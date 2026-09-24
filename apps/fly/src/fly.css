@@ -85,6 +85,10 @@ dl.measure { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; } dl
 .touch-knob { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px; border-radius: 50%; background: rgba(74,222,128,.85); pointer-events: none; }
 .touch-arm { position: absolute; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); transform: translateX(-50%); min-width: 96px; min-height: 56px; border-radius: 14px; border: 2px solid var(--warn); background: rgba(0,0,0,.6); color: var(--warn); font: 700 18px/1 system-ui; cursor: pointer; }
 .touch-arm.on { border-color: var(--accent); color: var(--accent); }
+/* with touch sticks on screen the bottom corners belong to the thumbs: OSD and credits move up */
+body.touch-on .osd.bl { bottom: calc(min(40vw, 220px) + 40px); }
+body.touch-on .osd.br { display: none; } /* keyboard shortcuts: nothing to press on a phone */
+body.touch-on .attribution { top: 100px; bottom: auto; max-width: calc(100vw - 32px); }
 .touch-hint { position: absolute; left: 50%; top: 72px; transform: translateX(-50%); font-size: 12px; color: #d1d5db; text-shadow: 0 1px 2px #000; text-align: center; width: 90vw; }
 @media (prefers-reduced-motion: reduce) { .panel, .crash-overlay { animation: none; } .progress > i, .stick-anim::after { transition: none; } }
 body.clean .top-actions, body.clean .attribution, body.clean .osd.br, body.clean .crash-overlay, body.clean .gate-msg, body.clean .banner { display: none; }

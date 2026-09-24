@@ -57,6 +57,7 @@ export class Controls {
     private ch = new Float32Array([0, 0, -1, 0, -1, -1, 0, 0]);
     private out = new Float32Array(8);
     lastSampleAt = -1e9;
+    private lastTick = 0;
     source: 'hid' | 'gamepad' | 'touch' | 'keyboard' | 'sim' | null = null;
     private session: FlightSession;
     block: ArmBlock = 'noProfile';
@@ -79,7 +80,9 @@ export class Controls {
     }
 
     private push(tMs: number): void {
-        this.lastSampleAt = tMs;
+        // staleness is about when the page last HEARD from the device (arrival), not the event's
+        // own timestamp: a touch event can be stamped 40 ms before the last keep-alive
+        this.lastSampleAt = performance.now();
         this.out.set(this.ch);
         const profileOk = this.profile !== null || this.source === 'touch' || this.source === 'keyboard' || this.source === 'sim';
         const fakeProfile = profileOk ? ({} as Profile) : null;
@@ -90,7 +93,13 @@ export class Controls {
 
     /** Called every frame: disarm on stale input or hidden tab even when no new sample arrives. */
     tick(now: number): void {
-        const age = now - this.lastSampleAt;
+        // A frame that itself comes late means the main thread stalled: queued device reports have
+        // not been delivered yet, so silence proves nothing this frame. Touch and keyboard live in
+        // the page and cannot drop out; only a radio or a gamepad can go stale.
+        const stalled = now - this.lastTick > 80;
+        this.lastTick = now;
+        const remote = this.source === 'hid' || this.source === 'gamepad';
+        const age = remote && !stalled ? now - this.lastSampleAt : 0;
         if (this.gate.armed && (age > 100 || document.visibilityState !== 'visible')) {
             this.out.set(this.ch);
             this.out[4] = this.gate.update({} as Profile, this.ch, age, document.visibilityState === 'visible', this.session.sim.crashed);

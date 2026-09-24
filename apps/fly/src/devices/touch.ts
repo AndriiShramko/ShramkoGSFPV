@@ -56,6 +56,7 @@ export class TouchSticks {
         hint.textContent = t('touch.hint');
         root.append(hint);
         parent.append(root);
+        document.body.classList.add('touch-on');
         this.layout();
         this.timer = window.setInterval(() => this.emit(performance.now()), 20); // keep-alive for the stale-input gate
     }
@@ -139,6 +140,7 @@ export class TouchSticks {
 
     dispose(): void {
         clearInterval(this.timer);
+        document.body.classList.remove('touch-on');
         this.root.remove();
     }
 }
