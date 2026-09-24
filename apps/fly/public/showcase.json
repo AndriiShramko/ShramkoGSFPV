@@ -1,9 +1,9 @@
 {
   "updated": "2026-09-24",
-  "note": "Static list approved by the author. No catalogue crawling: scenes are added here by hand.",
+  "note": "Static list approved by the author. No catalogue crawling: scenes are added here by hand. Titles, author and licence checked on the scene pages on superspl.at (2026-09-24); voxelCm = voxelResolution from scene.voxel.json.",
   "scenes": [
-    { "id": "39e63ce9", "title": "Modlinek Villa — attic room", "author": "Andrii Shramko", "license": "CC BY 4.0", "kind": "interior", "collision": true, "voxelCm": 5, "sizeMb": 64, "defaultDrone": "pavo20pro-3s" },
-    { "id": "7a475d38", "title": "Winter Garden", "author": "Andrii Shramko", "license": "CC BY 4.0", "kind": "interior", "collision": true, "voxelCm": 3.2, "sizeMb": 250, "defaultDrone": "pavo20pro-3s" },
-    { "id": "887f27aa", "title": "Tunis — old town streets", "author": "Andrii Shramko", "license": "CC BY 4.0", "kind": "exterior", "collision": true, "voxelCm": 5, "sizeMb": 485, "defaultDrone": "pavo20pro-3s" }
+    { "id": "39e63ce9", "title": "Modlinek Villa — red room and bathroom", "author": "Andrii Shramko", "license": "CC BY 4.0", "kind": "interior", "collision": true, "voxelCm": 5, "defaultDrone": "pavo20pro-3s" },
+    { "id": "7a475d38", "title": "Winter Garden — Jastrzębia Góra, Poland", "author": "Andrii Shramko", "license": "CC BY 4.0", "kind": "interior", "collision": true, "voxelCm": 3.2, "defaultDrone": "pavo20pro-3s" },
+    { "id": "887f27aa", "title": "Tunis — old town streets", "author": "Andrii Shramko", "license": "CC BY 4.0", "kind": "exterior", "collision": true, "voxelCm": 5, "defaultDrone": "pavo20pro-3s" }
   ]
 }
