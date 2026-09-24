@@ -1,0 +1,7 @@
+# Overlay for the first certificate: Let's Encrypt STAGING issuer (no rate-limit risk).
+# docker compose -f compose.yml -f compose.staging.yml up -d
+# Then, once routing answers: docker compose -f compose.yml up -d --force-recreate gsfpv-web
+services:
+  gsfpv-web:
+    environment:
+      LETSENCRYPT_TEST: "true"

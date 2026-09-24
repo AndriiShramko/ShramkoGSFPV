@@ -1,0 +1,59 @@
+# ShramkoGSFPV on the hub (65.109.11.177), directory /home/fpv/gsfpv/.
+# Two containers, no host ports: nginx:alpine serves the static release behind nginx-proxy + acme,
+# a tiny python API counts events and forwards leads. The web-proxy network is external: never
+# created or changed from here. Neighbours are never touched.
+name: gsfpv
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  gsfpv-web:
+    image: nginx:1.29-alpine
+    container_name: gsfpv-web
+    restart: unless-stopped
+    volumes:
+      - ./releases:/srv/releases:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    environment:
+      VIRTUAL_HOST: gsfpv.flyreelstudio.eu
+      VIRTUAL_PORT: "80"
+      LETSENCRYPT_HOST: gsfpv.flyreelstudio.eu
+      LETSENCRYPT_EMAIL: zmei116@gmail.com
+    networks: [web-proxy, gsfpv-internal]
+    mem_limit: 96m
+    cpus: 0.5
+    pids_limit: 64
+    security_opt: ["no-new-privileges:true"]
+    logging: *logging
+
+  gsfpv-api:
+    image: python:3.12-alpine
+    container_name: gsfpv-api
+    restart: unless-stopped
+    command: ["python", "-u", "/app/server.py"]
+    read_only: true
+    tmpfs: ["/tmp:size=8m"]
+    volumes:
+      - ./api:/app:ro
+      - ./data:/data
+    env_file: [config.env]
+    environment:
+      DATA_DIR: /data
+      PORT: "8090"
+      SITE_TAG: gsfpv
+    networks: [gsfpv-internal]
+    mem_limit: 64m
+    cpus: 0.25
+    pids_limit: 32
+    security_opt: ["no-new-privileges:true"]
+    logging: *logging
+
+networks:
+  web-proxy:
+    external: true
+  gsfpv-internal:
+    driver: bridge
