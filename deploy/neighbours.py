@@ -2,7 +2,7 @@
 server-side files from snapshot-server.sh, and a diff between two snapshots.
 
   python deploy/neighbours.py snap <dir>           # server snapshot (over SSH) + external HTTP codes/hashes
-  python deploy/neighbours.py diff <before> <after> [--allow gsfpv-web,gsfpv-api] [--stable <before2>]
+  python deploy/neighbours.py diff <before> <after> [--allow gsfpv-web,gsfpv-api] [--stable <b1>,<b2>,...]
 
 The HTTP part requests every vhost found in the live `docker ps` (not a list from notes) with a
 cache-busting query and records status + sha256 of the body. Bodies of dynamic pages change on
@@ -79,9 +79,11 @@ def rows(text: str) -> dict:
     return out
 
 
-def diff(a_dir: str, b_dir: str, allow: set, stable_dir: str | None) -> int:
+def diff(a_dir: str, b_dir: str, allow: set, stable_dirs: list[str]) -> int:
     a, b = load(a_dir), load(b_dir)
-    stable = load(stable_dir) if stable_dir else None
+    # a body is "static" only if it was identical in EVERY before snapshot: two snapshots a minute
+    # apart can sit inside one ISR window (Next.js s-maxage=60) and make a live page look static
+    stables = [load(d) for d in stable_dirs]
     problems = []
     ca, cb = rows(a['server']['containers.txt']), rows(b['server']['containers.txt'])
     for k in sorted(set(ca) | set(cb)):
@@ -112,7 +114,7 @@ def diff(a_dir: str, b_dir: str, allow: set, stable_dir: str | None) -> int:
             continue
         if v['code'] != w['code']:
             problems.append(f'http code changed: {h} {v["code"]} -> {w["code"]}')
-        if stable and stable['http'].get(h, {}).get('sha256') == v['sha256'] and v['sha256'] != w['sha256']:
+        if stables and all(st['http'].get(h, {}).get('sha256') == v['sha256'] for st in stables) and v['sha256'] != w['sha256']:
             problems.append(f'body changed on a static page: {h}')
     added_hosts = sorted(set(b['http']) - set(a['http']))
     out = {'before': a_dir, 'after': b_dir, 'problems': problems, 'added_vhosts': added_hosts, 'equal': not problems}
@@ -125,11 +127,11 @@ if __name__ == '__main__':
         snap(sys.argv[2])
     elif sys.argv[1] == 'diff':
         allow = set()
-        stable = None
+        stable: list[str] = []
         args = sys.argv[4:]
         for i, x in enumerate(args):
             if x == '--allow':
                 allow = set(args[i + 1].split(','))
             if x == '--stable':
-                stable = args[i + 1]
+                stable = args[i + 1].split(',')
         sys.exit(diff(sys.argv[2], sys.argv[3], allow, stable))
