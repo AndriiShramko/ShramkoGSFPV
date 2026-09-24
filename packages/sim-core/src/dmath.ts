@@ -3,8 +3,14 @@
 // JavaScript engines may implement Math.sin/cos/atan2/exp differently (V8, SpiderMonkey and
 // JavaScriptCore do not promise identical last-bit results). The simulation must produce the
 // same bits in Node and in every browser, so it only uses + - * / and Math.sqrt (IEEE-754
-// correctly rounded) and the functions below, which are ports of the public-domain fdlibm /
-// musl algorithms built from those operations only.
+// correctly rounded) and the functions below, which are ports of the fdlibm / musl algorithms
+// built from those operations only.
+//
+// fdlibm: Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
+// Developed at SunPro, a Sun Microsystems, Inc. business.
+// Permission to use, copy, modify, and distribute this software is freely granted,
+// provided that this notice is preserved.
+// musl libc: MIT License, Copyright (c) 2005-2020 Rich Felker, et al.
 
 const TOINT = 1.5 / 2.220446049250313e-16; // 1.5 * 2^52, round-to-nearest-integer trick
 

@@ -1,0 +1,136 @@
+{
+  "name": "a8-clearance",
+  "context": {
+    "date": "2026-09-24T14:11:12.449Z",
+    "gitHead": "bcef1bf",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "gate": false,
+  "method": "from authored camera positions, 200 Fibonacci directions: ray to the surface, then our swept test approaches with the body level and nose-first; clearance = centre-to-surface distance at first contact; ideal = the body extent towards the surface; excess = clearance - ideal",
+  "results": [
+    {
+      "scene": "39e63ce9",
+      "voxel": 0.05,
+      "body": "pavo20pro compound (4 ducts r30 + body r25)",
+      "samples": 2198,
+      "clearanceMedianMm": 103,
+      "clearanceP95Mm": 898.2,
+      "excessMedianMm": 47.2,
+      "excessP95Mm": 842.4
+    },
+    {
+      "scene": "39e63ce9",
+      "voxel": 0.05,
+      "body": "single sphere r25 mm (body)",
+      "samples": 2198,
+      "clearanceMedianMm": 38.3,
+      "clearanceP95Mm": 228.3,
+      "excessMedianMm": 13.3,
+      "excessP95Mm": 203.3
+    },
+    {
+      "scene": "39e63ce9",
+      "voxel": 0.05,
+      "body": "single sphere r30 mm (duct)",
+      "samples": 2198,
+      "clearanceMedianMm": 48,
+      "clearanceP95Mm": 316.7,
+      "excessMedianMm": 18,
+      "excessP95Mm": 286.7
+    },
+    {
+      "scene": "39e63ce9",
+      "voxel": 0.05,
+      "body": "single sphere r77 mm (bounding)",
+      "samples": 2198,
+      "clearanceMedianMm": 134.5,
+      "clearanceP95Mm": 1088.4,
+      "excessMedianMm": 57.7,
+      "excessP95Mm": 1011.6
+    },
+    {
+      "scene": "887f27aa",
+      "voxel": 0.05,
+      "body": "pavo20pro compound (4 ducts r30 + body r25)",
+      "samples": 149,
+      "clearanceMedianMm": 92,
+      "clearanceP95Mm": 409.3,
+      "excessMedianMm": 33,
+      "excessP95Mm": 346.2
+    },
+    {
+      "scene": "887f27aa",
+      "voxel": 0.05,
+      "body": "single sphere r25 mm (body)",
+      "samples": 149,
+      "clearanceMedianMm": 36.1,
+      "clearanceP95Mm": 112.4,
+      "excessMedianMm": 11.1,
+      "excessP95Mm": 87.4
+    },
+    {
+      "scene": "887f27aa",
+      "voxel": 0.05,
+      "body": "single sphere r30 mm (duct)",
+      "samples": 149,
+      "clearanceMedianMm": 43.6,
+      "clearanceP95Mm": 129.1,
+      "excessMedianMm": 13.6,
+      "excessP95Mm": 99.1
+    },
+    {
+      "scene": "887f27aa",
+      "voxel": 0.05,
+      "body": "single sphere r77 mm (bounding)",
+      "samples": 149,
+      "clearanceMedianMm": 113.4,
+      "clearanceP95Mm": 508.2,
+      "excessMedianMm": 36.6,
+      "excessP95Mm": 431.4
+    },
+    {
+      "scene": "7a475d38",
+      "voxel": 0.032,
+      "body": "pavo20pro compound (4 ducts r30 + body r25)",
+      "samples": 199,
+      "clearanceMedianMm": 108.8,
+      "clearanceP95Mm": 1039.8,
+      "excessMedianMm": 53,
+      "excessP95Mm": 985.2
+    },
+    {
+      "scene": "7a475d38",
+      "voxel": 0.032,
+      "body": "single sphere r25 mm (body)",
+      "samples": 199,
+      "clearanceMedianMm": 50.2,
+      "clearanceP95Mm": 518.4,
+      "excessMedianMm": 25.2,
+      "excessP95Mm": 493.4
+    },
+    {
+      "scene": "7a475d38",
+      "voxel": 0.032,
+      "body": "single sphere r30 mm (duct)",
+      "samples": 199,
+      "clearanceMedianMm": 58.5,
+      "clearanceP95Mm": 635.6,
+      "excessMedianMm": 28.5,
+      "excessP95Mm": 605.6
+    },
+    {
+      "scene": "7a475d38",
+      "voxel": 0.032,
+      "body": "single sphere r77 mm (bounding)",
+      "samples": 199,
+      "clearanceMedianMm": 165.6,
+      "clearanceP95Mm": 1055.5,
+      "excessMedianMm": 88.8,
+      "excessP95Mm": 978.6
+    }
+  ]
+}

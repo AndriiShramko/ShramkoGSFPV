@@ -5,6 +5,7 @@ import { Scenario, makePlan } from '@gsfpv/input/sim';
 import { findSphereSpawn, VoxelContactWorld, syntheticOpen } from '@gsfpv/collision';
 import { FlightSession } from './session';
 import { KeyboardSource } from './devices/keyboard';
+import { LatencyProbe } from './latency';
 import { GSPLAT_RENDERER_RASTER_GPU_SORT } from 'playcanvas';
 
 const q = new URLSearchParams(location.search);
@@ -79,6 +80,23 @@ async function boot(): Promise<void> {
         preset: session.presetId
     };
     hook.status = 'ready';
+    if (q.get('lat') === '1') {
+        // latency harness: numbered F13 presses, F24 posts the stage records to /report
+        const probe = new LatencyProbe(session);
+        const nonce = q.get('nonce') ?? '';
+        document.title = `GSFPV-LAT ${nonce} ready dpr=${devicePixelRatio}`;
+        addEventListener('keydown', (e) => {
+            // F20 toggles the lagFrames control (0 <-> 2) so the harness can interleave both modes
+            if (e.code === 'F20' || e.key === 'F20') {
+                session.lagFrames = session.lagFrames === 0 ? 2 : 0;
+                document.title = `GSFPV-LAT ${nonce} ready dpr=${devicePixelRatio} lag=${session.lagFrames}`;
+                return;
+            }
+            if (e.code !== 'F24' && e.key !== 'F24') return;
+            fetch('/report', { method: 'POST', body: JSON.stringify({ page: 'fly', lagFrames: session.lagFrames, records: probe.summary(), framePeriod: probe.framePeriod(), frames: session.frames, hitches: session.runner.hitches, renderer: session.renderer.currentRenderer, visibility: document.visibilityState, userAgent: navigator.userAgent }) })
+                .then(() => { document.title = `GSFPV-LAT ${nonce} reported`; });
+        });
+    }
 }
 
 function buildHud(s: FlightSession): void {

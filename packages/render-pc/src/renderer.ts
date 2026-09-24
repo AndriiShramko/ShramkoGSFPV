@@ -156,7 +156,7 @@ export class SplatRenderer {
             asset.on('load', () => {
                 const e = new Entity('gsplat', this.app);
                 e.setLocalEulerAngles(0, 0, 180); // SuperSplat scenes are stored upside down
-                e.addComponent('gsplat', { unified: true, asset });
+                e.addComponent('gsplat', { asset }); // unified rendering is the engine default
                 this.app.root.addChild(e);
                 this.splat = e;
                 // coarse LOD first for a fast reveal; revealFullDetail() opens the full range
@@ -214,7 +214,8 @@ export class SplatRenderer {
         };
         this.markerWhite = mk(1);
         this.markerBlack = mk(0);
-        const uiLayer = this.app.scene.layers.getLayerByName('UI');
+        // the Immediate layer is drawn after everything else, including the gsplat pass
+        const uiLayer = this.app.scene.layers.getLayerByName('Immediate');
         for (let i = 0; i < 4; i++) {
             const e = new Entity(`lat-marker-${i}`, this.app);
             e.addComponent('render', { type: 'plane', material: this.markerBlack, castShadows: false, layers: uiLayer ? [uiLayer.id] : undefined });
@@ -272,6 +273,42 @@ export class SplatRenderer {
 
     clearDebris(): void {
         for (const c of [...this.debrisRoot.children]) c.destroy();
+    }
+
+    /** A simple visible craft (only shown after a crash): body plate + four ducts. */
+    createCraftModel(ductOffset: number, ductRadius: number): Entity {
+        const root = new Entity('craft-model', this.app);
+        const mat = (rgb: [number, number, number]) => {
+            const m = new StandardMaterial();
+            m.diffuse = new Color(rgb[0], rgb[1], rgb[2]);
+            m.update();
+            return m;
+        };
+        const body = new Entity('craft-body', this.app);
+        body.addComponent('render', { type: 'box', material: mat([0.12, 0.12, 0.14]), castShadows: false });
+        body.setLocalScale(ductOffset * 1.6, ductRadius * 0.45, ductOffset * 1.9);
+        root.addChild(body);
+        for (const [dx, dz] of [[ductOffset, ductOffset], [ductOffset, -ductOffset], [-ductOffset, ductOffset], [-ductOffset, -ductOffset]]) {
+            const d = new Entity('craft-duct', this.app);
+            d.addComponent('render', { type: 'cylinder', material: mat([0.85, 0.25, 0.12]), castShadows: false });
+            d.setLocalPosition(dx, 0, dz);
+            d.setLocalScale(ductRadius * 2, ductRadius * 0.7, ductRadius * 2);
+            root.addChild(d);
+        }
+        this.debrisRoot.addChild(root);
+        return root;
+    }
+
+    setEntityPose(e: Entity, px: number, py: number, pz: number, qw: number, qx: number, qy: number, qz: number): void {
+        e.setPosition(px, py, pz);
+        this.tmpQ.set(qx, qy, qz, qw);
+        e.setRotation(this.tmpQ);
+    }
+
+    /** Third-person camera (crash view): at `pos`, looking at `target`. */
+    setCameraLookAt(px: number, py: number, pz: number, tx: number, ty: number, tz: number): void {
+        this.camera.setPosition(px, py, pz);
+        this.camera.lookAt(tx, ty, tz);
     }
 
     destroy(): void {

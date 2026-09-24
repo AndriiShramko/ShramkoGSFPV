@@ -1,0 +1,124 @@
+{
+  "name": "a1-engine-vs-createviewer",
+  "context": {
+    "date": "2026-09-24T14:09:12.277Z",
+    "gitHead": "bcef1bf",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "decision": "engine",
+  "score": {
+    "engine": "4/4",
+    "createViewer": "0/4"
+  },
+  "engine": {
+    "path": "engine",
+    "status": "done",
+    "criteria": {
+      "ownCameraNotOverwritten": {
+        "pass": true,
+        "set": [
+          1.234,
+          1.5,
+          -0.777
+        ],
+        "read": [
+          1.2339999675750732,
+          1.5,
+          -0.7770000100135803
+        ]
+      },
+      "renderScaleChangesBackbuffer": {
+        "pass": true,
+        "clientWidthPx": 1280.0000381469727,
+        "sizes": {
+          "1": [
+            1280,
+            800
+          ],
+          "2": [
+            2560,
+            1600
+          ],
+          "0.5": [
+            640,
+            400
+          ]
+        }
+      },
+      "collisionLoadedOnce": {
+        "pass": true,
+        "voxelBinDownloads": 1
+      },
+      "noPrivateApi": {
+        "pass": true,
+        "note": "checked statically against playcanvas.d.ts by the harness"
+      }
+    },
+    "renderer": 2,
+    "visibility": "visible",
+    "visibilityAtEnd": "visible",
+    "consoleErrors": [
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  "viewer": {
+    "path": "createViewer",
+    "status": "done",
+    "criteria": {
+      "ownCameraNotOverwritten": {
+        "pass": false,
+        "set": [
+          1.234,
+          1.5,
+          -0.777
+        ],
+        "read": [
+          -5.327819347381592,
+          1.036189317703247,
+          2.2254927158355713
+        ]
+      },
+      "renderScaleChangesBackbuffer": {
+        "pass": false,
+        "clientWidthPx": 1280.0000381469727,
+        "sizes": {
+          "2": [
+            1281,
+            801
+          ],
+          "0.5": [
+            1281,
+            801
+          ]
+        }
+      },
+      "collisionLoadedOnce": {
+        "pass": false,
+        "voxelBinDownloads": 2
+      },
+      "noPrivateApi": {
+        "pass": false,
+        "uses": [
+          "app.root.findByName('camera') — internal entity, not part of the viewer API"
+        ]
+      }
+    },
+    "renderer": 2,
+    "visibility": "visible",
+    "visibilityAtEnd": "visible",
+    "consoleErrors": [
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  },
+  "privateApiStaticCheck": {
+    "pass": true,
+    "checked": 70,
+    "problems": [],
+    "notFound": []
+  },
+  "note": "Criteria from spec-arch: own camera not overwritten; render scale really changes canvas.width; collision downloaded once; no private API. If the quality governor had needed a workaround, it would move to phase D."
+}

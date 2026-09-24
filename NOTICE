@@ -30,6 +30,14 @@ splat-transform (@playcanvas/splat-transform)
   https://github.com/playcanvas/splat-transform
   MIT License, Copyright (c) PlayCanvas Ltd.
 
+fdlibm / musl libc (algorithms and coefficients ported in
+packages/sim-core/src/dmath.ts)
+  fdlibm: Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
+  Developed at SunPro, a Sun Microsystems, Inc. business. Permission to use,
+  copy, modify, and distribute this software is freely granted, provided that
+  this notice is preserved.
+  musl libc: MIT License, Copyright (c) 2005-2020 Rich Felker, et al.
+
 ------------------------------------------------------------------------
 Acknowledgements
 ------------------------------------------------------------------------

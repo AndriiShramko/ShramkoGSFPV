@@ -110,6 +110,11 @@ export class Sim {
     events: SimEvent[] = [];
     /** optional: counts contact sweeps that started overlapping (should stay 0 in flight) */
     startOverlaps = 0;
+    /**
+     * Test seam for the determinism negative control ONLY: when set, its value is added to the
+     * thrust every step (e.g. Math.random), which must change the trace hash. Never set in the app.
+     */
+    perturb: (() => number) | null = null;
 
     // scratch
     private c0: Float64Array;
@@ -287,6 +292,8 @@ export class Sim {
             tauY += p.motorYaw[i] * p.kappa * T;
             power += p.kappa * T * (w * p.omegaMaxPerVolt * volt);
         }
+
+        if (this.perturb) tSum += this.perturb() * 1e-9;
 
         // ---- battery ----
         const amps = volt > 0.1 ? power / (p.eta * volt) : 0;

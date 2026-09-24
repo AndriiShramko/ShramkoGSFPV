@@ -51,6 +51,18 @@ importers:
 
   packages/collision: {}
 
+  packages/crash:
+    dependencies:
+      '@dimforge/rapier3d-deterministic-compat':
+        specifier: 0.20.0
+        version: 0.20.0
+      '@gsfpv/collision':
+        specifier: workspace:*
+        version: link:../collision
+      '@gsfpv/sim-core':
+        specifier: workspace:*
+        version: link:../sim-core
+
   packages/input:
     dependencies:
       '@gsfpv/collision':
@@ -90,6 +102,9 @@ importers:
         version: 1.63.0
 
 packages:
+
+  '@dimforge/rapier3d-deterministic-compat@0.20.0':
+    resolution: {integrity: sha512-kODprI9mdSm6idjbCuyRmwyVbSqFL3wvY7wOvu//eJqbqRjYc9pUMI0bSLBZt/IV+Vwzkh/Xi9nGVBJLnJgWOg==}
 
   '@esbuild/aix-ppc64@0.28.2':
     resolution: {integrity: sha512-XExcO+dvLKvVtNTibSTBej1NCAbaGhWn9Ww1ZPx80qsahhPFe/8jgWP0IchNe0F3HwkU7n8ejhH8bjonqht8mQ==}
@@ -685,6 +700,8 @@ packages:
     hasBin: true
 
 snapshots:
+
+  '@dimforge/rapier3d-deterministic-compat@0.20.0': {}
 
   '@esbuild/aix-ppc64@0.28.2':
     optional: true

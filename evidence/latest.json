@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-24T13:45:23.117Z",
+  "updated": "2026-09-24T16:46:28.337010",
   "items": {
     "ratesVectors": {
       "value": "1880 points, max error 0 deg/s",
@@ -9,6 +9,31 @@
     "tunnelling": {
       "value": "0 wall pass-throughs in 200,000 straight passes",
       "method": "swept test at 1 ms ticks vs independent resampling oracle; speeds 5, 10, 15, 25, 34.39 m/s; 3 real scans + 2 cm synthetic wall",
+      "date": "2026-09-24"
+    },
+    "clearance": {
+      "value": "Pavo20 Pro body stops 47.2 mm (median) beyond its own size from walls on the 5 cm voxel collision of scene 39e63ce9",
+      "method": "swept approach along 200 directions from 12 points",
+      "date": "2026-09-24"
+    },
+    "latency": {
+      "status": "LIMITED BY DISPLAY",
+      "value": "not gated: the test display runs at 30 Hz",
+      "outputHz": 28.2,
+      "medianMs": 252.5,
+      "p95Ms": 295.4,
+      "blankPageFloorMs": 65.4,
+      "stages": {
+        "inputToPhysicsMs": 15.8,
+        "physicsToFrameEndMs": 0.6,
+        "frameEndToGpuDoneMs": 100.1,
+        "gpuDoneToOutputMs": 136.2,
+        "samples": 220
+      },
+      "controlLagFrames2DeltaMs": 65.7,
+      "conditions": "DaVinci Resolve open on the same GPU (22.4 of 24.5 GB VRAM in use, GPU 20-52 %)",
+      "method": "SendInput F13 (QPC) -> first Desktop Duplication frame whose marker shows that input; stock Chrome, fresh profile; N=220 per mode",
+      "cameraMeasured": false,
       "date": "2026-09-24"
     }
   }

@@ -24,7 +24,8 @@ export class KeyboardSource {
     }
 
     private onDown = (e: KeyboardEvent): void => {
-        if (/^F(1[3-9]|2[0-4])$/.test(e.code)) {
+        if (/^F(1[3-9]|2[0-4])$/.test(e.code) || /^F(1[3-9]|2[0-4])$/.test(e.key)) {
+            if (/^F2[04]$/.test(e.code) || /^F2[04]$/.test(e.key)) return; // reserved: harness control keys
             // latency probe: one numbered event at the OS-stamped time
             this.latencyId++;
             this.session.input(this.ch, e.timeStamp, this.latencyId);

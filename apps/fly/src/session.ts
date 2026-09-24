@@ -83,10 +83,12 @@ export class FlightSession {
         }
         await splatLoad;
         this.visible = new Promise<void>((resolve) => {
-            const sys = this.renderer.app.systems.gsplat;
+            const sys = this.renderer.app.systems.gsplat!;
+            let streaming = false;
             const handler = (_cam: unknown, _layer: unknown, ready: boolean, loading: number) => {
-                // coarse level fully resident and on screen -> reveal, then stream the detail
-                if (ready && loading === 0 && this.renderer.app.stats.frame.gsplats > 0) {
+                // coarse level streamed in and fully resident -> reveal, then stream the detail
+                if (loading > 0) streaming = true;
+                if (ready && loading === 0 && streaming) {
                     sys.off('frame:ready', handler);
                     this.timings.visibleMs = performance.now() - this.createdAt;
                     this.renderer.revealFullDetail();
