@@ -1,8 +1,8 @@
 // One flight: scene + collision + physics + renderer, driven from the engine's update event.
 import { Sim, Runner, InputLog, S, compileParams, hoverSolve, SIM_CORE_VERSION, sha256Hex, attitude, spherePoses, replay as replayLog } from '@gsfpv/sim-core';
 import type { SimParams, ParamOverrides, SimEvent, LogHeader } from '@gsfpv/sim-core';
-import { fetchVoxelCollision, VoxelContactWorld, findSphereSpawn, NoCollisionError } from '@gsfpv/collision';
-import type { VoxelCollision } from '@gsfpv/collision';
+import { fetchVoxelCollision, VoxelContactWorld, findSphereSpawn, NoCollisionError, openVoxelCollision } from '@gsfpv/collision';
+import type { VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
 import { resolveScene, headingFromCamera } from '@gsfpv/scenes';
 import type { ResolvedScene } from '@gsfpv/scenes';
 import { SplatRenderer } from '@gsfpv/render-pc';
@@ -262,9 +262,31 @@ export class FlightSession {
         this.flightStartTick = this.sim.tick;
     }
 
-    /** Is the respawn point clear? (B12: respawn must land where isFreeAt is true) */
+    /**
+     * Is the respawn point clear: does the craft's bounding sphere touch no wall? Inside the voxel
+     * grid this agrees with isFreeAt; above a scan (an authored camera high up) isFreeAt says "no
+     * data" although there is only air, so the body test is the one that answers the question.
+     */
     spawnIsFree(p: [number, number, number, number] = this.spawn): boolean {
-        return this.collision ? this.collision.isFreeAt(p[0], p[1], p[2]) : true;
+        if (!this.collision) return true;
+        const push = { x: 0, y: 0, z: 0 };
+        return !this.collision.querySphere(p[0], p[1], p[2], this.params.boundRadius + 0.01, push);
+    }
+
+    /**
+     * Collision baked in this tab (phase C): swap it in, rebuild the model on it and move the
+     * spawn out of any wall. The input log restarts, because a replay needs the same collision.
+     */
+    installCollision(json: Uint8Array, bin: Uint8Array): void {
+        const metadata = JSON.parse(new TextDecoder().decode(json)) as VoxelMetadata;
+        this.collision = openVoxelCollision(metadata, bin);
+        const both = new Uint8Array(json.length + bin.length);
+        both.set(json, 0);
+        both.set(bin, json.length);
+        this.collisionSha256 = sha256Hex(both);
+        this.world = new VoxelContactWorld(this.collision);
+        if (!this.spawnIsFree()) this.spawn = this.findSpawn();
+        this.rebuildSim(this.presetId, this.overrides);
     }
 
     // ------------------------------------------------------------------ replay (input log only)
@@ -386,9 +408,16 @@ export class FlightSession {
         const c0 = new Float64Array(n * 3), c1 = new Float64Array(n * 3), tmp = new Float64Array(n * 3);
         const step = col.voxelResolution / 4;
         let done = 0, contacts = 0, penetrations = 0, tries = 0;
-        while (done < passes && tries < passes * 50) {
+        // near the spawn first; if walls are not within reach there, anywhere inside the voxel grid
+        const g0 = [col.gridMinX, col.gridMinY, col.gridMinZ];
+        const gs = [col.numVoxelsX * col.voxelResolution, col.numVoxelsY * col.voxelResolution, col.numVoxelsZ * col.voxelResolution];
+        while (done < passes && tries < passes * 400) {
             tries++;
-            const ox = this.spawn[0] + (rng() - 0.5) * 6, oy = this.spawn[1] + (rng() - 0.5) * 2, oz = this.spawn[2] + (rng() - 0.5) * 6;
+            const wide = tries > passes * 50;
+            const ox = wide ? g0[0] + rng() * gs[0] : this.spawn[0] + (rng() - 0.5) * 6;
+            const oy = wide ? g0[1] + rng() * gs[1] : this.spawn[1] + (rng() - 0.5) * 2;
+            const oz = wide ? g0[2] + rng() * gs[2] : this.spawn[2] + (rng() - 0.5) * 6;
+            if (wide && !col.isFreeAt(ox, oy, oz)) continue;
             if (col.querySphere(ox, oy, oz, p.boundRadius + 0.05, push)) continue;
             const ang = rng() * Math.PI * 2;
             const dx = Math.cos(ang), dz = Math.sin(ang), dy = (rng() - 0.5) * 0.4;

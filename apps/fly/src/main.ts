@@ -1,12 +1,14 @@
 // /fly entry: preflight -> scene picker -> flight (HUD, controls, crash, pause, settings).
 // URL: ?scene=<id|link>&drone=<preset>&g=<m/s2>&gm=<honest|same-twr|auto-throttle>
 // Test-only switches (never linked): ?simradio=scenario|open|raw, ?lat=1, ?lagFrames=N.
-import { S, InputLog } from '@gsfpv/sim-core';
+import { S, InputLog, parseBetaflightDiff } from '@gsfpv/sim-core';
 import type { SimEvent, ParamOverrides } from '@gsfpv/sim-core';
 import { parseSceneInput, recordOpen, recordFlight, SceneError } from '@gsfpv/scenes';
 import { Scenario, makePlan, makeTourPlan } from '@gsfpv/input/sim';
 import { findSphereSpawn, VoxelContactWorld, syntheticOpen } from '@gsfpv/collision';
 import { GSPLAT_RENDERER_RASTER_GPU_SORT } from 'playcanvas';
+import { FrameGovernor } from '@gsfpv/render-pc';
+import type { CinemaRecorder, RecorderInfo } from './cinema';
 import { FlightSession } from './session';
 import { KeyboardSource } from './devices/keyboard';
 import { TouchSticks } from './devices/touch';
@@ -15,7 +17,7 @@ import { LatencyProbe } from './latency';
 import { Controls } from './controls';
 import { CrashView } from './crashview';
 import { t, locale } from './i18n';
-import { h, clear } from './ui/dom';
+import { h, clear, panel } from './ui/dom';
 import { ScenePicker, loadShowcase } from './ui/scenes';
 import type { ShowcaseScene } from './ui/scenes';
 import { DronePicker } from './ui/drone';
@@ -56,6 +58,20 @@ interface TestHook {
     /** B15: replay the log saved in localStorage (optionally with one LSB flipped) in this tab */
     verifyLastLog?: (tamper?: { record: number; channel: number }) => { saved: string; endTick: number; hash: string; track: number[]; tampered: number | null } | null;
     loops?: number;
+    /** phase C: result of building collision in this tab */
+    bake?: Record<string, unknown>;
+    bakedBytes?: { json: Uint8Array; bin: Uint8Array };
+    runBake?: () => Promise<void>;
+    /** save the baked collision as two downloads (acceptance runs the Node tunnelling harness on it) */
+    downloadBaked?: () => boolean;
+    /** phase D: the exported trajectory as text (the same text the export button saves) */
+    trajectoryText?: (kind: 'csv' | 'json') => string;
+    governor?: FrameGovernor;
+    setFrameDelay?: (ms: number) => void;
+    /** phase D: import rates and PID from a Betaflight CLI diff (the same path as the import panel) */
+    importDiff?: (text: string) => { ok: boolean; firmware?: string | null; ratesType?: string; warnings?: string[]; errors?: string[] };
+    /** phase D: cinema mode and the recorder */
+    cinema?: { on: () => boolean; toggle: () => void; canRecord: boolean; start: () => Promise<string>; stop: () => Promise<RecorderInfo | null>; last: RecorderInfo | null; lastBytes: Uint8Array | null; creditStripStd: () => number };
 }
 const hook: TestHook = { status: 'loading', events: [], savedLogs: [] };
 (window as unknown as { __gsfpv: TestHook }).__gsfpv = hook;
@@ -176,7 +192,55 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
     attr.append(' · ', h('a', { href: `/${locale}/?report=${sceneId}#contact`, target: '_blank', rel: 'noopener', 'data-testid': 'report-scene' }, t('scenes.report')));
     ui.append(attr);
     if (!session.collision) {
-        ui.append(h('div', { class: 'badge-nowalls', role: 'status', 'data-testid': 'no-collision' }, t('scenes.noCollisionBadge')));
+        // phase C: walls can be built right here from the splats (same tool and defaults as SuperSplat)
+        const badge = h('div', { class: 'badge-nowalls', role: 'status', 'data-testid': 'no-collision' }, t('scenes.noCollisionBadge'));
+        const status = h('div', { class: 'bake-status', role: 'status', 'aria-live': 'polite', 'data-testid': 'bake-status' });
+        const bakeBtn = h('button', { type: 'button', class: 'btn', 'data-action': 'bake', onclick: () => void runBake() }, t('bake.button')) as HTMLButtonElement;
+        const box = h('div', { class: 'bake-box interactive' }, badge, bakeBtn, status);
+        ui.append(box);
+        const runBake = async (): Promise<void> => {
+            bakeBtn.disabled = true;
+            session.pause(true);
+            try {
+                const { bakeCollision, BakeRefusedError, BAKE_MAX_GAUSSIANS } = await import('./bake');
+                try {
+                    const r = await bakeCollision(session.scene.contentUrl, session.scene.contentKind, session.renderer.app.graphicsDevice, (st) => { status.textContent = t('bake.working', { stage: t(`bake.stage.${st}`) }); });
+                    session.installCollision(r.json, r.bin);
+                    hook.bake = { ok: true, gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length, collisionSha256: session.collisionSha256 };
+                    hook.bakedBytes = { json: r.json, bin: r.bin };
+                    if (hook.info) hook.info.hasCollision = true;
+                    badge.remove();
+                    bakeBtn.remove();
+                    status.textContent = t('bake.done', { voxels: (r.solidVoxels / 1e6).toFixed(1), s: (r.ms.total / 1000).toFixed(0) });
+                    beacon('bake_done');
+                } catch (e) {
+                    if (e instanceof BakeRefusedError) {
+                        hook.bake = { ok: false, refused: true, gaussians: e.size.gaussians, limit: BAKE_MAX_GAUSSIANS };
+                        status.textContent = t('bake.refused', { n: (e.size.gaussians / 1e6).toFixed(1), max: (BAKE_MAX_GAUSSIANS / 1e6).toFixed(0) });
+                        bakeBtn.remove();
+                    } else {
+                        hook.bake = { ok: false, error: String((e as Error)?.message ?? e) };
+                        status.textContent = t('bake.failed', { msg: String((e as Error)?.message ?? e).slice(0, 160) });
+                        bakeBtn.disabled = false;
+                    }
+                }
+            } finally {
+                session.pause(false);
+            }
+        };
+        hook.runBake = runBake;
+        hook.downloadBaked = () => {
+            const b = hook.bakedBytes;
+            if (!b) return false;
+            for (const [name, bytes] of [['baked.voxel.json', b.json], ['baked.voxel.bin', b.bin]] as const) {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: 'application/octet-stream' }));
+                a.download = `${sceneId}-${name}`;
+                a.click();
+            }
+            return true;
+        };
+        if (q.get('bake') === '1') void runBake();
     }
     // S5: another world with the same motors -> say what that does to thrust / weight before flying
     const gNow = session.params.gravity;
@@ -191,6 +255,25 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
     const crash = new CrashView(session);
     hook.crash = crash;
     const hud = new Hud(ui);
+    // quality governor: holds the display's frame rate; the settings "quality" is its ceiling
+    const governor = new FrameGovernor();
+    governor.enabled = q.get('governor') !== '0';
+    hook.governor = governor;
+    hook.setFrameDelay = (ms: number) => { frameDelay = Math.max(0, Math.min(200, ms)); };
+    let userMaxScale = session.renderer.renderScale;
+    let userBudget = 4;
+    let cinemaOn = false;
+    let frameDelay = 0; // test only (hook.setFrameDelay): burn CPU in each frame to simulate overload mid-flight
+    const applyQuality = (): void => {
+        if (cinemaOn) {
+            session.renderer.setRenderScale(userMaxScale);
+            session.renderer.setSplatBudgetMillions(16);
+            return;
+        }
+        const st = governor.current;
+        session.renderer.setRenderScale(Math.min(userMaxScale, st.renderScale));
+        session.renderer.setSplatBudgetMillions(Math.min(userBudget, st.splatBudgetMillions));
+    };
     new KeyboardSource(session);
     let overlay: CrashOverlay | null = null;
     let touch: TouchSticks | null = null;
@@ -210,6 +293,7 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
 
     hook.saveLog = (label: string) => saveLog(session, label);
     hook.verifyLastLog = (tamper) => verifyLastLog(session, tamper);
+    hook.trajectoryText = (kind) => trajectoryText(session, kind);
 
     session.onEvent = (e) => {
         hook.events.push(e);
@@ -240,6 +324,8 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
 
     session.onFrame = (s) => {
         const now = performance.now();
+        if (frameDelay > 0) { const end = now + frameDelay; while (performance.now() < end) { /* simulated overload */ } }
+        if (!cinemaOn && governor.onFrame(now)) applyQuality();
         controls.tick(now);
         if (!crash.active) crash.trackCamera();
         crash.frame(now);
@@ -293,8 +379,9 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
                 settingsPanel(ui, settingsFrom(session), session.params.twr, (v) => {
                     hud.visible = v.hud;
                     crash.reducedMotion = v.reducedMotion;
-                    session.renderer.setRenderScale(0.5 + v.quality * 0.5);
-                    session.renderer.app.scene.gsplat.splatBudget = (1 + v.quality * 3) * 1_000_000;
+                    userMaxScale = 0.5 + v.quality * 0.5;
+                    userBudget = 1 + v.quality * 3;
+                    applyQuality();
                     const o: ParamOverrides = { ...session.overrides, fovDeg: v.fov, uptiltDeg: v.uptilt, gravity: v.gravity, gravityMode: v.gravityMode, vCrash: v.vCrash, tauMs: v.tauMs, cdaScale: v.cdaScale, pid: v.pid };
                     afterCrashCleared();
                     session.rebuildSim(session.presetId, o);
@@ -313,9 +400,96 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
             measure: () => {
                 closePause = null;
                 measurePanel(ui, measureReport(session, controls), () => session.pause(false));
+            },
+            cinema: () => {
+                closePause = null;
+                toggleCinema();
+                session.pause(false);
+            },
+            import: () => {
+                closePause = null;
+                openImport();
             }
         });
     }
+
+    // ------------------------------------------------------------ Betaflight diff import (phase D)
+    function importDiff(text: string): ReturnType<NonNullable<TestHook['importDiff']>> {
+        const r = parseBetaflightDiff(text);
+        if (r.errors.length || (!r.rates && !r.pid)) return { ok: false, errors: r.errors.length ? r.errors : ['nothing to import'], warnings: r.warnings };
+        const o: ParamOverrides = { ...session.overrides };
+        if (r.rates) o.rates = r.rates;
+        if (r.pid) o.pid = { roll: [...r.pid.roll], pitch: [...r.pid.pitch], yaw: [...r.pid.yaw] };
+        if (r.throttle) o.throttle = { mid: r.throttle.mid, expo: r.throttle.expo };
+        afterCrashCleared();
+        session.rebuildSim(session.presetId, o);
+        const v = r.firmware.version;
+        return { ok: true, firmware: v ? `${r.firmware.name ?? 'Betaflight'} ${v.major}.${v.minor}.${v.patch}` : null, ratesType: r.rates?.type, warnings: r.warnings };
+    }
+    hook.importDiff = importDiff;
+    function openImport(): void {
+        session.pause(true);
+        const p = panel(t('import.title'), () => { p.close(); session.pause(false); });
+        const area = h('textarea', { class: 'import-text', rows: 10, spellcheck: 'false', 'aria-label': t('import.title'), placeholder: '# version … Betaflight / STM32F405 (S405) 4.5.1 …' }) as HTMLTextAreaElement;
+        const out = h('div', { class: 'import-out', role: 'status', 'aria-live': 'polite' });
+        const apply = h('button', { type: 'button', class: 'btn primary', 'data-action': 'import-apply', onclick: () => {
+            const r = importDiff(area.value);
+            clear(out);
+            out.append(h('p', {}, r.ok ? t('import.ok', { fw: r.firmware ?? '?', type: r.ratesType ?? '—', w: String(r.warnings?.length ?? 0) }) : t('import.refused', { msg: (r.errors ?? []).join(' · ') })));
+            // every warning in full: a success with warnings must not read as a clean success
+            if (r.warnings?.length) out.append(h('ul', { class: 'import-warnings' }, ...r.warnings.map((w) => h('li', {}, w))));
+        } }, t('import.apply'));
+        p.body.append(h('p', { class: 'muted' }, t('import.hint')), area, apply, out);
+        ui.append(p.root);
+        area.focus();
+    }
+
+    // ------------------------------------------------------------ cinema mode (phase D)
+    const credit = meta ? `${meta.title} — ${meta.author}, ${meta.license} · gsfpv.flyreelstudio.eu` : '';
+    let recorder: CinemaRecorder | null = null;
+    const recBtn = h('button', { type: 'button', class: 'btn rec', 'data-action': 'cinema-rec', hidden: true, onclick: () => void (recorder?.recording ? stopRec() : startRec()) }, t('cinema.rec')) as HTMLButtonElement;
+    const cinemaNote = h('div', { class: 'cinema-note', role: 'status', 'data-testid': 'cinema-note', hidden: true });
+    ui.append(h('div', { class: 'cinema-bar interactive' }, recBtn, cinemaNote));
+    session.renderer.app.on('frameend', () => { if (recorder?.recording) recorder.addFrame(canvas, performance.now()); });
+    function toggleCinema(): void {
+        cinemaOn = !cinemaOn;
+        document.body.classList.toggle('cinema', cinemaOn);
+        governor.enabled = !cinemaOn && q.get('governor') !== '0';
+        session.renderer.setDetail(cinemaOn ? 'final' : 'auto');
+        applyQuality();
+        recBtn.hidden = !cinemaOn || !meta;
+        cinemaNote.hidden = !cinemaOn;
+        cinemaNote.textContent = cinemaOn ? (meta ? t('cinema.on') : t('cinema.noRec')) : '';
+        if (!cinemaOn && recorder?.recording) void stopRec();
+    }
+    async function startRec(): Promise<string> {
+        if (!meta) throw new Error('recording is only for showcase scenes');
+        const { CinemaRecorder } = await import('./cinema');
+        if (!CinemaRecorder.supported) { cinemaNote.textContent = t('cinema.unsupported'); throw new Error('WebCodecs unavailable'); }
+        recorder = new CinemaRecorder(canvas.width, canvas.height, credit);
+        const codec = await recorder.start();
+        recBtn.textContent = t('cinema.stop');
+        recBtn.classList.add('on');
+        return codec;
+    }
+    async function stopRec(): Promise<RecorderInfo | null> {
+        if (!recorder) return null;
+        const { bytes, info } = await recorder.stop();
+        recBtn.textContent = t('cinema.rec');
+        recBtn.classList.remove('on');
+        hookCinema.last = info;
+        hookCinema.lastBytes = bytes;
+        cinemaNote.textContent = t('cinema.saved', { s: info.seconds.toFixed(1), mb: (info.bytes / 1048576).toFixed(1) });
+        if (!q.get('simradio')) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: 'video/mp4' }));
+            a.download = `gsfpv-${sceneId}-${Date.now()}.mp4`;
+            a.click();
+        }
+        return info;
+    }
+    const hookCinema: NonNullable<TestHook['cinema']> = { on: () => cinemaOn, toggle: toggleCinema, canRecord: !!meta, start: startRec, stop: stopRec, last: null, lastBytes: null, creditStripStd: () => recorder?.lastCreditStripStd ?? 0 };
+    hook.cinema = hookCinema;
 
     addEventListener('keydown', (e) => {
         if (e.code === 'KeyP' || e.code === 'Escape') { if (closePause) { closePause(); closePause = null; session.pause(false); } else openPause(); }
@@ -477,11 +651,15 @@ function saveLog(s: FlightSession, label: string): SavedLog {
     return entry;
 }
 
-function exportTrajectory(s: FlightSession, kind: 'csv' | 'json'): void {
+/** Trajectory as text: 100 samples per sim second, straight from the flight model's state. */
+function trajectoryText(s: FlightSession, kind: 'csv' | 'json'): string {
     const tr = s.runner.trajectory ?? [];
-    let text: string;
-    if (kind === 'json') text = JSON.stringify({ header: s.log.header, samplesHz: 100, points: tr }, null, 1);
-    else text = 't,px,py,pz,qw,qx,qy,qz,vx,vy,vz,m1,m2,m3,m4,throttle,armed,crashed\n' + tr.map((p) => [p.t, ...p.p, ...p.q, ...p.v, ...p.motors, p.throttle, p.armed ? 1 : 0, p.crashed ? 1 : 0].join(',')).join('\n');
+    if (kind === 'json') return JSON.stringify({ header: s.log.header, samplesHz: 100, points: tr }, null, 1);
+    return 't,px,py,pz,qw,qx,qy,qz,vx,vy,vz,m1,m2,m3,m4,throttle,armed,crashed\n' + tr.map((p) => [p.t, ...p.p, ...p.q, ...p.v, ...p.motors, p.throttle, p.armed ? 1 : 0, p.crashed ? 1 : 0].join(',')).join('\n');
+}
+
+function exportTrajectory(s: FlightSession, kind: 'csv' | 'json'): void {
+    const text = trajectoryText(s, kind);
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([text], { type: kind === 'json' ? 'application/json' : 'text/csv' }));
     a.download = `gsfpv-trajectory-${Date.now()}.${kind}`;

@@ -71,7 +71,10 @@ dl.measure { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; } dl
 .banner { position: absolute; top: 0; left: 0; right: 0; background: #3b2f0b; color: #fde68a; padding: 8px 16px; font-size: 14px; text-align: center; }
 .attribution { position: absolute; left: 16px; bottom: 40px; font-size: 12px; color: #d1d5db; text-shadow: 0 1px 2px #000; max-width: 60vw; }
 .attribution a { color: #bbf7d0; }
-.badge-nowalls { position: absolute; top: 44px; left: 50%; transform: translateX(-50%); background: rgba(12,14,18,.85); border: 1px solid var(--warn); color: var(--warn); padding: 6px 12px; border-radius: 999px; font-size: 13px; max-width: 92vw; text-align: center; }
+.bake-box { position: absolute; top: 44px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 92vw; }
+.bake-box .btn { background: rgba(12,14,18,.85); }
+.bake-status { font-size: 13px; color: #d1d5db; text-shadow: 0 1px 2px #000; text-align: center; }
+.badge-nowalls { background: rgba(12,14,18,.85); border: 1px solid var(--warn); color: var(--warn); padding: 6px 12px; border-radius: 999px; font-size: 13px; max-width: 92vw; text-align: center; }
 .top-actions { position: absolute; top: max(10px, env(safe-area-inset-top)); right: 16px; display: flex; gap: 8px; margin-top: 28px; }
 .top-actions .btn { min-height: 40px; padding: 6px 12px; background: rgba(12,14,18,.7); }
 .loading { position: absolute; inset: 0; display: grid; place-items: center; background: var(--bg); }
@@ -80,6 +83,10 @@ dl.measure { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; } dl
 .center-msg { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); background: var(--panel); padding: 16px 20px; border-radius: 12px; max-width: min(92vw, 560px); text-align: center; }
 /* touch sticks */
 .touch-root { position: absolute; inset: 0; }
+/* the stick layer covers the screen but only the pads and ARM take touches: buttons, links and
+   the bake control underneath stay reachable */
+#ui .touch-root.interactive { pointer-events: none; }
+#ui .touch-root .touch-pad, #ui .touch-root .touch-arm { pointer-events: auto; }
 .touch-pad { position: absolute; bottom: max(24px, env(safe-area-inset-bottom)); width: min(40vw, 220px); height: min(40vw, 220px); border-radius: 50%; border: 2px solid rgba(255,255,255,.35); background: rgba(255,255,255,.06); touch-action: none; }
 .touch-pad.left { left: 24px; } .touch-pad.right { right: 24px; }
 .touch-knob { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px; border-radius: 50%; background: rgba(74,222,128,.85); pointer-events: none; }
@@ -92,3 +99,11 @@ body.touch-on .attribution { top: 100px; bottom: auto; max-width: calc(100vw - 3
 .touch-hint { position: absolute; left: 50%; top: 72px; transform: translateX(-50%); font-size: 12px; color: #d1d5db; text-shadow: 0 1px 2px #000; text-align: center; width: 90vw; }
 @media (prefers-reduced-motion: reduce) { .panel, .crash-overlay { animation: none; } .progress > i, .stick-anim::after { transition: none; } }
 body.clean .top-actions, body.clean .attribution, body.clean .osd.br, body.clean .crash-overlay, body.clean .gate-msg, body.clean .banner { display: none; }
+/* cinema mode: clean picture, only the record control and its note */
+.cinema-bar { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; max-width: 92vw; }
+.cinema-note { font-size: 13px; color: #e5e7eb; text-shadow: 0 1px 2px #000; text-align: center; }
+.btn.rec.on { border-color: var(--bad); color: var(--bad); }
+body.cinema .osd, body.cinema .attribution, body.cinema .badge-nowalls, body.cinema .touch-hint { display: none; }
+.import-text { width: 100%; min-height: 160px; margin: 8px 0; background: #0b0d11; color: #e5e7eb; border: 1px solid var(--line); border-radius: 10px; padding: 8px; font: 12px/1.35 ui-monospace, Consolas, monospace; }
+.import-out { margin-top: 8px; font-size: 13px; }
+.import-warnings { margin: 6px 0 0 18px; font-size: 12px; color: var(--warn); }

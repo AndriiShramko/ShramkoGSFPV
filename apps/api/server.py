@@ -44,6 +44,7 @@ EVENTS: dict[str, dict[str, set | None]] = {
     "crash": {},
     "session_end": {"flight_s_bucket": None},
     "webgpu_unavailable": {},
+    "bake_done": {},
     "lang_switch": {"to": {"en", "es", "pl", "ru"}},
     "cta_click": {"target": {"github", "calendar", "linkedin", "email"}},
     "fly_click": {},

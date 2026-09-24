@@ -80,13 +80,15 @@ export interface PauseActions {
     settings(): void;
     replays(): void;
     measure(): void;
+    cinema(): void;
+    import(): void;
 }
 
 export function pauseMenu(parent: HTMLElement, a: PauseActions): () => void {
     const p = panel(t('pause.title'), () => { p.close(); a.resume(); });
     const items: [string, () => void][] = [
         ['pause.continue', a.resume], ['pause.restart', a.restart], ['pause.scene', a.scene], ['pause.drone', a.drone],
-        ['pause.radio', a.radio], ['pause.settings', a.settings], ['pause.replays', a.replays], ['pause.measure', a.measure]
+        ['pause.radio', a.radio], ['pause.settings', a.settings], ['pause.replays', a.replays], ['pause.measure', a.measure], ['pause.import', a.import], ['pause.cinema', a.cinema]
     ];
     for (const [k, fn] of items) p.body.append(h('button', { type: 'button', class: 'btn block', 'data-action': k, onclick: () => { p.close(); fn(); } }, t(k)));
     p.body.append(h('a', { class: 'btn block', href: `/${locale}/#contact`, target: '_blank', rel: 'noopener' }, t('pause.contact')));
