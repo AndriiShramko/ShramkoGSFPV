@@ -1,0 +1,107 @@
+{
+  "name": "a2-collision-formats",
+  "context": {
+    "date": "2026-09-24T13:41:39.076Z",
+    "gitHead": "a780ccb",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "results": {
+    "39e63ce9": {
+      "version": "1.0",
+      "flipXY": true,
+      "voxelResolution": 0.05,
+      "collisionSha256": "cd9ec1983aaf5c49ac53b3814e85c2ff06e4a337f70a38d299e6f99a615751a5",
+      "spawn": {
+        "from": [
+          0.6857250332832336,
+          1.5809873342514038,
+          0.6940217018127441
+        ],
+        "hit": [
+          0.6857250332832336,
+          -0.2000000000000013,
+          0.6940217018127441
+        ],
+        "drop": 1.780987334251405,
+        "surroundHits": 16,
+        "ok": true
+      },
+      "startPoints": 18,
+      "floorFoundCorrectFlip": 18,
+      "control": {
+        "name": "wrong flip must miss the floor from the spawn",
+        "spawnWithWrongFlip": {
+          "from": [
+            0.6857250332832336,
+            1.5809873342514038,
+            0.6940217018127441
+          ],
+          "hit": [
+            0.6857250332832336,
+            0.30000000000000004,
+            0.6940217018127441
+          ],
+          "drop": 1.2809873342514038,
+          "surroundHits": 0,
+          "ok": false
+        },
+        "floorFoundWrongFlip": 0,
+        "fired": true
+      },
+      "pass": true
+    },
+    "887f27aa": {
+      "version": "1.1",
+      "flipXY": false,
+      "voxelResolution": 0.05,
+      "collisionSha256": "1a104522ed03688d046d2210b68cb3e66afdb07d922f2de4b6096ac9a55a0f96",
+      "spawn": {
+        "from": [
+          0,
+          2,
+          0
+        ],
+        "hit": [
+          0,
+          -0.10000000000000053,
+          0
+        ],
+        "drop": 2.1000000000000005,
+        "surroundHits": 16,
+        "ok": true
+      },
+      "startPoints": 1,
+      "floorFoundCorrectFlip": 1,
+      "control": {
+        "name": "wrong flip must miss the floor from the spawn",
+        "spawnWithWrongFlip": {
+          "from": [
+            0,
+            2,
+            0
+          ],
+          "hit": [
+            0,
+            0.7000000000000004,
+            0
+          ],
+          "drop": 1.2999999999999996,
+          "surroundHits": 6,
+          "ok": false
+        },
+        "floorFoundWrongFlip": 0,
+        "fired": true
+      },
+      "pass": true
+    },
+    "unknownVersion": {
+      "error": "Unsupported voxel collision format version: \"2.0\" (supported: 1.0, 1.1)",
+      "pass": true
+    }
+  },
+  "runtimeMs": 1430
+}

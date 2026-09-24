@@ -1,0 +1,15 @@
+{
+  "name": "@gsfpv/bench",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Measurement and acceptance harnesses that write evidence/ JSON",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@gsfpv/sim-core": "workspace:*",
+    "@gsfpv/collision": "workspace:*"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "updated": "2026-09-24T13:41:39.306Z",
+  "items": {
+    "ratesVectors": {
+      "value": "1880 points, max error 0 deg/s",
+      "method": "compiled Betaflight 4.5.1 rate functions vs our re-implementation",
+      "date": "2026-09-24"
+    }
+  }
+}

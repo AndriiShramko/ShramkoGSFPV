@@ -1,0 +1,63 @@
+{
+  "name": "a3-rates-vectors",
+  "context": {
+    "date": "2026-09-24T13:41:39.206Z",
+    "gitHead": "a780ccb",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "source": {
+    "repo": "betaflight/betaflight",
+    "tag": "4.5.1",
+    "commit": "77d01ba3b76a22909d5f09cb0628820141f95eaa",
+    "files": [
+      "src/main/fc/rc.c"
+    ],
+    "functions": [
+      "applyBetaflightRates",
+      "applyRaceFlightRates",
+      "applyKissRates",
+      "applyActualRates"
+    ],
+    "final_clamp": "constrainf(rate, -rate_limit, rate_limit) as in calculateSetpointRate"
+  },
+  "build": {
+    "compiler": "zig cc 0.16.0 (clang version 21.1.0), ziglang 0.16.0 wheel from PyPI",
+    "flags": "-target x86_64-windows-gnu -mcpu=baseline -O2 -std=gnu11 -ffp-contract=off -fno-fast-math -Wall -Wextra ; rates translation unit additionally -Dfloat=double",
+    "float_mode": "double (float promoted to double)",
+    "literal_transform": "f/F suffixes of floating literals stripped in the extracted text (e.g. 14.54f -> 14.54, 0.01f -> 0.01) so constants are double too; no other textual change",
+    "generated": "2026-09-24"
+  },
+  "sets": 40,
+  "points": 1880,
+  "tolerance": 1e-9,
+  "maxAbsErrorDegPerS": 0,
+  "failingPoints": 0,
+  "perType": {
+    "BETAFLIGHT": {
+      "sets": 10,
+      "maxErr": 0
+    },
+    "RACEFLIGHT": {
+      "sets": 10,
+      "maxErr": 0
+    },
+    "KISS": {
+      "sets": 10,
+      "maxErr": 0
+    },
+    "ACTUAL": {
+      "sets": 10,
+      "maxErr": 0
+    }
+  },
+  "control": {
+    "name": "Actual curve with x^3 instead of x^5 must fail",
+    "maxAbsErrorDegPerS": 280.16640000000007,
+    "fired": true
+  },
+  "runtimeMs": 4
+}

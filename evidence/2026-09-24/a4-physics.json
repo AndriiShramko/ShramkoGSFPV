@@ -1,0 +1,109 @@
+{
+  "name": "a4-physics",
+  "context": {
+    "date": "2026-09-24T13:41:39.429Z",
+    "gitHead": "a780ccb",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "checks": {
+    "hover": {
+      "vz": -0.016470763238775346,
+      "motor": 0.3931309718372687,
+      "stick": 0.35781055220874997,
+      "pass": true,
+      "control": {
+        "name": "throttle +0.02 must climb",
+        "vz": 1.7089824511915646,
+        "fired": true
+      }
+    },
+    "fullStick": {
+      "roll": {
+        "target": 670,
+        "measured": 670.0568967890695,
+        "errPct": 0.008492058070070056,
+        "pass": true
+      },
+      "pitch": {
+        "target": 670,
+        "measured": 670.0539896497482,
+        "errPct": 0.008058156678842677,
+        "pass": true
+      },
+      "yaw": {
+        "target": 670,
+        "measured": 665.4067336969016,
+        "errPct": -0.6855621347908064,
+        "pass": true
+      },
+      "pass": true
+    },
+    "motorTau": {
+      "expectedMs": 15,
+      "measuredMs": 15,
+      "pass": true,
+      "control": {
+        "name": "tau = 0 must fail the check",
+        "measuredMs": 1,
+        "fired": true
+      }
+    },
+    "airmodeZeroThrottle": {
+      "target": 670,
+      "measured": 669.3113720194109,
+      "ratio": 0.9989721970438968,
+      "pass": true
+    },
+    "pidStep": {
+      "setpoint": 500,
+      "peak": 507.24643823301034,
+      "overshootPct": 1.4492876466020674,
+      "settledErr": 0.00015778837108780408,
+      "oscillations": 0,
+      "pass": true,
+      "control": {
+        "name": "Kp x3 must be caught (overshoot/oscillation)",
+        "overshootPct": 7.869321819497737,
+        "oscillations": 2,
+        "fired": true
+      }
+    },
+    "moonHover": {
+      "idealBattery": {
+        "g": 1.62,
+        "motor": 0.1817347702383993,
+        "expected": 0.1817347598446148,
+        "pass": true
+      },
+      "withSag": {
+        "g": 1.62,
+        "motor": 0.15823272511363048,
+        "expected": 0.1817347598446148,
+        "pass": false,
+        "note": "informational: with battery sag the hover output is lower because the pack sits above V_nom at hover current"
+      }
+    },
+    "zeroGAngularMomentum": {
+      "L0": 0.0013607802908625626,
+      "L1": 0.0013607802908634956,
+      "relDrift": 9.063829070579257e-13,
+      "pass": true
+    },
+    "terminalVelocity": {
+      "measured": 12.781491720931095,
+      "expected": 12.781491720931674,
+      "errPct": -4.5307100476865946e-12,
+      "pass": true,
+      "control": {
+        "name": "doubled CdA must shift v_term",
+        "measured": 9.037879469550093,
+        "fired": true
+      }
+    }
+  },
+  "runtimeMs": 122
+}
