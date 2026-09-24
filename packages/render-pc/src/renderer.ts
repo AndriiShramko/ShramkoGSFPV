@@ -180,6 +180,19 @@ export class SplatRenderer {
         comp.lodRangeMax = 1000;
     }
 
+    /** 'final': the finest level of detail everywhere (cinema mode); 'auto': by distance. */
+    setDetail(mode: 'auto' | 'final'): void {
+        const comp = this.splat?.gsplat as GSplatComponent | undefined;
+        if (!comp) return;
+        comp.lodRangeMin = 0;
+        comp.lodRangeMax = mode === 'final' ? 0 : 1000;
+    }
+
+    /** Upper bound of splats drawn per frame, in millions (the quality governor moves it). */
+    setSplatBudgetMillions(m: number): void {
+        this.app.scene.gsplat.splatBudget = Math.round(m * 1_000_000);
+    }
+
     /** Camera at the body pose, tilted up by the FPV camera uptilt. Quaternion (w, x, y, z). */
     setPose(px: number, py: number, pz: number, qw: number, qx: number, qy: number, qz: number, uptiltDeg: number): void {
         this.tmpQ.set(qx, qy, qz, qw);
