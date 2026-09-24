@@ -29,7 +29,7 @@
       "label": "O pega un enlace de SuperSplat",
       "placeholder": "https://superspl.at/scene/…",
       "button": "Abrir escena",
-      "hint": "Un enlace a la escena, un enlace superspl.at/s?id= o solo el id de la escena."
+      "hint": "Un enlace a la escena, un enlace superspl.at/s?id= o solo el id de la escena.", "empty": "Primero pega un enlace de SuperSplat o el id de una escena."
     },
     "facts": ["WebGPU y PlayCanvas", "Rates contrastados con Betaflight 4.5.1", "Colisión por barrido de vóxeles", "Licencia MIT"]
   },
@@ -172,7 +172,7 @@
     "lead": "Breve y sincero, para que nada te pille por sorpresa.",
     "items": [
       { "t": "Los datos de las escenas pueden cambiar sin aviso", "d": "Las escenas se cargan desde la CDN pública, pero no documentada, de SuperSplat. Puede cambiar en cualquier momento y algunas escenas podrían dejar de cargar." },
-      { "t": "Muchos escaneos aún no tienen datos de colisión", "d": "En esas escenas puedes atravesar las paredes, pero no estrellarte contra ellas. Pronto llegará el cálculo de colisiones en el navegador." },
+      { "t": "Algunos escaneos no traen datos de colisión", "d": "Para ellos, el simulador puede construir las paredes en tu navegador con la propia herramienta de SuperSplat (hasta 4 millones de gaussianas, unos 20 segundos en una GPU de escritorio). Los escaneos más grandes se atraviesan volando." },
       { "t": "Mareo", "d": "Los choques y el vuelo rápido pueden marear, así que haz pausas. Los efectos nunca hacen parpadear toda la pantalla y se respeta tu ajuste de movimiento reducido." },
       { "t": "Un simulador no es un vuelo real", "d": "Practica con responsabilidad, cumple la normativa de drones de tu país y nunca vueles sobre personas." },
       { "t": "Tus datos se quedan contigo", "d": "La calibración, el historial de vuelos y los favoritos se guardan solo en tu navegador." }
@@ -187,7 +187,7 @@
       { "q": "¿Cómo puedo volar un dron FPV por un escaneo 3D de Gaussian Splatting?", "a": "Abre ShramkoGSFPV en Chrome o Edge de escritorio, elige uno de los escaneos de Andrii o pega un enlace de SuperSplat, conecta una emisora, un mando o usa los sticks táctiles, y luego calibra, arma y vuela. No hay que instalar nada." },
       { "q": "¿Puedo usar mi emisora RadioMaster en el navegador?", "a": "Para eso está pensado: pon una emisora EdgeTX, como la TX16S, Boxer, Pocket o Zorro, en modo joystick USB y conéctala por WebHID en Chrome o Edge. Por ahora solo se ha probado con una emisora EdgeTX simulada, no con hardware real." },
       { "q": "¿Hay algún simulador FPV gratuito que funcione en el navegador?", "a": "Sí. ShramkoGSFPV es gratuito y de código abierto con licencia MIT. Funciona con WebGPU en Chrome o Edge de escritorio, sin descargas." },
-      { "q": "¿Qué escenas de SuperSplat puedo volar?", "a": "Cualquier escena pública de SuperSplat, por enlace o por id. Las escenas que traen datos de colisión en vóxeles tienen paredes sólidas; en el resto puedes atravesar las paredes, pero no chocar, hasta que llegue el cálculo de colisiones en el navegador." },
+      { "q": "¿Qué escenas de SuperSplat puedo volar?", "a": "Cualquier escena pública de SuperSplat, por enlace o id. Las escenas publicadas con datos de colisión tienen paredes sólidas desde el principio; para las demás puedes construir las paredes en tu navegador con un clic (escaneos de hasta 4 millones de gaussianas). Los más grandes se pueden atravesar volando, pero no chocar." },
       { "q": "¿Funciona en iPad o en el móvil?", "a": "Los sticks táctiles solo se han probado en emulación, todavía no en dispositivos reales, y necesitas un navegador con WebGPU. Las emisoras requieren Chrome o Edge de escritorio." },
       { "q": "¿La física de vuelo es como la de Betaflight?", "a": "Las curvas de rates (Betaflight, Actual, KISS, Raceflight) coinciden hasta el último dígito con Betaflight 4.5.1 compilado, y un PID de rates controla cuatro motores a través de un mezclador. Es nuestro propio modelo de vuelo, no el firmware de Betaflight." },
       { "q": "¿Me estrello contra las paredes o las atravieso?", "a": "En las escenas con datos de colisión te estrellas: en cada paso de la física se hace un barrido del cuerpo del dron contra los vóxeles, y un banco de pruebas comprueba que el vuelo rápido no atraviesa paredes. El resultado está en Cifras en vivo." },

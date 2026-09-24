@@ -29,7 +29,7 @@
       "label": "Albo wklej link z SuperSplat",
       "placeholder": "https://superspl.at/scene/…",
       "button": "Otwórz scenę",
-      "hint": "Link do sceny, link superspl.at/s?id= albo samo id sceny."
+      "hint": "Link do sceny, link superspl.at/s?id= albo samo id sceny.", "empty": "Najpierw wklej link do SuperSplat albo id sceny."
     },
     "facts": ["WebGPU i PlayCanvas", "Rates sprawdzone z Betaflight 4.5.1", "Kolizje z przemiataniem wokseli", "Licencja MIT"]
   },
@@ -172,7 +172,7 @@
     "lead": "Krótko i szczerze, żeby nic Cię nie zaskoczyło.",
     "items": [
       { "t": "Dane scen mogą się zmienić bez uprzedzenia", "d": "Sceny wczytują się z publicznego, ale nieudokumentowanego CDN SuperSplat. Może się on zmienić w każdej chwili, a niektóre sceny mogą przestać się ładować." },
-      { "t": "Wiele skanów nie ma jeszcze danych kolizji", "d": "Przez takie sceny można przelatywać, ale nie da się w nich rozbić. Liczenie kolizji w przeglądarce jest w drodze." },
+      { "t": "Niektóre skany nie mają danych kolizji", "d": "Dla nich symulator może zbudować ściany w twojej przeglądarce narzędziem samego SuperSplat (do 4 mln gaussianów, około 20 sekund na GPU w komputerze). Większe skany da się tylko przelatywać na wylot." },
       { "t": "Choroba lokomocyjna", "d": "Kraksy i szybkie latanie mogą przyprawić o mdłości, więc rób przerwy. Efekty nigdy nie migają na cały ekran, a ustawienie ograniczonego ruchu jest respektowane." },
       { "t": "Symulator to nie prawdziwy lot", "d": "Ćwicz odpowiedzialnie, przestrzegaj lokalnych przepisów dotyczących dronów i nigdy nie lataj nad ludźmi." },
       { "t": "Twoje dane zostają u Ciebie", "d": "Kalibracja, historia lotów i ulubione są zapisywane wyłącznie w Twojej przeglądarce." }
@@ -187,7 +187,7 @@
       { "q": "Jak polecieć dronem FPV przez skan 3D Gaussian Splatting?", "a": "Otwórz ShramkoGSFPV w Chrome lub Edge na komputerze, wybierz jeden ze skanów Andrija albo wklej link z SuperSplat, podłącz aparaturę, pad albo użyj drążków dotykowych, a potem skalibruj, uzbrój i leć. Niczego nie trzeba instalować." },
       { "q": "Czy mogę użyć mojej aparatury RadioMaster w przeglądarce?", "a": "Do tego to powstało: przełącz aparaturę EdgeTX, np. TX16S, Boxer, Pocket albo Zorro, w tryb joysticka USB i podłącz ją przez WebHID w Chrome lub Edge. Na razie testowaliśmy to tylko z symulowaną aparaturą EdgeTX, a nie z prawdziwym sprzętem." },
       { "q": "Czy jest darmowy symulator FPV działający w przeglądarce?", "a": "Tak. ShramkoGSFPV jest darmowy i open source na licencji MIT. Działa na WebGPU w Chrome lub Edge na komputerze, bez pobierania." },
-      { "q": "Po jakich scenach z SuperSplat mogę latać?", "a": "Po dowolnej publicznej scenie z SuperSplat, przez link albo id. Sceny z wokselowymi danymi kolizji mają twarde ściany; przez pozostałe można przelatywać, ale nie da się w nich rozbić, dopóki nie pojawi się liczenie kolizji w przeglądarce." },
+      { "q": "Po jakich scenach z SuperSplat mogę latać?", "a": "Każdą publiczną scenę SuperSplat, po linku albo id. Sceny opublikowane z danymi kolizji mają twarde ściany od razu; dla pozostałych możesz zbudować ściany w przeglądarce jednym kliknięciem (skany do 4 mln gaussianów). Przez większe można przelatywać, ale nie da się w nie uderzyć." },
       { "q": "Czy działa na iPadzie albo telefonie?", "a": "Drążki dotykowe testowaliśmy tylko w emulacji, jeszcze nie na prawdziwych urządzeniach, a potrzebna jest przeglądarka z WebGPU. Aparatura wymaga Chrome lub Edge na komputerze." },
       { "q": "Czy fizyka lotu jest jak w Betaflight?", "a": "Krzywe rates (Betaflight, Actual, KISS, Raceflight) zgadzają się ze skompilowanym Betaflight 4.5.1 do ostatniej cyfry, a PID na rates steruje czterema silnikami przez mikser. To nasz własny model lotu, a nie firmware Betaflight." },
       { "q": "Rozbijam się o ściany czy przez nie przelatuję?", "a": "Na scenach z danymi kolizji się rozbijasz: w każdym kroku fizyki bryła drona jest przemiatana względem wokseli, a zestaw testów sprawdza, czy szybki lot nie przebija się przez ściany. Wynik znajdziesz w sekcji Liczby na żywo." },

@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { flyPath } from "@/config/site";
 import { track } from "@/lib/track";
 
@@ -7,13 +7,16 @@ import { track } from "@/lib/track";
  * "Paste a SuperSplat link" → /{locale}/fly/?scene=<encoded raw value>. The simulator validates
  * the value. Without JS the same thing happens through a plain GET form.
  */
-export default function ScenePaste({ locale, label, placeholder, button, hint }: { locale: string; label: string; placeholder: string; button: string; hint: string }) {
+export default function ScenePaste({ locale, label, placeholder, button, hint, empty }: { locale: string; label: string; placeholder: string; button: string; hint: string; empty: string }) {
   const input = useRef<HTMLInputElement>(null);
+  // an empty submit says so in the page (the native "required" bubble is easy to miss on phones)
+  const [missing, setMissing] = useState(false);
 
   function go(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const value = input.current?.value.trim() ?? "";
     if (!value) {
+      setMissing(true);
       input.current?.focus();
       return;
     }
@@ -39,14 +42,21 @@ export default function ScenePaste({ locale, label, placeholder, button, hint }:
           required
           placeholder={placeholder}
           aria-describedby="scene-link-hint"
-          className="field min-w-0 flex-1"
+          aria-invalid={missing || undefined}
+          onInvalid={(e) => {
+            e.preventDefault();
+            setMissing(true);
+            input.current?.focus();
+          }}
+          onInput={() => setMissing(false)}
+          className={`field min-w-0 flex-1${missing ? " border-warn" : ""}`}
         />
         <button type="submit" className="btn-secondary min-h-12 shrink-0 px-5">
           {button}
         </button>
       </div>
-      <p id="scene-link-hint" className="mt-2 text-sm text-muted">
-        {hint}
+      <p id="scene-link-hint" role={missing ? "alert" : undefined} className={`mt-2 text-sm ${missing ? "text-warn" : "text-muted"}`}>
+        {missing ? empty : hint}
       </p>
     </form>
   );

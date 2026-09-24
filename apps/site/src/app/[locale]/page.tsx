@@ -81,7 +81,7 @@ function Landing({ locale }: { locale: Locale }) {
               <p className="text-sm text-muted sm:ml-2 sm:max-w-xs">{t("hero.ctaNote")}</p>
             </div>
             <div className="mt-10">
-              <ScenePaste locale={locale} label={t("hero.paste.label")} placeholder={t("hero.paste.placeholder")} button={t("hero.paste.button")} hint={t("hero.paste.hint")} />
+              <ScenePaste locale={locale} label={t("hero.paste.label")} placeholder={t("hero.paste.placeholder")} button={t("hero.paste.button")} hint={t("hero.paste.hint")} empty={t("hero.paste.empty")} />
             </div>
             <ul className="mt-12 flex flex-wrap gap-x-6 gap-y-2 font-mono text-[13px] text-muted">
               {heroFacts.map((f) => (

@@ -29,7 +29,7 @@
       "label": "Or paste a SuperSplat link",
       "placeholder": "https://superspl.at/scene/…",
       "button": "Open scene",
-      "hint": "A scene link, a superspl.at/s?id= link or just the scene id."
+      "hint": "A scene link, a superspl.at/s?id= link or just the scene id.", "empty": "Paste a SuperSplat link or a scene id first."
     },
     "facts": ["WebGPU + PlayCanvas", "Rates checked against Betaflight 4.5.1", "Swept voxel collision", "MIT license"]
   },
@@ -172,7 +172,7 @@
     "lead": "Short and honest, so nothing catches you by surprise.",
     "items": [
       { "t": "Scene data can change without notice", "d": "Scenes load from SuperSplat's public but undocumented CDN. It can change at any time, and some scenes may stop loading." },
-      { "t": "Many scans have no collision data yet", "d": "Those scenes can be flown through, not crashed into. In-browser collision baking is coming." },
+      { "t": "Some scans come without collision data", "d": "For those, the simulator can build walls right in your browser with SuperSplat’s own tool (up to 4 million Gaussians, about 20 seconds on a desktop GPU). Bigger scans stay fly-through." },
       { "t": "Motion sickness", "d": "Crashes and fast flight can make you queasy, so take breaks. Effects never flash the whole screen, and your reduced-motion setting is respected." },
       { "t": "A simulator is not a real flight", "d": "Practise responsibly, follow your local drone law and never fly over people." },
       { "t": "Your data stays with you", "d": "Calibration, flight history and favourites are stored only in your browser." }
@@ -187,7 +187,7 @@
       { "q": "How can I fly an FPV drone through a 3D Gaussian Splatting scan?", "a": "Open ShramkoGSFPV in desktop Chrome or Edge, pick one of Andrii's scans or paste a SuperSplat link, connect a radio, a gamepad or touch sticks, then calibrate, arm and fly. There is nothing to install." },
       { "q": "Can I use my RadioMaster radio in the browser?", "a": "That is what it is built for: switch an EdgeTX radio such as the TX16S, Boxer, Pocket or Zorro to USB joystick mode and connect it over WebHID in Chrome or Edge. So far this has been tested only with a simulated EdgeTX radio, not with real hardware." },
       { "q": "Is there a free FPV simulator that runs in the browser?", "a": "Yes. ShramkoGSFPV is free and open source under the MIT license. It runs on WebGPU in desktop Chrome or Edge, with no download." },
-      { "q": "Which SuperSplat scenes can I fly?", "a": "Any public SuperSplat scene, by link or id. Scenes that come with voxel collision data have solid walls; the rest can be flown through but not crashed into until in-browser collision baking lands." },
+      { "q": "Which SuperSplat scenes can I fly?", "a": "Any public SuperSplat scene, by link or id. Scenes published with voxel collision data have solid walls at once; for the others you can build walls in your browser with one click (scans up to 4 million Gaussians). Bigger scans can be flown through but not crashed into." },
       { "q": "Does it work on iPad or phone?", "a": "Touch sticks have been tested in emulation only, not on real devices yet, and you need a browser with WebGPU. Radios need desktop Chrome or Edge." },
       { "q": "Is the flight physics like Betaflight?", "a": "The rate curves (Betaflight, Actual, KISS, Raceflight) match compiled Betaflight 4.5.1 to the last digit, and a rate PID drives four motors through a mixer. It is our own flight model, not Betaflight firmware." },
       { "q": "Do I crash into walls or fly through them?", "a": "On scenes with collision data you crash: the drone's body is swept against the voxel data on every physics tick, and a test harness checks that fast flight cannot tunnel through walls. See Live numbers for the result." },
