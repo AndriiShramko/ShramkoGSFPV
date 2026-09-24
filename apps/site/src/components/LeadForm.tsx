@@ -67,7 +67,12 @@ export default function LeadForm() {
     }
     setD(draft);
     loaded.current = true;
-    if (scene) requestAnimationFrame(() => document.getElementById("contact")?.scrollIntoView({ block: "start" }));
+    if (scene) {
+      // scroll now, and once more when images and fonts above have loaded and shifted the layout
+      const toForm = () => document.getElementById("contact")?.scrollIntoView({ block: "start" });
+      requestAnimationFrame(toForm);
+      if (document.readyState !== "complete") window.addEventListener("load", () => requestAnimationFrame(toForm), { once: true });
+    }
   }, []);
 
   useEffect(() => {
