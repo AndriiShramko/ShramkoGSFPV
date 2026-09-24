@@ -67,7 +67,7 @@ if (want('cinema')) {
     const pass = state.on && state.governorEnabled === false && state.lodRangeMax === 0 && state.canRecord && !!codec && info && info.frames > 60 && parsed.samples === info.frames && parsed.boxes.includes('moov') && parsed.boxes.includes('mdat') && strip > 0.1
         && ctl.canRecord === false && ctl.refused && !ctl.recButtonVisible;
     summary.cinema = pass;
-    writeEvidence('d-cinema', { pass, state, codec, recorder: info, mp4: { ...parsed, bytes: mp4.length, file: 'evidence/…/d/cinema-887f27aa.mp4' }, creditStripLuminanceStd: strip, control: ctl });
+    writeEvidence('d-cinema', { site: SITE, pass, state, codec, recorder: info, mp4: { ...parsed, bytes: mp4.length, file: 'evidence/…/d/cinema-887f27aa.mp4' }, creditStripLuminanceStd: strip, control: ctl });
     console.log('cinema', pass ? 'PASS' : 'FAIL', JSON.stringify({ info, parsed, strip, ctl }));
 }
 
@@ -91,7 +91,7 @@ if (want('governor')) {
     const off = await governorRun(false);
     const pass = on.calm.step === 0 && on.loaded.step > 0 && on.loaded.scale < on.calm.scale && on.recovered.step === 0 && off.loaded.step === 0 && off.loaded.changes === 0;
     summary.governor = pass;
-    writeEvidence('d-governor', { pass, method: 'normal frames 6 s (display period learned), then a busy-wait of 1.4 display periods in every frame for 4 s, then normal again', enabled: on, control: { governorOff: off, fired: off.loaded.step === 0 } });
+    writeEvidence('d-governor', { site: SITE, pass, method: 'normal frames 6 s (display period learned), then a busy-wait of 1.4 display periods in every frame for 4 s, then normal again', enabled: on, control: { governorOff: off, fired: off.loaded.step === 0 } });
     console.log('governor', pass ? 'PASS' : 'FAIL', JSON.stringify({ on, off }));
 }
 
@@ -111,7 +111,7 @@ if (want('diff')) {
     const pAfterRefusal = await hook<Any>('return { rates: s.params.rates, pid: s.params.pid };');
     const pass = r45.ok && r44.ok && JSON.stringify(p45) !== JSON.stringify(p44) && !noVersion.ok && !garbage.ok && JSON.stringify(pAfterRefusal) === JSON.stringify(p44);
     summary.diff = pass;
-    writeEvidence('d-bf-diff-import', { pass, imported45: { result: r45, params: p45 }, imported44: { result: r44, params: p44 }, control: { noVersionRefused: !noVersion.ok, noVersion, garbageRefused: !garbage.ok, paramsUnchangedAfterRefusal: JSON.stringify(pAfterRefusal) === JSON.stringify(p44) } });
+    writeEvidence('d-bf-diff-import', { site: SITE, pass, imported45: { result: r45, params: p45 }, imported44: { result: r44, params: p44 }, control: { noVersionRefused: !noVersion.ok, noVersion, garbageRefused: !garbage.ok, paramsUnchangedAfterRefusal: JSON.stringify(pAfterRefusal) === JSON.stringify(p44) } });
     console.log('diff', pass ? 'PASS' : 'FAIL');
 }
 
@@ -134,7 +134,7 @@ if (want('trajectory')) {
         return { columns: head, rows: rows.length, endTick, firstT: rows[0]?.[0], lastT: rows[rows.length - 1]?.[0], exact: cmp(0), shifted: cmp(1), replayHashMatches: rep.hash === saved.hash };`);
     const pass = r.rows >= Math.floor(r.endTick / 10) - 2 && r.exact.compared > 50 && r.exact.maxDeltaM === 0 && r.shifted.maxDeltaM > 0 && r.replayHashMatches;
     summary.trajectory = pass;
-    writeEvidence('d-trajectory-export', { pass, check: 'every exported position equals the state recomputed from the input log alone at the same tick', result: r, control: { oneRowShift: r.shifted, fired: r.shifted.maxDeltaM > 0 } });
+    writeEvidence('d-trajectory-export', { site: SITE, pass, check: 'every exported position equals the state recomputed from the input log alone at the same tick', result: r, control: { oneRowShift: r.shifted, fired: r.shifted.maxDeltaM > 0 } });
     console.log('trajectory', pass ? 'PASS' : 'FAIL', JSON.stringify(r));
 }
 

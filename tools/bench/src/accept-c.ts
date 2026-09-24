@@ -80,6 +80,7 @@ const pass = ready.status === 'ready' && before.hasCollision === false && !!bake
     && Math.abs(relDiff) <= 0.01 && tab.passes === 20 && tab.penetrations === 0
     && !!refusal && refusal.refused === true && /\d/.test(refusalText ?? '') && /[А-Яа-я]/.test(refusalText ?? '');
 const file = writeEvidence('c-bake', {
+    site: SITE,
     pass,
     scene: '723068d7',
     bake: { ...bake, wallClockS: wallS, peakJsHeapMbCdp: Math.round(peakHeap / 1048576), note: 'peakJsHeapMb = performance.memory.usedJSHeapSize sampled in the page every 200 ms (the main number); peakJsHeapMbCdp = CDP polling from outside, which does not get through while the page is busy, so it undercounts; GPU buffers of the voxeliser are in neither' },
