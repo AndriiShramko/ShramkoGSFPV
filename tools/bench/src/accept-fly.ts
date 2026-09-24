@@ -109,7 +109,7 @@ if (want('B6')) {
             const outside = hosts.filter((x) => !ALLOWED.has(x));
             const run = { id, form, status: h.status, hasCollision: info.hasCollision, renderer: info.currentRenderer, visibility: vis, loadMs: (info.timings as Record<string, number>)?.visibleMs, pixelStd: px.std, pixelMean: px.mean, hosts, outside, pageerrors: [...errors] };
             runs.push(run);
-            if (form === id) await page.screenshot({ path: join(SHOTS, `b6-${id}.png`) });
+            if (form === id) await page.screenshot({ path: join(SHOTS, `b6-${id}.jpg`) });
             console.log('B6', JSON.stringify(run));
         }
     }
@@ -143,7 +143,7 @@ if (want('B7')) {
             const info = (h.info ?? {}) as Record<string, unknown>;
             rows.push({ id, l, status: h.status, hasCollision: info.hasCollision, badge, expected: dict(l)['scenes.noCollisionBadge'] });
         }
-        await page.screenshot({ path: join(SHOTS, `b7-${id}.png`) });
+        await page.screenshot({ path: join(SHOTS, `b7-${id}.jpg`) });
     }
     await page.goto(fly('en', 'scene=39e63ce9&nowarn=1&input=touch'));
     await waitReady(page, 180000);
@@ -188,7 +188,7 @@ if (want('B8')) {
     await sp.waitForTimeout(1500);
     const shimOn = await sp.evaluate(() => !(navigator as Navigator & { gpu?: unknown }).gpu);
     const shimBanner = await sp.locator('[data-testid="banner"]').first().textContent().catch(() => null);
-    const shimPx = await pixelStats(shim, await sp.screenshot({ path: join(SHOTS, 'b8-no-webgpu.png') }));
+    const shimPx = await pixelStats(shim, await sp.screenshot({ path: join(SHOTS, 'b8-no-webgpu.jpg') }));
     await shim.close();
 
     // Firefox (Playwright build): the scan is visible, the banner says radios need Chrome/Edge
@@ -199,7 +199,7 @@ if (want('B8')) {
         await fp.goto(fly('en', 'scene=39e63ce9&nowarn=1&input=touch'));
         const fh = await waitReady(fp, 240000);
         await fp.waitForTimeout(2500);
-        const fpng = await fp.screenshot({ path: join(SHOTS, 'b8-firefox.png') });
+        const fpng = await fp.screenshot({ path: join(SHOTS, 'b8-firefox.jpg') });
         const fBanner = await fp.locator('[data-testid="banner"]').first().textContent().catch(() => null);
         const hasGpu = await fp.evaluate(() => 'gpu' in navigator && !!(navigator as Navigator & { gpu?: unknown }).gpu);
         await fb.close();
@@ -228,7 +228,7 @@ if (want('B9')) {
     await page.click('[data-action="pause.drone"]');
     const srcLabels = await page.locator('.drone-card .src').count();
     const cards = await page.locator('.drone-card').count();
-    await page.screenshot({ path: join(SHOTS, 'b9-drones.png') });
+    await page.screenshot({ path: join(SHOTS, 'b9-drones.jpg') });
     const within = (r: Record<string, unknown>) => Math.abs((r.twrMeasured as number) / (r.twrPreset as number) - 1) <= 0.05;
     const def = rows[0], pico = rows[2];
     const picoDiffers = Math.abs((pico.twrMeasured as number) - (def.twrMeasured as number)) / (def.twrMeasured as number) > 0.05;
@@ -324,7 +324,7 @@ if (want('B12')) {
     const vCrash = await hookEval<number>(page, 'return s.params.vCrash;');
     const done = await waitFor(page, 'return { phase: h.scenario.phase, log: h.scenario.log, crash: h.lastCrash };', (v: { phase: string; crash: { pending?: boolean } | null }) => (v.phase === 'rest' || v.phase === 'done') && !!v.crash && !v.crash.pending, 120000);
     await page.waitForTimeout(1800);
-    await page.screenshot({ path: join(SHOTS, 'b12-crash.png') });
+    await page.screenshot({ path: join(SHOTS, 'b12-crash.jpg') });
     const overlay = await page.locator('.crash-overlay').count();
     await page.click('[data-action="respawn"]');
     await page.waitForTimeout(400);
@@ -410,7 +410,7 @@ if (want('B14')) {
         const pauseOpened = (await tp.locator('.panel').count()) > 0;
         await tp.keyboard.press('Escape');
         const view = await tp.evaluate(() => ({ scrollX, scrollY, scale: visualViewport?.scale ?? 1 }));
-        await tp.screenshot({ path: join(SHOTS, `b14-${w}x${hgt}.png`) });
+        await tp.screenshot({ path: join(SHOTS, `b14-${w}x${hgt}.jpg`) });
         await T.browser.close();
         rows.push({ viewport: `${w}x${hgt}`, pauseButtonReachable: pauseOpened, armedByButton: armed, bothPairsOneFrame: { ch: both.slice(0, 4), ok: bothChanged }, hover: { seconds: 10, crashed, armedAll, minY, maxY, target }, view, control: { outsideTouch: { before: ch0.slice(0, 4), after: chOut.slice(0, 4), fired: outsideZero } } });
         console.log('B14', JSON.stringify(rows[rows.length - 1]));
