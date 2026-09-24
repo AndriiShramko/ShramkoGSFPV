@@ -17,7 +17,9 @@
     "playcanvas": "2.22.4",
     "@gsfpv/scenes": "workspace:*",
     "@gsfpv/render-pc": "workspace:*",
-    "@gsfpv/input": "workspace:*"
+    "@gsfpv/input": "workspace:*",
+    "@gsfpv/crash": "workspace:*",
+    "@gsfpv/i18n": "workspace:*"
   },
   "devDependencies": {
     "@playcanvas/supersplat-viewer": "1.35.0",
