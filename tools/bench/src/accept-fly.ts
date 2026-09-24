@@ -179,11 +179,14 @@ if (want('B8')) {
 
     // no WebGPU (shim): honest message, the scan is still shown
     const shim = await browser.newContext({ viewport: { width: 1280, height: 800 } });
-    await shim.addInitScript(() => { Object.defineProperty(Navigator.prototype, 'gpu', { get: () => undefined, configurable: true }); });
+    // a STRING, not a function: tsx/esbuild wraps functions with a __name() helper that does not
+    // exist in the page, which silently broke the first version of this shim
+    await shim.addInitScript({ content: "Object.defineProperty(Navigator.prototype, 'gpu', { get() { return undefined; }, configurable: true });" });
     const sp = await shim.newPage();
     await sp.goto(fly('en', 'scene=39e63ce9&nowarn=1&input=touch'));
     const sh = await waitReady(sp, 180000);
     await sp.waitForTimeout(1500);
+    const shimOn = await sp.evaluate(() => !(navigator as Navigator & { gpu?: unknown }).gpu);
     const shimBanner = await sp.locator('[data-testid="banner"]').first().textContent().catch(() => null);
     const shimPx = await pixelStats(shim, await sp.screenshot({ path: join(SHOTS, 'b8-no-webgpu.png') }));
     await shim.close();
@@ -207,9 +210,9 @@ if (want('B8')) {
     }
     const en = dict('en');
     const pass = before >= 2 && after === before && filterKept && cleared === 0
-        && sh.status === 'ready' && shimBanner === en['banner.noWebgpu'] && shimPx.std > 0.04
+        && shimOn && sh.status === 'ready' && shimBanner === en['banner.noWebgpu'] && shimPx.std > 0.04
         && ff.ran === true && ff.status === 'ready' && (ff.pixelStd as number) > 0.04 && (ff.banner === en['banner.noHid'] || ff.banner === en['banner.noWebgpu']);
-    record('B8', { pass, history: { before, afterReload: after, filterKept }, control: { afterClearingStorage: cleared, fired: cleared === 0 }, noWebgpuShim: { status: sh.status, banner: shimBanner, pixelStd: shimPx.std }, firefox: ff });
+    record('B8', { pass, history: { before, afterReload: after, filterKept }, control: { afterClearingStorage: cleared, fired: cleared === 0 }, noWebgpuShim: { shimTookEffect: shimOn, status: sh.status, banner: shimBanner, pixelStd: shimPx.std }, firefox: ff });
 }
 
 // ------------------------------------------------------------------ B9 presets, measured TWR
@@ -497,8 +500,10 @@ if (want('B17')) {
         await helper.goto('about:blank');
         await p.bringToFront();
         const pending: Promise<void>[] = [];
+        let stopped = false;
         s.on('Page.screencastFrame', (f) => {
-            void s.send('Page.screencastFrameAck', { sessionId: f.sessionId });
+            if (stopped) return; // a late frame after stop: the helper tab may be gone already
+            void s.send('Page.screencastFrameAck', { sessionId: f.sessionId }).catch(() => undefined);
             pending.push(helper.evaluate(async ({ b64 }) => {
                 const bin = atob(b64); const u = new Uint8Array(bin.length);
                 for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
@@ -514,12 +519,13 @@ if (want('B17')) {
                     q[k] += Y; n[k]++; q[4] += Y; n[4]++;
                 }
                 return q.map((v, k) => v / n[k]);
-            }, { b64: f.data }).then((L) => { out.push({ t: f.metadata.timestamp ?? Date.now() / 1000, L: L.map(lin) }); }));
+            }, { b64: f.data }).then((L) => { out.push({ t: f.metadata.timestamp ?? Date.now() / 1000, L: L.map(lin) }); }).catch(() => undefined));
         });
         await s.send('Page.startScreencast', { format: 'jpeg', quality: 60, maxWidth: 320, maxHeight: 200, everyNthFrame: 1 });
         const t0 = Date.now();
         while (Date.now() - t0 < maxMs && !(await stopWhen())) await p.waitForTimeout(1000);
-        await s.send('Page.stopScreencast');
+        stopped = true;
+        await s.send('Page.stopScreencast').catch(() => undefined);
         await Promise.all(pending);
         await helper.close();
         return out.sort((a, b) => a.t - b.t);
@@ -531,18 +537,28 @@ if (want('B17')) {
     await sp.close();
     const strobeFlashes = detect(strobe);
     // 50 crashes in a loop (the same bot plan, respawned after every crash)
-    await page.goto(fly('en', `scene=39e63ce9&simradio=scenario&quick=1&loop=${N}&nowarn=1`));
+    const loopUrl = fly('en', `scene=39e63ce9&simradio=scenario&quick=1&loop=${N}&nowarn=1`);
+    const navs: { t: number; url: string }[] = [];
+    const consoleTail: string[] = [];
+    const t0 = Date.now();
+    page.on('framenavigated', (f) => { if (f === page.mainFrame()) navs.push({ t: (Date.now() - t0) / 1000, url: f.url().replace(/[?].*$/, '') }); });
+    page.on('console', (m) => { consoleTail.push(`${((Date.now() - t0) / 1000).toFixed(1)}s ${m.type()}: ${m.text()}`.slice(0, 300)); if (consoleTail.length > 40) consoleTail.shift(); });
+    await page.goto(loopUrl);
     await waitReady(page, 180000);
-    const crashesSeen = () => hookEval<number>(page, 'return h.events.filter((e) => e.type === "crash").length + (h.loops ?? 0) * 0;');
     let total = 0;
+    let lost: string | null = null;
     const s = await record5(page, async () => {
-        total = await hookEval<number>(page, 'return (h.loops ?? 0) + (h.scenario.log.crash ? 1 : 0);');
+        try {
+            total = await hookEval<number>(page, 'return (h.loops ?? 0) + (h.scenario.log.crash ? 1 : 0);');
+        } catch (e) {
+            lost = String(e).slice(0, 200); // the page went away: stop and report instead of dying
+            return true;
+        }
         return total >= N;
     }, N * 40000);
-    void crashesSeen;
     const flashes = detect(s);
-    const pass = total >= N && flashes <= 3 && strobeFlashes > 3;
-    record('B17', { pass, rule: 'WCAG 2.2 general flash: pairs of opposing relative-luminance changes >= 0.1 (darker < 0.8), max per 1 s window, whole frame and quarters; frames via CDP screencast', crashes: total, frames: s.length, maxFlashesPerSecond: flashes, control: { strobeHz: 5, frames: strobe.length, maxFlashesPerSecond: strobeFlashes, fired: strobeFlashes > 3 } });
+    const pass = !lost && total >= N && flashes <= 3 && strobeFlashes > 3;
+    record('B17', { pass, pageLost: lost, navigations: navs, consoleTail: lost ? consoleTail : [], rule: 'WCAG 2.2 general flash: pairs of opposing relative-luminance changes >= 0.1 (darker < 0.8), max per 1 s window, whole frame and quarters; frames via CDP screencast', crashes: total, frames: s.length, maxFlashesPerSecond: flashes, control: { strobeHz: 5, frames: strobe.length, maxFlashesPerSecond: strobeFlashes, fired: strobeFlashes > 3 } });
 }
 
 await browser.close();

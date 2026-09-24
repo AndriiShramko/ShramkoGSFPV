@@ -69,7 +69,10 @@ const bodies: { name: string; body: Body; sp: Float64Array }[] = [
 ];
 
 const results: Record<string, unknown>[] = [];
-for (const id of ['39e63ce9', '887f27aa', '7a475d38']) {
+// A8_SCENES / A8_EVIDENCE: run on other collision (phase C: baked in the browser) without touching the site numbers
+const A8_SCENES = (process.env.A8_SCENES || '39e63ce9,887f27aa,7a475d38').split(',');
+const A8_EVIDENCE = process.env.A8_EVIDENCE || '';
+for (const id of A8_SCENES) {
     const sc = await loadScene(id);
     const world = new VoxelContactWorld(sc.collision);
     const starts = [sc.settings.position, ...sc.settings.extra].slice(0, 12);
@@ -91,13 +94,13 @@ for (const id of ['39e63ce9', '887f27aa', '7a475d38']) {
         });
     }
 }
-const file = writeEvidence('a8-clearance', {
+const file = writeEvidence(A8_EVIDENCE || 'a8-clearance', {
     pass: true,
     gate: false,
     method: 'from authored camera positions, 200 Fibonacci directions: ray to the surface, then our swept test approaches with the body level and nose-first; clearance = centre-to-surface distance at first contact; ideal = the body extent towards the surface; excess = clearance - ideal',
     results
 });
 const pavo = results.find((r) => r.scene === '39e63ce9' && String(r.body).startsWith('pavo20pro')) as Record<string, number>;
-updateLatest('clearance', { value: `Pavo20 Pro body stops ${pavo.excessMedianMm} mm (median) beyond its own size from walls on the 5 cm voxel collision of scene 39e63ce9`, method: 'swept approach along 200 directions from 12 points', date: new Date().toISOString().slice(0, 10) });
+if (!A8_EVIDENCE && pavo) updateLatest('clearance', { value: `Pavo20 Pro body stops ${pavo.excessMedianMm} mm (median) beyond its own size from walls on the 5 cm voxel collision of scene 39e63ce9`, method: 'swept approach along 200 directions from 12 points', date: new Date().toISOString().slice(0, 10) });
 console.table(results);
 console.log('->', file);

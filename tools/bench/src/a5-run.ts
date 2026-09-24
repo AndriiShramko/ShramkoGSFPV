@@ -69,7 +69,10 @@ const tun30 = results.reduce((s, r) => s + (r.ctl30 as { tunnel: number }).tunne
 const tun144 = results.reduce((s, r) => s + (r.ctl144 as { tunnel: number }).tunnel, 0);
 const minPasses = Math.min(...results.map((r) => r.passes as number));
 const pass = totalPen === 0 && tun30 >= 1 && tun144 >= 1 && minPasses >= 10000;
-const file = writeEvidence('a5-tunnelling', {
+// A5_EVIDENCE: another evidence name for runs on other collision (e.g. baked in the browser, phase C);
+// only the default run feeds the site's numbers
+const EVIDENCE = process.env.A5_EVIDENCE || 'a5-tunnelling';
+const file = writeEvidence(EVIDENCE, {
     pass,
     body: { preset: 'pavo20pro-3s', spheres: body },
     vMax: vm,
@@ -85,5 +88,5 @@ const file = writeEvidence('a5-tunnelling', {
     workers: poolSize
 });
 console.log(`A5 ${pass ? 'PASS' : 'FAIL'}: ${totalPasses} passes, ${totalPen} penetrations, control tunnels ${tun30}/${tun144} -> ${file}`);
-if (pass) updateLatest('tunnelling', { value: `0 wall pass-throughs in ${totalPasses.toLocaleString('en-US')} straight passes`, method: `swept test at 1 ms ticks vs independent resampling oracle; speeds ${speeds.join(', ')} m/s; 3 real scans + 2 cm synthetic wall`, date: new Date().toISOString().slice(0, 10) });
+if (pass && EVIDENCE === 'a5-tunnelling') updateLatest('tunnelling', { value: `0 wall pass-throughs in ${totalPasses.toLocaleString('en-US')} straight passes`, method: `swept test at 1 ms ticks vs independent resampling oracle; speeds ${speeds.join(', ')} m/s; 3 real scans + 2 cm synthetic wall`, date: new Date().toISOString().slice(0, 10) });
 if (!pass) process.exitCode = 1;
