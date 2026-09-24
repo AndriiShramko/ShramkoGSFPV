@@ -1,0 +1,3 @@
+# gitleaks false positives, one fingerprint per line, each with its reason.
+# localStorage key name 'gsfpv.favourites.v1' matched generic-api-key (entropy 3.68); not a secret.
+bcef1bf6ce04538d31bcc4732d0a0426e95612d0:packages/scenes/src/index.ts:generic-api-key:165

@@ -162,7 +162,7 @@ export interface HistoryEntry {
 }
 
 const KEY_HISTORY = 'gsfpv.history.v1';
-const KEY_FAV = 'gsfpv.favourites.v1';
+const KEY_FAV = 'gsfpv.favourites.v1'; // gitleaks:allow (a localStorage key name, not a secret)
 const KEY_FILTER = 'gsfpv.filter.v1';
 
 function readJson<T>(key: string, fallback: T): T {
