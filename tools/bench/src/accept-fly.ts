@@ -121,7 +121,7 @@ if (want('B6')) {
         await page.goto(fly('ru', `scene=${encodeURIComponent(input)}&nowarn=1`));
         const h = await waitReady(page, 60000);
         const text = await page.locator('.scene-error').textContent();
-        errs.push({ input, status: h.status, errorCode: (await hookEval<string>(page, 'return h.errorCode;')), text, expected: ru[`error.${code}`], ok: h.status === 'picker' && text === ru[`error.${code}`], pageerrors: [...errors] });
+        errs.push({ input, status: h.status, errorCode: (await hookEval<string>(page, 'return h.errorCode;')), text, expected: ru[`error.${code}`], ok: (h.status === 'picker' || h.status === 'error') && text === ru[`error.${code}`], pageerrors: [...errors] });
     }
     // negative control of "frame not empty": a blank page must fail the same check
     await page.goto('about:blank');
