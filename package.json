@@ -1,0 +1,28 @@
+{
+  "name": "shramkogsfpv",
+  "private": true,
+  "description": "Open-source browser FPV drone simulator for 3D Gaussian Splatting scenes from SuperSplat",
+  "license": "MIT",
+  "author": "Andrii Shramko <zmei116@gmail.com> (https://www.linkedin.com/in/andrii-shramko/)",
+  "homepage": "https://github.com/AndriiShramko/ShramkoGSFPV",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndriiShramko/ShramkoGSFPV.git"
+  },
+  "type": "module",
+  "packageManager": "pnpm@11.5.0",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "build": "pnpm -r --if-present build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.1"
+  }
+}

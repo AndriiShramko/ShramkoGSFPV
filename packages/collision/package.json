@@ -1,0 +1,14 @@
+{
+  "name": "@gsfpv/collision",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SuperSplat voxel collision (vendored MIT code from playcanvas/supersplat-viewer) plus a provably conservative swept test for a compound drone body",
+  "license": "MIT",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  }
+}

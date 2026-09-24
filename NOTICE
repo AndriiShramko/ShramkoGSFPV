@@ -16,10 +16,15 @@ PlayCanvas Engine
 
 SuperSplat Viewer (@playcanvas/supersplat-viewer)
   https://github.com/playcanvas/supersplat-viewer
-  MIT License, Copyright (c) PlayCanvas Ltd.
+  MIT License, Copyright (c) 2011-2026 PlayCanvas Ltd.
   The measurement harness in tools/probe/ runs inside a checkout of this
-  project and uses its collision module. Any file vendored from it will keep
-  its original copyright header and be listed here by path.
+  project and uses its collision module. Vendored files (release v1.35.0,
+  commit e669b5d785a80571763bdf272849bcb8e50a5eb8), unchanged logic:
+    packages/collision/src/vendor/collision.ts
+    packages/collision/src/vendor/voxel-collision.ts
+    packages/collision/src/vendor/find-spawn.ts
+  License text: packages/collision/LICENSE-supersplat-viewer
+  Local changes: packages/collision/UPSTREAM.md
 
 splat-transform (@playcanvas/splat-transform)
   https://github.com/playcanvas/splat-transform
@@ -32,9 +37,11 @@ Acknowledgements
 SplatFPV (https://github.com/Rouf0x/splatfpv, MIT) showed that browser FPV
 flight through Gaussian splats is possible. No code from it is included.
 
-Rate curve formulas follow the publicly documented behaviour of Betaflight
-and related firmware. They are re-implemented from the formulas; no GPL code
-is copied into this repository.
+Rate curve formulas and PID scaling constants were read from Betaflight 4.5.1
+(GPL-3.0) and re-implemented; no Betaflight code is copied into this
+repository. Reference values in packages/sim-core/test/vectors/ were produced
+by compiling the Betaflight functions in a harness kept outside this
+repository; only the resulting numbers are included. See docs/PROVENANCE.md.
 
 ------------------------------------------------------------------------
 Scene content
