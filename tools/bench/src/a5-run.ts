@@ -7,6 +7,8 @@ import { hoverSolve } from '@gsfpv/sim-core';
 import { params } from './presets';
 import { REPO, writeEvidence, updateLatest } from './evidence';
 
+process.env.GSFPV_REPO = REPO; // the bundled workers read the scene cache and fixtures from here
+
 const PASSES = Number(process.env.A5_PASSES || 10000);
 const SCENES = (process.env.A5_SCENES || '39e63ce9,887f27aa,7a475d38,wall-2cm').split(',');
 

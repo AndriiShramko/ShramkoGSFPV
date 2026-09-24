@@ -5,7 +5,8 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 
-export const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+// GSFPV_REPO: set by drivers for bundled workers (.cache/*.mjs), whose own path says nothing about the repo
+export const REPO = process.env.GSFPV_REPO ?? join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
 export function today(): string {
     return new Date().toISOString().slice(0, 10);

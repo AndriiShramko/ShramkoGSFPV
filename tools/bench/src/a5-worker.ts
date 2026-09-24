@@ -45,7 +45,14 @@ async function main() {
         return true;
     };
     let lenSum = 0;
+    // start points: around the authored camera; when that keeps missing (a camera high above the
+    // scan, outside the voxel grid), anywhere inside the collision grid instead
+    let streak = 0;
+    let inGrid = false;
+    const g0 = [col.gridMinX, col.gridMinY, col.gridMinZ];
+    const gs = [col.numVoxelsX * col.voxelResolution, col.numVoxelsY * col.voxelResolution, col.numVoxelsZ * col.voxelResolution];
     while (agg.passes < job.passes) {
+        if (!inGrid && streak > 2000 && job.scene !== 'wall-2cm') inGrid = true;
         randomRotation(rng, R, true);
         let sx: number, sy: number, sz: number, dx: number, dy: number, dz: number, maxLen: number;
         if (job.scene === 'wall-2cm') {
@@ -56,11 +63,13 @@ async function main() {
             [dx, dy, dz] = d;
             maxLen = (0.3 - sx) / dx; // well past the wall
         } else {
-            sx = spawn[0] + (rng() - 0.5) * 40; sy = spawn[1] + (rng() - 0.5) * 10; sz = spawn[2] + (rng() - 0.5) * 40;
-            if (!col.isFreeAt(sx, sy, sz)) { agg.rejected++; continue; }
+            if (inGrid) { sx = g0[0] + rng() * gs[0]; sy = g0[1] + rng() * gs[1]; sz = g0[2] + rng() * gs[2]; }
+            else { sx = spawn[0] + (rng() - 0.5) * 40; sy = spawn[1] + (rng() - 0.5) * 10; sz = spawn[2] + (rng() - 0.5) * 40; }
+            if (!col.isFreeAt(sx, sy, sz)) { agg.rejected++; streak++; continue; }
             [dx, dy, dz] = unitVec(rng);
             const hit = col.queryRay(sx, sy, sz, dx, dy, dz, 5);
-            if (!hit) { agg.rejected++; continue; }
+            if (!hit) { agg.rejected++; streak++; continue; }
+            streak = 0;
             const D = Math.hypot(hit.x - sx, hit.y - sy, hit.z - sz);
             // start 0.2..3 m before the surface, pass continues 0.5 m beyond it
             const back = Math.min(D, 0.2 + rng() * 2.8);
