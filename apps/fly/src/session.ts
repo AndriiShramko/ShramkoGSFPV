@@ -414,16 +414,22 @@ export class FlightSession {
         while (done < passes && tries < passes * 400) {
             tries++;
             const wide = tries > passes * 50;
-            const ox = wide ? g0[0] + rng() * gs[0] : this.spawn[0] + (rng() - 0.5) * 6;
-            const oy = wide ? g0[1] + rng() * gs[1] : this.spawn[1] + (rng() - 0.5) * 2;
-            const oz = wide ? g0[2] + rng() * gs[2] : this.spawn[2] + (rng() - 0.5) * 6;
+            let ox = wide ? g0[0] + rng() * gs[0] : this.spawn[0] + (rng() - 0.5) * 6;
+            let oy = wide ? g0[1] + rng() * gs[1] : this.spawn[1] + (rng() - 0.5) * 2;
+            let oz = wide ? g0[2] + rng() * gs[2] : this.spawn[2] + (rng() - 0.5) * 6;
             if (wide && !col.isFreeAt(ox, oy, oz)) continue;
             if (col.querySphere(ox, oy, oz, p.boundRadius + 0.05, push)) continue;
             const ang = rng() * Math.PI * 2;
             const dx = Math.cos(ang), dz = Math.sin(ang), dy = (rng() - 0.5) * 0.4;
             const dl = Math.hypot(dx, dy, dz);
-            const hit = col.queryRay(ox, oy, oz, dx / dl, dy / dl, dz / dl, 6);
+            // wide search: look further for a surface and start 0.5..3 m in front of it (as the A5 harness does)
+            const hit = col.queryRay(ox, oy, oz, dx / dl, dy / dl, dz / dl, wide ? 30 : 6);
             if (!hit) continue;
+            if (wide) {
+                const back = Math.min(Math.hypot(hit.x - ox, hit.y - oy, hit.z - oz), 0.5 + rng() * 2.5);
+                ox = hit.x - (dx / dl) * back; oy = hit.y - (dy / dl) * back; oz = hit.z - (dz / dl) * back;
+                if (col.querySphere(ox, oy, oz, p.boundRadius + 0.05, push)) continue;
+            }
             const sim = new Sim(p, this.world);
             sim.reset(ox, oy, oz, (ang * 180) / Math.PI);
             sim.s[S.hold] = 0;
