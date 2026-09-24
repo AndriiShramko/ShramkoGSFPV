@@ -1,0 +1,5 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "lib": ["ES2022", "DOM", "DOM.Iterable"], "types": ["vite/client"], "noImplicitOverride": false },
+  "include": ["src/**/*.ts", "lab/**/*.ts", "../../packages/collision/src/types-shim.d.ts"]
+}

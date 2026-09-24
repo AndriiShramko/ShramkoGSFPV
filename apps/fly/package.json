@@ -1,0 +1,26 @@
+{
+  "name": "@gsfpv/fly",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The simulator app served at /{locale}/fly/ \u00e2\u20ac\u201d Vite, no framework",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@gsfpv/sim-core": "workspace:*",
+    "@gsfpv/collision": "workspace:*",
+    "playcanvas": "2.22.4",
+    "@gsfpv/scenes": "workspace:*",
+    "@gsfpv/render-pc": "workspace:*",
+    "@gsfpv/input": "workspace:*"
+  },
+  "devDependencies": {
+    "@playcanvas/supersplat-viewer": "1.35.0",
+    "vite": "^8.3.1"
+  }
+}

@@ -26,6 +26,15 @@ importers:
       '@gsfpv/collision':
         specifier: workspace:*
         version: link:../../packages/collision
+      '@gsfpv/input':
+        specifier: workspace:*
+        version: link:../../packages/input
+      '@gsfpv/render-pc':
+        specifier: workspace:*
+        version: link:../../packages/render-pc
+      '@gsfpv/scenes':
+        specifier: workspace:*
+        version: link:../../packages/scenes
       '@gsfpv/sim-core':
         specifier: workspace:*
         version: link:../../packages/sim-core
@@ -42,6 +51,23 @@ importers:
 
   packages/collision: {}
 
+  packages/input:
+    dependencies:
+      '@gsfpv/collision':
+        specifier: workspace:*
+        version: link:../collision
+      '@gsfpv/sim-core':
+        specifier: workspace:*
+        version: link:../sim-core
+
+  packages/render-pc:
+    dependencies:
+      playcanvas:
+        specifier: 2.22.4
+        version: 2.22.4
+
+  packages/scenes: {}
+
   packages/sim-core: {}
 
   tools/bench:
@@ -49,6 +75,9 @@ importers:
       '@gsfpv/collision':
         specifier: workspace:*
         version: link:../../packages/collision
+      '@gsfpv/input':
+        specifier: workspace:*
+        version: link:../../packages/input
       '@gsfpv/sim-core':
         specifier: workspace:*
         version: link:../../packages/sim-core
@@ -56,6 +85,9 @@ importers:
       esbuild:
         specifier: 0.28.2
         version: 0.28.2
+      playwright:
+        specifier: 1.63.0
+        version: 1.63.0
 
 packages:
 
@@ -506,6 +538,16 @@ packages:
     resolution: {integrity: sha512-mcL+1Bl1q/apzU0CLMHMQ3eYrvr3kzPtXtJe8rOYbu7xVPA47fvpL73oCzx6dtCyOxj6bldKIA0GC8maJRtYgA==}
     engines: {node: '>=18.3.0'}
 
+  playwright-core@1.63.0:
+    resolution: {integrity: sha512-rYCsBF/M5HjUch52bbtVONEFjv6Xu8sm8h72dNlR5bzIE1fvC/bxgspzkjSfU+MweEMmPM8KJebG6nnyxo5mCg==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  playwright@1.63.0:
+    resolution: {integrity: sha512-+7ziBLidS4NaNCdt57SUDT+wYmmd5fmiQejUic/kb+YsYSCPyOOE9sebzMjNmQrsnNpDJqd4WHvV/8lfKfUDUg==}
+    engines: {node: '>=20'}
+    hasBin: true
+
   postcss@8.5.28:
     resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
     engines: {node: ^10 || ^12 || >=14}
@@ -927,6 +969,12 @@ snapshots:
     dependencies:
       '@types/webxr': 0.5.24
       '@webgpu/types': 0.1.74
+
+  playwright-core@1.63.0: {}
+
+  playwright@1.63.0:
+    dependencies:
+      playwright-core: 1.63.0
 
   postcss@8.5.28:
     dependencies:

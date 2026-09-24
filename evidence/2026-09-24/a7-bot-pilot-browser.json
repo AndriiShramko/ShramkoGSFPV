@@ -1,0 +1,605 @@
+{
+  "name": "a7-bot-pilot-browser",
+  "context": {
+    "date": "2026-09-24T14:06:04.786Z",
+    "gitHead": "a5f1fe6",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "browser": "system Chrome (Playwright channel chrome), visible window, no rendering flags",
+  "checks": [
+    {
+      "scene": "39e63ce9",
+      "valid": true,
+      "flewAllPhases": true,
+      "crash": {
+        "tick": 10467,
+        "speed": 7.906511243139527,
+        "px": -5.199229089884253,
+        "py": 1.5005116844629063,
+        "pz": 0.7299006309934759
+      },
+      "controlCrash": null,
+      "pass": true
+    },
+    {
+      "scene": "887f27aa",
+      "valid": true,
+      "flewAllPhases": true,
+      "crash": {
+        "tick": 18037,
+        "speed": 8.992613469465132,
+        "px": -4.849065901578235,
+        "py": 2.094580023698663,
+        "pz": 0.89960942262583
+      },
+      "controlCrash": null,
+      "pass": true
+    }
+  ],
+  "control": {
+    "name": "same plan in an open volume must not crash",
+    "fired": true
+  },
+  "runs": [
+    {
+      "scene": "39e63ce9",
+      "mode": "scenario",
+      "ready": {
+        "status": "ready",
+        "info": {
+          "webgpu": true,
+          "currentRenderer": 2,
+          "gpuSort": true,
+          "hasCollision": true,
+          "collisionSha256": "cd9ec1983aaf5c49ac53b3814e85c2ff06e4a337f70a38d299e6f99a615751a5",
+          "timings": {
+            "settingsMs": 315,
+            "collisionMs": 456.10000002384186,
+            "firstFrameMs": 1176.5,
+            "visibleMs": 2712.3000000715256
+          },
+          "spawn": [
+            0.6857250332832336,
+            1.5809873342514038,
+            0.6940217018127441,
+            -107.22887701503547
+          ],
+          "preset": "pavo20pro-3s"
+        }
+      },
+      "shots": [
+        {
+          "phase": "hover",
+          "file": "evidence/2026-09-24/a7/39e63ce9-scenario/00-hover.png",
+          "t": 1.427,
+          "vis": "visible"
+        },
+        {
+          "phase": "box",
+          "file": "evidence/2026-09-24/a7/39e63ce9-scenario/01-box.png",
+          "t": 3.81,
+          "vis": "visible"
+        },
+        {
+          "phase": "box",
+          "file": "evidence/2026-09-24/a7/39e63ce9-scenario/02-box.png",
+          "t": 5.074,
+          "vis": "visible"
+        },
+        {
+          "phase": "box",
+          "file": "evidence/2026-09-24/a7/39e63ce9-scenario/03-box.png",
+          "t": 5.742,
+          "vis": "visible"
+        },
+        {
+          "phase": "return",
+          "file": "evidence/2026-09-24/a7/39e63ce9-scenario/04-return.png",
+          "t": 7.3,
+          "vis": "visible"
+        },
+        {
+          "phase": "aim",
+          "file": "evidence/2026-09-24/a7/39e63ce9-scenario/05-aim.png",
+          "t": 7.85,
+          "vis": "visible"
+        },
+        {
+          "phase": "dash",
+          "file": "evidence/2026-09-24/a7/39e63ce9-scenario/06-dash.png",
+          "t": 9.333,
+          "vis": "visible"
+        },
+        {
+          "phase": "dash",
+          "file": "evidence/2026-09-24/a7/39e63ce9-scenario/07-dash-fast.png",
+          "t": 10.049,
+          "vis": "visible"
+        },
+        {
+          "phase": "crashed",
+          "file": "evidence/2026-09-24/a7/39e63ce9-scenario/08-crashed.png",
+          "t": 10.664,
+          "vis": "visible"
+        },
+        {
+          "phase": "rest",
+          "file": "evidence/2026-09-24/a7/39e63ce9-scenario/09-rest.png",
+          "t": 14.514,
+          "vis": "visible"
+        }
+      ],
+      "final": {
+        "log": {
+          "phase": "rest",
+          "phases": [
+            {
+              "phase": "arm",
+              "tick": 0
+            },
+            {
+              "phase": "hover",
+              "tick": 1229
+            },
+            {
+              "phase": "box",
+              "tick": 3729
+            },
+            {
+              "phase": "return",
+              "tick": 7177
+            },
+            {
+              "phase": "aim",
+              "tick": 7781
+            },
+            {
+              "phase": "dash",
+              "tick": 9281
+            },
+            {
+              "phase": "crashed",
+              "tick": 10467
+            },
+            {
+              "phase": "rest",
+              "tick": 14467
+            }
+          ],
+          "hoverVz": 0.0019449151431438214,
+          "maxSpeed": 9.33376910201527,
+          "crash": {
+            "tick": 10467,
+            "speed": 7.906511243139527,
+            "px": -5.199229089884253,
+            "py": 1.5005116844629063,
+            "pz": 0.7299006309934759
+          },
+          "tumbleMaxW": 118.86935433852761
+        },
+        "crashes": 1,
+        "hitches": 11,
+        "startOverlaps": 0,
+        "frames": 366,
+        "renderer": 2,
+        "visibility": "visible"
+      },
+      "consoleErrors": [
+        "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ]
+    },
+    {
+      "scene": "39e63ce9",
+      "mode": "open",
+      "ready": {
+        "status": "ready",
+        "info": {
+          "webgpu": true,
+          "currentRenderer": 2,
+          "gpuSort": true,
+          "hasCollision": true,
+          "collisionSha256": "cd9ec1983aaf5c49ac53b3814e85c2ff06e4a337f70a38d299e6f99a615751a5",
+          "timings": {
+            "settingsMs": 363,
+            "collisionMs": 594.1000000238419,
+            "firstFrameMs": 1198.4000000953674,
+            "visibleMs": 2365.7000000476837
+          },
+          "spawn": [
+            0.6857250332832336,
+            1.5809873342514038,
+            0.6940217018127441,
+            -107.22887701503547
+          ],
+          "preset": "pavo20pro-3s"
+        }
+      },
+      "shots": [
+        {
+          "phase": "hover",
+          "file": "evidence/2026-09-24/a7/39e63ce9-open/00-hover.png",
+          "t": 1.097,
+          "vis": "visible"
+        },
+        {
+          "phase": "box",
+          "file": "evidence/2026-09-24/a7/39e63ce9-open/01-box.png",
+          "t": 3.446,
+          "vis": "visible"
+        },
+        {
+          "phase": "box",
+          "file": "evidence/2026-09-24/a7/39e63ce9-open/02-box.png",
+          "t": 4.129,
+          "vis": "visible"
+        },
+        {
+          "phase": "box",
+          "file": "evidence/2026-09-24/a7/39e63ce9-open/03-box.png",
+          "t": 4.945,
+          "vis": "visible"
+        },
+        {
+          "phase": "return",
+          "file": "evidence/2026-09-24/a7/39e63ce9-open/04-return.png",
+          "t": 6.828,
+          "vis": "visible"
+        },
+        {
+          "phase": "aim",
+          "file": "evidence/2026-09-24/a7/39e63ce9-open/05-aim.png",
+          "t": 7.544,
+          "vis": "visible"
+        },
+        {
+          "phase": "dash",
+          "file": "evidence/2026-09-24/a7/39e63ce9-open/06-dash.png",
+          "t": 9.027,
+          "vis": "visible"
+        },
+        {
+          "phase": "dash",
+          "file": "evidence/2026-09-24/a7/39e63ce9-open/07-dash-fast.png",
+          "t": 9.576,
+          "vis": "visible"
+        },
+        {
+          "phase": "done",
+          "file": "evidence/2026-09-24/a7/39e63ce9-open/08-done.png",
+          "t": 15.059,
+          "vis": "visible"
+        }
+      ],
+      "final": {
+        "log": {
+          "phase": "done",
+          "phases": [
+            {
+              "phase": "arm",
+              "tick": 0
+            },
+            {
+              "phase": "hover",
+              "tick": 869
+            },
+            {
+              "phase": "box",
+              "tick": 3369
+            },
+            {
+              "phase": "return",
+              "tick": 6813
+            },
+            {
+              "phase": "aim",
+              "tick": 7417
+            },
+            {
+              "phase": "dash",
+              "tick": 8917
+            },
+            {
+              "phase": "done",
+              "tick": 14918
+            }
+          ],
+          "hoverVz": 0.0019449151431438214,
+          "maxSpeed": 9.34762337060428,
+          "crash": null,
+          "tumbleMaxW": 0
+        },
+        "crashes": 0,
+        "hitches": 9,
+        "startOverlaps": 0,
+        "frames": 402,
+        "renderer": 2,
+        "visibility": "visible"
+      },
+      "consoleErrors": [
+        "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ]
+    },
+    {
+      "scene": "887f27aa",
+      "mode": "scenario",
+      "ready": {
+        "status": "ready",
+        "info": {
+          "webgpu": true,
+          "currentRenderer": 2,
+          "gpuSort": true,
+          "hasCollision": true,
+          "collisionSha256": "1a104522ed03688d046d2210b68cb3e66afdb07d922f2de4b6096ac9a55a0f96",
+          "timings": {
+            "settingsMs": 175.90000009536743,
+            "collisionMs": 8129.899999976158,
+            "firstFrameMs": 8549.5,
+            "visibleMs": 15274.899999976158
+          },
+          "spawn": [
+            0,
+            2,
+            0,
+            90
+          ],
+          "preset": "pavo20pro-3s"
+        }
+      },
+      "shots": [
+        {
+          "phase": "hover",
+          "file": "evidence/2026-09-24/a7/887f27aa-scenario/00-hover.png",
+          "t": 6.709,
+          "vis": "visible"
+        },
+        {
+          "phase": "box",
+          "file": "evidence/2026-09-24/a7/887f27aa-scenario/01-box.png",
+          "t": 9.092,
+          "vis": "visible"
+        },
+        {
+          "phase": "box",
+          "file": "evidence/2026-09-24/a7/887f27aa-scenario/02-box.png",
+          "t": 10.408,
+          "vis": "visible"
+        },
+        {
+          "phase": "box",
+          "file": "evidence/2026-09-24/a7/887f27aa-scenario/03-box.png",
+          "t": 11.358,
+          "vis": "visible"
+        },
+        {
+          "phase": "return",
+          "file": "evidence/2026-09-24/a7/887f27aa-scenario/04-return.png",
+          "t": 14.374,
+          "vis": "visible"
+        },
+        {
+          "phase": "aim",
+          "file": "evidence/2026-09-24/a7/887f27aa-scenario/05-aim.png",
+          "t": 15.559,
+          "vis": "visible"
+        },
+        {
+          "phase": "dash",
+          "file": "evidence/2026-09-24/a7/887f27aa-scenario/06-dash.png",
+          "t": 17.073,
+          "vis": "visible"
+        },
+        {
+          "phase": "dash",
+          "file": "evidence/2026-09-24/a7/887f27aa-scenario/07-dash-fast.png",
+          "t": 17.622,
+          "vis": "visible"
+        },
+        {
+          "phase": "crashed",
+          "file": "evidence/2026-09-24/a7/887f27aa-scenario/08-crashed.png",
+          "t": 18.173,
+          "vis": "visible"
+        },
+        {
+          "phase": "rest",
+          "file": "evidence/2026-09-24/a7/887f27aa-scenario/09-rest.png",
+          "t": 22.088,
+          "vis": "visible"
+        }
+      ],
+      "final": {
+        "log": {
+          "phase": "rest",
+          "phases": [
+            {
+              "phase": "arm",
+              "tick": 0
+            },
+            {
+              "phase": "hover",
+              "tick": 6513
+            },
+            {
+              "phase": "box",
+              "tick": 9013
+            },
+            {
+              "phase": "return",
+              "tick": 14325
+            },
+            {
+              "phase": "aim",
+              "tick": 15453
+            },
+            {
+              "phase": "dash",
+              "tick": 16953
+            },
+            {
+              "phase": "crashed",
+              "tick": 18037
+            },
+            {
+              "phase": "rest",
+              "tick": 22037
+            }
+          ],
+          "hoverVz": 0.00194491514313278,
+          "maxSpeed": 9.202074157964347,
+          "crash": {
+            "tick": 18037,
+            "speed": 8.992613469465132,
+            "px": -4.849065901578235,
+            "py": 2.094580023698663,
+            "pz": 0.89960942262583
+          },
+          "tumbleMaxW": 174.08197006532993
+        },
+        "crashes": 1,
+        "hitches": 10,
+        "startOverlaps": 0,
+        "frames": 605,
+        "renderer": 2,
+        "visibility": "visible"
+      },
+      "consoleErrors": [
+        "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ]
+    },
+    {
+      "scene": "887f27aa",
+      "mode": "open",
+      "ready": {
+        "status": "ready",
+        "info": {
+          "webgpu": true,
+          "currentRenderer": 2,
+          "gpuSort": true,
+          "hasCollision": true,
+          "collisionSha256": "1a104522ed03688d046d2210b68cb3e66afdb07d922f2de4b6096ac9a55a0f96",
+          "timings": {
+            "settingsMs": 435.7999999523163,
+            "collisionMs": 2362.600000023842,
+            "firstFrameMs": 3043.899999976158,
+            "visibleMs": 4123.5
+          },
+          "spawn": [
+            0,
+            2,
+            0,
+            90
+          ],
+          "preset": "pavo20pro-3s"
+        }
+      },
+      "shots": [
+        {
+          "phase": "hover",
+          "file": "evidence/2026-09-24/a7/887f27aa-open/00-hover.png",
+          "t": 1.047,
+          "vis": "visible"
+        },
+        {
+          "phase": "box",
+          "file": "evidence/2026-09-24/a7/887f27aa-open/01-box.png",
+          "t": 3.463,
+          "vis": "visible"
+        },
+        {
+          "phase": "box",
+          "file": "evidence/2026-09-24/a7/887f27aa-open/02-box.png",
+          "t": 4.179,
+          "vis": "visible"
+        },
+        {
+          "phase": "box",
+          "file": "evidence/2026-09-24/a7/887f27aa-open/03-box.png",
+          "t": 5.128,
+          "vis": "visible"
+        },
+        {
+          "phase": "return",
+          "file": "evidence/2026-09-24/a7/887f27aa-open/04-return.png",
+          "t": 8.711,
+          "vis": "visible"
+        },
+        {
+          "phase": "aim",
+          "file": "evidence/2026-09-24/a7/887f27aa-open/05-aim.png",
+          "t": 9.928,
+          "vis": "visible"
+        },
+        {
+          "phase": "dash",
+          "file": "evidence/2026-09-24/a7/887f27aa-open/06-dash.png",
+          "t": 11.411,
+          "vis": "visible"
+        },
+        {
+          "phase": "dash",
+          "file": "evidence/2026-09-24/a7/887f27aa-open/07-dash-fast.png",
+          "t": 12.077,
+          "vis": "visible"
+        },
+        {
+          "phase": "done",
+          "file": "evidence/2026-09-24/a7/887f27aa-open/08-done.png",
+          "t": 17.377,
+          "vis": "visible"
+        }
+      ],
+      "final": {
+        "log": {
+          "phase": "done",
+          "phases": [
+            {
+              "phase": "arm",
+              "tick": 0
+            },
+            {
+              "phase": "hover",
+              "tick": 885
+            },
+            {
+              "phase": "box",
+              "tick": 3385
+            },
+            {
+              "phase": "return",
+              "tick": 8697
+            },
+            {
+              "phase": "aim",
+              "tick": 9825
+            },
+            {
+              "phase": "dash",
+              "tick": 11325
+            },
+            {
+              "phase": "done",
+              "tick": 17326
+            }
+          ],
+          "hoverVz": 0.00194491514313278,
+          "maxSpeed": 9.350658233834467,
+          "crash": null,
+          "tumbleMaxW": 0
+        },
+        "crashes": 0,
+        "hitches": 7,
+        "startOverlaps": 0,
+        "frames": 469,
+        "renderer": 2,
+        "visibility": "visible"
+      },
+      "consoleErrors": [
+        "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ]
+    }
+  ]
+}

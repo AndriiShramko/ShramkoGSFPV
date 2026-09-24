@@ -61,7 +61,8 @@ export const S = {
     armed: 34, crashed: 35, armSw: 36, sat: 37, restT: 38, crashT: 39,
     g1R: 40, g1P: 41, g1Y: 42, g2R: 43, g2P: 44, g2Y: 45,
     d2R: 46, d2P: 47, d2Y: 48,
-    size: 49
+    hold: 49,
+    size: 50
 } as const;
 
 const PT1 = (fc: number) => {
@@ -97,6 +98,8 @@ const MIX_Y = [-1, 1, 1, -1];
 
 const MU = 0.4; // friction coefficient [estimate]
 const SKIN = 0.001; // m, gap kept after a contact
+const CRASH_ANG_DAMP = 3; // 1/s, tumbling craft (props stopped, ducts dragging) [estimate]
+const CRASH_LIN_DAMP = 0.5; // 1/s horizontal, scraping and bouncing losses [estimate]
 
 export class Sim {
     readonly p: SimParams;
@@ -144,6 +147,7 @@ export class Sim {
         s[S.soc] = 1;
         s[S.volt] = this.p.cells * cellVoc(1);
         s[S.armSw] = 1; // require a fresh off -> on transition
+        s[S.hold] = 1; // held in place at the spawn until the first arm
     }
 
     get armed(): boolean { return this.s[S.armed] > 0; }
@@ -182,6 +186,10 @@ export class Sim {
             this.events.push({ type: 'disarm', tick: this.tick, reason: 'switch' });
         }
         s[S.armSw] = sw;
+        if (s[S.hold] > 0) {
+            if (s[S.armed] > 0) s[S.hold] = 0;
+            else return; // parked at the spawn: no forces until armed
+        }
 
         // ---- body rotation matrix from q ----
         const qw = s[S.qw], qx = s[S.qx], qy = s[S.qy], qz = s[S.qz];
@@ -337,9 +345,12 @@ export class Sim {
         // ---- contact ----
         if (this.world) this.contact(px0, py0, pz0, q0w, q0x, q0y, q0z);
 
-        // crashed body settling: rest detection and 4 s cap
+        // crashed body settling: air and scraping losses, rest detection and 4 s cap
         if (s[S.crashed] > 0) {
             s[S.crashT] += DT;
+            const kw = 1 - CRASH_ANG_DAMP * DT, kv = 1 - CRASH_LIN_DAMP * DT;
+            s[S.wx] *= kw; s[S.wy] *= kw; s[S.wz] *= kw;
+            s[S.vx] *= kv; s[S.vz] *= kv;
             const v2 = s[S.vx] * s[S.vx] + s[S.vy] * s[S.vy] + s[S.vz] * s[S.vz];
             const w2 = s[S.wx] * s[S.wx] + s[S.wy] * s[S.wy] + s[S.wz] * s[S.wz];
             if (v2 < 0.0025 && w2 < 0.25) s[S.restT] += DT; else s[S.restT] = 0;
@@ -429,27 +440,57 @@ export class Sim {
 
         const k = this.cout.sphere;
         if (t === 0) {
-            // started overlapping: push the craft out and stop
+            // started overlapping: stay at the start pose and push every overlapping sphere out
             this.startOverlaps++;
-            const cx = this.c0[k * 3], cy = this.c0[k * 3 + 1], cz = this.c0[k * 3 + 2];
-            if (world.pushOut(cx, cy, cz, this.rr[k] + 1e-4, this.push)) {
-                s[S.px] = px0 + this.push.x; s[S.py] = py0 + this.push.y; s[S.pz] = pz0 + this.push.z;
-            } else {
-                s[S.px] = px0; s[S.py] = py0; s[S.pz] = pz0;
-            }
+            s[S.px] = px0; s[S.py] = py0; s[S.pz] = pz0;
             s[S.qw] = q0w; s[S.qx] = q0x; s[S.qy] = q0y; s[S.qz] = q0z;
+            for (let it = 0; it < 3; it++) {
+                let moved = false;
+                for (let i = 0; i < n; i++) {
+                    const cx = this.c0[i * 3] + (s[S.px] - px0), cy = this.c0[i * 3 + 1] + (s[S.py] - py0), cz = this.c0[i * 3 + 2] + (s[S.pz] - pz0);
+                    if (world.pushOut(cx, cy, cz, this.rr[i] + SKIN, this.push)) {
+                        const px = this.push.x, py = this.push.y, pz = this.push.z;
+                        s[S.px] += px; s[S.py] += py; s[S.pz] += pz;
+                        // remove the velocity component that drives the body into the surface
+                        const pl = Math.sqrt(px * px + py * py + pz * pz);
+                        if (pl > 1e-12) {
+                            const ux = px / pl, uy = py / pl, uz = pz / pl;
+                            const vn = s[S.vx] * ux + s[S.vy] * uy + s[S.vz] * uz;
+                            if (vn < 0) { s[S.vx] -= vn * ux; s[S.vy] -= vn * uy; s[S.vz] -= vn * uz; }
+                        }
+                        moved = true;
+                    }
+                }
+                if (!moved) break;
+            }
         } else {
-            // move to the contact position (translation interpolated, keep start rotation)
+            // move to the contact pose: translation and rotation interpolated like the sweep did
             s[S.px] = px0 + (s[S.px] - px0) * t;
             s[S.py] = py0 + (s[S.py] - py0) * t;
             s[S.pz] = pz0 + (s[S.pz] - pz0) * t;
-            s[S.qw] = q0w; s[S.qx] = q0x; s[S.qy] = q0y; s[S.qz] = q0z;
+            let bw = s[S.qw], bx = s[S.qx], by = s[S.qy], bz = s[S.qz];
+            if (q0w * bw + q0x * bx + q0y * by + q0z * bz < 0) { bw = -bw; bx = -bx; by = -by; bz = -bz; }
+            let iw = q0w + (bw - q0w) * t, ix = q0x + (bx - q0x) * t, iy = q0y + (by - q0y) * t, iz = q0z + (bz - q0z) * t;
+            const il = 1 / Math.sqrt(iw * iw + ix * ix + iy * iy + iz * iz);
+            iw *= il; ix *= il; iy *= il; iz *= il;
+            s[S.qw] = iw; s[S.qx] = ix; s[S.qy] = iy; s[S.qz] = iz;
             // keep a small skin so tangential motion along the surface is not reported as contact
-            const kx = this.c0[k * 3] + (s[S.px] - px0), ky = this.c0[k * 3 + 1] + (s[S.py] - py0), kz = this.c0[k * 3 + 2] + (s[S.pz] - pz0);
+            const kx = this.c0[k * 3] + (this.c1[k * 3] - this.c0[k * 3]) * t;
+            const ky = this.c0[k * 3 + 1] + (this.c1[k * 3 + 1] - this.c0[k * 3 + 1]) * t;
+            const kz = this.c0[k * 3 + 2] + (this.c1[k * 3 + 2] - this.c0[k * 3 + 2]) * t;
             const sx = this.cout.nx * SKIN, sy = this.cout.ny * SKIN, sz = this.cout.nz * SKIN;
-            if (!world.pushOut(kx + sx, ky + sy, kz + sz, this.rr[k], this.push)) {
+            // apply the skin only if no sphere of the body ends up touching anything
+            let clear = true;
+            for (let i = 0; i < n && clear; i++) {
+                const ix = this.c0[i * 3] + (this.c1[i * 3] - this.c0[i * 3]) * t + sx;
+                const iy = this.c0[i * 3 + 1] + (this.c1[i * 3 + 1] - this.c0[i * 3 + 1]) * t + sy;
+                const iz = this.c0[i * 3 + 2] + (this.c1[i * 3 + 2] - this.c0[i * 3 + 2]) * t + sz;
+                if (world.pushOut(ix, iy, iz, this.rr[i], this.push)) clear = false;
+            }
+            if (clear) {
                 s[S.px] += sx; s[S.py] += sy; s[S.pz] += sz;
             }
+            void kx; void ky; void kz;
         }
 
         // contact geometry

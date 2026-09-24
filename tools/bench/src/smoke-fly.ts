@@ -1,0 +1,12 @@
+import { launch, waitReady, visibility } from './browser';
+const url = process.argv[2] ?? 'http://localhost:5190/fly/?scene=39e63ce9';
+const { browser, page, console: log } = await launch();
+await page.goto(url);
+const r = await waitReady(page);
+console.log('ready', JSON.stringify(r), 'vis', await visibility(page));
+await page.waitForTimeout(4000);
+await page.screenshot({ path: '.cache/smoke-fly.png' });
+const hud = await page.evaluate(() => (window as any).__gsfpv.session?.hud());
+console.log('hud', JSON.stringify(hud), 'frames', await page.evaluate(() => (window as any).__gsfpv.session?.frames));
+console.log(log.slice(-15).join('\n'));
+await browser.close();

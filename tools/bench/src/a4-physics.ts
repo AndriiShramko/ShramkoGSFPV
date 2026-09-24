@@ -173,6 +173,7 @@ export function angularMomentumCheck(): { L0: number; L1: number; relDrift: numb
     const p = params('pavo20pro-3s', { gravity: 0 });
     const sim = new Sim(p, null);
     sim.reset(0, 0, 0, 0);
+    sim.s[S.hold] = 0; // free body, not parked at the spawn
     sim.s[S.wx] = 3; sim.s[S.wy] = 7; sim.s[S.wz] = -5; // tumbling, disarmed: no thrust, no drag (not moving)
     const Lw = () => {
         const s = sim.s;
@@ -197,6 +198,7 @@ export function terminalVelocityCheck(cdaScale = 1): { measured: number; expecte
     const p = params('pavo20pro-3s', { cdaScale });
     const sim = new Sim(p, null);
     sim.reset(0, 1000, 0, 0);
+    sim.s[S.hold] = 0; // free fall, not parked at the spawn
     for (let i = 0; i < 30000; i++) sim.step();
     const measured = -sim.s[S.vy];
     const nominal = params('pavo20pro-3s');

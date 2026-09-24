@@ -1,0 +1,17 @@
+{
+  "name": "@gsfpv/render-pc",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "playcanvas": "2.22.4"
+  }
+}

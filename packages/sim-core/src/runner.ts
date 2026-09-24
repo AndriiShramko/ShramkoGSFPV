@@ -14,6 +14,8 @@ export const MAX_CATCHUP_STEPS = 250;
 export interface InputSample {
     tUs: number; // sim-clock microseconds
     ch: ArrayLike<number>;
+    /** optional id of the input event (latency measurement); not part of the physics or the log */
+    id?: number;
 }
 
 export interface LogHeader {
@@ -111,6 +113,8 @@ export class Runner {
     trajectory: TrajectoryPoint[] | null = null;
     private lastApplied = new Float32Array(8);
     events: SimEvent[] = [];
+    /** id of the last input sample the physics has consumed */
+    lastAppliedId = 0;
 
     constructor(sim: Sim, log: InputLog | null, traceHash = false) {
         this.sim = sim;
@@ -127,7 +131,7 @@ export class Runner {
     }
 
     enqueue(sample: InputSample): void {
-        this.queue.push({ tUs: sample.tUs, ch: Float32Array.from(sample.ch as ArrayLike<number>) });
+        this.queue.push({ tUs: sample.tUs, ch: Float32Array.from(sample.ch as ArrayLike<number>), id: sample.id });
     }
 
     /** Respawn is part of the log, so replays reproduce it. */
@@ -161,6 +165,7 @@ export class Runner {
         while (this.qHead < this.queue.length && this.queue[this.qHead].tUs <= nextT) {
             const smp = this.queue[this.qHead++];
             for (let i = 0; i < 8; i++) this.lastApplied[i] = smp.ch[i] ?? 0;
+            if (smp.id !== undefined) this.lastAppliedId = smp.id;
             applied = true;
         }
         if (this.qHead > 4096) {

@@ -17,7 +17,7 @@ Spec: vault `03 - Resources/Deployment/shramkogsfpv/spec.md` (+ 6 spec-*.md). Ph
 | A4 | physics consistency + 4 controls | pass (local) | evidence/2026-09-24/a4-physics.json |
 | A5 | tunnelling ≥10 000 passes/speed, independent oracle, endpoint control | pass (local): 200 000 passes, 0 penetrations; control tunnels 43 810 @1/30 s, 5 590 @1/144 s | evidence/2026-09-24/a5-tunnelling.json |
 | A6 | determinism SHA-256 Node = Chrome, frame splits | todo | |
-| A7 | bot pilot crash on 39e63ce9 + 887f27aa, PNG series; open-volume control | todo | |
+| A7 | bot pilot crash on 39e63ce9 + 887f27aa, PNG series; open-volume control | pass (local, visible system Chrome): crash 7.9 m/s and 9.0 m/s; open volume: no crash | evidence/2026-09-24/a7-bot-pilot-browser.json, evidence/2026-09-24/a7/ |
 | A8 | clearance numbers for the compound body | todo | |
 | A9 | latency status with numbers (output rate first) | todo | |
 

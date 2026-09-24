@@ -1,0 +1,14 @@
+:root { color-scheme: dark; --bg: #07080a; --fg: #e8eaed; --muted: #9aa3ad; --accent: #4ade80; --warn: #fbbf24; --bad: #f87171; --panel: rgba(12,14,18,.82); }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow: hidden; overscroll-behavior: none; touch-action: none; }
+#view { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+#ui { position: fixed; inset: 0; pointer-events: none; }
+#ui .interactive, #ui button, #ui a, #ui input, #ui select { pointer-events: auto; }
+.osd { position: absolute; font: 600 15px/1.2 ui-monospace, "Cascadia Mono", Consolas, monospace; text-shadow: 0 1px 2px #000, 0 0 4px #000; color: #fff; }
+.osd.tl { top: 14px; left: 44px; } .osd.tr { top: 14px; right: 16px; text-align: right; } .osd.bl { bottom: 14px; left: 16px; } .osd.br { bottom: 14px; right: 16px; text-align: right; }
+.osd .armed { color: var(--accent); } .osd .disarmed { color: var(--warn); } .osd .crash { color: var(--bad); }
+.center-msg { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); background: var(--panel); padding: 16px 20px; border-radius: 12px; max-width: min(92vw, 560px); text-align: center; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; background: var(--bg); }
+.loading .bar { width: min(60vw, 360px); height: 4px; background: #1f2937; border-radius: 2px; overflow: hidden; }
+.loading .bar > i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+.error { color: var(--bad); }
