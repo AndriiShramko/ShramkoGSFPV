@@ -32,7 +32,8 @@ for (const l of ['en', 'es', 'pl', 'ru']) {
         const { r, body } = await get(p);
         expect(r.status === 200, `${p} -> ${r.status}`);
         expect(new RegExp(`<html[^>]*lang="${l}"`).test(body), `${p} has lang=${l}`);
-        expect(!/\b(undefined|TODO|PLACEHOLDER|lorem ipsum)\b/i.test(body.replace(/<script[\s\S]*?<\/script>/g, '')), `${p} has no placeholder text`);
+        const seen = body.replace(/<script[\s\S]*?<\/script>/g, ' ').replace(/<style[\s\S]*?<\/style>/g, ' ').replace(/\s[a-zA-Z_:][-a-zA-Z0-9_:.]*=/g, ' ');
+        expect(!/\b(undefined|TODO|PLACEHOLDER)\b|[Ll]orem ipsum/.test(seen), `${p} has no placeholder text`); // Spanish "todo" is a word
         expect(r.headers.get('x-content-type-options') === 'nosniff', `${p} nosniff`);
         expect(!!r.headers.get('referrer-policy'), `${p} referrer-policy`);
         expect(!!r.headers.get('x-frame-options'), `${p} x-frame-options`);

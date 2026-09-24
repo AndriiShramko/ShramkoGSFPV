@@ -56,12 +56,15 @@ for (const f of walk(DIST)) {
     }
 }
 
-// sanity checks that must never ship
+// sanity checks that must never ship. Words are searched in what a person can see: scripts
+// dropped, attribute NAMES dropped (an <input placeholder="..."> is fine, its value is checked)
+const FORBIDDEN = /\b(undefined|TODO|PLACEHOLDER)\b|[Ll]orem ipsum/; // case matters: Spanish "todo" is a word
+const visible = (html) => html.replace(/<script[\s\S]*?<\/script>/g, ' ').replace(/<style[\s\S]*?<\/style>/g, ' ').replace(/\s[a-zA-Z_:][-a-zA-Z0-9_:.]*=/g, ' ');
 const bad = [];
 for (const f of walk(DIST)) {
     if (!/\.(html|js|txt|xml|json)$/.test(f)) continue;
     const s = readFileSync(f, 'utf8');
-    if (/\b(TODO|PLACEHOLDER|lorem ipsum)\b/i.test(s) && f.endsWith('.html')) bad.push(`placeholder text: ${f}`);
+    if (f.endsWith('.html') && FORBIDDEN.test(visible(s))) bad.push(`placeholder text: ${f}: ${visible(s).match(FORBIDDEN)?.[0]}`);
     if (/(ghp_|gho_|github_pat_)[A-Za-z0-9]{20,}|BEGIN [A-Z ]*PRIVATE KEY|bot\d{8,}:[A-Za-z0-9_-]{30,}/.test(s)) bad.push(`secret-like string: ${f}`);
     if (f.endsWith('.html') && /[?&](lat|simradio|lagFrames)=/.test(s)) bad.push(`test switch linked: ${f}`);
 }
