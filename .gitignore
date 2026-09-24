@@ -35,3 +35,6 @@ apps/fly/dist-lab/
 # python bytecode
 __pycache__/
 *.pyc
+
+# hub address, port, user and paths stay local
+deploy/hub.env

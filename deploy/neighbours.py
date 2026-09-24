@@ -19,8 +19,25 @@ import time
 import urllib.request
 import ssl
 
-HOST = 'fpv@65.109.11.177'
-SSH = ['ssh', '-p', '2222', '-i', os.path.expanduser('~/.ssh/fpv_hetzner_key'), '-o', 'ConnectTimeout=20', HOST]
+def _hub_env() -> dict:
+    # hub address, port, key and paths: deploy/hub.env (gitignored), then the environment
+    env = {}
+    p = os.path.join(os.path.dirname(__file__), 'hub.env')
+    if os.path.exists(p):
+        for line in open(p, encoding='utf-8'):
+            if '=' in line and not line.lstrip().startswith('#'):
+                k, v = line.strip().split('=', 1)
+                env[k] = v
+    env.update({k: v for k, v in os.environ.items() if k.startswith('GSFPV_')})
+    return env
+
+
+HUB = _hub_env()
+HOST = HUB['GSFPV_HOST']
+KEY = os.path.expanduser(HUB.get('GSFPV_KEY', '~/.ssh/id_ed25519'))
+if KEY.startswith('/c/'):
+    KEY = 'C:/' + KEY[3:]
+SSH = ['ssh', '-p', HUB.get('GSFPV_PORT', '22'), '-i', KEY, '-o', 'ConnectTimeout=20', HOST]
 
 
 def ssh(cmd: str) -> str:
@@ -42,7 +59,7 @@ def fetch(url: str) -> tuple[int, str]:
 def snap(out: str) -> None:
     os.makedirs(out, exist_ok=True)
     name = os.path.basename(os.path.abspath(out))
-    remote = f'/home/fpv/_backups/{name}'
+    remote = f"{HUB['GSFPV_BACKUPS']}/{name}"
     # the script may have CRLF endings in a Windows checkout; bash on the server needs LF
     script = open(os.path.join(os.path.dirname(__file__), 'snapshot-server.sh'), encoding='utf-8').read().replace(chr(13), '')
     # bytes, not text: text mode on Windows would turn every \n into \r\n on the way to bash

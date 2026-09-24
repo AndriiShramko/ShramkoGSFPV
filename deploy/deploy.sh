@@ -10,12 +10,16 @@ TGZ="${1:?dist.tgz}"
 SUMS="${2:?SHA256SUMS}"
 SWITCH=1
 [ "${3:-}" = "--no-switch" ] && SWITCH=0
-HOST="${GSFPV_HOST:-fpv@65.109.11.177}"
-PORT="${GSFPV_PORT:-2222}"
-KEY="${GSFPV_KEY:-$HOME/.ssh/fpv_hetzner_key}"
+# hub address, port, key and paths come from deploy/hub.env (gitignored; see hub.env.example)
+[ -f "$(dirname "$0")/hub.env" ] && set -a && . "$(dirname "$0")/hub.env" && set +a
+: "${GSFPV_HOST:?set GSFPV_HOST in deploy/hub.env}" "${GSFPV_PORT:?}" "${GSFPV_BASE:?}"
+HOST="$GSFPV_HOST"
+PORT="$GSFPV_PORT"
+KEY="${GSFPV_KEY:-$HOME/.ssh/id_ed25519}"
+KEY="${KEY/#\~/$HOME}"
 SSH=(ssh -p "$PORT" -i "$KEY" -o BatchMode=yes "$HOST")
 SCP=(scp -P "$PORT" -i "$KEY" -o BatchMode=yes)
-BASE=/home/fpv/gsfpv
+BASE="$GSFPV_BASE"
 
 want=$(grep ' dist.tgz$' "$SUMS" | awk '{print $1}')
 have=$(sha256sum "$TGZ" | awk '{print $1}')

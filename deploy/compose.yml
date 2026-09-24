@@ -1,4 +1,4 @@
-# ShramkoGSFPV on the hub (65.109.11.177), directory /home/fpv/gsfpv/.
+# ShramkoGSFPV on the hub, in its own directory (GSFPV_BASE in deploy/hub.env).
 # Two containers, no host ports: nginx:alpine serves the static release behind nginx-proxy + acme,
 # a tiny python API counts events and forwards leads. The web-proxy network is external: never
 # created or changed from here. Neighbours are never touched.
