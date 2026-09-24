@@ -1,0 +1,43 @@
+name: cdn-canary
+
+# Once a day: the SuperSplat CDN paths the simulator depends on still answer 200 with CORS "*".
+# The paths are undocumented; if they move, this opens an issue instead of users finding out.
+on:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check CDN templates
+        id: check
+        run: |
+          fail=0
+          for id in 39e63ce9 887f27aa; do
+            for url in \
+              "https://d28zzqy0iyovbz.cloudfront.net/$id/v1/settings.json" \
+              "https://d28zzqy0iyovbz.cloudfront.net/$id/v1/lod-meta.json" \
+              "https://s3-eu-west-1.amazonaws.com/splats.playcanvas.com/$id/v1/scene.voxel.json" \
+              "https://s3-eu-west-1.amazonaws.com/splats.playcanvas.com/$id/v1/scene.voxel.bin"; do
+              h=$(curl -s -o /dev/null -D - -H "Origin: https://gsfpv.flyreelstudio.eu" -H "Range: bytes=0-0" "$url?cb=$RANDOM")
+              code=$(echo "$h" | head -1 | awk '{print $2}')
+              acao=$(echo "$h" | tr -d '\r' | grep -i '^access-control-allow-origin:' | awk '{print $2}')
+              echo "$code $acao $url"
+              if [ "$code" != "200" ] && [ "$code" != "206" ] || [ "$acao" != "*" ]; then fail=1; fi
+            done
+          done
+          echo "fail=$fail" >> "$GITHUB_OUTPUT"
+      - name: Open an issue on failure
+        if: steps.check.outputs.fail == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "SuperSplat CDN canary failed ($(date -u +%F))" \
+            --body "One of the CDN paths the simulator loads (settings.json, lod-meta.json, scene.voxel.json/.bin for 39e63ce9 or 887f27aa) did not answer 200/206 with Access-Control-Allow-Origin: *. See the run log: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          exit 1

@@ -1,0 +1,67 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.5.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm -r typecheck
+
+      - name: Lint (architecture rules)
+        run: node scripts/check-architecture.mjs
+
+      - name: Dependency licences
+        run: node scripts/check-licenses.mjs
+
+      - name: Unit tests, rate vectors, tunnelling and determinism subset
+        run: pnpm vitest run
+
+      - name: Build release (site + simulator, pre-gzip, numbers must exist in evidence)
+        run: node scripts/build-release.mjs
+
+      - name: Smoke the release behind the real nginx config (no GPU)
+        run: |
+          docker run -d --name gsfpv-smoke -p 8080:80 \
+            -v "$PWD/dist:/srv/releases/current:ro" \
+            -v "$PWD/deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro" \
+            --add-host gsfpv-api:127.0.0.1 nginx:1.29-alpine
+          sleep 2
+          node scripts/smoke-release.mjs http://localhost:8080
+
+      - name: Secret scan (full history)
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.21.2 detect --source /repo --redact --no-banner -v
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: |
+            dist.tgz
+            SHA256SUMS
+          retention-days: 30
