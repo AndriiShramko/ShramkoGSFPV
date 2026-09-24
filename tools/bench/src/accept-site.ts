@@ -100,20 +100,30 @@ if (want('B2')) {
     const flat = (o: unknown, pre = ''): Record<string, string> => Object.entries(o as Record<string, unknown>).reduce((acc, [k, v]) => (typeof v === 'string' ? { ...acc, [pre + k]: v } : { ...acc, ...flat(v, `${pre}${k}.`) }), {} as Record<string, string>);
     const en = flat(siteDict('en'));
     const TERMS = /^[\s\d.,:;/()+·×%≈—–-]*$|^(ShramkoGSFPV|GitHub|LinkedIn|SuperSplat|PlayCanvas|Rapier|Betaflight|SplatFPV|WebGPU|WebHID|EdgeTX|MIT|FAQ|OK|Email|E-mail|Liftoff|VelociDrone|DJI|RadioMaster|BetaFPV|Pavo20 Pro|3S|Andrii Shramko|zmei116@gmail\.com|Discord|Chrome|Edge|Firefox|Safari|Apache-2\.0|GPL-3\.0|CC BY 4\.0|JSON|CSV|USB|HID|PID|FPV|LOD|GPU|CPU|Gamepad|Raceflight|KISS|Actual|AGENTS\.md|AGENT_SETUP\.md|llms\.txt|SECURITY\.md|docs\/warnings\.md|Studio|Developer|Investor|Vendor|Pilot|Radio|Robots|Hz|ms|mm|m\/s|g)$/i;
+    // not prose, so equal in every language by design: enum codes the page translates through t()
+    // (".src" = manufacturer/measured/claim/estimate, ".level" = sim/emulated/…) and names or specs
+    const CODE_KEY = /\.(src|level)$/;
+    const NAME_TOKENS = /^(Safari|iPad|Android|Betaflight|Actual|KISS|Raceflight|Gamepad|API|PlayCanvas|Engine|fdlibm|musl|LAVA|KV|g|≈|>|\/)$/i;
+    const isNameOrSpec = (v: string) => v.split(/[\s, ]+/).filter(Boolean).every((w) => NAME_TOKENS.test(w) || /\d/.test(w));
     const same: Record<string, string[]> = {};
     for (const l of ['es', 'pl', 'ru']) {
         const d = flat(siteDict(l));
-        same[l] = Object.keys(en).filter((k) => d[k] === en[k] && !TERMS.test(en[k]) && !/https?:\/\//.test(en[k]));
+        same[l] = Object.keys(en).filter((k) => d[k] === en[k] && !TERMS.test(en[k]) && !/https?:\/\//.test(en[k]) && !CODE_KEY.test(k) && !isNameOrSpec(en[k]));
     }
-    const pass = r1.status === 302 && (r1.location ?? '').endsWith('/pl/') && (r2.location ?? '').endsWith('/ru/') && landed === '/pl/' && langPl === 'pl' && afterManual === '/ru/' && afterReload.path === '/ru/' && afterReload.lang === 'ru'
+    // control: a copy of RU with one prose string left in English must be caught
+    const ru = flat(siteDict('ru'));
+    const proseKey = Object.keys(en).find((k) => /^hero\./.test(k) && en[k].split(' ').length > 5 && ru[k] !== en[k]) ?? '';
+    const mutated = { ...ru, [proseKey]: en[proseKey] };
+    const caught = Object.keys(en).filter((k) => mutated[k] === en[k] && !TERMS.test(en[k]) && !/https?:\/\//.test(en[k]) && !CODE_KEY.test(k) && !isNameOrSpec(en[k])).includes(proseKey);
+    const pass = caught && r1.status === 302 && (r1.location ?? '').endsWith('/pl/') && (r2.location ?? '').endsWith('/ru/') && landed === '/pl/' && langPl === 'pl' && afterManual === '/ru/' && afterReload.path === '/ru/' && afterReload.lang === 'ru'
         && Object.values(hreflang).every((n) => n === 5) && Object.values(same).every((a) => a.length === 0);
-    record('B2', { pass, note: 'the 16 switcher clicks (nav + footer, landing + privacy) are in verify.mjs run against the live site', acceptLanguagePl: r1, manualRuBeatsPl: { status: r2.status, location: r2.location }, browser: { landed, langPl, afterManual, afterReload }, hreflangPerPage: hreflang, control: { untranslatedStrings: same, fired: 'a string equal to EN outside the term list fails this item' } });
+    record('B2', { pass, note: 'the 16 switcher clicks (nav + footer, landing + privacy) are in verify.mjs run against the live site', acceptLanguagePl: r1, manualRuBeatsPl: { status: r2.status, location: r2.location }, browser: { landed, langPl, afterManual, afterReload }, hreflangPerPage: hreflang, control: { untranslatedStrings: same, exempt: 'keys ending in .src/.level (enum codes translated via t()) and values made only of product names, units and numbers', injected: { key: proseKey, caught } } });
 }
 
 // ------------------------------------------------------------------ B3 no fake buttons
 async function auditControls(page: Page, path: string, inject: boolean): Promise<{ total: number; dead: string[]; links: number; buttons: number }> {
     await page.goto(url(path), { waitUntil: 'networkidle' });
-    const dismiss = page.locator('[aria-label="Analytics cookies"] button').last();
+    const dismiss = page.locator('[aria-label="Analytics cookies"] button', { hasText: 'Decline' });
     if (await dismiss.count()) await dismiss.click().catch(() => undefined); // decline: banner out of the way
     if (inject) await page.evaluate(() => { const b = document.createElement('button'); b.id = 'inert-control'; b.textContent = 'Inert'; b.type = 'button'; document.querySelector('main')?.prepend(b); });
     const list = await page.evaluate(() => [...document.querySelectorAll('a, button, [role=button]')].filter((e) => { const r = (e as HTMLElement).getBoundingClientRect(); const s = getComputedStyle(e); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && !(e as HTMLButtonElement).disabled; }).map((e, i) => { (e as HTMLElement).dataset.auditId = String(i); return { i, tag: e.tagName.toLowerCase(), href: (e as HTMLAnchorElement).getAttribute('href'), text: (e.textContent ?? '').trim().slice(0, 40) || e.getAttribute('aria-label') || '' }; }));
@@ -132,11 +142,12 @@ async function auditControls(page: Page, path: string, inject: boolean): Promise
         buttons++;
         // a button must do something observable: DOM change, navigation, a request, or the clipboard
         await page.goto(url(path), { waitUntil: 'networkidle' });
-        const d2 = page.locator('[aria-label="Analytics cookies"] button').last();
+        const d2 = page.locator('[aria-label="Analytics cookies"] button', { hasText: 'Decline' });
         if (await d2.count() && !el.text.match(/accept|decline|akcept|odrzu|acept|rechaz|принять|отклон/i)) await d2.click().catch(() => undefined);
         if (inject) await page.evaluate(() => { const b = document.createElement('button'); b.id = 'inert-control'; b.textContent = 'Inert'; b.type = 'button'; document.querySelector('main')?.prepend(b); });
         await page.evaluate(() => { const w = window as unknown as { __mut: number }; w.__mut = 0; new MutationObserver((m) => { w.__mut += m.length; }).observe(document.documentElement, { subtree: true, childList: true, attributes: true, characterData: true }); });
         const before = page.url();
+        const focusBefore = await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 80) ?? '');
         let requests = 0;
         const onReq = () => { requests++; };
         page.on('request', onReq);
@@ -145,7 +156,9 @@ async function auditControls(page: Page, path: string, inject: boolean): Promise
         await page.waitForTimeout(400);
         page.off('request', onReq);
         const mut = await page.evaluate(() => (window as unknown as { __mut: number }).__mut).catch(() => 1);
-        if (mut === 0 && page.url() === before && requests === 0) dead.push(`button "${el.text}" did nothing`);
+        const focusAfter = await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 80) ?? '').catch(() => focusBefore);
+        const focusMoved = focusAfter !== focusBefore && !/^<button/.test(focusAfter); // focus moved to a field it asks for
+        if (mut === 0 && page.url() === before && requests === 0 && !focusMoved) dead.push(`button "${el.text}" did nothing`);
     }
     return { total: list.length, dead, links, buttons };
 }
@@ -211,7 +224,7 @@ if (want('B5')) {
     await B.page.waitForTimeout(2500);
     const before = { gaCookies: (await B.ctx.cookies()).filter((c) => c.name.startsWith('_ga')).length, googleRequests: google.length, banner: await B.page.locator('[aria-label="Analytics cookies"]').count() };
     const beacon = await B.page.evaluate(async () => (await fetch('/api/e', { method: 'POST', body: JSON.stringify({ e: 'page_view', p: { locale: 'en' } }) })).status);
-    const acceptBtn = B.page.locator('[aria-label="Analytics cookies"] button').first();
+    const acceptBtn = B.page.locator('[aria-label="Analytics cookies"] button', { hasText: 'Accept' });
     const acceptText = (await acceptBtn.textContent())?.trim();
     const collect = B.page.waitForResponse((r) => /\/g\/collect/.test(r.url()), { timeout: 30000 }).catch(() => null);
     await acceptBtn.click();

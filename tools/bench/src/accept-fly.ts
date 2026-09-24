@@ -402,15 +402,22 @@ if (want('B14')) {
             if (Date.now() - t0 > 2000) { minY = Math.min(minY, st.y); maxY = Math.max(maxY, st.y); crashed ||= st.crashed; armedAll &&= st.armed; }
         }
         await touch('touchEnd', []);
+        // regression: the stick layer must not swallow the other controls (a tap on Pause opens the menu)
+        const P = await box('[data-action="pause"]');
+        await touch('touchStart', [{ ...c(P), id: 7 }]);
+        await touch('touchEnd', []);
+        await tp.waitForTimeout(400);
+        const pauseOpened = (await tp.locator('.panel').count()) > 0;
+        await tp.keyboard.press('Escape');
         const view = await tp.evaluate(() => ({ scrollX, scrollY, scale: visualViewport?.scale ?? 1 }));
         await tp.screenshot({ path: join(SHOTS, `b14-${w}x${hgt}.png`) });
         await T.browser.close();
-        rows.push({ viewport: `${w}x${hgt}`, armedByButton: armed, bothPairsOneFrame: { ch: both.slice(0, 4), ok: bothChanged }, hover: { seconds: 10, crashed, armedAll, minY, maxY, target }, view, control: { outsideTouch: { before: ch0.slice(0, 4), after: chOut.slice(0, 4), fired: outsideZero } } });
+        rows.push({ viewport: `${w}x${hgt}`, pauseButtonReachable: pauseOpened, armedByButton: armed, bothPairsOneFrame: { ch: both.slice(0, 4), ok: bothChanged }, hover: { seconds: 10, crashed, armedAll, minY, maxY, target }, view, control: { outsideTouch: { before: ch0.slice(0, 4), after: chOut.slice(0, 4), fired: outsideZero } } });
         console.log('B14', JSON.stringify(rows[rows.length - 1]));
     }
     const pass = rows.every((r) => {
-        const x = r as { armedByButton: boolean; bothPairsOneFrame: { ok: boolean }; hover: { crashed: boolean; armedAll: boolean; minY: number }; view: { scrollX: number; scrollY: number; scale: number }; control: { outsideTouch: { fired: boolean } } };
-        return x.armedByButton && x.bothPairsOneFrame.ok && !x.hover.crashed && x.hover.armedAll && x.view.scrollX === 0 && x.view.scrollY === 0 && x.view.scale === 1 && x.control.outsideTouch.fired;
+        const x = r as { pauseButtonReachable: boolean; armedByButton: boolean; bothPairsOneFrame: { ok: boolean }; hover: { crashed: boolean; armedAll: boolean; minY: number }; view: { scrollX: number; scrollY: number; scale: number }; control: { outsideTouch: { fired: boolean } } };
+        return x.pauseButtonReachable && x.armedByButton && x.bothPairsOneFrame.ok && !x.hover.crashed && x.hover.armedAll && x.view.scrollX === 0 && x.view.scrollY === 0 && x.view.scale === 1 && x.control.outsideTouch.fired;
     });
     record('B14', { pass, note: 'touch through CDP Input.dispatchTouchEvent in system Chrome with hasTouch; input=touch because desktop Chrome has WebHID', rows });
 }
