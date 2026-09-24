@@ -2,7 +2,7 @@
   "name": "@gsfpv/fly",
   "version": "0.1.0",
   "private": true,
-  "description": "The simulator app served at /{locale}/fly/ \u00e2\u20ac\u201d Vite, no framework",
+  "description": "The simulator app served at /{locale}/fly/ — Vite, no framework",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -12,14 +12,16 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@gsfpv/sim-core": "workspace:*",
     "@gsfpv/collision": "workspace:*",
-    "playcanvas": "2.22.4",
-    "@gsfpv/scenes": "workspace:*",
-    "@gsfpv/render-pc": "workspace:*",
-    "@gsfpv/input": "workspace:*",
     "@gsfpv/crash": "workspace:*",
-    "@gsfpv/i18n": "workspace:*"
+    "@gsfpv/i18n": "workspace:*",
+    "@gsfpv/input": "workspace:*",
+    "@gsfpv/render-pc": "workspace:*",
+    "@gsfpv/scenes": "workspace:*",
+    "@gsfpv/sim-core": "workspace:*",
+    "@playcanvas/splat-transform": "3.6.4",
+    "mediabunny": "1.59.1",
+    "playcanvas": "2.22.4"
   },
   "devDependencies": {
     "@playcanvas/supersplat-viewer": "1.35.0",
