@@ -41,7 +41,7 @@ async function run(scene: string, mode: 'scenario' | 'open') {
     return { scene, mode, ready, shots, final, consoleErrors: log.filter((l) => l.startsWith('error') || l.startsWith('pageerror')) };
 }
 
-const results = [];
+const results: Awaited<ReturnType<typeof run>>[] = [];
 for (const scene of ['39e63ce9', '887f27aa']) {
     results.push(await run(scene, 'scenario'));
     results.push(await run(scene, 'open'));

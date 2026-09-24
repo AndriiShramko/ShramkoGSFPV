@@ -28,3 +28,10 @@ Thumbs.db
 .idea/
 *.log
 .cache/
+dist.tgz
+SHA256SUMS
+apps/fly/dist-lab/
+
+# python bytecode
+__pycache__/
+*.pyc
