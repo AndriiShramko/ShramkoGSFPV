@@ -4,7 +4,8 @@ Spec: vault `03 - Resources/Deployment/shramkogsfpv/spec.md` (+ 6 spec-*.md). Ph
 
 ## Current
 
-- **Phase:** A done locally (A1-A9 evidence pushed) -> B (live site)
+- **Phase:** A done; B done on the live site except the final B3 re-run and B22/B23; C and D built and checked locally, live re-run in progress (release 80e5f46 = hub release 7f070213f299)
+- **Live:** https://gsfpv.flyreelstudio.eu (hub dir and address in the gitignored `deploy/hub.env`)
 - **Last update:** 2026-09-24
 
 ## Phase A
@@ -28,3 +29,17 @@ Spec: vault `03 - Resources/Deployment/shramkogsfpv/spec.md` (+ 6 spec-*.md). Ph
 - Rotation integrated through world-frame angular momentum (|L| drift 9e-13 over 10 s; plain Euler drifted 1.7 %).
 - A2 floor probe also requires the scan to surround the spawn (≥12/16 horizontal rays): a wrong flip is a point reflection and still finds *a* floor.
 - Oscillation in the PID step check = ≥2 crossings of the ±2 % band after reaching the setpoint.
+
+## Phase B (live, https://gsfpv.flyreelstudio.eu)
+
+Full table with numbers and controls: vault `03 - Resources/Deployment/shramkogsfpv/build-logs/acceptance-phase-b.md`; evidence `evidence/2026-09-24/b-*.json`, `b19-ci.json`, `b20-secret-scan.json`, `b21-neighbours-backup-rollback.json`.
+
+- Deploy: `bash deploy/deploy.sh <dist.tgz> <SHA256SUMS>` (artifact from CI), rollback `bash deploy/rollback.sh <sha12>`, neighbours `python deploy/neighbours.py snap|diff` with `--stable` over all BEFORE snapshots.
+- Acceptance drivers: `tools/bench/src/accept-fly.ts` (B6-B17), `accept-site.ts` (B1-B5), `accept-repo.ts` (B18); `SITE=` selects the site, `LOCAL_FLY=1` the Vite dev server.
+- Open: B3 re-run after the "Open scene" fix (release 80e5f46); B22 (vault + HEAD == origin), B23 (site and repo open in Andrii's Chrome).
+
+## Phases C and D
+
+- C: `accept-c.ts` (bake 723068d7 in the tab, compare with the splat-transform 3.6.4 CLI, refusal on bd04e182); A5/A8 on the baked files with `A5_SCENES=723068d7-baked A5_EVIDENCE=c-a5-baked` / `A8_SCENES=… A8_EVIDENCE=c-a8-baked`. Locally: bin identical to the CLI, 50 000 passes 0 penetrations.
+- D: `accept-d.ts [cinema governor diff trajectory]`. Betaflight import: `packages/sim-core/src/bfdiff.ts` (30 tests, built and cross-checked by a workflow against the firmware source).
+
