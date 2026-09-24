@@ -180,8 +180,8 @@
       "input": "00000000",
       "status": "error",
       "errorCode": "not-found",
-      "text": "Такой сцены нет на SuperSplat, или она не публичная.",
-      "expected": "Такой сцены нет на SuperSplat, или она не публичная.",
+      "text": "\u0422\u0430\u043a\u043e\u0439 \u0441\u0446\u0435\u043d\u044b \u043d\u0435\u0442 \u043d\u0430 SuperSplat, \u0438\u043b\u0438 \u043e\u043d\u0430 \u043d\u0435 \u043f\u0443\u0431\u043b\u0438\u0447\u043d\u0430\u044f.",
+      "expected": "\u0422\u0430\u043a\u043e\u0439 \u0441\u0446\u0435\u043d\u044b \u043d\u0435\u0442 \u043d\u0430 SuperSplat, \u0438\u043b\u0438 \u043e\u043d\u0430 \u043d\u0435 \u043f\u0443\u0431\u043b\u0438\u0447\u043d\u0430\u044f.",
       "ok": true,
       "pageerrors": []
     },
@@ -189,14 +189,14 @@
       "input": "https://example.com/scene/39e63ce9",
       "status": "picker",
       "errorCode": "invalid-link",
-      "text": "Это не ссылка SuperSplat и не ID сцены. Вставь ссылку вида superspl.at/scene/39e63ce9.",
-      "expected": "Это не ссылка SuperSplat и не ID сцены. Вставь ссылку вида superspl.at/scene/39e63ce9.",
+      "text": "\u042d\u0442\u043e \u043d\u0435 \u0441\u0441\u044b\u043b\u043a\u0430 SuperSplat \u0438 \u043d\u0435 ID \u0441\u0446\u0435\u043d\u044b. \u0412\u0441\u0442\u0430\u0432\u044c \u0441\u0441\u044b\u043b\u043a\u0443 \u0432\u0438\u0434\u0430 superspl.at/scene/39e63ce9.",
+      "expected": "\u042d\u0442\u043e \u043d\u0435 \u0441\u0441\u044b\u043b\u043a\u0430 SuperSplat \u0438 \u043d\u0435 ID \u0441\u0446\u0435\u043d\u044b. \u0412\u0441\u0442\u0430\u0432\u044c \u0441\u0441\u044b\u043b\u043a\u0443 \u0432\u0438\u0434\u0430 superspl.at/scene/39e63ce9.",
       "ok": true,
       "pageerrors": []
     }
   ],
   "control": {
-    "blankPageStd": 1.0536712127723509e-8,
+    "blankPageStd": 1.0536712127723509e-08,
     "fired": true
   }
 }

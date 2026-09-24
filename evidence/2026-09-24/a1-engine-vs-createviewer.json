@@ -103,7 +103,7 @@
       "noPrivateApi": {
         "pass": false,
         "uses": [
-          "app.root.findByName('camera') — internal entity, not part of the viewer API"
+          "app.root.findByName('camera') \u2014 internal entity, not part of the viewer API"
         ]
       }
     },

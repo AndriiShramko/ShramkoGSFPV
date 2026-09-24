@@ -10,7 +10,7 @@
   },
   "site": "https://gsfpv.flyreelstudio.eu",
   "pass": true,
-  "method": "disarmed drop from the spawn until contact or 0.5 s, a = 2(Δy + v0 t)/t²",
+  "method": "disarmed drop from the spawn until contact or 0.5 s, a = 2(\u0394y + v0 t)/t\u00b2",
   "rows": [
     {
       "g": 9.81,
@@ -24,7 +24,7 @@
       "measured": 1.6165910585382255,
       "fallM": 0.20369306730029457,
       "relErr": -0.0021042848529473357,
-      "warning": "With the same motors under 1.62 m/s² the craft has about 6.1× the thrust-to-weight it has on Earth: it will be very twitchy. \"Keep thrust / weight\" makes it feel normal. The air is Earth air everywhere — gravity is a game setting here."
+      "warning": "With the same motors under 1.62 m/s\u00b2 the craft has about 6.1\u00d7 the thrust-to-weight it has on Earth: it will be very twitchy. \"Keep thrust / weight\" makes it feel normal. The air is Earth air everywhere \u2014 gravity is a game setting here."
     }
   ],
   "control": {

@@ -1,13 +1,14 @@
 {
   "name": "d-cinema",
   "context": {
-    "date": "2026-09-24T17:59:13.610Z",
-    "gitHead": "e1d0622",
+    "date": "2026-09-24T18:13:14.541Z",
+    "gitHead": "28f5e39",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
+  "site": "https://gsfpv.flyreelstudio.eu",
   "pass": true,
   "state": {
     "on": true,
@@ -21,8 +22,8 @@
     "width": 1280,
     "height": 800,
     "frames": 179,
-    "bytes": 3477113,
-    "seconds": 6.002199999928474
+    "bytes": 3507329,
+    "seconds": 5.9919000000953675
   },
   "mp4": {
     "boxes": [
@@ -34,15 +35,15 @@
     "width": 1280,
     "height": 800,
     "codec": "avc1",
-    "bytes": 3477113,
-    "file": "kept outside git (3.5 MB binary): evidence/2026-09-24/d/cinema-887f27aa.mp4",
-    "sha256": "a013eb59850beb9c584822243a0c3530a4cfa9c31c73dca9124ba4d97e204c3c"
+    "bytes": 3507329,
+    "file": "kept outside git (binary): evidence/2026-09-24/d/cinema-887f27aa.mp4",
+    "sha256": "f896ab8deb0a51d5d9b156727118ea8a09e37445c600edf00b8a0940a9d60c3c"
   },
-  "creditStripLuminanceStd": 0.24760787686419128,
+  "creditStripLuminanceStd": 0.25212750516892146,
   "control": {
     "canRecord": false,
     "refused": true,
     "recButtonVisible": false,
-    "note": "Cinema mode: full detail. Recording is available for the showcase scans only — their authors agreed to it."
+    "note": "Cinema mode: full detail. Recording is available for the showcase scans only \u2014 their authors agreed to it."
   }
 }

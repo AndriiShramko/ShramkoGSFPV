@@ -32,16 +32,16 @@
       "l": "pl",
       "status": "ready",
       "hasCollision": false,
-      "badge": "Skan bez ścian: możesz latać, ale się nie rozbijesz",
-      "expected": "Skan bez ścian: możesz latać, ale się nie rozbijesz"
+      "badge": "Skan bez \u015bcian: mo\u017cesz lata\u0107, ale si\u0119 nie rozbijesz",
+      "expected": "Skan bez \u015bcian: mo\u017cesz lata\u0107, ale si\u0119 nie rozbijesz"
     },
     {
       "id": "723068d7",
       "l": "ru",
       "status": "ready",
       "hasCollision": false,
-      "badge": "Скан без стен: летать можно, а разбиться — нет",
-      "expected": "Скан без стен: летать можно, а разбиться — нет"
+      "badge": "\u0421\u043a\u0430\u043d \u0431\u0435\u0437 \u0441\u0442\u0435\u043d: \u043b\u0435\u0442\u0430\u0442\u044c \u043c\u043e\u0436\u043d\u043e, \u0430 \u0440\u0430\u0437\u0431\u0438\u0442\u044c\u0441\u044f \u2014 \u043d\u0435\u0442",
+      "expected": "\u0421\u043a\u0430\u043d \u0431\u0435\u0437 \u0441\u0442\u0435\u043d: \u043b\u0435\u0442\u0430\u0442\u044c \u043c\u043e\u0436\u043d\u043e, \u0430 \u0440\u0430\u0437\u0431\u0438\u0442\u044c\u0441\u044f \u2014 \u043d\u0435\u0442"
     },
     {
       "id": "bd04e182",
@@ -64,16 +64,16 @@
       "l": "pl",
       "status": "ready",
       "hasCollision": false,
-      "badge": "Skan bez ścian: możesz latać, ale się nie rozbijesz",
-      "expected": "Skan bez ścian: możesz latać, ale się nie rozbijesz"
+      "badge": "Skan bez \u015bcian: mo\u017cesz lata\u0107, ale si\u0119 nie rozbijesz",
+      "expected": "Skan bez \u015bcian: mo\u017cesz lata\u0107, ale si\u0119 nie rozbijesz"
     },
     {
       "id": "bd04e182",
       "l": "ru",
       "status": "ready",
       "hasCollision": false,
-      "badge": "Скан без стен: летать можно, а разбиться — нет",
-      "expected": "Скан без стен: летать можно, а разбиться — нет"
+      "badge": "\u0421\u043a\u0430\u043d \u0431\u0435\u0437 \u0441\u0442\u0435\u043d: \u043b\u0435\u0442\u0430\u0442\u044c \u043c\u043e\u0436\u043d\u043e, \u0430 \u0440\u0430\u0437\u0431\u0438\u0442\u044c\u0441\u044f \u2014 \u043d\u0435\u0442",
+      "expected": "\u0421\u043a\u0430\u043d \u0431\u0435\u0437 \u0441\u0442\u0435\u043d: \u043b\u0435\u0442\u0430\u0442\u044c \u043c\u043e\u0436\u043d\u043e, \u0430 \u0440\u0430\u0437\u0431\u0438\u0442\u044c\u0441\u044f \u2014 \u043d\u0435\u0442"
     }
   ],
   "control": {

@@ -1,0 +1,65 @@
+{
+  "name": "c-bake",
+  "context": {
+    "date": "2026-09-24T18:12:22.996Z",
+    "gitHead": "28f5e39",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "scene": "723068d7",
+  "bake": {
+    "ok": true,
+    "gaussians": 2144439,
+    "solidVoxels": 261895692,
+    "ms": {
+      "read": 7053.100000023842,
+      "voxelize": 18128.099999904633,
+      "total": 25181.199999928474
+    },
+    "peakJsHeapMb": 879.5839052200317,
+    "binBytes": 92417012,
+    "collisionSha256": "0d1714ad4c48461dfd9bab63b9cefe252d3edf7ca57ebf08f650a02c01b4a213",
+    "wallClockS": 28.403,
+    "peakJsHeapMbCdp": 56,
+    "note": "peakJsHeapMb = performance.memory.usedJSHeapSize sampled in the page every 200 ms (the main number); peakJsHeapMbCdp = CDP polling from outside, which does not get through while the page is busy, so it undercounts; GPU buffers of the voxeliser are in neither"
+  },
+  "before": {
+    "hasCollision": false,
+    "badge": true
+  },
+  "after": {
+    "hasCollision": true,
+    "badge": false,
+    "status": "Walls built in this browser: 261.9 million voxels in 25 s. Crashes are on.",
+    "spawnFree": true
+  },
+  "vsCli": {
+    "tool": "splat-transform 3.6.4 CLI, same meta.json, defaults (0.05 m, opacity 0.1)",
+    "cliSolidVoxels": 261895692,
+    "browserSolidVoxels": 261895692,
+    "relDiff": 0,
+    "binIdentical": true,
+    "cliPeak": "CPU 1.00 GB, GPU 154.9 MB, 18.9 s (its own log)"
+  },
+  "tunnellingInTab": {
+    "passes": 20,
+    "speed": 25,
+    "contacts": 20,
+    "penetrations": 0
+  },
+  "refusal": {
+    "scene": "bd04e182",
+    "result": {
+      "ok": false,
+      "refused": true,
+      "gaussians": 8685054,
+      "limit": 4000000
+    },
+    "text": "\u0412 \u044d\u0442\u043e\u043c \u0441\u043a\u0430\u043d\u0435 8.7 \u043c\u043b\u043d \u0433\u0430\u0443\u0441\u0441\u0438\u0430\u043d; \u0431\u0440\u0430\u0443\u0437\u0435\u0440 \u0441\u0442\u0440\u043e\u0438\u0442 \u0441\u0442\u0435\u043d\u044b \u043c\u0430\u043a\u0441\u0438\u043c\u0443\u043c \u0434\u043b\u044f 4 \u043c\u043b\u043d. \u041b\u0435\u0442\u0430\u0435\u0448\u044c \u0431\u0435\u0437 \u0441\u0442\u0435\u043d."
+  },
+  "savedFor": "A5_SCENES=723068d7-baked (Node, \u226510 000 passes per speed) and A8_SCENES=723068d7-baked"
+}
