@@ -67,6 +67,7 @@ export interface ParamOverrides {
     vCrash?: number;
     vBounce?: number;
     pid?: { roll?: number[]; pitch?: number[]; yaw?: number[] };
+    throttle?: ThrottleCurve; // thr_mid / thr_expo, e.g. imported from a Betaflight diff
     uptiltDeg?: number;
     fovDeg?: number;
 }
@@ -188,7 +189,7 @@ export function compileParams(p: PresetJson, o: ParamOverrides = {}): SimParams 
             pitch: o.pid?.pitch ?? (p.fields.pid_pitch.value as number[]),
             yaw: o.pid?.yaw ?? (p.fields.pid_yaw.value as number[])
         },
-        throttle: { mid: thr.mid, expo: thr.expo },
+        throttle: o.throttle ? { mid: o.throttle.mid, expo: o.throttle.expo } : { mid: thr.mid, expo: thr.expo },
         gravity,
         gravityMode,
         rho: 1.225,
