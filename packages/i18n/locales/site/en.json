@@ -1,0 +1,316 @@
+{
+  "meta": {
+    "title": "ShramkoGSFPV — FPV drone simulator for real 3D scans, in your browser",
+    "description": "Free, open-source FPV simulator that flies real Gaussian Splatting scans from SuperSplat: Betaflight-style rates and PID, walls you crash into, your radio over USB or touch sticks. No install."
+  },
+  "nav": {
+    "skip": "Skip to content",
+    "home": "ShramkoGSFPV — home",
+    "sections": "Sections",
+    "language": "Language",
+    "fly": "Fly now",
+    "anchors": {
+      "how": "How it works",
+      "real": "Physics",
+      "numbers": "Numbers",
+      "scenes": "Scans",
+      "radios": "Radios",
+      "faq": "FAQ",
+      "contact": "Contact"
+    }
+  },
+  "hero": {
+    "eyebrow": "Open-source FPV simulator · MIT",
+    "h1": "Fly an FPV drone through real 3D scans — right in your browser",
+    "sub": "ShramkoGSFPV turns SuperSplat Gaussian Splatting scans into places you can fly: Betaflight-style rates and PID, walls you actually crash into, and your own radio over USB or touch sticks. Nothing to install.",
+    "cta": "Fly now — no install",
+    "ctaNote": "Works best in desktop Chrome or Edge with WebGPU.",
+    "paste": {
+      "label": "Or paste a SuperSplat link",
+      "placeholder": "https://superspl.at/scene/…",
+      "button": "Open scene",
+      "hint": "A scene link, a superspl.at/s?id= link or just the scene id."
+    },
+    "facts": ["WebGPU + PlayCanvas", "Rates checked against Betaflight 4.5.1", "Swept voxel collision", "MIT license"]
+  },
+  "how": {
+    "eyebrow": "How it works",
+    "h2": "Three steps from a scan to the air",
+    "lead": "No account, no download. The scene streams straight from SuperSplat into your browser.",
+    "steps": [
+      { "t": "Pick a scan", "d": "Start with one of Andrii's scans or paste the link to any public SuperSplat scene." },
+      { "t": "Connect your controls", "d": "Plug in an EdgeTX radio in USB joystick mode (WebHID), use a gamepad, or fly with touch sticks." },
+      { "t": "Calibrate, arm, fly", "d": "Move the sticks once to calibrate, arm with the throttle all the way down — like a real quad — and go." }
+    ]
+  },
+  "real": {
+    "eyebrow": "Why it feels real",
+    "h2": "A quad that behaves like the one in your hands",
+    "lead": "An own flight model — four motors, a mixer and a rate PID — flying inside the real geometry of the scan.",
+    "items": [
+      { "t": "Walls are solid", "d": "Every physics tick sweeps the drone's body against the scan's voxel collision data, so a fast quad can't slip through a thin wall between frames." },
+      { "t": "Crashes are crashes", "d": "Hit something hard and the quad tumbles and throws debris. Brush a wall gently and it slides along it." },
+      { "t": "Your rates, to the digit", "d": "Betaflight, Actual, KISS and Raceflight rate curves match compiled Betaflight 4.5.1 to the last digit." },
+      { "t": "Replays you can trust", "d": "Flights are recorded as stick input and replay deterministically: the same inputs always give the same flight." },
+      { "t": "Gravity is a setting", "d": "Earth, Moon, Mars or zero-g. On the Moon the same drone gets extremely twitchy — the “keep thrust-to-weight” switch tames it." }
+    ],
+    "craft": {
+      "eyebrow": "Default craft",
+      "title": "BetaFPV Pavo20 Pro class, 3S",
+      "sub": "Every number says where it comes from.",
+      "rows": [
+        { "k": "Wheelbase", "v": "93.7 mm", "src": "manufacturer" },
+        { "k": "Motors", "v": "LAVA 1104 7200KV", "src": "manufacturer" },
+        { "k": "Weight", "v": "70.1 g · 108 g with O3", "src": "measured" },
+        { "k": "Thrust-to-weight", "v": ">5:1", "src": "claim" },
+        { "k": "Battery weight", "v": "≈ 45 g", "src": "estimate" },
+        { "k": "Duct size", "v": "≈ 30 mm radius", "src": "estimate" }
+      ],
+      "src": {
+        "manufacturer": "manufacturer",
+        "measured": "measured by Oscar Liang",
+        "claim": "manufacturer claim",
+        "estimate": "estimate"
+      },
+      "note": "“Class” means the numbers follow public specs and measurements. BetaFPV does not endorse this preset."
+    }
+  },
+  "numbers": {
+    "eyebrow": "Live numbers",
+    "h2": "We publish our own numbers because nobody else publishes theirs.",
+    "lead": "Each figure is read from the repository's evidence file when this site is built. If a measurement goes missing, the build fails.",
+    "labels": {
+      "ratesVectors": "Rate curves vs Betaflight 4.5.1",
+      "tunnelling": "Flying through walls",
+      "clearance": "Wall clearance, Pavo20 Pro",
+      "latency": "Stick-to-screen latency"
+    },
+    "method": "Method",
+    "date": "Date",
+    "units": { "ms": "ms", "hz": "Hz" },
+    "latency": {
+      "displayLimited": "Display-limited",
+      "explain": "The test display runs at {hz} Hz, so this result is bounded by the screen rather than by the simulator. It is published, but it is not gated.",
+      "explainNoHz": "The test display was too slow to bound this result, so it is published, but it is not gated.",
+      "camera": "Stick-to-photon latency with a camera has not been measured yet.",
+      "outputHz": "Output rate",
+      "median": "Median",
+      "p95": "95th percentile",
+      "floor": "Blank-page floor",
+      "conditions": "Conditions"
+    },
+    "quoteNote": "Values and methods are quoted from the evidence file as published, in English.",
+    "updated": "Evidence file updated {date}.",
+    "evidenceLink": "All raw evidence on GitHub"
+  },
+  "scenes": {
+    "eyebrow": "Andrii's scans",
+    "h2": "Start with a real place",
+    "lead": "Three scans by Andrii Shramko, free to fly and share under CC BY 4.0.",
+    "items": {
+      "39e63ce9": "Modlinek Villa — red room and bathroom",
+      "7a475d38": "Winter Garden — Jastrzębia Góra, Poland",
+      "887f27aa": "Tunis — old town streets"
+    },
+    "kind": { "interior": "Interior", "exterior": "Exterior" },
+    "alt": "Preview of the scan “{title}”",
+    "author": "By {name}",
+    "fly": "Fly this",
+    "original": "Original on SuperSplat"
+  },
+  "radios": {
+    "eyebrow": "Works with your radio",
+    "h2": "What works with your radio today",
+    "lead": "An honest matrix: nothing is marked as tested unless it was, and so far that means emulation or a simulated radio.",
+    "cols": { "browser": "Browser", "input": "Input", "status": "Status" },
+    "rows": [
+      { "browser": "Chrome / Edge, desktop", "input": "EdgeTX radio (RadioMaster TX16S, Boxer, Pocket, Zorro) as a USB joystick over WebHID", "status": "Not tested on real hardware yet — tested with a simulated EdgeTX radio", "level": "sim" },
+      { "browser": "Chrome / Edge, desktop", "input": "Gamepad", "status": "Not tested on real hardware yet", "level": "none" },
+      { "browser": "Chrome / Edge, desktop", "input": "DJI remote as a gamepad", "status": "Not tested", "level": "none" },
+      { "browser": "Safari, iPad, Android", "input": "Touch sticks", "status": "Tested in emulation", "level": "emu" },
+      { "browser": "Firefox", "input": "Radio or gamepad", "status": "Scene viewing only — radios need Chrome or Edge (no WebHID)", "level": "view" }
+    ],
+    "note": "Have an EdgeTX radio? A short test report helps a lot — use the contact form below or open an issue on GitHub."
+  },
+  "compare": {
+    "eyebrow": "Why this is better",
+    "h2": "How it compares",
+    "lead": "Facts as of September 2026. “Unknown” means we could not verify it.",
+    "caption": "Comparison of ShramkoGSFPV with the SuperSplat viewer, browser splat-FPV demos and classic FPV simulators, September 2026",
+    "feature": "Feature",
+    "swipe": "Swipe to compare",
+    "unknown": "unknown",
+    "cols": ["ShramkoGSFPV", "Walking in the SuperSplat viewer", "Browser splat-FPV demos (e.g. SplatFPV)", "Classic FPV simulators (fixed maps)"],
+    "rows": [
+      { "k": "Real scanned places", "cells": ["Any public SuperSplat scene", "Yes", "Yes, one file at a time", "No, fixed maps"] },
+      { "k": "Drone model", "cells": ["4 motors, mixer, rate PID", "None: a walking or flying camera", "First-order rate filter", "Full"] },
+      { "k": "Your own rates", "cells": ["Betaflight, Actual, KISS, Raceflight", "Not applicable", "Flat max rate plus expo", "Yes"] },
+      { "k": "Hitting a wall", "cells": ["Crash and tumble", "Slide along it", "Stop or slide", "Crash"] },
+      { "k": "Collision source", "cells": ["SuperSplat's voxel octree, swept test", "SuperSplat's voxel octree", "Rebuilt at load, point test", "Hand-made meshes"] },
+      { "k": "Radio input", "cells": ["EdgeTX over WebHID, gamepad, touch", "Gamepad", "Gamepad API", "USB joystick"] },
+      { "k": "Published test numbers", "cells": ["Yes, see Live numbers", "unknown", "unknown", "unknown"] },
+      { "k": "Install", "cells": ["None", "None", "None", "Yes"] },
+      { "k": "Source code", "cells": ["MIT", "MIT", "Varies", "Closed"] }
+    ],
+    "note": "Classic simulators are still the place to train for races on purpose-built tracks. This project is about flying real places."
+  },
+  "agents": {
+    "eyebrow": "For your AI agent",
+    "h2": "Let your coding agent set it up",
+    "lead": "Paste this into Claude Code, Codex, Cursor or any coding agent. It installs the project, runs the checks and opens the simulator locally, and only asks you for passwords or physical actions.",
+    "caption": "Prompt",
+    "copy": "Copy",
+    "copied": "Copied",
+    "docsTitle": "Docs written for agents",
+    "agentsMd": "rules for coding agents working in the repo",
+    "setupMd": "step-by-step install, update and removal",
+    "llms": "a short summary of the project for language models"
+  },
+  "risks": {
+    "eyebrow": "Risks & safety",
+    "h2": "What can go wrong",
+    "lead": "Short and honest, so nothing catches you by surprise.",
+    "items": [
+      { "t": "Scene data can change without notice", "d": "Scenes load from SuperSplat's public but undocumented CDN. It can change at any time, and some scenes may stop loading." },
+      { "t": "Many scans have no collision data yet", "d": "Those scenes can be flown through, not crashed into. In-browser collision baking is coming." },
+      { "t": "Motion sickness", "d": "Crashes and fast flight can make you queasy, so take breaks. Effects never flash the whole screen, and your reduced-motion setting is respected." },
+      { "t": "A simulator is not a real flight", "d": "Practise responsibly, follow your local drone law and never fly over people." },
+      { "t": "Your data stays with you", "d": "Calibration, flight history and favourites are stored only in your browser." }
+    ],
+    "security": "Security policy (SECURITY.md)",
+    "warnings": "Full list of warnings (docs/warnings.md)"
+  },
+  "faq": {
+    "eyebrow": "FAQ",
+    "h2": "Questions people ask",
+    "items": [
+      { "q": "How can I fly an FPV drone through a 3D Gaussian Splatting scan?", "a": "Open ShramkoGSFPV in desktop Chrome or Edge, pick one of Andrii's scans or paste a SuperSplat link, connect a radio, a gamepad or touch sticks, then calibrate, arm and fly. There is nothing to install." },
+      { "q": "Can I use my RadioMaster radio in the browser?", "a": "That is what it is built for: switch an EdgeTX radio such as the TX16S, Boxer, Pocket or Zorro to USB joystick mode and connect it over WebHID in Chrome or Edge. So far this has been tested only with a simulated EdgeTX radio, not with real hardware." },
+      { "q": "Is there a free FPV simulator that runs in the browser?", "a": "Yes. ShramkoGSFPV is free and open source under the MIT license. It runs on WebGPU in desktop Chrome or Edge, with no download." },
+      { "q": "Which SuperSplat scenes can I fly?", "a": "Any public SuperSplat scene, by link or id. Scenes that come with voxel collision data have solid walls; the rest can be flown through but not crashed into until in-browser collision baking lands." },
+      { "q": "Does it work on iPad or phone?", "a": "Touch sticks have been tested in emulation only, not on real devices yet, and you need a browser with WebGPU. Radios need desktop Chrome or Edge." },
+      { "q": "Is the flight physics like Betaflight?", "a": "The rate curves (Betaflight, Actual, KISS, Raceflight) match compiled Betaflight 4.5.1 to the last digit, and a rate PID drives four motors through a mixer. It is our own flight model, not Betaflight firmware." },
+      { "q": "Do I crash into walls or fly through them?", "a": "On scenes with collision data you crash: the drone's body is swept against the voxel data on every physics tick, and a test harness checks that fast flight cannot tunnel through walls. See Live numbers for the result." },
+      { "q": "Is it open source?", "a": "Yes, MIT. Code, measurements and design decisions are on GitHub. Betaflight's formulas were re-implemented; no GPL code was copied." }
+    ]
+  },
+  "opensource": {
+    "eyebrow": "Open source",
+    "h2": "MIT-licensed and built in the open",
+    "lead": "Code, measurements and every design decision live on GitHub. Pull requests, test reports from real radios and new scans are welcome.",
+    "repo": "View on GitHub",
+    "issues": "Good first issues",
+    "thanksTitle": "Built on the work of others",
+    "thanks": [
+      { "name": "PlayCanvas", "license": "MIT", "d": "The engine that renders the scans, and the SuperSplat viewer, whose collision code is vendored here.", "href": "https://github.com/playcanvas/engine" },
+      { "name": "Rapier", "license": "Apache-2.0", "d": "Deterministic physics for the crash: the tumbling craft and its debris.", "href": "https://rapier.rs/" },
+      { "name": "Betaflight", "license": "GPL-3.0", "d": "Rate and PID formulas were read from Betaflight 4.5.1 and re-implemented. No GPL code was copied.", "href": "https://github.com/betaflight/betaflight" },
+      { "name": "SplatFPV", "license": "MIT", "d": "An earlier browser experiment that showed FPV through splats is possible. No code was taken.", "href": "https://github.com/Rouf0x/splatfpv" }
+    ]
+  },
+  "contact": {
+    "eyebrow": "Contact",
+    "h2": "Let's build it together",
+    "role": "FPV pilot and 3D Gaussian Splatting specialist, author and maintainer of ShramkoGSFPV.",
+    "open": "Always open to interesting people — and ready to help teams build incredible projects.",
+    "partner": "I'm looking for FPV pilots, scanning studios, drone vendors, investors and developers — for partnership, licensing, integration or funding. Tell me who you are in one click.",
+    "calendar": "Book a call",
+    "formTitle": "Collaboration request",
+    "form": {
+      "role": {
+        "label": "I am a…",
+        "pilot": "Pilot",
+        "vendor": "Vendor",
+        "studio": "Studio",
+        "investor": "Investor",
+        "developer": "Developer",
+        "takedown": "Scene report"
+      },
+      "reportNotice": "You are reporting scene {id}. Tell us what is wrong with it — for example, it shows a private place or people without permission.",
+      "message": {
+        "label": "Anything to add?",
+        "optional": "(optional)",
+        "placeholder": "For example: we scan venues and want them flyable"
+      },
+      "email": { "label": "Your email", "placeholder": "you@example.com" },
+      "consent": {
+        "text": "I agree that Andrii Shramko contacts me about this request; see",
+        "link": "privacy"
+      },
+      "submit": "Send request",
+      "sending": "Sending…",
+      "ready": "Ready to send.",
+      "missing": {
+        "prefix": "To send, add",
+        "role": "who you are",
+        "email": "a valid email",
+        "consent": "your consent"
+      },
+      "done": {
+        "title": "Thank you — your request is in.",
+        "text": "Andrii will get back to you by email."
+      },
+      "error": "Sending didn't work this time. Your answers are still here — please try again in a moment, or write to zmei116@gmail.com."
+    }
+  },
+  "sticky": {
+    "cta": "Fly now",
+    "note": "Free, in your browser"
+  },
+  "consent": {
+    "title": "Analytics cookies",
+    "text": "May we use Google Analytics to see which parts of this site help? Nothing from Google loads unless you accept.",
+    "more": "Privacy",
+    "accept": "Accept",
+    "decline": "Decline"
+  },
+  "footer": {
+    "tagline": "Open-source browser FPV simulator for Gaussian Splatting scans.",
+    "linksLabel": "Site links",
+    "home": "Home",
+    "privacy": "Privacy",
+    "licenses": "Licenses",
+    "license": "MIT license",
+    "disclaimer": "Not affiliated with or endorsed by PlayCanvas, BetaFPV, the Betaflight project, LuGus Studios (Liftoff), DJI or RadioMaster. Trademarks belong to their owners."
+  },
+  "privacy": {
+    "title": "Privacy — ShramkoGSFPV",
+    "description": "What ShramkoGSFPV collects, why, for how long, and your rights under the GDPR.",
+    "eyebrow": "Privacy",
+    "h1": "Privacy notice",
+    "updated": "Last updated: 24 September 2026",
+    "review": "Legal review not yet done.",
+    "sections": [
+      { "h": "Who is responsible", "p": ["The controller of your data is Andrii Shramko. You can reach him at zmei116@gmail.com or through the contact form on this site."] },
+      { "h": "Cookieless visit counter", "p": ["The site sends a few whitelisted events to its own server at /api/e: switching language, clicks on the main buttons and contact links, and opening a scene. No cookies are set, no device identifier is created and your IP address is not stored.", "Purpose: understanding which parts of the site are useful (legitimate interest, Art. 6(1)(f) GDPR). Events are kept for 12 months."] },
+      { "h": "Google Analytics — only with your consent", "p": ["If analytics is switched on for this site, a banner asks first. Google's script is not loaded until you press Accept. Consent mode starts with every storage type denied, and Accept grants analytics storage only.", "Legal basis: your consent (Art. 6(1)(a) GDPR). You can withdraw it at any time."] },
+      { "h": "Stored only in your browser", "p": ["Radio calibration, flight history and favourites stay in your browser's storage. They are strictly necessary for the simulator to work, never leave your device and need no consent."] },
+      { "h": "Collaboration form", "p": ["If you send the form, your email, the role you chose and your message are stored on the server and forwarded to the owner's Telegram notification bot.", "They are kept until your request is handled or until you ask for them to be deleted. Legal basis: your consent (Art. 6(1)(a) GDPR)."] },
+      { "h": "Scene images and scene data", "p": ["Scene preview images on this page, and the scenes themselves in the simulator, are loaded by your browser directly from PlayCanvas servers (SuperSplat). As with any website, those servers see your IP address."] },
+      { "h": "Your rights", "p": ["You can ask for access to your data, its correction or erasure, restriction of processing, data portability, and you can object to processing or withdraw consent — through the contact form or by email.", "You also have the right to lodge a complaint with the Polish supervisory authority, the President of the Personal Data Protection Office (UODO)."] }
+    ],
+    "resetConsent": "Change my analytics choice",
+    "resetDone": "Choice cleared",
+    "contactTitle": "Contact the controller",
+    "formLink": "Contact form",
+    "uodoLink": "UODO — Polish data protection authority"
+  },
+  "licenses": {
+    "title": "Licenses — ShramkoGSFPV",
+    "description": "ShramkoGSFPV is MIT-licensed. Third-party software, formulas and scene content it builds on, with their licenses.",
+    "eyebrow": "Licenses",
+    "h1": "Licenses and credits",
+    "lead": "ShramkoGSFPV is released under the MIT License, © 2026 Andrii Shramko. It builds on these projects:",
+    "items": [
+      { "name": "ShramkoGSFPV", "license": "MIT", "d": "The simulator, this site and the measurement tools. Keep the copyright notice and credit Andrii Shramko when you reuse it.", "href": "https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/LICENSE" },
+      { "name": "PlayCanvas Engine", "license": "MIT", "d": "Rendering on WebGPU, including the GPU sorting of Gaussian splats.", "href": "https://github.com/playcanvas/engine" },
+      { "name": "SuperSplat viewer", "license": "MIT, vendored", "d": "The voxel collision code is vendored unchanged from release v1.35.0, with its original license header.", "href": "https://github.com/playcanvas/supersplat-viewer" },
+      { "name": "Rapier", "license": "Apache-2.0", "d": "Deterministic physics for the crash aftermath: the craft and its debris.", "href": "https://github.com/dimforge/rapier" },
+      { "name": "fdlibm / musl", "license": "Notice / MIT", "d": "Math routines ported so that a flight gives bit-identical results in every browser. fdlibm © 1993 Sun Microsystems (notice preserved); musl © Rich Felker et al.", "href": "https://musl.libc.org/" },
+      { "name": "Betaflight", "license": "GPL-3.0 — formulas only", "d": "Rate curve formulas and PID scaling constants were read from Betaflight 4.5.1 and re-implemented. No Betaflight code is included.", "href": "https://github.com/betaflight/betaflight" }
+    ],
+    "scenesTitle": "Scene content",
+    "scenes": "Scenes belong to their authors and are loaded from their publishers at runtime; they are not part of this project. Andrii Shramko's showcase scans are licensed CC BY 4.0. Other scenes keep the license their authors chose on SuperSplat.",
+    "trademarksTitle": "Trademarks"
+  }
+}

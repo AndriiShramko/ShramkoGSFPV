@@ -1,0 +1,14 @@
+{
+  "localeNames": {
+    "en": "English",
+    "es": "Español",
+    "pl": "Polski",
+    "ru": "Русский"
+  },
+  "notFound": {
+    "en": "This page does not exist. Go to the start page",
+    "es": "Esta página no existe. Ir a la portada",
+    "pl": "Ta strona nie istnieje. Przejdź na stronę główną",
+    "ru": "Такой страницы нет. На главную"
+  }
+}

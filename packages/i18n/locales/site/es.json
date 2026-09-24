@@ -1,0 +1,316 @@
+{
+  "meta": {
+    "title": "ShramkoGSFPV — simulador FPV sobre escaneos 3D reales, en el navegador",
+    "description": "Simulador FPV gratuito y de código abierto para volar escaneos Gaussian Splatting reales de SuperSplat: rates y PID al estilo Betaflight, paredes contra las que te estrellas de verdad, tu emisora por USB o sticks táctiles. Sin instalar nada."
+  },
+  "nav": {
+    "skip": "Ir al contenido",
+    "home": "ShramkoGSFPV — inicio",
+    "sections": "Secciones",
+    "language": "Idioma",
+    "fly": "Volar ya",
+    "anchors": {
+      "how": "Cómo funciona",
+      "real": "Física",
+      "numbers": "Cifras",
+      "scenes": "Escaneos",
+      "radios": "Emisoras",
+      "faq": "Preguntas",
+      "contact": "Contacto"
+    }
+  },
+  "hero": {
+    "eyebrow": "Simulador FPV de código abierto · licencia MIT",
+    "h1": "Vuela un dron FPV por escaneos 3D reales, directamente en tu navegador",
+    "sub": "ShramkoGSFPV convierte los escaneos Gaussian Splatting de SuperSplat en lugares por los que puedes volar: rates y PID al estilo Betaflight, paredes contra las que te estrellas de verdad y tu propia emisora por USB o sticks táctiles. Sin instalar nada.",
+    "cta": "Volar ya, sin instalar",
+    "ctaNote": "Funciona mejor en Chrome o Edge de escritorio con WebGPU.",
+    "paste": {
+      "label": "O pega un enlace de SuperSplat",
+      "placeholder": "https://superspl.at/scene/…",
+      "button": "Abrir escena",
+      "hint": "Un enlace a la escena, un enlace superspl.at/s?id= o solo el id de la escena."
+    },
+    "facts": ["WebGPU y PlayCanvas", "Rates contrastados con Betaflight 4.5.1", "Colisión por barrido de vóxeles", "Licencia MIT"]
+  },
+  "how": {
+    "eyebrow": "Cómo funciona",
+    "h2": "Tres pasos del escaneo al aire",
+    "lead": "Sin cuenta y sin descargas. La escena llega en streaming directamente de SuperSplat a tu navegador.",
+    "steps": [
+      { "t": "Elige un escaneo", "d": "Empieza con uno de los escaneos de Andrii o pega el enlace de cualquier escena pública de SuperSplat." },
+      { "t": "Conecta tus mandos", "d": "Enchufa una emisora EdgeTX en modo joystick USB (WebHID), usa un mando de consola o vuela con sticks táctiles." },
+      { "t": "Calibra, arma y vuela", "d": "Mueve los sticks una vez para calibrar, arma con el acelerador abajo del todo, como en un dron de verdad, y a volar." }
+    ]
+  },
+  "real": {
+    "eyebrow": "Por qué se siente real",
+    "h2": "Un dron que se comporta como el que tienes en las manos",
+    "lead": "Un modelo de vuelo propio, con cuatro motores, un mezclador y un PID de rates, que vuela dentro de la geometría real del escaneo.",
+    "items": [
+      { "t": "Las paredes son sólidas", "d": "En cada paso de la física se hace un barrido del cuerpo del dron contra los datos de colisión en vóxeles del escaneo, así que un dron rápido no puede colarse por una pared fina entre dos fotogramas." },
+      { "t": "Un choque es un choque", "d": "Si golpeas algo con fuerza, el dron da vueltas y suelta piezas. Si rozas una pared con suavidad, se desliza a lo largo de ella." },
+      { "t": "Tus rates, al dígito", "d": "Las curvas de rates Betaflight, Actual, KISS y Raceflight coinciden hasta el último dígito con Betaflight 4.5.1 compilado." },
+      { "t": "Repeticiones fiables", "d": "Los vuelos se graban como entradas de los sticks y se reproducen de forma determinista: las mismas entradas dan siempre el mismo vuelo." },
+      { "t": "La gravedad es un ajuste", "d": "Tierra, Luna, Marte o gravedad cero. En la Luna el mismo dron se vuelve nerviosísimo; el interruptor «mantener la relación empuje-peso» lo doma." }
+    ],
+    "craft": {
+      "eyebrow": "Dron por defecto",
+      "title": "Clase BetaFPV Pavo20 Pro, 3S",
+      "sub": "Cada cifra indica de dónde sale.",
+      "rows": [
+        { "k": "Distancia entre ejes", "v": "93,7 mm", "src": "manufacturer" },
+        { "k": "Motores", "v": "LAVA 1104 7200KV", "src": "manufacturer" },
+        { "k": "Peso", "v": "70,1 g · 108 g con O3", "src": "measured" },
+        { "k": "Relación empuje-peso", "v": ">5:1", "src": "claim" },
+        { "k": "Peso de la batería", "v": "≈ 45 g", "src": "estimate" },
+        { "k": "Tamaño de los ductos", "v": "≈ 30 mm de radio", "src": "estimate" }
+      ],
+      "src": {
+        "manufacturer": "fabricante",
+        "measured": "medido por Oscar Liang",
+        "claim": "dato del fabricante",
+        "estimate": "estimación"
+      },
+      "note": "«Clase» significa que las cifras siguen especificaciones y mediciones públicas. BetaFPV no respalda este preset."
+    }
+  },
+  "numbers": {
+    "eyebrow": "Cifras en vivo",
+    "h2": "Publicamos nuestras propias cifras porque nadie más publica las suyas.",
+    "lead": "Cada cifra se lee del archivo de evidencias del repositorio al compilar esta web. Si falta una medición, la compilación falla.",
+    "labels": {
+      "ratesVectors": "Curvas de rates frente a Betaflight 4.5.1",
+      "tunnelling": "Atravesar paredes",
+      "clearance": "Distancia a la pared, Pavo20 Pro",
+      "latency": "Latencia stick-pantalla"
+    },
+    "method": "Método",
+    "date": "Fecha",
+    "units": { "ms": "ms", "hz": "Hz" },
+    "latency": {
+      "displayLimited": "Limitada por la pantalla",
+      "explain": "La pantalla de prueba funciona a {hz} Hz, así que este resultado lo limita la pantalla y no el simulador. Lo publicamos, pero no es un criterio de aprobación.",
+      "explainNoHz": "La pantalla de prueba era demasiado lenta para acotar este resultado. Lo publicamos, pero no es un criterio de aprobación.",
+      "camera": "La latencia del stick al fotón con una cámara aún no se ha medido.",
+      "outputHz": "Frecuencia de salida",
+      "median": "Mediana",
+      "p95": "Percentil 95",
+      "floor": "Suelo con página en blanco",
+      "conditions": "Condiciones"
+    },
+    "quoteNote": "Los valores y métodos se citan tal como aparecen en el archivo de evidencias, en inglés.",
+    "updated": "Archivo de evidencias actualizado el {date}.",
+    "evidenceLink": "Todas las evidencias en GitHub"
+  },
+  "scenes": {
+    "eyebrow": "Escaneos de Andrii",
+    "h2": "Empieza por un lugar real",
+    "lead": "Tres escaneos de Andrii Shramko que puedes volar y compartir libremente bajo CC BY 4.0.",
+    "items": {
+      "39e63ce9": "Villa Modlinek: habitación roja y baño",
+      "7a475d38": "Jardín de invierno — Jastrzębia Góra, Polonia",
+      "887f27aa": "Túnez: calles de la medina"
+    },
+    "kind": { "interior": "Interiores", "exterior": "Exteriores" },
+    "alt": "Vista previa del escaneo «{title}»",
+    "author": "De {name}",
+    "fly": "Volar aquí",
+    "original": "Original en SuperSplat"
+  },
+  "radios": {
+    "eyebrow": "Compatible con tu emisora",
+    "h2": "Qué funciona hoy con tu emisora",
+    "lead": "Una tabla honesta: nada figura como probado si no lo está, y por ahora eso significa emulación o una emisora simulada.",
+    "cols": { "browser": "Navegador", "input": "Entrada", "status": "Estado" },
+    "rows": [
+      { "browser": "Chrome / Edge, escritorio", "input": "Emisora EdgeTX (RadioMaster TX16S, Boxer, Pocket, Zorro) como joystick USB mediante WebHID", "status": "Aún sin probar con hardware real; probado con una emisora EdgeTX simulada", "level": "sim" },
+      { "browser": "Chrome / Edge, escritorio", "input": "Mando de consola", "status": "Aún sin probar con hardware real", "level": "none" },
+      { "browser": "Chrome / Edge, escritorio", "input": "Mando DJI usado como mando de juego", "status": "Sin probar", "level": "none" },
+      { "browser": "Safari, iPad, Android", "input": "Sticks táctiles", "status": "Probado en emulación", "level": "emu" },
+      { "browser": "Firefox", "input": "Emisora o mando", "status": "Solo para ver escenas: las emisoras necesitan Chrome o Edge (sin WebHID)", "level": "view" }
+    ],
+    "note": "¿Tienes una emisora EdgeTX? Un breve informe de prueba ayuda muchísimo: usa el formulario de contacto de abajo o abre una incidencia en GitHub."
+  },
+  "compare": {
+    "eyebrow": "Por qué es mejor",
+    "h2": "Cómo se compara",
+    "lead": "Datos a septiembre de 2026. «Desconocido» significa que no pudimos comprobarlo.",
+    "caption": "Comparativa de ShramkoGSFPV con el visor de SuperSplat, las demos FPV de splats en el navegador y los simuladores FPV clásicos, septiembre de 2026",
+    "feature": "Característica",
+    "swipe": "Desliza para comparar",
+    "unknown": "desconocido",
+    "cols": ["ShramkoGSFPV", "Pasear por el visor de SuperSplat", "Demos FPV de splats en el navegador (p. ej., SplatFPV)", "Simuladores FPV clásicos (mapas fijos)"],
+    "rows": [
+      { "k": "Lugares escaneados reales", "cells": ["Cualquier escena pública de SuperSplat", "Sí", "Sí, de archivo en archivo", "No, mapas fijos"] },
+      { "k": "Modelo del dron", "cells": ["4 motores, mezclador, PID de rates", "Ninguno: una cámara que camina o vuela", "Filtro de rates de primer orden", "Completo"] },
+      { "k": "Tus propios rates", "cells": ["Betaflight, Actual, KISS, Raceflight", "No aplica", "Rate máximo fijo más expo", "Sí"] },
+      { "k": "Al chocar con una pared", "cells": ["Choque y vueltas de campana", "Se desliza por ella", "Se para o se desliza", "Choque"] },
+      { "k": "Origen de la colisión", "cells": ["Octree de vóxeles de SuperSplat, test de barrido", "Octree de vóxeles de SuperSplat", "Reconstruida al cargar, test de puntos", "Mallas hechas a mano"] },
+      { "k": "Entrada de emisora", "cells": ["EdgeTX por WebHID, mando, táctil", "Mando", "Gamepad API", "Joystick USB"] },
+      { "k": "Cifras de pruebas publicadas", "cells": ["Sí, ver Cifras en vivo", "desconocido", "desconocido", "desconocido"] },
+      { "k": "Instalación", "cells": ["Ninguna", "Ninguna", "Ninguna", "Sí"] },
+      { "k": "Código fuente", "cells": ["MIT", "MIT", "Depende", "Cerrado"] }
+    ],
+    "note": "Los simuladores clásicos siguen siendo el sitio para entrenar carreras en circuitos hechos a medida. Este proyecto va de volar lugares reales."
+  },
+  "agents": {
+    "eyebrow": "Para tu agente de IA",
+    "h2": "Deja que tu agente de programación lo instale",
+    "lead": "Pega esto en Claude Code, Codex, Cursor o cualquier agente de programación. Instala el proyecto, ejecuta las comprobaciones y abre el simulador en local, y solo te pide contraseñas o acciones físicas.",
+    "caption": "Instrucción",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "docsTitle": "Documentación pensada para agentes",
+    "agentsMd": "reglas para los agentes de programación que trabajan en el repositorio",
+    "setupMd": "instalación, actualización y desinstalación paso a paso",
+    "llms": "un resumen breve del proyecto para modelos de lenguaje"
+  },
+  "risks": {
+    "eyebrow": "Riesgos y seguridad",
+    "h2": "Qué puede salir mal",
+    "lead": "Breve y sincero, para que nada te pille por sorpresa.",
+    "items": [
+      { "t": "Los datos de las escenas pueden cambiar sin aviso", "d": "Las escenas se cargan desde la CDN pública, pero no documentada, de SuperSplat. Puede cambiar en cualquier momento y algunas escenas podrían dejar de cargar." },
+      { "t": "Muchos escaneos aún no tienen datos de colisión", "d": "En esas escenas puedes atravesar las paredes, pero no estrellarte contra ellas. Pronto llegará el cálculo de colisiones en el navegador." },
+      { "t": "Mareo", "d": "Los choques y el vuelo rápido pueden marear, así que haz pausas. Los efectos nunca hacen parpadear toda la pantalla y se respeta tu ajuste de movimiento reducido." },
+      { "t": "Un simulador no es un vuelo real", "d": "Practica con responsabilidad, cumple la normativa de drones de tu país y nunca vueles sobre personas." },
+      { "t": "Tus datos se quedan contigo", "d": "La calibración, el historial de vuelos y los favoritos se guardan solo en tu navegador." }
+    ],
+    "security": "Política de seguridad (SECURITY.md)",
+    "warnings": "Lista completa de advertencias (docs/warnings.md)"
+  },
+  "faq": {
+    "eyebrow": "Preguntas frecuentes",
+    "h2": "Lo que la gente pregunta",
+    "items": [
+      { "q": "¿Cómo puedo volar un dron FPV por un escaneo 3D de Gaussian Splatting?", "a": "Abre ShramkoGSFPV en Chrome o Edge de escritorio, elige uno de los escaneos de Andrii o pega un enlace de SuperSplat, conecta una emisora, un mando o usa los sticks táctiles, y luego calibra, arma y vuela. No hay que instalar nada." },
+      { "q": "¿Puedo usar mi emisora RadioMaster en el navegador?", "a": "Para eso está pensado: pon una emisora EdgeTX, como la TX16S, Boxer, Pocket o Zorro, en modo joystick USB y conéctala por WebHID en Chrome o Edge. Por ahora solo se ha probado con una emisora EdgeTX simulada, no con hardware real." },
+      { "q": "¿Hay algún simulador FPV gratuito que funcione en el navegador?", "a": "Sí. ShramkoGSFPV es gratuito y de código abierto con licencia MIT. Funciona con WebGPU en Chrome o Edge de escritorio, sin descargas." },
+      { "q": "¿Qué escenas de SuperSplat puedo volar?", "a": "Cualquier escena pública de SuperSplat, por enlace o por id. Las escenas que traen datos de colisión en vóxeles tienen paredes sólidas; en el resto puedes atravesar las paredes, pero no chocar, hasta que llegue el cálculo de colisiones en el navegador." },
+      { "q": "¿Funciona en iPad o en el móvil?", "a": "Los sticks táctiles solo se han probado en emulación, todavía no en dispositivos reales, y necesitas un navegador con WebGPU. Las emisoras requieren Chrome o Edge de escritorio." },
+      { "q": "¿La física de vuelo es como la de Betaflight?", "a": "Las curvas de rates (Betaflight, Actual, KISS, Raceflight) coinciden hasta el último dígito con Betaflight 4.5.1 compilado, y un PID de rates controla cuatro motores a través de un mezclador. Es nuestro propio modelo de vuelo, no el firmware de Betaflight." },
+      { "q": "¿Me estrello contra las paredes o las atravieso?", "a": "En las escenas con datos de colisión te estrellas: en cada paso de la física se hace un barrido del cuerpo del dron contra los vóxeles, y un banco de pruebas comprueba que el vuelo rápido no atraviesa paredes. El resultado está en Cifras en vivo." },
+      { "q": "¿Es de código abierto?", "a": "Sí, con licencia MIT. El código, las mediciones y las decisiones de diseño están en GitHub. Las fórmulas de Betaflight se reimplementaron; no se copió código GPL." }
+    ]
+  },
+  "opensource": {
+    "eyebrow": "Código abierto",
+    "h2": "Licencia MIT y desarrollo a la vista de todos",
+    "lead": "El código, las mediciones y cada decisión de diseño están en GitHub. Se agradecen pull requests, informes de prueba con emisoras reales y nuevos escaneos.",
+    "repo": "Ver en GitHub",
+    "issues": "Tareas para empezar",
+    "thanksTitle": "Construido sobre el trabajo de otros",
+    "thanks": [
+      { "name": "PlayCanvas", "license": "MIT", "d": "El motor que renderiza los escaneos y el visor de SuperSplat, cuyo código de colisión incluimos en el proyecto.", "href": "https://github.com/playcanvas/engine" },
+      { "name": "Rapier", "license": "Apache-2.0", "d": "Física determinista para el choque: el dron dando vueltas y sus piezas.", "href": "https://rapier.rs/" },
+      { "name": "Betaflight", "license": "GPL-3.0", "d": "Las fórmulas de rates y PID se leyeron de Betaflight 4.5.1 y se reimplementaron. No se copió código GPL.", "href": "https://github.com/betaflight/betaflight" },
+      { "name": "SplatFPV", "license": "MIT", "d": "Un experimento anterior en el navegador que demostró que el FPV entre splats es posible. No se tomó código.", "href": "https://github.com/Rouf0x/splatfpv" }
+    ]
+  },
+  "contact": {
+    "eyebrow": "Contacto",
+    "h2": "Construyámoslo juntos",
+    "role": "Piloto FPV y especialista en Gaussian Splatting 3D, autor y responsable de ShramkoGSFPV.",
+    "open": "Siempre abierto a conocer gente interesante y dispuesto a ayudar a equipos a crear proyectos increíbles.",
+    "partner": "Busco pilotos FPV, estudios de escaneo, fabricantes de drones, inversores y desarrolladores para colaborar, licenciar, integrar o financiar el proyecto. Dime quién eres con un clic.",
+    "calendar": "Reservar una llamada",
+    "formTitle": "Propuesta de colaboración",
+    "form": {
+      "role": {
+        "label": "Soy…",
+        "pilot": "Piloto",
+        "vendor": "Fabricante",
+        "studio": "Estudio",
+        "investor": "Inversor",
+        "developer": "Desarrollador",
+        "takedown": "Aviso sobre una escena"
+      },
+      "reportNotice": "Estás avisando sobre la escena {id}. Cuéntanos qué ocurre con ella; por ejemplo, si muestra un lugar privado o a personas sin su permiso.",
+      "message": {
+        "label": "¿Algo que añadir?",
+        "optional": "(opcional)",
+        "placeholder": "Por ejemplo: escaneamos locales y queremos que se puedan volar"
+      },
+      "email": { "label": "Tu correo electrónico", "placeholder": "tu@ejemplo.com" },
+      "consent": {
+        "text": "Acepto que Andrii Shramko se ponga en contacto conmigo sobre esta solicitud; consulta la",
+        "link": "privacidad"
+      },
+      "submit": "Enviar solicitud",
+      "sending": "Enviando…",
+      "ready": "Listo para enviar.",
+      "missing": {
+        "prefix": "Para enviar, indica",
+        "role": "quién eres",
+        "email": "un correo válido",
+        "consent": "tu consentimiento"
+      },
+      "done": {
+        "title": "Gracias, hemos recibido tu solicitud.",
+        "text": "Andrii te responderá por correo electrónico."
+      },
+      "error": "Esta vez no se ha podido enviar. Tus respuestas siguen aquí: vuelve a intentarlo en un momento o escribe a zmei116@gmail.com."
+    }
+  },
+  "sticky": {
+    "cta": "Volar ya",
+    "note": "Gratis, en tu navegador"
+  },
+  "consent": {
+    "title": "Cookies de analítica",
+    "text": "¿Podemos usar Google Analytics para ver qué partes de la web resultan útiles? No se carga nada de Google si no aceptas.",
+    "more": "Privacidad",
+    "accept": "Aceptar",
+    "decline": "Rechazar"
+  },
+  "footer": {
+    "tagline": "Simulador FPV de código abierto en el navegador para escaneos Gaussian Splatting.",
+    "linksLabel": "Enlaces del sitio",
+    "home": "Inicio",
+    "privacy": "Privacidad",
+    "licenses": "Licencias",
+    "license": "licencia MIT",
+    "disclaimer": "Sin relación con PlayCanvas, BetaFPV, el proyecto Betaflight, LuGus Studios (Liftoff), DJI ni RadioMaster, y sin su respaldo. Las marcas pertenecen a sus propietarios."
+  },
+  "privacy": {
+    "title": "Privacidad — ShramkoGSFPV",
+    "description": "Qué datos recoge ShramkoGSFPV, para qué, durante cuánto tiempo y cuáles son tus derechos según el RGPD.",
+    "eyebrow": "Privacidad",
+    "h1": "Aviso de privacidad",
+    "updated": "Última actualización: 24 de septiembre de 2026",
+    "review": "Aún sin revisión jurídica.",
+    "sections": [
+      { "h": "Responsable del tratamiento", "p": ["El responsable del tratamiento de tus datos es Andrii Shramko. Puedes escribirle a zmei116@gmail.com o usar el formulario de contacto de esta web."] },
+      { "h": "Contador de visitas sin cookies", "p": ["La web envía a su propio servidor, en /api/e, unos pocos eventos de una lista cerrada: cambio de idioma, clics en los botones principales y en los enlaces de contacto, y apertura de una escena. No se instalan cookies, no se crea ningún identificador del dispositivo y no se guarda tu dirección IP.", "Finalidad: saber qué partes de la web son útiles (interés legítimo, art. 6.1.f del RGPD). Los eventos se conservan 12 meses."] },
+      { "h": "Google Analytics, solo con tu consentimiento", "p": ["Si la analítica está activada en esta web, primero aparece un aviso. El script de Google no se carga hasta que pulsas Aceptar. El modo de consentimiento empieza con todos los tipos de almacenamiento denegados y Aceptar solo autoriza el almacenamiento de analítica.", "Base jurídica: tu consentimiento (art. 6.1.a del RGPD). Puedes retirarlo en cualquier momento."] },
+      { "h": "Solo en tu navegador", "p": ["La calibración de la emisora, el historial de vuelos y los favoritos se quedan en el almacenamiento de tu navegador. Son estrictamente necesarios para que funcione el simulador, nunca salen de tu dispositivo y no requieren consentimiento."] },
+      { "h": "Formulario de colaboración", "p": ["Si envías el formulario, tu correo, el perfil que elijas y tu mensaje se guardan en el servidor y se reenvían al bot de notificaciones de Telegram del propietario.", "Se conservan hasta que se atienda tu solicitud o hasta que pidas su supresión. Base jurídica: tu consentimiento (art. 6.1.a del RGPD)."] },
+      { "h": "Imágenes y datos de las escenas", "p": ["Las vistas previas de las escenas de esta página, y las propias escenas en el simulador, las carga tu navegador directamente desde los servidores de PlayCanvas (SuperSplat). Como con cualquier web, esos servidores ven tu dirección IP."] },
+      { "h": "Tus derechos", "p": ["Puedes solicitar el acceso a tus datos, su rectificación o supresión, la limitación del tratamiento y la portabilidad, así como oponerte al tratamiento o retirar tu consentimiento, a través del formulario de contacto o por correo electrónico.", "También tienes derecho a presentar una reclamación ante la autoridad de control polaca, el Presidente de la Oficina de Protección de Datos Personales (UODO)."] }
+    ],
+    "resetConsent": "Cambiar mi elección sobre la analítica",
+    "resetDone": "Elección borrada",
+    "contactTitle": "Contactar con el responsable",
+    "formLink": "Formulario de contacto",
+    "uodoLink": "UODO, autoridad polaca de protección de datos"
+  },
+  "licenses": {
+    "title": "Licencias — ShramkoGSFPV",
+    "description": "ShramkoGSFPV tiene licencia MIT. Software de terceros, fórmulas y contenido de escenas en los que se basa, con sus licencias.",
+    "eyebrow": "Licencias",
+    "h1": "Licencias y créditos",
+    "lead": "ShramkoGSFPV se publica bajo la licencia MIT, © 2026 Andrii Shramko. Se apoya en estos proyectos:",
+    "items": [
+      { "name": "ShramkoGSFPV", "license": "MIT", "d": "El simulador, esta web y las herramientas de medición. Si lo reutilizas, conserva el aviso de copyright y menciona a Andrii Shramko.", "href": "https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/LICENSE" },
+      { "name": "PlayCanvas Engine", "license": "MIT", "d": "Renderizado con WebGPU, incluida la ordenación en GPU de los splats gaussianos.", "href": "https://github.com/playcanvas/engine" },
+      { "name": "Visor de SuperSplat", "license": "MIT, incluido en el proyecto", "d": "El código de colisión por vóxeles se incluye sin cambios de la versión v1.35.0, con su cabecera de licencia original.", "href": "https://github.com/playcanvas/supersplat-viewer" },
+      { "name": "Rapier", "license": "Apache-2.0", "d": "Física determinista para lo que ocurre tras el choque: el dron y sus piezas.", "href": "https://github.com/dimforge/rapier" },
+      { "name": "fdlibm / musl", "license": "Aviso / MIT", "d": "Rutinas matemáticas portadas para que un vuelo dé resultados idénticos bit a bit en cualquier navegador. fdlibm © 1993 Sun Microsystems (aviso conservado); musl © Rich Felker y otros.", "href": "https://musl.libc.org/" },
+      { "name": "Betaflight", "license": "GPL-3.0, solo fórmulas", "d": "Las fórmulas de las curvas de rates y las constantes de escala del PID se leyeron de Betaflight 4.5.1 y se reimplementaron. No se incluye código de Betaflight.", "href": "https://github.com/betaflight/betaflight" }
+    ],
+    "scenesTitle": "Contenido de las escenas",
+    "scenes": "Las escenas pertenecen a sus autores y se cargan desde sus editores durante el uso; no forman parte de este proyecto. Los escaneos de muestra de Andrii Shramko tienen licencia CC BY 4.0. Las demás escenas conservan la licencia que sus autores eligieron en SuperSplat.",
+    "trademarksTitle": "Marcas"
+  }
+}

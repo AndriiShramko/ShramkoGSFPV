@@ -5,5 +5,5 @@
   "description": "Dictionaries for the landing (site/) and the simulator (fly/): en, es, pl, ru",
   "license": "MIT",
   "type": "module",
-  "exports": { "./fly/*": "./fly/*", "./site/*": "./site/*" }
+  "exports": { "./fly/*": "./locales/fly/*", "./site/*": "./locales/site/*", "./common.json": "./locales/common.json" }
 }
