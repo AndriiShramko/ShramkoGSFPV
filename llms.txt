@@ -1,21 +1,22 @@
 # ShramkoGSFPV
 
-> Open-source (MIT) browser FPV drone simulator for 3D Gaussian Splatting scenes. Fly any public SuperSplat scan with quadcopter physics (4 motors, mixer, rate PID, Betaflight/Actual/KISS/Raceflight rate curves), voxel collisions with real crashes, and your EdgeTX radio over WebHID, a gamepad or touch sticks. WebGPU + PlayCanvas. Author: Andrii Shramko. Status: pre-alpha (September 2026) — research and measurements done, app in development.
+> Open-source (MIT) browser FPV drone simulator for 3D Gaussian Splatting scenes. Fly any public SuperSplat scan with a quadcopter model (4 motors, mixer, rate PID, Betaflight/Actual/KISS/Raceflight rate curves), swept voxel collision with real crashes, and your EdgeTX radio over WebHID, a gamepad or touch sticks. WebGPU + PlayCanvas. Author: Andrii Shramko. Live at https://gsfpv.flyreelstudio.eu (alpha, September 2026).
 
-Key facts (measured 2026-09-21/22):
-- SuperSplat scene data and voxel collision load cross-origin (CORS *) into a third-party page; the scene metadata API does not.
-- WebGPU with GPU radix sort of Gaussians is active in PlayCanvas Engine 2.22.3 (gsplat.currentRenderer === 2).
-- A 3.8M-Gaussian interior loads in 1.2-1.9 s.
-- On the official 5 cm voxel collision, wall clearance tracks craft size (42.5 mm radius -> 72 mm median); a swept test is required to prevent tunnelling.
-- Default craft: BetaFPV Pavo20 Pro class 2.2-inch cinewhoop.
+Key facts (measured, see evidence/latest.json):
+- Rate curves match compiled Betaflight 4.5.1 at 1880 points with 0 deg/s error.
+- 0 wall pass-throughs in 200,000 straight passes at 5-34 m/s (1 ms swept test vs an independent oracle).
+- The whole flight is deterministic: the SHA-256 of the trace is identical in Node and Chrome and across 30/60/144/240 Hz frame splits; replays are recomputed from stick inputs only.
+- Scenes load in the visitor's browser straight from the public SuperSplat CDN; the server never contacts SuperSplat.
+- Default craft: BetaFPV Pavo20 Pro class 2.2-inch cinewhoop; every preset number is labelled manufacturer / measured / estimate.
+- Radio support has been tested with a simulated EdgeTX radio; a real radio has not been tested yet.
 
-## Docs
-- [README](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/README.md): what it is, status, FAQ, contacts
-- [Measured facts](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/measured-facts.md): every number with how it was measured
+## Links
+- [Simulator and landing page](https://gsfpv.flyreelstudio.eu): fly in the browser, EN/ES/PL/RU
+- [README](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/README.md): what it is, measured numbers, FAQ, contacts
+- [AGENT_SETUP.md](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/AGENT_SETUP.md): install, update and remove with a coding agent
 - [Decisions](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/decisions.md): architecture choices and reasons
 - [Warnings](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/warnings.md): risks and limits, stated honestly
-- [Prior art](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/prior-art.md): related projects
-- [Measurement harness](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/tools/probe/README.md)
+- [Provenance](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/PROVENANCE.md): where every piece of code came from
 
 ## Contact
 - Author: Andrii Shramko
