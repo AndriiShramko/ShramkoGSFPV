@@ -57,6 +57,11 @@ superspl.at link or id ──► CDN: settings.json, lod-meta.json, scene.voxel.
 - **Crashes:** impact speed decides; the wreck tumbles with debris (Rapier), then respawn at the start or the last safe point. No full-screen flashes (photosensitivity-checked).
 - **Gravity:** Earth, Moon, Mars, zero-g or your own value, with an honest "same motors" mode and a "keep thrust-to-weight" mode.
 - **Replays:** only stick inputs are stored; the flight is recomputed bit-exactly.
+- **Walls for scans published without them:** one click builds collision in the browser with SuperSplat's own tool and defaults (`@playcanvas/splat-transform`, 5 cm voxels). On a 2.1 M-Gaussian scan it takes about 20 s and the result is **byte-for-byte identical** to the command-line tool; scans above 4 M Gaussians are refused with the numbers.
+- **Cinema mode:** finest level of detail, automatic quality off, and a WebCodecs recorder (H.264 MP4) for the showcase scans, with the scene's credit burned into every frame.
+- **Quality governor:** when frames start missing the display's refresh, render scale and splat budget step down, and come back when the GPU has room again.
+- **Your Betaflight settings:** paste `diff` or `diff all` from the Betaflight CLI (4.3–4.5, 2025.12) and the simulated drone gets your rates, PID and throttle curve; anything the simulator does not use is listed, anything ambiguous is refused with the reason.
+- **Trajectory export:** CSV or JSON at 100 samples per second, straight from the flight model.
 
 Architecture decisions and their reasons: [`docs/decisions.md`](docs/decisions.md). What can go wrong: [`docs/warnings.md`](docs/warnings.md). Where every piece of code came from: [`docs/PROVENANCE.md`](docs/PROVENANCE.md).
 
