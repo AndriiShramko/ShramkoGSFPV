@@ -138,7 +138,12 @@ def clean_event(body: dict) -> dict | None:
     if name not in EVENTS:
         return None
     allowed = EVENTS[name]
-    props = body.get("p") if isinstance(body.get("p"), dict) else {}
+    p = body.get("p")
+    if isinstance(p, str):
+        # the landing sends one bare value: it belongs to the event's only property, if any
+        props = {next(iter(allowed)): p} if len(allowed) == 1 and p else {}
+    else:
+        props = p if isinstance(p, dict) else {}
     out = {}
     for k, v in props.items():
         if k not in allowed:
