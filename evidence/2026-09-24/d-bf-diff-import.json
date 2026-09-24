@@ -1,0 +1,129 @@
+{
+  "name": "d-bf-diff-import",
+  "context": {
+    "date": "2026-09-24T18:00:15.481Z",
+    "gitHead": "e1d0622",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "imported45": {
+    "result": {
+      "ok": true,
+      "firmware": "Betaflight 4.5.1",
+      "ratesType": "ACTUAL",
+      "warnings": [
+        "yaw_deadband = 5 changes the stick feel in Betaflight but is not applied by the simulator.",
+        "6 setting(s) not used by the simulator were ignored (gyro_lpf1_static_hz, dyn_notch_count, dshot_bidir, motor_pwm_protocol, rateprofile_name, ...)."
+      ]
+    },
+    "params": {
+      "rates": {
+        "type": "ACTUAL",
+        "roll": {
+          "rcRate": 20,
+          "rate": 85,
+          "expo": 30
+        },
+        "pitch": {
+          "rcRate": 20,
+          "rate": 85,
+          "expo": 30
+        },
+        "yaw": {
+          "rcRate": 18,
+          "rate": 65,
+          "expo": 0
+        },
+        "rateLimit": 1998
+      },
+      "pid": {
+        "roll": [
+          52,
+          90,
+          35,
+          140
+        ],
+        "pitch": [
+          55,
+          84,
+          44,
+          125
+        ],
+        "yaw": [
+          50,
+          80,
+          0,
+          100
+        ]
+      }
+    }
+  },
+  "imported44": {
+    "result": {
+      "ok": true,
+      "firmware": "Betaflight 4.4.3",
+      "ratesType": "BETAFLIGHT",
+      "warnings": [
+        "4.4 diff: an omitted value means the board's custom default (the diff says \"# config: YES\"); it is assumed equal to the firmware default.",
+        "Per-axis rate limits 1998/1998/1000 differ; the simulator has one limit and uses the lowest, 1000 deg/s.",
+        "3 setting(s) not used by the simulator were ignored (roll_level_expo, dshot_bidir, motor_pwm_protocol)."
+      ]
+    },
+    "params": {
+      "rates": {
+        "type": "BETAFLIGHT",
+        "roll": {
+          "rcRate": 120,
+          "rate": 72,
+          "expo": 10
+        },
+        "pitch": {
+          "rcRate": 120,
+          "rate": 72,
+          "expo": 10
+        },
+        "yaw": {
+          "rcRate": 100,
+          "rate": 60,
+          "expo": 0
+        },
+        "rateLimit": 1000
+      },
+      "pid": {
+        "roll": [
+          45,
+          80,
+          42,
+          110
+        ],
+        "pitch": [
+          50,
+          84,
+          48,
+          125
+        ],
+        "yaw": [
+          45,
+          80,
+          0,
+          120
+        ]
+      }
+    }
+  },
+  "control": {
+    "noVersionRefused": true,
+    "noVersion": {
+      "ok": false,
+      "errors": [
+        "Not a Betaflight diff: no \"# Betaflight / <target> (<board>) x.y.z ...\" version line found. Run `diff all` in the Betaflight CLI and paste the whole output."
+      ],
+      "warnings": []
+    },
+    "garbageRefused": true,
+    "paramsUnchangedAfterRefusal": true
+  }
+}

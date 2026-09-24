@@ -1,0 +1,55 @@
+{
+  "name": "d-trajectory-export",
+  "context": {
+    "date": "2026-09-24T18:00:29.121Z",
+    "gitHead": "e1d0622",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "check": "every exported position equals the state recomputed from the input log alone at the same tick",
+  "result": {
+    "columns": [
+      "t",
+      "px",
+      "py",
+      "pz",
+      "qw",
+      "qx",
+      "qy",
+      "qz",
+      "vx",
+      "vy",
+      "vz",
+      "m1",
+      "m2",
+      "m3",
+      "m4",
+      "throttle",
+      "armed",
+      "crashed"
+    ],
+    "rows": 1261,
+    "endTick": 12615,
+    "firstT": 0.01,
+    "lastT": 12.61,
+    "exact": {
+      "maxDeltaM": 0,
+      "compared": 126
+    },
+    "shifted": {
+      "maxDeltaM": 0.09290216329066953,
+      "compared": 126
+    },
+    "replayHashMatches": true
+  },
+  "control": {
+    "oneRowShift": {
+      "maxDeltaM": 0.09290216329066953,
+      "compared": 126
+    },
+    "fired": true
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "name": "b-site-b3",
+  "context": {
+    "date": "2026-09-24T17:56:11.570Z",
+    "gitHead": "2c6a116",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "rule": "links: a real target (internal ones answer 200/30x); buttons: a DOM mutation, a navigation, or a request within 400 ms of a click",
+  "pages": {
+    "/en/": {
+      "total": 49,
+      "dead": [],
+      "links": 47,
+      "buttons": 2
+    },
+    "/en/privacy/": {
+      "total": 27,
+      "dead": [],
+      "links": 26,
+      "buttons": 1
+    },
+    "/en/licenses/": {
+      "total": 32,
+      "dead": [],
+      "links": 32,
+      "buttons": 0
+    },
+    "/ru/": {
+      "total": 49,
+      "dead": [],
+      "links": 47,
+      "buttons": 2
+    }
+  },
+  "control": {
+    "injectedInertButton": true,
+    "flagged": [
+      "button \"Inert\" did nothing"
+    ],
+    "fired": true
+  }
+}

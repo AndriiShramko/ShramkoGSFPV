@@ -1,8 +1,8 @@
 {
   "name": "b-fly-b14",
   "context": {
-    "date": "2026-09-24T16:09:47.508Z",
-    "gitHead": "516200b",
+    "date": "2026-09-24T17:57:19.080Z",
+    "gitHead": "e1d0622",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -14,6 +14,7 @@
   "rows": [
     {
       "viewport": "375x812",
+      "pauseButtonReachable": true,
       "armedByButton": true,
       "bothPairsOneFrame": {
         "ch": [
@@ -28,8 +29,8 @@
         "seconds": 10,
         "crashed": false,
         "armedAll": true,
-        "minY": 3.4081370531923474,
-        "maxY": 5.83087385294515,
+        "minY": 3.4667764411360533,
+        "maxY": 5.718721086411667,
         "target": 2.3786547305178654
       },
       "view": {
@@ -57,6 +58,7 @@
     },
     {
       "viewport": "1024x768",
+      "pauseButtonReachable": true,
       "armedByButton": true,
       "bothPairsOneFrame": {
         "ch": [
@@ -71,9 +73,9 @@
         "seconds": 10,
         "crashed": false,
         "armedAll": true,
-        "minY": 2.6921900190465387,
-        "maxY": 3.1005002600630562,
-        "target": 2.3848174856509585
+        "minY": 2.687029526019192,
+        "maxY": 3.3783947794501756,
+        "target": 2.3820735070184127
       },
       "view": {
         "scrollX": 0,
