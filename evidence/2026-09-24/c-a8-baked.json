@@ -1,0 +1,56 @@
+{
+  "name": "c-a8-baked",
+  "context": {
+    "date": "2026-09-24T17:41:53.850Z",
+    "gitHead": "19550c6",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "gate": false,
+  "method": "from authored camera positions, 200 Fibonacci directions: ray to the surface, then our swept test approaches with the body level and nose-first; clearance = centre-to-surface distance at first contact; ideal = the body extent towards the surface; excess = clearance - ideal",
+  "results": [
+    {
+      "scene": "723068d7-baked",
+      "voxel": 0.05,
+      "body": "pavo20pro compound (4 ducts r30 + body r25)",
+      "samples": 141,
+      "clearanceMedianMm": 75.8,
+      "clearanceP95Mm": 442.7,
+      "excessMedianMm": 33.8,
+      "excessP95Mm": 382.5
+    },
+    {
+      "scene": "723068d7-baked",
+      "voxel": 0.05,
+      "body": "single sphere r25 mm (body)",
+      "samples": 141,
+      "clearanceMedianMm": 35.5,
+      "clearanceP95Mm": 131.7,
+      "excessMedianMm": 10.5,
+      "excessP95Mm": 106.7
+    },
+    {
+      "scene": "723068d7-baked",
+      "voxel": 0.05,
+      "body": "single sphere r30 mm (duct)",
+      "samples": 141,
+      "clearanceMedianMm": 42.4,
+      "clearanceP95Mm": 176,
+      "excessMedianMm": 12.4,
+      "excessP95Mm": 146
+    },
+    {
+      "scene": "723068d7-baked",
+      "voxel": 0.05,
+      "body": "single sphere r77 mm (bounding)",
+      "samples": 141,
+      "clearanceMedianMm": 124.2,
+      "clearanceP95Mm": 714.2,
+      "excessMedianMm": 47.4,
+      "excessP95Mm": 637.4
+    }
+  ]
+}

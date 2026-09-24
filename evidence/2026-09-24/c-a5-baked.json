@@ -1,0 +1,177 @@
+{
+  "name": "c-a5-baked",
+  "context": {
+    "date": "2026-09-24T17:41:17.727Z",
+    "gitHead": "19550c6",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "body": {
+    "preset": "pavo20pro-3s",
+    "spheres": {
+      "local": [
+        0.033100000000000004,
+        0,
+        0.033100000000000004,
+        0.033100000000000004,
+        0,
+        -0.033100000000000004,
+        -0.033100000000000004,
+        0,
+        0.033100000000000004,
+        -0.033100000000000004,
+        0,
+        -0.033100000000000004,
+        0,
+        0,
+        0
+      ],
+      "r": [
+        0.03,
+        0.03,
+        0.03,
+        0.03,
+        0.025
+      ]
+    }
+  },
+  "vMax": {
+    "vMax": 28.65538822598425,
+    "tiltDeg": 78.46304096718453
+  },
+  "speeds": [
+    5,
+    10,
+    15,
+    25,
+    34.39
+  ],
+  "passesPerSceneSpeed": 10000,
+  "totalPasses": 50000,
+  "totalPenetrations": 0,
+  "oracle": "upstream VoxelCollision.querySphere on every body sphere, path resampled every voxelResolution/4 from the start to the point where our sweep stopped the body (no sweep code involved)",
+  "sweep": "sim tick 1 ms; per tick: cover test r + L/2, then segments of r/2 bisected to 0.25 mm leaves with r + half-length inflation",
+  "control": {
+    "name": "endpoint-only test at frame steps 1/30 s and 1/144 s must miss at least one collision (tunnel)",
+    "tunnels30": 15466,
+    "tunnels144": 1684,
+    "fired": true
+  },
+  "results": [
+    {
+      "scene": "723068d7-baked",
+      "speed": 5,
+      "seed": 20260924,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 337,
+        "late": 9663,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 90,
+        "late": 9910,
+        "ok": 0
+      },
+      "rejected": 2176003,
+      "meanLen": 1.0855215781249927,
+      "examples": []
+    },
+    {
+      "scene": "723068d7-baked",
+      "speed": 10,
+      "seed": 20260925,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 1709,
+        "late": 8291,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 195,
+        "late": 9805,
+        "ok": 0
+      },
+      "rejected": 2175504,
+      "meanLen": 1.096958234375003,
+      "examples": []
+    },
+    {
+      "scene": "723068d7-baked",
+      "speed": 15,
+      "seed": 20260926,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 2943,
+        "late": 7057,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 205,
+        "late": 9795,
+        "ok": 0
+      },
+      "rejected": 2166782,
+      "meanLen": 1.0966716796874993,
+      "examples": []
+    },
+    {
+      "scene": "723068d7-baked",
+      "speed": 25,
+      "seed": 20260927,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 4761,
+        "late": 5239,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 396,
+        "late": 9604,
+        "ok": 0
+      },
+      "rejected": 2197999,
+      "meanLen": 1.1008685286458346,
+      "examples": []
+    },
+    {
+      "scene": "723068d7-baked",
+      "speed": 34.39,
+      "seed": 20260928,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 5716,
+        "late": 4284,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 798,
+        "late": 9202,
+        "ok": 0
+      },
+      "rejected": 2198991,
+      "meanLen": 1.103834314624996,
+      "examples": []
+    }
+  ],
+  "wallClockS": 40.299,
+  "workers": 5
+}
