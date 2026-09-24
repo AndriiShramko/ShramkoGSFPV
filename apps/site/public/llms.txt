@@ -1,0 +1,31 @@
+# ShramkoGSFPV
+
+> Free, open-source (MIT) FPV drone simulator that runs in the browser and flies real 3D Gaussian Splatting scans from SuperSplat. Quadcopter physics with four motors, a mixer and a rate PID; Betaflight, Actual, KISS and Raceflight rate curves checked against compiled Betaflight 4.5.1; swept collision against each scan's voxel data, so the drone crashes into walls instead of flying through them; input from an EdgeTX radio over WebHID, a gamepad or touch sticks. WebGPU + PlayCanvas Engine. Author: Andrii Shramko.
+
+Key facts:
+- Runs in desktop Chrome or Edge with WebGPU; no install. Radios need WebHID (Chrome or Edge).
+- Scenes: any public SuperSplat scene by link or id; scenes with voxel collision data have solid walls.
+- Default craft: BetaFPV Pavo20 Pro class, 3S (wheelbase 93.7 mm, LAVA 1104 7200KV — manufacturer; 70.1 g / 108 g with O3 — measured by Oscar Liang).
+- Crashes: impact speed decides; the craft tumbles and throws debris. Gravity: Earth, Moon, Mars, zero-g.
+- Deterministic replays from recorded stick input.
+- Hardware status: real EdgeTX radios and gamepads are not tested yet (a simulated EdgeTX radio is); touch sticks are tested in emulation only.
+- Every published number comes from the repository's evidence/latest.json with its method and date; stick-to-photon latency with a camera has not been measured yet.
+
+## Links
+- [Website](https://gsfpv.flyreelstudio.eu/en/): the landing page (also in Spanish, Polish and Russian)
+- [Simulator](https://gsfpv.flyreelstudio.eu/en/fly/): fly in the browser
+- [Source code](https://github.com/AndriiShramko/ShramkoGSFPV): MIT-licensed repository
+- [AGENTS.md](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/AGENTS.md): rules for coding agents working in the repository
+- [AGENT_SETUP.md](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/AGENT_SETUP.md): install, update and removal protocol for an AI agent
+- [Measured facts](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/measured-facts.md): every number and how it was measured
+- [Decisions](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/decisions.md): architecture choices and their reasons
+- [Provenance](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/PROVENANCE.md): where each formula and constant comes from
+- [Evidence](https://github.com/AndriiShramko/ShramkoGSFPV/tree/main/evidence): raw measurement files
+
+## Contact
+- Author: Andrii Shramko
+- LinkedIn: https://www.linkedin.com/in/andrii-shramko/
+- Book a call: https://calendar.app.google/Ff729HqGk4RpzPNDA
+- Email: zmei116@gmail.com
+- GitHub: https://github.com/AndriiShramko
+- Always open to interesting people and ready to help teams build incredible projects: partnership, licensing, integration and funding (FPV pilots, scanning studios, drone vendors, investors, developers).
