@@ -337,6 +337,7 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
             ? makeTourPlan(col, p.boundRadius, [session.spawn[0], session.spawn[1], session.spawn[2]], cam.target, Number(q.get('dash') ?? 2 * p.vCrash))
             : makePlan(col, p.boundRadius, [session.spawn[0], session.spawn[1], session.spawn[2]], cam.target, Number(q.get('dash') ?? 2 * p.vCrash),
                 (x, y, z, r, o) => findSphereSpawn(col, x, y, z, r, o));
+        if (q.get('quick') === '1') plan.box = [plan.spawn]; // crash loops: hover, aim, dash
         if (q.get('flip') === '1') {
             // flip point: straight above the spawn with 0.6 m of air above the craft (at most +1.5 m)
             const up = col.queryRay(plan.spawn[0], plan.spawn[1], plan.spawn[2], 0, 1, 0, 3);
