@@ -131,8 +131,9 @@ export class Scenario {
                     const ev = [...this.runner.events].reverse().find((e) => e.type === 'crash');
                     if (ev && ev.type === 'crash') this.log.crash = { tick: ev.tick, speed: ev.speed, px: ev.px, py: ev.py, pz: ev.pz };
                     this.go('crashed', sim);
-                } else if (el > 6) {
-                    this.go('done', sim); // no crash within 6 s (open-volume control ends here)
+                } else if (el > Math.max(6, 12 / pl.dashSpeed)) {
+                    // no crash: the open-volume control ends here; a slow dash gets time to reach the wall
+                    this.go('done', sim);
                 }
                 break;
             case 'crashed': {
