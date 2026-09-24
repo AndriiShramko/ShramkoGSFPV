@@ -1,0 +1,26 @@
+# ShramkoGSFPV
+
+> Open-source (MIT) browser FPV drone simulator for 3D Gaussian Splatting scenes. Fly any public SuperSplat scan with quadcopter physics (4 motors, mixer, rate PID, Betaflight/Actual/KISS/Raceflight rate curves), voxel collisions with real crashes, and your EdgeTX radio over WebHID, a gamepad or touch sticks. WebGPU + PlayCanvas. Author: Andrii Shramko. Status: pre-alpha (September 2026) — research and measurements done, app in development.
+
+Key facts (measured 2026-09-21/22):
+- SuperSplat scene data and voxel collision load cross-origin (CORS *) into a third-party page; the scene metadata API does not.
+- WebGPU with GPU radix sort of Gaussians is active in PlayCanvas Engine 2.22.3 (gsplat.currentRenderer === 2).
+- A 3.8M-Gaussian interior loads in 1.2-1.9 s.
+- On the official 5 cm voxel collision, wall clearance tracks craft size (42.5 mm radius -> 72 mm median); a swept test is required to prevent tunnelling.
+- Default craft: BetaFPV Pavo20 Pro class 2.2-inch cinewhoop.
+
+## Docs
+- [README](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/README.md): what it is, status, FAQ, contacts
+- [Measured facts](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/measured-facts.md): every number with how it was measured
+- [Decisions](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/decisions.md): architecture choices and reasons
+- [Warnings](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/warnings.md): risks and limits, stated honestly
+- [Prior art](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/prior-art.md): related projects
+- [Measurement harness](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/tools/probe/README.md)
+
+## Contact
+- Author: Andrii Shramko
+- LinkedIn: https://www.linkedin.com/in/andrii-shramko/
+- Book a call: https://calendar.app.google/Ff729HqGk4RpzPNDA
+- Email: zmei116@gmail.com
+- GitHub: https://github.com/AndriiShramko
+- Open to partnership, integration, licensing, sponsorship and funding.

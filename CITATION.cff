@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use ShramkoGSFPV, please cite it as below and credit Andrii Shramko."
+title: "ShramkoGSFPV: open-source FPV drone simulator for 3D Gaussian Splatting scenes"
+type: software
+authors:
+  - family-names: "Shramko"
+    given-names: "Andrii"
+    email: "zmei116@gmail.com"
+    website: "https://www.linkedin.com/in/andrii-shramko/"
+repository-code: "https://github.com/AndriiShramko/ShramkoGSFPV"
+license: MIT
+version: "0.0.1"
+date-released: "2026-09-24"
+keywords:
+  - fpv
+  - drone simulator
+  - 3D Gaussian Splatting
+  - SuperSplat
+  - PlayCanvas
+  - WebGPU
+  - WebHID
+  - quadcopter physics
+abstract: >-
+  A browser-based FPV drone simulator that flies real-feeling quadcopter
+  physics through photoreal 3D Gaussian Splatting scenes published on
+  SuperSplat, with voxel collisions, crashes and radio input over WebHID.

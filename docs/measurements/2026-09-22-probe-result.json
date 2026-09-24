@@ -1,0 +1,267 @@
+{
+ "status": "done",
+ "sceneId": "39e63ce9",
+ "errors": [],
+ "results": {
+  "clearance": {
+   "voxel_mm": 50,
+   "freeAtSpawn": true,
+   "note": "gap = distance from surface to nearest legal sphere centre; ideal == radius",
+   "byRadius": [
+    {
+     "radius_mm": 10,
+     "gap_p50_mm": 14,
+     "gap_p95_mm": 44,
+     "excessOverRadius_p50_mm": 4,
+     "raysWithNoSurface": 0
+    },
+    {
+     "radius_mm": 20,
+     "gap_p50_mm": 28,
+     "gap_p95_mm": 80,
+     "excessOverRadius_p50_mm": 8,
+     "raysWithNoSurface": 0
+    },
+    {
+     "radius_mm": 42.5,
+     "gap_p50_mm": 72,
+     "gap_p95_mm": 220,
+     "excessOverRadius_p50_mm": 29.5,
+     "raysWithNoSurface": 0
+    },
+    {
+     "radius_mm": 60,
+     "gap_p50_mm": 104,
+     "gap_p95_mm": 370,
+     "excessOverRadius_p50_mm": 44,
+     "raysWithNoSurface": 0
+    },
+    {
+     "radius_mm": 90,
+     "gap_p50_mm": 160,
+     "gap_p95_mm": 614,
+     "excessOverRadius_p50_mm": 70,
+     "raysWithNoSurface": 0
+    },
+    {
+     "radius_mm": 150,
+     "gap_p50_mm": 272,
+     "gap_p95_mm": 1002,
+     "excessOverRadius_p50_mm": 122,
+     "raysWithNoSurface": 0
+    }
+   ]
+  },
+  "tunnelling": {
+   "v5": {
+    "frameDist_mm": 34.7,
+    "tested": 2271,
+    "missedByEndpointTest": 0,
+    "caughtBySweep": 59
+   },
+   "v10": {
+    "frameDist_mm": 69.4,
+    "tested": 1149,
+    "missedByEndpointTest": 1,
+    "caughtBySweep": 59
+   },
+   "v15": {
+    "frameDist_mm": 104.2,
+    "tested": 776,
+    "missedByEndpointTest": 0,
+    "caughtBySweep": 59
+   },
+   "v25": {
+    "frameDist_mm": 173.6,
+    "tested": 476,
+    "missedByEndpointTest": 1,
+    "caughtBySweep": 60
+   }
+  },
+  "frames": {
+   "acro": {
+    "label": "acro-yaw-600dps",
+    "frames": 788,
+    "presented_ms": {
+     "n": 783,
+     "mean": 15.287,
+     "p50": 17.1,
+     "p95": 18.3,
+     "p99": 22.2,
+     "max": 39.7
+    },
+    "engineFrame_ms": {
+     "n": 783,
+     "mean": 15.31,
+     "p50": 17.1,
+     "p95": 18.1,
+     "p99": 18.6,
+     "max": 18.7
+    },
+    "gpu_ms": {
+     "n": 780,
+     "mean": 89.741,
+     "p50": 112.111,
+     "p95": 112.111,
+     "p99": 112.111,
+     "max": 112.111
+    },
+    "gpuSamples": 785
+   },
+   "hug": {
+    "label": "wall-hug-0.3m",
+    "frames": 575,
+    "presented_ms": {
+     "n": 570,
+     "mean": 17.441,
+     "p50": 17.2,
+     "p95": 18.3,
+     "p99": 18.6,
+     "max": 19.2
+    },
+    "engineFrame_ms": {
+     "n": 570,
+     "mean": 17.441,
+     "p50": 17.2,
+     "p95": 18.2,
+     "p99": 18.6,
+     "max": 18.8
+    },
+    "gpu_ms": {
+     "n": 570,
+     "mean": 112.111,
+     "p50": 112.111,
+     "p95": 112.111,
+     "p99": 112.111,
+     "max": 112.111
+    },
+    "gpuSamples": 575
+   },
+   "sortTime_ms": null,
+   "budget144_ms": 6.94,
+   "vsyncBaseline_ms": 17.1,
+   "headroom": [
+    {
+     "pixelScale": 1,
+     "pixels": "1922x1082",
+     "megapixels": 2.08,
+     "presented_p50": 17.2,
+     "presented_p99": 18.5,
+     "missRatePct": 0,
+     "holdsCadence": true
+    },
+    {
+     "pixelScale": 1.5,
+     "pixels": "1922x1082",
+     "megapixels": 2.08,
+     "presented_p50": 17.2,
+     "presented_p99": 18.7,
+     "missRatePct": 0,
+     "holdsCadence": true
+    },
+    {
+     "pixelScale": 2,
+     "pixels": "1922x1082",
+     "megapixels": 2.08,
+     "presented_p50": 17.2,
+     "presented_p99": 18.5,
+     "missRatePct": 0,
+     "holdsCadence": true
+    },
+    {
+     "pixelScale": 2.5,
+     "pixels": "1922x1082",
+     "megapixels": 2.08,
+     "presented_p50": 17.2,
+     "presented_p99": 18.6,
+     "missRatePct": 0,
+     "holdsCadence": true
+    },
+    {
+     "pixelScale": 3,
+     "pixels": "1922x1082",
+     "megapixels": 2.08,
+     "presented_p50": 17.2,
+     "presented_p99": 18.6,
+     "missRatePct": 0,
+     "holdsCadence": true
+    },
+    {
+     "pixelScale": 4,
+     "pixels": "1922x1082",
+     "megapixels": 2.08,
+     "presented_p50": 17.3,
+     "presented_p99": 18.6,
+     "missRatePct": 0,
+     "holdsCadence": true
+    }
+   ]
+  }
+ },
+ "idleCadence_ms": {
+  "n": 114,
+  "mean": 17.33,
+  "p50": 17.1,
+  "p95": 18.1,
+  "p99": 18.1,
+  "max": 18.5
+ },
+ "screen": {
+  "w": 1920,
+  "h": 1080,
+  "dpr": 1.0000000298023224
+ },
+ "title": "SuperSplat Viewer",
+ "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/lod-meta.json",
+ "collisionUrl": "https://s3-eu-west-1.amazonaws.com/splats.playcanvas.com/39e63ce9/v1/scene.voxel.json",
+ "collisionMeta": {
+  "version": "1.0",
+  "gridBounds": {
+   "min": [
+    -10.200000000000001,
+    -7.4,
+    -6.6000000000000005
+   ],
+   "max": [
+    15.200000000000001,
+    2.8000000000000003,
+    11.4
+   ]
+  },
+  "sceneBounds": {
+   "min": [
+    -10.092662759555873,
+    -7.306848486373618,
+    -6.487183063336874
+   ],
+   "max": [
+    15.186271767267018,
+    2.7002375519532427,
+    11.204852223085961
+   ]
+  },
+  "voxelResolution": 0.05,
+  "leafSize": 4,
+  "treeDepth": 7,
+  "numInteriorNodes": 9393,
+  "numMixedLeaves": 33518,
+  "nodeCount": 46796,
+  "leafDataCount": 67036
+ },
+ "loadMs": 969.9,
+ "renderer": {
+  "requested": "webgpu",
+  "isWebGPU": true,
+  "gsplatCurrent": 2,
+  "gpuSortActive": true
+ },
+ "walkAllowed": true,
+ "hasCollision": true,
+ "voxelResolution": 0.05,
+ "cameraFound": true,
+ "spawn": [
+  0.6857250332832336,
+  1.5809873342514038,
+  0.6940217018127441
+ ]
+}

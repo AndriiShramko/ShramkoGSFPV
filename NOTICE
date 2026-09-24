@@ -1,0 +1,45 @@
+ShramkoGSFPV
+Copyright (c) 2026 Andrii Shramko
+https://github.com/AndriiShramko/ShramkoGSFPV
+https://www.linkedin.com/in/andrii-shramko/
+
+This product was conceived, designed and is maintained by Andrii Shramko.
+Redistributions must keep this notice and the LICENSE file.
+
+------------------------------------------------------------------------
+Third-party software
+------------------------------------------------------------------------
+
+PlayCanvas Engine
+  https://github.com/playcanvas/engine
+  MIT License, Copyright (c) PlayCanvas Ltd.
+
+SuperSplat Viewer (@playcanvas/supersplat-viewer)
+  https://github.com/playcanvas/supersplat-viewer
+  MIT License, Copyright (c) PlayCanvas Ltd.
+  The measurement harness in tools/probe/ runs inside a checkout of this
+  project and uses its collision module. Any file vendored from it will keep
+  its original copyright header and be listed here by path.
+
+splat-transform (@playcanvas/splat-transform)
+  https://github.com/playcanvas/splat-transform
+  MIT License, Copyright (c) PlayCanvas Ltd.
+
+------------------------------------------------------------------------
+Acknowledgements
+------------------------------------------------------------------------
+
+SplatFPV (https://github.com/Rouf0x/splatfpv, MIT) showed that browser FPV
+flight through Gaussian splats is possible. No code from it is included.
+
+Rate curve formulas follow the publicly documented behaviour of Betaflight
+and related firmware. They are re-implemented from the formulas; no GPL code
+is copied into this repository.
+
+------------------------------------------------------------------------
+Scene content
+------------------------------------------------------------------------
+
+3D scenes are loaded at runtime from their publishers and are NOT part of
+this repository. They remain the property of their authors and are shown
+with the author's name and license.

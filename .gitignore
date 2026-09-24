@@ -1,0 +1,29 @@
+# dependencies and builds
+node_modules/
+dist/
+out/
+.next/
+build/
+coverage/
+
+# local measurement output and screenshots
+tools/probe/last-result.json
+tools/probe/shot.png
+tools/probe/gsfpv.js
+tools/probe/scenes/
+
+# secrets — never commit
+.env
+.env.*
+!.env.example
+config.env
+*.pem
+*.key
+secrets/
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log

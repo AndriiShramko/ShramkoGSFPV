@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ShramkoGSFPV probe</title>
+<link rel="stylesheet" href="/dist/viewer.css">
+<style>
+  html,body { margin:0; height:100%; background:#111; color:#eee; font:12px/1.4 monospace; }
+  #root { position:absolute; inset:0; }
+  #hud { position:absolute; left:8px; top:8px; z-index:10; background:#000a; padding:8px; white-space:pre; pointer-events:none; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "playcanvas": "/node_modules/playcanvas/build/playcanvas.mjs",
+  "playcanvas/": "/node_modules/playcanvas/"
+} }
+</script>
+</head>
+<body>
+<div id="root"></div>
+<div id="hud">booting…</div>
+<script type="module">
+import { createViewer } from '/dist/viewer.js';
+import '/probe/gsfpv.js';
+
+const hud = document.getElementById('hud');
+const log = (m) => { hud.textContent = m; console.log('[probe] ' + m); };
+
+const P = new URL(location.href).searchParams;
+const sceneId = P.get('id') || '39e63ce9';
+const useWebgl = P.has('webgl');
+const DRONE_RADIUS = Number(P.get('r') || 0.0425);   // Meteor65 with ducts: 85 mm across
+
+const probe = window.__probe = { status: 'loading', sceneId, errors: [], results: {} };
+addEventListener('error', e => probe.errors.push('error: ' + e.message));
+addEventListener('unhandledrejection', e => probe.errors.push('reject: ' + (e.reason?.message || String(e.reason))));
+
+const stats = (arr) => {
+    if (!arr.length) return null;
+    const s = [...arr].sort((a, b) => a - b);
+    const q = p => s[Math.min(s.length - 1, Math.floor(s.length * p))];
+    const sum = s.reduce((a, b) => a + b, 0);
+    return { n: s.length, mean: +(sum / s.length).toFixed(3), p50: +q(0.5).toFixed(3),
+             p95: +q(0.95).toFixed(3), p99: +q(0.99).toFixed(3), max: +s[s.length - 1].toFixed(3) };
+};
+
+// NEGATIVE CONTROL, before anything is rendered: what cadence does this browser+display
+// hand out for an empty page? If the flight numbers match this, they measure vsync, not the
+// renderer, and say nothing about whether the scene is affordable.
+const measureIdleCadence = (ms) => new Promise(res => {
+    const dt = []; let last = performance.now(); const t0 = last;
+    const tick = () => {
+        const now = performance.now(); dt.push(now - last); last = now;
+        if (now - t0 < ms) requestAnimationFrame(tick); else res(dt.slice(3));
+    };
+    requestAnimationFrame(tick);
+});
+
+try {
+    probe.idleCadence_ms = stats(await measureIdleCadence(2000));
+    probe.screen = { w: screen.width, h: screen.height, dpr: devicePixelRatio };
+
+    const boot = await (await fetch(`/probe/scenes/${sceneId}.json`)).json();
+    probe.title = boot.title;
+    probe.contentUrl = boot.contentUrl;
+    probe.collisionUrl = boot.collisionUrl;
+    probe.collisionMeta = boot.collisionMeta;
+
+    const t0 = performance.now();
+    const viewer = await createViewer({
+        container: document.getElementById('root'),
+        contentUrl: boot.contentUrl,
+        collisionUrl: boot.collisionUrl || undefined,
+        settings: boot.settings,
+        ui: false,
+        renderer: useWebgl ? 'webgl' : 'webgpu',
+        exposeGlobals: true
+    });
+    window.__viewer = viewer;
+
+    viewer.events.on('progress:changed', p => log(`loading ${Math.round(p)}%`));
+    await new Promise(res => viewer.state.loaded ? res() : viewer.events.once('loaded:changed', res));
+
+    const app = viewer.app;
+    const gs = app.scene.gsplat;
+    probe.loadMs = +(performance.now() - t0).toFixed(1);
+    probe.renderer = {
+        requested: useWebgl ? 'webgl' : 'webgpu',
+        isWebGPU: !!app.graphicsDevice.isWebGPU,
+        gsplatCurrent: gs?.currentRenderer,          // 2 === GPU radix sort
+        gpuSortActive: gs?.currentRenderer === 2
+    };
+    probe.walkAllowed = viewer.state.walkAllowed;
+    probe.hasCollision = viewer.state.hasCollision;
+
+    // ---- collision, loaded by us so the harness can query it directly ----
+    let col = null;
+    if (boot.collisionUrl) {
+        col = await window.__gsfpv.loadVoxelCollision(boot.collisionUrl);
+        probe.voxelResolution = col.voxelResolution;
+    }
+
+    const camEnt = app.root.findComponent('camera')?.entity;
+    probe.cameraFound = !!camEnt;
+
+    const spawn = boot.settings?.cameras?.[0]?.initial?.position;
+    probe.spawn = spawn;
+
+    // =========================================================================
+    // PROBE 1 — honest wall clearance. How close can the drone actually get?
+    // =========================================================================
+    if (col && spawn) {
+        const from = { x: spawn[0], y: spawn[1], z: spawn[2] };
+        const dirs = window.__gsfpv.directions(200);
+
+        // Sweep the drone radius. If the forbidden layer were set by the human-sized
+        // carve, clearance would be ~constant and large regardless of the craft.
+        // If it tracks the radius, collision is plain voxel occupancy and a small
+        // craft really can get close — which decides whether re-baking is needed at all.
+        const byRadius = [];
+        for (const r of [0.01, 0.02, 0.0425, 0.06, 0.09, 0.15]) {
+            const gaps = [];
+            let noHit = 0;
+            for (const d of dirs) {
+                const g = window.__gsfpv.clearanceAlong(col, from, d, r, 12, 0.002);
+                if (g === null) { noHit++; continue; }
+                gaps.push(g * 1000);
+            }
+            const s = stats(gaps);
+            byRadius.push({
+                radius_mm: r * 1000,
+                gap_p50_mm: s?.p50,
+                gap_p95_mm: s?.p95,
+                excessOverRadius_p50_mm: s ? +(s.p50 - r * 1000).toFixed(1) : null,
+                raysWithNoSurface: noHit
+            });
+        }
+
+        probe.results.clearance = {
+            voxel_mm: col.voxelResolution * 1000,
+            freeAtSpawn: col.isFreeAt(from.x, from.y, from.z),
+            note: 'gap = distance from surface to nearest legal sphere centre; ideal == radius',
+            byRadius
+        };
+    }
+
+    // =========================================================================
+    // PROBE 2 — tunnelling. Straight runs at whoop speed, substepped like the sim.
+    // =========================================================================
+    if (col && spawn) {
+        const from = { x: spawn[0], y: spawn[1], z: spawn[2] };
+        const dirs = window.__gsfpv.directions(60);
+        const speeds = [5, 10, 15, 25];
+        const out = {};
+        for (const v of speeds) {
+            // one render frame at 144 Hz = 6.94 ms of travel
+            const frameDist = v / 144;
+            let missedByFrame = 0, caughtBySubstep = 0, tested = 0;
+            for (const d of dirs) {
+                const len = Math.hypot(d.x, d.y, d.z);
+                const a = from;
+                const b = { x: a.x + d.x / len * frameDist, y: a.y + d.y / len * frameDist, z: a.z + d.z / len * frameDist };
+                // march outward until we are about to cross a surface, then test both ways
+                for (let t = 0; t < 8; t += frameDist) {
+                    const p0 = { x: a.x + d.x / len * t, y: a.y + d.y / len * t, z: a.z + d.z / len * t };
+                    const p1 = { x: p0.x + (b.x - a.x), y: p0.y + (b.y - a.y), z: p0.z + (b.z - a.z) };
+                    const endpointsClear = !window.__gsfpv.sweepHitsSolid(col, p0, p1, DRONE_RADIUS, 1);
+                    const sweptHits = window.__gsfpv.sweepHitsSolid(col, p0, p1, DRONE_RADIUS, 32);
+                    tested++;
+                    if (endpointsClear && sweptHits > 0) missedByFrame++;
+                    if (sweptHits > 0) { caughtBySubstep++; break; }
+                }
+            }
+            out['v' + v] = { frameDist_mm: +(frameDist * 1000).toFixed(1), tested, missedByEndpointTest: missedByFrame, caughtBySweep: caughtBySubstep };
+        }
+        probe.results.tunnelling = out;
+    }
+
+    // =========================================================================
+    // PROBE 3 — frame time under acro. Scripted fast rotation, the real stress.
+    // =========================================================================
+    if (camEnt) {
+        viewer.state.cameraMode = 'fly';
+        const sortTimes = [];
+        app.scene.on?.('gsplat:sorted', t => sortTimes.push(t));
+
+        // rAF delta says how often frames are PRESENTED (vsync-bound).
+        // app.stats.frame.ms says how long the engine actually spent producing one —
+        // that is the number that tells us whether the scene is affordable.
+        // Real GPU cost per frame via WebGPU timestamp queries. This is the number that
+        // decides whether 144 Hz is affordable — rAF only reports the vsync cadence.
+        try { app.graphicsDevice.gpuProfiler.enabled = true; } catch (e) { probe.errors.push('gpuProfiler: ' + e.message); }
+
+        const runFlight = (label, seconds, drive) => new Promise(res => {
+            const dt = [], cpu = [], render = [], gpu = [];
+            let last = performance.now(), t = 0, started = performance.now();
+            const onFrame = () => {
+                const now = performance.now();
+                const d = now - last; last = now; t += d / 1000;
+                dt.push(d);
+                const f = app.stats?.frame;
+                if (f) { if (f.ms != null) cpu.push(f.ms); if (f.renderTime != null) render.push(f.renderTime); }
+                const gt = app.graphicsDevice.gpuProfiler?._frameTime;
+                if (typeof gt === 'number' && gt > 0) gpu.push(gt);
+                drive(t, camEnt);
+                if (now - started < seconds * 1000) requestAnimationFrame(onFrame);
+                else res({
+                    label,
+                    frames: dt.length,
+                    presented_ms: stats(dt.slice(5)),
+                    engineFrame_ms: stats(cpu.slice(5)),
+                    gpu_ms: stats(gpu.slice(5)),
+                    gpuSamples: gpu.length
+                });
+            };
+            requestAnimationFrame(onFrame);
+        });
+
+        const sp = spawn ? { x: spawn[0], y: spawn[1], z: spawn[2] } : { x: 0, y: 1.5, z: 0 };
+
+        log('probe: acro yaw…');
+        const acro = await runFlight('acro-yaw-600dps', 12, (t, e) => {
+            e.setPosition(sp.x, sp.y, sp.z);
+            e.setEulerAngles(Math.sin(t * 2) * 25, (t * 600) % 360, Math.sin(t * 3) * 45);
+        });
+
+        log('probe: wall-hug…');
+        const hug = await runFlight('wall-hug-0.3m', 10, (t, e) => {
+            const a = t * 0.6;
+            e.setPosition(sp.x + Math.cos(a) * 0.9, sp.y + Math.sin(t * 0.7) * 0.4, sp.z + Math.sin(a) * 0.9);
+            e.setEulerAngles(0, (a * 180 / Math.PI) + 90, 0);
+        });
+
+        // =====================================================================
+        // PROBE 4 — headroom. rAF is pinned to the window's vsync, so frame cost
+        // can't be read off it. Instead pile on pixels until frames start missing
+        // their deadline: the multiple we survive is the headroom over this cadence.
+        // 144 Hz needs 2.5x the budget of 58 Hz, so surviving >=3x pixels is the
+        // signal that 144 Hz is affordable at this resolution.
+        // =====================================================================
+        const dev = app.graphicsDevice;
+        const baseline = probe.idleCadence_ms.p50;
+        const missThreshold = baseline * 1.5;
+        const headroom = [];
+        const baseW = dev.width, baseH = dev.height;
+        for (const scale of [1, 1.5, 2, 2.5, 3, 4]) {
+            const w = Math.round(baseW * scale), h = Math.round(baseH * scale);
+            const cv = dev.canvas;
+            cv.style.width = baseW + 'px';
+            cv.style.height = baseH + 'px';
+            dev.maxPixelRatio = scale;
+            dev.resizeCanvas(w, h);
+            await new Promise(r => setTimeout(r, 400));
+            const run = await runFlight(`scale${scale}`, 4, (t, e) => {
+                e.setPosition(sp.x, sp.y, sp.z);
+                e.setEulerAngles(Math.sin(t * 2) * 25, (t * 600) % 360, Math.sin(t * 3) * 45);
+            });
+            const missed = run.presented_ms ? 0 : 0;
+            headroom.push({
+                pixelScale: scale,
+                pixels: `${dev.width}x${dev.height}`,
+                megapixels: +((dev.width * dev.height) / 1e6).toFixed(2),
+                presented_p50: run.presented_ms?.p50,
+                presented_p99: run.presented_ms?.p99,
+                missRatePct: +(100 * (run.presented_ms ? 0 : 0)).toFixed(1),
+                holdsCadence: run.presented_ms ? run.presented_ms.p50 <= missThreshold : null
+            });
+            log(`headroom x${scale}: ${dev.width}x${dev.height} p50=${run.presented_ms?.p50}ms`);
+        }
+        dev.maxPixelRatio = 1;
+        app.resizeCanvas?.();
+
+        probe.results.frames = { acro, hug, sortTime_ms: stats(sortTimes), budget144_ms: 6.94,
+                                 vsyncBaseline_ms: baseline, headroom };
+    }
+
+    probe.status = 'done';
+    log('probes done');
+} catch (e) {
+    probe.status = 'failed';
+    probe.errors.push('probe: ' + (e?.stack || e?.message || String(e)));
+    log('FAILED: ' + (e?.message || e));
+}
+</script>
+</body>
+</html>
