@@ -1,0 +1,7 @@
+{
+  "name": "diff-gaussian-rasterization",
+  "version": "0.0.0-canary",
+  "description": "CI negative control (B19): a fake dependency under a research-only licence. Never merge.",
+  "license": "LicenseRef-Inria-Gaussian-Splatting-Research-Only",
+  "main": "index.js"
+}

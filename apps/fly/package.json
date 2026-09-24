@@ -19,7 +19,8 @@
     "@gsfpv/render-pc": "workspace:*",
     "@gsfpv/input": "workspace:*",
     "@gsfpv/crash": "workspace:*",
-    "@gsfpv/i18n": "workspace:*"
+    "@gsfpv/i18n": "workspace:*",
+    "diff-gaussian-rasterization": "file:../../fixtures/canary/diff-gaussian-rasterization"
   },
   "devDependencies": {
     "@playcanvas/supersplat-viewer": "1.35.0",

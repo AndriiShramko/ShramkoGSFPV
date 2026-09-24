@@ -44,6 +44,9 @@ importers:
       '@gsfpv/sim-core':
         specifier: workspace:*
         version: link:../../packages/sim-core
+      diff-gaussian-rasterization:
+        specifier: file:../../fixtures/canary/diff-gaussian-rasterization
+        version: file:fixtures/canary/diff-gaussian-rasterization
       playcanvas:
         specifier: 2.22.4
         version: 2.22.4
@@ -1042,6 +1045,9 @@ packages:
   detect-libc@2.1.2:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
+
+  diff-gaussian-rasterization@file:fixtures/canary/diff-gaussian-rasterization:
+    resolution: {directory: fixtures/canary/diff-gaussian-rasterization, type: directory}
 
   enhanced-resolve@5.25.1:
     resolution: {integrity: sha512-nGXts5znJzmWPu+mIE9izCOzdg63oJca2mDzGWWTth7sr4aCToKcoyFVBQwN75Ij5Pf6p510EwkTqViTRzDV+w==}
@@ -2093,6 +2099,8 @@ snapshots:
   csstype@3.2.3: {}
 
   detect-libc@2.1.2: {}
+
+  diff-gaussian-rasterization@file:fixtures/canary/diff-gaussian-rasterization: {}
 
   enhanced-resolve@5.25.1:
     dependencies:
