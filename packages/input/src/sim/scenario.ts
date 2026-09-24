@@ -16,9 +16,11 @@ export interface ScenarioPlan {
     /** optional cinematic tour through free corridors (replaces the box) */
     tour?: [number, number, number][];
     tourSpeed?: number;
+    /** optional roll flip: climb to this point, flip once, recover, then fly the route */
+    flipAt?: [number, number, number];
 }
 
-export type Phase = 'arm' | 'hover' | 'box' | 'return' | 'aim' | 'dash' | 'crashed' | 'rest' | 'done';
+export type Phase = 'arm' | 'hover' | 'climb' | 'flip' | 'recover' | 'box' | 'return' | 'aim' | 'dash' | 'crashed' | 'rest' | 'done';
 
 export interface ScenarioLog {
     phase: Phase;
@@ -27,6 +29,7 @@ export interface ScenarioLog {
     maxSpeed: number;
     crash: { tick: number; speed: number; px: number; py: number; pz: number } | null;
     tumbleMaxW: number; // rad/s after the crash
+    flip: { startTick: number; endTick: number; minUpY: number } | null;
 }
 
 export class Scenario {
@@ -35,7 +38,7 @@ export class Scenario {
     readonly plan: ScenarioPlan;
     phase: Phase = 'arm';
     private phaseTick = 0;
-    log: ScenarioLog = { phase: 'arm', phases: [{ phase: 'arm', tick: 0 }], hoverVz: null, maxSpeed: 0, crash: null, tumbleMaxW: 0 };
+    log: ScenarioLog = { phase: 'arm', phases: [{ phase: 'arm', tick: 0 }], hoverVz: null, maxSpeed: 0, crash: null, tumbleMaxW: 0, flip: null };
     /** bot update period in ticks (4 = 250 Hz, a typical radio link) */
     period = 4;
 
@@ -71,14 +74,32 @@ export class Scenario {
             case 'hover':
                 if (el >= 2.5) {
                     this.log.hoverVz = s[S.vy];
-                    if (pl.tour && pl.tour.length) {
-                        this.bot.acceptRadius = 0.35;
-                        this.bot.setTask({ kind: 'path', points: pl.tour, speed: pl.tourSpeed ?? 4, yawDeg: 'along' }, sim);
-                    } else {
-                        this.bot.setTask({ kind: 'path', points: [...pl.box, pl.box[0]], speed: 1.5, yawDeg: pl.spawnYawDeg }, sim);
-                    }
-                    this.go('box', sim);
+                    if (pl.flipAt) {
+                        this.bot.setTask({ kind: 'hover', target: pl.flipAt, yawDeg: pl.spawnYawDeg }, sim);
+                        this.go('climb', sim);
+                    } else this.startRoute(sim);
                 }
+                break;
+            case 'climb':
+                if (el >= 2.5) {
+                    this.log.flip = { startTick: sim.tick, endTick: -1, minUpY: 1 };
+                    this.go('flip', sim);
+                }
+                break;
+            case 'flip': {
+                // body up vector, world y component: 1 upright, -1 inverted
+                const upY = 1 - 2 * (s[S.qx] * s[S.qx] + s[S.qz] * s[S.qz]);
+                const f = this.log.flip!;
+                if (upY < f.minUpY) f.minUpY = upY;
+                if ((f.minUpY < -0.5 && upY > 0.3) || el > 2) {
+                    f.endTick = sim.tick;
+                    this.bot.setTask({ kind: 'hover', target: pl.flipAt!, yawDeg: pl.spawnYawDeg }, sim);
+                    this.go('recover', sim);
+                }
+                break;
+            }
+            case 'recover':
+                if (el >= 2.5) this.startRoute(sim);
                 break;
             case 'box':
                 if (this.bot.status.done || el > 30) {
@@ -125,8 +146,23 @@ export class Scenario {
         }
         if (sim.tick % this.period === 0 && this.phase !== 'done' && this.phase !== 'rest') {
             const ch = this.bot.update(sim);
+            if (this.phase === 'flip') {
+                // full right roll at low throttle: one quick roll, then the bot takes over again
+                ch[0] = 1; ch[1] = 0; ch[3] = 0; ch[2] = -0.4;
+            }
             this.runner.enqueue({ tUs: (sim.tick + 1) * 1000, ch });
         }
+    }
+
+    private startRoute(sim: Sim): void {
+        const pl = this.plan;
+        if (pl.tour && pl.tour.length) {
+            this.bot.acceptRadius = 0.35;
+            this.bot.setTask({ kind: 'path', points: pl.tour, speed: pl.tourSpeed ?? 4, yawDeg: 'along' }, sim);
+        } else {
+            this.bot.setTask({ kind: 'path', points: [...pl.box, pl.box[0]], speed: 1.5, yawDeg: pl.spawnYawDeg }, sim);
+        }
+        this.go('box', sim);
     }
 
     get finished(): boolean {
