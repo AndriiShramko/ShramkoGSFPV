@@ -84,7 +84,7 @@ const K_RELAX = PT1(15);
 const P_SCALE = 0.032029;
 const I_SCALE = 0.244381;
 const D_SCALE = 0.000529;
-// Betaflight 4.5.1 pid_init.c: Kf = FEEDFORWARD_SCALE * (F * 0.01)
+// Betaflight 4.5.1 (pid_init.c line 278) scales the F gain by 0.01 on top of the FF scale
 const F_SCALE = 0.013754 * 0.01;
 const ITERM_LIMIT = 400;
 const RELAX_THRESHOLD = 40;

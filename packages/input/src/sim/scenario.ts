@@ -13,6 +13,9 @@ export interface ScenarioPlan {
     wallDir: [number, number, number] | null; // horizontal unit vector towards the wall
     wallYawDeg: number;
     dashSpeed: number; // m/s
+    /** optional cinematic tour through free corridors (replaces the box) */
+    tour?: [number, number, number][];
+    tourSpeed?: number;
 }
 
 export type Phase = 'arm' | 'hover' | 'box' | 'return' | 'aim' | 'dash' | 'crashed' | 'rest' | 'done';
@@ -68,14 +71,25 @@ export class Scenario {
             case 'hover':
                 if (el >= 2.5) {
                     this.log.hoverVz = s[S.vy];
-                    this.bot.setTask({ kind: 'path', points: [...pl.box, pl.box[0]], speed: 1.5, yawDeg: pl.spawnYawDeg }, sim);
+                    if (pl.tour && pl.tour.length) {
+                        this.bot.acceptRadius = 0.35;
+                        this.bot.setTask({ kind: 'path', points: pl.tour, speed: pl.tourSpeed ?? 4, yawDeg: 'along' }, sim);
+                    } else {
+                        this.bot.setTask({ kind: 'path', points: [...pl.box, pl.box[0]], speed: 1.5, yawDeg: pl.spawnYawDeg }, sim);
+                    }
                     this.go('box', sim);
                 }
                 break;
             case 'box':
-                if (this.bot.status.done || el > 20) {
-                    this.bot.setTask({ kind: 'path', points: [pl.spawn], speed: 1.2, yawDeg: pl.spawnYawDeg }, sim);
-                    this.go('return', sim);
+                if (this.bot.status.done || el > 30) {
+                    if (pl.tour && pl.tour.length) {
+                        // tour ends where the dash starts: aim straight away
+                        this.bot.setTask({ kind: 'hover', target: [s[S.px], s[S.py], s[S.pz]], yawDeg: pl.wallYawDeg }, sim);
+                        this.go('aim', sim);
+                    } else {
+                        this.bot.setTask({ kind: 'path', points: [pl.spawn], speed: 1.2, yawDeg: pl.spawnYawDeg }, sim);
+                        this.go('return', sim);
+                    }
                 }
                 break;
             case 'return':

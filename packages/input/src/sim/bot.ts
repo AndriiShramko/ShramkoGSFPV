@@ -11,7 +11,7 @@ import type { Sim, SimParams } from '@gsfpv/sim-core';
 export type BotTask =
     | { kind: 'idle' }
     | { kind: 'hover'; target: [number, number, number]; yawDeg: number }
-    | { kind: 'path'; points: [number, number, number][]; speed: number; yawDeg: number }
+    | { kind: 'path'; points: [number, number, number][]; speed: number; yawDeg: number | 'along' }
     | { kind: 'dash'; from: [number, number, number]; dir: [number, number, number]; speed: number; yawDeg: number };
 
 export interface BotStatus {
@@ -36,6 +36,7 @@ export class BotPilot {
     tiltMaxDeg = 75;
     /** waypoint acceptance radius, m */
     acceptRadius = 0.1;
+    private alongYaw = 0;
 
     constructor(p: SimParams) {
         this.p = p;
@@ -98,7 +99,13 @@ export class BotPilot {
             tx = t.from[0] + t.dir[0] * along; ty = t.from[1] + t.dir[1] * along; tz = t.from[2] + t.dir[2] * along;
             vtx = t.dir[0] * vAlong; vty = t.dir[1] * vAlong; vtz = t.dir[2] * vAlong;
         }
-        const yawDeg = t.yawDeg;
+        let yawDeg: number;
+        if (t.yawDeg === 'along') {
+            // nose follows the direction of travel (cinematic flight)
+            const hv = Math.sqrt(vtx * vtx + vtz * vtz);
+            if (hv > 0.3) this.alongYaw = (Math.atan2(vtx, -vtz) * 180) / Math.PI;
+            yawDeg = this.alongYaw;
+        } else yawDeg = t.yawDeg;
 
         // desired acceleration
         let ax = this.kp * (tx - px) + this.kd * (vtx - s[S.vx]);
