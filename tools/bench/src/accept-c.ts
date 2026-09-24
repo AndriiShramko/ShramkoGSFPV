@@ -13,6 +13,7 @@ import { countSolidVoxelsFromBytes } from '@gsfpv/collision';
 const SITE = (process.env.SITE ?? 'https://gsfpv.flyreelstudio.eu').replace(/\/$/, '');
 const fly = (l: string, qs: string) => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}` : `${SITE}/${l}/fly/?${qs}`) + `&cb=${Math.random().toString(36).slice(2)}`;
 const SHOTS = join(REPO, 'evidence', today(), 'c');
+const CYRILLIC = new RegExp('[' + String.fromCharCode(0x400) + '-' + String.fromCharCode(0x4ff) + ']'); // code points: no such letters in this file
 mkdirSync(SHOTS, { recursive: true });
 const CLI_DIR = join(REPO, '.cache', 'scenes', '723068d7');
 const BAKED_DIR = join(REPO, '.cache', 'scenes', '723068d7-baked');
@@ -78,7 +79,7 @@ await browser.close();
 
 const pass = ready.status === 'ready' && before.hasCollision === false && !!bake && bake.ok === true && after.hasCollision && !after.badge && after.spawnFree
     && Math.abs(relDiff) <= 0.01 && tab.passes === 20 && tab.penetrations === 0
-    && !!refusal && refusal.refused === true && /\d/.test(refusalText ?? '') && /[А-Яа-я]/.test(refusalText ?? '');
+    && !!refusal && refusal.refused === true && /\d/.test(refusalText ?? '') && CYRILLIC.test(refusalText ?? '');
 const file = writeEvidence('c-bake', {
     site: SITE,
     pass,

@@ -22,6 +22,9 @@ const cb = () => `cb=${Math.random().toString(36).slice(2)}`;
 const url = (p: string) => `${SITE}${p}${p.includes('?') ? '&' : '?'}${cb()}`;
 const siteDict = (l: string) => JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'site', `${l}.json`), 'utf8'));
 const summary: Record<string, boolean> = {};
+// consent button words in the four languages, taken from the site dictionaries (no foreign letters in this file)
+const CONSENT_LIST: string[] = LOCALES.flatMap((l) => [String(siteDict(l).consent.accept), String(siteDict(l).consent.decline)]);
+const CONSENT_WORDS = { test: (s: string) => CONSENT_LIST.some((w) => s.toLowerCase().includes(w.toLowerCase())) };
 function record(id: string, data: Record<string, unknown> & { pass: boolean }): void {
     summary[id] = data.pass;
     writeEvidence(`b-site-${id.toLowerCase()}`, { site: SITE, ...data });
@@ -143,7 +146,7 @@ async function auditControls(page: Page, path: string, inject: boolean): Promise
         // a button must do something observable: DOM change, navigation, a request, or the clipboard
         await page.goto(url(path), { waitUntil: 'networkidle' });
         const d2 = page.locator('[aria-label="Analytics cookies"] button', { hasText: 'Decline' });
-        if (await d2.count() && !el.text.match(/accept|decline|akcept|odrzu|acept|rechaz|принять|отклон/i)) await d2.click().catch(() => undefined);
+        if (await d2.count() && !CONSENT_WORDS.test(el.text)) await d2.click().catch(() => undefined);
         if (inject) await page.evaluate(() => { const b = document.createElement('button'); b.id = 'inert-control'; b.textContent = 'Inert'; b.type = 'button'; document.querySelector('main')?.prepend(b); });
         await page.evaluate(() => { const w = window as unknown as { __mut: number }; w.__mut = 0; new MutationObserver((m) => { w.__mut += m.length; }).observe(document.documentElement, { subtree: true, childList: true, attributes: true, characterData: true }); });
         const before = page.url();

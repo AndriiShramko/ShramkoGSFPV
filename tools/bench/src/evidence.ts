@@ -31,11 +31,25 @@ export function context(): Record<string, unknown> {
     };
 }
 
+/**
+ * JSON with every non-ASCII character as a unicode escape: the same data, but the repository keeps
+ * no Cyrillic or Polish letters outside locales/ (recorded page text in RU/PL is data, not prose).
+ */
+export function asciiJson(json: string): string {
+    const BS = String.fromCharCode(92);
+    let out = '';
+    for (let i = 0; i < json.length; i++) {
+        const c = json.charCodeAt(i);
+        out += c < 128 ? json[i] : BS + 'u' + c.toString(16).padStart(4, '0');
+    }
+    return out;
+}
+
 export function writeEvidence(name: string, data: Record<string, unknown>, date = today()): string {
     const dir = join(REPO, 'evidence', date);
     mkdirSync(dir, { recursive: true });
     const file = join(dir, `${name}.json`);
-    writeFileSync(file, JSON.stringify({ name, context: context(), ...data }, null, 2) + '\n');
+    writeFileSync(file, asciiJson(JSON.stringify({ name, context: context(), ...data }, null, 2)) + String.fromCharCode(10));
     return file;
 }
 

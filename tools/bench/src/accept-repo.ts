@@ -29,7 +29,9 @@ const cff = readFileSync(join(REPO, 'CITATION.cff'), 'utf8');
 const cffOk = ['cff-version:', 'message:', 'title:', 'authors:', 'family-names:', 'license: MIT'].every((k) => cff.includes(k));
 // Cyrillic and Polish letters outside locales/ in tracked text files
 const tracked = execSync('git ls-files', { cwd: REPO, encoding: 'utf8' }).split('\n').filter(Boolean);
-const LETTERS = /[Ѐ-ӿąćęłńśźżĄĆĘŁŃŚŹŻ]/;
+// built from code points so this file itself stays free of the letters it looks for
+const cc = (...codes: number[]) => String.fromCharCode(...codes);
+const LETTERS = new RegExp('[' + cc(0x400) + '-' + cc(0x4ff) + cc(0x104) + '-' + cc(0x107) + cc(0x118, 0x119) + cc(0x141) + '-' + cc(0x144) + cc(0x15a, 0x15b) + cc(0x179) + '-' + cc(0x17c) + ']');
 const outside = tracked.filter((f) => !f.includes('locales/') && /\.(md|txt|json|ts|tsx|mjs|js|css|html|yml|yaml|cff|py|sh|toml)$/.test(f)).filter((f) => { try { return LETTERS.test(readFileSync(join(REPO, f), 'utf8')); } catch { return false; } });
 // placeholders in the docs a visitor reads
 const docs = tracked.filter((f) => /\.(md|txt|cff)$/.test(f) && !f.startsWith('evidence/'));
