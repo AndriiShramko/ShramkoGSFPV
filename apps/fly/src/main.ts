@@ -53,6 +53,9 @@ interface TestHook {
     events: SimEvent[];
     savedLogs: SavedLog[];
     saveLog?: (label: string) => SavedLog;
+    /** B15: replay the log saved in localStorage (optionally with one LSB flipped) in this tab */
+    verifyLastLog?: (tamper?: { record: number; channel: number }) => { saved: string; endTick: number; hash: string; track: number[]; tampered: number | null } | null;
+    loops?: number;
 }
 const hook: TestHook = { status: 'loading', events: [], savedLogs: [] };
 (window as unknown as { __gsfpv: TestHook }).__gsfpv = hook;
@@ -175,6 +178,13 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
     if (!session.collision) {
         ui.append(h('div', { class: 'badge-nowalls', role: 'status', 'data-testid': 'no-collision' }, t('scenes.noCollisionBadge')));
     }
+    // S5: another world with the same motors -> say what that does to thrust / weight before flying
+    const gNow = session.params.gravity;
+    if (gNow > 0 && gNow < 9.8 && (session.overrides.gravityMode ?? 'honest') === 'honest') {
+        const warn = h('div', { class: 'banner', role: 'note', 'data-testid': 'gravity-warning' }, t('settings.gravityWarning', { g: gNow.toFixed(2), x: (9.81 / gNow).toFixed(1) }));
+        ui.append(warn);
+        setTimeout(() => warn.remove(), 12000);
+    }
 
     const controls = new Controls(session);
     hook.controls = controls;
@@ -199,6 +209,7 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
     }
 
     hook.saveLog = (label: string) => saveLog(session, label);
+    hook.verifyLastLog = (tamper) => verifyLastLog(session, tamper);
 
     session.onEvent = (e) => {
         hook.events.push(e);
@@ -326,10 +337,37 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
             ? makeTourPlan(col, p.boundRadius, [session.spawn[0], session.spawn[1], session.spawn[2]], cam.target, Number(q.get('dash') ?? 2 * p.vCrash))
             : makePlan(col, p.boundRadius, [session.spawn[0], session.spawn[1], session.spawn[2]], cam.target, Number(q.get('dash') ?? 2 * p.vCrash),
                 (x, y, z, r, o) => findSphereSpawn(col, x, y, z, r, o));
+        if (q.get('flip') === '1') {
+            // flip point: straight above the spawn with 0.6 m of air above the craft (at most +1.5 m)
+            const up = col.queryRay(plan.spawn[0], plan.spawn[1], plan.spawn[2], 0, 1, 0, 3);
+            const room = up ? up.y - plan.spawn[1] - 0.6 - p.boundRadius : 1.5;
+            plan.flipAt = [plan.spawn[0], plan.spawn[1] + Math.max(0, Math.min(1.5, room)), plan.spawn[2]];
+        }
         session.runner.respawn(plan.spawn[0], plan.spawn[1], plan.spawn[2], plan.spawnYawDeg);
         if (simMode === 'open') session.sim.world = new VoxelContactWorld(syntheticOpen(0.05, 1000));
         hook.scenario = new Scenario(session.runner, plan);
         controls.source = 'sim';
+        // B17: crash loop — after each crash settles, respawn and fly the same plan again
+        let loopsLeft = Number(q.get('loop') ?? 0);
+        hook.loops = 0;
+        let restSince = 0;
+        if (loopsLeft > 0) {
+            const prevFrame = session.onFrame;
+            session.onFrame = (s, dt) => {
+                prevFrame?.(s, dt);
+                const sc = hook.scenario;
+                if (!sc || !sc.finished || loopsLeft <= 0) { restSince = 0; return; }
+                const now = performance.now();
+                if (!restSince) restSince = now;
+                if (now - restSince < 2500) return; // crash camera and overlay play out first
+                restSince = 0;
+                loopsLeft--;
+                hook.loops = (hook.loops ?? 0) + 1;
+                afterCrashCleared();
+                session.runner.respawn(plan.spawn[0], plan.spawn[1], plan.spawn[2], plan.spawnYawDeg);
+                hook.scenario = new Scenario(session.runner, plan);
+            };
+        }
     } else if (simMode === 'raw') {
         // simulated EdgeTX radio (raw 19-byte reports) running the calibration wizard like a person
         const fake = new FakeEdgeTx({
@@ -397,6 +435,25 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
     if (q.get('clean') === '1') document.body.classList.add('clean'); // recording: flight view + OSD only
     hook.status = 'ready';
     void S;
+}
+
+function verifyLastLog(s: FlightSession, tamper?: { record: number; channel: number }): ReturnType<NonNullable<TestHook['verifyLastLog']>> {
+    let raw: string | null = null;
+    try { raw = localStorage.getItem('gsfpv.lastLog'); } catch { raw = null; }
+    if (!raw) return null;
+    const j = JSON.parse(raw) as { header: InputLog['header']; endTick: number; hash: string; b64: string };
+    const bin = atob(j.b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    let tampered: number | null = null;
+    if (tamper) {
+        // least significant byte of a little-endian float32 channel value: 1 LSB of the mantissa
+        const off = tamper.record * InputLog.REC + 4 + tamper.channel * 4;
+        tampered = new DataView(bytes.buffer).getFloat32(off, true);
+        bytes[off] ^= 1;
+    }
+    const r = s.replayTrack(InputLog.fromBytes(j.header, bytes), j.endTick);
+    return { saved: j.hash, endTick: j.endTick, hash: r.hash, track: r.track, tampered };
 }
 
 function saveLog(s: FlightSession, label: string): SavedLog {

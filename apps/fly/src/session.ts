@@ -318,9 +318,23 @@ export class FlightSession {
         return replayLog(sim, log, endTick);
     }
 
+    /** Replay a log and sample the position every `every` ticks (B15: divergence of a tampered log). */
+    replayTrack(log: InputLog, endTick: number, every = 100): { hash: string; track: number[] } {
+        const h = log.header;
+        const sim = new Sim(this.params, this.world);
+        sim.reset(h.spawn[0], h.spawn[1], h.spawn[2], h.spawn[3]);
+        const track: number[] = [];
+        const hash = replayLog(sim, log, endTick, (x) => { if (x.tick % every === 0) track.push(x.s[S.px], x.s[S.py], x.s[S.pz]); });
+        return { hash, track };
+    }
+
     // ------------------------------------------------------------------ self-tests used by acceptance
 
-    /** Thrust-to-weight measured in the model: level, full throttle, (a + g) / g. */
+    /**
+     * Thrust-to-weight measured in the model like on a thrust stand: level, full throttle, the craft
+     * held in place while the motors spin up (so drag does not enter), then released for 20 ms;
+     * (a + g) / g. Battery sag under load stays in, as on a real stand.
+     */
     measureTwr(): number {
         const sim = new Sim(this.params, null);
         sim.reset(0, 100, 0, 0);
@@ -328,10 +342,10 @@ export class FlightSession {
         sim.setChannels(ch); sim.step();
         ch[4] = 1; sim.setChannels(ch); sim.step();
         ch[2] = 1; sim.setChannels(ch);
-        for (let i = 0; i < 150; i++) sim.step();
-        const v0 = sim.s[S.vy];
-        for (let i = 0; i < 50; i++) sim.step();
-        const a = (sim.s[S.vy] - v0) / 0.05;
+        const hold = () => { sim.s[S.px] = 0; sim.s[S.py] = 100; sim.s[S.pz] = 0; sim.s[S.vx] = 0; sim.s[S.vy] = 0; sim.s[S.vz] = 0; };
+        for (let i = 0; i < 300; i++) { sim.step(); hold(); }
+        for (let i = 0; i < 20; i++) sim.step();
+        const a = sim.s[S.vy] / 0.02;
         return (a + this.params.gravity) / this.params.gravity;
     }
 
