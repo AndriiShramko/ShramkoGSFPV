@@ -1,0 +1,119 @@
+{
+  "name": "b-site-b4",
+  "context": {
+    "date": "2026-09-24T17:29:00.350Z",
+    "gitHead": "19550c6",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "sitemap": {
+    "status": 200,
+    "locs": 12
+  },
+  "robots": {
+    "status": 200,
+    "aiCrawlersAllowed": true
+  },
+  "llms": 200,
+  "ogImage": {
+    "w": 1200,
+    "h": 630
+  },
+  "canonical": {
+    "ok": true,
+    "pages": {
+      "/en/": "https://gsfpv.flyreelstudio.eu/en/",
+      "/en/privacy/": "https://gsfpv.flyreelstudio.eu/en/privacy/",
+      "/en/licenses/": "https://gsfpv.flyreelstudio.eu/en/licenses/",
+      "/es/": "https://gsfpv.flyreelstudio.eu/es/",
+      "/es/privacy/": "https://gsfpv.flyreelstudio.eu/es/privacy/",
+      "/es/licenses/": "https://gsfpv.flyreelstudio.eu/es/licenses/",
+      "/pl/": "https://gsfpv.flyreelstudio.eu/pl/",
+      "/pl/privacy/": "https://gsfpv.flyreelstudio.eu/pl/privacy/",
+      "/pl/licenses/": "https://gsfpv.flyreelstudio.eu/pl/licenses/",
+      "/ru/": "https://gsfpv.flyreelstudio.eu/ru/",
+      "/ru/privacy/": "https://gsfpv.flyreelstudio.eu/ru/privacy/",
+      "/ru/licenses/": "https://gsfpv.flyreelstudio.eu/ru/licenses/"
+    }
+  },
+  "jsonLd": {
+    "en": [
+      "SoftwareApplication",
+      "SoftwareSourceCode",
+      "Person",
+      "FAQPage"
+    ],
+    "es": [
+      "SoftwareApplication",
+      "SoftwareSourceCode",
+      "Person",
+      "FAQPage"
+    ],
+    "pl": [
+      "SoftwareApplication",
+      "SoftwareSourceCode",
+      "Person",
+      "FAQPage"
+    ],
+    "ru": [
+      "SoftwareApplication",
+      "SoftwareSourceCode",
+      "Person",
+      "FAQPage"
+    ]
+  },
+  "contacts": {
+    "en": {
+      "name": true,
+      "linkedin": true,
+      "calendar": true,
+      "email": true,
+      "github": true,
+      "phrase": true,
+      "agentBlock": true,
+      "risks": true
+    },
+    "es": {
+      "name": true,
+      "linkedin": true,
+      "calendar": true,
+      "email": true,
+      "github": true,
+      "phrase": true,
+      "agentBlock": true,
+      "risks": true
+    },
+    "pl": {
+      "name": true,
+      "linkedin": true,
+      "calendar": true,
+      "email": true,
+      "github": true,
+      "phrase": true,
+      "agentBlock": true,
+      "risks": true
+    },
+    "ru": {
+      "name": true,
+      "linkedin": true,
+      "calendar": true,
+      "email": true,
+      "github": true,
+      "phrase": true,
+      "agentBlock": true,
+      "risks": true
+    }
+  },
+  "lighthouseA11yMobile": {
+    "en": 100,
+    "ru": 100
+  },
+  "control": {
+    "brokenJsonLdCaught": true
+  },
+  "placeholders": "checked by scripts/smoke-release.mjs on the live site (visible text)"
+}

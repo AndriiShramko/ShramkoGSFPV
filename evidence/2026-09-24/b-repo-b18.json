@@ -1,0 +1,95 @@
+{
+  "name": "b-repo-b18",
+  "context": {
+    "date": "2026-09-24T16:06:48.284Z",
+    "gitHead": "b958e86",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "repo": {
+    "private": false,
+    "description": "Open-source browser FPV drone simulator for 3D Gaussian Splatting scans (SuperSplat): quadcopter physics with Betaflight rates and PID, swept voxel collision with real crashes, EdgeTX radio over WebHID, gamepad or touch. WebGPU + PlayCanvas. Fly: gsfpv.flyreelstudio.eu",
+    "topics": [
+      "3d-gaussian-splatting",
+      "betaflight",
+      "browser-game",
+      "drone-simulator",
+      "edgetx",
+      "flight-simulator",
+      "fpv",
+      "fpv-simulator",
+      "gaussian-splatting",
+      "playcanvas",
+      "quadcopter",
+      "supersplat",
+      "webgpu",
+      "webhid"
+    ],
+    "license": "MIT",
+    "homepage": "https://gsfpv.flyreelstudio.eu"
+  },
+  "readme": {
+    "siteLink": true,
+    "siteStatus": 200,
+    "screenshots": [
+      {
+        "p": "apps/site/public/media/hero-poster.jpg",
+        "exists": true
+      }
+    ]
+  },
+  "files": [
+    {
+      "f": "NOTICE",
+      "exists": true
+    },
+    {
+      "f": "CITATION.cff",
+      "exists": true
+    },
+    {
+      "f": "AGENTS.md",
+      "exists": true
+    },
+    {
+      "f": "AGENT_SETUP.md",
+      "exists": true
+    },
+    {
+      "f": "llms.txt",
+      "exists": true
+    },
+    {
+      "f": "SECURITY.md",
+      "exists": true
+    },
+    {
+      "f": "docs/warnings.md",
+      "exists": true
+    },
+    {
+      "f": "docs/PROVENANCE.md",
+      "exists": true
+    },
+    {
+      "f": "LICENSE",
+      "exists": true
+    }
+  ],
+  "citationCffValid": true,
+  "cyrillicOrPolishOutsideLocales": [],
+  "placeholdersInDocs": [],
+  "mainProtection": {
+    "status": 200,
+    "forcePushAllowed": false,
+    "requiredChecks": [
+      "test-and-build"
+    ]
+  },
+  "control": {
+    "readmeLinkToSiteAnswers": 200
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "name": "b-fly-b14",
+  "context": {
+    "date": "2026-09-24T16:09:47.508Z",
+    "gitHead": "516200b",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "note": "touch through CDP Input.dispatchTouchEvent in system Chrome with hasTouch; input=touch because desktop Chrome has WebHID",
+  "rows": [
+    {
+      "viewport": "375x812",
+      "armedByButton": true,
+      "bothPairsOneFrame": {
+        "ch": [
+          -0.4168365001678467,
+          0.31262579560279846,
+          -0.9378824234008789,
+          0.31262752413749695
+        ],
+        "ok": true
+      },
+      "hover": {
+        "seconds": 10,
+        "crashed": false,
+        "armedAll": true,
+        "minY": 3.4081370531923474,
+        "maxY": 5.83087385294515,
+        "target": 2.3786547305178654
+      },
+      "view": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "scale": 1
+      },
+      "control": {
+        "outsideTouch": {
+          "before": [
+            0,
+            0,
+            -1,
+            0
+          ],
+          "after": [
+            0,
+            0,
+            -1,
+            0
+          ],
+          "fired": true
+        }
+      }
+    },
+    {
+      "viewport": "1024x768",
+      "armedByButton": true,
+      "bothPairsOneFrame": {
+        "ch": [
+          -0.4095241129398346,
+          0.3071419894695282,
+          -0.9214295744895935,
+          0.30714306235313416
+        ],
+        "ok": true
+      },
+      "hover": {
+        "seconds": 10,
+        "crashed": false,
+        "armedAll": true,
+        "minY": 2.6921900190465387,
+        "maxY": 3.1005002600630562,
+        "target": 2.3848174856509585
+      },
+      "view": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "scale": 1
+      },
+      "control": {
+        "outsideTouch": {
+          "before": [
+            0,
+            0,
+            -1,
+            0
+          ],
+          "after": [
+            0,
+            0,
+            -1,
+            0
+          ],
+          "fired": true
+        }
+      }
+    }
+  ]
+}

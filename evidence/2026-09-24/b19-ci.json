@@ -1,0 +1,55 @@
+{
+  "name": "b19-ci",
+  "context": {
+    "date": "2026-09-24T17:27:33.099681Z"
+  },
+  "pass": true,
+  "main": {
+    "runs": [
+      {
+        "sha": "2b579b0",
+        "run": 36023359127,
+        "conclusion": "success"
+      },
+      {
+        "sha": "b958e86",
+        "run": 36024085950,
+        "conclusion": "success"
+      }
+    ],
+    "steps": [
+      "Install",
+      "Typecheck",
+      "Lint (architecture rules)",
+      "Dependency licences",
+      "Unit tests, rate vectors, tunnelling and determinism subset",
+      "Build release",
+      "Smoke the release behind the real nginx config",
+      "Secret scan (full history)",
+      "upload dist artifact"
+    ]
+  },
+  "controls": [
+    {
+      "pr": 1,
+      "branch": "canary/failing-test",
+      "what": "a deliberately failing unit test",
+      "run": 36024669648,
+      "conclusion": "failure",
+      "failedStep": "Unit tests, rate vectors, tunnelling and determinism subset",
+      "closedWithoutMerge": true,
+      "branchDeleted": true
+    },
+    {
+      "pr": 2,
+      "branch": "canary/research-licence",
+      "what": "fake dependency \"diff-gaussian-rasterization\" under a research-only licence",
+      "run": 36034310215,
+      "conclusion": "failure",
+      "failedStep": "Dependency licences",
+      "closedWithoutMerge": true,
+      "branchDeleted": true
+    }
+  ],
+  "note": "the first main run (b98d8fa) failed on gitleaks: a false positive on a localStorage key name, fixed with a fingerprint in .gitleaksignore; see b20-secret-scan.json"
+}

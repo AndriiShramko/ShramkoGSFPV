@@ -1,0 +1,123 @@
+{
+  "name": "b-fly-b10",
+  "context": {
+    "date": "2026-09-24T16:08:00.257Z",
+    "gitHead": "b958e86",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "radio": "SimRadio EdgeTX Classic (simulated raw HID reports, NOT a real radio)",
+  "good": {
+    "step": 6,
+    "profile": {
+      "version": 1,
+      "deviceKey": "hid:1209:4f54:SimRadio EdgeTX Classic TAER:19",
+      "deviceName": "SimRadio EdgeTX Classic",
+      "axes": {
+        "throttle": {
+          "index": 0,
+          "invert": false,
+          "center": -0.978515625,
+          "min": -0.978515625,
+          "max": 0.9990234375
+        },
+        "yaw": {
+          "index": 3,
+          "invert": false,
+          "center": 0.030484375,
+          "min": -0.9775390625,
+          "max": 0.9990234375
+        },
+        "roll": {
+          "index": 1,
+          "invert": false,
+          "center": 0.02935546875,
+          "min": -0.978515625,
+          "max": 0.9990234375
+        },
+        "pitch": {
+          "index": 2,
+          "invert": true,
+          "center": 0.03006640625,
+          "min": -0.978515625,
+          "max": 0.9990234375
+        }
+      },
+      "arm": {
+        "kind": "axis",
+        "index": 4,
+        "threshold": 0,
+        "onAbove": true
+      },
+      "angleMode": null,
+      "deadband": 0,
+      "created": "2026-09-24T16:07:14.604Z"
+    },
+    "mappingCorrect": true
+  },
+  "throttleUpClimbs": {
+    "armed": true,
+    "y0": 1.2136819713554599,
+    "y1": 1.844370760326917,
+    "climbed": 0.6306887889714572
+  },
+  "survivesReload": true,
+  "controls": {
+    "otherOrder": {
+      "profile": {
+        "version": 1,
+        "deviceKey": "hid:1209:4f54:SimRadio EdgeTX Classic AETR:19",
+        "deviceName": "SimRadio EdgeTX Classic",
+        "axes": {
+          "throttle": {
+            "index": 2,
+            "invert": false,
+            "center": -0.9775390625,
+            "min": -0.9775390625,
+            "max": 0.9990234375
+          },
+          "yaw": {
+            "index": 3,
+            "invert": false,
+            "center": 0.03022265625,
+            "min": -0.9775390625,
+            "max": 0.9990234375
+          },
+          "roll": {
+            "index": 0,
+            "invert": false,
+            "center": 0.03015234375,
+            "min": -0.9765625,
+            "max": 0.9990234375
+          },
+          "pitch": {
+            "index": 1,
+            "invert": false,
+            "center": 0.02908203125,
+            "min": -0.978515625,
+            "max": 0.9990234375
+          }
+        },
+        "arm": {
+          "kind": "axis",
+          "index": 4,
+          "threshold": 0,
+          "onAbove": true
+        },
+        "angleMode": null,
+        "deadband": 0,
+        "created": "2026-09-24T16:07:32.239Z"
+      },
+      "fired": true
+    },
+    "brokenStick": {
+      "step": 3,
+      "message": "wizard.step3.pitch",
+      "fired": true
+    }
+  }
+}

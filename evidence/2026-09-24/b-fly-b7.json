@@ -1,0 +1,84 @@
+{
+  "name": "b-fly-b7",
+  "context": {
+    "date": "2026-09-24T16:05:43.951Z",
+    "gitHead": "b958e86",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "rows": [
+    {
+      "id": "723068d7",
+      "l": "en",
+      "status": "ready",
+      "hasCollision": false,
+      "badge": "Scan without walls: you can fly around, but you cannot crash",
+      "expected": "Scan without walls: you can fly around, but you cannot crash"
+    },
+    {
+      "id": "723068d7",
+      "l": "es",
+      "status": "ready",
+      "hasCollision": false,
+      "badge": "Escaneo sin paredes: puedes volar por todas partes, pero no te puedes estrellar",
+      "expected": "Escaneo sin paredes: puedes volar por todas partes, pero no te puedes estrellar"
+    },
+    {
+      "id": "723068d7",
+      "l": "pl",
+      "status": "ready",
+      "hasCollision": false,
+      "badge": "Skan bez ścian: możesz latać, ale się nie rozbijesz",
+      "expected": "Skan bez ścian: możesz latać, ale się nie rozbijesz"
+    },
+    {
+      "id": "723068d7",
+      "l": "ru",
+      "status": "ready",
+      "hasCollision": false,
+      "badge": "Скан без стен: летать можно, а разбиться — нет",
+      "expected": "Скан без стен: летать можно, а разбиться — нет"
+    },
+    {
+      "id": "bd04e182",
+      "l": "en",
+      "status": "ready",
+      "hasCollision": false,
+      "badge": "Scan without walls: you can fly around, but you cannot crash",
+      "expected": "Scan without walls: you can fly around, but you cannot crash"
+    },
+    {
+      "id": "bd04e182",
+      "l": "es",
+      "status": "ready",
+      "hasCollision": false,
+      "badge": "Escaneo sin paredes: puedes volar por todas partes, pero no te puedes estrellar",
+      "expected": "Escaneo sin paredes: puedes volar por todas partes, pero no te puedes estrellar"
+    },
+    {
+      "id": "bd04e182",
+      "l": "pl",
+      "status": "ready",
+      "hasCollision": false,
+      "badge": "Skan bez ścian: możesz latać, ale się nie rozbijesz",
+      "expected": "Skan bez ścian: możesz latać, ale się nie rozbijesz"
+    },
+    {
+      "id": "bd04e182",
+      "l": "ru",
+      "status": "ready",
+      "hasCollision": false,
+      "badge": "Скан без стен: летать можно, а разбиться — нет",
+      "expected": "Скан без стен: летать можно, а разбиться — нет"
+    }
+  ],
+  "control": {
+    "scene": "39e63ce9",
+    "badges": 0,
+    "fired": true
+  }
+}

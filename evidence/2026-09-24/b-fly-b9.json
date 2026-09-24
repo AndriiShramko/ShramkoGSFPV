@@ -1,0 +1,38 @@
+{
+  "name": "b-fly-b9",
+  "context": {
+    "date": "2026-09-24T16:06:48.763Z",
+    "gitHead": "b958e86",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "method": "thrust stand in the model: motors spun up while held, released 20 ms, (a+g)/g",
+  "rows": [
+    {
+      "preset": "pavo20pro-3s",
+      "twrPreset": 5,
+      "twrMeasured": 4.985023894219221
+    },
+    {
+      "preset": "pavo20pro2-3s",
+      "twrPreset": 5.9,
+      "twrMeasured": 5.879633080265451
+    },
+    {
+      "preset": "pavopico-2s",
+      "twrPreset": 4,
+      "twrMeasured": 3.9896946009128404
+    }
+  ],
+  "sourceLabels": 30,
+  "cards": 6,
+  "control": {
+    "picoMeasured": 3.9896946009128404,
+    "defaultMeasured": 4.985023894219221,
+    "fired": true
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "name": "b-fly-b12",
+  "context": {
+    "date": "2026-09-24T16:09:00.478Z",
+    "gitHead": "516200b",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "vCrash": 4,
+  "dashTarget": 8,
+  "crash": {
+    "tick": 10291,
+    "speed": 7.906511243139527,
+    "px": -5.199229089884253,
+    "py": 1.5005116844629063,
+    "pz": 0.7299006309934759
+  },
+  "tumbleMaxW": 118.86935433852761,
+  "wreck": {
+    "speed": 7.906511243139527,
+    "tick": 10291,
+    "engine": "rapier",
+    "debris": 4,
+    "maxAngularSpeed": 31.098975078520937,
+    "staticBoxes": 1406,
+    "event": {
+      "type": "crash",
+      "tick": 10291,
+      "speed": 7.906511243139527,
+      "nx": 0.8331747822426373,
+      "ny": 0.5530097487702489,
+      "nz": 0,
+      "px": -5.199229089884253,
+      "py": 1.5005116844629063,
+      "pz": 0.7299006309934759
+    }
+  },
+  "overlay": 1,
+  "respawn": {
+    "crashed": false,
+    "free": true
+  },
+  "control": {
+    "dash": 0.75,
+    "contacts": 500,
+    "crashes": 0,
+    "fired": true
+  }
+}

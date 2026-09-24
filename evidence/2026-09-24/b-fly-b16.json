@@ -1,0 +1,38 @@
+{
+  "name": "b-fly-b16",
+  "context": {
+    "date": "2026-09-24T16:11:39.996Z",
+    "gitHead": "516200b",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "method": "disarmed drop from the spawn until contact or 0.5 s, a = 2(Δy + v0 t)/t²",
+  "rows": [
+    {
+      "g": 9.81,
+      "measured": 9.594169188061336,
+      "fallM": 1.2090803306804665,
+      "relErr": -0.022001102134420414,
+      "warning": null
+    },
+    {
+      "g": 1.62,
+      "measured": 1.6165910585382255,
+      "fallM": 0.20369306730029457,
+      "relErr": -0.0021042848529473357,
+      "warning": "With the same motors under 1.62 m/s² the craft has about 6.1× the thrust-to-weight it has on Earth: it will be very twitchy. \"Keep thrust / weight\" makes it feel normal. The air is Earth air everywhere — gravity is a game setting here."
+    }
+  ],
+  "control": {
+    "sameAccelerationWouldFail": true,
+    "earthVsMoon": [
+      9.594169188061336,
+      1.6165910585382255
+    ],
+    "fired": true
+  }
+}

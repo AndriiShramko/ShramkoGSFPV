@@ -1,0 +1,71 @@
+{
+  "name": "b21-neighbours-backup-rollback",
+  "context": {
+    "date": "2026-09-24T16:02:15.256041Z",
+    "note": "neighbour names, IPs and vhosts are kept out of this public file; they are in the private vault build-log"
+  },
+  "pass": true,
+  "before": {
+    "snapshots": 4,
+    "span": "14:58-15:54 UTC",
+    "containers": 29,
+    "vhosts": 23,
+    "bodiesComparedAsStatic": 16,
+    "beforePairCD": {
+      "problems": 0,
+      "addedVhosts": 0,
+      "equal": true
+    }
+  },
+  "afterDeploy": {
+    "containers": 31,
+    "vhosts": 24,
+    "diffVsBefore": {
+      "problems": 0,
+      "addedVhosts": 1,
+      "equal": true
+    },
+    "allowed": [
+      "gsfpv-web",
+      "gsfpv-api",
+      "vhost gsfpv.flyreelstudio.eu"
+    ]
+  },
+  "methodFix": "first AFTER diff flagged one neighbour page whose body changed; it is a Next.js ISR page (s-maxage=60) whose body also changed between earlier BEFORE snapshots. Rule changed: a body counts as static only if identical in all 4 BEFORE snapshots (16 of 23 pages).",
+  "control": {
+    "tamperedSnapshot": "one container line deleted from a copy of AFTER",
+    "diff": {
+      "problems": 1,
+      "addedVhosts": 1,
+      "equal": false
+    },
+    "fired": true
+  },
+  "fullRollback": {
+    "composeDownSeconds": 12.6,
+    "hubVsBeforeAfterDown": {
+      "problems": 0,
+      "addedVhosts": 0,
+      "equal": true
+    },
+    "composeUpToFirst200Seconds": 3.6
+  },
+  "backup": {
+    "file": "backups directory on the hub: gsfpv-deploy-20260924.tgz (600)",
+    "bytes": 9075431,
+    "files": 186,
+    "restoreTreeSha256Equal": true
+  },
+  "releaseRollback": {
+    "from": "0079cb5f1eae (b958e86)",
+    "to": "78f660a6ae4a (2b579b0)",
+    "servedAfterMs": 1284,
+    "backServedAfterMs": 2532,
+    "indexSha256Prefix": {
+      "N+1": "96a1dcce100fdd2c",
+      "N": "56f0c5aed5ac5c57",
+      "N+1 again": "96a1dcce100fdd2c"
+    },
+    "method": "deploy/rollback.sh (ln -sfn + mv -T), timed until /release.json served the target sha; includes the SSH round trip"
+  }
+}

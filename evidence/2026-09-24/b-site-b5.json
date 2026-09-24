@@ -1,0 +1,35 @@
+{
+  "name": "b-site-b5",
+  "context": {
+    "date": "2026-09-24T17:29:17.705Z",
+    "gitHead": "19550c6",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "measurementId": "G-E7X0ES0QBE",
+  "beforeConsent": {
+    "gaCookies": 0,
+    "googleRequests": 0,
+    "banner": 1,
+    "apiEvent": 204
+  },
+  "acceptButton": "Accept",
+  "afterAccept": {
+    "gaCookies": 2,
+    "collectStatus": 204,
+    "collectHost": "region1.google-analytics.com",
+    "gtagLoaded": true
+  },
+  "afterReload": {
+    "banner": 0,
+    "gaCookies": 2
+  },
+  "control": {
+    "beforeConsentGaCookies": 0,
+    "googleRequestsBeforeConsent": 0
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "b-fly-b8",
+  "context": {
+    "date": "2026-09-24T17:14:02.695Z",
+    "gitHead": "516200b",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "history": {
+    "before": 2,
+    "afterReload": 2,
+    "filterKept": true
+  },
+  "control": {
+    "afterClearingStorage": 0,
+    "fired": true
+  },
+  "noWebgpuShim": {
+    "shimTookEffect": true,
+    "status": "ready",
+    "banner": "This browser has no WebGPU. You can look at the scan, but flying needs Chrome or Edge on a computer.",
+    "pixelStd": 0.1643557889188657
+  },
+  "firefox": {
+    "ran": true,
+    "status": "ready",
+    "error": null,
+    "banner": "Radios over USB work in Chrome and Edge. Here: gamepad or touch sticks.",
+    "webgpu": true,
+    "pixelStd": 0.164933353545558
+  }
+}

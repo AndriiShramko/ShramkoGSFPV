@@ -1,0 +1,10 @@
+{
+  "name": "b-site-smoke",
+  "context": {
+    "date": "2026-09-24T17:24:16.680033Z"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "output": "152 checks passed",
+  "covers": "locale redirects (/, /fly/ by Accept-Language and cookie), 16 pages 200 with lang, no placeholder text in visible HTML, nosniff, referrer-policy, x-frame-options, permissions-policy hid=(self), CSP report-only, sitemap/robots/llms/og/showcase 200, immutable hashed assets, every internal link on /en/"
+}

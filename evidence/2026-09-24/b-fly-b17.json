@@ -1,0 +1,35 @@
+{
+  "name": "b-fly-b17",
+  "context": {
+    "date": "2026-09-24T17:26:21.672Z",
+    "gitHead": "19550c6",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "pageLost": null,
+  "navigations": [
+    {
+      "t": 0.161,
+      "url": "https://gsfpv.flyreelstudio.eu/en/fly/"
+    },
+    {
+      "t": 0.735,
+      "url": "https://gsfpv.flyreelstudio.eu/en/fly/"
+    }
+  ],
+  "consoleTail": [],
+  "rule": "WCAG 2.2 general flash: pairs of opposing relative-luminance changes >= 0.1 (darker < 0.8), max per 1 s window, whole frame and quarters; frames via CDP screencast",
+  "crashes": 50,
+  "frames": 17426,
+  "maxFlashesPerSecond": 2,
+  "control": {
+    "strobeHz": 5,
+    "frames": 60,
+    "maxFlashesPerSecond": 6,
+    "fired": true
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "b-site-b1",
+  "context": {
+    "date": "2026-09-24T17:23:54.476Z",
+    "gitHead": "19550c6",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "cert": {
+    "subjectCN": "gsfpv.flyreelstudio.eu",
+    "issuer": "Let's Encrypt YR2",
+    "validTo": "2026-12-23T14:58:00.000Z",
+    "san": "DNS:gsfpv.flyreelstudio.eu",
+    "daysLeft": 90
+  },
+  "verdict": {
+    "ok": true,
+    "why": []
+  },
+  "https200": 200,
+  "http": {
+    "status": 301,
+    "location": "https://gsfpv.flyreelstudio.eu/en/"
+  },
+  "control": {
+    "ran": true,
+    "issuer": "C=US O=Let's Encrypt CN=(STAGING) Ersatz Emmer YR2",
+    "rejected": true,
+    "why": [
+      "staging issuer"
+    ]
+  }
+}

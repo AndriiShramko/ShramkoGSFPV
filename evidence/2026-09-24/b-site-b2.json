@@ -1,0 +1,60 @@
+{
+  "name": "b-site-b2",
+  "context": {
+    "date": "2026-09-24T17:30:02.677Z",
+    "gitHead": "19550c6",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "note": "the 16 switcher clicks (nav + footer, landing + privacy) are in verify.mjs run against the live site",
+  "acceptLanguagePl": {
+    "status": 302,
+    "location": "https://gsfpv.flyreelstudio.eu/pl/",
+    "body": "",
+    "type": "text/html"
+  },
+  "manualRuBeatsPl": {
+    "status": 302,
+    "location": "https://gsfpv.flyreelstudio.eu/ru/"
+  },
+  "browser": {
+    "landed": "/pl/",
+    "langPl": "pl",
+    "afterManual": "/ru/",
+    "afterReload": {
+      "path": "/ru/",
+      "lang": "ru",
+      "h1": "Летайте на FPV‑дроне по реальным 3D‑сканам — прямо в браузере"
+    }
+  },
+  "hreflangPerPage": {
+    "/en/": 5,
+    "/en/privacy/": 5,
+    "/en/licenses/": 5,
+    "/es/": 5,
+    "/es/privacy/": 5,
+    "/es/licenses/": 5,
+    "/pl/": 5,
+    "/pl/privacy/": 5,
+    "/pl/licenses/": 5,
+    "/ru/": 5,
+    "/ru/privacy/": 5,
+    "/ru/licenses/": 5
+  },
+  "control": {
+    "untranslatedStrings": {
+      "es": [],
+      "pl": [],
+      "ru": []
+    },
+    "exempt": "keys ending in .src/.level (enum codes translated via t()) and values made only of product names, units and numbers",
+    "injected": {
+      "key": "hero.h1",
+      "caught": true
+    }
+  }
+}
