@@ -1,0 +1,197 @@
+{
+  "id": "air65-1s",
+  "name": "BetaFPV Air65 Freestyle class, 1S",
+  "class": "65 mm brushless tiny whoop",
+  "notes": "Numbers read on betafpv.com on 2026-09-24; TWR, inertia and aerodynamics are not published and are estimates.",
+  "fields": {
+    "wheelbase_mm": {
+      "value": 65,
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter"
+    },
+    "motor": {
+      "value": "0702SE II 23000KV (Freestyle version)",
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter"
+    },
+    "motor_kv": {
+      "value": 23000,
+      "source": "manufacturer"
+    },
+    "prop": {
+      "value": "31 mm class",
+      "source": "estimate"
+    },
+    "dry_mass_g": {
+      "value": 17.3,
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter"
+    },
+    "battery": {
+      "value": "LAVA 1S 260 mAh",
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter"
+    },
+    "battery_cells": {
+      "value": 1,
+      "source": "manufacturer"
+    },
+    "battery_capacity_mah": {
+      "value": 260,
+      "source": "manufacturer"
+    },
+    "battery_mass_g": {
+      "value": 7,
+      "source": "estimate"
+    },
+    "auw_g": {
+      "value": 24.3,
+      "source": "estimate"
+    },
+    "twr": {
+      "value": 3.5,
+      "source": "estimate",
+      "note": "not published by BetaFPV",
+      "min": 2.5,
+      "max": 5.0
+    },
+    "inertia_roll_pitch_kgm2": {
+      "value": 8e-06,
+      "source": "estimate"
+    },
+    "inertia_yaw_kgm2": {
+      "value": 1.25e-05,
+      "source": "estimate"
+    },
+    "motor_tau_ms": {
+      "value": 9,
+      "source": "estimate",
+      "min": 6,
+      "max": 30
+    },
+    "motor_kappa_m": {
+      "value": 0.0045,
+      "source": "estimate",
+      "note": "reaction torque / thrust"
+    },
+    "motor_idle": {
+      "value": 0.055,
+      "source": "bf-default",
+      "note": "dshot_idle_value 550"
+    },
+    "rpm_loaded_fraction": {
+      "value": 0.75,
+      "source": "estimate",
+      "note": "loaded rpm / (KV * V), only used for battery current"
+    },
+    "cda_horizontal_cm2": {
+      "value": 18,
+      "source": "estimate"
+    },
+    "cda_vertical_cm2": {
+      "value": 50,
+      "source": "estimate"
+    },
+    "collider_duct_radius_mm": {
+      "value": 0,
+      "source": "estimate",
+      "note": "single sphere: ducts are not modelled separately on 65 mm whoops"
+    },
+    "collider_duct_offset_mm": {
+      "value": 0,
+      "source": "estimate"
+    },
+    "collider_body_radius_mm": {
+      "value": 42.5,
+      "source": "estimate"
+    },
+    "v_bounce_ms": {
+      "value": 1.5,
+      "source": "estimate"
+    },
+    "v_crash_ms": {
+      "value": 4.0,
+      "source": "estimate"
+    },
+    "pack_resistance_per_cell_ohm": {
+      "value": 0.05,
+      "source": "estimate"
+    },
+    "efficiency": {
+      "value": 0.7,
+      "source": "estimate"
+    },
+    "flight_time": {
+      "value": "4 min (LAVA 260 mAh)",
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter"
+    },
+    "camera_uptilt_deg": {
+      "value": 20,
+      "source": "estimate"
+    },
+    "camera_fov_deg": {
+      "value": 115,
+      "source": "estimate",
+      "note": "horizontal field of view of the simulated camera"
+    },
+    "rates": {
+      "value": {
+        "type": "ACTUAL",
+        "roll": [
+          7,
+          67,
+          0
+        ],
+        "pitch": [
+          7,
+          67,
+          0
+        ],
+        "yaw": [
+          7,
+          67,
+          0
+        ],
+        "rate_limit": 1998
+      },
+      "source": "bf-default",
+      "note": "Betaflight 4.5 defaults, rc_rate/srate/expo as CLI integers"
+    },
+    "pid_roll": {
+      "value": [
+        45,
+        80,
+        40,
+        120
+      ],
+      "source": "bf-default",
+      "note": "P, I, D, F"
+    },
+    "pid_pitch": {
+      "value": [
+        47,
+        84,
+        46,
+        125
+      ],
+      "source": "bf-default"
+    },
+    "pid_yaw": {
+      "value": [
+        45,
+        80,
+        0,
+        120
+      ],
+      "source": "bf-default"
+    },
+    "throttle": {
+      "value": {
+        "mid": 50,
+        "expo": 0
+      },
+      "source": "bf-default"
+    }
+  }
+}

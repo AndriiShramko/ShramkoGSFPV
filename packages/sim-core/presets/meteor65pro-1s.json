@@ -1,0 +1,192 @@
+{
+  "id": "meteor65pro-1s",
+  "name": "BetaFPV Meteor65 Pro class, 1S",
+  "class": "65 mm brushless tiny whoop",
+  "notes": "Neighbour preset.",
+  "fields": {
+    "wheelbase_mm": {
+      "value": 66,
+      "source": "manufacturer"
+    },
+    "motor": {
+      "value": "0802SE 19500KV",
+      "source": "manufacturer"
+    },
+    "motor_kv": {
+      "value": 19500,
+      "source": "manufacturer"
+    },
+    "prop": {
+      "value": "35 mm",
+      "source": "manufacturer"
+    },
+    "dry_mass_g": {
+      "value": 23.1,
+      "source": "manufacturer"
+    },
+    "battery": {
+      "value": "1S 300 mAh",
+      "source": "manufacturer"
+    },
+    "battery_cells": {
+      "value": 1,
+      "source": "manufacturer"
+    },
+    "battery_capacity_mah": {
+      "value": 300,
+      "source": "manufacturer"
+    },
+    "battery_mass_g": {
+      "value": 7.5,
+      "source": "estimate"
+    },
+    "auw_g": {
+      "value": 30.6,
+      "source": "estimate"
+    },
+    "twr": {
+      "value": 3.97,
+      "source": "manufacturer",
+      "min": 2.5,
+      "max": 5.0
+    },
+    "inertia_roll_pitch_kgm2": {
+      "value": 1.1e-05,
+      "source": "estimate"
+    },
+    "inertia_yaw_kgm2": {
+      "value": 1.7e-05,
+      "source": "estimate"
+    },
+    "motor_tau_ms": {
+      "value": 10,
+      "source": "estimate",
+      "min": 8,
+      "max": 30
+    },
+    "motor_kappa_m": {
+      "value": 0.0047,
+      "source": "estimate",
+      "note": "reaction torque / thrust"
+    },
+    "motor_idle": {
+      "value": 0.055,
+      "source": "bf-default",
+      "note": "dshot_idle_value 550"
+    },
+    "rpm_loaded_fraction": {
+      "value": 0.75,
+      "source": "estimate",
+      "note": "loaded rpm / (KV * V), only used for battery current"
+    },
+    "cda_horizontal_cm2": {
+      "value": 20,
+      "source": "estimate"
+    },
+    "cda_vertical_cm2": {
+      "value": 55,
+      "source": "estimate"
+    },
+    "collider_duct_radius_mm": {
+      "value": 0,
+      "source": "estimate",
+      "note": "single sphere: ducts are not modelled separately on 65 mm whoops"
+    },
+    "collider_duct_offset_mm": {
+      "value": 0,
+      "source": "estimate"
+    },
+    "collider_body_radius_mm": {
+      "value": 42.5,
+      "source": "estimate",
+      "note": "85 mm over the ducts"
+    },
+    "v_bounce_ms": {
+      "value": 1.5,
+      "source": "estimate"
+    },
+    "v_crash_ms": {
+      "value": 4.0,
+      "source": "estimate"
+    },
+    "pack_resistance_per_cell_ohm": {
+      "value": 0.012,
+      "source": "estimate"
+    },
+    "efficiency": {
+      "value": 0.7,
+      "source": "estimate"
+    },
+    "flight_time": {
+      "value": "4.5 min",
+      "source": "manufacturer"
+    },
+    "camera_uptilt_deg": {
+      "value": 20,
+      "source": "estimate"
+    },
+    "camera_fov_deg": {
+      "value": 115,
+      "source": "estimate",
+      "note": "horizontal field of view of the simulated camera"
+    },
+    "rates": {
+      "value": {
+        "type": "ACTUAL",
+        "roll": [
+          7,
+          67,
+          0
+        ],
+        "pitch": [
+          7,
+          67,
+          0
+        ],
+        "yaw": [
+          7,
+          67,
+          0
+        ],
+        "rate_limit": 1998
+      },
+      "source": "bf-default",
+      "note": "Betaflight 4.5 defaults, rc_rate/srate/expo as CLI integers"
+    },
+    "pid_roll": {
+      "value": [
+        45,
+        80,
+        40,
+        120
+      ],
+      "source": "bf-default",
+      "note": "P, I, D, F"
+    },
+    "pid_pitch": {
+      "value": [
+        47,
+        84,
+        46,
+        125
+      ],
+      "source": "bf-default"
+    },
+    "pid_yaw": {
+      "value": [
+        45,
+        80,
+        0,
+        120
+      ],
+      "source": "bf-default"
+    },
+    "throttle": {
+      "value": {
+        "mid": 50,
+        "expo": 0
+      },
+      "source": "bf-default"
+    }
+  }
+}
