@@ -9,7 +9,10 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@gsfpv/sim-core": "workspace:*",
-    "@gsfpv/collision": "workspace:*"
+    "@gsfpv/collision": "workspace:*",
+    "@gsfpv/sim-core": "workspace:*"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
   }
 }

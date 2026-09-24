@@ -1,0 +1,507 @@
+{
+  "name": "a5-tunnelling",
+  "context": {
+    "date": "2026-09-24T13:45:22.929Z",
+    "gitHead": "1434874",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "body": {
+    "preset": "pavo20pro-3s",
+    "spheres": {
+      "local": [
+        0.033100000000000004,
+        0,
+        0.033100000000000004,
+        0.033100000000000004,
+        0,
+        -0.033100000000000004,
+        -0.033100000000000004,
+        0,
+        0.033100000000000004,
+        -0.033100000000000004,
+        0,
+        -0.033100000000000004,
+        0,
+        0,
+        0
+      ],
+      "r": [
+        0.03,
+        0.03,
+        0.03,
+        0.03,
+        0.025
+      ]
+    }
+  },
+  "vMax": {
+    "vMax": 28.65538822598425,
+    "tiltDeg": 78.46304096718453
+  },
+  "speeds": [
+    5,
+    10,
+    15,
+    25,
+    34.39
+  ],
+  "passesPerSceneSpeed": 10000,
+  "totalPasses": 200000,
+  "totalPenetrations": 0,
+  "oracle": "upstream VoxelCollision.querySphere on every body sphere, path resampled every voxelResolution/4 from the start to the point where our sweep stopped the body (no sweep code involved)",
+  "sweep": "sim tick 1 ms; per tick: cover test r + L/2, then segments of r/2 bisected to 0.25 mm leaves with r + half-length inflation",
+  "control": {
+    "name": "endpoint-only test at frame steps 1/30 s and 1/144 s must miss at least one collision (tunnel)",
+    "tunnels30": 43810,
+    "tunnels144": 5590,
+    "fired": true
+  },
+  "results": [
+    {
+      "scene": "39e63ce9",
+      "speed": 5,
+      "seed": 20260924,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 364,
+        "late": 9636,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 116,
+        "late": 9884,
+        "ok": 0
+      },
+      "rejected": 247975,
+      "meanLen": 0.9759412031249989,
+      "examples": []
+    },
+    {
+      "scene": "39e63ce9",
+      "speed": 10,
+      "seed": 20260925,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 752,
+        "late": 9248,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 230,
+        "late": 9770,
+        "ok": 0
+      },
+      "rejected": 240688,
+      "meanLen": 0.9783778124999962,
+      "examples": []
+    },
+    {
+      "scene": "39e63ce9",
+      "speed": 15,
+      "seed": 20260926,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 1197,
+        "late": 8803,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 285,
+        "late": 9715,
+        "ok": 0
+      },
+      "rejected": 245828,
+      "meanLen": 0.9776570859375017,
+      "examples": []
+    },
+    {
+      "scene": "39e63ce9",
+      "speed": 25,
+      "seed": 20260927,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 2415,
+        "late": 7585,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 378,
+        "late": 9622,
+        "ok": 0
+      },
+      "rejected": 251113,
+      "meanLen": 0.9817201888020829,
+      "examples": []
+    },
+    {
+      "scene": "39e63ce9",
+      "speed": 34.39,
+      "seed": 20260928,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 3338,
+        "late": 6662,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 465,
+        "late": 9535,
+        "ok": 0
+      },
+      "rejected": 247828,
+      "meanLen": 0.9803118469270785,
+      "examples": []
+    },
+    {
+      "scene": "7a475d38",
+      "speed": 5,
+      "seed": 20260934,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 489,
+        "late": 9511,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 120,
+        "late": 9880,
+        "ok": 0
+      },
+      "rejected": 33475,
+      "meanLen": 0.9892865312499957,
+      "examples": []
+    },
+    {
+      "scene": "7a475d38",
+      "speed": 10,
+      "seed": 20260935,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 1095,
+        "late": 8905,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 243,
+        "late": 9757,
+        "ok": 0
+      },
+      "rejected": 33968,
+      "meanLen": 0.9928357968749999,
+      "examples": []
+    },
+    {
+      "scene": "7a475d38",
+      "speed": 15,
+      "seed": 20260936,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 1815,
+        "late": 8185,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 301,
+        "late": 9699,
+        "ok": 0
+      },
+      "rejected": 32898,
+      "meanLen": 0.9781264921875036,
+      "examples": []
+    },
+    {
+      "scene": "7a475d38",
+      "speed": 25,
+      "seed": 20260937,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 3115,
+        "late": 6885,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 498,
+        "late": 9502,
+        "ok": 0
+      },
+      "rejected": 33396,
+      "meanLen": 0.9848152213541638,
+      "examples": []
+    },
+    {
+      "scene": "7a475d38",
+      "speed": 34.39,
+      "seed": 20260938,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 4145,
+        "late": 5855,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 705,
+        "late": 9295,
+        "ok": 0
+      },
+      "rejected": 33248,
+      "meanLen": 0.9833181956510425,
+      "examples": []
+    },
+    {
+      "scene": "887f27aa",
+      "speed": 5,
+      "seed": 20260929,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 184,
+        "late": 9816,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 58,
+        "late": 9942,
+        "ok": 0
+      },
+      "rejected": 21684,
+      "meanLen": 1.0126059999999937,
+      "examples": []
+    },
+    {
+      "scene": "887f27aa",
+      "speed": 10,
+      "seed": 20260930,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 306,
+        "late": 9694,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 129,
+        "late": 9871,
+        "ok": 0
+      },
+      "rejected": 21887,
+      "meanLen": 1.0252429218749994,
+      "examples": []
+    },
+    {
+      "scene": "887f27aa",
+      "speed": 15,
+      "seed": 20260931,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 578,
+        "late": 9422,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 139,
+        "late": 9861,
+        "ok": 0
+      },
+      "rejected": 22030,
+      "meanLen": 1.0231932421874972,
+      "examples": []
+    },
+    {
+      "scene": "887f27aa",
+      "speed": 25,
+      "seed": 20260932,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 1378,
+        "late": 8622,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 166,
+        "late": 9834,
+        "ok": 0
+      },
+      "rejected": 21642,
+      "meanLen": 1.0324679492187512,
+      "examples": []
+    },
+    {
+      "scene": "887f27aa",
+      "speed": 34.39,
+      "seed": 20260933,
+      "passes": 10000,
+      "contacts": 10000,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 2284,
+        "late": 7716,
+        "ok": 0
+      },
+      "ctl144": {
+        "tunnel": 225,
+        "late": 9775,
+        "ok": 0
+      },
+      "rejected": 22196,
+      "meanLen": 1.0269223871614592,
+      "examples": []
+    },
+    {
+      "scene": "wall-2cm",
+      "speed": 5,
+      "seed": 20260939,
+      "passes": 10000,
+      "contacts": 8339,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 128,
+        "late": 8211,
+        "ok": 1661
+      },
+      "ctl144": {
+        "tunnel": 6,
+        "late": 8333,
+        "ok": 1661
+      },
+      "rejected": 0,
+      "meanLen": 1.6059064328431543,
+      "examples": []
+    },
+    {
+      "scene": "wall-2cm",
+      "speed": 10,
+      "seed": 20260940,
+      "passes": 10000,
+      "contacts": 8279,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 2624,
+        "late": 5655,
+        "ok": 1721
+      },
+      "ctl144": {
+        "tunnel": 19,
+        "late": 8260,
+        "ok": 1721
+      },
+      "rejected": 0,
+      "meanLen": 1.6238297671517374,
+      "examples": []
+    },
+    {
+      "scene": "wall-2cm",
+      "speed": 15,
+      "seed": 20260941,
+      "passes": 10000,
+      "contacts": 8265,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 4502,
+        "late": 3763,
+        "ok": 1735
+      },
+      "ctl144": {
+        "tunnel": 39,
+        "late": 8226,
+        "ok": 1735
+      },
+      "rejected": 0,
+      "meanLen": 1.6076215156551257,
+      "examples": []
+    },
+    {
+      "scene": "wall-2cm",
+      "speed": 25,
+      "seed": 20260942,
+      "passes": 10000,
+      "contacts": 8260,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 6156,
+        "late": 2103,
+        "ok": 1741
+      },
+      "ctl144": {
+        "tunnel": 232,
+        "late": 8027,
+        "ok": 1741
+      },
+      "rejected": 0,
+      "meanLen": 1.6145577972353977,
+      "examples": []
+    },
+    {
+      "scene": "wall-2cm",
+      "speed": 34.39,
+      "seed": 20260943,
+      "passes": 10000,
+      "contacts": 8290,
+      "penetrations": 0,
+      "passesWithPenetration": 0,
+      "ctl30": {
+        "tunnel": 6945,
+        "late": 1345,
+        "ok": 1710
+      },
+      "ctl144": {
+        "tunnel": 1236,
+        "late": 7054,
+        "ok": 1710
+      },
+      "rejected": 0,
+      "meanLen": 1.5927246389422958,
+      "examples": []
+    }
+  ],
+  "wallClockS": 41.069,
+  "workers": 20
+}

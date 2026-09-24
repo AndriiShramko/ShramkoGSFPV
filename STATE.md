@@ -15,7 +15,7 @@ Spec: vault `03 - Resources/Deployment/shramkogsfpv/spec.md` (+ 6 spec-*.md). Ph
 | A2 | vendored collision, formats 1.0/1.1, floor from spawn; wrong-flip control | pass (local) | evidence/2026-09-24/a2-collision-formats.json |
 | A3 | rates vs compiled Betaflight 4.5.1, 40 sets ±1e-9; x^5→x^3 control | pass (local) | evidence/2026-09-24/a3-rates-vectors.json |
 | A4 | physics consistency + 4 controls | pass (local) | evidence/2026-09-24/a4-physics.json |
-| A5 | tunnelling ≥10 000 passes/speed, independent oracle, endpoint control | todo | |
+| A5 | tunnelling ≥10 000 passes/speed, independent oracle, endpoint control | pass (local): 200 000 passes, 0 penetrations; control tunnels 43 810 @1/30 s, 5 590 @1/144 s | evidence/2026-09-24/a5-tunnelling.json |
 | A6 | determinism SHA-256 Node = Chrome, frame splits | todo | |
 | A7 | bot pilot crash on 39e63ce9 + 887f27aa, PNG series; open-volume control | todo | |
 | A8 | clearance numbers for the compound body | todo | |

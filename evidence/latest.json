@@ -1,9 +1,14 @@
 {
-  "updated": "2026-09-24T13:41:39.306Z",
+  "updated": "2026-09-24T13:45:23.117Z",
   "items": {
     "ratesVectors": {
       "value": "1880 points, max error 0 deg/s",
       "method": "compiled Betaflight 4.5.1 rate functions vs our re-implementation",
+      "date": "2026-09-24"
+    },
+    "tunnelling": {
+      "value": "0 wall pass-throughs in 200,000 straight passes",
+      "method": "swept test at 1 ms ticks vs independent resampling oracle; speeds 5, 10, 15, 25, 34.39 m/s; 3 real scans + 2 cm synthetic wall",
       "date": "2026-09-24"
     }
   }
