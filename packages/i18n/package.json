@@ -1,0 +1,9 @@
+{
+  "name": "@gsfpv/i18n",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dictionaries for the landing (site/) and the simulator (fly/): en, es, pl, ru",
+  "license": "MIT",
+  "type": "module",
+  "exports": { "./fly/*": "./fly/*", "./site/*": "./site/*" }
+}
