@@ -12,7 +12,11 @@ permissions:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
+    env:
+      # the build and the browser smoke must agree on the GA id (public Measurement ID, not a
+      # secret): verify.mjs then expects the consent banner and mocks every GA hit
+      NEXT_PUBLIC_GA_ID: G-E7X0ES0QBE
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,20 +43,51 @@ jobs:
       - name: Dependency licences
         run: node scripts/check-licenses.mjs
 
+      - name: Dictionary check (same keys and placeholders in all 4 locales)
+        run: pnpm --filter @gsfpv/site i18n:check
+
       - name: Unit tests, rate vectors, tunnelling and determinism subset
         run: pnpm vitest run
 
-      - name: Build release (site + simulator, pre-gzip, numbers must exist in evidence)
+      - name: Build release (site + simulator, pre-gzip, CSP hash map, numbers must exist in evidence)
         run: node scripts/build-release.mjs
 
-      - name: Smoke the release behind the real nginx config (no GPU)
+      - name: Serve the release behind the real nginx config
         run: |
           docker run -d --name gsfpv-smoke -p 8080:80 \
             -v "$PWD/dist:/srv/releases/current:ro" \
             -v "$PWD/deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro" \
             --add-host gsfpv-api:127.0.0.1 nginx:1.29-alpine
           sleep 2
-          node scripts/smoke-release.mjs http://localhost:8080
+          # the config (with the release's CSP map) must load, or every later step is noise
+          docker exec gsfpv-smoke nginx -t
+
+      - name: Smoke the release (no GPU; routing, headers, enforced CSP hashes, links)
+        run: node scripts/smoke-release.mjs http://localhost:8080
+
+      - name: Browsers for the no-GPU browser smoke
+        run: |
+          pnpm --filter @gsfpv/site exec playwright install --with-deps chromium
+          # verify.mjs launches channel "chrome": the runner image ships Google Chrome, install it only if missing
+          command -v google-chrome >/dev/null || pnpm --filter @gsfpv/site exec playwright install --with-deps chrome
+          google-chrome --version
+
+      - name: Browser smoke (i18n switchers, consent banner, lead form, beacons; /api and GA hits mocked)
+        env:
+          BASE: http://localhost:8080
+        run: pnpm --filter @gsfpv/site verify
+
+      - name: nginx log (on failure)
+        if: failure()
+        run: docker logs gsfpv-smoke 2>&1 | tail -n 200 || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-smoke-screenshots
+          path: apps/site/.shots/
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Secret scan (full history)
         run: |

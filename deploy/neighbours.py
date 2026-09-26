@@ -2,17 +2,21 @@
 server-side files from snapshot-server.sh, and a diff between two snapshots.
 
   python deploy/neighbours.py snap <dir>           # server snapshot (over SSH) + external HTTP codes/hashes
-  python deploy/neighbours.py diff <before> <after> [--allow gsfpv-web,gsfpv-api] [--stable <b1>,<b2>,...]
+  python deploy/neighbours.py diff <before> <after> [--allow gsfpv-web,gsfpv-api] [--stable <b1>,<b2>,...] [--offline]
 
 The HTTP part requests every vhost found in the live `docker ps` (not a list from notes) with a
 cache-busting query and records status + sha256 of the body. Bodies of dynamic pages change on
 every request, so a body hash is compared only where it was identical in two BEFORE snapshots.
-Allowed differences: our own containers/vhost added. Anything else in the diff = STOP and roll back.
+Allowed differences: our own containers/vhost/networks (gsfpv*) added. The diff also reads the
+nginx-proxy log between the two snapshot times (docker logs --since/--until over SSH, read-only)
+and counts [emerg]/[crit]; --offline skips that (replaying old snapshots) and says so in the output.
+Anything else in the diff = STOP and roll back.
 """
 import hashlib
 import json
 import os
 import random
+import re
 import subprocess
 import sys
 import time
@@ -96,7 +100,7 @@ def rows(text: str) -> dict:
     return out
 
 
-def diff(a_dir: str, b_dir: str, allow: set, stable_dirs: list[str]) -> int:
+def diff(a_dir: str, b_dir: str, allow: set, stable_dirs: list[str], offline: bool = False) -> int:
     a, b = load(a_dir), load(b_dir)
     # a body is "static" only if it was identical in EVERY before snapshot: two snapshots a minute
     # apart can sit inside one ISR window (Next.js s-maxage=60) and make a live page look static
@@ -134,9 +138,61 @@ def diff(a_dir: str, b_dir: str, allow: set, stable_dirs: list[str]) -> int:
         if stables and all(st['http'].get(h, {}).get('sha256') == v['sha256'] for st in stables) and v['sha256'] != w['sha256']:
             problems.append(f'body changed on a static page: {h}')
     added_hosts = sorted(set(b['http']) - set(a['http']))
-    out = {'before': a_dir, 'after': b_dir, 'problems': problems, 'added_vhosts': added_hosts, 'equal': not problems}
+    # networks: only our own (gsfpv*) may appear; none may vanish or change driver
+    na, nb = rows(a['server'].get('networks.txt', '')), rows(b['server'].get('networks.txt', ''))
+    added_networks = sorted(set(nb) - set(na))
+    for k in sorted(set(na) | set(nb)):
+        if k not in nb:
+            problems.append(f'network gone: {k}')
+        elif k not in na:
+            if not k.startswith('gsfpv'):
+                problems.append(f'network added: {k}')
+        elif na[k] != nb[k]:
+            problems.append(f'network driver changed: {k}')
+    if not na:
+        problems.append('networks.txt missing in the BEFORE snapshot')
+    log = {'checked': False, 'reason': '--offline'} if offline else proxy_log(window(a), window(b))
+    if not log['checked'] and not offline:
+        problems.append(f'nginx-proxy log not checked: {log["reason"]}')
+    elif log['checked'] and log['emerg_crit']:
+        problems.append(f'nginx-proxy log: {log["emerg_crit"]} [emerg]/[crit] lines in the deploy window')
+    out = {'before': a_dir, 'after': b_dir, 'problems': problems, 'added_vhosts': added_hosts,
+           'added_networks': added_networks, 'nginx_proxy_log': log, 'complete': log['checked'], 'equal': not problems}
     print(json.dumps(out, indent=1))
     return 0 if not problems else 1
+
+
+STAMP = re.compile(r'^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$')
+
+
+def window(s: dict) -> str:
+    # the server clock (taken_at.txt) bounds docker logs; the local clock is only a fallback
+    t = s['server'].get('taken_at.txt', '').strip() or s.get('taken_at', '')
+    return t if STAMP.match(t) else ''
+
+
+def proxy_log(since: str, until: str) -> dict:
+    """Count nginx [emerg]/[crit] lines that nginx-proxy logged between the two snapshots.
+
+    Read-only (docker logs over SSH). The spec asks for `emerg|crit`; nginx writes its levels as
+    [emerg]/[crit], and only those count as problems: a bare substring also hits access-log URLs
+    of neighbour sites, so that looser count is reported for information only. Sample lines are
+    returned with IPv4 addresses masked, since the proxy logs visitors of every site on the hub."""
+    if not since or not until or since > until:
+        return {'checked': False, 'reason': f'bad snapshot times {since!r}..{until!r}'}
+    cmd = (f'out=$(docker logs --since {since} --until {until} nginx-proxy 2>&1); rc=$?; '
+           'echo "rc=$rc lines=$(printf "%s\\n" "$out" | grep -c .)"; '
+           'printf "%s\\n" "$out" | grep -iE "emerg|crit" | head -n 200')
+    res = ssh(cmd).splitlines()
+    head = res[0] if res else ''
+    m = re.match(r'^rc=(\d+) lines=(\d+)$', head)
+    if not m or m.group(1) != '0':
+        return {'checked': False, 'reason': f'docker logs failed: {head or "no output"}'}
+    loose = res[1:]
+    strict = [x for x in loose if re.search(r'\[(emerg|crit)\]', x)]
+    mask = lambda x: re.sub(r'\b\d{1,3}(\.\d{1,3}){3}\b', 'x.x.x.x', x)[:300]
+    return {'checked': True, 'since': since, 'until': until, 'lines_in_window': int(m.group(2)),
+            'emerg_crit': len(strict), 'emerg_crit_substring': len(loose), 'samples': [mask(x) for x in strict[:3]]}
 
 
 if __name__ == '__main__':
@@ -151,4 +207,4 @@ if __name__ == '__main__':
                 allow = set(args[i + 1].split(','))
             if x == '--stable':
                 stable = args[i + 1].split(',')
-        sys.exit(diff(sys.argv[2], sys.argv[3], allow, stable))
+        sys.exit(diff(sys.argv[2], sys.argv[3], allow, stable, '--offline' in args))
