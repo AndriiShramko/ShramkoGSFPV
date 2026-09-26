@@ -1,0 +1,80 @@
+{
+ "idle": {
+  "at0": {
+   "id": "connect",
+   "stage": null,
+   "step": 1,
+   "cmds": 0,
+   "profile": false,
+   "armSource": null,
+   "hint": null
+  },
+  "at30s": {
+   "id": "stir",
+   "stage": "ready",
+   "step": 1,
+   "cmds": 0,
+   "profile": false,
+   "armSource": null,
+   "hint": null
+  },
+  "stayed": false,
+  "errors": []
+ },
+ "robot": {
+  "reached": true,
+  "seconds": 43,
+  "screens": 23,
+  "path": [
+   "connect/null",
+   "stir/ready",
+   "stir/active",
+   "stir/done",
+   "centre/ready",
+   "centre/active",
+   "centre/done",
+   "throttle/ready",
+   "throttle/active",
+   "throttle/done",
+   "yaw/ready",
+   "yaw/active",
+   "yaw/done",
+   "pitch/ready",
+   "pitch/active",
+   "pitch/done",
+   "roll/ready",
+   "roll/active",
+   "roll/done",
+   "arm/ready",
+   "arm/active",
+   "arm/done",
+   "check/null"
+  ],
+  "flew": {
+   "armed": true,
+   "y0": null,
+   "y1": null
+  },
+  "errors": []
+ },
+ "human": {
+  "end": {
+   "id": "check",
+   "stage": null,
+   "step": 6,
+   "cmds": 16,
+   "profile": true,
+   "armSource": {
+    "kind": "ch",
+    "n": 5
+   },
+   "hint": null
+  },
+  "seconds": 41,
+  "errors": []
+ },
+ "site": "https://gsfpv.flyreelstudio.eu",
+ "release": "f7e0221 = hub f88a9bfa2689",
+ "what": "wizard v3 (user-paced) on the live site: (idle) the fake radio moves its sticks like a person but no button is ever pressed for 30 s -> the wizard stays on stir/ready with 0 accepted commands and no profile; (robot) the fake radio presses Start/Next like a person -> 23 screens ready/active/done to the check screen, Fly, armed; (human) the human model at 375x812 reaches the check screen with a profile",
+ "negative_control": "packages/input/test/paced.test.ts (e): the frozen v2 wizard (the one Andrii tested) fails the same idle/tiny checks"
+}

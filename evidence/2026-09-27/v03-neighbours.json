@@ -1,0 +1,10 @@
+{
+ "deploy": "f88a9bfa2689 (previous 6fedc30ca8f5)",
+ "containers_before_after": 31,
+ "vhosts": 24,
+ "problems_reported": [
+  "body changed on a static page: alexcat.flyreelstudio.eu",
+  "body changed on a static page: fpvtoons-pilotmascots-droneoverlays.de"
+ ],
+ "resolution": "false alarm: both pages change between two consecutive requests made after the deploy with no deploy in between (ISR regeneration: 92c2...->5536...->5536..., 457d...->bb49...->bb49...); same status 200, no container restarted, no network added, nginx-proxy log 0 emerg/crit; our deploy only reloads gsfpv-web"
+}
