@@ -15,7 +15,7 @@ const browser = await chromium.launch({ channel: "chrome" });
 const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 1 });
 await page.goto(`${BASE}/${locale}/`, { waitUntil: "networkidle" });
 await page.screenshot({ path: join(shots, `${prefix}-viewport.png`) });
-const ids = (process.env.IDS ?? "top,how,real,numbers,scenes,radios,compare,agents,risks,faq,opensource,contact").split(",");
+const ids = (process.env.IDS ?? "top,features,how,real,numbers,scenes,radios,compare,agents,risks,faq,opensource,contact").split(",");
 for (const id of ids) {
   const el = page.locator(`#${id}`);
   await el.scrollIntoViewIfNeeded();

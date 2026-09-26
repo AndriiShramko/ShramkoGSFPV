@@ -18,6 +18,76 @@ ShramkoGSFPV joins the two: pick a real scanned place, arm, and fly it with a dr
 
 The default craft is a **BetaFPV Pavo20 Pro** class 2.2″ cinewhoop, with five more presets: Pavo20 Pro II on 3S and 4S, Pavo Pico, Meteor65 Pro and Air65. Most scans are rooms and streets, where a 5″ freestyle quad has no room to move. On each preset card the spec rows (thrust-to-weight, weight, wheelbase, motor, battery) say where the number comes from: manufacturer, independent measurement or estimate. The card's maximum rate (°/s) and hover-throttle figures do not carry a source label yet. The thrust-to-weight of three presets (Pavo20 Pro 3S, Pavo20 Pro II 3S, Pavo Pico 2S) was measured in the model and is within 0.4 % of the preset value (`b-fly-b9.json`); the other three are **not measured yet**.
 
+## Features and roadmap
+
+Status on 26 September 2026. **Live** means you can use it on https://gsfpv.flyreelstudio.eu today; **In progress** is being built now; **Next** is designed and queued. How each input device was tested is in [Radios and devices](#radios-and-devices), and the numbers behind the physics are in [What is measured](#what-is-measured-not-claimed). The same list, in four languages, is on the [landing page](https://gsfpv.flyreelstudio.eu/en/#features).
+
+### Available now (32)
+
+| Area | Feature | Status |
+|---|---|---|
+| Radio & calibration | EdgeTX radio over USB (WebHID) in Chrome or Edge | Live |
+| Radio & calibration | Calibration with a drawn radio that shows which stick to move | Live |
+| Radio & calibration | Reverse any channel after calibration | Live |
+| Radio & calibration | Recalibrate button in Controls | Live |
+| Radio & calibration | A known radio reconnects by itself when you change scans | Live |
+| Gamepad, touch & keyboard | Gamepad through the browser's Gamepad API (not tested on real hardware yet) | Live |
+| Gamepad, touch & keyboard | Touch sticks and an ARM button on a touch screen (tested in touch emulation only) | Live |
+| Gamepad, touch & keyboard | Keyboard, with every flying key shown on screen | Live |
+| Gamepad, touch & keyboard | Keyboard: `M` switches ANGLE (self-levelling) and ACRO; touch flies in ANGLE, a radio or gamepad in ACRO (ANGLE not tested yet) | Live |
+| Gamepad, touch & keyboard | Close Controls with × or Esc; the pause menu shows its keys (Esc / P continue, R restart) | Live |
+| Drone & tuning | Six BetaFPV-class presets: Pavo20 Pro 3S (default), Pavo20 Pro II 3S and 4S, Pavo Pico 2S, Meteor65 Pro 1S, Air65 1S | Live |
+| Drone & tuning | Betaflight, Actual, KISS and Raceflight rate curves (set through the diff import), checked against Betaflight 4.5.1 (`a3-rates-vectors.json`) | Live |
+| Drone & tuning | Import rates, PID and throttle curve from a Betaflight CLI `diff` / `diff all` (`d-bf-diff-import.json`) | Live |
+| Drone & tuning | PID for each axis: P, I, D and F | Live |
+| Drone & tuning | Motor spin-up time 8–30 ms and air drag 0.5–2× | Live |
+| Gravity & crashes | Gravity: Earth and Moon (measured, `b-fly-b16.json`), Mars, zero-g and a custom value through the `?g=` link parameter (not tested yet; a custom value matches no entry of the Settings gravity list, so Apply in Settings then sets zero-g) | Live |
+| Gravity & crashes | On other worlds: same motors, keep thrust-to-weight or auto throttle (the last two not tested yet) | Live |
+| Gravity & crashes | Crash threshold from 2 to 10 m/s | Live |
+| Gravity & crashes | After a crash: respawn at the start (`b-fly-b12.json`). The "From the last safe point" button does not keep its point reliably yet: the point is sampled only when a frame ends exactly on a 500th physics tick, so on a steady display it often stays at the start (defect D-d in [`docs/architecture-v03.md`](docs/architecture-v03.md)) | Live |
+| Gravity & crashes | Replay the last 10 s after a crash; a list of replays (`b-fly-b15.json`) | Live |
+| Camera, view & video | Camera field of view 70–150° and uptilt 0–50° | Live |
+| Camera, view & video | Stable frame ↔ detail slider; quality steps down by itself when frames drop (`d-governor.json`) | Live |
+| Camera, view & video | HUD on or off; F3 shows frame times | Live |
+| Camera, view & video | Reduced motion: a calmer crash camera (not tested yet) | Live |
+| Camera, view & video | Cinema mode: full detail and MP4 recording on the showcase scans (`d-cinema.json`) | Live |
+| Camera, view & video | Simulator in English, Spanish, Polish or Russian | Live |
+| Scenes & flight data | Any public SuperSplat scene in the current format, by link or id, re-published versions (v2, v3…) too; scenes in SuperSplat's older PLY format do not open yet | Live |
+| Scenes & flight data | Tabs: Andrii's scans, Recent, Favourites; filters for walls, type and flown | Live |
+| Scenes & flight data | Walls built in your browser for scans published without them, up to 4 M Gaussians (`c-bake.json`) | Live |
+| Scenes & flight data | Loading progress: stage, MB, speed, time left and retry | Live |
+| Scenes & flight data | Save the flight log; export the trajectory as CSV or JSON (CSV checked in `d-trajectory-export.json`, JSON not tested yet) | Live |
+| Scenes & flight data | Measurements panel: display refresh, frame times, physics rate and the input in use (its report rate is not measured yet); copy the report as JSON | Live |
+
+### In progress (8)
+
+Built on one shared settings store and one respawn system, not as quick patches ([`docs/architecture-v03.md`](docs/architecture-v03.md)).
+
+| Feature | Status |
+|---|---|
+| Calibration that waits for you: a step moves on only when you really move the stick | In progress |
+| Every setting kept between visits, with export, import and reset — one or all | In progress |
+| Pick the flight mode with a click; self-levelling by default for everyone | In progress |
+| Start on an invisible pad at spawn height instead of dropping to the floor | In progress |
+| After a crash, back in the air within 2 s, on a pad 5 s earlier; R returns to the start | In progress |
+| Crashes off for beginners | In progress |
+| Automatic restart when you are stuck or lying upside down | In progress |
+| Pavo20 Pro and Pro II physics tuned against the real quads | In progress |
+
+### Next (7)
+
+| Feature | Status |
+|---|---|
+| Flight stats at the end of a flight, like the goggles OSD | Next |
+| A full catalogue of every setting, on the site and here on GitHub | Next |
+| After a crash: your next favourite or a random top-rated scene (auto-switch off by default) | Next |
+| A SuperSplat tab with the same filters as superspl.at | Next |
+| Scale a wrong-size scene around the drone | Next |
+| 60 fps recording, and auto-record into the last folder you chose | Next |
+| Voxel-grid overlay: opacity, style, or fly the grid alone | Next |
+
+Missing a setting you need? Suggest it through the [contact form](https://gsfpv.flyreelstudio.eu/en/#contact) or open an issue.
+
 ## What is measured (not claimed)
 
 Numbers from the JSON files in [`evidence/2026-09-24/`](evidence/2026-09-24/) named in each row. The landing page's figures come from [`evidence/latest.json`](evidence/latest.json) (rates, tunnelling, clearance, latency), and its build fails if a number is missing.

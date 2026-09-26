@@ -21,6 +21,8 @@ type CraftRow = { k: string; v: string; src: "manufacturer" | "measured" | "clai
 type RadioRow = { browser: string; input: string; status: string; level: "sim" | "emu" | "none" | "view" };
 type CompareRow = { k: string; cells: string[] };
 type Thanks = { name: string; license: string; d: string; href: string };
+type FeatureGroup = { t: string; items: string[] };
+type FeatureStatus = "live" | "progress" | "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -42,6 +44,33 @@ const LEVEL_STYLE: Record<RadioRow["level"], string> = {
   view: "border-line-strong text-muted",
 };
 
+/** Feature board: one colour per status, the same pairs as the source chips above. */
+const STATUS_STYLE: Record<FeatureStatus, { chip: string; tile: string; num: string; bar: string }> = {
+  live: { chip: "border-accent/50 text-accent", tile: "border-accent/40", num: "text-accent", bar: "bg-accent" },
+  progress: { chip: "border-warn/50 text-warn", tile: "border-warn/40", num: "text-warn", bar: "bg-warn" },
+  next: { chip: "border-line-strong text-muted", tile: "border-line-strong", num: "text-ink", bar: "bg-line-strong" },
+};
+
+function StatusChip({ status, label }: { status: FeatureStatus; label: string }) {
+  return <span className={`mt-px inline-flex shrink-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs leading-5 ${STATUS_STYLE[status].chip}`}>{label}</span>;
+}
+
+/** Typography only: a range such as "8–30 ms" never breaks after its dash, a dash never starts a line. */
+const keepTogether = (s: string) => s.replace(/(\d)–(?=\d)/g, "$1–\u2060").replace(/ — /g, "\u00a0— ");
+
+function FeatureRows({ items, status, label }: { items: string[]; status: FeatureStatus; label: string }) {
+  return (
+    <ul className="mt-3 divide-y divide-line">
+      {items.map((it) => (
+        <li key={it} className="flex items-start justify-between gap-3 py-2.5">
+          <span className="text-[15px] leading-snug text-ink/90">{keepTogether(it)}</span>
+          <StatusChip status={status} label={label} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function Landing({ locale }: { locale: Locale }) {
   const t = useTranslations();
   const how = t.raw("how.steps") as TD[];
@@ -54,11 +83,19 @@ function Landing({ locale }: { locale: Locale }) {
   const faq = t.raw("faq.items") as QA[];
   const thanks = t.raw("opensource.thanks") as Thanks[];
   const heroFacts = t.raw("hero.facts") as string[];
+  const featGroups = t.raw("features.groups") as FeatureGroup[];
+  const featProgress = t.raw("features.progress") as string[];
+  const featNext = t.raw("features.next") as string[];
+  const featCounts: [FeatureStatus, number][] = [
+    ["live", featGroups.reduce((n, g) => n + g.items.length, 0)],
+    ["progress", featProgress.length],
+    ["next", featNext.length],
+  ];
   const fly = flyPath(locale);
 
   return (
     <>
-      <JsonLd locale={locale} description={t("meta.description")} faq={faq} />
+      <JsonLd locale={locale} description={t("meta.description")} faq={faq} features={featGroups.flatMap((g) => g.items)} />
       <Header locale={locale} page="" onLanding />
 
       <main id="main" tabIndex={-1} className="outline-none">
@@ -94,8 +131,78 @@ function Landing({ locale }: { locale: Locale }) {
           </div>
         </section>
 
+        {/* 1b. What you can set up: live / in progress / next */}
+        <Section id="features" index="01" eyebrow={t("features.eyebrow")} title={keepTogether(t("features.h2"))} lead={t("features.lead")} tone="surface">
+          <div className="mt-10 max-w-2xl">
+            <dl className="grid grid-cols-3 gap-3">
+              {featCounts.map(([k, n]) => (
+                <div key={k} className={`flex flex-col-reverse justify-end gap-1 rounded-xl border bg-bg p-4 ${STATUS_STYLE[k].tile}`}>
+                  <dt className="text-sm leading-snug text-muted">{t(`features.count.${k}`)}</dt>
+                  <dd className={`font-mono text-3xl font-semibold leading-none sm:text-4xl ${STATUS_STYLE[k].num}`}>{n}</dd>
+                </div>
+              ))}
+            </dl>
+            <div aria-hidden="true" className="mt-3 flex h-1.5 gap-1 overflow-hidden rounded-full">
+              {featCounts.map(([k, n]) => (
+                <span key={k} className={`rounded-full ${STATUS_STYLE[k].bar}`} style={{ flexGrow: n }} />
+              ))}
+            </div>
+          </div>
+
+          <h3 className="mt-14 text-2xl font-semibold text-ink">{t("features.nowTitle")}</h3>
+          <p className="mt-2 max-w-3xl text-sm text-muted">
+            {t.rich("features.nowNote", {
+              link: (chunks) => (
+                <a href="#radios" className="link">
+                  {chunks}
+                </a>
+              ),
+            })}
+          </p>
+          <ul className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {featGroups.map((g) => (
+              <li key={g.t} className="rounded-xl border border-line bg-bg p-5">
+                <h4 className="flex items-baseline justify-between gap-3 text-lg font-semibold text-ink">
+                  {g.t}
+                  <span aria-hidden="true" className="font-mono text-sm font-normal text-muted">
+                    {g.items.length}
+                  </span>
+                </h4>
+                <FeatureRows items={g.items} status="live" label={t("features.status.live")} />
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-6 grid gap-5 lg:grid-cols-2">
+            <article aria-labelledby="features-progress" className="rounded-xl border border-warn/30 bg-bg p-5 sm:p-6">
+              <h3 id="features-progress" className="flex items-center gap-3 text-2xl font-semibold text-ink">
+                <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-warn" />
+                {t("features.progressTitle")}
+              </h3>
+              <p className="mt-2 text-sm text-muted">{t("features.progressNote")}</p>
+              <FeatureRows items={featProgress} status="progress" label={t("features.status.progress")} />
+            </article>
+            <article aria-labelledby="features-next" className="rounded-xl border border-line bg-bg p-5 sm:p-6">
+              <h3 id="features-next" className="flex items-center gap-3 text-2xl font-semibold text-ink">
+                <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-line-strong" />
+                {t("features.nextTitle")}
+              </h3>
+              <p className="mt-2 text-sm text-muted">{t("features.nextNote")}</p>
+              <FeatureRows items={featNext} status="next" label={t("features.status.next")} />
+            </article>
+          </div>
+
+          <div className="mt-8 flex flex-col gap-4 rounded-xl border border-accent/30 bg-bg p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <p className="text-lg font-semibold text-ink">{t("features.suggest")}</p>
+            <a href="#contact" className="btn-secondary min-h-12 shrink-0 px-6">
+              {t("features.suggestLink")}
+              <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </Section>
+
         {/* 2. How it works */}
-        <Section id="how" index="01" eyebrow={t("how.eyebrow")} title={t("how.h2")} lead={t("how.lead")}>
+        <Section id="how" index="02" eyebrow={t("how.eyebrow")} title={t("how.h2")} lead={t("how.lead")}>
           <ol className="mt-10 grid gap-4 md:grid-cols-3">
             {how.map((s, i) => (
               <li key={s.t} className="rounded-xl border border-line bg-surface p-6">
@@ -108,7 +215,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 3. Why it feels real */}
-        <Section id="real" index="02" eyebrow={t("real.eyebrow")} title={t("real.h2")} lead={t("real.lead")} tone="surface">
+        <Section id="real" index="03" eyebrow={t("real.eyebrow")} title={t("real.h2")} lead={t("real.lead")} tone="surface">
           <div className="mt-10 grid gap-8 lg:grid-cols-[1.25fr_1fr]">
             <ul className="grid gap-x-8 gap-y-7 sm:grid-cols-2">
               {real.map((it) => (
@@ -141,12 +248,12 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 4. Live numbers */}
-        <Section id="numbers" index="03" eyebrow={t("numbers.eyebrow")} title={t("numbers.h2")} lead={t("numbers.lead")}>
+        <Section id="numbers" index="04" eyebrow={t("numbers.eyebrow")} title={t("numbers.h2")} lead={t("numbers.lead")}>
           <LiveNumbers />
         </Section>
 
         {/* 5. Andrii's scans */}
-        <Section id="scenes" index="04" eyebrow={t("scenes.eyebrow")} title={t("scenes.h2")} lead={t("scenes.lead")} tone="surface">
+        <Section id="scenes" index="05" eyebrow={t("scenes.eyebrow")} title={t("scenes.h2")} lead={t("scenes.lead")} tone="surface">
           <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {SHOWCASE.map((s) => {
               const title = t(`scenes.items.${s.id}`);
@@ -189,7 +296,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 6. Works with your radio */}
-        <Section id="radios" index="05" eyebrow={t("radios.eyebrow")} title={t("radios.h2")} lead={t("radios.lead")}>
+        <Section id="radios" index="06" eyebrow={t("radios.eyebrow")} title={t("radios.h2")} lead={t("radios.lead")}>
           <div className="mt-10 overflow-hidden rounded-xl border border-line">
             <div aria-hidden="true" className="hidden grid-cols-[1fr_1.6fr_1.6fr] gap-6 border-b border-line bg-surface px-6 py-3 font-mono text-xs uppercase tracking-wider text-muted md:grid">
               <span>{t("radios.cols.browser")}</span>
@@ -219,7 +326,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 7. Why this is better */}
-        <Section id="compare" index="06" eyebrow={t("compare.eyebrow")} title={t("compare.h2")} lead={t("compare.lead")} tone="surface">
+        <Section id="compare" index="07" eyebrow={t("compare.eyebrow")} title={t("compare.h2")} lead={t("compare.lead")} tone="surface">
           <p aria-hidden="true" className="mt-8 font-mono text-xs text-muted md:hidden">
             {t("compare.swipe")} →
           </p>
@@ -258,7 +365,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 8. For your AI agent */}
-        <Section id="agents" index="07" eyebrow={t("agents.eyebrow")} title={t("agents.h2")} lead={t("agents.lead")}>
+        <Section id="agents" index="08" eyebrow={t("agents.eyebrow")} title={t("agents.h2")} lead={t("agents.lead")}>
           <div className="mt-10 grid gap-8 lg:grid-cols-[1.5fr_1fr]">
             <CopyBlock id="agent-prompt" text={AGENT_PROMPT} label={t("agents.copy")} copied={t("agents.copied")} caption={t("agents.caption")} />
             <div>
@@ -288,7 +395,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 9. Risks & safety */}
-        <Section id="risks" index="08" eyebrow={t("risks.eyebrow")} title={t("risks.h2")} lead={t("risks.lead")} tone="surface">
+        <Section id="risks" index="09" eyebrow={t("risks.eyebrow")} title={t("risks.h2")} lead={t("risks.lead")} tone="surface">
           <ul className="mt-10 grid gap-4 md:grid-cols-2">
             {risks.map((r) => (
               <li key={r.t} className="rounded-xl border border-line bg-bg p-5">
@@ -311,7 +418,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 10. FAQ */}
-        <Section id="faq" index="09" eyebrow={t("faq.eyebrow")} title={t("faq.h2")}>
+        <Section id="faq" index="10" eyebrow={t("faq.eyebrow")} title={t("faq.h2")}>
           <div className="mt-10 divide-y divide-line rounded-xl border border-line">
             {faq.map((f, i) => (
               <details key={i} className="group px-5 sm:px-6">
@@ -328,7 +435,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 11. Open source */}
-        <Section id="opensource" index="10" eyebrow={t("opensource.eyebrow")} title={t("opensource.h2")} lead={t("opensource.lead")} tone="surface">
+        <Section id="opensource" index="11" eyebrow={t("opensource.eyebrow")} title={t("opensource.h2")} lead={t("opensource.lead")} tone="surface">
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Ext href={REPO} className="btn-primary min-h-12 px-6" track="cta_click" p="github">
               {t("opensource.repo")}
@@ -354,7 +461,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 12. Contact */}
-        <Section id="contact" index="11" eyebrow={t("contact.eyebrow")} title={t("contact.h2")}>
+        <Section id="contact" index="12" eyebrow={t("contact.eyebrow")} title={t("contact.h2")}>
           <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_1.15fr]">
             <div>
               <p className="text-xl font-semibold text-ink">{AUTHOR.name}</p>

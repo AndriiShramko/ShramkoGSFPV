@@ -3,7 +3,7 @@ import { AUTHOR, REPO, SITE } from "@/config/site";
 type FaqItem = { q: string; a: string };
 
 /** SoftwareApplication (+ author, source code) and, on the landing, FAQPage. Verified facts only. */
-export default function JsonLd({ locale, description, faq }: { locale: string; description: string; faq?: FaqItem[] }) {
+export default function JsonLd({ locale, description, faq, features }: { locale: string; description: string; faq?: FaqItem[]; features?: string[] }) {
   const url = `${SITE}/${locale}/`;
   const graph: Record<string, unknown>[] = [
     {
@@ -23,6 +23,8 @@ export default function JsonLd({ locale, description, faq }: { locale: string; d
       sameAs: [REPO],
       inLanguage: ["en", "es", "pl", "ru"],
       author: { "@id": `${SITE}/#author` },
+      // the landing's "Available now" list: only what works on the live site today
+      ...(features && features.length ? { featureList: features } : {}),
     },
     {
       "@type": "SoftwareSourceCode",

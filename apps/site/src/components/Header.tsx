@@ -4,7 +4,9 @@ import type { Locale } from "@/i18n/routing";
 import LangSwitcher from "./LangSwitcher";
 import Logo from "./Logo";
 
-const ANCHORS = ["how", "real", "numbers", "scenes", "radios", "faq", "contact"] as const;
+// "How it works" sits right under "Features" on the page, so the header links to the features board
+// instead; eight links did not fit next to the language switcher in Spanish and Russian.
+const ANCHORS = ["features", "real", "numbers", "scenes", "radios", "faq", "contact"] as const;
 
 /** Sticky header: brand, section anchors (desktop), language switcher and the "Fly now" CTA. */
 export default function Header({ locale, page, onLanding }: { locale: Locale; page: string; onLanding: boolean }) {
@@ -21,7 +23,7 @@ export default function Header({ locale, page, onLanding }: { locale: Locale; pa
           <Logo />
           <span>ShramkoGSFPV</span>
         </a>
-        <nav aria-label={t("sections")} className="hidden lg:block">
+        <nav aria-label={t("sections")} className="hidden min-[1152px]:block">
           <ul className="flex items-center gap-1">
             {ANCHORS.map((a) => (
               <li key={a}>

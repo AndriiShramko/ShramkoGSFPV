@@ -10,6 +10,7 @@
     "language": "Language",
     "fly": "Fly now",
     "anchors": {
+      "features": "Features",
       "how": "How it works",
       "real": "Physics",
       "numbers": "Numbers",
@@ -32,6 +33,104 @@
       "hint": "A scene link, a superspl.at/s?id= link or just the scene id.", "empty": "Paste a SuperSplat link or a scene id first."
     },
     "facts": ["WebGPU + PlayCanvas", "Rates checked against Betaflight 4.5.1", "Swept voxel collision", "MIT license"]
+  },
+  "features": {
+    "eyebrow": "What you can set up",
+    "h2": "Everything you can tune today — and what is coming",
+    "lead": "Radios, drones, physics, scenes and video: every option that works on the site today, what is being built right now and what comes next.",
+    "status": { "live": "Live", "progress": "In progress", "next": "Next" },
+    "count": { "live": "live now", "progress": "in progress", "next": "up next" },
+    "nowTitle": "Available now",
+    "nowNote": "“Live” means you can use it on the site today. How each input was tested: <link>Works with your radio</link>.",
+    "groups": [
+      {
+        "t": "Radio & calibration",
+        "items": [
+          "EdgeTX radio over USB (WebHID) in Chrome or Edge",
+          "Calibration with a drawn radio that shows which stick to move",
+          "Reverse any channel after calibration",
+          "Recalibrate button in Controls",
+          "A known radio reconnects by itself when you change scans"
+        ]
+      },
+      {
+        "t": "Gamepad, touch & keyboard",
+        "items": [
+          "Gamepad through the browser's Gamepad API",
+          "Touch sticks and an ARM button on a touch screen",
+          "Keyboard, with every flying key shown on screen",
+          "Keyboard: M switches ANGLE (self-levelling) and ACRO; touch flies in ANGLE, a radio or gamepad in ACRO (ANGLE not tested yet)",
+          "Close Controls with × or Esc; the pause menu shows its keys"
+        ]
+      },
+      {
+        "t": "Drone & tuning",
+        "items": [
+          "Six BetaFPV-class presets: Pavo20 Pro 3S, Pavo20 Pro II 3S and 4S, Pavo Pico 2S, Meteor65 Pro 1S, Air65 1S",
+          "Betaflight, Actual, KISS and Raceflight rate curves (set through the diff import), checked against Betaflight 4.5.1",
+          "Import rates, PID and throttle curve from a Betaflight CLI diff",
+          "PID for each axis: P, I, D and F",
+          "Motor spin-up time 8–30 ms and air drag 0.5–2×"
+        ]
+      },
+      {
+        "t": "Gravity & crashes",
+        "items": [
+          "Gravity: Earth and Moon (measured), Mars and zero-g (not tested yet)",
+          "On other worlds: same motors, keep thrust-to-weight or auto throttle (the last two not tested yet)",
+          "Crash threshold from 2 to 10 m/s",
+          "After a crash: respawn at the start (the “last safe point” button does not keep its point reliably yet)",
+          "Replay the last 10 s after a crash; a list of replays"
+        ]
+      },
+      {
+        "t": "Camera, view & video",
+        "items": [
+          "Camera field of view 70–150° and uptilt 0–50°",
+          "Stable frame ↔ detail slider; quality steps down by itself when frames drop",
+          "HUD on or off; F3 shows frame times",
+          "Reduced motion: a calmer crash camera (not tested yet)",
+          "Cinema mode: full detail and MP4 recording on Andrii's scans",
+          "Simulator in English, Spanish, Polish or Russian"
+        ]
+      },
+      {
+        "t": "Scenes & flight data",
+        "items": [
+          "Any public SuperSplat scene by link or id, re-published versions (v2, v3…) too; scenes in the older PLY format do not open yet",
+          "Tabs: Andrii's scans, Recent, Favourites; filters for walls, type and flown",
+          "Walls built in your browser for scans published without them (up to 4 M Gaussians)",
+          "Loading progress: stage, MB, speed, time left and retry",
+          "Save the flight log; export the trajectory as CSV or JSON",
+          "Measurements panel: display refresh, frame times, physics rate and the input in use; copy the report as JSON"
+        ]
+      }
+    ],
+    "progressTitle": "In progress",
+    "progressNote": "Being built now — on one shared settings store and one respawn system, not as quick patches.",
+    "progress": [
+      "Calibration that waits for you: a step moves on only when you really move the stick",
+      "Every setting kept between visits, with export, import and reset — one or all",
+      "Pick the flight mode with a click; self-levelling by default for everyone",
+      "Start on an invisible pad at spawn height instead of dropping to the floor",
+      "After a crash, back in the air within 2 s, on a pad 5 s earlier; R returns to the start",
+      "Crashes off for beginners",
+      "Automatic restart when you are stuck or lying upside down",
+      "Pavo20 Pro and Pro II physics tuned against the real quads"
+    ],
+    "nextTitle": "Next",
+    "nextNote": "Designed and queued for the next builds.",
+    "next": [
+      "Flight stats at the end of a flight, like the goggles OSD",
+      "A full catalogue of every setting, here and on GitHub",
+      "After a crash: your next favourite or a random top-rated scene (auto-switch off by default)",
+      "A SuperSplat tab with the same filters as superspl.at",
+      "Scale a wrong-size scene around the drone",
+      "60 fps recording, and auto-record into the last folder you chose",
+      "Voxel-grid overlay: opacity, style, or fly the grid alone"
+    ],
+    "suggest": "Missing a setting you need?",
+    "suggestLink": "Suggest a feature"
   },
   "how": {
     "eyebrow": "How it works",

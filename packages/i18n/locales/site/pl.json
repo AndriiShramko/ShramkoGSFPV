@@ -10,6 +10,7 @@
     "language": "Język",
     "fly": "Leć teraz",
     "anchors": {
+      "features": "Funkcje",
       "how": "Jak to działa",
       "real": "Fizyka",
       "numbers": "Liczby",
@@ -32,6 +33,104 @@
       "hint": "Link do sceny, link superspl.at/s?id= albo samo id sceny.", "empty": "Najpierw wklej link do SuperSplat albo id sceny."
     },
     "facts": ["WebGPU i PlayCanvas", "Rates sprawdzone z Betaflight 4.5.1", "Kolizje z przemiataniem wokseli", "Licencja MIT"]
+  },
+  "features": {
+    "eyebrow": "Co możesz ustawić",
+    "h2": "Wszystko, co już możesz dostroić — i co nadchodzi",
+    "lead": "Aparatury, drony, fizyka, sceny i wideo: każda opcja, która działa na stronie już dziś, to, co powstaje właśnie teraz, i to, co będzie dalej.",
+    "status": { "live": "Działa", "progress": "W budowie", "next": "Wkrótce" },
+    "count": { "live": "działa już dziś", "progress": "w budowie", "next": "w kolejce" },
+    "nowTitle": "Dostępne teraz",
+    "nowNote": "„Działa” znaczy, że możesz z tego korzystać na stronie już dziś. Jak testowano każde urządzenie: <link>Działa z Twoją aparaturą</link>.",
+    "groups": [
+      {
+        "t": "Aparatura i kalibracja",
+        "items": [
+          "Aparatura EdgeTX przez USB (WebHID) w Chrome lub Edge",
+          "Kalibracja z narysowaną aparaturą, która pokazuje, którym drążkiem ruszyć",
+          "Odwrócenie dowolnego kanału po kalibracji",
+          "Przycisk „Kalibruj ponownie” w menu „Sterowanie”",
+          "Znana aparatura łączy się sama po zmianie skanu"
+        ]
+      },
+      {
+        "t": "Pad, dotyk i klawiatura",
+        "items": [
+          "Pad (gamepad) przez Gamepad API przeglądarki",
+          "Drążki dotykowe i przycisk UZBRÓJ na ekranie dotykowym",
+          "Klawiatura — każdy klawisz lotu widać na ekranie",
+          "Klawiatura: M przełącza między ANGLE (samopoziomowanie) i ACRO; na dotyku lot w ANGLE, z aparaturą lub padem w ACRO (ANGLE jeszcze nie testowany)",
+          "Zamknięcie „Sterowania” przez × lub Esc; menu pauzy pokazuje swoje klawisze"
+        ]
+      },
+      {
+        "t": "Dron i strojenie",
+        "items": [
+          "Sześć presetów klasy BetaFPV: Pavo20 Pro 3S, Pavo20 Pro II 3S i 4S, Pavo Pico 2S, Meteor65 Pro 1S, Air65 1S",
+          "Krzywe rates Betaflight, Actual, KISS i Raceflight (ustawiane przez import diffu), sprawdzone z Betaflight 4.5.1",
+          "Import rates, PID i krzywej gazu z diffu z CLI Betaflight",
+          "PID dla każdej osi: P, I, D i F",
+          "Czas rozkręcania silników 8–30 ms i opór powietrza 0,5–2×"
+        ]
+      },
+      {
+        "t": "Grawitacja i kraksy",
+        "items": [
+          "Grawitacja: Ziemia i Księżyc (zmierzone), Mars i zero g (jeszcze nie testowane)",
+          "Na innych planetach: te same silniki, stały stosunek ciągu do masy albo automatyczny gaz (dwa ostatnie jeszcze nie testowane)",
+          "Próg kraksy od 2 do 10 m/s",
+          "Po kraksie: powrót na start (przycisk „ostatni bezpieczny punkt” jeszcze nie zapamiętuje punktu niezawodnie)",
+          "Powtórka ostatnich 10 s po kraksie; lista powtórek"
+        ]
+      },
+      {
+        "t": "Kamera, widok i wideo",
+        "items": [
+          "Pole widzenia kamery 70–150° i jej pochylenie 0–50°",
+          "Suwak płynność ↔ szczegóły; jakość sama spada, gdy gubią się klatki",
+          "HUD włączony lub wyłączony; F3 pokazuje czasy klatek",
+          "Ograniczenie ruchu: spokojniejsza kamera po kraksie (jeszcze nie testowane)",
+          "Tryb kinowy: pełne detale i nagrywanie MP4 na skanach Andrija",
+          "Symulator po angielsku, hiszpańsku, polsku lub rosyjsku"
+        ]
+      },
+      {
+        "t": "Sceny i dane lotu",
+        "items": [
+          "Dowolna publiczna scena SuperSplat z linku lub id, także opublikowana ponownie (v2, v3…); sceny w starszym formacie PLY jeszcze się nie otwierają",
+          "Zakładki: Skany Andrija, Ostatnie, Ulubione; filtry: ściany, typ, już latane",
+          "Ściany budowane w przeglądarce dla skanów opublikowanych bez nich (do 4 mln gaussianów)",
+          "Postęp ładowania: etap, MB, prędkość, pozostały czas i ponowienie",
+          "Zapis logu lotu; eksport trajektorii do CSV lub JSON",
+          "Panel pomiarów: odświeżanie ekranu, czasy klatek, częstotliwość fizyki i używane wejście; kopia raportu jako JSON"
+        ]
+      }
+    ],
+    "progressTitle": "W budowie",
+    "progressNote": "Powstaje teraz — na jednym wspólnym magazynie ustawień i jednym systemie respawnu, a nie jako szybkie łatki.",
+    "progress": [
+      "Kalibracja, która na Ciebie czeka: krok idzie dalej dopiero, gdy naprawdę ruszysz drążkiem",
+      "Wszystkie ustawienia zapamiętane między wizytami, z eksportem, importem i resetem jednego lub wszystkich",
+      "Wybór trybu lotu jednym kliknięciem; domyślnie samopoziomowanie dla wszystkich",
+      "Start z niewidzialnej platformy na wysokości pojawienia się, zamiast spadania na podłogę",
+      "Po kraksie z powrotem w powietrzu w 2 s, na platformie 5 s wcześniej; R wraca na start",
+      "Wyłączenie kraks dla początkujących",
+      "Automatyczny restart, gdy utkniesz albo leżysz do góry nogami",
+      "Fizyka Pavo20 Pro i Pro II dostrojona do prawdziwych dronów"
+    ],
+    "nextTitle": "Wkrótce",
+    "nextNote": "Zaprojektowane i czekają w kolejce na kolejne wydania.",
+    "next": [
+      "Statystyki na koniec lotu, jak OSD w goglach",
+      "Pełny katalog wszystkich ustawień — tutaj i na GitHubie",
+      "Po kraksie: następna ulubiona albo losowa, wysoko oceniana scena (auto-przełączanie domyślnie wyłączone)",
+      "Zakładka SuperSplat z tymi samymi filtrami co na superspl.at",
+      "Skalowanie sceny o złym rozmiarze wokół drona",
+      "Nagrywanie w 60 fps i automatyczne nagrywanie do ostatnio wybranego folderu",
+      "Nakładka siatki wokseli: przezroczystość, styl albo lot po samej siatce"
+    ],
+    "suggest": "Brakuje Ci jakiegoś ustawienia?",
+    "suggestLink": "Zaproponuj funkcję"
   },
   "how": {
     "eyebrow": "Jak to działa",
