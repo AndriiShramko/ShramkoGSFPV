@@ -1,6 +1,6 @@
 // Scene picker: paste a link, Andrii's scans (static showcase.json), recent, favourites, filters.
 // History, favourites and the filter live in the browser only and survive a reload.
-import { parseSceneInput, getHistory, getFavourites, toggleFavourite, getFilter, setFilter } from '@gsfpv/scenes';
+import { parseSceneInput, getHistory, getFavourites, toggleFavourite, getFilter, setFilter, posterUrl } from '@gsfpv/scenes';
 import type { SceneFilter } from '@gsfpv/scenes';
 import { h, clear } from './dom';
 import { t } from '../i18n';
@@ -15,8 +15,6 @@ export interface ShowcaseScene {
     voxelCm?: number;
     sizeMb?: number;
 }
-
-const POSTER = (id: string) => `https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/${id}/v1/m.webp`;
 
 export async function loadShowcase(): Promise<ShowcaseScene[]> {
     try {
@@ -79,7 +77,8 @@ export class ScenePicker {
     }
 
     showError(code: string, msg?: string): void {
-        this.err.textContent = t(`error.${code}`, { msg: msg ?? '' });
+        // a scene in a format we cannot open yet is not "missing": its text lives with the picker
+        this.err.textContent = code === 'unsupported' ? t('scenes.unsupported') : t(`error.${code}`, { msg: msg ?? '' });
     }
 
     private items(): (ShowcaseScene & { flights: number; fav: boolean })[] {
@@ -108,7 +107,7 @@ export class ScenePicker {
         for (const s of items) {
             const star = h('button', { type: 'button', class: `star ${s.fav ? 'on' : ''}`, 'aria-label': s.fav ? t('scenes.card.unfav') : t('scenes.card.fav'), 'aria-pressed': String(s.fav), onclick: (e: Event) => { e.stopPropagation(); toggleFavourite(s.id); this.render(tabs); } }, '★');
             const card = h('button', { type: 'button', class: 'scene-card', 'data-scene': s.id, onclick: () => this.onPick?.(s.id, this.tab === 'showcase' ? 'showcase' : 'history') },
-                h('img', { src: POSTER(s.id), alt: '', loading: 'lazy', width: 320, height: 180 }),
+                h('img', { src: posterUrl(s.id), alt: '', loading: 'lazy', width: 320, height: 180 }),
                 h('span', { class: 'scene-title' }, s.title),
                 h('span', { class: 'scene-meta' },
                     s.collision ? `${t('scenes.card.walls')}${s.voxelCm ? ` · ${s.voxelCm} cm` : ''}` : t('scenes.card.noWalls'),

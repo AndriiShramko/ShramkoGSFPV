@@ -47,12 +47,23 @@ function curve(p: PresetJson): HTMLCanvasElement {
 export class DronePicker {
     readonly root: HTMLDivElement;
     onPick: ((id: string) => void) | null = null;
+    /** Leave with nothing changed: keep the drone and fly on (the same path as Esc in main.ts). */
+    onClose: (() => void) | null = null;
+    private readonly current: string;
 
     constructor(parent: HTMLElement, current: string) {
+        this.current = current;
         const cards = h('div', { class: 'drone-grid' });
+        let keep: HTMLButtonElement | null = null;
         for (const [id, p] of Object.entries(PRESETS)) {
             const sp = compileParams(p);
-            const card = h('div', { class: `drone-card ${id === current ? 'selected' : ''}`, 'data-preset': id },
+            const isCur = id === current;
+            // the drone in use says so, and its button leaves without rebuilding the flight model
+            const btn = isCur
+                ? h('button', { type: 'button', class: 'btn primary', 'data-action': 'drone-keep', onclick: () => this.close() }, t('drone.keep'))
+                : h('button', { type: 'button', class: 'btn', 'data-action': 'drone-pick', onclick: () => this.onPick?.(id) }, t('common.fly'));
+            if (isCur) keep = btn;
+            const card = h('div', { class: `drone-card ${isCur ? 'selected' : ''}`, 'data-preset': id },
                 h('h3', {}, p.name, id === DEFAULT_PRESET ? h('span', { class: 'pill' }, t('drone.default')) : null),
                 h('p', { class: 'muted' }, p.class),
                 row(p, 'twr', t('drone.twr'), (v) => `${v}:1`),
@@ -62,12 +73,25 @@ export class DronePicker {
                 row(p, 'battery', t('drone.battery'), (v) => String(v)),
                 curve(p),
                 h('p', { class: 'muted small' }, `hover ≈ ${fmt(((1 / Math.sqrt(sp.twr) - sp.idle) / (1 - sp.idle)) * 100, 0)} % throttle`),
-                h('button', { type: 'button', class: 'btn primary', onclick: () => this.onPick?.(id) }, t('common.fly'))
+                btn
             );
             cards.append(card);
         }
-        this.root = h('div', { class: 'screen drones interactive' }, h('h1', {}, t('drone.title')), h('p', { class: 'muted' }, t('drone.sourceNote')), cards);
+        const x = h('button', { type: 'button', class: 'panel-x', 'data-action': 'drone-close', 'aria-label': t('common.close'), 'aria-keyshortcuts': 'Escape', title: `${t('common.close')} (Esc)`, onclick: () => this.close() }, '×');
+        // not modal: the top Controls and Pause buttons stay reachable above it (fly.css)
+        this.root = h('div', { class: 'screen drones interactive', role: 'dialog', 'aria-labelledby': 'drone-title' },
+            h('div', { class: 'drone-head' }, h('h1', { id: 'drone-title' }, t('drone.title')), x),
+            h('p', { class: 'muted' }, t('drone.sourceNote')), cards);
         parent.append(this.root);
+        // Enter keeps the drone in use; Tab reaches the others
+        (keep ?? x).focus({ preventScroll: true });
+    }
+
+    /** The close button and the current drone's card: nothing changes. Without an onClose, main.ts
+     *  treats picking the drone already in use as "keep it and fly on". */
+    private close(): void {
+        if (this.onClose) this.onClose();
+        else this.onPick?.(this.current);
     }
 
     remove(): void {

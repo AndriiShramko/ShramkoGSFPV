@@ -12,6 +12,7 @@ h1 { font-size: 22px; margin: 0 0 12px; } h2 { font-size: 18px; margin: 0 0 10px
 .btn:hover { border-color: #334155; } .btn:focus-visible, .scene-card:focus-visible, .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
 .btn[disabled] { opacity: .45; cursor: not-allowed; }
+.btn[hidden] { display: none; } /* .btn sets display, which would beat the hidden attribute (Record outside cinema) */
 .btn.block { display: flex; width: 100%; margin: 6px 0; }
 .pill { font-size: 11px; background: var(--accent); color: var(--accent-ink); border-radius: 999px; padding: 1px 8px; margin-left: 8px; vertical-align: middle; }
 /* screens */
@@ -35,6 +36,13 @@ h1 { font-size: 22px; margin: 0 0 12px; } h2 { font-size: 18px; margin: 0 0 10px
 .empty { color: var(--muted); }
 .drone-card { border: 1px solid var(--line); border-radius: var(--r); padding: 14px; background: var(--bg2); min-width: 0; }
 .drone-card.selected { border-color: var(--accent); }
+/* drone picker: starts under the top buttons so Controls and Pause stay visible and clickable;
+   its own header (title and close) stays put while the cards scroll */
+.screen.drones { top: calc(max(10px, env(safe-area-inset-top)) + 76px + var(--banner-h, 0px)); padding-top: 0; background: var(--bg); } /* opaque: the credit and the HUD showed through */
+/* full width band (the column stays 1100 px): the cards scroll under it */
+.screen.drones > .drone-head { position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 12px; max-width: none; margin: 0 -16px; padding: 10px max(16px, calc((100% - 1100px) / 2 + 16px)) 6px; background: var(--bg); }
+.drone-head h1 { margin: 0; }
+.drone-head .panel-x { flex: none; margin-right: -8px; }
 .spec-row { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; font-size: 14px; padding: 3px 0; border-bottom: 1px dashed var(--line); }
 .spec-row .src { grid-column: 1 / -1; font-size: 11px; color: var(--muted); }
 .src-estimate { color: var(--warn) !important; }
@@ -50,9 +58,11 @@ h1 { font-size: 22px; margin: 0 0 12px; } h2 { font-size: 18px; margin: 0 0 10px
 /* OSD */
 .hud { position: absolute; inset: 0; }
 .osd { position: absolute; font: 600 15px/1.25 ui-monospace, "Cascadia Mono", Consolas, monospace; text-shadow: 0 1px 2px #000, 0 0 4px #000; color: #fff; }
-.osd.tl { top: max(14px, env(safe-area-inset-top)); left: 44px; } .osd.tr { top: max(14px, env(safe-area-inset-top)); right: 16px; text-align: right; }
-.osd.bl { bottom: 14px; left: 16px; } .osd.br { bottom: 14px; right: 16px; text-align: right; font-size: 12px; font-weight: 500; opacity: .85; }
-.osd.frame { top: 44px; left: 44px; font-size: 12px; } .hidden { display: none; }
+/* --banner-h: total height of the notes at the top edge (flight.ts stackBanners); the top line,
+   the top buttons and the touch hint move down by it, so a note never prints over them */
+.osd.tl { top: calc(max(14px, env(safe-area-inset-top)) + var(--banner-h, 0px)); left: 44px; } .osd.tr { top: calc(max(14px, env(safe-area-inset-top)) + var(--banner-h, 0px)); right: 16px; text-align: right; }
+.osd.bl { bottom: 14px; left: 16px; } .osd.br { bottom: 14px; right: 16px; text-align: right; font-size: 12px; font-weight: 500; opacity: .85; white-space: nowrap; } /* one line: flight.ts picks a text that fits beside the telemetry */
+.osd.frame { top: calc(44px + var(--banner-h, 0px)); left: 44px; font-size: 12px; } .hidden { display: none; }
 .osd .armed { color: var(--accent); } .osd .disarmed { color: var(--warn); } .osd .crash { color: var(--bad); } .osd .rec { color: var(--bad); }
 .gate-msg { position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%); background: rgba(0,0,0,.55); color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 14px; max-width: 90vw; text-align: center; }
 .gate-msg:empty { display: none; }
@@ -66,20 +76,55 @@ h1 { font-size: 22px; margin: 0 0 12px; } h2 { font-size: 18px; margin: 0 0 10px
 details summary { cursor: pointer; min-height: 40px; display: flex; align-items: center; }
 .crash-overlay { position: absolute; left: 50%; top: 64px; transform: translateX(-50%); width: min(560px, calc(100vw - 32px)); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; animation: fadein .5s ease both; }
 @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+/* a modal panel (pause menu, settings...) stays on top: a crash overlay that shows up meanwhile
+   (it waits for the crash to settle) would cover its buttons, so it waits under the panel */
+#ui:has(> .panel) > .crash-overlay { visibility: hidden; }
 dl.measure { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; } dl.measure dd { margin: 0; font-family: ui-monospace, monospace; }
 .replay-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 6px 0; }
-.banner { position: absolute; top: 0; left: 0; right: 0; background: #3b2f0b; color: #fde68a; padding: 8px 16px; font-size: 14px; text-align: center; }
+.banner { position: absolute; top: 0; left: 0; right: 0; background: #3b2f0b; color: #fde68a; padding: 8px 16px; font-size: 14px; text-align: center; } /* stacked by flight.ts */
 .attribution { position: absolute; left: 16px; bottom: 40px; font-size: 12px; color: #d1d5db; text-shadow: 0 1px 2px #000; max-width: 60vw; }
 .attribution a { color: #bbf7d0; }
-.bake-box { position: absolute; top: 44px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 92vw; }
+.bake-box { position: absolute; top: calc(44px + var(--banner-h, 0px)); left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 92vw; }
 .bake-box .btn { background: rgba(12,14,18,.85); }
 .bake-status { font-size: 13px; color: #d1d5db; text-shadow: 0 1px 2px #000; text-align: center; }
 .badge-nowalls { background: rgba(12,14,18,.85); border: 1px solid var(--warn); color: var(--warn); padding: 6px 12px; border-radius: 999px; font-size: 13px; max-width: 92vw; text-align: center; }
-.top-actions { position: absolute; top: max(10px, env(safe-area-inset-top)); right: 16px; display: flex; gap: 8px; margin-top: 28px; }
+.top-actions { position: absolute; top: calc(max(10px, env(safe-area-inset-top)) + var(--banner-h, 0px)); right: 16px; display: flex; gap: 8px; margin-top: 28px; }
 .top-actions .btn { min-height: 40px; padding: 6px 12px; background: rgba(12,14,18,.7); }
-.loading { position: absolute; inset: 0; display: grid; place-items: center; background: var(--bg); }
-.loading .bar { width: min(60vw, 360px); height: 4px; background: #1f2937; border-radius: 2px; overflow: hidden; }
-.loading .bar > i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+/* loading: every row has a fixed height (numbers change, nothing moves); the bar and the sweep are
+   transforms, which keep animating while the main thread decodes the scan. Above the screens, so
+   its fade shows what comes next underneath. */
+.loading { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; padding: 16px; background: var(--bg); transition: opacity .26s ease; }
+.loading.leaving { opacity: 0; }
+#ui .loading.leaving button { pointer-events: none; }
+.load-card { width: min(440px, 100%); display: flex; flex-direction: column; gap: 8px; }
+.load-poster { aspect-ratio: 16 / 9; border-radius: var(--r); overflow: hidden; background: var(--bg2); border: 1px solid var(--line); }
+.load-poster img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.load-title, .load-stage, .load-nums, .load-parts { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.load-title { font-weight: 600; height: 1.45em; }
+.load-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; height: 1.45em; }
+.load-stage { font-size: 16px; min-width: 0; }
+.load-elapsed, .load-nums, .load-parts { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.load-elapsed { flex: none; }
+.load-nums, .load-parts { height: 1.45em; }
+.load-bar { position: relative; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.load-bar > i { position: absolute; top: 0; bottom: 0; left: 0; }
+.load-bar .fill { right: 0; background: var(--accent); transform: scaleX(0); transform-origin: 0 50%; transition: transform .3s linear; }
+.load-bar .sweep { width: 35%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent); opacity: 0; transform: translateX(-100%); }
+.loading[data-indeterminate] .load-bar .sweep { opacity: 1; animation: load-sweep 1.3s linear infinite; }
+@keyframes load-sweep { from { transform: translateX(-100%); } to { transform: translateX(290%); } }
+.load-hint { height: 2.9em; overflow: hidden; font-size: 13px; color: var(--warn); }
+.load-hint.note { color: var(--fg); }
+.loading[data-stage="done"] .load-stage { color: var(--accent); }
+.loading[data-partial] .load-stage { color: var(--warn); }
+.load-actions { display: flex; flex-wrap: wrap; gap: 8px; min-height: 44px; visibility: hidden; }
+.loading[data-actions] .load-actions { visibility: visible; }
+@keyframes load-pulse { 50% { opacity: .5; } }
+@media (prefers-reduced-motion: reduce) {
+    .loading, .load-bar .fill { transition: none; }
+    /* no sweeping motion: a slow fade of the track says "working" instead */
+    .loading[data-indeterminate] .load-bar .sweep { animation: none; opacity: 0; }
+    .loading[data-indeterminate] .load-bar { animation: load-pulse 2s ease-in-out infinite; }
+}
 .center-msg { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); background: var(--panel); padding: 16px 20px; border-radius: 12px; max-width: min(92vw, 560px); text-align: center; }
 /* touch sticks */
 .touch-root { position: absolute; inset: 0; }
@@ -95,12 +140,18 @@ dl.measure { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; } dl
 /* with touch sticks on screen the bottom corners belong to the thumbs: OSD and credits move up */
 body.touch-on .osd.bl { bottom: calc(min(40vw, 220px) + 40px); }
 body.touch-on .osd.br { display: none; } /* keyboard shortcuts: nothing to press on a phone */
-body.touch-on .attribution { top: 100px; bottom: auto; max-width: calc(100vw - 32px); }
-.touch-hint { position: absolute; left: 50%; top: 72px; transform: translateX(-50%); font-size: 12px; color: #d1d5db; text-shadow: 0 1px 2px #000; text-align: center; width: 90vw; }
-@media (prefers-reduced-motion: reduce) { .panel, .crash-overlay { animation: none; } .progress > i, .stick-anim::after { transition: none; } }
+body.touch-on .attribution { top: calc(max(10px, env(safe-area-inset-top)) + 128px + var(--banner-h, 0px)); bottom: auto; max-width: calc(100vw - 32px); } /* under the pad hint */
+/* the hint starts 8 px under the top buttons (they end 78 px down) and keeps to two lines, so
+   the credit under it has a fixed place */
+.touch-hint { position: absolute; left: 50%; top: calc(max(10px, env(safe-area-inset-top)) + 76px + var(--banner-h, 0px)); transform: translateX(-50%); font-size: 12px; line-height: 17px; max-height: 34px; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; color: #d1d5db; text-shadow: 0 1px 2px #000; text-align: center; width: 90vw; }
+/* the top of the HUD slides back up when a note goes, instead of jumping */
+.osd.tl, .osd.tr, .top-actions, .touch-hint, body.touch-on .attribution { transition: top .25s ease; }
+@media (prefers-reduced-motion: reduce) { .panel, .crash-overlay { animation: none; } .progress > i, .stick-anim::after, .osd.tl, .osd.tr, .top-actions, .touch-hint, body.touch-on .attribution { transition: none; } }
 body.clean .top-actions, body.clean .attribution, body.clean .osd.br, body.clean .crash-overlay, body.clean .gate-msg, body.clean .banner { display: none; }
 /* cinema mode: clean picture, only the record control and its note */
 .cinema-bar { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; max-width: 92vw; }
+/* touch sticks: the bottom centre is the ARM button and the pads, so Record goes above them */
+body.touch-on .cinema-bar { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 12px); }
 .cinema-note { font-size: 13px; color: #e5e7eb; text-shadow: 0 1px 2px #000; text-align: center; }
 .btn.rec.on { border-color: var(--bad); color: var(--bad); }
 body.cinema .osd, body.cinema .attribution, body.cinema .badge-nowalls, body.cinema .touch-hint { display: none; }
