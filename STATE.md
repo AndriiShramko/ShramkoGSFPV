@@ -4,9 +4,9 @@ Spec: vault `03 - Resources/Deployment/shramkogsfpv/spec.md` (+ 6 spec-*.md). Ph
 
 ## Current
 
-- **Phase:** A-D done on the live site (release 85f8bef). **v0.2** (after Andrii's first real-radio test, 2026-09-25) LIVE since 2026-09-26 16:45 UTC (commit bb00ca6 = hub release 6fedc30ca8f5): enforced CSP, 0 violations on the simulator (evidence/2026-09-26/v02-csp-live.json), neighbours equal (v02-neighbours-diff.json), smoke 184/184, accept-fly B6/B10/B11/B13/B15 PASS on the live site (b-fly-*.json). **v0.3** designed: `docs/architecture-v03.md` (waves 1-4).
+- **Phase:** A, B (B1-B23), C, D accepted on the live site. v0.2 live 2026-09-26; **wizard v3 (user-paced, like Liftoff) + landing/README "Features and roadmap" live 2026-09-27** (commit f7e0221 = hub release f88a9bfa2689; evidence/2026-09-27/). B22/B23 closed (evidence/2026-09-27/b22-b23.json). A9 latency: LIMITED BY DISPLAY (4K at 30 Hz), median 252 ms measured 2026-09-24 - diagnosis and fixes in progress (backlog item 27). v0.3 designed (docs/architecture-v03.md); wave 1 partly built in the main clone, not merged yet.
 - **Live:** https://gsfpv.flyreelstudio.eu (hub dir and address in the gitignored `deploy/hub.env`)
-- **Last update:** 2026-09-26
+- **Last update:** 2026-09-27
 
 ## v0.2 (Andrii's real-radio feedback, items 1, 2, 4, 5, 6, 8, 17, 22 + pause-menu keys)
 

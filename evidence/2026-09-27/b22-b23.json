@@ -1,0 +1,35 @@
+{
+ "B22": {
+  "repo_head": "580261fc7aad9f4a4d6472196ee7457c0eca7ce3",
+  "repo_origin_main": "580261fc7aad9f4a4d6472196ee7457c0eca7ce3",
+  "vault_head": "1848f9e8968e4666bee03b2b8fb420e56b134781",
+  "vault_origin_main": "1848f9e8968e4666bee03b2b8fb420e56b134781",
+  "playbook_line": "WEB-PLAYBOOK.md Inbox 2026-09-26: \"\\u0422\\u0440\\u0435\\u0431\\u043e\\u0432\\u0430\\u043d\\u0438\\u044f \\u0441\\u0435\\u0441\\u0441\\u0438\\u0438 \\u0432\\u043d\\u0435\\u0441\\u0435\\u043d\\u044b \\u0432 playbook: \\u0434\\u0430\"",
+  "vault_notes": [
+   "03 - Resources/Deployment/shramkogsfpv/build-logs/acceptance-phase-b.md",
+   "build-log-2026-09-25-real-radio.md",
+   "Daily/2026-09-24.md",
+   "AGENT_INDEX.md"
+  ],
+  "equal": true
+ },
+ "B23": {
+  "tool": "Claude in Chrome tabs_context_mcp, 2026-09-27 01:2x",
+  "tabs": [
+   {
+    "title": "ShramkoGSFPV landing (ru)",
+    "url": "https://gsfpv.flyreelstudio.eu/ru/#features"
+   },
+   {
+    "title": "AndriiShramko/ShramkoGSFPV (GitHub, README heading \"Features and roadmap\" found)",
+    "url": "https://github.com/AndriiShramko/ShramkoGSFPV"
+   }
+  ]
+ },
+ "release": "f7e0221 = hub f88a9bfa2689",
+ "accept_fly_live_v3": {
+  "B10": true,
+  "B11": true,
+  "note": "accept-fly B10 (wizard on the simulated radio + profile survives reload) and B11 (arm gate) re-run on the live site after the wizard v3 release"
+ }
+}
