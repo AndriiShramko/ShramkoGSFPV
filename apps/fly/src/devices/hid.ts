@@ -35,6 +35,9 @@ export class HidSource {
     device: HIDDevice | null = null;
     frame: RawFrame = { t: 0, axes: new Float32Array(8), buttons: 0 };
     reports = 0;
+    /** reports this parser cannot read (e.g. EdgeTX "Advanced" joystick layouts) and the last one's length */
+    badReports = 0;
+    lastBadLen = 0;
     private rateT0 = 0;
     private rateN = 0;
     rateHz = 0;
@@ -61,7 +64,12 @@ export class HidSource {
     private onReport = (e: HIDInputReportEvent): void => {
         this.reportLen = e.data.byteLength;
         const f = this.frame;
-        if (!parseEdgeTxReport(e.data, f)) return;
+        if (!parseEdgeTxReport(e.data, f)) {
+            // the wizard's connect screen says so instead of waiting for frames that never come
+            this.badReports++;
+            this.lastBadLen = e.data.byteLength;
+            return;
+        }
         f.t = e.timeStamp;
         this.reports++;
         this.rateN++;

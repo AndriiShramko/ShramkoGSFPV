@@ -10,17 +10,21 @@ import { GSPLAT_RENDERER_RASTER_GPU_SORT } from 'playcanvas';
 import { FrameGovernor } from '@gsfpv/render-pc';
 import type { CinemaRecorder, RecorderInfo } from './cinema';
 import { FlightSession } from './session';
-import { KeyboardSource } from './devices/keyboard';
+import { KeyboardSource, typing, dialogOpen } from './devices/keyboard';
+import { findSavedHid, findSavedGamepad } from './devices/reconnect';
 import { TouchSticks } from './devices/touch';
 import { FakeEdgeTx } from './devices/fakehid';
 import { LatencyProbe } from './latency';
-import { Controls } from './controls';
+import { Controls, loadLastInput, saveLastInput, loadProfiles, profileFor } from './controls';
+import type { LastInput } from './controls';
+import type { Profile } from '@gsfpv/input';
 import { CrashView } from './crashview';
 import { t, locale } from './i18n';
 import { h, clear, panel } from './ui/dom';
 import { ScenePicker, loadShowcase } from './ui/scenes';
 import type { ShowcaseScene } from './ui/scenes';
 import { DronePicker } from './ui/drone';
+import { LoadingScreen } from './ui/loading';
 import { RadioScreen } from './ui/radio';
 import type { RadioChoice } from './ui/radio';
 import { Hud, CrashOverlay, pauseMenu, settingsPanel, measurePanel, replaysPanel, warningModal } from './ui/flight';
@@ -43,6 +47,8 @@ interface TestHook {
     status: 'loading' | 'picker' | 'ready' | 'error';
     error?: string;
     errorCode?: string;
+    /** the loading screen's numbers (bytes of the first view), updated every 100 ms until 'done' */
+    loading?: { stage: string; loaded: number; total: number; fraction: number; exact: boolean; elapsedMs: number };
     session?: FlightSession;
     scenario?: Scenario;
     controls?: Controls;
@@ -80,9 +86,12 @@ const hasWebGPU = typeof navigator !== 'undefined' && !!(navigator as Navigator 
 const hasHid = typeof navigator !== 'undefined' && 'hid' in navigator;
 const isTouch = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
 
-function banner(text: string): void {
-    ui.append(h('div', { class: 'banner', role: 'note', 'data-testid': 'banner' }, text));
+function banner(text: string, kind: string): void {
+    ui.append(h('div', { class: 'banner', role: 'note', 'data-testid': 'banner', 'data-kind': kind }, text));
 }
+
+/** The "radios over USB need Chrome or Edge" note stays this long into a flight. */
+const HID_NOTE_FLIGHT_MS = 8000;
 
 function beacon(e: string, p: Record<string, string | number | boolean> = {}): void {
     try {
@@ -108,6 +117,45 @@ function settingsFrom(s: FlightSession): SettingsValues {
         reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
         pid: { roll: [...s.params.pid.roll], pitch: [...s.params.pid.pitch], yaw: [...s.params.pid.yaw] }
     };
+}
+
+// ------------------------------------------------------------ item 5: the input from last time
+/** Will the input from last time most likely come back by itself (no Controls screen after loading)? */
+/**
+ * A saved setup that may fly without being shown first: the one flown last time, or one made by
+ * this wizard (it was checked on its check screen before it was saved). A setup from the first
+ * wizard is shown for checking once, on the Controls screen, like a radio connected by hand.
+ */
+function trusted(key: string, last: LastInput | null): Profile | null {
+    const p = profileFor(key);
+    return p && (p.wizard === 2 || key === last?.key) ? p : null;
+}
+
+function expectResume(): boolean {
+    const last = loadLastInput();
+    if (last?.kind === 'touch' || last?.kind === 'keyboard') return true;
+    return Object.keys(loadProfiles()).some((k) => trusted(k, last));
+}
+
+/** The touch sticks or keyboard flown last time, or a granted radio / connected gamepad with a trusted setup. */
+async function resumeInput(): Promise<RadioChoice | null> {
+    const last = loadLastInput();
+    if (last?.kind === 'touch' || last?.kind === 'keyboard') return { kind: last.kind, profile: null };
+    const keys = Object.keys(loadProfiles()).filter((k) => trusted(k, last));
+    const look = (k: string): Profile | null => trusted(k, last);
+    const hid = (): Promise<RadioChoice | null> => (keys.some((k) => k.startsWith('hid:')) ? findSavedHid(look, last?.kind === 'hid' ? last.key ?? null : null) : Promise.resolve(null));
+    const pad = (): Promise<RadioChoice | null> => (keys.some((k) => k.startsWith('gp:')) ? findSavedGamepad(look) : Promise.resolve(null));
+    for (const find of last?.kind === 'gamepad' ? [pad, hid] : [hid, pad]) {
+        const c = await find();
+        if (c) return c;
+    }
+    return null;
+}
+
+/** A device found for a scan that then failed to load: let it go. */
+function release(c: RadioChoice | null): void {
+    if (c?.hid) { c.hid.onFrame = null; c.hid.close(); }
+    if (c?.gamepad) { c.gamepad.onFrame = null; c.gamepad.stop(); }
 }
 
 let picker: ScenePicker | null = null;
@@ -136,8 +184,8 @@ function go(raw: string, source: 'showcase' | 'paste' | 'history', showcase: Sho
 }
 
 async function boot(): Promise<void> {
-    if (!hasWebGPU) banner(t('banner.noWebgpu'));
-    else if (!hasHid) banner(t('banner.noHid'));
+    if (!hasWebGPU) banner(t('banner.noWebgpu'), 'no-webgpu');
+    else if (!hasHid) banner(t('banner.noHid'), 'no-hid');
     const showcase = await loadShowcase();
     let first = true;
     try { first = localStorage.getItem('gsfpv.warned') !== '1'; } catch { first = true; }
@@ -153,8 +201,22 @@ async function boot(): Promise<void> {
 
 async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
     picker?.remove();
-    const loading = h('div', { class: 'loading' }, h('div', {}, h('div', {}, t('loading.scene')), h('div', { class: 'bar' }, h('i'))));
-    ui.append(loading);
+    const meta = showcase.find((s) => s.id === sceneId);
+    // the Controls screen follows the loading screen unless a test mode or touch sticks take over
+    const sim = q.get('simradio');
+    // no test mode, no forced input: the input from last time is looked for while the scan loads
+    const own = !sim && q.get('lat') !== '1' && q.get('input') !== 'touch' && !(isTouch && !hasHid);
+    const resumed = own ? resumeInput().catch(() => null) : Promise.resolve(null);
+    const controlsNext = own ? !expectResume() : sim === 'raw' && q.get('lat') !== '1' && q.get('input') !== 'touch' && !(isTouch && !hasHid);
+    const loading = new LoadingScreen(ui, {
+        sceneId,
+        title: meta?.title,
+        next: controlsNext ? t('loading.next') : null,
+        onRetry: () => location.reload(),
+        onBack: () => { location.search = ''; }
+    });
+    const tLoad = performance.now();
+    hook.loading = { stage: 'connect', loaded: 0, total: 0, fraction: 0, exact: false, elapsedMs: 0 };
     const g = q.get('g');
     const gm = q.get('gm') as ParamOverrides['gravityMode'] | null;
     let session: FlightSession;
@@ -165,22 +227,31 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
             overrides: { gravity: g ? Number(g) : undefined, gravityMode: gm ?? undefined },
             latencyMarker: q.get('lat') === '1',
             lagFrames: Number(q.get('lagFrames') ?? 0),
-            renderScale: q.get('scale') ? Number(q.get('scale')) : 1
+            renderScale: q.get('scale') ? Number(q.get('scale')) : 1,
+            onProgress: (p) => {
+                loading.update(p);
+                hook.loading = { stage: p.stage, loaded: p.loaded, total: p.total, fraction: p.fraction, exact: p.exact, elapsedMs: Math.round(performance.now() - tLoad) };
+            }
         });
     } catch (e) {
         loading.remove();
         const code = e instanceof SceneError ? e.code : 'generic';
         hook.error = String((e as Error)?.message ?? e);
         showPicker(showcase, code, hook.error);
+        void resumed.then(release);
         hook.status = 'error';
         hook.errorCode = code;
         return;
     }
     hook.session = session;
     await session.visible;
-    loading.remove();
+    // "The scan is ready" for a moment, then the scan fades in: no jump straight into another screen
+    await loading.finish();
     document.body.classList.add('flying');
-    const meta = showcase.find((s) => s.id === sceneId);
+    // the USB note is about choosing a browser; over the flight it covers the OSD's top line and
+    // shows through the Controls screen (a phone has no room to move either), so it goes by itself
+    const hidNote = ui.querySelector('.banner[data-kind="no-hid"]');
+    if (hidNote) setTimeout(() => hidNote.remove(), HID_NOTE_FLIGHT_MS);
     recordOpen(sceneId, !!session.collision, meta?.title);
     beacon('scene_loaded', { has_collision: !!session.collision, load_ms_bucket: Math.round((session.timings.visibleMs ?? 0) / 1000) });
 
@@ -200,7 +271,7 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
         ui.append(box);
         const runBake = async (): Promise<void> => {
             bakeBtn.disabled = true;
-            session.pause(true);
+            session.pause(true, 'bake');
             try {
                 const { bakeCollision, BakeRefusedError, BAKE_MAX_GAUSSIANS } = await import('./bake');
                 try {
@@ -225,7 +296,7 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
                     }
                 }
             } finally {
-                session.pause(false);
+                session.pause(false, 'bake');
             }
         };
         hook.runBake = runBake;
@@ -274,10 +345,14 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
         session.renderer.setRenderScale(Math.min(userMaxScale, st.renderScale));
         session.renderer.setSplatBudgetMillions(Math.min(userBudget, st.splatBudgetMillions));
     };
-    new KeyboardSource(session);
+    // passive until the keyboard is the chosen input; Space then arms a radio without an arm switch
+    const keyboard = new KeyboardSource(controls);
+    keyboard.onArm = () => controls.toggleArm();
+    hud.onArm = () => controls.toggleArm();
     let overlay: CrashOverlay | null = null;
     let touch: TouchSticks | null = null;
     let closePause: (() => void) | null = null;
+    let closeDrones: (() => void) | null = null;
 
     ui.append(h('div', { class: 'top-actions' },
         h('button', { type: 'button', class: 'btn', 'data-action': 'open-controls', onclick: () => openRadio() }, t('top.controls')),
@@ -329,20 +404,42 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
         controls.tick(now);
         if (!crash.active) crash.trackCamera();
         crash.frame(now);
-        hud.update(s, controls.block, s.frameStats());
+        hud.update(s, controls.block, s.frameStats(), controls.view());
     };
 
-    function openRadio(): void {
-        session.pause(true);
-        const r = new RadioScreen(ui);
+    /** The Controls screen; the input in use is offered first (Fly, Recalibrate, Reverse channels). */
+    let lastChoice: RadioChoice | null = null;
+    function openRadio(firstOpen = false): void {
+        if (document.querySelector('.screen.radio')) return;
+        session.pause(true, 'controls');
+        // opened from the pause menu (its item or the top button): Controls takes the menu's place,
+        // so closing Controls flies on, whichever way it was opened
+        if (closePause) { closePause(); closePause = null; session.pause(false); }
+        const r = new RadioScreen(ui, lastChoice, { firstOpen });
         hook.radio = r;
-        r.onDone = (c) => { r.remove(); session.pause(false); useChoice(c); };
+        r.onDone = (c) => { r.remove(); session.pause(false, 'controls'); useChoice(c); };
+        // Close / Esc: nothing changes (remove() gives the radio in use its frames back). Closed
+        // before anything was chosen: the input from last time or the keyboard, never a dead screen
+        r.onClose = () => {
+            r.remove();
+            session.pause(false, 'controls');
+            if (lastChoice) return;
+            const c: RadioChoice = { kind: loadLastInput()?.kind === 'touch' ? 'touch' : 'keyboard', profile: null };
+            useChoice(c, false); // a stand-in, not a choice: the radio from last time is still looked for next time
+            inputNote(c);
+        };
     }
 
-    function useChoice(c: RadioChoice): void {
+    /** Fly with this input. `remember`: offer it by itself next time (not for URL-forced test inputs). */
+    function useChoice(c: RadioChoice, remember = true): void {
+        const prev = lastChoice;
+        // a device that is no longer the input stops listening, or it would feed the flight too
+        if (prev?.hid && prev.hid !== c.hid) { prev.hid.onFrame = null; prev.hid.close(); }
+        if (prev?.gamepad && prev.gamepad !== c.gamepad) { prev.gamepad.onFrame = null; prev.gamepad.stop(); }
         touch?.dispose();
         touch = null;
-        controls.profile = c.profile;
+        // the same input kept (Fly on the radio in use) stays armed; anything new starts disarmed
+        if (c.profile !== controls.profile || c.kind !== controls.source) controls.setProfile(c.profile);
         controls.source = c.kind;
         if (c.kind === 'hid' && c.hid) c.hid.onFrame = (f) => controls.raw(f);
         if (c.kind === 'gamepad' && c.gamepad) c.gamepad.onFrame = (f) => controls.raw(f);
@@ -350,20 +447,57 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
             touch = new TouchSticks(session, ui, controls);
             hook.touch = touch;
         }
+        keyboard.setActive(c.kind === 'keyboard');
+        lastChoice = c;
+        if (remember) saveLastInput({ kind: c.kind, key: c.profile?.deviceKey });
         beacon('input_connected', { kind: c.kind });
     }
 
+    /** "Connected: TX16S · Controls" on the Controls button for a while: what flies, and where to change it. */
+    let noteTimer = 0;
+    function inputNote(c: RadioChoice): void {
+        const btn = ui.querySelector<HTMLButtonElement>('[data-action="open-controls"]');
+        if (!btn) return;
+        const name = c.profile ? c.profile.deviceName : '';
+        const what = c.profile ? t('radio.connected', { name: name.length > 24 ? `${name.slice(0, 23)}…` : name }) : t(c.kind === 'touch' ? 'radio.touch' : 'radio.keyboard');
+        btn.querySelector('.input-note')?.remove();
+        ui.querySelector('.input-note-sr')?.remove();
+        btn.prepend(h('span', { class: 'input-note', 'data-testid': 'input-note' }, `${what} · `));
+        const sr = h('span', { class: 'visually-hidden input-note-sr', role: 'status' });
+        ui.append(sr);
+        // a live region is announced when its text changes, not when it arrives with the text
+        setTimeout(() => { sr.textContent = `${c.profile ? t('radio.connected', { name }) : what}. ${t('top.controls')}`; }, 100);
+        clearTimeout(noteTimer);
+        noteTimer = window.setTimeout(() => { btn.querySelector('.input-note')?.remove(); sr.remove(); }, 8000);
+    }
+
+    /** The menu's Restart (and R while the menu is up): back to the start with a fresh flight model. */
+    function restart(): void {
+        closePause?.();
+        closePause = null;
+        afterCrashCleared();
+        session.rebuildSim(session.presetId, session.overrides);
+        session.pause(false);
+    }
+
     function openPause(): void {
-        if (closePause) return;
+        // over another dialog (settings, a picker) the menu's Continue would fly under that dialog
+        if (closePause || dialogOpen()) return;
         session.pause(true);
         closePause = pauseMenu(ui, {
             resume: () => { closePause = null; session.pause(false); },
-            restart: () => { closePause = null; afterCrashCleared(); session.rebuildSim(session.presetId, session.overrides); session.pause(false); },
+            restart,
             scene: () => { location.search = ''; },
             drone: () => {
                 closePause = null;
                 const d = new DronePicker(ui, session.presetId);
+                // Esc, the picker's close and the current drone's own card keep the drone and fly
+                // on from where it was: no new flight model, no respawn
+                closeDrones = () => { closeDrones = null; d.remove(); session.pause(false); };
+                d.onClose = () => closeDrones?.();
                 d.onPick = (id) => {
+                    if (id === session.presetId) { closeDrones?.(); return; }
+                    closeDrones = null;
                     d.remove();
                     afterCrashCleared();
                     session.rebuildSim(id, session.overrides);
@@ -373,7 +507,7 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
                     session.pause(false);
                 };
             },
-            radio: () => { closePause = null; openRadio(); },
+            radio: () => openRadio(), // closes the menu and takes its pause over
             settings: () => {
                 closePause = null;
                 settingsPanel(ui, settingsFrom(session), session.params.twr, (v) => {
@@ -492,12 +626,29 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
     hook.cinema = hookCinema;
 
     addEventListener('keydown', (e) => {
-        if (e.code === 'KeyP' || e.code === 'Escape') { if (closePause) { closePause(); closePause = null; session.pause(false); } else openPause(); }
-        if (e.code === 'KeyR') { afterCrashCleared(); session.respawn(false); }
+        // the Controls screen has its own keys
+        if (document.querySelector('.screen.radio')) return;
+        // a text field takes R and P as letters; Esc is never text, so it still closes the panel around it
+        if (typing(e.target) && e.code !== 'Escape') return;
+        if (e.code === 'KeyP' || e.code === 'Escape') {
+            if (closePause) { closePause(); closePause = null; session.pause(false); }
+            else if (!dialogOpen()) openPause();
+            // Esc over a screen opened from the menu (settings, replays, drones...) closes it
+            else if (e.code === 'Escape') {
+                if (closeDrones) closeDrones();
+                else Array.from(ui.querySelectorAll<HTMLButtonElement>('.panel .panel-x')).pop()?.click();
+            }
+        }
+        // the menu shows R beside Restart: with the menu up, R is that item
+        if (e.code === 'KeyR') {
+            if (closePause) restart();
+            else { afterCrashCleared(); session.respawn(false); }
+        }
         if (e.code === 'F3') { hud.toggleFrameStats(); e.preventDefault(); }
     });
     document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden' && !closePause && !q.get('simradio') && q.get('lat') !== '1') openPause();
+        // already paused (Controls, settings, a picker): a pause menu on top would resume the flight under it
+        if (document.visibilityState === 'hidden' && !closePause && !session.paused && !q.get('simradio') && q.get('lat') !== '1') openPause();
     });
 
     // ------------------------------------------------------------ test modes
@@ -550,34 +701,52 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
             invert: Object.fromEntries((q.get('inv') ?? 'E').split('').filter(Boolean).map((k) => [k, true])),
             centerOffset: Number(q.get('offset') ?? 0.03),
             noise: Number(q.get('noise') ?? 0.01),
-            armChannel: 4,
+            armChannel: Number(q.get('armch') ?? 4), // -1: no switch on any channel (fresh EdgeTX model)
             rateHz: Number(q.get('rate') ?? 250),
             seed: 7,
-            brokenStick: (q.get('broken') as 'A' | 'E' | 'T' | 'R' | null) ?? undefined
+            brokenStick: (q.get('broken') as 'A' | 'E' | 'T' | 'R' | null) ?? undefined,
+            reactMs: Number(q.get('react') ?? 0),
+            // &human=<seed>: one of the simulated people (their mistakes, hints read, buttons pressed)
+            humanSeed: q.get('human') !== null ? Number(q.get('human')) : undefined
         });
         hook.fake = fake;
-        session.pause(true);
+        session.pause(true, 'controls');
         const r = new RadioScreen(ui);
         hook.radio = r;
         fake.follow = () => r.wizard?.state ?? null;
+        fake.onAct = (a) => {
+            const w = r.wizard;
+            if (!w) return;
+            if (a.kind === 'fly') document.querySelector<HTMLButtonElement>('[data-action="wizard-done"]')?.click();
+            else if (a.kind === 'pick') w.pick(a.ch);
+            else w[a.kind]();
+        };
         r.runWizard(fake.key, 'SimRadio EdgeTX Classic', (cb) => { fake.onFrame = cb; }, () => fake.cfg.rateHz, 'hid');
         r.onDone = (c) => {
             r.remove();
-            session.pause(false);
-            controls.profile = c.profile;
+            session.pause(false, 'controls');
+            controls.setProfile(c.profile);
             controls.source = 'hid';
             fake.follow = null;
+            fake.onAct = null;
             fake.onFrame = (f) => controls.raw(f);
         };
         fake.start();
     } else if (q.get('lat') === '1') {
         controls.source = 'keyboard';
+        keyboard.setActive(true);
     } else if (isTouch && !hasHid) {
-        useChoice({ kind: 'touch', profile: null });
+        useChoice({ kind: 'touch', profile: null }, false);
     } else if (q.get('input') === 'touch') {
-        useChoice({ kind: 'touch', profile: null });
+        useChoice({ kind: 'touch', profile: null }, false);
     } else {
-        openRadio();
+        // item 5: the same radio (or keyboard, touch) as last time flies at once; a note on the
+        // Controls button says so. Nothing found: the Controls screen as before
+        const c = await resumed;
+        if (c) {
+            useChoice(c);
+            inputNote(c);
+        } else openRadio(true);
     }
 
     if (q.get('lat') === '1') {

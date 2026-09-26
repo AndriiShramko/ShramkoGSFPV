@@ -27,6 +27,69 @@ export const TONEMAPS: Record<string, number> = {
     filmic: TONEMAP_FILMIC, hejl: TONEMAP_HEJL, none: TONEMAP_NONE
 };
 
+/** What the first view of a scan has downloaded so far (see SplatRenderer.splatBytes). */
+export interface SplatBytes {
+    /** the scan's file list is known (lod-meta.json or meta.json has been read) */
+    listed: boolean;
+    /** bytes received for the images of the files the first view needs */
+    received: number;
+    /** exact sizes of the images that have started, estimates for files that have not */
+    total: number;
+    /** no estimate left in `total` */
+    exact: boolean;
+    /** every file the first view needs has all its bytes */
+    complete: boolean;
+    /** images the engine gave up on */
+    failed: number;
+    /** performance.now() of the last byte, 0 before the first */
+    lastByteAt: number;
+}
+
+// Sizes of files whose images have not all reported yet, from the splat counts in lod-meta.json /
+// meta.json. SOG measured 16.6 bytes per splat with spherical harmonics (shN images) and 12.2
+// without on the showcase scans. Until a file's image list is known, take the larger, so the bar
+// jumps forward when the real sizes arrive instead of stalling. lod-meta has no splat count for the
+// environment file: the two measured were 0.30 MB (with SH) and 0.015 MB (without).
+const BYTES_PER_SPLAT_SH = 16.6;
+const BYTES_PER_SPLAT = 12.2;
+const ENV_BYTES_SH = 300_000;
+const ENV_BYTES = 30_000;
+
+const estimateBytes = (count: number | null, sh: boolean | null): number =>
+    count === null ? (sh === false ? ENV_BYTES : ENV_BYTES_SH) : count * (sh === false ? BYTES_PER_SPLAT : BYTES_PER_SPLAT_SH);
+
+interface ImageBytes {
+    dir: string;
+    loaded: number;
+    total: number;
+    failed: boolean;
+}
+
+interface ByteCount {
+    /** folder of the scan's content; only images under it are counted */
+    base: string;
+    listed: boolean;
+    /** folder of each file the first view needs -> its splat count (null: not in lod-meta) */
+    expected: Map<string, number | null>;
+    images: Map<string, ImageBytes>;
+    lastByteAt: number;
+    /** after the first reveal the detail streams in; that is not part of the load */
+    frozen: boolean;
+}
+
+/** The parts of the engine's GSplatOctree read here (public fields, not in the typings). */
+interface OctreeView {
+    lodLevels?: number;
+    files?: { url: string }[];
+    nodes?: { lods?: { fileIndex: number; count: number }[] }[];
+    environmentUrl?: string | null;
+}
+
+const dirOf = (u: string): string => {
+    const abs = new URL(u, location.href).href;
+    return abs.slice(0, abs.lastIndexOf('/') + 1);
+};
+
 export class SplatRenderer {
     readonly app: AppBase;
     readonly device: GraphicsDevice;
@@ -42,6 +105,7 @@ export class SplatRenderer {
     loadStartedAt = 0;
     firstFrameAt = 0;
     debrisRoot: Entity;
+    private count: ByteCount = { base: '', listed: false, expected: new Map(), images: new Map(), lastByteAt: 0, frozen: false };
 
     private constructor(canvas: HTMLCanvasElement, device: GraphicsDevice, opts: RendererOptions) {
         this.canvas = canvas;
@@ -90,6 +154,9 @@ export class SplatRenderer {
         g.renderer = device.isWebGPU ? GSPLAT_RENDERER_RASTER_GPU_SORT : GSPLAT_RENDERER_RASTER_CPU_SORT;
 
         if (opts.latencyMarker) this.initMarker();
+
+        // every SOG image is its own texture asset with exact byte progress from its XHR
+        app.assets.on('add', (a: Asset) => this.countAsset(a));
 
         this.ro = new ResizeObserver(() => this.resize());
         this.ro.observe(canvas);
@@ -150,7 +217,16 @@ export class SplatRenderer {
         this.loadStartedAt = performance.now();
         const filename = new URL(url, location.href).pathname.split('/').pop() || 'scene';
         const isMeta = filename.toLowerCase() === 'meta.json';
-        const start = async (): Promise<unknown> => (isMeta ? (await fetch(url)).json() : undefined);
+        const c = this.count;
+        c.base = dirOf(url);
+        const start = async (): Promise<unknown> => {
+            if (!isMeta) return undefined;
+            const data = (await (await fetch(url)).json()) as { count?: number; means?: { shape?: number[] } };
+            // a single SOG: all of it is the first view
+            c.expected.set(c.base, data.count ?? data.means?.shape?.[0] ?? 0);
+            c.listed = true;
+            return data;
+        };
         return start().then((data) => new Promise<Entity>((resolve, reject) => {
             const asset = new Asset(filename, 'gsplat', { url, filename }, data as object | undefined);
             asset.on('load', () => {
@@ -161,8 +237,10 @@ export class SplatRenderer {
                 this.splat = e;
                 // coarse LOD first for a fast reveal; revealFullDetail() opens the full range
                 const comp = e.gsplat as GSplatComponent;
-                const lodLevels = (comp.resource as unknown as { octree?: { lodLevels?: number } } | null)?.octree?.lodLevels;
+                const octree = (comp.resource as unknown as { octree?: OctreeView } | null)?.octree;
+                const lodLevels = octree?.lodLevels;
                 if (lodLevels) comp.lodRangeMin = comp.lodRangeMax = lodLevels - 1;
+                if (octree && lodLevels) this.expectCoarse(octree, lodLevels - 1);
                 resolve(e);
             });
             asset.on('progress', (rec: number, len: number) => onProgress?.(Math.min(100, (rec / Math.max(1, len)) * 100)));
@@ -172,8 +250,94 @@ export class SplatRenderer {
         }));
     }
 
+    /** The coarse level's files (splat counts from lod-meta) and the environment are the first view. */
+    private expectCoarse(octree: OctreeView, level: number): void {
+        const c = this.count;
+        const perFile = new Map<number, number>();
+        for (const n of octree.nodes ?? []) {
+            const l = n.lods?.[level];
+            if (l && l.fileIndex >= 0 && l.count > 0) perFile.set(l.fileIndex, (perFile.get(l.fileIndex) ?? 0) + l.count);
+        }
+        for (const [i, n] of perFile) {
+            const f = octree.files?.[i];
+            if (f?.url) c.expected.set(dirOf(f.url), n);
+        }
+        if (octree.environmentUrl) c.expected.set(dirOf(octree.environmentUrl), null);
+        c.listed = true;
+    }
+
+    private countAsset(a: Asset): void {
+        const c = this.count;
+        if (c.frozen || !c.base || a.type !== 'texture') return;
+        const url = (a.file as { url?: string } | null)?.url;
+        if (!url || !url.startsWith(c.base)) return;
+        // keyed by URL: an image the engine retries keeps what already arrived (never goes back)
+        let r = c.images.get(url);
+        if (!r) {
+            r = { dir: url.slice(0, url.lastIndexOf('/') + 1), loaded: 0, total: 0, failed: false };
+            c.images.set(url, r);
+        }
+        const rec = r;
+        rec.failed = false;
+        a.on('progress', (loaded: number, total: number) => {
+            if (loaded > rec.loaded) {
+                rec.loaded = loaded;
+                c.lastByteAt = performance.now();
+            }
+            if (total > 0) rec.total = total;
+        });
+        a.once('error', () => { rec.failed = true; });
+    }
+
+    /**
+     * Download state of the first view, from the engine's own per-image progress: images that have
+     * started report exact sizes; files that have not started count with their lod-meta estimate.
+     */
+    splatBytes(): SplatBytes {
+        const c = this.count;
+        const dirs = new Map<string, { total: number; sized: boolean; done: boolean; sh: boolean }>();
+        let received = 0;
+        let failed = 0;
+        for (const [url, r] of c.images) {
+            received += r.loaded;
+            if (r.failed) failed++;
+            const d = dirs.get(r.dir) ?? { total: 0, sized: true, done: true, sh: false };
+            d.total += Math.max(r.total, r.loaded);
+            if (r.total <= 0) d.sized = false;
+            if (!(r.total > 0 && r.loaded >= r.total)) d.done = false;
+            if (url.slice(r.dir.length).startsWith('shN')) d.sh = true;
+            dirs.set(r.dir, d);
+        }
+        let total = 0;
+        let exact = c.listed;
+        let complete = c.listed;
+        for (const [dir, count] of c.expected) {
+            const d = dirs.get(dir);
+            if (!d) {
+                total += estimateBytes(count, null);
+                exact = false;
+                complete = false;
+                continue;
+            }
+            // a file's images are all listed the moment it starts (so SH or not is known), but each
+            // reports its size only once its own bytes flow: until then the estimate is a floor
+            total += d.sized ? d.total : Math.max(estimateBytes(count, d.sh), d.total);
+            if (!d.sized) exact = false;
+            if (!d.done) complete = false;
+        }
+        for (const [dir, d] of dirs) {
+            if (c.expected.has(dir)) continue;
+            // a file the first view needed that lod-meta did not predict
+            total += d.total;
+            if (!d.sized) exact = false;
+            if (!d.done) complete = false;
+        }
+        return { listed: c.listed, received, total: Math.max(total, received), exact, complete, failed, lastByteAt: c.lastByteAt };
+    }
+
     /** Open the full LOD range after the coarse level has been shown. */
     revealFullDetail(): void {
+        this.count.frozen = true;
         const comp = this.splat?.gsplat as GSplatComponent | undefined;
         if (!comp) return;
         comp.lodRangeMin = 0;
