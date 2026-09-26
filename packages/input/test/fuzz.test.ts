@@ -5,10 +5,10 @@
 // packages/input/test/sweep.ts (several CPU-minutes, not in CI).
 
 import { describe, expect, it } from 'vitest';
-import { FUZZ_N, fuzzHuman, runNew } from './helpers';
+import { FUZZ_N, fuzzHuman, runNew, v3FrameChange, Watch } from './helpers';
 
 describe('fuzz: 768 people over every order x inversion set', () => {
-    it('new wizard: all correct, none hang, every run <= 120 s, no phase > 30 s', () => {
+    it('new wizard: all correct, none hang, every run <= 180 s, no stage > 30 s, only button-made screen changes', () => {
         const bad: string[] = [];
         const rates = new Set<number>();
         let gamepads = 0, noSwitch = 0, weights = 0;
@@ -18,9 +18,10 @@ describe('fuzz: 768 people over every order x inversion set', () => {
             if (cfg.gamepadLike) gamepads++;
             if (cfg.arm === 'none') noSwitch++;
             if (cfg.rangeLimit < 1) weights++;
-            const o = runNew(cfg);
+            const w = new Watch(v3FrameChange);
+            const o = runNew(cfg, 180000, w);
             const longPhase = Object.entries(o.phaseMs).find(([k, v]) => k !== 'check' && v > 30000);
-            if (o.kind !== 'correct' || o.ms > 120000 || longPhase) bad.push(`#${i} seed ${cfg.seed} ${cfg.order}: ${o.kind} ${(o.ms / 1000).toFixed(1)} s at ${o.where} ${longPhase ? `long ${longPhase[0]}` : ''} ${o.problems.join('; ')}`);
+            if (o.kind !== 'correct' || o.ms > 180000 || longPhase || w.violations.length) bad.push(`#${i} seed ${cfg.seed} ${cfg.order}: ${o.kind} ${(o.ms / 1000).toFixed(1)} s at ${o.where} ${longPhase ? `long ${longPhase[0]}` : ''} ${o.problems.join('; ')} ${w.violations.slice(0, 2).join('; ')}`);
         }
         expect(bad).toEqual([]);
         // the mix really contains the hard cases

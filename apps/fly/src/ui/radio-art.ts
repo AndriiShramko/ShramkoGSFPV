@@ -2,9 +2,10 @@
 // only changes attributes and classes). It shows WHICH stick to move and WHERE: the target well
 // is outlined, a dashed ghost knob travels the requested path (always one way: it fades in where
 // the stick starts, moves, waits at the goal and fades out, so the loop never reads as "and back
-// again"), an arrow sits beside the well (so the pilot's own knob never hides it), a ring fills
-// while the move is held, and a check mark appears when it is taken. A let-go is drawn as the
-// knob springing back from where it was pushed. The pilot's real knobs are drawn live on top.
+// again"), an arrow sits beside the well (so the pilot's own knob never hides it), a gauge along
+// the arrow fills with how far the stick has gone (ticks at 30 % and 70 %), a ring fills while the
+// move is held, and a check mark appears when it is taken. A let-go is drawn as the knob springing
+// back from where it was pushed. The pilot's real knobs are drawn live on top.
 // The wizard uses the large drawing, the in-flight arm card a mini one.
 import './wizard.css';
 import { t } from '../i18n';
@@ -12,6 +13,8 @@ import { t } from '../i18n';
 export type Side = 'L' | 'R';
 type Fn4 = 'roll' | 'pitch' | 'throttle' | 'yaw';
 type Dir = 'up' | 'down' | 'right' | 'centre' | 'stir';
+/** How far a push has gone, as the wizard grades it (calib.ts Zone). */
+export type GaugeZone = 'rest' | 'tiny' | 'almost' | 'enough' | 'two';
 
 /** SW 'on' / 'off': flip the arm switch to that position; 'flip': to the other one than now. */
 export type ArtTarget = { side: Side | 'both'; dir: Dir } | { side: 'SW'; dir: 'flip' | 'on' | 'off' } | null;
@@ -24,8 +27,10 @@ export interface ArtState {
     knobL: [number, number] | null; // x (right +), y (up +) in -1..1; null = unknown: grey knob at centre
     knobR: [number, number] | null;
     hold: number; // 0..1 ring around the target knob (only for side L/R)
-    ok: boolean; // check mark on the target; the ghost stops at its goal
+    ok: boolean; // check mark on the target knob (or on the switch); the ghost keeps showing the target
     sw: boolean | null; // arm lever: ON, OFF, null unknown
+    /** 0..1 ring around the arm switch: the flip is held at its new position (arm step). */
+    swHold?: number;
     tol: number; // dashed "let go here" zone, fraction of travel (0 = none)
     /** Where the stick rests on a one-well target (x right +, y up +), default the centre: the
      *  other axis of that stick stays where it is (a yaw let-go with the throttle down is at the bottom).
@@ -36,6 +41,10 @@ export interface ArtState {
     from?: [number, number] | null;
     /** false: the other wells stay bright (the check screen, where every stick is being tried). */
     dimOthers?: boolean;
+    /** The target is the move that comes after Start: ghost and arrow drawn faint. */
+    preview?: boolean;
+    /** Measuring a push: the gauge beside the arrow (frac 0..1 of the way the wizard needs). */
+    gauge?: { frac: number; zone: GaugeZone } | null;
     label: string; // aria-label
 }
 
@@ -62,8 +71,15 @@ const NS = 'http://www.w3.org/2000/svg';
 const TRAVEL = 46; // knob travel radius in user units
 const KNOB_R = 12;
 const RING = 2 * Math.PI * 20;
+const SW_RING = 2 * Math.PI * 27;
 const REACH = 0.95; // where the ghost's push ends: at the edge, where the pilot's knob will be
 const LETGO_FROM: [number, number] = [0.6, 0.6]; // "let go of both sticks": spring back from a corner
+// gauge: same length as the arrow (y 34..-30 or x -34..30), 8 units wide, beside it on the outside
+const G_A = 34;
+const G_B = -30;
+const G_LEN = G_A - G_B;
+const G_W = 8;
+const G_TICKS = [0.3, 0.7]; // calib.ts PUSH_TINY and PUSH_ACCEPT
 let uid = 0;
 
 const clamp1 = (v: number): number => Math.max(-1, Math.min(1, v));
@@ -95,6 +111,10 @@ interface Well {
     ghostPos: SVGGElement; // shown or hidden; the stir circles around its origin
     ghost: SVGGElement; // animated by a CSS class along --sx/--sy -> --ex/--ey
     arrow: SVGPathElement;
+    gauge: SVGGElement;
+    gTrack: SVGRectElement;
+    gFill: SVGRectElement;
+    gTicks: SVGLineElement[];
     tol: SVGCircleElement;
     shaft: SVGLineElement;
     kg: SVGGElement;
@@ -107,7 +127,8 @@ interface Well {
 export function radioArt(opts: { mini?: boolean } = {}): RadioArt {
     const mini = !!opts.mini;
     const markerId = `rb-ah-${++uid}`;
-    const svg = s('svg', { viewBox: '0 0 400 250', class: mini ? 'rb rb-mini' : 'rb' });
+    // the large drawing is a little taller: the well labels sit under the sideways gauge
+    const svg = s('svg', { viewBox: mini ? '0 0 400 250' : '0 0 400 262', class: mini ? 'rb rb-mini' : 'rb' });
     if (mini) svg.setAttribute('aria-hidden', 'true');
     else svg.setAttribute('role', 'img');
     svg.append(
@@ -123,9 +144,11 @@ export function radioArt(opts: { mini?: boolean } = {}): RadioArt {
     swText.textContent = t('arm.button'); // the same word as the on-screen ARM button
     const swOk = s('path', { class: 'rb-sw-ok rb-off', d: 'M100 30 L106 36 L117 24' });
     const swHalo = s('circle', { class: 'rb-sw-halo rb-off', cx: 77, cy: 28, r: 27 });
+    // the arm flip is held: the same ring as a held stick push, around the switch
+    const swHold = s('circle', { class: 'rb-hold rb-off', cx: 77, cy: 28, r: 27, transform: 'rotate(-90 77 28)', 'stroke-dasharray': `0 ${SW_RING}` });
     const sw = s('g', { class: 'rb-sw' }, swBase, swLever, swGhost);
     svg.append(
-        swHalo, sw, swText, swOk,
+        swHalo, swHold, sw, swText, swOk,
         s('g', { class: 'rb-sw' }, s('rect', { class: 'rb-sw-base', x: 308, y: 30, width: 30, height: 18, rx: 5 }), s('line', { class: 'rb-sw-lever rb-idle', x1: 323, y1: 32, x2: 323, y2: 10 })),
         s('rect', { class: 'rb-screen', x: 172, y: 56, width: 56, height: 30, rx: 5 })
     );
@@ -134,24 +157,58 @@ export function radioArt(opts: { mini?: boolean } = {}): RadioArt {
         const ghost = s('g', {}, s('circle', { class: 'rb-ghost', r: KNOB_R }));
         const ghostPos = s('g', { class: 'rb-off' }, ghost);
         const arrow = s('path', { class: 'rb-arrow rb-off', d: 'M0 0', 'marker-end': `url(#${markerId})` });
+        const gTrack = s('rect', { class: 'rb-g-trk', rx: 3 });
+        const gFill = s('rect', { class: 'rb-g-fill', rx: 3 });
+        const gTicks = G_TICKS.map((_, i) => s('line', { class: i === G_TICKS.length - 1 ? 'rb-g-tick goal' : 'rb-g-tick' }));
+        const gauge = s('g', { class: 'rb-gauge rb-off' }, gTrack, gFill, ...gTicks);
         const tol = s('circle', { class: 'rb-tol rb-off', r: 20 });
         const shaft = s('line', { class: 'rb-shaft', x1: 0, y1: 0, x2: 0, y2: 0 });
         const knob = s('circle', { class: 'rb-knob unknown', r: mini ? 20 : KNOB_R }); // mini: readable at 96 px
         const hold = s('circle', { class: 'rb-hold rb-off', r: 20, transform: 'rotate(-90)', 'stroke-dasharray': `0 ${RING}` });
         const ok = s('path', { class: 'rb-ok rb-off', d: 'M-7 0 L-2 5 L8 -6' });
         const kg = s('g', { class: 'rb-kg' }, hold, knob, ok);
-        const label = s('text', { class: 'rb-lbl', x: 0, y: 94 });
+        const label = s('text', { class: 'rb-lbl', x: 0, y: mini ? 94 : 104 });
         const well = s('rect', { class: 'rb-well', x: -58, y: -58, width: 116, height: 116, rx: 18 });
         const g = s('g', { class: 'rb-w', transform: `translate(${cx} 150)` },
             well,
             s('circle', { class: 'rb-ring', r: TRAVEL }),
             s('line', { class: 'rb-cross', x1: -TRAVEL, y1: 0, x2: TRAVEL, y2: 0 }),
             s('line', { class: 'rb-cross', x1: 0, y1: -TRAVEL, x2: 0, y2: TRAVEL }),
-            tol, ghostPos, arrow, shaft, kg, label);
+            tol, ghostPos, arrow, gauge, shaft, kg, label);
         svg.append(g);
-        return { side, g, well, ghostPos, ghost, arrow, tol, shaft, kg, knob, hold, ok, label };
+        return { side, g, well, ghostPos, ghost, arrow, gauge, gTrack, gFill, gTicks, tol, shaft, kg, knob, hold, ok, label };
     };
     const wells = [mkWell('L', 110), mkWell('R', 290)];
+
+    /** The gauge beside the arrow: filled from where the move starts toward the arrow's head. */
+    const setGauge = (w: Well, dir: Dir | null, g: ArtState['gauge']): void => {
+        const on = !mini && !!g && (dir === 'up' || dir === 'down' || dir === 'right');
+        cls(w.gauge, 'rb-off', !on);
+        if (!on || !g) return;
+        const f = Math.max(0, Math.min(1, g.frac));
+        for (const z of ['rest', 'tiny', 'almost', 'enough', 'two'] as GaugeZone[]) cls(w.gauge, `z-${z}`, g.zone === z);
+        const r = (el: Element, x: number, y: number, wd: number, ht: number): void => {
+            attr(el, 'x', x.toFixed(1)); attr(el, 'y', y.toFixed(1)); attr(el, 'width', wd.toFixed(1)); attr(el, 'height', ht.toFixed(1));
+        };
+        const line = (el: Element, x1: number, y1: number, x2: number, y2: number): void => {
+            attr(el, 'x1', x1.toFixed(1)); attr(el, 'y1', y1.toFixed(1)); attr(el, 'x2', x2.toFixed(1)); attr(el, 'y2', y2.toFixed(1));
+        };
+        const len = f * G_LEN;
+        if (dir === 'right') {
+            // under the sideways arrow (y 70): the track runs x -34..30, filled from the left
+            const y = 82 - G_W / 2;
+            r(w.gTrack, -G_A, y, G_LEN, G_W);
+            r(w.gFill, -G_A, y, len, G_W);
+            G_TICKS.forEach((p, i) => { const x = -G_A + p * G_LEN; line(w.gTicks[i], x, y - 3, x, y + G_W + 3); });
+        } else {
+            // beside the vertical arrow (x -70 / 70), on the outer side of the well
+            const x = (w.side === 'L' ? -84 : 84) - G_W / 2;
+            r(w.gTrack, x, G_B, G_W, G_LEN);
+            if (dir === 'up') r(w.gFill, x, G_A - len, G_W, len);
+            else r(w.gFill, x, G_B, G_W, len);
+            G_TICKS.forEach((p, i) => { const y = dir === 'up' ? G_A - p * G_LEN : G_B + p * G_LEN; line(w.gTicks[i], x - 3, y, x + G_W + 3, y); });
+        }
+    };
 
     let lastMode = 0;
     const set = (st: ArtState): void => {
@@ -165,6 +222,7 @@ export function radioArt(opts: { mini?: boolean } = {}): RadioArt {
         const tg = st.target;
         const swTarget = tg !== null && tg.side === 'SW';
         const stick = tg !== null && tg.side !== 'SW' ? tg : null;
+        const preview = !!st.preview;
         for (const w of wells) {
             const main = stick !== null && (stick.side === 'both' || stick.side === w.side);
             const extra = !!st.also && st.also.side === w.side;
@@ -186,17 +244,21 @@ export function radioArt(opts: { mini?: boolean } = {}): RadioArt {
             else if (dir === 'down') { a = from ?? home; b = [a[0], -REACH]; }
             else if (dir === 'right') { a = from ?? home; b = [REACH, a[1]]; }
             else if (dir === 'centre') a = from ?? (single ? home : LETGO_FROM);
-            const moving = dir !== null && dir !== 'stir' && !st.ok && (a[0] !== b[0] || a[1] !== b[1]);
+            const moving = dir !== null && dir !== 'stir' && (a[0] !== b[0] || a[1] !== b[1]);
             cls(w.ghostPos, 'rb-off', dir === null);
+            // the move after Start is only a preview: faint, so it does not read as "do it now"
+            cls(w.ghostPos, 'rb-preview', preview && main);
             attr(w.ghostPos, 'transform', dir === 'stir' ? at : '');
             attr(w.ghost, 'class', dir === 'stir' ? 'rb-g-stir' : moving ? 'rb-g-move' : 'rb-g-at');
             const px = (v: number): string => `${(v * TRAVEL).toFixed(1)}px`;
             attr(w.ghost, 'style', `--sx:${px(a[0])};--sy:${px(-a[1])};--ex:${px(b[0])};--ey:${px(-b[1])}`);
             // arrow beside the well
             const ax = w.side === 'L' ? -70 : 70;
-            const d = dir === 'up' ? `M${ax} 34 L${ax} -30` : dir === 'down' ? `M${ax} -34 L${ax} 30` : dir === 'right' ? 'M-34 70 L30 70' : '';
+            const d = dir === 'up' ? `M${ax} ${G_A} L${ax} ${G_B}` : dir === 'down' ? `M${ax} ${-G_A} L${ax} ${-G_B}` : dir === 'right' ? `M${-G_A} 70 L${-G_B} 70` : '';
             cls(w.arrow, 'rb-off', d === '');
+            cls(w.arrow, 'rb-preview', preview && main);
             if (d) attr(w.arrow, 'd', d);
+            setGauge(w, single ? dir : null, st.gauge);
             // "let go here": the knob must sit inside this dashed zone
             const tolOn = dir === 'centre' && st.tol > 0;
             cls(w.tol, 'rb-off', !tolOn);
@@ -212,17 +274,20 @@ export function radioArt(opts: { mini?: boolean } = {}): RadioArt {
             const hold = single ? Math.max(0, Math.min(1, st.hold)) : 0;
             cls(w.hold, 'rb-off', hold <= 0.001);
             attr(w.hold, 'stroke-dasharray', `${(hold * RING).toFixed(1)} ${RING.toFixed(1)}`);
-            cls(w.ok, 'rb-off', !(single && st.ok));
+            cls(w.ok, 'rb-off', !(main && st.ok));
         }
         const swDir = tg !== null && tg.side === 'SW' ? tg.dir : null;
         cls(sw, 'target', swTarget);
         cls(swHalo, 'rb-off', !swTarget);
         cls(swGhost, 'rb-off', !swTarget);
+        cls(swGhost, 'rb-preview', swTarget && preview);
         // the ghost lever goes to the asked position; 'flip' means away from where it is now
         cls(swGhost, 'to-off', swDir === 'off' || (swDir === 'flip' && st.sw === true));
-        cls(swGhost, 'rb-done', swTarget && st.ok); // taken: the ghost rests at its goal
         cls(swText, 'rb-off', !swTarget);
         cls(swOk, 'rb-off', !(swTarget && st.ok));
+        const sh = swTarget ? Math.max(0, Math.min(1, st.swHold ?? 0)) : 0;
+        cls(swHold, 'rb-off', sh <= 0.001);
+        attr(swHold, 'stroke-dasharray', `${(sh * SW_RING).toFixed(1)} ${SW_RING.toFixed(1)}`);
         cls(swLever, 'on', st.sw === true);
         cls(swLever, 'unknown', st.sw === null);
     };

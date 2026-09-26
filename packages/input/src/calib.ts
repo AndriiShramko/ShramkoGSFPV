@@ -1,24 +1,30 @@
 // Calibration wizard core (no DOM): turns raw device frames into a profile that maps the
 // device's axes and buttons onto roll / pitch / throttle / yaw / arm. The UI only shows what the
-// state says and feeds frames in; every decision is made here, so simulated people can test it.
+// state says, feeds frames in and calls the commands its buttons stand for; every decision is
+// made here, so simulated people can test it.
 //
 // Raw frames: axes normalised to [-1, 1] (HID 0..2048 -> -1..1, gamepad as is), buttons bitmask.
 //
-// Wizard v2 (2026-09-25). The first wizard froze on a real radio: it averaged the stick centres
-// over a fixed second while the hands were still moving, then waited forever for the sticks to
-// return there. This one measures only while things are still, takes a stick only when it came
-// from the middle and was held, and never waits silently: every waiting screen gets a hint and a
-// way out within 12 s. All times are in ms of the frame clock, never frame counts (radios send
-// 125..1000 reports/s). The TUNING numbers come from a model of people (sim/human.ts) and the
-// SimRadio; they are NOT measured on a real radio yet.
+// Wizard v3 (2026-09-26), user-paced. v2 advanced by itself: a screen ended once the sticks were
+// still for a moment, a push counted from the middle of the stirred range (a throttle parked mid
+// needed 20 % of its travel), and a throttle resting at an end became "up" after 2 s. On a real
+// radio the pilot could not keep up. Here nothing advances unless the pilot presses a button:
+// every step is ready -> active -> done, Start opens the measurement, Next leaves the result.
+// The only changes a frame makes on its own: the first frame (connect -> stir/ready), an accepted
+// push (fn active -> done) and an accepted arm flip (arm active -> done). A push counts only at
+// >= 70 % of the way from where the stick rested to its end, held 400 ms; nothing is ever taken
+// because time passed. Times are ms of the frame clock (radios send 125..1000 reports/s). The
+// TUNING numbers come from the rules, QGroundControl's thresholds and a model of people
+// (sim/human.ts); they are NOT measured on a real radio.
 
 export type Fn = 'roll' | 'pitch' | 'throttle' | 'yaw';
 export const FNS: Fn[] = ['throttle', 'yaw', 'pitch', 'roll']; // prompt order: left stick first in Mode 2
 
 export type StepId = 'connect' | 'stir' | 'centre' | 'throttle' | 'yaw' | 'pitch' | 'roll' | 'arm' | 'check';
 export const STEP_IDS: StepId[] = ['connect', 'stir', 'centre', 'throttle', 'yaw', 'pitch', 'roll', 'arm', 'check'];
-export type Phase = 'push' | 'release' | 'on' | 'off' | null;
-export type Dir = 'up' | 'down' | 'right' | 'centre' | 'stir' | 'flip';
+export type Stage = 'ready' | 'active' | 'done';
+export type Dir = 'up' | 'down' | 'right' | 'centre' | 'stir' | 'on' | 'off' | 'flip';
+export type Zone = 'rest' | 'tiny' | 'almost' | 'enough' | 'two';
 
 export interface RawFrame {
     t: number; // ms (page clock)
@@ -50,7 +56,7 @@ export interface Profile {
     deadband: number;
     created: string;
     mode?: 1 | 2; // stick mode chosen for the drawings; never used for mapping
-    wizard?: number; // 2 = made by this wizard; absent = made by the first one
+    wizard?: number; // 2 = made by wizard v2 or v3 (main.ts resumes these); absent = made by the first one
 }
 
 /** Legacy step number (main.ts, accept-fly): connect/stir 1, centre 2, sticks 3, arm 5, check 6. */
@@ -59,116 +65,121 @@ export type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export interface Hint { key: string; params: Record<string, string | number> }
 export type ChannelKind = 'stick' | 'switch' | 'idle';
 export interface ChannelLive { v: number; lo: number; hi: number; cover: number; kind: ChannelKind; fn: Fn | 'arm' | null; still: boolean }
-export interface Can { back: boolean; cont: boolean; useCurrent: boolean; pick: boolean; skipArm: boolean; fly: boolean; reverse: boolean }
 export type ArmSource = { kind: 'ch'; n: number } | { kind: 'button'; n: number } | { kind: 'key' }; // n is 1-based
+export interface Gauge { ch: number; frac: number; sign: 1 | -1 | 0; zone: Zone; held: number; other: number } // other: 2nd channel for 'two', else -1
+/** arm/active: the switch seen so far. 'on' = it is ON, the ring fills while it stays; 'off' = ON counted, now back OFF. */
+export interface ArmFlip { src: ArmSource; phase: 'on' | 'off'; held: number; level: number }
+export type StepResult =
+    | { kind: 'stir'; sticks: number[]; switches: number[]; short: number[] }
+    | { kind: 'centre'; centres: { ch: number; pct: number }[]; end: number }
+    | { kind: 'fn'; fn: Fn; ch: number; invert: boolean }
+    | { kind: 'arm'; source: ArmSource };
+export type Verdict = { ok: true } | { ok: false; hint: Hint };
+export interface Can {
+    begin: boolean; next: boolean; back: boolean; skipArm: boolean; pick: boolean;
+    measureAnyway: boolean; reverse: boolean; redo: boolean; fly: boolean;
+}
 
 export interface WizardState {
-    // legacy, still read by main.ts, fakehid, accept-fly
+    // legacy, read by main.ts, accept-fly B10/B11, smoke-ui: same meaning as in v2
     step: Step;
-    prompt: Fn | null; // push/release: the fn of the step, else null
-    message: string; // i18n key of what to do now
+    prompt: Fn | null; // the fn of a stick step
+    message: string; // i18n key of the say line: wizard.say.<id>.<stage> (connect, check: wizard.say.<id>)
     progress: number; // = hold
     error: string | null; // = hint?.key ?? null
-    profile: Profile | null; // set on entering check
-    // v2
+    profile: Profile | null; // check only
+    // v3
     id: StepId;
-    phase: Phase;
-    target: { what: Fn | 'arm' | 'sticks'; dir: Dir } | null;
-    hold: number; // 0..1, drives the ring
-    ok: boolean; // true during the check-mark pause after a success
-    stuckMs: number;
+    stage: Stage | null; // null on connect and check
+    target: { what: Fn | 'arm' | 'sticks'; dir: Dir } | null; // what the drawing animates
+    preview: boolean; // ready stage showing the coming move (dimmed ghost)
+    gauge: Gauge | null; // fn/active only
+    hold: number; // gauge.held (fn/active), armFlip.held (arm/active), else 0
+    armFlip: ArmFlip | null; // arm/active only
+    picked: number | null; // the channel listened to after pick() (fn/active, arm), else null
+    result: StepResult | null; // done stage only
+    redoing: boolean;
     hint: Hint | null;
     can: Can;
+    stuckMs: number; // ms in this stage (hint timers only)
+    cmds: number; // count of accepted commands (tests pair every stage change with it)
     channels: ChannelLive[]; // length nAxes (0 until the first frame)
     mapped: { roll: number; pitch: number; throttle: number; yaw: number; arm: boolean | null }; // NaN = unknown
     assigned: Partial<Record<Fn, number>>; // channel index per function so far
+    inverted: Partial<Record<Fn, boolean>>;
     armSource: ArmSource | null;
-    leader: { ch: number; mag: number } | null; // push only
     sticksDone: number; // stir: stick channels with cover >= STIR_COVER
     checks: { throttleLow: boolean; armOn: boolean | null; centred: boolean } | null; // check only
 }
 
 export const TUNING = {
+    // stillness at a pilot's press (rule 3): QGC settle 20/1000 for 500 ms, on an 80 ms EMA
+    STILL_TAU_MS: 80,
+    STILL_TOL: 0.04,
+    STILL_MS: 500,
+    // where a stick rests, in halves of its range from the middle
+    CENTRE_TOL: 0.15,
+    END_TOL: 0.10,
+    // the push (rule 2), in shares of the reach from the rest to the end
+    PUSH_REST: 0.10,
+    PUSH_TINY: 0.30,
+    PUSH_ACCEPT: 0.70,
+    PUSH_FLICK: 0.90,
+    TWO_FRAC: 0.30,
+    HOLD_MS: 400,
+    REACH_MIN: 0.50,
+    // stir (rule 4)
+    STIR_COVER: 0.80,
+    PLATEAU_MIN: 0.50,
+    PLATEAU_TOL: 0.03,
+    PLATEAU_AWAY: 0.30,
+    PLATEAU_HITS: 3,
+    // Next on the throttle result: the bar must read this low
+    THR_DOWN_MAX: 0.10,
+    MEASURE_ANYWAY_AFTER: 2, // refusals, a pilot's decision, not a timer
+    // kept from v2
     STILL_P2P: 0.10,
-    EMA_TAU_MS: 150,
     MOVING_SPAN: 0.30,
     SWITCH_SPAN: 0.50,
     STICK_SPAN: 1.00,
     OTHER_FRAC: 0.10,
     STIR_SWEEP_BINS: 10,
-    STIR_COVER: 0.90,
-    STIR_MIN_MS: 2500,
-    STIR_HINT_MS: 12000,
-    CENTRE_HOLD_MS: 800,
-    CENTRE_MIN_MS: 2000,
-    CENTRE_HINT_MS: 6000,
-    CENTRE_ESCAPE_MS: 10000,
-    PUSH: 0.60,
-    ARRIVE_FROM: 0.35,
-    ARRIVE_STILL_MS: 100,
-    QUIET: 0.35,
-    STICK_HOLD_MS: 400,
-    THROTTLE_HOLD_MS: 700,
-    THROTTLE_DOUBT_HOLD_MS: 2000,
-    THR_FLIP_STILL_MS: 1000,
-    THR_LATE_MS: 1500,
-    THR_AWAY_STILL_MS: 300,
+    // arm (Andrii 2026-09-26: "a weakly-noisy channel gets bound to arming as soon as the screen
+    // appears"): only a real flip after Start, ON then back OFF, each level still ARM_LEVEL_MS, the
+    // levels ARM_JUMP apart (50 % of -1..1 less EdgeTX's 0.999 top), every hop a jump (the biggest
+    // single-report step >= ARM_STEP_FRAC of the hop: knobs, sliders, sticks sweep)
+    ARM_JUMP: 0.95,
+    ARM_STEP_FRAC: 0.40,
+    ARM_PICK_JUMP: 0.30, // a channel the pilot picked by hand: a weight-limited switch, a slider
+    ARM_SMALL: 0.15,
+    ARM_LEVEL_MS: 300,
+    ARM_FAR_MS: 20,
     RANGE_ONE_SIDED: 0.5,
     TAKEN_HOLD_MS: 400,
-    PUSH_HINT_MS: 5000,
-    PUSH_ESCAPE_MS: 8000,
-    RELEASE_MID_TOL: 0.20,
-    RELEASE_REST_TOL: 0.10,
-    RELEASE_HOLD_MS: 300,
-    THR_DOWN_TOL: 0.20,
-    THR_DOWN_HOLD_MS: 400,
-    RELEASE_HINT_MS: 4000,
-    RELEASE_ESCAPE_MS: 8000,
-    ARM_JUMP: 0.50,
-    ARM_SMALL: 0.15,
-    ARM_LEVEL_MS: 120,
-    ARM_FAR_MS: 20,
-    ARM_ON_HOLD_MS: 600,
-    ARM_OFF_TOL: 0.20,
-    ARM_OFF_HOLD_MS: 400,
-    ARM_REACT_MS: 200,
-    ARM_SOON_WAIT_MS: 2000,
-    ARM_TAP_MS: 600,
-    ARM_TAPS_WITHIN_MS: 4000,
-    ARM_HINT_MS: 8000,
-    ARM_OFF_HINT_MS: 5000,
-    ARM_OFF_ESCAPE_MS: 8000,
-    CONNECT_HINT_MS: 3000,
-    OK_MS: 500,
-    CHECK_SUSPECT_MS: 3000,
     CLASSIFY_EVERY_MS: 100,
-    HINT_MIN_MS: 1500
+    HINT_MIN_MS: 1500,
+    CONNECT_HINT_MS: 3000,
+    CHECK_SUSPECT_MS: 3000,
+    // hint-only timers: a text or a button appears, nothing is taken
+    STIR_HINT_MS: 8000,
+    PUSH_HINT_MS: 5000,
+    PUSH_PICK_MS: 8000,
+    ARM_HINT_MS: 8000,
+    ARM_BACK_HINT_MS: 5000 // "now flip it back OFF" and nothing moves: was it ON at Start?
 } as const;
 
 const T = TUNING;
 const NB = 32; // stir histogram bins over [-1, 1]
 const NBITS = 24;
-const LIVE_STILL_MS = 300; // "still" dot on the channel bars
-const TWO_WINDOW_MS = 2000; // "two sticks at once" hint looks this far back
 
-const SAY: Record<string, string> = {
-    connect: 'wizard.say.connect',
-    stir: 'wizard.say.stir',
-    centre: 'wizard.say.centre',
-    'throttle/push': 'wizard.say.throttle.push',
-    'throttle/release': 'wizard.say.throttle.release',
-    'yaw/push': 'wizard.say.yaw.push',
-    'pitch/push': 'wizard.say.pitch.push',
-    'roll/push': 'wizard.say.roll.push',
-    release: 'wizard.say.release',
-    'arm/on': 'wizard.say.arm.on',
-    'arm/off': 'wizard.say.arm.off',
-    check: 'wizard.say.check'
-};
-
-interface ArmScratch { armCh: number; onLvl: number; offLvl: number; armBit: number; onVal: number; map: ArmMap | null }
-interface Snap { assigned: Partial<Record<Fn, AxisMap>>; rest: number[]; arm: ArmScratch }
-interface TrailEntry { id: StepId; phase: Phase; snap: Snap }
+interface Snap {
+    assigned: Partial<Record<Fn, AxisMap>>;
+    pushEnd: Partial<Record<Fn, number>>;
+    rest: number[];
+    arm: ArmMap | null;
+    stickSet: number[];
+    results: Partial<Record<StepId, StepResult>>;
+}
 
 function isFn(id: StepId): id is Fn {
     return id === 'throttle' || id === 'yaw' || id === 'pitch' || id === 'roll';
@@ -191,103 +202,142 @@ function armSourceOf(a: ArmMap | null): ArmSource | null {
     return { kind: 'key' };
 }
 
+/** A level arm input (reads ON or OFF by itself): an axis or a latching button. */
+function isLevel(a: ArmMap | null): boolean {
+    return !!a && (a.kind === 'axis' || (a.kind === 'button' && !a.toggle));
+}
+
+/** Reverse of an arm map, in place. */
+function flipArmMap(a: ArmMap | null): void {
+    if (!a || a.kind === 'key') return;
+    if (a.kind === 'axis') {
+        // the threshold sits 3/4 of the way to ON (a 3-position switch reads OFF in its middle);
+        // flipping onAbove alone would move it to 1/4 and arm in the middle, so mirror it between
+        // the two levels. Without levels (older profile) it is the midpoint, which mirrors onto itself.
+        if (a.off !== undefined && a.on !== undefined) {
+            a.threshold = a.off + a.on - a.threshold;
+            const x = a.off; a.off = a.on; a.on = x;
+        }
+        a.onAbove = !a.onAbove;
+    } else if (a.toggle) return;
+    else if (a.inverted) delete a.inverted;
+    else a.inverted = true;
+}
+
+function noCan(): Can {
+    return { begin: false, next: false, back: false, skipArm: false, pick: false, measureAnyway: false, reverse: false, redo: false, fly: false };
+}
+
 function freshState(): WizardState {
     return {
-        step: 0, prompt: null, message: SAY.connect, progress: 0, error: null, profile: null,
-        id: 'connect', phase: null, target: null, hold: 0, ok: false, stuckMs: 0, hint: null,
-        can: { back: false, cont: false, useCurrent: false, pick: false, skipArm: false, fly: false, reverse: false },
-        channels: [], mapped: { roll: NaN, pitch: NaN, throttle: NaN, yaw: NaN, arm: null }, assigned: {},
-        armSource: null, leader: null, sticksDone: 0, checks: null
+        step: 0, prompt: null, message: 'wizard.say.connect', progress: 0, error: null, profile: null,
+        id: 'connect', stage: null, target: null, preview: false, gauge: null, hold: 0, armFlip: null, picked: null, result: null, redoing: false,
+        hint: null, can: noCan(), stuckMs: 0, cmds: 0,
+        channels: [], mapped: { roll: NaN, pitch: NaN, throttle: NaN, yaw: NaN, arm: null }, assigned: {}, inverted: {},
+        armSource: null, sticksDone: 0, checks: null
     };
 }
+
+const DISABLED: Verdict = { ok: false, hint: { key: 'wizard.hint.disabled', params: {} } };
+const OK: Verdict = { ok: true };
 
 export class CalibrationWizard {
     state: WizardState = freshState();
     private deviceKey: string;
     private deviceName: string;
     private started = false;
-    private resumed = false;
+    private resumed: Profile | null = null;
+    private keepProfile: Profile | null = null;
     private now = 0;
-    private lastT = NaN;
+    private smT = NaN; // time of the last EMA / still-window update (frame, tick or command)
     private n = 0;
     // per channel, allocated once on the first frame
     private v = new Float64Array(0);
     private mins = new Float64Array(0);
     private maxs = new Float64Array(0);
     private rest = new Float64Array(0);
-    private cur = new Float64Array(0);
-    private wMin = new Float64Array(0);
+    private wMin = new Float64Array(0); // raw still window (arm levels)
     private wMax = new Float64Array(0);
     private wSum = new Float64Array(0);
     private wN = new Float64Array(0);
     private stillSince = new Float64Array(0);
-    private firstVal = new Float64Array(0);
+    private sm = new Float64Array(0); // smoothed value (rule 3)
+    private sMin = new Float64Array(0);
+    private sMax = new Float64Array(0);
+    private stillSince2 = new Float64Array(0);
     private hist = new Uint32Array(0);
     private histN = new Uint32Array(0);
     private kinds: ChannelKind[] = [];
     private fnOfCh: (Fn | 'arm' | null)[] = [];
-    private armedP = new Uint8Array(0); // push: came from the middle in this phase
-    private stillP = new Uint8Array(0); // push: was still at some moment in this phase
-    private startHigh = new Uint8Array(0); // push: already pushed when the phase began
-    private belowP = new Uint8Array(0); // push: an assigned channel was near its middle in this phase
+    private hiRef = new Float64Array(0); // stir plateau: the extreme at the first hit, per side
+    private loRef = new Float64Array(0);
+    private hiHits = new Uint8Array(0);
+    private loHits = new Uint8Array(0);
+    private hiAway = new Uint8Array(0);
+    private loAway = new Uint8Array(0);
+    private base = new Float64Array(0); // push: where each free channel rested at Start
+    private baseEnd = new Int8Array(0); // ... -1 / +1 when that was an end, else 0
+    private belowP = new Uint8Array(0); // push: an assigned channel was near its rest in this stage
     private takenSince = new Float64Array(0);
-    private lvl = new Float64Array(0); // arm: still level per channel (NaN = none yet)
-    private prevLvl = new Float64Array(0);
-    private lvlSince = new Float64Array(0);
+    // arm, per axis channel, from Start on (nothing is measured before it)
+    private cand = new Uint8Array(0); // a candidate: not a stick function, not stick-like in the stir (or picked)
+    private L0 = new Float64Array(0); // the first still level after Start: OFF (the pilot was told to put it OFF)
+    private lvl = new Float64Array(0); // the last still level
+    private armSt = new Uint8Array(0); // 0 no level yet, 1 at OFF waiting for ON, 2 ON counted, waiting for OFF
+    private onV = new Float64Array(0); // the ON level (the farthest one reached by a jump)
+    private stepMax = new Float64Array(0); // biggest single-report step since the last still level
+    private swept = new Uint8Array(0); // a hop here was a sweep (knob, slider): never an auto flip in this try
     private maxExc = new Float64Array(0);
-    private farV = new Float64Array(0); // arm: farthest value from the level since it was last still
-    private farT = new Float64Array(0); // arm: since when the value is ARM_JUMP away from the level (NaN = not)
-    private lvlChanged = new Uint8Array(0);
-    private seenLo = new Float64Array(0); // arm steps: lowest and highest still level seen per channel
-    private seenHi = new Float64Array(0);
-    private offEarly = false; // arm off: the input was already back at OFF before the screen could be read
-    private offEarlyT = 0; // ... since when (a button: the time of that change)
-    private offMoved = false; // ... and has moved since
-    private thrAway = false; // throttle down: seen resting away from "down" in this phase
-    private loose = new Uint8Array(0); // taken as a stick by "Continue anyway" without a full stir
+    private awayT = new Float64Array(0); // since when the value is a jump away from L0 (NaN = not)
+    private movedRefusals = new Uint8Array(0); // centre: Measure refused because this channel moved
+    private fr: RawFrame = { t: 0, axes: new Float32Array(8), buttons: 0 };
     // buttons
     private lastButtons = 0;
     private bitVal = new Uint8Array(NBITS);
     private bitSince = new Float64Array(NBITS);
     private bitBase = new Uint8Array(NBITS);
-    private bitChanged = new Uint8Array(NBITS);
-    private pressT = new Float64Array(NBITS).fill(NaN);
-    private tapT = new Float64Array(NBITS).fill(NaN);
-    private tapBit = -1;
+    private pressT = new Float64Array(NBITS).fill(NaN); // arm: pressed (away from its base) since
+    private relT = new Float64Array(NBITS).fill(NaN); // arm: back at its base since, after a press
+    private bKind = new Uint8Array(NBITS); // arm: 1 = that press was a tap (toggle), 2 = held (level)
     private hintAt = 0;
-    private emaDt = -1;
-    private emaK = 0;
     // flow
     private id: StepId = 'connect';
-    private phase: Phase = null;
-    private phaseT0 = 0;
-    private stuckT0 = 0;
-    private phaseFirst = true;
-    private ok = false;
-    private okUntil = 0;
-    private pendId: StepId = 'connect';
-    private pendPhase: Phase = null;
-    private fnIdx = 0;
-    private trail: TrailEntry[] = [];
+    private stage: Stage | null = null;
+    private stageT0 = 0;
+    private refHint: Hint | null = null; // the hint of a refused command, until the next command or stage
+    private redoing = false;
+    private redoSnap: Snap | null = null;
+    private readySnap: Partial<Record<StepId, Snap>> = {};
+    private results: Partial<Record<StepId, StepResult>> = {};
     // stir
-    private firstMoveT = NaN;
     private lastClassifyT = -Infinity;
+    private stirOk = false;
     private stickSet: number[] = [];
-    private endCh = -1; // centre: a stick still held at its end (not let go yet), else -1
     // push
     private free: number[] = [];
     private restrict: number | null = null;
     private holdStart = NaN;
     private holdCh = -1;
     private holdSign = 0;
-    private maxLead = 0;
-    private twoT = -Infinity;
+    private holdPeak = 0;
+    private flicked = false;
+    private inAttempt = false;
+    private attemptPeak = 0;
+    private lastPeak = 0;
+    private everMoved = false;
     private twoA = -1;
     private twoB = -1;
     private takenCh = -1;
+    private gauge: Gauge = { ch: -1, frac: 0, sign: 0, zone: 'rest', held: 0, other: -1 };
+    // arm
+    private wasOnCh = -1; // went over and straight back (a switch left ON at Start, or a flick): 0-based axis, or 100 + bit
+    private sweptCh = -1;
+    private backSince = NaN; // since when the screen says "now flip it back OFF"
+    private flip: ArmFlip = { src: { kind: 'ch', n: 0 }, phase: 'on', held: 0, level: 0 };
     // result so far
     private assigned: Partial<Record<Fn, AxisMap>> = {};
-    private arm: ArmScratch = { armCh: -1, onLvl: NaN, offLvl: NaN, armBit: -1, onVal: 1, map: null };
+    private pushEnd: Partial<Record<Fn, number>> = {};
+    private armMap: ArmMap | null = null;
     private mapOut = new Float32Array(8);
 
     constructor(deviceKey: string, deviceName: string) {
@@ -295,235 +345,366 @@ export class CalibrationWizard {
         this.deviceName = deviceName;
     }
 
-    /** Resume at the check screen with a saved profile (no trail: Back is disabled). */
+    /** Resume at the check with a saved profile: ranges seeded from it, so Set again works. */
     static resume(p: Profile): CalibrationWizard {
         const w = new CalibrationWizard(p.deviceKey, p.deviceName);
-        w.resumed = true;
+        w.resumed = p;
         w.started = true;
-        w.id = 'check';
-        w.phase = null;
         w.assigned = copyAssigned(p.axes);
-        w.arm.map = p.arm;
-        const st = w.state;
-        st.step = 6;
-        st.id = 'check';
-        st.message = SAY.check;
-        st.profile = p;
-        st.armSource = armSourceOf(p.arm);
-        for (const fn of FNS) if (p.axes[fn]) st.assigned[fn] = p.axes[fn].index;
-        st.checks = { throttleLow: false, armOn: null, centred: false };
-        w.timers();
+        w.armMap = copyArm(p.arm);
+        w.keepProfile = p;
+        w.go('check', null);
         return w;
     }
 
+    /** Lifecycle: begin at connect (a resumed wizard stays at its check). */
     start(t: number): void {
-        if (this.resumed) { this.now = Math.max(this.now, t); this.stuckT0 = this.now; return; }
+        if (this.resumed) { this.now = Math.max(this.now, t); this.stageT0 = this.now; return; }
         const keepN = this.n;
         const keep = this.state.channels;
+        const cmds = this.state.cmds;
         this.state = freshState();
         this.state.channels = keep;
+        this.state.cmds = cmds;
         this.n = keepN;
         this.started = true;
         this.now = t;
-        this.lastT = NaN;
-        this.trail = [];
+        this.smT = NaN;
         this.assigned = {};
-        this.arm = { armCh: -1, onLvl: NaN, offLvl: NaN, armBit: -1, onVal: 1, map: null };
-        this.enter('connect', null, false);
+        this.pushEnd = {};
+        this.armMap = null;
+        this.results = {};
+        this.readySnap = {};
+        this.redoing = false;
+        this.redoSnap = null;
+        this.stickSet = [];
+        this.go('connect', null);
         this.state.step = 1;
     }
 
+    /** Measure. The only stage changes here: connect -> stir/ready, an accepted push, an accepted arm flip. */
     feed(f: RawFrame): WizardState {
         const st = this.state;
         if (!this.started) return st;
         const t = f.t > this.now ? f.t : this.now;
-        const dt = Number.isNaN(this.lastT) ? 0 : t - this.lastT;
         this.now = t;
-        this.lastT = t;
         if (this.n === 0) this.init(Math.min(8, f.axes.length), f, t);
-        this.track(f, t, dt);
-        if (this.id === 'connect') this.enter('stir', null, true);
-        if (this.ok) {
-            if (t >= this.okUntil) this.enterPending();
-            else { this.live(f); this.timers(); return st; }
-        }
+        this.track(f, t);
+        if (this.id === 'connect') this.go('stir', 'ready');
         this.evaluate(t);
-        this.live(f);
+        this.live();
         this.timers();
         return st;
     }
 
-    /** Timers without frames (connect hint, end of the check-mark pause), and the rules on the held values. */
+    /**
+     * Timers and hints without frames. A pad that reports only changes (frozen Gamepad.timestamp)
+     * sends nothing while still: the held values count on (sample and hold), so a push or a switch
+     * held still is still taken here, as a frame would take it.
+     */
     tick(t: number): WizardState {
         if (!this.started) return this.state;
         if (t > this.now) this.now = t;
-        if (this.ok && this.now >= this.okUntil) this.enterPending();
-        // sample and hold: a pad that reports only changes (Gamepad.timestamp frozen, 8-bit axes,
-        // a deadzone) sends nothing while the sticks are still, and every hold here is stillness
-        if (!this.ok && this.n > 0 && this.id !== 'connect' && this.id !== 'check') this.evaluate(this.now);
+        this.advance(this.now);
+        if (this.n > 0 && this.id !== 'connect' && this.id !== 'check') this.evaluate(this.now);
+        if (this.n > 0) this.live();
         this.timers();
         return this.state;
     }
 
-    // ------------------------------------------------------------------ escapes
+    // ------------------------------------------------------------------ commands (the buttons)
 
+    /** "Start" on a ready stage. */
+    begin(t?: number): Verdict {
+        this.cmdAt(t);
+        if (this.stage !== 'ready') return DISABLED;
+        const id = this.id;
+        if (id === 'stir') {
+            if (this.n === 0) return this.refuse('wizard.hint.noData', {});
+            this.resetStir();
+            return this.accept('stir', 'active');
+        }
+        if (id === 'centre') {
+            this.movedRefusals.fill(0);
+            return this.accept('centre', 'active');
+        }
+        if (isFn(id)) return this.beginPush(id);
+        if (id === 'arm') return this.beginArm();
+        return DISABLED;
+    }
+
+    /** "Done" (stir/active), "Measure" (centre/active), "Next" (every done stage). */
+    next(t?: number): Verdict {
+        this.cmdAt(t);
+        const id = this.id;
+        if (this.stage === 'active') {
+            if (id === 'stir') return this.stirDone();
+            if (id === 'centre') return this.measure(false);
+            return DISABLED;
+        }
+        if (this.stage !== 'done') return DISABLED;
+        if (isFn(id)) {
+            const v = this.nextFn(id);
+            if (!v.ok) return v;
+        } else if (id === 'arm') {
+            const m = this.armMap;
+            if (isLevel(m) && armOn(m, this.frameNow())) return this.refuse('wizard.hint.next.armOn', {});
+        }
+        this.cmd();
+        this.forward();
+        return OK;
+    }
+
+    /** Back: active -> ready, done -> ready (its capture dropped), ready -> the previous result, check -> arm result. false = nothing before (the UI shows the device choice). */
     back(): boolean {
-        if (this.ok) {
-            const top = this.trail[this.trail.length - 1];
-            if (!top) return false;
-            this.ok = false;
-            this.restore(top.snap);
-            this.enter(top.id, top.phase, false);
+        const id = this.id;
+        if (id === 'connect') return false;
+        if (id === 'check') {
+            if (!this.results.arm) return false; // a resumed profile: no steps behind it
+            this.cmd();
+            this.go('arm', 'done');
             return true;
         }
-        if (this.trail.length < 2) return false;
-        this.trail.pop();
-        // a release or switch-off is part of its step: going back redoes the whole step
-        while (this.trail.length >= 2) {
-            const p = this.trail[this.trail.length - 1].phase;
-            if (p !== 'release' && p !== 'off') break;
-            this.trail.pop();
+        if (this.stage === 'active') { this.cmd(); this.go(id, 'ready'); return true; }
+        if (this.stage === 'done') {
+            const s = this.readySnap[id];
+            if (s) this.restore(s);
+            delete this.results[id];
+            this.cmd();
+            this.go(id, 'ready');
+            return true;
         }
-        const top = this.trail[this.trail.length - 1];
-        this.restore(top.snap);
-        this.enter(top.id, top.phase, false);
+        if (this.redoing && this.redoSnap) {
+            this.restore(this.redoSnap);
+            this.redoing = false;
+            this.redoSnap = null;
+            this.cmd();
+            this.go('check', null);
+            return true;
+        }
+        if (id === 'stir') return false;
+        const prev = STEP_IDS[STEP_IDS.indexOf(id) - 1];
+        if (!this.results[prev]) return false;
+        this.cmd();
+        this.go(prev, 'done');
         return true;
     }
 
-    cont(): void {
-        if (!this.state.can.cont) return;
-        this.state.hint = null;
-        if (this.id === 'stir') {
-            this.classify();
-            this.stickSet = [];
-            for (let i = 0; i < this.n; i++) if (this.kinds[i] === 'stick') this.stickSet.push(i);
-            // fewer than four sticks: every channel stays a candidate and the stick steps find them
-            // (with "Pick the channel by hand" there); the ones not stirred are measured from their rest
-            if (this.stickSet.length < 4) {
-                this.stickSet = [];
-                for (let i = 0; i < this.n; i++) { this.stickSet.push(i); if (this.kinds[i] !== 'stick') this.loose[i] = 1; }
-            }
-            this.succeed('centre', null);
-        } else if (this.id === 'throttle' && this.phase === 'release') {
-            // "Continue anyway" while the throttle still reads full on "Throttle all the way down":
-            // the pilot says this IS down, so the push was taken the wrong way round
-            const a = this.assigned.throttle!;
-            const c = a.index;
-            const up = a.invert ? this.mins[c] : this.maxs[c];
-            if (Math.abs(this.v[c] - up) <= T.THR_DOWN_TOL * this.half(c) && this.stillMs(c) >= T.THR_FLIP_STILL_MS) {
-                a.invert = !a.invert;
-                a.center = a.invert ? this.maxs[c] : this.mins[c];
-            }
-            this.succeed(...this.afterRelease());
-        } else if (this.id === 'arm' && this.phase === 'off') {
-            this.arm.map = this.armFromLevels();
-            this.succeed('check', null);
-        }
+    /** "Set again" on the check: that step once more, then back to the check. */
+    redo(what: Fn | 'arm', t?: number): Verdict {
+        this.cmdAt(t);
+        if (this.id !== 'check') return DISABLED;
+        if (this.n === 0) return this.refuse('wizard.hint.noData', {});
+        this.redoSnap = this.snap();
+        if (what === 'arm') this.armMap = null;
+        else { delete this.assigned[what]; delete this.pushEnd[what]; }
+        delete this.results[what];
+        this.redoing = true;
+        this.readySnap[what] = this.snap();
+        return this.accept(what, 'ready');
     }
 
-    useCurrent(): void {
-        if (!this.state.can.useCurrent) return;
-        this.state.hint = null;
-        if (this.id === 'centre') {
-            for (const c of this.stickSet) this.rest[c] = this.restNow(c);
-            this.succeed(FNS[0], 'push');
-        } else if (isFn(this.id) && this.id !== 'throttle' && this.phase === 'release') {
-            const a = this.assigned[this.id]!;
-            this.rest[a.index] = this.restNow(a.index);
-            a.center = this.rest[a.index];
-            this.succeed(...this.afterRelease());
-        }
+    /** No arm switch: arm with Space / the on-screen button (every arm stage). */
+    skipArm(t?: number): Verdict {
+        this.cmdAt(t);
+        if (this.id !== 'arm' || this.stage === null) return DISABLED;
+        this.armMap = { kind: 'key' };
+        this.results.arm = { kind: 'arm', source: { kind: 'key' } };
+        return this.accept('arm', 'done');
     }
 
-    pick(ch: number): void {
-        if (this.ok || this.phase !== 'push' || !isFn(this.id)) return;
-        if (!this.freeChannels().includes(ch)) return;
+    /**
+     * fn/active: listen to this free channel only; the push is still needed. Arm (ready, active,
+     * done: Liftoff's clickable dots): listen to this channel only, from now; the flip ON and back
+     * OFF is still needed, with a smaller hop (ARM_PICK_JUMP) and no switch-shape test.
+     */
+    pick(ch: number, t?: number): Verdict {
+        this.cmdAt(t);
+        if (this.id === 'arm' && this.stage !== null) {
+            if (!this.freeChannels().includes(ch)) return DISABLED;
+            if (this.stage === 'done') { const s = this.readySnap.arm; if (s) this.restore(s); delete this.results.arm; }
+            this.cmd();
+            this.go('arm', 'active');
+            this.restrict = ch;
+            this.state.picked = ch;
+            this.armReset();
+            this.timers();
+            return OK;
+        }
+        if (!isFn(this.id) || this.stage !== 'active') return DISABLED;
+        if (!this.freeChannels().includes(ch)) return DISABLED;
         this.restrict = ch;
+        this.state.picked = ch;
         this.free = [ch];
-        this.armedP.fill(0);
-        this.holdStart = NaN;
-        this.holdCh = -1;
-        this.maxLead = 0;
-        this.stuckT0 = this.now;
-        this.state.hint = null;
+        this.resetPush();
+        this.stageT0 = this.now;
+        this.cmd();
+        this.timers();
+        return OK;
+    }
+
+    /** centre/active after MEASURE_ANYWAY_AFTER refusals for a moving stick: take it as it is. */
+    measureAnyway(t?: number): Verdict {
+        this.cmdAt(t);
+        if (this.id !== 'centre' || this.stage !== 'active' || !this.canMeasureAnyway()) return DISABLED;
+        return this.measure(true);
+    }
+
+    /** Reverse: fn/done and arm/done (that line), check (any line). */
+    reverse(what: Fn | 'arm'): void {
+        const id = this.id;
+        const onCheck = id === 'check';
+        if (!onCheck && !(this.stage === 'done' && id === what)) return;
+        if (what === 'arm') {
+            if (!isLevel(this.armMap)) return;
+            flipArmMap(this.armMap);
+            if (onCheck && this.state.profile) flipArmMap(this.state.profile.arm);
+        } else {
+            const a = this.assigned[what];
+            if (!a) return;
+            a.invert = !a.invert;
+            if (what === 'throttle') a.center = a.invert ? a.max : a.min;
+            const r = this.results[what];
+            if (r && r.kind === 'fn') this.results[what] = { ...r, invert: a.invert };
+            const p = this.state.profile;
+            if (onCheck && p && p.axes[what]) {
+                const pa = p.axes[what];
+                pa.invert = a.invert;
+                if (what === 'throttle') pa.center = pa.invert ? pa.max : pa.min;
+            }
+        }
+        this.cmd();
+        this.fnFromAssigned();
+        if (this.stage === 'done') this.state.result = this.results[id] ?? null;
+        if (this.n > 0) this.live();
         this.timers();
     }
 
-    skipArm(): void {
-        if (!this.state.can.skipArm) return;
-        this.state.hint = null;
-        this.arm.map = { kind: 'key' };
-        this.state.armSource = { kind: 'key' };
-        this.enter('check', null, true);
-    }
-
-    reverse(what: Fn | 'arm'): void {
-        const p = this.state.profile;
-        if (this.id !== 'check' || !p) return;
-        if (what === 'arm') {
-            const a = p.arm;
-            if (!a || a.kind === 'key') return;
-            if (a.kind === 'axis') {
-                // the threshold sits 3/4 of the way to ON (a 3-position switch reads OFF in its
-                // middle); flipping onAbove alone would move it to 1/4 and arm in the middle, so
-                // mirror it between the two levels. Without levels (older profile) it is the
-                // midpoint, which mirrors onto itself.
-                if (a.off !== undefined && a.on !== undefined) {
-                    a.threshold = a.off + a.on - a.threshold;
-                    const x = a.off; a.off = a.on; a.on = x;
-                }
-                a.onAbove = !a.onAbove;
-            } else if (a.inverted) delete a.inverted;
-            else a.inverted = true;
-            return;
-        }
-        const a = p.axes[what];
-        a.invert = !a.invert;
-        if (what === 'throttle') a.center = a.invert ? a.max : a.min;
-        const own = this.assigned[what];
-        if (own) own.invert = a.invert;
-    }
-
-    /** Push: the channels that may still become this function (for the pick list). */
+    /** fn ready/active: the channels that may still become this function; arm stages: every channel not set to a stick function (the pick lists). */
     freeChannels(): number[] {
-        if (this.phase !== 'push') return [];
-        const used = this.usedChannels();
+        if (this.id === 'arm' && this.stage !== null) {
+            const used = this.usedChannels(null);
+            const out: number[] = [];
+            for (let i = 0; i < this.n; i++) if (!used.has(i)) out.push(i);
+            return out;
+        }
+        if (!isFn(this.id) || this.stage === 'done' || this.stage === null) return [];
+        const used = this.usedChannels(this.id);
         return this.stickSet.filter((c) => !used.has(c));
     }
 
-    // ------------------------------------------------------------------ flow
+    // ------------------------------------------------------------------ command plumbing
+
+    private cmdAt(t: number | undefined): void {
+        if (t !== undefined && t > this.now) this.now = t;
+        this.advance(this.now);
+    }
+
+    private cmd(): void {
+        this.state.cmds++;
+    }
+
+    private accept(id: StepId, stage: Stage | null): Verdict {
+        this.cmd();
+        this.go(id, stage);
+        return OK;
+    }
+
+    private refuse(key: string, params: Record<string, string | number>): Verdict {
+        const h: Hint = { key, params };
+        this.refHint = h;
+        this.state.hint = h;
+        this.state.error = key;
+        this.hintAt = this.now;
+        this.timers();
+        return { ok: false, hint: h };
+    }
+
+    private forward(): void {
+        if (this.redoing) {
+            this.redoing = false;
+            this.redoSnap = null;
+            this.go('check', null);
+            return;
+        }
+        const nx = STEP_IDS[STEP_IDS.indexOf(this.id) + 1];
+        if (nx !== 'check') this.readySnap[nx] = this.snap();
+        this.go(nx, nx === 'check' ? null : 'ready');
+    }
+
+    private snap(): Snap {
+        return {
+            assigned: copyAssigned(this.assigned), pushEnd: { ...this.pushEnd }, rest: Array.from(this.rest),
+            arm: copyArm(this.armMap), stickSet: this.stickSet.slice(), results: { ...this.results }
+        };
+    }
+
+    private restore(s: Snap): void {
+        this.assigned = copyAssigned(s.assigned);
+        this.pushEnd = { ...s.pushEnd };
+        for (let i = 0; i < this.n; i++) this.rest[i] = s.rest[i] ?? 0;
+        this.armMap = copyArm(s.arm);
+        this.stickSet = s.stickSet.slice();
+        this.results = { ...s.results };
+    }
+
+    // ------------------------------------------------------------------ measuring
 
     private init(n: number, f: RawFrame, t: number): void {
         this.n = n;
         const F = () => new Float64Array(n);
-        this.v = F(); this.mins = F(); this.maxs = F(); this.rest = F(); this.cur = F();
-        this.wMin = F(); this.wMax = F(); this.wSum = F(); this.wN = F(); this.stillSince = F(); this.firstVal = F();
+        this.v = F(); this.mins = F(); this.maxs = F(); this.rest = F();
+        this.wMin = F(); this.wMax = F(); this.wSum = F(); this.wN = F(); this.stillSince = F();
+        this.sm = F(); this.sMin = F(); this.sMax = F(); this.stillSince2 = F();
         this.hist = new Uint32Array(n * NB); this.histN = new Uint32Array(n);
         this.kinds = new Array<ChannelKind>(n).fill('idle');
         this.fnOfCh = new Array<Fn | 'arm' | null>(n).fill(null);
-        this.armedP = new Uint8Array(n); this.stillP = new Uint8Array(n); this.startHigh = new Uint8Array(n); this.belowP = new Uint8Array(n);
-        this.takenSince = F().fill(NaN);
-        this.lvl = F().fill(NaN); this.prevLvl = F().fill(NaN); this.lvlSince = F(); this.maxExc = F(); this.farV = F().fill(NaN); this.farT = F().fill(NaN); this.lvlChanged = new Uint8Array(n);
-        this.seenLo = F().fill(NaN); this.seenHi = F().fill(NaN); this.loose = new Uint8Array(n);
+        this.hiRef = F(); this.loRef = F(); this.hiHits = new Uint8Array(n); this.loHits = new Uint8Array(n);
+        this.hiAway = new Uint8Array(n); this.loAway = new Uint8Array(n);
+        this.base = F(); this.baseEnd = new Int8Array(n); this.belowP = new Uint8Array(n); this.takenSince = F().fill(NaN);
+        this.cand = new Uint8Array(n); this.L0 = F().fill(NaN); this.lvl = F().fill(NaN); this.armSt = new Uint8Array(n); this.onV = F().fill(NaN);
+        this.stepMax = F(); this.swept = new Uint8Array(n); this.maxExc = F(); this.awayT = F().fill(NaN);
+        this.movedRefusals = new Uint8Array(n);
         for (let i = 0; i < n; i++) {
             const x = f.axes[i];
-            this.v[i] = x; this.mins[i] = x; this.maxs[i] = x; this.cur[i] = x; this.firstVal[i] = x;
+            this.v[i] = x; this.mins[i] = x; this.maxs[i] = x; this.rest[i] = x;
             this.wMin[i] = x; this.wMax[i] = x; this.wSum[i] = 0; this.wN[i] = 0; this.stillSince[i] = t;
+            this.sm[i] = x; this.sMin[i] = x; this.sMax[i] = x; this.stillSince2[i] = t;
         }
+        this.smT = t;
         this.lastButtons = f.buttons;
         for (let b = 0; b < NBITS; b++) { this.bitVal[b] = (f.buttons >> b) & 1; this.bitSince[b] = t; }
         const ch: ChannelLive[] = [];
         for (let i = 0; i < n; i++) ch.push({ v: f.axes[i], lo: f.axes[i], hi: f.axes[i], cover: 0, kind: 'idle', fn: null, still: false });
         this.state.channels = ch;
-        if (this.resumed) this.fnFromAssigned();
+        const p = this.resumed;
+        if (p) {
+            // the saved ranges and centres, so Set again measures a push as on the first run
+            this.stickSet = [];
+            for (const fn of FNS) {
+                const a = p.axes[fn];
+                if (!a || a.index >= n) continue;
+                const c = a.index;
+                this.mins[c] = Math.min(this.mins[c], a.min);
+                this.maxs[c] = Math.max(this.maxs[c], a.max);
+                this.rest[c] = a.center;
+                this.kinds[c] = 'stick';
+                this.stickSet.push(c);
+            }
+            this.stickSet.sort((a, b) => a - b);
+            this.fnFromAssigned();
+        }
     }
 
-    private track(f: RawFrame, t: number, dt: number): void {
-        if (dt !== this.emaDt) { this.emaDt = dt; this.emaK = 1 - Math.exp(-dt / T.EMA_TAU_MS); }
-        const k = this.emaK;
-        const stir = this.id === 'stir' && !this.ok;
+    private track(f: RawFrame, t: number): void {
+        const dt = Number.isNaN(this.smT) ? 0 : t - this.smT;
+        if (dt > 0 || Number.isNaN(this.smT)) this.smT = t;
+        const k = dt > 0 ? 1 - Math.exp(-dt / T.STILL_TAU_MS) : 0;
+        const stir = this.id === 'stir' && this.stage === 'active';
+        const arm = this.id === 'arm' && this.stage === 'active';
         for (let i = 0; i < this.n; i++) {
             const x = f.axes[i];
+            if (arm) { const d = x > this.v[i] ? x - this.v[i] : this.v[i] - x; if (d > this.stepMax[i]) this.stepMax[i] = d; }
             this.v[i] = x;
             if (x < this.mins[i]) this.mins[i] = x;
             if (x > this.maxs[i]) this.maxs[i] = x;
@@ -531,206 +712,217 @@ export class CalibrationWizard {
             const hi = x > this.wMax[i] ? x : this.wMax[i];
             if (hi - lo > T.STILL_P2P) { this.stillSince[i] = t; this.wMin[i] = x; this.wMax[i] = x; this.wSum[i] = x; this.wN[i] = 1; }
             else { this.wMin[i] = lo; this.wMax[i] = hi; this.wSum[i] += x; this.wN[i]++; }
-            this.cur[i] += (x - this.cur[i]) * k;
+            this.sm[i] += (x - this.sm[i]) * k;
+            this.smWindow(i, t);
             if (stir) {
                 let b = Math.floor((x + 1) * (NB / 2));
                 b = b < 0 ? 0 : b > NB - 1 ? NB - 1 : b;
                 this.hist[i * NB + b]++;
                 this.histN[i]++;
-            }
-        }
-        if (this.id === 'arm') {
-            // every still level on both arm screens and their check-mark pauses: the far end of a
-            // 3-position switch is often reached only after its middle was already taken as ON
-            for (let i = 0; i < this.n; i++) {
-                if (t - this.stillSince[i] < T.ARM_LEVEL_MS) continue;
-                const m = this.stillMean(i);
-                if (!(m >= this.seenLo[i])) this.seenLo[i] = m;
-                if (!(m <= this.seenHi[i])) this.seenHi[i] = m;
+                this.plateauTrack(i, x);
             }
         }
         if (f.buttons !== this.lastButtons) {
             const changed = f.buttons ^ this.lastButtons;
             this.lastButtons = f.buttons;
-            const taps = this.id === 'arm' && this.phase === 'on' && !this.ok;
+            const armB = arm && this.restrict === null; // a channel picked by hand: buttons are not listened to
             for (let b = 0; b < NBITS; b++) {
                 if (!(changed & (1 << b))) continue;
                 const val = (f.buttons >> b) & 1;
                 this.bitVal[b] = val;
                 this.bitSince[b] = t;
-                if (!taps) continue;
-                this.bitChanged[b] = 1;
-                if (val === 1) { this.pressT[b] = t; continue; }
-                // a release: a short press is a tap; two taps close together = momentary button
-                if (!Number.isNaN(this.pressT[b]) && t - this.pressT[b] < T.ARM_TAP_MS) {
-                    if (!Number.isNaN(this.tapT[b]) && t - this.tapT[b] <= T.ARM_TAPS_WITHIN_MS) { if (this.tapBit < 0) this.tapBit = b; }
-                    else this.tapT[b] = this.pressT[b];
-                } else this.tapT[b] = NaN;
+                if (!armB) continue;
+                if (val !== this.bitBase[b]) { this.pressT[b] = t; this.relT[b] = NaN; continue; }
+                // back at its base (OFF). From 0: a press shorter than a level is a tap (momentary
+                // button, toggle), a longer one a level. From 1, a short release is a latching
+                // button that was ON at Start and got cycled
+                const p = this.pressT[b];
                 this.pressT[b] = NaN;
+                if (Number.isNaN(p)) continue;
+                const short = t - p < T.ARM_LEVEL_MS;
+                if (short && this.bitBase[b] === 1) { this.wasOnCh = 100 + b; continue; }
+                this.bKind[b] = short ? 1 : 2; // the latest press decides
+                this.relT[b] = t;
             }
         }
     }
 
-    private stillMs(i: number): number { return this.now - this.stillSince[i]; }
-    private stillInPhase(i: number): number { return this.now - Math.max(this.stillSince[i], this.phaseT0); }
-    private stillMean(i: number): number { return this.wN[i] > 0 ? this.wSum[i] / this.wN[i] : this.v[i]; }
-    /** "Use the current position": the still mean if still, else the smoothed value (cur stops at the last frame of a sparse pad). */
-    private restNow(i: number): number { return this.stillMs(i) >= LIVE_STILL_MS ? this.stillMean(i) : this.cur[i]; }
-    private half(i: number): number { const h = (this.maxs[i] - this.mins[i]) / 2; return h > 0.05 ? h : 0.05; }
-    private dm(i: number): number {
-        // a channel let through without a full stir: the middle of the little range seen so far is
-        // not its centre (its rest would read as an end), so measure from where it rested
-        if (this.loose[i] && this.id !== 'stir' && this.id !== 'centre') {
-            const r = this.rest[i];
-            return (this.v[i] - r) / Math.max(this.maxs[i] - r, r - this.mins[i], 0.05);
-        }
-        return (this.v[i] - (this.maxs[i] + this.mins[i]) / 2) / this.half(i);
+    /** The smoothed still window: restarts when the smoothed value spread over STILL_TOL. */
+    private smWindow(i: number, t: number): void {
+        const s = this.sm[i];
+        const lo = s < this.sMin[i] ? s : this.sMin[i];
+        const hi = s > this.sMax[i] ? s : this.sMax[i];
+        if (hi - lo > T.STILL_TOL) { this.stillSince2[i] = t; this.sMin[i] = s; this.sMax[i] = s; }
+        else { this.sMin[i] = lo; this.sMax[i] = hi; }
     }
-    private dr(i: number): number { return (this.v[i] - this.rest[i]) / this.half(i); }
 
-    private usedChannels(): Set<number> {
+    /** Time moves on without a frame: the last values hold (sample and hold). */
+    private advance(t: number): void {
+        if (this.n === 0 || Number.isNaN(this.smT) || t <= this.smT) return;
+        const k = 1 - Math.exp(-(t - this.smT) / T.STILL_TAU_MS);
+        this.smT = t;
+        for (let i = 0; i < this.n; i++) {
+            this.sm[i] += (this.v[i] - this.sm[i]) * k;
+            this.smWindow(i, t);
+        }
+    }
+
+    private plateauTrack(i: number, x: number): void {
+        // a stir that keeps coming back to the same extreme after leaving it: a real end (a radio
+        // whose output stops below 80 %), counted in movements, never in time
+        if (x <= this.maxs[i] - T.PLATEAU_AWAY) this.hiAway[i] = 1;
+        else if (this.hiAway[i] && x >= this.maxs[i] - T.PLATEAU_TOL) {
+            this.hiAway[i] = 0;
+            if (this.hiHits[i] === 0 || this.maxs[i] - this.hiRef[i] >= T.PLATEAU_TOL) { this.hiRef[i] = this.maxs[i]; this.hiHits[i] = 1; }
+            else if (this.hiHits[i] < 255) this.hiHits[i]++;
+        }
+        if (x >= this.mins[i] + T.PLATEAU_AWAY) this.loAway[i] = 1;
+        else if (this.loAway[i] && x <= this.mins[i] + T.PLATEAU_TOL) {
+            this.loAway[i] = 0;
+            if (this.loHits[i] === 0 || this.loRef[i] - this.mins[i] >= T.PLATEAU_TOL) { this.loRef[i] = this.mins[i]; this.loHits[i] = 1; }
+            else if (this.loHits[i] < 255) this.loHits[i]++;
+        }
+    }
+
+    private isStill(i: number): boolean { return this.now - this.stillSince2[i] >= T.STILL_MS; }
+    private stillMs(i: number): number { return this.now - this.stillSince[i]; } // raw window (arm)
+    private stillMean(i: number): number { return this.wN[i] > 0 ? this.wSum[i] / this.wN[i] : this.v[i]; }
+    private mid(i: number): number { return (this.maxs[i] + this.mins[i]) / 2; }
+    private half(i: number): number { const h = (this.maxs[i] - this.mins[i]) / 2; return h > 0.05 ? h : 0.05; }
+    /** Signed offset of the smoothed value from the middle of the range, in halves. */
+    private offMid(i: number): number { return (this.sm[i] - this.mid(i)) / this.half(i); }
+    private centred(i: number): boolean { return Math.abs(this.offMid(i)) <= T.CENTRE_TOL; }
+    private atEnd(i: number): boolean { return Math.abs(this.offMid(i)) >= 1 - T.END_TOL; }
+    /**
+     * Stir coverage: how far the channel got towards BOTH ends from the middle of the HID range
+     * (the shorter side). Half the span called a stir to -1..+0.61 "80 % covered": its middle then
+     * sat at -0.2 and a stick let go at 0 read as held on every later step.
+     */
+    private cover(i: number): number {
+        const lo = -this.mins[i], hi = this.maxs[i];
+        const c = lo < hi ? lo : hi;
+        return c > 0 ? c : 0;
+    }
+    private pctOff(i: number): number { return Math.round(Math.abs(this.offMid(i)) * 100); }
+
+    private usedChannels(except: Fn | null): Set<number> {
         const s = new Set<number>();
-        for (const fn of FNS) { const a = this.assigned[fn]; if (a) s.add(a.index); }
+        for (const fn of FNS) { const a = this.assigned[fn]; if (a && fn !== except) s.add(a.index); }
         return s;
     }
 
-    private enter(id: StepId, phase: Phase, push: boolean): void {
+    /** The newest still-window start among the channels: the one that moved last. */
+    private latestMover(list: number[]): number {
+        let ch = -1, since = -Infinity;
+        for (const i of list) if (!this.isStill(i) && this.stillSince2[i] > since) { since = this.stillSince2[i]; ch = i; }
+        return ch;
+    }
+
+    private frameNow(): RawFrame {
+        const f = this.fr;
+        f.t = this.now;
+        f.axes.fill(0);
+        for (let i = 0; i < this.n && i < f.axes.length; i++) f.axes[i] = this.v[i];
+        f.buttons = this.lastButtons;
+        return f;
+    }
+
+    // ------------------------------------------------------------------ stages
+
+    private go(id: StepId, stage: Stage | null): void {
         const st = this.state;
         this.id = id;
-        this.phase = phase;
-        this.phaseT0 = this.now;
-        this.stuckT0 = this.now;
-        this.phaseFirst = true;
-        this.ok = false;
+        this.stage = stage;
+        this.stageT0 = this.now;
+        this.refHint = null;
         this.restrict = null;
-        this.holdStart = NaN;
-        this.holdCh = -1;
-        this.maxLead = 0;
-        this.twoT = -Infinity;
-        this.takenCh = -1;
-        this.armedP.fill(0);
-        this.stillP.fill(0);
-        this.startHigh.fill(0);
-        this.belowP.fill(0);
+        this.resetPush();
         this.takenSince.fill(NaN);
-        if (isFn(id)) this.fnIdx = FNS.indexOf(id);
-        if (id === 'stir') this.resetStir();
-        if (id === 'arm' && phase === 'on') this.resetArm();
-        if (phase === 'push') { const used = this.usedChannels(); this.free = this.stickSet.filter((c) => !used.has(c)); }
-        if (push && id !== 'connect') this.trail.push({ id, phase, snap: this.snap() });
-        // legacy + v2 fields
+        this.belowP.fill(0);
+        // the arm watch of an earlier try must not speak on this screen (armReset starts a new one)
+        this.cand.fill(0);
+        this.wasOnCh = -1;
+        this.sweptCh = -1;
+        this.backSince = NaN;
+        if (isFn(id) && stage === 'active') { const used = this.usedChannels(id); this.free = this.stickSet.filter((c) => !used.has(c)); }
         st.id = id;
-        st.phase = phase;
+        st.stage = stage;
         st.step = id === 'connect' || id === 'stir' ? 1 : id === 'centre' ? 2 : isFn(id) ? 3 : id === 'arm' ? 5 : 6;
         st.prompt = isFn(id) ? id : null;
-        st.message = SAY[phase === 'release' && id !== 'throttle' ? 'release' : phase ? `${id}/${phase}` : id];
-        st.target = this.targetOf(id, phase);
-        st.hold = 0;
-        st.progress = 0;
-        st.ok = false;
+        st.message = stage ? `wizard.say.${id}.${stage}` : `wizard.say.${id}`;
+        const [target, preview] = this.targetOf(id, stage);
+        st.target = target;
+        st.preview = preview;
+        st.gauge = null;
+        st.armFlip = null;
+        st.picked = null;
+        st.hold = st.progress = 0;
         st.stuckMs = 0;
         st.hint = null;
         st.error = null;
-        st.leader = null;
         st.checks = null;
-        this.endCh = -1;
+        st.redoing = this.redoing;
+        st.result = stage === 'done' ? this.results[id] ?? null : null;
         this.fnFromAssigned();
         if (id === 'check') {
-            this.fixArmPolarity();
-            st.profile = this.buildProfile();
-            st.armSource = armSourceOf(this.arm.map);
+            st.profile = this.keepProfile ?? this.buildProfile();
+            this.keepProfile = null;
             st.checks = { throttleLow: false, armOn: null, centred: false };
-        } else if (!this.resumed) st.profile = null;
+        } else st.profile = null;
+        st.armSource = armSourceOf(this.armMap);
+        if (this.n > 0) this.live();
         this.timers();
     }
 
-    private targetOf(id: StepId, phase: Phase): WizardState['target'] {
-        if (id === 'stir') return { what: 'sticks', dir: 'stir' };
-        if (id === 'centre') return { what: 'sticks', dir: 'centre' };
+    private targetOf(id: StepId, stage: Stage | null): [WizardState['target'], boolean] {
+        if (id === 'stir') return stage === 'done' ? [{ what: 'sticks', dir: 'centre' }, false] : [{ what: 'sticks', dir: 'stir' }, stage === 'ready'];
+        if (id === 'centre') return [{ what: 'sticks', dir: 'centre' }, false];
         if (isFn(id)) {
-            if (phase === 'push') return { what: id, dir: id === 'throttle' || id === 'pitch' ? 'up' : 'right' };
-            return { what: id, dir: id === 'throttle' ? 'down' : 'centre' };
+            const push: Dir = id === 'throttle' || id === 'pitch' ? 'up' : 'right';
+            if (stage === 'ready') return id === 'throttle' ? [{ what: id, dir: 'down' }, false] : [{ what: id, dir: push }, true];
+            if (stage === 'active') return [{ what: id, dir: push }, false];
+            return [{ what: id, dir: id === 'throttle' && this.pushEnd.throttle ? 'down' : 'centre' }, false];
         }
-        if (id === 'arm') return { what: 'arm', dir: 'flip' };
-        return null;
-    }
-
-    private succeed(id: StepId, phase: Phase): void {
-        this.ok = true;
-        this.okUntil = this.now + T.OK_MS;
-        this.pendId = id;
-        this.pendPhase = phase;
-        const st = this.state;
-        st.ok = true;
-        st.hold = 1;
-        st.progress = 1;
-        st.hint = null;
-        st.error = null;
-        this.fnFromAssigned();
-        this.timers();
-    }
-
-    private enterPending(): void {
-        this.enter(this.pendId, this.pendPhase, true);
-    }
-
-    private afterRelease(): [StepId, Phase] {
-        return this.fnIdx + 1 < FNS.length ? [FNS[this.fnIdx + 1], 'push'] : ['arm', 'on'];
-    }
-
-    private snap(): Snap {
-        return { assigned: copyAssigned(this.assigned), rest: Array.from(this.rest), arm: { ...this.arm, map: copyArm(this.arm.map) } };
-    }
-
-    private restore(s: Snap): void {
-        this.assigned = copyAssigned(s.assigned);
-        for (let i = 0; i < this.n; i++) this.rest[i] = s.rest[i] ?? 0;
-        this.arm = { ...s.arm, map: copyArm(s.arm.map) };
-        this.state.armSource = this.arm.map ? armSourceOf(this.arm.map) : this.arm.armCh >= 0 ? { kind: 'ch', n: this.arm.armCh + 1 } : this.arm.armBit >= 0 ? { kind: 'button', n: this.arm.armBit + 1 } : null;
+        if (id === 'arm') return [{ what: 'arm', dir: stage === 'active' ? 'on' : 'off' }, false];
+        return [null, false];
     }
 
     private fnFromAssigned(): void {
         const st = this.state;
         for (let i = 0; i < this.fnOfCh.length; i++) this.fnOfCh[i] = null;
         st.assigned = {};
+        st.inverted = {};
         for (const fn of FNS) {
             const a = this.assigned[fn];
             if (!a) continue;
             st.assigned[fn] = a.index;
+            st.inverted[fn] = a.invert;
             if (a.index < this.fnOfCh.length) this.fnOfCh[a.index] = fn;
         }
-        const m = this.arm.map;
-        const ac = m && m.kind === 'axis' ? m.index : this.arm.armCh;
-        if (ac >= 0 && ac < this.fnOfCh.length) this.fnOfCh[ac] = 'arm';
+        const m = this.armMap;
+        if (m && m.kind === 'axis' && m.index < this.fnOfCh.length) this.fnOfCh[m.index] = 'arm';
     }
-
-    // ------------------------------------------------------------------ rules per screen
 
     private evaluate(t: number): void {
-        switch (this.id) {
-            case 'stir': this.evalStir(t); break;
-            case 'centre': this.evalCentre(); break;
-            case 'throttle': case 'yaw': case 'pitch': case 'roll':
-                if (this.phase === 'push') this.evalPush(t); else this.evalRelease();
-                break;
-            case 'arm':
-                if (this.phase === 'on') this.evalArmOn(t); else this.evalArmOff();
-                break;
-            default: break;
-        }
-        this.phaseFirst = false;
+        if (this.stage === 'active') {
+            if (this.id === 'stir') this.evalStir(t);
+            else if (isFn(this.id)) this.evalPush(t);
+            else if (this.id === 'arm') this.evalArm(t);
+        } else if (this.id === 'arm' && this.stage === 'done') this.armFarEnd();
     }
+
+    // ---------------------------------------------------------------- stir (rule 4)
 
     private resetStir(): void {
         for (let i = 0; i < this.n; i++) {
             const x = this.v[i];
-            this.mins[i] = x; this.maxs[i] = x; this.firstVal[i] = x; this.kinds[i] = 'idle';
+            this.mins[i] = x; this.maxs[i] = x; this.kinds[i] = 'idle';
+            this.hiHits[i] = 0; this.loHits[i] = 0; this.hiAway[i] = 0; this.loAway[i] = 0;
         }
         this.hist.fill(0);
         this.histN.fill(0);
-        this.loose.fill(0);
-        this.firstMoveT = NaN;
         this.lastClassifyT = -Infinity;
+        this.stirOk = false;
         this.stickSet = [];
         this.state.sticksDone = 0;
     }
@@ -738,12 +930,9 @@ export class CalibrationWizard {
     /**
      * Stick or switch from the stir histogram: a stirred stick sweeps many bins, a switch sits in 2-3.
      * Two signs of a sweep: time spent outside the 3 fullest bins, or many bins crossed at least
-     * twice. The second catches someone who stirs corner to corner and pauses in each corner:
-     * nearly all their time is at the ends, yet the stick passes through every bin on the way,
-     * while a switch jumps across in a frame or two (time share alone called all four sticks switches).
+     * twice (someone who stirs corner to corner and pauses in each corner still passes every bin).
      */
     private classify(): void {
-        let done = 0;
         for (let i = 0; i < this.n; i++) {
             const span = this.maxs[i] - this.mins[i];
             const cnt = this.histN[i];
@@ -756,358 +945,398 @@ export class CalibrationWizard {
             const other = cnt > 0 ? 1 - (a + b + c) / cnt : 0;
             const sweeps = other >= T.OTHER_FRAC || crossed >= T.STIR_SWEEP_BINS;
             this.kinds[i] = span >= T.STICK_SPAN && sweeps ? 'stick' : span >= T.SWITCH_SPAN && !sweeps ? 'switch' : 'idle';
-            if (this.kinds[i] === 'stick' && span / 2 >= T.STIR_COVER) done++;
         }
-        this.state.sticksDone = done;
+        let full = 0;
+        for (let i = 0; i < this.n; i++) if (this.kinds[i] === 'stick' && this.cover(i) >= T.STIR_COVER) full++;
+        this.state.sticksDone = full;
+        const top = this.widestSticks();
+        this.stirOk = top.length >= 4 && top.slice(0, 4).every((i) => this.cover(i) >= T.STIR_COVER || this.plateau(i));
+    }
+
+    private widestSticks(): number[] {
+        const idx: number[] = [];
+        for (let i = 0; i < this.n; i++) if (this.kinds[i] === 'stick') idx.push(i);
+        return idx.sort((a, b) => (this.maxs[b] - this.mins[b]) - (this.maxs[a] - this.mins[a]));
+    }
+
+    private plateau(i: number): boolean {
+        return (this.maxs[i] - this.mins[i]) / 2 >= T.PLATEAU_MIN && this.hiHits[i] >= T.PLATEAU_HITS && this.loHits[i] >= T.PLATEAU_HITS
+            && this.maxs[i] - this.hiRef[i] < T.PLATEAU_TOL && this.loRef[i] - this.mins[i] < T.PLATEAU_TOL;
     }
 
     private evalStir(t: number): void {
-        if (Number.isNaN(this.firstMoveT)) {
-            for (let i = 0; i < this.n; i++) if (Math.abs(this.v[i] - this.firstVal[i]) >= T.MOVING_SPAN) { this.firstMoveT = t; break; }
-        }
         if (t - this.lastClassifyT < T.CLASSIFY_EVERY_MS) return;
         this.lastClassifyT = t;
         this.classify();
-        this.state.hold = this.state.progress = Math.min(1, this.state.sticksDone / 4);
-        if (this.state.sticksDone >= 4 && !Number.isNaN(this.firstMoveT) && t - this.firstMoveT >= T.STIR_MIN_MS) {
-            this.stickSet = [];
-            for (let i = 0; i < this.n; i++) if (this.kinds[i] === 'stick') this.stickSet.push(i);
-            this.succeed('centre', null);
-        }
     }
 
-    private evalCentre(): void {
-        let least = Infinity;
-        for (const c of this.stickSet) least = Math.min(least, this.stillInPhase(c));
-        // still is not enough: a stick still at its END has not been let go (a slow reader still
-        // pausing in a corner), and its "rest" would be that end. Only the throttle rests at an
-        // end, so of the four sticks at most one may sit there (one more per extra stick-like
-        // channel, e.g. a pot or a gamepad trigger swept while stirring).
-        let ends = 0, endCh = -1, endStill = Infinity, stirred = 0;
-        for (const c of this.stickSet) {
-            if (this.loose[c]) continue; // an unstirred channel's range says nothing about its ends
-            stirred++;
-            if (Math.abs(this.dm(c)) < T.PUSH) continue;
-            ends++;
-            const s = this.stillInPhase(c);
-            if (s < endStill) { endStill = s; endCh = c; } // named in the hint: the latest to get there (nothing tells the throttle apart yet)
+    private stirDone(): Verdict {
+        this.classify();
+        this.lastClassifyT = this.now;
+        if (!this.stirOk) return { ok: false, hint: this.stirHintOf() ?? { key: 'wizard.hint.stir.few', params: { n: 0 } } };
+        const sticks: number[] = [], switches: number[] = [];
+        for (let i = 0; i < this.n; i++) { if (this.kinds[i] === 'stick') sticks.push(i); else if (this.kinds[i] === 'switch') switches.push(i); }
+        const short = this.widestSticks().slice(0, 4).filter((i) => this.cover(i) < T.STIR_COVER).sort((a, b) => a - b);
+        this.stickSet = sticks;
+        this.results.stir = { kind: 'stir', sticks, switches, short };
+        return this.accept('stir', 'done');
+    }
+
+    // ---------------------------------------------------------------- centre (rule 3)
+
+    private measure(anyway: boolean): Verdict {
+        const S = this.stickSet;
+        if (!anyway) {
+            const mover = this.latestMover(S);
+            if (mover >= 0) {
+                if (this.movedRefusals[mover] < 255) this.movedRefusals[mover]++;
+                return this.refuse('wizard.hint.centre.moving', { ch: mover + 1 });
+            }
+            const allow = S.length - 3; // the throttle, plus one per extra stick-like channel
+            const off = S.filter((c) => !this.centred(c));
+            const ends = off.filter((c) => this.atEnd(c));
+            if (off.length > allow && ends.length >= 2) return this.refuse('wizard.hint.centre.ends', { a: ends[0] + 1, b: ends[1] + 1 });
+            if (S.length === 4) {
+                const parked = off.find((c) => !this.atEnd(c));
+                if (parked !== undefined) return this.refuse('wizard.hint.centre.parked', { ch: parked + 1, pct: this.pctOff(parked) });
+            }
+            if (off.length > allow) {
+                const worst = off.reduce((a, b) => (Math.abs(this.offMid(b)) > Math.abs(this.offMid(a)) ? b : a));
+                return this.refuse('wizard.hint.centre.held', { ch: worst + 1, pct: this.pctOff(worst) });
+            }
         }
-        this.endCh = ends > Math.max(1, stirred - 3) ? endCh : -1;
-        if (this.endCh >= 0) { this.state.hold = this.state.progress = 0; return; }
-        // the screen stays at least CENTRE_MIN_MS: someone who was already still has not read it
-        // yet, and their late "throttle down" must happen here, not be taken as "throttle up" next
-        const shown = this.now - this.phaseT0;
-        this.state.hold = this.state.progress = Math.max(0, Math.min(1, least / T.CENTRE_HOLD_MS, shown / T.CENTRE_MIN_MS));
-        if (least < T.CENTRE_HOLD_MS || shown < T.CENTRE_MIN_MS) return;
-        for (const c of this.stickSet) this.rest[c] = this.stillMean(c);
-        this.succeed(FNS[0], 'push');
+        const centres: { ch: number; pct: number }[] = [];
+        let end = -1;
+        for (const c of S) {
+            this.rest[c] = this.sm[c];
+            centres.push({ ch: c, pct: Math.round(this.offMid(c) * 1000) / 10 });
+            if (end < 0 && this.atEnd(c)) end = c;
+        }
+        this.results.centre = { kind: 'centre', centres, end };
+        return this.accept('centre', 'done');
+    }
+
+    private canMeasureAnyway(): boolean {
+        for (let i = 0; i < this.n; i++) if (this.movedRefusals[i] >= T.MEASURE_ANYWAY_AFTER) return true;
+        return false;
+    }
+
+    // ---------------------------------------------------------------- the stick steps (rule 2)
+
+    private beginPush(fn: Fn): Verdict {
+        const used = this.usedChannels(fn);
+        const free = this.stickSet.filter((c) => !used.has(c));
+        let need = 0;
+        for (const f of ['yaw', 'pitch', 'roll'] as Fn[]) if (!this.assigned[f]) need++;
+        const extra = free.length - need - (fn === 'throttle' ? 1 : 0);
+        const mover = this.latestMover(free);
+        if (mover >= 0) return this.refuse('wizard.hint.begin.moving', { ch: mover + 1 });
+        const off = free.filter((c) => !this.centred(c));
+        if (off.length > free.length - need) {
+            const worst = off.reduce((a, b) => (Math.abs(this.offMid(b)) > Math.abs(this.offMid(a)) ? b : a));
+            return this.refuse('wizard.hint.begin.held', { ch: worst + 1, pct: this.pctOff(worst) });
+        }
+        // a throttle left mid (or a thumb): its push could go either way, so it must start from an
+        // end or from a spring centre (v2 took a 20 % nudge of a throttle parked mid as "up")
+        if (fn === 'throttle' && extra <= 0 && off.length === 1 && !this.atEnd(off[0])) {
+            return this.refuse('wizard.hint.begin.parked', { ch: off[0] + 1, pct: this.pctOff(off[0]) });
+        }
+        for (const c of free) {
+            this.base[c] = this.sm[c];
+            this.baseEnd[c] = this.atEnd(c) ? (this.offMid(c) > 0 ? 1 : -1) : 0;
+        }
+        return this.accept(fn, 'active');
+    }
+
+    private resetPush(): void {
+        this.holdStart = NaN;
+        this.holdCh = -1;
+        this.holdSign = 0;
+        this.holdPeak = 0;
+        this.flicked = false;
+        this.inAttempt = false;
+        this.attemptPeak = 0;
+        this.lastPeak = 0;
+        this.everMoved = false;
+        this.twoA = this.twoB = -1;
+        this.takenCh = -1;
+        const g = this.gauge;
+        g.ch = -1; g.frac = 0; g.sign = 0; g.zone = 'rest'; g.held = 0; g.other = -1;
+    }
+
+    /** Share of the way from where the channel rested at Start to its end, and the sign of the move. */
+    private pushFrac(j: number): [number, 1 | -1] {
+        const d = this.v[j] - this.base[j];
+        const s: 1 | -1 = d >= 0 ? 1 : -1;
+        const be = this.baseEnd[j];
+        if (be !== 0 && s === be) return [0, s]; // resting at an end: it can only go away from it
+        let reach = d >= 0 ? this.maxs[j] - this.base[j] : this.base[j] - this.mins[j];
+        if (reach < T.REACH_MIN) reach = T.REACH_MIN; // noise near a one-sided range never makes a push
+        const f = Math.abs(d) / reach;
+        return [f < 1 ? f : 1, s];
     }
 
     private evalPush(t: number): void {
-        const fn = FNS[this.fnIdx];
-        const F = this.free;
-        let count = 0, cand = -1, nHigh = 0, hA = -1, hB = -1, lead = -1, leadMag = -1;
-        for (let k = 0; k < F.length; k++) {
-            const j = F[k];
-            const a = Math.abs(this.dm(j));
-            if (this.phaseFirst && a >= T.PUSH) this.startHigh[j] = 1;
-            // arrival counts only after the stick was at rest in this phase: a movement already
-            // under way when the screen changed (a late reaction to the previous screen, e.g.
-            // lowering the throttle for "let go") must not be taken as this push
-            if (this.stillMs(j) >= T.ARRIVE_STILL_MS) this.stillP[j] = 1;
-            if (a < T.ARRIVE_FROM && this.stillP[j]) this.armedP[j] = 1;
-            if (a >= T.PUSH) { if (nHigh === 0) hA = j; else if (nHigh === 1) hB = j; nHigh++; }
-            if (this.armedP[j]) {
-                if (a > this.maxLead) this.maxLead = a;
-                if (a >= T.PUSH) { count++; cand = j; }
+        const fn = this.id as Fn;
+        let lead = -1, lf = 0, ls: 1 | -1 = 1, sec = -1, sf = 0;
+        for (const j of this.free) {
+            const [f, s] = this.pushFrac(j);
+            if (f > lf) { sec = lead; sf = lf; lead = j; lf = f; ls = s; }
+            else if (f > sf) { sec = j; sf = f; }
+        }
+        let zone: Zone = lf < T.PUSH_REST ? 'rest' : lf < T.PUSH_TINY ? 'tiny' : lf < T.PUSH_ACCEPT ? 'almost' : 'enough';
+        if (this.restrict === null && sf >= T.TWO_FRAC) { zone = 'two'; this.twoA = Math.min(lead, sec); this.twoB = Math.max(lead, sec); }
+        // attempts: an excursion from rest and back, for the "almost" hint
+        if (lf >= T.PUSH_REST) {
+            if (!this.inAttempt) { this.inAttempt = true; this.attemptPeak = 0; this.lastPeak = 0; }
+            this.everMoved = true;
+            if (lf > this.attemptPeak) this.attemptPeak = lf;
+        } else if (this.inAttempt) { this.inAttempt = false; this.lastPeak = this.attemptPeak; }
+        // the hold: enough, on the same channel and sign, continuously
+        if (zone === 'enough') {
+            if (lead !== this.holdCh || ls !== this.holdSign || Number.isNaN(this.holdStart)) {
+                this.holdCh = lead; this.holdSign = ls; this.holdStart = t; this.holdPeak = 0; this.flicked = false;
             }
-            if (a > leadMag) { leadMag = a; lead = j; }
+            if (lf > this.holdPeak) this.holdPeak = lf;
+        } else {
+            if (!Number.isNaN(this.holdStart) && this.holdPeak >= T.PUSH_FLICK && t - this.holdStart < T.HOLD_MS) this.flicked = true;
+            this.holdStart = NaN; this.holdCh = -1; this.holdSign = 0; this.holdPeak = 0;
         }
-        if (nHigh >= 2) { this.twoT = t; this.twoA = hA; this.twoB = hB; }
-        let good = count === 1;
-        // every other free stick must be near its rest or near its middle (two references, so a
-        // rest polluted by a thumb or a pot parked at an end cannot block the test)
-        if (good && this.restrict === null) {
-            for (let k = 0; k < F.length; k++) {
-                const j = F[k];
-                if (j === cand) continue;
-                if (!(Math.abs(this.dr(j)) < T.QUIET || Math.abs(this.dm(j)) < T.QUIET)) { good = false; break; }
-            }
-        }
-        const sign = good ? (this.dm(cand) >= 0 ? 1 : -1) : 0;
-        if (good) {
-            if (cand !== this.holdCh || sign !== this.holdSign || Number.isNaN(this.holdStart)) { this.holdCh = cand; this.holdSign = sign; this.holdStart = t; }
-        } else { this.holdStart = NaN; this.holdCh = -1; this.holdSign = 0; }
-        let need: number = fn === 'throttle' ? T.THROTTLE_HOLD_MS : T.STICK_HOLD_MS;
-        if (good && fn === 'throttle') {
-            // two ends are doubtful as "up": the end it rested at during "let go" (told: leave it
-            // down) and the raw-low end (down on nearly every radio). An impatient pilot pushes up
-            // for a moment and rests back at the bottom; that rest must not become "up" (inverted
-            // throttle). The ring fills slower there, so only a deliberate hold passes.
-            const rd = (this.rest[cand] - (this.maxs[cand] + this.mins[cand]) / 2) / this.half(cand);
-            if (sign < 0 || (Math.abs(rd) >= T.PUSH && (rd >= 0 ? 1 : -1) === sign)) need = T.THROTTLE_DOUBT_HOLD_MS;
-        }
-        const held = good ? t - this.holdStart : 0;
-        const st = this.state;
-        st.hold = st.progress = Math.min(1, held / need);
-        if (lead >= 0) {
-            if (!st.leader) st.leader = { ch: lead, mag: 0 };
-            st.leader.ch = lead;
-            st.leader.mag = Math.min(1, leadMag);
-        } else st.leader = null;
-        // an already-set channel pushed on purpose: say so at once
+        const heldMs = zone === 'enough' ? t - this.holdStart : 0;
+        const g = this.gauge;
+        g.ch = lead; g.frac = lf; g.sign = zone === 'rest' ? 0 : ls; g.zone = zone;
+        g.held = Math.min(1, heldMs / T.HOLD_MS); g.other = zone === 'two' ? sec : -1;
+        // an already-set channel pushed on purpose: say so, take nothing
         for (const f2 of FNS) {
             const a2 = this.assigned[f2];
-            if (!a2) continue;
+            if (!a2 || f2 === fn || a2.index >= this.n) continue;
             const c2 = a2.index;
-            const m = Math.abs(this.dm(c2));
-            if (m < T.ARRIVE_FROM) { this.belowP[c2] = 1; this.takenSince[c2] = NaN; if (this.takenCh === c2) this.takenCh = -1; }
-            else if (this.belowP[c2] && m >= T.PUSH) {
+            const d = this.v[c2] - this.rest[c2];
+            let reach = d >= 0 ? this.maxs[c2] - this.rest[c2] : this.rest[c2] - this.mins[c2];
+            if (reach < T.REACH_MIN) reach = T.REACH_MIN;
+            const m = Math.abs(d) / reach;
+            if (m < T.PUSH_TINY) { this.belowP[c2] = 1; this.takenSince[c2] = NaN; if (this.takenCh === c2) this.takenCh = -1; }
+            else if (this.belowP[c2] && m >= T.PUSH_ACCEPT) {
                 if (Number.isNaN(this.takenSince[c2])) this.takenSince[c2] = t;
                 else if (t - this.takenSince[c2] >= T.TAKEN_HOLD_MS) this.takenCh = c2;
             } else this.takenSince[c2] = NaN;
         }
-        if (good && held >= need) this.assign(fn, cand, sign);
+        if (zone === 'enough' && heldMs >= T.HOLD_MS) this.acceptPush(fn, lead, ls);
     }
 
-    private assign(fn: Fn, c: number, s: number): void {
-        const inv = s < 0;
+    private acceptPush(fn: Fn, c: number, s: 1 | -1): void {
+        const inv = s < 0; // the asks are always up / right
         this.assigned[fn] = fn === 'throttle'
             ? { index: c, invert: inv, center: inv ? this.maxs[c] : this.mins[c], min: this.mins[c], max: this.maxs[c] }
             : { index: c, invert: inv, center: this.rest[c], min: this.mins[c], max: this.maxs[c] };
-        this.state.leader = null;
-        this.succeed(fn, 'release');
+        this.pushEnd[fn] = this.baseEnd[c];
+        this.results[fn] = { kind: 'fn', fn, ch: c, invert: inv };
+        this.go(fn, 'done');
     }
 
-    private evalRelease(): void {
-        const fn = FNS[this.fnIdx];
-        const a = this.assigned[fn]!;
+    /** Next on a stick result: the stick is let go (the throttle is down), the centre is measured again. */
+    private nextFn(fn: Fn): Verdict {
+        const a = this.assigned[fn];
+        if (!a) return DISABLED;
         const c = a.index;
-        const st = this.state;
-        if (fn === 'throttle') {
-            const down = a.invert ? this.maxs[c] : this.mins[c];
-            const near = Math.abs(this.v[c] - down) <= T.THR_DOWN_TOL * this.half(c);
-            // "down" is an answer to this screen only after the stick rested somewhere else in it
-            // (held up, then pulled down). Reaching it in one movement that began before the
-            // screen, or sitting there already, may be the pilot still doing "up": after a push
-            // taken the wrong way round, their own push continues to what reads as "down" and
-            // would confirm the inversion silently. So that case must stay there THR_LATE_MS, long
-            // enough to read this screen and react (someone who thinks it is up moves away).
-            if (this.phaseFirst) this.thrAway = false;
-            if (!near && this.stillMs(c) >= T.THR_AWAY_STILL_MS) this.thrAway = true;
-            const need = this.thrAway ? T.THR_DOWN_HOLD_MS : T.THR_LATE_MS;
-            const s = near ? this.stillInPhase(c) : 0;
-            st.hold = st.progress = Math.min(1, s / need);
-            if (near && s >= need) this.succeed(...this.afterRelease());
-            return;
+        if (fn === 'throttle' && this.pushEnd.throttle) {
+            // a radio throttle: the bar must read down. A push taken the wrong way round shows here
+            // (the bar full with the stick down) and the pilot fixes it with Reverse
+            let u = (this.v[c] - a.min) / Math.max(1e-6, a.max - a.min);
+            if (a.invert) u = 1 - u;
+            u = u < 0 ? 0 : u > 1 ? 1 : u;
+            // no stillness asked here: nothing is measured, and a throttle at its bottom cannot be passing through
+            if (u > T.THR_DOWN_MAX) return this.refuse('wizard.hint.next.thrDown', { pct: Math.round(u * 100) });
+            return OK;
         }
-        // back at the rest taken at "let go" counts only off the ends: if that rest was an end
-        // (the person was still pausing in a corner then), the stick held there must not pass
-        const back = Math.abs(this.dm(c)) <= T.RELEASE_MID_TOL || (Math.abs(this.dr(c)) <= T.RELEASE_REST_TOL && Math.abs(this.dm(c)) < T.ARRIVE_FROM);
-        const s = back ? this.stillInPhase(c) : 0;
-        st.hold = st.progress = Math.min(1, s / T.RELEASE_HOLD_MS);
-        if (back && s >= T.RELEASE_HOLD_MS) {
-            this.rest[c] = this.stillMean(c); // the centre is measured again here: the thumb is off now
+        if (!this.isStill(c)) return this.refuse('wizard.hint.next.moving', { fn });
+        // let go: back near the rest measured on "let go of both sticks", or near the middle (that
+        // rest may hold a thumb that rested on the stick then)
+        const h = this.half(c);
+        const fromRest = Math.abs(this.sm[c] - this.rest[c]) / h;
+        if (fromRest > T.CENTRE_TOL && !this.centred(c)) return this.refuse('wizard.hint.next.held', { fn, pct: Math.round(Math.min(fromRest, Math.abs(this.offMid(c))) * 100) });
+        if (fn !== 'throttle') {
+            this.rest[c] = this.sm[c]; // the thumb is off now
             a.center = this.rest[c];
-            this.succeed(...this.afterRelease());
         }
+        return OK;
     }
 
-    private resetArm(): void {
-        this.lvl.fill(NaN);
-        this.prevLvl.fill(NaN);
-        this.lvlSince.fill(0);
+    // ---------------------------------------------------------------- arm
+
+    /**
+     * Start on arm/ready: from now on, and only now, the channels are watched. Not refused for a
+     * moving channel: a noisy one would block Start for ever, and the first still level after
+     * Start is what counts as OFF anyway.
+     */
+    private beginArm(): Verdict {
+        this.cmd();
+        this.go('arm', 'active');
+        this.armReset();
+        this.timers();
+        return OK;
+    }
+
+    /** Arm watch from now: candidates, their OFF level if they are still, the buttons' base. */
+    private armReset(): void {
+        const r = this.restrict;
+        for (let i = 0; i < this.n; i++) {
+            const f = this.fnOfCh[i];
+            // sticks never: the four functions, and anything stirred like a stick (a knob, a slider)
+            this.cand[i] = r !== null ? (i === r ? 1 : 0) : (f === null || f === 'arm') && this.kinds[i] !== 'stick' ? 1 : 0;
+            const still = this.cand[i] === 1 && this.stillMs(i) >= T.ARM_LEVEL_MS;
+            const m = still ? this.stillMean(i) : NaN;
+            this.L0[i] = m;
+            this.lvl[i] = m;
+            this.armSt[i] = still ? 1 : 0;
+        }
+        this.onV.fill(NaN);
+        this.stepMax.fill(0);
+        this.swept.fill(0);
         this.maxExc.fill(0);
-        this.farV.fill(NaN);
-        this.farT.fill(NaN);
-        this.lvlChanged.fill(0);
-        this.seenLo.fill(NaN); // an earlier try (before Back) may have used another switch
-        this.seenHi.fill(NaN);
-        this.arm = { armCh: -1, onLvl: NaN, offLvl: NaN, armBit: -1, onVal: 1, map: null };
+        this.awayT.fill(NaN);
         this.bitBase.set(this.bitVal);
-        this.bitChanged.fill(0);
         this.pressT.fill(NaN);
-        this.tapT.fill(NaN);
-        this.tapBit = -1;
-        this.state.armSource = null;
+        this.relT.fill(NaN);
+        this.bKind.fill(0);
+        this.wasOnCh = -1;
+        this.sweptCh = -1;
+        this.backSince = NaN;
+        this.state.armFlip = null;
     }
 
-    /** Arm levels: a level counts only when still; a new level must be ARM_JUMP away (noisy pots never are). */
-    private armLevels(): void {
-        for (let i = 0; i < this.n; i++) {
-            const fnc = this.fnOfCh[i];
-            if (fnc !== null && fnc !== 'arm') continue;
-            const x = this.v[i];
-            // a value far from the level counts once it has lasted ARM_FAR_MS: one glitch sample
-            // on a pot must not become a flip (a person's OFF-ON flick stays away far longer)
-            const far = !Number.isNaN(this.lvl[i]) && Math.abs(x - this.lvl[i]) >= T.ARM_JUMP;
-            if (!far) this.farT[i] = NaN;
-            else if (Number.isNaN(this.farT[i])) this.farT[i] = this.now;
-            const lasted = !far || this.now - this.farT[i] >= T.ARM_FAR_MS;
-            if (lasted && !Number.isNaN(this.lvl[i]) && !(Math.abs(this.farV[i] - this.lvl[i]) >= Math.abs(x - this.lvl[i]))) this.farV[i] = x;
-            if (this.stillMs(i) >= T.ARM_LEVEL_MS) {
-                const m = this.stillMean(i);
-                if (Number.isNaN(this.lvl[i])) { this.lvl[i] = m; this.lvlSince[i] = this.stillSince[i]; }
-                else if (Math.abs(m - this.lvl[i]) >= T.ARM_JUMP) {
-                    this.prevLvl[i] = this.lvl[i]; this.lvl[i] = m; this.lvlSince[i] = this.stillSince[i]; this.lvlChanged[i] = 1;
-                } else if (Math.abs(this.farV[i] - this.lvl[i]) >= T.ARM_JUMP) {
-                    // away and straight back, too fast to settle there (a switch that was already
-                    // ON, flipped OFF and ON again): the far end is the OFF level
-                    this.prevLvl[i] = this.farV[i]; this.lvl[i] = m; this.lvlSince[i] = this.stillSince[i]; this.lvlChanged[i] = 1;
-                } else this.lvl[i] = m;
-                this.farV[i] = m;
-            }
-            const e = Number.isNaN(this.lvl[i]) ? 0 : Math.abs(this.v[i] - this.lvl[i]);
-            if (e > this.maxExc[i]) this.maxExc[i] = e;
-        }
-    }
-
-    private evalArmOn(t: number): void {
-        this.armLevels();
-        const st = this.state;
-        let best = 0;
-        for (let i = 0; i < this.n; i++) {
-            const fnc = this.fnOfCh[i];
-            if ((fnc !== null && fnc !== 'arm') || !this.lvlChanged[i]) continue;
-            // still at that level right now (a flip back just now is not "held")
-            if (this.stillMs(i) < T.ARM_LEVEL_MS) continue;
-            const held = t - this.lvlSince[i];
-            if (held >= T.ARM_ON_HOLD_MS) {
-                this.arm.armCh = i; this.arm.onLvl = this.lvl[i]; this.arm.offLvl = this.prevLvl[i];
-                st.armSource = { kind: 'ch', n: i + 1 };
-                this.succeed('arm', 'off');
-                return;
-            }
-            best = Math.max(best, held / T.ARM_ON_HOLD_MS);
-        }
-        for (let b = 0; b < NBITS; b++) {
-            if (!this.bitChanged[b]) continue;
-            // back at an idle 0 after a press is a tap, not a latching switch
-            if (this.bitVal[b] === 0 && this.bitBase[b] === 0) continue;
-            const held = t - this.bitSince[b];
-            if (held >= T.ARM_ON_HOLD_MS) {
-                this.arm.armBit = b; this.arm.onVal = this.bitVal[b];
-                st.armSource = { kind: 'button', n: b + 1 };
-                this.succeed('arm', 'off');
-                return;
-            }
-            best = Math.max(best, held / T.ARM_ON_HOLD_MS);
-        }
-        if (this.tapBit >= 0 && this.bitVal[this.tapBit] === 0) {
-            this.arm.armBit = this.tapBit;
-            this.arm.map = { kind: 'button', bit: this.tapBit, toggle: true };
-            st.armSource = { kind: 'button', n: this.tapBit + 1 };
-            this.succeed('check', null);
-            return;
-        }
-        st.hold = st.progress = Math.min(1, best);
-    }
-
-    private armFromLevels(): ArmMap | null {
-        const a = this.arm;
-        // threshold 3/4 of the way to ON, not half way: a 3-position switch then reads OFF in its
-        // middle position instead of sitting exactly on the threshold
-        if (a.armCh >= 0) {
-            // a still level seen beyond ON (by half a jump) is the far end of a 3-position switch:
-            // its middle was taken as ON because the person paused there on the way. The far end
-            // is ON, so the middle reads OFF.
-            let on = a.onLvl;
-            const far = on > a.offLvl ? this.seenHi[a.armCh] : this.seenLo[a.armCh];
-            if (Math.abs(far - a.offLvl) >= Math.abs(on - a.offLvl) + T.ARM_JUMP / 2) on = far;
-            return { kind: 'axis', index: a.armCh, threshold: a.offLvl + 0.75 * (on - a.offLvl), onAbove: on > a.offLvl, off: a.offLvl, on };
-        }
-        if (a.armBit >= 0) return a.onVal === 0 ? { kind: 'button', bit: a.armBit, inverted: true } : { kind: 'button', bit: a.armBit };
-        return null;
+    private jumpOf(i: number): number {
+        return this.restrict === i ? T.ARM_PICK_JUMP : T.ARM_JUMP;
     }
 
     /**
-     * On entering the check from "Now flip it OFF": if the arm input reads ON, the two levels were
-     * swapped, and they are swapped back. It happens with a switch that was ON already (left ON
-     * after the stir, or at power-up): the person cycles it OFF -> ON, the OFF pause reaches
-     * ARM_ON_HOLD_MS and is taken as ON, and their own flip back ON is then taken as OFF. Only a
-     * flip that lands before the check opens is seen here; the check screen shows the live state.
-     * (Measured dead end: SWAPPING on a return within 250 ms of the OFF screen flipped fast
-     * responders the wrong way. evalArmOff only waits for the next move when the return lands
-     * within ARM_REACT_MS, it never decides on the timing alone.)
+     * arm/active, every frame and tick. A channel counts only for a flip ON and back OFF, each
+     * level still >= ARM_LEVEL_MS, the ON level >= ARM_JUMP from OFF, every hop a jump. The only
+     * acceptance is at the end of the OFF hold: never because time passed with nothing moving.
      */
-    private fixArmPolarity(): void {
-        const a = this.arm;
-        const m = a.map;
-        if (!m || m.kind === 'key' || (m.kind === 'button' && m.toggle)) return;
-        let on: boolean;
-        if (m.kind === 'axis') {
-            if (m.index >= this.n) return;
-            const v = this.v[m.index];
-            on = m.onAbove ? v > m.threshold : v < m.threshold;
-        } else on = this.bitVal[m.bit] === a.onVal;
-        if (!on) return;
-        if (m.kind === 'axis') { const x = a.onLvl; a.onLvl = a.offLvl; a.offLvl = x; }
-        else a.onVal = a.onVal ? 0 : 1;
-        a.map = this.armFromLevels();
+    private evalArm(t: number): void {
+        let rank = 0, fSrc = -1, fHeld = 0, fLevel = 0;
+        for (let i = 0; i < this.n; i++) {
+            if (!this.cand[i]) continue;
+            const x = this.v[i];
+            const jm = this.jumpOf(i);
+            const picked = this.restrict === i;
+            if (this.armSt[i] >= 1) {
+                const e = Math.abs(x - this.L0[i]);
+                if (e > this.maxExc[i]) this.maxExc[i] = e;
+                // over and straight back before it became a level there: a switch left ON at
+                // Start and cycled, or a flick too short to read (one glitch sample is neither)
+                if (this.armSt[i] === 1) {
+                    if (e >= jm) { if (Number.isNaN(this.awayT[i])) this.awayT[i] = t; }
+                    else if (e < jm / 2) {
+                        const a = this.awayT[i];
+                        if (!Number.isNaN(a) && t - a >= T.ARM_FAR_MS && !this.swept[i]) this.wasOnCh = i;
+                        this.awayT[i] = NaN;
+                    }
+                }
+            }
+            if (this.stillMs(i) >= T.ARM_LEVEL_MS) {
+                const m = this.stillMean(i);
+                if (this.armSt[i] === 0) { this.L0[i] = m; this.armSt[i] = 1; }
+                else {
+                    const hop = Math.abs(m - this.lvl[i]);
+                    if (hop >= jm / 2) {
+                        // a switch changes within a report or two; a knob or a slider (or a stick)
+                        // passes every value in between
+                        if (!picked && this.stepMax[i] < T.ARM_STEP_FRAC * hop) {
+                            this.swept[i] = 1;
+                            if (hop >= jm) this.sweptCh = i;
+                        } else if (!this.swept[i]) {
+                            const fromOff = Math.abs(m - this.L0[i]);
+                            if (this.armSt[i] === 1 && fromOff >= jm) { this.armSt[i] = 2; this.onV[i] = m; }
+                            else if (this.armSt[i] === 2 && fromOff >= jm && fromOff > Math.abs(this.onV[i] - this.L0[i])) this.onV[i] = m; // a 3-position switch: its far end
+                            else if (this.armSt[i] === 2 && fromOff < jm / 2) {
+                                const off = this.L0[i], on = this.onV[i];
+                                // threshold 3/4 of the way to ON: a 3-position switch reads OFF in its middle
+                                this.acceptArm({ kind: 'axis', index: i, threshold: off + 0.75 * (on - off), onAbove: on > off, off, on });
+                                return;
+                            }
+                        }
+                    }
+                }
+                this.lvl[i] = m;
+                this.stepMax[i] = 0;
+            }
+            // what the screen shows: ON under way, or ON counted and on its way back OFF
+            if (this.armSt[i] === 2) {
+                const held = Math.abs(x - this.L0[i]) < jm / 2 ? Math.min(1, this.stillMs(i) / T.ARM_LEVEL_MS) : 0;
+                if (rank < 2 || held > fHeld) { rank = 2; fSrc = i; fHeld = held; fLevel = x; }
+            } else if (rank < 2 && this.armSt[i] === 1 && !this.swept[i] && Math.abs(x - this.L0[i]) >= jm
+                && (picked || this.stepMax[i] >= T.ARM_STEP_FRAC * Math.abs(x - this.lvl[i]))) {
+                const held = Math.min(1, this.stillMs(i) / T.ARM_LEVEL_MS);
+                if (rank < 1 || held > fHeld) { rank = 1; fSrc = i; fHeld = held; fLevel = x; }
+            }
+        }
+        if (this.restrict === null) {
+            for (let b = 0; b < NBITS; b++) {
+                if (this.bitVal[b] !== this.bitBase[b]) {
+                    const p = this.pressT[b];
+                    if (Number.isNaN(p)) continue;
+                    // held long enough to be a level: ON has counted, now it must go back OFF
+                    if (t - p >= T.ARM_LEVEL_MS) { if (rank < 2) { rank = 2; fSrc = 100 + b; fHeld = 0; fLevel = this.bitVal[b]; } continue; }
+                    if (rank >= 2) continue;
+                    const held = (t - p) / T.ARM_LEVEL_MS;
+                    if (rank < 1 || held > fHeld) { rank = 1; fSrc = 100 + b; fHeld = held; fLevel = this.bitVal[b]; }
+                    continue;
+                }
+                const r = this.relT[b];
+                if (Number.isNaN(r)) continue;
+                if (t - r >= T.ARM_LEVEL_MS) {
+                    // pressed, then released for a level: a tap is a momentary button (toggle)
+                    const inv = this.bitBase[b] === 1;
+                    this.acceptArm(this.bKind[b] === 1 ? { kind: 'button', bit: b, toggle: true } : inv ? { kind: 'button', bit: b, inverted: true } : { kind: 'button', bit: b });
+                    return;
+                }
+                const held = (t - r) / T.ARM_LEVEL_MS;
+                if (rank < 2 || held > fHeld) { rank = 2; fSrc = 100 + b; fHeld = held; fLevel = this.bitVal[b]; }
+            }
+        }
+        const st = this.state;
+        if (rank !== 2) this.backSince = NaN;
+        else if (Number.isNaN(this.backSince)) this.backSince = t;
+        if (rank === 0) st.armFlip = null;
+        else {
+            const fl = this.flip;
+            fl.src = fSrc >= 100 ? { kind: 'button', n: fSrc - 99 } : { kind: 'ch', n: fSrc + 1 };
+            fl.phase = rank === 2 ? 'off' : 'on';
+            fl.held = fHeld;
+            fl.level = fLevel;
+            st.armFlip = fl;
+        }
+        const back = rank === 2;
+        st.message = back ? 'wizard.say.arm.back' : 'wizard.say.arm.active';
+        if (st.target) st.target.dir = back ? 'off' : 'on';
+        st.hold = st.progress = fHeld;
     }
 
-    private evalArmOff(): void {
-        const a = this.arm;
-        const st = this.state;
-        // Back at "OFF" before "Now flip it OFF" was on screen (during the check mark), or within
-        // ARM_REACT_MS of it (nobody reads a new screen and flips that fast), is not an answer to
-        // it. A switch that was already ON gets cycled OFF -> ON by its owner: the OFF pause was
-        // taken as ON and this return is their own flip back ON. So wait for a move after that:
-        // settling on the level taken as ON means that one is really OFF (swap); settling back
-        // here keeps the levels. Someone who reads the screen first is never held up. Back before
-        // the screen: wait however long. Within ARM_REACT_MS after it (also a robot or a script
-        // answering at once): wait only up to ARM_SOON_WAIT_MS, then the levels stand.
-        if (this.phaseFirst) { this.offEarly = false; this.offMoved = false; }
-        const soon = this.phaseT0 + T.ARM_REACT_MS;
-        if (a.armCh >= 0) {
-            const c = a.armCh;
-            if (!this.offEarly && Math.abs(this.v[c] - a.offLvl) <= T.ARM_OFF_TOL && this.stillSince[c] <= soon) { this.offEarly = true; this.offEarlyT = this.stillSince[c]; }
-            if (this.offEarly) {
-                if (Math.abs(this.v[c] - a.offLvl) >= T.ARM_JUMP / 2) this.offMoved = true;
-                if (this.offWait()) { st.hold = st.progress = 0; return; }
-                if (this.offMoved && Math.abs(this.stillMean(c) - a.onLvl) <= T.ARM_OFF_TOL && this.stillInPhase(c) >= T.ARM_OFF_HOLD_MS) {
-                    const x = a.onLvl; a.onLvl = a.offLvl; a.offLvl = x;
-                    a.map = this.armFromLevels();
-                    this.succeed('check', null);
-                    return;
-                }
-            }
-            const back = Math.abs(this.stillMean(c) - a.offLvl) <= T.ARM_OFF_TOL;
-            const s = back ? this.stillInPhase(c) : 0;
-            st.hold = st.progress = Math.min(1, s / T.ARM_OFF_HOLD_MS);
-            if (back && s >= T.ARM_OFF_HOLD_MS) { a.map = this.armFromLevels(); this.succeed('check', null); }
-        } else if (a.armBit >= 0) {
-            const b = a.armBit;
-            const off = this.bitVal[b] !== a.onVal;
-            // pressed from idle and let go before "Now flip it OFF" could be read: held, not
-            // latched. A momentary button pressed long on "Flip ON" (as a level it would have to
-            // be held all flight)
-            if (off && a.onVal === 1 && this.bitBase[b] === 0 && this.bitSince[b] <= soon) {
-                a.map = { kind: 'button', bit: b, toggle: true };
-                this.succeed('check', null);
-                return;
-            }
-            if (!this.offEarly && off && this.bitSince[b] <= soon) { this.offEarly = true; this.offEarlyT = this.bitSince[b]; }
-            if (this.offEarly) {
-                if (this.bitSince[b] > this.offEarlyT) this.offMoved = true;
-                if (this.offWait()) { st.hold = st.progress = 0; return; }
-                if (this.offMoved && !off && this.now - this.bitSince[b] >= T.ARM_OFF_HOLD_MS) {
-                    a.onVal = a.onVal ? 0 : 1;
-                    a.map = this.armFromLevels();
-                    this.succeed('check', null);
-                    return;
-                }
-            }
-            const s = off ? this.now - Math.max(this.bitSince[b], this.phaseT0) : 0;
-            st.hold = st.progress = Math.min(1, s / T.ARM_OFF_HOLD_MS);
-            if (off && s >= T.ARM_OFF_HOLD_MS) { a.map = this.armFromLevels(); this.succeed('check', null); }
+    private acceptArm(m: ArmMap): void {
+        this.armMap = m;
+        this.results.arm = { kind: 'arm', source: armSourceOf(m)! };
+        this.go('arm', 'done');
+    }
+
+    /** arm/done: a still level beyond ON is the far end of a 3-position switch: it is ON, the middle reads OFF. */
+    private armFarEnd(): void {
+        const m = this.armMap;
+        if (!m || m.kind !== 'axis' || m.off === undefined || m.on === undefined || m.index >= this.n) return;
+        const c = m.index;
+        if (this.stillMs(c) < T.ARM_LEVEL_MS) return;
+        const x = this.stillMean(c);
+        const span = m.on - m.off;
+        if ((x - m.off) * span > 0 && Math.abs(x - m.off) >= Math.abs(span) + T.ARM_JUMP / 2) {
+            // Reverse keeps the threshold mirrored between the levels: keep the same relation
+            const frac = (m.threshold - m.off) / span;
+            m.on = x;
+            m.threshold = m.off + frac * (x - m.off);
         }
     }
 
-    /** Arm off, back at OFF too early to be an answer: still waiting for the next move? */
-    private offWait(): boolean {
-        return !this.offMoved && (this.offEarlyT <= this.phaseT0 || this.now - this.phaseT0 < T.ARM_SOON_WAIT_MS);
-    }
+    // ------------------------------------------------------------------ profile
 
     private buildProfile(): Profile {
         const axes = {} as Record<Fn, AxisMap>;
@@ -1119,8 +1348,7 @@ export class CalibrationWizard {
             let max = c < this.n ? this.maxs[c] : a.max;
             if (fn !== 'throttle') {
                 // gimbals travel as far each way: a side seen less than half as far as the other
-                // was never explored (Continue before a full stir), and its short half would turn
-                // a nudge into full deflection. Mirror the explored side.
+                // was never explored, and its short half would turn a nudge into full deflection
                 const up = max - a.center, dn = a.center - min;
                 if (dn < T.RANGE_ONE_SIDED * up) min = a.center - up;
                 else if (up < T.RANGE_ONE_SIDED * dn) max = a.center + dn;
@@ -1134,7 +1362,7 @@ export class CalibrationWizard {
             deviceKey: this.deviceKey,
             deviceName: this.deviceName,
             axes,
-            arm: copyArm(this.arm.map),
+            arm: copyArm(this.armMap),
             angleMode: null,
             deadband: 0,
             created: new Date().toISOString(),
@@ -1142,9 +1370,9 @@ export class CalibrationWizard {
         };
     }
 
-    // ------------------------------------------------------------------ live values, hints, escapes
+    // ------------------------------------------------------------------ live values, hints, buttons
 
-    private live(f: RawFrame): void {
+    private live(): void {
         const st = this.state;
         const ch = st.channels;
         for (let i = 0; i < this.n; i++) {
@@ -1152,19 +1380,18 @@ export class CalibrationWizard {
             c.v = this.v[i];
             c.lo = this.mins[i];
             c.hi = this.maxs[i];
-            c.cover = (this.maxs[i] - this.mins[i]) / 2;
+            c.cover = this.cover(i);
             c.kind = this.kinds[i];
             c.fn = this.fnOfCh[i];
-            c.still = this.stillMs(i) >= LIVE_STILL_MS;
+            c.still = this.isStill(i);
         }
+        const f = this.frameNow();
         const m = st.mapped;
         const p = st.profile;
         if (this.id === 'check' && p) {
             const out = mapFrame(p, f, this.mapOut);
             m.roll = out[0]; m.pitch = out[1]; m.throttle = out[2]; m.yaw = out[3];
-            const a = p.arm;
-            const level = a && (a.kind === 'axis' || (a.kind === 'button' && !a.toggle));
-            m.arm = level ? armOn(a, f) : null;
+            m.arm = isLevel(p.arm) ? armOn(p.arm, f) : null;
             const u = (out[2] + 1) / 2;
             const cks = st.checks ?? (st.checks = { throttleLow: false, armOn: null, centred: false });
             cks.throttleLow = u <= 0.05;
@@ -1178,17 +1405,12 @@ export class CalibrationWizard {
         const th = this.assigned.throttle;
         if (th && th.index < this.n) {
             const c = th.index;
-            let u = (this.v[c] - this.mins[c]) / Math.max(1e-6, this.maxs[c] - this.mins[c]);
+            let u = (this.v[c] - th.min) / Math.max(1e-6, th.max - th.min);
             if (th.invert) u = 1 - u;
             u = u < 0 ? 0 : u > 1 ? 1 : u;
             m.throttle = u * 2 - 1;
         } else m.throttle = NaN;
-        const a = this.arm;
-        if (a.armCh >= 0 && a.armCh < this.n && !Number.isNaN(a.offLvl)) {
-            const thr = (a.onLvl + a.offLvl) / 2;
-            m.arm = a.onLvl > a.offLvl ? this.v[a.armCh] > thr : this.v[a.armCh] < thr;
-        } else if (a.armBit >= 0 && !(a.map && a.map.kind === 'button' && a.map.toggle)) m.arm = this.bitVal[a.armBit] === a.onVal;
-        else m.arm = null;
+        m.arm = isLevel(this.armMap) ? armOn(this.armMap, f) : null;
     }
 
     private mapLive(fn: Fn): number {
@@ -1202,7 +1424,7 @@ export class CalibrationWizard {
         return a.invert ? -r : r;
     }
 
-    private setHint(key: string | null, k1?: string, v1?: string | number, k2?: string, v2?: string | number): void {
+    private setHint(key: string | null, params?: Record<string, string | number>): void {
         const st = this.state;
         const cur = st.hint ? st.hint.key : null;
         // a shown hint stays a moment: a text that flickers with the noise cannot be read (and a
@@ -1211,97 +1433,64 @@ export class CalibrationWizard {
         if (key === null) { st.hint = null; st.error = null; return; }
         let h = st.hint;
         if (!h || key !== cur) { h = st.hint = { key, params: {} }; st.error = key; this.hintAt = this.now; }
-        const p = h.params;
-        if (k1 !== undefined && v1 !== undefined) p[k1] = v1;
-        if (k2 !== undefined && v2 !== undefined) p[k2] = v2;
+        if (params) for (const k of Object.keys(params)) h.params[k] = params[k];
     }
 
     private timers(): void {
         const st = this.state;
-        const stuck = this.now - this.stuckT0;
+        const stuck = this.now - this.stageT0;
         st.stuckMs = stuck;
         const c = st.can;
-        c.back = c.cont = c.useCurrent = c.pick = c.skipArm = c.fly = c.reverse = false;
-        if (this.ok) { c.back = this.trail.length >= 1; st.hint = null; st.error = null; return; }
-        const id = this.id;
-        switch (id) {
-            case 'connect':
-                this.setHint(stuck >= T.CONNECT_HINT_MS && this.n === 0 ? 'wizard.hint.noData' : null);
-                break;
-            case 'stir':
-                // after 12 s always a way on: with fewer than four sticks, Continue lets every
-                // channel through and the stick steps find them (see cont)
-                c.cont = stuck >= T.STIR_HINT_MS;
-                if (stuck >= T.STIR_HINT_MS) this.stirHint(); else this.setHint(null);
-                break;
-            case 'centre': {
-                c.back = this.trail.length >= 2;
-                c.useCurrent = stuck >= T.CENTRE_ESCAPE_MS;
-                if (stuck >= T.CENTRE_HINT_MS) {
-                    let worst = this.endCh, least = Infinity; // a stick held at its end first: it is what blocks
-                    if (worst < 0) for (const i of this.stickSet) { const s = this.stillInPhase(i); if (s < least) { least = s; worst = i; } }
-                    this.setHint(worst >= 0 ? 'wizard.hint.centre.moving' : null, 'ch', worst + 1);
-                } else this.setHint(null);
-                break;
+        c.begin = c.next = c.skipArm = c.pick = c.measureAnyway = c.reverse = c.redo = c.fly = false;
+        c.back = true; // rule 6: every screen has a way back
+        const id = this.id, stage = this.stage;
+        if (id === 'connect') { this.setHint(stuck >= T.CONNECT_HINT_MS && this.n === 0 ? 'wizard.hint.noData' : null); return; }
+        if (id === 'check') {
+            c.fly = c.reverse = c.redo = true;
+            const p = st.profile;
+            const th = p?.axes.throttle;
+            if (th && th.index < this.n && !Number.isNaN(st.mapped.throttle)) {
+                const u = (st.mapped.throttle + 1) / 2;
+                if (u >= 0.95 && this.stillMs(th.index) >= T.CHECK_SUSPECT_MS) this.setHint('wizard.hint.check.throttle', { pct: Math.round(u * 100) });
+                else this.setHint(null);
+            } else this.setHint(null);
+            return;
+        }
+        if (stage === 'ready') c.begin = this.n > 0;
+        else if (stage === 'done') c.next = true;
+        if (id === 'arm') {
+            c.skipArm = true;
+            let used = 0;
+            for (const fn of FNS) { const a = this.assigned[fn]; if (a && a.index < this.n) used++; }
+            c.pick = this.n > used; // the channel list (Liftoff's dots) on every arm stage
+        }
+        if (stage === 'done' && (isFn(id) || (id === 'arm' && isLevel(this.armMap)))) c.reverse = true;
+        if (stage === 'active') {
+            if (id === 'stir') {
+                c.next = this.stirOk;
+                if (stuck >= T.STIR_HINT_MS) { const h = this.stirHintOf(); this.setHint(h ? h.key : null, h?.params); } else this.setHint(null);
+                return;
             }
-            case 'throttle': case 'yaw': case 'pitch': case 'roll':
-                c.back = this.trail.length >= 2;
-                if (this.phase === 'push') { c.pick = stuck >= T.PUSH_ESCAPE_MS; this.pushHint(stuck); }
-                else if (id === 'throttle') {
-                    c.cont = stuck >= T.RELEASE_ESCAPE_MS;
-                    if (stuck >= T.RELEASE_HINT_MS && this.n > 0) {
-                        const a = this.assigned.throttle!;
-                        const i = a.index;
-                        const down = a.invert ? this.maxs[i] : this.mins[i];
-                        const up = a.invert ? this.mins[i] : this.maxs[i];
-                        const pct = Math.round((100 * (this.v[i] - down)) / (up - down || 1));
-                        this.setHint('wizard.hint.throttle.down', 'pct', pct);
-                    } else this.setHint(null);
-                } else {
-                    c.useCurrent = stuck >= T.RELEASE_ESCAPE_MS;
-                    if (stuck >= T.RELEASE_HINT_MS && this.n > 0) {
-                        const i = this.assigned[id]!.index;
-                        if (this.stillMs(i) < T.RELEASE_HOLD_MS) this.setHint('wizard.hint.release.moving');
-                        else this.setHint('wizard.hint.release.off', 'fn', id, 'pct', Math.round(Math.abs(this.dm(i)) * 100));
-                    } else this.setHint(null);
-                }
-                break;
-            case 'arm':
-                c.back = this.trail.length >= 2;
-                c.skipArm = true;
-                if (this.phase === 'on') {
-                    if (stuck >= T.ARM_HINT_MS) {
-                        let small = -1;
-                        for (let i = 0; i < this.n; i++) {
-                            const fnc = this.fnOfCh[i];
-                            if (fnc !== null && fnc !== 'arm') continue;
-                            if (this.maxExc[i] >= T.ARM_SMALL && this.maxExc[i] < T.ARM_JUMP) { small = i; break; }
-                        }
-                        if (small >= 0) this.setHint('wizard.hint.arm.small', 'ch', small + 1);
-                        else this.setHint('wizard.hint.arm.none');
-                    } else this.setHint(null);
-                } else {
-                    c.cont = stuck >= T.ARM_OFF_ESCAPE_MS;
-                    this.setHint(stuck >= T.ARM_OFF_HINT_MS ? 'wizard.hint.arm.back' : null);
-                }
-                break;
-            case 'check': {
-                c.back = this.trail.length >= 2;
-                c.fly = true;
-                c.reverse = true;
-                const p = st.profile;
-                const th = p?.axes.throttle;
-                if (th && th.index < this.n && !Number.isNaN(st.mapped.throttle)) {
-                    const u = (st.mapped.throttle + 1) / 2;
-                    if (u >= 0.95 && this.stillMs(th.index) >= T.CHECK_SUSPECT_MS) this.setHint('wizard.hint.check.throttle', 'pct', Math.round(u * 100));
-                    else this.setHint(null);
-                } else this.setHint(null);
-                break;
+            if (id === 'centre') { c.next = true; c.measureAnyway = this.canMeasureAnyway(); }
+            else if (isFn(id)) {
+                c.pick = stuck >= T.PUSH_PICK_MS;
+                const g = this.gauge;
+                st.gauge = g;
+                st.hold = st.progress = g.held;
+                this.pushHint(stuck);
+                return;
+            } else if (id === 'arm') {
+                this.armHint(stuck);
+                return;
             }
         }
+        // ready, done and centre/active: the hint of the last refused command, if any
+        const h = this.refHint;
+        st.hint = h;
+        st.error = h ? h.key : null;
     }
 
-    private stirHint(): void {
+    private stirHintOf(): Hint | null {
         let moving = 0, sticks = 0, part = -1, partSpan = 0;
         for (let i = 0; i < this.n; i++) {
             const span = this.maxs[i] - this.mins[i];
@@ -1310,45 +1499,55 @@ export class CalibrationWizard {
             else if (this.kinds[i] === 'idle' && span >= T.MOVING_SPAN && span > partSpan) { partSpan = span; part = i; }
         }
         // fewer than four channels move at all: the text asks about USB Joystick mode
-        if (moving < 4) { this.setHint('wizard.hint.stir.few', 'n', moving); return; }
+        if (moving < 4) return { key: 'wizard.hint.stir.few', params: { n: moving } };
         if (sticks < 4) {
-            // they do move, just not like sticks yet: no word about USB mode. A channel swept part
-            // of the way is most likely the missing stick (say how far it got); else ask for the
-            // full travel in every direction (only jumps between a few points so far)
-            if (part >= 0) this.setHint('wizard.hint.stir.coverage', 'ch', part + 1, 'pct', Math.round((partSpan / 2) * 100));
-            else this.setHint('wizard.needFourAxes');
-            return;
+            // they do move, just not like sticks yet: a channel swept part of the way is most
+            // likely the missing stick (say how far it got); else ask for the full travel
+            if (part >= 0) return { key: 'wizard.hint.stir.coverage', params: { ch: part + 1, pct: Math.round((partSpan / 2) * 100) } };
+            return { key: 'wizard.needFourAxes', params: {} };
         }
         // among the four widest sticks, the one furthest from its ends
-        const idx: number[] = [];
-        for (let i = 0; i < this.n; i++) if (this.kinds[i] === 'stick') idx.push(i);
-        idx.sort((a, b) => (this.maxs[b] - this.mins[b]) - (this.maxs[a] - this.mins[a]));
         let low = -1, lowCover = Infinity;
-        for (const i of idx.slice(0, 4)) { const cv = (this.maxs[i] - this.mins[i]) / 2; if (cv < lowCover) { lowCover = cv; low = i; } }
-        if (low < 0 || lowCover >= T.STIR_COVER) { this.setHint(null); return; }
-        this.setHint('wizard.hint.stir.coverage', 'ch', low + 1, 'pct', Math.round(lowCover * 100));
+        for (const i of this.widestSticks().slice(0, 4)) { const cv = this.cover(i); if (cv < lowCover) { lowCover = cv; low = i; } }
+        if (low < 0 || lowCover >= T.STIR_COVER) return null;
+        const pct = Math.round(lowCover * 100);
+        if (this.plateau(low)) return { key: 'wizard.hint.stir.short', params: { ch: low + 1, pct } };
+        return { key: 'wizard.hint.stir.coverage', params: { ch: low + 1, pct } };
     }
 
     private pushHint(stuck: number): void {
-        if (this.takenCh >= 0) {
-            const fnc = this.fnOfCh[this.takenCh];
-            if (fnc && fnc !== 'arm') { this.setHint('wizard.hint.push.taken', 'fn', fnc); return; }
-        }
-        if (stuck < T.PUSH_HINT_MS) { this.setHint(null); return; }
-        const fn = FNS[this.fnIdx];
-        if (fn === 'throttle') {
-            // a stick that has not come from the middle: pushed before the screen changed, or
-            // pushed from half way (the throttle does not spring back)
-            for (const j of this.free) {
-                if (this.armedP[j]) continue;
-                if (this.startHigh[j] || Math.abs(this.dm(j)) >= T.ARRIVE_FROM) { this.setHint('wizard.hint.throttle.already'); return; }
-            }
-        }
-        if (this.now - this.twoT <= TWO_WINDOW_MS && this.twoA >= 0 && this.twoB >= 0) {
-            this.setHint('wizard.hint.push.two', 'a', this.twoA + 1, 'b', this.twoB + 1);
+        const fnc = this.takenCh >= 0 ? this.fnOfCh[this.takenCh] : null;
+        if (fnc && fnc !== 'arm') { this.setHint('wizard.hint.push.taken', { fn: fnc }); return; }
+        if (this.gauge.zone === 'two') { this.setHint('wizard.hint.push.two', { a: this.twoA + 1, b: this.twoB + 1 }); return; }
+        if (this.flicked) { this.setHint('wizard.hint.push.hold'); return; }
+        if (!this.inAttempt && this.lastPeak >= T.PUSH_TINY && this.lastPeak < T.PUSH_ACCEPT) {
+            this.setHint('wizard.hint.push.short', { pct: Math.round(this.lastPeak * 100) });
             return;
         }
-        this.setHint(this.maxLead >= 0.3 ? 'wizard.hint.push.short' : 'wizard.hint.push.none');
+        if (!this.inAttempt && this.lastPeak < T.PUSH_TINY && stuck >= T.PUSH_HINT_MS) { this.setHint('wizard.hint.push.none'); return; }
+        this.setHint(null);
+    }
+
+    private armHint(stuck: number): void {
+        // a flip under way: the say line and the ring tell what to do. "Now flip it back OFF" with
+        // nothing moving for a while: most likely it was ON at Start and the pilot's OFF counted as ON
+        const fl = this.state.armFlip;
+        if (fl) {
+            if (fl.phase === 'off' && fl.held === 0 && this.now - this.backSince >= T.ARM_BACK_HINT_MS) {
+                this.setHint('wizard.hint.arm.wasOn', fl.src.kind === 'ch' ? { ch: fl.src.n } : { btn: fl.src.kind === 'button' ? fl.src.n : 0 });
+            } else this.setHint(null);
+            return;
+        }
+        if (this.sweptCh >= 0) { this.setHint('wizard.hint.arm.sweep', { ch: this.sweptCh + 1 }); return; }
+        if (this.wasOnCh >= 0) { this.setHint('wizard.hint.arm.wasOn', this.wasOnCh >= 100 ? { btn: this.wasOnCh - 99 } : { ch: this.wasOnCh + 1 }); return; }
+        if (stuck < T.ARM_HINT_MS) { this.setHint(null); return; }
+        let small = -1;
+        for (let i = 0; i < this.n; i++) {
+            if (!this.cand[i] || this.armSt[i] === 0) continue;
+            if (this.maxExc[i] >= T.ARM_SMALL && this.maxExc[i] < this.jumpOf(i)) { small = i; break; }
+        }
+        if (small >= 0) this.setHint('wizard.hint.arm.small', { ch: small + 1 });
+        else this.setHint('wizard.hint.arm.none');
     }
 }
 

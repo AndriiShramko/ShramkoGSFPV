@@ -1,12 +1,14 @@
 // Simulated people through the calibration wizard: the fixed 384-person grid must all come out
-// right, and the same people through the frozen first wizard must mostly fail (negative control:
-// if the old wizard passes them, the person model is too kind). The ideal person through the old
-// wizard must pass (positive control: the harness reproduces the path known to work).
+// right, pressing the buttons like people (Start, Done, Measure, Next, pressed again when refused),
+// with no screen change that a button did not make; and the same people through the frozen first
+// wizard must mostly fail (negative control: if the old wizard passes them, the person model is
+// too kind). The ideal person through the old wizard must pass (positive control: the harness
+// reproduces the path known to work).
 
 import { describe, expect, it } from 'vitest';
 import { idealHuman } from '../src/sim/human';
 import type { Outcome } from '../src/sim/human';
-import { gridHuman, invSet, runHead, runNew } from './helpers';
+import { gridHuman, invSet, runHead, runNew, v3FrameChange, Watch } from './helpers';
 
 function tally(outs: Outcome[]): { correct: number; wrong: number; hang: number } {
     const t = { correct: 0, wrong: 0, hang: 0 };
@@ -15,21 +17,23 @@ function tally(outs: Outcome[]): { correct: number; wrong: number; hang: number 
 }
 
 describe('simulated people', () => {
-    it('15. 384 random people (24 orders x 16 inversion sets): all correct, no hang, <= 120 s, no phase > 30 s', () => {
+    it('15. 384 random people (24 orders x 16 inversion sets): all correct, no hang, <= 180 s, no stage > 30 s, only button-made screen changes', () => {
         const outs: Outcome[] = [];
         const bad: string[] = [];
         let worstRun = 0, worstPhase = 0, worstPhaseName = '';
         for (let i = 0; i < 384; i++) {
             const cfg = gridHuman(i, 500);
-            const o = runNew(cfg);
+            const w = new Watch(v3FrameChange);
+            const o = runNew(cfg, 180000, w);
             outs.push(o);
+            if (w.violations.length) bad.push(`#${i} seed ${cfg.seed} ${cfg.order}: ${w.violations.slice(0, 2).join('; ')}`);
             worstRun = Math.max(worstRun, o.ms);
             for (const [k, v] of Object.entries(o.phaseMs)) if (k !== 'check' && v > worstPhase) { worstPhase = v; worstPhaseName = k; }
             if (o.kind !== 'correct') bad.push(`#${i} seed ${cfg.seed} ${cfg.order}: ${o.kind} at ${o.where}: ${o.problems.join('; ')}`);
         }
         expect(bad).toEqual([]);
         expect(tally(outs)).toEqual({ correct: 384, wrong: 0, hang: 0 });
-        expect(worstRun).toBeLessThanOrEqual(120000);
+        expect(worstRun).toBeLessThanOrEqual(180000);
         expect(worstPhase, worstPhaseName).toBeLessThanOrEqual(30000);
     });
 

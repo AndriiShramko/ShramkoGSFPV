@@ -3,6 +3,11 @@
 // channel order, per-channel inversion, a centre offset and noise, and it can follow the
 // calibration wizard's screens like an ideal robot (optionally with a reaction delay), or like one
 // of the simulated people of @gsfpv/input/sim (humanSeed). SimRadio is NOT a real radio.
+//
+// The wizard is user-paced (v3): nothing advances unless a button is pressed. The robot therefore
+// moves the sticks AND presses the buttons (Start, Done, Measure, Next) through `onAct`, the same
+// commands the page's buttons call; it never calls the wizard itself. `noButtons` keeps the hands
+// and drops every press (the page-level negative control: the wizard must then stay put).
 
 import type { RawFrame, WizardState } from '@gsfpv/input';
 import { Human, emptyInstruction, instructionOf, quantize11, randomHuman } from '@gsfpv/input/sim';
@@ -20,11 +25,17 @@ export interface FakeRadioConfig {
     brokenStick?: 'A' | 'E' | 'T' | 'R'; // negative control: this stick never moves
     reactMs?: number; // the robot starts on a new screen this long after it appears (default 0)
     humanSeed?: number; // behave like simulated person number N instead of the robot
+    noButtons?: boolean; // move the hands as usual, never press a button (negative control)
 }
 
 type S = 'A' | 'E' | 'T' | 'R';
+type Press = 'begin' | 'next' | 'skipArm';
 const FN_STICK: Record<string, S> = { throttle: 'T', yaw: 'R', roll: 'A', pitch: 'E' };
-const SLEW = 2 / 150; // full travel in 150 ms: a stick passes the middle on the way (the wizard's arrival rule)
+const SLEW = 2 / 150; // full travel in 150 ms: hands move at a finite speed
+// after the sticks reach their places: long enough for the wizard's 500 ms stillness at a press
+const SETTLE_MS = 900;
+const RETRY_MS = 400; // a refused press (the same screen after this long) is pressed again
+const STIR_MIN_MS = 1700; // at least one full circle of both sticks before Done
 
 export class FakeEdgeTx {
     readonly cfg: FakeRadioConfig;
@@ -38,18 +49,22 @@ export class FakeEdgeTx {
     onFrame: ((f: RawFrame) => void) | null = null;
     reports = 0;
     follow: (() => WizardState | null) | null = null;
-    /** Clicks of the simulated person (humanSeed): Continue, Use current, Pick, Skip, Fly. */
+    /** The buttons the robot or the simulated person presses (Start, Next, Pick, Skip, Reverse, Back, Fly). */
     onAct: ((a: UiAction) => void) | null = null;
+    /** Presses made (and, with noButtons, the ones dropped), for the page tests. */
+    presses = 0;
+    dropped = 0;
     readonly human: Human | null = null;
     private ins = emptyInstruction();
     private chv = new Float64Array(8);
     private lastT = NaN;
-    private seenId = '';
-    private seenPhase: string | null = null;
+    private seenKey = '';
     private seenAt = 0;
-    private doId = '';
-    private doPhase: string | null = null;
+    private doKey = '';
     private followT0 = 0;
+    private arrivedAt = NaN; // when the sticks reached where this screen wants them
+    private pressAt = NaN; // next press on this screen (NaN = none planned yet)
+    private offSeenAt = NaN; // arm/active: when "now flip it back OFF" appeared
 
     constructor(cfg: FakeRadioConfig) {
         this.cfg = cfg;
@@ -58,7 +73,7 @@ export class FakeEdgeTx {
         if (cfg.humanSeed !== undefined) {
             const inv = { A: !!cfg.invert.A, E: !!cfg.invert.E, T: !!cfg.invert.T, R: !!cfg.invert.R } as Record<Stick, boolean>;
             this.human = new Human(randomHuman(cfg.humanSeed, cfg.order, inv));
-            this.human.onAct = (act) => this.onAct?.(act);
+            this.human.onAct = (act) => this.emitAct(act);
         }
     }
 
@@ -81,49 +96,87 @@ export class FakeEdgeTx {
         this.want[stick] = x;
     }
 
-    /** Behave like an ideal person following the wizard's screens (after reactMs). */
+    private emitAct(a: UiAction): void {
+        if (this.cfg.noButtons) { this.dropped++; return; }
+        this.presses++;
+        this.onAct?.(a);
+    }
+
+    /** Behave like an ideal pilot following the wizard's screens (after reactMs): hands, then the button. */
     private autopilot(now: number, dt: number): void {
         const st = this.follow?.();
         if (!st) return;
-        if (st.id !== this.seenId || st.phase !== this.seenPhase) { this.seenId = st.id; this.seenPhase = st.phase; this.seenAt = now; }
-        if ((this.seenId !== this.doId || this.seenPhase !== this.doPhase) && now - this.seenAt >= (this.cfg.reactMs ?? 0)) {
-            this.doId = this.seenId;
-            this.doPhase = this.seenPhase;
+        const k = st.stage ? `${st.id}/${st.stage}` : st.id;
+        if (k !== this.seenKey) { this.seenKey = k; this.seenAt = now; }
+        if (this.doKey !== this.seenKey && now - this.seenAt >= (this.cfg.reactMs ?? 0)) {
+            this.doKey = this.seenKey;
             this.followT0 = now;
+            this.arrivedAt = NaN;
+            this.pressAt = NaN;
+            this.offSeenAt = NaN;
         }
+        const [id, stage] = this.doKey.split('/');
         const w = this.want;
         const el = now - this.followT0;
-        switch (this.doId) {
-            case 'stir': {
-                // both sticks round and round through their full range; switches stay put
-                const a = (el / 1000) * Math.PI * 2 * 0.6;
-                w.A = Math.cos(a); w.E = Math.sin(a); w.R = Math.cos(a * 1.3); w.T = Math.sin(a * 1.3);
+        let press: Press | null = null;
+        let settle = SETTLE_MS;
+        const centred = () => { w.A = 0; w.E = 0; w.R = 0; };
+        switch (id) {
+            case 'stir':
                 this.arm = false;
+                if (stage === 'active') {
+                    // both sticks round and round through their full range; switches stay put
+                    const a = (el / 1000) * Math.PI * 2 * 0.6;
+                    w.A = Math.cos(a); w.E = Math.sin(a); w.R = Math.cos(a * 1.3); w.T = Math.sin(a * 1.3);
+                    // Done once it is enabled and a full circle is behind (Done stays disabled for a broken stick)
+                    if (el >= STIR_MIN_MS && st.can.next) { press = 'next'; settle = 0; }
+                } else { centred(); w.T = -1; press = stage === 'ready' ? 'begin' : 'next'; }
+                break;
+            case 'centre':
+                centred(); w.T = -1; this.arm = false;
+                press = stage === 'ready' ? 'begin' : 'next'; // active: Measure
+                break;
+            case 'throttle': case 'yaw': case 'pitch': case 'roll': {
+                const s = FN_STICK[id];
+                centred();
+                if (id === 'throttle') w.T = -1; // the other steps: the throttle stays where it is
+                if (stage === 'active') w[s] = 1; // the asks are up / right; the drawing shows which
+                else press = stage === 'ready' ? 'begin' : 'next'; // done: the stick is let go (throttle down) first
                 break;
             }
-            case 'centre':
-                w.A = 0; w.E = 0; w.R = 0; w.T = -1; this.arm = false;
-                break;
-            case 'throttle':
-                w.A = 0; w.E = 0; w.R = 0;
-                w.T = this.doPhase === 'push' ? 1 : -1;
-                break;
-            case 'yaw': case 'pitch': case 'roll':
-                w.A = 0; w.E = 0; w.R = 0; // the throttle stays where it is
-                if (this.doPhase === 'push') w[FN_STICK[this.doId]] = 1;
-                break;
             case 'arm':
-                this.arm = this.doPhase === 'on';
+                if (stage === 'ready') {
+                    this.arm = false;
+                    press = this.cfg.armChannel < 0 ? 'skipArm' : 'begin'; // no switch on any channel: arm with Space
+                } else if (stage === 'active') {
+                    // ON, and back OFF once the screen says so (after the reaction time, like a screen)
+                    const back = st.armFlip?.phase === 'off';
+                    if (back && Number.isNaN(this.offSeenAt)) this.offSeenAt = now;
+                    if (!back) this.offSeenAt = NaN;
+                    this.arm = !(back && now - this.offSeenAt >= (this.cfg.reactMs ?? 0));
+                } else if (stage === 'done') { this.arm = false; press = 'next'; }
                 break;
             default:
                 break;
         }
         // hands move at a finite speed: a stick never jumps across its middle between two reports
         const step = SLEW * dt;
-        for (const k of ['A', 'E', 'T', 'R'] as S[]) {
-            const d = w[k] - this.sticks[k];
-            this.sticks[k] += d > step ? step : d < -step ? -step : d;
+        let far = false;
+        for (const q of ['A', 'E', 'T', 'R'] as S[]) {
+            const d = w[q] - this.sticks[q];
+            this.sticks[q] += d > step ? step : d < -step ? -step : d;
+            if (Math.abs(w[q] - this.sticks[q]) > 0.02) far = true;
         }
+        if (!press || id === 'check' || id === 'connect') return;
+        if (settle > 0 && Number.isNaN(this.arrivedAt)) {
+            if (far) return;
+            this.arrivedAt = now;
+            this.pressAt = now + settle;
+        }
+        if (now < this.pressAt) return; // false while NaN (stir Done: no arrival to wait for)
+        // only an enabled button is pressed; the same screen after RETRY_MS = refused: press again
+        this.pressAt = now + Math.max(RETRY_MS, this.cfg.reactMs ?? 0);
+        if (press === 'begin' ? st.can.begin : press === 'next' ? st.can.next : st.can.skipArm) this.emitAct({ kind: press });
     }
 
     private emit(now: number): void {
@@ -161,7 +214,7 @@ export class FakeEdgeTx {
         this.onFrame?.(this.frame);
     }
 
-    /** A simulated person (sim/human.ts) reads the wizard's screen and moves the sticks. */
+    /** A simulated person (sim/human.ts) reads the wizard's screen, moves the sticks and presses the buttons. */
     private emitHuman(now: number, dt: number): void {
         const h = this.human!;
         const st = this.follow?.();

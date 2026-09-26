@@ -149,8 +149,23 @@ function watchBanners(ui: HTMLElement): void {
     again();
 }
 
+/** Focus in a text field: H is a letter there, not the HUD key. */
+function typing(el: EventTarget | null): boolean {
+    return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement || (el instanceof HTMLElement && el.isContentEditable);
+}
+
+/**
+ * Guidance on the flight view (arm card, key card, touch hint, top notes, the walls box) is for
+ * getting into the air: once armed and flying it goes, and it comes back when disarmed or crashed
+ * (#ui.hud-flying, fly.css). A pilot saw a card hang over the whole flight. H switches every text
+ * on the flight view off and on (#ui.hud-off); the buttons and the touch pads stay.
+ */
 export class Hud {
     readonly root: HTMLDivElement;
+    private ui: HTMLElement;
+    private note = h('div', { class: 'hud-note', role: 'status', hidden: true });
+    private noteTimer = 0;
+    private textOff = false;
     private tl = h('div', { class: 'osd tl' });
     private tr = h('div', { class: 'osd tr' });
     private bl = h('div', { class: 'osd bl' });
@@ -166,9 +181,30 @@ export class Hud {
     onArm: (() => void) | null = null;
 
     constructor(parent: HTMLElement) {
+        this.ui = parent;
         this.root = h('div', { class: 'hud' }, this.tl, this.tr, this.bl, this.br, this.gate, this.card.el, this.card.disarm, this.keys.el, this.frameStats);
-        parent.append(this.root);
+        // outside .hud: it says how to get the text back while the rest is hidden
+        parent.append(this.root, this.note);
         watchBanners(parent);
+        addEventListener('keydown', this.onKey);
+    }
+
+    private onKey = (e: KeyboardEvent): void => {
+        if (e.code !== 'KeyH' || e.repeat || e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;
+        // a screen or a panel on top (Controls, pause menu, settings...) has its own keys
+        if (document.querySelector('#ui .screen, #ui .panel')) return;
+        this.toggleText();
+    };
+
+    /** H: every text on the flight view off, or back on. */
+    toggleText(): void {
+        this.textOff = !this.textOff;
+        this.ui.classList.toggle('hud-off', this.textOff);
+        this.root.style.display = this.visible && !this.textOff ? '' : 'none';
+        this.note.textContent = t(this.textOff ? 'hud.textOff' : 'hud.textOn');
+        this.note.hidden = false;
+        clearTimeout(this.noteTimer);
+        this.noteTimer = window.setTimeout(() => { this.note.hidden = true; }, 2500);
     }
 
     /** Text widths of the corner line, measured once per text (it is one line, fly.css nowrap). */
@@ -209,8 +245,11 @@ export class Hud {
         const now = performance.now();
         if (now - this.last < 100) return;
         this.last = now;
-        this.root.style.display = this.visible ? '' : 'none';
+        this.root.style.display = this.visible && !this.textOff ? '' : 'none';
         const hd = s.hud();
+        // armed and in the air: the guidance outside .hud (touch hint, notes, walls box) goes too
+        const flying = hd.armed && !hd.crashed;
+        if (this.ui.classList.contains('hud-flying') !== flying) this.ui.classList.toggle('hud-flying', flying);
         const status = hd.crashed ? `<span class="crash">${t('hud.crash')}</span>` : hd.armed ? `<span class="armed">${t('hud.armed')}</span>` : `<span class="disarmed">${t('hud.disarmed')}</span>`;
         const mode = s.sim.ch[5] > 0.5 ? t('hud.angle') : t('hud.acro');
         this.tl.innerHTML = `${status} · ${mode}${this.rec ? ` · <span class="rec">● ${t('hud.rec')}</span>` : ''}`;

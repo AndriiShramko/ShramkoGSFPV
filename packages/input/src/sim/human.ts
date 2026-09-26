@@ -2,12 +2,14 @@
 // (or a gamepad), reads each screen after a reaction time, stirs, lets go, pushes and flips
 // switches, and makes the mistakes people make: still stirring when the text changes, a thumb left
 // on a stick, the throttle already up, a slip onto the other axis of the same gimbal, weights below
-// 100 %, a model with no switch on any channel. When stuck, they read the hint and press the
-// escape buttons. The distributions are guesses from the wizard diag and the UX research, NOT
+// 100 %, a model with no switch on any channel, Next pressed before the stick is back. On the
+// user-paced wizard (v3) they press the buttons (Start, Done, Measure, Next) after a think time
+// and press again when a press is refused. When stuck, they read the hint and press the escape
+// buttons. The distributions are guesses from the wizard diag and the UX research, NOT
 // measurements of real people. Used by packages/input/test and by ?simradio=raw&human=<seed>.
 
 import { armOn, mapFrame, FNS } from '../calib';
-import type { CalibrationWizard, Fn, Profile, RawFrame, WizardState } from '../calib';
+import type { CalibrationWizard, Fn, Profile, RawFrame, Stage, Verdict, WizardState } from '../calib';
 import { mulberry32 } from './signals';
 
 export type Stick = 'A' | 'E' | 'T' | 'R';
@@ -40,6 +42,12 @@ export interface HumanConfig {
     patienceMs: number;
     slipProb: number;
     ideal: boolean; // the Node twin of the SimRadio robot: fast, exact, no mistakes
+    // user-paced wizard (v3): drawn after every other trait, so the people keep them
+    thinkLo: number; // ms before a press, drawn per press in [thinkLo, thinkHi]
+    thinkHi: number;
+    nextEarly: boolean; // sometimes presses Next before the stick is back, reads the refusal, fixes it
+    armPrepSkip: boolean; // leaves the arm switch ON on "put it OFF, then Start"
+    slow: { lo: number; hi: number } | null; // every reaction and every press waits U(lo, hi)
 }
 
 export const STICKS: Stick[] = ['A', 'E', 'T', 'R'];
@@ -71,7 +79,7 @@ export function randomHuman(seed: number, order: string, inv: Record<Stick, bool
     auxValue.push(U(-0.95, 0.95)); // a gamepad's fifth axis (slider / trigger at rest)
     auxNoise.push(gamepadLike ? U(0.003, 0.01) : 0);
     const flickInStir = r() < 0.3;
-    return {
+    const cfg: HumanConfig = {
         seed, order, inv,
         trim: { A: U(-0.03, 0.03), E: U(-0.03, 0.03), R: U(-0.03, 0.03) },
         noise: U(0.002, 0.01),
@@ -89,8 +97,15 @@ export function randomHuman(seed: number, order: string, inv: Record<Stick, bool
         cross: U(0, 0.12),
         patienceMs: U(2000, 6000),
         slipProb: 0.05,
-        ideal: false
+        ideal: false,
+        thinkLo: 0, thinkHi: 0, nextEarly: false, armPrepSkip: false, slow: null
     };
+    // drawn after every trait above: the grid people keep all of them
+    cfg.thinkLo = U(300, 900);
+    cfg.thinkHi = cfg.thinkLo + U(400, 2000);
+    cfg.nextEarly = r() < 0.2;
+    cfg.armPrepSkip = cfg.leaveArmOn && r() < 0.3;
+    return cfg;
 }
 
 export function idealHuman(order: string, inv: Record<Stick, boolean>): HumanConfig {
@@ -99,22 +114,38 @@ export function idealHuman(order: string, inv: Record<Stick, boolean>): HumanCon
         arm: 'ch5-2pos', aux: ['zero', 'zero', 'zero'], auxValue: [0, 0, 0, 0], auxNoise: [0, 0, 0, 0],
         rtMean: 0, stirReach: 1.1, stopsStirAfterMs: null, flickInStir: false, leaveArmOn: false, rangeLimit: 1,
         lowerThrottleInCentre: true, thumbRest: 0, throttleUpReaction: 'downFirst', residual: 0, cross: 0,
-        patienceMs: Infinity, slipProb: 0, ideal: true
+        patienceMs: Infinity, slipProb: 0, ideal: true,
+        thinkLo: 0, thinkHi: 0, nextEarly: false, armPrepSkip: false, slow: null
     };
 }
 
 // ------------------------------------------------------------------ what the person sees
 
-export type InstrKind = 'connect' | 'stir' | 'centre' | 'push' | 'release' | 'throttleDown' | 'armOn' | 'armOff' | 'armFlick' | 'check' | 'idle';
+export type InstrKind = 'connect' | 'stir' | 'centre' | 'push' | 'release' | 'throttleDown' | 'armOn' | 'armOff' | 'armFlick' | 'arm' | 'check' | 'idle';
+export interface InstrCan {
+    cont: boolean; useCurrent: boolean; pick: boolean; skipArm: boolean; fly: boolean;
+    begin: boolean; next: boolean; measureAnyway: boolean; reverse: boolean;
+}
 export interface Instruction {
     kind: InstrKind;
     fn: Fn | null;
     hint: string | null;
     ok: boolean;
     flick?: boolean; // the first wizard asked to flick every switch while stirring
-    can: { cont: boolean; useCurrent: boolean; pick: boolean; skipArm: boolean; fly: boolean };
+    paced: boolean; // the user-paced wizard (v3): the person presses Start / Next
+    stage: Stage | null;
+    can: InstrCan;
+    // what the screen shows live (not part of "the screen changed")
+    thr: number; // the throttle bar 0..1, NaN before the throttle is set
+    armLive: boolean | null;
+    armPhase: 'on' | 'off' | null; // v3 arm/active: 'off' = ON counted, the screen says "now flip it back OFF"
 }
-export type UiAction = { kind: 'cont' | 'useCurrent' | 'skipArm' | 'fly' } | { kind: 'pick'; ch: number };
+/** The buttons of the wizard screen, as the page and the simulated people press them. */
+export type UiAction =
+    | { kind: 'begin' | 'next' | 'skipArm' | 'measureAnyway' | 'fly' | 'back' }
+    | { kind: 'pick'; ch: number }
+    | { kind: 'reverse' | 'redo'; what: Fn | 'arm' }
+    | { kind: 'cont' | 'useCurrent' }; // only for the frozen v2 fixture's adapter
 export interface Adapter<W> {
     read(w: W): Instruction;
     act(w: W, a: UiAction): void;
@@ -122,61 +153,81 @@ export interface Adapter<W> {
     where(w: W): string;
 }
 
+const DONE: Verdict = { ok: true };
+const NOPE: Verdict = { ok: false, hint: { key: 'wizard.hint.disabled', params: {} } };
+
+/** One dispatcher for the page's simulated radio and the Node harness: every UI action goes through the wizard's commands. */
+export function act(w: CalibrationWizard, a: UiAction, t?: number): Verdict {
+    switch (a.kind) {
+        case 'begin': return w.begin(t);
+        case 'next': return w.next(t);
+        case 'skipArm': return w.skipArm(t);
+        case 'measureAnyway': return w.measureAnyway(t);
+        case 'pick': return w.pick(a.ch, t);
+        case 'reverse': w.reverse(a.what); return DONE;
+        case 'redo': return w.redo(a.what, t);
+        case 'back': return w.back() ? DONE : NOPE;
+        default: return NOPE; // fly: the UI saves the profile; cont / useCurrent: v2 only
+    }
+}
+
 export function emptyInstruction(): Instruction {
-    return { kind: 'idle', fn: null, hint: null, ok: false, can: { cont: false, useCurrent: false, pick: false, skipArm: false, fly: false } };
+    return {
+        kind: 'idle', fn: null, hint: null, ok: false, paced: false, stage: null,
+        can: { cont: false, useCurrent: false, pick: false, skipArm: false, fly: false, begin: false, next: false, measureAnyway: false, reverse: false },
+        thr: NaN, armLive: null, armPhase: null
+    };
 }
 
 /** What a person reads from the wizard's state (the screen), written into `out`. */
 export function instructionOf(st: WizardState, out: Instruction = emptyInstruction()): Instruction {
     const id = st.id;
-    out.kind = id === 'connect' ? 'connect' : id === 'stir' ? 'stir' : id === 'centre' ? 'centre' : id === 'check' ? 'check'
-        : id === 'arm' ? (st.phase === 'off' ? 'armOff' : 'armOn')
-            : st.phase === 'push' ? 'push' : id === 'throttle' ? 'throttleDown' : 'release';
+    out.kind = id === 'connect' ? 'connect' : id === 'stir' ? 'stir' : id === 'centre' ? 'centre' : id === 'check' ? 'check' : id === 'arm' ? 'arm' : 'push';
     out.fn = st.prompt;
     out.hint = st.hint ? st.hint.key : null;
-    out.ok = st.ok;
+    out.ok = false;
     out.flick = false;
-    out.can.cont = st.can.cont;
-    out.can.useCurrent = st.can.useCurrent;
-    out.can.pick = st.can.pick;
-    out.can.skipArm = st.can.skipArm;
-    out.can.fly = st.can.fly;
+    out.paced = true;
+    out.stage = st.stage;
+    const c = out.can, s = st.can;
+    c.cont = false; c.useCurrent = false;
+    c.pick = s.pick; c.skipArm = s.skipArm; c.fly = s.fly; c.begin = s.begin; c.next = s.next; c.measureAnyway = s.measureAnyway; c.reverse = s.reverse;
+    out.thr = Number.isNaN(st.mapped.throttle) ? NaN : (st.mapped.throttle + 1) / 2;
+    out.armLive = st.mapped.arm;
+    out.armPhase = st.armFlip ? st.armFlip.phase : null;
     return out;
 }
 
 export function newWizardAdapter(): Adapter<CalibrationWizard> {
     const ins = emptyInstruction();
     let lastId = '';
-    let lastPhase: string | null = null;
+    let lastStage: string | null = null;
     let where = '';
     return {
         read: (w) => instructionOf(w.state, ins),
-        act: (w, a) => {
-            switch (a.kind) {
-                case 'cont': w.cont(); break;
-                case 'useCurrent': w.useCurrent(); break;
-                case 'skipArm': w.skipArm(); break;
-                case 'pick': w.pick(a.ch); break;
-                case 'fly': break; // the UI would save the profile and fly
-            }
-        },
+        act: (w, a) => { act(w, a); },
         profile: (w) => (w.state.id === 'check' ? w.state.profile : null),
         where: (w) => {
             const st = w.state;
-            if (st.id !== lastId || st.phase !== lastPhase) { lastId = st.id; lastPhase = st.phase; where = st.phase ? `${st.id}/${st.phase}` : st.id; }
+            if (st.id !== lastId || st.stage !== lastStage) { lastId = st.id; lastStage = st.stage; where = st.stage ? `${st.id}/${st.stage}` : st.id; }
             return where;
         }
     };
 }
 
 function sameIns(a: Instruction, b: Instruction): boolean {
-    return a.kind === b.kind && a.fn === b.fn && a.hint === b.hint && a.ok === b.ok && !!a.flick === !!b.flick
+    return a.kind === b.kind && a.fn === b.fn && a.hint === b.hint && a.ok === b.ok && !!a.flick === !!b.flick && a.stage === b.stage
         && a.can.cont === b.can.cont && a.can.useCurrent === b.can.useCurrent && a.can.pick === b.can.pick
-        && a.can.skipArm === b.can.skipArm && a.can.fly === b.can.fly;
+        && a.can.skipArm === b.can.skipArm && a.can.fly === b.can.fly && a.can.begin === b.can.begin
+        && a.can.next === b.can.next && a.can.measureAnyway === b.can.measureAnyway && a.armPhase === b.armPhase;
 }
 
 function copyIns(a: Instruction): Instruction {
-    return { kind: a.kind, fn: a.fn, hint: a.hint, ok: a.ok, flick: !!a.flick, can: { ...a.can } };
+    return { kind: a.kind, fn: a.fn, hint: a.hint, ok: a.ok, flick: !!a.flick, paced: a.paced, stage: a.stage, can: { ...a.can }, thr: a.thr, armLive: a.armLive, armPhase: a.armPhase };
+}
+
+function screenOf(a: Instruction): string {
+    return `${a.kind}|${a.fn}|${a.stage}`;
 }
 
 // ------------------------------------------------------------------ the body
@@ -199,7 +250,7 @@ class Axis {
 }
 
 type Sub = 'slip' | 'push' | 'hold' | 'retry' | 'down' | 'dwell' | 'wait' | 'done';
-type CanKey = 'cont' | 'useCurrent' | 'pick' | 'skipArm' | 'fly';
+type CanKey = keyof InstrCan;
 
 export class Human {
     readonly c: HumanConfig;
@@ -222,15 +273,26 @@ export class Human {
     private last: Instruction | null = null;
     private pending: { ins: Instruction; at: number } | null = null;
     private cur: Instruction | null = null;
+    private liveThr = NaN;
+    private liveArm: boolean | null = null;
     // a UI click planned for later, only done if the screen still offers it
     private actKind: UiAction | null = null;
     private actAt = Infinity;
     private actNeed: CanKey | null = null;
     private actScreen = '';
+    // v3: after a press, look again; still the same screen = refused: fix what the hint says, press again
+    private retryAt = Infinity;
+    private retryScreen = '';
+    private retryAct: UiAction | null = null;
+    private retryNeed: CanKey | null = null;
+    private refusedHere = 0; // presses refused on this screen
     // switch / button script: flips at given times
     private swQ: { at: number; on: boolean }[] = [];
     private swBtn = false; // the script drives the momentary button, not the switch
     private flickRepeat = false;
+    private flipT = -Infinity; // time of the last physical arm flip
+    private armLearned = false; // told "was the switch ON?": puts it OFF from now on
+    private offAfterQ = false; // v3 arm: "now flip it back OFF" read while a flip was still under way
     // stir
     private stirOn = false;
     private stopAt = Infinity;
@@ -278,7 +340,17 @@ export class Human {
     }
 
     private U(a: number, b: number): number { return a + (b - a) * this.r(); }
-    private rt(): number { return this.c.ideal ? 0 : Math.max(250, this.c.rtMean * this.U(0.8, 1.2)); }
+    private rt(): number {
+        const s = this.c.slow;
+        if (s) return this.U(s.lo, s.hi);
+        return this.c.ideal ? 0 : Math.max(250, this.c.rtMean * this.U(0.8, 1.2));
+    }
+    /** Time before a press on the paced wizard. */
+    private think(): number {
+        const s = this.c.slow;
+        if (s) return this.U(s.lo, s.hi);
+        return this.c.ideal ? 0 : this.U(this.c.thinkLo, this.c.thinkHi);
+    }
     /** Unit-variance noise: sum of four uniforms (close enough to normal, and cheap per report). */
     private gauss(): number {
         const r = this.r;
@@ -315,10 +387,29 @@ export class Human {
         for (let k = 0; k < 4; k++) this.release(k);
     }
 
-    private flipArm(on: boolean): void {
+    /** Throttle all the way down (a radio throttle stays there once let go; a gamepad's springs back). */
+    private lowerThrottle(): void {
+        if (this.c.gamepadLike) { this.release(2); return; }
+        if (this.ax[2].p < -0.97 && !this.ax[2].held) return;
+        this.hold(2, -1.05, this.U(2, 3.5), 0.9);
+        this.lowering = true;
+    }
+
+    private thumbOff(): void {
+        if (this.thumbK >= 0) this.release(this.thumbK);
+        this.thumbK = -1;
+        this.thumbUntil = Infinity;
+    }
+
+    private flipArm(on: boolean, t = 0): void {
         if (this.arm === on) return;
         this.arm = on;
+        this.flipT = t;
         if (this.c.arm === 'ch5-3pos') this.arm3pass = this.U(30, 60); // passes the middle position
+    }
+
+    private isSwitch(): boolean {
+        return this.c.arm !== 'momentary' && this.c.arm !== 'none';
     }
 
     /** Plan switch flips (or momentary taps) from time t. */
@@ -345,7 +436,7 @@ export class Human {
     private runSwitch(t: number): void {
         while (this.swQ.length > 0 && this.swQ[0].at <= t) {
             const s = this.swQ.shift()!;
-            if (this.swBtn) this.btn = s.on; else this.flipArm(s.on);
+            if (this.swBtn) this.btn = s.on; else this.flipArm(s.on, t);
         }
     }
 
@@ -353,6 +444,8 @@ export class Human {
 
     /** The screen as it is now; a change is acted on after a reaction time. */
     see(ins: Instruction, t: number): void {
+        this.liveThr = ins.thr;
+        this.liveArm = ins.armLive;
         const l = this.last;
         if (l && sameIns(l, ins)) return;
         const okOnly = l !== null && l.kind === ins.kind && l.fn === ins.fn && !l.ok && ins.ok;
@@ -364,7 +457,7 @@ export class Human {
         if (!this.pending) this.pending = { ins: copy, at: t + delay };
         else {
             this.pending.ins = copy;
-            const floor = this.c.ideal ? 0 : 250;
+            const floor = this.c.ideal ? 0 : this.c.slow ? this.c.slow.lo : 250;
             if (this.pending.at < t + floor) this.pending.at = t + floor;
         }
     }
@@ -373,7 +466,17 @@ export class Human {
         this.actKind = a;
         this.actAt = t + delay;
         this.actNeed = need;
-        this.actScreen = this.cur ? `${this.cur.kind}|${this.cur.fn}` : '';
+        this.actScreen = this.cur ? screenOf(this.cur) : '';
+    }
+
+    /** v3: press this button after a think time (and again if it is refused). */
+    private planPress(t: number, a: UiAction, need: CanKey, delay = this.think()): void {
+        this.plan(t, a, need, delay);
+    }
+
+    private press(a: UiAction): void {
+        this.escapes.push(a.kind);
+        this.onAct?.(a);
     }
 
     private fire(t: number): void {
@@ -382,21 +485,34 @@ export class Human {
         this.actKind = null;
         this.actAt = Infinity;
         const l = this.last;
-        if (!l || `${l.kind}|${l.fn}` !== this.actScreen) return;
+        if (!l || screenOf(l) !== this.actScreen) return;
         if (need && !l.can[need]) return;
-        this.escapes.push(a.kind);
-        this.onAct?.(a);
+        if (l.paced) this.beforePress(a, l, t);
+        this.press(a);
         if (a.kind === 'pick') { this.letGoPush(); this.sub = 'retry'; this.subT = t + this.U(300, 800); }
+        if (l.paced && need !== null && need !== 'fly') {
+            // look again after a moment: the same screen means the press was refused
+            this.retryAt = t + Math.max(this.c.ideal ? 600 : 300, this.think());
+            this.retryScreen = this.actScreen;
+            this.retryAct = a;
+            this.retryNeed = need;
+        }
     }
 
     private adopt(ins: Instruction, t: number): void {
         const prev = this.cur;
         this.cur = ins;
-        if (!prev || prev.kind !== ins.kind || prev.fn !== ins.fn) { this.actKind = null; this.actAt = Infinity; this.start(ins, t); }
+        if (!prev || screenOf(prev) !== screenOf(ins)) {
+            this.actKind = null;
+            this.actAt = Infinity;
+            this.retryAt = Infinity;
+            this.refusedHere = 0;
+            if (ins.paced) this.startPaced(ins, t); else this.start(ins, t);
+        } else if (ins.paced) this.changePaced(prev, ins, t);
         else this.change(prev, ins, t);
     }
 
-    // ---------------------------------------------------------------- what to do on each screen
+    // ---------------------------------------------------------------- what to do on each screen (v2, first wizard)
 
     private start(ins: Instruction, t: number): void {
         this.thrDown = false;
@@ -445,13 +561,7 @@ export class Human {
                 break;
             case 'push': {
                 if (ins.ok && (!prev || !prev.ok)) { this.letGoPush(); this.sub = 'done'; break; }
-                if (newHint) {
-                    const h = ins.hint;
-                    if (h === 'wizard.hint.push.none' || h === 'wizard.hint.push.short') { this.reachP = 1.0; if (this.sub !== 'down' && this.sub !== 'dwell') this.pushNow(); }
-                    else if (h === 'wizard.hint.push.two') { this.crossP = 0; this.pushNow(); }
-                    else if (h === 'wizard.hint.throttle.already' && this.pk === 2) { this.hold(2, -1.05, 3, 0.9); this.sub = 'down'; }
-                    else if (h === 'wizard.hint.push.taken') { this.letGoPush(); this.releaseCentring(); this.sub = 'retry'; this.subT = t + this.U(300, 800); }
-                }
+                if (newHint) this.pushHintReaction(ins.hint, t);
                 if (gained('pick')) this.plan(t, { kind: 'pick', ch: this.c.order.indexOf(LETTER_OF[ins.fn!]) }, 'pick', 3000);
                 break;
             }
@@ -475,6 +585,147 @@ export class Human {
                 break;
             default: break;
         }
+    }
+
+    private pushHintReaction(h: string | null, t: number): void {
+        if (h === 'wizard.hint.push.none' || h === 'wizard.hint.push.short') { this.reachP = 1.0; if (this.sub !== 'down' && this.sub !== 'dwell') this.pushNow(); }
+        else if (h === 'wizard.hint.push.two') { this.crossP = 0; this.pushNow(); }
+        else if (h === 'wizard.hint.throttle.already' && this.pk === 2) { this.hold(2, -1.05, 3, 0.9); this.sub = 'down'; }
+        else if (h === 'wizard.hint.push.taken') { this.letGoPush(); this.releaseCentring(); this.sub = 'retry'; this.subT = t + this.U(300, 800); }
+    }
+
+    // ---------------------------------------------------------------- what to do on each screen (v3, user-paced)
+
+    private startPaced(ins: Instruction, t: number): void {
+        const c = this.c;
+        this.thrDown = false;
+        if (ins.kind !== 'stir' || ins.stage !== 'active') this.stirOn = false;
+        const stage = ins.stage;
+        switch (ins.kind) {
+            case 'stir':
+                if (stage === 'active') this.startStir(ins, t);
+                else { this.releaseCentring(); this.planPress(t, { kind: stage === 'ready' ? 'begin' : 'next' }, stage === 'ready' ? 'begin' : 'next'); }
+                break;
+            case 'centre':
+                if (stage === 'active') this.startCentre(t);
+                else this.releaseCentring();
+                this.planPress(t, { kind: stage === 'ready' ? 'begin' : 'next' }, stage === 'ready' ? 'begin' : 'next');
+                break;
+            case 'push': {
+                const fn = ins.fn!;
+                if (stage === 'active') { this.startPush(fn, t); break; }
+                this.letGoPush();
+                this.releaseCentring();
+                this.thumbOff();
+                if (fn === 'throttle') this.lowerThrottle();
+                if (stage === 'ready') this.planPress(t, { kind: 'begin' }, 'begin');
+                else this.planPress(t, { kind: 'next' }, 'next', c.nextEarly && !c.slow ? 0 : this.think());
+                break;
+            }
+            case 'arm':
+                if (stage === 'ready') {
+                    this.releaseCentring();
+                    if (c.gamepadLike) this.release(2);
+                    if (this.isSwitch() && (!c.armPrepSkip || this.armLearned)) this.planSwitch(t, 'off');
+                    this.planPress(t, { kind: 'begin' }, 'begin');
+                } else if (stage === 'active') {
+                    if (c.arm !== 'none') this.planSwitch(t, 'on');
+                } else {
+                    if (this.isSwitch()) this.planSwitch(t, 'off');
+                    this.planPress(t, { kind: 'next' }, 'next');
+                }
+                break;
+            case 'check': this.plan(t, { kind: 'fly' }, 'fly', c.slow ? this.U(c.slow.lo, c.slow.hi) : this.U(500, 2000)); break;
+            default: break;
+        }
+        this.changePaced(null, ins, t);
+    }
+
+    private changePaced(prev: Instruction | null, ins: Instruction, t: number): void {
+        const newHint = ins.hint !== null && (!prev || prev.hint !== ins.hint);
+        const gained = (k: CanKey) => ins.can[k] && (!prev || !prev.can[k]);
+        const h = ins.hint;
+        switch (ins.kind) {
+            case 'stir':
+                if (ins.stage !== 'active') break;
+                if (newHint && (h === 'wizard.hint.stir.coverage' || h === 'wizard.hint.stir.few' || h === 'wizard.needFourAxes' || h === 'wizard.hint.stir.short')) {
+                    this.stirOn = true; this.stopAt = Infinity; this.reach = 1.1;
+                }
+                if (gained('next')) this.planPress(t, { kind: 'next' }, 'next');
+                break;
+            case 'push':
+                if (ins.stage !== 'active') break;
+                if (newHint) {
+                    if (h === 'wizard.hint.push.hold' && this.pk === 2 && !this.c.gamepadLike) {
+                        // "was the throttle up when you pressed Start?": down, Back, then Start again
+                        this.lowerThrottle();
+                        this.plan(t, { kind: 'back' }, null, this.think());
+                    } else this.pushHintReaction(h, t);
+                }
+                if (gained('pick')) this.plan(t, { kind: 'pick', ch: this.c.order.indexOf(LETTER_OF[ins.fn!]) }, 'pick', this.c.slow ? this.think() : 3000);
+                break;
+            case 'arm':
+                if (ins.stage !== 'active') break;
+                // "now flip it back OFF" (read after the reaction time, like any change of the
+                // screen): a flip still under way in the hand is finished first. Already OFF in the
+                // hand (it was ON at Start): nothing to flip; the hint says what to do
+                if (ins.armPhase === 'off' && (!prev || prev.armPhase !== 'off') && this.isSwitch()) {
+                    if (this.swQ.length) this.offAfterQ = true;
+                    else if (this.arm) this.planSwitch(t, 'off');
+                }
+                if (!newHint) break;
+                if (h === 'wizard.hint.arm.none' || h === 'wizard.hint.arm.small') {
+                    if (this.c.arm === 'none') this.plan(t, { kind: 'skipArm' }, 'skipArm', this.c.slow ? this.think() : this.U(2000, 5000));
+                    else this.planSwitch(t, this.c.arm === 'momentary' ? 'taps' : 'redoOn');
+                } else if (h === 'wizard.hint.arm.wasOn') {
+                    // still ON in the hand while the screen says "back OFF": just flip it OFF
+                    if (ins.armPhase === 'off' && this.isSwitch() && this.arm) { this.planSwitch(t, 'off'); break; }
+                    // switch OFF, Back, Start, flip ON
+                    this.armLearned = true;
+                    if (this.isSwitch()) this.planSwitch(t, 'off');
+                    this.plan(t, { kind: 'back' }, null, this.think());
+                }
+                break;
+            default: break;
+        }
+    }
+
+    /** Just before a press: what the screen shows live that the person checks first. */
+    private beforePress(a: UiAction, l: Instruction, t: number): void {
+        // the arm line reads the opposite of the switch in the hand (and the radio had time to show it)
+        const armWrong = this.liveArm !== null && this.isSwitch() && this.liveArm !== this.arm && t - this.flipT >= 300 && this.swQ.length === 0;
+        if (armWrong && ((l.kind === 'arm' && l.stage === 'done' && a.kind === 'next') || (l.kind === 'check' && a.kind === 'fly'))) this.press({ kind: 'reverse', what: 'arm' });
+    }
+
+    /** A press was refused (the same screen after a moment): do what its hint says, press again. */
+    private retry(t: number): void {
+        let a = this.retryAct!;
+        let need = this.retryNeed!;
+        this.retryAt = Infinity;
+        const l = this.last;
+        if (!l || screenOf(l) !== this.retryScreen || !l.can[need]) return;
+        this.refusedHere++;
+        // "Measure as it is" once Measure kept failing after it was offered (a stick that never settles)
+        if (l.kind === 'centre' && l.can.measureAnyway && this.refusedHere >= 4) { a = { kind: 'measureAnyway' }; need = 'measureAnyway'; }
+        switch (l.hint) {
+            case 'wizard.hint.begin.held': case 'wizard.hint.centre.ends': case 'wizard.hint.centre.held': case 'wizard.hint.next.held':
+                this.letGoPush(); this.releaseCentring(); this.thumbOff();
+                break;
+            case 'wizard.hint.begin.parked': case 'wizard.hint.centre.parked':
+                this.releaseCentring(); this.thumbOff(); this.lowerThrottle();
+                break;
+            case 'wizard.hint.next.thrDown':
+                // the throttle is down in the hand, the bar reads it up: the push was taken the wrong way round
+                if (!this.c.gamepadLike && this.ax[2].p < -0.9 && !this.lowering && this.liveThr > 0.5) this.press({ kind: 'reverse', what: 'throttle' });
+                else this.lowerThrottle();
+                break;
+            case 'wizard.hint.next.armOn':
+                if (!this.arm && this.swQ.length === 0 && t - this.flipT >= 300 && this.liveArm === true) this.press({ kind: 'reverse', what: 'arm' });
+                else if (this.isSwitch() && this.arm) this.planSwitch(t, 'off');
+                break;
+            default: break; // "still moving": wait a moment
+        }
+        this.planPress(t, a, need, Math.max(this.c.ideal ? 50 : 200, this.think()));
     }
 
     private startStir(ins: Instruction, t: number): void {
@@ -578,14 +829,26 @@ export class Human {
 
     update(t: number, dt: number): void {
         if (this.pending && t >= this.pending.at) { const p = this.pending; this.pending = null; this.adopt(p.ins, t); }
-        const kind = this.cur ? this.cur.kind : 'idle';
-        if (kind === 'stir') this.doStir(t, dt);
+        const cur = this.cur;
+        const kind = cur ? cur.kind : 'idle';
+        if (cur && cur.paced) {
+            if (kind === 'stir' && cur.stage === 'active') this.doStir(t, dt);
+            else if (kind === 'push' && cur.stage === 'active') this.doPush(t);
+            if (this.lowering && this.ax[2].p < -0.97) { this.release(2); this.lowering = false; }
+            if (t >= this.thumbUntil && this.thumbK >= 0) this.thumbOff();
+        } else if (kind === 'stir') this.doStir(t, dt);
         else if (kind === 'centre') this.doCentre(t);
         else if (kind === 'push') this.doPush(t);
         else if (kind === 'throttleDown') { if (this.thrDown && !this.c.gamepadLike && this.ax[2].p < -0.97) { this.release(2); this.thrDown = false; } }
         else if (kind === 'armFlick' && this.flickRepeat && this.swQ.length === 0) this.planFlicks(t + this.U(1000, 3000));
         this.runSwitch(t);
+        if (this.offAfterQ && this.swQ.length === 0) {
+            this.offAfterQ = false;
+            const l = this.last;
+            if (l && l.kind === 'arm' && l.stage === 'active' && l.armPhase === 'off' && this.arm) this.planSwitch(t + this.U(200, 600), 'off');
+        }
         if (this.actAt <= t) this.fire(t);
+        if (this.retryAt <= t) this.retry(t);
         // body
         const n = Math.max(1, Math.ceil(dt / 4));
         const h = dt / n / 1000;
@@ -701,13 +964,16 @@ export function quantize11(v: number): number {
     return (raw - 1024) / 1024;
 }
 
+/** Called after every frame / tick ('frame') and after every UI action ('cmd'): the tests' command invariant. */
+export type Observer<W> = (w: W, cause: 'frame' | 'cmd', t: number) => void;
+
 export function runHuman<W extends { start(t: number): void; feed(f: RawFrame): unknown; tick?(t: number): unknown }>(
-    make: () => W, ad: Adapter<W>, cfg: HumanConfig, maxMs = 180000): Outcome {
+    make: () => W, ad: Adapter<W>, cfg: HumanConfig, maxMs = 180000, obs?: Observer<W>): Outcome {
     const w = make();
     const h = new Human(cfg);
     let flyAt = -1;
     let now = 0;
-    h.onAct = (a) => { if (a.kind === 'fly') { if (flyAt < 0) flyAt = now; } else ad.act(w, a); };
+    h.onAct = (a) => { if (a.kind === 'fly') { if (flyAt < 0) flyAt = now; } else { ad.act(w, a); obs?.(w, 'cmd', now); } };
     const frame: RawFrame = { t: 0, axes: new Float32Array(8), buttons: 0 };
     const ch = new Float64Array(8);
     const dt = 1000 / cfg.rateHz;
@@ -731,7 +997,8 @@ export function runHuman<W extends { start(t: number): void; feed(f: RawFrame): 
         }
         frame.t = t;
         w.feed(frame);
-        if (hasTick && t >= nextTick) { w.tick!(t); nextTick += 250; }
+        obs?.(w, 'frame', t);
+        if (hasTick && t >= nextTick) { w.tick!(t); nextTick += 250; obs?.(w, 'frame', t); }
         const wh = ad.where(w);
         if (wh !== where) {
             if (where) phaseMs[where] = (phaseMs[where] ?? 0) + (t - whereT);
@@ -799,4 +1066,3 @@ export function judge(cfg: HumanConfig, p: Profile): string[] {
     }
     return bad;
 }
-

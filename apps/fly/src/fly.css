@@ -66,6 +66,13 @@ h1 { font-size: 22px; margin: 0 0 12px; } h2 { font-size: 18px; margin: 0 0 10px
 .osd .armed { color: var(--accent); } .osd .disarmed { color: var(--warn); } .osd .crash { color: var(--bad); } .osd .rec { color: var(--bad); }
 .gate-msg { position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%); background: rgba(0,0,0,.55); color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 14px; max-width: 90vw; text-align: center; }
 .gate-msg:empty { display: none; }
+/* armed and flying (flight.ts Hud): the guidance for getting into the air goes, and comes back
+   when disarmed or crashed; a card hanging over the whole flight was a pilot's complaint */
+#ui.hud-flying .touch-hint, #ui.hud-flying > .banner, #ui.hud-flying > .bake-box, #ui.hud-flying .input-note { display: none; }
+/* H: every text on the flight view off (.hud itself is hidden by flight.ts); buttons and pads stay */
+#ui.hud-off .touch-hint, #ui.hud-off > .banner, #ui.hud-off > .bake-box, #ui.hud-off .attribution, #ui.hud-off .input-note { display: none; }
+.hud-note { position: absolute; left: 50%; top: calc(max(14px, env(safe-area-inset-top)) + 30px + var(--banner-h, 0px)); transform: translateX(-50%); max-width: min(90vw, 420px); background: rgba(0,0,0,.6); color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 13px; text-align: center; }
+.hud-note[hidden] { display: none; }
 /* panels & overlays (fade, never a full-screen flash) */
 .panel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; animation: fadein .4s ease both; }
 .panel-head { display: flex; justify-content: space-between; align-items: center; }
@@ -147,6 +154,11 @@ body.touch-on .attribution { top: calc(max(10px, env(safe-area-inset-top)) + 128
 /* the top of the HUD slides back up when a note goes, instead of jumping */
 .osd.tl, .osd.tr, .top-actions, .touch-hint, body.touch-on .attribution { transition: top .25s ease; }
 @media (prefers-reduced-motion: reduce) { .panel, .crash-overlay { animation: none; } .progress > i, .stick-anim::after, .osd.tl, .osd.tr, .top-actions, .touch-hint, body.touch-on .attribution { transition: none; } }
+/* a short window (a phone on its side): the credit goes up under the OSD's top line, so the bottom
+   middle stays free for the arm card and nothing sits over the middle of the view */
+@media (max-height: 500px) {
+    .attribution, body.touch-on .attribution { top: calc(max(10px, env(safe-area-inset-top)) + 34px + var(--banner-h, 0px)); bottom: auto; left: 16px; max-width: calc(100vw - 260px); }
+}
 body.clean .top-actions, body.clean .attribution, body.clean .osd.br, body.clean .crash-overlay, body.clean .gate-msg, body.clean .banner { display: none; }
 /* cinema mode: clean picture, only the record control and its note */
 .cinema-bar { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; max-width: 92vw; }

@@ -15,8 +15,8 @@ svg.rb { --ghost: #7dd3fc; --rb-body: #151b23; --rb-edge: #2c3643; --rb-well: #0
 .rb-sw-lever.rb-idle { stroke: #4b5563; transform: none; }
 .rb-ghost-lever { stroke: var(--ghost); stroke-width: 3; stroke-dasharray: 4 3; stroke-linecap: round; fill: none; transform-box: fill-box; transform-origin: 50% 100%; animation: rb-flip-on 1.6s ease-in-out infinite; }
 .rb-ghost-lever.to-off { animation-name: rb-flip-off; }
-.rb-ghost-lever.rb-done { animation: none; transform: rotate(25deg); }
-.rb-ghost-lever.rb-done.to-off { transform: rotate(-25deg); }
+/* the move that comes after Start: shown, but faint, so it does not read as "do it now" */
+.rb .rb-preview { opacity: .45; }
 .rb-sw-halo { fill: rgba(125, 211, 252, .08); stroke: var(--ghost); stroke-width: 2; stroke-dasharray: 5 4; animation: rb-pulse 1.4s ease-in-out infinite; }
 .rb-sw-ok { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
 .rb-well { fill: var(--rb-well); stroke: var(--rb-edge); stroke-width: 1.5; }
@@ -33,6 +33,15 @@ svg.rb { --ghost: #7dd3fc; --rb-body: #151b23; --rb-edge: #2c3643; --rb-well: #0
 .rb-tol { fill: none; stroke: var(--ghost); stroke-width: 1.5; stroke-dasharray: 3 3; }
 .rb-hold { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
 .rb-ok { fill: none; stroke: var(--accent-ink); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+/* push gauge beside the arrow: how far the stick has gone; ticks at 30 % (counts as a try) and
+   70 % (enough); the colour says the zone the wizard puts it in */
+.rb-g-trk { fill: var(--rb-well); stroke: var(--ghost); stroke-width: 1.2; }
+.rb-g-fill { fill: var(--muted); }
+.rb-gauge.z-almost .rb-g-fill { fill: var(--hint-fg, #fde68a); }
+.rb-gauge.z-enough .rb-g-fill { fill: var(--accent); }
+.rb-gauge.z-two .rb-g-fill { fill: var(--bad, #f87171); }
+.rb-g-tick { stroke: var(--muted); stroke-width: 1.5; }
+.rb-g-tick.goal { stroke: var(--fg); stroke-width: 2.5; }
 .rb-lbl { fill: var(--muted); font: 600 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; text-anchor: middle; }
 .rb-lbl.target { fill: var(--ghost); }
 .rb-arm-lbl { font-size: 11px; fill: var(--ghost); }
@@ -52,7 +61,7 @@ svg.rb { --ghost: #7dd3fc; --rb-body: #151b23; --rb-edge: #2c3643; --rb-well: #0
 @keyframes rb-flip-on { 0% { transform: rotate(-25deg); opacity: 0; } 15% { transform: rotate(-25deg); opacity: 1; } 50%, 85% { transform: rotate(25deg); opacity: 1; } 100% { transform: rotate(25deg); opacity: 0; } }
 @keyframes rb-flip-off { 0% { transform: rotate(25deg); opacity: 0; } 15% { transform: rotate(25deg); opacity: 1; } 50%, 85% { transform: rotate(-25deg); opacity: 1; } 100% { transform: rotate(-25deg); opacity: 0; } }
 /* mini (arm card): no labels, arrows, ghosts or ring; thicker strokes so it survives the scale */
-svg.rb-mini .rb-sw-halo, svg.rb-mini .rb-lbl, svg.rb-mini .rb-arrow, svg.rb-mini .rb-ghost, svg.rb-mini .rb-hold, svg.rb-mini .rb-ok, svg.rb-mini .rb-tol, svg.rb-mini .rb-ghost-lever, svg.rb-mini .rb-cross, svg.rb-mini .rb-screen { display: none; }
+svg.rb-mini .rb-sw-halo, svg.rb-mini .rb-lbl, svg.rb-mini .rb-arrow, svg.rb-mini .rb-ghost, svg.rb-mini .rb-hold, svg.rb-mini .rb-ok, svg.rb-mini .rb-tol, svg.rb-mini .rb-ghost-lever, svg.rb-mini .rb-cross, svg.rb-mini .rb-screen, svg.rb-mini .rb-gauge { display: none; }
 svg.rb-mini .rb-body { stroke-width: 5; }
 svg.rb-mini .rb-well { stroke-width: 4; }
 svg.rb-mini .rb-well.target, svg.rb-mini .rb-sw.target .rb-sw-base { stroke-width: 7; }
@@ -114,8 +123,46 @@ svg.rb-mini .rb-dim { opacity: .5; }
 .wz-stage svg.rb { width: 100%; height: auto; max-height: 52vh; margin: 0 auto; }
 .wz.is-check .wz-stage svg.rb { max-height: 36vh; }
 .wz-count { margin: 4px 0 2px; text-align: center; font-size: 14px; }
+.wz-count[hidden] { display: none; }
+/* ready stage: nothing is measured until the green button; the chip says so over the drawing */
+.wz-chip { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); padding: 5px 14px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 14px; white-space: nowrap; pointer-events: none; box-shadow: 0 0 0 3px rgba(74, 222, 128, .25); animation: wz-chip 1.6s ease-in-out infinite; }
+.wz-chip[hidden] { display: none; }
+@keyframes wz-chip { 0%, 100% { box-shadow: 0 0 0 3px rgba(74, 222, 128, .25); } 50% { box-shadow: 0 0 0 7px rgba(74, 222, 128, .08); } }
+.wz.is-ready .wz-stage { border-color: rgba(74, 222, 128, .45); }
+/* push: how far the stick has gone, in words (the gauge beside the arrow shows the same) */
+.wz-gauge-t { margin: 4px 0 2px; text-align: center; font-size: 17px; font-weight: 650; color: var(--muted); min-height: 1.45em; }
+.wz-gauge-t[hidden] { display: none; }
+.wz-gauge-t.z-almost { color: var(--hint-fg); }
+.wz-gauge-t.z-enough { color: var(--accent); }
+.wz-gauge-t.z-two { color: var(--bad); }
 .wz-hint { margin: 10px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--hint-bg); color: var(--hint-fg); border: 1px solid var(--hint-edge); }
 .wz-hint[hidden] { display: none; }
+/* a refused press: the answer nudges, so pressing again and getting the same text is noticed */
+.wz-hint.flash { animation: wz-flash .45s ease-out; }
+@keyframes wz-flash { 0% { transform: translateX(0); border-color: var(--hint-fg); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-2px); } 100% { transform: translateX(0); } }
+/* the result of a finished stage, live until Next */
+.wz-result { padding: 12px 14px; border: 1px solid var(--accent); border-radius: 12px; background: rgba(74, 222, 128, .06); display: grid; gap: 8px; max-width: 640px; }
+.wz-result p { margin: 0; }
+.wz-result-h { display: flex; gap: 8px; align-items: center; font-size: 18px; font-weight: 650; }
+.wz-result-h .mk svg { display: block; }
+.wz-result-h .mk::before { display: none; }
+.wz-result-inv { color: var(--warn); }
+.wz-result-inv[hidden] { display: none; }
+.wz-result-next { color: var(--fg); }
+.wz-centres { margin: 0; padding: 0 0 0 26px; font: 14px ui-monospace, Consolas, monospace; color: var(--muted); }
+/* check (rule 5): one row per function: name, channel, live bar, Reverse, Set again */
+.wz-rows { display: grid; gap: 8px; max-width: 760px; margin-bottom: 10px; }
+.wz-row { display: grid; grid-template-columns: 96px 64px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.wz-row .nm { font-weight: 600; }
+.wz-row .ch { font: 13px ui-monospace, Consolas, monospace; color: var(--muted); }
+.wz-row .ch.wide { grid-column: span 2; font-family: inherit; }
+.wz-row .trk { height: 12px; background: var(--line); border-radius: 6px; position: relative; overflow: hidden; }
+.wz-row .trk i { position: absolute; top: 0; bottom: 0; background: var(--accent); }
+.wz-row .trk.mid::after { content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 2px; margin-left: -1px; background: var(--muted); }
+.wz-row .acts { display: flex; gap: 6px; justify-content: flex-end; }
+.wz-row .btn { min-height: 36px; padding: 4px 12px; font-size: 13px; }
+.wz-row.arm .wz-armnow { min-height: 36px; font-size: 15px; }
+@media (prefers-reduced-motion: reduce) { .wz-chip, .wz-hint.flash { animation: none; } }
 .wz-extra:empty { display: none; }
 .wz-extra { margin-top: 10px; }
 .wz-modeask { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg2); }
@@ -134,6 +181,30 @@ svg.rb-mini .rb-dim { opacity: .5; }
 .wz-pick-list .btn { flex-direction: column; min-width: 72px; gap: 4px; font: 13px ui-monospace, Consolas, monospace; }
 .wz-pick-list .mini { display: block; width: 48px; height: 6px; background: var(--line); border-radius: 3px; position: relative; overflow: hidden; }
 .wz-pick-list .mini i { position: absolute; top: 0; bottom: 0; left: 0; background: var(--accent); }
+/* arm: every channel that is not a stick, live and clickable (Liftoff's dots). Seen = the flip
+   under way is on it; picked = listened to alone; taken = the result */
+.wz-pick.arm { margin-top: 10px; border-color: var(--line); }
+.wz-pick.arm > p:last-child { margin: 8px 0 0; }
+.wz-arm-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.wz-arm-list .btn.wz-armch { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; min-height: 44px; padding: 6px 10px; font: 600 13px ui-monospace, Consolas, monospace; text-align: left; }
+.wz-armch .bar { display: block; height: 8px; background: var(--line); border-radius: 4px; position: relative; overflow: hidden; }
+.wz-armch .bar i { position: absolute; top: 0; bottom: 0; left: 0; background: var(--muted); }
+.wz-armch .val { min-width: 4.5ch; text-align: right; color: var(--muted); font-weight: 400; }
+.wz-armch.seen { border-color: var(--ghost, #7dd3fc); }
+.wz-armch.seen .bar i { background: var(--ghost, #7dd3fc); }
+.wz-armch.picked, .wz-armch.taken { border-color: var(--accent); color: var(--accent); }
+.wz-armch.picked .bar i, .wz-armch.taken .bar i { background: var(--accent); }
+/* arm/active: the flip in two halves, ON then back OFF */
+.wz-flip { padding: 10px 12px; border: 1px solid var(--ghost, #7dd3fc); border-radius: 10px; background: var(--bg2); display: grid; gap: 6px; max-width: 640px; }
+.wz-flip p { margin: 0; }
+.wz-flip-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 16px; font-weight: 600; }
+.wz-flip-steps li { display: flex; gap: 8px; align-items: center; color: var(--muted); }
+.wz-flip-steps li.now { color: var(--fg); }
+.wz-flip-steps li.now > .mk::before { border-color: var(--ghost, #7dd3fc); background: rgba(125, 211, 252, .35); }
+.wz-flip-steps li.done { color: var(--accent); }
+.wz-flip-src { font-size: 14px; color: var(--fg); }
+.wz-flip-only[hidden] { display: none; }
+.wz-fbar.lvl .val { font: 13px ui-monospace, Consolas, monospace; color: var(--muted); min-width: 5ch; text-align: right; }
 .wz-checks { list-style: none; margin: 0 0 10px; padding: 0; }
 .wz-checks li { display: flex; gap: 8px; align-items: center; min-height: 28px; }
 .mk { width: 16px; height: 16px; flex: none; display: grid; place-items: center; }
@@ -180,8 +251,12 @@ svg.rb-mini .rb-dim { opacity: .5; }
 .wz-ch.sw .trk { background: repeating-linear-gradient(135deg, var(--line) 0 6px, #182029 6px 12px); }
 .wz-ch .fn { color: var(--fg); font-weight: 700; }
 .wz-ch .dot { display: none; width: 7px; height: 7px; border-radius: 50%; background: #3b4452; margin: 2px auto 0; }
-.wz-chans.dots .wz-ch .dot { display: block; }
+.wz-chans.dots .wz-ch .dot { display: block; width: 9px; height: 9px; background: var(--warn); } /* moving */
 .wz-ch.still .dot { background: var(--accent); }
+.wz-chans.dots .wz-ch.park .dot { background: var(--bad); } /* held between its middle and its end */
+/* the channel that is moving most during a push (Liftoff's dots) */
+.wz-ch.lead .trk { outline: 2px solid var(--ghost, #7dd3fc); }
+.wz-ch.lead { color: var(--fg); }
 .wz-foot { display: flex; gap: 6px 16px; flex-wrap: wrap; margin-top: 8px; }
 .wz-foot p { margin: 0; }
 .wz-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; position: sticky; bottom: 0; z-index: 1; background: rgba(7, 8, 10, .95); padding: 8px 0 max(12px, env(safe-area-inset-bottom)); }
@@ -204,11 +279,22 @@ svg.rb-mini .rb-dim { opacity: .5; }
     .wz-chans { gap: 3px; }
     .wz-ch .trk { height: 40px; }
     .wz-fbar { grid-template-columns: 76px minmax(0, 1fr) auto; }
+    /* check rows on a phone: name, channel and bar on one line, the two buttons under them */
+    .wz-row { grid-template-columns: 70px 56px minmax(0, 1fr); gap: 4px 8px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+    .wz-row .acts { grid-column: 1 / -1; }
+    .wz-row .ch.wide { grid-column: span 2; }
+    .wz-row .acts .btn { flex: 1 1 0; }
+    .wz-chip { font-size: 13px; top: 6px; padding: 4px 12px; }
+    .wz-gauge-t { font-size: 15px; }
+    .wz-result-h { font-size: 16px; }
     .wz-fbar.arm .wz-armnow { grid-column: 1 / -1; grid-row: 2; justify-self: stretch; justify-content: center; font-size: 16px; } /* a row of its own: no wrap */
     .wz-fbar.arm > :last-child { grid-column: 3; grid-row: 1; } /* Reverse stays at the end of the first row */
     .wz-actions { padding: 8px 0 max(8px, env(safe-area-inset-bottom)); }
     .wz-actions .btn { flex: 1 1 0; min-height: 48px; padding: 10px 8px; }
     .wz-actions .btn.big { flex-grow: 2; font-size: 17px; }
+    /* four buttons (an escape such as Skip beside Back and Start again): the green one gets its own
+       row, the other three share the next one instead of wrapping their labels into four lines */
+    .wz-actions:has(> :nth-child(4)) > .btn.big { flex-basis: 100%; min-height: 50px; }
     .wz.is-check .wz-stage svg.rb { max-height: 30vh; }
 }
 
@@ -231,9 +317,26 @@ svg.rb-mini .rb-dim { opacity: .5; }
 .kc-list li.now { color: var(--warn); }
 .kc-list li.now kbd { border-color: var(--warn); color: var(--warn); }
 .kc-keys { display: flex; gap: 4px; }
-/* touch: the one-line arm hint sits mid-screen, clear of the pads and the ARM button at the bottom */
-/* ...and under the credit, which moves down with the notes at the top edge (fly.css --banner-h) */
-.gate-msg.mid { top: max(38%, calc(max(10px, env(safe-area-inset-top)) + 188px + var(--banner-h, 0px))); bottom: auto; width: max-content; max-width: min(86vw, 520px); font-size: 16px; padding: 8px 14px; }
+/* touch: the one-line arm hint never sits over the middle of the view. Upright, the pads fill the
+   bottom corners with a finger's width between them: the hint goes just above them. On its side
+   there is room between the pads: the hint sits there, right above the ARM button it points to */
+.gate-msg.mid { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 12px); width: max-content; max-width: min(86vw, 520px); font-size: 16px; padding: 8px 14px; }
+@media (orientation: landscape) {
+    .gate-msg.mid { bottom: calc(max(24px, env(safe-area-inset-bottom)) + 64px); max-width: calc(100vw - 2 * min(40vw, 220px) - 64px); font-size: 14px; padding: 6px 12px; }
+}
+/* a short window (a phone on its side, a radio as gamepad): the cards shrink to their rows and sit
+   low, clear of the middle of the view (the credit moved up, fly.css) */
+@media (max-height: 500px) {
+    .arm-card { bottom: 40px; padding: 6px 10px; }
+    .arm-card svg.rb-mini, .arm-card h3 { display: none; }
+    .kc-list li:not(.now) { display: none; }
+    .key-card p.now { margin: 0 0 2px; }
+}
+/* a keyboard on a laptop screen: the keys in two columns, so the card stays low */
+@media (max-height: 860px) and (min-width: 900px) {
+    .arm-card.key-card { max-width: min(92vw, 820px); }
+    .kc-list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 20px; }
+}
 /* ---------------------------------------------------------------- pause menu: the key beside each item */
 .pause-menu .btn.block { justify-content: space-between; text-align: left; }
 .pm-label { min-width: 0; }

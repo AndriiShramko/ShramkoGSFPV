@@ -4,7 +4,7 @@
 import { S, InputLog, parseBetaflightDiff } from '@gsfpv/sim-core';
 import type { SimEvent, ParamOverrides } from '@gsfpv/sim-core';
 import { parseSceneInput, recordOpen, recordFlight, SceneError } from '@gsfpv/scenes';
-import { Scenario, makePlan, makeTourPlan } from '@gsfpv/input/sim';
+import { Scenario, makePlan, makeTourPlan, act } from '@gsfpv/input/sim';
 import { findSphereSpawn, VoxelContactWorld, syntheticOpen } from '@gsfpv/collision';
 import { GSPLAT_RENDERER_RASTER_GPU_SORT } from 'playcanvas';
 import { FrameGovernor } from '@gsfpv/render-pc';
@@ -705,9 +705,11 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
             rateHz: Number(q.get('rate') ?? 250),
             seed: 7,
             brokenStick: (q.get('broken') as 'A' | 'E' | 'T' | 'R' | null) ?? undefined,
-            reactMs: Number(q.get('react') ?? 0),
+            reactMs: Number(q.get('react') ?? 400),
             // &human=<seed>: one of the simulated people (their mistakes, hints read, buttons pressed)
-            humanSeed: q.get('human') !== null ? Number(q.get('human')) : undefined
+            humanSeed: q.get('human') !== null ? Number(q.get('human')) : undefined,
+            // &nobuttons=1: the hands follow the screens, no button is ever pressed (the wizard must stay put)
+            noButtons: q.get('nobuttons') === '1'
         });
         hook.fake = fake;
         session.pause(true, 'controls');
@@ -717,9 +719,9 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
         fake.onAct = (a) => {
             const w = r.wizard;
             if (!w) return;
+            // the same commands the wizard's buttons call; Fly through the button, which saves the profile
             if (a.kind === 'fly') document.querySelector<HTMLButtonElement>('[data-action="wizard-done"]')?.click();
-            else if (a.kind === 'pick') w.pick(a.ch);
-            else w[a.kind]();
+            else act(w, a, performance.now());
         };
         r.runWizard(fake.key, 'SimRadio EdgeTX Classic', (cb) => { fake.onFrame = cb; }, () => fake.cfg.rateHz, 'hid');
         r.onDone = (c) => {
