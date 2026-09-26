@@ -20,7 +20,9 @@ export default defineConfig({
                       a1viewer: resolve(__dirname, 'lab/a1-viewer.html'),
                       det: resolve(__dirname, 'lab/det.html'),
                       blank: resolve(__dirname, 'lab/blank.html'),
-                      flash: resolve(__dirname, 'lab/flash.html')
+                      flash: resolve(__dirname, 'lab/flash.html'),
+                      // A9 frame cost: measured on this build so it runs the release engine, not the dev server's debug one
+                      frame: resolve(__dirname, 'lab/frame.html')
                   }
                 : { main: resolve(__dirname, 'index.html') }
         }
