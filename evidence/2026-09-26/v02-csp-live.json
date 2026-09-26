@@ -1,0 +1,78 @@
+{
+ "base": "https://gsfpv.flyreelstudio.eu",
+ "pages": [
+  {
+   "path": "/en/",
+   "mode": "none",
+   "violations": [
+    {
+     "dir": "script-src-elem",
+     "blocked": "inline",
+     "sample": "",
+     "disposition": "enforce"
+    }
+   ],
+   "pageErrors": [],
+   "controlBlocked": true
+  },
+  {
+   "path": "/ru/",
+   "mode": "none",
+   "violations": [],
+   "pageErrors": []
+  },
+  {
+   "path": "/en/fly/?scene=39e63ce9&simradio=raw",
+   "mode": "none",
+   "violations": [],
+   "pageErrors": [],
+   "status": "ready",
+   "renderer": 2,
+   "collision": true,
+   "wizard": true,
+   "readyMs": 4241
+  },
+  {
+   "path": "/en/fly/?scene=9d09ab82",
+   "mode": "none",
+   "violations": [],
+   "pageErrors": [],
+   "samples": [
+    {
+     "t": 4,
+     "status": "loading",
+     "loading": {
+      "stage": "connect",
+      "loaded": 0,
+      "total": 0,
+      "fraction": 0,
+      "exact": false,
+      "elapsedMs": 1
+     },
+     "errorCode": null,
+     "radio": false,
+     "text": "9d09ab82\nOpening the scan\n0 s"
+    },
+    {
+     "t": 6015,
+     "status": "ready",
+     "loading": {
+      "stage": "done",
+      "loaded": 18728148,
+      "total": 18728148,
+      "fraction": 1,
+      "exact": true,
+      "elapsedMs": 3004
+     },
+     "errorCode": null,
+     "radio": true,
+     "text": ""
+    }
+   ]
+  }
+ ],
+ "ok": false,
+ "site": "https://gsfpv.flyreelstudio.eu",
+ "release": "bb00ca6 (hub 6fedc30ca8f5)",
+ "note": "mode none = the live nginx sends no x-csp-mode header (that header exists only in the local emulator); enforcement is proven by controlBlocked=true on /en/ and the Content-Security-Policy header"
+}

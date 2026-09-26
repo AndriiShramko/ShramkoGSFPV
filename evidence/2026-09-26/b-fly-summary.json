@@ -1,0 +1,19 @@
+{
+  "name": "b-fly-summary",
+  "context": {
+    "date": "2026-09-26T16:53:59.974Z",
+    "gitHead": "bb00ca6",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "items": {
+    "B6": true,
+    "B10": true,
+    "B11": true,
+    "B13": true,
+    "B15": true
+  }
+}

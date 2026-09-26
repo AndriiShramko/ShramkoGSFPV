@@ -1,0 +1,37 @@
+{
+  "name": "b-fly-b13",
+  "context": {
+    "date": "2026-09-26T16:53:13.919Z",
+    "gitHead": "bb00ca6",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "oracle": "every tick: each body sphere resampled every voxel/4 with the upstream querySphere",
+  "rows": [
+    {
+      "id": "39e63ce9",
+      "passes": 20,
+      "speed": 25,
+      "contacts": 20,
+      "penetrations": 0
+    },
+    {
+      "id": "887f27aa",
+      "passes": 20,
+      "speed": 25,
+      "contacts": 20,
+      "penetrations": 0
+    },
+    {
+      "id": "7a475d38",
+      "passes": 20,
+      "speed": 25,
+      "contacts": 20,
+      "penetrations": 0
+    }
+  ]
+}
