@@ -1,0 +1,102 @@
+{
+ "mode": "pause",
+ "lang": "en",
+ "tag": "old",
+ "checks": {
+  "pause-restart-shows-R": {
+   "ok": false,
+   "detail": [
+    {
+     "a": "pause.continue",
+     "keys": [
+      "Esc",
+      "P"
+     ],
+     "aria": "Escape P"
+    },
+    {
+     "a": "pause.restart",
+     "keys": [],
+     "aria": null
+    },
+    {
+     "a": "pause.scene",
+     "keys": [],
+     "aria": null
+    },
+    {
+     "a": "pause.drone",
+     "keys": [],
+     "aria": null
+    },
+    {
+     "a": "pause.radio",
+     "keys": [],
+     "aria": null
+    },
+    {
+     "a": "pause.settings",
+     "keys": [],
+     "aria": null
+    },
+    {
+     "a": "pause.replays",
+     "keys": [],
+     "aria": null
+    },
+    {
+     "a": "pause.measure",
+     "keys": [],
+     "aria": null
+    },
+    {
+     "a": "pause.import",
+     "keys": [],
+     "aria": null
+    },
+    {
+     "a": "pause.cinema",
+     "keys": [],
+     "aria": null
+    },
+    {
+     "a": null,
+     "keys": [],
+     "aria": null
+    }
+   ]
+  },
+  "pause-buttons-hit": {
+   "ok": true,
+   "detail": []
+  },
+  "pause-R-restarts": {
+   "ok": true,
+   "detail": {
+    "before": 3423,
+    "after": {
+     "paused": false,
+     "tick": 910,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "menu": false,
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    }
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

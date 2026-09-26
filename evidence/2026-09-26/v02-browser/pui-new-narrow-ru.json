@@ -1,0 +1,178 @@
+{
+ "mode": "narrow",
+ "lang": "ru",
+ "tag": "new",
+ "checks": {
+  "narrow-w480-keyline": {
+   "ok": true,
+   "detail": {
+    "bl": [
+     16,
+     767,
+     220,
+     19
+    ],
+    "br": [
+     323,
+     771,
+     141,
+     15
+    ],
+    "brText": "R \u043d\u0430 \u0441\u0442\u0430\u0440\u0442 \u00b7 P \u043f\u0430\u0443\u0437\u0430",
+    "attribution": [
+     16,
+     708,
+     288,
+     52
+    ],
+    "tops": [
+     191,
+     38,
+     273,
+     40
+    ],
+    "tl": [
+     44,
+     14,
+     105,
+     19
+    ],
+    "tr": [
+     359,
+     14,
+     105,
+     19
+    ],
+    "armed": true
+   }
+  },
+  "narrow-w480-buttons-hit": {
+   "ok": true,
+   "detail": []
+  },
+  "narrow-w375-keyline": {
+   "ok": true,
+   "detail": {
+    "bl": [
+     16,
+     779,
+     220,
+     19
+    ],
+    "br": [
+     296,
+     783,
+     63,
+     15
+    ],
+    "brText": "\u043a\u0440\u0430\u0448\u0435\u0439: 0",
+    "attribution": [
+     16,
+     702,
+     225,
+     70
+    ],
+    "tops": [
+     86,
+     38,
+     273,
+     40
+    ],
+    "tl": [
+     44,
+     14,
+     105,
+     19
+    ],
+    "tr": [
+     254,
+     14,
+     105,
+     19
+    ],
+    "armed": true
+   }
+  },
+  "narrow-w375-buttons-hit": {
+   "ok": true,
+   "detail": []
+  },
+  "narrow-w1024-keyline": {
+   "ok": true,
+   "detail": {
+    "bl": [
+     16,
+     735,
+     220,
+     19
+    ],
+    "br": [
+     256,
+     739,
+     752,
+     15
+    ],
+    "brText": "\u043a\u0440\u0430\u0448\u0435\u0439: 0  \u00b7  \u041f\u0440\u043e\u0431\u0435\u043b \u0430\u0440\u043c \u00b7 W/S \u0433\u0430\u0437 \u00b7 A/D \u0440\u044b\u0441\u043a\u0430\u043d\u0438\u0435 \u00b7 \u0441\u0442\u0440\u0435\u043b\u043a\u0438 \u0442\u0430\u043d\u0433\u0430\u0436/\u043a\u0440\u0435\u043d \u00b7 M angle/acro \u00b7 R \u043d\u0430 \u0441\u0442\u0430\u0440\u0442 \u00b7 P \u043f\u0430\u0443\u0437\u0430",
+    "attribution": [
+     16,
+     693,
+     614,
+     35
+    ],
+    "tops": [
+     735,
+     38,
+     273,
+     40
+    ],
+    "tl": [
+     44,
+     14,
+     105,
+     19
+    ],
+    "tr": [
+     903,
+     14,
+     105,
+     19
+    ],
+    "armed": true
+   }
+  },
+  "narrow-w1024-buttons-hit": {
+   "ok": true,
+   "detail": []
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

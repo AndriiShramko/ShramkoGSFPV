@@ -1,0 +1,178 @@
+{
+ "mode": "narrow",
+ "lang": "en",
+ "tag": "new",
+ "checks": {
+  "narrow-w480-keyline": {
+   "ok": true,
+   "detail": {
+    "bl": [
+     16,
+     767,
+     220,
+     19
+    ],
+    "br": [
+     330,
+     771,
+     134,
+     15
+    ],
+    "brText": "R respawn \u00b7 P pause",
+    "attribution": [
+     16,
+     708,
+     288,
+     52
+    ],
+    "tops": [
+     235,
+     38,
+     229,
+     40
+    ],
+    "tl": [
+     44,
+     14,
+     105,
+     19
+    ],
+    "tr": [
+     359,
+     14,
+     105,
+     19
+    ],
+    "armed": true
+   }
+  },
+  "narrow-w480-buttons-hit": {
+   "ok": true,
+   "detail": []
+  },
+  "narrow-w375-keyline": {
+   "ok": true,
+   "detail": {
+    "bl": [
+     16,
+     779,
+     220,
+     19
+    ],
+    "br": [
+     296,
+     783,
+     63,
+     15
+    ],
+    "brText": "crashes 0",
+    "attribution": [
+     16,
+     720,
+     225,
+     52
+    ],
+    "tops": [
+     131,
+     38,
+     229,
+     40
+    ],
+    "tl": [
+     44,
+     14,
+     105,
+     19
+    ],
+    "tr": [
+     254,
+     14,
+     105,
+     19
+    ],
+    "armed": true
+   }
+  },
+  "narrow-w375-buttons-hit": {
+   "ok": true,
+   "detail": []
+  },
+  "narrow-w1024-keyline": {
+   "ok": true,
+   "detail": {
+    "bl": [
+     16,
+     735,
+     220,
+     19
+    ],
+    "br": [
+     284,
+     739,
+     724,
+     15
+    ],
+    "brText": "crashes 0  \u00b7  Space arm \u00b7 W/S throttle \u00b7 A/D yaw \u00b7 arrows pitch/roll \u00b7 M angle/acro \u00b7 R respawn \u00b7 P pause",
+    "attribution": [
+     16,
+     711,
+     583,
+     17
+    ],
+    "tops": [
+     779,
+     38,
+     229,
+     40
+    ],
+    "tl": [
+     44,
+     14,
+     105,
+     19
+    ],
+    "tr": [
+     903,
+     14,
+     105,
+     19
+    ],
+    "armed": true
+   }
+  },
+  "narrow-w1024-buttons-hit": {
+   "ok": true,
+   "detail": []
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

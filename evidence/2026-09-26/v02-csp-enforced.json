@@ -1,0 +1,75 @@
+{
+ "base": "http://localhost:5320",
+ "pages": [
+  {
+   "path": "/en/",
+   "mode": "enforced",
+   "violations": [
+    {
+     "dir": "script-src-elem",
+     "blocked": "inline",
+     "sample": "",
+     "disposition": "enforce"
+    }
+   ],
+   "pageErrors": [],
+   "controlBlocked": true
+  },
+  {
+   "path": "/ru/",
+   "mode": "enforced",
+   "violations": [],
+   "pageErrors": []
+  },
+  {
+   "path": "/en/fly/?scene=39e63ce9&simradio=raw",
+   "mode": "enforced",
+   "violations": [],
+   "pageErrors": [],
+   "status": "ready",
+   "renderer": 2,
+   "collision": true,
+   "wizard": true,
+   "readyMs": 2279
+  },
+  {
+   "path": "/en/fly/?scene=9d09ab82",
+   "mode": "enforced",
+   "violations": [],
+   "pageErrors": [],
+   "samples": [
+    {
+     "t": 3,
+     "status": "loading",
+     "loading": {
+      "stage": "connect",
+      "loaded": 0,
+      "total": 0,
+      "fraction": 0,
+      "exact": false,
+      "elapsedMs": 1
+     },
+     "errorCode": null,
+     "radio": false,
+     "text": "9d09ab82\nOpening the scan\n0 s"
+    },
+    {
+     "t": 6010,
+     "status": "ready",
+     "loading": {
+      "stage": "done",
+      "loaded": 18728148,
+      "total": 18728148,
+      "fraction": 1,
+      "exact": true,
+      "elapsedMs": 3060
+     },
+     "errorCode": null,
+     "radio": true,
+     "text": ""
+    }
+   ]
+  }
+ ],
+ "ok": true
+}

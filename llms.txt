@@ -2,13 +2,17 @@
 
 > Open-source (MIT) browser FPV drone simulator for 3D Gaussian Splatting scenes. Fly any public SuperSplat scan with a quadcopter model (4 motors, mixer, rate PID, Betaflight/Actual/KISS/Raceflight rate curves), swept voxel collision with real crashes, and your EdgeTX radio over WebHID, a gamepad or touch sticks. WebGPU + PlayCanvas. Author: Andrii Shramko. Live at https://gsfpv.flyreelstudio.eu (alpha, September 2026).
 
-Key facts (measured, see evidence/latest.json):
-- Rate curves match compiled Betaflight 4.5.1 at 1880 points with 0 deg/s error.
-- 0 wall pass-throughs in 200,000 straight passes at 5-34 m/s (1 ms swept test vs an independent oracle).
+Key facts (measured, see the JSON files in evidence/2026-09-24/):
+- Rate curves match Betaflight 4.5.1's own rc.c at 1880 points with 0 deg/s error, both computed in double precision; a float32 build differs by at most 6.3e-4 deg/s.
+- 0 wall pass-throughs in 200,000 straight passes at 5-34 m/s (1 ms swept test vs an independent oracle): 150,000 on three real scans, 50,000 at a 2 cm wall.
 - The whole flight is deterministic: the SHA-256 of the trace is identical in Node and Chrome and across 30/60/144/240 Hz frame splits; replays are recomputed from stick inputs only.
 - Scenes load in the visitor's browser straight from the public SuperSplat CDN; the server never contacts SuperSplat.
-- Default craft: BetaFPV Pavo20 Pro class 2.2-inch cinewhoop; every preset number is labelled manufacturer / measured / estimate.
-- Radio support has been tested with a simulated EdgeTX radio; a real radio has not been tested yet.
+- Default craft: BetaFPV Pavo20 Pro class 2.2-inch cinewhoop, plus five more presets (Pavo20 Pro II 3S and 4S, Pavo Pico, Meteor65 Pro, Air65). The spec rows on each preset card (thrust-to-weight, weight, wheelbase, motor, battery) are labelled manufacturer / measured / estimate; the card's maximum rate and hover-throttle figures are not labelled yet.
+- Radio support has been tested in desktop Chrome with a simulated EdgeTX radio; a real radio, Edge, gamepads and the DJI controller have not been tested yet.
+- Touch sticks were tested only in desktop Chrome's touch emulation (375x812, 1024x768): arming, both sticks at once and the pause button work, but holding a hover was not checked and the check's negative control is not conclusive yet. Safari, iPad and Android browsers have not been tested yet.
+- Firefox 155 renders the scene with WebGPU and offers a gamepad or touch sticks; radios need Chrome or Edge (no WebHID in Firefox).
+- Crash effects stay under the WCAG limit of 3 flashes per second (at most 2 per second measured over 50 crashes).
+- Gravity: Earth and Moon drops measured; Mars, zero-g, a custom value and the keep-thrust-to-weight mode are not tested yet.
 
 ## Links
 - [Simulator and landing page](https://gsfpv.flyreelstudio.eu): fly in the browser, EN/ES/PL/RU

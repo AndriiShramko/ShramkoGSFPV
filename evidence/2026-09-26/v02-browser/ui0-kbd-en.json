@@ -1,0 +1,217 @@
+{
+ "mode": "kbd",
+ "lang": "en",
+ "checks": {
+  "controls-keyboard-hint": {
+   "ok": true,
+   "detail": {
+    "kbHint": "Space arms. W / S throttle, A / D yaw, arrows pitch and roll, M turns self-levelling on or off.",
+    "btns": [
+     {
+      "text": "Radio over USB (EdgeTX)",
+      "primary": true,
+      "disabled": false
+     },
+     {
+      "text": "Gamepad or radio as gamepad",
+      "primary": false,
+      "disabled": false
+     },
+     {
+      "text": "Touch sticks",
+      "primary": false,
+      "disabled": false
+     },
+     {
+      "text": "Keyboard",
+      "primary": false,
+      "disabled": false
+     }
+    ],
+    "focus": "Radio over USB (EdgeTX)",
+    "hid": true
+   }
+  },
+  "controls-accent-on-a-working-button": {
+   "ok": true,
+   "detail": [
+    {
+     "text": "Radio over USB (EdgeTX)",
+     "primary": true,
+     "disabled": false
+    },
+    {
+     "text": "Gamepad or radio as gamepad",
+     "primary": false,
+     "disabled": false
+    },
+    {
+     "text": "Touch sticks",
+     "primary": false,
+     "disabled": false
+    },
+    {
+     "text": "Keyboard",
+     "primary": false,
+     "disabled": false
+    }
+   ]
+  },
+  "kbd-gate-no-switch": {
+   "ok": true,
+   "detail": {
+    "armed": false,
+    "block": "switch",
+    "source": "keyboard",
+    "paused": false,
+    "thr": -1,
+    "screen": false,
+    "lang": "en",
+    "gate": "Press Space to arm.",
+    "gateCls": "gate-msg visually-hidden",
+    "gateVisible": false,
+    "gateRect": [
+     948,
+     1004,
+     24,
+     12
+    ],
+    "keyCard": true,
+    "keyNow": "Press Space to arm.",
+    "keyRowsNow": [
+     0
+    ],
+    "keyRect": [
+     745,
+     759,
+     430,
+     257
+    ],
+    "armCard": false,
+    "armCardRole": null,
+    "armCardText": "ARMTo armARM",
+    "br": "crashes 0",
+    "touch": false
+   }
+  },
+  "kbd-key-card": {
+   "ok": true,
+   "detail": {
+    "keyCard": true,
+    "now": "Press Space to arm.",
+    "rows": [
+     0
+    ],
+    "rect": [
+     745,
+     759,
+     430,
+     257
+    ],
+    "br": "crashes 0"
+   }
+  },
+  "kbd-throttle-block": {
+   "ok": true,
+   "detail": {
+    "block": "throttle",
+    "now": "Hold S until the throttle is all the way down, then press Space.",
+    "rows": [
+     1
+    ],
+    "thr": 0.052
+   }
+  },
+  "kbd-armed": {
+   "ok": true,
+   "detail": {
+    "armed": true,
+    "keyCard": false,
+    "gate": "",
+    "br": "crashes 0  \u00b7  Space arm \u00b7 W/S throttle \u00b7 A/D yaw \u00b7 arrows pitch/roll \u00b7 M angle/acro \u00b7 R respawn \u00b7 P pause"
+   }
+  },
+  "kbd-disarm-card-back": {
+   "ok": true,
+   "detail": {
+    "armed": false,
+    "keyCard": true,
+    "block": "switch",
+    "now": "Press Space to arm."
+   }
+  },
+  "pause-keys": {
+   "ok": false,
+   "detail": [
+    [
+     "pause.continue",
+     "Esc+P",
+     "Escape P"
+    ],
+    [
+     "pause.restart",
+     "R",
+     "R"
+    ],
+    [
+     "pause.scene",
+     "",
+     null
+    ],
+    [
+     "pause.drone",
+     "",
+     null
+    ],
+    [
+     "pause.radio",
+     "",
+     null
+    ],
+    [
+     "pause.settings",
+     "",
+     null
+    ],
+    [
+     "pause.replays",
+     "",
+     null
+    ],
+    [
+     "pause.measure",
+     "",
+     null
+    ],
+    [
+     "pause.import",
+     "",
+     null
+    ],
+    [
+     "pause.cinema",
+     "",
+     null
+    ],
+    [
+     "Work with us",
+     "",
+     null
+    ]
+   ]
+  }
+ },
+ "data": {},
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

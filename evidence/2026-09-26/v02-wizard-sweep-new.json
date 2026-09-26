@@ -1,0 +1,160 @@
+{
+ "note": "People are the model in packages/input/src/sim/human.ts, not measured humans; thresholds are not measured on a real radio.",
+ "tuning": {
+  "STILL_P2P": 0.1,
+  "EMA_TAU_MS": 150,
+  "MOVING_SPAN": 0.3,
+  "SWITCH_SPAN": 0.5,
+  "STICK_SPAN": 1,
+  "OTHER_FRAC": 0.1,
+  "STIR_COVER": 0.9,
+  "STIR_MIN_MS": 2500,
+  "STIR_CONT_COVER": 0.5,
+  "STIR_HINT_MS": 12000,
+  "CENTRE_HOLD_MS": 800,
+  "CENTRE_MIN_MS": 2000,
+  "CENTRE_HINT_MS": 6000,
+  "CENTRE_ESCAPE_MS": 10000,
+  "PUSH": 0.6,
+  "ARRIVE_FROM": 0.35,
+  "ARRIVE_STILL_MS": 100,
+  "QUIET": 0.35,
+  "STICK_HOLD_MS": 400,
+  "THROTTLE_HOLD_MS": 700,
+  "TAKEN_HOLD_MS": 400,
+  "PUSH_HINT_MS": 5000,
+  "PUSH_ESCAPE_MS": 8000,
+  "RELEASE_MID_TOL": 0.2,
+  "RELEASE_REST_TOL": 0.1,
+  "RELEASE_HOLD_MS": 300,
+  "THR_DOWN_TOL": 0.2,
+  "THR_DOWN_HOLD_MS": 400,
+  "RELEASE_HINT_MS": 4000,
+  "RELEASE_ESCAPE_MS": 8000,
+  "ARM_JUMP": 0.5,
+  "ARM_SMALL": 0.15,
+  "ARM_LEVEL_MS": 120,
+  "ARM_ON_HOLD_MS": 600,
+  "ARM_OFF_TOL": 0.2,
+  "ARM_OFF_HOLD_MS": 400,
+  "ARM_TAP_MS": 600,
+  "ARM_TAPS_WITHIN_MS": 4000,
+  "ARM_HINT_MS": 8000,
+  "ARM_OFF_HINT_MS": 5000,
+  "ARM_OFF_ESCAPE_MS": 8000,
+  "CONNECT_HINT_MS": 3000,
+  "OK_MS": 500,
+  "CHECK_SUSPECT_MS": 3000,
+  "CLASSIFY_EVERY_MS": 100,
+  "HINT_MIN_MS": 1500
+ },
+ "summary": {
+  "label": "new wizard",
+  "runs": 12000,
+  "correct": 12000,
+  "wrong": 0,
+  "hang": 0,
+  "badShare": 0,
+  "runMs": {
+   "p50": 26500,
+   "p95": 39888,
+   "max": 52244
+  },
+  "longestPhase": {
+   "name": "stir",
+   "ms": 18356
+  },
+  "phases": {
+   "stir": {
+    "n": 12000,
+    "p50": 4100,
+    "p95": 14336,
+    "max": 18356
+   },
+   "centre": {
+    "n": 12000,
+    "p50": 2500,
+    "p95": 3051,
+    "max": 3914
+   },
+   "throttle/push": {
+    "n": 12000,
+    "p50": 2248,
+    "p95": 2932,
+    "max": 8268
+   },
+   "throttle/release": {
+    "n": 12000,
+    "p50": 2026,
+    "p95": 2655,
+    "max": 2992
+   },
+   "yaw/push": {
+    "n": 12000,
+    "p50": 1876,
+    "p95": 2475,
+    "max": 2776
+   },
+   "yaw/release": {
+    "n": 12000,
+    "p50": 807,
+    "p95": 946,
+    "max": 1276
+   },
+   "pitch/push": {
+    "n": 12000,
+    "p50": 1436,
+    "p95": 1858,
+    "max": 2372
+   },
+   "pitch/release": {
+    "n": 12000,
+    "p50": 808,
+    "p95": 952,
+    "max": 1238
+   },
+   "roll/push": {
+    "n": 12000,
+    "p50": 1440,
+    "p95": 1861,
+    "max": 2454
+   },
+   "roll/release": {
+    "n": 12000,
+    "p50": 808,
+    "p95": 950,
+    "max": 1188
+   },
+   "arm/on": {
+    "n": 12000,
+    "p50": 1774,
+    "p95": 13380,
+    "max": 14534
+   },
+   "check": {
+    "n": 12000,
+    "p50": 2156,
+    "p95": 3096,
+    "max": 3696
+   },
+   "arm/off": {
+    "n": 7416,
+    "p50": 1800,
+    "p95": 2412,
+    "max": 2686
+   }
+  },
+  "hintsShownInRuns": {
+   "wizard.hint.arm.none": 3408,
+   "wizard.hint.stir.coverage": 2008,
+   "wizard.hint.throttle.already": 341,
+   "wizard.hint.push.short": 341
+  },
+  "escapesUsed": {
+   "skipArm": 3408,
+   "cont": 408
+  },
+  "problems": {}
+ },
+ "bad": []
+}

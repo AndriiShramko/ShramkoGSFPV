@@ -1,0 +1,302 @@
+{
+ "mode": "wizard",
+ "lang": "en",
+ "tag": "new",
+ "checks": {
+  "wizard-desk-pill-follows-switch": {
+   "ok": true,
+   "detail": {
+    "off": {
+     "text": "Now: OFF \u00b7 disarmed",
+     "on": "false",
+     "role": "status",
+     "rect": [
+      746,
+      829,
+      219,
+      41
+     ],
+     "font": 17,
+     "bg": "rgba(251, 191, 36, 0.1)",
+     "revPressed": "false",
+     "revRect": [
+      1195,
+      831,
+      91,
+      36
+     ],
+     "revHit": true,
+     "hint": "Set the arm switch where you fly disarmed: here it must say OFF. Says ON? Press Reverse on the Arm line.",
+     "level": false,
+     "ow": 0
+    },
+    "on": {
+     "text": "Now: ON \u00b7 armed",
+     "on": "true",
+     "role": "status",
+     "rect": [
+      746,
+      829,
+      192,
+      41
+     ],
+     "font": 17,
+     "bg": "rgba(74, 222, 128, 0.16)",
+     "revPressed": "false",
+     "revRect": [
+      1195,
+      831,
+      91,
+      36
+     ],
+     "revHit": true,
+     "hint": "Set the arm switch where you fly disarmed: here it must say OFF. Says ON? Press Reverse on the Arm line.",
+     "level": true,
+     "ow": 0
+    }
+   }
+  },
+  "wizard-desk-pill-big-and-coloured": {
+   "ok": true,
+   "detail": {
+    "onFont": 17,
+    "onRect": [
+     746,
+     829,
+     192,
+     41
+    ],
+    "onBg": "rgba(74, 222, 128, 0.16)",
+    "offBg": "rgba(251, 191, 36, 0.1)",
+    "overflowX": 0
+   }
+  },
+  "wizard-desk-pill-beside-reverse": {
+   "ok": true,
+   "detail": {
+    "pill": [
+     746,
+     829,
+     192,
+     41
+    ],
+    "rev": [
+     1195,
+     831,
+     91,
+     36
+    ],
+    "hint": "Set the arm switch where you fly disarmed: here it must say OFF. Says ON? Press Reverse on the Arm line."
+   }
+  },
+  "wizard-desk-pill-follows-reverse": {
+   "ok": true,
+   "detail": {
+    "rev": {
+     "text": "Now: OFF \u00b7 disarmed",
+     "on": "false",
+     "role": "status",
+     "rect": [
+      746,
+      829,
+      219,
+      41
+     ],
+     "font": 17,
+     "bg": "rgba(251, 191, 36, 0.1)",
+     "revPressed": "true",
+     "revRect": [
+      1195,
+      831,
+      91,
+      36
+     ],
+     "revHit": true,
+     "hint": "Set the arm switch where you fly disarmed: here it must say OFF. Says ON? Press Reverse on the Arm line.",
+     "level": true,
+     "ow": 0
+    },
+    "back": {
+     "text": "Now: ON \u00b7 armed",
+     "on": "true",
+     "role": "status",
+     "rect": [
+      746,
+      829,
+      192,
+      41
+     ],
+     "font": 17,
+     "bg": "rgba(74, 222, 128, 0.16)",
+     "revPressed": "false",
+     "revRect": [
+      1195,
+      831,
+      91,
+      36
+     ],
+     "revHit": true,
+     "hint": "Set the arm switch where you fly disarmed: here it must say OFF. Says ON? Press Reverse on the Arm line.",
+     "level": true,
+     "ow": 0
+    }
+   }
+  },
+  "wizard-p375-pill-follows-switch": {
+   "ok": true,
+   "detail": {
+    "off": {
+     "text": "Now: OFF \u00b7 disarmed",
+     "on": "false",
+     "role": "status",
+     "rect": [
+      16,
+      537,
+      328,
+      40
+     ],
+     "font": 16,
+     "bg": "rgba(251, 191, 36, 0.1)",
+     "revPressed": "false",
+     "revRect": [
+      253,
+      491,
+      91,
+      36
+     ],
+     "revHit": true,
+     "hint": "Set the arm switch where you fly disarmed: here it must say OFF. Says ON? Press Reverse on the Arm line.",
+     "level": false,
+     "ow": 0
+    },
+    "on": {
+     "text": "Now: ON \u00b7 armed",
+     "on": "true",
+     "role": "status",
+     "rect": [
+      16,
+      537,
+      328,
+      40
+     ],
+     "font": 16,
+     "bg": "rgba(74, 222, 128, 0.16)",
+     "revPressed": "false",
+     "revRect": [
+      253,
+      491,
+      91,
+      36
+     ],
+     "revHit": true,
+     "hint": "Set the arm switch where you fly disarmed: here it must say OFF. Says ON? Press Reverse on the Arm line.",
+     "level": true,
+     "ow": 0
+    }
+   }
+  },
+  "wizard-p375-pill-big-and-coloured": {
+   "ok": true,
+   "detail": {
+    "onFont": 16,
+    "onRect": [
+     16,
+     537,
+     328,
+     40
+    ],
+    "onBg": "rgba(74, 222, 128, 0.16)",
+    "offBg": "rgba(251, 191, 36, 0.1)",
+    "overflowX": 0
+   }
+  },
+  "wizard-p375-pill-beside-reverse": {
+   "ok": true,
+   "detail": {
+    "pill": [
+     16,
+     537,
+     328,
+     40
+    ],
+    "rev": [
+     253,
+     491,
+     91,
+     36
+    ],
+    "hint": "Set the arm switch where you fly disarmed: here it must say OFF. Says ON? Press Reverse on the Arm line."
+   }
+  },
+  "wizard-p375-pill-follows-reverse": {
+   "ok": true,
+   "detail": {
+    "rev": {
+     "text": "Now: OFF \u00b7 disarmed",
+     "on": "false",
+     "role": "status",
+     "rect": [
+      16,
+      537,
+      328,
+      40
+     ],
+     "font": 16,
+     "bg": "rgba(251, 191, 36, 0.1)",
+     "revPressed": "true",
+     "revRect": [
+      253,
+      491,
+      91,
+      36
+     ],
+     "revHit": true,
+     "hint": "Set the arm switch where you fly disarmed: here it must say OFF. Says ON? Press Reverse on the Arm line.",
+     "level": true,
+     "ow": 0
+    },
+    "back": {
+     "text": "Now: ON \u00b7 armed",
+     "on": "true",
+     "role": "status",
+     "rect": [
+      16,
+      537,
+      328,
+      40
+     ],
+     "font": 16,
+     "bg": "rgba(74, 222, 128, 0.16)",
+     "revPressed": "false",
+     "revRect": [
+      253,
+      491,
+      91,
+      36
+     ],
+     "revHit": true,
+     "hint": "Set the arm switch where you fly disarmed: here it must say OFF. Says ON? Press Reverse on the Arm line.",
+     "level": true,
+     "ow": 0
+    }
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

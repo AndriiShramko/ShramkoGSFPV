@@ -1,0 +1,170 @@
+{
+ "mode": "touch",
+ "lang": "en",
+ "checks": {
+  "touch-gate-text": {
+   "ok": true,
+   "detail": {
+    "source": "touch",
+    "block": "switch",
+    "gate": "Tap ARM at the bottom to arm.",
+    "cls": "gate-msg mid",
+    "rect": [
+     64,
+     309,
+     248,
+     39
+    ]
+   }
+  },
+  "touch-gate-clear-of-hud": {
+   "ok": true,
+   "detail": {
+    "gate": [
+     64,
+     309,
+     248,
+     39
+    ],
+    "hits": [],
+    "rects": {
+     ".touch-arm": [
+      140,
+      732,
+      96,
+      56
+     ],
+     ".touch-pad.left": [
+      24,
+      638,
+      150,
+      150
+     ],
+     ".touch-pad.right": [
+      201,
+      638,
+      150,
+      150
+     ],
+     ".osd.bl": [
+      16,
+      603,
+      211,
+      19
+     ],
+     ".osd.tl": [
+      44,
+      71,
+      141,
+      19
+     ],
+     ".touch-hint": [
+      19,
+      143,
+      338,
+      17
+     ],
+     ".attribution": [
+      16,
+      195,
+      343,
+      35
+     ],
+     ".top-actions": [
+      207,
+      95,
+      153,
+      40
+     ]
+    }
+   }
+  },
+  "touch-armed-gate-gone": {
+   "ok": true,
+   "detail": {
+    "armed": true,
+    "gate": "",
+    "block": null
+   }
+  },
+  "touch-pause-no-keycaps": {
+   "ok": true,
+   "detail": [
+    "none",
+    "none"
+   ]
+  },
+  "touch-controls-banner-hidden": {
+   "ok": true,
+   "detail": [
+    "hidden"
+   ]
+  },
+  "touch-controls-on-top": {
+   "ok": true,
+   "detail": {
+    "onTop": [
+     true,
+     true,
+     true
+    ],
+    "crashOverlay": [
+     "hidden"
+    ]
+   }
+  },
+  "touch-controls-accent": {
+   "ok": true,
+   "detail": {
+    "banner": [
+     "hidden"
+    ],
+    "btns": [
+     {
+      "text": "Radio over USB (EdgeTX)",
+      "primary": false,
+      "disabled": true
+     },
+     {
+      "text": "Gamepad or radio as gamepad",
+      "primary": false,
+      "disabled": false
+     },
+     {
+      "text": "Touch sticks",
+      "primary": true,
+      "disabled": false
+     },
+     {
+      "text": "Keyboard",
+      "primary": false,
+      "disabled": false
+     }
+    ],
+    "coarse": true,
+    "crashOverlay": [
+     "hidden"
+    ],
+    "onTop": [
+     true,
+     true,
+     true
+    ]
+   }
+  }
+ },
+ "data": {},
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

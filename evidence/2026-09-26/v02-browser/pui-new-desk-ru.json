@@ -1,0 +1,86 @@
+{
+ "mode": "desk",
+ "lang": "ru",
+ "tag": "new",
+ "checks": {
+  "desk-no-overlap-with-banner": {
+   "ok": true,
+   "detail": {
+    "rects": {
+     "tl": [
+      44,
+      50,
+      132,
+      19
+     ],
+     "tr": [
+      1799,
+      50,
+      105,
+      19
+     ],
+     "bl": [
+      16,
+      1047,
+      211,
+      19
+     ],
+     "br": [
+      1841,
+      1051,
+      63,
+      15
+     ],
+     "attribution": [
+      16,
+      1023,
+      661,
+      17
+     ],
+     "tops": [
+      1631,
+      74,
+      273,
+      40
+     ],
+     "keycard": [
+      743,
+      759,
+      435,
+      257
+     ],
+     "banner0": [
+      0,
+      0,
+      1920,
+      36
+     ]
+    },
+    "hits": []
+   }
+  },
+  "desk-buttons-hit": {
+   "ok": true,
+   "detail": []
+  },
+  "desk-armed-full-keyline": {
+   "ok": true,
+   "detail": {
+    "hits": [],
+    "br": "\u043a\u0440\u0430\u0448\u0435\u0439: 0  \u00b7  \u041f\u0440\u043e\u0431\u0435\u043b \u0430\u0440\u043c \u00b7 W/S \u0433\u0430\u0437 \u00b7 A/D \u0440\u044b\u0441\u043a\u0430\u043d\u0438\u0435 \u00b7 \u0441\u0442\u0440\u0435\u043b\u043a\u0438 \u0442\u0430\u043d\u0433\u0430\u0436/\u043a\u0440\u0435\u043d \u00b7 M angle/acro \u00b7 R \u043d\u0430 \u0441\u0442\u0430\u0440\u0442 \u00b7 P \u043f\u0430\u0443\u0437\u0430"
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

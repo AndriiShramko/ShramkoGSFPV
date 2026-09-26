@@ -1,0 +1,302 @@
+{
+ "mode": "wizard",
+ "lang": "ru",
+ "tag": "new",
+ "checks": {
+  "wizard-desk-pill-follows-switch": {
+   "ok": true,
+   "detail": {
+    "off": {
+     "text": "\u0421\u0435\u0439\u0447\u0430\u0441: \u0412\u042b\u041a\u041b \u00b7 \u0434\u0438\u0437\u0430\u0440\u043c",
+     "on": "false",
+     "role": "status",
+     "rect": [
+      746,
+      829,
+      248,
+      41
+     ],
+     "font": 17,
+     "bg": "rgba(251, 191, 36, 0.1)",
+     "revPressed": "false",
+     "revRect": [
+      1198,
+      831,
+      89,
+      36
+     ],
+     "revHit": true,
+     "hint": "\u041f\u043e\u0441\u0442\u0430\u0432\u044c \u0442\u0443\u043c\u0431\u043b\u0435\u0440 \u0430\u0440\u043c\u0430 \u0432 \u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0434\u0438\u0437\u0430\u0440\u043c\u0430: \u0437\u0434\u0435\u0441\u044c \u0434\u043e\u043b\u0436\u043d\u043e \u0431\u044b\u0442\u044c \u0412\u042b\u041a\u041b. \u0412\u0438\u0434\u0438\u0448\u044c \u0412\u041a\u041b \u2014 \u043d\u0430\u0436\u043c\u0438 \u00ab\u0420\u0435\u0432\u0435\u0440\u0441\u00bb \u0432 \u0441\u0442\u0440\u043e\u043a\u0435 \u00ab\u0410\u0440\u043c\u00bb.",
+     "level": false,
+     "ow": 0
+    },
+    "on": {
+     "text": "\u0421\u0435\u0439\u0447\u0430\u0441: \u0412\u041a\u041b \u00b7 \u0430\u0440\u043c",
+     "on": "true",
+     "role": "status",
+     "rect": [
+      746,
+      829,
+      203,
+      41
+     ],
+     "font": 17,
+     "bg": "rgba(74, 222, 128, 0.16)",
+     "revPressed": "false",
+     "revRect": [
+      1198,
+      831,
+      89,
+      36
+     ],
+     "revHit": true,
+     "hint": "\u041f\u043e\u0441\u0442\u0430\u0432\u044c \u0442\u0443\u043c\u0431\u043b\u0435\u0440 \u0430\u0440\u043c\u0430 \u0432 \u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0434\u0438\u0437\u0430\u0440\u043c\u0430: \u0437\u0434\u0435\u0441\u044c \u0434\u043e\u043b\u0436\u043d\u043e \u0431\u044b\u0442\u044c \u0412\u042b\u041a\u041b. \u0412\u0438\u0434\u0438\u0448\u044c \u0412\u041a\u041b \u2014 \u043d\u0430\u0436\u043c\u0438 \u00ab\u0420\u0435\u0432\u0435\u0440\u0441\u00bb \u0432 \u0441\u0442\u0440\u043e\u043a\u0435 \u00ab\u0410\u0440\u043c\u00bb.",
+     "level": true,
+     "ow": 0
+    }
+   }
+  },
+  "wizard-desk-pill-big-and-coloured": {
+   "ok": true,
+   "detail": {
+    "onFont": 17,
+    "onRect": [
+     746,
+     829,
+     203,
+     41
+    ],
+    "onBg": "rgba(74, 222, 128, 0.16)",
+    "offBg": "rgba(251, 191, 36, 0.1)",
+    "overflowX": 0
+   }
+  },
+  "wizard-desk-pill-beside-reverse": {
+   "ok": true,
+   "detail": {
+    "pill": [
+     746,
+     829,
+     203,
+     41
+    ],
+    "rev": [
+     1198,
+     831,
+     89,
+     36
+    ],
+    "hint": "\u041f\u043e\u0441\u0442\u0430\u0432\u044c \u0442\u0443\u043c\u0431\u043b\u0435\u0440 \u0430\u0440\u043c\u0430 \u0432 \u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0434\u0438\u0437\u0430\u0440\u043c\u0430: \u0437\u0434\u0435\u0441\u044c \u0434\u043e\u043b\u0436\u043d\u043e \u0431\u044b\u0442\u044c \u0412\u042b\u041a\u041b. \u0412\u0438\u0434\u0438\u0448\u044c \u0412\u041a\u041b \u2014 \u043d\u0430\u0436\u043c\u0438 \u00ab\u0420\u0435\u0432\u0435\u0440\u0441\u00bb \u0432 \u0441\u0442\u0440\u043e\u043a\u0435 \u00ab\u0410\u0440\u043c\u00bb."
+   }
+  },
+  "wizard-desk-pill-follows-reverse": {
+   "ok": true,
+   "detail": {
+    "rev": {
+     "text": "\u0421\u0435\u0439\u0447\u0430\u0441: \u0412\u042b\u041a\u041b \u00b7 \u0434\u0438\u0437\u0430\u0440\u043c",
+     "on": "false",
+     "role": "status",
+     "rect": [
+      746,
+      829,
+      248,
+      41
+     ],
+     "font": 17,
+     "bg": "rgba(251, 191, 36, 0.1)",
+     "revPressed": "true",
+     "revRect": [
+      1198,
+      831,
+      89,
+      36
+     ],
+     "revHit": true,
+     "hint": "\u041f\u043e\u0441\u0442\u0430\u0432\u044c \u0442\u0443\u043c\u0431\u043b\u0435\u0440 \u0430\u0440\u043c\u0430 \u0432 \u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0434\u0438\u0437\u0430\u0440\u043c\u0430: \u0437\u0434\u0435\u0441\u044c \u0434\u043e\u043b\u0436\u043d\u043e \u0431\u044b\u0442\u044c \u0412\u042b\u041a\u041b. \u0412\u0438\u0434\u0438\u0448\u044c \u0412\u041a\u041b \u2014 \u043d\u0430\u0436\u043c\u0438 \u00ab\u0420\u0435\u0432\u0435\u0440\u0441\u00bb \u0432 \u0441\u0442\u0440\u043e\u043a\u0435 \u00ab\u0410\u0440\u043c\u00bb.",
+     "level": true,
+     "ow": 0
+    },
+    "back": {
+     "text": "\u0421\u0435\u0439\u0447\u0430\u0441: \u0412\u041a\u041b \u00b7 \u0430\u0440\u043c",
+     "on": "true",
+     "role": "status",
+     "rect": [
+      746,
+      829,
+      203,
+      41
+     ],
+     "font": 17,
+     "bg": "rgba(74, 222, 128, 0.16)",
+     "revPressed": "false",
+     "revRect": [
+      1198,
+      831,
+      89,
+      36
+     ],
+     "revHit": true,
+     "hint": "\u041f\u043e\u0441\u0442\u0430\u0432\u044c \u0442\u0443\u043c\u0431\u043b\u0435\u0440 \u0430\u0440\u043c\u0430 \u0432 \u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0434\u0438\u0437\u0430\u0440\u043c\u0430: \u0437\u0434\u0435\u0441\u044c \u0434\u043e\u043b\u0436\u043d\u043e \u0431\u044b\u0442\u044c \u0412\u042b\u041a\u041b. \u0412\u0438\u0434\u0438\u0448\u044c \u0412\u041a\u041b \u2014 \u043d\u0430\u0436\u043c\u0438 \u00ab\u0420\u0435\u0432\u0435\u0440\u0441\u00bb \u0432 \u0441\u0442\u0440\u043e\u043a\u0435 \u00ab\u0410\u0440\u043c\u00bb.",
+     "level": true,
+     "ow": 0
+    }
+   }
+  },
+  "wizard-p375-pill-follows-switch": {
+   "ok": true,
+   "detail": {
+    "off": {
+     "text": "\u0421\u0435\u0439\u0447\u0430\u0441: \u0412\u042b\u041a\u041b \u00b7 \u0434\u0438\u0437\u0430\u0440\u043c",
+     "on": "false",
+     "role": "status",
+     "rect": [
+      16,
+      518,
+      328,
+      40
+     ],
+     "font": 16,
+     "bg": "rgba(251, 191, 36, 0.1)",
+     "revPressed": "false",
+     "revRect": [
+      255,
+      472,
+      89,
+      36
+     ],
+     "revHit": true,
+     "hint": "\u041f\u043e\u0441\u0442\u0430\u0432\u044c \u0442\u0443\u043c\u0431\u043b\u0435\u0440 \u0430\u0440\u043c\u0430 \u0432 \u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0434\u0438\u0437\u0430\u0440\u043c\u0430: \u0437\u0434\u0435\u0441\u044c \u0434\u043e\u043b\u0436\u043d\u043e \u0431\u044b\u0442\u044c \u0412\u042b\u041a\u041b. \u0412\u0438\u0434\u0438\u0448\u044c \u0412\u041a\u041b \u2014 \u043d\u0430\u0436\u043c\u0438 \u00ab\u0420\u0435\u0432\u0435\u0440\u0441\u00bb \u0432 \u0441\u0442\u0440\u043e\u043a\u0435 \u00ab\u0410\u0440\u043c\u00bb.",
+     "level": false,
+     "ow": 0
+    },
+    "on": {
+     "text": "\u0421\u0435\u0439\u0447\u0430\u0441: \u0412\u041a\u041b \u00b7 \u0430\u0440\u043c",
+     "on": "true",
+     "role": "status",
+     "rect": [
+      16,
+      518,
+      328,
+      40
+     ],
+     "font": 16,
+     "bg": "rgba(74, 222, 128, 0.16)",
+     "revPressed": "false",
+     "revRect": [
+      255,
+      472,
+      89,
+      36
+     ],
+     "revHit": true,
+     "hint": "\u041f\u043e\u0441\u0442\u0430\u0432\u044c \u0442\u0443\u043c\u0431\u043b\u0435\u0440 \u0430\u0440\u043c\u0430 \u0432 \u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0434\u0438\u0437\u0430\u0440\u043c\u0430: \u0437\u0434\u0435\u0441\u044c \u0434\u043e\u043b\u0436\u043d\u043e \u0431\u044b\u0442\u044c \u0412\u042b\u041a\u041b. \u0412\u0438\u0434\u0438\u0448\u044c \u0412\u041a\u041b \u2014 \u043d\u0430\u0436\u043c\u0438 \u00ab\u0420\u0435\u0432\u0435\u0440\u0441\u00bb \u0432 \u0441\u0442\u0440\u043e\u043a\u0435 \u00ab\u0410\u0440\u043c\u00bb.",
+     "level": true,
+     "ow": 0
+    }
+   }
+  },
+  "wizard-p375-pill-big-and-coloured": {
+   "ok": true,
+   "detail": {
+    "onFont": 16,
+    "onRect": [
+     16,
+     518,
+     328,
+     40
+    ],
+    "onBg": "rgba(74, 222, 128, 0.16)",
+    "offBg": "rgba(251, 191, 36, 0.1)",
+    "overflowX": 0
+   }
+  },
+  "wizard-p375-pill-beside-reverse": {
+   "ok": true,
+   "detail": {
+    "pill": [
+     16,
+     518,
+     328,
+     40
+    ],
+    "rev": [
+     255,
+     472,
+     89,
+     36
+    ],
+    "hint": "\u041f\u043e\u0441\u0442\u0430\u0432\u044c \u0442\u0443\u043c\u0431\u043b\u0435\u0440 \u0430\u0440\u043c\u0430 \u0432 \u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0434\u0438\u0437\u0430\u0440\u043c\u0430: \u0437\u0434\u0435\u0441\u044c \u0434\u043e\u043b\u0436\u043d\u043e \u0431\u044b\u0442\u044c \u0412\u042b\u041a\u041b. \u0412\u0438\u0434\u0438\u0448\u044c \u0412\u041a\u041b \u2014 \u043d\u0430\u0436\u043c\u0438 \u00ab\u0420\u0435\u0432\u0435\u0440\u0441\u00bb \u0432 \u0441\u0442\u0440\u043e\u043a\u0435 \u00ab\u0410\u0440\u043c\u00bb."
+   }
+  },
+  "wizard-p375-pill-follows-reverse": {
+   "ok": true,
+   "detail": {
+    "rev": {
+     "text": "\u0421\u0435\u0439\u0447\u0430\u0441: \u0412\u042b\u041a\u041b \u00b7 \u0434\u0438\u0437\u0430\u0440\u043c",
+     "on": "false",
+     "role": "status",
+     "rect": [
+      16,
+      518,
+      328,
+      40
+     ],
+     "font": 16,
+     "bg": "rgba(251, 191, 36, 0.1)",
+     "revPressed": "true",
+     "revRect": [
+      255,
+      472,
+      89,
+      36
+     ],
+     "revHit": true,
+     "hint": "\u041f\u043e\u0441\u0442\u0430\u0432\u044c \u0442\u0443\u043c\u0431\u043b\u0435\u0440 \u0430\u0440\u043c\u0430 \u0432 \u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0434\u0438\u0437\u0430\u0440\u043c\u0430: \u0437\u0434\u0435\u0441\u044c \u0434\u043e\u043b\u0436\u043d\u043e \u0431\u044b\u0442\u044c \u0412\u042b\u041a\u041b. \u0412\u0438\u0434\u0438\u0448\u044c \u0412\u041a\u041b \u2014 \u043d\u0430\u0436\u043c\u0438 \u00ab\u0420\u0435\u0432\u0435\u0440\u0441\u00bb \u0432 \u0441\u0442\u0440\u043e\u043a\u0435 \u00ab\u0410\u0440\u043c\u00bb.",
+     "level": true,
+     "ow": 0
+    },
+    "back": {
+     "text": "\u0421\u0435\u0439\u0447\u0430\u0441: \u0412\u041a\u041b \u00b7 \u0430\u0440\u043c",
+     "on": "true",
+     "role": "status",
+     "rect": [
+      16,
+      518,
+      328,
+      40
+     ],
+     "font": 16,
+     "bg": "rgba(74, 222, 128, 0.16)",
+     "revPressed": "false",
+     "revRect": [
+      255,
+      472,
+      89,
+      36
+     ],
+     "revHit": true,
+     "hint": "\u041f\u043e\u0441\u0442\u0430\u0432\u044c \u0442\u0443\u043c\u0431\u043b\u0435\u0440 \u0430\u0440\u043c\u0430 \u0432 \u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0434\u0438\u0437\u0430\u0440\u043c\u0430: \u0437\u0434\u0435\u0441\u044c \u0434\u043e\u043b\u0436\u043d\u043e \u0431\u044b\u0442\u044c \u0412\u042b\u041a\u041b. \u0412\u0438\u0434\u0438\u0448\u044c \u0412\u041a\u041b \u2014 \u043d\u0430\u0436\u043c\u0438 \u00ab\u0420\u0435\u0432\u0435\u0440\u0441\u00bb \u0432 \u0441\u0442\u0440\u043e\u043a\u0435 \u00ab\u0410\u0440\u043c\u00bb.",
+     "level": true,
+     "ow": 0
+    }
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

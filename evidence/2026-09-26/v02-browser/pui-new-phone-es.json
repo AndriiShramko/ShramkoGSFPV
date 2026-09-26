@@ -1,0 +1,576 @@
+{
+ "mode": "phone",
+ "lang": "es",
+ "tag": "new",
+ "checks": {
+  "phone-p375-no-overlap-1s": {
+   "ok": true,
+   "detail": {
+    "rects": {
+     "tl": [
+      44,
+      71,
+      141,
+      19
+     ],
+     "tr": [
+      254,
+      71,
+      105,
+      19
+     ],
+     "bl": [
+      16,
+      603,
+      211,
+      19
+     ],
+     "gate": [
+      65,
+      309,
+      246,
+      39
+     ],
+     "attribution": [
+      16,
+      195,
+      343,
+      35
+     ],
+     "hint": [
+      19,
+      143,
+      338,
+      17
+     ],
+     "tops": [
+      199,
+      95,
+      160,
+      40
+     ],
+     "arm": [
+      140,
+      732,
+      96,
+      56
+     ],
+     "banner0": [
+      0,
+      0,
+      375,
+      57
+     ]
+    },
+    "hits": []
+   }
+  },
+  "phone-p375-buttons-hit-1s": {
+   "ok": true,
+   "detail": [
+    {
+     "b": "open-controls:Controles",
+     "ok": true,
+     "hit": "BUTTON.btn"
+    },
+    {
+     "b": "pause:Pausa",
+     "ok": true,
+     "hit": "BUTTON.btn"
+    },
+    {
+     "b": "touch-arm:ARMAR",
+     "ok": true,
+     "hit": "BUTTON.touch-arm"
+    }
+   ]
+  },
+  "phone-p375-no-overlap-9s": {
+   "ok": true,
+   "detail": {
+    "rects": {
+     "tl": [
+      44,
+      14,
+      141,
+      19
+     ],
+     "tr": [
+      245,
+      14,
+      114,
+      19
+     ],
+     "bl": [
+      16,
+      603,
+      211,
+      19
+     ],
+     "gate": [
+      65,
+      309,
+      246,
+      39
+     ],
+     "attribution": [
+      16,
+      138,
+      343,
+      35
+     ],
+     "hint": [
+      19,
+      86,
+      338,
+      17
+     ],
+     "tops": [
+      199,
+      38,
+      160,
+      40
+     ],
+     "arm": [
+      140,
+      732,
+      96,
+      56
+     ]
+    },
+    "hits": []
+   }
+  },
+  "phone-p375-no-overlap-armed": {
+   "ok": true,
+   "detail": {
+    "rects": {
+     "tl": [
+      44,
+      14,
+      114,
+      19
+     ],
+     "tr": [
+      245,
+      14,
+      114,
+      19
+     ],
+     "bl": [
+      16,
+      603,
+      220,
+      19
+     ],
+     "attribution": [
+      16,
+      138,
+      343,
+      35
+     ],
+     "hint": [
+      19,
+      86,
+      338,
+      17
+     ],
+     "tops": [
+      199,
+      38,
+      160,
+      40
+     ],
+     "arm": [
+      130,
+      732,
+      115,
+      56
+     ]
+    },
+    "hits": []
+   }
+  },
+  "phone-p375-buttons-hit-armed": {
+   "ok": true,
+   "detail": []
+  },
+  "phone-p375-pause-buttons-hit": {
+   "ok": true,
+   "detail": []
+  },
+  "phone-p375-two-banners-stacked": {
+   "ok": true,
+   "detail": {
+    "nb": 2,
+    "rects": {
+     "tl": [
+      44,
+      188,
+      141,
+      19
+     ],
+     "tr": [
+      254,
+      188,
+      105,
+      19
+     ],
+     "bl": [
+      16,
+      603,
+      211,
+      19
+     ],
+     "gate": [
+      65,
+      372,
+      246,
+      39
+     ],
+     "attribution": [
+      16,
+      312,
+      343,
+      35
+     ],
+     "hint": [
+      19,
+      260,
+      338,
+      17
+     ],
+     "tops": [
+      199,
+      212,
+      160,
+      40
+     ],
+     "arm": [
+      140,
+      732,
+      96,
+      56
+     ],
+     "banner0": [
+      0,
+      0,
+      375,
+      57
+     ],
+     "banner1": [
+      0,
+      57,
+      375,
+      117
+     ]
+    },
+    "hits": []
+   }
+  },
+  "phone-p360-no-overlap-1s": {
+   "ok": true,
+   "detail": {
+    "rects": {
+     "tl": [
+      44,
+      71,
+      141,
+      19
+     ],
+     "tr": [
+      239,
+      71,
+      105,
+      19
+     ],
+     "bl": [
+      16,
+      537,
+      211,
+      19
+     ],
+     "gate": [
+      57,
+      281,
+      246,
+      39
+     ],
+     "attribution": [
+      16,
+      195,
+      328,
+      35
+     ],
+     "hint": [
+      18,
+      143,
+      324,
+      17
+     ],
+     "tops": [
+      184,
+      95,
+      160,
+      40
+     ],
+     "arm": [
+      132,
+      660,
+      96,
+      56
+     ],
+     "banner0": [
+      0,
+      0,
+      360,
+      57
+     ]
+    },
+    "hits": []
+   }
+  },
+  "phone-p360-buttons-hit-1s": {
+   "ok": true,
+   "detail": [
+    {
+     "b": "open-controls:Controles",
+     "ok": true,
+     "hit": "BUTTON.btn"
+    },
+    {
+     "b": "pause:Pausa",
+     "ok": true,
+     "hit": "BUTTON.btn"
+    },
+    {
+     "b": "touch-arm:ARMAR",
+     "ok": true,
+     "hit": "BUTTON.touch-arm"
+    }
+   ]
+  },
+  "phone-p360-no-overlap-9s": {
+   "ok": true,
+   "detail": {
+    "rects": {
+     "tl": [
+      44,
+      14,
+      141,
+      19
+     ],
+     "tr": [
+      230,
+      14,
+      114,
+      19
+     ],
+     "bl": [
+      16,
+      537,
+      211,
+      19
+     ],
+     "gate": [
+      57,
+      281,
+      246,
+      39
+     ],
+     "attribution": [
+      16,
+      138,
+      328,
+      35
+     ],
+     "hint": [
+      18,
+      86,
+      324,
+      17
+     ],
+     "tops": [
+      184,
+      38,
+      160,
+      40
+     ],
+     "arm": [
+      132,
+      660,
+      96,
+      56
+     ]
+    },
+    "hits": []
+   }
+  },
+  "phone-p360-no-overlap-armed": {
+   "ok": true,
+   "detail": {
+    "rects": {
+     "tl": [
+      44,
+      14,
+      114,
+      19
+     ],
+     "tr": [
+      230,
+      14,
+      114,
+      19
+     ],
+     "bl": [
+      16,
+      537,
+      220,
+      19
+     ],
+     "attribution": [
+      16,
+      138,
+      328,
+      35
+     ],
+     "hint": [
+      18,
+      86,
+      324,
+      17
+     ],
+     "tops": [
+      184,
+      38,
+      160,
+      40
+     ],
+     "arm": [
+      123,
+      660,
+      115,
+      56
+     ]
+    },
+    "hits": []
+   }
+  },
+  "phone-p360-buttons-hit-armed": {
+   "ok": true,
+   "detail": []
+  },
+  "phone-p360-pause-buttons-hit": {
+   "ok": true,
+   "detail": []
+  },
+  "phone-p360-two-banners-stacked": {
+   "ok": true,
+   "detail": {
+    "nb": 2,
+    "rects": {
+     "tl": [
+      44,
+      209,
+      141,
+      19
+     ],
+     "tr": [
+      239,
+      209,
+      105,
+      19
+     ],
+     "bl": [
+      16,
+      537,
+      211,
+      19
+     ],
+     "gate": [
+      57,
+      393,
+      246,
+      39
+     ],
+     "attribution": [
+      16,
+      333,
+      328,
+      35
+     ],
+     "hint": [
+      18,
+      281,
+      324,
+      17
+     ],
+     "tops": [
+      184,
+      233,
+      160,
+      40
+     ],
+     "arm": [
+      132,
+      660,
+      96,
+      56
+     ],
+     "banner0": [
+      0,
+      0,
+      360,
+      57
+     ],
+     "banner1": [
+      0,
+      57,
+      360,
+      138
+     ]
+    },
+    "hits": []
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

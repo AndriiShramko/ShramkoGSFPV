@@ -4,9 +4,20 @@ Spec: vault `03 - Resources/Deployment/shramkogsfpv/spec.md` (+ 6 spec-*.md). Ph
 
 ## Current
 
-- **Phase:** A done; B done on the live site except the final B3 re-run and B22/B23; C and D built and checked locally, live re-run in progress (release 80e5f46 = hub release 7f070213f299)
+- **Phase:** A-D done on the live site (release 85f8bef). **v0.2** (after Andrii's first real-radio test, 2026-09-25) built and verified on a local release build; deploy in progress. **v0.3** designed: `docs/architecture-v03.md` (waves 1-4).
 - **Live:** https://gsfpv.flyreelstudio.eu (hub dir and address in the gitignored `deploy/hub.env`)
-- **Last update:** 2026-09-24
+- **Last update:** 2026-09-26
+
+## v0.2 (Andrii's real-radio feedback, items 1, 2, 4, 5, 6, 8, 17, 22 + pause-menu keys)
+
+| Item | Fix | Evidence |
+|---|---|---|
+| 2 wizard hung at "Let go of the sticks", unclear | new wizard (packages/input/src/calib.ts + ui/radio.ts, radio-art.ts): drawn radio, target stick + ghost motion, live knobs, human-paced, every screen has a hint and an escape within 12 s | human-model sweep 12 000/12 000 correct, old wizard 97.6 % fail on the same people (evidence/2026-09-26/v02-wizard-sweep-new.json); independent 3 000-session fuzz: throttle inverted 79 -> 0, silent 12 s screens 97 -> 0 (v02-recheck.json) |
+| 4 loading without progress | stages, MB, speed, time left, stall hint, retry | v02-recheck.json, local 20 Mbit runs |
+| 22 throttle dead after window switch / settings | root cause: model rebuilt while paused started its clock at -(pause length); plus stale input queue after a hitch; `apps/fly/src/simclock.ts` + tests with the old clock as control | packages/input/test/simclock.test.ts |
+| 8 scene 9d09ab82 "does not exist" | SuperSplat versions (v2, v3...) + HEAD checks (Chrome cannot read 1 byte of a gzip file); walls from the CDN | packages/scenes/test (31 tests, 27/31 fail on the old resolver) |
+| 1, 5, 6, 17 | channel Reverse, auto-reconnect of a known radio, close Controls (x / Esc), Recalibrate | evidence/2026-09-26/v02-browser/*.json |
+| CSP | enforced per-page hashes; simulator 0 violations under the enforced policy (local server emulating nginx) | evidence/2026-09-26/v02-csp-enforced.json |
 
 ## Phase A
 

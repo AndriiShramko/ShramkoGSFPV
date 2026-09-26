@@ -1,0 +1,107 @@
+{
+ "mode": "rec",
+ "lang": "en",
+ "tag": "old",
+ "checks": {
+  "rec-desk-hidden-outside-cinema": {
+   "ok": false,
+   "detail": {
+    "hiddenAttr": true,
+    "display": "flex"
+   }
+  },
+  "rec-p375-hidden-and-arm-clear": {
+   "ok": false,
+   "detail": {
+    "display": "flex",
+    "hitAtArm": "BUTTON.touch-arm"
+   }
+  },
+  "rec-p375-cinema-clear": {
+   "ok": false,
+   "detail": {
+    "shown": true,
+    "rec": [
+     141,
+     689,
+     93,
+     44
+    ],
+    "arm": [
+     140,
+     732,
+     96,
+     56
+    ],
+    "recOverArm": true,
+    "hitRec": "BUTTON.btn.rec",
+    "hitArm": "BUTTON.touch-arm",
+    "padGap": [
+     -33,
+     -33
+    ],
+    "canRec": true
+   }
+  },
+  "rec-p360-hidden-and-arm-clear": {
+   "ok": false,
+   "detail": {
+    "display": "flex",
+    "hitAtArm": "BUTTON.touch-arm"
+   }
+  },
+  "rec-p360-cinema-clear": {
+   "ok": false,
+   "detail": {
+    "shown": true,
+    "rec": [
+     134,
+     617,
+     93,
+     44
+    ],
+    "arm": [
+     132,
+     660,
+     96,
+     56
+    ],
+    "recOverArm": true,
+    "hitRec": "BUTTON.btn.rec",
+    "hitArm": "BUTTON.touch-arm",
+    "padGap": [
+     -34,
+     -34
+    ],
+    "canRec": true
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

@@ -1,0 +1,165 @@
+{
+ "mode": "touch",
+ "lang": "pl",
+ "checks": {
+  "touch-gate-text": {
+   "ok": true,
+   "detail": {
+    "source": "touch",
+    "block": "switch",
+    "gate": "Dotknij UZBR\u00d3J na dole, \u017ceby uzbroi\u0107.",
+    "cls": "gate-msg mid",
+    "rect": [
+     39,
+     309,
+     297,
+     39
+    ]
+   }
+  },
+  "touch-gate-clear-of-hud": {
+   "ok": true,
+   "detail": {
+    "gate": [
+     39,
+     309,
+     297,
+     39
+    ],
+    "hits": [],
+    "rects": {
+     ".touch-arm": [
+      140,
+      732,
+      96,
+      56
+     ],
+     ".touch-pad.left": [
+      24,
+      638,
+      150,
+      150
+     ],
+     ".touch-pad.right": [
+      201,
+      638,
+      150,
+      150
+     ],
+     ".osd.bl": [
+      16,
+      603,
+      211,
+      19
+     ],
+     ".osd.tl": [
+      44,
+      71,
+      141,
+      19
+     ],
+     ".touch-hint": [
+      19,
+      143,
+      338,
+      34
+     ],
+     ".attribution": [
+      16,
+      195,
+      343,
+      35
+     ],
+     ".top-actions": [
+      189,
+      95,
+      170,
+      40
+     ]
+    }
+   }
+  },
+  "touch-armed-gate-gone": {
+   "ok": true,
+   "detail": {
+    "armed": true,
+    "gate": "",
+    "block": null
+   }
+  },
+  "touch-pause-no-keycaps": {
+   "ok": true,
+   "detail": [
+    "none",
+    "none"
+   ]
+  },
+  "touch-controls-banner-hidden": {
+   "ok": true,
+   "detail": [
+    "hidden"
+   ]
+  },
+  "touch-controls-on-top": {
+   "ok": true,
+   "detail": {
+    "onTop": [
+     true,
+     true,
+     true
+    ],
+    "crashOverlay": []
+   }
+  },
+  "touch-controls-accent": {
+   "ok": true,
+   "detail": {
+    "banner": [
+     "hidden"
+    ],
+    "btns": [
+     {
+      "text": "Aparatura przez USB (EdgeTX)",
+      "primary": false,
+      "disabled": true
+     },
+     {
+      "text": "Gamepad albo aparatura jako gamepad",
+      "primary": false,
+      "disabled": false
+     },
+     {
+      "text": "Dotykowe dr\u0105\u017cki",
+      "primary": true,
+      "disabled": false
+     },
+     {
+      "text": "Klawiatura",
+      "primary": false,
+      "disabled": false
+     }
+    ],
+    "coarse": true,
+    "crashOverlay": [],
+    "onTop": [
+     true,
+     true,
+     true
+    ]
+   }
+  }
+ },
+ "data": {},
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

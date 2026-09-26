@@ -50,7 +50,7 @@
     "items": [
       { "t": "Walls are solid", "d": "Every physics tick sweeps the drone's body against the scan's voxel collision data, so a fast quad can't slip through a thin wall between frames." },
       { "t": "Crashes are crashes", "d": "Hit something hard and the quad tumbles and throws debris. Brush a wall gently and it slides along it." },
-      { "t": "Your rates, to the digit", "d": "Betaflight, Actual, KISS and Raceflight rate curves match compiled Betaflight 4.5.1 to the last digit." },
+      { "t": "Your rates, Betaflight's formulas", "d": "Betaflight, Actual, KISS and Raceflight rate curves match Betaflight 4.5.1's own code with 0 error at 1880 points, both computed in double precision (in float32 they differ by at most 0.00063 °/s)." },
       { "t": "Replays you can trust", "d": "Flights are recorded as stick input and replay deterministically: the same inputs always give the same flight." },
       { "t": "Gravity is a setting", "d": "Earth, Moon, Mars or zero-g. On the Moon the same drone gets extremely twitchy — the “keep thrust-to-weight” switch tames it." }
     ],
@@ -124,11 +124,11 @@
     "lead": "An honest matrix: nothing is marked as tested unless it was, and so far that means emulation or a simulated radio.",
     "cols": { "browser": "Browser", "input": "Input", "status": "Status" },
     "rows": [
-      { "browser": "Chrome / Edge, desktop", "input": "EdgeTX radio (RadioMaster TX16S, Boxer, Pocket, Zorro) as a USB joystick over WebHID", "status": "Not tested on real hardware yet — tested with a simulated EdgeTX radio", "level": "sim" },
+      { "browser": "Chrome, desktop", "input": "EdgeTX radio (RadioMaster TX16S, Boxer, Pocket, Zorro) as a USB joystick over WebHID", "status": "Tested in Chrome with a simulated EdgeTX radio — not with a real radio yet, and Edge not run yet", "level": "sim" },
       { "browser": "Chrome / Edge, desktop", "input": "Gamepad", "status": "Not tested on real hardware yet", "level": "none" },
       { "browser": "Chrome / Edge, desktop", "input": "DJI remote as a gamepad", "status": "Not tested", "level": "none" },
-      { "browser": "Safari, iPad, Android", "input": "Touch sticks", "status": "Tested in emulation", "level": "emu" },
-      { "browser": "Firefox", "input": "Radio or gamepad", "status": "Scene viewing only — radios need Chrome or Edge (no WebHID)", "level": "view" }
+      { "browser": "Desktop Chrome, touch emulation (375×812, 1024×768)", "input": "Touch sticks", "status": "Tested in emulation only — Safari, iPad and Android browsers not tested yet", "level": "emu" },
+      { "browser": "Firefox", "input": "Gamepad or touch sticks", "status": "Firefox 155 renders the scene with WebGPU and offers a gamepad or touch sticks (flying not tested yet); radios need Chrome or Edge (no WebHID)", "level": "view" }
     ],
     "note": "Have an EdgeTX radio? A short test report helps a lot — use the contact form below or open an issue on GitHub."
   },
@@ -172,8 +172,8 @@
     "lead": "Short and honest, so nothing catches you by surprise.",
     "items": [
       { "t": "Scene data can change without notice", "d": "Scenes load from SuperSplat's public but undocumented CDN. It can change at any time, and some scenes may stop loading." },
-      { "t": "Some scans come without collision data", "d": "For those, the simulator can build walls right in your browser with SuperSplat’s own tool (up to 4 million Gaussians, about 20 seconds on a desktop GPU). Bigger scans stay fly-through." },
-      { "t": "Motion sickness", "d": "Crashes and fast flight can make you queasy, so take breaks. Effects never flash the whole screen, and your reduced-motion setting is respected." },
+      { "t": "Some scans come without collision data", "d": "For those, the simulator can build walls right in your browser with SuperSplat’s own tool (up to 4 million Gaussians, about 25 seconds for a 2.1-million scan on a desktop GPU). Bigger scans stay fly-through." },
+      { "t": "Motion sickness", "d": "Crashes and fast flight can make you queasy, so take breaks. Measured over 50 crashes, effects flash at most 2 times per second, under the WCAG limit of 3; your reduced-motion setting is respected (not tested yet)." },
       { "t": "A simulator is not a real flight", "d": "Practise responsibly, follow your local drone law and never fly over people." },
       { "t": "Your data stays with you", "d": "Calibration, flight history and favourites are stored only in your browser." }
     ],
@@ -185,11 +185,11 @@
     "h2": "Questions people ask",
     "items": [
       { "q": "How can I fly an FPV drone through a 3D Gaussian Splatting scan?", "a": "Open ShramkoGSFPV in desktop Chrome or Edge, pick one of Andrii's scans or paste a SuperSplat link, connect a radio, a gamepad or touch sticks, then calibrate, arm and fly. There is nothing to install." },
-      { "q": "Can I use my RadioMaster radio in the browser?", "a": "That is what it is built for: switch an EdgeTX radio such as the TX16S, Boxer, Pocket or Zorro to USB joystick mode and connect it over WebHID in Chrome or Edge. So far this has been tested only with a simulated EdgeTX radio, not with real hardware." },
+      { "q": "Can I use my RadioMaster radio in the browser?", "a": "That is what it is built for: switch an EdgeTX radio such as the TX16S, Boxer, Pocket or Zorro to USB joystick mode and connect it over WebHID in Chrome or Edge. So far this has been tested only in Chrome with a simulated EdgeTX radio, not with real hardware or in Edge." },
       { "q": "Is there a free FPV simulator that runs in the browser?", "a": "Yes. ShramkoGSFPV is free and open source under the MIT license. It runs on WebGPU in desktop Chrome or Edge, with no download." },
       { "q": "Which SuperSplat scenes can I fly?", "a": "Any public SuperSplat scene, by link or id. Scenes published with voxel collision data have solid walls at once; for the others you can build walls in your browser with one click (scans up to 4 million Gaussians). Bigger scans can be flown through but not crashed into." },
-      { "q": "Does it work on iPad or phone?", "a": "Touch sticks have been tested in emulation only, not on real devices yet, and you need a browser with WebGPU. Radios need desktop Chrome or Edge." },
-      { "q": "Is the flight physics like Betaflight?", "a": "The rate curves (Betaflight, Actual, KISS, Raceflight) match compiled Betaflight 4.5.1 to the last digit, and a rate PID drives four motors through a mixer. It is our own flight model, not Betaflight firmware." },
+      { "q": "Does it work on iPad or phone?", "a": "Touch sticks have been tested only in desktop Chrome's touch emulation, not in Safari, on iPad or in Android browsers yet, and you need a browser with WebGPU. Radios need desktop Chrome or Edge." },
+      { "q": "Is the flight physics like Betaflight?", "a": "The rate curves (Betaflight, Actual, KISS, Raceflight) match Betaflight 4.5.1's own code with 0 error at 1880 points when both are computed in double precision, and a rate PID drives four motors through a mixer. It is our own flight model, not Betaflight firmware." },
       { "q": "Do I crash into walls or fly through them?", "a": "On scenes with collision data you crash: the drone's body is swept against the voxel data on every physics tick, and a test harness checks that fast flight cannot tunnel through walls. See Live numbers for the result." },
       { "q": "Is it open source?", "a": "Yes, MIT. Code, measurements and design decisions are on GitHub. Betaflight's formulas were re-implemented; no GPL code was copied." }
     ]

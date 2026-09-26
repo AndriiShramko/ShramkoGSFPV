@@ -1,0 +1,259 @@
+{
+ "mode": "phone",
+ "lang": "en",
+ "checks": {
+  "phone-hud-no-overlap-1s": {
+   "ok": true,
+   "detail": {
+    "rects": {
+     "tl": [
+      44,
+      71,
+      141,
+      19
+     ],
+     "tr": [
+      239,
+      71,
+      105,
+      19
+     ],
+     "bl": [
+      16,
+      537,
+      211,
+      19
+     ],
+     "gate": [
+      56,
+      281,
+      248,
+      39
+     ],
+     "banner": [
+      0,
+      0,
+      360,
+      57
+     ],
+     "attribution": [
+      16,
+      195,
+      328,
+      35
+     ],
+     "hint": [
+      18,
+      143,
+      324,
+      17
+     ],
+     "tops": [
+      191,
+      95,
+      153,
+      40
+     ],
+     "arm": [
+      132,
+      660,
+      96,
+      56
+     ],
+     "padL": [
+      24,
+      572,
+      144,
+      144
+     ],
+     "padR": [
+      192,
+      572,
+      144,
+      144
+     ]
+    },
+    "hits": [],
+    "txt": {
+     "tl": "DISARMED \u00b7 ANGLE",
+     "bl": "THR 0%  0.0 m/s  ALT 0.0 m",
+     "gate": "Tap ARM at the bottom to arm.",
+     "banner": "Radios over USB work in Chrome and Edge. Here: gamepad or to"
+    },
+    "nButtons": 3,
+    "blocked": []
+   }
+  },
+  "phone-hud-no-overlap-9s": {
+   "ok": true,
+   "detail": {
+    "rects": {
+     "tl": [
+      44,
+      14,
+      141,
+      19
+     ],
+     "tr": [
+      230,
+      14,
+      114,
+      19
+     ],
+     "bl": [
+      16,
+      537,
+      211,
+      19
+     ],
+     "gate": [
+      56,
+      281,
+      248,
+      39
+     ],
+     "attribution": [
+      16,
+      138,
+      328,
+      35
+     ],
+     "hint": [
+      18,
+      86,
+      324,
+      17
+     ],
+     "tops": [
+      191,
+      38,
+      153,
+      40
+     ],
+     "arm": [
+      132,
+      660,
+      96,
+      56
+     ],
+     "padL": [
+      24,
+      572,
+      144,
+      144
+     ],
+     "padR": [
+      192,
+      572,
+      144,
+      144
+     ]
+    },
+    "hits": [],
+    "txt": {
+     "tl": "DISARMED \u00b7 ANGLE",
+     "bl": "THR 0%  0.0 m/s  ALT 0.0 m",
+     "gate": "Tap ARM at the bottom to arm.",
+     "banner": null
+    },
+    "nButtons": 3,
+    "blocked": []
+   }
+  },
+  "phone-hud-no-overlap-armed": {
+   "ok": true,
+   "detail": {
+    "rects": {
+     "tl": [
+      44,
+      14,
+      114,
+      19
+     ],
+     "tr": [
+      230,
+      14,
+      114,
+      19
+     ],
+     "bl": [
+      16,
+      537,
+      220,
+      19
+     ],
+     "attribution": [
+      16,
+      138,
+      328,
+      35
+     ],
+     "hint": [
+      18,
+      86,
+      324,
+      17
+     ],
+     "tops": [
+      191,
+      38,
+      153,
+      40
+     ],
+     "arm": [
+      132,
+      660,
+      96,
+      56
+     ],
+     "padL": [
+      24,
+      572,
+      144,
+      144
+     ],
+     "padR": [
+      192,
+      572,
+      144,
+      144
+     ]
+    },
+    "hits": [],
+    "txt": {
+     "tl": "ARMED \u00b7 ANGLE",
+     "bl": "THR 0%  2.9 m/s  ALT -0.9 m",
+     "gate": "",
+     "banner": null
+    },
+    "nButtons": 3,
+    "blocked": []
+   }
+  },
+  "phone-pause-fits": {
+   "ok": true,
+   "detail": {
+    "menu": [
+     16,
+     53,
+     328,
+     633
+    ],
+    "ow": 0
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

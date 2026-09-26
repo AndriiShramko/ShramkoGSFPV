@@ -1,0 +1,233 @@
+{
+ "mode": "drone",
+ "lang": "es",
+ "tag": "new",
+ "checks": {
+  "drone-desk-close-control": {
+   "ok": true,
+   "detail": {
+    "text": "\u00d7",
+    "rect": [
+     1466,
+     96,
+     44,
+     44
+    ],
+    "reachable": true
+   }
+  },
+  "drone-desk-current-keep-label": {
+   "ok": true,
+   "detail": {
+    "cur": "Actual \u00b7 mantener",
+    "others": [
+     "Volar",
+     "Volar",
+     "Volar",
+     "Volar",
+     "Volar"
+    ],
+    "focus": "drone-keep"
+   }
+  },
+  "drone-desk-top-buttons-reachable": {
+   "ok": true,
+   "detail": [
+    {
+     "text": "Teclado \u00b7 Controles",
+     "rect": [
+      1680,
+      38,
+      152,
+      40
+     ],
+     "reachable": true
+    },
+    {
+     "text": "Pausa",
+     "rect": [
+      1841,
+      38,
+      63,
+      40
+     ],
+     "reachable": true
+    }
+   ]
+  },
+  "drone-desk-all-buttons-hit": {
+   "ok": true,
+   "detail": []
+  },
+  "drone-desk-x-resumes-same-drone": {
+   "ok": true,
+   "detail": {
+    "paused": false,
+    "tick": 2291,
+    "armed": false,
+    "thr": -1,
+    "source": "keyboard",
+    "menu": false,
+    "drones": false,
+    "preset": "pavo20pro-3s",
+    "moved": 400,
+    "presetBefore": "pavo20pro-3s",
+    "tickBefore": 1432
+   }
+  },
+  "drone-desk-keep-resumes-same-drone": {
+   "ok": true,
+   "detail": {
+    "paused": false,
+    "tick": 3191,
+    "armed": false,
+    "thr": -1,
+    "source": "keyboard",
+    "menu": false,
+    "drones": false,
+    "preset": "pavo20pro-3s",
+    "moved": 400
+   }
+  },
+  "drone-desk-esc-resumes": {
+   "ok": true,
+   "detail": {
+    "paused": false,
+    "tick": 4067,
+    "armed": false,
+    "thr": -1,
+    "source": "keyboard",
+    "menu": false,
+    "drones": false,
+    "preset": "pavo20pro-3s",
+    "moved": 401
+   }
+  },
+  "drone-desk-keyboard-live-after": {
+   "ok": true,
+   "detail": {
+    "thr": -0.186,
+    "source": "keyboard"
+   }
+  },
+  "drone-desk-pick-other": {
+   "ok": true,
+   "detail": {
+    "paused": false,
+    "tick": 926,
+    "armed": false,
+    "thr": -1,
+    "source": "keyboard",
+    "menu": false,
+    "drones": false,
+    "preset": "pavo20pro2-3s",
+    "moved": 433
+   }
+  },
+  "drone-p375-close-control": {
+   "ok": true,
+   "detail": {
+    "text": "\u00d7",
+    "rect": [
+     323,
+     96,
+     44,
+     44
+    ],
+    "reachable": true
+   }
+  },
+  "drone-p375-current-keep-label": {
+   "ok": true,
+   "detail": {
+    "cur": "Actual \u00b7 mantener",
+    "others": [
+     "Volar",
+     "Volar",
+     "Volar",
+     "Volar",
+     "Volar"
+    ],
+    "focus": "drone-keep"
+   }
+  },
+  "drone-p375-top-buttons-reachable": {
+   "ok": true,
+   "detail": [
+    {
+     "text": "Controles",
+     "rect": [
+      199,
+      38,
+      89,
+      40
+     ],
+     "reachable": true
+    },
+    {
+     "text": "Pausa",
+     "rect": [
+      296,
+      38,
+      63,
+      40
+     ],
+     "reachable": true
+    }
+   ]
+  },
+  "drone-p375-all-buttons-hit": {
+   "ok": true,
+   "detail": []
+  },
+  "drone-p375-x-resumes-same-drone": {
+   "ok": true,
+   "detail": {
+    "paused": false,
+    "tick": 11705,
+    "armed": false,
+    "thr": -1,
+    "source": "touch",
+    "menu": false,
+    "drones": false,
+    "preset": "pavo20pro-3s",
+    "moved": 400,
+    "presetBefore": "pavo20pro-3s",
+    "tickBefore": 10738
+   }
+  },
+  "drone-p375-keep-resumes-same-drone": {
+   "ok": true,
+   "detail": {
+    "paused": false,
+    "tick": 12605,
+    "armed": false,
+    "thr": -1,
+    "source": "touch",
+    "menu": false,
+    "drones": false,
+    "preset": "pavo20pro-3s",
+    "moved": 400
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

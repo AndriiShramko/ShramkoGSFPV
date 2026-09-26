@@ -1,0 +1,181 @@
+{
+ "mode": "esc",
+ "tag": "new",
+ "checks": {
+  "esc-pause.settings": {
+   "ok": true,
+   "detail": {
+    "open": [
+     "Settings"
+    ],
+    "focus": "BODY.",
+    "after": {
+     "paused": false,
+     "tick": 2219,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    }
+   }
+  },
+  "esc-pause.replays": {
+   "ok": true,
+   "detail": {
+    "open": [
+     "Replays"
+    ],
+    "focus": "BODY.",
+    "after": {
+     "paused": false,
+     "tick": 2945,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    }
+   }
+  },
+  "esc-pause.measure": {
+   "ok": true,
+   "detail": {
+    "open": [
+     "Measurements"
+    ],
+    "focus": "BODY.",
+    "after": {
+     "paused": false,
+     "tick": 3671,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    }
+   }
+  },
+  "esc-pause.import": {
+   "ok": true,
+   "detail": {
+    "open": [
+     "Import from Betaflight"
+    ],
+    "focus": "TEXTAREA.",
+    "after": {
+     "paused": false,
+     "tick": 4392,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 433
+    }
+   }
+  },
+  "r-with-slider-focused": {
+   "ok": true,
+   "detail": {
+    "before": 0,
+    "after": 1,
+    "focus": "INPUT.range"
+   }
+  },
+  "esc-settings-after-slider": {
+   "ok": true,
+   "detail": {
+    "focus": "INPUT.range",
+    "after": {
+     "paused": false,
+     "tick": 5194,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    }
+   }
+  },
+  "esc-settings-after-checkbox": {
+   "ok": true,
+   "detail": {
+    "focus": "INPUT.checkbox",
+    "after": {
+     "paused": false,
+     "tick": 6442,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    }
+   }
+  },
+  "p-toggles-after": {
+   "ok": true,
+   "detail": {
+    "p1": {
+     "menu": true,
+     "paused": true
+    },
+    "p2": {
+     "paused": false,
+     "tick": 7613,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 434
+    }
+   }
+  },
+  "textarea-keeps-letters": {
+   "ok": true,
+   "detail": {
+    "v": "rp",
+    "menu": false,
+    "n": 1
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

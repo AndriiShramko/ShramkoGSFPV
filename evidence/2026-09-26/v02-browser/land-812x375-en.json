@@ -1,0 +1,139 @@
+{
+ "res": {
+  "1s": {
+   "pads": [
+    [
+     "touch-pad left",
+     [
+      24,
+      131,
+      220,
+      220
+     ]
+    ],
+    [
+     "touch-pad right",
+     [
+      568,
+      131,
+      220,
+      220
+     ]
+    ]
+   ],
+   "steal": {
+    "touch-pad left: points": 1048,
+    "touch-pad right: points": 1048
+   },
+   "links": [
+    {
+     "text": "SuperSplat",
+     "rect": [
+      441,
+      175,
+      57,
+      16
+     ],
+     "pe": "auto"
+    },
+    {
+     "text": "Report this scene",
+     "rect": [
+      508,
+      175,
+      91,
+      16
+     ],
+     "pe": "auto"
+    }
+   ],
+   "attribution": {
+    "rect": [
+     16,
+     174,
+     583,
+     17
+    ],
+    "pe": "auto"
+   }
+  },
+  "9s": {
+   "pads": [
+    [
+     "touch-pad left",
+     [
+      24,
+      131,
+      220,
+      220
+     ]
+    ],
+    [
+     "touch-pad right",
+     [
+      568,
+      131,
+      220,
+      220
+     ]
+    ]
+   ],
+   "steal": {
+    "touch-pad left: points": 1048,
+    "touch-pad right: points": 1048
+   },
+   "links": [
+    {
+     "text": "SuperSplat",
+     "rect": [
+      441,
+      139,
+      57,
+      16
+     ],
+     "pe": "auto"
+    },
+    {
+     "text": "Report this scene",
+     "rect": [
+      508,
+      139,
+      91,
+      16
+     ],
+     "pe": "auto"
+    }
+   ],
+   "attribution": {
+    "rect": [
+     16,
+     138,
+     583,
+     17
+    ],
+    "pe": "auto"
+   }
+  }
+ },
+ "tapTest": {
+  "at": [
+   470,
+   147
+  ],
+  "link": "SuperSplat",
+  "clicks": [
+   "A SuperSplat"
+  ],
+  "pagesBefore": 1,
+  "pagesAfter": 1,
+  "url": "http://localhost:5315/fly/",
+  "before": {
+   "ch": [
+    0,
+    0,
+    -1,
+    0
+   ]
+  }
+ }
+}

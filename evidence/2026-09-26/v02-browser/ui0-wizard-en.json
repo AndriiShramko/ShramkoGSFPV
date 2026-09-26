@@ -1,0 +1,83 @@
+{
+ "mode": "wizard",
+ "lang": "en",
+ "checks": {
+  "wizard-mode-question": {
+   "ok": true,
+   "detail": {
+    "ask": true,
+    "q": "Which stick is your throttle, the one that stays where you leave it?",
+    "pressed": [
+     [
+      "wizard-mode-2",
+      "true"
+     ],
+     [
+      "wizard-mode-1",
+      "false"
+     ]
+    ],
+    "pill": "Mode 2: throttle on the left stick"
+   }
+  },
+  "wizard-mode-pick": {
+   "ok": true,
+   "detail": {
+    "pressed": [
+     [
+      "wizard-mode-2",
+      "false"
+     ],
+     [
+      "wizard-mode-1",
+      "true"
+     ]
+    ],
+    "pill": "Mode 1: throttle on the right stick",
+    "stored": "1",
+    "focus": "wizard-mode-1"
+   }
+  },
+  "wizard-mode-pill-syncs": {
+   "ok": true,
+   "detail": {
+    "pressed": [
+     "true",
+     "false"
+    ],
+    "stored": "2"
+   }
+  },
+  "wizard-stir-other": {
+   "ok": true,
+   "detail": {
+    "hint": "Now stir the other stick too, into every corner. If it moves but no new bar below turns green, set the radio to USB Joystick mode.",
+    "key": "wizard.hint.stir.few",
+    "done": 2,
+    "id": "stir"
+   }
+  },
+  "wizard-stir-few-control": {
+   "ok": true,
+   "detail": {
+    "hint": "Only 2 channels move like sticks. We need 4. Is the radio in USB Joystick mode?",
+    "key": "wizard.hint.stir.few",
+    "params": {
+     "n": 2
+    },
+    "done": 0
+   }
+  }
+ },
+ "data": {},
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

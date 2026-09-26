@@ -1,0 +1,51 @@
+{
+ "mode": "dronepause",
+ "lang": "en",
+ "checks": {
+  "dronepause-top-pause-does-something": {
+   "ok": false,
+   "detail": {
+    "paused": true,
+    "tick": 1909,
+    "armed": false,
+    "thr": -1,
+    "source": "keyboard",
+    "block": "switch",
+    "menu": false,
+    "panels": [],
+    "drones": true,
+    "preset": "pavo20pro-3s"
+   }
+  },
+  "dronepause-still-leaves-and-keeps": {
+   "ok": true,
+   "detail": {
+    "b": {
+     "paused": false,
+     "tick": 2734,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    },
+    "presetBefore": "pavo20pro-3s"
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

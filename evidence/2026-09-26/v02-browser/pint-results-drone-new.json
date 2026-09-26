@@ -1,0 +1,123 @@
+{
+ "mode": "drone",
+ "tag": "new",
+ "checks": {
+  "drone-x-keeps": {
+   "ok": true,
+   "detail": {
+    "has": {
+     "x": true,
+     "keep": "Current \u00b7 keep"
+    },
+    "err": null,
+    "before": {
+     "tick": 2204,
+     "preset": "pavo20pro-3s"
+    },
+    "after": {
+     "paused": false,
+     "tick": 2931,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    },
+    "thrAfterW": -0.191
+   }
+  },
+  "drone-current-card-keeps": {
+   "ok": true,
+   "detail": {
+    "has": {
+     "x": true,
+     "keep": "Current \u00b7 keep"
+    },
+    "err": null,
+    "before": {
+     "tick": 3765,
+     "preset": "pavo20pro-3s"
+    },
+    "after": {
+     "paused": false,
+     "tick": 4483,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    },
+    "thrAfterW": -0.194
+   }
+  },
+  "drone-esc-keeps": {
+   "ok": true,
+   "detail": {
+    "has": {
+     "x": true,
+     "keep": "Current \u00b7 keep"
+    },
+    "err": null,
+    "before": {
+     "tick": 5316,
+     "preset": "pavo20pro-3s"
+    },
+    "after": {
+     "paused": false,
+     "tick": 6036,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    },
+    "thrAfterW": -0.132
+   }
+  },
+  "drone-other-rebuilds-control": {
+   "ok": true,
+   "detail": {
+    "before": {
+     "tick": 7353,
+     "preset": "pavo20pro-3s"
+    },
+    "after": {
+     "paused": false,
+     "tick": 692,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro2-3s",
+     "moved": 400
+    }
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

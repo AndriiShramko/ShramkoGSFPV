@@ -50,7 +50,7 @@
     "items": [
       { "t": "Ściany są twarde", "d": "W każdym kroku fizyki bryła drona jest przemiatana względem wokselowych danych kolizji skanu, więc szybki dron nie przeskoczy przez cienką ścianę między klatkami." },
       { "t": "Kraksa to kraksa", "d": "Uderz mocno, a dron koziołkuje i gubi części. Musnij ścianę delikatnie, a ślizga się wzdłuż niej." },
-      { "t": "Twoje rates co do cyfry", "d": "Krzywe rates Betaflight, Actual, KISS i Raceflight zgadzają się ze skompilowanym Betaflight 4.5.1 do ostatniej cyfry." },
+      { "t": "Twoje rates, wzory Betaflight", "d": "Krzywe rates Betaflight, Actual, KISS i Raceflight zgadzają się z kodem Betaflight 4.5.1 z błędem 0 w 1880 punktach, gdy oba liczone są w podwójnej precyzji (w float32 różnią się najwyżej o 0,00063 °/s)." },
       { "t": "Powtórki, którym można ufać", "d": "Loty zapisują się jako ruchy drążków i odtwarzają deterministycznie: te same wejścia zawsze dają ten sam lot." },
       { "t": "Grawitacja to ustawienie", "d": "Ziemia, Księżyc, Mars albo zero g. Na Księżycu ten sam dron robi się szalenie nerwowy — przełącznik „zachowaj stosunek ciągu do masy” go uspokaja." }
     ],
@@ -124,11 +124,11 @@
     "lead": "Uczciwa tabela: nic nie jest oznaczone jako przetestowane, jeśli nie było, a na razie oznacza to emulację albo symulowaną aparaturę.",
     "cols": { "browser": "Przeglądarka", "input": "Sterowanie", "status": "Stan" },
     "rows": [
-      { "browser": "Chrome / Edge, komputer", "input": "Aparatura EdgeTX (RadioMaster TX16S, Boxer, Pocket, Zorro) jako joystick USB przez WebHID", "status": "Jeszcze nie testowane na prawdziwym sprzęcie — przetestowane z symulowaną aparaturą EdgeTX", "level": "sim" },
+      { "browser": "Chrome, komputer", "input": "Aparatura EdgeTX (RadioMaster TX16S, Boxer, Pocket, Zorro) jako joystick USB przez WebHID", "status": "Przetestowane w Chrome z symulowaną aparaturą EdgeTX — jeszcze nie z prawdziwą aparaturą, Edge jeszcze nie uruchamiany", "level": "sim" },
       { "browser": "Chrome / Edge, komputer", "input": "Pad do gier", "status": "Jeszcze nie testowane na prawdziwym sprzęcie", "level": "none" },
       { "browser": "Chrome / Edge, komputer", "input": "Kontroler DJI jako pad", "status": "Nie testowane", "level": "none" },
-      { "browser": "Safari, iPad, Android", "input": "Drążki dotykowe", "status": "Przetestowane w emulacji", "level": "emu" },
-      { "browser": "Firefox", "input": "Aparatura lub pad", "status": "Tylko oglądanie scen — aparatura wymaga Chrome lub Edge (brak WebHID)", "level": "view" }
+      { "browser": "Chrome na komputerze, emulacja dotyku (375×812, 1024×768)", "input": "Drążki dotykowe", "status": "Przetestowane tylko w emulacji — Safari, iPad i przeglądarki na Androidzie jeszcze nie testowane", "level": "emu" },
+      { "browser": "Firefox", "input": "Pad lub drążki dotykowe", "status": "Firefox 155 wyświetla scenę przez WebGPU i oferuje pad lub drążki dotykowe (latanie jeszcze nie testowane); aparatura wymaga Chrome lub Edge (brak WebHID)", "level": "view" }
     ],
     "note": "Masz aparaturę EdgeTX? Krótki raport z testu bardzo pomoże — skorzystaj z formularza kontaktowego poniżej albo otwórz zgłoszenie na GitHubie."
   },
@@ -172,8 +172,8 @@
     "lead": "Krótko i szczerze, żeby nic Cię nie zaskoczyło.",
     "items": [
       { "t": "Dane scen mogą się zmienić bez uprzedzenia", "d": "Sceny wczytują się z publicznego, ale nieudokumentowanego CDN SuperSplat. Może się on zmienić w każdej chwili, a niektóre sceny mogą przestać się ładować." },
-      { "t": "Niektóre skany nie mają danych kolizji", "d": "Dla nich symulator może zbudować ściany w twojej przeglądarce narzędziem samego SuperSplat (do 4 mln gaussianów, około 20 sekund na GPU w komputerze). Większe skany da się tylko przelatywać na wylot." },
-      { "t": "Choroba lokomocyjna", "d": "Kraksy i szybkie latanie mogą przyprawić o mdłości, więc rób przerwy. Efekty nigdy nie migają na cały ekran, a ustawienie ograniczonego ruchu jest respektowane." },
+      { "t": "Niektóre skany nie mają danych kolizji", "d": "Dla nich symulator może zbudować ściany w twojej przeglądarce narzędziem samego SuperSplat (do 4 mln gaussianów, około 25 sekund dla skanu 2,1 mln na GPU w komputerze). Większe skany da się tylko przelatywać na wylot." },
+      { "t": "Choroba lokomocyjna", "d": "Kraksy i szybkie latanie mogą przyprawić o mdłości, więc rób przerwy. Zmierzone na 50 kraksach: efekty migają najwyżej 2 razy na sekundę, poniżej limitu WCAG wynoszącego 3; ustawienie ograniczonego ruchu jest respektowane (jeszcze nie testowane)." },
       { "t": "Symulator to nie prawdziwy lot", "d": "Ćwicz odpowiedzialnie, przestrzegaj lokalnych przepisów dotyczących dronów i nigdy nie lataj nad ludźmi." },
       { "t": "Twoje dane zostają u Ciebie", "d": "Kalibracja, historia lotów i ulubione są zapisywane wyłącznie w Twojej przeglądarce." }
     ],
@@ -185,11 +185,11 @@
     "h2": "O co ludzie pytają",
     "items": [
       { "q": "Jak polecieć dronem FPV przez skan 3D Gaussian Splatting?", "a": "Otwórz ShramkoGSFPV w Chrome lub Edge na komputerze, wybierz jeden ze skanów Andrija albo wklej link z SuperSplat, podłącz aparaturę, pad albo użyj drążków dotykowych, a potem skalibruj, uzbrój i leć. Niczego nie trzeba instalować." },
-      { "q": "Czy mogę użyć mojej aparatury RadioMaster w przeglądarce?", "a": "Do tego to powstało: przełącz aparaturę EdgeTX, np. TX16S, Boxer, Pocket albo Zorro, w tryb joysticka USB i podłącz ją przez WebHID w Chrome lub Edge. Na razie testowaliśmy to tylko z symulowaną aparaturą EdgeTX, a nie z prawdziwym sprzętem." },
+      { "q": "Czy mogę użyć mojej aparatury RadioMaster w przeglądarce?", "a": "Do tego to powstało: przełącz aparaturę EdgeTX, np. TX16S, Boxer, Pocket albo Zorro, w tryb joysticka USB i podłącz ją przez WebHID w Chrome lub Edge. Na razie testowaliśmy to tylko w Chrome z symulowaną aparaturą EdgeTX, a nie z prawdziwym sprzętem ani w Edge." },
       { "q": "Czy jest darmowy symulator FPV działający w przeglądarce?", "a": "Tak. ShramkoGSFPV jest darmowy i open source na licencji MIT. Działa na WebGPU w Chrome lub Edge na komputerze, bez pobierania." },
       { "q": "Po jakich scenach z SuperSplat mogę latać?", "a": "Każdą publiczną scenę SuperSplat, po linku albo id. Sceny opublikowane z danymi kolizji mają twarde ściany od razu; dla pozostałych możesz zbudować ściany w przeglądarce jednym kliknięciem (skany do 4 mln gaussianów). Przez większe można przelatywać, ale nie da się w nie uderzyć." },
-      { "q": "Czy działa na iPadzie albo telefonie?", "a": "Drążki dotykowe testowaliśmy tylko w emulacji, jeszcze nie na prawdziwych urządzeniach, a potrzebna jest przeglądarka z WebGPU. Aparatura wymaga Chrome lub Edge na komputerze." },
-      { "q": "Czy fizyka lotu jest jak w Betaflight?", "a": "Krzywe rates (Betaflight, Actual, KISS, Raceflight) zgadzają się ze skompilowanym Betaflight 4.5.1 do ostatniej cyfry, a PID na rates steruje czterema silnikami przez mikser. To nasz własny model lotu, a nie firmware Betaflight." },
+      { "q": "Czy działa na iPadzie albo telefonie?", "a": "Drążki dotykowe testowaliśmy tylko w emulacji dotyku w Chrome na komputerze, jeszcze nie w Safari, na iPadzie ani w przeglądarkach na Androidzie, a potrzebna jest przeglądarka z WebGPU. Aparatura wymaga Chrome lub Edge na komputerze." },
+      { "q": "Czy fizyka lotu jest jak w Betaflight?", "a": "Krzywe rates (Betaflight, Actual, KISS, Raceflight) zgadzają się z kodem Betaflight 4.5.1 z błędem 0 w 1880 punktach, gdy oba liczone są w podwójnej precyzji, a PID na rates steruje czterema silnikami przez mikser. To nasz własny model lotu, a nie firmware Betaflight." },
       { "q": "Rozbijam się o ściany czy przez nie przelatuję?", "a": "Na scenach z danymi kolizji się rozbijasz: w każdym kroku fizyki bryła drona jest przemiatana względem wokseli, a zestaw testów sprawdza, czy szybki lot nie przebija się przez ściany. Wynik znajdziesz w sekcji Liczby na żywo." },
       { "q": "Czy to open source?", "a": "Tak, na licencji MIT. Kod, pomiary i decyzje projektowe są na GitHubie. Wzory Betaflight zostały zaimplementowane od nowa; żaden kod na GPL nie został skopiowany." }
     ]

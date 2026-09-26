@@ -1,0 +1,233 @@
+{
+ "mode": "drone",
+ "lang": "ru",
+ "tag": "new",
+ "checks": {
+  "drone-desk-close-control": {
+   "ok": true,
+   "detail": {
+    "text": "\u00d7",
+    "rect": [
+     1466,
+     96,
+     44,
+     44
+    ],
+    "reachable": true
+   }
+  },
+  "drone-desk-current-keep-label": {
+   "ok": true,
+   "detail": {
+    "cur": "\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u00b7 \u043e\u0441\u0442\u0430\u0432\u0438\u0442\u044c",
+    "others": [
+     "\u041b\u0435\u0442\u0435\u0442\u044c",
+     "\u041b\u0435\u0442\u0435\u0442\u044c",
+     "\u041b\u0435\u0442\u0435\u0442\u044c",
+     "\u041b\u0435\u0442\u0435\u0442\u044c",
+     "\u041b\u0435\u0442\u0435\u0442\u044c"
+    ],
+    "focus": "drone-keep"
+   }
+  },
+  "drone-desk-top-buttons-reachable": {
+   "ok": true,
+   "detail": [
+    {
+     "text": "\u041a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u0430 \u00b7 \u0423\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0438\u0435",
+     "rect": [
+      1631,
+      38,
+      200,
+      40
+     ],
+     "reachable": true
+    },
+    {
+     "text": "\u041f\u0430\u0443\u0437\u0430",
+     "rect": [
+      1839,
+      38,
+      65,
+      40
+     ],
+     "reachable": true
+    }
+   ]
+  },
+  "drone-desk-all-buttons-hit": {
+   "ok": true,
+   "detail": []
+  },
+  "drone-desk-x-resumes-same-drone": {
+   "ok": true,
+   "detail": {
+    "paused": false,
+    "tick": 3004,
+    "armed": false,
+    "thr": -1,
+    "source": "keyboard",
+    "menu": false,
+    "drones": false,
+    "preset": "pavo20pro-3s",
+    "moved": 433,
+    "presetBefore": "pavo20pro-3s",
+    "tickBefore": 2103
+   }
+  },
+  "drone-desk-keep-resumes-same-drone": {
+   "ok": true,
+   "detail": {
+    "paused": false,
+    "tick": 3871,
+    "armed": false,
+    "thr": -1,
+    "source": "keyboard",
+    "menu": false,
+    "drones": false,
+    "preset": "pavo20pro-3s",
+    "moved": 400
+   }
+  },
+  "drone-desk-esc-resumes": {
+   "ok": true,
+   "detail": {
+    "paused": false,
+    "tick": 4755,
+    "armed": false,
+    "thr": -1,
+    "source": "keyboard",
+    "menu": false,
+    "drones": false,
+    "preset": "pavo20pro-3s",
+    "moved": 400
+   }
+  },
+  "drone-desk-keyboard-live-after": {
+   "ok": true,
+   "detail": {
+    "thr": -0.133,
+    "source": "keyboard"
+   }
+  },
+  "drone-desk-pick-other": {
+   "ok": true,
+   "detail": {
+    "paused": false,
+    "tick": 893,
+    "armed": false,
+    "thr": -1,
+    "source": "keyboard",
+    "menu": false,
+    "drones": false,
+    "preset": "pavo20pro2-3s",
+    "moved": 400
+   }
+  },
+  "drone-p375-close-control": {
+   "ok": true,
+   "detail": {
+    "text": "\u00d7",
+    "rect": [
+     323,
+     96,
+     44,
+     44
+    ],
+    "reachable": true
+   }
+  },
+  "drone-p375-current-keep-label": {
+   "ok": true,
+   "detail": {
+    "cur": "\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u00b7 \u043e\u0441\u0442\u0430\u0432\u0438\u0442\u044c",
+    "others": [
+     "\u041b\u0435\u0442\u0435\u0442\u044c",
+     "\u041b\u0435\u0442\u0435\u0442\u044c",
+     "\u041b\u0435\u0442\u0435\u0442\u044c",
+     "\u041b\u0435\u0442\u0435\u0442\u044c",
+     "\u041b\u0435\u0442\u0435\u0442\u044c"
+    ],
+    "focus": "drone-keep"
+   }
+  },
+  "drone-p375-top-buttons-reachable": {
+   "ok": true,
+   "detail": [
+    {
+     "text": "\u0423\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0438\u0435",
+     "rect": [
+      178,
+      38,
+      108,
+      40
+     ],
+     "reachable": true
+    },
+    {
+     "text": "\u041f\u0430\u0443\u0437\u0430",
+     "rect": [
+      294,
+      38,
+      65,
+      40
+     ],
+     "reachable": true
+    }
+   ]
+  },
+  "drone-p375-all-buttons-hit": {
+   "ok": true,
+   "detail": []
+  },
+  "drone-p375-x-resumes-same-drone": {
+   "ok": true,
+   "detail": {
+    "paused": false,
+    "tick": 10925,
+    "armed": false,
+    "thr": -1,
+    "source": "touch",
+    "menu": false,
+    "drones": false,
+    "preset": "pavo20pro-3s",
+    "moved": 400,
+    "presetBefore": "pavo20pro-3s",
+    "tickBefore": 10022
+   }
+  },
+  "drone-p375-keep-resumes-same-drone": {
+   "ok": true,
+   "detail": {
+    "paused": false,
+    "tick": 11824,
+    "armed": false,
+    "thr": -1,
+    "source": "touch",
+    "menu": false,
+    "drones": false,
+    "preset": "pavo20pro-3s",
+    "moved": 400
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

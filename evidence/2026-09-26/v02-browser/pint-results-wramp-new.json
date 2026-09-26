@@ -1,0 +1,69 @@
+{
+ "mode": "wramp",
+ "tag": "new",
+ "checks": {
+  "w-ramp-500ms-normal": {
+   "ok": true,
+   "detail": {
+    "msToFull": 500,
+    "emitIntervalMedianMs": 4
+   }
+  },
+  "w-tap-by-time-normal": {
+   "ok": true,
+   "detail": {
+    "tap150": {
+     "held": 152,
+     "pct": 30.4,
+     "expectPct": 30.4
+    },
+    "tap250": {
+     "held": 254,
+     "pct": 50.7,
+     "expectPct": 50.8
+    }
+   }
+  },
+  "w-ramp-500ms-clamp16": {
+   "ok": true,
+   "detail": {
+    "msToFull": 507,
+    "emitIntervalMedianMs": 16
+   }
+  },
+  "w-tap-by-time-clamp16": {
+   "ok": true,
+   "detail": {
+    "tap150": {
+     "held": 166,
+     "pct": 33.2,
+     "expectPct": 33.2
+    },
+    "tap250": {
+     "held": 266,
+     "pct": 53.1,
+     "expectPct": 53.2
+    }
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

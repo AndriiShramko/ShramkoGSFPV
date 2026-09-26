@@ -1,0 +1,443 @@
+{
+ "checks": {
+  "poster-fresh-9d09ab82": {
+   "ok": true,
+   "detail": {
+    "last": {
+     "src": "9d09ab82/v2/m.webp",
+     "complete": true,
+     "w": 240,
+     "vis": "visible",
+     "stage": "download"
+    },
+    "seen": [
+     {
+      "key": "9d09ab82/v1/m.webp 0 visible",
+      "ms": 4,
+      "stage": "connect"
+     },
+     {
+      "key": "9d09ab82/v1/m.webp 0 hidden",
+      "ms": 222,
+      "stage": "connect"
+     },
+     {
+      "key": "9d09ab82/v2/m.webp 0 hidden",
+      "ms": 449,
+      "stage": "connect"
+     },
+     {
+      "key": "9d09ab82/v2/m.webp 240 visible",
+      "ms": 579,
+      "stage": "connect"
+     }
+    ]
+   }
+  },
+  "poster-negative-control-v1": {
+   "ok": true,
+   "detail": {
+    "v1Status": 403
+   }
+  },
+  "poster-second-visit-v2-first": {
+   "ok": true,
+   "detail": {
+    "known": "[[\"9d09ab82\",2]]",
+    "first": "https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/9d09ab82/v2/m.webp",
+    "last": {
+     "src": "9d09ab82/v2/m.webp",
+     "complete": true,
+     "w": 240,
+     "vis": "visible",
+     "stage": "download"
+    },
+    "seen": [
+     {
+      "key": "9d09ab82/v2/m.webp 240 visible",
+      "ms": 1,
+      "stage": "connect"
+     }
+    ]
+   }
+  },
+  "poster-fresh-39e63ce9": {
+   "ok": true,
+   "detail": {
+    "last": {
+     "src": "39e63ce9/v1/m.webp",
+     "complete": true,
+     "w": 240,
+     "vis": "visible",
+     "stage": "download"
+    },
+    "seen": [
+     {
+      "key": "39e63ce9/v1/m.webp 0 visible",
+      "ms": 3,
+      "stage": "connect"
+     },
+     {
+      "key": "39e63ce9/v1/m.webp 240 visible",
+      "ms": 218,
+      "stage": "connect"
+     }
+    ]
+   }
+  },
+  "pause-0-flying-after-first-controls": {
+   "ok": true,
+   "detail": {
+    "paused": false,
+    "tick": 2244,
+    "menu": false,
+    "radio": false,
+    "panels": [],
+    "drones": false,
+    "preset": "pavo20pro-3s",
+    "moved": 400
+   }
+  },
+  "pause-1-top-controls-over-menu": {
+   "ok": true,
+   "detail": {
+    "m1": {
+     "paused": true,
+     "tick": 2244,
+     "menu": true,
+     "radio": false,
+     "panels": [
+      "Paused"
+     ],
+     "drones": false,
+     "preset": "pavo20pro-3s"
+    },
+    "c1": {
+     "paused": true,
+     "tick": 2244,
+     "menu": false,
+     "radio": true,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s"
+    },
+    "r": {
+     "paused": false,
+     "tick": 2956,
+     "menu": false,
+     "radio": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    }
+   }
+  },
+  "pause-2-menu-controls-item": {
+   "ok": true,
+   "detail": {
+    "c2": {
+     "paused": true,
+     "tick": 3156,
+     "menu": false,
+     "radio": true,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s"
+    },
+    "r": {
+     "paused": false,
+     "tick": 4072,
+     "menu": false,
+     "radio": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    }
+   }
+  },
+  "pause-3-r-in-menu-restarts": {
+   "ok": true,
+   "detail": {
+    "m3": {
+     "paused": true,
+     "tick": 5572,
+     "menu": true,
+     "radio": false,
+     "panels": [
+      "Paused"
+     ],
+     "drones": false,
+     "preset": "pavo20pro-3s"
+    },
+    "a3": {
+     "paused": false,
+     "tick": 55,
+     "menu": false,
+     "radio": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s"
+    },
+    "r": {
+     "paused": false,
+     "tick": 455,
+     "menu": false,
+     "radio": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    }
+   }
+  },
+  "pause-4-esc-closes-settings": {
+   "ok": true,
+   "detail": {
+    "s4": {
+     "paused": true,
+     "tick": 455,
+     "menu": false,
+     "radio": false,
+     "panels": [
+      "Settings"
+     ],
+     "drones": false,
+     "preset": "pavo20pro-3s"
+    },
+    "r": {
+     "paused": false,
+     "tick": 1173,
+     "menu": false,
+     "radio": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 401
+    }
+   }
+  },
+  "pause-5-settings-top-pause-and-controls": {
+   "ok": true,
+   "detail": {
+    "s5a": {
+     "paused": true,
+     "tick": 1173,
+     "menu": false,
+     "radio": false,
+     "panels": [
+      "Settings"
+     ],
+     "drones": false,
+     "preset": "pavo20pro-3s"
+    },
+    "s5b": {
+     "paused": true,
+     "tick": 1173,
+     "menu": false,
+     "radio": true,
+     "panels": [
+      "Settings"
+     ],
+     "drones": false,
+     "preset": "pavo20pro-3s"
+    },
+    "s5c": {
+     "paused": true,
+     "tick": 1173,
+     "menu": false,
+     "radio": false,
+     "panels": [
+      "Settings"
+     ],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 0
+    },
+    "r": {
+     "paused": false,
+     "tick": 1892,
+     "menu": false,
+     "radio": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 401
+    }
+   }
+  },
+  "pause-6-esc-closes-drone-picker": {
+   "ok": true,
+   "detail": {
+    "d6": {
+     "paused": true,
+     "tick": 1892,
+     "menu": false,
+     "radio": false,
+     "panels": [],
+     "drones": true,
+     "preset": "pavo20pro-3s"
+    },
+    "r": {
+     "paused": false,
+     "tick": 2614,
+     "menu": false,
+     "radio": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    }
+   }
+  },
+  "pause-7-holders": {
+   "ok": true,
+   "detail": {
+    "h7": [
+     true,
+     false,
+     true,
+     false,
+     false
+    ]
+   }
+  },
+  "pause-8-p-and-esc-toggle": {
+   "ok": true,
+   "detail": {
+    "p8a": {
+     "paused": true,
+     "tick": 2614,
+     "menu": true,
+     "radio": false,
+     "panels": [
+      "Paused"
+     ],
+     "drones": false,
+     "preset": "pavo20pro-3s"
+    },
+    "p8b": {
+     "paused": false,
+     "tick": 3229,
+     "menu": false,
+     "radio": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    },
+    "p8c": {
+     "paused": false,
+     "tick": 3880,
+     "menu": false,
+     "radio": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 434
+    }
+   }
+  },
+  "banner-phone": {
+   "ok": true,
+   "detail": {
+    "hidIn": false,
+    "at1": {
+     "note": true,
+     "text": "Radios over USB work in Chrome and Edge. Here: gamepad or touch sticks."
+    },
+    "at9": {
+     "note": false,
+     "osdTl": "DISARMED \u00b7 ANGLE",
+     "osdTop": 14,
+     "osdHitIsOsd": true
+    }
+   }
+  },
+  "banner-desk": {
+   "ok": true,
+   "detail": {
+    "hidIn": false,
+    "at1": {
+     "note": true,
+     "text": "Radios over USB work in Chrome and Edge. Here: gamepad or touch sticks."
+    },
+    "at9": {
+     "note": false,
+     "osdTl": "DISARMED \u00b7 ACRO",
+     "osdTop": 14,
+     "osdHitIsOsd": true
+    }
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ],
+ "data": {}
+}

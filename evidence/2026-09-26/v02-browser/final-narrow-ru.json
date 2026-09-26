@@ -1,0 +1,42 @@
+{
+ "mode": "narrow",
+ "lang": "ru",
+ "checks": {
+  "narrow-keyline-vs-telemetry": {
+   "ok": true,
+   "detail": {
+    "bl": [
+     16,
+     767,
+     220,
+     19
+    ],
+    "br": [
+     323,
+     771,
+     141,
+     15
+    ],
+    "attribution": [
+     16,
+     708,
+     288,
+     52
+    ],
+    "armed": true
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

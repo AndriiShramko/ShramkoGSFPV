@@ -1,0 +1,60 @@
+{
+ "mode": "rec",
+ "lang": "en",
+ "checks": {
+  "rec-desk-hidden-attr-honoured": {
+   "ok": false,
+   "detail": {
+    "exists": true,
+    "hiddenAttr": true,
+    "display": "flex",
+    "rect": [
+     914,
+     1020,
+     93,
+     44
+    ],
+    "cinema": false
+   }
+  },
+  "rec-phone-not-under-arm": {
+   "ok": false,
+   "detail": {
+    "hiddenAttr": true,
+    "display": "flex",
+    "rec": [
+     141,
+     752,
+     93,
+     44
+    ],
+    "arm": [
+     140,
+     732,
+     96,
+     56
+    ],
+    "hitAtRecCentre": "BUTTON.touch-arm"
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

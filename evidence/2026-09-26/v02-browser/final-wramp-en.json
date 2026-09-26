@@ -1,0 +1,33 @@
+{
+ "mode": "wramp",
+ "lang": "en",
+ "checks": {
+  "w-ramp-tap-not-near-full": {
+   "ok": true,
+   "detail": {
+    "tap150": {
+     "from": -1,
+     "to": -0.393,
+     "pct": 30
+    },
+    "tap250": {
+     "from": -1,
+     "to": 0.048,
+     "pct": 52
+    },
+    "msToFull": 515
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

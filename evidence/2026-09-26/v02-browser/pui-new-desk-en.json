@@ -1,0 +1,86 @@
+{
+ "mode": "desk",
+ "lang": "en",
+ "tag": "new",
+ "checks": {
+  "desk-no-overlap-with-banner": {
+   "ok": true,
+   "detail": {
+    "rects": {
+     "tl": [
+      44,
+      50,
+      132,
+      19
+     ],
+     "tr": [
+      1799,
+      50,
+      105,
+      19
+     ],
+     "bl": [
+      16,
+      1047,
+      211,
+      19
+     ],
+     "br": [
+      1841,
+      1051,
+      63,
+      15
+     ],
+     "attribution": [
+      16,
+      1023,
+      583,
+      17
+     ],
+     "tops": [
+      1675,
+      74,
+      229,
+      40
+     ],
+     "keycard": [
+      745,
+      759,
+      430,
+      257
+     ],
+     "banner0": [
+      0,
+      0,
+      1920,
+      36
+     ]
+    },
+    "hits": []
+   }
+  },
+  "desk-buttons-hit": {
+   "ok": true,
+   "detail": []
+  },
+  "desk-armed-full-keyline": {
+   "ok": true,
+   "detail": {
+    "hits": [],
+    "br": "crashes 0  \u00b7  Space arm \u00b7 W/S throttle \u00b7 A/D yaw \u00b7 arrows pitch/roll \u00b7 M angle/acro \u00b7 R respawn \u00b7 P pause"
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

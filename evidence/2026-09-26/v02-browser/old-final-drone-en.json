@@ -1,0 +1,72 @@
+{
+ "mode": "drone",
+ "lang": "en",
+ "checks": {
+  "drone-close-control": {
+   "ok": false,
+   "detail": {
+    "open": true,
+    "closeControl": null,
+    "currentText": "BetaFPV Pavo20 Pro class, 3Sdefault2.2-inch brushless cinewhoopThrust / weight5:",
+    "currentButton": "Fly",
+    "tops": [
+     {
+      "text": "Keyboard \u00b7 Controls",
+      "covered": true
+     },
+     {
+      "text": "Pause",
+      "covered": true
+     }
+    ]
+   }
+  },
+  "drone-top-buttons-reachable": {
+   "ok": false,
+   "detail": [
+    {
+     "text": "Keyboard \u00b7 Controls",
+     "covered": true
+    },
+    {
+     "text": "Pause",
+     "covered": true
+    }
+   ]
+  },
+  "drone-esc-resumes": {
+   "ok": true,
+   "detail": {
+    "paused": false,
+    "tick": 3181,
+    "armed": false,
+    "thr": -1,
+    "source": "keyboard",
+    "block": "switch",
+    "menu": false,
+    "panels": [],
+    "drones": false,
+    "preset": "pavo20pro-3s",
+    "moved": 399
+   }
+  },
+  "drone-keyboard-live-after-esc": {
+   "ok": true,
+   "detail": {
+    "thr": -0.592,
+    "source": "keyboard"
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

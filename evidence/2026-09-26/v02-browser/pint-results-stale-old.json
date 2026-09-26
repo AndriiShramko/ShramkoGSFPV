@@ -1,0 +1,183 @@
+{
+ "mode": "stale",
+ "tag": "old",
+ "checks": {
+  "pad-resumed-and-armed": {
+   "ok": true,
+   "detail": {
+    "src": {
+     "gate": false,
+     "block": "noProfile",
+     "simArmed": false,
+     "crashed": false,
+     "ageMs": 1000003284,
+     "alt": 1.58,
+     "source": "gamepad",
+     "paused": false
+    },
+    "armedAt": {
+     "gate": true,
+     "block": null,
+     "simArmed": true,
+     "crashed": false,
+     "ageMs": 7,
+     "alt": 1.13,
+     "source": "gamepad",
+     "paused": false
+    },
+    "hoverU": 0.4472135954999579
+   }
+  },
+  "pad-frozen-3s-stays-armed": {
+   "ok": false,
+   "detail": {
+    "samples": 50,
+    "disarmedSamples": 47,
+    "firstDisarm": {
+     "t": 170,
+     "gate": false,
+     "block": "stale",
+     "simArmed": false,
+     "crashed": false,
+     "ageMs": 173,
+     "alt": 1.11,
+     "source": "gamepad",
+     "paused": false
+    },
+    "maxAgeMs": 2979,
+    "crashed": true,
+    "alt": [
+     1.13,
+     -0.17
+    ],
+    "timestampUnchanged": true
+   }
+  },
+  "pad-unplugged-disarms": {
+   "ok": true,
+   "detail": {
+    "msToDisarm": 0,
+    "at": {
+     "t": 0,
+     "gate": false,
+     "block": "stale",
+     "simArmed": false,
+     "crashed": true,
+     "ageMs": 3689,
+     "alt": -0.17,
+     "source": "gamepad",
+     "paused": false
+    },
+    "end": {
+     "t": 783,
+     "gate": false,
+     "block": "stale",
+     "simArmed": false,
+     "crashed": true,
+     "ageMs": 4473,
+     "alt": -0.17,
+     "source": "gamepad",
+     "paused": false
+    },
+    "wall": 816
+   }
+  },
+  "pad-replugged-stays-disarmed": {
+   "ok": true,
+   "detail": {
+    "gate": false,
+    "block": "stale",
+    "simArmed": false,
+    "crashed": true,
+    "ageMs": 4819,
+    "alt": -0.17,
+    "source": "gamepad",
+    "paused": false
+   }
+  },
+  "hid-resumed-and-armed": {
+   "ok": true,
+   "detail": {
+    "src": {
+     "gate": false,
+     "block": "switch",
+     "simArmed": false,
+     "crashed": false,
+     "ageMs": 3,
+     "alt": 1.58,
+     "source": "hid",
+     "paused": false
+    },
+    "armedAt": {
+     "gate": true,
+     "block": null,
+     "simArmed": true,
+     "crashed": false,
+     "ageMs": 0,
+     "alt": 1.16,
+     "source": "hid",
+     "paused": false
+    }
+   }
+  },
+  "hid-streaming-3s-stays-armed": {
+   "ok": true,
+   "detail": {
+    "samples": 49,
+    "reports": 761,
+    "maxAgeMs": 5
+   }
+  },
+  "hid-silent-disarms": {
+   "ok": true,
+   "detail": {
+    "msToDisarm": 121,
+    "at": {
+     "t": 121,
+     "gate": false,
+     "block": "stale",
+     "simArmed": true,
+     "crashed": false,
+     "ageMs": 125,
+     "alt": 1.87,
+     "source": "hid",
+     "paused": false
+    },
+    "end": {
+     "t": 764,
+     "gate": false,
+     "block": "stale",
+     "simArmed": false,
+     "crashed": true,
+     "ageMs": 801,
+     "alt": 0.56,
+     "source": "hid",
+     "paused": false
+    }
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

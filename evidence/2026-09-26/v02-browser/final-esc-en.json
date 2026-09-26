@@ -1,0 +1,124 @@
+{
+ "mode": "esc",
+ "lang": "en",
+ "checks": {
+  "esc-pause.settings": {
+   "ok": true,
+   "detail": {
+    "open": [
+     "Settings"
+    ],
+    "focus": "BODY.",
+    "after": {
+     "paused": false,
+     "tick": 2135,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    }
+   }
+  },
+  "esc-pause.replays": {
+   "ok": true,
+   "detail": {
+    "open": [
+     "Replays"
+    ],
+    "focus": "BODY.",
+    "after": {
+     "paused": false,
+     "tick": 2866,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 434
+    }
+   }
+  },
+  "esc-pause.measure": {
+   "ok": true,
+   "detail": {
+    "open": [
+     "Measurements"
+    ],
+    "focus": "BODY.",
+    "after": {
+     "paused": false,
+     "tick": 3560,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    }
+   }
+  },
+  "esc-pause.import": {
+   "ok": true,
+   "detail": {
+    "open": [
+     "Import from Betaflight"
+    ],
+    "focus": "TEXTAREA.",
+    "after": {
+     "paused": false,
+     "tick": 4300,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 434
+    }
+   }
+  },
+  "esc-settings-after-slider": {
+   "ok": true,
+   "detail": {
+    "focus": "INPUT.range",
+    "after": {
+     "paused": false,
+     "tick": 5129,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 433
+    }
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

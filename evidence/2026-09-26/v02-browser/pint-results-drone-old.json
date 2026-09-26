@@ -1,0 +1,123 @@
+{
+ "mode": "drone",
+ "tag": "old",
+ "checks": {
+  "drone-x-keeps": {
+   "ok": false,
+   "detail": {
+    "has": {
+     "x": false,
+     "keep": "Fly"
+    },
+    "err": "page.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.screen.drones [data-action=\"drone-close\"]'",
+    "before": {
+     "tick": 1442,
+     "preset": "pavo20pro-3s"
+    },
+    "after": {
+     "paused": true,
+     "tick": 1442,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": true,
+     "preset": "pavo20pro-3s",
+     "moved": 0
+    },
+    "thrAfterW": -0.616
+   }
+  },
+  "drone-current-card-keeps": {
+   "ok": false,
+   "detail": {
+    "has": {
+     "x": false,
+     "keep": "Fly"
+    },
+    "err": null,
+    "before": {
+     "tick": 2584,
+     "preset": "pavo20pro-3s"
+    },
+    "after": {
+     "paused": false,
+     "tick": 692,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    },
+    "thrAfterW": -0.592
+   }
+  },
+  "drone-esc-keeps": {
+   "ok": true,
+   "detail": {
+    "has": {
+     "x": false,
+     "keep": "Fly"
+    },
+    "err": null,
+    "before": {
+     "tick": 1526,
+     "preset": "pavo20pro-3s"
+    },
+    "after": {
+     "paused": false,
+     "tick": 2250,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro-3s",
+     "moved": 400
+    },
+    "thrAfterW": -0.608
+   }
+  },
+  "drone-other-rebuilds-control": {
+   "ok": true,
+   "detail": {
+    "before": {
+     "tick": 3566,
+     "preset": "pavo20pro-3s"
+    },
+    "after": {
+     "paused": false,
+     "tick": 693,
+     "armed": false,
+     "thr": -1,
+     "source": "keyboard",
+     "block": "switch",
+     "menu": false,
+     "panels": [],
+     "drones": false,
+     "preset": "pavo20pro2-3s",
+     "moved": 400
+    }
+   }
+  }
+ },
+ "console": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 403 ()",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

@@ -50,7 +50,7 @@
     "items": [
       { "t": "Las paredes son sólidas", "d": "En cada paso de la física se hace un barrido del cuerpo del dron contra los datos de colisión en vóxeles del escaneo, así que un dron rápido no puede colarse por una pared fina entre dos fotogramas." },
       { "t": "Un choque es un choque", "d": "Si golpeas algo con fuerza, el dron da vueltas y suelta piezas. Si rozas una pared con suavidad, se desliza a lo largo de ella." },
-      { "t": "Tus rates, al dígito", "d": "Las curvas de rates Betaflight, Actual, KISS y Raceflight coinciden hasta el último dígito con Betaflight 4.5.1 compilado." },
+      { "t": "Tus rates, las fórmulas de Betaflight", "d": "Las curvas de rates Betaflight, Actual, KISS y Raceflight coinciden con el propio código de Betaflight 4.5.1 con error 0 en 1880 puntos, ambos calculados en doble precisión (en float32 difieren como mucho 0,00063 °/s)." },
       { "t": "Repeticiones fiables", "d": "Los vuelos se graban como entradas de los sticks y se reproducen de forma determinista: las mismas entradas dan siempre el mismo vuelo." },
       { "t": "La gravedad es un ajuste", "d": "Tierra, Luna, Marte o gravedad cero. En la Luna el mismo dron se vuelve nerviosísimo; el interruptor «mantener la relación empuje-peso» lo doma." }
     ],
@@ -124,11 +124,11 @@
     "lead": "Una tabla honesta: nada figura como probado si no lo está, y por ahora eso significa emulación o una emisora simulada.",
     "cols": { "browser": "Navegador", "input": "Entrada", "status": "Estado" },
     "rows": [
-      { "browser": "Chrome / Edge, escritorio", "input": "Emisora EdgeTX (RadioMaster TX16S, Boxer, Pocket, Zorro) como joystick USB mediante WebHID", "status": "Aún sin probar con hardware real; probado con una emisora EdgeTX simulada", "level": "sim" },
+      { "browser": "Chrome, escritorio", "input": "Emisora EdgeTX (RadioMaster TX16S, Boxer, Pocket, Zorro) como joystick USB mediante WebHID", "status": "Probado en Chrome con una emisora EdgeTX simulada; aún sin probar con una emisora real ni en Edge", "level": "sim" },
       { "browser": "Chrome / Edge, escritorio", "input": "Mando de consola", "status": "Aún sin probar con hardware real", "level": "none" },
       { "browser": "Chrome / Edge, escritorio", "input": "Mando DJI usado como mando de juego", "status": "Sin probar", "level": "none" },
-      { "browser": "Safari, iPad, Android", "input": "Sticks táctiles", "status": "Probado en emulación", "level": "emu" },
-      { "browser": "Firefox", "input": "Emisora o mando", "status": "Solo para ver escenas: las emisoras necesitan Chrome o Edge (sin WebHID)", "level": "view" }
+      { "browser": "Chrome de escritorio, emulación táctil (375×812, 1024×768)", "input": "Sticks táctiles", "status": "Probado solo en emulación; Safari, iPad y los navegadores de Android aún sin probar", "level": "emu" },
+      { "browser": "Firefox", "input": "Mando o sticks táctiles", "status": "Firefox 155 muestra la escena con WebGPU y ofrece mando o sticks táctiles (el vuelo aún sin probar); las emisoras necesitan Chrome o Edge (sin WebHID)", "level": "view" }
     ],
     "note": "¿Tienes una emisora EdgeTX? Un breve informe de prueba ayuda muchísimo: usa el formulario de contacto de abajo o abre una incidencia en GitHub."
   },
@@ -172,8 +172,8 @@
     "lead": "Breve y sincero, para que nada te pille por sorpresa.",
     "items": [
       { "t": "Los datos de las escenas pueden cambiar sin aviso", "d": "Las escenas se cargan desde la CDN pública, pero no documentada, de SuperSplat. Puede cambiar en cualquier momento y algunas escenas podrían dejar de cargar." },
-      { "t": "Algunos escaneos no traen datos de colisión", "d": "Para ellos, el simulador puede construir las paredes en tu navegador con la propia herramienta de SuperSplat (hasta 4 millones de gaussianas, unos 20 segundos en una GPU de escritorio). Los escaneos más grandes se atraviesan volando." },
-      { "t": "Mareo", "d": "Los choques y el vuelo rápido pueden marear, así que haz pausas. Los efectos nunca hacen parpadear toda la pantalla y se respeta tu ajuste de movimiento reducido." },
+      { "t": "Algunos escaneos no traen datos de colisión", "d": "Para ellos, el simulador puede construir las paredes en tu navegador con la propia herramienta de SuperSplat (hasta 4 millones de gaussianas, unos 25 segundos para un escaneo de 2,1 millones en una GPU de escritorio). Los escaneos más grandes se atraviesan volando." },
+      { "t": "Mareo", "d": "Los choques y el vuelo rápido pueden marear, así que haz pausas. Medido en 50 choques, los efectos destellan como mucho 2 veces por segundo, por debajo del límite WCAG de 3; se respeta tu ajuste de movimiento reducido (aún sin probar)." },
       { "t": "Un simulador no es un vuelo real", "d": "Practica con responsabilidad, cumple la normativa de drones de tu país y nunca vueles sobre personas." },
       { "t": "Tus datos se quedan contigo", "d": "La calibración, el historial de vuelos y los favoritos se guardan solo en tu navegador." }
     ],
@@ -185,11 +185,11 @@
     "h2": "Lo que la gente pregunta",
     "items": [
       { "q": "¿Cómo puedo volar un dron FPV por un escaneo 3D de Gaussian Splatting?", "a": "Abre ShramkoGSFPV en Chrome o Edge de escritorio, elige uno de los escaneos de Andrii o pega un enlace de SuperSplat, conecta una emisora, un mando o usa los sticks táctiles, y luego calibra, arma y vuela. No hay que instalar nada." },
-      { "q": "¿Puedo usar mi emisora RadioMaster en el navegador?", "a": "Para eso está pensado: pon una emisora EdgeTX, como la TX16S, Boxer, Pocket o Zorro, en modo joystick USB y conéctala por WebHID en Chrome o Edge. Por ahora solo se ha probado con una emisora EdgeTX simulada, no con hardware real." },
+      { "q": "¿Puedo usar mi emisora RadioMaster en el navegador?", "a": "Para eso está pensado: pon una emisora EdgeTX, como la TX16S, Boxer, Pocket o Zorro, en modo joystick USB y conéctala por WebHID en Chrome o Edge. Por ahora solo se ha probado en Chrome con una emisora EdgeTX simulada, no con hardware real ni en Edge." },
       { "q": "¿Hay algún simulador FPV gratuito que funcione en el navegador?", "a": "Sí. ShramkoGSFPV es gratuito y de código abierto con licencia MIT. Funciona con WebGPU en Chrome o Edge de escritorio, sin descargas." },
       { "q": "¿Qué escenas de SuperSplat puedo volar?", "a": "Cualquier escena pública de SuperSplat, por enlace o id. Las escenas publicadas con datos de colisión tienen paredes sólidas desde el principio; para las demás puedes construir las paredes en tu navegador con un clic (escaneos de hasta 4 millones de gaussianas). Los más grandes se pueden atravesar volando, pero no chocar." },
-      { "q": "¿Funciona en iPad o en el móvil?", "a": "Los sticks táctiles solo se han probado en emulación, todavía no en dispositivos reales, y necesitas un navegador con WebGPU. Las emisoras requieren Chrome o Edge de escritorio." },
-      { "q": "¿La física de vuelo es como la de Betaflight?", "a": "Las curvas de rates (Betaflight, Actual, KISS, Raceflight) coinciden hasta el último dígito con Betaflight 4.5.1 compilado, y un PID de rates controla cuatro motores a través de un mezclador. Es nuestro propio modelo de vuelo, no el firmware de Betaflight." },
+      { "q": "¿Funciona en iPad o en el móvil?", "a": "Los sticks táctiles solo se han probado en la emulación táctil de Chrome de escritorio, todavía no en Safari, iPad ni navegadores de Android, y necesitas un navegador con WebGPU. Las emisoras requieren Chrome o Edge de escritorio." },
+      { "q": "¿La física de vuelo es como la de Betaflight?", "a": "Las curvas de rates (Betaflight, Actual, KISS, Raceflight) coinciden con el propio código de Betaflight 4.5.1 con error 0 en 1880 puntos, ambos calculados en doble precisión, y un PID de rates controla cuatro motores a través de un mezclador. Es nuestro propio modelo de vuelo, no el firmware de Betaflight." },
       { "q": "¿Me estrello contra las paredes o las atravieso?", "a": "En las escenas con datos de colisión te estrellas: en cada paso de la física se hace un barrido del cuerpo del dron contra los vóxeles, y un banco de pruebas comprueba que el vuelo rápido no atraviesa paredes. El resultado está en Cifras en vivo." },
       { "q": "¿Es de código abierto?", "a": "Sí, con licencia MIT. El código, las mediciones y las decisiones de diseño están en GitHub. Las fórmulas de Betaflight se reimplementaron; no se copió código GPL." }
     ]
