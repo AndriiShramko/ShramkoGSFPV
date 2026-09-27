@@ -1,8 +1,8 @@
 {
   "name": "b-fly-summary",
   "context": {
-    "date": "2026-09-27T15:26:45.183Z",
-    "gitHead": "8042182",
+    "date": "2026-09-27T15:30:42.504Z",
+    "gitHead": "9a32caf",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -10,9 +10,6 @@
   },
   "site": "https://gsfpv.flyreelstudio.eu",
   "items": {
-    "B6": true,
-    "B10": true,
-    "B11": false,
-    "B12": true
+    "B11": true
   }
 }

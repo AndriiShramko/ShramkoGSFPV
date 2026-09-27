@@ -300,6 +300,10 @@ if (want('B11')) {
         const onAtLoad = a > 0;
         ch[4] = -1; g.update(P, ch, 0, true, false); ch[4] = 1; const afterCycle = g.update(P, ch, 0, true, false) > 0;
         return { onAtLoadArmed: onAtLoad, afterOffOnArmed: afterCycle };`);
+    // the craft armed at zero throttle above may have fallen and crashed meanwhile: back to the
+    // spawn first, so the trap is judged by the gate and not by a crash (a flaky 'crashed' once)
+    await hookEval(page, 's.respawn(false); return 0;');
+    await page.waitForTimeout(300);
     const trap = await hookEval<Record<string, unknown>>(page, `
         const c = h.controls; const keep = c.profile; const src = c.source;
         c.profile = { version: 1, deviceKey: 'gamepad:test', deviceName: 'trap', deadband: 0.02, created: '',
