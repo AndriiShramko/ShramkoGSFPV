@@ -1,3 +1,7 @@
 # gitleaks false positives, one fingerprint per line, each with its reason.
 # localStorage key name 'gsfpv.favourites.v1' matched generic-api-key (entropy 3.68); not a secret.
 bcef1bf6ce04538d31bcc4732d0a0426e95612d0:packages/scenes/src/index.ts:generic-api-key:165
+# test fixture lines in the prefs migration test (storage key 'gsfpv.walls.ABC123' / 'gsfpv.walls.def456' and their
+# "why" strings) matched generic-api-key (entropy 3.8 / 3.7); fake scene ids of a migration test, not secrets.
+00b55d8ebaefde7d8846837a34c549459ab84d8c:packages/prefs/test/migrate.test.ts:generic-api-key:209
+00b55d8ebaefde7d8846837a34c549459ab84d8c:packages/prefs/test/migrate.test.ts:generic-api-key:210
