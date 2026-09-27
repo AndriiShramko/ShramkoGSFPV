@@ -318,6 +318,7 @@
   "bake.stage.voxelize": "voxelizando en tu GPU",
   "bake.stage.done": "listo",
   "bake.done": "Paredes construidas en este navegador: {voxels} millones de vóxeles en {s} s. Los choques están activados.",
+  "bake.doneCoarse": "Paredes construidas en este navegador: {voxels} millones de vóxeles en {s} s, con una rejilla de {cm} cm (el escaneo es demasiado grande para 5 cm). Los choques están activados.",
   "bake.refused": "Este escaneo tiene {n} millones de gaussianas; el navegador puede construir paredes hasta {max} millones. Vuelas sin paredes.",
   "bake.failed": "No se pudieron construir las paredes: {msg}",
   "bake.walls": "Paredes {cm} cm",

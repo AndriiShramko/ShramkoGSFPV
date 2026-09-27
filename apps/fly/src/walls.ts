@@ -223,7 +223,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
         w.state = 'baking';
         s.pause(true, 'bake');
         try {
-            const r = await bakeCollision(s.scene.contentUrl, s.scene.contentKind, device, (st) => say(t('bake.working', { stage: t(`bake.stage.${st}`) })), { voxelM: BASE_VOXEL_M, size: w.size ?? undefined, limits: fake });
+            const r = await bakeCollision(s.scene.contentUrl, s.scene.contentKind, device, (st) => say(t('bake.working', { stage: t(`bake.stage.${st}`) })), { voxelM: BASE_VOXEL_M, size: w.size ?? undefined, limits: fake, coarsenOnOctree: true });
             w.bakes++;
             saveBakeSpeed(r.ms.total / 1000, r.gaussians);
             const sha = await wallsSha(r.json, r.bin);
@@ -233,7 +233,10 @@ export function mountWalls(o: WallsOptions): WallsHook {
             o.hook.bakedBytes = { json: r.json, bin: r.bin };
             w.lastBake = o.hook.bake;
             action.remove();
-            say(t('bake.done', { voxels: (r.solidVoxels / 1e6).toFixed(1), s: (r.ms.total / 1000).toFixed(0) }));
+            // a very large scan may have needed a coarser grid than 5 cm: say which
+            say(r.voxelM > BASE_VOXEL_M + 1e-6
+                ? t('bake.doneCoarse', { voxels: (r.solidVoxels / 1e6).toFixed(1), s: (r.ms.total / 1000).toFixed(0), cm: cm(r.voxelM) })
+                : t('bake.done', { voxels: (r.solidVoxels / 1e6).toFixed(1), s: (r.ms.total / 1000).toFixed(0) }));
             o.beacon('bake_done');
             void remember(w.keyInput, r, sha);
         } catch (e) {

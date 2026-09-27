@@ -318,6 +318,7 @@
   "bake.stage.voxelize": "voxelising on your GPU",
   "bake.stage.done": "done",
   "bake.done": "Walls built in this browser: {voxels} million voxels in {s} s. Crashes are on.",
+  "bake.doneCoarse": "Walls built in this browser: {voxels} million voxels in {s} s, on a {cm} cm grid (the scan is too large for 5 cm). Crashes are on.",
   "bake.refused": "This scan has {n} million Gaussians; the browser can build walls for up to {max} million. You fly without walls.",
   "bake.failed": "Could not build walls: {msg}",
   "bake.walls": "Walls {cm} cm",

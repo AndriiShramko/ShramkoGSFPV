@@ -318,6 +318,7 @@
   "bake.stage.voxelize": "wokselizacja na twoim GPU",
   "bake.stage.done": "gotowe",
   "bake.done": "Ściany zbudowane w tej przeglądarce: {voxels} mln wokseli w {s} s. Kraksy są włączone.",
+  "bake.doneCoarse": "Ściany zbudowane w tej przeglądarce: {voxels} mln wokseli w {s} s, na siatce {cm} cm (skan jest za duży na 5 cm). Kraksy są włączone.",
   "bake.refused": "Ten skan ma {n} mln gaussianów; przeglądarka zbuduje ściany najwyżej dla {max} mln. Latasz bez ścian.",
   "bake.failed": "Nie udało się zbudować ścian: {msg}",
   "bake.walls": "Ściany {cm} cm",

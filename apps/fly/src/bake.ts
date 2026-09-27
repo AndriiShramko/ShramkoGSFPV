@@ -225,6 +225,9 @@ export interface BakeResult {
 export interface BakeOptions {
     /** default: the 5 cm of a scene without walls */
     voxelM?: number;
+    /** base bake only: when the octree would exceed the format's limit (a very large exterior),
+     *  try 2x and 4x the voxel size on the same data instead of failing (the result says which) */
+    coarsenOnOctree?: boolean;
     /** the size already read for the cache key (saves a request) */
     size?: SceneSize;
     /** the shipped walls, for the octree-size gate of a refine */
@@ -294,15 +297,25 @@ export async function bakeCollision(contentUrl: string, kind: 'meta' | 'lod-meta
         const gpu = (device as unknown as { wgpu?: GpuErrorScopes }).wgpu ?? null;
         gpu?.pushErrorScope('out-of-memory');
         gpu?.pushErrorScope('validation');
+        // the format holds at most 2^24 mixed blocks; a very large exterior at 5 cm exceeds it and the
+        // library says so only after the work. A base bake then goes coarser on the same data
+        const sizes = o.coarsenOnOctree ? [voxelM, voxelM * 2, voxelM * 4] : [voxelM];
         let failure: unknown = null;
-        try {
-            await st.writeVoxel({ filename: 'scene.voxel.json', dataTable: table, voxelResolution: voxelM, opacityCutoff: OPACITY_CUTOFF, createDevice: async () => device }, mem);
-        } catch (e) {
-            failure = e;
+        let used = voxelM;
+        for (const v of sizes) {
+            failure = null;
+            used = v;
+            try {
+                await st.writeVoxel({ filename: 'scene.voxel.json', dataTable: table, voxelResolution: v, opacityCutoff: OPACITY_CUTOFF, createDevice: async () => device }, mem);
+            } catch (e) {
+                failure = e;
+            }
+            if (!(failure instanceof Error && /mixed blocks/i.test(failure.message))) break;
         }
         const validation = gpu ? await gpu.popErrorScope() : null;
         const oom = gpu ? await gpu.popErrorScope() : null;
         if (validation || oom) throw new BakeGpuError(`GPU ${validation ? 'validation' : 'out-of-memory'} error: ${(validation ?? oom)!.message.slice(0, 200)}`);
+        if (failure instanceof Error && /mixed blocks/i.test(failure.message)) throw new BakeRefusedError('octree', size, 0, `even at ${Math.round(used * 100)} cm`);
         if (failure) throw failure;
         const json = mem.results.get('scene.voxel.json');
         const bin = mem.results.get('scene.voxel.bin');
@@ -311,7 +324,7 @@ export async function bakeCollision(contentUrl: string, kind: 'meta' | 'lod-meta
         const t1 = performance.now();
         sample();
         onStage('done');
-        return { json, bin, gaussians: table.numRows, solidVoxels, voxelM, ms: { read: tRead - t0, voxelize: t1 - tRead, total: t1 - t0 }, peakJsHeapMb: peak };
+        return { json, bin, gaussians: table.numRows, solidVoxels, voxelM: used, ms: { read: tRead - t0, voxelize: t1 - tRead, total: t1 - t0 }, peakJsHeapMb: peak };
     } finally {
         clearInterval(timer);
     }
