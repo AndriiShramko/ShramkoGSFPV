@@ -1023,6 +1023,8 @@ export class SceneRotation {
 
 ### E.6 SuperSplat tab (item 9)
 
+> **Update 2026-09-27 (decision D35 in `docs/decisions.md`).** The owner decided the terms do not block a native catalogue. Phase 2 is built as a server-side caching proxy, not as a browser request (the CORS answer cannot change on our side): `GET /api/superspl/explore` in `apps/api/server.py`, client `SuperSplatCatalog` / `pickRandomTopRated` / `supersplSearchUrl` in `packages/scenes/src/superspl.ts`. Where this section says the server never contacts SuperSplat, or that phase 2 waits for permission, D35 wins. Phase 1's iframe and paste flow stay useful as a fallback.
+
 **Phase 1** (buildable now, no permission needed):
 - A picker tab, "SuperSplat", embeds `https://superspl.at/search?features=walkable&sort=likes` in an iframe.
   - It is their own UI with the same filters: walkable, downloadable, time, sort (trending / newest / oldest / most viewed / most liked / largest / smallest) and search.
@@ -1533,7 +1535,7 @@ S is 2 h or less, M 2–5 h, L 5–10 h of agent time.
 
 ## Open questions for Andrii
 
-1. **PlayCanvas permission** (legal).
+1. **PlayCanvas permission** (legal). *Decided 2026-09-27: not blocking; native catalogue through our caching proxy (D35).*
    - The native SuperSplat catalogue and "random highly rated scene" need their OK plus a CORS allowlist for our site. Their terms forbid automated access without authorisation.
    - May I draft the letter for you to send, or send it from your address?
    - Until then, the SuperSplat tab embeds superspl.at itself, and "random" draws from your curated list.

@@ -91,6 +91,26 @@ Do these steps in this order, before the next `deploy.sh`.
 6. **Deploy** as below. The first line `deploy.sh` prints is now
    `nginx.conf on the hub and inside gsfpv-web = deploy/nginx.conf`.
 
+## Changing the API (apps/api/server.py)
+
+The API is not part of `dist.tgz`: `gsfpv-api` runs `$GSFPV_BASE/api/server.py` (mounted read-only
+at `/app`) and reads it only when it starts. The first release with the SuperSplat catalogue (D35)
+needs both the new API and the new `nginx.conf` (location `^~ /api/superspl/`); either order is
+safe (without the API change the location answers `404 {"ok": false}`, without the nginx change
+the path falls through to the static site's 404 page; the client reports either as an error).
+
+1. Keep the live copy: `$SSH "cp $GSFPV_BASE/api/server.py $GSFPV_BASE/api/server.py.prev"`.
+2. Upload and compare:
+   ```bash
+   scp -P $GSFPV_PORT -i $GSFPV_KEY apps/api/server.py $GSFPV_HOST:$GSFPV_BASE/api/server.py
+   sha256sum apps/api/server.py; $SSH "sha256sum $GSFPV_BASE/api/server.py"      # must be equal
+   ```
+3. Restart only the API and check it: `$SSH "docker restart gsfpv-api"`, then
+   `curl -s https://gsfpv.flyreelstudio.eu/api/health` (200) and, once nginx has the location,
+   `curl -sD- -o /dev/null 'https://gsfpv.flyreelstudio.eu/api/superspl/explore?sort=starred&features=walkable&limit=3'`
+   twice: `X-Cache: miss`, then `X-Cache: hit`; `...?sort=likes` must answer 400.
+4. If it does not come up: put `server.py.prev` back and restart `gsfpv-api` again.
+
 ## Deploying a release
 
 1. Take `dist.tgz` and `SHA256SUMS` from the CI run of the commit you ship.
