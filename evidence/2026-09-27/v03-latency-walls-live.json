@@ -1,0 +1,101 @@
+{
+ "guardOn": {
+  "afterLoad": {
+   "periodMs": 33.099999999999454,
+   "rafToPresentMs": 36.600000000000364,
+   "submitToDoneMs": 17.90000000037253,
+   "inputToScreenMs": 88.24999999999955,
+   "skips": 3,
+   "canvas": [
+    1360,
+    765
+   ],
+   "css": [
+    1600,
+    900
+   ],
+   "dpr": 1.0000000298023224
+  },
+  "afterTask": {
+   "periodMs": 33.099999999998545,
+   "rafToPresentMs": 36.70000000000073,
+   "submitToDoneMs": 17.800000000745058,
+   "inputToScreenMs": 88.34999999999854,
+   "skips": 4,
+   "canvas": [
+    1600,
+    900
+   ],
+   "css": [
+    1600,
+    900
+   ],
+   "dpr": 1.0000000298023224
+  },
+  "hud": "DISARMED \u00b7 ACRO | 12.6 V 18.0 s | THR 0% 0.0 m/s ALT 0.0 m | crashes 0 | screen 30 Hz \u00b7 input \u2192 screen \u2248 88 ms \u00b7 physics 1000 Hz\nYour screen runs at 30 Hz, so every frame adds 33 ms of delay. Connect it by DisplayPort and choose 60 Hz: the delay drops by about half.",
+  "errors": []
+ },
+ "guardOff": {
+  "afterLoad": {
+   "periodMs": 33.100000000000364,
+   "rafToPresentMs": 101.5,
+   "submitToDoneMs": 14.400000000372529,
+   "inputToScreenMs": 153.15000000000055,
+   "skips": 0,
+   "canvas": [
+    960,
+    540
+   ],
+   "css": [
+    1600,
+    900
+   ],
+   "dpr": 1.0000000298023224
+  },
+  "afterTask": {
+   "periodMs": 33.099999999998545,
+   "rafToPresentMs": 100.29999999999927,
+   "submitToDoneMs": 17.09999999962747,
+   "inputToScreenMs": 151.9499999999971,
+   "skips": 0,
+   "canvas": [
+    1120,
+    630
+   ],
+   "css": [
+    1600,
+    900
+   ],
+   "dpr": 1.0000000298023224
+  },
+  "hud": "DISARMED \u00b7 ACRO | 12.6 V 18.1 s | THR 0% 0.0 m/s ALT 0.0 m | crashes 0 | screen 30 Hz \u00b7 input \u2192 screen \u2248 153 ms \u00b7 physics 1000 Hz\nYour screen runs at 30 Hz, so every frame adds 33 ms of delay. Connect it by DisplayPort and choose 60 Hz: the delay drops by about half.",
+  "errors": []
+ },
+ "wallsFirst": {
+  "offered": "offer",
+  "state": "in-use",
+  "source": "bake",
+  "voxelM": 0.016,
+  "sha": "68963b37142d6ef828f7a86faeb00c70947b9ccd0bd4613683827304f08e506f",
+  "bakes": 1,
+  "plan": {
+   "voxelM": 0.016,
+   "estS": 15.213156
+  },
+  "seconds": 0,
+  "errors": []
+ },
+ "wallsRestart": {
+  "state": "in-use",
+  "source": "cache",
+  "voxelM": 0.016,
+  "sha": "68963b37142d6ef828f7a86faeb00c70947b9ccd0bd4613683827304f08e506f",
+  "bakes": 0,
+  "cacheKind": "idb",
+  "errors": [],
+  "sameSha": true
+ },
+ "site": "https://gsfpv.flyreelstudio.eu",
+ "release": "4ca397f = hub 8ab586de700e",
+ "what": "latency guard on vs ?guard=0 (negative control) on the live page, 30 Hz display: rafToPresent 36.6 ms (1.1 frames) vs 101.5 ms (3 frames); estimated input->screen 88 vs 153 ms; after a 60 ms main-thread task the guard recovers (36.7 ms, skip 4) while the control stays at 100 ms. Walls 39e63ce9: shipped 5 cm -> refine 1.6 cm offered on a new machine (first bake calibrates the speed), baked in the page; a real browser restart takes the same walls from IndexedDB (0 bakes, same sha256)."
+}
