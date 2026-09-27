@@ -72,6 +72,15 @@ const tab = await page.evaluate(() => (window as any).__gsfpv.session.tunnelSelf
 // with numbers, in Russian, forced by fake GPU limits on the same scene.
 // GPU safety: this PC blue-screened with a heavy bake next to a DaVinci render; bake only if idle.
 const gpuBusy = (() => { try { return Number(execSync('nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits').toString().trim().split(/\r?\n/)[0]) > 40; } catch { return false; } })();
+// refusal first: once real walls are baked they are cached and the build button is gone
+await page.goto(fly('ru', 'scene=bd04e182&nowarn=1&input=touch'));
+await waitReady(page, 180000);
+await page.evaluate(() => (window as any).__gsfpv.walls.fakeLimits({ maxBufferSize: 64e6, maxStorageBufferBindingSize: 64e6 }));
+await page.click('[data-action="bake"]');
+let refusal: Record<string, unknown> | null = null;
+for (let i = 0; i < 60 && !refusal; i++) { refusal = await page.evaluate(() => (window as any).__gsfpv.bake ?? null); if (!refusal) await page.waitForTimeout(500); }
+const refusalText = await page.locator('[data-testid="bake-status"]').textContent();
+await page.screenshot({ path: join(SHOTS, 'c-bd04e182-refused.jpg') });
 let big: Record<string, unknown> | null = null;
 if (!gpuBusy) {
     await page.goto(fly('ru', 'scene=bd04e182&nowarn=1&input=touch'));
@@ -81,14 +90,7 @@ if (!gpuBusy) {
     big = { ...big, hasCollisionAfter: await page.evaluate(() => !!(window as any).__gsfpv.session.collision) };
     await page.screenshot({ path: join(SHOTS, 'c-bd04e182-baked.jpg') });
 }
-await page.goto(fly('ru', 'scene=bd04e182&nowarn=1&input=touch'));
-await waitReady(page, 180000);
-await page.evaluate(() => (window as any).__gsfpv.walls.fakeLimits({ maxBufferSize: 64e6, maxStorageBufferBindingSize: 64e6 }));
-await page.click('[data-action="bake"]');
-let refusal: Record<string, unknown> | null = null;
-for (let i = 0; i < 60 && !refusal; i++) { refusal = await page.evaluate(() => (window as any).__gsfpv.bake ?? null); if (!refusal) await page.waitForTimeout(500); }
-const refusalText = await page.locator('[data-testid="bake-status"]').textContent();
-await page.screenshot({ path: join(SHOTS, 'c-bd04e182-refused.jpg') });
+
 clearInterval(poll);
 await browser.close();
 

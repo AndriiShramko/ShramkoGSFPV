@@ -251,6 +251,11 @@ function heapMb(): number | null {
  * decode ("Expected property name ... at position 1" on bd04e182). A plain fetch lets the browser
  * decode the whole file; the files are in its HTTP cache already (the renderer loaded them).
  */
+/** The library reports the format's block limit only in its message, and not always as an Error. */
+function tooManyBlocks(e: unknown): boolean {
+    return e != null && /mixed blocks/i.test(String((e as { message?: unknown }).message ?? e));
+}
+
 export function wholeFileSystem(st: Pick<typeof import('@playcanvas/splat-transform'), 'MemoryReadFileSystem'>, base: string, f: (u: string) => Promise<Response> = fetch): import('@playcanvas/splat-transform').ReadFileSystem {
     return {
         async createSource(filename, progress) {
@@ -310,12 +315,12 @@ export async function bakeCollision(contentUrl: string, kind: 'meta' | 'lod-meta
             } catch (e) {
                 failure = e;
             }
-            if (!(failure instanceof Error && /mixed blocks/i.test(failure.message))) break;
+            if (!tooManyBlocks(failure)) break;
         }
         const validation = gpu ? await gpu.popErrorScope() : null;
         const oom = gpu ? await gpu.popErrorScope() : null;
         if (validation || oom) throw new BakeGpuError(`GPU ${validation ? 'validation' : 'out-of-memory'} error: ${(validation ?? oom)!.message.slice(0, 200)}`);
-        if (failure instanceof Error && /mixed blocks/i.test(failure.message)) throw new BakeRefusedError('octree', size, 0, `even at ${Math.round(used * 100)} cm`);
+        if (tooManyBlocks(failure)) throw new BakeRefusedError('octree', size, 0, `even at ${Math.round(used * 100)} cm`);
         if (failure) throw failure;
         const json = mem.results.get('scene.voxel.json');
         const bin = mem.results.get('scene.voxel.bin');
