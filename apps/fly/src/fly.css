@@ -78,14 +78,35 @@ h1 { font-size: 22px; margin: 0 0 12px; } h2 { font-size: 18px; margin: 0 0 10px
 .panel-head { display: flex; justify-content: space-between; align-items: center; }
 .panel-x { width: 44px; height: 44px; border: 0; background: transparent; color: var(--fg); font-size: 24px; cursor: pointer; }
 .set-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: center; margin: 8px 0; }
-.set-row input.pid { width: 56px; min-height: 36px; background: #0b0e12; color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 4px; }
+/* PID: one grid, a letter over each column, every axis on one line (flight.ts settingsPanel) */
+.pid-block { margin: 12px 0 8px; }
+.pid-block > p { margin: 0 0 6px; }
+.pid-grid { display: grid; grid-template-columns: auto repeat(4, minmax(44px, 64px)); gap: 6px 8px; align-items: center; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255,255,255,.02); }
+.pid-h { font: 600 12px/1 ui-monospace, "Cascadia Mono", Consolas, monospace; color: var(--muted); text-align: center; letter-spacing: .06em; }
+.pid-ax { white-space: nowrap; } /* its column is as wide as the longest axis name (auto), never cut on a phone */
+.pid-grid input.pid { width: 100%; min-width: 0; min-height: 36px; background: #0b0e12; color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; font: 500 14px/1 ui-monospace, "Cascadia Mono", Consolas, monospace; text-align: center; font-variant-numeric: tabular-nums; }
+.pid-grid input.pid:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+@media (max-width: 380px) { /* a 320 px phone: the longest axis name (Polish pitch) and four 3-digit fields still fit */
+    .pid-grid { grid-template-columns: auto repeat(4, minmax(34px, 64px)); gap: 6px 4px; padding: 8px; }
+    .pid-grid input.pid { padding: 4px 2px; font-size: 13px; }
+}
 .set-row select { min-height: 40px; background: var(--bg2); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+/* a select is as wide as its longest option: the Spanish gravity-mode option pushed the panel
+   96 px sideways on a phone (Polish 26 px). It takes the free columns and may shrink */
+.set-row > * { min-width: 0; }
+.set-row > select { grid-column: 2 / -1; width: 100%; }
 details summary { cursor: pointer; min-height: 40px; display: flex; align-items: center; }
-.crash-overlay { position: absolute; left: 50%; top: 64px; transform: translateX(-50%); width: min(560px, calc(100vw - 32px)); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; animation: fadein .5s ease both; }
+/* starts under the top buttons (they end 78 px down, lower by the notes' --banner-h): on a phone
+   the card covered the lower third of Controls and Pause */
+.crash-overlay { position: absolute; left: 50%; top: calc(max(10px, env(safe-area-inset-top)) + 88px + var(--banner-h, 0px)); transform: translateX(-50%); width: min(560px, calc(100vw - 32px)); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; animation: fadein .5s ease both; }
 @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
 /* a modal panel (pause menu, settings...) stays on top: a crash overlay that shows up meanwhile
    (it waits for the crash to settle) would cover its buttons, so it waits under the panel */
 #ui:has(> .panel) > .crash-overlay { visibility: hidden; }
+/* the crash card owns the top of the view while it is up: the pad hint, the voxel legend and the
+   walls box (all at the same height) would print half over its edge; they come back on respawn */
+#ui:has(> .crash-overlay) .touch-hint, #ui:has(> .crash-overlay) > .voxel-legend, #ui:has(> .crash-overlay) > .bake-box { visibility: hidden; }
+.crash-overlay { max-height: calc(100vh - max(10px, env(safe-area-inset-top)) - 104px - var(--banner-h, 0px)); overflow: auto; }
 dl.measure { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; } dl.measure dd { margin: 0; font-family: ui-monospace, monospace; }
 .replay-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 6px 0; }
 .banner { position: absolute; top: 0; left: 0; right: 0; background: #3b2f0b; color: #fde68a; padding: 8px 16px; font-size: 14px; text-align: center; } /* stacked by flight.ts */
@@ -145,7 +166,7 @@ dl.measure { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; } dl
 .touch-arm { position: absolute; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); transform: translateX(-50%); min-width: 96px; min-height: 56px; border-radius: 14px; border: 2px solid var(--warn); background: rgba(0,0,0,.6); color: var(--warn); font: 700 18px/1 system-ui; cursor: pointer; }
 .touch-arm.on { border-color: var(--accent); color: var(--accent); }
 /* with touch sticks on screen the bottom corners belong to the thumbs: OSD and credits move up */
-body.touch-on .osd.bl { bottom: calc(min(40vw, 220px) + 40px); }
+body.touch-on .osd.bl { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 16px); } /* 16 px over the pads, like them clear of the home bar */
 body.touch-on .osd.br { display: none; } /* keyboard shortcuts: nothing to press on a phone */
 body.touch-on .attribution { top: calc(max(10px, env(safe-area-inset-top)) + 128px + var(--banner-h, 0px)); bottom: auto; max-width: calc(100vw - 32px); } /* under the pad hint */
 /* the hint starts 8 px under the top buttons (they end 78 px down) and keeps to two lines, so
@@ -164,7 +185,12 @@ body.clean .top-actions, body.clean .attribution, body.clean .osd.br, body.clean
 .cinema-bar { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; max-width: 92vw; }
 /* touch sticks: the bottom centre is the ARM button and the pads, so Record goes above them */
 body.touch-on .cinema-bar { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 12px); }
-.cinema-note { font-size: 13px; color: #e5e7eb; text-shadow: 0 1px 2px #000; text-align: center; }
+.cinema-note { font-size: 13px; color: #e5e7eb; text-shadow: 0 1px 2px #000; text-align: center; background: rgba(0,0,0,.42); padding: 3px 10px; border-radius: 8px; }
+.cinema-note:empty { display: none; }
+.cinema-bar .btn.rec { background: rgba(12,14,18,.82); }
+/* the arm hint stacks above the Record control instead of printing under it: main.ts keeps
+   --cinema-top = distance from the bottom edge to the top of .cinema-bar */
+body.cinema .gate-msg { bottom: calc(var(--cinema-top, 96px) + 8px); }
 .btn.rec.on { border-color: var(--bad); color: var(--bad); }
 body.cinema .osd, body.cinema .attribution, body.cinema .badge-nowalls, body.cinema .touch-hint { display: none; }
 .import-text { width: 100%; min-height: 160px; margin: 8px 0; background: #0b0d11; color: #e5e7eb; border: 1px solid var(--line); border-radius: 10px; padding: 8px; font: 12px/1.35 ui-monospace, Consolas, monospace; }

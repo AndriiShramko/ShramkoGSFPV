@@ -596,7 +596,18 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
     let recorder: CinemaRecorder | null = null;
     const recBtn = h('button', { type: 'button', class: 'btn rec', 'data-action': 'cinema-rec', hidden: true, onclick: () => void (recorder?.recording ? stopRec() : startRec()) }, t('cinema.rec')) as HTMLButtonElement;
     const cinemaNote = h('div', { class: 'cinema-note', role: 'status', 'data-testid': 'cinema-note', hidden: true });
-    ui.append(h('div', { class: 'cinema-bar interactive' }, recBtn, cinemaNote));
+    const cinemaBar = h('div', { class: 'cinema-bar interactive' }, recBtn, cinemaNote);
+    ui.append(cinemaBar);
+    // the arm hint (Hud's gate line) stacks above the bar (fly.css body.cinema .gate-msg): it was
+    // printed under the Record button. The bar's height changes with its note, its place with touch
+    const placeOverCinema = (): void => {
+        if (!cinemaOn) return;
+        const top = cinemaBar.getBoundingClientRect().top;
+        const v = `${Math.max(0, Math.round(innerHeight - top))}px`;
+        if (ui.style.getPropertyValue('--cinema-top') !== v) ui.style.setProperty('--cinema-top', v);
+    };
+    new ResizeObserver(placeOverCinema).observe(cinemaBar);
+    addEventListener('resize', placeOverCinema);
     session.renderer.app.on('frameend', () => { if (recorder?.recording) recorder.addFrame(canvas, performance.now()); });
     function toggleCinema(): void {
         cinemaOn = !cinemaOn;
@@ -608,6 +619,7 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
         cinemaNote.hidden = !cinemaOn;
         cinemaNote.textContent = cinemaOn ? (meta ? t('cinema.on') : t('cinema.noRec')) : '';
         if (!cinemaOn && recorder?.recording) void stopRec();
+        placeOverCinema();
     }
     async function startRec(): Promise<string> {
         if (!meta) throw new Error('recording is only for showcase scenes');

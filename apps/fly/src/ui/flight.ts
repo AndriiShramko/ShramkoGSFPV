@@ -273,7 +273,9 @@ export class Hud {
         // a radio or gamepad gets the step-by-step card, the keyboard its keys; touch and sim the one line
         const radio = !!view && (src === 'hid' || src === 'gamepad');
         this.card.update(radio && view ? view : null, hd.armed, hd.crashed, block);
-        const say = !hd.armed && !hd.crashed && block ? gateText(block, view) : '';
+        // the test pilot (?simradio=scenario) flies the model directly, past the arm gate: the gate's
+        // "Calibrate your controls first" was never true for it, and it printed into every bot frame
+        const say = !hd.armed && !hd.crashed && block && src !== 'sim' ? gateText(block, view) : '';
         const keyCard = kbd && say !== '' && !document.querySelector('.screen.radio');
         this.keys.update(keyCard, say, block);
         // keyboard: the flying keys stay in the corner once the key card is gone (armed, crashed)
@@ -437,14 +439,20 @@ export function settingsPanel(parent: HTMLElement, v: SettingsValues, twr: numbe
     const rm = h('input', { type: 'checkbox' }) as HTMLInputElement;
     rm.checked = v.reducedMotion;
     rm.addEventListener('change', () => { v.reducedMotion = rm.checked; });
-    const pidInputs = (['roll', 'pitch', 'yaw'] as const).map((ax) => {
-        const inputs = v.pid[ax].map((x, i) => {
-            const inp = h('input', { type: 'number', min: 0, max: 250, step: 1, value: x, class: 'pid', 'aria-label': `${ax} ${'PIDF'[i]}` }) as HTMLInputElement;
+    // one grid for the header and the three axes: an axis row in .set-row (3 columns) wrapped its
+    // 5 cells onto two lines, the numbers out of line under the wrong letters
+    const pidGrid = h('div', { class: 'pid-grid', role: 'group', 'aria-label': t('settings.pid'), 'data-testid': 'pid-grid' },
+        h('span', { class: 'pid-corner', 'aria-hidden': 'true' }),
+        ...['P', 'I', 'D', 'F'].map((k) => h('span', { class: 'pid-h', 'aria-hidden': 'true' }, k)));
+    for (const ax of ['roll', 'pitch', 'yaw'] as const) {
+        const name = t(`wizard.axis.${ax}`);
+        pidGrid.append(h('span', { class: 'pid-ax' }, name));
+        v.pid[ax].forEach((x, i) => {
+            const inp = h('input', { type: 'number', min: 0, max: 250, step: 1, value: x, class: 'pid', inputmode: 'numeric', 'aria-label': `${name} ${'PIDF'[i]}` }) as HTMLInputElement;
             inp.addEventListener('change', () => { v.pid[ax][i] = Math.max(0, Math.min(250, Number(inp.value) || 0)); });
-            return inp;
+            pidGrid.append(inp);
         });
-        return h('div', { class: 'set-row' }, h('span', {}, ax), ...inputs);
-    });
+    }
     const adv = h('details', {},
         h('summary', {}, t('settings.advanced')),
         num(t('settings.quality'), v.quality, 0, 1, 0.05, 'quality'),
@@ -455,7 +463,7 @@ export function settingsPanel(parent: HTMLElement, v: SettingsValues, twr: numbe
         num(t('settings.crash'), v.vCrash, 2, 10, 0.5, 'vCrash', ' m/s'),
         num(t('settings.tau'), v.tauMs, 8, 30, 1, 'tauMs', ' ms'),
         num(t('settings.drag'), v.cdaScale, 0.5, 2, 0.05, 'cdaScale', '×'),
-        h('div', {}, h('p', { class: 'muted small' }, t('settings.pid')), ...pidInputs),
+        h('div', { class: 'pid-block' }, h('p', { class: 'muted small' }, t('settings.pid')), pidGrid),
         h('label', { class: 'set-row' }, h('span', {}, t('settings.reducedMotion')), rm)
     );
     p.body.append(

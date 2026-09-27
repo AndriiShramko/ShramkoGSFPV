@@ -320,7 +320,9 @@ svg.rb-mini .rb-dim { opacity: .5; }
 /* touch: the one-line arm hint never sits over the middle of the view. Upright, the pads fill the
    bottom corners with a finger's width between them: the hint goes just above them. On its side
    there is room between the pads: the hint sits there, right above the ARM button it points to */
-.gate-msg.mid { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 12px); width: max-content; max-width: min(86vw, 520px); font-size: 16px; padding: 8px 14px; }
+/* upright: above the OSD's bottom line (16 px over the pads, one 19 px line, fly.css), never on it:
+   "Tap ARM" was printed over "THR 0% 0.0 m/s ALT 0.0 m" */
+.gate-msg.mid { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 16px + 19px + 10px); width: max-content; max-width: min(86vw, 520px); font-size: 16px; padding: 8px 14px; }
 @media (orientation: landscape) {
     .gate-msg.mid { bottom: calc(max(24px, env(safe-area-inset-bottom)) + 64px); max-width: calc(100vw - 2 * min(40vw, 220px) - 64px); font-size: 14px; padding: 6px 12px; }
 }
