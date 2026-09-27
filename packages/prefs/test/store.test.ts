@@ -215,6 +215,82 @@ describe('persistence (A.5)', () => {
     });
 });
 
+/**
+ * The prefs review (prefsReview.mustFix[1]): with localStorage full at the first v0.3 boot (v0.2's
+ * gsfpv.lastLog can fill it), the migrated document never reached storage, and the first change
+ * rebuilt the tab's view from "nothing stored": stick mode, radios, favourites and the warning were
+ * gone from the session and came back as 'external' changes.
+ */
+describe('full storage at the first v0.3 boot (review must-fix 2)', () => {
+    const POCKET = { version: 1, deviceKey: 'hid:pocket', deviceName: 'Pocket', axes: { roll: { index: 0 } }, arm: { kind: 'axis', index: 4 } };
+    const LEGACY: Record<string, string> = {
+        'gsfpv.stickMode': '1',
+        'gsfpv.profiles.v1': JSON.stringify({ [POCKET.deviceKey]: POCKET }),
+        'gsfpv.lastInput': JSON.stringify({ kind: 'hid', key: POCKET.deviceKey }),
+        'gsfpv.favourites.v1': JSON.stringify(['39e63ce9']),
+        'gsfpv.warned': '1'
+    };
+    const legacy = (k: string) => LEGACY[k] ?? null;
+    /** localStorage with a quota switch; `erase()` is another tab's "erase everything" (the key removed). */
+    class QuotaBackend implements Backend {
+        text: string | null = null;
+        constructor(public full: boolean) {}
+        read() { return this.text; }
+        write(t: string) {
+            if (this.full) throw new Error('QuotaExceededError');
+            this.text = t;
+            return true;
+        }
+        erase() { this.text = null; }
+    }
+    const kept = (s: PrefsStore) => ({ stick: s.get('input.stickMode'), radios: Object.keys(s.collection('radioProfiles').items), last: s.collection('radioProfiles').last?.key ?? null, favourites: s.collection('sceneLibrary').favourites, warned: s.collection('ui').warned });
+    const MIGRATED = { stick: '1', radios: ['hid:pocket'], last: 'hid:pocket', favourites: ['39e63ce9'], warned: true };
+
+    it('a change keeps everything the migration read, and emits only the change', () => {
+        const q = new QuotaBackend(true);
+        const s = mkStore(q, { legacy });
+        expect(s.writable).toBe(false);
+        expect(kept(s)).toEqual(MIGRATED);
+        const seen: PrefChange[] = [];
+        s.onChange((c) => seen.push(c));
+        s.set('flight.mode', 'acro');
+        s.set('respawn.rewindS', 9);
+        expect(kept(s)).toEqual(MIGRATED);
+        expect(s.get('flight.mode')).toBe('acro');
+        expect(seen.map((c) => `${c.source}:${c.id}`)).toEqual(['user:flight.mode', 'user:respawn.rewindS']);
+    });
+
+    it('once there is room, the next write stores the migrated document with the changes', () => {
+        const q = new QuotaBackend(true);
+        const s = mkStore(q, { legacy });
+        s.set('flight.mode', 'acro');
+        q.full = false;
+        s.set('respawn.rewindS', 9);
+        expect(s.writable).toBe(true);
+        const later = mkStore(q, { legacy: () => null });
+        expect(later.migrated).toBeNull();
+        expect(kept(later)).toEqual(MIGRATED);
+        expect([later.get('flight.mode'), later.get('respawn.rewindS')]).toEqual(['acro', 9]);
+    });
+
+    it('control: with room for the document at boot the same change keeps everything (the working-storage run)', () => {
+        const q = new QuotaBackend(false);
+        const s = mkStore(q, { legacy });
+        expect(s.writable).toBe(true);
+        s.set('flight.mode', 'acro');
+        expect(kept(s)).toEqual(MIGRATED);
+    });
+
+    it('control: once this tab has stored a document, another tab\'s erase is still respected', () => {
+        const q = new QuotaBackend(false);
+        const s = mkStore(q, { legacy });
+        q.erase();
+        s.set('flight.mode', 'acro');
+        expect(kept(s)).toEqual({ stick: '2', radios: [], last: null, favourites: [], warned: false });
+        expect(JSON.parse(q.text!).settings.global).toEqual({ 'flight.mode': 'acro' });
+    });
+});
+
 describe('explicit semantics (A.6)', () => {
     it('set stores even a value equal to the default', () => {
         const s = mkStore();

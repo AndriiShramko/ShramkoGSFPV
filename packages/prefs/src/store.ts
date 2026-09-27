@@ -100,6 +100,12 @@ export class PrefsStore {
     private canWrite = true;
     /** a document written by a newer version: read, never overwritten */
     private readOnly = false;
+    /**
+     * This tab has seen a stored document (read one, or written one). Until it has, "nothing
+     * stored" means our document never reached storage (full or blocked at the first boot), not
+     * that another tab erased everything: the tab's own view is then the base of the next write.
+     */
+    private seenStored = false;
     private unExternal: (() => void) | null = null;
 
     constructor(schema: Schema, backend: Backend, presets: PresetResolver, o: StoreOptions = {}) {
@@ -113,6 +119,7 @@ export class PrefsStore {
         this.external = o.external ?? {};
 
         const text = this.safeRead();
+        this.seenStored = text !== null;
         let writeNow = false;
         if (text === null) {
             // first boot of v0.3 (or a first visit): v0.2's keys become the document, once
@@ -497,13 +504,17 @@ export class PrefsStore {
     }
 
     /**
-     * The document as storage holds it now. Nothing stored (another tab erased everything): an
-     * empty one, so the erase is respected. Unreadable: this tab's own view, so nothing it knows
-     * is lost when it writes. A newer version's document: 'newer', and this tab stops writing.
+     * The document as storage holds it now. Nothing stored: if this tab has seen a stored
+     * document, another tab erased everything, so an empty one (the erase is respected); if it
+     * never has, its own document never reached storage (full or blocked since boot, review
+     * must-fix 2), so this tab's own view, or the first change would drop what the first-boot
+     * migration read. Unreadable: this tab's own view, so nothing it knows is lost when it writes.
+     * A newer version's document: 'newer', and this tab stops writing.
      */
     private readStored(): PrefsDoc | 'newer' {
         const text = this.safeRead();
-        if (text === null) return emptyDoc(this.app, this.iso());
+        if (text === null) return this.seenStored ? emptyDoc(this.app, this.iso()) : clone(this.doc);
+        this.seenStored = true;
         const p = parseDocInput(text);
         if (!p.ok) {
             if (p.error === 'newer-version') {
@@ -543,6 +554,7 @@ export class PrefsStore {
             ok = false;
         }
         this.canWrite = ok;
+        if (ok) this.seenStored = true;
         return ok;
     }
 
