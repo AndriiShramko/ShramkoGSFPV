@@ -7,7 +7,20 @@ import ru from '@gsfpv/i18n/fly/ru.json';
 
 export type Locale = 'en' | 'es' | 'pl' | 'ru';
 export const LOCALES: Locale[] = ['en', 'es', 'pl', 'ru'];
-const DICTS: Record<Locale, Record<string, string>> = { en, es, pl, ru };
+
+// Namespaced dictionaries, locales/fly/<ns>/<lang>.json (docs/architecture-v03.md 1.3): each
+// feature adds its keys in its own files, so parallel work never edits the same four files. A glob
+// takes a path, not a package name, hence the walk up to packages/. Every key lives in exactly one
+// file (packages/i18n/test/fly-parity.test.ts), so the merge order cannot decide a text.
+const NAMESPACED = import.meta.glob<Record<string, string>>('../../../packages/i18n/locales/fly/*/*.json', { eager: true, import: 'default' });
+
+function merged(l: Locale, flat: Record<string, string>): Record<string, string> {
+    const out = { ...flat };
+    for (const [path, d] of Object.entries(NAMESPACED)) if (path.endsWith(`/${l}.json`)) Object.assign(out, d);
+    return out;
+}
+
+const DICTS: Record<Locale, Record<string, string>> = { en: merged('en', en), es: merged('es', es), pl: merged('pl', pl), ru: merged('ru', ru) };
 
 function fromPath(): Locale | null {
     const m = location.pathname.match(/^\/(en|es|pl|ru)\//);

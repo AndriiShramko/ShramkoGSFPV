@@ -35,6 +35,9 @@ importers:
       '@gsfpv/input':
         specifier: workspace:*
         version: link:../../packages/input
+      '@gsfpv/prefs':
+        specifier: workspace:*
+        version: link:../../packages/prefs
       '@gsfpv/render-pc':
         specifier: workspace:*
         version: link:../../packages/render-pc
@@ -131,6 +134,8 @@ importers:
       '@gsfpv/sim-core':
         specifier: workspace:*
         version: link:../sim-core
+
+  packages/prefs: {}
 
   packages/render-pc:
     dependencies:

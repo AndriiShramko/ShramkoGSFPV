@@ -1,6 +1,8 @@
 // Compile a preset JSON (every field has value + source) into the flat numbers the model uses.
 
 import type { RatesConfig, RatesType, ThrottleCurve } from './rates';
+import { invertThrottle } from './rates';
+import type { LevelParams } from './contracts';
 
 export type FieldSource = 'manufacturer' | 'estimate' | 'bf-default' | `measured:${string}`;
 
@@ -53,9 +55,35 @@ export interface SimParams {
     rho: number;
     cameraUptiltDeg: number;
     cameraFovDeg: number;
+    /** self-level tuning of angle and horizon modes (B.1) */
+    level: LevelParams;
+    /** PT3 cutoff on the self-level rate output, Hz (Betaflight ATTITUDE_CUTOFF_HZ 50); 0 = unfiltered, a test control only */
+    levelOutputHz: number;
+    /** false: an impact above vCrash is a bounce, not a crash (C.7) */
+    crashOn: boolean;
+    /** rotor and duct momentum drag at hover rotor speed, 1/s (H.2 item 1) */
+    ductDrag: number;
+    /** rotor + prop inertia about the motor axis, kg m^2 (H.2 item 3) */
+    rotorInertia: number;
+    /** motor-mix range where the I-term starts to fade (Betaflight iterm_windup 85 %); 1 = v0.2 (freeze only when saturated) */
+    itermWindup: number;
+    /** lowest body point below the centre with the craft level, m: where the platform goes (C.2) */
+    bodyBottom: number;
 }
 
 export const EARTH_G = 9.81;
+
+/** Betaflight 4.5.1 self-level defaults (pid.c: angle_limit 60, PID_LEVEL 50/75/75/50, horizon 135 deg, 500 ms, FF smoothing 80 ms). */
+export const LEVEL_DEFAULTS: Readonly<LevelParams> = {
+    limitDeg: 60,
+    gain: 50,
+    ffGain: 0.5,
+    ffSmoothMs: 80,
+    horizonStrength: 75,
+    horizonLimitSticks: 0.75,
+    horizonLimitDeg: 135,
+    horizonDelayMs: 500
+};
 
 export interface ParamOverrides {
     twr?: number;
@@ -70,6 +98,16 @@ export interface ParamOverrides {
     throttle?: ThrottleCurve; // thr_mid / thr_expo, e.g. imported from a Betaflight diff
     uptiltDeg?: number;
     fovDeg?: number;
+    /** self-level tuning; missing fields keep LEVEL_DEFAULTS */
+    level?: Partial<LevelParams>;
+    /** crashes on (default) or off (C.7); a flag, because JSON turns Infinity into null */
+    crashOn?: boolean;
+    /** rotor and duct momentum drag, 1/s at hover rotor speed (preset rotor_drag_per_s) */
+    ductDrag?: number;
+    /** multiplier on the preset rotor_inertia_kgm2 (1 = preset, 0 = no rotor-inertia yaw reaction) */
+    propInertia?: number;
+    /** motor idle as a fraction of full output (0.10 = Betaflight dshot_idle_value 1000) */
+    idle?: number;
 }
 
 function num(p: PresetJson, key: string): number {
@@ -140,10 +178,14 @@ export function compileParams(p: PresetJson, o: ParamOverrides = {}): SimParams 
         spheres = new Float64Array([0, 0, 0, bodyR]);
     }
     let boundRadius = 0;
+    let bodyBottom = 0;
     for (let i = 0; i < spheres.length; i += 4) {
         const d = Math.sqrt(spheres[i] * spheres[i] + spheres[i + 1] * spheres[i + 1] + spheres[i + 2] * spheres[i + 2]) + spheres[i + 3];
         if (d > boundRadius) boundRadius = d;
+        const below = spheres[i + 3] - spheres[i + 1];
+        if (below > bodyBottom) bodyBottom = below;
     }
+    const lv = o.level ?? {};
 
     const rj = p.fields.rates.value as { type: RatesType; roll: number[]; pitch: number[]; yaw: number[]; rate_limit: number };
     const rates: RatesConfig = o.rates ?? {
@@ -175,7 +217,7 @@ export function compileParams(p: PresetJson, o: ParamOverrides = {}): SimParams 
         omegaMaxPerVolt,
         tau: (o.tauMs ?? num(p, 'motor_tau_ms')) / 1000,
         kappa,
-        idle: num(p, 'motor_idle'),
+        idle: o.idle ?? num(p, 'motor_idle'),
         motorPos,
         motorYaw,
         cda: [cdaH, cdaV, cdaH],
@@ -194,11 +236,27 @@ export function compileParams(p: PresetJson, o: ParamOverrides = {}): SimParams 
         gravityMode,
         rho: 1.225,
         cameraUptiltDeg: o.uptiltDeg ?? num(p, 'camera_uptilt_deg'),
-        cameraFovDeg: o.fovDeg ?? num(p, 'camera_fov_deg')
+        cameraFovDeg: o.fovDeg ?? num(p, 'camera_fov_deg'),
+        level: {
+            limitDeg: lv.limitDeg ?? LEVEL_DEFAULTS.limitDeg,
+            gain: lv.gain ?? LEVEL_DEFAULTS.gain,
+            ffGain: lv.ffGain ?? LEVEL_DEFAULTS.ffGain,
+            ffSmoothMs: lv.ffSmoothMs ?? LEVEL_DEFAULTS.ffSmoothMs,
+            horizonStrength: lv.horizonStrength ?? LEVEL_DEFAULTS.horizonStrength,
+            horizonLimitSticks: lv.horizonLimitSticks ?? LEVEL_DEFAULTS.horizonLimitSticks,
+            horizonLimitDeg: lv.horizonLimitDeg ?? LEVEL_DEFAULTS.horizonLimitDeg,
+            horizonDelayMs: lv.horizonDelayMs ?? LEVEL_DEFAULTS.horizonDelayMs
+        },
+        levelOutputHz: 50,
+        crashOn: o.crashOn ?? true,
+        ductDrag: o.ductDrag ?? num(p, 'rotor_drag_per_s'),
+        rotorInertia: num(p, 'rotor_inertia_kgm2') * (o.propInertia ?? 1),
+        itermWindup: 0.85,
+        bodyBottom
     };
 }
 
-/** Throttle stick (0..1) that hovers at nominal voltage: u = (1/sqrt(TWR_local) - idle) / (1 - idle). */
+/** Throttle-curve output (0..1) that hovers at nominal voltage: u = (1/sqrt(TWR_local) - idle) / (1 - idle). */
 export function hoverThrottle(sp: SimParams): number {
     const twrLocal = (4 * sp.tmaxMotorNom) / (sp.mass * sp.gravity);
     if (twrLocal <= 0) return 0;
@@ -208,8 +266,10 @@ export function hoverThrottle(sp: SimParams): number {
 /**
  * Hover motor output and stick including battery sag at the given state of charge
  * (fixed point of thrust -> current -> voltage). Returns NaN outputs if it cannot hover.
+ * throttle = the throttle-curve output (what the mixer gets); stick = the stick position giving it
+ * (v0.2 returned the curve output as `stick`, which only matched while the curve was linear).
  */
-export function hoverSolve(sp: SimParams, soc = 1): { motor: number; stick: number; volts: number } {
+export function hoverSolve(sp: SimParams, soc = 1): { motor: number; throttle: number; stick: number; volts: number } {
     const need = (sp.mass * sp.gravity) / 4; // N per motor
     const vOc = sp.cells * voc(soc);
     let v = vOc;
@@ -221,6 +281,7 @@ export function hoverSolve(sp: SimParams, soc = 1): { motor: number; stick: numb
         const current = (4 * sp.kappa * need * omega) / (sp.eta * v);
         v = vOc - current * sp.rPack;
     }
-    if (!(w <= 1)) return { motor: NaN, stick: NaN, volts: v };
-    return { motor: w, stick: (w - sp.idle) / (1 - sp.idle), volts: v };
+    if (!(w <= 1)) return { motor: NaN, throttle: NaN, stick: NaN, volts: v };
+    const throttle = (w - sp.idle) / (1 - sp.idle);
+    return { motor: w, throttle, stick: invertThrottle(throttle, sp.throttle), volts: v };
 }

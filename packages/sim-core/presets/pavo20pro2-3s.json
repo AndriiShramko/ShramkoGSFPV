@@ -41,13 +41,16 @@
       "source": "manufacturer"
     },
     "battery_mass_g": {
-      "value": 45,
-      "source": "estimate"
+      "value": 42,
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/lava-ii-3s-battery",
+      "note": "LAVA II 3S 580 mAh"
     },
     "auw_g": {
-      "value": 161,
-      "source": "estimate",
-      "note": "dry mass + battery estimate"
+      "value": 158,
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/pavo20-pro-ii-brushless-whoop-quadcopter",
+      "note": "116.2 g with the O4 Pro + 42 g LAVA II battery; unmanned.tech measured 155.9 g with a LAVA 550 3S"
     },
     "twr": {
       "value": 5.9,
@@ -76,9 +79,10 @@
       "note": "reaction torque / thrust"
     },
     "motor_idle": {
-      "value": 0.055,
-      "source": "bf-default",
-      "note": "dshot_idle_value 550"
+      "value": 0.10,
+      "source": "manufacturer",
+      "ref": "https://support.betafpv.com/hc/en-us/articles/52638111624217",
+      "note": "BetaFPV CLI, F405 board (BF 4.5.3): dshot_idle_value 1000; the AT32 board (BF 2025.12+) ships motor_idle 800 = 0.08"
     },
     "rpm_loaded_fraction": {
       "value": 0.75,
@@ -156,43 +160,66 @@
         ],
         "rate_limit": 1998
       },
-      "source": "bf-default",
-      "note": "Betaflight 4.5 defaults, rc_rate/srate/expo as CLI integers"
+      "source": "manufacturer",
+      "ref": "https://support.betafpv.com/hc/en-us/articles/52638111624217",
+      "note": "the BetaFPV CLI keeps the Betaflight 4.5 defaults; rc_rate/srate/expo as CLI integers"
     },
     "pid_roll": {
       "value": [
-        45,
-        80,
-        40,
-        120
+        51,
+        105,
+        46,
+        41
       ],
-      "source": "bf-default",
-      "note": "P, I, D, F"
+      "source": "manufacturer",
+      "ref": "https://support.betafpv.com/hc/en-us/articles/52638111624217",
+      "note": "P, I, D, F; BetaFPV CLI, F405 board (BF 4.5.3), profile 0 'O4 Pro'"
     },
     "pid_pitch": {
       "value": [
-        47,
-        84,
-        46,
-        125
+        64,
+        133,
+        63,
+        51
       ],
-      "source": "bf-default"
+      "source": "manufacturer",
+      "ref": "https://support.betafpv.com/hc/en-us/articles/52638111624217",
+      "note": "BetaFPV CLI, F405 board, profile 0 'O4 Pro'"
     },
     "pid_yaw": {
       "value": [
-        45,
-        80,
+        51,
+        105,
         0,
-        120
+        41
       ],
-      "source": "bf-default"
+      "source": "manufacturer",
+      "ref": "https://support.betafpv.com/hc/en-us/articles/52638111624217",
+      "note": "BetaFPV CLI, F405 board, profile 0 'O4 Pro'"
     },
     "throttle": {
       "value": {
         "mid": 50,
         "expo": 0
       },
-      "source": "bf-default"
+      "source": "manufacturer",
+      "ref": "https://support.betafpv.com/hc/en-us/articles/52638111624217",
+      "note": "the BetaFPV CLI keeps the default curve"
+    },
+    "rotor_drag_per_s": {
+      "value": 0.6,
+      "source": "estimate",
+      "ref": "https://arxiv.org/abs/1712.02402",
+      "min": 0.3,
+      "max": 0.9,
+      "note": "rotor and duct momentum drag at hover rotor speed; momentum theory gives at most 0.86 1/s (sqrt(g rho A_rotors / m)); Faessler et al. 2018 measured 0.24-0.54 on an open-prop quad; a blackbox coast-down fits it"
+    },
+    "rotor_inertia_kgm2": {
+      "value": 2e-7,
+      "source": "estimate",
+      "min": 1e-7,
+      "max": 3e-7,
+      "note": "D2.2 prop + 1104 bell, as the Pavo20 Pro; drives the yaw reaction to motor speed changes"
     }
   }
 }

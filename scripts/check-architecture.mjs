@@ -3,6 +3,8 @@
 //  2. packages/collision imports nothing but itself (vendored code + our wrappers), no DOM.
 //  3. apps/site never imports playcanvas or the simulator packages.
 //  4. no Betaflight-looking identifiers were pasted into our sources (formulas only, no GPL code).
+//  5. packages/prefs touches no DOM globals outside src/browser.ts (v0.3 design 1.4), so the store,
+//     the schema and the catalogue builder run in Node tests and in the catalogue generator.
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -42,9 +44,18 @@ for (const f of walk(join(ROOT, 'packages', 'collision', 'src'))) {
     for (const i of out) if (!i.startsWith('.')) problems.push(`collision imports ${i} (${f})`);
     if (DOM.test(s)) problems.push(`collision touches the DOM (${f})`);
 }
+// wider than DOM above: the store must not reach storage, the page or IndexedDB by itself either.
+// Comments are stripped first: prefs prose says "the document (A.4)" everywhere.
+const PREFS_DOM = /\b(window|document|navigator|location|localStorage|sessionStorage|indexedDB|matchMedia|requestAnimationFrame|addEventListener|HTMLElement)\s*[.(]/;
+const PREFS_BROWSER = join(ROOT, 'packages', 'prefs', 'src', 'browser.ts');
+const code = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`\\])\/\/.*$/gm, '$1');
+for (const f of walk(join(ROOT, 'packages', 'prefs', 'src'))) {
+    if (f === PREFS_BROWSER) continue;
+    if (PREFS_DOM.test(code(readFileSync(f, 'utf8')))) problems.push(`prefs touches the DOM outside browser.ts (${f})`);
+}
 for (const f of walk(join(ROOT, 'apps', 'site'))) {
     const { out } = imports(f);
-    for (const i of out) if (/^(playcanvas|@gsfpv\/(render-pc|sim-core|collision|crash|input))/.test(i)) problems.push(`site imports ${i} (${f})`);
+    for (const i of out) if (/^(playcanvas|@gsfpv\/(render-pc|sim-core|collision|crash|input|prefs))/.test(i)) problems.push(`site imports ${i} (${f})`);
 }
 const BF = /\b(currentControlRateProfile|pidRuntime|rcCommandf|applyBetaflightRates|pidCoefficient|FEEDFORWARD_SCALE\s*\*)/;
 for (const f of [...walk(join(ROOT, 'packages')), ...walk(join(ROOT, 'apps'))]) {

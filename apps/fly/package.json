@@ -16,6 +16,7 @@
     "@gsfpv/crash": "workspace:*",
     "@gsfpv/i18n": "workspace:*",
     "@gsfpv/input": "workspace:*",
+    "@gsfpv/prefs": "workspace:*",
     "@gsfpv/render-pc": "workspace:*",
     "@gsfpv/scenes": "workspace:*",
     "@gsfpv/sim-core": "workspace:*",

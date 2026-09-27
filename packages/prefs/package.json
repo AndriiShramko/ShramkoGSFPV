@@ -1,0 +1,14 @@
+{
+  "name": "@gsfpv/prefs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Preferences store for the simulator: one schema of every setting, per-drone and per-scene scopes, export/import, and the keymap behind every keyboard shortcut",
+  "license": "MIT",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  }
+}
