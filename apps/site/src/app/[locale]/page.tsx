@@ -21,7 +21,7 @@ import ShotBand from "@/components/ShotBand";
 import StickyCTA from "@/components/StickyCTA";
 import Tour from "@/components/Tour";
 import { pageMetadata } from "@/lib/meta";
-import { SHOTS, absolute, shot, shotDate } from "@/lib/shots";
+import { SHOTS, absolute, full, panel, shot, shotDate } from "@/lib/shots";
 import type { ShotCaption } from "@/lib/shots";
 
 type TD = { t: string; d: string };
@@ -34,7 +34,7 @@ type FeatureGroup = { t: string; items: string[] };
 type FeatureStatus = "live" | "progress" | "next";
 
 /** Screenshots named in the structured data (the rest are on the page). */
-const LD_SHOTS = ["flight-tunis", "wizard-throttle", "pause", "drones", "crash", "cinema", "betaflight", "keys", "m-touch", "picker"];
+const LD_SHOTS = ["flight-tunis", "voxels", "wizard-throttle", "pause", "drones", "settings", "crash", "cinema", "voxels-only", "walls", "betaflight", "keys", "m-touch", "picker"];
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -106,9 +106,13 @@ function Landing({ locale }: { locale: Locale }) {
   const fly = flyPath(locale);
   const caps = t.raw("shots.items") as Record<string, ShotCaption>;
   const shots = SHOTS.filter((s) => caps[s.id]);
-  const gallery: GalleryItem[] = shots.map((s) => ({ id: s.id, t: caps[s.id].t, d: caps[s.id].d, open: t("shots.gallery.open", { title: caps[s.id].t }), phone: s.device === "mobile", small: s.small, large: s.large }));
+  // the grid shows each menu as its crop (readable small), the lightbox the whole screen
+  const gallery: GalleryItem[] = shots.map((s) => {
+    const th = panel(s);
+    return { id: s.id, t: caps[s.id].t, d: caps[s.id].d, open: t("shots.gallery.open", { title: caps[s.id].t }), phone: s.device === "mobile", thumb: { small: th.small, large: th.large }, full: s.large };
+  });
   const ldShots = LD_SHOTS.filter((id) => caps[id]).map((id) => {
-    const s = shot(id);
+    const s = full(shot(id));
     return { url: absolute(s), caption: `${caps[id].t}: ${caps[id].d}`, width: s.large.w, height: s.large.h };
   });
 
@@ -249,7 +253,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 3. Why it feels real */}
-        <Section id="real" index="05" eyebrow={t("real.eyebrow")} title={t("real.h2")} lead={t("real.lead")} tone="surface">
+        <Section id="real" index="05" eyebrow={t("real.eyebrow")} title={t("real.h2")} lead={t("real.lead")} tone="surface" backdrop={<ShotBackdrop id="voxels-only" tone="voxel" drift={-70} />}>
           <div className="mt-10 grid gap-8 lg:grid-cols-[1.25fr_1fr]">
             <ul className="grid gap-x-8 gap-y-7 sm:grid-cols-2">
               {real.map((it) => (
@@ -452,7 +456,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 10. FAQ */}
-        <Section id="faq" index="12" eyebrow={t("faq.eyebrow")} title={t("faq.h2")}>
+        <Section id="faq" index="12" eyebrow={t("faq.eyebrow")} title={t("faq.h2")} backdrop={<ShotBackdrop id="voxels" drift={60} />}>
           <div className="mt-10 divide-y divide-line rounded-xl border border-line">
             {faq.map((f, i) => (
               <details key={i} className="group px-5 sm:px-6">

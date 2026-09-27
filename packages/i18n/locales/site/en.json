@@ -102,7 +102,9 @@
           "Walls built in your browser for scans published without them (up to 4 M Gaussians)",
           "Loading progress: stage, MB, speed, time left and retry",
           "Save the flight log; export the trajectory as CSV or JSON",
-          "Measurements panel: display refresh, frame times, physics rate and the input in use; copy the report as JSON"
+          "Measurements panel: display refresh, frame times, physics rate and the input in use; copy the report as JSON",
+          "Voxel grid over the scan or on its own, the scan hidden (V): solid cubes, wireframe, height colours or floaters in red, with its own opacity",
+          "Walls (collisions) on or off (C), remembered for each scan; the scan's author sets the default, off for a noisy scan"
         ]
       }
     ],
@@ -126,8 +128,7 @@
       "After a crash: your next favourite or a random top-rated scene (auto-switch off by default)",
       "A SuperSplat tab with the same filters as superspl.at",
       "Scale a wrong-size scene around the drone",
-      "60 fps recording, and auto-record into the last folder you chose",
-      "Voxel-grid overlay: opacity, style, or fly the grid alone"
+      "60 fps recording, and auto-record into the last folder you chose"
     ],
     "suggest": "Missing a setting you need?",
     "suggestLink": "Suggest a feature"
@@ -364,7 +365,7 @@
         "Six BetaFPV-class quads, and every number on their cards says where it comes from. Paste a Betaflight CLI diff to fly with your own rates and PID.",
         "Hit a wall and the quad crashes at the speed it hit, the wreck tumbling with debris. Gravity, crash threshold, motors and PID sit in Settings.",
         "An OSD like in your goggles, field of view and camera uptilt, and a cinema mode that records MP4 of Andrii's scans with their credit in the picture.",
-        "Pick a scan or paste a link, watch it load with real numbers, then check the walls in use, frame times and your replays."
+        "Pick a scan or paste a link and watch it load with real numbers. Show the walls you crash into as a voxel grid over the scan, fly the grid alone, or switch the walls off on a noisy scan."
       ],
       "live": "Live now: {n}",
       "all": "Every feature and its status"
@@ -372,7 +373,7 @@
     "gallery": {
       "eyebrow": "Every screen",
       "h2": "All the menus, one by one",
-      "lead": "The calibration wizard, every screen of the pause menu, crashes, cinema mode and the phone layout. Open any picture to see it large.",
+      "lead": "Every screen of the pause menu, the calibration wizard, the voxel grid, crashes, cinema mode and the phone layout. Each menu is shown as itself; open any picture to see the whole screen.",
       "label": "Screenshots of the simulator",
       "prev": "Previous screenshot",
       "next": "Next screenshot",
@@ -393,10 +394,14 @@
       "wizard-arm": { "t": "Arm switch", "d": "Flip the switch you arm with ON and back OFF, pick its channel, or skip the step and arm with Space." },
       "wizard-check": { "t": "Check before flying", "d": "Every channel with a live bar and buttons to reverse or redo it, the arm state, and the profile to download or load." },
       "arm-card": { "t": "Ready to arm", "d": "Disarmed with a radio, a card lists what arming still needs: sticks let go, throttle down, the arm switch." },
-      "keys": { "t": "Keyboard", "d": "Every flying key on screen: Space arms, W and S throttle, A and D yaw, the arrows tilt, M switches self-levelling." },
-      "walls": { "t": "Walls", "d": "The walls line says which walls fly and offers finer ones with a time estimate; stored walls move to another PC as a zip." },
+      "keys": { "t": "Keyboard", "d": "Every flying key on screen: Space arms, W and S throttle, A and D yaw, the arrows tilt, M self-levelling, V the voxel grid, C the walls." },
+      "walls": { "t": "Walls on or off", "d": "The walls line on the credit opens the walls menu: the walls (collisions) switch, the voxel grid and the stored walls. Here the walls are off (C): the drone flies through everything, no crashes." },
+      "voxels": { "t": "Voxel grid over the scan", "d": "The walls you crash into, drawn over Andrii's Tunis scan in height colours: V switches between off, over the scan and voxels only; the chip names the style and the voxel size." },
+      "voxels-wire": { "t": "Wireframe grid", "d": "The Winter Garden's 3.2 cm walls as a wireframe over the scan: see where a wall really is before you fly the line." },
+      "voxels-only": { "t": "Voxels only", "d": "The scan hidden and only its 5 cm walls left, as solid cubes (Modlinek Villa): fly the grid alone and see every surface you can hit." },
+      "voxels-floaters": { "t": "Floaters in red", "d": "Pieces of the grid that touch nothing else and are smaller than 0.5 m³ turn red, so a phantom wall in the plants stands out." },
       "pause": { "t": "Pause menu", "d": "Continue, restart, scan, drone, controls, settings, replays, measurements, Betaflight import and cinema mode, with their keys." },
-      "settings": { "t": "Settings", "d": "Field of view and uptilt, HUD, stable frame or detail, gravity, crash threshold, motor spin-up, drag and PID for each axis." },
+      "settings": { "t": "Settings", "d": "Field of view and uptilt, HUD, the walls and the voxel grid, stable frame or detail, gravity, crash threshold, motor spin-up, drag and PID for each axis." },
       "drones": { "t": "Six drones", "d": "BetaFPV-class presets with a rate curve each; every number says where it comes from: manufacturer, measured or estimate." },
       "betaflight": { "t": "Betaflight import", "d": "Paste a CLI diff and its rates and PID fly the quad; every setting the simulator does not use is listed (here a test diff)." },
       "measure": { "t": "Measurements", "d": "Renderer, display refresh, frame times, physics rate, load time, the walls in use and a tunnelling self-test, copyable as JSON." },

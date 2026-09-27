@@ -4,15 +4,17 @@ import { useEffect } from "react";
 /**
  * Pictures marked with data-srcset (ShotImage `defer`: the screenshot band and the tour, right under
  * the hero) start downloading only after the page's load event, so they never compete with the
- * hero picture for the first paint; native lazy loading would fetch them at once, being within its
- * look-ahead distance of the first screen. Their boxes have a fixed aspect ratio, so the swap moves
- * nothing on the page. A swapped picture keeps data-deferred (the site checks read it).
+ * hero picture for the first paint. From then on they load lazily: a picture far down the tour, or
+ * a band tile outside the visible strip, is fetched only when it comes near the screen (a phone
+ * does not download pictures it never scrolls to). Their boxes have a fixed aspect ratio, so the
+ * swap moves nothing on the page. A swapped picture keeps data-deferred (the site checks read it).
  */
 export default function DeferImages() {
   useEffect(() => {
     let idle = 0;
     const swap = () => {
       for (const img of Array.from(document.querySelectorAll<HTMLImageElement>("img[data-srcset]"))) {
+        img.loading = "lazy";
         img.srcset = img.dataset.srcset ?? "";
         img.src = img.dataset.src ?? img.src;
         delete img.dataset.srcset;

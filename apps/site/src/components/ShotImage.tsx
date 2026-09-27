@@ -1,4 +1,4 @@
-import type { Shot } from "@/lib/shots";
+import type { ShotView } from "@/lib/shots";
 import { srcSet } from "@/lib/shots";
 
 /** 1x1 transparent GIF standing in for a deferred picture until the page has loaded. */
@@ -12,7 +12,7 @@ const BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAA
  * screenshots near the first screen never compete with the hero picture; with JavaScript off the
  * <noscript> copy shows it.
  */
-export default function ShotImage({ shot, sizes, alt, className = "", eager = false, defer = false }: { shot: Shot; sizes: string; alt: string; className?: string; eager?: boolean; defer?: boolean }) {
+export default function ShotImage({ shot, sizes, alt, className = "", eager = false, defer = false }: { shot: ShotView; sizes: string; alt: string; className?: string; eager?: boolean; defer?: boolean }) {
   const common = { sizes, width: shot.large.w, height: shot.large.h, alt, decoding: "async" as const, className, style: { aspectRatio: `${shot.large.w} / ${shot.large.h}` } };
   if (!defer) return <img src={shot.small.src} srcSet={srcSet(shot)} loading={eager ? "eager" : "lazy"} {...common} />;
   return (

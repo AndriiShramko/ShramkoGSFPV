@@ -5,6 +5,7 @@
 Key facts:
 - Runs in desktop Chrome or Edge with WebGPU; no install. Radios need WebHID (Chrome or Edge).
 - Scenes: any public SuperSplat scene by link or id; scenes with voxel collision data have solid walls.
+- Voxel grid and walls switch: V shows the scan's collision voxels over the scan or on their own with the scan hidden (solid cubes, wireframe, height colours, or floating pieces in red), so a pilot sees where the walls really are; C switches the walls (collisions) off or on, remembered per scan, and a scan's author can default a noisy scan to walls off.
 - Default craft: BetaFPV Pavo20 Pro class, 3S (wheelbase 93.7 mm, LAVA 1104 7200KV — manufacturer; 70.1 g / 108 g with O3 — measured by Oscar Liang).
 - Crashes: impact speed decides; the craft tumbles and throws debris. Gravity: Earth, Moon, Mars, zero-g.
 - Deterministic replays from recorded stick input.
@@ -21,6 +22,7 @@ Key facts:
 - [Decisions](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/decisions.md): architecture choices and their reasons
 - [Provenance](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/PROVENANCE.md): where each formula and constant comes from
 - [Evidence](https://github.com/AndriiShramko/ShramkoGSFPV/tree/main/evidence): raw measurement files
+- [Screenshots](https://github.com/AndriiShramko/ShramkoGSFPV/tree/main/docs/screenshots): real screenshots of every menu, the voxel grid and the phone layout, re-taken each release by tools/bench/src/screens.ts
 
 ## Contact
 - Author: Andrii Shramko

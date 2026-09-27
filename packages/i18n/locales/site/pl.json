@@ -102,7 +102,9 @@
           "Ściany budowane w przeglądarce dla skanów opublikowanych bez nich (do 4 mln gaussianów)",
           "Postęp ładowania: etap, MB, prędkość, pozostały czas i ponowienie",
           "Zapis logu lotu; eksport trajektorii do CSV lub JSON",
-          "Panel pomiarów: odświeżanie ekranu, czasy klatek, częstotliwość fizyki i używane wejście; kopia raportu jako JSON"
+          "Panel pomiarów: odświeżanie ekranu, czasy klatek, częstotliwość fizyki i używane wejście; kopia raportu jako JSON",
+          "Siatka wokseli na skanie albo sama, ze skanem ukrytym (V): pełne sześciany, krawędzie, kolory według wysokości albo pływające na czerwono, z własną przezroczystością",
+          "Ściany (kolizje) włączone albo wyłączone (C), zapamiętane dla każdego skanu; autor skanu ustala wartość domyślną, wyłączone przy skanie z dużym szumem"
         ]
       }
     ],
@@ -126,8 +128,7 @@
       "Po kraksie: następna ulubiona albo losowa, wysoko oceniana scena (auto-przełączanie domyślnie wyłączone)",
       "Zakładka SuperSplat z tymi samymi filtrami co na superspl.at",
       "Skalowanie sceny o złym rozmiarze wokół drona",
-      "Nagrywanie w 60 fps i automatyczne nagrywanie do ostatnio wybranego folderu",
-      "Nakładka siatki wokseli: przezroczystość, styl albo lot po samej siatce"
+      "Nagrywanie w 60 fps i automatyczne nagrywanie do ostatnio wybranego folderu"
     ],
     "suggest": "Brakuje Ci jakiegoś ustawienia?",
     "suggestLink": "Zaproponuj funkcję"
@@ -364,7 +365,7 @@
         "Sześć quadów klasy BetaFPV, a każda liczba na ich kartach mówi, skąd pochodzi. Wklej diff z CLI Betaflight i lataj na własnych rates i PID.",
         "Uderz w ścianę, a dron rozbije się z prędkością uderzenia, a wrak potoczy się z odłamkami. Grawitacja, próg kraksy, silniki i PID są w Ustawieniach.",
         "OSD jak w goglach, pole widzenia i pochylenie kamery oraz tryb kinowy, który nagrywa MP4 skanów Andrija z podpisem autora w kadrze.",
-        "Wybierz skan albo wklej link, zobacz, jak się wczytuje z prawdziwymi liczbami, a potem sprawdź ściany w użyciu, czasy klatek i swoje powtórki."
+        "Wybierz skan albo wklej link i zobacz, jak się wczytuje z prawdziwymi liczbami. Pokaż ściany, w które uderzasz, jako siatkę wokseli na skanie, lataj po samej siatce albo wyłącz ściany w skanie z dużym szumem."
       ],
       "live": "Działa teraz: {n}",
       "all": "Wszystkie funkcje i ich status"
@@ -372,7 +373,7 @@
     "gallery": {
       "eyebrow": "Każdy ekran",
       "h2": "Wszystkie menu po kolei",
-      "lead": "Kreator kalibracji, każdy ekran menu pauzy, kraksy, tryb kinowy i widok na telefonie. Otwórz dowolny obraz, żeby zobaczyć go w dużym rozmiarze.",
+      "lead": "Każdy ekran menu pauzy, kreator kalibracji, siatka wokseli, kraksy, tryb kinowy i widok na telefonie. Każde menu jest pokazane samo; otwórz dowolny obraz, żeby zobaczyć cały ekran.",
       "label": "Zrzuty ekranu symulatora",
       "prev": "Poprzedni zrzut",
       "next": "Następny zrzut",
@@ -393,10 +394,14 @@
       "wizard-arm": { "t": "Przełącznik uzbrojenia", "d": "Przestaw przełącznik uzbrojenia na ON i z powrotem na OFF, wybierz jego kanał albo pomiń krok i uzbrajaj spacją." },
       "wizard-check": { "t": "Sprawdzenie przed lotem", "d": "Każdy kanał z paskiem na żywo i przyciskami odwrócenia i powtórki, stan uzbrojenia oraz profil do pobrania lub wczytania." },
       "arm-card": { "t": "Gotowy do uzbrojenia", "d": "Nieuzbrojony z aparaturą: karta pokazuje, czego jeszcze brakuje — puszczone drążki, gaz w dół, przełącznik uzbrojenia." },
-      "keys": { "t": "Klawiatura", "d": "Wszystkie klawisze lotu na ekranie: spacja uzbraja, W i S to gaz, A i D odchylenie, strzałki przechylają, M przełącza samopoziomowanie." },
-      "walls": { "t": "Ściany", "d": "Linia ścian mówi, które ściany latają, i proponuje dokładniejsze z szacowanym czasem; zapisane ściany przenosi się na inny komputer jako zip." },
+      "keys": { "t": "Klawiatura", "d": "Wszystkie klawisze lotu na ekranie: spacja uzbraja, W i S to gaz, A i D odchylenie, strzałki przechylają, M samopoziomowanie, V siatka wokseli, C ściany." },
+      "walls": { "t": "Ściany włączone lub nie", "d": "Linia ścian przy podpisie autora otwiera menu ścian: przełącznik ścian (kolizji), siatkę wokseli i zapisane ściany. Tutaj ściany są wyłączone (C): dron przelatuje przez wszystko, bez kraks." },
+      "voxels": { "t": "Siatka wokseli na skanie", "d": "Ściany, w które uderzasz, narysowane na skanie Tunisu od Andrija w kolorach według wysokości: V przełącza między ukrytą, na skanie i samymi wokselami; etykieta podaje styl i rozmiar woksela." },
+      "voxels-wire": { "t": "Siatka z krawędzi", "d": "Ściany Ogrodu zimowego z wokseli 3,2 cm jako krawędzie na skanie: zobacz, gdzie naprawdę jest ściana, zanim polecisz tą linią." },
+      "voxels-only": { "t": "Same woksele", "d": "Skan ukryty, zostają tylko jego ściany z wokseli 5 cm jako pełne sześciany (Willa Modlinek): lataj po samej siatce i zobacz każdą powierzchnię, w którą możesz uderzyć." },
+      "voxels-floaters": { "t": "Pływające na czerwono", "d": "Kawałki siatki, które niczego nie dotykają i mają mniej niż 0,5 m³, robią się czerwone, więc widać fantomową ścianę wśród roślin." },
       "pause": { "t": "Menu pauzy", "d": "Dalej, restart, skan, dron, sterowanie, ustawienia, powtórki, pomiary, import z Betaflight i tryb kinowy, razem z klawiszami." },
-      "settings": { "t": "Ustawienia", "d": "Pole widzenia i pochylenie kamery, HUD, stabilny obraz lub detal, grawitacja, próg kraksy, rozkręcanie silników, opór powietrza i PID dla każdej osi." },
+      "settings": { "t": "Ustawienia", "d": "Pole widzenia i pochylenie kamery, HUD, ściany i siatka wokseli, stabilny obraz lub detal, grawitacja, próg kraksy, rozkręcanie silników, opór powietrza i PID dla każdej osi." },
       "drones": { "t": "Sześć dronów", "d": "Presety klasy BetaFPV, każdy z krzywą rates; każda liczba mówi, skąd pochodzi: producent, pomiar albo szacunek." },
       "betaflight": { "t": "Import z Betaflight", "d": "Wklej diff z CLI, a jego rates i PID przejdą na drona; ustawienia, których symulator nie używa, są wypisane (tu testowy diff)." },
       "measure": { "t": "Pomiary", "d": "Renderer, odświeżanie ekranu, czasy klatek, częstotliwość fizyki, czas wczytania, ściany w użyciu i autotest przelotu przez ściany, do skopiowania jako JSON." },

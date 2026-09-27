@@ -1,229 +1,327 @@
 {
-  "note": "written by tools/bench/src/screens.ts: real screenshots of the live simulator; captions in packages/i18n/locales/site/*.json under shots.items",
+  "note": "written by tools/bench/src/screens.ts: real screenshots of the simulator (whole screen + \"panel\", the menu itself); captions in packages/i18n/locales/site/*.json under shots.items",
   "site": "https://gsfpv.flyreelstudio.eu",
+  "fly": "http://localhost:5382/fly/",
   "shotAt": "2026-09-27",
   "release": {
-    "sha": "ac6b57e",
-    "built": "2026-09-27T07:26:53.010Z"
+    "sha": "97294e0",
+    "built": "2026-09-27T14:22:48.943Z",
+    "from": "local production build (vite build + vite preview)"
   },
   "items": [
     {
-      "id": "flight-tunis",
+      "id": "pause",
       "device": "desktop",
       "raw": {
-        "w": 1920,
-        "h": 1080
+        "w": 3840,
+        "h": 2160
       },
       "large": {
-        "src": "/shots/flight-tunis-1600.webp",
+        "src": "/shots/pause-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 149048,
+        "bytes": 174902,
         "quality": 0.86
       },
       "small": {
-        "src": "/shots/flight-tunis-800.webp",
+        "src": "/shots/pause-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 61750,
+        "bytes": 64458,
         "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 1894,
+          "h": 1514
+        },
+        "large": {
+          "src": "/shots/pause-panel-1600.webp",
+          "w": 1600,
+          "h": 1279,
+          "bytes": 120576,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/pause-panel-800.webp",
+          "w": 800,
+          "h": 639,
+          "bytes": 49742,
+          "quality": 0.86
+        }
       }
     },
     {
-      "id": "flight-villa",
+      "id": "settings",
       "device": "desktop",
       "raw": {
-        "w": 1920,
-        "h": 1080
+        "w": 3840,
+        "h": 2160
       },
       "large": {
-        "src": "/shots/flight-villa-1600.webp",
+        "src": "/shots/settings-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 65614,
+        "bytes": 135814,
         "quality": 0.86
       },
       "small": {
-        "src": "/shots/flight-villa-800.webp",
+        "src": "/shots/settings-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 27192,
+        "bytes": 56578,
         "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 1400,
+          "h": 1120
+        },
+        "large": {
+          "src": "/shots/settings-panel-1400.webp",
+          "w": 1400,
+          "h": 1120,
+          "bytes": 54992,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/settings-panel-700.webp",
+          "w": 700,
+          "h": 560,
+          "bytes": 25432,
+          "quality": 0.86
+        }
       }
     },
     {
-      "id": "flight-garden",
+      "id": "drones",
       "device": "desktop",
       "raw": {
-        "w": 1920,
-        "h": 1080
+        "w": 3840,
+        "h": 2160
       },
       "large": {
-        "src": "/shots/flight-garden-1600.webp",
+        "src": "/shots/drones-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 193866,
+        "bytes": 66678,
         "quality": 0.86
       },
       "small": {
-        "src": "/shots/flight-garden-800.webp",
+        "src": "/shots/drones-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 73944,
-        "quality": 0.86
-      }
-    },
-    {
-      "id": "picker",
-      "device": "desktop",
-      "raw": {
-        "w": 1180,
-        "h": 664
-      },
-      "large": {
-        "src": "/shots/picker-1180.webp",
-        "w": 1180,
-        "h": 664,
-        "bytes": 50828,
+        "bytes": 23934,
         "quality": 0.86
       },
-      "small": {
-        "src": "/shots/picker-590.webp",
-        "w": 590,
-        "h": 332,
-        "bytes": 19302,
-        "quality": 0.86
-      }
-    },
-    {
-      "id": "loading",
-      "device": "desktop",
-      "raw": {
-        "w": 1100,
-        "h": 619
-      },
-      "large": {
-        "src": "/shots/loading-1100.webp",
-        "w": 1100,
-        "h": 619,
-        "bytes": 30490,
-        "quality": 0.86
-      },
-      "small": {
-        "src": "/shots/loading-550.webp",
-        "w": 550,
-        "h": 310,
-        "bytes": 12088,
-        "quality": 0.86
-      }
-    },
-    {
-      "id": "controls",
-      "device": "desktop",
-      "raw": {
-        "w": 1180,
-        "h": 664
-      },
-      "large": {
-        "src": "/shots/controls-1180.webp",
-        "w": 1180,
-        "h": 664,
-        "bytes": 22734,
-        "quality": 0.86
-      },
-      "small": {
-        "src": "/shots/controls-590.webp",
-        "w": 590,
-        "h": 332,
-        "bytes": 8650,
-        "quality": 0.86
+      "panel": {
+        "raw": {
+          "w": 2376,
+          "h": 1486
+        },
+        "large": {
+          "src": "/shots/drones-panel-1600.webp",
+          "w": 1600,
+          "h": 1001,
+          "bytes": 90768,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/drones-panel-800.webp",
+          "w": 800,
+          "h": 500,
+          "bytes": 33896,
+          "quality": 0.86
+        }
       }
     },
     {
       "id": "wizard-stir",
       "device": "desktop",
       "raw": {
-        "w": 1920,
-        "h": 1080
+        "w": 3840,
+        "h": 2160
       },
       "large": {
         "src": "/shots/wizard-stir-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 43066,
+        "bytes": 43308,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/wizard-stir-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 16670,
+        "bytes": 16940,
         "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 2400,
+          "h": 1920
+        },
+        "large": {
+          "src": "/shots/wizard-stir-panel-1600.webp",
+          "w": 1600,
+          "h": 1280,
+          "bytes": 63820,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/wizard-stir-panel-800.webp",
+          "w": 800,
+          "h": 640,
+          "bytes": 27290,
+          "quality": 0.86
+        }
       }
     },
     {
       "id": "wizard-throttle",
       "device": "desktop",
       "raw": {
-        "w": 1920,
-        "h": 1080
+        "w": 3840,
+        "h": 2160
       },
       "large": {
         "src": "/shots/wizard-throttle-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 36514,
+        "bytes": 36630,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/wizard-throttle-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 14686,
+        "bytes": 14572,
         "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 2400,
+          "h": 1920
+        },
+        "large": {
+          "src": "/shots/wizard-throttle-panel-1600.webp",
+          "w": 1600,
+          "h": 1280,
+          "bytes": 51610,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/wizard-throttle-panel-800.webp",
+          "w": 800,
+          "h": 640,
+          "bytes": 22370,
+          "quality": 0.86
+        }
       }
     },
     {
       "id": "wizard-arm",
       "device": "desktop",
       "raw": {
-        "w": 1920,
-        "h": 1080
+        "w": 3840,
+        "h": 2160
       },
       "large": {
         "src": "/shots/wizard-arm-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 41012,
+        "bytes": 41290,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/wizard-arm-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 16256,
+        "bytes": 16268,
         "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 2400,
+          "h": 1920
+        },
+        "large": {
+          "src": "/shots/wizard-arm-panel-1600.webp",
+          "w": 1600,
+          "h": 1280,
+          "bytes": 57530,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/wizard-arm-panel-800.webp",
+          "w": 800,
+          "h": 640,
+          "bytes": 24612,
+          "quality": 0.86
+        }
       }
     },
     {
       "id": "wizard-check",
       "device": "desktop",
       "raw": {
-        "w": 1920,
-        "h": 1080
+        "w": 3840,
+        "h": 2160
       },
       "large": {
         "src": "/shots/wizard-check-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 52562,
+        "bytes": 52096,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/wizard-check-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 20190,
+        "bytes": 20066,
+        "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 2400,
+          "h": 1920
+        },
+        "large": {
+          "src": "/shots/wizard-check-panel-1600.webp",
+          "w": 1600,
+          "h": 1280,
+          "bytes": 77198,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/wizard-check-panel-800.webp",
+          "w": 800,
+          "h": 640,
+          "bytes": 30810,
+          "quality": 0.86
+        }
+      }
+    },
+    {
+      "id": "controls",
+      "device": "desktop",
+      "raw": {
+        "w": 2360,
+        "h": 1328
+      },
+      "large": {
+        "src": "/shots/controls-1600.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 33112,
+        "quality": 0.86
+      },
+      "small": {
+        "src": "/shots/controls-800.webp",
+        "w": 800,
+        "h": 450,
+        "bytes": 12316,
         "quality": 0.86
       }
     },
@@ -231,131 +329,213 @@
       "id": "arm-card",
       "device": "desktop",
       "raw": {
-        "w": 1920,
-        "h": 1080
+        "w": 3840,
+        "h": 2160
       },
       "large": {
         "src": "/shots/arm-card-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 69080,
+        "bytes": 70176,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/arm-card-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 26934,
+        "bytes": 27068,
         "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 1240,
+          "h": 774
+        },
+        "large": {
+          "src": "/shots/arm-card-panel-1240.webp",
+          "w": 1240,
+          "h": 774,
+          "bytes": 65638,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/arm-card-panel-620.webp",
+          "w": 620,
+          "h": 387,
+          "bytes": 30520,
+          "quality": 0.86
+        }
       }
     },
     {
       "id": "keys",
       "device": "desktop",
       "raw": {
-        "w": 1920,
-        "h": 1080
+        "w": 3840,
+        "h": 2160
       },
       "large": {
         "src": "/shots/keys-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 190218,
+        "bytes": 158466,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/keys-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 71278,
+        "bytes": 64702,
         "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 1400,
+          "h": 1016
+        },
+        "large": {
+          "src": "/shots/keys-panel-1400.webp",
+          "w": 1400,
+          "h": 1016,
+          "bytes": 124440,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/keys-panel-700.webp",
+          "w": 700,
+          "h": 508,
+          "bytes": 58780,
+          "quality": 0.86
+        }
       }
     },
     {
       "id": "walls",
       "device": "desktop",
       "raw": {
-        "w": 1920,
-        "h": 1080
+        "w": 3840,
+        "h": 2160
       },
       "large": {
         "src": "/shots/walls-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 192038,
+        "bytes": 226942,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/walls-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 71694,
+        "bytes": 80828,
+        "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 1556,
+          "h": 1244
+        },
+        "large": {
+          "src": "/shots/walls-panel-1556.webp",
+          "w": 1556,
+          "h": 1244,
+          "bytes": 194022,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/walls-panel-778.webp",
+          "w": 778,
+          "h": 622,
+          "bytes": 88782,
+          "quality": 0.86
+        }
+      }
+    },
+    {
+      "id": "voxels",
+      "device": "desktop",
+      "raw": {
+        "w": 3840,
+        "h": 2160
+      },
+      "large": {
+        "src": "/shots/voxels-1600.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 229790,
+        "quality": 0.86
+      },
+      "small": {
+        "src": "/shots/voxels-800.webp",
+        "w": 800,
+        "h": 450,
+        "bytes": 70324,
         "quality": 0.86
       }
     },
     {
-      "id": "pause",
+      "id": "voxels-wire",
       "device": "desktop",
       "raw": {
-        "w": 1920,
-        "h": 1080
+        "w": 3840,
+        "h": 2160
       },
       "large": {
-        "src": "/shots/pause-1600.webp",
+        "src": "/shots/voxels-wire-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 149118,
-        "quality": 0.86
+        "bytes": 254470,
+        "quality": 0.62
       },
       "small": {
-        "src": "/shots/pause-800.webp",
+        "src": "/shots/voxels-wire-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 60364,
-        "quality": 0.86
+        "bytes": 94414,
+        "quality": 0.78
       }
     },
     {
-      "id": "settings",
+      "id": "voxels-only",
       "device": "desktop",
       "raw": {
-        "w": 1920,
-        "h": 1080
+        "w": 3840,
+        "h": 2160
       },
       "large": {
-        "src": "/shots/settings-1600.webp",
+        "src": "/shots/voxels-only-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 142020,
-        "quality": 0.86
+        "bytes": 230706,
+        "quality": 0.78
       },
       "small": {
-        "src": "/shots/settings-800.webp",
+        "src": "/shots/voxels-only-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 59776,
-        "quality": 0.86
+        "bytes": 93314,
+        "quality": 0.82
       }
     },
     {
-      "id": "drones",
+      "id": "voxels-floaters",
       "device": "desktop",
       "raw": {
-        "w": 1920,
-        "h": 1080
+        "w": 3840,
+        "h": 2160
       },
       "large": {
-        "src": "/shots/drones-1600.webp",
+        "src": "/shots/voxels-floaters-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 67728,
+        "bytes": 226508,
         "quality": 0.86
       },
       "small": {
-        "src": "/shots/drones-800.webp",
+        "src": "/shots/voxels-floaters-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 24774,
+        "bytes": 74634,
         "quality": 0.86
       }
     },
@@ -363,65 +543,169 @@
       "id": "betaflight",
       "device": "desktop",
       "raw": {
-        "w": 1920,
-        "h": 1080
+        "w": 3840,
+        "h": 2160
       },
       "large": {
         "src": "/shots/betaflight-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 170904,
+        "bytes": 82206,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/betaflight-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 68400,
+        "bytes": 28970,
         "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 1574,
+          "h": 1260
+        },
+        "large": {
+          "src": "/shots/betaflight-panel-1574.webp",
+          "w": 1574,
+          "h": 1260,
+          "bytes": 98718,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/betaflight-panel-787.webp",
+          "w": 787,
+          "h": 630,
+          "bytes": 41394,
+          "quality": 0.86
+        }
       }
     },
     {
       "id": "measure",
       "device": "desktop",
       "raw": {
-        "w": 1920,
-        "h": 1080
+        "w": 3840,
+        "h": 2160
       },
       "large": {
         "src": "/shots/measure-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 169514,
+        "bytes": 97434,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/measure-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 68708,
+        "bytes": 37472,
+        "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 1508,
+          "h": 1206
+        },
+        "large": {
+          "src": "/shots/measure-panel-1508.webp",
+          "w": 1508,
+          "h": 1206,
+          "bytes": 96080,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/measure-panel-754.webp",
+          "w": 754,
+          "h": 603,
+          "bytes": 44090,
+          "quality": 0.86
+        }
+      }
+    },
+    {
+      "id": "replays",
+      "device": "desktop",
+      "raw": {
+        "w": 2560,
+        "h": 1440
+      },
+      "large": {
+        "src": "/shots/replays-1600.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 30610,
+        "quality": 0.86
+      },
+      "small": {
+        "src": "/shots/replays-800.webp",
+        "w": 800,
+        "h": 450,
+        "bytes": 13548,
+        "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 1520,
+          "h": 950
+        },
+        "large": {
+          "src": "/shots/replays-panel-1520.webp",
+          "w": 1520,
+          "h": 950,
+          "bytes": 26958,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/replays-panel-760.webp",
+          "w": 760,
+          "h": 475,
+          "bytes": 12104,
+          "quality": 0.86
+        }
+      }
+    },
+    {
+      "id": "picker",
+      "device": "desktop",
+      "raw": {
+        "w": 2360,
+        "h": 1328
+      },
+      "large": {
+        "src": "/shots/picker-1600.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 68836,
+        "quality": 0.86
+      },
+      "small": {
+        "src": "/shots/picker-800.webp",
+        "w": 800,
+        "h": 450,
+        "bytes": 27850,
         "quality": 0.86
       }
     },
     {
-      "id": "cinema",
+      "id": "loading",
       "device": "desktop",
       "raw": {
-        "w": 1920,
-        "h": 1080
+        "w": 2200,
+        "h": 1238
       },
       "large": {
-        "src": "/shots/cinema-1600.webp",
+        "src": "/shots/loading-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 248122,
+        "bytes": 44210,
         "quality": 0.86
       },
       "small": {
-        "src": "/shots/cinema-800.webp",
+        "src": "/shots/loading-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 82184,
+        "bytes": 18290,
         "quality": 0.86
       }
     },
@@ -429,43 +713,129 @@
       "id": "crash",
       "device": "desktop",
       "raw": {
-        "w": 1920,
-        "h": 1080
+        "w": 3840,
+        "h": 2160
       },
       "large": {
         "src": "/shots/crash-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 163350,
+        "bytes": 56592,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/crash-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 69630,
+        "bytes": 22740,
+        "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 1518,
+          "h": 1214
+        },
+        "large": {
+          "src": "/shots/crash-panel-1518.webp",
+          "w": 1518,
+          "h": 1214,
+          "bytes": 45266,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/crash-panel-759.webp",
+          "w": 759,
+          "h": 607,
+          "bytes": 19636,
+          "quality": 0.86
+        }
+      }
+    },
+    {
+      "id": "cinema",
+      "device": "desktop",
+      "raw": {
+        "w": 3840,
+        "h": 2160
+      },
+      "large": {
+        "src": "/shots/cinema-1600.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 137104,
+        "quality": 0.86
+      },
+      "small": {
+        "src": "/shots/cinema-800.webp",
+        "w": 800,
+        "h": 450,
+        "bytes": 58550,
         "quality": 0.86
       }
     },
     {
-      "id": "replays",
+      "id": "flight-tunis",
       "device": "desktop",
       "raw": {
-        "w": 1280,
-        "h": 720
+        "w": 3840,
+        "h": 2160
       },
       "large": {
-        "src": "/shots/replays-1280.webp",
-        "w": 1280,
-        "h": 720,
-        "bytes": 98970,
+        "src": "/shots/flight-tunis-1600.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 127624,
         "quality": 0.86
       },
       "small": {
-        "src": "/shots/replays-640.webp",
-        "w": 640,
-        "h": 360,
-        "bytes": 45418,
+        "src": "/shots/flight-tunis-800.webp",
+        "w": 800,
+        "h": 450,
+        "bytes": 56410,
+        "quality": 0.86
+      }
+    },
+    {
+      "id": "flight-villa",
+      "device": "desktop",
+      "raw": {
+        "w": 3840,
+        "h": 2160
+      },
+      "large": {
+        "src": "/shots/flight-villa-1600.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 99338,
+        "quality": 0.86
+      },
+      "small": {
+        "src": "/shots/flight-villa-800.webp",
+        "w": 800,
+        "h": 450,
+        "bytes": 37948,
+        "quality": 0.86
+      }
+    },
+    {
+      "id": "flight-garden",
+      "device": "desktop",
+      "raw": {
+        "w": 3840,
+        "h": 2160
+      },
+      "large": {
+        "src": "/shots/flight-garden-1600.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 198582,
+        "quality": 0.86
+      },
+      "small": {
+        "src": "/shots/flight-garden-800.webp",
+        "w": 800,
+        "h": 450,
+        "bytes": 72836,
         "quality": 0.86
       }
     },
@@ -480,14 +850,14 @@
         "src": "/shots/m-flight-780.webp",
         "w": 780,
         "h": 1688,
-        "bytes": 86000,
+        "bytes": 94962,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/m-flight-390.webp",
         "w": 390,
         "h": 844,
-        "bytes": 33704,
+        "bytes": 37206,
         "quality": 0.86
       }
     },
@@ -502,14 +872,14 @@
         "src": "/shots/m-touch-780.webp",
         "w": 780,
         "h": 1688,
-        "bytes": 148206,
+        "bytes": 145114,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/m-touch-390.webp",
         "w": 390,
         "h": 844,
-        "bytes": 62472,
+        "bytes": 61970,
         "quality": 0.86
       }
     },
@@ -524,14 +894,14 @@
         "src": "/shots/m-pause-780.webp",
         "w": 780,
         "h": 1688,
-        "bytes": 77140,
+        "bytes": 76824,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/m-pause-390.webp",
         "w": 390,
         "h": 844,
-        "bytes": 33462,
+        "bytes": 33314,
         "quality": 0.86
       }
     },
@@ -546,14 +916,14 @@
         "src": "/shots/m-crash-780.webp",
         "w": 780,
         "h": 1688,
-        "bytes": 83736,
+        "bytes": 80278,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/m-crash-390.webp",
         "w": 390,
         "h": 844,
-        "bytes": 34646,
+        "bytes": 33150,
         "quality": 0.86
       }
     },

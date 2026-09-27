@@ -83,23 +83,30 @@ const SHOT_MANIFEST = JSON.parse(readFileSync(join(SITE_DIR, "src", "config", "s
 const DOCS = join(SITE_DIR, "..", "..", "docs", "screenshots");
 {
   const bad = [];
+  let panels = 0;
   for (const it of SHOT_MANIFEST.items) {
-    for (const [v, cap] of [["large", 250 * 1024], ["small", 100 * 1024]]) {
-      const f = join(OUT, it[v].src);
-      if (!existsSync(f)) bad.push(`${it[v].src} missing`);
-      else if (statSync(f).size > cap) bad.push(`${it[v].src} ${statSync(f).size} B > ${cap}`);
-      else if (statSync(f).size !== it[v].bytes) bad.push(`${it[v].src} size differs from the manifest`);
-      if (it[v].w > (v === "large" ? 1600 : 800)) bad.push(`${it[v].src} ${it[v].w} px wide`);
+    // the whole screen, and the menu crop ("panel") when the shot has one
+    const sets = [["", it, `${it.id}.webp`], ...(it.panel ? [["panel ", it.panel, `${it.id}-panel.webp`]] : [])];
+    if (it.panel) panels++;
+    for (const [label, set, docName] of sets) {
+      for (const [v, cap] of [["large", 250 * 1024], ["small", 100 * 1024]]) {
+        const f = join(OUT, set[v].src);
+        if (!existsSync(f)) bad.push(`${label}${set[v].src} missing`);
+        else if (statSync(f).size > cap) bad.push(`${label}${set[v].src} ${statSync(f).size} B > ${cap}`);
+        else if (statSync(f).size !== set[v].bytes) bad.push(`${label}${set[v].src} size differs from the manifest`);
+        if (set[v].w > (v === "large" ? 1600 : 800)) bad.push(`${label}${set[v].src} ${set[v].w} px wide`);
+      }
+      const doc = join(DOCS, docName);
+      if (!existsSync(doc) || !readFileSync(doc).equals(readFileSync(join(OUT, set.large.src)))) bad.push(`docs/screenshots/${docName} missing or not the large file`);
     }
-    const doc = join(DOCS, `${it.id}.webp`);
-    if (!existsSync(doc) || !readFileSync(doc).equals(readFileSync(join(OUT, it.large.src)))) bad.push(`docs/screenshots/${it.id}.webp missing or not the large file`);
     for (const l of LOCALES) if (!DICT[l].shots?.items?.[it.id]?.t || !DICT[l].shots?.items?.[it.id]?.d) bad.push(`${l}: no caption for ${it.id}`);
   }
-  ok(`screenshots: ${SHOT_MANIFEST.items.length} shots, files present, <= 250 KB / 100 KB, docs copies, captions in 4 languages`, SHOT_MANIFEST.items.length >= 20 && bad.length === 0, bad.slice(0, 8).join("; "));
+  ok(`screenshots: ${SHOT_MANIFEST.items.length} shots (${panels} with a menu crop), files present, <= 250 KB / 100 KB, docs copies, captions in 4 languages`, SHOT_MANIFEST.items.length >= 20 && panels >= 10 && bad.length === 0, bad.slice(0, 8).join("; "));
   const missing = [];
   for (const l of LOCALES) {
     const html = readFileSync(join(OUT, l, "index.html"), "utf8");
-    for (const it of SHOT_MANIFEST.items) if (!html.includes(it.small.src)) missing.push(`${l}:${it.id}`);
+    // the gallery: its tile (the crop of a menu, or the whole screen) and the whole screen it opens
+    for (const it of SHOT_MANIFEST.items) if (!html.includes((it.panel ?? it).small.src) || !html.includes(it.large.src)) missing.push(`${l}:${it.id}`);
     const ld = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
     const app = ld.flatMap((o) => o["@graph"] ?? [o]).find((n) => n["@type"] === "SoftwareApplication");
     const shotsLd = app?.screenshot ?? [];
@@ -158,7 +165,7 @@ async function newCtx(viewport, opts = {}, consent = "no") {
     const rs = performance.getEntriesByType("resource").filter((r) => files.has(new URL(r.name).pathname));
     return { load: Math.round(load), deferredImgs: deferred.length, inBand: deferred.filter((i) => i.closest(".shot-band")).length, inTour: deferred.filter((i) => i.closest("#tour")).length, requests: rs.length, beforeLoad: rs.filter((r) => r.startTime < load).map((r) => new URL(r.name).pathname) };
   });
-  ok("band and tour screenshots: requested only after the load event, then all swapped in", swapped && early.inBand === 16 && early.inTour === 12 && early.requests > 0 && early.beforeLoad.length === 0, JSON.stringify(early));
+  ok("band and tour screenshots: requested only after the load event, then all swapped in", swapped && early.inBand === 20 && early.inTour === 12 && early.requests > 0 && early.beforeLoad.length === 0, JSON.stringify(early));
   await page.evaluate(async () => {
     for (const img of document.querySelectorAll("img")) img.loading = "eager";
     await Promise.all([...document.images].map((i) => (i.complete ? null : new Promise((r) => (i.onload = i.onerror = r)))));
@@ -298,6 +305,34 @@ for (const [loc, file] of [["en", "en-375x812-full.png"], ["ru", "ru-375x812-ful
   ok("no layout shift while scrolling the whole landing at 375 (lazy screenshots)", cls < 0.005, `sum of layout-shift values = ${cls.toFixed(4)} over ${total} px`);
   await ctx.close();
 }
+{
+  // phone data: after the load event the screenshots are swapped in but load lazily, so a phone
+  // that stays at the top fetches only the band tiles in view and nothing from the tour further
+  // down; the tour picture it scrolls to is fetched then (control: the same measurement).
+  const { ctx } = await newCtx({ width: 375, height: 812 }, { isMobile: true, hasTouch: true });
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/en/`, { waitUntil: "load" });
+  await page.waitForFunction(() => !document.querySelector("img[data-srcset]"), undefined, { timeout: 10000 }).catch(() => undefined);
+  await page.waitForTimeout(2500);
+  const probe = () => page.evaluate(() => {
+    const band = new Set([...document.querySelectorAll(".shot-band img")].flatMap((i) => (i.srcset || "").split(",").map((x) => new URL(x.trim().split(" ")[0], location.href).pathname)));
+    const shots = performance.getEntriesByType("resource").filter((r) => new URL(r.name).pathname.startsWith("/shots/"));
+    const tour = [...document.querySelectorAll("#tour img[data-deferred]")].filter((i) => !(i.srcset || "").split(",").some((x) => band.has(new URL(x.trim().split(" ")[0], location.href).pathname)));
+    const last = tour[tour.length - 1];
+    const files = (i) => (i.srcset || "").split(",").map((x) => new URL(x.trim().split(" ")[0], location.href).pathname);
+    return { shotFiles: shots.length, shotKB: Math.round(shots.reduce((a, r) => a + (r.transferSize || r.encodedBodySize || 0), 0) / 1024), bandImgs: document.querySelectorAll(".shot-band img").length, tourOnly: tour.length, lastTop: last ? Math.round(last.getBoundingClientRect().top + scrollY) : null, lastFetched: last ? shots.some((r) => files(last).includes(new URL(r.name).pathname)) : null, allLazy: [...document.querySelectorAll("img[data-deferred]")].every((i) => i.loading === "lazy") };
+  });
+  const atTop = await probe();
+  await page.evaluate(() => {
+    const band = new Set([...document.querySelectorAll(".shot-band img")].flatMap((i) => (i.srcset || "").split(",").map((x) => new URL(x.trim().split(" ")[0], location.href).pathname)));
+    const tour = [...document.querySelectorAll("#tour img[data-deferred]")].filter((i) => !(i.srcset || "").split(",").some((x) => band.has(new URL(x.trim().split(" ")[0], location.href).pathname)));
+    tour[tour.length - 1].scrollIntoView({ block: "center", behavior: "instant" });
+  });
+  await page.waitForTimeout(2500);
+  const there = await probe();
+  ok(`phone data: at the top a phone fetches ${atTop.shotFiles} screenshot files (${atTop.shotKB} KB); the tour picture ${atTop.lastTop} px down waits until scrolled to (control)`, atTop.allLazy && atTop.lastTop > 2500 && atTop.lastFetched === false && there.lastFetched === true && atTop.shotFiles <= 14 && atTop.shotKB < 800, JSON.stringify({ atTop, there }));
+  await ctx.close();
+}
 for (const reduce of [false, true]) {
   const { ctx } = await newCtx({ width: 1440, height: 900 }, { reducedMotion: reduce ? "reduce" : "no-preference" });
   const page = await ctx.newPage();
@@ -317,7 +352,29 @@ for (const reduce of [false, true]) {
   await ctx.close();
 }
 {
+  // from 1024 px the gallery is a grid of every picture (4 to a row), and a tile opens the whole screen
   const { ctx } = await newCtx({ width: 1440, height: 900 });
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/en/#gallery`, { waitUntil: "networkidle" });
+  const grid = await page.evaluate(() => {
+    const track = document.querySelector("[data-testid=gallery-track]");
+    const cards = [...track.children];
+    const lefts = new Set(cards.map((c) => Math.round(c.getBoundingClientRect().left)));
+    const tops = new Set(cards.map((c) => Math.round(c.getBoundingClientRect().top)));
+    return { cards: cards.length, columns: lefts.size, rows: tops.size, scrolls: track.scrollWidth > track.clientWidth + 1, buttonsShown: getComputedStyle(document.querySelector("#gallery .gallery-btn").parentElement.parentElement).display !== "none" };
+  });
+  const firstId = SHOT_MANIFEST.items[0].id;
+  await page.locator("[data-testid=gallery-track] li").first().locator("button").click();
+  await page.waitForFunction(() => { const i = document.querySelector("[data-testid=lightbox] img"); return i && i.complete && i.naturalWidth > 0; }, undefined, { timeout: 8000 });
+  const opened = await page.evaluate(() => { const i = document.querySelector("[data-testid=lightbox] img"); return { src: new URL(i.currentSrc || i.src).pathname, w: i.naturalWidth }; });
+  await page.screenshot({ path: join(SHOTS, "gallery-grid-lightbox.png") });
+  const wantFull = SHOT_MANIFEST.items[0].large;
+  ok("gallery at 1440: a grid of every picture, 4 to a row, no strip or buttons; a tile opens the whole screen", grid.cards === SHOT_MANIFEST.items.length && grid.columns === 4 && !grid.scrolls && !grid.buttonsShown && opened.src === wantFull.src && opened.w === wantFull.w, JSON.stringify({ grid, opened, firstId }));
+  await ctx.close();
+}
+{
+  // below 1024 px it is one strip, worked from the keyboard
+  const { ctx } = await newCtx({ width: 820, height: 1000 });
   const page = await ctx.newPage();
   await page.goto(`${BASE}/en/#gallery`, { waitUntil: "networkidle" });
   const caps = SHOT_MANIFEST.items.map((it) => DICT.en.shots.items[it.id].t);
@@ -343,7 +400,7 @@ for (const reduce of [false, true]) {
   const closed = !(await dlg.evaluate((d) => d.open));
   const focusBack = await page.evaluate(() => document.activeElement?.closest("li")?.getAttribute("data-shot"));
   const pass = x1 > x0 && counter === `2 of ${caps.length}` && openNow && t1 === caps[0] && t2 === caps[1] && closed && focusBack === SHOT_MANIFEST.items[0].id;
-  ok("gallery: ArrowRight scrolls one card, a picture opens large, arrows step, Esc closes, focus returns", pass, JSON.stringify({ x0, x1, counter, t1, t2, closed, focusBack }));
+  ok("gallery strip at 820: ArrowRight scrolls one card, a picture opens large, arrows step, Esc closes, focus returns", pass, JSON.stringify({ x0, x1, counter, t1, t2, closed, focusBack }));
   await ctx.close();
 }
 

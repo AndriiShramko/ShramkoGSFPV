@@ -3,15 +3,17 @@ import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent, MouseEvent } from "react";
 
 type Variant = { src: string; w: number; h: number };
-export type GalleryItem = { id: string; t: string; d: string; open: string; phone: boolean; small: Variant; large: Variant };
+/** `thumb`: the menu itself when the shot has a crop of it (readable small); `full`: the whole screen, shown large. */
+export type GalleryItem = { id: string; t: string; d: string; open: string; phone: boolean; thumb: { small: Variant; large: Variant }; full: Variant };
 export type GalleryLabels = { label: string; prev: string; next: string; close: string; count: string; phone: string };
 
 const reduced = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /**
- * Every screenshot in one horizontal strip (scroll snap, no library): Previous / Next buttons,
- * arrow keys, Home and End on the focused strip, and each picture opens large in a native modal
- * <dialog> (Esc closes it, the arrow keys step through, focus returns to the picture).
+ * Every screenshot: from 1024 px up a grid of all of them (four columns), on narrower screens one
+ * horizontal strip (scroll snap, no library) with Previous / Next buttons, arrow keys, Home and End
+ * on the focused strip. Each picture opens large, as the whole screen, in a native modal <dialog>
+ * (Esc closes it, the arrow keys step through, focus returns to the picture).
  */
 export default function Gallery({ items, labels }: { items: GalleryItem[]; labels: GalleryLabels }) {
   const track = useRef<HTMLUListElement>(null);
@@ -79,7 +81,7 @@ export default function Gallery({ items, labels }: { items: GalleryItem[]; label
 
   return (
     <div className="mt-10">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4 lg:hidden">
         <p className="font-mono text-sm text-muted" aria-hidden="true">
           {count}
         </p>
@@ -97,12 +99,13 @@ export default function Gallery({ items, labels }: { items: GalleryItem[]; label
           <li key={it.id} className={`gallery-card ${it.phone ? "is-phone" : ""}`} data-shot={it.id}>
             <figure>
               <button type="button" className="gallery-open" onClick={() => setOpen(i)} aria-label={it.open}>
-                <img src={it.small.src} srcSet={`${it.small.src} ${it.small.w}w, ${it.large.src} ${it.large.w}w`} sizes={it.phone ? "(min-width: 640px) 200px, 40vw" : "(min-width: 640px) 440px, 82vw"} width={it.large.w} height={it.large.h} alt="" loading="lazy" decoding="async" />
+                <img src={it.thumb.small.src} srcSet={`${it.thumb.small.src} ${it.thumb.small.w}w, ${it.thumb.large.src} ${it.thumb.large.w}w`} sizes={it.phone ? "(min-width: 1024px) 130px, (min-width: 640px) 200px, 40vw" : "(min-width: 1024px) 270px, (min-width: 640px) 440px, 82vw"} width={it.thumb.large.w} height={it.thumb.large.h} alt="" loading="lazy" decoding="async" />
                 {it.phone ? <span className="gallery-tag">{labels.phone}</span> : null}
               </button>
               <figcaption className="mt-3 text-sm leading-snug">
-                <span className="font-semibold text-ink">{it.t}</span>
-                <span className="text-muted"> — {it.d}</span>
+                <span className="font-semibold text-ink lg:block">{it.t}</span>
+                <span className="text-muted lg:hidden"> — </span>
+                <span className="text-muted lg:mt-1 lg:line-clamp-3 lg:text-[13px]">{it.d}</span>
               </figcaption>
             </figure>
           </li>
@@ -112,7 +115,7 @@ export default function Gallery({ items, labels }: { items: GalleryItem[]; label
         {cur ? (
           <div className="lightbox-inner">
             <div className="lightbox-media">
-              <img key={cur.id} src={cur.large.src} width={cur.large.w} height={cur.large.h} alt={cur.t} className={cur.phone ? "is-phone" : ""} />
+              <img key={cur.id} src={cur.full.src} width={cur.full.w} height={cur.full.h} alt={cur.t} className={cur.phone ? "is-phone" : ""} />
             </div>
             <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">

@@ -102,7 +102,9 @@
           "Paredes creadas en tu navegador para escaneos publicados sin ellas (hasta 4 M de gaussianas)",
           "Progreso de carga: etapa, MB, velocidad, tiempo restante y reintento",
           "Guarda el registro de vuelo; exporta la trayectoria en CSV o JSON",
-          "Panel de mediciones: refresco de pantalla, tiempos de fotograma, frecuencia de la física y el control en uso; copia el informe en JSON"
+          "Panel de mediciones: refresco de pantalla, tiempos de fotograma, frecuencia de la física y el control en uso; copia el informe en JSON",
+          "Rejilla de vóxeles sobre el escaneo o sola, con el escaneo oculto (V): cubos sólidos, aristas, colores por altura o flotantes en rojo, con su propia opacidad",
+          "Paredes (colisiones) activadas o desactivadas (C), recordado para cada escaneo; el autor del escaneo decide el valor por defecto, desactivadas si el escaneo tiene mucho ruido"
         ]
       }
     ],
@@ -126,8 +128,7 @@
       "Tras un choque: tu siguiente favorita o una escena al azar muy valorada (cambio automático apagado por defecto)",
       "Una pestaña de SuperSplat con los mismos filtros que superspl.at",
       "Escala una escena de tamaño erróneo alrededor del dron",
-      "Grabación a 60 fps y grabación automática en la última carpeta elegida",
-      "Rejilla de vóxeles superpuesta: opacidad, estilo o volar solo la rejilla"
+      "Grabación a 60 fps y grabación automática en la última carpeta elegida"
     ],
     "suggest": "¿Echas en falta algún ajuste?",
     "suggestLink": "Propón una función"
@@ -364,7 +365,7 @@
         "Seis cuadricópteros de clase BetaFPV, y cada número de sus fichas dice de dónde sale. Pega un diff de la CLI de Betaflight para volar con tus rates y tu PID.",
         "Choca contra una pared y el dron se estrella a la velocidad del golpe, con los restos rodando. Gravedad, umbral de choque, motores y PID están en Ajustes.",
         "Un OSD como el de tus gafas, campo de visión e inclinación de la cámara, y un modo cine que graba MP4 de los escaneos de Andrii con su crédito en la imagen.",
-        "Elige un escaneo o pega un enlace, mira cómo carga con números reales y revisa las paredes en uso, los tiempos de fotograma y tus repeticiones."
+        "Elige un escaneo o pega un enlace y mira cómo carga con números reales. Muestra las paredes contra las que chocas como una rejilla de vóxeles sobre el escaneo, vuela solo la rejilla o desactiva las paredes si el escaneo tiene mucho ruido."
       ],
       "live": "Funciones activas: {n}",
       "all": "Todas las funciones y su estado"
@@ -372,7 +373,7 @@
     "gallery": {
       "eyebrow": "Cada pantalla",
       "h2": "Todos los menús, uno a uno",
-      "lead": "El asistente de calibración, cada pantalla del menú de pausa, los choques, el modo cine y la vista en el móvil. Abre cualquier imagen para verla en grande.",
+      "lead": "Cada pantalla del menú de pausa, el asistente de calibración, la rejilla de vóxeles, los choques, el modo cine y la vista en el móvil. Cada menú aparece tal cual; abre cualquier imagen para ver la pantalla entera.",
       "label": "Capturas del simulador",
       "prev": "Captura anterior",
       "next": "Captura siguiente",
@@ -393,10 +394,14 @@
       "wizard-arm": { "t": "Interruptor de armado", "d": "Pon el interruptor con el que armas en ON y vuelve a OFF, elige su canal o salta el paso y arma con Espacio." },
       "wizard-check": { "t": "Comprobación antes de volar", "d": "Cada canal con su barra en vivo y botones para invertirlo o repetirlo, el estado de armado y el perfil para descargar o cargar." },
       "arm-card": { "t": "Listo para armar", "d": "Desarmado con una emisora, una tarjeta dice lo que falta para armar: soltar los sticks, gas abajo, el interruptor." },
-      "keys": { "t": "Teclado", "d": "Todas las teclas de vuelo en pantalla: Espacio arma, W y S el gas, A y D la guiñada, las flechas inclinan, M cambia el autonivelado." },
-      "walls": { "t": "Paredes", "d": "La línea de paredes dice cuáles vuelan y ofrece otras más finas con un tiempo estimado; las guardadas pasan a otro PC en un zip." },
+      "keys": { "t": "Teclado", "d": "Todas las teclas de vuelo en pantalla: Espacio arma, W y S el gas, A y D la guiñada, las flechas inclinan, M el autonivelado, V la rejilla de vóxeles, C las paredes." },
+      "walls": { "t": "Paredes activadas o no", "d": "La línea de paredes del crédito abre su menú: el interruptor de las paredes (colisiones), la rejilla de vóxeles y las paredes guardadas. Aquí están desactivadas (C): el dron atraviesa todo, sin choques." },
+      "voxels": { "t": "Rejilla de vóxeles sobre el escaneo", "d": "Las paredes contra las que chocas, dibujadas sobre el escaneo de Túnez de Andrii con colores por altura: V pasa de oculta a sobre el escaneo y a solo vóxeles; la etiqueta indica el estilo y el tamaño del vóxel." },
+      "voxels-wire": { "t": "Rejilla en aristas", "d": "Las paredes de 3,2 cm del Jardín de invierno como aristas sobre el escaneo: comprueba dónde está de verdad una pared antes de volar la línea." },
+      "voxels-only": { "t": "Solo vóxeles", "d": "El escaneo oculto y solo sus paredes de 5 cm, como cubos sólidos (Villa Modlinek): vuela la rejilla sola y ve cada superficie contra la que puedes chocar." },
+      "voxels-floaters": { "t": "Flotantes en rojo", "d": "Las piezas de la rejilla que no tocan nada más y miden menos de 0,5 m³ se vuelven rojas, y así se ve una pared fantasma entre las plantas." },
       "pause": { "t": "Menú de pausa", "d": "Continuar, reiniciar, escaneo, dron, controles, ajustes, repeticiones, mediciones, importación de Betaflight y modo cine, con sus teclas." },
-      "settings": { "t": "Ajustes", "d": "Campo de visión e inclinación, HUD, imagen estable o detalle, gravedad, umbral de choque, arranque de motores, arrastre y PID por eje." },
+      "settings": { "t": "Ajustes", "d": "Campo de visión e inclinación, HUD, las paredes y la rejilla de vóxeles, imagen estable o detalle, gravedad, umbral de choque, arranque de motores, arrastre y PID por eje." },
       "drones": { "t": "Seis drones", "d": "Presets de clase BetaFPV, cada uno con su curva de rates; cada número dice de dónde sale: fabricante, medido o estimado." },
       "betaflight": { "t": "Importar de Betaflight", "d": "Pega un diff de la CLI y sus rates y PID pasan al dron; se listan los ajustes que el simulador no usa (aquí, un diff de prueba)." },
       "measure": { "t": "Mediciones", "d": "Renderizador, refresco de pantalla, tiempos de fotograma, frecuencia de la física, tiempo de carga, paredes en uso y una autoprueba de atravesar paredes, copiables como JSON." },
