@@ -98,24 +98,24 @@ function Row({ s, group, locale, t }: { s: Setting; group: Group; locale: Locale
             </span>
             <span className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] leading-5 text-muted">
               {s.default ? (
-                <span className="inline-flex items-center gap-1.5">
+                <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1">
                   <span className="tc-cap">{t("default")}</span>
                   <span className="tc-val">{s.default}</span>
                   {s.preset ? <span>{t("preset")}</span> : null}
                 </span>
               ) : s.preset ? (
-                <span className="inline-flex items-center gap-1.5">
+                <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1">
                   <span className="tc-cap">{t("default")}</span>
                   <span>{t("preset")}</span>
                 </span>
               ) : null}
               {s.options.length ? (
-                <span className="inline-flex items-center gap-1.5">
+                <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1">
                   <span className="tc-cap">{t("options")}</span>
                   <span className="font-mono text-ink/80">{s.options.length}</span>
                 </span>
               ) : s.range ? (
-                <span className="inline-flex items-center gap-1.5">
+                <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1">
                   <span className="tc-cap">{t("range")}</span>
                   <span className="font-mono text-ink/80">{s.range}</span>
                 </span>

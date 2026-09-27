@@ -42,6 +42,7 @@
   font: 500 10.5px/1 var(--font-mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--color-muted);
 }
 

@@ -553,4 +553,12 @@ function main(): void {
     console.log(`  ${texts}`);
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+    try {
+        main();
+    } catch (e) {
+        // a missing text or a broken input: one readable line for CI, not a stack trace
+        console.error(e instanceof Error ? e.message : String(e));
+        process.exit(1);
+    }
+}
