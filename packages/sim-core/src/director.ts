@@ -9,14 +9,24 @@
 // - Stuck, flipped (Liftoff's rule): not crashed, up-vector y < 0.3, |v| < 0.2 m/s, |w| < 1 rad/s,
 //   touching, for 1.5 s. Stuck, wedged: armed, throttle stick >= hover + 0.15, |v| < 0.1 m/s,
 //   touching, for 3 s. Both rewind like a crash. An upright, disarmed craft is a landing: never.
-//   |v| and |w| are the net motion of the pose over the last 100 ms, not one tick's values: a
-//   craft at rest on a floor rocks in the contact solver at up to 3.8 rad/s and 0.17 m/s from
-//   tick to tick (v0.2's sim too, measured on a voxel floor), while over 100 ms its pose moves
-//   at most 0.27 rad/s and 0.018 m/s. Read per tick, not one tick in 3 s passed the flipped rule.
+//
+// How still is measured (a deviation from the design's wording, kept narrow):
+//   |v| is the largest distance the body centre got from where it was 100 ms earlier, per second;
+//   |w| is the same for the body's up direction (its tilt), in rad/s. Not one tick's values: a
+//   craft at rest in the contact solver rocks at up to 6 rad/s and 0.17 m/s from tick to tick
+//   (v0.2's sim too), so read per tick not one tick in 3 s passed the flipped rule. Not the whole
+//   rotation either: on the 39e63ce9 voxel floor a craft lying on its back spins about its own up
+//   axis at a steady 150 deg/s (contact chatter, about 107 contact events/s) while its tilt only
+//   wobbles by 1.3 deg, and a spin about the up axis does not change "lying on its back". Its
+//   whole rotation never read under 1.79 rad/s, so the design's |w| never let it count as still
+//   (0 respawns in 20 s); its tilt rate stays under 0.66 rad/s. The largest deviation, not the
+//   net change, so a rocking that happens to come back after exactly 100 ms still reads as motion.
 
 import { S } from './sim';
 import { datan2 } from './dmath';
+import { hoverSolve } from './params';
 import type { Sim, SimEvent, ContactWorld } from './sim';
+import type { SimParams } from './params';
 import type { RespawnOpts, RespawnReason } from './contracts';
 import type { StateHistory } from './history';
 
@@ -53,6 +63,8 @@ export interface RespawnRequest {
     yawDeg: number;
     opts: RespawnOpts;
     reason: RespawnReason;
+    /** back along the recorded path (the log keeps it as a flag, the stats count it); false = the start */
+    rewind?: boolean;
 }
 
 /** What the director last decided: for the "-5 s" label and the tests. */
@@ -75,7 +87,7 @@ export const FLIPPED_TICKS = 1500;
 export const WEDGED_TICKS = 3000;
 /** The touch and stillness checks run on this tick grid, so a stuck respawn lands 0-9 ticks after its hold time. */
 export const TOUCH_EVERY_TICKS = 10;
-/** |v| and |w| are the pose's net motion over this many ticks; the header says why. */
+/** |v| and |w| are the pose's largest deviation over this many ticks; the header says why. */
 export const STILL_WINDOW_TICKS = 100;
 const FLIPPED_UP_Y = 0.3;
 const FLIPPED_V = 0.2;
@@ -86,6 +98,13 @@ const TOUCH_MARGIN = 0.02;
 const POSES = STILL_WINDOW_TICKS / TOUCH_EVERY_TICKS + 1;
 const WINDOW_S = STILL_WINDOW_TICKS / 1000;
 
+/** The stick 0..1 that hovers a fresh pack, as the director reads it for a model (auto-throttle aware). */
+export function hoverStickOf(p: SimParams): number {
+    const s = hoverSolve(p, 1).stick;
+    // a model that cannot hover: no stick is "above hover", so nothing is ever wedged
+    return s === s ? s : Infinity;
+}
+
 export class RespawnDirector {
     policy: RespawnPolicy;
     /** set by the scene host: called at crash + delay when policy.onCrash is 'next-scene' */
@@ -94,16 +113,18 @@ export class RespawnDirector {
     readonly history: StateHistory;
     private readonly spawn: () => [number, number, number, number];
     private readonly world: () => ContactWorld | null;
-    private readonly boundRadius: number;
-    private readonly hoverStick: number;
+    private boundRadiusNow: number;
+    private hoverStickNow: number;
+    /** the model the two values above belong to (null until the first decide) */
+    private model: SimParams | null = null;
     private crashTick = -1;
     private manual: 'start' | 'rewind' | null = null;
     private flipSince = -1;
     private wedgeSince = -1;
     private lastRewind = -Infinity;
     private backoff = 0;
-    // poses on the touch grid (x, y, z, qw, qx, qy, qz), for the net motion over the window
-    private readonly poses = new Float64Array(POSES * 7);
+    // poses on the touch grid (x, y, z, up x, up y, up z), for the motion over the span
+    private readonly poses = new Float64Array(POSES * 6);
     private poseN = 0;
     private moveV = Infinity;
     private moveW = Infinity;
@@ -111,15 +132,33 @@ export class RespawnDirector {
 
     /**
      * world: what "touching" is tested against. Pass the sim's contactWorld, so a craft flipped on
-     * the invisible platform counts as lying on something. hoverStick: throttle stick 0..1 at hover.
+     * the invisible platform counts as lying on something. boundRadius, hoverStick: of the model
+     * the director starts with (hoverStickOf(p) gives the stick 0..1 at hover). When a 'life'
+     * setting swaps in a new model (another drone, a new throttle curve, gravity), the director
+     * takes both from that model at its first step.
      */
     constructor(policy: RespawnPolicy, spawn: () => [number, number, number, number], history: StateHistory, world: () => ContactWorld | null, boundRadius: number, hoverStick: number) {
         this.policy = { ...policy };
         this.spawn = spawn;
         this.history = history;
         this.world = world;
-        this.boundRadius = boundRadius;
-        this.hoverStick = hoverStick;
+        this.boundRadiusNow = boundRadius;
+        this.hoverStickNow = hoverStick;
+    }
+
+    /** body radius the touch test uses now, m */
+    get boundRadius(): number {
+        return this.boundRadiusNow;
+    }
+
+    /** throttle stick 0..1 at hover the wedged rule uses now */
+    get hoverStick(): number {
+        return this.hoverStickNow;
+    }
+
+    /** How still the craft is (the stuck rules' |v| m/s and |w| rad/s); Infinity until 100 ms of poses exist. */
+    motion(): { v: number; w: number } {
+        return { v: this.moveV, w: this.moveW };
     }
 
     /** Every sim event in order (the runner forwards them, respawns included). It feeds the history too. */
@@ -138,6 +177,14 @@ export class RespawnDirector {
     /** Called by the runner after every step; the request is applied at this tick. It samples the history first. */
     decide(sim: Sim): RespawnRequest | null {
         this.history.onStep(sim);
+        if (sim.p !== this.model) {
+            // a new model (the runner's newLife): its body and its hover, not the old drone's
+            if (this.model !== null) {
+                this.boundRadiusNow = sim.p.boundRadius;
+                this.hoverStickNow = hoverStickOf(sim.p);
+            }
+            this.model = sim.p;
+        }
         const t = sim.tick;
         const P = this.policy;
         const s = sim.s;
@@ -176,7 +223,7 @@ export class RespawnDirector {
         } else this.flipSince = -1;
 
         const stick = (sim.ch[2] + 1) * 0.5;
-        if (s[S.armed] > 0 && stick >= this.hoverStick + WEDGED_ABOVE_HOVER) {
+        if (s[S.armed] > 0 && stick >= this.hoverStickNow + WEDGED_ABOVE_HOVER) {
             if (grid) {
                 const still = this.moveV < WEDGED_V && this.touching(sim);
                 if (!still) this.wedgeSince = -1;
@@ -207,31 +254,46 @@ export class RespawnDirector {
         this.wedgeSince = -1;
     }
 
-    /** Records the pose on the grid; net speed and turn rate over the last STILL_WINDOW_TICKS, Infinity until that is filled. */
+    /**
+     * Records the pose on the grid. moveV / moveW: the largest distance of the centre, and the
+     * largest angle of the body's up direction, from the pose STILL_WINDOW_TICKS ago, over that
+     * span, per second; Infinity until the span is filled.
+     */
     private samplePose(s: Float64Array): void {
         const p = this.poses;
-        const k = (this.poseN % POSES) * 7;
+        const k = (this.poseN % POSES) * 6;
+        const qw = s[S.qw], qx = s[S.qx], qy = s[S.qy], qz = s[S.qz];
         p[k] = s[S.px]; p[k + 1] = s[S.py]; p[k + 2] = s[S.pz];
-        p[k + 3] = s[S.qw]; p[k + 4] = s[S.qx]; p[k + 5] = s[S.qy]; p[k + 6] = s[S.qz];
+        // body up axis in world (the second column of the rotation matrix)
+        p[k + 3] = 2 * (qx * qy - qw * qz); p[k + 4] = 1 - 2 * (qx * qx + qz * qz); p[k + 5] = 2 * (qy * qz + qw * qx);
         this.poseN++;
         if (this.poseN < POSES) {
             this.moveV = Infinity;
             this.moveW = Infinity;
             return;
         }
-        const o = (this.poseN % POSES) * 7; // the oldest pose in the ring
-        const dx = p[k] - p[o], dy = p[k + 1] - p[o + 1], dz = p[k + 2] - p[o + 2];
-        this.moveV = Math.sqrt(dx * dx + dy * dy + dz * dz) / WINDOW_S;
-        let dot = p[k + 3] * p[o + 3] + p[k + 4] * p[o + 4] + p[k + 5] * p[o + 5] + p[k + 6] * p[o + 6];
-        if (dot < 0) dot = -dot;
-        if (dot > 1) dot = 1;
-        this.moveW = (2 * datan2(Math.sqrt(1 - dot * dot), dot)) / WINDOW_S;
+        const o = (this.poseN % POSES) * 6; // the oldest pose in the ring
+        let d2 = 0;
+        let tilt = 0;
+        for (let j = 1; j < POSES; j++) {
+            const i = ((this.poseN + j) % POSES) * 6;
+            const dx = p[i] - p[o], dy = p[i + 1] - p[o + 1], dz = p[i + 2] - p[o + 2];
+            const dd = dx * dx + dy * dy + dz * dz;
+            if (dd > d2) d2 = dd;
+            // angle between two unit vectors, well conditioned at 0 and at 180 deg: 2 atan2(|a - b|, |a + b|)
+            const ax = p[i + 3] - p[o + 3], ay = p[i + 4] - p[o + 4], az = p[i + 5] - p[o + 5];
+            const bx = p[i + 3] + p[o + 3], by = p[i + 4] + p[o + 4], bz = p[i + 5] + p[o + 5];
+            const a = 2 * datan2(Math.sqrt(ax * ax + ay * ay + az * az), Math.sqrt(bx * bx + by * by + bz * bz));
+            if (a > tilt) tilt = a;
+        }
+        this.moveV = Math.sqrt(d2) / WINDOW_S;
+        this.moveW = tilt / WINDOW_S;
     }
 
     private touching(sim: Sim): boolean {
         const w = this.world();
         const s = sim.s;
-        return w !== null && w.pushOut(s[S.px], s[S.py], s[S.pz], this.boundRadius + TOUCH_MARGIN, this.push);
+        return w !== null && w.pushOut(s[S.px], s[S.py], s[S.pz], this.boundRadiusNow + TOUCH_MARGIN, this.push);
     }
 
     private rewind(t: number, incident: number, reason: RespawnReason): RespawnRequest {
@@ -243,7 +305,7 @@ export class RespawnDirector {
         this.lastRewind = t;
         this.resetStuck();
         this.last = { tick: t, reason, kind: 'rewind', incidentTick: incident, sampleTick: smp.tick, backoff: this.backoff };
-        return { x: smp.x, y: smp.y, z: smp.z, yawDeg: smp.yawDeg, opts: this.opts(P.refill === 'respawn'), reason };
+        return { x: smp.x, y: smp.y, z: smp.z, yawDeg: smp.yawDeg, opts: this.opts(P.refill === 'respawn'), reason, rewind: true };
     }
 
     private toStart(t: number, reason: RespawnReason, incident: number): RespawnRequest {
@@ -253,7 +315,7 @@ export class RespawnDirector {
         this.lastRewind = -Infinity;
         this.resetStuck();
         this.last = { tick: t, reason, kind: 'start', incidentTick: incident, sampleTick: null, backoff: 0 };
-        return { x, y, z, yawDeg, opts: this.opts(P.refill !== 'never'), reason };
+        return { x, y, z, yawDeg, opts: this.opts(P.refill !== 'never'), reason, rewind: false };
     }
 
     private opts(freshPack: boolean): RespawnOpts {

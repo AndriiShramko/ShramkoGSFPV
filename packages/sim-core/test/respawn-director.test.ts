@@ -2,9 +2,9 @@
 // backoff, stuck detection, R / Y, and the cases where nothing may happen.
 
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_RESPAWN_POLICY, RespawnDirector, S, StateHistory, dcos, dsin, hoverSolve } from '../src/index';
+import { DEFAULT_RESPAWN_POLICY, RespawnDirector, S, StateHistory, compileParams, dcos, dsin, hoverSolve, hoverStickOf, lifeSim } from '../src/index';
 import type { RespawnDecision, Runner, Sim } from '../src/index';
-import { PlaneWorld, Pilot, SPLITS, attachDirector, crashCycles, newRunner, runFrames } from './log-kit';
+import { PRESET, PlaneWorld, Pilot, SPLITS, attachDirector, crashCycles, header, newRunner, runFrames } from './log-kit';
 
 const WORLD = PlaneWorld.room({ wallX: 4 });
 const SPAWN: [number, number, number, number] = [0, 1, 0, 0];
@@ -144,6 +144,33 @@ describe('stuck (items 18, 23)', () => {
         expect(r.lives().length).toBe(1);
     });
 
+    /** On its back on the invisible platform, high over nothing (no scene): the director's world is `touch`. */
+    function onPlatform(touch: 'contactWorld' | 'scene'): Runner {
+        const at: [number, number, number, number] = [0, 5, 0, 0];
+        const r = newRunner({ world: null, at, opts: { platform: true } });
+        const p = r.sim.p;
+        r.director = new RespawnDirector({ ...DEFAULT_RESPAWN_POLICY }, () => at, new StateHistory(), () => (touch === 'contactWorld' ? r.sim.contactWorld : r.sim.world), p.boundRadius, hoverStickOf(p));
+        const s = r.sim.s;
+        s[S.qw] = 0; s[S.qx] = 0; s[S.qy] = 0; s[S.qz] = 1; // on its back, the duct spheres on the disc
+        s[S.hold] = 0;
+        runFrames(r, 60, 3_000_000);
+        return r;
+    }
+
+    it('flipped on the invisible platform (nothing else under it) counts as lying on something: reset at 1.50-1.51 s', () => {
+        const r = onPlatform('contactWorld');
+        expect(r.sim.s[S.py]).toBeGreaterThan(4.9); // it never fell: the disc held it
+        const L = r.lives()[1]?.header.life;
+        expect(L?.reason).toBe('stuck-flipped');
+        expect(L!.startTick).toBeGreaterThanOrEqual(1500);
+        expect(L!.startTick).toBeLessThanOrEqual(1510);
+    });
+
+    it('control: a director that tests the scene alone (sim.world) never sees it touching anything', () => {
+        const r = onPlatform('scene');
+        expect(r.lives().length).toBe(1);
+    });
+
     it('control: with respawn.unstuck off, the flipped craft stays', () => {
         const r = newRunner({ world: FLOOR, at: START });
         attachDirector(r, START, { unstuck: false });
@@ -184,6 +211,48 @@ describe('stuck (items 18, 23)', () => {
         const { r } = pinned(0.1);
         expect(r.sim.s[S.py]).toBeGreaterThan(1.1); // still up at the ceiling
         expect(r.lives().length).toBe(1);
+    });
+});
+
+describe('a new model through newLife (a life setting: another drone, gravity mode, throttle curve)', () => {
+    const CEIL = PlaneWorld.room({ ceilY: 1.2 });
+    const AT: [number, number, number, number] = [0, 1.12, 0, 0];
+
+    /**
+     * Armed under a ceiling on the Pro (honest gravity); at 0.3 s a settings life switches to
+     * auto-throttle, where the hover stick is 0.5, and the stick goes to 0.6: it climbs into the
+     * ceiling and presses there, 0.1 over hover, which is not a wedge. `late`: the director is made
+     * only after the switch, from the old model's values (what a page that never re-reads them has).
+     */
+    function switchToAuto(late: boolean): { r: Runner; d: RespawnDirector } {
+        const r = newRunner({ world: CEIL, at: AT });
+        const p0 = r.sim.p;
+        const stale = new RespawnDirector({ ...DEFAULT_RESPAWN_POLICY }, () => AT, new StateHistory(), () => r.sim.contactWorld, p0.boundRadius, hoverStickOf(p0));
+        if (!late) r.director = stale;
+        r.enqueue({ tUs: 1000, ch: [0, 0, -1, 0, -1, -1, 0, 0] });
+        r.enqueue({ tUs: 20_000, ch: [0, 0, -1, 0, 1, -1, 0, 0] });
+        r.enqueue({ tUs: 40_000, ch: [0, 0, 0.2, 0, 1, -1, 0, 0] });
+        r.advanceTo(300_000);
+        const overrides = { gravityMode: 'auto-throttle' as const };
+        const s = r.sim.s;
+        r.newLife(lifeSim(compileParams(PRESET, overrides), CEIL), header({ at: [s[S.px], s[S.py], s[S.pz], 0], overrides, opts: { keepArmed: true }, reason: 'settings' }));
+        if (late) r.director = stale;
+        runFrames(r, 60, 10_000_000);
+        return { r, d: stale };
+    }
+
+    it('the director takes the new model\'s hover stick (0.5 in auto-throttle) and body: 0.1 over hover presses but is no wedge', () => {
+        const { r, d } = switchToAuto(false);
+        expect(d.hoverStick).toBe(0.5);
+        expect(d.boundRadius).toBe(r.sim.p.boundRadius);
+        expect(r.sim.s[S.py]).toBeGreaterThan(1.1); // pressed at the ceiling
+        expect(r.lives().map((l) => l.header.life.reason)).toEqual(['start', 'settings']);
+    });
+
+    it('control: a director left with the old model\'s hover stick (0.277) calls the same craft wedged', () => {
+        const { r, d } = switchToAuto(true);
+        expect(d.hoverStick).toBeLessThan(0.3);
+        expect(r.lives().map((l) => l.header.life.reason)).toContain('stuck-wedged');
     });
 });
 
@@ -236,11 +305,15 @@ describe('R and Y (manual)', () => {
     });
 });
 
-describe('stillness is the pose\'s net motion over 100 ms (C.6, deviation noted in director.ts)', () => {
+describe('stillness is the largest pose change over 100 ms, of the centre and of the up direction (C.6, deviation noted in director.ts)', () => {
     const FLOOR = PlaneWorld.room();
 
-    /** Drives decide() with a scripted pose: on its back, touching the floor, sliding at v and turning about y at w. */
-    function scripted(v: number, w: number, ticks: number): number {
+    /**
+     * Drives decide() with a scripted pose on its back, touching the floor: sliding along x at v,
+     * tipping about the horizontal x axis at w (rad/s), spinning about its own up axis at spin, and
+     * rocking about x by +-rockDeg at rockHz. Returns the tick of the first respawn, or -1.
+     */
+    function scripted(o: { v?: number; w?: number; spin?: number; rockDeg?: number; rockHz?: number }, ticks: number): number {
         const r = newRunner({ world: FLOOR, at: [0, 0.5, 0, 0] });
         const sim = r.sim;
         const p = sim.p;
@@ -248,26 +321,55 @@ describe('stillness is the pose\'s net motion over 100 ms (C.6, deviation noted 
         const s = sim.s;
         for (let t = 1; t <= ticks; t++) {
             sim.tick = t;
-            const a = (w * t) / 1000;
-            // yaw by a about world y, times 180 deg about z: (0, sin(a/2), 0, cos(a/2))
-            s[S.qw] = 0; s[S.qx] = dsin(a / 2); s[S.qy] = 0; s[S.qz] = dcos(a / 2);
-            s[S.px] = (v * t) / 1000; s[S.py] = 0.031; s[S.pz] = 0;
+            const tip = ((o.w ?? 0) * t) / 1000 + ((o.rockDeg ?? 0) * Math.PI / 180) * dsin(2 * Math.PI * (o.rockHz ?? 0) * t / 1000);
+            const yaw = ((o.spin ?? 0) * t) / 1000;
+            // q = Rx(tip) * Ry(yaw) * Rz(180 deg): on its back, spun about its own up axis, tipped about world x
+            const cx = dcos(tip / 2), sx = dsin(tip / 2), cy = dcos(yaw / 2), sy = dsin(yaw / 2);
+            // Rx(tip) * Ry(yaw) = (cx cy, sx cy, cx sy, sx sy); times Rz(180) = (0, 0, 0, 1)
+            const aw = cx * cy, ax = sx * cy, ay = cx * sy, az = sx * sy;
+            s[S.qw] = -az; s[S.qx] = ay; s[S.qy] = -ax; s[S.qz] = aw;
+            s[S.px] = ((o.v ?? 0) * t) / 1000; s[S.py] = 0.031; s[S.pz] = 0;
             if (d.decide(sim)) return t;
         }
         return -1;
     }
 
-    it('0.19 m/s and 0.95 rad/s count as still: a respawn at 1.50-1.51 s', () => {
-        for (const [v, w] of [[0, 0], [0.19, 0], [0, 0.95]]) {
-            const t = scripted(v, w, 3000);
-            expect(t, `v ${v} w ${w}`).toBeGreaterThanOrEqual(1500);
-            expect(t, `v ${v} w ${w}`).toBeLessThanOrEqual(1510);
+    it('0.19 m/s and a 0.95 rad/s tilt count as still: a respawn at 1.50-1.51 s', () => {
+        for (const o of [{}, { v: 0.19 }, { w: 0.95 }]) {
+            const t = scripted(o, 3000);
+            expect(t, JSON.stringify(o)).toBeGreaterThanOrEqual(1500);
+            expect(t, JSON.stringify(o)).toBeLessThanOrEqual(1510);
         }
     });
 
-    it('control: 0.21 m/s or 1.05 rad/s is moving, never stuck', () => {
-        expect(scripted(0.21, 0, 5000)).toBe(-1);
-        expect(scripted(0, 1.05, 5000)).toBe(-1);
+    it('control: 0.21 m/s or a 1.05 rad/s tilt is moving, never stuck', () => {
+        expect(scripted({ v: 0.21 }, 5000)).toBe(-1);
+        expect(scripted({ w: 1.05 }, 5000)).toBe(-1);
+    });
+
+    it('a spin about its own up axis (2.6 rad/s, what the 39e63ce9 floor does to a craft on its back) is still lying there', () => {
+        const t = scripted({ spin: 2.6 }, 3000);
+        expect(t).toBeGreaterThanOrEqual(1500);
+        expect(t).toBeLessThanOrEqual(1510);
+    });
+
+    it('control: the design\'s literal |w| (the whole rotation) reads that spin as 2.6 rad/s, so the craft would never count as still', () => {
+        // the angle between the poses 100 ms apart, as the first implementation measured it
+        const q = (yaw: number) => [0, dsin(yaw / 2), 0, dcos(yaw / 2)];
+        const a = q(0), b = q(0.26);
+        const dot = Math.abs(a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3]);
+        expect((2 * Math.acos(Math.min(1, dot))) / 0.1).toBeGreaterThan(1);
+    });
+
+    it('a rocking that comes back after exactly 100 ms (+-6 deg at 10 Hz) still reads as motion: the largest change, not the net one', () => {
+        expect(scripted({ rockDeg: 6, rockHz: 10 }, 5000)).toBe(-1);
+        // control: the net change over 100 ms of that rocking is nil, so a net-change rule would call it still
+        const tipAt = (t: number) => 6 * dsin(2 * Math.PI * 10 * t / 1000);
+        expect(Math.abs(tipAt(1234) - tipAt(1134))).toBeLessThan(1e-9);
+        // and a small rocking inside the tolerance (+-1.3 deg, the voxel floor's wobble) is still
+        const t = scripted({ rockDeg: 1.3, rockHz: 7 }, 3000);
+        expect(t).toBeGreaterThanOrEqual(1500);
+        expect(t).toBeLessThanOrEqual(1510);
     });
 
     it('why: a craft at rest on the floor fails the rule read per tick, and passes it over 100 ms', () => {

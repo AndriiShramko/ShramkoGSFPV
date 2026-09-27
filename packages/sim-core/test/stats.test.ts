@@ -2,7 +2,7 @@
 // state and events, reproduced exactly by a replay of the log.
 
 import { describe, expect, it } from 'vitest';
-import { FlightStats, REC_BYTES, S, replayLives } from '../src/index';
+import { FlightStats, REC_BYTES, S, readRespawn, replayLives } from '../src/index';
 import type { Life, Runner, StatsBlock, StatsSource } from '../src/index';
 import { PlaneWorld, Pilot, attachDirector, crashCycles, deps, newRunner, runFrames } from './log-kit';
 
@@ -107,11 +107,7 @@ describe('stats from the log (D.4)', () => {
 
     function replayed(lives: readonly Life[]): { session: StatsBlock; life: StatsBlock } {
         const st = new FlightStats([SPAWN[0], SPAWN[1], SPAWN[2]], 550);
-        replayLives(lives, deps(WORLD), {
-            onStep: (sim) => st.onStep(sim),
-            onEvent: (e) => st.onEvent(e),
-            onLife: (l, i) => { if (i > 0) st.newLife([l.header.life.at[0], l.header.life.at[1], l.header.life.at[2]], l.header.life.reason); }
-        });
+        replayLives(lives, deps(WORLD), { stats: st });
         return { session: st.session(), life: st.life() };
     }
 
@@ -125,11 +121,51 @@ describe('stats from the log (D.4)', () => {
         expect(b.crashes).toBe(r.events.filter((e) => e.type === 'crash').length);
         expect(b.crashes).toBe(3);
         expect(b.respawns).toEqual({ crash: 3 });
+        // each crash went back along the path: the log's rewind flag, counted per life and session (D.1 "rewinds")
+        expect(b.rewinds).toBe(3);
+        expect(st.life().rewinds).toBe(1);
+        for (const l of r.lives().slice(0, 3)) {
+            const bytes = l.bytes();
+            expect(readRespawn(Array.from(new Float32Array(bytes.slice(bytes.length - 32).buffer))).rewind).toBe(true);
+        }
         expect(b.maxSpeed).toBeGreaterThan(5);
         expect(b.maxG).toBeGreaterThan(1);
         expect(b.usedMah).toBeGreaterThan(10);
         expect(b.minVolt).toBeLessThan(b.endVolt + 1);
         console.log('session stats of the 60 s flight:', JSON.stringify(b));
+    });
+
+    it('control: hooks wired by hand without the rewind flag miss the rewinds, so only the stats option replays them', () => {
+        const { r, st } = live();
+        const hand = new FlightStats([SPAWN[0], SPAWN[1], SPAWN[2]], 550);
+        replayLives(r.lives(), deps(WORLD), {
+            onStep: (sim) => hand.onStep(sim),
+            onEvent: (e) => hand.onEvent(e),
+            onLife: (l, i) => { if (i > 0) hand.newLife([l.header.life.at[0], l.header.life.at[1], l.header.life.at[2]], l.header.life.reason); }
+        });
+        expect(hand.session().rewinds).toBe(0);
+        expect(hand.session()).not.toEqual(st.session());
+        expect({ ...hand.session(), rewinds: 3 }).toEqual(st.session());
+    });
+
+    it('R (to the start) is a respawn but not a rewind; Y is both', () => {
+        const r = newRunner({ world: WORLD, at: SPAWN });
+        const d = attachDirector(r, SPAWN);
+        const st = new FlightStats([SPAWN[0], SPAWN[1], SPAWN[2]], 550);
+        r.stats = st;
+        const p = new Pilot(r);
+        p.plan = (pp, sim) => { if (pp.phase === '') { pp.bot.setTask({ kind: 'hover', target: [0, 1, 0], yawDeg: 0 }, sim); pp.phase = 'hover'; } };
+        runFrames(r, 60, 7_000_000);
+        d.request('start');
+        runFrames(r, 60, 7_100_000, { phaseUs: 7_000_000 });
+        expect(st.session().respawns).toEqual({ 'manual-start': 1 });
+        expect(st.session().rewinds).toBe(0);
+        runFrames(r, 60, 13_000_000, { phaseUs: 7_100_000 });
+        d.request('rewind');
+        runFrames(r, 60, 13_100_000, { phaseUs: 13_000_000 });
+        expect(st.session().respawns).toEqual({ 'manual-start': 1, 'manual-rewind': 1 });
+        expect(st.session().rewinds).toBe(1);
+        expect(d.last!.kind).toBe('rewind');
     });
 
     it('control: one LSB tampered in the log gives different stats', () => {

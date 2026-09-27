@@ -130,6 +130,8 @@ export const MAX_LOG_TICK = 0x1fffffff;
 export const RESPAWN_REASONS: readonly RespawnReason[] = ['crash', 'stuck-flipped', 'stuck-wedged', 'manual-start', 'manual-rewind', 'settings', 'scene', 'world'];
 export const RESPAWN_FLAG_PLATFORM = 1;
 export const RESPAWN_FLAG_KEEP_ARMED = 2;
+/** the craft went back along its recorded path (a rewind), not to the start: counted by the stats (D.1 "rewinds") */
+export const RESPAWN_FLAG_REWIND = 4;
 
 /**
  * Code of a record that takes effect at `slot`, the sim tick before the next step. An input for
@@ -159,19 +161,25 @@ export function normalizeRespawnOpts(o: RespawnOpts = {}): RespawnOpts {
     return out;
 }
 
-export interface RespawnRecord { at: [number, number, number, number]; opts: RespawnOpts; reason: RespawnReason }
+export interface RespawnRecord {
+    at: [number, number, number, number];
+    opts: RespawnOpts;
+    reason: RespawnReason;
+    /** back along the recorded path (flag 4); false for the start and for a record without the flag */
+    rewind: boolean;
+}
 
-function writeRespawn(out: Float32Array, at: ArrayLike<number>, o: RespawnOpts, reason: RespawnReason): void {
+function writeRespawn(out: Float32Array, at: ArrayLike<number>, o: RespawnOpts, reason: RespawnReason, rewind = false): void {
     const code = RESPAWN_REASONS.indexOf(reason);
     if (code < 0) throw new RangeError(`unknown respawn reason '${reason}'`);
     out[0] = at[0]; out[1] = at[1]; out[2] = at[2]; out[3] = at[3];
-    out[4] = (o.platform ? RESPAWN_FLAG_PLATFORM : 0) | (o.keepArmed ? RESPAWN_FLAG_KEEP_ARMED : 0);
+    out[4] = (o.platform ? RESPAWN_FLAG_PLATFORM : 0) | (o.keepArmed ? RESPAWN_FLAG_KEEP_ARMED : 0) | (rewind ? RESPAWN_FLAG_REWIND : 0);
     out[5] = o.platformR ?? 0;
     out[6] = o.soc ?? -1;
     out[7] = code;
 }
 
-/** Decodes a respawn record: ch[0..3] x, y, z, yaw; ch[4] flags; ch[5] platform radius (0 = default); ch[6] soc (-1 = keep); ch[7] reason. */
+/** Decodes a respawn record: ch[0..3] x, y, z, yaw; ch[4] flags (1 platform, 2 keepArmed, 4 rewind); ch[5] platform radius (0 = default); ch[6] soc (-1 = keep); ch[7] reason. */
 export function readRespawn(ch: ArrayLike<number>): RespawnRecord {
     const f = ch[4] | 0;
     const opts: RespawnOpts = { platform: (f & RESPAWN_FLAG_PLATFORM) !== 0, keepArmed: (f & RESPAWN_FLAG_KEEP_ARMED) !== 0 };
@@ -179,7 +187,7 @@ export function readRespawn(ch: ArrayLike<number>): RespawnRecord {
     if (ch[6] >= 0) opts.soc = ch[6];
     const reason = RESPAWN_REASONS[ch[7] | 0];
     if (reason === undefined) throw new RangeError(`unknown respawn reason code ${ch[7]}`);
-    return { at: [ch[0], ch[1], ch[2], ch[3]], opts, reason };
+    return { at: [ch[0], ch[1], ch[2], ch[3]], opts, reason, rewind: (f & RESPAWN_FLAG_REWIND) !== 0 };
 }
 
 /** Decodes a world record: ch[0] = s, ch[1..3] = t, ch[4] = floater minBlocks. */
@@ -339,8 +347,14 @@ export interface Life {
     /** the records; for the current life a view of the live buffer, so copy it to keep it */
     bytes(): Uint8Array;
     endTick: number;
-    /** sha256 of every tick's state from the life start, set when the life ends (option traceHash) */
+    /** sha256 of every tick's state after hashFrom, set when the life ends (option traceHash) */
     traceHash?: string;
+    /**
+     * traceHash covers the states of ticks after this one: the life start, or, when the head of a
+     * long life was dropped, the start of its last segment (a replay cannot reproduce states it no
+     * longer has). Unset = header.life.startTick.
+     */
+    hashFrom?: number;
     /** set when the head of a long life was dropped: the replay starts here instead of at the header */
     snapshot?: LifeSnapshot;
 }
@@ -385,15 +399,38 @@ class LifeRec implements Life {
     readonly header: LifeHeader;
     readonly segs: Segment[];
     traceHash?: string;
-    hasher: Sha256 | null;
+    hashFrom?: number;
+    /** the whole life's hash, until its head is dropped */
+    private full: Sha256 | null;
+    /** from the start of the last segment, once there are two (the fallback after a trim) */
+    private seg: Sha256 | null = null;
+    private segFrom = -1;
     private end = -1;
     private readonly now: () => number;
 
     constructor(header: LifeHeader, now: () => number, hash: boolean, cap: number) {
         this.header = header;
         this.now = now;
-        this.hasher = hash ? new Sha256() : null;
+        this.full = hash ? new Sha256() : null;
         this.segs = [new Segment(null, cap)];
+    }
+    /** hashes one tick's state (option traceHash); two hashers only while a long life has several segments */
+    hashState(bytes: Uint8Array): void {
+        this.full?.update(bytes);
+        this.seg?.update(bytes);
+    }
+    get hashing(): boolean {
+        return this.full !== null || this.seg !== null;
+    }
+    /** a new segment starts after `tick`: the fallback hash starts there */
+    segmentAt(tick: number): void {
+        if (!this.hashing) return;
+        this.seg = new Sha256();
+        this.segFrom = tick;
+    }
+    /** the head was dropped: the whole-life hash can no longer be reproduced */
+    headDropped(): void {
+        this.full = null;
     }
     get endTick(): number {
         return this.end >= 0 ? this.end : this.now();
@@ -421,10 +458,15 @@ class LifeRec implements Life {
     close(tick: number): void {
         this.end = tick;
         this.segs[this.segs.length - 1].trim();
-        if (this.hasher) {
-            this.traceHash = this.hasher.digestHex();
-            this.hasher = null;
+        if (this.full) {
+            this.traceHash = this.full.digestHex();
+            this.hashFrom = this.header.life.startTick;
+        } else if (this.seg) {
+            this.traceHash = this.seg.digestHex();
+            this.hashFrom = this.segFrom;
         }
+        this.full = null;
+        this.seg = null;
     }
 }
 
@@ -459,7 +501,6 @@ export class Runner {
     onWorld: ((ev: WorldEvent) => void) | null = null;
     private readonly v2: boolean;
     private kept: LifeRec[] = [];
-    private lifeHasher: Sha256 | null = null;
     private worldNow: WorldEvent | null = null;
     private lifeHash = false;
     private maxLives = DEFAULT_MAX_LIVES;
@@ -530,23 +571,39 @@ export class Runner {
             sim.respawn(f[0], f[1], f[2], f[3]);
             return;
         }
-        writeRespawn(this.rec, [x, y, z, yawDeg], normalizeRespawnOpts(opts), reason);
+        this.respawnV2(x, y, z, yawDeg, opts, reason, reason === 'manual-rewind');
+    }
+
+    private respawnV2(x: number, y: number, z: number, yawDeg: number, opts: RespawnOpts | undefined, reason: RespawnReason, rewind: boolean): void {
+        const sim = this.simRef;
+        writeRespawn(this.rec, [x, y, z, yawDeg], normalizeRespawnOpts(opts), reason, rewind);
         this.push(recordCode(REC_RESPAWN, sim.tick), this.rec);
         const r = readRespawn(this.rec);
         const base = cloneHeader(this.cur().header);
-        if (this.worldNow && base.scene) {
-            const w = this.worldNow;
-            base.scene.transform = [w.s, w.t[0], w.t[1], w.t[2]];
-            base.scene.floaterMinBlocks = w.floaterMinBlocks;
-        }
+        base.scene = this.sceneNow();
         this.worldNow = null;
         this.nextLife(sim, base, r);
+    }
+
+    /** The scene as the log has it now: the current life's header with its world records applied. */
+    private sceneNow(): LifeHeader['scene'] {
+        const sc = this.cur().header.scene;
+        if (!sc) return null;
+        const out = { ...sc, transform: [sc.transform[0], sc.transform[1], sc.transform[2], sc.transform[3]] as [number, number, number, number] };
+        const w = this.worldNow;
+        if (w) {
+            out.transform = [w.s, w.t[0], w.t[1], w.t[2]];
+            out.floaterMinBlocks = w.floaterMinBlocks;
+        }
+        return out;
     }
 
     /**
      * A 'life' setting changed (A.7): continue on a new Sim built from `header`'s params, with the
      * tick, the channels and the pack carried over. The runner fills life.index, startTick, soc and
-     * ch; the rest of the header is the caller's (params, scene, at, opts, reason).
+     * ch, and, on the same scene (id and version), the scene transform: only world records change it,
+     * so the log's value wins over a stale one in the caller's header (the life then replays alone).
+     * The rest of the header is the caller's (params, scene, floaterMinBlocks, at, opts, reason).
      */
     newLife(sim: Sim, header: LifeHeader): void {
         if (!this.v2) throw new Error('newLife needs a format /2 runner');
@@ -558,8 +615,11 @@ export class Runner {
         if (sim === prev && header.configHash !== this.cur().header.configHash) throw new Error('a new config needs a new Sim built from it');
         writeRespawn(this.rec, header.life.at, normalizeRespawnOpts(header.life.opts), reason);
         this.push(recordCode(REC_RESPAWN, prev.tick), this.rec);
+        const h = cloneHeader(header);
+        const now = this.sceneNow();
+        if (h.scene && now && h.scene.id === now.id && h.scene.version === now.version) h.scene.transform = now.transform;
         this.worldNow = null;
-        this.nextLife(sim, cloneHeader(header), readRespawn(this.rec));
+        this.nextLife(sim, h, readRespawn(this.rec));
     }
 
     /** Logs a world record (E.7) at the tick boundary, then calls onWorld with the Float32 values. */
@@ -632,13 +692,16 @@ export class Runner {
         for (let i = nEv; i < sim.events.length; i++) this.emit(sim.events[i]);
         if (sim.events.length > 256) sim.events.length = 0;
         if (this.hash) this.hash.update(this.hashBytes);
-        if (this.lifeHasher) this.lifeHasher.update(this.hashBytes);
+        if (this.lifeHash) this.cur().hashState(this.hashBytes);
         if (this.trajectory && sim.tick % 10 === 0) this.trajectory.push(trajPoint(sim));
         this.stats?.onStep(sim);
         this.onStep?.(sim);
         if (this.director) {
             const r = this.director.decide(this.simRef);
-            if (r) this.respawn(r.x, r.y, r.z, r.yawDeg, r.opts, r.reason);
+            if (r) {
+                if (this.v2) this.respawnV2(r.x, r.y, r.z, r.yawDeg, r.opts, r.reason, r.rewind === true);
+                else this.respawn(r.x, r.y, r.z, r.yawDeg, r.opts, r.reason);
+            }
         }
     }
 
@@ -677,7 +740,7 @@ export class Runner {
         const index = this.cur().header.life.index + 1;
         header.life = { index, startTick: tick, at: [r.at[0], r.at[1], r.at[2], r.at[3]], opts: { ...r.opts }, soc: next.s[S.soc], ch: Array.from(next.ch), reason: r.reason };
         this.open(header);
-        this.stats?.newLife([r.at[0], r.at[1], r.at[2]], r.reason);
+        this.stats?.newLife([r.at[0], r.at[1], r.at[2]], r.reason, r.rewind);
         for (let i = nEv; i < next.events.length; i++) this.emit(next.events[i]);
         this.onLife?.(this.cur());
     }
@@ -685,7 +748,6 @@ export class Runner {
     private open(h: LifeHeader): void {
         const life = new LifeRec(h, () => this.simRef.tick, this.lifeHash, Math.min(SEG_START_BYTES, this.segCap));
         this.kept.push(life);
-        this.lifeHasher = life.hasher;
         this.enforce();
     }
 
@@ -712,6 +774,7 @@ export class Runner {
             const sim = this.simRef;
             seg = new Segment({ tick: sim.tick, s: Array.from(sim.s), ch: Array.from(sim.ch), world: this.worldNow }, Math.min(SEG_START_BYTES, this.segCap));
             life.segs.push(seg);
+            life.segmentAt(sim.tick);
         }
         this.enforce();
         return seg;
@@ -723,7 +786,10 @@ export class Runner {
         let held = this.bytesKept();
         while (held > this.maxBytes && this.kept.length > 1) held -= this.kept.shift()!.held;
         const cur = this.cur();
-        while (held > this.maxBytes && cur.segs.length > 2) held -= cur.segs.shift()!.held;
+        while (held > this.maxBytes && cur.segs.length > 2) {
+            held -= cur.segs.shift()!.held;
+            cur.headDropped();
+        }
     }
 }
 
@@ -800,6 +866,8 @@ export function lifeSim(p: SimParams, world: ContactWorld | null): Sim {
 interface Hooks {
     onStep?: (sim: Sim) => void;
     onEvent?: (e: SimEvent) => void;
+    /** a respawn record was applied, before its events: where the live runner starts a life */
+    onRespawn?: (r: RespawnRecord) => void;
 }
 
 /** Places a replay sim at the life's first state: its snapshot, or the header's start. */
@@ -838,13 +906,15 @@ function applyDue(sim: Sim, cur: Cursor, scene: LifeHeader['scene'], deps: Repla
             const opts = carrySoc !== undefined && r.opts.soc === undefined ? { ...r.opts, soc: carrySoc } : r.opts;
             const n = sim.events.length;
             sim.respawn(r.at[0], r.at[1], r.at[2], r.at[3], opts);
+            hooks.onRespawn?.(r);
             emitFrom(sim, n, hooks);
         } else if (kind === REC_WORLD) sim.world = deps.world(scene, readWorld(cur.ch));
         cur.i++;
     }
 }
 
-function playTo(sim: Sim, cur: Cursor, endTick: number, scene: LifeHeader['scene'], deps: ReplayDeps, hash: Sha256 | null, hooks: Hooks): void {
+/** hashFrom: only the states of ticks after it go into the hash (Life.hashFrom). */
+function playTo(sim: Sim, cur: Cursor, endTick: number, scene: LifeHeader['scene'], deps: ReplayDeps, hash: Sha256 | null, hooks: Hooks, hashFrom = -Infinity): void {
     const bytes = stateBytes(sim);
     while (sim.tick < endTick) {
         applyDue(sim, cur, scene, deps, hooks);
@@ -852,7 +922,7 @@ function playTo(sim: Sim, cur: Cursor, endTick: number, scene: LifeHeader['scene
         sim.step();
         emitFrom(sim, n, hooks);
         if (sim.events.length > 256) sim.events.length = 0;
-        hash?.update(bytes);
+        if (hash && sim.tick > hashFrom) hash.update(bytes);
         hooks.onStep?.(sim);
     }
 }
@@ -883,14 +953,14 @@ export class LifePlayer {
     /** Steps until the sim reaches min(tick, endTick). */
     stepTo(tick: number): void {
         const hooks: Hooks = { onStep: this.onStep ?? undefined, onEvent: this.onEvent ?? undefined };
-        playTo(this.sim, this.cur, Math.min(tick, this.endTick), this.life.header.scene, this.deps, this.hash, hooks);
+        playTo(this.sim, this.cur, Math.min(tick, this.endTick), this.life.header.scene, this.deps, this.hash, hooks, this.life.hashFrom ?? this.life.header.life.startTick);
     }
 
     get done(): boolean {
         return this.sim.tick >= this.endTick;
     }
 
-    /** sha256 of the states stepped so far; finalises the hash: call it once, at the end. */
+    /** sha256 of the states stepped after life.hashFrom so far (what Life.traceHash holds); finalises the hash: call it once, at the end. */
     digest(): string {
         if (!this.hash) throw new Error('this player was made without a hash');
         return this.hash.digestHex();
@@ -909,15 +979,23 @@ export function replayLife(life: Life, deps: ReplayDeps, endTick?: number, onSte
 /**
  * Replays kept lives in one pass, as the live run went: the respawn record at the end of each
  * life moves the craft into the next one (a changed config swaps in a Sim built from the next
- * header). The hash covers every tick, like Runner.traceHash over the same ticks.
+ * header). The hash covers every tick, like Runner.traceHash over the same ticks. o.stats is fed
+ * in the live runner's order (a FlightStats made like the live one ends with equal numbers).
  */
 export function replayLives(
     lives: readonly Life[],
     deps: ReplayDeps,
-    o: { endTick?: number; onStep?: (sim: Sim) => void; onEvent?: (e: SimEvent) => void; onLife?: (life: Life, index: number) => void } = {}
+    o: { endTick?: number; onStep?: (sim: Sim) => void; onEvent?: (e: SimEvent) => void; onLife?: (life: Life, index: number) => void; stats?: FlightStats } = {}
 ): { hash: string; sim: Sim } {
     if (lives.length === 0) throw new Error('no lives to replay');
-    const hooks: Hooks = { onStep: o.onStep, onEvent: o.onEvent };
+    const st = o.stats;
+    const hooks: Hooks = st
+        ? {
+            onStep: (sim) => { st.onStep(sim); o.onStep?.(sim); },
+            onEvent: (e) => { st.onEvent(e); o.onEvent?.(e); },
+            onRespawn: (r) => st.newLife([r.at[0], r.at[1], r.at[2]], r.reason, r.rewind)
+        }
+        : { onStep: o.onStep, onEvent: o.onEvent };
     const end = o.endTick ?? Infinity;
     const hash = new Sha256();
     let sim = lifeSim(lifeParams(lives[0].header, deps), deps.world(lives[0].header.scene, null));

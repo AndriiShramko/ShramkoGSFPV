@@ -1,0 +1,118 @@
+{
+  "name": "v03-a6-determinism",
+  "context": {
+    "date": "2026-09-27T21:49:42.462Z",
+    "gitHead": "49bc22b",
+    "gitDirty": false,
+    "node": "v22.22.2",
+    "platform": "linux 6.18.44-fc-v37",
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz"
+  },
+  "pass": true,
+  "scope": "node+browser",
+  "referenceHash": "dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2",
+  "recordedReference": {
+    "hash": "dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2",
+    "matches": true,
+    "previous": "d3d4e0e380c8ca533ebdd462398c436ac1030ced791b7a0e2b399878cf4caf72 (sim-core/0.1.0, evidence/2026-09-24/a6-determinism.json)"
+  },
+  "script": "SimRadio channel script (arm, climb, chirps, square waves, a flip, yaw spins, dive), 30 s, 250 Hz, +-400 us jitter, seed 42; scene 39e63ce9 collision",
+  "node": {
+    "splits": [
+      {
+        "frameHz": 30,
+        "hash": "dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2",
+        "ticks": 30000,
+        "hitches": 0,
+        "crashed": false
+      },
+      {
+        "frameHz": 60,
+        "hash": "dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2",
+        "ticks": 30000,
+        "hitches": 0,
+        "crashed": false
+      },
+      {
+        "frameHz": 144,
+        "hash": "dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2",
+        "ticks": 30000,
+        "hitches": 0,
+        "crashed": false
+      },
+      {
+        "frameHz": 240,
+        "hash": "dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2",
+        "ticks": 30000,
+        "hitches": 0,
+        "crashed": false
+      }
+    ],
+    "replayFromInputLog": {
+      "hash": "dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2",
+      "ticks": 30000
+    },
+    "allEqual": true
+  },
+  "browser": {
+    "name": "Playwright Chromium 141.0.7390.37 (headless)",
+    "collision": "repo fixture answered through page.route (same bytes as the Node half)"
+  },
+  "chrome": {
+    "status": "done",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36",
+    "collisionSha": null,
+    "splits": [
+      {
+        "frameHz": 30,
+        "hash": "dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2",
+        "ticks": 30000,
+        "hitches": 0,
+        "crashed": false
+      },
+      {
+        "frameHz": 60,
+        "hash": "dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2",
+        "ticks": 30000,
+        "hitches": 0,
+        "crashed": false
+      },
+      {
+        "frameHz": 144,
+        "hash": "dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2",
+        "ticks": 30000,
+        "hitches": 0,
+        "crashed": false
+      },
+      {
+        "frameHz": 240,
+        "hash": "dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2",
+        "ticks": 30000,
+        "hitches": 0,
+        "crashed": false
+      }
+    ],
+    "replayFromInputLog": {
+      "hash": "dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2",
+      "ticks": 30000
+    },
+    "rafPaced": {
+      "hash": "dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2",
+      "ticks": 30000,
+      "frames": 174,
+      "medianFrameMs": 16.699999999999818
+    },
+    "control": {
+      "name": "Math.random added to the thrust must change the hash",
+      "hash": "cad540aa5afc8a0386b26b7a7e7629f7e410f735ebdef3166b5ff0a62e86dce6"
+    }
+  },
+  "visibility": "visible",
+  "control": {
+    "name": "Math.random in the sim step must change the hash",
+    "nodeHash": "ee0f2ab8afb77cdf55881245c905de57ee09239af02837fde343e820c0c2bdf6",
+    "chromeHash": "cad540aa5afc8a0386b26b7a7e7629f7e410f735ebdef3166b5ff0a62e86dce6",
+    "fired": true
+  },
+  "consoleErrors": []
+}

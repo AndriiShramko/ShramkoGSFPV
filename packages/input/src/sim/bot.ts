@@ -5,7 +5,7 @@
 // -> body-rate setpoints -> sticks via the inverse of the craft's own rate curve (acro mode).
 // Throttle: required thrust -> motor output at the current pack voltage -> stick.
 
-import { S, invertRate, dsin, dcos, DEG2RAD, RAD2DEG } from '@gsfpv/sim-core';
+import { S, invertRate, invertThrottle, dsin, dcos, DEG2RAD, RAD2DEG, MODE_CHANNEL } from '@gsfpv/sim-core';
 import type { Sim, SimParams } from '@gsfpv/sim-core';
 
 export type BotTask =
@@ -173,8 +173,8 @@ export class BotPilot {
         if (out > 1) out = 1;
         let stick = (out - this.p.idle) / (1 - this.p.idle);
         stick = stick < 0 ? 0 : stick > 1 ? 1 : stick;
-        ch[2] = stick * 2 - 1;
-        ch[5] = 0;
+        ch[2] = invertThrottle(stick, this.p.throttle) * 2 - 1;
+        ch[5] = MODE_CHANNEL.acro;
         return ch;
     }
 }
