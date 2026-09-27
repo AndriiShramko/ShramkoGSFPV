@@ -1,9 +1,10 @@
 import { AUTHOR, REPO, SITE } from "@/config/site";
 
 type FaqItem = { q: string; a: string };
+type Screenshot = { url: string; caption: string; width: number; height: number };
 
 /** SoftwareApplication (+ author, source code) and, on the landing, FAQPage. Verified facts only. */
-export default function JsonLd({ locale, description, faq, features }: { locale: string; description: string; faq?: FaqItem[]; features?: string[] }) {
+export default function JsonLd({ locale, description, faq, features, screenshots }: { locale: string; description: string; faq?: FaqItem[]; features?: string[]; screenshots?: Screenshot[] }) {
   const url = `${SITE}/${locale}/`;
   const graph: Record<string, unknown>[] = [
     {
@@ -25,6 +26,8 @@ export default function JsonLd({ locale, description, faq, features }: { locale:
       author: { "@id": `${SITE}/#author` },
       // the landing's "Available now" list: only what works on the live site today
       ...(features && features.length ? { featureList: features } : {}),
+      // real screenshots of the live simulator (tools/bench/src/screens.ts), captions in the page language
+      ...(screenshots && screenshots.length ? { screenshot: screenshots.map((s) => ({ "@type": "ImageObject", url: s.url, contentUrl: s.url, caption: s.caption, width: s.width, height: s.height, inLanguage: locale })) } : {}),
     },
     {
       "@type": "SoftwareSourceCode",

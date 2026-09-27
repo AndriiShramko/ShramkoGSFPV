@@ -1,10 +1,15 @@
 import type { ReactNode } from "react";
 
-/** Server-safe layout primitives. Content is visible with JavaScript off. */
-export function Section({ id, index, eyebrow, title, lead, tone = "plain", children }: { id: string; index: string; eyebrow: string; title: ReactNode; lead?: ReactNode; tone?: "plain" | "surface"; children?: ReactNode }) {
+/**
+ * Server-safe layout primitives. Content is visible with JavaScript off.
+ * `backdrop`: a decorative layer behind the section (a screenshot that drifts with the scroll).
+ */
+export function Section({ id, index, eyebrow, title, lead, tone = "plain", backdrop, children }: { id: string; index: string; eyebrow: string; title: ReactNode; lead?: ReactNode; tone?: "plain" | "surface"; backdrop?: ReactNode; children?: ReactNode }) {
+  const layered = backdrop ? { "data-parallax-host": "" } : {};
   return (
-    <section id={id} aria-labelledby={`${id}-title`} className={`scroll-mt-16 border-t border-line ${tone === "surface" ? "bg-surface/50" : ""}`}>
-      <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-8 sm:py-24">
+    <section id={id} aria-labelledby={`${id}-title`} className={`scroll-mt-16 border-t border-line ${tone === "surface" ? "bg-surface/50" : ""} ${backdrop ? "relative isolate overflow-hidden" : ""}`} {...layered}>
+      {backdrop}
+      <div className="relative mx-auto w-full max-w-6xl px-4 py-16 sm:px-8 sm:py-24">
         <p className="eyebrow">
           <span className="text-muted">{index}</span>
           <span aria-hidden="true" className="mx-2 text-line-strong">/</span>

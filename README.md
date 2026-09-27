@@ -8,6 +8,37 @@
 
 > **Status: alpha, live since September 2026.** The site, the simulator and the measurements below run in public. Every feature claim in this README is either **measured** (a JSON file in [`evidence/`](evidence/) with its method) or explicitly marked **not tested yet**. Most pass/fail checks also run a negative control, a deliberately broken case that must fail; where a check has none, or a weak one, the line says so. The radio path has been tested with a *simulated* EdgeTX radio, not yet with a real one.
 
+## Screenshots
+
+Real screenshots of the live simulator, taken on 27 September 2026 by [`tools/bench/src/screens.ts`](tools/bench/src/screens.ts) (system Chrome, 1920×1080). The calibration screens use the simulator's built-in simulated EdgeTX radio; the flights are flown by its test pilot. All 26 screens, phone-sized ones included, are in [`docs/screenshots/`](docs/screenshots/) and on the [landing page](https://gsfpv.flyreelstudio.eu/en/#gallery).
+
+<table>
+<tr>
+<td width="50%" valign="top"><a href="docs/screenshots/flight-tunis.webp"><img src="docs/screenshots/flight-tunis.webp" alt="Flight view over the Tunis old-town scan with the OSD"></a><br><sub><b>Flight view</b> — Andrii's Tunis scan with the OSD: arm state, flight mode, voltage, flight time, throttle, speed, altitude.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/wizard-throttle.webp"><img src="docs/screenshots/wizard-throttle.webp" alt="Calibration wizard: throttle found"></a><br><sub><b>Calibration</b> — a drawn radio shows which stick to move; here the throttle is found on CH1.</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><a href="docs/screenshots/wizard-check.webp"><img src="docs/screenshots/wizard-check.webp" alt="Calibration check screen"></a><br><sub><b>Check before flying</b> — every channel live, Reverse and Set again, the arm state, the profile.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/pause.webp"><img src="docs/screenshots/pause.webp" alt="Pause menu over the Winter Garden scan"></a><br><sub><b>Pause menu</b> — scan, drone, controls, settings, replays, measurements, Betaflight import, cinema mode.</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><a href="docs/screenshots/drones.webp"><img src="docs/screenshots/drones.webp" alt="Drone picker with six presets"></a><br><sub><b>Six drones</b> — every number labelled manufacturer, measured or estimate, with the rate curve.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/betaflight.webp"><img src="docs/screenshots/betaflight.webp" alt="Betaflight diff import"></a><br><sub><b>Betaflight import</b> — paste a CLI diff; unused settings are listed (here a test diff).</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><a href="docs/screenshots/crash.webp"><img src="docs/screenshots/crash.webp" alt="Crash panel after hitting a wall"></a><br><sub><b>Crash</b> — impact speed, Rapier debris, respawn, a 10-second replay or the flight log.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/settings.webp"><img src="docs/screenshots/settings.webp" alt="Settings panel"></a><br><sub><b>Settings</b> — FOV, uptilt, HUD, quality, gravity, crash threshold, motor spin-up, drag, PID.</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><a href="docs/screenshots/keys.webp"><img src="docs/screenshots/keys.webp" alt="Keyboard flying keys card"></a><br><sub><b>Keyboard</b> — every flying key on screen; the walls line offers finer walls.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/cinema.webp"><img src="docs/screenshots/cinema.webp" alt="Cinema mode"></a><br><sub><b>Cinema mode</b> — full detail, no HUD, MP4 recording with the scan's credit.</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><a href="docs/screenshots/measure.webp"><img src="docs/screenshots/measure.webp" alt="Measurements panel"></a><br><sub><b>Measurements</b> — renderer, refresh, frame times, physics rate, walls, tunnelling self-test.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/picker.webp"><img src="docs/screenshots/picker.webp" alt="Scan picker"></a><br><sub><b>Choose a scan</b> — Andrii's scans, recent and favourites, filters, or any SuperSplat link.</sub></td>
+</tr>
+</table>
+
 ---
 
 ## Why this exists

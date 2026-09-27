@@ -217,6 +217,250 @@ p {
   }
 }
 
+/* Real screenshots of the simulator (lib/shots.ts): the sliding band, the tour's framed pairs,
+   section backdrops, the gallery strip and its lightbox. In the components layer, so a utility
+   class on the same element still wins. Motion comes only from components/Parallax (a transform). */
+@layer components {
+  .shot-band::before,
+  .shot-band::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 5;
+    width: 14%;
+    pointer-events: none;
+  }
+  .shot-band::before {
+    left: 0;
+    background: linear-gradient(90deg, var(--color-surface), transparent);
+  }
+  .shot-band::after {
+    right: 0;
+    background: linear-gradient(270deg, var(--color-surface), transparent);
+  }
+  .shot-band-row {
+    will-change: transform;
+  }
+
+  .shot-glow {
+    position: absolute;
+    inset: 6% 4%;
+    z-index: -1;
+    border-radius: 48px;
+    background: radial-gradient(closest-side, rgba(74, 222, 128, 0.2), transparent);
+    filter: blur(44px);
+  }
+  .shot-frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+    border: 1px solid rgba(58, 66, 77, 0.85);
+    background: var(--color-surface);
+    box-shadow: 0 44px 90px -34px rgba(0, 0, 0, 0.95);
+  }
+  .shot-frame-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 26px;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--color-line);
+    background: var(--color-surface-2);
+  }
+  .shot-frame-bar i {
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    background: var(--color-line-strong);
+  }
+  .shot-num {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: inline-flex;
+    width: 24px;
+    height: 24px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
+    font: 600 12px/1 var(--font-mono);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+  }
+  .shot-side {
+    position: relative;
+    width: 60%;
+    margin: -16% 0 0 auto;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid var(--color-line-strong);
+    background: var(--color-surface);
+    box-shadow: 0 30px 70px -18px rgba(0, 0, 0, 0.95);
+  }
+  .shot-side.is-phone {
+    width: 36%;
+    margin-top: -34%;
+    border-radius: 22px;
+    border: 5px solid #1b1f25;
+  }
+  @media (min-width: 1024px) {
+    .shot-side {
+      position: absolute;
+      bottom: -14%;
+      width: 46%;
+      margin: 0;
+    }
+    .shot-side.on-right {
+      right: -5%;
+    }
+    .shot-side.on-left {
+      left: -5%;
+    }
+    .shot-side.is-phone {
+      bottom: -18%;
+      width: 23%;
+      margin: 0;
+    }
+  }
+
+  .shot-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .shot-backdrop-img {
+    position: absolute;
+    left: 0;
+    top: -100px;
+    width: 100%;
+    max-width: none;
+    height: calc(100% + 200px);
+    object-fit: cover;
+    opacity: 0.55;
+  }
+  .shot-backdrop-veil {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, var(--color-bg) 0%, rgba(7, 8, 10, 0.8) 18%, rgba(7, 8, 10, 0.8) 82%, var(--color-bg) 100%);
+  }
+
+  .gallery-track {
+    position: relative;
+    display: flex;
+    gap: 16px;
+    margin-top: 1rem;
+    padding: 4px 2px 16px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+  .gallery-card {
+    flex: none;
+    width: 82%;
+    scroll-snap-align: start;
+  }
+  @media (min-width: 640px) {
+    .gallery-card {
+      width: 440px;
+    }
+  }
+  .gallery-open {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid var(--color-line-strong);
+    background: var(--color-surface-2);
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  .gallery-open:hover {
+    border-color: var(--color-accent);
+  }
+  .gallery-open img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+  .gallery-open:hover img {
+    transform: scale(1.03);
+  }
+  .gallery-card.is-phone .gallery-open img {
+    object-fit: contain;
+  }
+  .gallery-tag {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    border: 1px solid var(--color-line-strong);
+    border-radius: 999px;
+    background: rgba(7, 8, 10, 0.85);
+    padding: 2px 10px;
+    font: 12px/1.6 var(--font-mono);
+    color: var(--color-ink);
+  }
+  .gallery-btn {
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-input);
+    border-radius: 999px;
+    color: var(--color-ink);
+    font-size: 18px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  .gallery-btn:hover:not(:disabled) {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+  .gallery-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .lightbox {
+    width: min(1200px, calc(100vw - 24px));
+    max-width: none;
+    max-height: calc(100dvh - 24px);
+    margin: auto;
+    padding: 16px;
+    overflow: auto;
+    border: 1px solid var(--color-line-strong);
+    border-radius: 16px;
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+  .lightbox::backdrop {
+    background: rgba(3, 4, 6, 0.88);
+  }
+  .lightbox-media {
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #000;
+  }
+  .lightbox-media img {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: calc(100dvh - 190px);
+    object-fit: contain;
+  }
+}
+
 /* Never let the mobile CTA bar cover the on-screen keyboard. */
 body:has(input:focus, textarea:focus) .sticky-cta {
   display: none;

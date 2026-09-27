@@ -3,7 +3,9 @@
 //   BASE=http://127.0.0.1:8138 node scripts/verify.mjs
 // Static checks (files, lang, canonical, hreflang, JSON-LD, forbidden words) + browser checks
 // (screenshots, overflow at 375 px, every language switcher, copy button, lead form against a
-// mocked /api/lead, scene paste, whitelisted beacons, no Google requests without GA id).
+// mocked /api/lead, scene paste, whitelisted beacons, no Google requests without GA id) + the
+// screenshots (files and byte caps, captions in 4 languages, parallax moves and stands still for
+// reduced motion, no layout shift while scrolling, the gallery works from the keyboard).
 import { chromium } from "playwright";
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -76,6 +78,36 @@ ok("sitemap lists 12 pages", (sitemap.match(/<loc>/g) ?? []).length === 12);
 const robots = readFileSync(join(OUT, "robots.txt"), "utf8");
 ok("robots allows AI crawlers + sitemap", ["GPTBot", "ClaudeBot", "PerplexityBot", "Google-Extended"].every((b) => robots.includes(`User-agent: ${b}`)) && robots.includes("Sitemap: https://gsfpv.flyreelstudio.eu/sitemap.xml"));
 
+// screenshots (src/config/shots.json, written by tools/bench/src/screens.ts)
+const SHOT_MANIFEST = JSON.parse(readFileSync(join(SITE_DIR, "src", "config", "shots.json"), "utf8"));
+const DOCS = join(SITE_DIR, "..", "..", "docs", "screenshots");
+{
+  const bad = [];
+  for (const it of SHOT_MANIFEST.items) {
+    for (const [v, cap] of [["large", 250 * 1024], ["small", 100 * 1024]]) {
+      const f = join(OUT, it[v].src);
+      if (!existsSync(f)) bad.push(`${it[v].src} missing`);
+      else if (statSync(f).size > cap) bad.push(`${it[v].src} ${statSync(f).size} B > ${cap}`);
+      else if (statSync(f).size !== it[v].bytes) bad.push(`${it[v].src} size differs from the manifest`);
+      if (it[v].w > (v === "large" ? 1600 : 800)) bad.push(`${it[v].src} ${it[v].w} px wide`);
+    }
+    const doc = join(DOCS, `${it.id}.webp`);
+    if (!existsSync(doc) || !readFileSync(doc).equals(readFileSync(join(OUT, it.large.src)))) bad.push(`docs/screenshots/${it.id}.webp missing or not the large file`);
+    for (const l of LOCALES) if (!DICT[l].shots?.items?.[it.id]?.t || !DICT[l].shots?.items?.[it.id]?.d) bad.push(`${l}: no caption for ${it.id}`);
+  }
+  ok(`screenshots: ${SHOT_MANIFEST.items.length} shots, files present, <= 250 KB / 100 KB, docs copies, captions in 4 languages`, SHOT_MANIFEST.items.length >= 20 && bad.length === 0, bad.slice(0, 8).join("; "));
+  const missing = [];
+  for (const l of LOCALES) {
+    const html = readFileSync(join(OUT, l, "index.html"), "utf8");
+    for (const it of SHOT_MANIFEST.items) if (!html.includes(it.small.src)) missing.push(`${l}:${it.id}`);
+    const ld = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
+    const app = ld.flatMap((o) => o["@graph"] ?? [o]).find((n) => n["@type"] === "SoftwareApplication");
+    const shotsLd = app?.screenshot ?? [];
+    if (shotsLd.length < 6 || shotsLd.some((x) => !existsSync(join(OUT, new URL(x.url).pathname)) || !x.caption)) missing.push(`${l}: JSON-LD screenshot`);
+  }
+  ok("every screenshot is on each landing (gallery) and JSON-LD lists screenshots that exist", missing.length === 0, missing.slice(0, 8).join(" "));
+}
+
 // ---------- browser ----------
 mkdirSync(SHOTS, { recursive: true });
 const browser = await chromium.launch({ channel: "chrome" });
@@ -117,6 +149,16 @@ async function newCtx(viewport, opts = {}, consent = "no") {
   await page.goto(`${BASE}/en/`, { waitUntil: "networkidle" });
   await page.waitForTimeout(800);
   ok("no console errors / hydration errors on /en/", consoleErrors.length === 0, consoleErrors.join(" | ").slice(0, 400));
+  // the screenshot band under the hero waits for the load event (components/DeferImages)
+  const swapped = await page.waitForFunction(() => !document.querySelector("img[data-srcset]"), undefined, { timeout: 10000 }).then(() => true, () => false);
+  const early = await page.evaluate(() => {
+    const load = performance.getEntriesByType("navigation")[0].loadEventStart;
+    const deferred = [...document.querySelectorAll("img[data-deferred]")];
+    const files = new Set(deferred.map((i) => new URL(i.currentSrc || i.src).pathname));
+    const rs = performance.getEntriesByType("resource").filter((r) => files.has(new URL(r.name).pathname));
+    return { load: Math.round(load), deferredImgs: deferred.length, inBand: deferred.filter((i) => i.closest(".shot-band")).length, inTour: deferred.filter((i) => i.closest("#tour")).length, requests: rs.length, beforeLoad: rs.filter((r) => r.startTime < load).map((r) => new URL(r.name).pathname) };
+  });
+  ok("band and tour screenshots: requested only after the load event, then all swapped in", swapped && early.inBand === 16 && early.inTour === 12 && early.requests > 0 && early.beforeLoad.length === 0, JSON.stringify(early));
   await page.evaluate(async () => {
     for (const img of document.querySelectorAll("img")) img.loading = "eager";
     await Promise.all([...document.images].map((i) => (i.complete ? null : new Promise((r) => (i.onload = i.onerror = r)))));
@@ -167,8 +209,14 @@ for (const [loc, file] of [["en", "en-375x812-full.png"], ["ru", "ru-375x812-ful
       const wide = [...document.querySelectorAll("body *")].filter((el) => {
         const r = el.getBoundingClientRect();
         if (r.width === 0 || r.right <= w + 1) return false;
-        // content inside an intentional horizontal scroller is fine
-        for (let a = el.parentElement; a; a = a.parentElement) if (getComputedStyle(a).overflowX === "auto") return false;
+        // content inside an intentional horizontal scroller is fine; so is a decorative (aria-hidden)
+        // layer clipped by a box that itself fits the viewport (the sliding screenshot band)
+        const decorative = !!el.closest('[aria-hidden="true"]');
+        for (let a = el.parentElement; a; a = a.parentElement) {
+          const ox = getComputedStyle(a).overflowX;
+          if (ox === "auto") return false;
+          if (decorative && (ox === "hidden" || ox === "clip") && a.getBoundingClientRect().right <= w + 1) return false;
+        }
         return true;
       });
       return { scroll: document.documentElement.scrollWidth - w, wide: wide.slice(0, 5).map((e) => e.tagName + "." + String(e.className).slice(0, 40)) };
@@ -197,6 +245,105 @@ for (const [loc, file] of [["en", "en-375x812-full.png"], ["ru", "ru-375x812-ful
   });
   ok("tap targets >= 44 px (landing, 375)", ui.small.length === 0, ui.small.join(" | "));
   ok("no pointer cursor on non-controls", ui.fake.length === 0, ui.fake.join(" | "));
+  await ctx.close();
+}
+
+// Screenshots in the browser: the overflow rule still catches real overflow (control), parallax
+// moves and stands still for reduced motion, no layout shift while scrolling, the gallery by keyboard.
+{
+  const { ctx } = await newCtx({ width: 375, height: 812 }, { isMobile: true, hasTouch: true });
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/en/`, { waitUntil: "load" });
+  // the same rule as above, run on two planted elements: one must be caught, one must not
+  const ctl = await page.evaluate(() => {
+    const w = document.documentElement.clientWidth;
+    const wide = (el) => {
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 || r.right <= w + 1) return false;
+      const decorative = !!el.closest('[aria-hidden="true"]');
+      for (let a = el.parentElement; a; a = a.parentElement) {
+        const ox = getComputedStyle(a).overflowX;
+        if (ox === "auto") return false;
+        if (decorative && (ox === "hidden" || ox === "clip") && a.getBoundingClientRect().right <= w + 1) return false;
+      }
+      return true;
+    };
+    const plain = document.createElement("div");
+    plain.style.cssText = "width:600px;height:10px";
+    document.querySelector("#tour").append(plain);
+    const hiddenText = document.createElement("div"); // content (not aria-hidden) cut off by a clipping box
+    hiddenText.style.cssText = "overflow:hidden;width:100%";
+    hiddenText.innerHTML = '<p style="width:600px">cut-off text</p>';
+    document.querySelector("#tour").append(hiddenText);
+    const r = { plainCaught: wide(plain), clippedContentCaught: wide(hiddenText.firstChild), bandTileExempt: !wide(document.querySelector(".shot-band img")) };
+    plain.remove();
+    hiddenText.remove();
+    return r;
+  });
+  ok("overflow rule: planted 600 px element and clipped content caught, band tiles exempt (control)", ctl.plainCaught && ctl.clippedContentCaught && ctl.bandTileExempt, JSON.stringify(ctl));
+  // layout shift over a full scroll of the page, lazy pictures loading on the way
+  await page.evaluate(() => {
+    window.__cls = 0;
+    new PerformanceObserver((l) => {
+      for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value;
+    }).observe({ type: "layout-shift", buffered: true });
+  });
+  const total = await page.evaluate(() => document.documentElement.scrollHeight);
+  for (let y = 0; y < total; y += 600) {
+    await page.evaluate((yy) => window.scrollTo({ top: yy, behavior: "instant" }), y);
+    await page.waitForTimeout(120);
+  }
+  await page.waitForTimeout(800);
+  const cls = await page.evaluate(() => window.__cls);
+  ok("no layout shift while scrolling the whole landing at 375 (lazy screenshots)", cls < 0.005, `sum of layout-shift values = ${cls.toFixed(4)} over ${total} px`);
+  await ctx.close();
+}
+for (const reduce of [false, true]) {
+  const { ctx } = await newCtx({ width: 1440, height: 900 }, { reducedMotion: reduce ? "reduce" : "no-preference" });
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/en/`, { waitUntil: "networkidle" });
+  const read = () => page.evaluate(() => [...document.querySelectorAll(".shot-band-row, #how .shot-backdrop-img")].map((e) => e.style.transform || "none"));
+  const top = await page.evaluate(() => document.querySelector(".shot-band").getBoundingClientRect().top + scrollY);
+  await page.evaluate((y) => window.scrollTo({ top: y - 700, behavior: "instant" }), top);
+  await page.waitForTimeout(300);
+  const a = await read();
+  await page.evaluate((y) => window.scrollTo({ top: y - 100, behavior: "instant" }), top);
+  await page.waitForTimeout(300);
+  const b = await read();
+  const moved = a[0] !== b[0] && a[1] !== b[1] && a[0] !== "none";
+  const still = [...a, ...b].every((x) => x === "none");
+  if (!reduce) ok("parallax: the band rows move with the scroll", moved, `${a.slice(0, 2).join(" | ")}  ->  ${b.slice(0, 2).join(" | ")}`);
+  else ok("parallax: reduced motion keeps every layer still (control of the same measurement)", still, [...a, ...b].join(" | "));
+  await ctx.close();
+}
+{
+  const { ctx } = await newCtx({ width: 1440, height: 900 });
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/en/#gallery`, { waitUntil: "networkidle" });
+  const caps = SHOT_MANIFEST.items.map((it) => DICT.en.shots.items[it.id].t);
+  const track = page.locator("[data-testid=gallery-track]");
+  await track.focus();
+  const x0 = await track.evaluate((e) => e.scrollLeft);
+  await page.keyboard.press("ArrowRight");
+  await page.waitForTimeout(700);
+  const x1 = await track.evaluate((e) => e.scrollLeft);
+  const counter = (await page.locator("#gallery p.font-mono").textContent())?.trim();
+  const first = page.locator("[data-testid=gallery-track] li").first().locator("button");
+  await first.click();
+  const dlg = page.locator("[data-testid=lightbox]");
+  await page.waitForFunction(() => { const i = document.querySelector("[data-testid=lightbox] img"); return i && i.complete && i.naturalWidth > 0; }, undefined, { timeout: 8000 });
+  const t1 = (await page.locator("#lightbox-title").textContent())?.trim();
+  const openNow = await dlg.evaluate((d) => d.open);
+  await page.keyboard.press("ArrowRight");
+  await page.waitForTimeout(200);
+  const t2 = (await page.locator("#lightbox-title").textContent())?.trim();
+  await page.screenshot({ path: join(SHOTS, "lightbox.png") });
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(200);
+  const closed = !(await dlg.evaluate((d) => d.open));
+  const focusBack = await page.evaluate(() => document.activeElement?.closest("li")?.getAttribute("data-shot"));
+  const pass = x1 > x0 && counter === `2 of ${caps.length}` && openNow && t1 === caps[0] && t2 === caps[1] && closed && focusBack === SHOT_MANIFEST.items[0].id;
+  ok("gallery: ArrowRight scrolls one card, a picture opens large, arrows step, Esc closes, focus returns", pass, JSON.stringify({ x0, x1, counter, t1, t2, closed, focusBack }));
   await ctx.close();
 }
 

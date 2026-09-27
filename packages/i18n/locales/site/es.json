@@ -352,6 +352,64 @@
       "error": "Esta vez no se ha podido enviar. Tus respuestas siguen aquí: vuelve a intentarlo en un momento o escribe a zmei116@gmail.com."
     }
   },
+  "shots": {
+    "band": "{n} pantallas del simulador en línea",
+    "tour": {
+      "eyebrow": "Dentro del simulador",
+      "h2": "Mira lo que ya está hecho",
+      "lead": "Cada imagen de esta página es una captura real del simulador en línea: {n} en total, tomadas el {date} por un script del repositorio, así que se pueden repetir tras cada versión.",
+      "rows": [
+        "Conecta una emisora EdgeTX y una emisora dibujada te guía: stick a stick, luego el interruptor con el que armas y, antes de volar, una comprobación de cada canal.",
+        "¿Sin emisora a mano? El teclado muestra cada tecla que usa, los sticks táctiles aparecen en una pantalla táctil y un mando se conecta por el navegador (aún sin probar con hardware real).",
+        "Seis cuadricópteros de clase BetaFPV, y cada número de sus fichas dice de dónde sale. Pega un diff de la CLI de Betaflight para volar con tus rates y tu PID.",
+        "Choca contra una pared y el dron se estrella a la velocidad del golpe, con los restos rodando. Gravedad, umbral de choque, motores y PID están en Ajustes.",
+        "Un OSD como el de tus gafas, campo de visión e inclinación de la cámara, y un modo cine que graba MP4 de los escaneos de Andrii con su crédito en la imagen.",
+        "Elige un escaneo o pega un enlace, mira cómo carga con números reales y revisa las paredes en uso, los tiempos de fotograma y tus repeticiones."
+      ],
+      "live": "Funciones activas: {n}",
+      "all": "Todas las funciones y su estado"
+    },
+    "gallery": {
+      "eyebrow": "Cada pantalla",
+      "h2": "Todos los menús, uno a uno",
+      "lead": "El asistente de calibración, cada pantalla del menú de pausa, los choques, el modo cine y la vista en el móvil. Abre cualquier imagen para verla en grande.",
+      "label": "Capturas del simulador",
+      "prev": "Captura anterior",
+      "next": "Captura siguiente",
+      "open": "Abrir en grande: {title}",
+      "close": "Cerrar",
+      "count": "{i} de {n}",
+      "phone": "Móvil"
+    },
+    "items": {
+      "flight-tunis": { "t": "Casco antiguo de Túnez", "d": "La vista de vuelo en el escaneo de Túnez de Andrii: estado de armado y modo de vuelo, voltaje y tiempo de vuelo, gas, velocidad, altura y las teclas." },
+      "flight-villa": { "t": "Villa Modlinek", "d": "Un cinewhoop de 2,2 pulgadas en un ático real; el crédito del escaneo y la línea de paredes están abajo a la izquierda." },
+      "flight-garden": { "t": "Jardín de invierno", "d": "Techo de cristal, plantas y muebles, con las paredes que SuperSplat publica para este escaneo: vóxeles de 3,2 cm contra los que te estrellas de verdad." },
+      "picker": { "t": "Elige un escaneo", "d": "Los escaneos de Andrii, los recientes y los favoritos, filtros por paredes, tipo y volados, o un enlace de SuperSplat pegado." },
+      "loading": { "t": "Carga", "d": "Qué se descarga, cuántos megabytes van y cuántos son en total, la velocidad, y el escaneo y sus paredes por separado." },
+      "controls": { "t": "Controles", "d": "Una emisora por USB (EdgeTX), un mando, sticks táctiles o el teclado, cada uno con una pista de una línea." },
+      "wizard-stir": { "t": "Calibración: remueve los sticks", "d": "La emisora dibujada muestra qué hacer y las barras de canal siguen los informes (aquí, una emisora EdgeTX simulada)." },
+      "wizard-throttle": { "t": "Gas encontrado", "d": "Cada stick se encuentra moviéndolo: el asistente nombra el canal, ofrece invertirlo y avanza cuando el stick vuelve." },
+      "wizard-arm": { "t": "Interruptor de armado", "d": "Pon el interruptor con el que armas en ON y vuelve a OFF, elige su canal o salta el paso y arma con Espacio." },
+      "wizard-check": { "t": "Comprobación antes de volar", "d": "Cada canal con su barra en vivo y botones para invertirlo o repetirlo, el estado de armado y el perfil para descargar o cargar." },
+      "arm-card": { "t": "Listo para armar", "d": "Desarmado con una emisora, una tarjeta dice lo que falta para armar: soltar los sticks, gas abajo, el interruptor." },
+      "keys": { "t": "Teclado", "d": "Todas las teclas de vuelo en pantalla: Espacio arma, W y S el gas, A y D la guiñada, las flechas inclinan, M cambia el autonivelado." },
+      "walls": { "t": "Paredes", "d": "La línea de paredes dice cuáles vuelan y ofrece otras más finas con un tiempo estimado; las guardadas pasan a otro PC en un zip." },
+      "pause": { "t": "Menú de pausa", "d": "Continuar, reiniciar, escaneo, dron, controles, ajustes, repeticiones, mediciones, importación de Betaflight y modo cine, con sus teclas." },
+      "settings": { "t": "Ajustes", "d": "Campo de visión e inclinación, HUD, imagen estable o detalle, gravedad, umbral de choque, arranque de motores, arrastre y PID por eje." },
+      "drones": { "t": "Seis drones", "d": "Presets de clase BetaFPV, cada uno con su curva de rates; cada número dice de dónde sale: fabricante, medido o estimado." },
+      "betaflight": { "t": "Importar de Betaflight", "d": "Pega un diff de la CLI y sus rates y PID pasan al dron; se listan los ajustes que el simulador no usa (aquí, un diff de prueba)." },
+      "measure": { "t": "Mediciones", "d": "Renderizador, refresco de pantalla, tiempos de fotograma, frecuencia de la física, tiempo de carga, paredes en uso y una autoprueba de atravesar paredes, copiables como JSON." },
+      "cinema": { "t": "Modo cine", "d": "Máximo detalle, calidad automática apagada y sin HUD; Grabar guarda un MP4 con el crédito del escaneo en la imagen." },
+      "crash": { "t": "Choque", "d": "Decide la velocidad del impacto; los restos ruedan y luego: reaparecer, una repetición de 10 segundos o el registro de vuelo." },
+      "replays": { "t": "Repeticiones", "d": "Un vuelo guardado se repite solo con las entradas de los sticks; su trayectoria se exporta en CSV o JSON." },
+      "m-flight": { "t": "Pantalla de móvil", "d": "La misma vista de vuelo en vertical, de 390 píxeles de ancho." },
+      "m-touch": { "t": "Sticks táctiles", "d": "Dos zonas táctiles y un botón ARM; en táctil el dron vuela autonivelado (ANGLE)." },
+      "m-pause": { "t": "Menú de pausa en el móvil", "d": "El menú entero cabe en la pantalla de un móvil." },
+      "m-crash": { "t": "Choque en el móvil", "d": "Velocidad del impacto, restos y el panel de choque en una pantalla pequeña." },
+      "m-picker": { "t": "Escaneos en el móvil", "d": "Pega un enlace o elige un escaneo en una pantalla pequeña." }
+    }
+  },
   "sticky": {
     "cta": "Volar ya",
     "note": "Gratis, en tu navegador"

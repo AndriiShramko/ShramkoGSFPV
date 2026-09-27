@@ -352,6 +352,64 @@
       "error": "Tym razem nie udało się wysłać. Twoje odpowiedzi są zachowane — spróbuj ponownie za chwilę albo napisz na zmei116@gmail.com."
     }
   },
+  "shots": {
+    "band": "Ekrany działającego symulatora: {n}",
+    "tour": {
+      "eyebrow": "W środku symulatora",
+      "h2": "Zobacz, co już zbudowano",
+      "lead": "Każdy obraz na tej stronie to prawdziwy zrzut ekranu działającego symulatora — łącznie {n}, zrobione {date} skryptem z repozytorium, więc można je powtórzyć po każdym wydaniu.",
+      "rows": [
+        "Podłącz aparaturę EdgeTX, a narysowana aparatura poprowadzi cię krok po kroku: drążek po drążku, potem przełącznik uzbrojenia, a przed lotem sprawdzenie każdego kanału.",
+        "Nie masz aparatury pod ręką? Klawiatura pokazuje każdy klawisz, którego używa, na ekranie dotykowym pojawiają się drążki dotykowe, a pad łączy się przez przeglądarkę (jeszcze nie testowany na prawdziwym sprzęcie).",
+        "Sześć quadów klasy BetaFPV, a każda liczba na ich kartach mówi, skąd pochodzi. Wklej diff z CLI Betaflight i lataj na własnych rates i PID.",
+        "Uderz w ścianę, a dron rozbije się z prędkością uderzenia, a wrak potoczy się z odłamkami. Grawitacja, próg kraksy, silniki i PID są w Ustawieniach.",
+        "OSD jak w goglach, pole widzenia i pochylenie kamery oraz tryb kinowy, który nagrywa MP4 skanów Andrija z podpisem autora w kadrze.",
+        "Wybierz skan albo wklej link, zobacz, jak się wczytuje z prawdziwymi liczbami, a potem sprawdź ściany w użyciu, czasy klatek i swoje powtórki."
+      ],
+      "live": "Działa teraz: {n}",
+      "all": "Wszystkie funkcje i ich status"
+    },
+    "gallery": {
+      "eyebrow": "Każdy ekran",
+      "h2": "Wszystkie menu po kolei",
+      "lead": "Kreator kalibracji, każdy ekran menu pauzy, kraksy, tryb kinowy i widok na telefonie. Otwórz dowolny obraz, żeby zobaczyć go w dużym rozmiarze.",
+      "label": "Zrzuty ekranu symulatora",
+      "prev": "Poprzedni zrzut",
+      "next": "Następny zrzut",
+      "open": "Otwórz w dużym rozmiarze: {title}",
+      "close": "Zamknij",
+      "count": "{i} z {n}",
+      "phone": "Telefon"
+    },
+    "items": {
+      "flight-tunis": { "t": "Stare miasto w Tunisie", "d": "Widok z lotu na skanie Tunisu od Andrija: stan uzbrojenia i tryb lotu, napięcie i czas lotu, gaz, prędkość, wysokość i klawisze." },
+      "flight-villa": { "t": "Willa Modlinek", "d": "Cinewhoop 2,2 cala na prawdziwym poddaszu; podpis autora skanu i linia ścian są na dole po lewej." },
+      "flight-garden": { "t": "Ogród zimowy", "d": "Szklany dach, rośliny i meble, a ściany to te, które SuperSplat publikuje dla tego skanu: woksele 3,2 cm, w które naprawdę się uderza." },
+      "picker": { "t": "Wybór skanu", "d": "Skany Andrija, ostatnie i ulubione, filtry według ścian, typu i przelotów albo wklejony link z SuperSplat." },
+      "loading": { "t": "Wczytywanie", "d": "Co się pobiera, ile megabajtów już jest i ile w sumie, prędkość, a skan i jego ściany osobno." },
+      "controls": { "t": "Sterowanie", "d": "Aparatura przez USB (EdgeTX), pad, drążki dotykowe albo klawiatura, każde z jednowierszową wskazówką." },
+      "wizard-stir": { "t": "Kalibracja: zakręć drążkami", "d": "Narysowana aparatura pokazuje, co zrobić, a paski kanałów idą za raportami (tu symulowana aparatura EdgeTX)." },
+      "wizard-throttle": { "t": "Gaz znaleziony", "d": "Każdy drążek znajduje się ruchem: kreator nazywa kanał, proponuje odwrócenie i sam idzie dalej, gdy drążek wróci." },
+      "wizard-arm": { "t": "Przełącznik uzbrojenia", "d": "Przestaw przełącznik uzbrojenia na ON i z powrotem na OFF, wybierz jego kanał albo pomiń krok i uzbrajaj spacją." },
+      "wizard-check": { "t": "Sprawdzenie przed lotem", "d": "Każdy kanał z paskiem na żywo i przyciskami odwrócenia i powtórki, stan uzbrojenia oraz profil do pobrania lub wczytania." },
+      "arm-card": { "t": "Gotowy do uzbrojenia", "d": "Nieuzbrojony z aparaturą: karta pokazuje, czego jeszcze brakuje — puszczone drążki, gaz w dół, przełącznik uzbrojenia." },
+      "keys": { "t": "Klawiatura", "d": "Wszystkie klawisze lotu na ekranie: spacja uzbraja, W i S to gaz, A i D odchylenie, strzałki przechylają, M przełącza samopoziomowanie." },
+      "walls": { "t": "Ściany", "d": "Linia ścian mówi, które ściany latają, i proponuje dokładniejsze z szacowanym czasem; zapisane ściany przenosi się na inny komputer jako zip." },
+      "pause": { "t": "Menu pauzy", "d": "Dalej, restart, skan, dron, sterowanie, ustawienia, powtórki, pomiary, import z Betaflight i tryb kinowy, razem z klawiszami." },
+      "settings": { "t": "Ustawienia", "d": "Pole widzenia i pochylenie kamery, HUD, stabilny obraz lub detal, grawitacja, próg kraksy, rozkręcanie silników, opór powietrza i PID dla każdej osi." },
+      "drones": { "t": "Sześć dronów", "d": "Presety klasy BetaFPV, każdy z krzywą rates; każda liczba mówi, skąd pochodzi: producent, pomiar albo szacunek." },
+      "betaflight": { "t": "Import z Betaflight", "d": "Wklej diff z CLI, a jego rates i PID przejdą na drona; ustawienia, których symulator nie używa, są wypisane (tu testowy diff)." },
+      "measure": { "t": "Pomiary", "d": "Renderer, odświeżanie ekranu, czasy klatek, częstotliwość fizyki, czas wczytania, ściany w użyciu i autotest przelotu przez ściany, do skopiowania jako JSON." },
+      "cinema": { "t": "Tryb kinowy", "d": "Pełny detal, automatyczna jakość wyłączona, bez HUD; „Nagrywaj” zapisuje MP4 z podpisem autora skanu w kadrze." },
+      "crash": { "t": "Kraksa", "d": "Decyduje prędkość uderzenia: wrak koziołkuje z odłamkami, a potem respawn, powtórka ostatnich 10 sekund albo log lotu." },
+      "replays": { "t": "Powtórki", "d": "Zapisany lot odtwarza się wyłącznie z ruchów drążków; trajektorię można wyeksportować do CSV albo JSON." },
+      "m-flight": { "t": "Ekran telefonu", "d": "Ten sam widok z lotu w pionie, 390 pikseli szerokości." },
+      "m-touch": { "t": "Drążki dotykowe", "d": "Dwa pola i przycisk ARM; na dotyku dron lata z samopoziomowaniem (ANGLE)." },
+      "m-pause": { "t": "Menu pauzy na telefonie", "d": "Całe menu mieści się na ekranie telefonu." },
+      "m-crash": { "t": "Kraksa na telefonie", "d": "Prędkość uderzenia, odłamki i panel kraksy na małym ekranie." },
+      "m-picker": { "t": "Skany na telefonie", "d": "Wklej link albo wybierz skan na małym ekranie." }
+    }
+  },
   "sticky": {
     "cta": "Leć teraz",
     "note": "Za darmo, w przeglądarce"

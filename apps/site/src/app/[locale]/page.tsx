@@ -5,15 +5,24 @@ import { AGENT_PROMPT, AUTHOR, GOOD_FIRST_ISSUES, REPO, REPO_BLOB, SHOWCASE, fly
 import type { Locale } from "@/i18n/routing";
 import { Ext, Section } from "@/components/kit";
 import CopyBlock from "@/components/CopyBlock";
+import DeferImages from "@/components/DeferImages";
 import Footer from "@/components/Footer";
+import Gallery from "@/components/Gallery";
+import type { GalleryItem } from "@/components/Gallery";
 import Header from "@/components/Header";
 import HeroMedia from "@/components/HeroMedia";
 import JsonLd from "@/components/JsonLd";
 import LeadForm from "@/components/LeadForm";
 import LiveNumbers from "@/components/LiveNumbers";
+import Parallax from "@/components/Parallax";
 import ScenePaste from "@/components/ScenePaste";
+import ShotBackdrop from "@/components/ShotBackdrop";
+import ShotBand from "@/components/ShotBand";
 import StickyCTA from "@/components/StickyCTA";
+import Tour from "@/components/Tour";
 import { pageMetadata } from "@/lib/meta";
+import { SHOTS, absolute, shot, shotDate } from "@/lib/shots";
+import type { ShotCaption } from "@/lib/shots";
 
 type TD = { t: string; d: string };
 type QA = { q: string; a: string };
@@ -23,6 +32,9 @@ type CompareRow = { k: string; cells: string[] };
 type Thanks = { name: string; license: string; d: string; href: string };
 type FeatureGroup = { t: string; items: string[] };
 type FeatureStatus = "live" | "progress" | "next";
+
+/** Screenshots named in the structured data (the rest are on the page). */
+const LD_SHOTS = ["flight-tunis", "wizard-throttle", "pause", "drones", "crash", "cinema", "betaflight", "keys", "m-touch", "picker"];
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -92,10 +104,19 @@ function Landing({ locale }: { locale: Locale }) {
     ["next", featNext.length],
   ];
   const fly = flyPath(locale);
+  const caps = t.raw("shots.items") as Record<string, ShotCaption>;
+  const shots = SHOTS.filter((s) => caps[s.id]);
+  const gallery: GalleryItem[] = shots.map((s) => ({ id: s.id, t: caps[s.id].t, d: caps[s.id].d, open: t("shots.gallery.open", { title: caps[s.id].t }), phone: s.device === "mobile", small: s.small, large: s.large }));
+  const ldShots = LD_SHOTS.filter((id) => caps[id]).map((id) => {
+    const s = shot(id);
+    return { url: absolute(s), caption: `${caps[id].t}: ${caps[id].d}`, width: s.large.w, height: s.large.h };
+  });
 
   return (
     <>
-      <JsonLd locale={locale} description={t("meta.description")} faq={faq} features={featGroups.flatMap((g) => g.items)} />
+      <JsonLd locale={locale} description={t("meta.description")} faq={faq} features={featGroups.flatMap((g) => g.items)} screenshots={ldShots} />
+      <Parallax />
+      <DeferImages />
       <Header locale={locale} page="" onLanding />
 
       <main id="main" tabIndex={-1} className="outline-none">
@@ -131,8 +152,16 @@ function Landing({ locale }: { locale: Locale }) {
           </div>
         </section>
 
-        {/* 1b. What you can set up: live / in progress / next */}
-        <Section id="features" index="01" eyebrow={t("features.eyebrow")} title={keepTogether(t("features.h2"))} lead={t("features.lead")} tone="surface">
+        {/* 1b. Real screenshots sliding with the scroll (decorative; the tour and gallery caption them) */}
+        <ShotBand label={t("shots.band", { n: shots.length })} />
+
+        {/* 1c. Tour: each feature group next to the screens that show it */}
+        <Section id="tour" index="01" eyebrow={t("shots.tour.eyebrow")} title={t("shots.tour.h2")} lead={t("shots.tour.lead", { n: shots.length, date: shotDate(locale) })}>
+          <Tour />
+        </Section>
+
+        {/* 1d. What you can set up: live / in progress / next */}
+        <Section id="features" index="02" eyebrow={t("features.eyebrow")} title={keepTogether(t("features.h2"))} lead={t("features.lead")} tone="surface">
           <div className="mt-10 max-w-2xl">
             <dl className="grid grid-cols-3 gap-3">
               {featCounts.map(([k, n]) => (
@@ -201,8 +230,13 @@ function Landing({ locale }: { locale: Locale }) {
           </div>
         </Section>
 
+        {/* 1e. Every screen, one by one */}
+        <Section id="gallery" index="03" eyebrow={t("shots.gallery.eyebrow")} title={t("shots.gallery.h2")} lead={t("shots.gallery.lead")}>
+          <Gallery items={gallery} labels={{ label: t("shots.gallery.label"), prev: t("shots.gallery.prev"), next: t("shots.gallery.next"), close: t("shots.gallery.close"), count: t.raw("shots.gallery.count") as string, phone: t("shots.gallery.phone") }} />
+        </Section>
+
         {/* 2. How it works */}
-        <Section id="how" index="02" eyebrow={t("how.eyebrow")} title={t("how.h2")} lead={t("how.lead")}>
+        <Section id="how" index="04" eyebrow={t("how.eyebrow")} title={t("how.h2")} lead={t("how.lead")} backdrop={<ShotBackdrop id="flight-garden" />}>
           <ol className="mt-10 grid gap-4 md:grid-cols-3">
             {how.map((s, i) => (
               <li key={s.t} className="rounded-xl border border-line bg-surface p-6">
@@ -215,7 +249,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 3. Why it feels real */}
-        <Section id="real" index="03" eyebrow={t("real.eyebrow")} title={t("real.h2")} lead={t("real.lead")} tone="surface">
+        <Section id="real" index="05" eyebrow={t("real.eyebrow")} title={t("real.h2")} lead={t("real.lead")} tone="surface">
           <div className="mt-10 grid gap-8 lg:grid-cols-[1.25fr_1fr]">
             <ul className="grid gap-x-8 gap-y-7 sm:grid-cols-2">
               {real.map((it) => (
@@ -248,12 +282,12 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 4. Live numbers */}
-        <Section id="numbers" index="04" eyebrow={t("numbers.eyebrow")} title={t("numbers.h2")} lead={t("numbers.lead")}>
+        <Section id="numbers" index="06" eyebrow={t("numbers.eyebrow")} title={t("numbers.h2")} lead={t("numbers.lead")} backdrop={<ShotBackdrop id="flight-villa" />}>
           <LiveNumbers />
         </Section>
 
         {/* 5. Andrii's scans */}
-        <Section id="scenes" index="05" eyebrow={t("scenes.eyebrow")} title={t("scenes.h2")} lead={t("scenes.lead")} tone="surface">
+        <Section id="scenes" index="07" eyebrow={t("scenes.eyebrow")} title={t("scenes.h2")} lead={t("scenes.lead")} tone="surface">
           <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {SHOWCASE.map((s) => {
               const title = t(`scenes.items.${s.id}`);
@@ -296,7 +330,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 6. Works with your radio */}
-        <Section id="radios" index="06" eyebrow={t("radios.eyebrow")} title={t("radios.h2")} lead={t("radios.lead")}>
+        <Section id="radios" index="08" eyebrow={t("radios.eyebrow")} title={t("radios.h2")} lead={t("radios.lead")}>
           <div className="mt-10 overflow-hidden rounded-xl border border-line">
             <div aria-hidden="true" className="hidden grid-cols-[1fr_1.6fr_1.6fr] gap-6 border-b border-line bg-surface px-6 py-3 font-mono text-xs uppercase tracking-wider text-muted md:grid">
               <span>{t("radios.cols.browser")}</span>
@@ -326,7 +360,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 7. Why this is better */}
-        <Section id="compare" index="07" eyebrow={t("compare.eyebrow")} title={t("compare.h2")} lead={t("compare.lead")} tone="surface">
+        <Section id="compare" index="09" eyebrow={t("compare.eyebrow")} title={t("compare.h2")} lead={t("compare.lead")} tone="surface">
           <p aria-hidden="true" className="mt-8 font-mono text-xs text-muted md:hidden">
             {t("compare.swipe")} →
           </p>
@@ -365,7 +399,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 8. For your AI agent */}
-        <Section id="agents" index="08" eyebrow={t("agents.eyebrow")} title={t("agents.h2")} lead={t("agents.lead")}>
+        <Section id="agents" index="10" eyebrow={t("agents.eyebrow")} title={t("agents.h2")} lead={t("agents.lead")}>
           <div className="mt-10 grid gap-8 lg:grid-cols-[1.5fr_1fr]">
             <CopyBlock id="agent-prompt" text={AGENT_PROMPT} label={t("agents.copy")} copied={t("agents.copied")} caption={t("agents.caption")} />
             <div>
@@ -395,7 +429,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 9. Risks & safety */}
-        <Section id="risks" index="09" eyebrow={t("risks.eyebrow")} title={t("risks.h2")} lead={t("risks.lead")} tone="surface">
+        <Section id="risks" index="11" eyebrow={t("risks.eyebrow")} title={t("risks.h2")} lead={t("risks.lead")} tone="surface">
           <ul className="mt-10 grid gap-4 md:grid-cols-2">
             {risks.map((r) => (
               <li key={r.t} className="rounded-xl border border-line bg-bg p-5">
@@ -418,7 +452,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 10. FAQ */}
-        <Section id="faq" index="10" eyebrow={t("faq.eyebrow")} title={t("faq.h2")}>
+        <Section id="faq" index="12" eyebrow={t("faq.eyebrow")} title={t("faq.h2")}>
           <div className="mt-10 divide-y divide-line rounded-xl border border-line">
             {faq.map((f, i) => (
               <details key={i} className="group px-5 sm:px-6">
@@ -435,7 +469,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 11. Open source */}
-        <Section id="opensource" index="11" eyebrow={t("opensource.eyebrow")} title={t("opensource.h2")} lead={t("opensource.lead")} tone="surface">
+        <Section id="opensource" index="13" eyebrow={t("opensource.eyebrow")} title={t("opensource.h2")} lead={t("opensource.lead")} tone="surface">
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Ext href={REPO} className="btn-primary min-h-12 px-6" track="cta_click" p="github">
               {t("opensource.repo")}
@@ -461,7 +495,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 12. Contact */}
-        <Section id="contact" index="12" eyebrow={t("contact.eyebrow")} title={t("contact.h2")}>
+        <Section id="contact" index="14" eyebrow={t("contact.eyebrow")} title={t("contact.h2")} backdrop={<ShotBackdrop id="flight-tunis" />}>
           <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_1.15fr]">
             <div>
               <p className="text-xl font-semibold text-ink">{AUTHOR.name}</p>

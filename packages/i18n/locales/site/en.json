@@ -352,6 +352,64 @@
       "error": "Sending didn't work this time. Your answers are still here — please try again in a moment, or write to zmei116@gmail.com."
     }
   },
+  "shots": {
+    "band": "{n} screens of the live simulator",
+    "tour": {
+      "eyebrow": "Inside the simulator",
+      "h2": "See what is already built",
+      "lead": "Every picture on this page is a real screenshot of the live simulator: {n} of them, taken on {date} by a script in the repository, so they can be taken again after every release.",
+      "rows": [
+        "Plug in an EdgeTX radio and a drawn radio walks you through it: stick by stick, then the switch you arm with, then a check of every channel before you fly.",
+        "No radio at hand? The keyboard shows every key it uses, touch sticks appear on a touch screen, and a gamepad connects through the browser (not tested on real hardware yet).",
+        "Six BetaFPV-class quads, and every number on their cards says where it comes from. Paste a Betaflight CLI diff to fly with your own rates and PID.",
+        "Hit a wall and the quad crashes at the speed it hit, the wreck tumbling with debris. Gravity, crash threshold, motors and PID sit in Settings.",
+        "An OSD like in your goggles, field of view and camera uptilt, and a cinema mode that records MP4 of Andrii's scans with their credit in the picture.",
+        "Pick a scan or paste a link, watch it load with real numbers, then check the walls in use, frame times and your replays."
+      ],
+      "live": "Live now: {n}",
+      "all": "Every feature and its status"
+    },
+    "gallery": {
+      "eyebrow": "Every screen",
+      "h2": "All the menus, one by one",
+      "lead": "The calibration wizard, every screen of the pause menu, crashes, cinema mode and the phone layout. Open any picture to see it large.",
+      "label": "Screenshots of the simulator",
+      "prev": "Previous screenshot",
+      "next": "Next screenshot",
+      "open": "Open larger: {title}",
+      "close": "Close",
+      "count": "{i} of {n}",
+      "phone": "Phone"
+    },
+    "items": {
+      "flight-tunis": { "t": "Tunis old town", "d": "The flight view on Andrii's Tunis scan: arm state and flight mode, battery voltage and flight time, throttle, speed, altitude and the keys." },
+      "flight-villa": { "t": "Modlinek Villa", "d": "A 2.2-inch cinewhoop in a real attic room; the scan's credit and its walls line sit at the bottom left." },
+      "flight-garden": { "t": "Winter Garden", "d": "Glass roof, plants and furniture, with the walls SuperSplat publishes for this scan: 3.2 cm voxels you really crash into." },
+      "picker": { "t": "Choose a scan", "d": "Andrii's scans, recent and favourite ones, filters for walls, type and flown, or a pasted SuperSplat link." },
+      "loading": { "t": "Loading", "d": "What is downloading, megabytes done and in total, the speed, and the scan and its walls counted apart." },
+      "controls": { "t": "Controls", "d": "A radio over USB (EdgeTX), a gamepad, touch sticks or the keyboard, each with a one-line hint." },
+      "wizard-stir": { "t": "Calibration: stir the sticks", "d": "The drawn radio shows what to do, and the channel bars follow the reports (here a simulated EdgeTX radio)." },
+      "wizard-throttle": { "t": "Throttle found", "d": "Each stick is found by moving it: the wizard names the channel, offers Reverse and moves on when the stick is back." },
+      "wizard-arm": { "t": "Arm switch", "d": "Flip the switch you arm with ON and back OFF, pick its channel, or skip the step and arm with Space." },
+      "wizard-check": { "t": "Check before flying", "d": "Every channel with a live bar and buttons to reverse or redo it, the arm state, and the profile to download or load." },
+      "arm-card": { "t": "Ready to arm", "d": "Disarmed with a radio, a card lists what arming still needs: sticks let go, throttle down, the arm switch." },
+      "keys": { "t": "Keyboard", "d": "Every flying key on screen: Space arms, W and S throttle, A and D yaw, the arrows tilt, M switches self-levelling." },
+      "walls": { "t": "Walls", "d": "The walls line says which walls fly and offers finer ones with a time estimate; stored walls move to another PC as a zip." },
+      "pause": { "t": "Pause menu", "d": "Continue, restart, scan, drone, controls, settings, replays, measurements, Betaflight import and cinema mode, with their keys." },
+      "settings": { "t": "Settings", "d": "Field of view and uptilt, HUD, stable frame or detail, gravity, crash threshold, motor spin-up, drag and PID for each axis." },
+      "drones": { "t": "Six drones", "d": "BetaFPV-class presets with a rate curve each; every number says where it comes from: manufacturer, measured or estimate." },
+      "betaflight": { "t": "Betaflight import", "d": "Paste a CLI diff and its rates and PID fly the quad; every setting the simulator does not use is listed (here a test diff)." },
+      "measure": { "t": "Measurements", "d": "Renderer, display refresh, frame times, physics rate, load time, the walls in use and a tunnelling self-test, copyable as JSON." },
+      "cinema": { "t": "Cinema mode", "d": "Full detail, automatic quality off, no HUD; Record saves an MP4 with the scan's credit in the picture." },
+      "crash": { "t": "Crash", "d": "The impact speed decides; the wreck tumbles with debris, then respawn, a 10-second replay or the flight log." },
+      "replays": { "t": "Replays", "d": "A saved flight plays again from its stick inputs alone; its trajectory exports as CSV or JSON." },
+      "m-flight": { "t": "Phone-sized screen", "d": "The same flight view in portrait, 390 pixels wide." },
+      "m-touch": { "t": "Touch sticks", "d": "Two pads and an ARM button; on touch the quad flies self-levelling (ANGLE)." },
+      "m-pause": { "t": "Pause menu on a phone", "d": "The whole menu fits on a phone screen." },
+      "m-crash": { "t": "Crash on a phone", "d": "Impact speed, debris and the crash panel on a small screen." },
+      "m-picker": { "t": "Scans on a phone", "d": "Paste a link or pick a scan on a small screen." }
+    }
+  },
   "sticky": {
     "cta": "Fly now",
     "note": "Free, in your browser"
