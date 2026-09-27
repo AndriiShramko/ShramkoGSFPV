@@ -148,6 +148,10 @@ export interface LatencyGuardOptions {
     measureTimeoutMs: number;
     /** never hold the loop longer than this, ms */
     maxSkipMs: number;
+    /** frames that are late this often in the last `overloadWindowMs` are an overload, not a slow
+     *  compositor: no skips then (the quality governor lowers the load; skipping would hide it) */
+    overloadShare: number;
+    overloadWindowMs: number;
 }
 
 export const DEFAULT_LATENCY_GUARD: LatencyGuardOptions = {
@@ -159,12 +163,14 @@ export const DEFAULT_LATENCY_GUARD: LatencyGuardOptions = {
     backoffMs: 10000,
     maxBackoffMs: 80000,
     measureTimeoutMs: 1500,
-    maxSkipMs: 150
+    maxSkipMs: 150,
+    overloadShare: 0.3,
+    overloadWindowMs: 1500
 };
 
 export interface GuardLogEntry {
     t: number;
-    what: 'sample' | 'skip' | 'trigger' | 'backoff' | 'gpu';
+    what: 'sample' | 'skip' | 'trigger' | 'backoff' | 'gpu' | 'overload';
     /** rAF -> presentation in display periods (sample) */
     frames?: number;
     /** skip length */
@@ -193,10 +199,18 @@ export class LatencyGuard {
     private episodeSkips = 0;
     private backoffUntil = -Infinity;
     private backoff: number;
+    /** recent frame intervals (our own skips left out): late = above 1.5 periods */
+    private recent: { t: number; late: boolean }[] = [];
 
     constructor(opts: LatencyGuardOptions = DEFAULT_LATENCY_GUARD) {
         this.backoff = opts.backoffMs;
         this.opts = opts;
+    }
+
+    /** Late frames make up at least `overloadShare` of the recent ones (8 frames at least). */
+    overloaded(t: number): boolean {
+        const r = this.recent.filter((x) => t - x.t <= this.opts.overloadWindowMs);
+        return r.length >= 8 && r.filter((x) => x.late).length / r.length >= this.opts.overloadShare;
     }
 
     /** rAF -> presentation of the last measurement in display periods (NaN before one). */
@@ -230,6 +244,10 @@ export class LatencyGuard {
         this.excuseNext = false;
         if (!excused && dt > 0 && dt <= 1000) this.period.add(t, dt);
         const P = this.period.ms;
+        if (!excused && dt > 0 && dt <= 1000 && Number.isFinite(P)) {
+            this.recent.push({ t, late: dt > 1.5 * P });
+            while (this.recent.length && t - this.recent[0].t > this.opts.overloadWindowMs) this.recent.shift();
+        }
         if (!this.active || !Number.isFinite(P)) return null;
         // a main-thread task that long can put the compositor back into its slow state. It shows as
         // a late callback more than as a gap in rAF timestamps: a BeginFrame that waited for the
@@ -273,6 +291,14 @@ export class LatencyGuard {
             this.episodeSkips = 0;
             this.measureAt = t + this.opts.sampleEveryMs;
             this.note({ t, what: 'gpu', ms: Math.round(submitToDoneMs) });
+            return null;
+        }
+        // the frames themselves keep coming late (CPU or GPU cannot keep up): that is the governor's
+        // job; a skip would also hide these late frames from it (it excuses the skipped interval)
+        if (this.overloaded(t)) {
+            this.episodeSkips = 0;
+            this.measureAt = t + this.opts.sampleEveryMs;
+            this.note({ t, what: 'overload' });
             return null;
         }
         if (this.episodeSkips >= this.opts.maxSkips) {
