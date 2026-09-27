@@ -266,10 +266,24 @@ export function hoverThrottle(sp: SimParams): number {
 /**
  * Hover motor output and stick including battery sag at the given state of charge
  * (fixed point of thrust -> current -> voltage). Returns NaN outputs if it cannot hover.
- * throttle = the throttle-curve output (what the mixer gets); stick = the stick position giving it
- * (v0.2 returned the curve output as `stick`, which only matched while the curve was linear).
+ * throttle = the mixer throttle; stick = the stick position giving it (v0.2 returned the curve
+ * output as `stick`, which only matched while the curve was linear). In auto-throttle mode the
+ * stick goes through the Sim's auto-throttle map instead of the curve: stick 0.5 is the hover of a
+ * fresh pack (the Sim's default hoverThr), so a drained pack needs a little more.
  */
 export function hoverSolve(sp: SimParams, soc = 1): { motor: number; throttle: number; stick: number; volts: number } {
+    const h = solveHover(sp, soc);
+    if (!(h.motor <= 1)) return { motor: NaN, throttle: NaN, stick: NaN, volts: h.volts };
+    const throttle = (h.motor - sp.idle) / (1 - sp.idle);
+    let stick: number;
+    if (sp.gravityMode === 'auto-throttle') {
+        const fresh = soc === 1 ? h : solveHover(sp, 1);
+        stick = autoThrottleStick(throttle, (fresh.motor - sp.idle) / (1 - sp.idle));
+    } else stick = invertThrottle(throttle, sp.throttle);
+    return { motor: h.motor, throttle, stick, volts: h.volts };
+}
+
+function solveHover(sp: SimParams, soc: number): { motor: number; volts: number } {
     const need = (sp.mass * sp.gravity) / 4; // N per motor
     const vOc = sp.cells * voc(soc);
     let v = vOc;
@@ -281,7 +295,15 @@ export function hoverSolve(sp: SimParams, soc = 1): { motor: number; throttle: n
         const current = (4 * sp.kappa * need * omega) / (sp.eta * v);
         v = vOc - current * sp.rPack;
     }
-    if (!(w <= 1)) return { motor: NaN, throttle: NaN, stick: NaN, volts: v };
-    const throttle = (w - sp.idle) / (1 - sp.idle);
-    return { motor: w, throttle, stick: invertThrottle(throttle, sp.throttle), volts: v };
+    return { motor: w, volts: v };
+}
+
+/**
+ * Inverse of the Sim's auto-throttle map (stick 0..0.5 -> 0..hover, 0.5..1 -> hover..1, with the
+ * hover throttle clamped to 0.02..0.98 as the Sim clamps it): the stick that gives mixer throttle t.
+ */
+export function autoThrottleStick(t: number, hover: number): number {
+    const h = hover < 0.02 ? 0.02 : hover > 0.98 ? 0.98 : hover;
+    const u = t <= h ? (0.5 * t) / h : 0.5 + (0.5 * (t - h)) / (1 - h);
+    return u < 0 ? 0 : u > 1 ? 1 : u;
 }

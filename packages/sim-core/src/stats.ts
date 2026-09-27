@@ -34,6 +34,8 @@ export interface StatsBlock {
     maxImpact: number;
     bounces: number;
     respawns: Partial<Record<RespawnReason, number>>;
+    /** respawns that went back along the recorded path (automatic or Y), not to the start */
+    rewinds: number;
     /** armed time from a life's start to its first crash, the longest one */
     longestCleanS: number;
     /** arming cycles started with the switch (a respawn that keeps the craft armed continues its flight) */
@@ -73,6 +75,7 @@ class Acc {
     maxImpact = 0;
     bounces = 0;
     respawns: Partial<Record<RespawnReason, number>> = {};
+    rewinds = 0;
     flights = 0;
     scenes = 1;
 
@@ -96,6 +99,7 @@ class Acc {
             maxImpact: this.maxImpact,
             bounces: this.bounces,
             respawns: { ...this.respawns },
+            rewinds: this.rewinds,
             longestCleanS: longestCleanTicks * DT,
             flights: this.flights,
             scenes: this.scenes
@@ -214,9 +218,10 @@ export class FlightStats {
 
     /**
      * A new life starts at `at`: the path goes on from there (the jump to it is not flown) and the
-     * G window restarts. The runner calls it at every respawn. 'scene': at is the new spawn.
+     * G window restarts. The runner calls it at every respawn (replayLives' `stats` option too, from
+     * the respawn record). 'scene': at is the new spawn. rewind: it went back along the path.
      */
-    newLife(at: [number, number, number], reason: RespawnReason | 'start' = 'start'): void {
+    newLife(at: [number, number, number], reason: RespawnReason | 'start' = 'start', rewind = false): void {
         if (this.cleanTicks > this.bestClean) this.bestClean = this.cleanTicks;
         this.lifeAcc = new Acc();
         this.cleanTicks = 0;
@@ -233,6 +238,10 @@ export class FlightStats {
         if (reason !== 'start') {
             this.lifeAcc.respawns[reason] = 1;
             this.sessAcc.respawns[reason] = (this.sessAcc.respawns[reason] ?? 0) + 1;
+        }
+        if (rewind) {
+            this.lifeAcc.rewinds = 1;
+            this.sessAcc.rewinds++;
         }
     }
 

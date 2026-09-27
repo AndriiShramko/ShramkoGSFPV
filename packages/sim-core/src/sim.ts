@@ -11,7 +11,7 @@
 
 import { dcos, dsin, datan2, RAD2DEG, DEG2RAD } from './dmath';
 import type { SimParams } from './params';
-import { cellVoc } from './params';
+import { cellVoc, hoverSolve } from './params';
 import { setpointRate, throttleCurve } from './rates';
 import { modeFromChannel } from './contracts';
 import type { LevelParams, RespawnOpts } from './contracts';
@@ -194,6 +194,10 @@ export class Sim {
         // PT1 with time constant horizon_delay_ms
         this.kHz = lv.horizonDelayMs > 0 ? DT / (lv.horizonDelayMs / 1000 + DT) : 1;
         this.sqrtTwr = Math.sqrt(p.twr);
+        // auto-throttle hover from the params alone, so a replay needs nothing from the page (D-g);
+        // v0.2 defaulted to 0.4 and relied on the page setting hoverSolve().motor
+        const hover = hoverSolve(p, 1).motor;
+        if (hover > 0 && hover <= 1) this.hoverThr = hover;
         this.s[S.soc] = 1; // a new model starts with a fresh pack; reset keeps the battery
         this.reset(0, 0, 0, 0);
         this.ch[2] = -1;
@@ -210,7 +214,8 @@ export class Sim {
     reset(x: number, y: number, z: number, yawDeg: number, opts: RespawnOpts = {}): void {
         const s = this.s;
         let soc = s[S.soc];
-        if (opts.soc !== undefined) soc = opts.soc < 0 ? 0 : opts.soc > 1 ? 1 : opts.soc;
+        // NaN keeps the pack (as a log record's -1 does): it would poison every hashed slot after it
+        if (opts.soc !== undefined && opts.soc === opts.soc) soc = opts.soc < 0 ? 0 : opts.soc > 1 ? 1 : opts.soc;
         s.fill(0);
         this.motorCmd.fill(0);
         s[S.px] = x; s[S.py] = y; s[S.pz] = z;

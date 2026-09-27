@@ -2,10 +2,10 @@
 
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
-    LifePlayer, MODE_CHANNEL, REC_BYTES, S, SIM_CORE_VERSION, attitude, compileParams, lifeConfigHash, lifeSim,
+    LifePlayer, MODE_CHANNEL, REC_BYTES, Runner, S, SIM_CORE_VERSION, attitude, compileParams, lifeConfigHash, lifeSim,
     lifeTrajectory, replayLife, replayLives, trajPoint
 } from '../src/index';
-import type { Life, Runner, Sim, TrajectoryPoint } from '../src/index';
+import type { Life, LifeHeader, Sim, TrajectoryPoint } from '../src/index';
 import { PRESET, PlaneWorld, Pilot, SPLITS, attachDirector, crashCycles, deps, header, newRunner, runFrames } from './log-kit';
 
 const SPAWN: [number, number, number, number] = [0, 1, 0, 0];
@@ -188,6 +188,83 @@ describe('bounded memory (C.9, D-f; C.12 item 8)', () => {
         const headless: Life = { header: cur.header, endTick: cur.endTick, bytes: () => cur.bytes() };
         const wrong = replayLife(headless, deps(WORLD)).sim.s;
         expect(Math.hypot(wrong[S.px] - r.sim.s[S.px], wrong[S.py] - r.sim.s[S.py], wrong[S.pz] - r.sim.s[S.pz])).toBeGreaterThan(0.01);
+    });
+
+    /** 30 s of box laps at 144 Hz frames and 250 Hz input with a byte budget, then R (which ends the life). */
+    function longLife(maxBytes: number): { r: Runner; life: Life } {
+        const r = newRunner({ world: WORLD, at: SPAWN, runner: { traceHash: true, maxBytes } });
+        const p = new Pilot(r);
+        p.plan = (pp, sim) => {
+            if (pp.phase === '') {
+                pp.bot.setTask({ kind: 'path', points: [[0, 1, 0], [2, 1.5, 0], [2, 1, 2], [0, 1.5, 2], [0, 1, 0], [2, 1.5, 0], [2, 1, 2], [0, 1, 2]], speed: 2.5, yawDeg: 'along' }, sim);
+                pp.phase = 'fly';
+            }
+        };
+        runFrames(r, 144, 30_000_000);
+        const life = r.current();
+        r.respawn(0, 1, 0, 0, { platform: true }, 'manual-start');
+        return { r, life };
+    }
+
+    it('a life that lost its head still verifies: its trace hash covers its last segment (hashFrom), and the replay reproduces it', () => {
+        const { life } = longLife(64 * 1024);
+        expect(life.snapshot).toBeDefined();
+        expect(life.hashFrom).toBeGreaterThan(life.snapshot!.tick);
+        expect(life.hashFrom).toBeLessThan(life.endTick);
+        expect(replayLife(life, deps(WORLD)).hash).toBe(life.traceHash);
+        // control: hashing every replayed tick (no hashFrom, as the life start would be) does not match
+        const all: Life = { header: life.header, endTick: life.endTick, bytes: () => life.bytes(), snapshot: life.snapshot };
+        expect(replayLife(all, deps(WORLD)).hash).not.toBe(life.traceHash);
+    });
+
+    it('a life longer than one segment that kept its head keeps the whole-life hash', () => {
+        // 512 KiB: segments of 3641 records (128 KiB); the 30 s at 250 Hz is 7500 records (264 KiB) in 3 segments, all kept
+        const { life } = longLife(512 * 1024);
+        expect(life.snapshot).toBeUndefined();
+        expect((life as unknown as { segs: unknown[] }).segs.length).toBeGreaterThan(1);
+        expect(life.hashFrom).toBe(life.header.life.startTick);
+        expect(replayLife(life, deps(WORLD)).hash).toBe(life.traceHash);
+    });
+});
+
+describe('newLife on the same scene takes the transform the world records set (C.9: a life replays alone)', () => {
+    // the floor sits at 0.8 * s: only the world record says when it rises (as in log-format.test.ts)
+    const floorAt = (s: number) => new PlaneWorld([[0, 1, 0, 0.8 * s]]);
+    const worldDeps = { preset: deps(null).preset, world: (sc: { transform: number[] } | null, ev: { s: number } | null) => floorAt(ev ? ev.s : sc ? sc.transform[0] : 0) };
+    const SCENE = { id: 'synthetic', version: 1, transform: [0, 0, 0, 0] as [number, number, number, number], floaterMinBlocks: 0 };
+
+    function run(): { r: Runner; stale: LifeHeader } {
+        const sim = lifeSim(compileParams(PRESET), floorAt(0));
+        const r = new Runner(sim, header({ at: [0, 0.04, 0, 0], scene: SCENE }), { traceHash: true });
+        const p = new Pilot(r);
+        p.plan = (pp, s) => { if (pp.phase === '') { pp.bot.setTask({ kind: 'hover', target: [0, 0.8, 0], yawDeg: 0 }, s); pp.phase = 'fly'; } };
+        r.onWorld = (ev) => { r.sim.world = floorAt(ev.s); };
+        runFrames(r, 60, 1_500_000);
+        r.world({ s: 1.1, t: [0, 0, 0], floaterMinBlocks: 0 });
+        runFrames(r, 60, 2_000_000, { phaseUs: 1_500_000 });
+        // a settings life whose header was built from the scene as it was at the start (transform s = 0)
+        const s = r.sim.s;
+        // no platform: only the raised floor holds the craft over its 0.8 m target
+        const stale = header({ at: [s[S.px], s[S.py], s[S.pz], 0], overrides: { tauMs: 18 }, scene: SCENE, opts: { keepArmed: true }, reason: 'settings' });
+        r.newLife(lifeSim(compileParams(PRESET, { tauMs: 18 }), r.sim.world), stale);
+        runFrames(r, 60, 4_000_000, { phaseUs: 2_000_000 });
+        return { r, stale };
+    }
+
+    it('the new header holds s = 1.1 from the world record, and the settings life replays alone to the live state', () => {
+        const { r } = run();
+        const life = r.current();
+        expect(life.header.scene!.transform[0]).toBe(Math.fround(1.1));
+        expect(Array.from(replayLife(life, worldDeps).sim.s)).toEqual(Array.from(r.sim.s));
+        expect(replayLives(r.lives(), worldDeps).sim.s).toEqual(r.sim.s);
+    });
+
+    it('control: the caller\'s stale transform in that header replays the settings life into a different place', () => {
+        const { r, stale } = run();
+        const life = r.current();
+        const asCalled: Life = { header: { ...life.header, scene: stale.scene }, endTick: life.endTick, bytes: () => life.bytes() };
+        const bad = replayLife(asCalled, worldDeps).sim.s;
+        expect(Math.hypot(bad[S.px] - r.sim.s[S.px], bad[S.py] - r.sim.s[S.py], bad[S.pz] - r.sim.s[S.pz])).toBeGreaterThan(0.01);
     });
 });
 

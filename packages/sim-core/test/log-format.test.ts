@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from 'vitest';
 import {
-    InputLog, LifePlayer, MAX_LOG_TICK, REC_INPUT, REC_RESPAWN, REC_WORLD, RESPAWN_REASONS, Runner, S, SIM_CORE_VERSION,
+    InputLog, LifePlayer, MAX_LOG_TICK, REC_INPUT, REC_RESPAWN, REC_WORLD, RESPAWN_FLAG_PLATFORM, RESPAWN_FLAG_REWIND, RESPAWN_REASONS, Runner, S, SIM_CORE_VERSION,
     canonicalJson, compileParams, forEachRecord, lifeConfigHash, lifeHeaderProblem, lifeParams, lifeSim, presetSha256,
     readRespawn, recordCode, recordKind, recordSlot, replayLife
 } from '../src/index';
@@ -89,6 +89,28 @@ describe('record layouts', () => {
         // the pack: kept (header soc = the sim's), or the fresh value it logged
         expect(lives[RESPAWN_REASONS.indexOf('scene') + 1].header.life.soc).toBe(0.5);
         expect(r.sim.s[S.px]).toBe(Math.fround(want[0]));
+    });
+
+    it('the rewind flag (4) is set by Y and by the director\'s rewinds, not by R or a fall back to the start, and is ignored by the physics', () => {
+        const world = PlaneWorld.room();
+        const r = newRunner({ world, at: [0, 0.5, 0, 0] });
+        r.advanceTo(5000);
+        r.respawn(0, 0.5, 0, 0, { platform: true }, 'manual-start');
+        r.advanceTo(10_000);
+        r.respawn(0.2, 0.5, 0, 0, { platform: true }, 'manual-rewind');
+        const flags = r.lives().slice(0, 2).map((l) => {
+            const b = l.bytes();
+            const ch = Array.from(new Float32Array(b.slice(b.length - 32).buffer));
+            return [ch[4], readRespawn(ch).rewind];
+        });
+        expect(flags).toEqual([[RESPAWN_FLAG_PLATFORM, false], [RESPAWN_FLAG_PLATFORM | RESPAWN_FLAG_REWIND, true]]);
+        // a record written before the flag existed reads as no rewind; the flag changes nothing in the sim
+        expect(readRespawn([0, 0.5, 0, 0, RESPAWN_FLAG_PLATFORM, 0, -1, 4]).rewind).toBe(false);
+        const a = lifeSim(compileParams(PRESET), world), b = lifeSim(compileParams(PRESET), world);
+        const ra = readRespawn([0.2, 0.5, 0, 0, 1, 0, -1, 4]), rb = readRespawn([0.2, 0.5, 0, 0, 5, 0, -1, 4]);
+        a.respawn(ra.at[0], ra.at[1], ra.at[2], ra.at[3], ra.opts);
+        b.respawn(rb.at[0], rb.at[1], rb.at[2], rb.at[3], rb.opts);
+        expect(Array.from(a.s)).toEqual(Array.from(b.s));
     });
 
     it('world records reach onWorld as Float32 and a replay swaps the world at the same tick; control: a replay that ignores them diverges', () => {
