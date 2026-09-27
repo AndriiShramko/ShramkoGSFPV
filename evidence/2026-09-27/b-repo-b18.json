@@ -1,14 +1,14 @@
 {
   "name": "b-repo-b18",
   "context": {
-    "date": "2026-09-27T02:24:27.237Z",
-    "gitHead": "d3513c0",
+    "date": "2026-09-27T02:49:40.321Z",
+    "gitHead": "61f1cf8",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "pass": false,
+  "pass": true,
   "repo": {
     "private": false,
     "description": "Open-source browser FPV drone simulator for 3D Gaussian Splatting scans (SuperSplat): quadcopter physics with Betaflight rates and PID, swept voxel collision with real crashes, EdgeTX radio over WebHID, gamepad or touch. WebGPU + PlayCanvas. Fly: gsfpv.flyreelstudio.eu",
@@ -81,9 +81,7 @@
   ],
   "citationCffValid": true,
   "cyrillicOrPolishOutsideLocales": [],
-  "placeholdersInDocs": [
-    "docs/architecture-v03.md"
-  ],
+  "placeholdersInDocs": [],
   "mainProtection": {
     "status": 200,
     "forcePushAllowed": false,
@@ -92,6 +90,7 @@
     ]
   },
   "control": {
-    "readmeLinkToSiteAnswers": 200
+    "readmeLinkToSiteAnswers": 200,
+    "placeholderRuleCatchesProseIgnoresCode": true
   }
 }

@@ -1,0 +1,20 @@
+{
+ "before": ".cache/snaps/gsfpv-fin-before-a",
+ "after": ".cache/snaps/gsfpv-fin-after-a",
+ "problems": [
+  "body changed on a static page: gsfpv.flyreelstudio.eu"
+ ],
+ "added_vhosts": [],
+ "added_networks": [],
+ "nginx_proxy_log": {
+  "checked": true,
+  "since": "2026-09-27T03:07:27Z",
+  "until": "2026-09-27T03:08:03Z",
+  "lines_in_window": 0,
+  "emerg_crit": 0,
+  "emerg_crit_substring": 0,
+  "samples": []
+ },
+ "complete": true,
+ "equal": false
+}

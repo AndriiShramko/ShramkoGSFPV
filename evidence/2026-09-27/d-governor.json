@@ -1,33 +1,33 @@
 {
   "name": "d-governor",
   "context": {
-    "date": "2026-09-27T02:24:07.627Z",
-    "gitHead": "d3513c0",
+    "date": "2026-09-27T03:24:22.912Z",
+    "gitHead": "a4cbb1f",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "site": "https://gsfpv.flyreelstudio.eu",
-  "pass": false,
+  "pass": true,
   "method": "normal frames 6 s (display period learned), then a busy-wait of 1.4 display periods in every frame for 4 s, then normal again",
   "enabled": {
     "calm": {
       "step": 0,
-      "changes": 0,
-      "periodMs": 31.59999999962747,
+      "changes": 6,
+      "periodMs": 32.30000000074506,
       "scale": 1
     },
     "loaded": {
-      "step": 0,
-      "changes": 0,
-      "periodMs": 32.40000000037253,
-      "scale": 1
+      "step": 4,
+      "changes": 10,
+      "periodMs": 32.899999998509884,
+      "scale": 0.5
     },
     "recovered": {
       "step": 0,
-      "changes": 0,
-      "periodMs": 32.899999998509884,
+      "changes": 14,
+      "periodMs": 32.90000000037253,
       "scale": 1
     }
   },
@@ -36,13 +36,13 @@
       "calm": {
         "step": 0,
         "changes": 0,
-        "periodMs": 29.59999999962747,
+        "periodMs": 31,
         "scale": 1
       },
       "loaded": {
         "step": 0,
         "changes": 0,
-        "periodMs": 30.699999999254942,
+        "periodMs": 31.299999997019768,
         "scale": 1
       },
       "recovered": {

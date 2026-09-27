@@ -1,8 +1,8 @@
 {
   "name": "b-site-b3",
   "context": {
-    "date": "2026-09-27T02:01:31.670Z",
-    "gitHead": "d3513c0",
+    "date": "2026-09-27T03:23:06.342Z",
+    "gitHead": "a4cbb1f",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -11,13 +11,13 @@
   "site": "https://gsfpv.flyreelstudio.eu",
   "pass": false,
   "release": {
-    "sha": "4ca397f",
-    "built": "2026-09-27T01:37:19.281Z"
+    "sha": "a4cbb1f",
+    "built": "2026-09-27T03:01:57.679Z"
   },
   "rule": "links: a real target (internal ones answer 200/30x, same-page anchors exist, anchors on another page exist in its HTML); buttons: each on a fresh load, scrolled into view BEFORE a 1 s baseline, clicked by data-audit-id; within 500 ms of the click a DOM mutation outside what changed in the baseline, a navigation, a request (not an image or font, not to a host busy in the baseline except documents; /api/ only if the baseline had none and not a crash beacon), focus moving to a non-button that is not the clicked control, a clipboard write, a device chooser, a download or a new window; scrolling is recorded but never counted; consent decline hides the banner, accept hides it and requests gtag",
   "totals": {
-    "controls": 386,
-    "buttonsClicked": 80,
+    "controls": 387,
+    "buttonsClicked": 81,
     "linksChecked": 306
   },
   "pages": {
@@ -519,11 +519,11 @@
         "1 button \"Andrii's scans\"": "dom 9",
         "2 button \"Recent\"": "dom 7",
         "3 button \"Favourites\"": "dom 7",
-        "4 button \"Modlinek Villa \u2014 red room and bathroomWa\"": "nav, dom 46, focus, req POST gsfpv.flyreelstudio.eu/api/e scene_open",
+        "4 button \"Modlinek Villa \u2014 red room and bathroomWa\"": "nav, dom 61, focus, req POST gsfpv.flyreelstudio.eu/api/e scene_open",
         "5 button \"\u2605\"": "dom 9",
-        "6 button \"Winter Garden, PolandWalls \u00b7 3.2 cm \u00b7 CC\"": "nav, dom 50, focus, req HEAD d28zzqy0iyovbz.cloudfront.net",
+        "6 button \"Winter Garden, PolandWalls \u00b7 3.2 cm \u00b7 CC\"": "nav, dom 61, focus, req HEAD d28zzqy0iyovbz.cloudfront.net",
         "7 button \"\u2605\"": "dom 9",
-        "8 button \"Tunis \u2014 old town streetsWalls \u00b7 5 cm \u00b7 C\"": "nav, dom 50, focus, req HEAD d28zzqy0iyovbz.cloudfront.net",
+        "8 button \"Tunis \u2014 old town streetsWalls \u00b7 5 cm \u00b7 C\"": "nav, dom 52, focus, req HEAD d28zzqy0iyovbz.cloudfront.net",
         "9 button \"\u2605\"": "dom 9"
       },
       "skipped": {
@@ -532,26 +532,25 @@
       }
     },
     "flight: top buttons and overlays": {
-      "total": 8,
+      "total": 9,
       "links": 2,
-      "buttons": 6,
+      "buttons": 7,
       "dead": [
-        "2 button \"Export walls\" not clickable: locator.click: Timeout 3000ms exceeded.",
-        "3 button \"Import walls\" not clickable: locator.click: Timeout 3000ms exceeded.",
-        "4 button \"Clear stored walls\" not clickable: locator.click: Timeout 3000ms exceeded."
+        "3 button \"Import walls\" did nothing"
       ],
       "effects": {
         "0 a \"SuperSplat\"": "external superspl.at",
         "1 a \"Report this scene\"": "link 200, anchor #contact found",
-        "2 button \"Export walls\"": "not clickable",
-        "3 button \"Import walls\"": "not clickable",
-        "4 button \"Clear stored walls\"": "not clickable",
-        "5 button \"Controls\"": "dom 4",
-        "6 button \"Pause\"": "dom 4",
-        "7 button \"ARM\"": "dom 4, req POST gsfpv.flyreelstudio.eu/api/e arm"
+        "2 button \"Export walls\"": "dom 1",
+        "3 button \"Import walls\"": "nothing",
+        "4 button \"Clear stored walls\"": "dom 3",
+        "5 button \"Refine walls to 1.6 cm (about 15 s)\"": "dom 5, req GET gsfpv.flyreelstudio.eu",
+        "6 button \"Controls\"": "dom 4",
+        "7 button \"Pause\"": "dom 1",
+        "8 button \"ARM\"": "dom 4, req POST gsfpv.flyreelstudio.eu/api/e arm"
       },
       "skipped": {
-        "hidden": 4,
+        "hidden": 3,
         "disabled": []
       }
     },
@@ -564,10 +563,10 @@
         "11 a \"Work with us\"": "link 200, anchor #contact found",
         "0 button \"\u00d7\"": "dom 1, focus",
         "1 button \"ContinueEscP\"": "dom 1, focus",
-        "2 button \"RestartR\"": "dom 4, focus, req GET d28zzqy0iyovbz.cloudfront.net",
+        "2 button \"RestartR\"": "dom 1, focus",
         "3 button \"Change scan\"": "nav, focus, req GET gsfpv.flyreelstudio.eu",
         "4 button \"Drone\"": "dom 2",
-        "5 button \"Controls\"": "dom 7",
+        "5 button \"Controls\"": "dom 5",
         "6 button \"Settings\"": "dom 2, focus",
         "7 button \"Replays\"": "dom 2, focus",
         "8 button \"Measurements\"": "dom 2, focus",
@@ -586,7 +585,7 @@
       "dead": [],
       "effects": {
         "0 button \"\u00d7\"": "dom 1",
-        "1 button \"Apply\"": "dom 3"
+        "1 button \"Apply\"": "dom 1"
       },
       "skipped": {
         "hidden": 0,
@@ -605,7 +604,7 @@
         "3 button \"Fly\"": "nav, dom 1, focus",
         "4 button \"Fly\"": "nav, dom 1, focus",
         "5 button \"Fly\"": "nav, dom 1, focus",
-        "6 button \"Fly\"": "nav, dom 3, focus"
+        "6 button \"Fly\"": "nav, dom 1, focus"
       },
       "skipped": {
         "hidden": 0,
@@ -620,9 +619,9 @@
       "effects": {
         "0 button \"\u00d7\"": "dom 7, focus",
         "1 button \"Radio over USB (EdgeTX)\"": "device",
-        "2 button \"Gamepad or radio as gamepad\"": "dom 1",
-        "3 button \"Touch sticks\"": "dom 13, focus, req POST gsfpv.flyreelstudio.eu/api/e input_connected",
-        "4 button \"Keyboard\"": "dom 16, focus, req POST gsfpv.flyreelstudio.eu/api/e input_connected"
+        "2 button \"Gamepad or radio as gamepad\"": "dom 3",
+        "3 button \"Touch sticks\"": "dom 11, focus, req POST gsfpv.flyreelstudio.eu/api/e input_connected",
+        "4 button \"Keyboard\"": "dom 15, focus, req POST gsfpv.flyreelstudio.eu/api/e input_connected"
       },
       "skipped": {
         "hidden": 0,
@@ -638,7 +637,7 @@
         "0 button \"\u00d7\"": "dom 1",
         "1 button \"Play\"": "dom 1",
         "2 button \"CSV\"": "download",
-        "3 button \"JSON\"": "dom 2, download"
+        "3 button \"JSON\"": "download"
       },
       "skipped": {
         "hidden": 0,
@@ -652,7 +651,7 @@
       "dead": [],
       "effects": {
         "0 button \"\u00d7\"": "dom 1",
-        "1 button \"Copy report JSON\"": "dom 2, clipboard"
+        "1 button \"Copy report JSON\"": "dom 1, clipboard"
       },
       "skipped": {
         "hidden": 0,
@@ -774,33 +773,66 @@
   "control": {
     "injectedInertButtons": "landing: first and last in <main> (the last below the fold); flight: one fixed over the canvas",
     "fired": {
-      "/en/ + inert buttons first and last in main": false,
-      "flight + inert button over the canvas": false
+      "/en/ + inert buttons first and last in main": true,
+      "flight + inert button over the canvas": true
     },
     "runs": {
       "/en/ + inert buttons first and last in main": {
-        "total": 0,
+        "total": 56,
         "links": 0,
-        "buttons": 0,
-        "dead": [],
-        "effects": {},
-        "skipped": {
-          "hidden": 0,
-          "disabled": []
+        "buttons": 2,
+        "dead": [
+          "14 button \"Inert top\" did nothing",
+          "43 button \"Inert end\" did nothing"
+        ],
+        "effects": {
+          "14 button \"Inert top\"": "nothing",
+          "43 button \"Inert end\"": "nothing"
         },
-        "error": "page.evaluate: ReferenceError: __name is not defined"
+        "skipped": {
+          "hidden": 1,
+          "disabled": [
+            "Send request"
+          ]
+        },
+        "planted": [
+          {
+            "text": "Inert top",
+            "belowFold": false
+          },
+          {
+            "text": "Inert end",
+            "belowFold": true
+          }
+        ],
+        "consent": {
+          "shown": true,
+          "buttons": [
+            "Decline",
+            "Accept"
+          ]
+        }
       },
       "flight + inert button over the canvas": {
-        "total": 0,
+        "total": 10,
         "links": 0,
-        "buttons": 0,
-        "dead": [],
-        "effects": {},
+        "buttons": 1,
+        "dead": [
+          "9 button \"Inert fixed\" did nothing"
+        ],
+        "effects": {
+          "9 button \"Inert fixed\"": "nothing"
+        },
         "skipped": {
-          "hidden": 0,
+          "hidden": 3,
           "disabled": []
         },
-        "error": "page.evaluate: ReferenceError: __name is not defined"
+        "planted": [
+          {
+            "text": "Inert fixed",
+            "belowFold": false
+          }
+        ]
       }
     }
   }

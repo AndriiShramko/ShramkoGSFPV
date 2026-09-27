@@ -1,0 +1,70 @@
+{
+ "before": ".cache/snaps/gsfpv-acc-before-a",
+ "after": ".cache/snaps/gsfpv-acc-after-a",
+ "problems": [
+  "body changed on a static page: alexcat.flyreelstudio.eu",
+  "body changed on a static page: demo.fpvtoons-pilotmascots-droneoverlays.de",
+  "body changed on a static page: fpvtoons-pilotmascots-droneoverlays.de",
+  "body changed on a static page: gsfpv.flyreelstudio.eu"
+ ],
+ "added_vhosts": [],
+ "added_networks": [],
+ "nginx_proxy_log": {
+  "checked": true,
+  "since": "2026-09-27T02:33:43Z",
+  "until": "2026-09-27T02:34:15Z",
+  "lines_in_window": 0,
+  "emerg_crit": 0,
+  "emerg_crit_substring": 0,
+  "samples": []
+ },
+ "complete": true,
+ "equal": false,
+ "isr_proof": {
+  "what": "each flagged neighbour page fetched 3 times in a row after the deploy, no deploy in between: bodies differ between fetches = the page changes by itself (ISR regeneration), not because of our deploy (which only reloads gsfpv-web)",
+  "fetches": {
+   "alexcat.flyreelstudio.eu": [
+    [
+     200,
+     "e3b756c16409a358"
+    ],
+    [
+     200,
+     "e3b756c16409a358"
+    ],
+    [
+     200,
+     "e3b756c16409a358"
+    ]
+   ],
+   "demo.fpvtoons-pilotmascots-droneoverlays.de": [
+    [
+     200,
+     "171c0be52f12aa19"
+    ],
+    [
+     200,
+     "03e2066613a58db6"
+    ],
+    [
+     200,
+     "03e2066613a58db6"
+    ]
+   ],
+   "fpvtoons-pilotmascots-droneoverlays.de": [
+    [
+     200,
+     "92f3f69cd6493f07"
+    ],
+    [
+     200,
+     "4ac904fe09fec7f7"
+    ],
+    [
+     200,
+     "4ac904fe09fec7f7"
+    ]
+   ]
+  }
+ }
+}
