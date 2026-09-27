@@ -78,6 +78,37 @@ const fin = (v: unknown): v is number => typeof v === 'number' && Number.isFinit
 const nonNeg = (v: unknown): number => (fin(v) && v > 0 ? v : 0);
 const str = (v: unknown): v is string => typeof v === 'string' && v.length > 0;
 
+// ------------------------------------------------------------------ keys from outside data
+
+/**
+ * Keys that never become keys of a map built from outside data (a stored or imported document, a
+ * legacy key, a drone or scene id): assigning '__proto__' replaces a plain object's prototype
+ * (values no preview shows, yet reads find), and 'constructor' / 'prototype' lead to built-ins
+ * (review must-fix 3). Other inherited names (toString...) are safe as long as maps are read and
+ * written through own() / hasOwn, which the store and import do.
+ */
+export const RESERVED_KEYS: readonly string[] = ['__proto__', 'constructor', 'prototype'];
+export function isReservedKey(k: string): boolean {
+    return RESERVED_KEYS.includes(k);
+}
+/** A map's own value, never an inherited one. */
+export function own<T>(m: Readonly<Record<string, T>>, k: string): T | undefined {
+    return Object.hasOwn(m, k) ? m[k] : undefined;
+}
+/**
+ * Where dropped reserved keys are reported (import): a path such as `settings.drone.constructor`.
+ * Absent: dropped silently (a stored document at boot).
+ */
+export type DroppedKeys = string[] | undefined;
+/** The own entries of a map whose keys are usable, the reserved ones reported. */
+function usable<T>(m: Record<string, T>, path: string, dropped: DroppedKeys): [string, T][] {
+    return Object.entries(m).filter(([k]) => {
+        if (!isReservedKey(k)) return true;
+        dropped?.push(`${path}.${k}`);
+        return false;
+    });
+}
+
 // ------------------------------------------------------------------ collection validators
 
 /** v0.2 parseProfile's test: version 1, a device key, axes, and an arm input this version reads. */
@@ -133,10 +164,10 @@ export function sortHistory(h: readonly LibraryEntry[]): LibraryEntry[] {
     return out.slice(0, HISTORY_CAP);
 }
 
-function validVersions(v: unknown): Record<string, number> {
+function validVersions(v: unknown, dropped?: DroppedKeys): Record<string, number> {
     const out: Record<string, number> = {};
     const o = obj(v) ?? {};
-    for (const [id, n] of Object.entries(o)) if (id && Number.isInteger(n) && (n as number) >= 1) out[id] = n as number;
+    for (const [id, n] of usable(o, 'collections.sceneLibrary.versions', dropped)) if (id && Number.isInteger(n) && (n as number) >= 1) out[id] = n as number;
     const keys = Object.keys(out);
     if (keys.length > VERSIONS_CAP) for (const k of keys.slice(VERSIONS_CAP)) delete out[k];
     return out;
@@ -148,28 +179,43 @@ function validTotals(v: unknown): DroneTotals | null {
     return { flights: nonNeg(o.flights), airtimeS: nonNeg(o.airtimeS), distanceM: nonNeg(o.distanceM), crashes: nonNeg(o.crashes) };
 }
 
-/** Repairs a collection: bad entries are dropped, missing fields get their defaults. null if it is not an object. */
-export function validateCollection<K extends CollectionId>(k: K, v: unknown): Collections[K] | null {
+/**
+ * Repairs a collection: bad entries are dropped, missing fields get their defaults. null if it is
+ * not an object. Reserved keys and ids (RESERVED_KEYS) are dropped and, given `dropped`, reported.
+ */
+export function validateCollection<K extends CollectionId>(k: K, v: unknown, dropped?: DroppedKeys): Collections[K] | null {
     const o = obj(v);
     if (!o) return null;
+    const path = `collections.${k}`;
     switch (k) {
         case 'radioProfiles': {
             const items: Record<string, RadioProfileItem> = {};
             // re-keyed by deviceKey: the key is what a reconnecting radio is found by
-            for (const p of Object.values(obj(o.items) ?? {})) {
+            for (const [key, p] of usable(obj(o.items) ?? {}, `${path}.items`, dropped)) {
                 const r = validRadioProfile(p);
-                if (r) items[r.deviceKey] = r;
+                if (!r) continue;
+                if (isReservedKey(r.deviceKey)) {
+                    if (r.deviceKey !== key) dropped?.push(`${path}.items.${r.deviceKey}`);
+                    continue;
+                }
+                items[r.deviceKey] = r;
             }
             return { v: 1, items, last: validLastInput(o.last) } as Collections[K];
         }
         case 'sceneLibrary': {
-            const history = sortHistory((Array.isArray(o.history) ? o.history : []).map(validLibraryEntry).filter((e): e is LibraryEntry => e !== null));
-            const favourites = [...new Set((Array.isArray(o.favourites) ? o.favourites : []).filter(str))];
-            return { v: 1, history, favourites, filter: validFilter(o.filter), versions: validVersions(o.versions) } as Collections[K];
+            const ids = (list: unknown[], field: string, id: (x: unknown) => unknown) => list.filter((x) => {
+                const i = id(x);
+                if (typeof i !== 'string' || !isReservedKey(i)) return true;
+                dropped?.push(`${path}.${field}.${i}`);
+                return false;
+            });
+            const history = sortHistory(ids(Array.isArray(o.history) ? o.history : [], 'history', (e) => obj(e)?.id).map(validLibraryEntry).filter((e): e is LibraryEntry => e !== null));
+            const favourites = [...new Set(ids(Array.isArray(o.favourites) ? o.favourites : [], 'favourites', (f) => f).filter(str))];
+            return { v: 1, history, favourites, filter: validFilter(o.filter), versions: validVersions(o.versions, dropped) } as Collections[K];
         }
         case 'stats': {
             const byDrone: Record<string, DroneTotals> = {};
-            for (const [id, t] of Object.entries(obj(o.byDrone) ?? {})) {
+            for (const [id, t] of usable(obj(o.byDrone) ?? {}, `${path}.byDrone`, dropped)) {
                 const r = validTotals(t);
                 if (id && r) byDrone[id] = r;
             }
@@ -181,31 +227,37 @@ export function validateCollection<K extends CollectionId>(k: K, v: unknown): Co
     return null;
 }
 
-function validSettingsMap(v: unknown): SettingsMap {
-    return { ...(obj(v) ?? {}) };
+/** A map of setting ids (a spread would keep an own '__proto__' key that a later assignment turns into a prototype). */
+function validSettingsMap(v: unknown, path: string, dropped: DroppedKeys): SettingsMap {
+    const out: SettingsMap = {};
+    for (const [id, x] of usable(obj(v) ?? {}, path, dropped)) out[id] = x;
+    return out;
 }
 
-function validNested(v: unknown): Record<string, SettingsMap> {
+function validNested(v: unknown, path: string, dropped: DroppedKeys): Record<string, SettingsMap> {
     const out: Record<string, SettingsMap> = {};
-    for (const [k, m] of Object.entries(obj(v) ?? {})) {
+    for (const [k, m] of usable(obj(v) ?? {}, path, dropped)) {
         const mm = obj(m);
-        if (k && mm && Object.keys(mm).length) out[k] = { ...mm };
+        if (!k || !mm) continue;
+        const inner = validSettingsMap(mm, `${path}.${k}`, dropped);
+        if (Object.keys(inner).length) out[k] = inner;
     }
     return out;
 }
 
 /**
  * The document shape with every part repaired; values are not checked against the schema here
- * (the store and import do that per def, and unknown ids are kept on purpose).
+ * (the store and import do that per def, and unknown ids are kept on purpose). Reserved keys
+ * (RESERVED_KEYS) are dropped at every level, and listed in `dropped` when it is given.
  */
-export function normalizeDoc(o: Record<string, unknown>, app = PREFS_APP_VERSION): PrefsDoc {
+export function normalizeDoc(o: Record<string, unknown>, app = PREFS_APP_VERSION, dropped?: DroppedKeys): PrefsDoc {
     const s = obj(o.settings) ?? {};
     const c = obj(o.collections) ?? {};
     const doc = emptyDoc(typeof o.app === 'string' ? o.app : app, typeof o.savedAt === 'string' ? o.savedAt : new Date(0).toISOString());
     doc.version = Number.isInteger(o.version) ? (o.version as number) : SCHEMA_VERSION;
-    doc.settings = { global: validSettingsMap(s.global), drone: validNested(s.drone), scene: validNested(s.scene) };
+    doc.settings = { global: validSettingsMap(s.global, 'settings.global', dropped), drone: validNested(s.drone, 'settings.drone', dropped), scene: validNested(s.scene, 'settings.scene', dropped) };
     for (const k of COLLECTION_IDS) {
-        const v = validateCollection(k, c[k]);
+        const v = validateCollection(k, c[k], dropped);
         if (v) (doc.collections as unknown as Record<string, unknown>)[k] = v;
     }
     return doc;

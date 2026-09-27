@@ -195,3 +195,101 @@ describe('export and import (A.4)', () => {
         expect(text.length).toBeLessThan(100 * 1024);
     });
 });
+
+/**
+ * The prefs review (prefsReview.mustFix[2]): the settings maps are plain objects, so a hand-made
+ * file could set a map's prototype through a '__proto__' key (values that no preview or change
+ * event showed, yet get() returned) or write onto a built-in through 'constructor'. Files are
+ * JSON text here: an object literal with a '__proto__' key would set the prototype in the test.
+ */
+describe('hostile import files (review must-fix 3)', () => {
+    const file = (settings: string, collections = '{}') => `{"format":"gsfpv-prefs","version":1,"app":"0.3.0","savedAt":"","settings":${settings},"collections":${collections}}`;
+    const BUILTINS = [Object, Object.prototype, Object.prototype.toString] as unknown as Record<string, unknown>[];
+    /** setting-like names on Object, its prototype or a built-in method: what a polluted write leaves */
+    const pollution = (): string[] => BUILTINS.flatMap((o) => Object.getOwnPropertyNames(o)).filter((k) => k.includes('.'));
+    const clean = () => {
+        for (const o of BUILTINS) for (const k of Object.getOwnPropertyNames(o)) if (k.includes('.')) delete o[k];
+    };
+
+    it("'__proto__' in the global map: dropped and reported, never a hidden value", () => {
+        const s = mkStore();
+        const seen: string[] = [];
+        s.onChange((c) => seen.push(c.id));
+        const f = file('{"global":{"__proto__":{"physics.gravity":0,"flight.mode":"acro"}}}');
+        const preview = s.previewImport(f);
+        expect(preview.changes).toEqual([]);
+        expect(preview.dropped).toContainEqual({ id: 'settings.global.__proto__', why: 'reserved key' });
+        const r = s.importFile(f);
+        expect(r.dropped).toContainEqual({ id: 'settings.global.__proto__', why: 'reserved key' });
+        expect([s.get('physics.gravity'), s.get('flight.mode')]).toEqual([9.81, 'angle']);
+        expect(s.explicitList()).toEqual([]);
+        expect(seen).toEqual([]);
+    });
+
+    it("'constructor' as a drone id (merge): dropped and reported, Object untouched", () => {
+        const before = Object.getOwnPropertyNames(Object).length;
+        try {
+            const s = mkStore();
+            const r = s.importFile(file('{"drone":{"constructor":{"physics.vCrash":9}}}'), 'merge');
+            expect((Object as unknown as Record<string, unknown>)['physics.vCrash']).toBeUndefined();
+            expect(Object.getOwnPropertyNames(Object).length).toBe(before);
+            expect(r.dropped).toContainEqual({ id: 'settings.drone.constructor', why: 'reserved key' });
+            expect(s.explicitList()).toEqual([]);
+        } finally {
+            clean();
+        }
+    });
+
+    it('control: the same values under real keys are previewed and applied', () => {
+        const s = mkStore();
+        const f = file(`{"global":{"physics.gravity":0,"flight.mode":"acro"},"drone":{"${PRO}":{"physics.vCrash":9}}}`);
+        expect(s.previewImport(f).changes).toHaveLength(3);
+        s.importFile(f, 'merge');
+        expect([s.get('physics.gravity'), s.get('flight.mode'), s.get('physics.vCrash', { drone: PRO })]).toEqual([0, 'acro', 9]);
+        expect(pollution()).toEqual([]);
+    });
+
+    it('reserved keys inside collections are dropped and reported; a key such as toString is data, never a built-in', () => {
+        const profile = (key: string) => JSON.stringify(radio(key));
+        const cols = `{"radioProfiles":{"v":1,"items":{"__proto__":${profile('__proto__')},"x":${profile('constructor')},"hid:pocket":${profile('hid:pocket')}}},`
+            + '"stats":{"v":1,"byDrone":{"__proto__":{"flights":5},"toString":{"flights":3,"airtimeS":1,"distanceM":1,"crashes":1}}},'
+            + '"sceneLibrary":{"v":1,"history":[{"id":"__proto__","lastFlown":1},{"id":"abc123","lastFlown":2}],"favourites":["constructor","abc123"],"versions":{"__proto__":2,"prototype":3,"abc123":2}}}';
+        try {
+            const s = mkStore();
+            s.updateCollection('stats', (d) => { d.byDrone[PRO] = { flights: 1, airtimeS: 1, distanceM: 1, crashes: 1 }; });
+            const r = s.importFile(file('{}', cols), 'merge');
+            expect(r.dropped.filter((d) => d.why === 'reserved key').map((d) => d.id).sort()).toEqual([
+                'collections.radioProfiles.items.__proto__',
+                'collections.radioProfiles.items.constructor',
+                'collections.sceneLibrary.favourites.constructor',
+                'collections.sceneLibrary.history.__proto__',
+                'collections.sceneLibrary.versions.__proto__',
+                'collections.sceneLibrary.versions.prototype',
+                'collections.stats.byDrone.__proto__'
+            ]);
+            expect(Object.keys(s.collection('radioProfiles').items)).toEqual(['hid:pocket']);
+            expect(s.collection('stats').byDrone.toString).toEqual({ flights: 3, airtimeS: 1, distanceM: 1, crashes: 1 });
+            expect(s.collection('sceneLibrary').history.map((e) => e.id)).toEqual(['abc123']);
+            expect(s.collection('sceneLibrary').favourites).toEqual(['abc123']);
+            expect(s.collection('sceneLibrary').versions).toEqual({ abc123: 2 });
+            expect(pollution()).toEqual([]);
+        } finally {
+            clean();
+        }
+    });
+
+    it('a reserved drone or scene id from the page is no context: nothing is written onto Object or its prototype', () => {
+        try {
+            const s = mkStore();
+            expect(s.set('scene.dropFloaters', 8, { scene: '__proto__' })).toEqual({ ok: false, reason: 'no-context' });
+            expect(s.set('physics.vCrash', 6, { drone: 'constructor' })).toEqual({ ok: false, reason: 'no-context' });
+            expect(s.set('physics.vCrash', 6, { drone: 'toString' })).toEqual({ ok: true, value: 6, clamped: false });
+            expect(({} as Record<string, unknown>)['scene.dropFloaters']).toBeUndefined();
+            expect(pollution()).toEqual([]);
+            expect(s.get('physics.vCrash', { drone: 'toString' })).toBe(6);
+            expect(s.get('physics.vCrash', { drone: 'valueOf' })).toBe(4);
+        } finally {
+            clean();
+        }
+    });
+});

@@ -3,7 +3,7 @@
 
 import { boundsOf, canonicalJson, checkValue } from './schema';
 import type { PresetResolver, Schema, Scope } from './schema';
-import { COLLECTION_IDS, clone, normalizeDoc, parseDocInput, sortHistory, validateCollection } from './doc';
+import { COLLECTION_IDS, clone, isReservedKey, normalizeDoc, own, parseDocInput, sortHistory, validateCollection } from './doc';
 import type { CollectionId, Collections, LibraryEntry, PrefsDoc, PrefsSettings } from './doc';
 import { runMigrations } from './migrate';
 
@@ -33,22 +33,36 @@ export function entriesOf(s: PrefsSettings): Entry[] {
     return out;
 }
 
+/** Own values only: an inherited name (toString, constructor) is never an entry. */
 export function entryAt(s: PrefsSettings, scope: Scope, key: string | null, id: string): unknown {
-    if (scope === 'global') return s.global[id];
-    return key === null ? undefined : s[scope][key]?.[id];
+    if (scope === 'global') return own(s.global, id);
+    if (key === null) return undefined;
+    const m = own(s[scope], key);
+    return m === undefined ? undefined : own(m, id);
 }
 
+/**
+ * Sets (or with `undefined` removes) one entry. A reserved id or key (RESERVED_KEYS) is never
+ * written: the maps are plain objects, and '__proto__' or 'constructor' would reach a prototype
+ * or a built-in (review must-fix 3). Callers refuse those earlier; this is the last guard.
+ */
 export function putEntry(s: PrefsSettings, scope: Scope, key: string | null, id: string, value: unknown): void {
+    if (isReservedKey(id) || (key !== null && isReservedKey(key))) return;
     if (value === undefined) {
         if (scope === 'global') delete s.global[id];
-        else if (key !== null && s[scope][key]) {
-            delete s[scope][key][id];
-            if (!Object.keys(s[scope][key]).length) delete s[scope][key];
+        else if (key !== null) {
+            const m = own(s[scope], key);
+            if (!m) return;
+            delete m[id];
+            if (!Object.keys(m).length) delete s[scope][key];
         }
         return;
     }
     if (scope === 'global') s.global[id] = value;
-    else if (key !== null) (s[scope][key] ??= {})[id] = value;
+    else if (key !== null) {
+        const m = own(s[scope], key) ?? (s[scope][key] = {});
+        m[id] = value;
+    }
 }
 
 const emptyCounts = (): Record<CollectionId, { added: number; changed: number }> => ({
@@ -111,14 +125,14 @@ export function mergeCollection<K extends CollectionId>(k: K, cur: Collections[K
                 if (!had || e.lastFlown >= had.lastFlown) byId.set(e.id, e);
             }
             const versions = { ...a.versions };
-            for (const [id, v] of Object.entries(b.versions)) versions[id] = Math.max(v, versions[id] ?? 1);
+            for (const [id, v] of Object.entries(b.versions)) versions[id] = Math.max(v, own(versions, id) ?? 1);
             return clone({ v: 1, history: sortHistory([...byId.values()]), favourites: [...a.favourites, ...b.favourites.filter((f) => !a.favourites.includes(f))], filter: b.filter, versions }) as Collections[K];
         }
         case 'stats': {
             const a = cur as Collections['stats'], b = inc as Collections['stats'];
             const byDrone = clone(a.byDrone);
             for (const [id, t] of Object.entries(b.byDrone)) {
-                const o = byDrone[id];
+                const o = own(byDrone, id);
                 byDrone[id] = o ? { flights: Math.max(o.flights, t.flights), airtimeS: Math.max(o.airtimeS, t.airtimeS), distanceM: Math.max(o.distanceM, t.distanceM), crashes: Math.max(o.crashes, t.crashes) } : { ...t };
             }
             return { v: 1, byDrone } as Collections[K];
@@ -136,10 +150,10 @@ function countCollection(k: CollectionId, before: unknown, after: unknown): { ad
     const diffMaps = (a: Record<string, unknown>, b: Record<string, unknown>) => {
         let added = 0, changed = 0;
         for (const [id, v] of Object.entries(b)) {
-            if (!(id in a)) added++;
+            if (!Object.hasOwn(a, id)) added++;
             else if (canonicalJson(a[id]) !== canonicalJson(v)) changed++;
         }
-        for (const id of Object.keys(a)) if (!(id in b)) changed++;
+        for (const id of Object.keys(a)) if (!Object.hasOwn(b, id)) changed++;
         return { added, changed };
     };
     switch (k) {
@@ -174,7 +188,10 @@ function countCollection(k: CollectionId, before: unknown, after: unknown): { ad
 export function planImport(current: PrefsDoc, file: unknown, mode: ImportMode, schema: Schema, presets: PresetResolver, currentDrone: string | undefined, app?: string): ImportPlan {
     const p = parseDocInput(file);
     if (!p.ok) return fail(p.error, p.version ?? 0);
-    const incoming = p.version < schema.version ? runMigrations(p.raw, p.version, { app }) : normalizeDoc(p.raw, app);
+    // reserved keys ('__proto__', 'constructor', 'prototype') are dropped where the maps are built,
+    // and reported here: a file must not change anything the preview does not show (A.4)
+    const reserved: string[] = [];
+    const incoming = p.version < schema.version ? runMigrations(p.raw, p.version, { app, dropped: reserved }) : normalizeDoc(p.raw, app, reserved);
     const report: ImportReport = { ok: true, fromVersion: p.version, changes: [], clamped: [], dropped: [], unknown: [], collections: emptyCounts() };
     const settings = sanitize(incoming.settings, schema, presets, currentDrone, report);
 
@@ -184,8 +201,8 @@ export function planImport(current: PrefsDoc, file: unknown, mode: ImportMode, s
     else for (const e of entriesOf(settings)) putEntry(next.settings, e.scope, e.key, e.id, e.value);
 
     for (const k of COLLECTION_IDS) {
-        if (rawCols[k] === undefined) continue;
-        const inc = validateCollection(k, rawCols[k]);
+        if (!Object.hasOwn(rawCols, k) || rawCols[k] === undefined) continue;
+        const inc = validateCollection(k, rawCols[k], reserved);
         if (!inc) {
             report.dropped.push({ id: `collection.${k}`, why: 'type' });
             continue;
@@ -194,6 +211,8 @@ export function planImport(current: PrefsDoc, file: unknown, mode: ImportMode, s
         report.collections[k] = countCollection(k, current.collections[k], merged);
         (next.collections as unknown as Record<string, unknown>)[k] = merged;
     }
+    // a collection's reserved keys are seen twice (the document, then the collection itself)
+    for (const path of new Set(reserved)) report.dropped.push({ id: path, why: 'reserved key' });
 
     // the preview lists known settings only; unknown ids are reported on their own
     const seen = new Set<string>();

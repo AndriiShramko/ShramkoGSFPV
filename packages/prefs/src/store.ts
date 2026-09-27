@@ -8,7 +8,7 @@
 
 import { boundsOf, canonicalJson, checkValue, isPresetRef, presetValue, SCHEMA_VERSION } from './schema';
 import type { GroupId, PresetResolver, Schema, Scope, SettingDef } from './schema';
-import { COLLECTION_IDS, PREFS_APP_VERSION, clone, defaultCollection, emptyDoc, normalizeDoc, parseDocInput, validateCollection } from './doc';
+import { COLLECTION_IDS, PREFS_APP_VERSION, clone, defaultCollection, emptyDoc, isReservedKey, normalizeDoc, parseDocInput, validateCollection } from './doc';
 import type { CollectionId, Collections, PrefsDoc, PrefsFile } from './doc';
 import { migrateLegacy, runMigrations } from './migrate';
 import type { MigrationNote } from './migrate';
@@ -368,14 +368,18 @@ export class PrefsStore {
         return this.schema.byId.has('drone.current') ? this.get<string>('drone.current') : undefined;
     }
 
-    /** Where a def's value is stored for ctx; null when a scene setting has no scene. */
+    /**
+     * Where a def's value is stored for ctx; null when a scene setting has no scene, or when the
+     * drone or scene id is a reserved key (doc.ts RESERVED_KEYS: '__proto__' as a map key would
+     * reach Object.prototype, review must-fix 3).
+     */
     private target(def: SettingDef, ctx?: Ctx): { scope: Scope; key: string | null } | null {
         if (def.scope === 'global') return { scope: 'global', key: null };
         if (def.scope === 'drone') {
             const d = this.droneOf(ctx);
-            return d === undefined ? null : { scope: 'drone', key: d };
+            return d === undefined || isReservedKey(d) ? null : { scope: 'drone', key: d };
         }
-        return ctx?.scene === undefined ? null : { scope: 'scene', key: ctx.scene };
+        return ctx?.scene === undefined || isReservedKey(ctx.scene) ? null : { scope: 'scene', key: ctx.scene };
     }
 
     private check(def: SettingDef, v: unknown, key: string | null) {

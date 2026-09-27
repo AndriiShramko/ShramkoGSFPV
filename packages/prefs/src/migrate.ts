@@ -3,7 +3,7 @@
 // removed, so rolling back to v0.2 still finds them; migration 1 -> 2 (v0.4) deletes them.
 
 import { SCHEMA_VERSION } from './schema';
-import { DEFAULT_FILTER, PREFS_APP_VERSION, emptyDoc, normalizeDoc, sortHistory, validFilter, validLastInput, validLibraryEntry, validRadioProfile, VERSIONS_CAP } from './doc';
+import { DEFAULT_FILTER, PREFS_APP_VERSION, emptyDoc, isReservedKey, normalizeDoc, sortHistory, validFilter, validLastInput, validLibraryEntry, validRadioProfile, VERSIONS_CAP } from './doc';
 import type { LibraryEntry, PrefsDoc, RadioProfileItem } from './doc';
 
 /** Every storage key the v0.2 simulator writes (apps/fly/src, packages/scenes), by what it holds. */
@@ -36,7 +36,12 @@ export function readLegacy(read: (key: string) => string | null): LegacyBag {
     return { format: 'gsfpv-legacy', version: 0, keys };
 }
 
-export interface MigrateOptions { app?: string; savedAt?: string }
+export interface MigrateOptions {
+    app?: string;
+    savedAt?: string;
+    /** reserved keys dropped from the result (doc.ts RESERVED_KEYS) are listed here (import reports them) */
+    dropped?: string[];
+}
 export interface MigrationNote { moved: string[]; ignored: { key: string; why: string }[] }
 
 export interface Migration {
@@ -74,7 +79,8 @@ function fromLegacy(bag: LegacyBag, o: MigrateOptions, note: MigrationNote): Pre
             let n = 0;
             for (const p of Object.values(profiles as Record<string, unknown>)) {
                 const r: RadioProfileItem | null = validRadioProfile(p);
-                if (r) {
+                // a reserved device key would set the map's prototype (doc.ts RESERVED_KEYS)
+                if (r && !isReservedKey(r.deviceKey)) {
                     doc.collections.radioProfiles.items[r.deviceKey] = r;
                     n++;
                 }
@@ -99,7 +105,7 @@ function fromLegacy(bag: LegacyBag, o: MigrateOptions, note: MigrationNote): Pre
     if (vers !== undefined) {
         if (Array.isArray(vers)) {
             for (const e of vers) {
-                if (Array.isArray(e) && typeof e[0] === 'string' && e[0] && Number.isInteger(e[1]) && e[1] > 1 && !(e[0] in versions)) versions[e[0]] = e[1];
+                if (Array.isArray(e) && typeof e[0] === 'string' && e[0] && !isReservedKey(e[0]) && Number.isInteger(e[1]) && e[1] > 1 && !Object.hasOwn(versions, e[0])) versions[e[0]] = e[1];
                 if (Object.keys(versions).length >= VERSIONS_CAP) break;
             }
             note.moved.push(K.versions);
@@ -163,7 +169,7 @@ export function runMigrations(input: unknown, from: number, o: MigrateOptions = 
         v = m.run(v, o, note);
         at = m.to;
     }
-    const doc = normalizeDoc(v as Record<string, unknown>, o.app);
+    const doc = normalizeDoc(v as Record<string, unknown>, o.app, o.dropped);
     doc.version = SCHEMA_VERSION;
     return doc;
 }
