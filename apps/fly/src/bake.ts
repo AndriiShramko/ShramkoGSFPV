@@ -241,6 +241,26 @@ function heapMb(): number | null {
     return m ? m.usedJSHeapSize / 1048576 : null;
 }
 
+/**
+ * Whole-file reads for the bake. splat-transform's UrlReadFileSystem probes with `Range: bytes=0-0`
+ * and then reads byte ranges; SuperSplat serves some files brotli/gzip-encoded (about 12 % of the
+ * streamed scenes), where the ranges address the ENCODED bytes and the page gets pieces it cannot
+ * decode ("Expected property name ... at position 1" on bd04e182). A plain fetch lets the browser
+ * decode the whole file; the files are in its HTTP cache already (the renderer loaded them).
+ */
+export function wholeFileSystem(st: Pick<typeof import('@playcanvas/splat-transform'), 'MemoryReadFileSystem'>, base: string, f: (u: string) => Promise<Response> = fetch): import('@playcanvas/splat-transform').ReadFileSystem {
+    return {
+        async createSource(filename, progress) {
+            const r = await f(base + filename);
+            if (!r.ok) throw new Error(`${filename}: ${r.status}`);
+            // one throw-away store per file: only the returned source keeps the bytes
+            const mem = new st.MemoryReadFileSystem();
+            mem.set(filename, new Uint8Array(await r.arrayBuffer()));
+            return mem.createSource(filename, progress);
+        }
+    };
+}
+
 export async function bakeCollision(contentUrl: string, kind: 'meta' | 'lod-meta', device: GraphicsDevice, onStage: (stage: 'size' | 'read' | 'voxelize' | 'done') => void, o: BakeOptions = {}): Promise<BakeResult> {
     const voxelM = o.voxelM ?? BASE_VOXEL_M;
     const t0 = performance.now();
@@ -258,7 +278,7 @@ export async function bakeCollision(contentUrl: string, kind: 'meta' | 'lod-meta
         st.WebPCodec.wasmUrl = wasmUrl;
         const base = contentUrl.slice(0, contentUrl.lastIndexOf('/') + 1);
         const file = contentUrl.slice(base.length);
-        const fs = new st.UrlReadFileSystem(base);
+        const fs = wholeFileSystem(st, base);
         const sources = await st.readFile({ filename: file, inputFormat: kind === 'lod-meta' ? 'lod' : 'sog', fileSystem: fs });
         const src = kind === 'lod-meta' ? st.selectLod(sources[0], 0) : sources[0];
         // only what the voxeliser reads (as the CLI does): same octree, bit for bit, at half the memory
