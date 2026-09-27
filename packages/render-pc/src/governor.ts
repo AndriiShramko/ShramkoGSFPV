@@ -119,10 +119,11 @@ export class FrameGovernor {
 // of about 40 ms or more. The frame rate does not change, only the delay: rAF -> presentation is
 // 3 or 2 display periods instead of 1 (measured 2026-09-27 at 30 Hz: 100 / 67 / 33 ms, and the
 // page never recovers by itself). Chrome leaves the mode only when BeginFrames pass with no main
-// frame pending, so the guard skips the engine's rAF for a moment. Measured on the live page: a
-// skip of 1 period removes one late frame (3 -> 2, then 2 -> 1), a skip of 2 periods from 2 and
-// of 3 periods from 3 reach 1 in one go. The guard therefore skips (late frames + 1) periods,
-// measures again and repeats until it is at 1 frame.
+// frame pending, so the guard skips the engine's rAF for a moment. Measured on the live page at
+// 30 Hz: a skip of 3 periods reached 1 frame from 3 and from 2 every time (6 of 6); 1 period
+// removes one late frame (3 -> 2, 2 -> 1: 4 of 4); 2 periods from 2 worked only 3 times in 9 and
+// once made it 3. The guard therefore skips 3 periods, measures again, and on a second failure
+// steps down one period at a time, until it is at 1 frame.
 //
 // It measures rather than assumes: the renderer inserts a text node in a rAF and Chrome's Element
 // Timing reports the presentation time of the frame that committed it, the same frame as the
@@ -183,7 +184,10 @@ export class LatencyGuard {
     skips = 0;
     readonly log: GuardLogEntry[] = [];
     private lastFrame = -1;
+    private lastNow = -1;
     private measureAt = 0;
+    /** a measurement owed to a hitch; kept while another measurement is out */
+    private hitchDue = Infinity;
     private pendingSince = -1;
     private excuseNext = false;
     private episodeSkips = 0;
@@ -212,24 +216,33 @@ export class LatencyGuard {
         this.note({ t, what: 'trigger' });
     }
 
-    /** Every engine frame, inside its rAF (`t`: the rAF timestamp). A 'measure' is done in this frame. */
-    onFrame(t: number): GuardAction {
+    /**
+     * Every engine frame, inside its rAF: `t` the rAF timestamp, `now` when the callback ran.
+     * A 'measure' is done in this frame.
+     */
+    onFrame(t: number, now = t): GuardAction {
         const dt = this.lastFrame >= 0 ? t - this.lastFrame : NaN;
+        const dNow = this.lastNow >= 0 ? now - this.lastNow : NaN;
         this.lastFrame = t;
+        this.lastNow = now;
         // the interval that contains our own skip says nothing about the display or a hitch
         const excused = this.excuseNext;
         this.excuseNext = false;
         if (!excused && dt > 0 && dt <= 1000) this.period.add(t, dt);
         const P = this.period.ms;
         if (!this.active || !Number.isFinite(P)) return null;
+        // a main-thread task that long can put the compositor back into its slow state. It shows as
+        // a late callback more than as a gap in rAF timestamps: a BeginFrame that waited for the
+        // task keeps its own time (a 60 ms task went unnoticed by timestamps alone)
+        const hitch = !excused && ((dt > 1.5 * P && dt <= 1000) || (dNow > 1.5 * P && dNow <= 1000) || now - t > 0.5 * P);
+        if (hitch) this.hitchDue = Math.min(this.hitchDue, Math.max(t + this.opts.hitchDelayFrames * P, this.backoffUntil));
         if (this.pendingSince >= 0) {
             if (t - this.pendingSince < this.opts.measureTimeoutMs) return null;
             this.pendingSince = -1; // never reported (hidden, covered): try again at the next routine check
             this.measureAt = t + this.opts.sampleEveryMs;
         }
-        // a late frame: a main-thread task that long can put the compositor back into its slow state
-        if (!excused && dt > 1.5 * P && dt <= 1000) this.measureAt = Math.min(this.measureAt, Math.max(t + this.opts.hitchDelayFrames * P, this.backoffUntil));
-        if (t < this.measureAt) return null;
+        if (t < Math.min(this.measureAt, this.hitchDue)) return null;
+        this.hitchDue = Infinity;
         this.pendingSince = t;
         return { kind: 'measure' };
     }
@@ -253,8 +266,10 @@ export class LatencyGuard {
             return null;
         }
         // frames queue on the GPU (too heavy, or another app renders): the delay is that queue, and
-        // skipping would only add stutter; the quality governor deals with a GPU that is too slow
-        if (submitToDoneMs > P) {
+        // skipping would only add stutter; the quality governor deals with a GPU that is too slow.
+        // Not at 1 period: at a light load the driver lowers the clock until one frame's work
+        // nearly fills its share (4090 at 30 Hz: 18 ms at 1100 MHz, 14 ms at 1700 MHz)
+        if (submitToDoneMs > 1.5 * P) {
             this.episodeSkips = 0;
             this.measureAt = t + this.opts.sampleEveryMs;
             this.note({ t, what: 'gpu', ms: Math.round(submitToDoneMs) });
@@ -271,8 +286,10 @@ export class LatencyGuard {
         }
         this.episodeSkips++;
         this.skips++;
-        // (late frames + 1) periods: the measured way out of 3 and of 2 frames in one skip
-        const skip = Math.min(this.opts.maxSkipMs, Math.round(f) * P + 1);
+        // 3 periods twice (the way out of 3 and of 2 frames that always worked), then 1 period at a
+        // time (each removed one late frame); never 2 periods (it failed 6 times in 9)
+        const periods = this.episodeSkips <= 2 ? 3 : 1;
+        const skip = Math.min(this.opts.maxSkipMs, periods * P + 1);
         this.excuseNext = true;
         this.measureAt = t + skip + this.opts.settleMs;
         this.note({ t, what: 'skip', ms: Math.round(skip) });

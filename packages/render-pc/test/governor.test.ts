@@ -79,8 +79,9 @@ describe('quality governor', () => {
 
 /**
  * A simulated Chrome compositor: it presents `late` frames after the one that committed, the
- * load leaves it at 2 late frames, a skip of k periods removes up to k of them (as measured on the
- * live page: 34 ms -> one, 67 ms from 2 frames and 100 ms from 3 -> all), a 60 ms task adds one back.
+ * load leaves it at 2 late frames, a skip of 1 period removes one and a skip of 3 periods all of
+ * them (as measured on the live page), a 60 ms task adds one back. `stubborn` skips of 3 periods
+ * fail first (2 periods failed 6 times in 9 on the live page; the guard must not depend on luck).
  */
 class Page {
     t = 0;
@@ -89,6 +90,8 @@ class Page {
     holdUntil = 0;
     /** submit -> GPU done the renderer reports with each measurement */
     submitToDone = NaN;
+    /** the next callback runs this late behind its rAF timestamp (a task the timestamps do not show) */
+    private lateNext = 0;
     constructor(P: number) {
         this.P = P;
     }
@@ -106,19 +109,35 @@ class Page {
                 if (a?.kind === 'skip') this.skip(a.ms);
             }
             if (this.t < this.holdUntil) continue;
-            const a = g.onFrame(this.t);
+            const a = g.onFrame(this.t, this.t + this.lateNext);
+            this.lateNext = 0;
             if (a?.kind === 'measure') pending.push({ at: this.t + 3 * this.P, value: (1 + this.late) * this.P + 0.5 });
         }
     }
+    /** the next this many long skips do nothing */
+    stubborn = 0;
     skip(ms: number): void {
         const missed = Math.floor(ms / this.P); // BeginFrames that pass with no main frame
-        this.late = Math.max(0, this.late - missed);
         this.holdUntil = this.t + ms;
+        if (missed >= 2 && this.stubborn > 0) { this.stubborn--; return; }
+        this.late = missed >= 3 ? 0 : Math.max(0, this.late - missed);
     }
-    longTask(ms: number): void {
-        this.t += ms;
+    /** `hidden`: the BeginFrame that waited keeps its timestamp, only the callback is late */
+    longTask(ms: number, hidden = false): void {
+        if (hidden) this.lateNext = ms;
+        else this.t += ms;
         this.late = Math.max(this.late, 1);
     }
+}
+
+/** The same page, but the guard is fed rAF timestamps only (the first version of the guard). */
+function runWithoutCallbackTime(page: Page): Page['run'] {
+    return (g: LatencyGuard, ms: number) => {
+        const orig = g.onFrame.bind(g);
+        g.onFrame = (t: number) => orig(t, t);
+        Page.prototype.run.call(page, g, ms);
+        g.onFrame = orig;
+    };
 }
 
 describe('latency guard', () => {
@@ -147,6 +166,39 @@ describe('latency guard', () => {
             expect(g.log.filter((e) => e.what === 'sample').length).toBeGreaterThan(8);
         });
     }
+
+    it('when long skips do not take, it steps down one period at a time and still gets to 1 frame', () => {
+        const page = new Page(1000 / 30);
+        page.stubborn = 2;
+        const g = new LatencyGuard();
+        page.run(g, 2000);
+        g.active = true;
+        g.trigger(page.t);
+        page.run(g, 3000);
+        expect(page.late).toBe(0);
+        const lens = g.log.filter((e) => e.what === 'skip').map((e) => e.ms);
+        expect(lens).toEqual([101, 101, 34, 34]);
+    });
+
+    it('a task that only makes the callback late (same rAF timestamps) is caught within a few frames', () => {
+        for (const withNow of [true, false]) {
+            const page = new Page(1000 / 30);
+            const g = new LatencyGuard();
+            page.run(g, 2000);
+            g.active = true;
+            g.trigger(page.t);
+            page.run(g, 3000);
+            expect(page.late).toBe(0);
+            page.run(g, 1000); // mid-way between two routine measurements
+            const t0 = page.t;
+            page.longTask(60, true);
+            if (!withNow) page.run = runWithoutCallbackTime(page); // control: timestamps only
+            page.run(g, 600);
+            const skip = g.log.find((e) => e.what === 'skip' && e.t > t0);
+            if (withNow) expect(skip && skip.t - t0).toBeLessThan(400);
+            else expect(skip).toBeUndefined(); // only the routine measurement, later, would find it
+        }
+    });
 
     it('negative control: recover off (?guard=0) measures the slow state and never skips', () => {
         const page = new Page(1000 / 30);
@@ -177,7 +229,7 @@ describe('latency guard', () => {
 });
 
 describe('latency guard and the GPU', () => {
-    it('frames queued on the GPU (submit -> done above a period) are not skipped: that delay is the queue', () => {
+    it('frames queued on the GPU (submit -> done above 1.5 periods) are not skipped: that delay is the queue', () => {
         const page = new Page(1000 / 30);
         page.submitToDone = 150; // another app renders (measured: 156 ms with a 42 ms GPU load)
         const g = new LatencyGuard();
@@ -187,8 +239,8 @@ describe('latency guard and the GPU', () => {
         page.run(g, 10000);
         expect(g.skips).toBe(0);
         expect(g.log.some((e) => e.what === 'gpu')).toBe(true);
-        // control: the same slow state with an idle GPU is skipped out of
-        page.submitToDone = 12;
+        // control: the same slow state with a lightly loaded, down-clocked GPU is skipped out of
+        page.submitToDone = 1000 / 30; // one full period of work, no queue behind it
         page.run(g, 3000);
         expect(g.skips).toBeGreaterThan(0);
         expect(page.late).toBe(0);

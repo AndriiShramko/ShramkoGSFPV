@@ -462,7 +462,7 @@ export class SplatRenderer {
         // inside the rAF callback the document timeline's time is this frame's rAF timestamp
         const ct = document.timeline?.currentTime;
         const t = typeof ct === 'number' ? ct : performance.now();
-        const a = this.latencyGuard.onFrame(t);
+        const a = this.latencyGuard.onFrame(t, performance.now());
         if (a?.kind === 'measure') this.measurePresentation(t);
     };
 
