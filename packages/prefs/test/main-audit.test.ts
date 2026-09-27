@@ -138,8 +138,14 @@ describe('every URL parameter main reads is a setting\'s or listed with its reas
 });
 
 describe('IndexedDB: prefs and main\'s walls cache share one database', () => {
+    const storesOf = (src: string) => quoted(grab(src, /const IDB_STORES = \[([^\]]*)\]/, 'IDB_STORES'));
+
     it('same name, same three stores (whichever opens it first creates all of them)', () => {
         expect(grab(APP_WALLCACHE, /const IDB_NAME = '([^']+)'/, 'IDB_NAME')).toBe(IDB_NAME);
-        expect(quoted(grab(APP_WALLCACHE, /const IDB_STORES = \[([^\]]*)\]/, 'IDB_STORES'))).toEqual([...IDB_STORES]);
+        expect(storesOf(APP_WALLCACHE)).toEqual([...IDB_STORES]);
+    });
+
+    it('control: a store renamed in the walls cache is caught', () => {
+        expect(storesOf(APP_WALLCACHE.replace("'logs'", "'flightlogs'"))).not.toEqual([...IDB_STORES]);
     });
 });
