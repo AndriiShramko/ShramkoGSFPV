@@ -144,10 +144,13 @@ if (want('B2')) {
 // so the banner shows on every load and its own buttons are audited too. A string: nothing here may
 // be rewritten by the bundler.
 const AUDIT_INIT = `(() => {
-  const s = { clipboard: 0, device: 0, download: 0, open: 0 };
+  const s = { clipboard: 0, device: 0, download: 0, open: 0, file: 0 };
   window.__auditSide = s;
   try { const c = navigator.clipboard; if (c) { const w = c.writeText.bind(c); c.writeText = (t) => { s.clipboard++; return w(t); }; } } catch (e) {}
   try { if (navigator.hid) navigator.hid.requestDevice = async () => { s.device++; return []; }; } catch (e) {}
+  // a file picker counts as the effect (and is not opened: a native dialog would block the run)
+  const ic = HTMLInputElement.prototype.click;
+  HTMLInputElement.prototype.click = function () { if (this.type === 'file') { s.file++; return; } return ic.call(this); };
   const ac = HTMLAnchorElement.prototype.click;
   HTMLAnchorElement.prototype.click = function () { if (this.download) s.download++; return ac.call(this); };
   const wo = window.open;
@@ -158,7 +161,7 @@ const AUDIT_INIT = `(() => {
 type Row = { i: number; tag: string; href: string | null; abs: string; text: string; banner: boolean };
 type Tagged = { rows: Row[]; hidden: number; disabled: string[]; scopeFound: boolean };
 type Planted = { text: string; belowFold: boolean };
-type Side = { clipboard: number; device: number; download: number; open: number };
+type Side = { clipboard: number; device: number; download: number; open: number; file: number };
 interface Surface {
     name: string;
     open: (page: Page) => Promise<void>;
@@ -361,7 +364,7 @@ async function auditSurface(page: Page, s: Surface): Promise<SurfaceResult> {
                 // focus moved to a field it asks for; a click focusing the clicked control itself is not an effect
                 if (after.focus !== before.focus && !after.focusIsClicked && !/^<button/.test(after.focus)) eff.push('focus');
                 if (Math.abs(after.y - before.y) > 20) notes.push('scroll (not counted)');
-                for (const k of ['clipboard', 'device', 'download', 'open'] as (keyof Side)[]) if ((after.side[k] ?? 0) > (before.side[k] ?? 0)) eff.push(k);
+                for (const k of ['clipboard', 'device', 'download', 'open', 'file'] as (keyof Side)[]) if ((after.side[k] ?? 0) > (before.side[k] ?? 0)) eff.push(k);
             }
             if (downloads > 0 && !eff.includes('download')) eff.push('download');
             if (caused.length) eff.push(`req ${caused[0]}`);
@@ -477,7 +480,7 @@ if (want('B3')) {
     record('B3', {
         pass,
         release,
-        rule: 'links: a real target (internal ones answer 200/30x, same-page anchors exist, anchors on another page exist in its HTML); buttons: each on a fresh load, scrolled into view BEFORE a 1 s baseline, clicked by data-audit-id; within 500 ms of the click a DOM mutation outside what changed in the baseline, a navigation, a request (not an image or font, not to a host busy in the baseline except documents; /api/ only if the baseline had none and not a crash beacon), focus moving to a non-button that is not the clicked control, a clipboard write, a device chooser, a download or a new window; scrolling is recorded but never counted; consent decline hides the banner, accept hides it and requests gtag',
+        rule: 'links: a real target (internal ones answer 200/30x, same-page anchors exist, anchors on another page exist in its HTML); buttons: each on a fresh load, scrolled into view BEFORE a 1 s baseline, clicked by data-audit-id; within 500 ms of the click a DOM mutation outside what changed in the baseline, a navigation, a request (not an image or font, not to a host busy in the baseline except documents; /api/ only if the baseline had none and not a crash beacon), focus moving to a non-button that is not the clicked control, a clipboard write, a device chooser, a file picker, a download or a new window; scrolling is recorded but never counted; consent decline hides the banner, accept hides it and requests gtag',
         totals: { controls: Object.values(pages).reduce((a, r) => a + r.total, 0), buttonsClicked: Object.values(pages).reduce((a, r) => a + r.buttons, 0), linksChecked: Object.values(pages).reduce((a, r) => a + r.links, 0) },
         pages,
         control: { injectedInertButtons: 'landing: first and last in <main> (the last below the fold); flight: one fixed over the canvas', fired, runs: controls }
