@@ -2,9 +2,12 @@
 // render scale and the splat budget when frames are missed, and raising them again slowly.
 // Pure logic on frame timestamps (no engine, no DOM), so it is tested without a GPU.
 //
-// A missed frame is an interval longer than 1.5 display periods: at 60 Hz a frame the GPU could
+// A missed frame is an interval longer than 1.25 display periods: at 60 Hz a frame the GPU could
 // not finish in time shows up as a 33 ms interval instead of 16.7 ms. The display period itself
 // is learned from the shortest intervals seen (a 30 Hz screen stays 30 Hz: that is not "slow").
+
+/** a frame interval above this many display periods counts as a missed frame */
+export const MISSED_PERIODS = 1.25;
 
 export interface QualityStep {
     renderScale: number; // backbuffer / CSS pixels * devicePixelRatio
@@ -87,7 +90,9 @@ export class FrameGovernor {
         if (dt <= 0 || dt > 1000) return null; // paused tab, debugger: not a frame-rate signal
         this.period.add(t, dt);
         const period = this.period.ms;
-        this.log.push({ t, missed: dt > 1.5 * period });
+        // 1.25 periods: a frame that took ~1.4 periods already makes the display repeat one (a 45 ms
+        // frame on a 30 Hz screen); 1.5 let a steady 22 fps pass as 'on time'
+        this.log.push({ t, missed: dt > MISSED_PERIODS * period });
         while (this.log.length && t - this.log[0].t > this.opts.upWindowMs) this.log.shift();
         if (!this.enabled) return null;
         const since = t - this.lastChange;
@@ -245,7 +250,7 @@ export class LatencyGuard {
         if (!excused && dt > 0 && dt <= 1000) this.period.add(t, dt);
         const P = this.period.ms;
         if (!excused && dt > 0 && dt <= 1000 && Number.isFinite(P)) {
-            this.recent.push({ t, late: dt > 1.5 * P });
+            this.recent.push({ t, late: dt > MISSED_PERIODS * P });
             while (this.recent.length && t - this.recent[0].t > this.opts.overloadWindowMs) this.recent.shift();
         }
         if (!this.active || !Number.isFinite(P)) return null;

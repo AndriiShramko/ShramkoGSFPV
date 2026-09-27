@@ -41,3 +41,21 @@ describe('latency guard under overload', () => {
         expect(g.onSample(t, 3 * P)?.kind).toBe('skip');
     });
 });
+
+describe('missed-frame threshold', () => {
+    it('a steady 1.36-period interval (45 ms frames on a 30 Hz screen) makes the governor step down', () => {
+        const gov = new FrameGovernor();
+        let u = 0;
+        gov.onFrame(u);
+        for (let i = 0; i < 90; i++) { u += P; gov.onFrame(u); }
+        for (let i = 0; i < 90; i++) { u += 1.36 * P; gov.onFrame(u); }
+        expect(gov.step).toBeGreaterThan(0);
+    });
+    it('control: normal jitter (+-6 %) is not a missed frame', () => {
+        const gov = new FrameGovernor();
+        let u = 0;
+        gov.onFrame(u);
+        for (let i = 0; i < 300; i++) { u += P * (i % 2 ? 1.06 : 0.94); gov.onFrame(u); }
+        expect(gov.step).toBe(0);
+    });
+});
