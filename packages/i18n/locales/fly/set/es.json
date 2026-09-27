@@ -1,1 +1,21 @@
-{}
+{
+  "set.voxels.show": "Rejilla de vóxeles",
+  "set.voxels.show.help": "Muestra las paredes como vóxeles: sobre el escaneo o en su lugar (el escaneo se oculta y vuelas sobre los vóxeles). V la cambia; al recargar la página vuelve el escaneo.",
+  "set.voxels.show.opt.off": "Oculta",
+  "set.voxels.show.opt.overlay": "Sobre el escaneo",
+  "set.voxels.show.opt.only": "Solo vóxeles",
+  "set.voxels.style": "Estilo de los vóxeles",
+  "set.voxels.style.help": "Cómo se dibujan los vóxeles. Los trozos flotantes de las paredes destacan en todos los estilos; «Flotantes en rojo» colorea solo esos.",
+  "set.voxels.style.opt.solid": "Cubos sólidos",
+  "set.voxels.style.opt.wire": "Aristas",
+  "set.voxels.style.opt.height": "Colores por altura",
+  "set.voxels.style.opt.floaters": "Flotantes en rojo",
+  "set.voxels.opacity": "Opacidad de los vóxeles sobre el escaneo",
+  "set.voxels.opacity.help": "Cuánto tapan los vóxeles mientras el escaneo se ve debajo.",
+  "set.voxels.opacityOnly": "Opacidad de los vóxeles, solo vóxeles",
+  "set.voxels.opacityOnly.help": "Cuánto tapan los vóxeles con el escaneo oculto.",
+  "set.scene.walls": "Paredes (colisiones)",
+  "set.scene.walls.help": "Desactivadas: el dron atraviesa todo, sin choques. Se guarda para cada escaneo; el autor puede desactivar por defecto las paredes de un escaneo con mucho ruido. C lo cambia.",
+  "set.scene.walls.opt.on": "Activadas",
+  "set.scene.walls.opt.off": "Desactivadas"
+}

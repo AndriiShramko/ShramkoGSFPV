@@ -1,1 +1,21 @@
-{}
+{
+  "set.voxels.show": "Voxel grid",
+  "set.voxels.show.help": "Shows the walls as voxels: over the scan, or instead of it (the scan hidden, you fly on the voxels). V switches it; a reload shows the scan again.",
+  "set.voxels.show.opt.off": "Off",
+  "set.voxels.show.opt.overlay": "Over the scan",
+  "set.voxels.show.opt.only": "Voxels only",
+  "set.voxels.style": "Voxel style",
+  "set.voxels.style.help": "How the voxels are drawn. Floating pieces of the walls stand out in every style; \"Floaters in red\" colours only them.",
+  "set.voxels.style.opt.solid": "Solid cubes",
+  "set.voxels.style.opt.wire": "Wireframe",
+  "set.voxels.style.opt.height": "Height colours",
+  "set.voxels.style.opt.floaters": "Floaters in red",
+  "set.voxels.opacity": "Voxel opacity over the scan",
+  "set.voxels.opacity.help": "How solid the voxels look while the scan shows under them.",
+  "set.voxels.opacityOnly": "Voxel opacity, voxels only",
+  "set.voxels.opacityOnly.help": "How solid the voxels look with the scan hidden.",
+  "set.scene.walls": "Walls (collisions)",
+  "set.scene.walls.help": "Off: the drone flies through everything, no crashes. Kept for each scan; the author may switch the walls of a noisy scan off by default. C switches it.",
+  "set.scene.walls.opt.on": "On",
+  "set.scene.walls.opt.off": "Off"
+}

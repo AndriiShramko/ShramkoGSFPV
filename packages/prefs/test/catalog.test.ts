@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { DEFAULT_DRONE_FIELDS, KEYMAP, SCHEMA, buildCatalogue, helpKey, keysFor, labelKey } from '../src';
 import type { Dict, KeyBinding } from '../src';
-import { PRESETS } from './helpers';
+import { MAIN_SETTINGS, PRESETS, REPO } from './helpers';
 
 const LANGS = ['en', 'es', 'pl', 'ru'];
 
@@ -9,7 +11,7 @@ const LANGS = ['en', 'es', 'pl', 'ru'];
 function dicts(): Record<string, Record<string, string>> {
     const out: Record<string, Record<string, string>> = {};
     for (const l of LANGS) {
-        const d: Record<string, string> = { 'prefs.on': `on-${l}`, 'prefs.off': `off-${l}`, 'prefs.fromPreset': `preset-${l}` };
+        const d: Record<string, string> = { 'prefs.on': `on-${l}`, 'prefs.off': `off-${l}`, 'prefs.fromPreset': `preset-${l}`, 'prefs.fromCurated': `curated-${l}` };
         for (const def of SCHEMA.defs) {
             d[labelKey(def)] = `${def.id}-${l}`;
             d[helpKey(def)] = `help ${def.id}-${l}`;
@@ -47,8 +49,14 @@ describe('buildCatalogue (I.6)', () => {
 
     it('a planned def needs no translation yet', () => {
         const d = dicts();
-        for (const l of LANGS) for (const k of Object.keys(d[l])) if (k.startsWith('set.voxels.')) delete d[l][k];
+        // recording is planned as a whole (the voxel grid, planned in wave 1, shipped on main since)
+        for (const l of LANGS) for (const k of Object.keys(d[l])) if (k.startsWith('set.recording.') || k === 'set.voxels.radiusM' || k === 'set.voxels.radiusM.help') delete d[l][k];
         expect(() => build(d)).not.toThrow();
+    });
+
+    it('a per-scan default shows its fallback and says it is per scan', () => {
+        const row = build().locales.pl.groups.flatMap((g) => g.settings).find((s) => s.id === 'scene.walls')!;
+        expect(row).toMatchObject({ type: 'enum', default: 'on-pl (curated-pl)', range: 'on-pl / off-pl', scope: 'scene', apply: 'life' });
     });
 
     it('rows carry label, help, default and range in each language, and keys only when shipped', () => {
@@ -86,5 +94,38 @@ describe('buildCatalogue (I.6)', () => {
         expect(c.counts.modes).toBe(SCHEMA.byId.get('flight.mode')!.status === 'shipped' ? 3 : 2);
         expect(c.generated).toBe('2026-10-05');
         expect(c.schemaVersion).toBe(1);
+    });
+});
+
+/**
+ * The real dictionaries, merged as apps/fly/src/i18n.ts merges them: the flat file, then every
+ * namespace. The settings shipped since v0.2 (main's walls switch and voxel grid) have all their
+ * catalogue texts; v0.2's own settings get theirs with W2-1 (the settings UI), so they are not
+ * built here.
+ */
+describe('the real dictionaries carry every text of the settings shipped since v0.2', () => {
+    const FLY = join(REPO, 'packages', 'i18n', 'locales', 'fly');
+    const real = (): Record<string, Record<string, string>> => Object.fromEntries(LANGS.map((l) => {
+        const d: Record<string, string> = JSON.parse(readFileSync(join(FLY, `${l}.json`), 'utf8'));
+        for (const ns of readdirSync(FLY).filter((n) => statSync(join(FLY, n)).isDirectory())) Object.assign(d, JSON.parse(readFileSync(join(FLY, ns, `${l}.json`), 'utf8')));
+        return [l, d];
+    }));
+    const since = { ...SCHEMA, defs: SCHEMA.defs.filter((d) => MAIN_SETTINGS.includes(d.id)) };
+    const buildReal = (d: Record<string, Record<string, string>>) => buildCatalogue(since, [], d, PRESETS, { generated: '2026-10-05' });
+
+    it('builds in all four languages with the English text in en', () => {
+        expect(since.defs.map((d) => d.id).sort()).toEqual([...MAIN_SETTINGS].sort());
+        const c = buildReal(real());
+        const en = c.locales.en.groups.flatMap((g) => g.settings);
+        expect(c.locales.en.groups.map((g) => g.title)).toEqual(['Walls and voxel grid']);
+        expect(en.find((s) => s.id === 'scene.walls')).toMatchObject({ label: 'Walls (collisions)', default: 'On (per scan, set by its author)', range: 'On / Off' });
+        expect(en.find((s) => s.id === 'voxels.style')).toMatchObject({ default: 'Wireframe', range: 'Solid cubes / Wireframe / Height colours / Floaters in red' });
+        for (const l of LANGS) expect(c.locales[l].groups.flatMap((g) => g.settings)).toHaveLength(MAIN_SETTINGS.length);
+    });
+
+    it('control: one text missing in one language throws, naming it', () => {
+        const d = real();
+        delete d.ru['set.scene.walls.opt.off'];
+        expect(() => buildReal(d)).toThrow(/ru: set\.scene\.walls\.opt\.off/);
     });
 });

@@ -69,6 +69,22 @@ export function localStorageLegacy(storage: Storage | null = defaultStorage()): 
     };
 }
 
+/** The storage's key names (the per-scan legacy keys are found by prefix); read-only. */
+export function localStorageKeys(storage: Pick<Storage, 'length' | 'key'> | null = defaultStorage()): () => string[] {
+    return () => {
+        const out: string[] = [];
+        try {
+            for (let i = 0; storage && i < storage.length; i++) {
+                const k = storage.key(i);
+                if (k !== null) out.push(k);
+            }
+        } catch {
+            /* blocked storage: no keys */
+        }
+        return out;
+    };
+}
+
 /** One cookie as a setting's storage. The landing reads NEXT_LOCALE, so the format is the one it writes. */
 export class CookieValue implements ValueBackend {
     constructor(readonly name: string, private readonly o: { doc?: { cookie: string } | null; allowed?: readonly string[]; maxAgeS?: number } = {}) {}
@@ -155,7 +171,12 @@ export function flushOnHide(store: PrefsStore, win: Listen | null = defaultWindo
 
 export type IdbStoreName = 'handles' | 'logs' | 'blobs';
 export const IDB_NAME = 'gsfpv';
-/** handles: the recording folder; logs: saved flight logs; blobs: reserved (A.5) */
+/**
+ * handles: the recording folder; logs: saved flight logs; blobs: main's walls cache (apps/fly
+ * wallcache.ts opens this same database and creates the same three stores, keys 'walls:' and
+ * 'wallsmeta:'). The walls cache is machine-local data with its own zip export, not preferences:
+ * it is never part of the settings document or file (A.5).
+ */
 export const IDB_STORES: readonly IdbStoreName[] = ['handles', 'logs', 'blobs'];
 
 /** A small promise wrapper over the `gsfpv` database: one key-value store per name. */
@@ -275,7 +296,7 @@ export function openBrowserPrefs(schema: Schema, presets: PresetResolver, o: Bro
         origin = '';
     }
     const external: Record<string, ValueBackend> = schema.byId.has('ui.language') ? { 'ui.language': new CookieValue('NEXT_LOCALE', { allowed: ['en', 'es', 'pl', 'ru'], doc: cookieDoc }) } : {};
-    const store = new PrefsStore(schema, new LocalStorageBackend(PREFS_KEY, storage, win !== undefined ? win : defaultWindow()), presets, { legacy, external, origin, ...storeOptions });
+    const store = new PrefsStore(schema, new LocalStorageBackend(PREFS_KEY, storage, win !== undefined ? win : defaultWindow()), presets, { legacy, legacyKeys: localStorageKeys(storage), external, origin, ...storeOptions });
     const offHide = flushOnHide(store, win !== undefined ? win : defaultWindow(), doc !== undefined ? doc : typeof document === 'undefined' ? null : document);
     let offPersist: () => void = () => {};
     void requestPersistence(store, storageManager !== undefined ? storageManager : defaultStorageManager()).then((off) => { offPersist = off; });

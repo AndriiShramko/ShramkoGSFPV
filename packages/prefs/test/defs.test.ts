@@ -1,14 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { DRONE_IDS, RATE_BOUNDS, SCHEMA, actionsOf, bindingOf, isPresetRef, validateFolder, validatePid, validateRates, validateThrottle, validateTransform } from '../src';
-import type { NumDef, SettingDef } from '../src';
+import { DRONE_IDS, RATE_BOUNDS, SCHEMA, actionsOf, bindingOf, defineSettings, isCuratedRef, isPresetRef, validateFolder, validatePid, validateRates, validateThrottle, validateTransform } from '../src';
+import type { EnumDef, NumDef, SettingDef } from '../src';
 import { RATE_BOUNDS as SIM_RATE_BOUNDS } from '../../sim-core/src/rates';
-import { PRESETS, REPO } from './helpers';
+import { MAIN_SETTINGS, PRESETS, REPO, V02_SETTINGS } from './helpers';
 
 /**
- * docs/architecture-v03.md A.8, row by row: id, group, scope, type, default, apply.
- * 'preset:<field>' = the drone preset's field; null = the preset's own tune.
+ * docs/architecture-v03.md A.8, row by row, brought up to what main ships (the voxel grid and the
+ * walls switch landed before prefs was wired, see defs/voxels.ts and defs/scene.ts): id, group,
+ * scope, type, default, apply. 'preset:<field>' = the drone preset's field; 'curated:<field>|x' =
+ * the admin's value per scan in showcase.json, else x; null = the preset's own tune.
  */
 const A8: [string, string, string, string, unknown, string][] = [
     ['flight.mode', 'flight', 'global', 'enum', 'angle', 'live'],
@@ -32,6 +34,7 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['display.units', 'display', 'global', 'enum', 'metric', 'live'],
     ['display.quality', 'display', 'global', 'number', 1, 'live'],
     ['display.governor', 'display', 'global', 'bool', true, 'live'],
+    ['display.latencyGuard', 'display', 'global', 'bool', true, 'live'],
     ['display.reducedMotion', 'display', 'global', 'enum', 'system', 'live'],
     ['display.frameStats', 'display', 'global', 'bool', false, 'live'],
     ['stats.onDisarm', 'display', 'global', 'bool', true, 'live'],
@@ -55,10 +58,12 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['scenes.allowNoWalls', 'scenes', 'global', 'bool', false, 'live'],
     ['scene.transform', 'scenes', 'scene', 'json', null, 'live'],
     ['scene.dropFloaters', 'voxels', 'scene', 'number', 0, 'life'],
+    ['scene.walls', 'voxels', 'scene', 'enum', 'curated:walls|on', 'life'],
     ['voxels.show', 'voxels', 'global', 'enum', 'off', 'live'],
-    ['voxels.opacity', 'voxels', 'global', 'number', 0.35, 'live'],
-    ['voxels.style', 'voxels', 'global', 'enum', 'grid', 'live'],
-    ['voxels.radiusM', 'voxels', 'global', 'number', 15, 'live'],
+    ['voxels.opacity', 'voxels', 'global', 'number', 0.55, 'live'],
+    ['voxels.opacityOnly', 'voxels', 'global', 'number', 1, 'live'],
+    ['voxels.style', 'voxels', 'global', 'enum', 'wire', 'live'],
+    ['voxels.radiusM', 'voxels', 'global', 'number', 20, 'live'],
     ['recording.fps', 'recording', 'global', 'enum', '60', 'live'],
     ['recording.resolution', 'recording', 'global', 'enum', '1080p', 'live'],
     ['recording.auto', 'recording', 'global', 'bool', false, 'live'],
@@ -76,13 +81,10 @@ function untranslatedNewShipped(defs: readonly SettingDef[]): string[] {
     return defs.filter((d) => d.status === 'shipped' && !V02_SETTINGS.includes(d.id) && dicts.some((t) => !t[`set.${d.id}`] || !t[`set.${d.id}.help`])).map((d) => d.id);
 }
 
-/** What a pilot could change in v0.2 (panel, picker, Controls screen, Betaflight import, F3). */
-const V02_SETTINGS = ['camera.fovDeg', 'camera.uptiltDeg', 'display.hud', 'display.quality', 'display.reducedMotion', 'display.frameStats', 'ui.language', 'input.stickMode', 'drone.current', 'physics.gravity', 'physics.gravityMode', 'physics.vCrash', 'physics.tauMs', 'physics.dragScale', 'tune.pid', 'tune.rates', 'tune.throttle'];
-
 describe('SCHEMA is the A.8 table', () => {
-    it('has the 53 settings of A.8, each with its group, scope, type, default and apply', () => {
-        expect(SCHEMA.defs).toHaveLength(53);
-        const got = SCHEMA.defs.map((d) => [d.id, d.group, d.scope, d.type, isPresetRef(d.default) ? `preset:${d.default.preset}` : d.default, d.apply]);
+    it('has the 56 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard), each with its group, scope, type, default and apply', () => {
+        expect(SCHEMA.defs).toHaveLength(56);
+        const got = SCHEMA.defs.map((d) => [d.id, d.group, d.scope, d.type, isPresetRef(d.default) ? `preset:${d.default.preset}` : isCuratedRef(d.default) ? `curated:${d.default.curated}|${String(d.default.fallback)}` : d.default, d.apply]);
         // order inside a group follows the def files, not the table's rows
         const byId = (a: unknown[], b: unknown[]) => String(a[0]).localeCompare(String(b[0]));
         expect([...got].sort(byId)).toEqual([...A8].sort(byId));
@@ -94,6 +96,11 @@ describe('SCHEMA is the A.8 table', () => {
         for (const id of V02_SETTINGS) expect(shipped, id).toContain(id);
         expect(untranslatedNewShipped(SCHEMA.defs)).toEqual([]);
         expect(SCHEMA.defs.every((d) => d.status === 'shipped' || d.status === 'planned')).toBe(true);
+    });
+
+    it('what a pilot can change on the live site today is shipped, and nothing else (v0.2 plus main\'s walls switch and voxel grid)', () => {
+        const shipped = SCHEMA.defs.filter((d) => d.status === 'shipped').map((d) => d.id);
+        expect([...shipped].sort()).toEqual([...V02_SETTINGS, ...MAIN_SETTINGS].sort());
     });
 
     it('control: flipping a new setting to shipped before its translations exist is caught', () => {
@@ -113,8 +120,15 @@ describe('SCHEMA is the A.8 table', () => {
         expect(range('level.angleLimitDeg')).toEqual([10, 85]);
         expect(range('physics.idlePct')).toEqual([0, 15]);
         expect(range('scene.dropFloaters')).toEqual([0, 64]);
-        expect(range('voxels.radiusM')).toEqual([5, 40]);
+        // main's: the test hook clamps the radius to 2-60 m, the opacity slider runs 5-100 %
+        expect(range('voxels.radiusM')).toEqual([2, 60]);
+        expect(range('voxels.opacity')).toEqual([0.05, 1]);
+        expect(range('voxels.opacityOnly')).toEqual([0.05, 1]);
         expect(range('recording.splitMin')).toEqual([1, 30]);
+    });
+
+    it('only the voxel view lasts one page load; nothing else opts out of storage', () => {
+        expect(SCHEMA.defs.filter((d) => d.persist === false).map((d) => d.id)).toEqual(['voxels.show']);
     });
 
     it('drone.current lists exactly the preset files in sim-core', () => {
@@ -153,8 +167,32 @@ describe('SCHEMA is the A.8 table', () => {
         for (const [, acts] of withKeys) for (const a of acts as string[]) expect(bindingOf(a)).toBeDefined();
     });
 
-    it('legacy URL parameters: ?g= ?gm= ?drone= ?governor=', () => {
-        expect(Object.fromEntries(SCHEMA.defs.filter((d) => d.url).map((d) => [d.url, d.id]))).toEqual({ governor: 'display.governor', drone: 'drone.current', g: 'physics.gravity', gm: 'physics.gravityMode' });
+    it('legacy URL parameters: v0.2\'s ?g= ?gm= ?drone= ?governor=, main\'s ?guard= and its this-load switches ?walls= ?voxels= ?vstyle= ?vradius=', () => {
+        expect(Object.fromEntries(SCHEMA.defs.filter((d) => d.url).map((d) => [d.url, d.id]))).toEqual({
+            governor: 'display.governor', guard: 'display.latencyGuard', drone: 'drone.current', g: 'physics.gravity', gm: 'physics.gravityMode',
+            walls: 'scene.walls', voxels: 'voxels.show', vstyle: 'voxels.style', vradius: 'voxels.radiusM'
+        });
+    });
+});
+
+describe('defineSettings: a per-scan default and a setting that is never stored', () => {
+    const walls = SCHEMA.byId.get('scene.walls') as EnumDef;
+    const show = SCHEMA.byId.get('voxels.show') as EnumDef;
+    const withDef = (d: SettingDef) => SCHEMA.defs.map((x) => (x.id === d.id ? d : x));
+
+    it('control: the real schema with both passes', () => {
+        expect(() => defineSettings(SCHEMA.defs)).not.toThrow();
+    });
+
+    it('a curated default only on a scene setting, with a valid fallback and a plain field name', () => {
+        expect(() => defineSettings(withDef({ ...walls, scope: 'global' }))).toThrow(/scene\.walls: a curated default needs scope 'scene'/);
+        expect(() => defineSettings(withDef({ ...walls, default: { curated: 'walls', fallback: 'maybe' } }))).toThrow(/scene\.walls: default 'maybe' is not an option/);
+        expect(() => defineSettings(withDef({ ...walls, default: { curated: 'walls.admin', fallback: 'on' } }))).toThrow(/curated field 'walls\.admin' is not a plain name/);
+    });
+
+    it('a setting that is never stored must be global, and persist is only ever false', () => {
+        expect(() => defineSettings(withDef({ ...show, scope: 'scene' }))).toThrow(/voxels\.show: a setting that is not stored needs scope 'global'/);
+        expect(() => defineSettings(withDef({ ...show, persist: true as unknown as false }))).toThrow(/voxels\.show: persist is false or absent/);
     });
 });
 

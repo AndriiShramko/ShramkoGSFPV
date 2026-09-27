@@ -4,7 +4,7 @@
 // not promise what the simulator does not do yet. A shipped entry without its text in any
 // language throws, so an untranslated row cannot reach the site.
 
-import { actionsOf, helpKey, isPresetRef, labelKey, presetValue } from './schema';
+import { actionsOf, helpKey, isCuratedRef, isPresetRef, labelKey, literalDefault, presetValue } from './schema';
 import type { Apply, GroupId, Schema, Scope, SettingDef, Unit } from './schema';
 import type { ActionId, KeyBinding } from './keymap';
 import { RATE_TYPES } from './defs/tune';
@@ -58,7 +58,7 @@ function num(v: number): string {
 /**
  * Builds the catalogue. dicts: one flat dictionary per locale (the fly dictionary merged with its
  * namespaces). Throws listing every missing text: a shipped setting's label, help, group title,
- * option labels, on/off, a preset-default note, and each shipped key's label.
+ * option labels, on/off, a preset-default or per-scan-default note, and each shipped key's label.
  */
 export function buildCatalogue(schema: Schema, keymap: readonly KeyBinding[], dicts: Readonly<Record<string, Dict>>, presets: readonly CataloguePreset[], o: CatalogueOptions = {}): Catalogue {
     const shipped = schema.defs.filter((d) => d.status === 'shipped');
@@ -85,28 +85,31 @@ export function buildCatalogue(schema: Schema, keymap: readonly KeyBinding[], di
         const unit = (u: Unit | undefined) => (u === undefined ? '' : (dict[`prefs.unit.${u}`] ?? UNIT_SYMBOL[u]));
         const setting = (d: SettingDef): CatalogueSetting => {
             let def = '', range = '';
+            const lit = literalDefault(d);
             switch (d.type) {
                 case 'bool':
-                    def = tr(d.default ? 'prefs.on' : 'prefs.off');
+                    def = tr(lit ? 'prefs.on' : 'prefs.off');
                     break;
                 case 'number': {
                     const u = unit(d.unit);
                     if (isPresetRef(d.default)) {
                         const v = presetValue(d.default, resolver, defaultDrone) ?? d.default.fallback ?? 0;
                         def = `${num(v)}${u} (${tr('prefs.fromPreset')})`;
-                    } else def = `${num(d.default)}${u}`;
+                    } else def = `${num(lit as number)}${u}`;
                     const lo = presetValue(d.min, resolver, defaultDrone), hi = presetValue(d.max, resolver, defaultDrone);
                     range = lo !== undefined && hi !== undefined ? `${num(lo)}–${num(hi)}${u}` : '';
                     break;
                 }
                 case 'enum':
-                    def = tr(`set.${d.id}.opt.${d.default}`);
+                    def = tr(`set.${d.id}.opt.${String(lit)}`);
                     range = d.options.map((x) => tr(`set.${d.id}.opt.${x}`)).join(' / ');
                     break;
                 case 'json':
                     def = d.default === null ? tr('prefs.fromPreset') : '';
                     break;
             }
+            // a per-scan default of the admin (showcase.json): the fallback, and a note that scans differ
+            if (isCuratedRef(d.default)) def = `${def} (${tr('prefs.fromCurated')})`;
             const caps = actionsOf(d).flatMap((a) => keys.find((b) => b.action === a)?.keys.map((k) => k.cap) ?? []);
             return { id: d.id, label: tr(labelKey(d)), help: tr(helpKey(d)), type: d.type, default: def, range, scope: d.scope, apply: d.apply, keys: caps, advanced: !!d.advanced };
         };

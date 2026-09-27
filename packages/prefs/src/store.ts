@@ -4,9 +4,11 @@
 //
 // Where a value comes from: the session layer (URL, test hook) ?? the stored entry of the def's
 // scope (global, drone[ctx.drone], scene[ctx.scene]) ?? the default (a literal, the drone preset's
-// field, or a scene's curated scale). ctx.drone defaults to the drone flown now (drone.current).
+// field, the admin's value for the scan in showcase.json, or a scene's curated scale). ctx.drone
+// defaults to the drone flown now (drone.current). A def with `persist: false` lives in the
+// session layer only (this page load).
 
-import { boundsOf, canonicalJson, checkValue, isPresetRef, presetValue, SCHEMA_VERSION } from './schema';
+import { boundsOf, canonicalJson, checkValue, isCuratedRef, isPresetRef, presetValue, SCHEMA_VERSION } from './schema';
 import type { GroupId, PresetResolver, Schema, Scope, SettingDef } from './schema';
 import { COLLECTION_IDS, PREFS_APP_VERSION, clone, defaultCollection, emptyDoc, isReservedKey, normalizeDoc, parseDocInput, validateCollection } from './doc';
 import type { CollectionId, Collections, PrefsDoc, PrefsFile } from './doc';
@@ -39,8 +41,10 @@ export interface StoreOptions {
     app?: string;
     /** written into export files (the page passes its origin) */
     origin?: string;
-    /** read-only access to v0.2's keys, for the first-boot migration */
+    /** read-only access to the keys written before v0.3, for the first-boot migration */
     legacy?: (key: string) => string | null;
+    /** the storage's key names, for the per-scan legacy keys (migrate.ts LEGACY_PREFIXES) */
+    legacyKeys?: () => readonly string[];
     /** settings that live outside the document, by id */
     external?: Readonly<Record<string, ValueBackend>>;
 }
@@ -124,7 +128,7 @@ export class PrefsStore {
         if (text === null) {
             // first boot of v0.3 (or a first visit): v0.2's keys become the document, once
             if (o.legacy) {
-                const m = migrateLegacy(o.legacy, { app: this.app, savedAt: this.iso() });
+                const m = migrateLegacy(o.legacy, { app: this.app, savedAt: this.iso() }, o.legacyKeys);
                 this.doc = m.doc;
                 this.migrated = { from: 0, found: m.found, moved: m.note.moved, ignored: m.note.ignored };
             } else this.doc = emptyDoc(this.app, this.iso());
@@ -169,6 +173,13 @@ export class PrefsStore {
 
     defaultOf<T = unknown>(id: string, ctx?: Ctx): T {
         const def = this.def(id);
+        if (isCuratedRef(def.default)) {
+            // the admin's value for this scan (showcase.json) when it is a valid one, else the fallback
+            const scene = ctx?.scene;
+            const raw = scene !== undefined && !isReservedKey(scene) ? this.presets.curated?.(scene, def.default.curated) : undefined;
+            const c = raw === undefined ? null : checkValue(def, raw, def.type === 'number' ? boundsOf(def, this.presets, this.droneOf(ctx)) : undefined);
+            return clone(c?.ok ? c.value : def.default.fallback) as T;
+        }
         if (def.type === 'json' && def.kind === 'transform') {
             // a scene's default size is the admin's curated scale (E.2), else 1
             const s = ctx?.scene !== undefined ? this.presets.curatedScale?.(ctx.scene) : undefined;
@@ -237,6 +248,7 @@ export class PrefsStore {
                 const def = this.schema.byId.get(id);
                 if (def) this.remove(def, undefined, 'reset');
             }
+            for (const def of this.schema.defs) if (def.persist === false) this.remove(def, undefined, 'reset');
         }
         for (const k of o.collections ?? []) this.replaceCollection(k, defaultCollection(k), 'reset');
     }
@@ -400,6 +412,8 @@ export class PrefsStore {
     }
 
     private stored(def: SettingDef, ctx?: Ctx): { has: boolean; value?: unknown } {
+        // never stored, so never read from the document either (a hand-edited one included)
+        if (def.persist === false) return { has: false };
         const ext = this.external[def.id];
         if (ext) {
             let raw: string | null = null;
@@ -424,6 +438,15 @@ export class PrefsStore {
     private write(id: string, value: unknown, ctx: Ctx | undefined, source: ChangeSource): SetResult {
         const def = this.schema.byId.get(id);
         if (!def) return { ok: false, reason: 'unknown-id' };
+        if (def.persist === false) {
+            // this page load only (the def says why): the session layer, never the document
+            const c = this.check(def, value, null);
+            if (!c.ok) return c;
+            const previous = this.get(id);
+            this.session.set(id, c.value);
+            this.emit({ id, scope: 'global', key: null, value: clone(c.value), previous, source });
+            return c;
+        }
         const ext = this.external[id];
         const t = ext ? { scope: 'global' as Scope, key: null } : this.target(def, ctx);
         if (!t) return { ok: false, reason: 'no-context' };
@@ -442,6 +465,13 @@ export class PrefsStore {
     }
 
     private remove(def: SettingDef, ctx: Ctx | undefined, source: ChangeSource): void {
+        if (def.persist === false) {
+            if (!this.session.has(def.id)) return;
+            const previous = this.get(def.id);
+            this.session.delete(def.id);
+            this.emit({ id: def.id, scope: 'global', key: null, value: this.get(def.id), previous, source });
+            return;
+        }
         const ext = this.external[def.id];
         if (ext) {
             if (!this.stored(def).has) return;

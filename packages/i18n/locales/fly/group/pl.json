@@ -1,1 +1,4 @@
-{}
+{
+  "group.voxels": "Ściany i siatka wokseli",
+  "group.voxels.help": "Ściany, w które się rozbijasz, i siatka wokseli, która je pokazuje."
+}

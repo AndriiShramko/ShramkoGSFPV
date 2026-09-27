@@ -32,7 +32,8 @@ export const SCHEMA = defineSettings([
 export { DRONE_IDS } from './drone';
 export { RATE_TYPES, RATE_BOUNDS, validatePid, validateRates, validateThrottle } from './tune';
 export type { RatesType, AxisRates, RatesValue, PidValue, ThrottleValue } from './tune';
-export { validateTransform, SCALE_MIN, SCALE_MAX } from './scene';
+export { validateTransform, SCALE_MIN, SCALE_MAX, WALLS_OPTIONS } from './scene';
+export { VOXEL_STYLES, VOXEL_VIEWS } from './voxels';
 export type { SceneTransform } from './scene';
 export { validateFolder } from './recording';
 export type { FolderValue } from './recording';

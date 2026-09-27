@@ -1,1 +1,21 @@
-{}
+{
+  "set.voxels.show": "Siatka wokseli",
+  "set.voxels.show.help": "Pokazuje ściany jako woksele: na skanie albo zamiast niego (skan znika, latasz po wokselach). Przełącza ją V; po przeładowaniu strony wraca skan.",
+  "set.voxels.show.opt.off": "Ukryta",
+  "set.voxels.show.opt.overlay": "Na skanie",
+  "set.voxels.show.opt.only": "Same woksele",
+  "set.voxels.style": "Styl wokseli",
+  "set.voxels.style.help": "Jak rysowane są woksele. Pływające kawałki ścian wyróżniają się w każdym stylu; „Pływające na czerwono” koloruje tylko je.",
+  "set.voxels.style.opt.solid": "Pełne sześciany",
+  "set.voxels.style.opt.wire": "Krawędzie",
+  "set.voxels.style.opt.height": "Kolory według wysokości",
+  "set.voxels.style.opt.floaters": "Pływające na czerwono",
+  "set.voxels.opacity": "Krycie wokseli na skanie",
+  "set.voxels.opacity.help": "Jak bardzo woksele zasłaniają, gdy pod nimi widać skan.",
+  "set.voxels.opacityOnly": "Krycie wokseli, same woksele",
+  "set.voxels.opacityOnly.help": "Jak bardzo woksele zasłaniają, gdy skan jest ukryty.",
+  "set.scene.walls": "Ściany (kolizje)",
+  "set.scene.walls.help": "Wyłączone: dron przelatuje przez wszystko, bez kraks. Zapamiętywane dla każdego skanu; autor może domyślnie wyłączyć ściany w skanie z dużym szumem. Przełącza je C.",
+  "set.scene.walls.opt.on": "Włączone",
+  "set.scene.walls.opt.off": "Wyłączone"
+}

@@ -94,6 +94,11 @@ function sanitize(raw: PrefsSettings, schema: Schema, presets: PresetResolver, c
             r.dropped.push({ id: e.id, why: `stored as ${e.scope}, but it is a ${def.scope} setting` });
             continue;
         }
+        if (def.persist === false) {
+            // lasts for one page load (schema.ts persist); a file never sets it
+            r.dropped.push({ id: e.id, why: 'not-stored' });
+            continue;
+        }
         const bounds = def.type === 'number' ? boundsOf(def, presets, e.scope === 'drone' ? (e.key ?? undefined) : currentDrone) : undefined;
         const c = checkValue(def, e.value, bounds);
         if (!c.ok) {

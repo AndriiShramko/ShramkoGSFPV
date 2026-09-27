@@ -1,1 +1,4 @@
-{}
+{
+  "group.voxels": "Paredes y rejilla de vóxeles",
+  "group.voxels.help": "Las paredes con las que chocas y la rejilla de vóxeles que las muestra."
+}

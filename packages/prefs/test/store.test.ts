@@ -128,7 +128,7 @@ describe('persistence (A.5)', () => {
         s.set('physics.vCrash', 6, { drone: PRO });
         s.resetAll();
         expect(s.explicitList()).toEqual([]);
-        expect(s.get('voxels.opacity')).toBe(0.35);
+        expect(s.get('voxels.opacity')).toBe(0.55);
     });
 
     it('resetAll keeps collections unless named', () => {
@@ -352,7 +352,7 @@ describe('two tabs (A.5)', () => {
         sb.onChange((c) => heard.push(c));
         sa.set('voxels.opacity', 0.6);
         expect(sb.get('voxels.opacity')).toBe(0.6);
-        expect(heard).toEqual([{ id: 'voxels.opacity', scope: 'global', key: null, value: 0.6, previous: 0.35, source: 'external' }]);
+        expect(heard).toEqual([{ id: 'voxels.opacity', scope: 'global', key: null, value: 0.6, previous: 0.55, source: 'external' }]);
     });
 
     it('an unwritten local change stays on top when the other tab writes', () => {
@@ -471,6 +471,110 @@ describe('URL session layer', () => {
         s.set('flight.mode', 'acro');
         expect(JSON.parse(b.read()!).settings.global['respawn.auto']).toBe(true);
         expect(s.setSession('respawn.rewindS', 500)).toEqual({ ok: true, value: 30, clamped: true });
+    });
+});
+
+describe('the walls switch, per scan, with the admin\'s default (scene.walls)', () => {
+    const NOISY = '7a475d38', CLEAN = '39e63ce9', PASTED = 'abcdef12';
+    const ADMIN = { [NOISY]: { walls: 'off' }, [CLEAN]: { walls: 'on' } };
+    const walls = (s: PrefsStore, scene: string) => s.get('scene.walls', { scene });
+
+    it('a scan the pilot never switched follows showcase.json; a scan not in the list, or a value that is not on/off, is on', () => {
+        const s = mkStore(new MemoryBackend(), {}, SCHEMA, {}, { ...ADMIN, bad: { walls: 'maybe' } });
+        expect([walls(s, NOISY), walls(s, CLEAN), walls(s, PASTED), walls(s, 'bad')]).toEqual(['off', 'on', 'on', 'on']);
+        expect(s.isExplicit('scene.walls', { scene: NOISY })).toBe(false);
+        expect(s.set('scene.walls', 'off')).toEqual({ ok: false, reason: 'no-context' });
+    });
+
+    it('the pilot\'s switch is kept for that scan only, and wins over the admin\'s value', () => {
+        const b = new MemoryBackend();
+        const s = mkStore(b, {}, SCHEMA, {}, ADMIN);
+        s.set('scene.walls', 'on', { scene: NOISY });
+        s.set('scene.walls', 'off', { scene: PASTED });
+        const later = mkStore(b, {}, SCHEMA, {}, ADMIN);
+        expect([walls(later, NOISY), walls(later, CLEAN), walls(later, PASTED)]).toEqual(['on', 'on', 'off']);
+        later.reset('scene.walls', { scene: NOISY });
+        expect(walls(later, NOISY)).toBe('off');
+    });
+
+    it('a changed admin value reaches a pilot who never switched that scan, not one who did (A.6)', () => {
+        const untouched = new MemoryBackend(), chose = new MemoryBackend();
+        mkStore(untouched, {}, SCHEMA, {}, ADMIN).set('flight.mode', 'acro');
+        mkStore(chose, {}, SCHEMA, {}, ADMIN).set('scene.walls', 'on', { scene: CLEAN });
+        const flipped = { [CLEAN]: { walls: 'off' } };
+        expect(walls(mkStore(untouched, {}, SCHEMA, {}, flipped), CLEAN)).toBe('off');
+        expect(walls(mkStore(chose, {}, SCHEMA, {}, flipped), CLEAN)).toBe('on');
+    });
+
+    it('control: the same def made global switches every scan at once, so the per-scan tests can tell', () => {
+        const d = SCHEMA.byId.get('scene.walls') as SettingDef;
+        const global = defineSettings(SCHEMA.defs.map((x): SettingDef => (x.id === d.id ? { ...d, scope: 'global', default: 'on' } as SettingDef : x)));
+        const s = mkStore(new MemoryBackend(), {}, global, {}, ADMIN);
+        s.set('scene.walls', 'off', { scene: PASTED });
+        expect([walls(s, CLEAN), walls(s, PASTED)]).toEqual(['off', 'off']);
+    });
+
+    it('?walls= is this page load only: it wins, and nothing is stored', () => {
+        const b = new MemoryBackend();
+        const s = mkStore(b, {}, SCHEMA, {}, ADMIN);
+        for (const v of settingsFromQuery(SCHEMA, '?walls=on').values) s.setSession(v.id, v.value);
+        expect(walls(s, NOISY)).toBe('on');
+        expect(mkStore(b, {}, SCHEMA, {}, ADMIN).explicitList()).toEqual([]);
+    });
+
+    it('exported and imported per scan', () => {
+        const a = mkStore(new MemoryBackend(), {}, SCHEMA, {}, ADMIN);
+        a.set('scene.walls', 'on', { scene: NOISY });
+        expect(a.exportFile().settings.scene).toEqual({ [NOISY]: { 'scene.walls': 'on' } });
+        const b = mkStore(new MemoryBackend(), {}, SCHEMA, {}, ADMIN);
+        b.importFile(a.exportFile());
+        expect(walls(b, NOISY)).toBe('on');
+    });
+});
+
+describe('a setting that lasts one page load (voxels.show, persist: false)', () => {
+    it('set changes it now, as a user change, and never reaches storage; a reload shows the default', () => {
+        const b = new MemoryBackend();
+        const s = mkStore(b);
+        const seen: PrefChange[] = [];
+        s.onChange((c) => seen.push(c));
+        expect(s.set('voxels.show', 'only')).toEqual({ ok: true, value: 'only', clamped: false });
+        expect(s.set('voxels.show', 'grid')).toEqual({ ok: false, reason: 'option' });
+        expect(s.get('voxels.show')).toBe('only');
+        expect(seen).toEqual([{ id: 'voxels.show', scope: 'global', key: null, value: 'only', previous: 'off', source: 'user' }]);
+        expect(s.isExplicit('voxels.show')).toBe(false);
+        expect(JSON.parse(b.read()!).settings.global['voxels.show']).toBeUndefined();
+        expect(s.exportFile().settings.global['voxels.show']).toBeUndefined();
+        expect(mkStore(b).get('voxels.show')).toBe('off');
+    });
+
+    it('control: the style next to it is stored and survives the reload', () => {
+        const b = new MemoryBackend();
+        const s = mkStore(b);
+        s.set('voxels.show', 'overlay');
+        s.set('voxels.style', 'height');
+        const later = mkStore(b);
+        expect([later.get('voxels.show'), later.get('voxels.style')]).toEqual(['off', 'height']);
+    });
+
+    it('reset, a group reset and reset all put it back; an import cannot set it, a hand-edited document is not read', () => {
+        const s = mkStore();
+        s.set('voxels.show', 'only');
+        s.reset('voxels.show');
+        expect(s.get('voxels.show')).toBe('off');
+        s.set('voxels.show', 'only');
+        s.resetGroup('voxels');
+        expect(s.get('voxels.show')).toBe('off');
+        s.set('voxels.show', 'only');
+        s.resetAll();
+        expect(s.get('voxels.show')).toBe('off');
+        const f = s.exportFile();
+        f.settings.global['voxels.show'] = 'only';
+        const r = s.importFile(f);
+        expect(r.dropped).toContainEqual({ id: 'voxels.show', why: 'not-stored' });
+        expect(s.get('voxels.show')).toBe('off');
+        // a stored document someone edited by hand
+        expect(mkStore(new MemoryBackend(JSON.stringify(f))).get('voxels.show')).toBe('off');
     });
 });
 

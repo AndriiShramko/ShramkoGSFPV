@@ -19,11 +19,20 @@ export type Unit = 'deg' | 'ms' | 's' | 'm' | 'mps' | 'mps2' | 'x' | 'pct' | 'pe
  */
 export interface PresetRef { preset: string; scale?: number; fallback?: number }
 
+/**
+ * A per-scene default the admin sets for each scan in the curated list (apps/fly/public/showcase.json,
+ * E.2): `PresetResolver.curated(sceneId, curated)`, used when it is a valid value, else `fallback`.
+ * Only for scene settings. The walls switch is the first: the admin's "walls": "off" for a noisy
+ * scan stays the default for a pilot who never switched that scan, and a later change of the
+ * admin's value reaches such a pilot, like any changed default (A.6).
+ */
+export interface CuratedRef<T = unknown> { curated: string; fallback: T }
+
 interface Base<T> {
     id: string; // '<group>.<name>', stable forever; a rename is a migration
     group: GroupId;
     scope: Scope;
-    default: T | PresetRef;
+    default: T | PresetRef | CuratedRef<T>;
     apply: Apply;
     shown: readonly Surface[];
     status: Status;
@@ -35,6 +44,13 @@ interface Base<T> {
     url?: string; // legacy / diagnostic URL parameter (session layer only)
     advanced?: boolean;
     items?: readonly number[]; // brief items it answers (catalogue, tests)
+    /**
+     * false: the value lasts for this page load only. set() puts it in the session layer; it is
+     * never stored, exported or imported, and a reload shows the default. Global settings only.
+     * For a state the app deliberately forgets, such as the voxel view (V): main shows the scan
+     * again after a reload.
+     */
+    persist?: false;
 }
 export interface BoolDef extends Base<boolean> { type: 'bool' }
 export interface NumDef extends Base<number> { type: 'number'; min: number | PresetRef; max: number | PresetRef; step: number; unit?: Unit; curve?: 'linear' | 'log' }
@@ -58,6 +74,18 @@ const KINDS: readonly JsonDef['kind'][] = ['pid', 'rates', 'throttle', 'transfor
 
 export function isPresetRef(v: unknown): v is PresetRef {
     return typeof v === 'object' && v !== null && !Array.isArray(v) && typeof (v as PresetRef).preset === 'string';
+}
+
+export function isCuratedRef(v: unknown): v is CuratedRef {
+    return typeof v === 'object' && v !== null && !Array.isArray(v) && typeof (v as CuratedRef).curated === 'string' && 'fallback' in v;
+}
+
+/** A def's default as a plain value: a literal, a curated default's fallback, a preset default's fallback. */
+export function literalDefault(def: SettingDef): unknown {
+    const d = def.default;
+    if (isCuratedRef(d)) return d.fallback;
+    if (isPresetRef(d)) return d.fallback;
+    return d;
 }
 
 /** The actions whose keys change a setting, as a list (the def may name one or two). */
@@ -94,8 +122,16 @@ function sortKeys(v: unknown): unknown {
     return v;
 }
 
-/** Reads drone preset fields (and curated scene scales) for defaults; the store never imports presets. */
-export interface PresetResolver { field(presetId: string, key: string): number | undefined; curatedScale?(sceneId: string): number | undefined }
+/**
+ * Reads drone preset fields and the admin's per-scene values for defaults; the store never imports
+ * presets or the curated list. curated(sceneId, field): the scene's entry in showcase.json, field
+ * by name as written there ("walls": "on" | "off"); undefined when the scene or field is absent.
+ */
+export interface PresetResolver {
+    field(presetId: string, key: string): number | undefined;
+    curatedScale?(sceneId: string): number | undefined;
+    curated?(sceneId: string, field: string): unknown;
+}
 
 /** A number or a preset field for this drone; undefined when the preset lacks the field. */
 export function presetValue(v: number | PresetRef, presets: PresetResolver, drone: string | undefined): number | undefined {
@@ -167,9 +203,19 @@ function problemsOf(d: SettingDef, known: ReadonlySet<string>): string[] {
         if (d.scope !== 'drone') p.push(`${id}: a preset default needs scope 'drone'`);
         if (typeof d.default.fallback !== 'number') p.push(`${id}: preset default without a fallback`);
     }
+    const curated = isCuratedRef(d.default) ? d.default : null;
+    if (curated) {
+        // the admin's value is per scan; its fallback is checked below like a literal default
+        if (d.scope !== 'scene') p.push(`${id}: a curated default needs scope 'scene'`);
+        if (d.type === 'json') p.push(`${id}: a curated default needs a bool, number or enum setting`);
+        if (!URL_RE.test(curated.curated)) p.push(`${id}: curated field '${curated.curated}' is not a plain name`);
+    }
+    if (d.persist !== undefined && d.persist !== false) p.push(`${id}: persist is false or absent`);
+    // the session layer holds one value per id, so a setting that is never stored cannot be per drone or scene
+    if (d.persist === false && d.scope !== 'global') p.push(`${id}: a setting that is not stored needs scope 'global'`);
     switch (d.type) {
         case 'bool':
-            if (typeof d.default !== 'boolean') p.push(`${id}: bool default is not a boolean`);
+            if (typeof literalDefault(d) !== 'boolean') p.push(`${id}: bool default is not a boolean`);
             break;
         case 'number': {
             if (!(d.step > 0) || !Number.isFinite(d.step)) p.push(`${id}: step must be a positive number`);
@@ -179,7 +225,7 @@ function problemsOf(d: SettingDef, known: ReadonlySet<string>): string[] {
             const hi = typeof d.max === 'number' ? d.max : undefined;
             if (lo !== undefined && hi !== undefined && !(lo < hi)) p.push(`${id}: min ${lo} is not below max ${hi}`);
             if (d.curve === 'log' && lo !== undefined && !(lo > 0)) p.push(`${id}: a log slider needs min > 0`);
-            const dv = isPresetRef(d.default) ? d.default.fallback : d.default;
+            const dv = literalDefault(d);
             if (typeof dv !== 'number' || !Number.isFinite(dv)) p.push(`${id}: number default is not a finite number`);
             else if ((lo !== undefined && dv < lo) || (hi !== undefined && dv > hi)) p.push(`${id}: default ${dv} outside ${lo}..${hi}`);
             break;
@@ -188,12 +234,15 @@ function problemsOf(d: SettingDef, known: ReadonlySet<string>): string[] {
             if (!d.options.length) p.push(`${id}: no options`);
             if (new Set(d.options).size !== d.options.length) p.push(`${id}: an option is listed twice`);
             for (const o of d.options) if (!OPTION_RE.test(o)) p.push(`${id}: option '${o}' cannot be an i18n key part`);
-            if (typeof d.default !== 'string' || !d.options.includes(d.default)) p.push(`${id}: default '${String(d.default)}' is not an option`);
+            {
+                const dv = literalDefault(d);
+                if (typeof dv !== 'string' || !d.options.includes(dv)) p.push(`${id}: default '${String(dv)}' is not an option`);
+            }
             break;
         case 'json': {
             if (!KINDS.includes(d.kind)) p.push(`${id}: unknown json kind ${d.kind}`);
             if (typeof d.validate !== 'function') p.push(`${id}: json setting without a validator`);
-            else if (d.default !== null) {
+            else if (d.default !== null && !curated) {
                 const c = checkValue(d, d.default);
                 if (!c.ok || c.clamped) p.push(`${id}: default does not pass its own validator unchanged`);
             }

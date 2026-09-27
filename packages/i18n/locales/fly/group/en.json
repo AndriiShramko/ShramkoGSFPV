@@ -1,1 +1,4 @@
-{}
+{
+  "group.voxels": "Walls and voxel grid",
+  "group.voxels.help": "The walls you crash into, and the voxel grid that shows them."
+}

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { LEGACY_KEYS, MIGRATIONS, MemoryBackend, PrefsStore, SCHEMA, canonicalJson, localStorageLegacy, migrateLegacy, parseLegacyLastLog, readLegacy, runMigrations } from '../src';
+import { LEGACY_KEYS, LEGACY_PREFIXES, MACHINE_LOCAL_KEYS, MAIN_VOXEL_DEFAULTS, MIGRATIONS, MemoryBackend, PrefsStore, SCHEMA, canonicalJson, localStorageKeys, localStorageLegacy, migrateLegacy, parseLegacyLastLog, readLegacy, runMigrations } from '../src';
 import { FakeStorage, REPO, T0, mkStore, resolver } from './helpers';
 
 // ------------------------------------------------------------------ v0.2 shapes, as v0.2 wrote them
@@ -20,8 +20,16 @@ const ALIEN = { ...PAD, deviceKey: 'hid:alien', arm: { kind: 'switch3', index: 5
 
 const LAST_LOG = { label: 'crash 12:04', header: { format: 'gsfpv-input-log/1', simCore: 'sim-core/0.1.0', preset: 'pavo20pro-3s', configHash: 'ab12', collisionSha256: null, spawn: [0, 1.2, 0, 90], seed: 0 }, endTick: 30211, hash: '9f0c', b64: 'AAAAAAAAgD8=' };
 
-/** Every key v0.2 writes, with a value in its real shape. */
+/**
+ * Every key written before v0.3 (v0.2, and main after it: gsfpv.voxels, gsfpv.walls.<scene>), with
+ * a value in its real shape; plus the machine-local bake speed, which must never move.
+ */
 const V02: Record<string, string> = {
+    // voxels.ts saves all three fields at every change: 0.55 is main's default, so only style and opacityOnly are choices
+    'gsfpv.voxels': JSON.stringify({ style: 'solid', opacityOverlay: 0.55, opacityOnly: 0.8 }),
+    'gsfpv.walls.39e63ce9': 'off',
+    'gsfpv.walls.9d09ab82': 'on',
+    'gsfpv.bakeSecondsPerMillion': '41.3',
     'gsfpv.profiles.v1': JSON.stringify({ [POCKET.deviceKey]: POCKET, [PAD.deviceKey]: PAD, [ALIEN.deviceKey]: ALIEN }),
     'gsfpv.stickMode': '1',
     'gsfpv.lastInput': JSON.stringify({ kind: 'hid', key: POCKET.deviceKey }),
@@ -37,7 +45,10 @@ const V02: Record<string, string> = {
     'gsfpv.lastLog': JSON.stringify(LAST_LOG)
 };
 
-/** Storage-key string literals in the v0.2 simulator sources. */
+/**
+ * Storage keys in the simulator sources: string literals, and template literals whose key goes on
+ * with the scene id (`gsfpv.walls.${sceneId}`, reported as 'gsfpv.walls.*').
+ */
 const SOURCES = [join(REPO, 'apps', 'fly', 'src'), join(REPO, 'packages', 'scenes', 'src'), join(REPO, 'packages', 'input', 'src')];
 function keysInSource(dirs: string[] = SOURCES): Set<string> {
     const out = new Set<string>();
@@ -45,38 +56,64 @@ function keysInSource(dirs: string[] = SOURCES): Set<string> {
         for (const n of readdirSync(dir)) {
             const p = join(dir, n);
             if (statSync(p).isDirectory()) walk(p);
-            else if (/\.tsx?$/.test(n)) for (const m of readFileSync(p, 'utf8').matchAll(/['"`](gsfpv\.[A-Za-z]+(?:\.v\d+)?)['"`]/g)) out.add(m[1]);
+            else if (/\.tsx?$/.test(n)) for (const m of readFileSync(p, 'utf8').matchAll(/['"`](gsfpv\.[A-Za-z]+(?:\.v\d+)?)(\.\$\{|['"`])/g)) out.add(m[2] === '.${' ? `${m[1]}.*` : m[1]);
         }
     };
     for (const d of dirs) walk(d);
     out.delete('gsfpv.prefs.v1'); // the v0.3 document itself, once the page uses it
     return out;
 }
+/** What the sources may write: the legacy keys, one pattern per legacy prefix, and the machine-local keys. */
+const classified = (local: Readonly<Record<string, string>> = MACHINE_LOCAL_KEYS) => [...Object.values(LEGACY_KEYS), ...Object.values(LEGACY_PREFIXES).map((p) => `${p}*`), ...Object.keys(local)].sort();
+const V02_KEYS = () => Object.keys(V02);
 
 describe('legacy migration v0 -> v1 (A.5)', () => {
-    it('the fixture covers every storage key the v0.2 sources write, and LEGACY_KEYS names each', () => {
-        const inSource = keysInSource();
-        expect([...inSource].sort()).toEqual(Object.values(LEGACY_KEYS).sort());
-        expect(Object.keys(V02).sort()).toEqual(Object.values(LEGACY_KEYS).sort());
+    it('every storage key the sources write is a legacy key, a legacy prefix or machine-local, and the fixture has each', () => {
+        expect([...keysInSource()].sort()).toEqual(classified());
+        const fixture = new Set(Object.keys(V02).map((k) => {
+            const p = Object.values(LEGACY_PREFIXES).find((x) => k.startsWith(x));
+            return p ? `${p}*` : k;
+        }));
+        expect([...fixture].sort()).toEqual(classified());
     });
 
-    it('control: a new storage key planted in a source file is found, so the check above would fail', () => {
+    it('control: a new key planted in a source file, as a literal or per scene, is found, so the check above would fail', () => {
         const dir = mkdtempSync(join(tmpdir(), 'prefs-scan-'));
         try {
-            writeFileSync(join(dir, 'planted.ts'), "localStorage.setItem('gsfpv.newThing.v1', '1');");
+            writeFileSync(join(dir, 'planted.ts'), "localStorage.setItem('gsfpv.newThing.v1', '1');\nconst k = (id: string) => `gsfpv.perScene.${id}`;");
             const found = keysInSource([...SOURCES, dir]);
             expect(found.has('gsfpv.newThing.v1')).toBe(true);
-            expect([...found].sort()).not.toEqual(Object.values(LEGACY_KEYS).sort());
+            expect(found.has('gsfpv.perScene.*')).toBe(true);
+            expect([...found].sort()).not.toEqual(classified());
         } finally {
             rmSync(dir, { recursive: true, force: true });
         }
     });
 
+    it('machine-local keys are listed with the reason they are not preferences, and are never read into the document', () => {
+        for (const [k, why] of Object.entries(MACHINE_LOCAL_KEYS)) {
+            expect(why.length, k).toBeGreaterThan(20);
+            expect(Object.values(LEGACY_KEYS).includes(k as never) || Object.values(LEGACY_PREFIXES).some((p) => k.startsWith(p)), k).toBe(false);
+        }
+        expect(Object.keys(MACHINE_LOCAL_KEYS)).toContain('gsfpv.bakeSecondsPerMillion');
+        const asked: string[] = [];
+        const m = migrateLegacy((k) => { asked.push(k); return V02[k] ?? null; }, {}, V02_KEYS);
+        expect(asked).not.toContain('gsfpv.bakeSecondsPerMillion');
+        expect(m.found).not.toContain('gsfpv.bakeSecondsPerMillion');
+        expect(canonicalJson(m.doc)).not.toContain('41.3');
+    });
+
+    it('control: without its exemption the bake speed would be an unclassified key', () => {
+        const { 'gsfpv.bakeSecondsPerMillion': _, ...rest } = MACHINE_LOCAL_KEYS;
+        expect([...keysInSource()].sort()).not.toEqual(classified(rest));
+    });
+
     it('moves every key into the document, in its v0.3 shape', () => {
-        const m = migrateLegacy((k) => V02[k] ?? null, { savedAt: new Date(T0).toISOString() });
+        const m = migrateLegacy((k) => V02[k] ?? null, { savedAt: new Date(T0).toISOString() }, V02_KEYS);
         const d = m.doc;
         expect(d.version).toBe(1);
-        expect(d.settings.global).toEqual({ 'input.stickMode': '1' });
+        expect(d.settings.global).toEqual({ 'input.stickMode': '1', 'voxels.style': 'solid', 'voxels.opacityOnly': 0.8 });
+        expect(d.settings.scene).toEqual({ '39e63ce9': { 'scene.walls': 'off' }, '9d09ab82': { 'scene.walls': 'on' } });
         // radios: the two readable ones, unchanged, keyed by device key; the last input kept
         expect(d.collections.radioProfiles.items).toEqual({ [POCKET.deviceKey]: POCKET, [PAD.deviceKey]: PAD });
         expect(d.collections.radioProfiles.last).toEqual({ kind: 'hid', key: POCKET.deviceKey });
@@ -90,7 +127,7 @@ describe('legacy migration v0 -> v1 (A.5)', () => {
         expect(d.collections.sceneLibrary.filter).toEqual({ collisionOnly: false, kind: 'interior', flown: 'all', maxMb: 200 });
         expect(d.collections.sceneLibrary.versions).toEqual({ '9d09ab82': 2, '723068d7': 3 });
         expect(d.collections.ui.warned).toBe(true);
-        expect(m.note.moved.sort()).toEqual(Object.values(LEGACY_KEYS).filter((k) => k !== LEGACY_KEYS.lastLog).sort());
+        expect(m.note.moved.sort()).toEqual([...Object.values(LEGACY_KEYS).filter((k) => k !== LEGACY_KEYS.lastLog), 'gsfpv.walls.39e63ce9', 'gsfpv.walls.9d09ab82'].sort());
         expect(m.note.ignored).toEqual([{ key: 'gsfpv.profiles.v1', why: '1 profile(s) this version cannot read' }]);
         // the flight log is not document material: it goes to IndexedDB
         expect(canonicalJson(d)).not.toContain('AAAAAAAAgD8=');
@@ -125,24 +162,58 @@ describe('legacy migration v0 -> v1 (A.5)', () => {
         expect(b.read()).toBe(text);
     });
 
-    it('the store boots from the legacy keys: radios, stick mode, favourites and the warning are there', () => {
-        const s = mkStore(new MemoryBackend(), { legacy: (k) => V02[k] ?? null });
+    it('the store boots from the legacy keys: radios, stick mode, favourites, the warning, the voxel look and each scan\'s walls are there', () => {
+        const s = mkStore(new MemoryBackend(), { legacy: (k) => V02[k] ?? null, legacyKeys: V02_KEYS }, SCHEMA, {}, { '39e63ce9': { walls: 'on' }, '9d09ab82': { walls: 'off' } });
         expect(s.get('input.stickMode')).toBe('1');
         expect(s.isExplicit('input.stickMode')).toBe(true);
         expect(Object.keys(s.collection('radioProfiles').items)).toHaveLength(2);
         expect(s.collection('ui').warned).toBe(true);
-        expect(s.migrated?.found.sort()).toEqual(Object.values(LEGACY_KEYS).sort());
+        expect([s.get('voxels.style'), s.get('voxels.opacity'), s.get('voxels.opacityOnly')]).toEqual(['solid', 0.55, 0.8]);
+        expect(s.isExplicit('voxels.opacity')).toBe(false);
+        // the pilot's switch wins over the admin's value, both ways
+        expect([s.get('scene.walls', { scene: '39e63ce9' }), s.get('scene.walls', { scene: '9d09ab82' })]).toEqual(['off', 'on']);
+        expect(s.migrated?.found.sort()).toEqual(Object.keys(V02).filter((k) => !Object.hasOwn(MACHINE_LOCAL_KEYS, k)).sort());
     });
 
     it('legacy keys are left untouched, through boot, changes and a reset', () => {
         const ls = new FakeStorage(V02);
         const read = localStorageLegacy(ls as unknown as Storage);
-        const s = new PrefsStore(SCHEMA, new MemoryBackend(), resolver(), { legacy: read, debounceMs: 0 });
+        const s = new PrefsStore(SCHEMA, new MemoryBackend(), resolver(), { legacy: read, legacyKeys: localStorageKeys(ls as unknown as Storage), debounceMs: 0 });
+        expect(s.get('scene.walls', { scene: '39e63ce9' })).toBe('off');
         s.set('flight.mode', 'acro');
+        s.set('scene.walls', 'on', { scene: '39e63ce9' });
         s.updateCollection('sceneLibrary', (d) => { d.favourites = []; });
         s.resetAll({ collections: ['radioProfiles'] });
         expect(ls.writes).toEqual([]);
         expect(Object.fromEntries(ls.m)).toEqual(V02);
+    });
+
+    it('gsfpv.voxels: main\'s own reading rules; a field equal to main\'s default is no choice', () => {
+        const run = (v: string) => migrateLegacy((k) => (k === 'gsfpv.voxels' ? v : null));
+        expect(run(JSON.stringify(MAIN_VOXEL_DEFAULTS)).doc.settings.global).toEqual({});
+        expect(run(JSON.stringify(MAIN_VOXEL_DEFAULTS)).note).toEqual({ moved: [], ignored: [] });
+        expect(run('{"style":"height","opacityOverlay":0.3}').doc.settings.global).toEqual({ 'voxels.style': 'height', 'voxels.opacity': 0.3 });
+        const bad = run('{"style":"grid","opacityOverlay":0,"opacityOnly":1.5}');
+        expect(bad.doc.settings.global).toEqual({});
+        expect(bad.note.ignored).toEqual([{ key: 'gsfpv.voxels', why: "style 'grid' is not one of solid, wire, height, floaters; opacityOverlay 0 is not within 0.05-1; opacityOnly 1.5 is not within 0.05-1" }]);
+        expect(run('[1]').note.ignored).toEqual([{ key: 'gsfpv.voxels', why: 'not an object' }]);
+        expect(run('{').note.ignored).toEqual([{ key: 'gsfpv.voxels', why: 'not JSON' }]);
+    });
+
+    it('gsfpv.walls.<scene>: on or off for a real scene id; anything else is skipped with its reason', () => {
+        const keys: Record<string, string> = { 'gsfpv.walls.abc123': 'off', 'gsfpv.walls.__proto__': 'off', 'gsfpv.walls.ABC123': 'on', 'gsfpv.walls.def456': 'maybe', 'gsfpv.walls.': 'off' };
+        const m = migrateLegacy((k) => keys[k] ?? null, {}, () => Object.keys(keys));
+        expect(m.doc.settings.scene).toEqual({ abc123: { 'scene.walls': 'off' } });
+        expect(m.note.ignored.sort((a, b) => a.key.localeCompare(b.key))).toEqual([
+            { key: 'gsfpv.walls.__proto__', why: "'__proto__' is not a scene id" },
+            { key: 'gsfpv.walls.ABC123', why: "'ABC123' is not a scene id" },
+            { key: 'gsfpv.walls.def456', why: "value 'maybe' is not on or off" }
+        ]);
+        expect(Object.prototype).not.toHaveProperty('scene.walls');
+    });
+
+    it('control: without the storage\'s key names the per-scan keys are not found (openBrowserPrefs passes them)', () => {
+        expect(migrateLegacy((k) => V02[k] ?? null).doc.settings.scene).toEqual({});
     });
 
     it('no legacy keys: an empty document, nothing reported', () => {

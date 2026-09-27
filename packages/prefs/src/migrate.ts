@@ -1,12 +1,15 @@
-// Migrations (A.5). Version 0 is v0.2's loose storage keys, read once into a "legacy bag"; 0 -> 1
-// turns the bag into the first document. The legacy keys are only read, never written or
-// removed, so rolling back to v0.2 still finds them; migration 1 -> 2 (v0.4) deletes them.
+// Migrations (A.5). Version 0 is the loose storage keys written before v0.3 (v0.2, and the releases
+// on main after it), read once into a "legacy bag"; 0 -> 1 turns the bag into the first document.
+// The legacy keys are only read, never written or removed, so rolling back still finds them;
+// migration 1 -> 2 (v0.4) deletes them.
 
 import { SCHEMA_VERSION } from './schema';
 import { DEFAULT_FILTER, PREFS_APP_VERSION, emptyDoc, isReservedKey, normalizeDoc, sortHistory, validFilter, validLastInput, validLibraryEntry, validRadioProfile, VERSIONS_CAP } from './doc';
 import type { LibraryEntry, PrefsDoc, RadioProfileItem } from './doc';
+import { VOXEL_STYLES } from './defs/voxels';
+import { WALLS_OPTIONS } from './defs/scene';
 
-/** Every storage key the v0.2 simulator writes (apps/fly/src, packages/scenes), by what it holds. */
+/** Every fixed storage key the simulator writes before v0.3 (apps/fly/src, packages/scenes), by what it holds. */
 export const LEGACY_KEYS = {
     profiles: 'gsfpv.profiles.v1', // Record<deviceKey, Profile> (controls.ts)
     stickMode: 'gsfpv.stickMode', // '1' | '2' (controls.ts)
@@ -16,24 +19,55 @@ export const LEGACY_KEYS = {
     filter: 'gsfpv.filter.v1', // SceneFilter (scenes)
     versions: 'gsfpv.versions.v1', // [id, version][] of republished scenes (scenes)
     warned: 'gsfpv.warned', // '1' after the first-visit warning (main.ts)
-    lastLog: 'gsfpv.lastLog' // { label, header, endTick, hash, b64 } (main.ts) -> IndexedDB, not the doc
+    lastLog: 'gsfpv.lastLog', // { label, header, endTick, hash, b64 } (main.ts) -> IndexedDB, not the doc
+    voxels: 'gsfpv.voxels' // { style, opacityOverlay, opacityOnly } (voxels.ts, main after v0.2)
 } as const;
+
+/** Keys with the scene id after the prefix: one key per scan (flightwalls.ts, main after v0.2). */
+export const LEGACY_PREFIXES = {
+    walls: 'gsfpv.walls.' // 'on' | 'off': the pilot's walls switch for that scan
+} as const;
+
+/**
+ * Keys the simulator writes that are not preferences, so they never move into the document, are
+ * never exported and never follow the pilot to another computer. Each with the reason. A test
+ * scans the sources: a new key must be a legacy key, a legacy prefix or listed here.
+ */
+export const MACHINE_LOCAL_KEYS: Readonly<Record<string, string>> = {
+    // wallcache.ts: seconds per million Gaussians the last walls bake took on this machine
+    // (download included). A measurement of this PC's GPU and network that sizes the next refine,
+    // not a choice: another computer bakes at its own speed, and a pilot never sets it.
+    'gsfpv.bakeSecondsPerMillion': "this machine's measured walls-bake speed, a calibration of its GPU and network, not a pilot's choice"
+};
 
 export interface LegacyBag { format: 'gsfpv-legacy'; version: 0; keys: Record<string, string> }
 
-/** Reads the v0.2 keys through a read-only accessor (a throwing read counts as absent). */
-export function readLegacy(read: (key: string) => string | null): LegacyBag {
-    const keys: Record<string, string> = {};
-    for (const k of Object.values(LEGACY_KEYS)) {
+/**
+ * Reads the legacy keys through a read-only accessor (a throwing read counts as absent). `keys`
+ * lists the storage's keys, for the per-scan ones (LEGACY_PREFIXES); without it they are not
+ * found. Machine-local keys are never read.
+ */
+export function readLegacy(read: (key: string) => string | null, keys?: () => readonly string[]): LegacyBag {
+    const out: Record<string, string> = {};
+    const take = (k: string) => {
+        if (Object.hasOwn(MACHINE_LOCAL_KEYS, k)) return;
         let v: string | null = null;
         try {
             v = read(k);
         } catch {
             v = null;
         }
-        if (typeof v === 'string') keys[k] = v;
+        if (typeof v === 'string') out[k] = v;
+    };
+    for (const k of Object.values(LEGACY_KEYS)) take(k);
+    let all: readonly string[] = [];
+    try {
+        all = keys?.() ?? [];
+    } catch {
+        all = [];
     }
-    return { format: 'gsfpv-legacy', version: 0, keys };
+    for (const k of [...all].sort()) if (Object.values(LEGACY_PREFIXES).some((p) => k.startsWith(p) && k.length > p.length)) take(k);
+    return { format: 'gsfpv-legacy', version: 0, keys: out };
 }
 
 export interface MigrateOptions {
@@ -143,8 +177,68 @@ function fromLegacy(bag: LegacyBag, o: MigrateOptions, note: MigrationNote): Pre
         doc.collections.ui.warned = warned === '1';
         note.moved.push(K.warned);
     }
+
+    fromLegacyVoxels(bag, doc, note);
+    fromLegacyWalls(bag, doc, note);
     // lastLog goes to IndexedDB (browser.ts migrateLastLog); it is not part of the document
     return doc;
+}
+
+/**
+ * What main's voxels.ts wrote for a field the pilot never changed (its DEFAULT_PREFS; a test keeps
+ * the two equal). main saved the whole object at every change, so a stored field equal to this is
+ * no evidence of a choice and is not migrated: a later change of the default reaches that pilot.
+ */
+export const MAIN_VOXEL_DEFAULTS = { style: 'wire', opacityOverlay: 0.55, opacityOnly: 1 } as const;
+
+/** gsfpv.voxels -> voxels.style, voxels.opacity, voxels.opacityOnly: main's loadVoxelPrefs rules (an unknown style or an opacity outside 0.05-1 was its default). */
+function fromLegacyVoxels(bag: LegacyBag, doc: PrefsDoc, note: MigrationNote): void {
+    const K = LEGACY_KEYS.voxels;
+    const v = json(bag, K, note);
+    if (v === undefined) return;
+    if (!v || typeof v !== 'object' || Array.isArray(v)) {
+        note.ignored.push({ key: K, why: 'not an object' });
+        return;
+    }
+    const o = v as Record<string, unknown>;
+    const why: string[] = [];
+    let moved = false;
+    if (o.style !== undefined) {
+        if (typeof o.style !== 'string' || !VOXEL_STYLES.includes(o.style)) why.push(`style '${String(o.style)}' is not one of ${VOXEL_STYLES.join(', ')}`);
+        else if (o.style !== MAIN_VOXEL_DEFAULTS.style) {
+            doc.settings.global['voxels.style'] = o.style;
+            moved = true;
+        }
+    }
+    for (const [field, id] of [['opacityOverlay', 'voxels.opacity'], ['opacityOnly', 'voxels.opacityOnly']] as const) {
+        const x = o[field];
+        if (x === undefined) continue;
+        if (typeof x !== 'number' || !(x >= 0.05 && x <= 1)) why.push(`${field} ${String(x)} is not within 0.05-1`);
+        else if (x !== MAIN_VOXEL_DEFAULTS[field]) {
+            doc.settings.global[id] = x;
+            moved = true;
+        }
+    }
+    if (moved) note.moved.push(K);
+    if (why.length) note.ignored.push({ key: K, why: why.join('; ') });
+}
+
+/** A SuperSplat scene id as main keys it (packages/scenes parseSceneInput: 6-32 hex digits, lower case). */
+const SCENE_ID = /^[0-9a-f]{6,32}$/;
+
+/** gsfpv.walls.<scene> -> scene.walls of that scene. main wrote it only when the pilot switched, so each one is a choice. */
+function fromLegacyWalls(bag: LegacyBag, doc: PrefsDoc, note: MigrationNote): void {
+    const P = LEGACY_PREFIXES.walls;
+    for (const [key, value] of Object.entries(bag.keys)) {
+        if (!key.startsWith(P)) continue;
+        const scene = key.slice(P.length);
+        if (!SCENE_ID.test(scene) || isReservedKey(scene)) note.ignored.push({ key, why: `'${scene}' is not a scene id` });
+        else if (!WALLS_OPTIONS.includes(value)) note.ignored.push({ key, why: `value '${value}' is not on or off` });
+        else {
+            (doc.settings.scene[scene] ??= {})['scene.walls'] = value;
+            note.moved.push(key);
+        }
+    }
 }
 
 export const MIGRATIONS: readonly Migration[] = [
@@ -176,9 +270,12 @@ export function runMigrations(input: unknown, from: number, o: MigrateOptions = 
 
 export interface LegacyMigration { doc: PrefsDoc; note: MigrationNote; found: string[] }
 
-/** First v0.3 boot: the v0.2 keys into a document. Pure: the same keys always give the same document. */
-export function migrateLegacy(read: (key: string) => string | null, o: MigrateOptions = {}): LegacyMigration {
-    const bag = readLegacy(read);
+/**
+ * First v0.3 boot: the legacy keys into a document. Pure: the same keys always give the same
+ * document. `keys` lists the storage's keys, for the per-scan ones (LEGACY_PREFIXES).
+ */
+export function migrateLegacy(read: (key: string) => string | null, o: MigrateOptions = {}, keys?: () => readonly string[]): LegacyMigration {
+    const bag = readLegacy(read, keys);
     const note: MigrationNote = { moved: [], ignored: [] };
     const doc = runMigrations(bag, 0, o, note);
     return { doc, note, found: Object.keys(bag.keys) };
