@@ -49,6 +49,9 @@ jobs:
       - name: Unit tests, rate vectors, tunnelling and determinism subset
         run: pnpm vitest run
 
+      - name: API tests (SuperSplat catalogue proxy; stdlib only, upstream mocked, no network)
+        run: python3 -m unittest discover -s apps/api/tests -v
+
       - name: Build release (site + simulator, pre-gzip, CSP hash map, numbers must exist in evidence)
         run: node scripts/build-release.mjs
 
