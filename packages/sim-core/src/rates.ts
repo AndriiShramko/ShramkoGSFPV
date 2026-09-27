@@ -112,6 +112,17 @@ function thrNode(u: number, tc: ThrottleCurve): number {
     return m + d * (1 - e + e * q * q);
 }
 
+/** Stick (0..1) that gives throttle-curve output u; bisection, for harnesses and hover figures, never the physics. */
+export function invertThrottle(u: number, tc: ThrottleCurve): number {
+    let lo = 0;
+    let hi = 1;
+    for (let i = 0; i < 60; i++) {
+        const mid = (lo + hi) / 2;
+        if (throttleCurve(mid, tc) < u) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
+}
+
 /** Inverse of a monotone curve by bisection — used by the bot pilot, never by the physics. */
 export function invertRate(type: RatesType, target: number, ax: AxisRates, rateLimit: number): number {
     let lo = -1;

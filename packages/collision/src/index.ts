@@ -6,3 +6,6 @@ export * from './open';
 export * from './world';
 export * from './synthetic';
 export * from './count';
+export * from './transform';
+export * from './mesh';
+export * from './components';

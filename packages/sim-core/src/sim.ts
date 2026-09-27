@@ -6,13 +6,16 @@
 // yaw + = yaw right. In body terms: roll = -w.z, pitch = -w.x, yaw = -w.y.
 //
 // Channels ch[0..7] in [-1, 1] after calibration: 0 roll (right +), 1 pitch (stick forward +),
-// 2 throttle (-1 = low, +1 = full), 3 yaw (right +), 4 arm switch (> 0.5 on), 5 angle mode
-// (> 0.5 on), 6..7 spare.
+// 2 throttle (-1 = low, +1 = full), 3 yaw (right +), 4 arm switch (> 0.5 on), 5 flight mode
+// (modeFromChannel: -1 acro, 0 horizon, +1 angle), 6..7 spare.
 
 import { dcos, dsin, datan2, RAD2DEG, DEG2RAD } from './dmath';
 import type { SimParams } from './params';
 import { cellVoc } from './params';
 import { setpointRate, throttleCurve } from './rates';
+import { modeFromChannel } from './contracts';
+import type { LevelParams, RespawnOpts } from './contracts';
+import { PlatformContact } from './platform';
 
 export const DT = 0.001;
 export const DT_US = 1000;
@@ -58,11 +61,19 @@ export const S = {
     spR: 26, spP: 27, spY: 28,
     splR: 29, splP: 30,
     soc: 31, volt: 32, amps: 33,
-    armed: 34, crashed: 35, armSw: 36, sat: 37, restT: 38, crashT: 39,
+    // mixRange: motor-mix range of the last step (I-term windup attenuation; v0.2 kept a 0/1 "sat" flag here)
+    armed: 34, crashed: 35, armSw: 36, mixRange: 37, restT: 38, crashT: 39,
     g1R: 40, g1P: 41, g1Y: 42, g2R: 43, g2P: 44, g2Y: 45,
     d2R: 46, d2P: 47, d2Y: 48,
     hold: 49,
-    size: 50
+    // self-level (B.1): PT3 stages of the level rate output and of the angle feed-forward (roll,
+    // pitch), the horizon level-share PT1, and the previous angle targets
+    lvR1: 50, lvR2: 51, lvR3: 52, lvP1: 53, lvP2: 54, lvP3: 55,
+    afR1: 56, afR2: 57, afR3: 58, afP1: 59, afP2: 60, afP3: 61,
+    hzS: 62, tgR: 63, tgP: 64,
+    // invisible one-way platform (C.2): on flag, disc centre on its top surface, radius
+    platOn: 65, platX: 66, platY: 67, platZ: 68, platR: 69,
+    size: 70
 } as const;
 
 const PT1 = (fc: number) => {
@@ -80,6 +91,12 @@ const K_GYRO1 = PT1(250);
 const K_GYRO2 = PT1(500);
 const K_FF = PT1(30);
 const K_RELAX = PT1(15);
+// Betaflight's PT3 moves the cutoff so the cascade, not each stage, is -3 dB at fc: 1 / sqrt(2^(1/3) - 1)
+const PT3_CUTOFF_CORRECTION = 1.961459177;
+const PT3 = (fc: number) => {
+    const rc = 1 / (2 * Math.PI * fc * PT3_CUTOFF_CORRECTION);
+    return DT / (rc + DT);
+};
 
 const P_SCALE = 0.032029;
 const I_SCALE = 0.244381;
@@ -88,8 +105,12 @@ const D_SCALE = 0.000529;
 const F_SCALE = 0.013754 * 0.01;
 const ITERM_LIMIT = 400;
 const RELAX_THRESHOLD = 40;
-const ANGLE_MAX_DEG = 55;
-const ANGLE_GAIN = 5; // 1/s: deg of error -> deg/s setpoint (Betaflight angle strength 50 class)
+
+// platform (C.2): gap below the lowest body point at the spawn, default radius, and where it retires
+const PLAT_GAP = 0.002;
+const PLAT_R = 0.4;
+const PLAT_LEAVE_UP = 1.0;
+const PLAT_LEAVE_SIDE = 0.5;
 
 // quad X mixer, Betaflight order M1 RR, M2 FR, M3 RL, M4 FL; columns roll, pitch, yaw
 const MIX_R = [-1, -1, 1, 1];
@@ -100,6 +121,24 @@ const MU = 0.4; // friction coefficient [estimate]
 const SKIN = 0.001; // m, gap kept after a contact
 const CRASH_ANG_DAMP = 3; // 1/s, tumbling craft (props stopped, ducts dragging) [estimate]
 const CRASH_LIN_DAMP = 0.5; // 1/s horizontal, scraping and bouncing losses [estimate]
+
+/**
+ * I-term gain from the last motor-mix range (Betaflight 4.5 pid.c dynCi, from the formula): full
+ * below `windup`, fading to 0 at a saturated mix. windup >= 1 is v0.2's rule: freeze only above 1.
+ */
+export function itermGain(mixRange: number, windup: number): number {
+    if (windup >= 1) return mixRange > 1 ? 0 : 1;
+    const g = (1 - mixRange) / (1 - windup);
+    return g < 0 ? 0 : g > 1 ? 1 : g;
+}
+
+/** one step of a 3-stage cascade stored in s[k..k+2] */
+function pt3(s: Float64Array, k: number, x: number, g: number): number {
+    s[k] += (x - s[k]) * g;
+    s[k + 1] += (s[k] - s[k + 1]) * g;
+    s[k + 2] += (s[k + 1] - s[k + 2]) * g;
+    return s[k + 2];
+}
 
 export class Sim {
     readonly p: SimParams;
@@ -124,8 +163,17 @@ export class Sim {
     private nS: number;
     private cout: ContactOut = { sphere: -1, nx: 0, ny: 0, nz: 0 };
     private push = { x: 0, y: 0, z: 0 };
-    private motorsOut = new Float64Array(4);
+    /** motor commands of the last step: after the mixer and idle, before the motor lag (0..1) */
+    readonly motorCmd = new Float64Array(4);
     private thrust = new Float64Array(4);
+    private plat = new PlatformContact();
+    // per-model constants of the self-level and drag terms (params do not change after construction)
+    private maxR: number;
+    private maxP: number;
+    private kAtt: number;
+    private kAff: number;
+    private kHz: number;
+    private sqrtTwr: number;
 
     constructor(p: SimParams, world: ContactWorld | null) {
         this.p = p;
@@ -136,38 +184,74 @@ export class Sim {
         this.rr = new Float64Array(this.nS);
         this.pad = new Float64Array(this.nS);
         for (let i = 0; i < this.nS; i++) this.rr[i] = p.spheres[i * 4 + 3];
+        const rc = p.rates;
+        this.maxR = setpointRate(rc.type, 1, rc.roll, rc.rateLimit);
+        this.maxP = setpointRate(rc.type, 1, rc.pitch, rc.rateLimit);
+        const lv = p.level;
+        this.kAtt = p.levelOutputHz > 0 ? PT3(p.levelOutputHz) : 0;
+        // Betaflight: angle feed-forward cutoff = 1000 / (2 pi smoothing_ms)
+        this.kAff = lv.ffSmoothMs > 0 ? PT3(1000 / (2 * Math.PI * lv.ffSmoothMs)) : 1;
+        // PT1 with time constant horizon_delay_ms
+        this.kHz = lv.horizonDelayMs > 0 ? DT / (lv.horizonDelayMs / 1000 + DT) : 1;
+        this.sqrtTwr = Math.sqrt(p.twr);
+        this.s[S.soc] = 1; // a new model starts with a fresh pack; reset keeps the battery
         this.reset(0, 0, 0, 0);
         this.ch[2] = -1;
         this.ch[4] = -1;
     }
 
-    /** Place the craft level at (x, y, z) with heading yawDeg (0 = nose along -z, + = turned right). */
-    reset(x: number, y: number, z: number, yawDeg: number): void {
+    /**
+     * Place the craft level and still at (x, y, z) with heading yawDeg (0 = nose along -z, + = turned
+     * right). Every hashed slot goes back to its start value except the battery, which opts.soc
+     * replaces (C.8). opts.platform puts the invisible platform under it (C.2). opts.keepArmed
+     * leaves it armed when the last applied arm channel is on (C.3); otherwise it is parked until
+     * a fresh off -> on edge of the switch.
+     */
+    reset(x: number, y: number, z: number, yawDeg: number, opts: RespawnOpts = {}): void {
         const s = this.s;
+        let soc = s[S.soc];
+        if (opts.soc !== undefined) soc = opts.soc < 0 ? 0 : opts.soc > 1 ? 1 : opts.soc;
         s.fill(0);
+        this.motorCmd.fill(0);
         s[S.px] = x; s[S.py] = y; s[S.pz] = z;
         const h = -yawDeg * DEG2RAD * 0.5;
         // rotation about +y (which turns left), so a right heading is a negative angle
         s[S.qw] = dcos(h); s[S.qx] = 0; s[S.qy] = dsin(h); s[S.qz] = 0;
-        s[S.soc] = 1;
-        s[S.volt] = this.p.cells * cellVoc(1);
-        s[S.armSw] = 1; // require a fresh off -> on transition
-        s[S.hold] = 1; // held in place at the spawn until the first arm
+        s[S.soc] = soc;
+        s[S.volt] = this.p.cells * cellVoc(soc);
+        s[S.armSw] = 1; // an off -> on transition is needed to arm, unless kept armed below
+        if (opts.platform === true) {
+            s[S.platOn] = 1;
+            s[S.platX] = x;
+            s[S.platY] = y - this.p.bodyBottom - PLAT_GAP;
+            s[S.platZ] = z;
+            s[S.platR] = opts.platformR ?? PLAT_R;
+        }
+        if (opts.keepArmed === true && this.ch[4] > 0.5) {
+            s[S.armed] = 1; // the pilot never released the switch: fly on at once
+            this.events.push({ type: 'arm', tick: this.tick });
+        } else {
+            s[S.hold] = 1; // held in place until the first arm
+        }
     }
 
     get armed(): boolean { return this.s[S.armed] > 0; }
     get crashed(): boolean { return this.s[S.crashed] > 0; }
 
+    /** What the craft collides with: the scene, plus the platform while it is on. */
+    get contactWorld(): ContactWorld | null {
+        const s = this.s;
+        return s[S.platOn] > 0 ? this.plat.set(this.world, s[S.platX], s[S.platY], s[S.platZ], s[S.platR]) : this.world;
+    }
+
     setChannels(ch: ArrayLike<number>): void {
         for (let i = 0; i < 8; i++) this.ch[i] = Math.fround(ch[i] ?? 0);
     }
 
-    respawn(x: number, y: number, z: number, yawDeg: number): void {
-        const soc = this.s[S.soc];
-        this.reset(x, y, z, yawDeg);
-        this.s[S.soc] = soc;
-        this.s[S.volt] = this.p.cells * cellVoc(soc);
+    /** reset() between ticks plus a 'respawn' event; without opts it is v0.2's respawn (battery kept, parked). */
+    respawn(x: number, y: number, z: number, yawDeg: number, opts: RespawnOpts = {}): void {
         this.events.push({ type: 'respawn', tick: this.tick });
+        this.reset(x, y, z, yawDeg, opts);
     }
 
     step(): void {
@@ -207,23 +291,35 @@ export class Sim {
 
         // ---- setpoints ----
         const rc = p.rates;
-        let spR = setpointRate(rc.type, ch[0], rc.roll, rc.rateLimit);
-        let spP = setpointRate(rc.type, ch[1], rc.pitch, rc.rateLimit);
+        const acroR = setpointRate(rc.type, ch[0], rc.roll, rc.rateLimit);
+        const acroP = setpointRate(rc.type, ch[1], rc.pitch, rc.rateLimit);
         const spY = setpointRate(rc.type, ch[3], rc.yaw, rc.rateLimit);
-        if (ch[5] > 0.5) {
-            // angle (self-level) mode on roll and pitch.
+        const mode = modeFromChannel(ch[5]);
+        let spR = acroR, spP = acroP;
+        if (mode === 'acro') {
+            this.levelIdle(acroR, acroP);
+        } else {
+            // self-level on roll and pitch, Betaflight 4.5.1 pidLevel() from its formulas.
             // body axes in world: right = (r00, r10, r20), up = (r01, r11, r21), back = (r02, r12, r22)
+            const lv = p.level;
             const rollDeg = datan2(-r10, r11) * RAD2DEG; // right side below the horizon = roll right
             const pitchDeg = datan2(r12, Math.sqrt(r02 * r02 + r22 * r22)) * RAD2DEG; // nose down +
-            const tgtR = ch[0] * ANGLE_MAX_DEG;
-            const tgtP = ch[1] * ANGLE_MAX_DEG;
-            spR = (tgtR - rollDeg) * ANGLE_GAIN;
-            spP = (tgtP - pitchDeg) * ANGLE_GAIN;
+            const lvR = this.levelRate(0, acroR, rollDeg, lv);
+            const lvP = this.levelRate(1, acroP, pitchDeg, lv);
+            if (mode === 'angle') {
+                spR = lvR;
+                spP = lvP;
+                s[S.hzS] = 0;
+            } else {
+                const hs = this.horizonShare(rollDeg, pitchDeg, lv);
+                spR = acroR * (1 - hs) + lvR * hs;
+                spP = acroP * (1 - hs) + lvP * hs;
+            }
         }
 
         let thr: number;
         if (p.gravityMode === 'auto-throttle') {
-            thr = autoThrottle(thrStick, this.hoverThr);
+            thr = autoThrottle(thrStick, (this.hoverThr - p.idle) / (1 - p.idle));
         } else {
             thr = throttleCurve(thrStick, p.throttle);
         }
@@ -232,15 +328,18 @@ export class Sim {
         const gR = this.gyroFilter(0, -wz * RAD2DEG);
         const gP = this.gyroFilter(1, -wx * RAD2DEG);
         const gY = this.gyroFilter(2, -wy * RAD2DEG);
-        const sat = s[S.sat] > 0;
+        const dynCi = itermGain(s[S.mixRange], p.itermWindup);
         const fcD = DTERM_DYN_MIN + (DTERM_DYN_MAX - DTERM_DYN_MIN) * (thr < 0 ? 0 : thr > 1 ? 1 : thr);
         const kD1 = PT1(fcD);
-        const pidR = this.axisPid(0, spR, gR, p.pid.roll, sat, armed, 500, kD1);
-        const pidP = this.axisPid(1, spP, gP, p.pid.pitch, sat, armed, 500, kD1);
-        const pidY = this.axisPid(2, spY, gY, p.pid.yaw, sat, armed, 400, kD1);
+        // rate-loop feed-forward follows the stick setpoint; Betaflight 4.5 forces it to 0 on axes
+        // under angle-mode control (horizon keeps it)
+        const ffRP = mode !== 'angle';
+        const pidR = this.axisPid(0, spR, acroR, ffRP, gR, p.pid.roll, dynCi, armed, 500, kD1);
+        const pidP = this.axisPid(1, spP, acroP, ffRP, gP, p.pid.pitch, dynCi, armed, 500, kD1);
+        const pidY = this.axisPid(2, spY, spY, true, gY, p.pid.yaw, dynCi, armed, 400, kD1);
 
         // ---- mixer with airmode ----
-        const out = this.motorsOut;
+        const out = this.motorCmd;
         if (armed) {
             let mn = Infinity, mx = -Infinity;
             for (let i = 0; i < 4; i++) {
@@ -257,7 +356,7 @@ export class Sim {
                 mn *= inv; mx *= inv;
             }
             t = t < -mn ? -mn : t > 1 - mx ? 1 - mx : t;
-            s[S.sat] = range > 1 ? 1 : 0;
+            s[S.mixRange] = range;
             for (let i = 0; i < 4; i++) {
                 let v = out[i] + t;
                 v = v < 0 ? 0 : v > 1 ? 1 : v;
@@ -265,7 +364,7 @@ export class Sim {
             }
         } else {
             for (let i = 0; i < 4; i++) out[i] = 0;
-            s[S.sat] = 0;
+            s[S.mixRange] = 0;
         }
 
         // ---- motors ----
@@ -274,22 +373,28 @@ export class Sim {
         const tmax = p.tmaxMotorNom * vr * vr;
         const th = this.thrust;
         let tSum = 0;
+        let wSum = 0;
         let tauX = 0, tauY = 0, tauZ = 0;
         let power = 0;
         const mp = p.motorPos;
         const a = p.tau > 0 ? DT / p.tau : 1;
         const aa = a > 1 ? 1 : a;
+        // spinning a rotor up takes torque, and the body takes the reaction about the motor axis:
+        // J_r * d(omega)/dt with omega = w * omega_max(V) (H.2 item 3); CW props (+1) push +y like their drag
+        const jr = (p.rotorInertia * p.omegaMaxPerVolt * volt) / DT;
         for (let i = 0; i < 4; i++) {
             const k = S.m0 + i;
-            s[k] += (out[i] - s[k]) * aa;
+            const dw = (out[i] - s[k]) * aa;
+            s[k] += dw;
             const w = s[k];
             const T = tmax * w * w;
             th[i] = T;
             tSum += T;
+            wSum += w;
             // r x (0, T, 0) = (-rz T, 0, rx T)
             tauX += -mp[i * 3 + 2] * T;
             tauZ += mp[i * 3] * T;
-            tauY += p.motorYaw[i] * p.kappa * T;
+            tauY += p.motorYaw[i] * (p.kappa * T + jr * dw);
             power += p.kappa * T * (w * p.omegaMaxPerVolt * volt);
         }
 
@@ -311,9 +416,14 @@ export class Sim {
         const bvz = r02 * vx + r12 * vy + r22 * vz;
         const speed = Math.sqrt(vx * vx + vy * vy + vz * vz);
         const kd = -0.5 * p.rho * speed;
-        const dbx = kd * p.cda[0] * bvx;
+        // rotor and duct momentum drag (H.2 item 1): the rotors ingest the in-plane airflow and send
+        // it down the duct axis, so the force opposes the in-rotor-plane velocity and scales with the
+        // mass flow, i.e. rotor speed. ductDrag is the rate at Earth hover, where
+        // sum(w) * V / V_nom = 4 / sqrt(TWR). Zero with the motors stopped (free fall is unchanged).
+        const kLin = p.ductDrag * p.mass * wSum * vr * this.sqrtTwr * 0.25;
+        const dbx = kd * p.cda[0] * bvx - kLin * bvx;
         const dby = kd * p.cda[1] * bvy + tSum;
-        const dbz = kd * p.cda[2] * bvz;
+        const dbz = kd * p.cda[2] * bvz - kLin * bvz;
         const fx = r00 * dbx + r01 * dby + r02 * dbz;
         const fy = r10 * dbx + r11 * dby + r12 * dbz - p.mass * p.gravity;
         const fz = r20 * dbx + r21 * dby + r22 * dbz;
@@ -350,7 +460,14 @@ export class Sim {
         s[S.wz] = (n02 * lwx + n12 * lwy + n22 * lwz) / I2;
 
         // ---- contact ----
-        if (this.world) this.contact(px0, py0, pz0, q0w, q0x, q0y, q0z);
+        const world = this.contactWorld;
+        if (world) this.contact(world, px0, py0, pz0, q0w, q0x, q0y, q0z);
+        if (s[S.platOn] > 0) {
+            // the platform retires once the craft has clearly left it (state only, so replays agree)
+            const dx = s[S.px] - s[S.platX], dz = s[S.pz] - s[S.platZ];
+            const side = s[S.platR] + PLAT_LEAVE_SIDE;
+            if (s[S.py] - s[S.platY] > PLAT_LEAVE_UP || dx * dx + dz * dz > side * side) s[S.platOn] = 0;
+        }
 
         // crashed body settling: air and scraping losses, rest detection and 4 s cap
         if (s[S.crashed] > 0) {
@@ -374,8 +491,67 @@ export class Sim {
         }
     }
 
-    /** throttle output at which the craft hovers (fresh pack), used by auto-throttle */
+    /**
+     * Motor output at which the craft hovers (fresh pack; session.ts sets hoverSolve().motor).
+     * Auto-throttle maps stick 0.5 to the mixer throttle that gives this output after idle (v0.2
+     * fed the output in as the throttle, so centre stick climbed: +18 % thrust on Earth at 5.5 %
+     * idle, +56 % on the Moon).
+     */
     hoverThr = 0.4;
+
+    /**
+     * Self-level rate demand for roll (ax 0) or pitch (ax 1): the target angle follows the acro
+     * rate curve, target = limit * setpoint(stick) / setpoint(1), so centre stick is gentle; rate =
+     * (target - current) * strength / 10 + PT3-smoothed angle feed-forward, then a PT3 at 50 Hz.
+     */
+    private levelRate(ax: number, acro: number, curDeg: number, lv: LevelParams): number {
+        const s = this.s;
+        const max = ax === 0 ? this.maxR : this.maxP;
+        const target = max > 0 ? (lv.limitDeg * acro) / max : 0;
+        const tK = S.tgR + ax;
+        const ffRaw = (lv.ffGain * (target - s[tK])) / DT;
+        s[tK] = target;
+        const ff = pt3(s, S.afR1 + ax * 3, ffRaw, this.kAff);
+        const rate = ((target - curDeg) * lv.gain) / 10 + ff;
+        const k = S.lvR1 + ax * 3;
+        if (this.kAtt > 0) return pt3(s, k, rate, this.kAtt);
+        s[k] = s[k + 1] = s[k + 2] = rate;
+        return rate;
+    }
+
+    /**
+     * In acro the level filters follow the stick, so switching to a levelled mode continues from
+     * the current setpoint (no step), and the angle feed-forward starts from rest.
+     */
+    private levelIdle(acroR: number, acroP: number): void {
+        const s = this.s;
+        s[S.lvR1] = s[S.lvR2] = s[S.lvR3] = acroR;
+        s[S.lvP1] = s[S.lvP2] = s[S.lvP3] = acroP;
+        s[S.afR1] = s[S.afR2] = s[S.afR3] = 0;
+        s[S.afP1] = s[S.afP2] = s[S.afP3] = 0;
+        const lim = this.p.level.limitDeg;
+        s[S.tgR] = this.maxR > 0 ? (lim * acroR) / this.maxR : 0;
+        s[S.tgP] = this.maxP > 0 ? (lim * acroP) / this.maxP : 0;
+        s[S.hzS] = 0;
+    }
+
+    /**
+     * Horizon level share (Betaflight 4.5 calcHorizonLevelStrength): 1 when level with centred
+     * sticks, 0 past horizonLimitDeg of inclination or horizonLimitSticks of deflection, times
+     * strength / 100; rises are delayed by a PT1 of horizonDelayMs, falls are immediate.
+     */
+    private horizonShare(rollDeg: number, pitchDeg: number, lv: LevelParams): number {
+        const s = this.s;
+        const incl = Math.max(rollDeg < 0 ? -rollDeg : rollDeg, pitchDeg < 0 ? -pitchDeg : pitchDeg);
+        const a0 = this.ch[0] < 0 ? -this.ch[0] : this.ch[0], a1 = this.ch[1] < 0 ? -this.ch[1] : this.ch[1];
+        const stick = Math.min(1, Math.max(a0, a1));
+        const fa = lv.horizonLimitDeg > 0 ? Math.max((lv.horizonLimitDeg - incl) / lv.horizonLimitDeg, 0) : 0;
+        const fs = lv.horizonLimitSticks > 0 ? Math.max((lv.horizonLimitSticks - stick) / lv.horizonLimitSticks, 0) : 0;
+        let h = fa * fs * Math.min(lv.horizonStrength / 100, 1);
+        s[S.hzS] += (h - s[S.hzS]) * this.kHz;
+        if (s[S.hzS] < h) h = s[S.hzS];
+        return h;
+    }
 
     private gyroFilter(ax: number, raw: number): number {
         const s = this.s;
@@ -385,7 +561,11 @@ export class Sim {
         return s[b];
     }
 
-    private axisPid(ax: number, sp: number, gyro: number, g: number[], sat: boolean, armed: boolean, limit: number, kD1: number): number {
+    /**
+     * sp = the setpoint the loop tracks (after self-level); ffIn = the stick setpoint whose
+     * derivative drives the feed-forward (0 output when ffOn is false); dynCi = I-term windup gain.
+     */
+    private axisPid(ax: number, sp: number, ffIn: number, ffOn: boolean, gyro: number, g: number[], dynCi: number, armed: boolean, limit: number, kD1: number): number {
         const s = this.s;
         const iK = S.iR + ax, dK = S.dfR + ax, fK = S.ffR + ax, spK = S.spR + ax;
         const e = sp - gyro;
@@ -397,14 +577,17 @@ export class Sim {
         const dNow = prevD + (d1 - prevD) * K_DTERM2;
         s[d2K] = dNow;
         const dTerm = -g[2] * D_SCALE * ((dNow - prevD) / DT);
-        // feed-forward on setpoint derivative, PT1 filtered
-        const spDelta = (sp - s[spK]) / DT;
-        s[spK] = sp;
-        const ffPrev = s[fK];
-        const ffRaw = g[3] * F_SCALE * spDelta;
-        const ff = ffPrev + (ffRaw - ffPrev) * K_FF;
+        // feed-forward on the stick setpoint derivative, PT1 filtered; the previous setpoint is
+        // tracked even while it is off, so switching back to acro gives no spike
+        const spDelta = (ffIn - s[spK]) / DT;
+        s[spK] = ffIn;
+        let ff = 0;
+        if (ffOn) {
+            const ffPrev = s[fK];
+            ff = ffPrev + (g[3] * F_SCALE * spDelta - ffPrev) * K_FF;
+        }
         s[fK] = ff;
-        // I with iterm relax (roll, pitch) and no windup while saturated or disarmed
+        // I with iterm relax (roll, pitch), windup attenuation and no I while disarmed
         let iErr = e;
         if (ax < 2) {
             const lK = S.splR + ax;
@@ -414,8 +597,8 @@ export class Sim {
             const relax = 1 - (hp < 0 ? -hp : hp) / RELAX_THRESHOLD;
             iErr = e * (relax > 0 ? relax : 0);
         }
-        if (armed && !sat) {
-            let I = s[iK] + g[1] * I_SCALE * iErr * DT;
+        if (armed && dynCi > 0) {
+            let I = s[iK] + g[1] * I_SCALE * dynCi * iErr * DT;
             I = I < -ITERM_LIMIT ? -ITERM_LIMIT : I > ITERM_LIMIT ? ITERM_LIMIT : I;
             s[iK] = I;
         }
@@ -425,10 +608,9 @@ export class Sim {
         return sum / 1000;
     }
 
-    private contact(px0: number, py0: number, pz0: number, q0w: number, q0x: number, q0y: number, q0z: number): void {
+    private contact(world: ContactWorld, px0: number, py0: number, pz0: number, q0w: number, q0x: number, q0y: number, q0z: number): void {
         const s = this.s;
         const p = this.p;
-        const world = this.world!;
         const n = this.nS;
         const sp = p.spheres;
         // sphere centres at the start and end of the tick
@@ -481,13 +663,16 @@ export class Sim {
             const il = 1 / Math.sqrt(iw * iw + ix * ix + iy * iy + iz * iz);
             iw *= il; ix *= il; iy *= il; iz *= il;
             s[S.qw] = iw; s[S.qx] = ix; s[S.qy] = iy; s[S.qz] = iz;
-            // keep a small skin so tangential motion along the surface is not reported as contact
+            // keep a small skin so tangential motion along the surface is not reported as contact.
+            // The platform is an exact plane that tangential motion never touches, so it gets no
+            // skin: a craft resting on it would otherwise fall 1 mm onto it every ~16 ms (0.14 m/s).
+            const onDisc = world === this.plat && this.plat.hitDisc;
             const kx = this.c0[k * 3] + (this.c1[k * 3] - this.c0[k * 3]) * t;
             const ky = this.c0[k * 3 + 1] + (this.c1[k * 3 + 1] - this.c0[k * 3 + 1]) * t;
             const kz = this.c0[k * 3 + 2] + (this.c1[k * 3 + 2] - this.c0[k * 3 + 2]) * t;
             const sx = this.cout.nx * SKIN, sy = this.cout.ny * SKIN, sz = this.cout.nz * SKIN;
             // apply the skin only if no sphere of the body ends up touching anything
-            let clear = true;
+            let clear = !onDisc;
             for (let i = 0; i < n && clear; i++) {
                 const ix = this.c0[i * 3] + (this.c1[i * 3] - this.c0[i * 3]) * t + sx;
                 const iy = this.c0[i * 3 + 1] + (this.c1[i * 3 + 1] - this.c0[i * 3 + 1]) * t + sy;
@@ -524,7 +709,8 @@ export class Sim {
         const approach = -vn;
 
         const flying = s[S.crashed] === 0;
-        if (flying && approach >= p.vCrash) {
+        // crashes off (C.7): the same impact is a bounce, reported with its speed; motors keep running
+        if (flying && p.crashOn && approach >= p.vCrash) {
             s[S.crashed] = 1;
             s[S.crashT] = 0;
             s[S.restT] = 0;

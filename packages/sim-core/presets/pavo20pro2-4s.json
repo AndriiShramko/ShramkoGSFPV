@@ -193,6 +193,21 @@
         "expo": 0
       },
       "source": "bf-default"
+    },
+    "rotor_drag_per_s": {
+      "value": 0.56,
+      "source": "estimate",
+      "ref": "https://arxiv.org/abs/1712.02402",
+      "min": 0.28,
+      "max": 0.82,
+      "note": "rotor and duct momentum drag at hover rotor speed: momentum theory sqrt(g rho A_rotors / m) = 0.82 1/s, scaled like the Pavo20 Pro (0.6 = 0.68 of its 0.88 1/s ideal)"
+    },
+    "rotor_inertia_kgm2": {
+      "value": 2e-7,
+      "source": "estimate",
+      "min": 1e-7,
+      "max": 3e-7,
+      "note": "D2.2 prop + 1104 bell, as the Pavo20 Pro; drives the yaw reaction to motor speed changes"
     }
   }
 }

@@ -1,0 +1,1648 @@
+diff --git a/apps/fly/src/controls.ts b/apps/fly/src/controls.ts
+index 85a2f17..8b064fd 100644
+--- a/apps/fly/src/controls.ts
++++ b/apps/fly/src/controls.ts
+@@ -2,7 +2,7 @@
+ // channels -> arm gate -> the flight session. Profiles live in localStorage (try/catch) keyed by
+ // the device fingerprint, versioned, and can be downloaded / loaded as a file.
+ 
+-import { ArmGate, mapFrame } from '@gsfpv/input';
++import { ArmGate, GamepadTrapGuard, mapFrame } from '@gsfpv/input';
+ import type { Profile, RawFrame, ArmBlock } from '@gsfpv/input';
+ import type { FlightSession } from './session';
+ 
+@@ -51,14 +51,20 @@ export function parseProfile(text: string): Profile | null {
+ }
+ 
+ /** Routes mapped channels through the arm gate into the session. */
++export type ControlSource = 'hid' | 'gamepad' | 'touch' | 'keyboard' | 'sim' | null;
++
+ export class Controls {
+     readonly gate = new ArmGate();
++    /** gamepads only: arming waits until every mapped axis has moved off the trap value 0.0 */
++    readonly trap = new GamepadTrapGuard();
++    /** true while a gamepad source has not yet shown life on every mapped axis */
++    untouched = false;
+     profile: Profile | null = null;
+     private ch = new Float32Array([0, 0, -1, 0, -1, -1, 0, 0]);
+     private out = new Float32Array(8);
+     lastSampleAt = -1e9;
+     private lastTick = 0;
+-    source: 'hid' | 'gamepad' | 'touch' | 'keyboard' | 'sim' | null = null;
++    private src: ControlSource = null;
+     private session: FlightSession;
+     block: ArmBlock = 'noProfile';
+ 
+@@ -66,9 +72,21 @@ export class Controls {
+         this.session = session;
+     }
+ 
++    get source(): ControlSource {
++        return this.src;
++    }
++
++    /** Every assignment is a (re)connect: the trap guard starts over. */
++    set source(v: ControlSource) {
++        this.src = v;
++        this.trap.reset();
++        this.untouched = v === 'gamepad';
++    }
++
+     /** A raw device frame through the current profile. */
+     raw(f: RawFrame): void {
+         if (!this.profile) return;
++        if (this.src === 'gamepad') this.untouched = !this.trap.feed(this.profile, f);
+         mapFrame(this.profile, f, this.ch);
+         this.push(f.t);
+     }
+@@ -86,7 +104,7 @@ export class Controls {
+         this.out.set(this.ch);
+         const profileOk = this.profile !== null || this.source === 'touch' || this.source === 'keyboard' || this.source === 'sim';
+         const fakeProfile = profileOk ? ({} as Profile) : null;
+-        this.out[4] = this.gate.update(fakeProfile, this.ch, 0, document.visibilityState === 'visible', this.session.sim?.crashed ?? false);
++        this.out[4] = this.gate.update(fakeProfile, this.ch, 0, document.visibilityState === 'visible', this.session.sim?.crashed ?? false, this.untouched);
+         this.block = this.gate.block;
+         this.session.input(this.out, tMs);
+     }
+@@ -102,7 +120,7 @@ export class Controls {
+         const age = remote && !stalled ? now - this.lastSampleAt : 0;
+         if (this.gate.armed && (age > 100 || document.visibilityState !== 'visible')) {
+             this.out.set(this.ch);
+-            this.out[4] = this.gate.update({} as Profile, this.ch, age, document.visibilityState === 'visible', this.session.sim.crashed);
++            this.out[4] = this.gate.update({} as Profile, this.ch, age, document.visibilityState === 'visible', this.session.sim.crashed, this.untouched);
+             this.block = this.gate.block;
+             this.session.input(this.out, now);
+         }
+diff --git a/apps/fly/src/devices/gamepad.ts b/apps/fly/src/devices/gamepad.ts
+index 01cb36f..b9a7c59 100644
+--- a/apps/fly/src/devices/gamepad.ts
++++ b/apps/fly/src/devices/gamepad.ts
+@@ -1,7 +1,8 @@
+ // Gamepad API (compatibility path; many radios also appear as gamepads). Polled at ~500 Hz with
+ // a MessageChannel loop, not in requestAnimationFrame, so input sampling is independent of the
+-// frame rate. Chromium traps: an axis may read exactly 0.0 until it has once been near centre,
+-// and a pad only appears after a deflection > 0.5 — the arm gate's "passed centre" rule covers it.
++// frame rate. Chromium traps: an axis reads exactly 0.0 until that stick is first moved, and a
++// pad only appears after a deflection > 0.5. The "passed centre" rule does not cover the first
++// trap (0.0 counts as centred); GamepadTrapGuard in @gsfpv/input does, through Controls.
+ 
+ import type { RawFrame } from '@gsfpv/input';
+ 
+diff --git a/apps/fly/src/main.ts b/apps/fly/src/main.ts
+index 5f79c81..3232b6f 100644
+--- a/apps/fly/src/main.ts
++++ b/apps/fly/src/main.ts
+@@ -1,10 +1,14 @@
+ // /fly entry: preflight -> scene picker -> flight (HUD, controls, crash, pause, settings).
+ // URL: ?scene=<id|link>&drone=<preset>&g=<m/s2>&gm=<honest|same-twr|auto-throttle>
+ // Test-only switches (never linked): ?simradio=scenario|open|raw, ?lat=1, ?lagFrames=N.
++//   simradio=scenario: &quick=1 &flip=1 &tour=1 &loop=N &dash=<m/s>; &far=1 = long head-on dashes
++//   (B13) with the live tunnelling oracle; simradio=raw: &useSaved=1 = use the saved profile for the
++//   simulated radio without the wizard, like a real radio that was calibrated before (B10)
+ import { S, InputLog, parseBetaflightDiff } from '@gsfpv/sim-core';
+ import type { SimEvent, ParamOverrides } from '@gsfpv/sim-core';
+ import { parseSceneInput, recordOpen, recordFlight, SceneError } from '@gsfpv/scenes';
+-import { Scenario, makePlan, makeTourPlan } from '@gsfpv/input/sim';
++import { Scenario, makePlan, makeTourPlan, makeFarPlan, LivePenetrationOracle } from '@gsfpv/input/sim';
++import type { ScenarioLog } from '@gsfpv/input/sim';
+ import { findSphereSpawn, VoxelContactWorld, syntheticOpen } from '@gsfpv/collision';
+ import { GSPLAT_RENDERER_RASTER_GPU_SORT } from 'playcanvas';
+ import { FrameGovernor } from '@gsfpv/render-pc';
+@@ -14,7 +18,7 @@ import { KeyboardSource } from './devices/keyboard';
+ import { TouchSticks } from './devices/touch';
+ import { FakeEdgeTx } from './devices/fakehid';
+ import { LatencyProbe } from './latency';
+-import { Controls } from './controls';
++import { Controls, profileFor } from './controls';
+ import { CrashView } from './crashview';
+ import { t, locale } from './i18n';
+ import { h, clear, panel } from './ui/dom';
+@@ -52,12 +56,22 @@ interface TestHook {
+     crash?: CrashView;
+     info?: Record<string, unknown>;
+     lastCrash?: Record<string, unknown> | null;
++    /** the last 500 events (for inspection; counts below are not capped) */
+     events: SimEvent[];
++    /** every contact / crash since load, uncapped */
++    counts: { contact: number; crash: number };
+     savedLogs: SavedLog[];
+     saveLog?: (label: string) => SavedLog;
+     /** B15: replay the log saved in localStorage (optionally with one LSB flipped) in this tab */
+     verifyLastLog?: (tamper?: { record: number; channel: number }) => { saved: string; endTick: number; hash: string; track: number[]; tampered: number | null } | null;
+     loops?: number;
++    /** scenario mode: one entry per finished bot flight (crash record, top speed, battery charge) */
++    passes?: { crash: ScenarioLog['crash']; maxSpeed: number; soc: number; oraclePenetrations: number | null }[];
++    /** scenario mode with far=1: the live tunnelling oracle on the running flight model */
++    oracle?: LivePenetrationOracle;
++    plan?: Record<string, unknown>;
++    /** simradio=raw&useSaved=1: the saved profile was found and used without the wizard */
++    usedSavedProfile?: boolean;
+     /** phase C: result of building collision in this tab */
+     bake?: Record<string, unknown>;
+     bakedBytes?: { json: Uint8Array; bin: Uint8Array };
+@@ -73,7 +87,7 @@ interface TestHook {
+     /** phase D: cinema mode and the recorder */
+     cinema?: { on: () => boolean; toggle: () => void; canRecord: boolean; start: () => Promise<string>; stop: () => Promise<RecorderInfo | null>; last: RecorderInfo | null; lastBytes: Uint8Array | null; creditStripStd: () => number };
+ }
+-const hook: TestHook = { status: 'loading', events: [], savedLogs: [] };
++const hook: TestHook = { status: 'loading', events: [], counts: { contact: 0, crash: 0 }, savedLogs: [] };
+ (window as unknown as { __gsfpv: TestHook }).__gsfpv = hook;
+ 
+ const hasWebGPU = typeof navigator !== 'undefined' && !!(navigator as Navigator & { gpu?: unknown }).gpu;
+@@ -298,6 +312,8 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
+     session.onEvent = (e) => {
+         hook.events.push(e);
+         if (hook.events.length > 500) hook.events.shift();
++        if (e.type === 'contact') hook.counts.contact++;
++        if (e.type === 'crash') hook.counts.crash++;
+         if (e.type === 'arm') { beacon('arm'); recordFlight(sceneId); }
+         if (e.type === 'crash') {
+             beacon('crash');
+@@ -507,10 +523,16 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
+         const col = session.collision;
+         const p = session.params;
+         const cam = session.scene.camera!;
+-        const plan = q.get('tour') === '1'
+-            ? makeTourPlan(col, p.boundRadius, [session.spawn[0], session.spawn[1], session.spawn[2]], cam.target, Number(q.get('dash') ?? 2 * p.vCrash))
+-            : makePlan(col, p.boundRadius, [session.spawn[0], session.spawn[1], session.spawn[2]], cam.target, Number(q.get('dash') ?? 2 * p.vCrash),
+-                (x, y, z, r, o) => findSphereSpawn(col, x, y, z, r, o));
++        const pos = [session.spawn[0], session.spawn[1], session.spawn[2]];
++        const findSpawn = (x: number, y: number, z: number, r: number, o: { x: number; y: number; z: number }) => findSphereSpawn(col, x, y, z, r, o);
++        // B12: 2.4 v_crash so the impact (bot lag, drag) still lands at >= 2 v_crash; B13 (far): 26 m/s
++        const far = q.get('far') === '1';
++        const dash = Number(q.get('dash') ?? (far ? 26 : 2.4 * p.vCrash));
++        const farPlan = far ? makeFarPlan(col, p.boundRadius, pos, cam.target, dash, 30, 60, findSpawn) : null;
++        if (far && !farPlan) throw new Error('no 30-60 m head-on run-up in this scene');
++        const plan = farPlan ?? (q.get('tour') === '1'
++            ? makeTourPlan(col, p.boundRadius, pos, cam.target, dash)
++            : makePlan(col, p.boundRadius, pos, cam.target, dash, findSpawn));
+         if (q.get('quick') === '1') plan.box = [plan.spawn]; // crash loops: hover, aim, dash
+         if (q.get('flip') === '1') {
+             // flip point: straight above the spawn with 0.6 m of air above the craft (at most +1.5 m)
+@@ -518,31 +540,39 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
+             const room = up ? up.y - plan.spawn[1] - 0.6 - p.boundRadius : 1.5;
+             plan.flipAt = [plan.spawn[0], plan.spawn[1] + Math.max(0, Math.min(1.5, room)), plan.spawn[2]];
+         }
++        hook.plan = { spawn: plan.spawn, dashFrom: plan.dashFrom ?? null, wallDir: plan.wallDir, wall: plan.wall ?? null, dashSpeed: plan.dashSpeed, dashAccel: plan.dashAccel ?? null, far };
+         session.runner.respawn(plan.spawn[0], plan.spawn[1], plan.spawn[2], plan.spawnYawDeg);
+         if (simMode === 'open') session.sim.world = new VoxelContactWorld(syntheticOpen(0.05, 1000));
++        if (far) hook.oracle = new LivePenetrationOracle(session.sim, col);
+         hook.scenario = new Scenario(session.runner, plan);
+         controls.source = 'sim';
+-        // B17: crash loop — after each crash settles, respawn and fly the same plan again
++        // B17 / B13: loop - after each crash settles, respawn and fly the same plan again; every
++        // finished flight is recorded in hook.passes (loop or not)
+         let loopsLeft = Number(q.get('loop') ?? 0);
+         hook.loops = 0;
++        hook.passes = [];
++        let recorded: Scenario | null = null;
+         let restSince = 0;
+-        if (loopsLeft > 0) {
+-            const prevFrame = session.onFrame;
+-            session.onFrame = (s, dt) => {
+-                prevFrame?.(s, dt);
+-                const sc = hook.scenario;
+-                if (!sc || !sc.finished || loopsLeft <= 0) { restSince = 0; return; }
+-                const now = performance.now();
+-                if (!restSince) restSince = now;
+-                if (now - restSince < 2500) return; // crash camera and overlay play out first
+-                restSince = 0;
+-                loopsLeft--;
+-                hook.loops = (hook.loops ?? 0) + 1;
+-                afterCrashCleared();
+-                session.runner.respawn(plan.spawn[0], plan.spawn[1], plan.spawn[2], plan.spawnYawDeg);
+-                hook.scenario = new Scenario(session.runner, plan);
+-            };
+-        }
++        const prevFrame = session.onFrame;
++        session.onFrame = (s, dt) => {
++            prevFrame?.(s, dt);
++            const sc = hook.scenario;
++            if (!sc || !sc.finished) { restSince = 0; return; }
++            if (recorded !== sc) {
++                recorded = sc;
++                hook.passes!.push({ crash: sc.log.crash, maxSpeed: sc.log.maxSpeed, soc: session.sim.s[S.soc], oraclePenetrations: hook.oracle ? hook.oracle.penetrations : null });
++            }
++            if (loopsLeft <= 0) return;
++            const now = performance.now();
++            if (!restSince) restSince = now;
++            if (now - restSince < 2500) return; // crash camera and overlay play out first
++            restSince = 0;
++            loopsLeft--;
++            hook.loops = (hook.loops ?? 0) + 1;
++            afterCrashCleared();
++            session.runner.respawn(plan.spawn[0], plan.spawn[1], plan.spawn[2], plan.spawnYawDeg);
++            hook.scenario = new Scenario(session.runner, plan);
++        };
+     } else if (simMode === 'raw') {
+         // simulated EdgeTX radio (raw 19-byte reports) running the calibration wizard like a person
+         const fake = new FakeEdgeTx({
+@@ -556,19 +586,29 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
+             brokenStick: (q.get('broken') as 'A' | 'E' | 'T' | 'R' | null) ?? undefined
+         });
+         hook.fake = fake;
+-        session.pause(true);
+-        const r = new RadioScreen(ui);
+-        hook.radio = r;
+-        fake.follow = () => r.wizard?.state ?? null;
+-        r.runWizard(fake.key, 'SimRadio EdgeTX Classic', (cb) => { fake.onFrame = cb; }, () => fake.cfg.rateHz, 'hid');
+-        r.onDone = (c) => {
+-            r.remove();
+-            session.pause(false);
+-            controls.profile = c.profile;
++        const attach = (profile: RadioChoice['profile']): void => {
++            controls.profile = profile;
+             controls.source = 'hid';
+             fake.follow = null;
+             fake.onFrame = (f) => controls.raw(f);
+         };
++        // useSaved=1: the same lookup the real WebHID path does (ui/radio.ts connectHid), no wizard
++        const saved = q.get('useSaved') === '1' ? profileFor(fake.key) : null;
++        hook.usedSavedProfile = !!saved;
++        if (saved) {
++            attach(saved);
++        } else {
++            session.pause(true);
++            const r = new RadioScreen(ui);
++            hook.radio = r;
++            fake.follow = () => r.wizard?.state ?? null;
++            r.runWizard(fake.key, 'SimRadio EdgeTX Classic', (cb) => { fake.onFrame = cb; }, () => fake.cfg.rateHz, 'hid');
++            r.onDone = (c) => {
++                r.remove();
++                session.pause(false);
++                attach(c.profile);
++            };
++        }
+         fake.start();
+     } else if (q.get('lat') === '1') {
+         controls.source = 'keyboard';
+diff --git a/apps/fly/src/session.ts b/apps/fly/src/session.ts
+index 8593a64..4886c09 100644
+--- a/apps/fly/src/session.ts
++++ b/apps/fly/src/session.ts
+@@ -1,11 +1,12 @@
+ // One flight: scene + collision + physics + renderer, driven from the engine's update event.
+-import { Sim, Runner, InputLog, S, compileParams, hoverSolve, SIM_CORE_VERSION, sha256Hex, attitude, spherePoses, replay as replayLog } from '@gsfpv/sim-core';
++import { Sim, Runner, InputLog, S, compileParams, hoverSolve, throttleCurve, SIM_CORE_VERSION, sha256Hex, attitude, spherePoses, replay as replayLog } from '@gsfpv/sim-core';
+ import type { SimParams, ParamOverrides, SimEvent, LogHeader } from '@gsfpv/sim-core';
+ import { fetchVoxelCollision, VoxelContactWorld, findSphereSpawn, NoCollisionError, openVoxelCollision } from '@gsfpv/collision';
+ import type { VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
+ import { resolveScene, headingFromCamera } from '@gsfpv/scenes';
+ import type { ResolvedScene } from '@gsfpv/scenes';
+ import { SplatRenderer } from '@gsfpv/render-pc';
++import { pathPenetrates } from '@gsfpv/input/sim';
+ import { PRESETS, DEFAULT_PRESET } from './presets';
+ 
+ export interface SessionOptions {
+@@ -393,6 +394,71 @@ export class FlightSession {
+         return { g: this.params.gravity, measured, fallM: fall };
+     }
+ 
++    /**
++     * B16: disarmed drop in open air (no collision world, nothing to hit) through the first `fallM`
++     * metres. Mean acceleration = speed gained / time at the moment the fall reaches `fallM`
++     * (interpolated inside the tick). The model's own drag term is integrated over the same fall,
++     * so what drag takes off is a number, not a guess: measured + mean drag = the gravity term.
++     */
++    dropTestOpenAir(fallM = 2): { g: number; fallM: number; t: number; v: number; measured: number; relErr: number; meanDragAccel: number; dragShareOfG: number; gravityTerm: number; gravityTermRelErr: number } {
++        const p = this.params;
++        const sim = new Sim(p, null);
++        sim.reset(0, 1000, 0, 0);
++        const ch = new Float32Array([0, 0, -1, 0, -1, 0, 0, 0]);
++        sim.setChannels(ch); sim.step();
++        ch[4] = 1; sim.setChannels(ch); sim.step(); // arm releases the parked craft
++        ch[4] = -1; sim.setChannels(ch); sim.step(); // disarm: motors off, free fall
++        const s = sim.s;
++        const y0 = s[S.py], v0 = -s[S.vy];
++        let dragImpulse = 0; // upward, per unit mass (m/s)
++        let n = 0, prevY = y0, prevV = v0, t = NaN, v = NaN;
++        for (; n < 20000; n++) {
++            // the model's drag, as Sim.step computes it: kd * cda (body axes) * body velocity, in world y
++            const qw = s[S.qw], qx = s[S.qx], qy = s[S.qy], qz = s[S.qz];
++            const r00 = 1 - 2 * (qy * qy + qz * qz), r01 = 2 * (qx * qy - qw * qz), r02 = 2 * (qx * qz + qw * qy);
++            const r10 = 2 * (qx * qy + qw * qz), r11 = 1 - 2 * (qx * qx + qz * qz), r12 = 2 * (qy * qz - qw * qx);
++            const r20 = 2 * (qx * qz - qw * qy), r21 = 2 * (qy * qz + qw * qx), r22 = 1 - 2 * (qx * qx + qy * qy);
++            const vx = s[S.vx], vy = s[S.vy], vz = s[S.vz];
++            const kd = -0.5 * p.rho * Math.sqrt(vx * vx + vy * vy + vz * vz);
++            const bvx = r00 * vx + r10 * vy + r20 * vz, bvy = r01 * vx + r11 * vy + r21 * vz, bvz = r02 * vx + r12 * vy + r22 * vz;
++            const dragY = r10 * kd * p.cda[0] * bvx + r11 * kd * p.cda[1] * bvy + r12 * kd * p.cda[2] * bvz;
++            sim.step();
++            const fall = y0 - s[S.py], vDown = -s[S.vy];
++            if (fall >= fallM) {
++                const f = (fallM - (y0 - prevY)) / Math.max(1e-12, fall - (y0 - prevY));
++                dragImpulse += (dragY / p.mass) * 0.001 * f;
++                t = (n + f) / 1000;
++                v = prevV + (vDown - prevV) * f;
++                break;
++            }
++            dragImpulse += (dragY / p.mass) * 0.001;
++            prevY = s[S.py];
++            prevV = vDown;
++        }
++        const measured = (v - v0) / t;
++        const meanDragAccel = dragImpulse / t;
++        const g = p.gravity;
++        return { g, fallM, t, v, measured, relErr: measured / g - 1, meanDragAccel, dragShareOfG: meanDragAccel / g, gravityTerm: measured + meanDragAccel, gravityTermRelErr: (measured + meanDragAccel) / g - 1 };
++    }
++
++    /**
++     * Throttle channel (-1..1) that hovers now: the hover motor output at the current charge
++     * (battery sag included) through the inverse of the throttle curve. The touch-stick hover test
++     * (B14) uses it as its feed-forward.
++     */
++    hoverChannel(): number {
++        const p = this.params;
++        if (p.gravityMode === 'auto-throttle') return 0;
++        const need = hoverSolve(p, this.sim.s[S.soc]).stick;
++        if (!(need >= 0)) return 1;
++        let lo = 0, hi = 1;
++        for (let i = 0; i < 40; i++) {
++            const m = (lo + hi) / 2;
++            if (throttleCurve(m, p.throttle) < need) lo = m; else hi = m;
++        }
++        return lo + hi - 1;
++    }
++
+     /**
+      * In-browser tunnelling check through the live flight model: the craft is launched at `speed`
+      * towards walls; an oracle (upstream querySphere) resamples every tick's path every voxel/4.
+@@ -441,18 +507,8 @@ export class FlightSession {
+                 const before = sim.events.length;
+                 sim.step();
+                 spherePoses(p.spheres, n, s[S.px], s[S.py], s[S.pz], s[S.qw], s[S.qx], s[S.qy], s[S.qz], c1);
+-                // oracle: resample every sphere's path during this tick
+-                for (let i = 0; i < n; i++) {
+-                    const L = Math.hypot(c1[i * 3] - c0[i * 3], c1[i * 3 + 1] - c0[i * 3 + 1], c1[i * 3 + 2] - c0[i * 3 + 2]);
+-                    const m = Math.max(1, Math.ceil(L / step));
+-                    for (let j = 0; j <= m; j++) {
+-                        const f = j / m;
+-                        tmp[0] = c0[i * 3] + (c1[i * 3] - c0[i * 3]) * f;
+-                        tmp[1] = c0[i * 3 + 1] + (c1[i * 3 + 1] - c0[i * 3 + 1]) * f;
+-                        tmp[2] = c0[i * 3 + 2] + (c1[i * 3 + 2] - c0[i * 3 + 2]) * f;
+-                        if (col.querySphere(tmp[0], tmp[1], tmp[2], p.spheres[i * 4 + 3], push)) { penetrations++; j = m + 1; i = n; }
+-                    }
+-                }
++                // oracle: resample every sphere's path during this tick (the same test the live oracle runs)
++                if (pathPenetrates(col, p.spheres, n, c0, c1, step, push, tmp)) penetrations++;
+                 if (sim.events.slice(before).some((e) => e.type === 'crash' || e.type === 'contact')) { hitWall = true; contacts++; }
+             }
+             done++;
+diff --git a/apps/fly/src/ui/drone.ts b/apps/fly/src/ui/drone.ts
+index 4bf6547..5bad950 100644
+--- a/apps/fly/src/ui/drone.ts
++++ b/apps/fly/src/ui/drone.ts
+@@ -1,5 +1,6 @@
+ // Drone picker: preset cards; every number shows where it comes from (manufacturer / measured /
+-// estimate / Betaflight default). Also draws the rate curve of the preset.
++// estimate / Betaflight default / computed from those). Also draws the rate curve of the preset;
++// its numbers sit in labelled rows, not on the canvas.
+ import { compileParams, setpointRate } from '@gsfpv/sim-core';
+ import type { PresetJson } from '@gsfpv/sim-core';
+ import { PRESETS, DEFAULT_PRESET } from '../presets';
+@@ -20,12 +21,22 @@ function row(p: PresetJson, key: string, label: string, render: (v: unknown) =>
+     return h('div', { class: 'spec-row' }, h('span', { class: 'spec-k' }, label), h('span', { class: 'spec-v' }, render(f.value)), h('span', { class: `src src-${f.source.split(':')[0]}`, title: f.ref ?? '' }, srcLabel(f.source)));
+ }
+ 
++/** A number derived from the labelled rows (rates, TWR): labelled as computed, like every other number. */
++function computedRow(label: string, value: string): HTMLElement {
++    return h('div', { class: 'spec-row' }, h('span', { class: 'spec-k' }, label), h('span', { class: 'spec-v' }, value), h('span', { class: 'src src-computed' }, t('common.computed')));
++}
++
++function maxRate(p: PresetJson): number {
++    const sp = compileParams(p);
++    return setpointRate(sp.rates.type, 1, sp.rates.roll, sp.rates.rateLimit);
++}
++
+ function curve(p: PresetJson): HTMLCanvasElement {
+     const c = h('canvas', { width: 220, height: 110, class: 'rate-curve', role: 'img', 'aria-label': 'rate curve' }) as HTMLCanvasElement;
+     const sp = compileParams(p);
+     const g = c.getContext('2d');
+     if (!g) return c;
+-    const max = setpointRate(sp.rates.type, 1, sp.rates.roll, sp.rates.rateLimit);
++    const max = maxRate(p);
+     g.strokeStyle = '#2a3340';
+     g.strokeRect(0.5, 0.5, 219, 109);
+     g.strokeStyle = '#4ade80';
+@@ -40,7 +51,7 @@ function curve(p: PresetJson): HTMLCanvasElement {
+     g.stroke();
+     g.fillStyle = '#9aa3ad';
+     g.font = '11px ui-monospace, monospace';
+-    g.fillText(`${sp.rates.type} ${Math.round(max)} °/s`, 8, 14);
++    g.fillText(sp.rates.type, 8, 14);
+     return c;
+ }
+ 
+@@ -54,15 +65,16 @@ export class DronePicker {
+             const sp = compileParams(p);
+             const card = h('div', { class: `drone-card ${id === current ? 'selected' : ''}`, 'data-preset': id },
+                 h('h3', {}, p.name, id === DEFAULT_PRESET ? h('span', { class: 'pill' }, t('drone.default')) : null),
+-                h('p', { class: 'muted' }, p.class),
++                h('p', { class: 'muted drone-class' }, p.class),
+                 row(p, 'twr', t('drone.twr'), (v) => `${v}:1`),
+                 row(p, 'auw_g', t('drone.weight'), (v) => `${v} g`),
+                 row(p, 'wheelbase_mm', t('drone.wheelbase'), (v) => `${v} mm`),
+                 row(p, 'motor', t('drone.motor'), (v) => String(v)),
+                 row(p, 'battery', t('drone.battery'), (v) => String(v)),
+                 curve(p),
+-                h('p', { class: 'muted small' }, `hover ≈ ${fmt(((1 / Math.sqrt(sp.twr) - sp.idle) / (1 - sp.idle)) * 100, 0)} % throttle`),
+-                h('button', { type: 'button', class: 'btn primary', onclick: () => this.onPick?.(id) }, t('common.fly'))
++                computedRow(t('drone.maxRate'), `${sp.rates.type} ${Math.round(maxRate(p))} °/s`),
++                computedRow(t('drone.hover'), `≈ ${fmt(((1 / Math.sqrt(sp.twr) - sp.idle) / (1 - sp.idle)) * 100, 0)} %`),
++                h('button', { type: 'button', class: 'btn primary', 'data-action': 'pick-drone', 'data-preset': id, onclick: () => this.onPick?.(id) }, t('common.fly'))
+             );
+             cards.append(card);
+         }
+diff --git a/packages/i18n/locales/fly/en.json b/packages/i18n/locales/fly/en.json
+index d1f3475..234cb60 100644
+--- a/packages/i18n/locales/fly/en.json
++++ b/packages/i18n/locales/fly/en.json
+@@ -11,6 +11,7 @@
+   "common.manufacturer": "manufacturer",
+   "common.measured": "measured",
+   "common.bfDefault": "Betaflight default",
++  "common.computed": "computed",
+   "loading.scene": "Loading the scan…",
+   "loading.collision": "Loading walls…",
+   "loading.detail": "Streaming detail…",
+@@ -46,8 +47,8 @@
+   "scenes.empty.recent": "Scans you open appear here.",
+   "scenes.empty.favourites": "Tap the star on a scan to keep it here.",
+   "scenes.empty.filter": "No scans match the filter.",
+-  "scenes.noCollisionBadge": "Scan without walls: you can fly around, but you cannot crash",
+-  "scenes.noCollisionLine": "Walls exist only in scans that have collision data. This one has none yet.",
++  "scenes.noCollisionBadge": "This scan has no walls yet: you fly through everything. You can build them here in the browser.",
++  "scenes.noCollisionLine": "No collision data is published for this scan. You can build walls here in the browser or fly through.",
+   "scenes.byAuthor": "Scene by its author — see the original on SuperSplat",
+   "scenes.attribution": "Scene: {title} by {author}, {license}",
+   "scenes.report": "Report this scene",
+@@ -64,6 +65,8 @@
+   "drone.motor": "Motors",
+   "drone.battery": "Battery",
+   "drone.rates": "Rates",
++  "drone.maxRate": "Max rotation rate",
++  "drone.hover": "Hover throttle",
+   "drone.clearance": "Closest approach to a wall on this scan: about {mm} mm from the centre",
+   "drone.sourceNote": "Every number shows where it comes from.",
+   "radio.title": "Controls",
+@@ -101,6 +104,7 @@
+   "wizard.axis.arm": "Arm",
+   "arm.hint": "Throttle all the way down — that's how a real drone arms.",
+   "arm.blocked.noProfile": "Calibrate your controls first.",
++  "arm.blocked.untouched": "Move every stick once: this browser reports 0 until a stick moves.",
+   "arm.blocked.center": "Move each stick through its centre once.",
+   "arm.blocked.throttle": "Throttle all the way down to arm.",
+   "arm.blocked.switch": "Turn the arm switch off, then on.",
+@@ -189,7 +193,7 @@
+   "top.pause": "Pause",
+   "top.controls": "Controls",
+   "banner.noHid": "Radios over USB work in Chrome and Edge. Here: gamepad or touch sticks.",
+-  "banner.noWebgpu": "This browser has no WebGPU. You can look at the scan, but flying needs Chrome or Edge on a computer.",
++  "banner.noWebgpu": "No WebGPU in this browser: the scan is drawn with WebGL2. You can fly, but it may run slower. For the best result use Chrome or Edge on a computer.",
+   "replay.playing": "Replay",
+   "replay.exit": "Back to flying",
+   "tunnel.pass": "{n} passes at {v} m/s, {bad} through walls",
+diff --git a/packages/i18n/locales/fly/es.json b/packages/i18n/locales/fly/es.json
+index 5e46ea9..aba7e3f 100644
+--- a/packages/i18n/locales/fly/es.json
++++ b/packages/i18n/locales/fly/es.json
+@@ -11,6 +11,7 @@
+   "common.manufacturer": "fabricante",
+   "common.measured": "medido",
+   "common.bfDefault": "por defecto en Betaflight",
++  "common.computed": "calculado",
+   "loading.scene": "Cargando el escaneo…",
+   "loading.collision": "Cargando las paredes…",
+   "loading.detail": "Cargando más detalle…",
+@@ -46,8 +47,8 @@
+   "scenes.empty.recent": "Aquí aparecerán los escaneos que abras.",
+   "scenes.empty.favourites": "Toca la estrella de un escaneo para tenerlo aquí.",
+   "scenes.empty.filter": "Ningún escaneo coincide con el filtro.",
+-  "scenes.noCollisionBadge": "Escaneo sin paredes: puedes volar por todas partes, pero no te puedes estrellar",
+-  "scenes.noCollisionLine": "Solo hay paredes en los escaneos con datos de colisión. Este aún no los tiene.",
++  "scenes.noCollisionBadge": "Este escaneo aún no tiene paredes: atraviesas todo. Puedes construirlas aquí, en el navegador.",
++  "scenes.noCollisionLine": "Este escaneo no tiene datos de colisión publicados. Puedes construir paredes aquí, en el navegador, o volar atravesándolo todo.",
+   "scenes.byAuthor": "Escena de su autor — mira el original en SuperSplat",
+   "scenes.attribution": "Escena: {title} de {author}, {license}",
+   "scenes.report": "Denunciar esta escena",
+@@ -64,6 +65,8 @@
+   "drone.motor": "Motores",
+   "drone.battery": "Batería",
+   "drone.rates": "Rates",
++  "drone.maxRate": "Velocidad de giro máx.",
++  "drone.hover": "Gas en estacionario",
+   "drone.clearance": "Distancia mínima a una pared en este escaneo: unos {mm} mm desde el centro",
+   "drone.sourceNote": "Cada número indica de dónde sale.",
+   "radio.title": "Controles",
+@@ -101,6 +104,7 @@
+   "wizard.axis.arm": "Armado",
+   "arm.hint": "Acelerador abajo del todo: así se arma un dron de verdad.",
+   "arm.blocked.noProfile": "Primero calibra los controles.",
++  "arm.blocked.untouched": "Mueve cada stick una vez: este navegador marca 0 hasta que el stick se mueve.",
+   "arm.blocked.center": "Pasa cada stick por el centro una vez.",
+   "arm.blocked.throttle": "Baja el acelerador del todo para armar.",
+   "arm.blocked.switch": "Desactiva el interruptor de armado y vuelve a activarlo.",
+@@ -189,7 +193,7 @@
+   "top.pause": "Pausa",
+   "top.controls": "Controles",
+   "banner.noHid": "La emisora por USB funciona en Chrome y Edge. Aquí: mando o sticks táctiles.",
+-  "banner.noWebgpu": "Este navegador no tiene WebGPU. Puedes ver el escaneo, pero para volar necesitas Chrome o Edge de escritorio.",
++  "banner.noWebgpu": "Este navegador no tiene WebGPU: el escaneo se dibuja con WebGL2. Puedes volar, pero puede ir más lento. Para el mejor resultado, usa Chrome o Edge de escritorio.",
+   "replay.playing": "Repetición",
+   "replay.exit": "Volver a volar",
+   "tunnel.pass": "Pasadas: {n} a {v} m/s; atravesaron paredes: {bad}",
+diff --git a/packages/i18n/locales/fly/pl.json b/packages/i18n/locales/fly/pl.json
+index 4c2e4b5..bddab68 100644
+--- a/packages/i18n/locales/fly/pl.json
++++ b/packages/i18n/locales/fly/pl.json
+@@ -11,6 +11,7 @@
+   "common.manufacturer": "producent",
+   "common.measured": "zmierzone",
+   "common.bfDefault": "domyślnie w Betaflight",
++  "common.computed": "obliczone",
+   "loading.scene": "Wczytywanie skanu…",
+   "loading.collision": "Wczytywanie ścian…",
+   "loading.detail": "Doczytywanie szczegółów…",
+@@ -46,8 +47,8 @@
+   "scenes.empty.recent": "Tu pojawią się skany, które otworzysz.",
+   "scenes.empty.favourites": "Kliknij gwiazdkę przy skanie, żeby go tu zachować.",
+   "scenes.empty.filter": "Żaden skan nie pasuje do filtra.",
+-  "scenes.noCollisionBadge": "Skan bez ścian: możesz latać, ale się nie rozbijesz",
+-  "scenes.noCollisionLine": "Ściany mają tylko skany z danymi kolizji. Ten jeszcze ich nie ma.",
++  "scenes.noCollisionBadge": "Ten skan nie ma jeszcze ścian: przelatujesz przez wszystko. Możesz je zbudować tutaj, w przeglądarce.",
++  "scenes.noCollisionLine": "Ten skan nie ma opublikowanych danych kolizji. Możesz zbudować ściany tutaj, w przeglądarce, albo latać przez wszystko.",
+   "scenes.byAuthor": "Scena należy do jej autora — oryginał zobaczysz na SuperSplat",
+   "scenes.attribution": "Scena: {title}, autor: {author}, {license}",
+   "scenes.report": "Zgłoś tę scenę",
+@@ -64,6 +65,8 @@
+   "drone.motor": "Silniki",
+   "drone.battery": "Akumulator",
+   "drone.rates": "Rates",
++  "drone.maxRate": "Maks. prędkość obrotu",
++  "drone.hover": "Gaz w zawisie",
+   "drone.clearance": "Najmniejsza odległość od ściany na tym skanie: ok. {mm} mm od środka",
+   "drone.sourceNote": "Przy każdej liczbie widać, skąd pochodzi.",
+   "radio.title": "Sterowanie",
+@@ -101,6 +104,7 @@
+   "wizard.axis.arm": "Uzbrojenie",
+   "arm.hint": "Gaz na sam dół — tak uzbraja się prawdziwy dron.",
+   "arm.blocked.noProfile": "Najpierw skalibruj sterowanie.",
++  "arm.blocked.untouched": "Porusz raz każdym drążkiem: ta przeglądarka podaje 0, dopóki drążek się nie ruszy.",
+   "arm.blocked.center": "Przeprowadź każdy drążek raz przez środek.",
+   "arm.blocked.throttle": "Gaz na sam dół, żeby uzbroić.",
+   "arm.blocked.switch": "Wyłącz przełącznik uzbrojenia i włącz go ponownie.",
+@@ -189,7 +193,7 @@
+   "top.pause": "Pauza",
+   "top.controls": "Sterowanie",
+   "banner.noHid": "Aparatura przez USB działa w Chrome i Edge. Tutaj: gamepad albo dotykowe drążki.",
+-  "banner.noWebgpu": "Ta przeglądarka nie ma WebGPU. Możesz obejrzeć skan, ale do latania potrzebny jest Chrome lub Edge na komputerze.",
++  "banner.noWebgpu": "Ta przeglądarka nie ma WebGPU: skan jest rysowany przez WebGL2. Możesz latać, ale może działać wolniej. Najlepiej w Chrome lub Edge na komputerze.",
+   "replay.playing": "Powtórka",
+   "replay.exit": "Wróć do latania",
+   "tunnel.pass": "Przeloty: {n} przy {v} m/s, przez ściany: {bad}",
+diff --git a/packages/i18n/locales/fly/ru.json b/packages/i18n/locales/fly/ru.json
+index e0331c8..0ac4eb9 100644
+--- a/packages/i18n/locales/fly/ru.json
++++ b/packages/i18n/locales/fly/ru.json
+@@ -11,6 +11,7 @@
+   "common.manufacturer": "производитель",
+   "common.measured": "измерено",
+   "common.bfDefault": "по умолчанию в Betaflight",
++  "common.computed": "расчёт",
+   "loading.scene": "Загружаем скан…",
+   "loading.collision": "Загружаем стены…",
+   "loading.detail": "Подгружаем детали…",
+@@ -46,8 +47,8 @@
+   "scenes.empty.recent": "Здесь появятся сканы, которые ты откроешь.",
+   "scenes.empty.favourites": "Нажми на звёздочку у скана, чтобы он появился здесь.",
+   "scenes.empty.filter": "Ни один скан не подходит под фильтр.",
+-  "scenes.noCollisionBadge": "Скан без стен: летать можно, а разбиться — нет",
+-  "scenes.noCollisionLine": "Стены есть только у сканов с данными столкновений. У этого их пока нет.",
++  "scenes.noCollisionBadge": "У этого скана пока нет стен: пролетаешь сквозь всё. Их можно построить здесь, в браузере.",
++  "scenes.noCollisionLine": "Для этого скана нет опубликованных данных столкновений. Стены можно построить здесь, в браузере, или летать насквозь.",
+   "scenes.byAuthor": "Сцена принадлежит её автору — оригинал смотри на SuperSplat",
+   "scenes.attribution": "Сцена: {title}, автор — {author}, {license}",
+   "scenes.report": "Пожаловаться на сцену",
+@@ -64,6 +65,8 @@
+   "drone.motor": "Моторы",
+   "drone.battery": "Аккумулятор",
+   "drone.rates": "Рейты",
++  "drone.maxRate": "Макс. скорость вращения",
++  "drone.hover": "Газ для висения",
+   "drone.clearance": "Ближе всего к стене на этом скане: около {mm} мм от центра",
+   "drone.sourceNote": "У каждого числа указано, откуда оно взято.",
+   "radio.title": "Управление",
+@@ -101,6 +104,7 @@
+   "wizard.axis.arm": "Арм",
+   "arm.hint": "Газ в самый низ — так армится настоящий дрон.",
+   "arm.blocked.noProfile": "Сначала откалибруй управление.",
++  "arm.blocked.untouched": "Подвигай каждый стик хотя бы раз: браузер показывает 0, пока стик не сдвинется.",
+   "arm.blocked.center": "Проведи каждый стик через центр хотя бы раз.",
+   "arm.blocked.throttle": "Опусти газ в самый низ, чтобы заармить.",
+   "arm.blocked.switch": "Выключи тумблер арма и включи снова.",
+@@ -189,7 +193,7 @@
+   "top.pause": "Пауза",
+   "top.controls": "Управление",
+   "banner.noHid": "Аппаратура по USB работает в Chrome и Edge. Здесь — геймпад или сенсорные стики.",
+-  "banner.noWebgpu": "В этом браузере нет WebGPU. Скан посмотреть можно, но для полёта нужен Chrome или Edge на компьютере.",
++  "banner.noWebgpu": "В этом браузере нет WebGPU: скан рисуется через WebGL2. Летать можно, но может работать медленнее. Лучше всего — Chrome или Edge на компьютере.",
+   "replay.playing": "Повтор",
+   "replay.exit": "Вернуться к полёту",
+   "tunnel.pass": "Проходов: {n} на {v} м/с, сквозь стены: {bad}",
+diff --git a/packages/input/src/calib.ts b/packages/input/src/calib.ts
+index f20a309..0360b60 100644
+--- a/packages/input/src/calib.ts
++++ b/packages/input/src/calib.ts
+@@ -299,12 +299,43 @@ export function armOn(a: ArmMap | null, f: RawFrame): boolean {
+ 
+ // -------------------------------------------------------------- arm gate
+ 
+-export type ArmBlock = null | 'noProfile' | 'center' | 'throttle' | 'switch' | 'stale' | 'hidden' | 'crashed';
++export type ArmBlock = null | 'noProfile' | 'untouched' | 'center' | 'throttle' | 'switch' | 'stale' | 'hidden' | 'crashed';
+ 
+ /**
+- * Arm only when: a profile exists; every stick passed through its centre since load (protects
+- * against the Chromium gamepad trap where an axis reports 0.0 until first moved); throttle <= 5 %;
+- * the arm switch goes off -> on; not crashed; the last sample is <= 100 ms old; the tab is visible.
++ * Chromium gamepad trap: every axis of a pad reads exactly 0.0 until that stick is first moved.
++ * A throttle mapped so that raw 0.0 is "low" then looks armable although nobody touched the
++ * sticks, and a centred 0.0 also satisfies the gate's "passed centre" rule, so that rule cannot
++ * catch it. This guard can: an axis counts as live only once it has reported a value that is not
++ * exactly 0 since the source connected (real sticks are never exactly 0.0 on every sample).
++ */
++export class GamepadTrapGuard {
++    private seen = new Set<number>();
++
++    /** New source (or reconnect): forget what was seen. */
++    reset(): void {
++        this.seen.clear();
++    }
++
++    /** Feed a raw frame; true once every mapped stick axis has shown a non-zero value. */
++    feed(p: Profile, f: RawFrame): boolean {
++        for (const fn of FNS) {
++            const i = p.axes[fn].index;
++            if (f.axes[i] !== 0) this.seen.add(i);
++        }
++        return this.ready(p);
++    }
++
++    ready(p: Profile): boolean {
++        return FNS.every((fn) => this.seen.has(p.axes[fn].index));
++    }
++}
++
++/**
++ * Arm only when: a profile exists; for a gamepad, every mapped axis has reported a value that is
++ * not exactly 0 since it connected (the trap guard above: `untouched` is passed in); every stick
++ * passed through its centre since load; throttle <= 5 %; the arm switch goes off -> on; not
++ * crashed; the last sample is <= 100 ms old; the tab is visible. The centre rule alone does NOT
++ * protect against the gamepad trap: an axis stuck at 0.0 already counts as centred.
+  */
+ export class ArmGate {
+     private passedCenter: Record<string, boolean> = { roll: false, pitch: false, yaw: false };
+@@ -312,7 +343,7 @@ export class ArmGate {
+     armed = false;
+     block: ArmBlock = 'noProfile';
+ 
+-    update(p: Profile | null, ch: Float32Array, lastSampleAgeMs: number, visible: boolean, crashed: boolean): number {
++    update(p: Profile | null, ch: Float32Array, lastSampleAgeMs: number, visible: boolean, crashed: boolean, untouched = false): number {
+         if (!p) { this.block = 'noProfile'; return this.out(false); }
+         for (const [k, i] of [['roll', 0], ['pitch', 1], ['yaw', 3]] as const) if (Math.abs(ch[i]) < 0.1) this.passedCenter[k] = true;
+         const sw = ch[4] > 0;
+@@ -323,6 +354,7 @@ export class ArmGate {
+         if (!visible) { this.block = 'hidden'; this.armed = false; return this.out(false); }
+         if (crashed) { this.block = 'crashed'; this.armed = false; return this.out(false); }
+         if (this.armed) { this.block = null; return this.out(true); }
++        if (untouched) { this.block = 'untouched'; return this.out(false); }
+         if (!Object.values(this.passedCenter).every(Boolean)) { this.block = 'center'; return this.out(false); }
+         if ((ch[2] + 1) / 2 > 0.05) { this.block = 'throttle'; return this.out(false); }
+         if (!rising) { this.block = 'switch'; return this.out(false); }
+diff --git a/packages/input/src/sim/bot.ts b/packages/input/src/sim/bot.ts
+index e76540b..8c5bd88 100644
+--- a/packages/input/src/sim/bot.ts
++++ b/packages/input/src/sim/bot.ts
+@@ -12,7 +12,10 @@ export type BotTask =
+     | { kind: 'idle' }
+     | { kind: 'hover'; target: [number, number, number]; yawDeg: number }
+     | { kind: 'path'; points: [number, number, number][]; speed: number; yawDeg: number | 'along' }
+-    | { kind: 'dash'; from: [number, number, number]; dir: [number, number, number]; speed: number; yawDeg: number };
++    | { kind: 'dash'; from: [number, number, number]; dir: [number, number, number]; speed: number; yawDeg: number; accel?: number };
++
++/** dash profile: constant acceleration up to the dash speed, m/s^2 (plans size their run-up with it) */
++export const DASH_ACCEL = 12;
+ 
+ export interface BotStatus {
+     task: string;
+@@ -92,10 +95,12 @@ export class BotPilot {
+         } else if (t.kind === 'dash') {
+             if (this.dashT0 < 0) this.dashT0 = sim.tick;
+             const el = (sim.tick - this.dashT0) / 1000;
+-            // accelerate at 12 m/s^2 up to speed, then hold it; lateral error pulled to the line
+-            const accelT = t.speed / 12;
+-            const along = el < accelT ? 0.5 * 12 * el * el : 0.5 * 12 * accelT * accelT + (el - accelT) * t.speed;
+-            const vAlong = el < accelT ? 12 * el : t.speed;
++            // accelerate at a constant rate (DASH_ACCEL unless the task says) up to speed, then hold it;
++            // lateral error pulled to the line
++            const acc = t.accel ?? DASH_ACCEL;
++            const accelT = t.speed / acc;
++            const along = el < accelT ? 0.5 * acc * el * el : 0.5 * acc * accelT * accelT + (el - accelT) * t.speed;
++            const vAlong = el < accelT ? acc * el : t.speed;
+             tx = t.from[0] + t.dir[0] * along; ty = t.from[1] + t.dir[1] * along; tz = t.from[2] + t.dir[2] * along;
+             vtx = t.dir[0] * vAlong; vty = t.dir[1] * vAlong; vtz = t.dir[2] * vAlong;
+         }
+diff --git a/packages/input/src/sim/index.ts b/packages/input/src/sim/index.ts
+index 976a013..7263ad4 100644
+--- a/packages/input/src/sim/index.ts
++++ b/packages/input/src/sim/index.ts
+@@ -3,3 +3,4 @@ export * from './scenario';
+ export * from './signals';
+ export * from './plan';
+ export * from './determinism';
++export * from './oracle';
+diff --git a/packages/input/src/sim/plan.ts b/packages/input/src/sim/plan.ts
+index 518e9b2..89c30ef 100644
+--- a/packages/input/src/sim/plan.ts
++++ b/packages/input/src/sim/plan.ts
+@@ -1,48 +1,260 @@
+ // Build a bot flight plan for a scene: validated spawn, a box that fits, and a wall to hit.
+ import type { ScenarioPlan } from './scenario';
+ import { boxAround } from './scenario';
+-import { findWall } from './bot';
++import { findWall, DASH_ACCEL } from './bot';
+ 
+ export interface PlanCollision {
+     querySphere(x: number, y: number, z: number, r: number, out: { x: number; y: number; z: number }): boolean;
+     queryRay(ox: number, oy: number, oz: number, dx: number, dy: number, dz: number, max: number): { x: number; y: number; z: number } | null;
++    /** upstream surface normal at a ray hit; when present, walls are picked so the dash meets them head-on */
++    querySurfaceNormal?(x: number, y: number, z: number, rdx: number, rdy: number, rdz: number): { nx: number; ny: number; nz: number };
+ }
+ 
+ export function headingOf(pos: number[], target: number[]): number {
+     return (Math.atan2(target[0] - pos[0], -(target[2] - pos[2])) * 180) / Math.PI;
+ }
+ 
++export interface SquareWall {
++    dir: [number, number, number]; // horizontal unit vector of the dash (= -normal, levelled)
++    dist: number; // horizontal distance to the wall surface, m
++    yawDeg: number;
++    normal: [number, number, number]; // predicted contact normal (upstream push-out at first touch)
++    angleDeg: number; // worst predicted angle between the dash and -normal over the probed patch
++    meanAngleDeg: number;
++    contactM: number; // distance flown until the body sphere first touches
++}
++
++const RAD = 180 / Math.PI;
++// heights around the dash line (m): the craft pitches nose-down and sags while dashing
++const BAND = Array.from({ length: 17 }, (_, i) => -0.2 + i * 0.025);
++// sideways offsets (m): the ducts sit off the centre line and the bot drifts a little; on a voxel
++// staircase a sphere meets a face or an edge depending on exactly where it hits
++const SIDE = [-0.05, -0.025, 0, 0.025, 0.05];
++
++/**
++ * First touch of a sphere marched along (ux, 0, uz) from `fromS` to `maxS`, bisected to 1 mm, with
++ * the upstream push-out normal there.
++ */
++function touch(col: PlanCollision, x: number, y: number, z: number, ux: number, uz: number, r: number, fromS: number, maxS: number, push: { x: number; y: number; z: number }): { s: number; nx: number; ny: number; nz: number } | null {
++    const stepM = r * 0.5;
++    let lo = -1, hi = -1;
++    if (col.querySphere(x + ux * fromS, y, z + uz * fromS, r, push)) return null;
++    for (let s = fromS; s <= maxS; s += stepM) {
++        if (col.querySphere(x + ux * s, y, z + uz * s, r, push)) { hi = s; lo = Math.max(0, s - stepM); break; }
++    }
++    if (hi < 0) return null;
++    while (hi - lo > 0.001) {
++        const m = (lo + hi) / 2;
++        if (col.querySphere(x + ux * m, y, z + uz * m, r, push)) hi = m; else lo = m;
++    }
++    if (!col.querySphere(x + ux * hi, y, z + uz * hi, r + 0.005, push)) return null;
++    const pl = Math.hypot(push.x, push.y, push.z);
++    return pl < 1e-9 ? null : { s: hi, nx: push.x / pl, ny: push.y / pl, nz: push.z / pl };
++}
++const angleTo = (ax: number, ay: number, az: number, bx: number, by: number, bz: number) =>
++    Math.acos(Math.max(-1, Math.min(1, (ax * bx + ay * by + az * bz) / (Math.hypot(ax, ay, az) * Math.hypot(bx, by, bz) || 1)))) * RAD;
++
++/**
++ * Head-on wall: its surface normal is near-horizontal (|ny| < 0.2) and the dash flies along the
++ * levelled -normal. The contact normal the flight model will see (upstream querySphere push-out of
++ * a sphere touching the wall, as VoxelContactWorld.normalAt does) is predicted by marching a sphere
++ * of radius `r` along the dash at every height of BAND and offset of SIDE; the face must be flat there (first touches
++ * within 6 cm; a ledge turns a small sphere's normal up by 30-40 degrees) and every
++ * normal within `maxAngleDeg`. Use the craft's smallest collider sphere for `r`: small spheres see
++ * voxel edges most. `clearR`: the corridor must stay free for a sphere that big until 0.6 m before
++ * the wall.
++ */
++export function findSquareWall(
++    col: PlanCollision, p: [number, number, number], r: number, minD: number, maxD: number, maxAngleDeg = 15, clearR = r
++): SquareWall | null {
++    if (!col.querySurfaceNormal) return null;
++    const push = { x: 0, y: 0, z: 0 };
++    let best: (SquareWall & { score: number }) | null = null;
++    const mid = (minD + maxD) / 2;
++    for (let a = 0; a < 360; a += 5) {
++        const ra = a / RAD;
++        const h = col.queryRay(p[0], p[1], p[2], Math.sin(ra), 0, -Math.cos(ra), maxD + 1);
++        if (!h) continue;
++        const n0 = col.querySurfaceNormal(h.x, h.y, h.z, Math.sin(ra), 0, -Math.cos(ra));
++        if (Math.abs(n0.ny) >= 0.2) continue;
++        const hl = Math.hypot(n0.nx, n0.nz);
++        if (hl < 1e-6) continue;
++        const ux = -n0.nx / hl, uz = -n0.nz / hl;
++        const h2 = col.queryRay(p[0], p[1], p[2], ux, 0, uz, maxD + 1);
++        if (!h2) continue;
++        const dist = Math.hypot(h2.x - p[0], h2.z - p[2]);
++        if (dist < minD || dist > maxD) continue;
++        const n2 = col.querySurfaceNormal(h2.x, h2.y, h2.z, ux, 0, uz);
++        if (Math.abs(n2.ny) >= 0.2 || angleTo(-ux, 0, -uz, n2.nx, n2.ny, n2.nz) > maxAngleDeg) continue;
++        // the craft pitches and sags during the dash: the face must be flat and head-on over a band
++        // of heights around the line, not just at its centre
++        let hi = -1, nx = 0, ny = 0, nz = 0, ang = 0, angSum = 0, nProbe = 0, lo = Infinity, far = -Infinity, ok = true;
++        for (const dy of BAND) {
++            for (const side of SIDE) {
++                // sideways = the dash turned 90 degrees in the horizontal plane
++                const t = touch(col, p[0] - uz * side, p[1] + dy, p[2] + ux * side, ux, uz, r, Math.max(0, dist - 0.6), dist + r, push);
++                if (!t) { ok = false; break; }
++                const a2 = angleTo(-ux, 0, -uz, t.nx, t.ny, t.nz);
++                if (Math.abs(t.ny) >= 0.2 || a2 > maxAngleDeg) { ok = false; break; }
++                lo = Math.min(lo, t.s); far = Math.max(far, t.s);
++                ang = Math.max(ang, a2);
++                angSum += a2; nProbe++;
++                if (dy === 0 && side === 0) { hi = t.s; nx = t.nx; ny = t.ny; nz = t.nz; }
++            }
++            if (!ok) break;
++        }
++        if (!ok || hi < 0 || far - lo > 0.06) continue;
++        // the corridor up to the last 0.6 m (the bot does not fly a perfect line: clearR is fatter)
++        let blocked = false;
++        const cr = Math.max(clearR, r);
++        for (let s = 0; s <= dist - 0.6 && !blocked; s += cr * 0.5) blocked = col.querySphere(p[0] + ux * s, p[1], p[2] + uz * s, cr, push);
++        if (blocked) continue;
++        const meanAng = angSum / nProbe;
++        const score = meanAng + (5 * Math.abs(dist - mid)) / Math.max(1, maxD - minD);
++        if (!best || score < best.score) best = { dir: [ux, 0, uz], dist, yawDeg: Math.atan2(ux, -uz) * RAD, normal: [nx, ny, nz], angleDeg: ang, meanAngleDeg: meanAng, contactM: hi, score };
++    }
++    if (!best) return null;
++    const { score: _s, ...w } = best;
++    void _s;
++    return w;
++}
++
++/** Run-up the bot needs to reach `speed` with a dash accelerating at `accel`, plus a margin to settle. */
++export function dashRunUp(speed: number, accel = DASH_ACCEL, margin = 1.0): number {
++    return (speed * speed) / (2 * accel) + margin;
++}
++
++/** B12 dash: a harder push than the default profile, so a room-sized run-up still reaches 2 v_crash and more */
++export const WALL_DASH_ACCEL = 20;
++
++/** Is the straight segment a -> b free for a sphere of radius r (sampled every r / 2)? */
++function segmentFree(col: PlanCollision, a: number[], b: number[], r: number, push: { x: number; y: number; z: number }): boolean {
++    const L = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
++    const n = Math.max(1, Math.ceil(L / (r * 0.5)));
++    for (let i = 0; i <= n; i++) {
++        const f = i / n;
++        if (col.querySphere(a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f, r, push)) return false;
++    }
++    return true;
++}
++
+ export function makePlan(
+     col: PlanCollision,
+     boundRadius: number,
+     pos: number[],
+     target: number[],
+     dashSpeed: number,
+-    findSpawn?: (x: number, y: number, z: number, r: number, out: { x: number; y: number; z: number }) => boolean
++    findSpawn?: (x: number, y: number, z: number, r: number, out: { x: number; y: number; z: number }) => boolean,
++    probeR = 0.025
+ ): ScenarioPlan {
+     const push = { x: 0, y: 0, z: 0 };
+     const R = boundRadius + 0.03;
+-    let spawn: [number, number, number] = [pos[0], pos[1], pos[2]];
+-    if (col.querySphere(spawn[0], spawn[1], spawn[2], R, push) && findSpawn) {
+-        const out = { x: 0, y: 0, z: 0 };
+-        if (findSpawn(spawn[0], spawn[1], spawn[2], R, out)) spawn = [out.x, out.y, out.z];
+-    }
++    const spawn = validSpawn(col, boundRadius, pos, findSpawn);
+     let box = boxAround(spawn, 1.2);
+     for (const size of [1.2, 0.8, 0.5, 0.3]) {
+         box = boxAround(spawn, size);
+         if (box.every((b) => !col.querySphere(b[0], b[1], b[2], R, push))) break;
+     }
+-    const wall = findWall((ox, oy, oz, dx, dy, dz, m) => col.queryRay(ox, oy, oz, dx, dy, dz, m), spawn, 2.5, 8);
++    // head-on wall far enough for the dash to reach its speed, from the spawn or a start point up to
++    // 1.5 m away that the bot can fly to in a straight line; the nearest-wall search is the fallback
++    const minD = Math.max(2.5, dashRunUp(dashSpeed, WALL_DASH_ACCEL));
++    const clear = boundRadius + 0.1;
++    let best: { w: SquareWall; from: [number, number, number]; score: number } | null = null;
++    for (const off of startOffsets()) {
++        const from: [number, number, number] = [spawn[0] + off[0], spawn[1] + off[1], spawn[2] + off[2]];
++        const moved = off[0] !== 0 || off[1] !== 0 || off[2] !== 0;
++        if (moved && (col.querySphere(from[0], from[1], from[2], clear + 0.05, push) || !segmentFree(col, spawn, from, clear, push))) continue;
++        const w = findSquareWall(col, from, Math.min(boundRadius, probeR), minD, minD + 6, 15, clear);
++        if (!w) continue;
++        const score = w.meanAngleDeg + 0.5 * w.angleDeg + 2 * Math.hypot(off[0], off[1], off[2]);
++        if (!best || score < best.score) best = { w, from, score };
++        if (!moved && w.angleDeg < 3) break; // good enough without moving
++    }
++    const square = best?.w ?? null;
++    const wall = square ?? findWall((ox, oy, oz, dx, dy, dz, m) => col.queryRay(ox, oy, oz, dx, dy, dz, m), spawn, 2.5, 8);
+     return {
+         spawn,
+         spawnYawDeg: headingOf(pos, target),
+         box,
+         wallDir: wall ? wall.dir : null,
+         wallYawDeg: wall ? wall.yawDeg : 0,
+-        dashSpeed
++        dashSpeed,
++        dashFrom: best ? best.from : undefined,
++        dashAccel: square ? WALL_DASH_ACCEL : undefined,
++        wall: square ? { normal: square.normal, angleDeg: square.angleDeg, distM: square.dist, headOn: true } : wall ? { normal: null, angleDeg: null, distM: wall.dist, headOn: false } : undefined
+     };
+ }
+ 
++/** The authored camera position, moved out of any wall when the craft would not fit there. */
++function validSpawn(col: PlanCollision, boundRadius: number, pos: number[], findSpawn?: (x: number, y: number, z: number, r: number, out: { x: number; y: number; z: number }) => boolean): [number, number, number] {
++    const R = boundRadius + 0.03;
++    if (col.querySphere(pos[0], pos[1], pos[2], R, { x: 0, y: 0, z: 0 }) && findSpawn) {
++        const out = { x: 0, y: 0, z: 0 };
++        if (findSpawn(pos[0], pos[1], pos[2], R, out)) return [out.x, out.y, out.z];
++    }
++    return [pos[0], pos[1], pos[2]];
++}
++
++/** Dash start candidates around the spawn: the spawn itself first, then rings of 0.5..1.5 m at three heights. */
++function startOffsets(): [number, number, number][] {
++    const out: [number, number, number][] = [[0, 0, 0]];
++    for (const dy of [0, 0.4, -0.3]) {
++        for (const rr of [0.5, 1.0, 1.5]) {
++            for (let k = 0; k < 8; k++) {
++                const a = (k / 8) * 2 * Math.PI;
++                out.push([Math.cos(a) * rr, dy, Math.sin(a) * rr]);
++            }
++        }
++    }
++    return out;
++}
++
++/**
++ * B13: a long head-on dash. Find a start point with a wall `minRun`..`maxRun` metres away, a flat
++ * head-on face and a free corridor, so the bot reaches `dashSpeed` well before it hits: first
++ * straight above the spawn, then on a grid of points 1.5 and 3 m above the ground up to `searchM`
++ * around it. Null if the scene has no such run-up (an interior, for example).
++ */
++export function makeFarPlan(
++    col: PlanCollision,
++    boundRadius: number,
++    pos: number[],
++    target: number[],
++    dashSpeed: number,
++    minRun = 30,
++    maxRun = 60,
++    findSpawn?: (x: number, y: number, z: number, r: number, out: { x: number; y: number; z: number }) => boolean,
++    probeR = 0.025,
++    searchM = 60
++): ScenarioPlan | null {
++    const spawn = validSpawn(col, boundRadius, pos, findSpawn);
++    const push = { x: 0, y: 0, z: 0 };
++    const clear = boundRadius + 0.3;
++    const minD = Math.max(minRun, dashRunUp(dashSpeed, DASH_ACCEL, 4));
++    const origins: [number, number, number][] = [0, 1, 2, 3, 5, 8].map((up) => [spawn[0], spawn[1] + up, spawn[2]]);
++    for (let dx = -searchM; dx <= searchM; dx += 6) {
++        for (let dz = -searchM; dz <= searchM; dz += 6) {
++            const down = col.queryRay(spawn[0] + dx, spawn[1] + 40, spawn[2] + dz, 0, -1, 0, 80);
++            if (down) for (const hgt of [1.5, 3]) origins.push([down.x, down.y + hgt, down.z]);
++        }
++    }
++    for (const o of origins) {
++        if (col.querySphere(o[0], o[1], o[2], clear, push)) continue;
++        const w = findSquareWall(col, o, Math.min(boundRadius, probeR), minD, maxRun, 15, clear);
++        if (!w) continue;
++        return {
++            spawn: o,
++            spawnYawDeg: w.yawDeg,
++            box: [o],
++            wallDir: w.dir,
++            wallYawDeg: w.yawDeg,
++            dashSpeed,
++            wall: { normal: w.normal, angleDeg: w.angleDeg, distM: w.dist, headOn: true }
++        };
++    }
++    return null;
++}
++
+ /**
+  * Cinematic tour: from the spawn, repeatedly take the longest free horizontal corridor (at least
+  * `minLeg` m, ignoring the way back), fly 70 % of it, `legs` times; then aim at the closest wall.
+@@ -81,5 +293,5 @@ export function makeTourPlan(
+         lastDir = best.dir;
+     }
+     const wall = findWall((ox, oy, oz, dx, dy, dz, m) => col.queryRay(ox, oy, oz, dx, dy, dz, m), p, 2.5, 10);
+-    return { ...base, tour: pts, tourSpeed: 4, wallDir: wall ? wall.dir : base.wallDir, wallYawDeg: wall ? wall.yawDeg : base.wallYawDeg };
++    return { ...base, dashFrom: undefined, dashAccel: undefined, tour: pts, tourSpeed: 4, wallDir: wall ? wall.dir : base.wallDir, wallYawDeg: wall ? wall.yawDeg : base.wallYawDeg, wall: wall ? { normal: null, angleDeg: null, distM: wall.dist, headOn: false } : base.wall };
+ }
+diff --git a/packages/input/src/sim/scenario.ts b/packages/input/src/sim/scenario.ts
+index 95e114f..ab1fa25 100644
+--- a/packages/input/src/sim/scenario.ts
++++ b/packages/input/src/sim/scenario.ts
+@@ -18,6 +18,11 @@ export interface ScenarioPlan {
+     tourSpeed?: number;
+     /** optional roll flip: climb to this point, flip once, recover, then fly the route */
+     flipAt?: [number, number, number];
++    /** where the dash starts (default: the spawn) and how hard it accelerates (default: the bot's DASH_ACCEL) */
++    dashFrom?: [number, number, number];
++    dashAccel?: number;
++    /** what the planner knows about the wall: predicted contact normal and dash angle when head-on */
++    wall?: { normal: [number, number, number] | null; angleDeg: number | null; distM: number; headOn: boolean };
+ }
+ 
+ export type Phase = 'arm' | 'hover' | 'climb' | 'flip' | 'recover' | 'box' | 'return' | 'aim' | 'dash' | 'crashed' | 'rest' | 'done';
+@@ -27,7 +32,11 @@ export interface ScenarioLog {
+     phases: { phase: Phase; tick: number }[];
+     hoverVz: number | null;
+     maxSpeed: number;
+-    crash: { tick: number; speed: number; px: number; py: number; pz: number } | null;
++    /**
++     * speed: approach speed along the contact normal (the flight model's crash rule); v: velocity
++     * one tick before the impact; impactSpeed = |v|; angleDeg: between v and -normal.
++     */
++    crash: { tick: number; speed: number; px: number; py: number; pz: number; nx: number; ny: number; nz: number; v: [number, number, number]; impactSpeed: number; angleDeg: number } | null;
+     tumbleMaxW: number; // rad/s after the crash
+     flip: { startTick: number; endTick: number; minUpY: number } | null;
+ }
+@@ -41,6 +50,8 @@ export class Scenario {
+     log: ScenarioLog = { phase: 'arm', phases: [{ phase: 'arm', tick: 0 }], hoverVz: null, maxSpeed: 0, crash: null, tumbleMaxW: 0, flip: null };
+     /** bot update period in ticks (4 = 250 Hz, a typical radio link) */
+     period = 4;
++    /** velocity after the previous step = the velocity going into this step (the impulse changes it) */
++    private lastV: [number, number, number] = [0, 0, 0];
+ 
+     constructor(runner: Runner, plan: ScenarioPlan) {
+         this.runner = runner;
+@@ -108,28 +119,34 @@ export class Scenario {
+                         this.bot.setTask({ kind: 'hover', target: [s[S.px], s[S.py], s[S.pz]], yawDeg: pl.wallYawDeg }, sim);
+                         this.go('aim', sim);
+                     } else {
+-                        this.bot.setTask({ kind: 'path', points: [pl.spawn], speed: 1.2, yawDeg: pl.spawnYawDeg }, sim);
++                        this.bot.setTask({ kind: 'path', points: [pl.dashFrom ?? pl.spawn], speed: 1.2, yawDeg: pl.spawnYawDeg }, sim);
+                         this.go('return', sim);
+                     }
+                 }
+                 break;
+             case 'return':
+                 if (this.bot.status.done || el > 8) {
+-                    this.bot.setTask({ kind: 'hover', target: pl.spawn, yawDeg: pl.wallYawDeg }, sim);
++                    this.bot.setTask({ kind: 'hover', target: pl.dashFrom ?? pl.spawn, yawDeg: pl.wallYawDeg }, sim);
+                     this.go('aim', sim);
+                 }
+                 break;
+             case 'aim':
+                 if (el >= 1.5) {
+                     if (!pl.wallDir) { this.go('done', sim); break; }
+-                    this.bot.setTask({ kind: 'dash', from: [s[S.px], s[S.py], s[S.pz]], dir: pl.wallDir, speed: pl.dashSpeed, yawDeg: pl.wallYawDeg }, sim);
++                    this.bot.setTask({ kind: 'dash', from: [s[S.px], s[S.py], s[S.pz]], dir: pl.wallDir, speed: pl.dashSpeed, yawDeg: pl.wallYawDeg, accel: pl.dashAccel }, sim);
+                     this.go('dash', sim);
+                 }
+                 break;
+             case 'dash':
+                 if (sim.crashed) {
+                     const ev = [...this.runner.events].reverse().find((e) => e.type === 'crash');
+-                    if (ev && ev.type === 'crash') this.log.crash = { tick: ev.tick, speed: ev.speed, px: ev.px, py: ev.py, pz: ev.pz };
++                    if (ev && ev.type === 'crash') {
++                        const [vx, vy, vz] = this.lastV;
++                        const vl = Math.sqrt(vx * vx + vy * vy + vz * vz);
++                        const cos = vl > 1e-9 ? -(vx * ev.nx + vy * ev.ny + vz * ev.nz) / vl : 1;
++                        const angleDeg = (Math.acos(Math.max(-1, Math.min(1, cos))) * 180) / Math.PI;
++                        this.log.crash = { tick: ev.tick, speed: ev.speed, px: ev.px, py: ev.py, pz: ev.pz, nx: ev.nx, ny: ev.ny, nz: ev.nz, v: [vx, vy, vz], impactSpeed: vl, angleDeg };
++                    }
+                     this.go('crashed', sim);
+                 } else if (el > Math.max(6, 12 / pl.dashSpeed)) {
+                     // no crash: the open-volume control ends here; a slow dash gets time to reach the wall
+@@ -153,6 +170,7 @@ export class Scenario {
+             }
+             this.runner.enqueue({ tUs: (sim.tick + 1) * 1000, ch });
+         }
++        this.lastV = [s[S.vx], s[S.vy], s[S.vz]];
+     }
+ 
+     private startRoute(sim: Sim): void {
+diff --git a/tools/bench/src/accept-d.ts b/tools/bench/src/accept-d.ts
+index 2f45912..c116dc0 100644
+--- a/tools/bench/src/accept-d.ts
++++ b/tools/bench/src/accept-d.ts
+@@ -1,5 +1,5 @@
+ // Phase D acceptance: cinema mode + recorder, quality governor, Betaflight diff import, trajectory
+-// export. Each with a negative control.
++// export (CSV and JSON). Each with a negative control.
+ //   SITE=https://gsfpv.flyreelstudio.eu npx tsx src/accept-d.ts [cinema governor diff trajectory]
+ import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+ import { join } from 'node:path';
+@@ -121,9 +121,12 @@ if (want('trajectory')) {
+     await waitReady(page, 180000);
+     await page.waitForTimeout(12000);
+     const r = await hook<Any>(`
++        // both exports taken in the same task, so they describe the same flight up to the same tick
+         const csv = h.trajectoryText('csv').trim().split('\\n');
++        const json = JSON.parse(h.trajectoryText('json'));
+         const head = csv[0].split(',');
+         const rows = csv.slice(1).map((l) => l.split(',').map(Number));
++        const pts = json.points;
+         const endTick = s.sim.tick;
+         const saved = h.saveLog('traj');
+         const bin = saved.bytes; let b2 = ''; for (let i = 0; i < bin.length; i++) b2 += String.fromCharCode(bin[i]);
+@@ -131,10 +134,16 @@ if (want('trajectory')) {
+         const rep = h.verifyLastLog();
+         // replayTrack samples every 100 ticks; rows are every 10 ticks: compare at the shared ticks
+         const cmp = (shift) => { let d = 0, n = 0; for (let k = 0; k * 3 + 2 < rep.track.length; k++) { const tick = (k + 1) * 100; const i = tick / 10 - 1 + shift; if (i < 0 || i >= rows.length) continue; const row = rows[i]; if (Math.round(row[0] * 1000) !== tick + shift * 10) { } d = Math.max(d, Math.hypot(row[1] - rep.track[k * 3], row[2] - rep.track[k * 3 + 1], row[3] - rep.track[k * 3 + 2])); n++; } return { maxDeltaM: d, compared: n }; };
+-        return { columns: head, rows: rows.length, endTick, firstT: rows[0]?.[0], lastT: rows[rows.length - 1]?.[0], exact: cmp(0), shifted: cmp(1), replayHashMatches: rep.hash === saved.hash };`);
+-    const pass = r.rows >= Math.floor(r.endTick / 10) - 2 && r.exact.compared > 50 && r.exact.maxDeltaM === 0 && r.shifted.maxDeltaM > 0 && r.replayHashMatches;
++        // the same comparison on the JSON export: points[i].p against the replay, plus its tick stamp
++        const cmpJson = (shift) => { let d = 0, n = 0, tickMismatch = 0; for (let k = 0; k * 3 + 2 < rep.track.length; k++) { const tick = (k + 1) * 100; const i = tick / 10 - 1 + shift; if (i < 0 || i >= pts.length) continue; const q = pts[i].p; if (Math.round(pts[i].t * 1000) !== tick) tickMismatch++; d = Math.max(d, Math.hypot(q[0] - rep.track[k * 3], q[1] - rep.track[k * 3 + 1], q[2] - rep.track[k * 3 + 2])); n++; } return { maxDeltaM: d, compared: n, tickMismatch }; };
++        const jsonHeaderMatchesLog = JSON.stringify(json.header) === JSON.stringify(saved.header);
++        return { columns: head, rows: rows.length, endTick, firstT: rows[0]?.[0], lastT: rows[rows.length - 1]?.[0], exact: cmp(0), shifted: cmp(1), replayHashMatches: rep.hash === saved.hash,
++            json: { points: pts.length, samplesHz: json.samplesHz, headerMatchesLog: jsonHeaderMatchesLog, keys: Object.keys(pts[0] || {}), exact: cmpJson(0), shifted: cmpJson(1) } };`);
++    const csvOk = r.rows >= Math.floor(r.endTick / 10) - 2 && r.exact.compared > 50 && r.exact.maxDeltaM === 0 && r.shifted.maxDeltaM > 0;
++    const jsonOk = r.json.points === r.rows && r.json.samplesHz === 100 && r.json.headerMatchesLog && r.json.exact.compared > 50 && r.json.exact.maxDeltaM === 0 && r.json.exact.tickMismatch === 0 && r.json.shifted.maxDeltaM > 0;
++    const pass = csvOk && jsonOk && r.replayHashMatches;
+     summary.trajectory = pass;
+-    writeEvidence('d-trajectory-export', { site: SITE, pass, check: 'every exported position equals the state recomputed from the input log alone at the same tick', result: r, control: { oneRowShift: r.shifted, fired: r.shifted.maxDeltaM > 0 } });
++    writeEvidence('d-trajectory-export', { site: SITE, pass, check: 'every exported position (CSV and JSON) equals the state recomputed from the input log alone at the same tick; the JSON header is the log header', result: r, csv: { ok: csvOk }, json: { ok: jsonOk }, control: { oneRowShift: { csv: r.shifted, json: r.json.shifted }, fired: r.shifted.maxDeltaM > 0 && r.json.shifted.maxDeltaM > 0 } });
+     console.log('trajectory', pass ? 'PASS' : 'FAIL', JSON.stringify(r));
+ }
+ 
+diff --git a/tools/bench/src/accept-fly.ts b/tools/bench/src/accept-fly.ts
+index b2a0fab..c14b7d9 100644
+--- a/tools/bench/src/accept-fly.ts
++++ b/tools/bench/src/accept-fly.ts
+@@ -2,7 +2,7 @@
+ // by default). System Chrome, visible window, stock flags. Every item writes its facts and its
+ // negative control into evidence/<date>/b-fly-<item>.json; PNGs next to it.
+ //   SITE=https://gsfpv.flyreelstudio.eu npx tsx src/accept-fly.ts [B6 B7 ...]
+-import { readFileSync, existsSync, mkdirSync } from 'node:fs';
++import { readFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
+ import { join } from 'node:path';
+ import { firefox } from 'playwright';
+ import type { BrowserContext, Page } from 'playwright';
+@@ -189,6 +189,18 @@ if (want('B8')) {
+     const shimOn = await sp.evaluate(() => !(navigator as Navigator & { gpu?: unknown }).gpu);
+     const shimBanner = await sp.locator('[data-testid="banner"]').first().textContent().catch(() => null);
+     const shimPx = await pixelStats(shim, await sp.screenshot({ path: join(SHOTS, 'b8-no-webgpu.jpg') }));
++    // the banner says the scan is drawn with WebGL2 and flying still works: check both
++    const shimDevice = await hookEval<{ deviceType: string; isWebGPU: boolean; renderer: number }>(sp, 'return { deviceType: s.renderer.app.graphicsDevice.deviceType, isWebGPU: s.renderer.isWebGPU, renderer: s.renderer.currentRenderer };');
++    await sp.click('.touch-arm'); // throttle is at the bottom: the touch ARM button arms
++    await sp.waitForTimeout(400);
++    const shimY0 = await hookEval<number>(sp, 'return s.sim.s[1];');
++    const shimArmed = await hookEval<boolean>(sp, 'return s.sim.armed;');
++    await hookEval(sp, 'h.touch.channels[2] = 0.3; return 0;'); // left stick up (the keep-alive sends it)
++    await sp.waitForTimeout(800);
++    const shimY1 = await hookEval<number>(sp, 'return s.sim.s[1];');
++    await hookEval(sp, 'h.touch.channels[2] = -1; return 0;');
++    await sp.click('.touch-arm');
++    const shimFlight = { armed: shimArmed, y0: shimY0, y1: shimY1, climbed: shimY1 - shimY0 };
+     await shim.close();
+ 
+     // Firefox (Playwright build): the scan is visible, the banner says radios need Chrome/Edge
+@@ -211,29 +223,42 @@ if (want('B8')) {
+     const en = dict('en');
+     const pass = before >= 2 && after === before && filterKept && cleared === 0
+         && shimOn && sh.status === 'ready' && shimBanner === en['banner.noWebgpu'] && shimPx.std > 0.04
++        && shimDevice.deviceType === 'webgl2' && !shimDevice.isWebGPU && shimFlight.armed && shimFlight.climbed > 0.1
+         && ff.ran === true && ff.status === 'ready' && (ff.pixelStd as number) > 0.04 && (ff.banner === en['banner.noHid'] || ff.banner === en['banner.noWebgpu']);
+-    record('B8', { pass, history: { before, afterReload: after, filterKept }, control: { afterClearingStorage: cleared, fired: cleared === 0 }, noWebgpuShim: { shimTookEffect: shimOn, status: sh.status, banner: shimBanner, pixelStd: shimPx.std }, firefox: ff });
++    record('B8', { pass, history: { before, afterReload: after, filterKept }, control: { afterClearingStorage: cleared, fired: cleared === 0 }, noWebgpuShim: { shimTookEffect: shimOn, status: sh.status, banner: shimBanner, pixelStd: shimPx.std, device: shimDevice, flight: shimFlight }, firefox: ff });
+ }
+ 
+ // ------------------------------------------------------------------ B9 presets, measured TWR
+ if (want('B9')) {
+-    const rows: Record<string, unknown>[] = [];
+-    for (const drone of [null, 'pavo20pro2-3s', 'pavopico-2s']) {
+-        await page.goto(fly('en', `scene=39e63ce9&nowarn=1&input=touch${drone ? `&drone=${drone}` : ''}`));
+-        await waitReady(page, 180000);
+-        rows.push(await hookEval<Record<string, unknown>>(page, 'return { preset: s.presetId, twrPreset: s.params.twr, twrMeasured: s.measureTwr() };'));
++    const measure = 'return { preset: s.presetId, twrPreset: s.params.twr, twrMeasured: s.measureTwr() };';
++    const openPicker = async () => { await page.keyboard.press('KeyP'); await page.click('[data-action="pause.drone"]'); };
++    // default: no ?drone= at all; Pro II and Pico: picked in the drone picker like a person would
++    await page.goto(fly('en', 'scene=39e63ce9&nowarn=1&input=touch'));
++    await waitReady(page, 180000);
++    const rows: Record<string, unknown>[] = [{ via: 'default (no drone parameter)', ...(await hookEval<Record<string, unknown>>(page, measure)) }];
++    for (const id of ['pavo20pro2-3s', 'pavopico-2s']) {
++        await openPicker();
++        await page.click(`.drone-card [data-action="pick-drone"][data-preset="${id}"]`);
++        await page.waitForTimeout(300);
++        rows.push({ via: `picker click on ${id}`, urlDrone: new URL(page.url()).searchParams.get('drone'), ...(await hookEval<Record<string, unknown>>(page, measure)) });
+     }
+-    // source labels in the drone picker
+-    await page.keyboard.press('KeyP');
+-    await page.click('[data-action="pause.drone"]');
+-    const srcLabels = await page.locator('.drone-card .src').count();
+-    const cards = await page.locator('.drone-card').count();
++    // every number row on every card carries a source label; any other digit on a card (outside the
++    // name, the class line and the button) would be a number without a source
++    await openPicker();
++    const cards = await hookEval<{ preset: string; rows: number; unlabelled: string[]; stray: string[] }[]>(page, `
++        return Array.from(document.querySelectorAll('.drone-card')).map((c) => ({
++            preset: c.getAttribute('data-preset'),
++            rows: c.querySelectorAll('.spec-row').length,
++            unlabelled: Array.from(c.querySelectorAll('.spec-row')).filter((r) => !((r.querySelector('.src') || {}).textContent || '').trim()).map((r) => r.textContent),
++            stray: Array.from(c.querySelectorAll('*')).filter((e) => e.children.length === 0 && /[0-9]/.test(e.textContent || '') && !e.closest('.spec-row, h3, .drone-class, button')).map((e) => e.textContent)
++        }));`);
+     await page.screenshot({ path: join(SHOTS, 'b9-drones.jpg') });
++    const labelsOk = cards.length >= 3 && cards.every((c) => c.rows >= 5 && c.unlabelled.length === 0 && c.stray.length === 0);
+     const within = (r: Record<string, unknown>) => Math.abs((r.twrMeasured as number) / (r.twrPreset as number) - 1) <= 0.05;
+     const def = rows[0], pico = rows[2];
+     const picoDiffers = Math.abs((pico.twrMeasured as number) - (def.twrMeasured as number)) / (def.twrMeasured as number) > 0.05;
+-    const pass = def.preset === 'pavo20pro-3s' && rows.every(within) && rows[1].preset === 'pavo20pro2-3s' && pico.preset === 'pavopico-2s' && srcLabels >= cards * 3 && picoDiffers;
+-    record('B9', { pass, method: 'thrust stand in the model: motors spun up while held, released 20 ms, (a+g)/g', rows, sourceLabels: srcLabels, cards, control: { picoMeasured: pico.twrMeasured, defaultMeasured: def.twrMeasured, fired: picoDiffers } });
++    const pass = def.preset === 'pavo20pro-3s' && rows.every(within) && rows[1].preset === 'pavo20pro2-3s' && pico.preset === 'pavopico-2s' && labelsOk && picoDiffers;
++    record('B9', { pass, method: 'thrust stand in the model: motors spun up while held, released 20 ms, (a+g)/g; Pro II and Pico picked by clicking their card in the drone picker', rows, sourceLabels: { rule: 'every .spec-row has a non-empty .src; no other digits on a card outside the name, the class line and the button', cards, ok: labelsOk }, control: { picoMeasured: pico.twrMeasured, defaultMeasured: def.twrMeasured, fired: picoDiffers } });
+ }
+ 
+ // ------------------------------------------------------------------ B10 wizard on SimRadio-raw
+@@ -242,26 +267,29 @@ async function wizard(qs: string, timeoutMs: number): Promise<{ step: number; ms
+     await waitReady(page, 180000);
+     return waitFor(page, 'const r = h.radio; return r && r.wizard ? { step: r.wizard.state.step, msg: r.wizard.state.message, err: r.wizard.state.error, prof: r.wizard.state.profile } : { step: -1 };', (v: { step: number }) => v.step === 6, timeoutMs);
+ }
++/** Arm the simulated radio with the throttle low, push the throttle to 0.6 for 0.7 s: armed and height gained. */
++async function climbTest(): Promise<{ armed: boolean; y0: number; y1: number; climbed: number }> {
++    await hookEval(page, "const f = h.fake; f.set('T', -1); f.arm = false; return 0;");
++    await page.waitForTimeout(300);
++    await hookEval(page, 'h.fake.arm = true; return 0;');
++    await page.waitForTimeout(300);
++    const y0 = await hookEval<number>(page, 'return s.sim.s[1];');
++    const armed = await hookEval<boolean>(page, 'return s.sim.armed;');
++    await hookEval(page, "h.fake.set('T', 0.6); return 0;");
++    await page.waitForTimeout(700);
++    const y1 = await hookEval<number>(page, 'return s.sim.s[1];');
++    await hookEval(page, "h.fake.set('T', -1); h.fake.arm = false; return 0;");
++    return { armed, y0, y1, climbed: y1 - y0 };
++}
++const GOOD = 'order=TAER&inv=E&offset=0.03&noise=0.01';
+ if (want('B10') || want('B11')) {
+-    const good = await wizard('order=TAER&inv=E&offset=0.03&noise=0.01', 60000);
++    const good = await wizard(GOOD, 60000);
+     const p = good.prof as { axes: Record<string, { index: number; invert: boolean }>; arm: { index?: number } } | null;
+     const mapOk = !!p && p.axes.throttle.index === 0 && p.axes.roll.index === 1 && p.axes.pitch.index === 2 && p.axes.yaw.index === 3 && p.axes.pitch.invert === true && p.axes.roll.invert === false && p.arm?.index === 4;
+     // finish the wizard (the "done" button), then throttle up must climb
+     await page.click('[data-action="wizard-done"], [data-action="done"]').catch(() => undefined);
+     await page.waitForTimeout(500);
+-    const climb = await (async () => {
+-        await hookEval(page, "const f = h.fake; f.set('T', -1); f.arm = false; return 0;");
+-        await page.waitForTimeout(300);
+-        await hookEval(page, 'h.fake.arm = true; return 0;');
+-        await page.waitForTimeout(300);
+-        const y0 = await hookEval<number>(page, 'return s.sim.s[1];');
+-        const armed = await hookEval<boolean>(page, 'return s.sim.armed;');
+-        await hookEval(page, "h.fake.set('T', 0.6); return 0;");
+-        await page.waitForTimeout(700);
+-        const y1 = await hookEval<number>(page, 'return s.sim.s[1];');
+-        await hookEval(page, "h.fake.set('T', -1); h.fake.arm = false; return 0;");
+-        return { armed, y0, y1, climbed: y1 - y0 };
+-    })();
++    const climb = await climbTest();
+     const saved = await page.evaluate(() => localStorage.getItem('gsfpv.profiles.v1'));
+     await page.reload();
+     await waitReady(page, 180000);
+@@ -270,19 +298,36 @@ if (want('B10') || want('B11')) {
+     const persisted = !!savedAfter && savedAfter === saved && JSON.parse(savedAfter)[key]?.axes?.throttle?.index === 0;
+ 
+     if (want('B10')) {
++        // behaviour, not storage: a reload with useSaved=1 takes the path of a calibrated real radio
++        // (profileFor(key) -> fly, no wizard); the craft must arm and climb on the restored mapping
++        const reuseUrl = fly('en', `scene=39e63ce9&simradio=raw&${GOOD}&useSaved=1`);
++        await page.goto(reuseUrl);
++        await waitReady(page, 180000);
++        await page.waitForTimeout(500);
++        const reuse = await hookEval<Record<string, unknown>>(page, "const all = JSON.parse(localStorage.getItem('gsfpv.profiles.v1') || '{}'); return { usedSavedProfile: h.usedSavedProfile === true, wizardStarted: !!h.radio, profileEqualsSaved: !!all[h.fake.key] && JSON.stringify(h.controls.profile) === JSON.stringify(all[h.fake.key]), source: h.controls.source };");
++        const wizardOnScreen = await page.locator('.radio, .wizard-msg').count();
++        const climbAfterReload = await climbTest();
++        // control: the same URL with no saved profile must fall back to the wizard
++        await page.evaluate(() => localStorage.removeItem('gsfpv.profiles.v1'));
++        await page.goto(reuseUrl);
++        await waitReady(page, 180000);
++        await page.waitForTimeout(800);
++        const noSaved = { usedSavedProfile: await hookEval<boolean>(page, 'return h.usedSavedProfile === true;'), wizardOnScreen: await page.locator('.radio, .wizard-msg').count() };
++        const reloadOk = reuse.usedSavedProfile === true && reuse.wizardStarted === false && wizardOnScreen === 0 && reuse.profileEqualsSaved === true && climbAfterReload.armed && climbAfterReload.climbed > 0.05;
++        const reloadCtl = noSaved.usedSavedProfile === false && noSaved.wizardOnScreen > 0;
+         const other = await wizard('order=AETR&inv=&offset=0.03&noise=0.01', 60000);
+         const op = other.prof as { axes: Record<string, { index: number }> } | null;
+         const otherDiffers = !!op && op.axes.roll.index === 0 && op.axes.throttle.index === 2;
+         const broken = await wizard('order=TAER&inv=E&broken=E', 25000);
+-        const pass = good.step === 6 && mapOk && climb.armed && climb.climbed > 0.05 && persisted && otherDiffers && broken.step !== 6;
+-        record('B10', { pass, radio: 'SimRadio EdgeTX Classic (simulated raw HID reports, NOT a real radio)', good: { step: good.step, profile: good.prof, mappingCorrect: mapOk }, throttleUpClimbs: climb, survivesReload: persisted, controls: { otherOrder: { profile: other.prof, fired: otherDiffers }, brokenStick: { step: broken.step, message: broken.msg, fired: broken.step !== 6 } } });
++        const pass = good.step === 6 && mapOk && climb.armed && climb.climbed > 0.05 && persisted && reloadOk && reloadCtl && otherDiffers && broken.step !== 6;
++        record('B10', { pass, radio: 'SimRadio EdgeTX Classic (simulated raw HID reports, NOT a real radio)', good: { step: good.step, profile: good.prof, mappingCorrect: mapOk }, throttleUpClimbs: climb, survivesReload: { storage: persisted, afterReload: { url: 'simradio=raw&useSaved=1 (saved profile used like a calibrated real radio)', ...reuse, wizardOnScreen, throttleUpClimbs: climbAfterReload, ok: reloadOk } }, controls: { otherOrder: { profile: other.prof, fired: otherDiffers }, brokenStick: { step: broken.step, message: broken.msg, fired: broken.step !== 6 }, reloadWithoutSavedProfile: { ...noSaved, fired: reloadCtl } } });
+     }
+ }
+ 
+ // ------------------------------------------------------------------ B11 arm gate
+ if (want('B11')) {
+-    // after B10's wizard the page runs the saved-mapping SimRadio; use a fresh wizard to be sure
+-    await wizard('order=TAER&inv=E&offset=0.03&noise=0.01', 60000);
++    // a fresh wizard, so the live SimRadio runs on a known profile
++    await wizard(GOOD, 60000);
+     await page.click('[data-action="wizard-done"], [data-action="done"]').catch(() => undefined);
+     await page.waitForTimeout(400);
+     const step = async (js: string, ms = 300) => { await hookEval(page, `${js}; return 0;`); await page.waitForTimeout(ms); return hookEval<{ armed: boolean; block: string | null }>(page, 'return { armed: s.sim.armed, block: h.controls.block };'); };
+@@ -291,8 +336,7 @@ if (want('B11')) {
+     await step("h.fake.arm = false; h.fake.set('T', -1)");
+     const lowThrottle = await step('h.fake.arm = true');
+     await step("h.fake.arm = false");
+-    // switch already ON when the page loads, and the gamepad trap (axes read 0.0 before the first
+-    // movement): both through a fresh ArmGate / the live Controls with a gamepad profile
++    // switch already ON when the page loads: a fresh ArmGate
+     const fresh = await hookEval<Record<string, unknown>>(page, `
+         const G = h.controls.gate.constructor; const g = new G(); const P = {};
+         const ch = new Float32Array([0, 0, -1, 0, 1, -1, 0, 0]);
+@@ -300,21 +344,33 @@ if (want('B11')) {
+         const onAtLoad = a > 0;
+         ch[4] = -1; g.update(P, ch, 0, true, false); ch[4] = 1; const afterCycle = g.update(P, ch, 0, true, false) > 0;
+         return { onAtLoadArmed: onAtLoad, afterOffOnArmed: afterCycle };`);
++    // the gamepad trap through the live Controls: every axis reads exactly 0.0 and raw 0.0 is the
++    // BOTTOM of the throttle axis, sticks centred, arm switch off -> on. The throttle and centre
++    // rules both pass, so only the trap guard can refuse. Then the sticks move once: it arms.
++    // Last, the old case (raw 0.0 = mid throttle) after the sticks moved: the throttle rule refuses.
+     const trap = await hookEval<Record<string, unknown>>(page, `
+         const c = h.controls; const keep = c.profile; const src = c.source;
+-        c.profile = { version: 1, deviceKey: 'gamepad:test', deviceName: 'trap', deadband: 0.02, created: '',
+-            axes: { roll: { index: 0, invert: false, center: 0, min: -1, max: 1 }, pitch: { index: 1, invert: false, center: 0, min: -1, max: 1 },
+-                    throttle: { index: 2, invert: false, center: 0, min: -1, max: 1 }, yaw: { index: 3, invert: false, center: 0, min: -1, max: 1 } },
+-            arm: { kind: 'button', bit: 0 }, angleMode: null };
+-        c.source = 'gamepad';
++        const ax = (i, min) => ({ index: i, invert: false, center: 0, min: min, max: 1 });
++        const P = { version: 1, deviceKey: 'gp:test', deviceName: 'trap', deadband: 0, created: '', axes: { roll: ax(0, -1), pitch: ax(1, -1), throttle: ax(2, 0), yaw: ax(3, -1) }, arm: { kind: 'button', bit: 0 }, angleMode: null };
+         const f = { t: performance.now(), axes: new Float32Array(8), buttons: 0 };
+-        c.raw(f); f.buttons = 1; f.t += 5; c.raw(f);
+-        const res = { armed: s.sim.armed || c.gate.armed, block: c.block };
+-        f.buttons = 0; f.t += 5; c.raw(f);
++        const feed = (vals, buttons, n) => { for (let i = 0; i < n; i++) { for (let k = 0; k < 4; k++) f.axes[k] = vals[k]; f.buttons = buttons; f.t += 4; c.raw(f); } };
++        c.profile = P; c.source = 'gamepad'; // a new connection: the guard starts over
++        feed([0, 0, 0, 0], 0, 5); feed([0, 0, 0, 0], 1, 5);
++        const trapped = { armed: c.gate.armed, block: c.block, untouched: c.untouched };
++        feed([0, 0, 0, 0], 0, 3);
++        feed([0.4, -0.3, 0.6, 0.5], 0, 1); feed([0.01, -0.01, 0.002, 0.01], 0, 5); feed([0.01, -0.01, 0.002, 0.01], 1, 5);
++        const released = { armed: c.gate.armed, block: c.block, untouched: c.untouched };
++        feed([0.01, -0.01, 0.002, 0.01], 0, 5);
++        c.profile = Object.assign({}, P, { axes: Object.assign({}, P.axes, { throttle: ax(2, -1) }) });
++        feed([0.01, -0.01, 0, 0.01], 0, 5); feed([0.01, -0.01, 0, 0.01], 1, 5);
++        const midAfterTouch = { armed: c.gate.armed, block: c.block };
++        feed([0.01, -0.01, 0, 0.01], 0, 5);
+         c.profile = keep; c.source = src;
+-        return res;`);
+-    const pass = !midThrottle.armed && midThrottle.block === 'throttle' && lowThrottle.armed && fresh.onAtLoadArmed === false && fresh.afterOffOnArmed === true && trap.armed === false && trap.block === 'throttle';
+-    record('B11', { pass, positive: { lowThrottleAndSwitchEdge: lowThrottle }, controls: { throttleNotLow: midThrottle, switchOnAtLoad: fresh, gamepadZeroAxesTrap: trap } });
++        return { trapped: trapped, released: released, oldCaseMidThrottle: midAfterTouch };`);
++    const tr = trap as { trapped: { armed: boolean; block: string }; released: { armed: boolean }; oldCaseMidThrottle: { armed: boolean; block: string } };
++    const pass = !midThrottle.armed && midThrottle.block === 'throttle' && lowThrottle.armed && fresh.onAtLoadArmed === false && fresh.afterOffOnArmed === true
++        && tr.trapped.armed === false && tr.trapped.block === 'untouched' && tr.released.armed === true && tr.oldCaseMidThrottle.armed === false && tr.oldCaseMidThrottle.block === 'throttle';
++    record('B11', { pass, positive: { lowThrottleAndSwitchEdge: lowThrottle, gamepadAfterEverySticksMoved: tr.released }, controls: { throttleNotLow: midThrottle, switchOnAtLoad: fresh, gamepadZeroAxesTrap: { profile: 'raw 0.0 = throttle LOW, sticks centred: only the trap guard can refuse', ...tr.trapped }, gamepadMidThrottleAfterTouch: tr.oldCaseMidThrottle } });
+ }
+ 
+ // ------------------------------------------------------------------ B12 crash, respawn
+@@ -322,6 +378,8 @@ if (want('B12')) {
+     await page.goto(fly('en', 'scene=39e63ce9&simradio=scenario&nowarn=1'));
+     await waitReady(page, 180000);
+     const vCrash = await hookEval<number>(page, 'return s.params.vCrash;');
++    const plan = await hookEval<Record<string, unknown>>(page, 'return h.plan;');
++    const dashTarget = plan.dashSpeed as number;
+     const done = await waitFor(page, 'return { phase: h.scenario.phase, log: h.scenario.log, crash: h.lastCrash };', (v: { phase: string; crash: { pending?: boolean } | null }) => (v.phase === 'rest' || v.phase === 'done') && !!v.crash && !v.crash.pending, 120000);
+     await page.waitForTimeout(1800);
+     await page.screenshot({ path: join(SHOTS, 'b12-crash.jpg') });
+@@ -333,24 +391,53 @@ if (want('B12')) {
+     const vBounce = await hookEval<number>(page, 'return s.params.vBounce;');
+     await page.goto(fly('en', `scene=39e63ce9&simradio=scenario&nowarn=1&dash=${0.5 * vBounce}`));
+     await waitReady(page, 180000);
+-    const soft = await waitFor(page, 'return { phase: h.scenario.phase, crash: h.scenario.log.crash, contacts: h.events.filter((e) => e.type === "contact").length, crashes: h.events.filter((e) => e.type === "crash").length };', (v: { phase: string }) => v.phase === 'done' || v.phase === 'rest', 120000);
+-    const c = done.log as { crash: { speed: number } | null; tumbleMaxW: number };
++    // counted in the page on every event, not from the 500-event buffer
++    const soft = await waitFor(page, 'return { phase: h.scenario.phase, crash: h.scenario.log.crash, contacts: h.counts.contact, crashes: h.counts.crash };', (v: { phase: string }) => v.phase === 'done' || v.phase === 'rest', 120000);
++    const c = done.log as { crash: { speed: number; impactSpeed: number; angleDeg: number; nx: number; ny: number; nz: number; v: number[] } | null; tumbleMaxW: number };
+     const lc = done.crash as { debris: number; engine: string; maxAngularSpeed: number; speed: number };
+-    const pass = !!c.crash && c.crash.speed >= 1.9 * vCrash && c.tumbleMaxW > 0 && lc.debris > 0 && lc.engine === 'rapier' && overlay === 1 && after.crashed === false && after.free === true
++    // speed: approach along the contact normal (the model's crash rule); angle: between the velocity one
++    // tick before the impact and -normal
++    const square = !!c.crash && c.crash.speed >= 2.0 * vCrash && Math.abs(c.crash.ny) < 0.2 && c.crash.angleDeg <= 15;
++    const pass = square && c.tumbleMaxW > 0 && lc.debris > 0 && lc.engine === 'rapier' && overlay === 1 && after.crashed === false && after.free === true
+         && soft.crashes === 0 && (soft.contacts as number) > 0;
+-    record('B12', { pass, vCrash, dashTarget: 2 * vCrash, crash: c.crash, tumbleMaxW: c.tumbleMaxW, wreck: lc, overlay, respawn: after, control: { dash: 0.5 * vBounce, contacts: soft.contacts, crashes: soft.crashes, fired: soft.crashes === 0 && (soft.contacts as number) > 0 } });
++    record('B12', { pass, vCrash, rule: 'crash.speed (normal approach) >= 2.0 v_crash, |normal.y| < 0.2, angle(velocity, -normal) <= 15 deg', dashTarget: dashTarget, plan, crash: c.crash, impactNormalSpeedOverVCrash: c.crash ? c.crash.speed / vCrash : null, tumbleMaxW: c.tumbleMaxW, wreck: lc, overlay, respawn: after, control: { dash: 0.5 * vBounce, contacts: soft.contacts, crashes: soft.crashes, counted: 'h.counts (every event since load, no buffer cap)', fired: soft.crashes === 0 && (soft.contacts as number) > 0 } });
+ }
+ 
+ // ------------------------------------------------------------------ B13 tunnelling on the live site
+ if (want('B13')) {
++    // by the bot: 20 head-on dashes (target 26 m/s) into a far wall of the Tunis exterior, through the
++    // live runner, with the tunnelling oracle on every step of the real flight
++    const N = 20;
++    await page.goto(fly('en', `scene=887f27aa&simradio=scenario&far=1&loop=${N - 1}&nowarn=1`));
++    const fh = await waitReady(page, 240000);
++    const bot = fh.status === 'ready'
++        ? await waitFor(page, 'return { passes: h.passes, loops: h.loops, oracle: { steps: h.oracle.steps, penetrations: h.oracle.penetrations, ticks: h.oracle.penetrationTicks }, plan: h.plan, hitches: s.runner.hitches };', (v: { passes?: unknown[] }) => (v.passes?.length ?? 0) >= N, N * 45000)
++        : { error: fh.error ?? fh.status };
++    type Pass = { crash: { speed: number; impactSpeed: number; angleDeg: number } | null; maxSpeed: number; soc: number };
++    const passes = ((bot.passes ?? []) as Pass[]).slice(0, N);
++    // oracle control: the same resampling test on a segment straight through the target wall, and one in open air
++    const oracleCtl = fh.status === 'ready' ? await hookEval<{ through: boolean; air: boolean }>(page, `
++        const pl = h.plan; const o = pl.spawn, d = pl.wallDir, L = pl.wall.distM;
++        return { through: h.oracle.probe(o[0] + d[0] * (L - 0.5), o[1], o[2] + d[2] * (L - 0.5), o[0] + d[0] * (L + 0.5), o[1], o[2] + d[2] * (L + 0.5), 0.03),
++                 air: h.oracle.probe(o[0], o[1], o[2], o[0] + d[0], o[1], o[2] + d[2], 0.03) };`) : null;
++    const speeds = passes.map((x) => (x.crash ? x.crash.impactSpeed : null));
++    const botOk = passes.length === N && passes.every((x) => !!x.crash && x.crash.impactSpeed >= 24) && bot.oracle?.penetrations === 0 && (bot.oracle?.steps ?? 0) > 0 && !!oracleCtl && oracleCtl.through && !oracleCtl.air;
++    // the model-launched self-test on three scenes stays as a second, independent check
+     const rows: Record<string, unknown>[] = [];
+     for (const id of ['39e63ce9', '887f27aa', '7a475d38']) {
+         await page.goto(fly('en', `scene=${id}&nowarn=1&input=touch`));
+         await waitReady(page, 180000);
+         rows.push({ id, ...(await hookEval<Record<string, unknown>>(page, 'return s.tunnelSelfTest(20, 25, 7);')) });
+     }
+-    const pass = rows.every((r) => r.passes === 20 && r.penetrations === 0 && (r.contacts as number) > 0);
+-    record('B13', { pass, oracle: 'every tick: each body sphere resampled every voxel/4 with the upstream querySphere', rows });
++    const modelOk = rows.every((r) => r.passes === 20 && r.penetrations === 0 && (r.contacts as number) > 0);
++    const pass = botOk && modelOk;
++    record('B13', {
++        pass,
++        oracle: 'every step of the live flight model (sim.step wrapped): each body sphere resampled every voxel/4 along its path with the upstream querySphere',
++        bot: { scene: '887f27aa', passes: passes.length, impactSpeeds: speeds, minImpactSpeed: Math.min(...speeds.map((v) => v ?? 0)), normalSpeeds: passes.map((x) => x.crash?.speed ?? null), anglesDeg: passes.map((x) => x.crash?.angleDeg ?? null), socAfterPass: passes.map((x) => x.soc), oracleSteps: bot.oracle?.steps ?? null, penetrations: bot.oracle?.penetrations ?? null, penetrationTicks: bot.oracle?.ticks ?? null, plan: bot.plan ?? null, hitches: bot.hitches ?? null, error: bot.error ?? null, rule: '20 passes, each crash at >= 24 m/s, 0 penetrations', ok: botOk },
++        modelLaunched: { rows, ok: modelOk },
++        control: { oracleThroughWall: oracleCtl?.through ?? null, oracleOpenAir: oracleCtl?.air ?? null, fired: !!oracleCtl && oracleCtl.through && !oracleCtl.air }
++    });
+ }
+ 
+ // ------------------------------------------------------------------ B14 touch sticks
+@@ -367,11 +454,12 @@ if (want('B14')) {
+         const c = (b: { x: number; y: number; width: number; height: number }) => ({ x: b.x + b.width / 2, y: b.y + b.height / 2 });
+         const touch = (type: string, pts: { x: number; y: number; id: number }[]) => cdp.send('Input.dispatchTouchEvent', { type: type as 'touchStart', touchPoints: pts.map((p) => ({ x: p.x, y: p.y, id: p.id })) });
+         const chNow = () => tp.evaluate(() => new Promise<number[]>((res) => requestAnimationFrame(() => res(Array.from((window as any).__gsfpv.touch.channels)))));
+-        // control first: a touch outside both pads (middle of the view, no UI there) changes nothing
++        // control first: a touch outside both pads (middle of the view, no UI there) changes nothing,
++        // read WHILE it is held (roll, pitch and yaw spring back on release and would hide a leak)
+         const ch0 = await chNow();
+         await touch('touchStart', [{ x: w / 2, y: hgt * 0.42, id: 9 }]);
+-        await touch('touchEnd', []);
+         const chOut = await chNow();
++        await touch('touchEnd', []);
+         const outsideZero = ch0.slice(0, 4).every((v, i) => Math.abs(v - chOut[i]) < 1e-6);
+         // two touches at once, still disarmed: both pairs of axes in one frame
+         const lc = c(L), rc = c(R), rl = L.width / 2 - 24, rr = R.width / 2 - 24;
+@@ -381,27 +469,38 @@ if (want('B14')) {
+         await touch('touchEnd', []);
+         await tp.waitForTimeout(200);
+         // arm with the button (throttle stayed low: the left stick is sticky at the bottom)
++        const y0 = await hookEval<number>(tp, 'return s.sim.s[1];'); // parked at the spawn
+         await touch('touchStart', [{ ...c(A), id: 1 }]);
+         await touch('touchEnd', []);
+-        await tp.waitForTimeout(300);
+-        const armed = await hookEval<boolean>(tp, 'return s.sim.armed;');
+-        // hover 10 s: a small altitude hold through the left pad only (angle mode keeps it level)
+-        const y0 = await hookEval<number>(tp, 'return s.sim.s[1];');
++        // hover 10 s through the left pad only (angle mode keeps it level): altitude PID with the
++        // model's own hover throttle (current charge, throttle curve) as feed-forward
++        const pad = await tp.evaluate(() => { const e = document.querySelector('.touch-pad.left') as HTMLElement; const rc = e.getBoundingClientRect(); return { cx: rc.left + rc.width / 2, cy: rc.top + rc.height / 2, r: e.clientWidth / 2 - 24 }; });
++        const at = (thr: number) => ({ x: pad.cx, y: pad.cy - Math.max(-1, Math.min(1, thr)) * pad.r, id: 4 });
+         const target = y0 + 0.8;
+-        let thr = -0.15, lastY = y0, minY = 1e9, maxY = -1e9;
+-        await touch('touchStart', [{ x: lc.x, y: lc.y - thr * rl, id: 4 }]);
++        const KP = 0.15, KI = 0.05, KD = 0.12;
++        let integ = 0;
++        await touch('touchStart', [at(await hookEval<number>(tp, 'return s.hoverChannel();'))]);
++        await tp.waitForTimeout(150); // the arm edge reaches the model on the next frames
++        const armed = await hookEval<boolean>(tp, 'return s.sim.armed;');
+         const t0 = Date.now();
+-        let crashed = false, armedAll = true;
+-        while (Date.now() - t0 < 12000) {
+-            await tp.waitForTimeout(100);
+-            const st = await hookEval<{ y: number; crashed: boolean; armed: boolean }>(tp, 'return { y: s.sim.s[1], crashed: s.sim.crashed, armed: s.sim.armed };');
+-            const vy = (st.y - lastY) / 0.1;
+-            lastY = st.y;
+-            thr = Math.max(-0.9, Math.min(0.6, -0.15 + 0.35 * (target - st.y) - 0.25 * vy));
+-            await touch('touchMove', [{ x: lc.x, y: lc.y - thr * rl, id: 4 }]);
+-            if (Date.now() - t0 > 2000) { minY = Math.min(minY, st.y); maxY = Math.max(maxY, st.y); crashed ||= st.crashed; armedAll &&= st.armed; }
++        let last = t0, crashed = false, armedAll = true;
++        const trace: { t: number; y: number }[] = [];
++        while (Date.now() - t0 < 10000) {
++            await tp.waitForTimeout(40);
++            const st = await hookEval<{ y: number; vy: number; crashed: boolean; armed: boolean; ff: number }>(tp, 'return { y: s.sim.s[1], vy: s.sim.s[4], crashed: s.sim.crashed, armed: s.sim.armed, ff: s.hoverChannel() };');
++            const now = Date.now();
++            const err = target - st.y;
++            integ = Math.max(-3, Math.min(3, integ + err * ((now - last) / 1000)));
++            last = now;
++            await touch('touchMove', [at(st.ff + KP * err + KI * integ - KD * st.vy)]);
++            trace.push({ t: (now - t0) / 1000, y: st.y });
++            crashed ||= st.crashed;
++            armedAll &&= st.armed;
+         }
+         await touch('touchEnd', []);
++        const tail = trace.filter((x) => x.t >= 2); // the last 8 of the 10 s
++        const maxAbsErr = Math.max(...tail.map((x) => Math.abs(x.y - target)));
++        const minY = Math.min(...tail.map((x) => x.y)), maxY = Math.max(...tail.map((x) => x.y));
+         // regression: the stick layer must not swallow the other controls (a tap on Pause opens the menu)
+         const P = await box('[data-action="pause"]');
+         await touch('touchStart', [{ ...c(P), id: 7 }]);
+@@ -412,12 +511,12 @@ if (want('B14')) {
+         const view = await tp.evaluate(() => ({ scrollX, scrollY, scale: visualViewport?.scale ?? 1 }));
+         await tp.screenshot({ path: join(SHOTS, `b14-${w}x${hgt}.jpg`) });
+         await T.browser.close();
+-        rows.push({ viewport: `${w}x${hgt}`, pauseButtonReachable: pauseOpened, armedByButton: armed, bothPairsOneFrame: { ch: both.slice(0, 4), ok: bothChanged }, hover: { seconds: 10, crashed, armedAll, minY, maxY, target }, view, control: { outsideTouch: { before: ch0.slice(0, 4), after: chOut.slice(0, 4), fired: outsideZero } } });
++        rows.push({ viewport: `${w}x${hgt}`, pauseButtonReachable: pauseOpened, armedByButton: armed, bothPairsOneFrame: { ch: both.slice(0, 4), ok: bothChanged }, hover: { seconds: 10, rule: '|y - target| <= 0.5 m for every sample of the last 8 s, armed, no crash', crashed, armedAll, target, minY, maxY, maxAbsErr, samples: tail.length, gains: { KP, KI, KD, feedForward: 's.hoverChannel()' } }, view, control: { outsideTouch: { readWhileHeld: true, before: ch0.slice(0, 4), during: chOut.slice(0, 4), fired: outsideZero }, sameReadCatchesPadTouch: bothChanged } });
+         console.log('B14', JSON.stringify(rows[rows.length - 1]));
+     }
+     const pass = rows.every((r) => {
+-        const x = r as { pauseButtonReachable: boolean; armedByButton: boolean; bothPairsOneFrame: { ok: boolean }; hover: { crashed: boolean; armedAll: boolean; minY: number }; view: { scrollX: number; scrollY: number; scale: number }; control: { outsideTouch: { fired: boolean } } };
+-        return x.pauseButtonReachable && x.armedByButton && x.bothPairsOneFrame.ok && !x.hover.crashed && x.hover.armedAll && x.view.scrollX === 0 && x.view.scrollY === 0 && x.view.scale === 1 && x.control.outsideTouch.fired;
++        const x = r as { pauseButtonReachable: boolean; armedByButton: boolean; bothPairsOneFrame: { ok: boolean }; hover: { crashed: boolean; armedAll: boolean; maxAbsErr: number; samples: number }; view: { scrollX: number; scrollY: number; scale: number }; control: { outsideTouch: { fired: boolean } } };
++        return x.pauseButtonReachable && x.armedByButton && x.bothPairsOneFrame.ok && !x.hover.crashed && x.hover.armedAll && x.hover.samples > 20 && x.hover.maxAbsErr <= 0.5 && x.view.scrollX === 0 && x.view.scrollY === 0 && x.view.scale === 1 && x.control.outsideTouch.fired;
+     });
+     record('B14', { pass, note: 'touch through CDP Input.dispatchTouchEvent in system Chrome with hasTouch; input=touch because desktop Chrome has WebHID', rows });
+ }
+@@ -436,10 +535,19 @@ if (want('B15')) {
+         const b = await hookEval<{ tick: number; now: number; hitches: number }>(page, 'return { tick: s.sim.tick, now: performance.now(), hitches: s.runner.hitches };');
+         return { stepsPerWallSecond: ((b.tick - a.tick) / (b.now - a.now)) * 1000, hitches: b.hitches };
+     };
++    // proof the throttle took effect: a fixed pure-JS loop timed in the page (median of 3)
++    const bench = async () => {
++        const ms: number[] = [];
++        for (let i = 0; i < 3; i++) ms.push(await hookEval<number>(page, 'let x = 1; const t0 = performance.now(); for (let i = 0; i < 20000000; i++) x = (Math.imul(x, 1103515245) + 12345) | 0; const ms = performance.now() - t0; return x === 0.5 ? -1 : ms;'));
++        return ms.sort((a, b) => a - b)[1];
++    };
++    const benchX1 = await bench();
+     const normal = await rate();
+     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
++    const benchX4 = await bench();
+     const slow = await rate();
+     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
++    const throttleTookEffect = benchX4 / benchX1 >= 2.5;
+     // a NEW tab replays the saved log (only the inputs travel)
+     const p2 = await context.newPage();
+     await p2.goto(fly('en', 'scene=887f27aa&nowarn=1&input=touch'));
+@@ -452,24 +560,45 @@ if (want('B15')) {
+     await p2.close();
+     const f = fl.flip as { minUpY: number } | null;
+     const pass = !!f && f.minUpY < -0.5 && !!fl.crash && (saved.endTick as number) >= 30000 && again.hash === saved.hash && again.saved === saved.hash
+-        && Math.abs(slow.stepsPerWallSecond - 1000) < 60 && ctl.differs === true && (ctl.maxDivergenceM as number) > 0.01;
+-    record('B15', { pass, flight: fl, saved, newTab: again, cpuThrottle: { x1: normal, x4: slow }, control: ctl });
++        && Math.abs(slow.stepsPerWallSecond - 1000) < 60 && throttleTookEffect && ctl.differs === true && (ctl.maxDivergenceM as number) > 0.01;
++    record('B15', { pass, flight: fl, saved, newTab: again, cpuThrottle: { x1: normal, x4: slow, benchMs: { x1: benchX1, x4: benchX4, slowdown: benchX4 / benchX1, rule: '>= 2.5x slower under x4', tookEffect: throttleTookEffect } }, control: ctl });
+ }
+ 
+ // ------------------------------------------------------------------ B16 gravity
+ if (want('B16')) {
+-    const rows: Record<string, unknown>[] = [];
+-    for (const g of [9.81, 1.62]) {
+-        await page.goto(fly('en', `scene=887f27aa&g=${g}&nowarn=1&input=touch`));
+-        await waitReady(page, 180000);
+-        const d = await hookEval<{ g: number; measured: number; fallM: number }>(page, 'return s.dropTest();');
+-        const warning = await page.locator('[data-testid="gravity-warning"]').textContent().catch(() => null);
+-        rows.push({ ...d, relErr: d.measured / g - 1, warning });
+-    }
+-    const [earth, moon] = rows as { measured: number; relErr: number; warning: string | null }[];
+-    const differs = Math.abs(earth.measured - moon.measured) > 1;
+-    const pass = rows.every((r) => Math.abs(r.relErr as number) <= 0.03) && differs && !earth.warning && !!moon.warning && /6\.1/.test(moon.warning ?? '');
+-    record('B16', { pass, method: 'disarmed drop from the spawn until contact or 0.5 s, a = 2(Δy + v0 t)/t²', rows, control: { sameAccelerationWouldFail: true, earthVsMoon: [earth.measured, moon.measured], fired: differs } });
++    type Drop = { g: number; fallM: number; t: number; v: number; measured: number; relErr: number; meanDragAccel: number; dragShareOfG: number; gravityTerm: number; gravityTermRelErr: number };
++    // the spec rule, as one checker: mean acceleration over a 2 m disarmed drop, Earth 9.81 and Moon
++    // 1.62, each within 3 %; the same checker runs on the control pair
++    const check = (earth: Drop, moon: Drop) => {
++        const e = earth.measured / 9.81 - 1, m = moon.measured / 1.62 - 1;
++        const fallOk = earth.fallM >= 2 && moon.fallM >= 2;
++        return { earthRelErr: e, moonRelErr: m, earthOk: Math.abs(e) <= 0.03, moonOk: Math.abs(m) <= 0.03, fallOk, pass: fallOk && Math.abs(e) <= 0.03 && Math.abs(m) <= 0.03 };
++    };
++    const drop = 'return s.dropTestOpenAir(2);';
++    await page.goto(fly('en', 'scene=887f27aa&g=9.81&nowarn=1&input=touch'));
++    await waitReady(page, 180000);
++    const earth = await hookEval<Drop>(page, drop);
++    const earthAgain = await hookEval<Drop>(page, drop); // control: an Earth drop labelled as the Moon
++    const earthWarning = await page.locator('[data-testid="gravity-warning"]').textContent().catch(() => null);
++    await page.goto(fly('en', 'scene=887f27aa&g=1.62&nowarn=1&input=touch'));
++    await waitReady(page, 180000);
++    const moon = await hookEval<Drop>(page, drop);
++    const moonWarning = await page.locator('[data-testid="gravity-warning"]').textContent().catch(() => null);
++    const verdict = check(earth, moon);
++    const control = check(earth, earthAgain);
++    const pass = verdict.pass && !earthWarning && !!moonWarning && /6\.1/.test(moonWarning ?? '');
++    record('B16', {
++        pass,
++        method: 'disarmed drop in open air (no collision world), mean acceleration = speed gained / time when the fall reaches 2.0 m (interpolated inside the 1 ms tick); the model integrates its own drag term over the same fall',
++        rows: [{ ...earth, warning: earthWarning }, { ...moon, warning: moonWarning }],
++        verdict,
++        drag: {
++            note: 'the flight model has quadratic drag (0.5 rho CdA v^2, vertical CdA of the preset); over a 2 m fall it takes the mean acceleration below g by the share below, the same share on Earth and the Moon (the fall is self-similar); measured + mean drag = the gravity term',
++            earth: { meanDragAccel: earth.meanDragAccel, shareOfG: earth.dragShareOfG, gravityTerm: earth.gravityTerm, gravityTermRelErr: earth.gravityTermRelErr },
++            moon: { meanDragAccel: moon.meanDragAccel, shareOfG: moon.dragShareOfG, gravityTerm: moon.gravityTerm, gravityTermRelErr: moon.gravityTermRelErr }
++        },
++        control: { pair: 'Earth drop + Earth drop labelled as the Moon, same checker', result: control, fired: !control.pass && !control.moonOk }
++    });
+ }
+ 
+ // ------------------------------------------------------------------ B17 photosensitivity
+@@ -569,5 +698,13 @@ if (want('B17')) {
+ }
+ 
+ await browser.close();
+-writeEvidence('b-fly-summary', { site: SITE, items: summary });
++// the summary covers every b-fly-b*.json on disk for today, not only the items of this run
++const EVDIR = join(REPO, 'evidence', today());
++const items: Record<string, { pass: boolean; date: string | null; gitHead: string | null; site: string | null; thisRun: boolean }> = {};
++for (const f of readdirSync(EVDIR).filter((x) => /^b-fly-b[0-9]+[.]json$/.test(x)).sort((a, b) => Number(a.replace(/[^0-9]/g, '')) - Number(b.replace(/[^0-9]/g, '')))) {
++    const j = JSON.parse(readFileSync(join(EVDIR, f), 'utf8'));
++    const id = f.slice('b-fly-'.length, -'.json'.length).toUpperCase();
++    items[id] = { pass: j.pass === true, date: j.context?.date ?? null, gitHead: j.context?.gitHead ?? null, site: j.site ?? null, thisRun: id in summary };
++}
++writeEvidence('b-fly-summary', { site: SITE, items, allPass: Object.values(items).every((x) => x.pass), thisRun: summary });
+ console.log(JSON.stringify(summary));
