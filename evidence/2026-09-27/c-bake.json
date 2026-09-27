@@ -1,15 +1,15 @@
 {
   "name": "c-bake",
   "context": {
-    "date": "2026-09-27T03:26:39.373Z",
-    "gitHead": "a4cbb1f",
+    "date": "2026-09-27T07:17:35.614Z",
+    "gitHead": "22c9507",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "site": "https://gsfpv.flyreelstudio.eu",
-  "pass": false,
+  "pass": true,
   "scene": "723068d7",
   "bake": {
     "ok": true,
@@ -18,15 +18,15 @@
     "gaussians": 2144439,
     "solidVoxels": 261895692,
     "ms": {
-      "read": 7161.39999999851,
-      "voxelize": 16153.300000000745,
-      "total": 23314.699999999255
+      "read": 2780.699999999255,
+      "voxelize": 16576.60000000149,
+      "total": 19357.300000000745
     },
-    "peakJsHeapMb": 870.9952182769775,
+    "peakJsHeapMb": 870.7911376953125,
     "binBytes": 92417012,
     "collisionSha256": "0d1714ad4c48461dfd9bab63b9cefe252d3edf7ca57ebf08f650a02c01b4a213",
-    "wallClockS": 24.16,
-    "peakJsHeapMbCdp": 138,
+    "wallClockS": 20.19,
+    "peakJsHeapMbCdp": 139,
     "note": "peakJsHeapMb = performance.memory.usedJSHeapSize sampled in the page every 200 ms (the main number); peakJsHeapMbCdp = CDP polling from outside, which does not get through while the page is busy, so it undercounts; GPU buffers of the voxeliser are in neither"
   },
   "before": {
@@ -36,7 +36,7 @@
   "after": {
     "hasCollision": true,
     "badge": false,
-    "status": "Walls built in this browser: 261.9 million voxels in 23 s. Crashes are on.",
+    "status": "Walls built in this browser: 261.9 million voxels in 19 s. Crashes are on.",
     "spawnFree": true
   },
   "vsCli": {
@@ -57,9 +57,20 @@
     "scene": "bd04e182",
     "note": "lod-meta.json served brotli-encoded; the bake now reads files whole",
     "result": {
-      "ok": false,
-      "error": "Voxel output has more than 16777216 mixed blocks. Use a coarser voxel resolution.",
-      "hasCollisionAfter": false
+      "ok": true,
+      "kind": "base",
+      "voxelM": 0.1,
+      "gaussians": 8685054,
+      "solidVoxels": 401232750,
+      "ms": {
+        "read": 12173.800000000745,
+        "voxelize": 55103,
+        "total": 67276.80000000075
+      },
+      "peakJsHeapMb": 2515.1048879623413,
+      "binBytes": 78839884,
+      "collisionSha256": "b7aeeb6746bf4550d4ad67523ef3a5ca5063b0921c771a9693eb65faf5dfb7ba",
+      "hasCollisionAfter": true
     }
   },
   "refusal": {
