@@ -16,6 +16,8 @@ function runRuleOnCopy(plant?: { file: string; line: string }): { code: number |
         mkdirSync(join(root, 'scripts'));
         cpSync(join(REPO, 'scripts', 'check-architecture.mjs'), join(root, 'scripts', 'check-architecture.mjs'));
         cpSync(SRC, join(root, 'packages', 'prefs', 'src'), { recursive: true });
+        // rule 6 requires the SuperSplat client to exist; copy it so only rule 1.4 decides here
+        cpSync(join(REPO, 'packages', 'scenes', 'src', 'superspl.ts'), join(root, 'packages', 'scenes', 'src', 'superspl.ts'));
         if (plant) {
             const f = join(root, 'packages', 'prefs', 'src', plant.file);
             writeFileSync(f, `${readFileSync(f, 'utf8')}\n${plant.line}\n`);
