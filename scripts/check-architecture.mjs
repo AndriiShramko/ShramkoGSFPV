@@ -3,6 +3,8 @@
 //  2. packages/collision imports nothing but itself (vendored code + our wrappers), no DOM.
 //  3. apps/site never imports playcanvas or the simulator packages.
 //  4. no Betaflight-looking identifiers were pasted into our sources (formulas only, no GPL code).
+//  5. the SuperSplat catalogue client (packages/scenes/src/superspl.ts) touches no DOM global (fetch and
+//     storage are injected) and never names PlayCanvas' API: the browser goes through /api/superspl/ (D35).
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -51,6 +53,16 @@ for (const f of [...walk(join(ROOT, 'packages')), ...walk(join(ROOT, 'apps'))]) 
     if (f.includes(`${join('collision', 'src', 'vendor')}`)) continue;
     const s = readFileSync(f, 'utf8');
     if (BF.test(s)) problems.push(`Betaflight identifier found (${f})`);
+}
+
+{
+    const f = join(ROOT, 'packages', 'scenes', 'src', 'superspl.ts');
+    if (!existsSync(f)) problems.push(`missing ${f}`);
+    else {
+        const s = readFileSync(f, 'utf8');
+        if (DOM.test(s) || /\b(sessionStorage|localStorage|indexedDB)\b/.test(s)) problems.push(`superspl.ts touches a DOM global (${f})`);
+        if (/playcanvas\.com\/api/.test(s)) problems.push(`superspl.ts names PlayCanvas' API; the browser must use /api/superspl/ (${f})`);
+    }
 }
 
 if (problems.length) {
