@@ -366,3 +366,6 @@ export function headingFromCamera(c: SceneCamera): number {
     const fz = c.target[2] - c.position[2];
     return (Math.atan2(fx, -fz) * 180) / Math.PI;
 }
+
+// SuperSplat catalogue (the list superspl.at shows, through our caching proxy): see superspl.ts
+export * from './superspl';
