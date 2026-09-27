@@ -1,0 +1,15 @@
+{
+ "what": "B21 rollback with the v0.3 rollback.sh on the real hub: switch to the previous release and back; each switch runs nginx -t + reload and checks every /en/ CSP hash of the target release",
+ "back": {
+  "to": "80ff30ea747f",
+  "seconds": 2.9,
+  "servedRelease": "61f1cf8"
+ },
+ "forward": {
+  "to": "1b84c75b12ee",
+  "seconds": 2.2,
+  "servedRelease": "a4cbb1f"
+ },
+ "control": "release.json served by the live site changed to the rollback target and back (the switch is observable, not assumed)",
+ "backups": "deploy.sh writes gsfpv-predeploy-<UTC>-<sha12>.tgz before every switch (13 entries, ~12 KB each); restore proven byte-for-byte on 2026-09-24 (evidence/2026-09-24/b21-neighbours-backup-rollback.json)"
+}

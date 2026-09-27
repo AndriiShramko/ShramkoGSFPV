@@ -1,20 +1,20 @@
 {
   "name": "b-site-b3",
   "context": {
-    "date": "2026-09-27T03:23:06.342Z",
-    "gitHead": "a4cbb1f",
+    "date": "2026-09-27T03:50:49.198Z",
+    "gitHead": "c4ba58b",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "site": "https://gsfpv.flyreelstudio.eu",
-  "pass": false,
+  "pass": true,
   "release": {
     "sha": "a4cbb1f",
     "built": "2026-09-27T03:01:57.679Z"
   },
-  "rule": "links: a real target (internal ones answer 200/30x, same-page anchors exist, anchors on another page exist in its HTML); buttons: each on a fresh load, scrolled into view BEFORE a 1 s baseline, clicked by data-audit-id; within 500 ms of the click a DOM mutation outside what changed in the baseline, a navigation, a request (not an image or font, not to a host busy in the baseline except documents; /api/ only if the baseline had none and not a crash beacon), focus moving to a non-button that is not the clicked control, a clipboard write, a device chooser, a download or a new window; scrolling is recorded but never counted; consent decline hides the banner, accept hides it and requests gtag",
+  "rule": "links: a real target (internal ones answer 200/30x, same-page anchors exist, anchors on another page exist in its HTML); buttons: each on a fresh load, scrolled into view BEFORE a 1 s baseline, clicked by data-audit-id; within 500 ms of the click a DOM mutation outside what changed in the baseline, a navigation, a request (not an image or font, not to a host busy in the baseline except documents; /api/ only if the baseline had none and not a crash beacon), focus moving to a non-button that is not the clicked control, a clipboard write, a device chooser, a file picker, a download or a new window; scrolling is recorded but never counted; consent decline hides the banner, accept hides it and requests gtag",
   "totals": {
     "controls": 387,
     "buttonsClicked": 81,
@@ -521,9 +521,9 @@
         "3 button \"Favourites\"": "dom 7",
         "4 button \"Modlinek Villa \u2014 red room and bathroomWa\"": "nav, dom 61, focus, req POST gsfpv.flyreelstudio.eu/api/e scene_open",
         "5 button \"\u2605\"": "dom 9",
-        "6 button \"Winter Garden, PolandWalls \u00b7 3.2 cm \u00b7 CC\"": "nav, dom 61, focus, req HEAD d28zzqy0iyovbz.cloudfront.net",
+        "6 button \"Winter Garden, PolandWalls \u00b7 3.2 cm \u00b7 CC\"": "nav, dom 56, focus, req HEAD d28zzqy0iyovbz.cloudfront.net",
         "7 button \"\u2605\"": "dom 9",
-        "8 button \"Tunis \u2014 old town streetsWalls \u00b7 5 cm \u00b7 C\"": "nav, dom 52, focus, req HEAD d28zzqy0iyovbz.cloudfront.net",
+        "8 button \"Tunis \u2014 old town streetsWalls \u00b7 5 cm \u00b7 C\"": "nav, dom 62, focus, req HEAD d28zzqy0iyovbz.cloudfront.net",
         "9 button \"\u2605\"": "dom 9"
       },
       "skipped": {
@@ -535,15 +535,13 @@
       "total": 9,
       "links": 2,
       "buttons": 7,
-      "dead": [
-        "3 button \"Import walls\" did nothing"
-      ],
+      "dead": [],
       "effects": {
         "0 a \"SuperSplat\"": "external superspl.at",
         "1 a \"Report this scene\"": "link 200, anchor #contact found",
         "2 button \"Export walls\"": "dom 1",
-        "3 button \"Import walls\"": "nothing",
-        "4 button \"Clear stored walls\"": "dom 3",
+        "3 button \"Import walls\"": "file",
+        "4 button \"Clear stored walls\"": "dom 1",
         "5 button \"Refine walls to 1.6 cm (about 15 s)\"": "dom 5, req GET gsfpv.flyreelstudio.eu",
         "6 button \"Controls\"": "dom 4",
         "7 button \"Pause\"": "dom 1",
@@ -566,7 +564,7 @@
         "2 button \"RestartR\"": "dom 1, focus",
         "3 button \"Change scan\"": "nav, focus, req GET gsfpv.flyreelstudio.eu",
         "4 button \"Drone\"": "dom 2",
-        "5 button \"Controls\"": "dom 5",
+        "5 button \"Controls\"": "dom 7",
         "6 button \"Settings\"": "dom 2, focus",
         "7 button \"Replays\"": "dom 2, focus",
         "8 button \"Measurements\"": "dom 2, focus",
@@ -585,7 +583,7 @@
       "dead": [],
       "effects": {
         "0 button \"\u00d7\"": "dom 1",
-        "1 button \"Apply\"": "dom 1"
+        "1 button \"Apply\"": "dom 3, req GET d28zzqy0iyovbz.cloudfront.net"
       },
       "skipped": {
         "hidden": 0,
@@ -619,9 +617,9 @@
       "effects": {
         "0 button \"\u00d7\"": "dom 7, focus",
         "1 button \"Radio over USB (EdgeTX)\"": "device",
-        "2 button \"Gamepad or radio as gamepad\"": "dom 3",
-        "3 button \"Touch sticks\"": "dom 11, focus, req POST gsfpv.flyreelstudio.eu/api/e input_connected",
-        "4 button \"Keyboard\"": "dom 15, focus, req POST gsfpv.flyreelstudio.eu/api/e input_connected"
+        "2 button \"Gamepad or radio as gamepad\"": "dom 1",
+        "3 button \"Touch sticks\"": "dom 15, focus, req POST gsfpv.flyreelstudio.eu/api/e input_connected",
+        "4 button \"Keyboard\"": "dom 16, focus, req POST gsfpv.flyreelstudio.eu/api/e input_connected"
       },
       "skipped": {
         "hidden": 0,

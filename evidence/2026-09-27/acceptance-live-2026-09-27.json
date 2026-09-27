@@ -1,0 +1,164 @@
+{
+ "site": "https://gsfpv.flyreelstudio.eu",
+ "liveRelease": "1b84c75b12ee (a4cbb1f)",
+ "date": "2026-09-27",
+ "items": [
+  {
+   "item": "A1-A9",
+   "release": "local, controls",
+   "evidence": "evidence/2026-09-24/a*.json",
+   "result": "pass (A9: LIMITED BY DISPLAY, 4K@30 Hz over HDMI; see v03-latency-walls-live.json for the guard)"
+  },
+  {
+   "item": "B1",
+   "release": "8ab586de700e+",
+   "evidence": "evidence/2026-09-27/b-site-b1.json",
+   "result": true
+  },
+  {
+   "item": "B2",
+   "release": "8ab586de700e",
+   "evidence": "evidence/2026-09-27/b-site-b2.json",
+   "result": true
+  },
+  {
+   "item": "B3",
+   "release": "1b84c75b12ee",
+   "evidence": "evidence/2026-09-27/b-site-b3.json",
+   "result": true
+  },
+  {
+   "item": "B4",
+   "release": "8ab586de700e",
+   "evidence": "evidence/2026-09-27/b-site-b4.json",
+   "result": true
+  },
+  {
+   "item": "B5",
+   "release": "8ab586de700e",
+   "evidence": "evidence/2026-09-27/b-site-b5.json",
+   "result": true
+  },
+  {
+   "item": "B6",
+   "release": "8ab586de700e (B10/B11 also f88a9bfa2689)",
+   "evidence": "evidence/2026-09-27/b-fly-b6.json",
+   "result": true
+  },
+  {
+   "item": "B7",
+   "release": "8ab586de700e (B10/B11 also f88a9bfa2689)",
+   "evidence": "evidence/2026-09-27/b-fly-b7.json",
+   "result": true
+  },
+  {
+   "item": "B8",
+   "release": "8ab586de700e (B10/B11 also f88a9bfa2689)",
+   "evidence": "evidence/2026-09-27/b-fly-b8.json",
+   "result": true
+  },
+  {
+   "item": "B9",
+   "release": "8ab586de700e (B10/B11 also f88a9bfa2689)",
+   "evidence": "evidence/2026-09-27/b-fly-b9.json",
+   "result": true
+  },
+  {
+   "item": "B10",
+   "release": "8ab586de700e (B10/B11 also f88a9bfa2689)",
+   "evidence": "evidence/2026-09-27/b-fly-b10.json",
+   "result": true
+  },
+  {
+   "item": "B11",
+   "release": "8ab586de700e (B10/B11 also f88a9bfa2689)",
+   "evidence": "evidence/2026-09-27/b-fly-b11.json",
+   "result": true
+  },
+  {
+   "item": "B12",
+   "release": "8ab586de700e (B10/B11 also f88a9bfa2689)",
+   "evidence": "evidence/2026-09-27/b-fly-b12.json",
+   "result": true
+  },
+  {
+   "item": "B13",
+   "release": "8ab586de700e (B10/B11 also f88a9bfa2689)",
+   "evidence": "evidence/2026-09-27/b-fly-b13.json",
+   "result": true
+  },
+  {
+   "item": "B14",
+   "release": "8ab586de700e (B10/B11 also f88a9bfa2689)",
+   "evidence": "evidence/2026-09-27/b-fly-b14.json",
+   "result": true
+  },
+  {
+   "item": "B15",
+   "release": "8ab586de700e (B10/B11 also f88a9bfa2689)",
+   "evidence": "evidence/2026-09-27/b-fly-b15.json",
+   "result": true
+  },
+  {
+   "item": "B16",
+   "release": "8ab586de700e (B10/B11 also f88a9bfa2689)",
+   "evidence": "evidence/2026-09-27/b-fly-b16.json",
+   "result": true
+  },
+  {
+   "item": "B17",
+   "release": "8ab586de700e (B10/B11 also f88a9bfa2689)",
+   "evidence": "evidence/2026-09-27/b-fly-b17.json",
+   "result": true
+  },
+  {
+   "item": "B18",
+   "release": "main",
+   "evidence": "evidence/2026-09-27/b-repo-b18.json",
+   "result": true
+  },
+  {
+   "item": "B19",
+   "release": "c4ba58b",
+   "evidence": "evidence/2026-09-27/b19-ci.json",
+   "result": "success"
+  },
+  {
+   "item": "B20",
+   "release": "history",
+   "evidence": "evidence/2026-09-27/b20-secret-values.json",
+   "result": "control fired; 1 hit = public hub IPv4 in old commits, 0 in tracked files"
+  },
+  {
+   "item": "B21",
+   "release": "1b84c75b12ee",
+   "evidence": "evidence/2026-09-27/b21-rollback-live.json + b21-neighbours-*.json",
+   "result": "rollback 2.9 s / forward 2.2 s; neighbours: containers/vhosts/networks equal, flagged pages proven ISR"
+  },
+  {
+   "item": "B22",
+   "release": "main",
+   "evidence": "evidence/2026-09-27/b22-b23.json",
+   "result": true
+  },
+  {
+   "item": "B23",
+   "release": "Andrii Chrome",
+   "evidence": "evidence/2026-09-27/b22-b23.json",
+   "result": true
+  },
+  {
+   "item": "C",
+   "release": "1b84c75b12ee",
+   "evidence": "evidence/2026-09-27/c-bake.json",
+   "result": "723068d7 bit-identical to CLI (261 895 692 voxels), 20/20 passes 0 penetrations, refusal with numbers in RU; bd04e182 (brotli) read fixed live, its 5 cm octree limit -> coarser grid built in c4ba58b, NOT deployed (hub disk STOP rule)"
+  },
+  {
+   "item": "D",
+   "release": "8ab586de700e / 1b84c75b12ee",
+   "evidence": "evidence/2026-09-27/d-*.json",
+   "result": "cinema, diff, trajectory PASS; governor PASS on 1b84c75b12ee"
+  }
+ ],
+ "notDeployed": "c4ba58b: coarser grid for huge scans without walls + bench changes; blocked by the spec-ops STOP rule (hub needs >= 2 GB free, has 1.5 GB; 96 % used by other projects: docker images 6.5 GB reclaimable, build cache 0.7 GB)"
+}

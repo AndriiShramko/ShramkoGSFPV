@@ -1,0 +1,101 @@
+{
+ "run": 36291526285,
+ "sha": "c4ba58ba929eb4984b1c18229aefd20e54cca3ed",
+ "conclusion": "success",
+ "url": "https://github.com/AndriiShramko/ShramkoGSFPV/actions/runs/36291526285",
+ "steps": [
+  [
+   "Set up job",
+   "success"
+  ],
+  [
+   "Run actions/checkout@v4",
+   "success"
+  ],
+  [
+   "Run pnpm/action-setup@v4",
+   "success"
+  ],
+  [
+   "Run actions/setup-node@v4",
+   "success"
+  ],
+  [
+   "Install",
+   "success"
+  ],
+  [
+   "Typecheck",
+   "success"
+  ],
+  [
+   "Lint (architecture rules)",
+   "success"
+  ],
+  [
+   "Dependency licences",
+   "success"
+  ],
+  [
+   "Dictionary check (same keys and placeholders in all 4 locales)",
+   "success"
+  ],
+  [
+   "Unit tests, rate vectors, tunnelling and determinism subset",
+   "success"
+  ],
+  [
+   "Build release (site + simulator, pre-gzip, CSP hash map, numbers must ",
+   "success"
+  ],
+  [
+   "Serve the release behind the real nginx config",
+   "success"
+  ],
+  [
+   "Smoke the release (no GPU; routing, headers, enforced CSP hashes, link",
+   "success"
+  ],
+  [
+   "Browsers for the no-GPU browser smoke",
+   "success"
+  ],
+  [
+   "Browser smoke (i18n switchers, consent banner, lead form, beacons; /ap",
+   "success"
+  ],
+  [
+   "nginx log (on failure)",
+   "skipped"
+  ],
+  [
+   "Run actions/upload-artifact@v4",
+   "success"
+  ],
+  [
+   "Secret scan (full history)",
+   "success"
+  ],
+  [
+   "Run actions/upload-artifact@v4",
+   "success"
+  ],
+  [
+   "Post Run actions/setup-node@v4",
+   "success"
+  ],
+  [
+   "Post Run pnpm/action-setup@v4",
+   "success"
+  ],
+  [
+   "Post Run actions/checkout@v4",
+   "success"
+  ],
+  [
+   "Complete job",
+   "success"
+  ]
+ ],
+ "what": "B19: CI on the latest main commit: typecheck, architecture rules, licences, i18n check, unit tests (171), release build with CSP hash map, nginx -t on the real config, smoke, browser smoke, full-history secret scan"
+}

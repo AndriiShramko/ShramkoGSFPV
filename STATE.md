@@ -4,7 +4,9 @@ Spec: vault `03 - Resources/Deployment/shramkogsfpv/spec.md` (+ 6 spec-*.md). Ph
 
 ## Current
 
-- **Phase:** A, B (B1-B23), C, D accepted on the live site. v0.2 live 2026-09-26; **wizard v3 (user-paced, like Liftoff) + landing/README "Features and roadmap" live 2026-09-27** (commit f7e0221 = hub release f88a9bfa2689; evidence/2026-09-27/). B22/B23 closed (evidence/2026-09-27/b22-b23.json). A9 latency: LIMITED BY DISPLAY (4K at 30 Hz), median 252 ms measured 2026-09-24 - diagnosis and fixes in progress (backlog item 27). v0.3 designed (docs/architecture-v03.md); wave 1 partly built in the main clone, not merged yet.
+- **Phase:** A, B (B1-B23), C, D re-accepted on the live site on 2026-09-27: `evidence/2026-09-27/acceptance-live-2026-09-27.json` (one line per item with its evidence file and the release it was measured on). Live release **1b84c75b12ee** (commit a4cbb1f): wizard v3, latency guard, walls refine + cache, governor 1.25-period threshold, whole-file bake reads.
+- **Not deployed:** c4ba58b (coarser grid for huge scans without walls + bench): the spec-ops STOP rule needs >= 2 GB free on the hub, it has 1.5 GB (96 % used by other projects). Needs Andrii.
+- **A9:** LIMITED BY DISPLAY (4K at 30 Hz over HDMI); the latency guard brings rAF->present from 3 to 1.1 frames (88 vs 153 ms estimated input->screen).
 - **Live:** https://gsfpv.flyreelstudio.eu (hub dir and address in the gitignored `deploy/hub.env`)
 - **Last update:** 2026-09-27
 

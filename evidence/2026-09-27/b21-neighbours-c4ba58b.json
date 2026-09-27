@@ -1,0 +1,22 @@
+{
+ "before": ".cache/snaps/gsfpv-fin2-before",
+ "after": ".cache/snaps/gsfpv-fin2-after",
+ "problems": [
+  "body changed on a static page: alexcat.flyreelstudio.eu",
+  "body changed on a static page: demo.fpvtoons-pilotmascots-droneoverlays.de",
+  "body changed on a static page: fpvtoons-pilotmascots-droneoverlays.de"
+ ],
+ "added_vhosts": [],
+ "added_networks": [],
+ "nginx_proxy_log": {
+  "checked": true,
+  "since": "2026-09-27T03:35:19Z",
+  "until": "2026-09-27T03:35:59Z",
+  "lines_in_window": 0,
+  "emerg_crit": 0,
+  "emerg_crit_substring": 0,
+  "samples": []
+ },
+ "complete": true,
+ "equal": false
+}
