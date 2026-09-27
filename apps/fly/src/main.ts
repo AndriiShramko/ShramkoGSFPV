@@ -1,6 +1,7 @@
 // /fly entry: preflight -> scene picker -> flight (HUD, controls, crash, pause, settings).
 // URL: ?scene=<id|link>&drone=<preset>&g=<m/s2>&gm=<honest|same-twr|auto-throttle>
-// Test-only switches (never linked): ?simradio=scenario|open|raw, ?lat=1, ?lagFrames=N, ?guard=0.
+// Test-only switches (never linked): ?simradio=scenario|open|raw, ?lat=1, ?lagFrames=N, ?guard=0,
+// ?refine=auto|offer|off (finer walls: the plan's choice, only on request, never), ?bake=1.
 import { S, InputLog, parseBetaflightDiff } from '@gsfpv/sim-core';
 import type { SimEvent, ParamOverrides } from '@gsfpv/sim-core';
 import { parseSceneInput, recordOpen, recordFlight, SceneError } from '@gsfpv/scenes';
@@ -19,6 +20,8 @@ import { Controls, loadLastInput, saveLastInput, loadProfiles, profileFor } from
 import type { LastInput } from './controls';
 import type { Profile } from '@gsfpv/input';
 import { CrashView } from './crashview';
+import { mountWalls } from './walls';
+import type { WallsHook } from './walls';
 import { t, locale } from './i18n';
 import { h, clear, panel } from './ui/dom';
 import { ScenePicker, loadShowcase } from './ui/scenes';
@@ -70,6 +73,8 @@ interface TestHook {
     runBake?: () => Promise<void>;
     /** save the baked collision as two downloads (acceptance runs the Node tunnelling harness on it) */
     downloadBaked?: () => boolean;
+    /** the walls in use, the refine, the walls store (walls.ts) */
+    walls?: WallsHook;
     /** phase D: the exported trajectory as text (the same text the export button saves) */
     trajectoryText?: (kind: 'csv' | 'json') => string;
     governor?: FrameGovernor;
@@ -265,57 +270,14 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
     // takedown path: the landing's contact form opens with role "takedown" and the scene id filled in
     attr.append(' · ', h('a', { href: `/${locale}/?report=${sceneId}#contact`, target: '_blank', rel: 'noopener', 'data-testid': 'report-scene' }, t('scenes.report')));
     ui.append(attr);
-    if (!session.collision) {
-        // phase C: walls can be built right here from the splats (same tool and defaults as SuperSplat)
-        const badge = h('div', { class: 'badge-nowalls', role: 'status', 'data-testid': 'no-collision' }, t('scenes.noCollisionBadge'));
-        const status = h('div', { class: 'bake-status', role: 'status', 'aria-live': 'polite', 'data-testid': 'bake-status' });
-        const bakeBtn = h('button', { type: 'button', class: 'btn', 'data-action': 'bake', onclick: () => void runBake() }, t('bake.button')) as HTMLButtonElement;
-        const box = h('div', { class: 'bake-box interactive' }, badge, bakeBtn, status);
-        ui.append(box);
-        const runBake = async (): Promise<void> => {
-            bakeBtn.disabled = true;
-            session.pause(true, 'bake');
-            try {
-                const { bakeCollision, BakeRefusedError, BAKE_MAX_GAUSSIANS } = await import('./bake');
-                try {
-                    const r = await bakeCollision(session.scene.contentUrl, session.scene.contentKind, session.renderer.app.graphicsDevice, (st) => { status.textContent = t('bake.working', { stage: t(`bake.stage.${st}`) }); });
-                    session.installCollision(r.json, r.bin);
-                    hook.bake = { ok: true, gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length, collisionSha256: session.collisionSha256 };
-                    hook.bakedBytes = { json: r.json, bin: r.bin };
-                    if (hook.info) hook.info.hasCollision = true;
-                    badge.remove();
-                    bakeBtn.remove();
-                    status.textContent = t('bake.done', { voxels: (r.solidVoxels / 1e6).toFixed(1), s: (r.ms.total / 1000).toFixed(0) });
-                    beacon('bake_done');
-                } catch (e) {
-                    if (e instanceof BakeRefusedError) {
-                        hook.bake = { ok: false, refused: true, gaussians: e.size.gaussians, limit: BAKE_MAX_GAUSSIANS };
-                        status.textContent = t('bake.refused', { n: (e.size.gaussians / 1e6).toFixed(1), max: (BAKE_MAX_GAUSSIANS / 1e6).toFixed(0) });
-                        bakeBtn.remove();
-                    } else {
-                        hook.bake = { ok: false, error: String((e as Error)?.message ?? e) };
-                        status.textContent = t('bake.failed', { msg: String((e as Error)?.message ?? e).slice(0, 160) });
-                        bakeBtn.disabled = false;
-                    }
-                }
-            } finally {
-                session.pause(false, 'bake');
-            }
-        };
-        hook.runBake = runBake;
-        hook.downloadBaked = () => {
-            const b = hook.bakedBytes;
-            if (!b) return false;
-            for (const [name, bytes] of [['baked.voxel.json', b.json], ['baked.voxel.bin', b.bin]] as const) {
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: 'application/octet-stream' }));
-                a.download = `${sceneId}-${name}`;
-                a.click();
-            }
-            return true;
-        };
-        if (q.get('bake') === '1') void runBake();
-    }
+    // walls: the phase C build for a scan without them, finer walls for coarse ones (walls.ts); the
+    // automated modes (bot radio, latency probe) fly the shipped walls unless ?refine= says otherwise
+    const refineQ = q.get('refine');
+    mountWalls({
+        ui, session, sceneId, beacon, hook,
+        mode: refineQ === 'auto' || refineQ === 'offer' || refineQ === 'off' ? refineQ : q.get('simradio') || q.get('lat') === '1' ? 'off' : 'auto',
+        bakeNow: q.get('bake') === '1'
+    });
     // S5: another world with the same motors -> say what that does to thrust / weight before flying
     const gNow = session.params.gravity;
     if (gNow > 0 && gNow < 9.8 && (session.overrides.gravityMode ?? 'honest') === 'honest') {

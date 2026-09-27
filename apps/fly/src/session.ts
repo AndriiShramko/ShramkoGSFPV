@@ -9,6 +9,7 @@ import { SplatRenderer } from '@gsfpv/render-pc';
 import type { SplatBytes } from '@gsfpv/render-pc';
 import { PRESETS, DEFAULT_PRESET } from './presets';
 import { SimClock } from './simclock';
+import { assertWalls } from './bake';
 
 export interface SessionOptions {
     sceneId: string;
@@ -407,6 +408,7 @@ export class FlightSession {
         this.overrides = overrides;
         this.params = compileParams(PRESETS[this.presetId], overrides);
         this.renderer.setFov(this.params.cameraFovDeg);
+        this.takePendingWalls(); // a restart is a moment the craft is not flying: queued walls go in
         this.buildSim();
     }
 
@@ -484,6 +486,12 @@ export class FlightSession {
     }
 
     respawn(fromSafePoint = false): void {
+        // queued walls go in first (a new model at the spawn); the safe point stays if it is clear in them too
+        if (this.pendingWalls) {
+            const safe = this.safePoint;
+            this.rebuildSim(this.presetId, this.overrides);
+            if (safe && this.spawnIsFree(safe)) this.safePoint = safe;
+        }
         const p = fromSafePoint && this.safePoint ? this.safePoint : this.spawn;
         this.runner.respawn(p[0], p[1], p[2], p[3]);
         this.flightStartTick = this.sim.tick;
@@ -500,20 +508,70 @@ export class FlightSession {
         return !this.collision.querySphere(p[0], p[1], p[2], this.params.boundRadius + 0.01, push);
     }
 
+    /** Walls waiting for a moment when swapping them cannot move the craft under the pilot. */
+    private pendingWalls: { json: Uint8Array; bin: Uint8Array; sha: string | null; onSwap: ((sha: string) => void) | null } | null = null;
+
     /**
-     * Collision baked in this tab (phase C): swap it in, rebuild the model on it and move the
-     * spawn out of any wall. The input log restarts, because a replay needs the same collision.
+     * Walls built in this tab, from the walls cache or imported: swap them in now, rebuild the model
+     * on them and move the spawn out of any wall. The input log restarts, because a replay needs the
+     * same collision. Walls without one solid voxel are refused (BakeRefusedError 'empty') and the old
+     * ones kept: the voxeliser returns an empty octree as success when the GPU refuses its buffer.
+     * `sha`: the json + bin digest when the caller already has it (a 90 MB .bin takes ~1 s here).
      */
-    installCollision(json: Uint8Array, bin: Uint8Array): void {
-        const metadata = JSON.parse(new TextDecoder().decode(json)) as VoxelMetadata;
-        this.collision = openVoxelCollision(metadata, bin);
-        const both = new Uint8Array(json.length + bin.length);
-        both.set(json, 0);
-        both.set(bin, json.length);
-        this.collisionSha256 = sha256Hex(both);
-        this.world = new VoxelContactWorld(this.collision);
-        if (!this.spawnIsFree()) this.spawn = this.findSpawn();
+    installCollision(json: Uint8Array, bin: Uint8Array, sha: string | null = null): string {
+        assertWalls(json, bin);
+        this.pendingWalls = null; // the newest walls win
+        this.setWalls(json, bin, sha);
         this.rebuildSim(this.presetId, this.overrides);
+        return this.collisionSha256!;
+    }
+
+    /**
+     * The same, never under a flying craft: at once when it is parked at the spawn (not armed since
+     * the last reset), else at the next respawn or restart. Refused at once, like installCollision.
+     */
+    queueCollision(json: Uint8Array, bin: Uint8Array, sha: string | null, onSwap: ((sha: string) => void) | null): void {
+        assertWalls(json, bin);
+        this.pendingWalls = { json, bin, sha, onSwap };
+        this.swapWallsIfParked();
+    }
+
+    get wallsPending(): boolean {
+        return !!this.pendingWalls;
+    }
+
+    /** Swap queued walls in if the craft still sits where a new model would put it. */
+    swapWallsIfParked(): boolean {
+        if (!this.pendingWalls || !this.sim || this.replayState) return false;
+        const s = this.sim.s;
+        const sp = this.spawn;
+        if (s[S.hold] === 0 || Math.hypot(s[S.px] - sp[0], s[S.py] - sp[1], s[S.pz] - sp[2]) > 1e-3) return false;
+        this.rebuildSim(this.presetId, this.overrides); // takes the queued walls
+        return true;
+    }
+
+    private takePendingWalls(): void {
+        const w = this.pendingWalls;
+        if (!w) return;
+        this.pendingWalls = null;
+        this.setWalls(w.json, w.bin, w.sha);
+        w.onSwap?.(this.collisionSha256!);
+    }
+
+    private setWalls(json: Uint8Array, bin: Uint8Array, sha: string | null): void {
+        const metadata = JSON.parse(new TextDecoder().decode(json)) as VoxelMetadata;
+        const collision = openVoxelCollision(metadata, bin);
+        let digest = sha;
+        if (!digest) {
+            const both = new Uint8Array(json.length + bin.length);
+            both.set(json, 0);
+            both.set(bin, json.length);
+            digest = sha256Hex(both);
+        }
+        this.collision = collision;
+        this.collisionSha256 = digest;
+        this.world = new VoxelContactWorld(collision);
+        if (!this.spawnIsFree()) this.spawn = this.findSpawn();
     }
 
     // ------------------------------------------------------------------ replay (input log only)
