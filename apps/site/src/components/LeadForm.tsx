@@ -97,8 +97,11 @@ export default function LeadForm() {
     e.preventDefault();
     if (!valid || state === "sending") return;
     setState("sending");
-    const elapsed = performance.now() - renderedAt.current;
-    if (elapsed < MIN_MS) await new Promise((r) => setTimeout(r, MIN_MS - elapsed));
+    // a timer may fire a fraction of a millisecond early, and t = 2999 is "suspect" on the server,
+    // so wait until the full MIN_MS has really passed
+    for (let left = MIN_MS - (performance.now() - renderedAt.current); left > 0; left = MIN_MS - (performance.now() - renderedAt.current)) {
+      await new Promise((r) => setTimeout(r, Math.ceil(left) + 1));
+    }
     const body = {
       role: d.role,
       message: d.message.trim().slice(0, MAX_MESSAGE),

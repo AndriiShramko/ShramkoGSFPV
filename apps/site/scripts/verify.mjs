@@ -158,6 +158,14 @@ async function newCtx(viewport, opts = {}, consent = "no") {
   ok("no console errors / hydration errors on /en/", consoleErrors.length === 0, consoleErrors.join(" | ").slice(0, 400));
   // the screenshot band under the hero waits for the load event (components/DeferImages)
   const swapped = await page.waitForFunction(() => !document.querySelector("img[data-srcset]"), undefined, { timeout: 10000 }).then(() => true, () => false);
+  // a resource timing entry appears only when its response has finished, so give the swapped pictures
+  // time to arrive before counting them (on a slow CI runner the count right after the swap was 0)
+  await page
+    .waitForFunction(() => {
+      const files = new Set([...document.querySelectorAll("img[data-deferred]")].map((i) => new URL(i.currentSrc || i.src).pathname));
+      return performance.getEntriesByType("resource").some((r) => files.has(new URL(r.name).pathname));
+    }, undefined, { timeout: 10000 })
+    .catch(() => {});
   const early = await page.evaluate(() => {
     const load = performance.getEntriesByType("navigation")[0].loadEventStart;
     const deferred = [...document.querySelectorAll("img[data-deferred]")];
