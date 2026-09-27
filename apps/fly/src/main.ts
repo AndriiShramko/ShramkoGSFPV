@@ -1,6 +1,6 @@
 // /fly entry: preflight -> scene picker -> flight (HUD, controls, crash, pause, settings).
 // URL: ?scene=<id|link>&drone=<preset>&g=<m/s2>&gm=<honest|same-twr|auto-throttle>
-// Test-only switches (never linked): ?simradio=scenario|open|raw, ?lat=1, ?lagFrames=N.
+// Test-only switches (never linked): ?simradio=scenario|open|raw, ?lat=1, ?lagFrames=N, ?guard=0.
 import { S, InputLog, parseBetaflightDiff } from '@gsfpv/sim-core';
 import type { SimEvent, ParamOverrides } from '@gsfpv/sim-core';
 import { parseSceneInput, recordOpen, recordFlight, SceneError } from '@gsfpv/scenes';
@@ -245,6 +245,9 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
     }
     hook.session = session;
     await session.visible;
+    // loading leaves Chrome's compositor 2 frames behind: the guard measures and skips out of it
+    // while "ready" is still on screen, then keeps watching (?guard=0: measure only, never skip)
+    session.renderer.startLatencyGuard(q.get('guard') !== '0');
     // "The scan is ready" for a moment, then the scan fades in: no jump straight into another screen
     await loading.finish();
     document.body.classList.add('flying');
@@ -400,7 +403,7 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
     session.onFrame = (s) => {
         const now = performance.now();
         if (frameDelay > 0) { const end = now + frameDelay; while (performance.now() < end) { /* simulated overload */ } }
-        if (!cinemaOn && governor.onFrame(now)) applyQuality();
+        if (!cinemaOn && governor.onFrame(now, s.renderer.frameAfterSkip)) applyQuality();
         controls.tick(now);
         if (!crash.active) crash.trackCamera();
         crash.frame(now);

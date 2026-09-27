@@ -171,7 +171,10 @@ export class Hud {
     private bl = h('div', { class: 'osd bl' });
     private br = h('div', { class: 'osd br' });
     private gate = h('div', { class: 'gate-msg', role: 'status', 'aria-live': 'polite' });
-    private frameStats = h('div', { class: 'osd frame hidden' });
+    // F3: display rate and estimated stick -> screen delay, then a hint when the screen is slow
+    private statsMain = h('div', { 'data-testid': 'latency-line' });
+    private statsHint = h('div', { 'data-testid': 'display-hint', hidden: true });
+    private frameStats = h('div', { class: 'osd frame hidden' }, this.statsMain, this.statsHint);
     private card = new ArmCard(() => this.onArm?.());
     private keys = new KeyCard();
     private last = 0;
@@ -273,7 +276,29 @@ export class Hud {
         // touch: mid-screen, clear of the pads and the ARM button it points to
         this.gate.classList.toggle('mid', src === 'touch');
         if (this.gate.textContent !== say) this.gate.textContent = say; // the same text again is announced again
-        this.frameStats.textContent = `frame p50 ${fmt(frameMs.p50, 1)} ms · p99 ${fmt(frameMs.p99, 1)} ms · physics 1000 Hz`;
+        this.latencyLine(s, frameMs.p50);
+    }
+
+    /**
+     * Not the frame gap: "frame 33.3 ms" was read as the delay, while stick -> screen was 3-5 such
+     * frames. The display rate and the renderer's estimate (measured rAF -> presentation) instead.
+     */
+    private latencyLine(s: FlightSession, frameP50: number): void {
+        if (this.frameStats.classList.contains('hidden')) return;
+        const L = s.renderer.latencyStats();
+        const P = Number.isFinite(L.periodMs) ? L.periodMs : frameP50;
+        const hz = Math.round(1000 / P);
+        const main = t('hud.stats', { hz: Number.isFinite(hz) ? hz : '—', ms: fmt(L.inputToScreenMs, 0) });
+        if (this.statsMain.textContent !== main) this.statsMain.textContent = main;
+        // below 50 Hz every stage that waits for a frame waits 2x longer than at 60 Hz
+        const slow = P > 20;
+        this.statsHint.hidden = !slow;
+        if (slow) {
+            const hint = t('hud.slowDisplay', { hz, p: Math.round(P) });
+            if (this.statsHint.textContent !== hint) this.statsHint.textContent = hint;
+            this.statsHint.style.maxWidth = '60ch';
+            this.statsHint.style.marginTop = '4px';
+        }
     }
 }
 

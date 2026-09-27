@@ -12,6 +12,25 @@ import {
     TONEMAP_LINEAR, TONEMAP_NEUTRAL, TONEMAP_ACES, TONEMAP_ACES2, TONEMAP_FILMIC, TONEMAP_HEJL, TONEMAP_NONE
 } from 'playcanvas';
 import type { GraphicsDevice, GSplatComponent } from 'playcanvas';
+import { LatencyGuard, inputToScreenMs } from './governor';
+
+/** What the HUD shows about the delay (see LatencyGuard, inputToScreenMs). */
+export interface LatencyStats {
+    /** learned display period, ms (Infinity before the first frames) */
+    periodMs: number;
+    /** last measured rAF -> presentation, ms (NaN: not measured yet, or not measurable here) */
+    rafToPresentMs: number;
+    /** median submit -> GPU done of the last frames, ms (NaN on WebGL2) */
+    submitToDoneMs: number;
+    /** estimated stick -> screen, ms */
+    inputToScreenMs: number;
+    /** frames skipped by the latency guard so far */
+    skips: number;
+}
+
+interface WgpuQueue {
+    onSubmittedWorkDone(): Promise<void>;
+}
 
 export interface RendererOptions {
     /** 1 = CSS pixels * devicePixelRatio */
@@ -106,6 +125,18 @@ export class SplatRenderer {
     firstFrameAt = 0;
     debrisRoot: Entity;
     private count: ByteCount = { base: '', listed: false, expected: new Map(), images: new Map(), lastByteAt: 0, frozen: false };
+    /** Chrome compositor latency guard (governor.ts); idle until startLatencyGuard() */
+    readonly latencyGuard = new LatencyGuard();
+    /** true during the first frame after a skip: its long interval was made on purpose */
+    frameAfterSkip = false;
+    private skipPending = false;
+    private skipTimer = 0;
+    private destroyed = false;
+    private latObserver: PerformanceObserver | null = null;
+    private latProbe: { id: string; raf: number; node: HTMLElement } | null = null;
+    private latSeq = 0;
+    private gpuQueue: WgpuQueue | null = null;
+    private submitDone: number[] = [];
 
     private constructor(canvas: HTMLCanvasElement, device: GraphicsDevice, opts: RendererOptions) {
         this.canvas = canvas;
@@ -158,6 +189,11 @@ export class SplatRenderer {
         // every SOG image is its own texture asset with exact byte progress from its XHR
         app.assets.on('add', (a: Asset) => this.countAsset(a));
 
+        app.on('frameupdate', this.onFrameUpdate);
+        this.gpuQueue = (device as unknown as { wgpu?: { queue?: WgpuQueue } }).wgpu?.queue ?? null;
+        if (this.gpuQueue) app.on('frameend', this.onFrameEnd);
+        document.addEventListener('visibilitychange', this.onVisibility);
+
         this.ro = new ResizeObserver(() => this.resize());
         this.ro.observe(canvas);
         this.resize();
@@ -171,7 +207,10 @@ export class SplatRenderer {
             stencil: false,
             powerPreference: 'high-performance'
         });
-        device.maxPixelRatio = window.devicePixelRatio;
+        // resize() already sizes the backbuffer in device pixels (CSS px * devicePixelRatio * scale);
+        // the engine multiplies by min(maxPixelRatio, dpr) again, so anything above 1 made it
+        // dpr-squared: 5760x3240 instead of 3840x2160 at 150 % (2.25x the pixels, 4x at 200 %)
+        device.maxPixelRatio = 1;
         return new SplatRenderer(canvas, device, opts);
     }
 
@@ -370,6 +409,117 @@ export class SplatRenderer {
         this.app.start();
     }
 
+    // ---- latency guard: measure rAF -> presentation, skip out of Chrome's slow state ----
+
+    /**
+     * Start measuring rAF -> presentation (the HUD shows it) and, with `recover`, skipping frames
+     * to leave Chrome's slow compositor state. The first measurement is taken at the next frame.
+     * Needs Element Timing (Chromium); elsewhere nothing is measured and nothing is skipped.
+     */
+    startLatencyGuard(recover: boolean): void {
+        const types = typeof PerformanceObserver !== 'undefined' ? PerformanceObserver.supportedEntryTypes ?? [] : [];
+        const g = this.latencyGuard;
+        g.recover = recover;
+        g.active = types.includes('element');
+        g.trigger(performance.now());
+    }
+
+    /**
+     * Hold the engine loop for `ms`: no rAF until then. Chrome leaves its slow state only when
+     * BeginFrames pass with no main frame pending. The flight model catches up on the next frame
+     * (SimClock), so only one picture is shown longer.
+     */
+    skipFrames(ms: number): boolean {
+        const app = this.app;
+        if (!app.frameRequestId || this.skipTimer || this.destroyed) return false;
+        cancelAnimationFrame(app.frameRequestId);
+        app.frameRequestId = null;
+        this.skipPending = true;
+        this.skipTimer = window.setTimeout(() => {
+            this.skipTimer = 0;
+            if (!this.destroyed && !app.frameRequestId) app.requestAnimationFrame();
+        }, ms);
+        return true;
+    }
+
+    /** Display period, measured delay and the stick -> screen estimate, for the HUD. */
+    latencyStats(): LatencyStats {
+        const g = this.latencyGuard;
+        const sd = this.submitToDoneMs();
+        const P = g.period.ms;
+        return { periodMs: P, rafToPresentMs: g.rafToPresentMs, submitToDoneMs: sd, inputToScreenMs: Number.isFinite(P) ? inputToScreenMs(P, g.rafToPresentMs, sd) : NaN, skips: g.skips };
+    }
+
+    /** median submit -> GPU done of the last 30 frames, ms (NaN on WebGL2) */
+    private submitToDoneMs(): number {
+        const d = [...this.submitDone].sort((x, y) => x - y);
+        return d.length ? d[d.length >> 1] : NaN;
+    }
+
+    private onFrameUpdate = (): void => {
+        this.frameAfterSkip = this.skipPending;
+        this.skipPending = false;
+        // inside the rAF callback the document timeline's time is this frame's rAF timestamp
+        const ct = document.timeline?.currentTime;
+        const t = typeof ct === 'number' ? ct : performance.now();
+        const a = this.latencyGuard.onFrame(t);
+        if (a?.kind === 'measure') this.measurePresentation(t);
+    };
+
+    /**
+     * A tiny text node inserted in this rAF is committed in the same main frame as the canvas, and
+     * Element Timing reports that frame's presentation time: rAF -> presentation without input
+     * events. It sits under the canvas: painted, so it is reported, but never seen.
+     */
+    private measurePresentation(raf: number): void {
+        if (!this.latObserver) {
+            this.latObserver = new PerformanceObserver((list) => {
+                for (const e of list.getEntries()) {
+                    const p = this.latProbe;
+                    const el = e as PerformanceEntry & { identifier?: string; renderTime?: number };
+                    if (!p || el.identifier !== p.id) continue;
+                    this.latProbe = null;
+                    p.node.remove();
+                    const a = this.latencyGuard.onSample(performance.now(), (el.renderTime || NaN) - p.raf, this.submitToDoneMs());
+                    if (a?.kind === 'skip') this.skipFrames(a.ms);
+                }
+            });
+            this.latObserver.observe({ type: 'element', buffered: false });
+        }
+        this.latProbe?.node.remove(); // an earlier one never reported (tab hidden): replaced
+        const id = `gsfpv-lat-${++this.latSeq}`;
+        const n = document.createElement('span');
+        n.setAttribute('elementtiming', id);
+        n.setAttribute('aria-hidden', 'true');
+        n.textContent = 'x';
+        const s = n.style;
+        s.position = 'fixed';
+        s.left = '0';
+        s.top = '0';
+        s.zIndex = '-1';
+        s.font = '4px/4px monospace';
+        s.color = '#fff';
+        s.pointerEvents = 'none';
+        document.body.append(n);
+        this.latProbe = { id, raf, node: n };
+    }
+
+    /** submit -> GPU done of each frame: a queue behind another GPU user shows up here first. */
+    private onFrameEnd = (): void => {
+        const q = this.gpuQueue;
+        if (!q) return;
+        const t0 = performance.now();
+        q.onSubmittedWorkDone().then(() => {
+            this.submitDone.push(performance.now() - t0);
+            if (this.submitDone.length > 30) this.submitDone.shift();
+        }, () => { /* device lost: no number */ });
+    };
+
+    private onVisibility = (): void => {
+        // back from another tab or window: switching is a main-thread hitch of its own
+        if (document.visibilityState === 'visible') this.latencyGuard.trigger(performance.now());
+    };
+
     // ---- latency marker: 16x16 CSS px in the top-left corner, drawn in the same frame ----
     // Four 8x8 px cells, black or white, encode (id mod 16). Black and white survive any tone
     // mapping or colour management, so the capture side decodes bits instead of colours.
@@ -489,6 +639,12 @@ export class SplatRenderer {
     }
 
     destroy(): void {
+        this.destroyed = true;
+        this.latencyGuard.active = false;
+        clearTimeout(this.skipTimer);
+        this.latObserver?.disconnect();
+        this.latProbe?.node.remove();
+        document.removeEventListener('visibilitychange', this.onVisibility);
         this.ro.disconnect();
         this.app.destroy();
     }
