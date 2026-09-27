@@ -10,6 +10,8 @@ import type { SplatBytes } from '@gsfpv/render-pc';
 import { PRESETS, DEFAULT_PRESET } from './presets';
 import { SimClock } from './simclock';
 import { assertWalls } from './bake';
+import { flightHeader, worldForLog, wallsState } from './flightwalls';
+import type { FlightLogHeader, WallsState } from './flightwalls';
 
 export interface SessionOptions {
     sceneId: string;
@@ -18,6 +20,8 @@ export interface SessionOptions {
     latencyMarker?: boolean;
     lagFrames?: number;
     renderScale?: number;
+    /** fly with the scan's walls (default) or through everything (flightwalls.ts) */
+    wallsOn?: boolean;
     /** loading state every 100 ms until the first view is on screen */
     onProgress?: (p: LoadProgress) => void;
 }
@@ -122,6 +126,12 @@ export class FlightSession {
     collision: VoxelCollision | null = null;
     collisionSha256: string | null = null;
     world: VoxelContactWorld | null = null;
+    /**
+     * The pilot's walls switch. Off: the flight model gets no contact world (the craft flies
+     * through everything, no crash) while the walls stay loaded for the voxel overlay and for
+     * switching back on. Change it with setWallsOn, which starts a new log.
+     */
+    wallsOn = true;
     params!: SimParams;
     overrides: ParamOverrides = {};
     sim!: Sim;
@@ -185,6 +195,7 @@ export class FlightSession {
         this.timings.settingsMs = performance.now() - tS;
         this.presetId = o.preset && PRESETS[o.preset] ? o.preset : DEFAULT_PRESET;
         this.overrides = o.overrides ?? {};
+        this.wallsOn = o.wallsOn ?? true;
         this.params = compileParams(PRESETS[this.presetId], this.overrides);
         this.renderer = await SplatRenderer.create(canvas, { renderScale: o.renderScale ?? 1, hFovDeg: this.params.cameraFovDeg, latencyMarker: !!o.latencyMarker });
         this.renderer.setToneMapping(this.scene.tonemapping);
@@ -375,21 +386,52 @@ export class FlightSession {
         return [pos[0], pos[1], pos[2], yaw];
     }
 
-    logHeader(): LogHeader {
-        return {
-            format: 'gsfpv-input-log/1',
+    /** The input log header: preset, settings, spawn and the walls the flight has (flightwalls.ts). */
+    logHeader(): FlightLogHeader {
+        return flightHeader({
             simCore: SIM_CORE_VERSION,
             preset: this.presetId,
-            configHash: sha256Hex(new TextEncoder().encode(JSON.stringify({ o: this.overrides, p: this.presetId }))),
-            collisionSha256: this.collisionSha256,
-            spawn: this.spawn,
-            seed: 0
-        };
+            overrides: this.overrides,
+            wallsSha256: this.collision ? this.collisionSha256 : null,
+            wallsOn: this.wallsOn,
+            spawn: this.spawn
+        });
+    }
+
+    /** on / off (the pilot's switch on a scan with walls) or none (the scan has no walls). */
+    get walls(): WallsState {
+        return wallsState(!!this.collision, this.wallsOn);
+    }
+
+    /** The contact world the flight model flies in: the walls, or none when they are switched off. */
+    get flightWorld(): VoxelContactWorld | null {
+        return this.wallsOn ? this.world : null;
+    }
+
+    /**
+     * Switch the walls on or off. A log holds one setting, so the flight model is rebuilt with a
+     * new log; a craft in the air goes on from where it is (respawned there, level and held, like R
+     * does at the start), unless walls coming on would put it inside one: then it starts at the
+     * spawn. Returns false when nothing changed (same setting, or a scan without walls).
+     */
+    setWallsOn(on: boolean): boolean {
+        if (on === this.wallsOn) return false;
+        this.wallsOn = on;
+        if (!this.sim) return true;
+        const s = this.sim.s;
+        const flying = s[S.hold] === 0 && s[S.crashed] === 0 && !this.replayState;
+        const here: [number, number, number, number] = [s[S.px], s[S.py], s[S.pz], attitude(s).yaw];
+        this.rebuildSim(this.presetId, this.overrides);
+        if (flying && (!on || this.spawnIsFree(here))) {
+            this.runner.respawn(here[0], here[1], here[2], here[3]);
+            this.flightStartTick = this.sim.tick;
+        }
+        return true;
     }
 
     /** (Re)create the flight model at the spawn; sim time restarts at 0 with a fresh log. */
     private buildSim(): void {
-        this.sim = new Sim(this.params, this.world);
+        this.sim = new Sim(this.params, this.flightWorld);
         this.sim.reset(this.spawn[0], this.spawn[1], this.spawn[2], this.spawn[3]);
         this.sim.hoverThr = hoverSolve(this.params, 1).motor;
         this.log = new InputLog(this.logHeader());
@@ -477,7 +519,8 @@ export class FlightSession {
     private trackSafePoint(): void {
         const s = this.sim.s;
         if (this.sim.tick % 500 !== 0 || s[S.armed] === 0 || s[S.crashed] > 0 || this.sim.tick - this.lastContactTick < 500) return;
-        if (this.collision) {
+        // walls off: any point is safe to come back to (switching them on restarts the model)
+        if (this.collision && this.wallsOn) {
             const push = { x: 0, y: 0, z: 0 };
             if (this.collision.querySphere(s[S.px], s[S.py], s[S.pz], this.params.boundRadius + 0.05, push)) return;
             if (!this.collision.isFreeAt(s[S.px], s[S.py], s[S.pz])) return;
@@ -503,7 +546,7 @@ export class FlightSession {
      * data" although there is only air, so the body test is the one that answers the question.
      */
     spawnIsFree(p: [number, number, number, number] = this.spawn): boolean {
-        if (!this.collision) return true;
+        if (!this.collision || !this.wallsOn) return true;
         const push = { x: 0, y: 0, z: 0 };
         return !this.collision.querySphere(p[0], p[1], p[2], this.params.boundRadius + 0.01, push);
     }
@@ -578,9 +621,11 @@ export class FlightSession {
 
     /** Replay the flight from its input log: fast-forward to `fromTick`, then play in real time. */
     startReplay(log: InputLog, fromTick: number, toTick: number): boolean {
-        const h = log.header;
-        if (h.simCore !== SIM_CORE_VERSION || h.collisionSha256 !== this.collisionSha256) return false;
-        const sim = new Sim(this.params, this.world);
+        const h = log.header as FlightLogHeader;
+        // the walls the log was flown with (its header), whatever the switch says now
+        const world = worldForLog(h, this.collisionSha256, this.world);
+        if (h.simCore !== SIM_CORE_VERSION || world === undefined) return false;
+        const sim = new Sim(this.params, world);
         sim.reset(h.spawn[0], h.spawn[1], h.spawn[2], h.spawn[3]);
         const st: ReplayState = { sim, log, rec: 0, endTick: toTick, t0: 0, startTick: Math.max(0, fromTick), ch: new Float32Array(8) };
         this.replayStep(st, st.startTick);
@@ -617,10 +662,16 @@ export class FlightSession {
         this.replayState = null;
     }
 
+    /** The log's own walls; a log from other walls replays on the current ones (its hash then differs). */
+    private replayWorld(h: LogHeader): VoxelContactWorld | null {
+        const w = worldForLog(h as FlightLogHeader, this.collisionSha256, this.world);
+        return w === undefined ? this.world : w;
+    }
+
     /** Hash of a full replay of a log (for verification in a fresh tab). */
     replayHash(log: InputLog, endTick: number): string {
         const h = log.header;
-        const sim = new Sim(this.params, this.world);
+        const sim = new Sim(this.params, this.replayWorld(h));
         sim.reset(h.spawn[0], h.spawn[1], h.spawn[2], h.spawn[3]);
         return replayLog(sim, log, endTick);
     }
@@ -628,7 +679,7 @@ export class FlightSession {
     /** Replay a log and sample the position every `every` ticks (B15: divergence of a tampered log). */
     replayTrack(log: InputLog, endTick: number, every = 100): { hash: string; track: number[] } {
         const h = log.header;
-        const sim = new Sim(this.params, this.world);
+        const sim = new Sim(this.params, this.replayWorld(h));
         sim.reset(h.spawn[0], h.spawn[1], h.spawn[2], h.spawn[3]);
         const track: number[] = [];
         const hash = replayLog(sim, log, endTick, (x) => { if (x.tick % every === 0) track.push(x.s[S.px], x.s[S.py], x.s[S.pz]); });
@@ -658,7 +709,7 @@ export class FlightSession {
 
     /** Disarmed drop from the spawn: mean downward acceleration until contact or 0.5 s. */
     dropTest(): { g: number; measured: number; fallM: number } {
-        const sim = new Sim(this.params, this.world);
+        const sim = new Sim(this.params, this.flightWorld);
         sim.reset(this.spawn[0], this.spawn[1], this.spawn[2], this.spawn[3]);
         const ch = new Float32Array([0, 0, -1, 0, -1, 0, 0, 0]);
         sim.setChannels(ch); sim.step();

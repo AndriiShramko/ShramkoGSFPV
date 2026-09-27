@@ -3,7 +3,9 @@
 // itself when it is short and this machine's bake speed is known, offered otherwise; walls built
 // before come from the browser's store without a rebuild, and the store travels to another PC as a
 // zip. New walls never land under a flying craft: they go in while it is parked at the spawn, else
-// at the next respawn or restart (session.queueCollision).
+// at the next respawn or restart (session.queueCollision). With the walls switched off (the pilot's
+// C, or the scan's default in showcase.json) nothing is offered or baked: a refine waits until the
+// walls come back on (WallsHook.switched).
 import type { FlightSession } from './session';
 import { t } from './i18n';
 import { h } from './ui/dom';
@@ -16,7 +18,8 @@ import type { ImportReport, WallsKeyInput, WallsRow } from './wallcache';
 export type RefineMode = 'auto' | 'offer' | 'off';
 
 export interface WallsHook {
-    state: 'checking' | 'none' | 'offer' | 'baking' | 'queued' | 'in-use' | 'refused' | 'failed';
+    /** parked: a refine was due, but the walls are switched off */
+    state: 'checking' | 'none' | 'offer' | 'parked' | 'baking' | 'queued' | 'in-use' | 'refused' | 'failed';
     source: 'shipped' | 'bake' | 'cache' | 'import' | 'none';
     voxelM: number | null;
     readonly sha: string | null;
@@ -41,6 +44,8 @@ export interface WallsHook {
     fakeLimits(l: GpuLimits | null | undefined): void;
     rows(): Promise<WallsRow[]>;
     clear(): Promise<void>;
+    /** the walls were switched on or off (session.setWallsOn): prompts go or come back, the line says so */
+    switched(on: boolean): void;
 }
 
 interface PhaseCHook {
@@ -61,6 +66,8 @@ export interface WallsOptions {
     bakeNow: boolean;
     beacon: (e: string, p?: Record<string, string | number | boolean>) => void;
     hook: PhaseCHook;
+    /** the walls switch and voxel controls (ui/voxels.ts), first in the walls menu */
+    controls?: HTMLElement;
 }
 
 const cm = (m: number): string => String(Math.round(m * 1000) / 10);
@@ -96,7 +103,8 @@ export function mountWalls(o: WallsOptions): WallsHook {
     const file = h('input', { type: 'file', accept: '.zip,application/zip', hidden: true, 'data-testid': 'walls-import-file' }) as HTMLInputElement;
     const more = h('details', { 'data-testid': 'walls-more' }, summary,
         // narrow: on a desktop the keyboard card sits right of the credit line, bottom middle
-        h('div', { style: 'display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin: 4px 0 8px; max-width: min(210px, 60vw)' },
+        h('div', { class: 'walls-menu', style: 'display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin: 4px 0 8px; max-width: min(250px, 70vw)' },
+            o.controls ?? null,
             inUse,
             storeInfo,
             h('div', { style: 'display: flex; flex-wrap: wrap; gap: 8px' },
@@ -143,7 +151,22 @@ export function mountWalls(o: WallsOptions): WallsHook {
         },
         fakeLimits: (l) => { fake = l; },
         rows: async () => (await cacheP).rows(),
-        clear: () => clearStore()
+        clear: () => clearStore(),
+        switched: (on) => {
+            showSummary();
+            if (!on) {
+                // an offered refine goes away with the walls; one already running finishes
+                if (w.state === 'offer' && action.dataset.action === 'refine' && w.plan) {
+                    parked = w.plan;
+                    w.state = 'parked';
+                    action.hidden = true;
+                }
+                return;
+            }
+            const p = parked;
+            parked = null;
+            if (p && !busy) prompt(p);
+        }
     };
     o.hook.walls = w;
 
@@ -155,7 +178,9 @@ export function mountWalls(o: WallsOptions): WallsHook {
 
     function showSummary(): void {
         // the arrow: the line opens the store; the page's CSS hides the default marker
-        summary.textContent = `${w.voxelM ? t('bake.walls', { cm: cm(w.voxelM) }) : t('bake.wallsNone')} ▾`;
+        const off = !!s.collision && !s.wallsOn;
+        summary.textContent = `${off ? t('walls.offSummary') : w.voxelM ? t('bake.walls', { cm: cm(w.voxelM) }) : t('bake.wallsNone')} ▾`;
+        summary.classList.toggle('walls-off', off);
         inUse.textContent = w.voxelM && w.source !== 'none' ? t('bake.inUse', { cm: cm(w.voxelM), source: t(`bake.source.${w.source}`) }) : t('bake.inUseNone');
     }
     showSummary();
@@ -227,6 +252,8 @@ export function mountWalls(o: WallsOptions): WallsHook {
             w.bakes++;
             saveBakeSpeed(r.ms.total / 1000, r.gaussians);
             const sha = await wallsSha(r.json, r.bin);
+            // the pilot asked for walls on a scan without any: they fly with them, whatever the switch said
+            s.wallsOn = true;
             s.installCollision(r.json, r.bin, sha);
             onSwap('bake')(sha);
             o.hook.bake = { ok: true, kind: 'base', voxelM: r.voxelM, gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length, collisionSha256: sha };
@@ -284,10 +311,22 @@ export function mountWalls(o: WallsOptions): WallsHook {
             w.lastBake = o.hook.bake;
             say(e instanceof BakeRefusedError ? refusedText(e, true) : t('bake.refine.failed', { msg: String((e as Error)?.message ?? e).slice(0, 160), was: cm(was ?? shipped.voxelM) }));
             // a failure that is not a refusal (a lost device, a network drop) may pass on a second try
-            if (!(e instanceof BakeRefusedError) && w.plan?.voxelM) offer({ ...w.plan, action: w.plan.action === 'offer-long' ? 'offer-long' : 'offer' });
+            if (!(e instanceof BakeRefusedError) && w.plan?.voxelM) prompt({ ...w.plan, action: w.plan.action === 'offer-long' ? 'offer-long' : 'offer' });
         } finally {
             busy = false;
         }
+    }
+
+    /** A refine to start or offer, unless the walls are switched off: then it waits for them. */
+    let parked: RefinePlan | null = null;
+    function prompt(plan: RefinePlan): void {
+        if (!s.wallsOn) {
+            parked = plan;
+            w.state = 'parked';
+            return;
+        }
+        if (plan.action === 'auto') void runRefine(plan.voxelM!);
+        else offer(plan);
     }
 
     function offer(plan: RefinePlan): void {
@@ -398,8 +437,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
         void c.markStale(w.keyInput, w.key).catch(() => 0);
         if (!shipped) { w.state = 'offer'; if (o.bakeNow) void runBase(); return; }
         const plan = w.plan!;
-        if (plan.action === 'auto') void runRefine(plan.voxelM!);
-        else if (plan.action === 'offer' || plan.action === 'offer-long') offer(plan);
+        if (plan.action === 'auto' || plan.action === 'offer' || plan.action === 'offer-long') prompt(plan);
         else w.state = plan.action === 'refused' ? 'refused' : 'none';
     }
     w.ready = decide().catch((e) => { w.state = 'failed'; console.warn('walls', e); });

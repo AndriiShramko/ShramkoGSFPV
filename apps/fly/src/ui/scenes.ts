@@ -14,6 +14,8 @@ export interface ShowcaseScene {
     collision: boolean;
     voxelCm?: number;
     sizeMb?: number;
+    /** the admin's default for the walls switch: "off" for a noisy scan (floating splats make phantom walls); absent = on */
+    walls?: 'on' | 'off';
 }
 
 export async function loadShowcase(): Promise<ShowcaseScene[]> {

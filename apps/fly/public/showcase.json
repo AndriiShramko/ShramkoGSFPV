@@ -1,9 +1,12 @@
 {
-  "updated": "2026-09-24",
+  "updated": "2026-09-27",
   "note": "Static list approved by the author. No catalogue crawling: scenes are added here by hand. Titles, author and licence checked on the scene pages on superspl.at (2026-09-24); voxelCm = voxelResolution from scene.voxel.json.",
+  "fields": {
+    "walls": "Admin default of the walls (collisions) switch for this scan: \"on\" or \"off\"; a missing field means \"on\". Use \"off\" for a noisy scan with many floating splats: the pilot then flies through everything with no crashes, and can still switch the walls on (C, the walls menu on the credit line, or Settings). A pilot's own choice for a scan is kept in their browser and wins over this default. Only scans that have walls are affected."
+  },
   "scenes": [
-    { "id": "39e63ce9", "title": "Modlinek Villa — red room and bathroom", "author": "Andrii Shramko", "license": "CC BY 4.0", "kind": "interior", "collision": true, "voxelCm": 5, "defaultDrone": "pavo20pro-3s" },
-    { "id": "7a475d38", "title": "Winter Garden, Poland", "author": "Andrii Shramko", "license": "CC BY 4.0", "kind": "interior", "collision": true, "voxelCm": 3.2, "defaultDrone": "pavo20pro-3s" },
-    { "id": "887f27aa", "title": "Tunis — old town streets", "author": "Andrii Shramko", "license": "CC BY 4.0", "kind": "exterior", "collision": true, "voxelCm": 5, "defaultDrone": "pavo20pro-3s" }
+    { "id": "39e63ce9", "title": "Modlinek Villa — red room and bathroom", "author": "Andrii Shramko", "license": "CC BY 4.0", "kind": "interior", "collision": true, "walls": "on", "voxelCm": 5, "defaultDrone": "pavo20pro-3s" },
+    { "id": "7a475d38", "title": "Winter Garden, Poland", "author": "Andrii Shramko", "license": "CC BY 4.0", "kind": "interior", "collision": true, "walls": "on", "voxelCm": 3.2, "defaultDrone": "pavo20pro-3s" },
+    { "id": "887f27aa", "title": "Tunis — old town streets", "author": "Andrii Shramko", "license": "CC BY 4.0", "kind": "exterior", "collision": true, "walls": "on", "voxelCm": 5, "defaultDrone": "pavo20pro-3s" }
   ]
 }
