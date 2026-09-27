@@ -298,6 +298,11 @@ async function auditSurface(page: Page, s: Surface): Promise<SurfaceResult> {
                 await page.waitForTimeout(200);
             }
             const target = page.locator(`[data-audit-id="${r.i}"]`);
+            // a control inside a closed <details> (the walls menu) is reached by opening it first, as a
+            // person does; its summary click is the harness's doing, before the baseline
+            await target.evaluate((el) => {
+                for (let d = el.closest('details'); d; d = d.parentElement ? d.parentElement.closest('details') : null) if (!d.open) (d.querySelector(':scope > summary') as HTMLElement | null)?.click();
+            }).catch(() => undefined);
             // into view BEFORE the baseline: that scroll and the lazy images it loads are the harness's doing
             await target.scrollIntoViewIfNeeded({ timeout: 3000 }).catch(() => undefined);
             await page.evaluate(() => {

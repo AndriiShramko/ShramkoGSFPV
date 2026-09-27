@@ -77,7 +77,14 @@ async function governorRun(enabled: boolean): Promise<Any> {
     await waitReady(page, 180000);
     await page.waitForTimeout(6000); // learn the display period on normal frames
     const t = async () => hook<Any>('return { step: h.governor.step, changes: h.governor.changes, periodMs: h.governor.displayPeriodMs, scale: s.renderer.renderScale };');
-    const calm = await t();
+    // a big scan keeps streaming detail after it is shown and the governor may step down meanwhile
+    // (correctly); "calm" = back at full quality for 3 s, waited for up to 60 s
+    let calm = await t();
+    for (let waited = 0, still = 0; waited < 60000 && still < 3000; waited += 500) {
+        await page.waitForTimeout(500);
+        calm = await t();
+        still = calm.step === 0 ? still + 500 : 0;
+    }
     await hook('h.setFrameDelay(Math.round(h.governor.displayPeriodMs * 1.4)); return 0;'); // every frame now misses its vsync
     await page.waitForTimeout(4000);
     const loaded = await t();

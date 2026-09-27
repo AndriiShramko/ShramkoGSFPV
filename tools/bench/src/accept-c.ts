@@ -4,6 +4,7 @@
 //    tunnelling (A5) and clearance (A8) harnesses.
 //  - bd04e182 (16.8 M Gaussians): a clear refusal with numbers, in the page language.
 //   SITE=https://gsfpv.flyreelstudio.eu npx tsx src/accept-c.ts
+import { execSync } from 'node:child_process';
 import { mkdirSync, writeFileSync, readFileSync, copyFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { launch, waitReady } from './browser';
@@ -66,9 +67,23 @@ const identical = !!bBin && Buffer.compare(bBin, cliBin) === 0;
 // in-tab tunnelling on the baked walls (the full ≥10 000 passes run in Node on the saved files)
 const tab = await page.evaluate(() => (window as any).__gsfpv.session.tunnelSelfTest(20, 25, 11));
 
-// ---- bd04e182: refusal with numbers, in Russian
+// ---- bd04e182 (8.7 M Gaussians at LOD 0, lod-meta.json served brotli-encoded): (a) the bake
+// reads the encoded files and builds walls (the v0.3 gates allow this size); (b) the refusal path
+// with numbers, in Russian, forced by fake GPU limits on the same scene.
+// GPU safety: this PC blue-screened with a heavy bake next to a DaVinci render; bake only if idle.
+const gpuBusy = (() => { try { return Number(execSync('nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits').toString().trim().split(/\r?\n/)[0]) > 40; } catch { return false; } })();
+let big: Record<string, unknown> | null = null;
+if (!gpuBusy) {
+    await page.goto(fly('ru', 'scene=bd04e182&nowarn=1&input=touch'));
+    await waitReady(page, 180000);
+    await page.click('[data-action="bake"]');
+    for (let i = 0; i < 360 && !big; i++) { big = await page.evaluate(() => (window as any).__gsfpv.bake ?? null); if (!big) await page.waitForTimeout(500); }
+    big = { ...big, hasCollisionAfter: await page.evaluate(() => !!(window as any).__gsfpv.session.collision) };
+    await page.screenshot({ path: join(SHOTS, 'c-bd04e182-baked.jpg') });
+}
 await page.goto(fly('ru', 'scene=bd04e182&nowarn=1&input=touch'));
 await waitReady(page, 180000);
+await page.evaluate(() => (window as any).__gsfpv.walls.fakeLimits({ maxBufferSize: 64e6, maxStorageBufferBindingSize: 64e6 }));
 await page.click('[data-action="bake"]');
 let refusal: Record<string, unknown> | null = null;
 for (let i = 0; i < 60 && !refusal; i++) { refusal = await page.evaluate(() => (window as any).__gsfpv.bake ?? null); if (!refusal) await page.waitForTimeout(500); }
@@ -79,7 +94,8 @@ await browser.close();
 
 const pass = ready.status === 'ready' && before.hasCollision === false && !!bake && bake.ok === true && after.hasCollision && !after.badge && after.spawnFree
     && Math.abs(relDiff) <= 0.01 && tab.passes === 20 && tab.penetrations === 0
-    && !!refusal && refusal.refused === true && /\d/.test(refusalText ?? '') && CYRILLIC.test(refusalText ?? '');
+    && !!refusal && refusal.refused === true && /\d/.test(refusalText ?? '') && CYRILLIC.test(refusalText ?? '')
+    && (gpuBusy || (!!big && big.ok === true && big.hasCollisionAfter === true));
 const file = writeEvidence('c-bake', {
     site: SITE,
     pass,
@@ -88,7 +104,8 @@ const file = writeEvidence('c-bake', {
     before, after,
     vsCli: { tool: 'splat-transform 3.6.4 CLI, same meta.json, defaults (0.05 m, opacity 0.1)', cliSolidVoxels: cliCount, browserSolidVoxels: browserCount, relDiff, binIdentical: identical, cliPeak: 'CPU 1.00 GB, GPU 154.9 MB, 18.9 s (its own log)' },
     tunnellingInTab: tab,
-    refusal: { scene: 'bd04e182', result: refusal, text: refusalText },
+    compressedBigScene: gpuBusy ? { skipped: 'GPU busy (> 40 %): heavy bake not run on this PC' } : { scene: 'bd04e182', note: 'lod-meta.json served brotli-encoded; the bake now reads files whole', result: big },
+    refusal: { scene: 'bd04e182', forcedBy: 'walls.fakeLimits 64 MB GPU buffers', result: refusal, text: refusalText },
     savedFor: 'A5_SCENES=723068d7-baked (Node, ≥10 000 passes per speed) and A8_SCENES=723068d7-baked'
 });
 writeFileSync(join(BAKED_DIR, 'bake-result.json'), JSON.stringify({ bake, browserCount, cliCount }, null, 1));
