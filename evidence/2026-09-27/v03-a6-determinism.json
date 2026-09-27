@@ -1,8 +1,8 @@
 {
   "name": "v03-a6-determinism",
   "context": {
-    "date": "2026-09-27T21:30:20.966Z",
-    "gitHead": "f9a46e3",
+    "date": "2026-09-27T21:49:42.462Z",
+    "gitHead": "49bc22b",
     "gitDirty": false,
     "node": "v22.22.2",
     "platform": "linux 6.18.44-fc-v37",
@@ -99,19 +99,19 @@
     "rafPaced": {
       "hash": "dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2",
       "ticks": 30000,
-      "frames": 182,
+      "frames": 174,
       "medianFrameMs": 16.699999999999818
     },
     "control": {
       "name": "Math.random added to the thrust must change the hash",
-      "hash": "45faf725516e70665f670904d064e37f323386a738d222fe78ce596b63e8f2de"
+      "hash": "cad540aa5afc8a0386b26b7a7e7629f7e410f735ebdef3166b5ff0a62e86dce6"
     }
   },
   "visibility": "visible",
   "control": {
     "name": "Math.random in the sim step must change the hash",
-    "nodeHash": "fd6a9f64afef79280497bdb094b883df6ca1a1acbfd5a42fd52042fd0f0a9786",
-    "chromeHash": "45faf725516e70665f670904d064e37f323386a738d222fe78ce596b63e8f2de",
+    "nodeHash": "ee0f2ab8afb77cdf55881245c905de57ee09239af02837fde343e820c0c2bdf6",
+    "chromeHash": "cad540aa5afc8a0386b26b7a7e7629f7e410f735ebdef3166b5ff0a62e86dce6",
     "fired": true
   },
   "consoleErrors": []
