@@ -175,6 +175,440 @@
       "note": "„Klasa” oznacza, że liczby opierają się na publicznych specyfikacjach i pomiarach. BetaFPV nie firmuje tego presetu."
     }
   },
+  "tune": {
+    "eyebrow": "Katalog ustawień",
+    "h2": "Każde ustawienie, klawisz i dron — z wartością domyślną i zakresem",
+    "lead": "Generowany przy każdym wydaniu ze schematu ustawień samego symulatora: dokładnie to, co możesz zmienić dziś — bez obietnic i bez zmyśleń. Szukaj albo filtruj według grupy.",
+    "count": {
+      "settings": "ustawienia",
+      "groups": "grupy",
+      "keys": "klawisze",
+      "drones": "presety dronów",
+      "rateTypes": "typy krzywych rates",
+      "modes": "tryby lotu"
+    },
+    "search": {
+      "label": "Szukaj w ustawieniach",
+      "placeholder": "FOV, grawitacja, PID…",
+      "clear": "Wyczyść wyszukiwanie"
+    },
+    "filter": {
+      "label": "Grupy",
+      "all": "Wszystkie"
+    },
+    "shown": "Widoczne: {n} z {total}",
+    "empty": "Żadne ustawienie nie pasuje do wyszukiwania. Spróbuj innego słowa.",
+    "default": "Domyślnie",
+    "range": "Zakres",
+    "options": "Opcje",
+    "preset": "z presetu drona",
+    "scope": {
+      "drone": "Dla każdego drona",
+      "scene": "Dla każdej sceny"
+    },
+    "scopeNote": "Wartości „dla każdego drona” są zapisywane osobno dla każdego drona, a „dla każdej sceny” — dla każdego skanu.",
+    "adv": "Zaawansowane",
+    "open": "Otwórz w symulatorze",
+    "keys": {
+      "title": "Skróty klawiszowe",
+      "note": "W symulatorze każdy klawisz widać obok jego pozycji w menu.",
+      "flying": "Latanie z klawiatury",
+      "flyingNote": "Nie masz aparatury? Te klawisze są drążkami."
+    },
+    "drones": {
+      "title": "Presety dronów: {n}",
+      "note": "Każda liczba mówi, skąd pochodzi: producent, niezależny pomiar albo szacunek.",
+      "fly": "Leć tym dronem",
+      "default": "domyślny"
+    },
+    "footer": {
+      "note": "Wygenerowano {date} ze schematu ustawień. Ustawienie, które jest jeszcze w budowie, pojawi się tu w dniu wydania.",
+      "docs": "Pełna lista na GitHubie",
+      "cta": "Wypróbuj je w symulatorze"
+    },
+    "text": {
+      "prefs": {
+        "on": "Włączone",
+        "off": "Wyłączone",
+        "fromPreset": "z presetu drona",
+        "unit": {
+          "s": "s",
+          "ms": "ms",
+          "m": "m",
+          "mps": "m/s",
+          "mps2": "m/s²",
+          "min": "min",
+          "blocks": "bloków",
+          "per_s": "1/s"
+        }
+      },
+      "group": {
+        "flight": "Lot",
+        "crash": "Kraksy i odrodzenie",
+        "camera": "Kamera",
+        "display": "Ekran",
+        "input": "Sterowanie",
+        "drone": "Dron i fizyka",
+        "tune": "Strojenie",
+        "scenes": "Sceny",
+        "voxels": "Siatka wokseli",
+        "recording": "Nagrywanie"
+      },
+      "keys": {
+        "pause": {
+          "toggle": "Pauza / wznów"
+        },
+        "respawn": {
+          "start": "Powrót na start",
+          "rewind": "Cofnij o 5 s"
+        },
+        "crash": {
+          "keep": "Zostaw wrak (bez automatycznego odrodzenia)"
+        },
+        "scene": {
+          "next": "Następna scena",
+          "random": "Losowa scena",
+          "favourite": "Następna ulubiona scena"
+        },
+        "mode": {
+          "cycle": "Tryb lotu"
+        },
+        "voxels": {
+          "cycle": "Siatka wokseli: ukryta / na skanie / same woksele"
+        },
+        "hud": {
+          "toggle": "Pokaż lub ukryj HUD"
+        },
+        "scale": {
+          "down": "Scena mniejsza",
+          "up": "Scena większa"
+        },
+        "record": {
+          "toggle": "Start / stop nagrywania"
+        },
+        "frameStats": {
+          "toggle": "Czasy klatek i opóźnienie"
+        },
+        "settings": {
+          "open": "Ustawienia"
+        }
+      },
+      "set": {
+        "flight": {
+          "mode": {
+            "label": "Tryb lotu",
+            "help": "Angle poziomuje drona, gdy puścisz drążki; Horizon też poziomuje, ale przy pełnym wychyleniu robi flipy; Acro trzyma położenie jak dron freestyle.",
+            "opt": {
+              "acro": "Acro (tryb rate)",
+              "angle": "Angle (samopoziomowanie)",
+              "horizon": "Horizon (poziomuje, flipy możliwe)"
+            }
+          }
+        },
+        "level": {
+          "angleLimitDeg": {
+            "label": "Limit przechyłu w Angle",
+            "help": "Największy przechył, na jaki pozwala tryb Angle, jak angle limit w Betaflight."
+          },
+          "strength": {
+            "label": "Siła samopoziomowania",
+            "help": "Jak mocno tryb Angle przywraca drona do poziomu, jak level strength w Betaflight."
+          },
+          "horizonStrength": {
+            "label": "Siła poziomowania w Horizon",
+            "help": "Jak mocno tryb Horizon poziomuje drona blisko środka drążka."
+          }
+        },
+        "crash": {
+          "enabled": {
+            "label": "Kraksy",
+            "help": "Wyłączone: uderzenie w ścianę nigdy nie kończy lotu, więc początkujący może latać dalej."
+          }
+        },
+        "physics": {
+          "vCrash": {
+            "label": "Próg kraksy",
+            "help": "Prędkość uderzenia, od której zderzenie liczy się jako kraksa; wolniejsze otarcia ślizgają się po ścianie."
+          },
+          "gravity": {
+            "label": "Grawitacja",
+            "help": "Ziemia 9,81, Księżyc 1,62, Mars 3,72, zero g albo dowolna wartość pomiędzy."
+          },
+          "gravityMode": {
+            "label": "Ciąg w innych światach",
+            "help": "Te same silniki (realnie), stosunek ciągu do masy jak na Ziemi albo automatyczny gaz, który zawisa przy drążku na środku.",
+            "opt": {
+              "honest": "Realny (te same silniki)",
+              "same-twr": "Zachowaj ciąg / masę",
+              "auto-throttle": "Automatyczny gaz (środek drążka = zawis)"
+            }
+          },
+          "twr": {
+            "label": "Stosunek ciągu do masy",
+            "help": "Maksymalny ciąg podzielony przez masę; preset bierze go od producenta albo z szacunku."
+          },
+          "tauMs": {
+            "label": "Czas rozkręcania silników",
+            "help": "Jak szybko silniki osiągają nowe obroty; mniej to żwawsza reakcja."
+          },
+          "dragScale": {
+            "label": "Opór powietrza",
+            "help": "Skaluje opór powietrza ramy: większy opór szybciej hamuje drona."
+          },
+          "ductDrag": {
+            "label": "Opór osłon śmigieł",
+            "help": "Opór wirników i osłon, który tłumi prędkość i kołysanie cinewhoopa."
+          },
+          "propInertia": {
+            "label": "Bezwładność śmigieł",
+            "help": "Skaluje bezwładność obrotową śmigieł: większa łagodzi gaz i skręty."
+          },
+          "idlePct": {
+            "label": "Bieg jałowy silników",
+            "help": "Obroty silników przy zerowym gazie, jak DShot idle value w Betaflight."
+          }
+        },
+        "respawn": {
+          "auto": {
+            "label": "Automatyczne odrodzenie",
+            "help": "Po kraksie dron sam wraca w powietrze."
+          },
+          "delayS": {
+            "label": "Opóźnienie odrodzenia",
+            "help": "Jak długo kraksa jest widoczna przed automatycznym odrodzeniem."
+          },
+          "target": {
+            "label": "Miejsce odrodzenia",
+            "help": "Cofnij się do miejsca sprzed kilku sekund przed kraksą albo wróć na start.",
+            "opt": {
+              "rewind": "Cofnięcie",
+              "start": "Start"
+            }
+          },
+          "rewindS": {
+            "label": "Cofnij o",
+            "help": "O ile sekund przed kraksą cofa cię odrodzenie."
+          },
+          "platform": {
+            "label": "Odrodzenie na platformie",
+            "help": "Startujesz z niewidzialnej platformy zamiast spadać na podłogę."
+          },
+          "keepArmed": {
+            "label": "Uzbrojony po odrodzeniu",
+            "help": "Nie trzeba ponownie przełączać przełącznika uzbrojenia po każdej kraksie."
+          },
+          "unstuck": {
+            "label": "Automatyczne uwalnianie",
+            "help": "Restartuje lot, gdy dron utknie albo leży do góry nogami."
+          },
+          "showPad": {
+            "label": "Pokaż platformę",
+            "help": "Rysuje platformę odrodzenia, domyślnie niewidzialną."
+          }
+        },
+        "battery": {
+          "refill": {
+            "label": "Ładowanie baterii",
+            "help": "Kiedy symulowany pakiet jest znowu pełny: na starcie, przy każdym odrodzeniu albo nigdy.",
+            "opt": {
+              "start": "Na starcie",
+              "respawn": "Przy każdym odrodzeniu",
+              "never": "Nigdy"
+            }
+          }
+        },
+        "camera": {
+          "fovDeg": {
+            "label": "Pole widzenia kamery",
+            "help": "Jak szeroko widzi kamera FPV; każdy dron ma własną wartość."
+          },
+          "uptiltDeg": {
+            "label": "Kąt nachylenia kamery",
+            "help": "Jak bardzo kamera FPV jest pochylona w górę; większy kąt pasuje do szybszego latania."
+          }
+        },
+        "display": {
+          "hud": {
+            "label": "Pokaż HUD",
+            "help": "Informacje na ekranie: uzbrojenie, tryb lotu, bateria, prędkość i wysokość."
+          },
+          "units": {
+            "label": "Jednostki",
+            "help": "Jednostki metryczne albo imperialne w HUD i w statystykach lotu.",
+            "opt": {
+              "metric": "Metryczne",
+              "imperial": "Imperialne"
+            }
+          },
+          "quality": {
+            "label": "Płynność ↔ szczegóły",
+            "help": "Zmienia rozdzielczość renderowania i budżet szczegółów. Fizyka zawsze działa w 1000 Hz."
+          },
+          "governor": {
+            "label": "Automatyczna jakość",
+            "help": "Sama obniża jakość, gdy gubią się klatki, i podnosi ją, gdy GPU ma zapas."
+          },
+          "reducedMotion": {
+            "label": "Ograniczenie ruchu",
+            "help": "Spokojniejsza kamera kraksy bez błysków; domyślnie według ustawień systemu.",
+            "opt": {
+              "system": "Według systemu",
+              "on": "Włączone",
+              "off": "Wyłączone"
+            }
+          },
+          "frameStats": {
+            "label": "Statystyki klatek",
+            "help": "Odświeżanie ekranu, czasy klatek i opóźnienie od wejścia do ekranu nad widokiem lotu."
+          }
+        },
+        "stats": {
+          "onDisarm": {
+            "label": "Statystyki po rozbrojeniu",
+            "help": "Po rozbrojeniu pokazuje kartę statystyk lotu, jak OSD w goglach."
+          }
+        },
+        "ui": {
+          "language": {
+            "label": "Język",
+            "help": "Angielski, hiszpański, polski lub rosyjski; domyślnie język strony.",
+            "opt": {
+              "browser": "Język strony"
+            }
+          }
+        },
+        "input": {
+          "stickMode": {
+            "label": "Tryb drążków",
+            "help": "Który drążek to gaz na rysunkach kalibracji: Tryb 2 po lewej, Tryb 1 po prawej.",
+            "opt": {
+              "1": "Tryb 1",
+              "2": "Tryb 2"
+            }
+          }
+        },
+        "drone": {
+          "current": {
+            "label": "Dron",
+            "help": "Jeden z presetów klasy BetaFPV; każda liczba na jego karcie mówi, skąd pochodzi."
+          }
+        },
+        "tune": {
+          "pid": {
+            "label": "Współczynniki PID (P / I / D / F)",
+            "help": "P, I, D i feed-forward dla przechyłu, pochylenia i odchylenia, osobno dla każdego drona, jak w Betaflight."
+          },
+          "rates": {
+            "label": "Rates (krzywe drążków)",
+            "help": "Krzywe rates Betaflight, Actual, KISS lub Raceflight, importowane z twojego diffa z CLI Betaflight."
+          },
+          "throttle": {
+            "label": "Krzywa gazu",
+            "help": "Throttle mid i expo z twojego diffa Betaflight."
+          }
+        },
+        "scenes": {
+          "autoSwitch": {
+            "label": "Następna scena po kraksie",
+            "help": "Po kraksie leć dalej w następnej scenie z rotacji; domyślnie wyłączone."
+          },
+          "rotation": {
+            "label": "Rotacja scen",
+            "help": "Z jakich scen pochodzi następna i losowa scena.",
+            "opt": {
+              "curated": "Wybór Andrija",
+              "favourites": "Twoje ulubione",
+              "history": "Ostatnio latane"
+            }
+          },
+          "order": {
+            "label": "Kolejność scen",
+            "help": "Losowo albo po kolei.",
+            "opt": {
+              "random": "Losowo",
+              "sequential": "Po kolei"
+            }
+          },
+          "allowNoWalls": {
+            "label": "Uwzględnij skany bez ścian",
+            "help": "Pozwala rotacji wybierać skany bez danych kolizji."
+          }
+        },
+        "scene": {
+          "transform": {
+            "label": "Rozmiar sceny",
+            "help": "Skaluje skan o złym rozmiarze wokół drona i zapamiętuje to dla każdej sceny."
+          },
+          "dropFloaters": {
+            "label": "Usuń pływające kawałki",
+            "help": "Usuwa pływające kawałki wokseli mniejsze niż tyle bloków (fantomowe ściany), osobno dla każdej sceny."
+          }
+        },
+        "voxels": {
+          "show": {
+            "label": "Siatka wokseli",
+            "help": "Pokazuje woksele kolizji na skanie albo same woksele z ukrytym skanem.",
+            "opt": {
+              "off": "Ukryta",
+              "overlay": "Na skanie",
+              "only": "Same woksele"
+            }
+          },
+          "opacity": {
+            "label": "Krycie wokseli",
+            "help": "Jak bardzo przezroczysta jest siatka wokseli."
+          },
+          "style": {
+            "label": "Styl wokseli",
+            "help": "Pełne sześciany, siatka, krawędzie, kolory wysokości albo pływające kawałki na czerwono.",
+            "opt": {
+              "solid": "Pełne sześciany",
+              "grid": "Siatka",
+              "edges": "Krawędzie",
+              "height": "Kolory według wysokości",
+              "floaters": "Pływające na czerwono"
+            }
+          },
+          "radiusM": {
+            "label": "Promień wokseli",
+            "help": "Jak daleko wokół drona rysowana jest siatka."
+          }
+        },
+        "recording": {
+          "fps": {
+            "label": "Klatki na sekundę nagrania",
+            "help": "30 lub 60 klatek na sekundę w zapisanym wideo.",
+            "opt": {
+              "30": "30 kl./s",
+              "60": "60 kl./s"
+            }
+          },
+          "resolution": {
+            "label": "Rozdzielczość nagrania",
+            "help": "Rozmiar zapisanego wideo.",
+            "opt": {
+              "1080p": "1080p",
+              "1440p": "1440p",
+              "2160p": "2160p (4K)",
+              "native": "Rozmiar ekranu"
+            }
+          },
+          "auto": {
+            "label": "Automatyczne nagrywanie",
+            "help": "Nagrywa każdy lot do ostatnio wybranego folderu."
+          },
+          "folder": {
+            "label": "Folder nagrań",
+            "help": "Folder, do którego trafiają filmy; przeglądarka go pamięta."
+          },
+          "splitMin": {
+            "label": "Nowy plik co",
+            "help": "Zaczyna nowy plik wideo po tylu minutach, więc awaria karty traci niewiele."
+          }
+        }
+      }
+    }
+  },
   "numbers": {
     "eyebrow": "Liczby na żywo",
     "h2": "Publikujemy własne liczby, bo nikt inny nie publikuje swoich.",

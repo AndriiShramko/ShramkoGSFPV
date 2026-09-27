@@ -1,0 +1,139 @@
+/* Settings catalogue (components/SettingsCatalog.tsx, CatalogTools.tsx). Only what utilities cannot
+   say: the simulator's key-caps (apps/fly ui/wizard.css .pm-keys kbd), badges, the default-value
+   chip, option pills, the row's +/× marker and a faint voxel grid behind the counters. Colours are
+   the theme's (app/globals.css); every text pair keeps >= 4.5:1 on the card backgrounds. */
+
+.tc-kbd {
+  display: inline-flex;
+  min-width: 26px;
+  justify-content: center;
+  padding: 2px 7px;
+  border: 1px solid #3a4452;
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: #0b0e12;
+  color: var(--color-ink);
+  font: 600 12px/18px var(--font-mono);
+  white-space: nowrap;
+}
+
+.tc-badge {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 999px;
+  padding: 0 8px;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+.tc-badge.is-drone {
+  border-color: rgba(74, 222, 128, 0.45);
+  color: var(--color-accent);
+}
+.tc-badge.is-scene {
+  border-color: rgba(227, 179, 65, 0.5);
+  color: var(--color-warn);
+}
+
+/* "DEFAULT", "RANGE", "OPTIONS" before a value */
+.tc-cap {
+  font: 500 10.5px/1 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--color-muted);
+}
+
+.tc-val {
+  border: 1px solid rgba(74, 222, 128, 0.28);
+  border-radius: 6px;
+  background: rgba(74, 222, 128, 0.08);
+  padding: 0 6px;
+  font-family: var(--font-mono);
+  color: var(--color-ink);
+}
+
+.tc-opt {
+  border: 1px solid var(--color-line-strong);
+  border-radius: 999px;
+  padding: 1px 10px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--color-ink);
+}
+.tc-opt.is-default {
+  border-color: rgba(74, 222, 128, 0.55);
+  background: rgba(74, 222, 128, 0.1);
+  color: var(--color-accent);
+}
+
+.tc-row > summary {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.tc-row > summary:hover {
+  background: rgba(21, 24, 29, 0.7);
+}
+.tc-row[open] {
+  background: rgba(21, 24, 29, 0.55);
+}
+.tc-plus {
+  flex: none;
+  width: 18px;
+  margin-top: 1px;
+  font: 400 20px/22px var(--font-mono);
+  color: var(--color-accent);
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+.tc-row[open] .tc-plus {
+  transform: rotate(45deg);
+}
+
+/* the search field's magnifier, drawn so no icon file or font is needed */
+.tc-search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -9px;
+  border: 2px solid var(--color-muted);
+  border-radius: 999px;
+  pointer-events: none;
+}
+.tc-search-icon::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  bottom: -5px;
+  width: 7px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-muted);
+  transform: rotate(45deg);
+}
+.tc-search::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.tc-chips {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+/* faint voxel grid behind the counters, as on the hero without its video */
+.tc-grid {
+  position: absolute;
+  inset: -24px 0 auto;
+  height: 260px;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(232, 234, 237, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232, 234, 237, 0.05) 1px, transparent 1px),
+    radial-gradient(60% 80% at 20% 30%, rgba(74, 222, 128, 0.08), transparent 70%);
+  background-size: 40px 40px, 40px 40px, 100% 100%;
+  mask-image: radial-gradient(70% 90% at 30% 35%, #000 0%, transparent 85%);
+}

@@ -10,6 +10,8 @@ const LOCALES = ["en", "es", "pl", "ru"];
 const ALLOW = new Set([
   "ShramkoGSFPV", "PlayCanvas", "PlayCanvas Engine", "Rapier", "Betaflight", "SplatFPV", "MIT", "Apache-2.0", "GPL-3.0",
   "LAVA 1104 7200KV", ">5:1", "Gamepad API", "Safari, iPad, Android", "Firefox", "fdlibm / musl", "ms", "Hz",
+  // settings catalogue (tune.text): SI unit symbols and video resolutions
+  "s", "m", "m/s", "m/s²", "min", "1/s", "1080p", "1440p", "2160p (4K)",
   "https://superspl.at/scene/…", "Betaflight, Actual, KISS, Raceflight", "≈ 45 g",
 ]);
 

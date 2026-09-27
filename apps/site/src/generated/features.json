@@ -1,0 +1,2709 @@
+{
+ "generated": "2026-09-27",
+ "schemaVersion": 1,
+ "defaultDrone": "pavo20pro-3s",
+ "counts": {
+  "settings": 17,
+  "groups": 6,
+  "drones": 6,
+  "modes": 2,
+  "keys": 4,
+  "rateTypes": 4,
+  "flyingKeys": 10,
+  "allKeys": 14
+ },
+ "locales": {
+  "en": {
+   "groups": [
+    {
+     "id": "crash",
+     "title": "Crashes & respawn",
+     "settings": [
+      {
+       "id": "physics.vCrash",
+       "label": "Crash threshold",
+       "help": "Impact speed above which a hit counts as a crash; slower touches slide along the wall.",
+       "type": "number",
+       "default": "4 m/s",
+       "range": "2\u201310 m/s",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "camera",
+     "title": "Camera",
+     "settings": [
+      {
+       "id": "camera.fovDeg",
+       "label": "Camera field of view",
+       "help": "How wide the FPV camera sees; each drone keeps its own value.",
+       "type": "number",
+       "default": "115\u00b0",
+       "range": "70\u2013150\u00b0",
+       "scope": "drone",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "camera.uptiltDeg",
+       "label": "Camera uptilt",
+       "help": "How far the FPV camera tilts up; more tilt suits faster flying.",
+       "type": "number",
+       "default": "20\u00b0",
+       "range": "0\u201350\u00b0",
+       "scope": "drone",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "display",
+     "title": "Display",
+     "settings": [
+      {
+       "id": "display.hud",
+       "label": "Show HUD",
+       "help": "The on-screen display: arm state, flight mode, battery, speed and altitude.",
+       "type": "bool",
+       "default": "On",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "key"
+       ]
+      },
+      {
+       "id": "display.quality",
+       "label": "Stable frame \u2194 detail",
+       "help": "Moves the render resolution and detail budget. Physics always runs at 1000 Hz.",
+       "type": "number",
+       "default": "1",
+       "range": "0\u20131",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "display.reducedMotion",
+       "label": "Reduced motion",
+       "help": "A calmer crash camera without flashes; follows your system setting by default.",
+       "type": "enum",
+       "default": "Follow the system",
+       "range": "Follow the system / On / Off",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Follow the system",
+        "On",
+        "Off"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "display.frameStats",
+       "label": "Frame stats",
+       "help": "Screen refresh, frame times and input-to-screen delay over the flight view.",
+       "type": "bool",
+       "default": "Off",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [
+        "F3"
+       ],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "key"
+       ]
+      },
+      {
+       "id": "ui.language",
+       "label": "Language",
+       "help": "English, Spanish, Polish or Russian; by default the language of the page.",
+       "type": "enum",
+       "default": "Page language",
+       "range": "Page language / English / Spanish / Polish / Russian",
+       "scope": "global",
+       "apply": "reload",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Page language",
+        "English",
+        "Spanish",
+        "Polish",
+        "Russian"
+       ],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "input",
+     "title": "Controls",
+     "settings": [
+      {
+       "id": "input.stickMode",
+       "label": "Stick mode",
+       "help": "Which stick is the throttle in the calibration drawings: Mode 2 on the left, Mode 1 on the right.",
+       "type": "enum",
+       "default": "Mode 2",
+       "range": "Mode 1 / Mode 2",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Mode 1",
+        "Mode 2"
+       ],
+       "shown": [
+        "controls"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "drone",
+     "title": "Drone & physics",
+     "settings": [
+      {
+       "id": "drone.current",
+       "label": "Drone",
+       "help": "One of the BetaFPV-class presets; every number on its card says where it comes from.",
+       "type": "enum",
+       "default": "BetaFPV Pavo20 Pro class, 3S",
+       "range": "BetaFPV Pavo20 Pro class, 3S / BetaFPV Pavo20 Pro II class, 3S / BetaFPV Pavo20 Pro II class, 4S / BetaFPV Pavo Pico class, 2S / BetaFPV Meteor65 Pro class, 1S / BetaFPV Air65 Freestyle class, 1S",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "BetaFPV Pavo20 Pro class, 3S",
+        "BetaFPV Pavo20 Pro II class, 3S",
+        "BetaFPV Pavo20 Pro II class, 4S",
+        "BetaFPV Pavo Pico class, 2S",
+        "BetaFPV Meteor65 Pro class, 1S",
+        "BetaFPV Air65 Freestyle class, 1S"
+       ],
+       "shown": [
+        "picker",
+        "url"
+       ]
+      },
+      {
+       "id": "physics.gravity",
+       "label": "Gravity",
+       "help": "Earth 9.81, Moon 1.62, Mars 3.72, zero-g, or any value in between.",
+       "type": "number",
+       "default": "9.81 m/s\u00b2",
+       "range": "0\u201330 m/s\u00b2",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "url"
+       ]
+      },
+      {
+       "id": "physics.gravityMode",
+       "label": "Thrust on other worlds",
+       "help": "Same motors (honest), the thrust-to-weight you have on Earth, or auto throttle that hovers at stick centre.",
+       "type": "enum",
+       "default": "Real (same motors)",
+       "range": "Real (same motors) / Keep thrust / weight / Auto throttle (stick centre hovers)",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Real (same motors)",
+        "Keep thrust / weight",
+        "Auto throttle (stick centre hovers)"
+       ],
+       "shown": [
+        "settings",
+        "url"
+       ]
+      },
+      {
+       "id": "physics.tauMs",
+       "label": "Motor spin-up time",
+       "help": "How fast the motors reach a new speed; lower feels snappier.",
+       "type": "number",
+       "default": "15 ms",
+       "range": "8\u201330 ms",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "physics.dragScale",
+       "label": "Air drag",
+       "help": "Scales the air drag of the frame: more drag slows the drone down sooner.",
+       "type": "number",
+       "default": "1\u00d7",
+       "range": "0.5\u20132\u00d7",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "tune",
+     "title": "Tune",
+     "settings": [
+      {
+       "id": "tune.pid",
+       "label": "PID gains (P / I / D / F)",
+       "help": "P, I, D and feed-forward for roll, pitch and yaw, per drone, as in Betaflight.",
+       "type": "json",
+       "default": "",
+       "range": "0\u2013250",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "tune.rates",
+       "label": "Rates (stick curves)",
+       "help": "Betaflight, Actual, KISS or Raceflight rate curves, imported from your Betaflight CLI diff.",
+       "type": "json",
+       "default": "",
+       "range": "",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [
+        "Betaflight",
+        "Actual",
+        "KISS",
+        "Raceflight"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "tune.throttle",
+       "label": "Throttle curve",
+       "help": "Throttle mid and expo from your Betaflight diff.",
+       "type": "json",
+       "default": "",
+       "range": "0\u2013100",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    }
+   ],
+   "keys": [
+    {
+     "action": "pause.toggle",
+     "label": "Pause / resume",
+     "keys": [
+      "Esc",
+      "P"
+     ]
+    },
+    {
+     "action": "respawn.start",
+     "label": "Back to the start",
+     "keys": [
+      "R"
+     ]
+    },
+    {
+     "action": "frameStats.toggle",
+     "label": "Frame times and delay",
+     "keys": [
+      "F3"
+     ]
+    }
+   ],
+   "flying": [
+    {
+     "label": "arm / disarm",
+     "keys": [
+      "Space"
+     ]
+    },
+    {
+     "label": "throttle up / down, stays where you leave it",
+     "keys": [
+      "W",
+      "S"
+     ]
+    },
+    {
+     "label": "yaw: turn left / right",
+     "keys": [
+      "A",
+      "D"
+     ]
+    },
+    {
+     "label": "pitch and roll: tilt",
+     "keys": [
+      "\u2191",
+      "\u2193",
+      "\u2190",
+      "\u2192"
+     ]
+    },
+    {
+     "label": "self-levelling (ANGLE) or ACRO",
+     "keys": [
+      "M"
+     ]
+    }
+   ],
+   "drones": [
+    {
+     "id": "pavo20pro-3s",
+     "name": "BetaFPV Pavo20 Pro class, 3S",
+     "fields": [
+      {
+       "label": "Thrust / weight",
+       "value": "5:1",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      },
+      {
+       "label": "All-up weight",
+       "value": "151 g",
+       "source": "measured:Oscar Liang",
+       "kind": "measured",
+       "sourceLabel": "measured: Oscar Liang"
+      },
+      {
+       "label": "Wheelbase",
+       "value": "93.7 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      },
+      {
+       "label": "Motors",
+       "value": "LAVA 1104 7200KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      },
+      {
+       "label": "Battery",
+       "value": "3S 550 mAh LAVA 75C",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      }
+     ]
+    },
+    {
+     "id": "pavo20pro2-3s",
+     "name": "BetaFPV Pavo20 Pro II class, 3S",
+     "fields": [
+      {
+       "label": "Thrust / weight",
+       "value": "5.9:1",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      },
+      {
+       "label": "All-up weight",
+       "value": "158 g",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      },
+      {
+       "label": "Wheelbase",
+       "value": "93.9 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      },
+      {
+       "label": "Motors",
+       "value": "7200KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      },
+      {
+       "label": "Battery",
+       "value": "3S 580 mAh",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      }
+     ]
+    },
+    {
+     "id": "pavo20pro2-4s",
+     "name": "BetaFPV Pavo20 Pro II class, 4S",
+     "fields": [
+      {
+       "label": "Thrust / weight",
+       "value": "5.5:1",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      },
+      {
+       "label": "All-up weight",
+       "value": "176 g",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "estimate"
+      },
+      {
+       "label": "Wheelbase",
+       "value": "93.9 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      },
+      {
+       "label": "Motors",
+       "value": "5500KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      },
+      {
+       "label": "Battery",
+       "value": "4S 580 mAh",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      }
+     ]
+    },
+    {
+     "id": "pavopico-2s",
+     "name": "BetaFPV Pavo Pico class, 2S",
+     "fields": [
+      {
+       "label": "Thrust / weight",
+       "value": "4:1",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "estimate"
+      },
+      {
+       "label": "All-up weight",
+       "value": "99 g",
+       "source": "measured:public review",
+       "kind": "measured",
+       "sourceLabel": "measured: public review"
+      },
+      {
+       "label": "Wheelbase",
+       "value": "80.8 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      },
+      {
+       "label": "Motors",
+       "value": "1102 14000KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      },
+      {
+       "label": "Battery",
+       "value": "2S 450 mAh LAVA 75C",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      }
+     ]
+    },
+    {
+     "id": "meteor65pro-1s",
+     "name": "BetaFPV Meteor65 Pro class, 1S",
+     "fields": [
+      {
+       "label": "Thrust / weight",
+       "value": "3.97:1",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      },
+      {
+       "label": "All-up weight",
+       "value": "30.6 g",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "estimate"
+      },
+      {
+       "label": "Wheelbase",
+       "value": "66 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      },
+      {
+       "label": "Motors",
+       "value": "0802SE 19500KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      },
+      {
+       "label": "Battery",
+       "value": "1S 300 mAh",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      }
+     ]
+    },
+    {
+     "id": "air65-1s",
+     "name": "BetaFPV Air65 Freestyle class, 1S",
+     "fields": [
+      {
+       "label": "Thrust / weight",
+       "value": "3.5:1",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "estimate"
+      },
+      {
+       "label": "All-up weight",
+       "value": "24.3 g",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "estimate"
+      },
+      {
+       "label": "Wheelbase",
+       "value": "65 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      },
+      {
+       "label": "Motors",
+       "value": "0702SE II 23000KV (Freestyle version)",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      },
+      {
+       "label": "Battery",
+       "value": "LAVA 1S 260 mAh",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "manufacturer"
+      }
+     ]
+    }
+   ]
+  },
+  "es": {
+   "groups": [
+    {
+     "id": "crash",
+     "title": "Choques y reaparici\u00f3n",
+     "settings": [
+      {
+       "id": "physics.vCrash",
+       "label": "Umbral de choque",
+       "help": "Velocidad de impacto a partir de la cual un golpe cuenta como choque; los roces m\u00e1s lentos se deslizan por la pared.",
+       "type": "number",
+       "default": "4 m/s",
+       "range": "2\u201310 m/s",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "camera",
+     "title": "C\u00e1mara",
+     "settings": [
+      {
+       "id": "camera.fovDeg",
+       "label": "Campo de visi\u00f3n de la c\u00e1mara",
+       "help": "Qu\u00e9 tan amplio ve la c\u00e1mara FPV; cada dron guarda su propio valor.",
+       "type": "number",
+       "default": "115\u00b0",
+       "range": "70\u2013150\u00b0",
+       "scope": "drone",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "camera.uptiltDeg",
+       "label": "Inclinaci\u00f3n de la c\u00e1mara",
+       "help": "Cu\u00e1nto se inclina hacia arriba la c\u00e1mara FPV; m\u00e1s inclinaci\u00f3n sirve para volar m\u00e1s r\u00e1pido.",
+       "type": "number",
+       "default": "20\u00b0",
+       "range": "0\u201350\u00b0",
+       "scope": "drone",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "display",
+     "title": "Pantalla",
+     "settings": [
+      {
+       "id": "display.hud",
+       "label": "Mostrar HUD",
+       "help": "La informaci\u00f3n en pantalla: armado, modo de vuelo, bater\u00eda, velocidad y altura.",
+       "type": "bool",
+       "default": "Activado",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "key"
+       ]
+      },
+      {
+       "id": "display.quality",
+       "label": "Fluidez \u2194 detalle",
+       "help": "Ajusta la resoluci\u00f3n de renderizado y el presupuesto de detalle. La f\u00edsica siempre funciona a 1000 Hz.",
+       "type": "number",
+       "default": "1",
+       "range": "0\u20131",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "display.reducedMotion",
+       "label": "Reducir movimiento",
+       "help": "Una c\u00e1mara de choque m\u00e1s tranquila y sin destellos; por defecto sigue el ajuste del sistema.",
+       "type": "enum",
+       "default": "Seg\u00fan el sistema",
+       "range": "Seg\u00fan el sistema / Activado / Desactivado",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Seg\u00fan el sistema",
+        "Activado",
+        "Desactivado"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "display.frameStats",
+       "label": "Estad\u00edsticas de fotogramas",
+       "help": "Frecuencia de pantalla, tiempos de fotograma y retardo de la entrada a la pantalla sobre la vista de vuelo.",
+       "type": "bool",
+       "default": "Desactivado",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [
+        "F3"
+       ],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "key"
+       ]
+      },
+      {
+       "id": "ui.language",
+       "label": "Idioma",
+       "help": "Ingl\u00e9s, espa\u00f1ol, polaco o ruso; por defecto, el idioma de la p\u00e1gina.",
+       "type": "enum",
+       "default": "Idioma de la p\u00e1gina",
+       "range": "Idioma de la p\u00e1gina / Ingl\u00e9s / Espa\u00f1ol / Polaco / Ruso",
+       "scope": "global",
+       "apply": "reload",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Idioma de la p\u00e1gina",
+        "Ingl\u00e9s",
+        "Espa\u00f1ol",
+        "Polaco",
+        "Ruso"
+       ],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "input",
+     "title": "Controles",
+     "settings": [
+      {
+       "id": "input.stickMode",
+       "label": "Modo de sticks",
+       "help": "Qu\u00e9 stick es el acelerador en los dibujos de calibraci\u00f3n: Modo 2 a la izquierda, Modo 1 a la derecha.",
+       "type": "enum",
+       "default": "Modo 2",
+       "range": "Modo 1 / Modo 2",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Modo 1",
+        "Modo 2"
+       ],
+       "shown": [
+        "controls"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "drone",
+     "title": "Dron y f\u00edsica",
+     "settings": [
+      {
+       "id": "drone.current",
+       "label": "Dron",
+       "help": "Uno de los presets de clase BetaFPV; cada n\u00famero de su ficha indica de d\u00f3nde viene.",
+       "type": "enum",
+       "default": "BetaFPV Pavo20 Pro class, 3S",
+       "range": "BetaFPV Pavo20 Pro class, 3S / BetaFPV Pavo20 Pro II class, 3S / BetaFPV Pavo20 Pro II class, 4S / BetaFPV Pavo Pico class, 2S / BetaFPV Meteor65 Pro class, 1S / BetaFPV Air65 Freestyle class, 1S",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "BetaFPV Pavo20 Pro class, 3S",
+        "BetaFPV Pavo20 Pro II class, 3S",
+        "BetaFPV Pavo20 Pro II class, 4S",
+        "BetaFPV Pavo Pico class, 2S",
+        "BetaFPV Meteor65 Pro class, 1S",
+        "BetaFPV Air65 Freestyle class, 1S"
+       ],
+       "shown": [
+        "picker",
+        "url"
+       ]
+      },
+      {
+       "id": "physics.gravity",
+       "label": "Gravedad",
+       "help": "Tierra 9,81, Luna 1,62, Marte 3,72, gravedad cero o cualquier valor intermedio.",
+       "type": "number",
+       "default": "9.81 m/s\u00b2",
+       "range": "0\u201330 m/s\u00b2",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "url"
+       ]
+      },
+      {
+       "id": "physics.gravityMode",
+       "label": "Empuje en otros mundos",
+       "help": "Los mismos motores (realista), la relaci\u00f3n empuje/peso de la Tierra o acelerador autom\u00e1tico que se mantiene con el stick al centro.",
+       "type": "enum",
+       "default": "Real (mismos motores)",
+       "range": "Real (mismos motores) / Mantener empuje / peso / Acelerador autom\u00e1tico (stick al centro = estacionario)",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Real (mismos motores)",
+        "Mantener empuje / peso",
+        "Acelerador autom\u00e1tico (stick al centro = estacionario)"
+       ],
+       "shown": [
+        "settings",
+        "url"
+       ]
+      },
+      {
+       "id": "physics.tauMs",
+       "label": "Tiempo de aceleraci\u00f3n de los motores",
+       "help": "Qu\u00e9 tan r\u00e1pido alcanzan los motores una nueva velocidad; menos se siente m\u00e1s \u00e1gil.",
+       "type": "number",
+       "default": "15 ms",
+       "range": "8\u201330 ms",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "physics.dragScale",
+       "label": "Resistencia del aire",
+       "help": "Escala la resistencia del aire del chasis: m\u00e1s resistencia frena antes el dron.",
+       "type": "number",
+       "default": "1\u00d7",
+       "range": "0.5\u20132\u00d7",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "tune",
+     "title": "Ajuste fino",
+     "settings": [
+      {
+       "id": "tune.pid",
+       "label": "Ganancias PID (P / I / D / F)",
+       "help": "P, I, D y feed-forward para alabeo, cabeceo y gui\u00f1ada, por dron, como en Betaflight.",
+       "type": "json",
+       "default": "",
+       "range": "0\u2013250",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "tune.rates",
+       "label": "Rates (curvas de los sticks)",
+       "help": "Curvas de rates Betaflight, Actual, KISS o Raceflight, importadas de tu diff de la CLI de Betaflight.",
+       "type": "json",
+       "default": "",
+       "range": "",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [
+        "Betaflight",
+        "Actual",
+        "KISS",
+        "Raceflight"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "tune.throttle",
+       "label": "Curva del acelerador",
+       "help": "Throttle mid y expo de tu diff de Betaflight.",
+       "type": "json",
+       "default": "",
+       "range": "0\u2013100",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    }
+   ],
+   "keys": [
+    {
+     "action": "pause.toggle",
+     "label": "Pausa / continuar",
+     "keys": [
+      "Esc",
+      "P"
+     ]
+    },
+    {
+     "action": "respawn.start",
+     "label": "Volver al inicio",
+     "keys": [
+      "R"
+     ]
+    },
+    {
+     "action": "frameStats.toggle",
+     "label": "Tiempos de fotograma y retardo",
+     "keys": [
+      "F3"
+     ]
+    }
+   ],
+   "flying": [
+    {
+     "label": "armar / desarmar",
+     "keys": [
+      "Espacio"
+     ]
+    },
+    {
+     "label": "acelerador arriba / abajo, se queda donde lo dejas",
+     "keys": [
+      "W",
+      "S"
+     ]
+    },
+    {
+     "label": "gui\u00f1ada: girar a la izquierda / derecha",
+     "keys": [
+      "A",
+      "D"
+     ]
+    },
+    {
+     "label": "cabeceo y alabeo: inclinar",
+     "keys": [
+      "\u2191",
+      "\u2193",
+      "\u2190",
+      "\u2192"
+     ]
+    },
+    {
+     "label": "autonivelado (ANGLE) o ACRO",
+     "keys": [
+      "M"
+     ]
+    }
+   ],
+   "drones": [
+    {
+     "id": "pavo20pro-3s",
+     "name": "BetaFPV Pavo20 Pro class, 3S",
+     "fields": [
+      {
+       "label": "Empuje / peso",
+       "value": "5:1",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      },
+      {
+       "label": "Peso total en vuelo",
+       "value": "151 g",
+       "source": "measured:Oscar Liang",
+       "kind": "measured",
+       "sourceLabel": "medido: Oscar Liang"
+      },
+      {
+       "label": "Distancia entre ejes",
+       "value": "93.7 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      },
+      {
+       "label": "Motores",
+       "value": "LAVA 1104 7200KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      },
+      {
+       "label": "Bater\u00eda",
+       "value": "3S 550 mAh LAVA 75C",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      }
+     ]
+    },
+    {
+     "id": "pavo20pro2-3s",
+     "name": "BetaFPV Pavo20 Pro II class, 3S",
+     "fields": [
+      {
+       "label": "Empuje / peso",
+       "value": "5.9:1",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      },
+      {
+       "label": "Peso total en vuelo",
+       "value": "158 g",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      },
+      {
+       "label": "Distancia entre ejes",
+       "value": "93.9 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      },
+      {
+       "label": "Motores",
+       "value": "7200KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      },
+      {
+       "label": "Bater\u00eda",
+       "value": "3S 580 mAh",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      }
+     ]
+    },
+    {
+     "id": "pavo20pro2-4s",
+     "name": "BetaFPV Pavo20 Pro II class, 4S",
+     "fields": [
+      {
+       "label": "Empuje / peso",
+       "value": "5.5:1",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      },
+      {
+       "label": "Peso total en vuelo",
+       "value": "176 g",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "estimaci\u00f3n"
+      },
+      {
+       "label": "Distancia entre ejes",
+       "value": "93.9 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      },
+      {
+       "label": "Motores",
+       "value": "5500KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      },
+      {
+       "label": "Bater\u00eda",
+       "value": "4S 580 mAh",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      }
+     ]
+    },
+    {
+     "id": "pavopico-2s",
+     "name": "BetaFPV Pavo Pico class, 2S",
+     "fields": [
+      {
+       "label": "Empuje / peso",
+       "value": "4:1",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "estimaci\u00f3n"
+      },
+      {
+       "label": "Peso total en vuelo",
+       "value": "99 g",
+       "source": "measured:public review",
+       "kind": "measured",
+       "sourceLabel": "medido: public review"
+      },
+      {
+       "label": "Distancia entre ejes",
+       "value": "80.8 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      },
+      {
+       "label": "Motores",
+       "value": "1102 14000KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      },
+      {
+       "label": "Bater\u00eda",
+       "value": "2S 450 mAh LAVA 75C",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      }
+     ]
+    },
+    {
+     "id": "meteor65pro-1s",
+     "name": "BetaFPV Meteor65 Pro class, 1S",
+     "fields": [
+      {
+       "label": "Empuje / peso",
+       "value": "3.97:1",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      },
+      {
+       "label": "Peso total en vuelo",
+       "value": "30.6 g",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "estimaci\u00f3n"
+      },
+      {
+       "label": "Distancia entre ejes",
+       "value": "66 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      },
+      {
+       "label": "Motores",
+       "value": "0802SE 19500KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      },
+      {
+       "label": "Bater\u00eda",
+       "value": "1S 300 mAh",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      }
+     ]
+    },
+    {
+     "id": "air65-1s",
+     "name": "BetaFPV Air65 Freestyle class, 1S",
+     "fields": [
+      {
+       "label": "Empuje / peso",
+       "value": "3.5:1",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "estimaci\u00f3n"
+      },
+      {
+       "label": "Peso total en vuelo",
+       "value": "24.3 g",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "estimaci\u00f3n"
+      },
+      {
+       "label": "Distancia entre ejes",
+       "value": "65 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      },
+      {
+       "label": "Motores",
+       "value": "0702SE II 23000KV (Freestyle version)",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      },
+      {
+       "label": "Bater\u00eda",
+       "value": "LAVA 1S 260 mAh",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "fabricante"
+      }
+     ]
+    }
+   ]
+  },
+  "pl": {
+   "groups": [
+    {
+     "id": "crash",
+     "title": "Kraksy i odrodzenie",
+     "settings": [
+      {
+       "id": "physics.vCrash",
+       "label": "Pr\u00f3g kraksy",
+       "help": "Pr\u0119dko\u015b\u0107 uderzenia, od kt\u00f3rej zderzenie liczy si\u0119 jako kraksa; wolniejsze otarcia \u015blizgaj\u0105 si\u0119 po \u015bcianie.",
+       "type": "number",
+       "default": "4 m/s",
+       "range": "2\u201310 m/s",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "camera",
+     "title": "Kamera",
+     "settings": [
+      {
+       "id": "camera.fovDeg",
+       "label": "Pole widzenia kamery",
+       "help": "Jak szeroko widzi kamera FPV; ka\u017cdy dron ma w\u0142asn\u0105 warto\u015b\u0107.",
+       "type": "number",
+       "default": "115\u00b0",
+       "range": "70\u2013150\u00b0",
+       "scope": "drone",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "camera.uptiltDeg",
+       "label": "K\u0105t nachylenia kamery",
+       "help": "Jak bardzo kamera FPV jest pochylona w g\u00f3r\u0119; wi\u0119kszy k\u0105t pasuje do szybszego latania.",
+       "type": "number",
+       "default": "20\u00b0",
+       "range": "0\u201350\u00b0",
+       "scope": "drone",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "display",
+     "title": "Ekran",
+     "settings": [
+      {
+       "id": "display.hud",
+       "label": "Poka\u017c HUD",
+       "help": "Informacje na ekranie: uzbrojenie, tryb lotu, bateria, pr\u0119dko\u015b\u0107 i wysoko\u015b\u0107.",
+       "type": "bool",
+       "default": "W\u0142\u0105czone",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "key"
+       ]
+      },
+      {
+       "id": "display.quality",
+       "label": "P\u0142ynno\u015b\u0107 \u2194 szczeg\u00f3\u0142y",
+       "help": "Zmienia rozdzielczo\u015b\u0107 renderowania i bud\u017cet szczeg\u00f3\u0142\u00f3w. Fizyka zawsze dzia\u0142a w 1000 Hz.",
+       "type": "number",
+       "default": "1",
+       "range": "0\u20131",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "display.reducedMotion",
+       "label": "Ograniczenie ruchu",
+       "help": "Spokojniejsza kamera kraksy bez b\u0142ysk\u00f3w; domy\u015blnie wed\u0142ug ustawie\u0144 systemu.",
+       "type": "enum",
+       "default": "Wed\u0142ug systemu",
+       "range": "Wed\u0142ug systemu / W\u0142\u0105czone / Wy\u0142\u0105czone",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Wed\u0142ug systemu",
+        "W\u0142\u0105czone",
+        "Wy\u0142\u0105czone"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "display.frameStats",
+       "label": "Statystyki klatek",
+       "help": "Od\u015bwie\u017canie ekranu, czasy klatek i op\u00f3\u017anienie od wej\u015bcia do ekranu nad widokiem lotu.",
+       "type": "bool",
+       "default": "Wy\u0142\u0105czone",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [
+        "F3"
+       ],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "key"
+       ]
+      },
+      {
+       "id": "ui.language",
+       "label": "J\u0119zyk",
+       "help": "Angielski, hiszpa\u0144ski, polski lub rosyjski; domy\u015blnie j\u0119zyk strony.",
+       "type": "enum",
+       "default": "J\u0119zyk strony",
+       "range": "J\u0119zyk strony / Angielski / Hiszpa\u0144ski / Polski / Rosyjski",
+       "scope": "global",
+       "apply": "reload",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "J\u0119zyk strony",
+        "Angielski",
+        "Hiszpa\u0144ski",
+        "Polski",
+        "Rosyjski"
+       ],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "input",
+     "title": "Sterowanie",
+     "settings": [
+      {
+       "id": "input.stickMode",
+       "label": "Tryb dr\u0105\u017ck\u00f3w",
+       "help": "Kt\u00f3ry dr\u0105\u017cek to gaz na rysunkach kalibracji: Tryb 2 po lewej, Tryb 1 po prawej.",
+       "type": "enum",
+       "default": "Tryb 2",
+       "range": "Tryb 1 / Tryb 2",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Tryb 1",
+        "Tryb 2"
+       ],
+       "shown": [
+        "controls"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "drone",
+     "title": "Dron i fizyka",
+     "settings": [
+      {
+       "id": "drone.current",
+       "label": "Dron",
+       "help": "Jeden z preset\u00f3w klasy BetaFPV; ka\u017cda liczba na jego karcie m\u00f3wi, sk\u0105d pochodzi.",
+       "type": "enum",
+       "default": "BetaFPV Pavo20 Pro class, 3S",
+       "range": "BetaFPV Pavo20 Pro class, 3S / BetaFPV Pavo20 Pro II class, 3S / BetaFPV Pavo20 Pro II class, 4S / BetaFPV Pavo Pico class, 2S / BetaFPV Meteor65 Pro class, 1S / BetaFPV Air65 Freestyle class, 1S",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "BetaFPV Pavo20 Pro class, 3S",
+        "BetaFPV Pavo20 Pro II class, 3S",
+        "BetaFPV Pavo20 Pro II class, 4S",
+        "BetaFPV Pavo Pico class, 2S",
+        "BetaFPV Meteor65 Pro class, 1S",
+        "BetaFPV Air65 Freestyle class, 1S"
+       ],
+       "shown": [
+        "picker",
+        "url"
+       ]
+      },
+      {
+       "id": "physics.gravity",
+       "label": "Grawitacja",
+       "help": "Ziemia 9,81, Ksi\u0119\u017cyc 1,62, Mars 3,72, zero g albo dowolna warto\u015b\u0107 pomi\u0119dzy.",
+       "type": "number",
+       "default": "9.81 m/s\u00b2",
+       "range": "0\u201330 m/s\u00b2",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "url"
+       ]
+      },
+      {
+       "id": "physics.gravityMode",
+       "label": "Ci\u0105g w innych \u015bwiatach",
+       "help": "Te same silniki (realnie), stosunek ci\u0105gu do masy jak na Ziemi albo automatyczny gaz, kt\u00f3ry zawisa przy dr\u0105\u017cku na \u015brodku.",
+       "type": "enum",
+       "default": "Realny (te same silniki)",
+       "range": "Realny (te same silniki) / Zachowaj ci\u0105g / mas\u0119 / Automatyczny gaz (\u015brodek dr\u0105\u017cka = zawis)",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Realny (te same silniki)",
+        "Zachowaj ci\u0105g / mas\u0119",
+        "Automatyczny gaz (\u015brodek dr\u0105\u017cka = zawis)"
+       ],
+       "shown": [
+        "settings",
+        "url"
+       ]
+      },
+      {
+       "id": "physics.tauMs",
+       "label": "Czas rozkr\u0119cania silnik\u00f3w",
+       "help": "Jak szybko silniki osi\u0105gaj\u0105 nowe obroty; mniej to \u017cwawsza reakcja.",
+       "type": "number",
+       "default": "15 ms",
+       "range": "8\u201330 ms",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "physics.dragScale",
+       "label": "Op\u00f3r powietrza",
+       "help": "Skaluje op\u00f3r powietrza ramy: wi\u0119kszy op\u00f3r szybciej hamuje drona.",
+       "type": "number",
+       "default": "1\u00d7",
+       "range": "0.5\u20132\u00d7",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "tune",
+     "title": "Strojenie",
+     "settings": [
+      {
+       "id": "tune.pid",
+       "label": "Wsp\u00f3\u0142czynniki PID (P / I / D / F)",
+       "help": "P, I, D i feed-forward dla przechy\u0142u, pochylenia i odchylenia, osobno dla ka\u017cdego drona, jak w Betaflight.",
+       "type": "json",
+       "default": "",
+       "range": "0\u2013250",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "tune.rates",
+       "label": "Rates (krzywe dr\u0105\u017ck\u00f3w)",
+       "help": "Krzywe rates Betaflight, Actual, KISS lub Raceflight, importowane z twojego diffa z CLI Betaflight.",
+       "type": "json",
+       "default": "",
+       "range": "",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [
+        "Betaflight",
+        "Actual",
+        "KISS",
+        "Raceflight"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "tune.throttle",
+       "label": "Krzywa gazu",
+       "help": "Throttle mid i expo z twojego diffa Betaflight.",
+       "type": "json",
+       "default": "",
+       "range": "0\u2013100",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    }
+   ],
+   "keys": [
+    {
+     "action": "pause.toggle",
+     "label": "Pauza / wzn\u00f3w",
+     "keys": [
+      "Esc",
+      "P"
+     ]
+    },
+    {
+     "action": "respawn.start",
+     "label": "Powr\u00f3t na start",
+     "keys": [
+      "R"
+     ]
+    },
+    {
+     "action": "frameStats.toggle",
+     "label": "Czasy klatek i op\u00f3\u017anienie",
+     "keys": [
+      "F3"
+     ]
+    }
+   ],
+   "flying": [
+    {
+     "label": "uzbr\u00f3j / rozbr\u00f3j",
+     "keys": [
+      "Spacja"
+     ]
+    },
+    {
+     "label": "gaz w g\u00f3r\u0119 / w d\u00f3\u0142, zostaje tam, gdzie go zostawisz",
+     "keys": [
+      "W",
+      "S"
+     ]
+    },
+    {
+     "label": "odchylenie: obr\u00f3t w lewo / w prawo",
+     "keys": [
+      "A",
+      "D"
+     ]
+    },
+    {
+     "label": "pochylenie i przechy\u0142: przechylanie",
+     "keys": [
+      "\u2191",
+      "\u2193",
+      "\u2190",
+      "\u2192"
+     ]
+    },
+    {
+     "label": "samopoziomowanie (ANGLE) albo ACRO",
+     "keys": [
+      "M"
+     ]
+    }
+   ],
+   "drones": [
+    {
+     "id": "pavo20pro-3s",
+     "name": "BetaFPV Pavo20 Pro class, 3S",
+     "fields": [
+      {
+       "label": "Ci\u0105g / masa",
+       "value": "5:1",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      },
+      {
+       "label": "Masa startowa",
+       "value": "151 g",
+       "source": "measured:Oscar Liang",
+       "kind": "measured",
+       "sourceLabel": "zmierzone: Oscar Liang"
+      },
+      {
+       "label": "Rozstaw osi",
+       "value": "93.7 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      },
+      {
+       "label": "Silniki",
+       "value": "LAVA 1104 7200KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      },
+      {
+       "label": "Akumulator",
+       "value": "3S 550 mAh LAVA 75C",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      }
+     ]
+    },
+    {
+     "id": "pavo20pro2-3s",
+     "name": "BetaFPV Pavo20 Pro II class, 3S",
+     "fields": [
+      {
+       "label": "Ci\u0105g / masa",
+       "value": "5.9:1",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      },
+      {
+       "label": "Masa startowa",
+       "value": "158 g",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      },
+      {
+       "label": "Rozstaw osi",
+       "value": "93.9 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      },
+      {
+       "label": "Silniki",
+       "value": "7200KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      },
+      {
+       "label": "Akumulator",
+       "value": "3S 580 mAh",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      }
+     ]
+    },
+    {
+     "id": "pavo20pro2-4s",
+     "name": "BetaFPV Pavo20 Pro II class, 4S",
+     "fields": [
+      {
+       "label": "Ci\u0105g / masa",
+       "value": "5.5:1",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      },
+      {
+       "label": "Masa startowa",
+       "value": "176 g",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "szacunkowo"
+      },
+      {
+       "label": "Rozstaw osi",
+       "value": "93.9 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      },
+      {
+       "label": "Silniki",
+       "value": "5500KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      },
+      {
+       "label": "Akumulator",
+       "value": "4S 580 mAh",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      }
+     ]
+    },
+    {
+     "id": "pavopico-2s",
+     "name": "BetaFPV Pavo Pico class, 2S",
+     "fields": [
+      {
+       "label": "Ci\u0105g / masa",
+       "value": "4:1",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "szacunkowo"
+      },
+      {
+       "label": "Masa startowa",
+       "value": "99 g",
+       "source": "measured:public review",
+       "kind": "measured",
+       "sourceLabel": "zmierzone: public review"
+      },
+      {
+       "label": "Rozstaw osi",
+       "value": "80.8 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      },
+      {
+       "label": "Silniki",
+       "value": "1102 14000KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      },
+      {
+       "label": "Akumulator",
+       "value": "2S 450 mAh LAVA 75C",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      }
+     ]
+    },
+    {
+     "id": "meteor65pro-1s",
+     "name": "BetaFPV Meteor65 Pro class, 1S",
+     "fields": [
+      {
+       "label": "Ci\u0105g / masa",
+       "value": "3.97:1",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      },
+      {
+       "label": "Masa startowa",
+       "value": "30.6 g",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "szacunkowo"
+      },
+      {
+       "label": "Rozstaw osi",
+       "value": "66 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      },
+      {
+       "label": "Silniki",
+       "value": "0802SE 19500KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      },
+      {
+       "label": "Akumulator",
+       "value": "1S 300 mAh",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      }
+     ]
+    },
+    {
+     "id": "air65-1s",
+     "name": "BetaFPV Air65 Freestyle class, 1S",
+     "fields": [
+      {
+       "label": "Ci\u0105g / masa",
+       "value": "3.5:1",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "szacunkowo"
+      },
+      {
+       "label": "Masa startowa",
+       "value": "24.3 g",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "szacunkowo"
+      },
+      {
+       "label": "Rozstaw osi",
+       "value": "65 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      },
+      {
+       "label": "Silniki",
+       "value": "0702SE II 23000KV (Freestyle version)",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      },
+      {
+       "label": "Akumulator",
+       "value": "LAVA 1S 260 mAh",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "producent"
+      }
+     ]
+    }
+   ]
+  },
+  "ru": {
+   "groups": [
+    {
+     "id": "crash",
+     "title": "\u041a\u0440\u0430\u0448\u0438 \u0438 \u0440\u0435\u0441\u043f\u0430\u0443\u043d",
+     "settings": [
+      {
+       "id": "physics.vCrash",
+       "label": "\u041f\u043e\u0440\u043e\u0433 \u043a\u0440\u0430\u0448\u0430",
+       "help": "\u0421\u043a\u043e\u0440\u043e\u0441\u0442\u044c \u0443\u0434\u0430\u0440\u0430, \u0432\u044b\u0448\u0435 \u043a\u043e\u0442\u043e\u0440\u043e\u0439 \u043a\u0430\u0441\u0430\u043d\u0438\u0435 \u0441\u0447\u0438\u0442\u0430\u0435\u0442\u0441\u044f \u043a\u0440\u0430\u0448\u0435\u043c; \u0431\u043e\u043b\u0435\u0435 \u043c\u0435\u0434\u043b\u0435\u043d\u043d\u044b\u0435 \u043a\u0430\u0441\u0430\u043d\u0438\u044f \u0441\u043a\u043e\u043b\u044c\u0437\u044f\u0442 \u0432\u0434\u043e\u043b\u044c \u0441\u0442\u0435\u043d\u044b.",
+       "type": "number",
+       "default": "4 \u043c/\u0441",
+       "range": "2\u201310 \u043c/\u0441",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "camera",
+     "title": "\u041a\u0430\u043c\u0435\u0440\u0430",
+     "settings": [
+      {
+       "id": "camera.fovDeg",
+       "label": "\u0423\u0433\u043e\u043b \u043e\u0431\u0437\u043e\u0440\u0430 \u043a\u0430\u043c\u0435\u0440\u044b",
+       "help": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0448\u0438\u0440\u043e\u043a\u043e \u0432\u0438\u0434\u0438\u0442 FPV-\u043a\u0430\u043c\u0435\u0440\u0430; \u0443 \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u0434\u0440\u043e\u043d\u0430 \u0441\u0432\u043e\u0451 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435.",
+       "type": "number",
+       "default": "115\u00b0",
+       "range": "70\u2013150\u00b0",
+       "scope": "drone",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "camera.uptiltDeg",
+       "label": "\u041d\u0430\u043a\u043b\u043e\u043d \u043a\u0430\u043c\u0435\u0440\u044b",
+       "help": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e FPV-\u043a\u0430\u043c\u0435\u0440\u0430 \u043d\u0430\u043a\u043b\u043e\u043d\u0435\u043d\u0430 \u0432\u0432\u0435\u0440\u0445; \u0431\u043e\u043b\u044c\u0448\u0438\u0439 \u043d\u0430\u043a\u043b\u043e\u043d \u2014 \u0434\u043b\u044f \u0431\u044b\u0441\u0442\u0440\u043e\u0433\u043e \u043f\u043e\u043b\u0451\u0442\u0430.",
+       "type": "number",
+       "default": "20\u00b0",
+       "range": "0\u201350\u00b0",
+       "scope": "drone",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "display",
+     "title": "\u042d\u043a\u0440\u0430\u043d",
+     "settings": [
+      {
+       "id": "display.hud",
+       "label": "\u041f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0442\u044c HUD",
+       "help": "\u042d\u043a\u0440\u0430\u043d\u043d\u0430\u044f \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u044f: \u0430\u0440\u043c, \u0440\u0435\u0436\u0438\u043c \u043f\u043e\u043b\u0451\u0442\u0430, \u0431\u0430\u0442\u0430\u0440\u0435\u044f, \u0441\u043a\u043e\u0440\u043e\u0441\u0442\u044c \u0438 \u0432\u044b\u0441\u043e\u0442\u0430.",
+       "type": "bool",
+       "default": "\u0412\u043a\u043b.",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "key"
+       ]
+      },
+      {
+       "id": "display.quality",
+       "label": "\u041f\u043b\u0430\u0432\u043d\u043e\u0441\u0442\u044c \u2194 \u0434\u0435\u0442\u0430\u043b\u0438\u0437\u0430\u0446\u0438\u044f",
+       "help": "\u041c\u0435\u043d\u044f\u0435\u0442 \u0440\u0430\u0437\u0440\u0435\u0448\u0435\u043d\u0438\u0435 \u0440\u0435\u043d\u0434\u0435\u0440\u0430 \u0438 \u0431\u044e\u0434\u0436\u0435\u0442 \u0434\u0435\u0442\u0430\u043b\u0438\u0437\u0430\u0446\u0438\u0438. \u0424\u0438\u0437\u0438\u043a\u0430 \u0432\u0441\u0435\u0433\u0434\u0430 \u0441\u0447\u0438\u0442\u0430\u0435\u0442\u0441\u044f \u043d\u0430 1000 \u0413\u0446.",
+       "type": "number",
+       "default": "1",
+       "range": "0\u20131",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "display.reducedMotion",
+       "label": "\u0423\u043c\u0435\u043d\u044c\u0448\u0435\u043d\u0438\u0435 \u0434\u0432\u0438\u0436\u0435\u043d\u0438\u044f",
+       "help": "\u0411\u043e\u043b\u0435\u0435 \u0441\u043f\u043e\u043a\u043e\u0439\u043d\u0430\u044f \u043a\u0430\u043c\u0435\u0440\u0430 \u043a\u0440\u0430\u0448\u0430 \u0431\u0435\u0437 \u0432\u0441\u043f\u044b\u0448\u0435\u043a; \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e \u043a\u0430\u043a \u0432 \u0441\u0438\u0441\u0442\u0435\u043c\u0435.",
+       "type": "enum",
+       "default": "\u041a\u0430\u043a \u0432 \u0441\u0438\u0441\u0442\u0435\u043c\u0435",
+       "range": "\u041a\u0430\u043a \u0432 \u0441\u0438\u0441\u0442\u0435\u043c\u0435 / \u0412\u043a\u043b. / \u0412\u044b\u043a\u043b.",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "\u041a\u0430\u043a \u0432 \u0441\u0438\u0441\u0442\u0435\u043c\u0435",
+        "\u0412\u043a\u043b.",
+        "\u0412\u044b\u043a\u043b."
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "display.frameStats",
+       "label": "\u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043a\u0430 \u043a\u0430\u0434\u0440\u043e\u0432",
+       "help": "\u0427\u0430\u0441\u0442\u043e\u0442\u0430 \u044d\u043a\u0440\u0430\u043d\u0430, \u0432\u0440\u0435\u043c\u044f \u043a\u0430\u0434\u0440\u0430 \u0438 \u0437\u0430\u0434\u0435\u0440\u0436\u043a\u0430 \u043e\u0442 \u0432\u0432\u043e\u0434\u0430 \u0434\u043e \u044d\u043a\u0440\u0430\u043d\u0430 \u043f\u043e\u0432\u0435\u0440\u0445 \u0432\u0438\u0434\u0430 \u043f\u043e\u043b\u0451\u0442\u0430.",
+       "type": "bool",
+       "default": "\u0412\u044b\u043a\u043b.",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [
+        "F3"
+       ],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "key"
+       ]
+      },
+      {
+       "id": "ui.language",
+       "label": "\u042f\u0437\u044b\u043a",
+       "help": "\u0410\u043d\u0433\u043b\u0438\u0439\u0441\u043a\u0438\u0439, \u0438\u0441\u043f\u0430\u043d\u0441\u043a\u0438\u0439, \u043f\u043e\u043b\u044c\u0441\u043a\u0438\u0439 \u0438\u043b\u0438 \u0440\u0443\u0441\u0441\u043a\u0438\u0439; \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e \u044f\u0437\u044b\u043a \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u044b.",
+       "type": "enum",
+       "default": "\u042f\u0437\u044b\u043a \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u044b",
+       "range": "\u042f\u0437\u044b\u043a \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u044b / \u0410\u043d\u0433\u043b\u0438\u0439\u0441\u043a\u0438\u0439 / \u0418\u0441\u043f\u0430\u043d\u0441\u043a\u0438\u0439 / \u041f\u043e\u043b\u044c\u0441\u043a\u0438\u0439 / \u0420\u0443\u0441\u0441\u043a\u0438\u0439",
+       "scope": "global",
+       "apply": "reload",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "\u042f\u0437\u044b\u043a \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u044b",
+        "\u0410\u043d\u0433\u043b\u0438\u0439\u0441\u043a\u0438\u0439",
+        "\u0418\u0441\u043f\u0430\u043d\u0441\u043a\u0438\u0439",
+        "\u041f\u043e\u043b\u044c\u0441\u043a\u0438\u0439",
+        "\u0420\u0443\u0441\u0441\u043a\u0438\u0439"
+       ],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "input",
+     "title": "\u0423\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0438\u0435",
+     "settings": [
+      {
+       "id": "input.stickMode",
+       "label": "\u0420\u0435\u0436\u0438\u043c \u0441\u0442\u0438\u043a\u043e\u0432",
+       "help": "\u041a\u0430\u043a\u043e\u0439 \u0441\u0442\u0438\u043a \u2014 \u0433\u0430\u0437 \u043d\u0430 \u0440\u0438\u0441\u0443\u043d\u043a\u0430\u0445 \u043a\u0430\u043b\u0438\u0431\u0440\u043e\u0432\u043a\u0438: \u0420\u0435\u0436\u0438\u043c 2 \u0441\u043b\u0435\u0432\u0430, \u0420\u0435\u0436\u0438\u043c 1 \u0441\u043f\u0440\u0430\u0432\u0430.",
+       "type": "enum",
+       "default": "\u0420\u0435\u0436\u0438\u043c 2",
+       "range": "\u0420\u0435\u0436\u0438\u043c 1 / \u0420\u0435\u0436\u0438\u043c 2",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "\u0420\u0435\u0436\u0438\u043c 1",
+        "\u0420\u0435\u0436\u0438\u043c 2"
+       ],
+       "shown": [
+        "controls"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "drone",
+     "title": "\u0414\u0440\u043e\u043d \u0438 \u0444\u0438\u0437\u0438\u043a\u0430",
+     "settings": [
+      {
+       "id": "drone.current",
+       "label": "\u0414\u0440\u043e\u043d",
+       "help": "\u041e\u0434\u0438\u043d \u0438\u0437 \u043f\u0440\u0435\u0441\u0435\u0442\u043e\u0432 \u043a\u043b\u0430\u0441\u0441\u0430 BetaFPV; \u0443 \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u0447\u0438\u0441\u043b\u0430 \u043d\u0430 \u0435\u0433\u043e \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0435 \u0443\u043a\u0430\u0437\u0430\u043d \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a.",
+       "type": "enum",
+       "default": "BetaFPV Pavo20 Pro class, 3S",
+       "range": "BetaFPV Pavo20 Pro class, 3S / BetaFPV Pavo20 Pro II class, 3S / BetaFPV Pavo20 Pro II class, 4S / BetaFPV Pavo Pico class, 2S / BetaFPV Meteor65 Pro class, 1S / BetaFPV Air65 Freestyle class, 1S",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "BetaFPV Pavo20 Pro class, 3S",
+        "BetaFPV Pavo20 Pro II class, 3S",
+        "BetaFPV Pavo20 Pro II class, 4S",
+        "BetaFPV Pavo Pico class, 2S",
+        "BetaFPV Meteor65 Pro class, 1S",
+        "BetaFPV Air65 Freestyle class, 1S"
+       ],
+       "shown": [
+        "picker",
+        "url"
+       ]
+      },
+      {
+       "id": "physics.gravity",
+       "label": "\u0413\u0440\u0430\u0432\u0438\u0442\u0430\u0446\u0438\u044f",
+       "help": "\u0417\u0435\u043c\u043b\u044f 9,81, \u041b\u0443\u043d\u0430 1,62, \u041c\u0430\u0440\u0441 3,72, \u043d\u0435\u0432\u0435\u0441\u043e\u043c\u043e\u0441\u0442\u044c \u0438\u043b\u0438 \u043b\u044e\u0431\u043e\u0435 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043c\u0435\u0436\u0434\u0443 \u043d\u0438\u043c\u0438.",
+       "type": "number",
+       "default": "9.81 \u043c/\u0441\u00b2",
+       "range": "0\u201330 \u043c/\u0441\u00b2",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "url"
+       ]
+      },
+      {
+       "id": "physics.gravityMode",
+       "label": "\u0422\u044f\u0433\u0430 \u0432 \u0434\u0440\u0443\u0433\u0438\u0445 \u043c\u0438\u0440\u0430\u0445",
+       "help": "\u0422\u0435 \u0436\u0435 \u043c\u043e\u0442\u043e\u0440\u044b (\u0447\u0435\u0441\u0442\u043d\u043e), \u0442\u044f\u0433\u043e\u0432\u043e\u043e\u0440\u0443\u0436\u0451\u043d\u043d\u043e\u0441\u0442\u044c \u043a\u0430\u043a \u043d\u0430 \u0417\u0435\u043c\u043b\u0435 \u0438\u043b\u0438 \u0430\u0432\u0442\u043e\u0433\u0430\u0437, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u0432\u0438\u0441\u0438\u0442 \u043f\u0440\u0438 \u0441\u0442\u0438\u043a\u0435 \u0432 \u0446\u0435\u043d\u0442\u0440\u0435.",
+       "type": "enum",
+       "default": "\u0420\u0435\u0430\u043b\u0438\u0441\u0442\u0438\u0447\u043d\u043e (\u0442\u0435 \u0436\u0435 \u043c\u043e\u0442\u043e\u0440\u044b)",
+       "range": "\u0420\u0435\u0430\u043b\u0438\u0441\u0442\u0438\u0447\u043d\u043e (\u0442\u0435 \u0436\u0435 \u043c\u043e\u0442\u043e\u0440\u044b) / \u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c \u0442\u044f\u0433\u0443 / \u0432\u0435\u0441 / \u0410\u0432\u0442\u043e\u0433\u0430\u0437 (\u0441\u0442\u0438\u043a \u0432 \u0446\u0435\u043d\u0442\u0440\u0435 \u2014 \u0432\u0438\u0441\u0435\u043d\u0438\u0435)",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "\u0420\u0435\u0430\u043b\u0438\u0441\u0442\u0438\u0447\u043d\u043e (\u0442\u0435 \u0436\u0435 \u043c\u043e\u0442\u043e\u0440\u044b)",
+        "\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c \u0442\u044f\u0433\u0443 / \u0432\u0435\u0441",
+        "\u0410\u0432\u0442\u043e\u0433\u0430\u0437 (\u0441\u0442\u0438\u043a \u0432 \u0446\u0435\u043d\u0442\u0440\u0435 \u2014 \u0432\u0438\u0441\u0435\u043d\u0438\u0435)"
+       ],
+       "shown": [
+        "settings",
+        "url"
+       ]
+      },
+      {
+       "id": "physics.tauMs",
+       "label": "\u0412\u0440\u0435\u043c\u044f \u0440\u0430\u0441\u043a\u0440\u0443\u0442\u043a\u0438 \u043c\u043e\u0442\u043e\u0440\u043e\u0432",
+       "help": "\u041a\u0430\u043a \u0431\u044b\u0441\u0442\u0440\u043e \u043c\u043e\u0442\u043e\u0440\u044b \u043d\u0430\u0431\u0438\u0440\u0430\u044e\u0442 \u043d\u043e\u0432\u044b\u0435 \u043e\u0431\u043e\u0440\u043e\u0442\u044b; \u043c\u0435\u043d\u044c\u0448\u0435 \u2014 \u0440\u0435\u0437\u0447\u0435 \u043e\u0442\u043a\u043b\u0438\u043a.",
+       "type": "number",
+       "default": "15 \u043c\u0441",
+       "range": "8\u201330 \u043c\u0441",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "physics.dragScale",
+       "label": "\u0421\u043e\u043f\u0440\u043e\u0442\u0438\u0432\u043b\u0435\u043d\u0438\u0435 \u0432\u043e\u0437\u0434\u0443\u0445\u0430",
+       "help": "\u041c\u0430\u0441\u0448\u0442\u0430\u0431\u0438\u0440\u0443\u0435\u0442 \u0441\u043e\u043f\u0440\u043e\u0442\u0438\u0432\u043b\u0435\u043d\u0438\u0435 \u0432\u043e\u0437\u0434\u0443\u0445\u0430 \u0440\u0430\u043c\u044b: \u0431\u043e\u043b\u044c\u0448\u0435 \u0441\u043e\u043f\u0440\u043e\u0442\u0438\u0432\u043b\u0435\u043d\u0438\u0435 \u2014 \u0434\u0440\u043e\u043d \u0442\u043e\u0440\u043c\u043e\u0437\u0438\u0442 \u0440\u0430\u043d\u044c\u0448\u0435.",
+       "type": "number",
+       "default": "1\u00d7",
+       "range": "0.5\u20132\u00d7",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "tune",
+     "title": "\u0422\u044e\u043d\u0438\u043d\u0433",
+     "settings": [
+      {
+       "id": "tune.pid",
+       "label": "\u041a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442\u044b PID (P / I / D / F)",
+       "help": "P, I, D \u0438 feed-forward \u0434\u043b\u044f \u043a\u0440\u0435\u043d\u0430, \u0442\u0430\u043d\u0433\u0430\u0436\u0430 \u0438 \u0440\u044b\u0441\u043a\u0430\u043d\u0438\u044f, \u0434\u043b\u044f \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u0434\u0440\u043e\u043d\u0430, \u043a\u0430\u043a \u0432 Betaflight.",
+       "type": "json",
+       "default": "",
+       "range": "0\u2013250",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "tune.rates",
+       "label": "\u0420\u0435\u0439\u0442\u044b (\u043a\u0440\u0438\u0432\u044b\u0435 \u0441\u0442\u0438\u043a\u043e\u0432)",
+       "help": "\u041a\u0440\u0438\u0432\u044b\u0435 \u0440\u0435\u0439\u0442\u043e\u0432 Betaflight, Actual, KISS \u0438\u043b\u0438 Raceflight, \u0438\u043c\u043f\u043e\u0440\u0442\u0438\u0440\u0443\u044e\u0442\u0441\u044f \u0438\u0437 \u0432\u0430\u0448\u0435\u0433\u043e diff \u0438\u0437 CLI Betaflight.",
+       "type": "json",
+       "default": "",
+       "range": "",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [
+        "Betaflight",
+        "Actual",
+        "KISS",
+        "Raceflight"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "tune.throttle",
+       "label": "\u041a\u0440\u0438\u0432\u0430\u044f \u0433\u0430\u0437\u0430",
+       "help": "Throttle mid \u0438 expo \u0438\u0437 \u0432\u0430\u0448\u0435\u0433\u043e diff Betaflight.",
+       "type": "json",
+       "default": "",
+       "range": "0\u2013100",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    }
+   ],
+   "keys": [
+    {
+     "action": "pause.toggle",
+     "label": "\u041f\u0430\u0443\u0437\u0430 / \u043f\u0440\u043e\u0434\u043e\u043b\u0436\u0438\u0442\u044c",
+     "keys": [
+      "Esc",
+      "P"
+     ]
+    },
+    {
+     "action": "respawn.start",
+     "label": "\u041d\u0430\u0437\u0430\u0434 \u043d\u0430 \u0441\u0442\u0430\u0440\u0442",
+     "keys": [
+      "R"
+     ]
+    },
+    {
+     "action": "frameStats.toggle",
+     "label": "\u0412\u0440\u0435\u043c\u044f \u043a\u0430\u0434\u0440\u0430 \u0438 \u0437\u0430\u0434\u0435\u0440\u0436\u043a\u0430",
+     "keys": [
+      "F3"
+     ]
+    }
+   ],
+   "flying": [
+    {
+     "label": "\u0430\u0440\u043c / \u0434\u0438\u0437\u0430\u0440\u043c",
+     "keys": [
+      "\u041f\u0440\u043e\u0431\u0435\u043b"
+     ]
+    },
+    {
+     "label": "\u0433\u0430\u0437 \u0432\u0432\u0435\u0440\u0445 / \u0432\u043d\u0438\u0437, \u043e\u0441\u0442\u0430\u0451\u0442\u0441\u044f \u0442\u0430\u043c, \u0433\u0434\u0435 \u043e\u0441\u0442\u0430\u0432\u0438\u043b",
+     "keys": [
+      "W",
+      "S"
+     ]
+    },
+    {
+     "label": "\u0440\u044b\u0441\u043a\u0430\u043d\u0438\u0435: \u043f\u043e\u0432\u043e\u0440\u043e\u0442 \u0432\u043b\u0435\u0432\u043e / \u0432\u043f\u0440\u0430\u0432\u043e",
+     "keys": [
+      "A",
+      "D"
+     ]
+    },
+    {
+     "label": "\u0442\u0430\u043d\u0433\u0430\u0436 \u0438 \u043a\u0440\u0435\u043d: \u043d\u0430\u043a\u043b\u043e\u043d",
+     "keys": [
+      "\u2191",
+      "\u2193",
+      "\u2190",
+      "\u2192"
+     ]
+    },
+    {
+     "label": "\u0441\u0430\u043c\u043e\u0432\u044b\u0440\u0430\u0432\u043d\u0438\u0432\u0430\u043d\u0438\u0435 (ANGLE) \u0438\u043b\u0438 ACRO",
+     "keys": [
+      "M"
+     ]
+    }
+   ],
+   "drones": [
+    {
+     "id": "pavo20pro-3s",
+     "name": "BetaFPV Pavo20 Pro class, 3S",
+     "fields": [
+      {
+       "label": "\u0422\u044f\u0433\u0430 / \u0432\u0435\u0441",
+       "value": "5:1",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      },
+      {
+       "label": "\u041f\u043e\u043b\u0451\u0442\u043d\u044b\u0439 \u0432\u0435\u0441",
+       "value": "151 g",
+       "source": "measured:Oscar Liang",
+       "kind": "measured",
+       "sourceLabel": "\u0438\u0437\u043c\u0435\u0440\u0435\u043d\u043e: Oscar Liang"
+      },
+      {
+       "label": "\u0414\u0438\u0430\u0433\u043e\u043d\u0430\u043b\u044c \u0440\u0430\u043c\u044b",
+       "value": "93.7 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      },
+      {
+       "label": "\u041c\u043e\u0442\u043e\u0440\u044b",
+       "value": "LAVA 1104 7200KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      },
+      {
+       "label": "\u0410\u043a\u043a\u0443\u043c\u0443\u043b\u044f\u0442\u043e\u0440",
+       "value": "3S 550 mAh LAVA 75C",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      }
+     ]
+    },
+    {
+     "id": "pavo20pro2-3s",
+     "name": "BetaFPV Pavo20 Pro II class, 3S",
+     "fields": [
+      {
+       "label": "\u0422\u044f\u0433\u0430 / \u0432\u0435\u0441",
+       "value": "5.9:1",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      },
+      {
+       "label": "\u041f\u043e\u043b\u0451\u0442\u043d\u044b\u0439 \u0432\u0435\u0441",
+       "value": "158 g",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      },
+      {
+       "label": "\u0414\u0438\u0430\u0433\u043e\u043d\u0430\u043b\u044c \u0440\u0430\u043c\u044b",
+       "value": "93.9 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      },
+      {
+       "label": "\u041c\u043e\u0442\u043e\u0440\u044b",
+       "value": "7200KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      },
+      {
+       "label": "\u0410\u043a\u043a\u0443\u043c\u0443\u043b\u044f\u0442\u043e\u0440",
+       "value": "3S 580 mAh",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      }
+     ]
+    },
+    {
+     "id": "pavo20pro2-4s",
+     "name": "BetaFPV Pavo20 Pro II class, 4S",
+     "fields": [
+      {
+       "label": "\u0422\u044f\u0433\u0430 / \u0432\u0435\u0441",
+       "value": "5.5:1",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      },
+      {
+       "label": "\u041f\u043e\u043b\u0451\u0442\u043d\u044b\u0439 \u0432\u0435\u0441",
+       "value": "176 g",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "\u043e\u0446\u0435\u043d\u043a\u0430"
+      },
+      {
+       "label": "\u0414\u0438\u0430\u0433\u043e\u043d\u0430\u043b\u044c \u0440\u0430\u043c\u044b",
+       "value": "93.9 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      },
+      {
+       "label": "\u041c\u043e\u0442\u043e\u0440\u044b",
+       "value": "5500KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      },
+      {
+       "label": "\u0410\u043a\u043a\u0443\u043c\u0443\u043b\u044f\u0442\u043e\u0440",
+       "value": "4S 580 mAh",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      }
+     ]
+    },
+    {
+     "id": "pavopico-2s",
+     "name": "BetaFPV Pavo Pico class, 2S",
+     "fields": [
+      {
+       "label": "\u0422\u044f\u0433\u0430 / \u0432\u0435\u0441",
+       "value": "4:1",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "\u043e\u0446\u0435\u043d\u043a\u0430"
+      },
+      {
+       "label": "\u041f\u043e\u043b\u0451\u0442\u043d\u044b\u0439 \u0432\u0435\u0441",
+       "value": "99 g",
+       "source": "measured:public review",
+       "kind": "measured",
+       "sourceLabel": "\u0438\u0437\u043c\u0435\u0440\u0435\u043d\u043e: public review"
+      },
+      {
+       "label": "\u0414\u0438\u0430\u0433\u043e\u043d\u0430\u043b\u044c \u0440\u0430\u043c\u044b",
+       "value": "80.8 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      },
+      {
+       "label": "\u041c\u043e\u0442\u043e\u0440\u044b",
+       "value": "1102 14000KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      },
+      {
+       "label": "\u0410\u043a\u043a\u0443\u043c\u0443\u043b\u044f\u0442\u043e\u0440",
+       "value": "2S 450 mAh LAVA 75C",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      }
+     ]
+    },
+    {
+     "id": "meteor65pro-1s",
+     "name": "BetaFPV Meteor65 Pro class, 1S",
+     "fields": [
+      {
+       "label": "\u0422\u044f\u0433\u0430 / \u0432\u0435\u0441",
+       "value": "3.97:1",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      },
+      {
+       "label": "\u041f\u043e\u043b\u0451\u0442\u043d\u044b\u0439 \u0432\u0435\u0441",
+       "value": "30.6 g",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "\u043e\u0446\u0435\u043d\u043a\u0430"
+      },
+      {
+       "label": "\u0414\u0438\u0430\u0433\u043e\u043d\u0430\u043b\u044c \u0440\u0430\u043c\u044b",
+       "value": "66 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      },
+      {
+       "label": "\u041c\u043e\u0442\u043e\u0440\u044b",
+       "value": "0802SE 19500KV",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      },
+      {
+       "label": "\u0410\u043a\u043a\u0443\u043c\u0443\u043b\u044f\u0442\u043e\u0440",
+       "value": "1S 300 mAh",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      }
+     ]
+    },
+    {
+     "id": "air65-1s",
+     "name": "BetaFPV Air65 Freestyle class, 1S",
+     "fields": [
+      {
+       "label": "\u0422\u044f\u0433\u0430 / \u0432\u0435\u0441",
+       "value": "3.5:1",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "\u043e\u0446\u0435\u043d\u043a\u0430"
+      },
+      {
+       "label": "\u041f\u043e\u043b\u0451\u0442\u043d\u044b\u0439 \u0432\u0435\u0441",
+       "value": "24.3 g",
+       "source": "estimate",
+       "kind": "estimate",
+       "sourceLabel": "\u043e\u0446\u0435\u043d\u043a\u0430"
+      },
+      {
+       "label": "\u0414\u0438\u0430\u0433\u043e\u043d\u0430\u043b\u044c \u0440\u0430\u043c\u044b",
+       "value": "65 mm",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      },
+      {
+       "label": "\u041c\u043e\u0442\u043e\u0440\u044b",
+       "value": "0702SE II 23000KV (Freestyle version)",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      },
+      {
+       "label": "\u0410\u043a\u043a\u0443\u043c\u0443\u043b\u044f\u0442\u043e\u0440",
+       "value": "LAVA 1S 260 mAh",
+       "source": "manufacturer",
+       "kind": "manufacturer",
+       "sourceLabel": "\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,78 @@
+{
+  "date": "2026-09-27",
+  "what": "scripts/gen-catalog.ts --check (the CI step) and its negative controls",
+  "command": "node --import tsx scripts/gen-catalog.ts --check",
+  "baseline": {
+    "exit": 0,
+    "out": "gen-catalog --check: up to date (17 settings in 6 groups, 4 shortcut keys + 10 flying keys, 6 drones); control: a planted stale label is caught in apps/site/src/generated/features.json, docs/settings.md, README.md"
+  },
+  "controls": [
+    {
+      "name": "stale label in a source text (the catalogue's own EN text for physics.vCrash)",
+      "file": "packages/i18n/locales/site/en.json",
+      "exit": 1,
+      "output": "gen-catalog --check: STALE apps/site/src/generated/features.json, docs/settings.md, README.md",
+      "expectNamed": [
+        "STALE",
+        "apps/site/src/generated/features.json",
+        "docs/settings.md",
+        "README.md"
+      ],
+      "pass": true,
+      "restored": true
+    },
+    {
+      "name": "stale label in the committed site data",
+      "file": "apps/site/src/generated/features.json",
+      "exit": 1,
+      "output": "gen-catalog --check: STALE apps/site/src/generated/features.json",
+      "expectNamed": [
+        "STALE",
+        "apps/site/src/generated/features.json"
+      ],
+      "pass": true,
+      "restored": true
+    },
+    {
+      "name": "hand edit inside the README block",
+      "file": "README.md",
+      "exit": 1,
+      "output": "gen-catalog --check: STALE README.md",
+      "expectNamed": [
+        "STALE",
+        "README.md"
+      ],
+      "pass": true,
+      "restored": true
+    },
+    {
+      "name": "hand edit of the llms.txt line",
+      "file": "llms.txt",
+      "exit": 1,
+      "output": "gen-catalog --check: STALE llms.txt",
+      "expectNamed": [
+        "STALE",
+        "llms.txt"
+      ],
+      "pass": true,
+      "restored": true
+    },
+    {
+      "name": "a shipped setting without its help text in pl (every source)",
+      "file": "packages/i18n/locales/site/pl.json",
+      "exit": 1,
+      "output": "catalogue: 1 missing translation(s): pl: set.physics.vCrash.help",
+      "expectNamed": [
+        "missing translation",
+        "pl: set.physics.vCrash.help"
+      ],
+      "pass": true,
+      "restored": true
+    }
+  ],
+  "afterRestore": {
+    "exit": 0,
+    "out": "gen-catalog --check: up to date (17 settings in 6 groups, 4 shortcut keys + 10 flying keys, 6 drones); control: a planted stale label is caught in apps/site/src/generated/features.json, docs/settings.md, README.md"
+  },
+  "pass": true
+}

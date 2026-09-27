@@ -1,0 +1,69 @@
+{
+  "date": "2026-09-27",
+  "what": "landing with the settings catalogue section (#tune): the site's verify.mjs and a11y.mjs, plus axe on #tune with every row opened",
+  "build": "apps/site next build of the worktree at 4ab37b1 (the evidence files are the only uncommitted change), served as a copy of out/ by scripts/serve.mjs on http://127.0.0.1:5325",
+  "browser": "Chromium 141.0.7390.37 from /opt/pw-browsers (no Google Chrome in this container): channel 'chrome' replaced by that executable through a preload, the scripts unchanged",
+  "verify": {
+    "exit": 1,
+    "summary": "verify: 137/139 passed",
+    "failed": [
+      "FAIL  en 375 hero video plays (muted, inline)  — {\"present\":true,\"muted\":true,\"autoplay\":true,\"playsinline\":true,\"time\":0,\"paused\":false,\"w\":0}",
+      "FAIL  ru 375 hero video plays (muted, inline)  — {\"present\":true,\"muted\":true,\"autoplay\":true,\"playsinline\":true,\"time\":0,\"paused\":false,\"w\":0}"
+    ],
+    "catalogueRelevant": [
+      "PASS  no console errors / hydration errors on /en/",
+      "PASS  band and tour screenshots: requested only after the load event, then all swapped in  — {\"load\":751,\"deferredImgs\":32,\"inBand\":20,\"inTour\":12,\"requests\":18,\"beforeLoad\":[]}",
+      "PASS  no horizontal overflow at 375: /en/",
+      "PASS  no horizontal overflow at 375: /es/",
+      "PASS  no horizontal overflow at 375: /pl/",
+      "PASS  no horizontal overflow at 375: /ru/",
+      "PASS  tap targets >= 44 px (landing, 375)",
+      "PASS  no pointer cursor on non-controls",
+      "PASS  overflow rule: planted 600 px element and clipped content caught, band tiles exempt (control)  — {\"plainCaught\":true,\"clippedContentCaught\":true,\"bandTileExempt\":true}",
+      "PASS  no layout shift while scrolling the whole landing at 375 (lazy screenshots)  — sum of layout-shift values = 0.0000 over 35650 px",
+      "PASS  phone data: at the top a phone fetches 12 screenshot files (636 KB); the tour picture 5032 px down waits until scrolled to (control)  — {\"atTop\":{\"shotFiles\":12,\"shotKB\":636,\"bandImgs\":20,\"tourOnly\":2,\"lastTop\":5032,\"lastFetched\":false,\"allLazy\":true},\"there\":{\"shotFiles\":19,\"shotKB\":944,\"bandImgs\":20,\"tourOnly\":2,\"lastTop\":5038,\"lastFetched\":true,\"allLazy\":true}}"
+    ],
+    "whyTheFailures": "the hero video is H.264 (avc1); this Chromium build has no H.264 decoder (canPlayType h264 below), so videoWidth stays 0. Not related to the catalogue; CI runs verify in Google Chrome."
+  },
+  "h264Probe": "{ h264: '', vp9: 'probably' }",
+  "a11y": {
+    "exit": 0,
+    "lines": [
+      "/en/: 0 violation(s); needs review: color-contrast",
+      "/en/privacy/: 0 violation(s); needs review: color-contrast",
+      "/en/licenses/: 0 violation(s); needs review: color-contrast",
+      "/es/: 0 violation(s); needs review: color-contrast",
+      "/es/privacy/: 0 violation(s); needs review: color-contrast",
+      "/es/licenses/: 0 violation(s); needs review: color-contrast",
+      "/pl/: 0 violation(s); needs review: color-contrast",
+      "/pl/privacy/: 0 violation(s); needs review: color-contrast",
+      "/pl/licenses/: 0 violation(s); needs review: color-contrast",
+      "/ru/: 0 violation(s); needs review: color-contrast",
+      "/ru/privacy/: 0 violation(s); needs review: color-contrast",
+      "/ru/licenses/: 0 violation(s); needs review: color-contrast",
+      "a11y: 0 violations"
+    ]
+  },
+  "axeOnOpenedCatalogue": [
+    "en 375: violations []; incomplete (see note) ... passed rules 30",
+    "es 375: violations []; incomplete (see note) ... passed rules 30",
+    "pl 375: violations []; incomplete (see note) ... passed rules 30",
+    "ru 375: violations []; incomplete (see note) ... passed rules 30",
+    "en 1440: violations []; incomplete (see note) ... passed rules 29",
+    "es 1440: violations []; incomplete (see note) ... passed rules 29",
+    "pl 1440: violations []; incomplete (see note) ... passed rules 29",
+    "ru 1440: violations []; incomplete (see note) ... passed rules 29"
+  ],
+  "axeNote": "no violations; axe's incomplete items in #tune are symbols (+, arrows, digits) it cannot rate as text, and the eyebrow next to the section's image-free heading",
+  "screenshots": {
+    "en-desktop-viewport.png": "1440x900, the section as a visitor lands on it (#tune)",
+    "en-desktop-section.png": "the whole section at 1440 wide (sticky header hidden for the capture)",
+    "en-desktop-row-open.png": "a row opened: help text, setting id, deep link into the simulator",
+    "en-desktop-search.png": "search 'gravity': 2 of 17, both rows opened, the empty column gone",
+    "en-mobile-viewport.png": "375x812 on arrival",
+    "en-mobile-section.png": "the whole section at 375 wide",
+    "en-mobile-search.png": "search at 375",
+    "ru-desktop-section.png": "Russian at 1440",
+    "ru-mobile-part1.png": "Russian at 375, the Display / Controls / Drone & physics cards"
+  }
+}
