@@ -1,9 +1,9 @@
 {
   "name": "b-fly-b10",
   "context": {
-    "date": "2026-09-27T02:08:26.397Z",
-    "gitHead": "d3513c0",
-    "gitDirty": true,
+    "date": "2026-09-27T07:34:48.527Z",
+    "gitHead": "ac6b57e",
+    "gitDirty": false,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
@@ -28,21 +28,21 @@
         "yaw": {
           "index": 3,
           "invert": false,
-          "center": 0.028446206116306123,
+          "center": 0.030309862273185727,
           "min": -0.9765625,
           "max": 0.9990234375
         },
         "pitch": {
           "index": 2,
           "invert": true,
-          "center": 0.02950269376828213,
-          "min": -0.9794921875,
+          "center": 0.028947944803226124,
+          "min": -0.978515625,
           "max": 0.9990234375
         },
         "roll": {
           "index": 1,
           "invert": false,
-          "center": 0.03079890373985397,
+          "center": 0.029854402846487202,
           "min": -0.978515625,
           "max": 0.9990234375
         }
@@ -57,16 +57,16 @@
       },
       "angleMode": null,
       "deadband": 0,
-      "created": "2026-09-27T02:07:28.184Z",
+      "created": "2026-09-27T07:33:56.024Z",
       "wizard": 2
     },
     "mappingCorrect": true
   },
   "throttleUpClimbs": {
     "armed": true,
-    "y0": 1.1194755720919072,
-    "y1": 1.7507972253652717,
-    "climbed": 0.6313216532733645
+    "y0": 1.1454523694932996,
+    "y1": 1.8022074025487116,
+    "climbed": 0.6567550330554119
   },
   "survivesReload": true,
   "controls": {
@@ -86,22 +86,22 @@
           "yaw": {
             "index": 3,
             "invert": false,
-            "center": 0.030503140793130854,
-            "min": -0.9775390625,
+            "center": 0.02976138239439975,
+            "min": -0.9755859375,
             "max": 0.9990234375
           },
           "pitch": {
             "index": 1,
             "invert": false,
-            "center": 0.02959464270855672,
-            "min": -0.9775390625,
+            "center": 0.031488614413146654,
+            "min": -0.9755859375,
             "max": 0.9990234375
           },
           "roll": {
             "index": 0,
             "invert": false,
-            "center": 0.03163571931409048,
-            "min": -0.978515625,
+            "center": 0.029147333116350985,
+            "min": -0.9775390625,
             "max": 0.9990234375
           }
         },
@@ -115,7 +115,7 @@
         },
         "angleMode": null,
         "deadband": 0,
-        "created": "2026-09-27T02:07:59.321Z",
+        "created": "2026-09-27T07:34:21.038Z",
         "wizard": 2
       },
       "fired": true

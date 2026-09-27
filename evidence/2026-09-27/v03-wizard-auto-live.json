@@ -1,0 +1,265 @@
+{
+ "site": "https://gsfpv.flyreelstudio.eu",
+ "release": "ac6b57e = hub 85548f3f7007",
+ "what": "wizard with Liftoff-style pacing on the live site: a fake radio pilot that NEVER presses a button (&nobuttons=1, every press dropped) moves its sticks like a person and reaches the check screen through all 23 screens in 26 s; no Start/Next button was visible on any screen; the human model at 375x812 also completes (33 s). Idle and tiny-movement pilots never pass (packages/input/test/auto.test.ts, with the auto-off control).",
+ "runs": {
+  "nobuttons": {
+   "seconds": 26,
+   "end": {
+    "id": "check",
+    "profile": true,
+    "startOrNextVisible": false
+   },
+   "screens": 23,
+   "path": [
+    {
+     "t": 25,
+     "k": "connect/null",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 518,
+     "k": "stir/ready",
+     "buttons": "wizard-mode,radio-close,wizard-mode-2,wizard-mode-1,wizard-back,wizard-restart"
+    },
+    {
+     "t": 978,
+     "k": "stir/active",
+     "buttons": "wizard-mode,radio-close,wizard-mode-2,wizard-mode-1,wizard-back,wizard-restart"
+    },
+    {
+     "t": 4389,
+     "k": "stir/done",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 5280,
+     "k": "centre/ready",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 5724,
+     "k": "centre/active",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 6614,
+     "k": "centre/done",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 7503,
+     "k": "throttle/ready",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 7949,
+     "k": "throttle/active",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 9461,
+     "k": "throttle/done",
+     "buttons": "wizard-mode,radio-close,reverse-throttle,wizard-back,wizard-restart"
+    },
+    {
+     "t": 10356,
+     "k": "yaw/ready",
+     "buttons": "wizard-mode,radio-close,reverse-throttle,wizard-back,wizard-restart"
+    },
+    {
+     "t": 11041,
+     "k": "yaw/active",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 12342,
+     "k": "yaw/done",
+     "buttons": "wizard-mode,radio-close,reverse-yaw,wizard-back,wizard-restart"
+    },
+    {
+     "t": 14074,
+     "k": "pitch/ready",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 14737,
+     "k": "pitch/active",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 16072,
+     "k": "pitch/done",
+     "buttons": "wizard-mode,radio-close,reverse-pitch,wizard-back,wizard-restart"
+    },
+    {
+     "t": 18068,
+     "k": "roll/ready",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 18558,
+     "k": "roll/active",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 19896,
+     "k": "roll/done",
+     "buttons": "wizard-mode,radio-close,reverse-roll,wizard-back,wizard-restart"
+    },
+    {
+     "t": 21661,
+     "k": "arm/ready",
+     "buttons": "wizard-mode,radio-close,pick-ch-5,pick-ch-6,pick-ch-7,pick-ch-8,wizard-skip-arm,wizard-back,wizard-restart"
+    },
+    {
+     "t": 22138,
+     "k": "arm/active",
+     "buttons": "wizard-mode,radio-close,pick-ch-5,pick-ch-6,pick-ch-7,pick-ch-8,wizard-skip-arm,wizard-back,wizard-restart"
+    },
+    {
+     "t": 24702,
+     "k": "arm/done",
+     "buttons": "wizard-mode,radio-close,reverse-arm,pick-ch-5,pick-ch-6,pick-ch-7,pick-ch-8,wizard-skip-arm,wizard-back,wizard-restart"
+    },
+    {
+     "t": 25611,
+     "k": "check/null",
+     "buttons": "wizard-mode,radio-close,reverse-throttle,wizard-redo-throttle,reverse-yaw,wizard-redo-yaw,reverse-pitch,wizard-redo-pitch,reverse-roll,wizard-redo-roll,reverse-arm,wizard-redo-arm,wizard-export,wizard-import,wizard-done,wizard-back,wizard-restart"
+    }
+   ],
+   "errors": []
+  },
+  "human": {
+   "seconds": 33,
+   "end": {
+    "id": "check",
+    "profile": true,
+    "startOrNextVisible": false
+   },
+   "screens": 23,
+   "path": [
+    {
+     "t": 2,
+     "k": "connect/null",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 386,
+     "k": "stir/ready",
+     "buttons": "wizard-mode,radio-close,wizard-mode-2,wizard-mode-1,wizard-back,wizard-restart"
+    },
+    {
+     "t": 762,
+     "k": "stir/active",
+     "buttons": "wizard-mode,radio-close,wizard-mode-2,wizard-mode-1,wizard-back,wizard-restart"
+    },
+    {
+     "t": 3808,
+     "k": "stir/done",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 4606,
+     "k": "centre/ready",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 5143,
+     "k": "centre/active",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 6745,
+     "k": "centre/done",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 7709,
+     "k": "throttle/ready",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 8247,
+     "k": "throttle/active",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 9459,
+     "k": "throttle/done",
+     "buttons": "wizard-mode,radio-close,reverse-throttle,wizard-back,wizard-restart"
+    },
+    {
+     "t": 10239,
+     "k": "yaw/ready",
+     "buttons": "wizard-mode,radio-close,reverse-throttle,wizard-back,wizard-restart"
+    },
+    {
+     "t": 10992,
+     "k": "yaw/active",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 11960,
+     "k": "yaw/done",
+     "buttons": "wizard-mode,radio-close,reverse-yaw,wizard-back,wizard-restart"
+    },
+    {
+     "t": 13371,
+     "k": "pitch/ready",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 13910,
+     "k": "pitch/active",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 14899,
+     "k": "pitch/done",
+     "buttons": "wizard-mode,radio-close,reverse-pitch,wizard-back,wizard-restart"
+    },
+    {
+     "t": 16110,
+     "k": "roll/ready",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 16860,
+     "k": "roll/active",
+     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    },
+    {
+     "t": 17837,
+     "k": "roll/done",
+     "buttons": "wizard-mode,radio-close,reverse-roll,wizard-back,wizard-restart"
+    },
+    {
+     "t": 19222,
+     "k": "arm/ready",
+     "buttons": "wizard-mode,radio-close,pick-ch-5,pick-ch-6,pick-ch-7,pick-ch-8,wizard-skip-arm,wizard-back,wizard-restart"
+    },
+    {
+     "t": 19794,
+     "k": "arm/active",
+     "buttons": "wizard-mode,radio-close,pick-ch-5,pick-ch-6,pick-ch-7,pick-ch-8,wizard-skip-arm,wizard-back,wizard-restart"
+    },
+    {
+     "t": 32332,
+     "k": "arm/done",
+     "buttons": "wizard-mode,radio-close,pick-ch-5,pick-ch-6,pick-ch-7,pick-ch-8,wizard-back,wizard-restart"
+    },
+    {
+     "t": 33316,
+     "k": "check/null",
+     "buttons": "wizard-mode,radio-close,reverse-throttle,wizard-redo-throttle,reverse-yaw,wizard-redo-yaw,reverse-pitch,wizard-redo-pitch,reverse-roll,wizard-redo-roll,wizard-redo-arm,wizard-export,wizard-import,wizard-done,wizard-back,wizard-restart"
+    }
+   ],
+   "errors": []
+  }
+ },
+ "acceptFly": {
+  "B10": true,
+  "B11": true
+ }
+}
