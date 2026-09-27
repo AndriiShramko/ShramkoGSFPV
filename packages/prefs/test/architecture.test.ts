@@ -51,6 +51,56 @@ describe('architecture rule 1.4', () => {
     });
 });
 
+/**
+ * The prefs review (docs/wip/wave1-reports.json, prefsReview.mustFix[0]): the first rule fired only
+ * on a name followed by '.' or '(', so the lines browser.ts itself uses to reach storage passed in
+ * the core. Each line below must fail the rule in store.ts; the same line in browser.ts must pass
+ * (the control: the failure comes from the rule's scope, not from a broken copy of the tree).
+ */
+const BYPASSES: [string, string][] = [
+    ['globalThis property', 'export const a = () => globalThis.localStorage ?? null;'],
+    ['bare window as a value', "export const b = () => (typeof window === 'undefined' ? null : window);"],
+    ['globalThis IndexedDB', 'export const c = () => globalThis.indexedDB ?? null;'],
+    ['bare localStorage kept in a variable', 'export const d = () => { const ls = localStorage; return ls; };'],
+    ['optional chaining on globalThis', "export const e = () => globalThis.location?.origin ?? '';"],
+    ['globalThis with a string index', "export const f = () => globalThis['sessionStorage'];"],
+    ['globalThis kept in a variable', 'export const g = () => { const G = globalThis; return G; };'],
+    ['self as the window', 'export const k = () => self.navigator;'],
+    ['code inside a template literal', 'export const h = () => `${document.title}`;'],
+    ['bare navigator after an operator', 'export const m = () => !!navigator;']
+];
+
+describe('architecture rule 1.4: bypasses found by the review', () => {
+    for (const [name, line] of BYPASSES) {
+        it(`fails on ${name} in the core`, () => {
+            const r = runRuleOnCopy({ file: 'store.ts', line });
+            expect(r.out).toMatch(/prefs touches the DOM outside browser\.ts .*store\.ts/);
+            expect(r.code).toBe(1);
+        });
+    }
+
+    it('control: every bypass line passes in browser.ts, so the failures above are the rule\'s scope', () => {
+        const r = runRuleOnCopy({ file: 'browser.ts', line: BYPASSES.map(([, l]) => l).join('\n') });
+        expect(r.out).toContain('architecture rules: ok');
+        expect(r.code).toBe(0);
+    });
+
+    it('text is not code: DOM names inside strings, template text and comments pass; a property named like a global passes', () => {
+        const lines = [
+            "export const s1 = 'window.localStorage is only named here';",
+            'export const s2 = "globalThis.indexedDB, navigator and document in prose";',
+            'export const s3 = `the document (A.4) and the window of a tab`;',
+            "export const s4 = 'a quote \\' then window.localStorage';",
+            '/* a block comment: window.document, globalThis.localStorage */',
+            'export const p1 = (o: { document: number; location: string }) => o.document + o.location.length;',
+            "export const p2 = 'http://x//y' + (1 / 2);"
+        ];
+        const r = runRuleOnCopy({ file: 'store.ts', line: lines.join('\n') });
+        expect(r.out).toContain('architecture rules: ok');
+        expect(r.code).toBe(0);
+    });
+});
+
 describe('no dependencies', () => {
     it('prefs sources import only each other', () => {
         const bad: string[] = [];
