@@ -46,6 +46,12 @@ jobs:
       - name: Dictionary check (same keys and placeholders in all 4 locales)
         run: pnpm --filter @gsfpv/site i18n:check
 
+      # the site build reads the committed features.json, so this runs before it; a stale catalogue
+      # (schema, keymap, presets or texts changed without re-running the generator) fails here,
+      # then the step's own negative control must catch a planted stale label
+      - name: Settings catalogue up to date (site features.json, docs/settings.md, README block, llms.txt)
+        run: node --import tsx scripts/gen-catalog.ts --check
+
       - name: Unit tests, rate vectors, tunnelling and determinism subset
         run: pnpm vitest run
 
