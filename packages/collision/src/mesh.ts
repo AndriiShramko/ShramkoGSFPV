@@ -120,6 +120,12 @@ export interface ChunkMesh {
 export interface ChunkOptions {
     /** blockComponents(col) of the same voxel data, to fill ChunkMesh.component. */
     components?: BlockComponents;
+    /**
+     * buildChunkBlockFaces only: close the chunk at its borders (cells outside it count as empty).
+     * A block-level chunk next to a voxel-level one then has no crack: where a block is solid but
+     * the voxels facing it across the border are empty, its side is still drawn.
+     */
+    closedBorder?: boolean;
 }
 
 /** The chunk (in units of `size` voxels) holding a world point of `col`. */
@@ -208,11 +214,14 @@ export function buildChunkBlockFaces(col: VoxelCollision, chunk: { x: number; y:
     const E = cells + 2;
     const occ = new Uint8Array(E * E * E);
     let solidInside = 0;
+    const closed = !!opts.closedBorder;
     forEachBlock(col, [o[0] - 1, o[1] - 1, o[2] - 1], [o[0] + cells + 1, o[1] + cells + 1, o[2] + cells + 1], (bx, by, bz) => {
         const lx = bx - o[0] + 1, ly = by - o[1] + 1, lz = bz - o[2] + 1;
         if (lx < 0 || ly < 0 || lz < 0 || lx >= E || ly >= E || lz >= E) return;
+        const inside = lx > 0 && ly > 0 && lz > 0 && lx <= cells && ly <= cells && lz <= cells;
+        if (!inside && closed) return;
         occ[(lz * E + ly) * E + lx] = 1;
-        if (lx > 0 && ly > 0 && lz > 0 && lx <= cells && ly <= cells && lz <= cells) solidInside++;
+        if (inside) solidInside++;
     });
     if (solidInside === 0) return emptyMesh(comp);
     return facesFromOcc(col, occ, cells, o, 4, comp);

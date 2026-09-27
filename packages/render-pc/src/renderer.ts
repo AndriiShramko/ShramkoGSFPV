@@ -391,6 +391,15 @@ export class SplatRenderer {
         comp.lodRangeMax = mode === 'final' ? 0 : 1000;
     }
 
+    /** Show or hide the scan (the voxel overlay's "voxels only"): the splats stop drawing, nothing is unloaded. */
+    setSplatVisible(on: boolean): void {
+        if (this.splat) this.splat.enabled = on;
+    }
+
+    get splatVisible(): boolean {
+        return !!this.splat?.enabled;
+    }
+
     /** Upper bound of splats drawn per frame, in millions (the quality governor moves it). */
     setSplatBudgetMillions(m: number): void {
         this.app.scene.gsplat.splatBudget = Math.round(m * 1_000_000);

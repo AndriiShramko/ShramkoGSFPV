@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import {
     openVoxelCollision, buildChunkFaces, buildChunkBlockFaces, chunkDims, blockComponents, blockDims,
-    overlayChunk, overlayChunkSize, occupiedChunks, floaterComponents, planChunks, chunkKey, chunkOfKey, FLOATER_M3
+    overlayChunk, overlayChunkSize, occupiedChunks, floaterComponents, planChunks, planChunksAround, chunkKey, chunkOfKey, FLOATER_M3
 } from '../src/index';
 import type { VoxelCollision } from '../src/index';
 import { blocksFromFn, encodeCollision, loadFixture, sameSet, unrollQuads } from './helpers';
@@ -103,6 +103,35 @@ describe('block-level faces (far level of detail)', () => {
             c += buildChunkBlockFaces(room, { x, y, z }, 32).faces;
         }
         expect(c * 10).toBeLessThan(f);
+    });
+});
+
+describe('closed borders for the block level (no crack beside a voxel-level chunk)', () => {
+    it('with closedBorder, the faces are brute force with everything outside the chunk empty; control: open borders differ', () => {
+        const col = GRIDS[0].col;
+        const solid = blockSolidFn(col);
+        const [cx, cy, cz] = chunkDims(col, 32);
+        let extra = 0;
+        for (let z = 0; z < cz; z++) for (let y = 0; y < cy; y++) for (let x = 0; x < cx; x++) {
+            const cells = 8;
+            const inChunk = (bx: number, by: number, bz: number): boolean =>
+                bx >= x * cells && bx < (x + 1) * cells && by >= y * cells && by < (y + 1) * cells && bz >= z * cells && bz < (z + 1) * cells && solid(bx, by, bz);
+            const brute = new Set<string>();
+            for (let k = 0; k < cells; k++) for (let j = 0; j < cells; j++) for (let i = 0; i < cells; i++) {
+                const bx = x * cells + i, by = y * cells + j, bz = z * cells + k;
+                if (!inChunk(bx, by, bz)) continue;
+                for (let d = 0; d < 6; d++) if (!inChunk(bx + DIR[d][0], by + DIR[d][1], bz + DIR[d][2])) brute.add(`${d},${bx},${by},${bz}`);
+            }
+            const m = buildChunkBlockFaces(col, { x, y, z }, 32, { closedBorder: true });
+            const u = unrollQuads(asBlocks(col), m);
+            expect(sameSet(brute, u.faces)).toEqual({ missing: 0, extra: 0 });
+            expect(u.badWinding).toBe(0);
+            extra += m.faces - buildChunkBlockFaces(col, { x, y, z }, 32).faces;
+        }
+        // the floor slab crosses chunk borders: closing them adds faces there
+        expect(extra).toBeGreaterThan(0);
+        // overlayChunk's level 1 is the closed one
+        expect(overlayChunk(col, { x: 0, y: 0, z: 0 }, 32, 1).faces).toBe(buildChunkBlockFaces(col, { x: 0, y: 0, z: 0 }, 32, { closedBorder: true }).faces);
     });
 });
 
@@ -238,5 +267,50 @@ describe('occupied chunks and the chunk plan', () => {
         expect([0.05, 0.032, 0.016, 0.008, 0.2].map(overlayChunkSize)).toEqual([48, 76, 128, 128, 32]);
         for (const r of [0.05, 0.032, 0.016]) expect(overlayChunkSize(r) % 4).toBe(0);
         expect(() => overlayChunkSize(0)).toThrow(RangeError);
+    });
+});
+
+describe('the plan finds exactly the chunks within the radius, and looks further when there are none', () => {
+    const { meta, bin, spawn } = loadFixture();
+    const col = openVoxelCollision(meta, bin);
+    const size = overlayChunkSize(col.voxelResolution);
+    const occ = new Set(occupiedChunks(col, blockComponents(col), size));
+    const dims = chunkDims(col, size);
+    const cm = size * col.voxelResolution;
+    /** brute force: every occupied chunk, distance from the (format 1.0 flipped) point to its box */
+    function brute(x: number, y: number, z: number, r: number): number[] {
+        const p = [col.flipXY ? -x : x, col.flipXY ? -y : y, z];
+        const g = [col.gridMinX, col.gridMinY, col.gridMinZ];
+        const out: [number, number][] = [];
+        for (const k of occ) {
+            const c = chunkOfKey(dims, k);
+            const d = Math.hypot(...[0, 1, 2].map((a) => { const lo = g[a] + c[a] * cm; return p[a] < lo ? lo - p[a] : p[a] > lo + cm ? p[a] - lo - cm : 0; }));
+            if (d <= r) out.push([d, k]);
+        }
+        return out.sort((a, b) => a[0] - b[0] || a[1] - b[1]).map((e) => e[1]);
+    }
+    const all = { radius: 0, fineQuads: 1e12, coarseQuads: 0 };
+
+    it('the box walk (small radius) and the occupied walk (wide radius) both equal brute force', () => {
+        for (const r of [3, 8, 60]) {
+            const plan = planChunks(col, size, occ, spawn[0], spawn[1], spawn[2], { ...all, radius: r });
+            expect(plan.chunks.map((c) => c.key)).toEqual(brute(spawn[0], spawn[1], spawn[2], r));
+        }
+        // 60 m: the box of chunks is larger than the grid's occupied list, the other walk ran
+        expect(Math.min(dims[0], 2 * Math.ceil(60 / cm) + 3) * Math.min(dims[1], 2 * Math.ceil(60 / cm) + 3) * Math.min(dims[2], 2 * Math.ceil(60 / cm) + 3)).toBeGreaterThan(occ.size);
+    });
+
+    it('high above the scan: nothing within 12 m, so the radius doubles until the nearest walls are in', () => {
+        const up = spawn[1] + 40;
+        expect(planChunks(col, size, occ, spawn[0], up, spawn[2], { ...all, radius: 12 }).chunks.length).toBe(0);
+        const far = planChunksAround(col, size, occ, spawn[0], up, spawn[2], { ...all, radius: 12 });
+        expect(far.searchRadius).toBeGreaterThanOrEqual(24);
+        expect(far.chunks.length).toBeGreaterThan(0);
+        expect(far.chunks.map((c) => c.key)).toEqual(brute(spawn[0], up, spawn[2], far.searchRadius));
+        // control: at the spawn the radius stays as asked
+        const near = planChunksAround(col, size, occ, spawn[0], spawn[1], spawn[2], { ...all, radius: 12 });
+        expect(near.searchRadius).toBe(12);
+        // and a point nowhere near the grid stops at the cap with nothing
+        expect(planChunksAround(col, size, occ, 5000, 0, 0, { ...all, radius: 12 }, 100)).toMatchObject({ searchRadius: 100, chunks: [] });
     });
 });

@@ -90,6 +90,8 @@ class KeyCard {
             row(caps('A', 'D'), t('arm.keys.yaw')),
             this.rows.sticks,
             row(caps('M'), t('arm.keys.mode')),
+            row(caps('V'), t('arm.keys.voxels')),
+            row(caps('C'), t('arm.keys.walls')),
             row(caps('R'), t('arm.keys.respawn')),
             row(caps('P', 'Esc'), t('arm.keys.pause')));
         this.el = h('div', { class: 'arm-card key-card hidden' }, h('div', {}, h('h3', {}, t('arm.keys.title')), this.now, list));
@@ -180,6 +182,8 @@ export class Hud {
     private last = 0;
     visible = true;
     rec = false;
+    /** the walls are switched off (C): a tag on the OSD's top line, the pilot must not forget it */
+    wallsOff = false;
     /** Arm kind 'key' (no switch on the radio): the on-screen ARM / DISARM button. */
     onArm: (() => void) | null = null;
 
@@ -204,10 +208,15 @@ export class Hud {
         this.textOff = !this.textOff;
         this.ui.classList.toggle('hud-off', this.textOff);
         this.root.style.display = this.visible && !this.textOff ? '' : 'none';
-        this.note.textContent = t(this.textOff ? 'hud.textOff' : 'hud.textOn');
+        this.flash(t(this.textOff ? 'hud.textOff' : 'hud.textOn'));
+    }
+
+    /** A short note under the OSD's top line (H, walls C, voxels V): what a key just did. */
+    flash(text: string, ms = 2500): void {
+        this.note.textContent = text;
         this.note.hidden = false;
         clearTimeout(this.noteTimer);
-        this.noteTimer = window.setTimeout(() => { this.note.hidden = true; }, 2500);
+        this.noteTimer = window.setTimeout(() => { this.note.hidden = true; }, ms);
     }
 
     /** Text widths of the corner line, measured once per text (it is one line, fly.css nowrap). */
@@ -255,7 +264,8 @@ export class Hud {
         if (this.ui.classList.contains('hud-flying') !== flying) this.ui.classList.toggle('hud-flying', flying);
         const status = hd.crashed ? `<span class="crash">${t('hud.crash')}</span>` : hd.armed ? `<span class="armed">${t('hud.armed')}</span>` : `<span class="disarmed">${t('hud.disarmed')}</span>`;
         const mode = s.sim.ch[5] > 0.5 ? t('hud.angle') : t('hud.acro');
-        this.tl.innerHTML = `${status} · ${mode}${this.rec ? ` · <span class="rec">● ${t('hud.rec')}</span>` : ''}`;
+        const walls = this.wallsOff ? ` · <span class="walls-off" data-testid="hud-walls-off">${t('hud.wallsOff')}</span>` : '';
+        this.tl.innerHTML = `${status} · ${mode}${walls}${this.rec ? ` · <span class="rec">● ${t('hud.rec')}</span>` : ''}`;
         this.tr.textContent = `${fmt(hd.volts, 1)} V  ${fmt(hd.timeS, 1)} s`;
         this.bl.textContent = `THR ${hd.throttlePct}%  ${fmt(hd.speed, 1)} m/s  ALT ${fmt(hd.altitude, 1)} m`;
         const src = view?.source ?? null;
@@ -388,7 +398,11 @@ export interface SettingsValues {
     pid: { roll: number[]; pitch: number[]; yaw: number[] };
 }
 
-export function settingsPanel(parent: HTMLElement, v: SettingsValues, twr: number, onApply: (v: SettingsValues) => void, onClose: () => void): void {
+/**
+ * `extra`: sections that apply at once (the walls switch and voxel grid, ui/voxels.ts), shown
+ * before Advanced; everything else waits for Apply.
+ */
+export function settingsPanel(parent: HTMLElement, v: SettingsValues, twr: number, onApply: (v: SettingsValues) => void, onClose: () => void, extra: HTMLElement[] = []): void {
     const p = panel(t('settings.title'), () => { p.close(); onClose(); });
     const lang = h('select', { 'aria-label': t('settings.language') }) as HTMLSelectElement;
     for (const l of LOCALES) lang.append(h('option', { value: l }, t(`lang.${l}`)));
@@ -449,6 +463,7 @@ export function settingsPanel(parent: HTMLElement, v: SettingsValues, twr: numbe
         num(t('settings.fov'), v.fov, 70, 150, 1, 'fov', '°'),
         num(t('settings.uptilt'), v.uptilt, 0, 50, 1, 'uptilt', '°'),
         h('label', { class: 'set-row' }, h('span', {}, t('settings.hud')), hudBox),
+        ...extra,
         adv,
         h('button', { type: 'button', class: 'btn primary', 'data-action': 'apply', onclick: () => { p.close(); onApply(v); } }, t('settings.apply'))
     );

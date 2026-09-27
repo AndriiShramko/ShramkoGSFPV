@@ -76,7 +76,8 @@ export interface OverlayChunk {
  * floater flag per quad (`floaters` from floaterComponents of the same `comp`).
  */
 export function overlayChunk(col: VoxelCollision, chunk: { x: number; y: number; z: number }, size: number, lod: 0 | 1, comp?: BlockComponents, floaters?: Uint8Array): OverlayChunk {
-    const m = (lod === 0 ? buildChunkFaces : buildChunkBlockFaces)(col, chunk, size, comp ? { components: comp } : {});
+    // level 1 chunks are closed at their borders: next to a level 0 chunk they leave no crack
+    const m = lod === 0 ? buildChunkFaces(col, chunk, size, comp ? { components: comp } : {}) : buildChunkBlockFaces(col, chunk, size, { ...(comp ? { components: comp } : {}), closedBorder: true });
     const quads = m.indices.length / 6;
     const nv = quads * 4;
     const normals = new Float32Array(nv * 3);
@@ -142,18 +143,30 @@ export function planChunks(col: VoxelCollision, size: number, occupied: Readonly
     const reach = Math.ceil(o.radius / cm) + 1;
     const found: PlannedChunk[] = [];
     const dist1 = (p: number, lo: number): number => (p < lo ? lo - p : p > lo + cm ? p - lo - cm : 0);
-    for (let cz = Math.max(0, c[2] - reach); cz <= Math.min(dims[2] - 1, c[2] + reach); cz++) {
-        const dz = dist1(pz, g[2] + cz * cm);
-        if (dz > o.radius) continue;
-        for (let cy = Math.max(0, c[1] - reach); cy <= Math.min(dims[1] - 1, c[1] + reach); cy++) {
-            const dy = dist1(py, g[1] + cy * cm);
-            if (Math.hypot(dy, dz) > o.radius) continue;
-            for (let cx = Math.max(0, c[0] - reach); cx <= Math.min(dims[0] - 1, c[0] + reach); cx++) {
-                const key = chunkKey(dims, cx, cy, cz);
-                if (!occupied.has(key)) continue;
-                const d = Math.hypot(dist1(px, g[0] + cx * cm), dy, dz);
-                if (d > o.radius) continue;
-                found.push({ key, x: cx, y: cy, z: cz, lod: 0, dist: d });
+    const lo = [Math.max(0, c[0] - reach), Math.max(0, c[1] - reach), Math.max(0, c[2] - reach)];
+    const hi = [Math.min(dims[0] - 1, c[0] + reach), Math.min(dims[1] - 1, c[1] + reach), Math.min(dims[2] - 1, c[2] + reach)];
+    const cube = Math.max(0, hi[0] - lo[0] + 1) * Math.max(0, hi[1] - lo[1] + 1) * Math.max(0, hi[2] - lo[2] + 1);
+    if (cube > occupied.size) {
+        // a wide radius over a sparse grid: fewer occupied chunks than cells in the box, so walk those
+        for (const key of occupied) {
+            const [cx, cy, cz] = chunkOfKey(dims, key);
+            const d = Math.hypot(dist1(px, g[0] + cx * cm), dist1(py, g[1] + cy * cm), dist1(pz, g[2] + cz * cm));
+            if (d <= o.radius) found.push({ key, x: cx, y: cy, z: cz, lod: 0, dist: d });
+        }
+    } else {
+        for (let cz = lo[2]; cz <= hi[2]; cz++) {
+            const dz = dist1(pz, g[2] + cz * cm);
+            if (dz > o.radius) continue;
+            for (let cy = lo[1]; cy <= hi[1]; cy++) {
+                const dy = dist1(py, g[1] + cy * cm);
+                if (Math.hypot(dy, dz) > o.radius) continue;
+                for (let cx = lo[0]; cx <= hi[0]; cx++) {
+                    const key = chunkKey(dims, cx, cy, cz);
+                    if (!occupied.has(key)) continue;
+                    const d = Math.hypot(dist1(px, g[0] + cx * cm), dy, dz);
+                    if (d > o.radius) continue;
+                    found.push({ key, x: cx, y: cy, z: cz, lod: 0, dist: d });
+                }
             }
         }
     }
@@ -180,4 +193,18 @@ export function planChunks(col: VoxelCollision, size: number, occupied: Readonly
         allR = ch.dist;
     }
     return { chunks: out, fineRadius: fineR, radius: allR, fineQuads: fine, coarseQuads: coarse };
+}
+
+/**
+ * planChunks, with the radius doubled (up to maxRadius) while it finds nothing: a camera high
+ * above an aerial scan (723068d7 starts 42 m over the ground) still sees the nearest walls. The
+ * budgets are the same, so a wider radius never draws more faces.
+ */
+export function planChunksAround(col: VoxelCollision, size: number, occupied: ReadonlySet<number>, x: number, y: number, z: number, o: PlanOptions, maxRadius = 160): ChunkPlan & { searchRadius: number } {
+    let r = o.radius;
+    for (;;) {
+        const plan = planChunks(col, size, occupied, x, y, z, { ...o, radius: r });
+        if (plan.chunks.length > 0 || r >= maxRadius) return { ...plan, searchRadius: r };
+        r = Math.min(maxRadius, r * 2);
+    }
 }

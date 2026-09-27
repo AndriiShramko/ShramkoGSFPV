@@ -1,7 +1,9 @@
 // /fly entry: preflight -> scene picker -> flight (HUD, controls, crash, pause, settings).
 // URL: ?scene=<id|link>&drone=<preset>&g=<m/s2>&gm=<honest|same-twr|auto-throttle>
 // Test-only switches (never linked): ?simradio=scenario|open|raw, ?lat=1, ?lagFrames=N, ?guard=0,
-// ?refine=auto|offer|off (finer walls: the plan's choice, only on request, never), ?bake=1.
+// ?refine=auto|offer|off (finer walls: the plan's choice, only on request, never), ?bake=1,
+// ?walls=on|off (this load only, not remembered), ?voxels=overlay|only&vstyle=solid|wire|height|floaters
+// &vopacity=0..1&vradius=m (the voxel grid for screenshots and checks; nothing remembered).
 import { S, InputLog, parseBetaflightDiff } from '@gsfpv/sim-core';
 import type { SimEvent, ParamOverrides } from '@gsfpv/sim-core';
 import { parseSceneInput, recordOpen, recordFlight, SceneError } from '@gsfpv/scenes';
@@ -22,6 +24,11 @@ import type { Profile } from '@gsfpv/input';
 import { CrashView } from './crashview';
 import { mountWalls } from './walls';
 import type { WallsHook } from './walls';
+import { initialWallsOn, loadWallsChoice, saveWallsChoice } from './flightwalls';
+import { VoxelController } from './voxels';
+import type { VoxelMode, VoxelStats, VoxelStyle } from './voxels';
+import { wallsVoxelsControls, voxelLegend } from './ui/voxels';
+import type { WallsSwitch } from './ui/voxels';
 import { t, locale } from './i18n';
 import { h, clear, panel } from './ui/dom';
 import { ScenePicker, loadShowcase } from './ui/scenes';
@@ -75,6 +82,10 @@ interface TestHook {
     downloadBaked?: () => boolean;
     /** the walls in use, the refine, the walls store (walls.ts) */
     walls?: WallsHook;
+    /** the pilot's walls switch (C): on / off, and the current log header that records it */
+    wallsSwitch?: { on: () => boolean; set: (on: boolean) => void; state: () => string; header: () => InputLog['header'] };
+    /** the voxel grid (V): mode, style, opacity, what is drawn */
+    voxels?: { stats: () => VoxelStats; perf: () => VoxelController['perf']; settled: () => boolean; setMode: (m: VoxelMode) => void; setStyle: (s: VoxelStyle) => void; setOpacity: (a: number) => void; setRadius: (m: number) => void };
     /** phase D: the exported trajectory as text (the same text the export button saves) */
     trajectoryText?: (kind: 'csv' | 'json') => string;
     governor?: FrameGovernor;
@@ -225,9 +236,12 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
     const g = q.get('g');
     const gm = q.get('gm') as ParamOverrides['gravityMode'] | null;
     let session: FlightSession;
+    // walls on or off: ?walls= (tests, this load only), the pilot's own choice for this scan, the scan's default
+    const wallsOn = initialWallsOn(meta?.walls, loadWallsChoice(sceneId), q.get('walls'));
     try {
         session = await FlightSession.start(canvas, {
             sceneId,
+            wallsOn,
             preset: q.get('drone') ?? undefined,
             overrides: { gravity: g ? Number(g) : undefined, gravityMode: gm ?? undefined },
             latencyMarker: q.get('lat') === '1',
@@ -270,14 +284,44 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
     // takedown path: the landing's contact form opens with role "takedown" and the scene id filled in
     attr.append(' · ', h('a', { href: `/${locale}/?report=${sceneId}#contact`, target: '_blank', rel: 'noopener', 'data-testid': 'report-scene' }, t('scenes.report')));
     ui.append(attr);
+    // the voxel grid (V) and the walls switch (C): one block in the walls menu and one in Settings
+    const voxels = new VoxelController(session);
+    let wallsHook: WallsHook | null = null;
+    let hudRef: Hud | null = null;
+    const wallsSwitch: WallsSwitch = { has: () => !!session.collision, on: () => session.wallsOn, set: (on) => setWalls(on), adminOff: meta?.walls === 'off' };
+    /** Walls on or off for this scan: a new flight model and log (session.setWallsOn), remembered per scan. */
+    function setWalls(on: boolean, remember = true): void {
+        if (!session.collision) return;
+        afterCrashCleared();
+        if (!session.setWallsOn(on)) return;
+        if (remember) saveWallsChoice(sceneId, on);
+        wallsHook?.switched(on);
+        if (hudRef) {
+            hudRef.wallsOff = !on;
+            hudRef.flash(t(on ? 'walls.switchedOn' : 'walls.switchedOff'), 3500);
+        }
+        voxels.touch();
+        beacon('walls_switch', { on });
+    }
     // walls: the phase C build for a scan without them, finer walls for coarse ones (walls.ts); the
     // automated modes (bot radio, latency probe) fly the shipped walls unless ?refine= says otherwise
     const refineQ = q.get('refine');
-    mountWalls({
+    wallsHook = mountWalls({
         ui, session, sceneId, beacon, hook,
         mode: refineQ === 'auto' || refineQ === 'offer' || refineQ === 'off' ? refineQ : q.get('simradio') || q.get('lat') === '1' ? 'off' : 'auto',
-        bakeNow: q.get('bake') === '1'
+        bakeNow: q.get('bake') === '1',
+        controls: wallsVoxelsControls(voxels, wallsSwitch, 'wm')
     });
+    hook.wallsSwitch = { on: () => session.wallsOn, set: (on) => setWalls(on, false), state: () => session.walls, header: () => session.log.header };
+    hook.voxels = {
+        stats: () => voxels.stats(),
+        perf: () => ({ ...voxels.perf }),
+        settled: () => voxels.settled,
+        setMode: (m) => voxels.setMode(m),
+        setStyle: (st) => voxels.configure({ style: st }),
+        setOpacity: (a) => voxels.configure({ opacity: a }),
+        setRadius: (m) => { voxels.radiusM = Math.max(2, Math.min(60, m)); }
+    };
     // S5: another world with the same motors -> say what that does to thrust / weight before flying
     const gNow = session.params.gravity;
     if (gNow > 0 && gNow < 9.8 && (session.overrides.gravityMode ?? 'honest') === 'honest') {
@@ -291,6 +335,9 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
     const crash = new CrashView(session);
     hook.crash = crash;
     const hud = new Hud(ui);
+    hud.wallsOff = !!session.collision && !session.wallsOn;
+    hudRef = hud;
+    voxelLegend(ui, voxels);
     // quality governor: holds the display's frame rate; the settings "quality" is its ceiling
     const governor = new FrameGovernor();
     governor.enabled = q.get('governor') !== '0';
@@ -367,6 +414,7 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
         if (frameDelay > 0) { const end = now + frameDelay; while (performance.now() < end) { /* simulated overload */ } }
         if (!cinemaOn && governor.onFrame(now, s.renderer.frameAfterSkip)) applyQuality();
         controls.tick(now);
+        voxels.frame(now);
         if (!crash.active) crash.trackCamera();
         crash.frame(now);
         hud.update(s, controls.block, s.frameStats(), controls.view());
@@ -485,7 +533,7 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
                     afterCrashCleared();
                     session.rebuildSim(session.presetId, o);
                     session.pause(false);
-                }, () => session.pause(false));
+                }, () => session.pause(false), [h('section', { class: 'set-section', 'data-testid': 'settings-walls-voxels' }, h('h3', {}, t('settings.wallsVoxels')), wallsVoxelsControls(voxels, wallsSwitch, 'set'))]);
             },
             replays: () => {
                 closePause = null;
@@ -610,6 +658,12 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
             else { afterCrashCleared(); session.respawn(false); }
         }
         if (e.code === 'F3') { hud.toggleFrameStats(); e.preventDefault(); }
+        // V: the voxel grid off / over the scan / voxels only; C: walls (collisions) on / off
+        if ((e.code === 'KeyV' || e.code === 'KeyC') && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            if (!session.collision) hud.flash(t(e.code === 'KeyV' ? 'voxels.noWalls' : 'walls.none'), 3500);
+            else if (e.code === 'KeyV') hud.flash(t('voxels.flash', { mode: t(`voxels.mode.${voxels.cycle()}`) }));
+            else setWalls(!session.wallsOn);
+        }
     });
     document.addEventListener('visibilitychange', () => {
         // already paused (Controls, settings, a picker): a pause menu on top would resume the flight under it
@@ -732,12 +786,22 @@ async function fly(sceneId: string, showcase: ShowcaseScene[]): Promise<void> {
         });
     }
 
+    // test switches for the voxel grid (screenshots, checks): this load only, nothing remembered
+    const vq = q.get('voxels');
+    const vs = q.get('vstyle');
+    const vo = q.get('vopacity');
+    const vr = q.get('vradius');
+    if (vr) voxels.radiusM = Math.max(2, Math.min(60, Number(vr) || voxels.radiusM));
+    if (vs || vo) voxels.configure({ style: (vs as VoxelStyle | null) ?? undefined, opacity: vo ? Number(vo) : undefined, mode: vq === 'overlay' || vq === 'only' ? vq : undefined });
+    if (vq === 'overlay' || vq === 'only') voxels.setMode(vq);
+
     hook.info = {
         webgpu: session.renderer.isWebGPU,
         currentRenderer: session.renderer.currentRenderer,
         gpuSort: session.renderer.currentRenderer === GSPLAT_RENDERER_RASTER_GPU_SORT,
         hasCollision: !!session.collision,
         collisionSha256: session.collisionSha256,
+        walls: session.walls,
         timings: session.timings,
         spawn: session.spawn,
         preset: session.presetId,
@@ -815,7 +879,8 @@ function measureReport(s: FlightSession, c: Controls): Record<string, unknown> {
         inputHz: null,
         pipelineMs: null,
         loadMs: s.timings.visibleMs,
-        collision: s.collision ? `voxel ${Math.round(s.collision.voxelResolution * 1000) / 10} cm, ${s.collision.flipXY ? 'format 1.0' : 'format 1.1'}` : 'none',
+        collision: s.collision ? `voxel ${Math.round(s.collision.voxelResolution * 1000) / 10} cm, ${s.collision.flipXY ? 'format 1.0' : 'format 1.1'}${s.wallsOn ? '' : ', switched off'}` : 'none',
+        walls: s.walls,
         tunnelSelfTest: tt ? t('tunnel.pass', { n: tt.passes, v: tt.speed, bad: tt.penetrations }) : '—',
         simCore: s.log.header.simCore,
         preset: s.presetId,
