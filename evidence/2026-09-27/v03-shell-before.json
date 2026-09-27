@@ -1,0 +1,3738 @@
+{
+ "name": "v03-shell-before",
+ "what": "tools/bench/src/accept-fly.ts B6-B17 (file unchanged), run locally against the Vite dev server of this commit, for the v0.3 wave 1 app-shell refactor (W1-2): same pass/fail and numbers within noise before and after",
+ "commit": "5db30a2",
+ "run": {
+  "server": "vite dev server of apps/fly at this commit, http://127.0.0.1:5312 (LOCAL_FLY=1, SITE=http://127.0.0.1:5312)",
+  "driver": "a verbatim copy of accept-fly.ts and evidence.ts in a gitignored runner dir; browser.ts launch() swapped for the preinstalled Playwright Chromium (/opt/pw-browsers/chromium, Chromium 141) headful under xvfb-run (no system Chrome, no display); same viewport, no extra flags; GSFPV_REPO pointed at a scratch dir so the committed evidence/2026-09-27/b-fly-*.json were not overwritten",
+  "env": {
+   "platform": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
+   "cpus": 4,
+   "gpu": "none: WebGPU has no adapter, WebGL runs in SwiftShader (software), the scan renders at about 1 frame/s after load"
+  },
+  "B17_CRASHES": 3
+ },
+ "limits": {
+  "B6": "renderer 1 (WebGL) instead of 2 (WebGPU GPU sort): no WebGPU adapter here; data: and blob: requests show as host \"\" (outside the allow-list); the two error pages come up in English, not Russian (LOCAL_FLY has no locale path)",
+  "B7": "LOCAL_FLY serves /fly/ without the locale path, so es/pl/ru pages come up in English (en rows and the control pass)",
+  "B8": "no Firefox build installed (/opt/pw-browsers has Chromium only); history, filter and the no-WebGPU shim parts pass",
+  "B10": "the simulated person does not finish the calibration wizard in the 60 s the harness allows at about 1 frame/s (step 2 of 6)",
+  "B11": "follows B10: no profile saved, the gate says noProfile",
+  "B12": "the bot does not crash within the 120 s wait (physics at about 56 steps per wall second, B15): the harness throws at the Respawn click and stops; the DOM walk covers crash panel and Respawn with a 10 min wait",
+  "B14": "the 10 s hover controller runs against a sim at about 0.06x real time: the craft settles and counts as crashed",
+  "B15": "replay hashes match in a new tab (pass part), but steps per wall second are about 56, not 1000",
+  "B17": "no crash within the N x 40 s = 120 s the harness allows (B17_CRASHES=3); one bot crash took 451 s here even at render scale 0.25 (the DOM walk, starting commit)"
+ },
+ "summary": {
+  "B6": false,
+  "B7": false,
+  "B8": false,
+  "B9": true,
+  "B10": false,
+  "B11": false,
+  "B12": false,
+  "B13": true,
+  "B14": false,
+  "B15": false,
+  "B16": true,
+  "B17": false
+ },
+ "invocations": [
+  {
+   "items": "B6-B17 (all)",
+   "results": [
+    "B6 FAIL",
+    "B7 FAIL",
+    "B8 FAIL",
+    "B9 PASS",
+    "B10 FAIL",
+    "B11 FAIL"
+   ],
+   "exception": "page.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('[data-action=\"respawn\"]')",
+   "exit": "exit 1"
+  },
+  {
+   "items": "B12",
+   "results": [],
+   "exception": "page.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('[data-action=\"respawn\"]')",
+   "exit": "exit 1"
+  },
+  {
+   "items": "B13 B14 B15 B16 B17",
+   "results": [
+    "B13 PASS",
+    "B14 FAIL",
+    "B15 FAIL",
+    "B16 PASS",
+    "B17 FAIL"
+   ],
+   "exception": null,
+   "exit": "exit 0"
+  }
+ ],
+ "items": {
+  "B6": {
+   "site": "http://127.0.0.1:5312",
+   "pass": false,
+   "frameNotEmptyRule": "luminance std > 0.04",
+   "runs": [
+    {
+     "id": "39e63ce9",
+     "form": "39e63ce9",
+     "status": "ready",
+     "hasCollision": true,
+     "renderer": 1,
+     "visibility": "visible",
+     "loadMs": 17194.800000000047,
+     "pixelStd": 0.14768639124285549,
+     "pixelMean": 0.5622267510478689,
+     "hosts": [
+      "127.0.0.1:5312",
+      "d28zzqy0iyovbz.cloudfront.net",
+      "s3-eu-west-1.amazonaws.com",
+      ""
+     ],
+     "outside": [
+      ""
+     ],
+     "pageerrors": []
+    },
+    {
+     "id": "39e63ce9",
+     "form": "https://superspl.at/scene/39e63ce9",
+     "status": "ready",
+     "hasCollision": true,
+     "renderer": 1,
+     "visibility": "visible",
+     "loadMs": 21668.299999999814,
+     "pixelStd": 0.14768639124285549,
+     "pixelMean": 0.5622267510478689,
+     "hosts": [
+      "d28zzqy0iyovbz.cloudfront.net",
+      "127.0.0.1:5312",
+      "s3-eu-west-1.amazonaws.com",
+      ""
+     ],
+     "outside": [
+      ""
+     ],
+     "pageerrors": []
+    },
+    {
+     "id": "39e63ce9",
+     "form": "https://superspl.at/s?id=39e63ce9",
+     "status": "ready",
+     "hasCollision": true,
+     "renderer": 1,
+     "visibility": "visible",
+     "loadMs": 8947.800000000047,
+     "pixelStd": 0.14768639124285549,
+     "pixelMean": 0.5622267510478689,
+     "hosts": [
+      "127.0.0.1:5312",
+      "d28zzqy0iyovbz.cloudfront.net",
+      "s3-eu-west-1.amazonaws.com",
+      ""
+     ],
+     "outside": [
+      ""
+     ],
+     "pageerrors": []
+    },
+    {
+     "id": "7a475d38",
+     "form": "7a475d38",
+     "status": "ready",
+     "hasCollision": true,
+     "renderer": 1,
+     "visibility": "visible",
+     "loadMs": 13617.399999999907,
+     "pixelStd": 0.2207146670369769,
+     "pixelMean": 0.4859151701164189,
+     "hosts": [
+      "127.0.0.1:5312",
+      "d28zzqy0iyovbz.cloudfront.net",
+      "s3-eu-west-1.amazonaws.com",
+      ""
+     ],
+     "outside": [
+      ""
+     ],
+     "pageerrors": []
+    },
+    {
+     "id": "7a475d38",
+     "form": "https://superspl.at/scene/7a475d38",
+     "status": "ready",
+     "hasCollision": true,
+     "renderer": 1,
+     "visibility": "visible",
+     "loadMs": 23651.299999999814,
+     "pixelStd": 0.22070754182667598,
+     "pixelMean": 0.48591511383884545,
+     "hosts": [
+      "127.0.0.1:5312",
+      "d28zzqy0iyovbz.cloudfront.net",
+      "s3-eu-west-1.amazonaws.com",
+      ""
+     ],
+     "outside": [
+      ""
+     ],
+     "pageerrors": []
+    },
+    {
+     "id": "7a475d38",
+     "form": "https://superspl.at/s?id=7a475d38",
+     "status": "ready",
+     "hasCollision": true,
+     "renderer": 1,
+     "visibility": "visible",
+     "loadMs": 20874.80000000028,
+     "pixelStd": 0.22070754182667598,
+     "pixelMean": 0.48591511383884545,
+     "hosts": [
+      "127.0.0.1:5312",
+      "s3-eu-west-1.amazonaws.com",
+      "d28zzqy0iyovbz.cloudfront.net",
+      ""
+     ],
+     "outside": [
+      ""
+     ],
+     "pageerrors": []
+    },
+    {
+     "id": "887f27aa",
+     "form": "887f27aa",
+     "status": "ready",
+     "hasCollision": true,
+     "renderer": 1,
+     "visibility": "visible",
+     "loadMs": 14315.5,
+     "pixelStd": 0.23494512425994388,
+     "pixelMean": 0.4902976146078493,
+     "hosts": [
+      "127.0.0.1:5312",
+      "d28zzqy0iyovbz.cloudfront.net",
+      "s3-eu-west-1.amazonaws.com",
+      ""
+     ],
+     "outside": [
+      ""
+     ],
+     "pageerrors": []
+    },
+    {
+     "id": "887f27aa",
+     "form": "https://superspl.at/scene/887f27aa",
+     "status": "ready",
+     "hasCollision": true,
+     "renderer": 1,
+     "visibility": "visible",
+     "loadMs": 14963.100000000093,
+     "pixelStd": 0.23494044343334886,
+     "pixelMean": 0.4902908947518447,
+     "hosts": [
+      "d28zzqy0iyovbz.cloudfront.net",
+      "127.0.0.1:5312",
+      "s3-eu-west-1.amazonaws.com",
+      ""
+     ],
+     "outside": [
+      ""
+     ],
+     "pageerrors": []
+    },
+    {
+     "id": "887f27aa",
+     "form": "https://superspl.at/s?id=887f27aa",
+     "status": "ready",
+     "hasCollision": true,
+     "renderer": 1,
+     "visibility": "visible",
+     "loadMs": 21095.600000000093,
+     "pixelStd": 0.23494052332803975,
+     "pixelMean": 0.49029138420343765,
+     "hosts": [
+      "127.0.0.1:5312",
+      "s3-eu-west-1.amazonaws.com",
+      "d28zzqy0iyovbz.cloudfront.net",
+      ""
+     ],
+     "outside": [
+      ""
+     ],
+     "pageerrors": []
+    }
+   ],
+   "errors": [
+    {
+     "input": "00000000",
+     "status": "error",
+     "errorCode": "not-found",
+     "text": "This scene does not exist on SuperSplat or is not public.",
+     "expected": "\u0422\u0430\u043a\u043e\u0439 \u0441\u0446\u0435\u043d\u044b \u043d\u0435\u0442 \u043d\u0430 SuperSplat, \u0438\u043b\u0438 \u043e\u043d\u0430 \u043d\u0435 \u043f\u0443\u0431\u043b\u0438\u0447\u043d\u0430\u044f.",
+     "ok": false,
+     "pageerrors": []
+    },
+    {
+     "input": "https://example.com/scene/39e63ce9",
+     "status": "picker",
+     "errorCode": "invalid-link",
+     "text": "This is not a SuperSplat link or scene id. Paste a link like superspl.at/scene/39e63ce9.",
+     "expected": "\u042d\u0442\u043e \u043d\u0435 \u0441\u0441\u044b\u043b\u043a\u0430 SuperSplat \u0438 \u043d\u0435 ID \u0441\u0446\u0435\u043d\u044b. \u0412\u0441\u0442\u0430\u0432\u044c \u0441\u0441\u044b\u043b\u043a\u0443 \u0432\u0438\u0434\u0430 superspl.at/scene/39e63ce9.",
+     "ok": false,
+     "pageerrors": []
+    }
+   ],
+   "control": {
+    "blankPageStd": 1.0536712127723509e-08,
+    "fired": true
+   },
+   "ranAt": "2026-09-27T21:04:00.343Z"
+  },
+  "B7": {
+   "site": "http://127.0.0.1:5312",
+   "pass": false,
+   "rows": [
+    {
+     "id": "723068d7",
+     "l": "en",
+     "status": "ready",
+     "hasCollision": false,
+     "badge": "Scan without walls: you can fly around, but you cannot crash",
+     "expected": "Scan without walls: you can fly around, but you cannot crash"
+    },
+    {
+     "id": "723068d7",
+     "l": "es",
+     "status": "ready",
+     "hasCollision": false,
+     "badge": "Scan without walls: you can fly around, but you cannot crash",
+     "expected": "Escaneo sin paredes: puedes volar por todas partes, pero no te puedes estrellar"
+    },
+    {
+     "id": "723068d7",
+     "l": "pl",
+     "status": "ready",
+     "hasCollision": false,
+     "badge": "Scan without walls: you can fly around, but you cannot crash",
+     "expected": "Skan bez \u015bcian: mo\u017cesz lata\u0107, ale si\u0119 nie rozbijesz"
+    },
+    {
+     "id": "723068d7",
+     "l": "ru",
+     "status": "ready",
+     "hasCollision": false,
+     "badge": "Scan without walls: you can fly around, but you cannot crash",
+     "expected": "\u0421\u043a\u0430\u043d \u0431\u0435\u0437 \u0441\u0442\u0435\u043d: \u043b\u0435\u0442\u0430\u0442\u044c \u043c\u043e\u0436\u043d\u043e, \u0430 \u0440\u0430\u0437\u0431\u0438\u0442\u044c\u0441\u044f \u2014 \u043d\u0435\u0442"
+    },
+    {
+     "id": "bd04e182",
+     "l": "en",
+     "status": "ready",
+     "hasCollision": false,
+     "badge": "Scan without walls: you can fly around, but you cannot crash",
+     "expected": "Scan without walls: you can fly around, but you cannot crash"
+    },
+    {
+     "id": "bd04e182",
+     "l": "es",
+     "status": "ready",
+     "hasCollision": false,
+     "badge": "Scan without walls: you can fly around, but you cannot crash",
+     "expected": "Escaneo sin paredes: puedes volar por todas partes, pero no te puedes estrellar"
+    },
+    {
+     "id": "bd04e182",
+     "l": "pl",
+     "status": "ready",
+     "hasCollision": false,
+     "badge": "Scan without walls: you can fly around, but you cannot crash",
+     "expected": "Skan bez \u015bcian: mo\u017cesz lata\u0107, ale si\u0119 nie rozbijesz"
+    },
+    {
+     "id": "bd04e182",
+     "l": "ru",
+     "status": "ready",
+     "hasCollision": false,
+     "badge": "Scan without walls: you can fly around, but you cannot crash",
+     "expected": "\u0421\u043a\u0430\u043d \u0431\u0435\u0437 \u0441\u0442\u0435\u043d: \u043b\u0435\u0442\u0430\u0442\u044c \u043c\u043e\u0436\u043d\u043e, \u0430 \u0440\u0430\u0437\u0431\u0438\u0442\u044c\u0441\u044f \u2014 \u043d\u0435\u0442"
+    }
+   ],
+   "control": {
+    "scene": "39e63ce9",
+    "badges": 0,
+    "fired": true
+   },
+   "ranAt": "2026-09-27T21:08:08.563Z"
+  },
+  "B8": {
+   "site": "http://127.0.0.1:5312",
+   "pass": false,
+   "history": {
+    "before": 3,
+    "afterReload": 3,
+    "filterKept": true
+   },
+   "control": {
+    "afterClearingStorage": 0,
+    "fired": true
+   },
+   "noWebgpuShim": {
+    "shimTookEffect": true,
+    "status": "ready",
+    "banner": "This browser has no WebGPU. You can look at the scan, but flying needs Chrome or Edge on a computer.",
+    "pixelStd": 0.1653405136303946
+   },
+   "firefox": {
+    "ran": false,
+    "error": "Error: browserType.launch: Executable doesn't exist at /opt/pw-browsers/firefox-1543/firefox/firefox\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551 Looks like Playwright was just installed or updated.       \u2551\n\u2551 Please run the following command to download new browsers: \u2551\n\u2551         "
+   },
+   "ranAt": "2026-09-27T21:09:38.520Z"
+  },
+  "B9": {
+   "site": "http://127.0.0.1:5312",
+   "pass": true,
+   "method": "thrust stand in the model: motors spun up while held, released 20 ms, (a+g)/g",
+   "rows": [
+    {
+     "preset": "pavo20pro-3s",
+     "twrPreset": 5,
+     "twrMeasured": 4.9851679102691735
+    },
+    {
+     "preset": "pavo20pro2-3s",
+     "twrPreset": 5.9,
+     "twrMeasured": 5.879903291067844
+    },
+    {
+     "preset": "pavopico-2s",
+     "twrPreset": 4,
+     "twrMeasured": 3.9896946009128404
+    }
+   ],
+   "sourceLabels": 30,
+   "cards": 6,
+   "control": {
+    "picoMeasured": 3.9896946009128404,
+    "defaultMeasured": 4.9851679102691735,
+    "fired": true
+   },
+   "ranAt": "2026-09-27T21:11:21.822Z"
+  },
+  "B10": {
+   "site": "http://127.0.0.1:5312",
+   "pass": false,
+   "radio": "SimRadio EdgeTX Classic (simulated raw HID reports, NOT a real radio)",
+   "good": {
+    "step": 2,
+    "profile": null,
+    "mappingCorrect": false
+   },
+   "throttleUpClimbs": {
+    "armed": false,
+    "y0": 1.5809873342514038,
+    "y1": 1.5809873342514038,
+    "climbed": 0
+   },
+   "survivesReload": false,
+   "controls": {
+    "otherOrder": {
+     "profile": null,
+     "fired": false
+    },
+    "brokenStick": {
+     "step": 1,
+     "message": "wizard.say.stir.active",
+     "fired": true
+    }
+   },
+   "ranAt": "2026-09-27T21:17:01.242Z"
+  },
+  "B11": {
+   "site": "http://127.0.0.1:5312",
+   "pass": false,
+   "positive": {
+    "lowThrottleAndSwitchEdge": {
+     "armed": false,
+     "block": "noProfile"
+    }
+   },
+   "controls": {
+    "throttleNotLow": {
+     "armed": false,
+     "block": "noProfile"
+    },
+    "switchOnAtLoad": {
+     "onAtLoadArmed": false,
+     "afterOffOnArmed": true
+    },
+    "gamepadZeroAxesTrap": {
+     "armed": false,
+     "block": "throttle"
+    }
+   },
+   "ranAt": "2026-09-27T21:20:23.032Z"
+  },
+  "B12": {
+   "pass": false,
+   "threw": "page.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('[data-action=\"respawn\"]')",
+   "note": "no evidence file: the harness threw at page.click([data-action=\"respawn\"]) because the bot pilot had not crashed within its 120 s wait at about 1 frame/s (software WebGL); the same exception ends the full run"
+  },
+  "B13": {
+   "site": "http://127.0.0.1:5312",
+   "pass": true,
+   "oracle": "every tick: each body sphere resampled every voxel/4 with the upstream querySphere",
+   "rows": [
+    {
+     "id": "39e63ce9",
+     "passes": 20,
+     "speed": 25,
+     "contacts": 20,
+     "penetrations": 0
+    },
+    {
+     "id": "887f27aa",
+     "passes": 20,
+     "speed": 25,
+     "contacts": 20,
+     "penetrations": 0
+    },
+    {
+     "id": "7a475d38",
+     "passes": 20,
+     "speed": 25,
+     "contacts": 20,
+     "penetrations": 0
+    }
+   ],
+   "ranAt": "2026-09-27T21:32:53.120Z"
+  },
+  "B14": {
+   "site": "http://127.0.0.1:5312",
+   "pass": false,
+   "note": "touch through CDP Input.dispatchTouchEvent in system Chrome with hasTouch; input=touch because desktop Chrome has WebHID",
+   "rows": [
+    {
+     "viewport": "375x812",
+     "pauseButtonReachable": true,
+     "armedByButton": true,
+     "bothPairsOneFrame": {
+      "ch": [
+       -0.4163264036178589,
+       0.3122446537017822,
+       -0.936735212802887,
+       0.3122449517250061
+      ],
+      "ok": true
+     },
+     "hover": {
+      "seconds": 10,
+      "crashed": true,
+      "armedAll": false,
+      "minY": -0.0686969587168029,
+      "maxY": -0.06820859440524457,
+      "target": 1.7343491964228313
+     },
+     "view": {
+      "scrollX": 0,
+      "scrollY": 0,
+      "scale": 1
+     },
+     "control": {
+      "outsideTouch": {
+       "before": [
+        0,
+        0,
+        -1,
+        0
+       ],
+       "after": [
+        0,
+        0,
+        -1,
+        0
+       ],
+       "fired": true
+      }
+     }
+    },
+    {
+     "viewport": "1024x768",
+     "pauseButtonReachable": true,
+     "armedByButton": true,
+     "bothPairsOneFrame": {
+      "ch": [
+       -0.4095241129398346,
+       0.3071427047252655,
+       -0.9214288592338562,
+       0.30714288353919983
+      ],
+      "ok": true
+     },
+     "hover": {
+      "seconds": 10,
+      "crashed": true,
+      "armedAll": false,
+      "minY": -0.06849863302825306,
+      "maxY": -0.06792029645980807,
+      "target": 1.7525550754498262
+     },
+     "view": {
+      "scrollX": 0,
+      "scrollY": 0,
+      "scale": 1
+     },
+     "control": {
+      "outsideTouch": {
+       "before": [
+        0,
+        0,
+        -1,
+        0
+       ],
+       "after": [
+        0,
+        0,
+        -1,
+        0
+       ],
+       "fired": true
+      }
+     }
+    }
+   ],
+   "ranAt": "2026-09-27T21:40:29.241Z"
+  },
+  "B15": {
+   "site": "http://127.0.0.1:5312",
+   "pass": false,
+   "flight": {
+    "phase": "box",
+    "flip": {
+     "startTick": 5753,
+     "endTick": 6203,
+     "minUpY": -0.9999998791417972
+    },
+    "crash": null,
+    "tick": 21501
+   },
+   "saved": {
+    "hash": "ad5b6d318f8fe046d1875c33d4d38e2ea7f4a1d5110d205a3aa7d7a1aea7a2a2",
+    "endTick": 21751,
+    "records": 5251
+   },
+   "newTab": {
+    "saved": "ad5b6d318f8fe046d1875c33d4d38e2ea7f4a1d5110d205a3aa7d7a1aea7a2a2",
+    "hash": "ad5b6d318f8fe046d1875c33d4d38e2ea7f4a1d5110d205a3aa7d7a1aea7a2a2",
+    "endTick": 21751
+   },
+   "cpuThrottle": {
+    "x1": {
+     "stepsPerWallSecond": 56.22526088521169,
+     "hitches": 90
+    },
+    "x4": {
+     "stepsPerWallSecond": 36.05708557788594,
+     "hitches": 94
+    }
+   },
+   "control": {
+    "hash": "1ff2925229eaaa850e9d366a02650a0933338f1eb7b1a32db28fd74e2569e13f",
+    "differs": true,
+    "maxDivergenceM": 2.7549358367713366e-08,
+    "tamperedValue": -0.437522828578949,
+    "record": 2625
+   },
+   "ranAt": "2026-09-27T21:46:16.145Z"
+  },
+  "B16": {
+   "site": "http://127.0.0.1:5312",
+   "pass": true,
+   "method": "disarmed drop from the spawn until contact or 0.5 s, a = 2(\u0394y + v0 t)/t\u00b2",
+   "rows": [
+    {
+     "g": 9.81,
+     "measured": 9.59112596070684,
+     "fallM": 1.2086980586369818,
+     "relErr": -0.022311318990128504,
+     "warning": null
+    },
+    {
+     "g": 1.62,
+     "measured": 1.6164579440962081,
+     "fallM": 0.2036745594070959,
+     "relErr": -0.0021864542616000238,
+     "warning": "With the same motors under 1.62 m/s\u00b2 the craft has about 6.1\u00d7 the thrust-to-weight it has on Earth: it will be very twitchy. \"Keep thrust / weight\" makes it feel normal. The air is Earth air everywhere \u2014 gravity is a game setting here."
+    }
+   ],
+   "control": {
+    "sameAccelerationWouldFail": true,
+    "earthVsMoon": [
+     9.59112596070684,
+     1.6164579440962081
+    ],
+    "fired": true
+   },
+   "ranAt": "2026-09-27T21:48:05.440Z"
+  },
+  "B17": {
+   "site": "http://127.0.0.1:5312",
+   "pass": false,
+   "pageLost": null,
+   "navigations": [
+    {
+     "t": 4.184,
+     "url": "http://127.0.0.1:5312/fly/"
+    },
+    {
+     "t": 5.461,
+     "url": "http://127.0.0.1:5312/fly/"
+    }
+   ],
+   "consoleTail": [],
+   "rule": "WCAG 2.2 general flash: pairs of opposing relative-luminance changes >= 0.1 (darker < 0.8), max per 1 s window, whole frame and quarters; frames via CDP screencast",
+   "crashes": 0,
+   "frames": 29,
+   "maxFlashesPerSecond": 0,
+   "control": {
+    "strobeHz": 5,
+    "frames": 40,
+    "maxFlashesPerSecond": 5,
+    "fired": true
+   },
+   "ranAt": "2026-09-27T21:51:02.820Z"
+  }
+ },
+ "repeat": {
+  "why": "a second sample of the items whose numbers follow the frame rate (about 1 frame/s here), to show the spread",
+  "items": {
+   "B10": {
+    "site": "http://127.0.0.1:5312",
+    "pass": false,
+    "radio": "SimRadio EdgeTX Classic (simulated raw HID reports, NOT a real radio)",
+    "good": {
+     "step": 3,
+     "profile": null,
+     "mappingCorrect": false
+    },
+    "throttleUpClimbs": {
+     "armed": false,
+     "y0": 1.5809873342514038,
+     "y1": 1.5809873342514038,
+     "climbed": 0
+    },
+    "survivesReload": false,
+    "controls": {
+     "otherOrder": {
+      "profile": null,
+      "fired": false
+     },
+     "brokenStick": {
+      "step": 1,
+      "message": "wizard.say.stir.active",
+      "fired": true
+     }
+    },
+    "ranAt": "2026-09-27T23:30:57.775Z"
+   },
+   "B15": {
+    "site": "http://127.0.0.1:5312",
+    "pass": false,
+    "flight": {
+     "phase": "box",
+     "flip": {
+      "startTick": 5505,
+      "endTick": 5955,
+      "minUpY": -0.9999998791417972
+     },
+     "crash": null,
+     "tick": 25252
+    },
+    "saved": {
+     "hash": "43efee90e61bcfca98484815bacd73d9d7aca584e7cbea37f1130a789ef3165e",
+     "endTick": 25502,
+     "records": 6251
+    },
+    "newTab": {
+     "saved": "43efee90e61bcfca98484815bacd73d9d7aca584e7cbea37f1130a789ef3165e",
+     "hash": "43efee90e61bcfca98484815bacd73d9d7aca584e7cbea37f1130a789ef3165e",
+     "endTick": 25502
+    },
+    "cpuThrottle": {
+     "x1": {
+      "stepsPerWallSecond": 84.83491126269891,
+      "hitches": 105
+     },
+     "x4": {
+      "stepsPerWallSecond": 62.29675683084228,
+      "hitches": 109
+     }
+    },
+    "control": {
+     "hash": "4d7888e63a3e01d4dcfbe70f785e16199093c2f4b59f2d8afc030e70bdef79fe",
+     "differs": true,
+     "maxDivergenceM": 3.279729998700344e-08,
+     "tamperedValue": -0.43991225957870483,
+     "record": 3125
+    },
+    "ranAt": "2026-09-27T23:36:27.534Z"
+   },
+   "B17": {
+    "site": "http://127.0.0.1:5312",
+    "pass": false,
+    "pageLost": null,
+    "navigations": [
+     {
+      "t": 4.084,
+      "url": "http://127.0.0.1:5312/fly/"
+     },
+     {
+      "t": 4.686,
+      "url": "http://127.0.0.1:5312/fly/"
+     }
+    ],
+    "consoleTail": [],
+    "rule": "WCAG 2.2 general flash: pairs of opposing relative-luminance changes >= 0.1 (darker < 0.8), max per 1 s window, whole frame and quarters; frames via CDP screencast",
+    "crashes": 0,
+    "frames": 47,
+    "maxFlashesPerSecond": 0,
+    "control": {
+     "strobeHz": 5,
+     "frames": 61,
+     "maxFlashesPerSecond": 5,
+     "fired": true
+    },
+    "ranAt": "2026-09-27T23:38:59.384Z"
+   }
+  }
+ },
+ "domWalk": {
+  "site": "http://127.0.0.1:5312",
+  "steps": [
+   {
+    "name": "warning",
+    "status": "loading",
+    "actions": [
+     "warning-ok"
+    ],
+    "testids": [],
+    "paused": null,
+    "panels": 1,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "panel"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": null,
+    "voxelMode": null,
+    "crashed": null
+   },
+   {
+    "name": "picker",
+    "status": "picker",
+    "actions": [],
+    "testids": [],
+    "paused": null,
+    "panels": 0,
+    "screens": [
+     "screen scenes interactive"
+    ],
+    "uiClasses": "",
+    "uiChildren": [
+     "screen"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": null,
+    "voxelMode": null,
+    "crashed": null
+   },
+   {
+    "name": "flight",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "walls-menu-open",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "menu",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "pause.cinema",
+     "pause.continue",
+     "pause.drone",
+     "pause.import",
+     "pause.measure",
+     "pause.radio",
+     "pause.replays",
+     "pause.restart",
+     "pause.scene",
+     "pause.settings",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": true,
+    "panels": 1,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root",
+     "panel"
+    ],
+    "menu": [
+     {
+      "tag": "BUTTON",
+      "action": "pause.continue",
+      "aria": "Escape P",
+      "caps": [
+       "Esc",
+       "P"
+      ],
+      "label": "Continue",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.restart",
+      "aria": "R",
+      "caps": [
+       "R"
+      ],
+      "label": "Restart",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.scene",
+      "aria": null,
+      "caps": [],
+      "label": "Change scan",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.drone",
+      "aria": null,
+      "caps": [],
+      "label": "Drone",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.radio",
+      "aria": null,
+      "caps": [],
+      "label": "Controls",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.settings",
+      "aria": null,
+      "caps": [],
+      "label": "Settings",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.replays",
+      "aria": null,
+      "caps": [],
+      "label": "Replays",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.measure",
+      "aria": null,
+      "caps": [],
+      "label": "Measurements",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.import",
+      "aria": null,
+      "caps": [],
+      "label": "Import rates from Betaflight",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.cinema",
+      "aria": null,
+      "caps": [],
+      "label": "Cinema mode (on / off)",
+      "disabled": false
+     },
+     {
+      "tag": "A",
+      "action": null,
+      "aria": null,
+      "caps": [],
+      "label": "Work with us",
+      "disabled": false
+     }
+    ],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "open pause.settings",
+    "status": "ready",
+    "actions": [
+     "apply",
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "pid-grid",
+     "report-scene",
+     "settings-walls-voxels",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-set",
+     "walls-voxels-wm"
+    ],
+    "paused": true,
+    "panels": 1,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root",
+     "panel"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "closed pause.settings",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "open pause.drone",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "drone-close",
+     "drone-keep",
+     "drone-pick",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": true,
+    "panels": 0,
+    "screens": [
+     "screen drones interactive"
+    ],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root",
+     "screen"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "closed pause.drone",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "open pause.replays",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": true,
+    "panels": 1,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root",
+     "panel"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "closed pause.replays",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "open pause.measure",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "copy-report",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": true,
+    "panels": 1,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root",
+     "panel"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "closed pause.measure",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "open pause.import",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "import-apply",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": true,
+    "panels": 1,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root",
+     "panel"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "closed pause.import",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "open pause.radio",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "radio-close",
+     "radio-keyboard",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": true,
+    "panels": 0,
+    "screens": [
+     "screen radio interactive"
+    ],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root",
+     "screen"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "closed pause.radio",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "P over settings",
+    "status": "ready",
+    "actions": [
+     "apply",
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "pid-grid",
+     "report-scene",
+     "settings-walls-voxels",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-set",
+     "walls-voxels-wm"
+    ],
+    "paused": true,
+    "panels": 1,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root",
+     "panel"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "top pause",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "pause.cinema",
+     "pause.continue",
+     "pause.drone",
+     "pause.import",
+     "pause.measure",
+     "pause.radio",
+     "pause.replays",
+     "pause.restart",
+     "pause.scene",
+     "pause.settings",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": true,
+    "panels": 1,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root",
+     "panel"
+    ],
+    "menu": [
+     {
+      "tag": "BUTTON",
+      "action": "pause.continue",
+      "aria": "Escape P",
+      "caps": [
+       "Esc",
+       "P"
+      ],
+      "label": "Continue",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.restart",
+      "aria": "R",
+      "caps": [
+       "R"
+      ],
+      "label": "Restart",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.scene",
+      "aria": null,
+      "caps": [],
+      "label": "Change scan",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.drone",
+      "aria": null,
+      "caps": [],
+      "label": "Drone",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.radio",
+      "aria": null,
+      "caps": [],
+      "label": "Controls",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.settings",
+      "aria": null,
+      "caps": [],
+      "label": "Settings",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.replays",
+      "aria": null,
+      "caps": [],
+      "label": "Replays",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.measure",
+      "aria": null,
+      "caps": [],
+      "label": "Measurements",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.import",
+      "aria": null,
+      "caps": [],
+      "label": "Import rates from Betaflight",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.cinema",
+      "aria": null,
+      "caps": [],
+      "label": "Cinema mode (on / off)",
+      "disabled": false
+     },
+     {
+      "tag": "A",
+      "action": null,
+      "aria": null,
+      "caps": [],
+      "label": "Work with us",
+      "disabled": false
+     }
+    ],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "continue",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "top controls",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "radio-close",
+     "radio-keyboard",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": true,
+    "panels": 0,
+    "screens": [
+     "screen radio interactive"
+    ],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root",
+     "screen"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "controls closed",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "controls over menu",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "radio-close",
+     "radio-keyboard",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": true,
+    "panels": 0,
+    "screens": [
+     "screen radio interactive"
+    ],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root",
+     "screen"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "controls over menu closed",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "V",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "overlay",
+    "crashed": false
+   },
+   {
+    "name": "V x3",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": "Voxel grid: Off \u00b7 V",
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "C off",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "hud-walls-off",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": "Walls off: you fly through everything \u00b7 C",
+    "frameStatsShown": false,
+    "wallsOn": false,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "C on",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": "Walls on: crashes are back \u00b7 C",
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "H off",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "hud-off",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": "Text hidden \u00b7 H brings it back",
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "H on",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": "Text shown \u00b7 H hides it",
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "F3",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": true,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "R",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "R in menu",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "Esc opens menu",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "pause.cinema",
+     "pause.continue",
+     "pause.drone",
+     "pause.import",
+     "pause.measure",
+     "pause.radio",
+     "pause.replays",
+     "pause.restart",
+     "pause.scene",
+     "pause.settings",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": true,
+    "panels": 1,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root",
+     "panel"
+    ],
+    "menu": [
+     {
+      "tag": "BUTTON",
+      "action": "pause.continue",
+      "aria": "Escape P",
+      "caps": [
+       "Esc",
+       "P"
+      ],
+      "label": "Continue",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.restart",
+      "aria": "R",
+      "caps": [
+       "R"
+      ],
+      "label": "Restart",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.scene",
+      "aria": null,
+      "caps": [],
+      "label": "Change scan",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.drone",
+      "aria": null,
+      "caps": [],
+      "label": "Drone",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.radio",
+      "aria": null,
+      "caps": [],
+      "label": "Controls",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.settings",
+      "aria": null,
+      "caps": [],
+      "label": "Settings",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.replays",
+      "aria": null,
+      "caps": [],
+      "label": "Replays",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.measure",
+      "aria": null,
+      "caps": [],
+      "label": "Measurements",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.import",
+      "aria": null,
+      "caps": [],
+      "label": "Import rates from Betaflight",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.cinema",
+      "aria": null,
+      "caps": [],
+      "label": "Cinema mode (on / off)",
+      "disabled": false
+     },
+     {
+      "tag": "A",
+      "action": null,
+      "aria": null,
+      "caps": [],
+      "label": "Work with us",
+      "disabled": false
+     }
+    ],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "Esc continues",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "P R in text field",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "import-apply",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": true,
+    "panels": 1,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root",
+     "panel"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "Esc from text field",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "P over drones",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "drone-close",
+     "drone-keep",
+     "drone-pick",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": true,
+    "panels": 0,
+    "screens": [
+     "screen drones interactive"
+    ],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root",
+     "screen"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "Esc over drones",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "hidden tab",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "pause.cinema",
+     "pause.continue",
+     "pause.drone",
+     "pause.import",
+     "pause.measure",
+     "pause.radio",
+     "pause.replays",
+     "pause.restart",
+     "pause.scene",
+     "pause.settings",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": true,
+    "panels": 1,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root",
+     "panel"
+    ],
+    "menu": [
+     {
+      "tag": "BUTTON",
+      "action": "pause.continue",
+      "aria": "Escape P",
+      "caps": [
+       "Esc",
+       "P"
+      ],
+      "label": "Continue",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.restart",
+      "aria": "R",
+      "caps": [
+       "R"
+      ],
+      "label": "Restart",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.scene",
+      "aria": null,
+      "caps": [],
+      "label": "Change scan",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.drone",
+      "aria": null,
+      "caps": [],
+      "label": "Drone",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.radio",
+      "aria": null,
+      "caps": [],
+      "label": "Controls",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.settings",
+      "aria": null,
+      "caps": [],
+      "label": "Settings",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.replays",
+      "aria": null,
+      "caps": [],
+      "label": "Replays",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.measure",
+      "aria": null,
+      "caps": [],
+      "label": "Measurements",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.import",
+      "aria": null,
+      "caps": [],
+      "label": "Import rates from Betaflight",
+      "disabled": false
+     },
+     {
+      "tag": "BUTTON",
+      "action": "pause.cinema",
+      "aria": null,
+      "caps": [],
+      "label": "Cinema mode (on / off)",
+      "disabled": false
+     },
+     {
+      "tag": "A",
+      "action": null,
+      "aria": null,
+      "caps": [],
+      "label": "Work with us",
+      "disabled": false
+     }
+    ],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "back",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "touch-root"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   },
+   {
+    "name": "crash overlay",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "replay",
+     "respawn",
+     "safe",
+     "save",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar",
+     "crash-overlay"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": true
+   },
+   {
+    "name": "after respawn",
+    "status": "ready",
+    "actions": [
+     "cinema-rec",
+     "hud-arm",
+     "hud-disarm",
+     "open-controls",
+     "pause",
+     "voxels-mode-off",
+     "voxels-mode-only",
+     "voxels-mode-overlay",
+     "voxels-opacity",
+     "voxels-style",
+     "walls-clear",
+     "walls-export",
+     "walls-import",
+     "walls-toggle"
+    ],
+    "testids": [
+     "attribution",
+     "bake-status",
+     "cinema-note",
+     "display-hint",
+     "latency-line",
+     "report-scene",
+     "voxel-legend",
+     "voxels-status",
+     "walls-box",
+     "walls-import-file",
+     "walls-in-use",
+     "walls-more",
+     "walls-note",
+     "walls-store",
+     "walls-summary",
+     "walls-voxels-wm"
+    ],
+    "paused": false,
+    "panels": 0,
+    "screens": [],
+    "uiClasses": "hud-flying",
+    "uiChildren": [
+     "attribution",
+     "bake-box",
+     "hud",
+     "hud-note",
+     "voxel-legend",
+     "top-actions",
+     "cinema-bar"
+    ],
+    "menu": [],
+    "hudNote": null,
+    "frameStatsShown": false,
+    "wallsOn": true,
+    "voxelMode": "off",
+    "crashed": false
+   }
+  ],
+  "crash": {
+   "waitedS": 451,
+   "state": {
+    "crash": {
+     "speed": 6.946691325077572,
+     "tick": 43241,
+     "engine": "rapier",
+     "debris": 2,
+     "maxAngularSpeed": 68.20272773813709,
+     "staticBoxes": 951,
+     "event": {
+      "type": "crash",
+      "tick": 43241,
+      "speed": 6.946691325077572,
+      "nx": 0.9852017983364664,
+      "ny": 0,
+      "nz": 0.17139841467934475,
+      "px": -0.5989255129311056,
+      "py": 1.90650714169293,
+      "pz": 0.650186931108381
+     }
+    },
+    "tick": 43254,
+    "phase": "crashed"
+   },
+   "overlay": true,
+   "afterRespawn": {
+    "crashed": true,
+    "overlays": 0,
+    "cameraOverride": true
+   }
+  },
+  "pageerrors": []
+ }
+}
