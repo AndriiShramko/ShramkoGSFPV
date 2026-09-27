@@ -144,6 +144,33 @@ describe('stuck (items 18, 23)', () => {
         expect(r.lives().length).toBe(1);
     });
 
+    /** On its back on the invisible platform, high over nothing (no scene): the director's world is `touch`. */
+    function onPlatform(touch: 'contactWorld' | 'scene'): Runner {
+        const at: [number, number, number, number] = [0, 5, 0, 0];
+        const r = newRunner({ world: null, at, opts: { platform: true } });
+        const p = r.sim.p;
+        r.director = new RespawnDirector({ ...DEFAULT_RESPAWN_POLICY }, () => at, new StateHistory(), () => (touch === 'contactWorld' ? r.sim.contactWorld : r.sim.world), p.boundRadius, hoverStickOf(p));
+        const s = r.sim.s;
+        s[S.qw] = 0; s[S.qx] = 0; s[S.qy] = 0; s[S.qz] = 1; // on its back, the duct spheres on the disc
+        s[S.hold] = 0;
+        runFrames(r, 60, 3_000_000);
+        return r;
+    }
+
+    it('flipped on the invisible platform (nothing else under it) counts as lying on something: reset at 1.50-1.51 s', () => {
+        const r = onPlatform('contactWorld');
+        expect(r.sim.s[S.py]).toBeGreaterThan(4.9); // it never fell: the disc held it
+        const L = r.lives()[1]?.header.life;
+        expect(L?.reason).toBe('stuck-flipped');
+        expect(L!.startTick).toBeGreaterThanOrEqual(1500);
+        expect(L!.startTick).toBeLessThanOrEqual(1510);
+    });
+
+    it('control: a director that tests the scene alone (sim.world) never sees it touching anything', () => {
+        const r = onPlatform('scene');
+        expect(r.lives().length).toBe(1);
+    });
+
     it('control: with respawn.unstuck off, the flipped craft stays', () => {
         const r = newRunner({ world: FLOOR, at: START });
         attachDirector(r, START, { unstuck: false });

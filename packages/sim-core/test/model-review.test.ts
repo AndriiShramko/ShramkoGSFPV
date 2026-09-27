@@ -67,6 +67,86 @@ describe('auto-throttle: hoverSolve().stick (the director reads it for the wedge
     });
 });
 
+describe('resting on the platform (C.2): the disc carries the craft at every duct, armed or not', () => {
+    /** Respawned armed at idle on the platform at (0, 5, 0) with nothing else in the world. */
+    function onDisc(mode: FlightMode, platform = true): Sim {
+        const sim = new Sim(params(), null);
+        sim.setChannels([0, 0, -1, 0, 1, MODE_CHANNEL[mode], 0, 0]);
+        sim.reset(0, 5, 0, 0, { platform, keepArmed: true });
+        return sim;
+    }
+    const tiltDeg = (sim: Sim) => (Math.acos(Math.min(1, 1 - 2 * (sim.s[S.qx] ** 2 + sim.s[S.qz] ** 2))) * 180) / Math.PI;
+
+    it('armed on it, then the switch off: 3 s later it still sits there, still, with no crash and no contact event after it settled', () => {
+        const sim = onDisc('angle');
+        for (let i = 0; i < 1000; i++) sim.step();
+        sim.setChannels([0, 0, -1, 0, -1, MODE_CHANNEL.angle, 0, 0]);
+        let late = 0;
+        for (let i = 0; i < 3000; i++) {
+            const n = sim.events.length;
+            sim.step();
+            for (let k = n; k < sim.events.length; k++) if (sim.events[k].type === 'contact' || sim.events[k].type === 'crash') late++;
+        }
+        const s = sim.s;
+        expect(sim.armed).toBe(false);
+        expect(sim.crashed).toBe(false);
+        expect(Math.abs(s[S.py] - 5)).toBeLessThan(0.005);
+        expect(Math.hypot(s[S.vx], s[S.vy], s[S.vz])).toBeLessThan(0.01);
+        expect(Math.hypot(s[S.wx], s[S.wy], s[S.wz])).toBeLessThan(0.1);
+        expect(late).toBe(0);
+    });
+
+    it('control: without the platform the same craft falls more than 1 m in those 3 s', () => {
+        const sim = onDisc('angle', false);
+        for (let i = 0; i < 1000; i++) sim.step();
+        sim.setChannels([0, 0, -1, 0, -1, MODE_CHANNEL.angle, 0, 0]);
+        for (let i = 0; i < 3000; i++) sim.step();
+        expect(5 - sim.s[S.py]).toBeGreaterThan(1);
+    });
+
+    /** 3 s armed at idle on the disc, then hover + 0.15 for 1 s: I-terms before, the largest tilt and the sideways drift of the climb. */
+    function liftOff(mode: FlightMode, windUp = false): { iMax: number; tilt: number; side: number } {
+        const sim = onDisc(mode);
+        const s = sim.s;
+        for (let i = 0; i < 3000; i++) sim.step();
+        // the state the one-point disc contact left behind (I-terms 97/-97/28 after 3 s), for the control
+        if (windUp) { s[S.iR] = 97; s[S.iP] = -97; s[S.iY] = 28; }
+        const iMax = Math.max(Math.abs(s[S.iR]), Math.abs(s[S.iP]), Math.abs(s[S.iY]));
+        const st = hoverSolve(sim.p, 1).stick + 0.15;
+        sim.setChannels([0, 0, st * 2 - 1, 0, 1, MODE_CHANNEL[mode], 0, 0]);
+        let tilt = 0;
+        for (let i = 0; i < 1000; i++) { sim.step(); tilt = Math.max(tilt, tiltDeg(sim)); }
+        return { iMax, tilt, side: Math.hypot(s[S.px], s[S.pz]) };
+    }
+
+    it('armed at idle for 3 s (acro and angle): the I-terms stay near 0 and the lift-off climbs straight', () => {
+        for (const mode of ['acro', 'angle'] as const) {
+            const r = liftOff(mode);
+            expect(r.iMax, mode).toBeLessThan(5);
+            expect(r.tilt, mode).toBeLessThan(1);
+            expect(r.side, mode).toBeLessThan(0.02);
+        }
+    });
+
+    it('control: with the I-terms the one-point disc contact wound up, the same lift-off leans and drifts', () => {
+        const r = liftOff('acro', true);
+        expect(r.tilt).toBeGreaterThan(1);
+        expect(r.side).toBeGreaterThan(0.02);
+    });
+
+    it('a craft dropped 2 cm onto it at a 20 deg tilt, disarmed, settles level on it', () => {
+        const sim = new Sim(params(), null);
+        sim.reset(0, 5, 0, 0, { platform: true });
+        const s = sim.s;
+        const h = (20 * Math.PI) / 360;
+        s[S.qw] = Math.cos(h); s[S.qz] = Math.sin(h); s[S.py] = 5.02; s[S.hold] = 0;
+        for (let i = 0; i < 3000; i++) sim.step();
+        expect(tiltDeg(sim)).toBeLessThan(0.5);
+        expect(Math.abs(s[S.py] - 5)).toBeLessThan(0.005);
+        expect(s[S.platOn]).toBe(1);
+    });
+});
+
 describe('RespawnOpts.soc that is not a number', () => {
     it('reset({ soc: NaN }) keeps the pack, and every hashed slot stays finite', () => {
         const p = params();

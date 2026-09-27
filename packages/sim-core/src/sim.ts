@@ -111,6 +111,10 @@ const PLAT_GAP = 0.002;
 const PLAT_R = 0.4;
 const PLAT_LEAVE_UP = 1.0;
 const PLAT_LEAVE_SIDE = 0.5;
+// resting on the platform: sequential-impulse passes over the spheres on its top, and how close
+// to the top (after the lift) a sphere's bottom must be to count as on it, m
+const REST_PASSES = 16;
+const REST_GAP = 1e-4;
 
 // quad X mixer, Betaflight order M1 RR, M2 FR, M3 RL, M4 FL; columns roll, pitch, yaw
 const MIX_R = [-1, -1, 1, 1];
@@ -160,6 +164,8 @@ export class Sim {
     private c1: Float64Array;
     private rr: Float64Array;
     private pad: Float64Array;
+    /** restOnDisc scratch: 9 slots per sphere */
+    private rest: Float64Array;
     private nS: number;
     private cout: ContactOut = { sphere: -1, nx: 0, ny: 0, nz: 0 };
     private push = { x: 0, y: 0, z: 0 };
@@ -183,6 +189,7 @@ export class Sim {
         this.c1 = new Float64Array(this.nS * 3);
         this.rr = new Float64Array(this.nS);
         this.pad = new Float64Array(this.nS);
+        this.rest = new Float64Array(this.nS * 9);
         for (let i = 0; i < this.nS; i++) this.rr[i] = p.spheres[i * 4 + 3];
         const rc = p.rates;
         this.maxR = setpointRate(rc.type, 1, rc.roll, rc.rateLimit);
@@ -632,8 +639,29 @@ export class Sim {
         const t = world.sweep(this.c0, this.c1, this.rr, this.pad, n, this.cout);
         if (t < 0) return;
 
-        const k = this.cout.sphere;
-        if (t === 0) {
+        let k = this.cout.sphere;
+        const onDisc = world === this.plat && this.plat.hitDisc;
+        const resting = onDisc && t === Number.MIN_VALUE && this.cout.ny > 0;
+        if (resting) {
+            // Resting on the platform: a sphere started the tick on its top (the disc reports that as
+            // the smallest fraction). Moving back to the start pose, as below, froze the pose every
+            // tick while a one-point impulse at one duct mostly spun the body: an armed craft's rate
+            // loop damped that, a disarmed one gained hidden fall and spin every tick (3.3 m/s and
+            // 70 rad/s 0.5 s after the pilot disarmed on the disc), crashed on it and dropped through.
+            // The disc is an exact plane, so keep the tick's motion, lift the body by the deepest
+            // penetration of a sphere over the disc (no skin: nothing to chatter), and support it at
+            // every sphere on the top together (restOnDisc).
+            const pl = this.plat;
+            const r2 = pl.r * pl.r;
+            let pen = 0;
+            for (let i = 0; i < n; i++) {
+                const cx = this.c1[i * 3] - pl.x, cy = this.c1[i * 3 + 1], cz = this.c1[i * 3 + 2] - pl.z;
+                if (cy < pl.y || cx * cx + cz * cz > r2) continue; // one-way: centres above the top only
+                const d = pl.y - (cy - this.rr[i]);
+                if (d > pen) { pen = d; k = i; }
+            }
+            s[S.py] += pen;
+        } else if (t === 0) {
             // started overlapping: stay at the start pose and push every overlapping sphere out
             this.startOverlaps++;
             s[S.px] = px0; s[S.py] = py0; s[S.pz] = pz0;
@@ -671,7 +699,6 @@ export class Sim {
             // keep a small skin so tangential motion along the surface is not reported as contact.
             // The platform is an exact plane that tangential motion never touches, so it gets no
             // skin: a craft resting on it would otherwise fall 1 mm onto it every ~16 ms (0.14 m/s).
-            const onDisc = world === this.plat && this.plat.hitDisc;
             const kx = this.c0[k * 3] + (this.c1[k * 3] - this.c0[k * 3]) * t;
             const ky = this.c0[k * 3 + 1] + (this.c1[k * 3 + 1] - this.c0[k * 3 + 1]) * t;
             const kz = this.c0[k * 3 + 2] + (this.c1[k * 3 + 2] - this.c0[k * 3 + 2]) * t;
@@ -731,6 +758,10 @@ export class Sim {
         } else if (flying && approach > 0.05) {
             this.events.push({ type: 'contact', tick: this.tick, speed: approach, regime: approach >= p.vBounce ? 'bounce' : 'slide' });
         }
+        if (resting) {
+            this.restOnDisc();
+            return;
+        }
         if (approach <= 0) return;
 
         // impulse with speed-dependent restitution and Coulomb friction
@@ -756,6 +787,90 @@ export class Sim {
         }
         applyImpulse(s, p.mass, ix, iy, iz, ox, oy, oz, r00, r01, r02, r10, r11, r12, r20, r21, r22, I0, I1, I2);
     }
+
+
+    /**
+     * A body resting on the platform's top, supported at every sphere on it at once: projected
+     * Gauss-Seidel over those contacts with accumulated impulses (normal >= 0, no bounce; box
+     * friction within MU times the normal one), so a push at one duct can be taken back when
+     * another duct carries the load. One impulse at one duct per tick, the scene floors' way,
+     * cannot hold a body on four points still: on the disc it rocked from duct to duct, the rate
+     * loop integrated the rocking (I-terms near 100 after 5 s at idle) and an acro craft walked off.
+     */
+    private restOnDisc(): void {
+        const s = this.s;
+        const p = this.p;
+        const pl = this.plat;
+        const sp = p.spheres;
+        const n = this.nS;
+        const c = this.rest;
+        const qw = s[S.qw], qx = s[S.qx], qy = s[S.qy], qz = s[S.qz];
+        const r00 = 1 - 2 * (qy * qy + qz * qz), r01 = 2 * (qx * qy - qw * qz), r02 = 2 * (qx * qz + qw * qy);
+        const r10 = 2 * (qx * qy + qw * qz), r11 = 1 - 2 * (qx * qx + qz * qz), r12 = 2 * (qy * qz - qw * qx);
+        const r20 = 2 * (qx * qz - qw * qy), r21 = 2 * (qy * qz + qw * qx), r22 = 1 - 2 * (qx * qx + qy * qy);
+        const I0 = p.inertia[0], I1 = p.inertia[1], I2 = p.inertia[2];
+        const im = 1 / p.mass;
+        const r2 = pl.r * pl.r;
+        // the contacts: spheres over the disc whose bottom is on its top; per contact 9 slots:
+        // contact point from the centre of mass (3), effective masses along y, x, z (3), and the
+        // impulses accumulated along y, x, z (3)
+        let m = 0;
+        for (let i = 0; i < n; i++) {
+            const lx = sp[i * 4], ly = sp[i * 4 + 1], lz = sp[i * 4 + 2], ri = sp[i * 4 + 3];
+            const cx = r00 * lx + r01 * ly + r02 * lz, cy = r10 * lx + r11 * ly + r12 * lz, cz = r20 * lx + r21 * ly + r22 * lz;
+            const wy = s[S.py] + cy;
+            const dx = s[S.px] + cx - pl.x, dz = s[S.pz] + cz - pl.z;
+            if (wy < pl.y || dx * dx + dz * dz > r2 || wy - ri - pl.y > REST_GAP) continue;
+            const k = m * 9;
+            const ox = cx, oy = cy - ri, oz = cz;
+            c[k] = ox; c[k + 1] = oy; c[k + 2] = oz;
+            c[k + 3] = 1 / (im + invEff(0, 1, 0, ox, oy, oz, r00, r01, r02, r10, r11, r12, r20, r21, r22, I0, I1, I2));
+            c[k + 4] = 1 / (im + invEff(1, 0, 0, ox, oy, oz, r00, r01, r02, r10, r11, r12, r20, r21, r22, I0, I1, I2));
+            c[k + 5] = 1 / (im + invEff(0, 0, 1, ox, oy, oz, r00, r01, r02, r10, r11, r12, r20, r21, r22, I0, I1, I2));
+            c[k + 6] = 0; c[k + 7] = 0; c[k + 8] = 0;
+            m++;
+        }
+        const cv = this.push;
+        for (let pass = 0; pass < REST_PASSES; pass++) {
+            // alternate the order, so no sphere index takes the load first every time
+            for (let j = 0; j < m; j++) {
+                const k = (pass & 1 ? m - 1 - j : j) * 9;
+                const ox = c[k], oy = c[k + 1], oz = c[k + 2];
+                // normal: the contact point may not move into the disc; the total impulse stays >= 0
+                this.pointVelocity(ox, oy, oz, r00, r01, r02, r10, r11, r12, r20, r21, r22, cv);
+                const lamN = Math.max(0, c[k + 6] - cv.y * c[k + 3]);
+                const jn = lamN - c[k + 6];
+                c[k + 6] = lamN;
+                if (jn !== 0) applyImpulse(s, p.mass, 0, jn, 0, ox, oy, oz, r00, r01, r02, r10, r11, r12, r20, r21, r22, I0, I1, I2);
+                // friction along x and z, the total within MU times the normal impulse
+                this.pointVelocity(ox, oy, oz, r00, r01, r02, r10, r11, r12, r20, r21, r22, cv);
+                const lim = MU * lamN;
+                const lamX = clampAbs(c[k + 7] - cv.x * c[k + 4], lim);
+                const lamZ = clampAbs(c[k + 8] - cv.z * c[k + 5], lim);
+                const jx = lamX - c[k + 7], jz = lamZ - c[k + 8];
+                c[k + 7] = lamX; c[k + 8] = lamZ;
+                if (jx !== 0 || jz !== 0) applyImpulse(s, p.mass, jx, 0, jz, ox, oy, oz, r00, r01, r02, r10, r11, r12, r20, r21, r22, I0, I1, I2);
+            }
+        }
+    }
+
+    /** Velocity of the point at world offset o from the centre of mass: v + w x o, into out. */
+    private pointVelocity(
+        ox: number, oy: number, oz: number,
+        r00: number, r01: number, r02: number, r10: number, r11: number, r12: number, r20: number, r21: number, r22: number,
+        out: { x: number; y: number; z: number }
+    ): void {
+        const s = this.s;
+        const bwx = s[S.wx], bwy = s[S.wy], bwz = s[S.wz];
+        const wwx = r00 * bwx + r01 * bwy + r02 * bwz, wwy = r10 * bwx + r11 * bwy + r12 * bwz, wwz = r20 * bwx + r21 * bwy + r22 * bwz;
+        out.x = s[S.vx] + (wwy * oz - wwz * oy);
+        out.y = s[S.vy] + (wwz * ox - wwx * oz);
+        out.z = s[S.vz] + (wwx * oy - wwy * ox);
+    }
+}
+
+function clampAbs(v: number, lim: number): number {
+    return v < -lim ? -lim : v > lim ? lim : v;
 }
 
 /** throttle mapping for auto-throttle gravity mode: stick 0.5 -> hover. */
