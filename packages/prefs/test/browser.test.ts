@@ -1,8 +1,8 @@
 // browser.ts with fake page objects (Node has no localStorage, cookies or storage events).
 // IndexedDB is checked in real Chrome by the wave-1 browser probe, not here.
 import { describe, expect, it } from 'vitest';
-import { CookieValue, LocalStorageBackend, PREFS_KEY, flushOnHide, localStorageLegacy, requestPersistence } from '../src';
-import { FakeStorage, mkStore } from './helpers';
+import { CookieValue, LEGACY_LOG_KEY, LocalStorageBackend, PREFS_KEY, SCHEMA, flushOnHide, localStorageLegacy, migrateLastLog, openBrowserPrefs, requestPersistence } from '../src';
+import { FakeStorage, mkStore, resolver } from './helpers';
 
 class FakeTarget {
     private readonly h = new Map<string, Set<(e: Event) => void>>();
@@ -139,6 +139,62 @@ describe('requestPersistence (A.5)', () => {
         const t = mkStore();
         await requestPersistence(t, null);
         expect(t.persisted).toBe('unknown');
+    });
+});
+
+/**
+ * The prefs review (prefsReview.mustFix[3]): gsfpv.lastLog was copied to IndexedDB on every boot
+ * whenever the copy was absent, and the legacy key stays for one release by design, so a log the
+ * pilot erased (A.9 "Erase everything", or the 50 MB cap dropping the oldest) came back.
+ */
+describe('the v0.2 flight log moves to IndexedDB on the first v0.3 boot only (review must-fix 4)', () => {
+    const LOG = { label: 'crash 12:04', header: { format: 'gsfpv-input-log/1', preset: 'pavo20pro-3s' }, endTick: 30211, hash: '9f0c', b64: 'AAAAAAAAgD8=' };
+    class MapKv {
+        readonly m = new Map<string, unknown>();
+        opened = 0;
+        closed = 0;
+        async get<T>(store: string, key: string): Promise<T | undefined> { return this.m.get(`${store}/${key}`) as T | undefined; }
+        async put(store: string, key: string, v: unknown): Promise<void> { this.m.set(`${store}/${key}`, v); }
+        async delete(store: string, key: string): Promise<void> { this.m.delete(`${store}/${key}`); }
+        close(): void { this.closed++; }
+    }
+    const boot = (ls: FakeStorage, kv: MapKv) => openBrowserPrefs(SCHEMA, resolver(), {
+        storage: ls as unknown as Storage, win: null, doc: null, cookieDoc: null, storageManager: null, debounceMs: 0,
+        openKv: async () => { kv.opened++; return kv; }
+    });
+
+    it('the first boot copies it; after the pilot erases it, the next boot does not bring it back', async () => {
+        const ls = new FakeStorage({ 'gsfpv.lastLog': JSON.stringify(LOG), 'gsfpv.warned': '1' });
+        const kv = new MapKv();
+        const first = boot(ls, kv);
+        expect(first.store.migrated?.from).toBe(0);
+        expect(await first.legacyLog).toBe(true);
+        expect(kv.m.get(`logs/${LEGACY_LOG_KEY}`)).toEqual(LOG);
+        first.dispose();
+        await kv.delete('logs', LEGACY_LOG_KEY); // the pilot erases the logs
+        const second = boot(ls, kv);
+        expect(second.store.migrated).toBeNull();
+        expect(await second.legacyLog).toBe(false);
+        expect(kv.m.has(`logs/${LEGACY_LOG_KEY}`)).toBe(false);
+        expect(ls.getItem('gsfpv.lastLog')).toBe(JSON.stringify(LOG)); // the legacy key stays for one release
+        second.dispose();
+    });
+
+    it('control: the copy itself still restores an erased log, so the second boot above holds back on purpose', async () => {
+        const ls = new FakeStorage({ 'gsfpv.lastLog': JSON.stringify(LOG) });
+        const kv = new MapKv();
+        await boot(ls, kv).legacyLog;
+        await kv.delete('logs', LEGACY_LOG_KEY);
+        expect(await migrateLastLog(kv, localStorageLegacy(ls as unknown as Storage))).toBe(true);
+        expect(kv.m.get(`logs/${LEGACY_LOG_KEY}`)).toEqual(LOG);
+    });
+
+    it('no IndexedDB: nothing moves, the store still boots', async () => {
+        const ls = new FakeStorage({ 'gsfpv.lastLog': JSON.stringify(LOG) });
+        const p = openBrowserPrefs(SCHEMA, resolver(), { storage: ls as unknown as Storage, win: null, doc: null, cookieDoc: null, storageManager: null, openKv: () => Promise.reject(new Error('blocked')) });
+        expect(await p.legacyLog).toBe(false);
+        expect(p.store.writable).toBe(true);
+        p.dispose();
     });
 });
 

@@ -216,11 +216,19 @@ export class IdbKv {
 /** The key v0.2's single saved log gets in the `logs` store. */
 export const LEGACY_LOG_KEY = 'legacy-lastLog';
 
+/** The part of IdbKv the log move needs (tests pass a map). */
+export interface LogKv {
+    get<T = unknown>(store: IdbStoreName, key: string): Promise<T | undefined>;
+    put(store: IdbStoreName, key: string, value: unknown): Promise<void>;
+}
+
 /**
- * Copies v0.2's saved flight log (the `gsfpv.lastLog` key) into IndexedDB once, unchanged. The
- * key itself stays for one release, like every legacy key. true when it copied.
+ * Copies v0.2's saved flight log (the `gsfpv.lastLog` key) into IndexedDB, unchanged, unless a
+ * copy is already there. The key itself stays for one release, like every legacy key. true when
+ * it copied. Call it on the first v0.3 boot only (openBrowserPrefs does): the legacy key outlives
+ * the copy, so a later call would bring back a log the pilot erased.
  */
-export async function migrateLastLog(kv: IdbKv, read: (key: string) => string | null): Promise<boolean> {
+export async function migrateLastLog(kv: LogKv, read: (key: string) => string | null): Promise<boolean> {
     let text: string | null = null;
     try {
         text = read(LEGACY_KEYS.lastLog);
@@ -233,15 +241,32 @@ export async function migrateLastLog(kv: IdbKv, read: (key: string) => string | 
     return true;
 }
 
-export interface BrowserPrefs { store: PrefsStore; dispose(): void }
+export interface BrowserPrefs {
+    store: PrefsStore;
+    /** the background move of v0.2's flight log: true when it copied the log on this boot */
+    legacyLog: Promise<boolean>;
+    dispose(): void;
+}
+
+/** What openBrowserPrefs takes from the page; each defaults to the real one (tests pass fakes). */
+export interface BrowserOptions extends StoreOptions {
+    storage?: Storage | null;
+    win?: Listen | null;
+    doc?: (Pick<Document, 'visibilityState'> & Listen) | null;
+    /** where the language cookie lives */
+    cookieDoc?: { cookie: string } | null;
+    storageManager?: StorageManagerLike | null;
+    openKv?: () => Promise<LogKv & { close(): void }>;
+}
 
 /**
  * The page's store in one call: the document in localStorage (v0.2 keys migrated on the first
  * boot), the language in its cookie, writes flushed when the tab hides, persistence asked for at
  * the first change, and the v0.2 flight log copied to IndexedDB in the background.
  */
-export function openBrowserPrefs(schema: Schema, presets: PresetResolver, o: StoreOptions = {}): BrowserPrefs {
-    const storage = defaultStorage();
+export function openBrowserPrefs(schema: Schema, presets: PresetResolver, o: BrowserOptions = {}): BrowserPrefs {
+    const { storage: givenStorage, win, doc, cookieDoc, storageManager, openKv, ...storeOptions } = o;
+    const storage = givenStorage !== undefined ? givenStorage : defaultStorage();
     const legacy = localStorageLegacy(storage);
     let origin = '';
     try {
@@ -249,14 +274,23 @@ export function openBrowserPrefs(schema: Schema, presets: PresetResolver, o: Sto
     } catch {
         origin = '';
     }
-    const external: Record<string, ValueBackend> = schema.byId.has('ui.language') ? { 'ui.language': new CookieValue('NEXT_LOCALE', { allowed: ['en', 'es', 'pl', 'ru'] }) } : {};
-    const store = new PrefsStore(schema, new LocalStorageBackend(PREFS_KEY, storage), presets, { legacy, external, origin, ...o });
-    const offHide = flushOnHide(store);
+    const external: Record<string, ValueBackend> = schema.byId.has('ui.language') ? { 'ui.language': new CookieValue('NEXT_LOCALE', { allowed: ['en', 'es', 'pl', 'ru'], doc: cookieDoc }) } : {};
+    const store = new PrefsStore(schema, new LocalStorageBackend(PREFS_KEY, storage, win !== undefined ? win : defaultWindow()), presets, { legacy, external, origin, ...storeOptions });
+    const offHide = flushOnHide(store, win !== undefined ? win : defaultWindow(), doc !== undefined ? doc : typeof document === 'undefined' ? null : document);
     let offPersist: () => void = () => {};
-    void requestPersistence(store).then((off) => { offPersist = off; });
-    void IdbKv.open().then((kv) => migrateLastLog(kv, legacy).finally(() => kv.close())).catch(() => { /* no IndexedDB: the log stays in its v0.2 key */ });
+    void requestPersistence(store, storageManager !== undefined ? storageManager : defaultStorageManager()).then((off) => { offPersist = off; });
+    // only on the boot that created the document from the legacy keys (A.5 "run once on the first
+    // v0.3 boot"): the key outlives the copy for one release, so any later boot would bring back
+    // a log the pilot erased (review must-fix 4). No IndexedDB on that boot: the log stays in its
+    // v0.2 key, where a rollback to v0.2 still finds it.
+    const legacyLog = store.migrated?.from !== 0
+        ? Promise.resolve(false)
+        : (openKv ?? (() => IdbKv.open()))()
+            .then((kv) => migrateLastLog(kv, legacy).finally(() => kv.close()))
+            .catch(() => false);
     return {
         store,
+        legacyLog,
         dispose: () => {
             offHide();
             offPersist();
