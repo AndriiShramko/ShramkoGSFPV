@@ -16,6 +16,7 @@ import LeadForm from "@/components/LeadForm";
 import LiveNumbers from "@/components/LiveNumbers";
 import Parallax from "@/components/Parallax";
 import ScenePaste from "@/components/ScenePaste";
+import SettingsCatalog from "@/components/SettingsCatalog";
 import ShotBackdrop from "@/components/ShotBackdrop";
 import ShotBand from "@/components/ShotBand";
 import StickyCTA from "@/components/StickyCTA";
@@ -285,13 +286,18 @@ function Landing({ locale }: { locale: Locale }) {
           </div>
         </Section>
 
+        {/* 3b. Every setting, key and drone: generated from the settings schema (scripts/gen-catalog.ts) */}
+        <Section id="tune" index="06" eyebrow={t("tune.eyebrow")} title={keepTogether(t("tune.h2"))} lead={t("tune.lead")}>
+          <SettingsCatalog locale={locale} />
+        </Section>
+
         {/* 4. Live numbers */}
-        <Section id="numbers" index="06" eyebrow={t("numbers.eyebrow")} title={t("numbers.h2")} lead={t("numbers.lead")} backdrop={<ShotBackdrop id="flight-villa" />}>
+        <Section id="numbers" index="07" eyebrow={t("numbers.eyebrow")} title={t("numbers.h2")} lead={t("numbers.lead")} backdrop={<ShotBackdrop id="flight-villa" />}>
           <LiveNumbers />
         </Section>
 
         {/* 5. Andrii's scans */}
-        <Section id="scenes" index="07" eyebrow={t("scenes.eyebrow")} title={t("scenes.h2")} lead={t("scenes.lead")} tone="surface">
+        <Section id="scenes" index="08" eyebrow={t("scenes.eyebrow")} title={t("scenes.h2")} lead={t("scenes.lead")} tone="surface">
           <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {SHOWCASE.map((s) => {
               const title = t(`scenes.items.${s.id}`);
@@ -334,7 +340,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 6. Works with your radio */}
-        <Section id="radios" index="08" eyebrow={t("radios.eyebrow")} title={t("radios.h2")} lead={t("radios.lead")}>
+        <Section id="radios" index="09" eyebrow={t("radios.eyebrow")} title={t("radios.h2")} lead={t("radios.lead")}>
           <div className="mt-10 overflow-hidden rounded-xl border border-line">
             <div aria-hidden="true" className="hidden grid-cols-[1fr_1.6fr_1.6fr] gap-6 border-b border-line bg-surface px-6 py-3 font-mono text-xs uppercase tracking-wider text-muted md:grid">
               <span>{t("radios.cols.browser")}</span>
@@ -364,7 +370,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 7. Why this is better */}
-        <Section id="compare" index="09" eyebrow={t("compare.eyebrow")} title={t("compare.h2")} lead={t("compare.lead")} tone="surface">
+        <Section id="compare" index="10" eyebrow={t("compare.eyebrow")} title={t("compare.h2")} lead={t("compare.lead")} tone="surface">
           <p aria-hidden="true" className="mt-8 font-mono text-xs text-muted md:hidden">
             {t("compare.swipe")} →
           </p>
@@ -403,7 +409,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 8. For your AI agent */}
-        <Section id="agents" index="10" eyebrow={t("agents.eyebrow")} title={t("agents.h2")} lead={t("agents.lead")}>
+        <Section id="agents" index="11" eyebrow={t("agents.eyebrow")} title={t("agents.h2")} lead={t("agents.lead")}>
           <div className="mt-10 grid gap-8 lg:grid-cols-[1.5fr_1fr]">
             <CopyBlock id="agent-prompt" text={AGENT_PROMPT} label={t("agents.copy")} copied={t("agents.copied")} caption={t("agents.caption")} />
             <div>
@@ -433,7 +439,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 9. Risks & safety */}
-        <Section id="risks" index="11" eyebrow={t("risks.eyebrow")} title={t("risks.h2")} lead={t("risks.lead")} tone="surface">
+        <Section id="risks" index="12" eyebrow={t("risks.eyebrow")} title={t("risks.h2")} lead={t("risks.lead")} tone="surface">
           <ul className="mt-10 grid gap-4 md:grid-cols-2">
             {risks.map((r) => (
               <li key={r.t} className="rounded-xl border border-line bg-bg p-5">
@@ -456,7 +462,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 10. FAQ */}
-        <Section id="faq" index="12" eyebrow={t("faq.eyebrow")} title={t("faq.h2")} backdrop={<ShotBackdrop id="voxels" drift={60} />}>
+        <Section id="faq" index="13" eyebrow={t("faq.eyebrow")} title={t("faq.h2")} backdrop={<ShotBackdrop id="voxels" drift={60} />}>
           <div className="mt-10 divide-y divide-line rounded-xl border border-line">
             {faq.map((f, i) => (
               <details key={i} className="group px-5 sm:px-6">
@@ -473,7 +479,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 11. Open source */}
-        <Section id="opensource" index="13" eyebrow={t("opensource.eyebrow")} title={t("opensource.h2")} lead={t("opensource.lead")} tone="surface">
+        <Section id="opensource" index="14" eyebrow={t("opensource.eyebrow")} title={t("opensource.h2")} lead={t("opensource.lead")} tone="surface">
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Ext href={REPO} className="btn-primary min-h-12 px-6" track="cta_click" p="github">
               {t("opensource.repo")}
@@ -499,7 +505,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 12. Contact */}
-        <Section id="contact" index="14" eyebrow={t("contact.eyebrow")} title={t("contact.h2")} backdrop={<ShotBackdrop id="flight-tunis" />}>
+        <Section id="contact" index="15" eyebrow={t("contact.eyebrow")} title={t("contact.h2")} backdrop={<ShotBackdrop id="flight-tunis" />}>
           <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_1.15fr]">
             <div>
               <p className="text-xl font-semibold text-ink">{AUTHOR.name}</p>
