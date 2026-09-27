@@ -158,6 +158,11 @@ export const TUNING = {
     TAKEN_HOLD_MS: 400,
     CLASSIFY_EVERY_MS: 100,
     HINT_MIN_MS: 1500,
+    // auto pacing (never an acceptance by time: these only delay a command whose own checks decide)
+    AUTO_READY_MS: 600,
+    AUTO_STIR_MIN_MS: 1500,
+    AUTO_CENTRE_MS: 700,
+    AUTO_DONE_MS: 900,
     CONNECT_HINT_MS: 3000,
     CHECK_SUSPECT_MS: 3000,
     // hint-only timers: a text or a button appears, nothing is taken
@@ -357,6 +362,16 @@ export class CalibrationWizard {
         return w;
     }
 
+    /**
+     * Liftoff-style pacing (Andrii 2026-09-27: "a hundred times Start, a hundred times Next — the
+     * pilot must not click"). The wizard moves on by itself, but ONLY on what the sticks actually
+     * did: a stage starts when the previous stick is back, a push is taken only when it is real
+     * (>= 70 %, held), a result moves on once the stick is let go / the switch is back off. Time
+     * alone never takes anything (the rule of message 3 stays). Off in the unit tests of the
+     * command API; the app turns it on.
+     */
+    auto = false;
+
     /** Lifecycle: begin at connect (a resumed wizard stays at its check). */
     start(t: number): void {
         if (this.resumed) { this.now = Math.max(this.now, t); this.stageT0 = this.now; return; }
@@ -392,6 +407,7 @@ export class CalibrationWizard {
         this.track(f, t);
         if (this.id === 'connect') this.go('stir', 'ready');
         this.evaluate(t);
+        this.autopilot(t);
         this.live();
         this.timers();
         return st;
@@ -406,10 +422,48 @@ export class CalibrationWizard {
         if (!this.started) return this.state;
         if (t > this.now) this.now = t;
         this.advance(this.now);
-        if (this.n > 0 && this.id !== 'connect' && this.id !== 'check') this.evaluate(this.now);
+        if (this.n > 0 && this.id !== 'connect' && this.id !== 'check') { this.evaluate(this.now); this.autopilot(this.now); }
         if (this.n > 0) this.live();
         this.timers();
         return this.state;
+    }
+
+    /**
+     * The same commands the buttons send, issued when the sticks say so. Each command keeps its own
+     * checks (a refused one shows its hint and changes nothing), so nothing here can take a stick
+     * that did not move: a ready stage begins, an active stir / centre ends only when its own rule
+     * holds, a result moves on only once the stick is back (throttle down, switch off).
+     */
+    private autopilot(t: number): void {
+        if (!this.auto || !this.started || this.n === 0) return;
+        const id = this.id;
+        if (id === 'connect' || id === 'check') return;
+        const since = t - this.stageT0;
+        if (this.stage === 'ready') {
+            // a beat to read the new screen; the animation already shows the move meanwhile
+            if (since >= T.AUTO_READY_MS) this.begin(t);
+            return;
+        }
+        if (this.stage === 'active') {
+            if (id === 'stir') {
+                // every stick went round (the same rule the Done button checks) and they are let go
+                if (since >= T.AUTO_STIR_MIN_MS && this.stirOk && this.latestMover(this.widestSticks().slice(0, 4)) < 0) this.next(t);
+            } else if (id === 'centre') {
+                // measured once the self-centring sticks are still; a moving or held one refuses with its hint
+                if (since >= T.AUTO_CENTRE_MS && this.latestMover(this.stickSet) < 0) this.next(t);
+            }
+            return;
+        }
+        if (this.stage === 'done' && since >= T.AUTO_DONE_MS) {
+            // the green tick stays a moment; then on, as soon as the stick is back / the switch is off
+            const fn = isFn(id) ? id : null;
+            if (fn) {
+                const a = this.assigned[fn];
+                if (!a) return;
+                if (fn !== 'throttle' && !this.isStill(a.index)) return; // still moving: no hint spam
+            }
+            this.next(t);
+        }
     }
 
     // ------------------------------------------------------------------ commands (the buttons)

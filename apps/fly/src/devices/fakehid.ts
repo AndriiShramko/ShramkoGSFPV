@@ -61,6 +61,7 @@ export class FakeEdgeTx {
     private seenKey = '';
     private seenAt = 0;
     private doKey = '';
+    private stirStop = false;
     private followT0 = 0;
     private arrivedAt = NaN; // when the sticks reached where this screen wants them
     private pressAt = NaN; // next press on this screen (NaN = none planned yet)
@@ -110,6 +111,7 @@ export class FakeEdgeTx {
         if (k !== this.seenKey) { this.seenKey = k; this.seenAt = now; }
         if (this.doKey !== this.seenKey && now - this.seenAt >= (this.cfg.reactMs ?? 0)) {
             this.doKey = this.seenKey;
+            this.stirStop = false;
             this.followT0 = now;
             this.arrivedAt = NaN;
             this.pressAt = NaN;
@@ -125,11 +127,16 @@ export class FakeEdgeTx {
             case 'stir':
                 this.arm = false;
                 if (stage === 'active') {
-                    // both sticks round and round through their full range; switches stay put
-                    const a = (el / 1000) * Math.PI * 2 * 0.6;
-                    w.A = Math.cos(a); w.E = Math.sin(a); w.R = Math.cos(a * 1.3); w.T = Math.sin(a * 1.3);
+                    // a pilot who presses no button (auto pacing) stops when the bars are green and lets go
+                    if (this.cfg.noButtons && el >= STIR_MIN_MS && st.can.next) this.stirStop = true;
+                    if (this.stirStop) { centred(); w.T = -1; }
+                    else {
+                        // both sticks round and round through their full range; switches stay put
+                        const a = (el / 1000) * Math.PI * 2 * 0.6;
+                        w.A = Math.cos(a); w.E = Math.sin(a); w.R = Math.cos(a * 1.3); w.T = Math.sin(a * 1.3);
+                    }
                     // Done once it is enabled and a full circle is behind (Done stays disabled for a broken stick)
-                    if (el >= STIR_MIN_MS && st.can.next) { press = 'next'; settle = 0; }
+                    if (!this.cfg.noButtons && el >= STIR_MIN_MS && st.can.next) { press = 'next'; settle = 0; }
                 } else { centred(); w.T = -1; press = stage === 'ready' ? 'begin' : 'next'; }
                 break;
             case 'centre':

@@ -31,6 +31,9 @@ export interface HumanConfig {
     rtMean: number; // ms; 0 = the ideal person (no reaction floor)
     stirReach: number;
     stopsStirAfterMs: number | null;
+    /** the wizard paces itself (auto): the person does not look for Done, they stop stirring when
+     *  the bars are green and let go, as the screen says */
+    auto?: boolean;
     flickInStir: boolean;
     leaveArmOn: boolean;
     rangeLimit: number; // channel output reaches only this share of the travel (radio weights)
@@ -651,7 +654,10 @@ export class Human {
                 if (newHint && (h === 'wizard.hint.stir.coverage' || h === 'wizard.hint.stir.few' || h === 'wizard.needFourAxes' || h === 'wizard.hint.stir.short')) {
                     this.stirOn = true; this.stopAt = Infinity; this.reach = 1.1;
                 }
-                if (gained('next')) this.planPress(t, { kind: 'next' }, 'next');
+                if (gained('next')) {
+                    if (this.c.auto) { this.stirOn = false; this.releaseAll(); } // green: stop and let go
+                    else this.planPress(t, { kind: 'next' }, 'next');
+                }
                 break;
             case 'push':
                 if (ins.stage !== 'active') break;

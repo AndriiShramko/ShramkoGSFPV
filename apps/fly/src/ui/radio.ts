@@ -351,6 +351,8 @@ export class RadioScreen {
     private mount(wz: CalibrationWizard, key: string, name: string, subscribe: Subscribe, rate: () => number, kind: SourceKind, saved: Profile | null): void {
         this.leave();
         const gen = this.gen;
+        // Liftoff-style: the sticks move the wizard on, no Start / Next per step (Andrii 2026-09-27)
+        wz.auto = true;
         this.wizard = wz;
         this.root.setAttribute('aria-labelledby', 'wz-title');
         const restart = (): void => this.runWizard(key, name, subscribe, rate, kind);
@@ -583,14 +585,15 @@ export class RadioScreen {
             if (st.id === 'check' && st.profile) {
                 const p = st.profile;
                 prim = btn(t('common.fly'), 'wizard-done', () => { p.mode = this.mode; saveProfile(p); this.finish(kind, p); }, { primary: true, big: true, disabled: !can.fly });
-            } else if (st.stage === 'ready') {
+            } else if (!wz.auto && st.stage === 'ready') {
                 prim = btn(t('wizard.btn.start'), 'wizard-start', () => exec(() => wz.begin(performance.now())), { primary: true, big: true, disabled: !can.begin });
-            } else if (st.stage === 'active') {
+            } else if (!wz.auto && st.stage === 'active') {
                 const label = st.id === 'stir' ? 'wizard.btn.done' : st.id === 'centre' ? 'wizard.btn.measure' : 'wizard.btn.next';
                 prim = btn(t(label), 'wizard-next', () => exec(() => wz.next(performance.now())), { primary: true, big: true, disabled: !can.next });
-            } else if (st.stage === 'done') {
+            } else if (!wz.auto && st.stage === 'done') {
                 prim = btn(t('wizard.btn.next'), 'wizard-next', () => exec(() => wz.next(performance.now())), { primary: true, big: true, disabled: !can.next });
             }
+            // auto pacing: no button to press; the sticks move it on (Enter / Space still do the same)
             list.push(prim);
             // the escapes of this stage, then Back and Start again (every screen, rule 6)
             if (st.id === 'centre' && st.stage === 'active' && can.measureAnyway) list.push(btn(t('wizard.btn.measureAnyway'), 'wizard-measure-anyway', () => exec(() => wz.measureAnyway())));
@@ -947,7 +950,7 @@ export class RadioScreen {
             setText(say, sayText);
             setText(sub, sText);
             art.set(artState(st, `${sayText} ${sText}`.trim()));
-            chip.hidden = st.stage !== 'ready';
+            chip.hidden = wz.auto || st.stage !== 'ready';
             count.hidden = st.id !== 'stir' || st.stage === 'done';
             if (!count.hidden) setText(count, t('wizard.stir.count', { n: st.sticksDone }));
             // how far the push has gone, in words beside the gauge
