@@ -1,0 +1,27 @@
+{
+ "site": "https://gsfpv.flyreelstudio.eu",
+ "release": "8042182 = hub e5fad2d5182f",
+ "what": "walls switch and voxel overlay live on 39e63ce9: C turns walls off (OSD WALLS OFF, menu Walls off) and on again; V cycles overlay (wireframe legend: 5 cm voxels within 14 m, 228k faces, 44 floating pieces) and voxels-only; landing /ru/: 71 images, 0 broken. The local verification of the fly agent: walls on -> crash at 9.3 m/s on a wall, off -> 0 contacts through the wall, both logs replay to their own hash (control: on/off hashes differ); overlay 30 fps on 4 scenes at 30 Hz.",
+ "live": {
+  "imgs": {
+   "total": 71,
+   "broken": []
+  },
+  "before": {
+   "collision": true,
+   "credit": "mko, CC BY 4.0 \u00c2\u00b7 SuperSplat \u00c2\u00b7 Report this scene\nWalls 5 cm \u00e2\u2013\u00be",
+   "osd": "DISARMED \u00c2\u00b7 ANGLE"
+  },
+  "afterC": {
+   "collision": true,
+   "credit": "amko, CC BY 4.0 \u00c2\u00b7 SuperSplat \u00c2\u00b7 Report this scene\nWalls off \u00e2\u2013\u00be",
+   "osd": "DISARMED \u00c2\u00b7 ANGLE \u00c2\u00b7 WALLS OFF"
+  },
+  "afterC2": {
+   "collision": true,
+   "credit": "mko, CC BY 4.0 \u00c2\u00b7 SuperSplat \u00c2\u00b7 Report this scene\nWalls 5 cm \u00e2\u2013\u00be",
+   "osd": "DISARMED \u00c2\u00b7 ANGLE"
+  },
+  "errors": []
+ }
+}

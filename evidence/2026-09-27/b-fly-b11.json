@@ -1,15 +1,15 @@
 {
   "name": "b-fly-b11",
   "context": {
-    "date": "2026-09-27T07:35:11.912Z",
-    "gitHead": "ac6b57e",
+    "date": "2026-09-27T15:25:58.044Z",
+    "gitHead": "8042182",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "site": "https://gsfpv.flyreelstudio.eu",
-  "pass": true,
+  "pass": false,
   "positive": {
     "lowThrottleAndSwitchEdge": {
       "armed": true,
@@ -27,7 +27,7 @@
     },
     "gamepadZeroAxesTrap": {
       "armed": false,
-      "block": "throttle"
+      "block": "crashed"
     }
   }
 }

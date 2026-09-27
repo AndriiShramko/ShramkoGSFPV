@@ -1,8 +1,8 @@
 {
   "name": "b-fly-b12",
   "context": {
-    "date": "2026-09-27T02:09:39.501Z",
-    "gitHead": "d3513c0",
+    "date": "2026-09-27T15:26:44.647Z",
+    "gitHead": "8042182",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -13,7 +13,7 @@
   "vCrash": 4,
   "dashTarget": 8,
   "crash": {
-    "tick": 9935,
+    "tick": 10451,
     "speed": 7.906511243139527,
     "px": -5.199229089884253,
     "py": 1.5005116844629063,
@@ -22,14 +22,14 @@
   "tumbleMaxW": 118.86935433852761,
   "wreck": {
     "speed": 7.906511243139527,
-    "tick": 9935,
+    "tick": 10451,
     "engine": "rapier",
-    "debris": 2,
-    "maxAngularSpeed": 31.375944057396712,
+    "debris": 4,
+    "maxAngularSpeed": 38.451633623640355,
     "staticBoxes": 1406,
     "event": {
       "type": "crash",
-      "tick": 9935,
+      "tick": 10451,
       "speed": 7.906511243139527,
       "nx": 0.8331747822426373,
       "ny": 0.5530097487702489,
