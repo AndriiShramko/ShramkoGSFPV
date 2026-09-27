@@ -175,6 +175,440 @@
       "note": "«Clase» significa que las cifras siguen especificaciones y mediciones públicas. BetaFPV no respalda este preset."
     }
   },
+  "tune": {
+    "eyebrow": "Catálogo de ajustes",
+    "h2": "Cada ajuste, tecla y dron, con su valor por defecto y su rango",
+    "lead": "Se genera en cada versión a partir del esquema de ajustes del propio simulador: exactamente lo que puedes cambiar hoy, sin promesas ni inventos. Busca o filtra por grupo.",
+    "count": {
+      "settings": "ajustes",
+      "groups": "grupos",
+      "keys": "teclas",
+      "drones": "drones",
+      "rateTypes": "tipos de curva de rates",
+      "modes": "modos de vuelo"
+    },
+    "search": {
+      "label": "Buscar en los ajustes",
+      "placeholder": "FOV, gravedad, PID…",
+      "clear": "Borrar la búsqueda"
+    },
+    "filter": {
+      "label": "Grupos",
+      "all": "Todos"
+    },
+    "shown": "Mostrados: {n} de {total}",
+    "empty": "Ningún ajuste coincide con esta búsqueda. Prueba otra palabra.",
+    "default": "Por defecto",
+    "range": "Rango",
+    "options": "Opciones",
+    "preset": "del preset del dron",
+    "scope": {
+      "drone": "Por dron",
+      "scene": "Por escena"
+    },
+    "scopeNote": "Los valores «por dron» se guardan por separado para cada dron, y los «por escena», para cada escaneo.",
+    "adv": "Avanzado",
+    "open": "Abrir en el simulador",
+    "keys": {
+      "title": "Atajos de teclado",
+      "note": "En el simulador, cada tecla aparece junto a su opción del menú.",
+      "flying": "Volar con el teclado",
+      "flyingNote": "¿Sin radio? Estas teclas son los sticks."
+    },
+    "drones": {
+      "title": "{n} presets de drones",
+      "note": "Cada número indica de dónde viene: fabricante, medición independiente o estimación.",
+      "fly": "Volar este dron",
+      "default": "por defecto"
+    },
+    "footer": {
+      "note": "Generado el {date} a partir del esquema de ajustes. Un ajuste que aún se está construyendo aparecerá aquí el día en que se publique.",
+      "docs": "La lista completa en GitHub",
+      "cta": "Pruébalos en el simulador"
+    },
+    "text": {
+      "prefs": {
+        "on": "Activado",
+        "off": "Desactivado",
+        "fromPreset": "del preset del dron",
+        "unit": {
+          "s": "s",
+          "ms": "ms",
+          "m": "m",
+          "mps": "m/s",
+          "mps2": "m/s²",
+          "min": "min",
+          "blocks": "bloques",
+          "per_s": "1/s"
+        }
+      },
+      "group": {
+        "flight": "Vuelo",
+        "crash": "Choques y reaparición",
+        "camera": "Cámara",
+        "display": "Pantalla",
+        "input": "Controles",
+        "drone": "Dron y física",
+        "tune": "Ajuste fino",
+        "scenes": "Escenas",
+        "voxels": "Rejilla de vóxeles",
+        "recording": "Grabación"
+      },
+      "keys": {
+        "pause": {
+          "toggle": "Pausa / continuar"
+        },
+        "respawn": {
+          "start": "Volver al inicio",
+          "rewind": "Retroceder 5 s"
+        },
+        "crash": {
+          "keep": "Mantener los restos (sin reaparición automática)"
+        },
+        "scene": {
+          "next": "Siguiente escena",
+          "random": "Escena aleatoria",
+          "favourite": "Siguiente escena favorita"
+        },
+        "mode": {
+          "cycle": "Modo de vuelo"
+        },
+        "voxels": {
+          "cycle": "Rejilla de vóxeles: oculta / sobre el escaneo / solo vóxeles"
+        },
+        "hud": {
+          "toggle": "Mostrar u ocultar el HUD"
+        },
+        "scale": {
+          "down": "Escena más pequeña",
+          "up": "Escena más grande"
+        },
+        "record": {
+          "toggle": "Iniciar o detener la grabación"
+        },
+        "frameStats": {
+          "toggle": "Tiempos de fotograma y retardo"
+        },
+        "settings": {
+          "open": "Ajustes"
+        }
+      },
+      "set": {
+        "flight": {
+          "mode": {
+            "label": "Modo de vuelo",
+            "help": "Angle nivela el dron al soltar los sticks; Horizon también lo nivela, pero con el stick al máximo hace flips; Acro mantiene la actitud, como un quad de freestyle.",
+            "opt": {
+              "acro": "Acro (modo rate)",
+              "angle": "Angle (autonivelado)",
+              "horizon": "Horizon (nivela, permite flips)"
+            }
+          }
+        },
+        "level": {
+          "angleLimitDeg": {
+            "label": "Inclinación máxima en Angle",
+            "help": "La inclinación máxima que permite el modo Angle, como el angle limit de Betaflight."
+          },
+          "strength": {
+            "label": "Fuerza del autonivelado",
+            "help": "Con cuánta fuerza el modo Angle devuelve el dron a la horizontal, como el level strength de Betaflight."
+          },
+          "horizonStrength": {
+            "label": "Fuerza de nivelado en Horizon",
+            "help": "Con cuánta fuerza el modo Horizon nivela el dron cerca del centro del stick."
+          }
+        },
+        "crash": {
+          "enabled": {
+            "label": "Choques",
+            "help": "Desactivados: chocar con una pared nunca termina el vuelo, así un principiante puede seguir volando."
+          }
+        },
+        "physics": {
+          "vCrash": {
+            "label": "Umbral de choque",
+            "help": "Velocidad de impacto a partir de la cual un golpe cuenta como choque; los roces más lentos se deslizan por la pared."
+          },
+          "gravity": {
+            "label": "Gravedad",
+            "help": "Tierra 9,81, Luna 1,62, Marte 3,72, gravedad cero o cualquier valor intermedio."
+          },
+          "gravityMode": {
+            "label": "Empuje en otros mundos",
+            "help": "Los mismos motores (realista), la relación empuje/peso de la Tierra o acelerador automático que se mantiene con el stick al centro.",
+            "opt": {
+              "honest": "Real (mismos motores)",
+              "same-twr": "Mantener empuje / peso",
+              "auto-throttle": "Acelerador automático (stick al centro = estacionario)"
+            }
+          },
+          "twr": {
+            "label": "Relación empuje/peso",
+            "help": "Empuje máximo dividido por el peso; el preset lo toma del fabricante o de una estimación."
+          },
+          "tauMs": {
+            "label": "Tiempo de aceleración de los motores",
+            "help": "Qué tan rápido alcanzan los motores una nueva velocidad; menos se siente más ágil."
+          },
+          "dragScale": {
+            "label": "Resistencia del aire",
+            "help": "Escala la resistencia del aire del chasis: más resistencia frena antes el dron."
+          },
+          "ductDrag": {
+            "label": "Resistencia de los ductos",
+            "help": "Resistencia de rotores y ductos que amortigua la velocidad y el bamboleo de un cinewhoop."
+          },
+          "propInertia": {
+            "label": "Inercia de las hélices",
+            "help": "Escala la inercia de giro de las hélices: más inercia suaviza el acelerador y los giros."
+          },
+          "idlePct": {
+            "label": "Ralentí de los motores",
+            "help": "Velocidad de los motores con el acelerador a cero, como el DShot idle value de Betaflight."
+          }
+        },
+        "respawn": {
+          "auto": {
+            "label": "Reaparición automática",
+            "help": "Tras un choque, el dron vuelve al aire por sí solo."
+          },
+          "delayS": {
+            "label": "Espera antes de reaparecer",
+            "help": "Cuánto tiempo se ve el choque antes de la reaparición automática."
+          },
+          "target": {
+            "label": "Reaparecer en",
+            "help": "Retroceder a donde estabas unos segundos antes del choque, o volver al inicio.",
+            "opt": {
+              "rewind": "Retroceder",
+              "start": "El inicio"
+            }
+          },
+          "rewindS": {
+            "label": "Retroceder",
+            "help": "Cuántos segundos antes del choque te devuelve el retroceso."
+          },
+          "platform": {
+            "label": "Reaparecer sobre una plataforma",
+            "help": "Vuelves a empezar sobre una plataforma invisible en lugar de caer al suelo."
+          },
+          "keepArmed": {
+            "label": "Seguir armado tras reaparecer",
+            "help": "No hace falta volver a accionar el interruptor de armado tras cada choque."
+          },
+          "unstuck": {
+            "label": "Desatascar automáticamente",
+            "help": "Reinicia el vuelo cuando el dron se queda atascado o boca abajo."
+          },
+          "showPad": {
+            "label": "Mostrar la plataforma",
+            "help": "Dibuja la plataforma de reaparición, invisible por defecto."
+          }
+        },
+        "battery": {
+          "refill": {
+            "label": "Recarga de la batería",
+            "help": "Cuándo vuelve a estar llena la batería simulada: al inicio, en cada reaparición o nunca.",
+            "opt": {
+              "start": "Al inicio",
+              "respawn": "En cada reaparición",
+              "never": "Nunca"
+            }
+          }
+        },
+        "camera": {
+          "fovDeg": {
+            "label": "Campo de visión de la cámara",
+            "help": "Qué tan amplio ve la cámara FPV; cada dron guarda su propio valor."
+          },
+          "uptiltDeg": {
+            "label": "Inclinación de la cámara",
+            "help": "Cuánto se inclina hacia arriba la cámara FPV; más inclinación sirve para volar más rápido."
+          }
+        },
+        "display": {
+          "hud": {
+            "label": "Mostrar HUD",
+            "help": "La información en pantalla: armado, modo de vuelo, batería, velocidad y altura."
+          },
+          "units": {
+            "label": "Unidades",
+            "help": "Unidades métricas o imperiales en el HUD y en las estadísticas de vuelo.",
+            "opt": {
+              "metric": "Métricas",
+              "imperial": "Imperiales"
+            }
+          },
+          "quality": {
+            "label": "Fluidez ↔ detalle",
+            "help": "Ajusta la resolución de renderizado y el presupuesto de detalle. La física siempre funciona a 1000 Hz."
+          },
+          "governor": {
+            "label": "Calidad automática",
+            "help": "Baja la calidad por sí sola cuando se pierden fotogramas y la vuelve a subir cuando la GPU tiene margen."
+          },
+          "reducedMotion": {
+            "label": "Reducir movimiento",
+            "help": "Una cámara de choque más tranquila y sin destellos; por defecto sigue el ajuste del sistema.",
+            "opt": {
+              "system": "Según el sistema",
+              "on": "Activado",
+              "off": "Desactivado"
+            }
+          },
+          "frameStats": {
+            "label": "Estadísticas de fotogramas",
+            "help": "Frecuencia de pantalla, tiempos de fotograma y retardo de la entrada a la pantalla sobre la vista de vuelo."
+          }
+        },
+        "stats": {
+          "onDisarm": {
+            "label": "Estadísticas al desarmar",
+            "help": "Al desarmar muestra la tarjeta de estadísticas del vuelo, como el OSD de las gafas."
+          }
+        },
+        "ui": {
+          "language": {
+            "label": "Idioma",
+            "help": "Inglés, español, polaco o ruso; por defecto, el idioma de la página.",
+            "opt": {
+              "browser": "Idioma de la página"
+            }
+          }
+        },
+        "input": {
+          "stickMode": {
+            "label": "Modo de sticks",
+            "help": "Qué stick es el acelerador en los dibujos de calibración: Modo 2 a la izquierda, Modo 1 a la derecha.",
+            "opt": {
+              "1": "Modo 1",
+              "2": "Modo 2"
+            }
+          }
+        },
+        "drone": {
+          "current": {
+            "label": "Dron",
+            "help": "Uno de los presets de clase BetaFPV; cada número de su ficha indica de dónde viene."
+          }
+        },
+        "tune": {
+          "pid": {
+            "label": "Ganancias PID (P / I / D / F)",
+            "help": "P, I, D y feed-forward para alabeo, cabeceo y guiñada, por dron, como en Betaflight."
+          },
+          "rates": {
+            "label": "Rates (curvas de los sticks)",
+            "help": "Curvas de rates Betaflight, Actual, KISS o Raceflight, importadas de tu diff de la CLI de Betaflight."
+          },
+          "throttle": {
+            "label": "Curva del acelerador",
+            "help": "Throttle mid y expo de tu diff de Betaflight."
+          }
+        },
+        "scenes": {
+          "autoSwitch": {
+            "label": "Siguiente escena tras un choque",
+            "help": "Tras un choque, sigue en la siguiente escena de tu rotación; desactivado por defecto."
+          },
+          "rotation": {
+            "label": "Rotación de escenas",
+            "help": "De qué escenas salen la siguiente y la aleatoria.",
+            "opt": {
+              "curated": "Selección de Andrii",
+              "favourites": "Tus favoritas",
+              "history": "Voladas recientemente"
+            }
+          },
+          "order": {
+            "label": "Orden de las escenas",
+            "help": "Aleatorio o una tras otra.",
+            "opt": {
+              "random": "Aleatorio",
+              "sequential": "En orden"
+            }
+          },
+          "allowNoWalls": {
+            "label": "Incluir escaneos sin paredes",
+            "help": "Permite que la rotación elija escaneos sin datos de colisión."
+          }
+        },
+        "scene": {
+          "transform": {
+            "label": "Tamaño de la escena",
+            "help": "Escala un escaneo de tamaño incorrecto alrededor del dron y lo recuerda para cada escena."
+          },
+          "dropFloaters": {
+            "label": "Quitar piezas flotantes",
+            "help": "Quita las piezas de vóxeles flotantes más pequeñas que este número de bloques (paredes fantasma), para cada escena."
+          }
+        },
+        "voxels": {
+          "show": {
+            "label": "Rejilla de vóxeles",
+            "help": "Muestra los vóxeles de colisión sobre el escaneo, o solo los vóxeles con el escaneo oculto.",
+            "opt": {
+              "off": "Oculta",
+              "overlay": "Sobre el escaneo",
+              "only": "Solo vóxeles"
+            }
+          },
+          "opacity": {
+            "label": "Opacidad de los vóxeles",
+            "help": "Qué tan transparente es la rejilla de vóxeles."
+          },
+          "style": {
+            "label": "Estilo de los vóxeles",
+            "help": "Cubos sólidos, rejilla, aristas, colores por altura o piezas flotantes en rojo.",
+            "opt": {
+              "solid": "Cubos sólidos",
+              "grid": "Rejilla",
+              "edges": "Aristas",
+              "height": "Colores por altura",
+              "floaters": "Flotantes en rojo"
+            }
+          },
+          "radiusM": {
+            "label": "Radio de los vóxeles",
+            "help": "Hasta qué distancia alrededor del dron se dibuja la rejilla."
+          }
+        },
+        "recording": {
+          "fps": {
+            "label": "Fotogramas por segundo de la grabación",
+            "help": "30 o 60 fotogramas por segundo en el vídeo guardado.",
+            "opt": {
+              "30": "30 fotogramas/s",
+              "60": "60 fotogramas/s"
+            }
+          },
+          "resolution": {
+            "label": "Resolución de la grabación",
+            "help": "El tamaño del vídeo guardado.",
+            "opt": {
+              "1080p": "1080p",
+              "1440p": "1440p",
+              "2160p": "2160p (4K)",
+              "native": "Tamaño de la pantalla"
+            }
+          },
+          "auto": {
+            "label": "Grabación automática",
+            "help": "Graba cada vuelo en la última carpeta que elegiste."
+          },
+          "folder": {
+            "label": "Carpeta de grabación",
+            "help": "La carpeta donde se guardan los vídeos; el navegador la recuerda."
+          },
+          "splitMin": {
+            "label": "Nuevo archivo cada",
+            "help": "Empieza un archivo de vídeo nuevo tras estos minutos, así una pestaña caída pierde poco."
+          }
+        }
+      }
+    }
+  },
   "numbers": {
     "eyebrow": "Cifras en vivo",
     "h2": "Publicamos nuestras propias cifras porque nadie más publica las suyas.",

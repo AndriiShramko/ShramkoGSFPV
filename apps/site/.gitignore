@@ -1,6 +1,9 @@
 .next/
 out/
 .shots/
-src/generated/
+# numbers.json is written at prebuild; features.json (the settings catalogue) is committed:
+# scripts/gen-catalog.ts writes it and CI checks it is not stale
+src/generated/*
+!src/generated/features.json
 next-env.d.ts
 *.tsbuildinfo

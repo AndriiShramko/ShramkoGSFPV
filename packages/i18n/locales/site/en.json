@@ -175,6 +175,440 @@
       "note": "“Class” means the numbers follow public specs and measurements. BetaFPV does not endorse this preset."
     }
   },
+  "tune": {
+    "eyebrow": "Settings catalogue",
+    "h2": "Every setting, key and drone, with its default and range",
+    "lead": "Generated from the simulator's own settings schema at every release: exactly what you can change today, nothing planned, nothing made up. Search it or filter by group.",
+    "count": {
+      "settings": "settings",
+      "groups": "groups",
+      "keys": "keyboard keys",
+      "drones": "drone presets",
+      "rateTypes": "rate-curve types",
+      "modes": "flight modes"
+    },
+    "search": {
+      "label": "Search the settings",
+      "placeholder": "FOV, gravity, PID…",
+      "clear": "Clear the search"
+    },
+    "filter": {
+      "label": "Groups",
+      "all": "All"
+    },
+    "shown": "Shown: {n} of {total}",
+    "empty": "No setting matches this search. Try another word.",
+    "default": "Default",
+    "range": "Range",
+    "options": "Options",
+    "preset": "from the drone preset",
+    "scope": {
+      "drone": "Per drone",
+      "scene": "Per scene"
+    },
+    "scopeNote": "“Per drone” values are kept separately for each drone, “per scene” ones for each scan.",
+    "adv": "Advanced",
+    "open": "Open in the simulator",
+    "keys": {
+      "title": "Keyboard shortcuts",
+      "note": "In the simulator each key is shown next to its menu item.",
+      "flying": "Keyboard flying",
+      "flyingNote": "No radio? These keys are the sticks."
+    },
+    "drones": {
+      "title": "{n} drone presets",
+      "note": "Every number says where it comes from: manufacturer, independent measurement or estimate.",
+      "fly": "Fly this drone",
+      "default": "default"
+    },
+    "footer": {
+      "note": "Generated on {date} from the settings schema. A setting that is still being built appears here the day it ships.",
+      "docs": "The full list on GitHub",
+      "cta": "Try them in the simulator"
+    },
+    "text": {
+      "prefs": {
+        "on": "On",
+        "off": "Off",
+        "fromPreset": "from the drone preset",
+        "unit": {
+          "s": "s",
+          "ms": "ms",
+          "m": "m",
+          "mps": "m/s",
+          "mps2": "m/s²",
+          "min": "min",
+          "blocks": "blocks",
+          "per_s": "1/s"
+        }
+      },
+      "group": {
+        "flight": "Flight",
+        "crash": "Crashes & respawn",
+        "camera": "Camera",
+        "display": "Display",
+        "input": "Controls",
+        "drone": "Drone & physics",
+        "tune": "Tune",
+        "scenes": "Scenes",
+        "voxels": "Voxel grid",
+        "recording": "Recording"
+      },
+      "keys": {
+        "pause": {
+          "toggle": "Pause / resume"
+        },
+        "respawn": {
+          "start": "Back to the start",
+          "rewind": "Rewind 5 s"
+        },
+        "crash": {
+          "keep": "Keep the wreck (no automatic respawn)"
+        },
+        "scene": {
+          "next": "Next scene",
+          "random": "Random scene",
+          "favourite": "Next favourite scene"
+        },
+        "mode": {
+          "cycle": "Flight mode"
+        },
+        "voxels": {
+          "cycle": "Voxel grid: off / over the scan / voxels only"
+        },
+        "hud": {
+          "toggle": "Show or hide the HUD"
+        },
+        "scale": {
+          "down": "Scene smaller",
+          "up": "Scene larger"
+        },
+        "record": {
+          "toggle": "Start or stop recording"
+        },
+        "frameStats": {
+          "toggle": "Frame times and delay"
+        },
+        "settings": {
+          "open": "Settings"
+        }
+      },
+      "set": {
+        "flight": {
+          "mode": {
+            "label": "Flight mode",
+            "help": "Angle levels the drone when you let go of the sticks; Horizon levels it too but flips at full stick; Acro holds the attitude, like a freestyle quad.",
+            "opt": {
+              "acro": "Acro (rate mode)",
+              "angle": "Angle (self-levelling)",
+              "horizon": "Horizon (levels, flips allowed)"
+            }
+          }
+        },
+        "level": {
+          "angleLimitDeg": {
+            "label": "Angle mode tilt limit",
+            "help": "The steepest tilt Angle mode allows, as Betaflight's angle limit."
+          },
+          "strength": {
+            "label": "Self-levelling strength",
+            "help": "How hard Angle mode pulls the drone back to level, as Betaflight's level strength."
+          },
+          "horizonStrength": {
+            "label": "Horizon levelling strength",
+            "help": "How hard Horizon mode levels the drone near the stick centre."
+          }
+        },
+        "crash": {
+          "enabled": {
+            "label": "Crashes",
+            "help": "Off: hitting a wall never ends the flight, so a beginner can keep flying."
+          }
+        },
+        "physics": {
+          "vCrash": {
+            "label": "Crash threshold",
+            "help": "Impact speed above which a hit counts as a crash; slower touches slide along the wall."
+          },
+          "gravity": {
+            "label": "Gravity",
+            "help": "Earth 9.81, Moon 1.62, Mars 3.72, zero-g, or any value in between."
+          },
+          "gravityMode": {
+            "label": "Thrust on other worlds",
+            "help": "Same motors (honest), the thrust-to-weight you have on Earth, or auto throttle that hovers at stick centre.",
+            "opt": {
+              "honest": "Real (same motors)",
+              "same-twr": "Keep thrust / weight",
+              "auto-throttle": "Auto throttle (stick centre hovers)"
+            }
+          },
+          "twr": {
+            "label": "Thrust-to-weight",
+            "help": "Maximum thrust divided by weight; the preset takes it from the manufacturer or an estimate."
+          },
+          "tauMs": {
+            "label": "Motor spin-up time",
+            "help": "How fast the motors reach a new speed; lower feels snappier."
+          },
+          "dragScale": {
+            "label": "Air drag",
+            "help": "Scales the air drag of the frame: more drag slows the drone down sooner."
+          },
+          "ductDrag": {
+            "label": "Duct drag",
+            "help": "Rotor and duct drag that damps a cinewhoop's speed and wobble."
+          },
+          "propInertia": {
+            "label": "Propeller inertia",
+            "help": "Scales the spin inertia of the props: more inertia softens throttle and turns."
+          },
+          "idlePct": {
+            "label": "Motor idle",
+            "help": "Motor speed at zero throttle, like Betaflight's DShot idle value."
+          }
+        },
+        "respawn": {
+          "auto": {
+            "label": "Automatic respawn",
+            "help": "After a crash the drone is back in the air by itself."
+          },
+          "delayS": {
+            "label": "Respawn delay",
+            "help": "How long the crash stays on screen before the automatic respawn."
+          },
+          "target": {
+            "label": "Respawn at",
+            "help": "Rewind to where you were a few seconds before the crash, or go back to the start.",
+            "opt": {
+              "rewind": "Rewind",
+              "start": "The start"
+            }
+          },
+          "rewindS": {
+            "label": "Rewind by",
+            "help": "How many seconds before the crash the rewind puts you back."
+          },
+          "platform": {
+            "label": "Respawn on a platform",
+            "help": "You restart hovering on an invisible pad instead of dropping to the floor."
+          },
+          "keepArmed": {
+            "label": "Stay armed after a respawn",
+            "help": "No need to flip the arm switch again after every crash."
+          },
+          "unstuck": {
+            "label": "Get unstuck automatically",
+            "help": "Restarts the flight when the drone is stuck or lies upside down."
+          },
+          "showPad": {
+            "label": "Show the platform",
+            "help": "Draws the respawn pad, which is invisible by default."
+          }
+        },
+        "battery": {
+          "refill": {
+            "label": "Battery refill",
+            "help": "When the simulated pack is full again: at the start, at every respawn, or never.",
+            "opt": {
+              "start": "At the start",
+              "respawn": "At every respawn",
+              "never": "Never"
+            }
+          }
+        },
+        "camera": {
+          "fovDeg": {
+            "label": "Camera field of view",
+            "help": "How wide the FPV camera sees; each drone keeps its own value."
+          },
+          "uptiltDeg": {
+            "label": "Camera uptilt",
+            "help": "How far the FPV camera tilts up; more tilt suits faster flying."
+          }
+        },
+        "display": {
+          "hud": {
+            "label": "Show HUD",
+            "help": "The on-screen display: arm state, flight mode, battery, speed and altitude."
+          },
+          "units": {
+            "label": "Units",
+            "help": "Metric or imperial units on the HUD and in the flight stats.",
+            "opt": {
+              "metric": "Metric",
+              "imperial": "Imperial"
+            }
+          },
+          "quality": {
+            "label": "Stable frame ↔ detail",
+            "help": "Moves the render resolution and detail budget. Physics always runs at 1000 Hz."
+          },
+          "governor": {
+            "label": "Automatic quality",
+            "help": "Lowers the quality by itself when frames drop, and raises it again when the GPU has room."
+          },
+          "reducedMotion": {
+            "label": "Reduced motion",
+            "help": "A calmer crash camera without flashes; follows your system setting by default.",
+            "opt": {
+              "system": "Follow the system",
+              "on": "On",
+              "off": "Off"
+            }
+          },
+          "frameStats": {
+            "label": "Frame stats",
+            "help": "Screen refresh, frame times and input-to-screen delay over the flight view."
+          }
+        },
+        "stats": {
+          "onDisarm": {
+            "label": "Flight stats on disarm",
+            "help": "Shows the flight's stats card, like the goggles' OSD, when you disarm."
+          }
+        },
+        "ui": {
+          "language": {
+            "label": "Language",
+            "help": "English, Spanish, Polish or Russian; by default the language of the page.",
+            "opt": {
+              "browser": "Page language"
+            }
+          }
+        },
+        "input": {
+          "stickMode": {
+            "label": "Stick mode",
+            "help": "Which stick is the throttle in the calibration drawings: Mode 2 on the left, Mode 1 on the right.",
+            "opt": {
+              "1": "Mode 1",
+              "2": "Mode 2"
+            }
+          }
+        },
+        "drone": {
+          "current": {
+            "label": "Drone",
+            "help": "One of the BetaFPV-class presets; every number on its card says where it comes from."
+          }
+        },
+        "tune": {
+          "pid": {
+            "label": "PID gains (P / I / D / F)",
+            "help": "P, I, D and feed-forward for roll, pitch and yaw, per drone, as in Betaflight."
+          },
+          "rates": {
+            "label": "Rates (stick curves)",
+            "help": "Betaflight, Actual, KISS or Raceflight rate curves, imported from your Betaflight CLI diff."
+          },
+          "throttle": {
+            "label": "Throttle curve",
+            "help": "Throttle mid and expo from your Betaflight diff."
+          }
+        },
+        "scenes": {
+          "autoSwitch": {
+            "label": "Next scene after a crash",
+            "help": "After a crash, carry on in the next scene of your rotation; off by default."
+          },
+          "rotation": {
+            "label": "Scene rotation",
+            "help": "Which scenes the next and the random scene come from.",
+            "opt": {
+              "curated": "Andrii's picks",
+              "favourites": "Your favourites",
+              "history": "Recently flown"
+            }
+          },
+          "order": {
+            "label": "Scene order",
+            "help": "Random, or one after another.",
+            "opt": {
+              "random": "Random",
+              "sequential": "In order"
+            }
+          },
+          "allowNoWalls": {
+            "label": "Include scans without walls",
+            "help": "Lets the rotation pick scans that have no collision data."
+          }
+        },
+        "scene": {
+          "transform": {
+            "label": "Scene size",
+            "help": "Scales a wrong-size scan around the drone, remembered for each scene."
+          },
+          "dropFloaters": {
+            "label": "Remove floating pieces",
+            "help": "Removes floating voxel pieces smaller than this many blocks (phantom walls), for each scene."
+          }
+        },
+        "voxels": {
+          "show": {
+            "label": "Voxel grid",
+            "help": "Shows the collision voxels over the scan, or only the voxels with the scan hidden.",
+            "opt": {
+              "off": "Off",
+              "overlay": "Over the scan",
+              "only": "Voxels only"
+            }
+          },
+          "opacity": {
+            "label": "Voxel opacity",
+            "help": "How see-through the voxel grid is."
+          },
+          "style": {
+            "label": "Voxel style",
+            "help": "Solid cubes, a grid, edges, height colours, or floating pieces in red.",
+            "opt": {
+              "solid": "Solid cubes",
+              "grid": "Grid",
+              "edges": "Edges",
+              "height": "Height colours",
+              "floaters": "Floaters in red"
+            }
+          },
+          "radiusM": {
+            "label": "Voxel radius",
+            "help": "How far around the drone the grid is drawn."
+          }
+        },
+        "recording": {
+          "fps": {
+            "label": "Recording frame rate",
+            "help": "30 or 60 frames per second in the saved video.",
+            "opt": {
+              "30": "30 frames/s",
+              "60": "60 frames/s"
+            }
+          },
+          "resolution": {
+            "label": "Recording resolution",
+            "help": "The size of the saved video.",
+            "opt": {
+              "1080p": "1080p",
+              "1440p": "1440p",
+              "2160p": "2160p (4K)",
+              "native": "Screen size"
+            }
+          },
+          "auto": {
+            "label": "Auto-record",
+            "help": "Records every flight into the folder you chose last."
+          },
+          "folder": {
+            "label": "Recording folder",
+            "help": "The folder videos are saved to; the browser remembers it."
+          },
+          "splitMin": {
+            "label": "New file every",
+            "help": "Starts a new video file after this many minutes, so a crashed tab loses little."
+          }
+        }
+      }
+    }
+  },
   "numbers": {
     "eyebrow": "Live numbers",
     "h2": "We publish our own numbers because nobody else publishes theirs.",
