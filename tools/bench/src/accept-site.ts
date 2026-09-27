@@ -43,6 +43,8 @@ async function raw(u: string, headers: Record<string, string> = {}): Promise<{ s
 async function launchVisible(opts: { locale?: string; width?: number; height?: number } = {}): Promise<{ ctx: BrowserContext; page: Page; close: () => Promise<void> }> {
     const browser = await chromium.launch({ channel: 'chrome', headless: false, args: ['--window-position=60,60'] });
     const ctx = await browser.newContext({ viewport: { width: opts.width ?? 1280, height: opts.height ?? 860 }, locale: opts.locale ?? 'en-US', extraHTTPHeaders: opts.locale ? { 'Accept-Language': opts.locale } : {} });
+    // tsx wraps named inner functions in __name(); functions sent to page.evaluate need it in the page
+    await ctx.addInitScript('globalThis.__name = globalThis.__name || ((f) => f);');
     const page = await ctx.newPage();
     return { ctx, page, close: () => browser.close() };
 }

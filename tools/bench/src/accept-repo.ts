@@ -35,11 +35,16 @@ const LETTERS = new RegExp('[' + cc(0x400) + '-' + cc(0x4ff) + cc(0x104) + '-' +
 const outside = tracked.filter((f) => !f.includes('locales/') && /\.(md|txt|json|ts|tsx|mjs|js|css|html|yml|yaml|cff|py|sh|toml)$/.test(f)).filter((f) => { try { return LETTERS.test(readFileSync(join(REPO, f), 'utf8')); } catch { return false; } });
 // placeholders in the docs a visitor reads
 const docs = tracked.filter((f) => /\.(md|txt|cff)$/.test(f) && !f.startsWith('evidence/'));
-const placeholders = docs.filter((f) => /\bTODO\b|\bPLACEHOLDER\b|[Ll]orem ipsum|\bundefined\b|\{\{[^}]+\}\}/.test(readFileSync(join(REPO, f), 'utf8')));
+// prose only: code blocks and inline code in design docs legitimately say `number | undefined`
+const prose = (s: string): string => s.replace(/```[\s\S]*?```/g, ' ').replace(/`[^`\n]*`/g, ' ');
+const PLACEHOLDER = /\bTODO\b|\bPLACEHOLDER\b|[Ll]orem ipsum|\bundefined\b|\{\{[^}]+\}\}/;
+const placeholders = docs.filter((f) => PLACEHOLDER.test(prose(readFileSync(join(REPO, f), 'utf8'))));
+// control: the same rule still catches a placeholder in prose, and ignores it inside code
+const placeholderControl = PLACEHOLDER.test(prose('Text TODO here.')) && !PLACEHOLDER.test(prose('Code `x: number | undefined` and\n```ts\nlet y = undefined\n```'));
 const topics = (repo.topics as string[]) ?? [];
 const prot = protection.json as { allow_force_pushes?: { enabled: boolean }; required_status_checks?: { contexts: string[] } } | null;
 const pass = repo.private === false && !!repo.description && topics.length >= 8 && (repo.license as { spdx_id: string })?.spdx_id === 'MIT' && repo.homepage === SITE
-    && siteLink && siteStatus === 200 && imgFiles.length > 0 && imgFiles.every((x) => x.exists) && files.every((x) => x.exists) && cffOk && outside.length === 0 && placeholders.length === 0
+    && siteLink && siteStatus === 200 && imgFiles.length > 0 && imgFiles.every((x) => x.exists) && files.every((x) => x.exists) && cffOk && outside.length === 0 && placeholders.length === 0 && placeholderControl
     && protection.status === 200 && prot?.allow_force_pushes?.enabled === false;
 writeEvidence('b-repo-b18', {
     pass,
@@ -49,6 +54,6 @@ writeEvidence('b-repo-b18', {
     cyrillicOrPolishOutsideLocales: outside,
     placeholdersInDocs: placeholders,
     mainProtection: { status: protection.status, forcePushAllowed: prot?.allow_force_pushes?.enabled, requiredChecks: prot?.required_status_checks?.contexts },
-    control: { readmeLinkToSiteAnswers: siteStatus }
+    control: { readmeLinkToSiteAnswers: siteStatus, placeholderRuleCatchesProseIgnoresCode: placeholderControl }
 });
 console.log(`B18 ${pass ? 'PASS' : 'FAIL'}`, JSON.stringify({ outside, placeholders, topics: topics.length }));
