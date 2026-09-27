@@ -1,0 +1,461 @@
+{
+  "name": "v03-a4-physics",
+  "context": {
+    "date": "2026-09-27T21:27:56.623Z",
+    "gitHead": "7a1ccd4",
+    "gitDirty": false,
+    "node": "v22.22.2",
+    "platform": "linux 6.18.44-fc-v37",
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz"
+  },
+  "pass": true,
+  "checks": {
+    "hover": {
+      "vz": -0.016288049050453682,
+      "motor": 0.39385249483907653,
+      "stick": 0.27743940434601666,
+      "pass": true,
+      "control": {
+        "name": "throttle +0.02 must climb",
+        "vz": 1.6716153564290763,
+        "fired": true
+      }
+    },
+    "fullStick": {
+      "roll": {
+        "target": 670,
+        "measured": 670.0132686893921,
+        "errPct": 0.0019804014018111266,
+        "pass": true
+      },
+      "pitch": {
+        "target": 670,
+        "measured": 670.0152269660373,
+        "errPct": 0.0022726814981029043,
+        "pass": true
+      },
+      "yaw": {
+        "target": 670,
+        "measured": 675.5774289071229,
+        "errPct": 0.8324520756899862,
+        "pass": true
+      },
+      "pass": true
+    },
+    "motorTau": {
+      "expectedMs": 15,
+      "measuredMs": 15,
+      "pass": true,
+      "control": {
+        "name": "tau = 0 must fail the check",
+        "measuredMs": 1,
+        "fired": true
+      }
+    },
+    "airmodeZeroThrottle": {
+      "target": 670,
+      "measured": 669.677581259229,
+      "ratio": 0.9995187779988493,
+      "pass": true
+    },
+    "pidStep": {
+      "setpoint": 500,
+      "peak": 510.11095225890324,
+      "overshootPct": 2.022190451780648,
+      "settledErr": 0.000049517969909061324,
+      "oscillations": 0,
+      "pass": true,
+      "control": {
+        "name": "Kp x3 must be caught (overshoot/oscillation)",
+        "overshootPct": 5.838202058062484,
+        "oscillations": 2,
+        "fired": true
+      }
+    },
+    "moonHover": {
+      "idealBattery": {
+        "g": 1.62,
+        "motor": 0.18173477127001816,
+        "expected": 0.1817347598446148,
+        "pass": true
+      },
+      "withSag": {
+        "g": 1.62,
+        "motor": 0.15854034326132957,
+        "expected": 0.1817347598446148,
+        "pass": false,
+        "note": "informational: with battery sag the hover output is lower because the pack sits above V_nom at hover current"
+      }
+    },
+    "zeroGAngularMomentum": {
+      "L0": 0.0013607802908625626,
+      "L1": 0.0013607802908634956,
+      "relDrift": 9.063829070579257e-13,
+      "pass": true
+    },
+    "terminalVelocity": {
+      "measured": 12.697677756509208,
+      "expected": 12.697677756509782,
+      "errPct": -4.518647189893655e-12,
+      "pass": true,
+      "control": {
+        "name": "doubled CdA must shift v_term",
+        "measured": 8.978614046949248,
+        "fired": true
+      }
+    },
+    "coastDown": {
+      "t10to5s": 0.913,
+      "t10to2s": 2.277,
+      "distTo2m": 10.956726320682534,
+      "gate": "1.8-3.0 s from 10 to 2 m/s",
+      "pass": true,
+      "control": {
+        "name": "duct drag 0 (v0.2) must fail",
+        "t10to2s": 17.745,
+        "fired": true
+      }
+    },
+    "sideslip": {
+      "cruiseMs": 4.992560494163736,
+      "slipOver30s": 1.468,
+      "gate": "above 30 deg for at most 2 s after a 90 deg yaw",
+      "pass": true,
+      "control": {
+        "name": "duct drag 0 must fail",
+        "slipOver30s": 3.743,
+        "fired": true
+      }
+    },
+    "yawStep": {
+      "setpoint": 670,
+      "t63ms": 13,
+      "t90ms": 22,
+      "peak": 707.1777153799928,
+      "overshootPct": 5.548912743282508,
+      "gate": "overshoot <= 10 %",
+      "pass": true,
+      "control": {
+        "name": "J_r = 0 must fail",
+        "overshootPct": 29.84771080036108,
+        "fired": true
+      }
+    },
+    "topSpeed": {
+      "kmh": 93.93597599929764,
+      "pitchDeg": 78.41787767410278,
+      "gate": "85-110 km/h",
+      "pass": true,
+      "control": {
+        "name": "CdA x 0.3 must leave the band",
+        "kmh": 172.13506901642083,
+        "fired": true
+      }
+    },
+    "terminalVelocityUnchanged": {
+      "withDuctDrag": 12.697677756509208,
+      "withoutDuctDrag": 12.697677756509208,
+      "analytic": 12.697677756509782,
+      "gate": "within 0.5 % of k = 0 and of sqrt(2 m g / (rho CdA))",
+      "pass": true,
+      "control": {
+        "name": "a 2 % larger CdA must move it by more than 0.5 %",
+        "measured": 12.572574432117161,
+        "fired": true
+      }
+    },
+    "hoverThrottle": {
+      "note": "reported, not gated: no 3S hover figure is published",
+      "pavo20pro-3s": {
+        "idle": 0.1,
+        "throttleCurve": {
+          "mid": 65,
+          "expo": 20
+        },
+        "fullPack": {
+          "motorOutput": 0.39385249483907653,
+          "throttlePct": 32.7,
+          "stickPct": 27.7
+        },
+        "halfPack": {
+          "motorOutput": 0.44841345442062513,
+          "throttlePct": 38.7,
+          "stickPct": 34
+        }
+      },
+      "pavo20pro2-3s": {
+        "idle": 0.1,
+        "throttleCurve": {
+          "mid": 50,
+          "expo": 0
+        },
+        "fullPack": {
+          "motorOutput": 0.3498033494617151,
+          "throttlePct": 27.8,
+          "stickPct": 27.8
+        },
+        "halfPack": {
+          "motorOutput": 0.39817607186092646,
+          "throttlePct": 33.1,
+          "stickPct": 33.1
+        }
+      }
+    }
+  },
+  "feel": {
+    "simCore": "sim-core/0.2.0",
+    "targets": {
+      "maxRates": "670 deg/s on all axes (BetaFPV keeps the Betaflight 4.5 default ACTUAL 7/67/0)",
+      "coastT10to2s": "predicted 2.3 s at k = 0.6; gate 1.8-3.0 s",
+      "yawStep": "predicted t90 21 ms, overshoot 5.6 %; gate overshoot <= 10 %",
+      "yawFlickAfterCentredDeg": "predicted 0.8 deg at J_r = 2e-7 (v0.2 tune)",
+      "sideslipOver30s": "predicted 1.5 s; gate <= 2 s",
+      "hover": "about 32.5 % throttle with 10 % idle predicted for the Pro (no 3S hover figure published); reported, not gated",
+      "topSpeedKmh": "predicted 94; gate 85-110",
+      "angleTilt": "Betaflight 4.5: 1.2 / 4.9 / 16.6 / 34.9 / 60 deg at stick 0.1 / 0.25 / 0.5 / 0.75 / 1"
+    },
+    "before": {
+      "pavo20pro-3s": {
+        "massG": 153,
+        "maxRates": {
+          "roll": 670,
+          "pitch": 670,
+          "yaw": 665.7
+        },
+        "hover": {
+          "idle": 0.055,
+          "fullPack": {
+            "motorOutput": 0.393,
+            "throttlePct": 35.8,
+            "stickPct": 35.8
+          },
+          "halfPack": {
+            "throttlePct": 41.5,
+            "stickPct": 41.5
+          }
+        },
+        "coast": {
+          "t10to5s": 4.54,
+          "t10to2s": 17.97,
+          "distTo2m": 72.6
+        },
+        "yawStep": {
+          "t63ms": 71,
+          "t90ms": 95,
+          "peak": 901,
+          "overshootPct": 34.5
+        },
+        "yawFlickAfterCentredDeg": -15.8,
+        "sideslip": {
+          "cruiseMs": 11.5,
+          "slipOver30s": 3.78
+        },
+        "angleTilt": {
+          "1": 55,
+          "0.1": 5.5,
+          "0.25": 13.75,
+          "0.5": 27.5,
+          "0.75": 41.25
+        }
+      },
+      "pavo20pro2-3s": {
+        "massG": 161,
+        "maxRates": {
+          "roll": 670,
+          "pitch": 670,
+          "yaw": 668.7
+        },
+        "hover": {
+          "idle": 0.055,
+          "fullPack": {
+            "motorOutput": 0.349,
+            "throttlePct": 31.1,
+            "stickPct": 31.1
+          },
+          "halfPack": {
+            "throttlePct": 36.2,
+            "stickPct": 36.2
+          }
+        },
+        "coast": {
+          "t10to5s": 4.78,
+          "t10to2s": 18.92,
+          "distTo2m": 76.4
+        },
+        "yawStep": {
+          "t63ms": 61,
+          "t90ms": 80,
+          "peak": 915,
+          "overshootPct": 36.6
+        },
+        "yawFlickAfterCentredDeg": -16.9,
+        "sideslip": {
+          "cruiseMs": 11.8,
+          "slipOver30s": 3.88
+        },
+        "angleTilt": {
+          "1": 55,
+          "0.1": 5.5,
+          "0.25": 13.75,
+          "0.5": 27.5,
+          "0.75": 41.25
+        }
+      }
+    },
+    "after": {
+      "pavo20pro-3s": {
+        "massG": 151,
+        "pid": {
+          "roll": [
+            54,
+            111,
+            44,
+            0
+          ],
+          "pitch": [
+            68,
+            139,
+            60,
+            0
+          ],
+          "yaw": [
+            54,
+            111,
+            0,
+            0
+          ]
+        },
+        "idle": 0.1,
+        "ductDragPerS": 0.6,
+        "rotorInertiaKgm2": 2e-7,
+        "maxRates": {
+          "roll": 670.0132686893921,
+          "pitch": 670.0152269660373,
+          "yaw": 675.5774289071229
+        },
+        "hover": {
+          "idle": 0.1,
+          "throttleCurve": {
+            "mid": 65,
+            "expo": 20
+          },
+          "fullPack": {
+            "motorOutput": 0.39385249483907653,
+            "throttlePct": 32.7,
+            "stickPct": 27.7
+          },
+          "halfPack": {
+            "motorOutput": 0.44841345442062513,
+            "throttlePct": 38.7,
+            "stickPct": 34
+          }
+        },
+        "coast": {
+          "t10to5s": 0.913,
+          "t10to2s": 2.277,
+          "distTo2m": 10.956726320682534
+        },
+        "yawStep": {
+          "setpoint": 670,
+          "t63ms": 13,
+          "t90ms": 22,
+          "peak": 707.1777153799928,
+          "overshootPct": 5.548912743282508
+        },
+        "yawFlickAfterCentredDeg": -3.9388254875208304,
+        "sideslip": {
+          "cruiseMs": 4.992560494163736,
+          "slipOver30s": 1.468
+        },
+        "topSpeed": {
+          "kmh": 93.93597599929764,
+          "pitchDeg": 78.41787767410278
+        },
+        "angleTilt": {
+          "1": 59.99980442087642,
+          "0.1": 1.164176174275005,
+          "0.25": 4.925356870153089,
+          "0.5": 16.56706198913702,
+          "0.75": 34.9251488958882
+        }
+      },
+      "pavo20pro2-3s": {
+        "massG": 158,
+        "pid": {
+          "roll": [
+            51,
+            105,
+            46,
+            41
+          ],
+          "pitch": [
+            64,
+            133,
+            63,
+            51
+          ],
+          "yaw": [
+            51,
+            105,
+            0,
+            41
+          ]
+        },
+        "idle": 0.1,
+        "ductDragPerS": 0.6,
+        "rotorInertiaKgm2": 2e-7,
+        "maxRates": {
+          "roll": 670.0038103299445,
+          "pitch": 669.9944250918584,
+          "yaw": 674.2522716776982
+        },
+        "hover": {
+          "idle": 0.1,
+          "throttleCurve": {
+            "mid": 50,
+            "expo": 0
+          },
+          "fullPack": {
+            "motorOutput": 0.3498033494617151,
+            "throttlePct": 27.8,
+            "stickPct": 27.8
+          },
+          "halfPack": {
+            "motorOutput": 0.39817607186092646,
+            "throttlePct": 33.1,
+            "stickPct": 33.1
+          }
+        },
+        "coast": {
+          "t10to5s": 0.922,
+          "t10to2s": 2.291,
+          "distTo2m": 11.039557818255789
+        },
+        "yawStep": {
+          "setpoint": 670,
+          "t63ms": 14,
+          "t90ms": 23,
+          "peak": 711.9404545745818,
+          "overshootPct": 6.259769339489818
+        },
+        "yawFlickAfterCentredDeg": -3.6241977965919716,
+        "sideslip": {
+          "cruiseMs": 5.038951430055746,
+          "slipOver30s": 1.474
+        },
+        "topSpeed": {
+          "kmh": 103.72643483546905,
+          "pitchDeg": 80.15325784683228
+        },
+        "angleTilt": {
+          "1": 59.999826744426805,
+          "0.1": 1.1641758949435532,
+          "0.25": 4.925355789744793,
+          "0.5": 16.567059220464916,
+          "0.75": 34.925147174289954
+        }
+      }
+    }
+  },
+  "runtimeMs": 948
+}
