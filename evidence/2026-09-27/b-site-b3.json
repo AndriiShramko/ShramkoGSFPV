@@ -1,0 +1,807 @@
+{
+  "name": "b-site-b3",
+  "context": {
+    "date": "2026-09-27T02:01:31.670Z",
+    "gitHead": "d3513c0",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": false,
+  "release": {
+    "sha": "4ca397f",
+    "built": "2026-09-27T01:37:19.281Z"
+  },
+  "rule": "links: a real target (internal ones answer 200/30x, same-page anchors exist, anchors on another page exist in its HTML); buttons: each on a fresh load, scrolled into view BEFORE a 1 s baseline, clicked by data-audit-id; within 500 ms of the click a DOM mutation outside what changed in the baseline, a navigation, a request (not an image or font, not to a host busy in the baseline except documents; /api/ only if the baseline had none and not a crash beacon), focus moving to a non-button that is not the clicked control, a clipboard write, a device chooser, a download or a new window; scrolling is recorded but never counted; consent decline hides the banner, accept hides it and requests gtag",
+  "totals": {
+    "controls": 386,
+    "buttonsClicked": 80,
+    "linksChecked": 306
+  },
+  "pages": {
+    "/en/": {
+      "total": 54,
+      "links": 50,
+      "buttons": 4,
+      "dead": [],
+      "effects": {
+        "0 a \"Skip to content\"": "anchor #main",
+        "1 a \"ShramkoGSFPV\"": "anchor #top",
+        "2 a \"Features\"": "anchor #features",
+        "3 a \"Physics\"": "anchor #real",
+        "4 a \"Numbers\"": "anchor #numbers",
+        "5 a \"Scans\"": "anchor #scenes",
+        "6 a \"Radios\"": "anchor #radios",
+        "7 a \"FAQ\"": "anchor #faq",
+        "8 a \"Contact\"": "anchor #contact",
+        "9 a \"en English\"": "link 200",
+        "10 a \"es Espa\u00f1ol\"": "link 200",
+        "11 a \"pl Polski\"": "link 200",
+        "12 a \"ru \u0420\u0443\u0441\u0441\u043a\u0438\u0439\"": "link 200",
+        "13 a \"Fly now\"": "link 200",
+        "14 a \"Fly now \u2014 no install\u2192\"": "link 200",
+        "16 a \"Works with your radio\"": "anchor #radios",
+        "17 a \"Suggest a feature\u2192\"": "anchor #contact",
+        "18 a \"All raw evidence on GitHub\u2197\"": "external github.com",
+        "19 a \"Fly this: Modlinek Villa \u2014 red room and \"": "link 200",
+        "20 a \"Original on SuperSplat: Modlinek Villa \u2014\"": "external superspl.at",
+        "21 a \"Fly this: Winter Garden \u2014 Jastrz\u0119bia G\u00f3r\"": "link 200",
+        "22 a \"Original on SuperSplat: Winter Garden \u2014 \"": "external superspl.at",
+        "23 a \"Fly this: Tunis \u2014 old town streets\"": "link 200",
+        "24 a \"Original on SuperSplat: Tunis \u2014 old town\"": "external superspl.at",
+        "26 a \"AGENTS.md\u2197\"": "external github.com",
+        "27 a \"AGENT_SETUP.md\u2197\"": "external github.com",
+        "28 a \"llms.txt\"": "link 200",
+        "29 a \"Security policy (SECURITY.md)\u2197\"": "external github.com",
+        "30 a \"Full list of warnings (docs/warnings.md)\"": "external github.com",
+        "31 a \"View on GitHub\u2197\"": "external github.com",
+        "32 a \"Good first issues\u2197\"": "external github.com",
+        "33 a \"PlayCanvas\u2197\"": "external github.com",
+        "34 a \"Rapier\u2197\"": "external rapier.rs",
+        "35 a \"Betaflight\u2197\"": "external github.com",
+        "36 a \"SplatFPV\u2197\"": "external github.com",
+        "37 a \"LinkedIn\u2197\"": "external www.linkedin.com",
+        "38 a \"Book a call\u2197\"": "external calendar.app.google",
+        "39 a \"zmei116@gmail.com\"": "mailto",
+        "40 a \"GitHub\u2197\"": "external github.com",
+        "41 a \"privacy\"": "link 200",
+        "42 a \"en English\"": "link 200",
+        "43 a \"es Espa\u00f1ol\"": "link 200",
+        "44 a \"pl Polski\"": "link 200",
+        "45 a \"ru \u0420\u0443\u0441\u0441\u043a\u0438\u0439\"": "link 200",
+        "46 a \"Home\"": "link 200",
+        "47 a \"Privacy\"": "link 200",
+        "48 a \"Licenses\"": "link 200",
+        "49 a \"GitHub\u2197\"": "external github.com",
+        "50 a \"Andrii Shramko\u2197\"": "external www.linkedin.com",
+        "51 a \"Privacy\"": "link 200",
+        "15 button \"Open scene\"": "dom 8, focus",
+        "25 button \"Copy\"": "dom 1, clipboard",
+        "52 button \"Decline\"": "dom 1",
+        "53 button \"Accept\"": "dom 2, req GET www.googletagmanager.com"
+      },
+      "skipped": {
+        "hidden": 1,
+        "disabled": [
+          "Send request"
+        ]
+      },
+      "consent": {
+        "shown": true,
+        "buttons": [
+          "Decline",
+          "Accept"
+        ],
+        "decline": {
+          "text": "Decline",
+          "bannerGone": true,
+          "gtagRequested": 0,
+          "ok": true
+        },
+        "accept": {
+          "text": "Accept",
+          "bannerGone": true,
+          "gtagRequested": 1,
+          "ok": true
+        }
+      }
+    },
+    "/es/": {
+      "total": 54,
+      "links": 50,
+      "buttons": 4,
+      "dead": [],
+      "effects": {
+        "0 a \"Ir al contenido\"": "anchor #main",
+        "1 a \"ShramkoGSFPV\"": "anchor #top",
+        "2 a \"Funciones\"": "anchor #features",
+        "3 a \"F\u00edsica\"": "anchor #real",
+        "4 a \"Cifras\"": "anchor #numbers",
+        "5 a \"Escaneos\"": "anchor #scenes",
+        "6 a \"Emisoras\"": "anchor #radios",
+        "7 a \"Preguntas\"": "anchor #faq",
+        "8 a \"Contacto\"": "anchor #contact",
+        "9 a \"en English\"": "link 200",
+        "10 a \"es Espa\u00f1ol\"": "link 200",
+        "11 a \"pl Polski\"": "link 200",
+        "12 a \"ru \u0420\u0443\u0441\u0441\u043a\u0438\u0439\"": "link 200",
+        "13 a \"Volar ya\"": "link 200",
+        "14 a \"Volar ya, sin instalar\u2192\"": "link 200",
+        "16 a \"Compatible con tu emisora\"": "anchor #radios",
+        "17 a \"Prop\u00f3n una funci\u00f3n\u2192\"": "anchor #contact",
+        "18 a \"Todas las evidencias en GitHub\u2197\"": "external github.com",
+        "19 a \"Volar aqu\u00ed: Villa Modlinek: habitaci\u00f3n r\"": "link 200",
+        "20 a \"Original en SuperSplat: Villa Modlinek: \"": "external superspl.at",
+        "21 a \"Volar aqu\u00ed: Jard\u00edn de invierno \u2014 Jastrz\u0119\"": "link 200",
+        "22 a \"Original en SuperSplat: Jard\u00edn de invier\"": "external superspl.at",
+        "23 a \"Volar aqu\u00ed: T\u00fanez: calles de la medina\"": "link 200",
+        "24 a \"Original en SuperSplat: T\u00fanez: calles de\"": "external superspl.at",
+        "26 a \"AGENTS.md\u2197\"": "external github.com",
+        "27 a \"AGENT_SETUP.md\u2197\"": "external github.com",
+        "28 a \"llms.txt\"": "link 200",
+        "29 a \"Pol\u00edtica de seguridad (SECURITY.md)\u2197\"": "external github.com",
+        "30 a \"Lista completa de advertencias (docs/war\"": "external github.com",
+        "31 a \"Ver en GitHub\u2197\"": "external github.com",
+        "32 a \"Tareas para empezar\u2197\"": "external github.com",
+        "33 a \"PlayCanvas\u2197\"": "external github.com",
+        "34 a \"Rapier\u2197\"": "external rapier.rs",
+        "35 a \"Betaflight\u2197\"": "external github.com",
+        "36 a \"SplatFPV\u2197\"": "external github.com",
+        "37 a \"LinkedIn\u2197\"": "external www.linkedin.com",
+        "38 a \"Reservar una llamada\u2197\"": "external calendar.app.google",
+        "39 a \"zmei116@gmail.com\"": "mailto",
+        "40 a \"GitHub\u2197\"": "external github.com",
+        "41 a \"privacidad\"": "link 200",
+        "42 a \"en English\"": "link 200",
+        "43 a \"es Espa\u00f1ol\"": "link 200",
+        "44 a \"pl Polski\"": "link 200",
+        "45 a \"ru \u0420\u0443\u0441\u0441\u043a\u0438\u0439\"": "link 200",
+        "46 a \"Inicio\"": "link 200",
+        "47 a \"Privacidad\"": "link 200",
+        "48 a \"Licencias\"": "link 200",
+        "49 a \"GitHub\u2197\"": "external github.com",
+        "50 a \"Andrii Shramko\u2197\"": "external www.linkedin.com",
+        "51 a \"Privacidad\"": "link 200",
+        "15 button \"Abrir escena\"": "dom 8, focus",
+        "25 button \"Copiar\"": "dom 1, clipboard",
+        "52 button \"Rechazar\"": "dom 1",
+        "53 button \"Aceptar\"": "dom 2, req GET www.googletagmanager.com"
+      },
+      "skipped": {
+        "hidden": 1,
+        "disabled": [
+          "Enviar solicitud"
+        ]
+      },
+      "consent": {
+        "shown": true,
+        "buttons": [
+          "Rechazar",
+          "Aceptar"
+        ],
+        "decline": {
+          "text": "Rechazar",
+          "bannerGone": true,
+          "gtagRequested": 0,
+          "ok": true
+        },
+        "accept": {
+          "text": "Aceptar",
+          "bannerGone": true,
+          "gtagRequested": 1,
+          "ok": true
+        }
+      }
+    },
+    "/pl/": {
+      "total": 54,
+      "links": 50,
+      "buttons": 4,
+      "dead": [],
+      "effects": {
+        "0 a \"Przejd\u017a do tre\u015bci\"": "anchor #main",
+        "1 a \"ShramkoGSFPV\"": "anchor #top",
+        "2 a \"Funkcje\"": "anchor #features",
+        "3 a \"Fizyka\"": "anchor #real",
+        "4 a \"Liczby\"": "anchor #numbers",
+        "5 a \"Skany\"": "anchor #scenes",
+        "6 a \"Aparatury\"": "anchor #radios",
+        "7 a \"Pytania\"": "anchor #faq",
+        "8 a \"Kontakt\"": "anchor #contact",
+        "9 a \"en English\"": "link 200",
+        "10 a \"es Espa\u00f1ol\"": "link 200",
+        "11 a \"pl Polski\"": "link 200",
+        "12 a \"ru \u0420\u0443\u0441\u0441\u043a\u0438\u0439\"": "link 200",
+        "13 a \"Le\u0107 teraz\"": "link 200",
+        "14 a \"Le\u0107 teraz \u2014 bez instalacji\u2192\"": "link 200",
+        "16 a \"Dzia\u0142a z Twoj\u0105 aparatur\u0105\"": "anchor #radios",
+        "17 a \"Zaproponuj funkcj\u0119\u2192\"": "anchor #contact",
+        "18 a \"Wszystkie surowe dowody na GitHubie\u2197\"": "external github.com",
+        "19 a \"Le\u0107 tutaj: Willa Modlinek \u2014 czerwony pok\"": "link 200",
+        "20 a \"Orygina\u0142 na SuperSplat: Willa Modlinek \u2014\"": "external superspl.at",
+        "21 a \"Le\u0107 tutaj: Ogr\u00f3d zimowy \u2014 Jastrz\u0119bia G\u00f3r\"": "link 200",
+        "22 a \"Orygina\u0142 na SuperSplat: Ogr\u00f3d zimowy \u2014 J\"": "external superspl.at",
+        "23 a \"Le\u0107 tutaj: Tunis \u2014 uliczki starej medyny\"": "link 200",
+        "24 a \"Orygina\u0142 na SuperSplat: Tunis \u2014 uliczki \"": "external superspl.at",
+        "26 a \"AGENTS.md\u2197\"": "external github.com",
+        "27 a \"AGENT_SETUP.md\u2197\"": "external github.com",
+        "28 a \"llms.txt\"": "link 200",
+        "29 a \"Polityka bezpiecze\u0144stwa (SECURITY.md)\u2197\"": "external github.com",
+        "30 a \"Pe\u0142na lista ostrze\u017ce\u0144 (docs/warnings.md)\"": "external github.com",
+        "31 a \"Zobacz na GitHubie\u2197\"": "external github.com",
+        "32 a \"Zadania na pocz\u0105tek\u2197\"": "external github.com",
+        "33 a \"PlayCanvas\u2197\"": "external github.com",
+        "34 a \"Rapier\u2197\"": "external rapier.rs",
+        "35 a \"Betaflight\u2197\"": "external github.com",
+        "36 a \"SplatFPV\u2197\"": "external github.com",
+        "37 a \"LinkedIn\u2197\"": "external www.linkedin.com",
+        "38 a \"Um\u00f3w rozmow\u0119\u2197\"": "external calendar.app.google",
+        "39 a \"zmei116@gmail.com\"": "mailto",
+        "40 a \"GitHub\u2197\"": "external github.com",
+        "41 a \"prywatno\u015b\u0107\"": "link 200",
+        "42 a \"en English\"": "link 200",
+        "43 a \"es Espa\u00f1ol\"": "link 200",
+        "44 a \"pl Polski\"": "link 200",
+        "45 a \"ru \u0420\u0443\u0441\u0441\u043a\u0438\u0439\"": "link 200",
+        "46 a \"Strona g\u0142\u00f3wna\"": "link 200",
+        "47 a \"Prywatno\u015b\u0107\"": "link 200",
+        "48 a \"Licencje\"": "link 200",
+        "49 a \"GitHub\u2197\"": "external github.com",
+        "50 a \"Andrii Shramko\u2197\"": "external www.linkedin.com",
+        "51 a \"Prywatno\u015b\u0107\"": "link 200",
+        "15 button \"Otw\u00f3rz scen\u0119\"": "dom 8, focus",
+        "25 button \"Kopiuj\"": "dom 1, clipboard",
+        "52 button \"Odrzucam\"": "dom 1",
+        "53 button \"Akceptuj\u0119\"": "dom 2, req GET www.googletagmanager.com"
+      },
+      "skipped": {
+        "hidden": 1,
+        "disabled": [
+          "Wy\u015blij zg\u0142oszenie"
+        ]
+      },
+      "consent": {
+        "shown": true,
+        "buttons": [
+          "Odrzucam",
+          "Akceptuj\u0119"
+        ],
+        "decline": {
+          "text": "Odrzucam",
+          "bannerGone": true,
+          "gtagRequested": 0,
+          "ok": true
+        },
+        "accept": {
+          "text": "Akceptuj\u0119",
+          "bannerGone": true,
+          "gtagRequested": 1,
+          "ok": true
+        }
+      }
+    },
+    "/ru/": {
+      "total": 54,
+      "links": 50,
+      "buttons": 4,
+      "dead": [],
+      "effects": {
+        "0 a \"\u041f\u0435\u0440\u0435\u0439\u0442\u0438 \u043a \u0441\u043e\u0434\u0435\u0440\u0436\u0438\u043c\u043e\u043c\u0443\"": "anchor #main",
+        "1 a \"ShramkoGSFPV\"": "anchor #top",
+        "2 a \"\u0424\u0443\u043d\u043a\u0446\u0438\u0438\"": "anchor #features",
+        "3 a \"\u0424\u0438\u0437\u0438\u043a\u0430\"": "anchor #real",
+        "4 a \"\u0417\u0430\u043c\u0435\u0440\u044b\"": "anchor #numbers",
+        "5 a \"\u0421\u043a\u0430\u043d\u044b\"": "anchor #scenes",
+        "6 a \"\u0410\u043f\u043f\u0430\u0440\u0430\u0442\u0443\u0440\u0430\"": "anchor #radios",
+        "7 a \"\u0412\u043e\u043f\u0440\u043e\u0441\u044b\"": "anchor #faq",
+        "8 a \"\u041a\u043e\u043d\u0442\u0430\u043a\u0442\u044b\"": "anchor #contact",
+        "9 a \"en English\"": "link 200",
+        "10 a \"es Espa\u00f1ol\"": "link 200",
+        "11 a \"pl Polski\"": "link 200",
+        "12 a \"ru \u0420\u0443\u0441\u0441\u043a\u0438\u0439\"": "link 200",
+        "13 a \"\u041f\u043e\u043b\u0435\u0442\u0430\u0442\u044c\"": "link 200",
+        "14 a \"\u041f\u043e\u043b\u0435\u0442\u0430\u0442\u044c \u2014 \u0431\u0435\u0437 \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0438\u2192\"": "link 200",
+        "16 a \"\u0420\u0430\u0431\u043e\u0442\u0430\u0435\u0442 \u0441 \u0432\u0430\u0448\u0435\u0439 \u0430\u043f\u043f\u0430\u0440\u0430\u0442\u0443\u0440\u043e\u0439\"": "anchor #radios",
+        "17 a \"\u041f\u0440\u0435\u0434\u043b\u043e\u0436\u0438\u0442\u044c \u0444\u0443\u043d\u043a\u0446\u0438\u044e\u2192\"": "anchor #contact",
+        "18 a \"\u0412\u0441\u0435 \u0438\u0441\u0445\u043e\u0434\u043d\u044b\u0435 \u0434\u0430\u043d\u043d\u044b\u0435 \u043d\u0430 GitHub\u2197\"": "external github.com",
+        "19 a \"\u041f\u043e\u043b\u0435\u0442\u0430\u0442\u044c \u0437\u0434\u0435\u0441\u044c: \u0412\u0438\u043b\u043b\u0430 Modlinek \u2014 \u043a\u0440\u0430\u0441\u043d\u0430\u044f\"": "link 200",
+        "20 a \"\u041e\u0440\u0438\u0433\u0438\u043d\u0430\u043b \u043d\u0430 SuperSplat: \u0412\u0438\u043b\u043b\u0430 Modlinek \u2014\"": "external superspl.at",
+        "21 a \"\u041f\u043e\u043b\u0435\u0442\u0430\u0442\u044c \u0437\u0434\u0435\u0441\u044c: \u0417\u0438\u043c\u043d\u0438\u0439 \u0441\u0430\u0434 \u2014 \u042f\u0441\u0442\u0448\u0435\u043c\u0431\u044f-\u0413\u0443\"": "link 200",
+        "22 a \"\u041e\u0440\u0438\u0433\u0438\u043d\u0430\u043b \u043d\u0430 SuperSplat: \u0417\u0438\u043c\u043d\u0438\u0439 \u0441\u0430\u0434 \u2014 \u042f\u0441\u0442\"": "external superspl.at",
+        "23 a \"\u041f\u043e\u043b\u0435\u0442\u0430\u0442\u044c \u0437\u0434\u0435\u0441\u044c: \u0422\u0443\u043d\u0438\u0441 \u2014 \u0443\u043b\u043e\u0447\u043a\u0438 \u0441\u0442\u0430\u0440\u043e\u0439 \u043c\u0435\"": "link 200",
+        "24 a \"\u041e\u0440\u0438\u0433\u0438\u043d\u0430\u043b \u043d\u0430 SuperSplat: \u0422\u0443\u043d\u0438\u0441 \u2014 \u0443\u043b\u043e\u0447\u043a\u0438 \u0441\"": "external superspl.at",
+        "26 a \"AGENTS.md\u2197\"": "external github.com",
+        "27 a \"AGENT_SETUP.md\u2197\"": "external github.com",
+        "28 a \"llms.txt\"": "link 200",
+        "29 a \"\u041f\u043e\u043b\u0438\u0442\u0438\u043a\u0430 \u0431\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u043e\u0441\u0442\u0438 (SECURITY.md)\u2197\"": "external github.com",
+        "30 a \"\u041f\u043e\u043b\u043d\u044b\u0439 \u0441\u043f\u0438\u0441\u043e\u043a \u043f\u0440\u0435\u0434\u0443\u043f\u0440\u0435\u0436\u0434\u0435\u043d\u0438\u0439 (docs/warni\"": "external github.com",
+        "31 a \"\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043d\u0430 GitHub\u2197\"": "external github.com",
+        "32 a \"\u0417\u0430\u0434\u0430\u0447\u0438 \u0434\u043b\u044f \u043d\u043e\u0432\u0438\u0447\u043a\u043e\u0432\u2197\"": "external github.com",
+        "33 a \"PlayCanvas\u2197\"": "external github.com",
+        "34 a \"Rapier\u2197\"": "external rapier.rs",
+        "35 a \"Betaflight\u2197\"": "external github.com",
+        "36 a \"SplatFPV\u2197\"": "external github.com",
+        "37 a \"LinkedIn\u2197\"": "external www.linkedin.com",
+        "38 a \"\u041d\u0430\u0437\u043d\u0430\u0447\u0438\u0442\u044c \u0441\u043e\u0437\u0432\u043e\u043d\u2197\"": "external calendar.app.google",
+        "39 a \"zmei116@gmail.com\"": "mailto",
+        "40 a \"GitHub\u2197\"": "external github.com",
+        "41 a \"\u043a\u043e\u043d\u0444\u0438\u0434\u0435\u043d\u0446\u0438\u0430\u043b\u044c\u043d\u043e\u0441\u0442\u044c\"": "link 200",
+        "42 a \"en English\"": "link 200",
+        "43 a \"es Espa\u00f1ol\"": "link 200",
+        "44 a \"pl Polski\"": "link 200",
+        "45 a \"ru \u0420\u0443\u0441\u0441\u043a\u0438\u0439\"": "link 200",
+        "46 a \"\u0413\u043b\u0430\u0432\u043d\u0430\u044f\"": "link 200",
+        "47 a \"\u041a\u043e\u043d\u0444\u0438\u0434\u0435\u043d\u0446\u0438\u0430\u043b\u044c\u043d\u043e\u0441\u0442\u044c\"": "link 200",
+        "48 a \"\u041b\u0438\u0446\u0435\u043d\u0437\u0438\u0438\"": "link 200",
+        "49 a \"GitHub\u2197\"": "external github.com",
+        "50 a \"Andrii Shramko\u2197\"": "external www.linkedin.com",
+        "51 a \"\u041a\u043e\u043d\u0444\u0438\u0434\u0435\u043d\u0446\u0438\u0430\u043b\u044c\u043d\u043e\u0441\u0442\u044c\"": "link 200",
+        "15 button \"\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u0441\u0446\u0435\u043d\u0443\"": "dom 8, focus",
+        "25 button \"\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c\"": "dom 1, clipboard",
+        "52 button \"\u041e\u0442\u043a\u043b\u043e\u043d\u0438\u0442\u044c\"": "dom 1",
+        "53 button \"\u041f\u0440\u0438\u043d\u044f\u0442\u044c\"": "dom 2, req GET www.googletagmanager.com"
+      },
+      "skipped": {
+        "hidden": 1,
+        "disabled": [
+          "\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u0437\u0430\u043f\u0440\u043e\u0441"
+        ]
+      },
+      "consent": {
+        "shown": true,
+        "buttons": [
+          "\u041e\u0442\u043a\u043b\u043e\u043d\u0438\u0442\u044c",
+          "\u041f\u0440\u0438\u043d\u044f\u0442\u044c"
+        ],
+        "decline": {
+          "text": "\u041e\u0442\u043a\u043b\u043e\u043d\u0438\u0442\u044c",
+          "bannerGone": true,
+          "gtagRequested": 0,
+          "ok": true
+        },
+        "accept": {
+          "text": "\u041f\u0440\u0438\u043d\u044f\u0442\u044c",
+          "bannerGone": true,
+          "gtagRequested": 1,
+          "ok": true
+        }
+      }
+    },
+    "/en/privacy/": {
+      "total": 30,
+      "links": 27,
+      "buttons": 3,
+      "dead": [],
+      "effects": {
+        "0 a \"Skip to content\"": "anchor #main",
+        "1 a \"ShramkoGSFPV\"": "link 200",
+        "2 a \"Features\"": "link 200, anchor #features found",
+        "3 a \"Physics\"": "link 200, anchor #real found",
+        "4 a \"Numbers\"": "link 200, anchor #numbers found",
+        "5 a \"Scans\"": "link 200, anchor #scenes found",
+        "6 a \"Radios\"": "link 200, anchor #radios found",
+        "7 a \"FAQ\"": "link 200, anchor #faq found",
+        "8 a \"Contact\"": "link 200, anchor #contact found",
+        "9 a \"en English\"": "link 200",
+        "10 a \"es Espa\u00f1ol\"": "link 200",
+        "11 a \"pl Polski\"": "link 200",
+        "12 a \"ru \u0420\u0443\u0441\u0441\u043a\u0438\u0439\"": "link 200",
+        "13 a \"Fly now\"": "link 200",
+        "15 a \"zmei116@gmail.com\"": "mailto",
+        "16 a \"Contact form\"": "link 200, anchor #contact found",
+        "17 a \"UODO \u2014 Polish data protection authority\u2197\"": "external uodo.gov.pl",
+        "18 a \"en English\"": "link 200",
+        "19 a \"es Espa\u00f1ol\"": "link 200",
+        "20 a \"pl Polski\"": "link 200",
+        "21 a \"ru \u0420\u0443\u0441\u0441\u043a\u0438\u0439\"": "link 200",
+        "22 a \"Home\"": "link 200",
+        "23 a \"Privacy\"": "link 200",
+        "24 a \"Licenses\"": "link 200",
+        "25 a \"GitHub\u2197\"": "external github.com",
+        "26 a \"Andrii Shramko\u2197\"": "external www.linkedin.com",
+        "27 a \"Privacy\"": "link 200",
+        "14 button \"Change my analytics choice\"": "nav, req GET gsfpv.flyreelstudio.eu",
+        "28 button \"Decline\"": "dom 1",
+        "29 button \"Accept\"": "dom 2, req GET www.googletagmanager.com"
+      },
+      "skipped": {
+        "hidden": 1,
+        "disabled": []
+      },
+      "consent": {
+        "shown": true,
+        "buttons": [
+          "Decline",
+          "Accept"
+        ],
+        "decline": {
+          "text": "Decline",
+          "bannerGone": true,
+          "gtagRequested": 0,
+          "ok": true
+        },
+        "accept": {
+          "text": "Accept",
+          "bannerGone": true,
+          "gtagRequested": 1,
+          "ok": true
+        }
+      }
+    },
+    "/en/licenses/": {
+      "total": 35,
+      "links": 33,
+      "buttons": 2,
+      "dead": [],
+      "effects": {
+        "0 a \"Skip to content\"": "anchor #main",
+        "1 a \"ShramkoGSFPV\"": "link 200",
+        "2 a \"Features\"": "link 200, anchor #features found",
+        "3 a \"Physics\"": "link 200, anchor #real found",
+        "4 a \"Numbers\"": "link 200, anchor #numbers found",
+        "5 a \"Scans\"": "link 200, anchor #scenes found",
+        "6 a \"Radios\"": "link 200, anchor #radios found",
+        "7 a \"FAQ\"": "link 200, anchor #faq found",
+        "8 a \"Contact\"": "link 200, anchor #contact found",
+        "9 a \"en English\"": "link 200",
+        "10 a \"es Espa\u00f1ol\"": "link 200",
+        "11 a \"pl Polski\"": "link 200",
+        "12 a \"ru \u0420\u0443\u0441\u0441\u043a\u0438\u0439\"": "link 200",
+        "13 a \"Fly now\"": "link 200",
+        "14 a \"ShramkoGSFPV\u2197\"": "external github.com",
+        "15 a \"PlayCanvas Engine\u2197\"": "external github.com",
+        "16 a \"SuperSplat viewer\u2197\"": "external github.com",
+        "17 a \"Rapier\u2197\"": "external github.com",
+        "18 a \"fdlibm / musl\u2197\"": "external musl.libc.org",
+        "19 a \"Betaflight\u2197\"": "external github.com",
+        "20 a \"LICENSE\u2197\"": "external github.com",
+        "21 a \"NOTICE\u2197\"": "external github.com",
+        "22 a \"PROVENANCE.md\u2197\"": "external github.com",
+        "23 a \"en English\"": "link 200",
+        "24 a \"es Espa\u00f1ol\"": "link 200",
+        "25 a \"pl Polski\"": "link 200",
+        "26 a \"ru \u0420\u0443\u0441\u0441\u043a\u0438\u0439\"": "link 200",
+        "27 a \"Home\"": "link 200",
+        "28 a \"Privacy\"": "link 200",
+        "29 a \"Licenses\"": "link 200",
+        "30 a \"GitHub\u2197\"": "external github.com",
+        "31 a \"Andrii Shramko\u2197\"": "external www.linkedin.com",
+        "32 a \"Privacy\"": "link 200",
+        "33 button \"Decline\"": "dom 1",
+        "34 button \"Accept\"": "dom 2, req GET www.googletagmanager.com"
+      },
+      "skipped": {
+        "hidden": 1,
+        "disabled": []
+      },
+      "consent": {
+        "shown": true,
+        "buttons": [
+          "Decline",
+          "Accept"
+        ],
+        "decline": {
+          "text": "Decline",
+          "bannerGone": true,
+          "gtagRequested": 0,
+          "ok": true
+        },
+        "accept": {
+          "text": "Accept",
+          "bannerGone": true,
+          "gtagRequested": 1,
+          "ok": true
+        }
+      }
+    },
+    "/en/fly/ first-visit warning": {
+      "total": 1,
+      "links": 0,
+      "buttons": 1,
+      "dead": [],
+      "effects": {
+        "0 button \"Understood\"": "dom 8"
+      },
+      "skipped": {
+        "hidden": 0,
+        "disabled": []
+      }
+    },
+    "/en/fly/ picker": {
+      "total": 10,
+      "links": 0,
+      "buttons": 10,
+      "dead": [],
+      "effects": {
+        "0 button \"Open\"": "dom 1",
+        "1 button \"Andrii's scans\"": "dom 9",
+        "2 button \"Recent\"": "dom 7",
+        "3 button \"Favourites\"": "dom 7",
+        "4 button \"Modlinek Villa \u2014 red room and bathroomWa\"": "nav, dom 46, focus, req POST gsfpv.flyreelstudio.eu/api/e scene_open",
+        "5 button \"\u2605\"": "dom 9",
+        "6 button \"Winter Garden, PolandWalls \u00b7 3.2 cm \u00b7 CC\"": "nav, dom 50, focus, req HEAD d28zzqy0iyovbz.cloudfront.net",
+        "7 button \"\u2605\"": "dom 9",
+        "8 button \"Tunis \u2014 old town streetsWalls \u00b7 5 cm \u00b7 C\"": "nav, dom 50, focus, req HEAD d28zzqy0iyovbz.cloudfront.net",
+        "9 button \"\u2605\"": "dom 9"
+      },
+      "skipped": {
+        "hidden": 0,
+        "disabled": []
+      }
+    },
+    "flight: top buttons and overlays": {
+      "total": 8,
+      "links": 2,
+      "buttons": 6,
+      "dead": [
+        "2 button \"Export walls\" not clickable: locator.click: Timeout 3000ms exceeded.",
+        "3 button \"Import walls\" not clickable: locator.click: Timeout 3000ms exceeded.",
+        "4 button \"Clear stored walls\" not clickable: locator.click: Timeout 3000ms exceeded."
+      ],
+      "effects": {
+        "0 a \"SuperSplat\"": "external superspl.at",
+        "1 a \"Report this scene\"": "link 200, anchor #contact found",
+        "2 button \"Export walls\"": "not clickable",
+        "3 button \"Import walls\"": "not clickable",
+        "4 button \"Clear stored walls\"": "not clickable",
+        "5 button \"Controls\"": "dom 4",
+        "6 button \"Pause\"": "dom 4",
+        "7 button \"ARM\"": "dom 4, req POST gsfpv.flyreelstudio.eu/api/e arm"
+      },
+      "skipped": {
+        "hidden": 4,
+        "disabled": []
+      }
+    },
+    "flight: pause menu": {
+      "total": 12,
+      "links": 1,
+      "buttons": 11,
+      "dead": [],
+      "effects": {
+        "11 a \"Work with us\"": "link 200, anchor #contact found",
+        "0 button \"\u00d7\"": "dom 1, focus",
+        "1 button \"ContinueEscP\"": "dom 1, focus",
+        "2 button \"RestartR\"": "dom 4, focus, req GET d28zzqy0iyovbz.cloudfront.net",
+        "3 button \"Change scan\"": "nav, focus, req GET gsfpv.flyreelstudio.eu",
+        "4 button \"Drone\"": "dom 2",
+        "5 button \"Controls\"": "dom 7",
+        "6 button \"Settings\"": "dom 2, focus",
+        "7 button \"Replays\"": "dom 2, focus",
+        "8 button \"Measurements\"": "dom 2, focus",
+        "9 button \"Import rates from Betaflight\"": "dom 2, focus",
+        "10 button \"Cinema mode (on / off)\"": "dom 5, focus"
+      },
+      "skipped": {
+        "hidden": 0,
+        "disabled": []
+      }
+    },
+    "flight: settings": {
+      "total": 2,
+      "links": 0,
+      "buttons": 2,
+      "dead": [],
+      "effects": {
+        "0 button \"\u00d7\"": "dom 1",
+        "1 button \"Apply\"": "dom 3"
+      },
+      "skipped": {
+        "hidden": 0,
+        "disabled": []
+      }
+    },
+    "flight: drones": {
+      "total": 7,
+      "links": 0,
+      "buttons": 7,
+      "dead": [],
+      "effects": {
+        "0 button \"\u00d7\"": "dom 1, focus",
+        "1 button \"Current \u00b7 keep\"": "dom 1, focus",
+        "2 button \"Fly\"": "nav, dom 1, focus",
+        "3 button \"Fly\"": "nav, dom 1, focus",
+        "4 button \"Fly\"": "nav, dom 1, focus",
+        "5 button \"Fly\"": "nav, dom 1, focus",
+        "6 button \"Fly\"": "nav, dom 3, focus"
+      },
+      "skipped": {
+        "hidden": 0,
+        "disabled": []
+      }
+    },
+    "flight: radio": {
+      "total": 5,
+      "links": 0,
+      "buttons": 5,
+      "dead": [],
+      "effects": {
+        "0 button \"\u00d7\"": "dom 7, focus",
+        "1 button \"Radio over USB (EdgeTX)\"": "device",
+        "2 button \"Gamepad or radio as gamepad\"": "dom 1",
+        "3 button \"Touch sticks\"": "dom 13, focus, req POST gsfpv.flyreelstudio.eu/api/e input_connected",
+        "4 button \"Keyboard\"": "dom 16, focus, req POST gsfpv.flyreelstudio.eu/api/e input_connected"
+      },
+      "skipped": {
+        "hidden": 0,
+        "disabled": []
+      }
+    },
+    "flight: replays": {
+      "total": 4,
+      "links": 0,
+      "buttons": 4,
+      "dead": [],
+      "effects": {
+        "0 button \"\u00d7\"": "dom 1",
+        "1 button \"Play\"": "dom 1",
+        "2 button \"CSV\"": "download",
+        "3 button \"JSON\"": "dom 2, download"
+      },
+      "skipped": {
+        "hidden": 0,
+        "disabled": []
+      }
+    },
+    "flight: measure": {
+      "total": 2,
+      "links": 0,
+      "buttons": 2,
+      "dead": [],
+      "effects": {
+        "0 button \"\u00d7\"": "dom 1",
+        "1 button \"Copy report JSON\"": "dom 2, clipboard"
+      },
+      "skipped": {
+        "hidden": 0,
+        "disabled": []
+      }
+    },
+    "flight: import": {
+      "total": 2,
+      "links": 0,
+      "buttons": 2,
+      "dead": [],
+      "effects": {
+        "0 button \"\u00d7\"": "dom 1, focus",
+        "1 button \"Import\"": "dom 1"
+      },
+      "skipped": {
+        "hidden": 0,
+        "disabled": []
+      }
+    },
+    "flight: cinema": {
+      "total": 5,
+      "links": 0,
+      "buttons": 5,
+      "dead": [],
+      "effects": {
+        "0 button \"Refine walls to 1.6 cm (about 15 s)\"": "dom 5, req GET gsfpv.flyreelstudio.eu",
+        "1 button \"Controls\"": "dom 4",
+        "2 button \"Pause\"": "dom 1",
+        "3 button \"\u25cf Record\"": "dom 2, req GET gsfpv.flyreelstudio.eu",
+        "4 button \"ARM\"": "dom 4, req POST gsfpv.flyreelstudio.eu/api/e arm"
+      },
+      "skipped": {
+        "hidden": 7,
+        "disabled": []
+      }
+    },
+    "/en/ (390x844)": {
+      "total": 47,
+      "links": 43,
+      "buttons": 4,
+      "dead": [],
+      "effects": {
+        "0 a \"Skip to content\"": "anchor #main",
+        "1 a \"ShramkoGSFPV\"": "anchor #top",
+        "2 a \"en English\"": "link 200",
+        "3 a \"es Espa\u00f1ol\"": "link 200",
+        "4 a \"pl Polski\"": "link 200",
+        "5 a \"ru \u0420\u0443\u0441\u0441\u043a\u0438\u0439\"": "link 200",
+        "6 a \"Fly now \u2014 no install\u2192\"": "link 200",
+        "8 a \"Works with your radio\"": "anchor #radios",
+        "9 a \"Suggest a feature\u2192\"": "anchor #contact",
+        "10 a \"All raw evidence on GitHub\u2197\"": "external github.com",
+        "11 a \"Fly this: Modlinek Villa \u2014 red room and \"": "link 200",
+        "12 a \"Original on SuperSplat: Modlinek Villa \u2014\"": "external superspl.at",
+        "13 a \"Fly this: Winter Garden \u2014 Jastrz\u0119bia G\u00f3r\"": "link 200",
+        "14 a \"Original on SuperSplat: Winter Garden \u2014 \"": "external superspl.at",
+        "15 a \"Fly this: Tunis \u2014 old town streets\"": "link 200",
+        "16 a \"Original on SuperSplat: Tunis \u2014 old town\"": "external superspl.at",
+        "18 a \"AGENTS.md\u2197\"": "external github.com",
+        "19 a \"AGENT_SETUP.md\u2197\"": "external github.com",
+        "20 a \"llms.txt\"": "link 200",
+        "21 a \"Security policy (SECURITY.md)\u2197\"": "external github.com",
+        "22 a \"Full list of warnings (docs/warnings.md)\"": "external github.com",
+        "23 a \"View on GitHub\u2197\"": "external github.com",
+        "24 a \"Good first issues\u2197\"": "external github.com",
+        "25 a \"PlayCanvas\u2197\"": "external github.com",
+        "26 a \"Rapier\u2197\"": "external rapier.rs",
+        "27 a \"Betaflight\u2197\"": "external github.com",
+        "28 a \"SplatFPV\u2197\"": "external github.com",
+        "29 a \"LinkedIn\u2197\"": "external www.linkedin.com",
+        "30 a \"Book a call\u2197\"": "external calendar.app.google",
+        "31 a \"zmei116@gmail.com\"": "mailto",
+        "32 a \"GitHub\u2197\"": "external github.com",
+        "33 a \"privacy\"": "link 200",
+        "34 a \"en English\"": "link 200",
+        "35 a \"es Espa\u00f1ol\"": "link 200",
+        "36 a \"pl Polski\"": "link 200",
+        "37 a \"ru \u0420\u0443\u0441\u0441\u043a\u0438\u0439\"": "link 200",
+        "38 a \"Home\"": "link 200",
+        "39 a \"Privacy\"": "link 200",
+        "40 a \"Licenses\"": "link 200",
+        "41 a \"GitHub\u2197\"": "external github.com",
+        "42 a \"Andrii Shramko\u2197\"": "external www.linkedin.com",
+        "43 a \"Fly now\"": "link 200",
+        "44 a \"Privacy\"": "link 200",
+        "7 button \"Open scene\"": "dom 8, focus",
+        "17 button \"Copy\"": "dom 1, clipboard",
+        "45 button \"Decline\"": "dom 1",
+        "46 button \"Accept\"": "dom 2, req GET www.googletagmanager.com"
+      },
+      "skipped": {
+        "hidden": 8,
+        "disabled": [
+          "Send request"
+        ]
+      },
+      "consent": {
+        "shown": true,
+        "buttons": [
+          "Decline",
+          "Accept"
+        ],
+        "decline": {
+          "text": "Decline",
+          "bannerGone": true,
+          "gtagRequested": 0,
+          "ok": true
+        },
+        "accept": {
+          "text": "Accept",
+          "bannerGone": true,
+          "gtagRequested": 1,
+          "ok": true
+        }
+      }
+    }
+  },
+  "control": {
+    "injectedInertButtons": "landing: first and last in <main> (the last below the fold); flight: one fixed over the canvas",
+    "fired": {
+      "/en/ + inert buttons first and last in main": false,
+      "flight + inert button over the canvas": false
+    },
+    "runs": {
+      "/en/ + inert buttons first and last in main": {
+        "total": 0,
+        "links": 0,
+        "buttons": 0,
+        "dead": [],
+        "effects": {},
+        "skipped": {
+          "hidden": 0,
+          "disabled": []
+        },
+        "error": "page.evaluate: ReferenceError: __name is not defined"
+      },
+      "flight + inert button over the canvas": {
+        "total": 0,
+        "links": 0,
+        "buttons": 0,
+        "dead": [],
+        "effects": {},
+        "skipped": {
+          "hidden": 0,
+          "disabled": []
+        },
+        "error": "page.evaluate: ReferenceError: __name is not defined"
+      }
+    }
+  }
+}

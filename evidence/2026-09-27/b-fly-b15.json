@@ -1,0 +1,56 @@
+{
+  "name": "b-fly-b15",
+  "context": {
+    "date": "2026-09-27T02:11:08.505Z",
+    "gitHead": "d3513c0",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "flight": {
+    "phase": "rest",
+    "flip": {
+      "startTick": 5813,
+      "endTick": 6262,
+      "minUpY": -0.9999994804307004
+    },
+    "crash": {
+      "tick": 18493,
+      "speed": 8.992918968142847,
+      "px": -4.849083230088881,
+      "py": 2.0977340593562728,
+      "pz": 0.8996168119135067
+    },
+    "tick": 30178
+  },
+  "saved": {
+    "hash": "b6ab29cfd79e12f6e364ed8d42ecf6ac6a0629d0ab81fee36bf7da83a7aeea62",
+    "endTick": 30178,
+    "records": 5422
+  },
+  "newTab": {
+    "saved": "b6ab29cfd79e12f6e364ed8d42ecf6ac6a0629d0ab81fee36bf7da83a7aeea62",
+    "hash": "b6ab29cfd79e12f6e364ed8d42ecf6ac6a0629d0ab81fee36bf7da83a7aeea62",
+    "endTick": 30178
+  },
+  "cpuThrottle": {
+    "x1": {
+      "stepsPerWallSecond": 997.1332419294529,
+      "hitches": 0
+    },
+    "x4": {
+      "stepsPerWallSecond": 1003.9570941486036,
+      "hitches": 0
+    }
+  },
+  "control": {
+    "hash": "83e422def330f2f09aba054501794132289b6d0f7e73218b464b7dfb8c72c7be",
+    "differs": true,
+    "maxDivergenceM": 0.028166712198678237,
+    "tamperedValue": -0.27711039781570435,
+    "record": 2711
+  }
+}

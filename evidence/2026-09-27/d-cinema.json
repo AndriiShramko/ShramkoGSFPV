@@ -1,0 +1,48 @@
+{
+  "name": "d-cinema",
+  "context": {
+    "date": "2026-09-27T02:23:30.559Z",
+    "gitHead": "d3513c0",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "state": {
+    "on": true,
+    "governorEnabled": false,
+    "lodRangeMax": 0,
+    "canRecord": true
+  },
+  "codec": "avc1.640033",
+  "recorder": {
+    "codec": "avc1.640033",
+    "width": 1280,
+    "height": 800,
+    "frames": 161,
+    "bytes": 3115810,
+    "seconds": 8.082199999999254
+  },
+  "mp4": {
+    "boxes": [
+      "ftyp",
+      "moov",
+      "mdat"
+    ],
+    "samples": 161,
+    "width": 1280,
+    "height": 800,
+    "codec": "avc1",
+    "bytes": 3115810,
+    "file": "evidence/\u2026/d/cinema-887f27aa.mp4"
+  },
+  "creditStripLuminanceStd": 0.23157956244533764,
+  "control": {
+    "canRecord": false,
+    "refused": true,
+    "recButtonVisible": false,
+    "note": "Cinema mode: full detail. Recording is available for the showcase scans only \u2014 their authors agreed to it."
+  }
+}
