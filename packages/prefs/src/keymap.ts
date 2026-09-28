@@ -6,7 +6,7 @@
 export type ActionId =
     | 'pause.toggle' | 'respawn.start' | 'respawn.rewind' | 'crash.keep' | 'scene.next' | 'scene.random' | 'scene.favourite'
     | 'mode.cycle' | 'voxels.cycle' | 'hud.toggle' | 'scale.down' | 'scale.up' | 'record.toggle' | 'frameStats.toggle'
-    | 'settings.open' | (string & {}); // v0.2 pause items keep the keys v0.2 shipped
+    | 'settings.open' | 'walls.toggle' | 'arm.toggle' | (string & {}); // v0.2 pause items keep the keys v0.2 shipped
 
 /** A key as a menu shows it (`cap`) and as ARIA names it (`aria`, for aria-keyshortcuts). v0.2's shape. */
 export interface KeyHint { cap: string; aria: string }
@@ -33,12 +33,18 @@ export interface KeyBinding {
      * flips its own binding to shipped.
      */
     status: 'shipped' | 'planned';
+    /**
+     * true: keyboard flying reads this key itself (devices/keyboard.ts, only while the keyboard is
+     * the input), so the page's router never routes it; it is listed for the key-caps and the
+     * catalogue. The only bindings allowed on a keyboard-flying key.
+     */
+    flying?: true;
 }
 
 const letter = (l: string): KeyChord => ({ code: `Key${l}`, cap: l, aria: l });
 
 export const KEYMAP: readonly KeyBinding[] = [
-    // v0.2 (main.ts keydown): P or Esc toggles the pause, so in the menu they continue
+    // v0.2 (app/builtin/pause.ts): P or Esc toggles the pause, so in the menu they continue
     { action: 'pause.toggle', keys: [{ code: 'Escape', cap: 'Esc', aria: 'Escape' }, letter('P')], when: 'always', labelKey: 'keys.pause.toggle', status: 'shipped' },
     // v0.2: R respawns at the start, and with the menu up it is the menu's Restart
     { action: 'respawn.start', keys: [letter('R')], when: 'always', labelKey: 'keys.respawn.start', status: 'shipped' },
@@ -48,14 +54,21 @@ export const KEYMAP: readonly KeyBinding[] = [
     { action: 'scene.next', keys: [letter('N')], when: 'always', labelKey: 'keys.scene.next', status: 'planned' },
     { action: 'scene.random', keys: [{ code: 'KeyN', shift: true, cap: 'Shift+N', aria: 'Shift+N' }], when: 'always', labelKey: 'keys.scene.random', status: 'planned' },
     { action: 'scene.favourite', keys: [letter('F')], when: 'always', labelKey: 'keys.scene.favourite', status: 'planned' },
-    // M is also the keyboard-flying mode key (devices/keyboard.ts): shared on purpose, same action
-    { action: 'mode.cycle', keys: [letter('M')], when: 'always', labelKey: 'keys.mode.cycle', status: 'planned' },
-    { action: 'voxels.cycle', keys: [letter('V')], when: 'always', labelKey: 'keys.voxels.cycle', status: 'planned' },
-    { action: 'hud.toggle', keys: [letter('H')], when: 'always', labelKey: 'keys.hud.toggle', status: 'planned' },
+    // M is the keyboard-flying mode key (devices/keyboard.ts: angle on / off while the keyboard
+    // flies). Shared on purpose, same action: a mode chip for every input (wave 2) routes it here
+    { action: 'mode.cycle', keys: [letter('M')], when: 'always', labelKey: 'keys.mode.cycle', status: 'shipped', flying: true },
+    // Space arms and disarms: keyboard flying, and a radio without an arm switch (devices/keyboard.ts)
+    { action: 'arm.toggle', keys: [{ code: 'Space', cap: 'Space', aria: 'Space' }], when: 'always', labelKey: 'keys.arm.toggle', status: 'shipped', flying: true },
+    // v0.2 (app/builtin/voxels.ts): the voxel grid off / over the scan / voxels only
+    { action: 'voxels.cycle', keys: [letter('V')], when: 'always', labelKey: 'keys.voxels.cycle', status: 'shipped' },
+    // v0.2 (app/builtin/walls.ts): the walls (collisions) on / off for this scan
+    { action: 'walls.toggle', keys: [letter('C')], when: 'always', labelKey: 'keys.walls.toggle', status: 'shipped' },
+    // v0.2 (app/builtin/hud.ts): every text on the flight view off / on
+    { action: 'hud.toggle', keys: [letter('H')], when: 'always', labelKey: 'keys.hud.toggle', status: 'shipped' },
     { action: 'scale.down', keys: [{ code: 'BracketLeft', cap: '[', aria: '[' }], when: 'always', labelKey: 'keys.scale.down', status: 'planned' },
     { action: 'scale.up', keys: [{ code: 'BracketRight', cap: ']', aria: ']' }], when: 'always', labelKey: 'keys.scale.up', status: 'planned' },
     { action: 'record.toggle', keys: [{ code: 'F9', cap: 'F9', aria: 'F9' }], when: 'always', labelKey: 'keys.record.toggle', status: 'planned' },
-    // v0.2 (main.ts keydown)
+    // v0.2 (app/builtin/hud.ts)
     { action: 'frameStats.toggle', keys: [{ code: 'F3', cap: 'F3', aria: 'F3' }], when: 'always', labelKey: 'keys.frameStats.toggle', status: 'shipped' },
     { action: 'settings.open', keys: [letter('O')], when: 'always', labelKey: 'keys.settings.open', status: 'planned' }
 ];
@@ -66,7 +79,10 @@ export const KEYMAP: readonly KeyBinding[] = [
  */
 export const V02_PAUSE_ITEMS: Readonly<Record<'resume' | 'restart', ActionId>> = { resume: 'pause.toggle', restart: 'respawn.start' };
 
-/** Keyboard flying (devices/keyboard.ts FLY_KEYS, plus Space = arm): no menu action may take one. */
+/**
+ * Keyboard flying (devices/keyboard.ts FLY_KEYS, plus Space = arm): no menu action may take one;
+ * only a binding marked `flying` (read by devices/keyboard.ts itself, never routed) lists one.
+ */
 export const FLYING_CODES: readonly string[] = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
 
 /** Other keys keyboard flying reads, each with the one action allowed to share it (the same thing). */
@@ -96,12 +112,13 @@ export interface KeyPress { code: string; shiftKey: boolean; ctrlKey?: boolean; 
 
 /**
  * The action a key press runs in the page's current state, or null. Ctrl, Alt and Meta chords are
- * never ours: the browser keeps Ctrl+R, Ctrl+P, Ctrl+F and the rest.
+ * never ours: the browser keeps Ctrl+R, Ctrl+P, Ctrl+F and the rest. Flying bindings are never
+ * routed: keyboard flying reads those keys itself.
  */
 export function actionFor(e: KeyPress, state: 'flight' | 'crash', o: { planned?: boolean; map?: readonly KeyBinding[] } = {}): ActionId | null {
     if (e.ctrlKey || e.altKey || e.metaKey) return null;
     for (const b of o.map ?? KEYMAP) {
-        if (!visible(b, !!o.planned) || (b.when !== 'always' && b.when !== state)) continue;
+        if (b.flying || !visible(b, !!o.planned) || (b.when !== 'always' && b.when !== state)) continue;
         if (b.keys.some((k) => k.code === e.code && !!k.shift === e.shiftKey)) return b.action;
     }
     return null;
@@ -109,9 +126,10 @@ export function actionFor(e: KeyPress, state: 'flight' | 'crash', o: { planned?:
 
 /**
  * Everything wrong with a keymap, empty when it is sound: a key bound twice where both listen
- * ('always' overlaps both states), a flying or harness key taken by a menu action, an action
- * listed twice, a label outside `keys.<action>`, an aria value with spaces (aria-keyshortcuts
- * separates alternatives with spaces). Planned bindings are checked too: they will ship.
+ * ('always' overlaps both states), a flying or harness key taken by a menu action, a binding
+ * marked flying on a key keyboard flying does not read, an action listed twice, a label outside
+ * `keys.<action>`, an aria value with spaces (aria-keyshortcuts separates alternatives with
+ * spaces). Planned bindings are checked too: they will ship.
  */
 export function keymapProblems(map: readonly KeyBinding[]): string[] {
     const out: string[] = [];
@@ -124,8 +142,9 @@ export function keymapProblems(map: readonly KeyBinding[]): string[] {
         if (!b.keys.length) out.push(`${b.action}: no keys`);
         for (const k of b.keys) {
             const chord = `${k.shift ? 'Shift+' : ''}${k.code}`;
-            if (FLYING_CODES.includes(k.code)) out.push(`${b.action}: ${chord} is a keyboard-flying key`);
+            if (FLYING_CODES.includes(k.code) && !b.flying) out.push(`${b.action}: ${chord} is a keyboard-flying key`);
             const sharer = SHARED_WITH_FLYING[k.code];
+            if (b.flying && !FLYING_CODES.includes(k.code) && sharer === undefined) out.push(`${b.action}: ${chord} is marked flying, but keyboard flying does not read it`);
             if (sharer !== undefined && sharer !== b.action) out.push(`${b.action}: ${chord} belongs to keyboard flying (${sharer})`);
             if (RESERVED_CODES.includes(k.code)) out.push(`${b.action}: ${chord} is reserved for the latency harness`);
             if (/\s/.test(k.aria) || !k.aria) out.push(`${b.action}: aria "${k.aria}" is not one aria-keyshortcuts value`);

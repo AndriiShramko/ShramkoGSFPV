@@ -27,14 +27,29 @@ const DESIGN_TABLE: Record<string, string[]> = {
     'settings.open': ['O']
 };
 
+/**
+ * Keys the app handled when wave 1 started that the design table does not list: C (walls on / off,
+ * on main since release e5fad2d5182f) and Space (arm, keyboard flying since v0.1).
+ */
+const V02_EXTRA: Record<string, string[]> = {
+    'walls.toggle': ['C'],
+    'arm.toggle': ['Space']
+};
+
+/**
+ * Every key the page handled at the start of wave 1 (main.ts keydown, the Hud's H, devices/keyboard.ts
+ * Space and M): the shipped bindings. M and Space are keyboard flying's own (flying: true).
+ */
+const SHIPPED_AT_WAVE1 = ['arm.toggle', 'frameStats.toggle', 'hud.toggle', 'mode.cycle', 'pause.toggle', 'respawn.start', 'voxels.cycle', 'walls.toggle'];
+
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });
 const plant = (b: Partial<KeyBinding> & Pick<KeyBinding, 'action' | 'keys'>): KeyBinding[] =>
     [...KEYMAP, { when: 'always', labelKey: `keys.${b.action}`, status: 'planned', ...b }];
 
 describe('keymap table (1.2)', () => {
-    it('has exactly the design table, action for action and cap for cap', () => {
+    it('has exactly the design table plus the v0.2 keys it did not list, action for action and cap for cap', () => {
         const got = Object.fromEntries(KEYMAP.map((b) => [b.action, b.keys.map((k) => k.cap)]));
-        expect(got).toEqual(DESIGN_TABLE);
+        expect(got).toEqual({ ...DESIGN_TABLE, ...V02_EXTRA });
     });
 
     it('is sound: no key twice where both listen, no flying or harness key, labels keys.<action>', () => {
@@ -55,17 +70,33 @@ describe('v0.2 keys keep working', () => {
         expect(keysFor(V02_PAUSE_ITEMS.restart)).toEqual(V02_PAUSE_KEYS.restart);
     });
 
-    it('P, Esc, R and F3 route in flight and while crashed, as main.ts did', () => {
+    it('P, Esc, R, F3, V, C and H route in flight and while crashed, as main.ts and the Hud did', () => {
         for (const state of ['flight', 'crash'] as const) {
             expect(actionFor(press('KeyP'), state)).toBe('pause.toggle');
             expect(actionFor(press('Escape'), state)).toBe('pause.toggle');
             expect(actionFor(press('KeyR'), state)).toBe('respawn.start');
             expect(actionFor(press('F3'), state)).toBe('frameStats.toggle');
+            expect(actionFor(press('KeyV'), state)).toBe('voxels.cycle');
+            expect(actionFor(press('KeyC'), state)).toBe('walls.toggle');
+            expect(actionFor(press('KeyH'), state)).toBe('hud.toggle');
         }
     });
 
-    it('only v0.2 bindings are shipped before wave 2, so the refactor changes no key', () => {
-        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual(['frameStats.toggle', 'pause.toggle', 'respawn.start']);
+    it('only the keys the page handled at the start of wave 1 are shipped, so the refactor changes no key', () => {
+        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual(SHIPPED_AT_WAVE1);
+    });
+
+    it('M and Space are keyboard flying\'s own: shown with their caps, never routed', () => {
+        expect(KEYMAP.filter((b) => b.flying).map((b) => b.action).sort()).toEqual(['arm.toggle', 'mode.cycle']);
+        expect(keysFor('mode.cycle')).toEqual([{ cap: 'M', aria: 'M' }]);
+        expect(keysFor('arm.toggle')).toEqual([{ cap: 'Space', aria: 'Space' }]);
+        for (const state of ['flight', 'crash'] as const) {
+            expect(actionFor(press('KeyM'), state)).toBeNull();
+            expect(actionFor(press('Space'), state)).toBeNull();
+        }
+        // control: the same M binding without the flag is routed like any other key
+        const routed = KEYMAP.map((b) => (b.action === 'mode.cycle' ? { ...b, flying: undefined } : b));
+        expect(actionFor(press('KeyM'), 'flight', { map: routed })).toBe('mode.cycle');
     });
 
     it('control: a planned key routes nothing and shows no cap, until asked for', () => {
@@ -133,6 +164,17 @@ describe('negative controls: keymapProblems catches every planted mistake', () =
             const p = keymapProblems(plant({ action: 'test.fly', keys: [{ code, cap: code, aria: code }] }));
             expect(p.some((s) => s.includes('keyboard-flying key')), code).toBe(true);
         }
+    });
+
+    it('Space (arm) taken by a routed action, even with arm.toggle removed', () => {
+        const map = KEYMAP.filter((b) => b.action !== 'arm.toggle');
+        const p = keymapProblems([...map, { action: 'test.space', keys: [{ code: 'Space', cap: 'Space', aria: 'Space' }], when: 'flight', labelKey: 'keys.test.space', status: 'planned' }]);
+        expect(p).toEqual(['test.space: Space is a keyboard-flying key']);
+    });
+
+    it('a binding marked flying on a key keyboard flying does not read (V)', () => {
+        const map = KEYMAP.map((b) => (b.action === 'voxels.cycle' ? { ...b, flying: true as const } : b));
+        expect(keymapProblems(map)).toEqual(['voxels.cycle: KeyV is marked flying, but keyboard flying does not read it']);
     });
 
     it('M taken by anything but the mode cycle', () => {
