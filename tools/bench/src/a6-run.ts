@@ -63,6 +63,8 @@ async function browserHalf(): Promise<{ chrome: Record<string, unknown> | null; 
         browser = l.browser;
         page = l.page;
         log = l.console;
+        // system Chrome, or the bundled Chromium where there is none (browser.ts)
+        browserName = `${l.which.kind === 'system-chrome' ? 'system Chrome' : 'Playwright Chromium (no system Chrome)'} ${l.which.version ?? ''} (visible)`;
     }
     await page.goto(`${BASE}det.html?spawn=${encodeURIComponent(JSON.stringify(spawn))}`);
     let chrome: Record<string, unknown> | null = null;

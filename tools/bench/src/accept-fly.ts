@@ -448,7 +448,7 @@ if (want('B14')) {
         const x = r as { pauseButtonReachable: boolean; armedByButton: boolean; bothPairsOneFrame: { ok: boolean }; hover: { crashed: boolean; armedAll: boolean; minY: number }; view: { scrollX: number; scrollY: number; scale: number }; control: { outsideTouch: { fired: boolean } } };
         return x.pauseButtonReachable && x.armedByButton && x.bothPairsOneFrame.ok && !x.hover.crashed && x.hover.armedAll && x.view.scrollX === 0 && x.view.scrollY === 0 && x.view.scale === 1 && x.control.outsideTouch.fired;
     });
-    record('B14', { pass, note: 'touch through CDP Input.dispatchTouchEvent in system Chrome with hasTouch; input=touch because desktop Chrome has WebHID', rows });
+    record('B14', { pass, note: 'touch through CDP Input.dispatchTouchEvent in Chrome (which one: context.browser) with hasTouch; input=touch because desktop Chrome has WebHID', rows });
 }
 
 // ------------------------------------------------------------------ B15 replay from inputs only

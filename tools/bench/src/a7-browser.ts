@@ -55,5 +55,5 @@ const checks = ['39e63ce9', '887f27aa'].map((s) => {
     return { scene: s, valid, flewAllPhases: flew, crash: a.final.log.crash, controlCrash: c.final.log.crash, pass: valid && flew && !!a.final.log.crash && !c.final.log.crash };
 });
 const pass = checks.every((c) => c.pass);
-const file = writeEvidence('a7-bot-pilot-browser', { pass, browser: 'system Chrome (Playwright channel chrome), visible window, no rendering flags', checks, control: { name: 'same plan in an open volume must not crash', fired: checks.every((c) => !c.controlCrash) }, runs: results });
+const file = writeEvidence('a7-bot-pilot-browser', { pass, browser: 'system Chrome (Playwright channel chrome), visible window, no rendering flags; context.browser says when it was the bundled Chromium instead', checks, control: { name: 'same plan in an open volume must not crash', fired: checks.every((c) => !c.controlCrash) }, runs: results });
 console.log('A7', pass ? 'PASS' : 'FAIL', JSON.stringify(checks), '->', file);
