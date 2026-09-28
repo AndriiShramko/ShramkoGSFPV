@@ -58,7 +58,15 @@ export function openPagePrefs(showcase: readonly ShowcaseScene[], query: string,
     const { schema = SCHEMA, presets = PRESETS, ...browser } = o;
     // storageManager null: no navigator.storage.persist() yet. Firefox answers it with a prompt,
     // which would be a visible change; W2-1 asks for it together with Settings -> Data (A.5).
-    const opened = openBrowserPrefs(schema, presetResolver(presets, showcase), { storageManager: null, ...browser });
+    const resolver = presetResolver(presets, showcase);
+    let opened: ReturnType<typeof openBrowserPrefs>;
+    try {
+        opened = openBrowserPrefs(schema, resolver, { storageManager: null, ...browser });
+    } catch (e) {
+        // nothing reads the store yet: a store that cannot open must not take the page down with it
+        console.error('prefs: the stored settings could not be opened; this page keeps them in memory', e);
+        opened = openBrowserPrefs(schema, resolver, { ...browser, storageManager: null, storage: null, openKv: () => Promise.reject(new Error('no storage')) });
+    }
     for (const v of settingsFromQuery(schema, query).values) opened.store.setSession(v.id, v.value);
     page = { store: opened.store, dispose: opened.dispose };
     return opened.store;
