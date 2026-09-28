@@ -20,8 +20,15 @@ export function gitSha(): string {
     }
 }
 
+/** The browser this process launched (browser.ts launchChrome): system Chrome or the bundled Chromium. */
+let browserInfo: Record<string, unknown> | null = null;
+export function noteBrowser(info: object): void {
+    browserInfo = { ...info };
+}
+
 export function context(): Record<string, unknown> {
     return {
+        ...(browserInfo ? { browser: browserInfo } : {}),
         date: new Date().toISOString(),
         gitHead: gitSha(),
         gitDirty: (() => { try { return execSync('git status --porcelain', { cwd: REPO }).toString().trim().length > 0; } catch { return null; } })(),

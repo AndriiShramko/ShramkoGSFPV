@@ -7,6 +7,8 @@
 // screenshots (files and byte caps, captions in 4 languages, parallax moves and stands still for
 // reduced motion, no layout shift while scrolling, the gallery works from the keyboard).
 import { chromium } from "playwright";
+// system Chrome, or the bundled Chromium where there is none (the cloud); tools/bench/README.md
+import { describeBrowser, pickBrowser } from "../../../tools/bench/src/chrome.mjs";
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -117,7 +119,9 @@ const DOCS = join(SITE_DIR, "..", "..", "docs", "screenshots");
 
 // ---------- browser ----------
 mkdirSync(SHOTS, { recursive: true });
-const browser = await chromium.launch({ channel: "chrome" });
+const pick = pickBrowser({ expected: chromium.executablePath() });
+const browser = await chromium.launch({ ...pick.launch });
+console.log(`browser: ${JSON.stringify(describeBrowser(pick, browser.version()))}`);
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "";
 console.log(GA_ID ? `GA mode: expecting the consent banner for ${GA_ID}` : "no-GA mode: expecting no banner and no Google requests");

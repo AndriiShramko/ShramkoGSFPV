@@ -2,6 +2,8 @@
 // 375x812 mobile viewport for every locale and page.
 //   AXE=<path to axe.min.js> BASE=http://127.0.0.1:8141 node scripts/a11y.mjs
 import { chromium } from "playwright";
+// system Chrome, or the bundled Chromium where there is none (the cloud); tools/bench/README.md
+import { describeBrowser, pickBrowser } from "../../../tools/bench/src/chrome.mjs";
 import { readFileSync } from "node:fs";
 
 const BASE = process.env.BASE ?? "http://127.0.0.1:8138";
@@ -11,7 +13,9 @@ if (!AXE) {
   process.exit(2);
 }
 const axeSource = readFileSync(AXE, "utf8");
-const browser = await chromium.launch({ channel: "chrome" });
+const pick = pickBrowser({ expected: chromium.executablePath() });
+const browser = await chromium.launch({ ...pick.launch });
+console.log(`browser: ${JSON.stringify(describeBrowser(pick, browser.version()))}`);
 const ctx = await browser.newContext({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });
 await ctx.addInitScript(() => {
   try {
