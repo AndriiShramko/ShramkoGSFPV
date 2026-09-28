@@ -1,0 +1,1224 @@
+{
+  "name": "v03-lead2-accept-fly",
+  "what": "tools/bench/src/accept-fly.ts B6-B17 in the cloud container (no GPU, no system Chrome) with ACCEPT_RENDER=off: the flight-logic items B9-B17 in the logic-only mode (?render=off: the scan is not downloaded or drawn, everything else runs at the real frame rate), the visual items B6-B8 with the scan drawn; against the previous cloud run (evidence/2026-09-27/v03-shell-after.json, everything drawn, commit c63a010)",
+  "commit": "39ba1d5 (the app code is that of d75e7fe; later commits add this evidence and docs only)",
+  "run": {
+    "server": "vite dev server of apps/fly at this commit, http://127.0.0.1:5331 (LOCAL_FLY=1), stopped after the runs",
+    "invocations": [
+      {
+        "items": "B9 B10 B11 B12 B13 B14 B15 B16 B17",
+        "command": "xvfb-run -a env LOCAL_FLY=1 SITE=http://127.0.0.1:5331 ACCEPT_RENDER=off npx tsx src/accept-fly.ts B9 ... B17",
+        "exit": 0,
+        "from": "2026-09-28T07:40:33.999Z",
+        "to": "2026-09-28T07:55:12.975Z"
+      },
+      {
+        "items": "B12 B15 (repeat)",
+        "command": "the same with B12 B15",
+        "exit": 0
+      },
+      {
+        "items": "B6 B7 B8",
+        "command": "the same with B6 B7 B8 (ACCEPT_RENDER=off does not touch them: scan drawn)",
+        "exit": 0,
+        "to": "2026-09-28T08:10:10.388Z"
+      }
+    ],
+    "aborted": "a first run of B6-B17 in one invocation was stopped during B6: an edit to apps/fly/src/app/prefs.ts reloaded the dev server page under it (Vite HMR); its numbers are not used",
+    "browser": {
+      "kind": "bundled-chromium",
+      "version": "141.0.7390.37",
+      "executable": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+      "why": "no system Chrome (/opt/google/chrome/chrome links to a Playwright build)"
+    },
+    "machine": {
+      "platform": "linux 6.18.44-fc-v37",
+      "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+      "cpus": 4,
+      "gpu": "none: WebGPU has no adapter, WebGL is SwiftShader (software)"
+    },
+    "B17_CRASHES": 50,
+    "gitDirty": "true in the item files only because evidence/2026-09-28/ was not yet committed"
+  },
+  "renderMode": {
+    "off": [
+      "B9",
+      "B10",
+      "B11",
+      "B12",
+      "B13",
+      "B14",
+      "B15",
+      "B16",
+      "B17"
+    ],
+    "on": [
+      "B6",
+      "B7",
+      "B8"
+    ],
+    "meaning": "render 'off' items checked the flight logic only; nothing about their picture, frame rate or latency counts (tools/bench/README.md); the switch itself: evidence/2026-09-28/v03-lead2-prefs-render.json (rAF 60/s, 1000 steps/s; drawn control 1 frame/s, about 180 steps/s)"
+  },
+  "summary": {
+    "B6": false,
+    "B7": false,
+    "B8": false,
+    "B9": true,
+    "B10": true,
+    "B11": true,
+    "B12": false,
+    "B13": true,
+    "B14": true,
+    "B15": false,
+    "B16": true,
+    "B17": true
+  },
+  "previousSummary": {
+    "B6": false,
+    "B7": false,
+    "B8": false,
+    "B9": true,
+    "B10": false,
+    "B11": false,
+    "B12": false,
+    "B13": true,
+    "B14": false,
+    "B15": false,
+    "B16": true,
+    "B17": false
+  },
+  "comparison": [
+    {
+      "item": "B6",
+      "render": "on",
+      "previousCloudRun": false,
+      "now": false,
+      "change": "same",
+      "why": "visual, scan drawn: renderer 1 (WebGL, CPU sort) instead of 2 (WebGPU GPU sort) because this machine has no WebGPU adapter; data: and blob: requests show as host \"\" outside the allow-list; the two error pages come up in English, not Russian (LOCAL_FLY serves /fly/ without the locale path). Frames are not empty (luminance std 0.15-0.23), 0 page errors, control fired."
+    },
+    {
+      "item": "B7",
+      "render": "on",
+      "previousCloudRun": false,
+      "now": false,
+      "change": "same",
+      "why": "visual, scan drawn: LOCAL_FLY serves /fly/ without the locale path, so the es/pl/ru pages come up in English and their badge text differs; the en rows (no collision, badge) and the control pass."
+    },
+    {
+      "item": "B8",
+      "render": "on",
+      "previousCloudRun": false,
+      "now": false,
+      "change": "same",
+      "why": "visual, scan drawn: no Firefox build here (/opt/pw-browsers has Chromium only; nothing is installed on purpose); history, filter across a reload, the storage control and the no-WebGPU shim (banner, frame not empty) pass."
+    },
+    {
+      "item": "B9",
+      "render": "off",
+      "previousCloudRun": true,
+      "now": true,
+      "change": "same",
+      "why": "logic-only: presets, measured TWR within 5 %, source labels; control fired."
+    },
+    {
+      "item": "B10",
+      "render": "off",
+      "previousCloudRun": false,
+      "now": true,
+      "change": "now passes",
+      "why": "logic-only: the simulated person finishes the wizard (step 6), mapping correct, throttle up climbs, the profile survives a reload; both controls fired. Previously the wizard stalled at step 2-3 at about 1 frame/s."
+    },
+    {
+      "item": "B11",
+      "render": "off",
+      "previousCloudRun": false,
+      "now": true,
+      "change": "now passes",
+      "why": "logic-only: arming only with throttle low and a switch edge; switch-on-at-load and the gamepad zero-axes trap blocked."
+    },
+    {
+      "item": "B12",
+      "render": "off",
+      "previousCloudRun": false,
+      "now": false,
+      "change": "same",
+      "why": "logic-only: the main check passes now (crash at 8.67 m/s >= 1.9 x v_crash, tumble, 4 rapier debris, crash panel, respawn on free space), but its negative control does not fire: the 0.75 m/s dash (0.5 x v_bounce) also ends in a crash. Same in a repeat run (repeat.B12) and in Node with no renderer at all (the same bot, sim-core and walls: crash at 6.1 m/s about 13.6 s into the slow dash, after 1035 wall contacts). The pre-wave-1 live release had 0 crashes on this control (evidence/2026-09-27/b-fly-b12.json). So it is the wave-1 flight logic (the bot flies acro with a curve-aware throttle since 7a1ccd4, sim-core model changes), not the render mode."
+    },
+    {
+      "item": "B13",
+      "render": "off",
+      "previousCloudRun": true,
+      "now": true,
+      "change": "same",
+      "why": "logic-only: 20 passes per scene, 0 penetrations, contacts on all three scans."
+    },
+    {
+      "item": "B14",
+      "render": "off",
+      "previousCloudRun": false,
+      "now": true,
+      "change": "now passes",
+      "why": "logic-only: touch sticks, both pairs in one frame, arm by button, 10 s hover without a crash on 375x812 and 1024x768; the pause button reachable; control fired. Previously the hover ran against a sim at about 0.06x real time."
+    },
+    {
+      "item": "B15",
+      "render": "off",
+      "previousCloudRun": false,
+      "now": false,
+      "change": "same",
+      "why": "logic-only: flip, crash, 30 000 ticks, the same hash replayed in a new tab, 998-1002 steps per wall second at x1 and at x4 CPU throttling (0 hitches). Fails only on the control's size: one flipped LSB changes the hash (fired) but the trajectory diverges 9.0 mm (repeat: 9.3 mm), the harness wants > 10 mm; the pre-wave-1 live runs diverged 21-28 mm (a different flight: the bot flies acro since wave 1). The control is a pure replay of the saved inputs, so the render mode plays no part."
+    },
+    {
+      "item": "B16",
+      "render": "off",
+      "previousCloudRun": true,
+      "now": true,
+      "change": "same",
+      "why": "logic-only: drop test within 3 % on Earth and Moon, gravity warning only on the Moon; control fired."
+    },
+    {
+      "item": "B17",
+      "render": "off",
+      "previousCloudRun": false,
+      "now": true,
+      "change": "now passes",
+      "why": "logic-only: 50 crashes in a loop without losing the page; flashes counted on the HUD and overlays only (the scan was not drawn): this run checks the crash loop, NOT photosensitivity; the strobe control fired."
+    }
+  ],
+  "limits": {
+    "B6": "no WebGPU adapter (renderer 1, not 2); LOCAL_FLY has no locale path (Russian error pages); data:/blob: hosts count as outside the allow-list here. A GPU machine, the live site.",
+    "B7": "LOCAL_FLY has no locale path (es/pl/ru pages in English). The live site or a local release build behind the locale paths.",
+    "B8": "no Firefox (Playwright Firefox is not installed and is never installed here). The owner's PC or a runner with Firefox.",
+    "B12": "not a cloud limit: the negative control fails in the flight logic itself (Node reproduces it without any renderer). Owner: W2-2 (respawn, B12) with sim-core/bot (7a1ccd4).",
+    "B15": "not a cloud limit: the control's divergence threshold (10 mm) against 9.0-9.3 mm on the wave-1 bot flight; a pure replay, no render involved. Decide: revisit the threshold or the tamper point (W2-2 owns B15 on format /2).",
+    "B17": "the photosensitivity half needs the scan drawn: a GPU machine; here only the crash loop counts."
+  },
+  "previousLimits": {
+    "B6": "renderer 1 (WebGL) instead of 2 (WebGPU GPU sort): no WebGPU adapter here; data: and blob: requests show as host \"\" (outside the allow-list); the two error pages come up in English, not Russian (LOCAL_FLY has no locale path)",
+    "B7": "LOCAL_FLY serves /fly/ without the locale path, so es/pl/ru pages come up in English (en rows and the control pass)",
+    "B8": "no Firefox build installed (/opt/pw-browsers has Chromium only); history, filter and the no-WebGPU shim parts pass",
+    "B10": "the simulated person does not finish the calibration wizard in the 60 s the harness allows at about 1 frame/s (step 2 of 6)",
+    "B11": "follows B10: no profile saved, the gate says noProfile",
+    "B12": "the bot does not crash within the 120 s wait (physics at about 56 steps per wall second, B15): the harness throws at the Respawn click and stops; the DOM walk covers crash panel and Respawn with a 10 min wait",
+    "B14": "the 10 s hover controller runs against a sim at about 0.06x real time: the craft settles and counts as crashed",
+    "B15": "replay hashes match in a new tab (pass part), but steps per wall second are about 56, not 1000",
+    "B17": "no crash within the N x 40 s = 120 s the harness allows (B17_CRASHES=3); one bot crash took 451 s here even at render scale 0.25 (the DOM walk, starting commit)"
+  },
+  "repeat": {
+    "why": "B12 and B15 failed: a second run to see whether it repeats",
+    "B12": {
+      "pass": false,
+      "crash": {
+        "tick": 10202,
+        "speed": 8.668332239403686,
+        "px": -5.19903128012581,
+        "py": 1.7296768898909767,
+        "pz": 0.7334250202783894
+      },
+      "control": {
+        "dash": 0.75,
+        "contacts": 497,
+        "crashes": 1,
+        "fired": false
+      }
+    },
+    "B15": {
+      "pass": false,
+      "savedHash": "6becd789848a94d3aa36b07c71b6b1c9479d76ff1c111c1cf80fe6f3e9441b47",
+      "newTabHash": "6becd789848a94d3aa36b07c71b6b1c9479d76ff1c111c1cf80fe6f3e9441b47",
+      "cpuThrottle": {
+        "x1": {
+          "stepsPerWallSecond": 1000,
+          "hitches": 0
+        },
+        "x4": {
+          "stepsPerWallSecond": 1001.1212158963498,
+          "hitches": 0
+        }
+      },
+      "control": {
+        "hash": "d98a7446bc5f28a666c733ba0301231a2e3b2dcfb269726f1f9f639ed2411e40",
+        "differs": true,
+        "maxDivergenceM": 0.009317362941486322,
+        "tamperedValue": -0.44454580545425415,
+        "record": 2815
+      }
+    },
+    "nodeB12Control": {
+      "what": "the B12 control plan (39e63ce9, dash 0.5 x v_bounce = 0.75 m/s) flown in Node with the same sim-core, bot and walls, no renderer (a scratch script over tools/bench/src/scenes.ts and presets.ts, like a7-node.ts)",
+      "crash": {
+        "phase": "dash",
+        "dashStartTick": 8285,
+        "tick": 21889,
+        "speed": 6.125461638715244
+      },
+      "contacts": 1035,
+      "maxSpeed": 8.710898006117343,
+      "mainPlanSameCrash": "dash 8 m/s: crash at 8.668332239403696 m/s, the page (render off) 8.668332239403686"
+    }
+  },
+  "items": {
+    "B6": {
+      "name": "b-fly-b6",
+      "context": {
+        "browser": {
+          "kind": "bundled-chromium",
+          "version": "141.0.7390.37",
+          "executable": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+          "why": "no system Chrome (/opt/google/chrome/chrome links to a Playwright build)"
+        },
+        "date": "2026-09-28T08:04:59.648Z",
+        "gitHead": "39ba1d5",
+        "gitDirty": true,
+        "node": "v22.22.2",
+        "platform": "linux 6.18.44-fc-v37",
+        "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz"
+      },
+      "site": "http://127.0.0.1:5331",
+      "render": "on",
+      "pass": false,
+      "frameNotEmptyRule": "luminance std > 0.04",
+      "runs": [
+        {
+          "id": "39e63ce9",
+          "form": "39e63ce9",
+          "status": "ready",
+          "hasCollision": true,
+          "renderer": 1,
+          "visibility": "visible",
+          "loadMs": 2770.6999999997206,
+          "pixelStd": 0.14768743156672476,
+          "pixelMean": 0.5622272620313248,
+          "hosts": [
+            "127.0.0.1:5331",
+            "d28zzqy0iyovbz.cloudfront.net",
+            "s3-eu-west-1.amazonaws.com",
+            ""
+          ],
+          "outside": [
+            ""
+          ],
+          "pageerrors": []
+        },
+        {
+          "id": "39e63ce9",
+          "form": "https://superspl.at/scene/39e63ce9",
+          "status": "ready",
+          "hasCollision": true,
+          "renderer": 1,
+          "visibility": "visible",
+          "loadMs": 39007.89999999991,
+          "pixelStd": 0.14768869067614057,
+          "pixelMean": 0.5622231075062023,
+          "hosts": [
+            "127.0.0.1:5331",
+            "d28zzqy0iyovbz.cloudfront.net",
+            "s3-eu-west-1.amazonaws.com",
+            ""
+          ],
+          "outside": [
+            ""
+          ],
+          "pageerrors": []
+        },
+        {
+          "id": "39e63ce9",
+          "form": "https://superspl.at/s?id=39e63ce9",
+          "status": "ready",
+          "hasCollision": true,
+          "renderer": 1,
+          "visibility": "visible",
+          "loadMs": 27677.80000000028,
+          "pixelStd": 0.14768869067614057,
+          "pixelMean": 0.5622231075062023,
+          "hosts": [
+            "127.0.0.1:5331",
+            "d28zzqy0iyovbz.cloudfront.net",
+            "s3-eu-west-1.amazonaws.com",
+            ""
+          ],
+          "outside": [
+            ""
+          ],
+          "pageerrors": []
+        },
+        {
+          "id": "7a475d38",
+          "form": "7a475d38",
+          "status": "ready",
+          "hasCollision": true,
+          "renderer": 1,
+          "visibility": "visible",
+          "loadMs": 9022,
+          "pixelStd": 0.22070783276689465,
+          "pixelMean": 0.4859114425735269,
+          "hosts": [
+            "127.0.0.1:5331",
+            "d28zzqy0iyovbz.cloudfront.net",
+            "s3-eu-west-1.amazonaws.com",
+            ""
+          ],
+          "outside": [
+            ""
+          ],
+          "pageerrors": []
+        },
+        {
+          "id": "7a475d38",
+          "form": "https://superspl.at/scene/7a475d38",
+          "status": "ready",
+          "hasCollision": true,
+          "renderer": 1,
+          "visibility": "visible",
+          "loadMs": 20553.600000000093,
+          "pixelStd": 0.22070783276689465,
+          "pixelMean": 0.4859114425735269,
+          "hosts": [
+            "127.0.0.1:5331",
+            "s3-eu-west-1.amazonaws.com",
+            "d28zzqy0iyovbz.cloudfront.net",
+            ""
+          ],
+          "outside": [
+            ""
+          ],
+          "pageerrors": []
+        },
+        {
+          "id": "7a475d38",
+          "form": "https://superspl.at/s?id=7a475d38",
+          "status": "ready",
+          "hasCollision": true,
+          "renderer": 1,
+          "visibility": "visible",
+          "loadMs": 16747.100000000093,
+          "pixelStd": 0.22070783873264138,
+          "pixelMean": 0.48591453062499745,
+          "hosts": [
+            "127.0.0.1:5331",
+            "s3-eu-west-1.amazonaws.com",
+            "d28zzqy0iyovbz.cloudfront.net",
+            ""
+          ],
+          "outside": [
+            ""
+          ],
+          "pageerrors": []
+        },
+        {
+          "id": "887f27aa",
+          "form": "887f27aa",
+          "status": "ready",
+          "hasCollision": true,
+          "renderer": 1,
+          "visibility": "visible",
+          "loadMs": 38017.60000000009,
+          "pixelStd": 0.23494132912583,
+          "pixelMean": 0.49028951062806997,
+          "hosts": [
+            "127.0.0.1:5331",
+            "d28zzqy0iyovbz.cloudfront.net",
+            "s3-eu-west-1.amazonaws.com",
+            ""
+          ],
+          "outside": [
+            ""
+          ],
+          "pageerrors": []
+        },
+        {
+          "id": "887f27aa",
+          "form": "https://superspl.at/scene/887f27aa",
+          "status": "ready",
+          "hasCollision": true,
+          "renderer": 1,
+          "visibility": "visible",
+          "loadMs": 19175.5,
+          "pixelStd": 0.23493949767341857,
+          "pixelMean": 0.4902924307935112,
+          "hosts": [
+            "d28zzqy0iyovbz.cloudfront.net",
+            "127.0.0.1:5331",
+            "s3-eu-west-1.amazonaws.com",
+            ""
+          ],
+          "outside": [
+            ""
+          ],
+          "pageerrors": []
+        },
+        {
+          "id": "887f27aa",
+          "form": "https://superspl.at/s?id=887f27aa",
+          "status": "ready",
+          "hasCollision": true,
+          "renderer": 1,
+          "visibility": "visible",
+          "loadMs": 16756,
+          "pixelStd": 0.23494052332803975,
+          "pixelMean": 0.49029138420343765,
+          "hosts": [
+            "127.0.0.1:5331",
+            "s3-eu-west-1.amazonaws.com",
+            "d28zzqy0iyovbz.cloudfront.net",
+            ""
+          ],
+          "outside": [
+            ""
+          ],
+          "pageerrors": []
+        }
+      ],
+      "errors": [
+        {
+          "input": "00000000",
+          "status": "error",
+          "errorCode": "not-found",
+          "text": "This scene does not exist on SuperSplat or is not public.",
+          "expected": "\u0422\u0430\u043a\u043e\u0439 \u0441\u0446\u0435\u043d\u044b \u043d\u0435\u0442 \u043d\u0430 SuperSplat, \u0438\u043b\u0438 \u043e\u043d\u0430 \u043d\u0435 \u043f\u0443\u0431\u043b\u0438\u0447\u043d\u0430\u044f.",
+          "ok": false,
+          "pageerrors": []
+        },
+        {
+          "input": "https://example.com/scene/39e63ce9",
+          "status": "picker",
+          "errorCode": "invalid-link",
+          "text": "This is not a SuperSplat link or scene id. Paste a link like superspl.at/scene/39e63ce9.",
+          "expected": "\u042d\u0442\u043e \u043d\u0435 \u0441\u0441\u044b\u043b\u043a\u0430 SuperSplat \u0438 \u043d\u0435 ID \u0441\u0446\u0435\u043d\u044b. \u0412\u0441\u0442\u0430\u0432\u044c \u0441\u0441\u044b\u043b\u043a\u0443 \u0432\u0438\u0434\u0430 superspl.at/scene/39e63ce9.",
+          "ok": false,
+          "pageerrors": []
+        }
+      ],
+      "control": {
+        "blankPageStd": 1.0536712127723509e-08,
+        "fired": true
+      }
+    },
+    "B7": {
+      "name": "b-fly-b7",
+      "context": {
+        "browser": {
+          "kind": "bundled-chromium",
+          "version": "141.0.7390.37",
+          "executable": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+          "why": "no system Chrome (/opt/google/chrome/chrome links to a Playwright build)"
+        },
+        "date": "2026-09-28T08:08:50.738Z",
+        "gitHead": "39ba1d5",
+        "gitDirty": true,
+        "node": "v22.22.2",
+        "platform": "linux 6.18.44-fc-v37",
+        "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz"
+      },
+      "site": "http://127.0.0.1:5331",
+      "render": "on",
+      "pass": false,
+      "rows": [
+        {
+          "id": "723068d7",
+          "l": "en",
+          "status": "ready",
+          "hasCollision": false,
+          "badge": "Scan without walls: you can fly around, but you cannot crash",
+          "expected": "Scan without walls: you can fly around, but you cannot crash"
+        },
+        {
+          "id": "723068d7",
+          "l": "es",
+          "status": "ready",
+          "hasCollision": false,
+          "badge": "Scan without walls: you can fly around, but you cannot crash",
+          "expected": "Escaneo sin paredes: puedes volar por todas partes, pero no te puedes estrellar"
+        },
+        {
+          "id": "723068d7",
+          "l": "pl",
+          "status": "ready",
+          "hasCollision": false,
+          "badge": "Scan without walls: you can fly around, but you cannot crash",
+          "expected": "Skan bez \u015bcian: mo\u017cesz lata\u0107, ale si\u0119 nie rozbijesz"
+        },
+        {
+          "id": "723068d7",
+          "l": "ru",
+          "status": "ready",
+          "hasCollision": false,
+          "badge": "Scan without walls: you can fly around, but you cannot crash",
+          "expected": "\u0421\u043a\u0430\u043d \u0431\u0435\u0437 \u0441\u0442\u0435\u043d: \u043b\u0435\u0442\u0430\u0442\u044c \u043c\u043e\u0436\u043d\u043e, \u0430 \u0440\u0430\u0437\u0431\u0438\u0442\u044c\u0441\u044f \u2014 \u043d\u0435\u0442"
+        },
+        {
+          "id": "bd04e182",
+          "l": "en",
+          "status": "ready",
+          "hasCollision": false,
+          "badge": "Scan without walls: you can fly around, but you cannot crash",
+          "expected": "Scan without walls: you can fly around, but you cannot crash"
+        },
+        {
+          "id": "bd04e182",
+          "l": "es",
+          "status": "ready",
+          "hasCollision": false,
+          "badge": "Scan without walls: you can fly around, but you cannot crash",
+          "expected": "Escaneo sin paredes: puedes volar por todas partes, pero no te puedes estrellar"
+        },
+        {
+          "id": "bd04e182",
+          "l": "pl",
+          "status": "ready",
+          "hasCollision": false,
+          "badge": "Scan without walls: you can fly around, but you cannot crash",
+          "expected": "Skan bez \u015bcian: mo\u017cesz lata\u0107, ale si\u0119 nie rozbijesz"
+        },
+        {
+          "id": "bd04e182",
+          "l": "ru",
+          "status": "ready",
+          "hasCollision": false,
+          "badge": "Scan without walls: you can fly around, but you cannot crash",
+          "expected": "\u0421\u043a\u0430\u043d \u0431\u0435\u0437 \u0441\u0442\u0435\u043d: \u043b\u0435\u0442\u0430\u0442\u044c \u043c\u043e\u0436\u043d\u043e, \u0430 \u0440\u0430\u0437\u0431\u0438\u0442\u044c\u0441\u044f \u2014 \u043d\u0435\u0442"
+        }
+      ],
+      "control": {
+        "scene": "39e63ce9",
+        "badges": 0,
+        "fired": true
+      }
+    },
+    "B8": {
+      "name": "b-fly-b8",
+      "context": {
+        "browser": {
+          "kind": "bundled-chromium",
+          "version": "141.0.7390.37",
+          "executable": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+          "why": "no system Chrome (/opt/google/chrome/chrome links to a Playwright build)"
+        },
+        "date": "2026-09-28T08:10:10.388Z",
+        "gitHead": "39ba1d5",
+        "gitDirty": true,
+        "node": "v22.22.2",
+        "platform": "linux 6.18.44-fc-v37",
+        "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz"
+      },
+      "site": "http://127.0.0.1:5331",
+      "render": "on",
+      "pass": false,
+      "history": {
+        "before": 3,
+        "afterReload": 3,
+        "filterKept": true
+      },
+      "control": {
+        "afterClearingStorage": 0,
+        "fired": true
+      },
+      "noWebgpuShim": {
+        "shimTookEffect": true,
+        "status": "ready",
+        "banner": "This browser has no WebGPU. You can look at the scan, but flying needs Chrome or Edge on a computer.",
+        "pixelStd": 0.16534672540262754
+      },
+      "firefox": {
+        "ran": false,
+        "error": "Error: browserType.launch: Executable doesn't exist at /opt/pw-browsers/firefox-1543/firefox/firefox\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551 Looks like Playwright was just installed or updated.       \u2551\n\u2551 Please run the following command to download new browsers: \u2551\n\u2551         "
+      }
+    },
+    "B9": {
+      "name": "b-fly-b9",
+      "context": {
+        "browser": {
+          "kind": "bundled-chromium",
+          "version": "141.0.7390.37",
+          "executable": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+          "why": "no system Chrome (/opt/google/chrome/chrome links to a Playwright build)"
+        },
+        "date": "2026-09-28T07:40:33.999Z",
+        "gitHead": "39ba1d5",
+        "gitDirty": true,
+        "node": "v22.22.2",
+        "platform": "linux 6.18.44-fc-v37",
+        "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz"
+      },
+      "site": "http://127.0.0.1:5331",
+      "render": "off",
+      "renderNote": "logic-only (?render=off): the scan was not drawn; not a visual or latency check",
+      "pass": true,
+      "method": "thrust stand in the model: motors spun up while held, released 20 ms, (a+g)/g",
+      "rows": [
+        {
+          "preset": "pavo20pro-3s",
+          "twrPreset": 5,
+          "twrMeasured": 4.9851679102691735
+        },
+        {
+          "preset": "pavo20pro2-3s",
+          "twrPreset": 5.9,
+          "twrMeasured": 5.879903291067844
+        },
+        {
+          "preset": "pavopico-2s",
+          "twrPreset": 4,
+          "twrMeasured": 3.9896946009128404
+        }
+      ],
+      "sourceLabels": 30,
+      "cards": 6,
+      "control": {
+        "picoMeasured": 3.9896946009128404,
+        "defaultMeasured": 4.9851679102691735,
+        "fired": true
+      }
+    },
+    "B10": {
+      "name": "b-fly-b10",
+      "context": {
+        "browser": {
+          "kind": "bundled-chromium",
+          "version": "141.0.7390.37",
+          "executable": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+          "why": "no system Chrome (/opt/google/chrome/chrome links to a Playwright build)"
+        },
+        "date": "2026-09-28T07:41:53.694Z",
+        "gitHead": "39ba1d5",
+        "gitDirty": true,
+        "node": "v22.22.2",
+        "platform": "linux 6.18.44-fc-v37",
+        "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz"
+      },
+      "site": "http://127.0.0.1:5331",
+      "render": "off",
+      "renderNote": "logic-only (?render=off): the scan was not drawn; not a visual or latency check",
+      "pass": true,
+      "radio": "SimRadio EdgeTX Classic (simulated raw HID reports, NOT a real radio)",
+      "good": {
+        "step": 6,
+        "profile": {
+          "version": 1,
+          "deviceKey": "hid:1209:4f54:SimRadio EdgeTX Classic TAER:19",
+          "deviceName": "SimRadio EdgeTX Classic",
+          "axes": {
+            "throttle": {
+              "index": 0,
+              "invert": false,
+              "center": -0.9794921875,
+              "min": -0.9794921875,
+              "max": 0.9990234375
+            },
+            "yaw": {
+              "index": 3,
+              "invert": false,
+              "center": 0.02977050446932784,
+              "min": -0.9755859375,
+              "max": 0.9990234375
+            },
+            "pitch": {
+              "index": 2,
+              "invert": true,
+              "center": 0.03072107289541955,
+              "min": -0.978515625,
+              "max": 0.9990234375
+            },
+            "roll": {
+              "index": 1,
+              "invert": false,
+              "center": 0.0313377419177422,
+              "min": -0.9775390625,
+              "max": 0.9990234375
+            }
+          },
+          "arm": {
+            "kind": "axis",
+            "index": 4,
+            "threshold": 0.49951171875,
+            "onAbove": true,
+            "off": -0.9990234375,
+            "on": 0.9990234375
+          },
+          "angleMode": null,
+          "deadband": 0,
+          "created": "2026-09-28T07:40:56.581Z",
+          "wizard": 2
+        },
+        "mappingCorrect": true
+      },
+      "throttleUpClimbs": {
+        "armed": true,
+        "y0": 1.1590825985835804,
+        "y1": 1.811905131103642,
+        "climbed": 0.6528225325200616
+      },
+      "survivesReload": true,
+      "controls": {
+        "otherOrder": {
+          "profile": {
+            "version": 1,
+            "deviceKey": "hid:1209:4f54:SimRadio EdgeTX Classic AETR:19",
+            "deviceName": "SimRadio EdgeTX Classic",
+            "axes": {
+              "throttle": {
+                "index": 2,
+                "invert": false,
+                "center": -0.9794921875,
+                "min": -0.9794921875,
+                "max": 0.9990234375
+              },
+              "yaw": {
+                "index": 3,
+                "invert": false,
+                "center": 0.031161555182919992,
+                "min": -0.9775390625,
+                "max": 0.9990234375
+              },
+              "pitch": {
+                "index": 1,
+                "invert": false,
+                "center": 0.031614962781097725,
+                "min": -0.9775390625,
+                "max": 0.9990234375
+              },
+              "roll": {
+                "index": 0,
+                "invert": false,
+                "center": 0.029519167132463133,
+                "min": -0.9775390625,
+                "max": 0.9990234375
+              }
+            },
+            "arm": {
+              "kind": "axis",
+              "index": 4,
+              "threshold": 0.49951171875,
+              "onAbove": true,
+              "off": -0.9990234375,
+              "on": 0.9990234375
+            },
+            "angleMode": null,
+            "deadband": 0,
+            "created": "2026-09-28T07:41:24.597Z",
+            "wizard": 2
+          },
+          "fired": true
+        },
+        "brokenStick": {
+          "step": 1,
+          "message": "wizard.say.stir.active",
+          "fired": true
+        }
+      }
+    },
+    "B11": {
+      "name": "b-fly-b11",
+      "context": {
+        "browser": {
+          "kind": "bundled-chromium",
+          "version": "141.0.7390.37",
+          "executable": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+          "why": "no system Chrome (/opt/google/chrome/chrome links to a Playwright build)"
+        },
+        "date": "2026-09-28T07:42:19.601Z",
+        "gitHead": "39ba1d5",
+        "gitDirty": true,
+        "node": "v22.22.2",
+        "platform": "linux 6.18.44-fc-v37",
+        "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz"
+      },
+      "site": "http://127.0.0.1:5331",
+      "render": "off",
+      "renderNote": "logic-only (?render=off): the scan was not drawn; not a visual or latency check",
+      "pass": true,
+      "positive": {
+        "lowThrottleAndSwitchEdge": {
+          "armed": true,
+          "block": null
+        }
+      },
+      "controls": {
+        "throttleNotLow": {
+          "armed": false,
+          "block": "throttle"
+        },
+        "switchOnAtLoad": {
+          "onAtLoadArmed": false,
+          "afterOffOnArmed": true
+        },
+        "gamepadZeroAxesTrap": {
+          "armed": false,
+          "block": "throttle"
+        }
+      }
+    },
+    "B12": {
+      "name": "b-fly-b12",
+      "context": {
+        "browser": {
+          "kind": "bundled-chromium",
+          "version": "141.0.7390.37",
+          "executable": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+          "why": "no system Chrome (/opt/google/chrome/chrome links to a Playwright build)"
+        },
+        "date": "2026-09-28T07:43:09.448Z",
+        "gitHead": "39ba1d5",
+        "gitDirty": true,
+        "node": "v22.22.2",
+        "platform": "linux 6.18.44-fc-v37",
+        "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz"
+      },
+      "site": "http://127.0.0.1:5331",
+      "render": "off",
+      "renderNote": "logic-only (?render=off): the scan was not drawn; not a visual or latency check",
+      "pass": false,
+      "vCrash": 4,
+      "dashTarget": 8,
+      "crash": {
+        "tick": 10198,
+        "speed": 8.668332239403686,
+        "px": -5.19903128012581,
+        "py": 1.7296768898909767,
+        "pz": 0.7334250202783894
+      },
+      "tumbleMaxW": 151.40840436669438,
+      "wreck": {
+        "speed": 8.668332239403686,
+        "tick": 10198,
+        "engine": "rapier",
+        "debris": 4,
+        "maxAngularSpeed": 99.79374947347719,
+        "staticBoxes": 1420,
+        "event": {
+          "type": "crash",
+          "tick": 10198,
+          "speed": 8.668332239403686,
+          "nx": 1,
+          "ny": 0,
+          "nz": 0,
+          "px": -5.19903128012581,
+          "py": 1.7296768898909767,
+          "pz": 0.7334250202783894
+        }
+      },
+      "overlay": 1,
+      "respawn": {
+        "crashed": false,
+        "free": true
+      },
+      "control": {
+        "dash": 0.75,
+        "contacts": 497,
+        "crashes": 1,
+        "fired": false
+      }
+    },
+    "B13": {
+      "name": "b-fly-b13",
+      "context": {
+        "browser": {
+          "kind": "bundled-chromium",
+          "version": "141.0.7390.37",
+          "executable": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+          "why": "no system Chrome (/opt/google/chrome/chrome links to a Playwright build)"
+        },
+        "date": "2026-09-28T07:43:20.740Z",
+        "gitHead": "39ba1d5",
+        "gitDirty": true,
+        "node": "v22.22.2",
+        "platform": "linux 6.18.44-fc-v37",
+        "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz"
+      },
+      "site": "http://127.0.0.1:5331",
+      "render": "off",
+      "renderNote": "logic-only (?render=off): the scan was not drawn; not a visual or latency check",
+      "pass": true,
+      "oracle": "every tick: each body sphere resampled every voxel/4 with the upstream querySphere",
+      "rows": [
+        {
+          "id": "39e63ce9",
+          "passes": 20,
+          "speed": 25,
+          "contacts": 20,
+          "penetrations": 0
+        },
+        {
+          "id": "887f27aa",
+          "passes": 20,
+          "speed": 25,
+          "contacts": 20,
+          "penetrations": 0
+        },
+        {
+          "id": "7a475d38",
+          "passes": 20,
+          "speed": 25,
+          "contacts": 20,
+          "penetrations": 0
+        }
+      ]
+    },
+    "B14": {
+      "name": "b-fly-b14",
+      "context": {
+        "browser": {
+          "kind": "bundled-chromium",
+          "version": "141.0.7390.37",
+          "executable": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+          "why": "no system Chrome (/opt/google/chrome/chrome links to a Playwright build)"
+        },
+        "date": "2026-09-28T07:43:56.466Z",
+        "gitHead": "39ba1d5",
+        "gitDirty": true,
+        "node": "v22.22.2",
+        "platform": "linux 6.18.44-fc-v37",
+        "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz"
+      },
+      "site": "http://127.0.0.1:5331",
+      "render": "off",
+      "renderNote": "logic-only (?render=off): the scan was not drawn; not a visual or latency check",
+      "pass": true,
+      "note": "touch through CDP Input.dispatchTouchEvent in Chrome (which one: context.browser) with hasTouch; input=touch because desktop Chrome has WebHID",
+      "rows": [
+        {
+          "viewport": "375x812",
+          "pauseButtonReachable": true,
+          "armedByButton": true,
+          "bothPairsOneFrame": {
+            "ch": [
+              -0.4163264036178589,
+              0.3122446537017822,
+              -0.936735212802887,
+              0.3122449517250061
+            ],
+            "ok": true
+          },
+          "hover": {
+            "seconds": 10,
+            "crashed": false,
+            "armedAll": true,
+            "minY": 3.1128862259029475,
+            "maxY": 3.4812280620269362,
+            "target": 2.410361405991355
+          },
+          "view": {
+            "scrollX": 0,
+            "scrollY": 0,
+            "scale": 1
+          },
+          "control": {
+            "outsideTouch": {
+              "before": [
+                0,
+                0,
+                -1,
+                0
+              ],
+              "after": [
+                0,
+                0,
+                -1,
+                0
+              ],
+              "fired": true
+            }
+          }
+        },
+        {
+          "viewport": "1024x768",
+          "pauseButtonReachable": true,
+          "armedByButton": true,
+          "bothPairsOneFrame": {
+            "ch": [
+              -0.4095241129398346,
+              0.3071427047252655,
+              -0.9214288592338562,
+              0.30714288353919983
+            ],
+            "ok": true
+          },
+          "hover": {
+            "seconds": 10,
+            "crashed": false,
+            "armedAll": true,
+            "minY": 3.144644444775751,
+            "maxY": 3.2257829746262394,
+            "target": 2.411635002734908
+          },
+          "view": {
+            "scrollX": 0,
+            "scrollY": 0,
+            "scale": 1
+          },
+          "control": {
+            "outsideTouch": {
+              "before": [
+                0,
+                0,
+                -1,
+                0
+              ],
+              "after": [
+                0,
+                0,
+                -1,
+                0
+              ],
+              "fired": true
+            }
+          }
+        }
+      ]
+    },
+    "B15": {
+      "name": "b-fly-b15",
+      "context": {
+        "browser": {
+          "kind": "bundled-chromium",
+          "version": "141.0.7390.37",
+          "executable": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+          "why": "no system Chrome (/opt/google/chrome/chrome links to a Playwright build)"
+        },
+        "date": "2026-09-28T07:44:43.348Z",
+        "gitHead": "39ba1d5",
+        "gitDirty": true,
+        "node": "v22.22.2",
+        "platform": "linux 6.18.44-fc-v37",
+        "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz"
+      },
+      "site": "http://127.0.0.1:5331",
+      "render": "off",
+      "renderNote": "logic-only (?render=off): the scan was not drawn; not a visual or latency check",
+      "pass": false,
+      "flight": {
+        "phase": "rest",
+        "flip": {
+          "startTick": 5701,
+          "endTick": 6151,
+          "minUpY": -0.9999998748515548
+        },
+        "crash": {
+          "tick": 19218,
+          "speed": 8.565648919042033,
+          "px": -4.899018282169666,
+          "py": 2.1660896045074054,
+          "pz": 0.8999678014733062
+        },
+        "tick": 30080
+      },
+      "saved": {
+        "hash": "74038705633df99c4d054be50c5838b10dfa89f9561eb9b3c08e81e05997bac4",
+        "endTick": 30080,
+        "records": 5631
+      },
+      "newTab": {
+        "saved": "74038705633df99c4d054be50c5838b10dfa89f9561eb9b3c08e81e05997bac4",
+        "hash": "74038705633df99c4d054be50c5838b10dfa89f9561eb9b3c08e81e05997bac4",
+        "endTick": 30080
+      },
+      "cpuThrottle": {
+        "x1": {
+          "stepsPerWallSecond": 998.377231306953,
+          "hitches": 0
+        },
+        "x4": {
+          "stepsPerWallSecond": 1002.4906600249066,
+          "hitches": 0
+        }
+      },
+      "control": {
+        "hash": "7ff4a3135beea0a0484df8af8b5fbd45685203c885f32dd3a33584ac1d388cba",
+        "differs": true,
+        "maxDivergenceM": 0.009035365145520929,
+        "tamperedValue": -0.44454580545425415,
+        "record": 2815
+      }
+    },
+    "B16": {
+      "name": "b-fly-b16",
+      "context": {
+        "browser": {
+          "kind": "bundled-chromium",
+          "version": "141.0.7390.37",
+          "executable": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+          "why": "no system Chrome (/opt/google/chrome/chrome links to a Playwright build)"
+        },
+        "date": "2026-09-28T07:45:21.593Z",
+        "gitHead": "39ba1d5",
+        "gitDirty": true,
+        "node": "v22.22.2",
+        "platform": "linux 6.18.44-fc-v37",
+        "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz"
+      },
+      "site": "http://127.0.0.1:5331",
+      "render": "off",
+      "renderNote": "logic-only (?render=off): the scan was not drawn; not a visual or latency check",
+      "pass": true,
+      "method": "disarmed drop from the spawn until contact or 0.5 s, a = 2(\u0394y + v0 t)/t\u00b2",
+      "rows": [
+        {
+          "g": 9.81,
+          "measured": 9.59112596070684,
+          "fallM": 1.2086980586369818,
+          "relErr": -0.022311318990128504,
+          "warning": null
+        },
+        {
+          "g": 1.62,
+          "measured": 1.6164579440962081,
+          "fallM": 0.2036745594070959,
+          "relErr": -0.0021864542616000238,
+          "warning": "With the same motors under 1.62 m/s\u00b2 the craft has about 6.1\u00d7 the thrust-to-weight it has on Earth: it will be very twitchy. \"Keep thrust / weight\" makes it feel normal. The air is Earth air everywhere \u2014 gravity is a game setting here."
+        }
+      ],
+      "control": {
+        "sameAccelerationWouldFail": true,
+        "earthVsMoon": [
+          9.59112596070684,
+          1.6164579440962081
+        ],
+        "fired": true
+      }
+    },
+    "B17": {
+      "name": "b-fly-b17",
+      "context": {
+        "browser": {
+          "kind": "bundled-chromium",
+          "version": "141.0.7390.37",
+          "executable": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+          "why": "no system Chrome (/opt/google/chrome/chrome links to a Playwright build)"
+        },
+        "date": "2026-09-28T07:55:12.975Z",
+        "gitHead": "39ba1d5",
+        "gitDirty": true,
+        "node": "v22.22.2",
+        "platform": "linux 6.18.44-fc-v37",
+        "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz"
+      },
+      "site": "http://127.0.0.1:5331",
+      "render": "off",
+      "renderNote": "logic-only (?render=off): the scan was not drawn; not a visual or latency check",
+      "pass": true,
+      "flashScope": "HUD and overlays only (?render=off: the scan was not drawn); the crash loop is what this run checks, not photosensitivity",
+      "pageLost": null,
+      "navigations": [
+        {
+          "t": 0.034,
+          "url": "http://127.0.0.1:5331/fly/"
+        },
+        {
+          "t": 0.809,
+          "url": "http://127.0.0.1:5331/fly/"
+        }
+      ],
+      "consoleTail": [],
+      "rule": "WCAG 2.2 general flash: pairs of opposing relative-luminance changes >= 0.1 (darker < 0.8), max per 1 s window, whole frame and quarters; frames via CDP screencast",
+      "crashes": 50,
+      "frames": 34563,
+      "maxFlashesPerSecond": 0,
+      "control": {
+        "strobeHz": 5,
+        "frames": 61,
+        "maxFlashesPerSecond": 5,
+        "fired": true
+      }
+    }
+  }
+}

@@ -1,0 +1,196 @@
+{
+  "name": "v03-lead2-prefs-render",
+  "context": {
+    "browser": {
+      "kind": "bundled-chromium",
+      "version": "141.0.7390.37",
+      "executable": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+      "why": "no system Chrome (/opt/google/chrome/chrome links to a Playwright build)"
+    },
+    "date": "2026-09-28T08:11:48.116Z",
+    "gitHead": "39ba1d5",
+    "gitDirty": true,
+    "node": "v22.22.2",
+    "platform": "linux 6.18.44-fc-v37",
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz"
+  },
+  "site": "http://127.0.0.1:5331",
+  "browser": {
+    "kind": "bundled-chromium",
+    "version": "141.0.7390.37",
+    "executable": "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
+    "why": "no system Chrome (/opt/google/chrome/chrome links to a Playwright build)"
+  },
+  "L1": {
+    "pass": true,
+    "what": "__gsfpv.prefs reachable; v0.2 keys migrated at the first boot; store == app for stick mode and walls at the picker, in flight, after C, after a reload; set/export/reset survive a reload",
+    "legacyKeys": {
+      "gsfpv.stickMode": "1",
+      "gsfpv.walls.39e63ce9": "off",
+      "gsfpv.warned": "1"
+    },
+    "atPicker": {
+      "storeStick": "1",
+      "appStick": "1",
+      "storeWalls": "off",
+      "appWalls": null,
+      "migrated": {
+        "from": 0,
+        "found": [
+          "gsfpv.stickMode",
+          "gsfpv.warned",
+          "gsfpv.walls.39e63ce9"
+        ],
+        "moved": [
+          "gsfpv.stickMode",
+          "gsfpv.warned",
+          "gsfpv.walls.39e63ce9"
+        ],
+        "ignored": []
+      },
+      "explicit": [
+        {
+          "id": "input.stickMode",
+          "scope": "global",
+          "key": null,
+          "value": "1"
+        },
+        {
+          "id": "scene.walls",
+          "scope": "scene",
+          "key": "39e63ce9",
+          "value": "off"
+        }
+      ],
+      "writable": true
+    },
+    "flying": {
+      "storeStick": "1",
+      "appStick": "1",
+      "storeWalls": "off",
+      "appWalls": "off",
+      "migrated": null,
+      "explicit": [
+        {
+          "id": "input.stickMode",
+          "scope": "global",
+          "key": null,
+          "value": "1"
+        },
+        {
+          "id": "scene.walls",
+          "scope": "scene",
+          "key": "39e63ce9",
+          "value": "off"
+        }
+      ],
+      "writable": true
+    },
+    "afterC": {
+      "storeStick": "1",
+      "appStick": "1",
+      "storeWalls": "on",
+      "appWalls": "on",
+      "migrated": null,
+      "explicit": [
+        {
+          "id": "input.stickMode",
+          "scope": "global",
+          "key": null,
+          "value": "1"
+        },
+        {
+          "id": "scene.walls",
+          "scope": "scene",
+          "key": "39e63ce9",
+          "value": "on"
+        }
+      ],
+      "writable": true
+    },
+    "reloaded": {
+      "storeStick": "1",
+      "appStick": "1",
+      "storeWalls": "on",
+      "appWalls": "on",
+      "migrated": null,
+      "explicit": [
+        {
+          "id": "input.stickMode",
+          "scope": "global",
+          "key": null,
+          "value": "1"
+        },
+        {
+          "id": "scene.walls",
+          "scope": "scene",
+          "key": "39e63ce9",
+          "value": "on"
+        }
+      ],
+      "writable": true
+    },
+    "setVCrash": {
+      "ok": true,
+      "value": 6.5,
+      "clamped": false
+    },
+    "vAfterReload": {
+      "v": 6.5,
+      "exported": {
+        "physics.vCrash": 6.5
+      }
+    },
+    "vAfterReset": 4,
+    "control": {
+      "unseeded": {
+        "stick": "2",
+        "walls": "on",
+        "migratedFrom": 0
+      },
+      "fired": true
+    }
+  },
+  "L2": {
+    "pass": true,
+    "what": "?render=off: no scan image requested, the page tags itself, the frame loop runs near the display rate and the flight model near real time (1000 steps/s)",
+    "thresholds": {
+      "rafPerS": ">= 45",
+      "simStepsPerS": ">= 900"
+    },
+    "off": {
+      "qs": "scene=39e63ce9&nowarn=1&input=touch&render=off",
+      "status": "ready",
+      "readyS": 3.5,
+      "render": "off",
+      "renderer": 1,
+      "hasCollision": true,
+      "tag": 1,
+      "scanImages": 0,
+      "posters": 1,
+      "rafPerS": 59.97001499250375,
+      "engineFramesPerS": 57.82652043868395,
+      "simStepsPerS": 1002.658690594882,
+      "hitches": 0
+    },
+    "control": {
+      "on": {
+        "qs": "scene=39e63ce9&nowarn=1&input=touch",
+        "status": "ready",
+        "readyS": 18.079,
+        "render": "on",
+        "renderer": 1,
+        "hasCollision": true,
+        "tag": 0,
+        "scanImages": 20,
+        "posters": 1,
+        "rafPerS": 0.8092579104961565,
+        "engineFramesPerS": 0.5424979317266491,
+        "simStepsPerS": 135.62448293166224,
+        "hitches": 17
+      },
+      "fired": true
+    }
+  },
+  "pass": true
+}
