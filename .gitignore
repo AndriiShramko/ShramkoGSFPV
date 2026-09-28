@@ -41,3 +41,6 @@ deploy/hub.env
 
 # recorded videos from acceptance runs stay local (sha256 is in the evidence JSON)
 evidence/**/*.mp4
+
+# Claude Code agent worktrees (local checkouts of other branches, never content)
+.claude/worktrees/
