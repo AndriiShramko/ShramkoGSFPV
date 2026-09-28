@@ -31,7 +31,7 @@ export interface Signals {
     /** rate setpoints deg/s (FLU signs) and the mixer throttle 0..1; null before Betaflight 3.2 */
     setpoint: [Float64Array, Float64Array, Float64Array] | null;
     mixerThrottle: Float64Array | null;
-    /** the flight controller's own roll / pitch estimate (debug_mode ATTITUDE), rad */
+    /** the flight controller's own roll / pitch estimate (debug_mode ATTITUDE, or the imuQuaternion fields of 2025.12+), rad; a cross-check only */
     fcAttitude: { roll: Float64Array; pitch: Float64Array } | null;
     gps: { t: Float64Array; speed: Float64Array; course: Float64Array; altitude: Float64Array; sats: Float64Array } | null;
     config: LogConfig;
@@ -170,6 +170,18 @@ export function extractSignals(log: DecodedLog): Signals {
         // attitude in decidegrees (imu.c Euler angles from its rotation matrix): roll = atan2 of the
         // up vector's y and z in the body, + = right side down; pitch = asin(-up.x), + = nose down
         fcAttitude = { roll: col('debug[0]', 0.1 * deg), pitch: col('debug[1]', 0.1 * deg) };
+    }
+    if (!fcAttitude && m.has('imuQuaternion[0]')) {
+        // Betaflight 2025.12+ logs the IMU quaternion's x, y, z scaled by 32767, w >= 0 implied
+        const qx = m.col('imuQuaternion[0]'), qy = m.col('imuQuaternion[1]'), qz = m.col('imuQuaternion[2]');
+        const roll = new Float64Array(n), pitch = new Float64Array(n);
+        for (let k = 0; k < n; k++) {
+            const x = qx[k] / 32767, y = qy[k] / 32767, z = qz[k] / 32767;
+            const w = Math.sqrt(Math.max(0, 1 - x * x - y * y - z * z));
+            roll[k] = Math.atan2(2 * (y * z + w * x), 1 - 2 * (x * x + y * y));
+            pitch[k] = Math.asin(Math.max(-1, Math.min(1, -2 * (x * z - w * y))));
+        }
+        fcAttitude = { roll, pitch };
     }
     let gps: Signals['gps'] = null;
     const g = log.gps;

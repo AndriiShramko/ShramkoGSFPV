@@ -12,3 +12,4 @@ way it is; the plan for what is left is [`../architecture-v03.md`](../architectu
 | `settings-modes-respawn.md` | settings inventory, flight modes, spawn platform, rewind respawn, post-flight stats (v0.3 parts A-D) |
 | `scenes-scale-recording-voxels.md` | SuperSplat catalogue API and CORS, scene scale, 60 fps recording, voxel overlay (v0.3 parts E-G) |
 | `physics-pavo20.md` | BetaFPV Pavo20 Pro / Pro II data and how our model differs (v0.3 part H) |
+| `blackbox-fit.md` | item 21 without and with data: what wave 1 changed, the BetaFPV `diff all` import (9 dumps, 2026.6.1), how Andrii records and sends a blackbox log, how `tools/blackbox` fits the preset from it (v0.3 H.3, H.4) |
