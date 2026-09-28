@@ -1,1 +1,19 @@
-{}
+{
+  "keys.arm.toggle": "Armar / desarmar (vuelo con teclado)",
+  "keys.crash.keep": "Mantener los restos (sin reaparición automática)",
+  "keys.frameStats.toggle": "Tiempos de fotograma y retardo",
+  "keys.hud.toggle": "Mostrar u ocultar el HUD",
+  "keys.mode.cycle": "Modo de vuelo",
+  "keys.pause.toggle": "Pausa / continuar",
+  "keys.record.toggle": "Iniciar o detener la grabación",
+  "keys.respawn.rewind": "Retroceder 5 s",
+  "keys.respawn.start": "Volver al inicio",
+  "keys.scale.down": "Escena más pequeña",
+  "keys.scale.up": "Escena más grande",
+  "keys.scene.favourite": "Siguiente escena favorita",
+  "keys.scene.next": "Siguiente escena",
+  "keys.scene.random": "Escena aleatoria",
+  "keys.settings.open": "Ajustes",
+  "keys.voxels.cycle": "Rejilla de vóxeles: oculta / sobre el escaneo / solo vóxeles",
+  "keys.walls.toggle": "Paredes sí / no en este escaneo"
+}

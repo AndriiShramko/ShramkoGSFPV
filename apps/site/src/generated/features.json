@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-27",
+ "generated": "2026-09-28",
  "schemaVersion": 1,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
@@ -7,10 +7,10 @@
   "groups": 7,
   "drones": 6,
   "modes": 2,
-  "keys": 4,
+  "keys": 9,
   "rateTypes": 4,
   "flyingKeys": 10,
-  "allKeys": 14
+  "allKeys": 17
  },
  "locales": {
   "en": {
@@ -91,7 +91,9 @@
        "range": "",
        "scope": "global",
        "apply": "live",
-       "keys": [],
+       "keys": [
+        "H"
+       ],
        "advanced": false,
        "preset": false,
        "options": [],
@@ -410,7 +412,9 @@
        "range": "Off / Over the scan / Voxels only",
        "scope": "global",
        "apply": "live",
-       "keys": [],
+       "keys": [
+        "V"
+       ],
        "advanced": false,
        "preset": false,
        "options": [
@@ -498,6 +502,41 @@
      "label": "Back to the start",
      "keys": [
       "R"
+     ]
+    },
+    {
+     "action": "mode.cycle",
+     "label": "Flight mode",
+     "keys": [
+      "M"
+     ]
+    },
+    {
+     "action": "arm.toggle",
+     "label": "Arm / disarm (keyboard flying)",
+     "keys": [
+      "Space"
+     ]
+    },
+    {
+     "action": "voxels.cycle",
+     "label": "Voxel grid: off / over the scan / voxels only",
+     "keys": [
+      "V"
+     ]
+    },
+    {
+     "action": "walls.toggle",
+     "label": "Walls on / off for this scan",
+     "keys": [
+      "C"
+     ]
+    },
+    {
+     "action": "hud.toggle",
+     "label": "Show or hide the HUD",
+     "keys": [
+      "H"
      ]
     },
     {
@@ -872,7 +911,9 @@
        "range": "",
        "scope": "global",
        "apply": "live",
-       "keys": [],
+       "keys": [
+        "H"
+       ],
        "advanced": false,
        "preset": false,
        "options": [],
@@ -1191,7 +1232,9 @@
        "range": "Oculta / Sobre el escaneo / Solo v\u00f3xeles",
        "scope": "global",
        "apply": "live",
-       "keys": [],
+       "keys": [
+        "V"
+       ],
        "advanced": false,
        "preset": false,
        "options": [
@@ -1279,6 +1322,41 @@
      "label": "Volver al inicio",
      "keys": [
       "R"
+     ]
+    },
+    {
+     "action": "mode.cycle",
+     "label": "Modo de vuelo",
+     "keys": [
+      "M"
+     ]
+    },
+    {
+     "action": "arm.toggle",
+     "label": "Armar / desarmar (vuelo con teclado)",
+     "keys": [
+      "Space"
+     ]
+    },
+    {
+     "action": "voxels.cycle",
+     "label": "Rejilla de v\u00f3xeles: oculta / sobre el escaneo / solo v\u00f3xeles",
+     "keys": [
+      "V"
+     ]
+    },
+    {
+     "action": "walls.toggle",
+     "label": "Paredes s\u00ed / no en este escaneo",
+     "keys": [
+      "C"
+     ]
+    },
+    {
+     "action": "hud.toggle",
+     "label": "Mostrar u ocultar el HUD",
+     "keys": [
+      "H"
      ]
     },
     {
@@ -1653,7 +1731,9 @@
        "range": "",
        "scope": "global",
        "apply": "live",
-       "keys": [],
+       "keys": [
+        "H"
+       ],
        "advanced": false,
        "preset": false,
        "options": [],
@@ -1972,7 +2052,9 @@
        "range": "Ukryta / Na skanie / Same woksele",
        "scope": "global",
        "apply": "live",
-       "keys": [],
+       "keys": [
+        "V"
+       ],
        "advanced": false,
        "preset": false,
        "options": [
@@ -2060,6 +2142,41 @@
      "label": "Powr\u00f3t na start",
      "keys": [
       "R"
+     ]
+    },
+    {
+     "action": "mode.cycle",
+     "label": "Tryb lotu",
+     "keys": [
+      "M"
+     ]
+    },
+    {
+     "action": "arm.toggle",
+     "label": "Uzbr\u00f3j / rozbr\u00f3j (latanie klawiatur\u0105)",
+     "keys": [
+      "Space"
+     ]
+    },
+    {
+     "action": "voxels.cycle",
+     "label": "Siatka wokseli: ukryta / na skanie / same woksele",
+     "keys": [
+      "V"
+     ]
+    },
+    {
+     "action": "walls.toggle",
+     "label": "\u015aciany w\u0142. / wy\u0142. dla tego skanu",
+     "keys": [
+      "C"
+     ]
+    },
+    {
+     "action": "hud.toggle",
+     "label": "Poka\u017c lub ukryj HUD",
+     "keys": [
+      "H"
      ]
     },
     {
@@ -2434,7 +2551,9 @@
        "range": "",
        "scope": "global",
        "apply": "live",
-       "keys": [],
+       "keys": [
+        "H"
+       ],
        "advanced": false,
        "preset": false,
        "options": [],
@@ -2753,7 +2872,9 @@
        "range": "\u0421\u043a\u0440\u044b\u0442\u0430 / \u041f\u043e\u0432\u0435\u0440\u0445 \u0441\u043a\u0430\u043d\u0430 / \u0422\u043e\u043b\u044c\u043a\u043e \u0432\u043e\u043a\u0441\u0435\u043b\u0438",
        "scope": "global",
        "apply": "live",
-       "keys": [],
+       "keys": [
+        "V"
+       ],
        "advanced": false,
        "preset": false,
        "options": [
@@ -2841,6 +2962,41 @@
      "label": "\u041d\u0430\u0437\u0430\u0434 \u043d\u0430 \u0441\u0442\u0430\u0440\u0442",
      "keys": [
       "R"
+     ]
+    },
+    {
+     "action": "mode.cycle",
+     "label": "\u0420\u0435\u0436\u0438\u043c \u043f\u043e\u043b\u0451\u0442\u0430",
+     "keys": [
+      "M"
+     ]
+    },
+    {
+     "action": "arm.toggle",
+     "label": "\u0410\u0440\u043c / \u0434\u0438\u0437\u0430\u0440\u043c (\u043f\u043e\u043b\u0451\u0442 \u0441 \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u044b)",
+     "keys": [
+      "Space"
+     ]
+    },
+    {
+     "action": "voxels.cycle",
+     "label": "\u0412\u043e\u043a\u0441\u0435\u043b\u044c\u043d\u0430\u044f \u0441\u0435\u0442\u043a\u0430: \u0441\u043a\u0440\u044b\u0442\u0430 / \u043f\u043e\u0432\u0435\u0440\u0445 \u0441\u043a\u0430\u043d\u0430 / \u0442\u043e\u043b\u044c\u043a\u043e \u0432\u043e\u043a\u0441\u0435\u043b\u0438",
+     "keys": [
+      "V"
+     ]
+    },
+    {
+     "action": "walls.toggle",
+     "label": "\u0421\u0442\u0435\u043d\u044b \u0432\u043a\u043b. / \u0432\u044b\u043a\u043b. \u0434\u043b\u044f \u044d\u0442\u043e\u0433\u043e \u0441\u043a\u0430\u043d\u0430",
+     "keys": [
+      "C"
+     ]
+    },
+    {
+     "action": "hud.toggle",
+     "label": "\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u0438\u043b\u0438 \u0441\u043a\u0440\u044b\u0442\u044c HUD",
+     "keys": [
+      "H"
      ]
     },
     {

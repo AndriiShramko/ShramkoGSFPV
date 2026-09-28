@@ -13,7 +13,20 @@ import { REPO, mkStore } from './helpers';
 const read = (...p: string[]) => readFileSync(join(REPO, ...p), 'utf8');
 const VOXEL_COLORS = read('packages', 'render-pc', 'src', 'voxel-colors.ts');
 const APP_VOXELS = read('apps', 'fly', 'src', 'voxels.ts');
-const APP_MAIN = read('apps', 'fly', 'src', 'main.ts');
+/** The page's own code: main.ts plus the app shell (apps/fly/src/app/**) it composes since v0.3 wave 1. */
+function appSources(): string {
+    const out: string[] = [read('apps', 'fly', 'src', 'main.ts')];
+    const walk = (dir: string) => {
+        for (const n of readdirSync(dir).sort()) {
+            const p = join(dir, n);
+            if (statSync(p).isDirectory()) walk(p);
+            else if (/\.ts$/.test(n)) out.push(readFileSync(p, 'utf8'));
+        }
+    };
+    walk(join(REPO, 'apps', 'fly', 'src', 'app'));
+    return out.join('\n');
+}
+const APP_MAIN = appSources();
 const APP_WALLCACHE = read('apps', 'fly', 'src', 'wallcache.ts');
 
 /** One regex group from a source, or a throw naming what was looked for. */
@@ -61,7 +74,7 @@ describe('the voxel grid: prefs equals main', () => {
     it('radius: main\'s 20 m, and the 2-60 m of its test hook', () => {
         const d = SCHEMA.byId.get('voxels.radiusM') as NumDef;
         expect(d.default).toBe(Number(grab(APP_VOXELS, /\n\s*radiusM = ([0-9.]+);/, 'VoxelController.radiusM')));
-        const clamp = grab(APP_MAIN, /setRadius: \(m\) => \{ voxels\.radiusM = (Math\.max\([^;]*\));/, 'hook setRadius').match(/\d+(?:\.\d+)?/g)!.map(Number);
+        const clamp = grab(APP_MAIN, /setRadius: \(m\) => \{ \w+\.radiusM = (Math\.max\([^;]*\));/, 'hook setRadius').match(/\d+(?:\.\d+)?/g)!.map(Number);
         expect([d.min, d.max]).toEqual(clamp);
         expect(d.status).toBe('planned'); // no control on the live site: the test hook and ?vradius only
     });
@@ -117,17 +130,17 @@ describe('every URL parameter main reads is a setting\'s or listed with its reas
         expect([...planted].filter((p) => !settingParams.has(p) && !Object.hasOwn(APP_URL_PARAMS_NOT_SETTINGS, p))).toEqual(['newswitch']);
     });
 
-    it('main.ts is the only fly source that reads the query string', () => {
+    it('app/env.ts is the only fly source that reads the query string (the page reads it once, as q; "location.search = ..." to leave is a write)', () => {
         const readers: string[] = [];
         const walk = (dir: string) => {
             for (const n of readdirSync(dir)) {
                 const p = join(dir, n);
                 if (statSync(p).isDirectory()) walk(p);
-                else if (/\.ts$/.test(n) && /location\.search\b|URLSearchParams\(\s*location/.test(readFileSync(p, 'utf8'))) readers.push(n);
+                else if (/\.ts$/.test(n) && /location\.search\b(?!\s*=[^=])|URLSearchParams\(\s*location/.test(readFileSync(p, 'utf8'))) readers.push(n);
             }
         };
         walk(join(REPO, 'apps', 'fly', 'src'));
-        expect(readers).toEqual(['main.ts']);
+        expect(readers).toEqual(['env.ts']);
     });
 
     it('the latency guard is on unless ?guard=0, as main starts it', () => {

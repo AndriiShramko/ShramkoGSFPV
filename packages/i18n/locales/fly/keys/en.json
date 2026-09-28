@@ -1,1 +1,19 @@
-{}
+{
+  "keys.arm.toggle": "Arm / disarm (keyboard flying)",
+  "keys.crash.keep": "Keep the wreck (no automatic respawn)",
+  "keys.frameStats.toggle": "Frame times and delay",
+  "keys.hud.toggle": "Show or hide the HUD",
+  "keys.mode.cycle": "Flight mode",
+  "keys.pause.toggle": "Pause / resume",
+  "keys.record.toggle": "Start or stop recording",
+  "keys.respawn.rewind": "Rewind 5 s",
+  "keys.respawn.start": "Back to the start",
+  "keys.scale.down": "Scene smaller",
+  "keys.scale.up": "Scene larger",
+  "keys.scene.favourite": "Next favourite scene",
+  "keys.scene.next": "Next scene",
+  "keys.scene.random": "Random scene",
+  "keys.settings.open": "Settings",
+  "keys.voxels.cycle": "Voxel grid: off / over the scan / voxels only",
+  "keys.walls.toggle": "Walls on / off for this scan"
+}

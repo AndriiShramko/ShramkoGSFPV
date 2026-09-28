@@ -1,1 +1,19 @@
-{}
+{
+  "keys.arm.toggle": "Арм / дизарм (полёт с клавиатуры)",
+  "keys.crash.keep": "Оставить обломки (без авто-респауна)",
+  "keys.frameStats.toggle": "Время кадра и задержка",
+  "keys.hud.toggle": "Показать или скрыть HUD",
+  "keys.mode.cycle": "Режим полёта",
+  "keys.pause.toggle": "Пауза / продолжить",
+  "keys.record.toggle": "Начать или остановить запись",
+  "keys.respawn.rewind": "Отмотать на 5 с",
+  "keys.respawn.start": "Назад на старт",
+  "keys.scale.down": "Сцена меньше",
+  "keys.scale.up": "Сцена больше",
+  "keys.scene.favourite": "Следующая избранная сцена",
+  "keys.scene.next": "Следующая сцена",
+  "keys.scene.random": "Случайная сцена",
+  "keys.settings.open": "Настройки",
+  "keys.voxels.cycle": "Воксельная сетка: скрыта / поверх скана / только воксели",
+  "keys.walls.toggle": "Стены вкл. / выкл. для этого скана"
+}

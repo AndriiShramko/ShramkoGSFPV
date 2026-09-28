@@ -1,1 +1,19 @@
-{}
+{
+  "keys.arm.toggle": "Uzbrój / rozbrój (latanie klawiaturą)",
+  "keys.crash.keep": "Zostaw wrak (bez automatycznego odrodzenia)",
+  "keys.frameStats.toggle": "Czasy klatek i opóźnienie",
+  "keys.hud.toggle": "Pokaż lub ukryj HUD",
+  "keys.mode.cycle": "Tryb lotu",
+  "keys.pause.toggle": "Pauza / wznów",
+  "keys.record.toggle": "Start / stop nagrywania",
+  "keys.respawn.rewind": "Cofnij o 5 s",
+  "keys.respawn.start": "Powrót na start",
+  "keys.scale.down": "Scena mniejsza",
+  "keys.scale.up": "Scena większa",
+  "keys.scene.favourite": "Następna ulubiona scena",
+  "keys.scene.next": "Następna scena",
+  "keys.scene.random": "Losowa scena",
+  "keys.settings.open": "Ustawienia",
+  "keys.voxels.cycle": "Siatka wokseli: ukryta / na skanie / same woksele",
+  "keys.walls.toggle": "Ściany wł. / wył. dla tego skanu"
+}
