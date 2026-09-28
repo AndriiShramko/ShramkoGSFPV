@@ -10,7 +10,7 @@
 // ?lagFrames=N, ?guard=0, ?refine=auto|offer|off (finer walls: the plan's choice, only on request,
 // never), ?bake=1, ?walls=on|off (this load only, not remembered), ?voxels=overlay|only
 // &vstyle=solid|wire|height|floaters&vopacity=0..1&vradius=m (the voxel grid for screenshots and
-// checks; nothing remembered).
+// checks; nothing remembered), ?render=off (logic only: the scan is not drawn; machines without a GPU).
 import { t } from './i18n';
 import { h, clear } from './ui/dom';
 import { boot } from './app/boot';

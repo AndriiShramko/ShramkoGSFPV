@@ -1,6 +1,8 @@
 // Screenshot each landing section separately (easier to review than one 10 000 px image).
 // node scripts/sections.mjs <locale> <width>x<height> <prefix>   (SHOTS_DIR=... to write elsewhere)
 import { chromium } from "playwright";
+// system Chrome, or the bundled Chromium where there is none (the cloud); tools/bench/README.md
+import { describeBrowser, pickBrowser } from "../../../tools/bench/src/chrome.mjs";
 import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -11,7 +13,9 @@ const [locale = "en", size = "1440x900", prefix = "sec"] = process.argv.slice(2)
 const [width, height] = size.split("x").map(Number);
 const shots = process.env.SHOTS_DIR ?? join(here, "..", ".shots");
 mkdirSync(shots, { recursive: true });
-const browser = await chromium.launch({ channel: "chrome" });
+const pick = pickBrowser({ expected: chromium.executablePath() });
+const browser = await chromium.launch({ ...pick.launch });
+console.log(`browser: ${JSON.stringify(describeBrowser(pick, browser.version()))}`);
 const mobile = width < 600;
 const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 1, isMobile: mobile, hasTouch: mobile });
 await page.goto(`${BASE}/${locale}/`, { waitUntil: "networkidle" });

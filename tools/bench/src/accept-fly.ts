@@ -2,6 +2,16 @@
 // by default). System Chrome, visible window, stock flags. Every item writes its facts and its
 // negative control into evidence/<date>/b-fly-<item>.json; PNGs next to it.
 //   SITE=https://gsfpv.flyreelstudio.eu npx tsx src/accept-fly.ts [B6 B7 ...]
+// Local: LOCAL_FLY=1 SITE=http://127.0.0.1:<port> against the Vite dev server of apps/fly.
+// Without system Chrome (the cloud container) the bundled Chromium runs (browser.ts, chrome.mjs):
+//   xvfb-run -a env LOCAL_FLY=1 SITE=http://127.0.0.1:5331 ACCEPT_RENDER=off npx tsx src/accept-fly.ts
+// ACCEPT_RENDER=off (opt-in, for machines without a GPU): the flight-logic items B9-B17 (presets,
+// wizard, arming, crash/respawn, tunnelling, touch hover, replay, gravity, crash loop) open the page
+// with ?render=off, the app's logic-only mode: the scan is not downloaded or drawn, everything else
+// runs at the real frame rate. Such a run is NEVER a visual or latency check: every item says
+// render 'off' in its evidence, its screenshots end in -render-off, and B17's flash count covers
+// the HUD and overlays only. The visual items B6 (renderer, frame not empty), B7 and B8 (pixel
+// checks, Firefox) always run with the scan drawn. tools/bench/README.md.
 import { readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { firefox } from 'playwright';
@@ -19,6 +29,19 @@ mkdirSync(SHOTS, { recursive: true });
 const cb = () => `cb=${Math.random().toString(36).slice(2)}`;
 // LOCAL_FLY=1: the Vite dev server serves /fly/ only (locale from the NEXT_LOCALE cookie there)
 const fly = (l: string, qs: string) => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}&${cb()}` : `${SITE}/${l}/fly/?${qs}&${cb()}`);
+// ACCEPT_RENDER=off: the flight-logic items open the logic-only mode (header); the visual ones never do
+const RENDER_OFF = process.env.ACCEPT_RENDER === 'off';
+const LOGIC_ITEMS = new Set(['B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17']);
+const flyLogic = (l: string, qs: string) => fly(l, RENDER_OFF ? `${qs}&render=off` : qs);
+/** a flight-logic item's screenshot: marked when the scan was not drawn, so it never passes for a visual one */
+const shot = (name: string) => (RENDER_OFF ? name.replace(/(\.\w+)$/, '-render-off$1') : name);
+/** waitReady for a flight-logic page: with ACCEPT_RENDER=off the page must say it runs logic-only */
+async function waitLogic(p: Page, timeoutMs: number): Promise<Record<string, unknown>> {
+    const h = await waitReady(p, timeoutMs);
+    const render = (h.info as Record<string, unknown> | undefined)?.render;
+    if (RENDER_OFF && h.status === 'ready' && render !== 'off') throw new Error(`ACCEPT_RENDER=off but the page draws the scan (info.render ${String(render)}): a build without ?render=off`);
+    return h;
+}
 
 function dict(l: string): Record<string, string> {
     for (const p of [join(REPO, 'packages', 'i18n', 'locales', 'fly', `${l}.json`), join(REPO, 'packages', 'i18n', 'fly', `${l}.json`)]) {
@@ -74,7 +97,9 @@ async function waitFor(page: Page, fn: string, ok: (v: Any) => boolean, timeoutM
 const summary: Record<string, unknown> = {};
 function record(id: string, data: Record<string, unknown> & { pass: boolean }): void {
     summary[id] = data.pass;
-    writeEvidence(`b-fly-${id.toLowerCase()}`, { site: SITE, ...data });
+    const off = RENDER_OFF && LOGIC_ITEMS.has(id);
+    const render = off ? { render: 'off', renderNote: 'logic-only (?render=off): the scan was not drawn; not a visual or latency check' } : { render: 'on' };
+    writeEvidence(`b-fly-${id.toLowerCase()}`, { site: SITE, ...render, ...data });
     console.log(`${id} ${data.pass ? 'PASS' : 'FAIL'}`);
 }
 
@@ -219,8 +244,8 @@ if (want('B8')) {
 if (want('B9')) {
     const rows: Record<string, unknown>[] = [];
     for (const drone of [null, 'pavo20pro2-3s', 'pavopico-2s']) {
-        await page.goto(fly('en', `scene=39e63ce9&nowarn=1&input=touch${drone ? `&drone=${drone}` : ''}`));
-        await waitReady(page, 180000);
+        await page.goto(flyLogic('en', `scene=39e63ce9&nowarn=1&input=touch${drone ? `&drone=${drone}` : ''}`));
+        await waitLogic(page, 180000);
         rows.push(await hookEval<Record<string, unknown>>(page, 'return { preset: s.presetId, twrPreset: s.params.twr, twrMeasured: s.measureTwr() };'));
     }
     // source labels in the drone picker
@@ -228,7 +253,7 @@ if (want('B9')) {
     await page.click('[data-action="pause.drone"]');
     const srcLabels = await page.locator('.drone-card .src').count();
     const cards = await page.locator('.drone-card').count();
-    await page.screenshot({ path: join(SHOTS, 'b9-drones.jpg') });
+    await page.screenshot({ path: join(SHOTS, shot('b9-drones.jpg')) });
     const within = (r: Record<string, unknown>) => Math.abs((r.twrMeasured as number) / (r.twrPreset as number) - 1) <= 0.05;
     const def = rows[0], pico = rows[2];
     const picoDiffers = Math.abs((pico.twrMeasured as number) - (def.twrMeasured as number)) / (def.twrMeasured as number) > 0.05;
@@ -238,8 +263,8 @@ if (want('B9')) {
 
 // ------------------------------------------------------------------ B10 wizard on SimRadio-raw
 async function wizard(qs: string, timeoutMs: number): Promise<{ step: number; msg: string; err: string | null; prof: Record<string, unknown> | null }> {
-    await page.goto(fly('en', `scene=39e63ce9&simradio=raw&${qs}`));
-    await waitReady(page, 180000);
+    await page.goto(flyLogic('en', `scene=39e63ce9&simradio=raw&${qs}`));
+    await waitLogic(page, 180000);
     return waitFor(page, 'const r = h.radio; return r && r.wizard ? { step: r.wizard.state.step, msg: r.wizard.state.message, err: r.wizard.state.error, prof: r.wizard.state.profile } : { step: -1 };', (v: { step: number }) => v.step === 6, timeoutMs);
 }
 if (want('B10') || want('B11')) {
@@ -264,7 +289,7 @@ if (want('B10') || want('B11')) {
     })();
     const saved = await page.evaluate(() => localStorage.getItem('gsfpv.profiles.v1'));
     await page.reload();
-    await waitReady(page, 180000);
+    await waitLogic(page, 180000);
     const savedAfter = await page.evaluate(() => localStorage.getItem('gsfpv.profiles.v1'));
     const key = await hookEval<string>(page, 'return h.fake.key;');
     const persisted = !!savedAfter && savedAfter === saved && JSON.parse(savedAfter)[key]?.axes?.throttle?.index === 0;
@@ -323,20 +348,20 @@ if (want('B11')) {
 
 // ------------------------------------------------------------------ B12 crash, respawn
 if (want('B12')) {
-    await page.goto(fly('en', 'scene=39e63ce9&simradio=scenario&nowarn=1'));
-    await waitReady(page, 180000);
+    await page.goto(flyLogic('en', 'scene=39e63ce9&simradio=scenario&nowarn=1'));
+    await waitLogic(page, 180000);
     const vCrash = await hookEval<number>(page, 'return s.params.vCrash;');
     const done = await waitFor(page, 'return { phase: h.scenario.phase, log: h.scenario.log, crash: h.lastCrash };', (v: { phase: string; crash: { pending?: boolean } | null }) => (v.phase === 'rest' || v.phase === 'done') && !!v.crash && !v.crash.pending, 120000);
     await page.waitForTimeout(1800);
-    await page.screenshot({ path: join(SHOTS, 'b12-crash.jpg') });
+    await page.screenshot({ path: join(SHOTS, shot('b12-crash.jpg')) });
     const overlay = await page.locator('.crash-overlay').count();
     await page.click('[data-action="respawn"]');
     await page.waitForTimeout(400);
     const after = await hookEval<Record<string, unknown>>(page, 'return { crashed: s.sim.crashed, free: s.spawnIsFree([s.sim.s[0], s.sim.s[1], s.sim.s[2], 0]) };');
     // control: a touch at 0.5 * v_bounce must not crash
     const vBounce = await hookEval<number>(page, 'return s.params.vBounce;');
-    await page.goto(fly('en', `scene=39e63ce9&simradio=scenario&nowarn=1&dash=${0.5 * vBounce}`));
-    await waitReady(page, 180000);
+    await page.goto(flyLogic('en', `scene=39e63ce9&simradio=scenario&nowarn=1&dash=${0.5 * vBounce}`));
+    await waitLogic(page, 180000);
     const soft = await waitFor(page, 'return { phase: h.scenario.phase, crash: h.scenario.log.crash, contacts: h.events.filter((e) => e.type === "contact").length, crashes: h.events.filter((e) => e.type === "crash").length };', (v: { phase: string }) => v.phase === 'done' || v.phase === 'rest', 120000);
     const c = done.log as { crash: { speed: number } | null; tumbleMaxW: number };
     const lc = done.crash as { debris: number; engine: string; maxAngularSpeed: number; speed: number };
@@ -349,8 +374,8 @@ if (want('B12')) {
 if (want('B13')) {
     const rows: Record<string, unknown>[] = [];
     for (const id of ['39e63ce9', '887f27aa', '7a475d38']) {
-        await page.goto(fly('en', `scene=${id}&nowarn=1&input=touch`));
-        await waitReady(page, 180000);
+        await page.goto(flyLogic('en', `scene=${id}&nowarn=1&input=touch`));
+        await waitLogic(page, 180000);
         rows.push({ id, ...(await hookEval<Record<string, unknown>>(page, 'return s.tunnelSelfTest(20, 25, 7);')) });
     }
     const pass = rows.every((r) => r.passes === 20 && r.penetrations === 0 && (r.contacts as number) > 0);
@@ -363,8 +388,8 @@ if (want('B14')) {
     for (const [w, hgt] of [[375, 812], [1024, 768]] as const) {
         const T = await launch({ width: w, height: hgt, mobile: true });
         const tp = T.page;
-        await tp.goto(fly('en', 'scene=887f27aa&nowarn=1&input=touch'));
-        await waitReady(tp, 180000);
+        await tp.goto(flyLogic('en', 'scene=887f27aa&nowarn=1&input=touch'));
+        await waitLogic(tp, 180000);
         const cdp = await T.context.newCDPSession(tp);
         const box = async (sel: string) => (await tp.locator(sel).boundingBox())!;
         const L = await box('.touch-pad.left'), R = await box('.touch-pad.right'), A = await box('.touch-arm');
@@ -414,7 +439,7 @@ if (want('B14')) {
         const pauseOpened = (await tp.locator('.panel').count()) > 0;
         await tp.keyboard.press('Escape');
         const view = await tp.evaluate(() => ({ scrollX, scrollY, scale: visualViewport?.scale ?? 1 }));
-        await tp.screenshot({ path: join(SHOTS, `b14-${w}x${hgt}.jpg`) });
+        await tp.screenshot({ path: join(SHOTS, shot(`b14-${w}x${hgt}.jpg`)) });
         await T.browser.close();
         rows.push({ viewport: `${w}x${hgt}`, pauseButtonReachable: pauseOpened, armedByButton: armed, bothPairsOneFrame: { ch: both.slice(0, 4), ok: bothChanged }, hover: { seconds: 10, crashed, armedAll, minY, maxY, target }, view, control: { outsideTouch: { before: ch0.slice(0, 4), after: chOut.slice(0, 4), fired: outsideZero } } });
         console.log('B14', JSON.stringify(rows[rows.length - 1]));
@@ -423,13 +448,13 @@ if (want('B14')) {
         const x = r as { pauseButtonReachable: boolean; armedByButton: boolean; bothPairsOneFrame: { ok: boolean }; hover: { crashed: boolean; armedAll: boolean; minY: number }; view: { scrollX: number; scrollY: number; scale: number }; control: { outsideTouch: { fired: boolean } } };
         return x.pauseButtonReachable && x.armedByButton && x.bothPairsOneFrame.ok && !x.hover.crashed && x.hover.armedAll && x.view.scrollX === 0 && x.view.scrollY === 0 && x.view.scale === 1 && x.control.outsideTouch.fired;
     });
-    record('B14', { pass, note: 'touch through CDP Input.dispatchTouchEvent in system Chrome with hasTouch; input=touch because desktop Chrome has WebHID', rows });
+    record('B14', { pass, note: 'touch through CDP Input.dispatchTouchEvent in Chrome (which one: context.browser) with hasTouch; input=touch because desktop Chrome has WebHID', rows });
 }
 
 // ------------------------------------------------------------------ B15 replay from inputs only
 if (want('B15')) {
-    await page.goto(fly('en', 'scene=887f27aa&simradio=scenario&flip=1&nowarn=1'));
-    await waitReady(page, 180000);
+    await page.goto(flyLogic('en', 'scene=887f27aa&simradio=scenario&flip=1&nowarn=1'));
+    await waitLogic(page, 180000);
     const fl = await waitFor(page, 'return { phase: h.scenario.phase, flip: h.scenario.log.flip, crash: h.scenario.log.crash, tick: s.sim.tick };', (v: { phase: string; tick: number }) => (v.phase === 'rest' || v.phase === 'done') && v.tick >= 30000, 150000);
     const saved = await hookEval<Record<string, unknown>>(page, "const e = h.saveLog('b15'); return { hash: e.hash, endTick: e.endTick, records: e.bytes.length / 36 };");
     // CPU throttling x4: steps per simulated second stay 1000
@@ -446,8 +471,8 @@ if (want('B15')) {
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
     // a NEW tab replays the saved log (only the inputs travel)
     const p2 = await context.newPage();
-    await p2.goto(fly('en', 'scene=887f27aa&nowarn=1&input=touch'));
-    await waitReady(p2, 180000);
+    await p2.goto(flyLogic('en', 'scene=887f27aa&nowarn=1&input=touch'));
+    await waitLogic(p2, 180000);
     const again = await hookEval<Record<string, unknown>>(p2, 'const r = h.verifyLastLog(); return { saved: r.saved, hash: r.hash, endTick: r.endTick };');
     const rec = Math.floor((saved.records as number) / 2);
     const ctl = await hookEval<Record<string, unknown>>(p2, `const a = h.verifyLastLog(); const b = h.verifyLastLog({ record: ${rec}, channel: 2 });
@@ -464,8 +489,8 @@ if (want('B15')) {
 if (want('B16')) {
     const rows: Record<string, unknown>[] = [];
     for (const g of [9.81, 1.62]) {
-        await page.goto(fly('en', `scene=887f27aa&g=${g}&nowarn=1&input=touch`));
-        await waitReady(page, 180000);
+        await page.goto(flyLogic('en', `scene=887f27aa&g=${g}&nowarn=1&input=touch`));
+        await waitLogic(page, 180000);
         const d = await hookEval<{ g: number; measured: number; fallM: number }>(page, 'return s.dropTest();');
         const warning = await page.locator('[data-testid="gravity-warning"]').textContent().catch(() => null);
         rows.push({ ...d, relErr: d.measured / g - 1, warning });
@@ -548,14 +573,14 @@ if (want('B17')) {
     await sp.close();
     const strobeFlashes = detect(strobe);
     // 50 crashes in a loop (the same bot plan, respawned after every crash)
-    const loopUrl = fly('en', `scene=39e63ce9&simradio=scenario&quick=1&loop=${N}&nowarn=1`);
+    const loopUrl = flyLogic('en', `scene=39e63ce9&simradio=scenario&quick=1&loop=${N}&nowarn=1`);
     const navs: { t: number; url: string }[] = [];
     const consoleTail: string[] = [];
     const t0 = Date.now();
     page.on('framenavigated', (f) => { if (f === page.mainFrame()) navs.push({ t: (Date.now() - t0) / 1000, url: f.url().replace(/[?].*$/, '') }); });
     page.on('console', (m) => { consoleTail.push(`${((Date.now() - t0) / 1000).toFixed(1)}s ${m.type()}: ${m.text()}`.slice(0, 300)); if (consoleTail.length > 40) consoleTail.shift(); });
     await page.goto(loopUrl);
-    await waitReady(page, 180000);
+    await waitLogic(page, 180000);
     let total = 0;
     let lost: string | null = null;
     const s = await record5(page, async () => {
@@ -569,9 +594,11 @@ if (want('B17')) {
     }, N * 40000);
     const flashes = detect(s);
     const pass = !lost && total >= N && flashes <= 3 && strobeFlashes > 3;
-    record('B17', { pass, pageLost: lost, navigations: navs, consoleTail: lost ? consoleTail : [], rule: 'WCAG 2.2 general flash: pairs of opposing relative-luminance changes >= 0.1 (darker < 0.8), max per 1 s window, whole frame and quarters; frames via CDP screencast', crashes: total, frames: s.length, maxFlashesPerSecond: flashes, control: { strobeHz: 5, frames: strobe.length, maxFlashesPerSecond: strobeFlashes, fired: strobeFlashes > 3 } });
+    // logic-only: the crash loop is the check; the frames had no scan, so the flash count says nothing about the scan's photosensitivity
+    const flashScope = RENDER_OFF ? 'HUD and overlays only (?render=off: the scan was not drawn); the crash loop is what this run checks, not photosensitivity' : 'the whole flight view';
+    record('B17', { pass, flashScope, pageLost: lost, navigations: navs, consoleTail: lost ? consoleTail : [], rule: 'WCAG 2.2 general flash: pairs of opposing relative-luminance changes >= 0.1 (darker < 0.8), max per 1 s window, whole frame and quarters; frames via CDP screencast', crashes: total, frames: s.length, maxFlashesPerSecond: flashes, control: { strobeHz: 5, frames: strobe.length, maxFlashesPerSecond: strobeFlashes, fired: strobeFlashes > 3 } });
 }
 
 await browser.close();
-writeEvidence('b-fly-summary', { site: SITE, items: summary });
+writeEvidence('b-fly-summary', { site: SITE, items: summary, render: RENDER_OFF ? { off: [...LOGIC_ITEMS].filter(want), on: ['B6', 'B7', 'B8'].filter(want) } : 'on' });
 console.log(JSON.stringify(summary));

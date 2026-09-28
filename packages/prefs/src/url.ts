@@ -27,6 +27,7 @@ export const APP_URL_PARAMS_NOT_SETTINGS: Readonly<Record<string, string>> = {
     bake: 'test: build walls at once for a scan without them (phase C bench)',
     vopacity: 'test: main applies it to the view given with ?voxels= (voxels.opacity or voxels.opacityOnly); one parameter per setting cannot say which',
     clean: 'capture: the flight view and the OSD only, for recording the landing video',
+    render: 'test: ?render=off, the logic-only mode for machines without a GPU (the cloud): the scan is never downloaded or drawn, the walls, flight model, input, HUD and crash handling run; never a visual or latency check',
     tour: BOT, dash: BOT, quick: BOT, flip: BOT, loop: BOT,
     order: SIM_RADIO, inv: SIM_RADIO, offset: SIM_RADIO, noise: SIM_RADIO, armch: SIM_RADIO, rate: SIM_RADIO, broken: SIM_RADIO, react: SIM_RADIO, human: SIM_RADIO, nobuttons: SIM_RADIO
 };

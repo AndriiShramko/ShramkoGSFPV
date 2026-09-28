@@ -3,12 +3,14 @@ import { fileURLToPath } from 'node:url';
 // repo root (tools/bench/scripts/ -> ../../..): no machine-specific paths
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\\/g, '/').replace(/\/$/, '');
 import { createRequire } from 'node:module';
+// system Chrome, or the bundled Chromium where there is none (tools/bench/README.md)
+import { pickBrowser } from '../src/chrome.mjs';
 import { mkdirSync, writeFileSync } from 'node:fs';
 const require = createRequire(ROOT + '/tools/bench/package.json');
 const { chromium } = require('playwright');
 const OUT = ROOT + '/.cache/wvl/live-look';
 mkdirSync(OUT, { recursive: true });
-const browser = await chromium.launch({ channel: 'chrome', headless: false });
+const browser = await chromium.launch({ ...pickBrowser({ expected: chromium.executablePath() }).launch, headless: false });
 const res = {};
 {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });

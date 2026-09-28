@@ -1,11 +1,15 @@
 // Render public/og.png (1200x630) from scripts/og.html with system Chrome via Playwright.
 // Run by hand after changing the template: pnpm --filter @gsfpv/site og
 import { chromium } from "playwright";
+// system Chrome, or the bundled Chromium where there is none (the cloud); tools/bench/README.md
+import { describeBrowser, pickBrowser } from "../../../tools/bench/src/chrome.mjs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const browser = await chromium.launch({ channel: "chrome" });
+const pick = pickBrowser({ expected: chromium.executablePath() });
+const browser = await chromium.launch({ ...pick.launch });
+console.log(`browser: ${JSON.stringify(describeBrowser(pick, browser.version()))}`);
 const page = await browser.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1 });
 await page.goto(pathToFileURL(join(here, "og.html")).href, { waitUntil: "load" });
 await page.evaluate(() => document.fonts.ready);

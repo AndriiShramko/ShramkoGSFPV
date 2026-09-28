@@ -58,10 +58,12 @@ export interface FlightContext {
     /** created once per page by the flight session today; the shell keeps it across scenes in E.4 */
     readonly renderer: SplatRenderer;
     /**
-     * The preferences store (@gsfpv/prefs). null until the lead wires it (the contract step before
-     * wave 2: a store on LocalStorageBackend, migration run, __gsfpv.prefs); nothing reads it yet.
+     * The page's preferences store (@gsfpv/prefs, app/prefs.ts): opened once per page by boot.ts on
+     * localStorage, the v0.2 keys migrated at the first v0.3 boot, the URL's settings in its session
+     * layer; also window.__gsfpv.prefs. Read with get(id, { drone, scene }), change with set(), follow
+     * with onChange(). Wave 1 features still read their own keys; app/prefs.ts mirrors their writes.
      */
-    readonly prefs: PrefsStore | null;
+    readonly prefs: PrefsStore;
     /** replaced on scene switch (E.4); listen to events.session */
     session: FlightSession;
     /** replaced with the session */

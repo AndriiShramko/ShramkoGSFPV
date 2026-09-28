@@ -28,12 +28,12 @@
 //   input=touch, refine=offer|off, nowarn=1, scale, governor=0
 //   the voxel grid through the page's test hook (__gsfpv.voxels: mode, style, opacity)
 // WebP is encoded by Chrome itself (OffscreenCanvas.convertToBlob), so there is no image dependency.
-import { chromium } from 'playwright';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { execSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { REPO } from './evidence';
+import { launchChrome } from './browser';
 
 const SITE = (process.env.SITE ?? 'https://gsfpv.flyreelstudio.eu').replace(/\/$/, '');
 /** where the simulator is opened: the site's English /en/fly/, or FLY (a local build of this commit) */
@@ -737,7 +737,7 @@ async function releaseInfo(): Promise<Record<string, unknown> | null> {
 
 // ------------------------------------------------------------------ main
 mkdirSync(RAW, { recursive: true });
-const browser = await chromium.launch({ channel: 'chrome', headless: false, args: ['--window-position=40,40', `--window-size=${DESKTOP.width + 16},${DESKTOP.height + 120}`] });
+const { browser } = await launchChrome({ headless: false, args: ['--window-position=40,40', `--window-size=${DESKTOP.width + 16},${DESKTOP.height + 120}`] });
 try {
     if (!process.env.ENCODE_ONLY) {
         await waitForGpu();
