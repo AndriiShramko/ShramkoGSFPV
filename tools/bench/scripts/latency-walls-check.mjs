@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 // repo root (tools/bench/scripts/ -> ../../..): no machine-specific paths
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\\/g, '/').replace(/\/$/, '');
 import { createRequire } from 'node:module';
+// system Chrome, or the bundled Chromium where there is none (tools/bench/README.md)
+import { pickBrowser } from '../src/chrome.mjs';
 import { writeFileSync, rmSync, mkdirSync } from 'node:fs';
 const require = createRequire(ROOT + '/tools/bench/package.json');
 const { chromium } = require('playwright');
@@ -14,7 +16,7 @@ rmSync(`${DIR}/profile`, { recursive: true, force: true });
 mkdirSync(DIR, { recursive: true });
 const out = {};
 async function open(qs) {
-    const ctx = await chromium.launchPersistentContext(`${DIR}/profile`, { channel: 'chrome', headless: false, viewport: { width: 1600, height: 900 }, args: ['--window-position=40,40'] });
+    const ctx = await chromium.launchPersistentContext(`${DIR}/profile`, { ...pickBrowser({ expected: chromium.executablePath() }).launch, headless: false, viewport: { width: 1600, height: 900 }, args: ['--window-position=40,40'] });
     await ctx.route('**/api/e', (r) => r.fulfill({ status: 204, body: '' }));
     const page = ctx.pages()[0] ?? (await ctx.newPage());
     const errors = [];

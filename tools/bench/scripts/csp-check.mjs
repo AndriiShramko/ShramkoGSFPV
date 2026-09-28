@@ -4,12 +4,14 @@ import { fileURLToPath } from 'node:url';
 // repo root (tools/bench/scripts/ -> ../../..): no machine-specific paths
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\\/g, '/').replace(/\/$/, '');
 import { createRequire } from 'node:module';
+// system Chrome, or the bundled Chromium where there is none (tools/bench/README.md)
+import { pickBrowser } from '../src/chrome.mjs';
 const require = createRequire(ROOT + '/tools/bench/package.json');
 const { chromium } = require('playwright');
 
 const base = process.argv[2] ?? 'http://localhost:5320';
 const out = { base, pages: [] };
-const browser = await chromium.launch({ channel: 'chrome', headless: false, args: ['--enable-unsafe-webgpu'] });
+const browser = await chromium.launch({ ...pickBrowser({ expected: chromium.executablePath() }).launch, headless: false, args: ['--enable-unsafe-webgpu'] });
 const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
 await ctx.addInitScript(() => {
     window.__csp = [];

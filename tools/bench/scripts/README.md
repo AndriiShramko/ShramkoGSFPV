@@ -1,6 +1,6 @@
 # Live checks outside the acceptance drivers
 
-Small Playwright scripts (system Chrome, headed) used for the v0.2/v0.3 releases. They read and
+Small Playwright scripts (system Chrome, or Playwright's bundled Chromium where there is none: `../README.md`; headed) used for the v0.2/v0.3 releases. They read and
 write only under the repo (`.cache/...`, gitignored). The acceptance drivers proper are
 `../src/accept-*.ts` (B1-B23, C, D) and `../src/screens.ts` (the landing / README screenshots).
 

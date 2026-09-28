@@ -5,13 +5,15 @@ import { fileURLToPath } from 'node:url';
 // repo root (tools/bench/scripts/ -> ../../..): no machine-specific paths
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\\/g, '/').replace(/\/$/, '');
 import { createRequire } from 'node:module';
+// system Chrome, or the bundled Chromium where there is none (tools/bench/README.md)
+import { pickBrowser } from '../src/chrome.mjs';
 import { mkdirSync, writeFileSync } from 'node:fs';
 const require = createRequire(ROOT + '/tools/bench/package.json');
 const { chromium } = require('playwright');
 const base = process.argv[2] ?? 'http://localhost:5346';
 const shots = process.argv[3] ?? ROOT + '/.cache/wz/auto-shots';
 mkdirSync(shots, { recursive: true });
-const browser = await chromium.launch({ channel: 'chrome', headless: false });
+const browser = await chromium.launch({ ...pickBrowser({ expected: chromium.executablePath() }).launch, headless: false });
 const out = {};
 for (const [name, qs, size] of [['nobuttons', '&nobuttons=1&react=900', { width: 1600, height: 900 }], ['human', '&human=5', { width: 375, height: 812 }]]) {
     const ctx = await browser.newContext({ viewport: size });
