@@ -5,15 +5,32 @@
 //                            (&order= &inv= &offset= &noise= &armch= &rate= &broken= &react= &human= &nobuttons=1)
 //   ?lat=1                   latency harness: keyboard input, F20 toggles 2 lag frames, F24 reports
 //   ?voxels=overlay|only &vstyle= &vopacity= &vradius=   the voxel grid for screenshots and checks
+//   ?render=off              logic-only: the scan is never downloaded or drawn (the engine clears the
+//                            frame), everything else runs: walls, flight model, input, HUD, crash
+//                            handling, the test hook. For machines without a GPU, where the scan
+//                            draws at about 1 frame/s and the flight model falls behind real time
+//                            (tools/bench/README.md). Never a visual or latency check: a tag says so
+//                            on the page and __gsfpv.info.render is 'off'.
 // Nothing here is remembered.
 import { Scenario, makePlan, makeTourPlan, act } from '@gsfpv/input/sim';
 import { findSphereSpawn, VoxelContactWorld, syntheticOpen } from '@gsfpv/collision';
 import { FakeEdgeTx } from '../devices/fakehid';
 import { LatencyProbe } from '../latency';
 import { RadioScreen } from '../ui/radio';
+import { h } from '../ui/dom';
 import type { VoxelStyle } from '../voxels';
 import { q } from './env';
 import type { FlightContext } from './context';
+
+/** ?render=off: the logic-only test mode (see the header); only the exact value switches it on. */
+export function logicOnly(): boolean {
+    return q.get('render') === 'off';
+}
+
+/** The page says it is not drawing the scan, so no screenshot of it can pass for a visual check. */
+export function logicOnlyTag(ui: HTMLElement): void {
+    ui.append(h('div', { class: 'test-mode-tag', role: 'note', 'data-testid': 'render-off' }, 'TEST MODE ?render=off: logic only, the scan is not drawn'));
+}
 
 /** Start the test input the URL asks for; false when there is none (the pilot's own input starts). */
 export function startTestMode(ctx: FlightContext): boolean {

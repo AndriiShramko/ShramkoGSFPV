@@ -23,7 +23,7 @@ import { InputHost, expectResume, ownInput, resumeInput, release } from './input
 import { Quality } from './quality';
 import { wallsHost } from './walls';
 import { FEATURES } from './features';
-import { startTestMode, latencyHarness, voxelSwitches } from './test-modes';
+import { startTestMode, latencyHarness, voxelSwitches, logicOnly, logicOnlyTag } from './test-modes';
 import { hook, keepEvent } from './test-hook';
 import { saveLog, verifyLastLog, trajectoryText } from './logs';
 import { beacon, hasHid, isTouch, q } from './env';
@@ -35,8 +35,7 @@ class Flight implements FlightContext {
     readonly ui: HTMLElement;
     readonly canvas: HTMLCanvasElement;
     readonly renderer: SplatRenderer;
-    /** wired by the lead before wave 2 (context.ts) */
-    readonly prefs: PrefsStore | null = null;
+    readonly prefs: PrefsStore;
     session: FlightSession;
     scene: SceneRef;
     readonly events = new Bus<AppEvents>();
@@ -56,14 +55,15 @@ class Flight implements FlightContext {
         this.events.emit('pause', { on, reasons });
     });
 
-    constructor(ui: HTMLElement, canvas: HTMLCanvasElement, session: FlightSession, scene: SceneRef) {
+    constructor(ui: HTMLElement, canvas: HTMLCanvasElement, session: FlightSession, scene: SceneRef, prefs: PrefsStore) {
         this.ui = ui;
         this.canvas = canvas;
+        this.prefs = prefs;
         this.session = session;
         this.scene = scene;
         this.renderer = session.renderer;
         this.voxels = new VoxelController(session);
-        this.walls = wallsHost({ session: () => this.session, scene: () => this.scene, events: this.events, clearCrash: () => this.clearCrash() });
+        this.walls = wallsHost({ session: () => this.session, scene: () => this.scene, events: this.events, clearCrash: () => this.clearCrash(), prefs });
         this.controls = new Controls(session);
         this.crash = new CrashView(session);
         this.quality = new Quality(session.renderer);
@@ -104,7 +104,7 @@ class Flight implements FlightContext {
 }
 
 /** Load `sceneId` and fly it; a scan that fails to load goes back to the picker through `onFail`. */
-export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, sceneId: string, showcase: ShowcaseScene[], onFail: (code: string, msg: string) => void): Promise<void> {
+export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, sceneId: string, showcase: ShowcaseScene[], prefs: PrefsStore, onFail: (code: string, msg: string) => void): Promise<void> {
     const meta = showcase.find((s) => s.id === sceneId);
     // the Controls screen follows the loading screen unless a test mode or touch sticks take over
     const sim = q.get('simradio');
@@ -126,10 +126,13 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, sceneId: s
     let session: FlightSession;
     // walls on or off: ?walls= (tests, this load only), the pilot's own choice for this scan, the scan's default
     const wallsOn = initialWallsOn(meta?.walls, loadWallsChoice(sceneId), q.get('walls'));
+    // ?render=off: logic only, the scan is never downloaded or drawn (test-modes.ts)
+    const drawScan = !logicOnly();
     try {
         session = await FlightSession.start(canvas, {
             sceneId,
             wallsOn,
+            drawScan,
             preset: q.get('drone') ?? undefined,
             overrides: { gravity: g ? Number(g) : undefined, gravityMode: gm ?? undefined },
             latencyMarker: q.get('lat') === '1',
@@ -165,7 +168,7 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, sceneId: s
     recordOpen(sceneId, !!session.collision, meta?.title);
     beacon('scene_loaded', { has_collision: !!session.collision, load_ms_bucket: Math.round((session.timings.visibleMs ?? 0) / 1000) });
 
-    const ctx = new Flight(ui, canvas, session, { id: sceneId, meta });
+    const ctx = new Flight(ui, canvas, session, { id: sceneId, meta }, prefs);
     hook.controls = ctx.controls;
     hook.crash = ctx.crash;
     hook.governor = ctx.quality.governor;
@@ -193,8 +196,11 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, sceneId: s
         timings: session.timings,
         spawn: session.spawn,
         preset: session.presetId,
-        locale
+        locale,
+        // 'off': the logic-only test mode; nothing about the picture of this page counts
+        render: drawScan ? 'on' : 'off'
     };
+    if (!drawScan) logicOnlyTag(ui);
     if (q.get('clean') === '1') document.body.classList.add('clean'); // recording: flight view + OSD only
     hook.status = 'ready';
 }

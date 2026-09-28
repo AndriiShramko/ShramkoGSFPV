@@ -22,6 +22,12 @@ export interface SessionOptions {
     renderScale?: number;
     /** fly with the scan's walls (default) or through everything (flightwalls.ts) */
     wallsOn?: boolean;
+    /**
+     * false: the logic-only test mode (?render=off, app/flight.ts): the scan is never downloaded
+     * or drawn; walls, flight model, input, HUD, crash handling and the test hook run as usual, and
+     * the engine only clears the frame. For machines without a GPU (the cloud); never a visual check.
+     */
+    drawScan?: boolean;
     /** loading state every 100 ms until the first view is on screen */
     onProgress?: (p: LoadProgress) => void;
 }
@@ -170,9 +176,12 @@ export class FlightSession {
     private coarseReady = false;
     private coarseForced = false;
     private loadDone = false;
+    /** the scan is drawn (false: ?render=off, see SessionOptions.drawScan) */
+    drawScan = true;
 
     static async start(canvas: HTMLCanvasElement, o: SessionOptions): Promise<FlightSession> {
         const s = new FlightSession();
+        s.drawScan = o.drawScan ?? true;
         if (o.onProgress) {
             s.onProgress = o.onProgress;
             s.progressTimer = window.setInterval(() => s.emitProgress(), PROGRESS_EVERY_MS);
@@ -200,7 +209,7 @@ export class FlightSession {
         this.renderer = await SplatRenderer.create(canvas, { renderScale: o.renderScale ?? 1, hFovDeg: this.params.cameraFovDeg, latencyMarker: !!o.latencyMarker });
         this.renderer.setToneMapping(this.scene.tonemapping);
         this.renderer.setBackground(this.scene.background);
-        const splatLoad = this.renderer.loadSplat(this.scene.contentUrl);
+        const splatLoad = this.drawScan ? this.renderer.loadSplat(this.scene.contentUrl) : Promise.resolve(null);
         // the walls download beside the scan, not before it: one slow host no longer holds up the other
         const walls = this.scene.collisionUrl ? this.loadWalls(this.scene.collisionUrl) : Promise.resolve();
         walls.catch(() => { /* awaited below; this only keeps an early failure from counting as unhandled */ });
@@ -208,7 +217,8 @@ export class FlightSession {
         // the chunks stream once the engine runs; until the flight model exists, look from the scan's camera
         const cam = this.scene.camera;
         if (cam) this.renderer.setCameraLookAt(cam.position[0], cam.position[1], cam.position[2], cam.target[0], cam.target[1], cam.target[2]);
-        const coarse = this.watchCoarse();
+        // logic-only: nothing streams, so nothing to wait for (the walls are awaited below)
+        const coarse = this.drawScan ? this.watchCoarse() : Promise.resolve().then(() => { this.coarseReady = true; });
         this.renderer.app.on('update', () => this.frame());
         this.renderer.app.on('frameend', () => {
             if (this.timings.firstFrameMs === null) this.timings.firstFrameMs = performance.now() - this.createdAt;
@@ -322,8 +332,9 @@ export class FlightSession {
     private stageNow(sb: SplatBytes | null, w: WallsBytes | null): LoadStage {
         if (this.loadDone) return 'done';
         // the bar needs both totals: the walls' size is known from their json even before the .bin answers
-        if (!sb?.listed || (w && !w.sized && !w.built && w.decoded === 0)) return 'connect';
-        const scanIn = this.coarseReady || sb.complete; // after a forced reveal nothing more is awaited
+        if ((this.drawScan ? !sb?.listed : !sb) || (w && !w.sized && !w.built && w.decoded === 0)) return 'connect';
+        // after a forced reveal nothing more is awaited; logic-only (?render=off) awaits no scan at all
+        const scanIn = !this.drawScan || this.coarseReady || !!sb?.complete;
         const wallsIn = !w || w.bodyDone || w.built;
         if (!scanIn || !wallsIn) return 'download';
         if (w && !w.built) return 'build';

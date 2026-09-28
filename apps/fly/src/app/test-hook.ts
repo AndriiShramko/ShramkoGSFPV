@@ -12,6 +12,7 @@ import type { TouchSticks } from '../devices/touch';
 import type { CrashView } from '../crashview';
 import type { WallsHook } from '../walls';
 import type { VoxelController, VoxelMode, VoxelStats, VoxelStyle } from '../voxels';
+import type { PrefsHook } from './prefs';
 
 export interface SavedLog {
     label: string;
@@ -23,6 +24,8 @@ export interface SavedLog {
 
 export interface TestHook {
     status: 'loading' | 'picker' | 'ready' | 'error';
+    /** the page's preferences store (app/prefs.ts), from the picker on */
+    prefs?: PrefsHook;
     error?: string;
     errorCode?: string;
     /** the loading screen's numbers (bytes of the first view), updated every 100 ms until 'done' */

@@ -6,6 +6,7 @@ import { ArmGate, ArmLatch, mapFrame } from '@gsfpv/input';
 import type { Profile, RawFrame, ArmBlock } from '@gsfpv/input';
 import type { FlightSession } from './session';
 import { t } from './i18n';
+import { mirrorStickMode } from './app/prefs';
 
 const KEY = 'gsfpv.profiles.v1';
 const MODE_KEY = 'gsfpv.stickMode';
@@ -52,6 +53,8 @@ export function setStickMode(m: 1 | 2): void {
     } catch {
         /* storage blocked: the choice lasts until reload */
     }
+    // wave 1 bridge (app/prefs.ts): input.stickMode in the store follows, until W2-3 moves it there
+    mirrorStickMode(m);
 }
 
 export function loadProfiles(): Record<string, Profile> {
