@@ -20,6 +20,7 @@ import { settings } from './builtin/settings';
 import { replays } from './builtin/replays';
 import { measure } from './builtin/measure';
 import { betaflightImport } from './builtin/import';
+import { modes } from './builtin/modes';
 
 export const FEATURES: readonly Feature[] = [
     scene,
@@ -37,5 +38,6 @@ export const FEATURES: readonly Feature[] = [
     settings,
     replays,
     measure,
-    betaflightImport
+    betaflightImport,
+    modes
 ];

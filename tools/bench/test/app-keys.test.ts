@@ -57,10 +57,16 @@ describe('one handler per key press, no key bound twice', () => {
             ['pause.toggle', 'pause.toggle', 'respawn.start', 'frameStats.toggle', 'voxels.cycle', 'walls.toggle', 'hud.toggle']);
     });
 
-    it('keyboard flying keys (W A S D, arrows, Space, M) and harness keys (F13-F24) are never routed', () => {
+    it('keyboard flying keys (W A S D, arrows, Space) and harness keys (F13-F24) are never routed', () => {
         const { r, total } = counting();
-        for (const code of ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'KeyM', 'F13', 'F20', 'F24']) expect(r.route(key({ code })), code).toBeNull();
+        for (const code of ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'F13', 'F20', 'F24']) expect(r.route(key({ code })), code).toBeNull();
         expect(total()).toBe(0);
+    });
+
+    it('M is routed for every input: the mode key (wave 2; review findings C3, C12)', () => {
+        const { r, runs } = counting();
+        expect(r.route(key({ code: 'KeyM' }))).toBe('mode.cycle');
+        expect(runs.get('mode.cycle')).toBe(1);
     });
 
     it('a stack per action: the last handler runs alone; unregistering gives the action back', () => {
@@ -78,7 +84,7 @@ describe('one handler per key press, no key bound twice', () => {
         const r = new KeyRouter();
         expect(() => r.on('settings.open', () => undefined)).toThrow(/planned/);
         expect(() => r.on('arm.toggle', () => undefined)).toThrow(/keyboard flying/);
-        expect(() => r.on('mode.cycle', () => undefined)).toThrow(/keyboard flying/);
+        expect(() => r.on('mode.cycle', () => undefined)).not.toThrow();
         expect(() => r.on('no.such', () => undefined)).toThrow(/no key binding/);
         expect(r.routes('pause.toggle')).toBe(true);
         expect(r.routes('arm.toggle')).toBe(false);

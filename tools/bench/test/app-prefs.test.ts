@@ -145,15 +145,17 @@ describe('stick mode: the store gives the value the app uses', () => {
         expect(s.isExplicit('input.stickMode')).toBe(false);
     });
 
-    it('control: a writer that skips the bridge (v0.2\'s localStorage only) leaves the store behind, and the check sees it', () => {
+    it('the app reads the store, not v0.2\'s key (wave 2, W2-3): a v0.2-style write to that key after the first boot changes nothing', () => {
         freshStorage({ 'gsfpv.stickMode': '1' });
         const s = openPage(SHOWCASE);
         storage.setItem('gsfpv.stickMode', '2');
-        expect(s.get('input.stickMode')).not.toBe(app());
+        expect(app()).toBe('1');
+        expect(s.get('input.stickMode')).toBe(app());
     });
 
     it('control: a store that did not migrate gives the default, not the pilot\'s mode 1', () => {
         freshStorage({ 'gsfpv.stickMode': '1' });
+        openPage(SHOWCASE);
         const unmigrated = new PrefsStore(SCHEMA, new MemoryBackend(), resolver());
         expect(unmigrated.get('input.stickMode')).not.toBe(app());
     });

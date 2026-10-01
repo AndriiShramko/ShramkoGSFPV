@@ -38,7 +38,8 @@ const V02_EXTRA: Record<string, string[]> = {
 
 /**
  * Every key the page handled at the start of wave 1 (main.ts keydown, the Hud's H, devices/keyboard.ts
- * Space and M): the shipped bindings. M and Space are keyboard flying's own (flying: true).
+ * Space and M): the shipped bindings. Space is keyboard flying's own (flying: true); M was too until
+ * wave 2 routed it as the mode key for every input.
  */
 const SHIPPED_AT_WAVE1 = ['arm.toggle', 'frameStats.toggle', 'hud.toggle', 'mode.cycle', 'pause.toggle', 'respawn.start', 'voxels.cycle', 'walls.toggle'];
 
@@ -86,17 +87,17 @@ describe('v0.2 keys keep working', () => {
         expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual(SHIPPED_AT_WAVE1);
     });
 
-    it('M and Space are keyboard flying\'s own: shown with their caps, never routed', () => {
-        expect(KEYMAP.filter((b) => b.flying).map((b) => b.action).sort()).toEqual(['arm.toggle', 'mode.cycle']);
+    it('Space is keyboard flying\'s own (shown, never routed); M is the mode key for every input (routed, wave 2)', () => {
+        expect(KEYMAP.filter((b) => b.flying).map((b) => b.action).sort()).toEqual(['arm.toggle']);
         expect(keysFor('mode.cycle')).toEqual([{ cap: 'M', aria: 'M' }]);
         expect(keysFor('arm.toggle')).toEqual([{ cap: 'Space', aria: 'Space' }]);
         for (const state of ['flight', 'crash'] as const) {
-            expect(actionFor(press('KeyM'), state)).toBeNull();
+            expect(actionFor(press('KeyM'), state)).toBe('mode.cycle');
             expect(actionFor(press('Space'), state)).toBeNull();
         }
-        // control: the same M binding without the flag is routed like any other key
-        const routed = KEYMAP.map((b) => (b.action === 'mode.cycle' ? { ...b, flying: undefined } : b));
-        expect(actionFor(press('KeyM'), 'flight', { map: routed })).toBe('mode.cycle');
+        // control: the same M binding marked flying (as in wave 1) is never routed: a radio pilot's M did nothing (review C3, C12)
+        const flying = KEYMAP.map((b) => (b.action === 'mode.cycle' ? { ...b, flying: true as const } : b));
+        expect(actionFor(press('KeyM'), 'flight', { map: flying })).toBeNull();
     });
 
     it('control: a planned key routes nothing and shows no cap, until asked for', () => {
