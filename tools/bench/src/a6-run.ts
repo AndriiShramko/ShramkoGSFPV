@@ -21,11 +21,16 @@ import { REPO, writeEvidence } from './evidence';
 const BASE = process.env.FLY_BASE ?? 'http://localhost:5190/fly/lab/';
 const MODE = (process.env.A6_CHROME ?? 'system') as 'system' | 'chromium' | 'off';
 /**
- * Trace hash of this script on sim-core/0.2.0 with the v0.3 presets (re-recorded 2026-09-26; the
- * v0.2 model, sim-core/0.1.0, gave d3d4e0e380c8...). A model change on purpose re-records it with
- * evidence; any other change of the hash fails A6.
+ * Trace hash of this script on sim-core/0.2.0 with the v0.3 presets. A model change on purpose
+ * re-records it with evidence; any other change of the hash fails A6.
+ * - 2026-10-01 (W2-2): 1d01ca5b16ae... The contact step resolves every touching duct when the first
+ *   contact pins the body (sim.ts pinnedContacts, B12's frozen corner). This script's craft lies on
+ *   its side on the floor from 1.25 s: 1218 of its ticks are pinned, and from tick 1271 on its other
+ *   touching ducts get their impulse too. No crash before or after; every split and the replay agree
+ *   (evidence/2026-10-01/v03-a6-determinism.json, v03-w2-2-a6-why.json).
+ * - 2026-09-26: dda474a21626... (sim-core/0.2.0 before that fix); sim-core/0.1.0 (v0.2) gave d3d4e0e380c8...
  */
-const REFERENCE = 'dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2';
+const REFERENCE = '1d01ca5b16aef6edce77d10de52517cbb609ace4fa05e47c3dccdf13111fff65';
 const sc = await loadScene('39e63ce9');
 const p = params('pavo20pro-3s');
 const spawn: [number, number, number, number] = [sc.settings.position[0], sc.settings.position[1], sc.settings.position[2], (Math.atan2(sc.settings.target[0] - sc.settings.position[0], -(sc.settings.target[2] - sc.settings.position[2])) * 180) / Math.PI];
@@ -99,7 +104,7 @@ const file = writeEvidence('v03-a6-determinism', {
     pass,
     scope: b ? 'node+browser' : 'node-only',
     referenceHash: ref,
-    recordedReference: { hash: REFERENCE, matches: matchesReference, previous: 'd3d4e0e380c8ca533ebdd462398c436ac1030ced791b7a0e2b399878cf4caf72 (sim-core/0.1.0, evidence/2026-09-24/a6-determinism.json)' },
+    recordedReference: { hash: REFERENCE, matches: matchesReference, previous: ['dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2 (sim-core/0.2.0 before the pinned-contact fix, 2026-09-26)', 'd3d4e0e380c8ca533ebdd462398c436ac1030ced791b7a0e2b399878cf4caf72 (sim-core/0.1.0, evidence/2026-09-24/a6-determinism.json)'] },
     script: 'SimRadio channel script (arm, climb, chirps, square waves, a flip, yaw spins, dive), 30 s, 250 Hz, +-400 us jitter, seed 42; scene 39e63ce9 collision',
     node: { splits: node, replayFromInputLog: { hash: nodeReplay.hash, ticks: nodeReplay.ticks }, allEqual: nodeSame },
     browser: b ? { name: b.browserName, collision: MODE === 'chromium' ? 'repo fixture answered through page.route (same bytes as the Node half)' : 'public bucket' } : { status: 'not run (A6_CHROME=off)' },
