@@ -262,6 +262,21 @@ export class RespawnDirector {
         return this.crashTick >= 0 && this.policy.auto ? { crashTick: this.crashTick, atTick: this.crashTick + this.policy.delayTicks } : null;
     }
 
+    /**
+     * Where the pending automatic respawn goes, as decide() will find it (the backoff, a path too
+     * short for it): for the toast, so "back 5 s" is never shown for a respawn that goes 10 s
+     * back or to the start. Reads only; null when nothing is pending or a scene switch follows.
+     */
+    preview(): { target: 'rewind' | 'start'; backTicks: number | null } | null {
+        const P = this.policy;
+        if (this.crashTick < 0 || !P.auto || (P.onCrash === 'next-scene' && this.onSceneIntent)) return null;
+        if (P.target === 'start') return { target: 'start', backTicks: null };
+        const backoff = this.crashTick - this.lastRewind < BACKOFF_WINDOW_TICKS ? this.backoff + 1 : 1;
+        const age = backoff * P.rewindTicks;
+        const smp = age <= this.history.depthTicks ? this.history.pickBefore(this.crashTick, age) : null;
+        return smp ? { target: 'rewind', backTicks: this.history.pathTick(this.crashTick) - smp.path } : { target: 'start', backTicks: null };
+    }
+
     private resetStuck(): void {
         this.flipSince = -1;
         this.wedgeSince = -1;

@@ -426,11 +426,12 @@ export class FlightSession {
         else this.respawnStart();
     }
 
-    /** The automatic respawn waiting to happen: when (sim ticks), and how far back it goes. */
+    /** The automatic respawn waiting to happen: when (sim ticks), and where it goes (the director's own preview: backoff included). */
     pendingRespawn(): { inTicks: number; delayTicks: number; target: 'rewind' | 'start'; backS: number } | null {
         const p = this.director?.pending();
-        if (!p) return null;
-        return { inTicks: Math.max(0, p.atTick - this.sim.tick), delayTicks: this.policy.delayTicks, target: this.policy.target, backS: this.policy.rewindTicks / 1000 };
+        const v = this.director?.preview();
+        if (!p || !v) return null;
+        return { inTicks: Math.max(0, p.atTick - this.sim.tick), delayTicks: this.policy.delayTicks, target: v.target, backS: v.backTicks === null ? 0 : Math.round(v.backTicks / 1000) };
     }
 
     /**

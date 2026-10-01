@@ -347,8 +347,11 @@ if (want('B11')) {
 }
 
 // ------------------------------------------------------------------ B12 crash, respawn
+// v0.3: with ?set.respawn.auto=0 (the crash panel and its respawn button, as v0.2); automatic
+// respawn is accept-v03-respawn.ts. The control's slow dash crashed in wave 1: a craft pinned in a
+// corner gathered speed in a frozen pose (sim.ts pinnedContacts, evidence v03-w2-2-model-why.json).
 if (want('B12')) {
-    await page.goto(flyLogic('en', 'scene=39e63ce9&simradio=scenario&nowarn=1'));
+    await page.goto(flyLogic('en', 'scene=39e63ce9&simradio=scenario&nowarn=1&set.respawn.auto=0'));
     await waitLogic(page, 180000);
     const vCrash = await hookEval<number>(page, 'return s.params.vCrash;');
     const done = await waitFor(page, 'return { phase: h.scenario.phase, log: h.scenario.log, crash: h.lastCrash };', (v: { phase: string; crash: { pending?: boolean } | null }) => (v.phase === 'rest' || v.phase === 'done') && !!v.crash && !v.crash.pending, 120000);
@@ -360,7 +363,7 @@ if (want('B12')) {
     const after = await hookEval<Record<string, unknown>>(page, 'return { crashed: s.sim.crashed, free: s.spawnIsFree([s.sim.s[0], s.sim.s[1], s.sim.s[2], 0]) };');
     // control: a touch at 0.5 * v_bounce must not crash
     const vBounce = await hookEval<number>(page, 'return s.params.vBounce;');
-    await page.goto(flyLogic('en', `scene=39e63ce9&simradio=scenario&nowarn=1&dash=${0.5 * vBounce}`));
+    await page.goto(flyLogic('en', `scene=39e63ce9&simradio=scenario&nowarn=1&dash=${0.5 * vBounce}&set.respawn.auto=0`));
     await waitLogic(page, 180000);
     const soft = await waitFor(page, 'return { phase: h.scenario.phase, crash: h.scenario.log.crash, contacts: h.events.filter((e) => e.type === "contact").length, crashes: h.events.filter((e) => e.type === "crash").length };', (v: { phase: string }) => v.phase === 'done' || v.phase === 'rest', 120000);
     const c = done.log as { crash: { speed: number } | null; tumbleMaxW: number };
@@ -452,11 +455,18 @@ if (want('B14')) {
 }
 
 // ------------------------------------------------------------------ B15 replay from inputs only
+// v0.3: log format /2 (the kept lives, each replayed from its own header), auto-respawn off. Two
+// controls: one LSB flipped in one record must change the hash (the replay is bit-exact), and a
+// stick-sized change in one record (+0.05 throttle for one 4 ms radio frame, the first record at
+// or after tick 10 000) must move the replayed path more than 1 cm. A 1-LSB change moves the path
+// by less than 1 um before the crash: its 5-30 mm afterwards are the tumble's chaos, a lottery
+// (0 to 32 mm by record, Node, 2026-10-01), so it cannot be the path control.
+const B15_TICK = 10000;
 if (want('B15')) {
-    await page.goto(flyLogic('en', 'scene=887f27aa&simradio=scenario&flip=1&nowarn=1'));
+    await page.goto(flyLogic('en', 'scene=887f27aa&simradio=scenario&flip=1&nowarn=1&set.respawn.auto=0'));
     await waitLogic(page, 180000);
     const fl = await waitFor(page, 'return { phase: h.scenario.phase, flip: h.scenario.log.flip, crash: h.scenario.log.crash, tick: s.sim.tick };', (v: { phase: string; tick: number }) => (v.phase === 'rest' || v.phase === 'done') && v.tick >= 30000, 150000);
-    const saved = await hookEval<Record<string, unknown>>(page, "const e = h.saveLog('b15'); return { hash: e.hash, endTick: e.endTick, records: e.bytes.length / 36 };");
+    const saved = await hookEval<Record<string, unknown>>(page, "const e = h.saveLog('b15'); return { hash: e.hash, endTick: e.endTick, records: e.records, lives: e.flight.lives.length };");
     // CPU throttling x4: steps per simulated second stay 1000
     const cdp = await context.newCDPSession(page);
     const rate = async () => {
@@ -473,15 +483,19 @@ if (want('B15')) {
     const p2 = await context.newPage();
     await p2.goto(flyLogic('en', 'scene=887f27aa&nowarn=1&input=touch'));
     await waitLogic(p2, 180000);
-    const again = await hookEval<Record<string, unknown>>(p2, 'const r = h.verifyLastLog(); return { saved: r.saved, hash: r.hash, endTick: r.endTick };');
-    const rec = Math.floor((saved.records as number) / 2);
-    const ctl = await hookEval<Record<string, unknown>>(p2, `const a = h.verifyLastLog(); const b = h.verifyLastLog({ record: ${rec}, channel: 2 });
-        let d = 0; for (let i = 0; i + 2 < Math.min(a.track.length, b.track.length); i += 3) d = Math.max(d, Math.hypot(a.track[i] - b.track[i], a.track[i + 1] - b.track[i + 1], a.track[i + 2] - b.track[i + 2]));
-        return { hash: b.hash, differs: b.hash !== a.hash, maxDivergenceM: d, tamperedValue: b.tampered, record: ${rec} };`);
+    const again = await hookEval<Record<string, unknown>>(p2, 'const r = h.verifyLastLog(); return { saved: r.saved, hash: r.hash, endTick: r.endTick, lives: r.lives, refused: r.refused ?? null };');
+    const ctl = await hookEval<Record<string, unknown>>(p2, `const a = h.verifyLastLog();
+        const div = (b) => { let d = 0; for (let i = 0; i + 2 < Math.min(a.track.length, b.track.length); i += 3) d = Math.max(d, Math.hypot(a.track[i] - b.track[i], a.track[i + 1] - b.track[i + 1], a.track[i + 2] - b.track[i + 2])); return d; };
+        const lsb = h.verifyLastLog({ atTick: ${B15_TICK}, channel: 2 });
+        const twitch = h.verifyLastLog({ atTick: ${B15_TICK}, channel: 2, delta: 0.05 });
+        return { atTick: ${B15_TICK}, channel: 'throttle',
+            lsb: { hash: lsb.hash, differs: lsb.hash !== a.hash, maxDivergenceM: div(lsb), tamperedValue: lsb.tampered, fired: lsb.hash !== a.hash },
+            twitch: { delta: 0.05, hash: twitch.hash, differs: twitch.hash !== a.hash, maxDivergenceM: div(twitch), tamperedValue: twitch.tampered, fired: twitch.hash !== a.hash && div(twitch) > 0.01 } };`);
     await p2.close();
     const f = fl.flip as { minUpY: number } | null;
-    const pass = !!f && f.minUpY < -0.5 && !!fl.crash && (saved.endTick as number) >= 30000 && again.hash === saved.hash && again.saved === saved.hash
-        && Math.abs(slow.stepsPerWallSecond - 1000) < 60 && ctl.differs === true && (ctl.maxDivergenceM as number) > 0.01;
+    const c = ctl as { lsb: { fired: boolean }; twitch: { fired: boolean } };
+    const pass = !!f && f.minUpY < -0.5 && !!fl.crash && (saved.endTick as number) >= 30000 && again.hash === saved.hash && again.saved === saved.hash && !again.refused
+        && Math.abs(slow.stepsPerWallSecond - 1000) < 60 && c.lsb.fired && c.twitch.fired;
     record('B15', { pass, flight: fl, saved, newTab: again, cpuThrottle: { x1: normal, x4: slow }, control: ctl });
 }
 
@@ -573,7 +587,8 @@ if (want('B17')) {
     await sp.close();
     const strobeFlashes = detect(strobe);
     // 50 crashes in a loop (the same bot plan, respawned after every crash)
-    const loopUrl = flyLogic('en', `scene=39e63ce9&simradio=scenario&quick=1&loop=${N}&nowarn=1`);
+    // v0.3: auto-respawn off, the loop respawns itself after each crash (as on v0.2)
+    const loopUrl = flyLogic('en', `scene=39e63ce9&simradio=scenario&quick=1&loop=${N}&nowarn=1&set.respawn.auto=0`);
     const navs: { t: number; url: string }[] = [];
     const consoleTail: string[] = [];
     const t0 = Date.now();

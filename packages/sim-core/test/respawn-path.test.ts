@@ -144,6 +144,35 @@ describe('rewinds stay on the path the pilot flew (review C5)', () => {
         expect(y.pathAgeTicks!).toBeLessThanOrEqual(5050);
     });
 
+    it('the toast\'s preview is what the respawn does: 5 s back, then (crash within 3 s, backoff) the start when the path is too short', () => {
+        const world = PlaneWorld.room({ wallX: 4 });
+        const spawn: [number, number, number, number] = [-10, 1, 0, 0];
+        const r = newRunner({ world, at: spawn });
+        const d = attachDirector(r, spawn);
+        const previews: { crash: number; target: string; back: number | null }[] = [];
+        const ev = d.onEvent.bind(d);
+        d.onEvent = (e: SimEvent) => { ev(e); if (e.type === 'crash') { const v = d.preview()!; previews.push({ crash: e.tick, target: v.target, back: v.backTicks }); } };
+        const seen = watch(r, d, shadow(r, d));
+        const p = new Pilot(r);
+        // life 0: 7 s at the spawn, then into the wall; every later life dashes 0.3 s after it starts
+        p.plan = (pp, sim, lt) => {
+            if (pp.phase === '') { pp.bot.setTask({ kind: 'hover', target: pp.here(sim), yawDeg: 0 }, sim); pp.phase = 'hover'; }
+            else if (pp.phase === 'hover' && lt >= (pp.life === 0 ? 7000 : 300) && sim.armed) { pp.bot.setTask({ kind: 'dash', from: pp.here(sim), dir: [1, 0, 0], speed: 6, yawDeg: 0 }, sim); pp.phase = 'dash'; }
+        };
+        runFrames(r, 60, 20_000_000);
+        expect(seen.length).toBeGreaterThanOrEqual(2);
+        for (let i = 0; i < 2; i++) {
+            const dec = seen[i].dec;
+            expect(previews[i].target).toBe(dec.kind);
+            expect(previews[i].back).toBe(dec.pathAgeTicks);
+        }
+        expect(seen[0].dec.kind).toBe('rewind');
+        expect(seen[1].dec.kind).toBe('start');
+        // control: the rule's own 5 s (what the toast said before the preview) is wrong for the second respawn
+        expect(d.policy.target).toBe('rewind');
+        expect(seen[1].dec.kind).not.toBe(d.policy.target);
+    });
+
     it('a sample less than 0.5 s before a crash is not safe (one 40 ms before a 4.6 m/s wall impact is no place to respawn)', () => {
         const world = PlaneWorld.room({ wallX: 4 });
         const spawn: [number, number, number, number] = [-20, 1, 0, 90];
