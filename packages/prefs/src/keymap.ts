@@ -70,7 +70,8 @@ export const KEYMAP: readonly KeyBinding[] = [
     { action: 'record.toggle', keys: [{ code: 'F9', cap: 'F9', aria: 'F9' }], when: 'always', labelKey: 'keys.record.toggle', status: 'planned' },
     // v0.2 (app/builtin/hud.ts)
     { action: 'frameStats.toggle', keys: [{ code: 'F3', cap: 'F3', aria: 'F3' }], when: 'always', labelKey: 'keys.frameStats.toggle', status: 'shipped' },
-    { action: 'settings.open', keys: [letter('O')], when: 'always', labelKey: 'keys.settings.open', status: 'planned' }
+    // W2-1 (app/builtin/settings.ts): the settings screen, also from the pause menu and the gear
+    { action: 'settings.open', keys: [letter('O')], when: 'always', labelKey: 'keys.settings.open', status: 'shipped' }
 ];
 
 /**

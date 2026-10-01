@@ -16,6 +16,8 @@ const SIM_RADIO = 'test: the simulated EdgeTX radio (?simradio=raw)';
  */
 export const APP_URL_PARAMS_NOT_SETTINGS: Readonly<Record<string, string>> = {
     scene: 'navigation: which scan to open; the scans flown live in the scene library, not in a setting',
+    open: 'navigation: ?open=settings opens the settings screen (the "Open in the simulator" links of the site catalogue, A.9)',
+    focus: 'navigation: with ?open=settings, the setting whose row gets the focus (?focus=<id>); a link, not a value',
     simradio: 'test: the bot pilot or a simulated radio flies instead of a person',
     lat: 'test: the stick-to-photon latency harness (tools/latency)',
     lagFrames: 'test: extra frames of delay, the latency harness control',

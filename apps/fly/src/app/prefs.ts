@@ -11,8 +11,12 @@
 // The other migrated values are a snapshot of the first v0.3 boot until their owners move them:
 // radio profiles and the last input (W2-3), the scene library (W3-1), the voxel look (W3-4).
 //
-// Owner from wave 2: W2-1 (settings UI and persistence) extends this file.
-import { SCHEMA, canonicalJson, openBrowserPrefs, settingsFromQuery } from '@gsfpv/prefs';
+// Owner from wave 2: W2-1 (settings UI and persistence) extends this file. Wave 2 makes the store the
+// truth for what the settings screen shows: the flight model and the camera are built from it
+// (overridesFor, cameraFor), a pilot's change goes through pilotSet (stored, and the link's value for
+// the same setting gives way, in the URL too), and the settings whose app code still keeps its own
+// key follow the store through a bridge (the voxel look: bridgeVoxels; the walls: applyWalls).
+import { COLLECTION_IDS, IdbKv, LEGACY_KEYS, LEGACY_PREFIXES, PREFS_KEY, SCHEMA, canonicalJson, openBrowserPrefs, settingsFromQuery } from '@gsfpv/prefs';
 import type { BrowserOptions, CollectionId, Collections, Ctx, GroupId, ImportMode, ImportReport, MigrationInfo, PrefsFile, PrefsStore, PresetResolver, RatesValue, Schema, Scope, SetResult, ThrottleValue, PidValue } from '@gsfpv/prefs';
 import type { GravityMode, ParamOverrides, PresetJson } from '@gsfpv/sim-core';
 import type { ShowcaseScene } from '../ui/scenes';
@@ -46,7 +50,7 @@ export function presetResolver(presets: Readonly<Record<string, PresetJson>>, sh
     };
 }
 
-let page: { store: PrefsStore; dispose(): void } | null = null;
+let page: { store: PrefsStore; dispose(): void; link: Map<string, string> } | null = null;
 
 /**
  * Opens the page's store once (a second call returns the same store). `query`: the page's query
@@ -68,8 +72,10 @@ export function openPagePrefs(showcase: readonly ShowcaseScene[], query: string,
         console.error('prefs: the stored settings could not be opened; this page keeps them in memory', e);
         opened = openBrowserPrefs(schema, resolver, { ...browser, storageManager: null, storage: null, openKv: () => Promise.reject(new Error('no storage')) });
     }
-    for (const v of settingsFromQuery(schema, query).values) opened.store.setSession(v.id, v.value);
-    page = { store: opened.store, dispose: opened.dispose };
+    // the link's settings, and the parameter each came from: a pilot's change of one takes it out of the URL
+    const link = new Map<string, string>();
+    for (const v of settingsFromQuery(schema, query).values) if (opened.store.setSession(v.id, v.value).ok) link.set(v.id, v.param);
+    page = { store: opened.store, dispose: opened.dispose, link };
     return opened.store;
 }
 
@@ -86,8 +92,15 @@ export function closePagePrefs(): void {
 
 // ------------------------------------------------------------------ wave 1 bridges (see the header)
 
+/**
+ * While a bridge puts the store's value into an app key (applyWalls), the app's own writer must not
+ * mirror it back: that would store a reset value as the pilot's explicit choice.
+ */
+let holdMirror = 0;
+
 /** controls.ts setStickMode: the pilot picked a stick mode on the Controls screen. */
 export function mirrorStickMode(m: 1 | 2, store: PrefsStore | null = pagePrefs()): void {
+    if (holdMirror) return;
     store?.set('input.stickMode', String(m));
 }
 
@@ -97,7 +110,7 @@ export function mirrorStickMode(m: 1 | 2, store: PrefsStore | null = pagePrefs()
  * Not remembered (the test hook): this load only, like ?walls=.
  */
 export function mirrorWallsChoice(scene: string, on: boolean, remember: boolean, store: PrefsStore | null = pagePrefs()): void {
-    if (!store) return;
+    if (!store || holdMirror) return;
     const v = on ? 'on' : 'off';
     if (remember) {
         store.set('scene.walls', v, { scene });
@@ -218,6 +231,225 @@ export function bridgeVoxels(store: PrefsStore, v: VoxelController, saved: () =>
     const offV = v.onChange(toStore);
     const offS = store.onChange((c) => { if (c.id.startsWith('voxels.')) toController(); });
     return () => { offV(); offS(); };
+}
+
+// ------------------------------------------------------------------ the pilot's changes (W2-1)
+
+/** The settings this page's link set (?drone=, ?g=, ?set.<id>=...), each with its URL parameter. */
+export function linkSettings(): ReadonlyMap<string, string> {
+    return page?.link ?? new Map();
+}
+
+/**
+ * The pilot changed a setting (the settings screen, the drone picker, the Betaflight import): it is
+ * stored for good (A.6), and a value this page's link set for the same setting gives way to it,
+ * in the session layer and in the address bar, so neither now nor after a reload does the link
+ * win over what the pilot just chose (item 20). A setting that is never stored (persist: false)
+ * lives in the session layer, so that layer is its value and stays.
+ */
+export function pilotSet(store: PrefsStore, id: string, value: unknown, ctx?: Ctx): SetResult {
+    const r = store.set(id, value, ctx);
+    if (r.ok) forgetLink(store, id);
+    return r;
+}
+
+/** The pilot's reset of one setting: the default again, also over a link's value. */
+export function pilotReset(store: PrefsStore, id: string, ctx?: Ctx): void {
+    store.reset(id, ctx);
+    forgetLink(store, id);
+}
+
+/** Every link value gives way (Reset all, Erase everything): the address bar keeps only what is not a setting. */
+export function forgetAllLinks(store: PrefsStore): void {
+    for (const id of [...linkSettings().keys()]) forgetLink(store, id);
+    store.clearSession();
+    // the session layer of the settings that are never stored is their value: back to the default too
+    for (const d of store.schema.defs) if (d.persist === false) store.reset(d.id);
+}
+
+function forgetLink(store: PrefsStore, id: string): void {
+    if (store.schema.byId.get(id)?.persist === false) return;
+    store.clearSession(id);
+    const param = page?.store === store ? page.link.get(id) : undefined;
+    if (param === undefined || !page) return;
+    page.link.delete(id);
+    try {
+        const u = new URL(location.href);
+        u.searchParams.delete(param);
+        history.replaceState(history.state, '', u);
+    } catch {
+        /* no history (tests): the session layer is cleared, which is what this load uses */
+    }
+}
+
+/** The flight model the store describes: the drone flown and its overrides (only what differs from its preset). */
+export function modelOf(store: PrefsStore, presets: Readonly<Record<string, PresetJson>> = PRESETS): { drone: string; overrides: ParamOverrides } {
+    const drone = droneOf(store, presets);
+    return { drone, overrides: overridesFor(store, drone) };
+}
+
+/** Does the session fly another model than the store describes? (undefined fields count as absent) */
+export function modelDiffers(session: { presetId: string; overrides: ParamOverrides }, store: PrefsStore): boolean {
+    const m = modelOf(store);
+    return m.drone !== session.presetId || canonicalJson(m.overrides) !== canonicalJson(session.overrides);
+}
+
+/**
+ * Puts the store's flight model on the session when it differs (A.7: 'life' settings, applied once):
+ * a new flight model, and a craft in the air goes on from where it is (applyLifeSettings). true when
+ * it changed anything. The flight's start, the settings screen's close, the drone picker and the
+ * Betaflight import call this, so all four fly what the screen shows.
+ */
+export function applyModel(session: { presetId: string; overrides: ParamOverrides; applyLifeSettings(presetId: string, overrides: ParamOverrides): void }, store: PrefsStore): boolean {
+    if (!modelDiffers(session, store)) return false;
+    const m = modelOf(store);
+    session.applyLifeSettings(m.drone, m.overrides);
+    return true;
+}
+
+/** The part of the walls switch (app/walls.ts) the bridge uses. */
+interface WallsLike { has(): boolean; on(): boolean; set(on: boolean, remember?: boolean): void }
+
+const wallsKey = (scene: string): string => `${LEGACY_PREFIXES.walls}${scene}`;
+
+/**
+ * The walls of `scene` follow the store (until the walls' reader moves onto it, wave 3): the
+ * switch is set to the store's value (a new flight model, like C), and the scan's own key, which
+ * the next flight starts from (flightwalls.ts loadWallsChoice), says the same: the pilot's value
+ * when explicit, nothing after a reset (so the admin's default rules again). The switch's mirror
+ * into the store is held back meanwhile: a reset must not come back as an explicit value.
+ * true when the switch changed.
+ */
+export function applyWalls(walls: WallsLike, store: PrefsStore, scene: string, storage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> | null = safeStorage()): boolean {
+    if (!walls.has() || !store.schema.byId.has('scene.walls')) return false;
+    const ctx = { scene };
+    const want = store.get<string>('scene.walls', ctx) === 'on';
+    const explicit = store.isExplicit('scene.walls', ctx);
+    let changed = false;
+    holdMirror++;
+    try {
+        if (walls.on() !== want) {
+            walls.set(want, true);
+            changed = true;
+        }
+    } finally {
+        holdMirror--;
+    }
+    try {
+        if (explicit) storage?.setItem(wallsKey(scene), want ? 'on' : 'off');
+        else storage?.removeItem(wallsKey(scene));
+    } catch {
+        /* blocked storage: the store's own banner says so */
+    }
+    return changed;
+}
+
+function safeStorage(): Storage | null {
+    try {
+        return globalThis.localStorage ?? null;
+    } catch {
+        return null;
+    }
+}
+
+// ------------------------------------------------------------------ Settings -> Data (W2-1)
+
+/** What Settings -> Data shows about the storage. */
+export interface StorageStatus {
+    /** false: private window, blocked or full storage; changes last until the tab closes */
+    writable: boolean;
+    persisted: 'yes' | 'no' | 'unknown';
+    /** the stored document's size, in characters of its text */
+    bytes: number;
+}
+
+export function storageStatus(store: PrefsStore, storage: Pick<Storage, 'getItem'> | null = safeStorage()): StorageStatus {
+    let bytes = 0;
+    try {
+        bytes = storage?.getItem(PREFS_KEY)?.length ?? 0;
+    } catch {
+        bytes = 0;
+    }
+    return { writable: store.writable, persisted: store.persisted, bytes };
+}
+
+type StorageManagerLike = Pick<StorageManager, 'persisted' | 'persist'>;
+
+function storageManager(): StorageManagerLike | null {
+    try {
+        return navigator.storage ?? null;
+    } catch {
+        return null;
+    }
+}
+
+/** Reads navigator.storage.persisted() into the store (never a prompt). */
+export async function readPersisted(store: PrefsStore, sm: StorageManagerLike | null = storageManager()): Promise<StorageStatus['persisted']> {
+    try {
+        if (sm?.persisted) store.persisted = (await sm.persisted()) ? 'yes' : 'no';
+    } catch {
+        /* keep the last known state */
+    }
+    return store.persisted;
+}
+
+/**
+ * navigator.storage.persist(), only from the pilot's click in Settings -> Data (A.5, A.12: Firefox
+ * answers it with a prompt, so never at boot or on a change).
+ */
+export async function askPersistence(store: PrefsStore, sm: StorageManagerLike | null = storageManager()): Promise<StorageStatus['persisted']> {
+    if (!sm?.persist) return store.persisted;
+    try {
+        store.persisted = (await sm.persist()) ? 'yes' : 'no';
+    } catch {
+        /* keep the last known state */
+    }
+    return store.persisted;
+}
+
+/** The export file's name, A.4: gsfpv-settings-YYYY-MM-DD.json (the local date). */
+export function exportFileName(now: Date = new Date()): string {
+    const p = (n: number) => String(n).padStart(2, '0');
+    return `gsfpv-settings-${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}.json`;
+}
+
+/** The part of IdbKv (@gsfpv/prefs browser.ts) erasing uses. */
+export interface EraseKv { keys(s: 'logs' | 'handles'): Promise<string[]>; delete(s: 'logs' | 'handles', k: string): Promise<void>; close(): void }
+
+/**
+ * Settings -> Data -> Erase everything: every setting, every collection (radios, scans, flight
+ * stats, the first-visit answer), the link's values, the keys the app still reads until their owner
+ * moves them onto the store (v0.2's keys: radios, stick mode, scans, voxels, walls per scan) and the
+ * saved flight logs and recording folder in IndexedDB. The walls cache stays: it is this machine's
+ * data, not the pilot's settings (browser.ts IDB_STORES). The caller reloads the page afterwards.
+ */
+export async function eraseEverything(store: PrefsStore, o: { storage?: Pick<Storage, 'length' | 'key' | 'removeItem'> | null; idb?: () => Promise<EraseKv> } = {}): Promise<void> {
+    forgetAllLinks(store);
+    store.resetAll({ settings: true, collections: COLLECTION_IDS });
+    store.flush();
+    const storage = o.storage !== undefined ? o.storage : safeStorage();
+    const legacy: readonly string[] = Object.values(LEGACY_KEYS);
+    const prefixes: readonly string[] = Object.values(LEGACY_PREFIXES);
+    try {
+        const keys: string[] = [];
+        for (let i = 0; storage && i < storage.length; i++) {
+            const k = storage.key(i);
+            if (k !== null && (legacy.includes(k) || prefixes.some((p) => k.startsWith(p)))) keys.push(k);
+        }
+        for (const k of keys) storage?.removeItem(k);
+    } catch {
+        /* blocked storage: nothing was kept there either */
+    }
+    try {
+        const kv = await (o.idb ?? (() => IdbKv.open()))();
+        try {
+            for (const s of ['logs', 'handles'] as const) for (const k of await kv.keys(s)) await kv.delete(s, k);
+        } finally {
+            kv.close();
+        }
+    } catch {
+        /* no IndexedDB: nothing stored there */
+    }
 }
 
 // ------------------------------------------------------------------ window.__gsfpv.prefs

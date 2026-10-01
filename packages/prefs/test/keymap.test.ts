@@ -100,10 +100,12 @@ describe('v0.2 keys keep working', () => {
     });
 
     it('control: a planned key routes nothing and shows no cap, until asked for', () => {
-        expect(actionFor(press('KeyO'), 'flight')).toBeNull();
-        expect(keysFor('settings.open')).toEqual([]);
-        expect(actionFor(press('KeyO'), 'flight', { planned: true })).toBe('settings.open');
-        expect(keysFor('settings.open', { planned: true })).toEqual([{ cap: 'O', aria: 'O' }]);
+        // F9 (recording, wave 3); settings.open (O) was the example until W2-1 shipped it
+        expect(actionFor(press('F9'), 'flight')).toBeNull();
+        expect(keysFor('record.toggle')).toEqual([]);
+        expect(actionFor(press('F9'), 'flight', { planned: true })).toBe('record.toggle');
+        expect(keysFor('record.toggle', { planned: true })).toEqual([{ cap: 'F9', aria: 'F9' }]);
+        expect(actionFor(press('KeyO'), 'flight')).toBe('settings.open');
     });
 });
 
