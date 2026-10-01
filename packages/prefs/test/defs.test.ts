@@ -73,21 +73,26 @@ const A8: [string, string, string, string, unknown, string][] = [
 
 /**
  * New settings (not in v0.2) that are shipped but lack set.<id> / set.<id>.help in a language of
- * the `set` namespace: the wave that ships a setting adds its text first (I.1 fails without it).
- * At wave 1 no new setting is shipped, so this is empty by construction.
+ * the simulator's dictionaries: the wave that ships a setting adds its text first (I.1 fails
+ * without it). The text may live in any namespace folder (the `set` one, or the namespace of the
+ * agent that owns the setting, design 1.3 and J): the app merges them all.
  */
 function untranslatedNewShipped(defs: readonly SettingDef[]): string[] {
-    const dicts = ['en', 'es', 'pl', 'ru'].map((l) => JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'set', `${l}.json`), 'utf8')) as Record<string, string>);
+    const FLY = join(REPO, 'packages', 'i18n', 'locales', 'fly');
+    const namespaces = readdirSync(FLY, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
+    const dicts = ['en', 'es', 'pl', 'ru'].map((l) => Object.assign({}, ...namespaces.map((ns) => JSON.parse(readFileSync(join(FLY, ns, `${l}.json`), 'utf8')) as Record<string, string>)) as Record<string, string>);
     return defs.filter((d) => d.status === 'shipped' && !V02_SETTINGS.includes(d.id) && dicts.some((t) => !t[`set.${d.id}`] || !t[`set.${d.id}.help`])).map((d) => d.id);
 }
 
 /**
- * Shipped in wave 2, one line per agent, each with its settings screen row working end to end.
- * W2-1: the H rows (TWR, duct drag, prop inertia, idle), built into the flight model by the app
- * (apps/fly app/prefs.ts overridesFor; tools/bench/test/app-settings.test.ts proves each changes it).
+ * Shipped in wave 2, each with its settings screen row or control working end to end:
+ * W2-1 the H rows (TWR, duct drag, prop inertia, idle), built into the flight model by the app
+ * (apps/fly app/prefs.ts overridesFor; tools/bench/test/app-settings.test.ts proves each changes it);
+ * W2-3 the flight mode (the mode chip and M).
  */
 const WAVE2_SETTINGS = [
-    'physics.twr', 'physics.ductDrag', 'physics.propInertia', 'physics.idlePct'
+    'physics.twr', 'physics.ductDrag', 'physics.propInertia', 'physics.idlePct',
+    'flight.mode'
 ];
 
 describe('SCHEMA is the A.8 table', () => {

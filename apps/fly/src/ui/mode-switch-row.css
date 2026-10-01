@@ -1,0 +1,8 @@
+/* The mode-switch row on the wizard's check screen (ui/mode-switch-row.ts), in the check's row
+   grid (wizard.css .wz-row): name, channel, the positions with their modes, the overrides. */
+.wz-modesw { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+.wz-modesw .btn.pos { min-height: 36px; padding: 4px 10px; font: 600 13px ui-monospace, Consolas, monospace; border-radius: 999px; }
+.wz-modesw .btn.pos[hidden] { display: none; }
+.wz-modesw .btn.pos.now { border-color: var(--accent); background: rgba(74, 222, 128, .16); color: var(--accent); }
+.wz-modesw-say { flex: 1 1 100%; }
+.wz-row.mode .wz-modesw-say:only-child { flex: 1 1 auto; }

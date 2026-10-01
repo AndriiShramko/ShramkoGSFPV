@@ -1,6 +1,10 @@
 // Touch sticks: two pads. Left = throttle (sticky, stays where you leave it) + yaw (springs back);
 // right = pitch + roll (spring back). Pointer events with coalesced samples, so fast swipes are
-// not quantised to the frame rate. Angle (self-level) mode by default, a big ARM button.
+// not quantised to the frame rate. A big ARM button. The flight mode is the pilot's (prefs
+// flight.mode, angle by default; the HUD mode chip): Controls puts it on ch[5], not this file.
+// The ARM button follows the arm gate: it stays on through a crash and its respawn (with
+// respawn.keepArmed the respawned craft flies on, design C.3), and shows ARM again when the gate
+// let go for another reason (a refusal, a respawn that wants a new tap, a hidden tab).
 
 import type { FlightSession } from '../session';
 import type { Controls } from '../controls';
@@ -10,7 +14,7 @@ export class TouchSticks {
     readonly root: HTMLDivElement;
     private session: FlightSession;
     private controls: Controls;
-    private ch = new Float32Array([0, 0, -1, 0, -1, 1, 0, 0]); // angle mode on
+    private ch = new Float32Array([0, 0, -1, 0, -1, 0, 0, 0]); // ch[5]: Controls writes the pilot's mode
     private throttle = 0;
     private pads: { el: HTMLDivElement; knob: HTMLDivElement; id: number | null; ox: number; oy: number; left: boolean }[] = [];
     private armBtn: HTMLButtonElement;
@@ -44,9 +48,10 @@ export class TouchSticks {
         arm.type = 'button';
         arm.textContent = t('arm.button');
         arm.addEventListener('click', (e) => {
-            this.armed = !this.armed;
-            arm.textContent = this.armed ? t('arm.disarm') : t('arm.button');
-            arm.classList.toggle('on', this.armed);
+            // shown on but the gate let go meanwhile: this tap is "arm", so OFF goes out first and
+            // the gate sees the edge it waits for
+            if (this.armed && this.letGo()) { this.armed = false; this.emit(e.timeStamp); }
+            this.setArmed(!this.armed);
             this.emit(e.timeStamp);
         });
         this.armBtn = arm;
@@ -125,6 +130,13 @@ export class TouchSticks {
         this.ch[4] = this.armed ? 1 : -1;
         this.lastInput = tMs;
         this.controls.channels(this.ch, tMs); // through the arm gate like every other source
+        if (this.armed && this.letGo()) this.setArmed(false);
+    }
+
+    /** The gate is not armed for a reason other than the crash in progress (which keepArmed rides through). */
+    private letGo(): boolean {
+        const g = this.controls.gate;
+        return !g.armed && g.block !== 'crashed';
     }
 
     /** Current channels (for tests). */

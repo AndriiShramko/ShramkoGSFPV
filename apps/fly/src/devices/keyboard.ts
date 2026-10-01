@@ -1,6 +1,8 @@
 // Keyboard input (development, latency measurement, flying without a radio).
 // Manual flying: W/S throttle (stays where it is left; held W is 0 -> 100 % in 0.5 s of real
-// time), A/D yaw, arrows roll/pitch, Space = arm toggle, M = angle mode.
+// time), A/D yaw, arrows roll/pitch, Space = arm toggle. The flight mode is not read here: M is
+// the page's mode key for every input (keymap mode.cycle, app/builtin/modes.ts) and Controls puts
+// the pilot's mode on ch[5].
 // F13..F24 are reserved for the latency harness: each press is one numbered input event that
 // travels the normal path (queue -> physics tick -> marker in the next rendered frame).
 // Every frame goes through Controls and its arm gate, like the other sources. Only the chosen
@@ -28,6 +30,11 @@ export function typing(el: EventTarget | null): boolean {
     return el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement || (el instanceof HTMLElement && el.isContentEditable);
 }
 
+/** Keys pressed inside the mode chip's open menu (ui/mode-chip.ts) move through its modes, not the sticks. */
+function inChipMenu(el: EventTarget | null): boolean {
+    return typeof Element !== 'undefined' && el instanceof Element && el.closest('.mc-pop') !== null;
+}
+
 /** A dialog is up (Controls, pause menu, settings, a picker): Space and arrows belong to its buttons. */
 export function dialogOpen(): boolean {
     return !!document.querySelector('.screen.radio, .panel, .screen.drones, .screen.scenes');
@@ -38,7 +45,6 @@ export class KeyboardSource {
     private ch = new Float32Array([0, 0, -1, 0, -1, 0, 0, 0]);
     private throttle = 0;
     private armed = false;
-    private angle = false;
     latencyId = 0;
     /** Another source flies; Space calls onArm, every other flying key is ignored. */
     passive = true;
@@ -68,7 +74,7 @@ export class KeyboardSource {
     }
 
     private onDown = (e: KeyboardEvent): void => {
-        if (typing(e.target) || dialogOpen()) return;
+        if (typing(e.target) || dialogOpen() || inChipMenu(e.target)) return;
         if (/^F(1[3-9]|2[0-4])$/.test(e.code) || /^F(1[3-9]|2[0-4])$/.test(e.key)) {
             if (/^F2[04]$/.test(e.code) || /^F2[04]$/.test(e.key)) return; // reserved: harness control keys
             if (this.passive) return;
@@ -85,8 +91,14 @@ export class KeyboardSource {
             }
             return;
         }
-        if (e.code === 'Space' && !e.repeat) { this.armed = !this.armed; this.emit(e.timeStamp); e.preventDefault(); }
-        if (e.code === 'KeyM' && !e.repeat) { this.angle = !this.angle; this.emit(e.timeStamp); }
+        if (e.code === 'Space' && !e.repeat) {
+            // the gate let go while no key was held (a respawn that wants a new flip, a refusal):
+            // this press is "arm", so OFF goes out first and the gate sees the edge it waits for
+            if (this.armed && this.letGo()) { this.armed = false; this.emit(e.timeStamp); }
+            this.armed = !this.armed;
+            this.emit(e.timeStamp);
+            e.preventDefault();
+        }
         if (FLY_KEYS.includes(e.code)) {
             if (!this.down.has(e.code)) this.ramp(e.timeStamp); // the ramp starts at the press, not the next tick
             this.down.add(e.code);
@@ -131,10 +143,17 @@ export class KeyboardSource {
         this.ch[3] = (d.has('KeyD') ? 0.5 : 0) - (d.has('KeyA') ? 0.5 : 0);
         this.ch[2] = this.throttle * 2 - 1;
         this.ch[4] = this.armed ? 1 : -1;
-        this.ch[5] = this.angle ? 1 : -1;
         this.controls.channels(this.ch, t);
-        // refused (throttle up, crashed, respawned) or disarmed by the gate: the next Space arms
-        if (this.armed && !this.controls.gate.armed) this.armed = false;
+        // refused (throttle up, a respawn that wants a new flip) or disarmed by the gate: the next
+        // Space arms. Not while crashed: with respawn.keepArmed the switch held on through the crash
+        // is what arms the respawned craft (design C.3)
+        if (this.armed && this.letGo()) this.armed = false;
+    }
+
+    /** The gate is not armed for a reason other than the crash in progress. */
+    private letGo(): boolean {
+        const g = this.controls.gate;
+        return !g.armed && g.block !== 'crashed';
     }
 
     dispose(): void {

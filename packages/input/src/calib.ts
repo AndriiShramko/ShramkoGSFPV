@@ -17,6 +17,13 @@
 // TUNING numbers come from the rules, QGroundControl's thresholds and a model of people
 // (sim/human.ts); they are NOT measured on a real radio.
 
+import { ModeSwitchDetector, DEFAULT_SWITCH_MODES, copyModeSwitch, sameInput, switchChannel, switchPos } from './mode-switch';
+import type { ModeSwitch, SwitchInput, SwitchPos } from './mode-switch';
+import type { FlightMode } from '@gsfpv/sim-core';
+
+// the radio's flight-mode switch (Profile.modeSwitch) lives in its own module; one import path for the app
+export * from './mode-switch';
+
 export type Fn = 'roll' | 'pitch' | 'throttle' | 'yaw';
 export const FNS: Fn[] = ['throttle', 'yaw', 'pitch', 'roll']; // prompt order: left stick first in Mode 2
 
@@ -57,7 +64,15 @@ export interface Profile {
     created: string;
     mode?: 1 | 2; // stick mode chosen for the drawings; never used for mapping
     wizard?: number; // 2 = made by wizard v2 or v3 (main.ts resumes these); absent = made by the first one
+    /**
+     * The radio's flight-mode switch (design B.2), found on the check screen: the radio then decides
+     * the mode. Optional, so every older profile loads as it is and the format stays version 1.
+     */
+    modeSwitch?: ModeSwitch;
 }
+
+/** The check screen's mode-switch row: the switch (null = none), where it is now, the positions seen, and whether a flip is watched for. */
+export interface ModeSwitchState { sw: ModeSwitch | null; pos: SwitchPos | null; seen: [boolean, boolean, boolean]; listening: boolean }
 
 /** Legacy step number (main.ts, accept-fly): connect/stir 1, centre 2, sticks 3, arm 5, check 6. */
 export type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -110,6 +125,7 @@ export interface WizardState {
     armSource: ArmSource | null;
     sticksDone: number; // stir: stick channels with cover >= STIR_COVER
     checks: { throttleLow: boolean; armOn: boolean | null; centred: boolean } | null; // check only
+    modeSwitch: ModeSwitchState | null; // check only
 }
 
 export const TUNING = {
@@ -239,7 +255,7 @@ function freshState(): WizardState {
         id: 'connect', stage: null, target: null, preview: false, gauge: null, hold: 0, armFlip: null, picked: null, result: null, redoing: false,
         hint: null, can: noCan(), stuckMs: 0, cmds: 0,
         channels: [], mapped: { roll: NaN, pitch: NaN, throttle: NaN, yaw: NaN, arm: null }, assigned: {}, inverted: {},
-        armSource: null, sticksDone: 0, checks: null
+        armSource: null, sticksDone: 0, checks: null, modeSwitch: null
     };
 }
 
@@ -344,6 +360,10 @@ export class CalibrationWizard {
     private pushEnd: Partial<Record<Fn, number>> = {};
     private armMap: ArmMap | null = null;
     private mapOut = new Float32Array(8);
+    // mode switch (check screen): found by a flip, kept across Set again; none until then
+    private modeSw: ModeSwitch | null = null;
+    private modeListen = true;
+    private modeDet = new ModeSwitchDetector();
 
     constructor(deviceKey: string, deviceName: string) {
         this.deviceKey = deviceKey;
@@ -357,6 +377,7 @@ export class CalibrationWizard {
         w.started = true;
         w.assigned = copyAssigned(p.axes);
         w.armMap = copyArm(p.arm);
+        w.modeSw = copyModeSwitch(p.modeSwitch);
         w.keepProfile = p;
         w.go('check', null);
         return w;
@@ -388,6 +409,8 @@ export class CalibrationWizard {
         this.assigned = {};
         this.pushEnd = {};
         this.armMap = null;
+        this.modeSw = null;
+        this.modeListen = true;
         this.results = {};
         this.readySnap = {};
         this.redoing = false;
@@ -406,6 +429,7 @@ export class CalibrationWizard {
         if (this.n === 0) this.init(Math.min(8, f.axes.length), f, t);
         this.track(f, t);
         if (this.id === 'connect') this.go('stir', 'ready');
+        if (this.id === 'check') this.modeWatch(this.modeDet.feed(f));
         this.evaluate(t);
         this.autopilot(t);
         this.live();
@@ -422,6 +446,7 @@ export class CalibrationWizard {
         if (!this.started) return this.state;
         if (t > this.now) this.now = t;
         this.advance(this.now);
+        if (this.n > 0 && this.id === 'check') this.modeWatch(this.modeDet.tick(this.now));
         if (this.n > 0 && this.id !== 'connect' && this.id !== 'check') { this.evaluate(this.now); this.autopilot(this.now); }
         if (this.n > 0) this.live();
         this.timers();
@@ -632,6 +657,35 @@ export class CalibrationWizard {
         if (this.stage === 'done') this.state.result = this.results[id] ?? null;
         if (this.n > 0) this.live();
         this.timers();
+    }
+
+    /**
+     * Mode switch on the check screen, an optional override: none (and stop watching, so a switch
+     * flipped later to try the arm does not become it), watch again for a flip, or another mode for
+     * one position. The flip itself needs no command (modeWatch).
+     */
+    modeSwitchNone(): void {
+        if (this.id !== 'check') return;
+        this.modeSw = null;
+        this.modeListen = false;
+        this.cmd();
+        this.modeSync();
+    }
+
+    modeSwitchFind(): void {
+        if (this.id !== 'check') return;
+        this.modeSw = null;
+        this.modeListen = true;
+        this.modeDet.reset();
+        this.cmd();
+        this.modeSync();
+    }
+
+    modeSwitchSet(pos: SwitchPos, mode: FlightMode): void {
+        if (this.id !== 'check' || !this.modeSw) return;
+        this.modeSw.modes[pos] = mode;
+        this.cmd();
+        this.modeSync();
     }
 
     /** fn ready/active: the channels that may still become this function; arm stages: every channel not set to a stick function (the pick lists). */
@@ -922,7 +976,8 @@ export class CalibrationWizard {
             st.profile = this.keepProfile ?? this.buildProfile();
             this.keepProfile = null;
             st.checks = { throttleLow: false, armOn: null, centred: false };
-        } else st.profile = null;
+            this.modeStart();
+        } else { st.profile = null; st.modeSwitch = null; }
         st.armSource = armSourceOf(this.armMap);
         if (this.n > 0) this.live();
         this.timers();
@@ -1390,6 +1445,55 @@ export class CalibrationWizard {
         }
     }
 
+    // ------------------------------------------------------------------ mode switch (check screen)
+
+    /** A new check screen: a fresh watch (nothing seen before it counts); the sticks and the arm switch are never it. */
+    private modeStart(): void {
+        const axes: number[] = [];
+        for (const fn of FNS) { const a = this.assigned[fn]; if (a) axes.push(a.index); }
+        const m = this.armMap;
+        if (m?.kind === 'axis') axes.push(m.index);
+        const p = this.state.profile;
+        if (p) for (const fn of FNS) { const a = p.axes[fn]; if (a) axes.push(a.index); }
+        if (p?.arm?.kind === 'axis') axes.push(p.arm.index);
+        const bits: number[] = [];
+        if (m?.kind === 'button') bits.push(m.bit);
+        if (p?.arm?.kind === 'button') bits.push(p.arm.bit);
+        this.modeDet.exclude(axes, bits);
+        this.modeDet.reset();
+        this.state.modeSwitch = { sw: null, pos: null, seen: [false, false, false], listening: this.modeListen };
+        this.modeSync();
+    }
+
+    /** A completed flip of a free switch while nothing is set and the pilot did not say none: that is the mode switch. */
+    private modeWatch(flip: { input: SwitchInput; from: SwitchPos; to: SwitchPos } | null): void {
+        if (!flip || this.modeSw || !this.modeListen) return;
+        this.modeSw = { input: flip.input, modes: [DEFAULT_SWITCH_MODES[0], DEFAULT_SWITCH_MODES[1], DEFAULT_SWITCH_MODES[2]] };
+        this.modeSync();
+        const ms = this.state.modeSwitch;
+        if (ms) { ms.seen[flip.from] = true; ms.seen[flip.to] = true; }
+    }
+
+    /** The profile on the check and the row's state follow the wizard's mode switch. */
+    private modeSync(): void {
+        const st = this.state;
+        const p = st.profile;
+        if (p) {
+            if (this.modeSw) p.modeSwitch = copyModeSwitch(this.modeSw)!;
+            else delete p.modeSwitch;
+        }
+        const ms = st.modeSwitch;
+        if (!ms) return;
+        const changed = ms.sw && this.modeSw ? !sameInput(ms.sw.input, this.modeSw.input) : !ms.sw !== !this.modeSw;
+        ms.sw = copyModeSwitch(this.modeSw);
+        ms.listening = this.modeListen && !this.modeSw;
+        if (changed) ms.seen = [false, false, false];
+        if (this.n > 0) {
+            ms.pos = ms.sw ? switchPos(ms.sw.input, this.frameNow()) : null;
+            if (ms.pos !== null) ms.seen[ms.pos] = true;
+        }
+    }
+
     // ------------------------------------------------------------------ profile
 
     private buildProfile(): Profile {
@@ -1420,7 +1524,8 @@ export class CalibrationWizard {
             angleMode: null,
             deadband: 0,
             created: new Date().toISOString(),
-            wizard: 2
+            wizard: 2,
+            ...(this.modeSw ? { modeSwitch: copyModeSwitch(this.modeSw)! } : {})
         };
     }
 
@@ -1451,6 +1556,11 @@ export class CalibrationWizard {
             cks.throttleLow = u <= 0.05;
             cks.armOn = m.arm;
             cks.centred = Math.abs(out[0]) <= 0.1 && Math.abs(out[1]) <= 0.1 && Math.abs(out[3]) <= 0.1;
+            const ms = st.modeSwitch;
+            if (ms) {
+                ms.pos = ms.sw ? switchPos(ms.sw.input, f) : null;
+                if (ms.pos !== null) ms.seen[ms.pos] = true;
+            }
             return;
         }
         m.roll = this.mapLive('roll');
@@ -1629,7 +1739,9 @@ export function mapFrame(p: Profile, f: RawFrame, out: Float32Array): Float32Arr
     u = u < 0 ? 0 : u > 1 ? 1 : u;
     out[2] = u * 2 - 1;
     out[4] = armOn(p.arm, f) ? 1 : -1;
-    out[5] = p.angleMode && armOn(p.angleMode, f) ? 1 : -1;
+    // the radio's mode switch: MODE_CHANNEL of the mode its position selects; without one, the
+    // first wizard's angle switch (never set since) or acro, and Controls writes the pilot's mode
+    out[5] = p.modeSwitch ? switchChannel(p.modeSwitch, f) : p.angleMode && armOn(p.angleMode, f) ? 1 : -1;
     return out;
 }
 

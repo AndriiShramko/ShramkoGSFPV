@@ -69,7 +69,10 @@ const V02_KEYS = () => Object.keys(V02);
 
 describe('legacy migration v0 -> v1 (A.5)', () => {
     it('every storage key the sources write is a legacy key, a legacy prefix or machine-local, and the fixture has each', () => {
-        expect([...keysInSource()].sort()).toEqual(classified());
+        // a subset: a legacy key its owner no longer writes (moved into the store, wave 2 on) stays
+        // legacy, since the first-boot migration still reads it
+        const known = classified();
+        for (const k of keysInSource()) expect(known, k).toContain(k);
         const fixture = new Set(Object.keys(V02).map((k) => {
             const p = Object.values(LEGACY_PREFIXES).find((x) => k.startsWith(x));
             return p ? `${p}*` : k;

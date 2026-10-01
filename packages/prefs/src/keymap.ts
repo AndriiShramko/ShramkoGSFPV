@@ -54,9 +54,10 @@ export const KEYMAP: readonly KeyBinding[] = [
     { action: 'scene.next', keys: [letter('N')], when: 'always', labelKey: 'keys.scene.next', status: 'planned' },
     { action: 'scene.random', keys: [{ code: 'KeyN', shift: true, cap: 'Shift+N', aria: 'Shift+N' }], when: 'always', labelKey: 'keys.scene.random', status: 'planned' },
     { action: 'scene.favourite', keys: [letter('F')], when: 'always', labelKey: 'keys.scene.favourite', status: 'planned' },
-    // M is the keyboard-flying mode key (devices/keyboard.ts: angle on / off while the keyboard
-    // flies). Shared on purpose, same action: a mode chip for every input (wave 2) routes it here
-    { action: 'mode.cycle', keys: [letter('M')], when: 'always', labelKey: 'keys.mode.cycle', status: 'shipped', flying: true },
+    // M cycles acro / angle / horizon for every input (app/builtin/modes.ts, the HUD mode chip; with
+    // a radio whose mode switch decides, it says so). v0.2's keyboard flying toggled angle on M,
+    // so keyboard pilots keep their key
+    { action: 'mode.cycle', keys: [letter('M')], when: 'always', labelKey: 'keys.mode.cycle', status: 'shipped' },
     // Space arms and disarms: keyboard flying, and a radio without an arm switch (devices/keyboard.ts)
     { action: 'arm.toggle', keys: [{ code: 'Space', cap: 'Space', aria: 'Space' }], when: 'always', labelKey: 'keys.arm.toggle', status: 'shipped', flying: true },
     // v0.2 (app/builtin/voxels.ts): the voxel grid off / over the scan / voxels only
@@ -86,7 +87,10 @@ export const V02_PAUSE_ITEMS: Readonly<Record<'resume' | 'restart', ActionId>> =
  */
 export const FLYING_CODES: readonly string[] = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
 
-/** Other keys keyboard flying reads, each with the one action allowed to share it (the same thing). */
+/**
+ * Keys keyboard pilots know from keyboard flying, each with the one action allowed on it (the same
+ * thing): M was keyboard flying's angle key in v0.2 and is the mode key for every input now.
+ */
 export const SHARED_WITH_FLYING: Readonly<Record<string, ActionId>> = { KeyM: 'mode.cycle' };
 
 /** F13-F24 belong to the latency harness (devices/keyboard.ts): one numbered input event per press. */
