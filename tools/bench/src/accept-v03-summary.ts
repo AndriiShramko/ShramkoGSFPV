@@ -449,7 +449,10 @@ try {
             const inside = (b) => !!b && b.x >= -0.5 && b.y >= -0.5 && b.r <= vw + 0.5 && b.b <= vh + 0.5;
             const hit = (a, b) => !!a && !!b && a.x < b.r - 0.5 && b.x < a.r - 0.5 && a.y < b.b - 0.5 && b.y < a.b - 0.5;
             const card = r(document.querySelector('${CARD}'));
-            const tops = [...document.querySelectorAll('.top-actions, .osd.tl, .osd.tr')].filter((e) => e.getClientRects().length).map(r);
+            const shown = (e) => e.getClientRects().length > 0 && !e.classList.contains('visually-hidden') && getComputedStyle(e).visibility !== 'hidden';
+            const tops = [...document.querySelectorAll('.top-actions, .osd.tl, .osd.tr')].filter(shown).map(r);
+            // everything else on the flight view the card must stay clear of: the OSD's bottom lines, the credit, the arm / key cards, the arm hint
+            const others = [...document.querySelectorAll('.osd.bl, .osd.br, .attribution, .arm-card, .arm-disarm, .gate-msg, .hud-note')].filter(shown).map((e) => ({ cls: e.className, box: r(e) }));
             const panel = document.querySelector('.pause-menu');
             const pr = r(panel);
             const btns = panel ? [...panel.querySelectorAll('.sum-menu .btn')].map(r) : [];
@@ -458,7 +461,7 @@ try {
             const cols = panel ? ['.sum-stats', '.sum-menu', '.sum-keys'].map((q) => r(panel.querySelector(q))) : [];
             return {
                 vw, vh,
-                card: card ? { box: card, inside: inside(card), hitsTop: tops.some((t) => hit(card, t)) } : null,
+                card: card ? { box: card, inside: inside(card), hitsTop: tops.some((t) => hit(card, t)), hitsOther: others.filter((o) => hit(card, o.box)).map((o) => o.cls) } : null,
                 panel: panel ? { box: pr, inside: inside(pr), hOverflow: panel.scrollWidth - panel.clientWidth, statRows: [...panel.querySelectorAll('[data-testid="summary-stats"] tbody tr')].filter((tr) => tr.getClientRects().length).length,
                     buttonOverlaps: overlaps.length, buttonsInside: btns.every((b) => b.x >= pr.x - 0.5 && b.r <= pr.r + 0.5), hitsTop: tops.some((t) => hit(pr, t)), cols } : null
             };`;
@@ -472,6 +475,11 @@ try {
             await sleep(400); // the fade-in
             const cardLayout = await ev(p, LAYOUT);
             await p.screenshot({ path: join(SHOTS, `card-${w}.jpg`), type: 'jpeg', quality: 80 });
+            // control: without the rule that keeps the "how to arm" cards under the stats card, the same look must see them collide on a phone
+            await ev(p, "const st = document.createElement('style'); st.id = 'planted-arm'; st.textContent = '#ui:has(> .osd-stats) .hud .arm-card:not(.hidden) { display: flex !important; }'; document.head.append(st); return 0;");
+            await sleep(200);
+            const cardPlanted = (await ev(p, LAYOUT)).card;
+            await ev(p, "document.getElementById('planted-arm').remove(); return 0;");
             await openPanel(p);
             await sleep(500);
             const panelLayout = await ev(p, LAYOUT);
@@ -481,17 +489,17 @@ try {
             await sleep(200);
             const planted = await ev(p, LAYOUT);
             await ctx.close();
-            return { info, card: cardLayout.card, panel: panelLayout.panel, planted: { hOverflow: planted.panel?.hOverflow ?? null, buttonOverlaps: planted.panel?.buttonOverlaps ?? null } };
+            return { info, card: cardLayout.card, panel: panelLayout.panel, planted: { hOverflow: planted.panel?.hOverflow ?? null, buttonOverlaps: planted.panel?.buttonOverlaps ?? null, cardHits: cardPlanted?.hitsOther ?? null } };
         };
         const { result, vramFreeMiB } = await withGpu(async () => ({ desktop: await run(1280, 800), phone: await run(375, 812) }));
-        const okCard = (c: Any) => !!c && c.inside && !c.hitsTop;
+        const okCard = (c: Any) => !!c && c.inside && !c.hitsTop && c.hitsOther.length === 0;
         const okPanel = (x: Any, rows: number) => !!x && x.inside && x.hOverflow <= 1 && x.statRows === rows && x.buttonOverlaps === 0 && x.buttonsInside && !x.hitsTop;
         const d = result.desktop, ph = result.phone;
         const threeCols = d.panel?.cols?.length === 3 && d.panel.cols.every(Boolean) && d.panel.cols[0].r <= d.panel.cols[1].x + 1 && d.panel.cols[1].r <= d.panel.cols[2].x + 1;
         const drawn = d.info.render === 'on' && ph.info.render === 'on';
         const pass = drawn && okCard(d.card) && okCard(ph.card) && okPanel(d.panel, 16) && okPanel(ph.panel, 4) && threeCols;
-        const fired = [d, ph].every((x) => (x.planted.hOverflow ?? 0) > 1 && (x.planted.buttonOverlaps ?? 0) > 0);
-        out.S6 = { pass: pass && fired, vramFreeMiB, what: 'scan drawn: the card and the panel inside the viewport, clear of the top buttons and the OSD corner lines, no horizontal overflow, menu buttons not overlapping; desktop 1280x800: 16 stat rows in three columns (stats | menu | keys); phone 375x812: the 4 main stat rows in one column', desktop: d, phone: ph, threeCols, shots: ['card-1280.jpg', 'panel-1280.jpg', 'card-375.jpg', 'panel-375.jpg'].map((f) => `evidence/${today()}/v03-summary/${f}`), control: { what: 'a planted style (stats table 1400 px wide, menu buttons with -24 px margins) must be seen as a horizontal overflow and as overlapping buttons', desktop: d.planted, phone: ph.planted, fired } };
+        const fired = [d, ph].every((x) => (x.planted.hOverflow ?? 0) > 1 && (x.planted.buttonOverlaps ?? 0) > 0) && (ph.planted.cardHits ?? []).some((c: string) => /arm-card/.test(c));
+        out.S6 = { pass: pass && fired, vramFreeMiB, what: 'scan drawn: the card inside the viewport and clear of the top buttons, the OSD lines, the credit and the arm / key cards; the panel inside the viewport and clear of the top buttons, no horizontal overflow, menu buttons not overlapping; desktop 1280x800: 16 stat rows in three columns (stats | menu | keys); phone 375x812: the 4 main stat rows in one column', desktop: d, phone: ph, threeCols, shots: ['card-1280.jpg', 'panel-1280.jpg', 'card-375.jpg', 'panel-375.jpg'].map((f) => `evidence/${today()}/v03-summary/${f}`), control: { what: 'planted styles must be seen: a 1400 px stats table as a horizontal overflow, -24 px button margins as overlapping buttons, and on the phone the keyboard card shown under the stats card as a collision', desktop: d.planted, phone: ph.planted, fired } };
         console.log('S6', out.S6.pass ? 'PASS' : 'FAIL', JSON.stringify({ d: { card: d.card, panel: d.panel }, ph: { card: ph.card, panel: ph.panel }, fired }));
     }
 } finally {

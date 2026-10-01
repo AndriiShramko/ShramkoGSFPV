@@ -1,6 +1,7 @@
 // End-of-flight stats (docs/architecture-v03.md D.2, item 7). After a disarm with the switch (not a
 // crash) and at least 3 s in the air, the goggles-style card shows the flight (ui/osd-stats.ts); it
-// goes on arm, on a throttle push above 25 %, on any key, after 30 s; Enter, Esc or its button open
+// goes on arm (or the arm switch flipped on), on a throttle push above 25 %, on any key, after 30 s,
+// with a new life; Enter, Esc or its button open
 // the full panel. Esc / P open the summary panel (the pause menu, app/menu.ts + ui/pause.ts): the
 // stats of this flight, the session and the drone's lifetime beside every menu item with its key,
 // and every keyboard shortcut. The lifetime totals per drone (flights, air time, distance, crashes)
@@ -56,6 +57,8 @@ export const summary: Feature = {
         // HUD and the mode chip show, whichever input or setting put it there
         const mode = (): string | null => (ctx.session.sim ? modeFromChannel(ctx.session.sim.ch[5]) : null);
         const throttle = (): number => (ctx.session.sim ? (ctx.session.sim.ch[2] + 1) * 0.5 : 0);
+        // the arm switch as the pilot set it, before the arm gate (which holds it low while arming is refused)
+        const armSwitchOn = (): boolean => ctx.controls.source !== 'sim' && ctx.controls.view().ch[4] > 0.5;
 
         const data = (): SummaryData => {
             sync();
@@ -119,7 +122,8 @@ export const summary: Feature = {
             sync();
             // a respawn between ticks emits no runner event (sim-core runner.ts emits only what a step
             // produced), so a new life is seen here: its air time starts again from zero
-            if (card && (now - cardAt > CARD_TIMEOUT_MS || throttleDismisses(thrAtCard, throttle()) || ledger.life().airtimeS + 1e-9 < cardAir)) closeCard();
+            // the arm switch flipped on closes it too, also when the gate refuses to arm (the "how to arm" card it covers comes back)
+            if (card && (now - cardAt > CARD_TIMEOUT_MS || throttleDismisses(thrAtCard, throttle()) || armSwitchOn() || ledger.life().airtimeS + 1e-9 < cardAir)) closeCard();
             if (now - lastCommit > COMMIT_EVERY_MS) {
                 lastCommit = now;
                 ledger.commit();
