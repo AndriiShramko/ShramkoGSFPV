@@ -1,7 +1,6 @@
 // The menu's "Replays": the logs saved in this tab, each to play back or export as a trajectory.
-import { InputLog } from '@gsfpv/sim-core';
 import { replaysPanel } from '../../ui/panels';
-import { exportTrajectory } from '../logs';
+import { exportTrajectory, playSaved } from '../logs';
 import type { Feature } from '../context';
 
 export const replays: Feature = {
@@ -14,7 +13,7 @@ export const replays: Feature = {
                 ctx.pause('panel');
                 replaysPanel(ctx.ui, ctx.hook.savedLogs.map((l) => ({
                     label: l.label,
-                    play: () => { ctx.resume('panel'); session.startReplay(InputLog.fromBytes(l.header, l.bytes), 0, l.endTick); },
+                    play: () => { ctx.resume('panel'); playSaved(session, l); },
                     exportCsv: () => exportTrajectory(session, 'csv'),
                     exportJson: () => exportTrajectory(session, 'json')
                 })), () => ctx.resume('panel'));

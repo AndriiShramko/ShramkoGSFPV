@@ -99,6 +99,8 @@ describe('per drone: a drone flies its own values (D-c, review C1/C10)', () => {
 /** A value other than the default, in range, for each setting the screen shows for the flight model. */
 const CHANGES: Record<string, { v: unknown; field: (p: ReturnType<typeof compileParams>) => unknown }> = {
     'physics.vCrash': { v: 6.5, field: (p) => p.vCrash },
+    // shipped by W2-2 (crashes off, item 3): the model's crashOn flag
+    'crash.enabled': { v: false, field: (p) => p.crashOn },
     'physics.gravity': { v: 1.62, field: (p) => p.gravity },
     'physics.gravityMode': { v: 'same-twr', field: (p) => p.gravityMode },
     'physics.twr': { v: 3, field: (p) => p.twr },
@@ -309,12 +311,12 @@ describe('the screen\'s model (ui/settings/model.ts)', () => {
         expect(shown.length).toBe(SCHEMA.defs.filter((d) => d.status === 'shipped').length);
         const groups = M.shownGroups(SCHEMA);
         expect(groups).toEqual(SCHEMA.groups.filter((g) => shown.some((d) => d.group === g)));
-        expect(shown.find((d) => d.id === 'respawn.auto')).toBeUndefined(); // planned (W2-2 ships it)
+        expect(shown.find((d) => d.id === 'respawn.showPad')).toBeUndefined(); // planned (the pad ring stays invisible, Andrii's wish)
     });
 
     it('?focus=: a shown row and its group; a planned one; an unknown one (the screen opens and says so)', () => {
         expect(M.focusTarget(SCHEMA, 'physics.vCrash')).toEqual({ kind: 'row', id: 'physics.vCrash', group: 'crash' });
-        expect(M.focusTarget(SCHEMA, 'respawn.auto').kind).toBe('planned');
+        expect(M.focusTarget(SCHEMA, 'respawn.showPad').kind).toBe('planned');
         expect(M.focusTarget(SCHEMA, 'no.such')).toEqual({ kind: 'unknown', id: 'no.such' });
     });
 

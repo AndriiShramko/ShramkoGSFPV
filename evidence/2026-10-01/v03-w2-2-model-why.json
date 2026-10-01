@@ -1,0 +1,89 @@
+{
+  "name": "v03-w2-2-model-why",
+  "context": {
+    "date": "2026-10-01T17:16:50.294Z",
+    "gitHead": "c5ade11",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "question": "B12's negative control (a 0.75 m/s dash into a wall must touch without a crash) fails since wave 1: flight model or bot?",
+  "answer": "Flight model. A craft pinned in a corner (one duct wins the sweep at t = 1e-12 every tick) froze while thrust drove other ducts into the wall unresolved; its speed grew past v_crash in a pose that never moved, then a phantom crash. v0.2 has the same single-impulse rule but its craft never got pinned there. Fixed in sim.ts pinnedContacts; the bot is unchanged.",
+  "trees": {
+    "main": "28e5ab3",
+    "base": "6b5065c",
+    "fixed": "this working tree"
+  },
+  "b12Control": {
+    "main": {
+      "dashMs": 0.75,
+      "contactsInDash": 1585,
+      "crashes": [],
+      "minUpYInDash": -0.3818183629536258,
+      "longestFrozenTicks": 7,
+      "frozenUntilTick": 428,
+      "speedAtEndOfFreeze": 0.0008050105316932444,
+      "controlPasses": true
+    },
+    "base": {
+      "dashMs": 0.75,
+      "contactsInDash": 1035,
+      "crashes": [
+        {
+          "tick": 21889,
+          "sAfterDashStart": 13.604,
+          "speed": 6.125378105552441
+        }
+      ],
+      "minUpYInDash": -0.01472858108057995,
+      "longestFrozenTicks": 669,
+      "frozenUntilTick": 21887,
+      "speedAtEndOfFreeze": 7.435403080095679,
+      "controlPasses": false
+    },
+    "fixed": {
+      "dashMs": 0.75,
+      "contactsInDash": 1914,
+      "crashes": [],
+      "minUpYInDash": -0.3317956480162336,
+      "longestFrozenTicks": 8,
+      "frozenUntilTick": 428,
+      "speedAtEndOfFreeze": 0.0008213059435506263,
+      "controlPasses": true
+    }
+  },
+  "a6": {
+    "note": "A6 script, 60 Hz frames: base vs fixed tick by tick. The hash moves because the craft lies on its side on the floor and its pinned ticks now resolve every touching duct.",
+    "hashBase": "dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2",
+    "hashFixed": "1d01ca5b16aef6edce77d10de52517cbb609ace4fa05e47c3dccdf13111fff65",
+    "firstDivergentTick": 1271,
+    "firstPinnedImpulseTick": 1271,
+    "pinnedTicksWithImpulse": 1218,
+    "crashesBase": 0,
+    "crashesFixed": 0,
+    "atDivergence": {
+      "base": {
+        "p": [
+          0.7184618486625927,
+          -0.026195681946810122,
+          0.6739116875797911
+        ],
+        "upY": -0.008751008833848939,
+        "armed": 1,
+        "crashed": 0
+      },
+      "fixed": {
+        "p": [
+          0.7184618486625927,
+          -0.026195681946810122,
+          0.6739116875797911
+        ],
+        "upY": -0.008751008833848939,
+        "armed": 1,
+        "crashed": 0
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 // window.__gsfpv: what the acceptance harnesses (tools/bench) read and drive. The shape is the one
 // main.ts had before the v0.3 split; the features fill their parts when they install.
-import type { InputLog, SimEvent } from '@gsfpv/sim-core';
+import type { LifeHeader, SimEvent } from '@gsfpv/sim-core';
 import type { Scenario } from '@gsfpv/input/sim';
 import type { FrameGovernor } from '@gsfpv/render-pc';
 import type { RecorderInfo } from '../cinema';
@@ -13,13 +13,16 @@ import type { CrashView } from '../crashview';
 import type { WallsHook } from '../walls';
 import type { VoxelController, VoxelMode, VoxelStats, VoxelStyle } from '../voxels';
 import type { PrefsHook } from './prefs';
+import type { SavedFlight, Tamper } from './logs';
 
+/** A flight saved in this tab (app/logs.ts, log format /2: the kept lives). */
 export interface SavedLog {
     label: string;
-    header: InputLog['header'];
-    bytes: Uint8Array;
+    flight: SavedFlight;
     endTick: number;
+    /** the lives' trace hashes in one digest */
     hash: string;
+    records: number;
 }
 
 export interface TestHook {
@@ -42,8 +45,8 @@ export interface TestHook {
     events: SimEvent[];
     savedLogs: SavedLog[];
     saveLog?: (label: string) => SavedLog;
-    /** B15: replay the log saved in localStorage (optionally with one LSB flipped) in this tab */
-    verifyLastLog?: (tamper?: { record: number; channel: number }) => { saved: string; endTick: number; hash: string; track: number[]; tampered: number | null } | null;
+    /** B15: replay the flight saved in localStorage in this tab (optionally with one record changed: logs.ts Tamper); refused: why it cannot replay here */
+    verifyLastLog?: (tamper?: Tamper) => { saved: string; endTick: number; hash: string; track: number[]; tampered: number | null; lives?: number; refused?: string } | null;
     loops?: number;
     /** phase C: result of building collision in this tab */
     bake?: Record<string, unknown>;
@@ -54,7 +57,7 @@ export interface TestHook {
     /** the walls in use, the refine, the walls store (walls.ts) */
     walls?: WallsHook;
     /** the pilot's walls switch (C): on / off, and the current log header that records it */
-    wallsSwitch?: { on: () => boolean; set: (on: boolean) => void; state: () => string; header: () => InputLog['header'] };
+    wallsSwitch?: { on: () => boolean; set: (on: boolean) => void; state: () => string; header: () => LifeHeader };
     /** the voxel grid (V): mode, style, opacity, what is drawn */
     voxels?: { stats: () => VoxelStats; perf: () => VoxelController['perf']; settled: () => boolean; setMode: (m: VoxelMode) => void; setStyle: (s: VoxelStyle) => void; setOpacity: (a: number) => void; setRadius: (m: number) => void };
     /** phase D: the exported trajectory as text (the same text the export button saves) */

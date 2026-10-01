@@ -19,7 +19,7 @@
 import { Sim, S, DT_US } from './sim';
 import type { SimEvent, ContactWorld } from './sim';
 import { Sha256, sha256Hex } from './sha256';
-import { compileParams, hoverSolve } from './params';
+import { compileParams } from './params';
 import type { ParamOverrides, PresetJson, SimParams } from './params';
 import type { LifeHeader, RespawnOpts, RespawnReason, WorldEvent } from './contracts';
 import type { RespawnDirector } from './director';
@@ -422,6 +422,12 @@ class LifeRec implements Life {
     get hashing(): boolean {
         return this.full !== null || this.seg !== null;
     }
+    /** The trace hash so far and the tick it starts after, without ending the life (null: not hashing). */
+    hashNow(): { hash: string; from: number } | null {
+        if (this.full) return { hash: this.full.copy().digestHex(), from: this.header.life.startTick };
+        if (this.seg) return { hash: this.seg.copy().digestHex(), from: this.segFrom };
+        return null;
+    }
     /** a new segment starts after `tick`: the fallback hash starts there */
     segmentAt(tick: number): void {
         if (!this.hashing) return;
@@ -645,6 +651,15 @@ export class Runner {
         return this.cur();
     }
 
+    /**
+     * The current life's trace hash so far (option traceHash) and the tick it starts after, read
+     * without ending the life: what a log saved mid-flight is checked against. A replay of the
+     * life to the current tick gives the same hash. null when the runner does not hash.
+     */
+    liveLifeHash(): { hash: string; from: number } | null {
+        return this.v2 ? this.cur().hashNow() : null;
+    }
+
     /** Bytes the kept lives hold (record buffers and snapshots); at most maxBytes. */
     bytesKept(): number {
         let n = 0;
@@ -858,11 +873,9 @@ export function lifeParams(h: LifeHeader, deps: Pick<ReplayDeps, 'preset'>): Sim
     return compileParams(preset, h.overrides);
 }
 
-/** A Sim for a life's params, set up the way the session sets up its own (auto-throttle reads hoverThr). */
+/** A Sim for a life's params, as the session builds its own (the constructor sets hoverThr: hoverThrOf, C6). */
 export function lifeSim(p: SimParams, world: ContactWorld | null): Sim {
-    const sim = new Sim(p, world);
-    sim.hoverThr = hoverSolve(p, 1).motor;
-    return sim;
+    return new Sim(p, world);
 }
 
 interface Hooks {

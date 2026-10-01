@@ -42,8 +42,13 @@ const V02_EXTRA: Record<string, string[]> = {
  * wave 2 routed it as the mode key for every input.
  */
 const SHIPPED_AT_WAVE1 = ['arm.toggle', 'frameStats.toggle', 'hud.toggle', 'mode.cycle', 'pause.toggle', 'respawn.start', 'voxels.cycle', 'walls.toggle'];
-/** Flipped in wave 2 by the agent whose feature handles them (W2-1: O opens Settings). */
-const SHIPPED_IN_WAVE2 = ['settings.open'];
+/** Keys shipped in wave 2, by the agent whose feature handles them. */
+const SHIPPED_IN_WAVE2: readonly string[] = [
+    // W2-1: O opens Settings
+    'settings.open',
+    // W2-2 respawn: Y rewinds, Enter keeps the wreck (C.10)
+    'respawn.rewind', 'crash.keep'
+];
 
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });
 const plant = (b: Partial<KeyBinding> & Pick<KeyBinding, 'action' | 'keys'>): KeyBinding[] =>
@@ -85,8 +90,7 @@ describe('v0.2 keys keep working', () => {
         }
     });
 
-    it('only the keys the page handled at the start of wave 1 are shipped, so the refactor changes no key', () => {
-        // wave 2 adds its own (SHIPPED_IN_WAVE2)
+    it('only the keys the page handled at the start of wave 1 are shipped, so the refactor changes no key (plus those wave 2 shipped)', () => {
         expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual([...SHIPPED_AT_WAVE1, ...SHIPPED_IN_WAVE2].sort());
     });
 

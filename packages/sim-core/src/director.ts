@@ -5,7 +5,8 @@
 //
 // - After a crash at tick c (policy.auto): at c + delay, back rewindTicks along the recorded
 //   path (or to the start). A crash within 3 s of the previous rewind goes back one more step:
-//   5, 10, 15 s ... as far as the history reaches, then the start.
+//   5, 10, 15 s ... as far as the history reaches, then the start. The path is the one the pilot
+//   flew: a rewind cuts the stretch it undid out of it, R starts a new one (history.ts, C5).
 // - Stuck, flipped (Liftoff's rule): not crashed, up-vector y < 0.3, |v| < 0.2 m/s, |w| < 1 rad/s,
 //   touching, for 1.5 s. Stuck, wedged: armed, throttle stick >= hover + 0.15, |v| < 0.1 m/s,
 //   touching, for 3 s. Both rewind like a crash. An upright, disarmed craft is a landing: never.
@@ -28,7 +29,7 @@ import { hoverSolve } from './params';
 import type { Sim, SimEvent, ContactWorld } from './sim';
 import type { SimParams } from './params';
 import type { RespawnOpts, RespawnReason } from './contracts';
-import type { StateHistory } from './history';
+import type { StateHistory, PathEdit } from './history';
 
 export interface RespawnPolicy {
     auto: boolean;
@@ -78,6 +79,8 @@ export interface RespawnDecision {
     sampleTick: number | null;
     /** 1 = one rewindTicks back, 2 = two, ...; 0 for the start */
     backoff: number;
+    /** how far back along the pilot's path the sample is from the incident, ticks (null for the start) */
+    pathAgeTicks: number | null;
 }
 
 /** A crash this soon after a rewind goes further back (C.6 backoff), ticks. */
@@ -118,6 +121,10 @@ export class RespawnDirector {
     /** the model the two values above belong to (null until the first decide) */
     private model: SimParams | null = null;
     private crashTick = -1;
+    /** the crash of the current life, auto or not (Y rewinds from it), -1 when it has none */
+    private crashedAt = -1;
+    /** the path edit of the respawn this director just asked for, applied by its 'respawn' event */
+    private edit: PathEdit = null;
     private manual: 'start' | 'rewind' | null = null;
     private flipSince = -1;
     private wedgeSince = -1;
@@ -166,11 +173,16 @@ export class RespawnDirector {
         this.history.onEvent(e);
         if (e.type === 'crash') {
             this.crashTick = this.policy.auto ? e.tick : -1;
+            this.crashedAt = e.tick;
             this.resetStuck();
         } else if (e.type === 'respawn') {
             this.crashTick = -1;
+            this.crashedAt = -1;
             this.resetStuck();
             this.poseN = 0; // the pose jumped: no motion across it
+            // a respawn this director did not ask for (a 'life' setting) goes on along the path
+            this.history.respawned(e.tick, this.edit);
+            this.edit = null;
         }
     }
 
@@ -193,7 +205,8 @@ export class RespawnDirector {
         if (this.manual) {
             const k = this.manual;
             this.manual = null;
-            return k === 'start' ? this.toStart(t, 'manual-start', t) : this.rewind(t, t, 'manual-rewind');
+            // Y after a crash goes back from the crash, not from the key press
+            return k === 'start' ? this.toStart(t, 'manual-start', t) : this.rewind(t, this.crashedAt >= 0 ? this.crashedAt : t, 'manual-rewind');
         }
         if (this.crashTick >= 0) {
             if (!P.auto) this.crashTick = -1;
@@ -247,6 +260,21 @@ export class RespawnDirector {
     /** The automatic respawn waiting to happen, for the toast countdown. */
     pending(): { crashTick: number; atTick: number } | null {
         return this.crashTick >= 0 && this.policy.auto ? { crashTick: this.crashTick, atTick: this.crashTick + this.policy.delayTicks } : null;
+    }
+
+    /**
+     * Where the pending automatic respawn goes, as decide() will find it (the backoff, a path too
+     * short for it): for the toast, so "back 5 s" is never shown for a respawn that goes 10 s
+     * back or to the start. Reads only; null when nothing is pending or a scene switch follows.
+     */
+    preview(): { target: 'rewind' | 'start'; backTicks: number | null } | null {
+        const P = this.policy;
+        if (this.crashTick < 0 || !P.auto || (P.onCrash === 'next-scene' && this.onSceneIntent)) return null;
+        if (P.target === 'start') return { target: 'start', backTicks: null };
+        const backoff = this.crashTick - this.lastRewind < BACKOFF_WINDOW_TICKS ? this.backoff + 1 : 1;
+        const age = backoff * P.rewindTicks;
+        const smp = age <= this.history.depthTicks ? this.history.pickBefore(this.crashTick, age) : null;
+        return smp ? { target: 'rewind', backTicks: this.history.pathTick(this.crashTick) - smp.path } : { target: 'start', backTicks: null };
     }
 
     private resetStuck(): void {
@@ -304,7 +332,8 @@ export class RespawnDirector {
         if (!smp) return this.toStart(t, reason, incident);
         this.lastRewind = t;
         this.resetStuck();
-        this.last = { tick: t, reason, kind: 'rewind', incidentTick: incident, sampleTick: smp.tick, backoff: this.backoff };
+        this.edit = { rewindTo: smp.tick };
+        this.last = { tick: t, reason, kind: 'rewind', incidentTick: incident, sampleTick: smp.tick, backoff: this.backoff, pathAgeTicks: this.history.pathTick(incident) - smp.path };
         return { x: smp.x, y: smp.y, z: smp.z, yawDeg: smp.yawDeg, opts: this.opts(P.refill === 'respawn'), reason, rewind: true };
     }
 
@@ -314,7 +343,8 @@ export class RespawnDirector {
         this.backoff = 0;
         this.lastRewind = -Infinity;
         this.resetStuck();
-        this.last = { tick: t, reason, kind: 'start', incidentTick: incident, sampleTick: null, backoff: 0 };
+        this.edit = 'restart';
+        this.last = { tick: t, reason, kind: 'start', incidentTick: incident, sampleTick: null, backoff: 0, pathAgeTicks: null };
         return { x, y, z, yawDeg, opts: this.opts(P.refill !== 'never'), reason, rewind: false };
     }
 

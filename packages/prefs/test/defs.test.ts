@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { DRONE_IDS, RATE_BOUNDS, SCHEMA, actionsOf, bindingOf, defineSettings, isCuratedRef, isPresetRef, validateFolder, validatePid, validateRates, validateThrottle, validateTransform } from '../src';
 import type { EnumDef, NumDef, SettingDef } from '../src';
@@ -72,15 +72,24 @@ const A8: [string, string, string, string, unknown, string][] = [
 ];
 
 /**
- * New settings (not in v0.2) that are shipped but lack set.<id> / set.<id>.help in a language of
- * the simulator's dictionaries: the wave that ships a setting adds its text first (I.1 fails
- * without it). The text may live in any namespace folder (the `set` one, or the namespace of the
- * agent that owns the setting, design 1.3 and J): the app merges them all.
+ * The fly dictionaries merged as apps/fly/src/i18n.ts merges them (the flat file, then every
+ * namespace): a setting's owner may keep its texts in its own namespace (docs 1.3, J.0).
  */
-function untranslatedNewShipped(defs: readonly SettingDef[]): string[] {
-    const FLY = join(REPO, 'packages', 'i18n', 'locales', 'fly');
-    const namespaces = readdirSync(FLY, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
-    const dicts = ['en', 'es', 'pl', 'ru'].map((l) => Object.assign({}, ...namespaces.map((ns) => JSON.parse(readFileSync(join(FLY, ns, `${l}.json`), 'utf8')) as Record<string, string>)) as Record<string, string>);
+function flyDicts(): Record<string, string>[] {
+    const fly = join(REPO, 'packages', 'i18n', 'locales', 'fly');
+    const ns = readdirSync(fly).filter((n) => statSync(join(fly, n)).isDirectory());
+    return ['en', 'es', 'pl', 'ru'].map((l) => {
+        const d = JSON.parse(readFileSync(join(fly, `${l}.json`), 'utf8')) as Record<string, string>;
+        for (const n of ns) Object.assign(d, JSON.parse(readFileSync(join(fly, n, `${l}.json`), 'utf8')));
+        return d;
+    });
+}
+
+/**
+ * New settings (not in v0.2) that are shipped but lack set.<id> / set.<id>.help in a language of
+ * the merged fly dictionaries: the wave that ships a setting adds its text first (I.1 fails without it).
+ */
+function untranslatedNewShipped(defs: readonly SettingDef[], dicts: Record<string, string>[] = flyDicts()): string[] {
     return defs.filter((d) => d.status === 'shipped' && !V02_SETTINGS.includes(d.id) && dicts.some((t) => !t[`set.${d.id}`] || !t[`set.${d.id}.help`])).map((d) => d.id);
 }
 
@@ -88,11 +97,13 @@ function untranslatedNewShipped(defs: readonly SettingDef[]): string[] {
  * Shipped in wave 2, each with its settings screen row or control working end to end:
  * W2-1 the H rows (TWR, duct drag, prop inertia, idle), built into the flight model by the app
  * (apps/fly app/prefs.ts overridesFor; tools/bench/test/app-settings.test.ts proves each changes it);
- * W2-3 the flight mode (the mode chip and M).
+ * W2-3 the flight mode (the mode chip and M); W2-2 crashes and respawn.
  */
 const WAVE2_SETTINGS = [
     'physics.twr', 'physics.ductDrag', 'physics.propInertia', 'physics.idlePct',
-    'flight.mode'
+    'flight.mode',
+    // W2-2 respawn: crashes and respawn (C.4-C.8; respawn.showPad stays planned)
+    'crash.enabled', 'respawn.auto', 'respawn.delayS', 'respawn.target', 'respawn.rewindS', 'respawn.platform', 'respawn.keepArmed', 'respawn.unstuck', 'battery.refill'
 ];
 
 describe('SCHEMA is the A.8 table', () => {
@@ -120,7 +131,9 @@ describe('SCHEMA is the A.8 table', () => {
 
     it('control: flipping a new setting to shipped before its translations exist is caught', () => {
         const flipped = SCHEMA.defs.map((d) => (d.id === 'respawn.auto' ? { ...d, status: 'shipped' as const } : d));
-        expect(untranslatedNewShipped(flipped)).toContain('respawn.auto');
+        const dicts = flyDicts();
+        for (const d of dicts) delete d['set.respawn.auto.help'];
+        expect(untranslatedNewShipped(flipped, dicts)).toContain('respawn.auto');
     });
 
     it('the ranges of A.8', () => {

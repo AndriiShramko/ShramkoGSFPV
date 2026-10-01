@@ -49,8 +49,8 @@ export const KEYMAP: readonly KeyBinding[] = [
     // v0.2: R respawns at the start, and with the menu up it is the menu's Restart
     { action: 'respawn.start', keys: [letter('R')], when: 'always', labelKey: 'keys.respawn.start', status: 'shipped' },
     // Liftoff's rewind key (research-a (c) [L10])
-    { action: 'respawn.rewind', keys: [letter('Y')], when: 'always', labelKey: 'keys.respawn.rewind', status: 'planned' },
-    { action: 'crash.keep', keys: [{ code: 'Enter', cap: 'Enter', aria: 'Enter' }], when: 'crash', labelKey: 'keys.crash.keep', status: 'planned' },
+    { action: 'respawn.rewind', keys: [letter('Y')], when: 'always', labelKey: 'keys.respawn.rewind', status: 'shipped' },
+    { action: 'crash.keep', keys: [{ code: 'Enter', cap: 'Enter', aria: 'Enter' }], when: 'crash', labelKey: 'keys.crash.keep', status: 'shipped' },
     { action: 'scene.next', keys: [letter('N')], when: 'always', labelKey: 'keys.scene.next', status: 'planned' },
     { action: 'scene.random', keys: [{ code: 'KeyN', shift: true, cap: 'Shift+N', aria: 'Shift+N' }], when: 'always', labelKey: 'keys.scene.random', status: 'planned' },
     { action: 'scene.favourite', keys: [letter('F')], when: 'always', labelKey: 'keys.scene.favourite', status: 'planned' },
