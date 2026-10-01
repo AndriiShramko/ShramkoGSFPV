@@ -8,6 +8,22 @@ Spec: vault `03 - Resources/Deployment/shramkogsfpv/spec.md` (+ 6 spec-*.md). Ph
 - **Acceptance:** A1-A9, B1-B23, C, D accepted on the live site; table `evidence/2026-09-27/acceptance-live-2026-09-27.json`; later releases re-checked: `evidence/2026-09-27/v03-*.json` (wizard auto, walls/voxels/landing, latency/walls). A9: LIMITED BY DISPLAY (the owner's 4K monitor runs 30 Hz over HDMI).
 - **Last update:** 2026-09-27
 
+## Cloud session status (2026-10-01, read this before continuing from b7261ee)
+
+- The cloud session (claude.ai/code, branch `shramkoclaude/determined-cannon-ns801h`, PR #3) hit the weekly limit on
+  2026-09-28 08:22 UTC. The wave-2 agents it had just started (W2-1 settings UI, W2-2 respawn, W2-3 modes, W2-4 summary)
+  **committed nothing**: start wave 2 from scratch on this branch.
+- **W4-3 Betaflight + blackbox is done and merged** (`b46cd89`): `bfdiff.ts` reads the 9 BetaFPV Pavo20 Pro / Pro II
+  factory dumps (4.5.0, 4.5.3, 2025.12.5, "2026.6.1"); `tools/blackbox/` = our own blackbox decoder (2,130 x 35 values
+  identical to `blackbox_decode`), the model fit from a log, `docs/research/blackbox-fit.md` (how Andrii records and
+  sends a log). Do not redo it.
+- Open from the wave-2 lead step (`evidence/2026-09-28/v03-lead2-accept-fly.json`): B12 negative control (the slow
+  0.75 m/s bot dash now crashes, reproducible in Node) and the B15 tamper control margin (9.0 mm vs 10 mm).
+- Hub commands from a cloud session: vault workflow `gsfpv-hub` (`.github/gsfpv-hub/README.md` in the vault). From the
+  owner's PC plain SSH works.
+- After 2026-10-01 a local session on the owner's PC continues this work; the cloud session stood down to avoid duplicate
+  work.
+
 ## Handoff — how any agent continues from git alone
 
 1. **Repos.** Code: `github.com/AndriiShramko/ShramkoGSFPV` — `main` = live. Unfinished v0.3 wave 1 (prefs store, sim-core modes/platform/battery, partial app shell and log/respawn): branch **`wip/v03-wave1`**, state in its `docs/wip/V03-WAVE1-STATUS.md`. Vault (owner's notes, backlog, verbatim briefs): private repo `obsidian-vault-andriishramko`.
