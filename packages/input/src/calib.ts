@@ -1679,23 +1679,49 @@ export type ArmBlock = null | 'noProfile' | 'center' | 'throttle' | 'switch' | '
  * Arm only when: a profile exists; every stick passed through its centre since load (protects
  * against the Chromium gamepad trap where an axis reports 0.0 until first moved); throttle <= 5 %;
  * the arm switch goes off -> on; not crashed; the last sample is <= 100 ms old; the tab is visible.
+ *
+ * keepArmedAfterCrash (docs/architecture-v03.md C.3, item 23: no switch flip after a respawn):
+ * while crashed the gate passes the raw switch level on (block still says 'crashed' for the arm
+ * card; the sim refuses to arm a crashed craft, and Sim.respawn with keepArmed reads this level at
+ * the respawn tick), and when `crashed` goes back to false with the switch on, the gate is armed at
+ * once: no new off -> on edge, no throttle-low rule. A stale radio or a hidden tab during the crash
+ * still disarms and still wants a new edge (v0.2 safety rule, unchanged).
  */
+export interface ArmGateOptions { keepArmedAfterCrash?: boolean }
+
 export class ArmGate {
     private passedCenter: Record<string, boolean> = { roll: false, pitch: false, yaw: false };
     private prevArm = true; // switch must be seen OFF first
+    /** armed when the current crash began, and nothing since then (stale radio, hidden tab, no
+     *  profile) demands a new edge: the respawn may arm without one */
+    private crashHold = false;
     armed = false;
     block: ArmBlock = 'noProfile';
+    keepArmedAfterCrash: boolean;
+
+    constructor(o: ArmGateOptions = {}) {
+        this.keepArmedAfterCrash = !!o.keepArmedAfterCrash;
+    }
 
     update(p: Profile | null, ch: Float32Array, lastSampleAgeMs: number, visible: boolean, crashed: boolean): number {
-        if (!p) { this.block = 'noProfile'; return this.out(false); }
+        if (!p) { this.block = 'noProfile'; this.crashHold = false; return this.out(false); }
         for (const [k, i] of [['roll', 0], ['pitch', 1], ['yaw', 3]] as const) if (Math.abs(ch[i]) < 0.1) this.passedCenter[k] = true;
         const sw = ch[4] > 0;
         const rising = sw && !this.prevArm;
         this.prevArm = sw;
         if (!sw) { this.armed = false; }
-        if (lastSampleAgeMs > 100) { this.block = 'stale'; this.armed = false; return this.out(false); }
-        if (!visible) { this.block = 'hidden'; this.armed = false; return this.out(false); }
-        if (crashed) { this.block = 'crashed'; this.armed = false; return this.out(false); }
+        if (lastSampleAgeMs > 100) { this.block = 'stale'; this.armed = false; this.crashHold = false; return this.out(false); }
+        if (!visible) { this.block = 'hidden'; this.armed = false; this.crashHold = false; return this.out(false); }
+        if (crashed) {
+            if (this.armed) this.crashHold = this.keepArmedAfterCrash;
+            this.block = 'crashed';
+            this.armed = false;
+            return this.out(this.crashHold && sw);
+        }
+        if (this.crashHold) {
+            this.crashHold = false;
+            if (sw) { this.armed = true; this.block = null; return this.out(true); }
+        }
         if (this.armed) { this.block = null; return this.out(true); }
         if (!Object.values(this.passedCenter).every(Boolean)) { this.block = 'center'; return this.out(false); }
         if ((ch[2] + 1) / 2 > 0.05) { this.block = 'throttle'; return this.out(false); }
