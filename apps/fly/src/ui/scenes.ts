@@ -4,6 +4,8 @@ import { parseSceneInput, getHistory, getFavourites, toggleFavourite, getFilter,
 import type { SceneFilter } from '@gsfpv/scenes';
 import { h, clear } from './dom';
 import { t } from '../i18n';
+import { pickerTabs } from './picker-tabs';
+import type { PickSource, PickerTab } from './picker-tabs';
 
 export interface ShowcaseScene {
     id: string;
@@ -30,11 +32,16 @@ export async function loadShowcase(): Promise<ShowcaseScene[]> {
 export class ScenePicker {
     readonly root: HTMLDivElement;
     private list: HTMLDivElement;
-    private tab: 'showcase' | 'recent' | 'favourites' = 'showcase';
+    /** a built-in tab, or the id of a registered PickerTab (ui/picker-tabs.ts) */
+    private tab: string = 'showcase';
     private filter: SceneFilter = getFilter();
     private showcase: ShowcaseScene[] = [];
     private err: HTMLDivElement;
-    onPick: ((id: string, source: 'showcase' | 'paste' | 'history') => void) | null = null;
+    private filters: HTMLDivElement;
+    /** the registered tabs as the picker opened (a later registration shows in the next picker) */
+    private extra: readonly PickerTab[] = pickerTabs().slice();
+    private unmountExtra: (() => void) | null = null;
+    onPick: ((id: string, source: PickSource) => void) | null = null;
 
     constructor(parent: HTMLElement, showcase: ShowcaseScene[]) {
         this.showcase = showcase;
@@ -54,6 +61,9 @@ export class ScenePicker {
         for (const k of ['showcase', 'recent', 'favourites'] as const) {
             tabs.append(h('button', { type: 'button', role: 'tab', class: 'tab', 'data-tab': k, 'aria-selected': String(k === this.tab), onclick: () => { this.tab = k; this.render(tabs); } }, t(`scenes.tab.${k}`)));
         }
+        for (const x of this.extra) {
+            tabs.append(h('button', { type: 'button', role: 'tab', class: 'tab', 'data-tab': x.id, 'aria-selected': 'false', onclick: () => { this.tab = x.id; this.render(tabs); } }, t(x.labelKey)));
+        }
         const fCol = h('input', { type: 'checkbox', id: 'f-col' }) as HTMLInputElement;
         fCol.checked = this.filter.collisionOnly;
         fCol.addEventListener('change', () => { this.filter.collisionOnly = fCol.checked; setFilter(this.filter); this.render(tabs); });
@@ -66,12 +76,13 @@ export class ScenePicker {
         fFlown.value = this.filter.flown;
         fFlown.addEventListener('change', () => { this.filter.flown = fFlown.value as SceneFilter['flown']; setFilter(this.filter); this.render(tabs); });
         this.list = h('div', { class: 'scene-grid' });
+        this.filters = h('div', { class: 'filters' }, h('label', { for: 'f-col' }, fCol, ' ', t('scenes.filter.collision')), fKind, fFlown);
         this.root = h('div', { class: 'screen scenes interactive' },
             h('h1', {}, t('scenes.title')),
             h('div', { class: 'scene-paste' }, input, h('button', { type: 'button', class: 'btn primary', onclick: go }, t('scenes.go'))),
             this.err,
             tabs,
-            h('div', { class: 'filters' }, h('label', { for: 'f-col' }, fCol, ' ', t('scenes.filter.collision')), fKind, fFlown),
+            this.filters,
             this.list
         );
         parent.append(this.root);
@@ -100,7 +111,21 @@ export class ScenePicker {
 
     private render(tabs: HTMLElement): void {
         for (const b of tabs.querySelectorAll('button')) b.setAttribute('aria-selected', String(b.getAttribute('data-tab') === this.tab));
+        this.unmountExtra?.();
+        this.unmountExtra = null;
         clear(this.list);
+        const x = this.extra.find((e) => e.id === this.tab);
+        this.filters.hidden = !!x?.ownFilters;
+        if (x) {
+            const pick = (raw: string, source: PickSource): void => {
+                const id = parseSceneInput(raw);
+                if (!id) { this.err.textContent = t('error.invalid-link'); return; }
+                this.err.textContent = '';
+                this.onPick?.(id, source);
+            };
+            this.unmountExtra = x.mount(this.list, { pick, showError: (c, m) => this.showError(c, m), filter: this.filter }) || null;
+            return;
+        }
         const items = this.items();
         if (items.length === 0) {
             this.list.append(h('p', { class: 'empty' }, this.tab === 'showcase' ? t('scenes.empty.filter') : t(`scenes.empty.${this.tab}`)));
@@ -123,6 +148,8 @@ export class ScenePicker {
     }
 
     remove(): void {
+        this.unmountExtra?.();
+        this.unmountExtra = null;
         this.root.remove();
     }
 }

@@ -4,6 +4,7 @@
 // picker with its error.
 import { parseSceneInput } from '@gsfpv/scenes';
 import { ScenePicker, loadShowcase } from '../ui/scenes';
+import type { PickSource } from '../ui/picker-tabs';
 import { warningModal } from '../ui/panels';
 import { t } from '../i18n';
 import { banner, beacon, hasHid, hasWebGPU, q } from './env';
@@ -29,7 +30,7 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
         hook.errorCode = errorCode ?? undefined;
     }
 
-    function go(raw: string, source: 'showcase' | 'paste' | 'history'): void {
+    function go(raw: string, source: PickSource): void {
         const id = parseSceneInput(raw);
         if (!id) {
             hook.errorCode = 'invalid-link';

@@ -1,0 +1,48 @@
+{
+  "name": "v03-picker-tabs-smoke",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-01T17:06:02.104Z",
+    "gitHead": "2a3f793",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "site": "http://127.0.0.1:5301",
+  "result": {
+    "tabOrder": [
+      "showcase",
+      "recent",
+      "favourites",
+      "smoke"
+    ],
+    "earlyHasTab": false,
+    "selected": "true",
+    "filtersHidden": true,
+    "err": "This is not a SuperSplat link or scene id. Paste a link like superspl.at/scene/39e63ce9.",
+    "picked": [
+      [
+        "39e63ce9",
+        "superspl"
+      ]
+    ],
+    "unmountedAfterSwitch": 1,
+    "filtersBack": true,
+    "gone": true,
+    "unmountedAfterRemove": 2,
+    "dupRefused": true,
+    "afterOff": 0
+  },
+  "controls": {
+    "pickerOpenedBeforeRegistrationHasNoTab": true,
+    "duplicateIdRefused": true
+  },
+  "pageerrors": []
+}

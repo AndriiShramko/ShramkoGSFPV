@@ -48,7 +48,8 @@ MAX_BODY = 8 * 1024
 
 # event -> allowed property -> allowed values (None = small integer bucket)
 EVENTS: dict[str, dict[str, set | None]] = {
-    "scene_open": {"source": {"showcase", "paste", "history"}},
+    # the same list as apps/fly/src/ui/picker-tabs.ts PickSource
+    "scene_open": {"source": {"showcase", "paste", "history", "superspl", "random", "next", "favourite"}},
     "scene_loaded": {"load_ms_bucket": None, "has_collision": {True, False}},
     "input_connected": {"kind": {"hid", "gamepad", "touch", "keyboard", "sim"}},
     "calibration_done": {},
