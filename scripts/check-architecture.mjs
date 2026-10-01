@@ -2,7 +2,8 @@
 //  1. packages/sim-core imports nothing outside itself and never touches DOM globals.
 //  2. packages/collision imports nothing but itself (vendored code + our wrappers), no DOM.
 //  3. apps/site never imports playcanvas or the simulator packages.
-//  4. no Betaflight-looking identifiers were pasted into our sources (formulas only, no GPL code).
+//  4. no Betaflight-looking identifiers were pasted into our sources (formulas only, no GPL code);
+//     packages, apps and tools/blackbox (the blackbox decoder and fit).
 //  5. packages/prefs touches no DOM globals outside src/browser.ts (v0.3 design 1.4), so the store,
 //     the schema and the catalogue builder run in Node tests and in the catalogue generator.
 //  6. the SuperSplat catalogue client (packages/scenes/src/superspl.ts) touches no DOM global (fetch and
@@ -134,8 +135,10 @@ for (const f of walk(join(ROOT, 'apps', 'site'))) {
     const { out } = imports(f);
     for (const i of out) if (/^(playcanvas|@gsfpv\/(render-pc|sim-core|collision|crash|input|prefs))/.test(i)) problems.push(`site imports ${i} (${f})`);
 }
-const BF = /\b(currentControlRateProfile|pidRuntime|rcCommandf|applyBetaflightRates|pidCoefficient|FEEDFORWARD_SCALE\s*\*)/;
-for (const f of [...walk(join(ROOT, 'packages')), ...walk(join(ROOT, 'apps'))]) {
+// (the second group: names from the firmware's blackbox writer and from the GPL blackbox decoders,
+// which tools/blackbox re-implements from the format documentation)
+const BF = /\b(currentControlRateProfile|pidRuntime|rcCommandf|applyBetaflightRates|pidCoefficient|FEEDFORWARD_SCALE\s*\*|blackboxWrite\w*|streamRead\w*|FLIGHT_LOG_FIELD_\w+|flightLogParse|mainHistory)/;
+for (const f of [...walk(join(ROOT, 'packages')), ...walk(join(ROOT, 'apps')), ...walk(join(ROOT, 'tools', 'blackbox'))]) {
     if (f.includes(`${join('collision', 'src', 'vendor')}`)) continue;
     const s = readFileSync(f, 'utf8');
     if (BF.test(s)) problems.push(`Betaflight identifier found (${f})`);

@@ -1,0 +1,217 @@
+# 
+
+# diff all
+
+# version
+# Betaflight / AT32F435G (A435G) 2025.12.5 Aug 10 2026 / 03:56:33 (7348054f2) MSP API: 1.47
+# config rev: 92c695a
+
+# start the command batch
+batch start
+
+# reset configuration to default settings
+defaults nosave
+
+board_name BETAFPVF435
+manufacturer_id BEFH
+mcu_id 00a12a181dc580000d5c070f
+signature 
+
+# name: Pavo20 Pro II
+
+# resources
+resource LED_STRIP 1 A09
+resource SERIAL_TX 1 NONE
+resource SERIAL_RX 1 NONE
+
+# timer
+timer A09 AF1
+# pin A09: TIM1 CH2 (AF1)
+
+# dma
+dma pin A09 5
+# pin A09: DMA1 Channel 6 Request 43
+
+# feature
+feature LED_STRIP
+feature OSD
+
+# serial
+serial UART3 0 115200 57600 0 115200
+serial UART4 131073 115200 57600 0 115200
+serial UART5 64 115200 57600 0 115200
+
+# beacon
+beacon RX_LOST
+beacon RX_SET
+
+# led
+led 0 0,0::CB:9
+led 1 1,0::CB:9
+led 2 2,0::CB:9
+led 3 3,0::CB:9
+led 4 4,0::CB:9
+led 5 5,0::CB:9
+led 6 6,0::CB:9
+led 7 7,0::CB:9
+led 8 0,1::CB:9
+led 9 1,1::CB:9
+led 10 2,1::CB:9
+led 11 3,1::CB:9
+led 12 4,1::CB:9
+led 13 5,1::CB:9
+led 14 6,1::CB:9
+led 15 7,1::CB:9
+led 16 0,2::CB:9
+led 17 1,2::CB:9
+led 18 2,2::CB:9
+led 19 3,2::CB:9
+led 20 4,2::CB:9
+led 21 5,2::CB:9
+led 22 6,2::CB:9
+led 23 7,2::CB:9
+led 24 0,3::CB:9
+led 25 1,3::CB:9
+led 26 2,3::CB:9
+led 27 3,3::CB:9
+led 28 4,3::CB:9
+led 29 5,3::CB:9
+led 30 6,3::CB:9
+led 31 7,3::CB:9
+
+# aux
+aux 0 0 2 1700 2100 0 0
+aux 1 1 0 900 1300 0 0
+aux 2 2 0 1300 1700 0 0
+aux 3 13 3 1700 2100 0 0
+aux 4 15 4 1700 2100 0 0
+aux 5 35 1 900 1300 0 0
+
+# master
+set gyro_lpf1_static_hz = 0
+set gyro_lpf2_static_hz = 550
+set dyn_notch_count = 1
+set dyn_notch_q = 400
+set dyn_notch_min_hz = 250
+set dyn_notch_max_hz = 500
+set gyro_lpf1_dyn_min_hz = 0
+set acc_calibration = 0,14,7,1
+set max_check = 2000
+set serialrx_provider = SBUS
+set motor_idle = 800
+set dshot_bidir = ON
+set motor_pwm_protocol = DSHOT300
+set motor_poles = 12
+set motor_output_reordering = 2,3,0,1,4,5,6,7
+set align_board_roll = 180
+set vbat_max_cell_voltage = 440
+set vbat_min_cell_voltage = 340
+set ibata_scale = 510
+set ibata_offset = -300
+set small_angle = 180
+set pid_process_denom = 2
+set simplified_gyro_filter_multiplier = 110
+set osd_rssi_dbm_alarm = -98
+set osd_vbat_pos = 2530
+set osd_rssi_pos = 192
+set osd_link_quality_pos = 418
+set osd_rssi_dbm_pos = 386
+set osd_rsnr_pos = 160
+set osd_tim_2_pos = 3598
+set osd_flymode_pos = 3535
+set osd_throttle_pos = 3503
+set osd_crosshairs_pos = 2361
+set osd_current_pos = 2561
+set osd_mah_drawn_pos = 2595
+set osd_craft_name_pos = 2613
+set osd_warnings_pos = 14805
+set osd_esc_tmp_pos = 129
+set osd_core_temp_pos = 225
+set craft_name = Pavo20 Pro II
+
+profile 0
+
+# profile 0
+set profile_name = O4 Pro
+set dterm_lpf1_dyn_min_hz = 86
+set dterm_lpf1_dyn_max_hz = 172
+set dterm_lpf1_static_hz = 86
+set dterm_lpf2_static_hz = 172
+set anti_gravity_gain = 60
+set p_pitch = 67
+set i_pitch = 139
+set d_pitch = 63
+set f_pitch = 53
+set p_roll = 53
+set i_roll = 110
+set d_roll = 46
+set f_roll = 43
+set p_yaw = 53
+set i_yaw = 110
+set f_yaw = 43
+set d_max_roll = 46
+set d_max_pitch = 63
+set feedforward_smooth_factor = 50
+set simplified_master_multiplier = 120
+set simplified_i_gain = 115
+set simplified_d_gain = 130
+set simplified_d_max_gain = 0
+set simplified_feedforward_gain = 30
+set simplified_pitch_d_gain = 120
+set simplified_pitch_pi_gain = 120
+set simplified_dterm_filter_multiplier = 115
+set tpa_rate = 70
+set tpa_breakpoint = 1280
+
+profile 1
+
+# profile 1
+set profile_name = DJI O4
+set dterm_lpf1_dyn_min_hz = 86
+set dterm_lpf1_dyn_max_hz = 172
+set dterm_lpf1_static_hz = 86
+set dterm_lpf2_static_hz = 172
+set anti_gravity_gain = 60
+set p_pitch = 58
+set i_pitch = 120
+set d_pitch = 53
+set f_pitch = 31
+set i_roll = 92
+set d_roll = 37
+set f_roll = 23
+set i_yaw = 92
+set f_yaw = 23
+set d_max_roll = 37
+set d_max_pitch = 53
+set feedforward_smooth_factor = 50
+set simplified_i_gain = 115
+set simplified_d_gain = 125
+set simplified_d_max_gain = 0
+set simplified_feedforward_gain = 20
+set simplified_pitch_d_gain = 125
+set simplified_pitch_pi_gain = 125
+set simplified_dterm_filter_multiplier = 115
+set tpa_rate = 60
+set tpa_breakpoint = 1240
+
+profile 2
+
+profile 3
+
+# restore original profile selection
+profile 0
+
+rateprofile 0
+
+rateprofile 1
+
+rateprofile 2
+
+rateprofile 3
+
+# restore original rateprofile selection
+rateprofile 0
+
+# save configuration
+save
+# 

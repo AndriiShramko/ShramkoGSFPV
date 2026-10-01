@@ -166,6 +166,12 @@ importers:
         specifier: 1.63.0
         version: 1.63.0
 
+  tools/blackbox:
+    dependencies:
+      '@gsfpv/sim-core':
+        specifier: workspace:*
+        version: link:../../packages/sim-core
+
 packages:
 
   '@adobe/spz@0.2.3':
