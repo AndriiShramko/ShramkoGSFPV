@@ -1,1 +1,12 @@
-{}
+{
+  "summary.mode": "Modo: {mode}",
+  "summary.mode.acro": "ACRO",
+  "summary.mode.angle": "ANGLE",
+  "summary.mode.horizon": "HORIZON",
+  "summary.menu": "Menú",
+  "summary.keys": "Atajos de teclado",
+  "summary.kbdFlying": "Volar con el teclado",
+  "summary.kbd.throttle": "Gas arriba / abajo",
+  "summary.kbd.yaw": "Yaw izquierda / derecha",
+  "summary.kbd.sticks": "Pitch y roll"
+}

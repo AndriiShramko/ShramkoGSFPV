@@ -1,1 +1,12 @@
-{}
+{
+  "summary.mode": "Режим: {mode}",
+  "summary.mode.acro": "ACRO",
+  "summary.mode.angle": "ANGLE",
+  "summary.mode.horizon": "HORIZON",
+  "summary.menu": "Меню",
+  "summary.keys": "Горячие клавиши",
+  "summary.kbdFlying": "Полёт с клавиатуры",
+  "summary.kbd.throttle": "Газ вверх / вниз",
+  "summary.kbd.yaw": "Яв влево / вправо",
+  "summary.kbd.sticks": "Питч и ролл"
+}
