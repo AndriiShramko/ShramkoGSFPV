@@ -1,4 +1,22 @@
 {
   "group.voxels": "Ściany i siatka wokseli",
-  "group.voxels.help": "Ściany, w które się rozbijasz, i siatka wokseli, która je pokazuje."
+  "group.voxels.help": "Ściany, w które się rozbijasz, i siatka wokseli, która je pokazuje.",
+  "group.flight": "Lot",
+  "group.flight.help": "Tryb lotu i samopoziomowanie.",
+  "group.crash": "Kraksy i odrodzenie",
+  "group.crash.help": "Co się dzieje po uderzeniu i jak wrócić w powietrze.",
+  "group.camera": "Kamera",
+  "group.camera.help": "Kamera FPV każdego drona. Zmianę widać od razu i nigdy nie przesuwa drona.",
+  "group.display": "Ekran",
+  "group.display.help": "Co pokazuje ekran, jakość obrazu i język.",
+  "group.input": "Sterowanie",
+  "group.input.help": "Aparatura, gamepad albo klawiatura. Kalibracja jest na ekranie Sterowanie.",
+  "group.drone": "Dron i fizyka",
+  "group.drone.help": "Którym dronem latasz i jak lata: grawitacja, silniki, opór. Większość wartości jest zapisywana osobno dla każdego drona.",
+  "group.tune": "Strojenie",
+  "group.tune.help": "PID, rates i krzywa gazu każdego drona, jak w Betaflight.",
+  "group.scenes": "Sceny",
+  "group.scenes.help": "Które skany będą następne i jak są wybierane.",
+  "group.recording": "Nagrywanie",
+  "group.recording.help": "Nagrywanie wideo z twoich lotów."
 }

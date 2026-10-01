@@ -1,26 +1,35 @@
 // The menu's "Import Betaflight diff" (phase D): rates, PID and throttle curve from a Betaflight CLI
-// diff become this drone's overrides (a new flight model); every warning is shown in full.
+// diff become the tune of the drone flown, stored for that drone (tune.rates / tune.pid /
+// tune.throttle; W2-1, review finding C10: v0.2 put them into one set of overrides that the next
+// drone inherited and a reload forgot), then a new flight model from the store; every warning is
+// shown in full.
 import { parseBetaflightDiff } from '@gsfpv/sim-core';
-import type { ParamOverrides } from '@gsfpv/sim-core';
 import { h, clear, panel } from '../../ui/dom';
 import { t } from '../../i18n';
+import { applyModel, droneOf, pilotSet } from '../prefs';
 import type { TestHook } from '../test-hook';
 import type { Feature, FlightContext } from '../context';
 
 type ImportResult = ReturnType<NonNullable<TestHook['importDiff']>>;
 
 function importDiff(ctx: FlightContext, text: string): ImportResult {
-    const session = ctx.session;
     const r = parseBetaflightDiff(text);
     if (r.errors.length || (!r.rates && !r.pid)) return { ok: false, errors: r.errors.length ? r.errors : ['nothing to import'], warnings: r.warnings };
-    const o: ParamOverrides = { ...session.overrides };
-    if (r.rates) o.rates = r.rates;
-    if (r.pid) o.pid = { roll: [...r.pid.roll], pitch: [...r.pid.pitch], yaw: [...r.pid.yaw] };
-    if (r.throttle) o.throttle = { mid: r.throttle.mid, expo: r.throttle.expo };
+    const store = ctx.prefs;
+    const at = { drone: droneOf(store) };
+    const warnings = [...r.warnings];
+    const put = (id: string, v: unknown): void => {
+        const s = pilotSet(store, id, v, at);
+        if (!s.ok) warnings.push(`${id}: not stored (${s.reason})`);
+        else if (s.clamped) warnings.push(`${id}: adjusted into the simulator's range`);
+    };
+    if (r.rates) put('tune.rates', { type: r.rates.type, roll: { ...r.rates.roll }, pitch: { ...r.rates.pitch }, yaw: { ...r.rates.yaw }, rateLimit: r.rates.rateLimit });
+    if (r.pid) put('tune.pid', { roll: [...r.pid.roll], pitch: [...r.pid.pitch], yaw: [...r.pid.yaw] });
+    if (r.throttle) put('tune.throttle', { mid: r.throttle.mid, expo: r.throttle.expo });
     ctx.clearCrash();
-    session.rebuildSim(session.presetId, o);
+    applyModel(ctx.session, store);
     const v = r.firmware.version;
-    return { ok: true, firmware: v ? `${r.firmware.name ?? 'Betaflight'} ${v.major}.${v.minor}.${v.patch}` : null, ratesType: r.rates?.type, warnings: r.warnings };
+    return { ok: true, firmware: v ? `${r.firmware.name ?? 'Betaflight'} ${v.major}.${v.minor}.${v.patch}` : null, ratesType: r.rates?.type, warnings };
 }
 
 function openImport(ctx: FlightContext): void {

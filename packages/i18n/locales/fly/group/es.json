@@ -1,4 +1,22 @@
 {
   "group.voxels": "Paredes y rejilla de vóxeles",
-  "group.voxels.help": "Las paredes con las que chocas y la rejilla de vóxeles que las muestra."
+  "group.voxels.help": "Las paredes con las que chocas y la rejilla de vóxeles que las muestra.",
+  "group.flight": "Vuelo",
+  "group.flight.help": "Modo de vuelo y autonivelado.",
+  "group.crash": "Choques y reaparición",
+  "group.crash.help": "Qué pasa cuando chocas y cómo vuelves al aire.",
+  "group.camera": "Cámara",
+  "group.camera.help": "La cámara FPV de cada dron. Los cambios se ven al instante y nunca mueven el dron.",
+  "group.display": "Pantalla",
+  "group.display.help": "Qué muestra la pantalla, la calidad de imagen y el idioma.",
+  "group.input": "Controles",
+  "group.input.help": "Tu emisora, mando o teclado. La calibración está en la pantalla Controles.",
+  "group.drone": "Dron y física",
+  "group.drone.help": "El dron que vuelas y cómo vuela: gravedad, motores, resistencia. La mayoría de los valores se guarda por separado para cada dron.",
+  "group.tune": "Ajuste fino",
+  "group.tune.help": "PID, rates y curva del acelerador de cada dron, como en Betaflight.",
+  "group.scenes": "Escenas",
+  "group.scenes.help": "Qué escaneos vienen después y cómo se eligen.",
+  "group.recording": "Grabación",
+  "group.recording.help": "Grabación de vídeo de tus vuelos."
 }

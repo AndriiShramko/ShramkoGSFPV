@@ -1,4 +1,22 @@
 {
   "group.voxels": "Walls and voxel grid",
-  "group.voxels.help": "The walls you crash into, and the voxel grid that shows them."
+  "group.voxels.help": "The walls you crash into, and the voxel grid that shows them.",
+  "group.flight": "Flight",
+  "group.flight.help": "Flight mode and self-levelling.",
+  "group.crash": "Crashes & respawn",
+  "group.crash.help": "What happens when you hit something, and how you get back in the air.",
+  "group.camera": "Camera",
+  "group.camera.help": "The FPV camera of each drone. A change shows at once and never moves the drone.",
+  "group.display": "Display",
+  "group.display.help": "What the screen shows, the picture quality and the language.",
+  "group.input": "Controls",
+  "group.input.help": "Your radio, gamepad or keyboard. Calibration is on the Controls screen.",
+  "group.drone": "Drone & physics",
+  "group.drone.help": "The drone you fly and how it flies: gravity, motors, drag. Most values are kept for each drone separately.",
+  "group.tune": "Tune",
+  "group.tune.help": "PID, rates and throttle curve of each drone, as in Betaflight.",
+  "group.scenes": "Scenes",
+  "group.scenes.help": "Which scans come next and how they are picked.",
+  "group.recording": "Recording",
+  "group.recording.help": "Video recording of your flights."
 }

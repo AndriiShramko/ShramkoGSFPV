@@ -1,7 +1,9 @@
 // Drone picker: preset cards; every number shows where it comes from (manufacturer / measured /
-// estimate / Betaflight default). Also draws the rate curve of the preset.
+// estimate / Betaflight default). Also draws the rate curve of the preset. Each drone keeps its own
+// settings (W2-1, D-c): a card says how many of them the pilot changed for that drone.
 import { compileParams, setpointRate } from '@gsfpv/sim-core';
 import type { PresetJson } from '@gsfpv/sim-core';
+import type { PrefsStore } from '@gsfpv/prefs';
 import { PRESETS, DEFAULT_PRESET } from '../presets';
 import { h, fmt } from './dom';
 import { t } from '../i18n';
@@ -51,8 +53,10 @@ export class DronePicker {
     onClose: (() => void) | null = null;
     private readonly current: string;
 
-    constructor(parent: HTMLElement, current: string) {
+    /** `store`: the page's settings, for the per-drone count on each card */
+    constructor(parent: HTMLElement, current: string, o: { store?: PrefsStore } = {}) {
         this.current = current;
+        const changed = (id: string): number => o.store?.explicitList({ drone: id }).filter((e) => e.scope === 'drone').length ?? 0;
         const cards = h('div', { class: 'drone-grid' });
         let keep: HTMLButtonElement | null = null;
         for (const [id, p] of Object.entries(PRESETS)) {
@@ -73,6 +77,7 @@ export class DronePicker {
                 row(p, 'battery', t('drone.battery'), (v) => String(v)),
                 curve(p),
                 h('p', { class: 'muted small' }, `hover ≈ ${fmt(((1 / Math.sqrt(sp.twr) - sp.idle) / (1 - sp.idle)) * 100, 0)} % throttle`),
+                changed(id) ? h('p', { class: 'small ok', 'data-testid': 'drone-changed' }, t('prefs.droneChanged', { n: String(changed(id)) })) : null,
                 btn
             );
             cards.append(card);

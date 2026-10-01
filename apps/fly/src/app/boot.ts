@@ -10,6 +10,7 @@ import { banner, beacon, hasHid, hasWebGPU, q } from './env';
 import { hook } from './test-hook';
 import { fly } from './flight';
 import { mirrorWarned, openPagePrefs, prefsHook } from './prefs';
+import { openSettingsLink, storageBanner } from './builtin/settings';
 
 export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<void> {
     if (!hasWebGPU) banner(ui, t('banner.noWebgpu'), 'no-webgpu');
@@ -18,6 +19,8 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
     // the curated scans are the store's per-scan defaults (the walls switch), so it opens after them
     const prefs = openPagePrefs(showcase, q.toString());
     hook.prefs = prefsHook(prefs);
+    // W2-1: blocked storage says so once (A.5); the catalogue's ?open=settings opens over the picker
+    storageBanner(ui, prefs);
     let picker: ScenePicker | null = null;
 
     function showPicker(errorCode: string | null, msg?: string): void {
@@ -49,7 +52,10 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
     const sceneParam = q.get('scene');
     const start = (): void => {
         if (sceneParam) go(sceneParam, 'paste');
-        else showPicker(null);
+        else {
+            showPicker(null);
+            openSettingsLink(ui, prefs);
+        }
     };
     if (first && !q.get('simradio') && q.get('lat') !== '1' && q.get('nowarn') !== '1') {
         warningModal(ui, () => { try { localStorage.setItem('gsfpv.warned', '1'); } catch { /* ignore */ } mirrorWarned(prefs); start(); });
