@@ -209,7 +209,8 @@ export class Recording {
                 scene: scene.id,
                 splitMin: this.splitMinOverride ?? this.d.prefs.get<number>('recording.splitMin'),
                 capSeconds: target.kind === 'memory' ? MEMORY_CAP_S : undefined,
-                legacyV02: o.legacyV02
+                legacyV02: o.legacyV02,
+                canvas: this.d.canvas
             });
             const codec = await r.start();
             r.pause(this.paused.flight || this.paused.hidden);

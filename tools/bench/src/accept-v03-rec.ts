@@ -1,7 +1,9 @@
 // v0.3 recording acceptance (docs/architecture-v03.md F.5; items 19 and 14; D34), in the real page
 // with the scan drawn. Fresh browser contexts only, never a pilot's profile.
 //   R1  a 10 s recording at a 60 Hz render: ffprobe says r_frame_rate 60/1, 0 duplicate pts,
-//       600 +- 2 frames, every frame decodes. Control C1: v0.2's path (every rendered frame into a
+//       600 +- 2 frames, every frame decodes, and the pictures are new ones: at most 6% repeat the
+//       previous picture (the render's own misses at ~58 Hz are 3-5%) and at most 1% were held for the encoder (item 19: the owner's file had
+//       406 repeats in 535 frames, an encoder that put out 30 a second; probe-rec-encoder.ts). Control C1: v0.2's path (every rendered frame into a
 //       30 fps track) on the same page gives about 29 duplicate pts a second.
 //   R3  the display's own rate (this PC: 30 Hz over HDMI): still 60/1 and 0 duplicate pts, the
 //       repeated frames counted and shown on the bar after stop.
@@ -159,14 +161,18 @@ if (want('R1')) {
     const c1Probe = c1File ? probe(c1File.file) : null;
     await ctx.close();
     const p = r1Probe;
+    // repeats: slots that got the previous picture again (a render hitch, or the encoder behind)
+    const repeats = { pct: Math.round((1000 * r1.info.duplicated) / Math.max(1, r1.info.frames)) / 10, heldPct: Math.round((1000 * r1.info.heldForEncoder) / Math.max(1, r1.info.frames)) / 10,
+        uniquePicturesPerS: Math.round(((r1.info.frames - r1.info.duplicated) / Math.max(0.001, r1.info.seconds)) * 10) / 10 };
     const pass = !!p && p.r_frame_rate === '60/1' && p.dupPts === 0 && Math.abs(p.packets - 600) <= 2 && p.decoded === p.packets
+        && repeats.pct <= 6 && repeats.heldPct <= 1
         && r1.info.files.length === 1 && r1.info.where === 'folder' && r1.info.fps === 60 && r1.strip > 0.1 && (rate.engineFps as number) >= 55;
     // control: the same file checks fail on v0.2's path: duplicate pts (research-b 3.1 measured 29 a
     // second with every frame reaching the encoder; v0.2 also skips a frame while 8 wait in the encoder)
     const fired = !!c1Probe && c1Probe.dupPts > 0 && c1Probe.r_frame_rate !== '60/1';
-    out.R1 = { pass: pass && fired, what: 'a 10 s recording at a 60 Hz render: r_frame_rate 60/1, 0 duplicate pts, 600 +- 2 frames, all decoded; into the folder; the credit burned in (strip luminance spread > 0.1)', scene: SHOWCASE, renderer: (ready.info as Any)?.currentRenderer, frameRateBefore: rate, engineFpsWhileRecording: r1.engineFpsWhileRecording, folder, recorder: r1.info, wallS: r1.wallS, codec: r1.codec, creditStripStd: r1.strip, file: r1File && { ...r1File, file: undefined }, ffprobe: r1Probe, note: r1.note,
+    out.R1 = { pass: pass && fired, what: 'a 10 s recording at a 60 Hz render: r_frame_rate 60/1, 0 duplicate pts, 600 +- 2 frames, all decoded; at most 6% repeated pictures, at most 1% held for the encoder; into the folder; the credit burned in (strip luminance spread > 0.1)', scene: SHOWCASE, renderer: (ready.info as Any)?.currentRenderer, frameRateBefore: rate, engineFpsWhileRecording: r1.engineFpsWhileRecording, repeats, folder, recorder: r1.info, wallS: r1.wallS, codec: r1.codec, creditStripStd: r1.strip, file: r1File && { ...r1File, file: undefined }, ffprobe: r1Probe, note: r1.note,
         control: { what: 'C1: v0.2 path (every rendered frame, 30 fps track, a frame skipped while 8 wait in the encoder) on the same page and render', fired, engineFpsWhileRecording: c1.engineFpsWhileRecording, framesSkippedByEncoderBound: c1.info.dropped, recorder: c1.info, file: c1File && { ...c1File, file: undefined }, ffprobe: c1Probe }, consoleErrors: errors };
-    console.log('R1', pass ? 'PASS' : 'FAIL', 'C1', fired ? 'FIRED' : 'DID NOT FIRE', JSON.stringify({ rate, r1Probe, c1Probe: c1Probe && { dupPts: c1Probe.dupPts, dupPerS: c1Probe.dupPerS, r: c1Probe.r_frame_rate } }));
+    console.log('R1', pass ? 'PASS' : 'FAIL', 'C1', fired ? 'FIRED' : 'DID NOT FIRE', JSON.stringify({ rate, engineFpsWhileRecording: r1.engineFpsWhileRecording, repeats, recorder: { frames: r1.info.frames, duplicated: r1.info.duplicated, held: r1.info.heldForEncoder, dropped: r1.info.dropped }, r1Probe, c1Probe: c1Probe && { dupPts: c1Probe.dupPts, dupPerS: c1Probe.dupPerS, r: c1Probe.r_frame_rate } }));
 }
 
 // ------------------------------------------------------------------ R3: the display's own rate

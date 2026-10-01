@@ -418,6 +418,207 @@ export async function pruneBrowserRecordings(keep: number): Promise<number> {
     }
 }
 
+// ------------------------------------------------------------------ the picture, made on the engine's GPU
+
+/** WebGPU flags (the TypeScript DOM library has the types but not these constants). */
+const TEX_COPY_SRC = 0x01, TEX_COPY_DST = 0x02, TEX_BINDING = 0x04, TEX_RENDER = 0x10;
+const BUF_MAP_READ = 0x01, BUF_COPY_SRC = 0x04, BUF_COPY_DST = 0x08, BUF_UNIFORM = 0x40, BUF_STORAGE = 0x80;
+const MAP_READ = 1;
+/** Pictures being read back at most: all of them busy means the encoder path is behind (the slot is held). */
+const READBACKS = 4;
+/** The I420 pictures are BT.709, limited range. */
+const REC709: VideoColorSpaceInit = { primaries: 'bt709', transfer: 'bt709', matrix: 'bt709', fullRange: false };
+
+/**
+ * The canvas scaled to the video size with the credit laid over it, as I420: one invocation writes
+ * 8 x 2 pixels (four words of Y, one of U, one of V). Rows are strideY bytes (width rounded up to 8).
+ */
+const I420_WGSL = /* wgsl */ `
+struct Params { outW: u32, outH: u32, strideY: u32, cx: u32, cy: u32, cw: u32, ch: u32, pad: u32 };
+@group(0) @binding(0) var src: texture_2d<f32>;
+@group(0) @binding(1) var samp: sampler;
+@group(0) @binding(2) var credit: texture_2d<f32>;
+@group(0) @binding(3) var<uniform> p: Params;
+@group(0) @binding(4) var<storage, read_write> outb: array<u32>;
+
+fn pixel(x: u32, y: u32) -> vec3f {
+    let uv = (vec2f(f32(x), f32(y)) + vec2f(0.5)) / vec2f(f32(p.outW), f32(p.outH));
+    var c = clamp(textureSampleLevel(src, samp, uv, 0.0).rgb, vec3f(0.0), vec3f(1.0));
+    if (x >= p.cx && x < p.cx + p.cw && y >= p.cy && y < p.cy + p.ch) {
+        let k = textureLoad(credit, vec2u(x - p.cx, y - p.cy), 0);
+        c = mix(c, k.rgb, k.a);
+    }
+    return c;
+}
+
+fn byte(v: f32) -> u32 { return u32(clamp(round(v), 0.0, 255.0)); }
+
+@compute @workgroup_size(8, 8)
+fn main(@builtin(global_invocation_id) id: vec3u) {
+    if (id.x * 8u >= p.strideY || id.y * 2u >= p.outH) { return; }
+    var ys = array<u32, 4>(0u, 0u, 0u, 0u);
+    var acc = array<vec3f, 4>(vec3f(0.0), vec3f(0.0), vec3f(0.0), vec3f(0.0));
+    for (var r = 0u; r < 2u; r++) {
+        for (var i = 0u; i < 8u; i++) {
+            let c = pixel(min(id.x * 8u + i, p.outW - 1u), id.y * 2u + r);
+            ys[r * 2u + i / 4u] |= byte(16.0 + 219.0 * dot(c, vec3f(0.2126, 0.7152, 0.0722))) << (8u * (i % 4u));
+            acc[i / 2u] += c;
+        }
+    }
+    var u = 0u;
+    var v = 0u;
+    for (var j = 0u; j < 4u; j++) {
+        let a = acc[j] * 0.25;
+        u |= byte(128.0 + 224.0 * dot(a, vec3f(-0.1146, -0.3854, 0.5))) << (8u * j);
+        v |= byte(128.0 + 224.0 * dot(a, vec3f(0.5, -0.4542, -0.0458))) << (8u * j);
+    }
+    let wY = p.strideY / 4u;
+    for (var r = 0u; r < 2u; r++) {
+        let at = (id.y * 2u + r) * wY + id.x * 2u;
+        outb[at] = ys[r * 2u];
+        outb[at + 1u] = ys[r * 2u + 1u];
+    }
+    let wC = p.strideY / 8u;
+    let uBase = p.strideY * p.outH / 4u;
+    let vBase = uBase + wC * (p.outH / 2u);
+    outb[uBase + id.y * wC + id.x] = u;
+    outb[vBase + id.y * wC + id.x] = v;
+}`;
+
+interface Rect { x: number; y: number; w: number; h: number }
+
+/** A picture read back from the GPU, and the credit strip's luminance spread when it was measured. */
+interface GpuPicture { frame: VideoFrame; stripStd: number | null }
+
+/**
+ * The video picture made on the engine's own WebGPU device (item 19). Measured on the owner's PC
+ * (probe-rec-encoder.ts, the page drawing at 60 Hz on a 30 Hz display): a VideoFrame made from a
+ * canvas reaches Chrome's hardware encoder through a copy on the GPU process' main thread, and while
+ * that thread is busy the copies got one turn per display refresh (30 a second, 10-20 at worst, for
+ * tens of seconds at a time), whatever the encoder settings; frames in CPU memory went in at 60 a
+ * second, and so did this path: the drawn frame copied, scaled, the credit laid over and turned into
+ * I420 in one compute pass on the engine's device, read back (mapAsync, not blocking), and handed
+ * to the encoder as a frame in memory (2.8 MB at 1080p).
+ */
+class GpuPictures {
+    readonly width: number;
+    readonly height: number;
+    private readonly strideY: number;
+    private readonly bytes: number;
+    private readonly out: GPUBuffer;
+    private readonly params: GPUBuffer;
+    private readonly sampler: GPUSampler;
+    private readonly creditTex: GPUTexture;
+    private readonly pool: GPUBuffer[] = [];
+    private readonly free: GPUBuffer[] = [];
+    private src: GPUTexture | null = null;
+    private bind: GPUBindGroup | null = null;
+
+    private constructor(private readonly device: GPUDevice, private readonly ctx: GPUCanvasContext, private readonly pipeline: GPUComputePipeline, width: number, height: number, credit: OffscreenCanvas, private readonly rect: Rect) {
+        this.width = width;
+        this.height = height;
+        this.strideY = Math.ceil(width / 8) * 8;
+        this.bytes = this.strideY * height * 1.5;
+        const d = device;
+        this.out = d.createBuffer({ size: this.bytes, usage: BUF_STORAGE | BUF_COPY_SRC });
+        this.params = d.createBuffer({ size: 32, usage: BUF_UNIFORM | BUF_COPY_DST });
+        d.queue.writeBuffer(this.params, 0, new Uint32Array([width, height, this.strideY, rect.x, rect.y, rect.w, rect.h, 0]));
+        this.sampler = d.createSampler({ magFilter: 'linear', minFilter: 'linear' });
+        this.creditTex = d.createTexture({ size: [Math.max(1, rect.w), Math.max(1, rect.h)], format: 'rgba8unorm', usage: TEX_BINDING | TEX_COPY_DST | TEX_RENDER });
+        if (rect.w > 0 && rect.h > 0) d.queue.copyExternalImageToTexture({ source: credit }, { texture: this.creditTex }, [rect.w, rect.h]);
+        for (let i = 0; i < READBACKS; i++) {
+            const b = d.createBuffer({ size: this.bytes, usage: BUF_MAP_READ | BUF_COPY_DST });
+            this.pool.push(b);
+            this.free.push(b);
+        }
+    }
+
+    /** For a canvas the engine draws with WebGPU (its texture copyable); null otherwise (the 2D canvas path then). */
+    static async create(canvas: HTMLCanvasElement | undefined, width: number, height: number, credit: OffscreenCanvas, rect: Rect): Promise<GpuPictures | null> {
+        try {
+            if (!canvas || typeof canvas.getContext !== 'function' || typeof GPUCanvasContext === 'undefined') return null;
+            const ctx = canvas.getContext('webgpu') as GPUCanvasContext | null;
+            const conf = ctx?.getConfiguration?.();
+            if (!ctx || !conf || !((conf.usage ?? 0) & TEX_COPY_SRC)) return null;
+            const pipeline = await conf.device.createComputePipelineAsync({ layout: 'auto', compute: { module: conf.device.createShaderModule({ code: I420_WGSL }), entryPoint: 'main' } });
+            return new GpuPictures(conf.device, ctx, pipeline, width, height, credit, rect);
+        } catch {
+            return null;
+        }
+    }
+
+    /** A readback is free: a picture can be started now. */
+    get ready(): boolean {
+        return this.free.length > 0;
+    }
+
+    /** Starts the picture of the frame the engine just drew (it is only there in this task); null when every readback is busy. */
+    capture(measureStrip: boolean): Promise<GpuPicture> | null {
+        const buf = this.free.pop();
+        if (!buf) return null;
+        const d = this.device;
+        const tex = this.ctx.getCurrentTexture();
+        if (!this.src || this.src.width !== tex.width || this.src.height !== tex.height) {
+            this.src?.destroy();
+            this.src = d.createTexture({ size: [tex.width, tex.height], format: tex.format, usage: TEX_BINDING | TEX_COPY_DST });
+            this.bind = d.createBindGroup({ layout: this.pipeline.getBindGroupLayout(0), entries: [
+                { binding: 0, resource: this.src.createView() },
+                { binding: 1, resource: this.sampler },
+                { binding: 2, resource: this.creditTex.createView() },
+                { binding: 3, resource: { buffer: this.params } },
+                { binding: 4, resource: { buffer: this.out } }
+            ] });
+        }
+        const enc = d.createCommandEncoder();
+        enc.copyTextureToTexture({ texture: tex }, { texture: this.src }, [tex.width, tex.height]);
+        const pass = enc.beginComputePass();
+        pass.setPipeline(this.pipeline);
+        pass.setBindGroup(0, this.bind!);
+        pass.dispatchWorkgroups(Math.ceil(this.strideY / 64), Math.ceil(this.height / 16));
+        pass.end();
+        enc.copyBufferToBuffer(this.out, 0, buf, 0, this.bytes);
+        d.queue.submit([enc.finish()]);
+        return buf.mapAsync(MAP_READ).then(() => {
+            try {
+                const data = new Uint8Array(buf.getMappedRange());
+                const sY = this.strideY, sC = sY / 2, h = this.height;
+                const stripStd = measureStrip ? this.stripStd(data) : null;
+                const frame = new VideoFrame(data, {
+                    format: 'I420', codedWidth: this.width, codedHeight: h, timestamp: 0, colorSpace: REC709,
+                    layout: [{ offset: 0, stride: sY }, { offset: sY * h, stride: sC }, { offset: sY * h + sC * (h / 2), stride: sC }]
+                });
+                return { frame, stripStd };
+            } finally {
+                buf.unmap();
+                this.free.push(buf);
+            }
+        });
+    }
+
+    /** Luminance spread of the credit strip, from the picture's Y plane (the acceptance's check that the credit is there). */
+    private stripStd(y: Uint8Array): number {
+        const r = this.rect;
+        let s = 0, s2 = 0, n = 0;
+        for (let row = r.y; row < r.y + r.h; row += 2) {
+            for (let x = r.x; x < r.x + r.w; x += 4) {
+                const L = (y[row * this.strideY + x] - 16) / 219;
+                s += L; s2 += L * L; n++;
+            }
+        }
+        const m = s / Math.max(1, n);
+        return Math.sqrt(Math.max(0, s2 / Math.max(1, n) - m * m));
+    }
+
+    /** After the last picture came back. */
+    destroy(): void {
+        for (const b of this.pool) b.destroy();
+        this.out.destroy();
+        this.params.destroy();
+        this.creditTex.destroy();
+        this.src?.destroy();
+    }
+}
+
 // ------------------------------------------------------------------ RECORDER (WebCodecs + Mediabunny)
 
 /** One written file. */
@@ -450,6 +651,8 @@ export interface RecorderInfo {
     /** why it ended without a stop from the pilot: the memory cap, or an error (disk full, access lost) */
     ended: 'stop' | 'cap' | 'error';
     error?: string;
+    /** where the pictures were made: on the engine's WebGPU device, or through a 2D canvas */
+    picture: 'webgpu' | '2d';
 }
 
 export interface RecorderOptions {
@@ -471,9 +674,24 @@ export interface RecorderOptions {
      * own render time into a track declared at 30 fps, which Mediabunny snaps to 1/30 s.
      */
     legacyV02?: boolean;
+    /** the engine's canvas: when it is drawn with WebGPU, the pictures are made on its device (GpuPictures) */
+    canvas?: HTMLCanvasElement;
 }
 
-/** Encoder settings for this size: H.264 first (plays everywhere), VP9 as a fallback (D34). */
+/**
+ * How the encoder is asked, in order (item 19). Measured on the owner's PC (RTX 4090, Chrome 154,
+ * 1728 x 1080 H.264, the page drawing at 60 Hz; tools/bench/src/probe-rec-encoder.ts): with no
+ * hardwareAcceleration given and latencyMode 'quality' Chrome's encoder put out 30 frames a second
+ * however fast it was fed, so a 60 fps recording repeated every other picture; 'prefer-hardware'
+ * takes 188 a second, and 'realtime' with no preference 190. Where there is no hardware encoder,
+ * 'realtime' is the mode made to keep up with a live source.
+ */
+const ENCODER_MODES: readonly Pick<VideoEncoderConfig, 'hardwareAcceleration' | 'latencyMode'>[] = [
+    { hardwareAcceleration: 'prefer-hardware', latencyMode: 'quality' },
+    { hardwareAcceleration: 'no-preference', latencyMode: 'realtime' }
+];
+
+/** Encoder settings for this size: H.264 first (plays everywhere), VP9 as a fallback (D34); the hardware encoder first. */
 async function pickCodec(width: number, height: number, fps: number): Promise<{ muxCodec: 'avc' | 'vp9'; config: VideoEncoderConfig } | null> {
     const candidates: { muxCodec: 'avc' | 'vp9'; codec: string }[] = [
         { muxCodec: 'avc', codec: 'avc1.640033' }, // High 5.1: up to 4K
@@ -482,10 +700,10 @@ async function pickCodec(width: number, height: number, fps: number): Promise<{ 
         { muxCodec: 'vp9', codec: 'vp09.00.51.08' }
     ];
     const declare = declareFramerate(width, height);
-    for (const c of candidates) {
+    for (const c of candidates) for (const mode of ENCODER_MODES) {
         // above 1920 x 1080 the hardware encoder refuses a declared 60 fps: leave it out there
         for (const withRate of declare ? [true, false] : [false]) {
-            const config: VideoEncoderConfig = { codec: c.codec, width, height, bitrate: bitrateFor(width, height, fps), latencyMode: 'quality', ...(withRate ? { framerate: fps } : {}) };
+            const config: VideoEncoderConfig = { codec: c.codec, width, height, bitrate: bitrateFor(width, height, fps), ...mode, ...(withRate ? { framerate: fps } : {}) };
             try {
                 const s = await VideoEncoder.isConfigSupported(config);
                 if (s.supported) return { muxCodec: c.muxCodec, config };
@@ -525,6 +743,8 @@ class Part {
     private readonly inFlight: boolean[] = [];
     /** encode calls with a picture of their own still in the encoder */
     pendingPictures = 0;
+    /** packets the encoder gave back; fewer than `frames` when it dropped some ('realtime' may) */
+    packets = 0;
 
     constructor(mb: typeof Mediabunny, firstSlot: number, name: Promise<string>, target: RecordTarget, muxCodec: 'avc' | 'vp9', config: VideoEncoderConfig, trackFps: number, onError: (e: unknown) => void) {
         this.firstSlot = firstSlot;
@@ -556,6 +776,7 @@ class Part {
         this.encoder = new VideoEncoder({
             output: (chunk, meta) => {
                 if (this.inFlight.shift()) this.pendingPictures--;
+                this.packets++;
                 const pkt = mb.EncodedPacket.fromEncodedChunk(chunk);
                 this.writes = this.writes.then(() => track.add(pkt, meta)).catch(fail);
             },
@@ -605,7 +826,7 @@ class Part {
             throw this.failed;
         }
         await this.output.finalize();
-        return { name: this.name, bytes: this.bytes, frames: this.frames, seconds: this.frames / fps };
+        return { name: this.name, bytes: this.bytes, frames: this.packets, seconds: this.packets / fps };
     }
 
     async abort(): Promise<void> {
@@ -641,10 +862,18 @@ export class CinemaRecorder {
     private duplicated = 0;
     private held = 0;
     private dropped = 0;
+    /** encode calls made; the files hold fewer pictures when the encoder dropped some */
+    private encoded = 0;
     private usedNames = new Set<string>();
     private error: unknown = null;
     private ending: Promise<RecorderInfo> | null = null;
     private legacyT0 = -1;
+    /** the WebGPU path: pictures come back later, so encodes go one after another through this chain */
+    private gpu: GpuPictures | null = null;
+    private chain: Promise<void> = Promise.resolve();
+    /** encodes waiting in the chain, and whether any picture was started (a repeat needs one before it) */
+    private queued = 0;
+    private pictured = false;
 
     constructor(o: RecorderOptions) {
         this.o = o;
@@ -698,6 +927,15 @@ export class CinemaRecorder {
         this.codec = pick.config.codec;
         this.muxCodec = pick.muxCodec;
         this.config = pick.config;
+        if (!this.o.legacyV02) {
+            const box = this.creditBox(this.ctx);
+            const rect = { x: Math.round(box.x), y: Math.round(box.y), w: Math.min(Math.ceil(box.w), this.width - Math.round(box.x)), h: Math.min(Math.ceil(box.h), this.height - Math.round(box.y)) };
+            const credit = new OffscreenCanvas(Math.max(1, rect.w), Math.max(1, rect.h));
+            const c = credit.getContext('2d')!;
+            c.font = this.ctx.font; // the font creditBox measured with
+            this.drawCredit(c, 0, 0, box);
+            this.gpu = await GpuPictures.create(this.o.canvas, this.width, this.height, credit, rect);
+        }
         this.part = this.newPart(0);
         this.recording = true;
         return this.codec;
@@ -708,24 +946,33 @@ export class CinemaRecorder {
         this.pacer.pause(on);
     }
 
-    /** Draws the canvas and the credit into the video picture. */
-    private compose(source: CanvasImageSource): void {
-        const c = this.ctx;
-        c.drawImage(source, 0, 0, this.width, this.height);
-        // the credit, bottom left, readable on any scene (D34: in every frame)
+    /** The credit's box, bottom left, readable on any scene (D34: in every frame); sets the font on `c`. */
+    private creditBox(c: OffscreenCanvasRenderingContext2D): { pad: number; x: number; y: number; w: number; h: number } {
         const fs = Math.max(14, Math.round(this.height / 40));
         c.font = `600 ${fs}px system-ui, sans-serif`;
         const pad = Math.round(fs * 0.6);
         const w = c.measureText(this.credit).width + pad * 2;
         const h = fs + pad * 2;
-        const y = this.height - h - pad;
+        return { pad, x: pad, y: this.height - h - pad, w, h };
+    }
+
+    /** The credit's box and text with the box's top left at (x, y). */
+    private drawCredit(c: OffscreenCanvasRenderingContext2D, x: number, y: number, b: { pad: number; w: number; h: number }): void {
         c.fillStyle = 'rgba(0,0,0,0.55)';
-        c.fillRect(pad, y, w, h);
+        c.fillRect(x, y, b.w, b.h);
         c.fillStyle = '#ffffff';
         c.textBaseline = 'middle';
-        c.fillText(this.credit, pad * 2, y + h / 2);
+        c.fillText(this.credit, x + b.pad, y + b.h / 2);
+    }
+
+    /** Draws the canvas and the credit into the video picture (the 2D canvas path). */
+    private compose(source: CanvasImageSource): void {
+        const c = this.ctx;
+        c.drawImage(source, 0, 0, this.width, this.height);
+        const b = this.creditBox(c);
+        this.drawCredit(c, b.x, b.y, b);
         // a read back from the GPU: once a second is enough for the acceptance's check
-        if (this.composed % 60 === 0) this.lastCreditStripStd = this.stripStd(pad, y, Math.min(w, this.width - pad), h);
+        if (this.composed % 60 === 0) this.lastCreditStripStd = this.stripStd(b.x, b.y, Math.min(b.w, this.width - b.pad), b.h);
         this.composed++;
     }
 
@@ -747,13 +994,33 @@ export class CinemaRecorder {
             this.maybeSplit(slot);
             const part = this.part!;
             let repeat = i < last;
+            const gpu = this.gpu;
             // the encoder is behind: hold the last picture for this slot (a cheap repeat) rather than leave a hole
-            if (!repeat && this.prev && !part.room(false)) {
+            if (!repeat && (gpu ? this.pictured : this.prev) && (!part.room(false) || (gpu && !gpu.ready))) {
                 repeat = true;
                 this.held++;
             }
-            if (!part.room(repeat) || (repeat && !this.prev)) {
+            if (!part.room(repeat) || (repeat && !(gpu ? this.pictured : this.prev)) || this.queued >= PENDING_CALLS_MAX) {
                 this.dropped++; // even repeats would pile up: give the slot up, never stall the flight
+                continue;
+            }
+            if (gpu) {
+                // the picture comes back later: the encodes follow one another in slot order
+                const pic = repeat ? null : gpu.capture(this.composed++ % 60 === 0);
+                this.pictured = true;
+                this.queued++;
+                this.chain = this.chain.then(async () => {
+                    this.queued--;
+                    if (pic) {
+                        const p = await pic;
+                        if (p.stripStd !== null) this.lastCreditStripStd = p.stripStd;
+                        this.prev?.close();
+                        this.prev = p.frame;
+                    }
+                    part.encode(this.prev!, slot, this.fps, repeat);
+                }).catch((e) => this.fail(e));
+                this.encoded++;
+                if (repeat) this.duplicated++;
                 continue;
             }
             if (!repeat) {
@@ -761,6 +1028,7 @@ export class CinemaRecorder {
                 cur = new VideoFrame(this.comp, { timestamp: 0 });
             }
             part.encode(repeat ? this.prev! : cur!, slot, this.fps, repeat);
+            this.encoded++;
             if (repeat) this.duplicated++;
         }
         if (cur) {
@@ -776,6 +1044,7 @@ export class CinemaRecorder {
         this.compose(source);
         const f = new VideoFrame(this.comp, { timestamp: 0 });
         part.encodeAt(f, Math.round((nowMs - this.legacyT0) * 1000));
+        this.encoded++;
         f.close();
     }
 
@@ -785,7 +1054,9 @@ export class CinemaRecorder {
         if (!min || !(min > 0) || !this.part) return;
         const every = Math.max(1, Math.round(min * 60 * this.fps));
         if (slot - this.part.firstSlot < every) return;
-        const finished = this.part.finish(this.fps);
+        const old = this.part;
+        // the WebGPU path: the encodes still in the chain go into this file first
+        const finished = this.chain.then(() => old.finish(this.fps));
         finished.catch(() => { /* reported by stop() */ });
         this.done.push(finished);
         this.part = this.newPart(slot);
@@ -813,10 +1084,11 @@ export class CinemaRecorder {
         this.recording = false;
         const last = this.part;
         this.part = null;
-        const all = [...this.done, why === 'error' ? last.abort().then(() => ({ name: last.name, bytes: 0, frames: 0, seconds: 0 })) : last.finish(this.fps)];
+        const all = [...this.done, this.chain.then(() => (why === 'error' ? last.abort().then(() => ({ name: last.name, bytes: 0, frames: 0, seconds: 0 })) : last.finish(this.fps)))];
         this.ending = Promise.allSettled(all).then((rs) => {
             this.prev?.close();
             this.prev = null;
+            this.gpu?.destroy();
             const files: RecordedFile[] = [];
             let err: unknown = this.error;
             for (const r of rs) {
@@ -824,6 +1096,7 @@ export class CinemaRecorder {
                 else err ??= r.reason;
             }
             const frames = files.reduce((n, f) => n + f.frames, 0);
+            const failed = err !== null && err !== undefined;
             const info: RecorderInfo = {
                 codec: this.codec,
                 width: this.width,
@@ -834,13 +1107,15 @@ export class CinemaRecorder {
                 seconds: this.o.legacyV02 ? this.seconds : frames / this.fps,
                 duplicated: this.duplicated,
                 heldForEncoder: this.held,
-                dropped: this.dropped,
+                // slots the encoder took but gave no packet for are gaps in the file too
+                dropped: this.dropped + (failed ? 0 : Math.max(0, this.encoded - frames)),
                 file: files.length ? files[files.length - 1].name : '',
                 files,
                 where: this.target.kind,
                 folder: this.target.folder,
-                ended: err !== null && err !== undefined ? 'error' : why,
-                ...(err !== null && err !== undefined ? { error: String((err as Error)?.message ?? err) } : {})
+                ended: failed ? 'error' : why,
+                picture: this.gpu ? 'webgpu' : '2d',
+                ...(failed ? { error: String((err as Error)?.message ?? err) } : {})
             };
             return info;
         });
