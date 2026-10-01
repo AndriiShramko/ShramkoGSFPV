@@ -49,8 +49,14 @@ describe('buildCatalogue (I.6)', () => {
 
     it('a planned def needs no translation yet', () => {
         const d = dicts();
-        // recording is planned as a whole (the voxel grid, planned in wave 1, shipped on main since)
-        for (const l of LANGS) for (const k of Object.keys(d[l])) if (k.startsWith('set.recording.') || k === 'set.voxels.radiusM' || k === 'set.voxels.radiusM.help') delete d[l][k];
+        // every planned def's texts go (the agents flip their defs to shipped as their features land)
+        const planned = SCHEMA.defs.filter((x) => x.status === 'planned');
+        expect(planned.length).toBeGreaterThan(0);
+        for (const l of LANGS) for (const def of planned) {
+            delete d[l][labelKey(def)];
+            delete d[l][helpKey(def)];
+            if (def.type === 'enum') for (const o of def.options) delete d[l][`set.${def.id}.opt.${o}`];
+        }
         expect(() => build(d)).not.toThrow();
     });
 

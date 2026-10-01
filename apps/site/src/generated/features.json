@@ -3,22 +3,71 @@
  "schemaVersion": 1,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
-  "settings": 22,
-  "groups": 7,
+  "settings": 40,
+  "groups": 9,
   "drones": 6,
-  "modes": 2,
-  "keys": 9,
+  "modes": 3,
+  "keys": 13,
   "rateTypes": 4,
   "flyingKeys": 10,
-  "allKeys": 17
+  "allKeys": 21
  },
  "locales": {
   "en": {
    "groups": [
     {
+     "id": "flight",
+     "title": "Flight",
+     "settings": [
+      {
+       "id": "flight.mode",
+       "label": "Flight mode",
+       "help": "Angle levels the drone when you let go of the sticks; Horizon levels it too but flips at full stick; Acro holds the attitude, like a freestyle quad. M or the mode chip switches it; a mode switch set on your radio's check screen decides instead.",
+       "type": "enum",
+       "default": "Angle (self-levelling)",
+       "range": "Acro (rate mode) / Angle (self-levelling) / Horizon (levels, flips allowed)",
+       "scope": "global",
+       "apply": "live",
+       "keys": [
+        "M"
+       ],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Acro (rate mode)",
+        "Angle (self-levelling)",
+        "Horizon (levels, flips allowed)"
+       ],
+       "shown": [
+        "hud",
+        "settings",
+        "key"
+       ]
+      }
+     ]
+    },
+    {
      "id": "crash",
      "title": "Crashes & respawn",
      "settings": [
+      {
+       "id": "crash.enabled",
+       "label": "Crashes",
+       "help": "Off: hitting a wall only bounces the drone off, the motors keep spinning. On: a hard hit is a crash.",
+       "type": "bool",
+       "default": "On",
+       "range": "",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "crash"
+       ]
+      },
       {
        "id": "physics.vCrash",
        "label": "Crash threshold",
@@ -35,6 +84,150 @@
        "shown": [
         "settings"
        ]
+      },
+      {
+       "id": "respawn.auto",
+       "label": "Respawn after a crash",
+       "help": "On: after a crash the drone comes back by itself, nothing to press. Off: the crash panel waits for you.",
+       "type": "bool",
+       "default": "On",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "crash"
+       ]
+      },
+      {
+       "id": "respawn.delayS",
+       "label": "Respawn delay",
+       "help": "How long the crash plays before the drone comes back.",
+       "type": "number",
+       "default": "2 s",
+       "range": "0.5\u201310 s",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.target",
+       "label": "Respawn at",
+       "help": "A few seconds back along your path, or the start.",
+       "type": "enum",
+       "default": "Back along the path",
+       "range": "Back along the path / The start",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Back along the path",
+        "The start"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.rewindS",
+       "label": "How far back",
+       "help": "Seconds back along your path where the drone reappears: after a crash, when stuck, and with Y.",
+       "type": "number",
+       "default": "5 s",
+       "range": "1\u201330 s",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.platform",
+       "label": "Invisible platform",
+       "help": "The drone appears on an invisible pad at that height and sits on it, motors on, until you lift off.",
+       "type": "bool",
+       "default": "On",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.keepArmed",
+       "label": "Stay armed after a respawn",
+       "help": "With the arm switch still on, the drone is armed right after a respawn: no switch flip.",
+       "type": "bool",
+       "default": "On",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.unstuck",
+       "label": "Reset when stuck",
+       "help": "Upside down or wedged and not moving: the drone goes a few seconds back by itself, like in Liftoff.",
+       "type": "bool",
+       "default": "On",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "battery.refill",
+       "label": "Fresh battery",
+       "help": "When the pack is full again.",
+       "type": "enum",
+       "default": "At the start (R, restart, new scene)",
+       "range": "At the start (R, restart, new scene) / At every respawn / Never",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "At the start (R, restart, new scene)",
+        "At every respawn",
+        "Never"
+       ],
+       "shown": [
+        "settings"
+       ]
       }
      ]
     },
@@ -45,7 +238,7 @@
       {
        "id": "camera.fovDeg",
        "label": "Camera field of view",
-       "help": "How wide the FPV camera sees; each drone keeps its own value.",
+       "help": "How wide the FPV camera sees. Each drone keeps its own value; a change never moves the drone.",
        "type": "number",
        "default": "115\u00b0",
        "range": "70\u2013150\u00b0",
@@ -62,7 +255,7 @@
       {
        "id": "camera.uptiltDeg",
        "label": "Camera uptilt",
-       "help": "How far the FPV camera tilts up; more tilt suits faster flying.",
+       "help": "How far the FPV camera tilts up; more tilt suits faster flying. Each drone keeps its own value.",
        "type": "number",
        "default": "20\u00b0",
        "range": "0\u201350\u00b0",
@@ -85,7 +278,7 @@
       {
        "id": "display.hud",
        "label": "Show HUD",
-       "help": "The on-screen display: arm state, flight mode, battery, speed and altitude.",
+       "help": "The on-screen display: arm state, flight mode, battery, speed and altitude. H hides every text on the flight view for a moment.",
        "type": "bool",
        "default": "On",
        "range": "",
@@ -143,7 +336,7 @@
       {
        "id": "display.frameStats",
        "label": "Frame stats",
-       "help": "Screen refresh, frame times and input-to-screen delay over the flight view.",
+       "help": "Screen refresh, frame times and input-to-screen delay over the flight view. F3 switches it.",
        "type": "bool",
        "default": "Off",
        "range": "",
@@ -217,7 +410,7 @@
       {
        "id": "drone.current",
        "label": "Drone",
-       "help": "One of the BetaFPV-class presets; every number on its card says where it comes from.",
+       "help": "One of the BetaFPV-class presets; every number on its card says where it comes from. Each drone keeps its own settings.",
        "type": "enum",
        "default": "BetaFPV Pavo20 Pro class, 3S",
        "range": "BetaFPV Pavo20 Pro class, 3S / BetaFPV Pavo20 Pro II class, 3S / BetaFPV Pavo20 Pro II class, 4S / BetaFPV Pavo Pico class, 2S / BetaFPV Meteor65 Pro class, 1S / BetaFPV Air65 Freestyle class, 1S",
@@ -280,6 +473,23 @@
        ]
       },
       {
+       "id": "physics.twr",
+       "label": "Thrust-to-weight",
+       "help": "Maximum thrust divided by weight; the preset takes it from the manufacturer or an estimate.",
+       "type": "number",
+       "default": "5",
+       "range": "2\u20138",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
        "id": "physics.tauMs",
        "label": "Motor spin-up time",
        "help": "How fast the motors reach a new speed; lower feels snappier.",
@@ -312,6 +522,57 @@
        "shown": [
         "settings"
        ]
+      },
+      {
+       "id": "physics.ductDrag",
+       "label": "Duct drag",
+       "help": "Rotor and duct drag that damps a cinewhoop's speed and wobble.",
+       "type": "number",
+       "default": "0.6 1/s",
+       "range": "0\u20131.5 1/s",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "physics.propInertia",
+       "label": "Propeller inertia",
+       "help": "Scales the spin inertia of the props: more inertia softens throttle and turns.",
+       "type": "number",
+       "default": "1\u00d7",
+       "range": "0\u20133\u00d7",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "physics.idlePct",
+       "label": "Motor idle",
+       "help": "Motor speed at zero throttle, like Betaflight's DShot idle value.",
+       "type": "number",
+       "default": "10 %",
+       "range": "0\u201315 %",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
       }
      ]
     },
@@ -322,7 +583,7 @@
       {
        "id": "tune.pid",
        "label": "PID gains (P / I / D / F)",
-       "help": "P, I, D and feed-forward for roll, pitch and yaw, per drone, as in Betaflight.",
+       "help": "P, I, D and feed-forward for roll, pitch and yaw, for each drone, as in Betaflight.",
        "type": "json",
        "default": "",
        "range": "0\u2013250",
@@ -339,7 +600,7 @@
       {
        "id": "tune.rates",
        "label": "Rates (stick curves)",
-       "help": "Betaflight, Actual, KISS or Raceflight rate curves, imported from your Betaflight CLI diff.",
+       "help": "Betaflight, Actual, KISS or Raceflight rate curves, imported from your Betaflight CLI diff, for each drone.",
        "type": "json",
        "default": "",
        "range": "",
@@ -361,7 +622,7 @@
       {
        "id": "tune.throttle",
        "label": "Throttle curve",
-       "help": "Throttle mid and expo from your Betaflight diff.",
+       "help": "Throttle mid and expo, as in Betaflight, for each drone.",
        "type": "json",
        "default": "",
        "range": "0\u2013100",
@@ -488,6 +749,89 @@
        ]
       }
      ]
+    },
+    {
+     "id": "recording",
+     "title": "Recording",
+     "settings": [
+      {
+       "id": "recording.fps",
+       "label": "Frame rate",
+       "help": "60 fps by default, at a constant frame rate (what DaVinci and Premiere expect).",
+       "type": "enum",
+       "default": "60 fps",
+       "range": "30 fps / 60 fps",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "30 fps",
+        "60 fps"
+       ],
+       "shown": [
+        "cinema",
+        "settings"
+       ]
+      },
+      {
+       "id": "recording.resolution",
+       "label": "Video size",
+       "help": "Up to this height, never larger than the picture on screen.",
+       "type": "enum",
+       "default": "1080p",
+       "range": "1080p / 1440p / 4K (2160p) / As on screen",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "1080p",
+        "1440p",
+        "4K (2160p)",
+        "As on screen"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "recording.auto",
+       "label": "Auto-record",
+       "help": "Starts when you arm, stops 3 s after you disarm, into the last chosen folder. Showcase scans only.",
+       "type": "bool",
+       "default": "Off",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "cinema"
+       ]
+      },
+      {
+       "id": "recording.splitMin",
+       "label": "New file every",
+       "help": "A long flight is split into files: if the tab crashes, only the last part is lost.",
+       "type": "number",
+       "default": "10 min",
+       "range": "1\u201330 min",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
     }
    ],
    "keys": [
@@ -504,6 +848,20 @@
      "label": "Back to the start",
      "keys": [
       "R"
+     ]
+    },
+    {
+     "action": "respawn.rewind",
+     "label": "Rewind 5 s",
+     "keys": [
+      "Y"
+     ]
+    },
+    {
+     "action": "crash.keep",
+     "label": "Keep the wreck (no automatic respawn)",
+     "keys": [
+      "Enter"
      ]
     },
     {
@@ -542,10 +900,24 @@
      ]
     },
     {
+     "action": "record.toggle",
+     "label": "Start or stop recording",
+     "keys": [
+      "F9"
+     ]
+    },
+    {
      "action": "frameStats.toggle",
      "label": "Frame times and delay",
      "keys": [
       "F3"
+     ]
+    },
+    {
+     "action": "settings.open",
+     "label": "Settings",
+     "keys": [
+      "O"
      ]
     }
    ],
@@ -838,9 +1210,58 @@
   "es": {
    "groups": [
     {
+     "id": "flight",
+     "title": "Vuelo",
+     "settings": [
+      {
+       "id": "flight.mode",
+       "label": "Modo de vuelo",
+       "help": "Angle nivela el dron al soltar los sticks; Horizon tambi\u00e9n lo nivela, pero con el stick al m\u00e1ximo hace flips; Acro mantiene la actitud, como un quad de freestyle. Se cambia con M o con el bot\u00f3n de modo en pantalla; si tu emisora tiene un interruptor de modos asignado, manda \u00e9l.",
+       "type": "enum",
+       "default": "Angle (autonivelado)",
+       "range": "Acro (modo rate) / Angle (autonivelado) / Horizon (nivela, permite flips)",
+       "scope": "global",
+       "apply": "live",
+       "keys": [
+        "M"
+       ],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Acro (modo rate)",
+        "Angle (autonivelado)",
+        "Horizon (nivela, permite flips)"
+       ],
+       "shown": [
+        "hud",
+        "settings",
+        "key"
+       ]
+      }
+     ]
+    },
+    {
      "id": "crash",
      "title": "Choques y reaparici\u00f3n",
      "settings": [
+      {
+       "id": "crash.enabled",
+       "label": "Choques",
+       "help": "Desactivado: chocar con una pared solo hace rebotar el dron y los motores siguen girando. Activado: un golpe fuerte es un choque.",
+       "type": "bool",
+       "default": "Activado",
+       "range": "",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "crash"
+       ]
+      },
       {
        "id": "physics.vCrash",
        "label": "Umbral de choque",
@@ -857,6 +1278,150 @@
        "shown": [
         "settings"
        ]
+      },
+      {
+       "id": "respawn.auto",
+       "label": "Reaparecer tras un choque",
+       "help": "Activado: tras un choque el dron vuelve solo, sin pulsar nada. Desactivado: el panel del choque espera a que elijas.",
+       "type": "bool",
+       "default": "Activado",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "crash"
+       ]
+      },
+      {
+       "id": "respawn.delayS",
+       "label": "Espera antes de reaparecer",
+       "help": "Cu\u00e1nto se ve el choque antes de que vuelva el dron.",
+       "type": "number",
+       "default": "2 s",
+       "range": "0.5\u201310 s",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.target",
+       "label": "D\u00f3nde reaparecer",
+       "help": "Unos segundos atr\u00e1s en tu ruta, o al inicio.",
+       "type": "enum",
+       "default": "Atr\u00e1s en la ruta",
+       "range": "Atr\u00e1s en la ruta / Al inicio",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Atr\u00e1s en la ruta",
+        "Al inicio"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.rewindS",
+       "label": "Cu\u00e1nto atr\u00e1s",
+       "help": "Cu\u00e1ntos segundos atr\u00e1s en tu ruta reaparece el dron: tras un choque, si se atasca y con Y.",
+       "type": "number",
+       "default": "5 s",
+       "range": "1\u201330 s",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.platform",
+       "label": "Plataforma invisible",
+       "help": "El dron aparece sobre una plataforma invisible a esa altura y se queda en ella con los motores encendidos hasta que despegues.",
+       "type": "bool",
+       "default": "Activado",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.keepArmed",
+       "label": "Seguir armado al reaparecer",
+       "help": "Si el interruptor de armado sigue activado, el dron queda armado nada m\u00e1s reaparecer: sin mover el interruptor.",
+       "type": "bool",
+       "default": "Activado",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.unstuck",
+       "label": "Reiniciar si se atasca",
+       "help": "Boca abajo o atascado sin moverse: el dron vuelve solo unos segundos atr\u00e1s, como en Liftoff.",
+       "type": "bool",
+       "default": "Activado",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "battery.refill",
+       "label": "Bater\u00eda nueva",
+       "help": "Cu\u00e1ndo vuelve a estar llena la bater\u00eda.",
+       "type": "enum",
+       "default": "Al inicio (R, reinicio, escena nueva)",
+       "range": "Al inicio (R, reinicio, escena nueva) / En cada reaparici\u00f3n / Nunca",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Al inicio (R, reinicio, escena nueva)",
+        "En cada reaparici\u00f3n",
+        "Nunca"
+       ],
+       "shown": [
+        "settings"
+       ]
       }
      ]
     },
@@ -867,7 +1432,7 @@
       {
        "id": "camera.fovDeg",
        "label": "Campo de visi\u00f3n de la c\u00e1mara",
-       "help": "Qu\u00e9 tan amplio ve la c\u00e1mara FPV; cada dron guarda su propio valor.",
+       "help": "Qu\u00e9 tan amplio ve la c\u00e1mara FPV. Cada dron guarda su propio valor; un cambio nunca mueve el dron.",
        "type": "number",
        "default": "115\u00b0",
        "range": "70\u2013150\u00b0",
@@ -884,7 +1449,7 @@
       {
        "id": "camera.uptiltDeg",
        "label": "Inclinaci\u00f3n de la c\u00e1mara",
-       "help": "Cu\u00e1nto se inclina hacia arriba la c\u00e1mara FPV; m\u00e1s inclinaci\u00f3n sirve para volar m\u00e1s r\u00e1pido.",
+       "help": "Cu\u00e1nto se inclina hacia arriba la c\u00e1mara FPV; m\u00e1s inclinaci\u00f3n sirve para volar m\u00e1s r\u00e1pido. Cada dron guarda su propio valor.",
        "type": "number",
        "default": "20\u00b0",
        "range": "0\u201350\u00b0",
@@ -907,7 +1472,7 @@
       {
        "id": "display.hud",
        "label": "Mostrar HUD",
-       "help": "La informaci\u00f3n en pantalla: armado, modo de vuelo, bater\u00eda, velocidad y altura.",
+       "help": "La informaci\u00f3n en pantalla: armado, modo de vuelo, bater\u00eda, velocidad y altura. H oculta un momento todo el texto de la vista de vuelo.",
        "type": "bool",
        "default": "Activado",
        "range": "",
@@ -965,7 +1530,7 @@
       {
        "id": "display.frameStats",
        "label": "Estad\u00edsticas de fotogramas",
-       "help": "Frecuencia de pantalla, tiempos de fotograma y retardo de la entrada a la pantalla sobre la vista de vuelo.",
+       "help": "Frecuencia de pantalla, tiempos de fotograma y retardo de la entrada a la pantalla sobre la vista de vuelo. F3 lo cambia.",
        "type": "bool",
        "default": "Desactivado",
        "range": "",
@@ -1039,7 +1604,7 @@
       {
        "id": "drone.current",
        "label": "Dron",
-       "help": "Uno de los presets de clase BetaFPV; cada n\u00famero de su ficha indica de d\u00f3nde viene.",
+       "help": "Uno de los presets de clase BetaFPV; cada n\u00famero de su ficha indica de d\u00f3nde viene. Cada dron guarda sus propios ajustes.",
        "type": "enum",
        "default": "BetaFPV Pavo20 Pro class, 3S",
        "range": "BetaFPV Pavo20 Pro class, 3S / BetaFPV Pavo20 Pro II class, 3S / BetaFPV Pavo20 Pro II class, 4S / BetaFPV Pavo Pico class, 2S / BetaFPV Meteor65 Pro class, 1S / BetaFPV Air65 Freestyle class, 1S",
@@ -1102,6 +1667,23 @@
        ]
       },
       {
+       "id": "physics.twr",
+       "label": "Relaci\u00f3n empuje/peso",
+       "help": "Empuje m\u00e1ximo dividido por el peso; el preset lo toma del fabricante o de una estimaci\u00f3n.",
+       "type": "number",
+       "default": "5",
+       "range": "2\u20138",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
        "id": "physics.tauMs",
        "label": "Tiempo de aceleraci\u00f3n de los motores",
        "help": "Qu\u00e9 tan r\u00e1pido alcanzan los motores una nueva velocidad; menos se siente m\u00e1s \u00e1gil.",
@@ -1134,6 +1716,57 @@
        "shown": [
         "settings"
        ]
+      },
+      {
+       "id": "physics.ductDrag",
+       "label": "Resistencia de los ductos",
+       "help": "Resistencia de rotores y ductos que amortigua la velocidad y el bamboleo de un cinewhoop.",
+       "type": "number",
+       "default": "0.6 1/s",
+       "range": "0\u20131.5 1/s",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "physics.propInertia",
+       "label": "Inercia de las h\u00e9lices",
+       "help": "Escala la inercia de giro de las h\u00e9lices: m\u00e1s inercia suaviza el acelerador y los giros.",
+       "type": "number",
+       "default": "1\u00d7",
+       "range": "0\u20133\u00d7",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "physics.idlePct",
+       "label": "Ralent\u00ed de los motores",
+       "help": "Velocidad de los motores con el acelerador a cero, como el DShot idle value de Betaflight.",
+       "type": "number",
+       "default": "10 %",
+       "range": "0\u201315 %",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
       }
      ]
     },
@@ -1144,7 +1777,7 @@
       {
        "id": "tune.pid",
        "label": "Ganancias PID (P / I / D / F)",
-       "help": "P, I, D y feed-forward para alabeo, cabeceo y gui\u00f1ada, por dron, como en Betaflight.",
+       "help": "P, I, D y feed-forward para alabeo, cabeceo y gui\u00f1ada, para cada dron, como en Betaflight.",
        "type": "json",
        "default": "",
        "range": "0\u2013250",
@@ -1161,7 +1794,7 @@
       {
        "id": "tune.rates",
        "label": "Rates (curvas de los sticks)",
-       "help": "Curvas de rates Betaflight, Actual, KISS o Raceflight, importadas de tu diff de la CLI de Betaflight.",
+       "help": "Curvas de rates Betaflight, Actual, KISS o Raceflight, importadas de tu diff de la CLI de Betaflight, para cada dron.",
        "type": "json",
        "default": "",
        "range": "",
@@ -1183,7 +1816,7 @@
       {
        "id": "tune.throttle",
        "label": "Curva del acelerador",
-       "help": "Throttle mid y expo de tu diff de Betaflight.",
+       "help": "Throttle mid y expo, como en Betaflight, para cada dron.",
        "type": "json",
        "default": "",
        "range": "0\u2013100",
@@ -1310,6 +1943,89 @@
        ]
       }
      ]
+    },
+    {
+     "id": "recording",
+     "title": "Grabaci\u00f3n",
+     "settings": [
+      {
+       "id": "recording.fps",
+       "label": "Fotogramas por segundo",
+       "help": "60 fps por defecto, con cadencia constante (la que esperan DaVinci y Premiere).",
+       "type": "enum",
+       "default": "60 fps",
+       "range": "30 fps / 60 fps",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "30 fps",
+        "60 fps"
+       ],
+       "shown": [
+        "cinema",
+        "settings"
+       ]
+      },
+      {
+       "id": "recording.resolution",
+       "label": "Tama\u00f1o del v\u00eddeo",
+       "help": "Hasta esta altura, nunca mayor que la imagen en pantalla.",
+       "type": "enum",
+       "default": "1080p",
+       "range": "1080p / 1440p / 4K (2160p) / Como en pantalla",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "1080p",
+        "1440p",
+        "4K (2160p)",
+        "Como en pantalla"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "recording.auto",
+       "label": "Grabaci\u00f3n autom\u00e1tica",
+       "help": "Empieza al armar y para 3 s despu\u00e9s de desarmar, en la \u00faltima carpeta elegida. Solo escaneos del escaparate.",
+       "type": "bool",
+       "default": "Desactivado",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "cinema"
+       ]
+      },
+      {
+       "id": "recording.splitMin",
+       "label": "Nuevo archivo cada",
+       "help": "Un vuelo largo se divide en archivos: si la pesta\u00f1a falla, solo se pierde la \u00faltima parte.",
+       "type": "number",
+       "default": "10 min",
+       "range": "1\u201330 min",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
     }
    ],
    "keys": [
@@ -1326,6 +2042,20 @@
      "label": "Volver al inicio",
      "keys": [
       "R"
+     ]
+    },
+    {
+     "action": "respawn.rewind",
+     "label": "Retroceder 5 s",
+     "keys": [
+      "Y"
+     ]
+    },
+    {
+     "action": "crash.keep",
+     "label": "Mantener los restos (sin reaparici\u00f3n autom\u00e1tica)",
+     "keys": [
+      "Enter"
      ]
     },
     {
@@ -1364,10 +2094,24 @@
      ]
     },
     {
+     "action": "record.toggle",
+     "label": "Iniciar o detener la grabaci\u00f3n",
+     "keys": [
+      "F9"
+     ]
+    },
+    {
      "action": "frameStats.toggle",
      "label": "Tiempos de fotograma y retardo",
      "keys": [
       "F3"
+     ]
+    },
+    {
+     "action": "settings.open",
+     "label": "Ajustes",
+     "keys": [
+      "O"
      ]
     }
    ],
@@ -1660,9 +2404,58 @@
   "pl": {
    "groups": [
     {
+     "id": "flight",
+     "title": "Lot",
+     "settings": [
+      {
+       "id": "flight.mode",
+       "label": "Tryb lotu",
+       "help": "Angle poziomuje drona, gdy pu\u015bcisz dr\u0105\u017cki; Horizon te\u017c poziomuje, ale przy pe\u0142nym wychyleniu robi flipy; Acro trzyma po\u0142o\u017cenie jak dron freestyle. Zmieniasz klawiszem M albo przyciskiem trybu na ekranie; je\u015bli w aparaturze ustawiony jest prze\u0142\u0105cznik tryb\u00f3w, decyduje on.",
+       "type": "enum",
+       "default": "Angle (samopoziomowanie)",
+       "range": "Acro (tryb rate) / Angle (samopoziomowanie) / Horizon (poziomuje, flipy mo\u017cliwe)",
+       "scope": "global",
+       "apply": "live",
+       "keys": [
+        "M"
+       ],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Acro (tryb rate)",
+        "Angle (samopoziomowanie)",
+        "Horizon (poziomuje, flipy mo\u017cliwe)"
+       ],
+       "shown": [
+        "hud",
+        "settings",
+        "key"
+       ]
+      }
+     ]
+    },
+    {
      "id": "crash",
      "title": "Kraksy i odrodzenie",
      "settings": [
+      {
+       "id": "crash.enabled",
+       "label": "Crashe",
+       "help": "Wy\u0142.: uderzenie w \u015bcian\u0119 tylko odbija drona, silniki kr\u0119c\u0105 si\u0119 dalej. W\u0142.: mocne uderzenie to crash.",
+       "type": "bool",
+       "default": "W\u0142\u0105czone",
+       "range": "",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "crash"
+       ]
+      },
       {
        "id": "physics.vCrash",
        "label": "Pr\u00f3g kraksy",
@@ -1679,6 +2472,150 @@
        "shown": [
         "settings"
        ]
+      },
+      {
+       "id": "respawn.auto",
+       "label": "Respawn po crashu",
+       "help": "W\u0142.: po crashu dron wraca sam, nic nie trzeba wciska\u0107. Wy\u0142.: panel crasha czeka na Tw\u00f3j wyb\u00f3r.",
+       "type": "bool",
+       "default": "W\u0142\u0105czone",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "crash"
+       ]
+      },
+      {
+       "id": "respawn.delayS",
+       "label": "Op\u00f3\u017anienie respawnu",
+       "help": "Jak d\u0142ugo wida\u0107 crash, zanim dron wr\u00f3ci.",
+       "type": "number",
+       "default": "2 s",
+       "range": "0.5\u201310 s",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.target",
+       "label": "Gdzie wraca\u0107",
+       "help": "Kilka sekund wstecz po Twojej trasie albo na start.",
+       "type": "enum",
+       "default": "Wstecz po trasie",
+       "range": "Wstecz po trasie / Na start",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Wstecz po trasie",
+        "Na start"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.rewindS",
+       "label": "Ile wstecz",
+       "help": "Ile sekund wstecz po Twojej trasie pojawia si\u0119 dron: po crashu, gdy utknie, i klawiszem Y.",
+       "type": "number",
+       "default": "5 s",
+       "range": "1\u201330 s",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.platform",
+       "label": "Niewidzialna platforma",
+       "help": "Dron pojawia si\u0119 na niewidzialnej platformie na tej wysoko\u015bci i stoi na niej z w\u0142\u0105czonymi silnikami, a\u017c wystartujesz.",
+       "type": "bool",
+       "default": "W\u0142\u0105czone",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.keepArmed",
+       "label": "Uzbrojony po respawnie",
+       "help": "Je\u015bli prze\u0142\u0105cznik arm zosta\u0142 w\u0142\u0105czony, dron jest uzbrojony od razu po respawnie: bez prze\u0142\u0105czania.",
+       "type": "bool",
+       "default": "W\u0142\u0105czone",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.unstuck",
+       "label": "Reset po utkni\u0119ciu",
+       "help": "Le\u017cy do g\u00f3ry nogami albo utkn\u0105\u0142 i si\u0119 nie rusza: dron sam wraca kilka sekund wstecz, jak w Liftoff.",
+       "type": "bool",
+       "default": "W\u0142\u0105czone",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "battery.refill",
+       "label": "\u015awie\u017cy akumulator",
+       "help": "Kiedy akumulator jest znowu pe\u0142ny.",
+       "type": "enum",
+       "default": "Na starcie (R, restart, nowa scena)",
+       "range": "Na starcie (R, restart, nowa scena) / Przy ka\u017cdym respawnie / Nigdy",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Na starcie (R, restart, nowa scena)",
+        "Przy ka\u017cdym respawnie",
+        "Nigdy"
+       ],
+       "shown": [
+        "settings"
+       ]
       }
      ]
     },
@@ -1689,7 +2626,7 @@
       {
        "id": "camera.fovDeg",
        "label": "Pole widzenia kamery",
-       "help": "Jak szeroko widzi kamera FPV; ka\u017cdy dron ma w\u0142asn\u0105 warto\u015b\u0107.",
+       "help": "Jak szeroko widzi kamera FPV. Ka\u017cdy dron ma w\u0142asn\u0105 warto\u015b\u0107; zmiana nigdy nie przesuwa drona.",
        "type": "number",
        "default": "115\u00b0",
        "range": "70\u2013150\u00b0",
@@ -1706,7 +2643,7 @@
       {
        "id": "camera.uptiltDeg",
        "label": "K\u0105t nachylenia kamery",
-       "help": "Jak bardzo kamera FPV jest pochylona w g\u00f3r\u0119; wi\u0119kszy k\u0105t pasuje do szybszego latania.",
+       "help": "Jak bardzo kamera FPV jest pochylona w g\u00f3r\u0119; wi\u0119kszy k\u0105t pasuje do szybszego latania. Ka\u017cdy dron ma w\u0142asn\u0105 warto\u015b\u0107.",
        "type": "number",
        "default": "20\u00b0",
        "range": "0\u201350\u00b0",
@@ -1729,7 +2666,7 @@
       {
        "id": "display.hud",
        "label": "Poka\u017c HUD",
-       "help": "Informacje na ekranie: uzbrojenie, tryb lotu, bateria, pr\u0119dko\u015b\u0107 i wysoko\u015b\u0107.",
+       "help": "Informacje na ekranie: uzbrojenie, tryb lotu, bateria, pr\u0119dko\u015b\u0107 i wysoko\u015b\u0107. H na chwil\u0119 chowa ca\u0142y tekst z widoku lotu.",
        "type": "bool",
        "default": "W\u0142\u0105czone",
        "range": "",
@@ -1787,7 +2724,7 @@
       {
        "id": "display.frameStats",
        "label": "Statystyki klatek",
-       "help": "Od\u015bwie\u017canie ekranu, czasy klatek i op\u00f3\u017anienie od wej\u015bcia do ekranu nad widokiem lotu.",
+       "help": "Od\u015bwie\u017canie ekranu, czasy klatek i op\u00f3\u017anienie od wej\u015bcia do ekranu nad widokiem lotu. F3 je prze\u0142\u0105cza.",
        "type": "bool",
        "default": "Wy\u0142\u0105czone",
        "range": "",
@@ -1861,7 +2798,7 @@
       {
        "id": "drone.current",
        "label": "Dron",
-       "help": "Jeden z preset\u00f3w klasy BetaFPV; ka\u017cda liczba na jego karcie m\u00f3wi, sk\u0105d pochodzi.",
+       "help": "Jeden z preset\u00f3w klasy BetaFPV; ka\u017cda liczba na jego karcie m\u00f3wi, sk\u0105d pochodzi. Ka\u017cdy dron ma w\u0142asne ustawienia.",
        "type": "enum",
        "default": "BetaFPV Pavo20 Pro class, 3S",
        "range": "BetaFPV Pavo20 Pro class, 3S / BetaFPV Pavo20 Pro II class, 3S / BetaFPV Pavo20 Pro II class, 4S / BetaFPV Pavo Pico class, 2S / BetaFPV Meteor65 Pro class, 1S / BetaFPV Air65 Freestyle class, 1S",
@@ -1924,6 +2861,23 @@
        ]
       },
       {
+       "id": "physics.twr",
+       "label": "Stosunek ci\u0105gu do masy",
+       "help": "Maksymalny ci\u0105g podzielony przez mas\u0119; preset bierze go od producenta albo z szacunku.",
+       "type": "number",
+       "default": "5",
+       "range": "2\u20138",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
        "id": "physics.tauMs",
        "label": "Czas rozkr\u0119cania silnik\u00f3w",
        "help": "Jak szybko silniki osi\u0105gaj\u0105 nowe obroty; mniej to \u017cwawsza reakcja.",
@@ -1956,6 +2910,57 @@
        "shown": [
         "settings"
        ]
+      },
+      {
+       "id": "physics.ductDrag",
+       "label": "Op\u00f3r os\u0142on \u015bmigie\u0142",
+       "help": "Op\u00f3r wirnik\u00f3w i os\u0142on, kt\u00f3ry t\u0142umi pr\u0119dko\u015b\u0107 i ko\u0142ysanie cinewhoopa.",
+       "type": "number",
+       "default": "0.6 1/s",
+       "range": "0\u20131.5 1/s",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "physics.propInertia",
+       "label": "Bezw\u0142adno\u015b\u0107 \u015bmigie\u0142",
+       "help": "Skaluje bezw\u0142adno\u015b\u0107 obrotow\u0105 \u015bmigie\u0142: wi\u0119ksza \u0142agodzi gaz i skr\u0119ty.",
+       "type": "number",
+       "default": "1\u00d7",
+       "range": "0\u20133\u00d7",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "physics.idlePct",
+       "label": "Bieg ja\u0142owy silnik\u00f3w",
+       "help": "Obroty silnik\u00f3w przy zerowym gazie, jak DShot idle value w Betaflight.",
+       "type": "number",
+       "default": "10 %",
+       "range": "0\u201315 %",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
       }
      ]
     },
@@ -1983,7 +2988,7 @@
       {
        "id": "tune.rates",
        "label": "Rates (krzywe dr\u0105\u017ck\u00f3w)",
-       "help": "Krzywe rates Betaflight, Actual, KISS lub Raceflight, importowane z twojego diffa z CLI Betaflight.",
+       "help": "Krzywe rates Betaflight, Actual, KISS lub Raceflight, importowane z twojego diffa z CLI Betaflight, osobno dla ka\u017cdego drona.",
        "type": "json",
        "default": "",
        "range": "",
@@ -2005,7 +3010,7 @@
       {
        "id": "tune.throttle",
        "label": "Krzywa gazu",
-       "help": "Throttle mid i expo z twojego diffa Betaflight.",
+       "help": "Throttle mid i expo, jak w Betaflight, osobno dla ka\u017cdego drona.",
        "type": "json",
        "default": "",
        "range": "0\u2013100",
@@ -2132,6 +3137,89 @@
        ]
       }
      ]
+    },
+    {
+     "id": "recording",
+     "title": "Nagrywanie",
+     "settings": [
+      {
+       "id": "recording.fps",
+       "label": "Klatki na sekund\u0119",
+       "help": "Domy\u015blnie 60 fps, ze sta\u0142\u0105 liczb\u0105 klatek (tego oczekuj\u0105 DaVinci i Premiere).",
+       "type": "enum",
+       "default": "60 fps",
+       "range": "30 fps / 60 fps",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "30 fps",
+        "60 fps"
+       ],
+       "shown": [
+        "cinema",
+        "settings"
+       ]
+      },
+      {
+       "id": "recording.resolution",
+       "label": "Rozdzielczo\u015b\u0107 wideo",
+       "help": "Do tej wysoko\u015bci, nigdy wi\u0119ksza ni\u017c obraz na ekranie.",
+       "type": "enum",
+       "default": "1080p",
+       "range": "1080p / 1440p / 4K (2160p) / Jak na ekranie",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "1080p",
+        "1440p",
+        "4K (2160p)",
+        "Jak na ekranie"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "recording.auto",
+       "label": "Autonagrywanie",
+       "help": "Start przy uzbrojeniu, stop 3 s po rozbrojeniu, do ostatnio wybranego folderu. Tylko skany z wystawy.",
+       "type": "bool",
+       "default": "Wy\u0142\u0105czone",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "cinema"
+       ]
+      },
+      {
+       "id": "recording.splitMin",
+       "label": "Nowy plik co",
+       "help": "D\u0142ugi lot dzieli si\u0119 na pliki: gdy karta padnie, przepada tylko ostatnia cz\u0119\u015b\u0107.",
+       "type": "number",
+       "default": "10 min",
+       "range": "1\u201330 min",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
     }
    ],
    "keys": [
@@ -2148,6 +3236,20 @@
      "label": "Powr\u00f3t na start",
      "keys": [
       "R"
+     ]
+    },
+    {
+     "action": "respawn.rewind",
+     "label": "Cofnij o 5 s",
+     "keys": [
+      "Y"
+     ]
+    },
+    {
+     "action": "crash.keep",
+     "label": "Zostaw wrak (bez automatycznego odrodzenia)",
+     "keys": [
+      "Enter"
      ]
     },
     {
@@ -2186,10 +3288,24 @@
      ]
     },
     {
+     "action": "record.toggle",
+     "label": "Start / stop nagrywania",
+     "keys": [
+      "F9"
+     ]
+    },
+    {
      "action": "frameStats.toggle",
      "label": "Czasy klatek i op\u00f3\u017anienie",
      "keys": [
       "F3"
+     ]
+    },
+    {
+     "action": "settings.open",
+     "label": "Ustawienia",
+     "keys": [
+      "O"
      ]
     }
    ],
@@ -2482,9 +3598,58 @@
   "ru": {
    "groups": [
     {
+     "id": "flight",
+     "title": "\u041f\u043e\u043b\u0451\u0442",
+     "settings": [
+      {
+       "id": "flight.mode",
+       "label": "\u0420\u0435\u0436\u0438\u043c \u043f\u043e\u043b\u0451\u0442\u0430",
+       "help": "Angle \u0432\u044b\u0440\u0430\u0432\u043d\u0438\u0432\u0430\u0435\u0442 \u0434\u0440\u043e\u043d, \u043a\u043e\u0433\u0434\u0430 \u043e\u0442\u043f\u0443\u0441\u043a\u0430\u0435\u0442\u0435 \u0441\u0442\u0438\u043a\u0438; Horizon \u0442\u043e\u0436\u0435 \u0432\u044b\u0440\u0430\u0432\u043d\u0438\u0432\u0430\u0435\u0442, \u043d\u043e \u043d\u0430 \u043f\u043e\u043b\u043d\u043e\u043c \u0441\u0442\u0438\u043a\u0435 \u0434\u0435\u043b\u0430\u0435\u0442 \u0444\u043b\u0438\u043f\u044b; Acro \u0434\u0435\u0440\u0436\u0438\u0442 \u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435, \u043a\u0430\u043a \u0444\u0440\u0438\u0441\u0442\u0430\u0439\u043b-\u043a\u0432\u0430\u0434. \u041c\u0435\u043d\u044f\u0435\u0442\u0441\u044f \u043a\u043b\u0430\u0432\u0438\u0448\u0435\u0439 M \u0438\u043b\u0438 \u043a\u043d\u043e\u043f\u043a\u043e\u0439 \u0440\u0435\u0436\u0438\u043c\u0430 \u043d\u0430 \u044d\u043a\u0440\u0430\u043d\u0435; \u0435\u0441\u043b\u0438 \u043d\u0430 \u043f\u0443\u043b\u044c\u0442\u0435 \u043d\u0430\u0437\u043d\u0430\u0447\u0435\u043d \u0442\u0443\u043c\u0431\u043b\u0435\u0440 \u0440\u0435\u0436\u0438\u043c\u043e\u0432, \u0440\u0435\u0448\u0430\u0435\u0442 \u043e\u043d.",
+       "type": "enum",
+       "default": "Angle (\u0441\u0430\u043c\u043e\u0432\u044b\u0440\u0430\u0432\u043d\u0438\u0432\u0430\u043d\u0438\u0435)",
+       "range": "Acro (\u0440\u0435\u0436\u0438\u043c rate) / Angle (\u0441\u0430\u043c\u043e\u0432\u044b\u0440\u0430\u0432\u043d\u0438\u0432\u0430\u043d\u0438\u0435) / Horizon (\u0432\u044b\u0440\u0430\u0432\u043d\u0438\u0432\u0430\u0435\u0442, \u0444\u043b\u0438\u043f\u044b \u043c\u043e\u0436\u043d\u043e)",
+       "scope": "global",
+       "apply": "live",
+       "keys": [
+        "M"
+       ],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Acro (\u0440\u0435\u0436\u0438\u043c rate)",
+        "Angle (\u0441\u0430\u043c\u043e\u0432\u044b\u0440\u0430\u0432\u043d\u0438\u0432\u0430\u043d\u0438\u0435)",
+        "Horizon (\u0432\u044b\u0440\u0430\u0432\u043d\u0438\u0432\u0430\u0435\u0442, \u0444\u043b\u0438\u043f\u044b \u043c\u043e\u0436\u043d\u043e)"
+       ],
+       "shown": [
+        "hud",
+        "settings",
+        "key"
+       ]
+      }
+     ]
+    },
+    {
      "id": "crash",
      "title": "\u041a\u0440\u0430\u0448\u0438 \u0438 \u0440\u0435\u0441\u043f\u0430\u0443\u043d",
      "settings": [
+      {
+       "id": "crash.enabled",
+       "label": "\u041a\u0440\u0430\u0448\u0438",
+       "help": "\u0412\u044b\u043a\u043b.: \u0443\u0434\u0430\u0440 \u043e \u0441\u0442\u0435\u043d\u0443 \u0442\u043e\u043b\u044c\u043a\u043e \u043e\u0442\u0442\u0430\u043b\u043a\u0438\u0432\u0430\u0435\u0442 \u0434\u0440\u043e\u043d, \u043c\u043e\u0442\u043e\u0440\u044b \u043a\u0440\u0443\u0442\u044f\u0442\u0441\u044f \u0434\u0430\u043b\u044c\u0448\u0435. \u0412\u043a\u043b.: \u0441\u0438\u043b\u044c\u043d\u044b\u0439 \u0443\u0434\u0430\u0440 \u2014 \u043a\u0440\u0430\u0448.",
+       "type": "bool",
+       "default": "\u0412\u043a\u043b.",
+       "range": "",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "crash"
+       ]
+      },
       {
        "id": "physics.vCrash",
        "label": "\u041f\u043e\u0440\u043e\u0433 \u043a\u0440\u0430\u0448\u0430",
@@ -2501,6 +3666,150 @@
        "shown": [
         "settings"
        ]
+      },
+      {
+       "id": "respawn.auto",
+       "label": "\u0420\u0435\u0441\u043f\u0430\u0443\u043d \u043f\u043e\u0441\u043b\u0435 \u043a\u0440\u0430\u0448\u0430",
+       "help": "\u0412\u043a\u043b.: \u043f\u043e\u0441\u043b\u0435 \u043a\u0440\u0430\u0448\u0430 \u0434\u0440\u043e\u043d \u0432\u043e\u0437\u0432\u0440\u0430\u0449\u0430\u0435\u0442\u0441\u044f \u0441\u0430\u043c, \u043d\u0438\u0447\u0435\u0433\u043e \u043d\u0430\u0436\u0438\u043c\u0430\u0442\u044c \u043d\u0435 \u043d\u0443\u0436\u043d\u043e. \u0412\u044b\u043a\u043b.: \u043f\u0430\u043d\u0435\u043b\u044c \u043a\u0440\u0430\u0448\u0430 \u0436\u0434\u0451\u0442 \u0432\u0430\u0448\u0435\u0433\u043e \u0432\u044b\u0431\u043e\u0440\u0430.",
+       "type": "bool",
+       "default": "\u0412\u043a\u043b.",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "crash"
+       ]
+      },
+      {
+       "id": "respawn.delayS",
+       "label": "\u0417\u0430\u0434\u0435\u0440\u0436\u043a\u0430 \u0440\u0435\u0441\u043f\u0430\u0443\u043d\u0430",
+       "help": "\u0421\u043a\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u0442\u0441\u044f \u043a\u0440\u0430\u0448, \u043f\u0440\u0435\u0436\u0434\u0435 \u0447\u0435\u043c \u0434\u0440\u043e\u043d \u0432\u0435\u0440\u043d\u0451\u0442\u0441\u044f.",
+       "type": "number",
+       "default": "2 \u0441",
+       "range": "0.5\u201310 \u0441",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.target",
+       "label": "\u041a\u0443\u0434\u0430 \u0432\u043e\u0437\u0432\u0440\u0430\u0449\u0430\u0442\u044c\u0441\u044f",
+       "help": "\u041d\u0430 \u043d\u0435\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0441\u0435\u043a\u0443\u043d\u0434 \u043d\u0430\u0437\u0430\u0434 \u043f\u043e \u0432\u0430\u0448\u0435\u0439 \u0442\u0440\u0430\u0435\u043a\u0442\u043e\u0440\u0438\u0438 \u0438\u043b\u0438 \u043d\u0430 \u0441\u0442\u0430\u0440\u0442.",
+       "type": "enum",
+       "default": "\u041d\u0430\u0437\u0430\u0434 \u043f\u043e \u0442\u0440\u0430\u0435\u043a\u0442\u043e\u0440\u0438\u0438",
+       "range": "\u041d\u0430\u0437\u0430\u0434 \u043f\u043e \u0442\u0440\u0430\u0435\u043a\u0442\u043e\u0440\u0438\u0438 / \u041d\u0430 \u0441\u0442\u0430\u0440\u0442",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "\u041d\u0430\u0437\u0430\u0434 \u043f\u043e \u0442\u0440\u0430\u0435\u043a\u0442\u043e\u0440\u0438\u0438",
+        "\u041d\u0430 \u0441\u0442\u0430\u0440\u0442"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.rewindS",
+       "label": "\u041d\u0430 \u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043d\u0430\u0437\u0430\u0434",
+       "help": "\u041d\u0430 \u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0441\u0435\u043a\u0443\u043d\u0434 \u043d\u0430\u0437\u0430\u0434 \u043f\u043e \u0442\u0440\u0430\u0435\u043a\u0442\u043e\u0440\u0438\u0438 \u043f\u043e\u044f\u0432\u043b\u044f\u0435\u0442\u0441\u044f \u0434\u0440\u043e\u043d: \u043f\u043e\u0441\u043b\u0435 \u043a\u0440\u0430\u0448\u0430, \u043a\u043e\u0433\u0434\u0430 \u0437\u0430\u0441\u0442\u0440\u044f\u043b, \u0438 \u043f\u043e Y.",
+       "type": "number",
+       "default": "5 \u0441",
+       "range": "1\u201330 \u0441",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.platform",
+       "label": "\u041d\u0435\u0432\u0438\u0434\u0438\u043c\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430",
+       "help": "\u0414\u0440\u043e\u043d \u043f\u043e\u044f\u0432\u043b\u044f\u0435\u0442\u0441\u044f \u043d\u0430 \u043d\u0435\u0432\u0438\u0434\u0438\u043c\u043e\u0439 \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0435 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0432\u044b\u0441\u043e\u0442\u0435 \u0438 \u0441\u0442\u043e\u0438\u0442 \u043d\u0430 \u043d\u0435\u0439 \u0441 \u043c\u043e\u0442\u043e\u0440\u0430\u043c\u0438, \u043f\u043e\u043a\u0430 \u0432\u044b \u043d\u0435 \u0432\u0437\u043b\u0435\u0442\u0438\u0442\u0435.",
+       "type": "bool",
+       "default": "\u0412\u043a\u043b.",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.keepArmed",
+       "label": "\u041d\u0435 \u0434\u0438\u0437\u0430\u0440\u043c\u0438\u0442\u044c \u043f\u043e\u0441\u043b\u0435 \u0440\u0435\u0441\u043f\u0430\u0443\u043d\u0430",
+       "help": "\u0415\u0441\u043b\u0438 \u0442\u0443\u043c\u0431\u043b\u0435\u0440 \u0430\u0440\u043c\u0430 \u043e\u0441\u0442\u0430\u043b\u0441\u044f \u0432\u043a\u043b\u044e\u0447\u0451\u043d, \u0434\u0440\u043e\u043d \u0437\u0430\u0430\u0440\u043c\u043b\u0435\u043d \u0441\u0440\u0430\u0437\u0443 \u043f\u043e\u0441\u043b\u0435 \u0440\u0435\u0441\u043f\u0430\u0443\u043d\u0430 \u2014 \u0449\u0451\u043b\u043a\u0430\u0442\u044c \u0442\u0443\u043c\u0431\u043b\u0435\u0440\u043e\u043c \u043d\u0435 \u043d\u0443\u0436\u043d\u043e.",
+       "type": "bool",
+       "default": "\u0412\u043a\u043b.",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "respawn.unstuck",
+       "label": "\u0420\u0435\u0441\u0442\u0430\u0440\u0442, \u0435\u0441\u043b\u0438 \u0437\u0430\u0441\u0442\u0440\u044f\u043b",
+       "help": "\u041b\u0435\u0436\u0438\u0442 \u0432\u0432\u0435\u0440\u0445 \u043d\u043e\u0433\u0430\u043c\u0438 \u0438\u043b\u0438 \u0437\u0430\u0441\u0442\u0440\u044f\u043b \u0438 \u043d\u0435 \u0434\u0432\u0438\u0433\u0430\u0435\u0442\u0441\u044f \u2014 \u0434\u0440\u043e\u043d \u0441\u0430\u043c \u0432\u043e\u0437\u0432\u0440\u0430\u0449\u0430\u0435\u0442\u0441\u044f \u043d\u0430 \u043d\u0435\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0441\u0435\u043a\u0443\u043d\u0434 \u043d\u0430\u0437\u0430\u0434, \u043a\u0430\u043a \u0432 Liftoff.",
+       "type": "bool",
+       "default": "\u0412\u043a\u043b.",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "battery.refill",
+       "label": "\u0421\u0432\u0435\u0436\u0438\u0439 \u0430\u043a\u043a\u0443\u043c\u0443\u043b\u044f\u0442\u043e\u0440",
+       "help": "\u041a\u043e\u0433\u0434\u0430 \u0430\u043a\u043a\u0443\u043c\u0443\u043b\u044f\u0442\u043e\u0440 \u0441\u043d\u043e\u0432\u0430 \u043f\u043e\u043b\u043d\u044b\u0439.",
+       "type": "enum",
+       "default": "\u041d\u0430 \u0441\u0442\u0430\u0440\u0442\u0435 (R, \u0440\u0435\u0441\u0442\u0430\u0440\u0442, \u043d\u043e\u0432\u0430\u044f \u0441\u0446\u0435\u043d\u0430)",
+       "range": "\u041d\u0430 \u0441\u0442\u0430\u0440\u0442\u0435 (R, \u0440\u0435\u0441\u0442\u0430\u0440\u0442, \u043d\u043e\u0432\u0430\u044f \u0441\u0446\u0435\u043d\u0430) / \u041f\u0440\u0438 \u043a\u0430\u0436\u0434\u043e\u043c \u0440\u0435\u0441\u043f\u0430\u0443\u043d\u0435 / \u041d\u0438\u043a\u043e\u0433\u0434\u0430",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "\u041d\u0430 \u0441\u0442\u0430\u0440\u0442\u0435 (R, \u0440\u0435\u0441\u0442\u0430\u0440\u0442, \u043d\u043e\u0432\u0430\u044f \u0441\u0446\u0435\u043d\u0430)",
+        "\u041f\u0440\u0438 \u043a\u0430\u0436\u0434\u043e\u043c \u0440\u0435\u0441\u043f\u0430\u0443\u043d\u0435",
+        "\u041d\u0438\u043a\u043e\u0433\u0434\u0430"
+       ],
+       "shown": [
+        "settings"
+       ]
       }
      ]
     },
@@ -2511,7 +3820,7 @@
       {
        "id": "camera.fovDeg",
        "label": "\u0423\u0433\u043e\u043b \u043e\u0431\u0437\u043e\u0440\u0430 \u043a\u0430\u043c\u0435\u0440\u044b",
-       "help": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0448\u0438\u0440\u043e\u043a\u043e \u0432\u0438\u0434\u0438\u0442 FPV-\u043a\u0430\u043c\u0435\u0440\u0430; \u0443 \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u0434\u0440\u043e\u043d\u0430 \u0441\u0432\u043e\u0451 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435.",
+       "help": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0448\u0438\u0440\u043e\u043a\u043e \u0432\u0438\u0434\u0438\u0442 FPV-\u043a\u0430\u043c\u0435\u0440\u0430. \u0423 \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u0434\u0440\u043e\u043d\u0430 \u0441\u0432\u043e\u0451 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435; \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u0435 \u043d\u0438\u043a\u043e\u0433\u0434\u0430 \u043d\u0435 \u0441\u0434\u0432\u0438\u0433\u0430\u0435\u0442 \u0434\u0440\u043e\u043d.",
        "type": "number",
        "default": "115\u00b0",
        "range": "70\u2013150\u00b0",
@@ -2528,7 +3837,7 @@
       {
        "id": "camera.uptiltDeg",
        "label": "\u041d\u0430\u043a\u043b\u043e\u043d \u043a\u0430\u043c\u0435\u0440\u044b",
-       "help": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e FPV-\u043a\u0430\u043c\u0435\u0440\u0430 \u043d\u0430\u043a\u043b\u043e\u043d\u0435\u043d\u0430 \u0432\u0432\u0435\u0440\u0445; \u0431\u043e\u043b\u044c\u0448\u0438\u0439 \u043d\u0430\u043a\u043b\u043e\u043d \u2014 \u0434\u043b\u044f \u0431\u044b\u0441\u0442\u0440\u043e\u0433\u043e \u043f\u043e\u043b\u0451\u0442\u0430.",
+       "help": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e FPV-\u043a\u0430\u043c\u0435\u0440\u0430 \u043d\u0430\u043a\u043b\u043e\u043d\u0435\u043d\u0430 \u0432\u0432\u0435\u0440\u0445; \u0431\u043e\u043b\u044c\u0448\u0438\u0439 \u043d\u0430\u043a\u043b\u043e\u043d \u2014 \u0434\u043b\u044f \u0431\u044b\u0441\u0442\u0440\u043e\u0433\u043e \u043f\u043e\u043b\u0451\u0442\u0430. \u0423 \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u0434\u0440\u043e\u043d\u0430 \u0441\u0432\u043e\u0451 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435.",
        "type": "number",
        "default": "20\u00b0",
        "range": "0\u201350\u00b0",
@@ -2551,7 +3860,7 @@
       {
        "id": "display.hud",
        "label": "\u041f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0442\u044c HUD",
-       "help": "\u042d\u043a\u0440\u0430\u043d\u043d\u0430\u044f \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u044f: \u0430\u0440\u043c, \u0440\u0435\u0436\u0438\u043c \u043f\u043e\u043b\u0451\u0442\u0430, \u0431\u0430\u0442\u0430\u0440\u0435\u044f, \u0441\u043a\u043e\u0440\u043e\u0441\u0442\u044c \u0438 \u0432\u044b\u0441\u043e\u0442\u0430.",
+       "help": "\u042d\u043a\u0440\u0430\u043d\u043d\u0430\u044f \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u044f: \u0430\u0440\u043c, \u0440\u0435\u0436\u0438\u043c \u043f\u043e\u043b\u0451\u0442\u0430, \u0431\u0430\u0442\u0430\u0440\u0435\u044f, \u0441\u043a\u043e\u0440\u043e\u0441\u0442\u044c \u0438 \u0432\u044b\u0441\u043e\u0442\u0430. H \u043d\u0430 \u0432\u0440\u0435\u043c\u044f \u043f\u0440\u044f\u0447\u0435\u0442 \u0432\u0435\u0441\u044c \u0442\u0435\u043a\u0441\u0442 \u0441 \u044d\u043a\u0440\u0430\u043d\u0430 \u043f\u043e\u043b\u0451\u0442\u0430.",
        "type": "bool",
        "default": "\u0412\u043a\u043b.",
        "range": "",
@@ -2609,7 +3918,7 @@
       {
        "id": "display.frameStats",
        "label": "\u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043a\u0430 \u043a\u0430\u0434\u0440\u043e\u0432",
-       "help": "\u0427\u0430\u0441\u0442\u043e\u0442\u0430 \u044d\u043a\u0440\u0430\u043d\u0430, \u0432\u0440\u0435\u043c\u044f \u043a\u0430\u0434\u0440\u0430 \u0438 \u0437\u0430\u0434\u0435\u0440\u0436\u043a\u0430 \u043e\u0442 \u0432\u0432\u043e\u0434\u0430 \u0434\u043e \u044d\u043a\u0440\u0430\u043d\u0430 \u043f\u043e\u0432\u0435\u0440\u0445 \u0432\u0438\u0434\u0430 \u043f\u043e\u043b\u0451\u0442\u0430.",
+       "help": "\u0427\u0430\u0441\u0442\u043e\u0442\u0430 \u044d\u043a\u0440\u0430\u043d\u0430, \u0432\u0440\u0435\u043c\u044f \u043a\u0430\u0434\u0440\u0430 \u0438 \u0437\u0430\u0434\u0435\u0440\u0436\u043a\u0430 \u043e\u0442 \u0432\u0432\u043e\u0434\u0430 \u0434\u043e \u044d\u043a\u0440\u0430\u043d\u0430 \u043f\u043e\u0432\u0435\u0440\u0445 \u0432\u0438\u0434\u0430 \u043f\u043e\u043b\u0451\u0442\u0430. F3 \u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0435\u0442.",
        "type": "bool",
        "default": "\u0412\u044b\u043a\u043b.",
        "range": "",
@@ -2683,7 +3992,7 @@
       {
        "id": "drone.current",
        "label": "\u0414\u0440\u043e\u043d",
-       "help": "\u041e\u0434\u0438\u043d \u0438\u0437 \u043f\u0440\u0435\u0441\u0435\u0442\u043e\u0432 \u043a\u043b\u0430\u0441\u0441\u0430 BetaFPV; \u0443 \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u0447\u0438\u0441\u043b\u0430 \u043d\u0430 \u0435\u0433\u043e \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0435 \u0443\u043a\u0430\u0437\u0430\u043d \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a.",
+       "help": "\u041e\u0434\u0438\u043d \u0438\u0437 \u043f\u0440\u0435\u0441\u0435\u0442\u043e\u0432 \u043a\u043b\u0430\u0441\u0441\u0430 BetaFPV; \u0443 \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u0447\u0438\u0441\u043b\u0430 \u043d\u0430 \u0435\u0433\u043e \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0435 \u0443\u043a\u0430\u0437\u0430\u043d \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a. \u0423 \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u0434\u0440\u043e\u043d\u0430 \u0441\u0432\u043e\u0438 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438.",
        "type": "enum",
        "default": "BetaFPV Pavo20 Pro class, 3S",
        "range": "BetaFPV Pavo20 Pro class, 3S / BetaFPV Pavo20 Pro II class, 3S / BetaFPV Pavo20 Pro II class, 4S / BetaFPV Pavo Pico class, 2S / BetaFPV Meteor65 Pro class, 1S / BetaFPV Air65 Freestyle class, 1S",
@@ -2746,6 +4055,23 @@
        ]
       },
       {
+       "id": "physics.twr",
+       "label": "\u0422\u044f\u0433\u043e\u0432\u043e\u043e\u0440\u0443\u0436\u0451\u043d\u043d\u043e\u0441\u0442\u044c",
+       "help": "\u041c\u0430\u043a\u0441\u0438\u043c\u0430\u043b\u044c\u043d\u0430\u044f \u0442\u044f\u0433\u0430, \u0434\u0435\u043b\u0451\u043d\u043d\u0430\u044f \u043d\u0430 \u0432\u0435\u0441; \u043f\u0440\u0435\u0441\u0435\u0442 \u0431\u0435\u0440\u0451\u0442 \u0435\u0451 \u0443 \u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044f \u0438\u043b\u0438 \u0438\u0437 \u043e\u0446\u0435\u043d\u043a\u0438.",
+       "type": "number",
+       "default": "5",
+       "range": "2\u20138",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
        "id": "physics.tauMs",
        "label": "\u0412\u0440\u0435\u043c\u044f \u0440\u0430\u0441\u043a\u0440\u0443\u0442\u043a\u0438 \u043c\u043e\u0442\u043e\u0440\u043e\u0432",
        "help": "\u041a\u0430\u043a \u0431\u044b\u0441\u0442\u0440\u043e \u043c\u043e\u0442\u043e\u0440\u044b \u043d\u0430\u0431\u0438\u0440\u0430\u044e\u0442 \u043d\u043e\u0432\u044b\u0435 \u043e\u0431\u043e\u0440\u043e\u0442\u044b; \u043c\u0435\u043d\u044c\u0448\u0435 \u2014 \u0440\u0435\u0437\u0447\u0435 \u043e\u0442\u043a\u043b\u0438\u043a.",
@@ -2778,6 +4104,57 @@
        "shown": [
         "settings"
        ]
+      },
+      {
+       "id": "physics.ductDrag",
+       "label": "\u0421\u043e\u043f\u0440\u043e\u0442\u0438\u0432\u043b\u0435\u043d\u0438\u0435 \u0434\u0430\u043a\u0442\u043e\u0432",
+       "help": "\u0421\u043e\u043f\u0440\u043e\u0442\u0438\u0432\u043b\u0435\u043d\u0438\u0435 \u0440\u043e\u0442\u043e\u0440\u043e\u0432 \u0438 \u0434\u0430\u043a\u0442\u043e\u0432, \u0433\u0430\u0441\u044f\u0449\u0435\u0435 \u0441\u043a\u043e\u0440\u043e\u0441\u0442\u044c \u0438 \u0440\u0430\u0441\u043a\u0430\u0447\u043a\u0443 \u0441\u0438\u043d\u0435\u0432\u0443\u043f\u0430.",
+       "type": "number",
+       "default": "0.6 1/\u0441",
+       "range": "0\u20131.5 1/\u0441",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "physics.propInertia",
+       "label": "\u0418\u043d\u0435\u0440\u0446\u0438\u044f \u043f\u0440\u043e\u043f\u0435\u043b\u043b\u0435\u0440\u043e\u0432",
+       "help": "\u041c\u0430\u0441\u0448\u0442\u0430\u0431\u0438\u0440\u0443\u0435\u0442 \u0438\u043d\u0435\u0440\u0446\u0438\u044e \u0432\u0440\u0430\u0449\u0435\u043d\u0438\u044f \u043f\u0440\u043e\u043f\u0435\u043b\u043b\u0435\u0440\u043e\u0432: \u0431\u043e\u043b\u044c\u0448\u0435 \u0438\u043d\u0435\u0440\u0446\u0438\u044f \u2014 \u043c\u044f\u0433\u0447\u0435 \u0433\u0430\u0437 \u0438 \u043f\u043e\u0432\u043e\u0440\u043e\u0442\u044b.",
+       "type": "number",
+       "default": "1\u00d7",
+       "range": "0\u20133\u00d7",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "physics.idlePct",
+       "label": "\u0425\u043e\u043b\u043e\u0441\u0442\u043e\u0439 \u0445\u043e\u0434 \u043c\u043e\u0442\u043e\u0440\u043e\u0432",
+       "help": "\u041e\u0431\u043e\u0440\u043e\u0442\u044b \u043c\u043e\u0442\u043e\u0440\u043e\u0432 \u043f\u0440\u0438 \u043d\u0443\u043b\u0435\u0432\u043e\u043c \u0433\u0430\u0437\u0435, \u043a\u0430\u043a DShot idle value \u0432 Betaflight.",
+       "type": "number",
+       "default": "10 %",
+       "range": "0\u201315 %",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
       }
      ]
     },
@@ -2805,7 +4182,7 @@
       {
        "id": "tune.rates",
        "label": "\u0420\u0435\u0439\u0442\u044b (\u043a\u0440\u0438\u0432\u044b\u0435 \u0441\u0442\u0438\u043a\u043e\u0432)",
-       "help": "\u041a\u0440\u0438\u0432\u044b\u0435 \u0440\u0435\u0439\u0442\u043e\u0432 Betaflight, Actual, KISS \u0438\u043b\u0438 Raceflight, \u0438\u043c\u043f\u043e\u0440\u0442\u0438\u0440\u0443\u044e\u0442\u0441\u044f \u0438\u0437 \u0432\u0430\u0448\u0435\u0433\u043e diff \u0438\u0437 CLI Betaflight.",
+       "help": "\u041a\u0440\u0438\u0432\u044b\u0435 \u0440\u0435\u0439\u0442\u043e\u0432 Betaflight, Actual, KISS \u0438\u043b\u0438 Raceflight, \u0438\u043c\u043f\u043e\u0440\u0442\u0438\u0440\u0443\u044e\u0442\u0441\u044f \u0438\u0437 \u0432\u0430\u0448\u0435\u0433\u043e diff \u0438\u0437 CLI Betaflight, \u0434\u043b\u044f \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u0434\u0440\u043e\u043d\u0430.",
        "type": "json",
        "default": "",
        "range": "",
@@ -2827,7 +4204,7 @@
       {
        "id": "tune.throttle",
        "label": "\u041a\u0440\u0438\u0432\u0430\u044f \u0433\u0430\u0437\u0430",
-       "help": "Throttle mid \u0438 expo \u0438\u0437 \u0432\u0430\u0448\u0435\u0433\u043e diff Betaflight.",
+       "help": "Throttle mid \u0438 expo, \u043a\u0430\u043a \u0432 Betaflight, \u0434\u043b\u044f \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u0434\u0440\u043e\u043d\u0430.",
        "type": "json",
        "default": "",
        "range": "0\u2013100",
@@ -2954,6 +4331,89 @@
        ]
       }
      ]
+    },
+    {
+     "id": "recording",
+     "title": "\u0417\u0430\u043f\u0438\u0441\u044c",
+     "settings": [
+      {
+       "id": "recording.fps",
+       "label": "\u0427\u0430\u0441\u0442\u043e\u0442\u0430 \u043a\u0430\u0434\u0440\u043e\u0432",
+       "help": "\u041f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e 60 fps, \u0441 \u043f\u043e\u0441\u0442\u043e\u044f\u043d\u043d\u043e\u0439 \u0447\u0430\u0441\u0442\u043e\u0442\u043e\u0439 \u043a\u0430\u0434\u0440\u043e\u0432 (\u0435\u0451 \u0436\u0434\u0443\u0442 DaVinci \u0438 Premiere).",
+       "type": "enum",
+       "default": "60 fps",
+       "range": "30 fps / 60 fps",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "30 fps",
+        "60 fps"
+       ],
+       "shown": [
+        "cinema",
+        "settings"
+       ]
+      },
+      {
+       "id": "recording.resolution",
+       "label": "\u0420\u0430\u0437\u043c\u0435\u0440 \u0432\u0438\u0434\u0435\u043e",
+       "help": "\u0414\u043e \u044d\u0442\u043e\u0439 \u0432\u044b\u0441\u043e\u0442\u044b, \u043d\u043e \u043d\u0435 \u0431\u043e\u043b\u044c\u0448\u0435 \u043a\u0430\u0440\u0442\u0438\u043d\u043a\u0438 \u043d\u0430 \u044d\u043a\u0440\u0430\u043d\u0435.",
+       "type": "enum",
+       "default": "1080p",
+       "range": "1080p / 1440p / 4K (2160p) / \u041a\u0430\u043a \u043d\u0430 \u044d\u043a\u0440\u0430\u043d\u0435",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "1080p",
+        "1440p",
+        "4K (2160p)",
+        "\u041a\u0430\u043a \u043d\u0430 \u044d\u043a\u0440\u0430\u043d\u0435"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "recording.auto",
+       "label": "\u0410\u0432\u0442\u043e\u0437\u0430\u043f\u0438\u0441\u044c",
+       "help": "\u0421\u0442\u0430\u0440\u0442 \u043f\u0440\u0438 \u0430\u0440\u043c\u0438\u043d\u0433\u0435, \u0441\u0442\u043e\u043f \u0447\u0435\u0440\u0435\u0437 3 \u0441 \u043f\u043e\u0441\u043b\u0435 \u0434\u0438\u0437\u0430\u0440\u043c\u0430, \u0432 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u044e\u044e \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u0443\u044e \u043f\u0430\u043f\u043a\u0443. \u0422\u043e\u043b\u044c\u043a\u043e \u0441\u043a\u0430\u043d\u044b \u0432\u0438\u0442\u0440\u0438\u043d\u044b.",
+       "type": "bool",
+       "default": "\u0412\u044b\u043a\u043b.",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "cinema"
+       ]
+      },
+      {
+       "id": "recording.splitMin",
+       "label": "\u041d\u043e\u0432\u044b\u0439 \u0444\u0430\u0439\u043b \u043a\u0430\u0436\u0434\u044b\u0435",
+       "help": "\u0414\u043b\u0438\u043d\u043d\u044b\u0439 \u043f\u043e\u043b\u0451\u0442 \u0440\u0435\u0436\u0435\u0442\u0441\u044f \u043d\u0430 \u0444\u0430\u0439\u043b\u044b: \u0435\u0441\u043b\u0438 \u0432\u043a\u043b\u0430\u0434\u043a\u0430 \u0443\u043f\u0430\u0434\u0451\u0442, \u043f\u0440\u043e\u043f\u0430\u0434\u0451\u0442 \u0442\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u043a\u0443\u0441\u043e\u043a.",
+       "type": "number",
+       "default": "10 \u043c\u0438\u043d",
+       "range": "1\u201330 \u043c\u0438\u043d",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
     }
    ],
    "keys": [
@@ -2970,6 +4430,20 @@
      "label": "\u041d\u0430\u0437\u0430\u0434 \u043d\u0430 \u0441\u0442\u0430\u0440\u0442",
      "keys": [
       "R"
+     ]
+    },
+    {
+     "action": "respawn.rewind",
+     "label": "\u041e\u0442\u043c\u043e\u0442\u0430\u0442\u044c \u043d\u0430 5 \u0441",
+     "keys": [
+      "Y"
+     ]
+    },
+    {
+     "action": "crash.keep",
+     "label": "\u041e\u0441\u0442\u0430\u0432\u0438\u0442\u044c \u043e\u0431\u043b\u043e\u043c\u043a\u0438 (\u0431\u0435\u0437 \u0430\u0432\u0442\u043e-\u0440\u0435\u0441\u043f\u0430\u0443\u043d\u0430)",
+     "keys": [
+      "Enter"
      ]
     },
     {
@@ -3008,10 +4482,24 @@
      ]
     },
     {
+     "action": "record.toggle",
+     "label": "\u041d\u0430\u0447\u0430\u0442\u044c \u0438\u043b\u0438 \u043e\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u044c \u0437\u0430\u043f\u0438\u0441\u044c",
+     "keys": [
+      "F9"
+     ]
+    },
+    {
      "action": "frameStats.toggle",
      "label": "\u0412\u0440\u0435\u043c\u044f \u043a\u0430\u0434\u0440\u0430 \u0438 \u0437\u0430\u0434\u0435\u0440\u0436\u043a\u0430",
      "keys": [
       "F3"
+     ]
+    },
+    {
+     "action": "settings.open",
+     "label": "\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438",
+     "keys": [
+      "O"
      ]
     }
    ],

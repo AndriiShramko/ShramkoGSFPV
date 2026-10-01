@@ -16,7 +16,5 @@
   "group.tune": "Тюнинг",
   "group.tune.help": "PID, рейты и кривая газа каждого дрона, как в Betaflight.",
   "group.scenes": "Сцены",
-  "group.scenes.help": "Какие сканы будут дальше и как их выбирать.",
-  "group.recording": "Запись",
-  "group.recording.help": "Запись видео ваших полётов."
+  "group.scenes.help": "Какие сканы будут дальше и как их выбирать."
 }

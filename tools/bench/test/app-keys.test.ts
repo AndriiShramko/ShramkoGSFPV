@@ -86,7 +86,7 @@ describe('one handler per key press, no key bound twice', () => {
 
     it('only shipped, routed bindings take handlers (a planned or flying one would never run)', () => {
         const r = new KeyRouter();
-        expect(() => r.on('record.toggle', () => undefined)).toThrow(/planned/);
+        expect(() => r.on('scene.next', () => undefined)).toThrow(/planned/);
         expect(() => r.on('arm.toggle', () => undefined)).toThrow(/keyboard flying/);
         expect(() => r.on('mode.cycle', () => undefined)).not.toThrow();
         expect(() => r.on('no.such', () => undefined)).toThrow(/no key binding/);

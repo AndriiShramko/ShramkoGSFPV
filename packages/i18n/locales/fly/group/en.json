@@ -16,7 +16,5 @@
   "group.tune": "Tune",
   "group.tune.help": "PID, rates and throttle curve of each drone, as in Betaflight.",
   "group.scenes": "Scenes",
-  "group.scenes.help": "Which scans come next and how they are picked.",
-  "group.recording": "Recording",
-  "group.recording.help": "Video recording of your flights."
+  "group.scenes.help": "Which scans come next and how they are picked."
 }

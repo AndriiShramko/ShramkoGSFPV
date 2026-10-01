@@ -68,7 +68,8 @@ export const KEYMAP: readonly KeyBinding[] = [
     { action: 'hud.toggle', keys: [letter('H')], when: 'always', labelKey: 'keys.hud.toggle', status: 'shipped' },
     { action: 'scale.down', keys: [{ code: 'BracketLeft', cap: '[', aria: '[' }], when: 'always', labelKey: 'keys.scale.down', status: 'planned' },
     { action: 'scale.up', keys: [{ code: 'BracketRight', cap: ']', aria: ']' }], when: 'always', labelKey: 'keys.scale.up', status: 'planned' },
-    { action: 'record.toggle', keys: [{ code: 'F9', cap: 'F9', aria: 'F9' }], when: 'always', labelKey: 'keys.record.toggle', status: 'planned' },
+    // W3-5 (app/builtin/cinema.ts): REC on the recording bar and in the pause menu (F.4)
+    { action: 'record.toggle', keys: [{ code: 'F9', cap: 'F9', aria: 'F9' }], when: 'always', labelKey: 'keys.record.toggle', status: 'shipped' },
     // v0.2 (app/builtin/hud.ts)
     { action: 'frameStats.toggle', keys: [{ code: 'F3', cap: 'F3', aria: 'F3' }], when: 'always', labelKey: 'keys.frameStats.toggle', status: 'shipped' },
     // W2-1 (app/builtin/settings.ts): the settings screen, also from the pause menu and the gear

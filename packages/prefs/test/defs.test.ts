@@ -6,6 +6,12 @@ import type { EnumDef, NumDef, SettingDef } from '../src';
 import { RATE_BOUNDS as SIM_RATE_BOUNDS } from '../../sim-core/src/rates';
 import { MAIN_SETTINGS, PRESETS, REPO, V02_SETTINGS } from './helpers';
 
+/** Settings a v0.3 wave shipped with its feature (the agent that flips one adds it here). */
+const V03_SHIPPED = [
+    // W3-5 recording (recording.folder stays planned: it is picked on the recording bar, not in Settings)
+    'recording.fps', 'recording.resolution', 'recording.auto', 'recording.splitMin'
+];
+
 /**
  * docs/architecture-v03.md A.8, row by row, brought up to what main ships (the voxel grid and the
  * walls switch landed before prefs was wired, see defs/voxels.ts and defs/scene.ts): id, group,
@@ -126,7 +132,7 @@ describe('SCHEMA is the A.8 table', () => {
     it('what a pilot can change on the live site today is shipped, and nothing else (v0.2 plus main\'s walls switch and voxel grid)', () => {
         // plus what wave 2 ships, each agent's own list (WAVE2_SETTINGS)
         const shipped = SCHEMA.defs.filter((d) => d.status === 'shipped').map((d) => d.id);
-        expect([...shipped].sort()).toEqual([...V02_SETTINGS, ...MAIN_SETTINGS, ...WAVE2_SETTINGS].sort());
+        expect([...shipped].sort()).toEqual([...V02_SETTINGS, ...MAIN_SETTINGS, ...WAVE2_SETTINGS, ...V03_SHIPPED].sort());
     });
 
     it('control: flipping a new setting to shipped before its translations exist is caught', () => {

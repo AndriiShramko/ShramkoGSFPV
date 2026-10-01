@@ -16,7 +16,5 @@
   "group.tune": "Ajuste fino",
   "group.tune.help": "PID, rates y curva del acelerador de cada dron, como en Betaflight.",
   "group.scenes": "Escenas",
-  "group.scenes.help": "Qué escaneos vienen después y cómo se eligen.",
-  "group.recording": "Grabación",
-  "group.recording.help": "Grabación de vídeo de tus vuelos."
+  "group.scenes.help": "Qué escaneos vienen después y cómo se eligen."
 }

@@ -47,7 +47,9 @@ const SHIPPED_IN_WAVE2: readonly string[] = [
     // W2-1: O opens Settings
     'settings.open',
     // W2-2 respawn: Y rewinds, Enter keeps the wreck (C.10)
-    'respawn.rewind', 'crash.keep'
+    'respawn.rewind', 'crash.keep',
+    // W3-5: F9, REC on the recording bar
+    'record.toggle'
 ];
 
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });
@@ -108,11 +110,11 @@ describe('v0.2 keys keep working', () => {
     });
 
     it('control: a planned key routes nothing and shows no cap, until asked for', () => {
-        // F9 (recording, wave 3); settings.open (O) was the example until W2-1 shipped it
-        expect(actionFor(press('F9'), 'flight')).toBeNull();
-        expect(keysFor('record.toggle')).toEqual([]);
-        expect(actionFor(press('F9'), 'flight', { planned: true })).toBe('record.toggle');
-        expect(keysFor('record.toggle', { planned: true })).toEqual([{ cap: 'F9', aria: 'F9' }]);
+        // N (next scene, wave 3); O and then F9 were the example until W2-1 and W3-5 shipped them
+        expect(actionFor(press('KeyN'), 'flight')).toBeNull();
+        expect(keysFor('scene.next')).toEqual([]);
+        expect(actionFor(press('KeyN'), 'flight', { planned: true })).toBe('scene.next');
+        expect(keysFor('scene.next', { planned: true })).toEqual([{ cap: 'N', aria: 'N' }]);
         expect(actionFor(press('KeyO'), 'flight')).toBe('settings.open');
     });
 });

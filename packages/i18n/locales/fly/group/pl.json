@@ -16,7 +16,5 @@
   "group.tune": "Strojenie",
   "group.tune.help": "PID, rates i krzywa gazu każdego drona, jak w Betaflight.",
   "group.scenes": "Sceny",
-  "group.scenes.help": "Które skany będą następne i jak są wybierane.",
-  "group.recording": "Nagrywanie",
-  "group.recording.help": "Nagrywanie wideo z twoich lotów."
+  "group.scenes.help": "Które skany będą następne i jak są wybierane."
 }
