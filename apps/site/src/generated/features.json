@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-28",
+ "generated": "2026-10-01",
  "schemaVersion": 1,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
@@ -390,7 +390,9 @@
        "range": "On / Off",
        "scope": "scene",
        "apply": "life",
-       "keys": [],
+       "keys": [
+        "C"
+       ],
        "advanced": false,
        "preset": false,
        "options": [
@@ -1210,7 +1212,9 @@
        "range": "Activadas / Desactivadas",
        "scope": "scene",
        "apply": "life",
-       "keys": [],
+       "keys": [
+        "C"
+       ],
        "advanced": false,
        "preset": false,
        "options": [
@@ -1335,7 +1339,7 @@
      "action": "arm.toggle",
      "label": "Armar / desarmar (vuelo con teclado)",
      "keys": [
-      "Space"
+      "Espacio"
      ]
     },
     {
@@ -2030,7 +2034,9 @@
        "range": "W\u0142\u0105czone / Wy\u0142\u0105czone",
        "scope": "scene",
        "apply": "life",
-       "keys": [],
+       "keys": [
+        "C"
+       ],
        "advanced": false,
        "preset": false,
        "options": [
@@ -2155,7 +2161,7 @@
      "action": "arm.toggle",
      "label": "Uzbr\u00f3j / rozbr\u00f3j (latanie klawiatur\u0105)",
      "keys": [
-      "Space"
+      "Spacja"
      ]
     },
     {
@@ -2850,7 +2856,9 @@
        "range": "\u0412\u043a\u043b\u044e\u0447\u0435\u043d\u044b / \u0412\u044b\u043a\u043b\u044e\u0447\u0435\u043d\u044b",
        "scope": "scene",
        "apply": "life",
-       "keys": [],
+       "keys": [
+        "C"
+       ],
        "advanced": false,
        "preset": false,
        "options": [
@@ -2975,7 +2983,7 @@
      "action": "arm.toggle",
      "label": "\u0410\u0440\u043c / \u0434\u0438\u0437\u0430\u0440\u043c (\u043f\u043e\u043b\u0451\u0442 \u0441 \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u044b)",
      "keys": [
-      "Space"
+      "\u041f\u0440\u043e\u0431\u0435\u043b"
      ]
     },
     {

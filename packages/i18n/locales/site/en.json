@@ -227,6 +227,14 @@
       "cta": "Try them in the simulator"
     },
     "text": {
+      "count": {
+        "settings": { "one": "setting", "few": "settings", "many": "settings", "other": "settings" },
+        "groups": { "one": "group", "few": "groups", "many": "groups", "other": "groups" },
+        "keys": { "one": "keyboard key", "few": "keyboard keys", "many": "keyboard keys", "other": "keyboard keys" },
+        "drones": { "one": "drone preset", "few": "drone presets", "many": "drone presets", "other": "drone presets" },
+        "rateTypes": { "one": "rate-curve type", "few": "rate-curve types", "many": "rate-curve types", "other": "rate-curve types" },
+        "modes": { "one": "flight mode", "few": "flight modes", "many": "flight modes", "other": "flight modes" }
+      },
       "prefs": {
         "on": "On",
         "off": "Off",

@@ -5,6 +5,9 @@
 //   docs/settings.md                         the full list on GitHub, in English
 //   README.md                                the block between <!-- settings:start --> and <!-- settings:end -->
 //   llms.txt, apps/site/public/llms.txt      one line under "## Links"
+//   packages/i18n/locales/site/<lang>.json   only tune.count.* (the landing's counter tiles, each word
+//                                            in the plural form for today's number) and tune.adv (the
+//                                            simulator's own word for "Advanced"); nothing else in it
 //
 //   node --import tsx scripts/gen-catalog.ts           write whatever is stale
 //   node --import tsx scripts/gen-catalog.ts --check   exit 1 when any output is stale (CI); then a
@@ -26,7 +29,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { DRONE_IDS, FLYING_CODES, KEYMAP, RATE_TYPES, SCALE_MAX, SCALE_MIN, SCHEMA, SHARED_WITH_FLYING, buildCatalogue, helpKey, isPresetRef, labelKey } from '../packages/prefs/src/index';
+import { DRONE_IDS, FLYING_CODES, KEYMAP, RATE_TYPES, SCALE_MAX, SCALE_MIN, SCHEMA, SHARED_WITH_FLYING, buildCatalogue, capText, helpKey, isPresetRef, labelKey } from '../packages/prefs/src/index';
 import type { CatalogueKey, CataloguePreset, CatalogueSetting, Dict, GroupId, SettingDef } from '../packages/prefs/src/index';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -266,7 +269,7 @@ export function buildFeatures(date: string): { features: Features; provenance: P
         const flying = FLYING.map((f) => {
             const label = fly[f.label];
             if (!label) throw new Error(`gen-catalog: ${lang}: missing ${f.label} (keyboard flying)`);
-            const caps = f.caps.map((c) => (c === 'Space' ? (fly['arm.keys.space'] ?? c) : c));
+            const caps = f.caps.map((c) => capText(c, fly)); // the same words as the shortcut list (C14)
             return { label, keys: caps };
         });
         const sourceOf = (source: string): Pick<FeatureField, 'kind' | 'sourceLabel'> => {
@@ -464,6 +467,107 @@ export function withLlmsLine(text: string, line: string): string {
     return lines.join('\n');
 }
 
+// ---------------------------------------------------------------- the landing's counter tiles
+
+/**
+ * The landing's counter tiles (apps/site SettingsCatalog.tsx `tiles`) put a number above a noun, so the
+ * noun must agree with the number: Russian "7 grupp", Polish "17 klawiszy" (transliterated), not the
+ * nominative plural "7 gruppy", "17 klawisze" that one fixed word gave (review C15).
+ * The counts change with every schema change, so no fixed word stays right: each tile's forms per CLDR
+ * plural category live in the site dictionary, tune.text.count.<tile>.{one,few,many,other}, and the
+ * generator writes the one for today's count into tune.count.<tile>, which the tile shows. tune.adv,
+ * the badge of an advanced setting, is the simulator's own word (settings.advanced) in each language.
+ */
+export const TILES: readonly (readonly [tile: string, count: keyof Features['counts']])[] = [
+    ['settings', 'settings'], ['groups', 'groups'], ['keys', 'allKeys'], ['drones', 'drones'], ['rateTypes', 'rateTypes'], ['modes', 'modes']
+];
+const TILE_SOURCE = 'apps/site/src/components/SettingsCatalog.tsx';
+
+/** The site's own tile list must be TILES: a tile added there without its forms here would show a stale word. */
+export function checkTiles(disk: (rel: string) => string | null): void {
+    const src = disk(TILE_SOURCE);
+    if (src === null) throw new Error(`gen-catalog: ${TILE_SOURCE} is missing`);
+    const block = /const tiles[^=]*=\s*\[([\s\S]*?)\];/.exec(src)?.[1] ?? '';
+    const theirs = [...block.matchAll(/\["(\w+)",\s*c\.(\w+)\]/g)].map((m) => `${m[1]}:${m[2]}`);
+    const ours = TILES.map(([t, c]) => `${t}:${c}`);
+    if (theirs.join() !== ours.join()) throw new Error(`gen-catalog: the landing's tiles (${theirs.join(', ') || 'none found'}) are not TILES (${ours.join(', ')}): update TILES and tune.text.count`);
+}
+
+/** The word a language puts after a number: the CLDR plural category of n picks one of the forms. */
+export function countWord(lang: string, forms: Readonly<Record<string, unknown>>, n: number): string {
+    const cat = new Intl.PluralRules(lang).select(n);
+    const s = forms[cat] ?? forms.other;
+    if (typeof s !== 'string' || !s.trim()) throw new Error(`gen-catalog: ${lang}: no "${cat}" form of a counter tile (tune.text.count)`);
+    return s;
+}
+
+export interface SiteDerived { count: Record<string, string>; adv: string }
+
+/** What the generator writes into one site dictionary, from its forms, today's counts and the simulator's words. */
+export function siteDerived(lang: string, siteText: string, counts: Features['counts'], fly: Readonly<Record<string, string>>): SiteDerived {
+    const tune = (JSON.parse(siteText) as { tune?: { text?: { count?: Record<string, Record<string, unknown>> } } }).tune;
+    const forms = tune?.text?.count;
+    if (!forms) throw new Error(`gen-catalog: packages/i18n/locales/site/${lang}.json has no tune.text.count block`);
+    const count: Record<string, string> = {};
+    for (const [tile, key] of TILES) {
+        if (!forms[tile]) throw new Error(`gen-catalog: ${lang}: no tune.text.count.${tile}`);
+        count[tile] = countWord(lang, forms[tile], counts[key]);
+    }
+    const adv = fly['settings.advanced'];
+    if (!adv?.trim()) throw new Error(`gen-catalog: ${lang}: the simulator has no settings.advanced`);
+    return { count, adv };
+}
+
+/** The end of the JSON object that starts at `open` (a "{"), strings and their escapes skipped. */
+function closing(text: string, open: number): number {
+    let depth = 0;
+    for (let i = open; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === '"') {
+            for (i++; i < text.length && text[i] !== '"'; i++) if (text[i] === '\\') i++;
+        } else if (ch === '{') depth++;
+        else if (ch === '}' && --depth === 0) return i;
+    }
+    throw new Error('gen-catalog: unbalanced JSON');
+}
+
+/** A JSON string literal, escapes included. */
+const JSON_STR = String.raw`"(?:[^"\\]|\\.)*"`;
+
+/**
+ * A site dictionary with tune.count.* and tune.adv set, everything else byte for byte (the files are
+ * formatted by hand, so they are edited in place, never re-serialised). Checked by parsing the result.
+ */
+export function withSiteDerived(text: string, d: SiteDerived): string {
+    const at = text.indexOf('\n  "tune": {');
+    if (at < 0) throw new Error('gen-catalog: a site dictionary has no top-level "tune" block');
+    const tuneOpen = text.indexOf('{', at);
+    const tuneEnd = closing(text, tuneOpen);
+    let tune = text.slice(tuneOpen, tuneEnd + 1);
+    const cAt = tune.indexOf('\n    "count": {');
+    if (cAt < 0) throw new Error('gen-catalog: tune has no "count" block');
+    const cOpen = tune.indexOf('{', cAt);
+    const cEnd = closing(tune, cOpen);
+    let count = tune.slice(cOpen, cEnd + 1);
+    for (const [tile, word] of Object.entries(d.count)) {
+        const re = new RegExp(String.raw`(\n      "${tile}": )` + JSON_STR);
+        if (!re.test(count)) throw new Error(`gen-catalog: tune.count has no "${tile}"`);
+        count = count.replace(re, (_m, head: string) => head + JSON.stringify(word));
+    }
+    tune = tune.slice(0, cOpen) + count + tune.slice(cEnd + 1);
+    const adv = new RegExp(String.raw`(\n    "adv": )` + JSON_STR);
+    if (!adv.test(tune)) throw new Error('gen-catalog: tune has no "adv"');
+    tune = tune.replace(adv, (_m, head: string) => head + JSON.stringify(d.adv));
+    const out = text.slice(0, tuneOpen) + tune + text.slice(tuneEnd + 1);
+    const want = JSON.parse(text) as { tune: Record<string, unknown> };
+    want.tune.count = { ...(want.tune.count as Record<string, string>), ...d.count };
+    want.tune.adv = d.adv;
+    if (JSON.stringify(JSON.parse(out)) !== JSON.stringify(want)) throw new Error('gen-catalog: editing tune.count / tune.adv would change more than those');
+    return out;
+}
+
+const SITE_DICTS = LANGS.map((l) => [l, `packages/i18n/locales/site/${l}.json`] as const);
+
 // ---------------------------------------------------------------- outputs, check, control
 
 type Outputs = Map<string, string>;
@@ -479,6 +583,12 @@ function render(f: Features, disk: (rel: string) => string | null): Outputs {
         const t = disk(p);
         if (t === null) throw new Error(`gen-catalog: ${p} is missing`);
         out.set(p, withLlmsLine(t, llmsLine(f)));
+    }
+    checkTiles(disk);
+    for (const [lang, p] of SITE_DICTS) {
+        const t = disk(p);
+        if (t === null) throw new Error(`gen-catalog: ${p} is missing`);
+        out.set(p, withSiteDerived(t, siteDerived(lang, t, f.counts, flyDict(lang))));
     }
     for (const [p, text] of [[OUT_MD, out.get(OUT_MD) as string], [README, readmeBlock(f)], ['llms.txt line', llmsLine(f)]] as const) {
         const m = NOT_IN_ENGLISH.exec(text);
@@ -509,8 +619,11 @@ function control(f: Features): string[] {
     const row = planted.locales.en.groups[0]?.settings[0];
     if (!row) return ['no setting to plant a stale label on'];
     row.label = `${row.label} (stale)`;
+    // and a group count whose Russian word differs (7 groups -> 2 or 5): the tiles must be caught too
+    planted.counts.groups = new Intl.PluralRules('ru').select(f.counts.groups) === 'few' ? 5 : 2;
     const s = stale(render(planted, read), read);
-    return [OUT_JSON, OUT_MD, README].filter((p) => !s.includes(p)).map((p) => `${p} not caught`);
+    const ru = SITE_DICTS.find(([l]) => l === 'ru')![1];
+    return [OUT_JSON, OUT_MD, README, ru].filter((p) => !s.includes(p)).map((p) => `${p} not caught`);
 }
 
 function main(): void {
@@ -535,7 +648,7 @@ function main(): void {
             console.error(`gen-catalog --check: the negative control did not fire (${missed.join('; ')})`);
             process.exit(1);
         }
-        console.log(`gen-catalog --check: up to date (${summary}); control: a planted stale label is caught in ${OUT_JSON}, ${OUT_MD}, ${README}`);
+        console.log(`gen-catalog --check: up to date (${summary}); control: a planted stale label is caught in ${OUT_JSON}, ${OUT_MD}, ${README}, and a planted count in the ru tiles`);
         console.log(`  ${texts}`);
         return;
     }

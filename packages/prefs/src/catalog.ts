@@ -51,6 +51,21 @@ export interface CatalogueOptions {
     rateTypes?: number;
 }
 
+/**
+ * Key-caps that are words, and the simulator's dictionary key for the word: its own key card writes
+ * Space in the pilot's language (t('arm.keys.space'), apps/fly ui/hud.ts), so the catalogue does
+ * too, in the shortcut list and in every row (review C14). Letters, symbols, F-keys, Esc, Enter and
+ * Shift are printed on the keys themselves and stay as they are.
+ */
+export const CAP_WORDS: Readonly<Record<string, string>> = { Space: 'arm.keys.space' };
+
+/** A key-cap as a language writes it; the cap itself when the dictionary has no word for it. */
+export function capText(cap: string, dict: Dict): string {
+    const k = CAP_WORDS[cap];
+    const s = k === undefined ? undefined : dict[k];
+    return typeof s === 'string' && s.trim() ? s : cap;
+}
+
 function num(v: number): string {
     return String(Math.round(v * 1000) / 1000);
 }
@@ -110,7 +125,7 @@ export function buildCatalogue(schema: Schema, keymap: readonly KeyBinding[], di
             }
             // a per-scan default of the admin (showcase.json): the fallback, and a note that scans differ
             if (isCuratedRef(d.default)) def = `${def} (${tr('prefs.fromCurated')})`;
-            const caps = actionsOf(d).flatMap((a) => keys.find((b) => b.action === a)?.keys.map((k) => k.cap) ?? []);
+            const caps = actionsOf(d).flatMap((a) => keys.find((b) => b.action === a)?.keys.map((k) => capText(k.cap, dict)) ?? []);
             return { id: d.id, label: tr(labelKey(d)), help: tr(helpKey(d)), type: d.type, default: def, range, scope: d.scope, apply: d.apply, keys: caps, advanced: !!d.advanced };
         };
         const groups: CatalogueGroup[] = [];
@@ -120,7 +135,7 @@ export function buildCatalogue(schema: Schema, keymap: readonly KeyBinding[], di
         }
         locales[lang] = {
             groups,
-            keys: keys.map((b) => ({ action: b.action, label: tr(b.labelKey), keys: b.keys.map((k) => k.cap) })),
+            keys: keys.map((b) => ({ action: b.action, label: tr(b.labelKey), keys: b.keys.map((k) => capText(k.cap, dict)) })),
             drones: presets.map((p) => ({
                 id: p.id,
                 name: p.name,

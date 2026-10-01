@@ -33,7 +33,7 @@ export const SCENE_DEFS: readonly SettingDef[] = [
     // when the admin changes it later (A.6); main's order is the same (flightwalls.ts
     // initialWallsOn: ?walls= for this load, then the pilot's choice, then the admin's, then on).
     // A new flight model and log at the same spot, like scene.dropFloaters: a life setting.
-    { id: 'scene.walls', group: 'voxels', scope: 'scene', type: 'enum', options: WALLS_OPTIONS, default: { curated: 'walls', fallback: 'on' }, apply: 'life', shown: ['key', 'settings', 'url'], url: 'walls', status: 'shipped', since: 1 },
+    { id: 'scene.walls', group: 'voxels', scope: 'scene', type: 'enum', options: WALLS_OPTIONS, default: { curated: 'walls', fallback: 'on' }, apply: 'life', shown: ['key', 'settings', 'url'], action: 'walls.toggle', url: 'walls', status: 'shipped', since: 1 },
     // default: the curated scale of the scene, else 1 (the store asks PresetResolver.curatedScale)
     { id: 'scene.transform', group: 'scenes', scope: 'scene', type: 'json', kind: 'transform', validate: validateTransform, default: null, apply: 'live', shown: ['pause', 'key', 'settings'], action: ['scale.down', 'scale.up'], status: 'planned', since: 1, items: [11] },
     // drops voxel components under N blocks (0 = off); changes the collision, so a life setting

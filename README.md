@@ -142,7 +142,7 @@ Missing a setting you need? Suggest it through the [contact form](https://gsfpv.
 | Controls (1) | Stick mode |
 | Drone & physics (5) | Drone · Gravity 0–30 m/s² · Thrust on other worlds · Motor spin-up time 8–30 ms · Air drag 0.5–2× |
 | Tune (3) | PID gains (P / I / D / F) · Rates (stick curves) · Throttle curve |
-| Walls and voxel grid (5) | Walls (collisions) · Voxel grid (`V`) · Voxel style · Voxel opacity over the scan 0.05–1 · Voxel opacity, voxels only 0.05–1 |
+| Walls and voxel grid (5) | Walls (collisions) (`C`) · Voxel grid (`V`) · Voxel style · Voxel opacity over the scan 0.05–1 · Voxel opacity, voxels only 0.05–1 |
 
 **Keyboard:** `Esc` `P` pause / resume · `R` back to the start · `M` flight mode · `Space` arm / disarm (keyboard flying) · `V` voxel grid: off / over the scan / voxels only · `C` walls on / off for this scan · `H` show or hide the hud · `F3` frame times and delay. **Keyboard flying:** `Space` arm / disarm · `W` `S` throttle up / down, stays where you leave it · `A` `D` yaw: turn left / right · `↑` `↓` `←` `→` pitch and roll: tilt · `M` self-levelling (ANGLE) or ACRO.
 

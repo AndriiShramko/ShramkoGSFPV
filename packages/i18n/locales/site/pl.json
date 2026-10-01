@@ -181,9 +181,9 @@
     "lead": "Generowany przy każdym wydaniu ze schematu ustawień samego symulatora: dokładnie to, co możesz zmienić dziś — bez obietnic i bez zmyśleń. Szukaj albo filtruj według grupy.",
     "count": {
       "settings": "ustawienia",
-      "groups": "grupy",
-      "keys": "klawisze",
-      "drones": "presety dronów",
+      "groups": "grup",
+      "keys": "klawiszy",
+      "drones": "presetów dronów",
       "rateTypes": "typy krzywych rates",
       "modes": "tryby lotu"
     },
@@ -227,6 +227,14 @@
       "cta": "Wypróbuj je w symulatorze"
     },
     "text": {
+      "count": {
+        "settings": { "one": "ustawienie", "few": "ustawienia", "many": "ustawień", "other": "ustawienia" },
+        "groups": { "one": "grupa", "few": "grupy", "many": "grup", "other": "grupy" },
+        "keys": { "one": "klawisz", "few": "klawisze", "many": "klawiszy", "other": "klawisza" },
+        "drones": { "one": "preset drona", "few": "presety dronów", "many": "presetów dronów", "other": "presetu dronów" },
+        "rateTypes": { "one": "typ krzywej rates", "few": "typy krzywych rates", "many": "typów krzywych rates", "other": "typu krzywych rates" },
+        "modes": { "one": "tryb lotu", "few": "tryby lotu", "many": "trybów lotu", "other": "trybu lotu" }
+      },
       "prefs": {
         "on": "Włączone",
         "off": "Wyłączone",
