@@ -400,45 +400,60 @@ if (want('P6')) {
 
 // ------------------------------------------------------------------ P7 phone 375 x 812
 if (want('P7')) {
-    const p = await page(browser, { w: 375, h: 812, mobile: true });
-    await flight(p);
-    await p.waitForTimeout(500);
-    const boxes = (sel: string) => p.evaluate((s) => [...document.querySelectorAll(s)].filter((e) => (e as HTMLElement).offsetParent !== null).map((e) => { const r = e.getBoundingClientRect(); return { id: (e as HTMLElement).dataset.id ?? (e as HTMLElement).dataset.action ?? e.className, l: r.left, t: r.top, r: r.right, b: r.bottom }; }), sel);
     const overlap = (a: Any, b: Any) => a.l < b.r - 0.5 && b.l < a.r - 0.5 && a.t < b.b - 0.5 && b.t < a.b - 0.5;
     const pairs = (list: Any[]) => { const o: string[] = []; for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) if (overlap(list[i], list[j])) o.push(`${list[i].id} x ${list[j].id}`); return o; };
-    const top = await boxes('.top-actions .btn, .osd.tl, .osd.tr');
-    const topOverlaps = pairs(top);
-    // the walls box at the top middle (walls.ts) is not ours: recorded, see the report
-    const wallsBox = await boxes('.bake-box');
-    await p.tap('[data-action="open-settings"]');
-    await p.waitForSelector('[data-testid="settings"]');
-    const measure = async () => {
-        const rows = await boxes('[data-testid="settings"] .sr');
-        const geo = await p.evaluate(() => { const pane = document.querySelector('.set-pane') as HTMLElement; const panel = document.querySelector('[data-testid="settings"]')!.getBoundingClientRect(); return { paneScroll: pane.scrollWidth, paneClient: pane.clientWidth, docScroll: document.documentElement.scrollWidth, panel: { l: panel.left, r: panel.right, t: panel.top, b: panel.bottom } }; });
-        const outside = rows.filter((r) => r.l < -0.5 || r.r > 375.5).map((r) => r.id);
-        return { rows: rows.length, overlaps: pairs(rows), outside, ...geo };
-    };
-    const first = await measure();
-    await p.tap('.set-group[data-group="drone"] .sg-toggle');
-    await p.waitForTimeout(300);
-    const drone = await measure();
-    await p.tap('.set-group[data-group="tune"] .sg-toggle');
-    await p.waitForTimeout(300);
-    const tune = await measure();
-    if (shots) await p.screenshot({ path: join(SHOTS_DIR, 'phone-tune-render-off.png') });
     const ok = (m: Any) => m.rows > 0 && m.overlaps.length === 0 && m.outside.length === 0 && m.paneScroll <= m.paneClient && m.docScroll <= 375 && m.panel.l >= 0 && m.panel.r <= 375.5;
-    const pass = topOverlaps.length === 0 && ok(first) && ok(drone) && ok(tune);
-    // control: a planted 600 px control must be caught by the same measurement
-    await p.addStyleTag({ content: '[data-id="tune.throttle"] .sr-control { width: 600px; }' });
-    await p.waitForTimeout(200);
-    const planted = await measure();
-    await p.context().close();
-    const control = { planted, fired: !ok(planted) };
-    // the walls box (walls.ts, fly.css; not this agent's) sits at the top middle where the top buttons are on a phone;
-    // it already covered Controls before the gear existed, so it is recorded for its owner, not counted here
-    const btn = (id: string) => top.find((b) => b.id === id);
-    const wallsVsTop = wallsBox.length ? { box: wallsBox[0], overlapsGear: !!btn('open-settings') && overlap(wallsBox[0], btn('open-settings')), overlapsControls: !!btn('open-controls') && overlap(wallsBox[0], btn('open-controls')) } : null;
-    out.P7 = { pass: pass && control.fired, what: 'phone 375x812: the gear, Controls and Pause do not overlap each other or the OSD lines; Settings fills the screen, no horizontal overflow, its rows do not overlap (first group, Drone & physics, Tune)', topButtons: top, topOverlaps, wallsBoxAtTop: wallsVsTop, settings: { first, drone, tune }, control };
+    const runs: Record<string, Any> = {};
+    let control: Any = null;
+    // English, and the two languages with the longest words (the settings' texts are in all four)
+    for (const lang of ['en', 'ru', 'pl']) {
+        const p = await page(browser, { w: 375, h: 812, mobile: true });
+        await p.context().addCookies([{ name: 'NEXT_LOCALE', value: lang, url: SITE }]);
+        await flight(p);
+        await p.waitForTimeout(500);
+        const boxes = (sel: string) => p.evaluate((q) => [...document.querySelectorAll(q)].filter((e) => (e as HTMLElement).offsetParent !== null).map((e) => { const r = e.getBoundingClientRect(); return { id: (e as HTMLElement).dataset.id ?? (e as HTMLElement).dataset.action ?? e.className, l: r.left, t: r.top, r: r.right, b: r.bottom }; }), sel);
+        const top = await boxes('.top-actions .btn, .osd.tl, .osd.tr');
+        // the walls box at the top middle (walls.ts, fly.css; not this agent's): recorded, see the report
+        const wallsBox = await boxes('.bake-box');
+        await p.tap('[data-action="open-settings"]');
+        await p.waitForSelector('[data-testid="settings"]');
+        const measure = async () => {
+            const rows = await boxes('[data-testid="settings"] .sr');
+            // every part of every visible row inside the screen's width
+            const parts = await boxes('[data-testid="settings"] .sr > *, [data-testid="settings"] .sr-control *, [data-testid="settings"] .sg-drone *, [data-testid="settings"] .sg-foot *, [data-testid="settings"] .panel-head *, [data-testid="settings"] .set-tools *, [data-testid="settings"] .data *');
+            const geo = await p.evaluate(() => { const pane = document.querySelector('.set-pane') as HTMLElement; const panel = document.querySelector('[data-testid="settings"]')!.getBoundingClientRect(); return { paneScroll: pane.scrollWidth, paneClient: pane.clientWidth, docScroll: document.documentElement.scrollWidth, panel: { l: panel.left, r: panel.right, t: panel.top, b: panel.bottom } }; });
+            const outside = [...rows, ...parts].filter((r) => r.l < -0.5 || r.r > 375.5).map((r) => String(r.id));
+            return { rows: rows.length, parts: parts.length, overlaps: pairs(rows), outside: [...new Set(outside)], ...geo };
+        };
+        const groups: Record<string, Any> = {};
+        const names = await p.evaluate(() => [...document.querySelectorAll('.set-group')].map((g) => g.getAttribute('data-group')!));
+        for (const g of names) {
+            // the accordion: the group's header opens it (the first one is open already)
+            if (!(await p.locator(`.set-group[data-group="${g}"].sel`).count())) await p.tap(`.set-group[data-group="${g}"] .sg-toggle`);
+            await p.waitForTimeout(150);
+            groups[g] = await measure();
+            if (g === 'data') groups[g].rows = 1; // Data has no setting rows, only its own block
+        }
+        if (shots && lang === 'ru') await p.screenshot({ path: join(SHOTS_DIR, 'phone-ru-data-render-off.png') });
+        const btn = (id: string) => top.find((b) => b.id === id);
+        runs[lang] = {
+            pageLang: await p.evaluate(() => document.documentElement.lang), title: await p.locator('#set-title').textContent(),
+            topButtons: top, topOverlaps: pairs(top),
+            wallsBoxAtTop: wallsBox.length ? { box: wallsBox[0], overlapsGear: !!btn('open-settings') && overlap(wallsBox[0], btn('open-settings')), overlapsControls: !!btn('open-controls') && overlap(wallsBox[0], btn('open-controls')) } : null,
+            groups, ok: pairs(top).length === 0 && Object.values(groups).every(ok) && (await p.evaluate(() => document.documentElement.lang)) === lang
+        };
+        if (lang === 'en') {
+            // control: a planted 600 px control must be caught by the same measurement
+            await p.tap('.set-group[data-group="tune"] .sg-toggle');
+            await p.addStyleTag({ content: '[data-id="tune.throttle"] .sr-control { width: 600px; }' });
+            await p.waitForTimeout(200);
+            const planted = await measure();
+            control = { planted, fired: !ok(planted) };
+        }
+        await p.context().close();
+    }
+    const pass = Object.values(runs).every((r) => r.ok);
+    out.P7 = { pass: pass && !!control?.fired, what: 'phone 375x812 in en, ru, pl: the gear, Controls and Pause do not overlap each other or the OSD lines; Settings fills the screen; in every group (accordion) no part of a row is outside the width, no horizontal scroll, rows do not overlap. The walls box at the top (not this agent\'s) is recorded: it already covered Controls before the gear', runs, control };
     console.log('P7', (out.P7 as Any).pass ? 'PASS' : 'FAIL');
 }
 

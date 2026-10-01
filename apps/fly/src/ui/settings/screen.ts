@@ -114,7 +114,7 @@ export class SettingsScreen {
         const pane = h('div', { class: 'set-pane' }, this.empty);
         this.pane = pane;
         for (const g of groups) {
-            const b = h('button', { type: 'button', class: 'set-rail-btn', 'data-group': g, onclick: () => this.select(g, true) }, groupTitle(g)) as HTMLButtonElement;
+            const b = h('button', { type: 'button', class: 'set-rail-btn', 'data-group': g, onclick: () => this.railPick(g) }, groupTitle(g)) as HTMLButtonElement;
             this.railButtons.set(g, b);
             rail.append(b);
             const sec = g === 'data' ? this.dataGroup() : this.group(g);
@@ -181,8 +181,10 @@ export class SettingsScreen {
     }
 
     private section(g: RailId, body: HTMLElement): HTMLElement {
-        const toggle = h('button', { type: 'button', class: 'sg-toggle', 'aria-controls': body.id, onclick: () => this.select(this.selected === g && this.narrow() ? null : g, false) }, groupTitle(g));
-        return h('section', { class: 'set-group', 'data-group': g, 'aria-label': groupTitle(g) }, h('h3', { class: 'sg-title' }, toggle), body);
+        // the accordion's header on a phone; on a wide screen the rail picks the group, so the title is only a title
+        // (a button there would do nothing when pressed)
+        const toggle = h('button', { type: 'button', class: 'sg-toggle', 'aria-controls': body.id, onclick: () => this.select(this.selected === g ? null : g, false) }, groupTitle(g));
+        return h('section', { class: 'set-group', 'data-group': g, 'aria-label': groupTitle(g) }, h('h3', { class: 'sg-title' }, h('span', { class: 'sg-name' }, groupTitle(g)), toggle), body);
     }
 
     private dataGroup(): HTMLElement {
@@ -434,6 +436,21 @@ export class SettingsScreen {
 
     private narrow(): boolean {
         return typeof matchMedia === 'function' && matchMedia('(max-width: 600px)').matches;
+    }
+
+    /**
+     * The rail: another group shows that group (the focus stays on the rail, like tabs); the group
+     * already shown takes the focus into its first control. A search in progress gives way.
+     */
+    private railPick(g: RailId): void {
+        if (this.query) {
+            this.search.value = '';
+            this.query = '';
+        } else if (this.selected === g) {
+            this.sections.get(g)?.querySelector<HTMLElement>('.sg-body input:not([type="hidden"]):not([tabindex="-1"]):not(:disabled), .sg-body select:not(:disabled), .sg-body button:not([hidden]):not(:disabled)')?.focus();
+            return;
+        }
+        this.select(g, true);
     }
 
     /** The rail's (or the accordion's) group; null closes the accordion. */

@@ -24,7 +24,7 @@
 .set-group[hidden] { display: none; }
 .settings:not(.searching) .set-group:not(.sel) { display: none; }
 .sg-title { margin: 6px 0 4px; font-size: 16px; }
-.sg-toggle { all: unset; font: inherit; font-weight: 600; color: var(--fg); cursor: default; }
+.sg-toggle { display: none; }
 .sg-help { margin: 0 0 8px; }
 .sg-drone { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 4px 0 8px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255,255,255,.02); }
 .sg-drone select, .sr-control select { min-height: 40px; max-width: 100%; background: var(--bg2); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; font: inherit; padding: 4px 8px; }
@@ -117,7 +117,8 @@
     .settings:not(.searching) .set-group:not(.sel) { display: block; }
     .set-group { padding: 0; border-bottom: 1px solid var(--line); }
     .sg-title { margin: 0; }
-    .sg-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 48px; cursor: pointer; }
+    .sg-name { display: none; }
+    .sg-toggle { all: unset; box-sizing: border-box; font: inherit; font-weight: 600; color: var(--fg); display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 48px; cursor: pointer; }
     .sg-toggle::after { content: "▸"; color: var(--muted); transition: transform .15s; }
     .sg-toggle[aria-expanded="true"]::after { transform: rotate(90deg); }
     .settings:not(.searching) .set-group:not(.sel) .sg-body { display: none; }
