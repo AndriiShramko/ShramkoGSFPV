@@ -41,6 +41,8 @@ const V02_EXTRA: Record<string, string[]> = {
  * Space and M): the shipped bindings. M and Space are keyboard flying's own (flying: true).
  */
 const SHIPPED_AT_WAVE1 = ['arm.toggle', 'frameStats.toggle', 'hud.toggle', 'mode.cycle', 'pause.toggle', 'respawn.start', 'voxels.cycle', 'walls.toggle'];
+/** Flipped in wave 2 by the agent whose feature handles them (W2-1: O opens Settings). */
+const SHIPPED_IN_WAVE2 = ['settings.open'];
 
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });
 const plant = (b: Partial<KeyBinding> & Pick<KeyBinding, 'action' | 'keys'>): KeyBinding[] =>
@@ -83,7 +85,8 @@ describe('v0.2 keys keep working', () => {
     });
 
     it('only the keys the page handled at the start of wave 1 are shipped, so the refactor changes no key', () => {
-        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual(SHIPPED_AT_WAVE1);
+        // wave 2 adds its own (SHIPPED_IN_WAVE2)
+        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual([...SHIPPED_AT_WAVE1, ...SHIPPED_IN_WAVE2].sort());
     });
 
     it('M and Space are keyboard flying\'s own: shown with their caps, never routed', () => {
@@ -100,10 +103,12 @@ describe('v0.2 keys keep working', () => {
     });
 
     it('control: a planned key routes nothing and shows no cap, until asked for', () => {
-        expect(actionFor(press('KeyO'), 'flight')).toBeNull();
-        expect(keysFor('settings.open')).toEqual([]);
-        expect(actionFor(press('KeyO'), 'flight', { planned: true })).toBe('settings.open');
-        expect(keysFor('settings.open', { planned: true })).toEqual([{ cap: 'O', aria: 'O' }]);
+        // F9 (recording, wave 3); settings.open (O) was the example until W2-1 shipped it
+        expect(actionFor(press('F9'), 'flight')).toBeNull();
+        expect(keysFor('record.toggle')).toEqual([]);
+        expect(actionFor(press('F9'), 'flight', { planned: true })).toBe('record.toggle');
+        expect(keysFor('record.toggle', { planned: true })).toEqual([{ cap: 'F9', aria: 'F9' }]);
+        expect(actionFor(press('KeyO'), 'flight')).toBe('settings.open');
     });
 });
 

@@ -81,6 +81,15 @@ function untranslatedNewShipped(defs: readonly SettingDef[]): string[] {
     return defs.filter((d) => d.status === 'shipped' && !V02_SETTINGS.includes(d.id) && dicts.some((t) => !t[`set.${d.id}`] || !t[`set.${d.id}.help`])).map((d) => d.id);
 }
 
+/**
+ * Shipped in wave 2, one line per agent, each with its settings screen row working end to end.
+ * W2-1: the H rows (TWR, duct drag, prop inertia, idle), built into the flight model by the app
+ * (apps/fly app/prefs.ts overridesFor; tools/bench/test/app-settings.test.ts proves each changes it).
+ */
+const WAVE2_SETTINGS = [
+    'physics.twr', 'physics.ductDrag', 'physics.propInertia', 'physics.idlePct'
+];
+
 describe('SCHEMA is the A.8 table', () => {
     it('has the 56 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard), each with its group, scope, type, default and apply', () => {
         expect(SCHEMA.defs).toHaveLength(56);
@@ -99,8 +108,9 @@ describe('SCHEMA is the A.8 table', () => {
     });
 
     it('what a pilot can change on the live site today is shipped, and nothing else (v0.2 plus main\'s walls switch and voxel grid)', () => {
+        // plus what wave 2 ships, each agent's own list (WAVE2_SETTINGS)
         const shipped = SCHEMA.defs.filter((d) => d.status === 'shipped').map((d) => d.id);
-        expect([...shipped].sort()).toEqual([...V02_SETTINGS, ...MAIN_SETTINGS].sort());
+        expect([...shipped].sort()).toEqual([...V02_SETTINGS, ...MAIN_SETTINGS, ...WAVE2_SETTINGS].sort());
     });
 
     it('control: flipping a new setting to shipped before its translations exist is caught', () => {
