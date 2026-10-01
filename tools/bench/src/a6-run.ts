@@ -27,7 +27,7 @@ const MODE = (process.env.A6_CHROME ?? 'system') as 'system' | 'chromium' | 'off
  *   contact pins the body (sim.ts pinnedContacts, B12's frozen corner). This script's craft lies on
  *   its side on the floor from 1.25 s: 1218 of its ticks are pinned, and from tick 1271 on its other
  *   touching ducts get their impulse too. No crash before or after; every split and the replay agree
- *   (evidence/2026-10-01/v03-a6-determinism.json, v03-w2-2-a6-why.json).
+ *   (evidence/2026-10-01/v03-a6-determinism.json, v03-w2-2-model-why.json).
  * - 2026-09-26: dda474a21626... (sim-core/0.2.0 before that fix); sim-core/0.1.0 (v0.2) gave d3d4e0e380c8...
  */
 const REFERENCE = '1d01ca5b16aef6edce77d10de52517cbb609ace4fa05e47c3dccdf13111fff65';
