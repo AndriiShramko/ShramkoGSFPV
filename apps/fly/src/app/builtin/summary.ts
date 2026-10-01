@@ -62,7 +62,8 @@ export const summary: Feature = {
             const id = ctx.session.presetId;
             return { mode: mode(), life: ledger.life(), session: ledger.session(), lifetime: ledger.lifetime(), drone: PRESETS[id]?.name ?? id, units: units(), shortcuts: shortcuts(ctx) };
         };
-        if (ctx.menu instanceof PauseMenu) ctx.menu.setSummary(data);
+        // the menu must open whatever happens here: without the data it is the menu alone
+        if (ctx.menu instanceof PauseMenu) ctx.menu.setSummary(() => { try { return data(); } catch (e) { console.error('summary panel data', e); return null; } });
 
         // ---- the card
         let card: StatsCard | null = null;
