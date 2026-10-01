@@ -116,6 +116,9 @@ if (want('P1')) {
     // change the scene: the pause menu's "Change scan" (a page load to the picker until W3), then another scan
     await p.keyboard.press('KeyP');
     await Promise.all([p.waitForNavigation({ timeout: 30000 }), p.click('[data-action="pause.scene"]')]);
+    // the picker's address has no ?nowarn: this profile never answered the first-visit warning, a pilot would now
+    await p.waitForSelector('[data-action="warning-ok"], .screen.scenes', { timeout: 60000 });
+    if (await p.locator('[data-action="warning-ok"]').count()) await p.click('[data-action="warning-ok"]');
     const picker = await waitReady(p, 60000);
     const atPicker = await vcrash(p);
     await flight(p, `scene=${SCENE2}&nowarn=1&input=touch&render=off`);
@@ -133,7 +136,8 @@ if (want('P1')) {
     const banner = await p.locator('.banner[data-kind="prefs-blocked"]').count();
     await c.close();
     const ok = (r: { store: number; model: number | null }) => r.store === 6.5 && (r.model === null || r.model === 6.5);
-    const pass = before.store === 4 && before.model === 4 && ok(inPanel) && inPanel.explicit && ok(afterClose) && afterClose.model === 6.5
+    // while Settings is open the flight model still has 4 ('life': applies when you continue), at close 6.5
+    const pass = before.store === 4 && before.model === 4 && inPanel.store === 6.5 && inPanel.model === 4 && inPanel.explicit && ok(afterClose) && afterClose.model === 6.5
         && picker.status === 'picker' && ok(atPicker) && ok(otherScene) && otherScene.model === 6.5 && ok(reloaded) && reloaded.model === 6.5 && ok(later) && later.model === 6.5 && banner === 0;
 
     // control: the same, with the browser's storage blocked (Firefox "block cookies", a locked-down profile)
@@ -263,7 +267,9 @@ if (want('P3')) {
 // ------------------------------------------------------------------ P4 D-b: open and close change nothing
 if (want('P4')) {
     const p = await page(browser);
-    await flight(p);
+    // ?governor=0: the frame governor steps the render scale down and up by itself when frames drop
+    // (render-pc FrameGovernor); off, the render scale is exactly the quality ceiling Settings sets
+    await flight(p, `${FLIGHT}&governor=0`);
     await hook(p, 's.log.__probe = 1; return 0;');
     const STATE = `const hud = document.querySelector('.hud'); const ui = document.getElementById('ui');
         return { hudShown: hud ? getComputedStyle(hud).display !== 'none' : null, textOff: ui.classList.contains('hud-off'), frameStats: !document.querySelector('.hud .osd.frame').classList.contains('hidden'),
@@ -297,7 +303,7 @@ if (want('P4')) {
     const changed = await hook(p, STATE);
     await p.context().close();
     const control = { state: changed, fired: changed.hudShown === false && changed.renderScale < s0.renderScale && changed.sameModel === true };
-    out.P4 = { pass: same && s0.paused === false && control.fired, what: 'D-b: Settings opened and closed 5 times (O, gear, pause menu; Esc, x, O): the HUD, the frame line, the render scale and splat budget and the flight model stay as they were; the flight is paused while it is open', start: s0, rounds, control };
+    out.P4 = { pass: same && s0.paused === false && control.fired, what: 'D-b: Settings opened and closed 5 times (O, gear, pause menu; Esc, x, O): the HUD, the frame line, the render scale and splat budget and the flight model stay as they were; the flight is paused while it is open', governor: 'off (?governor=0), so the render scale is the quality ceiling alone; with it on, a first run saw it step 0.85 -> 0.7 by itself between two rounds', start: s0, rounds, control };
     console.log('P4', (out.P4 as Any).pass ? 'PASS' : 'FAIL');
 }
 
@@ -469,5 +475,14 @@ if (want('P8')) {
 
 await browser.close();
 out.pageErrors = errors;
+// a run of some checks keeps the others' last results (each with its own time)
+for (const k of Object.keys(out)) if (/^P\d$/.test(k)) (out[k] as Any).at = new Date().toISOString();
+try {
+    const prev = JSON.parse(readFileSync(join(REPO, 'evidence', today(), 'v03-prefs.json'), 'utf8')) as Record<string, Any>;
+    for (const [k, v] of Object.entries(prev)) if (/^P\d$/.test(k) && !(k in out)) out[k] = v;
+} catch {
+    /* the first run of the day */
+}
+out.summary = Object.fromEntries(Object.keys(out).filter((k) => /^P\d$/.test(k)).sort().map((k) => [k, (out[k] as Any).pass ? 'pass' : 'FAIL']));
 const file = writeEvidence('v03-prefs', out);
 console.log(file);
