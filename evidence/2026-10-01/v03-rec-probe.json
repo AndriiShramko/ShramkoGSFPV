@@ -1,0 +1,508 @@
+{
+  "name": "v03-rec-probe",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-01T22:42:29.221Z",
+    "gitHead": "7927e10",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5335",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "force60": true,
+  "renderer": 2,
+  "page": {
+    "engineFps": 56.7,
+    "canvas": [
+      640,
+      400
+    ]
+  },
+  "A": {
+    "current": {
+      "supported": true,
+      "err": null,
+      "engineFps": 59.1,
+      "flushMs": 5019,
+      "capacityFps": 30.1,
+      "capacityFrames": 100,
+      "frameMainThreadMs": {
+        "p50": 0.2,
+        "p95": 0.4,
+        "max": 0.6
+      },
+      "cfg": {
+        "codec": "avc1.640033",
+        "w": 1728,
+        "h": 1080,
+        "bitrate": 11197440,
+        "latencyMode": "quality",
+        "hw": "no-preference",
+        "framerate": 60
+      },
+      "encoded": 295,
+      "outputs": 295,
+      "encodeCallsPerS": 59.2,
+      "outputsPerS": 30.5,
+      "steadyOutputsPerS": 29.7,
+      "latencyMs": {
+        "p50": 2750.3,
+        "p95": 4819.6,
+        "max": 5036.4
+      },
+      "queueAtEncode": {
+        "p50": 83,
+        "p95": 148,
+        "max": 155
+      },
+      "encodeCallMs": {
+        "p50": 0,
+        "p95": 0.1,
+        "max": 0.1
+      },
+      "bytes": 7783175
+    },
+    "realtime": {
+      "supported": true,
+      "err": null,
+      "engineFps": 59.2,
+      "flushMs": 0,
+      "capacityFps": 189.7,
+      "capacityFrames": 523,
+      "frameMainThreadMs": {
+        "p50": 0.2,
+        "p95": 0.3,
+        "max": 0.6
+      },
+      "cfg": {
+        "codec": "avc1.640033",
+        "w": 1728,
+        "h": 1080,
+        "bitrate": 11197440,
+        "latencyMode": "realtime",
+        "hw": "no-preference",
+        "framerate": 60
+      },
+      "encoded": 295,
+      "outputs": 295,
+      "encodeCallsPerS": 59.3,
+      "outputsPerS": 63.1,
+      "steadyOutputsPerS": 59.1,
+      "latencyMs": {
+        "p50": 11.1,
+        "p95": 173.5,
+        "max": 320.8
+      },
+      "queueAtEncode": {
+        "p50": 1,
+        "p95": 8,
+        "max": 18
+      },
+      "encodeCallMs": {
+        "p50": 0,
+        "p95": 0.1,
+        "max": 0.5
+      },
+      "bytes": 7430668
+    },
+    "hwQuality": {
+      "supported": true,
+      "err": null,
+      "engineFps": 59.7,
+      "flushMs": 0,
+      "capacityFps": 188.4,
+      "capacityFrames": 516,
+      "frameMainThreadMs": {
+        "p50": 0.2,
+        "p95": 0.3,
+        "max": 0.5
+      },
+      "cfg": {
+        "codec": "avc1.640033",
+        "w": 1728,
+        "h": 1080,
+        "bitrate": 11197440,
+        "latencyMode": "quality",
+        "hw": "prefer-hardware",
+        "framerate": 60
+      },
+      "encoded": 298,
+      "outputs": 298,
+      "encodeCallsPerS": 59.8,
+      "outputsPerS": 64.4,
+      "steadyOutputsPerS": 59.4,
+      "latencyMs": {
+        "p50": 10.9,
+        "p95": 253.4,
+        "max": 378.8
+      },
+      "queueAtEncode": {
+        "p50": 1,
+        "p95": 13,
+        "max": 20
+      },
+      "encodeCallMs": {
+        "p50": 0,
+        "p95": 0.2,
+        "max": 0.2
+      },
+      "bytes": 7642987
+    },
+    "hwRealtime": {
+      "supported": true,
+      "err": null,
+      "engineFps": 60.1,
+      "flushMs": 0,
+      "capacityFps": 191.3,
+      "capacityFrames": 533,
+      "frameMainThreadMs": {
+        "p50": 0.2,
+        "p95": 0.3,
+        "max": 0.5
+      },
+      "cfg": {
+        "codec": "avc1.640033",
+        "w": 1728,
+        "h": 1080,
+        "bitrate": 11197440,
+        "latencyMode": "realtime",
+        "hw": "prefer-hardware",
+        "framerate": 60
+      },
+      "encoded": 300,
+      "outputs": 300,
+      "encodeCallsPerS": 60.2,
+      "outputsPerS": 64.3,
+      "steadyOutputsPerS": 59.8,
+      "latencyMs": {
+        "p50": 10.6,
+        "p95": 175.4,
+        "max": 324.2
+      },
+      "queueAtEncode": {
+        "p50": 1,
+        "p95": 9,
+        "max": 20
+      },
+      "encodeCallMs": {
+        "p50": 0,
+        "p95": 0.1,
+        "max": 0.2
+      },
+      "bytes": 8058870
+    },
+    "hwRealtimeCbr": {
+      "supported": true,
+      "err": null,
+      "engineFps": 59.9,
+      "flushMs": 0,
+      "capacityFps": 30.1,
+      "capacityFrames": 99,
+      "frameMainThreadMs": {
+        "p50": 0.2,
+        "p95": 0.3,
+        "max": 0.5
+      },
+      "cfg": {
+        "codec": "avc1.640033",
+        "w": 1728,
+        "h": 1080,
+        "bitrate": 11197440,
+        "latencyMode": "realtime",
+        "hw": "prefer-hardware",
+        "framerate": 60
+      },
+      "encoded": 299,
+      "outputs": 299,
+      "encodeCallsPerS": 60,
+      "outputsPerS": 64.2,
+      "steadyOutputsPerS": 60.2,
+      "latencyMs": {
+        "p50": 10.9,
+        "p95": 199,
+        "max": 338.8
+      },
+      "queueAtEncode": {
+        "p50": 1,
+        "p95": 11,
+        "max": 20
+      },
+      "encodeCallMs": {
+        "p50": 0,
+        "p95": 0.1,
+        "max": 0.2
+      },
+      "bytes": 6886489
+    },
+    "swQuality": {
+      "supported": true,
+      "err": null,
+      "engineFps": 60.2,
+      "flushMs": 5,
+      "capacityFps": 128.2,
+      "capacityFrames": 392,
+      "frameMainThreadMs": {
+        "p50": 0.2,
+        "p95": 0.3,
+        "max": 0.4
+      },
+      "cfg": {
+        "codec": "avc1.640033",
+        "w": 1728,
+        "h": 1080,
+        "bitrate": 11197440,
+        "latencyMode": "quality",
+        "hw": "prefer-software",
+        "framerate": 60
+      },
+      "encoded": 300,
+      "outputs": 300,
+      "encodeCallsPerS": 60.3,
+      "outputsPerS": 61.7,
+      "steadyOutputsPerS": 59.9,
+      "latencyMs": {
+        "p50": 17.8,
+        "p95": 38.8,
+        "max": 140.3
+      },
+      "queueAtEncode": {
+        "p50": 1,
+        "p95": 1,
+        "max": 5
+      },
+      "encodeCallMs": {
+        "p50": 0,
+        "p95": 0.1,
+        "max": 0.2
+      },
+      "bytes": 7007820
+    }
+  },
+  "B": {
+    "codec": "avc1.640033",
+    "engineFps": 59.3,
+    "stopMs": 4296,
+    "info": {
+      "frames": 546,
+      "duplicated": 381,
+      "heldForEncoder": 428,
+      "dropped": 55,
+      "bytes": 12500924
+    },
+    "addFrameMs": {
+      "n": 593,
+      "p50": 0.1,
+      "p95": 0.4,
+      "max": 81,
+      "sumS": 0.211
+    },
+    "frameGapMs": {
+      "p50": 16.8,
+      "p95": 18.5,
+      "max": 100.4
+    },
+    "pendingPictures": {
+      "p50": 30,
+      "max": 30
+    },
+    "series": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        514,
+        3,
+        0
+      ],
+      [
+        1015,
+        23,
+        23
+      ],
+      [
+        1514,
+        29,
+        39
+      ],
+      [
+        2014,
+        30,
+        54
+      ],
+      [
+        2515,
+        29,
+        69
+      ],
+      [
+        3015,
+        30,
+        84
+      ],
+      [
+        3514,
+        29,
+        99
+      ],
+      [
+        4014,
+        30,
+        114
+      ],
+      [
+        4514,
+        29,
+        129
+      ],
+      [
+        5014,
+        30,
+        144
+      ],
+      [
+        5514,
+        29,
+        159
+      ],
+      [
+        6013,
+        30,
+        174
+      ],
+      [
+        6514,
+        30,
+        189
+      ],
+      [
+        7014,
+        30,
+        204
+      ],
+      [
+        7514,
+        30,
+        219
+      ],
+      [
+        8014,
+        30,
+        234
+      ],
+      [
+        8513,
+        30,
+        239
+      ],
+      [
+        9015,
+        30,
+        239
+      ],
+      [
+        9515,
+        29,
+        239
+      ]
+    ],
+    "writes": {
+      "n": 4,
+      "sumMs": 65,
+      "p95": 26.1,
+      "max": 26.1,
+      "mb": 12.5
+    },
+    "encoder": {
+      "cfg": {
+        "codec": "avc1.640033",
+        "w": 1728,
+        "h": 1080,
+        "bitrate": 11197440,
+        "latencyMode": "quality",
+        "hw": "no-preference",
+        "framerate": 60
+      },
+      "encoded": 546,
+      "outputs": 546,
+      "encodeCallsPerS": 55,
+      "outputsPerS": 44.1,
+      "steadyOutputsPerS": 30,
+      "latencyMs": {
+        "p50": 3751.1,
+        "p95": 5557.6,
+        "max": 5719.2
+      },
+      "queueAtEncode": {
+        "p50": 131,
+        "p95": 240,
+        "max": 240
+      },
+      "encodeCallMs": {
+        "p50": 0,
+        "p95": 0.1,
+        "max": 0.1
+      },
+      "bytes": 12497828
+    }
+  },
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 403 ()",
+    "Failed to load resource: the server responded with a status of 403 ()",
+    "Failed to load resource: the server responded with a status of 403 ()",
+    "Failed to load resource: the server responded with a status of 403 ()",
+    "Failed to load resource: the server responded with a status of 403 ()",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+}
