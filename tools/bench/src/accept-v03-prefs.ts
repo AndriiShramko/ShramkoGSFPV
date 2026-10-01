@@ -19,6 +19,9 @@
 //   P7 phone 375x812: no horizontal overflow, rows and top buttons do not overlap. Control: a planted
 //      600 px control is caught.
 //   P8 keys: O opens and closes; the menu item and the gear carry the O key-cap.
+//   P9 rows whose app code keeps its own key (F3 frame stats, voxel style, walls) follow the store.
+//   P10 the language row reloads in that language (NEXT_LOCALE cookie); its reset brings the page language back.
+//   P11 review C10: the drone picker and the Betaflight import keep each drone its own values.
 // Logic-only mode (?render=off): none of these is a picture check; screenshots of the screen over
 // the drawn scan are taken separately (SHOTS=1, needs the GPU: take the lock first).
 //   LOCAL_FLY=1 SITE=http://127.0.0.1:5321 npx tsx src/accept-v03-prefs.ts [P1 P2 ...] [SHOTS=1]
@@ -39,7 +42,7 @@ const FLIGHT = `scene=${SCENE}&nowarn=1&input=touch&render=off`;
 const WORK = join(REPO, '.cache', 'v03-prefs');
 const SHOTS_DIR = join(REPO, 'evidence', today(), 'v03-prefs');
 const args = process.argv.slice(2);
-const want = (k: string) => !args.some((a) => /^P\d$/.test(a)) || args.includes(k);
+const want = (k: string) => !args.some((a) => /^P\d+$/.test(a)) || args.includes(k);
 const shots = process.env.SHOTS === '1';
 mkdirSync(WORK, { recursive: true });
 mkdirSync(SHOTS_DIR, { recursive: true });
@@ -533,6 +536,84 @@ if (want('P9')) {
     console.log('P9', (out.P9 as Any).pass ? 'PASS' : 'FAIL');
 }
 
+// ------------------------------------------------------------------ P10 the language row reloads the page in that language
+if (want('P10')) {
+    const p = await page(browser);
+    await flight(p);
+    const lang0 = await p.evaluate(() => document.documentElement.lang);
+    await openByKey(p);
+    await p.click('.set-rail-btn[data-group="display"]');
+    await Promise.all([p.waitForNavigation({ timeout: 30000 }), p.selectOption('[data-id="ui.language"] select', 'pl')]);
+    await waitReady(p, 180000);
+    const pl = { lang: await p.evaluate(() => document.documentElement.lang), store: await hook(p, "return h.prefs.get('ui.language');"), cookie: await p.evaluate(() => document.cookie), menu: '' };
+    await p.keyboard.press('KeyP');
+    pl.menu = (await p.locator('[data-action="pause.settings"] .pm-label').textContent()) ?? '';
+    await p.keyboard.press('Escape');
+    // back to the page's language: the row's reset
+    await openByKey(p);
+    await p.click('.set-rail-btn[data-group="display"]');
+    await p.click('[data-id="ui.language"] [data-action="reset-setting"]');
+    const resetStore = await hook(p, "return { v: h.prefs.get('ui.language'), explicit: h.prefs.isExplicit('ui.language'), cookie: document.cookie };");
+    await closeByEsc(p);
+    await p.reload();
+    await waitReady(p, 180000);
+    const back = await p.evaluate(() => document.documentElement.lang);
+    // control: a cookie written past Settings (as the landing's switcher does) is what the next load shows,
+    // so the probe tells languages apart and the page follows the cookie, not a stale copy
+    await p.context().addCookies([{ name: 'NEXT_LOCALE', value: 'ru', url: SITE }]);
+    await p.reload();
+    await waitReady(p, 180000);
+    const ru = { lang: await p.evaluate(() => document.documentElement.lang), store: await hook(p, "return h.prefs.get('ui.language');") };
+    await p.context().close();
+    const pass = lang0 === 'en' && pl.lang === 'pl' && pl.store === 'pl' && /NEXT_LOCALE=pl/.test(pl.cookie) && pl.menu === 'Ustawienia' && resetStore.v === 'browser' && !resetStore.explicit && !/NEXT_LOCALE=/.test(resetStore.cookie) && back === 'en';
+    const control = { ru, fired: ru.lang === 'ru' && ru.store === 'ru' };
+    out.P10 = { pass: pass && control.fired, what: 'Language in Settings: Polski reloads the page in Polish and is kept in the NEXT_LOCALE cookie the landing reads; the row reset removes the cookie and the page language comes back', start: lang0, polish: pl, reset: resetStore, afterReset: back, control };
+    console.log('P10', (out.P10 as Any).pass ? 'PASS' : 'FAIL');
+}
+
+// ------------------------------------------------------------------ P11 the drone picker and the Betaflight import keep each drone's own values
+if (want('P11')) {
+    const p = await page(browser);
+    await flight(p);
+    await openByKey(p);
+    await typeNumber(p, 'drone', 'physics.tauMs', 25);
+    await typeNumber(p, 'camera', 'camera.fovDeg', 130);
+    await closeByEsc(p);
+    const diff = readFileSync(join(REPO, 'packages', 'sim-core', 'test', 'fixtures', 'bf-diff-4.5.1.txt'), 'utf8');
+    const imp = await hook(p, `return h.importDiff(${JSON.stringify(diff)});`);
+    const MODEL = `return { preset: s.presetId, tau: s.params.tau, fov: s.cameraFovDeg, rates: s.params.rates.type, rcRate: s.params.rates.roll.rcRate, pidRoll: s.params.pid.roll, url: location.search };`;
+    const pavo = await hook(p, MODEL);
+    const pavoOwn = await hook(p, `return h.prefs.explicitList({ drone: '${PAVO}' }).filter((e) => e.scope === 'drone').map((e) => e.id);`);
+    // pick the Meteor in the drone picker
+    await p.keyboard.press('KeyP');
+    await p.click('[data-action="pause.drone"]');
+    const pavoCard = await p.locator(`.drone-card[data-preset="${PAVO}"] [data-testid="drone-changed"]`).textContent();
+    await p.click(`.drone-card[data-preset="${METEOR}"] [data-action="drone-pick"]`);
+    await p.waitForTimeout(300);
+    const meteor = await hook(p, MODEL);
+    const meteorPreset = await hook(p, `return { tau: h.prefs.get('physics.tauMs', { drone: '${METEOR}' }) / 1000, fov: h.prefs.get('camera.fovDeg', { drone: '${METEOR}' }) };`);
+    // back to the Pavo, then a reload: the Pavo with its own tune again
+    await p.keyboard.press('KeyP');
+    await p.click('[data-action="pause.drone"]');
+    await p.click(`.drone-card[data-preset="${PAVO}"] [data-action="drone-pick"]`);
+    await p.waitForTimeout(300);
+    const pavoAgain = await hook(p, MODEL);
+    await p.reload();
+    await waitReady(p, 180000);
+    const reloaded = await hook(p, MODEL);
+    // control: v0.2's drone switch, the session's overrides handed to the next drone
+    const v02 = await hook(p, `s.rebuildSim('${METEOR}', s.overrides); return { preset: s.presetId, tau: s.params.tau, rates: s.params.rates.type, rcRate: s.params.rates.roll.rcRate };`);
+    await p.context().close();
+    // the 4.5.1 diff: ACTUAL rates with rc_rate 20 and its own PID; the Meteor's preset has rc_rate 7
+    const pass = imp.ok && pavo.preset === PAVO && Math.abs(pavo.tau - 0.025) < 1e-9 && pavo.fov === 130 && pavo.rcRate === 20
+        && (pavoCard ?? '').includes(String(pavoOwn.length)) && pavoOwn.length === 5 && meteor.preset === METEOR && Math.abs(meteor.tau - meteorPreset.tau) < 1e-9 && meteor.fov === meteorPreset.fov && meteor.fov === 115 && meteor.rcRate === 7 && canon(meteor.pidRoll) !== canon(pavo.pidRoll) && !/drone=/.test(meteor.url)
+        && pavoAgain.preset === PAVO && Math.abs(pavoAgain.tau - 0.025) < 1e-9 && pavoAgain.fov === 130 && canon(pavoAgain.pidRoll) === canon(pavo.pidRoll) && pavoAgain.rcRate === 20
+        && reloaded.preset === PAVO && Math.abs(reloaded.tau - 0.025) < 1e-9 && reloaded.fov === 130 && reloaded.rcRate === 20 && canon(reloaded.pidRoll) === canon(pavo.pidRoll);
+    const control = { v02, fired: v02.preset === METEOR && Math.abs(v02.tau - 0.025) < 1e-9 && v02.rcRate === 20 };
+    out.P11 = { pass: pass && control.fired, what: 'review C10 in the page: tau and FOV set in Settings and a Betaflight diff imported on the Pavo20 stay the Pavo\'s; picking the Meteor65 flies the Meteor\'s own values; back to the Pavo and after a reload, the Pavo\'s tune again; its card says how many values are its own', imported: imp, pavo, pavoOwn, pavoCard, meteor, meteorOwn: meteorPreset, pavoAgain, reloaded, control };
+    console.log('P11', (out.P11 as Any).pass ? 'PASS' : 'FAIL');
+}
+
 // ------------------------------------------------------------------ screenshots over the drawn scan (SHOTS=1; the GPU lock first)
 if (shots) {
     const taken: string[] = [];
@@ -558,13 +639,13 @@ if (shots) {
 await browser.close();
 out.pageErrors = errors;
 // a run of some checks keeps the others' last results (each with its own time)
-for (const k of Object.keys(out)) if (/^P\d$/.test(k)) (out[k] as Any).at = new Date().toISOString();
+for (const k of Object.keys(out)) if (/^P\d+$/.test(k)) (out[k] as Any).at = new Date().toISOString();
 try {
     const prev = JSON.parse(readFileSync(join(REPO, 'evidence', today(), 'v03-prefs.json'), 'utf8')) as Record<string, Any>;
-    for (const [k, v] of Object.entries(prev)) if (/^P\d$/.test(k) && !(k in out)) out[k] = v;
+    for (const [k, v] of Object.entries(prev)) if (/^P\d+$/.test(k) && !(k in out)) out[k] = v;
 } catch {
     /* the first run of the day */
 }
-out.summary = Object.fromEntries(Object.keys(out).filter((k) => /^P\d$/.test(k)).sort().map((k) => [k, (out[k] as Any).pass ? 'pass' : 'FAIL']));
+out.summary = Object.fromEntries(Object.keys(out).filter((k) => /^P\d+$/.test(k)).sort((a, b) => Number(a.slice(1)) - Number(b.slice(1))).map((k) => [k, (out[k] as Any).pass ? 'pass' : 'FAIL']));
 const file = writeEvidence('v03-prefs', out);
 console.log(file);

@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-01T17:46:02.784Z",
-    "gitHead": "62c4cce",
+    "date": "2026-10-01T17:49:26.483Z",
+    "gitHead": "bb8d2dd",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -22,6 +22,123 @@
     "why": "installed"
   },
   "mode": "render=off (logic only): every check here reads state, none is a picture check",
+  "P11": {
+    "pass": true,
+    "what": "review C10 in the page: tau and FOV set in Settings and a Betaflight diff imported on the Pavo20 stay the Pavo's; picking the Meteor65 flies the Meteor's own values; back to the Pavo and after a reload, the Pavo's tune again; its card says how many values are its own",
+    "imported": {
+      "ok": true,
+      "firmware": "Betaflight 4.5.1",
+      "ratesType": "ACTUAL",
+      "warnings": [
+        "yaw_deadband = 5 changes the stick feel in Betaflight but is not applied by the simulator.",
+        "6 setting(s) not used by the simulator were ignored (gyro_lpf1_static_hz, dyn_notch_count, dshot_bidir, motor_pwm_protocol, profile_name, ...)."
+      ]
+    },
+    "pavo": {
+      "preset": "pavo20pro-3s",
+      "tau": 0.025,
+      "fov": 130,
+      "rates": "ACTUAL",
+      "rcRate": 20,
+      "pidRoll": [
+        52,
+        90,
+        35,
+        140
+      ],
+      "url": "?scene=39e63ce9&nowarn=1&input=touch&render=off"
+    },
+    "pavoOwn": [
+      "camera.fovDeg",
+      "physics.tauMs",
+      "tune.pid",
+      "tune.rates",
+      "tune.throttle"
+    ],
+    "pavoCard": "Your changes for this drone: 5",
+    "meteor": {
+      "preset": "meteor65pro-1s",
+      "tau": 0.01,
+      "fov": 115,
+      "rates": "ACTUAL",
+      "rcRate": 7,
+      "pidRoll": [
+        45,
+        80,
+        40,
+        120
+      ],
+      "url": "?scene=39e63ce9&nowarn=1&input=touch&render=off"
+    },
+    "meteorOwn": {
+      "tau": 0.01,
+      "fov": 115
+    },
+    "pavoAgain": {
+      "preset": "pavo20pro-3s",
+      "tau": 0.025,
+      "fov": 130,
+      "rates": "ACTUAL",
+      "rcRate": 20,
+      "pidRoll": [
+        52,
+        90,
+        35,
+        140
+      ],
+      "url": "?scene=39e63ce9&nowarn=1&input=touch&render=off"
+    },
+    "reloaded": {
+      "preset": "pavo20pro-3s",
+      "tau": 0.025,
+      "fov": 130,
+      "rates": "ACTUAL",
+      "rcRate": 20,
+      "pidRoll": [
+        52,
+        90,
+        35,
+        140
+      ],
+      "url": "?scene=39e63ce9&nowarn=1&input=touch&render=off"
+    },
+    "control": {
+      "v02": {
+        "preset": "meteor65pro-1s",
+        "tau": 0.025,
+        "rates": "ACTUAL",
+        "rcRate": 20
+      },
+      "fired": true
+    },
+    "at": "2026-10-01T17:49:26.481Z"
+  },
+  "pageErrors": [],
+  "P10": {
+    "pass": true,
+    "what": "Language in Settings: Polski reloads the page in Polish and is kept in the NEXT_LOCALE cookie the landing reads; the row reset removes the cookie and the page language comes back",
+    "start": "en",
+    "polish": {
+      "lang": "pl",
+      "store": "pl",
+      "cookie": "NEXT_LOCALE=pl",
+      "menu": "Ustawienia"
+    },
+    "reset": {
+      "v": "browser",
+      "explicit": false,
+      "cookie": ""
+    },
+    "afterReset": "en",
+    "control": {
+      "ru": {
+        "lang": "ru",
+        "store": "ru"
+      },
+      "fired": true
+    },
+    "at": "2026-10-01T17:48:54.360Z"
+  },
   "P7": {
     "pass": true,
     "what": "phone 375x812 in en, ru, pl: the gear, Controls and Pause do not overlap each other or the OSD lines; Settings fills the screen; in every group (accordion) no part of a row is outside the width, no horizontal scroll, rows do not overlap. The walls box at the top (not this agent's) is recorded: it already covered Controls before the gear",
@@ -577,7 +694,6 @@
     },
     "at": "2026-10-01T17:46:02.782Z"
   },
-  "pageErrors": [],
   "P9": {
     "pass": true,
     "what": "settings whose app code still keeps its own key follow the store: F3 frame stats, the voxel style and the walls of this scan, set in Settings, are on screen and survive a reload; the walls row reset gives the scan default with nothing explicit left; walls apply when Settings closes (life)",
@@ -1113,6 +1229,8 @@
     "P6": "pass",
     "P7": "pass",
     "P8": "pass",
-    "P9": "pass"
+    "P9": "pass",
+    "P10": "pass",
+    "P11": "pass"
   }
 }
