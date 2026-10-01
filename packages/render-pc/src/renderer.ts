@@ -125,6 +125,12 @@ export class SplatRenderer {
     firstFrameAt = 0;
     debrisRoot: Entity;
     private count: ByteCount = { base: '', listed: false, expected: new Map(), images: new Map(), lastByteAt: 0, frozen: false };
+    /** the scan's own asset, and every asset the engine adds for it later (SOG images, streamed LOD files) */
+    private splatAsset: Asset | null = null;
+    private sceneAssets = new Set<Asset>();
+    /** the scene transform T(w) = s*w + t (design E.7); applied to every scan loaded after it is set */
+    private sceneS = 1;
+    private sceneT: [number, number, number] = [0, 0, 0];
     /** Chrome compositor latency guard (governor.ts); idle until startLatencyGuard() */
     readonly latencyGuard = new LatencyGuard();
     /** true during the first frame after a skip: its long interval was made on purpose */
@@ -268,9 +274,12 @@ export class SplatRenderer {
         };
         return start().then((data) => new Promise<Entity>((resolve, reject) => {
             const asset = new Asset(filename, 'gsplat', { url, filename }, data as object | undefined);
+            this.splatAsset = asset;
             asset.on('load', () => {
                 const e = new Entity('gsplat', this.app);
                 e.setLocalEulerAngles(0, 0, 180); // SuperSplat scenes are stored upside down
+                e.setLocalPosition(this.sceneT[0], this.sceneT[1], this.sceneT[2]);
+                e.setLocalScale(this.sceneS, this.sceneS, this.sceneS);
                 e.addComponent('gsplat', { asset }); // unified rendering is the engine default
                 this.app.root.addChild(e);
                 this.splat = e;
@@ -307,8 +316,10 @@ export class SplatRenderer {
 
     private countAsset(a: Asset): void {
         const c = this.count;
-        if (c.frozen || !c.base || a.type !== 'texture') return;
         const url = (a.file as { url?: string } | null)?.url;
+        // everything under the scan's folder belongs to the scan: unloadSplat() frees it
+        if (c.base && url && url.startsWith(c.base) && a !== this.splatAsset) this.sceneAssets.add(a);
+        if (c.frozen || !c.base || a.type !== 'texture') return;
         if (!url || !url.startsWith(c.base)) return;
         // keyed by URL: an image the engine retries keeps what already arrived (never goes back)
         let r = c.images.get(url);
@@ -389,6 +400,60 @@ export class SplatRenderer {
         if (!comp) return;
         comp.lodRangeMin = 0;
         comp.lodRangeMax = mode === 'final' ? 0 : 1000;
+    }
+
+    /**
+     * Drop the scan (design E.4, in-page scene switching): the entity, its asset and every asset the
+     * engine loaded for it (SOG images, streamed LOD files) are unloaded and removed, and the load
+     * counters start over, so the next loadSplat() is a first load again. The camera, the debris,
+     * the latency guard and the device stay. Lead contract step before wave 3.
+     */
+    unloadSplat(): void {
+        if (this.splat) {
+            this.splat.destroy();
+            this.splat = null;
+        }
+        const assets = [...this.sceneAssets];
+        if (this.splatAsset) assets.unshift(this.splatAsset);
+        for (const a of assets) {
+            a.unload();
+            this.app.assets.remove(a);
+        }
+        this.splatAsset = null;
+        this.sceneAssets.clear();
+        this.count = { base: '', listed: false, expected: new Map(), images: new Map(), lastByteAt: 0, frozen: false };
+        this.loadStartedAt = 0;
+        this.firstFrameAt = 0;
+    }
+
+    /**
+     * The scene transform T(w) = s*w + t (design E.7, scene scale around the drone): the scan's entity
+     * gets position t and uniform scale s and keeps its rotation; the engine's LOD handles uniform
+     * scale. Kept for scans loaded later. Collision and physics are transformed elsewhere
+     * (collision transform.ts); this only moves the picture. Lead contract step before wave 3.
+     */
+    setSceneTransform(s: number, t: [number, number, number]): void {
+        if (!(s > 0) || !Number.isFinite(s) || !t.every(Number.isFinite)) throw new RangeError(`bad scene transform s=${s} t=${t.join(',')}`);
+        this.sceneS = s;
+        this.sceneT = [t[0], t[1], t[2]];
+        if (this.splat) {
+            this.splat.setLocalPosition(t[0], t[1], t[2]);
+            this.splat.setLocalScale(s, s, s);
+        }
+    }
+
+    /** The transform set by setSceneTransform: [s, tx, ty, tz]. */
+    get sceneTransform(): [number, number, number, number] {
+        return [this.sceneS, this.sceneT[0], this.sceneT[1], this.sceneT[2]];
+    }
+
+    /**
+     * Draw the next animation frame even if the engine would skip it (autoRender off): a preview
+     * while the flight is paused (the scale row in the summary panel). With autoRender on, the
+     * default here, every frame already draws. Lead contract step before wave 3.
+     */
+    renderOnce(): void {
+        this.app.renderNextFrame = true;
     }
 
     /** Show or hide the scan (the voxel overlay's "voxels only"): the splats stop drawing, nothing is unloaded. */
