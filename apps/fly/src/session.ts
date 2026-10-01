@@ -145,6 +145,9 @@ export class FlightSession {
     log!: InputLog;
     spawn: [number, number, number, number] = [0, 0, 0, 0];
     presetId = DEFAULT_PRESET;
+    /** the pilot's camera, render-only (setCamera); null = the drone preset's value */
+    private camFovDeg: number | null = null;
+    private camUptiltDeg: number | null = null;
     /** page clock -> sim clock (pauses, restarts, skipped stalls) and the inputs not yet stepped */
     readonly clock = new SimClock();
     frames = 0;
@@ -455,12 +458,51 @@ export class FlightSession {
         this.safePoint = null;
     }
 
+    /**
+     * The pilot's camera (design A.7, D-h): FOV and uptilt are render-only, so changing them never
+     * rebuilds the flight model and never moves the craft. null = the drone preset's value (or the
+     * log's overrides, which v0.2 used for the camera). Lead contract step before wave 2: the
+     * settings screen (W2-1) calls this; the session split (W2-2) keeps it.
+     */
+    setCamera(fovDeg: number | null, uptiltDeg: number | null): void {
+        this.camFovDeg = fovDeg;
+        this.camUptiltDeg = uptiltDeg;
+        this.renderer.setFov(this.cameraFovDeg);
+    }
+
+    get cameraFovDeg(): number {
+        return this.camFovDeg ?? this.params.cameraFovDeg;
+    }
+
+    get cameraUptiltDeg(): number {
+        return this.camUptiltDeg ?? this.params.cameraUptiltDeg;
+    }
+
+    /**
+     * A 'life' setting changed (design A.7, C.4 kind `here`): a new flight model with these params,
+     * and a craft in the air goes on from where it is, level and still, instead of going back to
+     * the spawn (v0.2's Apply reset the flight: D-b). A parked or crashed craft, a replay, or a spot
+     * the new walls would put it inside: the spawn, as before. Lead contract step before wave 2:
+     * the settings screen (W2-1) calls this on close; the respawn work (W2-2) adds the platform and
+     * keepArmed options (C.4) without changing the signature.
+     */
+    applyLifeSettings(presetId: string, overrides: ParamOverrides): void {
+        const s = this.sim ? this.sim.s : null;
+        const flying = !!s && s[S.hold] === 0 && s[S.crashed] === 0 && !this.replayState;
+        const here: [number, number, number, number] | null = s ? [s[S.px], s[S.py], s[S.pz], attitude(s).yaw] : null;
+        this.rebuildSim(presetId, overrides);
+        if (flying && here && this.spawnIsFree(here)) {
+            this.runner.respawn(here[0], here[1], here[2], here[3]);
+            this.flightStartTick = this.sim.tick;
+        }
+    }
+
     /** Change drone / physics settings: a new flight model at the same scene. */
     rebuildSim(presetId: string, overrides: ParamOverrides): void {
         this.presetId = PRESETS[presetId] ? presetId : DEFAULT_PRESET;
         this.overrides = overrides;
         this.params = compileParams(PRESETS[this.presetId], overrides);
-        this.renderer.setFov(this.params.cameraFovDeg);
+        this.renderer.setFov(this.cameraFovDeg);
         this.takePendingWalls(); // a restart is a moment the craft is not flying: queued walls go in
         this.buildSim();
     }
@@ -513,7 +555,7 @@ export class FlightSession {
         if (!this.cameraOverride) {
             const s = this.sim.s;
             const frac = this.paused ? 0 : Math.max(0, Math.min(0.001, (this.toSimUs(now) - this.sim.tick * 1000) / 1e6));
-            this.renderer.setPose(s[S.px] + s[S.vx] * frac, s[S.py] + s[S.vy] * frac, s[S.pz] + s[S.vz] * frac, s[S.qw], s[S.qx], s[S.qy], s[S.qz], this.params.cameraUptiltDeg);
+            this.renderer.setPose(s[S.px] + s[S.vx] * frac, s[S.py] + s[S.vy] * frac, s[S.pz] + s[S.vz] * frac, s[S.qw], s[S.qx], s[S.qy], s[S.qz], this.cameraUptiltDeg);
         }
         if (this.lagFrames > 0) {
             this.lagQueue.push(this.runner.lastAppliedId);
@@ -665,7 +707,7 @@ export class FlightSession {
         const target = st.startTick + Math.floor(now - st.t0);
         this.replayStep(st, target);
         const s = st.sim.s;
-        if (!this.cameraOverride) this.renderer.setPose(s[S.px], s[S.py], s[S.pz], s[S.qw], s[S.qx], s[S.qy], s[S.qz], this.params.cameraUptiltDeg);
+        if (!this.cameraOverride) this.renderer.setPose(s[S.px], s[S.py], s[S.pz], s[S.qw], s[S.qx], s[S.qy], s[S.qz], this.cameraUptiltDeg);
         if (st.sim.tick >= st.endTick) this.replayState = null;
     }
 
