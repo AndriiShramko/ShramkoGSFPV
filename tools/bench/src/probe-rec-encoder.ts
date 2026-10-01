@@ -148,16 +148,195 @@ if (want('A')) {
     }
 }
 
+// C: the bare encoder fed the way the recorder feeds it, one feature at a time (hardware, quality, 60 Hz):
+// hold = the composed frame kept until the next one and a re-stamped copy encoded; strip = a read back
+// of the credit strip every 60 frames; engine = called from the engine's frame (Recording.frame) instead of rAF.
+if (want('C')) {
+    const variants = (process.env.PROBE_C ?? 'raf,raf+hold,raf+strip,engine,engine+hold+strip,raf').split(',');
+    out.C = {};
+    for (const [i, v] of variants.entries()) {
+        const r = await hook(page, `
+            const v = ${JSON.stringify(v)}.split('+');
+            const cfg = { codec: 'avc1.640033', width: 1728, height: 1080, bitrate: 11197440, framerate: 60, latencyMode: 'quality', hardwareAcceleration: 'prefer-hardware' };
+            const oc = new OffscreenCanvas(cfg.width, cfg.height); const cx = oc.getContext('2d', { willReadFrequently: false });
+            const src = h.rec.rec.d.canvas;
+            let err = null;
+            const enc = new VideoEncoder({ output: () => {}, error: (e) => { err = String(e); } });
+            enc.configure(cfg);
+            const st = window.__enc[window.__enc.length - 1];
+            let n = 0, prev = null; const t0 = performance.now();
+            const one = () => {
+                cx.drawImage(src, 0, 0, cfg.width, cfg.height);
+                if (v.includes('strip') && n % 60 === 0) cx.getImageData(10, cfg.height - 80, 500, 60);
+                const ts = Math.round(n * 1e6 / 60);
+                if (v.includes('hold')) { const cur = new VideoFrame(oc, { timestamp: 0 }); const f = new VideoFrame(cur, { timestamp: ts, duration: 16667 }); enc.encode(f, { keyFrame: n % 120 === 0 }); f.close(); if (prev) prev.close(); prev = cur; }
+                else { const f = new VideoFrame(oc, { timestamp: ts, duration: 16667 }); enc.encode(f, { keyFrame: n % 120 === 0 }); f.close(); }
+                n++;
+            };
+            await new Promise((res) => {
+                if (v[0] === 'engine') {
+                    const R = h.rec.rec; const orig = R.frame;
+                    R.frame = (now) => { orig.call(R, now); if (performance.now() - t0 >= 4000 || err) { R.frame = orig; res(); return; } one(); };
+                } else {
+                    const tick = () => { if (performance.now() - t0 >= 4000 || err) return res(); one(); requestAnimationFrame(tick); };
+                    requestAnimationFrame(tick);
+                }
+            });
+            const tf = performance.now(); try { await enc.flush(); } catch (e) { err ??= String(e); } const flushMs = Math.round(performance.now() - tf);
+            enc.close(); if (prev) prev.close();
+            const firstOut = st.out.slice(0, 6).map((o) => Math.round(o[0] - st.enc[0][0]));
+            return { err, flushMs, firstOut, ...summ(st) };`);
+        out.C[`${i}-${v}`] = r;
+        console.log('C', v, new Date().toISOString().slice(11, 23), JSON.stringify({ err: r.err, encoded: r.encoded, steady: r.steadyOutputsPerS, lat: r.latencyMs, q: r.queueAtEncode, flushMs: r.flushMs, firstOut: r.firstOut }));
+        await page.waitForTimeout(800);
+    }
+}
+
+// D: which frames the encoder is slow on: frames in CPU memory (I420, no canvas) against frames from
+// the 2D canvas, alternated, several encoder instances each (hardware, quality, 60 Hz, 3 s each).
+if (want('D')) {
+    const variants = (process.env.PROBE_D ?? 'cpu,canvas,cpu,canvas,cpu,canvas').split(',');
+    out.D = {};
+    for (const [i, v] of variants.entries()) {
+        const r = await hook(page, `
+            const v = ${JSON.stringify(v)};
+            const cfg = { codec: 'avc1.640033', width: 1728, height: 1080, bitrate: 11197440, framerate: 60, latencyMode: 'quality', hardwareAcceleration: 'prefer-hardware' };
+            const W = cfg.width, H = cfg.height;
+            const oc = new OffscreenCanvas(W, H); const cx = oc.getContext('2d', { willReadFrequently: v === 'cpucanvas' });
+            const src = h.rec.rec.d.canvas;
+            const frameMs = []; let chain = Promise.resolve();
+            const tinyC = new OffscreenCanvas(1, 1); const tiny = tinyC.getContext('2d');
+            const yuv = new Uint8Array(W * H * 3 / 2); for (let k = 0; k < W * H; k++) yuv[k] = (k * 7) & 255; yuv.fill(128, W * H);
+            let err = null;
+            if (v === 'gpumap') {
+                // the engine's own WebGPU device: copy the drawn canvas texture into a buffer, map it, encode it as a CPU frame
+                const gc = src.getContext('webgpu'); const conf = gc.getConfiguration ? gc.getConfiguration() : null; const dev = conf ? conf.device : s.renderer.app.graphicsDevice.wgpu;
+                const cw = src.width, ch = src.height, bpr = Math.ceil(cw * 4 / 256) * 256;
+                const fmt = (conf && conf.format) || 'bgra8unorm';
+                const pool = [0, 1, 2, 3].map(() => dev.createBuffer({ size: bpr * ch, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ }));
+                const free = [...pool];
+                const enc2 = new VideoEncoder({ output: () => {}, error: (e) => { err = String(e); } });
+                enc2.configure({ ...cfg, width: cw, height: ch, bitrate: Math.round(cw * ch * 6) });
+                const st2 = window.__enc[window.__enc.length - 1];
+                const frameMs = []; let n = 0, skipped = 0, maps = 0; const t0 = performance.now(); let chain = Promise.resolve();
+                await new Promise((res) => {
+                    const R = h.rec.rec; const orig = R.frame;
+                    R.frame = (now) => {
+                        orig.call(R, now);
+                        if (performance.now() - t0 >= 3000 || err) { R.frame = orig; res(); return; }
+                        const a0 = performance.now();
+                        const buf = free.pop(); if (!buf) { skipped++; return; }
+                        const ce = dev.createCommandEncoder(); ce.copyTextureToBuffer({ texture: gc.getCurrentTexture() }, { buffer: buf, bytesPerRow: bpr }, [cw, ch]); dev.queue.submit([ce.finish()]);
+                        const ts = Math.round(n * 1e6 / 60), key = n % 120 === 0; n++;
+                        const p = buf.mapAsync(GPUMapMode.READ).then(() => { maps++; const f = new VideoFrame(new Uint8Array(buf.getMappedRange()), { format: fmt.startsWith('bgra') ? 'BGRX' : 'RGBX', codedWidth: cw, codedHeight: ch, layout: [{ offset: 0, stride: bpr }], timestamp: ts, duration: 16667 }); buf.unmap(); free.push(buf); return f; });
+                        chain = chain.then(() => p).then((f) => { enc2.encode(f, { keyFrame: key }); f.close(); });
+                        frameMs.push(performance.now() - a0);
+                    };
+                });
+                await chain; await enc2.flush(); enc2.close(); pool.forEach((b) => b.destroy());
+                const sm = summ(st2);
+                return { err, encoded: n, skipped, maps, fmt, size: [cw, ch], frameMainThreadMs: { p50: pct(frameMs, 0.5), p95: pct(frameMs, 0.95) }, steadyOutputsPerS: sm.steadyOutputsPerS, outGapMsP50: null, latencyMs: sm.latencyMs, queueAtEncode: sm.queueAtEncode, flushMs: 0 };
+            }
+            if (v === 'worker') {
+                const code = 'let enc, out = [], encT = new Map(), lat = []; onmessage = async (e) => { const m = e.data; if (m.cfg) { enc = new VideoEncoder({ output: (c) => { const t = performance.now(); out.push(t); const a = encT.get(c.timestamp); if (a !== undefined) lat.push(t - a); }, error: (x) => postMessage({ err: String(x) }) }); enc.configure(m.cfg); return; } if (m.frame) { encT.set(m.frame.timestamp, performance.now()); enc.encode(m.frame, { keyFrame: m.key }); m.frame.close(); return; } if (m.done) { await enc.flush(); enc.close(); postMessage({ out, lat }); } };';
+                const wk = new Worker(URL.createObjectURL(new Blob([code], { type: 'text/javascript' })));
+                wk.postMessage({ cfg });
+                const frameMs = []; let n = 0; const t0 = performance.now();
+                await new Promise((res) => { const tick = () => { if (performance.now() - t0 >= 3000) return res(); const a = performance.now(); cx.drawImage(src, 0, 0, W, H); const f = new VideoFrame(oc, { timestamp: Math.round(n * 1e6 / 60), duration: 16667 }); wk.postMessage({ frame: f, key: n % 120 === 0 }, [f]); frameMs.push(performance.now() - a); n++; requestAnimationFrame(tick); }; requestAnimationFrame(tick); });
+                const tf = performance.now();
+                const r = await new Promise((res) => { wk.onmessage = (e) => { if (e.data.out) res(e.data); }; wk.postMessage({ done: true }); });
+                wk.terminate();
+                const o = r.out; const gaps = []; for (let k = 1; k < o.length; k++) gaps.push(o[k] - o[k - 1]);
+                const a = o[0] + (o[o.length - 1] - o[0]) * 0.25, b = o[0] + (o[o.length - 1] - o[0]) * 0.75;
+                return { err, encoded: n, outputs: o.length, flushMs: Math.round(performance.now() - tf), outGapMsP50: pct(gaps, 0.5), frameMainThreadMs: { p50: pct(frameMs, 0.5), p95: pct(frameMs, 0.95) }, steadyOutputsPerS: Math.round(o.filter((t) => t >= a && t < b).length / ((b - a) / 1000) * 10) / 10, latencyMs: { p50: pct(r.lat, 0.5), p95: pct(r.lat, 0.95) }, queueAtEncode: { max: null } };
+            }
+            const enc = new VideoEncoder({ output: () => {}, error: (e) => { err = String(e); } });
+            enc.configure(cfg);
+            const st = window.__enc[window.__enc.length - 1];
+            let n = 0; const t0 = performance.now();
+            await new Promise((res) => {
+                const tick = () => {
+                    if (performance.now() - t0 >= 3000 || err) return res();
+                    const ts = Math.round(n * 1e6 / 60);
+                    let f; const a0 = performance.now(); const key = n % 120 === 0;
+                    if (v === 'cpu') { yuv[(n * 9973) % (W * H)] ^= 255; f = new VideoFrame(yuv, { format: 'I420', codedWidth: W, codedHeight: H, timestamp: ts, duration: 16667 }); }
+                    else if (v === 'bitmap') { cx.drawImage(src, 0, 0, W, H); const bm = oc.transferToImageBitmap(); f = new VideoFrame(bm, { timestamp: ts, duration: 16667 }); bm.close(); }
+                    else { cx.drawImage(src, 0, 0, W, H); f = new VideoFrame(oc, { timestamp: ts, duration: 16667 }); }
+                    if (v === 'copyto') {
+                        const g = f; const buf = new Uint8Array(g.allocationSize());
+                        const p = g.copyTo(buf).then((layout) => { const c = new VideoFrame(buf, { format: g.format, codedWidth: g.codedWidth, codedHeight: g.codedHeight, layout, timestamp: g.timestamp, duration: 16667 }); g.close(); return c; });
+                        chain = chain.then(() => p).then((c) => { enc.encode(c, { keyFrame: key }); c.close(); });
+                    } else { enc.encode(f, { keyFrame: key }); f.close(); }
+                    // a 1-pixel read back flushes the canvas's GPU work and waits for it (the conversion's turn?)
+                    if (v === 'canvas+flush') cx.getImageData(0, 0, 1, 1);
+                    // a non-blocking flush: a 1 x 1 canvas on the same GPU context hands over its picture
+                    if (v === 'canvas+tib') { tiny.fillRect(0, 0, 1, 1); tinyC.transferToImageBitmap().close(); }
+                    frameMs.push(performance.now() - a0); n++;
+                    requestAnimationFrame(tick);
+                };
+                requestAnimationFrame(tick);
+            });
+            await chain;
+            const tf = performance.now(); try { await enc.flush(); } catch (e) { err ??= String(e); } const flushMs = Math.round(performance.now() - tf);
+            enc.close();
+            const o = st.out.map((x) => x[0]); const gaps = []; for (let k = 1; k < o.length; k++) gaps.push(o[k] - o[k - 1]);
+            return { err, flushMs, outGapMsP50: pct(gaps, 0.5), frameMainThreadMs: { p50: pct(frameMs, 0.5), p95: pct(frameMs, 0.95) }, ...summ(st) };`);
+        out.D[`${i}-${v}`] = r;
+        console.log('D', v, new Date().toISOString().slice(11, 23), JSON.stringify({ err: r.err, encoded: r.encoded, steady: r.steadyOutputsPerS, outGapP50: r.outGapMsP50, main: r.frameMainThreadMs, latP50: r.latencyMs.p50, qMax: r.queueAtEncode.max, flushMs: r.flushMs }));
+        await page.waitForTimeout(500);
+    }
+}
+
+// E: one canvas-fed encoder (hardware, quality, 60 Hz) for 50 s after the page is ready, per second:
+// packets out, and the engine's splat streaming (gsplat frame:ready loading count, bytes received).
+if (want('E')) for (let pass = 0; pass < Number(process.env.E_PASSES ?? 1); pass++) {
+    if (pass > 0) { await page.reload(); await waitReady(page, 240000); await page.waitForTimeout(5000); }
+    const r = await hook(page, `
+        const cfg = { codec: 'avc1.640033', width: 1728, height: 1080, bitrate: 11197440, framerate: 60, latencyMode: 'quality', hardwareAcceleration: 'prefer-hardware' };
+        const oc = new OffscreenCanvas(cfg.width, cfg.height); const cx = oc.getContext('2d', { willReadFrequently: false });
+        const src = h.rec.rec.d.canvas;
+        let loading = -1; const sys = s.renderer.app.systems.gsplat; const on = (_c, _l, ready, n) => { loading = n; }; sys.on('frame:ready', on);
+        let outs = 0, err = null;
+        const enc = new VideoEncoder({ output: () => { outs++; }, error: (e) => { err = String(e); } });
+        enc.configure(cfg);
+        const rows = []; let n = 0; const t0 = performance.now(); let lastSec = 0, lastOuts = 0, lastN = 0, f0 = s.frames;
+        await new Promise((res) => {
+            const tick = () => {
+                const now = performance.now();
+                if (now - t0 >= ${Number(process.env.E_S ?? 50) * 1000} || err) return res();
+                const sec = Math.floor((now - t0) / 1000);
+                if (sec > lastSec) { const b = s.renderer.splatBytes(); rows.push([sec, outs - lastOuts, n - lastN, enc.encodeQueueSize, loading, Math.round((b.received ?? b.bytes ?? 0) / 1e6), s.frames - f0]); lastSec = sec; lastOuts = outs; lastN = n; f0 = s.frames; }
+                // keep the backlog bounded, so a slow second shows as a slow second
+                if (enc.encodeQueueSize < 20) { cx.drawImage(src, 0, 0, cfg.width, cfg.height); const f = new VideoFrame(oc, { timestamp: Math.round(n * 1e6 / 60), duration: 16667 }); enc.encode(f, { keyFrame: n % 120 === 0 }); f.close(); n++; }
+                requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+        });
+        sys.off('frame:ready', on);
+        await enc.flush(); enc.close();
+        return { err, cols: ['s', 'packetsOut', 'fed', 'queue', 'gsplatLoading', 'splatMB', 'engineFrames'], rows, splatBytesKeys: Object.keys(s.renderer.splatBytes()) };`);
+    out[`E${pass}`] = r;
+    console.log('E pass', pass, r.err);
+    console.log('E', r.rows.map((row: number[]) => `${row[0]}:${row[1]}`).join(' '));
+}
+
 if (want('B')) {
+    // variants of the live recorder, one after another on the same page (PROBE_B, comma separated):
+    // as-is; nostrip (no credit-strip read back); norepeat (missed slots not repeated)
+    const PATCH: Record<string, string> = { 'as-is': '', nostrip: 'rec.stripStd = () => 0.5;', norepeat: 'rec.pacer.maxRepeat = 0;' };
+    const variants = (process.env.PROBE_B ?? 'as-is').split(',');
+    out.B = {};
+    for (const [i, v] of variants.entries()) {
     await hook(page, `const root = await navigator.storage.getDirectory(); const d = await root.getDirectoryHandle('gsfpv-probe-' + Date.now().toString(36), { create: true }); await h.rec.useFolder(d); return 0;`);
     const r = await hook(page, `
         const n0 = window.__enc.length; window.__writes.length = 0;
         const codec = await h.rec.start();
         const rec = h.rec.rec.recorder; const orig = rec.addFrame.bind(rec);
+        ${PATCH[v] ?? ''}
         const calls = [];
         rec.addFrame = (src, now) => { const p = rec.part; const pend = p ? p.pendingPictures : -1, q = p ? p.queue : -1; const a = performance.now(); orig(src, now); calls.push([a, performance.now() - a, pend, q]); };
         const t0 = performance.now(), f0 = s.frames;
-        await new Promise((r) => setTimeout(r, 10000));
+        await new Promise((r) => setTimeout(r, ${Number(process.env.PROBE_S ?? 10) * 1000}));
         const engineFps = Math.round((s.frames - f0) / (performance.now() - t0) * 10000) / 10;
         const tStop = performance.now();
         const info = await h.rec.stop();
@@ -165,16 +344,20 @@ if (want('B')) {
         const st = window.__enc[n0];
         const w = window.__writes;
         const gaps = []; for (let i = 1; i < calls.length; i++) gaps.push(calls[i][0] - calls[i - 1][0]);
-        // pictures in flight over time, sampled every 0.5 s
-        const series = []; let next = calls.length ? calls[0][0] : 0; for (const c of calls) if (c[0] >= next) { series.push([Math.round(c[0] - calls[0][0]), c[2], c[3]]); next += 500; }
+        // pictures in flight and the encoder's queue, sampled every 0.1 s for 2 s, then every 0.5 s
+        const series = []; let next = calls.length ? calls[0][0] : 0; for (const c of calls) if (c[0] >= next) { series.push([Math.round(c[0] - calls[0][0]), c[2], c[3]]); next += c[0] - calls[0][0] < 2000 ? 100 : 500; }
+        // when the encoder gave its first packets back (ms after the first encode call)
+        const firstOut = st ? st.out.slice(0, 5).map((o) => Math.round(o[0] - st.enc[0][0])) : null;
         return { codec, engineFps, stopMs, info: { frames: info.frames, duplicated: info.duplicated, heldForEncoder: info.heldForEncoder, dropped: info.dropped, bytes: info.bytes },
             addFrameMs: { n: calls.length, p50: pct(calls.map((c) => c[1]), 0.5), p95: pct(calls.map((c) => c[1]), 0.95), max: pct(calls.map((c) => c[1]), 1), sumS: Math.round(calls.reduce((n, c) => n + c[1], 0)) / 1000 },
             frameGapMs: { p50: pct(gaps, 0.5), p95: pct(gaps, 0.95), max: pct(gaps, 1) },
             pendingPictures: { p50: pct(calls.map((c) => c[2]), 0.5), max: pct(calls.map((c) => c[2]), 1) }, series,
             writes: { n: w.length, sumMs: Math.round(w.reduce((n, x) => n + x[1], 0)), p95: pct(w.map((x) => x[1]), 0.95), max: pct(w.map((x) => x[1]), 1), mb: Math.round(w.reduce((n, x) => n + x[2], 0) / 1e5) / 10 },
-            encoder: st ? summ(st) : null };`);
-    out.B = r;
-    console.log('B', JSON.stringify(r));
+            firstOut, encoder: st ? summ(st) : null };`);
+    out.B[`${i}-${v}`] = r;
+    console.log('B', v, JSON.stringify({ engineFps: r.engineFps, info: r.info, steadyOut: r.encoder?.steadyOutputsPerS, latP50: r.encoder?.latencyMs?.p50, hw: r.encoder?.cfg?.hw, lm: r.encoder?.cfg?.latencyMode, firstOut: r.firstOut, series: r.series.filter((_: Any, j: number) => j % 4 === 0) }));
+    await page.waitForTimeout(1500);
+    }
 }
 
 await browser.close();
