@@ -61,7 +61,7 @@ export const cinema: Feature = {
         const folderWrap = h('div', { class: 'rec-folder-wrap' }, folderBtn, folderMenu);
         const allowBtn = h('button', { type: 'button', class: 'btn rec-allow', 'data-action': 'rec-allow', hidden: true, onclick: () => void rec.allow() }) as HTMLButtonElement;
         const row = h('div', { class: 'rec-row' }, recBtn, autoBtn, folderWrap);
-        const cinemaNote = h('div', { class: 'cinema-note', role: 'status', 'data-testid': 'cinema-note' });
+        const cinemaNote = h('div', { class: 'cinema-note', role: 'status', id: 'rec-note', 'data-testid': 'cinema-note' });
         const cinemaBar = h('div', { class: 'cinema-bar rec-bar interactive', 'data-testid': 'rec-bar' }, row, allowBtn, cinemaNote);
         ui.append(cinemaBar);
 
@@ -121,6 +121,9 @@ export const cinema: Feature = {
             autoBtn.setAttribute('aria-pressed', autoOn && allowed ? 'true' : 'false');
             autoBtn.disabled = !allowed;
             autoBtn.title = allowed ? t('rec.auto.help') : !showcase ? t('rec.onlyShowcase') : t('rec.unsupported');
+            // disabled, it says why in the note right under it (a disabled button shows no tooltip everywhere)
+            if (allowed) autoBtn.removeAttribute('aria-describedby');
+            else autoBtn.setAttribute('aria-describedby', 'rec-note');
             const name = rec.folder?.name ?? '';
             folderWrap.hidden = !allowed || !rec.canPick;
             folderBtn.textContent = !rec.folder ? `${t('rec.folder.none')} ▾` : rec.access === 'denied' ? `${t('rec.folder.noAccess', { name })} ▾` : `${t('rec.folder', { name })} ▾`;
@@ -257,6 +260,8 @@ export const cinema: Feature = {
             if (document.visibilityState === 'visible') void rec.refreshAccess();
         });
         ctx.prefs.onChange((c) => {
+            // the folder's name was reset (Settings: reset, an imported file without it): its handle goes too
+            if (c.id === 'recording.folder' && c.value === null && rec.folder) void rec.forget();
             if (c.id === 'recording.auto' || c.id === 'recording.folder') render();
         });
 
