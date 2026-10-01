@@ -234,7 +234,11 @@ export class PrefsStore {
     }
 
     resetGroup(group: GroupId, ctx?: Ctx): void {
-        for (const def of this.schema.defs) if (def.group === group) this.remove(def, ctx, 'reset');
+        // The context is resolved once, before the loop (review finding C2): group 'drone' starts
+        // with drone.current, so resolving it per def would aim the drone's own rows at the default
+        // drone once drone.current is reset, and wipe that drone's values instead of this one's.
+        const c: Ctx = { drone: this.droneOf(ctx), scene: ctx?.scene };
+        for (const def of this.schema.defs) if (def.group === group) this.remove(def, c, 'reset');
     }
 
     /** Settings (default) and, when named, collections back to their defaults. Unknown ids (a newer version's) stay. */
