@@ -1,1 +1,12 @@
-{}
+{
+  "summary.mode": "Tryb: {mode}",
+  "summary.mode.acro": "ACRO",
+  "summary.mode.angle": "ANGLE",
+  "summary.mode.horizon": "HORIZON",
+  "summary.menu": "Menu",
+  "summary.keys": "Skróty klawiszowe",
+  "summary.kbdFlying": "Latanie na klawiaturze",
+  "summary.kbd.throttle": "Gaz w górę / w dół",
+  "summary.kbd.yaw": "Yaw w lewo / w prawo",
+  "summary.kbd.sticks": "Pitch i roll"
+}

@@ -1,1 +1,12 @@
-{}
+{
+  "summary.mode": "Mode: {mode}",
+  "summary.mode.acro": "ACRO",
+  "summary.mode.angle": "ANGLE",
+  "summary.mode.horizon": "HORIZON",
+  "summary.menu": "Menu",
+  "summary.keys": "Keyboard shortcuts",
+  "summary.kbdFlying": "Flying with the keyboard",
+  "summary.kbd.throttle": "Throttle up / down",
+  "summary.kbd.yaw": "Yaw left / right",
+  "summary.kbd.sticks": "Pitch and roll"
+}
