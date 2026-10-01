@@ -67,6 +67,8 @@ export const summary: Feature = {
         // ---- the card
         let card: StatsCard | null = null;
         let cardAt = 0;
+        /** the life's air time on the card: a new life (a respawn, a new flight model) has less, and the card goes */
+        let cardAir = 0;
         let thrAtCard = 0;
         let offKeys: (() => void) | null = null;
         const closeCard = (): void => {
@@ -81,8 +83,10 @@ export const summary: Feature = {
         };
         const showCard = (): void => {
             closeCard();
-            card = new StatsCard(ctx.ui, ledger.life(), units(), openPanel);
+            const life = ledger.life();
+            card = new StatsCard(ctx.ui, life, units(), openPanel);
             cardAt = performance.now();
+            cardAir = life.airtimeS;
             thrAtCard = throttle();
             const onKey = (e: KeyboardEvent): void => {
                 if (IGNORED.test(e.code) || dialogOpen()) return;
@@ -112,12 +116,15 @@ export const summary: Feature = {
         let lastCommit = performance.now();
         ctx.events.on('frame', ({ now }) => {
             sync();
-            if (card && (now - cardAt > CARD_TIMEOUT_MS || throttleDismisses(thrAtCard, throttle()))) closeCard();
+            // a respawn between ticks emits no runner event (sim-core runner.ts emits only what a step
+            // produced), so a new life is seen here: its air time starts again from zero
+            if (card && (now - cardAt > CARD_TIMEOUT_MS || throttleDismisses(thrAtCard, throttle()) || ledger.life().airtimeS + 1e-9 < cardAir)) closeCard();
             if (now - lastCommit > COMMIT_EVERY_MS) {
                 lastCommit = now;
                 ledger.commit();
             }
         });
+        ctx.events.on('life', () => closeCard());
         ctx.events.on('pause', ({ on }) => {
             if (!on) return;
             closeCard();

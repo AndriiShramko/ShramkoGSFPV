@@ -12,6 +12,7 @@ import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { KEYMAP } from '../../../packages/prefs/src/keymap';
+import { S } from '../../../packages/sim-core/src/index';
 import type { KeyBinding } from '../../../packages/prefs/src/keymap';
 import { launchChrome, waitReady } from './browser';
 import { writeEvidence, REPO, today } from './evidence';
@@ -134,17 +135,18 @@ function panelKeyProblems(info: Any, map: readonly KeyBinding[] = KEYMAP): strin
 /** What each shipped action changes on the page, and what it may change besides (a new flight model disarms, a respawn is logged). */
 const PROBES: Record<string, { field: string; also?: string[]; restore: number }> = {
     'pause.toggle': { field: 'menu', restore: 1 },
-    'respawn.start': { field: 'respawns', also: ['armed'], restore: 0 },
+    'respawn.start': { field: 'atSpawn', also: ['armed'], restore: 0 },
     'mode.cycle': { field: 'mode', restore: 1 },
-    'arm.toggle': { field: 'armed', restore: 1 },
+    'arm.toggle': { field: 'armed', also: ['atSpawn'], restore: 1 },
     'voxels.cycle': { field: 'voxel', restore: 2 },
-    'walls.toggle': { field: 'walls', also: ['armed', 'mode', 'respawns'], restore: 1 },
+    'walls.toggle': { field: 'walls', also: ['armed', 'mode', 'atSpawn'], restore: 1 },
     'hud.toggle': { field: 'hudOff', restore: 1 },
     'frameStats.toggle': { field: 'frame', restore: 1 }
 };
 const SNAP = `return {
     menu: !!document.querySelector('.pause-menu'),
-    respawns: h.events.filter((e) => e.type === 'respawn').length + ':' + (h.events.filter((e) => e.type === 'respawn').pop()?.tick ?? -1),
+    // a respawn between ticks is not a runner event (sim-core runner.ts emits what a step produced): the craft parked at the spawn instead
+    atSpawn: Math.hypot(s.sim.s[${S.px}] - h.info.spawn[0], s.sim.s[${S.py}] - h.info.spawn[1], s.sim.s[${S.pz}] - h.info.spawn[2]) < 1e-3,
     mode: s.sim.ch[5],
     armed: s.sim.armed,
     voxel: h.voxels.stats().mode,
