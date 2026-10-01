@@ -313,6 +313,27 @@ try {
         await ctx.close();
     }
 
+    // -------------------------------------------------------------- S1 control: a crash, not a disarm
+    if (want('S1') && out.S1) {
+        // the bot pilot (?simradio=scenario&quick=1) hovers, aims and dashes into a wall: a crash after
+        // more than 3 s in the air disarms the craft too (reason 'crash'), and no card may show
+        const ctx = await newContext(browser);
+        const p = await ctx.newPage();
+        await p.goto(fly(`${LOGIC}&simradio=scenario&quick=1`));
+        await waitReady(p, 240000);
+        let phase = '';
+        for (let i = 0; i < 600 && !['crashed', 'rest', 'done'].includes(phase); i++) { await sleep(100); phase = await ev(p, 'return h.scenario?.phase ?? "";'); }
+        const atCrash = await ev(p, "return { life: h.stats().life.airtimeS, disarms: h.events.filter((e) => e.type === 'disarm').map((e) => e.reason), crash: h.events.find((e) => e.type === 'crash') ?? null };");
+        let seen = 0;
+        for (let i = 0; i < 12; i++) { seen = Math.max(seen, await p.locator(CARD).count()); await sleep(100); }
+        await p.screenshot({ path: join(SHOTS, 'crash-no-card-render-off.jpg'), type: 'jpeg', quality: 80 });
+        await ctx.close();
+        const fired = !!atCrash.crash && atCrash.life >= 3 && atCrash.disarms.includes('crash') && !atCrash.disarms.includes('switch') && seen === 0;
+        out.S1.control = { what: 'the bot crashes into a wall after more than 3 s in the air (a crash disarm, not the switch): no card within 1.2 s', phase, atCrash, cardSeen: seen, fired };
+        out.S1.pass = out.S1.pass && fired;
+        console.log('S1 control', fired ? 'FIRED' : 'NOT FIRED', JSON.stringify({ phase, atCrash: { life: atCrash.life, disarms: atCrash.disarms, crash: atCrash.crash?.speed }, seen }));
+    }
+
     // -------------------------------------------------------------- S4 lifetime totals across a reload
     if (want('S4')) {
         const ctx = await newContext(browser);
@@ -408,8 +429,11 @@ try {
         await openPanel(p);
         await p.click('.pause-menu [data-action="pause.scene"]');
         await p.waitForURL((u) => !u.search.includes('scene='), { timeout: 15000 }).catch(() => undefined);
+        // the picker URL has no ?nowarn=1: this fresh profile gets the first-visit warning in front of it
+        const warned = await p.locator('[data-action="warning-ok"]').waitFor({ timeout: 15000 }).then(() => true, () => false);
+        if (warned) await p.click('[data-action="warning-ok"]');
         const picker = await waitReady(p, 60000).catch(() => ({ status: 'timeout' }));
-        items['pause.scene'] = { ok: picker.status === 'picker', status: picker.status };
+        items['pause.scene'] = { ok: picker.status === 'picker', status: picker.status, url: p.url(), firstVisitWarning: warned };
         await ctx.close();
         const everyItem = MENU.every((id) => items[id]?.ok === true) && Object.values(items).every((x) => x.ok);
         const everyDid = Object.entries(items).filter(([id]) => id !== 'pause.scene').every(([, x]) => did(x.before, x.after) || x.ok);
