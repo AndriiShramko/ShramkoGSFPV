@@ -16,6 +16,7 @@ import { GamepadSource } from '../devices/gamepad';
 import { saveProfile, profileFor, downloadProfile, parseProfile, getStickMode, setStickMode } from '../controls';
 import { radioArt, sideOf, knobsFrom, tickIcon } from './radio-art';
 import type { ArtState, ArtTarget } from './radio-art';
+import { modeSwitchRow, modeRowKey } from './mode-switch-row';
 
 export type SourceKind = 'hid' | 'gamepad' | 'touch' | 'keyboard';
 
@@ -737,6 +738,9 @@ export class RadioScreen {
                     h('span', { class: 'nm' }, t('wizard.axis.arm')), h('span', { class: 'ch' }, armText(st.armSource)), armNow,
                     h('div', { class: 'acts' }, canRev ? checkRev('arm') : null, redo('arm'))));
             }
+            // the radio's flight-mode switch: found by a flip, no press (mode-switch-row.ts)
+            const modeRow = modeSwitchRow(wz, (l, a, f) => btn(l, a, f), () => { sig = ''; render(); });
+            rows.append(modeRow.el);
             const row = (k: string, info = false): HTMLLIElement => h('li', { class: info ? 'info' : '' }, h('span', { class: 'mk' }, tickIcon()), h('span', {}, t(k)));
             const rThr = row('wizard.check.throttle');
             const rArm = armKind === 'key' ? row('wizard.check.armKey', true) : row(armKind === 'toggle' ? 'wizard.check.armToggle' : 'wizard.check.arm');
@@ -764,6 +768,7 @@ export class RadioScreen {
                 toggle(rCen, 'done', !!ck?.centred);
                 if (armNow) setArmNow(armNow, armLevel(s));
                 for (const [f, fill] of fills) setBar(fill, s.mapped[f], f === 'throttle');
+                modeRow.live();
             };
         };
 
@@ -999,7 +1004,7 @@ export class RadioScreen {
             // buttons and the extra panel
             const can = st.can;
             const s2 = [sk, st.hint?.key === 'wizard.hint.arm.none', can.begin, can.next, can.back, can.pick, can.skipArm, can.measureAnyway, can.fly, can.reverse, can.redo,
-                st.result?.kind ?? '', st.redoing, pickOpen, this.mode, !!st.profile].join('|');
+                st.result?.kind ?? '', st.redoing, pickOpen, this.mode, !!st.profile, modeRowKey(st)].join('|');
             if (s2 !== sig) {
                 sig = s2;
                 const had = document.activeElement instanceof HTMLElement ? document.activeElement : null;
