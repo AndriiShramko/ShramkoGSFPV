@@ -12,6 +12,9 @@
 //   node --import tsx scripts/gen-catalog.ts           write whatever is stale
 //   node --import tsx scripts/gen-catalog.ts --check   exit 1 when any output is stale (CI); then a
 //                                                      negative control: a planted stale label must be caught
+//   --check is the only gate that compares the committed outputs with the live schema, keymap and
+//   simulator words: an agent of a parallel wave may not regenerate, so vitest checks the committed
+//   outputs only against each other (packages/prefs/test/catalogue-committed.ts)
 //
 // Texts, in this order (the first that has the key wins):
 //   1. the simulator's dictionaries, packages/i18n/locales/fly/<lang>.json plus every namespace
@@ -623,7 +626,14 @@ function control(f: Features): string[] {
     planted.counts.groups = new Intl.PluralRules('ru').select(f.counts.groups) === 'few' ? 5 : 2;
     const s = stale(render(planted, read), read);
     const ru = SITE_DICTS.find(([l]) => l === 'ru')![1];
-    return [OUT_JSON, OUT_MD, README, ru].filter((p) => !s.includes(p)).map((p) => `${p} not caught`);
+    const missed = [OUT_JSON, OUT_MD, README, ru].filter((p) => !s.includes(p)).map((p) => `${p} not caught`);
+    // and an Advanced badge that is not the simulator's word: vitest no longer compares it with the
+    // simulator's dictionary (parallel agents may not regenerate), so this check is the only one that does
+    const text = read(ru) ?? '';
+    const tune = (JSON.parse(text) as { tune: { count: Record<string, string> } }).tune;
+    const plantedDisk = (rel: string) => (rel === ru ? withSiteDerived(text, { count: tune.count, adv: 'planted' }) : read(rel));
+    if (!stale(render(f, plantedDisk), plantedDisk).includes(ru)) missed.push(`a planted tune.adv in ${ru} not caught`);
+    return missed;
 }
 
 function main(): void {
@@ -648,7 +658,7 @@ function main(): void {
             console.error(`gen-catalog --check: the negative control did not fire (${missed.join('; ')})`);
             process.exit(1);
         }
-        console.log(`gen-catalog --check: up to date (${summary}); control: a planted stale label is caught in ${OUT_JSON}, ${OUT_MD}, ${README}, and a planted count in the ru tiles`);
+        console.log(`gen-catalog --check: up to date (${summary}); control: a planted stale label is caught in ${OUT_JSON}, ${OUT_MD}, ${README}, a planted count in the ru tiles and a planted Advanced in ${SITE_DICTS.find(([l]) => l === 'ru')![1]}`);
         console.log(`  ${texts}`);
         return;
     }
