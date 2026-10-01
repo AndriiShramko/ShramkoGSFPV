@@ -1,0 +1,27 @@
+/* The crash toast, the crash panel's key-caps and the "-5 s" label (ui/crash-overlay.ts, C.10). */
+
+/* bottom centre, over the arm-card's place (that card hides while crashed); nothing in it takes a
+   click, so it never sits between the pilot's thumb and a control */
+.crash-toast { position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%); width: max-content; max-width: min(92vw, 460px); display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 8px 14px; border-radius: 12px; background: rgba(12,14,18,.82); border: 1px solid var(--line); color: #fff; font-size: 14px; text-align: center; pointer-events: none; animation: fadein .3s ease both; }
+.crash-toast .ct-text { font-variant-numeric: tabular-nums; }
+.crash-toast .ct-bar { display: block; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.crash-toast .ct-bar > i { display: block; height: 100%; background: var(--accent); transform-origin: 0 50%; }
+.crash-toast .ct-keys { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; color: #d1d5db; font-size: 13px; }
+.crash-toast .ct-key { display: inline-flex; align-items: center; gap: 6px; }
+/* touch sticks: the bottom corners are the pads and the middle is ARM, so the toast goes above them */
+body.touch-on .crash-toast { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 12px); }
+body.touch-on .crash-toast .ct-keys { display: none; } /* keyboard keys: nothing to press on a phone */
+/* cinema mode: above the Record control */
+body.cinema .crash-toast { bottom: calc(var(--cinema-top, 96px) + 8px); }
+body.clean .crash-toast, body.clean .rewind-label, #ui.hud-off .rewind-label { display: none; }
+/* a modal panel (pause menu, settings) stays on top of it */
+#ui:has(> .panel) > .crash-toast { visibility: hidden; }
+
+.ck-keys { display: inline-flex; gap: 4px; margin-left: 8px; }
+.crash-toast kbd, .crash-overlay kbd { font: 600 11px/1 ui-monospace, Consolas, monospace; padding: 3px 6px; border-radius: 5px; border: 1px solid #3a4654; color: #d1d5db; background: rgba(255,255,255,.06); }
+.crash-overlay .btn.primary kbd { color: var(--accent-ink); border-color: rgba(5,46,22,.45); background: rgba(5,46,22,.12); }
+
+/* "-5 s": top centre, under the top line of the OSD; it fades out, it never flashes */
+.rewind-label { position: absolute; left: 50%; top: calc(max(14px, env(safe-area-inset-top)) + 34px + var(--banner-h, 0px)); transform: translateX(-50%); padding: 4px 12px; border-radius: 8px; background: rgba(0,0,0,.5); color: #fff; font: 600 18px/1.2 ui-monospace, "Cascadia Mono", Consolas, monospace; text-shadow: 0 1px 2px #000; pointer-events: none; animation: rewind-fade var(--label-ms, 1500ms) ease-out forwards; }
+@keyframes rewind-fade { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .crash-toast, .rewind-label { animation: none; } }

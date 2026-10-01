@@ -23,7 +23,9 @@ const key = (p: Press): KeyboardEvent => ({ shiftKey: false, ctrlKey: false, alt
 
 /** Every chord of every shipped binding the router routes (not keyboard flying's). */
 const routed = (map: readonly KeyBinding[] = KEYMAP) => map.filter((b) => b.status === 'shipped' && !b.flying);
-const chords = (map: readonly KeyBinding[] = KEYMAP) => routed(map).flatMap((b) => b.keys.map((k) => ({ action: b.action, code: k.code, shiftKey: !!k.shift })));
+/** ... and of those that listen in `state` (a 'crash' binding such as Enter keeps the wreck only while crashed) */
+const listening = (state: 'flight' | 'crash', map: readonly KeyBinding[] = KEYMAP) => routed(map).filter((b) => b.when === 'always' || b.when === state);
+const chords = (map: readonly KeyBinding[] = KEYMAP, state?: 'flight' | 'crash') => (state ? listening(state, map) : routed(map)).flatMap((b) => b.keys.map((k) => ({ action: b.action, code: k.code, shiftKey: !!k.shift })));
 
 /** A router with a counting handler on every routed action. */
 function counting(map: readonly KeyBinding[] = KEYMAP, o: ConstructorParameters<typeof KeyRouter>[0] = {}) {
@@ -42,12 +44,14 @@ describe('one handler per key press, no key bound twice', () => {
     it('each routed chord runs exactly one handler, its own action, in flight and while crashed', () => {
         for (const state of ['flight', 'crash'] as const) {
             const { r, runs, total } = counting(KEYMAP, { state: () => state });
-            for (const c of chords()) {
+            for (const c of chords(KEYMAP, state)) {
                 const before = total();
                 expect(r.route(key(c)), `${c.code} (${state})`).toBe(c.action);
                 expect(total() - before, c.code).toBe(1);
             }
-            expect([...runs.keys()].sort()).toEqual(routed().map((b) => b.action).sort());
+            expect([...runs.keys()].sort()).toEqual(listening(state).map((b) => b.action).sort());
+            // a binding that does not listen in this state runs nothing
+            for (const b of routed().filter((x) => !listening(state).includes(x))) for (const k of b.keys) expect(r.route(key({ code: k.code, shiftKey: !!k.shift })), `${k.code} (${state})`).toBeNull();
         }
     });
 

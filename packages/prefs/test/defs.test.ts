@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { DRONE_IDS, RATE_BOUNDS, SCHEMA, actionsOf, bindingOf, defineSettings, isCuratedRef, isPresetRef, validateFolder, validatePid, validateRates, validateThrottle, validateTransform } from '../src';
 import type { EnumDef, NumDef, SettingDef } from '../src';
@@ -72,12 +72,30 @@ const A8: [string, string, string, string, unknown, string][] = [
 ];
 
 /**
- * New settings (not in v0.2) that are shipped but lack set.<id> / set.<id>.help in a language of
- * the `set` namespace: the wave that ships a setting adds its text first (I.1 fails without it).
- * At wave 1 no new setting is shipped, so this is empty by construction.
+ * The fly dictionaries merged as apps/fly/src/i18n.ts merges them (the flat file, then every
+ * namespace): a setting's owner may keep its texts in its own namespace (docs 1.3, J.0).
  */
-function untranslatedNewShipped(defs: readonly SettingDef[]): string[] {
-    const dicts = ['en', 'es', 'pl', 'ru'].map((l) => JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'set', `${l}.json`), 'utf8')) as Record<string, string>);
+function flyDicts(): Record<string, string>[] {
+    const fly = join(REPO, 'packages', 'i18n', 'locales', 'fly');
+    const ns = readdirSync(fly).filter((n) => statSync(join(fly, n)).isDirectory());
+    return ['en', 'es', 'pl', 'ru'].map((l) => {
+        const d = JSON.parse(readFileSync(join(fly, `${l}.json`), 'utf8')) as Record<string, string>;
+        for (const n of ns) Object.assign(d, JSON.parse(readFileSync(join(fly, n, `${l}.json`), 'utf8')));
+        return d;
+    });
+}
+
+/** Settings shipped in wave 2, by their owners (append your own line). */
+const WAVE2_SHIPPED: readonly string[] = [
+    // W2-2 respawn: crashes and respawn (C.4-C.8; respawn.showPad stays planned)
+    'crash.enabled', 'respawn.auto', 'respawn.delayS', 'respawn.target', 'respawn.rewindS', 'respawn.platform', 'respawn.keepArmed', 'respawn.unstuck', 'battery.refill'
+];
+
+/**
+ * New settings (not in v0.2) that are shipped but lack set.<id> / set.<id>.help in a language of
+ * the merged fly dictionaries: the wave that ships a setting adds its text first (I.1 fails without it).
+ */
+function untranslatedNewShipped(defs: readonly SettingDef[], dicts: Record<string, string>[] = flyDicts()): string[] {
     return defs.filter((d) => d.status === 'shipped' && !V02_SETTINGS.includes(d.id) && dicts.some((t) => !t[`set.${d.id}`] || !t[`set.${d.id}.help`])).map((d) => d.id);
 }
 
@@ -98,14 +116,16 @@ describe('SCHEMA is the A.8 table', () => {
         expect(SCHEMA.defs.every((d) => d.status === 'shipped' || d.status === 'planned')).toBe(true);
     });
 
-    it('what a pilot can change on the live site today is shipped, and nothing else (v0.2 plus main\'s walls switch and voxel grid)', () => {
+    it('what a pilot can change on the live site today is shipped, and nothing else (v0.2 plus main\'s walls switch and voxel grid, plus what wave 2 shipped)', () => {
         const shipped = SCHEMA.defs.filter((d) => d.status === 'shipped').map((d) => d.id);
-        expect([...shipped].sort()).toEqual([...V02_SETTINGS, ...MAIN_SETTINGS].sort());
+        expect([...shipped].sort()).toEqual([...V02_SETTINGS, ...MAIN_SETTINGS, ...WAVE2_SHIPPED].sort());
     });
 
     it('control: flipping a new setting to shipped before its translations exist is caught', () => {
         const flipped = SCHEMA.defs.map((d) => (d.id === 'respawn.auto' ? { ...d, status: 'shipped' as const } : d));
-        expect(untranslatedNewShipped(flipped)).toContain('respawn.auto');
+        const dicts = flyDicts();
+        for (const d of dicts) delete d['set.respawn.auto.help'];
+        expect(untranslatedNewShipped(flipped, dicts)).toContain('respawn.auto');
     });
 
     it('the ranges of A.8', () => {

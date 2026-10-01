@@ -41,6 +41,11 @@ const V02_EXTRA: Record<string, string[]> = {
  * Space and M): the shipped bindings. M and Space are keyboard flying's own (flying: true).
  */
 const SHIPPED_AT_WAVE1 = ['arm.toggle', 'frameStats.toggle', 'hud.toggle', 'mode.cycle', 'pause.toggle', 'respawn.start', 'voxels.cycle', 'walls.toggle'];
+/** Keys shipped in wave 2, by their owners (append your own line). */
+const SHIPPED_IN_WAVE2: readonly string[] = [
+    // W2-2 respawn: Y rewinds, Enter keeps the wreck (C.10)
+    'respawn.rewind', 'crash.keep'
+];
 
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });
 const plant = (b: Partial<KeyBinding> & Pick<KeyBinding, 'action' | 'keys'>): KeyBinding[] =>
@@ -82,8 +87,8 @@ describe('v0.2 keys keep working', () => {
         }
     });
 
-    it('only the keys the page handled at the start of wave 1 are shipped, so the refactor changes no key', () => {
-        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual(SHIPPED_AT_WAVE1);
+    it('only the keys the page handled at the start of wave 1 are shipped, so the refactor changes no key (plus those wave 2 shipped)', () => {
+        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual([...SHIPPED_AT_WAVE1, ...SHIPPED_IN_WAVE2].sort());
     });
 
     it('M and Space are keyboard flying\'s own: shown with their caps, never routed', () => {
