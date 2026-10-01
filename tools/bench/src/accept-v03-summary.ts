@@ -7,7 +7,7 @@
 // S6 is visual (layout on a desktop and a phone, screenshots): it draws the scan, under the GPU
 // lock C:/dev/.gpu-lock (the owner's PC also renders video), only with >= 2500 MiB of VRAM free.
 // Evidence: evidence/<date>/v03-summary.json, screenshots in evidence/<date>/v03-summary/.
-import { mkdirSync, rmdirSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmdirSync, statSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 import type { Browser, BrowserContext, Page } from 'playwright';
@@ -15,7 +15,7 @@ import { KEYMAP } from '../../../packages/prefs/src/keymap';
 import { S } from '../../../packages/sim-core/src/index';
 import type { KeyBinding } from '../../../packages/prefs/src/keymap';
 import { launchChrome, waitReady } from './browser';
-import { writeEvidence, REPO, today } from './evidence';
+import { context, writeEvidence, REPO, today } from './evidence';
 
 const SITE = (process.env.SITE ?? 'http://127.0.0.1:5324').replace(/\/$/, '');
 const fly = (qs: string) => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}` : `${SITE}/en/fly/?${qs}`);
@@ -498,7 +498,16 @@ try {
     await browser.close();
 }
 
-const ran = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'].filter((k) => out[k]);
-out.ran = ran;
-out.pass = ran.length > 0 && ran.every((k) => out[k].pass === true);
-console.log('evidence', writeEvidence(ONLY.length && ONLY.length < 6 ? `v03-summary-${ONLY.join('-').toLowerCase()}` : 'v03-summary', out));
+// One evidence file for the day: a run of some parts replaces those parts and keeps the others, each
+// part with the commit and time it ran at (S6 waits for the GPU lock, so it may run on its own).
+const PARTS = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'];
+const file = join(REPO, 'evidence', today(), 'v03-summary.json');
+const prev: Any = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {};
+const runCtx = context();
+for (const k of PARTS) {
+    if (out[k]) out[k].ran = { at: runCtx.date, gitHead: runCtx.gitHead, gitDirty: runCtx.gitDirty, browser: which };
+    else if (prev[k]) out[k] = prev[k];
+}
+out.parts = PARTS.map((k) => ({ part: k, pass: out[k]?.pass ?? null, gitHead: out[k]?.ran?.gitHead ?? null }));
+out.pass = PARTS.every((k) => out[k]?.pass === true);
+console.log('evidence', writeEvidence('v03-summary', out), 'all six pass:', out.pass);
