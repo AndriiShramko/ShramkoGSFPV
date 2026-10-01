@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-01T17:41:40.838Z",
-    "gitHead": "d152391",
+    "date": "2026-10-01T17:43:11.108Z",
+    "gitHead": "595df56",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -22,6 +22,18 @@
     "why": "installed"
   },
   "mode": "render=off (logic only): every check here reads state, none is a picture check",
+  "screenshots": {
+    "what": "Settings over the drawn scan (not a check: pictures for the owner)",
+    "files": [
+      "evidence/2026-10-01/v03-prefs/desktop-drone.png",
+      "evidence/2026-10-01/v03-prefs/desktop-tune.png",
+      "evidence/2026-10-01/v03-prefs/desktop-data.png",
+      "evidence/2026-10-01/v03-prefs/phone-drone.png",
+      "evidence/2026-10-01/v03-prefs/phone-tune.png",
+      "evidence/2026-10-01/v03-prefs/phone-data.png"
+    ]
+  },
+  "pageErrors": [],
   "P9": {
     "pass": true,
     "what": "settings whose app code still keeps its own key follow the store: F3 frame stats, the voxel style and the walls of this scan, set in Settings, are on screen and survive a reload; the walls row reset gives the scan default with nothing explicit left; walls apply when Settings closes (life)",
@@ -100,7 +112,6 @@
     },
     "at": "2026-10-01T17:41:40.836Z"
   },
-  "pageErrors": [],
   "P1": {
     "pass": true,
     "what": "item 20: Crash threshold 6.5 set in Settings is what the flight uses, and it survives a scene change, a reload and a new browser on the same profile",
