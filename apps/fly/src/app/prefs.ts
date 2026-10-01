@@ -12,10 +12,11 @@
 // radio profiles and the last input (W2-3), the scene library (W3-1), the voxel look (W3-4).
 //
 // Owner from wave 2: W2-1 (settings UI and persistence) extends this file.
-import { SCHEMA, openBrowserPrefs, settingsFromQuery } from '@gsfpv/prefs';
-import type { BrowserOptions, Ctx, MigrationInfo, PrefsFile, PrefsStore, PresetResolver, Schema, Scope, SetResult } from '@gsfpv/prefs';
-import type { PresetJson } from '@gsfpv/sim-core';
+import { SCHEMA, canonicalJson, openBrowserPrefs, settingsFromQuery } from '@gsfpv/prefs';
+import type { BrowserOptions, CollectionId, Collections, Ctx, GroupId, ImportMode, ImportReport, MigrationInfo, PrefsFile, PrefsStore, PresetResolver, RatesValue, Schema, Scope, SetResult, ThrottleValue, PidValue } from '@gsfpv/prefs';
+import type { GravityMode, ParamOverrides, PresetJson } from '@gsfpv/sim-core';
 import type { ShowcaseScene } from '../ui/scenes';
+import type { VoxelController, VoxelMode, VoxelPrefs, VoxelStyle } from '../voxels';
 import { PRESETS } from '../presets';
 
 /**
@@ -109,6 +110,116 @@ export function mirrorWarned(store: PrefsStore | null = pagePrefs()): void {
     store?.updateCollection('ui', (d) => { d.warned = true; });
 }
 
+// ------------------------------------------------------------------ the flight model from the store (W2-1)
+
+/**
+ * How each setting of the flight model becomes a field of sim-core's ParamOverrides (A.7: the
+ * 'life' settings). One table, so the flight's start, the settings screen's close, the drone picker
+ * and the Betaflight import all build the same model from the same values. Settings another agent
+ * ships later (crash.enabled: W2-2; level.*: W2-3) are mapped already: they only flip their status.
+ * Camera FOV and uptilt are not here: they are render-only (D-h, applyCamera).
+ */
+const PARAM_FIELDS: Readonly<Record<string, (o: ParamOverrides, v: unknown) => void>> = {
+    'physics.vCrash': (o, v) => { o.vCrash = v as number; },
+    'physics.gravity': (o, v) => { o.gravity = v as number; },
+    'physics.gravityMode': (o, v) => { o.gravityMode = v as GravityMode; },
+    'physics.twr': (o, v) => { o.twr = v as number; },
+    'physics.tauMs': (o, v) => { o.tauMs = v as number; },
+    'physics.dragScale': (o, v) => { o.cdaScale = v as number; },
+    'physics.ductDrag': (o, v) => { o.ductDrag = v as number; },
+    'physics.propInertia': (o, v) => { o.propInertia = v as number; },
+    // the setting is a percentage, sim-core a fraction (0.055 = Betaflight dshot_idle_value 550)
+    'physics.idlePct': (o, v) => { o.idle = (v as number) / 100; },
+    'tune.pid': (o, v) => { const p = v as PidValue; o.pid = { roll: [...p.roll], pitch: [...p.pitch], yaw: [...p.yaw] }; },
+    'tune.rates': (o, v) => { const r = v as RatesValue; o.rates = { type: r.type, roll: { ...r.roll }, pitch: { ...r.pitch }, yaw: { ...r.yaw }, rateLimit: r.rateLimit }; },
+    'tune.throttle': (o, v) => { const t = v as ThrottleValue; o.throttle = { mid: t.mid, expo: t.expo }; },
+    'crash.enabled': (o, v) => { o.crashOn = v as boolean; },
+    'level.angleLimitDeg': (o, v) => { o.level = { ...o.level, limitDeg: v as number }; },
+    'level.strength': (o, v) => { o.level = { ...o.level, gain: v as number }; },
+    'level.horizonStrength': (o, v) => { o.level = { ...o.level, horizonStrength: v as number }; }
+};
+
+/** The settings that build the flight model (overridesFor), by id. */
+export const FLIGHT_MODEL_SETTINGS: readonly string[] = Object.keys(PARAM_FIELDS);
+
+/**
+ * The flight model's overrides for `drone`, from the store (A.6, A.7). Only what differs from the
+ * drone's preset goes in: a value the pilot chose, or one the URL set for this load. The preset
+ * fills the rest, so the log header lists exactly the pilot's changes. Per-drone values are this
+ * drone's own: one drone's tune never reaches another (D-c; review findings C1, C10).
+ */
+export function overridesFor(store: PrefsStore, drone: string): ParamOverrides {
+    const o: ParamOverrides = {};
+    const ctx: Ctx = { drone };
+    for (const [id, put] of Object.entries(PARAM_FIELDS)) {
+        if (!store.schema.byId.has(id)) continue;
+        const v = store.get(id, ctx);
+        if (v === null || v === undefined) continue; // a tune of null: the preset's own
+        if (!store.isExplicit(id, ctx) && canonicalJson(v) === canonicalJson(store.defaultOf(id, ctx))) continue;
+        put(o, v);
+    }
+    return o;
+}
+
+/** The drone the store says is flown, as a preset that exists. */
+export function droneOf(store: PrefsStore, presets: Readonly<Record<string, PresetJson>> = PRESETS): string {
+    const d = store.get<string>('drone.current');
+    return Object.hasOwn(presets, d) ? d : (store.defaultOf<string>('drone.current'));
+}
+
+/** The pilot's camera for `drone` (A.7, D-h): render-only, never part of the flight model. */
+export function cameraFor(store: PrefsStore, drone: string): { fovDeg: number; uptiltDeg: number } {
+    return { fovDeg: store.get<number>('camera.fovDeg', { drone }), uptiltDeg: store.get<number>('camera.uptiltDeg', { drone }) };
+}
+
+/** Puts the store's camera of the drone flown on the session: no new flight model, the craft never moves. */
+export function applyCamera(session: { presetId: string; setCamera(fovDeg: number | null, uptiltDeg: number | null): void }, store: PrefsStore): void {
+    const c = cameraFor(store, session.presetId);
+    session.setCamera(c.fovDeg, c.uptiltDeg);
+}
+
+/**
+ * The voxel grid's look and view, two ways (until W3-4 moves the controller onto the store): the
+ * store is the truth, so at install and on every store change the controller takes the store's
+ * values; a change made on the controller (the walls menu's block, V) goes into the store. The
+ * controller's own key (gsfpv.voxels) is written only by its remembered setters, so `saved` tells a
+ * pilot's change (remembered: it goes into the store) from a this-load-only one (?vopacity, the
+ * test hook: it does not). The view (voxels.show) is this load's only in both.
+ */
+export function bridgeVoxels(store: PrefsStore, v: VoxelController, saved: () => VoxelPrefs): () => void {
+    let applying = false;
+    const toController = (): void => {
+        applying = true;
+        try {
+            const style = store.get<VoxelStyle>('voxels.style'), over = store.get<number>('voxels.opacity'), only = store.get<number>('voxels.opacityOnly');
+            if (v.prefs.style !== style || v.prefs.opacityOverlay !== over || v.prefs.opacityOnly !== only) {
+                v.prefs.style = style;
+                v.prefs.opacityOverlay = over;
+                v.prefs.opacityOnly = only;
+                v.configure({}); // draws the new look, not remembered in the controller's own key
+            }
+            const show = store.get<VoxelMode>('voxels.show');
+            if (v.mode !== show) v.setMode(show);
+        } finally {
+            applying = false;
+        }
+    };
+    const toStore = (): void => {
+        if (applying) return;
+        const k = saved();
+        if (k.style === v.prefs.style && k.opacityOverlay === v.prefs.opacityOverlay && k.opacityOnly === v.prefs.opacityOnly) {
+            if (store.get('voxels.style') !== v.prefs.style) store.set('voxels.style', v.prefs.style);
+            if (store.get('voxels.opacity') !== v.prefs.opacityOverlay) store.set('voxels.opacity', v.prefs.opacityOverlay);
+            if (store.get('voxels.opacityOnly') !== v.prefs.opacityOnly) store.set('voxels.opacityOnly', v.prefs.opacityOnly);
+        }
+        if (store.get('voxels.show') !== v.mode) store.set('voxels.show', v.mode);
+    };
+    toController();
+    const offV = v.onChange(toStore);
+    const offS = store.onChange((c) => { if (c.id.startsWith('voxels.')) toController(); });
+    return () => { offV(); offS(); };
+}
+
 // ------------------------------------------------------------------ window.__gsfpv.prefs
 
 /** What the benches drive: enough to read, change, reset and export, and to see what boot did. */
@@ -127,6 +238,14 @@ export interface PrefsHook {
     writable(): boolean;
     /** write pending changes now (they are debounced 250 ms) */
     flush(): void;
+    /** Settings -> Data and "Reset this group", as the screen calls them */
+    resetGroup(group: GroupId, ctx?: Ctx): void;
+    resetAll(o?: { settings?: boolean; collections?: readonly CollectionId[] }): void;
+    previewImport(file: unknown, mode?: ImportMode): ImportReport;
+    importFile(file: unknown, mode?: ImportMode): ImportReport;
+    collection<K extends CollectionId>(k: K): Readonly<Collections[K]>;
+    /** the flight model the store describes for a drone (the drone flown when omitted) */
+    overrides(drone?: string): ParamOverrides;
 }
 
 export function prefsHook(store: PrefsStore): PrefsHook {
@@ -140,6 +259,12 @@ export function prefsHook(store: PrefsStore): PrefsHook {
         export: () => store.exportFile(),
         migrated: () => store.migrated,
         writable: () => store.writable,
-        flush: () => store.flush()
+        flush: () => store.flush(),
+        resetGroup: (group, ctx) => store.resetGroup(group, ctx),
+        resetAll: (o) => store.resetAll(o),
+        previewImport: (file, mode) => store.previewImport(file, mode),
+        importFile: (file, mode) => store.importFile(file, mode),
+        collection: (k) => store.collection(k),
+        overrides: (drone) => overridesFor(store, drone ?? droneOf(store))
     };
 }
