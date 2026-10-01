@@ -473,6 +473,73 @@ if (want('P8')) {
     console.log('P8', (out.P8 as Any).pass ? 'PASS' : 'FAIL');
 }
 
+// ------------------------------------------------------------------ P9 rows the app still keeps elsewhere follow the store
+if (want('P9')) {
+    const p = await page(browser);
+    await flight(p);
+    const READ = `return { frameStore: h.prefs.get('display.frameStats'), frameShown: !document.querySelector('.hud .osd.frame').classList.contains('hidden'),
+        styleStore: h.prefs.get('voxels.style'), styleApp: h.voxels.stats().style,
+        wallsStore: h.prefs.get('scene.walls', { scene: '${SCENE}' }), wallsExplicit: h.prefs.isExplicit('scene.walls', { scene: '${SCENE}' }), wallsApp: s.wallsOn, wallsKey: localStorage.getItem('gsfpv.walls.${SCENE}') };`;
+    const s0 = await hook(p, READ);
+    // F3 (display.frameStats' key), the voxel style and the walls in Settings
+    await p.keyboard.press('F3');
+    await openByKey(p);
+    await p.click('.set-rail-btn[data-group="voxels"]');
+    await p.selectOption('[data-id="voxels.style"] select', 'solid');
+    await p.click(`[data-id="scene.walls"] label:has-text("Off")`);
+    const whileOpen = await hook(p, READ);
+    await closeByEsc(p);
+    const closed = await hook(p, READ);
+    await hook(p, 'h.prefs.flush(); return 0;');
+    await p.reload();
+    await waitReady(p, 180000);
+    const reloaded = await hook(p, READ);
+    // the walls row's reset: the scan's default again, nothing explicit left behind
+    await openByKey(p);
+    await p.click('.set-rail-btn[data-group="voxels"]');
+    await p.click('[data-id="scene.walls"] [data-action="reset-setting"]');
+    await closeByEsc(p);
+    const wallsReset = await hook(p, READ);
+    // control: the same three changed the way v0.2's code did, past the store (the HUD's own toggle,
+    // the controller's this-load-only style, the walls switch without remembering): a reload loses them
+    await hook(p, `h.voxels.setStyle('height'); h.wallsSwitch.set(false); document.querySelector('.hud .osd.frame').classList.toggle('hidden'); h.prefs.flush(); return 0;`);
+    const bypassed = await hook(p, READ);
+    await p.reload();
+    await waitReady(p, 180000);
+    const bypassedReloaded = await hook(p, READ);
+    await p.context().close();
+    const pass = s0.frameStore === false && !s0.frameShown && s0.styleApp === 'wire' && s0.wallsApp === true
+        && whileOpen.frameStore === true && whileOpen.frameShown && whileOpen.styleApp === 'solid' && whileOpen.wallsStore === 'off' && whileOpen.wallsApp === true
+        && closed.wallsApp === false && closed.wallsKey === 'off'
+        && reloaded.frameStore === true && reloaded.frameShown && reloaded.styleStore === 'solid' && reloaded.styleApp === 'solid' && reloaded.wallsApp === false && reloaded.wallsStore === 'off'
+        && wallsReset.wallsApp === true && !wallsReset.wallsExplicit && wallsReset.wallsKey === null;
+    const control = { bypassed, afterReload: bypassedReloaded, fired: bypassed.styleApp === 'height' && bypassed.wallsApp === false && bypassedReloaded.styleApp === 'solid' && bypassedReloaded.wallsApp === true && bypassedReloaded.frameShown === true };
+    out.P9 = { pass: pass && control.fired, what: 'settings whose app code still keeps its own key follow the store: F3 frame stats, the voxel style and the walls of this scan, set in Settings, are on screen and survive a reload; the walls row reset gives the scan default with nothing explicit left; walls apply when Settings closes (life)', start: s0, whileOpen, afterClose: closed, reloaded, wallsReset, control };
+    console.log('P9', (out.P9 as Any).pass ? 'PASS' : 'FAIL');
+}
+
+// ------------------------------------------------------------------ screenshots over the drawn scan (SHOTS=1; the GPU lock first)
+if (shots) {
+    const taken: string[] = [];
+    for (const v of [{ w: 1280, h: 800, mobile: false, name: 'desktop' }, { w: 375, h: 812, mobile: true, name: 'phone' }]) {
+        const p = await page(browser, v);
+        await flight(p, `scene=${SCENE}&nowarn=1&input=touch`);
+        await p.waitForTimeout(4000);
+        await p.click('[data-action="open-settings"]');
+        await p.waitForSelector('[data-testid="settings"]');
+        for (const g of ['drone', 'tune', 'data']) {
+            if (v.mobile) await p.tap(`.set-group[data-group="${g}"] .sg-toggle`);
+            else await p.click(`.set-rail-btn[data-group="${g}"]`);
+            await p.waitForTimeout(300);
+            const f = join(SHOTS_DIR, `${v.name}-${g}.png`);
+            await p.screenshot({ path: f });
+            taken.push(f.slice(REPO.length + 1).replace(/\\/g, '/'));
+        }
+        await p.context().close();
+    }
+    out.screenshots = { what: 'Settings over the drawn scan (not a check: pictures for the owner)', files: taken };
+}
+
 await browser.close();
 out.pageErrors = errors;
 // a run of some checks keeps the others' last results (each with its own time)

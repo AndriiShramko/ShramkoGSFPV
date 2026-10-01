@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-01T17:40:33.611Z",
-    "gitHead": "a6ac1ab",
+    "date": "2026-10-01T17:41:40.838Z",
+    "gitHead": "d152391",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -22,6 +22,85 @@
     "why": "installed"
   },
   "mode": "render=off (logic only): every check here reads state, none is a picture check",
+  "P9": {
+    "pass": true,
+    "what": "settings whose app code still keeps its own key follow the store: F3 frame stats, the voxel style and the walls of this scan, set in Settings, are on screen and survive a reload; the walls row reset gives the scan default with nothing explicit left; walls apply when Settings closes (life)",
+    "start": {
+      "frameStore": false,
+      "frameShown": false,
+      "styleStore": "wire",
+      "styleApp": "wire",
+      "wallsStore": "on",
+      "wallsExplicit": false,
+      "wallsApp": true,
+      "wallsKey": null
+    },
+    "whileOpen": {
+      "frameStore": true,
+      "frameShown": true,
+      "styleStore": "solid",
+      "styleApp": "solid",
+      "wallsStore": "off",
+      "wallsExplicit": true,
+      "wallsApp": true,
+      "wallsKey": null
+    },
+    "afterClose": {
+      "frameStore": true,
+      "frameShown": true,
+      "styleStore": "solid",
+      "styleApp": "solid",
+      "wallsStore": "off",
+      "wallsExplicit": true,
+      "wallsApp": false,
+      "wallsKey": "off"
+    },
+    "reloaded": {
+      "frameStore": true,
+      "frameShown": true,
+      "styleStore": "solid",
+      "styleApp": "solid",
+      "wallsStore": "off",
+      "wallsExplicit": true,
+      "wallsApp": false,
+      "wallsKey": "off"
+    },
+    "wallsReset": {
+      "frameStore": true,
+      "frameShown": true,
+      "styleStore": "solid",
+      "styleApp": "solid",
+      "wallsStore": "on",
+      "wallsExplicit": false,
+      "wallsApp": true,
+      "wallsKey": null
+    },
+    "control": {
+      "bypassed": {
+        "frameStore": true,
+        "frameShown": false,
+        "styleStore": "solid",
+        "styleApp": "height",
+        "wallsStore": "off",
+        "wallsExplicit": false,
+        "wallsApp": false,
+        "wallsKey": null
+      },
+      "afterReload": {
+        "frameStore": true,
+        "frameShown": true,
+        "styleStore": "solid",
+        "styleApp": "solid",
+        "wallsStore": "on",
+        "wallsExplicit": false,
+        "wallsApp": true,
+        "wallsKey": null
+      },
+      "fired": true
+    },
+    "at": "2026-10-01T17:41:40.836Z"
+  },
+  "pageErrors": [],
   "P1": {
     "pass": true,
     "what": "item 20: Crash threshold 6.5 set in Settings is what the flight uses, and it survives a scene change, a reload and a new browser on the same profile",
@@ -81,7 +160,6 @@
     },
     "at": "2026-10-01T17:40:33.610Z"
   },
-  "pageErrors": [],
   "P3": {
     "pass": true,
     "what": "item 13: Export in one browser, Import (preview, then Replace) into a fresh one: explicitList() and the radio profiles are identical, and the flight uses the imported values",
@@ -594,6 +672,7 @@
     "P5": "pass",
     "P6": "pass",
     "P7": "pass",
-    "P8": "pass"
+    "P8": "pass",
+    "P9": "pass"
   }
 }
