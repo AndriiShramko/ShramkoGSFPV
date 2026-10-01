@@ -1,0 +1,63 @@
+{
+  "name": "b-fly-b15",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-01T12:25:29.053Z",
+    "gitHead": "634dba2",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5320",
+  "render": "on",
+  "pass": false,
+  "flight": {
+    "phase": "rest",
+    "flip": {
+      "startTick": 5705,
+      "endTick": 6155,
+      "minUpY": -0.9999998748515548
+    },
+    "crash": {
+      "tick": 19222,
+      "speed": 8.565648919042033,
+      "px": -4.899018282169666,
+      "py": 2.1660896045074054,
+      "pz": 0.8999678014733062
+    },
+    "tick": 30069
+  },
+  "saved": {
+    "hash": "5d52c4748256040516be9cfa58f9ab5e635fb3dbab1bd8e9353c4adf06c3a217",
+    "endTick": 30069,
+    "records": 5631
+  },
+  "newTab": {
+    "saved": "5d52c4748256040516be9cfa58f9ab5e635fb3dbab1bd8e9353c4adf06c3a217",
+    "hash": "5d52c4748256040516be9cfa58f9ab5e635fb3dbab1bd8e9353c4adf06c3a217",
+    "endTick": 30069
+  },
+  "cpuThrottle": {
+    "x1": {
+      "stepsPerWallSecond": 1006.5121385263167,
+      "hitches": 0
+    },
+    "x4": {
+      "stepsPerWallSecond": 995.6688405435428,
+      "hitches": 0
+    }
+  },
+  "control": {
+    "hash": "de3bc138a2e4119da63991d94f98dce2bbef7503f7ceb5862bb4679c92dc6791",
+    "differs": true,
+    "maxDivergenceM": 0.008755023491223332,
+    "tamperedValue": -0.44454580545425415,
+    "record": 2815
+  }
+}

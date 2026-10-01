@@ -1,0 +1,91 @@
+{
+  "name": "b-fly-b7",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-01T12:21:30.773Z",
+    "gitHead": "634dba2",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5320",
+  "render": "on",
+  "pass": true,
+  "rows": [
+    {
+      "id": "723068d7",
+      "l": "en",
+      "status": "ready",
+      "hasCollision": false,
+      "badge": "Scan without walls: you can fly around, but you cannot crash",
+      "expected": "Scan without walls: you can fly around, but you cannot crash"
+    },
+    {
+      "id": "723068d7",
+      "l": "es",
+      "status": "ready",
+      "hasCollision": false,
+      "badge": "Escaneo sin paredes: puedes volar por todas partes, pero no te puedes estrellar",
+      "expected": "Escaneo sin paredes: puedes volar por todas partes, pero no te puedes estrellar"
+    },
+    {
+      "id": "723068d7",
+      "l": "pl",
+      "status": "ready",
+      "hasCollision": false,
+      "badge": "Skan bez \u015bcian: mo\u017cesz lata\u0107, ale si\u0119 nie rozbijesz",
+      "expected": "Skan bez \u015bcian: mo\u017cesz lata\u0107, ale si\u0119 nie rozbijesz"
+    },
+    {
+      "id": "723068d7",
+      "l": "ru",
+      "status": "ready",
+      "hasCollision": false,
+      "badge": "\u0421\u043a\u0430\u043d \u0431\u0435\u0437 \u0441\u0442\u0435\u043d: \u043b\u0435\u0442\u0430\u0442\u044c \u043c\u043e\u0436\u043d\u043e, \u0430 \u0440\u0430\u0437\u0431\u0438\u0442\u044c\u0441\u044f \u2014 \u043d\u0435\u0442",
+      "expected": "\u0421\u043a\u0430\u043d \u0431\u0435\u0437 \u0441\u0442\u0435\u043d: \u043b\u0435\u0442\u0430\u0442\u044c \u043c\u043e\u0436\u043d\u043e, \u0430 \u0440\u0430\u0437\u0431\u0438\u0442\u044c\u0441\u044f \u2014 \u043d\u0435\u0442"
+    },
+    {
+      "id": "bd04e182",
+      "l": "en",
+      "status": "ready",
+      "hasCollision": false,
+      "badge": "Scan without walls: you can fly around, but you cannot crash",
+      "expected": "Scan without walls: you can fly around, but you cannot crash"
+    },
+    {
+      "id": "bd04e182",
+      "l": "es",
+      "status": "ready",
+      "hasCollision": false,
+      "badge": "Escaneo sin paredes: puedes volar por todas partes, pero no te puedes estrellar",
+      "expected": "Escaneo sin paredes: puedes volar por todas partes, pero no te puedes estrellar"
+    },
+    {
+      "id": "bd04e182",
+      "l": "pl",
+      "status": "ready",
+      "hasCollision": false,
+      "badge": "Skan bez \u015bcian: mo\u017cesz lata\u0107, ale si\u0119 nie rozbijesz",
+      "expected": "Skan bez \u015bcian: mo\u017cesz lata\u0107, ale si\u0119 nie rozbijesz"
+    },
+    {
+      "id": "bd04e182",
+      "l": "ru",
+      "status": "ready",
+      "hasCollision": false,
+      "badge": "\u0421\u043a\u0430\u043d \u0431\u0435\u0437 \u0441\u0442\u0435\u043d: \u043b\u0435\u0442\u0430\u0442\u044c \u043c\u043e\u0436\u043d\u043e, \u0430 \u0440\u0430\u0437\u0431\u0438\u0442\u044c\u0441\u044f \u2014 \u043d\u0435\u0442",
+      "expected": "\u0421\u043a\u0430\u043d \u0431\u0435\u0437 \u0441\u0442\u0435\u043d: \u043b\u0435\u0442\u0430\u0442\u044c \u043c\u043e\u0436\u043d\u043e, \u0430 \u0440\u0430\u0437\u0431\u0438\u0442\u044c\u0441\u044f \u2014 \u043d\u0435\u0442"
+    }
+  ],
+  "control": {
+    "scene": "39e63ce9",
+    "badges": 0,
+    "fired": true
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "b-fly-summary",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-01T12:26:05.039Z",
+    "gitHead": "634dba2",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5320",
+  "items": {
+    "B6": true,
+    "B7": true,
+    "B9": true,
+    "B10": true,
+    "B11": true,
+    "B12": false,
+    "B13": true,
+    "B14": true,
+    "B15": false,
+    "B16": true
+  },
+  "render": "on"
+}
