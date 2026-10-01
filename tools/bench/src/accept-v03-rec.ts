@@ -5,6 +5,7 @@
 //       30 fps track) on the same page gives about 29 duplicate pts a second.
 //   R3  the display's own rate (this PC: 30 Hz over HDMI): still 60/1 and 0 duplicate pts, the
 //       repeated frames counted and shown on the bar after stop.
+//   R4  the settings that ship with it: recording.fps 30, recording.resolution 2160p, a file split.
 //   R2  auto-record into "the folder" (an OPFS folder handed over the way the picker hands one;
 //       Playwright cannot drive the OS picker): Auto clicked, ARM, a throttle blip, DISARM; the file
 //       appears 3 s after the disarm, not before; Auto and the folder survive a reload. Control C2:
@@ -263,6 +264,46 @@ console.log('display', JSON.stringify(out.display));
     console.log('R2', pass ? 'PASS' : 'FAIL', 'C2', fired ? 'FIRED' : 'DID NOT FIRE', JSON.stringify({ armed: { a: armed.armed, r: armed.recording }, mid: { r: mid.recording, files: midFiles.length }, after: { r: after.recording, files }, reloaded: { auto: reloaded.auto, folder: reloaded.folder }, c2: { allowed: c2State.allowed, autoDisabled, autoTitle, rec: c2Armed.recording, files: c2Files.length } }));
 }
 
+// ------------------------------------------------------------------ R4: the settings that ship with it
+// recording.fps 30, recording.resolution 2160p, a split (recording.splitMin, shortened through the
+// hook to 3 s). Their controls are R1's file on the same page code without them: 60/1, 1080 high, one file.
+{
+    const { ctx, page, console: errors } = await newContext(browser, false);
+    await page.goto(fly(`scene=${SHOWCASE}&simradio=scenario&tour=1&nowarn=1`));
+    await waitReady(page, 240000);
+    await page.waitForTimeout(4000);
+    await hook(page, useOpfsFolder(`gsfpv-r4-${RUN}`));
+    const rec = (ms: number) => `await h.rec.start(); await new Promise((r) => setTimeout(r, ${ms})); return await h.rec.stop();`;
+    await hook(page, "h.prefs.set('recording.fps', '30'); return 0;");
+    const i30 = await hook(page, rec(4000));
+    const f30 = await saveLast(page, 'r4-30fps');
+    const p30 = f30 ? probe(f30.file) : null;
+    await hook(page, "h.prefs.reset('recording.fps'); h.prefs.set('recording.resolution', '2160p'); return 0;");
+    const i4k = await hook(page, rec(3000));
+    const f4k = await saveLast(page, 'r4-2160p');
+    const p4k = f4k ? probe(f4k.file) : null;
+    await hook(page, "h.prefs.reset('recording.resolution'); h.rec.setSplitMin(0.05); return 0;");
+    const iSplit = await hook(page, rec(7000));
+    const splitProbes: Probe[] = [];
+    for (const f of iSplit.files as Any[]) {
+        const b64 = await hook<string>(page, `const d = h.rec.rec.folder; const file = await (await d.getFileHandle('${f.name}')).getFile(); const b = new Uint8Array(await file.arrayBuffer()); let s2 = ''; for (let i = 0; i < b.length; i += 0x8000) s2 += String.fromCharCode(...b.subarray(i, i + 0x8000)); return btoa(s2);`);
+        const file = join(OUT, `r4-split-${f.name}`);
+        writeFileSync(file, Buffer.from(b64, 'base64'));
+        splitProbes.push(probe(file));
+    }
+    await hook(page, 'h.rec.setSplitMin(null); return 0;');
+    await ctx.close();
+    const fps30 = !!p30 && p30.r_frame_rate === '30/1' && p30.dupPts === 0 && Math.abs(p30.packets - 120) <= 2 && p30.decoded === p30.packets;
+    const size4k = !!p4k && p4k.height === 2160 && p4k.r_frame_rate === '60/1' && p4k.dupPts === 0 && Math.abs(p4k.packets - 180) <= 2 && p4k.decoded === p4k.packets;
+    const split = splitProbes.length === 3 && splitProbes.every((x) => x.r_frame_rate === '60/1' && x.dupPts === 0 && x.decoded === x.packets) && splitProbes[0].packets === 180 && splitProbes[1].packets === 180
+        && Math.abs(splitProbes.reduce((n, x) => n + x.packets, 0) - 420) <= 2 && new Set((iSplit.files as Any[]).map((f) => f.name)).size === 3;
+    const r1 = out.R1 as Any;
+    const controls = { r1File: r1?.ffprobe ? { r_frame_rate: r1.ffprobe.r_frame_rate, height: r1.ffprobe.height } : null, r1Files: r1?.recorder?.files?.length ?? null,
+        fired: !!r1?.ffprobe && r1.ffprobe.r_frame_rate === '60/1' && r1.ffprobe.height === 1080 && r1.recorder.files.length === 1 };
+    out.R4 = { pass: fps30 && size4k && split && controls.fired, what: 'recording.fps 30 gives a 30/1 file of 120 +- 2 frames in 4 s; recording.resolution 2160p a 2160-high 60/1 file; a split every 3 s gives 3 files of 180, 180 and the rest, each 60/1 with 0 duplicate pts', fps30: { pass: fps30, recorder: i30, ffprobe: p30 }, size2160: { pass: size4k, recorder: i4k, ffprobe: p4k }, split: { pass: split, recorder: iSplit, ffprobe: splitProbes }, control: { what: 'R1 on the same page code without these settings: 60/1, 1080 high, one file', ...controls }, consoleErrors: errors };
+    console.log('R4', (out.R4 as Any).pass ? 'PASS' : 'FAIL', JSON.stringify({ fps30, p30: p30 && { r: p30.r_frame_rate, n: p30.packets, d: p30.dupPts }, size4k, p4k: p4k && { w: p4k.width, h: p4k.height, r: p4k.r_frame_rate, n: p4k.packets, d: p4k.dupPts, held: i4k.heldForEncoder, drop: i4k.dropped }, split, parts: splitProbes.map((x) => x.packets) }));
+}
+
 await browser.close();
-out.pass = (out.R1 as Any).pass && (out.R2 as Any).pass && (out.R3 as Any).pass;
+out.pass = (out.R1 as Any).pass && (out.R2 as Any).pass && (out.R3 as Any).pass && (out.R4 as Any).pass;
 console.log('evidence', writeEvidence('v03-rec', out));
