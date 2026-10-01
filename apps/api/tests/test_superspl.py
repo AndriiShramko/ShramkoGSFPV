@@ -416,7 +416,8 @@ class RealFetch(unittest.TestCase):
         self.assertEqual(e.exception.detail, "timeout")
         self.assertEqual(len(server.fetch_upstream(self.base + "/slow", h, 3, 100000)[2]), 20)  # control
         with self.assertRaises(server.UpstreamError) as e:
-            server.fetch_upstream("http://127.0.0.1:1/", h, 1, 100)
+            # 5 s, not 1: Windows answers a closed loopback port with a refusal only after ~2 s of SYN retries
+            server.fetch_upstream("http://127.0.0.1:1/", h, 5, 100)
         self.assertEqual(e.exception.detail, "network")
 
     def test_nothing_of_the_visitor_reaches_the_upstream(self):
