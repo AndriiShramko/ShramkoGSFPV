@@ -569,6 +569,8 @@ export class Runner {
             this.log?.push(tick * DT_US + 1, [x, y, z, yawDeg, 0, 0, 0, 0]);
             const f = Float32Array.from([x, y, z, yawDeg]);
             sim.respawn(f[0], f[1], f[2], f[3]);
+            // the v1 log has no lives, but the stats still start a new one (the page's v0.2 session)
+            this.stats?.newLife([f[0], f[1], f[2]], reason, false);
             return;
         }
         this.respawnV2(x, y, z, yawDeg, opts, reason, reason === 'manual-rewind');

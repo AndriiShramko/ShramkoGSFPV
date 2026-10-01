@@ -1,5 +1,5 @@
 // One flight: scene + collision + physics + renderer, driven from the engine's update event.
-import { Sim, Runner, InputLog, S, compileParams, hoverSolve, SIM_CORE_VERSION, sha256Hex, attitude, spherePoses, replay as replayLog } from '@gsfpv/sim-core';
+import { Sim, Runner, InputLog, S, compileParams, hoverSolve, SIM_CORE_VERSION, sha256Hex, attitude, spherePoses, replay as replayLog, FlightStats } from '@gsfpv/sim-core';
 import type { SimParams, ParamOverrides, SimEvent, LogHeader } from '@gsfpv/sim-core';
 import { fetchVoxelCollision, VoxelContactWorld, findSphereSpawn, NoCollisionError, openVoxelCollision } from '@gsfpv/collision';
 import type { VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
@@ -145,6 +145,8 @@ export class FlightSession {
     log!: InputLog;
     spawn: [number, number, number, number] = [0, 0, 0, 0];
     presetId = DEFAULT_PRESET;
+    /** the flight's statistics (design D.1): life, session; rebuilt with the flight model */
+    stats!: FlightStats;
     /** the pilot's camera, render-only (setCamera); null = the drone preset's value */
     private camFovDeg: number | null = null;
     private camUptiltDeg: number | null = null;
@@ -451,6 +453,11 @@ export class FlightSession {
         this.log = new InputLog(this.logHeader());
         this.runner = new Runner(this.sim, this.log, true);
         this.runner.trajectory = [];
+        // FlightStats (design D.1) counted inside the step loop; a new flight model is a new count.
+        // Lead contract step before wave 2: the summary (W2-4) reads session.stats; the session
+        // split (W2-2) keeps it on the lives runner.
+        this.stats = new FlightStats([this.spawn[0], this.spawn[1], this.spawn[2]], (this.params.capacityAs * 1000) / 3600);
+        this.runner.stats = this.stats;
         // while paused (menu, settings, drone pick) sim time 0 is the moment the flight resumes
         this.clock.restart(performance.now());
         this.evIdx = 0;
