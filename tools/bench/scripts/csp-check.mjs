@@ -4,14 +4,21 @@ import { fileURLToPath } from 'node:url';
 // repo root (tools/bench/scripts/ -> ../../..): no machine-specific paths
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\\/g, '/').replace(/\/$/, '');
 import { createRequire } from 'node:module';
-// system Chrome, or the bundled Chromium where there is none (tools/bench/README.md)
-import { pickBrowser } from '../src/chrome.mjs';
+// system Chrome, or the bundled Chromium where there is none (tools/bench/README.md); a logic check,
+// so it runs on either, and records which browser and GL it ran on (visual-browser.mjs)
+import { browserRecord, pickHarnessBrowser } from './visual-browser.mjs';
 const require = createRequire(ROOT + '/tools/bench/package.json');
 const { chromium } = require('playwright');
 
 const base = process.argv[2] ?? 'http://localhost:5320';
 const out = { base, pages: [] };
-const browser = await chromium.launch({ ...pickBrowser({ expected: chromium.executablePath() }).launch, headless: false, args: ['--enable-unsafe-webgpu'] });
+const pick = pickHarnessBrowser({ expected: chromium.executablePath() }, false);
+const browser = await chromium.launch({ ...pick.launch, headless: false, args: ['--enable-unsafe-webgpu'] });
+{
+    const probe = await browser.newContext();
+    out.browser = await browserRecord(pick, await probe.newPage(), { visual: false, version: browser.version() });
+    await probe.close();
+}
 const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
 await ctx.addInitScript(() => {
     window.__csp = [];

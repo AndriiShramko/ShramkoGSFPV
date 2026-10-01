@@ -1,5 +1,8 @@
 // Real screenshots of the simulator for the landing page and the README, so they can be taken again
-// after every release. System Chrome, visible window, stock flags.
+// after every release. System Chrome, visible window, stock flags, a real GPU: Playwright's bundled
+// Chromium and software GL (SwiftShader) are refused unless BENCH_BROWSER=bundled asks for them, and
+// then shots.json and the docs index say the pictures do not count (../scripts/visual-browser.mjs,
+// review C18). The browser and the WebGL renderer go into shots.json (`browser`) and the report.
 //
 //   npx tsx tools/bench/src/screens.ts                   every shot, then encode
 //   npx tsx tools/bench/src/screens.ts pause crash       only these ids (encode runs for all raw PNGs)
@@ -28,12 +31,15 @@
 //   input=touch, refine=offer|off, nowarn=1, scale, governor=0
 //   the voxel grid through the page's test hook (__gsfpv.voxels: mode, style, opacity)
 // WebP is encoded by Chrome itself (OffscreenCanvas.convertToBlob), so there is no image dependency.
+import { chromium } from 'playwright';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { execSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { REPO } from './evidence';
 import { launchChrome } from './browser';
+import { browserRecord, pickHarnessBrowser } from '../scripts/visual-browser.mjs';
+import type { BrowserRecord } from '../scripts/visual-browser.mjs';
 
 const SITE = (process.env.SITE ?? 'https://gsfpv.flyreelstudio.eu').replace(/\/$/, '');
 /** where the simulator is opened: the site's English /en/fly/, or FLY (a local build of this commit) */
@@ -687,7 +693,7 @@ async function encodeAll(b: Browser): Promise<Encoded[]> {
 }
 
 /** docs/screenshots/README.md: every shot with its English caption (from the site dictionary). */
-function writeDocsIndex(encoded: Encoded[], shotAt: string, release: Record<string, unknown> | null): void {
+function writeDocsIndex(encoded: Encoded[], shotAt: string, release: Record<string, unknown> | null, shotBy: BrowserRecord | null): void {
     const en = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'site', 'en.json'), 'utf8')) as { shots?: { items?: Record<string, { t: string; d: string }> } };
     const cap = (id: string) => en.shots?.items?.[id] ?? { t: id, d: '' };
     // the tile is the menu itself when there is a crop of it; the link opens the whole screen
@@ -706,7 +712,7 @@ function writeDocsIndex(encoded: Encoded[], shotAt: string, release: Record<stri
     const md = [
         '# ShramkoGSFPV screenshots',
         '',
-        `${where} by [\`tools/bench/src/screens.ts\`](../../tools/bench/src/screens.ts) in system Chrome (desktop 1920×1080 at device scale 2, phone-sized 390×844). The same files are on the [landing page](https://gsfpv.flyreelstudio.eu/en/#gallery) with captions in four languages. To take them again after a release: \`npx tsx tools/bench/src/screens.ts\`.`,
+        `${where} by [\`tools/bench/src/screens.ts\`](../../tools/bench/src/screens.ts) in ${!shotBy || shotBy.counts ? 'system Chrome on a real GPU' : `**${shotBy.kind} with ${shotBy.softwareGl ? 'software GL' : 'no system Chrome'}: these are NOT real-GPU pictures**`} (desktop 1920×1080 at device scale 2, phone-sized 390×844). The same files are on the [landing page](https://gsfpv.flyreelstudio.eu/en/#gallery) with captions in four languages. To take them again after a release: \`npx tsx tools/bench/src/screens.ts\`.`,
         '',
         "Each menu has two files: `<name>-panel.webp` is the menu itself with a little of the scene around it (sharp enough to read), `<name>.webp` the whole screen. The calibration screens use the simulator's built-in simulated EdgeTX radio (`?simradio=raw`) and the flights are flown by its test pilot (`?simradio=scenario`), frozen while it is really flying, so the same screens can be taken again the same way after a release. This file is written by the same script.",
         '',
@@ -737,9 +743,19 @@ async function releaseInfo(): Promise<Record<string, unknown> | null> {
 
 // ------------------------------------------------------------------ main
 mkdirSync(RAW, { recursive: true });
-const { browser } = await launchChrome({ headless: false, args: ['--window-position=40,40', `--window-size=${DESKTOP.width + 16},${DESKTOP.height + 120}`] });
+// pictures for the landing only from system Chrome on a real GPU (refused here before anything starts)
+if (!process.env.ENCODE_ONLY) pickHarnessBrowser({ expected: chromium.executablePath() });
+const { browser, which } = await launchChrome({ headless: false, args: ['--window-position=40,40', `--window-size=${DESKTOP.width + 16},${DESKTOP.height + 120}`] });
+let shotBy: BrowserRecord | null = null;
 try {
     if (!process.env.ENCODE_ONLY) {
+        const probe = await browser.newContext();
+        try {
+            shotBy = await browserRecord(which, await probe.newPage()); // the GL the pages get: software is refused
+        } finally {
+            await probe.close();
+        }
+        console.log(`browser: ${shotBy.kind} ${shotBy.version ?? ''}, WebGL ${shotBy.webgl}`);
         await waitForGpu();
         const todo = [...new Set(SHOTS.filter((s) => want(s.id)).map((s) => s.flow))];
         for (const f of todo) {
@@ -760,11 +776,13 @@ try {
         fly: FLY,
         shotAt: process.env.ENCODE_ONLY && prev?.shotAt ? prev.shotAt : new Date().toISOString().slice(0, 10),
         release: process.env.ENCODE_ONLY && prev?.release ? prev.release : release,
+        // which browser and GL took the pictures (ENCODE_ONLY re-encodes the last ones: theirs stays)
+        browser: process.env.ENCODE_ONLY ? (prev?.browser ?? null) : shotBy,
         items: encoded
     };
     writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + '\n');
-    writeDocsIndex(encoded, manifest.shotAt, manifest.release as Record<string, unknown> | null);
-    writeFileSync(join(REPO, '.cache', 'screens', 'report.json'), JSON.stringify({ site: SITE, fly: FLY, release, report }, null, 2));
+    writeDocsIndex(encoded, manifest.shotAt, manifest.release as Record<string, unknown> | null, manifest.browser as BrowserRecord | null);
+    writeFileSync(join(REPO, '.cache', 'screens', 'report.json'), JSON.stringify({ site: SITE, fly: FLY, release, browser: manifest.browser, report }, null, 2));
     const failed = report.filter((r) => 'error' in r);
     console.log(`\nshots: ${encoded.length} encoded; flow errors: ${failed.length}${failed.length ? ' ' + failed.map((f) => f.id).join(', ') : ''}`);
     if (failed.length) process.exitCode = 1;

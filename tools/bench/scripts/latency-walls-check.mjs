@@ -5,8 +5,9 @@ import { fileURLToPath } from 'node:url';
 // repo root (tools/bench/scripts/ -> ../../..): no machine-specific paths
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\\/g, '/').replace(/\/$/, '');
 import { createRequire } from 'node:module';
-// system Chrome, or the bundled Chromium where there is none (tools/bench/README.md)
-import { pickBrowser } from '../src/chrome.mjs';
+// system Chrome on a real GPU: a visual / latency check refuses the bundled Chromium and software GL
+// unless BENCH_BROWSER=bundled, and records which browser and GL it ran on (visual-browser.mjs)
+import { browserRecord, pickHarnessBrowser } from './visual-browser.mjs';
 import { writeFileSync, rmSync, mkdirSync } from 'node:fs';
 const require = createRequire(ROOT + '/tools/bench/package.json');
 const { chromium } = require('playwright');
@@ -15,10 +16,12 @@ const DIR = ROOT + '/.cache/lv/live';
 rmSync(`${DIR}/profile`, { recursive: true, force: true });
 mkdirSync(DIR, { recursive: true });
 const out = {};
+const pick = pickHarnessBrowser({ expected: chromium.executablePath() });
 async function open(qs) {
-    const ctx = await chromium.launchPersistentContext(`${DIR}/profile`, { ...pickBrowser({ expected: chromium.executablePath() }).launch, headless: false, viewport: { width: 1600, height: 900 }, args: ['--window-position=40,40'] });
+    const ctx = await chromium.launchPersistentContext(`${DIR}/profile`, { ...pick.launch, headless: false, viewport: { width: 1600, height: 900 }, args: ['--window-position=40,40'] });
     await ctx.route('**/api/e', (r) => r.fulfill({ status: 204, body: '' }));
     const page = ctx.pages()[0] ?? (await ctx.newPage());
+    out.browser ??= await browserRecord(pick, page); // software GL: refused before any timing
     const errors = [];
     page.on('pageerror', (e) => errors.push(String(e.message).slice(0, 160)));
     await page.goto(`${SITE}?${qs}`, { waitUntil: 'load' });
