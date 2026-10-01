@@ -3,13 +3,15 @@
 // in the page's language, the same in the shortcut list and in the keyboard-flying card; the counter
 // tiles of the landing put each noun in the plural form its number needs, and the "Advanced" badge uses
 // the simulator's word. Every check has a negative control that must fire.
+// What the landing shows is checked on the committed catalogue (catalogue-committed.ts), never rebuilt
+// from the live schema here: whether it is still fresh is `gen-catalog --check`'s job alone, so an agent
+// who ships a setting or a key without regenerating keeps a green vitest (catalogue-site-drift.test.ts).
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { KEYMAP, SCHEMA, buildCatalogue, capText, helpKey, labelKey } from '../src';
 import type { Schema } from '../src';
-import { buildFeatures, countWord, siteDerived, withSiteDerived, TILES } from '../../../scripts/gen-catalog';
-import { PRESETS, REPO } from './helpers';
+import { countWord, siteDerived, withSiteDerived } from '../../../scripts/gen-catalog';
+import { committedFeatures, siteText, siteTune, spaceProblems, tileMismatches } from './catalogue-committed';
+import { PRESETS } from './helpers';
 
 const LANGS = ['en', 'es', 'pl', 'ru'] as const;
 
@@ -59,25 +61,24 @@ describe('key-caps in the catalogue (C13, C14)', () => {
         expect(bare.locales.ru.keys.find((k) => k.action === 'arm.toggle')!.keys).toEqual(['Space']);
     });
 
-    it('the real catalogue: in es, pl and ru the shortcut list and the flying card write Space the same way, never in English', () => {
-        const { features } = buildFeatures('2026-10-01');
-        const fly = (l: string) => JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', `${l}.json`), 'utf8')) as Record<string, string>;
-        for (const l of ['es', 'pl', 'ru'] as const) {
-            const loc = features.locales[l];
-            const word = fly(l)['arm.keys.space'];
-            expect(word).not.toBe('Space');
-            const all = [...loc.keys.flatMap((k) => k.keys), ...loc.flying.flatMap((k) => k.keys), ...loc.groups.flatMap((g) => g.settings.flatMap((s) => s.keys))];
-            expect(all, l).not.toContain('Space');
-            expect(loc.keys.find((k) => k.action === 'arm.toggle')!.keys, l).toEqual([word]);
-            expect(loc.flying[0].keys, l).toEqual([word]); // the flying card's arm row
-        }
-        expect(features.locales.en.keys.find((k) => k.action === 'arm.toggle')!.keys).toEqual(['Space']);
+    it('the committed catalogue: in es, pl and ru the shortcut list and the flying card write Space the same way, never in English', () => {
+        const f = committedFeatures();
+        for (const l of LANGS) expect(spaceProblems(f, l), l).toEqual([]);
+        const word = f.locales.ru.keys.find((k) => k.action === 'arm.toggle')!.keys[0];
+        expect(word).not.toBe('Space');
+        // controls: the English cap left in the Russian flying card, and a Polish flying card that writes it otherwise
+        const row = f.locales.en.flying.findIndex((r) => r.keys[0] === 'Space');
+        const english = structuredClone(f);
+        english.locales.ru.flying[row].keys = ['Space'];
+        expect(spaceProblems(english, 'ru')).toEqual([`ru: the shortcut list writes ${word}, the flying card Space`, 'ru: an English Space cap']);
+        const other = structuredClone(f);
+        other.locales.pl.flying[row].keys = ['Spc'];
+        expect(spaceProblems(other, 'pl')).toHaveLength(1);
     });
 });
 
 describe('the counter tiles and the Advanced badge on the landing (C15)', () => {
-    const site = (l: string) => readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'site', `${l}.json`), 'utf8');
-    const forms = (l: string, tile: string) => (JSON.parse(site(l)) as { tune: { text: { count: Record<string, Record<string, string>> } } }).tune.text.count[tile];
+    const forms = (l: string, tile: string) => siteTune(siteText(l)).text.count[tile];
 
     it('picks the form each number needs in Russian and Polish (CLDR plural rules)', () => {
         const ru = forms('ru', 'groups');
@@ -92,32 +93,33 @@ describe('the counter tiles and the Advanced badge on the landing (C15)', () => 
         expect(countWord('pl', pl, 17)).not.toBe(pl.few);
     });
 
-    it('the committed dictionaries carry the words for today\'s counts and the simulator\'s Advanced', () => {
-        const { features } = buildFeatures('2026-10-01');
-        for (const l of LANGS) {
-            const fly = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', `${l}.json`), 'utf8')) as Record<string, string>;
-            const text = site(l);
-            const d = siteDerived(l, text, features.counts, fly);
-            expect(withSiteDerived(text, d), `${l}: run node --import tsx scripts/gen-catalog.ts`).toBe(text);
-            const tune = (JSON.parse(text) as { tune: { count: Record<string, string>; adv: string } }).tune;
-            for (const [tile, key] of TILES) expect(tune.count[tile], `${l} ${tile}`).toBe(countWord(l, forms(l, tile), features.counts[key]));
-            expect(tune.adv).toBe(fly['settings.advanced']);
-        }
+    it('each committed dictionary carries the word its tile needs for the number in the committed catalogue', () => {
+        const { counts } = committedFeatures();
+        for (const l of LANGS) expect(tileMismatches(l, siteText(l), counts), l).toEqual([]);
+        // control: the Russian dictionary with the other form for the group count is caught
+        const text = siteText('ru');
+        const g = forms('ru', 'groups');
+        const now = siteTune(text).count.groups;
+        const planted = text.replace(`"groups": ${JSON.stringify(now)}`, `"groups": ${JSON.stringify(now === g.few ? g.many : g.few)}`);
+        expect(planted).not.toBe(text);
+        expect(tileMismatches('ru', planted, counts)).toEqual(['groups']);
     });
 
-    it('control: a fixed word that does not fit the count, and an Advanced the simulator does not use, are rewritten', () => {
-        const { features } = buildFeatures('2026-10-01');
-        const fly = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'ru.json'), 'utf8')) as Record<string, string>;
-        const text = site('ru');
-        const tune = (JSON.parse(text) as { tune: { count: Record<string, string>; adv: string } }).tune;
+    it("the generator rewrites a word that does not fit the count, and an Advanced that is not the simulator's, and nothing else", () => {
+        // the committed counts and the Advanced word already in the file: what the lead's last run wrote
+        const { counts } = committedFeatures();
+        const text = siteText('ru');
+        const tune = siteTune(text);
         const g = forms('ru', 'groups');
-        const planted = text.replace(`"groups": ${JSON.stringify(tune.count.groups)}`, `"groups": ${JSON.stringify(countWord('ru', g, features.counts.groups) === g.few ? g.many : g.few)}`)
+        const planted = text.replace(`"groups": ${JSON.stringify(tune.count.groups)}`, `"groups": ${JSON.stringify(tune.count.groups === g.few ? g.many : g.few)}`)
             .replace(`"adv": ${JSON.stringify(tune.adv)}`, '"adv": "planted"');
         expect(planted).not.toBe(text);
-        const fixed = withSiteDerived(planted, siteDerived('ru', planted, features.counts, fly));
+        const fixed = withSiteDerived(planted, siteDerived('ru', planted, counts, { 'settings.advanced': tune.adv }));
         expect(fixed).toBe(text);
         // the edit touches only those two values: the rest of the file stays byte for byte
         const changed = planted.split('\n').filter((line, i) => line !== fixed.split('\n')[i]);
         expect(changed).toHaveLength(2);
+        // and a new word of the simulator's lands in tune.adv
+        expect(siteTune(withSiteDerived(text, siteDerived('ru', text, counts, { 'settings.advanced': 'Расширенные' }))).adv).toBe('Расширенные');
     });
 });
