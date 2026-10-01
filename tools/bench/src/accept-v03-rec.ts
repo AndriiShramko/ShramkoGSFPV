@@ -220,7 +220,9 @@ console.log('display', JSON.stringify(out.display));
     await page.waitForTimeout(1500);
     const mid = await hook(page, 'return { armed: s.sim.armed, ...h.rec.state() };');
     const midFiles = await hook<Any[]>(page, listFolder(dir));
-    await page.waitForTimeout(2500); // 4 s after the disarm
+    // the stop is due 3 s after the disarm; then the file is closed (written out of the swap file)
+    const tReady = await hook<number | null>(page, `const t0 = performance.now(); while (performance.now() - t0 < 12000) { if (h.rec.state().last) return performance.now(); await new Promise((r) => setTimeout(r, 100)); } return null;`);
+    const savedS = tReady === null ? null : (Date.now() - tDisarm) / 1000;
     const after = await hook(page, 'return h.rec.state();');
     const files = await hook<Any[]>(page, listFolder(dir));
     const f = await saveLast(page, 'r2-auto');
@@ -234,7 +236,7 @@ console.log('display', JSON.stringify(out.display));
     const name = `gsfpv-${SHOWCASE}-`;
     const pass = before.length === 0 && afterAuto.auto === true && afterAuto.autoPressed === 'true' && armed.armed && armed.recording && armed.autoRun
         && mid.recording === true && mid.pendingStopAt !== null && midFiles.every((x) => x.bytes === 0)
-        && after.recording === false && files.length === 1 && String(files[0].name).startsWith(name) && /^gsfpv-[0-9a-f]{8}-\d{8}-\d{6}\.mp4$/.test(files[0].name) && files[0].bytes > 0
+        && savedS !== null && savedS >= 3 && savedS <= 10 && after.recording === false && files.length === 1 && String(files[0].name).startsWith(name) && /^gsfpv-[0-9a-f]{8}-\d{8}-\d{6}\.mp4$/.test(files[0].name) && files[0].bytes > 0
         && !!pr && pr.r_frame_rate === '60/1' && pr.dupPts === 0 && pr.decoded === pr.packets && (after.last?.where === 'folder')
         && reloaded.auto === true && reloaded.folder === dir && reloaded.autoPressed === 'true';
 
@@ -256,7 +258,7 @@ console.log('display', JSON.stringify(out.display));
     await ctx.close();
     const fired = c2State.allowed === false && c2State.auto === true && c2State.barShown === true && autoDisabled && !!autoTitle && autoTitle === c2State.autoTitle && /showcase/i.test(autoTitle)
         && c2Armed.armed === true && c2Armed.recording === false && c2After.recording === false && c2Files.length === files.length && c2State.recHidden === true;
-    out.R2 = { pass: pass && fired, what: 'auto-record into the chosen folder (an OPFS folder handed over like the picker\'s): Auto clicked, ARM starts it, a throttle blip, DISARM; still recording 1.5 s later (the file still empty: writes land on close), the file there 4 s after; Auto and the folder survive a reload', scene: SHOWCASE, folder: dir, before, afterAuto, armed, flew, mid, midFiles, after, files, armToDisarmS: (tDisarm - tArm) / 1000, file: f && { ...f, file: undefined }, ffprobe: pr, reloaded,
+    out.R2 = { pass: pass && fired, what: 'auto-record into the chosen folder (an OPFS folder handed over like the picker\'s): Auto clicked, ARM starts it, a throttle blip, DISARM; still recording 1.5 s later (the file still empty: writes land on close), the file saved 3-10 s after the disarm; Auto and the folder survive a reload', scene: SHOWCASE, folder: dir, before, afterAuto, armed, flew, mid, midFiles, savedAfterDisarmS: savedS, after, files, armToDisarmS: (tDisarm - tArm) / 1000, file: f && { ...f, file: undefined }, ffprobe: pr, reloaded,
         control: { what: `C2: scene ${PASTED} (not in the showcase), Auto still on and the folder set: ARM and DISARM write nothing, Auto is disabled and says why (logic-only page, the gate does not depend on drawing)`, fired, state: c2State, armed: c2Armed, after: c2After, files: c2Files, autoTitle, autoDisabled }, consoleErrors: errors };
     console.log('R2', pass ? 'PASS' : 'FAIL', 'C2', fired ? 'FIRED' : 'DID NOT FIRE', JSON.stringify({ armed: { a: armed.armed, r: armed.recording }, mid: { r: mid.recording, files: midFiles.length }, after: { r: after.recording, files }, reloaded: { auto: reloaded.auto, folder: reloaded.folder }, c2: { allowed: c2State.allowed, autoDisabled, autoTitle, rec: c2Armed.recording, files: c2Files.length } }));
 }

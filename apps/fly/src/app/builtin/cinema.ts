@@ -247,6 +247,11 @@ export const cinema: Feature = {
             // Resume (a click or P) is a user activation: the folder's permission can be asked there
             if (!on && rec.autoOn && rec.folder && rec.access === 'prompt' && navigator.userActivation?.isActive) void rec.allow();
         });
+        // a recording, or one being saved, is lost when the tab goes (nothing reaches the disk before
+        // the file is closed): the browser asks before leaving then
+        addEventListener('beforeunload', (e) => {
+            if (rec.recording || rec.busy) e.preventDefault();
+        });
         document.addEventListener('visibilitychange', () => {
             rec.pause('hidden', document.visibilityState === 'hidden');
             if (document.visibilityState === 'visible') void rec.refreshAccess();

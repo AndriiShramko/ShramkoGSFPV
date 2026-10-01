@@ -439,6 +439,8 @@ export interface RecorderInfo {
     seconds: number;
     /** slots that repeat the previous picture, and slots with no picture at all (gaps, a busy encoder) */
     duplicated: number;
+    /** of the repeated slots, those held because the encoder was behind (the rest: the render missed them) */
+    heldForEncoder: number;
     dropped: number;
     /** the last file's name, and every file of this recording (a long one is split) */
     file: string;
@@ -637,6 +639,7 @@ export class CinemaRecorder {
     private prev: VideoFrame | null = null;
     private composed = 0;
     private duplicated = 0;
+    private held = 0;
     private dropped = 0;
     private usedNames = new Set<string>();
     private error: unknown = null;
@@ -743,9 +746,14 @@ export class CinemaRecorder {
             }
             this.maybeSplit(slot);
             const part = this.part!;
-            const repeat = i < last;
+            let repeat = i < last;
+            // the encoder is behind: hold the last picture for this slot (a cheap repeat) rather than leave a hole
+            if (!repeat && this.prev && !part.room(false)) {
+                repeat = true;
+                this.held++;
+            }
             if (!part.room(repeat) || (repeat && !this.prev)) {
-                this.dropped++; // the encoder is behind: give the slot up, never stall the flight
+                this.dropped++; // even repeats would pile up: give the slot up, never stall the flight
                 continue;
             }
             if (!repeat) {
@@ -825,6 +833,7 @@ export class CinemaRecorder {
                 bytes: files.reduce((n, f) => n + f.bytes, 0),
                 seconds: this.o.legacyV02 ? this.seconds : frames / this.fps,
                 duplicated: this.duplicated,
+                heldForEncoder: this.held,
                 dropped: this.dropped,
                 file: files.length ? files[files.length - 1].name : '',
                 files,
