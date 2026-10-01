@@ -33,6 +33,9 @@ const FFPROBE = process.env.FFPROBE ?? 'C:/Program Files/Shutter Encoder/Library
 const OUT = join(REPO, 'evidence', today(), 'rec');
 mkdirSync(OUT, { recursive: true });
 const RUN = Date.now().toString(36);
+/** `npx tsx src/accept-v03-rec.ts R5`: only these parts (the evidence then gets their names) */
+const ONLY = process.argv.slice(2);
+const want = (k: string) => ONLY.length === 0 || ONLY.includes(k);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Any = any;
@@ -133,7 +136,7 @@ out.display = { rafHz: display, force60, why: force60 ? 'the display runs below 
 console.log('display', JSON.stringify(out.display));
 
 // ------------------------------------------------------------------ R1 + C1: 60 Hz render, 10 s
-{
+if (want('R1')) {
     const { ctx, page, console: errors } = await newContext(browser, force60);
     await page.goto(fly(`scene=${SHOWCASE}&simradio=scenario&tour=1&nowarn=1`));
     const ready = await waitReady(page, 240000);
@@ -167,7 +170,7 @@ console.log('display', JSON.stringify(out.display));
 }
 
 // ------------------------------------------------------------------ R3: the display's own rate
-{
+if (want('R3')) {
     const { ctx, page, console: errors } = await newContext(browser, false);
     await page.goto(fly(`scene=${SHOWCASE}&simradio=scenario&tour=1&nowarn=1`));
     await waitReady(page, 240000);
@@ -191,7 +194,7 @@ console.log('display', JSON.stringify(out.display));
 }
 
 // ------------------------------------------------------------------ R2 + C2: auto-record into the folder
-{
+if (want('R2')) {
     const { ctx, page, console: errors } = await newContext(browser, false);
     await page.goto(fly(`scene=${SHOWCASE}&nowarn=1&input=touch`));
     await waitReady(page, 240000);
@@ -269,7 +272,7 @@ console.log('display', JSON.stringify(out.display));
 // ------------------------------------------------------------------ R4: the settings that ship with it
 // recording.fps 30, recording.resolution 2160p, a split (recording.splitMin, shortened through the
 // hook to 3 s). Their controls are R1's file on the same page code without them: 60/1, 1080 high, one file.
-{
+if (want('R4')) {
     const { ctx, page, console: errors } = await newContext(browser, false);
     await page.goto(fly(`scene=${SHOWCASE}&simradio=scenario&tour=1&nowarn=1`));
     await waitReady(page, 240000);
@@ -312,7 +315,7 @@ console.log('display', JSON.stringify(out.display));
 // the file after stop (the path of Firefox and Safari, which have no folder picker). The pause menu
 // lists "Record / stop" with its F9 key-cap. Control C5: on a scene outside the showcase F9 records
 // nothing and the menu item is disabled.
-{
+if (want('R5')) {
     const { ctx, page, console: errors } = await newContext(browser, false);
     const menuItem = `const b = document.querySelector('[data-action="pause.record"]'); return b ? { label: b.querySelector('.pm-label')?.textContent ?? null, caps: [...b.querySelectorAll('kbd')].map((k) => k.textContent), aria: b.getAttribute('aria-keyshortcuts'), disabled: b.disabled } : null;`;
     const waitSaved = `const t0 = performance.now(); while (performance.now() - t0 < 8000) { const st = h.rec.state(); if (!st.recording && !st.busy && st.last) return st; await new Promise((r) => setTimeout(r, 100)); } return h.rec.state();`;
@@ -348,5 +351,7 @@ console.log('display', JSON.stringify(out.display));
 }
 
 await browser.close();
-out.pass = (out.R1 as Any).pass && (out.R2 as Any).pass && (out.R3 as Any).pass && (out.R4 as Any).pass && (out.R5 as Any).pass;
-console.log('evidence', writeEvidence('v03-rec', out));
+const parts = ['R1', 'R2', 'R3', 'R4', 'R5'].filter(want);
+out.parts = parts;
+out.pass = parts.every((k) => (out[k] as Any)?.pass === true);
+console.log('evidence', writeEvidence(ONLY.length ? `v03-rec-${parts.join('-')}` : 'v03-rec', out));
