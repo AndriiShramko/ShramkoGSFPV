@@ -260,7 +260,7 @@ export interface CatalogOptions {
     base?: string;
     /** this tab's cache: pass the page's session storage; default in memory only */
     store?: CatalogStore;
-    /** at most this long in the tab's cache; the proxy's max-age shortens it (default 10 min) */
+    /** at most this long in the tab's cache; the proxy's max-age shortens it, no max-age means not kept (default 10 min) */
     ttlMs?: number;
     now?: () => number;
     /** pages kept in the store, oldest dropped first (default 40, about 1-2 MB) */
@@ -275,6 +275,17 @@ interface Stored {
     exp: number;
     page: Omit<ExplorePage, 'from' | 'proxy'>;
 }
+
+export type RandomOptions = Omit<PickOptions, 'rng'> & { rng?: () => number } & TopRatedOptions & {
+    /**
+     * Without it, a scene whose format the API does not name (formatVerdict 'unknown', e.g. '') is never
+     * picked. With it, such a scene may be drawn, and is returned only when the check says 'yes'; 'no' or
+     * 'unknown' rules it out and the draw is repeated. 'yes' / 'no' are remembered by this catalogue per
+     * scene version. A check built on resolveScene (index.ts) fits: it rejects a legacy PLY with
+     * 'unsupported'. This file itself asks only the proxy (D35), so the check is the caller's.
+     */
+    check?: OpensCheck;
+};
 
 export interface TopRatedOptions {
     /** how many scenes (default 200: the owner's "top 200 walkable by likes, all time", E.5) */
@@ -294,6 +305,8 @@ export class SuperSplatCatalog {
     private readonly now: () => number;
     private readonly maxStored: number;
     private readonly inflight = new Map<string, Promise<ExplorePage>>();
+    /** RandomOptions.check verdicts, per `<id>/v<version>` */
+    private readonly opensSeen = new Map<string, 'yes' | 'no'>();
 
     constructor(o: CatalogOptions = {}) {
         this.enabled = o.enabled ?? true;
@@ -351,18 +364,42 @@ export class SuperSplatCatalog {
      * the best tier is on the first page, so one request usually does (about 0.6 s cold, measured); the next
      * page is read only when every complete tier read so far is used up (flown recently, broken, on screen).
      */
-    async randomTopRated(o: Omit<PickOptions, 'rng'> & { rng?: () => number } & TopRatedOptions = {}): Promise<PickResult | null> {
-        const opts: PickOptions = { ...o, rng: o.rng ?? Math.random };
+    async randomTopRated(o: RandomOptions = {}): Promise<PickResult | null> {
         const tierSize = Math.max(1, Math.floor(o.tierSize ?? 20));
-        const pages = this.topPages(o);
+        const check = o.isBroken ? undefined : o.check; // a caller's own isBroken rule replaces the format rule
+        const ruledOut = new Set<string>(o.broken ?? []);
+        const verdictOf = (it: ExploreItem) => this.opensSeen.get(`${it.id}/v${it.version}`);
+        const isBroken = o.isBroken ?? ((it: ExploreItem) => {
+            const v = formatVerdict(it.format);
+            return v === 'unsupported' || (v === 'unknown' && (!check || verdictOf(it) === 'no'));
+        });
+        const opts: PickOptions = { ...o, rng: o.rng ?? Math.random, broken: ruledOut, isBroken };
         const pool = new Map<string, ExploreItem>();
+        // draws again while the pick is a scene of unknown format that the check does not confirm
+        const draw = async (counts: (p: PickResult) => boolean): Promise<PickResult | null> => {
+            for (;;) {
+                const pick = pickRandomTopRated([...pool.values()], opts);
+                if (!pick || !counts(pick) || !check || formatVerdict(pick.item.format) !== 'unknown') return pick;
+                const key = `${pick.item.id}/v${pick.item.version}`;
+                let seen = this.opensSeen.get(key);
+                if (!seen) {
+                    const v = await check(pick.item).catch(() => 'unknown' as const);
+                    if (v !== 'unknown') this.opensSeen.set(key, v);
+                    seen = v === 'unknown' ? undefined : v;
+                }
+                if (seen === 'yes') return pick;
+                ruledOut.add(pick.item.id); // a legacy PLY, or no clear answer: not this time
+            }
+        };
+        const pages = this.topPages(o);
+        // a pick counts only from a tier that is complete in what was read (the pages come best first)
+        const complete = (p: PickResult) => !p.relaxed && (p.tier + 1) * tierSize <= pool.size;
         for (let r = await pages.next(); !r.done; r = await pages.next()) {
             for (const it of r.value) if (!pool.has(it.id)) pool.set(it.id, it);
-            const pick = pickRandomTopRated([...pool.values()], opts);
-            // a pick counts only from a tier that is complete in what was read (the pages come best first)
-            if (pick && !pick.relaxed && (pick.tier + 1) * tierSize <= pool.size) return pick;
+            const pick = await draw(complete);
+            if (pick && complete(pick)) return pick;
         }
-        return pickRandomTopRated([...pool.values()], opts);
+        return draw(() => true);
     }
 
     /** Pages of the best-liked list, best first; stops at the end, and after a failure past the first page. */
@@ -392,8 +429,11 @@ export class SuperSplatCatalog {
     private async load(qs: string, n: NormalQuery): Promise<ExplorePage> {
         let r: Response;
         try {
-            // credentials: 'omit' - the proxy needs no cookie and nginx would drop it anyway
-            r = await this.f(`${this.base}/explore?${qs}`, { headers: { Accept: 'application/json' }, credentials: 'omit' });
+            // credentials: 'omit' - the proxy needs no cookie and nginx would drop it anyway.
+            // cache: 'no-store' - the browser's HTTP cache must not hand back an answer it kept: its
+            // max-age would then count a second time here, and the data could reach 20 min (review C8).
+            // This tab's session store is the only cache on this side.
+            r = await this.f(`${this.base}/explore?${qs}`, { headers: { Accept: 'application/json' }, credentials: 'omit', cache: 'no-store' });
         } catch (e) {
             throw new SuperSplatError('network', `the catalogue did not answer: ${String(e)}`);
         }
@@ -419,9 +459,10 @@ export class SuperSplatCatalog {
         const page = readPage(raw, n);
         const xc = r.headers.get('x-cache');
         const proxy = xc === 'hit' || xc === 'miss' || xc === 'stale' ? xc : null;
-        // keep it no longer than the proxy says it stays fresh; a stale copy (max-age absent) is not kept
+        // keep it no longer than the proxy says it stays fresh (its max-age is what is left of its 10 min).
+        // No max-age, no keeping: a stale copy, and a hit in its last second ("no-cache"), are not kept (C8).
         const m = /max-age=(\d+)/.exec(r.headers.get('cache-control') ?? '');
-        const keepMs = m ? Math.min(this.ttlMs, Number(m[1]) * 1000) : proxy === 'stale' ? 0 : this.ttlMs;
+        const keepMs = m ? Math.min(this.ttlMs, Number(m[1]) * 1000) : 0;
         if (keepMs > 0) this.write(qs, { exp: this.now() + keepMs, page });
         return { ...page, from: 'network', proxy };
     }
@@ -479,8 +520,24 @@ export class SuperSplatCatalog {
 
 // ---------------- random scene, highest rated first ----------------
 
+/** Formats the simulator opens (resolveScene: lod-meta.json for 'ssog', meta.json for 'sog' and 'sogs'). */
+export const SUPPORTED_FORMATS: readonly string[] = ['sog', 'ssog', 'sogs'];
 /** Formats the simulator cannot open yet (resolveScene: 'unsupported'). */
 export const UNSUPPORTED_FORMATS: readonly string[] = ['compressed.ply'];
+
+/**
+ * What the API's format field says. It does not label old uploads reliably: legacy compressed-PLY scenes
+ * come back with format '' (review C9; 2026-10-01, top 40 walkable by likes: both ''-format scenes, among
+ * them the best-liked of all, c67edb74, have only scene.compressed.ply on the CDN). So only the formats
+ * named above count as known; anything else is 'unknown' and is not picked without a check.
+ */
+export function formatVerdict(format: string): 'opens' | 'unsupported' | 'unknown' {
+    if (SUPPORTED_FORMATS.includes(format)) return 'opens';
+    return UNSUPPORTED_FORMATS.includes(format) ? 'unsupported' : 'unknown';
+}
+
+/** A look at whether a scene opens, for a scene whose format the API does not name (see RandomOptions.check). */
+export type OpensCheck = (it: ExploreItem) => Promise<'yes' | 'no' | 'unknown'>;
 
 export interface PickOptions {
     /** uniform in [0, 1): inject a seeded one for a repeatable pick */
@@ -491,7 +548,7 @@ export interface PickOptions {
     recent?: Iterable<string>;
     /** known broken (failed to load lately, taken down): never picked */
     broken?: Iterable<string>;
-    /** more "broken" rules; default: a format the simulator cannot open */
+    /** more "broken" rules; default: any format the simulator is not known to open (formatVerdict) */
     isBroken?: (it: ExploreItem) => boolean;
     minLikes?: number;
     /** scenes per rating tier (default 20) */
@@ -523,7 +580,7 @@ export function pickRandomTopRated(pool: readonly ExploreItem[], o: PickOptions)
     const tierSize = Math.max(1, Math.floor(o.tierSize ?? 20));
     const broken = new Set(o.broken ?? []);
     const recent = new Set(o.recent ?? []);
-    const isBroken = o.isBroken ?? ((it: ExploreItem) => UNSUPPORTED_FORMATS.includes(it.format));
+    const isBroken = o.isBroken ?? ((it: ExploreItem) => formatVerdict(it.format) !== 'opens');
     const minLikes = o.minLikes ?? 0;
     const unique = new Map<string, ExploreItem>();
     for (const it of pool) if (!unique.has(it.id)) unique.set(it.id, it);

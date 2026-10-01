@@ -227,6 +227,23 @@ class Cache(unittest.TestCase):
         self.assertEqual(header(p.handle("sort=starred", "c"), "X-Cache"), "miss")
         self.assertEqual(len(fake.calls), 2, "TTL expired: 1 upstream call")
 
+    def test_max_age_never_promises_more_than_is_left(self):
+        """The rule the tab's keep is built on (packages/scenes/test/superspl.test.ts models it, review C8): max-age =
+        whole seconds left of the 10 min, rounded down; in the last second 'no-cache', which the tab does not keep."""
+        p, _, clock = proxy()
+        t0 = clock.t
+        p.handle("sort=starred", "c")
+        got = {}
+        for age in (1, 299.5, 598.9, 599, 599.5, 599.99):
+            clock.t = t0 + age
+            r = p.handle("sort=starred", "c")
+            got[age] = (header(r, "X-Cache"), header(r, "Cache-Control"))
+        self.assertEqual(got, {1: ("hit", "public, max-age=599"), 299.5: ("hit", "public, max-age=300"),
+                               598.9: ("hit", "public, max-age=1"), 599: ("hit", "public, max-age=1"),
+                               599.5: ("hit", "no-cache"), 599.99: ("hit", "no-cache")})
+        for age, (_, cc) in got.items():  # what the header promises plus the age never passes 600 s
+            self.assertLessEqual(age + (int(cc.split("=")[1]) if "max-age" in cc else 0), 600)
+
     def test_bounded_bytes_and_least_recently_used_goes_first(self):
         one = len(proxy()[0].handle("skip=0", "c")[1]) + 512
         p, fake, _ = proxy(cache_max_bytes=3 * one + 10)
