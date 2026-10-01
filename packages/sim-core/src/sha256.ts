@@ -41,6 +41,20 @@ export class Sha256 {
         return this;
     }
 
+    /**
+     * An independent hasher in the same state: digest the copy to read the hash so far and keep
+     * updating this one. digestHex() finalises in place, so a second call, or an update after it,
+     * gives a wrong hash (v0.2's saveLog read the live trace hash that way mid-flight).
+     */
+    copy(): Sha256 {
+        const c = new Sha256();
+        c.h.set(this.h);
+        c.buf.set(this.buf);
+        c.bufLen = this.bufLen;
+        c.total = this.total;
+        return c;
+    }
+
     digestHex(): string {
         const bits = this.total * 8;
         const pad = new Uint8Array(((this.bufLen < 56 ? 56 : 120) - this.bufLen) + 8);

@@ -422,6 +422,12 @@ class LifeRec implements Life {
     get hashing(): boolean {
         return this.full !== null || this.seg !== null;
     }
+    /** The trace hash so far and the tick it starts after, without ending the life (null: not hashing). */
+    hashNow(): { hash: string; from: number } | null {
+        if (this.full) return { hash: this.full.copy().digestHex(), from: this.header.life.startTick };
+        if (this.seg) return { hash: this.seg.copy().digestHex(), from: this.segFrom };
+        return null;
+    }
     /** a new segment starts after `tick`: the fallback hash starts there */
     segmentAt(tick: number): void {
         if (!this.hashing) return;
@@ -643,6 +649,15 @@ export class Runner {
 
     current(): Life {
         return this.cur();
+    }
+
+    /**
+     * The current life's trace hash so far (option traceHash) and the tick it starts after, read
+     * without ending the life: what a log saved mid-flight is checked against. A replay of the
+     * life to the current tick gives the same hash. null when the runner does not hash.
+     */
+    liveLifeHash(): { hash: string; from: number } | null {
+        return this.v2 ? this.cur().hashNow() : null;
     }
 
     /** Bytes the kept lives hold (record buffers and snapshots); at most maxBytes. */
