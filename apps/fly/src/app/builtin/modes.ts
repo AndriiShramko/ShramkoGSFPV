@@ -59,22 +59,28 @@ export const modes: Feature = {
             ctx.hud.flash(t('mode.now', { mode: t(`mode.${next}`) }));
         });
 
-        // the chip follows the mode flying (a radio switch flips it too) and the OSD line it sits beside
+        // the chip follows the mode flying (a radio switch flips it too) and the OSD line it sits beside,
+        // clear of the right-hand OSD line, the top buttons and the boxes and notes at the top
+        const place = (): void => chip.place(ctx.ui.querySelector<HTMLElement>('.hud .osd.tl'),
+            [...ctx.ui.querySelectorAll('.hud .osd.tr, .top-actions')],
+            [...ctx.ui.querySelectorAll(':scope > .bake-box, .touch-hint, :scope > .voxel-legend, :scope > .banner')]);
         let last = 0;
         const offFrame = ctx.events.on('frame', ({ now }) => {
             if (now - last < 100) return;
             last = now;
             chip.update();
-            chip.place(ctx.ui.querySelector<HTMLElement>('.hud .osd.tl'), ctx.ui.querySelector<HTMLElement>('.hud .osd.tr'));
+            place();
         });
-        const onResize = (): void => chip.place(ctx.ui.querySelector<HTMLElement>('.hud .osd.tl'), ctx.ui.querySelector<HTMLElement>('.hud .osd.tr'));
-        addEventListener('resize', onResize);
+        addEventListener('resize', place);
+        // a pause (the menu, a panel, Controls, a hidden tab) closes the popover: nothing of it stays over a screen
+        const offPause = ctx.events.on('pause', ({ on }) => { if (on) chip.close(); });
 
         return () => {
             offPrefs();
             offKey();
             offFrame();
-            removeEventListener('resize', onResize);
+            offPause();
+            removeEventListener('resize', place);
             chip.dispose();
         };
     }

@@ -27,7 +27,7 @@ const fly = (qs: string) => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}` : `${S
 const SCENE = '39e63ce9';
 const ONLY = process.argv.slice(2).map((x) => x.toUpperCase());
 const want = (id: string) => ONLY.length === 0 || ONLY.includes(id);
-const SHOTS = join(REPO, 'evidence', today(), 'v03-modes');
+const SHOTS = join(REPO, 'evidence', today(), process.env.MODES_EVIDENCE ?? 'v03-modes');
 mkdirSync(SHOTS, { recursive: true });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -306,9 +306,14 @@ const OVERLAP = `const box = (el, name) => { if (!el || el.offsetParent === null
     const chip = box(document.querySelector('[data-testid="mode-chip"]'), 'chip');
     const others = [box(document.querySelector('.hud .osd.tl'), 'osd-tl'), box(document.querySelector('.hud .osd.tr'), 'osd-tr'), box(document.querySelector('.hud .osd.bl'), 'osd-bl'),
         box(document.querySelector('.top-actions'), 'top-actions'), box(document.querySelector('.touch-hint'), 'touch-hint'), box(document.querySelector('.touch-arm'), 'touch-arm'),
-        ...[...document.querySelectorAll('.touch-pad')].map((e, i) => box(e, 'touch-pad-' + i)), box(document.querySelector('.attribution'), 'attribution'), box(document.querySelector('.input-note'), 'input-note')].filter(Boolean);
+        ...[...document.querySelectorAll('.touch-pad')].map((e, i) => box(e, 'touch-pad-' + i)), box(document.querySelector('.attribution'), 'attribution'), box(document.querySelector('.input-note'), 'input-note'),
+        box(document.querySelector('#ui > .bake-box'), 'bake-box'), box(document.querySelector('#ui > .voxel-legend'), 'voxel-legend'), box(document.querySelector('.gate-msg'), 'gate-msg'),
+        ...[...document.querySelectorAll('#ui > .banner')].map((e, i) => box(e, 'banner-' + i))].filter(Boolean);
     const hit = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-    return { chip, overlaps: chip ? others.filter((o) => hit(chip, o)).map((o) => o.name) : null, others, vw: innerWidth, vh: innerHeight,
+    const tl = document.querySelector('.hud .osd.tl'), st = tl && tl.firstElementChild, tr = document.querySelector('.hud .osd.tr');
+    // the OSD line still prints the mode word today (ui/hud.ts); without it (requested), would the chip fit beside the status?
+    const besideStatusFits = !!(chip && st && tr) && st.getBoundingClientRect().right + 8 + chip.w <= tr.getBoundingClientRect().left - 8;
+    return { chip, overlaps: chip ? others.filter((o) => hit(chip, o)).map((o) => o.name) : null, others, vw: innerWidth, vh: innerHeight, osdLine: tl ? tl.textContent : null, besideStatusFits,
         inView: chip ? chip.x >= 0 && chip.y >= 0 && chip.x + chip.w <= innerWidth && chip.y + chip.h <= innerHeight : false };`;
 
 async function layout(size: { width: number; height: number; mobile: boolean }, tag: string): Promise<Any> {
@@ -320,7 +325,11 @@ async function layout(size: { width: number; height: number; mobile: boolean }, 
     await p.screenshot({ path: join(SHOTS, `m5-${tag}-chip.png`) });
     await p.click('[data-testid="mode-chip"]');
     await wait(p, 200);
-    const pop = await hook(p, "const r = document.querySelector('#mode-pop').getBoundingClientRect(); const items = [...document.querySelectorAll('#mode-pop [role=menuitemradio]')].map((b) => Math.round(b.getBoundingClientRect().height)); return { x: r.left, y: r.top, w: r.width, h: r.height, inView: r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, itemHeights: items };");
+    // every choice of the open popover is the topmost thing where a finger lands on it (nothing paints over it)
+    const POP = "const r = document.querySelector('#mode-pop').getBoundingClientRect(); const bs = [...document.querySelectorAll('#mode-pop [role=menuitemradio]')]; const items = bs.map((b) => Math.round(b.getBoundingClientRect().height)); const topmost = bs.every((b) => { const q = b.getBoundingClientRect(); return b.contains(document.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2)); }); return { x: r.left, y: r.top, w: r.width, h: r.height, inView: r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, itemHeights: items, topmost };";
+    const pop = await hook(p, POP);
+    // control: the same popover without its stacking (z-index auto, as first built) is painted over on a phone
+    const popFlat = await hook(p, `document.querySelector('.mode-chip').style.zIndex = 'auto'; const res = (() => { ${POP} })(); document.querySelector('.mode-chip').style.zIndex = ''; return res;`);
     await p.screenshot({ path: join(SHOTS, `m5-${tag}-popover.png`) });
     await p.keyboard.press('Escape');
     // under the Controls screen the chip goes with the rest of the flight view
@@ -330,18 +339,19 @@ async function layout(size: { width: number; height: number; mobile: boolean }, 
     await p.keyboard.press('Escape');
     await wait(p, 300);
     // control: the same overlap test with the chip planted on the right-hand OSD line must see it
-    const planted = await hook(p, `const el = document.querySelector('[data-testid="mode-chip"]').parentElement; const tr = document.querySelector('.hud .osd.tr').getBoundingClientRect();
-        el.style.transition = 'none'; el.style.left = tr.left + 'px'; el.style.top = tr.top + 'px'; ${OVERLAP}`);
+    const planted = await hook(p, `const el = document.querySelector('[data-testid="mode-chip"]').parentElement; const trR = document.querySelector('.hud .osd.tr').getBoundingClientRect();
+        el.style.transition = 'none'; el.style.left = trR.left + 'px'; el.style.top = trR.top + 'px'; ${OVERLAP}`);
     await ctx.close();
-    return { ready: { status: ready.status, render: (ready.info as Any)?.render, renderer: (ready.info as Any)?.currentRenderer }, closed, pop, underControls, control: { overlaps: planted.overlaps, fired: Array.isArray(planted.overlaps) && planted.overlaps.includes('osd-tr') }, errors: log.filter((l) => l.startsWith('pageerror')) };
+    return { ready: { status: ready.status, render: (ready.info as Any)?.render, renderer: (ready.info as Any)?.currentRenderer }, closed, pop, underControls, control: { overlaps: planted.overlaps, fired: Array.isArray(planted.overlaps) && planted.overlaps.includes('osd-tr'), popoverFlat: { topmost: popFlat.topmost, fired: popFlat.topmost === false } }, errors: log.filter((l) => l.startsWith('pageerror')) };
 }
 
 if (want('M5')) {
     // the scan is drawn here: GPU lock and free memory are the caller's (see the task's GPU rule)
     const desktop = await layout({ width: 1280, height: 800, mobile: false }, 'desktop');
     const phone = await layout({ width: 375, height: 812, mobile: true }, 'phone');
-    const ok = (r: Any) => r.ready.status === 'ready' && r.ready.render === 'on' && r.closed.chip && r.closed.inView && r.closed.overlaps.length === 0 && r.pop.inView && r.pop.itemHeights.every((x: number) => x >= 44) && r.underControls === 'hidden' && r.control.fired;
-    out.M5 = { pass: ok(desktop) && ok(phone), what: 'the chip beside the OSD line overlaps no OSD line, button, pad or note; its popover fits the screen with 44 px rows; hidden under the Controls screen (desktop 1280x800, phone 375x812, scan drawn)', desktop, phone };
+    const ok = (r: Any) => r.ready.status === 'ready' && r.ready.render === 'on' && r.closed.chip && r.closed.inView && r.closed.overlaps.length === 0 && r.pop.inView && r.pop.topmost && r.pop.itemHeights.every((x: number) => x >= 44) && r.underControls === 'hidden' && r.control.fired;
+    // the flat-popover control can fire only where something sits over the popover: the phone
+    out.M5 = { pass: ok(desktop) && ok(phone) && phone.control.popoverFlat.fired, what: 'the chip beside the OSD line overlaps no OSD line, button, pad or note; its popover fits the screen with 44 px rows; hidden under the Controls screen (desktop 1280x800, phone 375x812, scan drawn)', desktop, phone };
     console.log('M5', out.M5.pass ? 'PASS' : 'FAIL', JSON.stringify({ d: desktop.closed.overlaps, p: phone.closed.overlaps }));
 }
 
@@ -350,7 +360,8 @@ const ALL = ['M1', 'M2', 'M3', 'M4', 'M5'];
 const ran = ALL.filter((k) => out[k]);
 out.ran = ran;
 // a run of some items keeps today's results of the others, each with the run it came from
-const file = join(REPO, 'evidence', today(), 'v03-modes.json');
+const NAME = process.env.MODES_EVIDENCE ?? 'v03-modes'; // another name for a what-if run (a local patch measured, never the item's own result)
+const file = join(REPO, 'evidence', today(), `${NAME}.json`);
 if (existsSync(file)) {
     const old = JSON.parse(readFileSync(file, 'utf8')) as Any;
     for (const k of ALL) {
@@ -361,4 +372,4 @@ if (existsSync(file)) {
 }
 const have = ALL.filter((k) => out[k]);
 out.pass = have.length === ALL.length && have.every((k) => out[k].pass);
-console.log('evidence', writeEvidence('v03-modes', out), 'all items pass:', out.pass);
+console.log('evidence', writeEvidence(NAME, out), 'all items pass:', out.pass);

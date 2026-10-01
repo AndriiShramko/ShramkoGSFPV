@@ -2,6 +2,8 @@
    the default spot below is where that line starts, for the first frame. Colours reuse fly.css. */
 .mode-chip { position: absolute; left: 44px; top: calc(max(14px, env(safe-area-inset-top)) + var(--banner-h, 0px) - 4px); }
 .mode-chip[hidden] { display: none; }
+/* the open popover over the rest of the flight view (later parts paint on top otherwise); under the loading screen (5) */
+.mode-chip:has(> .mc-pop:not([hidden])) { z-index: 4; }
 .mc-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 2px 8px 2px 10px; border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, .28); background: rgba(12, 14, 18, .62); color: #fff; cursor: pointer;
     font: 600 14px/1.2 ui-monospace, "Cascadia Mono", Consolas, monospace; text-shadow: 0 1px 2px #000; white-space: nowrap; }

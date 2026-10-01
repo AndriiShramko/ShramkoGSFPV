@@ -101,7 +101,12 @@ export class ModeChip {
     open(): void {
         if (this.isOpen) return;
         this.update();
+        this.pop.style.left = '';
         this.pop.hidden = false;
+        // under the chip, moved left as far as it must to stay inside the 16 px gutter (a phone)
+        const r = this.pop.getBoundingClientRect();
+        const over = r.right - (innerWidth - 16);
+        if (over > 0) this.pop.style.left = `${-Math.min(over, Math.max(0, r.left - 16))}px`;
         this.btn.setAttribute('aria-expanded', 'true');
         (this.items.find((i) => i.b.getAttribute('aria-checked') === 'true') ?? this.items[0]).b.focus({ preventScroll: true });
         addEventListener('pointerdown', this.outside, { capture: true });
@@ -122,10 +127,13 @@ export class ModeChip {
     }
 
     /**
-     * Beside the OSD's top line, vertically centred on it; below it when the two would reach the
-     * right-hand line. Hidden while that line is not shown (H, cinema, a screen over the view).
+     * Beside the OSD's top line (`tl`), vertically centred on it; else right below it. The first of
+     * the two that stays on screen, never touches `hard` (the right-hand OSD line, the top buttons:
+     * text over text) and touches nothing of `soft` (boxes and notes that come and go); when both
+     * touch something soft, the one that covers least. Hidden while the line is not shown (H,
+     * cinema, a screen over the view).
      */
-    place(tl: HTMLElement | null, tr: HTMLElement | null): void {
+    place(tl: HTMLElement | null, hard: readonly Element[], soft: readonly Element[]): void {
         if (!tl || tl.offsetParent === null || tl.getClientRects().length === 0) {
             if (!this.el.hidden) { this.close(); this.el.hidden = true; }
             return;
@@ -134,10 +142,40 @@ export class ModeChip {
         const a = tl.getBoundingClientRect();
         const w = this.btn.offsetWidth;
         const ch = this.btn.offsetHeight;
-        const r = tr && tr.offsetParent !== null ? tr.getBoundingClientRect() : null;
-        let left = a.right + GAP;
-        let top = a.top + a.height / 2 - ch / 2;
-        if (left + w > (r ? r.left : innerWidth - 16) - GAP) { left = a.left; top = a.bottom + 4; }
+        const rects = (els: readonly Element[]): DOMRect[] => {
+            const out: DOMRect[] = [];
+            for (const el of els) {
+                if (!(el instanceof HTMLElement) || el.offsetParent === null) continue;
+                const r = el.getBoundingClientRect();
+                if (r.width > 0 && r.height > 0) out.push(r);
+            }
+            return out;
+        };
+        const hardR = rects(hard);
+        const softR = rects(soft);
+        // the OSD line and the top buttons keep 4 px from the chip; a box may touch it (half a pixel of rounding is not a touch)
+        const overlap = (x: number, y: number, b: DOMRect, gap: number): number => {
+            const ox = Math.min(x + w + gap, b.right) - Math.max(x - gap, b.left);
+            const oy = Math.min(y + ch, b.bottom) - Math.max(y, b.top);
+            return ox > 0.5 && oy > 0.5 ? ox * oy : 0;
+        };
+        const cost = (x: number, y: number): number => {
+            if (x < 0 || y < 0 || x + w > innerWidth - GAP || y + ch > innerHeight) return Infinity;
+            if (hardR.some((b) => overlap(x, y, b, 4) > 0)) return Infinity;
+            let c = 0;
+            for (const b of softR) c += overlap(x, y, b, 0);
+            return c;
+        };
+        // beside the line; under its start; under it at the page's 16 px gutter (a phone, with a box in the middle of the top)
+        const below = a.bottom + 4;
+        const spots: [number, number][] = [[a.right + GAP, a.top + a.height / 2 - ch / 2], [a.left, below], [16, below]];
+        let [left, top] = spots[1];
+        let best = Infinity;
+        for (const [x, y] of spots) {
+            const c = cost(x, y);
+            if (c < best) { best = c; left = x; top = y; }
+            if (c === 0) break;
+        }
         const key = `${Math.round(left)}|${Math.round(top)}`;
         if (key === this.placed) return;
         this.placed = key;
