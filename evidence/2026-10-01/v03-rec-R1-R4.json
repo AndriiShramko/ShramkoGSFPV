@@ -1,0 +1,356 @@
+{
+  "name": "v03-rec-R1-R4",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-01T23:20:10.210Z",
+    "gitHead": "4443731",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5335",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "ffprobe": "C:/Program Files/Shutter Encoder/Library/ffprobe.exe",
+  "display": {
+    "rafHz": 27.6,
+    "force60": true,
+    "why": "the display runs below 60 Hz (the owner's 4K monitor: 30 Hz over HDMI): the 60 Hz render comes from a 60 Hz timer driving the page's frame loop, the scan drawn every frame"
+  },
+  "R1": {
+    "pass": false,
+    "what": "a 10 s recording at a 60 Hz render: r_frame_rate 60/1, 0 duplicate pts, 600 +- 2 frames, all decoded; at most 6% repeated pictures, at most 1% held for the encoder; into the folder; the credit burned in (strip luminance spread > 0.1)",
+    "scene": "39e63ce9",
+    "renderer": 2,
+    "frameRateBefore": {
+      "engineFps": 54.9,
+      "frameMs": {
+        "p50": 16.69999999552965,
+        "p99": 45.600000001490116,
+        "hz": 59.880239536987155
+      }
+    },
+    "engineFpsWhileRecording": 57.7,
+    "repeats": {
+      "pct": 5.3,
+      "heldPct": 0,
+      "uniquePicturesPerS": 56.8
+    },
+    "folder": "gsfpv-r1-muq5o25c",
+    "recorder": {
+      "codec": "avc1.640033",
+      "width": 1728,
+      "height": 1080,
+      "fps": 60,
+      "frames": 601,
+      "bytes": 14712248,
+      "seconds": 10.016666666666667,
+      "duplicated": 32,
+      "heldForEncoder": 0,
+      "dropped": 0,
+      "file": "gsfpv-39e63ce9-20261002-011856.mp4",
+      "files": [
+        {
+          "name": "gsfpv-39e63ce9-20261002-011856.mp4",
+          "bytes": 14712248,
+          "frames": 601,
+          "seconds": 10.016666666666667
+        }
+      ],
+      "where": "folder",
+      "folder": "gsfpv-r1-muq5o25c",
+      "ended": "stop",
+      "picture": "webgpu"
+    },
+    "wallS": 10.003,
+    "codec": "avc1.640033",
+    "creditStripStd": 0.2490363061271607,
+    "file": {
+      "name": "gsfpv-39e63ce9-20261002-011856.mp4",
+      "where": "folder",
+      "bytes": 14712248,
+      "sha256": "d74c11691dd73b8af63207936b23e94f89643ff0aaceb775685cdc185989bea7"
+    },
+    "ffprobe": {
+      "r_frame_rate": "60/1",
+      "avg_frame_rate": "60/1",
+      "time_base": "1/60",
+      "codec": "h264",
+      "width": 1728,
+      "height": 1080,
+      "packets": 601,
+      "decoded": 601,
+      "dupPts": 0,
+      "dupPerS": 0,
+      "steps": {
+        "16.7": 600
+      },
+      "durationS": 10.016667
+    },
+    "note": "Saved 10.0 s to gsfpv-r1-muq5o25c (14.0 MB) \u00b7 60 fps \u00b7 repeated frames: 32 \u00b7 dropped: 0",
+    "control": {
+      "what": "C1: v0.2 path (every rendered frame, 30 fps track, a frame skipped while 8 wait in the encoder) on the same page and render",
+      "fired": true,
+      "engineFpsWhileRecording": 58.3,
+      "framesSkippedByEncoderBound": 283,
+      "recorder": {
+        "codec": "avc1.640033",
+        "width": 1728,
+        "height": 1080,
+        "fps": 30,
+        "frames": 300,
+        "bytes": 11206892,
+        "seconds": 10.310299999997019,
+        "duplicated": 0,
+        "heldForEncoder": 0,
+        "dropped": 283,
+        "file": "gsfpv-39e63ce9-20261002-011914.mp4",
+        "files": [
+          {
+            "name": "gsfpv-39e63ce9-20261002-011914.mp4",
+            "bytes": 11206892,
+            "frames": 300,
+            "seconds": 5
+          }
+        ],
+        "where": "folder",
+        "folder": "gsfpv-r1-muq5o25c",
+        "ended": "stop",
+        "picture": "2d"
+      },
+      "file": {
+        "name": "gsfpv-39e63ce9-20261002-011914.mp4",
+        "where": "folder",
+        "bytes": 11206892,
+        "sha256": "41d59c4df8e39b339ace4f92170f1270fb8df6eb945248cbff2c37a0083d4c48"
+      },
+      "ffprobe": {
+        "r_frame_rate": "30/1",
+        "avg_frame_rate": "30/1",
+        "time_base": "1/30",
+        "codec": "h264",
+        "width": 1728,
+        "height": 1080,
+        "packets": 300,
+        "decoded": 300,
+        "dupPts": 22,
+        "dupPerS": 2.2,
+        "steps": {
+          "133.3": 2,
+          "0.0": 22,
+          "33.3": 258,
+          "66.7": 17
+        },
+        "durationS": 10
+      }
+    },
+    "consoleErrors": []
+  },
+  "R4": {
+    "pass": true,
+    "what": "recording.fps 30 gives a 30/1 file of 120 +- 2 frames in 4 s; recording.resolution 2160p a 2160-high 60/1 file; a split every 3 s gives 3 files of 180, 180 and the rest, each 60/1 with 0 duplicate pts",
+    "fps30": {
+      "pass": true,
+      "recorder": {
+        "codec": "avc1.640033",
+        "width": 1728,
+        "height": 1080,
+        "fps": 30,
+        "frames": 121,
+        "bytes": 3273235,
+        "seconds": 4.033333333333333,
+        "duplicated": 10,
+        "heldForEncoder": 0,
+        "dropped": 0,
+        "file": "gsfpv-39e63ce9-20261002-011939.mp4",
+        "files": [
+          {
+            "name": "gsfpv-39e63ce9-20261002-011939.mp4",
+            "bytes": 3273235,
+            "frames": 121,
+            "seconds": 4.033333333333333
+          }
+        ],
+        "where": "folder",
+        "folder": "gsfpv-r4-muq5o25c",
+        "ended": "stop",
+        "picture": "webgpu"
+      },
+      "ffprobe": {
+        "r_frame_rate": "30/1",
+        "avg_frame_rate": "30/1",
+        "time_base": "1/30",
+        "codec": "h264",
+        "width": 1728,
+        "height": 1080,
+        "packets": 121,
+        "decoded": 121,
+        "dupPts": 0,
+        "dupPerS": 0,
+        "steps": {
+          "33.3": 120
+        },
+        "durationS": 4.033333
+      }
+    },
+    "size2160": {
+      "pass": true,
+      "recorder": {
+        "codec": "avc1.640033",
+        "width": 3456,
+        "height": 2160,
+        "fps": 60,
+        "frames": 179,
+        "bytes": 28808673,
+        "seconds": 2.9833333333333334,
+        "duplicated": 90,
+        "heldForEncoder": 1,
+        "dropped": 0,
+        "file": "gsfpv-39e63ce9-20261002-011945.mp4",
+        "files": [
+          {
+            "name": "gsfpv-39e63ce9-20261002-011945.mp4",
+            "bytes": 28808673,
+            "frames": 179,
+            "seconds": 2.9833333333333334
+          }
+        ],
+        "where": "folder",
+        "folder": "gsfpv-r4-muq5o25c",
+        "ended": "stop",
+        "picture": "webgpu"
+      },
+      "ffprobe": {
+        "r_frame_rate": "60/1",
+        "avg_frame_rate": "60/1",
+        "time_base": "1/60",
+        "codec": "h264",
+        "width": 3456,
+        "height": 2160,
+        "packets": 179,
+        "decoded": 179,
+        "dupPts": 0,
+        "dupPerS": 0,
+        "steps": {
+          "16.7": 178
+        },
+        "durationS": 2.983333
+      }
+    },
+    "split": {
+      "pass": true,
+      "recorder": {
+        "codec": "avc1.640033",
+        "width": 1728,
+        "height": 1080,
+        "fps": 60,
+        "frames": 419,
+        "bytes": 10512853,
+        "seconds": 6.983333333333333,
+        "duplicated": 209,
+        "heldForEncoder": 0,
+        "dropped": 0,
+        "file": "gsfpv-39e63ce9-20261002-012005.mp4",
+        "files": [
+          {
+            "name": "gsfpv-39e63ce9-20261002-011959.mp4",
+            "bytes": 4587945,
+            "frames": 180,
+            "seconds": 3
+          },
+          {
+            "name": "gsfpv-39e63ce9-20261002-012002.mp4",
+            "bytes": 4396389,
+            "frames": 180,
+            "seconds": 3
+          },
+          {
+            "name": "gsfpv-39e63ce9-20261002-012005.mp4",
+            "bytes": 1528519,
+            "frames": 59,
+            "seconds": 0.9833333333333333
+          }
+        ],
+        "where": "folder",
+        "folder": "gsfpv-r4-muq5o25c",
+        "ended": "stop",
+        "picture": "webgpu"
+      },
+      "ffprobe": [
+        {
+          "r_frame_rate": "60/1",
+          "avg_frame_rate": "60/1",
+          "time_base": "1/60",
+          "codec": "h264",
+          "width": 1728,
+          "height": 1080,
+          "packets": 180,
+          "decoded": 180,
+          "dupPts": 0,
+          "dupPerS": 0,
+          "steps": {
+            "16.7": 179
+          },
+          "durationS": 3
+        },
+        {
+          "r_frame_rate": "60/1",
+          "avg_frame_rate": "60/1",
+          "time_base": "1/60",
+          "codec": "h264",
+          "width": 1728,
+          "height": 1080,
+          "packets": 180,
+          "decoded": 180,
+          "dupPts": 0,
+          "dupPerS": 0,
+          "steps": {
+            "16.7": 179
+          },
+          "durationS": 3
+        },
+        {
+          "r_frame_rate": "60/1",
+          "avg_frame_rate": "60/1",
+          "time_base": "1/60",
+          "codec": "h264",
+          "width": 1728,
+          "height": 1080,
+          "packets": 59,
+          "decoded": 59,
+          "dupPts": 0,
+          "dupPerS": 0,
+          "steps": {
+            "16.7": 58
+          },
+          "durationS": 0.983333
+        }
+      ]
+    },
+    "control": {
+      "what": "R1 on the same page code without these settings: 60/1, 1080 high, one file",
+      "r1File": {
+        "r_frame_rate": "60/1",
+        "height": 1080
+      },
+      "r1Files": 1,
+      "fired": true
+    },
+    "consoleErrors": []
+  },
+  "parts": [
+    "R1",
+    "R4"
+  ],
+  "pass": false
+}

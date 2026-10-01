@@ -1,0 +1,709 @@
+{
+  "name": "v03-rec-R2-R3-R4-R5",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-01T23:18:31.379Z",
+    "gitHead": "4443731",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5335",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "ffprobe": "C:/Program Files/Shutter Encoder/Library/ffprobe.exe",
+  "display": {
+    "rafHz": 28,
+    "force60": true,
+    "why": "the display runs below 60 Hz (the owner's 4K monitor: 30 Hz over HDMI): the 60 Hz render comes from a 60 Hz timer driving the page's frame loop, the scan drawn every frame"
+  },
+  "R3": {
+    "pass": true,
+    "what": "at the display's own rate: still 60/1 with 0 duplicate pts and 300 +- 2 frames in 5 s; the repeated frames counted and shown on the bar after stop",
+    "frameRateDuring": {
+      "engineFps": 26,
+      "frameMs": {
+        "p50": 33.30000000447035,
+        "p99": 132.09999999403954,
+        "hz": 30.03003002599866
+      }
+    },
+    "recorder": {
+      "codec": "avc1.640033",
+      "width": 1728,
+      "height": 1080,
+      "fps": 60,
+      "frames": 299,
+      "bytes": 7274531,
+      "seconds": 4.983333333333333,
+      "duplicated": 151,
+      "heldForEncoder": 0,
+      "dropped": 0,
+      "file": "gsfpv-39e63ce9-20261002-011700.mp4",
+      "files": [
+        {
+          "name": "gsfpv-39e63ce9-20261002-011700.mp4",
+          "bytes": 7274531,
+          "frames": 299,
+          "seconds": 4.983333333333333
+        }
+      ],
+      "where": "folder",
+      "folder": "gsfpv-r3-muq5lkrj",
+      "ended": "stop",
+      "picture": "webgpu"
+    },
+    "note": "Saved 5.0 s to gsfpv-r3-muq5lkrj (6.9 MB) \u00b7 60 fps \u00b7 repeated frames: 151 \u00b7 dropped: 0",
+    "file": {
+      "name": "gsfpv-39e63ce9-20261002-011700.mp4",
+      "where": "folder",
+      "bytes": 7274531,
+      "sha256": "a5d6771074b80fa22e8e913c7028decde4a38872459f1c0d8bec529acd9f83fe"
+    },
+    "ffprobe": {
+      "r_frame_rate": "60/1",
+      "avg_frame_rate": "60/1",
+      "time_base": "1/60",
+      "codec": "h264",
+      "width": 1728,
+      "height": 1080,
+      "packets": 299,
+      "decoded": 299,
+      "dupPts": 0,
+      "dupPerS": 0,
+      "steps": {
+        "16.7": 298
+      },
+      "durationS": 4.983333
+    },
+    "consoleErrors": []
+  },
+  "R2": {
+    "pass": true,
+    "what": "auto-record into the chosen folder (an OPFS folder handed over like the picker's): Auto clicked, ARM starts it, a throttle blip, DISARM; still recording 1.5 s later (the file still empty: writes land on close), the file saved 3-10 s after the disarm; Auto and the folder survive a reload",
+    "scene": "39e63ce9",
+    "folder": "gsfpv-auto-muq5lkrj",
+    "before": [],
+    "afterAuto": {
+      "allowed": true,
+      "showcase": true,
+      "supported": true,
+      "canPick": true,
+      "recording": false,
+      "autoRun": false,
+      "auto": true,
+      "seconds": 0,
+      "busy": false,
+      "folder": "gsfpv-auto-muq5lkrj",
+      "access": "granted",
+      "pendingStopAt": null,
+      "barHidden": false,
+      "barShown": true,
+      "recHidden": false,
+      "autoDisabled": false,
+      "autoPressed": "true",
+      "autoTitle": "Auto-record: starts when you arm, stops 3 s after you disarm.",
+      "folderChip": "Folder: gsfpv-auto-muq5lkrj \u25be",
+      "allowChip": null,
+      "note": "",
+      "last": null,
+      "offers": []
+    },
+    "armed": {
+      "armed": true,
+      "allowed": true,
+      "showcase": true,
+      "supported": true,
+      "canPick": true,
+      "recording": true,
+      "autoRun": true,
+      "auto": true,
+      "seconds": 0.8833333333333333,
+      "busy": false,
+      "folder": "gsfpv-auto-muq5lkrj",
+      "access": "granted",
+      "pendingStopAt": null,
+      "barHidden": false,
+      "barShown": false,
+      "recHidden": false,
+      "autoDisabled": false,
+      "autoPressed": "true",
+      "autoTitle": "Auto-record: starts when you arm, stops 3 s after you disarm.",
+      "folderChip": "Folder: gsfpv-auto-muq5lkrj \u25be",
+      "allowChip": null,
+      "note": "Recording 0:00",
+      "last": null,
+      "offers": []
+    },
+    "flew": {
+      "armed": true,
+      "crashed": false,
+      "y": 1.579085649718785
+    },
+    "mid": {
+      "armed": false,
+      "allowed": true,
+      "showcase": true,
+      "supported": true,
+      "canPick": true,
+      "recording": true,
+      "autoRun": true,
+      "auto": true,
+      "seconds": 4.75,
+      "busy": false,
+      "folder": "gsfpv-auto-muq5lkrj",
+      "access": "granted",
+      "pendingStopAt": 16080.79999999702,
+      "barHidden": false,
+      "barShown": true,
+      "recHidden": false,
+      "autoDisabled": false,
+      "autoPressed": "true",
+      "autoTitle": "Auto-record: starts when you arm, stops 3 s after you disarm.",
+      "folderChip": "Folder: gsfpv-auto-muq5lkrj \u25be",
+      "allowChip": null,
+      "note": "Recording 0:04",
+      "last": null,
+      "offers": []
+    },
+    "midFiles": [
+      {
+        "name": "gsfpv-39e63ce9-20261002-011719.mp4",
+        "bytes": 0
+      }
+    ],
+    "savedAfterDisarmS": 3.172,
+    "after": {
+      "allowed": true,
+      "showcase": true,
+      "supported": true,
+      "canPick": true,
+      "recording": false,
+      "autoRun": true,
+      "auto": true,
+      "seconds": 0,
+      "busy": false,
+      "folder": "gsfpv-auto-muq5lkrj",
+      "access": "granted",
+      "pendingStopAt": null,
+      "barHidden": false,
+      "barShown": true,
+      "recHidden": false,
+      "autoDisabled": false,
+      "autoPressed": "true",
+      "autoTitle": "Auto-record: starts when you arm, stops 3 s after you disarm.",
+      "folderChip": "Folder: gsfpv-auto-muq5lkrj \u25be",
+      "allowChip": null,
+      "note": "",
+      "last": {
+        "codec": "avc1.640033",
+        "width": 1728,
+        "height": 1080,
+        "fps": 60,
+        "frames": 379,
+        "bytes": 6388062,
+        "seconds": 6.316666666666666,
+        "duplicated": 204,
+        "heldForEncoder": 15,
+        "dropped": 0,
+        "file": "gsfpv-39e63ce9-20261002-011719.mp4",
+        "files": [
+          {
+            "name": "gsfpv-39e63ce9-20261002-011719.mp4",
+            "bytes": 6388062,
+            "frames": 379,
+            "seconds": 6.316666666666666
+          }
+        ],
+        "where": "folder",
+        "folder": "gsfpv-auto-muq5lkrj",
+        "ended": "stop",
+        "picture": "webgpu"
+      },
+      "offers": []
+    },
+    "files": [
+      {
+        "name": "gsfpv-39e63ce9-20261002-011719.mp4",
+        "bytes": 6388062
+      }
+    ],
+    "armToDisarmS": 3.622,
+    "file": {
+      "name": "gsfpv-39e63ce9-20261002-011719.mp4",
+      "where": "folder",
+      "bytes": 6388062,
+      "sha256": "69c0f1b43fdaf0a99d0bc7930e497f25e2a98ce187e5d95e4c5a3a7b2b5bdca0"
+    },
+    "ffprobe": {
+      "r_frame_rate": "60/1",
+      "avg_frame_rate": "60/1",
+      "time_base": "1/60",
+      "codec": "h264",
+      "width": 1728,
+      "height": 1080,
+      "packets": 379,
+      "decoded": 379,
+      "dupPts": 0,
+      "dupPerS": 0,
+      "steps": {
+        "16.7": 378
+      },
+      "durationS": 6.316667
+    },
+    "reloaded": {
+      "allowed": true,
+      "showcase": true,
+      "supported": true,
+      "canPick": true,
+      "recording": false,
+      "autoRun": false,
+      "auto": true,
+      "seconds": 0,
+      "busy": false,
+      "folder": "gsfpv-auto-muq5lkrj",
+      "access": "granted",
+      "pendingStopAt": null,
+      "barHidden": false,
+      "barShown": true,
+      "recHidden": false,
+      "autoDisabled": false,
+      "autoPressed": "true",
+      "autoTitle": "Auto-record: starts when you arm, stops 3 s after you disarm.",
+      "folderChip": "Folder: gsfpv-auto-muq5lkrj \u25be",
+      "allowChip": null,
+      "note": "",
+      "last": null,
+      "offers": []
+    },
+    "control": {
+      "what": "C2: scene 723068d7 (not in the showcase), Auto still on and the folder set: ARM and DISARM write nothing, Auto is disabled and says why (logic-only page, the gate does not depend on drawing)",
+      "fired": true,
+      "state": {
+        "allowed": false,
+        "showcase": false,
+        "supported": true,
+        "canPick": true,
+        "recording": false,
+        "autoRun": false,
+        "auto": true,
+        "seconds": 0,
+        "busy": false,
+        "folder": "gsfpv-auto-muq5lkrj",
+        "access": "granted",
+        "pendingStopAt": null,
+        "barHidden": false,
+        "barShown": true,
+        "recHidden": true,
+        "autoDisabled": true,
+        "autoPressed": "false",
+        "autoTitle": "Recording works on showcase scans only \u2014 their authors agreed to it.",
+        "folderChip": null,
+        "allowChip": null,
+        "note": "Recording works on showcase scans only \u2014 their authors agreed to it.",
+        "last": null,
+        "offers": []
+      },
+      "armed": {
+        "armed": true,
+        "allowed": false,
+        "showcase": false,
+        "supported": true,
+        "canPick": true,
+        "recording": false,
+        "autoRun": false,
+        "auto": true,
+        "seconds": 0,
+        "busy": false,
+        "folder": "gsfpv-auto-muq5lkrj",
+        "access": "granted",
+        "pendingStopAt": null,
+        "barHidden": false,
+        "barShown": false,
+        "recHidden": true,
+        "autoDisabled": true,
+        "autoPressed": "false",
+        "autoTitle": "Recording works on showcase scans only \u2014 their authors agreed to it.",
+        "folderChip": null,
+        "allowChip": null,
+        "note": "Recording works on showcase scans only \u2014 their authors agreed to it.",
+        "last": null,
+        "offers": []
+      },
+      "after": {
+        "allowed": false,
+        "showcase": false,
+        "supported": true,
+        "canPick": true,
+        "recording": false,
+        "autoRun": false,
+        "auto": true,
+        "seconds": 0,
+        "busy": false,
+        "folder": "gsfpv-auto-muq5lkrj",
+        "access": "granted",
+        "pendingStopAt": null,
+        "barHidden": false,
+        "barShown": true,
+        "recHidden": true,
+        "autoDisabled": true,
+        "autoPressed": "false",
+        "autoTitle": "Recording works on showcase scans only \u2014 their authors agreed to it.",
+        "folderChip": null,
+        "allowChip": null,
+        "note": "Recording works on showcase scans only \u2014 their authors agreed to it.",
+        "last": null,
+        "offers": []
+      },
+      "files": [
+        {
+          "name": "gsfpv-39e63ce9-20261002-011719.mp4",
+          "bytes": 6388062
+        }
+      ],
+      "autoTitle": "Recording works on showcase scans only \u2014 their authors agreed to it.",
+      "autoDisabled": true
+    },
+    "consoleErrors": []
+  },
+  "R4": {
+    "pass": false,
+    "what": "recording.fps 30 gives a 30/1 file of 120 +- 2 frames in 4 s; recording.resolution 2160p a 2160-high 60/1 file; a split every 3 s gives 3 files of 180, 180 and the rest, each 60/1 with 0 duplicate pts",
+    "fps30": {
+      "pass": true,
+      "recorder": {
+        "codec": "avc1.640033",
+        "width": 1728,
+        "height": 1080,
+        "fps": 30,
+        "frames": 120,
+        "bytes": 3442534,
+        "seconds": 4,
+        "duplicated": 6,
+        "heldForEncoder": 0,
+        "dropped": 0,
+        "file": "gsfpv-39e63ce9-20261002-011749.mp4",
+        "files": [
+          {
+            "name": "gsfpv-39e63ce9-20261002-011749.mp4",
+            "bytes": 3442534,
+            "frames": 120,
+            "seconds": 4
+          }
+        ],
+        "where": "folder",
+        "folder": "gsfpv-r4-muq5lkrj",
+        "ended": "stop",
+        "picture": "webgpu"
+      },
+      "ffprobe": {
+        "r_frame_rate": "30/1",
+        "avg_frame_rate": "30/1",
+        "time_base": "1/30",
+        "codec": "h264",
+        "width": 1728,
+        "height": 1080,
+        "packets": 120,
+        "decoded": 120,
+        "dupPts": 0,
+        "dupPerS": 0,
+        "steps": {
+          "33.3": 119
+        },
+        "durationS": 4
+      }
+    },
+    "size2160": {
+      "pass": true,
+      "recorder": {
+        "codec": "avc1.640033",
+        "width": 3456,
+        "height": 2160,
+        "fps": 60,
+        "frames": 179,
+        "bytes": 29167934,
+        "seconds": 2.9833333333333334,
+        "duplicated": 91,
+        "heldForEncoder": 0,
+        "dropped": 0,
+        "file": "gsfpv-39e63ce9-20261002-011755.mp4",
+        "files": [
+          {
+            "name": "gsfpv-39e63ce9-20261002-011755.mp4",
+            "bytes": 29167934,
+            "frames": 179,
+            "seconds": 2.9833333333333334
+          }
+        ],
+        "where": "folder",
+        "folder": "gsfpv-r4-muq5lkrj",
+        "ended": "stop",
+        "picture": "webgpu"
+      },
+      "ffprobe": {
+        "r_frame_rate": "60/1",
+        "avg_frame_rate": "60/1",
+        "time_base": "1/60",
+        "codec": "h264",
+        "width": 3456,
+        "height": 2160,
+        "packets": 179,
+        "decoded": 179,
+        "dupPts": 0,
+        "dupPerS": 0,
+        "steps": {
+          "16.7": 178
+        },
+        "durationS": 2.983333
+      }
+    },
+    "split": {
+      "pass": true,
+      "recorder": {
+        "codec": "avc1.640033",
+        "width": 1728,
+        "height": 1080,
+        "fps": 60,
+        "frames": 419,
+        "bytes": 10909096,
+        "seconds": 6.983333333333333,
+        "duplicated": 212,
+        "heldForEncoder": 0,
+        "dropped": 0,
+        "file": "gsfpv-39e63ce9-20261002-011815.mp4",
+        "files": [
+          {
+            "name": "gsfpv-39e63ce9-20261002-011809.mp4",
+            "bytes": 4568770,
+            "frames": 180,
+            "seconds": 3
+          },
+          {
+            "name": "gsfpv-39e63ce9-20261002-011812.mp4",
+            "bytes": 4640221,
+            "frames": 180,
+            "seconds": 3
+          },
+          {
+            "name": "gsfpv-39e63ce9-20261002-011815.mp4",
+            "bytes": 1700105,
+            "frames": 59,
+            "seconds": 0.9833333333333333
+          }
+        ],
+        "where": "folder",
+        "folder": "gsfpv-r4-muq5lkrj",
+        "ended": "stop",
+        "picture": "webgpu"
+      },
+      "ffprobe": [
+        {
+          "r_frame_rate": "60/1",
+          "avg_frame_rate": "60/1",
+          "time_base": "1/60",
+          "codec": "h264",
+          "width": 1728,
+          "height": 1080,
+          "packets": 180,
+          "decoded": 180,
+          "dupPts": 0,
+          "dupPerS": 0,
+          "steps": {
+            "16.7": 179
+          },
+          "durationS": 3
+        },
+        {
+          "r_frame_rate": "60/1",
+          "avg_frame_rate": "60/1",
+          "time_base": "1/60",
+          "codec": "h264",
+          "width": 1728,
+          "height": 1080,
+          "packets": 180,
+          "decoded": 180,
+          "dupPts": 0,
+          "dupPerS": 0,
+          "steps": {
+            "16.7": 179
+          },
+          "durationS": 3
+        },
+        {
+          "r_frame_rate": "60/1",
+          "avg_frame_rate": "60/1",
+          "time_base": "1/60",
+          "codec": "h264",
+          "width": 1728,
+          "height": 1080,
+          "packets": 59,
+          "decoded": 59,
+          "dupPts": 0,
+          "dupPerS": 0,
+          "steps": {
+            "16.7": 58
+          },
+          "durationS": 0.983333
+        }
+      ]
+    },
+    "control": {
+      "what": "R1 on the same page code without these settings: 60/1, 1080 high, one file",
+      "r1File": null,
+      "r1Files": null,
+      "fired": false
+    },
+    "consoleErrors": []
+  },
+  "R5": {
+    "pass": true,
+    "what": "F9 starts and stops a recording; with no folder chosen it goes to the browser storage and the bar offers the file (the Firefox / Safari path); the pause menu lists Record / stop with its F9 key-cap",
+    "render": "off",
+    "on": {
+      "allowed": true,
+      "showcase": true,
+      "supported": true,
+      "canPick": true,
+      "recording": true,
+      "autoRun": false,
+      "auto": false,
+      "seconds": 1.7833333333333334,
+      "busy": false,
+      "folder": null,
+      "access": "none",
+      "pendingStopAt": null,
+      "barHidden": false,
+      "barShown": true,
+      "recHidden": false,
+      "autoDisabled": false,
+      "autoPressed": "false",
+      "autoTitle": "Auto-record: starts when you arm, stops 3 s after you disarm.",
+      "folderChip": "Choose a folder \u25be",
+      "allowChip": null,
+      "note": "Recording 0:01",
+      "last": null,
+      "offers": []
+    },
+    "off": {
+      "allowed": true,
+      "showcase": true,
+      "supported": true,
+      "canPick": true,
+      "recording": false,
+      "autoRun": false,
+      "auto": false,
+      "seconds": 0,
+      "busy": false,
+      "folder": null,
+      "access": "none",
+      "pendingStopAt": null,
+      "barHidden": false,
+      "barShown": true,
+      "recHidden": false,
+      "autoDisabled": false,
+      "autoPressed": "false",
+      "autoTitle": "Auto-record: starts when you arm, stops 3 s after you disarm.",
+      "folderChip": "Choose a folder \u25be",
+      "allowChip": null,
+      "note": "Saved 1.8 s in the browser (0.0 MB) \u00b7 60 fps \u00b7 repeated frames: 53 \u00b7 dropped: 0 Save file",
+      "last": {
+        "codec": "avc1.640033",
+        "width": 1728,
+        "height": 1080,
+        "fps": 60,
+        "frames": 107,
+        "bytes": 21608,
+        "seconds": 1.7833333333333334,
+        "duplicated": 53,
+        "heldForEncoder": 0,
+        "dropped": 0,
+        "file": "gsfpv-39e63ce9-20261002-011824.mp4",
+        "files": [
+          {
+            "name": "gsfpv-39e63ce9-20261002-011824.mp4",
+            "bytes": 21608,
+            "frames": 107,
+            "seconds": 1.7833333333333334
+          }
+        ],
+        "where": "browser",
+        "folder": "",
+        "ended": "stop",
+        "picture": "webgpu"
+      },
+      "offers": [
+        {
+          "name": "gsfpv-39e63ce9-20261002-011824.mp4",
+          "bytes": 21608
+        }
+      ]
+    },
+    "offer": {
+      "download": "gsfpv-39e63ce9-20261002-011824.mp4",
+      "href": "blob:"
+    },
+    "menuItem": {
+      "label": "Record / stop",
+      "caps": [
+        "F9"
+      ],
+      "aria": "F9",
+      "disabled": false
+    },
+    "control": {
+      "what": "C5: scene 723068d7 (not in the showcase): F9 records nothing, the menu item is disabled",
+      "fired": true,
+      "state": {
+        "allowed": false,
+        "showcase": false,
+        "supported": true,
+        "canPick": true,
+        "recording": false,
+        "autoRun": false,
+        "auto": false,
+        "seconds": 0,
+        "busy": false,
+        "folder": null,
+        "access": "none",
+        "pendingStopAt": null,
+        "barHidden": true,
+        "barShown": false,
+        "recHidden": true,
+        "autoDisabled": true,
+        "autoPressed": "false",
+        "autoTitle": "Recording works on showcase scans only \u2014 their authors agreed to it.",
+        "folderChip": null,
+        "allowChip": null,
+        "note": "Recording works on showcase scans only \u2014 their authors agreed to it.",
+        "last": null,
+        "offers": []
+      },
+      "menuItem": {
+        "label": "Record / stop",
+        "caps": [
+          "F9"
+        ],
+        "aria": "F9",
+        "disabled": true
+      }
+    },
+    "consoleErrors": []
+  },
+  "parts": [
+    "R2",
+    "R3",
+    "R4",
+    "R5"
+  ],
+  "pass": false
+}
