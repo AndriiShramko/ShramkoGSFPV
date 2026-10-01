@@ -64,6 +64,10 @@ function slowDash(pinnedPass: boolean): Run {
     const plan = makePlan(COL, p.boundRadius, pos, CAM.target, 0.5 * p.vBounce, (x, y, z, r, o) => findSphereSpawn(COL, x, y, z, r, o));
     runner.respawn(plan.spawn[0], plan.spawn[1], plan.spawn[2], plan.spawnYawDeg);
     const sc = new Scenario(runner, plan);
+    // the dash reference of wave 1 (it ran on with the clock and pressed the craft ever harder into
+    // the wall): the flight that found the pinned corner. The bot now restarts a held-back dash
+    // (b12-rewind.test.ts), which no longer drives the craft into that corner.
+    sc.bot.dashLeadS = Infinity;
     const run: Run = { crashes: [], contacts: 0, frozenTicks: 0, frozenSpeed: 0, maxSpeed: 0, minUpY: 1 };
     let last = [NaN, NaN, NaN];
     let frozen = 0;

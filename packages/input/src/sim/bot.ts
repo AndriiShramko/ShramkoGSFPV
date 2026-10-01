@@ -20,6 +20,9 @@ export interface BotStatus {
     done: boolean;
 }
 
+/** the least lead of the dash reference over the craft, m (bot.dashLeadS) */
+export const DASH_LEAD_MIN = 0.5;
+
 export class BotPilot {
     readonly p: SimParams;
     task: BotTask = { kind: 'idle' };
@@ -27,6 +30,17 @@ export class BotPilot {
     private t0 = 0;
     private wp = 0;
     private dashT0 = -1;
+    /** where along the line the current dash profile started (0, or where a held-back craft restarted it) */
+    private dashAlong0 = 0;
+    /**
+     * How far the dash reference may lead the craft, in seconds of the dash speed (at least
+     * DASH_LEAD_MIN): more than a craft flying freely ever lags (about 2 m at 8 m/s, 12 m/s^2
+     * over kp), so it binds only on a craft that is held back. Infinity: the reference runs on
+     * with the clock whatever the craft does (before 2026-10-02; tests use it as the control).
+     */
+    dashLeadS = 0.5;
+    /** how often a held-back craft restarted the dash (for tests and the bench) */
+    dashRestarts = 0;
     readonly ch = new Float64Array(8);
     status: BotStatus = { task: 'idle', waypoint: 0, done: false };
     kp = 6;
@@ -90,11 +104,25 @@ export class BotPilot {
             tx = px + vtx * 0.15; ty = py + vty * 0.15; tz = pz + vtz * 0.15;
             if (this.wp === t.points.length - 1 && d < 0.6) { [tx, ty, tz] = target; vtx = vty = vtz = 0; }
         } else if (t.kind === 'dash') {
-            if (this.dashT0 < 0) this.dashT0 = sim.tick;
-            const el = (sim.tick - this.dashT0) / 1000;
+            // the craft's progress along the line
+            const done = (px - t.from[0]) * t.dir[0] + (py - t.from[1]) * t.dir[1] + (pz - t.from[2]) * t.dir[2];
+            if (this.dashT0 < 0) { this.dashT0 = sim.tick; this.dashAlong0 = 0; }
             // accelerate at 12 m/s^2 up to speed, then hold it; lateral error pulled to the line
             const accelT = t.speed / 12;
-            const along = el < accelT ? 0.5 * 12 * el * el : 0.5 * 12 * accelT * accelT + (el - accelT) * t.speed;
+            const profile = (el: number) => (el < accelT ? 0.5 * 12 * el * el : 0.5 * 12 * accelT * accelT + (el - accelT) * t.speed);
+            let el = (sim.tick - this.dashT0) / 1000;
+            // A craft held back (a wall, a respawn back along the path) restarts the dash from where it
+            // is, as a pilot would. A reference running on with the clock pushed a held craft into the
+            // wall ever harder (up to aMax, tilted 75 deg), and after a respawn 0.4 m before that wall
+            // flew it in at 3 m/s: B12's 0.75 m/s control crashed (b12-rewind.test.ts).
+            const leadMax = Math.max(DASH_LEAD_MIN, this.dashLeadS * t.speed);
+            if (this.dashAlong0 + profile(el) - done > leadMax) {
+                this.dashT0 = sim.tick;
+                this.dashAlong0 = done;
+                this.dashRestarts++;
+                el = 0;
+            }
+            const along = this.dashAlong0 + profile(el);
             const vAlong = el < accelT ? 12 * el : t.speed;
             tx = t.from[0] + t.dir[0] * along; ty = t.from[1] + t.dir[1] * along; tz = t.from[2] + t.dir[2] * along;
             vtx = t.dir[0] * vAlong; vty = t.dir[1] * vAlong; vtz = t.dir[2] * vAlong;
