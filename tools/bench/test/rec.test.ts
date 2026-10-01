@@ -21,8 +21,8 @@ function renderTimes(hz: number, seconds: number, jitterMs = 0, seed = 7, start 
 interface Run { stamps: number[]; at: number[]; repeats: number; dropped: number; pacer: FramePacer }
 
 /** The pacer over these render times: each stamp is a slot written to the file, in order. */
-function paced(times: readonly number[], fps: 30 | 60 = 60): Run {
-    const pacer = new FramePacer(fps);
+function paced(times: readonly number[], fps: 30 | 60 = 60, maxRepeat?: number): Run {
+    const pacer = new FramePacer(fps, { maxRepeat });
     const stamps: number[] = [];
     const at: number[] = [];
     let repeats = 0, dropped = 0;
@@ -93,19 +93,31 @@ describe('FramePacer: a 60 fps file from any render rate (F.1, F.5)', () => {
         expect(r.dropped).toBe(0);
     });
 
-    it('a render slower than 20 Hz: two missed slots repeat the previous frame, a longer gap is dropped and counted', () => {
+    it('a render hitch or a slow render: the missed slots repeat the previous frame up to 1 s, a longer gap is dropped; both counted', () => {
+        // 15 Hz: every frame reaches 4 slots, 3 of them repeats; the file stays complete and constant-rate
         const r = paced(renderTimes(15, 10));
         expect(cfr(r.stamps).ok).toBe(true);
-        expect(r.repeats).toBe(2 * 149);
-        expect(r.dropped).toBe(149);
-        // a one-off 100 ms hitch at 60 Hz: 2 repeats, the rest of the gap dropped, nothing else
-        const times = renderTimes(60, 2);
-        const hitch = [...times.slice(0, 60), ...times.slice(60).map((t) => t + 100)];
-        const h = paced(hitch);
+        expect(cfr(r.stamps).gaps).toBe(0);
+        expect(r.repeats).toBe(3 * 149);
+        expect(r.dropped).toBe(0);
+        // a one-off 100 ms hitch at 60 Hz (the owner's PC has them, recording or not): 6 repeats, no gap
+        const times = renderTimes(60, 3);
+        const shift = (ms: number) => [...times.slice(0, 60), ...times.slice(60).map((t) => t + ms)];
+        const h = paced(shift(100));
         expect(cfr(h.stamps).ok).toBe(true);
-        expect(h.repeats).toBe(2);
-        expect(h.dropped).toBe(4);
-        expect(h.pacer.stamped + h.pacer.dropped).toBe(h.pacer.slotCount);
+        expect(cfr(h.stamps).gaps).toBe(0);
+        expect(h.repeats).toBe(6);
+        expect(h.dropped).toBe(0);
+        // a 1.5 s stall: one second of repeats, the rest of the gap dropped
+        const long = paced(shift(1500));
+        expect(long.repeats).toBe(60);
+        expect(long.dropped).toBe(30);
+        expect(cfr(long.stamps).gaps).toBe(30);
+        expect(long.pacer.stamped + long.pacer.dropped).toBe(long.pacer.slotCount);
+        // the limit is a parameter: the design's first figure (2) drops the 15 Hz render's fourth slot
+        const two = paced(renderTimes(15, 10), 60, 2);
+        expect(two.repeats).toBe(2 * 149);
+        expect(two.dropped).toBe(149);
     });
 
     it('a pause (menu, hidden tab) takes no slots and leaves no gap: the grid restarts at the next frame', () => {
@@ -212,9 +224,9 @@ describe('file names and video sizes (F.1, F.2)', () => {
         expect(recordingName('../a b/c', d)).toBe('gsfpv-abc-20261001-070509.mp4');
     });
 
-    it('the size as flown or scaled down to the chosen height, never up, always even', () => {
+    it('the size as flown, or the canvas scaled to the chosen height (the governor may draw it smaller), always even', () => {
         expect(outputSize(3840, 2000, '1080p')).toEqual({ width: 2074, height: 1080 });
-        expect(outputSize(1280, 800, '1080p')).toEqual({ width: 1280, height: 800 });
+        expect(outputSize(640, 400, '1080p')).toEqual({ width: 1728, height: 1080 });
         expect(outputSize(1921, 1081, 'native')).toEqual({ width: 1920, height: 1080 });
         expect(outputSize(3840, 2160, '1440p')).toEqual({ width: 2560, height: 1440 });
         expect(outputSize(3840, 2160, '2160p')).toEqual({ width: 3840, height: 2160 });

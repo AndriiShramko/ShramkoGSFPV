@@ -139,10 +139,11 @@ console.log('display', JSON.stringify(out.display));
     const folder = await hook<string>(page, useOpfsFolder(`gsfpv-r1-${RUN}`));
     const run = async (control: boolean) => hook(page, `
         const codec = await h.rec.start(${control ? "{ control: 'v02' }" : ''});
-        const t0 = performance.now();
+        const t0 = performance.now(), f0 = s.frames;
         await new Promise((r) => setTimeout(r, 10000));
+        const f1 = s.frames, t1 = performance.now();
         const info = await h.rec.stop();
-        return { codec, wallS: (performance.now() - t0) / 1000, info, strip: h.cinema.creditStripStd(), note: document.querySelector('[data-testid=cinema-note]').textContent };`);
+        return { codec, wallS: (t1 - t0) / 1000, engineFpsWhileRecording: Math.round(((f1 - f0) / (t1 - t0)) * 10000) / 10, info, strip: h.cinema.creditStripStd(), note: document.querySelector('[data-testid=cinema-note]').textContent };`);
     const r1 = await run(false);
     const r1File = await saveLast(page, 'r1-60hz');
     const r1Probe = r1File ? probe(r1File.file) : null;
@@ -154,10 +155,11 @@ console.log('display', JSON.stringify(out.display));
     const p = r1Probe;
     const pass = !!p && p.r_frame_rate === '60/1' && p.dupPts === 0 && Math.abs(p.packets - 600) <= 2 && p.decoded === p.packets
         && r1.info.files.length === 1 && r1.info.where === 'folder' && r1.info.fps === 60 && r1.strip > 0.1 && (rate.engineFps as number) >= 55;
-    // control: the old path gives duplicates at about the measured v0.2 rate (research-b 3.1: 29/s)
-    const fired = !!c1Probe && c1Probe.dupPts > 0 && c1Probe.dupPerS >= 20 && c1Probe.r_frame_rate !== '60/1';
-    out.R1 = { pass: pass && fired, what: 'a 10 s recording at a 60 Hz render: r_frame_rate 60/1, 0 duplicate pts, 600 +- 2 frames, all decoded; into the folder; the credit burned in (strip luminance spread > 0.1)', scene: SHOWCASE, renderer: (ready.info as Any)?.currentRenderer, frameRateDuring: rate, folder, recorder: r1.info, wallS: r1.wallS, codec: r1.codec, creditStripStd: r1.strip, file: r1File && { ...r1File, file: undefined }, ffprobe: r1Probe, note: r1.note,
-        control: { what: 'C1: v0.2 path (every rendered frame, 30 fps track) on the same page and render', fired, recorder: c1.info, file: c1File && { ...c1File, file: undefined }, ffprobe: c1Probe }, consoleErrors: errors };
+    // control: the same file checks fail on v0.2's path: duplicate pts (research-b 3.1 measured 29 a
+    // second with every frame reaching the encoder; v0.2 also skips a frame while 8 wait in the encoder)
+    const fired = !!c1Probe && c1Probe.dupPts > 0 && c1Probe.r_frame_rate !== '60/1';
+    out.R1 = { pass: pass && fired, what: 'a 10 s recording at a 60 Hz render: r_frame_rate 60/1, 0 duplicate pts, 600 +- 2 frames, all decoded; into the folder; the credit burned in (strip luminance spread > 0.1)', scene: SHOWCASE, renderer: (ready.info as Any)?.currentRenderer, frameRateBefore: rate, engineFpsWhileRecording: r1.engineFpsWhileRecording, folder, recorder: r1.info, wallS: r1.wallS, codec: r1.codec, creditStripStd: r1.strip, file: r1File && { ...r1File, file: undefined }, ffprobe: r1Probe, note: r1.note,
+        control: { what: 'C1: v0.2 path (every rendered frame, 30 fps track, a frame skipped while 8 wait in the encoder) on the same page and render', fired, engineFpsWhileRecording: c1.engineFpsWhileRecording, framesSkippedByEncoderBound: c1.info.dropped, recorder: c1.info, file: c1File && { ...c1File, file: undefined }, ffprobe: c1Probe }, consoleErrors: errors };
     console.log('R1', pass ? 'PASS' : 'FAIL', 'C1', fired ? 'FIRED' : 'DID NOT FIRE', JSON.stringify({ rate, r1Probe, c1Probe: c1Probe && { dupPts: c1Probe.dupPts, dupPerS: c1Probe.dupPerS, r: c1Probe.r_frame_rate } }));
 }
 

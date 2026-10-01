@@ -271,7 +271,7 @@ export const cinema: Feature = {
             stop: stopRec,
             last: null,
             lastBytes: null,
-            creditStripStd: () => rec.recorder?.lastCreditStripStd ?? 0
+            creditStripStd: () => rec.creditStripStd
         };
         ctx.hook.cinema = hookCinema;
         const recHook: RecHook = {

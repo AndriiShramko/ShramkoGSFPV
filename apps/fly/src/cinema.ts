@@ -7,8 +7,10 @@
 // 60 Hz render wrote 29 duplicate timestamps a second (research-b 3.1, D-j). Here a FramePacer puts
 // the rendered frames on a fixed 1/fps grid: each slot k gets the first frame within half a period
 // of k/fps and is stamped exactly k/fps, so the file has a constant frame rate (DaVinci needs it).
-// Up to two missed slots repeat the previous frame; a longer gap is dropped; both are counted and
-// shown after stop. The file goes to disk while it is written (StreamTarget, fastStart false) into
+// Missed slots (a render hitch, a render slower than the grid) repeat the previous frame, up to one
+// second; a longer gap is dropped. Both are counted and shown after stop. (The design said two; on
+// the owner's PC the page has 50-200 ms render hitches even without recording, and with two the
+// 10 s check lost 41 slots: the file was no longer constant-rate. A repeat is what the screen showed.) The file goes to disk while it is written (StreamTarget, fastStart false) into
 // the pilot's folder or the browser's own storage (OPFS); memory only as the last fallback, capped.
 //
 // Everything above the targets line is pure (no DOM, no clock): tools/bench/test/rec.test.ts.
@@ -40,7 +42,8 @@ const NOTHING: PaceResult = Object.freeze({ slots: [], dropped: 0 }) as PaceResu
  * frame. A frame takes every slot whose window [k - 1/2, k + 1/2) periods it has reached: at a
  * render as fast as the grid each frame takes one slot even when vsync jitters by a few ms; a
  * faster render leaves frames without a slot (not encoded); a slower one makes a frame reach
- * several slots, and the missed ones repeat the previous frame (at most `maxRepeat`, else dropped).
+ * several slots, and the missed ones repeat the previous frame (at most `maxRepeat`, one second by
+ * default, else dropped).
  */
 export class FramePacer {
     readonly fps: number;
@@ -60,7 +63,7 @@ export class FramePacer {
     constructor(fps: RecFps, o: { maxRepeat?: number } = {}) {
         this.fps = fps;
         this.periodMs = 1000 / fps;
-        this.maxRepeat = Math.max(0, Math.floor(o.maxRepeat ?? 2));
+        this.maxRepeat = Math.max(0, Math.floor(o.maxRepeat ?? fps));
     }
 
     onRendered(nowMs: number): PaceResult {
@@ -130,15 +133,14 @@ export function recordingName(scene: string, d: Date, n = 1): string {
 const RES_HEIGHT: Record<Exclude<RecResolution, 'native'>, number> = { '1080p': 1080, '1440p': 1440, '2160p': 2160 };
 
 /**
- * The video size: the canvas as flown ('native'), or the canvas scaled to that height, never
- * above the canvas (an upscale adds no detail). Even sizes: H.264 needs them.
+ * The video size: the canvas as flown ('native'), or the canvas scaled to that height (the pilot
+ * asked for a 1080p file; the frame governor may draw the canvas smaller). Even sizes: H.264 needs them.
  */
 export function outputSize(canvasW: number, canvasH: number, res: RecResolution): { width: number; height: number } {
     const w = Math.max(2, Math.floor(canvasW)), h = Math.max(2, Math.floor(canvasH));
     const even = (x: number) => Math.max(2, Math.round(x) & ~1);
     if (res === 'native' || !(res in RES_HEIGHT)) return { width: even(w), height: even(h) };
     const target = RES_HEIGHT[res];
-    if (h <= target) return { width: even(w), height: even(h) };
     return { width: even((w * target) / h), height: even(target) };
 }
 
@@ -493,8 +495,18 @@ async function pickCodec(width: number, height: number, fps: number): Promise<{ 
 
 /** A key frame every 120 frames (2 s at 60 fps). */
 const KEY_EVERY = 120;
-/** frames waiting in the encoder before a slot is given up (never stall the flight) */
-const QUEUE_MAX = 8;
+/**
+ * Pictures waiting in the encoder before a new one is given up (never stall the flight; each holds a
+ * copy of the frame). Repeats share their picture with the frame they repeat, so only the total of
+ * them is bounded. Measured on the owner's PC (H.264 hardware, 1728 x 1080): the encoder takes a few
+ * hundred ms to start, and the queue as the page sees it lags while the main thread is busy; with a
+ * bound of 16 calls that counted repeats too, a 30 Hz render with one repeat per frame lost every
+ * other slot for the first 2 s.
+ */
+const PENDING_PICTURES_MAX = 30;
+const PENDING_CALLS_MAX = 240;
+/** v0.2's bound (the test-only control keeps v0.2's behaviour) */
+const LEGACY_QUEUE_MAX = 8;
 
 /** One file: its own encoder and MP4 output, so a split never waits for the previous file. */
 class Part {
@@ -507,6 +519,10 @@ class Part {
     private readonly encoder: VideoEncoder;
     private writes: Promise<void>;
     private readonly sink: Promise<RecordSink>;
+    /** per encode call still in the encoder, in order: does it carry a picture of its own (not a repeat) */
+    private readonly inFlight: boolean[] = [];
+    /** encode calls with a picture of their own still in the encoder */
+    pendingPictures = 0;
 
     constructor(mb: typeof Mediabunny, firstSlot: number, name: Promise<string>, target: RecordTarget, muxCodec: 'avc' | 'vp9', config: VideoEncoderConfig, trackFps: number, onError: (e: unknown) => void) {
         this.firstSlot = firstSlot;
@@ -537,6 +553,7 @@ class Part {
         // packets must reach the container in decode order: chain the writes
         this.encoder = new VideoEncoder({
             output: (chunk, meta) => {
+                if (this.inFlight.shift()) this.pendingPictures--;
                 const pkt = mb.EncodedPacket.fromEncodedChunk(chunk);
                 this.writes = this.writes.then(() => track.add(pkt, meta)).catch(fail);
             },
@@ -549,11 +566,19 @@ class Part {
         return this.encoder.state === 'configured' ? this.encoder.encodeQueueSize : Infinity;
     }
 
-    encode(frame: VideoFrame, slot: number, fps: number): void {
+    /** Can this encode go in now: a new picture, or a repeat of the last one? */
+    room(repeat: boolean): boolean {
+        if (this.encoder.state !== 'configured' || this.inFlight.length >= PENDING_CALLS_MAX) return false;
+        return repeat || this.pendingPictures < PENDING_PICTURES_MAX;
+    }
+
+    encode(frame: VideoFrame, slot: number, fps: number, repeat: boolean): void {
         const ts = slotUs(slot - this.firstSlot, fps);
         const f = new VideoFrame(frame, { timestamp: ts, duration: slotUs(1, fps) });
         this.encoder.encode(f, { keyFrame: this.frames % KEY_EVERY === 0 });
         f.close();
+        this.inFlight.push(!repeat);
+        if (!repeat) this.pendingPictures++;
         this.frames++;
     }
 
@@ -562,6 +587,8 @@ class Part {
         const f = new VideoFrame(frame, { timestamp: timestampUs });
         this.encoder.encode(f, { keyFrame: this.frames % 60 === 0 });
         f.close();
+        this.inFlight.push(true);
+        this.pendingPictures++;
         this.frames++;
     }
 
@@ -694,7 +721,8 @@ export class CinemaRecorder {
         c.fillStyle = '#ffffff';
         c.textBaseline = 'middle';
         c.fillText(this.credit, pad * 2, y + h / 2);
-        if (this.composed % 30 === 0) this.lastCreditStripStd = this.stripStd(pad, y, Math.min(w, this.width - pad), h);
+        // a read back from the GPU: once a second is enough for the acceptance's check
+        if (this.composed % 60 === 0) this.lastCreditStripStd = this.stripStd(pad, y, Math.min(w, this.width - pad), h);
         this.composed++;
     }
 
@@ -716,7 +744,7 @@ export class CinemaRecorder {
             this.maybeSplit(slot);
             const part = this.part!;
             const repeat = i < last;
-            if (part.queue > QUEUE_MAX || (repeat && !this.prev)) {
+            if (!part.room(repeat) || (repeat && !this.prev)) {
                 this.dropped++; // the encoder is behind: give the slot up, never stall the flight
                 continue;
             }
@@ -724,7 +752,7 @@ export class CinemaRecorder {
                 this.compose(source);
                 cur = new VideoFrame(this.comp, { timestamp: 0 });
             }
-            part.encode(repeat ? this.prev! : cur!, slot, this.fps);
+            part.encode(repeat ? this.prev! : cur!, slot, this.fps, repeat);
             if (repeat) this.duplicated++;
         }
         if (cur) {
@@ -735,7 +763,7 @@ export class CinemaRecorder {
 
     private addLegacy(source: CanvasImageSource, nowMs: number): void {
         const part = this.part!;
-        if (part.queue > QUEUE_MAX) return;
+        if (part.queue > LEGACY_QUEUE_MAX) { this.dropped++; return; }
         if (this.legacyT0 < 0) this.legacyT0 = nowMs;
         this.compose(source);
         const f = new VideoFrame(this.comp, { timestamp: 0 });

@@ -271,7 +271,16 @@ export class Recording {
     /** The engine drew a frame (same task): the recorder takes it. */
     frame(nowMs: number): void {
         const r = this.recorder;
-        if (r?.recording) r.addFrame(this.d.canvas, nowMs);
+        if (r?.recording) {
+            r.addFrame(this.d.canvas, nowMs);
+            this.strip = r.lastCreditStripStd;
+        }
+    }
+
+    private strip = 0;
+    /** Luminance spread of the credit strip in the last recording's frames (D34 acceptance: the credit is there). */
+    get creditStripStd(): number {
+        return this.strip;
     }
 
     /** Once per frame: a pending auto stop that is due. */
