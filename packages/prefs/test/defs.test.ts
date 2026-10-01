@@ -6,6 +6,12 @@ import type { EnumDef, NumDef, SettingDef } from '../src';
 import { RATE_BOUNDS as SIM_RATE_BOUNDS } from '../../sim-core/src/rates';
 import { MAIN_SETTINGS, PRESETS, REPO, V02_SETTINGS } from './helpers';
 
+/** Settings a v0.3 wave shipped with its feature (the agent that flips one adds it here). */
+const V03_SHIPPED = [
+    // W3-5 recording (recording.folder stays planned: it is picked on the recording bar, not in Settings)
+    'recording.fps', 'recording.resolution', 'recording.auto', 'recording.splitMin'
+];
+
 /**
  * docs/architecture-v03.md A.8, row by row, brought up to what main ships (the voxel grid and the
  * walls switch landed before prefs was wired, see defs/voxels.ts and defs/scene.ts): id, group,
@@ -73,11 +79,13 @@ const A8: [string, string, string, string, unknown, string][] = [
 
 /**
  * New settings (not in v0.2) that are shipped but lack set.<id> / set.<id>.help in a language of
- * the `set` namespace: the wave that ships a setting adds its text first (I.1 fails without it).
- * At wave 1 no new setting is shipped, so this is empty by construction.
+ * the fly namespaces (the `set` namespace, or the namespace of the agent that owns the def): the
+ * wave that ships a setting adds its text first (I.1 fails without it).
  */
 function untranslatedNewShipped(defs: readonly SettingDef[]): string[] {
-    const dicts = ['en', 'es', 'pl', 'ru'].map((l) => JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'set', `${l}.json`), 'utf8')) as Record<string, string>);
+    const root = join(REPO, 'packages', 'i18n', 'locales', 'fly');
+    const namespaces = readdirSync(root, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
+    const dicts = ['en', 'es', 'pl', 'ru'].map((l) => Object.assign({}, ...namespaces.map((ns) => JSON.parse(readFileSync(join(root, ns, `${l}.json`), 'utf8')) as Record<string, string>)) as Record<string, string>);
     return defs.filter((d) => d.status === 'shipped' && !V02_SETTINGS.includes(d.id) && dicts.some((t) => !t[`set.${d.id}`] || !t[`set.${d.id}.help`])).map((d) => d.id);
 }
 
@@ -98,9 +106,9 @@ describe('SCHEMA is the A.8 table', () => {
         expect(SCHEMA.defs.every((d) => d.status === 'shipped' || d.status === 'planned')).toBe(true);
     });
 
-    it('what a pilot can change on the live site today is shipped, and nothing else (v0.2 plus main\'s walls switch and voxel grid)', () => {
+    it('what a pilot can change on the live site today is shipped, and nothing else (v0.2 plus main\'s walls switch and voxel grid, plus what v0.3 shipped so far)', () => {
         const shipped = SCHEMA.defs.filter((d) => d.status === 'shipped').map((d) => d.id);
-        expect([...shipped].sort()).toEqual([...V02_SETTINGS, ...MAIN_SETTINGS].sort());
+        expect([...shipped].sort()).toEqual([...V02_SETTINGS, ...MAIN_SETTINGS, ...V03_SHIPPED].sort());
     });
 
     it('control: flipping a new setting to shipped before its translations exist is caught', () => {

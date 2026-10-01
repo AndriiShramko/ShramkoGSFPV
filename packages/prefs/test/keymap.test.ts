@@ -41,6 +41,8 @@ const V02_EXTRA: Record<string, string[]> = {
  * Space and M): the shipped bindings. M and Space are keyboard flying's own (flying: true).
  */
 const SHIPPED_AT_WAVE1 = ['arm.toggle', 'frameStats.toggle', 'hud.toggle', 'mode.cycle', 'pause.toggle', 'respawn.start', 'voxels.cycle', 'walls.toggle'];
+/** Bindings a later wave shipped with its feature (the agent that flips one adds it here). */
+const SHIPPED_LATER = ['record.toggle']; // W3-5: F9, REC on the recording bar
 
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });
 const plant = (b: Partial<KeyBinding> & Pick<KeyBinding, 'action' | 'keys'>): KeyBinding[] =>
@@ -82,8 +84,8 @@ describe('v0.2 keys keep working', () => {
         }
     });
 
-    it('only the keys the page handled at the start of wave 1 are shipped, so the refactor changes no key', () => {
-        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual(SHIPPED_AT_WAVE1);
+    it('only the keys the page handled at the start of wave 1 are shipped, so the refactor changes no key (plus those later waves shipped)', () => {
+        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual([...SHIPPED_AT_WAVE1, ...SHIPPED_LATER].sort());
     });
 
     it('M and Space are keyboard flying\'s own: shown with their caps, never routed', () => {
