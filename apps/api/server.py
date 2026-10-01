@@ -21,15 +21,17 @@ only (config.env on the server, never in git). Logs contain method + path + stat
 """
 from __future__ import annotations
 
+import http.client
+import io
 import json
 import math
 import os
 import re
 import shutil
+import ssl
 import threading
 import time
 import unicodedata
-import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
@@ -369,42 +371,101 @@ class UpstreamError(Exception):
         self.detail = detail
 
 
-class _NoRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, req, fp, code, msg, headers, newurl):  # a 3xx is an error, not a new host
-        return None
+_UPSTREAM_TLS = ssl.create_default_context()  # certificate and host name checked, like urllib did
 
 
-_UPSTREAM_OPENER = urllib.request.build_opener(_NoRedirect)  # no cookie jar: none is ever stored or sent
+def _time_left(deadline: float) -> float:
+    left = deadline - time.monotonic()
+    if left <= 0:
+        raise TimeoutError("deadline")
+    return left
+
+
+class _DeadlineIO(io.RawIOBase):
+    """The response's bytes, headers and body alike. Every socket wait gets only the time left until the
+    deadline, so an upstream that drips a byte now and then (each recv quick, the whole answer endless)
+    cannot hold the call, its slot and the page's waiting visitors past the deadline (review C7)."""
+
+    def __init__(self, sock, raw, deadline: float):
+        self._sock = sock
+        self._raw = raw  # the socket's own file: it keeps the socket open while the response reads it
+        self._deadline = deadline
+
+    def readable(self) -> bool:
+        return True
+
+    def readinto(self, b) -> int:
+        self._sock.settimeout(_time_left(self._deadline))
+        return self._raw.readinto(b)
+
+    def close(self) -> None:
+        self._raw.close()
+        super().close()
+
+
+class _DeadlineResponse(http.client.HTTPResponse):
+    def __init__(self, sock, deadline: float, *args, **kwargs):
+        super().__init__(sock, *args, **kwargs)
+        raw = self.fp.detach()  # the base class's socket file, unread: its buffer goes, the file stays
+        self.fp = io.BufferedReader(_DeadlineIO(sock, raw, deadline), 65536)
+
+
+class _DeadlineHTTPS(http.client.HTTPSConnection):
+    """TLS whose handshake gets the time left, not a fresh timeout of its own."""
+
+    def __init__(self, host: str, port: int | None, deadline: float):
+        super().__init__(host, port, timeout=_time_left(deadline), context=_UPSTREAM_TLS)
+        self._deadline = deadline
+
+    def connect(self) -> None:
+        http.client.HTTPConnection.connect(self)  # TCP, within the time left
+        self.sock.settimeout(_time_left(self._deadline))
+        self.sock = self._context.wrap_socket(self.sock, server_hostname=self.host)
 
 
 def fetch_upstream(url: str, headers: dict, timeout: float, max_bytes: int) -> tuple[int, dict, bytes]:
-    """GET with a deadline for the whole answer. Returns (status, lower-case headers, body)."""
+    """GET with a deadline for the whole answer: connecting, TLS, the headers and the body together take at
+    most `timeout` seconds, because every socket wait gets only the time left (a name lookup is the system
+    resolver's and the one step not bounded here). No redirect is followed (a 3xx is returned as its
+    status) and no cookie is kept or sent: http.client does neither. Returns (status, lower-case headers,
+    body); the body only for a 2xx, like the urllib version before it."""
     deadline = time.monotonic() + timeout
-    req = urllib.request.Request(url, headers=headers, method="GET")
+    conn = None
     try:
-        with _UPSTREAM_OPENER.open(req, timeout=timeout) as r:
-            chunks, n = [], 0
-            while True:
-                if time.monotonic() > deadline:
-                    raise UpstreamError("timeout")
-                b = r.read(65536)
-                if not b:
-                    break
-                chunks.append(b)
-                n += len(b)
-                if n > max_bytes:
-                    raise UpstreamError("too-large")
-            return r.status, {k.lower(): v for k, v in r.headers.items()}, b"".join(chunks)
-    except urllib.error.HTTPError as e:
-        return e.code, {k.lower(): v for k, v in (e.headers.items() if e.headers else [])}, b""
+        u = urllib.parse.urlsplit(url)
+        if u.scheme not in ("http", "https") or not u.hostname:
+            raise UpstreamError("network")
+        if u.scheme == "https":
+            conn = _DeadlineHTTPS(u.hostname, u.port, deadline)
+        else:
+            conn = http.client.HTTPConnection(u.hostname, u.port, timeout=_time_left(deadline))
+        conn.response_class = lambda sock, *a, **kw: _DeadlineResponse(sock, deadline, *a, **kw)
+        conn.connect()
+        conn.sock.settimeout(_time_left(deadline))
+        conn.request("GET", (u.path or "/") + ("?" + u.query if u.query else ""), headers={**headers, "Connection": "close"})
+        r = conn.getresponse()
+        hdrs = {k.lower(): v for k, v in r.getheaders()}
+        if not 200 <= r.status < 300:
+            return r.status, hdrs, b""
+        chunks, n = [], 0
+        while True:
+            b = r.read1(65536)  # what has arrived, not a full 64 KiB: the deadline is checked on every wait
+            if not b:
+                break
+            chunks.append(b)
+            n += len(b)
+            if n > max_bytes:
+                raise UpstreamError("too-large")
+        return r.status, hdrs, b"".join(chunks)
     except UpstreamError:
         raise
-    except TimeoutError as e:
+    except TimeoutError as e:  # socket.timeout too
         raise UpstreamError("timeout") from e
-    except urllib.error.URLError as e:
-        raise UpstreamError("timeout" if isinstance(e.reason, TimeoutError) else "network") from e
-    except (OSError, ValueError) as e:
+    except (http.client.HTTPException, OSError, ValueError) as e:  # refused, reset, TLS, cut short, bad status line
         raise UpstreamError("network") from e
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 @dataclass
