@@ -71,14 +71,35 @@ export const cinema: Feature = {
             folderBtn.setAttribute('aria-expanded', 'false');
         }
 
-        // the credit line and the arm hint stack above the bar instead of printing under it
+        // Outside cinema mode on a desktop the bar sits bottom right; over a long credit line (a narrow
+        // window) it goes up above it. The arm card, the key card and the arm hint go above the bar
+        // when they would meet it. Measured, because the credit and the cards change size by themselves.
+        const overlapX = (a: DOMRect, b: DOMRect): boolean => a.width > 0 && b.width > 0 && a.left < b.right + 8 && b.left < a.right + 8;
         const placeAbove = (): void => {
             const shown = cinemaBar.offsetParent !== null && !cinemaBar.hidden;
-            ui.classList.toggle('rec-bar-up', shown);
-            if (!shown) return;
-            const top = cinemaBar.getBoundingClientRect().top;
+            if (!shown) {
+                ui.classList.remove('rec-bar-up');
+                return;
+            }
+            const body = document.body.classList;
+            let lift = 0;
+            if (!body.contains('cinema') && !body.contains('touch-on')) {
+                ui.style.setProperty('--rec-lift', '0px');
+                const credit = ui.querySelector('.attribution');
+                const a = credit instanceof HTMLElement && credit.offsetParent !== null ? credit.getBoundingClientRect() : null;
+                const b = cinemaBar.getBoundingClientRect();
+                if (a && overlapX(a, b) && a.top < b.bottom) lift = Math.max(0, Math.round(b.bottom - a.top + 6));
+            }
+            ui.style.setProperty('--rec-lift', `${lift}px`);
+            const bar = cinemaBar.getBoundingClientRect();
+            // the cards go above the bar and above a credit line low on the screen (they printed over it)
+            const credit = body.contains('touch-on') ? null : ui.querySelector('.attribution');
+            const c = credit instanceof HTMLElement && credit.offsetParent !== null ? credit.getBoundingClientRect() : null;
+            const top = c && c.height > 0 && c.top > innerHeight / 2 ? Math.min(bar.top, c.top) : bar.top;
             const v = `${Math.max(0, Math.round(innerHeight - top))}px`;
             if (ui.style.getPropertyValue('--cinema-top') !== v) ui.style.setProperty('--cinema-top', v);
+            const cards = [...ui.querySelectorAll('.hud > .arm-card, .hud > .arm-disarm, .hud > .gate-msg')].filter((c): c is HTMLElement => c instanceof HTMLElement && c.offsetParent !== null);
+            ui.classList.toggle('rec-bar-up', body.contains('cinema') || cards.some((c) => overlapX(c.getBoundingClientRect(), bar)));
         };
         new ResizeObserver(placeAbove).observe(cinemaBar);
         addEventListener('resize', placeAbove);
@@ -212,10 +233,13 @@ export const cinema: Feature = {
         // ------------------------------------------------------------------ frames, flight events, pauses
         ctx.renderer.app.on('frameend', () => rec.frame(performance.now()));
         let shown = 0;
+        let placed = 0;
         ctx.events.on('frame', ({ now }) => {
             rec.tick(now);
             // the running time on the bar, twice a second
             if (rec.recording && now - shown > 500) { shown = now; render(); }
+            // the cards around the bar come and go by themselves (arming, the key card)
+            if (now - placed > 250) { placed = now; placeAbove(); }
         });
         ctx.events.on('sim', (e) => rec.onSim(e, performance.now(), !!navigator.userActivation?.isActive));
         ctx.events.on('pause', ({ on }) => {

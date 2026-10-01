@@ -1,7 +1,7 @@
 /* The recording bar (app/builtin/cinema.ts; docs/architecture-v03.md F.4): REC with its key, Auto
    right next to it, the folder chip, the "allow" line and the note. fly.css places .cinema-bar at the
-   bottom middle for cinema mode; outside it the bar sits above the OSD's bottom line, and the credit
-   line, the arm card and the arm hint stack above the bar (--cinema-top, kept by cinema.ts). */
+   bottom middle for cinema mode; outside it the bar sits above the OSD's bottom line, and the arm
+   card and the arm hint stack above the bar where they would meet it (--cinema-top, kept by cinema.ts). */
 .rec-bar[hidden] { display: none; }
 .rec-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
 .rec-bar .btn { min-height: 40px; padding: 6px 12px; background: rgba(12,14,18,.82); }
@@ -18,8 +18,10 @@ body.touch-on .rec-bar .btn kbd { display: none; } /* no keyboard to press */
 .rec-bar .btn.rec-allow { border-color: var(--warn); color: var(--warn); }
 .rec-offer { color: #bbf7d0; }
 
-/* outside cinema mode: above the OSD's bottom line; out of the way while flying (the OSD says REC) */
+/* outside cinema mode, desktop: bottom right, above the OSD's corner line, clear of the credit line
+   (cinema.ts lifts it over a long credit: --rec-lift); out of the way while flying (the OSD says REC) */
 body:not(.cinema) .cinema-bar { bottom: 40px; }
+body:not(.cinema):not(.touch-on) .cinema-bar { left: auto; right: 16px; transform: none; align-items: flex-end; bottom: calc(40px + var(--rec-lift, 0px)); }
 body:not(.cinema) #ui.hud-flying > .cinema-bar { display: none; }
 /* touch, upright: above the telemetry line over the pads (fly.css: pads, 16 px, one 19 px line) */
 body.touch-on:not(.cinema) .cinema-bar { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 16px + 19px + 10px); }
@@ -27,10 +29,5 @@ body.touch-on:not(.cinema) .cinema-bar { bottom: calc(max(24px, env(safe-area-in
 @media (orientation: landscape) {
     body.touch-on:not(.cinema) .cinema-bar { bottom: calc(max(24px, env(safe-area-inset-bottom)) + 64px + 44px); max-width: calc(100vw - 2 * min(40vw, 220px) - 64px); }
 }
-/* what used to sit where the bar is goes above it: the arm card and hint, and (low, on a wide
-   enough window) the credit line */
-body:not(.cinema) #ui.rec-bar-up .hud > :is(.arm-card, .arm-disarm, .gate-msg) { bottom: calc(var(--cinema-top, 96px) + 30px); }
-body.touch-on:not(.cinema) #ui.rec-bar-up .hud > .gate-msg.mid { bottom: calc(var(--cinema-top, 96px) + 8px); }
-@media (min-height: 501px) {
-    body:not(.cinema):not(.touch-on) #ui.rec-bar-up .attribution { bottom: calc(var(--cinema-top, 96px) + 6px); }
-}
+/* the arm card, the key card and the arm hint go above the bar when they would meet it (rec-bar-up) */
+body:not(.cinema) #ui.rec-bar-up .hud > :is(.arm-card, .arm-disarm, .gate-msg) { bottom: calc(var(--cinema-top, 96px) + 8px); }
