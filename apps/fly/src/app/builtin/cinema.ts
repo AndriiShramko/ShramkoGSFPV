@@ -250,6 +250,12 @@ export const cinema: Feature = {
             // Resume (a click or P) is a user activation: the folder's permission can be asked there
             if (!on && rec.autoOn && rec.folder && rec.access === 'prompt' && navigator.userActivation?.isActive) void rec.allow();
         });
+        // another scene in the same page (E.4): this scene's recording is finished first (its credit is in every frame)
+        ctx.events.on('session', () => {
+            rec.rules.reset();
+            if (rec.recording) void stopRec();
+            else render();
+        });
         // a recording, or one being saved, is lost when the tab goes (nothing reaches the disk before
         // the file is closed): the browser asks before leaving then
         addEventListener('beforeunload', (e) => {
