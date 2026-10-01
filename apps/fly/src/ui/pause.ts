@@ -37,9 +37,8 @@ export function pauseMenu(parent: HTMLElement, entries: readonly PauseMenuEntry[
             h('span', { class: 'pm-label' }, t(it.labelKey)), caps));
     });
     menu.append(h('a', { class: 'btn block', href: `/${locale}/#contact`, target: '_blank', rel: 'noopener' }, h('span', { class: 'pm-label' }, t('pause.contact'))));
-    const right = h('div', { class: 'sum-col' }, menu);
-    if (summary) right.append(keysBlock(summary));
-    p.body.append(h('div', { class: 'sum-grid' }, summary ? statsColumn(summary) : null, right));
+    // stats | menu | keys on a wide screen, stats | menu over keys below 1100 px, one column on a phone
+    p.body.append(h('div', { class: 'sum-grid' }, summary ? statsColumn(summary) : null, menu, summary ? keysBlock(summary) : null));
     // Up / Down walk the menu (arrows fly only outside a dialog: devices/keyboard.ts dialogOpen)
     p.root.addEventListener('keydown', (e) => {
         if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;

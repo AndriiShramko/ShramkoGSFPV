@@ -3,15 +3,19 @@
    Colours reuse the fly.css variables; the menu buttons keep .pause-menu's look (wizard.css). */
 
 /* ---- the summary panel: stats on the left, the menu and its keys on the right ---- */
-.panel.summary.has-stats { width: min(960px, calc(100vw - 32px)); }
+/* under the top buttons (they end 78 px down, lower by the notes' --banner-h), not over them */
+.panel.summary.has-stats { top: calc(max(10px, env(safe-area-inset-top)) + 80px + var(--banner-h, 0px)); transform: translateX(-50%); width: min(1200px, calc(100vw - 32px)); max-height: calc(100vh - max(10px, env(safe-area-inset-top)) - 92px - var(--banner-h, 0px)); background: rgba(12,14,18,.97); }
 .summary .panel-head { gap: 8px; }
 .summary .panel-head h2 { margin: 0 auto 0 0; }
 .sum-mode { flex: none; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--accent); font: 600 12px/1.2 ui-monospace, "Cascadia Mono", Consolas, monospace; letter-spacing: .04em; }
 .sum-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; margin-top: 6px; }
-.panel.summary.has-stats .sum-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
+.panel.summary.has-stats .sum-grid { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+.summary .sum-menu .btn.block { min-height: 40px; margin: 4px 0; padding: 7px 12px; }
+.summary .sum-menu .btn.block:first-child { margin-top: 0; }
 .sum-col { min-width: 0; }
 .sum-col h3 { margin: 0 0 6px; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .sum-col h3.sum-sub { margin-top: 14px; }
+.sum-col h3.sum-sub:first-child { margin-top: 0; }
 
 .sum-table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
 .sum-table th, .sum-table td { padding: 4px 6px; border-bottom: 1px dashed var(--line); text-align: right; white-space: nowrap; }
@@ -26,13 +30,19 @@
 
 .sum-keys ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 .sum-keys li { display: flex; align-items: center; gap: 10px; min-height: 28px; font-size: 14px; }
-.sum-keys .kc-keys { display: inline-flex; flex-wrap: wrap; gap: 4px; flex: none; width: 92px; }
-.sum-keys kbd { min-width: 26px; padding: 2px 7px; border: 1px solid #3a4452; border-bottom-width: 2px; border-radius: 6px; background: #0b0e12; color: var(--muted); font: 600 12px/18px ui-monospace, Consolas, monospace; text-align: center; }
+.sum-keys .kc-keys { display: inline-flex; flex-wrap: wrap; gap: 3px; flex: none; width: 106px; }
+.sum-keys kbd { min-width: 23px; padding: 2px 6px; border: 1px solid #3a4452; border-bottom-width: 2px; border-radius: 6px; background: #0b0e12; color: var(--muted); font: 600 12px/18px ui-monospace, Consolas, monospace; text-align: center; }
 body.touch-on .sum-keys { display: none; } /* flying with touch sticks: no keyboard to press */
 
-/* one column below 760 px; on a phone the stats keep their 4 main lines (D.5) */
+/* stats | menu over keys below 1100 px, one column below 760 px; on a phone the stats keep their 4 main lines (D.5) */
+@media (max-width: 1100px) {
+    .panel.summary.has-stats .sum-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); grid-template-areas: "stats menu" "stats keys"; }
+    .panel.summary.has-stats .sum-stats { grid-area: stats; }
+    .panel.summary.has-stats .sum-menu { grid-area: menu; }
+    .panel.summary.has-stats .sum-keys { grid-area: keys; }
+}
 @media (max-width: 760px) {
-    .panel.summary.has-stats .sum-grid { grid-template-columns: minmax(0, 1fr); }
+    .panel.summary.has-stats .sum-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "stats" "menu" "keys"; }
 }
 @media (max-width: 479px) {
     .sum-table tbody tr:not(.core) { display: none; }

@@ -266,7 +266,7 @@ export function statText(id: string, b: StatsBlock | null, t: DroneTotals | null
         case 'usedMah': return `${n0(b.usedMah)} mAh`;
         case 'maxG': return `${n1(b.maxG)} G`;
         case 'avgThrottle': return `${n0(b.avgThrottle * 100)} %`;
-        case 'fullThrottle': return `${fmtClock(b.fullThrottleS)} · ${b.fullThrottleCount}×`;
+        case 'fullThrottle': return b.fullThrottleCount > 0 ? `${fmtClock(b.fullThrottleS)} · ${b.fullThrottleCount}×` : '—';
         case 'crashes': return n0(b.crashes);
         case 'maxImpact': return b.maxImpact > 0 ? `${n0(speedIn(b.maxImpact, u))} ${u === 'imperial' ? w.mph : w.kmh}` : '—';
         case 'longestClean': return fmtClock(b.longestCleanS);

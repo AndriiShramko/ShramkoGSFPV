@@ -83,7 +83,7 @@ export function keysBlock(d: SummaryData): HTMLElement {
     const row = (s: SummaryShortcut) => h('li', { 'data-key-action': s.action, 'aria-keyshortcuts': s.keys.map((k) => k.aria).join(' ') }, kbds(s.keys.map((k) => k.cap)), h('span', {}, t(s.labelKey)));
     const routed = d.shortcuts.filter((s) => !s.flying);
     const flying = d.shortcuts.filter((s) => s.flying);
-    return h('section', { class: 'sum-keys', 'aria-labelledby': 'sum-keys-h', 'data-testid': 'summary-keys' },
+    return h('section', { class: 'sum-col sum-keys', 'aria-labelledby': 'sum-keys-h', 'data-testid': 'summary-keys' },
         h('h3', { id: 'sum-keys-h', class: 'sum-sub' }, t('summary.keys')),
         h('ul', {}, ...routed.map(row)),
         h('h3', { class: 'sum-sub', id: 'sum-kbd-h' }, t('summary.kbdFlying')),
