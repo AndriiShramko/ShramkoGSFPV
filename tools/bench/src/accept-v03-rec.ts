@@ -5,6 +5,8 @@
 //       30 fps track) on the same page gives about 29 duplicate pts a second.
 //   R3  the display's own rate (this PC: 30 Hz over HDMI): still 60/1 and 0 duplicate pts, the
 //       repeated frames counted and shown on the bar after stop.
+//   R5  F9 and the pause menu's key-cap; with no folder the file goes to the browser's storage and
+//       is offered after stop (logic-only page). Control C5: outside the showcase F9 does nothing.
 //   R4  the settings that ship with it: recording.fps 30, recording.resolution 2160p, a file split.
 //   R2  auto-record into "the folder" (an OPFS folder handed over the way the picker hands one;
 //       Playwright cannot drive the OS picker): Auto clicked, ARM, a throttle blip, DISARM; the file
@@ -304,6 +306,47 @@ console.log('display', JSON.stringify(out.display));
     console.log('R4', (out.R4 as Any).pass ? 'PASS' : 'FAIL', JSON.stringify({ fps30, p30: p30 && { r: p30.r_frame_rate, n: p30.packets, d: p30.dupPts }, size4k, p4k: p4k && { w: p4k.width, h: p4k.height, r: p4k.r_frame_rate, n: p4k.packets, d: p4k.dupPts, held: i4k.heldForEncoder, drop: i4k.dropped }, split, parts: splitProbes.map((x) => x.packets) }));
 }
 
+// ------------------------------------------------------------------ R5: F9, the pause menu, no folder
+// Logic-only pages (?render=off): keys, menus and where the file goes do not depend on drawing.
+// A fresh browser with no folder chosen: F9 records into the browser's own storage and the bar offers
+// the file after stop (the path of Firefox and Safari, which have no folder picker). The pause menu
+// lists "Record / stop" with its F9 key-cap. Control C5: on a scene outside the showcase F9 records
+// nothing and the menu item is disabled.
+{
+    const { ctx, page, console: errors } = await newContext(browser, false);
+    const menuItem = `const b = document.querySelector('[data-action="pause.record"]'); return b ? { label: b.querySelector('.pm-label')?.textContent ?? null, caps: [...b.querySelectorAll('kbd')].map((k) => k.textContent), aria: b.getAttribute('aria-keyshortcuts'), disabled: b.disabled } : null;`;
+    const waitSaved = `const t0 = performance.now(); while (performance.now() - t0 < 8000) { const st = h.rec.state(); if (!st.recording && !st.busy && st.last) return st; await new Promise((r) => setTimeout(r, 100)); } return h.rec.state();`;
+    await page.goto(fly(`scene=${SHOWCASE}&nowarn=1&lat=1&render=off`));
+    await waitReady(page, 240000);
+    await page.waitForTimeout(1000);
+    await page.keyboard.press('F9');
+    await page.waitForTimeout(2000);
+    const on = await hook(page, 'return h.rec.state();');
+    await page.keyboard.press('F9');
+    const off = await hook(page, waitSaved);
+    const offer = await page.evaluate(`(() => { const a = document.querySelector('[data-testid=rec-offer]'); return a ? { download: a.getAttribute('download'), href: (a.getAttribute('href') || '').slice(0, 5) } : null; })()`) as Any;
+    await page.keyboard.press('KeyP');
+    await page.waitForTimeout(400);
+    const item = await hook(page, menuItem);
+    await page.keyboard.press('Escape');
+    // control: outside the showcase
+    await page.goto(fly(`scene=${PASTED}&nowarn=1&lat=1&render=off`));
+    await waitReady(page, 240000);
+    await page.waitForTimeout(1000);
+    await page.keyboard.press('F9');
+    await page.waitForTimeout(1500);
+    const c5 = await hook(page, 'return h.rec.state();');
+    await page.keyboard.press('KeyP');
+    await page.waitForTimeout(400);
+    const c5Item = await hook(page, menuItem);
+    await ctx.close();
+    const pass = on.recording === true && on.folder === null && off.recording === false && off.last?.where === 'browser' && off.offers.length === 1 && !!offer && offer.download === off.offers[0].name && offer.href === 'blob:'
+        && !!item && item.caps.includes('F9') && item.aria === 'F9' && item.disabled === false;
+    const fired = c5.allowed === false && c5.recording === false && c5.last === null && !!c5Item && c5Item.disabled === true;
+    out.R5 = { pass: pass && fired, what: 'F9 starts and stops a recording; with no folder chosen it goes to the browser storage and the bar offers the file (the Firefox / Safari path); the pause menu lists Record / stop with its F9 key-cap', render: 'off', on, off, offer, menuItem: item, control: { what: `C5: scene ${PASTED} (not in the showcase): F9 records nothing, the menu item is disabled`, fired, state: c5, menuItem: c5Item }, consoleErrors: errors };
+    console.log('R5', pass ? 'PASS' : 'FAIL', 'C5', fired ? 'FIRED' : 'DID NOT FIRE', JSON.stringify({ on: on.recording, where: off.last?.where, offers: off.offers, offer, item, c5: { rec: c5.recording, item: c5Item } }));
+}
+
 await browser.close();
-out.pass = (out.R1 as Any).pass && (out.R2 as Any).pass && (out.R3 as Any).pass && (out.R4 as Any).pass;
+out.pass = (out.R1 as Any).pass && (out.R2 as Any).pass && (out.R3 as Any).pass && (out.R4 as Any).pass && (out.R5 as Any).pass;
 console.log('evidence', writeEvidence('v03-rec', out));
