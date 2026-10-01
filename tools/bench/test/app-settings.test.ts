@@ -352,8 +352,23 @@ describe('the screen\'s model (ui/settings/model.ts)', () => {
         expect(M.importSummary(b.previewImport({ ...emptyDoc('9', 'x'), version: 99 })).error).toBe('newer-version');
     });
 
-    it('the export file is named gsfpv-settings-YYYY-MM-DD.json (A.4)', () => {
-        expect(P.exportFileName(new Date(2026, 9, 2, 23, 59))).toBe('gsfpv-settings-2026-10-02.json');
+    it('A.12: the stored document with 100 scans, 5 radios and every drone tuned stays under 100 KB', () => {
+        const s = memStore();
+        const pad = (i: number) => ({ version: 1, deviceKey: `gamepad:pad ${i}`, deviceName: `Pad ${i}`, deadband: 0.05, created: '2026-09-22T09:00:00.000Z', axes: { roll: { index: 2, invert: false, center: 0, min: -1, max: 1 }, pitch: { index: 3, invert: true, center: 0, min: -1, max: 1 }, throttle: { index: 1, invert: true, center: 0, min: -1, max: 1 }, yaw: { index: 0, invert: false, center: 0, min: -1, max: 1 } }, arm: { kind: 'button', bit: 0, toggle: true }, angleMode: null });
+        const fill = (n: number) => s.updateCollection('sceneLibrary', (d) => {
+            d.history = Array.from({ length: n }, (_, i) => ({ id: (0x10000000 + i).toString(16), version: 1, title: `A scan with a long enough title number ${i}`, lastFlown: 1759400000000 - i * 1000, flights: 4, airtimeS: 312, hasCollision: true }));
+            d.favourites = d.history.slice(0, 50).map((e) => e.id);
+        });
+        fill(100);
+        s.updateCollection('radioProfiles', (d) => { for (let i = 0; i < 5; i++) d.items[`gamepad:pad ${i}`] = pad(i) as never; });
+        for (const drone of Object.keys(PR.PRESETS)) for (const [id, c] of Object.entries(CHANGES)) if (SCHEMA.byId.get(id)!.scope === 'drone') P.pilotSet(s, id, c.v, { drone });
+        const bytes = JSON.stringify(s.exportFile()).length;
+        expect(s.collection('sceneLibrary').history).toHaveLength(100);
+        expect(Object.keys(s.collection('radioProfiles').items)).toHaveLength(5);
+        expect(bytes).toBeLessThan(100 * 1024);
+        // control: the measure can fail: 250 radios of the same shape go past the bound (radios are not capped)
+        s.updateCollection('radioProfiles', (d) => { for (let i = 0; i < 250; i++) d.items[`gamepad:pad ${i}`] = pad(i) as never; });
+        expect(JSON.stringify(s.exportFile()).length).toBeGreaterThan(100 * 1024);
     });
 });
 

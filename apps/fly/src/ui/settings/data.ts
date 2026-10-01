@@ -2,8 +2,9 @@
 // settings to a file, import one (a preview of what changes first, then replace or merge), reset
 // every setting, erase everything (with a second press), and the storage's state: saved or not,
 // kept or not when the disk fills up, with navigator.storage.persist() only on the pilot's click.
+import { exportFileName } from '@gsfpv/prefs';
 import type { ImportMode, PrefsStore } from '@gsfpv/prefs';
-import { askPersistence, eraseEverything, exportFileName, forgetAllLinks, readPersisted, storageStatus } from '../../app/prefs';
+import { askPersistence, eraseEverything, forgetAllLinks, readPersisted, storageStatus } from '../../app/prefs';
 import { h } from '../dom';
 import { t } from '../../i18n';
 import { importSummary } from './model';
@@ -42,7 +43,7 @@ export function dataSection(host: DataHost): { el: HTMLElement; refresh(): void 
     const exportBtn = h('button', { type: 'button', class: 'btn primary', 'data-action': 'settings-export' }, t('prefs.export'));
     exportBtn.addEventListener('click', () => {
         store.flush();
-        const name = exportFileName();
+        const name = exportFileName(Date.now());
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([JSON.stringify(store.exportFile(), null, 2)], { type: 'application/json' }));
         a.download = name;

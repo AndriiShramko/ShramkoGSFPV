@@ -61,8 +61,8 @@ let page: { store: PrefsStore; dispose(): void; link: Map<string, string> } | nu
 export function openPagePrefs(showcase: readonly ShowcaseScene[], query: string, o: BrowserOptions & { schema?: Schema; presets?: Readonly<Record<string, PresetJson>> } = {}): PrefsStore {
     if (page) return page.store;
     const { schema = SCHEMA, presets = PRESETS, ...browser } = o;
-    // storageManager null: no navigator.storage.persist() yet. Firefox answers it with a prompt,
-    // which would be a visible change; W2-1 asks for it together with Settings -> Data (A.5).
+    // storageManager null: no navigator.storage.persist() at boot or on a change. Firefox answers it
+    // with a prompt, so it is asked only from the pilot's click in Settings -> Data (askPersistence).
     const resolver = presetResolver(presets, showcase);
     let opened: ReturnType<typeof openBrowserPrefs>;
     try {
@@ -405,12 +405,6 @@ export async function askPersistence(store: PrefsStore, sm: StorageManagerLike |
         /* keep the last known state */
     }
     return store.persisted;
-}
-
-/** The export file's name, A.4: gsfpv-settings-YYYY-MM-DD.json (the local date). */
-export function exportFileName(now: Date = new Date()): string {
-    const p = (n: number) => String(n).padStart(2, '0');
-    return `gsfpv-settings-${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}.json`;
 }
 
 /** The part of IdbKv (@gsfpv/prefs browser.ts) erasing uses. */
