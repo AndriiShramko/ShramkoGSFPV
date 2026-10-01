@@ -1,74 +1,276 @@
-// Cinema mode (phase D): full detail with the governor off, a Record button for showcase scenes
-// (their credit burnt into the video), the bar at the bottom middle; the menu's "Cinema mode".
+// Cinema mode (phase D) and the recording bar (docs/architecture-v03.md F.1, F.2, F.4; items 19, 14).
+// Cinema mode: full detail with the governor off. The bar at the bottom middle: REC (F9), the Auto
+// toggle right next to it (item 14), the folder chip "Folder: <name> ▾" (pick, change, forget), a
+// one-line "Allow saving to <folder>" when the browser asks again, and a note line (saved, frames
+// repeated or dropped, why not here). REC is offered in normal flight too, at the quality as flown;
+// cinema mode only raises the quality. Showcase scenes only (D34): elsewhere REC is not offered and
+// Auto is shown disabled with the reason. While flying (armed, not crashed) the bar steps aside
+// outside cinema mode; the OSD shows "● REC" while it records. recording.ts does the work.
 import { h } from '../../ui/dom';
 import { t } from '../../i18n';
 import { q } from '../env';
-import type { CinemaRecorder, RecorderInfo } from '../../cinema';
+import type { RecorderInfo } from '../../cinema';
 import type { TestHook } from '../test-hook';
 import type { Feature } from '../context';
+import { Recording, autoRespawnShipped } from './recording';
+import type { Saved } from './recording';
+import './cinema.css';
+
+/** What the acceptance reads and drives besides the phase-D cinema hook (window.__gsfpv.rec). */
+export interface RecHook {
+    rec: Recording;
+    state(): Record<string, unknown>;
+    useFolder(dir: FileSystemDirectoryHandle): Promise<void>;
+    setAuto(on: boolean): void;
+    /** control: 'v02' is the negative control of F.5 (v0.2's 30 fps track) */
+    start(o?: { control?: 'v02' }): Promise<string>;
+    stop(): Promise<RecorderInfo | null>;
+    /** the newest saved file's bytes as base64, from wherever it went */
+    readLast(): Promise<{ name: string; where: string; b64: string } | null>;
+    /** test only: minutes per file instead of recording.splitMin (a split in seconds) */
+    setSplitMin(min: number | null): void;
+}
+
+const mmss = (s: number): string => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
 export const cinema: Feature = {
     id: 'cinema',
     install(ctx) {
         const { canvas, ui } = ctx;
-        const meta = ctx.scene.meta;
-        const credit = meta ? `${meta.title} — ${meta.author}, ${meta.license} · gsfpv.flyreelstudio.eu` : '';
-        let recorder: CinemaRecorder | null = null;
-        const recBtn = h('button', { type: 'button', class: 'btn rec', 'data-action': 'cinema-rec', hidden: true, onclick: () => void (recorder?.recording ? stopRec() : startRec()) }, t('cinema.rec')) as HTMLButtonElement;
-        const cinemaNote = h('div', { class: 'cinema-note', role: 'status', 'data-testid': 'cinema-note', hidden: true });
-        const cinemaBar = h('div', { class: 'cinema-bar interactive' }, recBtn, cinemaNote);
+        const creditOf = (): string | null => {
+            const meta = ctx.scene.meta;
+            return meta ? `${meta.title} — ${meta.author}, ${meta.license} · gsfpv.flyreelstudio.eu` : null;
+        };
+        const rec = new Recording({
+            prefs: ctx.prefs,
+            canvas,
+            scene: () => ({ id: ctx.scene.id, credit: creditOf() }),
+            autoRespawn: () => autoRespawnShipped(ctx.prefs)
+        });
+        let note = '';
+        let noteOffer: Saved['offer'] = [];
+        let menuOpen = false;
+
+        // ------------------------------------------------------------------ the bar
+        const recBtn = h('button', { type: 'button', class: 'btn rec', 'data-action': 'cinema-rec', 'aria-keyshortcuts': 'F9', onclick: () => toggle(true) }) as HTMLButtonElement;
+        const autoBtn = h('button', { type: 'button', class: 'btn rec-auto', 'data-action': 'rec-auto', 'aria-pressed': 'false', onclick: () => onAuto() }) as HTMLButtonElement;
+        const folderBtn = h('button', { type: 'button', class: 'btn rec-folder', 'data-action': 'rec-folder', 'aria-haspopup': 'menu', 'aria-expanded': 'false', onclick: () => onFolder() }) as HTMLButtonElement;
+        const changeBtn = h('button', { type: 'button', class: 'btn', role: 'menuitem', 'data-action': 'rec-folder-change', onclick: () => { closeMenu(); void rec.pick(); } }, t('rec.folder.change'));
+        const forgetBtn = h('button', { type: 'button', class: 'btn', role: 'menuitem', 'data-action': 'rec-folder-forget', onclick: () => { closeMenu(); void rec.forget(); } }, t('rec.folder.forget'));
+        const folderMenu = h('div', { class: 'rec-menu', role: 'menu', hidden: true, onkeydown: (e: Event) => { if ((e as KeyboardEvent).code === 'Escape') { e.stopPropagation(); closeMenu(); folderBtn.focus(); } } }, changeBtn, forgetBtn);
+        const folderWrap = h('div', { class: 'rec-folder-wrap' }, folderBtn, folderMenu);
+        const allowBtn = h('button', { type: 'button', class: 'btn rec-allow', 'data-action': 'rec-allow', hidden: true, onclick: () => void rec.allow() }) as HTMLButtonElement;
+        const row = h('div', { class: 'rec-row' }, recBtn, autoBtn, folderWrap);
+        const cinemaNote = h('div', { class: 'cinema-note', role: 'status', 'data-testid': 'cinema-note' });
+        const cinemaBar = h('div', { class: 'cinema-bar rec-bar interactive', 'data-testid': 'rec-bar' }, row, allowBtn, cinemaNote);
         ui.append(cinemaBar);
-        // the arm hint (Hud's gate line) stacks above the bar (fly.css body.cinema .gate-msg): it was
-        // printed under the Record button. The bar's height changes with its note, its place with touch
-        const placeOverCinema = (): void => {
-            if (!ctx.quality.cinema) return;
+
+        function closeMenu(): void {
+            menuOpen = false;
+            folderMenu.hidden = true;
+            folderBtn.setAttribute('aria-expanded', 'false');
+        }
+
+        // the credit line and the arm hint stack above the bar instead of printing under it
+        const placeAbove = (): void => {
+            const shown = cinemaBar.offsetParent !== null && !cinemaBar.hidden;
+            ui.classList.toggle('rec-bar-up', shown);
+            if (!shown) return;
             const top = cinemaBar.getBoundingClientRect().top;
             const v = `${Math.max(0, Math.round(innerHeight - top))}px`;
             if (ui.style.getPropertyValue('--cinema-top') !== v) ui.style.setProperty('--cinema-top', v);
         };
-        new ResizeObserver(placeOverCinema).observe(cinemaBar);
-        addEventListener('resize', placeOverCinema);
-        ctx.session.renderer.app.on('frameend', () => { if (recorder?.recording) recorder.addFrame(canvas, performance.now()); });
+        new ResizeObserver(placeAbove).observe(cinemaBar);
+        addEventListener('resize', placeAbove);
+
+        /** Everything the bar shows, from the recorder's state and the store. */
+        function render(): void {
+            const allowed = rec.allowed;
+            const showcase = creditOf() !== null;
+            const recording = rec.recording;
+            const cinemaOn = ctx.quality.cinema;
+            const autoOn = rec.autoOn;
+            // a non-showcase scene shows the bar only when the pilot would expect a recording here
+            cinemaBar.hidden = !(showcase || cinemaOn || autoOn);
+            recBtn.hidden = !allowed;
+            recBtn.classList.toggle('on', recording);
+            recBtn.disabled = rec.busy && !recording;
+            recBtn.replaceChildren(recording ? t('rec.stop', { t: mmss(rec.seconds) }) : t('rec.button'), h('kbd', { 'aria-hidden': 'true' }, 'F9'));
+            autoBtn.textContent = t('rec.auto');
+            autoBtn.setAttribute('aria-pressed', autoOn && allowed ? 'true' : 'false');
+            autoBtn.disabled = !allowed;
+            autoBtn.title = allowed ? t('rec.auto.help') : !showcase ? t('rec.onlyShowcase') : t('rec.unsupported');
+            const name = rec.folder?.name ?? '';
+            folderWrap.hidden = !allowed || !rec.canPick;
+            folderBtn.textContent = !rec.folder ? `${t('rec.folder.none')} ▾` : rec.access === 'denied' ? `${t('rec.folder.noAccess', { name })} ▾` : `${t('rec.folder', { name })} ▾`;
+            allowBtn.hidden = !allowed || !rec.folder || rec.access !== 'prompt';
+            allowBtn.textContent = t('rec.permission', { name });
+            ctx.hud.rec = recording;
+            // the note: why not here, else what happens now, else the last result
+            const why = !showcase ? t('rec.onlyShowcase') : !rec.supported ? t('rec.unsupported') : '';
+            cinemaNote.replaceChildren();
+            if (why) cinemaNote.append(cinemaOn ? t('cinema.noRec') : why);
+            else if (recording) cinemaNote.append(t('rec.recording', { t: mmss(rec.seconds) }));
+            else if (note) {
+                cinemaNote.append(note);
+                for (const f of noteOffer) cinemaNote.append(' ', h('a', { href: f.url, download: f.name, class: 'rec-offer', 'data-testid': 'rec-offer' }, t('rec.download')));
+            } else if (cinemaOn) cinemaNote.append(t('cinema.on'));
+            placeAbove();
+        }
+        rec.onChange = render;
+
+        function savedNote(s: Saved): string {
+            const i = s.info;
+            const mb = (i.bytes / 1048576).toFixed(1);
+            const sec = i.seconds.toFixed(1);
+            const head = i.ended === 'cap' ? t('rec.memoryCap') : i.ended === 'error' ? t('rec.error', { e: i.error ?? '' }) : '';
+            const where = i.where === 'folder' ? t('rec.saved', { s: sec, name: i.folder, mb }) : t('rec.savedBrowser', { s: sec, mb });
+            const parts = i.files.length > 1 ? ` · ${t('rec.parts', { n: i.files.length })}` : '';
+            return `${head ? `${head} ` : ''}${where}${parts} · ${t('rec.drops', { fps: i.fps, dup: i.duplicated, drop: i.dropped })}`;
+        }
+
+        function showSaved(s: Saved | null): void {
+            if (!s) return;
+            note = savedNote(s);
+            noteOffer = s.offer;
+            hookCinema.last = s.info;
+            render();
+        }
+        rec.onEnded = showSaved;
+
+        /** activation: inside a click or a key press, where the folder's permission may be asked */
+        async function startRec(activation: boolean, legacyV02 = false): Promise<string> {
+            note = '';
+            noteOffer = [];
+            // a bar click or F9 is a user activation: ask for the folder straight away, before any await
+            if (activation && rec.folder && rec.access === 'prompt') await rec.allow();
+            return rec.queue(() => rec.start({ auto: false, activation, legacyV02 }));
+        }
+
+        async function stopRec(): Promise<RecorderInfo | null> {
+            const s = await rec.queue(() => rec.stop());
+            showSaved(s);
+            if (s && q.get('simradio')) {
+                // test modes keep the bytes for the phase-D acceptance (accept-d.ts reads lastBytes)
+                const last = await readLast();
+                hookCinema.lastBytes = last ? Uint8Array.from(atob(last.b64), (c) => c.charCodeAt(0)) : null;
+            }
+            return s?.info ?? null;
+        }
+
+        function toggle(activation: boolean): void {
+            if (!rec.allowed) return;
+            if (rec.recording) void stopRec();
+            else void startRec(activation).catch((e) => { note = String((e as Error)?.message ?? e); render(); });
+        }
+
+        function onAuto(): void {
+            if (!rec.allowed) return;
+            const on = !rec.autoOn;
+            // the first time: where should the videos go? (the picker needs this click)
+            if (on && !rec.folder && rec.canPick) void rec.pick();
+            else if (on && rec.folder && rec.access === 'prompt') void rec.allow();
+            rec.setAuto(on);
+            // switched on while flying: this flight is recorded too
+            if (on && ctx.session.sim.armed && !rec.recording) void rec.queue(() => rec.start({ auto: true, activation: true })).catch(() => '');
+        }
+
+        function onFolder(): void {
+            if (!rec.folder) { void rec.pick(); return; }
+            menuOpen = !menuOpen;
+            folderMenu.hidden = !menuOpen;
+            folderBtn.setAttribute('aria-expanded', String(menuOpen));
+            if (menuOpen) changeBtn.focus();
+        }
+        addEventListener('pointerdown', (e) => { if (menuOpen && !folderWrap.contains(e.target as Node)) closeMenu(); });
+
+        async function readLast(): Promise<{ name: string; where: string; b64: string } | null> {
+            const s = rec.last;
+            const f = s?.info.files[s.info.files.length - 1];
+            if (!s || !f) return null;
+            let blob: Blob | null = null;
+            const offered = s.offer.find((o) => o.name === f.name);
+            if (offered) blob = await (await fetch(offered.url)).blob();
+            else if (rec.folder) blob = await (await rec.folder.getFileHandle(f.name)).getFile();
+            if (!blob) return null;
+            const b = new Uint8Array(await blob.arrayBuffer());
+            let s2 = '';
+            for (let i = 0; i < b.length; i += 0x8000) s2 += String.fromCharCode(...b.subarray(i, i + 0x8000));
+            return { name: f.name, where: offered ? s.info.where : 'folder', b64: btoa(s2) };
+        }
+
+        // ------------------------------------------------------------------ cinema mode
         function toggleCinema(): void {
             const on = !ctx.quality.cinema;
             document.body.classList.toggle('cinema', on);
             ctx.quality.setCinema(on);
-            ctx.session.renderer.setDetail(on ? 'final' : 'auto');
+            ctx.renderer.setDetail(on ? 'final' : 'auto');
             ctx.quality.apply();
-            recBtn.hidden = !on || !meta;
-            cinemaNote.hidden = !on;
-            cinemaNote.textContent = on ? (meta ? t('cinema.on') : t('cinema.noRec')) : '';
-            if (!on && recorder?.recording) void stopRec();
-            placeOverCinema();
+            render();
         }
-        async function startRec(): Promise<string> {
-            if (!meta) throw new Error('recording is only for showcase scenes');
-            const { CinemaRecorder } = await import('../../cinema');
-            if (!CinemaRecorder.supported) { cinemaNote.textContent = t('cinema.unsupported'); throw new Error('WebCodecs unavailable'); }
-            recorder = new CinemaRecorder(canvas.width, canvas.height, credit);
-            const codec = await recorder.start();
-            recBtn.textContent = t('cinema.stop');
-            recBtn.classList.add('on');
-            return codec;
-        }
-        async function stopRec(): Promise<RecorderInfo | null> {
-            if (!recorder) return null;
-            const { bytes, info } = await recorder.stop();
-            recBtn.textContent = t('cinema.rec');
-            recBtn.classList.remove('on');
-            hookCinema.last = info;
-            hookCinema.lastBytes = bytes;
-            cinemaNote.textContent = t('cinema.saved', { s: info.seconds.toFixed(1), mb: (info.bytes / 1048576).toFixed(1) });
-            if (!q.get('simradio')) {
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: 'video/mp4' }));
-                a.download = `gsfpv-${ctx.scene.id}-${Date.now()}.mp4`;
-                a.click();
-            }
-            return info;
-        }
-        const hookCinema: NonNullable<TestHook['cinema']> = { on: () => ctx.quality.cinema, toggle: toggleCinema, canRecord: !!meta, start: startRec, stop: stopRec, last: null, lastBytes: null, creditStripStd: () => recorder?.lastCreditStripStd ?? 0 };
-        ctx.hook.cinema = hookCinema;
+
+        // ------------------------------------------------------------------ frames, flight events, pauses
+        ctx.renderer.app.on('frameend', () => rec.frame(performance.now()));
+        let shown = 0;
+        ctx.events.on('frame', ({ now }) => {
+            rec.tick(now);
+            // the running time on the bar, twice a second
+            if (rec.recording && now - shown > 500) { shown = now; render(); }
+        });
+        ctx.events.on('sim', (e) => rec.onSim(e, performance.now(), !!navigator.userActivation?.isActive));
+        ctx.events.on('pause', ({ on }) => {
+            rec.pause('flight', on);
+            // Resume (a click or P) is a user activation: the folder's permission can be asked there
+            if (!on && rec.autoOn && rec.folder && rec.access === 'prompt' && navigator.userActivation?.isActive) void rec.allow();
+        });
+        document.addEventListener('visibilitychange', () => {
+            rec.pause('hidden', document.visibilityState === 'hidden');
+            if (document.visibilityState === 'visible') void rec.refreshAccess();
+        });
+        ctx.prefs.onChange((c) => {
+            if (c.id === 'recording.auto' || c.id === 'recording.folder') render();
+        });
+
+        ctx.keys.on('record.toggle', (e) => {
+            e.preventDefault();
+            toggle(true);
+        });
         ctx.menu.add({ id: 'pause.cinema', action: null, labelKey: 'pause.cinema', order: 100, section: 'tools', run: toggleCinema });
+        ctx.menu.add({ id: 'pause.record', action: 'record.toggle', labelKey: 'rec.menu', order: 101, section: 'tools', run: () => toggle(true), enabled: () => rec.allowed });
+
+        // ------------------------------------------------------------------ test hook
+        const hookCinema: NonNullable<TestHook['cinema']> = {
+            on: () => ctx.quality.cinema,
+            toggle: toggleCinema,
+            canRecord: rec.allowed,
+            start: () => startRec(true),
+            stop: stopRec,
+            last: null,
+            lastBytes: null,
+            creditStripStd: () => rec.recorder?.lastCreditStripStd ?? 0
+        };
+        ctx.hook.cinema = hookCinema;
+        const recHook: RecHook = {
+            rec,
+            state: () => ({
+                allowed: rec.allowed, showcase: creditOf() !== null, supported: rec.supported, canPick: rec.canPick,
+                recording: rec.recording, autoRun: rec.autoRun, auto: rec.autoOn, seconds: rec.seconds, busy: rec.busy,
+                folder: rec.folder?.name ?? null, access: rec.access, pendingStopAt: rec.rules.pendingStopAt,
+                barHidden: cinemaBar.hidden, barShown: cinemaBar.offsetParent !== null, recHidden: recBtn.hidden,
+                autoDisabled: autoBtn.disabled, autoPressed: autoBtn.getAttribute('aria-pressed'), autoTitle: autoBtn.title,
+                folderChip: folderWrap.hidden ? null : folderBtn.textContent, allowChip: allowBtn.hidden ? null : allowBtn.textContent,
+                note: cinemaNote.textContent, last: rec.last?.info ?? null, offers: rec.last?.offer.map((o) => ({ name: o.name, bytes: o.bytes })) ?? []
+            }),
+            useFolder: (dir) => rec.useFolder(dir),
+            setAuto: (on) => rec.setAuto(on),
+            start: (o) => startRec(true, o?.control === 'v02'),
+            stop: stopRec,
+            readLast,
+            setSplitMin: (min) => { rec.splitMinOverride = min; }
+        };
+        (ctx.hook as TestHook & { rec?: RecHook }).rec = recHook;
+
+        render();
+        void rec.load();
     }
 };

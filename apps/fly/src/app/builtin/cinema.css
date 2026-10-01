@@ -1,0 +1,36 @@
+/* The recording bar (app/builtin/cinema.ts; docs/architecture-v03.md F.4): REC with its key, Auto
+   right next to it, the folder chip, the "allow" line and the note. fly.css places .cinema-bar at the
+   bottom middle for cinema mode; outside it the bar sits above the OSD's bottom line, and the credit
+   line, the arm card and the arm hint stack above the bar (--cinema-top, kept by cinema.ts). */
+.rec-bar[hidden] { display: none; }
+.rec-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.rec-bar .btn { min-height: 40px; padding: 6px 12px; background: rgba(12,14,18,.82); }
+.rec-bar .btn kbd { margin-left: 2px; padding: 1px 6px; border: 1px solid #3a4452; border-bottom-width: 2px; border-radius: 6px; background: #0b0e12; color: var(--muted); font: 600 11px/16px ui-monospace, Consolas, monospace; }
+body.touch-on .rec-bar .btn kbd { display: none; } /* no keyboard to press */
+.btn.rec-auto::before { content: ""; width: 10px; height: 10px; border-radius: 50%; border: 2px solid currentColor; flex: none; }
+.btn.rec-auto[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.btn.rec-auto[aria-pressed="true"]::before { background: currentColor; }
+.rec-folder-wrap { position: relative; display: flex; }
+.rec-folder-wrap[hidden] { display: none; }
+.btn.rec-folder { display: block; max-width: min(40vw, 260px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 26px; }
+.rec-menu { position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 5; display: flex; flex-direction: column; gap: 6px; min-width: 220px; padding: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.rec-menu[hidden] { display: none; }
+.rec-bar .btn.rec-allow { border-color: var(--warn); color: var(--warn); }
+.rec-offer { color: #bbf7d0; }
+
+/* outside cinema mode: above the OSD's bottom line; out of the way while flying (the OSD says REC) */
+body:not(.cinema) .cinema-bar { bottom: 40px; }
+body:not(.cinema) #ui.hud-flying > .cinema-bar { display: none; }
+/* touch, upright: above the telemetry line over the pads (fly.css: pads, 16 px, one 19 px line) */
+body.touch-on:not(.cinema) .cinema-bar { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 16px + 19px + 10px); }
+/* touch, on its side: between the pads, above the ARM button */
+@media (orientation: landscape) {
+    body.touch-on:not(.cinema) .cinema-bar { bottom: calc(max(24px, env(safe-area-inset-bottom)) + 64px + 44px); max-width: calc(100vw - 2 * min(40vw, 220px) - 64px); }
+}
+/* what used to sit where the bar is goes above it: the arm card and hint, and (low, on a wide
+   enough window) the credit line */
+body:not(.cinema) #ui.rec-bar-up .hud > :is(.arm-card, .arm-disarm, .gate-msg) { bottom: calc(var(--cinema-top, 96px) + 30px); }
+body.touch-on:not(.cinema) #ui.rec-bar-up .hud > .gate-msg.mid { bottom: calc(var(--cinema-top, 96px) + 8px); }
+@media (min-height: 501px) {
+    body:not(.cinema):not(.touch-on) #ui.rec-bar-up .attribution { bottom: calc(var(--cinema-top, 96px) + 6px); }
+}
