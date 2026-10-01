@@ -1,0 +1,974 @@
+{
+  "name": "v03-summary",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-01T17:37:33.777Z",
+    "gitHead": "3db8ec7",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5324",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "keymapShipped": [
+    {
+      "action": "pause.toggle",
+      "keys": [
+        "Escape",
+        "KeyP"
+      ],
+      "flying": false
+    },
+    {
+      "action": "respawn.start",
+      "keys": [
+        "KeyR"
+      ],
+      "flying": false
+    },
+    {
+      "action": "mode.cycle",
+      "keys": [
+        "KeyM"
+      ],
+      "flying": true
+    },
+    {
+      "action": "arm.toggle",
+      "keys": [
+        "Space"
+      ],
+      "flying": true
+    },
+    {
+      "action": "voxels.cycle",
+      "keys": [
+        "KeyV"
+      ],
+      "flying": false
+    },
+    {
+      "action": "walls.toggle",
+      "keys": [
+        "KeyC"
+      ],
+      "flying": false
+    },
+    {
+      "action": "hud.toggle",
+      "keys": [
+        "KeyH"
+      ],
+      "flying": false
+    },
+    {
+      "action": "frameStats.toggle",
+      "keys": [
+        "F3"
+      ],
+      "flying": false
+    }
+  ],
+  "S1": {
+    "pass": true,
+    "render": "off",
+    "what": "fly with the keyboard (walls off), disarm with the switch after 4 s: the card shows, its air time is within 0.1 s of __gsfpv.stats().life.airtimeS; any key closes it; Enter opens the summary panel with the first item focused (not pressed); a life under 3 s shows no card",
+    "flight": {
+      "armed": true,
+      "lifeAtDisarm": 4.022
+    },
+    "card": {
+      "shown": true,
+      "title": "--- STATS ---",
+      "lines": 10,
+      "airtime": "0:04.0",
+      "rows": {
+        "airtime": "0:04.0",
+        "maxSpeed": "48 km/h",
+        "maxAlt": "37.4 m",
+        "maxDist": "0.0 m",
+        "distance": "38.1 m",
+        "minVolt": "12.13 V",
+        "maxAmps": "11.4 A",
+        "usedMah": "12 mAh",
+        "maxG": "2.2 G",
+        "avgThrottle": "50 %"
+      }
+    },
+    "life": {
+      "airtimeS": 4.022
+    },
+    "disarm": {
+      "type": "disarm",
+      "tick": 4491,
+      "reason": "switch"
+    },
+    "airtimeDiffS": 0.02200000000000024,
+    "goneOnKey": true,
+    "secondCard": true,
+    "enter": {
+      "panel": true,
+      "card": 0,
+      "focused": "pause.continue"
+    },
+    "closedByEsc": true,
+    "shortLife": {
+      "airtimeS": 1.5130000000000001,
+      "card": 0
+    },
+    "control": {
+      "what": "the bot crashes into a wall after more than 3 s in the air (a crash disarm, not the switch): no card within 1.2 s",
+      "phase": "crashed",
+      "atCrash": {
+        "life": 5.2250000000000005,
+        "disarms": [
+          "crash"
+        ],
+        "crash": {
+          "type": "crash",
+          "tick": 5822,
+          "speed": 8.668891791625434,
+          "nx": 1,
+          "ny": 0,
+          "nz": 0,
+          "px": -5.199040443254583,
+          "py": 1.7295653287201118,
+          "pz": 0.7271217104472011
+        }
+      },
+      "cardSeen": 0,
+      "fired": true
+    },
+    "ran": {
+      "at": "2026-10-01T17:37:33.656Z",
+      "gitHead": "3db8ec7",
+      "gitDirty": true,
+      "browser": {
+        "kind": "system-chrome",
+        "version": "154.0.8037.59",
+        "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "why": "installed"
+      }
+    }
+  },
+  "S2": {
+    "pass": true,
+    "render": "off",
+    "what": "Esc opens the summary panel: every shipped KEYMAP action with its key-caps (and aria-keyshortcuts), no planned one, Continue and Restart with their keys; 16 stat rows (this flight, session, all time) with the life air time; the mode chip = the mode the flight model flies; Copy stats puts the table on the clipboard",
+    "problems": [],
+    "shown": [
+      {
+        "action": "pause.toggle",
+        "caps": [
+          "Esc",
+          "P"
+        ],
+        "aria": "Escape P"
+      },
+      {
+        "action": "respawn.start",
+        "caps": [
+          "R"
+        ],
+        "aria": "R"
+      },
+      {
+        "action": "voxels.cycle",
+        "caps": [
+          "V"
+        ],
+        "aria": "V"
+      },
+      {
+        "action": "walls.toggle",
+        "caps": [
+          "C"
+        ],
+        "aria": "C"
+      },
+      {
+        "action": "hud.toggle",
+        "caps": [
+          "H"
+        ],
+        "aria": "H"
+      },
+      {
+        "action": "frameStats.toggle",
+        "caps": [
+          "F3"
+        ],
+        "aria": "F3"
+      },
+      {
+        "action": "mode.cycle",
+        "caps": [
+          "M"
+        ],
+        "aria": "M"
+      },
+      {
+        "action": "arm.toggle",
+        "caps": [
+          "Space"
+        ],
+        "aria": "Space"
+      }
+    ],
+    "items": [
+      {
+        "id": "pause.continue",
+        "caps": [
+          "Esc",
+          "P"
+        ],
+        "aria": "Escape P",
+        "testid": null
+      },
+      {
+        "id": "pause.restart",
+        "caps": [
+          "R"
+        ],
+        "aria": "R",
+        "testid": null
+      },
+      {
+        "id": "pause.scene",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.drone",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.radio",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.settings",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.replays",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.measure",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.import",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.cinema",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      }
+    ],
+    "mode": {
+      "chip": "acro",
+      "simChannel": -1,
+      "sim": "acro"
+    },
+    "airtime": {
+      "panel": {
+        "id": "airtime",
+        "life": "0:01.5",
+        "session": "0:08.8",
+        "lifetime": "0:08.8",
+        "visible": true
+      },
+      "hook": 1.5130000000000001
+    },
+    "copy": {
+      "status": "Copied",
+      "lines": 19,
+      "head": [
+        "ShramkoGSFPV flight stats \u00b7 BetaFPV Pavo20 Pro class, 3S \u00b7 2026-10-01\r",
+        "\r",
+        "                   This flight  Session  All time\r"
+      ]
+    },
+    "control": {
+      "what": "the same check against a keymap whose hud.toggle is J",
+      "problems": [
+        "hud.toggle: caps H != J",
+        "hud.toggle: aria \"H\" != \"J\""
+      ],
+      "fired": true
+    },
+    "ran": {
+      "at": "2026-10-01T17:37:33.656Z",
+      "gitHead": "3db8ec7",
+      "gitDirty": true,
+      "browser": {
+        "kind": "system-chrome",
+        "version": "154.0.8037.59",
+        "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "why": "installed"
+      }
+    }
+  },
+  "S3": {
+    "pass": true,
+    "render": "off",
+    "what": "with the panel closed, every key of every shipped KEYMAP binding (looping over the table, keyboard flying keys included) does what its row in the panel says: exactly that action's effect on the page, and pressed again it goes back",
+    "results": [
+      {
+        "action": "pause.toggle",
+        "key": "Escape",
+        "flying": false,
+        "expect": "menu",
+        "changed": [
+          "menu"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "pause.toggle",
+        "key": "KeyP",
+        "flying": false,
+        "expect": "menu",
+        "changed": [
+          "menu"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "respawn.start",
+        "key": "KeyR",
+        "flying": false,
+        "expect": "atSpawn",
+        "changed": [
+          "atSpawn"
+        ],
+        "ok": true,
+        "restored": null
+      },
+      {
+        "action": "mode.cycle",
+        "key": "KeyM",
+        "flying": true,
+        "expect": "mode",
+        "changed": [
+          "mode"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "arm.toggle",
+        "key": "Space",
+        "flying": true,
+        "expect": "armed",
+        "changed": [
+          "atSpawn",
+          "armed"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "voxels.cycle",
+        "key": "KeyV",
+        "flying": false,
+        "expect": "voxel",
+        "changed": [
+          "voxel"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "walls.toggle",
+        "key": "KeyC",
+        "flying": false,
+        "expect": "walls",
+        "changed": [
+          "mode",
+          "walls"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "hud.toggle",
+        "key": "KeyH",
+        "flying": false,
+        "expect": "hudOff",
+        "changed": [
+          "hudOff"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "frameStats.toggle",
+        "key": "F3",
+        "flying": false,
+        "expect": "frame",
+        "changed": [
+          "frame"
+        ],
+        "ok": true,
+        "restored": true
+      }
+    ],
+    "control": {
+      "what": "a deliberately wrong binding in the page's own keymap module (H and V swapped): the loop and the panel check must both fail",
+      "injected": {
+        "url": "http://127.0.0.1:5324/fly/@fs/C:/dev/gsfpv-w2-4/packages/prefs/src/keymap.ts",
+        "hud": [
+          "KeyV"
+        ],
+        "voxels": [
+          "KeyH"
+        ]
+      },
+      "loop": [
+        {
+          "action": "voxels.cycle",
+          "key": "KeyV",
+          "flying": false,
+          "expect": "voxel",
+          "changed": [
+            "hudOff"
+          ],
+          "ok": false,
+          "restored": true
+        },
+        {
+          "action": "hud.toggle",
+          "key": "KeyH",
+          "flying": false,
+          "expect": "hudOff",
+          "changed": [
+            "voxel"
+          ],
+          "ok": false,
+          "restored": true
+        }
+      ],
+      "panelProblems": [
+        "voxels.cycle: caps H != V",
+        "voxels.cycle: aria \"H\" != \"V\"",
+        "hud.toggle: caps V != H",
+        "hud.toggle: aria \"V\" != \"H\""
+      ],
+      "fired": true
+    },
+    "ran": {
+      "at": "2026-10-01T17:37:33.656Z",
+      "gitHead": "3db8ec7",
+      "gitDirty": true,
+      "browser": {
+        "kind": "system-chrome",
+        "version": "154.0.8037.59",
+        "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "why": "installed"
+      }
+    }
+  },
+  "S4": {
+    "pass": true,
+    "what": "a 4 s flight goes into the drone's lifetime totals (prefs collection 'stats'); after a reload the totals, the stored collection and the panel's All time column are the same",
+    "before": {
+      "lifetime": {
+        "flights": 1,
+        "airtimeS": 4.09,
+        "distanceM": 38.55377019788416,
+        "crashes": 0
+      },
+      "drone": "pavo20pro-3s"
+    },
+    "afterReload": {
+      "lifetime": {
+        "flights": 1,
+        "airtimeS": 4.09,
+        "distanceM": 38.55377019788416,
+        "crashes": 0
+      },
+      "stored": {
+        "flights": 1,
+        "airtimeS": 4.09,
+        "distanceM": 38.55377019788416,
+        "crashes": 0
+      }
+    },
+    "panelAllTimeAirtime": "0:04.1",
+    "control": {
+      "what": "a fresh browser context starts at zero",
+      "fresh": {
+        "lifetime": {
+          "flights": 0,
+          "airtimeS": 0,
+          "distanceM": 0,
+          "crashes": 0
+        },
+        "stored": null
+      },
+      "fired": true
+    },
+    "ran": {
+      "at": "2026-10-01T17:37:33.656Z",
+      "gitHead": "3db8ec7",
+      "gitDirty": true,
+      "browser": {
+        "kind": "system-chrome",
+        "version": "154.0.8037.59",
+        "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "why": "installed"
+      }
+    }
+  },
+  "S5": {
+    "pass": true,
+    "what": "the summary panel keeps every pause-menu item with its data-action, in order, and the contact link; the first item has the focus, Down / Up walk the menu (wrapping), Tab goes on, Enter runs the focused item, Esc closes what it opened; every item does what it did",
+    "order": [
+      "pause.continue",
+      "pause.restart",
+      "pause.scene",
+      "pause.drone",
+      "pause.radio",
+      "pause.settings",
+      "pause.replays",
+      "pause.measure",
+      "pause.import",
+      "pause.cinema"
+    ],
+    "contact": {
+      "href": "/en/#contact",
+      "target": "_blank"
+    },
+    "nav": {
+      "walk": [
+        "pause.restart",
+        "pause.scene",
+        "pause.drone",
+        "pause.radio",
+        "pause.settings",
+        "pause.replays",
+        "pause.measure",
+        "pause.import",
+        "pause.cinema",
+        "/en/#contact",
+        "pause.continue"
+      ],
+      "expectWalk": [
+        "pause.restart",
+        "pause.scene",
+        "pause.drone",
+        "pause.radio",
+        "pause.settings",
+        "pause.replays",
+        "pause.measure",
+        "pause.import",
+        "pause.cinema",
+        "/en/#contact",
+        "pause.continue"
+      ],
+      "up": "/en/#contact",
+      "tab": "pause.restart",
+      "onMeasure": "pause.measure",
+      "enterOpened": "panel interactive",
+      "escClosed": true
+    },
+    "items": {
+      "pause.continue": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 2228,
+          "paused": true
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying",
+          "tick": 2753,
+          "paused": false
+        }
+      },
+      "pause.restart": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 3853,
+          "paused": true
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying",
+          "tick": 492,
+          "paused": false
+        }
+      },
+      "pause.drone": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 792,
+          "paused": true
+        },
+        "after": {
+          "panel": false,
+          "other": "screen drones interactive",
+          "body": "flying",
+          "tick": 792,
+          "paused": true
+        }
+      },
+      "pause.radio": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 1109,
+          "paused": true
+        },
+        "after": {
+          "panel": false,
+          "other": "screen radio interactive",
+          "body": "flying",
+          "tick": 1109,
+          "paused": true
+        }
+      },
+      "pause.settings": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 1420,
+          "paused": true
+        },
+        "after": {
+          "panel": false,
+          "other": "panel interactive",
+          "body": "flying",
+          "tick": 1420,
+          "paused": true
+        }
+      },
+      "pause.replays": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 1734,
+          "paused": true
+        },
+        "after": {
+          "panel": false,
+          "other": "panel interactive",
+          "body": "flying",
+          "tick": 1734,
+          "paused": true
+        }
+      },
+      "pause.measure": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 2045,
+          "paused": true
+        },
+        "after": {
+          "panel": false,
+          "other": "panel interactive",
+          "body": "flying",
+          "tick": 2045,
+          "paused": true
+        }
+      },
+      "pause.import": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 2365,
+          "paused": true
+        },
+        "after": {
+          "panel": false,
+          "other": "panel interactive",
+          "body": "flying",
+          "tick": 2365,
+          "paused": true
+        }
+      },
+      "pause.cinema": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 2686,
+          "paused": true
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying cinema",
+          "tick": 3197,
+          "paused": false
+        }
+      },
+      "pause.scene": {
+        "ok": true,
+        "status": "picker",
+        "url": "http://127.0.0.1:5324/fly/?",
+        "firstVisitWarning": true
+      }
+    },
+    "control": {
+      "what": "a planted button in the menu that does nothing: the same look must find nothing happened",
+      "planted": {
+        "didSomething": false
+      },
+      "fired": true
+    },
+    "ran": {
+      "at": "2026-10-01T17:37:33.656Z",
+      "gitHead": "3db8ec7",
+      "gitDirty": true,
+      "browser": {
+        "kind": "system-chrome",
+        "version": "154.0.8037.59",
+        "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "why": "installed"
+      }
+    }
+  },
+  "S6": {
+    "pass": true,
+    "vramFreeMiB": 19615,
+    "what": "scan drawn: the card inside the viewport and clear of the top buttons, the OSD lines, the credit and the arm / key cards; the panel inside the viewport and clear of the top buttons, no horizontal overflow, menu buttons not overlapping; desktop 1280x800: 16 stat rows in three columns (stats | menu | keys); phone 375x812: the 4 main stat rows in one column",
+    "desktop": {
+      "info": {
+        "render": "on",
+        "gpuSort": true,
+        "webgpu": true
+      },
+      "card": {
+        "box": {
+          "x": 450,
+          "y": 98,
+          "r": 830,
+          "b": 398.0833435058594
+        },
+        "inside": true,
+        "hitsTop": false,
+        "hitsOther": []
+      },
+      "panel": {
+        "box": {
+          "x": 40,
+          "y": 90,
+          "r": 1240,
+          "b": 759.5208740234375
+        },
+        "inside": true,
+        "hOverflow": 0,
+        "statRows": 16,
+        "buttonOverlaps": 0,
+        "buttonsInside": true,
+        "hitsTop": false,
+        "cols": [
+          {
+            "x": 56.66666793823242,
+            "y": 156.6666717529297,
+            "r": 502.0729179382324,
+            "b": 742.8541717529297
+          },
+          {
+            "x": 520.0729370117188,
+            "y": 156.6666717529297,
+            "r": 862.6979370117188,
+            "b": 640.6666717529297
+          },
+          {
+            "x": 880.6979370117188,
+            "y": 156.6666717529297,
+            "r": 1223.3229370117188,
+            "b": 556.0416717529297
+          }
+        ]
+      },
+      "planted": {
+        "hOverflow": 217,
+        "buttonOverlaps": 19,
+        "cardHits": []
+      }
+    },
+    "phone": {
+      "info": {
+        "render": "on",
+        "gpuSort": true,
+        "webgpu": true
+      },
+      "card": {
+        "box": {
+          "x": 16,
+          "y": 98,
+          "r": 359.3333435058594,
+          "b": 364.29168701171875
+        },
+        "inside": true,
+        "hitsTop": false,
+        "hitsOther": []
+      },
+      "panel": {
+        "box": {
+          "x": 16,
+          "y": 90,
+          "r": 359.3333435058594,
+          "b": 800
+        },
+        "inside": true,
+        "hOverflow": 0,
+        "statRows": 4,
+        "buttonOverlaps": 0,
+        "buttonsInside": true,
+        "hitsTop": false,
+        "cols": [
+          {
+            "x": 32.66666793823242,
+            "y": 156.6666717529297,
+            "r": 327.3333549499512,
+            "b": 380.56251525878906
+          },
+          {
+            "x": 32.66666793823242,
+            "y": 398.5625,
+            "r": 327.3333549499512,
+            "b": 882.5625
+          },
+          {
+            "x": 32.66666793823242,
+            "y": 900.5625,
+            "r": 327.3333549499512,
+            "b": 1312.5208435058594
+          }
+        ]
+      },
+      "planted": {
+        "hOverflow": 1089,
+        "buttonOverlaps": 19,
+        "cardHits": [
+          "arm-card key-card"
+        ]
+      }
+    },
+    "threeCols": true,
+    "shots": [
+      "evidence/2026-10-01/v03-summary/card-1280.jpg",
+      "evidence/2026-10-01/v03-summary/panel-1280.jpg",
+      "evidence/2026-10-01/v03-summary/card-375.jpg",
+      "evidence/2026-10-01/v03-summary/panel-375.jpg"
+    ],
+    "control": {
+      "what": "planted styles must be seen: a 1400 px stats table as a horizontal overflow, -24 px button margins as overlapping buttons, and on the phone the keyboard card shown under the stats card as a collision",
+      "desktop": {
+        "hOverflow": 217,
+        "buttonOverlaps": 19,
+        "cardHits": []
+      },
+      "phone": {
+        "hOverflow": 1089,
+        "buttonOverlaps": 19,
+        "cardHits": [
+          "arm-card key-card"
+        ]
+      },
+      "fired": true
+    },
+    "ran": {
+      "at": "2026-10-01T17:36:23.305Z",
+      "gitHead": "3db8ec7",
+      "gitDirty": true,
+      "browser": {
+        "kind": "system-chrome",
+        "version": "154.0.8037.59",
+        "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "why": "installed"
+      }
+    }
+  },
+  "parts": [
+    {
+      "part": "S1",
+      "pass": true,
+      "gitHead": "3db8ec7"
+    },
+    {
+      "part": "S2",
+      "pass": true,
+      "gitHead": "3db8ec7"
+    },
+    {
+      "part": "S3",
+      "pass": true,
+      "gitHead": "3db8ec7"
+    },
+    {
+      "part": "S4",
+      "pass": true,
+      "gitHead": "3db8ec7"
+    },
+    {
+      "part": "S5",
+      "pass": true,
+      "gitHead": "3db8ec7"
+    },
+    {
+      "part": "S6",
+      "pass": true,
+      "gitHead": "3db8ec7"
+    }
+  ],
+  "pass": true
+}
