@@ -287,12 +287,17 @@ if (want('B10') || want('B11')) {
         await hookEval(page, "h.fake.set('T', -1); h.fake.arm = false; return 0;");
         return { armed, y0, y1, climbed: y1 - y0 };
     })();
-    const saved = await page.evaluate(() => localStorage.getItem('gsfpv.profiles.v1'));
+    // v0.3 keeps radio profiles in the prefs store's collection radioProfiles (W2-3), not in v0.2's
+    // gsfpv.profiles.v1: what the page itself reads after a reload is what counts
+    const PROFILE = "return JSON.stringify(h.prefs.collection('radioProfiles').items[h.fake.key] ?? null);";
+    const saved = await hookEval<string>(page, PROFILE);
     await page.reload();
     await waitLogic(page, 180000);
-    const savedAfter = await page.evaluate(() => localStorage.getItem('gsfpv.profiles.v1'));
-    const key = await hookEval<string>(page, 'return h.fake.key;');
-    const persisted = !!savedAfter && savedAfter === saved && JSON.parse(savedAfter)[key]?.axes?.throttle?.index === 0;
+    const savedAfter = await hookEval<string>(page, PROFILE);
+    // the store keeps canonical JSON (sorted keys): compare the values, not the strings
+    const canon = (v: unknown): unknown => Array.isArray(v) ? v.map(canon) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v as object).sort().map((k) => [k, canon((v as Record<string, unknown>)[k])])) : v;
+    const same = JSON.stringify(canon(JSON.parse(saved))) === JSON.stringify(canon(JSON.parse(savedAfter)));
+    const persisted = savedAfter !== 'null' && saved !== 'null' && same && JSON.parse(savedAfter)?.axes?.throttle?.index === 0;
 
     if (want('B10')) {
         const other = await wizard('order=AETR&inv=&offset=0.03&noise=0.01', 60000);
@@ -300,7 +305,7 @@ if (want('B10') || want('B11')) {
         const otherDiffers = !!op && op.axes.roll.index === 0 && op.axes.throttle.index === 2;
         const broken = await wizard('order=TAER&inv=E&broken=E', 25000);
         const pass = good.step === 6 && mapOk && climb.armed && climb.climbed > 0.05 && persisted && otherDiffers && broken.step !== 6;
-        record('B10', { pass, radio: 'SimRadio EdgeTX Classic (simulated raw HID reports, NOT a real radio)', good: { step: good.step, profile: good.prof, mappingCorrect: mapOk }, throttleUpClimbs: climb, survivesReload: persisted, controls: { otherOrder: { profile: other.prof, fired: otherDiffers }, brokenStick: { step: broken.step, message: broken.msg, fired: broken.step !== 6 } } });
+        record('B10', { pass, radio: 'SimRadio EdgeTX Classic (simulated raw HID reports, NOT a real radio)', good: { step: good.step, profile: good.prof, mappingCorrect: mapOk }, throttleUpClimbs: climb, survivesReload: persisted, profileBefore: saved, profileAfterReload: savedAfter, controls: { otherOrder: { profile: other.prof, fired: otherDiffers }, brokenStick: { step: broken.step, message: broken.msg, fired: broken.step !== 6 } } });
     }
 }
 

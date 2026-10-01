@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-01T12:26:05.039Z",
-    "gitHead": "634dba2",
+    "date": "2026-10-01T23:38:10.216Z",
+    "gitHead": "18ba86a",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -16,16 +16,7 @@
   },
   "site": "http://localhost:5320",
   "items": {
-    "B6": true,
-    "B7": true,
-    "B9": true,
-    "B10": true,
-    "B11": true,
-    "B12": false,
-    "B13": true,
-    "B14": true,
-    "B15": false,
-    "B16": true
+    "B10": true
   },
   "render": "on"
 }

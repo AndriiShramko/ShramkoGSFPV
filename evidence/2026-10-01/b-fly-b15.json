@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-01T12:25:29.053Z",
-    "gitHead": "634dba2",
+    "date": "2026-10-01T23:31:30.050Z",
+    "gitHead": "18ba86a",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -16,48 +16,63 @@
   },
   "site": "http://localhost:5320",
   "render": "on",
-  "pass": false,
+  "pass": true,
   "flight": {
     "phase": "rest",
     "flip": {
-      "startTick": 5705,
-      "endTick": 6155,
+      "startTick": 5713,
+      "endTick": 6163,
       "minUpY": -0.9999998748515548
     },
     "crash": {
-      "tick": 19222,
+      "tick": 19230,
       "speed": 8.565648919042033,
       "px": -4.899018282169666,
       "py": 2.1660896045074054,
       "pz": 0.8999678014733062
     },
-    "tick": 30069
+    "tick": 30243
   },
   "saved": {
-    "hash": "5d52c4748256040516be9cfa58f9ab5e635fb3dbab1bd8e9353c4adf06c3a217",
-    "endTick": 30069,
-    "records": 5631
+    "hash": "130a48595c08f17af64859f82d87136270a823db6c304ebd5f3dec59789b608f",
+    "endTick": 30243,
+    "records": 5631,
+    "lives": 2
   },
   "newTab": {
-    "saved": "5d52c4748256040516be9cfa58f9ab5e635fb3dbab1bd8e9353c4adf06c3a217",
-    "hash": "5d52c4748256040516be9cfa58f9ab5e635fb3dbab1bd8e9353c4adf06c3a217",
-    "endTick": 30069
+    "saved": "130a48595c08f17af64859f82d87136270a823db6c304ebd5f3dec59789b608f",
+    "hash": "130a48595c08f17af64859f82d87136270a823db6c304ebd5f3dec59789b608f",
+    "endTick": 30243,
+    "lives": 2,
+    "refused": null
   },
   "cpuThrottle": {
     "x1": {
-      "stepsPerWallSecond": 1006.5121385263167,
+      "stepsPerWallSecond": 1005.1103078648885,
       "hitches": 0
     },
     "x4": {
-      "stepsPerWallSecond": 995.6688405435428,
+      "stepsPerWallSecond": 997.3079415712502,
       "hitches": 0
     }
   },
   "control": {
-    "hash": "de3bc138a2e4119da63991d94f98dce2bbef7503f7ceb5862bb4679c92dc6791",
-    "differs": true,
-    "maxDivergenceM": 0.008755023491223332,
-    "tamperedValue": -0.44454580545425415,
-    "record": 2815
+    "atTick": 10000,
+    "channel": "throttle",
+    "lsb": {
+      "hash": "97c9744f8c350f2eebe81a67d0c91ab6cd6aa690f59469c2b7c4e23f8fcc6e05",
+      "differs": true,
+      "maxDivergenceM": 0.01756369884517163,
+      "tamperedValue": -0.37293997406959534,
+      "fired": true
+    },
+    "twitch": {
+      "delta": 0.05,
+      "hash": "78799ad79d88cae47ed0ef6f76f4954e53871f4a6cdefdf27349155189fd05ec",
+      "differs": true,
+      "maxDivergenceM": 0.3824906995833291,
+      "tamperedValue": -0.37293997406959534,
+      "fired": true
+    }
   }
 }
