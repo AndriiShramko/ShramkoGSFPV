@@ -86,6 +86,44 @@ def header(reply, name: str) -> str | None:
 
 VALID = "sort=starred&order=-1&time=week&features=downloadable,walkable&search=gothic%20church&skip=32&limit=16"
 
+TRICKLE_S = 1.6        # how long the fake upstream keeps dripping
+TRICKLE_STEP_S = 0.1   # one byte this often: every single read is quick, the whole answer is not
+DEADLINE_S = 0.5       # the fetch timeout the trickle tests give
+SLACK_S = 0.5          # what a deadline may overrun by (thread start, one last short wait)
+
+
+def old_fetch(url: str, headers: dict, timeout: float, max_bytes: int):
+    """Control only: fetch_upstream before review C7 (2026-10-01). The deadline was checked between reads, a
+    buffered read waited for 64 KiB or the end, and the socket timeout bounded each recv, not the answer."""
+    import urllib.request
+    deadline = time.monotonic() + timeout
+    req = urllib.request.Request(url, headers=headers, method="GET")
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            chunks = []
+            while True:
+                if time.monotonic() > deadline:
+                    raise server.UpstreamError("timeout")
+                b = r.read(65536)
+                if not b:
+                    break
+                chunks.append(b)
+            return r.status, {}, b"".join(chunks)
+    except server.UpstreamError:
+        raise
+    except Exception as e:  # noqa: BLE001
+        raise server.UpstreamError("network") from e
+
+
+def timed(f, *a):
+    """(result or exception, seconds)."""
+    t0 = time.monotonic()
+    try:
+        out = f(*a)
+    except Exception as e:  # noqa: BLE001
+        out = e
+    return out, time.monotonic() - t0
+
 
 class Whitelist(unittest.TestCase):
     def test_valid_query_forwarded_like_supersplat_client(self):
@@ -188,6 +226,23 @@ class Cache(unittest.TestCase):
         clock.t += 501  # control: 601 s after the fetch the entry is no longer fresh
         self.assertEqual(header(p.handle("sort=starred", "c"), "X-Cache"), "miss")
         self.assertEqual(len(fake.calls), 2, "TTL expired: 1 upstream call")
+
+    def test_max_age_never_promises_more_than_is_left(self):
+        """The rule the tab's keep is built on (packages/scenes/test/superspl.test.ts models it, review C8): max-age =
+        whole seconds left of the 10 min, rounded down; in the last second 'no-cache', which the tab does not keep."""
+        p, _, clock = proxy()
+        t0 = clock.t
+        p.handle("sort=starred", "c")
+        got = {}
+        for age in (1, 299.5, 598.9, 599, 599.5, 599.99):
+            clock.t = t0 + age
+            r = p.handle("sort=starred", "c")
+            got[age] = (header(r, "X-Cache"), header(r, "Cache-Control"))
+        self.assertEqual(got, {1: ("hit", "public, max-age=599"), 299.5: ("hit", "public, max-age=300"),
+                               598.9: ("hit", "public, max-age=1"), 599: ("hit", "public, max-age=1"),
+                               599.5: ("hit", "no-cache"), 599.99: ("hit", "no-cache")})
+        for age, (_, cc) in got.items():  # what the header promises plus the age never passes 600 s
+            self.assertLessEqual(age + (int(cc.split("=")[1]) if "max-age" in cc else 0), 600)
 
     def test_bounded_bytes_and_least_recently_used_goes_first(self):
         one = len(proxy()[0].handle("skip=0", "c")[1]) + 512
@@ -382,6 +437,24 @@ class RealFetch(unittest.TestCase):
                         self.wfile.flush()
                         time.sleep(0.1)
                     return
+                if self.path.startswith("/trickle"):
+                    # an overloaded upstream: a byte every TRICKLE_STEP_S for TRICKLE_S, in the headers or the body
+                    try:
+                        if self.path.startswith("/trickle-head"):
+                            self.wfile.write(b"HTTP/1.1 200 OK\r\nX-Pad: ")
+                        else:
+                            self.send_response(200)
+                            self.send_header("Content-Length", "100000")  # far more than ever comes
+                            self.end_headers()
+                        t_end = time.monotonic() + TRICKLE_S
+                        while time.monotonic() < t_end:
+                            self.wfile.write(b"x")
+                            self.wfile.flush()
+                            time.sleep(TRICKLE_STEP_S)
+                    except OSError:  # the client gave up: that is the point
+                        pass
+                    self.close_connection = True
+                    return
                 b = b"x" * 5000 if self.path.startswith("/big") else page()
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
@@ -419,6 +492,48 @@ class RealFetch(unittest.TestCase):
             # 5 s, not 1: Windows answers a closed loopback port with a refusal only after ~2 s of SYN retries
             server.fetch_upstream("http://127.0.0.1:1/", h, 5, 100)
         self.assertEqual(e.exception.detail, "network")
+
+    def test_the_deadline_holds_for_the_whole_answer_against_a_trickle(self):
+        """Review C7: one byte every 0.1 s must not stretch a 0.5 s deadline, neither in a body announced as
+        100000 bytes nor in headers that never end. Control: the fetch before the fix overran the same
+        deadline by the whole trickle."""
+        h = dict(server.SUPERSPL_UPSTREAM_HEADERS)
+        for path in ("/trickle", "/trickle-head"):
+            out, dt = timed(server.fetch_upstream, self.base + path, h, DEADLINE_S, 1_000_000)
+            self.assertIsInstance(out, server.UpstreamError, path)
+            self.assertEqual((path, out.detail), (path, "timeout"))
+            self.assertLess(dt, DEADLINE_S + SLACK_S, path)
+        for path in ("/trickle", "/trickle-head"):
+            _, dt = timed(old_fetch, self.base + path, h, DEADLINE_S, 1_000_000)
+            self.assertGreater(dt, TRICKLE_S - 0.3, f"control {path}: the old fetch waited the trickle out")
+
+    def test_a_trickling_upstream_keeps_no_visitor_past_the_deadline(self):
+        """Review C7 (b): the page's leader is bounded, so every visitor asking that page gets the stale copy
+        by the deadline (before the fix: each one waited up to timeout + slot wait + 1 s, holding a thread)."""
+        def run(fetch) -> list:
+            clock = Clock()
+            p = server.SupersplProxy(server.SupersplConfig(upstream_timeout_s=DEADLINE_S, slot_wait_s=0.2), fetch=fetch,
+                                     clock=clock, wall=lambda: 1790000000.0, upstream=self.base + "/ok")
+            self.assertEqual(header(p.handle("skip=0", "seed"), "X-Cache"), "miss")
+            clock.t += p.cfg.ttl_s + 1  # the copy is stale now: the next ask goes upstream, which now drips
+            p.upstream = self.base + "/trickle"
+            out: list = [None] * 6
+
+            def ask(i):
+                r, dt = timed(p.handle, "skip=0", f"visitor{i}")
+                out[i] = (r[0], header(r, "X-Cache"), dt)
+            ts = [threading.Thread(target=ask, args=(i,)) for i in range(len(out))]
+            for t in ts:
+                t.start()
+            for t in ts:
+                t.join(15)
+            return out
+        got = run(server.fetch_upstream)
+        self.assertEqual([g[:2] for g in got], [(200, "stale")] * 6)
+        self.assertLess(max(g[2] for g in got), DEADLINE_S + SLACK_S)
+        ctl = run(old_fetch)  # control: the same page with the old fetch keeps every visitor for the trickle
+        self.assertEqual([g[:2] for g in ctl], [(200, "stale")] * 6)
+        self.assertGreater(max(g[2] for g in ctl), TRICKLE_S - 0.3)
 
     def test_nothing_of_the_visitor_reaches_the_upstream(self):
         """Visitor -> our Handler (real HTTP) -> real fetch_upstream -> local fake upstream, headers compared."""

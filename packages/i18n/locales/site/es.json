@@ -227,6 +227,14 @@
       "cta": "Pruébalos en el simulador"
     },
     "text": {
+      "count": {
+        "settings": { "one": "ajuste", "few": "ajustes", "many": "ajustes", "other": "ajustes" },
+        "groups": { "one": "grupo", "few": "grupos", "many": "grupos", "other": "grupos" },
+        "keys": { "one": "tecla", "few": "teclas", "many": "teclas", "other": "teclas" },
+        "drones": { "one": "dron", "few": "drones", "many": "drones", "other": "drones" },
+        "rateTypes": { "one": "tipo de curva de rates", "few": "tipos de curva de rates", "many": "tipos de curva de rates", "other": "tipos de curva de rates" },
+        "modes": { "one": "modo de vuelo", "few": "modos de vuelo", "many": "modos de vuelo", "other": "modos de vuelo" }
+      },
       "prefs": {
         "on": "Activado",
         "off": "Desactivado",

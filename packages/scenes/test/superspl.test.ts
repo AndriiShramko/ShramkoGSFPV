@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
     SuperSplatCatalog, SuperSplatError, MemoryStore, normalizeQuery, exploreQueryString, cleanSearch, supersplSearchUrl,
-    pickRandomTopRated, CATALOG_TTL_MS
+    pickRandomTopRated, CATALOG_TTL_MS, UNSUPPORTED_FORMATS, formatVerdict
 } from '../src/index';
 import type { CatalogStore, ExploreItem, ExploreQuery } from '../src/index';
 
@@ -117,7 +117,8 @@ describe('query normalisation (mirrors the proxy whitelist)', () => {
         expect(exploreQueryString(normalizeQuery({ ...Q, skip: 16 }))).not.toBe(exploreQueryString(normalizeQuery(Q))); // control
     });
 
-    const py = spawnSync('python3', ['--version']).status === 0;
+    // python3 on Linux CI, python on Windows (where python3 may be the store's stub)
+    const py = ['python3', 'python'].find((c) => spawnSync(c, ['--version']).status === 0);
     it.skipIf(!py)('every query string this client sends passes the real proxy whitelist unchanged', () => {
         const queries: Partial<ExploreQuery>[] = [
             {}, Q, { sort: 'trending', time: 'week' }, { sort: 'size', order: 1, time: 'day', features: ['downloadable'], skip: 10000, limit: 48 },
@@ -137,7 +138,7 @@ describe('query normalisation (mirrors the proxy whitelist)', () => {
             'print(json.dumps(out))'
         ].join('\n');
         const control = { qs: 'sort=likes&order=-1', search: '' };
-        const r = spawnSync('python3', ['-c', script], { input: JSON.stringify([...sent, control]), encoding: 'utf8' });
+        const r = spawnSync(py!, ['-c', script], { input: JSON.stringify([...sent, control]), encoding: 'utf8' });
         expect(r.stderr).toBe('');
         const got = JSON.parse(r.stdout) as Array<{ ok: boolean; search?: string; param?: string }>;
         expect(got.slice(0, -1)).toEqual(sent.map((s) => ({ ok: true, search: s.search })));
@@ -213,6 +214,44 @@ describe('SuperSplatCatalog.explore', () => {
         expect((await cat2.explore(Q)).proxy).toBe('stale');
         await cat2.explore(Q);
         expect(stale.calls).toHaveLength(2);
+    });
+
+    it('no max-age, no keeping: a hit in its last second is asked again; every request bypasses the HTTP cache (review C8)', async () => {
+        const c = clock();
+        const last = proxy(pageOf([wire(0)], { 'cache-control': 'no-cache', 'x-cache': 'hit' }));
+        const cat = new SuperSplatCatalog({ fetch: last.fetch, now: c.now });
+        expect((await cat.explore(Q)).proxy).toBe('hit');
+        await cat.explore(Q);
+        expect(last.calls).toHaveLength(2);
+        // the browser's own cache would replay an answer and its max-age would count twice: never asked of it
+        expect(last.calls.map((x) => x.init?.cache)).toEqual(['no-store', 'no-store']);
+        const kept = proxy(pageOf([wire(0)], { 'cache-control': 'public, max-age=1', 'x-cache': 'hit' }));
+        const cat2 = new SuperSplatCatalog({ fetch: kept.fetch, now: c.now });
+        await cat2.explore(Q);
+        await cat2.explore(Q);
+        expect(kept.calls).toHaveLength(1); // control: the same hit with a max-age is kept
+    });
+
+    it('data in the tab is never older than the 10 min of the proxy, whatever the age of its copy (D35, review C8)', async () => {
+        // the proxy's header rule (apps/api/server.py _ok): max-age = whole seconds left of its 600, else no-cache
+        const proxyHeaders = (ageS: number, cc?: string): Record<string, string> => {
+            const fresh = Math.trunc(600 - ageS);
+            return { 'cache-control': cc ?? (fresh > 0 ? `public, max-age=${fresh}` : 'no-cache'), 'x-cache': ageS === 0 ? 'miss' : 'hit' };
+        };
+        /** How old the data is when this tab lets go of it (s): the proxy's copy age plus the time kept here. */
+        const oldestShown = async (ageS: number, cc?: string): Promise<number> => {
+            const c = clock();
+            const exps: number[] = [];
+            const store: CatalogStore = {
+                getItem: () => null,
+                setItem: (k, v) => { if (!k.endsWith('index')) exps.push((JSON.parse(v) as { exp: number }).exp); },
+                removeItem: () => undefined
+            };
+            await new SuperSplatCatalog({ fetch: proxy(pageOf([wire(0)], proxyHeaders(ageS, cc))).fetch, now: c.now, store }).explore(Q);
+            return ageS + (exps.length ? (Math.max(...exps) - c.t) / 1000 : 0);
+        };
+        for (const age of [0, 1, 299.5, 598.9, 599, 599.5, 599.99, 600]) expect(await oldestShown(age), `copy ${age} s old`).toBeLessThanOrEqual(600);
+        expect(await oldestShown(300, 'public, max-age=600')).toBe(900); // control: the measure does catch an over-long keep
     });
 
     it('keeps at most maxStored pages, dropping the oldest', async () => {
@@ -400,6 +439,51 @@ describe('pickRandomTopRated', () => {
         const r = pickRandomTopRated(dup, { rng: () => 0.75 });
         expect([r!.item.id, r!.candidates]).toEqual([id(1), 2]);
         for (const bad of [1, -0.5, Number.NaN, Infinity]) expect(pickRandomTopRated(pool, { rng: () => bad })!.item.id).toMatch(/^[0-9a-f]{8}$/);
+    });
+});
+
+describe('formats the API does not name (review C9)', () => {
+    // c67edb74 "Gothic Church - Kefermarkt": the best-liked walkable scene on 2026-10-01; the API gives its format
+    // as '' and the CDN has only scene.compressed.ply for it (resolveScene: 'unsupported')
+    const tier = items(20, (i) => (i === 0 ? { id: 'c67edb74', format: '' } : {}));
+
+    it('only sog, ssog and sogs count as known; the pure picker never draws an unknown one', () => {
+        expect(['sog', 'ssog', 'sogs', 'compressed.ply', '', 'ply', 'SOG'].map(formatVerdict))
+            .toEqual(['opens', 'opens', 'opens', 'unsupported', 'unknown', 'unknown', 'unknown']);
+        const count = (o: Partial<Parameters<typeof pickRandomTopRated>[1]>) => {
+            const rng = mulberry32(3);
+            let n = 0;
+            for (let i = 0; i < 2000; i++) if (pickRandomTopRated(tier, { rng, ...o })!.item.id === 'c67edb74') n++;
+            return n;
+        };
+        expect(count({})).toBe(0);
+        // control: the rule before the fix (only 'compressed.ply' is broken) picks it about 1 time in 20
+        expect(count({ isBroken: (it) => UNSUPPORTED_FORMATS.includes(it.format) })).toBeGreaterThan(50);
+    });
+
+    it('randomTopRated with a check: an unknown format is returned only when the check says it opens, each asked once', async () => {
+        const pool = Array.from({ length: 40 }, (_, i) => wire(i, i === 0 ? { id: 'c67edb74', format: '' } : i === 1 ? { format: '' } : {}));
+        const asked: string[] = [];
+        const check = async (it: ExploreItem) => {
+            asked.push(it.id);
+            return it.id === 'c67edb74' ? ('no' as const) : ('yes' as const); // id(1): '' in the API, a SOG on the CDN
+        };
+        const draws = async (o: { check?: typeof check }) => {
+            const cat = new SuperSplatCatalog({ fetch: proxy(pageOf(pool)).fetch });
+            const got: string[] = [];
+            for (let k = 0; k < 40; k++) got.push((await cat.randomTopRated({ rng: () => (k + 0.5) / 40, ...o }))!.item.id);
+            return got;
+        };
+        const got = await draws({ check });
+        expect(got).not.toContain('c67edb74');
+        expect(got).toContain(id(1)); // control: a good scene with a blank format stays reachable
+        expect(asked.sort()).toEqual([id(1), 'c67edb74']); // known formats are never checked; verdicts are kept
+        const plain = await draws({});
+        expect(plain).not.toContain('c67edb74');
+        expect(plain).not.toContain(id(1)); // without a check an unknown format is not picked at all
+        const unsure = new SuperSplatCatalog({ fetch: proxy(pageOf(pool)).fetch });
+        const r = await unsure.randomTopRated({ rng: () => 0, check: async () => 'unknown' });
+        expect(r!.item.id).toBe(id(2)); // no clear answer: not this time, the next scene of the tier instead
     });
 });
 

@@ -5,16 +5,23 @@ import { fileURLToPath } from 'node:url';
 // repo root (tools/bench/scripts/ -> ../../..): no machine-specific paths
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\\/g, '/').replace(/\/$/, '');
 import { createRequire } from 'node:module';
-// system Chrome, or the bundled Chromium where there is none (tools/bench/README.md)
-import { pickBrowser } from '../src/chrome.mjs';
+// system Chrome, or the bundled Chromium where there is none (tools/bench/README.md); a logic check,
+// so it runs on either, and records which browser and GL it ran on (visual-browser.mjs)
+import { browserRecord, pickHarnessBrowser } from './visual-browser.mjs';
 import { mkdirSync, writeFileSync } from 'node:fs';
 const require = createRequire(ROOT + '/tools/bench/package.json');
 const { chromium } = require('playwright');
 const base = process.argv[2] ?? 'http://localhost:5346';
 const shots = process.argv[3] ?? ROOT + '/.cache/wz/auto-shots';
 mkdirSync(shots, { recursive: true });
-const browser = await chromium.launch({ ...pickBrowser({ expected: chromium.executablePath() }).launch, headless: false });
+const pick = pickHarnessBrowser({ expected: chromium.executablePath() }, false);
+const browser = await chromium.launch({ ...pick.launch, headless: false });
 const out = {};
+{
+    const probe = await browser.newContext();
+    out.browser = await browserRecord(pick, await probe.newPage(), { visual: false, version: browser.version() });
+    await probe.close();
+}
 for (const [name, qs, size] of [['nobuttons', '&nobuttons=1&react=900', { width: 1600, height: 900 }], ['human', '&human=5', { width: 375, height: 812 }]]) {
     const ctx = await browser.newContext({ viewport: size });
     const page = await ctx.newPage();
@@ -43,4 +50,4 @@ for (const [name, qs, size] of [['nobuttons', '&nobuttons=1&react=900', { width:
 }
 await browser.close();
 writeFileSync(`${shots}/result.json`, JSON.stringify(out, null, 1));
-console.log(JSON.stringify(Object.fromEntries(Object.entries(out).map(([k, v]) => [k, { seconds: v.seconds, end: v.end, screens: v.screens, errors: v.errors, anyStartNext: v.path.some((p) => /wizard-(start|next)/.test(p.buttons)) }])), null, 1));
+console.log(JSON.stringify({ browser: out.browser, ...Object.fromEntries(Object.entries(out).filter(([k]) => k !== 'browser').map(([k, v]) => [k, { seconds: v.seconds, end: v.end, screens: v.screens, errors: v.errors, anyStartNext: v.path.some((p) => /wizard-(start|next)/.test(p.buttons)) }])) }, null, 1));

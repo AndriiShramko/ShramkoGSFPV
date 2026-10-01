@@ -155,13 +155,14 @@ describe('SCHEMA is the A.8 table', () => {
         expect([...missing].filter((f) => f !== 'rotor_drag_per_s')).toEqual([]);
     });
 
-    it('key actions exist in the keymap: M, H, F3, V and [ ]', () => {
+    it('key actions exist in the keymap: M, H, F3, [ ], C and V', () => {
         const withKeys = SCHEMA.defs.filter((d) => actionsOf(d).length).map((d) => [d.id, actionsOf(d)]);
         expect(withKeys).toEqual([
             ['flight.mode', ['mode.cycle']],
             ['display.hud', ['hud.toggle']],
             ['display.frameStats', ['frameStats.toggle']],
             ['scene.transform', ['scale.down', 'scale.up']],
+            ['scene.walls', ['walls.toggle']], // C, shipped on main; its row showed no key until review C13
             ['voxels.show', ['voxels.cycle']]
         ]);
         for (const [, acts] of withKeys) for (const a of acts as string[]) expect(bindingOf(a)).toBeDefined();
