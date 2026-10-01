@@ -1,0 +1,84 @@
+{
+ "name": "v03-w1-render-accept",
+ "what": "W1-2 acceptance half the cloud could not run: accept-fly B6-B16 (B8 Firefox and B17 crash loop not run) WITH the scan drawn on a real GPU (RTX 4090, system Chrome), against a local RELEASE build of cloud-v03 + ArmGate keepArmedAfterCrash (634dba2) served with the hub CSP by tools/bench/scripts/serve-csp.mjs (locale paths, so the B6/B7 Russian pages are checked, unlike LOCAL_FLY)",
+ "commit": "634dba2",
+ "browser": {
+  "kind": "system-chrome",
+  "version": "154.0.8037.59",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed"
+ },
+ "items": {
+  "B10": {
+   "pass": true,
+   "render": "on",
+   "file": "evidence/2026-10-01/b-fly-b10.json"
+  },
+  "B11": {
+   "pass": true,
+   "render": "on",
+   "file": "evidence/2026-10-01/b-fly-b11.json"
+  },
+  "B12": {
+   "pass": false,
+   "render": "on",
+   "file": "evidence/2026-10-01/b-fly-b12.json"
+  },
+  "B13": {
+   "pass": true,
+   "render": "on",
+   "file": "evidence/2026-10-01/b-fly-b13.json"
+  },
+  "B14": {
+   "pass": true,
+   "render": "on",
+   "file": "evidence/2026-10-01/b-fly-b14.json"
+  },
+  "B15": {
+   "pass": false,
+   "render": "on",
+   "file": "evidence/2026-10-01/b-fly-b15.json"
+  },
+  "B16": {
+   "pass": true,
+   "render": "on",
+   "file": "evidence/2026-10-01/b-fly-b16.json"
+  },
+  "B6": {
+   "pass": true,
+   "render": "on",
+   "file": "evidence/2026-10-01/b-fly-b6.json"
+  },
+  "B7": {
+   "pass": true,
+   "render": "on",
+   "file": "evidence/2026-10-01/b-fly-b7.json"
+  },
+  "B9": {
+   "pass": true,
+   "render": "on",
+   "file": "evidence/2026-10-01/b-fly-b9.json"
+  }
+ },
+ "summary": {
+  "pass": [
+   "B10",
+   "B11",
+   "B13",
+   "B14",
+   "B16",
+   "B6",
+   "B7",
+   "B9"
+  ],
+  "fail": [
+   "B12",
+   "B15"
+  ]
+ },
+ "comparedWithCloud": "evidence/2026-09-28/v03-lead2-accept-fly.json: the same two items fail for the same reasons; everything the cloud could only run logic-only (B9-B16) or with software GL (B6) passes here with real rendering",
+ "failures": {
+  "B12": "the crash itself is right (8.67 m/s, Rapier wreck, respawn free); the negative control fails: the bot's slow 0.75 m/s dash into the wall must not crash, and it tumbles (upY 0.21) and crashes once. B12 passed on main (evidence/2026-09-27/b-fly-b12.json), so wave 1 (sim-core model or the bot, 7a1ccd4) changed it. Owner: W2-2 with the sim-core review.",
+  "B15": "the property holds (the saved log replays to the same hash 5d52c474... in a new tab, 995-1006 steps per wall second at 1x and 4x CPU throttle); the control (one tampered record must move the path > 10 mm) moved it 8.76 mm. Threshold or tamper point of the check, not the replay. Owner: W2-2 (B15 on log format /2)."
+ }
+}
