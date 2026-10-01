@@ -300,7 +300,8 @@ export class SettingsScreen {
         switch (def.type) {
             case 'bool': return this.switchControl(uid, label, get, set, enabled);
             case 'number': return this.numberControl(def, uid, label, get, set, enabled);
-            case 'enum': return def.options.length <= 4 ? this.segmented(def, uid, label, get, set, enabled) : this.selectControl(def, uid, label, get, set, enabled);
+            // a segmented control while its options fit on one line (A.9: four or fewer, short), else a select
+            case 'enum': return def.options.length <= 4 && def.options.reduce((n, o) => n + texts.option(def, o).length, 0) <= 40 ? this.segmented(def, uid, label, get, set, enabled) : this.selectControl(def, uid, label, get, set, enabled);
             case 'json': return jsonEditor(def, { get, set, drone: () => this.editDrone, uid, label, importBetaflight: this.host.importBetaflight ? () => this.host.importBetaflight?.() : undefined });
         }
     }
