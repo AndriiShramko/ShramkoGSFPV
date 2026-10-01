@@ -78,7 +78,11 @@ describe('after a crash (C.12 item 6)', () => {
 });
 
 describe('backoff (C.6)', () => {
-    /** 20 s hover in the first life, then every life dashes into the wall 0.5 s after it starts */
+    /**
+     * 40 s hover in the first life, then every life dashes into the wall 0.5 s after it starts (the
+     * fourth after 6 s). Ages are along the pilot's path (history.ts): a rewind cuts out what it
+     * undid, so 5 + 10 + 15 s of backoff need about 30 s of path before the first crash.
+     */
     function backoffRun(history: StateHistory): { r: Runner; dec: RespawnDecision[] } {
         const r = newRunner({ world: WORLD, at: SPAWN });
         attachDirector(r, SPAWN, {}, history);
@@ -86,14 +90,14 @@ describe('backoff (C.6)', () => {
         const p = new Pilot(r);
         crashCycles(p, { hoverTicks: 500, speed: 6, maxCrashes: 4 });
         const base = p.plan!;
-        p.plan = (pp, sim, lt) => base(pp, sim, pp.life === 0 ? lt - 19_500 : lt);
-        runFrames(r, 60, 40_000_000);
+        p.plan = (pp, sim, lt) => base(pp, sim, pp.life === 0 ? lt - 39_500 : pp.life === 3 ? lt - 5_500 : lt);
+        runFrames(r, 60, 62_000_000);
         return { r, dec };
     }
 
-    it('a crash within 3 s of the previous rewind goes further back: 5, 10, 15 s', () => {
+    it('a crash within 3 s of the previous rewind goes further back along the path: 5, 10, 15 s', () => {
         const { r, dec } = backoffRun(new StateHistory());
-        const ages = dec.map((x) => x.incidentTick - x.sampleTick!);
+        const ages = dec.map((x) => x.pathAgeTicks!);
         expect(dec.slice(0, 3).map((x) => x.backoff)).toEqual([1, 2, 3]);
         const lo = [5000, 10_000, 15_000];
         ages.slice(0, 3).forEach((a, i) => { expect(a).toBeGreaterThanOrEqual(lo[i]); expect(a).toBeLessThanOrEqual(lo[i] + 50); });
@@ -103,8 +107,8 @@ describe('backoff (C.6)', () => {
     });
 
     it('beyond the history\'s reach it goes to the start, and the backoff begins again', () => {
-        // 14 s deep and read 2 s after the crash: 12 s back from the crash, so 5 and 10 s fit and 15 s does not
-        const { r, dec } = backoffRun(new StateHistory({ capacity: 280 }));
+        // 20 s deep: the 10 s step reaches 13.9 s before the first crash (kept), the 15 s step 27.8 s (gone)
+        const { r, dec } = backoffRun(new StateHistory({ capacity: 400 }));
         expect(dec.slice(0, 3).map((x) => `${x.kind}:${x.backoff}`)).toEqual(['rewind:1', 'rewind:2', 'start:0']);
         expect(r.lives()[3].header.life.at).toEqual(SPAWN);
         expect(r.lives()[3].header.life.soc).toBe(1); // a start gives a fresh pack (refill 'start')
