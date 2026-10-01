@@ -1,0 +1,14 @@
+{
+  "name": "@gsfpv/blackbox",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Node-only Betaflight blackbox log decoder and flight-model fit for the Pavo20 presets (design H.4); shipped nowhere",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@gsfpv/sim-core": "workspace:*"
+  }
+}

@@ -1,0 +1,2 @@
+# Manufacturer CLI dumps are kept byte for byte (mixed CRLF/LF as downloaded), so their SHA-256 matches the source.
+*.txt -text

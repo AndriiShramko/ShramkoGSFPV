@@ -37,6 +37,9 @@ describe('Betaflight diff import: fixtures', () => {
             target: 'STM32F405',
             boardId: 'S405',
             mspApi: '1.46',
+            gitHash: '77d01ba3b',
+            semantics: '4.5',
+            releaseOfHash: '4.5.1',
             raw: VERSION_45
         });
         // "restore original ... selection" lines point at profile 1 and rateprofile 2, not 3.
@@ -262,8 +265,8 @@ describe('Betaflight diff import: refusals (negative controls)', () => {
         expect(fork.errors.join(' ')).toMatch(/EmuFlight/);
     });
 
-    it('(e) only 4.3, 4.4, 4.5 and 2025.12 are accepted', () => {
-        for (const v of ['3.5.7', '4.0.0', '4.1.7', '4.2.11', '4.6.0', '4.7.0', '2025.6.0', '2026.6.0']) {
+    it('(e) only 4.3, 4.4, 4.5, 2025.12 and 2026.x are accepted', () => {
+        for (const v of ['3.5.7', '4.0.0', '4.1.7', '4.2.11', '4.6.0', '4.7.0', '2025.6.0', '2027.6.0']) {
             const r = parseBetaflightDiff(D45.replace(' 4.5.1 ', ` ${v} `));
             expect(r.errors.join(' '), v).toMatch(/not supported/);
             expect(r.pid).toBeNull();

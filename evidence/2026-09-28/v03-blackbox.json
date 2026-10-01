@@ -1,0 +1,2158 @@
+{
+ "generated": "2026-09-28T08:17:02.662Z",
+ "generator": "tools/blackbox/scripts/evidence.ts",
+ "note": "W4-3 (design H.3, H.4). Decoder and fit are ours (tools/blackbox); the official decoder is blackbox_decode built from github.com/betaflight/blackbox-tools master f832acf9cd9dbe5ad8220de1a5f4eb4021523d72.",
+ "betafpvDumps": {
+  "source": "packages/sim-core/test/fixtures/betafpv/README.md",
+  "parsedAfter": "9 of 9",
+  "parsedBefore": "7 of 9",
+  "idleImported": true,
+  "dumps": [
+   {
+    "file": "pavo20pro-bf450-elrs-20241216.txt",
+    "sha256": "52f70752ec348c12939ea138627d5c7cd1c77043ca3a31f3a15ee0e592ef57c6",
+    "version": "4.5.0",
+    "semantics": "4.5",
+    "releaseOfBuildHash": "4.5.0",
+    "parsed": true,
+    "errors": [],
+    "pid": {
+     "roll": [
+      54,
+      111,
+      44,
+      0
+     ],
+     "pitch": [
+      68,
+      139,
+      60,
+      0
+     ],
+     "yaw": [
+      54,
+      111,
+      0,
+      0
+     ]
+    },
+    "rates": "ACTUAL 7/67/0",
+    "throttle": {
+     "mid": 65,
+     "expo": 20
+    },
+    "idle": {
+     "fraction": 0.1,
+     "setting": "dshot_idle_value",
+     "value": 1000,
+     "fromDefault": false,
+     "dynamicMinRpm": 0
+    },
+    "ignoredSettings": 61,
+    "ignoredCommands": 23,
+    "warnings": [
+     "Not modelled by the simulator, although they change how the quad flies in Betaflight: tpa_rate = 60, tpa_breakpoint = 1250, anti_gravity_gain = 40, feedforward_smooth_factor = 50, feedforward_averaging = 2_POINT, dterm_lpf1_dyn_min_hz = 86, dterm_lpf1_dyn_max_hz = 172, dterm_lpf1_static_hz = 86, dterm_lpf2_static_hz = 172.",
+     "52 setting(s) not used by the simulator were ignored (gyro_lpf1_static_hz, gyro_lpf2_static_hz, dyn_notch_count, dyn_notch_q, dyn_notch_min_hz, ...)."
+    ],
+    "before": {
+     "parsed": true,
+     "errors": []
+    }
+   },
+   {
+    "file": "pavo20pro-bf450-sbus-20250610.txt",
+    "sha256": "2148109e3f186786085e0663df94aeba50cc54211ef8929f7068a9380dae695c",
+    "version": "4.5.0",
+    "semantics": "4.5",
+    "releaseOfBuildHash": "4.5.0",
+    "parsed": true,
+    "errors": [],
+    "pid": {
+     "roll": [
+      54,
+      111,
+      44,
+      0
+     ],
+     "pitch": [
+      68,
+      139,
+      60,
+      0
+     ],
+     "yaw": [
+      54,
+      111,
+      0,
+      0
+     ]
+    },
+    "rates": "ACTUAL 7/67/0",
+    "throttle": {
+     "mid": 65,
+     "expo": 20
+    },
+    "idle": {
+     "fraction": 0.1,
+     "setting": "dshot_idle_value",
+     "value": 1000,
+     "fromDefault": false,
+     "dynamicMinRpm": 0
+    },
+    "ignoredSettings": 60,
+    "ignoredCommands": 23,
+    "warnings": [
+     "Not modelled by the simulator, although they change how the quad flies in Betaflight: tpa_rate = 60, tpa_breakpoint = 1250, anti_gravity_gain = 40, feedforward_smooth_factor = 50, feedforward_averaging = 2_POINT, dterm_lpf1_dyn_min_hz = 86, dterm_lpf1_dyn_max_hz = 172, dterm_lpf1_static_hz = 86, dterm_lpf2_static_hz = 172.",
+     "51 setting(s) not used by the simulator were ignored (gyro_lpf1_static_hz, gyro_lpf2_static_hz, dyn_notch_count, dyn_notch_q, dyn_notch_min_hz, ...)."
+    ],
+    "before": {
+     "parsed": true,
+     "errors": []
+    }
+   },
+   {
+    "file": "pavo20pro-bf450-tbs-20240729.txt",
+    "sha256": "6bfd2c7bc353e76027567c3f33c2595a2a5357e08a5304ab27fb677994e86d7b",
+    "version": "4.5.0",
+    "semantics": "4.5",
+    "releaseOfBuildHash": "4.5.0",
+    "parsed": true,
+    "errors": [],
+    "pid": {
+     "roll": [
+      54,
+      111,
+      44,
+      0
+     ],
+     "pitch": [
+      68,
+      139,
+      60,
+      0
+     ],
+     "yaw": [
+      54,
+      111,
+      0,
+      0
+     ]
+    },
+    "rates": "ACTUAL 7/67/0",
+    "throttle": {
+     "mid": 65,
+     "expo": 20
+    },
+    "idle": {
+     "fraction": 0.1,
+     "setting": "dshot_idle_value",
+     "value": 1000,
+     "fromDefault": false,
+     "dynamicMinRpm": 0
+    },
+    "ignoredSettings": 59,
+    "ignoredCommands": 23,
+    "warnings": [
+     "Not modelled by the simulator, although they change how the quad flies in Betaflight: tpa_rate = 60, tpa_breakpoint = 1250, anti_gravity_gain = 40, feedforward_smooth_factor = 50, feedforward_averaging = 2_POINT, dterm_lpf1_dyn_min_hz = 86, dterm_lpf1_dyn_max_hz = 172, dterm_lpf1_static_hz = 86, dterm_lpf2_static_hz = 172.",
+     "50 setting(s) not used by the simulator were ignored (gyro_lpf1_static_hz, gyro_lpf2_static_hz, dyn_notch_count, dyn_notch_q, dyn_notch_min_hz, ...)."
+    ],
+    "before": {
+     "parsed": true,
+     "errors": []
+    }
+   },
+   {
+    "file": "pavo20pro2-3s-bf453-f405-elrs-20251230.txt",
+    "sha256": "0e55ba03239f347df40fc2bc8c7fdad08c8991dd507dd1a22f10fc61bc987c9e",
+    "version": "4.5.3",
+    "semantics": "4.5",
+    "releaseOfBuildHash": "4.5.3",
+    "parsed": true,
+    "errors": [],
+    "pid": {
+     "roll": [
+      51,
+      105,
+      46,
+      41
+     ],
+     "pitch": [
+      64,
+      133,
+      63,
+      51
+     ],
+     "yaw": [
+      51,
+      105,
+      0,
+      41
+     ]
+    },
+    "rates": "ACTUAL 7/67/0",
+    "throttle": {
+     "mid": 50,
+     "expo": 0
+    },
+    "idle": {
+     "fraction": 0.1,
+     "setting": "dshot_idle_value",
+     "value": 1000,
+     "fromDefault": false,
+     "dynamicMinRpm": 0
+    },
+    "ignoredSettings": 57,
+    "ignoredCommands": 63,
+    "warnings": [
+     "Not modelled by the simulator, although they change how the quad flies in Betaflight: tpa_breakpoint = 1280, feedforward_smooth_factor = 50, feedforward_averaging = 2_POINT, dterm_lpf1_dyn_min_hz = 86, dterm_lpf1_dyn_max_hz = 172, dterm_lpf1_static_hz = 86, dterm_lpf2_static_hz = 172.",
+     "50 setting(s) not used by the simulator were ignored (gyro_lpf1_static_hz, gyro_lpf2_static_hz, dyn_notch_count, dyn_notch_q, dyn_notch_min_hz, ...)."
+    ],
+    "before": {
+     "parsed": true,
+     "errors": []
+    }
+   },
+   {
+    "file": "pavo20pro2-3s-bf453-f405-sbus-20251230.txt",
+    "sha256": "a9ed1d999907ce3da5be02baa2a78c828aaadfd74e9a2c5b318c63b376636a7d",
+    "version": "4.5.3",
+    "semantics": "4.5",
+    "releaseOfBuildHash": "4.5.3",
+    "parsed": true,
+    "errors": [],
+    "pid": {
+     "roll": [
+      51,
+      105,
+      46,
+      41
+     ],
+     "pitch": [
+      64,
+      133,
+      63,
+      51
+     ],
+     "yaw": [
+      51,
+      105,
+      0,
+      41
+     ]
+    },
+    "rates": "ACTUAL 7/67/0",
+    "throttle": {
+     "mid": 50,
+     "expo": 0
+    },
+    "idle": {
+     "fraction": 0.1,
+     "setting": "dshot_idle_value",
+     "value": 1000,
+     "fromDefault": false,
+     "dynamicMinRpm": 0
+    },
+    "ignoredSettings": 55,
+    "ignoredCommands": 63,
+    "warnings": [
+     "Not modelled by the simulator, although they change how the quad flies in Betaflight: tpa_breakpoint = 1280, feedforward_smooth_factor = 50, feedforward_averaging = 2_POINT, dterm_lpf1_dyn_min_hz = 86, dterm_lpf1_dyn_max_hz = 172, dterm_lpf1_static_hz = 86, dterm_lpf2_static_hz = 172.",
+     "48 setting(s) not used by the simulator were ignored (gyro_lpf1_static_hz, gyro_lpf2_static_hz, dyn_notch_count, dyn_notch_q, dyn_notch_min_hz, ...)."
+    ],
+    "before": {
+     "parsed": true,
+     "errors": []
+    }
+   },
+   {
+    "file": "pavo20pro2-bf2025125-at32-elrs-20260810.txt",
+    "sha256": "5040e1e971ec8d27ae85b60e166d1f8ee0572cd3d679a46109f0124514f10190",
+    "version": "2025.12.5",
+    "semantics": "2025.12",
+    "releaseOfBuildHash": "2025.12.5",
+    "parsed": true,
+    "errors": [],
+    "pid": {
+     "roll": [
+      53,
+      110,
+      46,
+      43
+     ],
+     "pitch": [
+      67,
+      139,
+      63,
+      53
+     ],
+     "yaw": [
+      53,
+      110,
+      0,
+      43
+     ]
+    },
+    "rates": "ACTUAL 7/67/0",
+    "throttle": {
+     "mid": 50,
+     "expo": 0
+    },
+    "idle": {
+     "fraction": 0.08,
+     "setting": "motor_idle",
+     "value": 800,
+     "fromDefault": false,
+     "dynamicMinRpm": 0
+    },
+    "ignoredSettings": 55,
+    "ignoredCommands": 56,
+    "warnings": [
+     "Not modelled by the simulator, although they change how the quad flies in Betaflight: tpa_rate = 70, tpa_breakpoint = 1280, anti_gravity_gain = 60, feedforward_smooth_factor = 50, dterm_lpf1_dyn_min_hz = 86, dterm_lpf1_dyn_max_hz = 172, dterm_lpf1_static_hz = 86, dterm_lpf2_static_hz = 172.",
+     "47 setting(s) not used by the simulator were ignored (gyro_lpf1_static_hz, gyro_lpf2_static_hz, dyn_notch_count, dyn_notch_q, dyn_notch_min_hz, ...)."
+    ],
+    "before": {
+     "parsed": true,
+     "errors": []
+    }
+   },
+   {
+    "file": "pavo20pro2-bf2025125-at32-sbus-20260810.txt",
+    "sha256": "1e908bdca52db601c5002b0fd4125082d02f549ccd88b818603060a79e7dcea6",
+    "version": "2025.12.5",
+    "semantics": "2025.12",
+    "releaseOfBuildHash": "2025.12.5",
+    "parsed": true,
+    "errors": [],
+    "pid": {
+     "roll": [
+      53,
+      110,
+      46,
+      43
+     ],
+     "pitch": [
+      67,
+      139,
+      63,
+      53
+     ],
+     "yaw": [
+      53,
+      110,
+      0,
+      43
+     ]
+    },
+    "rates": "ACTUAL 7/67/0",
+    "throttle": {
+     "mid": 50,
+     "expo": 0
+    },
+    "idle": {
+     "fraction": 0.08,
+     "setting": "motor_idle",
+     "value": 800,
+     "fromDefault": false,
+     "dynamicMinRpm": 0
+    },
+    "ignoredSettings": 56,
+    "ignoredCommands": 57,
+    "warnings": [
+     "Not modelled by the simulator, although they change how the quad flies in Betaflight: tpa_rate = 70, tpa_breakpoint = 1280, anti_gravity_gain = 60, feedforward_smooth_factor = 50, dterm_lpf1_dyn_min_hz = 86, dterm_lpf1_dyn_max_hz = 172, dterm_lpf1_static_hz = 86, dterm_lpf2_static_hz = 172.",
+     "48 setting(s) not used by the simulator were ignored (gyro_lpf1_static_hz, gyro_lpf2_static_hz, dyn_notch_count, dyn_notch_q, dyn_notch_min_hz, ...)."
+    ],
+    "before": {
+     "parsed": true,
+     "errors": []
+    }
+   },
+   {
+    "file": "pavo20pro2-bf202661-at32-elrs-20260920.txt",
+    "sha256": "7a0722731822ca26c57ccd298030e371f131b10b3ba8efbf31f763b4952a9563",
+    "version": "2026.6.1",
+    "semantics": "2026.6",
+    "releaseOfBuildHash": "2025.12.5",
+    "parsed": true,
+    "errors": [],
+    "pid": {
+     "roll": [
+      53,
+      110,
+      46,
+      43
+     ],
+     "pitch": [
+      67,
+      139,
+      63,
+      53
+     ],
+     "yaw": [
+      53,
+      110,
+      0,
+      43
+     ]
+    },
+    "rates": "ACTUAL 7/67/0",
+    "throttle": {
+     "mid": 50,
+     "expo": 0
+    },
+    "idle": {
+     "fraction": 0.08,
+     "setting": "motor_idle",
+     "value": 800,
+     "fromDefault": false,
+     "dynamicMinRpm": 0
+    },
+    "ignoredSettings": 55,
+    "ignoredCommands": 56,
+    "warnings": [
+     "Betaflight 2026.6.1 is read with 2026.6 meanings, checked against the 2026.6.1 source: rates, PID defaults and the D scheme are those of 2025.12; only the D-boost defaults (d_max_gain 0, d_max_advance 35) and the battery profiles are new. This dump's build hash 7348054f2 is the commit of Betaflight 2025.12.5 and its MSP API 1.47 is not the 1.48 that 2026.6 reports: it looks like a 2025.12.5 build labelled 2026.6.1. The rates, PIDs, feed-forward, throttle curve and idle read the same either way.",
+     "Not modelled by the simulator, although they change how the quad flies in Betaflight: tpa_rate = 70, tpa_breakpoint = 1280, anti_gravity_gain = 60, feedforward_smooth_factor = 50, dterm_lpf1_dyn_min_hz = 86, dterm_lpf1_dyn_max_hz = 172, dterm_lpf1_static_hz = 86, dterm_lpf2_static_hz = 172.",
+     "47 setting(s) not used by the simulator were ignored (gyro_lpf1_static_hz, gyro_lpf2_static_hz, dyn_notch_count, dyn_notch_q, dyn_notch_min_hz, ...)."
+    ],
+    "before": {
+     "parsed": false,
+     "errors": [
+      "Betaflight 2026.6 is not supported: the import knows 4.3, 4.4, 4.5 and 2025.12 (4.2 and older have other defaults; 4.6 builds already use the 2025.12 D meanings)."
+     ]
+    }
+   },
+   {
+    "file": "pavo20pro2-bf202661-at32-sbus-20260920.txt",
+    "sha256": "391d5084f806bafb5473dc30464cb2cfd67f2f2a706a8ea9c5b0365f2822fc62",
+    "version": "2026.6.1",
+    "semantics": "2026.6",
+    "releaseOfBuildHash": "2025.12.5",
+    "parsed": true,
+    "errors": [],
+    "pid": {
+     "roll": [
+      53,
+      110,
+      46,
+      43
+     ],
+     "pitch": [
+      67,
+      139,
+      63,
+      53
+     ],
+     "yaw": [
+      53,
+      110,
+      0,
+      43
+     ]
+    },
+    "rates": "ACTUAL 7/67/0",
+    "throttle": {
+     "mid": 50,
+     "expo": 0
+    },
+    "idle": {
+     "fraction": 0.08,
+     "setting": "motor_idle",
+     "value": 800,
+     "fromDefault": false,
+     "dynamicMinRpm": 0
+    },
+    "ignoredSettings": 56,
+    "ignoredCommands": 57,
+    "warnings": [
+     "Betaflight 2026.6.1 is read with 2026.6 meanings, checked against the 2026.6.1 source: rates, PID defaults and the D scheme are those of 2025.12; only the D-boost defaults (d_max_gain 0, d_max_advance 35) and the battery profiles are new. This dump's build hash 7348054f2 is the commit of Betaflight 2025.12.5 and its MSP API 1.47 is not the 1.48 that 2026.6 reports: it looks like a 2025.12.5 build labelled 2026.6.1. The rates, PIDs, feed-forward, throttle curve and idle read the same either way.",
+     "Not modelled by the simulator, although they change how the quad flies in Betaflight: tpa_rate = 70, tpa_breakpoint = 1280, anti_gravity_gain = 60, feedforward_smooth_factor = 50, dterm_lpf1_dyn_min_hz = 86, dterm_lpf1_dyn_max_hz = 172, dterm_lpf1_static_hz = 86, dterm_lpf2_static_hz = 172.",
+     "48 setting(s) not used by the simulator were ignored (gyro_lpf1_static_hz, gyro_lpf2_static_hz, dyn_notch_count, dyn_notch_q, dyn_notch_min_hz, ...)."
+    ],
+    "before": {
+     "parsed": false,
+     "errors": [
+      "Betaflight 2026.6 is not supported: the import knows 4.3, 4.4, 4.5 and 2025.12 (4.2 and older have other defaults; 4.6 builds already use the 2025.12 D meanings)."
+     ]
+    }
+   }
+  ]
+ },
+ "publicLogs": [
+  {
+   "source": "github.com/Plasmatree/PID-Analyzer good_tune.BBL at d2ab676ea93d96a7319d263bb9ff78278f390952 (Betaflight 3.1.5, CS110; Beer-Ware licence notice in PID-Analyzer.py)",
+   "sha256": "a1a8e906f58c23d3f65acc31961c89249318300f38ea10e153e03f3d839de69f",
+   "bytes": 4777984,
+   "firmware": "Betaflight 3.1.5 (4646f9d) OMNIBUSF4",
+   "decodeMs": 285,
+   "stats": {
+    "frames": {
+     "I": 38580,
+     "P": 115737,
+     "S": 342,
+     "G": 0,
+     "H": 0,
+     "E": 5
+    },
+    "corrupt": 0,
+    "rejectedMain": 0,
+    "unknownEvents": 0,
+    "skippedBytes": 0,
+    "cleanEnd": true
+   },
+   "events": [
+    "loggingResume",
+    "syncBeep",
+    "flightMode",
+    "flightMode",
+    "logEnd"
+   ],
+   "compare": {
+    "officialRows": 154311,
+    "ourRows": 154317,
+    "matchedRows": 154311,
+    "onlyOfficial": 0,
+    "onlyOurs": 6,
+    "comparedColumns": 34,
+    "skippedColumns": [],
+    "cells": 5246574,
+    "mismatchedCells": 0,
+    "maxAbsDiff": 0,
+    "firstMismatch": null,
+    "loopIteration": {
+     "officialStep": [
+      8,
+      32
+     ],
+     "ourStep": [
+      8
+     ],
+     "ourStepMatchesHeader": true
+    },
+    "onlyOursAfterEvent": 6
+   },
+   "gps": null,
+   "fit": {
+    "log": {
+     "firmware": "Betaflight 3.1.5 (4646f9d) OMNIBUSF4",
+     "craft": "CS110",
+     "date": null,
+     "durationS": 156.776251,
+     "flyingS": 141.94312999999997,
+     "sampleHz": 989,
+     "hasRpm": false,
+     "hasAcc": true,
+     "hasGps": false,
+     "attitude": "estimated"
+    },
+    "estimates": {
+     "twrThrustFit": {
+      "value": 7.518,
+      "se": 0.147,
+      "unit": "ratio",
+      "confidence": "high",
+      "basis": "thrust fit over 26 s of slow flight in the simulator's thrust model, at the median flight voltage 7.28 V"
+     },
+     "hoverMotor": {
+      "value": 0.3647,
+      "se": 0.003567,
+      "unit": "fraction",
+      "confidence": "high",
+      "basis": "from the thrust fit at the median flight voltage 7.28 V (no still hover in the log)"
+     }
+    },
+    "rates": null,
+    "notIdentified": [
+     {
+      "what": "rates",
+      "why": "Betaflight 3.x rate headers (rcRate/rcExpo/rates) are not converted; read the rates from a diff instead"
+     },
+     {
+      "what": "hover throttle stick %",
+      "why": "only 0.0 s of still hover in the log (needs 2 s: hold a still hover for 10 s); the hover motor output and TWR come from the thrust fit instead"
+     },
+     {
+      "what": "motor lag tau",
+      "why": "needs bidirectional DShot rpm (eRPM[] fields; dshot_bidir = ON)"
+     },
+     {
+      "what": "rotor inertia, yaw torque, roll/pitch authority",
+      "why": "needs bidirectional DShot rpm (eRPM[] fields)"
+     },
+     {
+      "what": "duct / rotor drag, CdA",
+      "why": "0 coast-down(s) (need 2: sticks centred and near level for 1.5 s after a push) and 0 usable GPS cruise fixes (need 50): fly the H.4 coast-downs"
+     }
+    ],
+    "preset": null
+   }
+  },
+  {
+   "source": "github.com/aprskalo1/betaflight-blackbox-analyzer 20_9_2026_bfl/LOG00002.BFL at e1f2149346f0f8ea7df1d5e007809e002b7b18ec (Betaflight 4.5.1, SpeedyBee F405 V4, 6S, GPS; no licence stated, not stored)",
+   "sha256": "db7b2541a87715145699cf7cf3004a6514fa6fe5ce25e20537621ffe2f7d9d52",
+   "bytes": 11774209,
+   "firmware": "Betaflight 4.5.1 (77d01ba3b) STM32F405",
+   "decodeMs": 518,
+   "stats": {
+    "frames": {
+     "I": 10885,
+     "P": 337431,
+     "S": 44,
+     "G": 3431,
+     "H": 1,
+     "E": 4
+    },
+    "corrupt": 0,
+    "rejectedMain": 0,
+    "unknownEvents": 0,
+    "skippedBytes": 0,
+    "cleanEnd": true
+   },
+   "events": [
+    "syncBeep",
+    "flightMode",
+    "disarm",
+    "logEnd"
+   ],
+   "compare": {
+    "officialRows": 348304,
+    "ourRows": 348316,
+    "matchedRows": 348304,
+    "onlyOfficial": 0,
+    "onlyOurs": 12,
+    "comparedColumns": 46,
+    "skippedColumns": [
+     "energyCumulative"
+    ],
+    "cells": 16021984,
+    "mismatchedCells": 0,
+    "maxAbsDiff": 0,
+    "firstMismatch": null,
+    "loopIteration": {
+     "officialStep": [
+      1,
+      97,
+      109
+     ],
+     "ourStep": [
+      4
+     ],
+     "ourStepMatchesHeader": true
+    },
+    "onlyOursAfterEvent": 12
+   },
+   "gps": {
+    "officialRows": 3431,
+    "ourRows": 3431,
+    "matchedRows": 3431,
+    "mismatches": 0,
+    "maxCoordDiffDeg": 7.105427357601002e-15
+   },
+   "fit": {
+    "log": {
+     "firmware": "Betaflight 4.5.1 (77d01ba3b) STM32F405",
+     "craft": "",
+     "date": "2026-09-20",
+     "durationS": 343.647196,
+     "flyingS": 299.73716299999995,
+     "sampleHz": 1013,
+     "hasRpm": true,
+     "hasAcc": true,
+     "hasGps": true,
+     "attitude": "estimated"
+    },
+    "estimates": {
+     "twrThrustFit": {
+      "value": 13.56,
+      "se": 0.2979,
+      "unit": "ratio",
+      "confidence": "high",
+      "basis": "thrust fit over 146 s of slow flight in the simulator's thrust model, at the median flight voltage 22.89 V"
+     },
+     "thrustPerRpm2": {
+      "value": 1.841e-7,
+      "se": 2.16e-9,
+      "unit": "1/(rad/s)^2",
+      "confidence": "high",
+      "basis": "thrust per summed rpm^2 over the weight, k_T / (m g)"
+     },
+     "hoverMotor": {
+      "value": 0.2716,
+      "se": 0.002984,
+      "unit": "fraction",
+      "confidence": "high",
+      "basis": "from the thrust fit at the median flight voltage 22.89 V (no still hover in the log)"
+     },
+     "motorTau": {
+      "value": 27.16,
+      "se": 0.5894,
+      "unit": "ms",
+      "confidence": "high",
+      "basis": "first-order lag from motor command to rpm, mean of 4 motors; command-to-telemetry delay 1 samples (1.0 ms) on top"
+     },
+     "motorTauLowRpm": {
+      "value": 27.89,
+      "se": null,
+      "unit": "ms",
+      "confidence": "high",
+      "basis": "below the median rpm"
+     },
+     "motorTauHighRpm": {
+      "value": 26.8,
+      "se": null,
+      "unit": "ms",
+      "confidence": "high",
+      "basis": "above the median rpm"
+     },
+     "yawDragPerRpm2": {
+      "value": 4.034e-7,
+      "se": 1.496e-7,
+      "unit": "1/rad",
+      "confidence": "low",
+      "basis": "yaw drag torque per rpm^2 (kappa k_T / I_z); R^2 0.42; props-out rotation"
+     },
+     "yawDamping": {
+      "value": 0.2,
+      "se": 0.1173,
+      "unit": "1/s",
+      "confidence": "low",
+      "basis": "yaw rate damping"
+     },
+     "rotorInertiaRatio": {
+      "value": 0.0008424,
+      "se": 0.00008454,
+      "unit": "ratio",
+      "confidence": "medium",
+      "basis": "rotor inertia / yaw inertia (J_r / I_z) from the yaw kick of rotor acceleration"
+     },
+     "rollAuthorityPerRpm2": {
+      "value": 0.0000013,
+      "se": 1.223e-7,
+      "unit": "1/rad",
+      "confidence": "high",
+      "basis": "roll acceleration per differential rpm^2 (arm k_T / I)"
+     },
+     "pitchAuthorityPerRpm2": {
+      "value": 0.000001121,
+      "se": 3.534e-7,
+      "unit": "1/rad",
+      "confidence": "low",
+      "basis": "pitch acceleration per differential rpm^2 (arm k_T / I)"
+     },
+     "ductDrag": {
+      "value": 0.2573,
+      "se": 0.0167,
+      "unit": "1/s",
+      "confidence": "high",
+      "basis": "rotor/duct momentum drag at hover rotor speed; 1153 GPS cruise fixes (level flight along the heading assumed)"
+     }
+    },
+    "rates": {
+     "type": "BETAFLIGHT",
+     "maxDegS": {
+      "roll": 942.6341463414637,
+      "pitch": 942.6341463414637,
+      "yaw": 860.6060606060607
+     },
+     "setpointErrDegS": [
+      0.4123,
+      0.3937,
+      0.3297
+     ],
+     "stickP995": [
+      0.342,
+      0.314,
+      0.322
+     ]
+    },
+    "notIdentified": [
+     {
+      "what": "hover throttle stick %",
+      "why": "only 0.0 s of still hover in the log (needs 2 s: hold a still hover for 10 s); the hover motor output and TWR come from the thrust fit instead"
+     },
+     {
+      "what": "TWR from rpm",
+      "why": "no full-throttle punch-out long enough (0.3 s with all motors above 97 %)"
+     },
+     {
+      "what": "quadratic body drag (CdA)",
+      "why": "0.00144 +- 0.0014 1/m: not distinguishable from 0 with this data (quadratic body drag 0.5 rho CdA / m; 1153 GPS cruise fixes (level flight along the heading assumed))"
+     }
+    ],
+    "preset": null
+   }
+  },
+  {
+   "source": "github.com/aprskalo1/betaflight-blackbox-analyzer 20_9_2026_bfl/LOG00008.BFL at e1f2149346f0f8ea7df1d5e007809e002b7b18ec (no licence stated, not stored)",
+   "sha256": "36ed1d851316e0b0da0f586ba09bb66af923a1d1529cdfef943c1855f86ec994",
+   "bytes": 11720012,
+   "firmware": "Betaflight 4.5.1 (77d01ba3b) STM32F405",
+   "decodeMs": 533,
+   "stats": {
+    "frames": {
+     "I": 10821,
+     "P": 335449,
+     "S": 44,
+     "G": 3233,
+     "H": 1,
+     "E": 4
+    },
+    "corrupt": 0,
+    "rejectedMain": 0,
+    "unknownEvents": 0,
+    "skippedBytes": 0,
+    "cleanEnd": true
+   },
+   "events": [
+    "syncBeep",
+    "flightMode",
+    "disarm",
+    "logEnd"
+   ],
+   "compare": {
+    "officialRows": 346243,
+    "ourRows": 346270,
+    "matchedRows": 346243,
+    "onlyOfficial": 0,
+    "onlyOurs": 27,
+    "comparedColumns": 46,
+    "skippedColumns": [
+     "energyCumulative"
+    ],
+    "cells": 15927178,
+    "mismatchedCells": 0,
+    "maxAbsDiff": 0,
+    "firstMismatch": null,
+    "loopIteration": {
+     "officialStep": [
+      1,
+      97
+     ],
+     "ourStep": [
+      4
+     ],
+     "ourStepMatchesHeader": true
+    },
+    "onlyOursAfterEvent": 27
+   },
+   "gps": {
+    "officialRows": 3233,
+    "ourRows": 3233,
+    "matchedRows": 3233,
+    "mismatches": 0,
+    "maxCoordDiffDeg": 7.105427357601002e-15
+   },
+   "fit": {
+    "log": {
+     "firmware": "Betaflight 4.5.1 (77d01ba3b) STM32F405",
+     "craft": "",
+     "date": "2026-09-20",
+     "durationS": 341.623297,
+     "flyingS": 287.94018600000015,
+     "sampleHz": 1013,
+     "hasRpm": true,
+     "hasAcc": true,
+     "hasGps": true,
+     "attitude": "estimated"
+    },
+    "estimates": {
+     "twrThrustFit": {
+      "value": 12.52,
+      "se": 0.3947,
+      "unit": "ratio",
+      "confidence": "high",
+      "basis": "thrust fit over 111 s of slow flight in the simulator's thrust model, at the median flight voltage 22.76 V"
+     },
+     "thrustPerRpm2": {
+      "value": 1.805e-7,
+      "se": 4.122e-9,
+      "unit": "1/(rad/s)^2",
+      "confidence": "high",
+      "basis": "thrust per summed rpm^2 over the weight, k_T / (m g)"
+     },
+     "hoverMotor": {
+      "value": 0.2826,
+      "se": 0.004456,
+      "unit": "fraction",
+      "confidence": "high",
+      "basis": "from the thrust fit at the median flight voltage 22.76 V (no still hover in the log)"
+     },
+     "motorTau": {
+      "value": 29.45,
+      "se": 1.918,
+      "unit": "ms",
+      "confidence": "high",
+      "basis": "first-order lag from motor command to rpm, mean of 4 motors; command-to-telemetry delay 0 samples (0.0 ms) on top"
+     },
+     "motorTauLowRpm": {
+      "value": 29.14,
+      "se": null,
+      "unit": "ms",
+      "confidence": "high",
+      "basis": "below the median rpm"
+     },
+     "motorTauHighRpm": {
+      "value": 28.95,
+      "se": null,
+      "unit": "ms",
+      "confidence": "high",
+      "basis": "above the median rpm"
+     },
+     "yawDragPerRpm2": {
+      "value": 3.111e-7,
+      "se": 9.1e-8,
+      "unit": "1/rad",
+      "confidence": "low",
+      "basis": "yaw drag torque per rpm^2 (kappa k_T / I_z); R^2 0.32; props-out rotation"
+     },
+     "yawDamping": {
+      "value": 0.1311,
+      "se": 0.05482,
+      "unit": "1/s",
+      "confidence": "low",
+      "basis": "yaw rate damping"
+     },
+     "rotorInertiaRatio": {
+      "value": 0.0006782,
+      "se": 0.00008347,
+      "unit": "ratio",
+      "confidence": "medium",
+      "basis": "rotor inertia / yaw inertia (J_r / I_z) from the yaw kick of rotor acceleration"
+     },
+     "rollAuthorityPerRpm2": {
+      "value": 0.00000128,
+      "se": 2.27e-7,
+      "unit": "1/rad",
+      "confidence": "medium",
+      "basis": "roll acceleration per differential rpm^2 (arm k_T / I)"
+     },
+     "pitchAuthorityPerRpm2": {
+      "value": 6.018e-7,
+      "se": 1.848e-7,
+      "unit": "1/rad",
+      "confidence": "low",
+      "basis": "pitch acceleration per differential rpm^2 (arm k_T / I)"
+     },
+     "ductDrag": {
+      "value": 0.2046,
+      "se": 0.01379,
+      "unit": "1/s",
+      "confidence": "high",
+      "basis": "rotor/duct momentum drag at hover rotor speed; 664 GPS cruise fixes (level flight along the heading assumed)"
+     },
+     "quadDragPerM": {
+      "value": 0.00582,
+      "se": 0.001017,
+      "unit": "1/m",
+      "confidence": "medium",
+      "basis": "quadratic body drag 0.5 rho CdA / m; 664 GPS cruise fixes (level flight along the heading assumed)"
+     }
+    },
+    "rates": {
+     "type": "BETAFLIGHT",
+     "maxDegS": {
+      "roll": 942.6341463414637,
+      "pitch": 942.6341463414637,
+      "yaw": 860.6060606060607
+     },
+     "setpointErrDegS": [
+      0.3608,
+      0.3464,
+      0.5559
+     ],
+     "stickP995": [
+      0.374,
+      0.288,
+      0.308
+     ]
+    },
+    "notIdentified": [
+     {
+      "what": "hover throttle stick %",
+      "why": "only 0.0 s of still hover in the log (needs 2 s: hold a still hover for 10 s); the hover motor output and TWR come from the thrust fit instead"
+     },
+     {
+      "what": "TWR from rpm",
+      "why": "no full-throttle punch-out long enough (0.3 s with all motors above 97 %)"
+     }
+    ],
+    "preset": null
+   }
+  },
+  {
+   "source": "github.com/aprskalo1/betaflight-blackbox-analyzer 13_9_2026_bfl/LOG00004.BFL at e1f2149346f0f8ea7df1d5e007809e002b7b18ec (no licence stated, not stored)",
+   "sha256": "547994eec9e9af37e41106e032d8dcbe384e82a52d400ee90bea7aae6e951f91",
+   "bytes": 11920202,
+   "firmware": "Betaflight 4.5.1 (77d01ba3b) STM32F405",
+   "decodeMs": 525,
+   "stats": {
+    "frames": {
+     "I": 10907,
+     "P": 338113,
+     "S": 46,
+     "G": 3444,
+     "H": 1,
+     "E": 6
+    },
+    "corrupt": 0,
+    "rejectedMain": 0,
+    "unknownEvents": 0,
+    "skippedBytes": 0,
+    "cleanEnd": true
+   },
+   "events": [
+    "syncBeep",
+    "flightMode",
+    "flightMode",
+    "flightMode",
+    "disarm",
+    "logEnd"
+   ],
+   "compare": {
+    "officialRows": 348972,
+    "ourRows": 349020,
+    "matchedRows": 348972,
+    "onlyOfficial": 0,
+    "onlyOurs": 48,
+    "comparedColumns": 46,
+    "skippedColumns": [
+     "energyCumulative"
+    ],
+    "cells": 16052712,
+    "mismatchedCells": 0,
+    "maxAbsDiff": 0,
+    "firstMismatch": null,
+    "loopIteration": {
+     "officialStep": [
+      1,
+      97,
+      98
+     ],
+     "ourStep": [
+      4
+     ],
+     "ourStepMatchesHeader": true
+    },
+    "onlyOursAfterEvent": 48
+   },
+   "gps": {
+    "officialRows": 3444,
+    "ourRows": 3444,
+    "matchedRows": 3444,
+    "mismatches": 0,
+    "maxCoordDiffDeg": 7.105427357601002e-15
+   },
+   "fit": {
+    "log": {
+     "firmware": "Betaflight 4.5.1 (77d01ba3b) STM32F405",
+     "craft": "",
+     "date": "2026-09-13",
+     "durationS": 344.328978,
+     "flyingS": 317.3811569999999,
+     "sampleHz": 1013,
+     "hasRpm": true,
+     "hasAcc": true,
+     "hasGps": true,
+     "attitude": "estimated"
+    },
+    "estimates": {
+     "twrThrustFit": {
+      "value": 13.15,
+      "se": 0.2681,
+      "unit": "ratio",
+      "confidence": "high",
+      "basis": "thrust fit over 165 s of slow flight in the simulator's thrust model, at the median flight voltage 22.67 V"
+     },
+     "thrustPerRpm2": {
+      "value": 1.841e-7,
+      "se": 2.291e-9,
+      "unit": "1/(rad/s)^2",
+      "confidence": "high",
+      "basis": "thrust per summed rpm^2 over the weight, k_T / (m g)"
+     },
+     "hoverMotor": {
+      "value": 0.2758,
+      "se": 0.002811,
+      "unit": "fraction",
+      "confidence": "high",
+      "basis": "from the thrust fit at the median flight voltage 22.67 V (no still hover in the log)"
+     },
+     "motorTau": {
+      "value": 28,
+      "se": 1.025,
+      "unit": "ms",
+      "confidence": "high",
+      "basis": "first-order lag from motor command to rpm, mean of 4 motors; command-to-telemetry delay 1 samples (1.0 ms) on top"
+     },
+     "motorTauLowRpm": {
+      "value": 27.9,
+      "se": null,
+      "unit": "ms",
+      "confidence": "high",
+      "basis": "below the median rpm"
+     },
+     "motorTauHighRpm": {
+      "value": 27.62,
+      "se": null,
+      "unit": "ms",
+      "confidence": "high",
+      "basis": "above the median rpm"
+     },
+     "yawDragPerRpm2": {
+      "value": 0.000001069,
+      "se": 1.801e-7,
+      "unit": "1/rad",
+      "confidence": "medium",
+      "basis": "yaw drag torque per rpm^2 (kappa k_T / I_z); R^2 0.65; props-out rotation"
+     },
+     "yawDamping": {
+      "value": 0.5123,
+      "se": 0.1636,
+      "unit": "1/s",
+      "confidence": "low",
+      "basis": "yaw rate damping"
+     },
+     "rotorInertiaRatio": {
+      "value": 0.001116,
+      "se": 0.00005765,
+      "unit": "ratio",
+      "confidence": "high",
+      "basis": "rotor inertia / yaw inertia (J_r / I_z) from the yaw kick of rotor acceleration"
+     },
+     "rollAuthorityPerRpm2": {
+      "value": 0.000005757,
+      "se": 0.000001613,
+      "unit": "1/rad",
+      "confidence": "low",
+      "basis": "roll acceleration per differential rpm^2 (arm k_T / I)"
+     },
+     "pitchAuthorityPerRpm2": {
+      "value": 0.000001888,
+      "se": 0.000001161,
+      "unit": "1/rad",
+      "confidence": "low",
+      "basis": "pitch acceleration per differential rpm^2 (arm k_T / I)"
+     },
+     "ductDrag": {
+      "value": 0.2342,
+      "se": 0.01695,
+      "unit": "1/s",
+      "confidence": "high",
+      "basis": "rotor/duct momentum drag at hover rotor speed; 1158 GPS cruise fixes (level flight along the heading assumed)"
+     }
+    },
+    "rates": {
+     "type": "BETAFLIGHT",
+     "maxDegS": {
+      "roll": 1170.0487804878053,
+      "pitch": 1170.0487804878053,
+      "yaw": 860.6060606060607
+     },
+     "setpointErrDegS": [
+      0.309,
+      0.309,
+      0.5574
+     ],
+     "stickP995": [
+      0.622,
+      0.43,
+      0.434
+     ]
+    },
+    "notIdentified": [
+     {
+      "what": "hover throttle stick %",
+      "why": "only 0.0 s of still hover in the log (needs 2 s: hold a still hover for 10 s); the hover motor output and TWR come from the thrust fit instead"
+     },
+     {
+      "what": "TWR from rpm",
+      "why": "no full-throttle punch-out long enough (0.3 s with all motors above 97 %)"
+     },
+     {
+      "what": "quadratic body drag (CdA)",
+      "why": "0.00275 +- 0.0015 1/m: not distinguishable from 0 with this data (quadratic body drag 0.5 rho CdA / m; 1158 GPS cruise fixes (level flight along the heading assumed))"
+     }
+    ],
+    "preset": null
+   }
+  }
+ ],
+ "simulatorLog": {
+  "what": "sim-core flies the H.4 flight script on pavo20pro-3s and writes a binary log (Betaflight 4.5 fields, gyro noise 1 deg/s, accelerometer 0.01 g, rpm 0.5 %, rpm one loop late); the fit must return the parameters the simulator used",
+  "base": {
+   "truth": {
+    "twr": 5,
+    "tauMs": 15,
+    "rotorInertia": 2e-7,
+    "kappa": 0.0075,
+    "ductDrag": 0.6,
+    "inertiaRollPitch": 0.000111,
+    "inertiaYaw": 0.000171
+   },
+   "fit": {
+    "log": {
+     "firmware": "Betaflight 4.5.1 (77d01ba3b) GSFPV-SIM",
+     "craft": "sim pavo20pro-3s",
+     "date": "2026-09-28",
+     "durationS": 139.289,
+     "flyingS": 133.14,
+     "sampleHz": 1000,
+     "hasRpm": true,
+     "hasAcc": true,
+     "hasGps": false,
+     "attitude": {
+      "fcDiffDeg": {
+       "roll": 0.12089398290222511,
+       "pitch": 0.11611994843239853
+      }
+     }
+    },
+    "estimates": {
+     "hoverMotor": {
+      "value": 0.4047,
+      "se": 0.003904,
+      "unit": "fraction",
+      "confidence": "high",
+      "basis": "149 still-hover windows of 0.25 s"
+     },
+     "hoverThrottle": {
+      "value": 33.88,
+      "se": 0.3969,
+      "unit": "%",
+      "confidence": "high",
+      "basis": "throttle stick after the curve (the OSD throttle)"
+     },
+     "hoverVolts": {
+      "value": 12.15,
+      "se": 0.1058,
+      "unit": "V",
+      "confidence": "high",
+      "basis": "pack voltage while hovering"
+     },
+     "twrHoverMatched": {
+      "value": 5.001,
+      "se": 0.0004897,
+      "unit": "ratio",
+      "confidence": "high",
+      "basis": "still hover in the simulator's thrust model Tmax (V/Vnom)^2 w^2, at the preset's Vnom 10.98 V"
+     },
+     "twrThrustFit": {
+      "value": 4.982,
+      "se": 0.002686,
+      "unit": "ratio",
+      "confidence": "high",
+      "basis": "thrust fit over 128 s of slow flight in the simulator's thrust model, at the preset's Vnom 10.98 V"
+     },
+     "thrustPerRpm2": {
+      "value": 3.234e-8,
+      "se": 2.554e-11,
+      "unit": "1/(rad/s)^2",
+      "confidence": "high",
+      "basis": "thrust per summed rpm^2 over the weight, k_T / (m g)"
+     },
+     "motorTau": {
+      "value": 15.07,
+      "se": 0.09629,
+      "unit": "ms",
+      "confidence": "high",
+      "basis": "first-order lag from motor command to rpm, mean of 4 motors; command-to-telemetry delay 0 samples (0.0 ms) on top"
+     },
+     "motorTauLowRpm": {
+      "value": 15.12,
+      "se": null,
+      "unit": "ms",
+      "confidence": "high",
+      "basis": "below the median rpm"
+     },
+     "motorTauHighRpm": {
+      "value": 15.04,
+      "se": null,
+      "unit": "ms",
+      "confidence": "high",
+      "basis": "above the median rpm"
+     },
+     "yawDragPerRpm2": {
+      "value": 0.000001991,
+      "se": 2.922e-8,
+      "unit": "1/rad",
+      "confidence": "high",
+      "basis": "yaw drag torque per rpm^2 (kappa k_T / I_z); R^2 0.99"
+     },
+     "yawDamping": {
+      "value": -0.005216,
+      "se": 0.02572,
+      "unit": "1/s",
+      "confidence": "low",
+      "basis": "yaw rate damping"
+     },
+     "rotorInertiaRatio": {
+      "value": 0.0012,
+      "se": 0.000006859,
+      "unit": "ratio",
+      "confidence": "high",
+      "basis": "rotor inertia / yaw inertia (J_r / I_z) from the yaw kick of rotor acceleration"
+     },
+     "rollAuthorityPerRpm2": {
+      "value": 0.00001442,
+      "se": 6.072e-7,
+      "unit": "1/rad",
+      "confidence": "high",
+      "basis": "roll acceleration per differential rpm^2 (arm k_T / I)"
+     },
+     "pitchAuthorityPerRpm2": {
+      "value": 0.00001443,
+      "se": 6.475e-7,
+      "unit": "1/rad",
+      "confidence": "high",
+      "basis": "pitch acceleration per differential rpm^2 (arm k_T / I)"
+     },
+     "ductDrag": {
+      "value": 0.586,
+      "se": 0.008192,
+      "unit": "1/s",
+      "confidence": "high",
+      "basis": "rotor/duct momentum drag at hover rotor speed, body drag held at the preset's CdA; 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+     },
+     "ductDragJoint": {
+      "value": 0.557,
+      "se": 0.02924,
+      "unit": "1/s",
+      "confidence": "high",
+      "basis": "joint fit of both drag terms; 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+     },
+     "quadDragPerM": {
+      "value": 0.03353,
+      "se": 0.008184,
+      "unit": "1/m",
+      "confidence": "medium",
+      "basis": "quadratic body drag 0.5 rho CdA / m, joint fit with the rotor drag (weakly identified at coast speeds); 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+     },
+     "cdaHorizontal": {
+      "value": 82.67,
+      "se": 20.18,
+      "unit": "cm^2",
+      "confidence": "medium",
+      "basis": "quadratic body drag 0.5 rho CdA / m, joint fit with the rotor drag (weakly identified at coast speeds); 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted); CdA = 2 m c / rho with m = 151 g"
+     }
+    },
+    "rates": {
+     "type": "ACTUAL",
+     "maxDegS": {
+      "roll": 670,
+      "pitch": 670,
+      "yaw": 670
+     },
+     "setpointErrDegS": [
+      0,
+      0,
+      0
+     ],
+     "stickP995": [
+      0.6,
+      0.6,
+      1
+     ]
+    },
+    "notIdentified": [
+     {
+      "what": "TWR from rpm",
+      "why": "no full-throttle punch-out long enough (0.3 s with all motors above 97 %)"
+     },
+     {
+      "what": "CdA (proposal)",
+      "why": "83 +- 20 cm^2 is not firm enough to change the preset: at coast speeds the body drag is small next to the rotor drag (a fast straight pass, H.4 step F, pins it)"
+     }
+    ],
+    "preset": {
+     "id": "pavo20pro-3s",
+     "fields": [
+      {
+       "field": "motor_tau_ms",
+       "now": 15,
+       "proposed": 15.1,
+       "source": "measured:blackbox-2026-09-28",
+       "confidence": "high",
+       "note": "+- 0.1 ms; 15.1 ms below / 15.0 ms above the median rpm"
+      },
+      {
+       "field": "rotor_inertia_kgm2",
+       "now": 2e-7,
+       "proposed": 2.1e-7,
+       "source": "measured:blackbox-2026-09-28",
+       "confidence": "high",
+       "note": "J_r / I_z = 1.20e-3 times the preset's I_z 1.71e-4 kg m^2 (an estimate)"
+      },
+      {
+       "field": "motor_kappa_m",
+       "now": 0.0075,
+       "proposed": 0.0071,
+       "source": "measured:blackbox-2026-09-28",
+       "confidence": "medium",
+       "note": "yaw fit x the preset's I_z / k_T (k_T from 151 g and the hover rpm); I_z is an estimate, so this is the weakest link"
+      },
+      {
+       "field": "inertia_roll_pitch_kgm2",
+       "now": 0.000111,
+       "proposed": 0.00011,
+       "source": "measured:blackbox-2026-09-28",
+       "confidence": "medium",
+       "note": "arm 33.1 mm x k_T / mean roll-pitch authority; k_T from 151 g and the hover rpm"
+      },
+      {
+       "field": "rotor_drag_per_s",
+       "now": 0.6,
+       "proposed": 0.586,
+       "source": "measured:blackbox-2026-09-28",
+       "confidence": "high",
+       "note": "+- 0.01 1/s; rotor/duct momentum drag at hover rotor speed, body drag held at the preset's CdA; 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+      }
+     ]
+    }
+   }
+  },
+  "controls": {
+   "rotorInertia0": {
+    "truth": {
+     "twr": 5,
+     "tauMs": 15,
+     "rotorInertia": 0,
+     "kappa": 0.0075,
+     "ductDrag": 0.6,
+     "inertiaRollPitch": 0.000111,
+     "inertiaYaw": 0.000171
+    },
+    "fit": {
+     "log": {
+      "firmware": "Betaflight 4.5.1 (77d01ba3b) GSFPV-SIM",
+      "craft": "sim pavo20pro-3s",
+      "date": "2026-09-28",
+      "durationS": 139.289,
+      "flyingS": 133.14,
+      "sampleHz": 1000,
+      "hasRpm": true,
+      "hasAcc": true,
+      "hasGps": false,
+      "attitude": {
+       "fcDiffDeg": {
+        "roll": 0.11932622310447735,
+        "pitch": 0.11711309126539754
+       }
+      }
+     },
+     "estimates": {
+      "hoverMotor": {
+       "value": 0.4047,
+       "se": 0.003827,
+       "unit": "fraction",
+       "confidence": "high",
+       "basis": "153 still-hover windows of 0.25 s"
+      },
+      "hoverThrottle": {
+       "value": 33.9,
+       "se": 0.3969,
+       "unit": "%",
+       "confidence": "high",
+       "basis": "throttle stick after the curve (the OSD throttle)"
+      },
+      "hoverVolts": {
+       "value": 12.15,
+       "se": 0.1101,
+       "unit": "V",
+       "confidence": "high",
+       "basis": "pack voltage while hovering"
+      },
+      "twrHoverMatched": {
+       "value": 5,
+       "se": 0.0007028,
+       "unit": "ratio",
+       "confidence": "high",
+       "basis": "still hover in the simulator's thrust model Tmax (V/Vnom)^2 w^2, at the preset's Vnom 10.98 V"
+      },
+      "twrThrustFit": {
+       "value": 4.978,
+       "se": 0.003195,
+       "unit": "ratio",
+       "confidence": "high",
+       "basis": "thrust fit over 127 s of slow flight in the simulator's thrust model, at the preset's Vnom 10.98 V"
+      },
+      "thrustPerRpm2": {
+       "value": 3.233e-8,
+       "se": 2.37e-11,
+       "unit": "1/(rad/s)^2",
+       "confidence": "high",
+       "basis": "thrust per summed rpm^2 over the weight, k_T / (m g)"
+      },
+      "motorTau": {
+       "value": 15.01,
+       "se": 0.08339,
+       "unit": "ms",
+       "confidence": "high",
+       "basis": "first-order lag from motor command to rpm, mean of 4 motors; command-to-telemetry delay 0 samples (0.0 ms) on top"
+      },
+      "motorTauLowRpm": {
+       "value": 15.15,
+       "se": null,
+       "unit": "ms",
+       "confidence": "high",
+       "basis": "below the median rpm"
+      },
+      "motorTauHighRpm": {
+       "value": 14.93,
+       "se": null,
+       "unit": "ms",
+       "confidence": "high",
+       "basis": "above the median rpm"
+      },
+      "yawDragPerRpm2": {
+       "value": 0.000002104,
+       "se": 2.221e-9,
+       "unit": "1/rad",
+       "confidence": "high",
+       "basis": "yaw drag torque per rpm^2 (kappa k_T / I_z); R^2 1.00"
+      },
+      "yawDamping": {
+       "value": 0.0006617,
+       "se": 0.00066,
+       "unit": "1/s",
+       "confidence": "low",
+       "basis": "yaw rate damping"
+      },
+      "rotorInertiaRatio": {
+       "value": 0.00001845,
+       "se": 0.000001279,
+       "unit": "ratio",
+       "confidence": "high",
+       "basis": "rotor inertia / yaw inertia (J_r / I_z) from the yaw kick of rotor acceleration"
+      },
+      "rollAuthorityPerRpm2": {
+       "value": 0.00001442,
+       "se": 6.197e-7,
+       "unit": "1/rad",
+       "confidence": "high",
+       "basis": "roll acceleration per differential rpm^2 (arm k_T / I)"
+      },
+      "pitchAuthorityPerRpm2": {
+       "value": 0.00001443,
+       "se": 6.61e-7,
+       "unit": "1/rad",
+       "confidence": "high",
+       "basis": "pitch acceleration per differential rpm^2 (arm k_T / I)"
+      },
+      "ductDrag": {
+       "value": 0.586,
+       "se": 0.008192,
+       "unit": "1/s",
+       "confidence": "high",
+       "basis": "rotor/duct momentum drag at hover rotor speed, body drag held at the preset's CdA; 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+      },
+      "ductDragJoint": {
+       "value": 0.557,
+       "se": 0.02924,
+       "unit": "1/s",
+       "confidence": "high",
+       "basis": "joint fit of both drag terms; 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+      },
+      "quadDragPerM": {
+       "value": 0.03353,
+       "se": 0.008184,
+       "unit": "1/m",
+       "confidence": "medium",
+       "basis": "quadratic body drag 0.5 rho CdA / m, joint fit with the rotor drag (weakly identified at coast speeds); 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+      }
+     },
+     "rates": {
+      "type": "ACTUAL",
+      "maxDegS": {
+       "roll": 670,
+       "pitch": 670,
+       "yaw": 670
+      },
+      "setpointErrDegS": [
+       0,
+       0,
+       0
+      ],
+      "stickP995": [
+       0.6,
+       0.6,
+       1
+      ]
+     },
+     "notIdentified": [
+      {
+       "what": "TWR from rpm",
+       "why": "no full-throttle punch-out long enough (0.3 s with all motors above 97 %)"
+      },
+      {
+       "what": "roll/pitch inertia",
+       "why": "needs the all-up mass (--mass) and the hover rpm to turn the authority into an inertia"
+      }
+     ],
+     "preset": {
+      "id": "pavo20pro-3s",
+      "fields": [
+       {
+        "field": "rotor_inertia_kgm2",
+        "now": 2e-7,
+        "proposed": 3.2e-9,
+        "source": "measured:blackbox-2026-09-28",
+        "confidence": "high",
+        "note": "J_r / I_z = 1.85e-5 times the preset's I_z 1.71e-4 kg m^2 (an estimate)"
+       },
+       {
+        "field": "rotor_drag_per_s",
+        "now": 0.6,
+        "proposed": 0.586,
+        "source": "measured:blackbox-2026-09-28",
+        "confidence": "high",
+        "note": "+- 0.01 1/s; rotor/duct momentum drag at hover rotor speed, body drag held at the preset's CdA; 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+       }
+      ]
+     }
+    }
+   },
+   "ductDrag0": {
+    "truth": {
+     "twr": 5,
+     "tauMs": 15,
+     "rotorInertia": 2e-7,
+     "kappa": 0.0075,
+     "ductDrag": 0,
+     "inertiaRollPitch": 0.000111,
+     "inertiaYaw": 0.000171
+    },
+    "fit": {
+     "log": {
+      "firmware": "Betaflight 4.5.1 (77d01ba3b) GSFPV-SIM",
+      "craft": "sim pavo20pro-3s",
+      "date": "2026-09-28",
+      "durationS": 139.289,
+      "flyingS": 133.14,
+      "sampleHz": 1000,
+      "hasRpm": true,
+      "hasAcc": true,
+      "hasGps": false,
+      "attitude": {
+       "fcDiffDeg": {
+        "roll": 0.3174245310848729,
+        "pitch": 0.2959131012347714
+       }
+      }
+     },
+     "estimates": {
+      "hoverMotor": {
+       "value": 0.3957,
+       "se": 0.00427,
+       "unit": "fraction",
+       "confidence": "high",
+       "basis": "77 still-hover windows of 0.25 s"
+      },
+      "hoverThrottle": {
+       "value": 32.9,
+       "se": 0.459,
+       "unit": "%",
+       "confidence": "high",
+       "basis": "throttle stick after the curve (the OSD throttle)"
+      },
+      "hoverVolts": {
+       "value": 12.39,
+       "se": 0.1512,
+       "unit": "V",
+       "confidence": "high",
+       "basis": "pack voltage while hovering"
+      },
+      "twrHoverMatched": {
+       "value": 5.001,
+       "se": 0.001231,
+       "unit": "ratio",
+       "confidence": "high",
+       "basis": "still hover in the simulator's thrust model Tmax (V/Vnom)^2 w^2, at the preset's Vnom 10.98 V"
+      },
+      "twrThrustFit": {
+       "value": 4.975,
+       "se": 0.004364,
+       "unit": "ratio",
+       "confidence": "high",
+       "basis": "thrust fit over 128 s of slow flight in the simulator's thrust model, at the preset's Vnom 10.98 V"
+      },
+      "thrustPerRpm2": {
+       "value": 3.23e-8,
+       "se": 4.205e-11,
+       "unit": "1/(rad/s)^2",
+       "confidence": "high",
+       "basis": "thrust per summed rpm^2 over the weight, k_T / (m g)"
+      },
+      "motorTau": {
+       "value": 15.07,
+       "se": 0.09045,
+       "unit": "ms",
+       "confidence": "high",
+       "basis": "first-order lag from motor command to rpm, mean of 4 motors; command-to-telemetry delay 0 samples (0.0 ms) on top"
+      },
+      "motorTauLowRpm": {
+       "value": 15.12,
+       "se": null,
+       "unit": "ms",
+       "confidence": "high",
+       "basis": "below the median rpm"
+      },
+      "motorTauHighRpm": {
+       "value": 15.05,
+       "se": null,
+       "unit": "ms",
+       "confidence": "high",
+       "basis": "above the median rpm"
+      },
+      "yawDragPerRpm2": {
+       "value": 0.000001991,
+       "se": 2.91e-8,
+       "unit": "1/rad",
+       "confidence": "high",
+       "basis": "yaw drag torque per rpm^2 (kappa k_T / I_z); R^2 0.99"
+      },
+      "yawDamping": {
+       "value": -0.005171,
+       "se": 0.02566,
+       "unit": "1/s",
+       "confidence": "low",
+       "basis": "yaw rate damping"
+      },
+      "rotorInertiaRatio": {
+       "value": 0.0012,
+       "se": 0.000006715,
+       "unit": "ratio",
+       "confidence": "high",
+       "basis": "rotor inertia / yaw inertia (J_r / I_z) from the yaw kick of rotor acceleration"
+      },
+      "rollAuthorityPerRpm2": {
+       "value": 0.00001442,
+       "se": 4.201e-7,
+       "unit": "1/rad",
+       "confidence": "high",
+       "basis": "roll acceleration per differential rpm^2 (arm k_T / I)"
+      },
+      "pitchAuthorityPerRpm2": {
+       "value": 0.00001442,
+       "se": 4.771e-7,
+       "unit": "1/rad",
+       "confidence": "high",
+       "basis": "pitch acceleration per differential rpm^2 (arm k_T / I)"
+      },
+      "ductDragJoint": {
+       "value": -0.02311,
+       "se": 0.01726,
+       "unit": "1/s",
+       "confidence": "low",
+       "basis": "joint fit of both drag terms; 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+      },
+      "quadDragPerM": {
+       "value": 0.02439,
+       "se": 0.002619,
+       "unit": "1/m",
+       "confidence": "medium",
+       "basis": "quadratic body drag 0.5 rho CdA / m, joint fit with the rotor drag (weakly identified at coast speeds); 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+      }
+     },
+     "rates": {
+      "type": "ACTUAL",
+      "maxDegS": {
+       "roll": 670,
+       "pitch": 670,
+       "yaw": 670
+      },
+      "setpointErrDegS": [
+       0,
+       0,
+       0
+      ],
+      "stickP995": [
+       0.6,
+       0.6,
+       1
+      ]
+     },
+     "notIdentified": [
+      {
+       "what": "TWR from rpm",
+       "why": "no full-throttle punch-out long enough (0.3 s with all motors above 97 %)"
+      },
+      {
+       "what": "duct / rotor drag",
+       "why": "-0.0122 +- 0.0038 1/s: not distinguishable from 0 with this data (rotor/duct momentum drag at hover rotor speed, body drag held at the preset's CdA; 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted))"
+      },
+      {
+       "what": "roll/pitch inertia",
+       "why": "needs the all-up mass (--mass) and the hover rpm to turn the authority into an inertia"
+      }
+     ],
+     "preset": {
+      "id": "pavo20pro-3s",
+      "fields": [
+       {
+        "field": "motor_tau_ms",
+        "now": 15,
+        "proposed": 15.1,
+        "source": "measured:blackbox-2026-09-28",
+        "confidence": "high",
+        "note": "+- 0.1 ms; 15.1 ms below / 15.0 ms above the median rpm"
+       },
+       {
+        "field": "rotor_inertia_kgm2",
+        "now": 2e-7,
+        "proposed": 2.1e-7,
+        "source": "measured:blackbox-2026-09-28",
+        "confidence": "high",
+        "note": "J_r / I_z = 1.20e-3 times the preset's I_z 1.71e-4 kg m^2 (an estimate)"
+       },
+       {
+        "field": "motor_kappa_m",
+        "now": 0.0075,
+        "proposed": 0.0071,
+        "source": "measured:blackbox-2026-09-28",
+        "confidence": "low",
+        "note": "yaw fit x the preset's I_z / k_T (k_T from the preset's Tmax and KV (no --mass)); I_z is an estimate, so this is the weakest link"
+       }
+      ]
+     }
+    }
+   },
+   "tau30ms": {
+    "truth": {
+     "twr": 5,
+     "tauMs": 30,
+     "rotorInertia": 2e-7,
+     "kappa": 0.0075,
+     "ductDrag": 0.6,
+     "inertiaRollPitch": 0.000111,
+     "inertiaYaw": 0.000171
+    },
+    "fit": {
+     "log": {
+      "firmware": "Betaflight 4.5.1 (77d01ba3b) GSFPV-SIM",
+      "craft": "sim pavo20pro-3s",
+      "date": "2026-09-28",
+      "durationS": 139.289,
+      "flyingS": 133.14,
+      "sampleHz": 1000,
+      "hasRpm": true,
+      "hasAcc": true,
+      "hasGps": false,
+      "attitude": "estimated"
+     },
+     "estimates": {
+      "hoverMotor": {
+       "value": 0.4047,
+       "se": 0.003375,
+       "unit": "fraction",
+       "confidence": "high",
+       "basis": "145 still-hover windows of 0.25 s"
+      },
+      "hoverThrottle": {
+       "value": 33.8,
+       "se": 0.3969,
+       "unit": "%",
+       "confidence": "high",
+       "basis": "throttle stick after the curve (the OSD throttle)"
+      },
+      "hoverVolts": {
+       "value": 12.16,
+       "se": 0.1058,
+       "unit": "V",
+       "confidence": "high",
+       "basis": "pack voltage while hovering"
+      },
+      "twrHoverMatched": {
+       "value": 5.001,
+       "se": 0.0005109,
+       "unit": "ratio",
+       "confidence": "high",
+       "basis": "still hover in the simulator's thrust model Tmax (V/Vnom)^2 w^2, at the preset's Vnom 10.98 V"
+      },
+      "twrThrustFit": {
+       "value": 4.976,
+       "se": 0.00359,
+       "unit": "ratio",
+       "confidence": "high",
+       "basis": "thrust fit over 127 s of slow flight in the simulator's thrust model, at the preset's Vnom 10.98 V"
+      },
+      "thrustPerRpm2": {
+       "value": 3.234e-8,
+       "se": 2.524e-11,
+       "unit": "1/(rad/s)^2",
+       "confidence": "high",
+       "basis": "thrust per summed rpm^2 over the weight, k_T / (m g)"
+      },
+      "motorTau": {
+       "value": 30.02,
+       "se": 0.1215,
+       "unit": "ms",
+       "confidence": "high",
+       "basis": "first-order lag from motor command to rpm, mean of 4 motors; command-to-telemetry delay 0 samples (0.0 ms) on top"
+      },
+      "motorTauLowRpm": {
+       "value": 30.17,
+       "se": null,
+       "unit": "ms",
+       "confidence": "high",
+       "basis": "below the median rpm"
+      },
+      "motorTauHighRpm": {
+       "value": 29.99,
+       "se": null,
+       "unit": "ms",
+       "confidence": "high",
+       "basis": "above the median rpm"
+      },
+      "yawDragPerRpm2": {
+       "value": 0.000002031,
+       "se": 2.152e-8,
+       "unit": "1/rad",
+       "confidence": "high",
+       "basis": "yaw drag torque per rpm^2 (kappa k_T / I_z); R^2 1.00"
+      },
+      "yawDamping": {
+       "value": -0.002255,
+       "se": 0.01845,
+       "unit": "1/s",
+       "confidence": "low",
+       "basis": "yaw rate damping"
+      },
+      "rotorInertiaRatio": {
+       "value": 0.0012,
+       "se": 0.00001635,
+       "unit": "ratio",
+       "confidence": "high",
+       "basis": "rotor inertia / yaw inertia (J_r / I_z) from the yaw kick of rotor acceleration"
+      },
+      "rollAuthorityPerRpm2": {
+       "value": 0.00001433,
+       "se": 4.736e-7,
+       "unit": "1/rad",
+       "confidence": "high",
+       "basis": "roll acceleration per differential rpm^2 (arm k_T / I)"
+      },
+      "pitchAuthorityPerRpm2": {
+       "value": 0.00001433,
+       "se": 5.128e-7,
+       "unit": "1/rad",
+       "confidence": "high",
+       "basis": "pitch acceleration per differential rpm^2 (arm k_T / I)"
+      },
+      "ductDrag": {
+       "value": 0.5868,
+       "se": 0.008597,
+       "unit": "1/s",
+       "confidence": "high",
+       "basis": "rotor/duct momentum drag at hover rotor speed, body drag held at the preset's CdA; 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+      },
+      "ductDragJoint": {
+       "value": 0.5606,
+       "se": 0.03093,
+       "unit": "1/s",
+       "confidence": "high",
+       "basis": "joint fit of both drag terms; 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+      },
+      "quadDragPerM": {
+       "value": 0.03243,
+       "se": 0.008675,
+       "unit": "1/m",
+       "confidence": "low",
+       "basis": "quadratic body drag 0.5 rho CdA / m, joint fit with the rotor drag (weakly identified at coast speeds); 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+      }
+     },
+     "rates": {
+      "type": "ACTUAL",
+      "maxDegS": {
+       "roll": 670,
+       "pitch": 670,
+       "yaw": 670
+      },
+      "setpointErrDegS": [
+       0,
+       0,
+       0
+      ],
+      "stickP995": [
+       0.6,
+       0.6,
+       1
+      ]
+     },
+     "notIdentified": [
+      {
+       "what": "TWR from rpm",
+       "why": "no full-throttle punch-out long enough (0.3 s with all motors above 97 %)"
+      },
+      {
+       "what": "roll/pitch inertia",
+       "why": "needs the all-up mass (--mass) and the hover rpm to turn the authority into an inertia"
+      }
+     ],
+     "preset": {
+      "id": "pavo20pro-3s",
+      "fields": [
+       {
+        "field": "motor_tau_ms",
+        "now": 15,
+        "proposed": 30,
+        "source": "measured:blackbox-2026-09-28",
+        "confidence": "high",
+        "note": "+- 0.1 ms; 30.2 ms below / 30.0 ms above the median rpm"
+       },
+       {
+        "field": "rotor_inertia_kgm2",
+        "now": 2e-7,
+        "proposed": 2.1e-7,
+        "source": "measured:blackbox-2026-09-28",
+        "confidence": "high",
+        "note": "J_r / I_z = 1.20e-3 times the preset's I_z 1.71e-4 kg m^2 (an estimate)"
+       },
+       {
+        "field": "motor_kappa_m",
+        "now": 0.0075,
+        "proposed": 0.00724,
+        "source": "measured:blackbox-2026-09-28",
+        "confidence": "low",
+        "note": "yaw fit x the preset's I_z / k_T (k_T from the preset's Tmax and KV (no --mass)); I_z is an estimate, so this is the weakest link"
+       },
+       {
+        "field": "rotor_drag_per_s",
+        "now": 0.6,
+        "proposed": 0.587,
+        "source": "measured:blackbox-2026-09-28",
+        "confidence": "high",
+        "note": "+- 0.01 1/s; rotor/duct momentum drag at hover rotor speed, body drag held at the preset's CdA; 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+       }
+      ]
+     }
+    }
+   },
+   "noRpm": {
+    "truth": {
+     "twr": 5,
+     "tauMs": 15,
+     "rotorInertia": 2e-7,
+     "kappa": 0.0075,
+     "ductDrag": 0.6,
+     "inertiaRollPitch": 0.000111,
+     "inertiaYaw": 0.000171
+    },
+    "fit": {
+     "log": {
+      "firmware": "Betaflight 4.5.1 (77d01ba3b) GSFPV-SIM",
+      "craft": "sim pavo20pro-3s",
+      "date": "2026-09-28",
+      "durationS": 139.289,
+      "flyingS": 133.14,
+      "sampleHz": 1000,
+      "hasRpm": false,
+      "hasAcc": true,
+      "hasGps": false,
+      "attitude": {
+       "fcDiffDeg": {
+        "roll": 0.12089398290222511,
+        "pitch": 0.11611994843239853
+       }
+      }
+     },
+     "estimates": {
+      "hoverMotor": {
+       "value": 0.4047,
+       "se": 0.003904,
+       "unit": "fraction",
+       "confidence": "high",
+       "basis": "149 still-hover windows of 0.25 s"
+      },
+      "hoverThrottle": {
+       "value": 33.88,
+       "se": 0.3969,
+       "unit": "%",
+       "confidence": "high",
+       "basis": "throttle stick after the curve (the OSD throttle)"
+      },
+      "hoverVolts": {
+       "value": 12.15,
+       "se": 0.1058,
+       "unit": "V",
+       "confidence": "high",
+       "basis": "pack voltage while hovering"
+      },
+      "twrHoverMatched": {
+       "value": 5.001,
+       "se": 0.0004897,
+       "unit": "ratio",
+       "confidence": "high",
+       "basis": "still hover in the simulator's thrust model Tmax (V/Vnom)^2 w^2, at the preset's Vnom 10.98 V"
+      },
+      "twrThrustFit": {
+       "value": 4.982,
+       "se": 0.002686,
+       "unit": "ratio",
+       "confidence": "high",
+       "basis": "thrust fit over 128 s of slow flight in the simulator's thrust model, at the preset's Vnom 10.98 V"
+      },
+      "ductDrag": {
+       "value": 0.5868,
+       "se": 0.008204,
+       "unit": "1/s",
+       "confidence": "high",
+       "basis": "rotor/duct momentum drag at hover rotor speed, body drag held at the preset's CdA; 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+      },
+      "ductDragJoint": {
+       "value": 0.5568,
+       "se": 0.02917,
+       "unit": "1/s",
+       "confidence": "high",
+       "basis": "joint fit of both drag terms; 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+      },
+      "quadDragPerM": {
+       "value": 0.0339,
+       "se": 0.008144,
+       "unit": "1/m",
+       "confidence": "medium",
+       "basis": "quadratic body drag 0.5 rho CdA / m, joint fit with the rotor drag (weakly identified at coast speeds); 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+      }
+     },
+     "rates": {
+      "type": "ACTUAL",
+      "maxDegS": {
+       "roll": 670,
+       "pitch": 670,
+       "yaw": 670
+      },
+      "setpointErrDegS": [
+       0,
+       0,
+       0
+      ],
+      "stickP995": [
+       0.6,
+       0.6,
+       1
+      ]
+     },
+     "notIdentified": [
+      {
+       "what": "motor lag tau",
+       "why": "needs bidirectional DShot rpm (eRPM[] fields; dshot_bidir = ON)"
+      },
+      {
+       "what": "rotor inertia, yaw torque, roll/pitch authority",
+       "why": "needs bidirectional DShot rpm (eRPM[] fields)"
+      }
+     ],
+     "preset": {
+      "id": "pavo20pro-3s",
+      "fields": [
+       {
+        "field": "rotor_drag_per_s",
+        "now": 0.6,
+        "proposed": 0.587,
+        "source": "measured:blackbox-2026-09-28",
+        "confidence": "high",
+        "note": "+- 0.01 1/s; rotor/duct momentum drag at hover rotor speed, body drag held at the preset's CdA; 6 coast-downs (6 integrated from a still hover before the push, 0 with the start speed fitted)"
+       }
+      ]
+     }
+    }
+   }
+  }
+ }
+}

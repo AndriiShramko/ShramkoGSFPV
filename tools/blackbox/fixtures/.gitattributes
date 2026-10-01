@@ -1,0 +1,3 @@
+# log excerpts are binary; the JSON vectors are text
+*.bbl binary
+*.bfl binary
