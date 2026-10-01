@@ -6,7 +6,24 @@ Spec: vault `03 - Resources/Deployment/shramkogsfpv/spec.md` (+ 6 spec-*.md). Ph
 
 - **Live:** https://gsfpv.flyreelstudio.eu — release **e5fad2d5182f** = commit `8042182` (+ later commits on `main` are evidence/bench/docs only). Contains: no-click calibration wizard (sticks move it on), latency guard + honest HUD latency, walls refine to 1.6 cm with browser cache/export, walls on/off (C key; admin default per scan in `apps/fly/public/showcase.json`), voxel overlay (V key; overlay / voxels only, 4 styles, opacity), whole-file bake reads (brotli scenes), coarser grid for huge scans, governor 1.25-period threshold, landing + README with 30 real screenshots and parallax.
 - **Acceptance:** A1-A9, B1-B23, C, D accepted on the live site; table `evidence/2026-09-27/acceptance-live-2026-09-27.json`; later releases re-checked: `evidence/2026-09-27/v03-*.json` (wizard auto, walls/voxels/landing, latency/walls). A9: LIMITED BY DISPLAY (the owner's 4K monitor runs 30 Hz over HDMI).
-- **Last update:** 2026-09-27
+- **Last update:** 2026-10-01 (v0.3 continues on branch `shramkoclaude/determined-cannon-ns801h`, PR #3: see "Where v0.3 stands" below)
+
+## Where v0.3 stands (2026-10-01, local session on the owner's PC)
+
+- **Continue from branch `shramkoclaude/determined-cannon-ns801h` (PR #3), not from `wip/v03-wave1`.** `wip/v03-wave1` is the old,
+  superseded snapshot (its `docs/wip/V03-WAVE1-STATUS.md` is history only).
+- **Wave 1 is done** on PR #3 (prefs store with the 4 review must-fixes, app shell, sim-core model / lives / log /2 / director /
+  history / stats, collision transform, namespaced i18n). W2-5 (settings catalogue on the site) and W4-3 (Betaflight dumps +
+  blackbox tools) are done early. Lead contract step before wave 2 done: `ctx.prefs`, `ArmGate.keepArmedAfterCrash`,
+  `FlightSession.setCamera` / `applyLifeSettings` / `stats`.
+- **Open from wave 1:** accept-fly B12 negative control (the bot's slow dash tumbles into a crash since wave 1) and the B15 tamper
+  control margin; both owned by W2-2. With the scan drawn on a GPU, B6 B7 B9 B10 B11 B13 B14 B16 pass on a local release build
+  (`evidence/2026-10-01/v03-w1-render-accept.json`).
+- **Review of the cloud work** (7 areas, every finding tried by 3 skeptics): 19 confirmed, 20 refuted; each confirmed one is owned
+  by a wave-2 agent or the lead (vault build log `build-log-2026-09-27-cloud-v03.md`).
+- **Wave 2** (W2-1 settings UI, W2-2 respawn, W2-3 modes, W2-4 summary) runs in worktrees `C:/dev/gsfpv-w2-*` on branches
+  `w2-1`..`w2-4` (local only until merged into PR #3).
+
 
 ## Cloud session status (2026-10-01, read this before continuing from b7261ee)
 
@@ -26,10 +43,10 @@ Spec: vault `03 - Resources/Deployment/shramkogsfpv/spec.md` (+ 6 spec-*.md). Ph
 
 ## Handoff — how any agent continues from git alone
 
-1. **Repos.** Code: `github.com/AndriiShramko/ShramkoGSFPV` — `main` = live. Unfinished v0.3 wave 1 (prefs store, sim-core modes/platform/battery, partial app shell and log/respawn): branch **`wip/v03-wave1`**, state in its `docs/wip/V03-WAVE1-STATUS.md`. Vault (owner's notes, backlog, verbatim briefs): private repo `obsidian-vault-andriishramko`.
+1. **Repos.** Code: `github.com/AndriiShramko/ShramkoGSFPV` — `main` = live. v0.3 in progress: branch **`shramkoclaude/determined-cannon-ns801h`** (PR #3; state in "Where v0.3 stands" above). `wip/v03-wave1` is superseded. Vault (owner's notes, backlog, verbatim briefs): private repo `obsidian-vault-andriishramko`.
 2. **What the owner asked for, with item numbers and status:** start at the vault note `03 - Resources/Deployment/shramkogsfpv/HANDOFF.md` — it links the backlog (item numbers, status), the owner's verbatim briefs (primary source; derived notes lose details), the build log with numbers and root causes (`build-logs/build-log-2026-09-25-real-radio.md`) and the acceptance table (`build-logs/acceptance-phase-b.md`).
-3. **Plan for what is left:** `docs/architecture-v03.md` (parts A-I, waves in section J) + `docs/research/*` (why things are as they are). Next in order: settings store + modes + spawn platform / rewind respawn (wave 1 branch), flight stats, SuperSplat catalogue tab with filters / random highly rated / favourites (owner's decision 2026-09-27: legal terms do not block it), scene scale, 60 fps recording + auto folder, Pavo20 physics (needs the owner's `diff all` / blackbox).
-4. **Checks:** `pnpm -r typecheck`, `npx vitest run` (227 tests), `node scripts/check-architecture.mjs`, `node scripts/check-licenses.mjs`, `pnpm --filter @gsfpv/site i18n:check`; live acceptance `tools/bench/src/accept-{site,fly,c,d,repo}.ts` (`SITE=https://gsfpv.flyreelstudio.eu npx tsx ...`); extra live checks `tools/bench/scripts/` (README there); screenshots `tools/bench/src/screens.ts`.
+3. **Plan for what is left:** `docs/architecture-v03.md` (parts A-I, waves in section J) + `docs/research/*` (why things are as they are). Next in order (wave 2 on PR #3): settings screen + modes + spawn platform / rewind respawn, flight stats, SuperSplat catalogue tab with filters / random highly rated / favourites (owner's decision 2026-09-27: legal terms do not block it), scene scale, 60 fps recording + auto folder, Pavo20 physics (needs the owner's `diff all` / blackbox).
+4. **Checks:** `pnpm -r typecheck`, `npx vitest run` (711+ tests on PR #3), `node scripts/check-architecture.mjs`, `node scripts/check-licenses.mjs`, `pnpm --filter @gsfpv/site i18n:check`; live acceptance `tools/bench/src/accept-{site,fly,c,d,repo}.ts` (`SITE=https://gsfpv.flyreelstudio.eu npx tsx ...`); extra live checks `tools/bench/scripts/` (README there); screenshots `tools/bench/src/screens.ts`.
 5. **Deploy:** CI builds `dist.tgz` + `SHA256SUMS` on every push to `main` (artifact `dist`); `deploy/README.md` = the procedure (nginx.conf first when it changes, `deploy/deploy.sh`, `deploy/rollback.sh`, neighbours snapshot/diff with `deploy/neighbours.py`). NOT in git on purpose: `deploy/hub.env` (hub address, SSH port/user/key path) and all secrets — the vault note `HANDOFF.md` above names where the owner keeps server access for agents; the secrets file itself is local only, never in any git repo. Rules: never touch other containers on the hub or `/home/fpv/proxy/`, never `git push --force`, spec-ops STOP rule: >= 2 GB free on the hub before a deploy.
 6. **Traps met so far:** Git Bash rewrites env paths for native programs (do not `set -a; . hub.env` before python); tsx wraps page functions in `__name` (pass strings or shim it); Chrome cannot read one byte of a brotli/gzip file (use HEAD / whole-file reads); the owner's PC runs DaVinci renders on the same GPU (check `nvidia-smi` before heavy bakes); a real person is slower than any "human model" (never accept anything because time passed).
    - **Cloud container (Claude Code on the web):** no GPU (WebGL is software, the scan draws at about 1 frame/s), so flight checks run only in the logic-only mode (`?render=off`, `ACCEPT_RENDER=off` in accept-fly; never a visual or latency check; `tools/bench/README.md`); no system Chrome, so the bench falls back to Playwright's bundled Chromium (`/opt/pw-browsers`; `/opt/google/chrome/chrome` is only a link to it), headful under `xvfb-run -a`, never `playwright install`; Chromium has no H.264, so the site's hero-video checks fail there only; the egress proxy re-signs TLS, so certificate checks run from the hub or a GitHub runner; SSH only through the vault's gsfpv-hub workflow.

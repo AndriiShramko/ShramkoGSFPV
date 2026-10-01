@@ -1,5 +1,10 @@
 # v0.3 wave 1 — work in progress (branch `wip/v03-wave1`)
 
+> **Superseded (2026-10-01).** Everything below describes the branch `wip/v03-wave1` as it was on 2026-09-27. Wave 1 was
+> finished and merged on branch `shramkoclaude/determined-cannon-ns801h` (PR #3): the 4 prefs must-fix items are fixed
+> (a31799c, d7f8c8d, 6121bef, ca9b96e), W1-2 is merged (8856d18) and W1-4 is finished (7a1ccd4). Do not redo any of it;
+> start from `STATE.md` "Where v0.3 stands".
+
 This branch holds the unfinished v0.3 wave 1 ("foundations") exactly as the agents left it on
 2026-09-26/27. It is **not** merged and **not** deployed. `main` (the live site) moved on without it:
 the no-click calibration wizard, the latency guard, walls refine / on-off, the voxel overlay and the
