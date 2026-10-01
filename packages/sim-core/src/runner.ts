@@ -19,7 +19,7 @@
 import { Sim, S, DT_US } from './sim';
 import type { SimEvent, ContactWorld } from './sim';
 import { Sha256, sha256Hex } from './sha256';
-import { compileParams, hoverSolve } from './params';
+import { compileParams } from './params';
 import type { ParamOverrides, PresetJson, SimParams } from './params';
 import type { LifeHeader, RespawnOpts, RespawnReason, WorldEvent } from './contracts';
 import type { RespawnDirector } from './director';
@@ -858,11 +858,9 @@ export function lifeParams(h: LifeHeader, deps: Pick<ReplayDeps, 'preset'>): Sim
     return compileParams(preset, h.overrides);
 }
 
-/** A Sim for a life's params, set up the way the session sets up its own (auto-throttle reads hoverThr). */
+/** A Sim for a life's params, as the session builds its own (the constructor sets hoverThr: hoverThrOf, C6). */
 export function lifeSim(p: SimParams, world: ContactWorld | null): Sim {
-    const sim = new Sim(p, world);
-    sim.hoverThr = hoverSolve(p, 1).motor;
-    return sim;
+    return new Sim(p, world);
 }
 
 interface Hooks {

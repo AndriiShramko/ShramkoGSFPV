@@ -216,8 +216,7 @@ export class Sim {
         this.sqrtTwr = Math.sqrt(p.twr);
         // auto-throttle hover from the params alone, so a replay needs nothing from the page (D-g);
         // v0.2 defaulted to 0.4 and relied on the page setting hoverSolve().motor
-        const hover = hoverSolve(p, 1).motor;
-        if (hover > 0 && hover <= 1) this.hoverThr = hover;
+        this.hoverThr = hoverThrOf(p);
         this.s[S.soc] = 1; // a new model starts with a fresh pack; reset keeps the battery
         this.reset(0, 0, 0, 0);
         this.ch[2] = -1;
@@ -942,6 +941,18 @@ export class Sim {
 
 function clampAbs(v: number, lim: number): number {
     return v < -lim ? -lim : v > lim ? lim : v;
+}
+
+/**
+ * The motor output a fresh pack hovers at, the one value of Sim.hoverThr (review finding C6): the
+ * Sim constructor sets it, and every Sim (the page's, a replay's, lifeSim's) gets the same. Zero
+ * gravity hovers at 0 (v0.2's guard turned that into 0.4 in a `new Sim` while the page set 0, so
+ * a zero-g auto-throttle flight replayed 13 m higher); a craft that cannot hover gets full output
+ * (hoverSolve says NaN, which would poison the auto-throttle map).
+ */
+export function hoverThrOf(p: SimParams): number {
+    const m = hoverSolve(p, 1).motor;
+    return m >= 0 && m <= 1 ? m : 1;
 }
 
 /** throttle mapping for auto-throttle gravity mode: stick 0.5 -> hover. */

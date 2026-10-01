@@ -1,5 +1,5 @@
 // One flight: scene + collision + physics + renderer, driven from the engine's update event.
-import { Sim, Runner, InputLog, S, compileParams, hoverSolve, SIM_CORE_VERSION, sha256Hex, attitude, spherePoses, replay as replayLog, FlightStats } from '@gsfpv/sim-core';
+import { Sim, Runner, InputLog, S, compileParams, SIM_CORE_VERSION, sha256Hex, attitude, spherePoses, replay as replayLog, FlightStats } from '@gsfpv/sim-core';
 import type { SimParams, ParamOverrides, SimEvent, LogHeader } from '@gsfpv/sim-core';
 import { fetchVoxelCollision, VoxelContactWorld, findSphereSpawn, NoCollisionError, openVoxelCollision } from '@gsfpv/collision';
 import type { VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
@@ -449,7 +449,7 @@ export class FlightSession {
     private buildSim(): void {
         this.sim = new Sim(this.params, this.flightWorld);
         this.sim.reset(this.spawn[0], this.spawn[1], this.spawn[2], this.spawn[3]);
-        this.sim.hoverThr = hoverSolve(this.params, 1).motor;
+        // hoverThr: the Sim constructor's own (hoverThrOf), the same in every replay (review C6)
         this.log = new InputLog(this.logHeader());
         this.runner = new Runner(this.sim, this.log, true);
         this.runner.trajectory = [];
