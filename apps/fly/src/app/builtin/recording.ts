@@ -292,7 +292,8 @@ export class Recording {
     onSim(e: AutoEvent, nowMs: number, activation: boolean): void {
         if (!this.autoOn || !this.allowed) return;
         const act = this.rules.onEvent(e, nowMs, this.d.autoRespawn());
-        if (act === 'start' && !this.recorder && !this.busy) void this.queue(() => this.start({ auto: true, activation }).catch(() => ''));
+        // queued: an arm while the last flight's file is still being saved records once that is done
+        if (act === 'start' && !this.recorder) void this.queue(() => (this.recorder ? Promise.resolve('') : this.start({ auto: true, activation }).catch(() => '')));
     }
 
     /** Starts and stops one after another (an arm right after a stop must not race it). */
