@@ -1,0 +1,1173 @@
+{
+  "name": "v03-summary",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T04:57:06.010Z",
+    "gitHead": "d44ac11",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "keymapShipped": [
+    {
+      "action": "pause.toggle",
+      "keys": [
+        "Escape",
+        "KeyP"
+      ],
+      "flying": false
+    },
+    {
+      "action": "respawn.start",
+      "keys": [
+        "KeyR"
+      ],
+      "flying": false
+    },
+    {
+      "action": "respawn.rewind",
+      "keys": [
+        "KeyY"
+      ],
+      "flying": false
+    },
+    {
+      "action": "crash.keep",
+      "keys": [
+        "Enter"
+      ],
+      "flying": false
+    },
+    {
+      "action": "scene.next",
+      "keys": [
+        "KeyN"
+      ],
+      "flying": false
+    },
+    {
+      "action": "scene.random",
+      "keys": [
+        "Shift+KeyN"
+      ],
+      "flying": false
+    },
+    {
+      "action": "scene.favourite",
+      "keys": [
+        "KeyF"
+      ],
+      "flying": false
+    },
+    {
+      "action": "mode.cycle",
+      "keys": [
+        "KeyM"
+      ],
+      "flying": false
+    },
+    {
+      "action": "arm.toggle",
+      "keys": [
+        "Space"
+      ],
+      "flying": true
+    },
+    {
+      "action": "voxels.cycle",
+      "keys": [
+        "KeyV"
+      ],
+      "flying": false
+    },
+    {
+      "action": "walls.toggle",
+      "keys": [
+        "KeyC"
+      ],
+      "flying": false
+    },
+    {
+      "action": "hud.toggle",
+      "keys": [
+        "KeyH"
+      ],
+      "flying": false
+    },
+    {
+      "action": "scale.down",
+      "keys": [
+        "BracketLeft"
+      ],
+      "flying": false
+    },
+    {
+      "action": "scale.up",
+      "keys": [
+        "BracketRight"
+      ],
+      "flying": false
+    },
+    {
+      "action": "record.toggle",
+      "keys": [
+        "F9"
+      ],
+      "flying": false
+    },
+    {
+      "action": "frameStats.toggle",
+      "keys": [
+        "F3"
+      ],
+      "flying": false
+    },
+    {
+      "action": "settings.open",
+      "keys": [
+        "KeyO"
+      ],
+      "flying": false
+    }
+  ],
+  "S1": {
+    "pass": true,
+    "render": "off",
+    "what": "fly with the keyboard (walls off), disarm with the switch after 4 s: the card shows, its air time is within 0.1 s of __gsfpv.stats().life.airtimeS; any key closes it; Enter opens the summary panel with the first item focused (not pressed); a life under 3 s shows no card",
+    "flight": {
+      "armed": true,
+      "lifeAtDisarm": 4.07
+    },
+    "card": {
+      "shown": true,
+      "title": "--- STATS ---",
+      "lines": 10,
+      "airtime": "0:04.1",
+      "rows": {
+        "airtime": "0:04.1",
+        "maxSpeed": "49 km/h",
+        "maxAlt": "40.4 m",
+        "maxDist": "0.0 m",
+        "distance": "40.4 m",
+        "minVolt": "12.12 V",
+        "maxAmps": "11.5 A",
+        "usedMah": "12 mAh",
+        "maxG": "2.9 G",
+        "avgThrottle": "50 %"
+      }
+    },
+    "life": {
+      "airtimeS": 4.07
+    },
+    "disarm": {
+      "type": "disarm",
+      "tick": 4535,
+      "reason": "switch"
+    },
+    "airtimeDiffS": 0.02999999999999936,
+    "goneOnKey": true,
+    "secondCard": true,
+    "enter": {
+      "panel": true,
+      "card": 0,
+      "focused": "pause.continue"
+    },
+    "closedByEsc": true,
+    "shortLife": {
+      "airtimeS": 1.573,
+      "card": 0
+    },
+    "control": {
+      "what": "the bot crashes into a wall after more than 3 s in the air (a crash disarm, not the switch): no card within 1.2 s",
+      "phase": "crashed",
+      "atCrash": {
+        "life": 5.2250000000000005,
+        "disarms": [
+          "crash"
+        ],
+        "crash": {
+          "type": "crash",
+          "tick": 5950,
+          "speed": 8.668891791625434,
+          "nx": 1,
+          "ny": 0,
+          "nz": 0,
+          "px": -5.199040443254583,
+          "py": 1.7295653287201118,
+          "pz": 0.7271217104472011
+        }
+      },
+      "cardSeen": 0,
+      "fired": true
+    },
+    "ran": {
+      "at": "2026-10-02T04:57:05.888Z",
+      "gitHead": "d44ac11",
+      "gitDirty": true,
+      "browser": {
+        "kind": "system-chrome",
+        "version": "154.0.8037.59",
+        "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "why": "installed"
+      }
+    }
+  },
+  "S2": {
+    "pass": true,
+    "render": "off",
+    "what": "Esc opens the summary panel: every shipped KEYMAP action with its key-caps (and aria-keyshortcuts), no planned one, Continue and Restart with their keys; 16 stat rows (this flight, session, all time) with the life air time; the mode chip = the mode the flight model flies; Copy stats puts the table on the clipboard",
+    "problems": [],
+    "shown": [
+      {
+        "action": "pause.toggle",
+        "caps": [
+          "Esc",
+          "P"
+        ],
+        "aria": "Escape P"
+      },
+      {
+        "action": "respawn.start",
+        "caps": [
+          "R"
+        ],
+        "aria": "R"
+      },
+      {
+        "action": "respawn.rewind",
+        "caps": [
+          "Y"
+        ],
+        "aria": "Y"
+      },
+      {
+        "action": "crash.keep",
+        "caps": [
+          "Enter"
+        ],
+        "aria": "Enter"
+      },
+      {
+        "action": "scene.next",
+        "caps": [
+          "N"
+        ],
+        "aria": "N"
+      },
+      {
+        "action": "scene.random",
+        "caps": [
+          "Shift+N"
+        ],
+        "aria": "Shift+N"
+      },
+      {
+        "action": "scene.favourite",
+        "caps": [
+          "F"
+        ],
+        "aria": "F"
+      },
+      {
+        "action": "mode.cycle",
+        "caps": [
+          "M"
+        ],
+        "aria": "M"
+      },
+      {
+        "action": "voxels.cycle",
+        "caps": [
+          "V"
+        ],
+        "aria": "V"
+      },
+      {
+        "action": "walls.toggle",
+        "caps": [
+          "C"
+        ],
+        "aria": "C"
+      },
+      {
+        "action": "hud.toggle",
+        "caps": [
+          "H"
+        ],
+        "aria": "H"
+      },
+      {
+        "action": "scale.down",
+        "caps": [
+          "["
+        ],
+        "aria": "["
+      },
+      {
+        "action": "scale.up",
+        "caps": [
+          "]"
+        ],
+        "aria": "]"
+      },
+      {
+        "action": "record.toggle",
+        "caps": [
+          "F9"
+        ],
+        "aria": "F9"
+      },
+      {
+        "action": "frameStats.toggle",
+        "caps": [
+          "F3"
+        ],
+        "aria": "F3"
+      },
+      {
+        "action": "settings.open",
+        "caps": [
+          "O"
+        ],
+        "aria": "O"
+      },
+      {
+        "action": "arm.toggle",
+        "caps": [
+          "Space"
+        ],
+        "aria": "Space"
+      }
+    ],
+    "items": [
+      {
+        "id": "pause.continue",
+        "caps": [
+          "Esc",
+          "P"
+        ],
+        "aria": "Escape P",
+        "testid": null
+      },
+      {
+        "id": "pause.restart",
+        "caps": [
+          "R"
+        ],
+        "aria": "R",
+        "testid": null
+      },
+      {
+        "id": "pause.rewind",
+        "caps": [
+          "Y"
+        ],
+        "aria": "Y",
+        "testid": null
+      },
+      {
+        "id": "pause.scene",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.scene.next",
+        "caps": [
+          "N"
+        ],
+        "aria": "N",
+        "testid": null
+      },
+      {
+        "id": "pause.scene.random",
+        "caps": [
+          "Shift+N"
+        ],
+        "aria": "Shift+N",
+        "testid": null
+      },
+      {
+        "id": "pause.scene.favourite",
+        "caps": [
+          "F"
+        ],
+        "aria": "F",
+        "testid": null
+      },
+      {
+        "id": "pause.drone",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.radio",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.settings",
+        "caps": [
+          "O"
+        ],
+        "aria": "O",
+        "testid": null
+      },
+      {
+        "id": "pause.replays",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.measure",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.import",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.cinema",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.record",
+        "caps": [
+          "F9"
+        ],
+        "aria": "F9",
+        "testid": null
+      }
+    ],
+    "mode": {
+      "chip": "angle",
+      "simChannel": 1,
+      "sim": "angle"
+    },
+    "airtime": {
+      "panel": {
+        "id": "airtime",
+        "life": "0:01.6",
+        "session": "0:08.9",
+        "lifetime": "0:08.9",
+        "visible": true
+      },
+      "hook": 1.573
+    },
+    "copy": {
+      "status": "Copied",
+      "lines": 19,
+      "head": [
+        "ShramkoGSFPV flight stats \u00b7 BetaFPV Pavo20 Pro class, 3S \u00b7 2026-10-02\r",
+        "\r",
+        "                   This flight  Session  All time\r"
+      ]
+    },
+    "control": {
+      "what": "the same check against a keymap whose hud.toggle is J",
+      "problems": [
+        "hud.toggle: caps H != J",
+        "hud.toggle: aria \"H\" != \"J\""
+      ],
+      "fired": true
+    },
+    "ran": {
+      "at": "2026-10-02T04:57:05.888Z",
+      "gitHead": "d44ac11",
+      "gitDirty": true,
+      "browser": {
+        "kind": "system-chrome",
+        "version": "154.0.8037.59",
+        "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "why": "installed"
+      }
+    }
+  },
+  "S4": {
+    "pass": true,
+    "what": "a 4 s flight goes into the drone's lifetime totals (prefs collection 'stats'); after a reload the totals, the stored collection and the panel's All time column are the same",
+    "before": {
+      "lifetime": {
+        "flights": 1,
+        "airtimeS": 4.066,
+        "distanceM": 40.20946492232513,
+        "crashes": 0
+      },
+      "drone": "pavo20pro-3s"
+    },
+    "afterReload": {
+      "lifetime": {
+        "flights": 1,
+        "airtimeS": 4.066,
+        "distanceM": 40.20946492232513,
+        "crashes": 0
+      },
+      "stored": {
+        "flights": 1,
+        "airtimeS": 4.066,
+        "distanceM": 40.20946492232513,
+        "crashes": 0
+      }
+    },
+    "panelAllTimeAirtime": "0:04.1",
+    "control": {
+      "what": "a fresh browser context starts at zero",
+      "fresh": {
+        "lifetime": {
+          "flights": 0,
+          "airtimeS": 0,
+          "distanceM": 0,
+          "crashes": 0
+        },
+        "stored": null
+      },
+      "fired": true
+    },
+    "ran": {
+      "at": "2026-10-02T04:57:05.888Z",
+      "gitHead": "d44ac11",
+      "gitDirty": true,
+      "browser": {
+        "kind": "system-chrome",
+        "version": "154.0.8037.59",
+        "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "why": "installed"
+      }
+    }
+  },
+  "S3": {
+    "pass": false,
+    "render": "off",
+    "what": "with the panel closed, every key of every shipped KEYMAP binding (looping over the table, keyboard flying keys included) does what its row in the panel says: exactly that action's effect on the page, and pressed again it goes back",
+    "results": [
+      {
+        "action": "pause.toggle",
+        "key": "Escape",
+        "flying": false,
+        "expect": "menu",
+        "changed": [
+          "menu"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "pause.toggle",
+        "key": "KeyP",
+        "flying": false,
+        "expect": "menu",
+        "changed": [
+          "menu"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "respawn.start",
+        "key": "KeyR",
+        "flying": false,
+        "expect": "lives",
+        "changed": [
+          "lives"
+        ],
+        "ok": true,
+        "restored": null
+      },
+      {
+        "action": "respawn.rewind",
+        "key": "KeyY",
+        "flying": false,
+        "expect": "lives",
+        "changed": [
+          "lives"
+        ],
+        "ok": true,
+        "restored": null
+      },
+      {
+        "action": "crash.keep",
+        "key": "Enter",
+        "ok": true,
+        "changed": [],
+        "skipped": "listens only while a crash is up (when: 'crash'): checked with the crash in tools/bench/src/accept-v03-respawn.ts"
+      },
+      {
+        "action": "mode.cycle",
+        "key": "KeyM",
+        "flying": false,
+        "expect": "mode",
+        "changed": [
+          "mode"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "arm.toggle",
+        "key": "Space",
+        "flying": true,
+        "expect": "armed",
+        "changed": [
+          "atSpawn",
+          "armed"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "voxels.cycle",
+        "key": "KeyV",
+        "flying": false,
+        "expect": "voxel",
+        "changed": [
+          "voxel"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "walls.toggle",
+        "key": "KeyC",
+        "flying": false,
+        "expect": "walls",
+        "changed": [
+          "walls",
+          "lives"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "hud.toggle",
+        "key": "KeyH",
+        "flying": false,
+        "expect": "hudOff",
+        "changed": [
+          "hudOff"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "scale.down",
+        "key": "BracketLeft",
+        "flying": false,
+        "expect": "scale",
+        "changed": [
+          "scale"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "scale.up",
+        "key": "BracketRight",
+        "flying": false,
+        "expect": "scale",
+        "changed": [
+          "scale"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "record.toggle",
+        "key": "F9",
+        "flying": false,
+        "expect": "rec",
+        "changed": [
+          "rec"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "frameStats.toggle",
+        "key": "F3",
+        "flying": false,
+        "expect": "frame",
+        "changed": [
+          "frame"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "settings.open",
+        "key": "KeyO",
+        "flying": false,
+        "expect": "settings",
+        "changed": [
+          "settings"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "scene.next",
+        "key": "KeyN",
+        "flying": false,
+        "expect": "scene",
+        "changed": [
+          "walls",
+          "scene"
+        ],
+        "ok": true,
+        "restored": null
+      },
+      {
+        "action": "scene.random",
+        "key": "Shift+KeyN",
+        "flying": false,
+        "expect": "scene",
+        "changed": [
+          "scene"
+        ],
+        "ok": true,
+        "restored": null
+      },
+      {
+        "action": "scene.favourite",
+        "key": "KeyF",
+        "ok": true,
+        "changed": [],
+        "skipped": "needs a favourite scene: checked in tools/bench/src/accept-v03-scenes.ts S4"
+      }
+    ],
+    "control": {
+      "what": "a deliberately wrong binding in the page's own keymap module (H and V swapped): the loop and the panel check must both fail",
+      "injected": {
+        "url": null
+      },
+      "loop": [
+        {
+          "action": "voxels.cycle",
+          "key": "KeyV",
+          "flying": false,
+          "expect": "voxel",
+          "changed": [
+            "voxel"
+          ],
+          "ok": true,
+          "restored": true
+        },
+        {
+          "action": "hud.toggle",
+          "key": "KeyH",
+          "flying": false,
+          "expect": "hudOff",
+          "changed": [
+            "hudOff"
+          ],
+          "ok": true,
+          "restored": true
+        }
+      ],
+      "panelProblems": [],
+      "fired": false
+    },
+    "ran": {
+      "at": "2026-10-02T04:50:38.116Z",
+      "gitHead": "d44ac11",
+      "gitDirty": true,
+      "browser": {
+        "kind": "system-chrome",
+        "version": "154.0.8037.59",
+        "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "why": "installed"
+      }
+    }
+  },
+  "S5": {
+    "pass": true,
+    "what": "the summary panel keeps every pause-menu item with its data-action, in order, and the contact link; the first item has the focus, Down / Up walk the menu (wrapping), Tab goes on, Enter runs the focused item, Esc closes what it opened; every item does what it did",
+    "order": [
+      "pause.continue",
+      "pause.restart",
+      "pause.rewind",
+      "pause.scene",
+      "pause.scene.next",
+      "pause.scene.random",
+      "pause.scene.favourite",
+      "pause.drone",
+      "pause.radio",
+      "pause.settings",
+      "pause.replays",
+      "pause.measure",
+      "pause.import",
+      "pause.cinema",
+      "pause.record"
+    ],
+    "contact": {
+      "href": "/en/#contact",
+      "target": "_blank"
+    },
+    "nav": {
+      "walk": [
+        "pause.restart",
+        "pause.rewind",
+        "pause.scene",
+        "pause.scene.next",
+        "pause.scene.random",
+        "pause.scene.favourite",
+        "pause.drone",
+        "pause.radio",
+        "pause.settings",
+        "pause.replays",
+        "pause.measure",
+        "pause.import",
+        "pause.cinema",
+        "pause.record",
+        "/en/#contact",
+        "pause.continue"
+      ],
+      "expectWalk": [
+        "pause.restart",
+        "pause.rewind",
+        "pause.scene",
+        "pause.scene.next",
+        "pause.scene.random",
+        "pause.scene.favourite",
+        "pause.drone",
+        "pause.radio",
+        "pause.settings",
+        "pause.replays",
+        "pause.measure",
+        "pause.import",
+        "pause.cinema",
+        "pause.record",
+        "/en/#contact",
+        "pause.continue"
+      ],
+      "up": "/en/#contact",
+      "tab": "pause.restart",
+      "onMeasure": "pause.measure",
+      "enterOpened": "panel interactive",
+      "escClosed": true
+    },
+    "items": {
+      "pause.continue": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 2281,
+          "paused": true,
+          "rec": false,
+          "lives": 1
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying",
+          "tick": 2781,
+          "paused": false,
+          "rec": false,
+          "lives": 1
+        }
+      },
+      "pause.restart": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 3914,
+          "paused": true,
+          "rec": false,
+          "lives": 1
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying",
+          "tick": 491,
+          "paused": false,
+          "rec": false,
+          "lives": 1
+        }
+      },
+      "pause.rewind": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 825,
+          "paused": true,
+          "rec": false,
+          "lives": 1
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying",
+          "tick": 1320,
+          "paused": false,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.scene.next": {
+        "ok": true,
+        "note": "checked in accept-v03-scenes S1/S3/S4"
+      },
+      "pause.scene.random": {
+        "ok": true,
+        "note": "checked in accept-v03-scenes S1/S3/S4"
+      },
+      "pause.scene.favourite": {
+        "ok": true,
+        "note": "checked in accept-v03-scenes S1/S3/S4"
+      },
+      "pause.drone": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 1653,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "screen drones interactive",
+          "body": "flying",
+          "tick": 1653,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.radio": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 1965,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "screen radio interactive",
+          "body": "flying",
+          "tick": 1965,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.settings": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 2267,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "panel interactive settings",
+          "body": "flying",
+          "tick": 2267,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.replays": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 2586,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "panel interactive",
+          "body": "flying",
+          "tick": 2586,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.measure": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 2900,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "panel interactive",
+          "body": "flying",
+          "tick": 2900,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.import": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 3218,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "panel interactive",
+          "body": "flying",
+          "tick": 3218,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.cinema": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 3533,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying cinema",
+          "tick": 4045,
+          "paused": false,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.record": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 4355,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying",
+          "tick": 6366,
+          "paused": false,
+          "rec": true,
+          "lives": 2
+        }
+      },
+      "pause.scene": {
+        "ok": true,
+        "pickerOverFlight": true,
+        "panelGone": true,
+        "url": "https://gsfpv.flyreelstudio.eu/en/fly/?scene=39e63ce9&nowarn=1&render=off"
+      }
+    },
+    "control": {
+      "what": "a planted button in the menu that does nothing: the same look must find nothing happened",
+      "planted": {
+        "didSomething": false
+      },
+      "fired": true
+    },
+    "ran": {
+      "at": "2026-10-02T04:50:38.116Z",
+      "gitHead": "d44ac11",
+      "gitDirty": true,
+      "browser": {
+        "kind": "system-chrome",
+        "version": "154.0.8037.59",
+        "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "why": "installed"
+      }
+    }
+  },
+  "parts": [
+    {
+      "part": "S1",
+      "pass": true,
+      "gitHead": "d44ac11"
+    },
+    {
+      "part": "S2",
+      "pass": true,
+      "gitHead": "d44ac11"
+    },
+    {
+      "part": "S3",
+      "pass": false,
+      "gitHead": "d44ac11"
+    },
+    {
+      "part": "S4",
+      "pass": true,
+      "gitHead": "d44ac11"
+    },
+    {
+      "part": "S5",
+      "pass": true,
+      "gitHead": "d44ac11"
+    },
+    {
+      "part": "S6",
+      "pass": null,
+      "gitHead": null
+    }
+  ],
+  "pass": false
+}

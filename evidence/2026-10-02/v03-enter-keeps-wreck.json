@@ -1,0 +1,50 @@
+{
+  "name": "v03-enter-keeps-wreck",
+  "context": {
+    "date": "2026-10-02T05:01:53.888Z",
+    "gitHead": "d44ac11",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "pass": true,
+  "what": "Enter during the respawn countdown keeps the wreck: the crash panel shows, still crashed 4 s later, no new life",
+  "enter": {
+    "atToast": {
+      "status": "ready",
+      "toast": true,
+      "panel": false,
+      "crashed": true,
+      "lives": 2
+    },
+    "after": {
+      "status": "ready",
+      "toast": false,
+      "panel": true,
+      "crashed": true,
+      "lives": 2
+    }
+  },
+  "control": {
+    "what": "the same crash without Enter: the drone respawns by itself (a new life, no crash panel)",
+    "plain": {
+      "atToast": {
+        "status": "ready",
+        "toast": true,
+        "panel": false,
+        "crashed": true,
+        "lives": 2
+      },
+      "after": {
+        "status": "ready",
+        "toast": true,
+        "panel": false,
+        "crashed": true,
+        "lives": 3
+      }
+    },
+    "fired": true
+  }
+}

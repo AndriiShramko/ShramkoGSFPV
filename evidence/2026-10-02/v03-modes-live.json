@@ -1,0 +1,402 @@
+{
+  "name": "v03-modes",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T04:46:25.027Z",
+    "gitHead": "d44ac11",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "render": {
+    "M1": "off",
+    "M2": "off",
+    "M3": "off",
+    "M4": "off",
+    "M5": "on"
+  },
+  "M1": {
+    "pass": true,
+    "what": "chip -> Horizon: chip HORIZON, prefs flight.mode, ch[5] = 0, still after a reload; M cycles acro / angle / horizon with a note",
+    "start": {
+      "chip": "ANGLE",
+      "chipSrc": "",
+      "pref": "angle",
+      "explicit": false,
+      "ch5": 1,
+      "flying": "angle",
+      "radioDecides": false,
+      "note": null
+    },
+    "popOpen": true,
+    "popItems": [
+      "ACRONo self-levelling: the drone holds its attitude",
+      "ANGLESelf-levelling: let go of the sticks and it levels out",
+      "HORIZONLevels near centre stick, flips at full stick"
+    ],
+    "mKey": [
+      "M"
+    ],
+    "afterClick": {
+      "chip": "HORIZON",
+      "chipSrc": "",
+      "pref": "horizon",
+      "explicit": true,
+      "ch5": 0,
+      "flying": "horizon",
+      "radioDecides": false,
+      "note": null
+    },
+    "popClosed": true,
+    "afterReload": {
+      "chip": "HORIZON",
+      "chipSrc": "",
+      "pref": "horizon",
+      "explicit": true,
+      "ch5": 0,
+      "flying": "horizon",
+      "radioDecides": false,
+      "note": null
+    },
+    "cycle": [
+      {
+        "chip": "ACRO",
+        "chipSrc": "",
+        "pref": "acro",
+        "explicit": true,
+        "ch5": -1,
+        "flying": "acro",
+        "radioDecides": false,
+        "note": "Mode: ACRO"
+      },
+      {
+        "chip": "ANGLE",
+        "chipSrc": "",
+        "pref": "angle",
+        "explicit": true,
+        "ch5": 1,
+        "flying": "angle",
+        "radioDecides": false,
+        "note": "Mode: ANGLE"
+      },
+      {
+        "chip": "HORIZON",
+        "chipSrc": "",
+        "pref": "horizon",
+        "explicit": true,
+        "ch5": 0,
+        "flying": "horizon",
+        "radioDecides": false,
+        "note": "Mode: HORIZON"
+      }
+    ],
+    "control": {
+      "fresh": {
+        "chip": "ANGLE",
+        "chipSrc": "",
+        "pref": "angle",
+        "explicit": false,
+        "ch5": 1,
+        "flying": "angle",
+        "radioDecides": false,
+        "note": null
+      },
+      "fired": true
+    },
+    "errors": []
+  },
+  "M2": {
+    "pass": true,
+    "what": "the radio's mode switch, found on the check screen with no press, decides ch[5]; a chip click and M leave ch[5] at the radio's value and say why",
+    "radio": "SimRadio EdgeTX Classic (simulated raw HID reports, NOT a real radio), CH6 driven by the harness",
+    "check": {
+      "id": "check",
+      "step": 6,
+      "cmds": 16,
+      "seconds": 20,
+      "presses": {
+        "presses": 0,
+        "dropped": 1
+      }
+    },
+    "found": {
+      "cmdsBefore": 16,
+      "cmdsAfter": 16,
+      "modeSwitch": {
+        "sw": {
+          "input": {
+            "kind": "axis",
+            "index": 5
+          },
+          "modes": [
+            "acro",
+            "horizon",
+            "angle"
+          ]
+        },
+        "pos": 2,
+        "seen": [
+          true,
+          false,
+          true
+        ],
+        "listening": false
+      },
+      "profileSwitch": {
+        "input": {
+          "kind": "axis",
+          "index": 5
+        },
+        "modes": [
+          "acro",
+          "horizon",
+          "angle"
+        ]
+      },
+      "row": "Mode switchCH6\u2212100: ACRO0: HORIZON+100: ANGLECH6: your radio sets the modeNo switch",
+      "presses": 0
+    },
+    "stored": {
+      "version": 1,
+      "modeSwitch": {
+        "input": {
+          "index": 5,
+          "kind": "axis"
+        },
+        "modes": [
+          "acro",
+          "horizon",
+          "angle"
+        ]
+      }
+    },
+    "low": {
+      "chip": "ACRO",
+      "chipSrc": "CH6",
+      "pref": "angle",
+      "explicit": false,
+      "ch5": -1,
+      "flying": "acro",
+      "radioDecides": true,
+      "note": null
+    },
+    "popup": {
+      "disabled": "true",
+      "note": "Your radio's switch CH6 sets the mode"
+    },
+    "afterChip": {
+      "chip": "ACRO",
+      "chipSrc": "CH6",
+      "pref": "angle",
+      "explicit": false,
+      "ch5": -1,
+      "flying": "acro",
+      "radioDecides": true,
+      "note": null
+    },
+    "afterM": {
+      "chip": "ACRO",
+      "chipSrc": "CH6",
+      "pref": "angle",
+      "explicit": false,
+      "ch5": -1,
+      "flying": "acro",
+      "radioDecides": true,
+      "note": "Your radio's switch CH6 sets the mode"
+    },
+    "high": {
+      "chip": "ANGLE",
+      "chipSrc": "CH6",
+      "pref": "angle",
+      "explicit": false,
+      "ch5": 1,
+      "flying": "angle",
+      "radioDecides": true,
+      "note": "Your radio's switch CH6 sets the mode"
+    },
+    "mid": {
+      "chip": "HORIZON",
+      "chipSrc": "CH6",
+      "pref": "angle",
+      "explicit": false,
+      "ch5": 0,
+      "flying": "horizon",
+      "radioDecides": true,
+      "note": "Your radio's switch CH6 sets the mode"
+    },
+    "control": {
+      "check": {
+        "id": "check",
+        "step": 6,
+        "cmds": 16,
+        "seconds": 20,
+        "presses": {
+          "presses": 0,
+          "dropped": 1
+        }
+      },
+      "before": {
+        "chip": "ANGLE",
+        "chipSrc": "",
+        "pref": "angle",
+        "explicit": false,
+        "ch5": 1,
+        "flying": "angle",
+        "radioDecides": false,
+        "note": null
+      },
+      "after": {
+        "chip": "HORIZON",
+        "chipSrc": "",
+        "pref": "horizon",
+        "explicit": true,
+        "ch5": 0,
+        "flying": "horizon",
+        "radioDecides": false,
+        "note": null
+      },
+      "fired": true
+    },
+    "errors": []
+  },
+  "M3": {
+    "pass": true,
+    "what": "respawn.keepArmed (on by default): the radio's arm switch kept ON through a crash and the respawn (R) arms the gate again with no new flip; off (changed live) wants the flip",
+    "radio": "SimRadio EdgeTX Classic (simulated raw HID reports, NOT a real radio)",
+    "pref": {
+      "keepArmed": true,
+      "controls": true
+    },
+    "crash": {
+      "armedBefore": {
+        "gate": true,
+        "sim": true,
+        "y": 1.5576143222407297
+      },
+      "crashed": true,
+      "during": {
+        "crashed": true,
+        "block": "crashed",
+        "gateArmed": false,
+        "switchOn": true
+      }
+    },
+    "after": {
+      "crashed": false,
+      "gateArmed": true,
+      "block": null,
+      "switchOn": true,
+      "simArmed": true,
+      "keepArmed": true
+    },
+    "control": {
+      "offLive": false,
+      "crash": {
+        "armedBefore": {
+          "gate": true,
+          "sim": true,
+          "y": 1.569359401738097
+        },
+        "crashed": true,
+        "during": {
+          "crashed": true,
+          "block": "crashed",
+          "gateArmed": false,
+          "switchOn": true
+        }
+      },
+      "after": {
+        "crashed": false,
+        "gateArmed": false,
+        "block": "switch",
+        "switchOn": true,
+        "simArmed": false,
+        "keepArmed": false
+      },
+      "afterFlip": {
+        "gateArmed": true,
+        "block": null
+      },
+      "fired": true
+    },
+    "simSide": {
+      "simArmedAfterRespawn": true,
+      "note": "page side only: the flight model respawns armed once the session's respawn passes RespawnOpts.keepArmed (W2-2, session.ts); until then the craft is parked even though the gate passes ON"
+    },
+    "errors": []
+  },
+  "M4": {
+    "pass": true,
+    "what": "v0.2 radio profiles (an EdgeTX radio, a gamepad), the last input and the stick mode move into the prefs document on the first v0.3 boot and stay there",
+    "migrated": {
+      "from": 0,
+      "found": [
+        "gsfpv.profiles.v1",
+        "gsfpv.stickMode",
+        "gsfpv.lastInput"
+      ],
+      "moved": [
+        "gsfpv.stickMode",
+        "gsfpv.profiles.v1",
+        "gsfpv.lastInput"
+      ],
+      "ignored": [
+        {
+          "key": "gsfpv.profiles.v1",
+          "why": "1 profile(s) this version cannot read"
+        }
+      ]
+    },
+    "docItems": [
+      "gp:Xbox Wireless Controller",
+      "hid:1209:4f54:Radiomaster TX16S Joystick:19"
+    ],
+    "last": {
+      "key": "hid:1209:4f54:Radiomaster TX16S Joystick:19",
+      "kind": "hid"
+    },
+    "stick": "1",
+    "again": {
+      "migrated": null,
+      "keys": [
+        "gp:Xbox Wireless Controller",
+        "hid:1209:4f54:Radiomaster TX16S Joystick:19"
+      ]
+    },
+    "control": {
+      "brokenInDoc": false,
+      "ignored": [
+        {
+          "key": "gsfpv.profiles.v1",
+          "why": "1 profile(s) this version cannot read"
+        }
+      ],
+      "consoleWarning": [
+        "warning: radio setups: gsfpv.profiles.v1 was not moved into the settings (1 profile(s) this version cannot read); the old copy stays in this browser"
+      ],
+      "legacyStillHasBroken": true,
+      "fired": true
+    },
+    "errors": []
+  },
+  "ran": [
+    "M1",
+    "M2",
+    "M3",
+    "M4"
+  ],
+  "pass": false
+}

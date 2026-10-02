@@ -1,0 +1,511 @@
+{
+  "name": "v03-prefs",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T04:52:55.051Z",
+    "gitHead": "d44ac11",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "mode": "render=off (logic only): every check here reads state, none is a picture check",
+  "P3": {
+    "pass": true,
+    "what": "item 13: Export in one browser, Import (preview, then Replace) into a fresh one: explicitList() and the radio profiles are identical, and the flight uses the imported values",
+    "exportFile": "gsfpv-settings-2026-10-02.json",
+    "A": {
+      "explicit": [
+        {
+          "id": "physics.gravity",
+          "scope": "global",
+          "key": null,
+          "value": 1.62
+        },
+        {
+          "id": "camera.fovDeg",
+          "scope": "drone",
+          "key": "meteor65pro-1s",
+          "value": 125
+        },
+        {
+          "id": "physics.vCrash",
+          "scope": "drone",
+          "key": "pavo20pro-3s",
+          "value": 6.5
+        },
+        {
+          "id": "tune.pid",
+          "scope": "drone",
+          "key": "pavo20pro-3s",
+          "value": {
+            "roll": [
+              60,
+              111,
+              44,
+              0
+            ],
+            "pitch": [
+              68,
+              139,
+              60,
+              0
+            ],
+            "yaw": [
+              54,
+              111,
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "radios": [
+        "gamepad:Xbox Wireless Controller"
+      ]
+    },
+    "preview": {
+      "settingsLine": "Settings that change: 4",
+      "changeLines": 4
+    },
+    "B": {
+      "explicitEqual": true,
+      "radiosEqual": true,
+      "model": {
+        "vCrash": 6.5,
+        "gravity": 1.62,
+        "pidRoll": [
+          60,
+          111,
+          44,
+          0
+        ]
+      },
+      "meteorFov": 125
+    },
+    "control": {
+      "flippedPreviewLines": 1,
+      "flippedLine": "physics.vCrash \u00b7 pavo20pro-3s: 6.5 \u2192 7",
+      "listsDiffer": true,
+      "fired": true
+    },
+    "at": "2026-10-02T04:52:55.050Z"
+  },
+  "P4": {
+    "pass": true,
+    "what": "D-b: Settings opened and closed 5 times (O, gear, pause menu; Esc, x, O): the HUD, the frame line, the render scale and splat budget and the flight model stay as they were; the flight is paused while it is open",
+    "governor": "off (?governor=0), so the render scale is the quality ceiling alone; with it on, a first run saw it step 0.85 -> 0.7 by itself between two rounds",
+    "start": {
+      "hudShown": true,
+      "textOff": false,
+      "frameStats": false,
+      "renderScale": 1,
+      "budget": 4000000,
+      "sameModel": true,
+      "preset": "pavo20pro-3s",
+      "paused": false
+    },
+    "rounds": [
+      {
+        "open": "O",
+        "close": "Esc",
+        "pausedWhileOpen": true,
+        "state": {
+          "hudShown": true,
+          "textOff": false,
+          "frameStats": false,
+          "renderScale": 1,
+          "budget": 4000000,
+          "sameModel": true,
+          "preset": "pavo20pro-3s",
+          "paused": false
+        }
+      },
+      {
+        "open": "gear",
+        "close": "x",
+        "pausedWhileOpen": true,
+        "state": {
+          "hudShown": true,
+          "textOff": false,
+          "frameStats": false,
+          "renderScale": 1,
+          "budget": 4000000,
+          "sameModel": true,
+          "preset": "pavo20pro-3s",
+          "paused": false
+        }
+      },
+      {
+        "open": "menu",
+        "close": "Esc",
+        "pausedWhileOpen": true,
+        "state": {
+          "hudShown": true,
+          "textOff": false,
+          "frameStats": false,
+          "renderScale": 1,
+          "budget": 4000000,
+          "sameModel": true,
+          "preset": "pavo20pro-3s",
+          "paused": false
+        }
+      },
+      {
+        "open": "O",
+        "close": "O",
+        "pausedWhileOpen": true,
+        "state": {
+          "hudShown": true,
+          "textOff": false,
+          "frameStats": false,
+          "renderScale": 1,
+          "budget": 4000000,
+          "sameModel": true,
+          "preset": "pavo20pro-3s",
+          "paused": false
+        }
+      },
+      {
+        "open": "gear",
+        "close": "x",
+        "pausedWhileOpen": true,
+        "state": {
+          "hudShown": true,
+          "textOff": false,
+          "frameStats": false,
+          "renderScale": 1,
+          "budget": 4000000,
+          "sameModel": true,
+          "preset": "pavo20pro-3s",
+          "paused": false
+        }
+      }
+    ],
+    "control": {
+      "state": {
+        "hudShown": false,
+        "textOff": false,
+        "frameStats": false,
+        "renderScale": 0.5,
+        "budget": 1000000,
+        "sameModel": true,
+        "preset": "pavo20pro-3s",
+        "paused": false
+      },
+      "fired": true
+    },
+    "at": "2026-10-02T04:52:55.050Z"
+  },
+  "P6": {
+    "pass": true,
+    "what": "deep link /fly/?open=settings&focus=<id>: at the picker (after the first-visit warning) and in flight, Settings opens with that row focused and its group shown; closing takes the link out of the address bar",
+    "behindWarning": {
+      "open": false,
+      "focusedRow": null,
+      "highlighted": null,
+      "group": null,
+      "note": null,
+      "picker": false,
+      "url": "?open=settings&focus=physics.vCrash"
+    },
+    "atPicker": {
+      "open": true,
+      "focusedRow": "physics.vCrash",
+      "highlighted": "physics.vCrash",
+      "group": "crash",
+      "note": null,
+      "picker": true,
+      "url": "?open=settings&focus=physics.vCrash"
+    },
+    "afterClose": {
+      "open": false,
+      "focusedRow": null,
+      "highlighted": null,
+      "group": null,
+      "note": null,
+      "picker": true,
+      "url": ""
+    },
+    "inFlight": {
+      "open": true,
+      "focusedRow": "camera.fovDeg",
+      "highlighted": "camera.fovDeg",
+      "group": "camera",
+      "note": null,
+      "picker": false,
+      "url": "?scene=39e63ce9&nowarn=1&input=touch&render=off&open=settings&focus=camera.fovDeg",
+      "paused": true
+    },
+    "control": {
+      "unknown": {
+        "open": true,
+        "focusedRow": null,
+        "highlighted": null,
+        "group": "flight",
+        "note": "There is no setting \u201cno.such\u201d in this version.",
+        "picker": true,
+        "url": "?open=settings&focus=no.such&nowarn=1"
+      },
+      "planned": {
+        "open": true,
+        "focusedRow": "respawn.auto",
+        "highlighted": "respawn.auto",
+        "group": "crash",
+        "note": null,
+        "picker": true,
+        "url": "?open=settings&focus=respawn.auto&nowarn=1"
+      },
+      "pageErrors": [],
+      "fired": true
+    },
+    "at": "2026-10-02T04:52:55.050Z"
+  },
+  "P8": {
+    "pass": true,
+    "what": "O opens and closes Settings; in the pause menu its item shows the O cap and O runs it; the gear says O; an O typed into the search stays a letter (the screen stays open)",
+    "search": {
+      "gravoHits": [],
+      "gravHits": [
+        "physics.gravity",
+        "physics.gravityMode"
+      ],
+      "typedOKeptOpen": true
+    },
+    "closedByO": true,
+    "menuItem": {
+      "aria": "O",
+      "cap": "O"
+    },
+    "openedFromMenu": true,
+    "gear": {
+      "aria": "O",
+      "label": "Settings (O)"
+    },
+    "resumedAfter": true,
+    "control": {
+      "noKeyItem": {
+        "aria": null,
+        "cap": null
+      },
+      "fired": true
+    },
+    "at": "2026-10-02T04:52:55.050Z"
+  },
+  "P9": {
+    "pass": true,
+    "what": "settings whose app code still keeps its own key follow the store: F3 frame stats, the voxel style and the walls of this scan, set in Settings, are on screen and survive a reload; the walls row reset gives the scan default with nothing explicit left; walls apply when Settings closes (life)",
+    "start": {
+      "frameStore": false,
+      "frameShown": false,
+      "styleStore": "wire",
+      "styleApp": "wire",
+      "wallsStore": "on",
+      "wallsExplicit": false,
+      "wallsApp": true,
+      "wallsKey": null
+    },
+    "whileOpen": {
+      "frameStore": true,
+      "frameShown": true,
+      "styleStore": "solid",
+      "styleApp": "solid",
+      "wallsStore": "off",
+      "wallsExplicit": true,
+      "wallsApp": true,
+      "wallsKey": null
+    },
+    "afterClose": {
+      "frameStore": true,
+      "frameShown": true,
+      "styleStore": "solid",
+      "styleApp": "solid",
+      "wallsStore": "off",
+      "wallsExplicit": true,
+      "wallsApp": false,
+      "wallsKey": "off"
+    },
+    "reloaded": {
+      "frameStore": true,
+      "frameShown": true,
+      "styleStore": "solid",
+      "styleApp": "solid",
+      "wallsStore": "off",
+      "wallsExplicit": true,
+      "wallsApp": false,
+      "wallsKey": "off"
+    },
+    "wallsReset": {
+      "frameStore": true,
+      "frameShown": true,
+      "styleStore": "solid",
+      "styleApp": "solid",
+      "wallsStore": "on",
+      "wallsExplicit": false,
+      "wallsApp": true,
+      "wallsKey": null
+    },
+    "control": {
+      "bypassed": {
+        "frameStore": true,
+        "frameShown": false,
+        "styleStore": "solid",
+        "styleApp": "height",
+        "wallsStore": "off",
+        "wallsExplicit": false,
+        "wallsApp": false,
+        "wallsKey": null
+      },
+      "afterReload": {
+        "frameStore": true,
+        "frameShown": true,
+        "styleStore": "solid",
+        "styleApp": "solid",
+        "wallsStore": "on",
+        "wallsExplicit": false,
+        "wallsApp": true,
+        "wallsKey": null
+      },
+      "fired": true
+    },
+    "at": "2026-10-02T04:52:55.050Z"
+  },
+  "P10": {
+    "pass": false,
+    "what": "Language in Settings: Polski reloads the page in Polish and is kept in the NEXT_LOCALE cookie the landing reads; the row reset removes the cookie and the page language comes back",
+    "start": "en",
+    "polish": {
+      "lang": "pl",
+      "store": "pl",
+      "cookie": "NEXT_LOCALE=pl",
+      "menu": "Ustawienia"
+    },
+    "reset": {
+      "v": "browser",
+      "explicit": false,
+      "cookie": ""
+    },
+    "afterReset": "pl",
+    "control": {
+      "ru": {
+        "lang": "pl",
+        "store": "ru"
+      },
+      "fired": false
+    },
+    "at": "2026-10-02T04:52:55.050Z"
+  },
+  "P11": {
+    "pass": true,
+    "what": "review C10 in the page: tau and FOV set in Settings and a Betaflight diff imported on the Pavo20 stay the Pavo's; picking the Meteor65 flies the Meteor's own values; back to the Pavo and after a reload, the Pavo's tune again; its card says how many values are its own",
+    "imported": {
+      "ok": true,
+      "firmware": "Betaflight 4.5.1",
+      "ratesType": "ACTUAL",
+      "warnings": [
+        "yaw_deadband = 5 changes the stick feel in Betaflight but is not applied by the simulator.",
+        "6 setting(s) not used by the simulator were ignored (gyro_lpf1_static_hz, dyn_notch_count, dshot_bidir, motor_pwm_protocol, profile_name, ...)."
+      ]
+    },
+    "pavo": {
+      "preset": "pavo20pro-3s",
+      "tau": 0.025,
+      "fov": 130,
+      "rates": "ACTUAL",
+      "rcRate": 20,
+      "pidRoll": [
+        52,
+        90,
+        35,
+        140
+      ],
+      "url": "?scene=39e63ce9&nowarn=1&input=touch&render=off"
+    },
+    "pavoOwn": [
+      "camera.fovDeg",
+      "physics.tauMs",
+      "tune.pid",
+      "tune.rates",
+      "tune.throttle"
+    ],
+    "pavoCard": "Your changes for this drone: 5",
+    "meteor": {
+      "preset": "meteor65pro-1s",
+      "tau": 0.01,
+      "fov": 115,
+      "rates": "ACTUAL",
+      "rcRate": 7,
+      "pidRoll": [
+        45,
+        80,
+        40,
+        120
+      ],
+      "url": "?scene=39e63ce9&nowarn=1&input=touch&render=off"
+    },
+    "meteorOwn": {
+      "tau": 0.01,
+      "fov": 115
+    },
+    "pavoAgain": {
+      "preset": "pavo20pro-3s",
+      "tau": 0.025,
+      "fov": 130,
+      "rates": "ACTUAL",
+      "rcRate": 20,
+      "pidRoll": [
+        52,
+        90,
+        35,
+        140
+      ],
+      "url": "?scene=39e63ce9&nowarn=1&input=touch&render=off"
+    },
+    "reloaded": {
+      "preset": "pavo20pro-3s",
+      "tau": 0.025,
+      "fov": 130,
+      "rates": "ACTUAL",
+      "rcRate": 20,
+      "pidRoll": [
+        52,
+        90,
+        35,
+        140
+      ],
+      "url": "?scene=39e63ce9&nowarn=1&input=touch&render=off"
+    },
+    "control": {
+      "v02": {
+        "preset": "meteor65pro-1s",
+        "tau": 0.025,
+        "rates": "ACTUAL",
+        "rcRate": 20
+      },
+      "fired": true
+    },
+    "at": "2026-10-02T04:52:55.050Z"
+  },
+  "pageErrors": [],
+  "summary": {
+    "P3": "pass",
+    "P4": "pass",
+    "P6": "pass",
+    "P8": "pass",
+    "P9": "pass",
+    "P10": "FAIL",
+    "P11": "pass"
+  }
+}

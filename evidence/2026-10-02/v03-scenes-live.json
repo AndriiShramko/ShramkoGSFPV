@@ -1,0 +1,342 @@
+{
+  "name": "v03-scenes",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T05:00:21.073Z",
+    "gitHead": "d44ac11",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "render": {
+    "S1": "off",
+    "S2": "on",
+    "S3": "off",
+    "S4": "off",
+    "S5": "off",
+    "S6": "off"
+  },
+  "S1": {
+    "pass": true,
+    "what": "N loads the next scene in the page: no reload, the simulated radio stays connected and armed, the throttle follows at once; a page load shows the Controls screen again",
+    "radio": "SimRadio EdgeTX Classic (simulated raw HID reports, NOT a real radio)",
+    "before": {
+      "scene": "39e63ce9",
+      "url": "39e63ce9",
+      "mark": 1,
+      "sameFake": true,
+      "controlsScreen": false,
+      "loading": false,
+      "source": "hid",
+      "paused": false,
+      "armed": true,
+      "gateArmed": true,
+      "life": "start",
+      "keepArmed": false,
+      "platform": true,
+      "switches": 0,
+      "first": {
+        "reason": "start",
+        "keepArmed": false,
+        "platform": true
+      }
+    },
+    "switch": {
+      "state": "done",
+      "from": "39e63ce9",
+      "to": "887f27aa",
+      "reason": "next",
+      "ms": 1365
+    },
+    "after": {
+      "scene": "887f27aa",
+      "url": "887f27aa",
+      "mark": 1,
+      "sameFake": true,
+      "controlsScreen": false,
+      "loading": false,
+      "source": "hid",
+      "paused": false,
+      "armed": true,
+      "gateArmed": true,
+      "life": "scene",
+      "keepArmed": true,
+      "platform": true,
+      "switches": 1,
+      "first": {
+        "reason": "scene",
+        "keepArmed": true,
+        "platform": true
+      }
+    },
+    "throttle": {
+      "samples": [
+        {
+          "stick": 0.5,
+          "ch2": 0.5310957431793213
+        },
+        {
+          "stick": -0.6,
+          "ch2": -0.5923001170158386
+        },
+        {
+          "stick": 0.2,
+          "ch2": 0.2221125364303589
+        }
+      ],
+      "ok": true
+    },
+    "control": {
+      "mark": null,
+      "controlsScreen": true,
+      "source": null,
+      "fired": true
+    },
+    "errors": []
+  },
+  "S3": {
+    "pass": true,
+    "what": "scenes.autoSwitch on: after the crash delay the next scene loads (toast: next scene in ...), the radio stays; off: the crash respawns in the same scene; the crash panel has N / Shift+N / F and Next scene loads",
+    "onCrash": "next-scene",
+    "toast": "Crash 2.5 m/s \u00b7 next scene in 1.6 s",
+    "switch": {
+      "state": "done",
+      "from": "39e63ce9",
+      "to": "887f27aa",
+      "reason": "auto",
+      "ms": 1346
+    },
+    "after": {
+      "scene": "887f27aa",
+      "url": "887f27aa",
+      "mark": 1,
+      "sameFake": true,
+      "controlsScreen": false,
+      "loading": false,
+      "source": "hid",
+      "paused": false,
+      "armed": true,
+      "gateArmed": true,
+      "life": "settings",
+      "keepArmed": true,
+      "platform": true,
+      "switches": 3,
+      "first": {
+        "reason": "scene",
+        "keepArmed": true,
+        "platform": true
+      }
+    },
+    "throttle": {
+      "samples": [
+        {
+          "stick": 0.5,
+          "ch2": 0.5182625651359558
+        },
+        {
+          "stick": -0.6,
+          "ch2": -0.5834155678749084
+        },
+        {
+          "stick": 0.2,
+          "ch2": 0.22507403790950775
+        }
+      ],
+      "ok": true
+    },
+    "panel": {
+      "crashed": true,
+      "row": [
+        {
+          "action": "scene-next",
+          "keys": "N"
+        },
+        {
+          "action": "scene-random",
+          "keys": "Shift+N"
+        },
+        {
+          "action": "scene-favourite",
+          "keys": "F"
+        }
+      ],
+      "switch": {
+        "state": "done",
+        "from": "39e63ce9",
+        "to": "7a475d38",
+        "reason": "next",
+        "ms": 2045
+      },
+      "after": {
+        "scene": "7a475d38",
+        "sameFake": true,
+        "panel": false,
+        "controlsScreen": false
+      },
+      "ok": true
+    },
+    "control": {
+      "crashedBefore": true,
+      "onCrash": "respawn",
+      "crashed": false,
+      "respawned": true,
+      "scene": "39e63ce9",
+      "url": "39e63ce9",
+      "mark": 1,
+      "sameFake": true,
+      "controlsScreen": false,
+      "loading": false,
+      "source": "hid",
+      "paused": false,
+      "armed": true,
+      "gateArmed": true,
+      "life": "crash",
+      "keepArmed": true,
+      "platform": true,
+      "switches": 0,
+      "first": {
+        "reason": "start",
+        "keepArmed": false,
+        "platform": false
+      },
+      "fired": true
+    },
+    "errors": []
+  },
+  "S4": {
+    "pass": true,
+    "what": "F loads the next favourite in the favourites order (starred in the picker), Shift+N a random curated scene (never the current one); with no favourites F loads nothing",
+    "favourites": [
+      "7a475d38",
+      "887f27aa"
+    ],
+    "fav": [
+      {
+        "switch": {
+          "state": "done",
+          "from": "39e63ce9",
+          "to": "7a475d38",
+          "reason": "favourite",
+          "ms": 1522
+        },
+        "scene": "7a475d38"
+      },
+      {
+        "switch": {
+          "state": "done",
+          "from": "7a475d38",
+          "to": "887f27aa",
+          "reason": "favourite",
+          "ms": 1307
+        },
+        "scene": "887f27aa"
+      }
+    ],
+    "random": {
+      "switch": {
+        "state": "done",
+        "from": "887f27aa",
+        "to": "7a475d38",
+        "reason": "random",
+        "ms": 1545
+      },
+      "scene": "7a475d38"
+    },
+    "control": {
+      "switches": 0,
+      "scene": "39e63ce9",
+      "sceneSwitch": null,
+      "favourites": [],
+      "nWorks": true,
+      "fired": true
+    },
+    "errors": []
+  },
+  "S5": {
+    "pass": true,
+    "what": "the picker shows \"Continue: <last scene>\" first; a fresh browser has no such card",
+    "lastFlown": "7a475d38",
+    "card": "7a475d38",
+    "text": "Continue: Winter Garden, Poland",
+    "control": {
+      "freshCards": 0,
+      "fired": true
+    }
+  },
+  "S6": {
+    "pass": true,
+    "what": "pause menu -> Change scan: the picker over the flight; a card loads in the page with the simulated radio connected; Esc goes back to flying; a non-SuperSplat link is refused",
+    "esc": {
+      "open": false,
+      "paused": false,
+      "scene": "39e63ce9",
+      "switches": 0
+    },
+    "switch": {
+      "state": "done",
+      "from": "39e63ce9",
+      "to": "7a475d38",
+      "reason": "pick",
+      "ms": 1462
+    },
+    "after": {
+      "scene": "7a475d38",
+      "url": "7a475d38",
+      "mark": 1,
+      "sameFake": true,
+      "controlsScreen": false,
+      "loading": false,
+      "source": "hid",
+      "paused": false,
+      "armed": false,
+      "gateArmed": false,
+      "life": "scene",
+      "keepArmed": true,
+      "platform": true,
+      "switches": 1,
+      "first": {
+        "reason": "scene",
+        "keepArmed": true,
+        "platform": true
+      }
+    },
+    "throttle": {
+      "samples": [
+        {
+          "stick": 0.5,
+          "ch2": 0.5241855978965759
+        },
+        {
+          "stick": -0.6,
+          "ch2": -0.5765054225921631
+        },
+        {
+          "stick": 0.2,
+          "ch2": 0.22803553938865662
+        }
+      ],
+      "ok": true
+    },
+    "control": {
+      "error": "This is not a SuperSplat link or scene id. Paste a link like superspl.at/scene/39e63ce9.",
+      "switches": 0,
+      "scene": "39e63ce9",
+      "fired": true
+    },
+    "errors": []
+  },
+  "pass": true
+}

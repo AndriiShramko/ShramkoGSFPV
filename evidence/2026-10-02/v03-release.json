@@ -1,0 +1,371 @@
+{
+  "name": "v03-release",
+  "what": "W4-5: v0.3 release acceptance on the live site, and what the landing and the README say",
+  "date": "2026-10-02",
+  "live": {
+    "site": "https://gsfpv.flyreelstudio.eu",
+    "release": "f6dbf235b307",
+    "releaseJson": {
+      "sha": "9dd0f99",
+      "built": "2026-10-02T03:50:33.491Z"
+    },
+    "note": "release.json names the commit the live dist was built from (9dd0f99, evidence-only commits after it up to 8283d95)"
+  },
+  "pass": true,
+  "items": [
+    {
+      "item": "Calibration wizard that waits for the pilot (a step moves on only when the stick really moves)",
+      "checks": [
+        {
+          "file": "evidence/2026-09-27/v03-wizard-auto-live.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "release": "ac6b57e = hub 85548f3f7007",
+          "pass": true,
+          "detail": "a pilot that never presses a button reached the check screen in 26 s through 23 screens; B10 B11 pass"
+        },
+        {
+          "file": "evidence/2026-10-02/v03-modes-live.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "parts": {
+            "M2": true
+          },
+          "pass": true
+        }
+      ],
+      "note": "accepted live on 2026-09-27; the wizard changed since only by the mode-switch row on its check screen (3592a16, 9bcf1cc): M2 in v03-modes-live.json and the wizard screenshots walk it again today on the live site with a simulated radio that never presses a button",
+      "pass": true
+    },
+    {
+      "item": "Settings kept between visits, per drone; export, import, reset one or all",
+      "checks": [
+        {
+          "file": "evidence/2026-10-02/v03-prefs.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "parts": {
+            "P1": true,
+            "P2": true,
+            "P5": true,
+            "P7": true
+          },
+          "pass": true
+        },
+        {
+          "file": "evidence/2026-10-02/v03-prefs-live.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "parts": {
+            "P3": true,
+            "P4": true,
+            "P6": true,
+            "P8": true,
+            "P9": true,
+            "P11": true
+          },
+          "pass": true
+        }
+      ],
+      "note": "P10 (the language row) is open on the live site: openChecks W45-3",
+      "pass": true
+    },
+    {
+      "item": "Flight modes: Angle by default for everyone, mode chip, M, the radio mode switch found with no click",
+      "checks": [
+        {
+          "file": "evidence/2026-10-02/v03-modes-live.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "parts": {
+            "M1": true,
+            "M2": true,
+            "M3": true,
+            "M4": true
+          },
+          "pass": true
+        }
+      ],
+      "note": "M5 (the chip drawn on a desktop and a phone, no overlaps) is visual: evidence/2026-10-02/v03-modes.json on a production build; the live screenshots mode-chip and m-touch show it",
+      "pass": true
+    },
+    {
+      "item": "Invisible start pad at spawn height",
+      "checks": [
+        {
+          "file": "evidence/2026-10-02/v03-respawn.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "parts": {
+            "R16": true
+          },
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "item": "Automatic respawn 2 s after a crash, 5 s back, armed; R start, Y rewind, Enter keep the wreck",
+      "checks": [
+        {
+          "file": "evidence/2026-10-02/v03-respawn.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "parts": {
+            "R23": true,
+            "RR": true
+          },
+          "pass": true
+        },
+        {
+          "file": "evidence/2026-10-02/v03-summary-live.json (S3 keys)",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "keys": 18,
+          "allKeysOk": true,
+          "respawnKeys": {
+            "KeyR": true,
+            "KeyY": true,
+            "Enter": true
+          },
+          "pass": true
+        },
+        {
+          "file": "evidence/2026-10-02/v03-enter-keeps-wreck.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "parts": {},
+          "pass": true
+        }
+      ],
+      "note": "Enter during the countdown: tools/bench/src/probe-enter-keeps-wreck.ts (control: without Enter it respawns). S3 on the live site: all 18 keys do what the panel says; its control (a wrong binding injected into the keymap module) can only be injected on the dev server, where it fired (evidence/2026-10-02/v03-summary.json)",
+      "pass": true
+    },
+    {
+      "item": "Crashes off",
+      "checks": [
+        {
+          "file": "evidence/2026-10-02/v03-respawn.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "parts": {
+            "R18": true
+          },
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "item": "Automatic restart when stuck or upside down",
+      "checks": [
+        {
+          "file": "evidence/2026-10-02/v03-respawn.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "parts": {
+            "R18": true
+          },
+          "pass": true
+        }
+      ],
+      "note": "R18 flips the craft with crashes off: reason stuck-flipped, back in the air",
+      "pass": true
+    },
+    {
+      "item": "Flight stats: the card on disarm, the summary panel with every key",
+      "checks": [
+        {
+          "file": "evidence/2026-10-02/v03-summary-live.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "parts": {
+            "S1": true,
+            "S2": true,
+            "S4": true,
+            "S5": true
+          },
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "item": "Settings catalogue on the site and on GitHub",
+      "checks": [
+        {
+          "file": "scripts/gen-catalog.ts --check",
+          "site": "repo + https://gsfpv.flyreelstudio.eu/en/#tune",
+          "pass": true,
+          "detail": "up to date (46 settings in 10 groups, 18 keys + 10 flying keys, 6 drones), its planted-stale control caught; the live landing has the #tune section"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "item": "In-page scene switching (N / Shift+N / F) with the radio connected; next scene after a crash (auto-switch, off by default); Continue card",
+      "checks": [
+        {
+          "file": "evidence/2026-10-02/v03-scenes-live.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "parts": {
+            "S1": true,
+            "S3": true,
+            "S4": true,
+            "S5": true,
+            "S6": true
+          },
+          "pass": true
+        }
+      ],
+      "note": "S2 (heap and VRAM over 10 switches) draws the scan: evidence/2026-10-02/v03-scenes.json on a production build",
+      "pass": true
+    },
+    {
+      "item": "SuperSplat tab: superspl.at filters and sorting, Random top-rated, favourites",
+      "checks": [
+        {
+          "file": "evidence/2026-10-02/v03-superspl-live.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "parts": {
+            "S1": true,
+            "S2": true,
+            "S3": true,
+            "S4": true,
+            "S5": true,
+            "S6": true,
+            "S7": true,
+            "S8": true,
+            "S9": true
+          },
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "item": "Scene scale around the drone ([ ])",
+      "checks": [
+        {
+          "file": "evidence/2026-10-02/v03-scale.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "parts": {
+            "SC1": true,
+            "SC2": true
+          },
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "item": "60 fps recording (F9) and auto-record into a folder",
+      "checks": [
+        {
+          "file": "evidence/2026-10-02/v03-rec-R1-live-w41.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "parts": {
+            "R1": true
+          },
+          "pass": true
+        }
+      ],
+      "note": "R1 live: 60/1, 60.0 Hz, 0.7 % repeated pictures. Auto-record into a folder (R2) passed only on a local build with an OPFS folder handed over like the picker's (evidence/2026-10-01/v03-rec-R2-R3-R4-R5.json): the OS folder picker cannot be driven by a bench",
+      "pass": true
+    },
+    {
+      "item": "Video from the flight log (60 fps, 1080p / 1440p / 4K)",
+      "checks": [
+        {
+          "file": "evidence/2026-10-02/v03-export-E1.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "parts": {
+            "E1": true
+          },
+          "pass": true
+        }
+      ],
+      "note": "E2 (4K), E3 (cancel), E4 (the summary row, 1440p) on the release build: evidence/2026-10-02/v03-export.json",
+      "pass": true
+    },
+    {
+      "item": "Drop floating pieces from the walls (phantom walls), admin default per scan",
+      "checks": [
+        {
+          "file": "evidence/2026-10-02/v03-floaters.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "parts": {
+            "F1": true
+          },
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "item": "Screenshots of every screen from the live site (landing tour, gallery, README)",
+      "checks": [
+        {
+          "file": "apps/site/src/config/shots.json",
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "pass": true,
+          "detail": "39 shots taken 2026-10-02 from the release built from 9dd0f99, system-chrome 154.0.8037.59 on ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+        }
+      ],
+      "pass": true
+    }
+  ],
+  "passTable": [
+    "PASS | Calibration wizard that waits for the pilot (a step moves on only when the stick really moves) | evidence/2026-09-27/v03-wizard-auto-live.json, evidence/2026-10-02/v03-modes-live.json",
+    "PASS | Settings kept between visits, per drone; export, import, reset one or all | evidence/2026-10-02/v03-prefs.json, evidence/2026-10-02/v03-prefs-live.json",
+    "PASS | Flight modes: Angle by default for everyone, mode chip, M, the radio mode switch found with no click | evidence/2026-10-02/v03-modes-live.json",
+    "PASS | Invisible start pad at spawn height | evidence/2026-10-02/v03-respawn.json",
+    "PASS | Automatic respawn 2 s after a crash, 5 s back, armed; R start, Y rewind, Enter keep the wreck | evidence/2026-10-02/v03-respawn.json, evidence/2026-10-02/v03-summary-live.json (S3 keys), evidence/2026-10-02/v03-enter-keeps-wreck.json",
+    "PASS | Crashes off | evidence/2026-10-02/v03-respawn.json",
+    "PASS | Automatic restart when stuck or upside down | evidence/2026-10-02/v03-respawn.json",
+    "PASS | Flight stats: the card on disarm, the summary panel with every key | evidence/2026-10-02/v03-summary-live.json",
+    "PASS | Settings catalogue on the site and on GitHub | scripts/gen-catalog.ts --check",
+    "PASS | In-page scene switching (N / Shift+N / F) with the radio connected; next scene after a crash (auto-switch, off by default); Continue card | evidence/2026-10-02/v03-scenes-live.json",
+    "PASS | SuperSplat tab: superspl.at filters and sorting, Random top-rated, favourites | evidence/2026-10-02/v03-superspl-live.json",
+    "PASS | Scene scale around the drone ([ ]) | evidence/2026-10-02/v03-scale.json",
+    "PASS | 60 fps recording (F9) and auto-record into a folder | evidence/2026-10-02/v03-rec-R1-live-w41.json",
+    "PASS | Video from the flight log (60 fps, 1080p / 1440p / 4K) | evidence/2026-10-02/v03-export-E1.json",
+    "PASS | Drop floating pieces from the walls (phantom walls), admin default per scan | evidence/2026-10-02/v03-floaters.json",
+    "PASS | Screenshots of every screen from the live site (landing tour, gallery, README) | apps/site/src/config/shots.json"
+  ],
+  "defects": [
+    {
+      "id": "W45-1",
+      "what": "On a phone (touch layout) on one of Andrii's scans, the crash toast of the automatic respawn is drawn over the recording bar (REC / Auto / Choose a folder) and the scene credit for the 2 s countdown",
+      "evidence": "evidence/2026-10-02/v03-release/phone-toast-over-rec-bar-390.webp (the live site, 390x844, Modlinek Villa, the test pilot's crash)",
+      "why": "the rec bar shows whenever the craft is not flying (cinema.css: hidden only under #ui.hud-flying) and the toast sits at the bottom on touch; accept-v03-respawn checks the toast against a list of boxes that has no .rec-bar (the bar came later, W3-5)",
+      "fix": "not fixed here (app code, needs a release): hide the bar or lift the toast while a crash toast is up on touch; add .rec-bar to the respawn bench overlap list",
+      "screenshots": "the landing's phone crash picture (m-crash) is taken with automatic respawn off (the crash panel), so it does not show this"
+    },
+    {
+      "id": "W45-2 (test only)",
+      "what": "With the test pilot (?simradio=scenario) the OSD line says ACRO while the mode chip says ANGLE: the bot flies ACRO whatever the chip says",
+      "evidence": "evidence/2026-10-02/v03-release/phone-toast-over-rec-bar-390.webp (top left), docs/screenshots/m-crash.webp",
+      "fix": "none needed for pilots; the screenshot of the chip is taken from a keyboard flight so it does not contradict itself"
+    }
+  ],
+  "ownerToTry": [
+    "Crash on purpose with the arm switch left ON: the toast counts down, 2 s later you fly again from 5 s earlier, still armed, no switch flip; the throttle should pick up from where your stick is (the benches held a simulated radio at hover)",
+    "Recalibrate (Controls): on the check screen flip your flight-mode switch: it must be found with no click; then flip it in flight: Angle / Horizon / Acro, and the chip says the radio decides",
+    "Without a mode switch: click the mode chip (top left) and press M; Angle must be the default on a fresh browser",
+    "Auto-record with the real Windows folder picker: recording bar -> Choose a folder, Auto on, arm / fly / disarm; next day after a reload it should ask once to allow the folder, then write there; open the file in DaVinci: 60 fps constant",
+    "Crashes off (Settings -> Crashes & respawn), land upside down and keep the throttle up: it should go a few seconds back by itself; tell us how the first second feels (a jump, a flip, a throttle punch)",
+    "Slow wall touches in a tight room (Modlinek Villa attic): under the crash threshold (4 m/s on the Pavo20) you should slide along the wall, not crash; with crashes off you bounce",
+    "N / Shift+N / F while armed with the radio: the radio must stay connected and the new scene start on its pad",
+    "A noisy scan with phantom walls: Settings -> Walls and voxel grid -> Drop floating pieces (16-64 blocks): do the invisible hits go away? V shows what is left",
+    "On your phone, one of your scans, crash with automatic respawn on: the toast covers the recording bar for 2 s (defect W45-1): is it in your way?"
+  ],
+  "openChecks": [
+    {
+      "id": "W45-3",
+      "what": "accept-v03-prefs P10 fails on the live site: after Polish was picked, the language row reset (and a NEXT_LOCALE=ru cookie) leave the page in Polish",
+      "why": "the live simulator takes its language from the address (/pl/fly/), the dev server the check was written for from the cookie; picking a language works (en -> pl, cookie set), the reset only takes effect on the next address without a locale",
+      "file": "evidence/2026-10-02/v03-prefs-live.json",
+      "fix": "not fixed here: the reset could navigate to the path of the browser language, or the check accept the path-locale behaviour"
+    },
+    {
+      "id": "B18",
+      "what": "tools/bench/src/accept-repo.ts fails on letters outside locales/ in 5 tracked files from earlier waves (apps/fly/src/ui/settings/model.ts, apps/fly/src/ui/superspl-tab-logic.ts, docs/wip/V03-WAVE1-STATUS.md, packages/prefs/test/catalogue-site.test.ts, tools/bench/test/app-settings.test.ts); README placeholders: none",
+      "file": "evidence/2026-10-02/b-repo-b18-w45.json"
+    }
+  ],
+  "benchChanges": [
+    "tools/bench/src/accept-v03-summary.ts: S3 knew no probe for the scene-scale keys [ and ] (added after it was written): probes added; S5 threw on the scene items that carry no before/after: guarded",
+    "tools/bench/src/evidence.ts + accept-v03-{modes,summary,scenes,superspl,prefs}.ts: EVIDENCE_SUFFIX=-live writes a live run next to the build run instead of over it",
+    "tools/bench/src/evidence.ts waitForExpr: accept-v03-scenes / -superspl used page.waitForFunction with strings, refused by the CSP of the live site and a release build (they had only run on the dev server)",
+    "tools/bench/src/screens.ts: the v0.3 screens; page.waitForFunction is refused by the site CSP (unsafe-eval): polled with evaluate instead (imagesLoaded had been silently timing out); the voxel style is set after the mode (switching the mode on reads the style from the settings)"
+  ]
+}
