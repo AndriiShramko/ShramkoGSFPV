@@ -1,0 +1,112 @@
+{
+  "name": "v05-ux-w4",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T09:04:32.190Z",
+    "gitHead": "e93b2fb",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "W4": {
+    "pass": true,
+    "what": "a blinking red dot with the time while recording (steady when held or with reduced motion), a click stops; the menu item says the state; cinema mode hides the dot and its bar says Stop",
+    "rec": {
+      "recording": true,
+      "shown": true,
+      "label": "Recording, 0:01. Stop recording",
+      "text": "0:01",
+      "anim": "rec-blink",
+      "held": false,
+      "bar": "\u25a0 Stop 0:01F9"
+    },
+    "menuOn": "\u25cf Recording 0:01 \u2014 stop",
+    "heldDot": {
+      "recording": true,
+      "shown": true,
+      "label": "Recording, 0:01. Stop recording",
+      "text": "0:01",
+      "anim": "none",
+      "held": true,
+      "bar": "\u25a0 Stop 0:01F9"
+    },
+    "cinema": {
+      "recording": true,
+      "shown": false,
+      "label": "Recording, 0:02. Stop recording",
+      "text": "0:02",
+      "anim": "rec-blink",
+      "held": false,
+      "bar": "\u25a0 Stop 0:02F9"
+    },
+    "reduced": {
+      "recording": true,
+      "shown": true,
+      "label": "Recording, 0:02. Stop recording",
+      "text": "0:02",
+      "anim": "none",
+      "held": false,
+      "bar": "\u25a0 Stop 0:02F9"
+    },
+    "stopped": {
+      "recording": false,
+      "shown": false,
+      "label": "Recording, 0:02. Stop recording",
+      "text": "0:02",
+      "anim": "rec-blink",
+      "held": false,
+      "bar": "\u25cf RECF9"
+    },
+    "menuOff": "Start recording",
+    "phone": {
+      "recording": true,
+      "shown": true,
+      "label": "Recording, 0:01. Stop recording",
+      "text": "0:01",
+      "anim": "rec-blink",
+      "held": false,
+      "bar": "\u25a0 Stop 0:01F9"
+    },
+    "layout": {
+      "375": {
+        "overlaps": [],
+        "outside": []
+      },
+      "1280": {
+        "overlaps": [],
+        "outside": []
+      }
+    },
+    "shots": [
+      "evidence/2026-10-02/v05-ux/w4-rec-dot-1280.png",
+      "evidence/2026-10-02/v05-ux/w4-rec-dot-375.png"
+    ],
+    "control": {
+      "before": {
+        "recording": false,
+        "shown": false,
+        "label": null,
+        "text": "",
+        "anim": "rec-blink",
+        "held": false,
+        "bar": "\u25cf RECF9"
+      },
+      "fired": true
+    }
+  },
+  "pageErrors": []
+}
