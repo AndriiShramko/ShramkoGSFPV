@@ -180,9 +180,9 @@
     "h2": "Każde ustawienie, klawisz i dron — z wartością domyślną i zakresem",
     "lead": "Generowany przy każdym wydaniu ze schematu ustawień samego symulatora: dokładnie to, co możesz zmienić dziś — bez obietnic i bez zmyśleń. Szukaj albo filtruj według grupy.",
     "count": {
-      "settings": "ustawienia",
+      "settings": "ustawień",
       "groups": "grup",
-      "keys": "klawisze",
+      "keys": "klawiszy",
       "drones": "presetów dronów",
       "rateTypes": "typy krzywych rates",
       "modes": "tryby lotu"

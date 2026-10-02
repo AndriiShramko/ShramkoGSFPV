@@ -23,7 +23,7 @@ Key facts:
 - [Provenance](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/PROVENANCE.md): where each formula and constant comes from
 - [Evidence](https://github.com/AndriiShramko/ShramkoGSFPV/tree/main/evidence): raw measurement files
 - [Screenshots](https://github.com/AndriiShramko/ShramkoGSFPV/tree/main/docs/screenshots): real screenshots of every menu, the voxel grid and the phone layout, re-taken each release by tools/bench/src/screens.ts
-- [Settings catalogue](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/settings.md): every setting of the simulator with its default, range, scope and keyboard key: 44 settings in 10 groups, 24 keyboard keys, 6 drone presets and 4 rate-curve types (generated from the settings schema at each release; in four languages at https://gsfpv.flyreelstudio.eu/en/#tune)
+- [Settings catalogue](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/settings.md): every setting of the simulator with its default, range, scope and keyboard key: 45 settings in 10 groups, 26 keyboard keys, 6 drone presets and 4 rate-curve types (generated from the settings schema at each release; in four languages at https://gsfpv.flyreelstudio.eu/en/#tune)
 
 ## Contact
 - Author: Andrii Shramko
