@@ -27,7 +27,7 @@ const fly = (qs: string) => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}` : `${S
 const SCENE = '39e63ce9';
 const ONLY = process.argv.slice(2).map((x) => x.toUpperCase());
 const want = (id: string) => ONLY.length === 0 || ONLY.includes(id);
-const SHOTS = join(REPO, 'evidence', today(), process.env.MODES_EVIDENCE ?? 'v03-modes');
+const SHOTS = join(REPO, 'evidence', today(), (process.env.MODES_EVIDENCE ?? 'v03-modes') + (process.env.EVIDENCE_SUFFIX ?? ''));
 mkdirSync(SHOTS, { recursive: true });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -369,7 +369,7 @@ const ran = ALL.filter((k) => out[k]);
 out.ran = ran;
 // a run of some items keeps today's results of the others, each with the run it came from
 const NAME = process.env.MODES_EVIDENCE ?? 'v03-modes'; // another name for a what-if run (a local patch measured, never the item's own result)
-const file = join(REPO, 'evidence', today(), `${NAME}.json`);
+const file = join(REPO, 'evidence', today(), `${NAME}${process.env.EVIDENCE_SUFFIX ?? ''}.json`);
 if (existsSync(file)) {
     const old = JSON.parse(readFileSync(file, 'utf8')) as Any;
     for (const k of ALL) {

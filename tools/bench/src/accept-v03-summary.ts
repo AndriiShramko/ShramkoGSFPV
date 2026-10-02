@@ -23,7 +23,7 @@ const SCENE = '39e63ce9';
 const LOGIC = `scene=${SCENE}&nowarn=1&render=off`;
 const ONLY = process.argv.slice(2).map((x) => x.toUpperCase());
 const want = (id: string) => ONLY.length === 0 || ONLY.includes(id);
-const SHOTS = join(REPO, 'evidence', today(), 'v03-summary');
+const SHOTS = join(REPO, 'evidence', today(), 'v03-summary' + (process.env.EVIDENCE_SUFFIX ?? ''));
 mkdirSync(SHOTS, { recursive: true });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -537,7 +537,7 @@ try {
 // One evidence file for the day: a run of some parts replaces those parts and keeps the others, each
 // part with the commit and time it ran at (S6 waits for the GPU lock, so it may run on its own).
 const PARTS = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'];
-const file = join(REPO, 'evidence', today(), 'v03-summary.json');
+const file = join(REPO, 'evidence', today(), `v03-summary${process.env.EVIDENCE_SUFFIX ?? ''}.json`);
 const prev: Any = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {};
 const runCtx = context();
 for (const k of PARTS) {

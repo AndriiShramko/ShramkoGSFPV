@@ -31,7 +31,7 @@ const B = '7a475d38';
 const C = '887f27aa';
 const ONLY = process.argv.slice(2).map((x) => x.toUpperCase());
 const want = (id: string) => ONLY.length === 0 || ONLY.includes(id);
-const SHOTS = join(REPO, 'evidence', today(), 'v03-scenes');
+const SHOTS = join(REPO, 'evidence', today(), 'v03-scenes' + (process.env.EVIDENCE_SUFFIX ?? ''));
 mkdirSync(SHOTS, { recursive: true });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

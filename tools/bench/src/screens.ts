@@ -34,7 +34,7 @@
 import { chromium } from 'playwright';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { execSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { REPO } from './evidence';
 import { launchChrome } from './browser';
@@ -70,7 +70,10 @@ interface Clip { x: number; y: number; width: number; height: number }
  */
 export const SHOTS: { id: string; device: Device; flow: string }[] = [
     { id: 'pause', device: 'desktop', flow: 'garden' },
-    { id: 'settings', device: 'desktop', flow: 'tunis' },
+    { id: 'settings', device: 'desktop', flow: 'stats' },
+    { id: 'stats-card', device: 'desktop', flow: 'stats' },
+    { id: 'mode-chip', device: 'desktop', flow: 'chip' },
+    { id: 'scene-size', device: 'desktop', flow: 'stats' },
     { id: 'drones', device: 'desktop', flow: 'garden' },
     { id: 'wizard-stir', device: 'desktop', flow: 'wizard' },
     { id: 'wizard-throttle', device: 'desktop', flow: 'wizard' },
@@ -79,17 +82,22 @@ export const SHOTS: { id: string; device: Device; flow: string }[] = [
     { id: 'controls', device: 'desktop', flow: 'wizard' },
     { id: 'arm-card', device: 'desktop', flow: 'wizard' },
     { id: 'keys', device: 'desktop', flow: 'keys' },
+    { id: 'crash-toast', device: 'desktop', flow: 'toast' },
     { id: 'walls', device: 'desktop', flow: 'vgarden' },
     { id: 'voxels', device: 'desktop', flow: 'vtunis' },
     { id: 'voxels-wire', device: 'desktop', flow: 'vgarden' },
     { id: 'voxels-only', device: 'desktop', flow: 'vvilla' },
     { id: 'voxels-floaters', device: 'desktop', flow: 'vgarden' },
+    { id: 'voxels-dropped', device: 'desktop', flow: 'vdrop' },
     { id: 'betaflight', device: 'desktop', flow: 'villa' },
     { id: 'measure', device: 'desktop', flow: 'villa' },
     { id: 'replays', device: 'desktop', flow: 'tunis' },
     { id: 'picker', device: 'desktop', flow: 'picker' },
+    { id: 'superspl', device: 'desktop', flow: 'superspl' },
     { id: 'loading', device: 'desktop', flow: 'loading' },
     { id: 'crash', device: 'desktop', flow: 'tunis' },
+    { id: 'rec-bar', device: 'desktop', flow: 'rec' },
+    { id: 'video-export', device: 'desktop', flow: 'rec' },
     { id: 'cinema', device: 'desktop', flow: 'cinema' },
     { id: 'flight-tunis', device: 'desktop', flow: 'tunis' },
     { id: 'flight-villa', device: 'desktop', flow: 'villa' },
@@ -98,7 +106,8 @@ export const SHOTS: { id: string; device: Device; flow: string }[] = [
     { id: 'm-touch', device: 'mobile', flow: 'mobile' },
     { id: 'm-pause', device: 'mobile', flow: 'mobile' },
     { id: 'm-crash', device: 'mobile', flow: 'mobile' },
-    { id: 'm-picker', device: 'mobile', flow: 'mobile' }
+    { id: 'm-picker', device: 'mobile', flow: 'mobile' },
+    { id: 'm-settings', device: 'mobile', flow: 'mobile' }
 ];
 
 /**
@@ -110,8 +119,17 @@ export const SHOTS: { id: string; device: Device; flow: string }[] = [
 interface PanelSpec { sel: string; extra?: Clip[]; pad?: number; minW?: number; maxW?: number }
 const MID = { x: DESKTOP.width / 2 - 170, y: DESKTOP.height / 2 - 150, width: 340, height: 260 };
 const PANEL: Record<string, PanelSpec> = {
-    pause: { sel: '.pause-menu', maxW: 1000 },
-    settings: { sel: '.panel', maxW: 700 }, // the panel's width and its top: the walls and voxel grid block
+    pause: { sel: '.pause-menu', maxW: 1600 }, // the summary panel: stats | menu | keys
+    settings: { sel: '[data-testid="settings"]', maxW: 1400, pad: 0.04 }, // the rail and the open group (Crashes & respawn)
+    'stats-card': { sel: '[data-testid="osd-stats"]', minW: 760 },
+    'mode-chip': { sel: '[data-testid="mode-chip"], #mode-pop', minW: 640 },
+    // the row's left part (label, value, the - button, the walls' block size below): the whole row and its
+    // block-size line are as wide as the panel, so they are not in the selector
+    'scene-size': { sel: '[data-testid="scene-size-value"], [data-testid="scene-size"] [data-action="scale-down"]', minW: 760 },
+    'crash-toast': { sel: '.crash-toast', extra: [MID], maxW: 1100, pad: 0.05 },
+    'rec-bar': { sel: '[data-testid="rec-bar"]', minW: 760 },
+    'video-export': { sel: '[data-testid="video-export-bar"]', minW: 820 },
+    'voxels-dropped': { sel: '[data-testid="walls-more"]', minW: 760 },
     drones: { sel: '.screen.drones h1, .screen.drones .drone-card:nth-child(-n+4)', maxW: 1200, pad: 0.04 },
     betaflight: { sel: '.panel', maxW: 1000 },
     measure: { sel: '.panel', maxW: 1000 },
@@ -164,6 +182,24 @@ async function waitForGpu(): Promise<void> {
     throw new Error('GPU stayed busy for 30 minutes: not shooting');
 }
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+/** The benches' shared GPU lock (a directory; tools/bench/src/accept-v03-summary.ts): one scan-drawing run at a time. */
+const GPU_LOCK = process.env.GPU_LOCK ?? 'C:/dev/.gpu-lock';
+let haveLock = false;
+async function gpuLock(): Promise<void> {
+    if (process.platform !== 'win32' && !process.env.GPU_LOCK) return;
+    for (;;) {
+        try { mkdirSync(GPU_LOCK); haveLock = true; return; } catch {
+            try { if (Date.now() - statSync(GPU_LOCK).mtimeMs > 30 * 60 * 1000) { rmdirSync(GPU_LOCK); continue; } } catch { /* gone meanwhile */ }
+            console.log('waiting for the GPU lock');
+            await sleep(10000);
+        }
+    }
+}
+function gpuUnlock(): void {
+    if (haveLock) try { rmdirSync(GPU_LOCK); } catch { /* */ }
+    haveLock = false;
+}
+process.on('SIGINT', () => { gpuUnlock(); process.exit(130); });
 const cb = (): string => `cb=${Math.random().toString(36).slice(2, 8)}`;
 const fly = (qs: string): string => `${FLY}?${qs}&${cb()}`;
 
@@ -191,7 +227,8 @@ async function ready(page: Page, timeoutMs = 180000): Promise<string> {
 }
 /** Every <img> on the page has arrived (the picker's posters, the drone cards). */
 async function imagesLoaded(page: Page): Promise<void> {
-    await page.waitForFunction('[...document.images].every((i) => i.complete)', undefined, { timeout: 30000 }).catch(() => undefined);
+    // polled with evaluate: page.waitForFunction eval's its string, which the site's CSP refuses (it silently timed out)
+    await until(page, 'return [...document.images].every((i) => i.complete);', (v) => v === true, 30000, 200).catch(() => undefined);
 }
 /** A few painted frames, so what was just changed is on screen. */
 async function frames(page: Page, n = 3): Promise<void> {
@@ -225,7 +262,7 @@ async function unfreeze(page: Page): Promise<void> {
  * returns one value), so the wreck and its debris hang in the air while the crash card still
  * appears on its own real timer (1.5 s). restoreClock() lets time run again.
  */
-async function crashFrozen(page: Page, afterMs = 320): Promise<Any> {
+async function crashFrozen(page: Page, afterMs = 320, shown = '.crash-overlay'): Promise<Any> {
     await hook(page, `window.__shotCrash = null;
         const step = () => {
             if (h.lastCrash) {
@@ -236,7 +273,7 @@ async function crashFrozen(page: Page, afterMs = 320): Promise<Any> {
         };
         requestAnimationFrame(step); return 0;`);
     await until(page, 'return window.__shotCrash;', (x) => !!x, 120000, 50);
-    await page.locator('.crash-overlay').waitFor({ timeout: 10000 });
+    await page.locator(shown).waitFor({ timeout: 10000 });
     await page.waitForTimeout(500);
     await frames(page);
     return hook(page, 'return h.lastCrash;');
@@ -342,13 +379,29 @@ async function escape(page: Page): Promise<void> {
     await page.keyboard.press('Escape');
     await page.waitForTimeout(400);
 }
+/** Back to the flight view: Esc until no menu, screen or popover is open (Settings may return to the menu first). */
+async function closeAll(page: Page): Promise<void> {
+    for (let i = 0; i < 4; i++) {
+        const open = await page.evaluate("!!document.querySelector('.pause-menu, [data-testid=\"settings\"], #mode-pop:not([hidden]), .screen.drones')");
+        if (!open) return;
+        await escape(page);
+    }
+}
+/** The bot lets go of the arm switch and the throttle (a disarm in the air), from the next physics step on. */
+async function botDisarm(page: Page): Promise<void> {
+    await hook(page, `const sc = h.scenario; if (!sc.__disarmHook) { const orig = sc.bot.update.bind(sc.bot); sc.bot.update = (sim) => { const ch = orig(sim); if (window.__shotDisarm) { ch[4] = -1; ch[2] = -1; } return ch; }; sc.__disarmHook = true; }
+        window.__shotDisarm = true; return 0;`);
+}
 /** The voxel grid through the test hook, then wait until every chunk in range is built. */
 async function voxels(page: Page, mode: 'off' | 'overlay' | 'only', style: string, opacity: number): Promise<Any> {
-    await hook(page, `const v = h.voxels; v.setStyle(${JSON.stringify(style)}); v.setMode(${JSON.stringify(mode)}); v.setOpacity(${opacity}); return 0;`);
+    // the mode first: since v0.3 switching it on reads the style from the settings, which would undo an earlier setStyle
+    await hook(page, `const v = h.voxels; v.setMode(${JSON.stringify(mode)}); v.setStyle(${JSON.stringify(style)}); v.setOpacity(${opacity}); return 0;`);
     if (mode !== 'off') await until(page, 'return h.voxels.settled();', (v) => v === true, 120000, 250);
     await page.waitForTimeout(900);
     await frames(page);
-    return hook(page, 'const st = h.voxels.stats(); return { mode: st.mode, style: st.style, chunks: st.chunks, quads: st.quads, floaters: st.floaters, radiusM: st.radiusM && +st.radiusM.toFixed(1) };');
+    const st = await hook(page, 'const st = h.voxels.stats(); return { mode: st.mode, style: st.style, chunks: st.chunks, quads: st.quads, floaters: st.floaters, radiusM: st.radiusM && +st.radiusM.toFixed(1) };');
+    if (mode !== 'off' && st.style !== style) throw new Error(`voxel style ${st.style}, wanted ${style}`);
+    return st;
 }
 /** Camera up and back from the spawn, looking at the scan's own target (as far as free air allows). */
 async function highView(page: Page, up = 0.7, back = 1.5, lookDown = 0.3): Promise<void> {
@@ -446,17 +499,14 @@ const flows: Record<string, (b: Browser) => Promise<void>> = {
     },
 
     async tunis(b) {
+        // automatic respawn off (set.respawn.auto=0, as a pilot sets it in Settings, or Enter after a
+        // crash): the crash card waits with its buttons instead of the toast (crash-toast)
         const ctx = await context(b, 'desktop');
         const page = await open(ctx);
-        await page.goto(fly(`scene=887f27aa&simradio=scenario&tour=1&${DESK_Q}`));
+        await page.goto(fly(`scene=887f27aa&simradio=scenario&tour=1&set.respawn.auto=0&${DESK_Q}`));
         await ready(page);
         const f = await freezeWhen(page, FREEZE.tunis);
         await snap(page, 'flight-tunis', undefined, { frozen: f });
-        await menu(page, 'pause.settings');
-        await page.click('.panel details > summary');
-        await page.waitForTimeout(400);
-        await snap(page, 'settings');
-        await escape(page);
         await unfreeze(page);
         // the tour's last leg is a dash into a wall: the wreck and its debris (Rapier), the crash card
         const crash = await crashFrozen(page);
@@ -503,12 +553,12 @@ const flows: Record<string, (b: Browser) => Promise<void>> = {
         await page.locator('.pause-menu').waitFor();
         await page.waitForTimeout(500);
         await snap(page, 'pause');
-        await escape(page);
+        await closeAll(page);
         await menu(page, 'pause.drone');
         await imagesLoaded(page);
         await page.waitForTimeout(600);
         await snap(page, 'drones');
-        await escape(page);
+        await closeAll(page);
         await unfreeze(page);
         const f = await freezeWhen(page, FREEZE.garden);
         await snap(page, 'flight-garden', undefined, { frozen: f });
@@ -583,15 +633,178 @@ const flows: Record<string, (b: Browser) => Promise<void>> = {
         await ctx.close();
     },
 
+    async stats(b) {
+        // the Winter Garden tour with every setting at its default: Settings on Crashes & respawn over a
+        // slow moment; then the bot lets go of the arm switch in the air:
+        // the goggles-style stats card; P: the summary panel's scene-size row after ] twice
+        const ctx = await context(b, 'desktop');
+        const page = await open(ctx);
+        await page.goto(fly(`scene=7a475d38&simradio=scenario&tour=1&${DESK_Q}`));
+        await ready(page);
+        const m = await freezeWhen(page, FREEZE.gardenMenus);
+        await menu(page, 'pause.settings');
+        await page.locator('[data-testid="settings"]').waitFor({ timeout: 10000 });
+        await page.click('.set-rail-btn[data-group="crash"]');
+        await page.waitForTimeout(600);
+        await snap(page, 'settings', undefined, { frozen: m });
+        await closeAll(page);
+        // the summary panel's scene-size row, ] twice: the garden grows around the drone
+        await page.keyboard.press('KeyP');
+        await page.locator('[data-testid="scene-size"]').waitFor({ timeout: 10000 });
+        for (let i = 0; i < 2; i++) {
+            await page.click('[data-testid="scene-size"] [data-action="scale-up"]');
+            await page.waitForTimeout(500);
+        }
+        await page.waitForTimeout(1500); // applied after 300 ms; the walls and the splats follow
+        const size = await hook(page, "const r = document.querySelector('[data-testid=\"scene-size\"]'); return { row: r.textContent, size: h.scale ? h.scale.size() : null };");
+        await snap(page, 'scene-size', undefined, { size });
+        await closeAll(page);
+        await ctx.close();
+        // the stats card: a keyboard flight over Tunis (the test pilot's simulated radio keeps its arm
+        // switch on, which closes the card at once): walls off, throttle to zero, arm, about half
+        // throttle for 3.5 s of climb over the roofs, disarm; the card is taken as the quad starts to fall
+        const ctx2 = await context(b, 'desktop');
+        const p2 = await open(ctx2);
+        await p2.goto(fly(`scene=887f27aa&refine=off&${DESK_Q}`));
+        await ready(p2);
+        await p2.click('[data-action="radio-keyboard"]');
+        await until(p2, 'return h.controls.source;', (v) => v === 'keyboard', 10000, 100);
+        await p2.waitForTimeout(2500); // detail streams in around the spawn
+        // walls off for the climb (the palms over the spawn stop it), as accept-v03-summary S6 flies it
+        await hook(p2, 'h.wallsSwitch.set(false); return 0;');
+        await p2.keyboard.down('KeyS'); await p2.waitForTimeout(450); await p2.keyboard.up('KeyS');
+        await p2.keyboard.press('Space');
+        await until(p2, 'return s.sim.armed;', (v) => v === true, 5000, 50);
+        await p2.keyboard.down('KeyW'); await p2.waitForTimeout(250); await p2.keyboard.up('KeyW');
+        // nose down a little on the way up: the camera looks over the roofs, not at the sky
+        await p2.waitForTimeout(1200);
+        await p2.keyboard.down('ArrowUp'); await p2.waitForTimeout(700); await p2.keyboard.up('ArrowUp');
+        await until(p2, 'return h.stats().life.airtimeS;', (v) => v >= 3.5, 30000, 50);
+        await p2.keyboard.press('Space');
+        await p2.locator('[data-testid="osd-stats"]').waitFor({ timeout: 5000 });
+        await p2.waitForTimeout(450); // the fade-in
+        const card = await hook(p2, "const c = document.querySelector('[data-testid=\"osd-stats\"]'); return c ? [...c.querySelectorAll('[data-stat]')].map((r) => r.dataset.stat + '=' + r.querySelector('dd').textContent) : null;");
+        await snap(p2, 'stats-card', undefined, { card });
+        await ctx2.close();
+    },
+
+    async chip(b) {
+        // the mode chip and its popover on the Winter Garden, flying from the keyboard (not the test
+        // pilot: it flies ACRO whatever the chip says, so its OSD line would contradict the chip)
+        const ctx = await context(b, 'desktop');
+        const page = await open(ctx);
+        await page.goto(fly(`scene=7a475d38&refine=off&${DESK_Q}`));
+        await ready(page);
+        await page.click('[data-action="radio-keyboard"]');
+        await page.locator('[data-testid="mode-chip"]').waitFor({ timeout: 10000 });
+        await page.waitForTimeout(3000); // detail streams in around the spawn
+        await page.click('[data-testid="mode-chip"]');
+        await page.locator('#mode-pop').waitFor({ timeout: 5000 });
+        await page.waitForTimeout(400);
+        const mode = await hook(page, "const c = document.querySelector('[data-testid=\"mode-chip\"]'); const t = document.querySelector('.hud .osd.tl'); return { chip: c && c.textContent, osd: t && t.textContent };");
+        await snap(page, 'mode-chip', undefined, { mode });
+        await ctx.close();
+    },
+
+    async toast(b) {
+        // automatic respawn (the default): the bot's dash across the villa's attic ends in a wall, the
+        // toast counts down to the respawn 5 s back along the path; the page clock is held mid-countdown
+        const ctx = await context(b, 'desktop');
+        const page = await open(ctx);
+        await page.goto(fly(`scene=39e63ce9&simradio=scenario&${DESK_Q}`));
+        await ready(page);
+        const crash = await crashFrozen(page, 450, '[data-testid="crash-toast"]');
+        const text = await hook(page, "const t = document.querySelector('.crash-toast'); return t ? t.textContent : null;");
+        await snap(page, 'crash-toast', undefined, { speed: crash?.speed, toast: text });
+        await restoreClock(page);
+        await ctx.close();
+    },
+
+    async superspl(b) {
+        // the picker's SuperSplat tab: superspl.at's catalogue through the site's proxy, its filters, Random top-rated
+        const ctx = await context(b, 'desktop');
+        const page = await open(ctx);
+        await page.goto(fly(`nowarn=1&${DESK_Q}`));
+        await ready(page);
+        await page.click('button[data-tab="superspl"]');
+        // not page.waitForFunction: its string predicate is eval'd, which the site's CSP refuses
+        await until(page, 'const g = document.querySelector(".ss-grid"); return !!g && !g.hasAttribute("aria-busy") && g.querySelectorAll(".ss-card").length > 0;', (v) => v === true, 60000, 250);
+        await imagesLoaded(page);
+        await page.waitForTimeout(1200);
+        await imagesLoaded(page);
+        const got = await hook(page, "return { cards: document.querySelectorAll('.ss-grid .ss-card').length, status: (document.querySelector('.ss-status') || {}).textContent || '' };");
+        await snap(page, 'superspl', await clip16x9(page, '.screen.scenes > *'), got);
+        await ctx.close();
+    },
+
+    async rec(b) {
+        // Tunis (one of Andrii's scans, where recording is allowed), disarmed on the keyboard (the bar
+        // hides while flying): F9 records at 60 fps; the bar shows Stop with the time, Auto and the folder
+        const ctx = await context(b, 'desktop');
+        const page = await open(ctx);
+        await page.goto(fly(`scene=887f27aa&refine=off&${DESK_Q}`));
+        await ready(page);
+        await page.click('[data-action="radio-keyboard"]');
+        await until(page, 'return h.controls.source;', (v) => v === 'keyboard', 10000, 100);
+        await page.waitForTimeout(2500);
+        await page.keyboard.press('F9');
+        await until(page, "const b = document.querySelector('[data-action=\"cinema-rec\"]'); return !!b && b.classList.contains('on');", (v) => v === true, 15000, 100);
+        await page.waitForTimeout(3200);
+        const bar = await hook(page, "const b = document.querySelector('[data-testid=\"rec-bar\"]'); return b ? b.textContent : null;");
+        await snap(page, 'rec-bar', undefined, { bar });
+        await page.keyboard.press('F9');
+        await page.waitForTimeout(1000);
+        await ctx.close();
+        // the summary panel's "video from the log" over the test pilot's flight, 1080p, shot a third of
+        // the way through and cancelled (no file is written)
+        const ctx2 = await context(b, 'desktop');
+        const p2 = await open(ctx2);
+        await p2.goto(fly(`scene=887f27aa&simradio=scenario&tour=1&${DESK_Q}`));
+        await ready(p2);
+        await until(p2, 'return s.sim.tick > 7000;', (v) => v === true, 90000, 100);
+        await p2.keyboard.press('KeyP');
+        await p2.locator('[data-action="video-export"]').waitFor({ timeout: 10000 });
+        await p2.selectOption('[data-testid="video-export-size"]', '1080p');
+        await p2.click('[data-action="video-export"]');
+        const prog = await until(p2, "const p = document.querySelector('[data-testid=\"video-export-progress\"]'); return p && p.max ? p.value / p.max : 0;", (v) => v >= 0.3, 120000, 100);
+        const text = await hook(p2, "const b = document.querySelector('[data-testid=\"video-export-bar\"]'); return b ? b.textContent : null;");
+        await snap(p2, 'video-export', undefined, { progress: prog, bar: text });
+        await p2.keyboard.press('Escape'); // Cancel: nothing is written
+        await p2.waitForTimeout(800);
+        await ctx2.close();
+    },
+
+    async vdrop(b) {
+        // Modlinek Villa: the pieces of its walls under 64 blocks dropped (Settings -> Walls and voxel
+        // grid, "Drop floating pieces"); the wireframe grid shows what is left, the walls menu
+        // on the credit line says what was dropped
+        const ctx = await context(b, 'desktop');
+        const page = await open(ctx);
+        await page.goto(fly(`scene=39e63ce9&simradio=scenario&${DESK_Q}`));
+        await ready(page);
+        await freezeWhen(page, FREEZE.hover);
+        await page.waitForTimeout(2000);
+        await highView(page);
+        await hook(page, 'h.floaters.set(64); return 0;');
+        const a = await voxels(page, 'overlay', 'wire', 0.7);
+        await page.click('[data-testid="walls-summary"]');
+        await page.waitForTimeout(900);
+        const st = await hook(page, "const e = document.querySelector('[data-testid=\"voxels-status\"]'); return { status: e && e.textContent, floaters: h.floaters.state() };");
+        await snap(page, 'voxels-dropped', undefined, { voxels: a, ...st });
+        await ctx.close();
+    },
+
     async mobile(b) {
         const ctx = await context(b, 'mobile');
         const page = await open(ctx);
+        console.log('mobile: picker');
         await page.goto(fly('nowarn=1'));
         await ready(page);
         await page.locator('.scene-card img').first().waitFor();
         await imagesLoaded(page);
         await page.waitForTimeout(500);
         await snap(page, 'm-picker');
+        console.log('mobile: touch');
         await page.goto(fly('scene=887f27aa&input=touch&refine=off'));
         await ready(page);
         await page.locator('.touch-pad.left').waitFor();
@@ -601,7 +814,10 @@ const flows: Record<string, (b: Browser) => Promise<void>> = {
         await page.locator('.pause-menu').waitFor();
         await page.waitForTimeout(400);
         await snap(page, 'm-pause');
-        await page.goto(fly('scene=39e63ce9&simradio=scenario'));
+        console.log('mobile: villa');
+        // automatic respawn off: the crash panel (on a phone the toast of the default covers the
+        // recording bar, a defect recorded in evidence/2026-10-02/v03-release.json)
+        await page.goto(fly('scene=39e63ce9&simradio=scenario&set.respawn.auto=0'));
         await ready(page);
         const f = await freezeWhen(page, FREEZE.mobile);
         await snap(page, 'm-flight', undefined, { frozen: f });
@@ -609,13 +825,25 @@ const flows: Record<string, (b: Browser) => Promise<void>> = {
         await crashFrozen(page);
         await snap(page, 'm-crash');
         await restoreClock(page);
+        console.log('mobile: settings');
+        // Settings on a phone: the groups fold; "Your settings" open (export, import, reset)
+        await page.goto(fly('scene=887f27aa&input=touch&refine=off'));
+        await ready(page);
+        await page.locator('.touch-pad.left').waitFor();
+        await page.click('[data-action="open-settings"]');
+        await page.locator('[data-testid="settings"]').waitFor({ timeout: 10000 });
+        await page.tap('.set-group[data-group="data"] .sg-toggle');
+        await page.waitForTimeout(500);
+        await hook(page, "const g = document.querySelector('.set-group[data-group=\"data\"]'); if (g) g.scrollIntoView({ block: 'start' }); return 0;");
+        await page.waitForTimeout(300);
+        await snap(page, 'm-settings');
         await ctx.close();
     }
 };
 
 // ------------------------------------------------------------------ encode
 interface Variant { src: string; w: number; h: number; bytes: number; quality: number }
-interface Encoded { id: string; device: Device; raw: { w: number; h: number }; large: Variant; small: Variant; panel?: { raw: { w: number; h: number }; large: Variant; small: Variant } }
+interface Encoded { id: string; device: Device; shotAt?: string; raw: { w: number; h: number }; large: Variant; small: Variant; panel?: { raw: { w: number; h: number }; large: Variant; small: Variant } }
 
 /** One PNG -> two WebP sizes (<= 1600 and <= 800 px wide) in Chrome's own encoder: the best quality under each byte cap. */
 async function encodeOne(page: Page, raw: string, name: string, crop?: Clip): Promise<{ raw: { w: number; h: number }; large: Variant; small: Variant }> {
@@ -668,11 +896,28 @@ async function encodeAll(b: Browser): Promise<Encoded[]> {
     const page = await ctx.newPage();
     await page.goto('http://screens.local/');
     const out: Encoded[] = [];
+    // a shot with no raw PNG here (a run of some ids only, or a fresh clone: .cache is not in git) keeps
+    // its last encoded files and manifest entry, with the day it was taken, instead of being deleted
+    const prevItems = existsSync(MANIFEST) ? ((JSON.parse(readFileSync(MANIFEST, 'utf8')) as { shotAt?: string; items?: Encoded[] })) : null;
+    const kept = (id: string): Encoded | null => {
+        const p = prevItems?.items?.find((x) => x.id === id);
+        if (!p) return null;
+        const files = [p.large, p.small, ...(p.panel ? [p.panel.large, p.panel.small] : [])].map((v) => join(SITE_SHOTS, v.src.slice(7)));
+        return files.every((f) => existsSync(f)) ? { ...p, shotAt: p.shotAt ?? prevItems?.shotAt } : null;
+    };
     for (const s of SHOTS) {
         const raw = join(RAW, `${s.id}.png`);
-        if (!existsSync(raw)) continue;
+        if (!existsSync(raw)) {
+            const p = kept(s.id);
+            if (p) {
+                out.push(p);
+                console.log(`kept ${s.id}: no new capture, the files of ${p.shotAt ?? 'an earlier run'} stay`);
+            }
+            continue;
+        }
         const full = await encodeOne(page, raw, s.id);
-        const e: Encoded = { id: s.id, device: s.device, ...full };
+        const day = process.env.ENCODE_ONLY ? (prevItems?.items?.find((x) => x.id === s.id)?.shotAt ?? prevItems?.shotAt) : new Date().toISOString().slice(0, 10);
+        const e: Encoded = { id: s.id, device: s.device, shotAt: day, ...full };
         copyFileSync(join(SITE_SHOTS, `${s.id}-${e.large.w}.webp`), join(DOC_SHOTS, `${s.id}.webp`));
         const side = join(RAW, `${s.id}.panel.json`);
         if (PANEL[s.id] && existsSync(side)) {
@@ -756,15 +1001,20 @@ try {
             await probe.close();
         }
         console.log(`browser: ${shotBy.kind} ${shotBy.version ?? ''}, WebGL ${shotBy.webgl}`);
-        await waitForGpu();
-        const todo = [...new Set(SHOTS.filter((s) => want(s.id)).map((s) => s.flow))];
-        for (const f of todo) {
-            console.log(`--- flow ${f}`);
-            try {
-                await flows[f](browser);
-            } catch (e) {
-                note(`flow:${f}`, { error: String((e as Error)?.message ?? e).slice(0, 400) });
+        await gpuLock();
+        try {
+            await waitForGpu();
+            const todo = [...new Set(SHOTS.filter((s) => want(s.id)).map((s) => s.flow))];
+            for (const f of todo) {
+                console.log(`--- flow ${f}`);
+                try {
+                    await flows[f](browser);
+                } catch (e) {
+                    note(`flow:${f}`, { error: String((e as Error)?.message ?? e).slice(0, 400) });
+                }
             }
+        } finally {
+            gpuUnlock();
         }
     }
     const encoded = await encodeAll(browser);
@@ -774,7 +1024,9 @@ try {
         note: 'written by tools/bench/src/screens.ts: real screenshots of the simulator (whole screen + "panel", the menu itself); captions in packages/i18n/locales/site/*.json under shots.items',
         site: SITE,
         fly: FLY,
-        shotAt: process.env.ENCODE_ONLY && prev?.shotAt ? prev.shotAt : new Date().toISOString().slice(0, 10),
+        // the day of the newest picture; each item has its own day (kept ones keep theirs), the oldest is below
+        shotAt: process.env.ENCODE_ONLY && prev?.shotAt ? prev.shotAt : encoded.map((e) => e.shotAt ?? '').sort().pop() || new Date().toISOString().slice(0, 10),
+        oldestShotAt: encoded.map((e) => e.shotAt ?? prev?.shotAt ?? '').filter(Boolean).sort()[0] ?? null,
         release: process.env.ENCODE_ONLY && prev?.release ? prev.release : release,
         // which browser and GL took the pictures (ENCODE_ONLY re-encodes the last ones: theirs stays)
         browser: process.env.ENCODE_ONLY ? (prev?.browser ?? null) : shotBy,

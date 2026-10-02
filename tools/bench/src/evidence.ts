@@ -55,7 +55,8 @@ export function asciiJson(json: string): string {
 export function writeEvidence(name: string, data: Record<string, unknown>, date = today()): string {
     const dir = join(REPO, 'evidence', date);
     mkdirSync(dir, { recursive: true });
-    const file = join(dir, `${name}.json`);
+    // EVIDENCE_SUFFIX: a second run of the same check under its own name (e.g. -live: the live site), not over the first
+    const file = join(dir, `${name}${process.env.EVIDENCE_SUFFIX ?? ''}.json`);
     writeFileSync(file, asciiJson(JSON.stringify({ name, context: context(), ...data }, null, 2)) + String.fromCharCode(10));
     return file;
 }

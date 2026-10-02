@@ -41,7 +41,7 @@ const SCENE = '39e63ce9', SCENE2 = '7a475d38';
 const PAVO = 'pavo20pro-3s', METEOR = 'meteor65pro-1s';
 const FLIGHT = `scene=${SCENE}&nowarn=1&input=touch&render=off`;
 const WORK = join(REPO, '.cache', 'v03-prefs');
-const SHOTS_DIR = join(REPO, 'evidence', today(), 'v03-prefs');
+const SHOTS_DIR = join(REPO, 'evidence', today(), 'v03-prefs' + (process.env.EVIDENCE_SUFFIX ?? ''));
 const args = process.argv.slice(2);
 const want = (k: string) => !args.some((a) => /^P\d+$/.test(a)) || args.includes(k);
 const shots = process.env.SHOTS === '1';
@@ -642,7 +642,7 @@ out.pageErrors = errors;
 // a run of some checks keeps the others' last results (each with its own time)
 for (const k of Object.keys(out)) if (/^P\d+$/.test(k)) (out[k] as Any).at = new Date().toISOString();
 try {
-    const prev = JSON.parse(readFileSync(join(REPO, 'evidence', today(), 'v03-prefs.json'), 'utf8')) as Record<string, Any>;
+    const prev = JSON.parse(readFileSync(join(REPO, 'evidence', today(), `v03-prefs${process.env.EVIDENCE_SUFFIX ?? ''}.json`), 'utf8')) as Record<string, Any>;
     for (const [k, v] of Object.entries(prev)) if (/^P\d+$/.test(k) && !(k in out)) out[k] = v;
 } catch {
     /* the first run of the day */

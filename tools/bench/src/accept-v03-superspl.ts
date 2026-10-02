@@ -33,7 +33,7 @@ const SITE = (process.env.SITE ?? 'http://127.0.0.1:5332').replace(/\/$/, '');
 const PROXY = (process.env.PROXY ?? 'https://gsfpv.flyreelstudio.eu').replace(/\/$/, '');
 const fly = (qs: string, lang = 'en') => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}` : `${SITE}/${lang}/fly/?${qs}`);
 const PICKER = 'nowarn=1&render=off&input=touch';
-const SHOTS = join(REPO, 'evidence', today(), 'v03-superspl');
+const SHOTS = join(REPO, 'evidence', today(), 'v03-superspl' + (process.env.EVIDENCE_SUFFIX ?? ''));
 const args = process.argv.slice(2);
 const want = (k: string) => !args.some((a) => /^S\d+$/.test(a)) || args.includes(k);
 mkdirSync(SHOTS, { recursive: true });
