@@ -65,7 +65,11 @@ function countOn(ctx: FlightContext, n: number): FloaterPreview | null {
 
 let open: { panel: FloaterPanel; suggested: number } | null = null;
 
-/** The panel over the paused flight; a second call keeps the one that is up. */
+/**
+ * The panel beside the flight, which goes on: the pilot can fly around to find the red pieces (they
+ * are often away from the craft); on a phone the sheet covers the pads until it is closed. A second
+ * call keeps the one that is up.
+ */
 export function openFloaterPanel(ctx: FlightContext): void {
     if (open?.panel.root.isConnected) return;
     const base = ctx.session.baseCollision;
@@ -78,7 +82,6 @@ export function openFloaterPanel(ctx: FlightContext): void {
     // in the scan's own units: specks are noise of the scan, whatever size the pilot flies it at
     const suggested = suggestMinBlocks(comps, base.voxelResolution);
     const scene = { scene: ctx.scene.id };
-    ctx.pause('panel');
     const panel = floaterPanel(ctx.ui, {
         count: (n) => previewFloaters(comps, n),
         suggested,
@@ -86,10 +89,7 @@ export function openFloaterPanel(ctx: FlightContext): void {
         applied: () => ctx.session.floaterMinBlocks,
         preview: (n) => ctx.voxels.previewFloaters(n),
         apply: (n) => { pilotSet(ctx.prefs, 'scene.dropFloaters', n, scene); },
-        onClose: () => {
-            open = null;
-            ctx.resume('panel');
-        }
+        onClose: () => { open = null; }
     });
     open = { panel, suggested };
 }

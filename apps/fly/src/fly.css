@@ -253,7 +253,10 @@ body.cinema .voxel-legend, body.clean .voxel-legend, #ui.hud-off .voxel-legend {
 @media (prefers-reduced-motion: reduce) { .wv-knob, .wv-knob::after { transition: none; } }
 
 /* "Clean floating voxels" (ui/floaters.ts): beside the flight view, so the scan and its red pieces stay in sight */
-.panel.floaters-panel { left: 16px; top: 50%; transform: translateY(-50%); width: min(360px, calc(100vw - 32px)); max-height: calc(100vh - 32px); z-index: 6; }
+/* desktop: the left column, under the OSD's top line and above the credit and the telemetry at the bottom */
+.panel.floaters-panel { left: 16px; top: calc(max(14px, env(safe-area-inset-top)) + 50px + var(--banner-h, 0px)); transform: none; width: min(360px, calc(100vw - 32px)); max-height: calc(100vh - 64px - 76px - var(--banner-h, 0px)); z-index: 6; }
+/* touch sticks on a wide screen: the credit and the telemetry are on the left, so the right side, under the buttons, above the right pad */
+body.touch-on .panel.floaters-panel { left: auto; right: 16px; top: calc(max(10px, env(safe-area-inset-top)) + 90px + var(--banner-h, 0px)); max-height: calc(100vh - 100px - min(40vw, 220px) - 40px - var(--banner-h, 0px)); }
 .fl-explain { margin: 0 0 8px; font-size: 14px; line-height: 1.45; }
 .fl-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: 0 0 10px; color: var(--muted); }
 .fl-swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; flex: none; }
@@ -269,7 +272,7 @@ body.cinema .voxel-legend, body.clean .voxel-legend, #ui.hud-off .voxel-legend {
 .fl-note { margin: 6px 0 0; }
 .wv-clean { min-height: 36px; padding: 6px 12px; }
 @media (max-width: 600px) {
-    .panel.floaters-panel { left: 0; right: 0; top: auto; bottom: 0; transform: none; width: 100vw; max-height: 55vh; border-radius: 14px 14px 0 0; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+    .panel.floaters-panel, body.touch-on .panel.floaters-panel { left: 0; right: 0; top: auto; bottom: 0; transform: none; width: 100vw; max-height: 55vh; border-radius: 14px 14px 0 0; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
     .fl-explain { font-size: 13px; }
 }
 

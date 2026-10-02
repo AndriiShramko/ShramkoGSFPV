@@ -1,6 +1,7 @@
 // "Clean floating voxels" (the owner's message 16: "I move the slider and do not understand what
 // changes"). The floater filter (prefs scene.dropFloaters, G.3) explained where it acts: a small
-// panel beside the flight view while the voxel grid previews the slider's value on the scan
+// panel beside the flight view (the flight goes on, so the pilot can fly to the pieces) while the
+// voxel grid previews the slider's value on the scan
 // (VoxelController.previewFloaters: the pieces that would go in red, the walls that stay in grey), a
 // live line of what goes, one click for a suggested value, and Apply. Closing it ends the preview:
 // the scan looks as before. In Settings the row says the same line and opens the panel.
@@ -54,7 +55,7 @@ export function floaterPanel(parent: HTMLElement, host: FloaterPanelHost): Float
     const clean = h('button', { type: 'button', class: 'btn primary', 'data-action': 'floaters-clean' }, t('floaters.clean')) as HTMLButtonElement;
     const cleanNote = h('p', { class: 'muted small fl-note' });
     const x = h('button', { type: 'button', class: 'panel-x', 'data-action': 'floaters-close', 'aria-label': t('common.close'), 'aria-keyshortcuts': 'Escape', title: `${t('common.close')} (Esc)` }, '×');
-    const root = h('div', { class: 'panel interactive floaters-panel', role: 'dialog', 'aria-modal': 'false', 'aria-labelledby': 'fl-title', 'data-testid': 'floaters-panel' },
+    const root = h('div', { class: 'panel interactive floaters-panel', role: 'dialog', 'aria-modal': 'false', 'aria-labelledby': 'fl-title', tabindex: -1, 'data-testid': 'floaters-panel' },
         h('div', { class: 'panel-head' }, h('h2', { id: 'fl-title' }, t('floaters.title')), x),
         h('p', { class: 'fl-explain' }, t('floaters.explain')),
         h('p', { class: 'fl-legend small' },
@@ -115,7 +116,8 @@ export function floaterPanel(parent: HTMLElement, host: FloaterPanelHost): Float
     parent.append(root);
     host.preview(start);
     render();
-    range.focus();
+    // the dialog itself takes the focus (a screen reader says what it is); the flight's keys stay the flight's
+    root.focus({ preventScroll: true });
     return { root, value: () => Number(range.value), close };
 }
 

@@ -15,6 +15,8 @@ export type VoxelMode = 'off' | 'overlay' | 'only';
 export const VOXEL_MODES: readonly VoxelMode[] = ['off', 'overlay', 'only'];
 /** A chunk drawn in colours a floater preview change made old: asked for again, kept on screen meanwhile. */
 const STALE = -1;
+/** Metres around the camera a floater preview draws at least (the budgets still hold). */
+const PREVIEW_RADIUS_M = 60;
 export { VOXEL_STYLES };
 export type { VoxelStyle };
 
@@ -399,7 +401,9 @@ export class VoxelController {
         const p = this.session.renderer.camera.getPosition();
         const avgFine = this.sum.nFine ? this.sum.fine / this.sum.nFine : undefined;
         const avgCoarse = this.sum.nCoarse ? this.sum.coarse / this.sum.nCoarse : undefined;
-        const plan = planChunksAround(col, this.size, this.occupied, p.x, p.y, p.z, { radius: this.radiusM, fineQuads: this.fineQuads, coarseQuads: this.coarseQuads, known: this.known, avgFine, avgCoarse });
+        // a floater preview looks further: the pieces it would drop are often away from the craft
+        const radius = this.previewN !== null ? Math.max(this.radiusM, PREVIEW_RADIUS_M) : this.radiusM;
+        const plan = planChunksAround(col, this.size, this.occupied, p.x, p.y, p.z, { radius, fineQuads: this.fineQuads, coarseQuads: this.coarseQuads, known: this.known, avgFine, avgCoarse });
         this.plan = { fineRadius: plan.fineRadius, radius: plan.radius };
         this.planned = true;
         this.wanted = new Map(plan.chunks.map((c) => [c.key, c.lod]));
