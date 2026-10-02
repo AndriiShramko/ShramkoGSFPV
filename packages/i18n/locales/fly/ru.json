@@ -225,7 +225,6 @@
   "hud.crash": "КРАШ",
   "hud.acro": "ACRO",
   "hud.angle": "ANGLE",
-  "hud.rec": "REC",
   "hud.crashes": "крашей: {n}",
   "hud.keys": "R на старт · P пауза · V воксели · C стены · H скрыть надписи · F3 экран и задержка",
   "hud.keysKbd": "Пробел арм · W/S газ · A/D рыскание · стрелки тангаж/крен · M angle/acro · R на старт · P пауза · H скрыть надписи",

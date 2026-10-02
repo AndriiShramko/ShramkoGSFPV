@@ -17,7 +17,8 @@ import { dialogOpen } from '../../devices/keyboard';
 import { loadVoxelPrefs } from '../../voxels';
 import { t } from '../../i18n';
 import { banner, q } from '../env';
-import { applyCamera, applyModel, applyWalls, bridgeVoxels, modelDiffers, pilotSet } from '../prefs';
+import { applyCamera, applyModel, bridgeVoxels, modelDiffers, pilotSet } from '../prefs';
+import { floatersRow } from './floaters';
 import type { Feature, FlightContext } from '../context';
 
 let current: SettingsScreen | null = null;
@@ -61,8 +62,8 @@ function browserLocale(): 'en' | 'es' | 'pl' | 'ru' {
 
 /**
  * Everything the flight takes from the store when the screen closes, or when the flight starts:
- * the drone and its flight model (one new model, where the craft is), the walls of this scan.
- * true when the flight model or the walls changed.
+ * the drone and its flight model (one new model, where the craft is). The walls follow the store by
+ * themselves (app/walls.ts). true when the flight model changed.
  */
 function applyToFlight(ctx: FlightContext): boolean {
     const store = ctx.prefs;
@@ -72,7 +73,6 @@ function applyToFlight(ctx: FlightContext): boolean {
         ctx.clearCrash();
         changed = applyModel(ctx.session, store);
     }
-    if (applyWalls(ctx.walls, store, ctx.scene.id)) changed = true;
     applyCamera(ctx.session, store);
     return changed;
 }
@@ -113,7 +113,8 @@ export function openSettings(ctx: FlightContext, focus: string | null = null): v
             forgetDeepLink();
             applyToFlight(ctx);
             ctx.resume('panel');
-        }
+        },
+        extra: (id) => (id === 'scene.dropFloaters' ? floatersRow(ctx, () => current?.close()) : null)
     }, { focus });
 }
 

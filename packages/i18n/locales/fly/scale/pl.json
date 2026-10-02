@@ -8,7 +8,8 @@
   "scale.toastLimit": "Rozmiar sceny x{x} (granica)",
   "scale.voxel": "Ściany: bloki {cm} cm",
   "scale.voxelCoarse": "Ściany: bloki {cm} cm — zgrubne: możesz się rozbić, zanim dotkniesz tego, co widzisz",
+  "scale.voxelCoarseM": "Ściany: bloki {m} m — zgrubne: możesz się rozbić, zanim dotkniesz tego, co widzisz",
   "scale.pushed": "Po zmniejszeniu sceny dron znalazł się w ścianie: przeniesiono go w najbliższe wolne miejsce",
   "set.scene.transform": "Rozmiar sceny",
-  "set.scene.transform.help": "Niektóre skany nie są w prawdziwych metrach, więc dron wydaje się za duży albo za mały. Scena skaluje się wokół drona; [ i ] zmieniają rozmiar w locie. Zapamiętywane dla każdego skanu."
+  "set.scene.transform.help": "Niektóre skany nie są w prawdziwych metrach, więc dron wydaje się za duży albo za mały. Albo powiększ pokój i lataj po nim jak komar, z krzesłem wielkości domu. Od x0,25 do x100, wokół drona; [ i ] zmieniają rozmiar w locie, x1,1 na naciśnięcie, z Shift x2. Zapamiętywane dla każdego skanu."
 }

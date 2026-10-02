@@ -15,7 +15,7 @@
 // truth for what the settings screen shows: the flight model and the camera are built from it
 // (overridesFor, cameraFor), a pilot's change goes through pilotSet (stored, and the link's value for
 // the same setting gives way, in the URL too), and the settings whose app code still keeps its own
-// key follow the store through a bridge (the voxel look: bridgeVoxels; the walls: applyWalls).
+// key follow the store through a bridge (the voxel look: bridgeVoxels).
 import { COLLECTION_IDS, IdbKv, LEGACY_KEYS, LEGACY_PREFIXES, PREFS_KEY, SCHEMA, canonicalJson, openBrowserPrefs, settingsFromQuery } from '@gsfpv/prefs';
 import type { BrowserOptions, CollectionId, Collections, Ctx, GroupId, ImportMode, ImportReport, MigrationInfo, PrefsFile, PrefsStore, PresetResolver, RatesValue, Schema, Scope, SetResult, ThrottleValue, PidValue } from '@gsfpv/prefs';
 import type { GravityMode, ParamOverrides, PresetJson } from '@gsfpv/sim-core';
@@ -92,30 +92,9 @@ export function closePagePrefs(): void {
 
 // ------------------------------------------------------------------ wave 1 bridges (see the header)
 
-/**
- * While a bridge puts the store's value into an app key (applyWalls), the app's own writer must not
- * mirror it back: that would store a reset value as the pilot's explicit choice.
- */
-let holdMirror = 0;
-
 /** controls.ts setStickMode: the pilot picked a stick mode on the Controls screen. */
 export function mirrorStickMode(m: 1 | 2, store: PrefsStore | null = pagePrefs()): void {
-    if (holdMirror) return;
     store?.set('input.stickMode', String(m));
-}
-
-/**
- * app/walls.ts: the pilot switched the walls of `scene`. Remembered (the walls menu, C, Settings):
- * the pilot's choice for that scan, and any ?walls= of this load no longer describes the flight.
- * Not remembered (the test hook): this load only, like ?walls=.
- */
-export function mirrorWallsChoice(scene: string, on: boolean, remember: boolean, store: PrefsStore | null = pagePrefs()): void {
-    if (!store || holdMirror) return;
-    const v = on ? 'on' : 'off';
-    if (remember) {
-        store.set('scene.walls', v, { scene });
-        store.clearSession('scene.walls');
-    } else store.setSession('scene.walls', v);
 }
 
 /** boot.ts: the pilot answered the first-visit warning. */
@@ -305,43 +284,6 @@ export function applyModel(session: { presetId: string; overrides: ParamOverride
     const m = modelOf(store);
     session.applyLifeSettings(m.drone, m.overrides);
     return true;
-}
-
-/** The part of the walls switch (app/walls.ts) the bridge uses. */
-interface WallsLike { has(): boolean; on(): boolean; set(on: boolean, remember?: boolean): void }
-
-const wallsKey = (scene: string): string => `${LEGACY_PREFIXES.walls}${scene}`;
-
-/**
- * The walls of `scene` follow the store (until the walls' reader moves onto it, wave 3): the
- * switch is set to the store's value (a new flight model, like C), and the scan's own key, which
- * the next flight starts from (flightwalls.ts loadWallsChoice), says the same: the pilot's value
- * when explicit, nothing after a reset (so the admin's default rules again). The switch's mirror
- * into the store is held back meanwhile: a reset must not come back as an explicit value.
- * true when the switch changed.
- */
-export function applyWalls(walls: WallsLike, store: PrefsStore, scene: string, storage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> | null = safeStorage()): boolean {
-    if (!walls.has() || !store.schema.byId.has('scene.walls')) return false;
-    const ctx = { scene };
-    const want = store.get<string>('scene.walls', ctx) === 'on';
-    const explicit = store.isExplicit('scene.walls', ctx);
-    let changed = false;
-    holdMirror++;
-    try {
-        if (walls.on() !== want) {
-            walls.set(want, true);
-            changed = true;
-        }
-    } finally {
-        holdMirror--;
-    }
-    try {
-        if (explicit) storage?.setItem(wallsKey(scene), want ? 'on' : 'off');
-        else storage?.removeItem(wallsKey(scene));
-    } catch {
-        /* blocked storage: the store's own banner says so */
-    }
-    return changed;
 }
 
 function safeStorage(): Storage | null {

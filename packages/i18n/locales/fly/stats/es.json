@@ -35,5 +35,8 @@
   "stats.maxImpact": "Golpe más fuerte",
   "stats.longestClean": "Más tiempo sin chocar",
   "set.stats.onDisarm": "Estadísticas al desarmar",
-  "set.stats.onDisarm.help": "Desarma con el interruptor tras 3 s o más en el aire y verás 30 s la tarjeta de estadísticas, como en las gafas."
+  "set.stats.onDisarm.help": "Desarma con el interruptor tras 3 s o más en el aire y verás 30 s la tarjeta de estadísticas, como en las gafas.",
+  "stats.save": "Guardar mis estadísticas",
+  "stats.saveJsonAria": "Guardar mis estadísticas como JSON",
+  "stats.saveNote": "Los totales de cada dron como tabla para una hoja de cálculo (o JSON). Se quedan en este navegador y también van en Ajustes → Datos → Exportar ajustes."
 }

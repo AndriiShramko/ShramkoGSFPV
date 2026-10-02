@@ -9,7 +9,7 @@ import { FlightSession } from '../session';
 import { Controls } from '../controls';
 import { CrashView } from '../crashview';
 import { VoxelController } from '../voxels';
-import { initialWallsOn, loadWallsChoice } from '../flightwalls';
+import { wallsWanted } from '../flightwalls';
 import { storedTransform } from './builtin/scale';
 import { storedDropFloaters } from './builtin/floaters';
 import { Hud } from '../ui/hud';
@@ -150,8 +150,8 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, sceneId: s
     const g = q.get('g');
     const gm = q.get('gm') as ParamOverrides['gravityMode'] | null;
     let session: FlightSession;
-    // walls on or off: ?walls= (tests, this load only), the pilot's own choice for this scan, the scan's default
-    const wallsOn = initialWallsOn(meta?.walls, loadWallsChoice(sceneId), q.get('walls'));
+    // walls on or off: ?walls= (tests, this load only), the pilot's own choice (every scan), the scan's default
+    const wallsOn = wallsWanted(prefs, sceneId);
     // ?render=off: logic only, the scan is never downloaded or drawn (test-modes.ts)
     const drawScan = !logicOnly();
     try {

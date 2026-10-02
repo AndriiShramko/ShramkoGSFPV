@@ -32,7 +32,7 @@
 .sg-foot p { margin: 0; flex-basis: 100%; }
 
 /* a row: name and keys, badges, the control, the changed dot and reset; the help text below */
-.sr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) auto; grid-template-areas: "head control side" "meta control side" "help help help"; gap: 2px 12px; align-items: center; padding: 10px 8px; margin: 0 -8px; border-radius: 10px; border-bottom: 1px solid rgba(255,255,255,.04); }
+.sr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) auto; grid-template-areas: "head control side" "meta control side"; gap: 2px 12px; align-items: center; padding: 10px 8px; margin: 0 -8px; border-radius: 10px; border-bottom: 1px solid rgba(255,255,255,.04); }
 .sr[hidden] { display: none; }
 .sr.focused { background: rgba(74,222,128,.08); box-shadow: inset 0 0 0 1px rgba(74,222,128,.45); }
 .sr.disabled { opacity: .6; }
@@ -50,11 +50,19 @@
 .sr-dot[hidden] { display: none; }
 .sr-reset { min-height: 32px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--fg); font: inherit; font-size: 13px; cursor: pointer; }
 .sr-reset[hidden] { display: none; }
-.sr-help { width: 24px; height: 24px; flex: none; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--muted); font: 600 12px/1 system-ui, sans-serif; cursor: pointer; }
-.sr-help[aria-expanded="true"] { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
-.sr-reset:focus-visible, .sr-help:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.sr-helptext { grid-area: help; margin: 6px 0 0; }
-.sr-helptext[hidden] { display: none; }
+/* the "?" toggletip (ui/toggletip.ts): the text over the screen, in the top layer when the browser has popovers */
+/* a live line under a row (the floater filter), across the row */
+.sr-extra { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 4px; }
+.sr-extra-line { margin: 0; flex: 1 1 220px; color: var(--fg); }
+.sr-extra-btn { min-height: 36px; padding: 6px 12px; }
+.tip-btn { width: 24px; height: 24px; flex: none; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--muted); font: 600 12px/1 system-ui, sans-serif; cursor: help; }
+.tip-btn:hover, .tip-btn:focus-visible { color: var(--fg); border-color: var(--muted); }
+.tip-btn[aria-expanded="true"] { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
+.sr-reset:focus-visible, .tip-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.tip { position: fixed; inset: auto; margin: 0; z-index: 30; width: max-content; max-width: 320px; padding: 8px 11px; border-radius: 8px; border: 1px solid var(--line); background: #1a1f27; color: var(--fg); font: 400 13px/1.45 system-ui, sans-serif; box-shadow: 0 8px 24px rgba(0,0,0,.5); overflow-wrap: anywhere; animation: tipin .12s ease both; }
+.tip[hidden] { display: none; }
+.tip[data-state="pinned"] { border-color: var(--accent); }
+@keyframes tipin { from { opacity: 0; } to { opacity: 1; } }
 
 /* number: a slider and a field with its unit */
 .sr-num { display: flex; align-items: center; gap: 10px; min-width: 0; }
@@ -125,8 +133,8 @@
     .sg-toggle::after { content: "▸"; color: var(--muted); transition: transform .15s; }
     .sg-toggle[aria-expanded="true"]::after { transform: rotate(90deg); }
     .settings:not(.searching) .set-group:not(.sel) .sg-body { display: none; }
-    .sr { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "head side" "meta meta" "control control" "help help"; }
+    .sr { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "head side" "meta meta" "control control"; }
     .sr-num { flex-wrap: wrap; }
     .sr-range { flex-basis: 100%; }
 }
-@media (prefers-reduced-motion: reduce) { .sw-track, .sw-track::after, .sg-toggle::after { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .sw-track, .sw-track::after, .sg-toggle::after { transition: none; } .tip { animation: none; } }

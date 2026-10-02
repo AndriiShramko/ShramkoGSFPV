@@ -5,7 +5,11 @@
 // repeated or dropped, why not here). REC is offered in normal flight too, at the quality as flown;
 // cinema mode only raises the quality. Showcase scenes only (D34): elsewhere REC is not offered and
 // Auto is shown disabled with the reason. While flying (armed, not crashed) the bar steps aside
-// outside cinema mode; the OSD shows "● REC" while it records. recording.ts does the work.
+// outside cinema mode. While it records, a red dot blinks with the running time in the top-right
+// row (the owner's message 16: "unclear whether it records"); a click on it stops. In cinema mode
+// (the clean picture) the dot is not drawn: the bar at the bottom, always there, says "Stop 0:42".
+// The pause menu's item says which it does: "Start recording" or "Recording 0:42 - stop".
+// recording.ts does the work.
 import { h } from '../../ui/dom';
 import { t } from '../../i18n';
 import { q } from '../env';
@@ -83,6 +87,13 @@ export const cinema: Feature = {
         const cinemaNote = h('div', { class: 'cinema-note', role: 'status', id: 'rec-note', 'data-testid': 'cinema-note' });
         const cinemaBar = h('div', { class: 'cinema-bar rec-bar interactive', 'data-testid': 'rec-bar' }, row, allowBtn, cinemaNote);
         ui.append(cinemaBar);
+        // the recording dot: first in the top-right row of buttons (builtin/top.ts, installed before this)
+        const dotTime = h('span', { class: 'rec-dot-time' });
+        const dot = h('button', { type: 'button', class: 'btn rec-dot', 'data-action': 'rec-dot', 'data-testid': 'rec-dot', hidden: true, 'aria-keyshortcuts': 'F9', onclick: () => toggle(true) },
+            h('span', { class: 'rec-dot-i', 'aria-hidden': 'true' }), dotTime) as HTMLButtonElement;
+        ui.querySelector('.top-actions')?.prepend(dot);
+        /** the flight is held (pause menu, a panel): the recorder waits, the dot stops blinking */
+        let held = false;
 
         function closeMenu(): void {
             menuOpen = false;
@@ -148,7 +159,14 @@ export const cinema: Feature = {
             folderBtn.textContent = !rec.folder ? `${t('rec.folder.none')} ▾` : rec.access === 'denied' ? `${t('rec.folder.noAccess', { name })} ▾` : `${t('rec.folder', { name })} ▾`;
             allowBtn.hidden = !allowed || !rec.folder || rec.access !== 'prompt';
             allowBtn.textContent = t('rec.permission', { name });
-            ctx.hud.rec = recording;
+            dot.hidden = !recording;
+            if (recording) {
+                const time = mmss(rec.seconds);
+                if (dotTime.textContent !== time) dotTime.textContent = time;
+                const name = t('rec.dot', { t: time });
+                if (dot.getAttribute('aria-label') !== name) { dot.setAttribute('aria-label', name); dot.title = `${name} (F9)`; }
+                dot.classList.toggle('held', held);
+            }
             // the latency guard measures but does not skip while a file is written (each skip is 2-3 repeated slots)
             ctx.renderer.latencyGuard.holdSkips = !rec.guardHoldOff && (recording || rec.exporting);
             // the note: why not here, else what happens now, else the last result
@@ -271,6 +289,8 @@ export const cinema: Feature = {
         ctx.events.on('sim', (e) => rec.onSim(e, performance.now(), !!navigator.userActivation?.isActive));
         ctx.events.on('pause', ({ on }) => {
             rec.pause('flight', on);
+            held = on;
+            render();
             // Resume (a click or P) is a user activation: the folder's permission can be asked there
             if (!on && rec.autoOn && rec.folder && rec.access === 'prompt' && navigator.userActivation?.isActive) void rec.allow();
         });
@@ -300,7 +320,10 @@ export const cinema: Feature = {
             toggle(true);
         });
         ctx.menu.add({ id: 'pause.cinema', action: null, labelKey: 'pause.cinema', order: 100, section: 'tools', run: toggleCinema });
-        ctx.menu.add({ id: 'pause.record', action: 'record.toggle', labelKey: 'rec.menu', order: 101, section: 'tools', run: () => toggle(true), enabled: () => rec.allowed });
+        ctx.menu.add({
+            id: 'pause.record', action: 'record.toggle', labelKey: 'rec.menu', order: 101, section: 'tools', run: () => toggle(true), enabled: () => rec.allowed,
+            label: () => (rec.recording ? t('rec.menu.stop', { t: mmss(rec.seconds) }) : t('rec.menu.start'))
+        });
 
         // ------------------------------------------------------------------ test hook
         const hookCinema: NonNullable<TestHook['cinema']> = {
@@ -321,6 +344,7 @@ export const cinema: Feature = {
                 recording: rec.recording, autoRun: rec.autoRun, auto: rec.autoOn, seconds: rec.seconds, busy: rec.busy,
                 folder: rec.folder?.name ?? null, access: rec.access, pendingStopAt: rec.rules.pendingStopAt,
                 barHidden: cinemaBar.hidden, barShown: cinemaBar.offsetParent !== null, recHidden: recBtn.hidden,
+                dotShown: !dot.hidden && dot.getClientRects().length > 0, dotText: dot.hidden ? null : dot.getAttribute('aria-label'),
                 autoDisabled: autoBtn.disabled, autoPressed: autoBtn.getAttribute('aria-pressed'), autoTitle: autoBtn.title,
                 folderChip: folderWrap.hidden ? null : folderBtn.textContent, allowChip: allowBtn.hidden ? null : allowBtn.textContent,
                 note: cinemaNote.textContent, last: rec.last?.info ?? null, offers: rec.last?.offer.map((o) => ({ name: o.name, bytes: o.bytes })) ?? []

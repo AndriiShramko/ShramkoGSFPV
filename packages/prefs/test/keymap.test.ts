@@ -20,8 +20,8 @@ const DESIGN_TABLE: Record<string, string[]> = {
     'mode.cycle': ['M'],
     'voxels.cycle': ['V'],
     'hud.toggle': ['H'],
-    'scale.down': ['['],
-    'scale.up': [']'],
+    'scale.down': ['[', 'Shift+['], // Shift: x2 steps (owner's message 16, scale up to x100)
+    'scale.up': [']', 'Shift+]'],
     'record.toggle': ['F9'],
     'frameStats.toggle': ['F3'],
     'settings.open': ['O']

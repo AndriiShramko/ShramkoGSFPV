@@ -26,5 +26,11 @@
   "set.input.stickMode": "Режим стиков",
   "set.input.stickMode.help": "Какой стик — газ на рисунках калибровки: Режим 2 слева, Режим 1 справа.",
   "set.input.stickMode.opt.1": "Режим 1",
-  "set.input.stickMode.opt.2": "Режим 2"
+  "set.input.stickMode.opt.2": "Режим 2",
+  "set.level.strength": "Сила режима Angle",
+  "set.level.strength.help": "Насколько твёрдо режим Angle выравнивает дрон и следует за стиком: больше — резче. Сила Angle из Betaflight (angle_p_gain, по умолчанию 50): при 100 дрон набирает половину наклона стика примерно за 70 мс вместо 100.",
+  "set.level.angleLimitDeg": "Предел наклона",
+  "set.level.angleLimitDeg.help": "Насколько дрон наклоняется в режиме Angle при стике до упора: больше наклон — больше скорость. angle_limit из Betaflight (по умолчанию 60°).",
+  "set.level.horizonStrength": "Сила режима Horizon",
+  "set.level.horizonStrength.help": "Насколько твёрдо режим Horizon выравнивает дрон у центра стика: больше — выравнивает сильнее. Сила выравнивания Horizon из Betaflight (по умолчанию 75)."
 }

@@ -51,5 +51,8 @@
   "set.recording.folder": "Folder",
   "set.recording.folder.help": "Where videos go without asking every time (Chrome and Edge on a computer). Other browsers keep the video and offer the file after the flight.",
   "set.recording.splitMin": "New file every",
-  "set.recording.splitMin.help": "A long flight is split into files: if the tab crashes, only the last part is lost."
+  "set.recording.splitMin.help": "A long flight is split into files: if the tab crashes, only the last part is lost.",
+  "rec.menu.start": "Start recording",
+  "rec.menu.stop": "● Recording {t} — stop",
+  "rec.dot": "Recording, {t}. Stop recording"
 }

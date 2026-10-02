@@ -8,11 +8,12 @@
 // flight's host does that). 'life' settings wait in the store until the screen closes; the host then
 // builds one new flight model. A value is always read back from the store: what the row shows is
 // what the app uses.
-import { actionsOf, boundsOf, helpKey, labelKey } from '@gsfpv/prefs';
+import { actionsOf, boundsOf, helpKey, isCuratedRef, labelKey } from '@gsfpv/prefs';
 import type { ActionId, Ctx, EnumDef, GroupId, KeyHint, NumDef, PrefChange, PrefsStore, SettingDef } from '@gsfpv/prefs';
 import { PRESETS } from '../../presets';
 import { droneOf, linkSettings, pilotReset, pilotSet, presetResolver } from '../../app/prefs';
 import { h } from '../dom';
+import { toggletip } from '../toggletip';
 import { t } from '../../i18n';
 import { jsonEditor } from './editors';
 import type { Editor } from './editors';
@@ -33,6 +34,8 @@ export interface SettingsHost {
     reload(id: string): void;
     /** the screen is gone (x, Esc, O); the host applies what waits for it */
     onClose(): void;
+    /** a setting's owner adds a live line under its row (the floater filter: what it drops now) */
+    extra?(id: string): { el: HTMLElement; refresh(): void } | null;
 }
 
 /** v0.2's name of a setting whose owner has not written `set.<id>` yet (A.10: reused where the wording holds). */
@@ -218,6 +221,8 @@ export class SettingsScreen {
     private ctxOf(def: SettingDef): Ctx | undefined | null {
         if (def.scope === 'drone') return { drone: this.editDrone };
         if (def.scope === 'scene') return this.host.scene ? { scene: this.host.scene.id } : null;
+        // one value for every scan whose default is the admin's per scan (the walls): read for this scan
+        if (isCuratedRef(def.default) && this.host.scene) return { scene: this.host.scene.id };
         return undefined;
     }
 
@@ -250,21 +255,16 @@ export class SettingsScreen {
         const fromLink = h('span', { class: 'sr-link', hidden: true }, t('prefs.fromLink'));
         const dot = h('span', { class: 'sr-dot', title: t('prefs.changed'), 'aria-hidden': 'true' });
         const reset = h('button', { type: 'button', class: 'sr-reset', 'data-action': 'reset-setting', hidden: true, onclick: () => { const c = ctxOf(); if (c === null) return; pilotReset(this.store, def.id, c); if (def.apply === 'reload') this.host.reload(def.id); } }, t('prefs.reset')) as HTMLButtonElement; // a reset of the language reloads like a change (the page's address names the language)
-        const helpId = `${uid}-help`;
-        const helpText = help ? h('p', { class: 'sr-helptext muted small', id: helpId, hidden: true }, help) : null;
-        const helpBtn = help ? h('button', { type: 'button', class: 'sr-help', 'aria-expanded': 'false', 'aria-controls': helpId, 'aria-label': t('prefs.help', { name: label }), title: t('prefs.help', { name: label }) }, '?') as HTMLButtonElement : null;
-        helpBtn?.addEventListener('click', () => {
-            const open = helpBtn.getAttribute('aria-expanded') !== 'true';
-            helpBtn.setAttribute('aria-expanded', String(open));
-            if (helpText) helpText.hidden = !open;
-        });
+        // the description: shown on hover and keyboard focus, pinned by a click or tap (ui/toggletip.ts)
+        const tip = help ? toggletip(t('prefs.help', { name: label }), help, `${uid}-help`) : null;
+        const extra = this.host.extra?.(def.id) ?? null;
         const labelEl = control.labelFor ? h('label', { class: 'sr-name', for: control.labelFor }, label) : h('span', { class: 'sr-name' }, label);
         const el = h('div', { class: 'sr', 'data-id': def.id, 'data-scope': def.scope, 'data-type': def.type, 'data-testid': `setting-${def.id}` },
-            h('div', { class: 'sr-head' }, labelEl, caps, helpBtn),
+            h('div', { class: 'sr-head' }, labelEl, caps, tip?.button, tip?.bubble),
             h('div', { class: 'sr-meta' }, badge, scope, fromLink),
             h('div', { class: 'sr-control' }, control.el),
             h('div', { class: 'sr-side' }, dot, reset),
-            helpText);
+            extra?.el);
         if (!enabled) el.classList.add('disabled');
 
         const refresh = (): void => {
@@ -284,6 +284,7 @@ export class SettingsScreen {
             else scope.textContent = '';
             scope.hidden = def.scope === 'global';
             control.refresh();
+            extra?.refresh();
         };
         refresh();
         return { def, el, focus: () => control.focus(), refresh };

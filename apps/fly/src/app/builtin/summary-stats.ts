@@ -285,3 +285,51 @@ export function statsText(o: { title: string; heads: [string, string, string]; l
     const line = (r: string[]) => r.map((c, i) => (i === 0 ? c.padEnd(w[i]) : c.padStart(w[i]))).join('  ').trimEnd();
     return [o.title, '', ...all.map(line)].join('\n');
 }
+
+// ------------------------------------------------------------------ "Save my stats" (owner's message 16)
+
+/**
+ * The lifetime totals as a file the pilot keeps (the owner's message 16: "if he comes back in half a
+ * year everything is there, and he can save it to his computer"): every drone ever flown, and the
+ * sum. SI units in the file whatever the display shows, so two files always compare.
+ */
+export interface StatsFile {
+    format: 'gsfpv-stats';
+    version: 1;
+    exportedAt: string;
+    units: { airtime: 's'; distance: 'm' };
+    drones: (DroneTotals & { id: string; name: string })[];
+    total: DroneTotals;
+}
+
+export function statsFile(byDrone: Readonly<Record<string, DroneTotals>>, name: (id: string) => string, now: Date): StatsFile {
+    const total = zeroTotals();
+    const drones = Object.keys(byDrone).sort().map((id) => {
+        const d = byDrone[id];
+        total.flights += d.flights;
+        total.airtimeS += d.airtimeS;
+        total.distanceM += d.distanceM;
+        total.crashes += d.crashes;
+        return { id, name: name(id), flights: d.flights, airtimeS: d.airtimeS, distanceM: d.distanceM, crashes: d.crashes };
+    });
+    return { format: 'gsfpv-stats', version: 1, exportedAt: now.toISOString(), units: { airtime: 's', distance: 'm' }, drones, total };
+}
+
+/** A CSV field: quoted when it holds a comma, a quote or a line break (RFC 4180). */
+const csvField = (v: string | number): string => {
+    const s = typeof v === 'number' ? String(Math.round(v * 10) / 10) : v;
+    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
+
+/** The same as a table for a spreadsheet: one row per drone, then the total. Column names are fixed English ids. */
+export function statsCsv(f: StatsFile): string {
+    const rows: (string | number)[][] = [['drone_id', 'drone', 'flights', 'airtime_s', 'airtime', 'distance_m', 'crashes']];
+    for (const d of f.drones) rows.push([d.id, d.name, d.flights, d.airtimeS, fmtClock(d.airtimeS, false), d.distanceM, d.crashes]);
+    rows.push(['total', '', f.total.flights, f.total.airtimeS, fmtClock(f.total.airtimeS, false), f.total.distanceM, f.total.crashes]);
+    return `${rows.map((r) => r.map(csvField).join(',')).join('\r\n')}\r\n`;
+}
+
+/** gsfpv-stats-YYYY-MM-DD.<ext> */
+export function statsFileName(now: Date, ext: 'json' | 'csv'): string {
+    return `gsfpv-stats-${now.toISOString().slice(0, 10)}.${ext}`;
+}

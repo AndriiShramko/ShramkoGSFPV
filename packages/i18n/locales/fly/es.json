@@ -225,7 +225,6 @@
   "hud.crash": "CHOQUE",
   "hud.acro": "ACRO",
   "hud.angle": "ANGLE",
-  "hud.rec": "REC",
   "hud.crashes": "choques: {n}",
   "hud.keys": "R reaparecer · P pausa · V vóxeles · C paredes · H ocultar textos · F3 pantalla y retardo",
   "hud.keysKbd": "Espacio armar · W/S acelerador · A/D guiñada · flechas cabeceo/alabeo · M angle/acro · R reaparecer · P pausa · H ocultar textos",

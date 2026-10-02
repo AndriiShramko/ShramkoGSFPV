@@ -15,7 +15,9 @@ const V03_SHIPPED = [
     // W3-3 scene size around the drone (E.7): the summary panel row, [ ], Settings -> Scenes
     'scene.transform',
     // W4-2 phantom walls (G.3): Settings -> Walls and voxel grid, admin default in showcase.json
-    'scene.dropFloaters'
+    'scene.dropFloaters',
+    // v0.5 (owner's message 16): angle mode's strength, tilt limit and horizon strength, advanced rows of Flight
+    'level.angleLimitDeg', 'level.strength', 'level.horizonStrength'
 ];
 
 /**
@@ -70,7 +72,7 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['scenes.allowNoWalls', 'scenes', 'global', 'bool', false, 'live'],
     ['scene.transform', 'scenes', 'scene', 'json', null, 'live'],
     ['scene.dropFloaters', 'voxels', 'scene', 'number', 'curated:dropFloaters|0', 'life'],
-    ['scene.walls', 'voxels', 'scene', 'enum', 'curated:walls|on', 'life'],
+    ['scene.walls', 'voxels', 'global', 'enum', 'curated:walls|on', 'life'],
     ['voxels.show', 'voxels', 'global', 'enum', 'off', 'live'],
     ['voxels.opacity', 'voxels', 'global', 'number', 0.55, 'live'],
     ['voxels.opacityOnly', 'voxels', 'global', 'number', 1, 'live'],
@@ -225,8 +227,9 @@ describe('defineSettings: a per-scan default and a setting that is never stored'
         expect(() => defineSettings(SCHEMA.defs)).not.toThrow();
     });
 
-    it('a curated default only on a scene setting, with a valid fallback and a plain field name', () => {
-        expect(() => defineSettings(withDef({ ...walls, scope: 'global' }))).toThrow(/scene\.walls: a curated default needs scope 'scene'/);
+    it('a curated default on a scene or global setting (never per drone), with a valid fallback and a plain field name', () => {
+        expect(() => defineSettings(withDef({ ...walls, scope: 'scene' }))).not.toThrow();
+        expect(() => defineSettings(withDef({ ...walls, scope: 'drone' }))).toThrow(/scene\.walls: a curated default needs scope 'scene' or 'global'/);
         expect(() => defineSettings(withDef({ ...walls, default: { curated: 'walls', fallback: 'maybe' } }))).toThrow(/scene\.walls: default 'maybe' is not an option/);
         expect(() => defineSettings(withDef({ ...walls, default: { curated: 'walls.admin', fallback: 'on' } }))).toThrow(/curated field 'walls\.admin' is not a plain name/);
     });
@@ -257,7 +260,9 @@ describe('JSON validators', () => {
 
     it('throttle, transform and folder', () => {
         expect(validateThrottle({ mid: 65, expo: 120 })).toEqual({ mid: 65, expo: 100 });
-        expect(validateTransform({ s: 9, t: [0.3, 0, -1.2], v: 2 })).toEqual({ s: 4, t: [0.3, 0, -1.2], v: 2 });
+        expect(validateTransform({ s: 9, t: [0.3, 0, -1.2], v: 2 })).toEqual({ s: 9, t: [0.3, 0, -1.2], v: 2 }); // x9 is in range since x100
+        expect(validateTransform({ s: 250, t: [0.3, 0, -1.2], v: 2 })).toEqual({ s: 100, t: [0.3, 0, -1.2], v: 2 });
+        expect(validateTransform({ s: 0.1, t: [0, 0, 0] })?.s).toBe(0.25);
         expect(validateTransform({ s: 1.5, t: [0, 0] })).toBeNull();
         expect(validateTransform({ s: 1.5, t: [0, 0, 0] })).toEqual({ s: 1.5, t: [0, 0, 0], v: 0 });
         expect(validateFolder({ name: 'GSFPV' })).toEqual({ name: 'GSFPV' });

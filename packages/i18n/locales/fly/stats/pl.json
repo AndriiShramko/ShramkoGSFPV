@@ -35,5 +35,8 @@
   "stats.maxImpact": "Najmocniejsze uderzenie",
   "stats.longestClean": "Najdłużej bez kraksy",
   "set.stats.onDisarm": "Statystyki po rozbrojeniu",
-  "set.stats.onDisarm.help": "Rozbrój przełącznikiem po co najmniej 3 s w powietrzu, a na 30 s pokaże się karta statystyk jak w goglach."
+  "set.stats.onDisarm.help": "Rozbrój przełącznikiem po co najmniej 3 s w powietrzu, a na 30 s pokaże się karta statystyk jak w goglach.",
+  "stats.save": "Zapisz moje statystyki",
+  "stats.saveJsonAria": "Zapisz moje statystyki jako JSON",
+  "stats.saveNote": "Sumy każdego drona jako tabela do arkusza (albo JSON). Zostają w tej przeglądarce i trafiają też do Ustawienia → Dane → Eksportuj ustawienia."
 }

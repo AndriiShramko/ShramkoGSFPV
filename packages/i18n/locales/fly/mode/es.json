@@ -26,5 +26,11 @@
   "set.input.stickMode": "Modo de sticks",
   "set.input.stickMode.help": "Qué stick es el acelerador en los dibujos de calibración: Modo 2 a la izquierda, Modo 1 a la derecha.",
   "set.input.stickMode.opt.1": "Modo 1",
-  "set.input.stickMode.opt.2": "Modo 2"
+  "set.input.stickMode.opt.2": "Modo 2",
+  "set.level.strength": "Fuerza del modo Angle",
+  "set.level.strength.help": "Con qué firmeza el modo Angle nivela el dron y sigue el stick: más alto, más rápida la respuesta. La fuerza de Angle de Betaflight (angle_p_gain, 50 por defecto): con 100 el dron alcanza la mitad de la inclinación del stick en unos 70 ms en vez de 100.",
+  "set.level.angleLimitDeg": "Límite de inclinación",
+  "set.level.angleLimitDeg.help": "Cuánto se inclina el dron en modo Angle con el stick a fondo: más inclinación, más velocidad. El angle_limit de Betaflight (60° por defecto).",
+  "set.level.horizonStrength": "Fuerza del modo Horizon",
+  "set.level.horizonStrength.help": "Con qué firmeza el modo Horizon nivela el dron cerca del centro del stick: más alto, nivela más fuerte. La fuerza de nivelado de Horizon de Betaflight (75 por defecto)."
 }

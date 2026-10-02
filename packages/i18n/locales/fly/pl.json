@@ -225,7 +225,6 @@
   "hud.crash": "KRAKSA",
   "hud.acro": "ACRO",
   "hud.angle": "ANGLE",
-  "hud.rec": "REC",
   "hud.crashes": "kraksy: {n}",
   "hud.keys": "R powrót na start · P pauza · V woksele · C ściany · H ukryj napisy · F3 ekran i opóźnienie",
   "hud.keysKbd": "Spacja uzbrój · W/S gaz · A/D odchylenie · strzałki pochylenie/przechył · M angle/acro · R start · P pauza · H ukryj napisy",

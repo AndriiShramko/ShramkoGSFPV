@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { Sim, Runner, InputLog, S, compileParams, replay, SIM_CORE_VERSION } from '../../sim-core/src/index';
 import type { PresetJson, LogHeader } from '../../sim-core/src/index';
 import preset from '../../sim-core/presets/pavo20pro-3s.json';
-import { flightHeader, worldForLog, initialWallsOn, wallsState, loadWallsChoice, saveWallsChoice } from '../../../apps/fly/src/flightwalls';
+import { flightHeader, worldForLog, wallsState, wallsWanted } from '../../../apps/fly/src/flightwalls';
 import type { FlightLogHeader } from '../../../apps/fly/src/flightwalls';
 import { syntheticRoom, VoxelContactWorld } from '../src/index';
 
@@ -107,21 +107,14 @@ describe('walls switch: log header and replay', () => {
 });
 
 describe('walls switch: which setting a flight starts with', () => {
-    it('?walls= wins, then the pilot, then the admin default, then on', () => {
-        expect(initialWallsOn(undefined, null, null)).toBe(true);
-        expect(initialWallsOn('off', null, null)).toBe(false);
-        expect(initialWallsOn('off', 'on', null)).toBe(true);
-        expect(initialWallsOn('on', 'off', null)).toBe(false);
-        expect(initialWallsOn('on', 'on', 'off')).toBe(false);
-        expect(initialWallsOn('off', 'off', 'on')).toBe(true);
-        // control: anything else in the URL is ignored
-        expect(initialWallsOn('off', null, 'maybe')).toBe(false);
+    it('the store scene.walls for this scan (one choice for every scan, its default per scan: prefs store.test.ts)', () => {
+        const asked: unknown[] = [];
+        const store = (v: string) => ({ get: <T,>(id: string, ctx?: { scene?: string }) => { asked.push([id, ctx]); return v as T; } });
+        expect(wallsWanted(store('on'), '39e63ce9')).toBe(true);
+        expect(wallsWanted(store('off'), '39e63ce9')).toBe(false);
+        // asked for this scan, so a pilot who never chose gets the author's default for it
+        expect(asked[0]).toEqual(['scene.walls', { scene: '39e63ce9' }]);
         expect(wallsState(true, false)).toBe('off');
         expect(wallsState(false, false)).toBe('none');
-    });
-
-    it('without localStorage (Node, a blocked store) the choice reads as none and saving does not throw', () => {
-        expect(loadWallsChoice('39e63ce9')).toBeNull();
-        expect(() => saveWallsChoice('39e63ce9', false)).not.toThrow();
     });
 });

@@ -132,7 +132,7 @@ function throttleEditor(io: EditorIo): Editor {
 }
 
 /**
- * The scene's size (E.7): x0.25 to x4 on a log slider. It stores the new size with the old offset;
+ * The scene's size (E.7): SCALE_MIN to SCALE_MAX (x0.25 to x100) on a log slider. It stores the new size with the old offset;
  * the flight takes a new size as "rescale around the drone" and stores the offset that gives.
  */
 function transformEditor(io: EditorIo): Editor {

@@ -10,11 +10,10 @@ export const hud: Feature = {
     install(ctx) {
         const h = ctx.hud;
         h.mount(ctx.ui);
-        h.wallsOff = !!ctx.session.collision && !ctx.session.wallsOn;
         // arm kind 'key' (no switch on the radio): the on-screen ARM / DISARM button
         h.onArm = () => ctx.controls.toggleArm();
+        // the walls tag itself the OSD reads from the flight (ui/hud.ts update)
         ctx.events.on('walls', ({ on }) => {
-            h.wallsOff = !on;
             h.flash(t(on ? 'walls.switchedOn' : 'walls.switchedOff'), 3500);
         });
         ctx.keys.on('hud.toggle', (e) => {

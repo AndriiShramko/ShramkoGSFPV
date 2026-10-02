@@ -3,7 +3,7 @@
 // deterministically. Controls: N = 0 removes nothing; a piece of exactly N blocks stays; a ray
 // through a dropped floater hits before and passes after, a big wall is still hit.
 import { describe, expect, it } from 'vitest';
-import { blockComponents, componentAt, dropFloaters, floaterDigestParts, forEachBlock, blockDims, openVoxelCollision, componentsOf } from '../src/index';
+import { blockComponents, componentAt, dropFloaters, floaterDigestParts, forEachBlock, blockDims, openVoxelCollision, componentsOf, previewFloaters, suggestMinBlocks } from '../src/index';
 import type { VoxelCollision } from '../src/index';
 import { encodeCollision, loadFixture, setVoxel } from './helpers';
 import type { BlockMasks, Dims } from './helpers';
@@ -158,5 +158,49 @@ describe('dropFloaters on the scan 39e63ce9 (CC BY fixture, 57 pieces)', () => {
         const big = comps.keys[Array.from(comps.blockIds).indexOf(Array.from(comps.sizes).indexOf(34967))];
         expect(after.get(big)).toBe(before.get(big));
         expect(componentAt(comps, -1, 0, 0)).toBe(-1);
+    });
+});
+
+describe('the preview counts and the suggested N (Settings and the "Clean floating voxels" panel)', () => {
+    const { meta, bin } = loadFixture();
+    const col = openVoxelCollision(meta, bin);
+    const comps = componentsOf(col);
+
+    it('previewFloaters gives exactly what dropFloaters drops, for every N on the fixture', () => {
+        for (const n of [0, 1, 2, 5, 17, 40, 64]) {
+            const p = previewFloaters(comps, n);
+            const f = dropFloaters(col, n);
+            expect([p.pieces, p.blocks], `N = ${n}`).toEqual([f.pieces, f.blocks]);
+            expect(p.totalBlocks).toBe(comps.keys.length);
+        }
+    });
+
+    it('control: a preview that also counted the pieces of exactly N blocks would disagree with the filter', () => {
+        const atN = (n: number) => Array.from(comps.sizes).filter((s) => s <= n).length;
+        const n = Array.from(comps.sizes).find((s) => s > 1 && s < 64)!;
+        expect(atN(n)).not.toBe(dropFloaters(col, n).pieces);
+    });
+
+    it('suggestMinBlocks: the largest N under the volume and 1 % caps, no larger than the pieces need', () => {
+        const comp = (sizes: number[]) => ({ count: sizes.length, sizes: Uint32Array.from(sizes) });
+        // 5 cm voxels: a block is 20 cm, 0.008 m3, so up to 62 blocks is half a cubic metre
+        expect(suggestMinBlocks(comp([100000, 1, 1, 3, 7]), 0.05)).toBe(8);
+        // two 30-block pieces (62 blocks, under 1 % of the walls and under half a cubic metre each) go
+        expect(suggestMinBlocks(comp([10000, 30, 30, 2]), 0.05)).toBe(31);
+        // a share cap: 600 blocks of 40-block pieces is 6 % of a 10 000-block scan, so only the small ones go
+        expect(suggestMinBlocks(comp([9400, ...Array(15).fill(40), 2, 2]), 0.05)).toBe(3);
+        // nothing small: nothing to suggest
+        expect(suggestMinBlocks(comp([5000, 800]), 0.05)).toBe(0);
+        // the fixture: something to clean, never above the filter's range
+        const s = suggestMinBlocks(comps, col.voxelResolution);
+        expect(s).toBeGreaterThan(1);
+        expect(s).toBeLessThanOrEqual(64);
+        expect(previewFloaters(comps, s).blocks).toBeLessThanOrEqual(comps.keys.length * 0.01);
+    });
+
+    it('control: coarse 20 cm voxels make the volume cap bite (a 0.5 m3 piece is 1 block of 80 cm)', () => {
+        const comp = { count: 3, sizes: Uint32Array.from([100000, 1, 3]) };
+        expect(suggestMinBlocks(comp, 0.2)).toBe(0);
+        expect(suggestMinBlocks(comp, 0.05)).toBe(4);
     });
 });

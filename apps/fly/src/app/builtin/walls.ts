@@ -1,9 +1,10 @@
 // The walls: the box at the top middle (phase C build for a scan without walls, the refine to finer
 // walls, the walls store; walls.ts), the "Walls 5 cm" line on the credit with the walls switch and
-// the voxel controls in its menu, and C: walls (collisions) on / off for this scan.
+// the voxel controls in its menu, and C: walls (collisions) on / off, one choice for every scan.
 import { mountWalls } from '../../walls';
 import type { RefineMode } from '../../walls';
 import { wallsVoxelsControls } from '../../ui/voxels';
+import { openFloaterPanel } from './floaters';
 import { t } from '../../i18n';
 import { beacon, q } from '../env';
 import type { Feature } from '../context';
@@ -22,7 +23,8 @@ export const walls: Feature = {
             ui: ctx.ui, session: ctx.session, sceneId: ctx.scene.id, beacon, hook: ctx.hook,
             mode: refineMode(),
             bakeNow: q.get('bake') === '1',
-            controls: wallsVoxelsControls(ctx.voxels, ctx.walls, 'wm')
+            controls: wallsVoxelsControls(ctx.voxels, ctx.walls, 'wm', () => openFloaterPanel(ctx)),
+            switchOn: () => ctx.walls.set(true)
         });
         let w = mount();
         // a scene switched in the page (E.4): the box, the walls line and the store for the new scene

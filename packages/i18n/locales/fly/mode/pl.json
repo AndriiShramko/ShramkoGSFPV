@@ -26,5 +26,11 @@
   "set.input.stickMode": "Tryb drążków",
   "set.input.stickMode.help": "Który drążek to gaz na rysunkach kalibracji: Tryb 2 po lewej, Tryb 1 po prawej.",
   "set.input.stickMode.opt.1": "Tryb 1",
-  "set.input.stickMode.opt.2": "Tryb 2"
+  "set.input.stickMode.opt.2": "Tryb 2",
+  "set.level.strength": "Siła trybu Angle",
+  "set.level.strength.help": "Jak mocno tryb Angle poziomuje drona i podąża za drążkiem: wyżej znaczy żwawiej. Siła Angle z Betaflighta (angle_p_gain, domyślnie 50): przy 100 dron osiąga połowę przechyłu drążka w około 70 ms zamiast 100.",
+  "set.level.angleLimitDeg": "Limit przechyłu",
+  "set.level.angleLimitDeg.help": "Jak bardzo dron przechyla się w trybie Angle przy pełnym drążku: większy przechył, większa prędkość. angle_limit z Betaflighta (domyślnie 60°).",
+  "set.level.horizonStrength": "Siła trybu Horizon",
+  "set.level.horizonStrength.help": "Jak mocno tryb Horizon poziomuje drona blisko środka drążka: wyżej poziomuje mocniej. Siła poziomowania Horizon z Betaflighta (domyślnie 75)."
 }

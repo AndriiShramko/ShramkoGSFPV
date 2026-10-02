@@ -111,7 +111,11 @@ const CHANGES: Record<string, { v: unknown; field: (p: ReturnType<typeof compile
     'physics.idlePct': { v: 3, field: (p) => p.idle },
     'tune.pid': { v: { roll: [60, 100, 40, 0], pitch: [60, 100, 40, 0], yaw: [50, 90, 0, 0] }, field: (p) => p.pid },
     'tune.rates': { v: { type: 'BETAFLIGHT', roll: { rcRate: 100, rate: 70, expo: 0 }, pitch: { rcRate: 100, rate: 70, expo: 0 }, yaw: { rcRate: 100, rate: 70, expo: 0 }, rateLimit: 1998 }, field: (p) => p.rates },
-    'tune.throttle': { v: { mid: 40, expo: 30 }, field: (p) => p.throttle }
+    'tune.throttle': { v: { mid: 40, expo: 30 }, field: (p) => p.throttle },
+    // shipped in v0.5 (owner's message 16): Betaflight's angle_p_gain, angle_limit, horizon level strength
+    'level.strength': { v: 100, field: (p) => p.level.gain },
+    'level.angleLimitDeg': { v: 75, field: (p) => p.level.limitDeg },
+    'level.horizonStrength': { v: 120, field: (p) => p.level.horizonStrength }
 };
 
 describe('each flight-model row the screen shows changes sim-core\'s model (and nothing else does)', () => {
@@ -212,52 +216,6 @@ describe('a pilot\'s change wins over the link (item 20: "they came back to defa
         const s = openPage('g=50');
         expect(s.get('physics.gravity')).toBe(30);
         expect(P.overridesFor(s, PAVO).gravity).toBe(30);
-    });
-});
-
-describe('the walls follow the store (applyWalls)', () => {
-    /** app/walls.ts's switch: a new model, the scan's key, and the mirror into the store */
-    function fakeWalls(s: PrefsStore, scene: string, on = true) {
-        const w = {
-            on: on,
-            sets: 0,
-            has: () => true,
-            isOn: () => w.on,
-            set(v: boolean, remember = true) {
-                w.on = v;
-                w.sets++;
-                if (remember) storage.setItem(`gsfpv.walls.${scene}`, v ? 'on' : 'off');
-                P.mirrorWallsChoice(scene, v, remember, s);
-            }
-        };
-        return { has: w.has, on: () => w.isOn(), set: (v: boolean, r?: boolean) => w.set(v, r), w };
-    }
-    const SCENE = '39e63ce9';
-
-    it('a value from Settings goes on the switch; a reset goes back to the default without becoming explicit', () => {
-        freshStorage();
-        const s = openPage();
-        const walls = fakeWalls(s, SCENE);
-        P.pilotSet(s, 'scene.walls', 'off', { scene: SCENE });
-        expect(P.applyWalls(walls, s, SCENE, storage)).toBe(true);
-        expect(walls.on()).toBe(false);
-        expect(storage.getItem(`gsfpv.walls.${SCENE}`)).toBe('off');
-        P.pilotReset(s, 'scene.walls', { scene: SCENE });
-        expect(P.applyWalls(walls, s, SCENE, storage)).toBe(true);
-        expect(walls.on()).toBe(true);
-        expect(s.isExplicit('scene.walls', { scene: SCENE })).toBe(false);
-        expect(storage.getItem(`gsfpv.walls.${SCENE}`)).toBeNull();
-        // nothing changed since: no new flight model
-        expect(P.applyWalls(walls, s, SCENE, storage)).toBe(false);
-        expect(walls.w.sets).toBe(2);
-    });
-
-    it('control: the switch\'s own mirror, not held back, turns the reset into an explicit value', () => {
-        freshStorage();
-        const s = openPage();
-        const walls = fakeWalls(s, SCENE, false);
-        walls.set(true, true);
-        expect(s.isExplicit('scene.walls', { scene: SCENE })).toBe(true);
     });
 });
 
