@@ -1,17 +1,28 @@
 {
   "note": "written by tools/bench/src/screens.ts: real screenshots of the simulator (whole screen + \"panel\", the menu itself); captions in packages/i18n/locales/site/*.json under shots.items",
   "site": "https://gsfpv.flyreelstudio.eu",
-  "fly": "http://localhost:5382/fly/",
-  "shotAt": "2026-09-27",
+  "fly": "https://gsfpv.flyreelstudio.eu/en/fly/",
+  "shotAt": "2026-10-02",
+  "oldestShotAt": "2026-10-02",
   "release": {
-    "sha": "97294e0",
-    "built": "2026-09-27T14:22:48.943Z",
-    "from": "local production build (vite build + vite preview)"
+    "sha": "9dd0f99",
+    "built": "2026-10-02T03:50:33.491Z"
+  },
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+    "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "softwareGl": false,
+    "counts": true
   },
   "items": [
     {
       "id": "pause",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -20,33 +31,33 @@
         "src": "/shots/pause-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 174902,
+        "bytes": 137720,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/pause-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 64458,
+        "bytes": 50836,
         "quality": 0.86
       },
       "panel": {
         "raw": {
-          "w": 1894,
-          "h": 1514
+          "w": 2976,
+          "h": 2088
         },
         "large": {
           "src": "/shots/pause-panel-1600.webp",
           "w": 1600,
-          "h": 1279,
-          "bytes": 120576,
+          "h": 1123,
+          "bytes": 141778,
           "quality": 0.86
         },
         "small": {
           "src": "/shots/pause-panel-800.webp",
           "w": 800,
-          "h": 639,
-          "bytes": 49742,
+          "h": 561,
+          "bytes": 53298,
           "quality": 0.86
         }
       }
@@ -54,6 +65,7 @@
     {
       "id": "settings",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -62,33 +74,162 @@
         "src": "/shots/settings-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 135814,
+        "bytes": 148740,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/settings-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 56578,
+        "bytes": 56706,
         "quality": 0.86
       },
       "panel": {
         "raw": {
-          "w": 1400,
-          "h": 1120
+          "w": 2106,
+          "h": 1684
         },
         "large": {
-          "src": "/shots/settings-panel-1400.webp",
-          "w": 1400,
-          "h": 1120,
-          "bytes": 54992,
+          "src": "/shots/settings-panel-1600.webp",
+          "w": 1600,
+          "h": 1279,
+          "bytes": 89758,
           "quality": 0.86
         },
         "small": {
-          "src": "/shots/settings-panel-700.webp",
-          "w": 700,
-          "h": 560,
-          "bytes": 25432,
+          "src": "/shots/settings-panel-800.webp",
+          "w": 800,
+          "h": 640,
+          "bytes": 36762,
+          "quality": 0.86
+        }
+      }
+    },
+    {
+      "id": "stats-card",
+      "device": "desktop",
+      "shotAt": "2026-10-02",
+      "raw": {
+        "w": 3840,
+        "h": 2160
+      },
+      "large": {
+        "src": "/shots/stats-card-1600.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 54950,
+        "quality": 0.86
+      },
+      "small": {
+        "src": "/shots/stats-card-800.webp",
+        "w": 800,
+        "h": 450,
+        "bytes": 23434,
+        "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 1520,
+          "h": 1200
+        },
+        "large": {
+          "src": "/shots/stats-card-panel-1520.webp",
+          "w": 1520,
+          "h": 1200,
+          "bytes": 40054,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/stats-card-panel-760.webp",
+          "w": 760,
+          "h": 600,
+          "bytes": 16614,
+          "quality": 0.86
+        }
+      }
+    },
+    {
+      "id": "mode-chip",
+      "device": "desktop",
+      "shotAt": "2026-10-02",
+      "raw": {
+        "w": 3840,
+        "h": 2160
+      },
+      "large": {
+        "src": "/shots/mode-chip-1600.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 207290,
+        "quality": 0.86
+      },
+      "small": {
+        "src": "/shots/mode-chip-800.webp",
+        "w": 800,
+        "h": 450,
+        "bytes": 74640,
+        "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 1280,
+          "h": 908
+        },
+        "large": {
+          "src": "/shots/mode-chip-panel-1280.webp",
+          "w": 1280,
+          "h": 908,
+          "bytes": 81876,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/mode-chip-panel-640.webp",
+          "w": 640,
+          "h": 454,
+          "bytes": 39320,
+          "quality": 0.86
+        }
+      }
+    },
+    {
+      "id": "scene-size",
+      "device": "desktop",
+      "shotAt": "2026-10-02",
+      "raw": {
+        "w": 3840,
+        "h": 2160
+      },
+      "large": {
+        "src": "/shots/scene-size-1600.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 135714,
+        "quality": 0.86
+      },
+      "small": {
+        "src": "/shots/scene-size-800.webp",
+        "w": 800,
+        "h": 450,
+        "bytes": 49330,
+        "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 1520,
+          "h": 950
+        },
+        "large": {
+          "src": "/shots/scene-size-panel-1520.webp",
+          "w": 1520,
+          "h": 950,
+          "bytes": 59888,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/scene-size-panel-760.webp",
+          "w": 760,
+          "h": 475,
+          "bytes": 25706,
           "quality": 0.86
         }
       }
@@ -96,6 +237,7 @@
     {
       "id": "drones",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -104,14 +246,14 @@
         "src": "/shots/drones-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 66678,
+        "bytes": 68876,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/drones-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 23934,
+        "bytes": 24688,
         "quality": 0.86
       },
       "panel": {
@@ -123,14 +265,14 @@
           "src": "/shots/drones-panel-1600.webp",
           "w": 1600,
           "h": 1001,
-          "bytes": 90768,
+          "bytes": 91974,
           "quality": 0.86
         },
         "small": {
           "src": "/shots/drones-panel-800.webp",
           "w": 800,
           "h": 500,
-          "bytes": 33896,
+          "bytes": 34582,
           "quality": 0.86
         }
       }
@@ -138,6 +280,7 @@
     {
       "id": "wizard-stir",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -146,14 +289,14 @@
         "src": "/shots/wizard-stir-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 43308,
+        "bytes": 43276,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/wizard-stir-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 16940,
+        "bytes": 16898,
         "quality": 0.86
       },
       "panel": {
@@ -165,14 +308,14 @@
           "src": "/shots/wizard-stir-panel-1600.webp",
           "w": 1600,
           "h": 1280,
-          "bytes": 63820,
+          "bytes": 63812,
           "quality": 0.86
         },
         "small": {
           "src": "/shots/wizard-stir-panel-800.webp",
           "w": 800,
           "h": 640,
-          "bytes": 27290,
+          "bytes": 27312,
           "quality": 0.86
         }
       }
@@ -180,6 +323,7 @@
     {
       "id": "wizard-throttle",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -188,14 +332,14 @@
         "src": "/shots/wizard-throttle-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 36630,
+        "bytes": 36652,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/wizard-throttle-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 14572,
+        "bytes": 14564,
         "quality": 0.86
       },
       "panel": {
@@ -207,14 +351,14 @@
           "src": "/shots/wizard-throttle-panel-1600.webp",
           "w": 1600,
           "h": 1280,
-          "bytes": 51610,
+          "bytes": 51488,
           "quality": 0.86
         },
         "small": {
           "src": "/shots/wizard-throttle-panel-800.webp",
           "w": 800,
           "h": 640,
-          "bytes": 22370,
+          "bytes": 22034,
           "quality": 0.86
         }
       }
@@ -222,6 +366,7 @@
     {
       "id": "wizard-arm",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -230,14 +375,14 @@
         "src": "/shots/wizard-arm-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 41290,
+        "bytes": 41278,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/wizard-arm-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 16268,
+        "bytes": 16248,
         "quality": 0.86
       },
       "panel": {
@@ -249,14 +394,14 @@
           "src": "/shots/wizard-arm-panel-1600.webp",
           "w": 1600,
           "h": 1280,
-          "bytes": 57530,
+          "bytes": 57474,
           "quality": 0.86
         },
         "small": {
           "src": "/shots/wizard-arm-panel-800.webp",
           "w": 800,
           "h": 640,
-          "bytes": 24612,
+          "bytes": 24592,
           "quality": 0.86
         }
       }
@@ -264,6 +409,7 @@
     {
       "id": "wizard-check",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -272,14 +418,14 @@
         "src": "/shots/wizard-check-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 52096,
+        "bytes": 52026,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/wizard-check-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 20066,
+        "bytes": 19792,
         "quality": 0.86
       },
       "panel": {
@@ -291,14 +437,14 @@
           "src": "/shots/wizard-check-panel-1600.webp",
           "w": 1600,
           "h": 1280,
-          "bytes": 77198,
+          "bytes": 78566,
           "quality": 0.86
         },
         "small": {
           "src": "/shots/wizard-check-panel-800.webp",
           "w": 800,
           "h": 640,
-          "bytes": 30810,
+          "bytes": 32152,
           "quality": 0.86
         }
       }
@@ -306,6 +452,7 @@
     {
       "id": "controls",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 2360,
         "h": 1328
@@ -328,6 +475,7 @@
     {
       "id": "arm-card",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -336,14 +484,14 @@
         "src": "/shots/arm-card-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 70176,
+        "bytes": 73866,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/arm-card-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 27068,
+        "bytes": 27464,
         "quality": 0.86
       },
       "panel": {
@@ -355,14 +503,14 @@
           "src": "/shots/arm-card-panel-1240.webp",
           "w": 1240,
           "h": 774,
-          "bytes": 65638,
+          "bytes": 65590,
           "quality": 0.86
         },
         "small": {
           "src": "/shots/arm-card-panel-620.webp",
           "w": 620,
           "h": 387,
-          "bytes": 30520,
+          "bytes": 30432,
           "quality": 0.86
         }
       }
@@ -370,6 +518,7 @@
     {
       "id": "keys",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -378,14 +527,14 @@
         "src": "/shots/keys-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 158466,
+        "bytes": 160696,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/keys-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 64702,
+        "bytes": 65126,
         "quality": 0.86
       },
       "panel": {
@@ -397,14 +546,57 @@
           "src": "/shots/keys-panel-1400.webp",
           "w": 1400,
           "h": 1016,
-          "bytes": 124440,
+          "bytes": 124456,
           "quality": 0.86
         },
         "small": {
           "src": "/shots/keys-panel-700.webp",
           "w": 700,
           "h": 508,
-          "bytes": 58780,
+          "bytes": 58756,
+          "quality": 0.86
+        }
+      }
+    },
+    {
+      "id": "crash-toast",
+      "device": "desktop",
+      "shotAt": "2026-10-02",
+      "raw": {
+        "w": 3840,
+        "h": 2160
+      },
+      "large": {
+        "src": "/shots/crash-toast-1600.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 92326,
+        "quality": 0.86
+      },
+      "small": {
+        "src": "/shots/crash-toast-800.webp",
+        "w": 800,
+        "h": 450,
+        "bytes": 34794,
+        "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 1722,
+          "h": 1378
+        },
+        "large": {
+          "src": "/shots/crash-toast-panel-1600.webp",
+          "w": 1600,
+          "h": 1280,
+          "bytes": 87560,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/crash-toast-panel-800.webp",
+          "w": 800,
+          "h": 640,
+          "bytes": 36870,
           "quality": 0.86
         }
       }
@@ -412,6 +604,7 @@
     {
       "id": "walls",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -420,14 +613,14 @@
         "src": "/shots/walls-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 226942,
+        "bytes": 227942,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/walls-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 80828,
+        "bytes": 81498,
         "quality": 0.86
       },
       "panel": {
@@ -439,14 +632,14 @@
           "src": "/shots/walls-panel-1556.webp",
           "w": 1556,
           "h": 1244,
-          "bytes": 194022,
+          "bytes": 194462,
           "quality": 0.86
         },
         "small": {
           "src": "/shots/walls-panel-778.webp",
           "w": 778,
           "h": 622,
-          "bytes": 88782,
+          "bytes": 88814,
           "quality": 0.86
         }
       }
@@ -454,6 +647,7 @@
     {
       "id": "voxels",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -462,20 +656,21 @@
         "src": "/shots/voxels-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 229790,
+        "bytes": 229956,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/voxels-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 70324,
+        "bytes": 71656,
         "quality": 0.86
       }
     },
     {
       "id": "voxels-wire",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -484,20 +679,21 @@
         "src": "/shots/voxels-wire-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 254470,
+        "bytes": 251204,
         "quality": 0.62
       },
       "small": {
         "src": "/shots/voxels-wire-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 94414,
+        "bytes": 92440,
         "quality": 0.78
       }
     },
     {
       "id": "voxels-only",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -506,20 +702,21 @@
         "src": "/shots/voxels-only-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 230706,
+        "bytes": 231772,
         "quality": 0.78
       },
       "small": {
         "src": "/shots/voxels-only-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 93314,
+        "bytes": 93496,
         "quality": 0.82
       }
     },
     {
       "id": "voxels-floaters",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -528,20 +725,64 @@
         "src": "/shots/voxels-floaters-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 226508,
+        "bytes": 227966,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/voxels-floaters-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 74634,
+        "bytes": 73694,
         "quality": 0.86
+      }
+    },
+    {
+      "id": "voxels-dropped",
+      "device": "desktop",
+      "shotAt": "2026-10-02",
+      "raw": {
+        "w": 3840,
+        "h": 2160
+      },
+      "large": {
+        "src": "/shots/voxels-dropped-1600.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 219734,
+        "quality": 0.78
+      },
+      "small": {
+        "src": "/shots/voxels-dropped-800.webp",
+        "w": 800,
+        "h": 450,
+        "bytes": 89866,
+        "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 1520,
+          "h": 1216
+        },
+        "large": {
+          "src": "/shots/voxels-dropped-panel-1520.webp",
+          "w": 1520,
+          "h": 1216,
+          "bytes": 234434,
+          "quality": 0.82
+        },
+        "small": {
+          "src": "/shots/voxels-dropped-panel-760.webp",
+          "w": 760,
+          "h": 608,
+          "bytes": 96410,
+          "quality": 0.82
+        }
       }
     },
     {
       "id": "betaflight",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -550,14 +791,14 @@
         "src": "/shots/betaflight-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 82206,
+        "bytes": 73948,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/betaflight-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 28970,
+        "bytes": 25844,
         "quality": 0.86
       },
       "panel": {
@@ -569,14 +810,14 @@
           "src": "/shots/betaflight-panel-1574.webp",
           "w": 1574,
           "h": 1260,
-          "bytes": 98718,
+          "bytes": 93052,
           "quality": 0.86
         },
         "small": {
           "src": "/shots/betaflight-panel-787.webp",
           "w": 787,
           "h": 630,
-          "bytes": 41394,
+          "bytes": 38472,
           "quality": 0.86
         }
       }
@@ -584,6 +825,7 @@
     {
       "id": "measure",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -592,14 +834,14 @@
         "src": "/shots/measure-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 97434,
+        "bytes": 100142,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/measure-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 37472,
+        "bytes": 38308,
         "quality": 0.86
       },
       "panel": {
@@ -611,14 +853,14 @@
           "src": "/shots/measure-panel-1508.webp",
           "w": 1508,
           "h": 1206,
-          "bytes": 96080,
+          "bytes": 94026,
           "quality": 0.86
         },
         "small": {
           "src": "/shots/measure-panel-754.webp",
           "w": 754,
           "h": 603,
-          "bytes": 44090,
+          "bytes": 42576,
           "quality": 0.86
         }
       }
@@ -626,6 +868,7 @@
     {
       "id": "replays",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 2560,
         "h": 1440
@@ -634,14 +877,14 @@
         "src": "/shots/replays-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 30610,
+        "bytes": 46728,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/replays-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 13548,
+        "bytes": 20404,
         "quality": 0.86
       },
       "panel": {
@@ -653,14 +896,14 @@
           "src": "/shots/replays-panel-1520.webp",
           "w": 1520,
           "h": 950,
-          "bytes": 26958,
+          "bytes": 33938,
           "quality": 0.86
         },
         "small": {
           "src": "/shots/replays-panel-760.webp",
           "w": 760,
           "h": 475,
-          "bytes": 12104,
+          "bytes": 14874,
           "quality": 0.86
         }
       }
@@ -668,6 +911,7 @@
     {
       "id": "picker",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 2360,
         "h": 1328
@@ -676,20 +920,44 @@
         "src": "/shots/picker-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 68836,
+        "bytes": 69800,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/picker-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 27850,
+        "bytes": 28166,
+        "quality": 0.86
+      }
+    },
+    {
+      "id": "superspl",
+      "device": "desktop",
+      "shotAt": "2026-10-02",
+      "raw": {
+        "w": 3840,
+        "h": 2160
+      },
+      "large": {
+        "src": "/shots/superspl-1600.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 105500,
+        "quality": 0.86
+      },
+      "small": {
+        "src": "/shots/superspl-800.webp",
+        "w": 800,
+        "h": 450,
+        "bytes": 38006,
         "quality": 0.86
       }
     },
     {
       "id": "loading",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 2200,
         "h": 1238
@@ -698,20 +966,21 @@
         "src": "/shots/loading-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 44210,
+        "bytes": 44216,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/loading-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 18290,
+        "bytes": 18280,
         "quality": 0.86
       }
     },
     {
       "id": "crash",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -720,14 +989,14 @@
         "src": "/shots/crash-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 56592,
+        "bytes": 66258,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/crash-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 22740,
+        "bytes": 27356,
         "quality": 0.86
       },
       "panel": {
@@ -739,14 +1008,100 @@
           "src": "/shots/crash-panel-1518.webp",
           "w": 1518,
           "h": 1214,
-          "bytes": 45266,
+          "bytes": 52062,
           "quality": 0.86
         },
         "small": {
           "src": "/shots/crash-panel-759.webp",
           "w": 759,
           "h": 607,
-          "bytes": 19636,
+          "bytes": 22782,
+          "quality": 0.86
+        }
+      }
+    },
+    {
+      "id": "rec-bar",
+      "device": "desktop",
+      "shotAt": "2026-10-02",
+      "raw": {
+        "w": 3840,
+        "h": 2160
+      },
+      "large": {
+        "src": "/shots/rec-bar-1600.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 239372,
+        "quality": 0.82
+      },
+      "small": {
+        "src": "/shots/rec-bar-800.webp",
+        "w": 800,
+        "h": 450,
+        "bytes": 96058,
+        "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 1520,
+          "h": 950
+        },
+        "large": {
+          "src": "/shots/rec-bar-panel-1520.webp",
+          "w": 1520,
+          "h": 950,
+          "bytes": 174256,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/rec-bar-panel-760.webp",
+          "w": 760,
+          "h": 475,
+          "bytes": 80576,
+          "quality": 0.86
+        }
+      }
+    },
+    {
+      "id": "video-export",
+      "device": "desktop",
+      "shotAt": "2026-10-02",
+      "raw": {
+        "w": 3840,
+        "h": 2160
+      },
+      "large": {
+        "src": "/shots/video-export-1600.webp",
+        "w": 1600,
+        "h": 900,
+        "bytes": 219704,
+        "quality": 0.78
+      },
+      "small": {
+        "src": "/shots/video-export-800.webp",
+        "w": 800,
+        "h": 450,
+        "bytes": 100282,
+        "quality": 0.86
+      },
+      "panel": {
+        "raw": {
+          "w": 1640,
+          "h": 1024
+        },
+        "large": {
+          "src": "/shots/video-export-panel-1600.webp",
+          "w": 1600,
+          "h": 999,
+          "bytes": 246242,
+          "quality": 0.86
+        },
+        "small": {
+          "src": "/shots/video-export-panel-800.webp",
+          "w": 800,
+          "h": 500,
+          "bytes": 99588,
           "quality": 0.86
         }
       }
@@ -754,6 +1109,7 @@
     {
       "id": "cinema",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -762,20 +1118,21 @@
         "src": "/shots/cinema-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 137104,
+        "bytes": 67202,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/cinema-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 58550,
+        "bytes": 28078,
         "quality": 0.86
       }
     },
     {
       "id": "flight-tunis",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -784,20 +1141,21 @@
         "src": "/shots/flight-tunis-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 127624,
+        "bytes": 69180,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/flight-tunis-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 56410,
+        "bytes": 29112,
         "quality": 0.86
       }
     },
     {
       "id": "flight-villa",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -806,20 +1164,21 @@
         "src": "/shots/flight-villa-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 99338,
+        "bytes": 99646,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/flight-villa-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 37948,
+        "bytes": 38616,
         "quality": 0.86
       }
     },
     {
       "id": "flight-garden",
       "device": "desktop",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 3840,
         "h": 2160
@@ -828,20 +1187,21 @@
         "src": "/shots/flight-garden-1600.webp",
         "w": 1600,
         "h": 900,
-        "bytes": 198582,
+        "bytes": 210826,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/flight-garden-800.webp",
         "w": 800,
         "h": 450,
-        "bytes": 72836,
+        "bytes": 74204,
         "quality": 0.86
       }
     },
     {
       "id": "m-flight",
       "device": "mobile",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 780,
         "h": 1688
@@ -850,20 +1210,21 @@
         "src": "/shots/m-flight-780.webp",
         "w": 780,
         "h": 1688,
-        "bytes": 94962,
+        "bytes": 116454,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/m-flight-390.webp",
         "w": 390,
         "h": 844,
-        "bytes": 37206,
+        "bytes": 41736,
         "quality": 0.86
       }
     },
     {
       "id": "m-touch",
       "device": "mobile",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 780,
         "h": 1688
@@ -872,20 +1233,21 @@
         "src": "/shots/m-touch-780.webp",
         "w": 780,
         "h": 1688,
-        "bytes": 145114,
+        "bytes": 144490,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/m-touch-390.webp",
         "w": 390,
         "h": 844,
-        "bytes": 61970,
+        "bytes": 61888,
         "quality": 0.86
       }
     },
     {
       "id": "m-pause",
       "device": "mobile",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 780,
         "h": 1688
@@ -894,20 +1256,21 @@
         "src": "/shots/m-pause-780.webp",
         "w": 780,
         "h": 1688,
-        "bytes": 76824,
+        "bytes": 83208,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/m-pause-390.webp",
         "w": 390,
         "h": 844,
-        "bytes": 33314,
+        "bytes": 35988,
         "quality": 0.86
       }
     },
     {
       "id": "m-crash",
       "device": "mobile",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 780,
         "h": 1688
@@ -916,20 +1279,21 @@
         "src": "/shots/m-crash-780.webp",
         "w": 780,
         "h": 1688,
-        "bytes": 80278,
+        "bytes": 74400,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/m-crash-390.webp",
         "w": 390,
         "h": 844,
-        "bytes": 33150,
+        "bytes": 32586,
         "quality": 0.86
       }
     },
     {
       "id": "m-picker",
       "device": "mobile",
+      "shotAt": "2026-10-02",
       "raw": {
         "w": 780,
         "h": 1688
@@ -938,14 +1302,37 @@
         "src": "/shots/m-picker-780.webp",
         "w": 780,
         "h": 1688,
-        "bytes": 91120,
+        "bytes": 83658,
         "quality": 0.86
       },
       "small": {
         "src": "/shots/m-picker-390.webp",
         "w": 390,
         "h": 844,
-        "bytes": 40700,
+        "bytes": 36770,
+        "quality": 0.86
+      }
+    },
+    {
+      "id": "m-settings",
+      "device": "mobile",
+      "shotAt": "2026-10-02",
+      "raw": {
+        "w": 780,
+        "h": 1688
+      },
+      "large": {
+        "src": "/shots/m-settings-780.webp",
+        "w": 780,
+        "h": 1688,
+        "bytes": 38458,
+        "quality": 0.86
+      },
+      "small": {
+        "src": "/shots/m-settings-390.webp",
+        "w": 390,
+        "h": 844,
+        "bytes": 16378,
         "quality": 0.86
       }
     }
