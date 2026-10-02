@@ -15,6 +15,7 @@ import { t } from './i18n';
 import { h, clear } from './ui/dom';
 import { boot } from './app/boot';
 import { hook } from './app/test-hook';
+import './ui/scenes-superspl'; // registers the picker's SuperSplat tab (W3-2)
 
 const ui = document.getElementById('ui')!;
 const canvas = document.getElementById('view') as HTMLCanvasElement;

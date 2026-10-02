@@ -1,0 +1,25 @@
+/* The SuperSplat tab of the scene picker (ui/scenes-superspl.ts). It mounts inside the picker's grid, so it spans every column. */
+.ss-tab { grid-column: 1 / -1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.ss-filters { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; }
+.ss-search { flex: 1 1 100%; min-width: 0; min-height: 44px; font-size: 16px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: #0b0e12; color: var(--fg); }
+.ss-filters select { flex: 1 1 150px; min-width: 0; min-height: 44px; background: var(--bg2); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font: inherit; }
+.ss-filters select:disabled { opacity: .5; }
+.ss-check { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; cursor: pointer; }
+.ss-check input { width: 20px; height: 20px; margin: 0; accent-color: var(--accent); }
+.ss-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.ss-actions .btn { flex: 1 1 200px; }
+.ss-status { margin: 0; min-height: 20px; font-size: 14px; }
+.ss-error { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--bad); border-radius: 10px; color: var(--bad); }
+.ss-error[hidden] { display: none; }
+.ss-error-text { flex: 1 1 200px; min-width: 0; }
+.ss-grid { min-width: 0; }
+.ss-grid[aria-busy="true"] { opacity: .6; }
+.ss-card { position: relative; }
+.ss-card img.broken { visibility: hidden; }
+.ss-badges { position: absolute; top: 8px; left: 8px; right: 56px; display: flex; flex-wrap: wrap; gap: 4px; pointer-events: none; }
+.ss-badge { font-size: 11px; line-height: 1.5; padding: 1px 7px; border-radius: 999px; background: rgba(0,0,0,.7); color: var(--fg); }
+.ss-badge.walk { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.ss-badge.old { background: var(--warn); color: #1c1402; }
+.ss-card .scene-title, .ss-card .scene-meta { overflow-wrap: anywhere; }
+.ss-more[hidden] { display: none; }
+.ss-credit { margin: 0; }
