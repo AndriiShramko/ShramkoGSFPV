@@ -3,10 +3,10 @@
 // first v0.3 boot, the URL's settings in the session layer, a real PresetResolver. The claim: for a
 // setting the first boot migrated, the store gives the value the app itself uses, at the first
 // boot, after the pilot changes it through the app, and at the next boot. Checked for the stick
-// mode (controls.ts getStickMode) and the walls switch (flightwalls.ts initialWallsOn over the
-// admin's showcase.json value, the pilot's key and ?walls=, then app/walls.ts switching).
-// Negative controls: a writer that bypasses the bridge, a store without the migration, a walls
-// host without the bridge, a resolver without the presets: each must give a mismatch.
+// mode (controls.ts getStickMode). The walls switch has no key of its own any more: the store is
+// its only place (one choice for every scan), and the flight follows the store (app/walls.ts).
+// Negative controls: a writer that bypasses the bridge, a store without the migration, the
+// per-scan walls rule, a resolver without the presets: each must give a mismatch.
 // Node: the app modules read location, document and matchMedia when they load, so those are
 // stubbed first and the modules are imported after.
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -161,65 +161,103 @@ describe('stick mode: the store gives the value the app uses', () => {
     });
 });
 
-describe('walls switch: the store gives the value the app uses', () => {
-    const SCENE = '39e63ce9';
-    type Admin = 'on' | 'off' | undefined;
-    type Stored = 'on' | 'off' | null;
-    const showcaseWith = (admin: Admin): ShowcaseScene[] => SHOWCASE.map((s) => {
-        if (s.id !== SCENE) return s;
-        const { walls: _drop, ...rest } = s;
-        return admin === undefined ? rest : { ...rest, walls: admin };
-    });
-    /** what app/flight.ts starts the flight with */
-    const appInitial = (admin: Admin, forced: string | null) => (FW.initialWallsOn(admin, FW.loadWallsChoice(SCENE), forced) ? 'on' : 'off');
-    const bootCase = (admin: Admin, stored: Stored, forced: string | null) => {
-        freshStorage(stored === null ? {} : { [`gsfpv.walls.${SCENE}`]: stored });
-        const s = openPage(showcaseWith(admin), forced === null ? `scene=${SCENE}` : `scene=${SCENE}&walls=${forced}`);
-        return { store: s.get<string>('scene.walls', { scene: SCENE }), app: appInitial(admin, forced) };
-    };
-    const CASES: [Admin, Stored, string | null][] = [];
-    for (const a of ['on', 'off', undefined] as Admin[]) for (const st of ['on', 'off', null] as Stored[]) for (const f of [null, 'on', 'off', 'junk']) CASES.push([a, st, f]);
-
-    it('first boot: the same answer in all 36 cases of admin default, the pilot\'s v0.2-era key and ?walls=', () => {
-        const bad = CASES.map(([a, st, f]) => ({ a, st, f, ...bootCase(a, st, f) })).filter((r) => r.store !== r.app);
-        expect(bad).toEqual([]);
-    });
-
-    /** a flight's walls host over a fake session (walls loaded, switch state in wallsOn) */
-    function host(prefs: PrefsStore | null, admin: Admin, on: boolean) {
-        const session = { collision: {}, wallsOn: on, setWallsOn(v: boolean) { if (v === this.wallsOn) return false; this.wallsOn = v; return true; } };
-        const scene: SceneRef = { id: SCENE, meta: showcaseWith(admin).find((s) => s.id === SCENE) };
-        const h = W.wallsHost({ session: () => session as never, scene: () => scene, events: new CX.Bus(), clearCrash: () => undefined, prefs });
-        return { h, live: () => (session.wallsOn ? 'on' : 'off') };
+describe('walls switch: one choice for every scan, and the flight follows the store', () => {
+    // two scans: the admin switches the walls of NOISY off by default, CLEAN keeps them on
+    const NOISY = '7a475d38', CLEAN = '39e63ce9';
+    const showcase: ShowcaseScene[] = [{ ...SHOWCASE[0], id: NOISY, walls: 'off' }, { ...SHOWCASE[0], id: CLEAN, walls: 'on' }];
+    /** a fake flight on a scan with walls: what FlightSession.start was given, and setWallsOn */
+    const flight = (on: boolean) => ({ collision: {}, wallsOn: on, lives: 0, setWallsOn(v: boolean) { if (v === this.wallsOn) return false; this.wallsOn = v; this.lives++; return true; } });
+    type Fake = ReturnType<typeof flight>;
+    /** the page: its store, the walls host, the 'walls' events, and a scene switch as scene-host.ts does it */
+    function page(query = '', start = CLEAN) {
+        const store = openPage(showcase, query);
+        let session: Fake = flight(FW.wallsWanted(store, start));
+        let scene: SceneRef = { id: start, meta: showcase.find((x) => x.id === start) };
+        const events = new CX.Bus<import('../../../apps/fly/src/app/context').AppEvents>();
+        const seen: boolean[] = [];
+        events.on('walls', ({ on }) => seen.push(on));
+        const walls = W.wallsHost({ session: () => session as never, scene: () => scene, events, clearCrash: () => undefined, prefs: store });
+        const switchTo = (id: string, made: Fake = flight(FW.wallsWanted(store, id))) => {
+            session = made; // scene-host.ts: wallsOn: wallsWanted(ctx.prefs, id), then Flight.swapSession
+            scene = { id, meta: showcase.find((x) => x.id === id) };
+            events.emit('session', session as never);
+        };
+        return { store, walls, seen, switchTo, live: () => session.wallsOn, session: () => session };
     }
 
-    it('switched by the pilot (remembered), by the test hook (this load only), then the next boot: equal each time', () => {
-        const rows: { step: string; store: string; app: string }[] = [];
-        for (const admin of ['on', 'off', undefined] as Admin[]) for (const forced of [null, 'off', 'on']) {
-            freshStorage();
-            const q = forced === null ? `scene=${SCENE}` : `scene=${SCENE}&walls=${forced}`;
-            let s = openPage(showcaseWith(admin), q);
-            const { h, live } = host(s, admin, appInitial(admin, forced) === 'on');
-            const get = () => s.get<string>('scene.walls', { scene: SCENE });
-            rows.push({ step: `${admin}/${forced} boot`, store: get(), app: live() });
-            h.set(live() !== 'on'); // walls menu / C / Settings: remembered
-            rows.push({ step: `${admin}/${forced} pilot`, store: get(), app: live() });
-            h.set(live() !== 'on', false); // __gsfpv.wallsSwitch.set: this load only
-            rows.push({ step: `${admin}/${forced} hook`, store: get(), app: live() });
-            s = openPage(showcaseWith(admin), q); // the next page load
-            rows.push({ step: `${admin}/${forced} next boot`, store: get(), app: appInitial(admin, forced) });
-        }
-        expect(rows.filter((r) => r.store !== r.app)).toEqual([]);
-        expect(rows.length).toBe(36);
+    it('the owner\'s case: off on one scan stays off on the next, also on a scan whose author has them on', () => {
+        freshStorage();
+        const p = page('', CLEAN);
+        expect(p.live()).toBe(true);
+        p.walls.set(false); // C
+        expect([p.live(), p.seen]).toEqual([false, [false]]);
+        p.switchTo(NOISY);
+        expect(p.live()).toBe(false);
+        p.switchTo(CLEAN);
+        expect(p.live()).toBe(false);
+        // the next page load, on either scan
+        expect([FW.wallsWanted(openPage(showcase), CLEAN), FW.wallsWanted(openPage(showcase), NOISY)]).toEqual([false, false]);
     });
 
-    it('control: a walls host without the bridge leaves the store behind, and the check sees it', () => {
+    it('control: the per-scan rule this replaces (the admin\'s value of the new scan) flies the next scan with walls on', () => {
         freshStorage();
-        const s = openPage(showcaseWith('on'), `scene=${SCENE}`);
-        const { h, live } = host(null, 'on', true);
-        h.set(false);
-        expect(live()).toBe('off');
-        expect(s.get('scene.walls', { scene: SCENE })).not.toBe(live());
+        const p = page('', CLEAN);
+        p.walls.set(false);
+        p.switchTo(CLEAN);
+        const perScan = showcase.find((x) => x.id === CLEAN)!.walls !== 'off';
+        // the check of the test above (the next scan flies without walls) fails on the old rule
+        expect([perScan, p.live()]).toEqual([true, false]);
+    });
+
+    it('a pilot who never chose gets the author\'s value per scan; on again, every scan has walls', () => {
+        freshStorage();
+        const p = page('', NOISY);
+        expect(p.live()).toBe(false);
+        expect(p.walls.adminOff).toBe(true);
+        p.switchTo(CLEAN);
+        expect(p.live()).toBe(true);
+        p.walls.set(false);
+        p.walls.set(true);
+        p.switchTo(NOISY);
+        expect([p.live(), p.walls.adminOff]).toEqual([true, false]);
+    });
+
+    it('Settings, a reset or an import changes the store: the flight follows at once, one new life each', () => {
+        freshStorage();
+        const p = page('', CLEAN);
+        p.store.set('scene.walls', 'off'); // the Settings row
+        expect([p.live(), p.session().lives]).toEqual([false, 1]);
+        p.store.reset('scene.walls'); // back to the author's value (CLEAN: on)
+        expect([p.live(), p.session().lives]).toEqual([true, 2]);
+        const file = p.store.exportFile();
+        file.settings.global['scene.walls'] = 'off';
+        p.store.importFile(file);
+        expect([p.live(), p.seen]).toEqual([false, [false, true, false]]);
+        p.store.set('flight.mode', 'acro'); // another setting: nothing happens to the walls
+        expect(p.session().lives).toBe(3);
+    });
+
+    it('?walls= holds for this load on every scan; the pilot\'s switch replaces it and is stored; the hook\'s is not', () => {
+        freshStorage();
+        const p = page('walls=off', CLEAN);
+        expect(p.live()).toBe(false);
+        p.switchTo(NOISY);
+        expect(p.live()).toBe(false);
+        p.walls.set(true);
+        expect([p.live(), p.session().lives, p.store.isExplicit('scene.walls')]).toEqual([true, 1, true]);
+        p.walls.set(false, false); // __gsfpv.wallsSwitch.set: this load only
+        expect(p.live()).toBe(false);
+        expect(FW.wallsWanted(openPage(showcase), NOISY)).toBe(true);
+    });
+
+    it('a change while the next scan loads reaches it when it starts (the session event)', () => {
+        freshStorage();
+        const p = page('', NOISY);
+        const made = flight(FW.wallsWanted(p.store, CLEAN)); // the next scan starts loading with walls on
+        expect(made.wallsOn).toBe(true);
+        p.store.set('scene.walls', 'off'); // e.g. Settings in another tab, while it loads
+        p.switchTo(CLEAN, made);
+        expect(p.live()).toBe(false);
     });
 });
 

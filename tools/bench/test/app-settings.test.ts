@@ -215,52 +215,6 @@ describe('a pilot\'s change wins over the link (item 20: "they came back to defa
     });
 });
 
-describe('the walls follow the store (applyWalls)', () => {
-    /** app/walls.ts's switch: a new model, the scan's key, and the mirror into the store */
-    function fakeWalls(s: PrefsStore, scene: string, on = true) {
-        const w = {
-            on: on,
-            sets: 0,
-            has: () => true,
-            isOn: () => w.on,
-            set(v: boolean, remember = true) {
-                w.on = v;
-                w.sets++;
-                if (remember) storage.setItem(`gsfpv.walls.${scene}`, v ? 'on' : 'off');
-                P.mirrorWallsChoice(scene, v, remember, s);
-            }
-        };
-        return { has: w.has, on: () => w.isOn(), set: (v: boolean, r?: boolean) => w.set(v, r), w };
-    }
-    const SCENE = '39e63ce9';
-
-    it('a value from Settings goes on the switch; a reset goes back to the default without becoming explicit', () => {
-        freshStorage();
-        const s = openPage();
-        const walls = fakeWalls(s, SCENE);
-        P.pilotSet(s, 'scene.walls', 'off', { scene: SCENE });
-        expect(P.applyWalls(walls, s, SCENE, storage)).toBe(true);
-        expect(walls.on()).toBe(false);
-        expect(storage.getItem(`gsfpv.walls.${SCENE}`)).toBe('off');
-        P.pilotReset(s, 'scene.walls', { scene: SCENE });
-        expect(P.applyWalls(walls, s, SCENE, storage)).toBe(true);
-        expect(walls.on()).toBe(true);
-        expect(s.isExplicit('scene.walls', { scene: SCENE })).toBe(false);
-        expect(storage.getItem(`gsfpv.walls.${SCENE}`)).toBeNull();
-        // nothing changed since: no new flight model
-        expect(P.applyWalls(walls, s, SCENE, storage)).toBe(false);
-        expect(walls.w.sets).toBe(2);
-    });
-
-    it('control: the switch\'s own mirror, not held back, turns the reset into an explicit value', () => {
-        freshStorage();
-        const s = openPage();
-        const walls = fakeWalls(s, SCENE, false);
-        walls.set(true, true);
-        expect(s.isExplicit('scene.walls', { scene: SCENE })).toBe(true);
-    });
-});
-
 describe('Erase everything', () => {
     it('settings, collections, the link, the v0.2 keys and the saved logs go; the walls cache and other machine data stay', async () => {
         freshStorage({ 'gsfpv.profiles.v1': '{"k":{}}', 'gsfpv.stickMode': '1', 'gsfpv.walls.39e63ce9': 'off', 'gsfpv.warned': '1', 'gsfpv.bake.speed': '3', 'other.app': 'x' });

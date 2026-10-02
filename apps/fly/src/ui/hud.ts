@@ -184,8 +184,6 @@ export class Hud {
     private last = 0;
     visible = true;
     rec = false;
-    /** the walls are switched off (C): a tag on the OSD's top line, the pilot must not forget it */
-    wallsOff = false;
     /** Arm kind 'key' (no switch on the radio): the on-screen ARM / DISARM button. */
     onArm: (() => void) | null = null;
 
@@ -264,7 +262,9 @@ export class Hud {
         if (ui.classList.contains('hud-flying') !== flying) ui.classList.toggle('hud-flying', flying);
         const status = hd.crashed ? `<span class="crash">${t('hud.crash')}</span>` : hd.armed ? `<span class="armed">${t('hud.armed')}</span>` : `<span class="disarmed">${t('hud.disarmed')}</span>`;
         const mode = s.sim.ch[5] > 0.5 ? t('hud.angle') : t('hud.acro');
-        const walls = this.wallsOff ? ` · <span class="walls-off" data-testid="hud-walls-off">${t('hud.wallsOff')}</span>` : '';
+        // walls switched off (C): a tag the pilot must not forget, read from the flight itself each
+        // time (never a copy: after a scene switch a copy said off over a flight with walls on)
+        const walls = s.walls === 'off' ? ` · <span class="walls-off" data-testid="hud-walls-off">${t('hud.wallsOff')}</span>` : '';
         this.tl.innerHTML = `${status} · ${mode}${walls}${this.rec ? ` · <span class="rec">● ${t('hud.rec')}</span>` : ''}`;
         this.tr.textContent = `${fmt(hd.volts, 1)} V  ${fmt(hd.timeS, 1)} s`;
         this.bl.textContent = `THR ${hd.throttlePct}%  ${fmt(hd.speed, 1)} m/s  ALT ${fmt(hd.altitude, 1)} m`;

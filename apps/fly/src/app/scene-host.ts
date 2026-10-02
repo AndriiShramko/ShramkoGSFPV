@@ -21,7 +21,7 @@ import { LoadingScreen } from '../ui/loading';
 import { ScenePicker } from '../ui/scenes';
 import type { ShowcaseScene } from '../ui/scenes';
 import { h } from '../ui/dom';
-import { initialWallsOn, loadWallsChoice } from '../flightwalls';
+import { wallsWanted } from '../flightwalls';
 import { storedTransform } from './builtin/scale';
 import { storedDropFloaters } from './builtin/floaters';
 import { t } from '../i18n';
@@ -156,7 +156,7 @@ export class SceneHost implements SceneSwitcher {
             policy: old.policy,
             crashOn: old.crashOn,
             sceneStart: ch ? { ch } : undefined,
-            wallsOn: initialWallsOn(meta?.walls, loadWallsChoice(id), q.get('walls')),
+            wallsOn: wallsWanted(ctx.prefs, id),
             transform: storedTransform(ctx.prefs, id),
             dropFloaters: storedDropFloaters(ctx.prefs, id),
             onProgress: (p) => loading.update(p)

@@ -15,7 +15,7 @@
   "set.voxels.opacityOnly": "Krycie wokseli, same woksele",
   "set.voxels.opacityOnly.help": "Jak bardzo woksele zasłaniają, gdy skan jest ukryty.",
   "set.scene.walls": "Ściany (kolizje)",
-  "set.scene.walls.help": "Wyłączone: dron przelatuje przez wszystko, bez kraks. Zapamiętywane dla każdego skanu; autor może domyślnie wyłączyć ściany w skanie z dużym szumem. Przełącza je C.",
+  "set.scene.walls.help": "Wyłączone: dron przelatuje przez wszystko, bez kraks. Jeden wybór dla wszystkich skanów: wyłączone tutaj zostają wyłączone także w następnym skanie. Dopóki ich nie przełączysz, każdy skan startuje tak, jak ustawił go autor (skan z dużym szumem może startować bez ścian). Przełącza je C.",
   "set.scene.walls.opt.on": "Włączone",
   "set.scene.walls.opt.off": "Wyłączone",
   "set.camera.fovDeg": "Pole widzenia kamery",

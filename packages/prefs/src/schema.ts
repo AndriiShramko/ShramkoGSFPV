@@ -22,9 +22,12 @@ export interface PresetRef { preset: string; scale?: number; fallback?: number }
 /**
  * A per-scene default the admin sets for each scan in the curated list (apps/fly/public/showcase.json,
  * E.2): `PresetResolver.curated(sceneId, curated)`, used when it is a valid value, else `fallback`.
- * Only for scene settings. The walls switch is the first: the admin's "walls": "off" for a noisy
- * scan stays the default for a pilot who never switched that scan, and a later change of the
- * admin's value reaches such a pilot, like any changed default (A.6).
+ * The store reads it for the scene in the context (`get(id, { scene })`). A scene setting keeps
+ * one value per scan; a global one keeps one value for every scan, and the admin's value per scan
+ * applies only while the pilot has not chosen. The walls switch is the first (global since schema
+ * 2, the owner's message 16): the admin's "walls": "off" for a noisy scan is the default of a pilot
+ * who never switched the walls, and a later change of the admin's value reaches such a pilot, like
+ * any changed default (A.6); once the pilot switches, that choice holds on every scan.
  */
 export interface CuratedRef<T = unknown> { curated: string; fallback: T }
 
@@ -58,7 +61,8 @@ export interface EnumDef extends Base<string> { type: 'enum'; options: readonly 
 export interface JsonDef<T = unknown> extends Base<T | null> { type: 'json'; kind: 'pid' | 'rates' | 'throttle' | 'transform' | 'folder'; validate(v: unknown): T | null }
 export type SettingDef = BoolDef | NumDef | EnumDef | JsonDef;
 
-export const SCHEMA_VERSION = 1;
+/** 2: scene.walls became one choice for every scan (migrate.ts, 1 -> 2). */
+export const SCHEMA_VERSION = 2;
 
 /** Group order: the settings rail, the catalogue and SCHEMA follow it. */
 export const GROUPS: readonly GroupId[] = ['flight', 'crash', 'camera', 'display', 'input', 'drone', 'tune', 'scenes', 'voxels', 'recording'];
@@ -206,7 +210,7 @@ function problemsOf(d: SettingDef, known: ReadonlySet<string>): string[] {
     const curated = isCuratedRef(d.default) ? d.default : null;
     if (curated) {
         // the admin's value is per scan; its fallback is checked below like a literal default
-        if (d.scope !== 'scene') p.push(`${id}: a curated default needs scope 'scene'`);
+        if (d.scope === 'drone') p.push(`${id}: a curated default needs scope 'scene' or 'global'`);
         if (d.type === 'json') p.push(`${id}: a curated default needs a bool, number or enum setting`);
         if (!URL_RE.test(curated.curated)) p.push(`${id}: curated field '${curated.curated}' is not a plain name`);
     }

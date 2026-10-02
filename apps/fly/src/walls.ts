@@ -70,6 +70,8 @@ export interface WallsOptions {
     hook: PhaseCHook;
     /** the walls switch and voxel controls (ui/voxels.ts), first in the walls menu */
     controls?: HTMLElement;
+    /** the pilot asked for walls (the build button): the switch goes on, for every scan (app/walls.ts) */
+    switchOn(): void;
 }
 
 const cm = (m: number): string => String(Math.round(m * 1000) / 10);
@@ -261,7 +263,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
             saveBakeSpeed(r.ms.total / 1000, r.gaussians);
             const sha = await wallsSha(r.json, r.bin);
             // the pilot asked for walls on a scan without any: they fly with them, whatever the switch said
-            s.wallsOn = true;
+            o.switchOn();
             s.installCollision(r.json, r.bin, sha);
             onSwap('bake')(sha);
             o.hook.bake = { ok: true, kind: 'base', voxelM: r.voxelM, gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length, collisionSha256: sha };

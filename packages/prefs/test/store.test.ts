@@ -188,7 +188,7 @@ describe('persistence (A.5)', () => {
     });
 
     it('a document from a newer version is read but never overwritten', () => {
-        const newer = JSON.stringify({ format: 'gsfpv-prefs', version: 2, app: '0.4.0', savedAt: '', settings: { global: { 'flight.mode': 'acro' } }, collections: {} });
+        const newer = JSON.stringify({ format: 'gsfpv-prefs', version: SCHEMA.version + 1, app: '0.4.0', savedAt: '', settings: { global: { 'flight.mode': 'acro' } }, collections: {} });
         const b = new MemoryBackend(newer);
         const s = mkStore(b);
         expect(s.get('flight.mode')).toBe('acro');
@@ -474,61 +474,61 @@ describe('URL session layer', () => {
     });
 });
 
-describe('the walls switch, per scan, with the admin\'s default (scene.walls)', () => {
+describe('the walls switch: one choice for every scan, the admin\'s default per scan (scene.walls)', () => {
     const NOISY = '7a475d38', CLEAN = '39e63ce9', PASTED = 'abcdef12';
     const ADMIN = { [NOISY]: { walls: 'off' }, [CLEAN]: { walls: 'on' } };
     const walls = (s: PrefsStore, scene: string) => s.get('scene.walls', { scene });
 
-    it('a scan the pilot never switched follows showcase.json; a scan not in the list, or a value that is not on/off, is on', () => {
+    it('a pilot who never switched follows showcase.json per scan; a scan not in the list, or a value that is not on/off, is on', () => {
         const s = mkStore(new MemoryBackend(), {}, SCHEMA, {}, { ...ADMIN, bad: { walls: 'maybe' } });
         expect([walls(s, NOISY), walls(s, CLEAN), walls(s, PASTED), walls(s, 'bad')]).toEqual(['off', 'on', 'on', 'on']);
-        expect(s.isExplicit('scene.walls', { scene: NOISY })).toBe(false);
-        expect(s.set('scene.walls', 'off')).toEqual({ ok: false, reason: 'no-context' });
+        expect(s.isExplicit('scene.walls')).toBe(false);
     });
 
-    it('the pilot\'s switch is kept for that scan only, and wins over the admin\'s value', () => {
+    it('the pilot\'s switch holds on every scan, over the admin\'s value both ways, and survives a reload', () => {
         const b = new MemoryBackend();
         const s = mkStore(b, {}, SCHEMA, {}, ADMIN);
-        s.set('scene.walls', 'on', { scene: NOISY });
         s.set('scene.walls', 'off', { scene: PASTED });
         const later = mkStore(b, {}, SCHEMA, {}, ADMIN);
-        expect([walls(later, NOISY), walls(later, CLEAN), walls(later, PASTED)]).toEqual(['on', 'on', 'off']);
-        later.reset('scene.walls', { scene: NOISY });
-        expect(walls(later, NOISY)).toBe('off');
+        expect([walls(later, NOISY), walls(later, CLEAN), walls(later, PASTED)]).toEqual(['off', 'off', 'off']);
+        later.set('scene.walls', 'on');
+        expect([walls(later, NOISY), walls(later, CLEAN), walls(later, PASTED)]).toEqual(['on', 'on', 'on']);
+        later.reset('scene.walls');
+        expect([walls(later, NOISY), walls(later, CLEAN)]).toEqual(['off', 'on']);
     });
 
-    it('a changed admin value reaches a pilot who never switched that scan, not one who did (A.6)', () => {
+    it('a changed admin value reaches a pilot who never switched, not one who did (A.6)', () => {
         const untouched = new MemoryBackend(), chose = new MemoryBackend();
         mkStore(untouched, {}, SCHEMA, {}, ADMIN).set('flight.mode', 'acro');
-        mkStore(chose, {}, SCHEMA, {}, ADMIN).set('scene.walls', 'on', { scene: CLEAN });
+        mkStore(chose, {}, SCHEMA, {}, ADMIN).set('scene.walls', 'on');
         const flipped = { [CLEAN]: { walls: 'off' } };
         expect(walls(mkStore(untouched, {}, SCHEMA, {}, flipped), CLEAN)).toBe('off');
         expect(walls(mkStore(chose, {}, SCHEMA, {}, flipped), CLEAN)).toBe('on');
     });
 
-    it('control: the same def made global switches every scan at once, so the per-scan tests can tell', () => {
+    it('control: the per-scan def (schema 1) gives the owner\'s bug: off on one scan, on on the next', () => {
         const d = SCHEMA.byId.get('scene.walls') as SettingDef;
-        const global = defineSettings(SCHEMA.defs.map((x): SettingDef => (x.id === d.id ? { ...d, scope: 'global', default: 'on' } as SettingDef : x)));
-        const s = mkStore(new MemoryBackend(), {}, global, {}, ADMIN);
+        const perScan = defineSettings(SCHEMA.defs.map((x): SettingDef => (x.id === d.id ? { ...d, scope: 'scene' } as SettingDef : x)));
+        const s = mkStore(new MemoryBackend(), {}, perScan, {}, ADMIN);
         s.set('scene.walls', 'off', { scene: PASTED });
-        expect([walls(s, CLEAN), walls(s, PASTED)]).toEqual(['off', 'off']);
+        expect([walls(s, PASTED), walls(s, CLEAN)]).toEqual(['off', 'on']);
     });
 
-    it('?walls= is this page load only: it wins, and nothing is stored', () => {
+    it('?walls= is this page load only: it wins on every scan, and nothing is stored', () => {
         const b = new MemoryBackend();
         const s = mkStore(b, {}, SCHEMA, {}, ADMIN);
         for (const v of settingsFromQuery(SCHEMA, '?walls=on').values) s.setSession(v.id, v.value);
-        expect(walls(s, NOISY)).toBe('on');
+        expect([walls(s, NOISY), walls(s, CLEAN)]).toEqual(['on', 'on']);
         expect(mkStore(b, {}, SCHEMA, {}, ADMIN).explicitList()).toEqual([]);
     });
 
-    it('exported and imported per scan', () => {
+    it('exported and imported as one value', () => {
         const a = mkStore(new MemoryBackend(), {}, SCHEMA, {}, ADMIN);
-        a.set('scene.walls', 'on', { scene: NOISY });
-        expect(a.exportFile().settings.scene).toEqual({ [NOISY]: { 'scene.walls': 'on' } });
+        a.set('scene.walls', 'off');
+        expect(a.exportFile().settings).toMatchObject({ global: { 'scene.walls': 'off' }, scene: {} });
         const b = mkStore(new MemoryBackend(), {}, SCHEMA, {}, ADMIN);
         b.importFile(a.exportFile());
-        expect(walls(b, NOISY)).toBe('on');
+        expect(walls(b, CLEAN)).toBe('off');
     });
 });
 

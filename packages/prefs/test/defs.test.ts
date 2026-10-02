@@ -70,7 +70,7 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['scenes.allowNoWalls', 'scenes', 'global', 'bool', false, 'live'],
     ['scene.transform', 'scenes', 'scene', 'json', null, 'live'],
     ['scene.dropFloaters', 'voxels', 'scene', 'number', 'curated:dropFloaters|0', 'life'],
-    ['scene.walls', 'voxels', 'scene', 'enum', 'curated:walls|on', 'life'],
+    ['scene.walls', 'voxels', 'global', 'enum', 'curated:walls|on', 'life'],
     ['voxels.show', 'voxels', 'global', 'enum', 'off', 'live'],
     ['voxels.opacity', 'voxels', 'global', 'number', 0.55, 'live'],
     ['voxels.opacityOnly', 'voxels', 'global', 'number', 1, 'live'],
@@ -225,8 +225,9 @@ describe('defineSettings: a per-scan default and a setting that is never stored'
         expect(() => defineSettings(SCHEMA.defs)).not.toThrow();
     });
 
-    it('a curated default only on a scene setting, with a valid fallback and a plain field name', () => {
-        expect(() => defineSettings(withDef({ ...walls, scope: 'global' }))).toThrow(/scene\.walls: a curated default needs scope 'scene'/);
+    it('a curated default on a scene or global setting (never per drone), with a valid fallback and a plain field name', () => {
+        expect(() => defineSettings(withDef({ ...walls, scope: 'scene' }))).not.toThrow();
+        expect(() => defineSettings(withDef({ ...walls, scope: 'drone' }))).toThrow(/scene\.walls: a curated default needs scope 'scene' or 'global'/);
         expect(() => defineSettings(withDef({ ...walls, default: { curated: 'walls', fallback: 'maybe' } }))).toThrow(/scene\.walls: default 'maybe' is not an option/);
         expect(() => defineSettings(withDef({ ...walls, default: { curated: 'walls.admin', fallback: 'on' } }))).toThrow(/curated field 'walls\.admin' is not a plain name/);
     });

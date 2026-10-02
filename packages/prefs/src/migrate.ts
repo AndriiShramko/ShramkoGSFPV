@@ -241,6 +241,34 @@ function fromLegacyWalls(bag: LegacyBag, doc: PrefsDoc, note: MigrationNote): vo
     }
 }
 
+/**
+ * Schema 1 kept the walls switch per scan; schema 2 keeps one choice for every scan (the owner's
+ * message 16: "if the pilot turned them off they must be off on all scenes"). The choice made last
+ * becomes the one: the scan flown most recently (the scene library's lastFlown) among those the
+ * pilot switched, on a tie (or none flown) 'off', then the lowest scene id, so the same document
+ * always gives the same answer. Every per-scan entry goes: nothing is left to disagree with it.
+ */
+export function wallsToGlobal(doc: PrefsDoc, note: MigrationNote): PrefsDoc {
+    const flown = new Map(doc.collections.sceneLibrary.history.map((e) => [e.id, e.lastFlown]));
+    let best: { scene: string; value: string; at: number } | null = null;
+    for (const scene of Object.keys(doc.settings.scene).sort()) {
+        const map = doc.settings.scene[scene];
+        if (!Object.hasOwn(map, 'scene.walls')) continue;
+        const value = map['scene.walls'];
+        delete map['scene.walls'];
+        if (!Object.keys(map).length) delete doc.settings.scene[scene];
+        if (typeof value !== 'string' || !WALLS_OPTIONS.includes(value)) {
+            note.ignored.push({ key: `scene.walls@${scene}`, why: `value '${String(value)}' is not on or off` });
+            continue;
+        }
+        note.moved.push(`scene.walls@${scene}`);
+        const at = flown.get(scene) ?? -1;
+        if (!best || at > best.at || (at === best.at && value === 'off' && best.value !== 'off')) best = { scene, value, at };
+    }
+    if (best && !Object.hasOwn(doc.settings.global, 'scene.walls')) doc.settings.global['scene.walls'] = best.value;
+    return doc;
+}
+
 export const MIGRATIONS: readonly Migration[] = [
     {
         from: 0,
@@ -251,6 +279,12 @@ export const MIGRATIONS: readonly Migration[] = [
             if (!bag || bag.format !== 'gsfpv-legacy') throw new Error('migration 0 -> 1 needs a legacy bag');
             return fromLegacy(bag, o, note);
         }
+    },
+    {
+        from: 1,
+        to: 2,
+        about: 'the walls switch: one choice for every scan',
+        run: (input, o, note) => wallsToGlobal(normalizeDoc(input as Record<string, unknown>, o.app, o.dropped), note)
     }
 ];
 

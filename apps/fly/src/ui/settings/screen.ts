@@ -8,7 +8,7 @@
 // flight's host does that). 'life' settings wait in the store until the screen closes; the host then
 // builds one new flight model. A value is always read back from the store: what the row shows is
 // what the app uses.
-import { actionsOf, boundsOf, helpKey, labelKey } from '@gsfpv/prefs';
+import { actionsOf, boundsOf, helpKey, isCuratedRef, labelKey } from '@gsfpv/prefs';
 import type { ActionId, Ctx, EnumDef, GroupId, KeyHint, NumDef, PrefChange, PrefsStore, SettingDef } from '@gsfpv/prefs';
 import { PRESETS } from '../../presets';
 import { droneOf, linkSettings, pilotReset, pilotSet, presetResolver } from '../../app/prefs';
@@ -218,6 +218,8 @@ export class SettingsScreen {
     private ctxOf(def: SettingDef): Ctx | undefined | null {
         if (def.scope === 'drone') return { drone: this.editDrone };
         if (def.scope === 'scene') return this.host.scene ? { scene: this.host.scene.id } : null;
+        // one value for every scan whose default is the admin's per scan (the walls): read for this scan
+        if (isCuratedRef(def.default) && this.host.scene) return { scene: this.host.scene.id };
         return undefined;
     }
 

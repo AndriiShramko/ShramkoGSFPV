@@ -60,9 +60,9 @@ describe('buildCatalogue (I.6)', () => {
         expect(() => build(d)).not.toThrow();
     });
 
-    it('a per-scan default shows its fallback and says it is per scan', () => {
+    it('a per-scan default shows its fallback and says it is per scan (the walls: one choice for every scan, the author\'s default per scan)', () => {
         const row = build().locales.pl.groups.flatMap((g) => g.settings).find((s) => s.id === 'scene.walls')!;
-        expect(row).toMatchObject({ type: 'enum', default: 'on-pl (curated-pl)', range: 'on-pl / off-pl', scope: 'scene', apply: 'life' });
+        expect(row).toMatchObject({ type: 'enum', default: 'on-pl (curated-pl)', range: 'on-pl / off-pl', scope: 'global', apply: 'life' });
     });
 
     it('rows carry label, help, default and range in each language, and keys only when shipped', () => {
@@ -99,7 +99,7 @@ describe('buildCatalogue (I.6)', () => {
         expect(c.counts).toMatchObject({ groups: withShipped.length, drones: 6, rateTypes: 4 });
         expect(c.counts.modes).toBe(SCHEMA.byId.get('flight.mode')!.status === 'shipped' ? 3 : 2);
         expect(c.generated).toBe('2026-10-05');
-        expect(c.schemaVersion).toBe(1);
+        expect(c.schemaVersion).toBe(SCHEMA.version);
     });
 });
 

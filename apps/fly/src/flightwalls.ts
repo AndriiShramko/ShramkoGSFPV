@@ -1,7 +1,7 @@
-// Walls on or off (Andrii, 2026-09-27 message 9): the pilot can fly a scan with or without its
-// collision, and the admin sets each showcase scan's default in public/showcase.json ("walls":
-// "off" for a noisy scan full of floating splats). Pure: the flight session, the page and the
-// replay test share it.
+// Walls on or off (Andrii, 2026-09-27 message 9; one choice for every scan since message 16): the
+// pilot can fly with or without the scan's collision, and the admin sets each showcase scan's
+// default in public/showcase.json ("walls": "off" for a noisy scan full of floating splats) for a
+// pilot who never switched. Pure: the flight session, the page and the replay test share it.
 //
 // The input log stays honest: its header says which walls the flight had. Walls off is flown
 // with no contact world at all, so the header carries no collision hash then, and a replay takes
@@ -11,7 +11,6 @@ import type { LogHeader, ParamOverrides } from '@gsfpv/sim-core';
 
 /** on / off: the scan has walls and the pilot flies with / without them; none: the scan has no walls. */
 export type WallsState = 'on' | 'off' | 'none';
-export type WallsDefault = 'on' | 'off';
 
 /** An input log header that also records the walls setting. Logs from before it have no field: read as on. */
 export interface FlightLogHeader extends LogHeader {
@@ -62,28 +61,12 @@ export function worldForLog<W>(h: FlightLogHeader, wallsSha256: string | null, w
     return h.collisionSha256 === wallsSha256 && world ? world : undefined;
 }
 
-/** ?walls=on|off (tests) wins; then the pilot's own choice for this scan; then the admin default; then on. */
-export function initialWallsOn(admin: WallsDefault | undefined, stored: WallsDefault | null, forced: string | null): boolean {
-    if (forced === 'on' || forced === 'off') return forced === 'on';
-    return (stored ?? admin ?? 'on') === 'on';
-}
-
-const storeKey = (sceneId: string): string => `gsfpv.walls.${sceneId}`;
-
-/** The pilot's own walls choice for a scan, or null (private window, storage blocked, never chosen). */
-export function loadWallsChoice(sceneId: string): WallsDefault | null {
-    try {
-        const v = globalThis.localStorage?.getItem(storeKey(sceneId));
-        return v === 'on' || v === 'off' ? v : null;
-    } catch {
-        return null;
-    }
-}
-
-export function saveWallsChoice(sceneId: string, on: boolean): void {
-    try {
-        globalThis.localStorage?.setItem(storeKey(sceneId), on ? 'on' : 'off');
-    } catch {
-        /* storage blocked: the choice lasts until the tab closes */
-    }
+/**
+ * Walls on or off for a flight on `sceneId`: the store's scene.walls (one choice for every scan, the
+ * owner's message 16). Its order: ?walls= for this load (the session layer), then the pilot's own
+ * choice, then the admin's default for this scan (showcase.json), then on. The only reader: a new
+ * flight (app/flight.ts, app/scene-host.ts) and the switch (app/walls.ts) both ask here.
+ */
+export function wallsWanted(store: { get<T = unknown>(id: string, ctx?: { scene?: string }): T }, sceneId: string): boolean {
+    return store.get<string>('scene.walls', { scene: sceneId }) !== 'off';
 }

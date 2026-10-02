@@ -114,9 +114,10 @@ describe('legacy migration v0 -> v1 (A.5)', () => {
     it('moves every key into the document, in its v0.3 shape', () => {
         const m = migrateLegacy((k) => V02[k] ?? null, { savedAt: new Date(T0).toISOString() }, V02_KEYS);
         const d = m.doc;
-        expect(d.version).toBe(1);
-        expect(d.settings.global).toEqual({ 'input.stickMode': '1', 'voxels.style': 'solid', 'voxels.opacityOnly': 0.8 });
-        expect(d.settings.scene).toEqual({ '39e63ce9': { 'scene.walls': 'off' }, '9d09ab82': { 'scene.walls': 'on' } });
+        expect(d.version).toBe(SCHEMA.version);
+        // the walls: one choice for every scan, the one of the scan flown last (39e63ce9: off)
+        expect(d.settings.global).toEqual({ 'input.stickMode': '1', 'voxels.style': 'solid', 'voxels.opacityOnly': 0.8, 'scene.walls': 'off' });
+        expect(d.settings.scene).toEqual({});
         // radios: the two readable ones, unchanged, keyed by device key; the last input kept
         expect(d.collections.radioProfiles.items).toEqual({ [POCKET.deviceKey]: POCKET, [PAD.deviceKey]: PAD });
         expect(d.collections.radioProfiles.last).toEqual({ kind: 'hid', key: POCKET.deviceKey });
@@ -130,7 +131,7 @@ describe('legacy migration v0 -> v1 (A.5)', () => {
         expect(d.collections.sceneLibrary.filter).toEqual({ collisionOnly: false, kind: 'interior', flown: 'all', maxMb: 200 });
         expect(d.collections.sceneLibrary.versions).toEqual({ '9d09ab82': 2, '723068d7': 3 });
         expect(d.collections.ui.warned).toBe(true);
-        expect(m.note.moved.sort()).toEqual([...Object.values(LEGACY_KEYS).filter((k) => k !== LEGACY_KEYS.lastLog), 'gsfpv.walls.39e63ce9', 'gsfpv.walls.9d09ab82'].sort());
+        expect(m.note.moved.sort()).toEqual([...Object.values(LEGACY_KEYS).filter((k) => k !== LEGACY_KEYS.lastLog), 'gsfpv.walls.39e63ce9', 'gsfpv.walls.9d09ab82', 'scene.walls@39e63ce9', 'scene.walls@9d09ab82'].sort());
         expect(m.note.ignored).toEqual([{ key: 'gsfpv.profiles.v1', why: '1 profile(s) this version cannot read' }]);
         // the flight log is not document material: it goes to IndexedDB
         expect(canonicalJson(d)).not.toContain('AAAAAAAAgD8=');
@@ -165,7 +166,7 @@ describe('legacy migration v0 -> v1 (A.5)', () => {
         expect(b.read()).toBe(text);
     });
 
-    it('the store boots from the legacy keys: radios, stick mode, favourites, the warning, the voxel look and each scan\'s walls are there', () => {
+    it('the store boots from the legacy keys: radios, stick mode, favourites, the warning, the voxel look and the walls are there', () => {
         const s = mkStore(new MemoryBackend(), { legacy: (k) => V02[k] ?? null, legacyKeys: V02_KEYS }, SCHEMA, {}, { '39e63ce9': { walls: 'on' }, '9d09ab82': { walls: 'off' } });
         expect(s.get('input.stickMode')).toBe('1');
         expect(s.isExplicit('input.stickMode')).toBe(true);
@@ -173,8 +174,8 @@ describe('legacy migration v0 -> v1 (A.5)', () => {
         expect(s.collection('ui').warned).toBe(true);
         expect([s.get('voxels.style'), s.get('voxels.opacity'), s.get('voxels.opacityOnly')]).toEqual(['solid', 0.55, 0.8]);
         expect(s.isExplicit('voxels.opacity')).toBe(false);
-        // the pilot's switch wins over the admin's value, both ways
-        expect([s.get('scene.walls', { scene: '39e63ce9' }), s.get('scene.walls', { scene: '9d09ab82' })]).toEqual(['off', 'on']);
+        // the pilot's last switch (off, on the scan flown last) wins over the admin's value on every scan
+        expect([s.get('scene.walls', { scene: '39e63ce9' }), s.get('scene.walls', { scene: '9d09ab82' })]).toEqual(['off', 'off']);
         expect(s.migrated?.found.sort()).toEqual(Object.keys(V02).filter((k) => !Object.hasOwn(MACHINE_LOCAL_KEYS, k)).sort());
     });
 
@@ -206,7 +207,8 @@ describe('legacy migration v0 -> v1 (A.5)', () => {
     it('gsfpv.walls.<scene>: on or off for a real scene id; anything else is skipped with its reason', () => {
         const keys: Record<string, string> = { 'gsfpv.walls.abc123': 'off', 'gsfpv.walls.__proto__': 'off', 'gsfpv.walls.ABC123': 'on', 'gsfpv.walls.def456': 'maybe', 'gsfpv.walls.': 'off' };
         const m = migrateLegacy((k) => keys[k] ?? null, {}, () => Object.keys(keys));
-        expect(m.doc.settings.scene).toEqual({ abc123: { 'scene.walls': 'off' } });
+        expect(m.doc.settings.scene).toEqual({});
+        expect(m.doc.settings.global['scene.walls']).toBe('off');
         expect(m.note.ignored.sort((a, b) => a.key.localeCompare(b.key))).toEqual([
             { key: 'gsfpv.walls.__proto__', why: "'__proto__' is not a scene id" },
             { key: 'gsfpv.walls.ABC123', why: "'ABC123' is not a scene id" },
@@ -233,13 +235,51 @@ describe('legacy migration v0 -> v1 (A.5)', () => {
 
 describe('migration chain', () => {
     it('MIGRATIONS starts at version 0 (the legacy bag) and reaches the schema version', () => {
-        expect(MIGRATIONS.map((m) => [m.from, m.to])).toEqual([[0, 1]]);
+        expect(MIGRATIONS.map((m) => [m.from, m.to])).toEqual([[0, 1], [1, 2]]);
         expect(runMigrations(readLegacy((k) => V02[k] ?? null), 0).version).toBe(SCHEMA.version);
     });
 
     it('control: a version with no migration throws instead of guessing', () => {
         expect(() => runMigrations({}, -1)).toThrow(/no migration from version -1/);
         expect(() => runMigrations({ not: 'a bag' }, 0)).toThrow(/needs a legacy bag/);
+    });
+});
+
+describe('schema 1 -> 2: the walls switch becomes one choice for every scan', () => {
+    const V1 = (scene: Record<string, Record<string, unknown>>, history: { id: string; lastFlown: number }[] = [], global: Record<string, unknown> = {}) => ({
+        format: 'gsfpv-prefs', version: 1, app: '0.3.0', savedAt: '2026-10-01T00:00:00.000Z',
+        settings: { global, drone: {}, scene },
+        collections: { sceneLibrary: { v: 1, history: history.map((h) => ({ ...h, version: 1, flights: 1, airtimeS: 0, hasCollision: true })), favourites: [], filter: { collisionOnly: true, kind: 'all', flown: 'all', maxMb: null }, versions: {} } }
+    });
+    const walls = (doc: ReturnType<typeof V1>) => runMigrations(doc, 1).settings;
+
+    it('the choice on the scan flown last wins; the per-scan entries go, other scene settings stay', () => {
+        const out = walls(V1({ aaaaaa: { 'scene.walls': 'on' }, bbbbbb: { 'scene.walls': 'off', 'scene.dropFloaters': 4 } }, [{ id: 'aaaaaa', lastFlown: 2 }, { id: 'bbbbbb', lastFlown: 1 }]));
+        expect(out.global['scene.walls']).toBe('on');
+        expect(out.scene).toEqual({ bbbbbb: { 'scene.dropFloaters': 4 } });
+    });
+
+    it('nothing flown (or a tie): off wins, the owner rule; no choice at all stores nothing', () => {
+        expect(walls(V1({ aaaaaa: { 'scene.walls': 'on' }, bbbbbb: { 'scene.walls': 'off' } })).global['scene.walls']).toBe('off');
+        expect(walls(V1({ aaaaaa: { 'scene.dropFloaters': 2 } })).global).toEqual({});
+    });
+
+    it('a stored v1 document and an imported v1 file both arrive migrated', () => {
+        const doc = V1({ aaaaaa: { 'scene.walls': 'off' } });
+        const b = new MemoryBackend(JSON.stringify(doc));
+        const s = mkStore(b, {}, SCHEMA, {}, { cccccc: { walls: 'on' } });
+        expect(s.get('scene.walls', { scene: 'cccccc' })).toBe('off'); // another scan, admin on: the pilot's off holds
+        expect(s.migrated?.from).toBe(1);
+        expect(JSON.parse(b.read()!).version).toBe(SCHEMA.version);
+        const t = mkStore(new MemoryBackend(), {}, SCHEMA, {}, { cccccc: { walls: 'on' } });
+        expect(t.importFile(JSON.stringify(doc)).ok).toBe(true);
+        expect(t.get('scene.walls', { scene: 'cccccc' })).toBe('off');
+    });
+
+    it('control: read as schema 2 without the migration, the old per-scan entry is not a choice and the admin rules', () => {
+        const doc = { ...V1({ aaaaaa: { 'scene.walls': 'off' } }), version: SCHEMA.version };
+        const s = mkStore(new MemoryBackend(JSON.stringify(doc)), {}, SCHEMA, {}, { cccccc: { walls: 'on' } });
+        expect(s.get('scene.walls', { scene: 'cccccc' })).toBe('on');
     });
 });
 

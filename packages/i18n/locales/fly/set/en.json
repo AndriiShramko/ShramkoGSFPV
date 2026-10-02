@@ -15,7 +15,7 @@
   "set.voxels.opacityOnly": "Voxel opacity, voxels only",
   "set.voxels.opacityOnly.help": "How solid the voxels look with the scan hidden.",
   "set.scene.walls": "Walls (collisions)",
-  "set.scene.walls.help": "Off: the drone flies through everything, no crashes. Kept for each scan; the author may switch the walls of a noisy scan off by default. C switches it.",
+  "set.scene.walls.help": "Off: the drone flies through everything, no crashes. One choice for every scan: switched off here, the walls stay off on the next scan too. Until you switch them, each scan starts as its author set it (a noisy scan may start with the walls off). C switches it.",
   "set.scene.walls.opt.on": "On",
   "set.scene.walls.opt.off": "Off",
   "set.camera.fovDeg": "Camera field of view",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MemoryBackend, canonicalJson, exportFileName } from '../src';
+import { MemoryBackend, SCHEMA_VERSION, canonicalJson, exportFileName } from '../src';
 import type { PrefsFile, PrefsStore } from '../src';
 import { T0, mkStore } from './helpers';
 
@@ -47,7 +47,7 @@ describe('export and import (A.4)', () => {
     it('the file is the document plus exportedAt and origin, under the dated name', () => {
         const f = mkStore(new MemoryBackend(), { origin: 'https://gsfpv.flyreelstudio.eu' }).exportFile();
         expect(f.format).toBe('gsfpv-prefs');
-        expect(f.version).toBe(1);
+        expect(f.version).toBe(SCHEMA_VERSION);
         expect(f.origin).toBe('https://gsfpv.flyreelstudio.eu');
         expect(f.exportedAt).toBe(new Date(T0).toISOString());
         expect(exportFileName(T0)).toBe('gsfpv-settings-2026-10-02.json');
@@ -71,9 +71,9 @@ describe('export and import (A.4)', () => {
 
     it('a file from a newer version is refused', () => {
         const s = filled();
-        const file = { ...s.exportFile(), version: 2 };
+        const file = { ...s.exportFile(), version: SCHEMA_VERSION + 1 };
         const r = mkStore().importFile(file);
-        expect(r).toMatchObject({ ok: false, error: 'newer-version', fromVersion: 2 });
+        expect(r).toMatchObject({ ok: false, error: 'newer-version', fromVersion: SCHEMA_VERSION + 1 });
     });
 
     it('corrupt JSON is refused with a report; so is a file that is not a settings file', () => {

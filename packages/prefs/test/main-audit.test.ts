@@ -7,7 +7,6 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { APP_URL_PARAMS_NOT_SETTINGS, IDB_NAME, IDB_STORES, MAIN_VOXEL_DEFAULTS, MemoryBackend, SCHEMA, VOXEL_STYLES, VOXEL_VIEWS, WALLS_OPTIONS, settingsFromQuery } from '../src';
 import type { EnumDef, NumDef, PrefsStore } from '../src';
-import { initialWallsOn } from '../../../apps/fly/src/flightwalls';
 import { REPO, mkStore } from './helpers';
 
 const read = (...p: string[]) => readFileSync(join(REPO, ...p), 'utf8');
@@ -80,29 +79,7 @@ describe('the voxel grid: prefs equals main', () => {
     });
 });
 
-describe('the walls switch: prefs equals main (flightwalls.ts initialWallsOn)', () => {
-    const SCENE = '39e63ce9';
-    type Admin = 'on' | 'off' | undefined;
-    type Stored = 'on' | 'off' | null;
-    /** prefs' answer: the admin's value as the resolver's curated field, the pilot's entry, ?walls= as the session layer */
-    function prefsWalls(admin: Admin, stored: Stored, forced: string | null): string {
-        const s: PrefsStore = mkStore(new MemoryBackend(), {}, SCHEMA, {}, admin === undefined ? {} : { [SCENE]: { walls: admin } });
-        if (stored !== null) s.set('scene.walls', stored, { scene: SCENE });
-        if (forced !== null) for (const v of settingsFromQuery(SCHEMA, `?walls=${forced}`).values) s.setSession(v.id, v.value);
-        return s.get<string>('scene.walls', { scene: SCENE });
-    }
-    const CASES: [Admin, Stored, string | null][] = [];
-    for (const a of ['on', 'off', undefined] as Admin[]) for (const st of ['on', 'off', null] as Stored[]) for (const f of [null, 'on', 'off', 'junk']) CASES.push([a, st, f]);
-    const mismatches = (app: (a: Admin, s: Stored, f: string | null) => boolean) => CASES.filter(([a, st, f]) => prefsWalls(a, st, f) !== (app(a, st, f) ? 'on' : 'off'));
-
-    it('the same answer in all 36 cases of admin default, pilot\'s choice and ?walls=', () => {
-        expect(mismatches(initialWallsOn)).toEqual([]);
-    });
-
-    it('control: an app that let the admin override the pilot would differ, so the comparison can fail', () => {
-        expect(mismatches((a, st, f) => initialWallsOn(st ?? undefined, a ?? null, f)).length).toBeGreaterThan(0);
-    });
-
+describe('the walls switch: the admin values in showcase.json', () => {
     it('showcase.json: every admin value is an option, and the field is documented there', () => {
         const sc = JSON.parse(read('apps', 'fly', 'public', 'showcase.json')) as { fields: Record<string, string>; scenes: { id: string; walls?: string }[] };
         expect(sc.fields.walls).toMatch(/"on" or "off"/);
@@ -122,7 +99,10 @@ describe('every URL parameter main reads is a setting\'s or listed with its reas
         expect([...settingParams].filter((p) => Object.hasOwn(APP_URL_PARAMS_NOT_SETTINGS, p))).toEqual([]);
         expect(Object.keys(APP_URL_PARAMS_NOT_SETTINGS).filter((p) => !inMain.has(p))).toEqual([]);
         // v0.2's drone and gravity parameters stay settings, not test switches
-        for (const p of ['g', 'gm', 'drone', 'governor', 'guard', 'walls', 'voxels', 'vstyle', 'vradius']) expect(inMain.has(p), p).toBe(true);
+        for (const p of ['g', 'gm', 'drone', 'governor', 'guard', 'voxels', 'vstyle', 'vradius']) expect(inMain.has(p), p).toBe(true);
+        // ?walls= reaches the flight only through the store's session layer (scene.walls, flightwalls.ts wallsWanted)
+        expect(inMain.has('walls')).toBe(false);
+        expect(settingsFromQuery(SCHEMA, '?walls=off').values.map((v) => [v.id, v.value])).toEqual([['scene.walls', 'off']]);
     });
 
     it('control: a new parameter planted in main.ts is unclassified', () => {

@@ -15,7 +15,7 @@
   "set.voxels.opacityOnly": "Opacidad de los vóxeles, solo vóxeles",
   "set.voxels.opacityOnly.help": "Cuánto tapan los vóxeles con el escaneo oculto.",
   "set.scene.walls": "Paredes (colisiones)",
-  "set.scene.walls.help": "Desactivadas: el dron atraviesa todo, sin choques. Se guarda para cada escaneo; el autor puede desactivar por defecto las paredes de un escaneo con mucho ruido. C lo cambia.",
+  "set.scene.walls.help": "Desactivadas: el dron atraviesa todo, sin choques. Una sola elección para todos los escaneos: si las desactivas aquí, siguen desactivadas en el siguiente escaneo. Hasta que las cambies, cada escaneo empieza como lo dejó su autor (uno con mucho ruido puede empezar sin paredes). C lo cambia.",
   "set.scene.walls.opt.on": "Activadas",
   "set.scene.walls.opt.off": "Desactivadas",
   "set.camera.fovDeg": "Campo de visión de la cámara",
