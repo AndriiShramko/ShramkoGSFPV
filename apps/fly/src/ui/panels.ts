@@ -29,14 +29,15 @@ export function measurePanel(parent: HTMLElement, report: Record<string, unknown
     parent.append(p.root);
 }
 
-export function replaysPanel(parent: HTMLElement, items: { label: string; play: () => void; exportCsv: () => void; exportJson: () => void }[], onClose: () => void): void {
+export function replaysPanel(parent: HTMLElement, items: { label: string; play: () => void; exportCsv: () => void; exportJson: () => void; video?: () => void }[], onClose: () => void): void {
     const p = panel(t('replays.title'), () => { p.close(); onClose(); });
     if (items.length === 0) p.body.append(h('p', { class: 'muted' }, t('replays.empty')));
     for (const it of items) {
         p.body.append(h('div', { class: 'replay-row' }, h('span', {}, it.label),
             h('button', { type: 'button', class: 'btn', onclick: () => { p.close(); it.play(); } }, t('replays.play')),
             h('button', { type: 'button', class: 'btn', onclick: it.exportCsv }, 'CSV'),
-            h('button', { type: 'button', class: 'btn', onclick: it.exportJson }, 'JSON')));
+            h('button', { type: 'button', class: 'btn', onclick: it.exportJson }, 'JSON'),
+            it.video ? h('button', { type: 'button', class: 'btn', 'data-action': 'replay-video', onclick: () => { p.close(); it.video!(); } }, t('rec.export.button')) : null));
     }
     parent.append(p.root);
     void clear;

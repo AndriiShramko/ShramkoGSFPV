@@ -74,6 +74,11 @@ declare module '../test-hook' {
 }
 
 const SIZES: readonly ExportSize[] = ['1080p', '1440p', '2160p'];
+const RUNNERS = new WeakMap<FlightContext, (o?: ExportRunOptions) => Promise<ExportResult>>();
+/** The export of this page (the Replays panel saves a saved flight as video through it). */
+export function videoExportOf(ctx: FlightContext): ((o?: ExportRunOptions) => Promise<ExportResult>) | undefined {
+    return RUNNERS.get(ctx);
+}
 let chosen: ExportSize | null = null;
 
 export const videoExport: Feature = {
@@ -172,14 +177,16 @@ export const videoExport: Feature = {
             const no = why(lives, fromTick, toTick);
             if (no || !share || running) {
                 result.error = no || 'busy';
+                if (no) ctx.hud.flash(no, 4000);
                 return result;
             }
             running = { ex: null, recorder: null, cancelled: false };
             const activation = !!navigator.userActivation?.isActive;
-            // a live recording ends here (saved as usual): the export takes the canvas
-            if (share.rec.recording) await share.stop();
+            // held before anything is awaited: the caller may release its own pause right after this call
             ctx.pause('export');
             if (ctx.menu.isOpen) ctx.menu.close();
+            // a live recording ends here (saved as usual): the export takes the canvas
+            if (share.rec.recording) await share.stop();
             showBar(size);
             const r = ctx.renderer;
             const s = ctx.session;
@@ -320,6 +327,8 @@ export const videoExport: Feature = {
                 h('span', { class: 'vx-label', id }, t('rec.export.title')), select, go, note);
         };
         if (ctx.menu instanceof PauseMenu) ctx.menu.addRow(makeRow);
+
+        RUNNERS.set(ctx, run);
 
         // ------------------------------------------------------------------ test hook
         ctx.hook.videoExport = {
