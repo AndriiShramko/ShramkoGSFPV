@@ -9,6 +9,8 @@
 //   E2  4K: 1 s gives 3840 x 2160, 60 frames, 60/1.
 //   E3  Cancel: the export stops, no file is left in the folder, the flight is still paused under
 //       the bar until Close, and Close goes back to the summary panel.
+//   E4  the pilot's way: the summary panel's row (P), 1440p chosen, "Save video" clicked: the whole
+//       current life is saved at 2560 x 1440, 60/1, and the bar says so; Esc closes it.
 //   LOCAL_FLY=1 SITE=http://127.0.0.1:5341 npx tsx src/accept-v03-export.ts   (GPU lock: tools/bench/README.md)
 // Evidence: evidence/<date>/v03-export.json; the videos stay local in evidence/<date>/export/ (gitignored, sha256 in the JSON).
 import { createHash } from 'node:crypto';
@@ -167,9 +169,34 @@ if (want('E3')) {
     console.log('E3', pass ? 'PASS' : 'FAIL', JSON.stringify(out.E3));
 }
 
+// ------------------------------------------------------------------ E4: the summary panel's row, clicked
+if (want('E4')) {
+    if (!(await page.$('.pause-menu'))) { await page.keyboard.press('KeyP'); await page.waitForTimeout(400); }
+    const row = await hook(page, 'const r = document.querySelector("[data-testid=video-export]"); return r ? { text: r.textContent, disabled: r.querySelector("[data-action=video-export]").disabled } : null;');
+    const lifeFrames = await hook<number>(page, 'const l = s.log; return Math.floor((l.endTick - l.header.life.startTick) * 60 / 1000);');
+    await page.selectOption('[data-testid=video-export-size]', '1440p');
+    await page.click('[data-action=video-export]');
+    const t1 = Date.now();
+    let text = '';
+    while (Date.now() - t1 < 240000) {
+        text = await page.evaluate('document.querySelector("[data-testid=video-export-status]")?.textContent ?? ""') as string;
+        if (/60 fps ·|cancelled|not saved/.test(text)) break;
+        await page.waitForTimeout(500);
+    }
+    const file = await saveLast(page, 'e4-1440p');
+    const pr = file ? probe(file.file) : null;
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    const after = await hook(page, 'return { bar: h.videoExport.state().bar, menuOpen: !!document.querySelector(".pause-menu") };');
+    const pass = !!row && row.disabled === false && !!pr && pr.r_frame_rate === '60/1' && pr.width === 2560 && pr.height === 1440 && pr.dupPts === 0 && pr.packets === lifeFrames && pr.decoded === pr.packets
+        && text.includes(`${lifeFrames} frames at 60 fps`) && after.bar === false && after.menuOpen === true;
+    out.E4 = { pass, what: 'the summary panel row: 1440p chosen and Save video clicked saves the whole current life (2560 x 1440, 60/1, one frame per 1/60 s of it); the bar reports it; Esc closes it back to the panel', row, lifeFrames, barText: text, ffprobe: pr, file: file && { ...file, file: undefined }, after };
+    console.log('E4', pass ? 'PASS' : 'FAIL', JSON.stringify({ row, lifeFrames, text, pr, after }));
+}
+
 out.consoleErrors = errors;
 await browser.close();
-const parts = ['E1', 'E2', 'E3'].filter(want);
+const parts = ['E1', 'E2', 'E3', 'E4'].filter(want);
 out.parts = parts;
 out.pass = parts.every((k) => (out[k] as Any)?.pass === true);
 console.log('evidence', writeEvidence(ONLY.length ? `v03-export-${parts.join('-')}` : 'v03-export', out));

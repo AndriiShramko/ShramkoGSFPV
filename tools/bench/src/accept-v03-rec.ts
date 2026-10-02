@@ -225,19 +225,24 @@ if (want('R1')) {
 
 // ------------------------------------------------------------------ R6 + C6: a busy main thread (W4-1)
 // The live site's 25.7 % repeats (0 held for the encoder, 58.4 frames a second) are reproduced here by
-// keeping the main thread busy (R6_BUSY=ms:every, 12 ms of work every 30 ms by default, as a streaming
-// scan does): callbacks then run late. R6: the recorder stamps each frame with its rAF time and the
+// keeping the main thread busy (R6_BUSY=ms:every: up to 14 ms of work at irregular times, every 10-35
+// ms, from a seeded generator, as a streaming scan's tasks come; a fixed period beats with the 60 Hz
+// grid and makes every callback equally late, which bunches nothing): callbacks then run late by
+// varying amounts. R6: the recorder stamps each frame with its rAF time and the
 // latency guard holds its skips: at most 6 % repeats. Control C6 on the same page and load: stamped
 // when the work ended and the guard free to skip (the code before W4-1): more than 6 % and more than
 // twice R6's.
 if (want('R6')) {
-    const [busyMs, everyMs] = (process.env.R6_BUSY ?? '12:30').split(':').map(Number);
+    const [busyMs, everyMs] = (process.env.R6_BUSY ?? '14:35').split(':').map(Number);
     const { ctx, page, console: errors } = await newContext(browser, force60);
     await page.goto(fly(`scene=${SHOWCASE}&simradio=scenario&tour=1&nowarn=1`));
     await waitReady(page, 240000);
     await page.waitForTimeout(5000);
     await hook(page, useOpfsFolder(`gsfpv-r6-${RUN}`));
-    await hook(page, `window.__busy = setInterval(() => { const e = performance.now() + ${busyMs}; while (performance.now() < e) { /* a streaming scan's main-thread work */ } }, ${everyMs}); return true;`);
+    await hook(page, `let seed = 12345; const rnd = () => ((seed = (seed * 1103515245 + 12345) >>> 0) / 4294967296);
+        window.__busyOn = true;
+        const task = () => { if (!window.__busyOn) return; const e = performance.now() + rnd() * ${busyMs}; while (performance.now() < e) { /* a streaming scan's main-thread work */ } setTimeout(task, 10 + rnd() * (${everyMs} - 10)); };
+        task(); return true;`);
     await page.waitForTimeout(1500);
     const rec10 = (control: boolean) => hook(page, `
         h.rec.setStamp(${control ? "'end'" : "'frame'"});
@@ -246,7 +251,7 @@ if (want('R6')) {
         const ends = [], rafs = [], app = s.renderer.app, onEnd = () => { ends.push(performance.now()); rafs.push(app._time); };
         app.on('frameend', onEnd);
         await h.rec.start();
-        const t0 = performance.now(), f0 = s.frames;
+        const t0 = performance.now(), f0 = s.frames, skipsAtStart = g.skips;
         const held0 = g.log.filter((e) => e.what === 'held').length;
         await new Promise((r) => setTimeout(r, 10000));
         const t1 = performance.now(), f1 = s.frames;
@@ -255,7 +260,7 @@ if (want('R6')) {
         app.off('frameend', onEnd);
         const keep = ends.map((t, i) => t >= t0 && t <= t1);
         const L = window.__raf60 ? window.__raf60.late : null;
-        return { gpuNow, ends: ends.filter((_, i) => keep[i]), rafs: rafs.filter((_, i) => keep[i]), info, engineFps: Math.round(((f1 - f0) / (t1 - t0)) * 10000) / 10, skips: g.skips - sk0, guardHeld: g.log.filter((e) => e.what === 'held' && e.t >= t0).length, holdSkips: g.holdSkips,
+        return { gpuNow, ends: ends.filter((_, i) => keep[i]), rafs: rafs.filter((_, i) => keep[i]), info, engineFps: Math.round(((f1 - f0) / (t1 - t0)) * 10000) / 10, skips: g.skips - skipsAtStart, skipsAroundStart: skipsAtStart - sk0, guardHeld: g.log.filter((e) => e.what === 'held' && e.t >= t0).length, holdSkips: g.holdSkips,
             late: L && L0 ? { n: L.n - L0.n, overHalfPeriod: L.overHalf - L0.overHalf, meanMs: Math.round(((L.sum - L0.sum) / Math.max(1, L.n - L0.n)) * 10) / 10 } : null };`);
     // the same frames through the pacer both ways (offline): what the stamp alone changes
     const paceOf = (times: number[]) => { const pc = new FramePacer(60); let rep = 0; for (const t of times) rep += Math.max(0, pc.onRendered(t).slots.length - 1); return { slots: pc.slotCount, repeated: rep, unused: pc.unused, pct: Math.round((1000 * rep) / Math.max(1, pc.slotCount)) / 10 }; };
@@ -270,14 +275,14 @@ if (want('R6')) {
     const ctlProbe = ctlFile ? probe(ctlFile.file) : null;
     await page.waitForTimeout(1000);
     const fix2 = withPacing(await rec10(false));
-    await hook(page, 'clearInterval(window.__busy); h.rec.setStamp("frame"); h.rec.setGuardHold(true); return true;');
+    await hook(page, 'window.__busyOn = false; h.rec.setStamp("frame"); h.rec.setGuardHold(true); return true;');
     await ctx.close();
     const pct = (x: Any) => Math.round((1000 * x.info.duplicated) / Math.max(1, x.info.frames)) / 10;
     const pass = !!fixProbe && fixProbe.r_frame_rate === '60/1' && fixProbe.dupPts === 0 && Math.abs(fixProbe.packets - 600) <= 2 && fixProbe.decoded === fixProbe.packets && pct(fix) <= 6 && pct(fix2) <= 6 && fix.skips === 0 && fix2.skips === 0;
     // the control's own frames, paced both ways: the stamp alone makes the difference
     const fired = !!ctlProbe && pct(ctl) > 6 && pct(ctl) > 2 * Math.max(pct(fix), pct(fix2)) && ctl.sameFrames.byWorkEnd.pct > 2 * ctl.sameFrames.byRafTime.pct;
-    out.R6 = { pass: pass && fired, what: `a busy main thread (${busyMs} ms of work every ${everyMs} ms, callbacks late): with frames stamped at their rAF time and the guard holding its skips, at most 6 % repeated pictures, 60/1, 0 duplicate pts, 600 +- 2 frames, no guard skip while recording`,
-        busy: { busyMs, everyMs }, repeatsPct: pct(fix), fix: { ...fix, info: { frames: fix.info.frames, duplicated: fix.info.duplicated, held: fix.info.heldForEncoder, dropped: fix.info.dropped } }, fixAgain: { ...fix2, info: { frames: fix2.info.frames, duplicated: fix2.info.duplicated, held: fix2.info.heldForEncoder, dropped: fix2.info.dropped } }, ffprobe: fixProbe, file: fixFile && { ...fixFile, file: undefined },
+    out.R6 = { pass: pass && fired, what: `a busy main thread (up to ${busyMs} ms of work every 10-${everyMs} ms, callbacks late by varying amounts): with frames stamped at their rAF time and the guard holding its skips, at most 6 % repeated pictures, 60/1, 0 duplicate pts, 600 +- 2 frames, no guard skip while recording`,
+        busy: { upToMs: busyMs, everyMs: [10, everyMs], seed: 12345 }, repeatsPct: pct(fix), fix: { ...fix, info: { frames: fix.info.frames, duplicated: fix.info.duplicated, held: fix.info.heldForEncoder, dropped: fix.info.dropped } }, fixAgain: { ...fix2, info: { frames: fix2.info.frames, duplicated: fix2.info.duplicated, held: fix2.info.heldForEncoder, dropped: fix2.info.dropped } }, ffprobe: fixProbe, file: fixFile && { ...fixFile, file: undefined },
         control: { what: 'C6: the same page and load with the code before W4-1 (frames stamped when their work ended, the guard free to skip)', fired, repeatsPct: pct(ctl), run: { ...ctl, info: { frames: ctl.info.frames, duplicated: ctl.info.duplicated, held: ctl.info.heldForEncoder, dropped: ctl.info.dropped } }, ffprobe: ctlProbe, file: ctlFile && { ...ctlFile, file: undefined } }, consoleErrors: errors };
     const brief = (x: Any) => ({ pct: pct(x), fps: x.engineFps, skips: x.skips, guardHeld: x.guardHeld, late: x.late, rec: `${x.info.duplicated}/${x.info.frames} held ${x.info.heldForEncoder} ${JSON.stringify(x.info.heldWhy)}`, gpuNow: x.gpuNow, sameFrames: x.sameFrames });
     console.log('R6', pass ? 'PASS' : 'FAIL', 'C6', fired ? 'FIRED' : 'DID NOT FIRE', JSON.stringify({ fix: brief(fix), ctl: brief(ctl), fix2: brief(fix2), probes: [fixProbe && fixProbe.packets, ctlProbe && ctlProbe.packets] }));

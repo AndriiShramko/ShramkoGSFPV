@@ -1,0 +1,229 @@
+{
+  "name": "v03-rec-R6-release-local",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T03:36:34.390Z",
+    "gitHead": "3d75d36",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5341",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "ffprobe": "C:/Program Files/Shutter Encoder/Library/ffprobe.exe",
+  "display": {
+    "rafHz": 28.6,
+    "force60": true,
+    "why": "the display runs below 60 Hz (the owner's 4K monitor: 30 Hz over HDMI): the 60 Hz render comes from a 60 Hz timer driving the page's frame loop, the scan drawn every frame"
+  },
+  "R6": {
+    "pass": true,
+    "what": "a busy main thread (up to 14 ms of work every 10-35 ms, callbacks late by varying amounts): with frames stamped at their rAF time and the guard holding its skips, at most 6 % repeated pictures, 60/1, 0 duplicate pts, 600 +- 2 frames, no guard skip while recording",
+    "busy": {
+      "upToMs": 14,
+      "everyMs": [
+        10,
+        35
+      ],
+      "seed": 12345
+    },
+    "repeatsPct": 1.2,
+    "fix": {
+      "gpuNow": {
+        "submitToDoneMs": 7.2,
+        "canvas": [
+          640,
+          400
+        ],
+        "governor": {
+          "renderScale": 0.5,
+          "splatBudgetMillions": 1.5
+        }
+      },
+      "info": {
+        "frames": 601,
+        "duplicated": 7,
+        "held": 0,
+        "dropped": 0
+      },
+      "engineFps": 59.3,
+      "skips": 0,
+      "skipsAroundStart": 1,
+      "guardHeld": 0,
+      "holdSkips": false,
+      "late": {
+        "n": 645,
+        "overHalfPeriod": 37,
+        "meanMs": 1.6
+      },
+      "sameFrames": {
+        "byWorkEnd": {
+          "slots": 602,
+          "repeated": 19,
+          "unused": 11,
+          "pct": 3.2
+        },
+        "byRafTime": {
+          "slots": 601,
+          "repeated": 7,
+          "unused": 0,
+          "pct": 1.2
+        },
+        "frames": 594
+      }
+    },
+    "fixAgain": {
+      "gpuNow": {
+        "submitToDoneMs": 86.2,
+        "canvas": [
+          640,
+          400
+        ],
+        "governor": {
+          "renderScale": 0.5,
+          "splatBudgetMillions": 1.5
+        }
+      },
+      "info": {
+        "frames": 601,
+        "duplicated": 0,
+        "held": 0,
+        "dropped": 0
+      },
+      "engineFps": 60.1,
+      "skips": 0,
+      "skipsAroundStart": 0,
+      "guardHeld": 0,
+      "holdSkips": false,
+      "late": {
+        "n": 607,
+        "overHalfPeriod": 27,
+        "meanMs": 1.5
+      },
+      "sameFrames": {
+        "byWorkEnd": {
+          "slots": 601,
+          "repeated": 3,
+          "unused": 3,
+          "pct": 0.5
+        },
+        "byRafTime": {
+          "slots": 601,
+          "repeated": 0,
+          "unused": 0,
+          "pct": 0
+        },
+        "frames": 601
+      }
+    },
+    "ffprobe": {
+      "r_frame_rate": "60/1",
+      "avg_frame_rate": "60/1",
+      "time_base": "1/60",
+      "codec": "h264",
+      "width": 1728,
+      "height": 1080,
+      "packets": 601,
+      "decoded": 601,
+      "dupPts": 0,
+      "dupPerS": 0,
+      "steps": {
+        "16.7": 600
+      },
+      "durationS": 10.016667
+    },
+    "file": {
+      "name": "gsfpv-39e63ce9-20261002-053547.mp4",
+      "where": "folder",
+      "bytes": 14620268,
+      "sha256": "bb2e4375c637c72dd36cd55c1aebe4a8f4d4fd9eac2308053044cdc6c19daa1c"
+    },
+    "control": {
+      "what": "C6: the same page and load with the code before W4-1 (frames stamped when their work ended, the guard free to skip)",
+      "fired": true,
+      "repeatsPct": 9.8,
+      "run": {
+        "gpuNow": {
+          "submitToDoneMs": 79.3,
+          "canvas": [
+            640,
+            400
+          ],
+          "governor": {
+            "renderScale": 0.5,
+            "splatBudgetMillions": 1.5
+          }
+        },
+        "info": {
+          "frames": 601,
+          "duplicated": 59,
+          "held": 17,
+          "dropped": 0
+        },
+        "engineFps": 59.6,
+        "skips": 0,
+        "skipsAroundStart": 0,
+        "guardHeld": 0,
+        "holdSkips": false,
+        "late": {
+          "n": 610,
+          "overHalfPeriod": 46,
+          "meanMs": 2.2
+        },
+        "sameFrames": {
+          "byWorkEnd": {
+            "slots": 601,
+            "repeated": 40,
+            "unused": 35,
+            "pct": 6.7
+          },
+          "byRafTime": {
+            "slots": 601,
+            "repeated": 5,
+            "unused": 0,
+            "pct": 0.8
+          },
+          "frames": 596
+        }
+      },
+      "ffprobe": {
+        "r_frame_rate": "60/1",
+        "avg_frame_rate": "60/1",
+        "time_base": "1/60",
+        "codec": "h264",
+        "width": 1728,
+        "height": 1080,
+        "packets": 601,
+        "decoded": 601,
+        "dupPts": 0,
+        "dupPerS": 0,
+        "steps": {
+          "16.7": 600
+        },
+        "durationS": 10.016667
+      },
+      "file": {
+        "name": "gsfpv-39e63ce9-20261002-053605.mp4",
+        "where": "folder",
+        "bytes": 14778518,
+        "sha256": "f035f9cba93ef53501f95b897c7595f2191e922f2f4cfc9890be758c9d855afa"
+      }
+    },
+    "consoleErrors": []
+  },
+  "parts": [
+    "R6"
+  ],
+  "pass": true
+}

@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-02T03:11:21.924Z",
-    "gitHead": "039815b",
+    "date": "2026-10-02T03:33:02.999Z",
+    "gitHead": "3d75d36",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://127.0.0.1:5341",
+  "site": "http://localhost:5341",
   "browser": {
     "kind": "system-chrome",
     "version": "154.0.8037.59",
@@ -23,12 +23,12 @@
   },
   "ffprobe": "C:/Program Files/Shutter Encoder/Library/ffprobe.exe",
   "flight": {
-    "lifeMs": 6804,
+    "lifeMs": 6905,
     "range": {
-      "from": 33590,
-      "to": 38590,
-      "start": 32786,
-      "end": 39590
+      "from": 33859,
+      "to": 38859,
+      "start": 32954,
+      "end": 39859
     },
     "renderer": 2
   },
@@ -40,53 +40,53 @@
       "size": "1080p",
       "frames": 300,
       "encoded": 300,
-      "startTick": 33590,
-      "endTick": 38590,
+      "startTick": 33859,
+      "endTick": 38859,
       "stepFps": 60,
-      "waited": 1,
+      "waited": 0,
       "incomplete": 0,
       "encodedIncomplete": 0,
       "crashes": 0,
       "seconds": 5,
       "first": {
         "k": 0,
-        "tick": 33590,
+        "tick": 33859,
         "p": [
-          -1.786252084610637,
-          1.972098109977467,
-          1.1112882253673753
+          -2.1463539600932733,
+          2.1555836444443677,
+          1.094749840566555
         ],
         "q": [
-          0.8387102285034327,
-          -0.16058674375449689,
-          0.5065973342775857,
-          -0.11889571580545509
+          0.9304483265338543,
+          -0.13379333583413272,
+          0.038753658714203866,
+          -0.33891504669015227
         ],
         "cam": [
-          -1.7862521409988403,
-          1.9720981121063232,
-          1.1112881898880005
+          -2.1463539600372314,
+          2.155583620071411,
+          1.0947498083114624
         ],
         "crash": false
       },
       "last": {
         "k": 299,
-        "tick": 38573,
+        "tick": 38842,
         "p": [
-          -0.7596202279459767,
-          1.95750238439107,
-          0.7994789240836762
+          -0.7389933541333159,
+          1.940907449621284,
+          0.7742085135217132
         ],
         "q": [
-          0.9168635619635283,
-          -0.3015320846437544,
-          0.13966453031778814,
-          -0.22120901800119974
+          0.9309230832082243,
+          -0.22816131115840946,
+          0.16865076981682922,
+          -0.22995988145926652
         ],
         "cam": [
-          -0.7596202492713928,
-          1.9575023651123047,
-          0.7994789481163025
+          -0.7389933466911316,
+          1.9409074783325195,
+          0.7742084860801697
         ],
         "crash": false
       },
@@ -96,26 +96,30 @@
         "height": 1080,
         "fps": 60,
         "frames": 300,
-        "bytes": 9163493,
+        "bytes": 9283452,
         "seconds": 5,
         "duplicated": 0,
         "heldForEncoder": 0,
+        "heldWhy": {
+          "readback": 0,
+          "encoder": 0
+        },
         "dropped": 0,
-        "file": "gsfpv-39e63ce9-20261002-051054.mp4",
+        "file": "gsfpv-39e63ce9-20261002-053212.mp4",
         "files": [
           {
-            "name": "gsfpv-39e63ce9-20261002-051054.mp4",
-            "bytes": 9163493,
+            "name": "gsfpv-39e63ce9-20261002-053212.mp4",
+            "bytes": 9283452,
             "frames": 300,
             "seconds": 5
           }
         ],
         "where": "folder",
-        "folder": "gsfpv-export-muqdxrt8",
+        "folder": "gsfpv-export-muqep6gj",
         "ended": "stop",
         "picture": "webgpu"
       },
-      "creditStripStd": 0.2553426958191417
+      "creditStripStd": 0.23911952782011686
     },
     "during": {
       "running": true,
@@ -140,39 +144,39 @@
     },
     "replay": [
       {
-        "tick": 33590,
+        "tick": 33859,
         "p": [
-          -1.786252084610637,
-          1.972098109977467,
-          1.1112882253673753
+          -2.1463539600932733,
+          2.1555836444443677,
+          1.094749840566555
         ],
         "q": [
-          0.8387102285034327,
-          -0.16058674375449689,
-          0.5065973342775857,
-          -0.11889571580545509
+          0.9304483265338543,
+          -0.13379333583413272,
+          0.038753658714203866,
+          -0.33891504669015227
         ]
       },
       {
-        "tick": 38573,
+        "tick": 38842,
         "p": [
-          -0.7596202279459767,
-          1.95750238439107,
-          0.7994789240836762
+          -0.7389933541333159,
+          1.940907449621284,
+          0.7742085135217132
         ],
         "q": [
-          0.9168635619635283,
-          -0.3015320846437544,
-          0.13966453031778814,
-          -0.22120901800119974
+          0.9309230832082243,
+          -0.22816131115840946,
+          0.16865076981682922,
+          -0.22995988145926652
         ]
       }
     ],
     "file": {
-      "name": "gsfpv-39e63ce9-20261002-051054.mp4",
+      "name": "gsfpv-39e63ce9-20261002-053212.mp4",
       "where": "folder",
-      "bytes": 9163493,
-      "sha256": "e155e1a15ff16719c8ae4e2e0f2772f3e700d5c058624fe2bef6d9e1270ba9ed"
+      "bytes": 9283452,
+      "sha256": "4143bc4198f203478ff802605c3ea6932d3036d9342e270a2c171f8bdeafacab"
     },
     "ffprobe": {
       "r_frame_rate": "60/1",
@@ -188,7 +192,7 @@
       "evidence/2026-10-02/export/e1-first.jpg",
       "evidence/2026-10-02/export/e1-last.jpg"
     ],
-    "folder": "gsfpv-export-muqdxrt8",
+    "folder": "gsfpv-export-muqep6gj",
     "control": {
       "what": "C1: the same stretch with a deliberately wrong frame step (1/30 s): 150 frames, the last pose not the replay's at 299/60 s",
       "fired": true,
@@ -197,43 +201,43 @@
         "frames": 150,
         "first": {
           "k": 0,
-          "tick": 33590,
+          "tick": 33859,
           "p": [
-            -1.786252084610637,
-            1.972098109977467,
-            1.1112882253673753
+            -2.1463539600932733,
+            2.1555836444443677,
+            1.094749840566555
           ],
           "q": [
-            0.8387102285034327,
-            -0.16058674375449689,
-            0.5065973342775857,
-            -0.11889571580545509
+            0.9304483265338543,
+            -0.13379333583413272,
+            0.038753658714203866,
+            -0.33891504669015227
           ],
           "cam": [
-            -1.7862521409988403,
-            1.9720981121063232,
-            1.1112881898880005
+            -2.1463539600372314,
+            2.155583620071411,
+            1.0947498083114624
           ],
           "crash": false
         },
         "last": {
           "k": 149,
-          "tick": 38557,
+          "tick": 38826,
           "p": [
-            -0.7615086888033253,
-            1.9607403391831941,
-            0.8011274192621163
+            -0.7410917692318789,
+            1.9414723415792736,
+            0.7738812484072302
           ],
           "q": [
-            0.9122679260494722,
-            -0.31917643373029647,
-            0.14524209590256917,
-            -0.21165625157418222
+            0.9396336386327698,
+            -0.2199906379064698,
+            0.12311929316286851,
+            -0.23137498575758245
           ],
           "cam": [
-            -0.7615087032318115,
-            1.960740327835083,
-            0.8011274337768555
+            -0.741091787815094,
+            1.9414722919464111,
+            0.7738812565803528
           ],
           "crash": false
         }
@@ -248,7 +252,7 @@
         "dupPts": 0,
         "durationS": 2.5
       },
-      "lastPoseOffM": 0.00409489584713924
+      "lastPoseOffM": 0.002197624013619304
     }
   },
   "E2": {
@@ -264,22 +268,26 @@
         "height": 2160,
         "fps": 60,
         "frames": 60,
-        "bytes": 11870746,
+        "bytes": 11489903,
         "seconds": 1,
         "duplicated": 0,
         "heldForEncoder": 0,
+        "heldWhy": {
+          "readback": 0,
+          "encoder": 0
+        },
         "dropped": 0,
-        "file": "gsfpv-39e63ce9-20261002-051114.mp4",
+        "file": "gsfpv-39e63ce9-20261002-053232.mp4",
         "files": [
           {
-            "name": "gsfpv-39e63ce9-20261002-051114.mp4",
-            "bytes": 11870746,
+            "name": "gsfpv-39e63ce9-20261002-053232.mp4",
+            "bytes": 11489903,
             "frames": 60,
             "seconds": 1
           }
         ],
         "where": "folder",
-        "folder": "gsfpv-export-muqdxrt8",
+        "folder": "gsfpv-export-muqep6gj",
         "ended": "stop",
         "picture": "webgpu"
       }
@@ -303,10 +311,10 @@
       "evidence/2026-10-02/export/e2-last.jpg"
     ],
     "file": {
-      "name": "gsfpv-39e63ce9-20261002-051114.mp4",
+      "name": "gsfpv-39e63ce9-20261002-053232.mp4",
       "where": "folder",
-      "bytes": 11870746,
-      "sha256": "83bc51e9cf3faf0c056a1fbc2e0e20993e520c1897417b95a7adf0f4dac3dc70"
+      "bytes": 11489903,
+      "sha256": "ac285e43f13cce499fed42f3418b1f4d48c78a5ed542740dc517abe5e74836e3"
     }
   },
   "E3": {
@@ -314,7 +322,7 @@
     "what": "Cancel stops the export, leaves no file, keeps the flight paused under the bar; Esc closes the bar back to the summary panel",
     "result": {
       "ended": "cancel",
-      "encoded": 24,
+      "encoded": 20,
       "frames": 300
     },
     "filesBefore": 3,
@@ -330,11 +338,42 @@
       "paused": true
     }
   },
+  "E4": {
+    "pass": true,
+    "what": "the summary panel row: 1440p chosen and Save video clicked saves the whole current life (2560 x 1440, 60/1, one frame per 1/60 s of it); the bar reports it; Esc closes it back to the panel",
+    "row": {
+      "text": "Save this flight as video (60 fps)1080p1440p4K (2160p)Save video",
+      "disabled": false
+    },
+    "lifeFrames": 414,
+    "barText": "414 frames at 60 fps \u00b7 Saved 6.9 s to gsfpv-export-muqep6gj (37.9 MB)",
+    "ffprobe": {
+      "r_frame_rate": "60/1",
+      "codec": "h264",
+      "width": 2560,
+      "height": 1440,
+      "packets": 414,
+      "decoded": 414,
+      "dupPts": 0,
+      "durationS": 6.9
+    },
+    "file": {
+      "name": "gsfpv-39e63ce9-20261002-053239.mp4",
+      "where": "folder",
+      "bytes": 39748198,
+      "sha256": "b8d39518831618ab2634242214f0c37dc795a36f10fa012c9f628fa3640516ba"
+    },
+    "after": {
+      "bar": false,
+      "menuOpen": true
+    }
+  },
   "consoleErrors": [],
   "parts": [
     "E1",
     "E2",
-    "E3"
+    "E3",
+    "E4"
   ],
   "pass": true
 }
