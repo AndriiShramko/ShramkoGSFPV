@@ -183,7 +183,6 @@ export class Hud {
     private keys = new KeyCard();
     private last = 0;
     visible = true;
-    rec = false;
     /** Arm kind 'key' (no switch on the radio): the on-screen ARM / DISARM button. */
     onArm: (() => void) | null = null;
 
@@ -265,7 +264,8 @@ export class Hud {
         // walls switched off (C): a tag the pilot must not forget, read from the flight itself each
         // time (never a copy: after a scene switch a copy said off over a flight with walls on)
         const walls = s.walls === 'off' ? ` · <span class="walls-off" data-testid="hud-walls-off">${t('hud.wallsOff')}</span>` : '';
-        this.tl.innerHTML = `${status} · ${mode}${walls}${this.rec ? ` · <span class="rec">● ${t('hud.rec')}</span>` : ''}`;
+        // recording: the red dot in the top-right row says it (builtin/cinema.ts), not this line
+        this.tl.innerHTML = `${status} · ${mode}${walls}`;
         this.tr.textContent = `${fmt(hd.volts, 1)} V  ${fmt(hd.timeS, 1)} s`;
         this.bl.textContent = `THR ${hd.throttlePct}%  ${fmt(hd.speed, 1)} m/s  ALT ${fmt(hd.altitude, 1)} m`;
         const src = view?.source ?? null;

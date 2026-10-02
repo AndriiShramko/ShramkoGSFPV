@@ -62,7 +62,7 @@ export class PauseMenu implements MenuRegistry {
         if (this.isOpen || dialogOpen()) return;
         this.hold.pause('menu');
         const items = this.items();
-        const entries = items.map((it) => ({ id: it.id, labelKey: it.labelKey, keys: it.action ? this.keys.caps(it.action) : [], disabled: it.enabled?.() === false }));
+        const entries = items.map((it) => ({ id: it.id, labelKey: it.labelKey, label: it.label?.(), keys: it.action ? this.keys.caps(it.action) : [], disabled: it.enabled?.() === false }));
         const rows: HTMLElement[] = [];
         for (const make of this.rows) {
             try { const el = make(); if (el) rows.push(el); } catch (e) { console.error('summary panel row', e); }

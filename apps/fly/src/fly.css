@@ -69,7 +69,7 @@ h1 { font-size: 22px; margin: 0 0 12px; } h2 { font-size: 18px; margin: 0 0 10px
 .osd.tl { top: calc(max(14px, env(safe-area-inset-top)) + var(--banner-h, 0px)); left: 44px; } .osd.tr { top: calc(max(14px, env(safe-area-inset-top)) + var(--banner-h, 0px)); right: 16px; text-align: right; }
 .osd.bl { bottom: 14px; left: 16px; } .osd.br { bottom: 14px; right: 16px; text-align: right; font-size: 12px; font-weight: 500; opacity: .85; white-space: nowrap; } /* one line: flight.ts picks a text that fits beside the telemetry */
 .osd.frame { top: calc(44px + var(--banner-h, 0px)); left: 44px; font-size: 12px; } .hidden { display: none; }
-.osd .armed { color: var(--accent); } .osd .disarmed { color: var(--warn); } .osd .crash { color: var(--bad); } .osd .rec { color: var(--bad); }
+.osd .armed { color: var(--accent); } .osd .disarmed { color: var(--warn); } .osd .crash { color: var(--bad); }
 .gate-msg { position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%); background: rgba(0,0,0,.55); color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 14px; max-width: 90vw; text-align: center; }
 .gate-msg:empty { display: none; }
 /* armed and flying (flight.ts Hud): the guidance for getting into the air goes, and comes back
@@ -272,3 +272,13 @@ body.cinema .voxel-legend, body.clean .voxel-legend, #ui.hud-off .voxel-legend {
     .panel.floaters-panel { left: 0; right: 0; top: auto; bottom: 0; transform: none; width: 100vw; max-height: 55vh; border-radius: 14px 14px 0 0; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
     .fl-explain { font-size: 13px; }
 }
+
+/* the recording dot (builtin/cinema.ts): first in the top-right row while a recording runs; a click stops it.
+   It blinks; held (the flight paused) or with reduced motion it stays lit. Not in cinema mode: the bar says it there. */
+.top-actions .btn.rec-dot { gap: 8px; border-color: rgba(248,113,113,.6); color: #fecaca; font: 600 14px/1 ui-monospace, Consolas, monospace; font-variant-numeric: tabular-nums; }
+.rec-dot[hidden] { display: none; }
+.rec-dot-i { width: 12px; height: 12px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,.8); flex: none; animation: rec-blink 1.2s steps(1, end) infinite; }
+.rec-dot.held .rec-dot-i { animation: none; }
+@keyframes rec-blink { 0% { opacity: 1; } 50% { opacity: .2; } }
+body.cinema .rec-dot { display: none; }
+@media (prefers-reduced-motion: reduce) { .rec-dot-i { animation: none; } }

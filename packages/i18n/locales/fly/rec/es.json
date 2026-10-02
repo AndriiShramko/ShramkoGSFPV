@@ -51,5 +51,8 @@
   "set.recording.folder": "Carpeta",
   "set.recording.folder.help": "Dónde van los vídeos sin preguntar cada vez (Chrome y Edge en ordenador). Otros navegadores guardan el vídeo y ofrecen el archivo al terminar.",
   "set.recording.splitMin": "Nuevo archivo cada",
-  "set.recording.splitMin.help": "Un vuelo largo se divide en archivos: si la pestaña falla, solo se pierde la última parte."
+  "set.recording.splitMin.help": "Un vuelo largo se divide en archivos: si la pestaña falla, solo se pierde la última parte.",
+  "rec.menu.start": "Empezar a grabar",
+  "rec.menu.stop": "● Grabando {t} — parar",
+  "rec.dot": "Grabando, {t}. Parar la grabación"
 }

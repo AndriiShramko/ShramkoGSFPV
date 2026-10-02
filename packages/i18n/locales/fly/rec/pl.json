@@ -51,5 +51,8 @@
   "set.recording.folder": "Folder",
   "set.recording.folder.help": "Gdzie trafiają filmy bez pytania za każdym razem (Chrome i Edge na komputerze). Inne przeglądarki trzymają wideo i dają plik po locie.",
   "set.recording.splitMin": "Nowy plik co",
-  "set.recording.splitMin.help": "Długi lot dzieli się na pliki: gdy karta padnie, przepada tylko ostatnia część."
+  "set.recording.splitMin.help": "Długi lot dzieli się na pliki: gdy karta padnie, przepada tylko ostatnia część.",
+  "rec.menu.start": "Zacznij nagrywać",
+  "rec.menu.stop": "● Nagrywanie {t} — zatrzymaj",
+  "rec.dot": "Nagrywanie, {t}. Zatrzymaj nagrywanie"
 }

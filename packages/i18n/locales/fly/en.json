@@ -225,7 +225,6 @@
   "hud.crash": "CRASH",
   "hud.acro": "ACRO",
   "hud.angle": "ANGLE",
-  "hud.rec": "REC",
   "hud.crashes": "crashes {n}",
   "hud.keys": "R respawn · P pause · V voxels · C walls · H hide text · F3 screen and delay",
   "hud.keysKbd": "Space arm · W/S throttle · A/D yaw · arrows pitch/roll · M angle/acro · R respawn · P pause · H hide text",

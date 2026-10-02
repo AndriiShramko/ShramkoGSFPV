@@ -112,7 +112,8 @@ export interface FlightContext {
 /** A feature installs its parts into the context; the returned function (if any) takes them out again. */
 export interface Feature { id: string; install(ctx: FlightContext): (() => void) | void }
 
-export interface MenuItem { id: string; action: ActionId | null; labelKey: string; order: number; section: 'flight' | 'scene' | 'setup' | 'tools'; run(): void; enabled?(): boolean }
+/** `label`: the text when it says a state (taken each time the menu opens); else t(labelKey). */
+export interface MenuItem { id: string; action: ActionId | null; labelKey: string; order: number; section: 'flight' | 'scene' | 'setup' | 'tools'; run(): void; enabled?(): boolean; label?(): string }
 
 /**
  * The pause menu's items, and the menu that shows them. `id` is the item's data-action on the page.
