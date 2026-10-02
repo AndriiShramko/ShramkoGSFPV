@@ -3,7 +3,7 @@
  "schemaVersion": 1,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
-  "settings": 45,
+  "settings": 46,
   "groups": 10,
   "drones": 6,
   "modes": 3,
@@ -768,6 +768,23 @@
         "key",
         "settings",
         "url"
+       ]
+      },
+      {
+       "id": "scene.dropFloaters",
+       "label": "Drop floating pieces under N blocks",
+       "help": "Noisy scans have floating specks that become invisible walls the drone crashes into. Every piece of the walls smaller than this many blocks (a block is 4\u00d74\u00d74 voxels) is removed, for this scan only. 0 keeps everything; the voxel grid shows what is left.",
+       "type": "number",
+       "default": "0 blocks (per scan, set by its author)",
+       "range": "0\u201364 blocks",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
        ]
       },
       {
@@ -2104,6 +2121,23 @@
        ]
       },
       {
+       "id": "scene.dropFloaters",
+       "label": "Quitar piezas flotantes de menos de N bloques",
+       "help": "Los escaneos con ruido tienen motas flotantes que se convierten en paredes invisibles contra las que choca el dron. Se quita cada pieza de las paredes con menos bloques que este n\u00famero (un bloque son 4\u00d74\u00d74 v\u00f3xeles), solo en este escaneo. Con 0 se queda todo; la rejilla de v\u00f3xeles muestra lo que queda.",
+       "type": "number",
+       "default": "0 bloques (por escaneo, lo fija su autor)",
+       "range": "0\u201364 bloques",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
        "id": "voxels.show",
        "label": "Rejilla de v\u00f3xeles",
        "help": "Muestra las paredes como v\u00f3xeles: sobre el escaneo o en su lugar (el escaneo se oculta y vuelas sobre los v\u00f3xeles). V la cambia; al recargar la p\u00e1gina vuelve el escaneo.",
@@ -3437,6 +3471,23 @@
        ]
       },
       {
+       "id": "scene.dropFloaters",
+       "label": "Usu\u0144 p\u0142ywaj\u0105ce kawa\u0142ki mniejsze ni\u017c N blok\u00f3w",
+       "help": "Zaszumione skany maj\u0105 p\u0142ywaj\u0105ce drobinki, kt\u00f3re staj\u0105 si\u0119 niewidzialnymi \u015bcianami, w kt\u00f3re uderza dron. Ka\u017cdy kawa\u0142ek \u015bcian mniejszy ni\u017c tyle blok\u00f3w (blok to 4\u00d74\u00d74 woksele) zostaje usuni\u0119ty, tylko w tym skanie. 0 zostawia wszystko; siatka wokseli pokazuje, co zosta\u0142o.",
+       "type": "number",
+       "default": "0 blok\u00f3w (dla ka\u017cdego skanu, ustala autor)",
+       "range": "0\u201364 blok\u00f3w",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
        "id": "voxels.show",
        "label": "Siatka wokseli",
        "help": "Pokazuje \u015bciany jako woksele: na skanie albo zamiast niego (skan znika, latasz po wokselach). Prze\u0142\u0105cza j\u0105 V; po prze\u0142adowaniu strony wraca skan.",
@@ -4767,6 +4818,23 @@
         "key",
         "settings",
         "url"
+       ]
+      },
+      {
+       "id": "scene.dropFloaters",
+       "label": "\u0423\u0431\u0440\u0430\u0442\u044c \u043b\u0435\u0442\u0430\u044e\u0449\u0438\u0435 \u043a\u0443\u0441\u043a\u0438 \u043c\u0435\u043d\u044c\u0448\u0435 N \u0431\u043b\u043e\u043a\u043e\u0432",
+       "help": "\u0412 \u0448\u0443\u043c\u043d\u044b\u0445 \u0441\u043a\u0430\u043d\u0430\u0445 \u0435\u0441\u0442\u044c \u043b\u0435\u0442\u0430\u044e\u0449\u0438\u0435 \u0442\u043e\u0447\u043a\u0438, \u043a\u043e\u0442\u043e\u0440\u044b\u0435 \u043f\u0440\u0435\u0432\u0440\u0430\u0449\u0430\u044e\u0442\u0441\u044f \u0432 \u043d\u0435\u0432\u0438\u0434\u0438\u043c\u044b\u0435 \u0441\u0442\u0435\u043d\u044b, \u0438 \u0434\u0440\u043e\u043d \u0432 \u043d\u0438\u0445 \u0432\u0440\u0435\u0437\u0430\u0435\u0442\u0441\u044f. \u041a\u0430\u0436\u0434\u044b\u0439 \u043a\u0443\u0441\u043e\u043a \u0441\u0442\u0435\u043d \u043c\u0435\u043d\u044c\u0448\u0435 \u044d\u0442\u043e\u0433\u043e \u0447\u0438\u0441\u043b\u0430 \u0431\u043b\u043e\u043a\u043e\u0432 (\u0431\u043b\u043e\u043a \u2014 4\u00d74\u00d74 \u0432\u043e\u043a\u0441\u0435\u043b\u044f) \u0443\u0431\u0438\u0440\u0430\u0435\u0442\u0441\u044f, \u0442\u043e\u043b\u044c\u043a\u043e \u0432 \u044d\u0442\u043e\u043c \u0441\u043a\u0430\u043d\u0435. 0 \u043e\u0441\u0442\u0430\u0432\u043b\u044f\u0435\u0442 \u0432\u0441\u0451; \u0432\u043e\u043a\u0441\u0435\u043b\u044c\u043d\u0430\u044f \u0441\u0435\u0442\u043a\u0430 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u0442, \u0447\u0442\u043e \u043e\u0441\u0442\u0430\u043b\u043e\u0441\u044c.",
+       "type": "number",
+       "default": "0 \u0431\u043b\u043e\u043a\u043e\u0432 (\u0434\u043b\u044f \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u0441\u043a\u0430\u043d\u0430, \u0437\u0430\u0434\u0430\u0451\u0442 \u0430\u0432\u0442\u043e\u0440)",
+       "range": "0\u201364 \u0431\u043b\u043e\u043a\u043e\u0432",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
        ]
       },
       {

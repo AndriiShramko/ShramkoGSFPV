@@ -1,0 +1,379 @@
+{
+  "name": "v03-export",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T03:33:02.999Z",
+    "gitHead": "3d75d36",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5341",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "ffprobe": "C:/Program Files/Shutter Encoder/Library/ffprobe.exe",
+  "flight": {
+    "lifeMs": 6905,
+    "range": {
+      "from": 33859,
+      "to": 38859,
+      "start": 32954,
+      "end": 39859
+    },
+    "renderer": 2
+  },
+  "E1": {
+    "pass": true,
+    "what": "a 5 s stretch of the life saved as video at 1080p: 60/1, 300 frames, all decoded, 0 duplicate pts; no frame encoded with the scan incomplete; first and last frame poses = a fresh replay at 0 and 299/60 s; paused (reason export) with the bar up meanwhile; Close goes back to the summary panel; the credit burned in; into the folder",
+    "result": {
+      "ended": "done",
+      "size": "1080p",
+      "frames": 300,
+      "encoded": 300,
+      "startTick": 33859,
+      "endTick": 38859,
+      "stepFps": 60,
+      "waited": 0,
+      "incomplete": 0,
+      "encodedIncomplete": 0,
+      "crashes": 0,
+      "seconds": 5,
+      "first": {
+        "k": 0,
+        "tick": 33859,
+        "p": [
+          -2.1463539600932733,
+          2.1555836444443677,
+          1.094749840566555
+        ],
+        "q": [
+          0.9304483265338543,
+          -0.13379333583413272,
+          0.038753658714203866,
+          -0.33891504669015227
+        ],
+        "cam": [
+          -2.1463539600372314,
+          2.155583620071411,
+          1.0947498083114624
+        ],
+        "crash": false
+      },
+      "last": {
+        "k": 299,
+        "tick": 38842,
+        "p": [
+          -0.7389933541333159,
+          1.940907449621284,
+          0.7742085135217132
+        ],
+        "q": [
+          0.9309230832082243,
+          -0.22816131115840946,
+          0.16865076981682922,
+          -0.22995988145926652
+        ],
+        "cam": [
+          -0.7389933466911316,
+          1.9409074783325195,
+          0.7742084860801697
+        ],
+        "crash": false
+      },
+      "info": {
+        "codec": "avc1.640033",
+        "width": 1920,
+        "height": 1080,
+        "fps": 60,
+        "frames": 300,
+        "bytes": 9283452,
+        "seconds": 5,
+        "duplicated": 0,
+        "heldForEncoder": 0,
+        "heldWhy": {
+          "readback": 0,
+          "encoder": 0
+        },
+        "dropped": 0,
+        "file": "gsfpv-39e63ce9-20261002-053212.mp4",
+        "files": [
+          {
+            "name": "gsfpv-39e63ce9-20261002-053212.mp4",
+            "bytes": 9283452,
+            "frames": 300,
+            "seconds": 5
+          }
+        ],
+        "where": "folder",
+        "folder": "gsfpv-export-muqep6gj",
+        "ended": "stop",
+        "picture": "webgpu"
+      },
+      "creditStripStd": 0.23911952782011686
+    },
+    "during": {
+      "running": true,
+      "k": 0,
+      "frames": 0,
+      "waited": 0,
+      "bar": true,
+      "row": null,
+      "paused": true,
+      "menuOpen": false,
+      "barText": "Saving the flight as video, 1080pCancelClose"
+    },
+    "afterRun": {
+      "paused": true,
+      "bar": true
+    },
+    "afterClose": {
+      "paused": true,
+      "bar": false,
+      "menuOpen": true,
+      "row": true
+    },
+    "replay": [
+      {
+        "tick": 33859,
+        "p": [
+          -2.1463539600932733,
+          2.1555836444443677,
+          1.094749840566555
+        ],
+        "q": [
+          0.9304483265338543,
+          -0.13379333583413272,
+          0.038753658714203866,
+          -0.33891504669015227
+        ]
+      },
+      {
+        "tick": 38842,
+        "p": [
+          -0.7389933541333159,
+          1.940907449621284,
+          0.7742085135217132
+        ],
+        "q": [
+          0.9309230832082243,
+          -0.22816131115840946,
+          0.16865076981682922,
+          -0.22995988145926652
+        ]
+      }
+    ],
+    "file": {
+      "name": "gsfpv-39e63ce9-20261002-053212.mp4",
+      "where": "folder",
+      "bytes": 9283452,
+      "sha256": "4143bc4198f203478ff802605c3ea6932d3036d9342e270a2c171f8bdeafacab"
+    },
+    "ffprobe": {
+      "r_frame_rate": "60/1",
+      "codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "packets": 300,
+      "decoded": 300,
+      "dupPts": 0,
+      "durationS": 5
+    },
+    "stills": [
+      "evidence/2026-10-02/export/e1-first.jpg",
+      "evidence/2026-10-02/export/e1-last.jpg"
+    ],
+    "folder": "gsfpv-export-muqep6gj",
+    "control": {
+      "what": "C1: the same stretch with a deliberately wrong frame step (1/30 s): 150 frames, the last pose not the replay's at 299/60 s",
+      "fired": true,
+      "result": {
+        "encoded": 150,
+        "frames": 150,
+        "first": {
+          "k": 0,
+          "tick": 33859,
+          "p": [
+            -2.1463539600932733,
+            2.1555836444443677,
+            1.094749840566555
+          ],
+          "q": [
+            0.9304483265338543,
+            -0.13379333583413272,
+            0.038753658714203866,
+            -0.33891504669015227
+          ],
+          "cam": [
+            -2.1463539600372314,
+            2.155583620071411,
+            1.0947498083114624
+          ],
+          "crash": false
+        },
+        "last": {
+          "k": 149,
+          "tick": 38826,
+          "p": [
+            -0.7410917692318789,
+            1.9414723415792736,
+            0.7738812484072302
+          ],
+          "q": [
+            0.9396336386327698,
+            -0.2199906379064698,
+            0.12311929316286851,
+            -0.23137498575758245
+          ],
+          "cam": [
+            -0.741091787815094,
+            1.9414722919464111,
+            0.7738812565803528
+          ],
+          "crash": false
+        }
+      },
+      "ffprobe": {
+        "r_frame_rate": "60/1",
+        "codec": "h264",
+        "width": 1920,
+        "height": 1080,
+        "packets": 150,
+        "decoded": 150,
+        "dupPts": 0,
+        "durationS": 2.5
+      },
+      "lastPoseOffM": 0.002197624013619304
+    }
+  },
+  "E2": {
+    "pass": true,
+    "what": "4K: 1 s gives 3840 x 2160, 60 frames, 60/1; the canvas back at the window's size after",
+    "result": {
+      "encoded": 60,
+      "waited": 0,
+      "incomplete": 0,
+      "info": {
+        "codec": "avc1.640033",
+        "width": 3840,
+        "height": 2160,
+        "fps": 60,
+        "frames": 60,
+        "bytes": 11489903,
+        "seconds": 1,
+        "duplicated": 0,
+        "heldForEncoder": 0,
+        "heldWhy": {
+          "readback": 0,
+          "encoder": 0
+        },
+        "dropped": 0,
+        "file": "gsfpv-39e63ce9-20261002-053232.mp4",
+        "files": [
+          {
+            "name": "gsfpv-39e63ce9-20261002-053232.mp4",
+            "bytes": 11489903,
+            "frames": 60,
+            "seconds": 1
+          }
+        ],
+        "where": "folder",
+        "folder": "gsfpv-export-muqep6gj",
+        "ended": "stop",
+        "picture": "webgpu"
+      }
+    },
+    "canvasAfter": {
+      "w": 1088,
+      "h": 680
+    },
+    "ffprobe": {
+      "r_frame_rate": "60/1",
+      "codec": "h264",
+      "width": 3840,
+      "height": 2160,
+      "packets": 60,
+      "decoded": 60,
+      "dupPts": 0,
+      "durationS": 1
+    },
+    "stills": [
+      "evidence/2026-10-02/export/e2-first.jpg",
+      "evidence/2026-10-02/export/e2-last.jpg"
+    ],
+    "file": {
+      "name": "gsfpv-39e63ce9-20261002-053232.mp4",
+      "where": "folder",
+      "bytes": 11489903,
+      "sha256": "ac285e43f13cce499fed42f3418b1f4d48c78a5ed542740dc517abe5e74836e3"
+    }
+  },
+  "E3": {
+    "pass": true,
+    "what": "Cancel stops the export, leaves no file, keeps the flight paused under the bar; Esc closes the bar back to the summary panel",
+    "result": {
+      "ended": "cancel",
+      "encoded": 20,
+      "frames": 300
+    },
+    "filesBefore": 3,
+    "filesAfter": 3,
+    "underBar": {
+      "paused": true,
+      "bar": true,
+      "text": "Video not saved: cancelled."
+    },
+    "closed": {
+      "bar": false,
+      "menuOpen": true,
+      "paused": true
+    }
+  },
+  "E4": {
+    "pass": true,
+    "what": "the summary panel row: 1440p chosen and Save video clicked saves the whole current life (2560 x 1440, 60/1, one frame per 1/60 s of it); the bar reports it; Esc closes it back to the panel",
+    "row": {
+      "text": "Save this flight as video (60 fps)1080p1440p4K (2160p)Save video",
+      "disabled": false
+    },
+    "lifeFrames": 414,
+    "barText": "414 frames at 60 fps \u00b7 Saved 6.9 s to gsfpv-export-muqep6gj (37.9 MB)",
+    "ffprobe": {
+      "r_frame_rate": "60/1",
+      "codec": "h264",
+      "width": 2560,
+      "height": 1440,
+      "packets": 414,
+      "decoded": 414,
+      "dupPts": 0,
+      "durationS": 6.9
+    },
+    "file": {
+      "name": "gsfpv-39e63ce9-20261002-053239.mp4",
+      "where": "folder",
+      "bytes": 39748198,
+      "sha256": "b8d39518831618ab2634242214f0c37dc795a36f10fa012c9f628fa3640516ba"
+    },
+    "after": {
+      "bar": false,
+      "menuOpen": true
+    }
+  },
+  "consoleErrors": [],
+  "parts": [
+    "E1",
+    "E2",
+    "E3",
+    "E4"
+  ],
+  "pass": true
+}

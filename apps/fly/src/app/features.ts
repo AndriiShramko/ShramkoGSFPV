@@ -25,6 +25,7 @@ import { modes } from './builtin/modes';
 import { rotation } from './builtin/rotation';
 import { scale } from './builtin/scale';
 import { floaters } from './builtin/floaters';
+import { videoExport } from './builtin/video-export';
 
 export const FEATURES: readonly Feature[] = [
     scene,
@@ -47,5 +48,6 @@ export const FEATURES: readonly Feature[] = [
     modes,
     rotation,
     scale,
-    floaters
+    floaters,
+    videoExport
 ];

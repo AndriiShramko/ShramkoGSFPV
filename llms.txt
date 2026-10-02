@@ -21,7 +21,7 @@ Key facts (measured, see the JSON files in evidence/2026-09-24/):
 - [Decisions](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/decisions.md): architecture choices and reasons
 - [Warnings](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/warnings.md): risks and limits, stated honestly
 - [Provenance](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/PROVENANCE.md): where every piece of code came from
-- [Settings catalogue](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/settings.md): every setting of the simulator with its default, range, scope and keyboard key: 45 settings in 10 groups, 26 keyboard keys, 6 drone presets and 4 rate-curve types (generated from the settings schema at each release; in four languages at https://gsfpv.flyreelstudio.eu/en/#tune)
+- [Settings catalogue](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/settings.md): every setting of the simulator with its default, range, scope and keyboard key: 46 settings in 10 groups, 26 keyboard keys, 6 drone presets and 4 rate-curve types (generated from the settings schema at each release; in four languages at https://gsfpv.flyreelstudio.eu/en/#tune)
 
 ## Contact
 - Author: Andrii Shramko

@@ -175,7 +175,7 @@ export const DEFAULT_LATENCY_GUARD: LatencyGuardOptions = {
 
 export interface GuardLogEntry {
     t: number;
-    what: 'sample' | 'skip' | 'trigger' | 'backoff' | 'gpu' | 'overload';
+    what: 'sample' | 'skip' | 'trigger' | 'backoff' | 'gpu' | 'overload' | 'held';
     /** rAF -> presentation in display periods (sample) */
     frames?: number;
     /** skip length */
@@ -187,6 +187,12 @@ export class LatencyGuard {
     active = false;
     /** also skip frames to leave a slow state (?guard=0 turns only this off) */
     recover = true;
+    /**
+     * A recording (or the video export) runs: measure, but do not skip. A skip of 3 periods is 2-3
+     * slots of the 60 fps file that repeat the previous picture (W4-1, live R1: 4 skips in 10 s were
+     * 8 of the file's 59 repeated slots); the guard skips again once the recording stops.
+     */
+    holdSkips = false;
     readonly opts: LatencyGuardOptions;
     readonly period = new DisplayPeriod();
     /** last measured rAF -> presentation, ms; NaN before the first measurement */
@@ -304,6 +310,12 @@ export class LatencyGuard {
             this.episodeSkips = 0;
             this.measureAt = t + this.opts.sampleEveryMs;
             this.note({ t, what: 'overload' });
+            return null;
+        }
+        if (this.holdSkips) {
+            this.episodeSkips = 0;
+            this.measureAt = t + this.opts.sampleEveryMs;
+            this.note({ t, what: 'held' });
             return null;
         }
         if (this.episodeSkips >= this.opts.maxSkips) {

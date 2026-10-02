@@ -66,6 +66,10 @@ export class Recording {
     readonly rules = new AutoRecordRules();
     /** test only (the hook): minutes per file instead of recording.splitMin */
     splitMinOverride: number | null = null;
+    /** the video export (F.3) is writing a file */
+    exporting = false;
+    /** test only (the hook), the control of W4-1: the latency guard may skip while recording */
+    guardHoldOff = false;
     private paused = { flight: false, hidden: false };
     private offerUrls: string[] = [];
     private pending: Promise<unknown> = Promise.resolve();
@@ -223,6 +227,46 @@ export class Recording {
             return codec;
         } finally {
             this.busy = false;
+            this.onChange();
+        }
+    }
+
+    /**
+     * The video export from the flight log (F.3): a recorder in exact mode (one slot per frame given,
+     * none paced, repeated or dropped) at width x height, 60 fps, into the place a recording goes.
+     */
+    async openExport(o: { width: number; height: number; activation: boolean }): Promise<CinemaRecorder> {
+        const scene = this.d.scene();
+        if (scene.credit === null) throw new Error('recording is only for showcase scenes');
+        if (!this.supported) throw new Error('WebCodecs unavailable');
+        const target = await this.target(o.activation);
+        if (target.kind === 'browser') await pruneBrowserRecordings(KEEP_IN_BROWSER - 1);
+        const r = new CinemaRecorder({
+            width: o.width, height: o.height, fps: 60, credit: scene.credit, target, scene: scene.id,
+            capSeconds: target.kind === 'memory' ? MEMORY_CAP_S : undefined, canvas: this.d.canvas, exact: true
+        });
+        await r.start();
+        this.exporting = true;
+        this.onChange();
+        return r;
+    }
+
+    /** The export's file closed and saved as a recording is (moved into the folder, or offered). */
+    async finishExport(r: CinemaRecorder): Promise<Saved> {
+        try {
+            return await this.finish(await r.stop(), r.target);
+        } finally {
+            this.exporting = false;
+            this.onChange();
+        }
+    }
+
+    /** The export cancelled (or failed): its file is removed. */
+    async cancelExport(r: CinemaRecorder): Promise<void> {
+        try {
+            await r.cancel();
+        } finally {
+            this.exporting = false;
             this.onChange();
         }
     }
