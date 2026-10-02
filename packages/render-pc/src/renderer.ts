@@ -271,6 +271,17 @@ export class SplatRenderer {
     }
 
     /**
+     * The time this frame is for: its requestAnimationFrame timestamp (the display's frame time, ms
+     * on performance.now()'s clock), however late the callback ran. A recording stamps frames with it
+     * (W4-1): stamped with the moment the work ended, a frame whose callback ran half a period late
+     * (the main thread busy, a scan still streaming) took the next frame's slot, and that frame was
+     * left without one, so the slot before repeated the previous picture.
+     */
+    get frameTime(): number {
+        return this.app._time;
+    }
+
+    /**
      * The frame the engine just drew showed the scan complete for its view: nothing loading, every
      * level of detail in place and sorted (the gsplat 'frame:ready' of this very frame). True without
      * a scan on screen (none loaded, hidden, or ?render=off). Call it in 'frameend'.

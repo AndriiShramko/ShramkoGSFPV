@@ -66,6 +66,10 @@ export class Recording {
     readonly rules = new AutoRecordRules();
     /** test only (the hook): minutes per file instead of recording.splitMin */
     splitMinOverride: number | null = null;
+    /** the video export (F.3) is writing a file */
+    exporting = false;
+    /** test only (the hook), the control of W4-1: the latency guard may skip while recording */
+    guardHoldOff = false;
     private paused = { flight: false, hidden: false };
     private offerUrls: string[] = [];
     private pending: Promise<unknown> = Promise.resolve();
@@ -242,13 +246,29 @@ export class Recording {
             capSeconds: target.kind === 'memory' ? MEMORY_CAP_S : undefined, canvas: this.d.canvas, exact: true
         });
         await r.start();
+        this.exporting = true;
         this.onChange();
         return r;
     }
 
     /** The export's file closed and saved as a recording is (moved into the folder, or offered). */
     async finishExport(r: CinemaRecorder): Promise<Saved> {
-        return this.finish(await r.stop(), r.target);
+        try {
+            return await this.finish(await r.stop(), r.target);
+        } finally {
+            this.exporting = false;
+            this.onChange();
+        }
+    }
+
+    /** The export cancelled (or failed): its file is removed. */
+    async cancelExport(r: CinemaRecorder): Promise<void> {
+        try {
+            await r.cancel();
+        } finally {
+            this.exporting = false;
+            this.onChange();
+        }
     }
 
     /** Stops and saves; the files to save by hand are in the result's offer. */

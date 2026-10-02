@@ -29,6 +29,9 @@ export interface RecHook {
     readLast(): Promise<{ name: string; where: string; b64: string } | null>;
     /** test only: minutes per file instead of recording.splitMin (a split in seconds) */
     setSplitMin(min: number | null): void;
+    /** test only, controls of W4-1: stamp frames when their work ended (before the fix), and let the guard skip while recording */
+    setStamp(at: 'frame' | 'end'): void;
+    setGuardHold(on: boolean): void;
 }
 
 /** The page's recording and the bar's stop and note: the video export (builtin/video-export.ts) uses them. */
@@ -62,6 +65,8 @@ export const cinema: Feature = {
             autoRespawn: () => autoRespawnShipped(ctx.prefs)
         });
         let note = '';
+        /** test only, the control of the stamping fix: frames stamped when their work ended (before W4-1) */
+        let stampAtEnd = false;
         let noteOffer: Saved['offer'] = [];
         let menuOpen = false;
 
@@ -144,6 +149,8 @@ export const cinema: Feature = {
             allowBtn.hidden = !allowed || !rec.folder || rec.access !== 'prompt';
             allowBtn.textContent = t('rec.permission', { name });
             ctx.hud.rec = recording;
+            // the latency guard measures but does not skip while a file is written (each skip is 2-3 repeated slots)
+            ctx.renderer.latencyGuard.holdSkips = !rec.guardHoldOff && (recording || rec.exporting);
             // the note: why not here, else what happens now, else the last result
             const why = !showcase ? t('rec.onlyShowcase') : !rec.supported ? t('rec.unsupported') : '';
             cinemaNote.replaceChildren();
@@ -249,7 +256,9 @@ export const cinema: Feature = {
         }
 
         // ------------------------------------------------------------------ frames, flight events, pauses
-        ctx.renderer.app.on('frameend', () => rec.frame(performance.now()));
+        // each frame on the slot of the display frame it is for (its rAF time), not of the moment its
+        // work ended: a late callback otherwise takes the next frame's slot and leaves a repeat (W4-1)
+        ctx.renderer.app.on('frameend', () => rec.frame(stampAtEnd ? performance.now() : ctx.renderer.frameTime));
         let shown = 0;
         let placed = 0;
         ctx.events.on('frame', ({ now }) => {
@@ -321,7 +330,9 @@ export const cinema: Feature = {
             start: (o) => startRec(true, o?.control === 'v02'),
             stop: stopRec,
             readLast,
-            setSplitMin: (min) => { rec.splitMinOverride = min; }
+            setSplitMin: (min) => { rec.splitMinOverride = min; },
+            setStamp: (at) => { stampAtEnd = at === 'end'; },
+            setGuardHold: (on) => { rec.guardHoldOff = !on; render(); }
         };
         (ctx.hook as TestHook & { rec?: RecHook }).rec = recHook;
 

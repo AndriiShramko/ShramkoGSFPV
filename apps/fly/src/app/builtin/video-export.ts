@@ -266,7 +266,7 @@ export const videoExport: Feature = {
                 });
                 Object.assign(result, { ended, encoded: ex.k, waited: ex.waited, incomplete: ex.incomplete, encodedIncomplete: ex.encodedIncomplete, crashes: ex.crashes, first: ex.first, last: ex.last, creditStripStd: recorder.lastCreditStripStd });
                 restore();
-                if (ended === 'cancel') await recorder.cancel();
+                if (ended === 'cancel') await share.rec.cancelExport(recorder);
                 else {
                     const saved: Saved = await share.rec.finishExport(recorder);
                     result.info = saved.info;
@@ -278,7 +278,7 @@ export const videoExport: Feature = {
             } catch (e) {
                 result.error = String((e as Error)?.message ?? e);
                 restore();
-                try { await running.recorder?.cancel(); } catch { /* nothing written */ }
+                try { if (running.recorder) await share.rec.cancelExport(running.recorder); } catch { /* nothing written */ }
             }
             running = null;
             progress.value = result.encoded;

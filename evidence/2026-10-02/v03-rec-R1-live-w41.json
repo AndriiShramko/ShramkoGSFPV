@@ -1,0 +1,686 @@
+{
+  "name": "v03-rec-R1-live-w41",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T03:15:48.098Z",
+    "gitHead": "b002105",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "ffprobe": "C:/Program Files/Shutter Encoder/Library/ffprobe.exe",
+  "display": {
+    "rafHz": 27.9,
+    "force60": true,
+    "why": "the display runs below 60 Hz (the owner's 4K monitor: 30 Hz over HDMI): the 60 Hz render comes from a 60 Hz timer driving the page's frame loop, the scan drawn every frame"
+  },
+  "R1": {
+    "pass": true,
+    "what": "a 10 s recording at a 60 Hz render: r_frame_rate 60/1, 0 duplicate pts, 600 +- 2 frames, all decoded; at most 6% repeated pictures, at most 1% held for the encoder; into the folder; the credit burned in (strip luminance spread > 0.1)",
+    "scene": "39e63ce9",
+    "renderer": 2,
+    "frameRateBefore": {
+      "engineFps": 60,
+      "frameMs": {
+        "p50": 16.80000000447035,
+        "p99": 78.79999999701977,
+        "hz": 59.523809507970704
+      }
+    },
+    "engineFpsWhileRecording": 59.7,
+    "repeats": {
+      "pct": 1.5,
+      "heldPct": 0,
+      "uniquePicturesPerS": 59.1
+    },
+    "before": {
+      "skipsDuringRateWindow": 0,
+      "guardLog": [
+        {
+          "t": 2635.3000000044703,
+          "what": "sample",
+          "frames": 6.2
+        },
+        {
+          "t": 2635.3000000044703,
+          "what": "skip",
+          "ms": 18
+        },
+        {
+          "t": 2779.60000000149,
+          "what": "sample",
+          "frames": 5.04
+        },
+        {
+          "t": 2779.60000000149,
+          "what": "gpu",
+          "ms": 35
+        },
+        {
+          "t": 2911.5,
+          "what": "sample",
+          "frames": 6.19
+        },
+        {
+          "t": 2911.5,
+          "what": "gpu",
+          "ms": 35
+        },
+        {
+          "t": 3097.2000000029802,
+          "what": "sample",
+          "frames": 5.12
+        },
+        {
+          "t": 3097.2000000029802,
+          "what": "overload"
+        },
+        {
+          "t": 3212.2000000029802,
+          "what": "sample",
+          "frames": 4.2
+        },
+        {
+          "t": 3212.2000000029802,
+          "what": "overload"
+        },
+        {
+          "t": 3323.7000000029802,
+          "what": "sample",
+          "frames": 3.18
+        },
+        {
+          "t": 3323.7000000029802,
+          "what": "overload"
+        },
+        {
+          "t": 3413.4000000059605,
+          "what": "sample",
+          "frames": 4.19
+        },
+        {
+          "t": 3413.4000000059605,
+          "what": "overload"
+        },
+        {
+          "t": 3512.10000000149,
+          "what": "sample",
+          "frames": 4.24
+        },
+        {
+          "t": 3512.10000000149,
+          "what": "overload"
+        },
+        {
+          "t": 3612.3000000044703,
+          "what": "sample",
+          "frames": 4.24
+        },
+        {
+          "t": 3612.3000000044703,
+          "what": "overload"
+        },
+        {
+          "t": 3712.8000000044703,
+          "what": "sample",
+          "frames": 3.22
+        },
+        {
+          "t": 3712.8000000044703,
+          "what": "overload"
+        },
+        {
+          "t": 3811.9000000059605,
+          "what": "sample",
+          "frames": 4.24
+        },
+        {
+          "t": 3811.9000000059605,
+          "what": "overload"
+        },
+        {
+          "t": 3912,
+          "what": "sample",
+          "frames": 4.24
+        },
+        {
+          "t": 3912,
+          "what": "skip",
+          "ms": 50
+        },
+        {
+          "t": 4078.4000000059605,
+          "what": "sample",
+          "frames": 3.07
+        },
+        {
+          "t": 4078.4000000059605,
+          "what": "skip",
+          "ms": 50
+        },
+        {
+          "t": 4246.5,
+          "what": "sample",
+          "frames": 3.15
+        },
+        {
+          "t": 4246.5,
+          "what": "skip",
+          "ms": 17
+        },
+        {
+          "t": 4378.10000000149,
+          "what": "sample",
+          "frames": 5.06
+        },
+        {
+          "t": 4378.10000000149,
+          "what": "skip",
+          "ms": 18
+        },
+        {
+          "t": 4546,
+          "what": "sample",
+          "frames": 6.16
+        },
+        {
+          "t": 4546,
+          "what": "backoff",
+          "ms": 10000
+        },
+        {
+          "t": 4678.70000000298,
+          "what": "sample",
+          "frames": 5.05
+        },
+        {
+          "t": 4678.70000000298,
+          "what": "skip",
+          "ms": 51
+        },
+        {
+          "t": 5112.80000000447,
+          "what": "sample",
+          "frames": 513.89
+        },
+        {
+          "t": 5112.80000000447,
+          "what": "gpu",
+          "ms": 4
+        },
+        {
+          "t": 7346.9000000059605,
+          "what": "sample",
+          "frames": 7.19
+        },
+        {
+          "t": 7346.9000000059605,
+          "what": "overload"
+        },
+        {
+          "t": 9479,
+          "what": "sample",
+          "frames": 311.83
+        },
+        {
+          "t": 9479,
+          "what": "gpu",
+          "ms": 13
+        }
+      ],
+      "periodMs": 0.2680000000000291,
+      "governor": {
+        "renderScale": 0.5,
+        "splatBudgetMillions": 1.5
+      }
+    },
+    "diag": {
+      "guardActive": true,
+      "guardRecover": true,
+      "skips": 0,
+      "skipMs": 0,
+      "slotsInSkips": 0,
+      "guardLog": [
+        {
+          "t": 16712.30000000447,
+          "what": "sample",
+          "frames": 384.33
+        },
+        {
+          "t": 16712.30000000447,
+          "what": "gpu",
+          "ms": 9
+        },
+        {
+          "t": 16846.10000000149,
+          "what": "sample",
+          "frames": 317.66
+        },
+        {
+          "t": 16846.10000000149,
+          "what": "gpu",
+          "ms": 10
+        },
+        {
+          "t": 16978.30000000447,
+          "what": "sample",
+          "frames": 374.25
+        },
+        {
+          "t": 16978.30000000447,
+          "what": "gpu",
+          "ms": 10
+        },
+        {
+          "t": 17112.20000000298,
+          "what": "sample",
+          "frames": 322.51
+        },
+        {
+          "t": 17112.20000000298,
+          "what": "gpu",
+          "ms": 7
+        },
+        {
+          "t": 17246.90000000596,
+          "what": "sample",
+          "frames": 316.54
+        },
+        {
+          "t": 17246.90000000596,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 17379.90000000596,
+          "what": "sample",
+          "frames": 311.69
+        },
+        {
+          "t": 17379.90000000596,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 17521.20000000298,
+          "what": "sample",
+          "frames": 321.28
+        },
+        {
+          "t": 17521.20000000298,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 17645.40000000596,
+          "what": "sample",
+          "frames": 317.29
+        },
+        {
+          "t": 17645.40000000596,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 17779.20000000298,
+          "what": "sample",
+          "frames": 373.51
+        },
+        {
+          "t": 17779.20000000298,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 17914.20000000298,
+          "what": "sample",
+          "frames": 383.46
+        },
+        {
+          "t": 17914.20000000298,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 18047,
+          "what": "sample",
+          "frames": 316.54
+        },
+        {
+          "t": 18047,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 18180,
+          "what": "sample",
+          "frames": 373.51
+        },
+        {
+          "t": 18180,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 18314.10000000149,
+          "what": "sample",
+          "frames": 321.4
+        },
+        {
+          "t": 18314.10000000149,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 18446.90000000596,
+          "what": "sample",
+          "frames": 378.73
+        },
+        {
+          "t": 18446.90000000596,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 18579.40000000596,
+          "what": "sample",
+          "frames": 373.88
+        },
+        {
+          "t": 18579.40000000596,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 18713.30000000447,
+          "what": "sample",
+          "frames": 321.77
+        },
+        {
+          "t": 18713.30000000447,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 18847.10000000149,
+          "what": "sample",
+          "frames": 379.48
+        },
+        {
+          "t": 18847.10000000149,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 18980.70000000298,
+          "what": "sample",
+          "frames": 374.51
+        },
+        {
+          "t": 18980.70000000298,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 19113.60000000149,
+          "what": "sample",
+          "frames": 321.4
+        },
+        {
+          "t": 19113.60000000149,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 19246.70000000298,
+          "what": "sample",
+          "frames": 379.48
+        },
+        {
+          "t": 19246.70000000298,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 19379.20000000298,
+          "what": "sample",
+          "frames": 374.25
+        },
+        {
+          "t": 19379.20000000298,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 19513.70000000298,
+          "what": "sample",
+          "frames": 383.58
+        },
+        {
+          "t": 19513.70000000298,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 19646.10000000149,
+          "what": "sample",
+          "frames": 378.36
+        },
+        {
+          "t": 19646.10000000149,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 19779.40000000596,
+          "what": "sample",
+          "frames": 311.69
+        },
+        {
+          "t": 19779.40000000596,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 19913.70000000298,
+          "what": "sample",
+          "frames": 383.96
+        },
+        {
+          "t": 19913.70000000298,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 20046.5,
+          "what": "sample",
+          "frames": 316.92
+        },
+        {
+          "t": 20046.5,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 20181.90000000596,
+          "what": "sample",
+          "frames": 312.81
+        },
+        {
+          "t": 20181.90000000596,
+          "what": "gpu",
+          "ms": 5
+        },
+        {
+          "t": 20312.70000000298,
+          "what": "sample",
+          "frames": 384.33
+        },
+        {
+          "t": 20312.70000000298,
+          "what": "gpu",
+          "ms": 6
+        },
+        {
+          "t": 20446,
+          "what": "sample",
+          "frames": 317.17
+        },
+        {
+          "t": 20446,
+          "what": "gpu",
+          "ms": 6
+        },
+        {
+          "t": 20579.40000000596,
+          "what": "sample",
+          "frames": 311.69
+        },
+        {
+          "t": 20579.40000000596,
+          "what": "gpu",
+          "ms": 7
+        }
+      ],
+      "periodMs": 0.2680000000000291,
+      "lateFrames": 11,
+      "slotsMissedByLateFrames": 11,
+      "worstMs": 37,
+      "governorBefore": {
+        "renderScale": 0.5,
+        "splatBudgetMillions": 1.5
+      },
+      "governorAfter": {
+        "renderScale": 0.5,
+        "splatBudgetMillions": 1.5
+      }
+    },
+    "folder": "gsfpv-r1-muqe3zpn",
+    "recorder": {
+      "codec": "avc1.640033",
+      "width": 1728,
+      "height": 1080,
+      "fps": 60,
+      "frames": 602,
+      "bytes": 14531226,
+      "seconds": 10.033333333333333,
+      "duplicated": 9,
+      "heldForEncoder": 0,
+      "dropped": 0,
+      "file": "gsfpv-39e63ce9-20261002-051515.mp4",
+      "files": [
+        {
+          "name": "gsfpv-39e63ce9-20261002-051515.mp4",
+          "bytes": 14531226,
+          "frames": 602,
+          "seconds": 10.033333333333333
+        }
+      ],
+      "where": "folder",
+      "folder": "gsfpv-r1-muqe3zpn",
+      "ended": "stop",
+      "picture": "webgpu"
+    },
+    "wallS": 10.01810000000149,
+    "codec": "avc1.640033",
+    "creditStripStd": 0.2619618273011265,
+    "file": {
+      "name": "gsfpv-39e63ce9-20261002-051515.mp4",
+      "where": "folder",
+      "bytes": 14531226,
+      "sha256": "c2151eca7c46e48d387e3436d010ac900140fac5911b2b0bc915246c27211742"
+    },
+    "ffprobe": {
+      "r_frame_rate": "60/1",
+      "avg_frame_rate": "60/1",
+      "time_base": "1/60",
+      "codec": "h264",
+      "width": 1728,
+      "height": 1080,
+      "packets": 602,
+      "decoded": 602,
+      "dupPts": 0,
+      "dupPerS": 0,
+      "steps": {
+        "16.7": 601
+      },
+      "durationS": 10.033333
+    },
+    "note": "Saved 10.0 s to gsfpv-r1-muqe3zpn (13.9 MB) \u00b7 60 fps \u00b7 repeated frames: 9 \u00b7 dropped: 0",
+    "control": {
+      "what": "C1: v0.2 path (every rendered frame, 30 fps track, a frame skipped while 8 wait in the encoder) on the same page and render",
+      "fired": true,
+      "engineFpsWhileRecording": 57.8,
+      "framesSkippedByEncoderBound": 166,
+      "recorder": {
+        "codec": "avc1.640033",
+        "width": 1728,
+        "height": 1080,
+        "fps": 30,
+        "frames": 413,
+        "bytes": 15011072,
+        "seconds": 10.02479999999702,
+        "duplicated": 0,
+        "heldForEncoder": 0,
+        "dropped": 166,
+        "file": "gsfpv-39e63ce9-20261002-051532.mp4",
+        "files": [
+          {
+            "name": "gsfpv-39e63ce9-20261002-051532.mp4",
+            "bytes": 15011072,
+            "frames": 413,
+            "seconds": 6.883333333333334
+          }
+        ],
+        "where": "folder",
+        "folder": "gsfpv-r1-muqe3zpn",
+        "ended": "stop",
+        "picture": "2d"
+      },
+      "file": {
+        "name": "gsfpv-39e63ce9-20261002-051532.mp4",
+        "where": "folder",
+        "bytes": 15011072,
+        "sha256": "90e20bde22662a94b0ebfb52c151a7d5351f41a114d4f6efa2cc626d554508b0"
+      },
+      "ffprobe": {
+        "r_frame_rate": "30/1",
+        "avg_frame_rate": "413/10",
+        "time_base": "1/30",
+        "codec": "h264",
+        "width": 1728,
+        "height": 1080,
+        "packets": 413,
+        "decoded": 413,
+        "dupPts": 172,
+        "dupPerS": 17.2,
+        "steps": {
+          "133.3": 1,
+          "0.0": 172,
+          "33.3": 184,
+          "100.0": 2,
+          "66.7": 53
+        },
+        "durationS": 10
+      }
+    },
+    "consoleErrors": []
+  },
+  "parts": [
+    "R1"
+  ],
+  "pass": true
+}

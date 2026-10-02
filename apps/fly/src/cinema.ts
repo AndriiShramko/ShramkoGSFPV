@@ -424,8 +424,16 @@ export async function pruneBrowserRecordings(keep: number): Promise<number> {
 const TEX_COPY_SRC = 0x01, TEX_COPY_DST = 0x02, TEX_BINDING = 0x04, TEX_RENDER = 0x10;
 const BUF_MAP_READ = 0x01, BUF_COPY_SRC = 0x04, BUF_COPY_DST = 0x08, BUF_UNIFORM = 0x40, BUF_STORAGE = 0x80;
 const MAP_READ = 1;
-/** Pictures being read back at most: all of them busy means the encoder path is behind (the slot is held). */
-const READBACKS = 4;
+/**
+ * Pictures being read back at most: all of them busy means the encoder path is behind (the slot is
+ * held). A readback comes back when the GPU has done the frame and the main thread has run its
+ * callback: with a scan streaming (the main thread busy) that took over 4 frames often enough to
+ * hold 5-16 % of the slots (W4-1, R6). Up to 8 while they total at most 24 MB (1080p: 2.8 MB each),
+ * never fewer than 4 (4K: 12 MB each).
+ */
+export function readbacksFor(bytes: number): number {
+    return Math.max(4, Math.min(8, Math.floor((24 * 1024 * 1024) / Math.max(1, bytes))));
+}
 /** The I420 pictures are BT.709, limited range. */
 const REC709: VideoColorSpaceInit = { primaries: 'bt709', transfer: 'bt709', matrix: 'bt709', fullRange: false };
 
@@ -526,7 +534,7 @@ class GpuPictures {
         this.sampler = d.createSampler({ magFilter: 'linear', minFilter: 'linear' });
         this.creditTex = d.createTexture({ size: [Math.max(1, rect.w), Math.max(1, rect.h)], format: 'rgba8unorm', usage: TEX_BINDING | TEX_COPY_DST | TEX_RENDER });
         if (rect.w > 0 && rect.h > 0) d.queue.copyExternalImageToTexture({ source: credit }, { texture: this.creditTex }, [rect.w, rect.h]);
-        for (let i = 0; i < READBACKS; i++) {
+        for (let i = 0, n = readbacksFor(this.bytes); i < n; i++) {
             const b = d.createBuffer({ size: this.bytes, usage: BUF_MAP_READ | BUF_COPY_DST });
             this.pool.push(b);
             this.free.push(b);
@@ -642,6 +650,8 @@ export interface RecorderInfo {
     duplicated: number;
     /** of the repeated slots, those held because the encoder was behind (the rest: the render missed them) */
     heldForEncoder: number;
+    /** of those held: every GPU readback still out (the GPU behind), or the encoder's queue full */
+    heldWhy?: { readback: number; encoder: number };
     dropped: number;
     /** the last file's name, and every file of this recording (a long one is split) */
     file: string;
@@ -866,6 +876,7 @@ export class CinemaRecorder {
     private composed = 0;
     private duplicated = 0;
     private held = 0;
+    private heldReadback = 0;
     private dropped = 0;
     /** encode calls made; the files hold fewer pictures when the encoder dropped some */
     private encoded = 0;
@@ -1007,6 +1018,7 @@ export class CinemaRecorder {
             if (!repeat && (gpu ? this.pictured : this.prev) && (!part.room(false) || (gpu && !gpu.ready))) {
                 repeat = true;
                 this.held++;
+                if (part.room(false)) this.heldReadback++;
             }
             if (!part.room(repeat) || (repeat && !(gpu ? this.pictured : this.prev)) || this.queued >= PENDING_CALLS_MAX) {
                 this.dropped++; // even repeats would pile up: give the slot up, never stall the flight
@@ -1166,6 +1178,7 @@ export class CinemaRecorder {
                 seconds: this.o.legacyV02 ? this.seconds : frames / this.fps,
                 duplicated: this.duplicated,
                 heldForEncoder: this.held,
+                heldWhy: { readback: this.heldReadback, encoder: this.held - this.heldReadback },
                 // slots the encoder took but gave no packet for are gaps in the file too
                 dropped: this.dropped + (failed ? 0 : Math.max(0, this.encoded - frames)),
                 file: files.length ? files[files.length - 1].name : '',
