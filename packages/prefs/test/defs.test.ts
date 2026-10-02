@@ -11,7 +11,9 @@ const V03_SHIPPED = [
     // W3-5 recording (recording.folder stays planned: it is picked on the recording bar, not in Settings)
     'recording.fps', 'recording.resolution', 'recording.auto', 'recording.splitMin',
     // W3-1 scene rotation (E.3-E.5): Settings -> Scenes
-    'scenes.autoSwitch', 'scenes.rotation', 'scenes.order', 'scenes.allowNoWalls'
+    'scenes.autoSwitch', 'scenes.rotation', 'scenes.order', 'scenes.allowNoWalls',
+    // W3-3 scene size around the drone (E.7): the summary panel row, [ ], Settings -> Scenes
+    'scene.transform'
 ];
 
 /**

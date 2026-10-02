@@ -51,7 +51,9 @@ const SHIPPED_IN_WAVE2: readonly string[] = [
     // W3-5: F9, REC on the recording bar
     'record.toggle',
     // W3-1: N next scene, Shift+N random scene, F next favourite (E.5)
-    'scene.next', 'scene.random', 'scene.favourite'
+    'scene.next', 'scene.random', 'scene.favourite',
+    // W3-3: [ and ] scene smaller / larger around the drone (E.7)
+    'scale.down', 'scale.up'
 ];
 
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });
