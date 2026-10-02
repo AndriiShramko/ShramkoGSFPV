@@ -1,0 +1,680 @@
+{
+  "name": "v03-modes",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-01T22:31:00.046Z",
+    "gitHead": "75c7d30",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5301",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "render": {
+    "M1": "off",
+    "M2": "off",
+    "M3": "off",
+    "M4": "off",
+    "M5": "on"
+  },
+  "M5": {
+    "pass": true,
+    "what": "the chip beside the OSD line overlaps no OSD line, button, pad or note; its popover fits the screen with 44 px rows; hidden under the Controls screen (desktop 1280x800, phone 375x812, scan drawn)",
+    "desktop": {
+      "ready": {
+        "status": "ready",
+        "render": "on",
+        "renderer": 2
+      },
+      "closed": {
+        "chip": {
+          "x": 193,
+          "y": 9,
+          "w": 74.35417175292969,
+          "h": 28,
+          "name": "chip"
+        },
+        "overlaps": [],
+        "others": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75,
+            "name": "osd-tl"
+          },
+          {
+            "x": 1158.53125,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75,
+            "name": "osd-tr"
+          },
+          {
+            "x": 16,
+            "y": 521.25,
+            "w": 210.9375,
+            "h": 18.75,
+            "name": "osd-bl"
+          },
+          {
+            "x": 1058.125,
+            "y": 38,
+            "w": 205.875,
+            "h": 40,
+            "name": "top-actions"
+          },
+          {
+            "x": 64,
+            "y": 86,
+            "w": 1152,
+            "h": 17,
+            "name": "touch-hint"
+          },
+          {
+            "x": 592,
+            "y": 720,
+            "w": 96,
+            "h": 56,
+            "name": "touch-arm"
+          },
+          {
+            "x": 24,
+            "y": 556,
+            "w": 220,
+            "h": 220,
+            "name": "touch-pad-0"
+          },
+          {
+            "x": 1036,
+            "y": 556,
+            "w": 220,
+            "h": 220,
+            "name": "touch-pad-1"
+          },
+          {
+            "x": 16,
+            "y": 138,
+            "w": 582.6146240234375,
+            "h": 57.395835876464844,
+            "name": "attribution"
+          },
+          {
+            "x": 510.609375,
+            "y": 44,
+            "w": 258.78125,
+            "h": 52,
+            "name": "bake-box"
+          },
+          {
+            "x": 531.9114990234375,
+            "y": 587.7083740234375,
+            "w": 216.17709350585938,
+            "h": 32.29166793823242,
+            "name": "gate-msg"
+          }
+        ],
+        "vw": 1280,
+        "vh": 800,
+        "osdLine": "DISARMED \u00b7 ANGLE",
+        "besideStatusFits": true,
+        "inView": true
+      },
+      "pop": {
+        "x": 193,
+        "y": 43,
+        "w": 311.375,
+        "h": 158.89584350585938,
+        "inView": true,
+        "itemHeights": [
+          47,
+          47,
+          47
+        ],
+        "topmost": true
+      },
+      "underControls": "hidden",
+      "control": {
+        "overlaps": [
+          "osd-tr",
+          "top-actions"
+        ],
+        "fired": true,
+        "popoverFlat": {
+          "topmost": false,
+          "keptWithZ": true,
+          "fired": true
+        }
+      },
+      "errors": []
+    },
+    "phone": {
+      "ready": {
+        "status": "ready",
+        "render": "on",
+        "renderer": 2
+      },
+      "closed": {
+        "chip": {
+          "x": 16,
+          "y": 217,
+          "w": 78.35417175292969,
+          "h": 36,
+          "name": "chip"
+        },
+        "overlaps": [],
+        "others": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75,
+            "name": "osd-tl"
+          },
+          {
+            "x": 253.86459350585938,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75,
+            "name": "osd-tr"
+          },
+          {
+            "x": 16,
+            "y": 603.125,
+            "w": 210.9375,
+            "h": 18.75,
+            "name": "osd-bl"
+          },
+          {
+            "x": 153.45834350585938,
+            "y": 38,
+            "w": 205.875,
+            "h": 40,
+            "name": "top-actions"
+          },
+          {
+            "x": 18.77083396911621,
+            "y": 86,
+            "w": 337.79168701171875,
+            "h": 17,
+            "name": "touch-hint"
+          },
+          {
+            "x": 139.6666717529297,
+            "y": 732,
+            "w": 96,
+            "h": 56,
+            "name": "touch-arm"
+          },
+          {
+            "x": 24,
+            "y": 637.875,
+            "w": 150.125,
+            "h": 150.125,
+            "name": "touch-pad-0"
+          },
+          {
+            "x": 201.20834350585938,
+            "y": 637.875,
+            "w": 150.125,
+            "h": 150.125,
+            "name": "touch-pad-1"
+          },
+          {
+            "x": 16,
+            "y": 138,
+            "w": 343.3333435058594,
+            "h": 74.79167175292969,
+            "name": "attribution"
+          },
+          {
+            "x": 93.83333587646484,
+            "y": 44,
+            "w": 187.6666717529297,
+            "h": 72.83333587646484,
+            "name": "bake-box"
+          },
+          {
+            "x": 63.85416793823242,
+            "y": 459.8020935058594,
+            "w": 247.625,
+            "h": 39.19791793823242,
+            "name": "gate-msg"
+          }
+        ],
+        "vw": 375,
+        "vh": 812,
+        "osdLine": "DISARMED \u00b7 ANGLE",
+        "besideStatusFits": true,
+        "inView": true
+      },
+      "pop": {
+        "x": 16,
+        "y": 259,
+        "w": 311.375,
+        "h": 158.89584350585938,
+        "inView": true,
+        "itemHeights": [
+          47,
+          47,
+          47
+        ],
+        "topmost": true
+      },
+      "underControls": "hidden",
+      "control": {
+        "overlaps": [
+          "osd-tr",
+          "top-actions",
+          "bake-box"
+        ],
+        "fired": true,
+        "popoverFlat": {
+          "topmost": false,
+          "keptWithZ": true,
+          "fired": true
+        }
+      },
+      "errors": []
+    }
+  },
+  "ran": [
+    "M5"
+  ],
+  "M1": {
+    "pass": true,
+    "what": "chip -> Horizon: chip HORIZON, prefs flight.mode, ch[5] = 0, still after a reload; M cycles acro / angle / horizon with a note",
+    "start": {
+      "chip": "ANGLE",
+      "chipSrc": "",
+      "pref": "angle",
+      "explicit": false,
+      "ch5": 1,
+      "flying": "angle",
+      "radioDecides": false,
+      "note": null
+    },
+    "popOpen": true,
+    "popItems": [
+      "ACRONo self-levelling: the drone holds its attitude",
+      "ANGLESelf-levelling: let go of the sticks and it levels out",
+      "HORIZONLevels near centre stick, flips at full stick"
+    ],
+    "mKey": [
+      "M"
+    ],
+    "afterClick": {
+      "chip": "HORIZON",
+      "chipSrc": "",
+      "pref": "horizon",
+      "explicit": true,
+      "ch5": 0,
+      "flying": "horizon",
+      "radioDecides": false,
+      "note": null
+    },
+    "popClosed": true,
+    "afterReload": {
+      "chip": "HORIZON",
+      "chipSrc": "",
+      "pref": "horizon",
+      "explicit": true,
+      "ch5": 0,
+      "flying": "horizon",
+      "radioDecides": false,
+      "note": null
+    },
+    "cycle": [
+      {
+        "chip": "ACRO",
+        "chipSrc": "",
+        "pref": "acro",
+        "explicit": true,
+        "ch5": -1,
+        "flying": "acro",
+        "radioDecides": false,
+        "note": "Mode: ACRO"
+      },
+      {
+        "chip": "ANGLE",
+        "chipSrc": "",
+        "pref": "angle",
+        "explicit": true,
+        "ch5": 1,
+        "flying": "angle",
+        "radioDecides": false,
+        "note": "Mode: ANGLE"
+      },
+      {
+        "chip": "HORIZON",
+        "chipSrc": "",
+        "pref": "horizon",
+        "explicit": true,
+        "ch5": 0,
+        "flying": "horizon",
+        "radioDecides": false,
+        "note": "Mode: HORIZON"
+      }
+    ],
+    "control": {
+      "fresh": {
+        "chip": "ANGLE",
+        "chipSrc": "",
+        "pref": "angle",
+        "explicit": false,
+        "ch5": 1,
+        "flying": "angle",
+        "radioDecides": false,
+        "note": null
+      },
+      "fired": true
+    },
+    "errors": [],
+    "fromRun": {
+      "date": "2026-10-01T22:29:09.918Z",
+      "gitHead": "75c7d30",
+      "gitDirty": true
+    }
+  },
+  "M2": {
+    "pass": true,
+    "what": "the radio's mode switch, found on the check screen with no press, decides ch[5]; a chip click and M leave ch[5] at the radio's value and say why",
+    "radio": "SimRadio EdgeTX Classic (simulated raw HID reports, NOT a real radio), CH6 driven by the harness",
+    "check": {
+      "id": "check",
+      "step": 6,
+      "cmds": 16,
+      "seconds": 20,
+      "presses": {
+        "presses": 0,
+        "dropped": 0
+      }
+    },
+    "found": {
+      "cmdsBefore": 16,
+      "cmdsAfter": 16,
+      "modeSwitch": {
+        "sw": {
+          "input": {
+            "kind": "axis",
+            "index": 5
+          },
+          "modes": [
+            "acro",
+            "horizon",
+            "angle"
+          ]
+        },
+        "pos": 2,
+        "seen": [
+          true,
+          false,
+          true
+        ],
+        "listening": false
+      },
+      "profileSwitch": {
+        "input": {
+          "kind": "axis",
+          "index": 5
+        },
+        "modes": [
+          "acro",
+          "horizon",
+          "angle"
+        ]
+      },
+      "row": "Mode switchCH6\u2212100: ACRO0: HORIZON+100: ANGLECH6: your radio sets the modeNo switch",
+      "presses": 0
+    },
+    "stored": {
+      "version": 1,
+      "modeSwitch": {
+        "input": {
+          "index": 5,
+          "kind": "axis"
+        },
+        "modes": [
+          "acro",
+          "horizon",
+          "angle"
+        ]
+      }
+    },
+    "low": {
+      "chip": "ACRO",
+      "chipSrc": "CH6",
+      "pref": "angle",
+      "explicit": false,
+      "ch5": -1,
+      "flying": "acro",
+      "radioDecides": true,
+      "note": null
+    },
+    "popup": {
+      "disabled": "true",
+      "note": "Your radio's switch CH6 sets the mode"
+    },
+    "afterChip": {
+      "chip": "ACRO",
+      "chipSrc": "CH6",
+      "pref": "angle",
+      "explicit": false,
+      "ch5": -1,
+      "flying": "acro",
+      "radioDecides": true,
+      "note": null
+    },
+    "afterM": {
+      "chip": "ACRO",
+      "chipSrc": "CH6",
+      "pref": "angle",
+      "explicit": false,
+      "ch5": -1,
+      "flying": "acro",
+      "radioDecides": true,
+      "note": "Your radio's switch CH6 sets the mode"
+    },
+    "high": {
+      "chip": "ANGLE",
+      "chipSrc": "CH6",
+      "pref": "angle",
+      "explicit": false,
+      "ch5": 1,
+      "flying": "angle",
+      "radioDecides": true,
+      "note": "Your radio's switch CH6 sets the mode"
+    },
+    "mid": {
+      "chip": "HORIZON",
+      "chipSrc": "CH6",
+      "pref": "angle",
+      "explicit": false,
+      "ch5": 0,
+      "flying": "horizon",
+      "radioDecides": true,
+      "note": "Your radio's switch CH6 sets the mode"
+    },
+    "control": {
+      "check": {
+        "id": "check",
+        "step": 6,
+        "cmds": 16,
+        "seconds": 19,
+        "presses": {
+          "presses": 0,
+          "dropped": 0
+        }
+      },
+      "before": {
+        "chip": "ANGLE",
+        "chipSrc": "",
+        "pref": "angle",
+        "explicit": false,
+        "ch5": 1,
+        "flying": "angle",
+        "radioDecides": false,
+        "note": null
+      },
+      "after": {
+        "chip": "HORIZON",
+        "chipSrc": "",
+        "pref": "horizon",
+        "explicit": true,
+        "ch5": 0,
+        "flying": "horizon",
+        "radioDecides": false,
+        "note": null
+      },
+      "fired": true
+    },
+    "errors": [],
+    "fromRun": {
+      "date": "2026-10-01T22:29:09.918Z",
+      "gitHead": "75c7d30",
+      "gitDirty": true
+    }
+  },
+  "M3": {
+    "pass": true,
+    "what": "respawn.keepArmed (on by default): the radio's arm switch kept ON through a crash and the respawn (R) arms the gate again with no new flip; off (changed live) wants the flip",
+    "radio": "SimRadio EdgeTX Classic (simulated raw HID reports, NOT a real radio)",
+    "pref": {
+      "keepArmed": true,
+      "controls": true
+    },
+    "crash": {
+      "armedBefore": {
+        "gate": true,
+        "sim": true,
+        "y": 1.5723715984729445
+      },
+      "crashed": true,
+      "during": {
+        "crashed": true,
+        "block": "crashed",
+        "gateArmed": false,
+        "switchOn": true
+      }
+    },
+    "after": {
+      "crashed": false,
+      "gateArmed": true,
+      "block": null,
+      "switchOn": true,
+      "simArmed": true,
+      "keepArmed": true
+    },
+    "control": {
+      "offLive": false,
+      "crash": {
+        "armedBefore": {
+          "gate": true,
+          "sim": true,
+          "y": 1.5719627878217954
+        },
+        "crashed": true,
+        "during": {
+          "crashed": true,
+          "block": "crashed",
+          "gateArmed": false,
+          "switchOn": true
+        }
+      },
+      "after": {
+        "crashed": false,
+        "gateArmed": false,
+        "block": "switch",
+        "switchOn": true,
+        "simArmed": false,
+        "keepArmed": false
+      },
+      "afterFlip": {
+        "gateArmed": true,
+        "block": null
+      },
+      "fired": true
+    },
+    "simSide": {
+      "simArmedAfterRespawn": true,
+      "note": "page side only: the flight model respawns armed once the session's respawn passes RespawnOpts.keepArmed (W2-2, session.ts); until then the craft is parked even though the gate passes ON"
+    },
+    "errors": [],
+    "fromRun": {
+      "date": "2026-10-01T22:27:29.984Z",
+      "gitHead": "75c7d30",
+      "gitDirty": true
+    }
+  },
+  "M4": {
+    "pass": true,
+    "what": "v0.2 radio profiles (an EdgeTX radio, a gamepad), the last input and the stick mode move into the prefs document on the first v0.3 boot and stay there",
+    "migrated": {
+      "from": 0,
+      "found": [
+        "gsfpv.profiles.v1",
+        "gsfpv.stickMode",
+        "gsfpv.lastInput"
+      ],
+      "moved": [
+        "gsfpv.stickMode",
+        "gsfpv.profiles.v1",
+        "gsfpv.lastInput"
+      ],
+      "ignored": [
+        {
+          "key": "gsfpv.profiles.v1",
+          "why": "1 profile(s) this version cannot read"
+        }
+      ]
+    },
+    "docItems": [
+      "gp:Xbox Wireless Controller",
+      "hid:1209:4f54:Radiomaster TX16S Joystick:19"
+    ],
+    "last": {
+      "key": "hid:1209:4f54:Radiomaster TX16S Joystick:19",
+      "kind": "hid"
+    },
+    "stick": "1",
+    "again": {
+      "migrated": null,
+      "keys": [
+        "gp:Xbox Wireless Controller",
+        "hid:1209:4f54:Radiomaster TX16S Joystick:19"
+      ]
+    },
+    "control": {
+      "brokenInDoc": false,
+      "ignored": [
+        {
+          "key": "gsfpv.profiles.v1",
+          "why": "1 profile(s) this version cannot read"
+        }
+      ],
+      "consoleWarning": [
+        "warning: radio setups: gsfpv.profiles.v1 was not moved into the settings (1 profile(s) this version cannot read); the old copy stays in this browser"
+      ],
+      "legacyStillHasBroken": true,
+      "fired": true
+    },
+    "errors": [],
+    "fromRun": {
+      "date": "2026-10-01T22:29:09.918Z",
+      "gitHead": "75c7d30",
+      "gitDirty": true
+    }
+  },
+  "pass": true
+}

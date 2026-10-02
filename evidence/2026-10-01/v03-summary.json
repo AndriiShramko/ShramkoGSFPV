@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-01T17:37:33.777Z",
-    "gitHead": "3db8ec7",
+    "date": "2026-10-01T22:23:55.110Z",
+    "gitHead": "75c7d30",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://127.0.0.1:5324",
+  "site": "http://127.0.0.1:5301",
   "browser": {
     "kind": "system-chrome",
     "version": "154.0.8037.59",
@@ -38,11 +38,25 @@
       "flying": false
     },
     {
+      "action": "respawn.rewind",
+      "keys": [
+        "KeyY"
+      ],
+      "flying": false
+    },
+    {
+      "action": "crash.keep",
+      "keys": [
+        "Enter"
+      ],
+      "flying": false
+    },
+    {
       "action": "mode.cycle",
       "keys": [
         "KeyM"
       ],
-      "flying": true
+      "flying": false
     },
     {
       "action": "arm.toggle",
@@ -73,20 +87,350 @@
       "flying": false
     },
     {
+      "action": "record.toggle",
+      "keys": [
+        "F9"
+      ],
+      "flying": false
+    },
+    {
       "action": "frameStats.toggle",
       "keys": [
         "F3"
       ],
       "flying": false
+    },
+    {
+      "action": "settings.open",
+      "keys": [
+        "KeyO"
+      ],
+      "flying": false
     }
   ],
+  "S5": {
+    "pass": true,
+    "what": "the summary panel keeps every pause-menu item with its data-action, in order, and the contact link; the first item has the focus, Down / Up walk the menu (wrapping), Tab goes on, Enter runs the focused item, Esc closes what it opened; every item does what it did",
+    "order": [
+      "pause.continue",
+      "pause.restart",
+      "pause.rewind",
+      "pause.scene",
+      "pause.drone",
+      "pause.radio",
+      "pause.settings",
+      "pause.replays",
+      "pause.measure",
+      "pause.import",
+      "pause.cinema",
+      "pause.record"
+    ],
+    "contact": {
+      "href": "/en/#contact",
+      "target": "_blank"
+    },
+    "nav": {
+      "walk": [
+        "pause.restart",
+        "pause.rewind",
+        "pause.scene",
+        "pause.drone",
+        "pause.radio",
+        "pause.settings",
+        "pause.replays",
+        "pause.measure",
+        "pause.import",
+        "pause.cinema",
+        "pause.record",
+        "/en/#contact",
+        "pause.continue"
+      ],
+      "expectWalk": [
+        "pause.restart",
+        "pause.rewind",
+        "pause.scene",
+        "pause.drone",
+        "pause.radio",
+        "pause.settings",
+        "pause.replays",
+        "pause.measure",
+        "pause.import",
+        "pause.cinema",
+        "pause.record",
+        "/en/#contact",
+        "pause.continue"
+      ],
+      "up": "/en/#contact",
+      "tab": "pause.restart",
+      "onMeasure": "pause.measure",
+      "enterOpened": "panel interactive",
+      "escClosed": true
+    },
+    "items": {
+      "pause.continue": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 2263,
+          "paused": true,
+          "rec": false,
+          "lives": 1
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying",
+          "tick": 2784,
+          "paused": false,
+          "rec": false,
+          "lives": 1
+        }
+      },
+      "pause.restart": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 3917,
+          "paused": true,
+          "rec": false,
+          "lives": 1
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying",
+          "tick": 491,
+          "paused": false,
+          "rec": false,
+          "lives": 1
+        }
+      },
+      "pause.rewind": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 825,
+          "paused": true,
+          "rec": false,
+          "lives": 1
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying",
+          "tick": 1319,
+          "paused": false,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.drone": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 1652,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "screen drones interactive",
+          "body": "flying",
+          "tick": 1652,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.radio": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 1961,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "screen radio interactive",
+          "body": "flying",
+          "tick": 1961,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.settings": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 2263,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "panel interactive settings",
+          "body": "flying",
+          "tick": 2263,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.replays": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 2584,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "panel interactive",
+          "body": "flying",
+          "tick": 2584,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.measure": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 2905,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "panel interactive",
+          "body": "flying",
+          "tick": 2905,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.import": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 3223,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "panel interactive",
+          "body": "flying",
+          "tick": 3223,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.cinema": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 3542,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying cinema",
+          "tick": 4058,
+          "paused": false,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.record": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 4368,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying",
+          "tick": 6388,
+          "paused": false,
+          "rec": true,
+          "lives": 2
+        }
+      },
+      "pause.scene": {
+        "ok": true,
+        "status": "picker",
+        "url": "http://127.0.0.1:5301/fly/?",
+        "firstVisitWarning": true
+      }
+    },
+    "control": {
+      "what": "a planted button in the menu that does nothing: the same look must find nothing happened",
+      "planted": {
+        "didSomething": false
+      },
+      "fired": true
+    },
+    "ran": {
+      "at": "2026-10-01T22:23:54.988Z",
+      "gitHead": "75c7d30",
+      "gitDirty": true,
+      "browser": {
+        "kind": "system-chrome",
+        "version": "154.0.8037.59",
+        "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "why": "installed"
+      }
+    }
+  },
   "S1": {
     "pass": true,
     "render": "off",
     "what": "fly with the keyboard (walls off), disarm with the switch after 4 s: the card shows, its air time is within 0.1 s of __gsfpv.stats().life.airtimeS; any key closes it; Enter opens the summary panel with the first item focused (not pressed); a life under 3 s shows no card",
     "flight": {
       "armed": true,
-      "lifeAtDisarm": 4.022
+      "lifeAtDisarm": 4.0120000000000005
     },
     "card": {
       "shown": true,
@@ -95,26 +439,26 @@
       "airtime": "0:04.0",
       "rows": {
         "airtime": "0:04.0",
-        "maxSpeed": "48 km/h",
-        "maxAlt": "37.4 m",
+        "maxSpeed": "49 km/h",
+        "maxAlt": "39.4 m",
         "maxDist": "0.0 m",
-        "distance": "38.1 m",
+        "distance": "39.4 m",
         "minVolt": "12.13 V",
-        "maxAmps": "11.4 A",
+        "maxAmps": "11.5 A",
         "usedMah": "12 mAh",
-        "maxG": "2.2 G",
+        "maxG": "2.9 G",
         "avgThrottle": "50 %"
       }
     },
     "life": {
-      "airtimeS": 4.022
+      "airtimeS": 4.0120000000000005
     },
     "disarm": {
       "type": "disarm",
-      "tick": 4491,
+      "tick": 4485,
       "reason": "switch"
     },
-    "airtimeDiffS": 0.02200000000000024,
+    "airtimeDiffS": 0.012000000000000455,
     "goneOnKey": true,
     "secondCard": true,
     "enter": {
@@ -124,7 +468,7 @@
     },
     "closedByEsc": true,
     "shortLife": {
-      "airtimeS": 1.5130000000000001,
+      "airtimeS": 1.5170000000000001,
       "card": 0
     },
     "control": {
@@ -137,7 +481,7 @@
         ],
         "crash": {
           "type": "crash",
-          "tick": 5822,
+          "tick": 5850,
           "speed": 8.668891791625434,
           "nx": 1,
           "ny": 0,
@@ -151,8 +495,8 @@
       "fired": true
     },
     "ran": {
-      "at": "2026-10-01T17:37:33.656Z",
-      "gitHead": "3db8ec7",
+      "at": "2026-10-01T22:22:28.438Z",
+      "gitHead": "75c7d30",
       "gitDirty": true,
       "browser": {
         "kind": "system-chrome",
@@ -184,6 +528,27 @@
         "aria": "R"
       },
       {
+        "action": "respawn.rewind",
+        "caps": [
+          "Y"
+        ],
+        "aria": "Y"
+      },
+      {
+        "action": "crash.keep",
+        "caps": [
+          "Enter"
+        ],
+        "aria": "Enter"
+      },
+      {
+        "action": "mode.cycle",
+        "caps": [
+          "M"
+        ],
+        "aria": "M"
+      },
+      {
         "action": "voxels.cycle",
         "caps": [
           "V"
@@ -205,6 +570,13 @@
         "aria": "H"
       },
       {
+        "action": "record.toggle",
+        "caps": [
+          "F9"
+        ],
+        "aria": "F9"
+      },
+      {
         "action": "frameStats.toggle",
         "caps": [
           "F3"
@@ -212,11 +584,11 @@
         "aria": "F3"
       },
       {
-        "action": "mode.cycle",
+        "action": "settings.open",
         "caps": [
-          "M"
+          "O"
         ],
-        "aria": "M"
+        "aria": "O"
       },
       {
         "action": "arm.toggle",
@@ -245,6 +617,14 @@
         "testid": null
       },
       {
+        "id": "pause.rewind",
+        "caps": [
+          "Y"
+        ],
+        "aria": "Y",
+        "testid": null
+      },
+      {
         "id": "pause.scene",
         "caps": [],
         "aria": null,
@@ -264,8 +644,10 @@
       },
       {
         "id": "pause.settings",
-        "caps": [],
-        "aria": null,
+        "caps": [
+          "O"
+        ],
+        "aria": "O",
         "testid": null
       },
       {
@@ -291,12 +673,20 @@
         "caps": [],
         "aria": null,
         "testid": null
+      },
+      {
+        "id": "pause.record",
+        "caps": [
+          "F9"
+        ],
+        "aria": "F9",
+        "testid": null
       }
     ],
     "mode": {
-      "chip": "acro",
-      "simChannel": -1,
-      "sim": "acro"
+      "chip": "angle",
+      "simChannel": 1,
+      "sim": "angle"
     },
     "airtime": {
       "panel": {
@@ -306,7 +696,7 @@
         "lifetime": "0:08.8",
         "visible": true
       },
-      "hook": 1.5130000000000001
+      "hook": 1.5170000000000001
     },
     "copy": {
       "status": "Copied",
@@ -326,8 +716,8 @@
       "fired": true
     },
     "ran": {
-      "at": "2026-10-01T17:37:33.656Z",
-      "gitHead": "3db8ec7",
+      "at": "2026-10-01T22:22:28.438Z",
+      "gitHead": "75c7d30",
       "gitDirty": true,
       "browser": {
         "kind": "system-chrome",
@@ -368,17 +758,36 @@
         "action": "respawn.start",
         "key": "KeyR",
         "flying": false,
-        "expect": "atSpawn",
+        "expect": "lives",
         "changed": [
-          "atSpawn"
+          "atSpawn",
+          "lives"
         ],
         "ok": true,
         "restored": null
       },
       {
+        "action": "respawn.rewind",
+        "key": "KeyY",
+        "flying": false,
+        "expect": "lives",
+        "changed": [
+          "lives"
+        ],
+        "ok": true,
+        "restored": null
+      },
+      {
+        "action": "crash.keep",
+        "key": "Enter",
+        "ok": true,
+        "changed": [],
+        "skipped": "listens only while a crash is up (when: 'crash'): checked with the crash in tools/bench/src/accept-v03-respawn.ts"
+      },
+      {
         "action": "mode.cycle",
         "key": "KeyM",
-        "flying": true,
+        "flying": false,
         "expect": "mode",
         "changed": [
           "mode"
@@ -415,8 +824,8 @@
         "flying": false,
         "expect": "walls",
         "changed": [
-          "mode",
-          "walls"
+          "walls",
+          "lives"
         ],
         "ok": true,
         "restored": true
@@ -433,6 +842,17 @@
         "restored": true
       },
       {
+        "action": "record.toggle",
+        "key": "F9",
+        "flying": false,
+        "expect": "rec",
+        "changed": [
+          "rec"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
         "action": "frameStats.toggle",
         "key": "F3",
         "flying": false,
@@ -442,12 +862,23 @@
         ],
         "ok": true,
         "restored": true
+      },
+      {
+        "action": "settings.open",
+        "key": "KeyO",
+        "flying": false,
+        "expect": "settings",
+        "changed": [
+          "settings"
+        ],
+        "ok": true,
+        "restored": true
       }
     ],
     "control": {
       "what": "a deliberately wrong binding in the page's own keymap module (H and V swapped): the loop and the panel check must both fail",
       "injected": {
-        "url": "http://127.0.0.1:5324/fly/@fs/C:/dev/gsfpv-w2-4/packages/prefs/src/keymap.ts",
+        "url": "http://127.0.0.1:5301/fly/@fs/C:/dev/gsfpv-v03/packages/prefs/src/keymap.ts",
         "hud": [
           "KeyV"
         ],
@@ -488,8 +919,8 @@
       "fired": true
     },
     "ran": {
-      "at": "2026-10-01T17:37:33.656Z",
-      "gitHead": "3db8ec7",
+      "at": "2026-10-01T22:22:28.438Z",
+      "gitHead": "75c7d30",
       "gitDirty": true,
       "browser": {
         "kind": "system-chrome",
@@ -505,8 +936,8 @@
     "before": {
       "lifetime": {
         "flights": 1,
-        "airtimeS": 4.09,
-        "distanceM": 38.55377019788416,
+        "airtimeS": 4.038,
+        "distanceM": 40.00262849373269,
         "crashes": 0
       },
       "drone": "pavo20pro-3s"
@@ -514,18 +945,18 @@
     "afterReload": {
       "lifetime": {
         "flights": 1,
-        "airtimeS": 4.09,
-        "distanceM": 38.55377019788416,
+        "airtimeS": 4.038,
+        "distanceM": 40.00262849373269,
         "crashes": 0
       },
       "stored": {
         "flights": 1,
-        "airtimeS": 4.09,
-        "distanceM": 38.55377019788416,
+        "airtimeS": 4.038,
+        "distanceM": 40.00262849373269,
         "crashes": 0
       }
     },
-    "panelAllTimeAirtime": "0:04.1",
+    "panelAllTimeAirtime": "0:04.0",
     "control": {
       "what": "a fresh browser context starts at zero",
       "fresh": {
@@ -540,240 +971,8 @@
       "fired": true
     },
     "ran": {
-      "at": "2026-10-01T17:37:33.656Z",
-      "gitHead": "3db8ec7",
-      "gitDirty": true,
-      "browser": {
-        "kind": "system-chrome",
-        "version": "154.0.8037.59",
-        "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-        "why": "installed"
-      }
-    }
-  },
-  "S5": {
-    "pass": true,
-    "what": "the summary panel keeps every pause-menu item with its data-action, in order, and the contact link; the first item has the focus, Down / Up walk the menu (wrapping), Tab goes on, Enter runs the focused item, Esc closes what it opened; every item does what it did",
-    "order": [
-      "pause.continue",
-      "pause.restart",
-      "pause.scene",
-      "pause.drone",
-      "pause.radio",
-      "pause.settings",
-      "pause.replays",
-      "pause.measure",
-      "pause.import",
-      "pause.cinema"
-    ],
-    "contact": {
-      "href": "/en/#contact",
-      "target": "_blank"
-    },
-    "nav": {
-      "walk": [
-        "pause.restart",
-        "pause.scene",
-        "pause.drone",
-        "pause.radio",
-        "pause.settings",
-        "pause.replays",
-        "pause.measure",
-        "pause.import",
-        "pause.cinema",
-        "/en/#contact",
-        "pause.continue"
-      ],
-      "expectWalk": [
-        "pause.restart",
-        "pause.scene",
-        "pause.drone",
-        "pause.radio",
-        "pause.settings",
-        "pause.replays",
-        "pause.measure",
-        "pause.import",
-        "pause.cinema",
-        "/en/#contact",
-        "pause.continue"
-      ],
-      "up": "/en/#contact",
-      "tab": "pause.restart",
-      "onMeasure": "pause.measure",
-      "enterOpened": "panel interactive",
-      "escClosed": true
-    },
-    "items": {
-      "pause.continue": {
-        "ok": true,
-        "before": {
-          "panel": true,
-          "other": "",
-          "body": "flying",
-          "tick": 2228,
-          "paused": true
-        },
-        "after": {
-          "panel": false,
-          "other": "",
-          "body": "flying",
-          "tick": 2753,
-          "paused": false
-        }
-      },
-      "pause.restart": {
-        "ok": true,
-        "before": {
-          "panel": true,
-          "other": "",
-          "body": "flying",
-          "tick": 3853,
-          "paused": true
-        },
-        "after": {
-          "panel": false,
-          "other": "",
-          "body": "flying",
-          "tick": 492,
-          "paused": false
-        }
-      },
-      "pause.drone": {
-        "ok": true,
-        "before": {
-          "panel": true,
-          "other": "",
-          "body": "flying",
-          "tick": 792,
-          "paused": true
-        },
-        "after": {
-          "panel": false,
-          "other": "screen drones interactive",
-          "body": "flying",
-          "tick": 792,
-          "paused": true
-        }
-      },
-      "pause.radio": {
-        "ok": true,
-        "before": {
-          "panel": true,
-          "other": "",
-          "body": "flying",
-          "tick": 1109,
-          "paused": true
-        },
-        "after": {
-          "panel": false,
-          "other": "screen radio interactive",
-          "body": "flying",
-          "tick": 1109,
-          "paused": true
-        }
-      },
-      "pause.settings": {
-        "ok": true,
-        "before": {
-          "panel": true,
-          "other": "",
-          "body": "flying",
-          "tick": 1420,
-          "paused": true
-        },
-        "after": {
-          "panel": false,
-          "other": "panel interactive",
-          "body": "flying",
-          "tick": 1420,
-          "paused": true
-        }
-      },
-      "pause.replays": {
-        "ok": true,
-        "before": {
-          "panel": true,
-          "other": "",
-          "body": "flying",
-          "tick": 1734,
-          "paused": true
-        },
-        "after": {
-          "panel": false,
-          "other": "panel interactive",
-          "body": "flying",
-          "tick": 1734,
-          "paused": true
-        }
-      },
-      "pause.measure": {
-        "ok": true,
-        "before": {
-          "panel": true,
-          "other": "",
-          "body": "flying",
-          "tick": 2045,
-          "paused": true
-        },
-        "after": {
-          "panel": false,
-          "other": "panel interactive",
-          "body": "flying",
-          "tick": 2045,
-          "paused": true
-        }
-      },
-      "pause.import": {
-        "ok": true,
-        "before": {
-          "panel": true,
-          "other": "",
-          "body": "flying",
-          "tick": 2365,
-          "paused": true
-        },
-        "after": {
-          "panel": false,
-          "other": "panel interactive",
-          "body": "flying",
-          "tick": 2365,
-          "paused": true
-        }
-      },
-      "pause.cinema": {
-        "ok": true,
-        "before": {
-          "panel": true,
-          "other": "",
-          "body": "flying",
-          "tick": 2686,
-          "paused": true
-        },
-        "after": {
-          "panel": false,
-          "other": "",
-          "body": "flying cinema",
-          "tick": 3197,
-          "paused": false
-        }
-      },
-      "pause.scene": {
-        "ok": true,
-        "status": "picker",
-        "url": "http://127.0.0.1:5324/fly/?",
-        "firstVisitWarning": true
-      }
-    },
-    "control": {
-      "what": "a planted button in the menu that does nothing: the same look must find nothing happened",
-      "planted": {
-        "didSomething": false
-      },
-      "fired": true
-    },
-    "ran": {
-      "at": "2026-10-01T17:37:33.656Z",
-      "gitHead": "3db8ec7",
+      "at": "2026-10-01T22:22:28.438Z",
+      "gitHead": "75c7d30",
       "gitDirty": true,
       "browser": {
         "kind": "system-chrome",
@@ -785,7 +984,7 @@
   },
   "S6": {
     "pass": true,
-    "vramFreeMiB": 19615,
+    "vramFreeMiB": 4562,
     "what": "scan drawn: the card inside the viewport and clear of the top buttons, the OSD lines, the credit and the arm / key cards; the panel inside the viewport and clear of the top buttons, no horizontal overflow, menu buttons not overlapping; desktop 1280x800: 16 stat rows in three columns (stats | menu | keys); phone 375x812: the 4 main stat rows in one column",
     "desktop": {
       "info": {
@@ -828,19 +1027,19 @@
             "x": 520.0729370117188,
             "y": 156.6666717529297,
             "r": 862.6979370117188,
-            "b": 640.6666717529297
+            "b": 728.6666717529297
           },
           {
             "x": 880.6979370117188,
             "y": 156.6666717529297,
             "r": 1223.3229370117188,
-            "b": 556.0416717529297
+            "b": 688.6250457763672
           }
         ]
       },
       "planted": {
         "hOverflow": 217,
-        "buttonOverlaps": 19,
+        "buttonOverlaps": 23,
         "cardHits": []
       }
     },
@@ -885,19 +1084,19 @@
             "x": 32.66666793823242,
             "y": 398.5625,
             "r": 327.3333549499512,
-            "b": 882.5625
+            "b": 970.5625
           },
           {
             "x": 32.66666793823242,
-            "y": 900.5625,
+            "y": 988.5625,
             "r": 327.3333549499512,
-            "b": 1312.5208435058594
+            "b": 1533.1041870117188
           }
         ]
       },
       "planted": {
         "hOverflow": 1089,
-        "buttonOverlaps": 19,
+        "buttonOverlaps": 23,
         "cardHits": [
           "arm-card key-card"
         ]
@@ -914,12 +1113,12 @@
       "what": "planted styles must be seen: a 1400 px stats table as a horizontal overflow, -24 px button margins as overlapping buttons, and on the phone the keyboard card shown under the stats card as a collision",
       "desktop": {
         "hOverflow": 217,
-        "buttonOverlaps": 19,
+        "buttonOverlaps": 23,
         "cardHits": []
       },
       "phone": {
         "hOverflow": 1089,
-        "buttonOverlaps": 19,
+        "buttonOverlaps": 23,
         "cardHits": [
           "arm-card key-card"
         ]
@@ -927,8 +1126,8 @@
       "fired": true
     },
     "ran": {
-      "at": "2026-10-01T17:36:23.305Z",
-      "gitHead": "3db8ec7",
+      "at": "2026-10-01T22:22:28.438Z",
+      "gitHead": "75c7d30",
       "gitDirty": true,
       "browser": {
         "kind": "system-chrome",
@@ -942,32 +1141,32 @@
     {
       "part": "S1",
       "pass": true,
-      "gitHead": "3db8ec7"
+      "gitHead": "75c7d30"
     },
     {
       "part": "S2",
       "pass": true,
-      "gitHead": "3db8ec7"
+      "gitHead": "75c7d30"
     },
     {
       "part": "S3",
       "pass": true,
-      "gitHead": "3db8ec7"
+      "gitHead": "75c7d30"
     },
     {
       "part": "S4",
       "pass": true,
-      "gitHead": "3db8ec7"
+      "gitHead": "75c7d30"
     },
     {
       "part": "S5",
       "pass": true,
-      "gitHead": "3db8ec7"
+      "gitHead": "75c7d30"
     },
     {
       "part": "S6",
       "pass": true,
-      "gitHead": "3db8ec7"
+      "gitHead": "75c7d30"
     }
   ],
   "pass": true

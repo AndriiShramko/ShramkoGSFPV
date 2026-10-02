@@ -203,7 +203,11 @@ if (want('M2')) {
  * (A climb and a cut first was not reliable: the throttle caught the fall below 4 m/s now and then.)
  */
 async function crashWithSwitchOn(p: Page): Promise<Any> {
-    await hook(p, "h.fake.set('T', -1); h.fake.arm = false; return 0;");
+    // since W2-2 the craft starts on an invisible platform (item 16) that holds it at idle: the crash
+    // needs the 1.7 m drop, so the platform is off for this start (R) and back on for the respawn
+    await hook(p, "h.prefs.set('respawn.platform', false); h.fake.set('T', -1); h.fake.arm = false; return 0;");
+    await p.keyboard.press('KeyR');
+    await wait(p, 300);
     await wait(p, 400);
     await hook(p, 'h.fake.arm = true; return 0;');
     await wait(p, 60);
@@ -221,6 +225,7 @@ async function crashWithSwitchOn(p: Page): Promise<Any> {
 }
 
 async function respawnWithSwitchOn(p: Page): Promise<Any> {
+    await hook(p, "h.prefs.set('respawn.platform', true); return 0;");
     await p.keyboard.press('KeyR');
     await wait(p, 500);
     return hook(p, 'return { crashed: !!s.sim.crashed, gateArmed: h.controls.gate.armed, block: h.controls.block, switchOn: h.fake.arm, simArmed: !!s.sim.armed, keepArmed: h.controls.keepArmedAfterCrash };');
@@ -248,7 +253,7 @@ if (want('M3')) {
     await hook(p, 'h.fake.arm = true; return 0;');
     await wait(p, 400);
     const afterFlip = await hook(p, 'return { gateArmed: h.controls.gate.armed, block: h.controls.block };');
-    await hook(p, "h.prefs.reset('respawn.keepArmed'); return 0;");
+    await hook(p, "h.prefs.reset('respawn.keepArmed'); h.prefs.reset('respawn.platform'); return 0;");
     await ctx.close();
     const pass = pref.keepArmed === true && pref.controls === true && crash.armedBefore.gate && crash.crashed && crash.during.block === 'crashed' && crash.during.switchOn
         && !after.crashed && after.gateArmed === true && after.block === null && after.switchOn;
@@ -329,7 +334,10 @@ async function layout(size: { width: number; height: number; mobile: boolean }, 
     const POP = "const r = document.querySelector('#mode-pop').getBoundingClientRect(); const bs = [...document.querySelectorAll('#mode-pop [role=menuitemradio]')]; const items = bs.map((b) => Math.round(b.getBoundingClientRect().height)); const topmost = bs.every((b) => { const q = b.getBoundingClientRect(); return b.contains(document.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2)); }); return { x: r.left, y: r.top, w: r.width, h: r.height, inView: r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, itemHeights: items, topmost };";
     const pop = await hook(p, POP);
     // control: the same popover without its stacking (z-index auto, as first built) is painted over on a phone
-    const popFlat = await hook(p, `document.querySelector('.mode-chip').style.zIndex = 'auto'; const res = (() => { ${POP} })(); document.querySelector('.mode-chip').style.zIndex = ''; return res;`);
+    // control: a copy of the walls box (the page's own layer for boxes) laid exactly over the popover; with the
+    // chip's z-index removed the box paints over the choices (topmost false), with it the popover stays on top
+    const COVER = "const src = document.querySelector('#ui > .bake-box') || document.querySelector('.touch-hint'); const r = document.querySelector('#mode-pop').getBoundingClientRect(); const c = src.cloneNode(true); c.removeAttribute('data-testid'); c.setAttribute('data-planted', '1'); Object.assign(c.style, { position: 'fixed', left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px', margin: '0', transform: 'none' }); src.parentElement.append(c);";
+    const popFlat = await hook(p, `${COVER} document.querySelector('.mode-chip').style.zIndex = 'auto'; const res = (() => { ${POP} })(); document.querySelector('.mode-chip').style.zIndex = ''; const kept = (() => { ${POP} })(); document.querySelector('[data-planted]').remove(); res.keptWithZ = kept.topmost; return res;`);
     await p.screenshot({ path: join(SHOTS, `m5-${tag}-popover.png`) });
     await p.keyboard.press('Escape');
     // under the Controls screen the chip goes with the rest of the flight view
@@ -342,7 +350,7 @@ async function layout(size: { width: number; height: number; mobile: boolean }, 
     const planted = await hook(p, `const el = document.querySelector('[data-testid="mode-chip"]').parentElement; const trR = document.querySelector('.hud .osd.tr').getBoundingClientRect();
         el.style.transition = 'none'; el.style.left = trR.left + 'px'; el.style.top = trR.top + 'px'; ${OVERLAP}`);
     await ctx.close();
-    return { ready: { status: ready.status, render: (ready.info as Any)?.render, renderer: (ready.info as Any)?.currentRenderer }, closed, pop, underControls, control: { overlaps: planted.overlaps, fired: Array.isArray(planted.overlaps) && planted.overlaps.includes('osd-tr'), popoverFlat: { topmost: popFlat.topmost, fired: popFlat.topmost === false } }, errors: log.filter((l) => l.startsWith('pageerror')) };
+    return { ready: { status: ready.status, render: (ready.info as Any)?.render, renderer: (ready.info as Any)?.currentRenderer }, closed, pop, underControls, control: { overlaps: planted.overlaps, fired: Array.isArray(planted.overlaps) && planted.overlaps.includes('osd-tr'), popoverFlat: { topmost: popFlat.topmost, keptWithZ: popFlat.keptWithZ, fired: popFlat.topmost === false && popFlat.keptWithZ === true } }, errors: log.filter((l) => l.startsWith('pageerror')) };
 }
 
 if (want('M5')) {

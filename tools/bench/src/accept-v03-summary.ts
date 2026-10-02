@@ -32,7 +32,8 @@ const ev = <T = Any>(p: Page, body: string): Promise<T> => p.evaluate(`(async ()
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** The menu of v0.2 / wave 1, in order: the summary panel must keep every item, its data-action and its place. */
-const MENU = ['pause.continue', 'pause.restart', 'pause.scene', 'pause.drone', 'pause.radio', 'pause.settings', 'pause.replays', 'pause.measure', 'pause.import', 'pause.cinema'];
+// with the items the other wave-2/3 agents registered (merge 2026-10-02): Rewind 5 s (W2-2) after Restart, Record (W3-5) after Cinema
+const MENU = ['pause.continue', 'pause.restart', 'pause.rewind', 'pause.scene', 'pause.drone', 'pause.radio', 'pause.settings', 'pause.replays', 'pause.measure', 'pause.import', 'pause.cinema', 'pause.record'];
 /** Menu items that run a keymap action (MenuItem.action): the item shows that action's keys. */
 const MENU_ACTION: Record<string, string> = { 'pause.continue': 'pause.toggle', 'pause.restart': 'respawn.start' };
 const SHIPPED = KEYMAP.filter((b) => b.status === 'shipped');
@@ -133,15 +134,21 @@ function panelKeyProblems(info: Any, map: readonly KeyBinding[] = KEYMAP): strin
 // ------------------------------------------------------------------ the key loop (S3)
 
 /** What each shipped action changes on the page, and what it may change besides (a new flight model disarms, a respawn is logged). */
-const PROBES: Record<string, { field: string; also?: string[]; restore: number }> = {
+const PROBES: Record<string, { field: string; also?: string[]; restore: number; restoreKey?: string; skip?: string; waitMs?: number }> = {
     'pause.toggle': { field: 'menu', restore: 1 },
-    'respawn.start': { field: 'atSpawn', also: ['armed'], restore: 0 },
-    'mode.cycle': { field: 'mode', restore: 1 },
+    // a respawn is a new life (log /2), also when the craft already stands at the spawn
+    'respawn.start': { field: 'lives', also: ['armed', 'atSpawn'], restore: 0 },
+    'mode.cycle': { field: 'mode', restore: 2 }, // acro -> angle -> horizon: two more presses come back
     'arm.toggle': { field: 'armed', also: ['atSpawn'], restore: 1 },
     'voxels.cycle': { field: 'voxel', restore: 2 },
-    'walls.toggle': { field: 'walls', also: ['armed', 'mode', 'atSpawn'], restore: 1 },
+    'walls.toggle': { field: 'walls', also: ['armed', 'mode', 'atSpawn', 'lives'], restore: 1 },
     'hud.toggle': { field: 'hudOff', restore: 1 },
-    'frameStats.toggle': { field: 'frame', restore: 1 }
+    'frameStats.toggle': { field: 'frame', restore: 1 },
+    // shipped by the other wave-2/3 agents after this loop was written (merge on 2026-10-02)
+    'settings.open': { field: 'settings', restore: 1, restoreKey: 'Escape' },
+    'record.toggle': { field: 'rec', restore: 1, waitMs: 2000 }, // the encoder starts asynchronously
+    'respawn.rewind': { field: 'lives', also: ['atSpawn', 'armed'], restore: 0 },
+    'crash.keep': { field: 'crashPanel', restore: 0, skip: "listens only while a crash is up (when: 'crash'): checked with the crash in tools/bench/src/accept-v03-respawn.ts" }
 };
 const SNAP = `return {
     menu: !!document.querySelector('.pause-menu'),
@@ -152,7 +159,11 @@ const SNAP = `return {
     voxel: h.voxels.stats().mode,
     walls: h.wallsSwitch.on(),
     hudOff: document.querySelector('#ui').classList.contains('hud-off'),
-    frame: !document.querySelector('.osd.frame').classList.contains('hidden')
+    frame: !document.querySelector('.osd.frame').classList.contains('hidden'),
+    settings: !!document.querySelector('[data-testid=settings]'),
+    rec: !!document.querySelector('[data-action=cinema-rec].on'),
+    lives: s.lives ? s.lives().length : 0,
+    crashPanel: !!document.querySelector('[data-testid=crash-panel]')
 };`;
 const pw = (k: { code: string; shift?: boolean }) => (k.shift ? `Shift+${k.code}` : k.code);
 
@@ -161,15 +172,16 @@ async function keyLoop(p: Page, bindings: readonly KeyBinding[]): Promise<{ ok: 
     for (const b of bindings) {
         const probe = PROBES[b.action];
         for (const k of b.keys) {
-            if (!probe) { results.push({ action: b.action, key: pw(k), ok: false, why: 'no probe for this action: add one' }); continue; }
+            if (!probe) { results.push({ action: b.action, key: pw(k), ok: false, changed: [], why: 'no probe for this action: add one' }); continue; }
+            if (probe.skip) { results.push({ action: b.action, key: pw(k), ok: true, changed: [], skipped: probe.skip }); continue; }
             const before = await ev(p, SNAP);
             await p.keyboard.press(pw(k));
-            await sleep(300);
+            await sleep(probe.waitMs ?? 300);
             const after = await ev(p, SNAP);
             const changed = Object.keys(before).filter((f) => before[f] !== after[f]);
             const ok = changed.includes(probe.field) && changed.every((f) => f === probe.field || (probe.also ?? []).includes(f));
             let restored: boolean | null = null;
-            for (let i = 0; i < probe.restore; i++) { await p.keyboard.press(pw(k)); await sleep(300); }
+            for (let i = 0; i < probe.restore; i++) { await p.keyboard.press(probe.restoreKey ?? pw(k)); await sleep(probe.waitMs ?? 300); }
             if (probe.restore > 0) restored = (await ev(p, SNAP))[probe.field] === before[probe.field];
             results.push({ action: b.action, key: pw(k), flying: !!b.flying, expect: probe.field, changed, ok: ok && restored !== false, restored });
         }
@@ -186,7 +198,9 @@ const EFFECT = `return {
     body: document.body.className,
     tick: s && s.sim ? s.sim.tick : -1,
     paused: s ? s.paused : null,
-    href: location.href
+    href: location.href,
+    rec: !!document.querySelector('[data-action=cinema-rec].on'),
+    lives: s && s.lives ? s.lives().length : 0
 };`;
 async function openPanel(p: Page): Promise<void> {
     if (!(await p.locator('.pause-menu').count())) await p.keyboard.press('Escape');
@@ -400,7 +414,7 @@ try {
             await openPanel(p);
             const b = await ev(p, EFFECT);
             await p.click(`.pause-menu [data-action="${id}"]`);
-            await sleep(500);
+            await sleep(id === 'pause.record' ? 2000 : 500); // the encoder starts asynchronously (as F9 in S3)
             const a = await ev(p, EFFECT);
             items[id] = { ok: check(b, a), before: { ...b, href: undefined }, after: { ...a, href: undefined } };
             if (back) await back();
@@ -410,10 +424,12 @@ try {
         await look('pause.continue', (b, a) => !a.panel && a.paused === false);
         await sleep(800);
         await look('pause.restart', (b, a) => !a.panel && a.tick < b.tick);
+        await look('pause.rewind', (b, a) => !a.panel && a.lives > b.lives);
         await look('pause.drone', (b, a) => /drones/.test(a.other), async () => { await p.keyboard.press('Escape'); });
         await look('pause.radio', (b, a) => /radio/.test(a.other), async () => { await p.click('[data-action="radio-close"]'); });
         for (const id of ['pause.settings', 'pause.replays', 'pause.measure', 'pause.import']) await look(id, (b, a) => /panel/.test(a.other) && !a.panel, closeX);
         await look('pause.cinema', (b, a) => !/cinema/.test(b.body) && /cinema/.test(a.body), async () => { await openPanel(p); await p.click('.pause-menu [data-action="pause.cinema"]'); });
+        await look('pause.record', (b, a) => !a.panel && !b.rec && a.rec, async () => { await sleep(1500); await p.keyboard.press('F9'); await sleep(1500); });
         // control: a planted button in the menu that does nothing is caught by the same look
         await openPanel(p);
         const b0 = await ev(p, EFFECT);
@@ -421,7 +437,7 @@ try {
         await p.click('[data-action="planted-inert"]');
         await sleep(500);
         const a0 = await ev(p, EFFECT);
-        const did = (b: Any, a: Any) => b.panel !== a.panel || b.other !== a.other || b.body !== a.body || a.tick < b.tick || b.href !== a.href;
+        const did = (b: Any, a: Any) => b.panel !== a.panel || b.other !== a.other || b.body !== a.body || a.tick < b.tick || b.href !== a.href || b.rec !== a.rec || b.lives !== a.lives;
         const planted = { didSomething: did(b0, a0) };
         // Change scan last: it leaves the flight for the picker
         await p.keyboard.press('Escape');
