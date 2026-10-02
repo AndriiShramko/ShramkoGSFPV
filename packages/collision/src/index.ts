@@ -9,4 +9,5 @@ export * from './count';
 export * from './transform';
 export * from './mesh';
 export * from './components';
+export * from './rebuild';
 export * from './overlay';

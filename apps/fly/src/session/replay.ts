@@ -8,7 +8,8 @@
 import { LifePlayer, SIM_CORE_VERSION, lifeHeaderProblem, presetSha256, sha256Hex, trajPoint } from '@gsfpv/sim-core';
 import type { ContactWorld, Life, LifeHeader, PresetJson, ReplayDeps, Sim, TrajectoryPoint } from '@gsfpv/sim-core';
 import { PRESETS } from '../presets';
-import { IDENTITY, isIdentity, worldUnder } from './world';
+import { validMinBlocks } from '@gsfpv/collision';
+import { IDENTITY, filteredWalls, isIdentity, worldUnder } from './world';
 import type { BaseWalls } from './world';
 
 let bySha: Map<string, PresetJson> | null = null;
@@ -36,18 +37,39 @@ export function lifeProblem(h: LifeHeader, walls: WallsSource): string | null {
     if (!h.presetJson && !presetBySha(h.presetSha256)) return `preset ${h.preset} (${h.presetSha256.slice(0, 12)}) is not in this build`;
     if (h.collisionSha256 !== null && (h.collisionSha256 !== walls.collisionSha256 || !walls.world)) return 'flown on other walls';
     if (h.collisionSha256 !== null && h.scene && !isIdentity({ s: h.scene.transform[0], t: h.scene.transform.slice(1) }) && !walls.collision) return 'flown on rescaled walls this page cannot rebuild';
-    return null;
+    return floaterProblem(h, walls);
+}
+
+/**
+ * The floater filter (G.3): a life flown with pieces under N blocks dropped replays only on walls
+ * this page rebuilds from the scan's own to the very hash its header names (scene.floaterSha256).
+ */
+function floaterProblem(h: LifeHeader, walls: WallsSource): string | null {
+    const n = h.scene?.floaterMinBlocks ?? 0;
+    if (!validMinBlocks(n)) return `floater filter ${String(n)} is not a whole number of blocks 0-64`;
+    if (h.collisionSha256 === null || n === 0) return null;
+    if (!walls.collision) return 'flown with floating pieces dropped, on walls this page cannot rebuild';
+    const want = h.scene?.floaterSha256;
+    if (typeof want !== 'string') return 'flown with floating pieces dropped, but the log does not name the walls it gives';
+    let got: string | null;
+    try {
+        got = filteredWalls(walls.collision, n).sha256;
+    } catch (e) {
+        return `the floater filter cannot be rebuilt here: ${(e as Error).message}`;
+    }
+    return got === want ? null : `flown with floating pieces under ${n} blocks dropped, on walls this page rebuilds differently`;
 }
 
 /** ReplayDeps for one life: its walls (none when it flew without), its preset. */
 export function depsFor(h: LifeHeader, walls: WallsSource): ReplayDeps {
     return {
         preset: (sha) => (h.presetJson && sha === h.presetSha256 ? h.presetJson : presetBySha(sha)),
-        // the header scene's transform, or a world record's (E.7), over the scan's own walls
+        // the header scene's transform and floater filter, or a world record's (E.7, G.3), over the scan's own walls
         world: (scene, ev) => {
             if (h.collisionSha256 === null) return null;
             const tr = ev ?? (scene ? { s: scene.transform[0], t: scene.transform.slice(1) } : IDENTITY);
-            return worldUnder(walls, tr);
+            const n = ev ? ev.floaterMinBlocks : scene?.floaterMinBlocks ?? 0;
+            return worldUnder(walls, tr, validMinBlocks(n) ? n : 0);
         }
     };
 }

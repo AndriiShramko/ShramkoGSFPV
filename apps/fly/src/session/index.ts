@@ -10,7 +10,8 @@
 import { Sim, Runner, S, compileParams, SIM_CORE_VERSION, sha256Hex, attitude, FlightStats, RespawnDirector, StateHistory, DEFAULT_RESPAWN_POLICY, hoverStickOf, makeLifeHeader } from '@gsfpv/sim-core';
 import type { SimParams, ParamOverrides, SimEvent, Life, LifeHeader, RespawnOpts, RespawnPolicy, RespawnReason } from '@gsfpv/sim-core';
 import { VoxelContactWorld, findSphereSpawn, openVoxelCollision } from '@gsfpv/collision';
-import type { VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
+import { validMinBlocks } from '@gsfpv/collision';
+import type { FloaterFilter, VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
 import { resolveScene, headingFromCamera } from '@gsfpv/scenes';
 import type { ResolvedScene } from '@gsfpv/scenes';
 import { SplatRenderer } from '@gsfpv/render-pc';
@@ -24,7 +25,7 @@ import type { LoadProgress } from './loader';
 import { LivesPlayer, lifeProblem } from './replay';
 import type { WallsSource } from './replay';
 import { measureTwr, dropTest, tunnelSelfTest } from './selftest';
-import { IDENTITY, f32, isIdentity, packed, pointMap, pushOut, sameTransform, scaledCollision } from './world';
+import { IDENTITY, f32, filteredWalls, isIdentity, packed, pointMap, pushOut, sameTransform, scaledCollision } from './world';
 import type { SceneTransform } from './world';
 
 export type { LoadStage, LoadPart, LoadProgress } from './loader';
@@ -64,6 +65,8 @@ export interface SessionOptions {
     sceneStart?: { ch: ArrayLike<number> };
     /** the scene's size (E.7, prefs scene.transform): T(w) = s*w + t from the first frame; none = the scan as it is */
     transform?: { s: number; t: readonly number[]; v?: number } | null;
+    /** the floater filter (G.3, prefs scene.dropFloaters): pieces of the walls under N blocks dropped; 0 or none = off */
+    dropFloaters?: number;
 }
 
 /** Who keeps the flight paused (FlightSession.pause). */
@@ -105,8 +108,11 @@ export class FlightSession {
     baseWorld: VoxelContactWorld | null = null;
     /** the scene's size now: T(w) = s*w + t, Float32 values (setTransform) */
     transform: SceneTransform = IDENTITY;
-    /** a world record's floater filter (G.3, W4-2); 0 = off */
+    /** the floater filter (G.3): pieces of the walls under this many blocks are dropped; 0 = off (setDropFloaters) */
     floaterMinBlocks = 0;
+    /** what the filter dropped from the scan's walls (null: no walls) and the filtered walls' hash (null: filter off) */
+    floaterFilter: FloaterFilter | null = null;
+    floaterSha256: string | null = null;
     /**
      * The pilot's walls switch. Off: the flight model gets no contact world (the craft flies
      * through everything, no crash) while the walls stay loaded for the voxel overlay and for
@@ -209,6 +215,7 @@ export class FlightSession {
         this.presetId = o.preset && PRESETS[o.preset] ? o.preset : DEFAULT_PRESET;
         this.overrides = jsonSafe(o.overrides ?? {});
         this.wallsOn = o.wallsOn ?? true;
+        this.floaterMinBlocks = validMinBlocks(o.dropFloaters) ? o.dropFloaters : 0;
         this.params = compileParams(PRESETS[this.presetId], this.lifeOverrides());
         this.renderer = o.renderer ?? await SplatRenderer.create(canvas, { renderScale: o.renderScale ?? 1, hFovDeg: this.params.cameraFovDeg, latencyMarker: !!o.latencyMarker });
         if (o.renderer) this.renderer.setFov(this.params.cameraFovDeg);
@@ -321,7 +328,7 @@ export class FlightSession {
             preset: PRESETS[this.presetId],
             overrides: this.lifeOverrides(),
             collisionSha256: this.flightWorld ? this.collisionSha256 : null,
-            scene: { id: this.scene.id, version: this.scene.version, transform: packed(this.transform), floaterMinBlocks: this.floaterMinBlocks },
+            scene: this.headerScene(),
             at,
             opts,
             reason
@@ -553,6 +560,7 @@ export class FlightSession {
         this.world = null;
         this.baseCollision = null;
         this.baseWorld = null;
+        this.floaterFilter = null;
         this.runner = undefined as unknown as Runner;
         this.lagQueue = [];
         this.frameTimes = [];
@@ -697,12 +705,54 @@ export class FlightSession {
         return [tr.s * p[0] + tr.t[0], tr.s * p[1] + tr.t[1], tr.s * p[2] + tr.t[2]];
     }
 
-    /** The flown walls from the scan's own under `transform` (the same function a replay uses). */
+    /**
+     * The flown walls from the scan's own: the floater filter first, then `transform` (the same
+     * functions a replay uses, session/world.ts).
+     */
     private scaleWalls(): void {
         const base = this.baseCollision;
         if (!base) return;
-        this.collision = scaledCollision(base, this.transform);
-        this.world = isIdentity(this.transform) ? this.baseWorld : new VoxelContactWorld(this.collision);
+        const f = filteredWalls(base, this.floaterMinBlocks);
+        this.floaterFilter = f.filter;
+        this.floaterSha256 = f.sha256;
+        this.collision = scaledCollision(f.collision, this.transform);
+        this.world = isIdentity(this.transform) && f.collision === base ? this.baseWorld : new VoxelContactWorld(this.collision);
+    }
+
+    /** The scene as a life header holds it: the transform and the floater filter with its walls' hash (G.3). */
+    private headerScene(): NonNullable<LifeHeader['scene']> {
+        const sc: NonNullable<LifeHeader['scene']> = { id: this.scene.id, version: this.scene.version, transform: packed(this.transform), floaterMinBlocks: this.floaterMinBlocks };
+        if (this.floaterMinBlocks > 0 && this.floaterSha256) sc.floaterSha256 = this.floaterSha256;
+        return sc;
+    }
+
+    /**
+     * Drop the walls' floating pieces under n blocks (G.3, the owner's item 24: phantom walls),
+     * 0 = keep them all. The walls change, so the log gets a world record with the new filter (C.9:
+     * ch[4]) and a craft in the air goes on from where it is in a new life whose header names the
+     * filtered walls' hash (a replay rebuilds them from the scan's own and refuses other walls); a
+     * parked or crashed one, or one a returning piece would hold, starts again at the spawn.
+     * Returns false when nothing changed.
+     */
+    setDropFloaters(n: number): boolean {
+        if (!validMinBlocks(n)) throw new RangeError(`floater filter must be an integer 0..64, got ${n}`);
+        if (n === this.floaterMinBlocks) return false;
+        this.floaterMinBlocks = n;
+        this.scaleWalls();
+        if (!this.runner) return true;
+        this.replay = null;
+        const tr = this.transform;
+        this.runner.world({ s: tr.s, t: [tr.t[0], tr.t[1], tr.t[2]], floaterMinBlocks: n });
+        // pieces coming back may cover the spawn: the nearest free spot, as after a scale-down
+        const spawnOut = this.spawnIsFree() ? null : pushOut(this.collision, this.spawn, this.params.boundRadius + 0.03);
+        if (spawnOut) {
+            this.spawn = spawnOut;
+            this.stats.moveSpawn([spawnOut[0], spawnOut[1], spawnOut[2]]);
+        }
+        const here = this.here();
+        if (this.flying && this.spawnIsFree(here)) this.newLife(here, 'settings');
+        else this.rebuildSim(this.presetId, this.overrides);
+        return true;
     }
 
     /** Where the scene scales around: the craft, else (before the flight model exists) the spawn. */
