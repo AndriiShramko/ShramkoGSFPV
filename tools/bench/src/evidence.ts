@@ -69,3 +69,18 @@ export function updateLatest(key: string, value: Record<string, unknown>): void 
     cur.updated = new Date().toISOString();
     writeFileSync(file, JSON.stringify(cur, null, 2) + '\n');
 }
+
+/**
+ * page.waitForFunction with a string, safe under the site's CSP: Playwright runs a string predicate
+ * through new Function, which a page without 'unsafe-eval' refuses (the live site and a release build),
+ * so the expression is polled with evaluate instead. Throws on timeout, like waitForFunction.
+ */
+export async function waitForExpr(p: { evaluate(expr: string): Promise<unknown>; waitForTimeout(ms: number): Promise<void> }, expr: string, opts: { timeout?: number; polling?: number } = {}): Promise<void> {
+    const t0 = Date.now();
+    const timeout = opts.timeout ?? 30000;
+    for (;;) {
+        if (await p.evaluate(`(() => { try { return !!(${expr}); } catch (e) { return false; } })()`)) return;
+        if (Date.now() - t0 > timeout) throw new Error(`timeout ${timeout} ms waiting for ${expr.slice(0, 120)}`);
+        await p.waitForTimeout(opts.polling ?? 100);
+    }
+}

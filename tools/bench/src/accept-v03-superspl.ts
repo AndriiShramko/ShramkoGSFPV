@@ -27,7 +27,7 @@ import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { launchChrome } from './browser';
-import { REPO, today, writeEvidence } from './evidence';
+import { REPO, today, writeEvidence, waitForExpr } from './evidence';
 
 const SITE = (process.env.SITE ?? 'http://127.0.0.1:5332').replace(/\/$/, '');
 const PROXY = (process.env.PROXY ?? 'https://gsfpv.flyreelstudio.eu').replace(/\/$/, '');
@@ -83,7 +83,7 @@ const mockItem = (id: string, likes = 100) => ({ id, version: 1, title: `Mock ${
 async function picker(p: Page, qs = PICKER, lang = 'en'): Promise<void> {
     await p.goto(fly(qs, lang));
     // a scene from the address that fails comes back to the picker with status 'error' (app/flight.ts)
-    await p.waitForFunction('!!(window.__gsfpv && window.__gsfpv.status !== "loading" && document.querySelector(".screen.scenes"))', null, { timeout: 120000 });
+    await waitForExpr(p, '!!(window.__gsfpv && window.__gsfpv.status !== "loading" && document.querySelector(".screen.scenes"))', { timeout: 120000 });
 }
 
 /** Opens the tab and waits for cards or the error line. */
@@ -93,7 +93,7 @@ async function openTab(p: Page): Promise<void> {
 }
 
 async function settle(p: Page): Promise<void> {
-    await p.waitForFunction('(() => { const g = document.querySelector(".ss-grid"); const e = document.querySelector(".ss-error"); return g && !g.hasAttribute("aria-busy") && (g.children.length > 0 || (e && !e.hidden) || document.querySelector(".ss-status").textContent.length > 0); })()', null, { timeout: 30000 });
+    await waitForExpr(p, '(() => { const g = document.querySelector(".ss-grid"); const e = document.querySelector(".ss-error"); return g && !g.hasAttribute("aria-busy") && (g.children.length > 0 || (e && !e.hidden) || document.querySelector(".ss-status").textContent.length > 0); })()', { timeout: 30000 });
 }
 
 const ids = (p: Page) => ev<string[]>(p, '[...document.querySelectorAll(".ss-grid .ss-card")].map((b) => b.dataset.scene)');
@@ -115,7 +115,7 @@ async function waitRequest(w: Wire, from: number, test: (s: string) => boolean, 
 const q = (s: string) => new URLSearchParams(s);
 /** after a pick: the flight is up ('ready'), or it failed (back at the picker with an error, or 'error') */
 async function waitFlight(p: Page, ms = 180000): Promise<Record<string, unknown>> {
-    await p.waitForFunction('(() => { const h = window.__gsfpv; return h && (h.status === "ready" || h.status === "error" || (h.status === "picker" && !!h.errorCode)); })()', null, { timeout: ms, polling: 250 });
+    await waitForExpr(p, '(() => { const h = window.__gsfpv; return h && (h.status === "ready" || h.status === "error" || (h.status === "picker" && !!h.errorCode)); })()', { timeout: ms, polling: 250 });
     return ev(p, '({ status: window.__gsfpv.status, errorCode: window.__gsfpv.errorCode ?? null, error: window.__gsfpv.error ?? null })');
 }
 
@@ -214,7 +214,7 @@ await check('S6', async () => {
     // since W3-1 the favourites live in the prefs store (collection sceneLibrary), not in v0.2's gsfpv.favourites.v1
     const stored = await ev<string[]>(page, 'window.__gsfpv.prefs.collection("sceneLibrary").favourites');
     await page.reload();
-    await page.waitForFunction('window.__gsfpv && window.__gsfpv.status === "picker"');
+    await waitForExpr(page, 'window.__gsfpv && window.__gsfpv.status === "picker"', {});
     await openTab(page);
     const starA = await ev<string | null>(page, `document.querySelector('.ss-grid button.star[data-fav="${a}"]')?.getAttribute('aria-pressed') ?? null`);
     const starB = await ev<string | null>(page, `document.querySelector('.ss-grid button.star[data-fav="${b}"]')?.getAttribute('aria-pressed') ?? null`);
@@ -224,7 +224,7 @@ await check('S6', async () => {
     await openTab(page);
     await page.click(`.ss-grid button.star[data-fav="${a}"]`);
     await page.reload();
-    await page.waitForFunction('window.__gsfpv && window.__gsfpv.status === "picker"');
+    await waitForExpr(page, 'window.__gsfpv && window.__gsfpv.status === "picker"', {});
     await openTab(page);
     const starAAfterUnstar = await ev<string | null>(page, `document.querySelector('.ss-grid button.star[data-fav="${a}"]')?.getAttribute('aria-pressed') ?? null`);
     // W3-1 keeps the title and walls with a favourite: the Favourites tab shows it under the default walls-only filter
@@ -265,7 +265,7 @@ await check('S4', async () => {
     // the same mock with another scene: it is picked (so "nothing" above is the skip, not a broken mock)
     c.wire.items = [mockItem('deadbeef', 999), mockItem('39e63ce9', 5)];
     await cp.click('.ss-random');
-    await cp.waitForFunction('new URL(location.href).searchParams.get("scene") === "39e63ce9"', null, { timeout: 15000 }).catch(() => null);
+    await waitForExpr(cp, 'new URL(location.href).searchParams.get("scene") === "39e63ce9"', { timeout: 15000 }).catch(() => null);
     const otherPicked = sceneInUrl(cp);
     const s4b = (await beacons(cp)).filter((x) => x.e === 'scene_open').map((x) => x.p?.source);
     await c.ctx.close();
@@ -293,7 +293,7 @@ await check('S5', async () => {
     await picker(cp);
     await openTab(cp);
     await cp.click('.ss-grid .ss-card[data-scene="deadbeef"]');
-    await cp.waitForFunction('window.__gsfpv.status !== "loading" && window.__gsfpv.errorCode', null, { timeout: 120000 }).catch(() => null);
+    await waitForExpr(cp, 'window.__gsfpv.status !== "loading" && window.__gsfpv.errorCode', { timeout: 120000 }).catch(() => null);
     const ctrl = await ev<Any>(cp, '({ status: window.__gsfpv.status, errorCode: window.__gsfpv.errorCode ?? null, picker: !!document.querySelector(".screen.scenes") })');
     await c.ctx.close();
     const pass = ready.status === 'ready' && opened === target && bc.length === 1 && bc[0].p?.source === 'superspl';
@@ -322,7 +322,7 @@ await check('S7', async () => {
     await ctx.setOffline(true);
     wire.offline = true;
     await p.selectOption('.ss-sort', 'oldest');
-    await p.waitForFunction('(() => { const e = document.querySelector(".ss-error"); return e && !e.hidden; })()', null, { timeout: 15000 }).catch(() => null);
+    await waitForExpr(p, '(() => { const e = document.querySelector(".ss-error"); return e && !e.hidden; })()', { timeout: 15000 }).catch(() => null);
     const offline = await errorLine(p);
     await ctx.setOffline(false);
     wire.offline = false;

@@ -22,7 +22,7 @@ import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { launchChrome, waitReady } from './browser';
-import { writeEvidence, REPO, today } from './evidence';
+import { writeEvidence, REPO, today, waitForExpr } from './evidence';
 
 const SITE = (process.env.SITE ?? 'http://127.0.0.1:5331').replace(/\/$/, '');
 const fly = (qs: string) => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}` : `${SITE}/en/fly/?${qs}`);
@@ -247,7 +247,7 @@ if (want('S4') || want('S5')) {
     for (const id of [C, B]) await p.click(`.scene-cell:has([data-scene="${id}"]) .star`);
     await p.click(`.scene-grid [data-scene="${A}"]`);
     // the hook still says 'picker' until this flight is ready (waitReady would return at once)
-    await p.waitForFunction('window.__gsfpv && window.__gsfpv.status === "ready"', undefined, { timeout: 180000 });
+    await waitForExpr(p, 'window.__gsfpv && window.__gsfpv.status === "ready"', { timeout: 180000 });
     await wait(p, 500);
     const favourites = await hook<string[]>(p, "return h.prefs.collection('sceneLibrary').favourites;");
     const fav: Any[] = [];

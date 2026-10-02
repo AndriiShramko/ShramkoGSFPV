@@ -153,6 +153,9 @@ const PROBES: Record<string, { field: string; also?: string[]; restore: number; 
     'scene.next': { field: 'scene', also: ['lives', 'atSpawn', 'armed', 'mode', 'walls', 'voxel'], restore: 0, waitMs: 15000 }, // a scene loads (keys wait meanwhile)
     'scene.random': { field: 'scene', also: ['lives', 'atSpawn', 'armed', 'mode', 'walls', 'voxel'], restore: 0, waitMs: 15000 },
     'scene.favourite': { field: 'scene', restore: 0, skip: 'needs a favourite scene: checked in tools/bench/src/accept-v03-scenes.ts S4' },
+    // W3-3: [ and ] scale the scene around the drone (applied after 300 ms; a world record, so a new life); the other key puts it back
+    'scale.down': { field: 'scale', also: ['lives', 'atSpawn', 'armed'], restore: 1, restoreKey: 'BracketRight', waitMs: 900 },
+    'scale.up': { field: 'scale', also: ['lives', 'atSpawn', 'armed'], restore: 1, restoreKey: 'BracketLeft', waitMs: 900 },
     'crash.keep': { field: 'crashPanel', restore: 0, skip: "listens only while a crash is up (when: 'crash'): checked with the crash in tools/bench/src/accept-v03-respawn.ts" }
 };
 const SNAP = `return {
@@ -169,7 +172,8 @@ const SNAP = `return {
     rec: !!document.querySelector('[data-action=cinema-rec].on'),
     lives: s && s.lives ? s.lives().length : 0,
     scene: new URL(location.href).searchParams.get('scene'),
-    crashPanel: !!document.querySelector('[data-testid=crash-panel]')
+    crashPanel: !!document.querySelector('[data-testid=crash-panel]'),
+    scale: h.scale ? Math.round(h.scale.size() * 1000) / 1000 : null
 };`;
 const pw = (k: { code: string; shift?: boolean }) => (k.shift ? `Shift+${k.code}` : k.code);
 
@@ -464,7 +468,7 @@ try {
         items['pause.scene'] = { ok: overFlight && !after.panel, pickerOverFlight: overFlight, panelGone: !after.panel, url: after.url };
         await ctx.close();
         const everyItem = MENU.every((id) => items[id]?.ok === true) && Object.values(items).every((x) => x.ok);
-        const everyDid = Object.entries(items).filter(([id]) => id !== 'pause.scene').every(([, x]) => did(x.before, x.after) || x.ok);
+        const everyDid = Object.entries(items).filter(([id]) => id !== 'pause.scene').every(([, x]) => (x.before && x.after && did(x.before, x.after)) || x.ok); // the scene items carry no before/after (checked in accept-v03-scenes)
         const pass = JSON.stringify(order) === JSON.stringify(MENU) && info.contact?.href === '/en/#contact' && info.contact?.target === '_blank' && info.focused === 'pause.continue' && navOk && everyItem && everyDid;
         out.S5 = { pass: pass && !planted.didSomething, what: 'the summary panel keeps every pause-menu item with its data-action, in order, and the contact link; the first item has the focus, Down / Up walk the menu (wrapping), Tab goes on, Enter runs the focused item, Esc closes what it opened; every item does what it did', order, contact: info.contact, nav, items, control: { what: 'a planted button in the menu that does nothing: the same look must find nothing happened', planted, fired: !planted.didSomething } };
         console.log('S5', out.S5.pass ? 'PASS' : 'FAIL', JSON.stringify({ order, nav, items: Object.fromEntries(Object.entries(items).map(([k, v]) => [k, v.ok])), planted }));
