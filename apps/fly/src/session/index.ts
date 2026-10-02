@@ -24,6 +24,8 @@ import type { LoadProgress } from './loader';
 import { LivesPlayer, lifeProblem } from './replay';
 import type { WallsSource } from './replay';
 import { measureTwr, dropTest, tunnelSelfTest } from './selftest';
+import { IDENTITY, f32, isIdentity, packed, pointMap, pushOut, sameTransform, scaledCollision } from './world';
+import type { SceneTransform } from './world';
 
 export type { LoadStage, LoadPart, LoadProgress } from './loader';
 
@@ -60,6 +62,8 @@ export interface SessionOptions {
      * when the rules keep it (respawn.keepArmed).
      */
     sceneStart?: { ch: ArrayLike<number> };
+    /** the scene's size (E.7, prefs scene.transform): T(w) = s*w + t from the first frame; none = the scan as it is */
+    transform?: { s: number; t: readonly number[]; v?: number } | null;
 }
 
 /** Who keeps the flight paused (FlightSession.pause). */
@@ -92,9 +96,17 @@ function jsonSafe(o: ParamOverrides): ParamOverrides {
 export class FlightSession {
     renderer!: SplatRenderer;
     scene!: ResolvedScene;
+    /** the walls the craft flies in: the scan's, seen through `transform` (E.7) */
     collision: VoxelCollision | null = null;
     collisionSha256: string | null = null;
     world: VoxelContactWorld | null = null;
+    /** the scan's own walls, untransformed: what replays rebuild from (E.7) */
+    baseCollision: VoxelCollision | null = null;
+    baseWorld: VoxelContactWorld | null = null;
+    /** the scene's size now: T(w) = s*w + t, Float32 values (setTransform) */
+    transform: SceneTransform = IDENTITY;
+    /** a world record's floater filter (G.3, W4-2); 0 = off */
+    floaterMinBlocks = 0;
     /**
      * The pilot's walls switch. Off: the flight model gets no contact world (the craft flies
      * through everything, no crash) while the walls stay loaded for the voxel overlay and for
@@ -202,6 +214,11 @@ export class FlightSession {
         if (o.renderer) this.renderer.setFov(this.params.cameraFovDeg);
         this.renderer.setToneMapping(this.scene.tonemapping);
         this.renderer.setBackground(this.scene.background);
+        // the scene's size (E.7) before its splats exist: the renderer gives the entity s and t when it makes it
+        // a size set on an older version of the scan keeps its scale, not its offset (the scan moved)
+        const tr = o.transform;
+        this.transform = tr ? f32(tr.v && tr.v !== this.scene.version ? { s: tr.s, t: [0, 0, 0] } : tr) : IDENTITY;
+        this.renderer.setSceneTransform(this.transform.s, [...this.transform.t]);
         const splatLoad = this.drawScan ? this.renderer.loadSplat(this.scene.contentUrl) : Promise.resolve(null);
         // the walls download beside the scan, not before it: one slow host no longer holds up the other
         const walls = this.scene.collisionUrl ? loader.loadWalls(this.scene.collisionUrl) : Promise.resolve(null);
@@ -209,7 +226,10 @@ export class FlightSession {
         await splatLoad;
         // the chunks stream once the engine runs; until the flight model exists, look from the scan's camera
         const cam = this.scene.camera;
-        if (cam) this.renderer.setCameraLookAt(cam.position[0], cam.position[1], cam.position[2], cam.target[0], cam.target[1], cam.target[2]);
+        if (cam) {
+            const p = this.toFlown(cam.position), q = this.toFlown(cam.target);
+            this.renderer.setCameraLookAt(p[0], p[1], p[2], q[0], q[1], q[2]);
+        }
         // logic-only: nothing streams, so nothing to wait for (the walls are awaited below)
         const coarse = loader.watchCoarse();
         const onUpdate = (): void => this.frame();
@@ -225,8 +245,9 @@ export class FlightSession {
         const w = await walls;
         if (this.disposed) throw new Error('the scene switch was cancelled');
         if (w) {
-            this.collision = w.collision;
-            this.world = w.world;
+            this.baseCollision = w.collision;
+            this.baseWorld = w.world;
+            this.scaleWalls();
             this.collisionSha256 = w.sha256;
             this.timings.collisionMs = w.ms;
         }
@@ -244,7 +265,7 @@ export class FlightSession {
 
     private findSpawn(): [number, number, number, number] {
         const cam = this.scene.camera;
-        let pos: [number, number, number] = cam ? [...cam.position] : [0, 1.5, 0];
+        let pos: [number, number, number] = this.toFlown(cam ? cam.position : [0, 1.5, 0]);
         const yaw = cam ? headingFromCamera(cam) : 0;
         if (this.collision) {
             const push = { x: 0, y: 0, z: 0 };
@@ -285,7 +306,7 @@ export class FlightSession {
 
     /** The walls this page replays logs on (replay.ts). */
     get wallsSource(): WallsSource {
-        return { collisionSha256: this.collisionSha256, world: this.world };
+        return { collisionSha256: this.collisionSha256, world: this.baseWorld, collision: this.baseCollision };
     }
 
     /** The pilot's overrides plus crash.enabled: what a life's params and header are made from. */
@@ -300,7 +321,7 @@ export class FlightSession {
             preset: PRESETS[this.presetId],
             overrides: this.lifeOverrides(),
             collisionSha256: this.flightWorld ? this.collisionSha256 : null,
-            scene: { id: this.scene.id, version: this.scene.version, transform: [1, 0, 0, 0], floaterMinBlocks: 0 },
+            scene: { id: this.scene.id, version: this.scene.version, transform: packed(this.transform), floaterMinBlocks: this.floaterMinBlocks },
             at,
             opts,
             reason
@@ -334,6 +355,8 @@ export class FlightSession {
         this.stats = new FlightStats([this.spawn[0], this.spawn[1], this.spawn[2]], (this.params.capacityAs * 1000) / 3600);
         this.runner.stats = this.stats;
         this.runner.onLife = (life) => this.lifeStarted(life);
+        // a world record (E.7): the walls under the new transform are built already (setTransform)
+        this.runner.onWorld = () => { this.runner.sim.world = this.flightWorld; };
         // while paused (menu, settings, drone pick) sim time 0 is the moment the flight resumes
         this.clock.restart(performance.now());
         this.evIdx = 0;
@@ -528,6 +551,8 @@ export class FlightSession {
         try { this.renderer?.clearDebris(); this.renderer?.unloadSplat(); } catch { /* a renderer that never loaded */ }
         this.collision = null;
         this.world = null;
+        this.baseCollision = null;
+        this.baseWorld = null;
         this.runner = undefined as unknown as Runner;
         this.lagQueue = [];
         this.frameTimes = [];
@@ -657,10 +682,71 @@ export class FlightSession {
             both.set(bin, json.length);
             digest = sha256Hex(both);
         }
-        this.collision = collision;
+        this.baseCollision = collision;
+        this.baseWorld = new VoxelContactWorld(collision);
+        this.scaleWalls();
         this.collisionSha256 = digest;
-        this.world = new VoxelContactWorld(collision);
         if (!this.spawnIsFree()) this.spawn = this.findSpawn();
+    }
+
+    // ------------------------------------------------------------------ scene scale (E.7)
+
+    /** A point of the scan (file space) in the flown world: T(p). */
+    private toFlown(p: readonly number[]): [number, number, number] {
+        const tr = this.transform;
+        return [tr.s * p[0] + tr.t[0], tr.s * p[1] + tr.t[1], tr.s * p[2] + tr.t[2]];
+    }
+
+    /** The flown walls from the scan's own under `transform` (the same function a replay uses). */
+    private scaleWalls(): void {
+        const base = this.baseCollision;
+        if (!base) return;
+        this.collision = scaledCollision(base, this.transform);
+        this.world = isIdentity(this.transform) ? this.baseWorld : new VoxelContactWorld(this.collision);
+    }
+
+    /** Where the scene scales around: the craft, else (before the flight model exists) the spawn. */
+    pivot(): [number, number, number] {
+        if (!this.runner) return [this.spawn[0], this.spawn[1], this.spawn[2]];
+        const s = this.sim.s;
+        return [s[S.px], s[S.py], s[S.pz]];
+    }
+
+    /**
+     * Fly the scene under `next` from now on (E.7). The craft's state does not change (scaling
+     * around the drone keeps it where it is, velocity included); the splats, the walls, the spawn,
+     * the recorded path (rewinds) and the altitude base follow the scene; the log gets a world
+     * record, so a replay rebuilds the same walls from the same scan. A scale-down that leaves the
+     * craft touching a wall moves it to the nearest free spot with a 'world' respawn (C.4 'here'),
+     * and a spawn inside a wall moves out the same way. Returns the Float32 transform now in use
+     * and whether the craft was pushed out.
+     */
+    setTransform(next: { s: number; t: readonly number[] }): { transform: SceneTransform; pushed: boolean } {
+        const to = f32(next);
+        const from = this.transform;
+        if (sameTransform(from, to)) return { transform: from, pushed: false };
+        const map = pointMap(from, to); // throws on a bad transform, before anything changed
+        this.transform = to;
+        this.renderer.setSceneTransform(to.s, [...to.t]);
+        this.scaleWalls();
+        const sp = map(this.spawn[0], this.spawn[1], this.spawn[2]);
+        this.spawn = [sp[0], sp[1], sp[2], this.spawn[3]];
+        if (!this.runner) return { transform: to, pushed: false };
+        this.replay = null;
+        this.history.mapPositions(map);
+        this.stats.moveSpawn(sp);
+        this.runner.world({ s: to.s, t: [to.t[0], to.t[1], to.t[2]], floaterMinBlocks: this.floaterMinBlocks });
+        const r = this.params.boundRadius + 0.03;
+        const spawnOut = this.spawnIsFree() ? null : pushOut(this.collision, this.spawn, r);
+        if (spawnOut) {
+            this.spawn = spawnOut;
+            this.stats.moveSpawn([spawnOut[0], spawnOut[1], spawnOut[2]]);
+        }
+        const here = this.here();
+        if (this.spawnIsFree(here)) return { transform: to, pushed: false };
+        const at = pushOut(this.collision, here, r) ?? this.spawn;
+        this.runner.respawn(at[0], at[1], at[2], at[3], this.respawnOpts(), 'world');
+        return { transform: to, pushed: true };
     }
 
     // ------------------------------------------------------------------ replay (C.9: from the log only)

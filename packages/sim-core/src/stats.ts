@@ -132,6 +132,11 @@ export class FlightStats {
         this.capacityMah = capacityMah;
     }
 
+    /** The scene was rescaled (E.7): the altitude and home distance count from the spawn's new place. */
+    moveSpawn(at: readonly number[]): void {
+        this.spawn = [at[0], at[1], at[2]];
+    }
+
     onStep(sim: StatsSource): void {
         const s = sim.s;
         const L = this.lifeAcc, T = this.sessAcc;

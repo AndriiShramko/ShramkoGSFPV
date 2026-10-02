@@ -8,6 +8,8 @@
 import { LifePlayer, SIM_CORE_VERSION, lifeHeaderProblem, presetSha256, sha256Hex, trajPoint } from '@gsfpv/sim-core';
 import type { ContactWorld, Life, LifeHeader, PresetJson, ReplayDeps, Sim, TrajectoryPoint } from '@gsfpv/sim-core';
 import { PRESETS } from '../presets';
+import { IDENTITY, isIdentity, worldUnder } from './world';
+import type { BaseWalls } from './world';
 
 let bySha: Map<string, PresetJson> | null = null;
 
@@ -17,8 +19,11 @@ export function presetBySha(sha: string): PresetJson | null {
     return bySha.get(sha) ?? null;
 }
 
-/** The walls this page has: their digest and their contact world. */
-export interface WallsSource {
+/**
+ * The walls this page has: their digest, their contact world and the scan's own collision, all
+ * untransformed (E.7: a life replays under its header's transform and its world records).
+ */
+export interface WallsSource extends BaseWalls {
     collisionSha256: string | null;
     world: ContactWorld | null;
 }
@@ -30,6 +35,7 @@ export function lifeProblem(h: LifeHeader, walls: WallsSource): string | null {
     if (p) return p;
     if (!h.presetJson && !presetBySha(h.presetSha256)) return `preset ${h.preset} (${h.presetSha256.slice(0, 12)}) is not in this build`;
     if (h.collisionSha256 !== null && (h.collisionSha256 !== walls.collisionSha256 || !walls.world)) return 'flown on other walls';
+    if (h.collisionSha256 !== null && h.scene && !isIdentity({ s: h.scene.transform[0], t: h.scene.transform.slice(1) }) && !walls.collision) return 'flown on rescaled walls this page cannot rebuild';
     return null;
 }
 
@@ -37,7 +43,12 @@ export function lifeProblem(h: LifeHeader, walls: WallsSource): string | null {
 export function depsFor(h: LifeHeader, walls: WallsSource): ReplayDeps {
     return {
         preset: (sha) => (h.presetJson && sha === h.presetSha256 ? h.presetJson : presetBySha(sha)),
-        world: () => (h.collisionSha256 === null ? null : walls.world)
+        // the header scene's transform, or a world record's (E.7), over the scan's own walls
+        world: (scene, ev) => {
+            if (h.collisionSha256 === null) return null;
+            const tr = ev ?? (scene ? { s: scene.transform[0], t: scene.transform.slice(1) } : IDENTITY);
+            return worldUnder(walls, tr);
+        }
     };
 }
 
