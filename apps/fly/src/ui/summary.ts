@@ -32,6 +32,8 @@ export interface SummaryData {
     drone: string;
     units: Units;
     shortcuts: readonly SummaryShortcut[];
+    /** "Save my stats": every drone's lifetime totals as a file (absent: not offered) */
+    save?(kind: 'csv' | 'json'): void;
 }
 
 /** Keyboard flying's own keys besides the keymap's (devices/keyboard.ts): the sticks. */
@@ -71,11 +73,16 @@ export function statsColumn(d: SummaryData): HTMLElement {
     const table = h('table', { class: 'sum-table', 'data-testid': 'summary-stats' }, h('caption', { class: 'visually-hidden' }, t('stats.title')), h('thead', {}, head), h('tbody', {}, ...body));
     const status = h('span', { class: 'sum-copied', role: 'status', 'data-testid': 'stats-copied' });
     const copy = h('button', { type: 'button', class: 'btn', 'data-action': 'stats-copy', onclick: () => void copyText(summaryText(d), status) }, t('stats.copy'));
+    // the lifetime of every drone, to keep on the computer: a table for a spreadsheet, or the same as JSON
+    const save = d.save ? h('button', { type: 'button', class: 'btn', 'data-action': 'stats-save', 'aria-describedby': 'sum-save-note', onclick: () => d.save?.('csv') }, t('stats.save')) : null;
+    const saveJson = d.save ? h('button', { type: 'button', class: 'btn', 'data-action': 'stats-save-json', 'aria-label': t('stats.saveJsonAria'), onclick: () => d.save?.('json') }, 'JSON') : null;
+    const saveNote = d.save ? h('p', { class: 'sum-note muted small', id: 'sum-save-note' }, t('stats.saveNote')) : null;
     return h('section', { class: 'sum-col sum-stats', 'aria-labelledby': 'sum-stats-h' },
         h('h3', { id: 'sum-stats-h' }, t('stats.title')),
         table,
         h('p', { class: 'sum-drone' }, t('stats.lifetimeOf', { drone: d.drone })),
-        h('div', { class: 'sum-actions' }, copy, status));
+        h('div', { class: 'sum-actions' }, copy, save, saveJson, status),
+        saveNote);
 }
 
 /** Under the menu: every shipped key of the keymap with its name, then keyboard flying's keys. */

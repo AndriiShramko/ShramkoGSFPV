@@ -35,5 +35,8 @@
   "stats.maxImpact": "Hardest hit",
   "stats.longestClean": "Longest clean run",
   "set.stats.onDisarm": "Stats card after disarm",
-  "set.stats.onDisarm.help": "Disarm with the switch after 3 s or more in the air and the goggles-style stats card shows for 30 s."
+  "set.stats.onDisarm.help": "Disarm with the switch after 3 s or more in the air and the goggles-style stats card shows for 30 s.",
+  "stats.save": "Save my stats",
+  "stats.saveJsonAria": "Save my stats as JSON",
+  "stats.saveNote": "Every drone's totals as a table for a spreadsheet (or JSON). They stay in this browser and go with Settings → Data → Export settings too."
 }

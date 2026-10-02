@@ -16,7 +16,8 @@ import { PRESETS } from '../../presets';
 import { StatsCard } from '../../ui/osd-stats';
 import type { SummaryData, SummaryShortcut } from '../../ui/summary';
 import { PauseMenu } from '../menu';
-import { StatsLedger, cardOnDisarm, throttleDismisses, CARD_TIMEOUT_MS, COMMIT_EVERY_MS } from './summary-stats';
+import { StatsLedger, cardOnDisarm, throttleDismisses, statsCsv, statsFile, statsFileName, CARD_TIMEOUT_MS, COMMIT_EVERY_MS } from './summary-stats';
+import { askPersistence } from '../prefs';
 import type { Units } from './summary-stats';
 import type { Feature, FlightContext } from '../context';
 
@@ -33,6 +34,8 @@ declare module '../test-hook' {
     interface TestHook {
         /** D.4: this flight (life), this visit (session) and the drone's lifetime totals, as the card and the summary panel show them */
         stats?: () => StatsHook;
+        /** the last "Save my stats" file: its kind, name and text */
+        statsSaved?: { kind: 'csv' | 'json'; name: string; body: string };
     }
 }
 
@@ -60,10 +63,30 @@ export const summary: Feature = {
         // the arm switch as the pilot set it, before the arm gate (which holds it low while arming is refused)
         const armSwitchOn = (): boolean => ctx.controls.source !== 'sim' && ctx.controls.view().ch[4] > 0.5;
 
+        /**
+         * "Save my stats" (the owner's message 16): what is flown so far goes into the totals first,
+         * then every drone's lifetime as a file. The click is the moment to ask the browser to keep
+         * this site's storage (navigator.storage.persist(); Firefox asks the pilot), so the totals
+         * are still there in half a year; they also travel in Settings -> Data -> Export.
+         */
+        const saveStats = (kind: 'csv' | 'json'): void => {
+            ledger.commit();
+            const now = new Date();
+            const f = statsFile(ctx.prefs.collection('stats').byDrone, (id) => PRESETS[id]?.name ?? id, now);
+            const body = kind === 'csv' ? statsCsv(f) : `${JSON.stringify(f, null, 2)}\n`;
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([body], { type: kind === 'csv' ? 'text/csv;charset=utf-8' : 'application/json' }));
+            a.download = statsFileName(now, kind);
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+            void askPersistence(ctx.prefs);
+            ctx.hook.statsSaved = { kind, name: a.download, body };
+        };
+
         const data = (): SummaryData => {
             sync();
             const id = ctx.session.presetId;
-            return { mode: mode(), life: ledger.life(), session: ledger.session(), lifetime: ledger.lifetime(), drone: PRESETS[id]?.name ?? id, units: units(), shortcuts: shortcuts(ctx) };
+            return { mode: mode(), life: ledger.life(), session: ledger.session(), lifetime: ledger.lifetime(), drone: PRESETS[id]?.name ?? id, units: units(), shortcuts: shortcuts(ctx), save: saveStats };
         };
         // the menu must open whatever happens here: without the data it is the menu alone
         if (ctx.menu instanceof PauseMenu) ctx.menu.setSummary(() => { try { return data(); } catch (e) { console.error('summary panel data', e); return null; } });

@@ -18,7 +18,7 @@ import { MemoryBackend } from '../../../packages/prefs/src';
 import type { PrefsStore } from '../../../packages/prefs/src';
 import { mkStore } from '../../../packages/prefs/test/helpers';
 import {
-    StatsLedger, cardOnDisarm, emptyStats, fmtClock, mergeStats, statText, statsText, throttleDismisses, zeroTotals, STAT_ROWS,
+    StatsLedger, cardOnDisarm, statsCsv, statsFile, statsFileName, emptyStats, fmtClock, mergeStats, statText, statsText, throttleDismisses, zeroTotals, STAT_ROWS,
     CARD_MIN_AIRTIME_S
 } from '../../../apps/fly/src/app/builtin/summary-stats';
 import type { TotalsStore } from '../../../apps/fly/src/app/builtin/summary-stats';
@@ -207,5 +207,45 @@ describe('the card', () => {
         // the columns line up: every row is as long as the heading row or shorter only by trailing blanks
         const widths = new Set(lines.slice(2).map((l) => l.length));
         expect(widths.size).toBe(1);
+    });
+});
+
+describe('the stats last: stored, exported, imported, and saved as a file (owner\'s message 16)', () => {
+    const TOTALS = { 'pavo20pro-3s': { flights: 12, airtimeS: 3725.4, distanceM: 18234.6, crashes: 7 }, 'tinyhawk-1s': { flights: 3, airtimeS: 61, distanceM: 410, crashes: 1 } };
+    const fill = (s: PrefsStore) => s.updateCollection('stats', (d) => { d.byDrone = JSON.parse(JSON.stringify(TOTALS)); });
+
+    it('a later page on the same storage has them (the document is written at once); control: another storage does not', () => {
+        const b = new MemoryBackend();
+        fill(mkStore(b));
+        expect(mkStore(b).collection('stats').byDrone).toEqual(TOTALS);
+        expect(mkStore(new MemoryBackend()).collection('stats').byDrone).toEqual({});
+    });
+
+    it('Settings -> Data export carries them and an import restores them; control: an export without the collection does not', () => {
+        const a = mkStore(new MemoryBackend());
+        fill(a);
+        const file = JSON.parse(JSON.stringify(a.exportFile()));
+        const fresh = mkStore(new MemoryBackend());
+        expect(fresh.importFile(file).ok).toBe(true);
+        expect(fresh.collection('stats').byDrone).toEqual(TOTALS);
+        const without = mkStore(new MemoryBackend());
+        without.importFile(JSON.parse(JSON.stringify(a.exportFile({ include: ['ui'] }))));
+        expect(without.collection('stats').byDrone).toEqual({});
+    });
+
+    it('"Save my stats": every drone and the total, SI units, as JSON and as a CSV table', () => {
+        const f = statsFile(TOTALS, (id) => (id === 'pavo20pro-3s' ? 'Pavo20 Pro, 3S' : id), new Date('2026-10-02T12:00:00Z'));
+        expect(f.drones.map((d) => d.id)).toEqual(['pavo20pro-3s', 'tinyhawk-1s']);
+        expect(f.total).toEqual({ flights: 15, airtimeS: 3786.4, distanceM: 18644.6, crashes: 8 });
+        const csv = statsCsv(f).split('\r\n');
+        expect(csv[0]).toBe('drone_id,drone,flights,airtime_s,airtime,distance_m,crashes');
+        expect(csv[1]).toBe('pavo20pro-3s,"Pavo20 Pro, 3S",12,3725.4,1:02:05,18234.6,7'); // a comma in a name is quoted
+        expect(csv[3]).toBe('total,,15,3786.4,1:03:06,18644.6,8');
+        expect(csv).toHaveLength(5); // header, 2 drones, total, the empty end after the last line break
+        expect(statsFileName(new Date('2026-10-02T12:00:00Z'), 'csv')).toBe('gsfpv-stats-2026-10-02.csv');
+    });
+
+    it('control: with no drone flown the file still has its total row of zeros', () => {
+        expect(statsCsv(statsFile({}, (id) => id, new Date(0))).split('\r\n')[1]).toBe('total,,0,0,0:00,0,0');
     });
 });
