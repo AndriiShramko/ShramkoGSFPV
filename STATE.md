@@ -10,7 +10,8 @@ Spec: vault `03 - Resources/Deployment/shramkogsfpv/spec.md` (+ 6 spec-*.md). Ph
 
 ## Where v0.3 stands (2026-10-02)
 
-- **Live (2026-10-02, latest):** release **71ab27004d91** = `main` bb92518: + scene scale around the drone ([ ] keys, summary row, per scene; live SC1/SC2 pass). Before it: release **006de3885965** = `main` a66be24: + wave 3 part: the SuperSplat tab in the picker (filters as superspl.at, random top-rated, favourites; live: 24 cards of 1,346), in-page scene switching (N / Shift+N / F, auto-switch after a crash, Continue card; live S1/S3 pass). Earlier: release **7c2d0e0c0c6d** = `main` bc2e96f (PR #3's branch fast-forwarded into `main`; the API with the SuperSplat
+- **Live (2026-10-02, final for v0.3):** release **e7a8d908d0dd** = `main` 5a36c5a: v0.3 waves 1-4 complete — every v0.3 item is on the live site with a live check (pass table and the owner's real-radio list: `evidence/2026-10-02/v03-release.json`), except item 21 (Pavo20 physics fitted to the owner's blackbox logs: tools ready, data missing). Landing and README roadmap at 2 October (48 live), 39 screenshots from the live site.
+- Earlier releases the same day: f6dbf235b307 (wave 4), 71ab27004d91 (scene scale): release **71ab27004d91** = `main` bb92518: + scene scale around the drone ([ ] keys, summary row, per scene; live SC1/SC2 pass). Before it: release **006de3885965** = `main` a66be24: + wave 3 part: the SuperSplat tab in the picker (filters as superspl.at, random top-rated, favourites; live: 24 cards of 1,346), in-page scene switching (N / Shift+N / F, auto-switch after a crash, Continue card; live S1/S3 pass). Earlier: release **7c2d0e0c0c6d** = `main` bc2e96f (PR #3's branch fast-forwarded into `main`; the API with the SuperSplat
   catalogue proxy and nginx.conf with `/api/superspl/` uploaded first). Neighbours equal before/after (31 containers, 24 sites),
   smoke 184/184.
 - **On the live site now:** v0.3 wave 1 + wave 2: settings screen from the prefs schema (per-drone values kept and saved, export /
@@ -20,7 +21,7 @@ Spec: vault `03 - Resources/Deployment/shramkogsfpv/spec.md` (+ 6 spec-*.md). Ph
 - **Live acceptance:** B6 B9 B10 B11 B12 B15, P1 P2 P5 P7, S1 S2, M1-M3, R16 R23 R18 RR pass. Open: S3's control cannot inject
   into a bundled build (its keys all pass); live R1: 60/1, 602 frames, 0 held, but 25.7 % repeated pictures while the page drew
   51.6 Hz before recording (locally 2.5 %).
-- **Next (wave 4, running):** W4-1 video from the log (F.3) + the live recording repeats; W4-2 phantom walls (G.3, drop floating pieces). Then W4-5 release acceptance. Then wave 4: video from the
+- **Next:** item 21 when the owner sends `diff all` + blackbox logs of his Pavo20 Pro / Pro II (docs/research/blackbox-fit.md); his real-radio checks (v03-release.json `ownerTryList`); `main` is the integration branch again (PR #3's branch is fully in `main`). Then wave 4: video from the
   log (F.3), the phantom-wall fix (G.3), release acceptance (W4-5). W4-3 (blackbox tools) is done.
 - **W4-5 release acceptance (2026-10-02, branch w4-5):** every v0.3 item passes on the live site (release f6dbf235b307, built from 9dd0f99); the table, the open defects (W45-1 phone crash toast over the recording bar; P10 language reset on /pl/ paths; B18 letters outside locales/) and the owner's list of what to try with his radio: `evidence/2026-10-02/v03-release.json`. Landing and README say "Status on 2 October 2026" (48 live, 1 in progress: Pavo20 physics against the real quads, 1 next); all 39 screenshots re-taken from the live site.
 - **Working rule since 2026-10-02:** no review / verify fan-outs; one or two agents at a time; merge and ship as soon as accepted.
