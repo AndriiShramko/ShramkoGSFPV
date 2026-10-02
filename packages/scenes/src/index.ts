@@ -1,6 +1,9 @@
 // Scenes: parse a SuperSplat link, load everything straight from the public CDN (never through
 // our server), cache collision/settings with ETag revalidation, keep history and favourites
 // in the browser only, with the version folder of each republished scene.
+import * as lib from './library';
+import { DEFAULT_FILTER } from './library';
+import type { LibraryEntry, SceneFilter, SceneLibraryData } from './library';
 
 export const CDN = 'https://d28zzqy0iyovbz.cloudfront.net';
 /** Posters live in their own bucket, in the same v<N> folder as the scene. */
@@ -256,6 +259,7 @@ export function posterUrl(id: string, size: 'm' | 'l' | 'xl' = 'm', version: num
 
 // ---------------- history, favourites, filter (browser storage, try/catch) ----------------
 
+/** A history row as the picker reads it (a LibraryEntry has these and more). */
 export interface HistoryEntry {
     id: string;
     title?: string;
@@ -285,29 +289,65 @@ function writeJson(key: string, v: unknown): void {
     }
 }
 
-export function getHistory(): HistoryEntry[] {
-    return readJson<HistoryEntry[]>(KEY_HISTORY, []);
+/**
+ * Where the library lives (E.1). The page puts it in its preferences store (the collection
+ * `sceneLibrary`, app/prefs.ts) with useLibraryStore; until then (and in a page without the store)
+ * it is v0.2's own keys, so nothing a pilot had is lost.
+ */
+export interface LibraryStore {
+    read(): SceneLibraryData;
+    write(d: SceneLibraryData): void;
 }
 
-export function recordOpen(id: string, hasCollision: boolean | null, title?: string): void {
-    const h = getHistory();
-    const i = h.findIndex((e) => e.id === id);
-    const e: HistoryEntry = i >= 0 ? h[i] : { id, lastFlown: 0, flights: 0, hasCollision };
-    e.lastFlown = Date.now();
-    e.hasCollision = hasCollision ?? e.hasCollision;
-    if (title) e.title = title;
-    if (i >= 0) h.splice(i, 1);
-    h.unshift(e);
-    writeJson(KEY_HISTORY, h.slice(0, 100));
-}
-
-export function recordFlight(id: string): void {
-    const h = getHistory();
-    const e = h.find((x) => x.id === id);
-    if (e) {
-        e.flights++;
-        writeJson(KEY_HISTORY, h);
+/** v0.2's keys: history, favourites and filter each under its own localStorage key. */
+export const legacyLibraryStore: LibraryStore = {
+    read() {
+        const hist = readJson<unknown>(KEY_HISTORY, []);
+        const favs = readJson<unknown>(KEY_FAV, []);
+        const history: LibraryEntry[] = (Array.isArray(hist) ? hist : [])
+            .filter((e): e is HistoryEntry => !!e && typeof (e as HistoryEntry).id === 'string')
+            .map((e) => ({ version: 1, airtimeS: 0, ...e, lastFlown: Number(e.lastFlown) || 0, flights: Number(e.flights) || 0, hasCollision: e.hasCollision ?? null }));
+        const favourites = (Array.isArray(favs) ? favs : []).filter((x): x is string => typeof x === 'string');
+        return { v: 1, history, favourites, filter: { ...DEFAULT_FILTER, ...readJson<Partial<SceneFilter>>(KEY_FILTER, {}) }, versions: {} };
+    },
+    write(d) {
+        writeJson(KEY_HISTORY, d.history);
+        writeJson(KEY_FAV, d.favourites);
+        writeJson(KEY_FILTER, d.filter);
     }
+};
+
+let libraryStore: LibraryStore = legacyLibraryStore;
+
+/** The page's library from now on (app/prefs.ts: the prefs collection). */
+export function useLibraryStore(s: LibraryStore): void {
+    libraryStore = s;
+}
+
+/** The whole library now (a copy). */
+export function getLibrary(): SceneLibraryData {
+    return libraryStore.read();
+}
+
+function updateLibrary(fn: (d: SceneLibraryData) => SceneLibraryData): void {
+    libraryStore.write(fn(libraryStore.read()));
+}
+
+export function getHistory(): HistoryEntry[] {
+    return libraryStore.read().history;
+}
+
+export function recordOpen(id: string, hasCollision: boolean | null, title?: string, version = 1): void {
+    updateLibrary((d) => lib.recordOpen(d, { id, version, title, hasCollision }, Date.now()));
+}
+
+export function recordFlight(id: string, airtimeS = 0): void {
+    updateLibrary((d) => lib.recordFlight(d, id, airtimeS));
+}
+
+/** A scene that failed to load (the rotation skips it for a day). */
+export function recordFailure(id: string, code: string): void {
+    updateLibrary((d) => lib.recordFailure(d, id, code, Date.now()));
 }
 
 const KEY_VERSIONS = 'gsfpv.versions.v1';
@@ -332,32 +372,25 @@ function rememberVersion(id: string, v: number): void {
 }
 
 export function getFavourites(): string[] {
-    return readJson<string[]>(KEY_FAV, []);
+    return libraryStore.read().favourites;
 }
 
 export function toggleFavourite(id: string): boolean {
-    const f = getFavourites();
-    const i = f.indexOf(id);
-    if (i >= 0) f.splice(i, 1); else f.unshift(id);
-    writeJson(KEY_FAV, f);
-    return i < 0;
+    let on = false;
+    updateLibrary((d) => {
+        const r = lib.toggleFavourite(d, id);
+        on = r.on;
+        return r.data;
+    });
+    return on;
 }
-
-export interface SceneFilter {
-    collisionOnly: boolean;
-    kind: 'all' | 'interior' | 'exterior';
-    flown: 'all' | 'flown' | 'new';
-    maxMb: number | null;
-}
-
-export const DEFAULT_FILTER: SceneFilter = { collisionOnly: true, kind: 'all', flown: 'all', maxMb: null };
 
 export function getFilter(): SceneFilter {
-    return { ...DEFAULT_FILTER, ...readJson<Partial<SceneFilter>>(KEY_FILTER, {}) };
+    return { ...DEFAULT_FILTER, ...libraryStore.read().filter };
 }
 
 export function setFilter(f: SceneFilter): void {
-    writeJson(KEY_FILTER, f);
+    updateLibrary((d) => ({ ...d, filter: { ...f } }));
 }
 
 /** Spawn heading (deg, right-turn positive, 0 = -z) from the authored camera. */
@@ -369,3 +402,7 @@ export function headingFromCamera(c: SceneCamera): number {
 
 // SuperSplat catalogue (the list superspl.at shows, through our caching proxy): see superspl.ts
 export * from './superspl';
+export * from './rotation';
+export * as library from './library';
+export { DEFAULT_FILTER, HISTORY_CAP, emptyLibrary, mergeLibraries, lastScene, failedRecently } from './library';
+export type { SceneFilter, LibraryEntry, SceneLibraryData } from './library';
