@@ -1,0 +1,845 @@
+{
+  "name": "v03-prefs",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T00:30:31.463Z",
+    "gitHead": "10a68eb",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5320",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "mode": "render=off (logic only): every check here reads state, none is a picture check",
+  "P7": {
+    "pass": true,
+    "what": "phone 375x812 in en, ru, pl: the gear, Controls and Pause do not overlap each other or the OSD lines; Settings fills the screen; in every group (accordion) no part of a row is outside the width, no horizontal scroll, rows do not overlap. The walls box at the top (not this agent's) is recorded: it already covered Controls before the gear",
+    "runs": {
+      "en": {
+        "pageLang": "en",
+        "title": "SettingsO",
+        "topButtons": [
+          {
+            "id": "osd tl",
+            "l": 44,
+            "t": 14,
+            "r": 184.625,
+            "b": 32.75
+          },
+          {
+            "id": "osd tr",
+            "l": 253.86459350585938,
+            "t": 14,
+            "r": 359.3333435058594,
+            "b": 32.75
+          },
+          {
+            "id": "open-settings",
+            "l": 153.45834350585938,
+            "t": 38,
+            "r": 198.79167938232422,
+            "b": 78
+          },
+          {
+            "id": "open-controls",
+            "l": 206.7916717529297,
+            "t": 38,
+            "r": 287.78125762939453,
+            "b": 78
+          },
+          {
+            "id": "pause",
+            "l": 295.78125,
+            "t": 38,
+            "r": 359.33333587646484,
+            "b": 78
+          }
+        ],
+        "topOverlaps": [],
+        "wallsBoxAtTop": {
+          "box": {
+            "id": "bake-box interactive",
+            "l": 93.83333587646484,
+            "t": 110,
+            "r": 281.50000762939453,
+            "b": 182.83333587646484
+          },
+          "overlapsGear": false,
+          "overlapsControls": false
+        },
+        "groups": {
+          "flight": {
+            "rows": 1,
+            "parts": 10,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "crash": {
+            "rows": 10,
+            "parts": 88,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "camera": {
+            "rows": 2,
+            "parts": 25,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "display": {
+            "rows": 5,
+            "parts": 45,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "input": {
+            "rows": 1,
+            "parts": 14,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "drone": {
+            "rows": 9,
+            "parts": 79,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "tune": {
+            "rows": 3,
+            "parts": 76,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "voxels": {
+            "rows": 5,
+            "parts": 46,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "recording": {
+            "rows": 4,
+            "parts": 44,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "data": {
+            "rows": 1,
+            "parts": 18,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          }
+        },
+        "ok": true
+      },
+      "ru": {
+        "pageLang": "ru",
+        "title": "\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438O",
+        "topButtons": [
+          {
+            "id": "osd tl",
+            "l": 44,
+            "t": 14,
+            "r": 184.625,
+            "b": 32.75
+          },
+          {
+            "id": "osd tr",
+            "l": 253.86459350585938,
+            "t": 14,
+            "r": 359.3333435058594,
+            "b": 32.75
+          },
+          {
+            "id": "open-settings",
+            "l": 124.89583587646484,
+            "t": 38,
+            "r": 170.2291717529297,
+            "b": 78
+          },
+          {
+            "id": "open-controls",
+            "l": 178.2291717529297,
+            "t": 38,
+            "r": 286.09375762939453,
+            "b": 78
+          },
+          {
+            "id": "pause",
+            "l": 294.09375,
+            "t": 38,
+            "r": 359.33333587646484,
+            "b": 78
+          }
+        ],
+        "topOverlaps": [],
+        "wallsBoxAtTop": {
+          "box": {
+            "id": "bake-box interactive",
+            "l": 93.83333587646484,
+            "t": 110,
+            "r": 281.50000762939453,
+            "b": 182.83333587646484
+          },
+          "overlapsGear": false,
+          "overlapsControls": false
+        },
+        "groups": {
+          "flight": {
+            "rows": 1,
+            "parts": 10,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "crash": {
+            "rows": 10,
+            "parts": 88,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "camera": {
+            "rows": 2,
+            "parts": 25,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "display": {
+            "rows": 5,
+            "parts": 45,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "input": {
+            "rows": 1,
+            "parts": 14,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "drone": {
+            "rows": 9,
+            "parts": 79,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "tune": {
+            "rows": 3,
+            "parts": 76,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "voxels": {
+            "rows": 5,
+            "parts": 46,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "recording": {
+            "rows": 4,
+            "parts": 44,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "data": {
+            "rows": 1,
+            "parts": 18,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          }
+        },
+        "ok": true
+      },
+      "pl": {
+        "pageLang": "pl",
+        "title": "UstawieniaO",
+        "topButtons": [
+          {
+            "id": "osd tl",
+            "l": 44,
+            "t": 14,
+            "r": 184.625,
+            "b": 32.75
+          },
+          {
+            "id": "osd tr",
+            "l": 253.86459350585938,
+            "t": 14,
+            "r": 359.3333435058594,
+            "b": 32.75
+          },
+          {
+            "id": "open-settings",
+            "l": 136.05209350585938,
+            "t": 38,
+            "r": 181.38542938232422,
+            "b": 78
+          },
+          {
+            "id": "open-controls",
+            "l": 189.3854217529297,
+            "t": 38,
+            "r": 287.5729217529297,
+            "b": 78
+          },
+          {
+            "id": "pause",
+            "l": 295.57293701171875,
+            "t": 38,
+            "r": 359.3333549499512,
+            "b": 78
+          }
+        ],
+        "topOverlaps": [],
+        "wallsBoxAtTop": {
+          "box": {
+            "id": "bake-box interactive",
+            "l": 93.83333587646484,
+            "t": 110,
+            "r": 281.50000762939453,
+            "b": 204.58333587646484
+          },
+          "overlapsGear": false,
+          "overlapsControls": false
+        },
+        "groups": {
+          "flight": {
+            "rows": 1,
+            "parts": 10,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "crash": {
+            "rows": 10,
+            "parts": 88,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "camera": {
+            "rows": 2,
+            "parts": 25,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "display": {
+            "rows": 5,
+            "parts": 45,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "input": {
+            "rows": 1,
+            "parts": 14,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "drone": {
+            "rows": 9,
+            "parts": 79,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "tune": {
+            "rows": 3,
+            "parts": 76,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "voxels": {
+            "rows": 5,
+            "parts": 46,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "recording": {
+            "rows": 4,
+            "parts": 44,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          },
+          "data": {
+            "rows": 1,
+            "parts": 18,
+            "overlaps": [],
+            "outside": [],
+            "paneScroll": 375,
+            "paneClient": 375,
+            "docScroll": 375,
+            "panel": {
+              "l": 0,
+              "r": 375.3333435058594,
+              "t": 0,
+              "b": 812
+            }
+          }
+        },
+        "ok": true
+      }
+    },
+    "control": {
+      "planted": {
+        "rows": 3,
+        "parts": 76,
+        "overlaps": [],
+        "outside": [
+          "sr-control"
+        ],
+        "paneScroll": 612,
+        "paneClient": 375,
+        "docScroll": 375,
+        "panel": {
+          "l": 0,
+          "r": 375.3333435058594,
+          "t": 0,
+          "b": 812
+        }
+      },
+      "fired": true
+    },
+    "at": "2026-10-02T00:30:31.461Z"
+  },
+  "pageErrors": [],
+  "P1": {
+    "pass": true,
+    "what": "item 20: Crash threshold 6.5 set in Settings is what the flight uses, and it survives a scene change, a reload and a new browser on the same profile",
+    "before": {
+      "store": 4,
+      "explicit": false,
+      "model": 4
+    },
+    "inPanel": {
+      "store": 6.5,
+      "explicit": true,
+      "model": 4
+    },
+    "afterClose": {
+      "store": 6.5,
+      "explicit": true,
+      "model": 6.5
+    },
+    "picker": "picker",
+    "atPicker": {
+      "store": 6.5,
+      "explicit": true,
+      "model": null
+    },
+    "otherScene": {
+      "scene": "7a475d38",
+      "store": 6.5,
+      "explicit": true,
+      "model": 6.5
+    },
+    "reloaded": {
+      "store": 6.5,
+      "explicit": true,
+      "model": 6.5
+    },
+    "daysLater": {
+      "store": 6.5,
+      "explicit": true,
+      "model": 6.5
+    },
+    "control": {
+      "what": "storage blocked: the banner shows, Data says not saved, and the value is lost on reload",
+      "bannerShown": true,
+      "bannerText": "Settings can't be saved in this browser window (private mode or blocked storage). Export still works.",
+      "setInPanel": {
+        "store": 6.5,
+        "explicit": true,
+        "model": 4
+      },
+      "dataWritable": "false",
+      "afterReload": {
+        "store": 4,
+        "explicit": false,
+        "model": 4
+      },
+      "fired": true
+    },
+    "at": "2026-10-02T00:22:41.053Z"
+  },
+  "P2": {
+    "pass": true,
+    "what": "row reset gives the preset value (Pavo20 vCrash 4.0); a group reset only its group (second press confirms); Reset all gives the defaults and the flight uses them",
+    "set": {
+      "v": 6.5,
+      "fov": 130,
+      "list": 2
+    },
+    "changedDot": true,
+    "rowReset": {
+      "v": 4,
+      "preset": 4,
+      "explicit": false,
+      "fov": 130,
+      "dot": false
+    },
+    "beforeConfirm": 130,
+    "groupReset": {
+      "fov": 115,
+      "v": 7
+    },
+    "resetAll": {
+      "list": [],
+      "v": 4,
+      "fov": 115
+    },
+    "flightAfterClose": {
+      "vCrash": 4,
+      "fov": 115
+    },
+    "control": {
+      "rowResetKeptFov": 130,
+      "groupResetKeptVCrash": 7,
+      "groupResetFov": 115,
+      "fired": true
+    },
+    "at": "2026-10-02T00:22:41.053Z"
+  },
+  "P5": {
+    "pass": true,
+    "what": "D-h: FOV changed in Settings while the bot flies: the craft is where it was (same tick, same flight model, 0 mm), the camera has the new FOV, the flight goes on",
+    "airborne": {
+      "d": 0.8497796636736997,
+      "speed": 3.8018900965298736,
+      "armed": true,
+      "crashed": false,
+      "tick": 3622
+    },
+    "change": {
+      "a": {
+        "tick": 3622,
+        "p": [
+          -0.06021271940760195,
+          1.8867222808198711,
+          0.9627752847669222
+        ],
+        "fov": 115
+      },
+      "b": {
+        "tick": 3622,
+        "p": [
+          -0.06021271940760195,
+          1.8867222808198711,
+          0.9627752847669222
+        ],
+        "fov": 100,
+        "sameLog": true
+      },
+      "inPanelFov": 100,
+      "stored": 100,
+      "moveMm": 0,
+      "spawn": [
+        0.6857250332832336,
+        1.5809873342514038,
+        0.6940217018127441,
+        -107.22887701503547
+      ]
+    },
+    "after600ms": {
+      "tick": 4221,
+      "dFromSpawn": 3.204425302791323,
+      "fov": 100
+    },
+    "thresholdMm": 1,
+    "control": {
+      "v02": {
+        "a": {
+          "tick": 3389,
+          "p": [
+            0.2721677227365108,
+            1.8585363400482542,
+            0.8423319619010615
+          ]
+        },
+        "b": {
+          "tick": 0,
+          "p": [
+            0.6857250332832336,
+            1.5809873342514038,
+            0.6940217018127441
+          ]
+        },
+        "moveMm": 519.6720436707395,
+        "atSpawnMm": 0
+      },
+      "fired": true
+    },
+    "at": "2026-10-02T00:22:41.053Z"
+  },
+  "summary": {
+    "P1": "pass",
+    "P2": "pass",
+    "P5": "pass",
+    "P7": "pass"
+  }
+}

@@ -1,0 +1,639 @@
+{
+  "name": "v03-summary",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T00:23:22.617Z",
+    "gitHead": "10a68eb",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "keymapShipped": [
+    {
+      "action": "pause.toggle",
+      "keys": [
+        "Escape",
+        "KeyP"
+      ],
+      "flying": false
+    },
+    {
+      "action": "respawn.start",
+      "keys": [
+        "KeyR"
+      ],
+      "flying": false
+    },
+    {
+      "action": "respawn.rewind",
+      "keys": [
+        "KeyY"
+      ],
+      "flying": false
+    },
+    {
+      "action": "crash.keep",
+      "keys": [
+        "Enter"
+      ],
+      "flying": false
+    },
+    {
+      "action": "mode.cycle",
+      "keys": [
+        "KeyM"
+      ],
+      "flying": false
+    },
+    {
+      "action": "arm.toggle",
+      "keys": [
+        "Space"
+      ],
+      "flying": true
+    },
+    {
+      "action": "voxels.cycle",
+      "keys": [
+        "KeyV"
+      ],
+      "flying": false
+    },
+    {
+      "action": "walls.toggle",
+      "keys": [
+        "KeyC"
+      ],
+      "flying": false
+    },
+    {
+      "action": "hud.toggle",
+      "keys": [
+        "KeyH"
+      ],
+      "flying": false
+    },
+    {
+      "action": "record.toggle",
+      "keys": [
+        "F9"
+      ],
+      "flying": false
+    },
+    {
+      "action": "frameStats.toggle",
+      "keys": [
+        "F3"
+      ],
+      "flying": false
+    },
+    {
+      "action": "settings.open",
+      "keys": [
+        "KeyO"
+      ],
+      "flying": false
+    }
+  ],
+  "S1": {
+    "pass": true,
+    "render": "off",
+    "what": "fly with the keyboard (walls off), disarm with the switch after 4 s: the card shows, its air time is within 0.1 s of __gsfpv.stats().life.airtimeS; any key closes it; Enter opens the summary panel with the first item focused (not pressed); a life under 3 s shows no card",
+    "flight": {
+      "armed": true,
+      "lifeAtDisarm": 4.066
+    },
+    "card": {
+      "shown": true,
+      "title": "--- STATS ---",
+      "lines": 10,
+      "airtime": "0:04.1",
+      "rows": {
+        "airtime": "0:04.1",
+        "maxSpeed": "49 km/h",
+        "maxAlt": "40.3 m",
+        "maxDist": "0.0 m",
+        "distance": "40.3 m",
+        "minVolt": "12.12 V",
+        "maxAmps": "11.5 A",
+        "usedMah": "12 mAh",
+        "maxG": "2.9 G",
+        "avgThrottle": "50 %"
+      }
+    },
+    "life": {
+      "airtimeS": 4.066
+    },
+    "disarm": {
+      "type": "disarm",
+      "tick": 4536,
+      "reason": "switch"
+    },
+    "airtimeDiffS": 0.03399999999999981,
+    "goneOnKey": true,
+    "secondCard": true,
+    "enter": {
+      "panel": true,
+      "card": 0,
+      "focused": "pause.continue"
+    },
+    "closedByEsc": true,
+    "shortLife": {
+      "airtimeS": 1.574,
+      "card": 0
+    },
+    "control": {
+      "what": "the bot crashes into a wall after more than 3 s in the air (a crash disarm, not the switch): no card within 1.2 s",
+      "phase": "crashed",
+      "atCrash": {
+        "life": 5.2250000000000005,
+        "disarms": [
+          "crash"
+        ],
+        "crash": {
+          "type": "crash",
+          "tick": 5950,
+          "speed": 8.668891791625434,
+          "nx": 1,
+          "ny": 0,
+          "nz": 0,
+          "px": -5.199040443254583,
+          "py": 1.7295653287201118,
+          "pz": 0.7271217104472011
+        }
+      },
+      "cardSeen": 0,
+      "fired": true
+    },
+    "ran": {
+      "at": "2026-10-02T00:23:22.495Z",
+      "gitHead": "10a68eb",
+      "gitDirty": true,
+      "browser": {
+        "kind": "system-chrome",
+        "version": "154.0.8037.59",
+        "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "why": "installed"
+      }
+    }
+  },
+  "S2": {
+    "pass": true,
+    "render": "off",
+    "what": "Esc opens the summary panel: every shipped KEYMAP action with its key-caps (and aria-keyshortcuts), no planned one, Continue and Restart with their keys; 16 stat rows (this flight, session, all time) with the life air time; the mode chip = the mode the flight model flies; Copy stats puts the table on the clipboard",
+    "problems": [],
+    "shown": [
+      {
+        "action": "pause.toggle",
+        "caps": [
+          "Esc",
+          "P"
+        ],
+        "aria": "Escape P"
+      },
+      {
+        "action": "respawn.start",
+        "caps": [
+          "R"
+        ],
+        "aria": "R"
+      },
+      {
+        "action": "respawn.rewind",
+        "caps": [
+          "Y"
+        ],
+        "aria": "Y"
+      },
+      {
+        "action": "crash.keep",
+        "caps": [
+          "Enter"
+        ],
+        "aria": "Enter"
+      },
+      {
+        "action": "mode.cycle",
+        "caps": [
+          "M"
+        ],
+        "aria": "M"
+      },
+      {
+        "action": "voxels.cycle",
+        "caps": [
+          "V"
+        ],
+        "aria": "V"
+      },
+      {
+        "action": "walls.toggle",
+        "caps": [
+          "C"
+        ],
+        "aria": "C"
+      },
+      {
+        "action": "hud.toggle",
+        "caps": [
+          "H"
+        ],
+        "aria": "H"
+      },
+      {
+        "action": "record.toggle",
+        "caps": [
+          "F9"
+        ],
+        "aria": "F9"
+      },
+      {
+        "action": "frameStats.toggle",
+        "caps": [
+          "F3"
+        ],
+        "aria": "F3"
+      },
+      {
+        "action": "settings.open",
+        "caps": [
+          "O"
+        ],
+        "aria": "O"
+      },
+      {
+        "action": "arm.toggle",
+        "caps": [
+          "Space"
+        ],
+        "aria": "Space"
+      }
+    ],
+    "items": [
+      {
+        "id": "pause.continue",
+        "caps": [
+          "Esc",
+          "P"
+        ],
+        "aria": "Escape P",
+        "testid": null
+      },
+      {
+        "id": "pause.restart",
+        "caps": [
+          "R"
+        ],
+        "aria": "R",
+        "testid": null
+      },
+      {
+        "id": "pause.rewind",
+        "caps": [
+          "Y"
+        ],
+        "aria": "Y",
+        "testid": null
+      },
+      {
+        "id": "pause.scene",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.drone",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.radio",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.settings",
+        "caps": [
+          "O"
+        ],
+        "aria": "O",
+        "testid": null
+      },
+      {
+        "id": "pause.replays",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.measure",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.import",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.cinema",
+        "caps": [],
+        "aria": null,
+        "testid": null
+      },
+      {
+        "id": "pause.record",
+        "caps": [
+          "F9"
+        ],
+        "aria": "F9",
+        "testid": null
+      }
+    ],
+    "mode": {
+      "chip": "angle",
+      "simChannel": 1,
+      "sim": "angle"
+    },
+    "airtime": {
+      "panel": {
+        "id": "airtime",
+        "life": "0:01.6",
+        "session": "0:08.9",
+        "lifetime": "0:08.9",
+        "visible": true
+      },
+      "hook": 1.574
+    },
+    "copy": {
+      "status": "Copied",
+      "lines": 19,
+      "head": [
+        "ShramkoGSFPV flight stats \u00b7 BetaFPV Pavo20 Pro class, 3S \u00b7 2026-10-02\r",
+        "\r",
+        "                   This flight  Session  All time\r"
+      ]
+    },
+    "control": {
+      "what": "the same check against a keymap whose hud.toggle is J",
+      "problems": [
+        "hud.toggle: caps H != J",
+        "hud.toggle: aria \"H\" != \"J\""
+      ],
+      "fired": true
+    },
+    "ran": {
+      "at": "2026-10-02T00:23:22.495Z",
+      "gitHead": "10a68eb",
+      "gitDirty": true,
+      "browser": {
+        "kind": "system-chrome",
+        "version": "154.0.8037.59",
+        "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "why": "installed"
+      }
+    }
+  },
+  "S3": {
+    "pass": false,
+    "render": "off",
+    "what": "with the panel closed, every key of every shipped KEYMAP binding (looping over the table, keyboard flying keys included) does what its row in the panel says: exactly that action's effect on the page, and pressed again it goes back",
+    "results": [
+      {
+        "action": "pause.toggle",
+        "key": "Escape",
+        "flying": false,
+        "expect": "menu",
+        "changed": [
+          "menu"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "pause.toggle",
+        "key": "KeyP",
+        "flying": false,
+        "expect": "menu",
+        "changed": [
+          "menu"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "respawn.start",
+        "key": "KeyR",
+        "flying": false,
+        "expect": "lives",
+        "changed": [
+          "atSpawn",
+          "lives"
+        ],
+        "ok": true,
+        "restored": null
+      },
+      {
+        "action": "respawn.rewind",
+        "key": "KeyY",
+        "flying": false,
+        "expect": "lives",
+        "changed": [
+          "lives"
+        ],
+        "ok": true,
+        "restored": null
+      },
+      {
+        "action": "crash.keep",
+        "key": "Enter",
+        "ok": true,
+        "changed": [],
+        "skipped": "listens only while a crash is up (when: 'crash'): checked with the crash in tools/bench/src/accept-v03-respawn.ts"
+      },
+      {
+        "action": "mode.cycle",
+        "key": "KeyM",
+        "flying": false,
+        "expect": "mode",
+        "changed": [
+          "mode"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "arm.toggle",
+        "key": "Space",
+        "flying": true,
+        "expect": "armed",
+        "changed": [
+          "atSpawn",
+          "armed"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "voxels.cycle",
+        "key": "KeyV",
+        "flying": false,
+        "expect": "voxel",
+        "changed": [
+          "voxel"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "walls.toggle",
+        "key": "KeyC",
+        "flying": false,
+        "expect": "walls",
+        "changed": [
+          "walls",
+          "lives"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "hud.toggle",
+        "key": "KeyH",
+        "flying": false,
+        "expect": "hudOff",
+        "changed": [
+          "hudOff"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "record.toggle",
+        "key": "F9",
+        "flying": false,
+        "expect": "rec",
+        "changed": [
+          "rec"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "frameStats.toggle",
+        "key": "F3",
+        "flying": false,
+        "expect": "frame",
+        "changed": [
+          "frame"
+        ],
+        "ok": true,
+        "restored": true
+      },
+      {
+        "action": "settings.open",
+        "key": "KeyO",
+        "flying": false,
+        "expect": "settings",
+        "changed": [
+          "settings"
+        ],
+        "ok": true,
+        "restored": true
+      }
+    ],
+    "control": {
+      "what": "a deliberately wrong binding in the page's own keymap module (H and V swapped): the loop and the panel check must both fail",
+      "injected": {
+        "url": null
+      },
+      "loop": [
+        {
+          "action": "voxels.cycle",
+          "key": "KeyV",
+          "flying": false,
+          "expect": "voxel",
+          "changed": [
+            "voxel"
+          ],
+          "ok": true,
+          "restored": true
+        },
+        {
+          "action": "hud.toggle",
+          "key": "KeyH",
+          "flying": false,
+          "expect": "hudOff",
+          "changed": [
+            "hudOff"
+          ],
+          "ok": true,
+          "restored": true
+        }
+      ],
+      "panelProblems": [],
+      "fired": false
+    },
+    "ran": {
+      "at": "2026-10-02T00:23:22.495Z",
+      "gitHead": "10a68eb",
+      "gitDirty": true,
+      "browser": {
+        "kind": "system-chrome",
+        "version": "154.0.8037.59",
+        "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "why": "installed"
+      }
+    }
+  },
+  "parts": [
+    {
+      "part": "S1",
+      "pass": true,
+      "gitHead": "10a68eb"
+    },
+    {
+      "part": "S2",
+      "pass": true,
+      "gitHead": "10a68eb"
+    },
+    {
+      "part": "S3",
+      "pass": false,
+      "gitHead": "10a68eb"
+    },
+    {
+      "part": "S4",
+      "pass": null,
+      "gitHead": null
+    },
+    {
+      "part": "S5",
+      "pass": null,
+      "gitHead": null
+    },
+    {
+      "part": "S6",
+      "pass": null,
+      "gitHead": null
+    }
+  ],
+  "pass": false
+}

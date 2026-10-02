@@ -115,6 +115,8 @@ dl.measure { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; } dl
 .attribution a { color: #bbf7d0; }
 .bake-box { position: absolute; top: calc(44px + var(--banner-h, 0px)); left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 92vw; }
 .bake-box .btn { background: rgba(12,14,18,.85); }
+/* a phone: the top buttons (Settings, Controls, Pause) reach the middle, so the walls box goes under them and the hint line */
+@media (max-width: 640px) { .bake-box { top: calc(max(10px, env(safe-area-inset-top)) + 100px + var(--banner-h, 0px)); } }
 .bake-status { font-size: 13px; color: #d1d5db; text-shadow: 0 1px 2px #000; text-align: center; }
 .badge-nowalls { background: rgba(12,14,18,.85); border: 1px solid var(--warn); color: var(--warn); padding: 6px 12px; border-radius: 999px; font-size: 13px; max-width: 92vw; text-align: center; }
 .top-actions { position: absolute; top: calc(max(10px, env(safe-area-inset-top)) + var(--banner-h, 0px)); right: 16px; display: flex; gap: 8px; margin-top: 28px; }

@@ -1,0 +1,40 @@
+{
+  "name": "b-fly-b11",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T00:20:14.891Z",
+    "gitHead": "10a68eb",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "render": "on",
+  "pass": true,
+  "positive": {
+    "lowThrottleAndSwitchEdge": {
+      "armed": true,
+      "block": null
+    }
+  },
+  "controls": {
+    "throttleNotLow": {
+      "armed": false,
+      "block": "throttle"
+    },
+    "switchOnAtLoad": {
+      "onAtLoadArmed": false,
+      "afterOffOnArmed": true
+    },
+    "gamepadZeroAxesTrap": {
+      "armed": false,
+      "block": "throttle"
+    }
+  }
+}

@@ -1,0 +1,296 @@
+{
+  "name": "v03-respawn",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T00:26:53.325Z",
+    "gitHead": "10a68eb",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "render": "off for R16 R23 R18 RR (flight logic; never a visual check), on for SHOTS",
+  "R16": {
+    "pass": true,
+    "item": 16,
+    "rule": "armed at idle on the spawn: |dy| < 2 cm for 5 s",
+    "platform": {
+      "y0": 1.5809873342514038,
+      "plat0": 1,
+      "t0": 1488,
+      "armedTicks": 5019,
+      "minY": 1.578987335251404,
+      "maxY": 1.5809775271197801,
+      "crashed": false,
+      "contacts": 0,
+      "ticks": 5100,
+      "platOn": 1,
+      "armed": true,
+      "block": null,
+      "dyUp": -0.00000980713162368474,
+      "dyDown": 0.001999998999999919
+    },
+    "control": {
+      "query": "set.respawn.platform=0",
+      "run": {
+        "y0": 1.5809873342514038,
+        "plat0": 0,
+        "t0": 635,
+        "armedTicks": 5260,
+        "minY": -0.17006903964555303,
+        "maxY": 1.5809775271197801,
+        "crashed": false,
+        "contacts": 0,
+        "ticks": 5300,
+        "platOn": 0,
+        "armed": true,
+        "block": null,
+        "dyUp": -0.00000980713162368474,
+        "dyDown": 1.751056373896957
+      },
+      "fired": true
+    }
+  },
+  "R23": {
+    "pass": true,
+    "item": 23,
+    "gate": {
+      "keepArmedAfterCrash": true,
+      "source": "sim"
+    },
+    "respawn": {
+      "wallS": 1.998,
+      "simS": 2,
+      "framePeriodMs": 33.30000000447035,
+      "reason": "crash",
+      "decision": {
+        "tick": 12182,
+        "reason": "crash",
+        "kind": "rewind",
+        "incidentTick": 10182,
+        "sampleTick": 5150,
+        "backoff": 1,
+        "pathAgeTicks": 5032
+      },
+      "at": [
+        0.6492201089859009,
+        1.5890464782714844,
+        0.5572961568832397,
+        -107.26687622070312
+      ],
+      "recordedAt": [
+        0.6492200971441285,
+        1.58904643621044,
+        0.5572961491621489
+      ],
+      "offM": 4.437312559018651e-8,
+      "armedAtLife": true,
+      "toastTexts": [
+        "Crash 8.7 m/s \u00b7 back 5 s in 2.0 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 1.9 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 1.8 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 1.7 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 1.6 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 1.5 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 1.4 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 1.3 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 1.2 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 1.1 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 1.0 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 0.9 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 0.8 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 0.7 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 0.6 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 0.5 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 0.4 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 0.3 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 0.2 s",
+        "Crash 8.7 m/s \u00b7 back 5 s in 0.1 s"
+      ],
+      "lives": 3,
+      "lives0": 2
+    },
+    "hudThr": {
+      "atHover": {
+        "hud": 28,
+        "stick": 28,
+        "armed": true,
+        "crashed": false,
+        "vy": -0.00008464491282676666,
+        "y": 1.5871445450863972,
+        "label": "\u22125 s",
+        "crashView": false
+      },
+      "up": {
+        "hud": 40,
+        "stick": 40,
+        "armed": true,
+        "crashed": false,
+        "vy": -0.13309350191352595,
+        "y": 1.8801439093724368,
+        "label": "\u22125 s",
+        "crashView": false,
+        "climbedM": 0.29299936428603957
+      }
+    },
+    "switch": {
+      "lowSwitchTicks": 0,
+      "watchTicks": 3995,
+      "label": "\u22125 s"
+    },
+    "note": "ArmGate keepArmedAfterCrash is wired",
+    "control": {
+      "query": "set.respawn.auto=0",
+      "atCrash": {
+        "crashTick": 10214,
+        "lifeTick": null,
+        "lifeT": null,
+        "label": null,
+        "armed": false,
+        "crashed": true,
+        "lives": 2,
+        "toast": false,
+        "panel": false,
+        "phase": "crashed"
+      },
+      "after10s": {
+        "crashTick": 10214,
+        "lifeTick": null,
+        "lifeT": null,
+        "label": null,
+        "armed": false,
+        "crashed": true,
+        "lives": 2,
+        "toast": false,
+        "panel": true,
+        "phase": "rest"
+      },
+      "fired": true
+    }
+  },
+  "R18": {
+    "pass": true,
+    "item": 18,
+    "crashOn": false,
+    "flipped": {
+      "dropped": true,
+      "stillTick": 6563,
+      "lifeTick": 8000,
+      "reason": "stuck-flipped",
+      "crashes": 0,
+      "minUp": -0.9999998243819346,
+      "upNow": 1,
+      "y": 1.5725619792938232,
+      "lives": 3,
+      "lives0": 2,
+      "simS": 1.437,
+      "wallS": 1.4338999999985098
+    },
+    "control": {
+      "what": "the same drop upright, disarmed: a landing",
+      "atRest": {
+        "dropped": true,
+        "stillTick": null,
+        "lifeTick": null,
+        "reason": null,
+        "crashes": 0,
+        "minUp": -0.9985174914865507,
+        "upNow": 0.9996989114592245,
+        "y": -0.16815072162501526,
+        "lives": 2,
+        "lives0": 2,
+        "simS": null,
+        "wallS": null
+      },
+      "after20s": {
+        "dropped": true,
+        "stillTick": null,
+        "lifeTick": null,
+        "reason": null,
+        "crashes": 0,
+        "minUp": -0.9985174914865507,
+        "upNow": 0.9997130094599288,
+        "y": -0.16806090236626298,
+        "lives": 2,
+        "lives0": 2,
+        "simS": null,
+        "wallS": null
+      },
+      "fired": true
+    }
+  },
+  "RR": {
+    "pass": true,
+    "key": "R",
+    "run": {
+      "spawn": [
+        0.6857250332832336,
+        1.5809873342514038,
+        0.6940217018127441,
+        -107.22887701503547
+      ],
+      "away": {
+        "d": 0.5055574758545551,
+        "armed": true
+      },
+      "after": {
+        "off": 0.0024305876637111534,
+        "platOn": 1,
+        "armed": true,
+        "hold": 0,
+        "reason": "manual-start",
+        "y": 1.5790743009330435
+      },
+      "later": {
+        "dy": -0.0008489386429686441,
+        "armed": true,
+        "crashed": false,
+        "platOn": 1
+      }
+    },
+    "control": {
+      "query": "set.respawn.keepArmed=0",
+      "run": {
+        "spawn": [
+          0.6857250332832336,
+          1.5809873342514038,
+          0.6940217018127441,
+          -107.22887701503547
+        ],
+        "away": {
+          "d": 0.488935337009096,
+          "armed": true
+        },
+        "after": {
+          "off": 0,
+          "platOn": 1,
+          "armed": false,
+          "hold": 1,
+          "reason": "manual-start",
+          "y": 1.5809873342514038
+        },
+        "later": {
+          "dy": 0,
+          "armed": false,
+          "crashed": false,
+          "platOn": 1
+        }
+      },
+      "fired": true
+    }
+  },
+  "pageErrors": [],
+  "summary": {
+    "R16": true,
+    "R23": true,
+    "R18": true,
+    "RR": true
+  }
+}

@@ -35,7 +35,8 @@ import { pickBrowser } from './chrome.mjs';
 import { REPO, today, writeEvidence } from './evidence';
 
 const SITE = (process.env.SITE ?? 'http://127.0.0.1:5321').replace(/\/$/, '');
-const fly = (qs: string) => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}` : `${SITE}/en/fly/?${qs}`);
+// LOCAL_FLY: the dev server serves /fly/ only (the language from the NEXT_LOCALE cookie); a release build or the live site by its locale path
+const fly = (qs: string, lang = 'en') => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}` : `${SITE}/${lang}/fly/?${qs}`);
 const SCENE = '39e63ce9', SCENE2 = '7a475d38';
 const PAVO = 'pavo20pro-3s', METEOR = 'meteor65pro-1s';
 const FLIGHT = `scene=${SCENE}&nowarn=1&input=touch&render=off`;
@@ -75,8 +76,8 @@ async function persistent(dir: string, init?: string): Promise<BrowserContext> {
     return ctx;
 }
 
-async function flight(p: Page, qs = FLIGHT): Promise<void> {
-    await p.goto(fly(qs));
+async function flight(p: Page, qs = FLIGHT, lang = 'en'): Promise<void> {
+    await p.goto(fly(qs, lang));
     const r = await waitReady(p, 180000);
     if (r.status !== 'ready') throw new Error(`flight did not start: ${String(r.status)} ${String(r.error ?? '')}`);
 }
@@ -412,7 +413,7 @@ if (want('P7')) {
     for (const lang of ['en', 'ru', 'pl']) {
         const p = await page(browser, { w: 375, h: 812, mobile: true });
         await p.context().addCookies([{ name: 'NEXT_LOCALE', value: lang, url: SITE }]);
-        await flight(p);
+        await flight(p, FLIGHT, lang);
         await p.waitForTimeout(500);
         const boxes = (sel: string) => p.evaluate((q) => [...document.querySelectorAll(q)].filter((e) => (e as HTMLElement).offsetParent !== null).map((e) => { const r = e.getBoundingClientRect(); return { id: (e as HTMLElement).dataset.id ?? (e as HTMLElement).dataset.action ?? e.className, l: r.left, t: r.top, r: r.right, b: r.bottom }; }), sel);
         const top = await boxes('.top-actions .btn, .osd.tl, .osd.tr');
