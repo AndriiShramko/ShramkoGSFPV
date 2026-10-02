@@ -1,0 +1,307 @@
+{
+  "name": "v03-scale",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T02:32:56.158Z",
+    "gitHead": "9ceb46a",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "site": "http://127.0.0.1:5333",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "scene": "39e63ce9",
+  "SC1": {
+    "pass": true,
+    "what": "x2 around the drone: position and scan point kept within 1 mm, a ray to a wall doubles within 1 voxel, the craft flies the scaled walls, splat entity scale 2 at t, kept after a reload",
+    "dir": {
+      "d": [
+        1,
+        -1,
+        1
+      ],
+      "r": 0.3711351291435712
+    },
+    "before": {
+      "pos": [
+        0.6857250332832336,
+        1.5809873342514038,
+        0.6940217018127441
+      ],
+      "s": 1,
+      "t": [
+        0,
+        0,
+        0
+      ],
+      "scanPoint": [
+        0.6857250332832336,
+        1.5809873342514038,
+        0.6940217018127441
+      ],
+      "ray": 0.3711351291435712,
+      "entityScale": [
+        1,
+        1,
+        1
+      ],
+      "entityPos": [
+        0,
+        0,
+        0
+      ],
+      "flies": true,
+      "voxel": 0.05,
+      "baseVoxel": 0.05,
+      "stored": {
+        "s": 1,
+        "t": [
+          0,
+          0,
+          0
+        ],
+        "v": 0
+      },
+      "size": 1
+    },
+    "x2": {
+      "pos": [
+        0.6857250332832336,
+        1.5809873342514038,
+        0.6940217018127441
+      ],
+      "s": 2,
+      "t": [
+        -0.6857250332832336,
+        -1.5809873342514038,
+        -0.6940217018127441
+      ],
+      "scanPoint": [
+        0.6857250332832336,
+        1.5809873342514038,
+        0.6940217018127441
+      ],
+      "ray": 0.7422702582871424,
+      "entityScale": [
+        2,
+        2,
+        2
+      ],
+      "entityPos": [
+        -0.6857250332832336,
+        -1.5809873342514038,
+        -0.6940217018127441
+      ],
+      "flies": true,
+      "voxel": 0.1,
+      "baseVoxel": 0.05,
+      "stored": {
+        "s": 2,
+        "t": [
+          -0.6857250332832336,
+          -1.5809873342514038,
+          -0.6940217018127441
+        ],
+        "v": 1
+      },
+      "size": 2
+    },
+    "reloaded": {
+      "pos": [
+        0.6857250332832336,
+        1.5809873342514038,
+        0.6940217018127441
+      ],
+      "s": 2,
+      "t": [
+        -0.6857250332832336,
+        -1.5809873342514038,
+        -0.6940217018127441
+      ],
+      "scanPoint": [
+        0.6857250332832336,
+        1.5809873342514038,
+        0.6940217018127441
+      ],
+      "ray": 0.7422702582871424,
+      "entityScale": [
+        2,
+        2,
+        2
+      ],
+      "entityPos": [
+        -0.6857250332832336,
+        -1.5809873342514038,
+        -0.6940217018127441
+      ],
+      "flies": true,
+      "voxel": 0.1,
+      "baseVoxel": 0.05,
+      "stored": {
+        "s": 2,
+        "t": [
+          -0.6857250332832336,
+          -1.5809873342514038,
+          -0.6940217018127441
+        ],
+        "v": 1
+      },
+      "size": 2
+    },
+    "checks": {
+      "positionKeptMm": 0,
+      "scanPointKeptMm": 0,
+      "rayBefore": 0.3711351291435712,
+      "rayX2": 0.7422702582871424,
+      "rayRatio": 2,
+      "rayErrM": 0,
+      "entityScale": [
+        2,
+        2,
+        2
+      ],
+      "entityPosIsT": true,
+      "fliesScaledWalls": true,
+      "voxelX2": 0.1,
+      "reloadedSize": 2,
+      "reloadedEntity": [
+        2,
+        2,
+        2
+      ],
+      "reloadedStored": {
+        "s": 2,
+        "t": [
+          -0.6857250332832336,
+          -1.5809873342514038,
+          -0.6940217018127441
+        ],
+        "v": 1
+      }
+    },
+    "control": {
+      "resetSize": 1,
+      "resetEntity": [
+        1,
+        1,
+        1
+      ],
+      "resetRay": 0.3711351291435712,
+      "resetReloadedSize": 1,
+      "resetReloadedEntity": [
+        1,
+        1,
+        1
+      ],
+      "fired": true
+    },
+    "pageErrors": []
+  },
+  "SC2": {
+    "pass": true,
+    "what": "] x3 then [ x3 returns to x1 within float error; each step applies after the 300 ms debounce",
+    "steps": [
+      {
+        "key": "BracketRight",
+        "at50ms": 1,
+        "at450ms": 1.100000023841858
+      },
+      {
+        "key": "BracketRight",
+        "at50ms": 1.100000023841858,
+        "at450ms": 1.2100000381469727
+      },
+      {
+        "key": "BracketRight",
+        "at50ms": 1.2100000381469727,
+        "at450ms": 1.3310000896453857
+      },
+      {
+        "key": "BracketLeft",
+        "at50ms": 1.3310000896453857,
+        "at450ms": 1.2100000381469727
+      },
+      {
+        "key": "BracketLeft",
+        "at50ms": 1.2100000381469727,
+        "at450ms": 1.100000023841858
+      },
+      {
+        "key": "BracketLeft",
+        "at50ms": 1.100000023841858,
+        "at450ms": 1
+      }
+    ],
+    "final": {
+      "size": 1,
+      "t": [
+        1.2153387629609824e-8,
+        -9.539489198573392e-10,
+        1.233321267335441e-8
+      ],
+      "stored": {
+        "s": 1,
+        "t": [
+          1.2153387629609824e-8,
+          -9.539489198573392e-10,
+          1.233321267335441e-8
+        ],
+        "v": 1
+      }
+    },
+    "delayedApply": true,
+    "control": {
+      "afterUp3": 1.3310000896453857,
+      "fired": true
+    },
+    "pageErrors": []
+  },
+  "SC3": {
+    "pass": true,
+    "what": "summary panel row: x1.00, [+] gives x1.10, walls block size shown, warning above 10 cm",
+    "first": {
+      "value": "x1.00",
+      "voxel": "Walls: 5.0 cm blocks",
+      "warn": false,
+      "size": 1,
+      "label": "Scene sizex1.00\u2212+Res"
+    },
+    "plus": {
+      "value": "x1.10",
+      "voxel": "Walls: 5.5 cm blocks",
+      "warn": false,
+      "size": 1.100000023841858,
+      "label": "Scene sizex1.10\u2212+Res"
+    },
+    "coarse": {
+      "value": "x2.20",
+      "voxel": "Walls: 11.0 cm blocks \u2014 coarse: you may crash before you touch what you see",
+      "warn": true,
+      "size": 2.200000047683716,
+      "label": "Scene sizex2.20\u2212+Res"
+    },
+    "control": {
+      "atX1": {
+        "value": "x1.00",
+        "voxel": "Walls: 5.0 cm blocks",
+        "warn": false,
+        "size": 1,
+        "label": "Scene sizex1.00\u2212+Res"
+      },
+      "fired": true
+    },
+    "pageErrors": []
+  }
+}

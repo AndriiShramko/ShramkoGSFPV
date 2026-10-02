@@ -1,0 +1,72 @@
+{
+  "name": "v03-a6-determinism",
+  "context": {
+    "date": "2026-10-02T02:29:58.188Z",
+    "gitHead": "9ceb46a",
+    "gitDirty": false,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "scope": "node-only",
+  "referenceHash": "1d01ca5b16aef6edce77d10de52517cbb609ace4fa05e47c3dccdf13111fff65",
+  "recordedReference": {
+    "hash": "1d01ca5b16aef6edce77d10de52517cbb609ace4fa05e47c3dccdf13111fff65",
+    "matches": true,
+    "previous": [
+      "dda474a216260e7696f971fb6c10756bc7d6d8d512451fa327ff2d5ba02fb3b2 (sim-core/0.2.0 before the pinned-contact fix, 2026-09-26)",
+      "d3d4e0e380c8ca533ebdd462398c436ac1030ced791b7a0e2b399878cf4caf72 (sim-core/0.1.0, evidence/2026-09-24/a6-determinism.json)"
+    ]
+  },
+  "script": "SimRadio channel script (arm, climb, chirps, square waves, a flip, yaw spins, dive), 30 s, 250 Hz, +-400 us jitter, seed 42; scene 39e63ce9 collision",
+  "node": {
+    "splits": [
+      {
+        "frameHz": 30,
+        "hash": "1d01ca5b16aef6edce77d10de52517cbb609ace4fa05e47c3dccdf13111fff65",
+        "ticks": 30000,
+        "hitches": 0,
+        "crashed": false
+      },
+      {
+        "frameHz": 60,
+        "hash": "1d01ca5b16aef6edce77d10de52517cbb609ace4fa05e47c3dccdf13111fff65",
+        "ticks": 30000,
+        "hitches": 0,
+        "crashed": false
+      },
+      {
+        "frameHz": 144,
+        "hash": "1d01ca5b16aef6edce77d10de52517cbb609ace4fa05e47c3dccdf13111fff65",
+        "ticks": 30000,
+        "hitches": 0,
+        "crashed": false
+      },
+      {
+        "frameHz": 240,
+        "hash": "1d01ca5b16aef6edce77d10de52517cbb609ace4fa05e47c3dccdf13111fff65",
+        "ticks": 30000,
+        "hitches": 0,
+        "crashed": false
+      }
+    ],
+    "replayFromInputLog": {
+      "hash": "1d01ca5b16aef6edce77d10de52517cbb609ace4fa05e47c3dccdf13111fff65",
+      "ticks": 30000
+    },
+    "allEqual": true
+  },
+  "browser": {
+    "status": "not run (A6_CHROME=off)"
+  },
+  "chrome": null,
+  "visibility": null,
+  "control": {
+    "name": "Math.random in the sim step must change the hash",
+    "nodeHash": "c3ce212acd469e0106d0d3d866e206ba6bf76980f5e7f2f97d24716703403414",
+    "chromeHash": null,
+    "fired": true
+  },
+  "consoleErrors": []
+}
