@@ -7,15 +7,15 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-02T08:35:58.118Z",
-    "gitHead": "79748ec",
+    "date": "2026-10-02T08:49:08.594Z",
+    "gitHead": "e9700f6",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "pass": true,
-  "site": "http://127.0.0.1:5352",
+  "site": "http://localhost:5320",
   "browser": {
     "kind": "system-chrome",
     "version": "154.0.8037.59",
@@ -88,8 +88,8 @@
       "world": false,
       "tag": true,
       "phase": "done",
-      "speed": 8.00016645089827,
-      "ms": 10065
+      "speed": 8.000138996139336,
+      "ms": 10071
     },
     "control": {
       "stepOn": "on",
@@ -100,8 +100,8 @@
         "world": true,
         "tag": false,
         "phase": "crashed",
-        "speed": 4.481778575894942,
-        "ms": 4762
+        "speed": 4.046158092459251,
+        "ms": 4793
       },
       "fired": true
     }
@@ -346,15 +346,15 @@
       "held": false,
       "bar": "\u25a0 Stop 0:01F9"
     },
-    "menuOn": "\u25cf Recording 0:02 \u2014 stop",
+    "menuOn": "\u25cf Recording 0:01 \u2014 stop",
     "heldDot": {
       "recording": true,
       "shown": true,
-      "label": "Recording, 0:02. Stop recording",
-      "text": "0:02",
+      "label": "Recording, 0:01. Stop recording",
+      "text": "0:01",
       "anim": "none",
       "held": true,
-      "bar": "\u25a0 Stop 0:02F9"
+      "bar": "\u25a0 Stop 0:01F9"
     },
     "cinema": {
       "recording": true,

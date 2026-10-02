@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-02T04:52:55.051Z",
-    "gitHead": "d44ac11",
+    "date": "2026-10-02T05:23:50.216Z",
+    "gitHead": "5a36c5a",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -22,6 +22,32 @@
     "why": "installed"
   },
   "mode": "render=off (logic only): every check here reads state, none is a picture check",
+  "P10": {
+    "pass": true,
+    "what": "Language in Settings: Polski reloads the page in Polish and is kept in the NEXT_LOCALE cookie the landing reads; the row reset removes the cookie and the page language comes back",
+    "start": "en",
+    "polish": {
+      "lang": "pl",
+      "store": "pl",
+      "cookie": "NEXT_LOCALE=pl",
+      "menu": "Ustawienia"
+    },
+    "reset": {
+      "v": "browser",
+      "explicit": false,
+      "cookie": ""
+    },
+    "afterReset": "en",
+    "control": {
+      "ru": {
+        "lang": "ru",
+        "store": "ru"
+      },
+      "fired": true
+    },
+    "at": "2026-10-02T05:23:50.214Z"
+  },
+  "pageErrors": [],
   "P3": {
     "pass": true,
     "what": "item 13: Export in one browser, Import (preview, then Replace) into a fresh one: explicitList() and the radio profiles are identical, and the flight uses the imported values",
@@ -382,31 +408,6 @@
     },
     "at": "2026-10-02T04:52:55.050Z"
   },
-  "P10": {
-    "pass": false,
-    "what": "Language in Settings: Polski reloads the page in Polish and is kept in the NEXT_LOCALE cookie the landing reads; the row reset removes the cookie and the page language comes back",
-    "start": "en",
-    "polish": {
-      "lang": "pl",
-      "store": "pl",
-      "cookie": "NEXT_LOCALE=pl",
-      "menu": "Ustawienia"
-    },
-    "reset": {
-      "v": "browser",
-      "explicit": false,
-      "cookie": ""
-    },
-    "afterReset": "pl",
-    "control": {
-      "ru": {
-        "lang": "pl",
-        "store": "ru"
-      },
-      "fired": false
-    },
-    "at": "2026-10-02T04:52:55.050Z"
-  },
   "P11": {
     "pass": true,
     "what": "review C10 in the page: tau and FOV set in Settings and a Betaflight diff imported on the Pavo20 stay the Pavo's; picking the Meteor65 flies the Meteor's own values; back to the Pavo and after a reload, the Pavo's tune again; its card says how many values are its own",
@@ -498,14 +499,13 @@
     },
     "at": "2026-10-02T04:52:55.050Z"
   },
-  "pageErrors": [],
   "summary": {
     "P3": "pass",
     "P4": "pass",
     "P6": "pass",
     "P8": "pass",
     "P9": "pass",
-    "P10": "FAIL",
+    "P10": "pass",
     "P11": "pass"
   }
 }
