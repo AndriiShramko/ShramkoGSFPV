@@ -87,7 +87,7 @@ out["pass"] = (out["catalog"]["status"] == 200 and out["catalog"]["revalidated"]
 day = time.strftime("%Y-%m-%d")
 (REPO / "evidence" / day).mkdir(parents=True, exist_ok=True)
 path = REPO / "evidence" / day / "v06-admin-nginx.json"
-path.write_text(json.dumps({"name": "v06-admin-nginx", "nginxConf": "deploy/nginx.conf", **out}, indent=2) + "\n")
+path.write_text(json.dumps({"name": "v06-admin-nginx", "nginxConf": "deploy/nginx.conf", **out}, indent=2) + "\n", newline="\n")
 print(json.dumps(out, indent=1))
 print(("PASS " if out["pass"] else "FAIL ") + str(path))
 sys.exit(0 if out["pass"] else 1)
