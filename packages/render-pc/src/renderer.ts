@@ -147,13 +147,14 @@ export class SplatRenderer {
     private gpuQueue: WgpuQueue | null = null;
     private submitDone: number[] = [];
     /**
-     * Frames the GPU may still be working on when the next one is drawn (0: no limit). With 1, a
-     * frame is drawn only once the GPU has finished the last one; otherwise it is not drawn and the
-     * next animation frame tries again with a newer pose (the flight model steps either way).
-     * Without the limit, frames queue on the GPU behind another GPU user (a DaVinci render) and each
-     * queued frame is one more period between the stick and the screen: positive control, another
-     * process keeping the GPU busy (v05-latency HOG_MS=40), submit -> GPU done p50 129 ms and event
-     * -> presentation p50 152 ms against 10 ms and 56 ms without it.
+     * Frames the GPU may still be working on when the next one is drawn (0: no limit). At the limit
+     * the frame is not drawn and the next animation frame tries again with a newer pose (the flight
+     * model steps either way). Without a limit, frames queue on the GPU behind another GPU user (a
+     * DaVinci render) and each queued frame is one more period between the stick and the screen.
+     * Measured at 30 Hz with another process keeping the GPU busy (v05-latency HOG_MS=40), stick ->
+     * screen p50/p95: no limit 206/287 ms, 2 frames 130/172 ms (19 % held), 1 frame 154/195 ms (57 %
+     * held: the GPU idles between our frames while it waits for the next rAF). With the GPU free, 2
+     * holds nothing (83/99 ms, as without a limit); 1 would hold whenever a frame takes a period.
      */
     maxFramesInFlight = 2;
     /** frames not drawn because the GPU had not finished the previous ones (for the governor and the probe) */
