@@ -1,0 +1,19 @@
+{
+  "share.menu": "Udostępnij tę scenę",
+  "share.title": "Udostępnij tę scenę",
+  "share.making": "Tworzę twój obrazek i link…",
+  "share.ready": "Link gotowy. Wybierz, gdzie go opublikować:",
+  "share.failed": "Nie udało się teraz utworzyć linku z obrazkiem: przyciski udostępnią zwykły link do tej sceny, a obrazek możesz zapisać i tak.",
+  "share.native": "Udostępnij…",
+  "share.copy": "Kopiuj link",
+  "share.copied": "Link skopiowany",
+  "share.save": "Zapisz obrazek",
+  "share.instagram": "Instagram: zapisz obrazek i go opublikuj albo użyj Udostępnij… na telefonie.",
+  "share.text": "Właśnie przeleciałem dronem FPV przez {scene} — prawdziwy skan 3D, prosto w przeglądarce. Za darmo, działa z twoją własną aparaturą. Przelecisz tę linię?",
+  "share.scan": "prawdziwy skan 3D",
+  "share.hook": "Przelecisz tę linię?",
+  "share.tagline": "Darmowy symulator FPV w przeglądarce · prawdziwe skany 3D · twoja aparatura",
+  "share.cta": "Leć za darmo",
+  "share.scanBy": "Skan: {credit}",
+  "share.nice": "Ładny lot — {time} w powietrzu. Udostępnij tę scenę i rzuć wyzwanie znajomym."
+}

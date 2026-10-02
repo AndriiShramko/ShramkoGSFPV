@@ -1,0 +1,19 @@
+{
+  "share.menu": "Share this scene",
+  "share.title": "Share this scene",
+  "share.making": "Making your picture and link…",
+  "share.ready": "Your link is ready. Pick where to post it:",
+  "share.failed": "The picture link could not be made right now: the buttons share the plain link to this scene, and you can still save the picture.",
+  "share.native": "Share…",
+  "share.copy": "Copy link",
+  "share.copied": "Link copied",
+  "share.save": "Save picture",
+  "share.instagram": "Instagram: save the picture and post it, or use Share… on your phone.",
+  "share.text": "I just flew an FPV drone through {scene} — a real 3D scan, right in the browser. Free, and your own radio works. Can you fly this line?",
+  "share.scan": "a real 3D scan",
+  "share.hook": "Can you fly this line?",
+  "share.tagline": "Free FPV sim in your browser · real 3D scans · your own radio",
+  "share.cta": "Fly it free",
+  "share.scanBy": "Scan: {credit}",
+  "share.nice": "Nice flight — {time} in the air. Share this scene and challenge your friends."
+}

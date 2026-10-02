@@ -1,0 +1,10 @@
+/* "Share this scene" (builtin/share.ts) and the summary panel's "Nice flight" row. */
+.panel.share { width: min(640px, calc(100vw - 32px)); }
+.share-preview img { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); }
+.share-preview:empty { aspect-ratio: 1200 / 630; border-radius: 10px; background: var(--bg2); }
+.share-status { margin: 10px 0 6px; }
+.share-targets { display: flex; flex-wrap: wrap; gap: 8px; }
+.share-targets[hidden] { display: none; }
+.share-url { width: 100%; box-sizing: border-box; margin-top: 10px; padding: 10px 12px; border-radius: 10px; border: 1px solid #5b6572; background: var(--bg); color: var(--fg); font: 14px ui-monospace, Consolas, monospace; }
+.share-url[hidden] { display: none; }
+.share-nice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid rgba(74, 222, 128, .4); border-radius: 12px; background: rgba(74, 222, 128, .06); }

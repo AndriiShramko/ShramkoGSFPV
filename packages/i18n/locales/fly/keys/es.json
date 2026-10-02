@@ -1,6 +1,7 @@
 {
   "keys.arm.toggle": "Armar / desarmar (vuelo con teclado)",
   "keys.crash.keep": "Mantener los restos (sin reaparición automática)",
+  "keys.feedback.open": "Informar de un error o una idea",
   "keys.frameStats.toggle": "Tiempos de fotograma y retardo",
   "keys.hud.toggle": "Mostrar u ocultar el HUD",
   "keys.mode.cycle": "Modo de vuelo",

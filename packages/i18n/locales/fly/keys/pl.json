@@ -1,6 +1,7 @@
 {
   "keys.arm.toggle": "Uzbrój / rozbrój (latanie klawiaturą)",
   "keys.crash.keep": "Zostaw wrak (bez automatycznego odrodzenia)",
+  "keys.feedback.open": "Zgłoś błąd lub pomysł",
   "keys.frameStats.toggle": "Czasy klatek i opóźnienie",
   "keys.hud.toggle": "Pokaż lub ukryj HUD",
   "keys.mode.cycle": "Tryb lotu",

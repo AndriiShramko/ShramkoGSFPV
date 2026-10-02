@@ -1,6 +1,7 @@
 {
   "keys.arm.toggle": "Арм / дизарм (полёт с клавиатуры)",
   "keys.crash.keep": "Оставить обломки (без авто-респауна)",
+  "keys.feedback.open": "Сообщить об ошибке или идее",
   "keys.frameStats.toggle": "Время кадра и задержка",
   "keys.hud.toggle": "Показать или скрыть HUD",
   "keys.mode.cycle": "Режим полёта",

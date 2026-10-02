@@ -54,10 +54,14 @@ function unb64(s: string): Uint8Array {
     return out;
 }
 
-/** The kept lives as a saved flight: closed lives with their hash, the current one with its hash so far. */
-export function savedFlight(s: FlightSession, label: string): SavedFlight {
-    const lives = s.lives();
-    const cur = lives[lives.length - 1];
+/**
+ * The kept lives as a saved flight: closed lives with their hash, the current one with its hash so far.
+ * `currentOnly`: the current life alone (a bug report: the life the pilot was in when it happened).
+ */
+export function savedFlight(s: FlightSession, label: string, o: { currentOnly?: boolean } = {}): SavedFlight {
+    const all = s.lives();
+    const cur = all[all.length - 1];
+    const lives = o.currentOnly && cur ? [cur] : all;
     const live = s.runner.liveLifeHash();
     const out: SavedLife[] = [];
     let records = 0;
