@@ -1,6 +1,6 @@
 // The scene flown: the credit line (showcase scenes carry title, author and licence; a pasted scene
 // links to its original) with the takedown link, the flight counted in the scene history on the
-// first arm, and the menu's "Change scene".
+// first arm, and the menu's "Change scene" (the picker over the flight, app/scene-host.ts).
 import { recordFlight } from '@gsfpv/scenes';
 import { h } from '../../ui/dom';
 import { t, locale } from '../../i18n';
@@ -29,7 +29,7 @@ export const scene: Feature = {
             if (e.type === 'arm') { beacon('arm'); recordFlight(ctx.scene.id); }
         });
 
-        // the picker is another page load: the flight stays paused until the page goes
-        ctx.menu.add({ id: 'pause.scene', action: null, labelKey: 'pause.scene', order: 30, section: 'scene', run: () => { ctx.pause('scene'); location.search = ''; } });
+        // the picker over the flight (E.4): a picked scene loads in the page, the radio stays connected
+        ctx.menu.add({ id: 'pause.scene', action: null, labelKey: 'pause.scene', order: 30, section: 'scene', run: () => ctx.scenes.openPicker() });
     }
 };

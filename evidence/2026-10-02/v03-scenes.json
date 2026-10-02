@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-02T01:28:42.958Z",
-    "gitHead": "7cdedcf",
+    "date": "2026-10-02T01:34:21.007Z",
+    "gitHead": "05fdc25",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -26,7 +26,8 @@
     "S2": "on",
     "S3": "off",
     "S4": "off",
-    "S5": "off"
+    "S5": "off",
+    "S6": "off"
   },
   "S1": {
     "pass": true,
@@ -58,7 +59,7 @@
       "from": "39e63ce9",
       "to": "887f27aa",
       "reason": "next",
-      "ms": 1315
+      "ms": 1349
     },
     "after": {
       "scene": "887f27aa",
@@ -85,15 +86,15 @@
       "samples": [
         {
           "stick": 0.5,
-          "ch2": 0.5231984257698059
+          "ch2": 0.5172753930091858
         },
         {
           "stick": -0.6,
-          "ch2": -0.5765054225921631
+          "ch2": -0.5853899121284485
         },
         {
           "stick": 0.2,
-          "ch2": 0.22013820707798004
+          "ch2": 0.21520237624645233
         }
       ],
       "ok": true
@@ -110,149 +111,149 @@
     "pass": true,
     "what": "10 switches A<->B in one page: JS heap after GC and app.stats VRAM within +15 % of the first load of A; with unloadSplat disabled VRAM grows past it",
     "first": {
-      "heapMb": 37.4,
-      "vramMb": 352.1,
-      "texMb": 203,
-      "sbMb": 148.7,
+      "heapMb": 37.3,
+      "vramMb": 417.1,
+      "texMb": 196.2,
+      "sbMb": 220.3,
       "receivedMb": 5.8,
       "scene": "39e63ce9"
     },
     "steps": [
       {
         "to": "7a475d38",
-        "ms": 1678,
-        "state": "done",
-        "heapMb": 38.5,
-        "vramMb": 298.5,
-        "texMb": 220.9,
-        "sbMb": 76.9,
-        "receivedMb": 8.1,
-        "scene": "7a475d38"
-      },
-      {
-        "to": "39e63ce9",
         "ms": 1603,
         "state": "done",
+        "heapMb": 38.6,
+        "vramMb": 396.9,
+        "texMb": 282.7,
+        "sbMb": 113.6,
+        "receivedMb": 8.1,
+        "scene": "7a475d38"
+      },
+      {
+        "to": "39e63ce9",
+        "ms": 1726,
+        "state": "done",
         "heapMb": 38.5,
-        "vramMb": 345.6,
-        "texMb": 178.1,
-        "sbMb": 166.8,
+        "vramMb": 386.6,
+        "texMb": 209.8,
+        "sbMb": 176.2,
         "receivedMb": 5.8,
         "scene": "39e63ce9"
       },
       {
         "to": "7a475d38",
-        "ms": 3675,
-        "state": "done",
-        "heapMb": 39,
-        "vramMb": 255.9,
-        "texMb": 201.9,
-        "sbMb": 53.3,
-        "receivedMb": 8.1,
-        "scene": "7a475d38"
-      },
-      {
-        "to": "39e63ce9",
-        "ms": 2154,
-        "state": "done",
-        "heapMb": 39.2,
-        "vramMb": 289.4,
-        "texMb": 163.3,
-        "sbMb": 125.3,
-        "receivedMb": 5.8,
-        "scene": "39e63ce9"
-      },
-      {
-        "to": "7a475d38",
-        "ms": 2326,
-        "state": "done",
-        "heapMb": 39.8,
-        "vramMb": 281.8,
-        "texMb": 208.8,
-        "sbMb": 72.3,
-        "receivedMb": 8.1,
-        "scene": "7a475d38"
-      },
-      {
-        "to": "39e63ce9",
-        "ms": 1602,
-        "state": "done",
-        "heapMb": 39.5,
-        "vramMb": 238.7,
-        "texMb": 123.7,
-        "sbMb": 114.2,
-        "receivedMb": 5.8,
-        "scene": "39e63ce9"
-      },
-      {
-        "to": "7a475d38",
-        "ms": 1826,
-        "state": "done",
-        "heapMb": 40,
-        "vramMb": 300.5,
-        "texMb": 205.3,
-        "sbMb": 94.4,
-        "receivedMb": 8.1,
-        "scene": "7a475d38"
-      },
-      {
-        "to": "39e63ce9",
-        "ms": 1606,
-        "state": "done",
-        "heapMb": 40.2,
-        "vramMb": 284.4,
-        "texMb": 140,
-        "sbMb": 143.7,
-        "receivedMb": 5.8,
-        "scene": "39e63ce9"
-      },
-      {
-        "to": "7a475d38",
-        "ms": 1921,
-        "state": "done",
-        "heapMb": 40.7,
-        "vramMb": 299.8,
-        "texMb": 215.4,
-        "sbMb": 83.7,
-        "receivedMb": 8.1,
-        "scene": "7a475d38"
-      },
-      {
-        "to": "39e63ce9",
         "ms": 1688,
         "state": "done",
-        "heapMb": 40.5,
-        "vramMb": 224.8,
+        "heapMb": 39.2,
+        "vramMb": 299.8,
+        "texMb": 232.4,
+        "sbMb": 67,
+        "receivedMb": 8.1,
+        "scene": "7a475d38"
+      },
+      {
+        "to": "39e63ce9",
+        "ms": 1551,
+        "state": "done",
+        "heapMb": 38.9,
+        "vramMb": 230.8,
         "texMb": 135.8,
-        "sbMb": 88.3,
+        "sbMb": 94.4,
+        "receivedMb": 5.8,
+        "scene": "39e63ce9"
+      },
+      {
+        "to": "7a475d38",
+        "ms": 1660,
+        "state": "done",
+        "heapMb": 39.8,
+        "vramMb": 286.5,
+        "texMb": 203.7,
+        "sbMb": 82.3,
+        "receivedMb": 8.1,
+        "scene": "7a475d38"
+      },
+      {
+        "to": "39e63ce9",
+        "ms": 1576,
+        "state": "done",
+        "heapMb": 39.5,
+        "vramMb": 182.8,
+        "texMb": 96.3,
+        "sbMb": 86,
+        "receivedMb": 5.8,
+        "scene": "39e63ce9"
+      },
+      {
+        "to": "7a475d38",
+        "ms": 1673,
+        "state": "done",
+        "heapMb": 40,
+        "vramMb": 292,
+        "texMb": 205,
+        "sbMb": 86.6,
+        "receivedMb": 8.1,
+        "scene": "7a475d38"
+      },
+      {
+        "to": "39e63ce9",
+        "ms": 1583,
+        "state": "done",
+        "heapMb": 40,
+        "vramMb": 182.8,
+        "texMb": 96.3,
+        "sbMb": 86,
+        "receivedMb": 5.8,
+        "scene": "39e63ce9"
+      },
+      {
+        "to": "7a475d38",
+        "ms": 1660,
+        "state": "done",
+        "heapMb": 40.6,
+        "vramMb": 287.6,
+        "texMb": 204.8,
+        "sbMb": 82.3,
+        "receivedMb": 8.1,
+        "scene": "7a475d38"
+      },
+      {
+        "to": "39e63ce9",
+        "ms": 1591,
+        "state": "done",
+        "heapMb": 40.3,
+        "vramMb": 182.8,
+        "texMb": 96.3,
+        "sbMb": 86,
         "receivedMb": 5.8,
         "scene": "39e63ce9"
       }
     ],
-    "heapRatio": 1.083,
-    "vramRatio": 0.638,
+    "heapRatio": 1.08,
+    "vramRatio": 0.438,
     "control": {
       "leak": [
         {
           "to": "7a475d38",
-          "heapMb": 41,
-          "vramMb": 280,
-          "texMb": 190.9,
-          "sbMb": 88.3,
+          "heapMb": 40.9,
+          "vramMb": 276.8,
+          "texMb": 190.3,
+          "sbMb": 86,
           "receivedMb": 5.8,
           "scene": "7a475d38"
         },
         {
           "to": "39e63ce9",
-          "heapMb": 41.3,
-          "vramMb": 314.6,
-          "texMb": 200.1,
-          "sbMb": 113.7,
+          "heapMb": 41,
+          "vramMb": 256.7,
+          "texMb": 169.2,
+          "sbMb": 86.9,
           "receivedMb": 5.8,
           "scene": "39e63ce9"
         }
       ],
-      "vramRatioToLastA": 1.399,
+      "vramRatioToLastA": 1.404,
       "fired": true
     },
     "errors": []
@@ -267,7 +268,7 @@
       "from": "39e63ce9",
       "to": "7a475d38",
       "reason": "auto",
-      "ms": 1533
+      "ms": 1522
     },
     "after": {
       "scene": "7a475d38",
@@ -294,7 +295,7 @@
       "samples": [
         {
           "stick": 0.5,
-          "ch2": 0.527147114276886
+          "ch2": 0.5310957431793213
         },
         {
           "stick": -0.6,
@@ -328,7 +329,7 @@
         "from": "39e63ce9",
         "to": "887f27aa",
         "reason": "next",
-        "ms": 1372
+        "ms": 1460
       },
       "after": {
         "scene": "887f27aa",
@@ -380,7 +381,7 @@
           "from": "39e63ce9",
           "to": "7a475d38",
           "reason": "favourite",
-          "ms": 1557
+          "ms": 1508
         },
         "scene": "7a475d38"
       },
@@ -390,7 +391,7 @@
           "from": "7a475d38",
           "to": "887f27aa",
           "reason": "favourite",
-          "ms": 1355
+          "ms": 1287
         },
         "scene": "887f27aa"
       }
@@ -401,7 +402,7 @@
         "from": "887f27aa",
         "to": "39e63ce9",
         "reason": "random",
-        "ms": 1382
+        "ms": 1465
       },
       "scene": "39e63ce9"
     },
@@ -425,6 +426,68 @@
       "freshCards": 0,
       "fired": true
     }
+  },
+  "S6": {
+    "pass": true,
+    "what": "pause menu -> Change scan: the picker over the flight; a card loads in the page with the simulated radio connected; Esc goes back to flying; a non-SuperSplat link is refused",
+    "esc": {
+      "open": false,
+      "paused": false,
+      "scene": "39e63ce9",
+      "switches": 0
+    },
+    "switch": {
+      "state": "done",
+      "from": "39e63ce9",
+      "to": "7a475d38",
+      "reason": "pick",
+      "ms": 1507
+    },
+    "after": {
+      "scene": "7a475d38",
+      "url": "7a475d38",
+      "mark": 1,
+      "sameFake": true,
+      "controlsScreen": false,
+      "loading": false,
+      "source": "hid",
+      "paused": false,
+      "armed": false,
+      "gateArmed": false,
+      "life": "scene",
+      "keepArmed": true,
+      "platform": true,
+      "switches": 1,
+      "first": {
+        "reason": "scene",
+        "keepArmed": true,
+        "platform": true
+      }
+    },
+    "throttle": {
+      "samples": [
+        {
+          "stick": 0.5,
+          "ch2": 0.5222112536430359
+        },
+        {
+          "stick": -0.6,
+          "ch2": -0.5804541110992432
+        },
+        {
+          "stick": 0.2,
+          "ch2": 0.21915103495121002
+        }
+      ],
+      "ok": true
+    },
+    "control": {
+      "error": "This is not a SuperSplat link or scene id. Paste a link like superspl.at/scene/39e63ce9.",
+      "switches": 0,
+      "scene": "39e63ce9",
+      "fired": true
+    },
+    "errors": []
   },
   "pass": true
 }

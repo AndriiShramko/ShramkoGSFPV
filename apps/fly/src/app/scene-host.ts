@@ -10,13 +10,17 @@
 //      keeps ?scene= current with history.replaceState, records the open in the library, resumes.
 // A scene that fails to load is noted (the rotation skips it for a day) and the scene left comes
 // back. Which scene N, Shift+N and F load comes from the rotation (@gsfpv/scenes rotation.ts).
-import { SceneError, SceneRotation, getLibrary, legacyLibraryStore, mergeLibraries, recordFailure, recordOpen, useLibraryStore } from '@gsfpv/scenes';
+// The pause menu's "Change scan" opens the scene picker over the flight (openPicker): a scene picked
+// there loads the same way, so changing the scan by hand keeps the radio too (item 5).
+import { SceneError, SceneRotation, getLibrary, legacyLibraryStore, mergeLibraries, parseSceneInput, recordFailure, recordOpen, useLibraryStore } from '@gsfpv/scenes';
 import type { RotationRules, RotationSource, RotationOrder, SceneLibraryData } from '@gsfpv/scenes';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { FlightSession } from '../session';
 import type { SessionOptions } from '../session';
 import { LoadingScreen } from '../ui/loading';
+import { ScenePicker } from '../ui/scenes';
 import type { ShowcaseScene } from '../ui/scenes';
+import { h } from '../ui/dom';
 import { initialWallsOn, loadWallsChoice } from '../flightwalls';
 import { t } from '../i18n';
 import { beacon, q } from './env';
@@ -40,6 +44,7 @@ export class SceneHost implements SceneSwitcher {
     readonly rotation: SceneRotation;
     private busyNow = false;
     readonly log: SwitchRecord[] = [];
+    private picker: ScenePicker | null = null;
 
     constructor(d: SceneHostDeps) {
         this.d = d;
@@ -64,6 +69,47 @@ export class SceneHost implements SceneSwitcher {
         const source: RotationSource = src === 'favourites' || src === 'history' ? src : 'curated';
         const order: RotationOrder = prefs.get<string>('scenes.order') === 'sequential' ? 'sequential' : 'random';
         return this.rotation.next(source, cur, order, this.rules());
+    }
+
+    /**
+     * The scene picker over the flight (paused, reason 'scene'): every tab, the link field, the
+     * Continue card. A pick loads in the page; x or Esc closes it and the flight goes on.
+     */
+    openPicker(): void {
+        const { ctx, showcase } = this.d;
+        if (this.picker || this.busyNow) return;
+        ctx.pause('scene');
+        if (ctx.menu.isOpen) ctx.menu.close();
+        const picker = new ScenePicker(ctx.ui, [...showcase]);
+        this.picker = picker;
+        picker.root.classList.add('in-flight');
+        picker.root.dataset.testid = 'scenes-in-flight';
+        // the flight's keys wait while it is up (its field takes letters); Esc closes it
+        const offKeys = ctx.keys.block(() => true);
+        const onKey = (e: KeyboardEvent): void => {
+            if (e.key !== 'Escape') return;
+            e.preventDefault();
+            e.stopPropagation();
+            close(true);
+        };
+        const close = (resume: boolean): void => {
+            picker.remove();
+            this.picker = null;
+            offKeys();
+            removeEventListener('keydown', onKey, true);
+            if (resume) ctx.resume('scene');
+        };
+        addEventListener('keydown', onKey, true);
+        picker.root.prepend(h('button', { type: 'button', class: 'panel-x', 'data-action': 'scenes-close', 'aria-label': t('common.close'), 'aria-keyshortcuts': 'Escape', title: `${t('common.close')} (Esc)`, onclick: () => close(true) }, '×'));
+        picker.onPick = (raw, source) => {
+            const id = parseSceneInput(raw);
+            if (!id) { picker.showError('invalid-link'); return; }
+            // the same scene: back to it as it was
+            if (id === ctx.scene.id) { close(true); return; }
+            close(false); // the 'scene' pause stays: load() holds it and releases it when the new scene flies
+            beacon('scene_open', { source });
+            void this.load(id, 'pick');
+        };
     }
 
     async go(kind: 'next' | 'random' | 'favourite' | 'auto'): Promise<boolean> {

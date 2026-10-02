@@ -12,7 +12,10 @@
 //       crash panel, its scene row (N, Shift+N, F) is there and Next scene loads the next scene.
 //   S4  F loads the next favourite (starred in the picker), Shift+N a random curated scene. Control: no favourites, F loads nothing.
 //   S5  the picker's "Continue" card is the last scene flown. Control: a fresh browser has none.
-// S1, S3, S4, S5 are flight logic: the logic-only mode ?render=off (tools/bench/README.md).
+//   S6  pause menu -> Change scan opens the picker over the flight; a picked card loads in the page
+//       with the simulated radio still connected; Esc closes it and the flight goes on. Control: a
+//       link that is not SuperSplat's is refused in the same picker (invalid link), nothing loads.
+// S1, S3, S4, S5, S6 are flight logic: the logic-only mode ?render=off (tools/bench/README.md).
 //   LOCAL_FLY=1 SITE=http://127.0.0.1:5331 npx tsx src/accept-v03-scenes.ts [S1 S2 ...]
 // Evidence: evidence/<date>/v03-scenes.json.
 import { mkdirSync } from 'node:fs';
@@ -90,7 +93,7 @@ const STATE = `return { scene: s.scene.id, url: new URL(location.href).searchPar
     first: { reason: s.lives()[0].header.life.reason, keepArmed: s.lives()[0].header.life.opts.keepArmed === true, platform: s.lives()[0].header.life.opts.platform === true } };`;
 
 const { browser, which } = await launchChrome({ headless: false, args: ['--window-position=40,40', '--window-size=1296,920'] });
-const out: Record<string, Any> = { site: SITE, browser: which, render: { S1: 'off', S2: 'on', S3: 'off', S4: 'off', S5: 'off' } };
+const out: Record<string, Any> = { site: SITE, browser: which, render: { S1: 'off', S2: 'on', S3: 'off', S4: 'off', S5: 'off', S6: 'off' } };
 
 // ------------------------------------------------------------------ S1 N: in-page, the radio stays
 if (want('S1')) {
@@ -296,6 +299,43 @@ if (want('S4') || want('S5')) {
         console.log('S5', out.S5.pass ? 'PASS' : 'FAIL', JSON.stringify({ lastFlown, card, text, control }));
     }
     await ctx.close();
+}
+
+// ------------------------------------------------------------------ S6 the picker over the flight
+if (want('S6')) {
+    const { ctx, page: p, log } = await context(browser);
+    await radioFlying(p);
+    await hook(p, 'window.__mark = 1; window.__fake = h.fake; return 0;');
+    const picker = async (): Promise<boolean> => {
+        await p.keyboard.press('KeyP');
+        await p.click('[data-action="pause.scene"]');
+        return p.waitForSelector('[data-testid="scenes-in-flight"]', { timeout: 5000 }).then(() => true).catch(() => false);
+    };
+    // Esc: closed, nothing loaded, the flight runs again
+    const opened1 = await picker();
+    const paused1 = await hook<boolean>(p, 'return s.paused;');
+    await p.keyboard.press('Escape');
+    await wait(p, 300);
+    const esc = await hook(p, 'return { open: !!document.querySelector(\'[data-testid="scenes-in-flight"]\'), paused: s.paused, scene: s.scene.id, switches: h.scenes.log.length };');
+    // control: a link that is not SuperSplat's, in the same picker's field
+    const opened2 = await picker();
+    await p.screenshot({ path: join(SHOTS, 's6-picker-in-flight-render-off.png') });
+    await p.fill('[data-testid="scenes-in-flight"] .scene-input', 'https://example.com/scene/abc');
+    await p.keyboard.press('Enter');
+    await wait(p, 400);
+    const refused = await hook(p, 'return { error: document.querySelector(\'[data-testid="scenes-in-flight"] .scene-error\')?.textContent ?? "", switches: h.scenes.log.length, scene: s.scene.id };');
+    // a card: loads in the page
+    await p.click(`[data-testid="scenes-in-flight"] .scene-grid [data-scene="${B}"]`);
+    const sw = await switched(p);
+    await wait(p, 300);
+    const after = await hook(p, STATE);
+    const throttle = await throttleFollows(p);
+    await ctx.close();
+    const pass = opened1 && paused1 && !esc.open && !esc.paused && esc.scene === A && esc.switches === 0 && opened2
+        && sw.state === 'done' && sw.reason === 'pick' && after.scene === B && after.url === B && after.mark === 1 && after.sameFake && !after.controlsScreen && !after.paused && throttle.ok;
+    const control = { ...refused, fired: refused.error.length > 0 && refused.switches === 0 && refused.scene === A };
+    out.S6 = { pass: pass && control.fired, what: 'pause menu -> Change scan: the picker over the flight; a card loads in the page with the simulated radio connected; Esc goes back to flying; a non-SuperSplat link is refused', esc, switch: sw, after, throttle, control, errors: errors(log) };
+    console.log('S6', out.S6.pass ? 'PASS' : 'FAIL', JSON.stringify({ esc, sw, after: { scene: after.scene, sameFake: after.sameFake, controlsScreen: after.controlsScreen }, throttle: throttle.ok, control }));
 }
 
 await browser.close();

@@ -58,6 +58,8 @@ export interface SceneSwitcher {
     go(kind: 'next' | 'random' | 'favourite' | 'auto'): Promise<boolean>;
     /** load this scene in place of the one flown */
     load(id: string, reason: SceneSwitchReason): Promise<boolean>;
+    /** the scene picker over the flight (the pause menu's "Change scan"); a pick loads in the page */
+    openPicker(): void;
     /** a switch is under way */
     readonly busy: boolean;
 }
