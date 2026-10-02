@@ -25,7 +25,7 @@ export const EXPORT_SIZES: Readonly<Record<ExportSize, { w: number; h: number }>
 
 export const EXPORT_FPS = 60;
 
-/** Frames of `durationTicks` ms of flight at `fps`: frame k shows k/fps s (300 for 5 s at 60). Integer maths: 5000 / (1000 / 60) is 299.99... in floating point. */
+/** Frames of `durationTicks` ms of flight at `fps`: frame k shows k/fps s (300 for 5 s at 60; ticks x fps first, so no period is rounded). */
 export function exportFrameCount(durationTicks: number, fps: number = EXPORT_FPS): number {
     return Math.max(0, Math.floor((Math.max(0, durationTicks) * fps + 1e-6) / 1000));
 }
