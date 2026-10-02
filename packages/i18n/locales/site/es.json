@@ -1,7 +1,8 @@
 {
   "meta": {
     "title": "ShramkoGSFPV — simulador FPV sobre escaneos 3D reales, en el navegador",
-    "description": "Simulador FPV gratuito y de código abierto para volar escaneos Gaussian Splatting reales de SuperSplat: rates y PID al estilo Betaflight, paredes contra las que te estrellas de verdad, tu emisora por USB o sticks táctiles. Sin instalar nada."
+    "description": "Simulador FPV gratuito y de código abierto para volar escaneos Gaussian Splatting reales de SuperSplat: rates y PID al estilo Betaflight, paredes contra las que te estrellas de verdad, tu emisora por USB o sticks táctiles. Sin instalar nada.",
+    "ogTitle": "Vuela un dron FPV por escaneos 3D reales, directamente en tu navegador"
   },
   "nav": {
     "skip": "Ir al contenido",
@@ -939,5 +940,62 @@
     "scenesTitle": "Contenido de las escenas",
     "scenes": "Las escenas pertenecen a sus autores y se cargan desde sus editores durante el uso; no forman parte de este proyecto. Los escaneos de muestra de Andrii Shramko tienen licencia CC BY 4.0. Las demás escenas conservan la licencia que sus autores eligieron en SuperSplat.",
     "trademarksTitle": "Marcas"
+  },
+  "feedback": {
+    "button": "Opinión",
+    "buttonLabel": "Informar de un error, sugerir una idea o proponer una colaboración",
+    "title": "Opinión",
+    "lead": "¿Has encontrado un error, tienes una idea o quieres colaborar? Andrii lee cada mensaje.",
+    "kind": {
+      "label": "¿De qué se trata?",
+      "bug": "Error",
+      "idea": "Idea o deseo",
+      "coop": "Colaboración"
+    },
+    "bug": {
+      "message": "¿Qué ha fallado?",
+      "placeholder": "Qué hiciste, qué esperabas y qué pasó en su lugar"
+    },
+    "idea": {
+      "message": "Tu idea o deseo",
+      "placeholder": "¿Qué haría el simulador mejor para ti?"
+    },
+    "contact": {
+      "label": "Contacto (opcional)",
+      "placeholder": "Email, Telegram, lo que quieras — solo si quieres respuesta"
+    },
+    "diag": {
+      "consent": "Adjuntar datos técnicos para ayudar a arreglarlo",
+      "what": "Solo con esta casilla marcada, el informe incluye además:",
+      "items": [
+        "la versión del sitio",
+        "tu navegador, tamaño de pantalla e idiomas",
+        "la dirección de esta página",
+        "los mensajes de error recientes de la página"
+      ],
+      "none": "Nada más: ni cookies, ni archivos, ni datos personales."
+    },
+    "coop": {
+      "text": "La colaboración va por el formulario de contacto: quién eres, unas palabras y tu email.",
+      "go": "Abrir el formulario de contacto"
+    },
+    "send": "Enviar",
+    "sending": "Enviando…",
+    "missing": "Escribe primero unas palabras.",
+    "done": {
+      "title": "Gracias, ya ha llegado.",
+      "id": "Número de tu informe: {id}. Menciónalo si vuelves a escribir."
+    },
+    "close": "Cerrar",
+    "error": "Esta vez no se ha podido enviar. Tu texto sigue aquí; inténtalo de nuevo en un momento."
+  },
+  "share": {
+    "label": "Compartir ShramkoGSFPV",
+    "hero": "¿Conoces a un piloto que debería probarlo? Compártelo:",
+    "footer": "Compártelo con un piloto",
+    "text": "Vuela un dron FPV a través de escaneos 3D reales, directamente en el navegador: rates y PID al estilo Betaflight, paredes contra las que te estrellas, tu propia emisora por USB. Gratis y de código abierto.",
+    "native": "Compartir…",
+    "copy": "Copiar enlace",
+    "copied": "Enlace copiado"
   }
 }

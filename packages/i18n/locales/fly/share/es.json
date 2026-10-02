@@ -1,0 +1,19 @@
+{
+  "share.menu": "Compartir esta escena",
+  "share.title": "Compartir esta escena",
+  "share.making": "Creando tu imagen y tu enlace…",
+  "share.ready": "Tu enlace está listo. Elige dónde publicarlo:",
+  "share.failed": "Ahora no se ha podido crear el enlace con imagen: los botones comparten el enlace simple a esta escena, y aun así puedes guardar la imagen.",
+  "share.native": "Compartir…",
+  "share.copy": "Copiar enlace",
+  "share.copied": "Enlace copiado",
+  "share.save": "Guardar imagen",
+  "share.instagram": "Instagram: guarda la imagen y publícala, o usa Compartir… en tu móvil.",
+  "share.text": "Acabo de volar un dron FPV a través de {scene}: un escaneo 3D real, directamente en el navegador. Gratis, y funciona con tu propia emisora. ¿Te atreves con esta línea?",
+  "share.scan": "un escaneo 3D real",
+  "share.hook": "¿Te atreves con esta línea?",
+  "share.tagline": "Simulador FPV gratis en tu navegador · escaneos 3D reales · tu propia emisora",
+  "share.cta": "Vuela gratis",
+  "share.scanBy": "Escaneo: {credit}",
+  "share.nice": "Buen vuelo: {time} en el aire. Comparte esta escena y reta a tus amigos."
+}

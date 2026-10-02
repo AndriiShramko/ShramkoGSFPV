@@ -1,7 +1,8 @@
 {
   "meta": {
     "title": "ShramkoGSFPV — FPV drone simulator for real 3D scans, in your browser",
-    "description": "Free, open-source FPV simulator that flies real Gaussian Splatting scans from SuperSplat: Betaflight-style rates and PID, walls you crash into, your radio over USB or touch sticks. No install."
+    "description": "Free, open-source FPV simulator that flies real Gaussian Splatting scans from SuperSplat: Betaflight-style rates and PID, walls you crash into, your radio over USB or touch sticks. No install.",
+    "ogTitle": "Fly an FPV drone through real 3D scans — right in your browser"
   },
   "nav": {
     "skip": "Skip to content",
@@ -939,5 +940,62 @@
     "scenesTitle": "Scene content",
     "scenes": "Scenes belong to their authors and are loaded from their publishers at runtime; they are not part of this project. Andrii Shramko's showcase scans are licensed CC BY 4.0. Other scenes keep the license their authors chose on SuperSplat.",
     "trademarksTitle": "Trademarks"
+  },
+  "feedback": {
+    "button": "Feedback",
+    "buttonLabel": "Report a bug, suggest an idea or propose cooperation",
+    "title": "Feedback",
+    "lead": "Found a bug, have an idea, or want to work together? Andrii reads every message.",
+    "kind": {
+      "label": "What is it about?",
+      "bug": "Bug",
+      "idea": "Idea",
+      "coop": "Cooperation"
+    },
+    "bug": {
+      "message": "What went wrong?",
+      "placeholder": "What you did, what you expected, what happened instead"
+    },
+    "idea": {
+      "message": "Your idea or wish",
+      "placeholder": "What would make the simulator better for you?"
+    },
+    "contact": {
+      "label": "Contact (optional)",
+      "placeholder": "Email, Telegram, anything — only if you want an answer"
+    },
+    "diag": {
+      "consent": "Attach technical details to help fix it",
+      "what": "Only with this box ticked, the report also carries:",
+      "items": [
+        "the site's release",
+        "your browser, screen size and languages",
+        "the address of this page",
+        "the page's recent error messages"
+      ],
+      "none": "Nothing else: no cookies, no files, no personal data."
+    },
+    "coop": {
+      "text": "Cooperation goes through the contact form: who you are, a few words and your email.",
+      "go": "Open the contact form"
+    },
+    "send": "Send",
+    "sending": "Sending…",
+    "missing": "Write a few words first.",
+    "done": {
+      "title": "Thank you — it's in.",
+      "id": "Your report number: {id}. Mention it if you write again."
+    },
+    "close": "Close",
+    "error": "Sending didn't work this time. Your text is still here — please try again in a moment."
+  },
+  "share": {
+    "label": "Share ShramkoGSFPV",
+    "hero": "Know a pilot who should try this? Share it:",
+    "footer": "Share with a pilot",
+    "text": "Fly an FPV drone through real 3D scans, right in the browser: Betaflight-style rates and PID, walls you crash into, your own radio over USB. Free and open source.",
+    "native": "Share…",
+    "copy": "Copy link",
+    "copied": "Link copied"
   }
 }

@@ -53,8 +53,15 @@ const SHIPPED_IN_WAVE2: readonly string[] = [
     // W3-1: N next scene, Shift+N random scene, F next favourite (E.5)
     'scene.next', 'scene.random', 'scene.favourite',
     // W3-3: [ and ] scene smaller / larger around the drone (E.7)
-    'scale.down', 'scale.up'
+    'scale.down', 'scale.up',
+    // W5: B opens the feedback dialog (bug / idea / cooperation)
+    'feedback.open'
 ];
+
+/** Keys added after the design table, by the agent whose feature handles them. */
+const ADDED_AFTER_DESIGN: Record<string, string[]> = {
+    'feedback.open': ['B']
+};
 
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });
 const plant = (b: Partial<KeyBinding> & Pick<KeyBinding, 'action' | 'keys'>): KeyBinding[] =>
@@ -63,7 +70,7 @@ const plant = (b: Partial<KeyBinding> & Pick<KeyBinding, 'action' | 'keys'>): Ke
 describe('keymap table (1.2)', () => {
     it('has exactly the design table plus the v0.2 keys it did not list, action for action and cap for cap', () => {
         const got = Object.fromEntries(KEYMAP.map((b) => [b.action, b.keys.map((k) => k.cap)]));
-        expect(got).toEqual({ ...DESIGN_TABLE, ...V02_EXTRA });
+        expect(got).toEqual({ ...DESIGN_TABLE, ...V02_EXTRA, ...ADDED_AFTER_DESIGN });
     });
 
     it('is sound: no key twice where both listen, no flying or harness key, labels keys.<action>', () => {

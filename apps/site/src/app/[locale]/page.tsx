@@ -16,6 +16,7 @@ import LeadForm from "@/components/LeadForm";
 import LiveNumbers from "@/components/LiveNumbers";
 import Parallax from "@/components/Parallax";
 import ScenePaste from "@/components/ScenePaste";
+import ShareButtons from "@/components/ShareButtons";
 import SettingsCatalog from "@/components/SettingsCatalog";
 import ShotBackdrop from "@/components/ShotBackdrop";
 import ShotBand from "@/components/ShotBand";
@@ -40,7 +41,7 @@ const LD_SHOTS = ["flight-tunis", "voxels", "wizard-throttle", "pause", "drones"
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "meta" });
-  return pageMetadata({ locale: locale as Locale, page: "", title: t("title"), description: t("description") });
+  return pageMetadata({ locale: locale as Locale, page: "", title: t("title"), description: t("description"), ogTitle: t("ogTitle") });
 }
 
 const SRC_STYLE: Record<CraftRow["src"], string> = {
@@ -146,6 +147,7 @@ function Landing({ locale }: { locale: Locale }) {
             <div className="mt-10">
               <ScenePaste locale={locale} label={t("hero.paste.label")} placeholder={t("hero.paste.placeholder")} button={t("hero.paste.button")} hint={t("hero.paste.hint")} empty={t("hero.paste.empty")} />
             </div>
+            <ShareButtons where="hero" />
             <ul className="mt-12 flex flex-wrap gap-x-6 gap-y-2 font-mono text-[13px] text-muted">
               {heroFacts.map((f) => (
                 <li key={f} className="flex items-center gap-2">

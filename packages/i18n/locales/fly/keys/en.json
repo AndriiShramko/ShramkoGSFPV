@@ -1,6 +1,7 @@
 {
   "keys.arm.toggle": "Arm / disarm (keyboard flying)",
   "keys.crash.keep": "Keep the wreck (no automatic respawn)",
+  "keys.feedback.open": "Report a bug or an idea",
   "keys.frameStats.toggle": "Frame times and delay",
   "keys.hud.toggle": "Show or hide the HUD",
   "keys.mode.cycle": "Flight mode",

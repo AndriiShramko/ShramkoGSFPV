@@ -19,7 +19,7 @@ SSH="ssh -p $GSFPV_PORT -i $GSFPV_KEY -o BatchMode=yes $GSFPV_HOST"
 | `$GSFPV_BASE/compose.yml` | the two containers, `gsfpv-web` (nginx) and `gsfpv-api` (python) |
 | `$GSFPV_BASE/nginx.conf` | copy of [`deploy/nginx.conf`](nginx.conf); mounted read-only into `gsfpv-web` as `/etc/nginx/conf.d/default.conf` (a single-file bind mount) |
 | `$GSFPV_BASE/config.env` | secrets of the API; never in git |
-| `$GSFPV_BASE/api/`, `data/` | API code, counters and leads |
+| `$GSFPV_BASE/api/`, `data/` | API code, counters, leads, bug reports (`reports.jsonl`, `reports/`) and share pictures (`share/`) |
 | `$GSFPV_BASE/releases/<sha12>/` | unpacked releases (the last 5 are kept) |
 | `$GSFPV_BASE/releases/current` | symlink to the live release; nginx serves `/srv/releases/current` |
 | `$GSFPV_BASE/incoming/` | uploaded tarballs |
@@ -110,6 +110,41 @@ the path falls through to the static site's 404 page; the client reports either 
    `curl -sD- -o /dev/null 'https://gsfpv.flyreelstudio.eu/api/superspl/explore?sort=starred&features=walkable&limit=3'`
    twice: `X-Cache: miss`, then `X-Cache: hit`; `...?sort=likes` must answer 400.
 4. If it does not come up: put `server.py.prev` back and restart `gsfpv-api` again.
+
+### Bug reports, ideas and share links (W5)
+
+The release with the Feedback dialog and "Share this scene" needs the new API and the new
+`nginx.conf` (upload `nginx.conf` first, as above, then the API). Nothing in `compose.yml` changes.
+
+| Route | nginx | API |
+|---|---|---|
+| `POST /api/report` | `location = /api/report`, POST only, `client_max_body_size 512k`, no cookies | a bug or an idea: stored first in `data/reports.jsonl` (fsync, id `R-YYYYMMDD-NNNN`), then a short Telegram note to the lead bot (kind, id, page, scene, release, whether diagnostics came, the contact the visitor typed, the first 600 characters; never the diagnostics). A bug's diagnostics only with the visitor's consent, in `data/reports/<id>.json`. 8 KB of words, 512 KB on the wire, gzip accepted (unpacked at most 2 MB); honeypot and time-to-submit as for a lead (a suspect is stored, not sent, keeps no diagnostics); 10 an hour per visitor, 300 in all; the disk guard and `REPORTS_CAP_BYTES` (default 1 GB) skip diagnostics, never the record |
+| `POST /api/share` | `location = /api/share`, POST only, 512k | a whole JPEG of exactly 1200x630 (at most 400 KB) and its words: `data/share/<id>.jpg` + `.json`, id 11 random URL-safe characters; 12 an hour per visitor, 300 in all; 503 under the disk guard, 507 over `SHARE_CAP_BYTES` (default 1 GB) |
+| `GET /s/<id>`, `GET /s/<id>.jpg` | `location ~ "^/s/[A-Za-z0-9_-]{11}(\.jpg)?$"`, GET/HEAD only; any other `/s/...` is the static 404 | the share page: Open Graph and Twitter card tags (og:image is the picture), its own CSP (one hashed script sends a person on to `/<locale>/fly/?scene=<id>`; crawlers do not run it); the picture with `Cache-Control: immutable` |
+
+New environment (in `compose.yml`'s `environment` or `config.env`, all optional, no secrets):
+`PUBLIC_ORIGIN` (default `https://gsfpv.flyreelstudio.eu`, the origin the share pages name; set it
+for staging), `REPORTS_CAP_BYTES`, `SHARE_CAP_BYTES`. Telegram uses the existing `TG_BOT_TOKEN` and
+`TG_CHAT_ID`.
+
+Check after the restart (the second line must answer 404 from the API, not the site's 404 page):
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' -X POST -H 'Content-Type: application/json' -d '{"kind":"idea"}' https://gsfpv.flyreelstudio.eu/api/report   # 400 (no message)
+curl -s https://gsfpv.flyreelstudio.eu/s/AAAAAAAAAAA | head -c 120                                                                                       # <title>Not found
+```
+
+**Reading reports.** There is no public route that lists them. The owner's tool reads them from the
+hub over SSH (this file's `hub.env`) into `tools/reports/inbox/` (gitignored: visitors' words and
+contacts never go into git):
+
+```bash
+python tools/reports/pull.py pull                  # reports.jsonl + every diagnostics file
+python tools/reports/pull.py list --kind bug       # the open bugs, newest first
+python tools/reports/pull.py show R-20261002-0007 --log   # one report; --log writes its flight log to replay
+python tools/reports/pull.py close R-20261002-0007 --note "fixed in <sha>"
+```
+
+Open or closed is kept on that machine (`inbox/status.json`) until the admin panel shows reports.
 
 ## Deploying a release
 

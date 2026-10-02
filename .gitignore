@@ -44,3 +44,6 @@ evidence/**/*.mp4
 
 # Claude Code agent worktrees (local checkouts of other branches, never content)
 .claude/worktrees/
+
+# bug reports pulled from the hub (visitors' words and contacts): tools/reports/pull.py
+tools/reports/inbox/

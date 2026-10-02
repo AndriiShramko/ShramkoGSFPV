@@ -1,7 +1,8 @@
 {
   "meta": {
     "title": "ShramkoGSFPV — symulator FPV w prawdziwych skanach 3D, w przeglądarce",
-    "description": "Darmowy symulator FPV open source, który lata po prawdziwych skanach Gaussian Splatting z SuperSplat: rates i PID jak w Betaflight, ściany, o które naprawdę się rozbijasz, Twoja aparatura przez USB albo drążki dotykowe. Bez instalacji."
+    "description": "Darmowy symulator FPV open source, który lata po prawdziwych skanach Gaussian Splatting z SuperSplat: rates i PID jak w Betaflight, ściany, o które naprawdę się rozbijasz, Twoja aparatura przez USB albo drążki dotykowe. Bez instalacji.",
+    "ogTitle": "Lataj dronem FPV po prawdziwych skanach 3D — prosto w przeglądarce"
   },
   "nav": {
     "skip": "Przejdź do treści",
@@ -939,5 +940,62 @@
     "scenesTitle": "Treść scen",
     "scenes": "Sceny należą do swoich autorów i są wczytywane od ich wydawców w trakcie działania; nie są częścią tego projektu. Pokazowe skany Andrija Shramki są na licencji CC BY 4.0. Pozostałe sceny zachowują licencję wybraną przez autorów w SuperSplat.",
     "trademarksTitle": "Znaki towarowe"
+  },
+  "feedback": {
+    "button": "Opinia",
+    "buttonLabel": "Zgłoś błąd, zaproponuj pomysł lub współpracę",
+    "title": "Opinia",
+    "lead": "Znalazłeś błąd, masz pomysł albo chcesz współpracować? Andrii czyta każdą wiadomość.",
+    "kind": {
+      "label": "Czego to dotyczy?",
+      "bug": "Błąd",
+      "idea": "Pomysł",
+      "coop": "Współpraca"
+    },
+    "bug": {
+      "message": "Co poszło nie tak?",
+      "placeholder": "Co zrobiłeś, czego się spodziewałeś, co stało się zamiast tego"
+    },
+    "idea": {
+      "message": "Twój pomysł lub życzenie",
+      "placeholder": "Co sprawiłoby, że symulator byłby dla ciebie lepszy?"
+    },
+    "contact": {
+      "label": "Kontakt (opcjonalnie)",
+      "placeholder": "E-mail, Telegram, cokolwiek — tylko jeśli chcesz odpowiedzi"
+    },
+    "diag": {
+      "consent": "Dołącz dane techniczne, żeby pomóc to naprawić",
+      "what": "Tylko z zaznaczonym polem zgłoszenie zawiera też:",
+      "items": [
+        "wydanie strony",
+        "twoją przeglądarkę, rozmiar ekranu i języki",
+        "adres tej strony",
+        "ostatnie komunikaty błędów strony"
+      ],
+      "none": "Nic więcej: żadnych ciasteczek, plików ani danych osobowych."
+    },
+    "coop": {
+      "text": "Współpraca idzie przez formularz kontaktowy: kim jesteś, kilka słów i twój e-mail.",
+      "go": "Otwórz formularz kontaktowy"
+    },
+    "send": "Wyślij",
+    "sending": "Wysyłanie…",
+    "missing": "Najpierw napisz kilka słów.",
+    "done": {
+      "title": "Dziękujemy — dotarło.",
+      "id": "Numer twojego zgłoszenia: {id}. Podaj go, jeśli napiszesz ponownie."
+    },
+    "close": "Zamknij",
+    "error": "Tym razem nie udało się wysłać. Twój tekst nadal tu jest — spróbuj ponownie za chwilę."
+  },
+  "share": {
+    "label": "Udostępnij ShramkoGSFPV",
+    "hero": "Znasz pilota, który powinien to wypróbować? Udostępnij:",
+    "footer": "Udostępnij pilotowi",
+    "text": "Lataj dronem FPV przez prawdziwe skany 3D, prosto w przeglądarce: rates i PID jak w Betaflight, ściany, w które się rozbijasz, twoja aparatura przez USB. Za darmo i open source.",
+    "native": "Udostępnij…",
+    "copy": "Kopiuj link",
+    "copied": "Link skopiowany"
   }
 }

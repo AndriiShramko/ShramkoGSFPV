@@ -1,0 +1,254 @@
+{
+  "name": "v05-feedback",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T09:02:09.264Z",
+    "gitHead": "4c38441",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "fly": "http://127.0.0.1:5353",
+  "scene": "39e63ce9",
+  "gpuFreeMiB": 9246,
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "flyReady": "ready",
+  "F1_bugWithConsent": {
+    "pass": true,
+    "id": "R-20261002-0001",
+    "itemsListed": 8,
+    "pictureBoxDisabledUntilConsent": true,
+    "record": {
+      "id": "R-20261002-0001",
+      "ts": "2026-10-02T09:01:20Z",
+      "site": "gsfpv",
+      "kind": "bug",
+      "page": "fly",
+      "locale": "en",
+      "scene": "39e63ce9",
+      "release": "dev",
+      "message": "W5 acceptance: bug with technical details",
+      "contact": "",
+      "suspect": false,
+      "diagnostics": true,
+      "diagBytes": 33842
+    },
+    "diagnosticsKeys": [
+      "release",
+      "page",
+      "browser",
+      "scene",
+      "walls",
+      "settings",
+      "errors",
+      "frames",
+      "flightLog",
+      "screenshot"
+    ],
+    "release": {
+      "sha": "dev"
+    },
+    "gpu": {
+      "api": "webgpu",
+      "adapter": {
+        "vendor": "nvidia",
+        "architecture": "lovelace",
+        "device": "",
+        "description": ""
+      }
+    },
+    "frames": {
+      "renderHz": 29.9,
+      "p50ms": 33.4,
+      "p99ms": 134,
+      "held": 19
+    },
+    "settingsCount": 0,
+    "errorsCount": 0,
+    "flightLog": {
+      "format": "gsfpv-flight/2",
+      "lives": 1,
+      "records": 156
+    },
+    "screenshot": {
+      "bytes": 14675,
+      "size": {
+        "w": 480,
+        "h": 300
+      }
+    },
+    "bodyBytesDiag": 33770
+  },
+  "F2_bugWithoutConsent": {
+    "pass": true,
+    "id": "R-20261002-0002",
+    "sentKeys": [
+      "kind",
+      "message",
+      "contact",
+      "locale",
+      "page",
+      "scene",
+      "release",
+      "t",
+      "hp",
+      "diagnosticsConsent"
+    ],
+    "record": {
+      "id": "R-20261002-0002",
+      "ts": "2026-10-02T09:01:23Z",
+      "site": "gsfpv",
+      "kind": "bug",
+      "page": "fly",
+      "locale": "en",
+      "scene": "39e63ce9",
+      "release": "dev",
+      "message": "W5 acceptance: bug without technical details",
+      "contact": "",
+      "suspect": false,
+      "diagnostics": false,
+      "diagBytes": 0
+    },
+    "diagnosticsFile": false
+  },
+  "F3_cooperation": {
+    "pass": true,
+    "openedByB": true,
+    "sameWordsAsLanding": true,
+    "sendDisabledUntilFilled": true,
+    "lead": {
+      "role": "pilot",
+      "scene": "39e63ce9",
+      "suspect": false
+    },
+    "controlUnboundKeyOpensNothing": true
+  },
+  "F4_sharePicture": {
+    "pass": true,
+    "shareUrl": "https://gsfpv.flyreelstudio.eu/s/MitZRfzINGQ",
+    "jpeg": {
+      "bytes": 87011,
+      "size": {
+        "w": 1200,
+        "h": 630
+      }
+    },
+    "viewStd": 17.4,
+    "controlFlatStd": 0,
+    "storedEqualsUploaded": true,
+    "sent": {
+      "scene": "39e63ce9",
+      "title": "Modlinek Villa \u2014 red room and bathroom",
+      "credit": "Modlinek Villa \u2014 red room and bathroom \u2014 Andrii Shramko, CC BY 4.0",
+      "locale": "en"
+    },
+    "targets": [
+      "linkedin",
+      "facebook",
+      "x",
+      "telegram",
+      "whatsapp",
+      "reddit"
+    ]
+  },
+  "F5_sharePageOg": {
+    "pass": true,
+    "tags": {
+      "viewport": "width=device-width, initial-scale=1",
+      "description": "A real 3D scan, Betaflight-style rates and PID, walls you actually crash into. Plug in your own radio over USB or fly with touch sticks. Free, open source, nothing to install. Can you fly this line? Scan: Modlinek Villa \u2014 red room and bathroom \u2014 Andrii Shramko, CC BY 4.0.",
+      "robots": "noindex",
+      "og:type": "website",
+      "og:site_name": "ShramkoGSFPV",
+      "og:title": "Fly an FPV drone through Modlinek Villa \u2014 red room and bathroom \u2014 right in your browser",
+      "og:description": "A real 3D scan, Betaflight-style rates and PID, walls you actually crash into. Plug in your own radio over USB or fly with touch sticks. Free, open source, nothing to install. Can you fly this line? Scan: Modlinek Villa \u2014 red room and bathroom \u2014 Andrii Shramko, CC BY 4.0.",
+      "og:url": "https://gsfpv.flyreelstudio.eu/s/MitZRfzINGQ",
+      "og:image": "https://gsfpv.flyreelstudio.eu/s/MitZRfzINGQ.jpg",
+      "og:image:secure_url": "https://gsfpv.flyreelstudio.eu/s/MitZRfzINGQ.jpg",
+      "og:image:type": "image/jpeg",
+      "og:image:width": "1200",
+      "og:image:height": "630",
+      "og:image:alt": "FPV view inside Modlinek Villa \u2014 red room and bathroom, a 3D Gaussian Splatting scan, in the ShramkoGSFPV simulator",
+      "og:locale": "en_US",
+      "twitter:card": "summary_large_image",
+      "twitter:title": "Fly an FPV drone through Modlinek Villa \u2014 red room and bathroom \u2014 right in your browser",
+      "twitter:description": "A real 3D scan, Betaflight-style rates and PID, walls you actually crash into. Plug in your own radio over USB or fly with touch sticks. Free, open source, nothing to install. Can you fly this line? Scan: Modlinek Villa \u2014 red room and bathroom \u2014 Andrii Shramko, CC BY 4.0.",
+      "twitter:image": "https://gsfpv.flyreelstudio.eu/s/MitZRfzINGQ.jpg",
+      "twitter:image:alt": "FPV view inside Modlinek Villa \u2014 red room and bathroom, a 3D Gaussian Splatting scan, in the ShramkoGSFPV simulator"
+    },
+    "why": [],
+    "imageServedEqualsUpload": true,
+    "control": {
+      "unknownIdStatus": 404,
+      "validatorRejects": true,
+      "why": [
+        "status 404",
+        "no og:title",
+        "no og:description",
+        "no og:image",
+        "no og:url",
+        "no twitter:card",
+        "no twitter:image",
+        "og:image size not 1200x630"
+      ]
+    }
+  },
+  "flyPageErrors": [],
+  "S1_landingFeedback": {
+    "pass": true,
+    "visibleOn": {
+      "/en/": true,
+      "/pl/privacy/": true,
+      "/ru/licenses/": true
+    },
+    "dialogOpen": true,
+    "withConsent": {
+      "id": "R-20261002-0003",
+      "diagnostics": true
+    },
+    "controlWithoutConsent": {
+      "id": "R-20261002-0004",
+      "diagnostics": false,
+      "file": false
+    }
+  },
+  "S2_landingCooperation": {
+    "pass": true,
+    "contactFormInView": true,
+    "dialogClosed": true,
+    "controlNotInViewBefore": true
+  },
+  "S3_landingShare": {
+    "pass": true,
+    "heroTargets": 6,
+    "footerTargetsPl": 6,
+    "controlPlLinksNameTheirOwnPage": true,
+    "ogImage": "https://gsfpv.flyreelstudio.eu/og.jpg",
+    "ogJpg": {
+      "bytes": 107709,
+      "size": {
+        "w": 1200,
+        "h": 630
+      }
+    },
+    "ogTitle": "Fly an FPV drone through real 3D scans \u2014 right in your browser"
+  },
+  "storedFiles": [
+    "events-2026-10-02.jsonl",
+    "leads.jsonl",
+    "reports",
+    "reports.jsonl",
+    "share"
+  ]
+}

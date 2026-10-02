@@ -3,6 +3,7 @@ import { AUTHOR, REPO } from "@/config/site";
 import type { Locale } from "@/i18n/routing";
 import { Ext } from "./kit";
 import LangSwitcher from "./LangSwitcher";
+import ShareButtons from "./ShareButtons";
 import Logo from "./Logo";
 
 export default function Footer({ locale, page }: { locale: Locale; page: string }) {
@@ -24,6 +25,7 @@ export default function Footer({ locale, page }: { locale: Locale; page: string 
             </p>
             <LangSwitcher locale={locale} page={page} label={nav("language")} where="footer" />
           </div>
+          <ShareButtons where="footer" />
         </div>
         <nav aria-label={t("linksLabel")}>
           <ul className="space-y-1 text-sm">
