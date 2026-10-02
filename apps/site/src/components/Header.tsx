@@ -6,7 +6,7 @@ import Logo from "./Logo";
 
 // "How it works" sits right under "Features" on the page, so the header links to the features board
 // instead; eight links did not fit next to the language switcher in Spanish and Russian.
-const ANCHORS = ["features", "real", "numbers", "scenes", "radios", "faq", "contact"] as const;
+const ANCHORS = ["locations", "features", "real", "numbers", "scenes", "radios", "faq", "contact"] as const;
 
 /** Sticky header: brand, section anchors (desktop), language switcher and the "Fly now" CTA. */
 export default function Header({ locale, page, onLanding }: { locale: Locale; page: string; onLanding: boolean }) {

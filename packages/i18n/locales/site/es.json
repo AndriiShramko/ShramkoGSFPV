@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "ShramkoGSFPV — simulador FPV sobre escaneos 3D reales, en el navegador",
-    "description": "Simulador FPV gratuito y de código abierto para volar escaneos Gaussian Splatting reales de SuperSplat: rates y PID al estilo Betaflight, paredes contra las que te estrellas de verdad, tu emisora por USB o sticks táctiles. Sin instalar nada.",
+    "description": "Simulador FPV gratuito y de código abierto en tu navegador: vuela más de 1300 escaneos Gaussian Splatting reales de SuperSplat, encógete para volar una habitación como una ciudad, choca contra paredes reales y usa tu emisora por USB. Sin instalar nada.",
     "ogTitle": "Vuela un dron FPV por escaneos 3D reales, directamente en tu navegador"
   },
   "nav": {
@@ -11,6 +11,7 @@
     "language": "Idioma",
     "fly": "Volar ya",
     "anchors": {
+      "locations": "Lugares",
       "features": "Funciones",
       "how": "Cómo funciona",
       "real": "Física",
@@ -24,7 +25,7 @@
   "hero": {
     "eyebrow": "Simulador FPV de código abierto · licencia MIT",
     "h1": "Vuela un dron FPV por escaneos 3D reales, directamente en tu navegador",
-    "sub": "ShramkoGSFPV convierte los escaneos Gaussian Splatting de SuperSplat en lugares por los que puedes volar: rates y PID al estilo Betaflight, paredes contra las que te estrellas de verdad y tu propia emisora por USB o sticks táctiles. Sin instalar nada.",
+    "sub": "ShramkoGSFPV convierte más de 1300 escaneos Gaussian Splatting de SuperSplat en lugares por los que puedes volar: habitaciones, calles y jardines reales con paredes contra las que te estrellas de verdad, rates y PID al estilo Betaflight y tu propia emisora por USB o sticks táctiles. Sin instalar nada.",
     "cta": "Volar ya, sin instalar",
     "ctaNote": "Funciona mejor en Chrome o Edge de escritorio con WebGPU.",
     "paste": {
@@ -33,7 +34,7 @@
       "button": "Abrir escena",
       "hint": "Un enlace a la escena, un enlace superspl.at/s?id= o solo el id de la escena.", "empty": "Primero pega un enlace de SuperSplat o el id de una escena."
     },
-    "facts": ["WebGPU y PlayCanvas", "Rates contrastados con Betaflight 4.5.1", "Colisión por barrido de vóxeles", "Licencia MIT"]
+    "facts": ["Más de 1300 escaneos con paredes", "Escala de la escena de ×0,25 a ×100", "WebGPU y PlayCanvas", "Rates contrastados con Betaflight 4.5.1", "Colisión por barrido de vóxeles", "Licencia MIT"]
   },
   "features": {
     "eyebrow": "Qué puedes configurar",
@@ -95,7 +96,7 @@
           "HUD activado o desactivado; F3 muestra los tiempos de fotograma",
           "Reducir movimiento: una cámara de choque más tranquila (sin probar aún)",
           "Modo cine: detalle máximo y grabación en MP4 en los escaneos de Andrii",
-          "Grabación a 60 fps con F9 en los escaneos de Andrii, o grabación automática de cada vuelo en una carpeta que eliges",
+          "Grabación a 60 fps con F9 en los escaneos de Andrii, con un punto de grabación y el tiempo en pantalla, o grabación automática de cada vuelo en una carpeta que eliges",
           "Vídeo desde el registro de vuelo en los escaneos de Andrii, desde el panel de resumen o las repeticiones: 60 fps en 1080p, 1440p o 4K",
           "Simulador en inglés, español, polaco o ruso"
         ]
@@ -107,8 +108,9 @@
           "Pestañas: Escaneos de Andrii, Recientes, Favoritos; filtros por paredes, tipo y ya voladas",
           "Una pestaña de SuperSplat con los filtros y el orden de superspl.at, una escena al azar entre las mejor valoradas y una estrella para favoritas",
           "Cambia de escena sin recargar la página: N siguiente, Shift+N al azar, F siguiente favorita; la emisora sigue conectada",
-          "Tras un choque, la siguiente escena en vez de reaparecer: de la lista de Andrii, tus favoritas o las que ya volaste (desactivado por defecto)",
-          "Escala una escena de tamaño erróneo alrededor del dron con [ y ], recordado para cada escaneo",
+          "Tras un choque, la siguiente escena en vez de reaparecer, en orden aleatorio o fijo: de la selección de Andrii, tus favoritas o las que ya volaste (desactivado por defecto)",
+          "Escala de la escena alrededor del dron de ×0,25 a ×100 con [ y ] (Shift duplica el paso) o desde el menú de pausa: vuela una habitación como una ciudad; se guarda para cada escaneo y las paredes escalan con ella",
+          "Comparte la escena que vuelas: un enlace con una imagen de tu vista",
           "Progreso de carga: etapa, MB, velocidad, tiempo restante y reintento"
         ]
       },
@@ -116,8 +118,8 @@
         "t": "Paredes y rejilla de vóxeles",
         "items": [
           "Paredes creadas en tu navegador para escaneos publicados sin ellas (hasta 4 M de gaussianas)",
-          "Paredes (colisiones) activadas o desactivadas (C), recordado para cada escaneo; el autor del escaneo decide el valor por defecto, desactivadas si el escaneo tiene mucho ruido",
-          "Quita las motas flotantes de un escaneo con ruido que se vuelven paredes invisibles, para cada escaneo; su autor puede fijar un valor por defecto",
+          "Paredes (colisiones) activadas o desactivadas con C, una sola elección para todas las escenas, así no cambia al pasar de una escena a otra",
+          "Quita las motas flotantes de un escaneo con ruido que se vuelven paredes invisibles, con una vista previa en vivo de lo que se quita; se guarda para cada escaneo y su autor puede fijar un valor por defecto",
           "Rejilla de vóxeles sobre el escaneo o sola, con el escaneo oculto (V): cubos sólidos, aristas, colores por altura o flotantes en rojo, con su propia opacidad"
         ]
       },
@@ -129,7 +131,9 @@
           "Estadísticas del vuelo al desarmar, como el OSD de las gafas",
           "Panel de resumen: las estadísticas del vuelo, cada opción del menú y cada tecla",
           "Guarda el registro de vuelo; exporta la trayectoria en CSV o JSON",
-          "Panel de mediciones: refresco de pantalla, tiempos de fotograma, frecuencia de la física y el control en uso; copia el informe en JSON"
+          "Panel de mediciones: refresco de pantalla, tiempos de fotograma, frecuencia de la física y el control en uso; copia el informe en JSON",
+          "Estadísticas de vuelo de todo el tiempo guardadas entre visitas; un botón las descarga en CSV y JSON",
+          "Comentarios desde el simulador (B) y desde cada página de este sitio: un error, una idea o una propuesta de colaboración; los datos técnicos se envían solo si aceptas"
         ]
       }
     ],
@@ -151,7 +155,7 @@
     "h2": "Tres pasos del escaneo al aire",
     "lead": "Sin cuenta y sin descargas. La escena llega en streaming directamente de SuperSplat a tu navegador.",
     "steps": [
-      { "t": "Elige un escaneo", "d": "Empieza con uno de los escaneos de Andrii o pega el enlace de cualquier escena pública de SuperSplat." },
+      { "t": "Elige un escaneo", "d": "Elige uno de los más de 1300 escaneos con paredes de la pestaña SuperSplat del simulador, uno de Andrii o pega el enlace de cualquier escena pública de SuperSplat." },
       { "t": "Conecta tus mandos", "d": "Enchufa una emisora EdgeTX en modo joystick USB (WebHID), usa un mando de consola o vuela con sticks táctiles." },
       { "t": "Calibra, arma y vuela", "d": "Mueve los sticks una vez para calibrar, arma con el acelerador abajo del todo, como en un dron de verdad, y a volar." }
     ]
@@ -658,6 +662,45 @@
     "updated": "Archivo de evidencias actualizado el {date}.",
     "evidenceLink": "Todas las evidencias en GitHub"
   },
+  "locations": {
+    "eyebrow": "Novedad: lugares para volar",
+    "h2": "Cada escaneo con paredes de SuperSplat es ya un lugar para volar: más de 1300 y cada vez más",
+    "lead": "Habitaciones, jardines, calles e iglesias reales, escaneados por gente de todo el mundo y publicados con paredes contra las que te estrellas. Deja que el simulador elija, cambia de lugar en cada choque o trae tu propio escaneo.",
+    "items": [
+      { "t": "Más de 1300 lugares reales", "d": "La pestaña SuperSplat del simulador muestra todos los escaneos públicos con paredes, con la ordenación, los filtros y la búsqueda de superspl.at." },
+      { "t": "Un lugar nuevo tras cada choque", "d": "Marca con estrella los escaneos que te gusten, activa «Siguiente escena tras un choque» y cada choque te lleva a otro sitio, en orden aleatorio: tus favoritas, los lugares que ya volaste o la selección de Andrii." },
+      { "t": "Cambia en un segundo", "d": "N: siguiente escena, Shift+N: aleatoria, F: siguiente favorita. La página no se recarga y tu emisora sigue conectada." },
+      { "t": "Tu propio escaneo, o el de cualquiera", "d": "Publica un escaneo en SuperSplat, o elige cualquiera público, y pega su enlace aquí o en el simulador." }
+    ],
+    "random": "Vuela a un lugar al azar",
+    "randomNote": "Uno de los 200 escaneos con paredes con más «me gusta» de SuperSplat, elegido al azar.",
+    "own": "Añade tu propio escaneo: pega su enlace de SuperSplat",
+    "ownHint": "Tu escaneo o cualquiera público: un enlace de escena, un enlace superspl.at/s?id= o solo el id de la escena.",
+    "shotAlt": "La pestaña SuperSplat del simulador: ordenación, filtros de paredes y descarga, Aleatoria entre las mejores y una cuadrícula de escaneos con paredes"
+  },
+  "scale": {
+    "eyebrow": "Novedad: escala de la escena",
+    "h2": "Encógete: vuela una habitación como si fuera una ciudad",
+    "lead": "Dos teclas escalan toda la escena alrededor del dron, de ×0,25 a ×100. A ×100 tienes el tamaño de un mosquito: una silla es un rascacielos y el hueco bajo la cama, un cañón. Lánzate en picado junto a la pata de una silla: la sensación es increíble.",
+    "stops": [
+      { "k": "×0,25", "d": "un escaneo que salió demasiado grande" },
+      { "k": "×1", "d": "tamaño real" },
+      { "k": "×10", "d": "una habitación se vuelve un pabellón" },
+      { "k": "×100", "d": "un mosquito en una ciudad" }
+    ],
+    "steps": [
+      "Abre una habitación: la villa de Andrii, el jardín de invierno o cualquier escaneo de interior.",
+      "Mantén ] para agrandar la escena ([ la encoge, Shift+] la duplica de golpe) o mueve Tamaño de la escena en el menú de pausa. Cada escaneo guarda su escala.",
+      "Las paredes crecen con ella: sigues chocando con la pata de la silla junto a la que te lanzas."
+    ],
+    "cta": "Encógete: vuela una habitación como una ciudad",
+    "ctaNote": "Abre la habitación de la villa de Andrii; pulsa ] hasta que la mesa sea un puente.",
+    "shotAlt": "La fila Tamaño de la escena del menú de pausa: la escala del escaneo y su control deslizante, con el tamaño de bloque de las paredes debajo"
+  },
+  "video": {
+    "credit": "Vídeo: un vuelo en {title}, escaneo de {name}, CC BY 4.0, grabado en el simulador.",
+    "fly": "Vuela esta escena"
+  },
   "scenes": {
     "eyebrow": "Escaneos de Andrii",
     "h2": "Empieza por un lugar real",
@@ -697,7 +740,7 @@
     "unknown": "desconocido",
     "cols": ["ShramkoGSFPV", "Pasear por el visor de SuperSplat", "Demos FPV de splats en el navegador (p. ej., SplatFPV)", "Simuladores FPV clásicos (mapas fijos)"],
     "rows": [
-      { "k": "Lugares escaneados reales", "cells": ["Cualquier escena pública de SuperSplat", "Sí", "Sí, de archivo en archivo", "No, mapas fijos"] },
+      { "k": "Lugares escaneados reales", "cells": ["Cualquier escena pública de SuperSplat; las más de 1300 con paredes, en un catálogo integrado", "Sí", "Sí, de archivo en archivo", "No, mapas fijos"] },
       { "k": "Modelo del dron", "cells": ["4 motores, mezclador, PID de rates", "Ninguno: una cámara que camina o vuela", "Filtro de rates de primer orden", "Completo"] },
       { "k": "Tus propios rates", "cells": ["Betaflight, Actual, KISS, Raceflight", "No aplica", "Rate máximo fijo más expo", "Sí"] },
       { "k": "Al chocar con una pared", "cells": ["Choque y vueltas de campana", "Se desliza por ella", "Se para o se desliza", "Choque"] },
@@ -739,14 +782,17 @@
     "eyebrow": "Preguntas frecuentes",
     "h2": "Lo que la gente pregunta",
     "items": [
-      { "q": "¿Cómo puedo volar un dron FPV por un escaneo 3D de Gaussian Splatting?", "a": "Abre ShramkoGSFPV en Chrome o Edge de escritorio, elige uno de los escaneos de Andrii o pega un enlace de SuperSplat, conecta una emisora, un mando o usa los sticks táctiles, y luego calibra, arma y vuela. No hay que instalar nada." },
+      { "q": "¿Cómo puedo volar un dron FPV por un escaneo 3D de Gaussian Splatting?", "a": "Abre ShramkoGSFPV en Chrome o Edge de escritorio, elige un escaneo (más de 1300 con paredes en la pestaña SuperSplat, uno de Andrii o un enlace de SuperSplat pegado), conecta una emisora, un mando o usa los sticks táctiles, y luego calibra, arma y vuela. No hay que instalar nada." },
       { "q": "¿Puedo usar mi emisora RadioMaster en el navegador?", "a": "Para eso está pensado: pon una emisora EdgeTX, como la TX16S, Boxer, Pocket o Zorro, en modo joystick USB y conéctala por WebHID en Chrome o Edge. Por ahora solo se ha probado en Chrome con una emisora EdgeTX simulada, no con hardware real ni en Edge." },
       { "q": "¿Hay algún simulador FPV gratuito que funcione en el navegador?", "a": "Sí. ShramkoGSFPV es gratuito y de código abierto con licencia MIT. Funciona con WebGPU en Chrome o Edge de escritorio, sin descargas." },
-      { "q": "¿Qué escenas de SuperSplat puedo volar?", "a": "Cualquier escena pública de SuperSplat, por enlace o id. Las escenas publicadas con datos de colisión tienen paredes sólidas desde el principio; para las demás puedes construir las paredes en tu navegador con un clic (escaneos de hasta 4 millones de gaussianas). Los más grandes se pueden atravesar volando, pero no chocar." },
+      { "q": "¿Qué escenas de SuperSplat puedo volar?", "a": "Cualquier escena pública de SuperSplat, por enlace o id; la pestaña SuperSplat del simulador muestra las más de 1300 publicadas con paredes, con los filtros de superspl.at. Esas tienen paredes sólidas desde el principio; para las demás puedes construir las paredes en tu navegador con un clic (escaneos de hasta 4 millones de gaussianas). Los más grandes se pueden atravesar volando, pero no chocar." },
       { "q": "¿Funciona en iPad o en el móvil?", "a": "Los sticks táctiles solo se han probado en la emulación táctil de Chrome de escritorio, todavía no en Safari, iPad ni navegadores de Android, y necesitas un navegador con WebGPU. Las emisoras requieren Chrome o Edge de escritorio." },
       { "q": "¿La física de vuelo es como la de Betaflight?", "a": "Las curvas de rates (Betaflight, Actual, KISS, Raceflight) coinciden con el propio código de Betaflight 4.5.1 con error 0 en 1880 puntos, ambos calculados en doble precisión, y un PID de rates controla cuatro motores a través de un mezclador. Es nuestro propio modelo de vuelo, no el firmware de Betaflight." },
       { "q": "¿Me estrello contra las paredes o las atravieso?", "a": "En las escenas con datos de colisión te estrellas: en cada paso de la física se hace un barrido del cuerpo del dron contra los vóxeles, y un banco de pruebas comprueba que el vuelo rápido no atraviesa paredes. El resultado está en Cifras en vivo." },
-      { "q": "¿Es de código abierto?", "a": "Sí, con licencia MIT. El código, las mediciones y las decisiones de diseño están en GitHub. Las fórmulas de Betaflight se reimplementaron; no se copió código GPL." }
+      { "q": "¿Es de código abierto?", "a": "Sí, con licencia MIT. El código, las mediciones y las decisiones de diseño están en GitHub. Las fórmulas de Betaflight se reimplementaron; no se copió código GPL." },
+      { "q": "¿Puede el simulador llevarme a un lugar nuevo después de cada choque?", "a": "Sí. «Aleatoria entre las mejores» en la pestaña SuperSplat abre un escaneo que no has visto, Shift+N carga una escena al azar en pleno vuelo y, con «Siguiente escena tras un choque» activado, cada choque te lleva a otra escena: de la selección de Andrii, tus favoritas o las que ya volaste, en orden aleatorio o fijo. La emisora sigue conectada." },
+      { "q": "¿Puedo volar una habitación como si fuera una ciudad?", "a": "Sí. Tamaño de la escena escala todo el escaneo alrededor del dron de ×0,25 a ×100 con [ y ] (Shift+] lo duplica) o desde el menú de pausa. A ×100 una silla es como un rascacielos y puedes lanzarte en picado junto a sus patas; las paredes escalan con la escena, así que sigues chocando con ellas. La escala se guarda para cada escaneo." },
+      { "q": "¿Puedo volar mi propio escaneo 3D?", "a": "Sí. Publícalo en SuperSplat (superspl.at) y pega su enlace o id en esta página o en el simulador. Si lo publicas con paredes (datos de colisión de vóxeles), es sólido desde el principio; sin ellas puedes construir las paredes en el navegador para escaneos de hasta 4 millones de gaussianas." }
     ]
   },
   "opensource": {
@@ -820,8 +866,8 @@
         "Seis cuadricópteros de clase BetaFPV, y cada número de sus fichas dice de dónde sale. Pega un diff de la CLI de Betaflight para volar con tus rates y tu PID.",
         "Choca contra una pared y el dron se estrella a la velocidad del golpe, con los restos rodando; dos segundos después vuelve al aire, 5 s atrás en tu trayectoria y aún armado. Choques desactivados, el retraso y dónde reapareces están en Ajustes.",
         "Un OSD como el de tus gafas, campo de visión e inclinación de la cámara. F9 graba vídeo a 60 fps de los escaneos de Andrii con su crédito en la imagen, la grabación automática guarda cada vuelo en tu carpeta y un registro de vuelo se convierte en vídeo a 60 fps hasta 4K.",
-        "Elige un escaneo de Andrii, explora SuperSplat con sus propios filtros o pega un enlace, y mira cómo carga con números reales. N, Shift+N y F cambian de escena en la misma página con la emisora conectada; [ y ] corrigen un escaneo de tamaño erróneo.",
-        "Muestra las paredes contra las que chocas como una rejilla de vóxeles sobre el escaneo, o vuela solo la rejilla. ¿Un escaneo con ruido? Quita sus motas flotantes, las paredes fantasma, o desactiva sus paredes.",
+        "Elige uno de los más de 1300 escaneos con paredes en la pestaña SuperSplat, con sus propios filtros, uno de Andrii o pega un enlace, y mira cómo carga con números reales. N, Shift+N y F cambian de escena en la misma página con la emisora conectada; [ y ] escalan la escena de ×0,25 a ×100.",
+        "Muestra las paredes contra las que chocas como una rejilla de vóxeles sobre el escaneo, o vuela solo la rejilla. ¿Un escaneo con ruido? Quita sus motas flotantes, las paredes fantasma, con vista previa en vivo, o desactiva las paredes para todas las escenas.",
         "Todos los ajustes en una pantalla, guardados entre visitas, con exportar, importar y restablecer. Desarma y una tarjeta como la de las gafas muestra el vuelo; en pausa, el panel de resumen tiene sus estadísticas, cada opción del menú y cada tecla."
       ],
       "live": "Funciones activas: {n}",
@@ -872,7 +918,7 @@
       "m-picker": { "t": "Escaneos en el móvil", "d": "Pega un enlace o elige un escaneo en una pantalla pequeña." },
       "stats-card": { "t": "Estadísticas del vuelo", "d": "Desarma tras un vuelo y una tarjeta como el OSD de las gafas muestra tiempo en el aire, velocidad y altura máximas, distancia, batería, corriente, mAh usados, fuerza G y gas medio." },
       "mode-chip": { "t": "Modo de vuelo", "d": "Angle por defecto; el indicador, M o un interruptor de tu emisora eligen Acro, Angle u Horizon." },
-      "scene-size": { "t": "Tamaño de la escena", "d": "¿Un escaneo que no está en metros reales? [ y ] lo escalan alrededor del dron de 0,25× a 4×, recordado para cada escaneo; el tamaño de bloque de las paredes lo sigue." },
+      "scene-size": { "t": "Tamaño de la escena", "d": "[ y ] escalan el escaneo alrededor del dron de 0,25× a 100×: corrige un escaneo que no está en metros reales, o encógete y vuela una habitación como una ciudad. Se guarda para cada escaneo; el tamaño de bloque de las paredes lo sigue." },
       "crash-toast": { "t": "Reaparición automática", "d": "El aviso cuenta atrás; 2 s después del choque el dron vuelve 5 s atrás en su trayectoria, aún armado. Enter se queda, R vuelve al inicio, N y F cargan otra escena." },
       "superspl": { "t": "Pestaña SuperSplat", "d": "El catálogo de superspl.at en el selector, con su orden, filtros de tiempo, paredes y descarga, búsqueda, una escena al azar entre las mejor valoradas y una estrella para favoritas." },
       "rec-bar": { "t": "Grabación", "d": "F9 graba vídeo a 60 fps de los escaneos de Andrii; la grabación automática guarda cada vuelo en la carpeta que elijas y la barra dice qué se guardó y dónde." },

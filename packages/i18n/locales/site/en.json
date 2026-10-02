@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "ShramkoGSFPV — FPV drone simulator for real 3D scans, in your browser",
-    "description": "Free, open-source FPV simulator that flies real Gaussian Splatting scans from SuperSplat: Betaflight-style rates and PID, walls you crash into, your radio over USB or touch sticks. No install.",
+    "description": "Free, open-source FPV simulator in your browser: fly 1,300+ real Gaussian Splatting scans from SuperSplat, shrink to fly a room like a city, crash into real walls, use your radio over USB. No install.",
     "ogTitle": "Fly an FPV drone through real 3D scans — right in your browser"
   },
   "nav": {
@@ -11,6 +11,7 @@
     "language": "Language",
     "fly": "Fly now",
     "anchors": {
+      "locations": "Places",
       "features": "Features",
       "how": "How it works",
       "real": "Physics",
@@ -24,7 +25,7 @@
   "hero": {
     "eyebrow": "Open-source FPV simulator · MIT",
     "h1": "Fly an FPV drone through real 3D scans — right in your browser",
-    "sub": "ShramkoGSFPV turns SuperSplat Gaussian Splatting scans into places you can fly: Betaflight-style rates and PID, walls you actually crash into, and your own radio over USB or touch sticks. Nothing to install.",
+    "sub": "ShramkoGSFPV turns 1,300+ Gaussian Splatting scans from SuperSplat into places you can fly: real rooms, streets and gardens with walls you actually crash into, Betaflight-style rates and PID, and your own radio over USB or touch sticks. Nothing to install.",
     "cta": "Fly now — no install",
     "ctaNote": "Works best in desktop Chrome or Edge with WebGPU.",
     "paste": {
@@ -33,7 +34,7 @@
       "button": "Open scene",
       "hint": "A scene link, a superspl.at/s?id= link or just the scene id.", "empty": "Paste a SuperSplat link or a scene id first."
     },
-    "facts": ["WebGPU + PlayCanvas", "Rates checked against Betaflight 4.5.1", "Swept voxel collision", "MIT license"]
+    "facts": ["1,300+ walkable scans", "Scene scale ×0.25 to ×100", "WebGPU + PlayCanvas", "Rates checked against Betaflight 4.5.1", "Swept voxel collision", "MIT license"]
   },
   "features": {
     "eyebrow": "What you can set up",
@@ -95,7 +96,7 @@
           "HUD on or off; F3 shows frame times",
           "Reduced motion: a calmer crash camera (not tested yet)",
           "Cinema mode: full detail and MP4 recording on Andrii's scans",
-          "Recording at 60 fps with F9 on Andrii's scans, or auto-record every flight into a folder you choose",
+          "Recording at 60 fps with F9 on Andrii's scans, with a recording dot and the time on screen, or auto-record every flight into a folder you choose",
           "Video from the flight log on Andrii's scans, from the summary panel or the replays: 60 fps at 1080p, 1440p or 4K",
           "Simulator in English, Spanish, Polish or Russian"
         ]
@@ -107,8 +108,9 @@
           "Tabs: Andrii's scans, Recent, Favourites; filters for walls, type and flown",
           "A SuperSplat tab with superspl.at's filters and sorting, a random top-rated scene and a star for favourites",
           "Change scenes without reloading the page: N next, Shift+N random, F next favourite; the radio stays connected",
-          "After a crash, the next scene instead of a respawn: from Andrii's list, your favourites or the scenes you flew (off by default)",
-          "Scale a wrong-size scene around the drone with [ and ], kept for each scan",
+          "After a crash, the next scene instead of a respawn, in random or fixed order: from Andrii's picks, your favourites or the scenes you flew (off by default)",
+          "Scene scale around the drone from ×0.25 to ×100 with [ and ] (Shift doubles a step) or the pause menu: fly a room like a city; kept for each scan, the walls scale with it",
+          "Share the scene you are flying: a link with a picture of your view",
           "Loading progress: stage, MB, speed, time left and retry"
         ]
       },
@@ -116,8 +118,8 @@
         "t": "Walls & voxel grid",
         "items": [
           "Walls built in your browser for scans published without them (up to 4 M Gaussians)",
-          "Walls (collisions) on or off (C), remembered for each scan; the scan's author sets the default, off for a noisy scan",
-          "Drop the floating specks of a noisy scan that turn into invisible walls, for each scan; the scan's author can set a default",
+          "Walls (collisions) on or off with C, one choice for every scene, so it stays the same after a scene switch",
+          "Drop the floating specks of a noisy scan that turn into invisible walls, with a live preview of what goes; kept for each scan, the scan's author can set a default",
           "Voxel grid over the scan or on its own, the scan hidden (V): solid cubes, wireframe, height colours or floaters in red, with its own opacity"
         ]
       },
@@ -129,7 +131,9 @@
           "Flight stats when you disarm, like the goggles OSD",
           "Summary panel: this flight's stats, every menu item and every key",
           "Save the flight log; export the trajectory as CSV or JSON",
-          "Measurements panel: display refresh, frame times, physics rate and the input in use; copy the report as JSON"
+          "Measurements panel: display refresh, frame times, physics rate and the input in use; copy the report as JSON",
+          "Lifetime flight stats kept between visits; one button downloads them as CSV and JSON",
+          "Feedback from the simulator (B) and from every page of this site: a bug, an idea or cooperation; technical details are sent only if you agree"
         ]
       }
     ],
@@ -151,7 +155,7 @@
     "h2": "Three steps from a scan to the air",
     "lead": "No account, no download. The scene streams straight from SuperSplat into your browser.",
     "steps": [
-      { "t": "Pick a scan", "d": "Start with one of Andrii's scans or paste the link to any public SuperSplat scene." },
+      { "t": "Pick a scan", "d": "Pick one of 1,300+ walkable scans in the simulator's SuperSplat tab, one of Andrii's, or paste the link to any public SuperSplat scene." },
       { "t": "Connect your controls", "d": "Plug in an EdgeTX radio in USB joystick mode (WebHID), use a gamepad, or fly with touch sticks." },
       { "t": "Calibrate, arm, fly", "d": "Move the sticks once to calibrate, arm with the throttle all the way down — like a real quad — and go." }
     ]
@@ -658,6 +662,45 @@
     "updated": "Evidence file updated {date}.",
     "evidenceLink": "All raw evidence on GitHub"
   },
+  "locations": {
+    "eyebrow": "New: places to fly",
+    "h2": "Every walkable scan on SuperSplat is now a place to fly: 1,300+ and growing",
+    "lead": "Real rooms, gardens, streets and churches, scanned by people around the world and published with walls you crash into. Let the simulator pick, change places on every crash, or bring your own scan.",
+    "items": [
+      { "t": "1,300+ real places", "d": "The SuperSplat tab in the simulator lists every public scan with walls, with superspl.at's own sorting, filters and search." },
+      { "t": "A new place after every crash", "d": "Star the scans you like, switch on “Next scene after a crash”, and every crash drops you somewhere else, in random order: your favourites, the places you have flown or Andrii's picks." },
+      { "t": "Switch in a second", "d": "N: next scene, Shift+N: random, F: next favourite. The page does not reload and your radio stays connected." },
+      { "t": "Your own scan, or anyone's", "d": "Publish a scan on SuperSplat, or take any public one, and paste its link here or in the simulator." }
+    ],
+    "random": "Fly a random location",
+    "randomNote": "One of the 200 best-liked walkable scans on SuperSplat, picked at random.",
+    "own": "Add your own scan: paste its SuperSplat link",
+    "ownHint": "Your scan or anyone's public one: a scene link, a superspl.at/s?id= link or just the scene id.",
+    "shotAlt": "The SuperSplat tab of the simulator: sorting, walls and download filters, Random top-rated and a grid of scans with walls"
+  },
+  "scale": {
+    "eyebrow": "New: scene scale",
+    "h2": "Shrink yourself: fly a room like a city",
+    "lead": "Two keys scale the whole scene around the drone, from ×0.25 to ×100. At ×100 you are the size of a mosquito: a chair is a tower block, the gap under the bed a canyon. Dive along a chair leg — it is an awesome feeling.",
+    "stops": [
+      { "k": "×0.25", "d": "a scan that came out too big" },
+      { "k": "×1", "d": "true size" },
+      { "k": "×10", "d": "a room becomes a hall" },
+      { "k": "×100", "d": "a mosquito in a city" }
+    ],
+    "steps": [
+      "Open a room: Andrii's villa, the winter garden or any indoor scan.",
+      "Hold ] to grow the scene ([ shrinks it, Shift+] doubles it at once), or drag Scene size in the pause menu. Each scan keeps its own scale.",
+      "The walls grow with it, so you still crash into the chair leg you dive past."
+    ],
+    "cta": "Shrink yourself: fly a room like a city",
+    "ctaNote": "Opens the room in Andrii's villa; press ] until the table is a bridge.",
+    "shotAlt": "The Scene size row of the pause menu: the scan's scale and its slider, with the walls' block size under it"
+  },
+  "video": {
+    "credit": "Video: a flight in {title}, scan by {name}, CC BY 4.0, recorded in the simulator.",
+    "fly": "Fly this scene"
+  },
   "scenes": {
     "eyebrow": "Andrii's scans",
     "h2": "Start with a real place",
@@ -697,7 +740,7 @@
     "unknown": "unknown",
     "cols": ["ShramkoGSFPV", "Walking in the SuperSplat viewer", "Browser splat-FPV demos (e.g. SplatFPV)", "Classic FPV simulators (fixed maps)"],
     "rows": [
-      { "k": "Real scanned places", "cells": ["Any public SuperSplat scene", "Yes", "Yes, one file at a time", "No, fixed maps"] },
+      { "k": "Real scanned places", "cells": ["Any public SuperSplat scene; the 1,300+ with walls in a built-in catalogue", "Yes", "Yes, one file at a time", "No, fixed maps"] },
       { "k": "Drone model", "cells": ["4 motors, mixer, rate PID", "None: a walking or flying camera", "First-order rate filter", "Full"] },
       { "k": "Your own rates", "cells": ["Betaflight, Actual, KISS, Raceflight", "Not applicable", "Flat max rate plus expo", "Yes"] },
       { "k": "Hitting a wall", "cells": ["Crash and tumble", "Slide along it", "Stop or slide", "Crash"] },
@@ -739,14 +782,17 @@
     "eyebrow": "FAQ",
     "h2": "Questions people ask",
     "items": [
-      { "q": "How can I fly an FPV drone through a 3D Gaussian Splatting scan?", "a": "Open ShramkoGSFPV in desktop Chrome or Edge, pick one of Andrii's scans or paste a SuperSplat link, connect a radio, a gamepad or touch sticks, then calibrate, arm and fly. There is nothing to install." },
+      { "q": "How can I fly an FPV drone through a 3D Gaussian Splatting scan?", "a": "Open ShramkoGSFPV in desktop Chrome or Edge, pick a scan (1,300+ with walls in the SuperSplat tab, one of Andrii's or a pasted SuperSplat link), connect a radio, a gamepad or touch sticks, then calibrate, arm and fly. There is nothing to install." },
       { "q": "Can I use my RadioMaster radio in the browser?", "a": "That is what it is built for: switch an EdgeTX radio such as the TX16S, Boxer, Pocket or Zorro to USB joystick mode and connect it over WebHID in Chrome or Edge. So far this has been tested only in Chrome with a simulated EdgeTX radio, not with real hardware or in Edge." },
       { "q": "Is there a free FPV simulator that runs in the browser?", "a": "Yes. ShramkoGSFPV is free and open source under the MIT license. It runs on WebGPU in desktop Chrome or Edge, with no download." },
-      { "q": "Which SuperSplat scenes can I fly?", "a": "Any public SuperSplat scene, by link or id. Scenes published with voxel collision data have solid walls at once; for the others you can build walls in your browser with one click (scans up to 4 million Gaussians). Bigger scans can be flown through but not crashed into." },
+      { "q": "Which SuperSplat scenes can I fly?", "a": "Any public SuperSplat scene, by link or id; the simulator's SuperSplat tab lists the 1,300+ published with walls, with superspl.at's own filters. Those have solid walls at once; for the others you can build walls in your browser with one click (scans up to 4 million Gaussians). Bigger scans can be flown through but not crashed into." },
       { "q": "Does it work on iPad or phone?", "a": "Touch sticks have been tested only in desktop Chrome's touch emulation, not in Safari, on iPad or in Android browsers yet, and you need a browser with WebGPU. Radios need desktop Chrome or Edge." },
       { "q": "Is the flight physics like Betaflight?", "a": "The rate curves (Betaflight, Actual, KISS, Raceflight) match Betaflight 4.5.1's own code with 0 error at 1880 points when both are computed in double precision, and a rate PID drives four motors through a mixer. It is our own flight model, not Betaflight firmware." },
       { "q": "Do I crash into walls or fly through them?", "a": "On scenes with collision data you crash: the drone's body is swept against the voxel data on every physics tick, and a test harness checks that fast flight cannot tunnel through walls. See Live numbers for the result." },
-      { "q": "Is it open source?", "a": "Yes, MIT. Code, measurements and design decisions are on GitHub. Betaflight's formulas were re-implemented; no GPL code was copied." }
+      { "q": "Is it open source?", "a": "Yes, MIT. Code, measurements and design decisions are on GitHub. Betaflight's formulas were re-implemented; no GPL code was copied." },
+      { "q": "Can the simulator take me to a new place after every crash?", "a": "Yes. Random top-rated in the SuperSplat tab opens a scan you have not seen, Shift+N loads a random scene in flight, and with “Next scene after a crash” switched on every crash takes you to another scene: from Andrii's picks, your favourites or the scenes you have flown, in random or fixed order. The radio stays connected." },
+      { "q": "Can I fly a room as if it were a city?", "a": "Yes. Scene size scales the whole scan around the drone from ×0.25 to ×100 with [ and ] (Shift+] doubles it) or in the pause menu. At ×100 a chair is the size of a tower block and you can dive along its legs; the walls scale with the scene, so you still crash into them. The scale is kept for each scan." },
+      { "q": "Can I fly my own 3D scan?", "a": "Yes. Publish it on SuperSplat (superspl.at) and paste its link or id on this page or in the simulator. Published with walls (voxel collision data), it is solid at once; without them you can build walls in the browser for scans up to 4 million Gaussians." }
     ]
   },
   "opensource": {
@@ -820,8 +866,8 @@
         "Six BetaFPV-class quads, and every number on their cards says where it comes from. Paste a Betaflight CLI diff to fly with your own rates and PID.",
         "Hit a wall and the quad crashes at the speed it hit, the wreck tumbling with debris; two seconds later it is back in the air, 5 s back along your path and still armed. Crashes off, the delay and where you come back sit in Settings.",
         "An OSD like in your goggles, field of view and camera uptilt. F9 records 60 fps video of Andrii's scans with their credit in the picture, auto-record catches every flight into your folder, and a flight log becomes a 60 fps video up to 4K.",
-        "Pick one of Andrii's scans, browse SuperSplat with its own filters or paste a link, and watch it load with real numbers. N, Shift+N and F change the scene in the page with the radio still connected; [ and ] fix a scan of the wrong size.",
-        "Show the walls you crash into as a voxel grid over the scan, or fly the grid alone. A noisy scan? Drop its floating specks, the phantom walls, or switch its walls off.",
+        "Pick one of 1,300+ walkable scans in the SuperSplat tab with its own filters, one of Andrii's, or paste a link, and watch it load with real numbers. N, Shift+N and F change the scene in the page with the radio still connected; [ and ] scale the scene from ×0.25 to ×100.",
+        "Show the walls you crash into as a voxel grid over the scan, or fly the grid alone. A noisy scan? Drop its floating specks, the phantom walls, with a live preview, or switch the walls off for every scene.",
         "Every setting on one screen, kept between visits, with export, import and reset. Disarm and a goggles-style card shows the flight; pause and the summary panel has its stats, every menu item and every key."
       ],
       "live": "Live now: {n}",
@@ -872,7 +918,7 @@
       "m-picker": { "t": "Scans on a phone", "d": "Paste a link or pick a scan on a small screen." },
       "stats-card": { "t": "Flight stats", "d": "Disarm after a flight and a card like the goggles OSD shows air time, top speed and altitude, distance, battery, current, mAh used, G-force and average throttle." },
       "mode-chip": { "t": "Flight mode", "d": "Angle by default; the chip, M or a switch on your radio picks Acro, Angle or Horizon." },
-      "scene-size": { "t": "Scene size", "d": "A scan not in true metres? [ and ] scale it around the drone from 0.25× to 4×, kept for each scan; the walls' block size follows." },
+      "scene-size": { "t": "Scene size", "d": "[ and ] scale the scan around the drone from 0.25× to 100×: fix a scan not in true metres, or shrink yourself and fly a room like a city. Kept for each scan; the walls' block size follows." },
       "crash-toast": { "t": "Automatic respawn", "d": "The toast counts down; 2 s after the crash the drone is back 5 s along its path, still armed. Enter stays, R goes to the start, N and F load another scene." },
       "superspl": { "t": "SuperSplat tab", "d": "superspl.at's catalogue in the picker with its sorting, time, walls and download filters, search, Random top-rated and a star for favourites." },
       "rec-bar": { "t": "Recording", "d": "F9 records 60 fps video of Andrii's scans; Auto records every flight into the folder you choose, and the bar says what was saved where." },

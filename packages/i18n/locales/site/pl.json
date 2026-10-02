@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "ShramkoGSFPV — symulator FPV w prawdziwych skanach 3D, w przeglądarce",
-    "description": "Darmowy symulator FPV open source, który lata po prawdziwych skanach Gaussian Splatting z SuperSplat: rates i PID jak w Betaflight, ściany, o które naprawdę się rozbijasz, Twoja aparatura przez USB albo drążki dotykowe. Bez instalacji.",
+    "description": "Darmowy symulator FPV open source w przeglądarce: ponad 1300 prawdziwych skanów Gaussian Splatting z SuperSplat, pokój w skali miasta, ściany, o które naprawdę się rozbijasz, Twoja aparatura przez USB. Bez instalacji.",
     "ogTitle": "Lataj dronem FPV po prawdziwych skanach 3D — prosto w przeglądarce"
   },
   "nav": {
@@ -11,6 +11,7 @@
     "language": "Język",
     "fly": "Leć teraz",
     "anchors": {
+      "locations": "Miejsca",
       "features": "Funkcje",
       "how": "Jak to działa",
       "real": "Fizyka",
@@ -24,7 +25,7 @@
   "hero": {
     "eyebrow": "Symulator FPV open source · licencja MIT",
     "h1": "Lataj dronem FPV po prawdziwych skanach 3D — prosto w przeglądarce",
-    "sub": "ShramkoGSFPV zamienia skany Gaussian Splatting z SuperSplat w miejsca, po których można latać: rates i PID jak w Betaflight, ściany, o które naprawdę się rozbijasz, i Twoja własna aparatura przez USB albo drążki dotykowe. Niczego nie instalujesz.",
+    "sub": "ShramkoGSFPV zamienia ponad 1300 skanów Gaussian Splatting z SuperSplat w miejsca, po których można latać: prawdziwe pokoje, ulice i ogrody ze ścianami, o które naprawdę się rozbijasz, rates i PID jak w Betaflight i Twoja własna aparatura przez USB albo drążki dotykowe. Niczego nie instalujesz.",
     "cta": "Leć teraz — bez instalacji",
     "ctaNote": "Najlepiej działa w Chrome lub Edge na komputerze, z WebGPU.",
     "paste": {
@@ -33,7 +34,7 @@
       "button": "Otwórz scenę",
       "hint": "Link do sceny, link superspl.at/s?id= albo samo id sceny.", "empty": "Najpierw wklej link do SuperSplat albo id sceny."
     },
-    "facts": ["WebGPU i PlayCanvas", "Rates sprawdzone z Betaflight 4.5.1", "Kolizje z przemiataniem wokseli", "Licencja MIT"]
+    "facts": ["Ponad 1300 skanów ze ścianami", "Skala sceny od ×0,25 do ×100", "WebGPU i PlayCanvas", "Rates sprawdzone z Betaflight 4.5.1", "Kolizje z przemiataniem wokseli", "Licencja MIT"]
   },
   "features": {
     "eyebrow": "Co możesz ustawić",
@@ -95,7 +96,7 @@
           "HUD włączony lub wyłączony; F3 pokazuje czasy klatek",
           "Ograniczenie ruchu: spokojniejsza kamera po kraksie (jeszcze nie testowane)",
           "Tryb kinowy: pełne detale i nagrywanie MP4 na skanach Andrija",
-          "Nagrywanie w 60 fps klawiszem F9 na skanach Andrija albo automatyczne nagrywanie każdego lotu do wybranego folderu",
+          "Nagrywanie w 60 fps klawiszem F9 na skanach Andrija, z kropką nagrywania i czasem na ekranie, albo automatyczne nagrywanie każdego lotu do wybranego folderu",
           "Wideo z logu lotu na skanach Andrija, z panelu podsumowania albo z powtórek: 60 fps w 1080p, 1440p albo 4K",
           "Symulator po angielsku, hiszpańsku, polsku lub rosyjsku"
         ]
@@ -107,8 +108,9 @@
           "Zakładki: Skany Andrija, Ostatnie, Ulubione; filtry: ściany, typ, już latane",
           "Zakładka SuperSplat z filtrami i sortowaniem jak na superspl.at, losową sceną spośród najwyżej ocenianych i gwiazdką ulubionych",
           "Zmiana sceny bez przeładowania strony: N następna, Shift+N losowa, F następna ulubiona; aparatura zostaje połączona",
-          "Po kraksie następna scena zamiast respawnu: z listy Andrija, z ulubionych albo z już przelatanych (domyślnie wyłączone)",
-          "Skalowanie sceny o złym rozmiarze wokół drona klawiszami [ i ], zapamiętane dla każdego skanu",
+          "Po kraksie następna scena zamiast respawnu, w losowej albo stałej kolejności: z wyboru Andrija, z ulubionych albo z już przelatanych (domyślnie wyłączone)",
+          "Skala sceny wokół drona od ×0,25 do ×100 klawiszami [ i ] (Shift podwaja krok) albo w menu pauzy: lataj po pokoju jak po mieście; zapamiętana dla każdego skanu, ściany skalują się razem z nią",
+          "Udostępnij scenę, po której latasz: link z obrazem Twojego widoku",
           "Postęp ładowania: etap, MB, prędkość, pozostały czas i ponowienie"
         ]
       },
@@ -116,8 +118,8 @@
         "t": "Ściany i siatka wokseli",
         "items": [
           "Ściany budowane w przeglądarce dla skanów opublikowanych bez nich (do 4 mln gaussianów)",
-          "Ściany (kolizje) włączone albo wyłączone (C), zapamiętane dla każdego skanu; autor skanu ustala wartość domyślną, wyłączone przy skanie z dużym szumem",
-          "Usuwanie unoszących się drobin zaszumionego skanu, które stają się niewidzialnymi ścianami, dla każdego skanu; autor skanu może ustawić wartość domyślną",
+          "Ściany (kolizje) włączone albo wyłączone klawiszem C, jeden wybór dla wszystkich scen, więc nie zmienia się po przejściu do innej sceny",
+          "Usuwanie unoszących się drobin zaszumionego skanu, które stają się niewidzialnymi ścianami, z podglądem na żywo tego, co znika; zapamiętane dla każdego skanu, autor skanu może ustawić wartość domyślną",
           "Siatka wokseli na skanie albo sama, ze skanem ukrytym (V): pełne sześciany, krawędzie, kolory według wysokości albo pływające na czerwono, z własną przezroczystością"
         ]
       },
@@ -129,7 +131,9 @@
           "Statystyki lotu po rozbrojeniu, jak OSD w goglach",
           "Panel podsumowania: statystyki lotu, każda pozycja menu i każdy klawisz",
           "Zapis logu lotu; eksport trajektorii do CSV lub JSON",
-          "Panel pomiarów: odświeżanie ekranu, czasy klatek, częstotliwość fizyki i używane wejście; kopia raportu jako JSON"
+          "Panel pomiarów: odświeżanie ekranu, czasy klatek, częstotliwość fizyki i używane wejście; kopia raportu jako JSON",
+          "Statystyki lotów z całego czasu zachowane między wizytami; jeden przycisk pobiera je jako CSV i JSON",
+          "Opinie z symulatora (B) i z każdej strony tej witryny: błąd, pomysł albo propozycja współpracy; dane techniczne są wysyłane tylko za Twoją zgodą"
         ]
       }
     ],
@@ -151,7 +155,7 @@
     "h2": "Trzy kroki od skanu do lotu",
     "lead": "Bez konta i bez pobierania. Scena strumieniuje się prosto z SuperSplat do Twojej przeglądarki.",
     "steps": [
-      { "t": "Wybierz skan", "d": "Zacznij od jednego ze skanów Andrija albo wklej link do dowolnej publicznej sceny z SuperSplat." },
+      { "t": "Wybierz skan", "d": "Wybierz jeden z ponad 1300 skanów ze ścianami w zakładce SuperSplat symulatora, skan Andrija albo wklej link do dowolnej publicznej sceny z SuperSplat." },
       { "t": "Podłącz sterowanie", "d": "Podłącz aparaturę EdgeTX w trybie joysticka USB (WebHID), użyj pada albo lataj drążkami dotykowymi." },
       { "t": "Kalibracja, uzbrojenie, lot", "d": "Porusz raz drążkami, żeby skalibrować, uzbrój przy gazie na zero — jak w prawdziwym dronie — i w górę." }
     ]
@@ -658,6 +662,45 @@
     "updated": "Plik dowodów zaktualizowano {date}.",
     "evidenceLink": "Wszystkie surowe dowody na GitHubie"
   },
+  "locations": {
+    "eyebrow": "Nowość: miejsca do latania",
+    "h2": "Każdy skan ze ścianami na SuperSplat to teraz miejsce do latania: ponad 1300 i wciąż ich przybywa",
+    "lead": "Prawdziwe pokoje, ogrody, ulice i kościoły, zeskanowane przez ludzi z całego świata i opublikowane ze ścianami, o które się rozbijasz. Pozwól symulatorowi wybrać, zmieniaj miejsce po każdej kraksie albo przynieś własny skan.",
+    "items": [
+      { "t": "Ponad 1300 prawdziwych miejsc", "d": "Zakładka SuperSplat w symulatorze pokazuje każdy publiczny skan ze ścianami, z sortowaniem, filtrami i wyszukiwarką samego superspl.at." },
+      { "t": "Nowe miejsce po każdej kraksie", "d": "Oznacz gwiazdką skany, które lubisz, włącz „Następna scena po kraksie”, a każda kraksa przeniesie Cię gdzie indziej, w losowej kolejności: do ulubionych, do już przelatanych albo do wyboru Andrija." },
+      { "t": "Zmiana w sekundę", "d": "N: następna scena, Shift+N: losowa, F: następna ulubiona. Strona się nie przeładowuje, a aparatura zostaje połączona." },
+      { "t": "Twój własny skan albo czyjkolwiek", "d": "Opublikuj skan na SuperSplat albo weź dowolny publiczny i wklej jego link tutaj lub w symulatorze." }
+    ],
+    "random": "Leć w losowe miejsce",
+    "randomNote": "Jeden z 200 najbardziej lubianych skanów ze ścianami na SuperSplat, wybrany losowo.",
+    "own": "Dodaj własny skan: wklej jego link z SuperSplat",
+    "ownHint": "Twój skan albo dowolny publiczny: link do sceny, link superspl.at/s?id= albo samo id sceny.",
+    "shotAlt": "Zakładka SuperSplat w symulatorze: sortowanie, filtry ścian i pobierania, Losowa z najlepszych i siatka skanów ze ścianami"
+  },
+  "scale": {
+    "eyebrow": "Nowość: skala sceny",
+    "h2": "Zmniejsz się: lataj po pokoju jak po mieście",
+    "lead": "Dwa klawisze skalują całą scenę wokół drona, od ×0,25 do ×100. Przy ×100 masz rozmiar komara: krzesło to wieżowiec, a szpara pod łóżkiem — kanion. Zanurkuj wzdłuż nogi krzesła — to niesamowite uczucie.",
+    "stops": [
+      { "k": "×0,25", "d": "skan, który wyszedł za duży" },
+      { "k": "×1", "d": "prawdziwy rozmiar" },
+      { "k": "×10", "d": "pokój staje się halą" },
+      { "k": "×100", "d": "komar w mieście" }
+    ],
+    "steps": [
+      "Otwórz pokój: willę Andrija, ogród zimowy albo dowolny skan wnętrza.",
+      "Przytrzymaj ], żeby powiększyć scenę ([ ją zmniejsza, Shift+] od razu podwaja), albo przesuń Rozmiar sceny w menu pauzy. Każdy skan pamięta swoją skalę.",
+      "Ściany rosną razem z nią, więc nadal rozbijasz się o nogę krzesła, wzdłuż której nurkujesz."
+    ],
+    "cta": "Zmniejsz się: lataj po pokoju jak po mieście",
+    "ctaNote": "Otwiera pokój w willi Andrija; naciskaj ], aż stół stanie się mostem.",
+    "shotAlt": "Wiersz Rozmiar sceny w menu pauzy: skala skanu i jej suwak, pod nim rozmiar bloków ścian"
+  },
+  "video": {
+    "credit": "Wideo: lot w scenie {title}, skan: {name}, CC BY 4.0, nagrany w symulatorze.",
+    "fly": "Leć w tej scenie"
+  },
   "scenes": {
     "eyebrow": "Skany Andrija",
     "h2": "Zacznij od prawdziwego miejsca",
@@ -697,7 +740,7 @@
     "unknown": "nieznane",
     "cols": ["ShramkoGSFPV", "Spacer w przeglądarce SuperSplat", "Przeglądarkowe dema FPV na splatach (np. SplatFPV)", "Klasyczne symulatory FPV (stałe mapy)"],
     "rows": [
-      { "k": "Prawdziwe zeskanowane miejsca", "cells": ["Dowolna publiczna scena z SuperSplat", "Tak", "Tak, po jednym pliku", "Nie, stałe mapy"] },
+      { "k": "Prawdziwe zeskanowane miejsca", "cells": ["Dowolna publiczna scena z SuperSplat; ponad 1300 ze ścianami we wbudowanym katalogu", "Tak", "Tak, po jednym pliku", "Nie, stałe mapy"] },
       { "k": "Model drona", "cells": ["4 silniki, mikser, PID na rates", "Brak: chodząca lub latająca kamera", "Filtr rates pierwszego rzędu", "Pełny"] },
       { "k": "Własne rates", "cells": ["Betaflight, Actual, KISS, Raceflight", "Nie dotyczy", "Stały maks. obrót plus expo", "Tak"] },
       { "k": "Uderzenie w ścianę", "cells": ["Kraksa i koziołkowanie", "Ślizg wzdłuż ściany", "Zatrzymanie albo ślizg", "Kraksa"] },
@@ -739,14 +782,17 @@
     "eyebrow": "Najczęstsze pytania",
     "h2": "O co ludzie pytają",
     "items": [
-      { "q": "Jak polecieć dronem FPV przez skan 3D Gaussian Splatting?", "a": "Otwórz ShramkoGSFPV w Chrome lub Edge na komputerze, wybierz jeden ze skanów Andrija albo wklej link z SuperSplat, podłącz aparaturę, pad albo użyj drążków dotykowych, a potem skalibruj, uzbrój i leć. Niczego nie trzeba instalować." },
+      { "q": "Jak polecieć dronem FPV przez skan 3D Gaussian Splatting?", "a": "Otwórz ShramkoGSFPV w Chrome lub Edge na komputerze, wybierz skan (ponad 1300 ze ścianami w zakładce SuperSplat, skan Andrija albo wklejony link z SuperSplat), podłącz aparaturę, pad albo użyj drążków dotykowych, a potem skalibruj, uzbrój i leć. Niczego nie trzeba instalować." },
       { "q": "Czy mogę użyć mojej aparatury RadioMaster w przeglądarce?", "a": "Do tego to powstało: przełącz aparaturę EdgeTX, np. TX16S, Boxer, Pocket albo Zorro, w tryb joysticka USB i podłącz ją przez WebHID w Chrome lub Edge. Na razie testowaliśmy to tylko w Chrome z symulowaną aparaturą EdgeTX, a nie z prawdziwym sprzętem ani w Edge." },
       { "q": "Czy jest darmowy symulator FPV działający w przeglądarce?", "a": "Tak. ShramkoGSFPV jest darmowy i open source na licencji MIT. Działa na WebGPU w Chrome lub Edge na komputerze, bez pobierania." },
-      { "q": "Po jakich scenach z SuperSplat mogę latać?", "a": "Każdą publiczną scenę SuperSplat, po linku albo id. Sceny opublikowane z danymi kolizji mają twarde ściany od razu; dla pozostałych możesz zbudować ściany w przeglądarce jednym kliknięciem (skany do 4 mln gaussianów). Przez większe można przelatywać, ale nie da się w nie uderzyć." },
+      { "q": "Po jakich scenach z SuperSplat mogę latać?", "a": "Każdą publiczną scenę SuperSplat, po linku albo id; zakładka SuperSplat w symulatorze pokazuje ponad 1300 opublikowanych ze ścianami, z filtrami superspl.at. Te mają twarde ściany od razu; dla pozostałych możesz zbudować ściany w przeglądarce jednym kliknięciem (skany do 4 mln gaussianów). Przez większe można przelatywać, ale nie da się w nie uderzyć." },
       { "q": "Czy działa na iPadzie albo telefonie?", "a": "Drążki dotykowe testowaliśmy tylko w emulacji dotyku w Chrome na komputerze, jeszcze nie w Safari, na iPadzie ani w przeglądarkach na Androidzie, a potrzebna jest przeglądarka z WebGPU. Aparatura wymaga Chrome lub Edge na komputerze." },
       { "q": "Czy fizyka lotu jest jak w Betaflight?", "a": "Krzywe rates (Betaflight, Actual, KISS, Raceflight) zgadzają się z kodem Betaflight 4.5.1 z błędem 0 w 1880 punktach, gdy oba liczone są w podwójnej precyzji, a PID na rates steruje czterema silnikami przez mikser. To nasz własny model lotu, a nie firmware Betaflight." },
       { "q": "Rozbijam się o ściany czy przez nie przelatuję?", "a": "Na scenach z danymi kolizji się rozbijasz: w każdym kroku fizyki bryła drona jest przemiatana względem wokseli, a zestaw testów sprawdza, czy szybki lot nie przebija się przez ściany. Wynik znajdziesz w sekcji Liczby na żywo." },
-      { "q": "Czy to open source?", "a": "Tak, na licencji MIT. Kod, pomiary i decyzje projektowe są na GitHubie. Wzory Betaflight zostały zaimplementowane od nowa; żaden kod na GPL nie został skopiowany." }
+      { "q": "Czy to open source?", "a": "Tak, na licencji MIT. Kod, pomiary i decyzje projektowe są na GitHubie. Wzory Betaflight zostały zaimplementowane od nowa; żaden kod na GPL nie został skopiowany." },
+      { "q": "Czy symulator może po każdej kraksie przenieść mnie w nowe miejsce?", "a": "Tak. „Losowa z najlepszych” w zakładce SuperSplat otwiera skan, którego jeszcze nie widziałeś, Shift+N wczytuje losową scenę w locie, a z włączoną opcją „Następna scena po kraksie” każda kraksa przenosi Cię do innej sceny: z wyboru Andrija, z ulubionych albo z już przelatanych, w losowej albo stałej kolejności. Aparatura zostaje połączona." },
+      { "q": "Czy mogę latać po pokoju jak po mieście?", "a": "Tak. Rozmiar sceny skaluje cały skan wokół drona od ×0,25 do ×100 klawiszami [ i ] (Shift+] podwaja) albo w menu pauzy. Przy ×100 krzesło jest jak wieżowiec i możesz zanurkować wzdłuż jego nóg; ściany skalują się razem ze sceną, więc nadal się o nie rozbijasz. Skala jest zapamiętana dla każdego skanu." },
+      { "q": "Czy mogę latać po własnym skanie 3D?", "a": "Tak. Opublikuj go na SuperSplat (superspl.at) i wklej jego link albo id na tej stronie lub w symulatorze. Opublikowany ze ścianami (danymi kolizji wokseli) jest twardy od razu; bez nich możesz zbudować ściany w przeglądarce dla skanów do 4 mln gaussianów." }
     ]
   },
   "opensource": {
@@ -820,8 +866,8 @@
         "Sześć quadów klasy BetaFPV, a każda liczba na ich kartach mówi, skąd pochodzi. Wklej diff z CLI Betaflight i lataj na własnych rates i PID.",
         "Uderz w ścianę, a dron rozbije się z prędkością uderzenia, a wrak potoczy się z odłamkami; dwie sekundy później jest znów w powietrzu, 5 s wstecz na trasie i nadal uzbrojony. Wyłączenie kraks, opóźnienie i miejsce powrotu są w Ustawieniach.",
         "OSD jak w goglach, pole widzenia i pochylenie kamery. F9 nagrywa wideo 60 fps ze skanów Andrija z podpisem autora w kadrze, automatyczne nagrywanie zapisuje każdy lot w twoim folderze, a log lotu staje się wideo 60 fps do 4K.",
-        "Wybierz skan Andrija, przeglądaj SuperSplat z jego filtrami albo wklej link i zobacz, jak się wczytuje z prawdziwymi liczbami. N, Shift+N i F zmieniają scenę na tej samej stronie przy podłączonej aparaturze; [ i ] poprawiają skan o złym rozmiarze.",
-        "Pokaż ściany, w które uderzasz, jako siatkę wokseli na skanie albo lataj po samej siatce. Skan z szumem? Usuń unoszące się drobiny — ściany-widma — albo wyłącz jego ściany.",
+        "Wybierz jeden z ponad 1300 skanów ze ścianami w zakładce SuperSplat z jej filtrami, skan Andrija albo wklej link i zobacz, jak się wczytuje z prawdziwymi liczbami. N, Shift+N i F zmieniają scenę na tej samej stronie przy podłączonej aparaturze; [ i ] skalują scenę od ×0,25 do ×100.",
+        "Pokaż ściany, w które uderzasz, jako siatkę wokseli na skanie albo lataj po samej siatce. Skan z szumem? Usuń unoszące się drobiny — ściany-widma — z podglądem na żywo albo wyłącz ściany dla wszystkich scen.",
         "Wszystkie ustawienia na jednym ekranie, zapamiętane między wizytami, z eksportem, importem i resetem. Po rozbrojeniu karta jak w goglach pokazuje lot; w pauzie panel podsumowania ma jego statystyki, każdą pozycję menu i każdy klawisz."
       ],
       "live": "Działa teraz: {n}",
@@ -872,7 +918,7 @@
       "m-picker": { "t": "Skany na telefonie", "d": "Wklej link albo wybierz skan na małym ekranie." },
       "stats-card": { "t": "Statystyki lotu", "d": "Rozbrój po locie, a karta jak OSD w goglach pokaże czas w powietrzu, maksymalną prędkość i wysokość, dystans, baterię, prąd, zużyte mAh, przeciążenie i średni gaz." },
       "mode-chip": { "t": "Tryb lotu", "d": "Domyślnie Angle; przycisk, M albo przełącznik na aparaturze wybiera Acro, Angle lub Horizon." },
-      "scene-size": { "t": "Rozmiar sceny", "d": "Skan nie w prawdziwych metrach? [ i ] skalują go wokół drona od 0,25× do 4×, zapamiętane dla każdego skanu; rozmiar bloków ścian idzie za nim." },
+      "scene-size": { "t": "Rozmiar sceny", "d": "[ i ] skalują skan wokół drona od 0,25× do 100×: popraw skan nie w prawdziwych metrach albo zmniejsz się i lataj po pokoju jak po mieście. Zapamiętane dla każdego skanu; rozmiar bloków ścian idzie za nim." },
       "crash-toast": { "t": "Automatyczny respawn", "d": "Komunikat odlicza; 2 s po kraksie dron wraca 5 s wstecz na swojej trasie, nadal uzbrojony. Enter zostaje, R wraca na start, N i F wczytują inną scenę." },
       "superspl": { "t": "Zakładka SuperSplat", "d": "Katalog superspl.at w wyborze sceny, z jego sortowaniem, filtrami czasu, ścian i pobierania, wyszukiwarką, losową sceną spośród najwyżej ocenianych i gwiazdką ulubionych." },
       "rec-bar": { "t": "Nagrywanie", "d": "F9 nagrywa wideo 60 fps ze skanów Andrija; automatyczne nagrywanie zapisuje każdy lot w wybranym folderze, a pasek mówi, co i gdzie zapisano." },

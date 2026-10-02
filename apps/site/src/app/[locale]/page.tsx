@@ -4,6 +4,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AGENT_PROMPT, AUTHOR, GOOD_FIRST_ISSUES, REPO, REPO_BLOB, SHOWCASE, flyPath, posterUrl, superSplatUrl } from "@/config/site";
 import type { Locale } from "@/i18n/routing";
 import { Ext, Section } from "@/components/kit";
+import BgVideo from "@/components/BgVideo";
+import BgVideos from "@/components/BgVideos";
 import CopyBlock from "@/components/CopyBlock";
 import DeferImages from "@/components/DeferImages";
 import Footer from "@/components/Footer";
@@ -15,13 +17,17 @@ import JsonLd from "@/components/JsonLd";
 import LeadForm from "@/components/LeadForm";
 import LiveNumbers from "@/components/LiveNumbers";
 import Parallax from "@/components/Parallax";
+import RandomScene from "@/components/RandomScene";
 import ScenePaste from "@/components/ScenePaste";
 import ShareButtons from "@/components/ShareButtons";
 import SettingsCatalog from "@/components/SettingsCatalog";
 import ShotBackdrop from "@/components/ShotBackdrop";
 import ShotBand from "@/components/ShotBand";
+import ShotImage from "@/components/ShotImage";
 import StickyCTA from "@/components/StickyCTA";
 import Tour from "@/components/Tour";
+import { VIDEOS } from "@/config/videos";
+import type { VideoSlot } from "@/config/videos";
 import { pageMetadata } from "@/lib/meta";
 import { SHOTS, absolute, full, panel, shot, shotDate } from "@/lib/shots";
 import type { ShotCaption } from "@/lib/shots";
@@ -85,6 +91,39 @@ function FeatureRows({ items, status, label }: { items: string[]; status: Featur
   );
 }
 
+/**
+ * A real flight behind a block: heavy veil under the text column, the flight clear on the right.
+ * On a narrow screen the block is far taller than wide, so the 2:1 loop covers only its first
+ * 80 % of a screen (cover over the whole block would show a blurred sliver), fading into the page.
+ */
+function VideoBackdrop({ slot }: { slot: VideoSlot }) {
+  return (
+    <div aria-hidden="true" className="absolute inset-0 -z-10">
+      <BgVideo slot={slot} className="bottom-auto h-[80svh] lg:bottom-0 lg:h-auto" />
+      <div className="absolute inset-x-0 top-[calc(80svh-12rem)] h-48 bg-gradient-to-b from-transparent to-bg lg:hidden" />
+      <div className="absolute inset-0 bg-bg/75 lg:bg-transparent lg:bg-gradient-to-r lg:from-bg/95 lg:via-bg/75 lg:to-bg/30" />
+      <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-bg to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-bg to-transparent" />
+    </div>
+  );
+}
+
+/** The scan a background flight was recorded in, credited like the showcase cards, with a link to fly it. */
+function VideoCredit({ slot, locale, className = "" }: { slot: VideoSlot; locale: Locale; className?: string }) {
+  const t = useTranslations();
+  const { scene } = VIDEOS[slot];
+  const title = t(`scenes.items.${scene}`);
+  return (
+    <p className={`text-xs text-muted ${className}`}>
+      {t("video.credit", { title, name: AUTHOR.name })}{" "}
+      <a href={`${flyPath(locale)}?scene=${scene}`} data-track="scene_open" data-p="showcase" className="link">
+        {t("video.fly")}
+        <span className="sr-only">: {title}</span>
+      </a>
+    </p>
+  );
+}
+
 function Landing({ locale }: { locale: Locale }) {
   const t = useTranslations();
   const how = t.raw("how.steps") as TD[];
@@ -97,6 +136,9 @@ function Landing({ locale }: { locale: Locale }) {
   const faq = t.raw("faq.items") as QA[];
   const thanks = t.raw("opensource.thanks") as Thanks[];
   const heroFacts = t.raw("hero.facts") as string[];
+  const locItems = t.raw("locations.items") as TD[];
+  const scaleSteps = t.raw("scale.steps") as string[];
+  const scaleStops = t.raw("scale.stops") as { k: string; d: string }[];
   const featGroups = t.raw("features.groups") as FeatureGroup[];
   const featProgress = t.raw("features.progress") as string[];
   const featNext = t.raw("features.next") as string[];
@@ -123,6 +165,7 @@ function Landing({ locale }: { locale: Locale }) {
       <JsonLd locale={locale} description={t("meta.description")} faq={faq} features={featGroups.flatMap((g) => g.items)} screenshots={ldShots} />
       <Parallax />
       <DeferImages />
+      <BgVideos />
       <Header locale={locale} page="" onLanding />
 
       <main id="main" tabIndex={-1} className="outline-none">
@@ -156,19 +199,90 @@ function Landing({ locale }: { locale: Locale }) {
                 </li>
               ))}
             </ul>
+            <VideoCredit slot="hero" locale={locale} className="mt-4" />
           </div>
         </section>
 
-        {/* 1b. Real screenshots sliding with the scroll (decorative; the tour and gallery caption them) */}
+        {/* 1a. News: every walkable SuperSplat scan is a place to fly; random, next on crash, your own scan */}
+        <Section id="locations" index="01" eyebrow={t("locations.eyebrow")} title={t("locations.h2")} lead={t("locations.lead")} backdrop={<VideoBackdrop slot="locations" />}>
+          <div className="mt-10 grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:items-start">
+            <div>
+              <ul className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+                {locItems.map((it) => (
+                  <li key={it.t} className="border-l border-accent/50 pl-4">
+                    <h3 className="text-lg font-semibold text-ink">{it.t}</h3>
+                    <p className="mt-1.5 text-ink/80">{it.d}</p>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <RandomScene href={fly} className="btn-primary min-h-14 px-7 text-lg sm:shrink-0">
+                  {t("locations.random")}
+                  <span aria-hidden="true">→</span>
+                </RandomScene>
+                <p className="text-sm text-muted sm:ml-2 sm:max-w-xs">{t("locations.randomNote")}</p>
+              </div>
+              <div className="mt-8">
+                <ScenePaste id="scene-link-own" locale={locale} label={t("locations.own")} placeholder={t("hero.paste.placeholder")} button={t("hero.paste.button")} hint={t("locations.ownHint")} empty={t("hero.paste.empty")} />
+              </div>
+            </div>
+            <figure className="lg:mt-1">
+              {/* the picker sits in the middle 60 % of the screen: the box (cover) shows that part, large enough to read */}
+              <ShotImage shot={full(shot("superspl"))} defer sizes="(min-width: 1024px) 840px, 170vw" alt={t("locations.shotAlt")} className="aspect-[480/450]! w-full rounded-xl border border-line-strong bg-surface-2 object-cover shadow-2xl shadow-black/60" />
+              <figcaption className="mt-3 text-sm text-muted">{caps.superspl?.d}</figcaption>
+            </figure>
+          </div>
+          <VideoCredit slot="locations" locale={locale} className="mt-10" />
+        </Section>
+
+        {/* 1b. News: scene scale x0.25..x100, a room flown like a city */}
+        <Section id="scale" index="02" eyebrow={t("scale.eyebrow")} title={t("scale.h2")} lead={t("scale.lead")} backdrop={<VideoBackdrop slot="scale" />}>
+          <div className="mt-10 grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:items-start">
+            <div>
+              <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {scaleStops.map((s) => (
+                  <div key={s.k} className="flex flex-col-reverse justify-end gap-1.5 rounded-xl border border-line-strong bg-bg/70 p-4 backdrop-blur-sm">
+                    <dt className="text-sm leading-snug text-ink/80">{s.d}</dt>
+                    <dd className="font-mono text-2xl font-semibold leading-none text-accent">{s.k}</dd>
+                  </div>
+                ))}
+              </dl>
+              <ol className="mt-8 grid gap-3">
+                {scaleSteps.map((s, i) => (
+                  <li key={s} className="flex gap-4">
+                    <span aria-hidden="true" className="font-mono text-sm leading-7 text-accent">
+                      0{i + 1}
+                    </span>
+                    <span className="text-ink/90">{s}</span>
+                  </li>
+                ))}
+              </ol>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <a href={`${fly}?scene=${VIDEOS.scale.scene}`} data-track="fly_click" className="btn-primary min-h-14 px-7 text-lg sm:shrink-0">
+                  {t("scale.cta")}
+                  <span aria-hidden="true">→</span>
+                </a>
+                <p className="text-sm text-muted sm:ml-2 sm:max-w-xs">{t("scale.ctaNote")}</p>
+              </div>
+            </div>
+            <figure className="lg:mt-1">
+              <ShotImage shot={panel(shot("scene-size"))} defer sizes="(min-width: 1024px) 500px, 100vw" alt={t("scale.shotAlt")} className="w-full rounded-xl border border-line-strong bg-surface-2 shadow-2xl shadow-black/60" />
+              <figcaption className="mt-3 text-sm text-muted">{caps["scene-size"]?.d}</figcaption>
+            </figure>
+          </div>
+          <VideoCredit slot="scale" locale={locale} className="mt-10" />
+        </Section>
+
+        {/* 1c. Real screenshots sliding with the scroll (decorative; the tour and gallery caption them) */}
         <ShotBand label={t("shots.band", { n: shots.length })} />
 
         {/* 1c. Tour: each feature group next to the screens that show it */}
-        <Section id="tour" index="01" eyebrow={t("shots.tour.eyebrow")} title={t("shots.tour.h2")} lead={t("shots.tour.lead", { n: shots.length, date: shotDate(locale) })}>
+        <Section id="tour" index="03" eyebrow={t("shots.tour.eyebrow")} title={t("shots.tour.h2")} lead={t("shots.tour.lead", { n: shots.length, date: shotDate(locale) })}>
           <Tour />
         </Section>
 
         {/* 1d. What you can set up: live / in progress / next */}
-        <Section id="features" index="02" eyebrow={t("features.eyebrow")} title={keepTogether(t("features.h2"))} lead={t("features.lead")} tone="surface">
+        <Section id="features" index="04" eyebrow={t("features.eyebrow")} title={keepTogether(t("features.h2"))} lead={t("features.lead")} tone="surface">
           <div className="mt-10 max-w-2xl">
             <dl className="grid grid-cols-3 gap-3">
               {featCounts.map(([k, n]) => (
@@ -238,12 +352,12 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 1e. Every screen, one by one */}
-        <Section id="gallery" index="03" eyebrow={t("shots.gallery.eyebrow")} title={t("shots.gallery.h2")} lead={t("shots.gallery.lead")}>
+        <Section id="gallery" index="05" eyebrow={t("shots.gallery.eyebrow")} title={t("shots.gallery.h2")} lead={t("shots.gallery.lead")}>
           <Gallery items={gallery} labels={{ label: t("shots.gallery.label"), prev: t("shots.gallery.prev"), next: t("shots.gallery.next"), close: t("shots.gallery.close"), count: t.raw("shots.gallery.count") as string, phone: t("shots.gallery.phone") }} />
         </Section>
 
         {/* 2. How it works */}
-        <Section id="how" index="04" eyebrow={t("how.eyebrow")} title={t("how.h2")} lead={t("how.lead")} backdrop={<ShotBackdrop id="flight-garden" />}>
+        <Section id="how" index="06" eyebrow={t("how.eyebrow")} title={t("how.h2")} lead={t("how.lead")} backdrop={<ShotBackdrop id="flight-garden" />}>
           <ol className="mt-10 grid gap-4 md:grid-cols-3">
             {how.map((s, i) => (
               <li key={s.t} className="rounded-xl border border-line bg-surface p-6">
@@ -256,7 +370,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 3. Why it feels real */}
-        <Section id="real" index="05" eyebrow={t("real.eyebrow")} title={t("real.h2")} lead={t("real.lead")} tone="surface" backdrop={<ShotBackdrop id="voxels-only" tone="voxel" drift={-70} />}>
+        <Section id="real" index="07" eyebrow={t("real.eyebrow")} title={t("real.h2")} lead={t("real.lead")} tone="surface" backdrop={<ShotBackdrop id="voxels-only" tone="voxel" drift={-70} />}>
           <div className="mt-10 grid gap-8 lg:grid-cols-[1.25fr_1fr]">
             <ul className="grid gap-x-8 gap-y-7 sm:grid-cols-2">
               {real.map((it) => (
@@ -289,17 +403,17 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 3b. Every setting, key and drone: generated from the settings schema (scripts/gen-catalog.ts) */}
-        <Section id="tune" index="06" eyebrow={t("tune.eyebrow")} title={keepTogether(t("tune.h2"))} lead={t("tune.lead")}>
+        <Section id="tune" index="08" eyebrow={t("tune.eyebrow")} title={keepTogether(t("tune.h2"))} lead={t("tune.lead")}>
           <SettingsCatalog locale={locale} />
         </Section>
 
         {/* 4. Live numbers */}
-        <Section id="numbers" index="07" eyebrow={t("numbers.eyebrow")} title={t("numbers.h2")} lead={t("numbers.lead")} backdrop={<ShotBackdrop id="flight-villa" />}>
+        <Section id="numbers" index="09" eyebrow={t("numbers.eyebrow")} title={t("numbers.h2")} lead={t("numbers.lead")} backdrop={<ShotBackdrop id="flight-villa" />}>
           <LiveNumbers />
         </Section>
 
         {/* 5. Andrii's scans */}
-        <Section id="scenes" index="08" eyebrow={t("scenes.eyebrow")} title={t("scenes.h2")} lead={t("scenes.lead")} tone="surface">
+        <Section id="scenes" index="10" eyebrow={t("scenes.eyebrow")} title={t("scenes.h2")} lead={t("scenes.lead")} tone="surface">
           <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {SHOWCASE.map((s) => {
               const title = t(`scenes.items.${s.id}`);
@@ -342,7 +456,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 6. Works with your radio */}
-        <Section id="radios" index="09" eyebrow={t("radios.eyebrow")} title={t("radios.h2")} lead={t("radios.lead")}>
+        <Section id="radios" index="11" eyebrow={t("radios.eyebrow")} title={t("radios.h2")} lead={t("radios.lead")}>
           <div className="mt-10 overflow-hidden rounded-xl border border-line">
             <div aria-hidden="true" className="hidden grid-cols-[1fr_1.6fr_1.6fr] gap-6 border-b border-line bg-surface px-6 py-3 font-mono text-xs uppercase tracking-wider text-muted md:grid">
               <span>{t("radios.cols.browser")}</span>
@@ -372,7 +486,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 7. Why this is better */}
-        <Section id="compare" index="10" eyebrow={t("compare.eyebrow")} title={t("compare.h2")} lead={t("compare.lead")} tone="surface">
+        <Section id="compare" index="12" eyebrow={t("compare.eyebrow")} title={t("compare.h2")} lead={t("compare.lead")} tone="surface">
           <p aria-hidden="true" className="mt-8 font-mono text-xs text-muted md:hidden">
             {t("compare.swipe")} →
           </p>
@@ -411,7 +525,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 8. For your AI agent */}
-        <Section id="agents" index="11" eyebrow={t("agents.eyebrow")} title={t("agents.h2")} lead={t("agents.lead")}>
+        <Section id="agents" index="13" eyebrow={t("agents.eyebrow")} title={t("agents.h2")} lead={t("agents.lead")}>
           <div className="mt-10 grid gap-8 lg:grid-cols-[1.5fr_1fr]">
             <CopyBlock id="agent-prompt" text={AGENT_PROMPT} label={t("agents.copy")} copied={t("agents.copied")} caption={t("agents.caption")} />
             <div>
@@ -441,7 +555,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 9. Risks & safety */}
-        <Section id="risks" index="12" eyebrow={t("risks.eyebrow")} title={t("risks.h2")} lead={t("risks.lead")} tone="surface">
+        <Section id="risks" index="14" eyebrow={t("risks.eyebrow")} title={t("risks.h2")} lead={t("risks.lead")} tone="surface">
           <ul className="mt-10 grid gap-4 md:grid-cols-2">
             {risks.map((r) => (
               <li key={r.t} className="rounded-xl border border-line bg-bg p-5">
@@ -464,7 +578,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 10. FAQ */}
-        <Section id="faq" index="13" eyebrow={t("faq.eyebrow")} title={t("faq.h2")} backdrop={<ShotBackdrop id="voxels" drift={60} />}>
+        <Section id="faq" index="15" eyebrow={t("faq.eyebrow")} title={t("faq.h2")} backdrop={<ShotBackdrop id="voxels" drift={60} />}>
           <div className="mt-10 divide-y divide-line rounded-xl border border-line">
             {faq.map((f, i) => (
               <details key={i} className="group px-5 sm:px-6">
@@ -481,7 +595,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 11. Open source */}
-        <Section id="opensource" index="14" eyebrow={t("opensource.eyebrow")} title={t("opensource.h2")} lead={t("opensource.lead")} tone="surface">
+        <Section id="opensource" index="16" eyebrow={t("opensource.eyebrow")} title={t("opensource.h2")} lead={t("opensource.lead")} tone="surface">
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Ext href={REPO} className="btn-primary min-h-12 px-6" track="cta_click" p="github">
               {t("opensource.repo")}
@@ -507,7 +621,7 @@ function Landing({ locale }: { locale: Locale }) {
         </Section>
 
         {/* 12. Contact */}
-        <Section id="contact" index="15" eyebrow={t("contact.eyebrow")} title={t("contact.h2")} backdrop={<ShotBackdrop id="flight-tunis" />}>
+        <Section id="contact" index="17" eyebrow={t("contact.eyebrow")} title={t("contact.h2")} backdrop={<ShotBackdrop id="flight-tunis" />}>
           <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_1.15fr]">
             <div>
               <p className="text-xl font-semibold text-ink">{AUTHOR.name}</p>

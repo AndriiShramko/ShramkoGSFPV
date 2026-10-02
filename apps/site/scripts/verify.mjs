@@ -363,6 +363,61 @@ for (const reduce of [false, true]) {
   else ok("parallax: reduced motion keeps every layer still (control of the same measurement)", still, [...a, ...b].join(" | "));
   await ctx.close();
 }
+// Background videos (components/BgVideo + BgVideos): nothing before the load event, then only the
+// blocks in view (the next block peeking in under the first screen is not); a block scrolled to fetches and plays its own loop (control);
+// reduced motion and Save-Data fetch no video at all (the poster stays). Bytes are counted from
+// the responses (Content-Length), so the numbers are what the visitor downloads.
+{
+  const mediaBytes = (page) => {
+    const got = [];
+    page.on("response", async (r) => {
+      const p = new URL(r.url()).pathname;
+      if (!/^\/media\/.*\.mp4$/.test(p)) return;
+      got.push({ p, bytes: Number((await r.allHeaders())["content-length"] ?? 0), at: Date.now() });
+    });
+    return got;
+  };
+  const sum = (a) => Math.round(a.reduce((n, x) => n + x.bytes, 0) / 1024);
+  for (const [label, viewport, opts] of [["1440", { width: 1440, height: 900 }, {}], ["375", { width: 375, height: 812 }, { isMobile: true, hasTouch: true }]]) {
+    const { ctx } = await newCtx(viewport, opts);
+    const page = await ctx.newPage();
+    const got = mediaBytes(page);
+    await page.goto(`${BASE}/en/`, { waitUntil: "load" });
+    const loadAt = Date.now();
+    await page.waitForTimeout(3000);
+    const atTop = got.map((x) => x.p);
+    const state = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll("video[data-bg-video]")].map((v) => [v.closest("section")?.id ?? "?", v.dataset.state ?? "none"])));
+    const early = got.filter((x) => x.at < loadAt).length;
+    // control: the scale block, far below the first screen, fetches and plays its loop once scrolled to
+    await page.locator("#scale").scrollIntoViewIfNeeded();
+    const played = await page
+      .waitForFunction(() => {
+        const v = document.querySelector("#scale video[data-bg-video]");
+        return !!v && !v.paused && v.currentTime > 0.3 && v.classList.contains("is-playing");
+      }, undefined, { timeout: 15000 })
+      .then(() => true, () => false);
+    const scaleFetched = got.some((x) => x.p.startsWith("/media/villa-"));
+    // and the hero's loop pauses once it is off screen
+    const heroPaused = await page.evaluate(() => document.querySelector("video.hero-video")?.paused === true);
+    ok(`background videos ${label}: at the top only the hero fetches its loop (${sum(got.filter((x) => atTop.includes(x.p)))} KB: ${atTop.join(", ") || "none"}), none before the load event; the scale block's loop is fetched and plays once scrolled to, the hero pauses off screen (control)`, early === 0 && atTop.length >= 1 && !atTop.some((p) => p.startsWith("/media/villa-")) && atTop.length === 1 && atTop[0].startsWith("/media/tunis-") && played && scaleFetched && heroPaused, JSON.stringify({ atTop, state, early, played, scaleFetched, heroPaused, scaleKB: sum(got.filter((x) => x.p.startsWith("/media/villa-"))) }));
+    await ctx.close();
+  }
+  for (const [label, opts, init] of [["reduced motion", { reducedMotion: "reduce" }, null], ["Save-Data", {}, () => Object.defineProperty(navigator, "connection", { value: { saveData: true, effectiveType: "4g" }, configurable: true })]]) {
+    const { ctx } = await newCtx({ width: 1440, height: 900 }, opts);
+    if (init) await ctx.addInitScript(init);
+    const page = await ctx.newPage();
+    const got = mediaBytes(page);
+    await page.goto(`${BASE}/en/`, { waitUntil: "load" });
+    for (const id of ["locations", "scale", "top"]) {
+      await page.locator(`#${id}`).scrollIntoViewIfNeeded();
+      await page.waitForTimeout(700);
+    }
+    const posters = await page.evaluate(() => [...document.querySelectorAll(".bg-video-poster")].filter((i) => i.complete && i.naturalWidth > 0).length);
+    ok(`background videos, ${label}: no loop fetched while scrolling past all three blocks, the posters show instead`, got.length === 0 && posters >= 2, JSON.stringify({ fetched: got.map((x) => x.p), posters }));
+    await ctx.close();
+  }
+}
+
 {
   // from 1024 px the gallery is a grid of every picture (4 to a row), and a tile opens the whole screen
   const { ctx } = await newCtx({ width: 1440, height: 900 });
