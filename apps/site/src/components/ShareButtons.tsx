@@ -21,7 +21,7 @@ export default function ShareButtons({ where }: { where: "hero" | "footer" }) {
   const text = t("text");
   const title = "ShramkoGSFPV";
   const href = (h: string) => h.replace("{url}", encodeURIComponent(url)).replace("{text}", encodeURIComponent(text)).replace("{title}", encodeURIComponent(title));
-  const pill = "inline-flex min-h-10 items-center rounded-full border border-line-strong px-3.5 text-sm text-ink hover:border-accent hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
+  const pill = "inline-flex min-h-11 items-center rounded-full border border-line-strong px-3.5 text-sm text-ink hover:border-accent hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
   async function copy() {
     try {

@@ -138,7 +138,7 @@ export default function Feedback() {
         aria-label={t("buttonLabel")}
         title={t("buttonLabel")}
         data-testid="feedback-open"
-        className="fixed bottom-[84px] left-3 z-40 inline-flex min-h-10 items-center gap-2 rounded-full border border-line-strong bg-surface/90 px-4 text-sm text-ink shadow-lg backdrop-blur hover:border-accent hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent md:bottom-4 md:left-4"
+        className="fixed bottom-[84px] left-3 z-40 inline-flex min-h-11 items-center gap-2 rounded-full border border-line-strong bg-surface/90 px-4 text-sm text-ink shadow-lg backdrop-blur hover:border-accent hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent md:bottom-4 md:left-4"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <path fill="currentColor" d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm3 5v2h10V9H7zm0 4v2h7v-2H7z" />
