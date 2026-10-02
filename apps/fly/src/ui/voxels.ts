@@ -27,7 +27,10 @@ export function voxelStatus(v: VoxelController): string {
     if (s.state === 'preparing') return t('voxels.preparing');
     const reach = Math.max(1, Math.round(s.radiusM));
     const line = t('voxels.status', { m: reach, k: Math.round(s.quads / 1000), cm: s.voxelCm ?? '—' });
-    return s.floaters > 0 ? `${line} · ${t('voxels.floaters', { n: s.floaters })}` : line;
+    // the floater filter (G.3): what it dropped, or where to drop the pieces the grid highlights
+    const dropped = s.dropped ? t('voxels.dropped', { pieces: s.dropped.pieces, n: s.dropped.minBlocks }) : '';
+    if (s.floaters > 0) return [line, t('voxels.floaters', { n: s.floaters }), dropped || t('voxels.dropHint')].join(' · ');
+    return dropped ? `${line} · ${dropped}` : line;
 }
 
 /**

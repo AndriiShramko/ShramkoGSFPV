@@ -1,1 +1,8 @@
-{}
+{
+  "set.scene.dropFloaters": "Quitar piezas flotantes de menos de N bloques",
+  "set.scene.dropFloaters.help": "Los escaneos con ruido tienen motas flotantes que se convierten en paredes invisibles contra las que choca el dron. Se quita cada pieza de las paredes con menos bloques que este número (un bloque son 4×4×4 vóxeles), solo en este escaneo. Con 0 se queda todo; la rejilla de vóxeles muestra lo que queda.",
+  "voxels.dropFloaters.on": "Piezas flotantes de menos de {n} bloques quitadas: {pieces}",
+  "voxels.dropFloaters.off": "Piezas flotantes conservadas: todas vuelven a contar como paredes",
+  "voxels.dropped": "{pieces} piezas flotantes de menos de {n} bloques quitadas de las paredes",
+  "voxels.dropHint": "en Ajustes → Paredes y rejilla de vóxeles puedes quitar las pequeñas"
+}

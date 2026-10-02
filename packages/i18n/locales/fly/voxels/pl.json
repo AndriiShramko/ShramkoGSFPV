@@ -1,1 +1,8 @@
-{}
+{
+  "set.scene.dropFloaters": "Usuń pływające kawałki mniejsze niż N bloków",
+  "set.scene.dropFloaters.help": "Zaszumione skany mają pływające drobinki, które stają się niewidzialnymi ścianami, w które uderza dron. Każdy kawałek ścian mniejszy niż tyle bloków (blok to 4×4×4 woksele) zostaje usunięty, tylko w tym skanie. 0 zostawia wszystko; siatka wokseli pokazuje, co zostało.",
+  "voxels.dropFloaters.on": "Usunięte pływające kawałki poniżej {n} bloków: {pieces}",
+  "voxels.dropFloaters.off": "Pływające kawałki zostają: każdy znowu liczy się jako ściana",
+  "voxels.dropped": "usunięte ze ścian pływające kawałki poniżej {n} bloków: {pieces}",
+  "voxels.dropHint": "małe można usunąć ze ścian w Ustawieniach → Ściany i siatka wokseli"
+}

@@ -1,1 +1,8 @@
-{}
+{
+  "set.scene.dropFloaters": "Drop floating pieces under N blocks",
+  "set.scene.dropFloaters.help": "Noisy scans have floating specks that become invisible walls the drone crashes into. Every piece of the walls smaller than this many blocks (a block is 4×4×4 voxels) is removed, for this scan only. 0 keeps everything; the voxel grid shows what is left.",
+  "voxels.dropFloaters.on": "Floating pieces under {n} blocks dropped: {pieces}",
+  "voxels.dropFloaters.off": "Floating pieces kept: every piece counts as a wall again",
+  "voxels.dropped": "{pieces} floating pieces under {n} blocks dropped from the walls",
+  "voxels.dropHint": "Settings → Walls and voxel grid can drop the small ones from the walls"
+}

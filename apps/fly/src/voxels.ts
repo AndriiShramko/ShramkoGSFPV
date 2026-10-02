@@ -67,6 +67,8 @@ export interface VoxelStats {
     /** connected pieces of the walls and the floating ones among them */
     components: number;
     floaters: number;
+    /** the floater filter (G.3, prefs scene.dropFloaters): pieces under minBlocks dropped from the walls; null = off */
+    dropped: { minBlocks: number; pieces: number } | null;
     prepareMs: number | null;
     /** mean worker time per chunk so far, ms */
     chunkMs: number;
@@ -384,6 +386,7 @@ export class VoxelController {
             pendingUploads: o?.pendingUploads ?? 0,
             components: this.components,
             floaters: this.floaters,
+            dropped: this.session.floaterMinBlocks > 0 && this.session.floaterFilter ? { minBlocks: this.session.floaterMinBlocks, pieces: this.session.floaterFilter.pieces } : null,
             prepareMs: this.prepareMs,
             chunkMs: this.sum.n ? this.sum.ms / this.sum.n : 0,
             chunksBuilt: this.sum.n,

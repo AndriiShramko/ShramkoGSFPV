@@ -19,6 +19,8 @@ export interface ShowcaseScene {
     sizeMb?: number;
     /** the admin's default for the walls switch: "off" for a noisy scan (floating splats make phantom walls); absent = on */
     walls?: 'on' | 'off';
+    /** the admin's default floater filter (G.3, prefs scene.dropFloaters): pieces of the walls under N blocks dropped; absent = 0 */
+    dropFloaters?: number;
 }
 
 export async function loadShowcase(): Promise<ShowcaseScene[]> {

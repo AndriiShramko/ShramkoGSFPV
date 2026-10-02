@@ -67,7 +67,7 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['scenes.order', 'scenes', 'global', 'enum', 'random', 'live'],
     ['scenes.allowNoWalls', 'scenes', 'global', 'bool', false, 'live'],
     ['scene.transform', 'scenes', 'scene', 'json', null, 'live'],
-    ['scene.dropFloaters', 'voxels', 'scene', 'number', 0, 'life'],
+    ['scene.dropFloaters', 'voxels', 'scene', 'number', 'curated:dropFloaters|0', 'life'],
     ['scene.walls', 'voxels', 'scene', 'enum', 'curated:walls|on', 'life'],
     ['voxels.show', 'voxels', 'global', 'enum', 'off', 'live'],
     ['voxels.opacity', 'voxels', 'global', 'number', 0.55, 'live'],
