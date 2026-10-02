@@ -409,6 +409,7 @@ export function headingFromCamera(c: SceneCamera): number {
 // SuperSplat catalogue (the list superspl.at shows, through our caching proxy): see superspl.ts
 export * from './superspl';
 export * from './rotation';
+export * from './catalog';
 export * as library from './library';
 export { DEFAULT_FILTER, HISTORY_CAP, emptyLibrary, mergeLibraries, lastScene, failedRecently, pickerRows, favouriteEntries } from './library';
 export type { SceneFilter, LibraryEntry, SceneLibraryData, FavouriteMeta, PickerRow, CuratedCard } from './library';

@@ -3,7 +3,7 @@
 // warning, the scene from the link or the scene picker; a scan that fails to load comes back to the
 // picker with its error.
 import { parseSceneInput } from '@gsfpv/scenes';
-import { ScenePicker, loadShowcase } from '../ui/scenes';
+import { ScenePicker, loadCatalog } from '../ui/scenes';
 import type { PickSource } from '../ui/picker-tabs';
 import { warningModal } from '../ui/panels';
 import { t } from '../i18n';
@@ -17,7 +17,9 @@ import { useStoreLibrary } from './scene-host';
 export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<void> {
     if (!hasWebGPU) banner(ui, t('banner.noWebgpu'), 'no-webgpu');
     else if (!hasHid) banner(ui, t('banner.noHid'), 'no-hid');
-    const showcase = await loadShowcase();
+    // the owner's published catalogue (/api/catalog), else the release's static list
+    const catalog = await loadCatalog();
+    const showcase = catalog.scenes;
     // the curated scans are the store's per-scan defaults (the walls switch), so it opens after them
     const prefs = openPagePrefs(showcase, q.toString());
     hook.prefs = prefsHook(prefs);
@@ -29,7 +31,7 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
 
     function showPicker(errorCode: string | null, msg?: string): void {
         picker?.remove();
-        picker = new ScenePicker(ui, showcase);
+        picker = new ScenePicker(ui, showcase, catalog.collections);
         picker.onPick = (raw, src) => go(raw, src);
         if (errorCode) picker.showError(errorCode, msg);
         hook.status = 'picker';
@@ -48,7 +50,7 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
         history.replaceState(null, '', u);
         beacon('scene_open', { source });
         picker?.remove();
-        void fly(ui, canvas, id, showcase, prefs, (code, msg) => showPicker(code, msg));
+        void fly(ui, canvas, id, showcase, prefs, (code, msg) => showPicker(code, msg), catalog.collections);
     }
 
     let first = true;

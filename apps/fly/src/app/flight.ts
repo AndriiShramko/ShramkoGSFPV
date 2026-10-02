@@ -3,6 +3,7 @@
 import type { ParamOverrides } from '@gsfpv/sim-core';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { recordOpen, SceneError } from '@gsfpv/scenes';
+import type { CatalogCollection } from '@gsfpv/scenes';
 import type { SplatRenderer } from '@gsfpv/render-pc';
 import { GSPLAT_RENDERER_RASTER_GPU_SORT } from 'playcanvas';
 import { FlightSession } from '../session';
@@ -130,7 +131,7 @@ class Flight implements FlightContext {
 }
 
 /** Load `sceneId` and fly it; a scan that fails to load goes back to the picker through `onFail`. */
-export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, sceneId: string, showcase: ShowcaseScene[], prefs: PrefsStore, onFail: (code: string, msg: string) => void): Promise<void> {
+export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, sceneId: string, showcase: ShowcaseScene[], prefs: PrefsStore, onFail: (code: string, msg: string) => void, collections: CatalogCollection[] = []): Promise<void> {
     const meta = showcase.find((s) => s.id === sceneId);
     // the Controls screen follows the loading screen unless a test mode or touch sticks take over
     const sim = q.get('simradio');
@@ -200,7 +201,7 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, sceneId: s
 
     const ctx = new Flight(ui, canvas, session, { id: sceneId, meta }, prefs);
     // E.4: the next scenes load in this page, on this renderer, with the same input
-    const host = new SceneHost({ ctx, canvas, showcase, base: { drawScan, latencyMarker: q.get('lat') === '1', lagFrames: Number(q.get('lagFrames') ?? 0), renderScale: q.get('scale') ? Number(q.get('scale')) : 1 } });
+    const host = new SceneHost({ ctx, canvas, showcase, collections, base: { drawScan, latencyMarker: q.get('lat') === '1', lagFrames: Number(q.get('lagFrames') ?? 0), renderScale: q.get('scale') ? Number(q.get('scale')) : 1 } });
     ctx.scenes = host;
     hook.scenes = host;
     hook.controls = ctx.controls;

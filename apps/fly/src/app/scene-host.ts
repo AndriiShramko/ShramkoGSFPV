@@ -13,7 +13,7 @@
 // The pause menu's "Change scan" opens the scene picker over the flight (openPicker): a scene picked
 // there loads the same way, so changing the scan by hand keeps the radio too (item 5).
 import { SceneError, SceneRotation, getLibrary, legacyLibraryStore, mergeLibraries, parseSceneInput, recordFailure, recordOpen, useLibraryStore } from '@gsfpv/scenes';
-import type { RotationRules, RotationSource, RotationOrder, SceneLibraryData } from '@gsfpv/scenes';
+import type { CatalogCollection, RotationRules, RotationSource, RotationOrder, SceneLibraryData } from '@gsfpv/scenes';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { FlightSession } from '../session';
 import type { SessionOptions } from '../session';
@@ -34,6 +34,8 @@ export interface SceneHostDeps {
     ctx: FlightContext & { swapSession(next: FlightSession, scene: SceneRef): void };
     canvas: HTMLCanvasElement;
     showcase: readonly ShowcaseScene[];
+    /** the catalogue's collections (the picker's chips) */
+    collections?: readonly CatalogCollection[];
     /** how this page flies whatever scene (the URL's test switches): the same for every scene */
     base: Pick<SessionOptions, 'drawScan' | 'latencyMarker' | 'lagFrames' | 'renderScale'>;
 }
@@ -82,7 +84,7 @@ export class SceneHost implements SceneSwitcher {
         if (this.picker || this.busyNow) return;
         ctx.pause('scene');
         if (ctx.menu.isOpen) ctx.menu.close();
-        const picker = new ScenePicker(ctx.ui, [...showcase]);
+        const picker = new ScenePicker(ctx.ui, [...showcase], [...(this.d.collections ?? [])]);
         this.picker = picker;
         picker.root.classList.add('in-flight');
         picker.root.dataset.testid = 'scenes-in-flight';
