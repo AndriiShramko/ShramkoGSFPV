@@ -1,0 +1,210 @@
+{
+  "name": "v03-superspl",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T01:04:42.147Z",
+    "gitHead": "804151d",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5332",
+  "proxy": "https://gsfpv.flyreelstudio.eu",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "mode": "render=off (logic only): no scan is drawn; the list is the live proxy unless a check says mocked",
+  "results": {
+    "S1": {
+      "pass": true,
+      "control": true,
+      "cards": 24,
+      "sameIdsAsProxy": true,
+      "thumbsLoaded": 6,
+      "firstRequest": "?sort=trending&order=-1&time=all&features=walkable&skip=0&limit=24",
+      "status": "Showing 24 of 1,346 scenes",
+      "plantedThumb": {
+        "src": "https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/00000000/v1/m.webp",
+        "loaded": false
+      }
+    },
+    "S2": {
+      "pass": true,
+      "control": true,
+      "request": "?sort=createdAt&order=-1&time=all&features=walkable%2Cdownloadable&skip=0&limit=24",
+      "before": [
+        "a6df26f1",
+        "9d09ab82",
+        "3eecfd55",
+        "fb6b9fae"
+      ],
+      "after": [
+        "8fd7e940",
+        "224aba38",
+        "4c0a32c2",
+        "192cd629"
+      ],
+      "sameIdsAsProxy": true,
+      "cardsWithBothBadges": "24/24",
+      "href": "https://superspl.at/search?sort=newest&time=all&features=walkable,downloadable",
+      "timeWasDisabled": true,
+      "timeNowEnabled": true
+    },
+    "S3": {
+      "pass": true,
+      "control": true,
+      "request": "?sort=starred&order=-1&time=all&features=walkable&search=church&skip=0&limit=24",
+      "shown": 24,
+      "totalWithSearch": 47,
+      "totalWithout": 1346,
+      "status": "Showing 24 of 47 scenes"
+    },
+    "S6": {
+      "pass": true,
+      "control": true,
+      "starred": "ff1d0393",
+      "unstarred": "91c1e47e",
+      "storedFavourites": [
+        "ff1d0393"
+      ],
+      "afterReload": {
+        "a": "true",
+        "b": "false"
+      },
+      "afterUnstarAndReload": "false",
+      "observation": {
+        "inFavouritesTabWithWallsOnly": false,
+        "why": "ui/scenes.ts (W3-1) lists a favourite with no history entry as a scene without walls, so the default walls-only filter hides it; favourites carry no title or walls flag"
+      }
+    },
+    "S4": {
+      "pass": true,
+      "control": true,
+      "picked": "8d5c3046",
+      "status": "ready",
+      "tier0Size": 19,
+      "beacons": [
+        {
+          "e": "scene_open",
+          "p": {
+            "source": "random"
+          }
+        }
+      ],
+      "starredRequest": "?sort=starred&order=-1&time=all&features=walkable&skip=0&limit=40",
+      "controlPickerError": "This scene does not exist on SuperSplat or is not public.",
+      "controlMessage": "No other top-rated scene is left to pick. Try again later or pick one from the list.",
+      "controlOtherPicked": "39e63ce9"
+    },
+    "S5": {
+      "pass": true,
+      "control": true,
+      "target": "a6df26f1",
+      "opened": "a6df26f1",
+      "status": "ready",
+      "beacons": [
+        {
+          "e": "scene_open",
+          "p": {
+            "source": "superspl"
+          }
+        }
+      ],
+      "controlMissingScene": {
+        "status": "error",
+        "errorCode": "not-found",
+        "picker": true
+      }
+    },
+    "S7": {
+      "pass": true,
+      "control": true,
+      "message": "SuperSplat's catalogue is busy right now. Try again in 5 s.Try again",
+      "retryVisible": true,
+      "filtersVisible": true,
+      "cardsAfterRetry": 24,
+      "offlineMessage": "You are offline. Connect to the internet and try again.Try again",
+      "cardsBackOnline": 24
+    },
+    "S8": {
+      "pass": true,
+      "control": true,
+      "measured": {
+        "vw": 375,
+        "overflow": 0,
+        "overlaps": [],
+        "offscreen": [],
+        "unlabelled": [],
+        "checked": 37
+      },
+      "phoneThumb": {
+        "src": "https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/a6df26f1/v1/m.webp",
+        "loaded": true
+      },
+      "keyboard": [
+        "ss-sort",
+        "ss-walk",
+        "ss-dl",
+        "ss-random",
+        "ss-open",
+        "scene-card.ss-card",
+        "star",
+        "scene-card.ss-card",
+        "star"
+      ],
+      "inOrder": [
+        "ss-sort",
+        "ss-walk",
+        "ss-dl",
+        "ss-random",
+        "ss-open"
+      ],
+      "controlMeasured": {
+        "overflow": 241,
+        "overlaps": [
+          "btn primary ss-random x planted"
+        ],
+        "unlabelled": [
+          "text"
+        ]
+      }
+    },
+    "S9": {
+      "pass": true,
+      "control": true,
+      "ru": {
+        "random": "\u0421\u043b\u0443\u0447\u0430\u0439\u043d\u0430\u044f \u0438\u0437 \u043b\u0443\u0447\u0448\u0438\u0445",
+        "more": "\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u0435\u0449\u0451",
+        "sort": "\u0421\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u043a\u0430",
+        "rawKeys": 0,
+        "option": "\u0411\u043e\u043b\u044c\u0448\u0435 \u043b\u0430\u0439\u043a\u043e\u0432",
+        "tabLabel": "SuperSplat",
+        "ok": true
+      },
+      "pl": {
+        "random": "Losowa z najlepszych",
+        "more": "Poka\u017c wi\u0119cej",
+        "sort": "Sortowanie",
+        "rawKeys": 0,
+        "option": "Najbardziej lubiane",
+        "tabLabel": "SuperSplat",
+        "ok": true
+      }
+    }
+  },
+  "pageErrors": [],
+  "summary": {
+    "checks": 9,
+    "passed": 9,
+    "controlsFired": 9
+  }
+}
