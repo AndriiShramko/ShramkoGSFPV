@@ -35,7 +35,7 @@ type FeatureGroup = { t: string; items: string[] };
 type FeatureStatus = "live" | "progress" | "next";
 
 /** Screenshots named in the structured data (the rest are on the page). */
-const LD_SHOTS = ["flight-tunis", "voxels", "wizard-throttle", "pause", "drones", "settings", "crash", "cinema", "voxels-only", "walls", "betaflight", "keys", "m-touch", "picker"];
+const LD_SHOTS = ["flight-tunis", "voxels", "wizard-throttle", "pause", "drones", "settings", "crash", "cinema", "voxels-only", "walls", "betaflight", "keys", "m-touch", "picker", "superspl", "stats-card", "mode-chip", "crash-toast", "video-export"];
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;

@@ -47,19 +47,20 @@
         "t": "Aparatura i kalibracja",
         "items": [
           "Aparatura EdgeTX przez USB (WebHID) w Chrome lub Edge",
-          "Kalibracja z narysowaną aparaturą, która pokazuje, którym drążkiem ruszyć",
+          "Kalibracja z narysowaną aparaturą, która pokazuje, którym drążkiem ruszyć; każdy krok czeka, aż naprawdę nim ruszysz",
           "Odwrócenie dowolnego kanału po kalibracji",
           "Przycisk „Kalibruj ponownie” w menu „Sterowanie”",
-          "Znana aparatura łączy się sama po zmianie skanu"
+          "Znana aparatura łączy się sama i zostaje połączona przy zmianie sceny",
+          "Przełącznik trybu lotu na aparaturze jest wykrywany na ekranie sprawdzania, bez klikania"
         ]
       },
       {
-        "t": "Pad, dotyk i klawiatura",
+        "t": "Sterowanie i tryby lotu",
         "items": [
           "Pad (gamepad) przez Gamepad API przeglądarki",
           "Drążki dotykowe i przycisk UZBRÓJ na ekranie dotykowym",
           "Klawiatura — każdy klawisz lotu widać na ekranie",
-          "Klawiatura: M przełącza między ANGLE (samopoziomowanie) i ACRO; na dotyku lot w ANGLE, z aparaturą lub padem w ACRO (ANGLE jeszcze nie testowany)",
+          "Tryby lotu: Angle (samopoziomowanie, domyślnie dla wszystkich), Horizon i Acro; klawisz M, przycisk trybu na ekranie albo przełącznik na aparaturze",
           "Zamknięcie „Sterowania” przez × lub Esc; menu pauzy pokazuje swoje klawisze"
         ]
       },
@@ -74,12 +75,14 @@
         ]
       },
       {
-        "t": "Grawitacja i kraksy",
+        "t": "Grawitacja, kraksy i respawn",
         "items": [
           "Grawitacja: Ziemia i Księżyc (zmierzone), Mars i zero g (jeszcze nie testowane)",
           "Na innych planetach: te same silniki, stały stosunek ciągu do masy albo automatyczny gaz (dwa ostatnie jeszcze nie testowane)",
-          "Próg kraksy od 2 do 10 m/s",
-          "Po kraksie: powrót na start (przycisk „ostatni bezpieczny punkt” jeszcze nie zapamiętuje punktu niezawodnie)",
+          "Próg kraksy od 2 do 10 m/s albo kraksy wyłączone: ściana tylko cię odbija",
+          "Po kraksie dron wraca sam po 2 s, 5 s wstecz na twojej trasie i nadal uzbrojony; R: na start, Y: cofnij 5 s, Enter: zostań przy wraku",
+          "Start z niewidzialnej platformy na wysokości pojawienia się, z włączonymi silnikami, aż się wzniesiesz",
+          "Do góry nogami albo zaklinowany i bez ruchu: dron sam cofa się o kilka sekund",
           "Powtórka ostatnich 10 s po kraksie; lista powtórek"
         ]
       },
@@ -91,44 +94,53 @@
           "HUD włączony lub wyłączony; F3 pokazuje czasy klatek",
           "Ograniczenie ruchu: spokojniejsza kamera po kraksie (jeszcze nie testowane)",
           "Tryb kinowy: pełne detale i nagrywanie MP4 na skanach Andrija",
+          "Nagrywanie w 60 fps klawiszem F9 na skanach Andrija albo automatyczne nagrywanie każdego lotu do wybranego folderu",
+          "Wideo z logu lotu na skanach Andrija, z panelu podsumowania albo z powtórek: 60 fps w 1080p, 1440p albo 4K",
           "Symulator po angielsku, hiszpańsku, polsku lub rosyjsku"
         ]
       },
       {
-        "t": "Sceny i dane lotu",
+        "t": "Sceny i SuperSplat",
         "items": [
           "Dowolna publiczna scena SuperSplat z linku lub id, także opublikowana ponownie (v2, v3…); sceny w starszym formacie PLY jeszcze się nie otwierają",
           "Zakładki: Skany Andrija, Ostatnie, Ulubione; filtry: ściany, typ, już latane",
+          "Zakładka SuperSplat z filtrami i sortowaniem jak na superspl.at, losową sceną spośród najwyżej ocenianych i gwiazdką ulubionych",
+          "Zmiana sceny bez przeładowania strony: N następna, Shift+N losowa, F następna ulubiona; aparatura zostaje połączona",
+          "Po kraksie następna scena zamiast respawnu: z listy Andrija, z ulubionych albo z już przelatanych (domyślnie wyłączone)",
+          "Skalowanie sceny o złym rozmiarze wokół drona klawiszami [ i ], zapamiętane dla każdego skanu",
+          "Postęp ładowania: etap, MB, prędkość, pozostały czas i ponowienie"
+        ]
+      },
+      {
+        "t": "Ściany i siatka wokseli",
+        "items": [
           "Ściany budowane w przeglądarce dla skanów opublikowanych bez nich (do 4 mln gaussianów)",
-          "Postęp ładowania: etap, MB, prędkość, pozostały czas i ponowienie",
+          "Ściany (kolizje) włączone albo wyłączone (C), zapamiętane dla każdego skanu; autor skanu ustala wartość domyślną, wyłączone przy skanie z dużym szumem",
+          "Usuwanie unoszących się drobin zaszumionego skanu, które stają się niewidzialnymi ścianami, dla każdego skanu; autor skanu może ustawić wartość domyślną",
+          "Siatka wokseli na skanie albo sama, ze skanem ukrytym (V): pełne sześciany, krawędzie, kolory według wysokości albo pływające na czerwono, z własną przezroczystością"
+        ]
+      },
+      {
+        "t": "Ustawienia, statystyki i dane lotu",
+        "items": [
+          "Wszystkie ustawienia zapamiętane między wizytami, każdy dron z własnym strojeniem; eksport, import i reset jednego lub wszystkich",
+          "Katalog wszystkich ustawień z wartością domyślną, zakresem i klawiszem — na tej stronie i na GitHubie",
+          "Statystyki lotu po rozbrojeniu, jak OSD w goglach",
+          "Panel podsumowania: statystyki lotu, każda pozycja menu i każdy klawisz",
           "Zapis logu lotu; eksport trajektorii do CSV lub JSON",
-          "Panel pomiarów: odświeżanie ekranu, czasy klatek, częstotliwość fizyki i używane wejście; kopia raportu jako JSON",
-          "Siatka wokseli na skanie albo sama, ze skanem ukrytym (V): pełne sześciany, krawędzie, kolory według wysokości albo pływające na czerwono, z własną przezroczystością",
-          "Ściany (kolizje) włączone albo wyłączone (C), zapamiętane dla każdego skanu; autor skanu ustala wartość domyślną, wyłączone przy skanie z dużym szumem"
+          "Panel pomiarów: odświeżanie ekranu, czasy klatek, częstotliwość fizyki i używane wejście; kopia raportu jako JSON"
         ]
       }
     ],
     "progressTitle": "W budowie",
-    "progressNote": "Powstaje teraz — na jednym wspólnym magazynie ustawień i jednym systemie respawnu, a nie jako szybkie łatki.",
+    "progressNote": "Powstaje teraz.",
     "progress": [
-      "Kalibracja, która na Ciebie czeka: krok idzie dalej dopiero, gdy naprawdę ruszysz drążkiem",
-      "Wszystkie ustawienia zapamiętane między wizytami, z eksportem, importem i resetem jednego lub wszystkich",
-      "Wybór trybu lotu jednym kliknięciem; domyślnie samopoziomowanie dla wszystkich",
-      "Start z niewidzialnej platformy na wysokości pojawienia się, zamiast spadania na podłogę",
-      "Po kraksie z powrotem w powietrzu w 2 s, na platformie 5 s wcześniej; R wraca na start",
-      "Wyłączenie kraks dla początkujących",
-      "Automatyczny restart, gdy utkniesz albo leżysz do góry nogami",
-      "Fizyka Pavo20 Pro i Pro II dostrojona do prawdziwych dronów"
+      "Fizyka Pavo20 Pro i Pro II dostrojona do prawdziwych dronów: narzędzia do logów blackbox i import zrzutu Betaflight są gotowe, czekamy na logi z prawdziwych dronów"
     ],
     "nextTitle": "Wkrótce",
     "nextNote": "Zaprojektowane i czekają w kolejce na kolejne wydania.",
     "next": [
-      "Statystyki na koniec lotu, jak OSD w goglach",
-      "Pełny katalog wszystkich ustawień — tutaj i na GitHubie",
-      "Po kraksie: następna ulubiona albo losowa, wysoko oceniana scena (auto-przełączanie domyślnie wyłączone)",
-      "Zakładka SuperSplat z tymi samymi filtrami co na superspl.at",
-      "Skalowanie sceny o złym rozmiarze wokół drona",
-      "Nagrywanie w 60 fps i automatyczne nagrywanie do ostatnio wybranego folderu"
+      "Przełączniki na aparaturze do respawnu i cofania"
     ],
     "suggest": "Brakuje Ci jakiegoś ustawienia?",
     "suggestLink": "Zaproponuj funkcję"
@@ -802,12 +814,14 @@
       "h2": "Zobacz, co już zbudowano",
       "lead": "Każdy obraz na tej stronie to prawdziwy zrzut ekranu działającego symulatora — łącznie {n}, zrobione {date} skryptem z repozytorium, więc można je powtórzyć po każdym wydaniu.",
       "rows": [
-        "Podłącz aparaturę EdgeTX, a narysowana aparatura poprowadzi cię krok po kroku: drążek po drążku, potem przełącznik uzbrojenia, a przed lotem sprawdzenie każdego kanału.",
-        "Nie masz aparatury pod ręką? Klawiatura pokazuje każdy klawisz, którego używa, na ekranie dotykowym pojawiają się drążki dotykowe, a pad łączy się przez przeglądarkę (jeszcze nie testowany na prawdziwym sprzęcie).",
+        "Podłącz aparaturę EdgeTX, a narysowana aparatura poprowadzi cię krok po kroku: drążek po drążku, potem przełącznik uzbrojenia, a przed lotem sprawdzenie każdego kanału. Każdy krok czeka, aż naprawdę ruszysz drążkiem.",
+        "Domyślnie Angle z samopoziomowaniem dla wszystkich; przycisk na ekranie, M albo przełącznik na aparaturze wybiera Horizon lub Acro. Nie masz aparatury pod ręką? Klawiatura pokazuje każdy używany klawisz, na ekranie dotykowym pojawiają się drążki, a pad łączy się przez przeglądarkę (jeszcze nie testowany na prawdziwym sprzęcie).",
         "Sześć quadów klasy BetaFPV, a każda liczba na ich kartach mówi, skąd pochodzi. Wklej diff z CLI Betaflight i lataj na własnych rates i PID.",
-        "Uderz w ścianę, a dron rozbije się z prędkością uderzenia, a wrak potoczy się z odłamkami. Grawitacja, próg kraksy, silniki i PID są w Ustawieniach.",
-        "OSD jak w goglach, pole widzenia i pochylenie kamery oraz tryb kinowy, który nagrywa MP4 skanów Andrija z podpisem autora w kadrze.",
-        "Wybierz skan albo wklej link i zobacz, jak się wczytuje z prawdziwymi liczbami. Pokaż ściany, w które uderzasz, jako siatkę wokseli na skanie, lataj po samej siatce albo wyłącz ściany w skanie z dużym szumem."
+        "Uderz w ścianę, a dron rozbije się z prędkością uderzenia, a wrak potoczy się z odłamkami; dwie sekundy później jest znów w powietrzu, 5 s wstecz na trasie i nadal uzbrojony. Wyłączenie kraks, opóźnienie i miejsce powrotu są w Ustawieniach.",
+        "OSD jak w goglach, pole widzenia i pochylenie kamery. F9 nagrywa wideo 60 fps ze skanów Andrija z podpisem autora w kadrze, automatyczne nagrywanie zapisuje każdy lot w twoim folderze, a log lotu staje się wideo 60 fps do 4K.",
+        "Wybierz skan Andrija, przeglądaj SuperSplat z jego filtrami albo wklej link i zobacz, jak się wczytuje z prawdziwymi liczbami. N, Shift+N i F zmieniają scenę na tej samej stronie przy podłączonej aparaturze; [ i ] poprawiają skan o złym rozmiarze.",
+        "Pokaż ściany, w które uderzasz, jako siatkę wokseli na skanie albo lataj po samej siatce. Skan z szumem? Usuń unoszące się drobiny — ściany-widma — albo wyłącz jego ściany.",
+        "Wszystkie ustawienia na jednym ekranie, zapamiętane między wizytami, z eksportem, importem i resetem. Po rozbrojeniu karta jak w goglach pokazuje lot; w pauzie panel podsumowania ma jego statystyki, każdą pozycję menu i każdy klawisz."
       ],
       "live": "Działa teraz: {n}",
       "all": "Wszystkie funkcje i ich status"
@@ -842,19 +856,28 @@
       "voxels-wire": { "t": "Siatka z krawędzi", "d": "Ściany Ogrodu zimowego z wokseli 3,2 cm jako krawędzie na skanie: zobacz, gdzie naprawdę jest ściana, zanim polecisz tą linią." },
       "voxels-only": { "t": "Same woksele", "d": "Skan ukryty, zostają tylko jego ściany z wokseli 5 cm jako pełne sześciany (Willa Modlinek): lataj po samej siatce i zobacz każdą powierzchnię, w którą możesz uderzyć." },
       "voxels-floaters": { "t": "Pływające na czerwono", "d": "Kawałki siatki, które niczego nie dotykają i mają mniej niż 0,5 m³, robią się czerwone, więc widać fantomową ścianę wśród roślin." },
-      "pause": { "t": "Menu pauzy", "d": "Dalej, restart, skan, dron, sterowanie, ustawienia, powtórki, pomiary, import z Betaflight i tryb kinowy, razem z klawiszami." },
-      "settings": { "t": "Ustawienia", "d": "Pole widzenia i pochylenie kamery, HUD, ściany i siatka wokseli, stabilny obraz lub detal, grawitacja, próg kraksy, rozkręcanie silników, opór powietrza i PID dla każdej osi." },
+      "pause": { "t": "Panel podsumowania", "d": "Pauza pokazuje statystyki tego lotu obok sesji i wszystkich lotów, rozmiar sceny, zapis jako wideo, każdą pozycję menu i każdy klawisz." },
+      "settings": { "t": "Ustawienia", "d": "Wszystkie ustawienia na jednym ekranie, w grupach i z wyszukiwarką; tu kraksy i respawn: kraksy, próg, automatyczny respawn, opóźnienie, gdzie i jak daleko wstecz, niewidzialna platforma." },
       "drones": { "t": "Sześć dronów", "d": "Presety klasy BetaFPV, każdy z krzywą rates; każda liczba mówi, skąd pochodzi: producent, pomiar albo szacunek." },
       "betaflight": { "t": "Import z Betaflight", "d": "Wklej diff z CLI, a jego rates i PID przejdą na drona; ustawienia, których symulator nie używa, są wypisane (tu testowy diff)." },
       "measure": { "t": "Pomiary", "d": "Renderer, odświeżanie ekranu, czasy klatek, częstotliwość fizyki, czas wczytania, ściany w użyciu i autotest przelotu przez ściany, do skopiowania jako JSON." },
       "cinema": { "t": "Tryb kinowy", "d": "Pełny detal, automatyczna jakość wyłączona, bez HUD; „Nagrywaj” zapisuje MP4 z podpisem autora skanu w kadrze." },
-      "crash": { "t": "Kraksa", "d": "Decyduje prędkość uderzenia: wrak koziołkuje z odłamkami, a potem respawn, powtórka ostatnich 10 sekund albo log lotu." },
+      "crash": { "t": "Kraksa", "d": "Przy wyłączonym automatycznym respawnie albo po Enter: prędkość uderzenia, wrak z odłamkami, a potem cofnięcie o 5 s, powrót na start, powtórka 10 s, log lotu albo inna scena." },
       "replays": { "t": "Powtórki", "d": "Zapisany lot odtwarza się wyłącznie z ruchów drążków; trajektorię można wyeksportować do CSV albo JSON." },
       "m-flight": { "t": "Ekran telefonu", "d": "Ten sam widok z lotu w pionie, 390 pikseli szerokości." },
       "m-touch": { "t": "Drążki dotykowe", "d": "Dwa pola i przycisk ARM; na dotyku dron lata z samopoziomowaniem (ANGLE)." },
-      "m-pause": { "t": "Menu pauzy na telefonie", "d": "Całe menu mieści się na ekranie telefonu." },
+      "m-pause": { "t": "Podsumowanie na telefonie", "d": "Rozmiar sceny, wideo, główne statystyki i menu w jednym przewijanym panelu." },
       "m-crash": { "t": "Kraksa na telefonie", "d": "Prędkość uderzenia, odłamki i panel kraksy na małym ekranie." },
-      "m-picker": { "t": "Skany na telefonie", "d": "Wklej link albo wybierz skan na małym ekranie." }
+      "m-picker": { "t": "Skany na telefonie", "d": "Wklej link albo wybierz skan na małym ekranie." },
+      "stats-card": { "t": "Statystyki lotu", "d": "Rozbrój po locie, a karta jak OSD w goglach pokaże czas w powietrzu, maksymalną prędkość i wysokość, dystans, baterię, prąd, zużyte mAh, przeciążenie i średni gaz." },
+      "mode-chip": { "t": "Tryb lotu", "d": "Domyślnie Angle; przycisk, M albo przełącznik na aparaturze wybiera Acro, Angle lub Horizon." },
+      "scene-size": { "t": "Rozmiar sceny", "d": "Skan nie w prawdziwych metrach? [ i ] skalują go wokół drona od 0,25× do 4×, zapamiętane dla każdego skanu; rozmiar bloków ścian idzie za nim." },
+      "crash-toast": { "t": "Automatyczny respawn", "d": "Komunikat odlicza; 2 s po kraksie dron wraca 5 s wstecz na swojej trasie, nadal uzbrojony. Enter zostaje, R wraca na start, N i F wczytują inną scenę." },
+      "superspl": { "t": "Zakładka SuperSplat", "d": "Katalog superspl.at w wyborze sceny, z jego sortowaniem, filtrami czasu, ścian i pobierania, wyszukiwarką, losową sceną spośród najwyżej ocenianych i gwiazdką ulubionych." },
+      "rec-bar": { "t": "Nagrywanie", "d": "F9 nagrywa wideo 60 fps ze skanów Andrija; automatyczne nagrywanie zapisuje każdy lot w wybranym folderze, a pasek mówi, co i gdzie zapisano." },
+      "video-export": { "t": "Wideo z logu lotu", "d": "Lot renderowany ponownie z logu jako wideo 60 fps w 1080p, 1440p albo 4K, klatka po klatce; anulowanie nie zostawia pliku." },
+      "voxels-dropped": { "t": "Usunięte unoszące się kawałki", "d": "Willa Modlinek bez kawałków ścian mniejszych niż 64 bloki: 44 ściany-widma mniej, tylko dla tego skanu; menu ścian mówi, co usunięto." },
+      "m-settings": { "t": "Ustawienia na telefonie", "d": "Grupy zwijają się na małym ekranie; ostatnia trzyma ustawienia w przeglądarce i je eksportuje, importuje albo resetuje." }
     }
   },
   "sticky": {

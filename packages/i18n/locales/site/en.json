@@ -47,19 +47,20 @@
         "t": "Radio & calibration",
         "items": [
           "EdgeTX radio over USB (WebHID) in Chrome or Edge",
-          "Calibration with a drawn radio that shows which stick to move",
+          "Calibration with a drawn radio that shows which stick to move; each step waits until you really move it",
           "Reverse any channel after calibration",
           "Recalibrate button in Controls",
-          "A known radio reconnects by itself when you change scans"
+          "A known radio reconnects by itself, and stays connected when you change scenes",
+          "The flight-mode switch on your radio is found on the check screen, with no click"
         ]
       },
       {
-        "t": "Gamepad, touch & keyboard",
+        "t": "Controls & flight modes",
         "items": [
           "Gamepad through the browser's Gamepad API",
           "Touch sticks and an ARM button on a touch screen",
           "Keyboard, with every flying key shown on screen",
-          "Keyboard: M switches ANGLE (self-levelling) and ACRO; touch flies in ANGLE, a radio or gamepad in ACRO (ANGLE not tested yet)",
+          "Flight modes: Angle (self-levelling, the default for everyone), Horizon and Acro; M, the mode chip on screen or your radio's switch",
           "Close Controls with × or Esc; the pause menu shows its keys"
         ]
       },
@@ -74,12 +75,14 @@
         ]
       },
       {
-        "t": "Gravity & crashes",
+        "t": "Gravity, crashes & respawn",
         "items": [
           "Gravity: Earth and Moon (measured), Mars and zero-g (not tested yet)",
           "On other worlds: same motors, keep thrust-to-weight or auto throttle (the last two not tested yet)",
-          "Crash threshold from 2 to 10 m/s",
-          "After a crash: respawn at the start (the “last safe point” button does not keep its point reliably yet)",
+          "Crash threshold from 2 to 10 m/s, or crashes off: a wall only bounces you off",
+          "After a crash the drone is back by itself in 2 s, 5 s back along your path and still armed; R: the start, Y: rewind 5 s, Enter: keep the wreck",
+          "Start on an invisible pad at spawn height, motors on, until you lift off",
+          "Upside down or wedged and not moving: the drone goes a few seconds back by itself",
           "Replay the last 10 s after a crash; a list of replays"
         ]
       },
@@ -91,44 +94,53 @@
           "HUD on or off; F3 shows frame times",
           "Reduced motion: a calmer crash camera (not tested yet)",
           "Cinema mode: full detail and MP4 recording on Andrii's scans",
+          "Recording at 60 fps with F9 on Andrii's scans, or auto-record every flight into a folder you choose",
+          "Video from the flight log on Andrii's scans, from the summary panel or the replays: 60 fps at 1080p, 1440p or 4K",
           "Simulator in English, Spanish, Polish or Russian"
         ]
       },
       {
-        "t": "Scenes & flight data",
+        "t": "Scenes & SuperSplat",
         "items": [
           "Any public SuperSplat scene by link or id, re-published versions (v2, v3…) too; scenes in the older PLY format do not open yet",
           "Tabs: Andrii's scans, Recent, Favourites; filters for walls, type and flown",
+          "A SuperSplat tab with superspl.at's filters and sorting, a random top-rated scene and a star for favourites",
+          "Change scenes without reloading the page: N next, Shift+N random, F next favourite; the radio stays connected",
+          "After a crash, the next scene instead of a respawn: from Andrii's list, your favourites or the scenes you flew (off by default)",
+          "Scale a wrong-size scene around the drone with [ and ], kept for each scan",
+          "Loading progress: stage, MB, speed, time left and retry"
+        ]
+      },
+      {
+        "t": "Walls & voxel grid",
+        "items": [
           "Walls built in your browser for scans published without them (up to 4 M Gaussians)",
-          "Loading progress: stage, MB, speed, time left and retry",
+          "Walls (collisions) on or off (C), remembered for each scan; the scan's author sets the default, off for a noisy scan",
+          "Drop the floating specks of a noisy scan that turn into invisible walls, for each scan; the scan's author can set a default",
+          "Voxel grid over the scan or on its own, the scan hidden (V): solid cubes, wireframe, height colours or floaters in red, with its own opacity"
+        ]
+      },
+      {
+        "t": "Settings, stats & flight data",
+        "items": [
+          "Every setting kept between visits, each drone with its own tune; export, import and reset one or all",
+          "A catalogue of every setting with its default, range and key, on this site and on GitHub",
+          "Flight stats when you disarm, like the goggles OSD",
+          "Summary panel: this flight's stats, every menu item and every key",
           "Save the flight log; export the trajectory as CSV or JSON",
-          "Measurements panel: display refresh, frame times, physics rate and the input in use; copy the report as JSON",
-          "Voxel grid over the scan or on its own, the scan hidden (V): solid cubes, wireframe, height colours or floaters in red, with its own opacity",
-          "Walls (collisions) on or off (C), remembered for each scan; the scan's author sets the default, off for a noisy scan"
+          "Measurements panel: display refresh, frame times, physics rate and the input in use; copy the report as JSON"
         ]
       }
     ],
     "progressTitle": "In progress",
-    "progressNote": "Being built now — on one shared settings store and one respawn system, not as quick patches.",
+    "progressNote": "Being built now.",
     "progress": [
-      "Calibration that waits for you: a step moves on only when you really move the stick",
-      "Every setting kept between visits, with export, import and reset — one or all",
-      "Pick the flight mode with a click; self-levelling by default for everyone",
-      "Start on an invisible pad at spawn height instead of dropping to the floor",
-      "After a crash, back in the air within 2 s, on a pad 5 s earlier; R returns to the start",
-      "Crashes off for beginners",
-      "Automatic restart when you are stuck or lying upside down",
-      "Pavo20 Pro and Pro II physics tuned against the real quads"
+      "Pavo20 Pro and Pro II physics tuned against the real quads: the blackbox log tools and the Betaflight dump import are ready, waiting for logs from the real quads"
     ],
     "nextTitle": "Next",
     "nextNote": "Designed and queued for the next builds.",
     "next": [
-      "Flight stats at the end of a flight, like the goggles OSD",
-      "A full catalogue of every setting, here and on GitHub",
-      "After a crash: your next favourite or a random top-rated scene (auto-switch off by default)",
-      "A SuperSplat tab with the same filters as superspl.at",
-      "Scale a wrong-size scene around the drone",
-      "60 fps recording, and auto-record into the last folder you chose"
+      "Radio switches for respawn and rewind"
     ],
     "suggest": "Missing a setting you need?",
     "suggestLink": "Suggest a feature"
@@ -802,12 +814,14 @@
       "h2": "See what is already built",
       "lead": "Every picture on this page is a real screenshot of the live simulator: {n} of them, taken on {date} by a script in the repository, so they can be taken again after every release.",
       "rows": [
-        "Plug in an EdgeTX radio and a drawn radio walks you through it: stick by stick, then the switch you arm with, then a check of every channel before you fly.",
-        "No radio at hand? The keyboard shows every key it uses, touch sticks appear on a touch screen, and a gamepad connects through the browser (not tested on real hardware yet).",
+        "Plug in an EdgeTX radio and a drawn radio walks you through it: stick by stick, then the switch you arm with, then a check of every channel before you fly. Each step waits until you really move the stick.",
+        "Angle self-levelling by default for everyone; the chip on screen, M or a switch on your radio picks Horizon or Acro. No radio at hand? The keyboard shows every key it uses, touch sticks appear on a touch screen, and a gamepad connects through the browser (not tested on real hardware yet).",
         "Six BetaFPV-class quads, and every number on their cards says where it comes from. Paste a Betaflight CLI diff to fly with your own rates and PID.",
-        "Hit a wall and the quad crashes at the speed it hit, the wreck tumbling with debris. Gravity, crash threshold, motors and PID sit in Settings.",
-        "An OSD like in your goggles, field of view and camera uptilt, and a cinema mode that records MP4 of Andrii's scans with their credit in the picture.",
-        "Pick a scan or paste a link and watch it load with real numbers. Show the walls you crash into as a voxel grid over the scan, fly the grid alone, or switch the walls off on a noisy scan."
+        "Hit a wall and the quad crashes at the speed it hit, the wreck tumbling with debris; two seconds later it is back in the air, 5 s back along your path and still armed. Crashes off, the delay and where you come back sit in Settings.",
+        "An OSD like in your goggles, field of view and camera uptilt. F9 records 60 fps video of Andrii's scans with their credit in the picture, auto-record catches every flight into your folder, and a flight log becomes a 60 fps video up to 4K.",
+        "Pick one of Andrii's scans, browse SuperSplat with its own filters or paste a link, and watch it load with real numbers. N, Shift+N and F change the scene in the page with the radio still connected; [ and ] fix a scan of the wrong size.",
+        "Show the walls you crash into as a voxel grid over the scan, or fly the grid alone. A noisy scan? Drop its floating specks, the phantom walls, or switch its walls off.",
+        "Every setting on one screen, kept between visits, with export, import and reset. Disarm and a goggles-style card shows the flight; pause and the summary panel has its stats, every menu item and every key."
       ],
       "live": "Live now: {n}",
       "all": "Every feature and its status"
@@ -842,19 +856,28 @@
       "voxels-wire": { "t": "Wireframe grid", "d": "The Winter Garden's 3.2 cm walls as a wireframe over the scan: see where a wall really is before you fly the line." },
       "voxels-only": { "t": "Voxels only", "d": "The scan hidden and only its 5 cm walls left, as solid cubes (Modlinek Villa): fly the grid alone and see every surface you can hit." },
       "voxels-floaters": { "t": "Floaters in red", "d": "Pieces of the grid that touch nothing else and are smaller than 0.5 m³ turn red, so a phantom wall in the plants stands out." },
-      "pause": { "t": "Pause menu", "d": "Continue, restart, scan, drone, controls, settings, replays, measurements, Betaflight import and cinema mode, with their keys." },
-      "settings": { "t": "Settings", "d": "Field of view and uptilt, HUD, the walls and the voxel grid, stable frame or detail, gravity, crash threshold, motor spin-up, drag and PID for each axis." },
+      "pause": { "t": "Summary panel", "d": "Pause shows this flight's stats beside the session and all-time ones, the scene size, saving as video, every menu item and every key." },
+      "settings": { "t": "Settings", "d": "Every setting on one screen, by group and with search; here Crashes & respawn: crashes, threshold, automatic respawn, delay, where and how far back, the invisible platform." },
       "drones": { "t": "Six drones", "d": "BetaFPV-class presets with a rate curve each; every number says where it comes from: manufacturer, measured or estimate." },
       "betaflight": { "t": "Betaflight import", "d": "Paste a CLI diff and its rates and PID fly the quad; every setting the simulator does not use is listed (here a test diff)." },
       "measure": { "t": "Measurements", "d": "Renderer, display refresh, frame times, physics rate, load time, the walls in use and a tunnelling self-test, copyable as JSON." },
       "cinema": { "t": "Cinema mode", "d": "Full detail, automatic quality off, no HUD; Record saves an MP4 with the scan's credit in the picture." },
-      "crash": { "t": "Crash", "d": "The impact speed decides; the wreck tumbles with debris, then respawn, a 10-second replay or the flight log." },
+      "crash": { "t": "Crash", "d": "With automatic respawn off, or after Enter: the impact speed, the wreck with debris, then rewind 5 s, back to the start, a 10-second replay, the flight log or another scene." },
       "replays": { "t": "Replays", "d": "A saved flight plays again from its stick inputs alone; its trajectory exports as CSV or JSON." },
       "m-flight": { "t": "Phone-sized screen", "d": "The same flight view in portrait, 390 pixels wide." },
       "m-touch": { "t": "Touch sticks", "d": "Two pads and an ARM button; on touch the quad flies self-levelling (ANGLE)." },
-      "m-pause": { "t": "Pause menu on a phone", "d": "The whole menu fits on a phone screen." },
+      "m-pause": { "t": "Summary on a phone", "d": "Scene size, video, the main stats and the menu in one scrolling panel." },
       "m-crash": { "t": "Crash on a phone", "d": "Impact speed, debris and the crash panel on a small screen." },
-      "m-picker": { "t": "Scans on a phone", "d": "Paste a link or pick a scan on a small screen." }
+      "m-picker": { "t": "Scans on a phone", "d": "Paste a link or pick a scan on a small screen." },
+      "stats-card": { "t": "Flight stats", "d": "Disarm after a flight and a card like the goggles OSD shows air time, top speed and altitude, distance, battery, current, mAh used, G-force and average throttle." },
+      "mode-chip": { "t": "Flight mode", "d": "Angle by default; the chip, M or a switch on your radio picks Acro, Angle or Horizon." },
+      "scene-size": { "t": "Scene size", "d": "A scan not in true metres? [ and ] scale it around the drone from 0.25× to 4×, kept for each scan; the walls' block size follows." },
+      "crash-toast": { "t": "Automatic respawn", "d": "The toast counts down; 2 s after the crash the drone is back 5 s along its path, still armed. Enter stays, R goes to the start, N and F load another scene." },
+      "superspl": { "t": "SuperSplat tab", "d": "superspl.at's catalogue in the picker with its sorting, time, walls and download filters, search, Random top-rated and a star for favourites." },
+      "rec-bar": { "t": "Recording", "d": "F9 records 60 fps video of Andrii's scans; Auto records every flight into the folder you choose, and the bar says what was saved where." },
+      "video-export": { "t": "Video from the flight log", "d": "The flight rendered again from its log as 60 fps video at 1080p, 1440p or 4K, frame by frame; Cancel leaves no file." },
+      "voxels-dropped": { "t": "Floating pieces dropped", "d": "Modlinek Villa with the pieces of its walls under 64 blocks removed: 44 phantom walls gone, for this scan only; the walls menu says what was dropped." },
+      "m-settings": { "t": "Settings on a phone", "d": "The groups fold on a small screen; the last one keeps your settings in the browser and exports, imports or resets them." }
     }
   },
   "sticky": {

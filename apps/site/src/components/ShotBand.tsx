@@ -5,8 +5,8 @@ import { panel, shot } from "@/lib/shots";
 // as its crop (the menu itself, readable), a flight or the voxel grid as the whole screen; no
 // picture appears twice. Decorative: every picture is shown again, with its caption, in the tour
 // and the gallery below.
-const ROW_A = ["voxels", "pause", "flight-tunis", "wizard-throttle", "drones", "voxels-only", "crash", "settings", "flight-garden", "walls"];
-const ROW_B = ["keys", "cinema", "voxels-wire", "betaflight", "flight-villa", "wizard-check", "picker", "voxels-floaters", "loading", "replays"];
+const ROW_A = ["voxels", "pause", "flight-tunis", "wizard-throttle", "drones", "voxels-only", "crash", "settings", "flight-garden", "walls", "superspl", "stats-card"];
+const ROW_B = ["keys", "cinema", "voxels-wire", "betaflight", "flight-villa", "wizard-check", "picker", "voxels-floaters", "loading", "replays", "mode-chip", "video-export"];
 
 /** On a phone a row shows its first PHONE_TILES pictures (enough for the strip and its slide); the
  *  rest are display:none there, so a phone does not download them. */

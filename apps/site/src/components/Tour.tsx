@@ -14,11 +14,13 @@ type FeatureGroup = { t: string; items: string[] };
  */
 const TOUR: { main: string; side: string }[] = [
   { main: "wizard-throttle", side: "wizard-check" },
-  { main: "keys", side: "m-touch" },
+  { main: "mode-chip", side: "m-touch" },
   { main: "drones", side: "betaflight" },
-  { main: "crash", side: "m-crash" },
-  { main: "flight-tunis", side: "cinema" },
-  { main: "voxels", side: "walls" },
+  { main: "crash-toast", side: "m-crash" },
+  { main: "flight-tunis", side: "rec-bar" },
+  { main: "superspl", side: "scene-size" },
+  { main: "voxels", side: "voxels-dropped" },
+  { main: "settings", side: "stats-card" },
 ];
 
 /** The picture's number, never over the screenshot itself: in the picture's window bar, or hanging off a phone's rounded corner. */

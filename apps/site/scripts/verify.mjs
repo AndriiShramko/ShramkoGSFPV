@@ -177,7 +177,7 @@ async function newCtx(viewport, opts = {}, consent = "no") {
     const rs = performance.getEntriesByType("resource").filter((r) => files.has(new URL(r.name).pathname));
     return { load: Math.round(load), deferredImgs: deferred.length, inBand: deferred.filter((i) => i.closest(".shot-band")).length, inTour: deferred.filter((i) => i.closest("#tour")).length, requests: rs.length, beforeLoad: rs.filter((r) => r.startTime < load).map((r) => new URL(r.name).pathname) };
   });
-  ok("band and tour screenshots: requested only after the load event, then all swapped in", swapped && early.inBand === 20 && early.inTour === 12 && early.requests > 0 && early.beforeLoad.length === 0, JSON.stringify(early));
+  ok("band and tour screenshots: requested only after the load event, then all swapped in", swapped && early.inBand === 24 && early.inTour === 16 && early.requests > 0 && early.beforeLoad.length === 0, JSON.stringify(early));
   await page.evaluate(async () => {
     for (const img of document.querySelectorAll("img")) img.loading = "eager";
     await Promise.all([...document.images].map((i) => (i.complete ? null : new Promise((r) => (i.onload = i.onerror = r)))));

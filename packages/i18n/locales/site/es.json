@@ -47,19 +47,20 @@
         "t": "Emisora y calibración",
         "items": [
           "Emisora EdgeTX por USB (WebHID) en Chrome o Edge",
-          "Calibración con una emisora dibujada que muestra qué stick mover",
+          "Calibración con una emisora dibujada que muestra qué stick mover; cada paso espera a que de verdad lo muevas",
           "Invierte cualquier canal después de calibrar",
           "Botón «Recalibrar» en «Controles»",
-          "Una emisora conocida se reconecta sola al cambiar de escaneo"
+          "Una emisora conocida se reconecta sola y sigue conectada al cambiar de escena",
+          "El interruptor de modo de vuelo de tu emisora se detecta en la pantalla de comprobación, sin hacer clic"
         ]
       },
       {
-        "t": "Mando, táctil y teclado",
+        "t": "Controles y modos de vuelo",
         "items": [
           "Mando (gamepad) a través de la Gamepad API del navegador",
           "Sticks táctiles y botón ARMAR en una pantalla táctil",
           "Teclado, con cada tecla de vuelo visible en pantalla",
-          "Teclado: M cambia entre ANGLE (autonivelado) y ACRO; en táctil se vuela en ANGLE, con emisora o mando en ACRO (ANGLE sin probar aún)",
+          "Modos de vuelo: Angle (autonivelado, por defecto para todos), Horizon y Acro; con M, el indicador de modo en pantalla o el interruptor de tu emisora",
           "Cierra «Controles» con × o Esc; el menú de pausa muestra sus teclas"
         ]
       },
@@ -74,12 +75,14 @@
         ]
       },
       {
-        "t": "Gravedad y choques",
+        "t": "Gravedad, choques y reaparición",
         "items": [
           "Gravedad: Tierra y Luna (medidas), Marte y gravedad cero (sin probar aún)",
           "En otros mundos: mismos motores, mantener empuje/peso o gas automático (los dos últimos sin probar aún)",
-          "Umbral de choque de 2 a 10 m/s",
-          "Tras un choque: reaparece al inicio (el botón «último punto seguro» aún no guarda su punto de forma fiable)",
+          "Umbral de choque de 2 a 10 m/s, o choques desactivados: la pared solo te hace rebotar",
+          "Tras un choque el dron vuelve solo en 2 s, 5 s atrás en tu trayectoria y aún armado; R: al inicio, Y: rebobinar 5 s, Enter: quedarse con los restos",
+          "Empiezas sobre una plataforma invisible a la altura de aparición, con los motores en marcha, hasta que despegas",
+          "Boca abajo o atascado sin moverse: el dron vuelve solo unos segundos atrás",
           "Repite los últimos 10 s tras un choque; lista de repeticiones"
         ]
       },
@@ -91,44 +94,53 @@
           "HUD activado o desactivado; F3 muestra los tiempos de fotograma",
           "Reducir movimiento: una cámara de choque más tranquila (sin probar aún)",
           "Modo cine: detalle máximo y grabación en MP4 en los escaneos de Andrii",
+          "Grabación a 60 fps con F9 en los escaneos de Andrii, o grabación automática de cada vuelo en una carpeta que eliges",
+          "Vídeo desde el registro de vuelo en los escaneos de Andrii, desde el panel de resumen o las repeticiones: 60 fps en 1080p, 1440p o 4K",
           "Simulador en inglés, español, polaco o ruso"
         ]
       },
       {
-        "t": "Escenas y datos de vuelo",
+        "t": "Escenas y SuperSplat",
         "items": [
           "Cualquier escena pública de SuperSplat por enlace o id, también las republicadas (v2, v3…); las del antiguo formato PLY aún no se abren",
           "Pestañas: Escaneos de Andrii, Recientes, Favoritos; filtros por paredes, tipo y ya voladas",
+          "Una pestaña de SuperSplat con los filtros y el orden de superspl.at, una escena al azar entre las mejor valoradas y una estrella para favoritas",
+          "Cambia de escena sin recargar la página: N siguiente, Shift+N al azar, F siguiente favorita; la emisora sigue conectada",
+          "Tras un choque, la siguiente escena en vez de reaparecer: de la lista de Andrii, tus favoritas o las que ya volaste (desactivado por defecto)",
+          "Escala una escena de tamaño erróneo alrededor del dron con [ y ], recordado para cada escaneo",
+          "Progreso de carga: etapa, MB, velocidad, tiempo restante y reintento"
+        ]
+      },
+      {
+        "t": "Paredes y rejilla de vóxeles",
+        "items": [
           "Paredes creadas en tu navegador para escaneos publicados sin ellas (hasta 4 M de gaussianas)",
-          "Progreso de carga: etapa, MB, velocidad, tiempo restante y reintento",
+          "Paredes (colisiones) activadas o desactivadas (C), recordado para cada escaneo; el autor del escaneo decide el valor por defecto, desactivadas si el escaneo tiene mucho ruido",
+          "Quita las motas flotantes de un escaneo con ruido que se vuelven paredes invisibles, para cada escaneo; su autor puede fijar un valor por defecto",
+          "Rejilla de vóxeles sobre el escaneo o sola, con el escaneo oculto (V): cubos sólidos, aristas, colores por altura o flotantes en rojo, con su propia opacidad"
+        ]
+      },
+      {
+        "t": "Ajustes, estadísticas y datos de vuelo",
+        "items": [
+          "Todos los ajustes se guardan entre visitas, cada dron con su propio ajuste; exportar, importar y restablecer uno o todos",
+          "Un catálogo de todos los ajustes con su valor por defecto, rango y tecla, en este sitio y en GitHub",
+          "Estadísticas del vuelo al desarmar, como el OSD de las gafas",
+          "Panel de resumen: las estadísticas del vuelo, cada opción del menú y cada tecla",
           "Guarda el registro de vuelo; exporta la trayectoria en CSV o JSON",
-          "Panel de mediciones: refresco de pantalla, tiempos de fotograma, frecuencia de la física y el control en uso; copia el informe en JSON",
-          "Rejilla de vóxeles sobre el escaneo o sola, con el escaneo oculto (V): cubos sólidos, aristas, colores por altura o flotantes en rojo, con su propia opacidad",
-          "Paredes (colisiones) activadas o desactivadas (C), recordado para cada escaneo; el autor del escaneo decide el valor por defecto, desactivadas si el escaneo tiene mucho ruido"
+          "Panel de mediciones: refresco de pantalla, tiempos de fotograma, frecuencia de la física y el control en uso; copia el informe en JSON"
         ]
       }
     ],
     "progressTitle": "En desarrollo",
-    "progressNote": "Se construye ahora, sobre un único almacén de ajustes y un único sistema de reaparición, no con parches rápidos.",
+    "progressNote": "Se construye ahora.",
     "progress": [
-      "Calibración que te espera: cada paso avanza solo cuando de verdad mueves el stick",
-      "Todos los ajustes guardados entre visitas, con exportar, importar y restablecer uno o todos",
-      "Elige el modo de vuelo con un clic; autonivelado por defecto para todos",
-      "Despega desde una plataforma invisible a la altura de aparición, en vez de caer al suelo",
-      "Tras un choque, de nuevo en el aire en 2 s, sobre una plataforma 5 s antes; R vuelve al inicio",
-      "Choques desactivables para principiantes",
-      "Reinicio automático si te quedas atascado o boca abajo",
-      "Física del Pavo20 Pro y Pro II ajustada con los drones reales"
+      "Física del Pavo20 Pro y Pro II ajustada con los drones reales: las herramientas para logs blackbox y la importación del volcado de Betaflight están listas; faltan logs de los drones reales"
     ],
     "nextTitle": "Próximamente",
     "nextNote": "Diseñado y en cola para las próximas versiones.",
     "next": [
-      "Estadísticas al final del vuelo, como el OSD de las gafas",
-      "Catálogo completo de todos los ajustes, aquí y en GitHub",
-      "Tras un choque: tu siguiente favorita o una escena al azar muy valorada (cambio automático apagado por defecto)",
-      "Una pestaña de SuperSplat con los mismos filtros que superspl.at",
-      "Escala una escena de tamaño erróneo alrededor del dron",
-      "Grabación a 60 fps y grabación automática en la última carpeta elegida"
+      "Interruptores de la emisora para reaparecer y rebobinar"
     ],
     "suggest": "¿Echas en falta algún ajuste?",
     "suggestLink": "Propón una función"
@@ -802,12 +814,14 @@
       "h2": "Mira lo que ya está hecho",
       "lead": "Cada imagen de esta página es una captura real del simulador en línea: {n} en total, tomadas el {date} por un script del repositorio, así que se pueden repetir tras cada versión.",
       "rows": [
-        "Conecta una emisora EdgeTX y una emisora dibujada te guía: stick a stick, luego el interruptor con el que armas y, antes de volar, una comprobación de cada canal.",
-        "¿Sin emisora a mano? El teclado muestra cada tecla que usa, los sticks táctiles aparecen en una pantalla táctil y un mando se conecta por el navegador (aún sin probar con hardware real).",
+        "Conecta una emisora EdgeTX y una emisora dibujada te guía: stick a stick, luego el interruptor con el que armas y, antes de volar, una comprobación de cada canal. Cada paso espera a que de verdad muevas el stick.",
+        "Angle con autonivelado por defecto para todos; el indicador en pantalla, M o un interruptor de tu emisora eligen Horizon o Acro. ¿Sin emisora a mano? El teclado muestra cada tecla que usa, en una pantalla táctil aparecen sticks táctiles y un mando se conecta por el navegador (aún sin probar con hardware real).",
         "Seis cuadricópteros de clase BetaFPV, y cada número de sus fichas dice de dónde sale. Pega un diff de la CLI de Betaflight para volar con tus rates y tu PID.",
-        "Choca contra una pared y el dron se estrella a la velocidad del golpe, con los restos rodando. Gravedad, umbral de choque, motores y PID están en Ajustes.",
-        "Un OSD como el de tus gafas, campo de visión e inclinación de la cámara, y un modo cine que graba MP4 de los escaneos de Andrii con su crédito en la imagen.",
-        "Elige un escaneo o pega un enlace y mira cómo carga con números reales. Muestra las paredes contra las que chocas como una rejilla de vóxeles sobre el escaneo, vuela solo la rejilla o desactiva las paredes si el escaneo tiene mucho ruido."
+        "Choca contra una pared y el dron se estrella a la velocidad del golpe, con los restos rodando; dos segundos después vuelve al aire, 5 s atrás en tu trayectoria y aún armado. Choques desactivados, el retraso y dónde reapareces están en Ajustes.",
+        "Un OSD como el de tus gafas, campo de visión e inclinación de la cámara. F9 graba vídeo a 60 fps de los escaneos de Andrii con su crédito en la imagen, la grabación automática guarda cada vuelo en tu carpeta y un registro de vuelo se convierte en vídeo a 60 fps hasta 4K.",
+        "Elige un escaneo de Andrii, explora SuperSplat con sus propios filtros o pega un enlace, y mira cómo carga con números reales. N, Shift+N y F cambian de escena en la misma página con la emisora conectada; [ y ] corrigen un escaneo de tamaño erróneo.",
+        "Muestra las paredes contra las que chocas como una rejilla de vóxeles sobre el escaneo, o vuela solo la rejilla. ¿Un escaneo con ruido? Quita sus motas flotantes, las paredes fantasma, o desactiva sus paredes.",
+        "Todos los ajustes en una pantalla, guardados entre visitas, con exportar, importar y restablecer. Desarma y una tarjeta como la de las gafas muestra el vuelo; en pausa, el panel de resumen tiene sus estadísticas, cada opción del menú y cada tecla."
       ],
       "live": "Funciones activas: {n}",
       "all": "Todas las funciones y su estado"
@@ -842,19 +856,28 @@
       "voxels-wire": { "t": "Rejilla en aristas", "d": "Las paredes de 3,2 cm del Jardín de invierno como aristas sobre el escaneo: comprueba dónde está de verdad una pared antes de volar la línea." },
       "voxels-only": { "t": "Solo vóxeles", "d": "El escaneo oculto y solo sus paredes de 5 cm, como cubos sólidos (Villa Modlinek): vuela la rejilla sola y ve cada superficie contra la que puedes chocar." },
       "voxels-floaters": { "t": "Flotantes en rojo", "d": "Las piezas de la rejilla que no tocan nada más y miden menos de 0,5 m³ se vuelven rojas, y así se ve una pared fantasma entre las plantas." },
-      "pause": { "t": "Menú de pausa", "d": "Continuar, reiniciar, escaneo, dron, controles, ajustes, repeticiones, mediciones, importación de Betaflight y modo cine, con sus teclas." },
-      "settings": { "t": "Ajustes", "d": "Campo de visión e inclinación, HUD, las paredes y la rejilla de vóxeles, imagen estable o detalle, gravedad, umbral de choque, arranque de motores, arrastre y PID por eje." },
+      "pause": { "t": "Panel de resumen", "d": "La pausa muestra las estadísticas de este vuelo junto a las de la sesión y de siempre, el tamaño de la escena, guardar como vídeo, cada opción del menú y cada tecla." },
+      "settings": { "t": "Ajustes", "d": "Todos los ajustes en una pantalla, por grupos y con búsqueda; aquí, choques y reaparición: choques, umbral, reaparición automática, retraso, dónde y cuánto atrás, la plataforma invisible." },
       "drones": { "t": "Seis drones", "d": "Presets de clase BetaFPV, cada uno con su curva de rates; cada número dice de dónde sale: fabricante, medido o estimado." },
       "betaflight": { "t": "Importar de Betaflight", "d": "Pega un diff de la CLI y sus rates y PID pasan al dron; se listan los ajustes que el simulador no usa (aquí, un diff de prueba)." },
       "measure": { "t": "Mediciones", "d": "Renderizador, refresco de pantalla, tiempos de fotograma, frecuencia de la física, tiempo de carga, paredes en uso y una autoprueba de atravesar paredes, copiables como JSON." },
       "cinema": { "t": "Modo cine", "d": "Máximo detalle, calidad automática apagada y sin HUD; Grabar guarda un MP4 con el crédito del escaneo en la imagen." },
-      "crash": { "t": "Choque", "d": "Decide la velocidad del impacto; los restos ruedan y luego: reaparecer, una repetición de 10 segundos o el registro de vuelo." },
+      "crash": { "t": "Choque", "d": "Con la reaparición automática desactivada, o tras Enter: la velocidad del impacto, los restos y luego rebobinar 5 s, volver al inicio, repetir los últimos 10 s, el registro de vuelo u otra escena." },
       "replays": { "t": "Repeticiones", "d": "Un vuelo guardado se repite solo con las entradas de los sticks; su trayectoria se exporta en CSV o JSON." },
       "m-flight": { "t": "Pantalla de móvil", "d": "La misma vista de vuelo en vertical, de 390 píxeles de ancho." },
       "m-touch": { "t": "Sticks táctiles", "d": "Dos zonas táctiles y un botón ARM; en táctil el dron vuela autonivelado (ANGLE)." },
-      "m-pause": { "t": "Menú de pausa en el móvil", "d": "El menú entero cabe en la pantalla de un móvil." },
+      "m-pause": { "t": "Resumen en el móvil", "d": "Tamaño de la escena, vídeo, las estadísticas principales y el menú en un panel que se desplaza." },
       "m-crash": { "t": "Choque en el móvil", "d": "Velocidad del impacto, restos y el panel de choque en una pantalla pequeña." },
-      "m-picker": { "t": "Escaneos en el móvil", "d": "Pega un enlace o elige un escaneo en una pantalla pequeña." }
+      "m-picker": { "t": "Escaneos en el móvil", "d": "Pega un enlace o elige un escaneo en una pantalla pequeña." },
+      "stats-card": { "t": "Estadísticas del vuelo", "d": "Desarma tras un vuelo y una tarjeta como el OSD de las gafas muestra tiempo en el aire, velocidad y altura máximas, distancia, batería, corriente, mAh usados, fuerza G y gas medio." },
+      "mode-chip": { "t": "Modo de vuelo", "d": "Angle por defecto; el indicador, M o un interruptor de tu emisora eligen Acro, Angle u Horizon." },
+      "scene-size": { "t": "Tamaño de la escena", "d": "¿Un escaneo que no está en metros reales? [ y ] lo escalan alrededor del dron de 0,25× a 4×, recordado para cada escaneo; el tamaño de bloque de las paredes lo sigue." },
+      "crash-toast": { "t": "Reaparición automática", "d": "El aviso cuenta atrás; 2 s después del choque el dron vuelve 5 s atrás en su trayectoria, aún armado. Enter se queda, R vuelve al inicio, N y F cargan otra escena." },
+      "superspl": { "t": "Pestaña SuperSplat", "d": "El catálogo de superspl.at en el selector, con su orden, filtros de tiempo, paredes y descarga, búsqueda, una escena al azar entre las mejor valoradas y una estrella para favoritas." },
+      "rec-bar": { "t": "Grabación", "d": "F9 graba vídeo a 60 fps de los escaneos de Andrii; la grabación automática guarda cada vuelo en la carpeta que elijas y la barra dice qué se guardó y dónde." },
+      "video-export": { "t": "Vídeo desde el registro de vuelo", "d": "El vuelo se vuelve a renderizar desde su registro como vídeo a 60 fps en 1080p, 1440p o 4K, fotograma a fotograma; cancelar no deja ningún archivo." },
+      "voxels-dropped": { "t": "Piezas flotantes quitadas", "d": "Modlinek Villa sin las piezas de sus paredes de menos de 64 bloques: 44 paredes fantasma menos, solo para este escaneo; el menú de paredes dice qué se quitó." },
+      "m-settings": { "t": "Ajustes en el móvil", "d": "Los grupos se pliegan en una pantalla pequeña; el último guarda tus ajustes en el navegador y los exporta, importa o restablece." }
     }
   },
   "sticky": {
