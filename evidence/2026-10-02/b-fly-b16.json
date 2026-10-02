@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-02T00:00:11.285Z",
-    "gitHead": "2f77223",
+    "date": "2026-10-02T02:43:22.095Z",
+    "gitHead": "1ec3a14",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://127.0.0.1:5322",
+  "site": "http://localhost:5320",
   "render": "on",
   "pass": true,
   "method": "disarmed drop from the spawn until contact or 0.5 s, a = 2(\u0394y + v0 t)/t\u00b2",

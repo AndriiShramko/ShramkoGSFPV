@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-02T00:29:36.052Z",
-    "gitHead": "10a68eb",
+    "date": "2026-10-02T01:40:33.218Z",
+    "gitHead": "5010d28",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5320",
+  "site": "http://127.0.0.1:5301",
   "browser": {
     "kind": "system-chrome",
     "version": "154.0.8037.59",
