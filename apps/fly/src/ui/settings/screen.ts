@@ -34,6 +34,8 @@ export interface SettingsHost {
     reload(id: string): void;
     /** the screen is gone (x, Esc, O); the host applies what waits for it */
     onClose(): void;
+    /** a setting's owner adds a live line under its row (the floater filter: what it drops now) */
+    extra?(id: string): { el: HTMLElement; refresh(): void } | null;
 }
 
 /** v0.2's name of a setting whose owner has not written `set.<id>` yet (A.10: reused where the wording holds). */
@@ -255,12 +257,14 @@ export class SettingsScreen {
         const reset = h('button', { type: 'button', class: 'sr-reset', 'data-action': 'reset-setting', hidden: true, onclick: () => { const c = ctxOf(); if (c === null) return; pilotReset(this.store, def.id, c); if (def.apply === 'reload') this.host.reload(def.id); } }, t('prefs.reset')) as HTMLButtonElement; // a reset of the language reloads like a change (the page's address names the language)
         // the description: shown on hover and keyboard focus, pinned by a click or tap (ui/toggletip.ts)
         const tip = help ? toggletip(t('prefs.help', { name: label }), help, `${uid}-help`) : null;
+        const extra = this.host.extra?.(def.id) ?? null;
         const labelEl = control.labelFor ? h('label', { class: 'sr-name', for: control.labelFor }, label) : h('span', { class: 'sr-name' }, label);
         const el = h('div', { class: 'sr', 'data-id': def.id, 'data-scope': def.scope, 'data-type': def.type, 'data-testid': `setting-${def.id}` },
             h('div', { class: 'sr-head' }, labelEl, caps, tip?.button, tip?.bubble),
             h('div', { class: 'sr-meta' }, badge, scope, fromLink),
             h('div', { class: 'sr-control' }, control.el),
-            h('div', { class: 'sr-side' }, dot, reset));
+            h('div', { class: 'sr-side' }, dot, reset),
+            extra?.el);
         if (!enabled) el.classList.add('disabled');
 
         const refresh = (): void => {
@@ -280,6 +284,7 @@ export class SettingsScreen {
             else scope.textContent = '';
             scope.hidden = def.scope === 'global';
             control.refresh();
+            extra?.refresh();
         };
         refresh();
         return { def, el, focus: () => control.focus(), refresh };

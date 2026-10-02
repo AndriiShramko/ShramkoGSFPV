@@ -6,11 +6,18 @@
 // applies it with the scene size (session.setDropFloaters: the walls change, the log gets a world
 // record and a new life whose header names the filtered walls' hash). The voxel grid then shows
 // the filtered walls (it draws session.collision) and its status line says what was dropped.
+//
+// The "Clean floating voxels" panel (ui/floaters.ts, the owner's message 16): opened from the
+// Settings row, from the walls menu, or the test hook; the voxel grid previews the slider's value
+// while it is up (VoxelController.previewFloaters), Apply and the one-click clean store the value.
 import type { PrefsStore } from '@gsfpv/prefs';
-import { componentsOf, validMinBlocks } from '@gsfpv/collision';
-import type { VoxelCollision } from '@gsfpv/collision';
+import { componentsOf, previewFloaters, suggestMinBlocks, validMinBlocks } from '@gsfpv/collision';
+import type { FloaterPreview, VoxelCollision } from '@gsfpv/collision';
+import { floaterPanel, floaterRowExtra } from '../../ui/floaters';
+import type { FloaterPanel } from '../../ui/floaters';
 import { t } from '../../i18n';
-import type { Feature } from '../context';
+import { pilotSet } from '../prefs';
+import type { Feature, FlightContext } from '../context';
 
 // window.__gsfpv.floaters (test-hook.ts is the shell's; this feature adds its part, like the others)
 declare module '../test-hook' {
@@ -24,6 +31,9 @@ declare module '../test-hook' {
              * whose upper neighbour is empty (index space, the same in the flown walls), the largest first
              */
             pieces(): { size: number; voxel: [number, number, number] }[];
+            /** the "Clean floating voxels" panel: open it, and its slider's value (null: not open) */
+            open(): void;
+            panel(): { value: number; preview: number | null; suggested: number } | null;
         };
     }
 }
@@ -45,6 +55,52 @@ export function storedDropFloaters(prefs: PrefsStore, scene: string): number {
     } catch {
         return 0;
     }
+}
+
+/** What the filter drops at n on this scan's own walls; null without walls. */
+function countOn(ctx: FlightContext, n: number): FloaterPreview | null {
+    const base = ctx.session.baseCollision;
+    return base && validMinBlocks(n) ? previewFloaters(componentsOf(base), n) : null;
+}
+
+let open: { panel: FloaterPanel; suggested: number } | null = null;
+
+/** The panel over the paused flight; a second call keeps the one that is up. */
+export function openFloaterPanel(ctx: FlightContext): void {
+    if (open?.panel.root.isConnected) return;
+    const base = ctx.session.baseCollision;
+    const flown = ctx.session.collision;
+    if (!base || !flown) {
+        ctx.hud.flash(t('walls.none'), 3500);
+        return;
+    }
+    const comps = componentsOf(base);
+    // in the scan's own units: specks are noise of the scan, whatever size the pilot flies it at
+    const suggested = suggestMinBlocks(comps, base.voxelResolution);
+    const scene = { scene: ctx.scene.id };
+    ctx.pause('panel');
+    const panel = floaterPanel(ctx.ui, {
+        count: (n) => previewFloaters(comps, n),
+        suggested,
+        blockCm: 4 * flown.voxelResolution * 100,
+        applied: () => ctx.session.floaterMinBlocks,
+        preview: (n) => ctx.voxels.previewFloaters(n),
+        apply: (n) => { pilotSet(ctx.prefs, 'scene.dropFloaters', n, scene); },
+        onClose: () => {
+            open = null;
+            ctx.resume('panel');
+        }
+    });
+    open = { panel, suggested };
+}
+
+/** Under Settings' row: what its value drops now, and the panel (Settings closes first). */
+export function floatersRow(ctx: FlightContext, closeSettings: () => void): { el: HTMLElement; refresh(): void } {
+    return floaterRowExtra({
+        count: (n) => countOn(ctx, n),
+        value: () => storedDropFloaters(ctx.prefs, ctx.scene.id),
+        open: () => { closeSettings(); openFloaterPanel(ctx); }
+    });
 }
 
 export const floaters: Feature = {
@@ -101,9 +157,15 @@ export const floaters: Feature = {
                     out.push({ size: c.sizes[id], voxel: v });
                 }
                 return out.sort((a, b) => b.size - a.size);
-            }
+            },
+            open: () => openFloaterPanel(ctx),
+            panel: () => (open ? { value: open.panel.value(), preview: ctx.voxels.preview, suggested: open.suggested } : null)
         };
+        // a new scene: a panel of the old one goes (its counts were of the old walls)
+        const offSession = ctx.events.on('session', () => open?.panel.close());
         return () => {
+            offSession();
+            open?.panel.close();
             offPrefs();
             delete ctx.hook.floaters;
         };

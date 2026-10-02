@@ -37,7 +37,7 @@ export function voxelStatus(v: VoxelController): string {
  * The walls switch and the voxel controls. `id` keeps label ids unique when the block is on the
  * page twice (walls menu and settings).
  */
-export function wallsVoxelsControls(v: VoxelController, walls: WallsSwitch, id: string): HTMLElement {
+export function wallsVoxelsControls(v: VoxelController, walls: WallsSwitch, id: string, cleanFloaters?: () => void): HTMLElement {
     const sw = h('button', { type: 'button', class: 'wv-switch', role: 'switch', 'aria-checked': 'true', 'aria-keyshortcuts': 'C', 'data-action': 'walls-toggle', 'aria-labelledby': `${id}-walls` },
         h('span', { class: 'wv-knob', 'aria-hidden': 'true' }), h('span', { class: 'wv-state' })) as HTMLButtonElement;
     sw.addEventListener('click', () => walls.set(!walls.on()));
@@ -57,6 +57,8 @@ export function wallsVoxelsControls(v: VoxelController, walls: WallsSwitch, id: 
     const opOut = h('output', { class: 'wv-out' });
     op.addEventListener('input', () => v.setOpacity(Number(op.value) / 100));
     const status = h('p', { class: 'wv-note', role: 'status', 'data-testid': 'voxels-status' });
+    // the floater filter, explained on the scan (ui/floaters.ts)
+    const clean = cleanFloaters ? h('button', { type: 'button', class: 'btn wv-clean', 'data-action': 'floaters-open', onclick: () => cleanFloaters() }, t('floaters.open')) as HTMLButtonElement : null;
 
     const root = h('div', { class: 'wv', 'data-testid': `walls-voxels-${id}` },
         h('div', { class: 'wv-row' }, h('span', { id: `${id}-walls`, class: 'wv-label' }, t('walls.switch')), sw, h('kbd', { 'aria-hidden': 'true' }, 'C')),
@@ -65,7 +67,8 @@ export function wallsVoxelsControls(v: VoxelController, walls: WallsSwitch, id: 
         seg,
         h('div', { class: 'wv-row' }, h('span', { id: `${id}-style`, class: 'wv-label' }, t('voxels.style')), style),
         h('div', { class: 'wv-row' }, h('span', { id: `${id}-opacity`, class: 'wv-label' }, t('voxels.opacity')), op, opOut),
-        status);
+        status,
+        clean);
 
     const render = (): void => {
         const has = walls.has();
@@ -90,6 +93,7 @@ export function wallsVoxelsControls(v: VoxelController, walls: WallsSwitch, id: 
         opOut.textContent = `${pct(a)} %`;
         const st = voxelStatus(v);
         if (status.textContent !== st) status.textContent = st;
+        if (clean) clean.hidden = !has;
     };
     render();
     const off = v.onChange(() => { if (!root.isConnected && started) stop(); else render(); });

@@ -6,13 +6,15 @@
 // flying on the voxels is just flying.
 import { VoxelOverlay, VOXEL_STYLES } from '@gsfpv/render-pc';
 import type { VoxelStyle } from '@gsfpv/render-pc';
-import { overlayChunkSize, planChunksAround } from '@gsfpv/collision';
+import { FLOATER_MIN_BLOCKS_MAX, overlayChunkSize, planChunksAround } from '@gsfpv/collision';
 import type { VoxelCollision } from '@gsfpv/collision';
 import type { FlightSession } from './session';
 import type { FromWorker, ToWorker, WorkerGrid } from './voxels.worker';
 
 export type VoxelMode = 'off' | 'overlay' | 'only';
 export const VOXEL_MODES: readonly VoxelMode[] = ['off', 'overlay', 'only'];
+/** A chunk drawn in colours a floater preview change made old: asked for again, kept on screen meanwhile. */
+const STALE = -1;
 export { VOXEL_STYLES };
 export type { VoxelStyle };
 
@@ -67,6 +69,8 @@ export interface VoxelStats {
     /** connected pieces of the walls and the floating ones among them */
     components: number;
     floaters: number;
+    /** the floater preview's N (previewFloaters), null when none runs: `floaters` then counts the pieces it would drop */
+    preview: number | null;
     /** the floater filter (G.3, prefs scene.dropFloaters): pieces under minBlocks dropped from the walls; null = off */
     dropped: { minBlocks: number; pieces: number } | null;
     prepareMs: number | null;
@@ -106,7 +110,10 @@ export class VoxelController {
     private known = { fine: new Map<number, number>(), coarse: new Map<number, number>() };
     private sum = { fine: 0, nFine: 0, coarse: 0, nCoarse: 0, ms: 0, n: 0 };
     private wanted = new Map<number, 0 | 1>();
-    private loaded = new Map<number, 0 | 1>();
+    /** the level drawn per chunk; STALE: drawn in colours a floater preview change made old */
+    private loaded = new Map<number, 0 | 1 | typeof STALE>();
+    /** the floater filter's preview (previewFloaters): N, or null when off */
+    private previewN: number | null = null;
     private inFlight = new Set<string>();
     private plan = { fineRadius: 0, radius: 0 };
     /** a plan was made since the worker became ready (until then "settled" means nothing) */
@@ -144,6 +151,49 @@ export class VoxelController {
 
     get opacity(): number {
         return this.mode === 'only' ? this.prefs.opacityOnly : this.prefs.opacityOverlay;
+    }
+
+    /** The mode drawn: the pilot's, but over the scan while a floater preview runs with the grid off. */
+    private get shown(): VoxelMode {
+        return this.previewN !== null && this.mode === 'off' ? 'overlay' : this.mode;
+    }
+
+    /** The colours drawn: the pilot's style, or the floater colours while a preview runs. */
+    private get look(): VoxelStyle {
+        return this.previewN !== null ? 'floaters' : this.prefs.style;
+    }
+
+    /** The walls drawn: the flown ones, or the scan's own (before the filter) while a preview runs. */
+    private target(): VoxelCollision | null {
+        return this.previewN !== null ? this.session.unfilteredWalls : this.session.collision;
+    }
+
+    /** The floater filter's preview at N (or null: none). */
+    get preview(): number | null {
+        return this.previewN;
+    }
+
+    /**
+     * Preview the floater filter at `n` (Settings' "drop floating pieces", ui/floaters.ts): the scan's
+     * own walls over the scan, the pieces the filter would drop at n in red, the rest as walls. null
+     * ends it and the grid is the pilot's again (mode, style and walls); nothing here is remembered.
+     */
+    previewFloaters(n: number | null): void {
+        if (n !== null && !(Number.isInteger(n) && n >= 0 && n <= FLOATER_MIN_BLOCKS_MAX)) return;
+        if (n === this.previewN) return;
+        const was = this.previewN;
+        this.previewN = n;
+        if (was !== null && n !== null && this.worker && this.col === this.target()) {
+            // the same walls, other pieces in red: what is drawn is asked for again in the new colours
+            this.gen++;
+            const msg: ToWorker = { t: 'mark', gen: this.gen, minBlocks: n };
+            this.worker.postMessage(msg);
+            this.inFlight.clear();
+            for (const k of this.loaded.keys()) this.loaded.set(k, STALE);
+            this.lastPlanAt = 0;
+            this.apply();
+            this.notify();
+        } else this.resetFor(this.target());
     }
 
     setMode(m: VoxelMode): void {
@@ -199,27 +249,29 @@ export class VoxelController {
     }
 
     private apply(): void {
-        const walls = !!this.session.collision;
-        const on = this.mode !== 'off' && walls;
+        const walls = !!this.target();
+        const mode = this.shown;
+        const on = mode !== 'off' && walls;
         if (on && !this.overlay) this.overlay = new VoxelOverlay(this.session.renderer);
         this.overlay?.setVisible(on);
-        this.overlay?.setLook(this.prefs.style, this.opacity);
+        this.overlay?.setLook(this.look, mode === 'only' ? this.prefs.opacityOnly : this.prefs.opacityOverlay);
         // without walls there is nothing to fly on: the scan stays
-        this.session.renderer.setSplatVisible(!(this.mode === 'only' && walls));
+        this.session.renderer.setSplatVisible(!(mode === 'only' && walls));
         if (on) this.ensureWorker();
     }
 
     get state(): VoxelState {
         if (!this.session.collision) return 'no-walls';
         if (this.error) return 'failed';
-        if (this.mode === 'off') return 'off';
+        if (this.shown === 'off') return 'off';
         return this.occupied ? 'ready' : 'preparing';
     }
 
     /** Per frame, before drawing: new walls reset the grid; chunks are planned and uploaded. */
     frame(now: number): void {
-        if (this.session.collision !== this.col) this.resetFor(this.session.collision);
-        if (this.mode === 'off' || !this.overlay || !this.col) return;
+        const want = this.target();
+        if (want !== this.col) this.resetFor(want);
+        if (this.shown === 'off' || !this.overlay || !this.col) return;
         const t0 = performance.now();
         this.overlay.update();
         const t1 = performance.now();
@@ -284,7 +336,7 @@ export class VoxelController {
         };
         // the worker gets its own copy: the flight keeps reading these arrays
         const nodes = col.nodes.slice(), leaf = col.leafData.slice();
-        const msg: ToWorker = { t: 'init', gen, grid, nodes, leaf, size: this.size, layout: this.overlay!.layout };
+        const msg: ToWorker = { t: 'init', gen, grid, nodes, leaf, size: this.size, layout: this.overlay!.layout, minBlocks: this.previewN ?? 0 };
         w.postMessage(msg, [nodes.buffer, leaf.buffer]);
         this.worker = w;
         this.prepStart = performance.now();
@@ -308,6 +360,13 @@ export class VoxelController {
         if (m.t === 'error') {
             this.error = m.message;
             this.inFlight.clear(); // the failed request must not hold a slot for ever
+            this.notify();
+            return;
+        }
+        if (m.t === 'marked') {
+            this.floaters = m.floaters;
+            this.planned = false;
+            this.lastPlanAt = 0;
             this.notify();
             return;
         }
@@ -362,7 +421,7 @@ export class VoxelController {
             if (this.inFlight.has(id)) continue;
             this.inFlight.add(id);
             const [lo, hi] = this.overlay.heightRange;
-            const msg: ToWorker = { t: 'chunk', gen: this.gen, key: c.key, x: c.x, y: c.y, z: c.z, lod: c.lod, style: this.prefs.style, lo, hi };
+            const msg: ToWorker = { t: 'chunk', gen: this.gen, key: c.key, x: c.x, y: c.y, z: c.z, lod: c.lod, style: this.look, lo, hi };
             this.worker.postMessage(msg);
         }
     }
@@ -386,6 +445,7 @@ export class VoxelController {
             pendingUploads: o?.pendingUploads ?? 0,
             components: this.components,
             floaters: this.floaters,
+            preview: this.previewN,
             dropped: this.session.floaterMinBlocks > 0 && this.session.floaterFilter ? { minBlocks: this.session.floaterMinBlocks, pieces: this.session.floaterFilter.pieces } : null,
             prepareMs: this.prepareMs,
             chunkMs: this.sum.n ? this.sum.ms / this.sum.n : 0,
@@ -399,7 +459,7 @@ export class VoxelController {
 
     /** Everything wanted is drawn (tests and screenshots wait for it). */
     get settled(): boolean {
-        if (this.mode === 'off' || !this.col) return true;
+        if (this.shown === 'off' || !this.col) return true;
         if (this.state !== 'ready' || !this.planned) return false;
         const o = this.overlay?.stats();
         if (!o || o.pendingUploads > 0 || o.recolorPending > 0 || this.inFlight.size > 0) return false;

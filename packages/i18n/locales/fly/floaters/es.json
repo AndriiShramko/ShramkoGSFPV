@@ -1,0 +1,21 @@
+{
+  "floaters.title": "Limpiar vóxeles flotantes",
+  "floaters.open": "Limpiar vóxeles flotantes…",
+  "floaters.explain": "Un escaneo con ruido tiene motas que flotan en el aire. Las paredes convierten cada mota en una pequeña pieza sólida, y el dron choca con ella aunque allí no hay nada. Esto quita cada pieza que no toca ninguna pared grande y es más pequeña que el tamaño de abajo.",
+  "floaters.legendDrop": "se quita",
+  "floaters.legendKeep": "sigue siendo pared",
+  "floaters.size": "Quitar piezas más pequeñas que (bloques)",
+  "floaters.block": "1 bloque = un cubo de {cm} cm, 4×4×4 vóxeles.",
+  "floaters.effect": "Quita piezas flotantes: {pieces} · bloques: {blocks}. Las paredes grandes se quedan.",
+  "floaters.effectNone": "No se quita nada: ninguna pieza es tan pequeña.",
+  "floaters.effectOff": "Desactivado: cada pieza sigue siendo pared.",
+  "floaters.clean": "Limpiar vóxeles flotantes",
+  "floaters.suggested": "Un clic usa el tamaño sugerido: menos de {n} bloques (solo piezas pequeñas, en total menos del 1 % de las paredes).",
+  "floaters.nothing": "Este escaneo no tiene piezas flotantes pequeñas: no hay nada que limpiar.",
+  "floaters.apply": "Aplicar: menos de {n} bloques",
+  "floaters.turnOff": "Aplicar: mantener todas las piezas",
+  "floaters.isApplied": "Aplicado",
+  "floaters.appliedNow": "Este escaneo vuela con las piezas de menos de {n} bloques quitadas.",
+  "floaters.appliedOff": "Este escaneo vuela con todas las piezas como paredes.",
+  "floaters.show": "Ver en el escaneo"
+}

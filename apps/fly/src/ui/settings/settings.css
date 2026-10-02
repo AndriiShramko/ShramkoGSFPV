@@ -51,6 +51,10 @@
 .sr-reset { min-height: 32px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--fg); font: inherit; font-size: 13px; cursor: pointer; }
 .sr-reset[hidden] { display: none; }
 /* the "?" toggletip (ui/toggletip.ts): the text over the screen, in the top layer when the browser has popovers */
+/* a live line under a row (the floater filter), across the row */
+.sr-extra { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 4px; }
+.sr-extra-line { margin: 0; flex: 1 1 220px; color: var(--fg); }
+.sr-extra-btn { min-height: 36px; padding: 6px 12px; }
 .tip-btn { width: 24px; height: 24px; flex: none; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--muted); font: 600 12px/1 system-ui, sans-serif; cursor: help; }
 .tip-btn:hover, .tip-btn:focus-visible { color: var(--fg); border-color: var(--muted); }
 .tip-btn[aria-expanded="true"] { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }

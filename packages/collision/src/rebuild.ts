@@ -55,6 +55,64 @@ export function validMinBlocks(n: unknown): n is number {
     return typeof n === 'number' && Number.isInteger(n) && n >= 0 && n <= FLOATER_MIN_BLOCKS_MAX;
 }
 
+/** What dropFloaters would drop at N, read from the pieces' sizes alone (the same rule: size < N). */
+export interface FloaterPreview {
+    minBlocks: number;
+    pieces: number;
+    blocks: number;
+    /** pieces and blocks of the walls in all */
+    components: number;
+    totalBlocks: number;
+}
+
+/** The count dropFloaters(base, n) gives, without building the walls (Settings and the preview, every slider step). */
+export function previewFloaters(comp: Pick<BlockComponents, 'count' | 'sizes'>, minBlocks: number): FloaterPreview {
+    if (!validMinBlocks(minBlocks)) throw new RangeError(`floater filter must be an integer 0..${FLOATER_MIN_BLOCKS_MAX}, got ${minBlocks}`);
+    let pieces = 0, blocks = 0, total = 0;
+    for (let id = 0; id < comp.count; id++) {
+        const n = comp.sizes[id];
+        total += n;
+        if (n < minBlocks) {
+            pieces++;
+            blocks += n;
+        }
+    }
+    return { minBlocks, pieces, blocks, components: comp.count, totalBlocks: total };
+}
+
+/** A floating piece is small: at most this volume (the voxel grid's floater colour uses the same, overlay.ts FLOATER_M3). */
+export const SUGGEST_MAX_M3 = 0.5;
+/** ... and all the pieces dropped together stay at most this share of the walls' blocks. */
+export const SUGGEST_MAX_SHARE = 0.01;
+
+/**
+ * The N to suggest ("Clean floating voxels"): the largest N that drops only pieces of at most
+ * SUGGEST_MAX_M3 (a block is 4 voxels a side) and at most SUGGEST_MAX_SHARE of all the blocks, so
+ * the specks go and the big walls, and anything that might be a real object, stay. 0 when no piece
+ * qualifies (nothing to clean).
+ */
+export function suggestMinBlocks(comp: Pick<BlockComponents, 'count' | 'sizes'>, voxelM: number): number {
+    const blockM3 = (4 * voxelM) ** 3;
+    const byVolume = blockM3 > 0 ? Math.floor(SUGGEST_MAX_M3 / blockM3) + 1 : FLOATER_MIN_BLOCKS_MAX;
+    const cap = Math.max(1, Math.min(FLOATER_MIN_BLOCKS_MAX, byVolume));
+    // dropped blocks by N: count pieces per size once, then walk N up
+    const per = new Float64Array(cap + 1);
+    let total = 0;
+    for (let id = 0; id < comp.count; id++) {
+        const n = comp.sizes[id];
+        total += n;
+        if (n < cap) per[n] += n;
+    }
+    const budget = total * SUGGEST_MAX_SHARE;
+    let best = 0, dropped = 0;
+    for (let n = 2; n <= cap; n++) {
+        dropped += per[n - 1]; // N = n drops the pieces of n - 1 blocks too
+        if (dropped > budget) break;
+        if (per[n - 1] > 0) best = n;
+    }
+    return best;
+}
+
 /**
  * The walls of `base` without its connected pieces smaller than `minBlocks` blocks (26-connected
  * 4x4x4 blocks). minBlocks 0 returns the base. Cached per base and N (the two latest N), so the

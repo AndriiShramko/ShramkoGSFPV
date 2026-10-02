@@ -18,12 +18,18 @@ export interface WorkerGrid {
     treeDepth: number;
 }
 
+/**
+ * Which pieces are painted as floaters: 0, the small ones by volume (overlay.ts FLOATER_M3); N > 0,
+ * the ones the floater filter would drop at N (size under N blocks: the preview of Settings' filter).
+ */
 export type ToWorker =
-    | { t: 'init'; gen: number; grid: WorkerGrid; nodes: Uint32Array; leaf: Uint32Array; size: number; layout: VoxelLayout }
+    | { t: 'init'; gen: number; grid: WorkerGrid; nodes: Uint32Array; leaf: Uint32Array; size: number; layout: VoxelLayout; minBlocks: number }
+    | { t: 'mark'; gen: number; minBlocks: number }
     | { t: 'chunk'; gen: number; key: number; x: number; y: number; z: number; lod: 0 | 1; style: VoxelStyle; lo: number; hi: number };
 
 export type FromWorker =
     | { t: 'ready'; gen: number; occupied: Int32Array; blocks: number; components: number; floaters: number; ms: number }
+    | { t: 'marked'; gen: number; floaters: number }
     | ({ t: 'chunk'; gen: number; key: number; lod: 0 | 1; faces: number; floaterQuads: number; ms: number } & PackedChunk)
     | { t: 'error'; gen: number; message: string };
 
@@ -56,6 +62,18 @@ function metadataOf(g: WorkerGrid, nodes: number, leaf: number): VoxelMetadata {
     };
 }
 
+/** The floater flags for `minBlocks` (see ToWorker); the number of pieces flagged. */
+function mark(minBlocks: number): number {
+    if (!comp || !col) return 0;
+    if (minBlocks > 0) {
+        floaters = new Uint8Array(comp.count);
+        for (let i = 0; i < comp.count; i++) if (comp.sizes[i] < minBlocks) floaters[i] = 1;
+    } else floaters = floaterComponents(comp, col.voxelResolution);
+    let nf = 0;
+    for (let i = 0; i < floaters.length; i++) nf += floaters[i];
+    return nf;
+}
+
 scope.onmessage = (e) => {
     const m = e.data;
     try {
@@ -67,11 +85,16 @@ scope.onmessage = (e) => {
             const meta = metadataOf(m.grid, m.nodes.length, m.leaf.length);
             col = m.grid.flip ? new FlippedVoxelCollision(meta, m.nodes, m.leaf) : new VoxelCollision(meta, m.nodes, m.leaf);
             comp = blockComponents(col);
-            floaters = floaterComponents(comp, col.voxelResolution);
+            const nf = mark(m.minBlocks);
             const occupied = occupiedChunks(col, comp, size);
-            let nf = 0;
-            for (let i = 0; i < floaters.length; i++) nf += floaters[i];
             scope.postMessage({ t: 'ready', gen, occupied, blocks: comp.keys.length, components: comp.count, floaters: nf, ms: performance.now() - t0 }, [occupied.buffer]);
+            return;
+        }
+        if (m.t === 'mark') {
+            // the same walls, other pieces painted: the chunks asked for after this carry the new colours
+            if (!comp || !col) return;
+            gen = m.gen;
+            scope.postMessage({ t: 'marked', gen, floaters: mark(m.minBlocks) });
             return;
         }
         if (m.t === 'chunk') {

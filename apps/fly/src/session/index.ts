@@ -697,6 +697,24 @@ export class FlightSession {
         if (!this.spawnIsFree()) this.spawn = this.findSpawn();
     }
 
+    private unfiltered: { base: VoxelCollision; tr: SceneTransform; col: VoxelCollision } | null = null;
+
+    /**
+     * The scan's own walls before the floater filter, in the flown frame (the scene's size): what
+     * the floater preview draws, so the pieces a filter would drop (or drops now) can be seen.
+     * The flown walls themselves when the filter is off.
+     */
+    get unfilteredWalls(): VoxelCollision | null {
+        const base = this.baseCollision;
+        if (!base) return null;
+        const u = this.unfiltered;
+        if (u && u.base === base && u.tr === this.transform) return u.col;
+        // the same object while base and size stay, also across a filter change (the grid is not rebuilt)
+        const col = this.floaterFilter && this.floaterFilter.collision !== base ? scaledCollision(base, this.transform) : this.collision!;
+        this.unfiltered = { base, tr: this.transform, col };
+        return col;
+    }
+
     // ------------------------------------------------------------------ scene scale (E.7)
 
     /** A point of the scan (file space) in the flown world: T(p). */

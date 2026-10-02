@@ -4,6 +4,7 @@
 import { mountWalls } from '../../walls';
 import type { RefineMode } from '../../walls';
 import { wallsVoxelsControls } from '../../ui/voxels';
+import { openFloaterPanel } from './floaters';
 import { t } from '../../i18n';
 import { beacon, q } from '../env';
 import type { Feature } from '../context';
@@ -22,7 +23,7 @@ export const walls: Feature = {
             ui: ctx.ui, session: ctx.session, sceneId: ctx.scene.id, beacon, hook: ctx.hook,
             mode: refineMode(),
             bakeNow: q.get('bake') === '1',
-            controls: wallsVoxelsControls(ctx.voxels, ctx.walls, 'wm'),
+            controls: wallsVoxelsControls(ctx.voxels, ctx.walls, 'wm', () => openFloaterPanel(ctx)),
             switchOn: () => ctx.walls.set(true)
         });
         let w = mount();

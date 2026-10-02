@@ -18,6 +18,7 @@ import { loadVoxelPrefs } from '../../voxels';
 import { t } from '../../i18n';
 import { banner, q } from '../env';
 import { applyCamera, applyModel, bridgeVoxels, modelDiffers, pilotSet } from '../prefs';
+import { floatersRow } from './floaters';
 import type { Feature, FlightContext } from '../context';
 
 let current: SettingsScreen | null = null;
@@ -112,7 +113,8 @@ export function openSettings(ctx: FlightContext, focus: string | null = null): v
             forgetDeepLink();
             applyToFlight(ctx);
             ctx.resume('panel');
-        }
+        },
+        extra: (id) => (id === 'scene.dropFloaters' ? floatersRow(ctx, () => current?.close()) : null)
     }, { focus });
 }
 

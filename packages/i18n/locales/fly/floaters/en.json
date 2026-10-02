@@ -1,0 +1,21 @@
+{
+  "floaters.title": "Clean floating voxels",
+  "floaters.open": "Clean floating voxels…",
+  "floaters.explain": "A noisy scan has specks floating in the air. The walls turn each speck into a small solid piece, and the drone crashes into it although nothing is there. This removes every piece that touches no big wall and is smaller than the size below.",
+  "floaters.legendDrop": "removed",
+  "floaters.legendKeep": "stays a wall",
+  "floaters.size": "Remove pieces smaller than (blocks)",
+  "floaters.block": "1 block = a cube of {cm} cm, 4×4×4 voxels.",
+  "floaters.effect": "Removes floating pieces: {pieces} · blocks: {blocks}. The big walls stay.",
+  "floaters.effectNone": "Nothing is removed: no piece is that small.",
+  "floaters.effectOff": "Off: every piece stays a wall.",
+  "floaters.clean": "Clean floating voxels",
+  "floaters.suggested": "One click uses the suggested size: under {n} blocks (only small pieces, together under 1 % of the walls).",
+  "floaters.nothing": "No small floating pieces on this scan: nothing to clean.",
+  "floaters.apply": "Apply: under {n} blocks",
+  "floaters.turnOff": "Apply: keep every piece",
+  "floaters.isApplied": "Applied",
+  "floaters.appliedNow": "This scan flies with: pieces under {n} blocks removed.",
+  "floaters.appliedOff": "This scan flies with every piece as a wall.",
+  "floaters.show": "Show on the scan"
+}

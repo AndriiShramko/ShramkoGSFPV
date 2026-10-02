@@ -251,3 +251,24 @@ body.cinema .osd, body.cinema .attribution, body.cinema .badge-nowalls, body.cin
 body.cinema .voxel-legend, body.clean .voxel-legend, #ui.hud-off .voxel-legend { display: none; }
 #ui:has(> .screen.radio) > .voxel-legend { visibility: hidden; }
 @media (prefers-reduced-motion: reduce) { .wv-knob, .wv-knob::after { transition: none; } }
+
+/* "Clean floating voxels" (ui/floaters.ts): beside the flight view, so the scan and its red pieces stay in sight */
+.panel.floaters-panel { left: 16px; top: 50%; transform: translateY(-50%); width: min(360px, calc(100vw - 32px)); max-height: calc(100vh - 32px); z-index: 6; }
+.fl-explain { margin: 0 0 8px; font-size: 14px; line-height: 1.45; }
+.fl-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: 0 0 10px; color: var(--muted); }
+.fl-swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; flex: none; }
+.fl-swatch.drop { background: #ff2933; }
+.fl-swatch.keep { background: #808791; margin-left: 10px; }
+.fl-label { display: block; font-weight: 500; margin: 6px 0 2px; }
+.fl-row { display: flex; align-items: center; gap: 10px; }
+.fl-row input[type="range"] { flex: 1; min-width: 0; min-height: 32px; accent-color: var(--accent); }
+.fl-out { min-width: 2.5em; text-align: right; font: 600 16px/1 ui-monospace, Consolas, monospace; }
+.fl-effect { margin: 10px 0; padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,.06); font-weight: 600; line-height: 1.4; }
+.fl-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.fl-actions .btn { flex: 1 1 140px; }
+.fl-note { margin: 6px 0 0; }
+.wv-clean { min-height: 36px; padding: 6px 12px; }
+@media (max-width: 600px) {
+    .panel.floaters-panel { left: 0; right: 0; top: auto; bottom: 0; transform: none; width: 100vw; max-height: 55vh; border-radius: 14px 14px 0 0; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+    .fl-explain { font-size: 13px; }
+}

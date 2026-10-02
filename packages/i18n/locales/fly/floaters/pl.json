@@ -1,0 +1,21 @@
+{
+  "floaters.title": "Usuń latające woksele",
+  "floaters.open": "Usuń latające woksele…",
+  "floaters.explain": "Skan z szumem ma drobinki unoszące się w powietrzu. Ściany robią z każdej drobinki mały twardy kawałek i dron rozbija się o niego, choć nic tam nie ma. To usuwa każdy kawałek, który nie dotyka żadnej dużej ściany i jest mniejszy niż rozmiar poniżej.",
+  "floaters.legendDrop": "usunięte",
+  "floaters.legendKeep": "zostaje ścianą",
+  "floaters.size": "Usuń kawałki mniejsze niż (bloki)",
+  "floaters.block": "1 blok = sześcian {cm} cm, 4×4×4 woksele.",
+  "floaters.effect": "Usuwa latające kawałki: {pieces} · bloki: {blocks}. Duże ściany zostają.",
+  "floaters.effectNone": "Nic nie znika: żaden kawałek nie jest tak mały.",
+  "floaters.effectOff": "Wyłączone: każdy kawałek zostaje ścianą.",
+  "floaters.clean": "Usuń latające woksele",
+  "floaters.suggested": "Jedno kliknięcie bierze proponowany rozmiar: poniżej {n} bloków (tylko małe kawałki, razem mniej niż 1 % ścian).",
+  "floaters.nothing": "Ten skan nie ma małych latających kawałków: nie ma czego czyścić.",
+  "floaters.apply": "Zastosuj: poniżej {n} bloków",
+  "floaters.turnOff": "Zastosuj: zostaw wszystkie kawałki",
+  "floaters.isApplied": "Zastosowane",
+  "floaters.appliedNow": "Ten skan lata bez kawałków mniejszych niż {n} bloków.",
+  "floaters.appliedOff": "Ten skan lata ze wszystkimi kawałkami jako ścianami.",
+  "floaters.show": "Pokaż na skanie"
+}
