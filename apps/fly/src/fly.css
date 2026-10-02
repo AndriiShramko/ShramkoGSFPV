@@ -291,3 +291,19 @@ body.cinema .rec-dot { display: none; }
     .rec-dot-time { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .rec-dot-i { animation: none; } }
+/* the Catalogue tab as a storefront (ui/scenes.ts): Featured row, collection chips, section heads; they sit in the grid, so they span it */
+.sf-featured, .sf-chips, .sf-head { grid-column: 1 / -1; min-width: 0; }
+.sf-head { margin: 6px 0 0; font-size: 15px; font-weight: 600; color: var(--muted); }
+.sf-row { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(280px, calc(50% - 6px)); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; padding: 4px 2px 10px; }
+.sf-item { scroll-snap-align: start; min-width: 0; }
+.sf-item > .scene-cell, .sf-big { height: 100%; }
+.sf-big img { height: auto; } /* the 16:9 box, not the width/height attributes */
+.sf-big .scene-title { font-size: 18px; }
+.sf-pitch { padding: 0 10px; font-size: 14px; }
+.sf-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.sf-chip[aria-pressed="true"] { color: var(--fg); border-color: var(--accent); }
+.sf-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.sf-badge { font-size: 12px; line-height: 1.5; padding: 0 7px; border-radius: 999px; border: 1px solid var(--line); }
+.sf-badge.walls { color: var(--accent); border-color: rgba(74,222,128,.45); }
+.sf-badge.nowalls { color: var(--warn); border-color: rgba(251,191,36,.45); }
+@media (max-width: 640px) { .sf-row { grid-auto-columns: 86%; } }

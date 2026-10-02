@@ -1,0 +1,232 @@
+{
+  "name": "v06-admin",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T10:22:56.259Z",
+    "gitHead": "eba6dcc",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "fly": "http://127.0.0.1:5362",
+  "error": null,
+  "checks": [
+    {
+      "name": "picker reads /api/catalog",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "wrong password refused in the page",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "session cookie is HttpOnly, Secure, SameSite=Strict, Path=/api/admin",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the page cannot read the session cookie",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the admin list is the published list",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "drag and drop moved the first scene to second place",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "ArrowUp on a handle moved the scene up",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the draft is saved and marked unpublished",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "draft before publish changes nothing in the picker",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "after publish: the pinned scene is first in Featured",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "after publish: the pitch line shows on the Featured card",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "after publish: the rest follows the admin order",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the publish is in the history (undo)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "a pasted link of a listed scene is checked on the CDN and cannot be added twice",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "a scene found by title words is added on top of the draft",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "its title and author came from SuperSplat",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "discard draft brings back the published list",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the report is listed with its words",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "closing a report is stored server-side",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the visitor's report itself is unchanged",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "after logout the session is gone (401)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "audit has the failed and the good login, the publish, the report status and the logout",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the password is in no log, audit or data file",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "no page errors",
+      "ok": true,
+      "control": false
+    }
+  ],
+  "reportId": "R-20261002-0001",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "pickerBefore": {
+    "featured": [],
+    "grid": [
+      "39e63ce9",
+      "7a475d38",
+      "887f27aa"
+    ],
+    "pitch": ""
+  },
+  "cookie": {
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "Strict",
+    "path": "/api/admin"
+  },
+  "adminStart": [
+    "39e63ce9",
+    "7a475d38",
+    "887f27aa"
+  ],
+  "draftOrder": [
+    "7a475d38",
+    "887f27aa",
+    "39e63ce9"
+  ],
+  "pickerWithDraft": {
+    "featured": [],
+    "grid": [
+      "39e63ce9",
+      "7a475d38",
+      "887f27aa"
+    ],
+    "pitch": ""
+  },
+  "pickerAfter": {
+    "featured": [
+      "887f27aa"
+    ],
+    "grid": [
+      "7a475d38",
+      "39e63ce9"
+    ],
+    "pitch": "Fly the old town at full speed"
+  },
+  "history": [
+    "20261002T102236Z"
+  ],
+  "addKnown": "39e63ce9Opens in the simulator: lod-meta, CDN folder v1.SuperSplat's list cannot be searched by id: type the title and author, or search by words from the title.TitleAuthorLicenceAlready in the list.",
+  "addedFromSearch": "5cc66450",
+  "addPreview": "5cc66450Opens in the simulator: ssog, CDN folder v1.TitleAuthorLicenceAdd to the top of the list",
+  "audit": [
+    "login:false",
+    "login:true",
+    "draft:true",
+    "draft:true",
+    "draft:true",
+    "publish:true",
+    "draft:true",
+    "discard:true",
+    "report-status:true",
+    "logout:true"
+  ],
+  "pageErrors": [],
+  "apiCalls": [
+    "GET /api/catalog 200",
+    "GET /api/admin/session 401",
+    "POST /api/admin/login 401",
+    "POST /api/admin/login 200",
+    "GET /api/admin/catalog 200",
+    "POST /api/admin/catalog/draft 200",
+    "POST /api/admin/catalog/draft 200",
+    "POST /api/admin/catalog/draft 200",
+    "GET /api/catalog 200",
+    "POST /api/admin/catalog/publish 200",
+    "GET /api/catalog 200",
+    "GET /api/superspl/explore 200",
+    "POST /api/admin/catalog/draft 200",
+    "POST /api/admin/catalog/discard 200",
+    "GET /api/admin/reports 200",
+    "POST /api/admin/reports/status 200",
+    "POST /api/admin/logout 200",
+    "GET /api/admin/session 401"
+  ]
+}

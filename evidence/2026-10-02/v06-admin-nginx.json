@@ -1,0 +1,37 @@
+{
+  "name": "v06-admin-nginx",
+  "nginxConf": "deploy/nginx.conf",
+  "catalog": {
+    "status": 200,
+    "etag": "\"5371efd551e3f1209b0df946932a47b8\"",
+    "cacheControl": "public, max-age=60",
+    "revalidated": 304
+  },
+  "adminPage": 200,
+  "putRefused": 403,
+  "noSession": 401,
+  "viaFrontProxy": {
+    "wrong": [
+      401,
+      401,
+      401,
+      401,
+      401
+    ],
+    "rightPasswordAfter": 429,
+    "clientsInAudit": 1
+  },
+  "controlStraightToWeb": {
+    "wrong": [
+      401,
+      401,
+      401,
+      401,
+      401
+    ],
+    "rightPasswordAfter": 200,
+    "clientsInAudit": 6
+  },
+  "apiMemoryAfterLogins": "21.77MiB / 64MiB",
+  "pass": true
+}

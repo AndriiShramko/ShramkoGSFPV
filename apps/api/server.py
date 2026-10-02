@@ -16,6 +16,9 @@ POST /api/share  a picture of the view (JPEG 1200x630) for a link that shows it 
                  share/<id>.jpg + share/<id>.json. GET /s/<id> is a tiny page with Open Graph and
                  Twitter card tags that sends a visitor on to the simulator with that scene;
                  GET /s/<id>.jpg is the picture (immutable).
+GET  /api/catalog the scene catalogue the scene picker shows (public, ETag/304, max-age 60), and
+/api/admin/...   the owner's admin behind a password (login, sessions, CSRF, brute-force guard, audit,
+                 catalogue draft/publish/history, report status): admin.py, which documents both.
 GET  /api/health 200 {"ok": true, ...}; 503 when the disk guard has tripped.
 GET  /api/superspl/explore
                  SuperSplat catalogue (owner's decision 2026-09-27, docs/decisions.md D35): the
@@ -54,6 +57,8 @@ from collections import OrderedDict, defaultdict, deque
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+
+import admin
 
 SITE = os.environ.get("SITE_TAG", "gsfpv")
 DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
@@ -1074,6 +1079,22 @@ def share_page(sid: str) -> bytes | None:
     return doc.encode("utf-8")
 
 
+# ---------------- the owner's admin and the public catalogue (admin.py) ----------------
+
+def _catalog_seed() -> Path | None:
+    """The first catalogue (used once, while DATA_DIR/catalog.json does not exist): CATALOG_SEED, else
+    showcase.json next to this file (the hub: copied into $GSFPV_BASE/api/), else the repo's own."""
+    here = Path(__file__).resolve().parent
+    for p in (os.environ.get("CATALOG_SEED"), here / "showcase.json", here.parent / "fly" / "public" / "showcase.json"):
+        if p and Path(p).is_file():
+            return Path(p)
+    return None
+
+
+ADMIN = admin.AdminApi(data_dir=lambda: DATA_DIR, reports_file=lambda: REPORTS_FILE, reports_dir=lambda: REPORTS_DIR,
+                       seed=_catalog_seed, telegram=lambda text: send_telegram(text), site=SITE)
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "gsfpv-api"
     sys_version = ""
@@ -1138,6 +1159,31 @@ class Handler(BaseHTTPRequestHandler):
             raise BadBody(400)
         return v
 
+    def _admin_body(self, limit: int) -> bytes:
+        """An admin request's body, read only once the session is known (admin.AdminApi.handle)."""
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            n = -1
+        if n < 0 or n > limit:
+            raise admin.TooLarge()
+        self._admin_read = True
+        return self.rfile.read(n) if n else b""
+
+    def _admin(self, method: str, path: str) -> None:
+        self._admin_read = False
+        res = ADMIN.handle(method, path, self.headers, self._admin_body, self._client())
+        if not self._admin_read:
+            # refused before the body was looked at (401/403/429/503): read a small one away, so the
+            # client gets the answer instead of a reset connection
+            try:
+                n = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                n = 0
+            if 0 < n <= admin.MAX_BODY:
+                self.rfile.read(n)
+        self._send(*res)
+
     def _send(self, code: int, body: bytes, headers: list, head: bool = False) -> None:
         self.send_response(code)
         for k, v in headers:
@@ -1175,6 +1221,10 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/superspl/explore":
             # only the query string and a client key (for the per-visitor limit, RAM only) are used
             return self._send(*SUPERSPL.handle(qs, self._client()))
+        if path == "/api/catalog":
+            return self._send(*ADMIN.public_catalog(self.headers.get("If-None-Match")))
+        if path.startswith("/api/admin/"):
+            return self._admin("GET", path)
         if self.path.split("?")[0] == "/api/health":
             if _guard["tripped"]:
                 return self._json(503, {"ok": False, "reason": "disk", "free_gb": round(free_gb(), 2)})
@@ -1243,6 +1293,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(500, {"ok": False})
             mid = None if rec["suspect"] else send_telegram(report_text(rec))
             return self._json(200, {"ok": True, "id": rec["id"], "diagnostics": rec["diagnostics"], "delivered": mid is not None})
+        if path.startswith("/api/admin/"):
+            return self._admin("POST", path)
         if path == "/api/share":
             if not _rate(_shits, self._client(), 12, 3600.0) or not _rate(_all_hits, "share", 300, 3600.0):
                 return self._json(429, {"ok": False})

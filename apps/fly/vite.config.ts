@@ -1,7 +1,8 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'node:path';
 
-// Production build = the simulator only (served at /{locale}/fly/, assets under /fly/).
+// Production build = the simulator (served at /{locale}/fly/, assets under /fly/) and the owner's admin
+// page (admin/index.html; scripts/build-release.mjs moves it to /admin/, its assets stay under /fly/assets/).
 // The lab pages (probes, determinism, latency controls) exist only in dev/preview builds.
 const lab = process.env.GSFPV_LAB === '1';
 
@@ -24,7 +25,7 @@ export default defineConfig({
                       // A9 frame cost: measured on this build so it runs the release engine, not the dev server's debug one
                       frame: resolve(__dirname, 'lab/frame.html')
                   }
-                : { main: resolve(__dirname, 'index.html') }
+                : { main: resolve(__dirname, 'index.html'), admin: resolve(__dirname, 'admin/index.html') }
         }
     },
     server: { port: 5190, strictPort: true },
