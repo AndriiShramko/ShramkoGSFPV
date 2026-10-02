@@ -13,6 +13,7 @@ import type { ActionId, Ctx, EnumDef, GroupId, KeyHint, NumDef, PrefChange, Pref
 import { PRESETS } from '../../presets';
 import { droneOf, linkSettings, pilotReset, pilotSet, presetResolver } from '../../app/prefs';
 import { h } from '../dom';
+import { toggletip } from '../toggletip';
 import { t } from '../../i18n';
 import { jsonEditor } from './editors';
 import type { Editor } from './editors';
@@ -252,21 +253,14 @@ export class SettingsScreen {
         const fromLink = h('span', { class: 'sr-link', hidden: true }, t('prefs.fromLink'));
         const dot = h('span', { class: 'sr-dot', title: t('prefs.changed'), 'aria-hidden': 'true' });
         const reset = h('button', { type: 'button', class: 'sr-reset', 'data-action': 'reset-setting', hidden: true, onclick: () => { const c = ctxOf(); if (c === null) return; pilotReset(this.store, def.id, c); if (def.apply === 'reload') this.host.reload(def.id); } }, t('prefs.reset')) as HTMLButtonElement; // a reset of the language reloads like a change (the page's address names the language)
-        const helpId = `${uid}-help`;
-        const helpText = help ? h('p', { class: 'sr-helptext muted small', id: helpId, hidden: true }, help) : null;
-        const helpBtn = help ? h('button', { type: 'button', class: 'sr-help', 'aria-expanded': 'false', 'aria-controls': helpId, 'aria-label': t('prefs.help', { name: label }), title: t('prefs.help', { name: label }) }, '?') as HTMLButtonElement : null;
-        helpBtn?.addEventListener('click', () => {
-            const open = helpBtn.getAttribute('aria-expanded') !== 'true';
-            helpBtn.setAttribute('aria-expanded', String(open));
-            if (helpText) helpText.hidden = !open;
-        });
+        // the description: shown on hover and keyboard focus, pinned by a click or tap (ui/toggletip.ts)
+        const tip = help ? toggletip(t('prefs.help', { name: label }), help, `${uid}-help`) : null;
         const labelEl = control.labelFor ? h('label', { class: 'sr-name', for: control.labelFor }, label) : h('span', { class: 'sr-name' }, label);
         const el = h('div', { class: 'sr', 'data-id': def.id, 'data-scope': def.scope, 'data-type': def.type, 'data-testid': `setting-${def.id}` },
-            h('div', { class: 'sr-head' }, labelEl, caps, helpBtn),
+            h('div', { class: 'sr-head' }, labelEl, caps, tip?.button, tip?.bubble),
             h('div', { class: 'sr-meta' }, badge, scope, fromLink),
             h('div', { class: 'sr-control' }, control.el),
-            h('div', { class: 'sr-side' }, dot, reset),
-            helpText);
+            h('div', { class: 'sr-side' }, dot, reset));
         if (!enabled) el.classList.add('disabled');
 
         const refresh = (): void => {
