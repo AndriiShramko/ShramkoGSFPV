@@ -149,7 +149,7 @@ export const scale: Feature = {
             const vox = h('span', { class: 'sc-vox', 'data-testid': 'scene-size-voxel' });
             row = { out, slider, vox, reset };
             const el = h('section', { class: 'sum-row sc-row', role: 'group', 'aria-labelledby': id, 'data-testid': 'scene-size' },
-                h('span', { class: 'sc-label', id }, t('scale.title')), out, minus, slider, plus, reset, vox);
+                h('span', { class: 'sc-label', id }, t('scale.title')), out, h('span', { class: 'sc-ctl' }, minus, slider, plus, reset), vox);
             queueMicrotask(() => refresh());
             return el;
         };

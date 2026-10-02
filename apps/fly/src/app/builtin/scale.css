@@ -4,6 +4,7 @@
 .sc-label { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .sc-value { min-width: 4.2em; font: 600 14px/1.2 ui-monospace, "Cascadia Mono", Consolas, monospace; color: var(--accent); }
 .sc-row .sc-btn { min-width: 36px; min-height: 32px; padding: 4px 10px; }
-.sc-slider { flex: 1 1 160px; min-width: 120px; accent-color: var(--accent); }
+.sc-ctl { display: flex; flex: 1 1 280px; align-items: center; gap: 8px; min-width: 0; }
+.sc-slider { flex: 1 1 auto; min-width: 80px; accent-color: var(--accent); }
 .sc-vox { flex: 1 1 100%; font-size: 12px; color: var(--muted); }
 .sc-vox.warn { color: var(--warn, #f0b429); }
