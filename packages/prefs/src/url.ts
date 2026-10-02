@@ -21,6 +21,7 @@ export const APP_URL_PARAMS_NOT_SETTINGS: Readonly<Record<string, string>> = {
     simradio: 'test: the bot pilot or a simulated radio flies instead of a person',
     lat: 'test: the stick-to-photon latency harness (tools/latency)',
     lagFrames: 'test: extra frames of delay, the latency harness control',
+    inflight: 'test: frames the GPU may still be on when the next is drawn (0 = no limit), the GPU-queue control',
     nonce: 'test: the latency harness run id in the page title',
     nowarn: 'test: benches skip the first-visit warning (a pilot\'s own answer is the ui collection)',
     input: 'test: force the touch sticks on a desktop (?input=touch)',

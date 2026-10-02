@@ -184,6 +184,7 @@ export class SceneHost implements SceneSwitcher {
             return false;
         }
         if (base.drawScan !== false) next.renderer.startLatencyGuard(q.get('guard') !== '0');
+        if (q.get('inflight') !== null) next.renderer.maxFramesInFlight = Number(q.get('inflight'));
         await loading.finish();
         ctx.swapSession(next, { id, meta });
         const u = new URL(location.href);

@@ -28,6 +28,9 @@ export interface LatencyStats {
     skips: number;
 }
 
+/** a drawn frame the GPU has not finished after this long is not waited for (ms) */
+const HOLD_MAX_MS = 1000;
+
 interface WgpuQueue {
     onSubmittedWorkDone(): Promise<void>;
 }
@@ -143,6 +146,22 @@ export class SplatRenderer {
     private latSeq = 0;
     private gpuQueue: WgpuQueue | null = null;
     private submitDone: number[] = [];
+    /**
+     * Frames the GPU may still be working on when the next one is drawn (0: no limit). With 1, a
+     * frame is drawn only once the GPU has finished the last one; otherwise it is not drawn and the
+     * next animation frame tries again with a newer pose (the flight model steps either way).
+     * Without the limit, frames queue on the GPU behind another GPU user (a DaVinci render) and each
+     * queued frame is one more period between the stick and the screen: positive control, another
+     * process keeping the GPU busy (v05-latency HOG_MS=40), submit -> GPU done p50 129 ms and event
+     * -> presentation p50 152 ms against 10 ms and 56 ms without it.
+     */
+    maxFramesInFlight = 2;
+    /** frames not drawn because the GPU had not finished the previous ones (for the governor and the probe) */
+    framesHeld = 0;
+    /** submit times of the drawn frames the GPU has not finished, oldest first */
+    private inFlight: number[] = [];
+    /** this engine frame draws (decided at 'framerender') */
+    private drawing = true;
     /** the backbuffer size the video export draws at (F.3), whatever the canvas' CSS size; null: the window's */
     private fixedRes: { w: number; h: number } | null = null;
     /** engine frames begun (counted at 'frameupdate'): what splatFrame.frame refers to */
@@ -212,7 +231,10 @@ export class SplatRenderer {
             this.splatFrame.loading = typeof loading === 'number' ? loading : 0;
         });
         this.gpuQueue = (device as unknown as { wgpu?: { queue?: WgpuQueue } }).wgpu?.queue ?? null;
-        if (this.gpuQueue) app.on('frameend', this.onFrameEnd);
+        if (this.gpuQueue) {
+            app.on('framerender', this.onFrameRender);
+            app.on('frameend', this.onFrameEnd);
+        }
         document.addEventListener('visibilitychange', this.onVisibility);
 
         this.ro = new ResizeObserver(() => this.resize());
@@ -627,15 +649,36 @@ export class SplatRenderer {
         this.latProbe = { id, raf, node: n };
     }
 
-    /** submit -> GPU done of each frame: a queue behind another GPU user shows up here first. */
+    /**
+     * After the flight model and the scene moved, before drawing: hold this frame when the GPU has
+     * not finished maxFramesInFlight frames (see there). Never while a recording or the video export
+     * runs (the guard's holdSkips: every slot of the file wants a picture), and never for a frame
+     * that is owed (renderOnce). A frame unfinished for HOLD_MAX_MS is not waited for any longer: a
+     * lost promise must not stop the picture.
+     */
+    private onFrameRender = (): void => {
+        const app = this.app;
+        const cap = this.maxFramesInFlight;
+        const f = this.inFlight;
+        const hold = cap > 0 && f.length >= cap && !this.latencyGuard.holdSkips && performance.now() - f[0] < HOLD_MAX_MS;
+        app.autoRender = !hold;
+        this.drawing = !hold || app.renderNextFrame;
+        if (!this.drawing) this.framesHeld++;
+    };
+
+    /** submit -> GPU done of each drawn frame: a queue behind another GPU user shows up here first. */
     private onFrameEnd = (): void => {
         const q = this.gpuQueue;
-        if (!q) return;
+        if (!q || !this.drawing) return;
         const t0 = performance.now();
+        const f = this.inFlight;
+        f.push(t0);
+        // the queue finishes work in submission order: the oldest entry is the one done
         q.onSubmittedWorkDone().then(() => {
+            f.shift();
             this.submitDone.push(performance.now() - t0);
             if (this.submitDone.length > 30) this.submitDone.shift();
-        }, () => { /* device lost: no number */ });
+        }, () => { f.shift(); /* device lost: no number */ });
     };
 
     private onVisibility = (): void => {

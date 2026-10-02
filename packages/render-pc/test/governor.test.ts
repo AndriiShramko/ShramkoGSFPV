@@ -56,6 +56,22 @@ describe('quality governor', () => {
         expect(g.changes).toBe(0);
     });
 
+    it('frames the renderer held for the GPU queue are missed frames although rAF stays on time', () => {
+        // the frame cap (SplatRenderer.maxFramesInFlight) holds every other picture for 3 s: the
+        // animation frames still come every period, only the 'held' flag says the display repeated one
+        const heldEvery = (g: FrameGovernor, flag: boolean) => {
+            const p = 1000 / 30;
+            g.onFrame(0);
+            for (let i = 1; i <= 90; i++) g.onFrame(i * p, false, flag && i % 2 === 0);
+        };
+        const held = new FrameGovernor();
+        heldEvery(held, true);
+        expect(held.step).toBeGreaterThan(0);
+        const blind = new FrameGovernor(); // control: the same frames without the flag look perfect
+        heldEvery(blind, false);
+        expect(blind.changes).toBe(0);
+    });
+
     it('intervals the latency guard made on purpose are not missed frames', () => {
         // 8 skips of 3 periods within 2 s at 30 Hz: counted, that is > 10 % missed and a step down
         const skipsEvery = (g: FrameGovernor, excuse: boolean) => {

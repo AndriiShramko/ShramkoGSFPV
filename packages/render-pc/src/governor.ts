@@ -81,8 +81,11 @@ export class FrameGovernor {
      * Feed one frame timestamp (ms). Returns the new step when the quality changes, else null.
      * `excused`: the interval ending here was made on purpose (the latency guard skipped a frame),
      * so it says nothing about the GPU keeping up and is not counted as a missed frame.
+     * `held`: the renderer did not draw the frame before this one because the GPU had not finished
+     * the previous one (SplatRenderer.maxFramesInFlight): the display repeated a picture, a missed
+     * frame although the animation frames themselves came on time.
      */
-    onFrame(t: number, excused = false): QualityStep | null {
+    onFrame(t: number, excused = false, held = false): QualityStep | null {
         if (this.last < 0) { this.last = t; return null; }
         const dt = t - this.last;
         this.last = t;
@@ -92,7 +95,7 @@ export class FrameGovernor {
         const period = this.period.ms;
         // 1.25 periods: a frame that took ~1.4 periods already makes the display repeat one (a 45 ms
         // frame on a 30 Hz screen); 1.5 let a steady 22 fps pass as 'on time'
-        this.log.push({ t, missed: dt > MISSED_PERIODS * period });
+        this.log.push({ t, missed: held || dt > MISSED_PERIODS * period });
         while (this.log.length && t - this.log[0].t > this.opts.upWindowMs) this.log.shift();
         if (!this.enabled) return null;
         const since = t - this.lastChange;

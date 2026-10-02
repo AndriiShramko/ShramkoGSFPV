@@ -186,6 +186,8 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, sceneId: s
     // loading leaves Chrome's compositor 2 frames behind: the guard measures and skips out of it
     // while "ready" is still on screen, then keeps watching (?guard=0: measure only, never skip)
     session.renderer.startLatencyGuard(q.get('guard') !== '0');
+    // ?inflight=N: frames the GPU may still be on when the next is drawn (0 = no limit, the negative control)
+    if (q.get('inflight') !== null) session.renderer.maxFramesInFlight = Number(q.get('inflight'));
     // "The scan is ready" for a moment, then the scan fades in: no jump straight into another screen
     await loading.finish();
     document.body.classList.add('flying');

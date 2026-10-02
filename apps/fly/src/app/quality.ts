@@ -14,6 +14,8 @@ export class Quality {
     private cinemaOn = false;
     /** test only (hook.setFrameDelay): ms of busy CPU in each frame */
     private frameDelay = 0;
+    /** renderer.framesHeld at the last frame */
+    private heldSeen = 0;
 
     constructor(renderer: SplatRenderer) {
         this.renderer = renderer;
@@ -57,6 +59,9 @@ export class Quality {
     /** Once per frame, first: the simulated overload (tests), then the governor's step. */
     frame(now: number): void {
         if (this.frameDelay > 0) { const end = now + this.frameDelay; while (performance.now() < end) { /* simulated overload */ } }
-        if (!this.cinemaOn && this.governor.onFrame(now, this.renderer.frameAfterSkip)) this.apply();
+        // a frame the renderer held for the GPU queue (maxFramesInFlight) is a missed one
+        const held = this.renderer.framesHeld !== this.heldSeen;
+        this.heldSeen = this.renderer.framesHeld;
+        if (!this.cinemaOn && this.governor.onFrame(now, this.renderer.frameAfterSkip, held)) this.apply();
     }
 }

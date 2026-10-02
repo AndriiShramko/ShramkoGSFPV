@@ -7,7 +7,7 @@
 //   app/test-hook.ts  window.__gsfpv for the acceptance harnesses
 // URL: ?scene=<id|link>&drone=<preset>&g=<m/s2>&gm=<honest|same-twr|auto-throttle>
 // Test-only switches (never linked, app/test-modes.ts): ?simradio=scenario|open|raw, ?lat=1,
-// ?lagFrames=N, ?guard=0, ?refine=auto|offer|off (finer walls: the plan's choice, only on request,
+// ?lagFrames=N, ?guard=0, ?inflight=N, ?refine=auto|offer|off (finer walls: the plan's choice, only on request,
 // never), ?bake=1, ?walls=on|off (this load only, not remembered), ?voxels=overlay|only
 // &vstyle=solid|wire|height|floaters&vopacity=0..1&vradius=m (the voxel grid for screenshots and
 // checks; nothing remembered), ?render=off (logic only: the scan is not drawn; machines without a GPU).
