@@ -91,12 +91,17 @@ function FeatureRows({ items, status, label }: { items: string[]; status: Featur
   );
 }
 
-/** A real flight behind a block: heavy veil under the text column, the flight clear on the right (wide screens). */
+/**
+ * A real flight behind a block: heavy veil under the text column, the flight clear on the right.
+ * On a narrow screen the block is far taller than wide, so the 2:1 loop covers only its first
+ * 80 % of a screen (cover over the whole block would show a blurred sliver), fading into the page.
+ */
 function VideoBackdrop({ slot }: { slot: VideoSlot }) {
   return (
     <div aria-hidden="true" className="absolute inset-0 -z-10">
-      <BgVideo slot={slot} />
-      <div className="absolute inset-0 bg-bg/80 lg:bg-transparent lg:bg-gradient-to-r lg:from-bg/95 lg:via-bg/75 lg:to-bg/30" />
+      <BgVideo slot={slot} className="bottom-auto h-[80svh] lg:bottom-0 lg:h-auto" />
+      <div className="absolute inset-x-0 top-[calc(80svh-12rem)] h-48 bg-gradient-to-b from-transparent to-bg lg:hidden" />
+      <div className="absolute inset-0 bg-bg/75 lg:bg-transparent lg:bg-gradient-to-r lg:from-bg/95 lg:via-bg/75 lg:to-bg/30" />
       <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-bg to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-bg to-transparent" />
     </div>
@@ -222,10 +227,8 @@ function Landing({ locale }: { locale: Locale }) {
               </div>
             </div>
             <figure className="lg:mt-1">
-              {/* the picker sits in the middle 60 % of the screen: show that part, large enough to read */}
-              <div className="relative aspect-[480/450] overflow-hidden rounded-xl border border-line-strong bg-surface-2 shadow-2xl shadow-black/60">
-                <ShotImage shot={full(shot("superspl"))} sizes="(min-width: 1024px) 840px, 170vw" alt={t("locations.shotAlt")} className="absolute left-[-33.4%] top-0 w-[166.7%] max-w-none" />
-              </div>
+              {/* the picker sits in the middle 60 % of the screen: the box (cover) shows that part, large enough to read */}
+              <ShotImage shot={full(shot("superspl"))} defer sizes="(min-width: 1024px) 840px, 170vw" alt={t("locations.shotAlt")} className="aspect-[480/450]! w-full rounded-xl border border-line-strong bg-surface-2 object-cover shadow-2xl shadow-black/60" />
               <figcaption className="mt-3 text-sm text-muted">{caps.superspl?.d}</figcaption>
             </figure>
           </div>
@@ -263,7 +266,7 @@ function Landing({ locale }: { locale: Locale }) {
               </div>
             </div>
             <figure className="lg:mt-1">
-              <ShotImage shot={panel(shot("scene-size"))} sizes="(min-width: 1024px) 500px, 100vw" alt={t("scale.shotAlt")} className="w-full rounded-xl border border-line-strong bg-surface-2 shadow-2xl shadow-black/60" />
+              <ShotImage shot={panel(shot("scene-size"))} defer sizes="(min-width: 1024px) 500px, 100vw" alt={t("scale.shotAlt")} className="w-full rounded-xl border border-line-strong bg-surface-2 shadow-2xl shadow-black/60" />
               <figcaption className="mt-3 text-sm text-muted">{caps["scene-size"]?.d}</figcaption>
             </figure>
           </div>

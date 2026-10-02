@@ -5,6 +5,8 @@ type Conn = { saveData?: boolean; effectiveType?: string };
 type MC = { decodingInfo?: (c: unknown) => Promise<{ supported: boolean; smooth: boolean; powerEfficient: boolean }> };
 
 const WIDE = "(min-width: 1100px)";
+const DWELL_MS = 250;
+const SEEN = 0.3;
 const AV1 = (w: number) => `video/mp4; codecs="av01.0.${w > 1280 ? "08" : "05"}M.08"`;
 
 /** AV1 when the browser plays it smoothly (and, on a narrow screen, without burning the battery); else H.264. */
@@ -23,9 +25,10 @@ async function pickCodec(v: HTMLVideoElement, w: number, wide: boolean): Promise
 
 /**
  * Starts the background videos of components/BgVideo. Nothing is fetched before the page's load
- * event; then a video gets its file only when its block is within ~one screen of the viewport
- * (the hero's at once, it is on screen), plays while it is near or on screen and pauses when it
- * leaves or the tab is hidden. Reduced motion, Save-Data or a 2G connection: no video at all, the
+ * event; then a video gets its file only when a good part of its block has been on screen for a
+ * quarter of a second (the hero's right after the load event); it plays
+ * while it is there and pauses when it leaves or the tab is hidden. Reduced motion, Save-Data or a
+ * 2G connection: no video at all, the
  * poster stays. 1920 px files from 1100 px CSS width up, 1280 px below.
  */
 export default function BgVideos() {
@@ -56,24 +59,37 @@ export default function BgVideos() {
       v.preload = "auto";
       play(v);
     };
+    // A block is "in view" once a good part of it is on screen: SEEN of the viewport's height, or
+    // half of the block. A block whose top edge just peeks in under the first screen is not, nor one
+    // only passed on the way (a jump to an anchor, a fast fling): it must stay in view for DWELL_MS.
+    // A block that leaves the screen entirely pauses.
+    const timers = new Map<HTMLVideoElement, number>();
     const onSeen = (entries: IntersectionObserverEntry[]) => {
       for (const e of entries) {
         const v = e.target as HTMLVideoElement;
-        if (e.isIntersecting) {
+        const seen = e.isIntersecting && e.intersectionRect.height >= Math.min(SEEN * window.innerHeight, 0.5 * e.boundingClientRect.height);
+        if (seen && !near.has(v)) {
           near.add(v);
-          void attach(v);
-        } else {
+          clearTimeout(timers.get(v));
+          timers.set(v, window.setTimeout(() => near.has(v) && void attach(v), DWELL_MS));
+        } else if (!e.isIntersecting) {
+          clearTimeout(timers.get(v));
           near.delete(v);
           v.pause();
+        } else if (!seen && !v.dataset.state) {
+          clearTimeout(timers.get(v));
+          near.delete(v);
         }
       }
     };
     const start = () => {
       if (lite || reduced.matches || io) return;
-      io = new IntersectionObserver(onSeen, { rootMargin: "50% 0px" });
+      io = new IntersectionObserver(onSeen, { threshold: Array.from({ length: 21 }, (_, i) => i / 20) });
       for (const v of videos) io.observe(v);
     };
     const stop = () => {
+      for (const id of timers.values()) clearTimeout(id);
+      timers.clear();
       io?.disconnect();
       io = null;
       near.clear();
