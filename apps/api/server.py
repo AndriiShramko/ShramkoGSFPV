@@ -6,6 +6,16 @@ POST /api/e      cookieless first-party counter. No cookies, no device id, no IP
                  per client (in RAM only). Retention: 12 months and at most 50 MB in total.
 POST /api/lead   collaboration form and scene takedown reports: stored FIRST (JSONL, fsync),
                  then forwarded to the shared Telegram lead bot. Honeypot + time-to-submit.
+POST /api/report a bug or an idea from the simulator or the landing, the same rules as a lead: stored
+                 FIRST (reports.jsonl, fsync, id R-YYYYMMDD-NNNN), then a short Telegram message
+                 (no contact details beyond what the visitor typed, no logs). A bug's technical
+                 details (diagnostics) only with the visitor's consent, kept apart in
+                 reports/<id>.json; the only body allowed to be large (512 KB, gzip accepted).
+                 There is no public way to read reports: tools/reports/pull.py reads them over SSH.
+POST /api/share  a picture of the view (JPEG 1200x630) for a link that shows it on social networks:
+                 share/<id>.jpg + share/<id>.json. GET /s/<id> is a tiny page with Open Graph and
+                 Twitter card tags that sends a visitor on to the simulator with that scene;
+                 GET /s/<id>.jpg is the picture (immutable).
 GET  /api/health 200 {"ok": true, ...}; 503 when the disk guard has tripped.
 GET  /api/superspl/explore
                  SuperSplat catalogue (owner's decision 2026-09-27, docs/decisions.md D35): the
@@ -21,9 +31,13 @@ only (config.env on the server, never in git). Logs contain method + path + stat
 """
 from __future__ import annotations
 
+import base64
+import hashlib
+import html
 import http.client
 import io
 import json
+import secrets
 import math
 import os
 import re
@@ -35,6 +49,7 @@ import unicodedata
 import urllib.parse
 import urllib.request
 import uuid
+import zlib
 from collections import OrderedDict, defaultdict, deque
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -47,6 +62,15 @@ MIN_FREE_GB = float(os.environ.get("MIN_FREE_GB", "2"))
 EVENTS_CAP_BYTES = int(os.environ.get("EVENTS_CAP_BYTES", str(50 * 1024 * 1024)))
 RETENTION_DAYS = int(os.environ.get("RETENTION_DAYS", "365"))
 MAX_BODY = 8 * 1024
+REPORTS_FILE = DATA_DIR / "reports.jsonl"
+REPORTS_DIR = DATA_DIR / "reports"   # <id>.json: a bug's diagnostics, only with the visitor's consent
+SHARE_DIR = DATA_DIR / "share"       # <id>.jpg + <id>.json
+# the address the share pages name in og:image / og:url (behind nginx the Host header is the container's)
+PUBLIC_ORIGIN = os.environ.get("PUBLIC_ORIGIN", "https://gsfpv.flyreelstudio.eu").rstrip("/")
+MAX_UPLOAD = 512 * 1024              # a bug report with diagnostics, a share picture: on the wire (nginx: 512k)
+MAX_INFLATED = 2 * 1024 * 1024       # a gzip body unpacks to at most this
+REPORTS_CAP_BYTES = int(os.environ.get("REPORTS_CAP_BYTES", str(1024 * 1024 * 1024)))
+SHARE_CAP_BYTES = int(os.environ.get("SHARE_CAP_BYTES", str(1024 * 1024 * 1024)))
 
 # event -> allowed property -> allowed values (None = small integer bucket)
 EVENTS: dict[str, dict[str, set | None]] = {
@@ -75,6 +99,9 @@ EMAIL_RE = re.compile(r"^[^@\s]{1,64}@[^@\s]{1,190}\.[^@\s]{2,24}$")
 _lock = threading.Lock()
 _ehits: dict[str, deque] = defaultdict(deque)
 _lhits: dict[str, deque] = defaultdict(deque)
+_rhits: dict[str, deque] = defaultdict(deque)
+_shits: dict[str, deque] = defaultdict(deque)
+_all_hits: dict[str, deque] = defaultdict(deque)  # per endpoint, every visitor together
 _guard = {"tripped": False, "warned": False}
 
 
@@ -699,6 +726,354 @@ class SupersplProxy:
 SUPERSPL = SupersplProxy()
 
 
+# ---------------- bug reports, ideas and share pictures ----------------
+# A report is a visitor's own words (bug or idea) plus, for a bug and only with the visitor's consent,
+# the technical details the page collected (diagnostics: release, browser, GPU, settings, recent
+# errors, frame stats, the current life's flight log, a small picture of the view). It is stored
+# before anything else happens; Telegram gets a short note with the id, never the diagnostics.
+
+LOCALES = ("en", "es", "pl", "ru")
+REPORT_KINDS = ("bug", "idea")
+REPORT_PAGES = ("fly", "site")
+REPORT_MESSAGE_MAX = 2000
+REPORT_CONTACT_MAX = 200
+TELEGRAM_MESSAGE_MAX = 600
+_RELEASE_RE = re.compile(r"[0-9A-Za-z._-]{1,40}")
+_REPORT_LINE_RE = re.compile(r'^\{"id": "R-([0-9]{8})-([0-9]{4,})"')
+_SHARE_ID_RE = re.compile(r"[A-Za-z0-9_-]{11}")
+SHARE_W, SHARE_H = 1200, 630
+SHARE_IMAGE_MAX = 400 * 1024
+
+
+class BadBody(ValueError):
+    """A request refused for its body: the HTTP status to answer with."""
+
+    def __init__(self, status: int):
+        super().__init__(str(status))
+        self.status = status
+
+
+def _plain(v, n: int, lines: bool = False) -> str:
+    """A visitor's text: a string only, control and format characters dropped (new lines kept where
+    `lines`), trimmed, at most n characters."""
+    if not isinstance(v, str):
+        return ""
+    keep = "\n" if lines else ""
+    s = "".join(c for c in v[: n * 2] if c in keep or unicodedata.category(c) not in ("Cc", "Cs", "Cf"))
+    return s.strip()[:n].strip()
+
+
+def gunzip_bounded(raw: bytes, limit: int) -> bytes:
+    """A gzip body unpacked to at most `limit` bytes: a small bomb cannot fill the 64 MB container."""
+    d = zlib.decompressobj(16 + zlib.MAX_WBITS)
+    try:
+        out = d.decompress(raw, limit + 1)
+    except zlib.error as e:
+        raise BadBody(400) from e
+    if len(out) > limit:
+        raise BadBody(413)
+    if not d.eof:  # cut short
+        raise BadBody(400)
+    return out
+
+
+def _write_durable(path: Path, data: bytes) -> None:
+    """Whole file or nothing: a temporary file, fsync, then the rename."""
+    tmp = path.with_name(path.name + ".tmp")
+    with tmp.open("wb") as f:
+        f.write(data)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
+
+
+_dir_bytes: dict[str, int] = {}
+
+
+def _dir_room(d: Path, n: int, cap: int) -> bool:
+    """Room for n more bytes under the directory's cap (caller holds _lock). Counted from the disk the
+    first time, then as files are written."""
+    k = str(d)
+    if k not in _dir_bytes:
+        _dir_bytes[k] = sum(f.stat().st_size for f in d.iterdir() if f.is_file()) if d.exists() else 0
+    return _dir_bytes[k] + n <= cap
+
+
+def _dir_add(d: Path, n: int) -> None:
+    _dir_bytes[str(d)] = _dir_bytes.get(str(d), 0) + n
+
+
+def parse_report(b: dict) -> dict:
+    """The whitelist of a report. Diagnostics are kept only for a bug whose sender ticked the consent
+    box (diagnosticsConsent: true); without it they are dropped here and never touch the disk."""
+    kind = b.get("kind")
+    if kind not in REPORT_KINDS:
+        raise BadBody(400)
+    message = _plain(b.get("message"), REPORT_MESSAGE_MAX, lines=True)
+    if not message:
+        raise BadBody(400)
+    # everything but the diagnostics: the size of a lead
+    if len(json.dumps({k: v for k, v in b.items() if k != "diagnostics"}, ensure_ascii=False).encode()) > MAX_BODY:
+        raise BadBody(413)
+    try:
+        t_ms = float(b.get("t") or 0)
+    except (TypeError, ValueError):
+        t_ms = 0
+    diag = b.get("diagnostics")
+    consent = b.get("diagnosticsConsent") is True
+    locale, page, scene, release = b.get("locale"), b.get("page"), b.get("scene"), b.get("release")
+    return {
+        "kind": kind,
+        "page": page if page in REPORT_PAGES else "",
+        "locale": locale if locale in LOCALES else "",
+        "scene": scene if isinstance(scene, str) and _ID_RE.fullmatch(scene) else "",
+        "release": release if isinstance(release, str) and _RELEASE_RE.fullmatch(release) else "",
+        "message": message,
+        "contact": _plain(b.get("contact"), REPORT_CONTACT_MAX),
+        "suspect": bool(b.get("hp")) or t_ms < 3000,
+        "diagnostics": diag if kind == "bug" and consent and isinstance(diag, dict) and diag else None,
+    }
+
+
+_seq: dict = {"day": "", "n": 0, "file": None}
+
+
+def _next_report_id(now: float) -> str:
+    """R-YYYYMMDD-NNNN, numbered per UTC day (caller holds _lock); after a restart the day's last
+    number is read back from reports.jsonl."""
+    day = time.strftime("%Y%m%d", time.gmtime(now))
+    if _seq["day"] != day or _seq["file"] != REPORTS_FILE:
+        n = 0
+        if REPORTS_FILE.exists():
+            with REPORTS_FILE.open(encoding="utf-8") as f:
+                for line in f:
+                    m = _REPORT_LINE_RE.match(line)
+                    if m and m.group(1) == day:
+                        n = max(n, int(m.group(2)))
+        _seq.update(day=day, n=n, file=REPORTS_FILE)
+    _seq["n"] += 1
+    return f"R-{day}-{_seq['n']:04d}"
+
+
+def store_report(r: dict, now: float | None = None) -> dict:
+    """Stored before anything is sent: the diagnostics file first (so a record never names a missing
+    file), then the record line, both fsynced. A suspect report keeps no diagnostics; a full disk
+    (the guard or the directory's cap) keeps the record and says the diagnostics were skipped."""
+    now = time.time() if now is None else now
+    diag = r["diagnostics"]
+    with _lock:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        rid = _next_report_id(now)
+        rec = {"id": rid, "ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now)), "site": SITE,
+               **{k: v for k, v in r.items() if k != "diagnostics"}, "diagnostics": False, "diagBytes": 0}
+        if diag is not None and not r["suspect"]:
+            blob = json.dumps({"id": rid, "ts": rec["ts"], "diagnostics": diag}, ensure_ascii=False, separators=(",", ":")).encode()
+            if _guard["tripped"] or not _dir_room(REPORTS_DIR, len(blob), REPORTS_CAP_BYTES):
+                rec["diagnostics"] = "skipped"
+            else:
+                REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+                _write_durable(REPORTS_DIR / f"{rid}.json", blob)
+                _dir_add(REPORTS_DIR, len(blob))
+                rec["diagnostics"], rec["diagBytes"] = True, len(blob)
+        with REPORTS_FILE.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+            f.flush()
+            os.fsync(f.fileno())
+    return rec
+
+
+def report_text(rec: dict) -> str:
+    """The Telegram note: what, where, the id to look it up by; no diagnostics, no logs."""
+    where = " · ".join(x for x in (f"Page: {rec['page'] or '-'}", f"Lang: {rec['locale'] or '-'}",
+                                   f"Scene: {rec['scene']}" if rec["scene"] else "",
+                                   f"Release: {rec['release']}" if rec["release"] else "") if x)
+    d = rec["diagnostics"]
+    diag = f"attached ({max(1, round(rec['diagBytes'] / 1024))} KB)" if d is True else ("not stored, disk full" if d == "skipped" else "none")
+    msg = rec["message"]
+    short = msg if len(msg) <= TELEGRAM_MESSAGE_MAX else msg[: TELEGRAM_MESSAGE_MAX - 3] + "..."
+    return (f"[{rec['kind'].upper()}][site={SITE}] {rec['id']}\n{where}\nDiagnostics: {diag}\n"
+            f"Contact: {rec['contact'] or '-'}\nMessage:\n{short}")
+
+
+# Share pages: the words follow what FPV pilots answer to (a real place, real physics, their own radio,
+# free, in the browser, a challenge). Facts only: what the simulator does today, no numbers.
+SHARE_TEXT = {
+    "en": {
+        "title": "Fly an FPV drone through {scene} — right in your browser",
+        "scan": "a real 3D scan",
+        "desc": "A real 3D scan, Betaflight-style rates and PID, walls you actually crash into. Plug in your own radio over USB or fly with touch sticks. Free, open source, nothing to install. Can you fly this line?",
+        "credit": "Scan: {credit}.",
+        "cta": "Fly it now",
+        "alt": "FPV view inside {scene}, a 3D Gaussian Splatting scan, in the ShramkoGSFPV simulator",
+    },
+    "es": {
+        "title": "Vuela un dron FPV a través de {scene}, directamente en tu navegador",
+        "scan": "un escaneo 3D real",
+        "desc": "Un escaneo 3D real, rates y PID al estilo Betaflight, paredes contra las que de verdad te estrellas. Conecta tu propia emisora por USB o vuela con sticks táctiles. Gratis, de código abierto, sin instalar nada. ¿Te atreves con esta línea?",
+        "credit": "Escaneo: {credit}.",
+        "cta": "Volar ahora",
+        "alt": "Vista FPV dentro de {scene}, un escaneo 3D Gaussian Splatting, en el simulador ShramkoGSFPV",
+    },
+    "pl": {
+        "title": "Leć dronem FPV przez {scene} — prosto w przeglądarce",
+        "scan": "prawdziwy skan 3D",
+        "desc": "Prawdziwy skan 3D, rates i PID jak w Betaflight, ściany, w które naprawdę się rozbijasz. Podłącz własną aparaturę przez USB albo leć na dotykowych drążkach. Za darmo, open source, bez instalacji. Przelecisz tę linię?",
+        "credit": "Skan: {credit}.",
+        "cta": "Leć teraz",
+        "alt": "Widok FPV wewnątrz {scene}, skan 3D Gaussian Splatting, w symulatorze ShramkoGSFPV",
+    },
+    "ru": {
+        "title": "Пролети на FPV-дроне через {scene} — прямо в браузере",
+        "scan": "настоящий 3D-скан",
+        "desc": "Настоящий 3D-скан, рейты и PID как в Betaflight, стены, в которые по-настоящему врезаешься. Подключи свой пульт по USB или летай на сенсорных стиках. Бесплатно, open source, без установки. Пролетишь эту линию?",
+        "credit": "Скан: {credit}.",
+        "cta": "Лететь",
+        "alt": "FPV-вид внутри {scene}, 3D Gaussian Splatting скан, в симуляторе ShramkoGSFPV",
+    },
+}
+OG_LOCALE = {"en": "en_US", "es": "es_ES", "pl": "pl_PL", "ru": "ru_RU"}
+# the page's only script sends a person on to the simulator; link-preview crawlers do not run it, so
+# they read this page's tags and not the simulator's (a meta refresh some of them would follow)
+_SHARE_SCRIPT = 'location.replace(document.getElementById("go").href)'
+_SHARE_SCRIPT_HASH = "sha256-" + base64.b64encode(hashlib.sha256(_SHARE_SCRIPT.encode()).digest()).decode()
+SHARE_CSP = (f"default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src '{_SHARE_SCRIPT_HASH}'; "
+             "base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+_SOF = {0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF}
+
+
+def jpeg_size(b: bytes) -> tuple[int, int] | None:
+    """(width, height) from the frame header of a whole JPEG (SOI ... EOI), else None."""
+    if len(b) < 8 or b[:3] != b"\xff\xd8\xff" or b[-2:] != b"\xff\xd9":
+        return None
+    i = 2
+    while i + 4 <= len(b):
+        if b[i] != 0xFF:
+            return None
+        m = b[i + 1]
+        if m == 0xFF:  # fill byte
+            i += 1
+            continue
+        if 0xD0 <= m <= 0xD8 or m == 0x01:  # markers without a length
+            i += 2
+            continue
+        seg = int.from_bytes(b[i + 2:i + 4], "big")
+        if seg < 2:
+            return None
+        if m in _SOF:
+            if i + 9 > len(b):
+                return None
+            return int.from_bytes(b[i + 7:i + 9], "big"), int.from_bytes(b[i + 5:i + 7], "big")
+        if m == 0xDA:  # image data before any frame header
+            return None
+        i += 2 + seg
+    return None
+
+
+def parse_share(b: dict) -> tuple[bytes, dict]:
+    """The picture (a whole JPEG of exactly 1200x630, at most 400 KB) and its words, cut to size."""
+    if b.get("hp"):
+        raise BadBody(400)
+    img = b.get("image")
+    if not isinstance(img, str):
+        raise BadBody(400)
+    img = img.removeprefix("data:image/jpeg;base64,")
+    if len(img) > SHARE_IMAGE_MAX * 4 // 3 + 4:
+        raise BadBody(413)
+    try:
+        data = base64.b64decode(img, validate=True)
+    except ValueError as e:  # binascii.Error
+        raise BadBody(400) from e
+    if jpeg_size(data) != (SHARE_W, SHARE_H):
+        raise BadBody(400)
+    scene, locale = b.get("scene"), b.get("locale")
+    if not isinstance(scene, str) or not _ID_RE.fullmatch(scene):
+        raise BadBody(400)
+    return data, {"scene": scene, "title": _plain(b.get("title"), 80), "credit": _plain(b.get("credit"), 160),
+                  "locale": locale if locale in LOCALES else "en"}
+
+
+def store_share(data: bytes, meta: dict, now: float | None = None) -> str:
+    """The picture, then its words (the page exists once both do); 503 under the disk guard, 507 over the cap."""
+    now = time.time() if now is None else now
+    sid = secrets.token_urlsafe(8)  # 11 characters: not guessable, nothing to enumerate
+    doc = json.dumps({"id": sid, "ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now)), **meta}, ensure_ascii=False).encode()
+    with _lock:
+        if _guard["tripped"]:
+            raise BadBody(503)
+        if not _dir_room(SHARE_DIR, len(data) + len(doc), SHARE_CAP_BYTES):
+            raise BadBody(507)
+        SHARE_DIR.mkdir(parents=True, exist_ok=True)
+        _write_durable(SHARE_DIR / f"{sid}.jpg", data)
+        _write_durable(SHARE_DIR / f"{sid}.json", doc)
+        _dir_add(SHARE_DIR, len(data) + len(doc))
+    return sid
+
+
+def share_image(sid: str) -> bytes | None:
+    if not _SHARE_ID_RE.fullmatch(sid):
+        return None
+    try:
+        return (SHARE_DIR / f"{sid}.jpg").read_bytes()
+    except OSError:
+        return None
+
+
+def share_page(sid: str) -> bytes | None:
+    """The page a shared link opens: Open Graph and Twitter card tags for the crawlers, a picture, the
+    words and a link for a person (the script follows it at once). Every visitor's word is escaped."""
+    if not _SHARE_ID_RE.fullmatch(sid):
+        return None
+    try:
+        meta = json.loads((SHARE_DIR / f"{sid}.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(meta, dict) or not isinstance(meta.get("scene"), str) or not _ID_RE.fullmatch(meta["scene"]):
+        return None
+    loc = meta.get("locale") if meta.get("locale") in LOCALES else "en"
+    tx = SHARE_TEXT[loc]
+    name = _plain(meta.get("title"), 80) or tx["scan"]
+    credit = _plain(meta.get("credit"), 160)
+    title = tx["title"].format(scene=name)
+    desc = tx["desc"] + (" " + tx["credit"].format(credit=credit) if credit else "")
+    alt = tx["alt"].format(scene=name)
+    page = f"{PUBLIC_ORIGIN}/s/{sid}"
+    img = f"{PUBLIC_ORIGIN}/s/{sid}.jpg"
+    fly = f"/{loc}/fly/?scene={meta['scene']}"
+    e = lambda s: html.escape(s, quote=True)  # noqa: E731
+    tags = [("property", "og:type", "website"), ("property", "og:site_name", "ShramkoGSFPV"), ("property", "og:title", title),
+            ("property", "og:description", desc), ("property", "og:url", page), ("property", "og:image", img),
+            ("property", "og:image:secure_url", img), ("property", "og:image:type", "image/jpeg"),
+            ("property", "og:image:width", str(SHARE_W)), ("property", "og:image:height", str(SHARE_H)),
+            ("property", "og:image:alt", alt), ("property", "og:locale", OG_LOCALE[loc]),
+            ("name", "twitter:card", "summary_large_image"), ("name", "twitter:title", title),
+            ("name", "twitter:description", desc), ("name", "twitter:image", img), ("name", "twitter:image:alt", alt)]
+    head = "\n".join(f'<meta {a}="{k}" content="{e(v)}">' for a, k, v in tags)
+    doc = f"""<!doctype html>
+<html lang="{loc}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{e(title)}</title>
+<meta name="description" content="{e(desc)}">
+<meta name="robots" content="noindex">
+<link rel="canonical" href="{e(page)}">
+{head}
+<style>body{{margin:0;background:#07080a;color:#e8eaed;font:16px/1.5 system-ui,sans-serif}}main{{max-width:720px;margin:0 auto;padding:16px}}img{{width:100%;height:auto;border-radius:8px}}a{{display:inline-block;margin-top:8px;padding:12px 20px;border-radius:8px;background:#4ade80;color:#03170b;font-weight:600;text-decoration:none}}p{{color:#9ba3ae}}</style>
+</head>
+<body>
+<main>
+<img src="{e(img)}" alt="{e(alt)}" width="{SHARE_W}" height="{SHARE_H}">
+<h1>{e(title)}</h1>
+<p>{e(desc)}</p>
+<a id="go" href="{e(fly)}">{e(tx['cta'])}</a>
+</main>
+<script>{_SHARE_SCRIPT}</script>
+</body>
+</html>
+"""
+    return doc.encode("utf-8")
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "gsfpv-api"
     sys_version = ""
@@ -731,16 +1106,73 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:  # noqa: BLE001
             return None
 
-    def _send(self, code: int, body: bytes, headers: list) -> None:
+    def _upload(self) -> dict:
+        """A body that may be large (a report with diagnostics, a share picture): JSON, plain or gzip."""
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            raise BadBody(400) from None
+        if n <= 0:
+            raise BadBody(400)
+        if n > MAX_UPLOAD:
+            # read a modest excess away so the client gets the 413 instead of a reset; a huge one is cut off
+            # (behind nginx client_max_body_size answers first)
+            left = n if n <= 4 * MAX_UPLOAD else 0
+            while left > 0:
+                got = len(self.rfile.read(min(left, 65536)))
+                if not got:
+                    break
+                left -= got
+            raise BadBody(413)
+        raw = self.rfile.read(n)
+        enc = (self.headers.get("Content-Encoding") or "identity").strip().lower()
+        if enc == "gzip":
+            raw = gunzip_bounded(raw, MAX_INFLATED)
+        elif enc != "identity":
+            raise BadBody(415)
+        try:
+            v = json.loads(raw)
+        except ValueError as e:  # UnicodeDecodeError too
+            raise BadBody(400) from e
+        if not isinstance(v, dict):
+            raise BadBody(400)
+        return v
+
+    def _send(self, code: int, body: bytes, headers: list, head: bool = False) -> None:
         self.send_response(code)
         for k, v in headers:
             self.send_header(k, v)
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
-        self.wfile.write(body)
+        if not head:
+            self.wfile.write(body)
+
+    def _share(self, path: str, head: bool) -> None:
+        """GET/HEAD /s/<id> (the page) and /s/<id>.jpg (the picture)."""
+        rest = path[len("/s/"):]
+        if rest.endswith(".jpg"):
+            img = share_image(rest[:-4])
+            if img is not None:
+                return self._send(200, img, [("Content-Type", "image/jpeg"), ("Cache-Control", "public, max-age=31536000, immutable"),
+                                             ("X-Content-Type-Options", "nosniff")], head)
+        else:
+            doc = share_page(rest)
+            if doc is not None:
+                return self._send(200, doc, [("Content-Type", "text/html; charset=utf-8"), ("Cache-Control", "public, max-age=3600"),
+                                             ("Content-Security-Policy", SHARE_CSP), ("X-Content-Type-Options", "nosniff")], head)
+        self._send(404, b'<!doctype html><meta charset="utf-8"><title>Not found</title><p><a href="/">ShramkoGSFPV</a></p>\n',
+                   [("Content-Type", "text/html; charset=utf-8"), ("Cache-Control", "no-store")], head)
+
+    def do_HEAD(self):
+        path = self.path.split("?")[0]
+        if path.startswith("/s/"):
+            return self._share(path, head=True)
+        self._send(404, b"", [("Content-Type", "application/json")], head=True)
 
     def do_GET(self):
         path, _, qs = self.path.partition("?")
+        if path.startswith("/s/"):
+            return self._share(path, head=False)
         if path == "/api/superspl/explore":
             # only the query string and a client key (for the per-visitor limit, RAM only) are used
             return self._send(*SUPERSPL.handle(qs, self._client()))
@@ -800,6 +1232,29 @@ class Handler(BaseHTTPRequestHandler):
                         + (f"\nScene: {scene}" if scene else "") + f"\nMessage:\n{message or '-'}")
                 mid = send_telegram(text)
             return self._json(200, {"ok": True, "id": rec["id"], "delivered": mid is not None})
+        if path == "/api/report":
+            if not _rate(_rhits, self._client(), 10, 3600.0) or not _rate(_all_hits, "report", 300, 3600.0):
+                return self._json(429, {"ok": False})
+            try:
+                r = parse_report(self._upload())
+                rec = store_report(r)
+            except BadBody as e:
+                return self._json(e.status, {"ok": False})
+            except OSError:  # not stored: nothing is sent either
+                return self._json(500, {"ok": False})
+            mid = None if rec["suspect"] else send_telegram(report_text(rec))
+            return self._json(200, {"ok": True, "id": rec["id"], "diagnostics": rec["diagnostics"], "delivered": mid is not None})
+        if path == "/api/share":
+            if not _rate(_shits, self._client(), 12, 3600.0) or not _rate(_all_hits, "share", 300, 3600.0):
+                return self._json(429, {"ok": False})
+            try:
+                data, meta = parse_share(self._upload())
+                sid = store_share(data, meta)
+            except BadBody as e:
+                return self._json(e.status, {"ok": False})
+            except OSError:
+                return self._json(500, {"ok": False})
+            return self._json(200, {"ok": True, "id": sid, "url": f"{PUBLIC_ORIGIN}/s/{sid}", "image": f"{PUBLIC_ORIGIN}/s/{sid}.jpg"})
         self._json(404, {"ok": False})
 
 
