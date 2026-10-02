@@ -6,40 +6,24 @@ Spec: vault `03 - Resources/Deployment/shramkogsfpv/spec.md` (+ 6 spec-*.md). Ph
 
 - **Live:** https://gsfpv.flyreelstudio.eu — release **e5fad2d5182f** = commit `8042182` (+ later commits on `main` are evidence/bench/docs only). Contains: no-click calibration wizard (sticks move it on), latency guard + honest HUD latency, walls refine to 1.6 cm with browser cache/export, walls on/off (C key; admin default per scan in `apps/fly/public/showcase.json`), voxel overlay (V key; overlay / voxels only, 4 styles, opacity), whole-file bake reads (brotli scenes), coarser grid for huge scans, governor 1.25-period threshold, landing + README with 30 real screenshots and parallax.
 - **Acceptance:** A1-A9, B1-B23, C, D accepted on the live site; table `evidence/2026-09-27/acceptance-live-2026-09-27.json`; later releases re-checked: `evidence/2026-09-27/v03-*.json` (wizard auto, walls/voxels/landing, latency/walls). A9: LIMITED BY DISPLAY (the owner's 4K monitor runs 30 Hz over HDMI).
-- **Last update:** 2026-10-01 (v0.3 continues on branch `shramkoclaude/determined-cannon-ns801h`, PR #3: see "Where v0.3 stands" below)
+- **Last update:** 2026-10-02 (v0.3 waves 1-2 live: see "Where v0.3 stands" below)
 
-## Where v0.3 stands (2026-10-01, local session on the owner's PC)
+## Where v0.3 stands (2026-10-02)
 
-- **Continue from branch `shramkoclaude/determined-cannon-ns801h` (PR #3), not from `wip/v03-wave1`.** `wip/v03-wave1` is the old,
-  superseded snapshot (its `docs/wip/V03-WAVE1-STATUS.md` is history only).
-- **Wave 1 is done** on PR #3 (prefs store with the 4 review must-fixes, app shell, sim-core model / lives / log /2 / director /
-  history / stats, collision transform, namespaced i18n). W2-5 (settings catalogue on the site) and W4-3 (Betaflight dumps +
-  blackbox tools) are done early. Lead contract step before wave 2 done: `ctx.prefs`, `ArmGate.keepArmedAfterCrash`,
-  `FlightSession.setCamera` / `applyLifeSettings` / `stats`.
-- **Open from wave 1:** accept-fly B12 negative control (the bot's slow dash tumbles into a crash since wave 1) and the B15 tamper
-  control margin; both owned by W2-2. With the scan drawn on a GPU, B6 B7 B9 B10 B11 B13 B14 B16 pass on a local release build
-  (`evidence/2026-10-01/v03-w1-render-accept.json`).
-- **Review of the cloud work** (7 areas, every finding tried by 3 skeptics): 19 confirmed, 20 refuted; each confirmed one is owned
-  by a wave-2 agent or the lead (vault build log `build-log-2026-09-27-cloud-v03.md`).
-- **Wave 2** (W2-1 settings UI, W2-2 respawn, W2-3 modes, W2-4 summary) runs in worktrees `C:/dev/gsfpv-w2-*` on branches
-  `w2-1`..`w2-4` (local only until merged into PR #3).
-
-
-## Cloud session status (2026-10-01, read this before continuing from b7261ee)
-
-- The cloud session (claude.ai/code, branch `shramkoclaude/determined-cannon-ns801h`, PR #3) hit the weekly limit on
-  2026-09-28 08:22 UTC. The wave-2 agents it had just started (W2-1 settings UI, W2-2 respawn, W2-3 modes, W2-4 summary)
-  **committed nothing**: start wave 2 from scratch on this branch.
-- **W4-3 Betaflight + blackbox is done and merged** (`b46cd89`): `bfdiff.ts` reads the 9 BetaFPV Pavo20 Pro / Pro II
-  factory dumps (4.5.0, 4.5.3, 2025.12.5, "2026.6.1"); `tools/blackbox/` = our own blackbox decoder (2,130 x 35 values
-  identical to `blackbox_decode`), the model fit from a log, `docs/research/blackbox-fit.md` (how Andrii records and
-  sends a log). Do not redo it.
-- Open from the wave-2 lead step (`evidence/2026-09-28/v03-lead2-accept-fly.json`): B12 negative control (the slow
-  0.75 m/s bot dash now crashes, reproducible in Node) and the B15 tamper control margin (9.0 mm vs 10 mm).
-- Hub commands from a cloud session: vault workflow `gsfpv-hub` (`.github/gsfpv-hub/README.md` in the vault). From the
-  owner's PC plain SSH works.
-- After 2026-10-01 a local session on the owner's PC continues this work; the cloud session stood down to avoid duplicate
-  work.
+- **Live:** release **7c2d0e0c0c6d** = `main` bc2e96f (PR #3's branch fast-forwarded into `main`; the API with the SuperSplat
+  catalogue proxy and nginx.conf with `/api/superspl/` uploaded first). Neighbours equal before/after (31 containers, 24 sites),
+  smoke 184/184.
+- **On the live site now:** v0.3 wave 1 + wave 2: settings screen from the prefs schema (per-drone values kept and saved, export /
+  import, deep links from the landing catalogue), automatic respawn (rewind 5 s, invisible platform, keep armed, unstuck, crashes
+  off), flight modes (angle by default, mode chip, M, the radio's mode switch found with no click), stats card + summary panel with
+  every key, recording at 60 fps on the engine's WebGPU device + auto-record to a folder, SuperSplat catalogue API (`/api/superspl/explore`).
+- **Live acceptance:** B6 B9 B10 B11 B12 B15, P1 P2 P5 P7, S1 S2, M1-M3, R16 R23 R18 RR pass. Open: S3's control cannot inject
+  into a bundled build (its keys all pass); live R1: 60/1, 602 frames, 0 held, but 25.7 % repeated pictures while the page drew
+  51.6 Hz before recording (locally 2.5 %).
+- **Next (wave 3):** scene host + rotation + crash-panel scene keys (W3-1), the SuperSplat tab in the picker on the D35 proxy
+  (W3-2; `ui/picker-tabs.ts` registry ready), scene scale (W3-3; render-pc `setSceneTransform` ready). Then wave 4: video from the
+  log (F.3), the phantom-wall fix (G.3), release acceptance (W4-5). W4-3 (blackbox tools) is done.
+- **Working rule since 2026-10-02:** no review / verify fan-outs; one or two agents at a time; merge and ship as soon as accepted.
 
 ## Handoff — how any agent continues from git alone
 
