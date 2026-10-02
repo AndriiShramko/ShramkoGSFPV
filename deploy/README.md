@@ -100,8 +100,9 @@ safe (without the API change the location answers `404 {"ok": false}`, without t
 the path falls through to the static site's 404 page; the client reports either as an error).
 
 1. Keep the live copy: `$SSH "cp $GSFPV_BASE/api/server.py $GSFPV_BASE/api/server.py.prev"`.
-2. Upload and compare:
+2. Upload and compare (with `apps/api/locales/`, the /s/<id> page texts, and `apps/api/admin.py`):
    ```bash
+   scp -r -P $GSFPV_PORT -i $GSFPV_KEY apps/api/locales $GSFPV_HOST:$GSFPV_BASE/api/
    scp -P $GSFPV_PORT -i $GSFPV_KEY apps/api/server.py $GSFPV_HOST:$GSFPV_BASE/api/server.py
    sha256sum apps/api/server.py; $SSH "sha256sum $GSFPV_BASE/api/server.py"      # must be equal
    ```

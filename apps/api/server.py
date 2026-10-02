@@ -902,40 +902,8 @@ def report_text(rec: dict) -> str:
 
 # Share pages: the words follow what FPV pilots answer to (a real place, real physics, their own radio,
 # free, in the browser, a challenge). Facts only: what the simulator does today, no numbers.
-SHARE_TEXT = {
-    "en": {
-        "title": "Fly an FPV drone through {scene} — right in your browser",
-        "scan": "a real 3D scan",
-        "desc": "A real 3D scan, Betaflight-style rates and PID, walls you actually crash into. Plug in your own radio over USB or fly with touch sticks. Free, open source, nothing to install. Can you fly this line?",
-        "credit": "Scan: {credit}.",
-        "cta": "Fly it now",
-        "alt": "FPV view inside {scene}, a 3D Gaussian Splatting scan, in the ShramkoGSFPV simulator",
-    },
-    "es": {
-        "title": "Vuela un dron FPV a través de {scene}, directamente en tu navegador",
-        "scan": "un escaneo 3D real",
-        "desc": "Un escaneo 3D real, rates y PID al estilo Betaflight, paredes contra las que de verdad te estrellas. Conecta tu propia emisora por USB o vuela con sticks táctiles. Gratis, de código abierto, sin instalar nada. ¿Te atreves con esta línea?",
-        "credit": "Escaneo: {credit}.",
-        "cta": "Volar ahora",
-        "alt": "Vista FPV dentro de {scene}, un escaneo 3D Gaussian Splatting, en el simulador ShramkoGSFPV",
-    },
-    "pl": {
-        "title": "Leć dronem FPV przez {scene} — prosto w przeglądarce",
-        "scan": "prawdziwy skan 3D",
-        "desc": "Prawdziwy skan 3D, rates i PID jak w Betaflight, ściany, w które naprawdę się rozbijasz. Podłącz własną aparaturę przez USB albo leć na dotykowych drążkach. Za darmo, open source, bez instalacji. Przelecisz tę linię?",
-        "credit": "Skan: {credit}.",
-        "cta": "Leć teraz",
-        "alt": "Widok FPV wewnątrz {scene}, skan 3D Gaussian Splatting, w symulatorze ShramkoGSFPV",
-    },
-    "ru": {
-        "title": "Пролети на FPV-дроне через {scene} — прямо в браузере",
-        "scan": "настоящий 3D-скан",
-        "desc": "Настоящий 3D-скан, рейты и PID как в Betaflight, стены, в которые по-настоящему врезаешься. Подключи свой пульт по USB или летай на сенсорных стиках. Бесплатно, open source, без установки. Пролетишь эту линию?",
-        "credit": "Скан: {credit}.",
-        "cta": "Лететь",
-        "alt": "FPV-вид внутри {scene}, 3D Gaussian Splatting скан, в симуляторе ShramkoGSFPV",
-    },
-}
+# the /s/<id> page texts in 4 languages (apps/api/locales/share.json; deployed next to server.py)
+SHARE_TEXT: dict[str, dict[str, str]] = json.loads((Path(__file__).resolve().parent / "locales" / "share.json").read_text(encoding="utf-8"))
 OG_LOCALE = {"en": "en_US", "es": "es_ES", "pl": "pl_PL", "ru": "ru_RU"}
 # the page's only script sends a person on to the simulator; link-preview crawlers do not run it, so
 # they read this page's tags and not the simulator's (a meta refresh some of them would follow)

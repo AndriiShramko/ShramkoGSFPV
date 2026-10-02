@@ -76,7 +76,7 @@ export const KEYMAP: readonly KeyBinding[] = [
     // W2-1 (app/builtin/settings.ts): the settings screen, also from the pause menu and the gear
     { action: 'settings.open', keys: [letter('O')], when: 'always', labelKey: 'keys.settings.open', status: 'shipped' },
     // W5 (app/builtin/feedback.ts): the bug / idea / cooperation dialog, also on the top bar and in the
-    // pause menu; B as in bug (and Polish błąd), and in the crash state too, where bugs show
+    // pause menu; B as in bug (and the Polish "blad"), and in the crash state too, where bugs show
     { action: 'feedback.open', keys: [letter('B')], when: 'always', labelKey: 'keys.feedback.open', status: 'shipped' }
 ];
 

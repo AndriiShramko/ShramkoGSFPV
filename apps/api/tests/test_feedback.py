@@ -266,7 +266,7 @@ class Share(Api):
         sid = self.share(locale="pl", title="")[1]["id"]
         m = Meta()
         m.feed(self.call("GET", f"/s/{sid}")[1].decode("utf-8"))
-        self.assertEqual(m.tags["og:title"], "Leć dronem FPV przez prawdziwy skan 3D — prosto w przeglądarce")
+        self.assertEqual(m.tags["og:title"], server.SHARE_TEXT["pl"]["title"].format(scene=server.SHARE_TEXT["pl"]["scan"]))  # the Polish page, texts from locales/share.json
         self.assertEqual(m.tags["og:locale"], "pl_PL")
         # control: an unknown locale falls back to English
         sid = self.share(locale="xx")[1]["id"]
