@@ -22,6 +22,7 @@ import { measure } from './builtin/measure';
 import { betaflightImport } from './builtin/import';
 import { summary } from './builtin/summary';
 import { modes } from './builtin/modes';
+import { rotation } from './builtin/rotation';
 
 export const FEATURES: readonly Feature[] = [
     scene,
@@ -41,5 +42,6 @@ export const FEATURES: readonly Feature[] = [
     measure,
     betaflightImport,
     summary,
-    modes
+    modes,
+    rotation
 ];

@@ -49,7 +49,9 @@ const SHIPPED_IN_WAVE2: readonly string[] = [
     // W2-2 respawn: Y rewinds, Enter keeps the wreck (C.10)
     'respawn.rewind', 'crash.keep',
     // W3-5: F9, REC on the recording bar
-    'record.toggle'
+    'record.toggle',
+    // W3-1: N next scene, Shift+N random scene, F next favourite (E.5)
+    'scene.next', 'scene.random', 'scene.favourite'
 ];
 
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });
@@ -110,11 +112,13 @@ describe('v0.2 keys keep working', () => {
     });
 
     it('control: a planned key routes nothing and shows no cap, until asked for', () => {
-        // N (next scene, wave 3); O and then F9 were the example until W2-1 and W3-5 shipped them
-        expect(actionFor(press('KeyN'), 'flight')).toBeNull();
-        expect(keysFor('scene.next')).toEqual([]);
-        expect(actionFor(press('KeyN'), 'flight', { planned: true })).toBe('scene.next');
-        expect(keysFor('scene.next', { planned: true })).toEqual([{ cap: 'N', aria: 'N' }]);
+        // N as it was until W3-1 shipped it (O, F9 and N were the example until W2-1, W3-5 and W3-1 shipped them)
+        const planned = KEYMAP.map((b) => (b.action === 'scene.next' ? { ...b, status: 'planned' as const } : b));
+        expect(actionFor(press('KeyN'), 'flight', { map: planned })).toBeNull();
+        expect(keysFor('scene.next', { map: planned })).toEqual([]);
+        expect(actionFor(press('KeyN'), 'flight', { planned: true, map: planned })).toBe('scene.next');
+        expect(keysFor('scene.next', { planned: true, map: planned })).toEqual([{ cap: 'N', aria: 'N' }]);
+        expect(actionFor(press('KeyN'), 'flight')).toBe('scene.next');
         expect(actionFor(press('KeyO'), 'flight')).toBe('settings.open');
     });
 });

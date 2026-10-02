@@ -10,13 +10,20 @@ import type { Feature } from '../context';
 export const scene: Feature = {
     id: 'scene',
     install(ctx) {
-        const { id, meta } = ctx.scene;
         const attr = h('div', { class: 'attribution interactive', 'data-testid': 'attribution' });
-        if (meta) attr.append(t('scenes.attribution', { title: meta.title, author: meta.author, license: meta.license }), ' · ', h('a', { href: `https://superspl.at/scene/${id}`, target: '_blank', rel: 'noopener' }, 'SuperSplat'));
-        else attr.append(h('a', { href: `https://superspl.at/scene/${id}`, target: '_blank', rel: 'noopener' }, t('scenes.byAuthor')));
-        // takedown path: the landing's contact form opens with role "takedown" and the scene id filled in
-        attr.append(' · ', h('a', { href: `/${locale}/?report=${id}#contact`, target: '_blank', rel: 'noopener', 'data-testid': 'report-scene' }, t('scenes.report')));
+        const credit = (): void => {
+            const { id, meta } = ctx.scene;
+            attr.replaceChildren();
+            attr.dataset.scene = id;
+            if (meta) attr.append(t('scenes.attribution', { title: meta.title, author: meta.author, license: meta.license }), ' · ', h('a', { href: `https://superspl.at/scene/${id}`, target: '_blank', rel: 'noopener' }, 'SuperSplat'));
+            else attr.append(h('a', { href: `https://superspl.at/scene/${id}`, target: '_blank', rel: 'noopener' }, t('scenes.byAuthor')));
+            // takedown path: the landing's contact form opens with role "takedown" and the scene id filled in
+            attr.append(' · ', h('a', { href: `/${locale}/?report=${id}#contact`, target: '_blank', rel: 'noopener', 'data-testid': 'report-scene' }, t('scenes.report')));
+        };
+        credit();
         ctx.ui.append(attr);
+        // a scene switched in the page (E.4): its own credit; the walls line goes on it again (builtin/walls.ts)
+        ctx.events.on('session', credit);
 
         ctx.events.on('sim', (e) => {
             if (e.type === 'arm') { beacon('arm'); recordFlight(ctx.scene.id); }

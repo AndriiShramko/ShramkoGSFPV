@@ -12,6 +12,7 @@ import { hook } from './test-hook';
 import { fly } from './flight';
 import { mirrorWarned, openPagePrefs, prefsHook } from './prefs';
 import { openSettingsLink, storageBanner } from './builtin/settings';
+import { useStoreLibrary } from './scene-host';
 
 export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<void> {
     if (!hasWebGPU) banner(ui, t('banner.noWebgpu'), 'no-webgpu');
@@ -20,6 +21,8 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
     // the curated scans are the store's per-scan defaults (the walls switch), so it opens after them
     const prefs = openPagePrefs(showcase, q.toString());
     hook.prefs = prefsHook(prefs);
+    // E.1: history, favourites and the filter live in the store from here on (the picker reads them)
+    useStoreLibrary(prefs);
     // W2-1: blocked storage says so once (A.5); the catalogue's ?open=settings opens over the picker
     storageBanner(ui, prefs);
     let picker: ScenePicker | null = null;

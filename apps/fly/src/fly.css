@@ -30,6 +30,9 @@ h1 { font-size: 22px; margin: 0 0 12px; } h2 { font-size: 18px; margin: 0 0 10px
 .scene-cell { position: relative; min-width: 0; }
 .scene-card { display: flex; flex-direction: column; gap: 4px; width: 100%; text-align: left; padding: 0 0 10px; border-radius: var(--r); border: 1px solid var(--line); background: var(--bg2); color: var(--fg); cursor: pointer; overflow: hidden; font: inherit; }
 .scene-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: #111; }
+/* E.8: "Continue: <last scene>" above the tabs: poster left, title right */
+.scene-continue { flex-direction: row; align-items: center; gap: 12px; padding: 0 12px 0 0; margin-bottom: 10px; max-width: 520px; }
+.scene-continue img { width: 160px; flex: none; }
 .scene-title { padding: 0 10px; font-weight: 600; } .scene-meta { padding: 0 10px; color: var(--muted); font-size: 13px; }
 .star { position: absolute; top: 8px; right: 8px; width: 40px; height: 40px; border-radius: 999px; border: 0; background: rgba(0,0,0,.55); color: #9aa3ad; font-size: 20px; cursor: pointer; }
 .star.on { color: var(--warn); }
@@ -126,6 +129,10 @@ dl.measure { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; } dl
    its fade shows what comes next underneath. */
 .loading { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; padding: 16px; background: var(--bg); transition: opacity .26s ease; }
 .loading.leaving { opacity: 0; }
+/* a scene switch in flight (app/scene-host.ts): a small card over the dimmed view, no poster */
+.loading.compact { background: rgba(0, 0, 0, .5); }
+.loading.compact .load-card { width: min(360px, 100%); padding: 12px 14px; border-radius: 10px; background: var(--bg); }
+.loading.compact .load-poster { display: none; }
 #ui .loading.leaving button { pointer-events: none; }
 .load-card { width: min(440px, 100%); display: flex; flex-direction: column; gap: 8px; }
 .load-poster { aspect-ratio: 16 / 9; border-radius: var(--r); overflow: hidden; background: var(--bg2); border: 1px solid var(--line); }

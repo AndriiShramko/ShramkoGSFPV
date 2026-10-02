@@ -1,1 +1,22 @@
-{}
+{
+  "rotation.toast": "Choque {speed} · siguiente escena en {in} s",
+  "rotation.key.next": "Siguiente escena",
+  "rotation.key.favourite": "Favorita",
+  "rotation.none": "No hay otra escena a la que ir. Cambia la fuente en Ajustes → Escenas o permite escenas sin paredes.",
+  "rotation.noFavourite": "Aún no tienes otra escena favorita: marca escenas con la estrella (★) en la lista de escenas.",
+  "rotation.failed": "La escena {id} no se cargó: vuelves a la que estabas volando. Se omitirá durante un día.",
+  "scenes.continue": "Continuar: {title}",
+  "set.scenes.autoSwitch": "Siguiente escena tras un choque",
+  "set.scenes.autoSwitch.help": "Activado: tras un choque se carga la siguiente escena en lugar de reaparecer, y empiezas en su plataforma. La emisora sigue conectada.",
+  "set.scenes.rotation": "Escenas para rotar",
+  "set.scenes.rotation.help": "De dónde salen N (siguiente escena) y la escena tras un choque. Shift+N es siempre una escena aleatoria de la lista del autor; F, tu siguiente favorita.",
+  "set.scenes.rotation.opt.curated": "Lista del autor",
+  "set.scenes.rotation.opt.favourites": "Mis favoritas",
+  "set.scenes.rotation.opt.history": "Escenas que he volado",
+  "set.scenes.order": "Orden",
+  "set.scenes.order.help": "Aleatorio: cada escena una vez antes de que se repita ninguna, nunca la que tienes delante. En orden: una tras otra, en bucle.",
+  "set.scenes.order.opt.random": "Aleatorio",
+  "set.scenes.order.opt.sequential": "En orden",
+  "set.scenes.allowNoWalls": "Incluir escenas sin paredes",
+  "set.scenes.allowNoWalls.help": "En las escenas sin paredes no hay choques: atraviesas todo. Desactivado: la rotación las omite."
+}

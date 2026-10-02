@@ -27,6 +27,8 @@ export interface LoadingOptions {
     next?: string | null;
     onRetry: () => void;
     onBack: () => void;
+    /** a scene switch in flight (E.4): a small card over the flight view instead of the whole screen */
+    compact?: boolean;
 }
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
@@ -78,7 +80,7 @@ export class LoadingScreen {
         const actions = h('div', { class: 'load-actions' },
             h('button', { type: 'button', class: 'btn primary', 'data-action': 'load-retry', onclick: () => o.onRetry() }, t('loading.retry')),
             h('button', { type: 'button', class: 'btn', 'data-action': 'load-back', onclick: () => o.onBack() }, t('loading.back')));
-        this.root = h('div', { class: 'loading', 'data-testid': 'loading', 'data-stage': 'connect', 'data-indeterminate': true, 'aria-busy': 'true' },
+        this.root = h('div', { class: o.compact ? 'loading compact' : 'loading', 'data-testid': 'loading', 'data-stage': 'connect', 'data-indeterminate': true, 'aria-busy': 'true' },
             h('div', { class: 'load-card' },
                 h('div', { class: 'load-poster' }, img),
                 h('div', { class: 'load-title' }, o.title ?? o.sceneId),

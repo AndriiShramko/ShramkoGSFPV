@@ -18,13 +18,15 @@ function refineMode(): RefineMode {
 export const walls: Feature = {
     id: 'walls',
     install(ctx) {
-        const session = ctx.session;
-        const w = mountWalls({
-            ui: ctx.ui, session, sceneId: ctx.scene.id, beacon, hook: ctx.hook,
+        const mount = () => mountWalls({
+            ui: ctx.ui, session: ctx.session, sceneId: ctx.scene.id, beacon, hook: ctx.hook,
             mode: refineMode(),
             bakeNow: q.get('bake') === '1',
             controls: wallsVoxelsControls(ctx.voxels, ctx.walls, 'wm')
         });
+        let w = mount();
+        // a scene switched in the page (E.4): the box, the walls line and the store for the new scene
+        ctx.events.on('session', () => { w.dispose(); w = mount(); });
         ctx.events.on('walls', ({ on }) => w.switched(on));
         ctx.hook.wallsSwitch = { on: () => ctx.session.wallsOn, set: (on) => ctx.walls.set(on, false), state: () => ctx.session.walls, header: () => ctx.session.log.header };
         ctx.keys.on('walls.toggle', (e) => {

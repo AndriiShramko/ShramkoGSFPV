@@ -1,1 +1,22 @@
-{}
+{
+  "rotation.toast": "Crash {speed} · następna scena za {in} s",
+  "rotation.key.next": "Następna scena",
+  "rotation.key.favourite": "Ulubiona",
+  "rotation.none": "Nie ma innej sceny. Zmień źródło w Ustawienia → Sceny albo dopuść sceny bez ścian.",
+  "rotation.noFavourite": "Nie masz jeszcze innej ulubionej sceny: oznacz sceny gwiazdką (★) na liście scen.",
+  "rotation.failed": "Scena {id} się nie wczytała: wracasz do tej, w której latałeś. Przez dobę będzie pomijana.",
+  "scenes.continue": "Kontynuuj: {title}",
+  "set.scenes.autoSwitch": "Następna scena po crashu",
+  "set.scenes.autoSwitch.help": "Wł.: po crashu zamiast respawnu wczytuje się następna scena, a ty startujesz z jej platformy. Aparatura zostaje podłączona.",
+  "set.scenes.rotation": "Z jakich scen wybierać",
+  "set.scenes.rotation.help": "Skąd biorą się N (następna scena) i scena po crashu. Shift+N to zawsze losowa scena z listy autora; F to następna ulubiona.",
+  "set.scenes.rotation.opt.curated": "Lista autora",
+  "set.scenes.rotation.opt.favourites": "Moje ulubione",
+  "set.scenes.rotation.opt.history": "Sceny, w których latałem",
+  "set.scenes.order": "Kolejność",
+  "set.scenes.order.help": "Losowo: każda scena raz, zanim któraś się powtórzy, nigdy ta, w której jesteś. Po kolei: jedna za drugą, w kółko.",
+  "set.scenes.order.opt.random": "Losowo",
+  "set.scenes.order.opt.sequential": "Po kolei",
+  "set.scenes.allowNoWalls": "Uwzględniaj sceny bez ścian",
+  "set.scenes.allowNoWalls.help": "W scenach bez ścian nie ma crashy: dron przelatuje przez wszystko. Wył.: rotacja je pomija."
+}

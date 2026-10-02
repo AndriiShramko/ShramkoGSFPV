@@ -31,7 +31,10 @@ export interface AppEvents {
     frame: { now: number };
     /** a new life of the flight model (wave 2: respawns); not emitted in wave 1 */
     life: { index: number; reason: RespawnReason | 'start' };
-    /** a new scene session (E.4 scene switching); not emitted in wave 1 */
+    /**
+     * a new scene session (E.4, app/scene-host.ts): ctx.session and ctx.scene are the new ones
+     * already; whatever a feature put on the old session or built for the old scene goes on again
+     */
     session: FlightSession;
     pause: { on: boolean; reasons: readonly PauseReason[] };
     /** the walls were switched on or off (C, the switch): the new flight model is in already */
@@ -44,6 +47,19 @@ export interface AppEvents {
 export interface SceneRef {
     id: string;
     meta?: ShowcaseScene;
+}
+
+/** Why a scene loads in flight (E.4, E.5): N, Shift+N, F, scenes.autoSwitch after a crash, a pick, back after a failed load. */
+export type SceneSwitchReason = 'next' | 'random' | 'favourite' | 'auto' | 'pick' | 'back';
+
+/** In-page scene switching (app/scene-host.ts): the radio, the settings and the page stay. */
+export interface SceneSwitcher {
+    /** N (next), Shift+N (random), F (next favourite), auto (the crash with scenes.autoSwitch): pick from the rotation and load; false when nothing loaded */
+    go(kind: 'next' | 'random' | 'favourite' | 'auto'): Promise<boolean>;
+    /** load this scene in place of the one flown */
+    load(id: string, reason: SceneSwitchReason): Promise<boolean>;
+    /** a switch is under way */
+    readonly busy: boolean;
 }
 
 /** The pilot's walls switch for this scan (app/walls.ts); the UI block and C both use it. */
@@ -68,6 +84,8 @@ export interface FlightContext {
     session: FlightSession;
     /** replaced with the session */
     scene: SceneRef;
+    /** in-page scene switching (E.4): N, Shift+N, F, the crash panel, scenes.autoSwitch */
+    readonly scenes: SceneSwitcher;
     readonly controls: Controls;
     /** the input in use and its screen: the Controls screen, the keyboard, the touch sticks */
     readonly input: InputHost;

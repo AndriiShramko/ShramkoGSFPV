@@ -36,6 +36,12 @@ export class CrashView {
     private preCam = { x: 0, y: 0, z: 0, fx: 0, fy: 0, fz: -1 };
     rapierReady = false;
 
+    /** A new scene (E.4): the old crash goes, the view follows the new session. */
+    setSession(s: FlightSession): void {
+        this.clear();
+        this.s = s;
+    }
+
     constructor(s: FlightSession) {
         this.s = s;
         // warm up Rapier in the background so the first crash has it

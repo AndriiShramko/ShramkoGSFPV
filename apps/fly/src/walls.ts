@@ -38,6 +38,8 @@ export interface WallsHook {
     refine(): Promise<void>;
     exportZip(): Promise<Uint8Array>;
     importZip(bytes: Uint8Array): Promise<ImportReport>;
+    /** the scene was switched (E.4): the box and the walls line go, the timers stop */
+    dispose(): void;
     /** test: put these walls in now (the path a bake, the store and an import take) */
     install(json: Uint8Array, bin: Uint8Array): { ok: boolean; sha: string | null; error?: string };
     /** test: pretend the GPU has these limits (undefined: the real ones) */
@@ -150,6 +152,12 @@ export function mountWalls(o: WallsOptions): WallsHook {
             }
         },
         fakeLimits: (l) => { fake = l; },
+        dispose: () => {
+            clearInterval(pollTimer);
+            clearTimeout(hideTimer);
+            box.remove();
+            more.remove();
+        },
         rows: async () => (await cacheP).rows(),
         clear: () => clearStore(),
         switched: (on) => {

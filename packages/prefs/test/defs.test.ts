@@ -9,7 +9,9 @@ import { MAIN_SETTINGS, PRESETS, REPO, V02_SETTINGS } from './helpers';
 /** Settings a v0.3 wave shipped with its feature (the agent that flips one adds it here). */
 const V03_SHIPPED = [
     // W3-5 recording (recording.folder stays planned: it is picked on the recording bar, not in Settings)
-    'recording.fps', 'recording.resolution', 'recording.auto', 'recording.splitMin'
+    'recording.fps', 'recording.resolution', 'recording.auto', 'recording.splitMin',
+    // W3-1 scene rotation (E.3-E.5): Settings -> Scenes
+    'scenes.autoSwitch', 'scenes.rotation', 'scenes.order', 'scenes.allowNoWalls'
 ];
 
 /**

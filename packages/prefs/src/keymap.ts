@@ -51,9 +51,9 @@ export const KEYMAP: readonly KeyBinding[] = [
     // Liftoff's rewind key (research-a (c) [L10])
     { action: 'respawn.rewind', keys: [letter('Y')], when: 'always', labelKey: 'keys.respawn.rewind', status: 'shipped' },
     { action: 'crash.keep', keys: [{ code: 'Enter', cap: 'Enter', aria: 'Enter' }], when: 'crash', labelKey: 'keys.crash.keep', status: 'shipped' },
-    { action: 'scene.next', keys: [letter('N')], when: 'always', labelKey: 'keys.scene.next', status: 'planned' },
-    { action: 'scene.random', keys: [{ code: 'KeyN', shift: true, cap: 'Shift+N', aria: 'Shift+N' }], when: 'always', labelKey: 'keys.scene.random', status: 'planned' },
-    { action: 'scene.favourite', keys: [letter('F')], when: 'always', labelKey: 'keys.scene.favourite', status: 'planned' },
+    { action: 'scene.next', keys: [letter('N')], when: 'always', labelKey: 'keys.scene.next', status: 'shipped' },
+    { action: 'scene.random', keys: [{ code: 'KeyN', shift: true, cap: 'Shift+N', aria: 'Shift+N' }], when: 'always', labelKey: 'keys.scene.random', status: 'shipped' },
+    { action: 'scene.favourite', keys: [letter('F')], when: 'always', labelKey: 'keys.scene.favourite', status: 'shipped' },
     // M cycles acro / angle / horizon for every input (app/builtin/modes.ts, the HUD mode chip; with
     // a radio whose mode switch decides, it says so). v0.2's keyboard flying toggled angle on M,
     // so keyboard pilots keep their key

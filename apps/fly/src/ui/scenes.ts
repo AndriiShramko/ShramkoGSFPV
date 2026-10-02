@@ -1,6 +1,6 @@
 // Scene picker: paste a link, Andrii's scans (static showcase.json), recent, favourites, filters.
 // History, favourites and the filter live in the browser only and survive a reload.
-import { parseSceneInput, getHistory, getFavourites, toggleFavourite, getFilter, setFilter, posterUrl } from '@gsfpv/scenes';
+import { parseSceneInput, getHistory, getFavourites, toggleFavourite, getFilter, setFilter, posterUrl, getLibrary, lastScene } from '@gsfpv/scenes';
 import type { SceneFilter } from '@gsfpv/scenes';
 import { h, clear } from './dom';
 import { t } from '../i18n';
@@ -76,11 +76,20 @@ export class ScenePicker {
         fFlown.value = this.filter.flown;
         fFlown.addEventListener('change', () => { this.filter.flown = fFlown.value as SceneFilter['flown']; setFilter(this.filter); this.render(tabs); });
         this.list = h('div', { class: 'scene-grid' });
+        // E.8: "Continue: <last scene>" comes first, whatever the tab
+        const last = lastScene(getLibrary());
+        const lastTitle = last ? showcase.find((s) => s.id === last.id)?.title ?? last.title ?? last.id : '';
+        const cont = last
+            ? h('button', { type: 'button', class: 'scene-card scene-continue', 'data-testid': 'scene-continue', 'data-scene': last.id, onclick: () => this.onPick?.(last.id, 'history') },
+                h('img', { src: posterUrl(last.id), alt: '', loading: 'lazy', width: 160, height: 90 }),
+                h('span', { class: 'scene-title' }, t('scenes.continue', { title: lastTitle })))
+            : null;
         this.filters = h('div', { class: 'filters' }, h('label', { for: 'f-col' }, fCol, ' ', t('scenes.filter.collision')), fKind, fFlown);
         this.root = h('div', { class: 'screen scenes interactive' },
             h('h1', {}, t('scenes.title')),
             h('div', { class: 'scene-paste' }, input, h('button', { type: 'button', class: 'btn primary', onclick: go }, t('scenes.go'))),
             this.err,
+            cont,
             tabs,
             this.filters,
             this.list

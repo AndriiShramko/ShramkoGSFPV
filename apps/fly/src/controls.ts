@@ -171,6 +171,11 @@ export class Controls {
         this.armView = { ch: this.ch, armKind: null, armLabel: '', mode: 2, source: null };
     }
 
+    /** A new scene (E.4): the same input, profile and arm gate feed the new session. */
+    setSession(session: FlightSession): void {
+        this.session = session;
+    }
+
     /**
      * Use a profile (or none). A new profile starts disarmed: a fresh gate wants the switch seen
      * OFF and every stick through its centre again, so a switch left ON under the old mapping (or
