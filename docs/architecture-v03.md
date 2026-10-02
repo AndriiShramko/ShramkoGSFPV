@@ -1252,6 +1252,8 @@ export class VoxelOverlay {
 - **Style "floaters"** paints components under 512 blocks red.
 - **Wave 4 adds the per-scene fix `scene.dropFloaters`.** It drops components under N blocks; default 0 means off.
   - It changes the collision, so its value goes into the life header and the collision hash.
+  - **Built (W4-2):** `collision/src/rebuild.ts` `dropFloaters(base, N)` copies the octree words and points every leaf of a dropped piece at one appended empty mask (no mask is edited, so shared masks stay safe); deterministic, cached per scan and N. The filter is applied before the scene transform (`session/world.ts` `filteredWalls`, `worldUnder`).
+  - A change is a world record (ch[4] = N) followed by a new life (reason 'settings') whose header carries `scene.floaterMinBlocks` and `scene.floaterSha256` (sha256 of the filtered walls); `replay.ts` rebuilds them from the scan's own walls and refuses another hash. Admin default: showcase.json `dropFloaters`. Evidence `evidence/2026-10-02/v03-floaters.json`.
 
 ### G.4 UI placement
 

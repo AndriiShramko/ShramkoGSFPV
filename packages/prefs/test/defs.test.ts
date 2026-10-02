@@ -13,7 +13,9 @@ const V03_SHIPPED = [
     // W3-1 scene rotation (E.3-E.5): Settings -> Scenes
     'scenes.autoSwitch', 'scenes.rotation', 'scenes.order', 'scenes.allowNoWalls',
     // W3-3 scene size around the drone (E.7): the summary panel row, [ ], Settings -> Scenes
-    'scene.transform'
+    'scene.transform',
+    // W4-2 phantom walls (G.3): Settings -> Walls and voxel grid, admin default in showcase.json
+    'scene.dropFloaters'
 ];
 
 /**
@@ -67,7 +69,7 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['scenes.order', 'scenes', 'global', 'enum', 'random', 'live'],
     ['scenes.allowNoWalls', 'scenes', 'global', 'bool', false, 'live'],
     ['scene.transform', 'scenes', 'scene', 'json', null, 'live'],
-    ['scene.dropFloaters', 'voxels', 'scene', 'number', 0, 'life'],
+    ['scene.dropFloaters', 'voxels', 'scene', 'number', 'curated:dropFloaters|0', 'life'],
     ['scene.walls', 'voxels', 'scene', 'enum', 'curated:walls|on', 'life'],
     ['voxels.show', 'voxels', 'global', 'enum', 'off', 'live'],
     ['voxels.opacity', 'voxels', 'global', 'number', 0.55, 'live'],

@@ -24,6 +24,7 @@ import { summary } from './builtin/summary';
 import { modes } from './builtin/modes';
 import { rotation } from './builtin/rotation';
 import { scale } from './builtin/scale';
+import { floaters } from './builtin/floaters';
 
 export const FEATURES: readonly Feature[] = [
     scene,
@@ -45,5 +46,6 @@ export const FEATURES: readonly Feature[] = [
     summary,
     modes,
     rotation,
-    scale
+    scale,
+    floaters
 ];

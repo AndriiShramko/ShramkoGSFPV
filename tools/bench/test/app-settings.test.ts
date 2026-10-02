@@ -381,3 +381,29 @@ describe('presets used by the screen are the app\'s', () => {
         for (const p of Object.values(PR.PRESETS) as PresetJson[]) expect(typeof p.name).toBe('string');
     });
 });
+
+describe('the floater filter per scan (G.3): the admin\'s showcase value, the pilot\'s wins', () => {
+    const SCENE = SHOWCASE[0].id;
+    const store = (extra: Record<string, unknown>) => new PrefsStore(SCHEMA, new MemoryBackend(), P.presetResolver(PR.PRESETS, [{ ...SHOWCASE[0], ...extra } as ShowcaseScene, ...SHOWCASE.slice(1)]), { debounceMs: 0 });
+
+    it('a missing field is 0; the admin\'s "dropFloaters": 12 is the scan\'s default; another scan stays 0', () => {
+        expect(memStore().get('scene.dropFloaters', { scene: SCENE })).toBe(0);
+        const s = store({ dropFloaters: 12 });
+        expect(s.get('scene.dropFloaters', { scene: SCENE })).toBe(12);
+        expect(s.get('scene.dropFloaters', { scene: SHOWCASE[1].id })).toBe(0);
+    });
+
+    it('the pilot\'s value for the scan wins over the admin\'s, and a reset follows the admin again', () => {
+        const s = store({ dropFloaters: 12 });
+        expect(s.set('scene.dropFloaters', 5, { scene: SCENE }).ok).toBe(true);
+        expect(s.get('scene.dropFloaters', { scene: SCENE })).toBe(5);
+        s.reset('scene.dropFloaters', { scene: SCENE });
+        expect(s.get('scene.dropFloaters', { scene: SCENE })).toBe(12);
+    });
+
+    it('control: an admin value that is not a number is ignored (the scan keeps every piece); out of range is clamped like every number setting', () => {
+        for (const bad of ['12', null, true, 'off']) expect(store({ dropFloaters: bad }).get('scene.dropFloaters', { scene: SCENE }), String(bad)).toBe(0);
+        expect(store({ dropFloaters: 100 }).get('scene.dropFloaters', { scene: SCENE })).toBe(64);
+        expect(store({ dropFloaters: -1 }).get('scene.dropFloaters', { scene: SCENE })).toBe(0);
+    });
+});

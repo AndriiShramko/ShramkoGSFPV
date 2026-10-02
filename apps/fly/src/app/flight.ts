@@ -11,6 +11,7 @@ import { CrashView } from '../crashview';
 import { VoxelController } from '../voxels';
 import { initialWallsOn, loadWallsChoice } from '../flightwalls';
 import { storedTransform } from './builtin/scale';
+import { storedDropFloaters } from './builtin/floaters';
 import { Hud } from '../ui/hud';
 import { LoadingScreen } from '../ui/loading';
 import type { ShowcaseScene } from '../ui/scenes';
@@ -158,6 +159,7 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, sceneId: s
             sceneId,
             wallsOn,
             transform: storedTransform(prefs, sceneId),
+            dropFloaters: storedDropFloaters(prefs, sceneId),
             drawScan,
             preset: q.get('drone') ?? undefined,
             overrides: { gravity: g ? Number(g) : undefined, gravityMode: gm ?? undefined },

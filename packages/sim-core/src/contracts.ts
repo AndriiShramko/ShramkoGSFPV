@@ -87,8 +87,11 @@ export interface LifeHeader {
     configHash: string;
     /** hash of the collision file's original bytes */
     collisionSha256: string | null;
-    /** transform = [s, tx, ty, tz] at the start of the life */
-    scene: { id: string; version: number; transform: [number, number, number, number]; floaterMinBlocks: number } | null;
+    /**
+     * transform = [s, tx, ty, tz] at the start of the life; floaterMinBlocks = the floater filter
+     * (G.3, 0 = off) and floaterSha256 = the hash of the filtered walls it gives (set when it is on)
+     */
+    scene: { id: string; version: number; transform: [number, number, number, number]; floaterMinBlocks: number; floaterSha256?: string } | null;
     /** at = [x, y, z, yawDeg]; ch = the last applied channels; the tick continues across lives */
     life: { index: number; startTick: number; at: [number, number, number, number]; opts: RespawnOpts; soc: number; ch: number[]; reason: RespawnReason | 'start' };
     seed: 0;
