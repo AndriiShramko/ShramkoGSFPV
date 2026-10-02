@@ -2,6 +2,8 @@
 // spinning 15 turns a second is both nauseating and a flash hazard); instead a chase camera behind
 // the impact follows the tumbling craft and its debris smoothly. Rapier supplies the tumble and
 // the debris when it is loaded; otherwise the simulator's own tumble drives the craft model.
+// The clock is injected (F.3): the live view runs on performance.now(), the video export on its
+// own frame times (k/60 s), so a crash in an exported flight moves as it would have on screen.
 
 import { S } from '@gsfpv/sim-core';
 import type { SimEvent } from '@gsfpv/sim-core';
@@ -20,8 +22,14 @@ export interface CrashInfo {
     staticBoxes: number;
 }
 
+/** What the crash view needs of a flight: the live session, or the video export's replay (F.3). */
+export type CrashHost = Pick<FlightSession, 'sim' | 'params' | 'renderer' | 'collision'>;
+
 export class CrashView {
-    private s: FlightSession;
+    private s: CrashHost;
+    private readonly clock: () => number;
+    /** held (the video export draws its own crash): no camera, no tumble, the craft and debris hidden */
+    private held = false;
     private scene: CrashScene | null = null;
     private craft: Entity | null = null;
     private debris: Entity[] = [];
@@ -37,13 +45,14 @@ export class CrashView {
     rapierReady = false;
 
     /** A new scene (E.4): the old crash goes, the view follows the new session. */
-    setSession(s: FlightSession): void {
+    setSession(s: CrashHost): void {
         this.clear();
         this.s = s;
     }
 
-    constructor(s: FlightSession) {
+    constructor(s: CrashHost, o: { clock?: () => number } = {}) {
         this.s = s;
+        this.clock = o.clock ?? (() => performance.now());
         // warm up Rapier in the background so the first crash has it
         loadRapier().then((r) => { this.rapierReady = !!r; });
     }
@@ -101,12 +110,12 @@ export class CrashView {
             this.info.staticBoxes = this.scene.staticBoxes;
             for (const pc of this.scene.pieces()) if (pc.kind === 'debris') this.debris.push(s.renderer.addBox(pc.size[0], pc.size[1], pc.size[2], [0.9, 0.9, 0.92]));
         }
-        this.lastT = performance.now();
+        this.lastT = this.clock();
     }
 
     /** Per frame while a crash is active: advance the tumble and place the chase camera. */
     frame(now: number): void {
-        if (!this.active || !this.craft) return;
+        if (!this.active || !this.craft || this.held) return;
         const dt = Math.min(0.1, (now - this.lastT) / 1000);
         this.lastT = now;
         const r = this.s.renderer;
@@ -135,11 +144,25 @@ export class CrashView {
         r.setCameraLookAt(this.cam.x, this.cam.y, this.cam.z, this.look.x, this.look.y, this.look.z);
     }
 
+    /**
+     * Hold the view (the video export draws its own crash, F.3): it neither moves the camera nor
+     * tumbles, and its craft and debris are hidden; released, it goes on from the clock's time.
+     */
+    hold(on: boolean): void {
+        if (on === this.held) return;
+        this.held = on;
+        if (this.craft) this.craft.enabled = !on;
+        for (const d of this.debris) d.enabled = !on;
+        if (!on) this.lastT = this.clock();
+    }
+
     clear(): void {
         this.active = false;
         this.scene?.free();
         this.scene = null;
-        this.s.renderer.clearDebris();
+        // only this view's pieces: the export's view and the live one can both have a crash
+        this.craft?.destroy();
+        for (const d of this.debris) d.destroy();
         this.craft = null;
         this.debris = [];
     }

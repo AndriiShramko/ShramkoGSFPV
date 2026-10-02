@@ -227,6 +227,30 @@ export class Recording {
         }
     }
 
+    /**
+     * The video export from the flight log (F.3): a recorder in exact mode (one slot per frame given,
+     * none paced, repeated or dropped) at width x height, 60 fps, into the place a recording goes.
+     */
+    async openExport(o: { width: number; height: number; activation: boolean }): Promise<CinemaRecorder> {
+        const scene = this.d.scene();
+        if (scene.credit === null) throw new Error('recording is only for showcase scenes');
+        if (!this.supported) throw new Error('WebCodecs unavailable');
+        const target = await this.target(o.activation);
+        if (target.kind === 'browser') await pruneBrowserRecordings(KEEP_IN_BROWSER - 1);
+        const r = new CinemaRecorder({
+            width: o.width, height: o.height, fps: 60, credit: scene.credit, target, scene: scene.id,
+            capSeconds: target.kind === 'memory' ? MEMORY_CAP_S : undefined, canvas: this.d.canvas, exact: true
+        });
+        await r.start();
+        this.onChange();
+        return r;
+    }
+
+    /** The export's file closed and saved as a recording is (moved into the folder, or offered). */
+    async finishExport(r: CinemaRecorder): Promise<Saved> {
+        return this.finish(await r.stop(), r.target);
+    }
+
     /** Stops and saves; the files to save by hand are in the result's offer. */
     async stop(): Promise<Saved | null> {
         const r = this.recorder;

@@ -6,7 +6,7 @@
 // + overrides, D-g), never from the session, and the walls are the ones whose hash the header
 // names. A life flown on walls this page does not have cannot replay here.
 import { LifePlayer, SIM_CORE_VERSION, lifeHeaderProblem, presetSha256, sha256Hex, trajPoint } from '@gsfpv/sim-core';
-import type { ContactWorld, Life, LifeHeader, PresetJson, ReplayDeps, Sim, TrajectoryPoint } from '@gsfpv/sim-core';
+import type { ContactWorld, Life, LifeHeader, PresetJson, ReplayDeps, Sim, SimEvent, TrajectoryPoint } from '@gsfpv/sim-core';
 import { PRESETS } from '../presets';
 import { IDENTITY, isIdentity, worldUnder } from './world';
 import type { BaseWalls } from './world';
@@ -62,6 +62,13 @@ export class LivesPlayer {
     private player: LifePlayer;
     /** called after every step, in tick order across the lives */
     onStep: ((sim: Sim) => void) | null = null;
+    /** every event of the replayed model (a crash, a respawn), as the runner emitted it in flight */
+    onEvent: ((e: SimEvent) => void) | null = null;
+    /**
+     * The scene transform [s, tx, ty, tz] the life is at now: its header's, then each world record's
+     * (E.7). The video export draws the scan under it (F.3).
+     */
+    transform: [number, number, number, number] = [1, 0, 0, 0];
 
     constructor(lives: readonly Life[], walls: WallsSource, endTick: number, o: { hash?: boolean } = {}) {
         if (lives.length === 0) throw new Error('no lives to play');
@@ -74,8 +81,16 @@ export class LivesPlayer {
 
     private open(i: number): LifePlayer {
         const life = this.lives[i];
-        const p = new LifePlayer(life, depsFor(life.header, this.walls), Math.min(life.endTick, this.endTick), { hash: this.hash });
+        const sc = life.header.scene;
+        this.transform = sc ? [sc.transform[0], sc.transform[1], sc.transform[2], sc.transform[3]] : [1, 0, 0, 0];
+        const base = depsFor(life.header, this.walls);
+        const deps: ReplayDeps = { ...base, world: (scene, ev) => {
+            if (ev) this.transform = [ev.s, ev.t[0], ev.t[1], ev.t[2]];
+            return base.world(scene, ev);
+        } };
+        const p = new LifePlayer(life, deps, Math.min(life.endTick, this.endTick), { hash: this.hash });
         p.onStep = (sim) => this.onStep?.(sim);
+        p.onEvent = (e) => this.onEvent?.(e);
         this.idx = i;
         return p;
     }

@@ -143,6 +143,16 @@ export class SplatRenderer {
     private latSeq = 0;
     private gpuQueue: WgpuQueue | null = null;
     private submitDone: number[] = [];
+    /** the backbuffer size the video export draws at (F.3), whatever the canvas' CSS size; null: the window's */
+    private fixedRes: { w: number; h: number } | null = null;
+    /** engine frames begun (counted at 'frameupdate'): what splatFrame.frame refers to */
+    frameNumber = 0;
+    /**
+     * The scan's state in the last frame the engine prepared it (the gsplat system's 'frame:ready'):
+     * `ready` is every level of detail for this view in place and sorted, `loading` the files still
+     * on their way. The video export (F.3) encodes a frame only when both say the view is complete.
+     */
+    readonly splatFrame = { frame: -1, ready: false, loading: 0 };
 
     private constructor(canvas: HTMLCanvasElement, device: GraphicsDevice, opts: RendererOptions) {
         this.canvas = canvas;
@@ -196,6 +206,11 @@ export class SplatRenderer {
         app.assets.on('add', (a: Asset) => this.countAsset(a));
 
         app.on('frameupdate', this.onFrameUpdate);
+        (app.systems as unknown as { gsplat: { on(name: string, cb: (...a: unknown[]) => void): void } }).gsplat.on('frame:ready', (_camera: unknown, _layer: unknown, ready: unknown, loading: unknown) => {
+            this.splatFrame.frame = this.frameNumber;
+            this.splatFrame.ready = ready === true;
+            this.splatFrame.loading = typeof loading === 'number' ? loading : 0;
+        });
         this.gpuQueue = (device as unknown as { wgpu?: { queue?: WgpuQueue } }).wgpu?.queue ?? null;
         if (this.gpuQueue) app.on('frameend', this.onFrameEnd);
         document.addEventListener('visibilitychange', this.onVisibility);
@@ -235,13 +250,35 @@ export class SplatRenderer {
     }
 
     resize(): void {
-        const w = Math.max(1, Math.round(this.canvas.clientWidth * window.devicePixelRatio * this.renderScale));
-        const h = Math.max(1, Math.round(this.canvas.clientHeight * window.devicePixelRatio * this.renderScale));
-        if (this.canvas.clientWidth === 0 || this.canvas.clientHeight === 0) return;
+        const f = this.fixedRes;
+        const w = f ? f.w : Math.max(1, Math.round(this.canvas.clientWidth * window.devicePixelRatio * this.renderScale));
+        const h = f ? f.h : Math.max(1, Math.round(this.canvas.clientHeight * window.devicePixelRatio * this.renderScale));
+        if (!f && (this.canvas.clientWidth === 0 || this.canvas.clientHeight === 0)) return;
         if (w !== this.lastSize.w || h !== this.lastSize.h) {
             this.app.setCanvasResolution(RESOLUTION_FIXED, w, h);
             this.lastSize = { w, h };
         }
+    }
+
+    /**
+     * Draw at exactly w x h device pixels whatever the canvas' size on the page (the video export
+     * draws 1920 x 1080, 2560 x 1440 or 3840 x 2160, F.3); null goes back to the window's size and
+     * the render scale. The camera's aspect follows the backbuffer.
+     */
+    setFixedResolution(size: { w: number; h: number } | null): void {
+        this.fixedRes = size ? { w: Math.max(2, Math.round(size.w)), h: Math.max(2, Math.round(size.h)) } : null;
+        this.resize();
+    }
+
+    /**
+     * The frame the engine just drew showed the scan complete for its view: nothing loading, every
+     * level of detail in place and sorted (the gsplat 'frame:ready' of this very frame). True without
+     * a scan on screen (none loaded, hidden, or ?render=off). Call it in 'frameend'.
+     */
+    get sceneComplete(): boolean {
+        if (!this.splat || !this.splat.enabled) return true;
+        const f = this.splatFrame;
+        return f.frame === this.frameNumber && f.ready && f.loading === 0;
     }
 
     setToneMapping(name: string | undefined): void {
@@ -531,6 +568,7 @@ export class SplatRenderer {
     }
 
     private onFrameUpdate = (): void => {
+        this.frameNumber++;
         this.frameAfterSkip = this.skipPending;
         this.skipPending = false;
         // inside the rAF callback the document timeline's time is this frame's rAF timestamp

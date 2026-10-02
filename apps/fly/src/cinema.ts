@@ -676,6 +676,11 @@ export interface RecorderOptions {
     legacyV02?: boolean;
     /** the engine's canvas: when it is drawn with WebGPU, the pictures are made on its device (GpuPictures) */
     canvas?: HTMLCanvasElement;
+    /**
+     * The video export from the flight log (F.3): no pacing, every addExact() is the next slot with
+     * a new picture; nothing is repeated or dropped, the caller waits while canTake is false.
+     */
+    exact?: boolean;
 }
 
 /**
@@ -874,6 +879,8 @@ export class CinemaRecorder {
     /** encodes waiting in the chain, and whether any picture was started (a repeat needs one before it) */
     private queued = 0;
     private pictured = false;
+    /** exact mode: slots encoded so far */
+    private exactSlots = 0;
 
     constructor(o: RecorderOptions) {
         this.o = o;
@@ -894,6 +901,7 @@ export class CinemaRecorder {
 
     /** Seconds recorded so far (slots / fps). */
     get seconds(): number {
+        if (this.o.exact) return this.exactSlots / this.fps;
         return this.o.legacyV02 ? (this.legacyT0 < 0 ? 0 : (performance.now() - this.legacyT0) / 1000) : this.pacer.slotCount / this.fps;
     }
 
@@ -978,7 +986,7 @@ export class CinemaRecorder {
 
     /** Call right after the engine rendered a frame (same task), with the WebGPU canvas. */
     addFrame(source: CanvasImageSource, nowMs: number): void {
-        if (!this.recording || !this.part) return;
+        if (!this.recording || !this.part || this.o.exact) return;
         if (this.o.legacyV02) return this.addLegacy(source, nowMs);
         const pace = this.pacer.onRendered(nowMs);
         this.dropped += pace.dropped;
@@ -1005,20 +1013,7 @@ export class CinemaRecorder {
                 continue;
             }
             if (gpu) {
-                // the picture comes back later: the encodes follow one another in slot order
-                const pic = repeat ? null : gpu.capture(this.composed++ % 60 === 0);
-                this.pictured = true;
-                this.queued++;
-                this.chain = this.chain.then(async () => {
-                    this.queued--;
-                    if (pic) {
-                        const p = await pic;
-                        if (p.stripStd !== null) this.lastCreditStripStd = p.stripStd;
-                        this.prev?.close();
-                        this.prev = p.frame;
-                    }
-                    part.encode(this.prev!, slot, this.fps, repeat);
-                }).catch((e) => this.fail(e));
+                this.queueGpu(gpu, part, slot, repeat);
                 this.encoded++;
                 if (repeat) this.duplicated++;
                 continue;
@@ -1035,6 +1030,70 @@ export class CinemaRecorder {
             this.prev?.close();
             this.prev = cur;
         }
+    }
+
+    /** The WebGPU path: the picture comes back later, so the encodes follow one another in slot order. */
+    private queueGpu(gpu: GpuPictures, part: Part, slot: number, repeat: boolean): void {
+        const pic = repeat ? null : gpu.capture(this.composed++ % 60 === 0);
+        this.pictured = true;
+        this.queued++;
+        this.chain = this.chain.then(async () => {
+            this.queued--;
+            if (pic) {
+                const p = await pic;
+                if (p.stripStd !== null) this.lastCreditStripStd = p.stripStd;
+                this.prev?.close();
+                this.prev = p.frame;
+            }
+            part.encode(this.prev!, slot, this.fps, repeat);
+        }).catch((e) => this.fail(e));
+    }
+
+    /** Exact mode (the export, F.3): a new picture can go in now, without waiting for a readback or the encoder. */
+    get canTake(): boolean {
+        const part = this.part;
+        if (!this.recording || !part) return false;
+        if (this.gpu && !this.gpu.ready) return false;
+        return part.room(false) && this.queued < PENDING_CALLS_MAX;
+    }
+
+    /**
+     * Exact mode: the frame the engine just drew (same task) is the next slot, stamped k/fps. Returns
+     * the slot, or -1 when it could not go in (check canTake first; the memory cap ends the file).
+     */
+    addExact(source: CanvasImageSource): number {
+        if (!this.o.exact || !this.canTake) return -1;
+        const slot = this.exactSlots;
+        if (this.o.capSeconds && slot >= this.o.capSeconds * this.fps) {
+            this.endBy('cap');
+            return -1;
+        }
+        this.exactSlots++;
+        const part = this.part!;
+        if (this.gpu) this.queueGpu(this.gpu, part, slot, false);
+        else {
+            this.compose(source);
+            const cur = new VideoFrame(this.comp, { timestamp: 0 });
+            part.encode(cur, slot, this.fps, false);
+            this.prev?.close();
+            this.prev = cur;
+        }
+        this.encoded++;
+        return slot;
+    }
+
+    /** Cancel (the export's Cancel): nothing is kept, the file being written is removed. */
+    async cancel(): Promise<void> {
+        const last = this.part;
+        if (!last) return;
+        this.recording = false;
+        this.part = null;
+        await this.chain.catch(() => undefined);
+        await last.abort();
+        this.prev?.close();
+        this.prev = null;
+        this.gpu?.destroy();
+        this.gpu = null;
     }
 
     private addLegacy(source: CanvasImageSource, nowMs: number): void {

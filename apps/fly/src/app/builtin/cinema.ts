@@ -11,7 +11,7 @@ import { t } from '../../i18n';
 import { q } from '../env';
 import type { RecorderInfo } from '../../cinema';
 import type { TestHook } from '../test-hook';
-import type { Feature } from '../context';
+import type { Feature, FlightContext } from '../context';
 import { Recording, autoRespawnShipped } from './recording';
 import type { Saved } from './recording';
 import './cinema.css';
@@ -29,6 +29,20 @@ export interface RecHook {
     readLast(): Promise<{ name: string; where: string; b64: string } | null>;
     /** test only: minutes per file instead of recording.splitMin (a split in seconds) */
     setSplitMin(min: number | null): void;
+}
+
+/** The page's recording and the bar's stop and note: the video export (builtin/video-export.ts) uses them. */
+export interface RecordingShare {
+    rec: Recording;
+    /** stops a running recording and shows what was saved on the bar */
+    stop(): Promise<RecorderInfo | null>;
+    /** a saved file (the export's) on the bar's note line, with its link when it is offered */
+    show(s: Saved | null): void;
+}
+const SHARED = new WeakMap<FlightContext, RecordingShare>();
+/** The cinema feature's recording for this page (installed before the export). */
+export function recordingOf(ctx: FlightContext): RecordingShare | undefined {
+    return SHARED.get(ctx);
 }
 
 const mmss = (s: number): string => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -161,6 +175,7 @@ export const cinema: Feature = {
             render();
         }
         rec.onEnded = showSaved;
+        SHARED.set(ctx, { rec, stop: () => stopRec(), show: showSaved });
 
         /** activation: inside a click or a key press, where the folder's permission may be asked */
         async function startRec(activation: boolean, legacyV02 = false): Promise<string> {
