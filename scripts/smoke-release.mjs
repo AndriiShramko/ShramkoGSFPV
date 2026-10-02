@@ -69,6 +69,18 @@ for (const p of ['/sitemap.xml', '/robots.txt', '/llms.txt', '/og.jpg', '/fly/sh
     const { r } = await get(p);
     expect(r.status === 200, `${p} -> ${r.status}`);
 }
+// the owner's admin page: served, never cached or framed, its own strict CSP, no inline script
+{
+    const { r, body } = await get('/admin/');
+    expect(r.status === 200 && /<main id="admin">/.test(body), `/admin/ -> ${r.status}`);
+    expect((r.headers.get('cache-control') ?? '').includes('no-store'), '/admin/ no-store');
+    expect(r.headers.get('x-frame-options') === 'DENY', '/admin/ x-frame-options DENY');
+    const csp = r.headers.get('content-security-policy') ?? '';
+    expect(csp.includes("script-src 'self';") && csp.includes("frame-ancestors 'none'"), '/admin/ strict CSP');
+    expect(inlineScriptHashes(body).length === 0, '/admin/ has no inline script');
+    const js = body.match(/\/fly\/assets\/admin-[^"']+\.js/)?.[0];
+    expect(!!js && (await get(js)).r.status === 200, `/admin/ script ${js} served`);
+}
 // hashed simulator asset: immutable
 const flyHtml = pages.find((x) => x.p === '/en/fly/')?.body ?? '';
 const asset = flyHtml.match(/\/fly\/assets\/[^"']+\.js/)?.[0];

@@ -1,5 +1,6 @@
 // Assemble one static release from the landing (Next export) and the simulator (Vite build):
 //   dist/                 site out/ + /fly/assets + /{locale}/fly/index.html (lang per copy)
+//                         + /admin/index.html (the owner's admin page; its scripts are in /fly/assets)
 //   dist/csp-hashes.conf  per-page inline script hashes for the enforced CSP (see deploy/nginx.conf)
 //   dist.tgz, SHA256SUMS  what goes to the hub (built here or in CI, never on the server)
 // Usage: node scripts/build-release.mjs [--skip-build]
@@ -33,9 +34,13 @@ cpSync(siteOut, DIST, { recursive: true });
 // simulator: assets and data under /fly/, the HTML shell under every locale
 mkdirSync(join(DIST, 'fly'), { recursive: true });
 for (const name of readdirSync(flyOut)) {
-    if (name === 'index.html') continue;
+    if (name === 'index.html' || name === 'admin') continue;
     cpSync(join(flyOut, name), join(DIST, 'fly', name), { recursive: true });
 }
+// the admin page: one HTML file at /admin/ (nginx: no-store, its own strict CSP; data only from the API)
+if (!existsSync(join(flyOut, 'admin', 'index.html'))) throw new Error('missing apps/fly/dist/admin/index.html');
+mkdirSync(join(DIST, 'admin'), { recursive: true });
+cpSync(join(flyOut, 'admin', 'index.html'), join(DIST, 'admin', 'index.html'));
 const flyHtml = readFileSync(join(flyOut, 'index.html'), 'utf8');
 for (const l of LOCALES) {
     mkdirSync(join(DIST, l, 'fly'), { recursive: true });
