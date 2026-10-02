@@ -7,7 +7,8 @@
 // record and a new life whose header names the filtered walls' hash). The voxel grid then shows
 // the filtered walls (it draws session.collision) and its status line says what was dropped.
 import type { PrefsStore } from '@gsfpv/prefs';
-import { validMinBlocks } from '@gsfpv/collision';
+import { componentsOf, validMinBlocks } from '@gsfpv/collision';
+import type { VoxelCollision } from '@gsfpv/collision';
 import { t } from '../../i18n';
 import type { Feature } from '../context';
 
@@ -18,8 +19,22 @@ declare module '../test-hook' {
         floaters?: {
             state(): { minBlocks: number; pieces: number; blocks: number; components: number; sha256: string | null; stored: number };
             set(n: number): void;
+            /**
+             * Pieces of the scan's own walls by size: for each, its size in blocks and one solid voxel
+             * whose upper neighbour is empty (index space, the same in the flown walls), the largest first
+             */
+            pieces(): { size: number; voxel: [number, number, number] }[];
         };
     }
+}
+
+/** A solid voxel with an empty one above it in block (bx, by, bz), or null. */
+function topVoxel(col: VoxelCollision, bx: number, by: number, bz: number): [number, number, number] | null {
+    for (let y = 3; y >= 0; y--) for (let z = 0; z < 4; z++) for (let x = 0; x < 4; x++) {
+        const ix = bx * 4 + x, iy = by * 4 + y, iz = bz * 4 + z;
+        if (col.isVoxelSolid(ix, iy, iz) && !col.isVoxelSolid(ix, iy + 1, iz)) return [ix, iy, iz];
+    }
+    return null;
 }
 
 /** The filter a scene starts with: the pilot's for this scan, else the admin's (showcase.json), else 0. */
@@ -67,7 +82,26 @@ export const floaters: Feature = {
                     stored: storedDropFloaters(ctx.prefs, ctx.scene.id)
                 };
             },
-            set: (n) => { ctx.prefs.set('scene.dropFloaters', n, sceneCtx()); }
+            set: (n) => { ctx.prefs.set('scene.dropFloaters', n, sceneCtx()); },
+            pieces: () => {
+                const base = ctx.session.baseCollision;
+                if (!base) return [];
+                const c = componentsOf(base);
+                const [nbx, nby] = c.dims;
+                const out: { size: number; voxel: [number, number, number] }[] = [];
+                const seen = new Uint8Array(c.count);
+                for (let i = 0; i < c.keys.length; i++) {
+                    const id = c.blockIds[i];
+                    if (seen[id]) continue;
+                    const k = c.keys[i];
+                    const bx = k % nbx, rest = (k - bx) / nbx, by = rest % nby, bz = (rest - by) / nby;
+                    const v = topVoxel(base, bx, by, bz);
+                    if (!v) continue; // its first block has no voxel open to the top: try the next block of the piece
+                    seen[id] = 1;
+                    out.push({ size: c.sizes[id], voxel: v });
+                }
+                return out.sort((a, b) => b.size - a.size);
+            }
         };
         return () => {
             offPrefs();

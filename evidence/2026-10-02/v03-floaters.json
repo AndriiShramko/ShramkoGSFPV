@@ -1,0 +1,226 @@
+{
+  "name": "v03-floaters",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T03:12:22.518Z",
+    "gitHead": "613bf15",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "site": "http://127.0.0.1:5342",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "scene": "39e63ce9",
+  "minBlocks": 64,
+  "F1": {
+    "pass": true,
+    "what": "Settings row \"Drop floating pieces under N blocks\" = 64 on 39e63ce9: a ray onto a known floating piece hits the flown walls before and passes after, the life header names N and the filtered walls' hash, the voxel grid rebuilds without the dropped pieces, the value survives a reload",
+    "floater": {
+      "size": 57,
+      "voxel": [
+        254,
+        111,
+        51
+      ]
+    },
+    "wall": {
+      "size": 34967,
+      "voxel": [
+        199,
+        105,
+        67
+      ]
+    },
+    "piecesTotal": 57,
+    "piecesUnderN": 44,
+    "checks": {
+      "settingsRowShown": true,
+      "hitBefore": true,
+      "passesAfter": true,
+      "filterState": true,
+      "headerNamesFilter": true,
+      "gridWithoutThem": true,
+      "statusSaysDropped": true,
+      "reloadKeeps": true,
+      "noPageErrors": true
+    },
+    "control": {
+      "wallStillHit": true,
+      "backToZero": true,
+      "backSurvivesReload": true,
+      "fired": true
+    },
+    "before": {
+      "state": {
+        "minBlocks": 0,
+        "pieces": 0,
+        "blocks": 0,
+        "components": 0,
+        "sha256": null,
+        "stored": 0,
+        "header": {
+          "floaterMinBlocks": 0,
+          "floaterSha256": null
+        },
+        "grid": {
+          "state": "ready",
+          "components": 57,
+          "floaters": 44,
+          "dropped": null
+        },
+        "status": "5 cm voxels within 14 m \u00b7 513k faces \u00b7 44 floating pieces highlighted \u00b7 Settings \u2192 Walls and voxel grid can drop the small ones from the walls"
+      },
+      "floater": {
+        "solid": true,
+        "hit": true,
+        "distVoxels": 0.49999999999998934,
+        "flies": true
+      },
+      "wall": {
+        "solid": true,
+        "hit": true,
+        "distVoxels": 0.49999999999998934,
+        "flies": true
+      }
+    },
+    "after": {
+      "state": {
+        "minBlocks": 64,
+        "pieces": 44,
+        "blocks": 233,
+        "components": 57,
+        "sha256": "93c2b0c67198396827df45127277214ba9cd9dd37dcd32856091fd63d34c10d4",
+        "stored": 64,
+        "header": {
+          "floaterMinBlocks": 64,
+          "floaterSha256": "93c2b0c67198396827df45127277214ba9cd9dd37dcd32856091fd63d34c10d4"
+        },
+        "grid": {
+          "state": "ready",
+          "components": 13,
+          "floaters": 0,
+          "dropped": {
+            "minBlocks": 64,
+            "pieces": 44
+          }
+        },
+        "status": "5 cm voxels within 14 m \u00b7 509k faces \u00b7 44 floating pieces under 64 blocks dropped from the walls"
+      },
+      "floater": {
+        "solid": false,
+        "hit": false,
+        "distVoxels": null,
+        "flies": true
+      },
+      "wall": {
+        "solid": true,
+        "hit": true,
+        "distVoxels": 0.49999999999998934,
+        "flies": true
+      }
+    },
+    "reloaded": {
+      "state": {
+        "minBlocks": 64,
+        "pieces": 44,
+        "blocks": 233,
+        "components": 57,
+        "sha256": "93c2b0c67198396827df45127277214ba9cd9dd37dcd32856091fd63d34c10d4",
+        "stored": 64,
+        "header": {
+          "floaterMinBlocks": 64,
+          "floaterSha256": "93c2b0c67198396827df45127277214ba9cd9dd37dcd32856091fd63d34c10d4"
+        },
+        "grid": {
+          "state": "ready",
+          "components": 13,
+          "floaters": 0,
+          "dropped": {
+            "minBlocks": 64,
+            "pieces": 44
+          }
+        },
+        "status": "5 cm voxels within 14 m \u00b7 511k faces \u00b7 44 floating pieces under 64 blocks dropped from the walls"
+      },
+      "floater": {
+        "solid": false,
+        "hit": false,
+        "distVoxels": null,
+        "flies": true
+      },
+      "wall": {
+        "solid": true,
+        "hit": true,
+        "distVoxels": 0.49999999999998934,
+        "flies": true
+      }
+    },
+    "back": {
+      "state": {
+        "minBlocks": 0,
+        "pieces": 0,
+        "blocks": 0,
+        "components": 0,
+        "sha256": null,
+        "stored": 0,
+        "header": {
+          "floaterMinBlocks": 0,
+          "floaterSha256": null
+        },
+        "grid": {
+          "state": "ready",
+          "components": 57,
+          "floaters": 44,
+          "dropped": null
+        },
+        "status": "5 cm voxels within 14 m \u00b7 512k faces \u00b7 44 floating pieces highlighted \u00b7 Settings \u2192 Walls and voxel grid can drop the small ones from the walls"
+      },
+      "floater": {
+        "solid": true,
+        "hit": true,
+        "distVoxels": 0.49999999999998934,
+        "flies": true
+      }
+    },
+    "backReloaded": {
+      "state": {
+        "minBlocks": 0,
+        "pieces": 0,
+        "blocks": 0,
+        "components": 0,
+        "sha256": null,
+        "stored": 0,
+        "header": {
+          "floaterMinBlocks": 0,
+          "floaterSha256": null
+        },
+        "grid": {
+          "state": "off",
+          "components": 0,
+          "floaters": 0,
+          "dropped": null
+        },
+        "status": "V: off \u2192 over the scan \u2192 voxels only \u00b7 C: walls on / off"
+      },
+      "floater": {
+        "solid": true,
+        "hit": true,
+        "distVoxels": 0.49999999999998934,
+        "flies": true
+      }
+    },
+    "pageErrors": []
+  }
+}

@@ -39,5 +39,5 @@ export const SCENE_DEFS: readonly SettingDef[] = [
     // G.3 phantom walls: drops the walls' connected pieces under N blocks (0 = off). Per scan like
     // the walls switch: the admin's default is showcase.json's "dropFloaters", the pilot's value for
     // a scan wins. It changes the walls, so a life setting (a world record and a new life).
-    { id: 'scene.dropFloaters', group: 'voxels', scope: 'scene', type: 'number', min: 0, max: 64, step: 1, unit: 'blocks', default: { curated: 'dropFloaters', fallback: 0 }, apply: 'life', shown: ['settings'], status: 'planned', since: 1, items: [24] }
+    { id: 'scene.dropFloaters', group: 'voxels', scope: 'scene', type: 'number', min: 0, max: 64, step: 1, unit: 'blocks', default: { curated: 'dropFloaters', fallback: 0 }, apply: 'life', shown: ['settings'], status: 'shipped', since: 1, items: [24] }
 ];

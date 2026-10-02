@@ -13,7 +13,9 @@ const V03_SHIPPED = [
     // W3-1 scene rotation (E.3-E.5): Settings -> Scenes
     'scenes.autoSwitch', 'scenes.rotation', 'scenes.order', 'scenes.allowNoWalls',
     // W3-3 scene size around the drone (E.7): the summary panel row, [ ], Settings -> Scenes
-    'scene.transform'
+    'scene.transform',
+    // W4-2 phantom walls (G.3): Settings -> Walls and voxel grid, admin default in showcase.json
+    'scene.dropFloaters'
 ];
 
 /**
