@@ -355,6 +355,9 @@ if (want('B11')) {
 // v0.3: with ?set.respawn.auto=0 (the crash panel and its respawn button, as v0.2); automatic
 // respawn is accept-v03-respawn.ts. The control's slow dash crashed in wave 1: a craft pinned in a
 // corner gathered speed in a frozen pose (sim.ts pinnedContacts, evidence v03-w2-2-model-why.json).
+// In the page it still crashed after that: the director's stuck-flipped rewind (unstuck stays on)
+// put the craft 0.41 m before the wall while the bot's dash reference had run 10 m past it
+// (bot.ts dashLeadS, sim-core test b12-rewind.test.ts; b12-capture.ts saves the page's log).
 if (want('B12')) {
     await page.goto(flyLogic('en', 'scene=39e63ce9&simradio=scenario&nowarn=1&set.respawn.auto=0'));
     await waitLogic(page, 180000);

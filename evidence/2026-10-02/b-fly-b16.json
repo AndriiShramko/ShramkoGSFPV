@@ -1,0 +1,45 @@
+{
+  "name": "b-fly-b16",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T00:00:11.285Z",
+    "gitHead": "2f77223",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5322",
+  "render": "on",
+  "pass": true,
+  "method": "disarmed drop from the spawn until contact or 0.5 s, a = 2(\u0394y + v0 t)/t\u00b2",
+  "rows": [
+    {
+      "g": 9.81,
+      "measured": 9.59112596070684,
+      "fallM": 1.2086980586369818,
+      "relErr": -0.022311318990128504,
+      "warning": null
+    },
+    {
+      "g": 1.62,
+      "measured": 1.6164579440962081,
+      "fallM": 0.2036745594070959,
+      "relErr": -0.0021864542616000238,
+      "warning": "With the same motors under 1.62 m/s\u00b2 the craft has about 6.1\u00d7 the thrust-to-weight it has on Earth: it will be very twitchy. \"Keep thrust / weight\" makes it feel normal. The air is Earth air everywhere \u2014 gravity is a game setting here."
+    }
+  ],
+  "control": {
+    "sameAccelerationWouldFail": true,
+    "earthVsMoon": [
+      9.59112596070684,
+      1.6164579440962081
+    ],
+    "fired": true
+  }
+}
