@@ -1,0 +1,353 @@
+{
+  "name": "v03-rec-R1-live-w4",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T04:02:12.876Z",
+    "gitHead": "9dd0f99",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "ffprobe": "C:/Program Files/Shutter Encoder/Library/ffprobe.exe",
+  "display": {
+    "rafHz": 28.9,
+    "force60": true,
+    "why": "the display runs below 60 Hz (the owner's 4K monitor: 30 Hz over HDMI): the 60 Hz render comes from a 60 Hz timer driving the page's frame loop, the scan drawn every frame"
+  },
+  "R1": {
+    "streamed": {
+      "waitedMs": 8338,
+      "calm": true
+    },
+    "pass": true,
+    "what": "a 10 s recording at a 60 Hz render: r_frame_rate 60/1, 0 duplicate pts, 600 +- 2 frames, all decoded; at most 6% repeated pictures, at most 1% held for the encoder; into the folder; the credit burned in (strip luminance spread > 0.1)",
+    "scene": "39e63ce9",
+    "renderer": 2,
+    "frameRateBefore": {
+      "engineFps": 59.8,
+      "frameMs": {
+        "p50": 16.899999991059303,
+        "p99": 30.899999991059303,
+        "hz": 59.17159766443996
+      }
+    },
+    "engineFpsWhileRecording": 59.7,
+    "repeats": {
+      "pct": 0.7,
+      "heldPct": 0,
+      "uniquePicturesPerS": 59.6
+    },
+    "before": {
+      "skipsDuringRateWindow": 0,
+      "guardLog": [
+        {
+          "t": 3445.2000000029802,
+          "what": "trigger"
+        },
+        {
+          "t": 3586.2000000029802,
+          "what": "sample",
+          "frames": 6.01
+        },
+        {
+          "t": 3586.2000000029802,
+          "what": "gpu",
+          "ms": 61
+        },
+        {
+          "t": 4353,
+          "what": "sample",
+          "frames": 5.1
+        },
+        {
+          "t": 4353,
+          "what": "skip",
+          "ms": 51
+        },
+        {
+          "t": 4606.20000000298,
+          "what": "sample",
+          "frames": 8.03
+        },
+        {
+          "t": 4606.20000000298,
+          "what": "skip",
+          "ms": 51
+        },
+        {
+          "t": 4786,
+          "what": "sample",
+          "frames": 5.26
+        },
+        {
+          "t": 4786,
+          "what": "skip",
+          "ms": 18
+        },
+        {
+          "t": 4919.29999999702,
+          "what": "sample",
+          "frames": 5.19
+        },
+        {
+          "t": 4919.29999999702,
+          "what": "skip",
+          "ms": 18
+        },
+        {
+          "t": 5187.5999999940395,
+          "what": "sample",
+          "frames": 5.01
+        },
+        {
+          "t": 5187.5999999940395,
+          "what": "backoff",
+          "ms": 10000
+        },
+        {
+          "t": 15325.09999999404,
+          "what": "sample",
+          "frames": 5.2
+        },
+        {
+          "t": 15325.09999999404,
+          "what": "skip",
+          "ms": 51
+        },
+        {
+          "t": 15485.90000000596,
+          "what": "sample",
+          "frames": 4.05
+        },
+        {
+          "t": 15485.90000000596,
+          "what": "skip",
+          "ms": 51
+        },
+        {
+          "t": 15919.29999999702,
+          "what": "sample",
+          "frames": 5.21
+        },
+        {
+          "t": 15919.29999999702,
+          "what": "skip",
+          "ms": 18
+        },
+        {
+          "t": 16153.59999999404,
+          "what": "sample",
+          "frames": 5.14
+        },
+        {
+          "t": 16153.59999999404,
+          "what": "skip",
+          "ms": 18
+        },
+        {
+          "t": 16554.5,
+          "what": "sample",
+          "frames": 5.12
+        },
+        {
+          "t": 16554.5,
+          "what": "backoff",
+          "ms": 20000
+        }
+      ],
+      "periodMs": 16.53399999999965,
+      "governor": {
+        "renderScale": 0.5,
+        "splatBudgetMillions": 1.5
+      }
+    },
+    "diag": {
+      "guardActive": true,
+      "guardRecover": true,
+      "skips": 0,
+      "skipMs": 0,
+      "slotsInSkips": 0,
+      "guardLog": [],
+      "periodMs": 16.53399999999965,
+      "lateFrames": 7,
+      "slotsMissedByLateFrames": 7,
+      "worstMs": 34,
+      "governorBefore": {
+        "renderScale": 0.5,
+        "splatBudgetMillions": 1.5
+      },
+      "governorAfter": {
+        "renderScale": 0.5,
+        "splatBudgetMillions": 1.5
+      },
+      "callbacksLate": {
+        "n": 755,
+        "overHalfPeriod": 13,
+        "meanMs": 0.8,
+        "maxEverMs": 113
+      },
+      "pacing": {
+        "byEnd": {
+          "slots": 602,
+          "repeated": 6,
+          "unused": 2,
+          "pct": 1
+        },
+        "byStart": {
+          "slots": 602,
+          "repeated": 4,
+          "unused": 0,
+          "pct": 0.7
+        },
+        "byRafTime": {
+          "slots": 602,
+          "repeated": 4,
+          "unused": 0,
+          "pct": 0.7
+        },
+        "frames": 598,
+        "workMs": {
+          "p10": 1,
+          "p50": 1.5,
+          "p90": 2.1,
+          "max": 5.7
+        }
+      }
+    },
+    "folder": "gsfpv-r1-muqfrgx9",
+    "recorder": {
+      "codec": "avc1.640033",
+      "width": 1728,
+      "height": 1080,
+      "fps": 60,
+      "frames": 602,
+      "bytes": 14354540,
+      "seconds": 10.033333333333333,
+      "duplicated": 4,
+      "heldForEncoder": 0,
+      "heldWhy": {
+        "readback": 0,
+        "encoder": 0
+      },
+      "dropped": 0,
+      "file": "gsfpv-39e63ce9-20261002-060141.mp4",
+      "files": [
+        {
+          "name": "gsfpv-39e63ce9-20261002-060141.mp4",
+          "bytes": 14354540,
+          "frames": 602,
+          "seconds": 10.033333333333333
+        }
+      ],
+      "where": "folder",
+      "folder": "gsfpv-r1-muqfrgx9",
+      "ended": "stop",
+      "picture": "webgpu"
+    },
+    "wallS": 10.011100000008941,
+    "codec": "avc1.640033",
+    "creditStripStd": 0.2593123553953711,
+    "file": {
+      "name": "gsfpv-39e63ce9-20261002-060141.mp4",
+      "where": "folder",
+      "bytes": 14354540,
+      "sha256": "6fd40f8ebc7706788782e4ec05653c1467ea78920a684aa2fea81dd0e19a03d0"
+    },
+    "ffprobe": {
+      "r_frame_rate": "60/1",
+      "avg_frame_rate": "60/1",
+      "time_base": "1/60",
+      "codec": "h264",
+      "width": 1728,
+      "height": 1080,
+      "packets": 602,
+      "decoded": 602,
+      "dupPts": 0,
+      "dupPerS": 0,
+      "steps": {
+        "16.7": 601
+      },
+      "durationS": 10.033333
+    },
+    "note": "Saved 10.0 s to gsfpv-r1-muqfrgx9 (13.7 MB) \u00b7 60 fps \u00b7 repeated frames: 4 \u00b7 dropped: 0",
+    "control": {
+      "what": "C1: v0.2 path (every rendered frame, 30 fps track, a frame skipped while 8 wait in the encoder) on the same page and render",
+      "fired": true,
+      "engineFpsWhileRecording": 58.8,
+      "framesSkippedByEncoderBound": 338,
+      "recorder": {
+        "codec": "avc1.640033",
+        "width": 1728,
+        "height": 1080,
+        "fps": 30,
+        "frames": 251,
+        "bytes": 9726595,
+        "seconds": 10.287866666669645,
+        "duplicated": 0,
+        "heldForEncoder": 0,
+        "heldWhy": {
+          "readback": 0,
+          "encoder": 0
+        },
+        "dropped": 338,
+        "file": "gsfpv-39e63ce9-20261002-060158.mp4",
+        "files": [
+          {
+            "name": "gsfpv-39e63ce9-20261002-060158.mp4",
+            "bytes": 9726595,
+            "frames": 251,
+            "seconds": 4.183333333333334
+          }
+        ],
+        "where": "folder",
+        "folder": "gsfpv-r1-muqfrgx9",
+        "ended": "stop",
+        "picture": "2d"
+      },
+      "file": {
+        "name": "gsfpv-39e63ce9-20261002-060158.mp4",
+        "where": "folder",
+        "bytes": 9726595,
+        "sha256": "d2299cfd1ca39b5849d7bf591ea85f88037321b64b498edcd28654ef749a7ae3"
+      },
+      "ffprobe": {
+        "r_frame_rate": "30/1",
+        "avg_frame_rate": "7530/299",
+        "time_base": "1/30",
+        "codec": "h264",
+        "width": 1728,
+        "height": 1080,
+        "packets": 251,
+        "decoded": 251,
+        "dupPts": 56,
+        "dupPerS": 5.6,
+        "steps": {
+          "133.3": 1,
+          "33.3": 92,
+          "0.0": 56,
+          "66.7": 100,
+          "100.0": 1
+        },
+        "durationS": 9.966667
+      }
+    },
+    "consoleErrors": []
+  },
+  "parts": [
+    "R1"
+  ],
+  "pass": true
+}
