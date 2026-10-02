@@ -111,7 +111,11 @@ const CHANGES: Record<string, { v: unknown; field: (p: ReturnType<typeof compile
     'physics.idlePct': { v: 3, field: (p) => p.idle },
     'tune.pid': { v: { roll: [60, 100, 40, 0], pitch: [60, 100, 40, 0], yaw: [50, 90, 0, 0] }, field: (p) => p.pid },
     'tune.rates': { v: { type: 'BETAFLIGHT', roll: { rcRate: 100, rate: 70, expo: 0 }, pitch: { rcRate: 100, rate: 70, expo: 0 }, yaw: { rcRate: 100, rate: 70, expo: 0 }, rateLimit: 1998 }, field: (p) => p.rates },
-    'tune.throttle': { v: { mid: 40, expo: 30 }, field: (p) => p.throttle }
+    'tune.throttle': { v: { mid: 40, expo: 30 }, field: (p) => p.throttle },
+    // shipped in v0.5 (owner's message 16): Betaflight's angle_p_gain, angle_limit, horizon level strength
+    'level.strength': { v: 100, field: (p) => p.level.gain },
+    'level.angleLimitDeg': { v: 75, field: (p) => p.level.limitDeg },
+    'level.horizonStrength': { v: 120, field: (p) => p.level.horizonStrength }
 };
 
 describe('each flight-model row the screen shows changes sim-core\'s model (and nothing else does)', () => {

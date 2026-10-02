@@ -15,7 +15,9 @@ const V03_SHIPPED = [
     // W3-3 scene size around the drone (E.7): the summary panel row, [ ], Settings -> Scenes
     'scene.transform',
     // W4-2 phantom walls (G.3): Settings -> Walls and voxel grid, admin default in showcase.json
-    'scene.dropFloaters'
+    'scene.dropFloaters',
+    // v0.5 (owner's message 16): angle mode's strength, tilt limit and horizon strength, advanced rows of Flight
+    'level.angleLimitDeg', 'level.strength', 'level.horizonStrength'
 ];
 
 /**

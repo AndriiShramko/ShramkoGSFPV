@@ -26,5 +26,11 @@
   "set.input.stickMode": "Stick mode",
   "set.input.stickMode.help": "Which stick is the throttle in the calibration drawings: Mode 2 on the left, Mode 1 on the right.",
   "set.input.stickMode.opt.1": "Mode 1",
-  "set.input.stickMode.opt.2": "Mode 2"
+  "set.input.stickMode.opt.2": "Mode 2",
+  "set.level.strength": "Angle strength",
+  "set.level.strength.help": "How firmly angle mode levels the drone and follows the stick: higher is snappier. Betaflight's angle strength (angle_p_gain, 50 by default): at 100 the drone reaches half the stick's tilt in about 70 ms instead of 100.",
+  "set.level.angleLimitDeg": "Angle limit",
+  "set.level.angleLimitDeg.help": "How far the drone tilts in angle mode at full stick: more tilt, more speed. Betaflight's angle_limit (60° by default).",
+  "set.level.horizonStrength": "Horizon strength",
+  "set.level.horizonStrength.help": "How firmly horizon mode levels the drone near the stick centre: higher levels harder. Betaflight's horizon level strength (75 by default)."
 }

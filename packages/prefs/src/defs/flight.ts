@@ -4,8 +4,10 @@ import type { SettingDef } from '../schema';
 
 export const FLIGHT_DEFS: readonly SettingDef[] = [
     { id: 'flight.mode', group: 'flight', scope: 'global', type: 'enum', options: ['acro', 'angle', 'horizon'], default: 'angle', apply: 'live', shown: ['hud', 'settings', 'key'], action: 'mode.cycle', status: 'shipped', since: 1, items: [15, 23] },
-    // Betaflight 4.5.1 level-mode numbers (research-a (b)), per drone like the rest of a tune
-    { id: 'level.angleLimitDeg', group: 'flight', scope: 'drone', type: 'number', min: 10, max: 85, step: 1, unit: 'deg', default: 60, apply: 'life', shown: ['settings'], advanced: true, status: 'planned', since: 1, items: [21] },
-    { id: 'level.strength', group: 'flight', scope: 'drone', type: 'number', min: 0, max: 200, step: 1, default: 50, apply: 'life', shown: ['settings'], advanced: true, status: 'planned', since: 1, items: [21] },
-    { id: 'level.horizonStrength', group: 'flight', scope: 'drone', type: 'number', min: 0, max: 200, step: 1, default: 75, apply: 'life', shown: ['settings'], advanced: true, status: 'planned', since: 1, items: [15] }
+    // Betaflight 4.5.1 level-mode numbers (research-a (b)), per drone like the rest of a tune. Shipped
+    // in v0.5 (the owner's message 16): angle mode matches Betaflight's defaults exactly, which feels
+    // slow to him; the strength is the knob (100: half the stick's tilt in ~70 ms instead of ~100).
+    { id: 'level.angleLimitDeg', group: 'flight', scope: 'drone', type: 'number', min: 10, max: 85, step: 1, unit: 'deg', default: 60, apply: 'life', shown: ['settings'], advanced: true, status: 'shipped', since: 1, items: [21] },
+    { id: 'level.strength', group: 'flight', scope: 'drone', type: 'number', min: 0, max: 200, step: 1, default: 50, apply: 'life', shown: ['settings'], advanced: true, status: 'shipped', since: 1, items: [21] },
+    { id: 'level.horizonStrength', group: 'flight', scope: 'drone', type: 'number', min: 0, max: 200, step: 1, default: 75, apply: 'life', shown: ['settings'], advanced: true, status: 'shipped', since: 1, items: [15] }
 ];
