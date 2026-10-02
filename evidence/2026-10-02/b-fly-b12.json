@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-02T08:45:13.217Z",
-    "gitHead": "e9700f6",
+    "date": "2026-10-02T09:43:16.089Z",
+    "gitHead": "a856793",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -20,7 +20,7 @@
   "vCrash": 4,
   "dashTarget": 8,
   "crash": {
-    "tick": 10194,
+    "tick": 10390,
     "speed": 8.66833223940369,
     "px": -5.199031280125832,
     "py": 1.7296768898909813,
@@ -29,14 +29,14 @@
   "tumbleMaxW": 151.40840436669455,
   "wreck": {
     "speed": 8.66833223940369,
-    "tick": 10194,
+    "tick": 10390,
     "engine": "rapier",
-    "debris": 2,
-    "maxAngularSpeed": 100.3937986867269,
+    "debris": 4,
+    "maxAngularSpeed": 100.69516471996708,
     "staticBoxes": 1420,
     "event": {
       "type": "crash",
-      "tick": 10194,
+      "tick": 10390,
       "speed": 8.66833223940369,
       "nx": 1,
       "ny": 0,
