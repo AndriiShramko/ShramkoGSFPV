@@ -292,12 +292,12 @@ describe('Erase everything', () => {
 });
 
 describe('the screen\'s model (ui/settings/model.ts)', () => {
-    const tx = { label: (d: SettingDef) => ({ 'physics.gravity': 'Grawitacja', 'camera.fovDeg': 'Kąt widzenia kamery' } as Record<string, string>)[d.id] ?? d.id, help: () => '', option: (_d: SettingDef, o: string) => o };
+    const tx = { label: (d: SettingDef) => ({ 'physics.gravity': 'Grawitacja', 'camera.fovDeg': 'K\u0105t widzenia kamery' } as Record<string, string>)[d.id] ?? d.id, help: () => '', option: (_d: SettingDef, o: string) => o };
 
     it('search: every word, any case, accents folded, ids too', () => {
         const fov = SCHEMA.byId.get('camera.fovDeg')!, grav = SCHEMA.byId.get('physics.gravity')!;
         expect(M.matches(fov, 'kat', tx)).toBe(true);
-        expect(M.matches(fov, 'KĄT kamery', tx)).toBe(true);
+        expect(M.matches(fov, 'K\u0104T kamery', tx)).toBe(true);
         expect(M.matches(fov, 'camera.fov', tx)).toBe(true);
         expect(M.matches(grav, '', tx)).toBe(true);
         // control: a word it does not have

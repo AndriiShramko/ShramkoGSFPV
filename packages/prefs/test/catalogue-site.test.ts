@@ -120,6 +120,6 @@ describe('the counter tiles and the Advanced badge on the landing (C15)', () => 
         const changed = planted.split('\n').filter((line, i) => line !== fixed.split('\n')[i]);
         expect(changed).toHaveLength(2);
         // and a new word of the simulator's lands in tune.adv
-        expect(siteTune(withSiteDerived(text, siteDerived('ru', text, counts, { 'settings.advanced': 'Расширенные' }))).adv).toBe('Расширенные');
+        expect(siteTune(withSiteDerived(text, siteDerived('ru', text, counts, { 'settings.advanced': '\u0420\u0430\u0441\u0448\u0438\u0440\u0435\u043d\u043d\u044b\u0435' }))).adv).toBe('\u0420\u0430\u0441\u0448\u0438\u0440\u0435\u043d\u043d\u044b\u0435');
     });
 });

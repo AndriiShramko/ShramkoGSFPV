@@ -39,5 +39,5 @@ reference only; most of it is superseded by v0.2.
 2. Re-run the prefs review's must-fix items, finish W1-2 shell and W1-4 log/respawn per section J.
 3. Gates: `pnpm -r typecheck`, `npx vitest run`, `node scripts/check-architecture.mjs`.
 4. Then waves 2-4 of section J; the owner's backlog with item numbers is in the vault note
-   `01 - Projects/FPV-симулятор в 3DGS-сценах/ShramkoGSFPV — бэклог 2026-09-25.md`
+   the backlog note of the project folder (see the vault HANDOFF note)
    (vault repo `obsidian-vault-andriishramko`).

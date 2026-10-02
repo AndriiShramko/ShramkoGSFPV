@@ -249,7 +249,7 @@ export class SettingsScreen {
         const caps = keyCaps.length ? h('span', { class: 'sr-keys', 'aria-hidden': 'true' }, ...keyCaps.map((k) => h('kbd', {}, k.cap))) : null;
         const fromLink = h('span', { class: 'sr-link', hidden: true }, t('prefs.fromLink'));
         const dot = h('span', { class: 'sr-dot', title: t('prefs.changed'), 'aria-hidden': 'true' });
-        const reset = h('button', { type: 'button', class: 'sr-reset', 'data-action': 'reset-setting', hidden: true, onclick: () => { const c = ctxOf(); if (c !== null) pilotReset(this.store, def.id, c); } }, t('prefs.reset')) as HTMLButtonElement;
+        const reset = h('button', { type: 'button', class: 'sr-reset', 'data-action': 'reset-setting', hidden: true, onclick: () => { const c = ctxOf(); if (c === null) return; pilotReset(this.store, def.id, c); if (def.apply === 'reload') this.host.reload(def.id); } }, t('prefs.reset')) as HTMLButtonElement; // a reset of the language reloads like a change (the page's address names the language)
         const helpId = `${uid}-help`;
         const helpText = help ? h('p', { class: 'sr-helptext muted small', id: helpId, hidden: true }, help) : null;
         const helpBtn = help ? h('button', { type: 'button', class: 'sr-help', 'aria-expanded': 'false', 'aria-controls': helpId, 'aria-label': t('prefs.help', { name: label }), title: t('prefs.help', { name: label }) }, '?') as HTMLButtonElement : null;

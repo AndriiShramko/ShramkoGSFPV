@@ -26,7 +26,7 @@ export interface DefTexts {
     option(def: SettingDef, o: string): string;
 }
 
-/** Lower case, accents gone (é -> e), one space between words: "Kąt" finds "kat", "FOV" finds "fov". */
+/** Lower case, accents gone (é -> e), one space between words: "K\u0105t" (Polish) finds "kat", "FOV" finds "fov". */
 export function fold(s: string): string {
     return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 }

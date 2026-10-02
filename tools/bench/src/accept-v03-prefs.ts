@@ -553,16 +553,17 @@ if (want('P10')) {
     // back to the page's language: the row's reset
     await openByKey(p);
     await p.click('.set-rail-btn[data-group="display"]');
-    await p.click('[data-id="ui.language"] [data-action="reset-setting"]');
-    const resetStore = await hook(p, "return { v: h.prefs.get('ui.language'), explicit: h.prefs.isExplicit('ui.language'), cookie: document.cookie };");
-    await closeByEsc(p);
-    await p.reload();
+    // the reset reloads the page in the browser's language, like a change does (on a release build the address names the language)
+    await Promise.all([p.waitForNavigation({ timeout: 30000 }), p.click('[data-id="ui.language"] [data-action="reset-setting"]')]);
     await waitReady(p, 180000);
+    const resetStore = await hook(p, "return { v: h.prefs.get('ui.language'), explicit: h.prefs.isExplicit('ui.language'), cookie: document.cookie };");
     const back = await p.evaluate(() => document.documentElement.lang);
     // control: a cookie written past Settings (as the landing's switcher does) is what the next load shows,
     // so the probe tells languages apart and the page follows the cookie, not a stale copy
     await p.context().addCookies([{ name: 'NEXT_LOCALE', value: 'ru', url: SITE }]);
-    await p.reload();
+    // the dev server serves /fly/ (the cookie decides); a release build goes to the cookie's language path, as the landing's switcher does
+    if (process.env.LOCAL_FLY) await p.reload();
+    else await p.goto(fly(FLIGHT, 'ru'));
     await waitReady(p, 180000);
     const ru = { lang: await p.evaluate(() => document.documentElement.lang), store: await hook(p, "return h.prefs.get('ui.language');") };
     await p.context().close();

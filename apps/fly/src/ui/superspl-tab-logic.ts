@@ -131,7 +131,7 @@ export function sizeParts(bytes: number, locale: string): { key: 'mb' | 'gb'; n:
     return { key: 'mb', n: new Intl.NumberFormat(locale, { maximumFractionDigits: mb < 10 ? 1 : 0 }).format(mb) };
 }
 
-/** 55 711 -> "56K" / "56 тыс." as the locale writes it. */
+/** 55 711 -> "56K" / "56 tys." (the Russian short form) as the locale writes it. */
 export function countLabel(n: number, locale: string): string {
     return new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
 }

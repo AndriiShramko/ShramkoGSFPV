@@ -4,6 +4,8 @@
    click, so it never sits between the pilot's thumb and a control */
 .crash-toast { position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%); width: max-content; max-width: min(92vw, 460px); display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 8px 14px; border-radius: 12px; background: rgba(12,14,18,.82); border: 1px solid var(--line); color: #fff; font-size: 14px; text-align: center; pointer-events: none; animation: fadein .3s ease both; }
 .crash-toast .ct-text { font-variant-numeric: tabular-nums; }
+/* a phone: the bottom holds the recording bar and the scene credit; the toast goes under the top buttons, which is free while flying */
+@media (max-width: 640px) { .crash-toast { bottom: auto; top: calc(max(10px, env(safe-area-inset-top)) + 96px + var(--banner-h, 0px)); } }
 .crash-toast .ct-bar { display: block; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
 .crash-toast .ct-bar > i { display: block; height: 100%; background: var(--accent); transform-origin: 0 50%; }
 .crash-toast .ct-keys { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; color: #d1d5db; font-size: 13px; }
