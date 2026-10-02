@@ -7,30 +7,30 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-02T10:37:00.797Z",
-    "gitHead": "9039a46",
+    "date": "2026-10-02T11:27:31.192Z",
+    "gitHead": "0a169fa",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "pass": true,
-  "site": "http://127.0.0.1:8138",
+  "site": "https://gsfpv.flyreelstudio.eu",
   "reference": "https://gsfpv.flyreelstudio.eu",
   "L1-L2 desktop": {
     "pass": true,
     "now": {
       "top": {
-        "totalKB": 5613,
-        "videoKB": 3754,
+        "totalKB": 1772,
+        "videoKB": 973,
         "videos": [
           "/media/tunis-1920.av1.mp4"
         ],
         "videoBeforeLoad": []
       },
       "scrolled": {
-        "totalKB": 14963,
-        "videoKB": 10223,
+        "totalKB": 13946,
+        "videoKB": 10234,
         "videos": [
           "/media/tunis-1920.av1.mp4",
           "/media/garden-1920.av1.mp4",
@@ -43,41 +43,41 @@
     },
     "before": {
       "top": {
-        "totalKB": 5389,
-        "videoKB": 3996,
+        "totalKB": 1227,
+        "videoKB": 428,
         "videos": [
-          "/media/hero.mp4"
+          "/media/tunis-1920.av1.mp4"
         ],
-        "videoBeforeLoad": [
-          "/media/hero.mp4"
-        ]
+        "videoBeforeLoad": []
       },
       "scrolled": {
-        "totalKB": 7343,
-        "videoKB": 3996,
+        "totalKB": 13946,
+        "videoKB": 10234,
         "videos": [
-          "/media/hero.mp4"
+          "/media/tunis-1920.av1.mp4",
+          "/media/garden-1920.av1.mp4",
+          "/media/villa-1920.av1.mp4"
         ]
       },
       "scaleBefore": false,
-      "scaleAfter": false,
-      "pageHeight": 27694
+      "scaleAfter": true,
+      "pageHeight": 30341
     }
   },
   "L1-L2 phone": {
     "pass": true,
     "now": {
       "top": {
-        "totalKB": 3448,
-        "videoKB": 1844,
+        "totalKB": 2389,
+        "videoKB": 1846,
         "videos": [
           "/media/tunis-1280.av1.mp4"
         ],
         "videoBeforeLoad": []
       },
       "scrolled": {
-        "totalKB": 8961,
-        "videoKB": 5384,
+        "totalKB": 7924,
+        "videoKB": 5390,
         "videos": [
           "/media/tunis-1280.av1.mp4",
           "/media/garden-1280.av1.mp4",
@@ -90,35 +90,35 @@
     },
     "before": {
       "top": {
-        "totalKB": 2022,
-        "videoKB": 1089,
+        "totalKB": 2389,
+        "videoKB": 1846,
         "videos": [
-          "/media/hero.mp4"
+          "/media/tunis-1280.av1.mp4"
         ],
-        "videoBeforeLoad": [
-          "/media/hero.mp4"
-        ]
+        "videoBeforeLoad": []
       },
       "scrolled": {
-        "totalKB": 6330,
-        "videoKB": 3996,
+        "totalKB": 7924,
+        "videoKB": 5390,
         "videos": [
-          "/media/hero.mp4"
+          "/media/tunis-1280.av1.mp4",
+          "/media/garden-1280.av1.mp4",
+          "/media/villa-1280.av1.mp4"
         ]
       },
       "scaleBefore": false,
-      "scaleAfter": false,
-      "pageHeight": 43079
+      "scaleAfter": true,
+      "pageHeight": 47460
     }
   },
-  "catalogueTotal": 1345,
-  "randomQuery": "?sort=starred&features=walkable&limit=40&skip=80",
+  "catalogueTotal": 1346,
+  "randomQuery": "?sort=starred&features=walkable&limit=40&skip=160",
   "L3 random location": {
     "pass": true,
-    "opened": "d27352df",
+    "opened": "90de518d",
     "pool": 40,
-    "total": 1345,
-    "query": "?sort=starred&features=walkable&limit=40&skip=80",
+    "total": 1346,
+    "query": "?sort=starred&features=walkable&limit=40&skip=160",
     "fallback": "/en/fly/"
   },
   "L4 blocks in 4 languages": {
