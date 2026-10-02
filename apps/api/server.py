@@ -1148,18 +1148,17 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(body)
 
     def _share(self, path: str, head: bool) -> None:
-        """GET/HEAD /s/<id> (the page) and /s/<id>.jpg (the picture)."""
+        """GET/HEAD /s/<id> (the page) and /s/<id>.jpg (the picture); nginx adds the common headers (nosniff...)."""
         rest = path[len("/s/"):]
         if rest.endswith(".jpg"):
             img = share_image(rest[:-4])
             if img is not None:
-                return self._send(200, img, [("Content-Type", "image/jpeg"), ("Cache-Control", "public, max-age=31536000, immutable"),
-                                             ("X-Content-Type-Options", "nosniff")], head)
+                return self._send(200, img, [("Content-Type", "image/jpeg"), ("Cache-Control", "public, max-age=31536000, immutable")], head)
         else:
             doc = share_page(rest)
             if doc is not None:
                 return self._send(200, doc, [("Content-Type", "text/html; charset=utf-8"), ("Cache-Control", "public, max-age=3600"),
-                                             ("Content-Security-Policy", SHARE_CSP), ("X-Content-Type-Options", "nosniff")], head)
+                                             ("Content-Security-Policy", SHARE_CSP)], head)
         self._send(404, b'<!doctype html><meta charset="utf-8"><title>Not found</title><p><a href="/">ShramkoGSFPV</a></p>\n',
                    [("Content-Type", "text/html; charset=utf-8"), ("Cache-Control", "no-store")], head)
 
