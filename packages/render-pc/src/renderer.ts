@@ -15,6 +15,14 @@ import type { GraphicsDevice, GSplatComponent } from 'playcanvas';
 import { LatencyGuard, inputToScreenMs } from './governor';
 
 /** What the HUD shows about the delay (see LatencyGuard, inputToScreenMs). */
+
+/** The view's far end at scene size x1, in metres: every scan flown so far fits in it. */
+export const FAR_CLIP_M = 2000;
+/** The far end at scene size s: x1's or more, never less (a smaller scene is still drawn whole). */
+export function farClipFor(s: number): number {
+    return FAR_CLIP_M * Math.max(1, s);
+}
+
 export interface LatencyStats {
     /** learned display period, ms (Infinity before the first frames) */
     periodMs: number;
@@ -172,7 +180,7 @@ export class SplatRenderer {
         cam.addComponent('camera', {
             clearColor: new Color(0, 0, 0, 1),
             nearClip: 0.01, // <= 10 mm: the craft flies within centimetres of surfaces
-            farClip: 2000,
+            farClip: FAR_CLIP_M,
             fov: opts.hFovDeg ?? 115,
             horizontalFov: true,
             toneMapping: TONEMAP_LINEAR
@@ -484,6 +492,8 @@ export class SplatRenderer {
         if (!(s > 0) || !Number.isFinite(s) || !t.every(Number.isFinite)) throw new RangeError(`bad scene transform s=${s} t=${t.join(',')}`);
         this.sceneS = s;
         this.sceneT = [t[0], t[1], t[2]];
+        // a scene made bigger reaches further: its far end stays in view (a 50 m scan at x100 is 5 km)
+        this.camera.camera!.farClip = farClipFor(s);
         if (this.splat) {
             this.splat.setLocalPosition(t[0], t[1], t[2]);
             this.splat.setLocalScale(s, s, s);

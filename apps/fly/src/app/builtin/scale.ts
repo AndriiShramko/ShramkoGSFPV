@@ -1,8 +1,9 @@
 // Scene size around the drone (docs/architecture-v03.md E.7; the owner's item 11: "if the scene's
 // size is wrong, the pilot must be able to change its scale, centred on the drone"). A scan is
 // often not in true metres, so the drone feels too big or too small; physics stays in metres and
-// the scene scales instead. [ and ] divide or multiply the size by 1.1, applied 300 ms after the
-// last press (a held key goes on stepping); the summary panel has a row "Scene size x1.00 [-]
+// the scene scales instead, from x0.25 to x100 (the owner's message 16: fly a room as a mosquito).
+// [ and ] divide or multiply the size by 1.1, with Shift by 2, applied 300 ms after the last press
+// (a held key goes on stepping); the summary panel has a row "Scene size x1.00 [-]
 // slider [+] reset" with the voxel size it gives the walls; Settings -> Scenes holds the same value.
 // Every change rescales around the craft (session.setTransform: the craft stays where it is, the
 // walls and the splats follow, the log gets a world record) and is kept per scene (prefs
@@ -20,6 +21,8 @@ import './scale.css';
 
 /** One press of [ or ]. */
 export const SCALE_STEP = 1.1;
+/** One press with Shift. */
+export const SCALE_STEP_FAST = 2;
 /** A key's size applies this long after the last press (E.7: on release, debounced). */
 export const SCALE_APPLY_MS = 300;
 /** Above this voxel size the walls get coarse enough to feel (E.7). */
@@ -52,6 +55,13 @@ export function voxelAt(session: FlightSession, s: number): number | null {
 
 const fmt = (s: number): string => s.toFixed(2);
 
+/** The walls' block size as the row says it: centimetres up to a metre, then metres (x100 makes 5 cm blocks 5 m). */
+export function voxelText(m: number): string {
+    const coarse = m > COARSE_VOXEL_M + 1e-9;
+    if (m < 1) return t(coarse ? 'scale.voxelCoarse' : 'scale.voxel', { cm: (m * 100).toFixed(1) });
+    return t('scale.voxelCoarseM', { m: m < 10 ? m.toFixed(1) : m.toFixed(0) });
+}
+
 export const scale: Feature = {
     id: 'scale',
     install(ctx: FlightContext) {
@@ -71,10 +81,8 @@ export const scale: Feature = {
             const v = voxelAt(ctx.session, s);
             row.vox.hidden = v === null;
             if (v !== null) {
-                const cm = (v * 100).toFixed(1);
-                const coarse = v > COARSE_VOXEL_M + 1e-9;
-                row.vox.textContent = coarse ? t('scale.voxelCoarse', { cm }) : t('scale.voxel', { cm });
-                row.vox.classList.toggle('warn', coarse);
+                row.vox.textContent = voxelText(v);
+                row.vox.classList.toggle('warn', v > COARSE_VOXEL_M + 1e-9);
             }
         };
 
@@ -113,8 +121,10 @@ export const scale: Feature = {
         };
         // over a screen or a panel (settings, drones, the picker) the keys are theirs; the summary panel is ours
         const blocked = (): boolean => !!document.querySelector('#ui .screen, #ui .panel:not(.pause-menu)');
-        const step = (k: number, e: KeyboardEvent): void => {
+        const step = (up: boolean, e: KeyboardEvent): void => {
             if (blocked()) return;
+            const by = e.shiftKey ? SCALE_STEP_FAST : SCALE_STEP;
+            const k = up ? by : 1 / by;
             e.preventDefault();
             const now = performance.now();
             if (e.repeat && now - lastStep < 100) return; // a held key: ten steps a second
@@ -127,8 +137,8 @@ export const scale: Feature = {
             clearTimeout(timer);
             timer = window.setTimeout(flushKeys, SCALE_APPLY_MS);
         };
-        const offDown = ctx.keys.on('scale.down', (e) => step(1 / SCALE_STEP, e));
-        const offUp = ctx.keys.on('scale.up', (e) => step(SCALE_STEP, e));
+        const offDown = ctx.keys.on('scale.down', (e) => step(false, e));
+        const offUp = ctx.keys.on('scale.up', (e) => step(true, e));
 
         // ---- the summary panel's row
         let slideTimer = 0;

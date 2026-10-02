@@ -8,11 +8,12 @@ import type { SettingDef } from '../schema';
 export interface SceneTransform { s: number; t: [number, number, number]; v: number }
 
 export const SCALE_MIN = 0.25;
-export const SCALE_MAX = 4;
+/** x100 (the owner's message 16): a room as big as a city, a dive along a chair like a mosquito */
+export const SCALE_MAX = 100;
 
 const fin = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 
-/** Scale is clamped into 0.25-4; a transform stored before versions were known gets v = 0. */
+/** Scale is clamped into SCALE_MIN..SCALE_MAX; a transform stored before versions were known gets v = 0. */
 export function validateTransform(v: unknown): SceneTransform | null {
     if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
     const o = v as Record<string, unknown>;

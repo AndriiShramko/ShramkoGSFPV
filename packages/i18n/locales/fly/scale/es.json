@@ -8,7 +8,8 @@
   "scale.toastLimit": "Tamaño de la escena x{x} (el límite)",
   "scale.voxel": "Paredes: bloques de {cm} cm",
   "scale.voxelCoarse": "Paredes: bloques de {cm} cm; son gruesos: puedes chocar antes de tocar lo que ves",
+  "scale.voxelCoarseM": "Paredes: bloques de {m} m; son gruesos: puedes chocar antes de tocar lo que ves",
   "scale.pushed": "Al reducir la escena, el dron quedó dentro de una pared: se ha movido al punto libre más cercano",
   "set.scene.transform": "Tamaño de la escena",
-  "set.scene.transform.help": "Algunos escaneos no están en metros reales y el dron parece demasiado grande o pequeño. La escena se escala alrededor del dron; [ y ] lo cambian en vuelo. Se guarda para cada escaneo."
+  "set.scene.transform.help": "Algunos escaneos no están en metros reales y el dron parece demasiado grande o pequeño. O haz enorme una habitación y vuélala como un mosquito, con una silla del tamaño de una casa. De x0,25 a x100, alrededor del dron; [ y ] lo cambian en vuelo, x1,1 por pulsación, con Mayús x2. Se guarda para cada escaneo."
 }

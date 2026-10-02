@@ -258,7 +258,9 @@ describe('JSON validators', () => {
 
     it('throttle, transform and folder', () => {
         expect(validateThrottle({ mid: 65, expo: 120 })).toEqual({ mid: 65, expo: 100 });
-        expect(validateTransform({ s: 9, t: [0.3, 0, -1.2], v: 2 })).toEqual({ s: 4, t: [0.3, 0, -1.2], v: 2 });
+        expect(validateTransform({ s: 9, t: [0.3, 0, -1.2], v: 2 })).toEqual({ s: 9, t: [0.3, 0, -1.2], v: 2 }); // x9 is in range since x100
+        expect(validateTransform({ s: 250, t: [0.3, 0, -1.2], v: 2 })).toEqual({ s: 100, t: [0.3, 0, -1.2], v: 2 });
+        expect(validateTransform({ s: 0.1, t: [0, 0, 0] })?.s).toBe(0.25);
         expect(validateTransform({ s: 1.5, t: [0, 0] })).toBeNull();
         expect(validateTransform({ s: 1.5, t: [0, 0, 0] })).toEqual({ s: 1.5, t: [0, 0, 0], v: 0 });
         expect(validateFolder({ name: 'GSFPV' })).toEqual({ name: 'GSFPV' });
