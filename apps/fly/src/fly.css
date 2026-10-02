@@ -297,6 +297,7 @@ body.cinema .rec-dot { display: none; }
 .sf-row { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(280px, calc(50% - 6px)); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; padding: 4px 2px 10px; }
 .sf-item { scroll-snap-align: start; min-width: 0; }
 .sf-item > .scene-cell, .sf-big { height: 100%; }
+.sf-big img { height: auto; } /* the 16:9 box, not the width/height attributes */
 .sf-big .scene-title { font-size: 18px; }
 .sf-pitch { padding: 0 10px; font-size: 14px; }
 .sf-chips { display: flex; flex-wrap: wrap; gap: 6px; }

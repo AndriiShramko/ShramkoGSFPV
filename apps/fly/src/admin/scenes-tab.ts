@@ -257,7 +257,7 @@ export class ScenesTab {
         walls.checked = s.walls !== 'off';
         walls.addEventListener('change', () => { s.walls = walls.checked ? 'on' : 'off'; this.changed(true); });
         const pitch = LANGS.map((l) => {
-            const i = h('input', { type: 'text', maxlength: 140, value: s.pitch?.[l] ?? '' }) as HTMLInputElement;
+            const i = h('input', { type: 'text', maxlength: 140, value: s.pitch?.[l] ?? '', 'data-pitch': l }) as HTMLInputElement;
             i.addEventListener('input', () => { s.pitch = setText(s.pitch ?? {}, l, i.value); this.changed(false); });
             return field(t('admin.field.pitch', { lang: l }), i);
         });
