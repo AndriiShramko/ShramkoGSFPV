@@ -1,16 +1,16 @@
 {
  "generated": "2026-10-02",
- "schemaVersion": 1,
+ "schemaVersion": 2,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
-  "settings": 46,
+  "settings": 49,
   "groups": 10,
   "drones": 6,
   "modes": 3,
-  "keys": 18,
+  "keys": 20,
   "rateTypes": 4,
   "flyingKeys": 10,
-  "allKeys": 26
+  "allKeys": 28
  },
  "locales": {
   "en": {
@@ -42,6 +42,57 @@
         "hud",
         "settings",
         "key"
+       ]
+      },
+      {
+       "id": "level.angleLimitDeg",
+       "label": "Angle limit",
+       "help": "How far the drone tilts in angle mode at full stick: more tilt, more speed. Betaflight's angle_limit (60\u00b0 by default).",
+       "type": "number",
+       "default": "60\u00b0",
+       "range": "10\u201385\u00b0",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "level.strength",
+       "label": "Angle strength",
+       "help": "How firmly angle mode levels the drone and follows the stick: higher is snappier. Betaflight's angle strength (angle_p_gain, 50 by default): at 100 the drone reaches half the stick's tilt in about 70 ms instead of 100.",
+       "type": "number",
+       "default": "50",
+       "range": "0\u2013200",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "level.horizonStrength",
+       "label": "Horizon strength",
+       "help": "How firmly horizon mode levels the drone near the stick centre: higher levels harder. Betaflight's horizon level strength (75 by default).",
+       "type": "number",
+       "default": "75",
+       "range": "0\u2013200",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
        ]
       }
      ]
@@ -721,15 +772,17 @@
       {
        "id": "scene.transform",
        "label": "Scene size",
-       "help": "Some scans are not in true metres, so the drone feels too big or too small. The scene scales around the drone; [ and ] change it in flight. Kept for each scan.",
+       "help": "Some scans are not in true metres, so the drone feels too big or too small. Or make a room huge and fly it like a mosquito, a chair as big as a house. From x0.25 to x100, around the drone; [ and ] change it in flight, x1.1 a press, with Shift x2. Kept for each scan.",
        "type": "json",
        "default": "1\u00d7",
-       "range": "0.25\u00d7\u20134\u00d7",
+       "range": "0.25\u00d7\u2013100\u00d7",
        "scope": "scene",
        "apply": "live",
        "keys": [
         "[",
-        "]"
+        "Shift+[",
+        "]",
+        "Shift+]"
        ],
        "advanced": false,
        "preset": false,
@@ -749,11 +802,11 @@
       {
        "id": "scene.walls",
        "label": "Walls (collisions)",
-       "help": "Off: the drone flies through everything, no crashes. Kept for each scan; the author may switch the walls of a noisy scan off by default. C switches it.",
+       "help": "Off: the drone flies through everything, no crashes. One choice for every scan: switched off here, the walls stay off on the next scan too. Until you switch them, each scan starts as its author set it (a noisy scan may start with the walls off). C switches it.",
        "type": "enum",
        "default": "On (per scan, set by its author)",
        "range": "On / Off",
-       "scope": "scene",
+       "scope": "global",
        "apply": "life",
        "keys": [
         "C"
@@ -1045,14 +1098,16 @@
      "action": "scale.down",
      "label": "Scene smaller",
      "keys": [
-      "["
+      "[",
+      "Shift+["
      ]
     },
     {
      "action": "scale.up",
      "label": "Scene larger",
      "keys": [
-      "]"
+      "]",
+      "Shift+]"
      ]
     },
     {
@@ -1392,6 +1447,57 @@
         "hud",
         "settings",
         "key"
+       ]
+      },
+      {
+       "id": "level.angleLimitDeg",
+       "label": "L\u00edmite de inclinaci\u00f3n",
+       "help": "Cu\u00e1nto se inclina el dron en modo Angle con el stick a fondo: m\u00e1s inclinaci\u00f3n, m\u00e1s velocidad. El angle_limit de Betaflight (60\u00b0 por defecto).",
+       "type": "number",
+       "default": "60\u00b0",
+       "range": "10\u201385\u00b0",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "level.strength",
+       "label": "Fuerza del modo Angle",
+       "help": "Con qu\u00e9 firmeza el modo Angle nivela el dron y sigue el stick: m\u00e1s alto, m\u00e1s r\u00e1pida la respuesta. La fuerza de Angle de Betaflight (angle_p_gain, 50 por defecto): con 100 el dron alcanza la mitad de la inclinaci\u00f3n del stick en unos 70 ms en vez de 100.",
+       "type": "number",
+       "default": "50",
+       "range": "0\u2013200",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "level.horizonStrength",
+       "label": "Fuerza del modo Horizon",
+       "help": "Con qu\u00e9 firmeza el modo Horizon nivela el dron cerca del centro del stick: m\u00e1s alto, nivela m\u00e1s fuerte. La fuerza de nivelado de Horizon de Betaflight (75 por defecto).",
+       "type": "number",
+       "default": "75",
+       "range": "0\u2013200",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
        ]
       }
      ]
@@ -2071,15 +2177,17 @@
       {
        "id": "scene.transform",
        "label": "Tama\u00f1o de la escena",
-       "help": "Algunos escaneos no est\u00e1n en metros reales y el dron parece demasiado grande o peque\u00f1o. La escena se escala alrededor del dron; [ y ] lo cambian en vuelo. Se guarda para cada escaneo.",
+       "help": "Algunos escaneos no est\u00e1n en metros reales y el dron parece demasiado grande o peque\u00f1o. O haz enorme una habitaci\u00f3n y vu\u00e9lala como un mosquito, con una silla del tama\u00f1o de una casa. De x0,25 a x100, alrededor del dron; [ y ] lo cambian en vuelo, x1,1 por pulsaci\u00f3n, con May\u00fas x2. Se guarda para cada escaneo.",
        "type": "json",
        "default": "1\u00d7",
-       "range": "0.25\u00d7\u20134\u00d7",
+       "range": "0.25\u00d7\u2013100\u00d7",
        "scope": "scene",
        "apply": "live",
        "keys": [
         "[",
-        "]"
+        "Shift+[",
+        "]",
+        "Shift+]"
        ],
        "advanced": false,
        "preset": false,
@@ -2099,11 +2207,11 @@
       {
        "id": "scene.walls",
        "label": "Paredes (colisiones)",
-       "help": "Desactivadas: el dron atraviesa todo, sin choques. Se guarda para cada escaneo; el autor puede desactivar por defecto las paredes de un escaneo con mucho ruido. C lo cambia.",
+       "help": "Desactivadas: el dron atraviesa todo, sin choques. Una sola elecci\u00f3n para todos los escaneos: si las desactivas aqu\u00ed, siguen desactivadas en el siguiente escaneo. Hasta que las cambies, cada escaneo empieza como lo dej\u00f3 su autor (uno con mucho ruido puede empezar sin paredes). C lo cambia.",
        "type": "enum",
        "default": "Activadas (por escaneo, lo fija su autor)",
        "range": "Activadas / Desactivadas",
-       "scope": "scene",
+       "scope": "global",
        "apply": "life",
        "keys": [
         "C"
@@ -2395,14 +2503,16 @@
      "action": "scale.down",
      "label": "Escena m\u00e1s peque\u00f1a",
      "keys": [
-      "["
+      "[",
+      "Shift+["
      ]
     },
     {
      "action": "scale.up",
      "label": "Escena m\u00e1s grande",
      "keys": [
-      "]"
+      "]",
+      "Shift+]"
      ]
     },
     {
@@ -2742,6 +2852,57 @@
         "hud",
         "settings",
         "key"
+       ]
+      },
+      {
+       "id": "level.angleLimitDeg",
+       "label": "Limit przechy\u0142u",
+       "help": "Jak bardzo dron przechyla si\u0119 w trybie Angle przy pe\u0142nym dr\u0105\u017cku: wi\u0119kszy przechy\u0142, wi\u0119ksza pr\u0119dko\u015b\u0107. angle_limit z Betaflighta (domy\u015blnie 60\u00b0).",
+       "type": "number",
+       "default": "60\u00b0",
+       "range": "10\u201385\u00b0",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "level.strength",
+       "label": "Si\u0142a trybu Angle",
+       "help": "Jak mocno tryb Angle poziomuje drona i pod\u0105\u017ca za dr\u0105\u017ckiem: wy\u017cej znaczy \u017cwawiej. Si\u0142a Angle z Betaflighta (angle_p_gain, domy\u015blnie 50): przy 100 dron osi\u0105ga po\u0142ow\u0119 przechy\u0142u dr\u0105\u017cka w oko\u0142o 70 ms zamiast 100.",
+       "type": "number",
+       "default": "50",
+       "range": "0\u2013200",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "level.horizonStrength",
+       "label": "Si\u0142a trybu Horizon",
+       "help": "Jak mocno tryb Horizon poziomuje drona blisko \u015brodka dr\u0105\u017cka: wy\u017cej poziomuje mocniej. Si\u0142a poziomowania Horizon z Betaflighta (domy\u015blnie 75).",
+       "type": "number",
+       "default": "75",
+       "range": "0\u2013200",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
        ]
       }
      ]
@@ -3421,15 +3582,17 @@
       {
        "id": "scene.transform",
        "label": "Rozmiar sceny",
-       "help": "Niekt\u00f3re skany nie s\u0105 w prawdziwych metrach, wi\u0119c dron wydaje si\u0119 za du\u017cy albo za ma\u0142y. Scena skaluje si\u0119 wok\u00f3\u0142 drona; [ i ] zmieniaj\u0105 rozmiar w locie. Zapami\u0119tywane dla ka\u017cdego skanu.",
+       "help": "Niekt\u00f3re skany nie s\u0105 w prawdziwych metrach, wi\u0119c dron wydaje si\u0119 za du\u017cy albo za ma\u0142y. Albo powi\u0119ksz pok\u00f3j i lataj po nim jak komar, z krzes\u0142em wielko\u015bci domu. Od x0,25 do x100, wok\u00f3\u0142 drona; [ i ] zmieniaj\u0105 rozmiar w locie, x1,1 na naci\u015bni\u0119cie, z Shift x2. Zapami\u0119tywane dla ka\u017cdego skanu.",
        "type": "json",
        "default": "1\u00d7",
-       "range": "0.25\u00d7\u20134\u00d7",
+       "range": "0.25\u00d7\u2013100\u00d7",
        "scope": "scene",
        "apply": "live",
        "keys": [
         "[",
-        "]"
+        "Shift+[",
+        "]",
+        "Shift+]"
        ],
        "advanced": false,
        "preset": false,
@@ -3449,11 +3612,11 @@
       {
        "id": "scene.walls",
        "label": "\u015aciany (kolizje)",
-       "help": "Wy\u0142\u0105czone: dron przelatuje przez wszystko, bez kraks. Zapami\u0119tywane dla ka\u017cdego skanu; autor mo\u017ce domy\u015blnie wy\u0142\u0105czy\u0107 \u015bciany w skanie z du\u017cym szumem. Prze\u0142\u0105cza je C.",
+       "help": "Wy\u0142\u0105czone: dron przelatuje przez wszystko, bez kraks. Jeden wyb\u00f3r dla wszystkich skan\u00f3w: wy\u0142\u0105czone tutaj zostaj\u0105 wy\u0142\u0105czone tak\u017ce w nast\u0119pnym skanie. Dop\u00f3ki ich nie prze\u0142\u0105czysz, ka\u017cdy skan startuje tak, jak ustawi\u0142 go autor (skan z du\u017cym szumem mo\u017ce startowa\u0107 bez \u015bcian). Prze\u0142\u0105cza je C.",
        "type": "enum",
        "default": "W\u0142\u0105czone (dla ka\u017cdego skanu, ustala autor)",
        "range": "W\u0142\u0105czone / Wy\u0142\u0105czone",
-       "scope": "scene",
+       "scope": "global",
        "apply": "life",
        "keys": [
         "C"
@@ -3745,14 +3908,16 @@
      "action": "scale.down",
      "label": "Scena mniejsza",
      "keys": [
-      "["
+      "[",
+      "Shift+["
      ]
     },
     {
      "action": "scale.up",
      "label": "Scena wi\u0119ksza",
      "keys": [
-      "]"
+      "]",
+      "Shift+]"
      ]
     },
     {
@@ -4092,6 +4257,57 @@
         "hud",
         "settings",
         "key"
+       ]
+      },
+      {
+       "id": "level.angleLimitDeg",
+       "label": "\u041f\u0440\u0435\u0434\u0435\u043b \u043d\u0430\u043a\u043b\u043e\u043d\u0430",
+       "help": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0434\u0440\u043e\u043d \u043d\u0430\u043a\u043b\u043e\u043d\u044f\u0435\u0442\u0441\u044f \u0432 \u0440\u0435\u0436\u0438\u043c\u0435 Angle \u043f\u0440\u0438 \u0441\u0442\u0438\u043a\u0435 \u0434\u043e \u0443\u043f\u043e\u0440\u0430: \u0431\u043e\u043b\u044c\u0448\u0435 \u043d\u0430\u043a\u043b\u043e\u043d \u2014 \u0431\u043e\u043b\u044c\u0448\u0435 \u0441\u043a\u043e\u0440\u043e\u0441\u0442\u044c. angle_limit \u0438\u0437 Betaflight (\u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e 60\u00b0).",
+       "type": "number",
+       "default": "60\u00b0",
+       "range": "10\u201385\u00b0",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "level.strength",
+       "label": "\u0421\u0438\u043b\u0430 \u0440\u0435\u0436\u0438\u043c\u0430 Angle",
+       "help": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0442\u0432\u0451\u0440\u0434\u043e \u0440\u0435\u0436\u0438\u043c Angle \u0432\u044b\u0440\u0430\u0432\u043d\u0438\u0432\u0430\u0435\u0442 \u0434\u0440\u043e\u043d \u0438 \u0441\u043b\u0435\u0434\u0443\u0435\u0442 \u0437\u0430 \u0441\u0442\u0438\u043a\u043e\u043c: \u0431\u043e\u043b\u044c\u0448\u0435 \u2014 \u0440\u0435\u0437\u0447\u0435. \u0421\u0438\u043b\u0430 Angle \u0438\u0437 Betaflight (angle_p_gain, \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e 50): \u043f\u0440\u0438 100 \u0434\u0440\u043e\u043d \u043d\u0430\u0431\u0438\u0440\u0430\u0435\u0442 \u043f\u043e\u043b\u043e\u0432\u0438\u043d\u0443 \u043d\u0430\u043a\u043b\u043e\u043d\u0430 \u0441\u0442\u0438\u043a\u0430 \u043f\u0440\u0438\u043c\u0435\u0440\u043d\u043e \u0437\u0430 70 \u043c\u0441 \u0432\u043c\u0435\u0441\u0442\u043e 100.",
+       "type": "number",
+       "default": "50",
+       "range": "0\u2013200",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "level.horizonStrength",
+       "label": "\u0421\u0438\u043b\u0430 \u0440\u0435\u0436\u0438\u043c\u0430 Horizon",
+       "help": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0442\u0432\u0451\u0440\u0434\u043e \u0440\u0435\u0436\u0438\u043c Horizon \u0432\u044b\u0440\u0430\u0432\u043d\u0438\u0432\u0430\u0435\u0442 \u0434\u0440\u043e\u043d \u0443 \u0446\u0435\u043d\u0442\u0440\u0430 \u0441\u0442\u0438\u043a\u0430: \u0431\u043e\u043b\u044c\u0448\u0435 \u2014 \u0432\u044b\u0440\u0430\u0432\u043d\u0438\u0432\u0430\u0435\u0442 \u0441\u0438\u043b\u044c\u043d\u0435\u0435. \u0421\u0438\u043b\u0430 \u0432\u044b\u0440\u0430\u0432\u043d\u0438\u0432\u0430\u043d\u0438\u044f Horizon \u0438\u0437 Betaflight (\u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e 75).",
+       "type": "number",
+       "default": "75",
+       "range": "0\u2013200",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
        ]
       }
      ]
@@ -4771,15 +4987,17 @@
       {
        "id": "scene.transform",
        "label": "\u0420\u0430\u0437\u043c\u0435\u0440 \u0441\u0446\u0435\u043d\u044b",
-       "help": "\u041d\u0435\u043a\u043e\u0442\u043e\u0440\u044b\u0435 \u0441\u043a\u0430\u043d\u044b \u043d\u0435 \u0432 \u043d\u0430\u0441\u0442\u043e\u044f\u0449\u0438\u0445 \u043c\u0435\u0442\u0440\u0430\u0445, \u0438 \u0434\u0440\u043e\u043d \u043a\u0430\u0436\u0435\u0442\u0441\u044f \u0441\u043b\u0438\u0448\u043a\u043e\u043c \u0431\u043e\u043b\u044c\u0448\u0438\u043c \u0438\u043b\u0438 \u043c\u0430\u043b\u0435\u043d\u044c\u043a\u0438\u043c. \u0421\u0446\u0435\u043d\u0430 \u043c\u0430\u0441\u0448\u0442\u0430\u0431\u0438\u0440\u0443\u0435\u0442\u0441\u044f \u0432\u043e\u043a\u0440\u0443\u0433 \u0434\u0440\u043e\u043d\u0430; [ \u0438 ] \u043c\u0435\u043d\u044f\u044e\u0442 \u0440\u0430\u0437\u043c\u0435\u0440 \u0432 \u043f\u043e\u043b\u0451\u0442\u0435. \u0417\u0430\u043f\u043e\u043c\u0438\u043d\u0430\u0435\u0442\u0441\u044f \u0434\u043b\u044f \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u0441\u043a\u0430\u043d\u0430.",
+       "help": "\u041d\u0435\u043a\u043e\u0442\u043e\u0440\u044b\u0435 \u0441\u043a\u0430\u043d\u044b \u043d\u0435 \u0432 \u043d\u0430\u0441\u0442\u043e\u044f\u0449\u0438\u0445 \u043c\u0435\u0442\u0440\u0430\u0445, \u0438 \u0434\u0440\u043e\u043d \u043a\u0430\u0436\u0435\u0442\u0441\u044f \u0441\u043b\u0438\u0448\u043a\u043e\u043c \u0431\u043e\u043b\u044c\u0448\u0438\u043c \u0438\u043b\u0438 \u043c\u0430\u043b\u0435\u043d\u044c\u043a\u0438\u043c. \u0410 \u043c\u043e\u0436\u043d\u043e \u0441\u0434\u0435\u043b\u0430\u0442\u044c \u043a\u043e\u043c\u043d\u0430\u0442\u0443 \u043e\u0433\u0440\u043e\u043c\u043d\u043e\u0439 \u0438 \u043b\u0435\u0442\u0430\u0442\u044c \u043f\u043e \u043d\u0435\u0439 \u043a\u0430\u043a \u043a\u043e\u043c\u0430\u0440, \u0432\u0434\u043e\u043b\u044c \u0441\u0442\u0443\u043b\u0430 \u0440\u0430\u0437\u043c\u0435\u0440\u043e\u043c \u0441 \u0434\u043e\u043c. \u041e\u0442 x0,25 \u0434\u043e x100, \u0432\u043e\u043a\u0440\u0443\u0433 \u0434\u0440\u043e\u043d\u0430; [ \u0438 ] \u043c\u0435\u043d\u044f\u044e\u0442 \u0440\u0430\u0437\u043c\u0435\u0440 \u0432 \u043f\u043e\u043b\u0451\u0442\u0435, x1,1 \u0437\u0430 \u043d\u0430\u0436\u0430\u0442\u0438\u0435, \u0441 Shift x2. \u0417\u0430\u043f\u043e\u043c\u0438\u043d\u0430\u0435\u0442\u0441\u044f \u0434\u043b\u044f \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u0441\u043a\u0430\u043d\u0430.",
        "type": "json",
        "default": "1\u00d7",
-       "range": "0.25\u00d7\u20134\u00d7",
+       "range": "0.25\u00d7\u2013100\u00d7",
        "scope": "scene",
        "apply": "live",
        "keys": [
         "[",
-        "]"
+        "Shift+[",
+        "]",
+        "Shift+]"
        ],
        "advanced": false,
        "preset": false,
@@ -4799,11 +5017,11 @@
       {
        "id": "scene.walls",
        "label": "\u0421\u0442\u0435\u043d\u044b (\u0441\u0442\u043e\u043b\u043a\u043d\u043e\u0432\u0435\u043d\u0438\u044f)",
-       "help": "\u0412\u044b\u043a\u043b\u044e\u0447\u0435\u043d\u044b: \u0434\u0440\u043e\u043d \u043f\u0440\u043e\u043b\u0435\u0442\u0430\u0435\u0442 \u0441\u043a\u0432\u043e\u0437\u044c \u0432\u0441\u0451, \u043a\u0440\u0430\u0448\u0435\u0439 \u043d\u0435\u0442. \u0417\u0430\u043f\u043e\u043c\u0438\u043d\u0430\u0435\u0442\u0441\u044f \u0434\u043b\u044f \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u0441\u043a\u0430\u043d\u0430; \u0430\u0432\u0442\u043e\u0440 \u043c\u043e\u0436\u0435\u0442 \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e \u0432\u044b\u043a\u043b\u044e\u0447\u0438\u0442\u044c \u0441\u0442\u0435\u043d\u044b \u0432 \u0441\u043a\u0430\u043d\u0435 \u0441 \u0441\u0438\u043b\u044c\u043d\u044b\u043c \u0448\u0443\u043c\u043e\u043c. \u041f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0435\u0442\u0441\u044f \u043a\u043b\u0430\u0432\u0438\u0448\u0435\u0439 C.",
+       "help": "\u0412\u044b\u043a\u043b\u044e\u0447\u0435\u043d\u044b: \u0434\u0440\u043e\u043d \u043f\u0440\u043e\u043b\u0435\u0442\u0430\u0435\u0442 \u0441\u043a\u0432\u043e\u0437\u044c \u0432\u0441\u0451, \u043a\u0440\u0430\u0448\u0435\u0439 \u043d\u0435\u0442. \u041e\u0434\u0438\u043d \u0432\u044b\u0431\u043e\u0440 \u0434\u043b\u044f \u0432\u0441\u0435\u0445 \u0441\u043a\u0430\u043d\u043e\u0432: \u0432\u044b\u043a\u043b\u044e\u0447\u0438\u043b \u0437\u0434\u0435\u0441\u044c \u2014 \u0441\u0442\u0435\u043d\u044b \u0432\u044b\u043a\u043b\u044e\u0447\u0435\u043d\u044b \u0438 \u0432 \u0441\u043b\u0435\u0434\u0443\u044e\u0449\u0435\u043c \u0441\u043a\u0430\u043d\u0435. \u041f\u043e\u043a\u0430 \u0442\u044b \u0438\u0445 \u043d\u0435 \u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u043b, \u043a\u0430\u0436\u0434\u044b\u0439 \u0441\u043a\u0430\u043d \u043d\u0430\u0447\u0438\u043d\u0430\u0435\u0442\u0441\u044f \u0442\u0430\u043a, \u043a\u0430\u043a \u043d\u0430\u0441\u0442\u0440\u043e\u0438\u043b \u0430\u0432\u0442\u043e\u0440 (\u0448\u0443\u043c\u043d\u044b\u0439 \u0441\u043a\u0430\u043d \u043c\u043e\u0436\u0435\u0442 \u043d\u0430\u0447\u0438\u043d\u0430\u0442\u044c\u0441\u044f \u0431\u0435\u0437 \u0441\u0442\u0435\u043d). \u041f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0435\u0442\u0441\u044f \u043a\u043b\u0430\u0432\u0438\u0448\u0435\u0439 C.",
        "type": "enum",
        "default": "\u0412\u043a\u043b\u044e\u0447\u0435\u043d\u044b (\u0434\u043b\u044f \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u0441\u043a\u0430\u043d\u0430, \u0437\u0430\u0434\u0430\u0451\u0442 \u0430\u0432\u0442\u043e\u0440)",
        "range": "\u0412\u043a\u043b\u044e\u0447\u0435\u043d\u044b / \u0412\u044b\u043a\u043b\u044e\u0447\u0435\u043d\u044b",
-       "scope": "scene",
+       "scope": "global",
        "apply": "life",
        "keys": [
         "C"
@@ -5095,14 +5313,16 @@
      "action": "scale.down",
      "label": "\u0421\u0446\u0435\u043d\u0430 \u043c\u0435\u043d\u044c\u0448\u0435",
      "keys": [
-      "["
+      "[",
+      "Shift+["
      ]
     },
     {
      "action": "scale.up",
      "label": "\u0421\u0446\u0435\u043d\u0430 \u0431\u043e\u043b\u044c\u0448\u0435",
      "keys": [
-      "]"
+      "]",
+      "Shift+]"
      ]
     },
     {
