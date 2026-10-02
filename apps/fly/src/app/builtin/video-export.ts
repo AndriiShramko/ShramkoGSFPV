@@ -39,6 +39,8 @@ export interface ExportResult {
     first: ExportPose | null;
     last: ExportPose | null;
     info: RecorderInfo | null;
+    /** luminance spread of the credit strip in the encoded pictures (D34: the credit is burned in) */
+    creditStripStd: number;
     error?: string;
 }
 
@@ -165,7 +167,7 @@ export const videoExport: Feature = {
             const lives = o.lives ?? cur.lives;
             const fromTick = o.fromTick ?? (o.lives ? lives[0]?.header.life.startTick ?? 0 : cur.from);
             const toTick = o.toTick ?? (o.lives ? lives[lives.length - 1]?.endTick ?? 0 : cur.to);
-            const result: ExportResult = { ended: 'error', size, frames: 0, encoded: 0, startTick: fromTick, endTick: toTick, stepFps: o.stepFps ?? 60, waited: 0, incomplete: 0, encodedIncomplete: 0, crashes: 0, seconds: 0, first: null, last: null, info: null };
+            const result: ExportResult = { ended: 'error', size, frames: 0, encoded: 0, startTick: fromTick, endTick: toTick, stepFps: o.stepFps ?? 60, waited: 0, incomplete: 0, encodedIncomplete: 0, crashes: 0, seconds: 0, first: null, last: null, info: null, creditStripStd: 0 };
             const share = recordingOf(ctx);
             const no = why(lives, fromTick, toTick);
             if (no || !share || running) {
@@ -255,7 +257,7 @@ export const videoExport: Feature = {
                     };
                     r.app.on('frameend', onEnd);
                 });
-                Object.assign(result, { ended, encoded: ex.k, waited: ex.waited, incomplete: ex.incomplete, encodedIncomplete: ex.encodedIncomplete, crashes: ex.crashes, first: ex.first, last: ex.last });
+                Object.assign(result, { ended, encoded: ex.k, waited: ex.waited, incomplete: ex.incomplete, encodedIncomplete: ex.encodedIncomplete, crashes: ex.crashes, first: ex.first, last: ex.last, creditStripStd: recorder.lastCreditStripStd });
                 restore();
                 if (ended === 'cancel') await recorder.cancel();
                 else {
