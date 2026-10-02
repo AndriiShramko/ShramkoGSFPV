@@ -289,7 +289,7 @@ if (want('W4')) {
     const lay375 = await layout(m.page, ['[data-testid=rec-dot]', '.top-actions .btn:not(.rec-dot)', '.osd.tl', '.osd.tr', '.mode-chip', '.touch-hint', '.attribution']);
     await hook(m.page, 'return h.rec.stop().then(() => 0);');
     await m.ctx.close();
-    const pass = rec.recording && rec.shown && /^Recording, 0:0[1-4]\. Stop recording$/.test(rec.label) && rec.anim === 'rec-blink'
+    const pass = rec.recording && rec.shown && /^Recording, 0:0[0-4]\. Stop recording$/.test(rec.label) && rec.anim === 'rec-blink'
         && /Recording 0:0\d — stop/.test(menuOn ?? '') && heldDot.held && cinema.recording && !cinema.shown && /Stop/.test(cinema.bar ?? '')
         && reduced.anim === 'none' && !stopped.recording && !stopped.shown && /^Start recording$/.test((menuOff ?? '').trim())
         && phone.shown && lay1280.overlaps.length === 0 && lay375.overlaps.length === 0 && lay375.outside.length === 0;

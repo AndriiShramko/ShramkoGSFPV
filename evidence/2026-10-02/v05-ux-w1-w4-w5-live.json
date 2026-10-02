@@ -1,0 +1,268 @@
+{
+  "name": "v05-ux-w1-w4-w5",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T09:03:22.904Z",
+    "gitHead": "d734232",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": false,
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "W1": {
+    "pass": true,
+    "what": "walls off on one scan stay off on the next (in-page switches and a later page), the tag and the flight agree at every step; the bot flies through a wall with them off",
+    "steps": [
+      {
+        "step": "A start",
+        "scene": "39e63ce9",
+        "walls": "on",
+        "world": true,
+        "tag": false,
+        "stored": "on",
+        "explicit": false
+      },
+      {
+        "step": "A after C",
+        "scene": "39e63ce9",
+        "walls": "off",
+        "world": false,
+        "tag": true,
+        "stored": "off",
+        "explicit": true
+      },
+      {
+        "step": "B after the switch",
+        "scene": "7a475d38",
+        "walls": "off",
+        "world": false,
+        "tag": true,
+        "stored": "off",
+        "explicit": true
+      },
+      {
+        "step": "B after C (control: on)",
+        "scene": "7a475d38",
+        "walls": "on",
+        "world": true,
+        "tag": false,
+        "stored": "on",
+        "explicit": true
+      },
+      {
+        "step": "B after C again",
+        "scene": "7a475d38",
+        "walls": "off",
+        "world": false,
+        "tag": true,
+        "stored": "off",
+        "explicit": true
+      },
+      {
+        "step": "C after the switch",
+        "scene": "887f27aa",
+        "walls": "off",
+        "world": false,
+        "tag": true,
+        "stored": "off",
+        "explicit": true
+      }
+    ],
+    "botWallsOff": {
+      "crashed": false,
+      "crashes": 0,
+      "walls": "off",
+      "world": false,
+      "tag": true,
+      "phase": "done",
+      "speed": 8.000107831802946,
+      "ms": 10011
+    },
+    "control": {
+      "stepOn": "on",
+      "freshBot": {
+        "crashed": true,
+        "crashes": 1,
+        "walls": "on",
+        "world": true,
+        "tag": false,
+        "phase": "crashed",
+        "speed": 4.678252304513712,
+        "ms": 5024
+      },
+      "fired": true
+    }
+  },
+  "W4": {
+    "pass": false,
+    "what": "a blinking red dot with the time while recording (steady when held or with reduced motion), a click stops; the menu item says the state; cinema mode hides the dot and its bar says Stop",
+    "rec": {
+      "recording": true,
+      "shown": true,
+      "label": "Recording, 0:00. Stop recording",
+      "text": "0:00",
+      "anim": "rec-blink",
+      "held": false,
+      "bar": "\u25a0 Stop 0:00F9"
+    },
+    "menuOn": "\u25cf Recording 0:01 \u2014 stop",
+    "heldDot": {
+      "recording": true,
+      "shown": true,
+      "label": "Recording, 0:01. Stop recording",
+      "text": "0:01",
+      "anim": "none",
+      "held": true,
+      "bar": "\u25a0 Stop 0:01F9"
+    },
+    "cinema": {
+      "recording": true,
+      "shown": false,
+      "label": "Recording, 0:01. Stop recording",
+      "text": "0:01",
+      "anim": "rec-blink",
+      "held": false,
+      "bar": "\u25a0 Stop 0:01F9"
+    },
+    "reduced": {
+      "recording": true,
+      "shown": true,
+      "label": "Recording, 0:01. Stop recording",
+      "text": "0:01",
+      "anim": "none",
+      "held": false,
+      "bar": "\u25a0 Stop 0:01F9"
+    },
+    "stopped": {
+      "recording": false,
+      "shown": false,
+      "label": "Recording, 0:01. Stop recording",
+      "text": "0:01",
+      "anim": "rec-blink",
+      "held": false,
+      "bar": "\u25cf RECF9"
+    },
+    "menuOff": "Start recording",
+    "phone": {
+      "recording": true,
+      "shown": true,
+      "label": "Recording, 0:00. Stop recording",
+      "text": "0:00",
+      "anim": "rec-blink",
+      "held": false,
+      "bar": "\u25a0 Stop 0:00F9"
+    },
+    "layout": {
+      "375": {
+        "overlaps": [],
+        "outside": []
+      },
+      "1280": {
+        "overlaps": [],
+        "outside": []
+      }
+    },
+    "shots": [
+      "evidence/2026-10-02/v05-ux/w4-rec-dot-1280.png",
+      "evidence/2026-10-02/v05-ux/w4-rec-dot-375.png"
+    ],
+    "control": {
+      "before": {
+        "recording": false,
+        "shown": false,
+        "label": null,
+        "text": "",
+        "anim": "rec-blink",
+        "held": false,
+        "bar": "\u25cf RECF9"
+      },
+      "fired": true
+    }
+  },
+  "W5": {
+    "pass": true,
+    "what": "x100 around the drone: position kept, the ray to a wall 100x within one scaled voxel, the far clip reaches the farthest wall, the row says m blocks with the warning; Shift+] x2, ] x1.1",
+    "dir": {
+      "d": [
+        0,
+        1,
+        0
+      ],
+      "r": 0.469012665748596
+    },
+    "x1": {
+      "size": 1,
+      "pos": [
+        0.6857250332832336,
+        1.5809873342514038,
+        0.6940217018127441
+      ],
+      "ray": 0.469012665748596,
+      "voxel": 0.05,
+      "farClip": 2000,
+      "farthestWall": 20.02086760254112,
+      "entity": 1,
+      "flies": true,
+      "splat": true
+    },
+    "x100": {
+      "size": 100,
+      "pos": [
+        0.6857250332832336,
+        1.5809873342514038,
+        0.6940217018127441
+      ],
+      "ray": 46.90126669406891,
+      "voxel": 5,
+      "farClip": 200000,
+      "farthestWall": 2002.0867632559955,
+      "entity": 100,
+      "flies": true,
+      "splat": true
+    },
+    "posMm": 0,
+    "row": {
+      "value": "x100.00",
+      "voxel": "Walls: 5.0 m blocks \u2014 coarse: you may crash before you touch what you see",
+      "warn": true,
+      "slider": "6.643856189774724"
+    },
+    "shift": 2,
+    "plainStep": 1.100000023841858,
+    "layout": {
+      "375": {
+        "overlaps": [],
+        "outside": []
+      },
+      "row": {
+        "overlaps": [],
+        "outside": []
+      }
+    },
+    "shots": [
+      "evidence/2026-10-02/v05-ux/w5-x100-view-1280.png",
+      "evidence/2026-10-02/v05-ux/w5-x100-summary-1280.png",
+      "evidence/2026-10-02/v05-ux/w5-x100-summary-375.png"
+    ],
+    "control": {
+      "farClipAtX1": 2000,
+      "farthestWallAtX100": 2002.0867632559955,
+      "x1Ray": 0.469012665748596,
+      "fired": true
+    }
+  },
+  "pageErrors": []
+}
