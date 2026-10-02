@@ -10,7 +10,7 @@ Spec: vault `03 - Resources/Deployment/shramkogsfpv/spec.md` (+ 6 spec-*.md). Ph
 
 ## Where v0.3 stands (2026-10-02)
 
-- **Live:** release **7c2d0e0c0c6d** = `main` bc2e96f (PR #3's branch fast-forwarded into `main`; the API with the SuperSplat
+- **Live (2026-10-02 later):** release **006de3885965** = `main` a66be24: + wave 3 part: the SuperSplat tab in the picker (filters as superspl.at, random top-rated, favourites; live: 24 cards of 1,346), in-page scene switching (N / Shift+N / F, auto-switch after a crash, Continue card; live S1/S3 pass). Earlier: release **7c2d0e0c0c6d** = `main` bc2e96f (PR #3's branch fast-forwarded into `main`; the API with the SuperSplat
   catalogue proxy and nginx.conf with `/api/superspl/` uploaded first). Neighbours equal before/after (31 containers, 24 sites),
   smoke 184/184.
 - **On the live site now:** v0.3 wave 1 + wave 2: settings screen from the prefs schema (per-drone values kept and saved, export /
@@ -20,8 +20,7 @@ Spec: vault `03 - Resources/Deployment/shramkogsfpv/spec.md` (+ 6 spec-*.md). Ph
 - **Live acceptance:** B6 B9 B10 B11 B12 B15, P1 P2 P5 P7, S1 S2, M1-M3, R16 R23 R18 RR pass. Open: S3's control cannot inject
   into a bundled build (its keys all pass); live R1: 60/1, 602 frames, 0 held, but 25.7 % repeated pictures while the page drew
   51.6 Hz before recording (locally 2.5 %).
-- **Next (wave 3):** scene host + rotation + crash-panel scene keys (W3-1), the SuperSplat tab in the picker on the D35 proxy
-  (W3-2; `ui/picker-tabs.ts` registry ready), scene scale (W3-3; render-pc `setSceneTransform` ready). Then wave 4: video from the
+- **Next:** scene scale (W3-3; render-pc `setSceneTransform` ready; W3-1 and W3-2 are live). Then wave 4: video from the
   log (F.3), the phantom-wall fix (G.3), release acceptance (W4-5). W4-3 (blackbox tools) is done.
 - **Working rule since 2026-10-02:** no review / verify fan-outs; one or two agents at a time; merge and ship as soon as accepted.
 
