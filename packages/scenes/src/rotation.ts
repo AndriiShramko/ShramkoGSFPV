@@ -7,7 +7,7 @@
 //   - skipped: scenes without walls (unless allowNoWalls), scenes that failed to load in the last
 //     24 h. `skip: false` turns the skipping off (the tests' negative control).
 // Random SuperSplat scenes by likes (E.6 phase 2) are not here yet: Shift+N draws from the curated list.
-import { failedRecently } from './library';
+import { failedRecently, opened } from './library';
 import type { SceneLibraryData } from './library';
 
 export type RotationSource = 'curated' | 'favourites' | 'history';
@@ -50,7 +50,7 @@ export class SceneRotation {
             if (c && c.collision !== null) return c.collision;
             return lib.history.find((e) => e.id === id)?.hasCollision ?? null;
         };
-        const ids = source === 'curated' ? curated.map((s) => s.id) : source === 'favourites' ? lib.favourites : lib.history.map((e) => e.id);
+        const ids = source === 'curated' ? curated.map((s) => s.id) : source === 'favourites' ? lib.favourites : opened(lib).map((e) => e.id);
         const out: string[] = [];
         for (const id of ids) {
             if (out.includes(id)) continue;

@@ -1,6 +1,9 @@
 // The scene library (docs/architecture-v03.md E.1): the scenes flown (history, newest first, at
 // most 100), the pilot's favourites (newest star first), the picker's filter, the republished
-// scenes' versions and the scenes that failed to load. Pure: every function takes the data and
+// scenes' versions and the scenes that failed to load. A scene starred before it was ever opened
+// (the SuperSplat tab) keeps its title, walls flag and version in a history entry that was never
+// opened (lastFlown 0): the favourites list stays plain ids (the stored format every release reads),
+// and the opened history (opened()) leaves those entries out. Pure: every function takes the data and
 // returns new data; where it is kept (the prefs collection `sceneLibrary`, or v0.2's own keys in a
 // page without the store) is the caller's business (index.ts useLibraryStore).
 
@@ -74,10 +77,68 @@ export function recordFlight(d: SceneLibraryData, id: string, airtimeS: number):
     return { ...d, history: d.history.map((x) => (x.id === id ? { ...x, flights: x.flights + 1, airtimeS: x.airtimeS + Math.max(0, airtimeS) } : x)) };
 }
 
-/** Star or unstar: a new star goes first (the order F walks), unstarring keeps the others' order. */
-export function toggleFavourite(d: SceneLibraryData, id: string): { data: SceneLibraryData; on: boolean } {
+/** What the place a scene is starred from knows of it (a card of the SuperSplat tab, the picker). */
+export interface FavouriteMeta { title?: string; hasCollision?: boolean | null; version?: number }
+
+/**
+ * Star or unstar: a new star goes first (the order F walks), unstarring keeps the others' order.
+ * `meta` (title, walls, version) is kept with the scene: on its history entry, or on a new entry that
+ * was never opened (lastFlown 0) for a scene starred before it was flown; what is known already is
+ * only filled in, never replaced by an unknown. Unstarring drops such a never-opened entry again.
+ */
+export function toggleFavourite(d: SceneLibraryData, id: string, meta: FavouriteMeta = {}): { data: SceneLibraryData; on: boolean } {
     const on = !d.favourites.includes(id);
-    return { data: { ...d, favourites: on ? [id, ...d.favourites] : d.favourites.filter((x) => x !== id) }, on };
+    const favourites = on ? [id, ...d.favourites] : d.favourites.filter((x) => x !== id);
+    const old = d.history.find((x) => x.id === id);
+    let history = d.history;
+    if (on) {
+        const e: LibraryEntry = { ...(old ?? entry(id)) };
+        if (meta.title) e.title = meta.title;
+        if (typeof meta.hasCollision === 'boolean') e.hasCollision = meta.hasCollision;
+        if (meta.version && meta.version > e.version) e.version = meta.version;
+        history = old ? d.history.map((x) => (x.id === id ? e : x)) : capped([...d.history, e]);
+    } else if (old && old.lastFlown === 0 && old.failedAt === undefined) {
+        history = d.history.filter((x) => x.id !== id);
+    }
+    const versions = on && meta.version && meta.version > 1 ? { ...d.versions, [id]: Math.max(meta.version, d.versions[id] ?? 0) } : d.versions;
+    return { data: { ...d, favourites, history, versions }, on };
+}
+
+/** The scenes opened here, newest first (the Recent tab, the history rotation): never-opened entries left out. */
+export function opened(d: SceneLibraryData): LibraryEntry[] {
+    return d.history.filter((e) => e.lastFlown > 0);
+}
+
+/** Each favourite with what is known of it, in the favourites' order; an id-only favourite (older lists) has walls unknown. */
+export function favouriteEntries(d: SceneLibraryData): LibraryEntry[] {
+    return d.favourites.map((id) => {
+        const e = d.history.find((x) => x.id === id);
+        return e ? { ...e, version: Math.max(e.version, d.versions[id] ?? 1) } : { ...entry(id), version: d.versions[id] ?? 1 };
+    });
+}
+
+/** What the picker needs of a curated scene. */
+export interface CuratedCard { id: string; title: string; collision: boolean; kind: string }
+
+/** One card of the picker's built-in tabs; collision null: not known (shown under the walls filter, never hidden on a guess). */
+export interface PickerRow { id: string; title: string; collision: boolean | null; flights: number; fav: boolean }
+
+/** The cards of the picker's Showcase, Recent and Favourites tabs after the filter (ui/scenes.ts draws them). */
+export function pickerRows(tab: 'showcase' | 'recent' | 'favourites', curated: readonly CuratedCard[], d: SceneLibraryData, f: SceneFilter): PickerRow[] {
+    const byId = new Map(curated.map((s) => [s.id, s]));
+    const flights = (id: string): number => d.history.find((e) => e.id === id)?.flights ?? 0;
+    const base: { id: string; title: string; collision: boolean | null; kind: string | null }[] =
+        tab === 'showcase' ? curated.map((s) => ({ id: s.id, title: s.title, collision: s.collision, kind: s.kind }))
+        : (tab === 'recent' ? opened(d) : favouriteEntries(d)).map((e) => {
+            const c = byId.get(e.id);
+            return { id: e.id, title: c?.title ?? e.title ?? e.id, collision: c ? c.collision : e.hasCollision, kind: c?.kind ?? null };
+        });
+    return base
+        .map((s) => ({ ...s, flights: flights(s.id), fav: d.favourites.includes(s.id) }))
+        .filter((s) => !f.collisionOnly || s.collision !== false)
+        .filter((s) => f.kind === 'all' || tab !== 'showcase' || s.kind === f.kind)
+        .filter((s) => f.flown === 'all' || (f.flown === 'flown' ? s.flights > 0 : s.flights === 0))
+        .map(({ id, title, collision, flights: n, fav }) => ({ id, title, collision, flights: n, fav }));
 }
 
 /** A scene that failed to load: kept in the history (the picker still lists it), skipped by the rotation for a day. */
@@ -94,7 +155,7 @@ export function failedRecently(d: SceneLibraryData, id: string, now: number): bo
     return !!e && e.failedAt !== undefined && now - e.failedAt < FAILED_SKIP_MS;
 }
 
-/** The scene opened last (the picker's "Continue" card), or null. */
+/** The scene opened last (the picker's "Continue" card), or null; a starred, never-opened scene is not one. */
 export function lastScene(d: SceneLibraryData): LibraryEntry | null {
     let best: LibraryEntry | null = null;
     for (const e of d.history) if (e.lastFlown > 0 && (!best || e.lastFlown > best.lastFlown)) best = e;

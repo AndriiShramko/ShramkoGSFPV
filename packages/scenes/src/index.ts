@@ -333,8 +333,9 @@ function updateLibrary(fn: (d: SceneLibraryData) => SceneLibraryData): void {
     libraryStore.write(fn(libraryStore.read()));
 }
 
+/** The scenes opened here, newest first (a scene starred but never opened is not in it). */
 export function getHistory(): HistoryEntry[] {
-    return libraryStore.read().history;
+    return lib.opened(libraryStore.read());
 }
 
 export function recordOpen(id: string, hasCollision: boolean | null, title?: string, version = 1): void {
@@ -375,10 +376,15 @@ export function getFavourites(): string[] {
     return libraryStore.read().favourites;
 }
 
-export function toggleFavourite(id: string): boolean {
+/**
+ * Star or unstar a scene; true when it is starred now. `meta`: what the caller knows of it (title,
+ * walls, the SuperSplat version), kept with the favourite so the Favourites tab and the rotation
+ * know a scene never opened here (library.ts toggleFavourite).
+ */
+export function toggleFavourite(id: string, meta?: lib.FavouriteMeta): boolean {
     let on = false;
     updateLibrary((d) => {
-        const r = lib.toggleFavourite(d, id);
+        const r = lib.toggleFavourite(d, id, meta);
         on = r.on;
         return r.data;
     });
@@ -404,5 +410,5 @@ export function headingFromCamera(c: SceneCamera): number {
 export * from './superspl';
 export * from './rotation';
 export * as library from './library';
-export { DEFAULT_FILTER, HISTORY_CAP, emptyLibrary, mergeLibraries, lastScene, failedRecently } from './library';
-export type { SceneFilter, LibraryEntry, SceneLibraryData } from './library';
+export { DEFAULT_FILTER, HISTORY_CAP, emptyLibrary, mergeLibraries, lastScene, failedRecently, pickerRows, favouriteEntries } from './library';
+export type { SceneFilter, LibraryEntry, SceneLibraryData, FavouriteMeta, PickerRow, CuratedCard } from './library';

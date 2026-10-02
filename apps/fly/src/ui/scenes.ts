@@ -1,6 +1,7 @@
 // Scene picker: paste a link, Andrii's scans (static showcase.json), recent, favourites, filters.
 // History, favourites and the filter live in the browser only and survive a reload.
-import { parseSceneInput, getHistory, getFavourites, toggleFavourite, getFilter, setFilter, posterUrl, getLibrary, lastScene } from '@gsfpv/scenes';
+import { parseSceneInput, toggleFavourite, getFilter, setFilter, posterUrl, getLibrary, lastScene, pickerRows } from '@gsfpv/scenes';
+import type { PickerRow } from '@gsfpv/scenes';
 import type { SceneFilter } from '@gsfpv/scenes';
 import { h, clear } from './dom';
 import { t } from '../i18n';
@@ -103,19 +104,11 @@ export class ScenePicker {
         this.err.textContent = code === 'unsupported' ? t('scenes.unsupported') : t(`error.${code}`, { msg: msg ?? '' });
     }
 
-    private items(): (ShowcaseScene & { flights: number; fav: boolean })[] {
-        const hist = getHistory();
-        const favs = getFavourites();
+    /** The built-in tab's cards (@gsfpv/scenes pickerRows): favourites keep the title and walls they were starred with. */
+    private items(): (PickerRow & { meta?: ShowcaseScene })[] {
+        const tab = this.tab === 'recent' || this.tab === 'favourites' ? this.tab : 'showcase';
         const byId = new Map(this.showcase.map((s) => [s.id, s]));
-        let base: ShowcaseScene[];
-        if (this.tab === 'showcase') base = this.showcase;
-        else if (this.tab === 'recent') base = hist.map((e) => byId.get(e.id) ?? { id: e.id, title: e.title ?? e.id, author: '', license: '', kind: 'interior', collision: e.hasCollision ?? false });
-        else base = favs.map((id) => byId.get(id) ?? { id, title: hist.find((e) => e.id === id)?.title ?? id, author: '', license: '', kind: 'interior', collision: hist.find((e) => e.id === id)?.hasCollision ?? false });
-        return base
-            .map((s) => ({ ...s, flights: hist.find((e) => e.id === s.id)?.flights ?? 0, fav: favs.includes(s.id) }))
-            .filter((s) => !this.filter.collisionOnly || s.collision)
-            .filter((s) => this.filter.kind === 'all' || this.tab !== 'showcase' || s.kind === this.filter.kind)
-            .filter((s) => this.filter.flown === 'all' || (this.filter.flown === 'flown' ? s.flights > 0 : s.flights === 0));
+        return pickerRows(tab, this.showcase, getLibrary(), this.filter).map((r) => ({ ...r, meta: byId.get(r.id) }));
     }
 
     private render(tabs: HTMLElement): void {
@@ -141,14 +134,15 @@ export class ScenePicker {
             return;
         }
         for (const s of items) {
-            const star = h('button', { type: 'button', class: `star ${s.fav ? 'on' : ''}`, 'aria-label': s.fav ? t('scenes.card.unfav') : t('scenes.card.fav'), 'aria-pressed': String(s.fav), onclick: (e: Event) => { e.stopPropagation(); toggleFavourite(s.id); this.render(tabs); } }, '★');
+            const star = h('button', { type: 'button', class: `star ${s.fav ? 'on' : ''}`, 'aria-label': s.fav ? t('scenes.card.unfav') : t('scenes.card.fav'), 'aria-pressed': String(s.fav), onclick: (e: Event) => { e.stopPropagation(); toggleFavourite(s.id, { title: s.title, hasCollision: s.collision }); this.render(tabs); } }, '★');
             const card = h('button', { type: 'button', class: 'scene-card', 'data-scene': s.id, onclick: () => this.onPick?.(s.id, this.tab === 'showcase' ? 'showcase' : 'history') },
                 h('img', { src: posterUrl(s.id), alt: '', loading: 'lazy', width: 320, height: 180 }),
                 h('span', { class: 'scene-title' }, s.title),
                 h('span', { class: 'scene-meta' },
-                    s.collision ? `${t('scenes.card.walls')}${s.voxelCm ? ` · ${s.voxelCm} cm` : ''}` : t('scenes.card.noWalls'),
-                    s.sizeMb ? ` · ${s.sizeMb} MB` : '',
-                    s.license ? ` · ${s.license}` : '',
+                    // walls not known (a favourite starred before it was opened, by an older release): nothing said
+                    s.collision === null ? '' : s.collision ? `${t('scenes.card.walls')}${s.meta?.voxelCm ? ` · ${s.meta.voxelCm} cm` : ''}` : t('scenes.card.noWalls'),
+                    s.meta?.sizeMb ? ` · ${s.meta.sizeMb} MB` : '',
+                    s.meta?.license ? ` · ${s.meta.license}` : '',
                     s.flights ? ` · ${t('scenes.card.flown', { n: s.flights })}` : ''
                 )
             );

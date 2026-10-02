@@ -1,7 +1,7 @@
 // The scene library (docs/architecture-v03.md E.1, E.10): the history cap of 100, the favourites'
 // order and the merge. Each block ends with a negative control that must fire.
 import { describe, expect, it } from 'vitest';
-import { library as L, emptyLibrary, mergeLibraries, lastScene, HISTORY_CAP, failedRecently } from '../src/index';
+import { library as L, emptyLibrary, mergeLibraries, lastScene, HISTORY_CAP, failedRecently, pickerRows, favouriteEntries, DEFAULT_FILTER } from '../src/index';
 import type { SceneLibraryData } from '../src/index';
 
 const open = (d: SceneLibraryData, id: string, now: number, extra: { title?: string; hasCollision?: boolean | null } = {}): SceneLibraryData =>
@@ -92,5 +92,48 @@ describe('scene library: merge', () => {
         const naive = [...a.history, ...b.history].map((e) => e.id);
         expect(naive).toEqual(['y', 'x', 'x']);
         expect(mergeLibraries(a, b).history.map((e) => e.id)).toEqual(['x', 'y']);
+    });
+});
+
+describe('scene library: a favourite keeps what it was starred with (title, walls, version)', () => {
+    const CURATED = [{ id: '39e63ce9', title: 'Modlinek Villa', collision: true, kind: 'interior' }];
+
+    it('starred from the SuperSplat tab, never opened: in Favourites under the walls filter with its title; not in Recent', () => {
+        const d = L.toggleFavourite(emptyLibrary(), 'ab12cd34', { title: 'Old mill', hasCollision: true, version: 3 }).data;
+        expect(d.favourites).toEqual(['ab12cd34']);
+        expect(pickerRows('favourites', CURATED, d, DEFAULT_FILTER)).toEqual([{ id: 'ab12cd34', title: 'Old mill', collision: true, flights: 0, fav: true }]);
+        expect(pickerRows('recent', CURATED, d, DEFAULT_FILTER)).toEqual([]);
+        expect(lastScene(d)).toBeNull();
+        expect(favouriteEntries(d)[0].version).toBe(3);
+        expect(d.versions).toEqual({ ab12cd34: 3 });
+        // opened later: the same entry, now in Recent, its title kept
+        const o = L.recordOpen(d, { id: 'ab12cd34', version: 3, hasCollision: true }, 50);
+        expect(pickerRows('recent', CURATED, o, DEFAULT_FILTER).map((r) => r.title)).toEqual(['Old mill']);
+        // starring again with less known never forgets what is known
+        const again = L.toggleFavourite(L.toggleFavourite(o, 'ab12cd34').data, 'ab12cd34', { hasCollision: null }).data;
+        expect(favouriteEntries(again)[0]).toEqual(expect.objectContaining({ title: 'Old mill', hasCollision: true }));
+        // unstarring a scene never opened drops its entry again
+        expect(L.toggleFavourite(d, 'ab12cd34').data.history).toEqual([]);
+    });
+
+    it('starred without walls: hidden under the walls filter, shown (with its title) without it', () => {
+        const d = L.toggleFavourite(emptyLibrary(), 'ee00ee00', { title: 'Field', hasCollision: false }).data;
+        expect(pickerRows('favourites', CURATED, d, DEFAULT_FILTER)).toEqual([]);
+        expect(pickerRows('favourites', CURATED, d, { ...DEFAULT_FILTER, collisionOnly: false })).toEqual([{ id: 'ee00ee00', title: 'Field', collision: false, flights: 0, fav: true }]);
+    });
+
+    it('an id-only list (stored by an older release) still reads: walls unknown, shown under the filter', () => {
+        const d = { ...emptyLibrary(), favourites: ['ff00ff00', '39e63ce9'] };
+        expect(pickerRows('favourites', CURATED, d, DEFAULT_FILTER)).toEqual([
+            { id: 'ff00ff00', title: 'ff00ff00', collision: null, flights: 0, fav: true },
+            { id: '39e63ce9', title: 'Modlinek Villa', collision: true, flights: 0, fav: true }
+        ]);
+    });
+
+    it('control: starred with the id only (as the SuperSplat tab did) the card has no title, and the old picker rule (unknown walls = no walls) hid it', () => {
+        const d = L.toggleFavourite(emptyLibrary(), 'ab12cd34').data;
+        expect(pickerRows('favourites', CURATED, d, DEFAULT_FILTER)[0]).toEqual(expect.objectContaining({ title: 'ab12cd34', collision: null }));
+        const oldRule = favouriteEntries(d).map((e) => ({ id: e.id, collision: e.hasCollision ?? false })).filter((s) => s.collision);
+        expect(oldRule).toEqual([]);
     });
 });

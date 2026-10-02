@@ -106,7 +106,8 @@ describe('scene rotation: sequential, favourites, random', () => {
         d = L.recordOpen(d, { id: 'h1', version: 1, hasCollision: true }, NOW - 10);
         d = L.recordOpen(d, { id: 'h2', version: 1, hasCollision: false }, NOW - 5);
         const r = rot(5, curated, d);
-        expect(r.candidates('history', RULES)).toEqual(['h1', 'old-fail']);
+        // only scenes opened here: 'old-fail' failed before it was ever opened, so it is not history
+        expect(r.candidates('history', RULES)).toEqual(['h1']);
         for (let i = 0; i < 50; i++) expect(r.random('a', RULES)).not.toBe('a');
     });
 });
