@@ -23,3 +23,5 @@
 .ss-card .scene-title, .ss-card .scene-meta { overflow-wrap: anywhere; }
 .ss-more[hidden] { display: none; }
 .ss-credit { margin: 0; }
+/* the picker hides its own filter row for a tab with ownFilters; .filters sets display, which would beat [hidden] */
+.filters[hidden] { display: none; }
