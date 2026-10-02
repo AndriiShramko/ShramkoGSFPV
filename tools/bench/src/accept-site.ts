@@ -489,6 +489,18 @@ if (want('B3')) {
 // ------------------------------------------------------------------ B4 SEO / GEO / §17
 const LD_BLOCK = /<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g;
 /** @type values of every JSON-LD block; a block that does not parse becomes '<broken>'. */
+/** Width and height from a JPEG's frame header (the landing's og.jpg), or null. */
+function jpegSize(b: Buffer): { w: number; h: number } | null {
+    if (b.length < 4 || b[0] !== 0xff || b[1] !== 0xd8) return null;
+    for (let i = 2; i + 9 < b.length;) {
+        if (b[i] !== 0xff) return null;
+        const m = b[i + 1];
+        if (m >= 0xc0 && m <= 0xcf && m !== 0xc4 && m !== 0xc8 && m !== 0xcc) return { w: b.readUInt16BE(i + 7), h: b.readUInt16BE(i + 5) };
+        i += 2 + b.readUInt16BE(i + 2);
+    }
+    return null;
+}
+
 function jsonLdTypes(html: string): string[] {
     return [...html.matchAll(LD_BLOCK)].flatMap((m) => { try { const j = JSON.parse(m[1]); return (Array.isArray(j) ? j : j['@graph'] ?? [j]).map((x: { '@type': string }) => x['@type']); } catch { return ['<broken>']; } });
 }
@@ -502,8 +514,8 @@ if (want('B4')) {
     const sitemap = await raw(url('/sitemap.xml'));
     const robots = await raw(url('/robots.txt'));
     const llms = await raw(url('/llms.txt'));
-    const og = Buffer.from(await (await fetch(url('/og.png'))).arrayBuffer());
-    const ogSize = og.subarray(1, 4).toString() === 'PNG' ? { w: og.readUInt32BE(16), h: og.readUInt32BE(20) } : null;
+    const og = Buffer.from(await (await fetch(url('/og.jpg'))).arrayBuffer());
+    const ogSize = jpegSize(og);
     const robotsAllows = ['GPTBot', 'ClaudeBot', 'PerplexityBot'].every((b) => new RegExp(`User-agent: ${b}\\s+Allow: /`, 'i').test(robots.body));
     const canon: Record<string, string | null> = {};
     const ldTypes: Record<string, string[]> = {};

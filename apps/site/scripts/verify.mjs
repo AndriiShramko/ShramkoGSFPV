@@ -31,7 +31,7 @@ const ok = (name, pass, detail = "") => {
 };
 
 // ---------- static ----------
-for (const f of ["sitemap.xml", "robots.txt", "llms.txt", "og.png", "index.html", "404.html", "icon.svg"]) ok(`out/${f} exists`, existsSync(join(OUT, f)));
+for (const f of ["sitemap.xml", "robots.txt", "llms.txt", "og.jpg", "index.html", "404.html", "icon.svg"]) ok(`out/${f} exists`, existsSync(join(OUT, f)));
 const htmlFiles = [];
 for (const l of LOCALES) for (const p of PAGES) {
   const f = join(OUT, l, p, "index.html");
@@ -59,7 +59,7 @@ for (const l of LOCALES) for (const p of PAGES) {
   }
   const wantTypes = p === "" ? ["SoftwareApplication", "FAQPage"] : ["SoftwareApplication"];
   ok(`${l}/${p} JSON-LD parses`, ld.length > 0 && parsed === ld.length && wantTypes.every((t) => types.includes(t)), types.join(","));
-  ok(`${l}/${p} og:image`, html.includes(`property="og:image" content="${ORIGIN}/og.png"`));
+  ok(`${l}/${p} og:image`, html.includes(`property="og:image" content="${ORIGIN}/og.jpg"`));
 }
 const forbidden = /undefined|TODO|PLACEHOLDER|lorem|Liftoff-level|like Liftoff/;
 const walk = (d, acc = []) => {

@@ -5,6 +5,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { routing, type Locale } from "@/i18n/routing";
 import ClickTracker from "@/components/ClickTracker";
 import ConsentBanner from "@/components/ConsentBanner";
+import Feedback from "@/components/Feedback";
 import LangSync from "@/components/LangSync";
 
 export const dynamicParams = false;
@@ -17,14 +18,15 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale as Locale);
-  // Only the client components' strings go into the RSC payload (banner + lead form).
+  // Only the client components' strings go into the RSC payload (banner, lead form, feedback, share).
   const messages = (await getMessages()) as Record<string, Record<string, unknown>>;
-  const clientMessages = { consent: messages.consent, contact: { form: messages.contact.form } } as AbstractIntlMessages;
+  const clientMessages = { consent: messages.consent, contact: { form: messages.contact.form }, feedback: messages.feedback, share: messages.share } as AbstractIntlMessages;
   return (
     <NextIntlClientProvider messages={clientMessages}>
       <LangSync locale={locale as Locale} />
       <ClickTracker />
       {children}
+      <Feedback />
       <ConsentBanner />
     </NextIntlClientProvider>
   );

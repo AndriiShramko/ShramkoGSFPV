@@ -16,6 +16,7 @@ export const AUTHOR = {
 
 export const LEAD_ENDPOINT = "/api/lead";
 export const EVENT_ENDPOINT = "/api/e";
+export const REPORT_ENDPOINT = "/api/report";
 
 export const AGENT_PROMPT =
   "Set up ShramkoGSFPV for me by following https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/AGENT_SETUP.md exactly. Install, run the checks, start the simulator locally and open it in Chrome. Do not change any system settings; ask me only if a step needs my password or a physical action.";

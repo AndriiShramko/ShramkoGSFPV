@@ -2,8 +2,12 @@ import type { Metadata } from "next";
 import { SITE } from "@/config/site";
 import { OG_LOCALE, routing, type Locale } from "@/i18n/routing";
 
-/** Per-page metadata: own canonical, hreflang for every locale + x-default, OG/Twitter. */
-export function pageMetadata({ locale, page, title, description }: { locale: Locale; page: string; title: string; description: string }): Metadata {
+/**
+ * Per-page metadata: own canonical, hreflang for every locale + x-default, OG/Twitter. `ogTitle`: the
+ * share card's headline when it should differ from the <title> (the landing: the hero's promise, not the
+ * brand first).
+ */
+export function pageMetadata({ locale, page, title, description, ogTitle }: { locale: Locale; page: string; title: string; description: string; ogTitle?: string }): Metadata {
   const url = (l: string) => `${SITE}/${l}/${page}`;
   const languages: Record<string, string> = {};
   for (const l of routing.locales) languages[l] = url(l);
@@ -18,14 +22,14 @@ export function pageMetadata({ locale, page, title, description }: { locale: Loc
     openGraph: {
       type: "website",
       siteName: "ShramkoGSFPV",
-      title,
+      title: ogTitle ?? title,
       description,
       url: url(locale),
       locale: OG_LOCALE[locale],
       alternateLocale: routing.locales.filter((l) => l !== locale).map((l) => OG_LOCALE[l]),
-      images: [{ url: `${SITE}/og.png`, width: 1200, height: 630, alt: "ShramkoGSFPV" }],
+      images: [{ url: `${SITE}/og.jpg`, width: 1200, height: 630, type: "image/jpeg", alt: "ShramkoGSFPV: fly an FPV drone through real 3D scans in your browser" }],
     },
-    twitter: { card: "summary_large_image", title, description, images: [`${SITE}/og.png`] },
+    twitter: { card: "summary_large_image", title: ogTitle ?? title, description, images: [`${SITE}/og.jpg`] },
     robots: { index: true, follow: true },
     icons: { icon: [{ url: "/icon.svg", type: "image/svg+xml" }] },
   };

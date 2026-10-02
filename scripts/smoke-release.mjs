@@ -65,7 +65,7 @@ for (const l of ['en', 'es', 'pl', 'ru']) {
         pages.push({ p, body });
     }
 }
-for (const p of ['/sitemap.xml', '/robots.txt', '/llms.txt', '/og.png', '/fly/showcase.json']) {
+for (const p of ['/sitemap.xml', '/robots.txt', '/llms.txt', '/og.jpg', '/fly/showcase.json']) {
     const { r } = await get(p);
     expect(r.status === 200, `${p} -> ${r.status}`);
 }
