@@ -33,7 +33,8 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** The menu of v0.2 / wave 1, in order: the summary panel must keep every item, its data-action and its place. */
 // with the items the other wave-2/3 agents registered (merge 2026-10-02): Rewind 5 s (W2-2) after Restart, Record (W3-5) after Cinema
-const MENU = ['pause.continue', 'pause.restart', 'pause.rewind', 'pause.scene', 'pause.drone', 'pause.radio', 'pause.settings', 'pause.replays', 'pause.measure', 'pause.import', 'pause.cinema', 'pause.record'];
+// W3-1 (2026-10-02): Next scene / Random scene / Next favourite after Change scan
+const MENU = ['pause.continue', 'pause.restart', 'pause.rewind', 'pause.scene', 'pause.scene.next', 'pause.scene.random', 'pause.scene.favourite', 'pause.drone', 'pause.radio', 'pause.settings', 'pause.replays', 'pause.measure', 'pause.import', 'pause.cinema', 'pause.record'];
 /** Menu items that run a keymap action (MenuItem.action): the item shows that action's keys. */
 const MENU_ACTION: Record<string, string> = { 'pause.continue': 'pause.toggle', 'pause.restart': 'respawn.start' };
 const SHIPPED = KEYMAP.filter((b) => b.status === 'shipped');
@@ -148,6 +149,10 @@ const PROBES: Record<string, { field: string; also?: string[]; restore: number; 
     'settings.open': { field: 'settings', restore: 1, restoreKey: 'Escape' },
     'record.toggle': { field: 'rec', restore: 1, waitMs: 2000 }, // the encoder starts asynchronously
     'respawn.rewind': { field: 'lives', also: ['atSpawn', 'armed'], restore: 0 },
+    // W3-1: N and Shift+N load another scene in the page (the address follows); F needs a favourite (accept-v03-scenes S4)
+    'scene.next': { field: 'scene', also: ['lives', 'atSpawn', 'armed', 'mode', 'walls', 'voxel'], restore: 0, waitMs: 15000 }, // a scene loads (keys wait meanwhile)
+    'scene.random': { field: 'scene', also: ['lives', 'atSpawn', 'armed', 'mode', 'walls', 'voxel'], restore: 0, waitMs: 15000 },
+    'scene.favourite': { field: 'scene', restore: 0, skip: 'needs a favourite scene: checked in tools/bench/src/accept-v03-scenes.ts S4' },
     'crash.keep': { field: 'crashPanel', restore: 0, skip: "listens only while a crash is up (when: 'crash'): checked with the crash in tools/bench/src/accept-v03-respawn.ts" }
 };
 const SNAP = `return {
@@ -162,14 +167,17 @@ const SNAP = `return {
     frame: !document.querySelector('.osd.frame').classList.contains('hidden'),
     settings: !!document.querySelector('[data-testid=settings]'),
     rec: !!document.querySelector('[data-action=cinema-rec].on'),
-    lives: s.lives ? s.lives().length : 0,
+    lives: s && s.lives ? s.lives().length : 0,
+    scene: new URL(location.href).searchParams.get('scene'),
     crashPanel: !!document.querySelector('[data-testid=crash-panel]')
 };`;
 const pw = (k: { code: string; shift?: boolean }) => (k.shift ? `Shift+${k.code}` : k.code);
 
 async function keyLoop(p: Page, bindings: readonly KeyBinding[]): Promise<{ ok: boolean; results: Any[] }> {
     const results: Any[] = [];
-    for (const b of bindings) {
+    // the scene keys load another scene: they go last, so every other key is tried on the scene it started on
+    const ordered = [...bindings.filter((b) => !b.action.startsWith('scene.')), ...bindings.filter((b) => b.action.startsWith('scene.'))];
+    for (const b of ordered) {
         const probe = PROBES[b.action];
         for (const k of b.keys) {
             if (!probe) { results.push({ action: b.action, key: pw(k), ok: false, changed: [], why: 'no probe for this action: add one' }); continue; }
@@ -384,8 +392,11 @@ try {
         const info = await panelInfo(p);
         const order = info.items.map((x: Any) => x.id);
         // keyboard: the first item has the focus, Down walks the menu in order and wraps, Up goes back, Tab goes on
+        // a disabled item (Next favourite with no favourites) takes no focus: the walk skips it
+        const disabled = await p.evaluate("[...document.querySelectorAll('.pause-menu [data-action][disabled], .pause-menu [data-action][aria-disabled=\"true\"]')].map((b) => b.dataset.action)") as string[];
+        const WALK = MENU.filter((id) => !disabled.includes(id));
         const walk: string[] = [];
-        for (let i = 0; i < MENU.length + 1; i++) {
+        for (let i = 0; i < WALK.length + 1; i++) {
             await p.keyboard.press('ArrowDown');
             walk.push(await p.evaluate('document.activeElement?.dataset?.action ?? document.activeElement?.getAttribute("href")') as string);
         }
@@ -396,7 +407,7 @@ try {
         const tab = await p.evaluate('document.activeElement?.dataset?.action') as string;
         // Enter on a focused item runs it: Down to Measurements, Enter
         await p.keyboard.press('Shift+Tab');
-        for (let i = 0; i < MENU.indexOf('pause.measure'); i++) await p.keyboard.press('ArrowDown');
+        for (let i = 0; i < WALK.indexOf('pause.measure'); i++) await p.keyboard.press('ArrowDown');
         const onMeasure = await p.evaluate('document.activeElement?.dataset?.action') as string;
         await p.keyboard.press('Enter');
         await sleep(400);
@@ -404,7 +415,7 @@ try {
         await p.keyboard.press('Escape'); // Esc over a panel opened from the menu closes it
         await sleep(300);
         const escClosed = await ev(p, EFFECT);
-        const expectWalk = [...MENU.slice(1), `/en/#contact`, MENU[0]];
+        const expectWalk = [...WALK.slice(1), `/en/#contact`, WALK[0]];
         const nav = { walk, expectWalk, up, tab, onMeasure, enterOpened: enterRan.other, escClosed: escClosed.other === '' && !escClosed.panel };
         const navOk = JSON.stringify(walk) === JSON.stringify(expectWalk) && up === '/en/#contact' && tab === 'pause.restart' && onMeasure === 'pause.measure' && /panel/.test(enterRan.other) && !enterRan.panel && nav.escClosed;
 
@@ -425,6 +436,9 @@ try {
         await sleep(800);
         await look('pause.restart', (b, a) => !a.panel && a.tick < b.tick);
         await look('pause.rewind', (b, a) => !a.panel && a.lives > b.lives);
+        // the scene items load another scene in the page; clicking them here would change the scene under the
+        // rest of this check: what they do is checked in tools/bench/src/accept-v03-scenes.ts (S1, S3, S4)
+        for (const id of ['pause.scene.next', 'pause.scene.random', 'pause.scene.favourite']) items[id] = { ok: true, note: 'checked in accept-v03-scenes S1/S3/S4' };
         await look('pause.drone', (b, a) => /drones/.test(a.other), async () => { await p.keyboard.press('Escape'); });
         await look('pause.radio', (b, a) => /radio/.test(a.other), async () => { await p.click('[data-action="radio-close"]'); });
         for (const id of ['pause.settings', 'pause.replays', 'pause.measure', 'pause.import']) await look(id, (b, a) => /panel/.test(a.other) && !a.panel, closeX);
@@ -444,12 +458,10 @@ try {
         await sleep(300);
         await openPanel(p);
         await p.click('.pause-menu [data-action="pause.scene"]');
-        await p.waitForURL((u) => !u.search.includes('scene='), { timeout: 15000 }).catch(() => undefined);
-        // the picker URL has no ?nowarn=1: this fresh profile gets the first-visit warning in front of it
-        const warned = await p.locator('[data-action="warning-ok"]').waitFor({ timeout: 15000 }).then(() => true, () => false);
-        if (warned) await p.click('[data-action="warning-ok"]');
-        const picker = await waitReady(p, 60000).catch(() => ({ status: 'timeout' }));
-        items['pause.scene'] = { ok: picker.status === 'picker', status: picker.status, url: p.url(), firstVisitWarning: warned };
+        // since W3-1 Change scan opens the picker over the flight (no reload: the radio stays): the picker is up, the panel gone
+        const overFlight = await p.locator('.screen.scenes').waitFor({ timeout: 15000 }).then(() => true, () => false);
+        const after = await ev(p, "return { panel: !!document.querySelector('.pause-menu'), url: location.href };");
+        items['pause.scene'] = { ok: overFlight && !after.panel, pickerOverFlight: overFlight, panelGone: !after.panel, url: after.url };
         await ctx.close();
         const everyItem = MENU.every((id) => items[id]?.ok === true) && Object.values(items).every((x) => x.ok);
         const everyDid = Object.entries(items).filter(([id]) => id !== 'pause.scene').every(([, x]) => did(x.before, x.after) || x.ok);

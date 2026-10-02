@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-02T00:23:22.617Z",
-    "gitHead": "10a68eb",
+    "date": "2026-10-02T01:47:45.734Z",
+    "gitHead": "5010d28",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "https://gsfpv.flyreelstudio.eu",
+  "site": "http://127.0.0.1:5301",
   "browser": {
     "kind": "system-chrome",
     "version": "154.0.8037.59",
@@ -48,6 +48,27 @@
       "action": "crash.keep",
       "keys": [
         "Enter"
+      ],
+      "flying": false
+    },
+    {
+      "action": "scene.next",
+      "keys": [
+        "KeyN"
+      ],
+      "flying": false
+    },
+    {
+      "action": "scene.random",
+      "keys": [
+        "Shift+KeyN"
+      ],
+      "flying": false
+    },
+    {
+      "action": "scene.favourite",
+      "keys": [
+        "KeyF"
       ],
       "flying": false
     },
@@ -108,6 +129,325 @@
       "flying": false
     }
   ],
+  "S5": {
+    "pass": false,
+    "what": "the summary panel keeps every pause-menu item with its data-action, in order, and the contact link; the first item has the focus, Down / Up walk the menu (wrapping), Tab goes on, Enter runs the focused item, Esc closes what it opened; every item does what it did",
+    "order": [
+      "pause.continue",
+      "pause.restart",
+      "pause.rewind",
+      "pause.scene",
+      "pause.scene.next",
+      "pause.scene.random",
+      "pause.scene.favourite",
+      "pause.drone",
+      "pause.radio",
+      "pause.settings",
+      "pause.replays",
+      "pause.measure",
+      "pause.import",
+      "pause.cinema",
+      "pause.record"
+    ],
+    "contact": {
+      "href": "/en/#contact",
+      "target": "_blank"
+    },
+    "nav": {
+      "walk": [
+        "pause.restart",
+        "pause.rewind",
+        "pause.scene",
+        "pause.scene.next",
+        "pause.scene.random",
+        "pause.scene.favourite",
+        "pause.drone",
+        "pause.radio",
+        "pause.settings",
+        "pause.replays",
+        "pause.measure",
+        "pause.import",
+        "pause.cinema"
+      ],
+      "expectWalk": [
+        "pause.restart",
+        "pause.rewind",
+        "pause.scene",
+        "pause.drone",
+        "pause.radio",
+        "pause.settings",
+        "pause.replays",
+        "pause.measure",
+        "pause.import",
+        "pause.cinema",
+        "pause.record",
+        "/en/#contact",
+        "pause.continue"
+      ],
+      "up": "pause.import",
+      "tab": "pause.record",
+      "onMeasure": "pause.scene.random",
+      "enterOpened": "",
+      "escClosed": false
+    },
+    "items": {
+      "pause.continue": {
+        "ok": false,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": -1,
+          "paused": true,
+          "rec": false,
+          "lives": 0
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying",
+          "tick": -1,
+          "paused": true,
+          "rec": false,
+          "lives": 0
+        }
+      },
+      "pause.restart": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 1061,
+          "paused": true,
+          "rec": false,
+          "lives": 1
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying",
+          "tick": 492,
+          "paused": false,
+          "rec": false,
+          "lives": 1
+        }
+      },
+      "pause.rewind": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 792,
+          "paused": true,
+          "rec": false,
+          "lives": 1
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying",
+          "tick": 1313,
+          "paused": false,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.drone": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 1612,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "screen drones interactive",
+          "body": "flying",
+          "tick": 1612,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.radio": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 1941,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "screen radio interactive",
+          "body": "flying",
+          "tick": 1941,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.settings": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 2248,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "panel interactive settings",
+          "body": "flying",
+          "tick": 2248,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.replays": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 2566,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "panel interactive",
+          "body": "flying",
+          "tick": 2566,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.measure": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 2881,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "panel interactive",
+          "body": "flying",
+          "tick": 2881,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.import": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 3197,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "panel interactive",
+          "body": "flying",
+          "tick": 3197,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.cinema": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 3517,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying cinema",
+          "tick": 4025,
+          "paused": false,
+          "rec": false,
+          "lives": 2
+        }
+      },
+      "pause.record": {
+        "ok": true,
+        "before": {
+          "panel": true,
+          "other": "",
+          "body": "flying",
+          "tick": 4349,
+          "paused": true,
+          "rec": false,
+          "lives": 2
+        },
+        "after": {
+          "panel": false,
+          "other": "",
+          "body": "flying",
+          "tick": 6360,
+          "paused": false,
+          "rec": true,
+          "lives": 2
+        }
+      },
+      "pause.scene": {
+        "ok": true,
+        "pickerOverFlight": true,
+        "panelGone": true,
+        "url": "http://127.0.0.1:5301/fly/?scene=887f27aa&nowarn=1&render=off"
+      }
+    },
+    "control": {
+      "what": "a planted button in the menu that does nothing: the same look must find nothing happened",
+      "planted": {
+        "didSomething": false
+      },
+      "fired": true
+    },
+    "ran": {
+      "at": "2026-10-02T01:47:45.616Z",
+      "gitHead": "5010d28",
+      "gitDirty": true,
+      "browser": {
+        "kind": "system-chrome",
+        "version": "154.0.8037.59",
+        "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "why": "installed"
+      }
+    }
+  },
   "S1": {
     "pass": true,
     "render": "off",
@@ -412,7 +752,7 @@
     }
   },
   "S3": {
-    "pass": false,
+    "pass": true,
     "render": "off",
     "what": "with the panel closed, every key of every shipped KEYMAP binding (looping over the table, keyboard flying keys included) does what its row in the panel says: exactly that action's effect on the page, and pressed again it goes back",
     "results": [
@@ -444,7 +784,6 @@
         "flying": false,
         "expect": "lives",
         "changed": [
-          "atSpawn",
           "lives"
         ],
         "ok": true,
@@ -557,12 +896,49 @@
         ],
         "ok": true,
         "restored": true
+      },
+      {
+        "action": "scene.next",
+        "key": "KeyN",
+        "flying": false,
+        "expect": "scene",
+        "changed": [
+          "walls",
+          "scene"
+        ],
+        "ok": true,
+        "restored": null
+      },
+      {
+        "action": "scene.random",
+        "key": "Shift+KeyN",
+        "flying": false,
+        "expect": "scene",
+        "changed": [
+          "walls",
+          "scene"
+        ],
+        "ok": true,
+        "restored": null
+      },
+      {
+        "action": "scene.favourite",
+        "key": "KeyF",
+        "ok": true,
+        "changed": [],
+        "skipped": "needs a favourite scene: checked in tools/bench/src/accept-v03-scenes.ts S4"
       }
     ],
     "control": {
       "what": "a deliberately wrong binding in the page's own keymap module (H and V swapped): the loop and the panel check must both fail",
       "injected": {
-        "url": null
+        "url": "http://127.0.0.1:5301/fly/@fs/C:/dev/gsfpv-v03/packages/prefs/src/keymap.ts",
+        "hud": [
+          "KeyV"
+        ],
+        "voxels": [
+          "KeyH"
+        ]
       },
       "loop": [
         {
@@ -571,9 +947,9 @@
           "flying": false,
           "expect": "voxel",
           "changed": [
-            "voxel"
+            "hudOff"
           ],
-          "ok": true,
+          "ok": false,
           "restored": true
         },
         {
@@ -582,18 +958,23 @@
           "flying": false,
           "expect": "hudOff",
           "changed": [
-            "hudOff"
+            "voxel"
           ],
-          "ok": true,
+          "ok": false,
           "restored": true
         }
       ],
-      "panelProblems": [],
-      "fired": false
+      "panelProblems": [
+        "voxels.cycle: caps H != V",
+        "voxels.cycle: aria \"H\" != \"V\"",
+        "hud.toggle: caps V != H",
+        "hud.toggle: aria \"V\" != \"H\""
+      ],
+      "fired": true
     },
     "ran": {
-      "at": "2026-10-02T00:23:22.495Z",
-      "gitHead": "10a68eb",
+      "at": "2026-10-02T01:46:50.061Z",
+      "gitHead": "5010d28",
       "gitDirty": true,
       "browser": {
         "kind": "system-chrome",
@@ -616,8 +997,8 @@
     },
     {
       "part": "S3",
-      "pass": false,
-      "gitHead": "10a68eb"
+      "pass": true,
+      "gitHead": "5010d28"
     },
     {
       "part": "S4",
@@ -626,8 +1007,8 @@
     },
     {
       "part": "S5",
-      "pass": null,
-      "gitHead": null
+      "pass": false,
+      "gitHead": "5010d28"
     },
     {
       "part": "S6",

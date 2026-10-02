@@ -211,7 +211,8 @@ await check('S6', async () => {
     const [a, b] = [list[1], list[2]];
     await page.click(`.ss-grid button.star[data-fav="${a}"]`);
     const pressed = await ev<string>(page, `document.querySelector('.ss-grid button.star[data-fav="${a}"]').getAttribute('aria-pressed')`);
-    const stored = await ev<string[]>(page, 'JSON.parse(localStorage.getItem("gsfpv.favourites.v1") || "[]")');
+    // since W3-1 the favourites live in the prefs store (collection sceneLibrary), not in v0.2's gsfpv.favourites.v1
+    const stored = await ev<string[]>(page, 'window.__gsfpv.prefs.collection("sceneLibrary").favourites');
     await page.reload();
     await page.waitForFunction('window.__gsfpv && window.__gsfpv.status === "picker"');
     await openTab(page);
@@ -226,7 +227,8 @@ await check('S6', async () => {
     await page.waitForFunction('window.__gsfpv && window.__gsfpv.status === "picker"');
     await openTab(page);
     const starAAfterUnstar = await ev<string | null>(page, `document.querySelector('.ss-grid button.star[data-fav="${a}"]')?.getAttribute('aria-pressed') ?? null`);
-    const pass = pressed === 'true' && stored.includes(a) && starA === 'true';
+    // W3-1 keeps the title and walls with a favourite: the Favourites tab shows it under the default walls-only filter
+    const pass = pressed === 'true' && stored.includes(a) && starA === 'true' && inFavTab;
     return { pass, control: starB === 'false' && starAAfterUnstar === 'false', starred: a, unstarred: b, storedFavourites: stored, afterReload: { a: starA, b: starB }, afterUnstarAndReload: starAAfterUnstar, observation: { inFavouritesTabWithWallsOnly: inFavTab, why: 'ui/scenes.ts (W3-1) lists a favourite with no history entry as a scene without walls, so the default walls-only filter hides it; favourites carry no title or walls flag' } };
 });
 

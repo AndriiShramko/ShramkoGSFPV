@@ -279,7 +279,8 @@ export class FlightSession {
 
     /** The lives kept (the last 30, at most 32 MB), oldest first; the last is the current one. */
     lives(): readonly Life[] {
-        return this.runner.lives();
+        // none before the walls are in, and none after dispose() (a scene switch, the picker over the flight)
+        return this.runner ? this.runner.lives() : [];
     }
 
     /** The walls this page replays logs on (replay.ts). */
