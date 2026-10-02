@@ -22,6 +22,7 @@ Spec: vault `03 - Resources/Deployment/shramkogsfpv/spec.md` (+ 6 spec-*.md). Ph
   51.6 Hz before recording (locally 2.5 %).
 - **Next (wave 4, running):** W4-1 video from the log (F.3) + the live recording repeats; W4-2 phantom walls (G.3, drop floating pieces). Then W4-5 release acceptance. Then wave 4: video from the
   log (F.3), the phantom-wall fix (G.3), release acceptance (W4-5). W4-3 (blackbox tools) is done.
+- **W4-5 release acceptance (2026-10-02, branch w4-5):** every v0.3 item passes on the live site (release f6dbf235b307, built from 9dd0f99); the table, the open defects (W45-1 phone crash toast over the recording bar; P10 language reset on /pl/ paths; B18 letters outside locales/) and the owner's list of what to try with his radio: `evidence/2026-10-02/v03-release.json`. Landing and README say "Status on 2 October 2026" (48 live, 1 in progress: Pavo20 physics against the real quads, 1 next); all 39 screenshots re-taken from the live site.
 - **Working rule since 2026-10-02:** no review / verify fan-outs; one or two agents at a time; merge and ship as soon as accepted.
 
 ## Handoff — how any agent continues from git alone

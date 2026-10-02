@@ -100,7 +100,7 @@ Status on 2 October 2026. **Live** means you can use it on https://gsfpv.flyreel
 | Gravity, crashes & respawn | Gravity: Earth and Moon (measured, `b-fly-b16.json`), Mars, zero-g and a custom value through the `?g=` link parameter (not tested yet) | Live |
 | Gravity, crashes & respawn | On other worlds: same motors, keep thrust-to-weight or auto throttle (the last two not tested yet) | Live |
 | Gravity, crashes & respawn | Crash threshold from 2 to 10 m/s, or crashes off: a wall only bounces you off (`v03-respawn.json`, R18) | Live |
-| Gravity, crashes & respawn | After a crash the drone is back by itself in 2 s, 5 s back along your path and still armed; `R` the start, `Y` rewind 5 s, `Enter` keeps the wreck (`v03-respawn.json`, R23 and RR) | Live |
+| Gravity, crashes & respawn | After a crash the drone is back by itself in 2 s, 5 s back along your path and still armed; `R` the start, `Y` rewind 5 s, `Enter` keeps the wreck (`v03-respawn.json`, R23 and RR; `v03-enter-keeps-wreck.json`) | Live |
 | Gravity, crashes & respawn | Start on an invisible pad at spawn height, motors on, until you lift off (`v03-respawn.json`, R16) | Live |
 | Gravity, crashes & respawn | Upside down or wedged and not moving: the drone goes a few seconds back by itself (`v03-respawn.json`, R18: lying upside down with crashes off, back in the air by itself) | Live |
 | Gravity, crashes & respawn | Replay the last 10 s after a crash; a list of replays (`b-fly-b15.json`) | Live |
