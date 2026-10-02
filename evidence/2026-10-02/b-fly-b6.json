@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-02T09:38:27.166Z",
-    "gitHead": "a856793",
+    "date": "2026-10-02T10:47:00.295Z",
+    "gitHead": "7221896",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5320",
+  "site": "https://gsfpv.flyreelstudio.eu",
   "render": "on",
   "pass": true,
   "frameNotEmptyRule": "luminance std > 0.04",
@@ -26,11 +26,11 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 771.1999999880791,
-      "pixelStd": 0.15732784516379092,
-      "pixelMean": 0.5537456604442516,
+      "loadMs": 1411.1000000089407,
+      "pixelStd": 0.15732476114416827,
+      "pixelMean": 0.5537459598621439,
       "hosts": [
-        "localhost:5320",
+        "gsfpv.flyreelstudio.eu",
         "d28zzqy0iyovbz.cloudfront.net",
         "s3-eu-west-1.amazonaws.com"
       ],
@@ -44,11 +44,11 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 1195.5,
-      "pixelStd": 0.15782283382680826,
-      "pixelMean": 0.5535674309374922,
+      "loadMs": 879.8000000119209,
+      "pixelStd": 0.15744614996068398,
+      "pixelMean": 0.5537143323345715,
       "hosts": [
-        "localhost:5320",
+        "gsfpv.flyreelstudio.eu",
         "s3-eu-west-1.amazonaws.com",
         "d28zzqy0iyovbz.cloudfront.net"
       ],
@@ -62,11 +62,11 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 1084,
-      "pixelStd": 0.159581594549672,
-      "pixelMean": 0.5548269725428928,
+      "loadMs": 1152.7999999970198,
+      "pixelStd": 0.15745098848096248,
+      "pixelMean": 0.5537151179840811,
       "hosts": [
-        "localhost:5320",
+        "gsfpv.flyreelstudio.eu",
         "s3-eu-west-1.amazonaws.com",
         "d28zzqy0iyovbz.cloudfront.net"
       ],
@@ -80,11 +80,11 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 1218.5999999940395,
-      "pixelStd": 0.2288510215471034,
-      "pixelMean": 0.4776797248376111,
+      "loadMs": 1650.300000011921,
+      "pixelStd": 0.22241564310280257,
+      "pixelMean": 0.4756036861121288,
       "hosts": [
-        "localhost:5320",
+        "gsfpv.flyreelstudio.eu",
         "d28zzqy0iyovbz.cloudfront.net",
         "s3-eu-west-1.amazonaws.com"
       ],
@@ -98,13 +98,13 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 1453.2999999970198,
-      "pixelStd": 0.22315616814703684,
-      "pixelMean": 0.4778548478584581,
+      "loadMs": 1365.2000000029802,
+      "pixelStd": 0.22885061663545364,
+      "pixelMean": 0.4776797468474147,
       "hosts": [
-        "localhost:5320",
-        "s3-eu-west-1.amazonaws.com",
-        "d28zzqy0iyovbz.cloudfront.net"
+        "gsfpv.flyreelstudio.eu",
+        "d28zzqy0iyovbz.cloudfront.net",
+        "s3-eu-west-1.amazonaws.com"
       ],
       "outside": [],
       "pageerrors": []
@@ -116,13 +116,13 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 1470.800000011921,
-      "pixelStd": 0.22315649785219566,
-      "pixelMean": 0.4778547125490224,
+      "loadMs": 1580.2000000029802,
+      "pixelStd": 0.2237179053910316,
+      "pixelMean": 0.47497111490195315,
       "hosts": [
-        "localhost:5320",
-        "s3-eu-west-1.amazonaws.com",
-        "d28zzqy0iyovbz.cloudfront.net"
+        "d28zzqy0iyovbz.cloudfront.net",
+        "gsfpv.flyreelstudio.eu",
+        "s3-eu-west-1.amazonaws.com"
       ],
       "outside": [],
       "pageerrors": []
@@ -134,11 +134,11 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 1399.5,
-      "pixelStd": 0.2350709526663956,
-      "pixelMean": 0.48652592291360397,
+      "loadMs": 1362.300000011921,
+      "pixelStd": 0.23506740661583836,
+      "pixelMean": 0.486526048180148,
       "hosts": [
-        "localhost:5320",
+        "gsfpv.flyreelstudio.eu",
         "d28zzqy0iyovbz.cloudfront.net",
         "s3-eu-west-1.amazonaws.com"
       ],
@@ -152,11 +152,11 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 1414.0999999940395,
-      "pixelStd": 0.2346110804032622,
-      "pixelMean": 0.4862529873866541,
+      "loadMs": 1623.3999999910593,
+      "pixelStd": 0.2362994535310737,
+      "pixelMean": 0.4868698136458434,
       "hosts": [
-        "localhost:5320",
+        "gsfpv.flyreelstudio.eu",
         "s3-eu-west-1.amazonaws.com",
         "d28zzqy0iyovbz.cloudfront.net"
       ],
@@ -170,11 +170,11 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 1461.2000000029802,
-      "pixelStd": 0.23639660664662154,
-      "pixelMean": 0.48698906301165445,
+      "loadMs": 1586.3999999910593,
+      "pixelStd": 0.2362995060997457,
+      "pixelMean": 0.48686973697304925,
       "hosts": [
-        "localhost:5320",
+        "gsfpv.flyreelstudio.eu",
         "s3-eu-west-1.amazonaws.com",
         "d28zzqy0iyovbz.cloudfront.net"
       ],

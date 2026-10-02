@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-02T09:44:00.543Z",
-    "gitHead": "a856793",
+    "date": "2026-10-02T10:52:36.848Z",
+    "gitHead": "7221896",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5320",
+  "site": "https://gsfpv.flyreelstudio.eu",
   "render": "on",
   "pass": true,
   "note": "touch through CDP Input.dispatchTouchEvent in Chrome (which one: context.browser) with hasTouch; input=touch because desktop Chrome has WebHID",
@@ -36,9 +36,9 @@
         "seconds": 10,
         "crashed": false,
         "armedAll": true,
-        "minY": 3.399565970024008,
-        "maxY": 3.843765787009175,
-        "target": 2.798026123858701
+        "minY": 3.4041730444284606,
+        "maxY": 3.79848488119519,
+        "target": 2.798026644948922
       },
       "view": {
         "scrollX": 0,
@@ -80,8 +80,8 @@
         "seconds": 10,
         "crashed": false,
         "armedAll": true,
-        "minY": 3.448160311497141,
-        "maxY": 3.768553417357417,
+        "minY": 3.4372042348008383,
+        "maxY": 3.8027498818018888,
         "target": 2.7980150940173583
       },
       "view": {
