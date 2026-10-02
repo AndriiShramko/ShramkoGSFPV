@@ -5,9 +5,10 @@ import { track } from "@/lib/track";
 
 /**
  * "Paste a SuperSplat link" → /{locale}/fly/?scene=<encoded raw value>. The simulator validates
- * the value. Without JS the same thing happens through a plain GET form.
+ * the value. Without JS the same thing happens through a plain GET form. `id`: a second copy on the
+ * page (the locations block) needs its own field id.
  */
-export default function ScenePaste({ locale, label, placeholder, button, hint, empty }: { locale: string; label: string; placeholder: string; button: string; hint: string; empty: string }) {
+export default function ScenePaste({ locale, label, placeholder, button, hint, empty, id = "scene-link" }: { locale: string; label: string; placeholder: string; button: string; hint: string; empty: string; id?: string }) {
   const input = useRef<HTMLInputElement>(null);
   // an empty submit says so in the page (the native "required" bubble is easy to miss on phones)
   const [missing, setMissing] = useState(false);
@@ -26,13 +27,13 @@ export default function ScenePaste({ locale, label, placeholder, button, hint, e
 
   return (
     <form action={flyPath(locale)} method="get" onSubmit={go} className="w-full max-w-xl">
-      <label htmlFor="scene-link" className="mb-2 block text-sm font-medium text-ink">
+      <label htmlFor={id} className="mb-2 block text-sm font-medium text-ink">
         {label}
       </label>
       <div className="flex flex-col gap-2 sm:flex-row">
         <input
           ref={input}
-          id="scene-link"
+          id={id}
           name="scene"
           type="text"
           inputMode="url"
@@ -41,7 +42,7 @@ export default function ScenePaste({ locale, label, placeholder, button, hint, e
           spellCheck={false}
           required
           placeholder={placeholder}
-          aria-describedby="scene-link-hint"
+          aria-describedby={`${id}-hint`}
           aria-invalid={missing || undefined}
           onInvalid={(e) => {
             e.preventDefault();
@@ -55,7 +56,7 @@ export default function ScenePaste({ locale, label, placeholder, button, hint, e
           {button}
         </button>
       </div>
-      <p id="scene-link-hint" role={missing ? "alert" : undefined} className={`mt-2 text-sm ${missing ? "text-warn" : "text-muted"}`}>
+      <p id={`${id}-hint`} role={missing ? "alert" : undefined} className={`mt-2 text-sm ${missing ? "text-warn" : "text-muted"}`}>
         {missing ? empty : hint}
       </p>
     </form>
