@@ -7,15 +7,15 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-02T02:32:56.158Z",
-    "gitHead": "9ceb46a",
+    "date": "2026-10-02T02:54:55.831Z",
+    "gitHead": "bb92518",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "pass": true,
-  "site": "http://127.0.0.1:5333",
+  "site": "https://gsfpv.flyreelstudio.eu",
   "browser": {
     "kind": "system-chrome",
     "version": "154.0.8037.59",
@@ -264,42 +264,6 @@
     "delayedApply": true,
     "control": {
       "afterUp3": 1.3310000896453857,
-      "fired": true
-    },
-    "pageErrors": []
-  },
-  "SC3": {
-    "pass": true,
-    "what": "summary panel row: x1.00, [+] gives x1.10, walls block size shown, warning above 10 cm",
-    "first": {
-      "value": "x1.00",
-      "voxel": "Walls: 5.0 cm blocks",
-      "warn": false,
-      "size": 1,
-      "label": "Scene sizex1.00\u2212+Res"
-    },
-    "plus": {
-      "value": "x1.10",
-      "voxel": "Walls: 5.5 cm blocks",
-      "warn": false,
-      "size": 1.100000023841858,
-      "label": "Scene sizex1.10\u2212+Res"
-    },
-    "coarse": {
-      "value": "x2.20",
-      "voxel": "Walls: 11.0 cm blocks \u2014 coarse: you may crash before you touch what you see",
-      "warn": true,
-      "size": 2.200000047683716,
-      "label": "Scene sizex2.20\u2212+Res"
-    },
-    "control": {
-      "atX1": {
-        "value": "x1.00",
-        "voxel": "Walls: 5.0 cm blocks",
-        "warn": false,
-        "size": 1,
-        "label": "Scene sizex1.00\u2212+Res"
-      },
       "fired": true
     },
     "pageErrors": []
