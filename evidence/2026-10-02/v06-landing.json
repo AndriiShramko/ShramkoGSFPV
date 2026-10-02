@@ -1,0 +1,239 @@
+{
+  "name": "v06-landing",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T10:37:00.797Z",
+    "gitHead": "9039a46",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "site": "http://127.0.0.1:8138",
+  "reference": "https://gsfpv.flyreelstudio.eu",
+  "L1-L2 desktop": {
+    "pass": true,
+    "now": {
+      "top": {
+        "totalKB": 5613,
+        "videoKB": 3754,
+        "videos": [
+          "/media/tunis-1920.av1.mp4"
+        ],
+        "videoBeforeLoad": []
+      },
+      "scrolled": {
+        "totalKB": 14963,
+        "videoKB": 10223,
+        "videos": [
+          "/media/tunis-1920.av1.mp4",
+          "/media/garden-1920.av1.mp4",
+          "/media/villa-1920.av1.mp4"
+        ]
+      },
+      "scaleBefore": false,
+      "scaleAfter": true,
+      "pageHeight": 30341
+    },
+    "before": {
+      "top": {
+        "totalKB": 5389,
+        "videoKB": 3996,
+        "videos": [
+          "/media/hero.mp4"
+        ],
+        "videoBeforeLoad": [
+          "/media/hero.mp4"
+        ]
+      },
+      "scrolled": {
+        "totalKB": 7343,
+        "videoKB": 3996,
+        "videos": [
+          "/media/hero.mp4"
+        ]
+      },
+      "scaleBefore": false,
+      "scaleAfter": false,
+      "pageHeight": 27694
+    }
+  },
+  "L1-L2 phone": {
+    "pass": true,
+    "now": {
+      "top": {
+        "totalKB": 3448,
+        "videoKB": 1844,
+        "videos": [
+          "/media/tunis-1280.av1.mp4"
+        ],
+        "videoBeforeLoad": []
+      },
+      "scrolled": {
+        "totalKB": 8961,
+        "videoKB": 5384,
+        "videos": [
+          "/media/tunis-1280.av1.mp4",
+          "/media/garden-1280.av1.mp4",
+          "/media/villa-1280.av1.mp4"
+        ]
+      },
+      "scaleBefore": false,
+      "scaleAfter": true,
+      "pageHeight": 47460
+    },
+    "before": {
+      "top": {
+        "totalKB": 2022,
+        "videoKB": 1089,
+        "videos": [
+          "/media/hero.mp4"
+        ],
+        "videoBeforeLoad": [
+          "/media/hero.mp4"
+        ]
+      },
+      "scrolled": {
+        "totalKB": 6330,
+        "videoKB": 3996,
+        "videos": [
+          "/media/hero.mp4"
+        ]
+      },
+      "scaleBefore": false,
+      "scaleAfter": false,
+      "pageHeight": 43079
+    }
+  },
+  "catalogueTotal": 1345,
+  "randomQuery": "?sort=starred&features=walkable&limit=40&skip=80",
+  "L3 random location": {
+    "pass": true,
+    "opened": "d27352df",
+    "pool": 40,
+    "total": 1345,
+    "query": "?sort=starred&features=walkable&limit=40&skip=80",
+    "fallback": "/en/fly/"
+  },
+  "L4 blocks in 4 languages": {
+    "pass": true,
+    "en": {
+      "pass": true,
+      "order": [
+        "top",
+        "locations",
+        "scale",
+        "tour"
+      ],
+      "locH2": "Every walkable scan on SuperSplat is now a place to fly: 1,300+ and growing",
+      "scaleH2": "Shrink yourself: fly a room like a city",
+      "random": "Fly a random location\u2192",
+      "scaleCta": "Shrink yourself: fly a room like a city\n\u2192",
+      "credits": 3,
+      "faq": 11
+    },
+    "es": {
+      "pass": true,
+      "order": [
+        "top",
+        "locations",
+        "scale",
+        "tour"
+      ],
+      "locH2": "Cada escaneo con paredes de SuperSplat es ya un lugar para volar: m\u00e1s de 1300 y cada vez m\u00e1s",
+      "scaleH2": "Enc\u00f3gete: vuela una habitaci\u00f3n como si fuera una ciudad",
+      "random": "Vuela a un lugar al azar\u2192",
+      "scaleCta": "Enc\u00f3gete: vuela una habitaci\u00f3n como una ciudad\n\u2192",
+      "credits": 3,
+      "faq": 11
+    },
+    "pl": {
+      "pass": true,
+      "order": [
+        "top",
+        "locations",
+        "scale",
+        "tour"
+      ],
+      "locH2": "Ka\u017cdy skan ze \u015bcianami na SuperSplat to teraz miejsce do latania: ponad 1300 i wci\u0105\u017c ich przybywa",
+      "scaleH2": "Zmniejsz si\u0119: lataj po pokoju jak po mie\u015bcie",
+      "random": "Le\u0107 w losowe miejsce\u2192",
+      "scaleCta": "Zmniejsz si\u0119: lataj po pokoju jak po mie\u015bcie\n\u2192",
+      "credits": 3,
+      "faq": 11
+    },
+    "ru": {
+      "pass": true,
+      "order": [
+        "top",
+        "locations",
+        "scale",
+        "tour"
+      ],
+      "locH2": "\u041a\u0430\u0436\u0434\u044b\u0439 \u0441\u043a\u0430\u043d \u0441\u043e \u0441\u0442\u0435\u043d\u0430\u043c\u0438 \u043d\u0430 SuperSplat \u2014 \u0442\u0435\u043f\u0435\u0440\u044c \u043c\u0435\u0441\u0442\u043e \u0434\u043b\u044f \u043f\u043e\u043b\u0451\u0442\u0430: \u0431\u043e\u043b\u0435\u0435 1300, \u0438 \u0438\u0445 \u0432\u0441\u0451 \u0431\u043e\u043b\u044c\u0448\u0435",
+      "scaleH2": "\u0423\u043c\u0435\u043d\u044c\u0448\u0438\u0442\u0435\u0441\u044c: \u043b\u0435\u0442\u0430\u0439\u0442\u0435 \u043f\u043e \u043a\u043e\u043c\u043d\u0430\u0442\u0435 \u043a\u0430\u043a \u043f\u043e \u0433\u043e\u0440\u043e\u0434\u0443",
+      "random": "\u041f\u043e\u043b\u0435\u0442\u0435\u0442\u044c \u0432 \u0441\u043b\u0443\u0447\u0430\u0439\u043d\u043e\u0435 \u043c\u0435\u0441\u0442\u043e\u2192",
+      "scaleCta": "\u0423\u043c\u0435\u043d\u044c\u0448\u0438\u0442\u044c\u0441\u044f \u0438 \u043f\u043e\u043b\u0435\u0442\u0435\u0442\u044c \u043f\u043e \u043a\u043e\u043c\u043d\u0430\u0442\u0435 \u043a\u0430\u043a \u043f\u043e \u0433\u043e\u0440\u043e\u0434\u0443\n\u2192",
+      "credits": 3,
+      "faq": 11
+    }
+  },
+  "encodes": {
+    "tunis": {
+      "tunis-1280.mp4": 2367622,
+      "tunis-1280.av1.mp4": 1888032,
+      "tunis-1920.mp4": 4730427,
+      "tunis-1920.av1.mp4": 3843677,
+      "tunis-poster-800.webp": 56992,
+      "tunis-poster-1600.webp": 155082
+    },
+    "garden": {
+      "garden-1280.mp4": 2389250,
+      "garden-1280.av1.mp4": 1877351,
+      "garden-1920.mp4": 4773235,
+      "garden-1920.av1.mp4": 3672497,
+      "garden-poster-800.webp": 36880,
+      "garden-poster-1600.webp": 94316
+    },
+    "villa": {
+      "villa-1280.mp4": 2420180,
+      "villa-1280.av1.mp4": 1747258,
+      "villa-1920.mp4": 4662954,
+      "villa-1920.av1.mp4": 2951157,
+      "villa-poster-800.webp": 25816,
+      "villa-poster-1600.webp": 61878
+    }
+  },
+  "segments": {
+    "tunis": {
+      "scene": "887f27aa",
+      "block": "hero",
+      "from": 12,
+      "to": 24.6
+    },
+    "garden": {
+      "scene": "7a475d38",
+      "block": "locations",
+      "from": 1,
+      "to": 13.6
+    },
+    "villa": {
+      "scene": "39e63ce9",
+      "block": "scale",
+      "from": 41.5,
+      "to": 54.1
+    },
+    "loop": "12.0 s each: the last 0.6 s cross-faded into the first 0.6 s",
+    "note": "source: the owner's simulator recordings of 2 October 2026, 2160x1080 60 fps; burned-in credit strip cropped (2000x1000 from x=80), 30 fps"
+  },
+  "L5 encode sizes": {
+    "pass": true,
+    "over": []
+  }
+}
