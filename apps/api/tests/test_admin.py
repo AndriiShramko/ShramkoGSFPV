@@ -178,7 +178,8 @@ class Auth(AdminApi):
         before = self.state(cookie)["draft"]
         moved = {"collections": [], "scenes": list(reversed(before["scenes"]))}
         self.assertEqual(self.req("POST", "/api/admin/catalog/draft", {"catalog": moved}, cookie=cookie)[0], 403)
-        self.assertEqual(self.req("POST", "/api/admin/catalog/draft", {"catalog": moved}, cookie=cookie, csrf=csrf[:-1] + "A")[0], 403)
+        wrong = csrf[:-1] + ("B" if csrf[-1] == "A" else "A")  # always differs (a token ending in A made this the right one: 1 run in 64)
+        self.assertEqual(self.req("POST", "/api/admin/catalog/draft", {"catalog": moved}, cookie=cookie, csrf=wrong)[0], 403)
         self.assertEqual(self.req("POST", "/api/admin/catalog/publish", {}, cookie=cookie, csrf="")[0], 403)
         self.assertEqual(self.state(cookie)["draft"], before)  # nothing changed
         # control: the right token
