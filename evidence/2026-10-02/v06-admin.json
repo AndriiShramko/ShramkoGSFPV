@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-02T10:12:01.426Z",
-    "gitHead": "527363d",
+    "date": "2026-10-02T10:22:56.259Z",
+    "gitHead": "eba6dcc",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -191,7 +191,7 @@
     "pitch": "Fly the old town at full speed"
   },
   "history": [
-    "20261002T101140Z"
+    "20261002T102236Z"
   ],
   "addKnown": "39e63ce9Opens in the simulator: lod-meta, CDN folder v1.SuperSplat's list cannot be searched by id: type the title and author, or search by words from the title.TitleAuthorLicenceAlready in the list.",
   "addedFromSearch": "5cc66450",

@@ -19,7 +19,7 @@ SSH="ssh -p $GSFPV_PORT -i $GSFPV_KEY -o BatchMode=yes $GSFPV_HOST"
 | `$GSFPV_BASE/compose.yml` | the two containers, `gsfpv-web` (nginx) and `gsfpv-api` (python) |
 | `$GSFPV_BASE/nginx.conf` | copy of [`deploy/nginx.conf`](nginx.conf); mounted read-only into `gsfpv-web` as `/etc/nginx/conf.d/default.conf` (a single-file bind mount) |
 | `$GSFPV_BASE/config.env` | secrets of the API; never in git |
-| `$GSFPV_BASE/api/`, `data/` | API code, counters, leads, bug reports (`reports.jsonl`, `reports/`) and share pictures (`share/`) |
+| `$GSFPV_BASE/api/`, `data/` | API code (`server.py`, `admin.py`, the catalogue seed `showcase.json`), counters, leads, bug reports (`reports.jsonl`, `reports/`), share pictures (`share/`), the scene catalogue and the admin's audit (see "Admin") |
 | `$GSFPV_BASE/releases/<sha12>/` | unpacked releases (the last 5 are kept) |
 | `$GSFPV_BASE/releases/current` | symlink to the live release; nginx serves `/srv/releases/current` |
 | `$GSFPV_BASE/incoming/` | uploaded tarballs |
@@ -91,7 +91,7 @@ Do these steps in this order, before the next `deploy.sh`.
 6. **Deploy** as below. The first line `deploy.sh` prints is now
    `nginx.conf on the hub and inside gsfpv-web = deploy/nginx.conf`.
 
-## Changing the API (apps/api/server.py)
+## Changing the API (apps/api/server.py, admin.py)
 
 The API is not part of `dist.tgz`: `gsfpv-api` runs `$GSFPV_BASE/api/server.py` (mounted read-only
 at `/app`) and reads it only when it starts. The first release with the SuperSplat catalogue (D35)
@@ -144,7 +144,82 @@ python tools/reports/pull.py show R-20261002-0007 --log   # one report; --log wr
 python tools/reports/pull.py close R-20261002-0007 --note "fixed in <sha>"
 ```
 
-Open or closed is kept on that machine (`inbox/status.json`) until the admin panel shows reports.
+Open or closed is kept on that machine (`inbox/status.json`); the admin panel's Reports tab (below)
+keeps its own open/closed on the server (`data/report-status.json`), the two are not synced.
+
+## Admin (v0.6): /admin/, the scene catalogue, report status
+
+The owner's admin page `/admin/` (a static page of the release: `apps/fly/admin/index.html` +
+`apps/fly/src/admin/`) and its API (`apps/api/admin.py`, wired into `server.py`). The scene picker's
+Catalogue tab reads `GET /api/catalog` (what the admin published) and falls back to the release's static
+`/fly/showcase.json` when the API does not answer.
+
+| Route | nginx | API |
+|---|---|---|
+| `/admin/` | `location ^~ /admin/`: `no-store`, `X-Frame-Options DENY`, `noindex`, its own strict CSP (`script-src 'self'`, connects only to itself and the scene CDN) | - |
+| `GET /api/catalog` | `location = /api/catalog`, GET only, no cookies | the published list, hidden scenes left out; `ETag`, 304 on `If-None-Match`, `max-age=60` (pilots see a publish within a minute) |
+| `/api/admin/*` | `location ^~ /api/admin/`, GET/POST only, `client_max_body_size 256k`, `no-store`; the real-IP module takes the client address from the X-Forwarded-For nginx-proxy appends (read from the right, private addresses trusted), so a forged header does not dodge the lockout | login, logout, session, catalogue draft/publish/discard/restore, reports list/status/diagnostics (the list is in `admin.py`'s docstring) |
+
+**Security.** Off unless `ADMIN_PASSWORD_HASH` is set in `config.env` (every admin route answers 503,
+never an open door). The password is checked with scrypt (n=16384, r=8, p=1, 16-byte random salt;
+one check at a time, 16 MiB, inside the 64 MB container) and a constant-time compare; it is never
+stored, logged or echoed. A session is a random id in an `HttpOnly; Secure; SameSite=Strict` cookie on
+`Path=/api/admin`, 12 h, in RAM only (an API restart signs the owner out). Every POST but the login
+needs the `X-CSRF` token issued with the session. Brute force: 5 wrong passwords from one address in
+15 min lock it for 15 min, doubling with each further lock up to 24 h; 30 wrong passwords in an hour
+from anywhere refuse every login for an hour and send one Telegram alert (`TG_BOT_TOKEN`). A locked
+login is refused before the password is looked at. Every action goes to `data/admin-audit.jsonl`
+(time, a keyed hash of the address, action, ok).
+
+**Files in `data/`.** `catalog.json` (live), `catalog-draft.json` (the admin's unpublished work),
+`catalog-history/<UTC time>.json` (every version that went live: the undo), `report-status.json`,
+`admin-audit.jsonl`. The deploy backups already take the whole `data/`.
+
+**The catalogue entry** (the order in the list is the order pilots see): `id` (SuperSplat id), `version`
+(CDN folder v<N>), `title`, `author`, `license`, `thumb` (poster URL, S3 or the CDN only), `kind`
+(`interior`, `exterior`, `other`), `collision` (the scene has walls), `walls` (`on`/`off`: the admin
+default of the walls switch), `dropFloaters` (0-64), `scale` (0.25-4), `voxelCm`, `sizeMb`, `format`,
+`defaultDrone`, `pitch` (one line per language, `{"en": ..., "ru": ...}`), `collections` (ids of the
+catalogue's `collections`, each `{id, title: {en, es, pl, ru}}`), `pinned` (the Featured row), `hidden`
+(kept, not shown). `showcase.json`'s fields mean the same.
+
+**Seeding.** The first time the catalogue is read and `data/catalog.json` does not exist, the API copies
+`showcase.json`'s scenes into it (none pinned or hidden, no collections). It looks for `CATALOG_SEED`, then
+`showcase.json` next to `server.py` (on the hub: `$GSFPV_BASE/api/showcase.json`). After that the file is
+only the picker's fallback.
+
+### First deploy of the admin
+
+Either order of release and API is safe (without the API the picker gets a 404 from `/api/catalog` and
+uses its static list). Do it in this order:
+
+1. **The hash**, on the owner's machine (asks twice, no echo; prints only the line; a new salt each run):
+   `python tools/admin/hash_password.py`. Put the printed `ADMIN_PASSWORD_HASH=scrypt:...` line into
+   `$GSFPV_BASE/config.env` on the hub as it is (no quotes: it has no `$`, which Compose would interpolate).
+   Never commit it, never paste it into a chat or a note other than the private vault.
+2. **nginx.conf** as in "Changing nginx.conf" above (new: `/admin/`, `/api/catalog`, `/api/admin/`).
+3. **The API**: keep `server.py.prev` as in "Changing the API", then upload three files and compare:
+   ```bash
+   scp -P $GSFPV_PORT -i $GSFPV_KEY apps/api/server.py apps/api/admin.py apps/fly/public/showcase.json $GSFPV_HOST:$GSFPV_BASE/api/
+   sha256sum apps/api/server.py apps/api/admin.py apps/fly/public/showcase.json
+   $SSH "cd $GSFPV_BASE/api && sha256sum server.py admin.py showcase.json"
+   ```
+4. **Recreate** the API container so it reads `config.env` again (`docker restart` does NOT re-read an
+   env file): `$SSH "cd $GSFPV_BASE && docker compose up -d --force-recreate gsfpv-api"`.
+5. **The release** with `deploy.sh` as usual (the picker's storefront and `/admin/`).
+6. **Check**:
+   ```bash
+   curl -sD- -o /dev/null https://gsfpv.flyreelstudio.eu/api/catalog | grep -iE '^(HTTP|etag|cache-control)'   # 200, an ETag, max-age=60
+   curl -s -o /dev/null -w '%{http_code}\n' -H 'If-None-Match: <that etag>' https://gsfpv.flyreelstudio.eu/api/catalog   # 304
+   curl -s -o /dev/null -w '%{http_code}\n' https://gsfpv.flyreelstudio.eu/api/admin/session    # 401 (503: the hash is missing or malformed)
+   curl -sI https://gsfpv.flyreelstudio.eu/admin/ | grep -iE '^(HTTP|cache-control|x-frame-options|content-security-policy)'
+   ```
+   Then sign in at `/admin/`, and `$SSH "tail -3 $GSFPV_BASE/data/admin-audit.jsonl"` shows the login.
+   Two wrong passwords sent with different forged `X-Forwarded-For` headers must show the SAME `ip` hash
+   in the audit (nginx-proxy appends the real address; checked locally in `evidence/2026-10-02/v06-admin-nginx.json`).
+
+Changing the password later: a new line from the tool, replace it in `config.env`, recreate `gsfpv-api`
+(step 4). Switching the admin off: remove the line and recreate.
 
 ## Deploying a release
 

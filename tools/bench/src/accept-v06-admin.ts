@@ -26,7 +26,7 @@ const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms
 type Any = any;
 const results: Record<string, Any> = {};
 const checks: { name: string; ok: boolean; control: boolean }[] = [];
-let child: ChildProcess | null = null;
+const children: ChildProcess[] = [];
 
 function check(name: string, ok: boolean, control = false): void {
     checks.push({ name, ok, control });
@@ -91,13 +91,14 @@ const savedState = (page: Page): Promise<unknown> => page.waitForFunction(() => 
 async function main(): Promise<void> {
     const secret = testSecret();
     mkdirSync(join(REPO, 'evidence', today()), { recursive: true });
-    child = spawn('python', [join(REPO, 'apps', 'api', 'server.py')], {
+    const child = spawn('python', [join(REPO, 'apps', 'api', 'server.py')], {
         env: { ...process.env, DATA_DIR: DATA, PORT: String(API_PORT), ADMIN_PASSWORD_HASH: secret.hash, TG_BOT_TOKEN: '', TG_CHAT_ID: '', MIN_FREE_GB: '0' },
         stdio: ['ignore', 'pipe', 'pipe']
     });
+    children.push(child);
     let apiLog = '';
-    child.stdout?.on('data', (b) => { apiLog += String(b); });
-    child.stderr?.on('data', (b) => { apiLog += String(b); });
+    child.stdout.on('data', (b) => { apiLog += String(b); });
+    child.stderr.on('data', (b) => { apiLog += String(b); });
     await until(`${API}/api/health`);
     // a pilot's idea, stored the way the simulator sends it
     const rep = await (await fetch(`${API}/api/report`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': '198.51.100.9' },
@@ -242,7 +243,7 @@ try {
     failed = e;
     console.error(e);
 } finally {
-    child?.kill();
+    for (const c of children) c.kill();
     try { rmSync(DATA, { recursive: true, force: true }); } catch { /* a file still open */ }
 }
 const pass = !failed && checks.length > 0 && checks.every((c) => c.ok);

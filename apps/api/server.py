@@ -1167,10 +1167,22 @@ class Handler(BaseHTTPRequestHandler):
             n = -1
         if n < 0 or n > limit:
             raise admin.TooLarge()
+        self._admin_read = True
         return self.rfile.read(n) if n else b""
 
     def _admin(self, method: str, path: str) -> None:
-        self._send(*ADMIN.handle(method, path, self.headers, self._admin_body, self._client()))
+        self._admin_read = False
+        res = ADMIN.handle(method, path, self.headers, self._admin_body, self._client())
+        if not self._admin_read:
+            # refused before the body was looked at (401/403/429/503): read a small one away, so the
+            # client gets the answer instead of a reset connection
+            try:
+                n = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                n = 0
+            if 0 < n <= admin.MAX_BODY:
+                self.rfile.read(n)
+        self._send(*res)
 
     def _send(self, code: int, body: bytes, headers: list, head: bool = False) -> None:
         self.send_response(code)
