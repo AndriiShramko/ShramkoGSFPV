@@ -10,40 +10,56 @@
 
 ## Screenshots
 
-Real screenshots of the simulator, taken on 27 September 2026 by [`tools/bench/src/screens.ts`](tools/bench/src/screens.ts) in system Chrome (1920×1080 at device scale 2, so the menus stay sharp). A menu is shown as itself with a little of the scene around it; click any picture for the whole screen. The calibration screens use the simulator's built-in simulated EdgeTX radio; the flights are flown by its test pilot and frozen while it is really flying. All 30 screens, phone-sized ones included, are in [`docs/screenshots/`](docs/screenshots/) and on the [landing page](https://gsfpv.flyreelstudio.eu/en/#gallery).
+Real screenshots of the live simulator, taken on 2 October 2026 by [`tools/bench/src/screens.ts`](tools/bench/src/screens.ts) in system Chrome on a real GPU (1920×1080 at device scale 2, so the menus stay sharp). A menu is shown as itself with a little of the scene around it; click any picture for the whole screen. The calibration screens use the simulator's built-in simulated EdgeTX radio; the flights are flown by its test pilot or from the keyboard and frozen while really flying. All 39 screens, phone-sized ones included, are in [`docs/screenshots/`](docs/screenshots/) and on the [landing page](https://gsfpv.flyreelstudio.eu/en/#gallery).
 
 <table>
 <tr>
-<td width="50%" valign="top"><a href="docs/screenshots/voxels.webp"><img src="docs/screenshots/voxels.webp" alt="Voxel grid over the Tunis scan in height colours"></a><br><sub><b>Voxel grid over the scan</b> — the walls you crash into, drawn over the scan in height colours; `V` cycles off / over the scan / voxels only.</sub></td>
-<td width="50%" valign="top"><a href="docs/screenshots/voxels-only.webp"><img src="docs/screenshots/voxels-only.webp" alt="Voxels only, the scan hidden, Modlinek Villa as solid cubes"></a><br><sub><b>Voxels only</b> — the scan hidden, its 5 cm walls as solid cubes: fly the grid alone and see every surface you can hit.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/voxels.webp"><img src="docs/screenshots/voxels.webp" alt="Voxel grid over the scan"></a><br><sub><b>Voxel grid over the scan</b> — The walls you crash into, drawn over Andrii's Tunis scan in height colours: V switches between off, over the scan and voxels only; the chip names the style and the voxel size.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/voxels-only.webp"><img src="docs/screenshots/voxels-only.webp" alt="Voxels only"></a><br><sub><b>Voxels only</b> — The scan hidden and only its 5 cm walls left, as solid cubes (Modlinek Villa): fly the grid alone and see every surface you can hit.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><a href="docs/screenshots/flight-tunis.webp"><img src="docs/screenshots/flight-tunis.webp" alt="Flight view over the Tunis old-town scan with the OSD"></a><br><sub><b>Flight view</b> — Andrii's Tunis scan at 4.8 m/s with the OSD: arm state, flight mode, voltage, flight time, throttle, speed, altitude.</sub></td>
-<td width="50%" valign="top"><a href="docs/screenshots/wizard-throttle.webp"><img src="docs/screenshots/wizard-throttle-panel.webp" alt="Calibration wizard: throttle found"></a><br><sub><b>Calibration</b> — a drawn radio shows which stick to move; here the throttle is found on CH1.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/flight-tunis.webp"><img src="docs/screenshots/flight-tunis.webp" alt="Tunis old town"></a><br><sub><b>Tunis old town</b> — The flight view on Andrii's Tunis scan: arm state and flight mode, battery voltage and flight time, throttle, speed, altitude and the keys.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/wizard-throttle.webp"><img src="docs/screenshots/wizard-throttle-panel.webp" alt="Throttle found"></a><br><sub><b>Throttle found</b> — Each stick is found by moving it: the wizard names the channel, offers Reverse and moves on when the stick is back.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><a href="docs/screenshots/pause.webp"><img src="docs/screenshots/pause-panel.webp" alt="Pause menu over the Winter Garden scan"></a><br><sub><b>Pause menu</b> — scan, drone, controls, settings, replays, measurements, Betaflight import, cinema mode, with their keys.</sub></td>
-<td width="50%" valign="top"><a href="docs/screenshots/settings.webp"><img src="docs/screenshots/settings-panel.webp" alt="Settings panel with the walls and voxel grid block"></a><br><sub><b>Settings</b> — FOV, uptilt, HUD, walls and voxel grid, quality, gravity, crash threshold, motor spin-up, drag, PID.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/pause.webp"><img src="docs/screenshots/pause-panel.webp" alt="Summary panel"></a><br><sub><b>Summary panel</b> — Pause shows this flight's stats beside the session and all-time ones, the scene size, saving as video, every menu item and every key.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/settings.webp"><img src="docs/screenshots/settings-panel.webp" alt="Settings"></a><br><sub><b>Settings</b> — Every setting on one screen, by group and with search; here Crashes & respawn: crashes, threshold, automatic respawn, delay, where and how far back, the invisible platform.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><a href="docs/screenshots/drones.webp"><img src="docs/screenshots/drones-panel.webp" alt="Drone picker with six presets"></a><br><sub><b>Six drones</b> — every number labelled manufacturer, measured or estimate, with the rate curve.</sub></td>
-<td width="50%" valign="top"><a href="docs/screenshots/betaflight.webp"><img src="docs/screenshots/betaflight-panel.webp" alt="Betaflight diff import"></a><br><sub><b>Betaflight import</b> — paste a CLI diff; unused settings are listed (here a test diff).</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/stats-card.webp"><img src="docs/screenshots/stats-card-panel.webp" alt="Flight stats"></a><br><sub><b>Flight stats</b> — Disarm after a flight and a card like the goggles OSD shows air time, top speed and altitude, distance, battery, current, mAh used, G-force and average throttle.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/mode-chip.webp"><img src="docs/screenshots/mode-chip-panel.webp" alt="Flight mode"></a><br><sub><b>Flight mode</b> — Angle by default; the chip, M or a switch on your radio picks Acro, Angle or Horizon.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><a href="docs/screenshots/crash.webp"><img src="docs/screenshots/crash-panel.webp" alt="Crash card with the wreck and debris"></a><br><sub><b>Crash</b> — impact speed, Rapier debris, respawn, a 10-second replay or the flight log.</sub></td>
-<td width="50%" valign="top"><a href="docs/screenshots/walls.webp"><img src="docs/screenshots/walls-panel.webp" alt="Walls menu with the walls switched off"></a><br><sub><b>Walls on or off</b> — the walls line opens the walls (collisions) switch and the voxel grid; here the walls are off (`C`).</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/crash-toast.webp"><img src="docs/screenshots/crash-toast-panel.webp" alt="Automatic respawn"></a><br><sub><b>Automatic respawn</b> — The toast counts down; 2 s after the crash the drone is back 5 s along its path, still armed. Enter stays, R goes to the start, N and F load another scene.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/crash.webp"><img src="docs/screenshots/crash-panel.webp" alt="Crash"></a><br><sub><b>Crash</b> — With automatic respawn off, or after Enter: the impact speed, the wreck with debris, then rewind 5 s, back to the start, a 10-second replay, the flight log or another scene.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><a href="docs/screenshots/keys.webp"><img src="docs/screenshots/keys-panel.webp" alt="Keyboard flying keys card"></a><br><sub><b>Keyboard</b> — every flying key on screen, `V` voxel grid and `C` walls included.</sub></td>
-<td width="50%" valign="top"><a href="docs/screenshots/cinema.webp"><img src="docs/screenshots/cinema.webp" alt="Cinema mode over the Tunis scan"></a><br><sub><b>Cinema mode</b> — full detail, no HUD, MP4 recording with the scan's credit.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/superspl.webp"><img src="docs/screenshots/superspl.webp" alt="SuperSplat tab"></a><br><sub><b>SuperSplat tab</b> — superspl.at's catalogue in the picker with its sorting, time, walls and download filters, search, Random top-rated and a star for favourites.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/scene-size.webp"><img src="docs/screenshots/scene-size-panel.webp" alt="Scene size"></a><br><sub><b>Scene size</b> — A scan not in true metres? [ and ] scale it around the drone from 0.25× to 4×, kept for each scan; the walls' block size follows.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><a href="docs/screenshots/voxels-wire.webp"><img src="docs/screenshots/voxels-wire.webp" alt="Wireframe voxel grid over the Winter Garden scan"></a><br><sub><b>Wireframe grid</b> — the Winter Garden's 3.2 cm walls as a wireframe over the photo scan.</sub></td>
-<td width="50%" valign="top"><a href="docs/screenshots/voxels-floaters.webp"><img src="docs/screenshots/voxels-floaters.webp" alt="Floating pieces of the voxel grid tinted red"></a><br><sub><b>Floaters in red</b> — pieces that touch nothing else and are under 0.5 m³ turn red, so a phantom wall stands out.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/rec-bar.webp"><img src="docs/screenshots/rec-bar-panel.webp" alt="Recording"></a><br><sub><b>Recording</b> — F9 records 60 fps video of Andrii's scans; Auto records every flight into the folder you choose, and the bar says what was saved where.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/video-export.webp"><img src="docs/screenshots/video-export-panel.webp" alt="Video from the flight log"></a><br><sub><b>Video from the flight log</b> — The flight rendered again from its log as 60 fps video at 1080p, 1440p or 4K, frame by frame; Cancel leaves no file.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><a href="docs/screenshots/flight-garden.webp"><img src="docs/screenshots/flight-garden.webp" alt="Flight view in the Winter Garden at 8 m/s"></a><br><sub><b>Winter Garden</b> — the test pilot's dash at 8.1 m/s between the table and the plants.</sub></td>
-<td width="50%" valign="top"><a href="docs/screenshots/picker.webp"><img src="docs/screenshots/picker.webp" alt="Scan picker"></a><br><sub><b>Choose a scan</b> — Andrii's scans, recent and favourites, filters, or any SuperSplat link.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/voxels-dropped.webp"><img src="docs/screenshots/voxels-dropped-panel.webp" alt="Floating pieces dropped"></a><br><sub><b>Floating pieces dropped</b> — Modlinek Villa with the pieces of its walls under 64 blocks removed: 44 phantom walls gone, for this scan only; the walls menu says what was dropped.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/walls.webp"><img src="docs/screenshots/walls-panel.webp" alt="Walls on or off"></a><br><sub><b>Walls on or off</b> — The walls line on the credit opens the walls menu: the walls (collisions) switch, the voxel grid and the stored walls. Here the walls are off (C): the drone flies through everything, no crashes.</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><a href="docs/screenshots/drones.webp"><img src="docs/screenshots/drones-panel.webp" alt="Six drones"></a><br><sub><b>Six drones</b> — BetaFPV-class presets with a rate curve each; every number says where it comes from: manufacturer, measured or estimate.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/betaflight.webp"><img src="docs/screenshots/betaflight-panel.webp" alt="Betaflight import"></a><br><sub><b>Betaflight import</b> — Paste a CLI diff and its rates and PID fly the quad; every setting the simulator does not use is listed (here a test diff).</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><a href="docs/screenshots/keys.webp"><img src="docs/screenshots/keys-panel.webp" alt="Keyboard"></a><br><sub><b>Keyboard</b> — Every flying key on screen: Space arms, W and S throttle, A and D yaw, the arrows tilt, M self-levelling, V the voxel grid, C the walls.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/cinema.webp"><img src="docs/screenshots/cinema.webp" alt="Cinema mode"></a><br><sub><b>Cinema mode</b> — Full detail, automatic quality off, no HUD; Record saves an MP4 with the scan's credit in the picture.</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><a href="docs/screenshots/voxels-wire.webp"><img src="docs/screenshots/voxels-wire.webp" alt="Wireframe grid"></a><br><sub><b>Wireframe grid</b> — The Winter Garden's 3.2 cm walls as a wireframe over the scan: see where a wall really is before you fly the line.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/voxels-floaters.webp"><img src="docs/screenshots/voxels-floaters.webp" alt="Floaters in red"></a><br><sub><b>Floaters in red</b> — Pieces of the grid that touch nothing else and are smaller than 0.5 m³ turn red, so a phantom wall in the plants stands out.</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><a href="docs/screenshots/flight-garden.webp"><img src="docs/screenshots/flight-garden.webp" alt="Winter Garden"></a><br><sub><b>Winter Garden</b> — Glass roof, plants and furniture, with the walls SuperSplat publishes for this scan: 3.2 cm voxels you really crash into.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/picker.webp"><img src="docs/screenshots/picker.webp" alt="Choose a scan"></a><br><sub><b>Choose a scan</b> — Andrii's scans, recent and favourite ones, filters for walls, type and flown, or a pasted SuperSplat link.</sub></td>
 </tr>
 </table>
 
@@ -59,72 +75,72 @@ The default craft is a **BetaFPV Pavo20 Pro** class 2.2″ cinewhoop, with five 
 
 ## Features and roadmap
 
-Status on 27 September 2026. **Live** means you can use it on https://gsfpv.flyreelstudio.eu today; **In progress** is being built now; **Next** is designed and queued. How each input device was tested is in [Radios and devices](#radios-and-devices), and the numbers behind the physics are in [What is measured](#what-is-measured-not-claimed). The same list, in four languages, is on the [landing page](https://gsfpv.flyreelstudio.eu/en/#features).
+Status on 2 October 2026. **Live** means you can use it on https://gsfpv.flyreelstudio.eu today; **In progress** is being built now; **Next** is designed and queued. How each input device was tested is in [Radios and devices](#radios-and-devices), and the numbers behind the physics are in [What is measured](#what-is-measured-not-claimed). The same list, in four languages, is on the [landing page](https://gsfpv.flyreelstudio.eu/en/#features). The v0.3 items name the check that accepted them on the live site (JSON files in [`evidence/`](evidence/); the list is in [`evidence/2026-10-02/v03-release.json`](evidence/2026-10-02/v03-release.json)).
 
-### Available now (34)
+### Available now (48)
 
 | Area | Feature | Status |
 |---|---|---|
 | Radio & calibration | EdgeTX radio over USB (WebHID) in Chrome or Edge | Live |
-| Radio & calibration | Calibration with a drawn radio that shows which stick to move | Live |
+| Radio & calibration | Calibration with a drawn radio that shows which stick to move; each step waits until you really move it (`v03-wizard-auto-live.json`) | Live |
 | Radio & calibration | Reverse any channel after calibration | Live |
 | Radio & calibration | Recalibrate button in Controls | Live |
-| Radio & calibration | A known radio reconnects by itself when you change scans | Live |
-| Gamepad, touch & keyboard | Gamepad through the browser's Gamepad API (not tested on real hardware yet) | Live |
-| Gamepad, touch & keyboard | Touch sticks and an ARM button on a touch screen (tested in touch emulation only) | Live |
-| Gamepad, touch & keyboard | Keyboard, with every flying key shown on screen | Live |
-| Gamepad, touch & keyboard | Keyboard: `M` switches ANGLE (self-levelling) and ACRO; touch flies in ANGLE, a radio or gamepad in ACRO (ANGLE not tested yet) | Live |
-| Gamepad, touch & keyboard | Close Controls with × or Esc; the pause menu shows its keys (Esc / P continue, R restart) | Live |
+| Radio & calibration | A known radio reconnects by itself, and stays connected when you change scenes (`v03-scenes-live.json`) | Live |
+| Radio & calibration | The flight-mode switch on your radio is found on the check screen, with no click (`v03-modes-live.json`, with the simulated radio) | Live |
+| Controls & flight modes | Gamepad through the browser's Gamepad API (not tested on real hardware yet) | Live |
+| Controls & flight modes | Touch sticks and an ARM button on a touch screen (tested in touch emulation only) | Live |
+| Controls & flight modes | Keyboard, with every flying key shown on screen | Live |
+| Controls & flight modes | Flight modes: Angle (self-levelling, the default for everyone), Horizon and Acro; `M`, the mode chip on screen or your radio's switch (`v03-modes-live.json`) | Live |
+| Controls & flight modes | Close Controls with × or Esc; the summary panel shows every key | Live |
 | Drone & tuning | Six BetaFPV-class presets: Pavo20 Pro 3S (default), Pavo20 Pro II 3S and 4S, Pavo Pico 2S, Meteor65 Pro 1S, Air65 1S | Live |
 | Drone & tuning | Betaflight, Actual, KISS and Raceflight rate curves (set through the diff import), checked against Betaflight 4.5.1 (`a3-rates-vectors.json`) | Live |
 | Drone & tuning | Import rates, PID and throttle curve from a Betaflight CLI `diff` / `diff all` (`d-bf-diff-import.json`) | Live |
 | Drone & tuning | PID for each axis: P, I, D and F | Live |
 | Drone & tuning | Motor spin-up time 8–30 ms and air drag 0.5–2× | Live |
-| Gravity & crashes | Gravity: Earth and Moon (measured, `b-fly-b16.json`), Mars, zero-g and a custom value through the `?g=` link parameter (not tested yet; a custom value matches no entry of the Settings gravity list, so Apply in Settings then sets zero-g) | Live |
-| Gravity & crashes | On other worlds: same motors, keep thrust-to-weight or auto throttle (the last two not tested yet) | Live |
-| Gravity & crashes | Crash threshold from 2 to 10 m/s | Live |
-| Gravity & crashes | After a crash: respawn at the start (`b-fly-b12.json`). The "From the last safe point" button does not keep its point reliably yet: the point is sampled only when a frame ends exactly on a 500th physics tick, so on a steady display it often stays at the start (defect D-d in [`docs/architecture-v03.md`](docs/architecture-v03.md)) | Live |
-| Gravity & crashes | Replay the last 10 s after a crash; a list of replays (`b-fly-b15.json`) | Live |
+| Gravity, crashes & respawn | Gravity: Earth and Moon (measured, `b-fly-b16.json`), Mars, zero-g and a custom value through the `?g=` link parameter (not tested yet) | Live |
+| Gravity, crashes & respawn | On other worlds: same motors, keep thrust-to-weight or auto throttle (the last two not tested yet) | Live |
+| Gravity, crashes & respawn | Crash threshold from 2 to 10 m/s, or crashes off: a wall only bounces you off (`v03-respawn.json`, R18) | Live |
+| Gravity, crashes & respawn | After a crash the drone is back by itself in 2 s, 5 s back along your path and still armed; `R` the start, `Y` rewind 5 s, `Enter` keeps the wreck (`v03-respawn.json`, R23 and RR) | Live |
+| Gravity, crashes & respawn | Start on an invisible pad at spawn height, motors on, until you lift off (`v03-respawn.json`, R16) | Live |
+| Gravity, crashes & respawn | Upside down or wedged and not moving: the drone goes a few seconds back by itself (`v03-respawn.json`, R18: lying upside down with crashes off, back in the air by itself) | Live |
+| Gravity, crashes & respawn | Replay the last 10 s after a crash; a list of replays (`b-fly-b15.json`) | Live |
 | Camera, view & video | Camera field of view 70–150° and uptilt 0–50° | Live |
 | Camera, view & video | Stable frame ↔ detail slider; quality steps down by itself when frames drop (`d-governor.json`) | Live |
 | Camera, view & video | HUD on or off; F3 shows frame times | Live |
 | Camera, view & video | Reduced motion: a calmer crash camera (not tested yet) | Live |
 | Camera, view & video | Cinema mode: full detail and MP4 recording on the showcase scans (`d-cinema.json`) | Live |
+| Camera, view & video | Recording at 60 fps with `F9` on Andrii's scans, or auto-record every flight into a folder you choose (`v03-rec-R1-live-w41.json`: 60.0 Hz, 0.7 % repeated frames; the browser's own folder picker was not driven by a bench) | Live |
+| Camera, view & video | Video from the flight log on Andrii's scans, from the summary panel or the replays: 60 fps at 1080p, 1440p or 4K (`v03-export-E1.json`) | Live |
 | Camera, view & video | Simulator in English, Spanish, Polish or Russian | Live |
-| Scenes & flight data | Any public SuperSplat scene in the current format, by link or id, re-published versions (v2, v3…) too; scenes in SuperSplat's older PLY format do not open yet | Live |
-| Scenes & flight data | Tabs: Andrii's scans, Recent, Favourites; filters for walls, type and flown | Live |
-| Scenes & flight data | Walls built in your browser for scans published without them, up to 4 M Gaussians (`c-bake.json`) | Live |
-| Scenes & flight data | Loading progress: stage, MB, speed, time left and retry | Live |
-| Scenes & flight data | Save the flight log; export the trajectory as CSV or JSON (CSV checked in `d-trajectory-export.json`, JSON not tested yet) | Live |
-| Scenes & flight data | Measurements panel: display refresh, frame times, physics rate and the input in use (its report rate is not measured yet); copy the report as JSON | Live |
-| Scenes & flight data | Voxel grid over the scan or on its own with the scan hidden (`V`): solid cubes, wireframe, height colours or floaters in red (pieces under 0.5 m³ that touch nothing), opacity per mode; test switches `?voxels=overlay\|only&vstyle=&vopacity=`. Faces and floaters checked against brute force with controls ([`packages/collision/test/`](packages/collision/test/)); frame cost measured only on a 30 Hz screen, no evidence file yet | Live |
-| Scenes & flight data | Walls (collisions) on or off (`C`, the walls menu or Settings), remembered per scan in the browser; the admin default per scan is `"walls": "on" \| "off"` in [`apps/fly/public/showcase.json`](apps/fly/public/showcase.json) (off for a noisy scan). A flight log records the setting and replays with it; on hits the wall, off flies through it, each log replays to its own hash, with controls ([`walls-switch.test.ts`](packages/collision/test/walls-switch.test.ts)) | Live |
+| Scenes & SuperSplat | Any public SuperSplat scene in the current format, by link or id, re-published versions (v2, v3…) too; scenes in SuperSplat's older PLY format do not open yet | Live |
+| Scenes & SuperSplat | Tabs: Andrii's scans, Recent, Favourites; filters for walls, type and flown | Live |
+| Scenes & SuperSplat | A SuperSplat tab with superspl.at's filters and sorting, a random top-rated scene and a star for favourites (`v03-superspl-live.json`) | Live |
+| Scenes & SuperSplat | Change scenes without reloading the page: `N` next, `Shift+N` random, `F` next favourite; the radio stays connected (`v03-scenes-live.json`) | Live |
+| Scenes & SuperSplat | After a crash, the next scene instead of a respawn: from Andrii's list, your favourites or the scenes you flew (off by default; `v03-scenes-live.json`, S3) | Live |
+| Scenes & SuperSplat | Scale a wrong-size scene around the drone with `[` and `]`, kept for each scan (`v03-scale.json`) | Live |
+| Scenes & SuperSplat | Loading progress: stage, MB, speed, time left and retry | Live |
+| Walls & voxel grid | Walls built in your browser for scans published without them, up to 4 M Gaussians (`c-bake.json`) | Live |
+| Walls & voxel grid | Walls (collisions) on or off (`C`, the walls menu or Settings), remembered per scan; the admin default per scan is `"walls": "on" \| "off"` in [`apps/fly/public/showcase.json`](apps/fly/public/showcase.json). A flight log records the setting and replays with it ([`walls-switch.test.ts`](packages/collision/test/walls-switch.test.ts)) | Live |
+| Walls & voxel grid | Drop the floating specks of a noisy scan that turn into invisible walls ("phantom walls"): pieces under N blocks, per scan; the admin default is `"dropFloaters"` in `showcase.json` (`v03-floaters.json`) | Live |
+| Walls & voxel grid | Voxel grid over the scan or on its own with the scan hidden (`V`): solid cubes, wireframe, height colours or floaters in red, opacity per mode; faces and floaters checked against brute force with controls ([`packages/collision/test/`](packages/collision/test/)) | Live |
+| Settings, stats & flight data | Every setting kept between visits, each drone with its own tune; export, import and reset one or all (`v03-prefs.json`) | Live |
+| Settings, stats & flight data | A catalogue of every setting with its default, range and key: [Everything you can tune](#everything-you-can-tune), [`docs/settings.md`](docs/settings.md) and the [landing page](https://gsfpv.flyreelstudio.eu/en/#tune) | Live |
+| Settings, stats & flight data | Flight stats when you disarm, like the goggles OSD (`v03-summary-live.json`) | Live |
+| Settings, stats & flight data | Summary panel: this flight's stats, every menu item and every key (`v03-summary-live.json`) | Live |
+| Settings, stats & flight data | Save the flight log; export the trajectory as CSV or JSON (CSV checked in `d-trajectory-export.json`, JSON not tested yet) | Live |
+| Settings, stats & flight data | Measurements panel: display refresh, frame times, physics rate and the input in use (its report rate is not measured yet); copy the report as JSON | Live |
 
-### In progress (8)
-
-Built on one shared settings store and one respawn system, not as quick patches ([`docs/architecture-v03.md`](docs/architecture-v03.md)).
-
-| Feature | Status |
-|---|---|
-| Calibration that waits for you: a step moves on only when you really move the stick | In progress |
-| Every setting kept between visits, with export, import and reset — one or all | In progress |
-| Pick the flight mode with a click; self-levelling by default for everyone | In progress |
-| Start on an invisible pad at spawn height instead of dropping to the floor | In progress |
-| After a crash, back in the air within 2 s, on a pad 5 s earlier; R returns to the start | In progress |
-| Crashes off for beginners | In progress |
-| Automatic restart when you are stuck or lying upside down | In progress |
-| Pavo20 Pro and Pro II physics tuned against the real quads | In progress |
-
-### Next (6)
+### In progress (1)
 
 | Feature | Status |
 |---|---|
-| Flight stats at the end of a flight, like the goggles OSD | Next |
-| A full catalogue of every setting, on the site and here on GitHub | Next |
-| After a crash: your next favourite or a random top-rated scene (auto-switch off by default) | Next |
-| A SuperSplat tab with the same filters as superspl.at | Next |
-| Scale a wrong-size scene around the drone | Next |
-| 60 fps recording, and auto-record into the last folder you chose | Next |
+| Pavo20 Pro and Pro II physics tuned against the real quads: the blackbox log tools and the Betaflight dump import are ready, waiting for logs from the real quads | In progress |
+
+### Next (1)
+
+| Feature | Status |
+|---|---|
+| Radio switches for respawn and rewind | Next |
 
 Missing a setting you need? Suggest it through the [contact form](https://gsfpv.flyreelstudio.eu/en/#contact) or open an issue.
 
