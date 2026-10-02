@@ -68,6 +68,9 @@ export interface TestHook {
     importDiff?: (text: string) => { ok: boolean; firmware?: string | null; ratesType?: string; warnings?: string[]; errors?: string[] };
     /** phase D: cinema mode and the recorder */
     cinema?: { on: () => boolean; toggle: () => void; canRecord: boolean; start: () => Promise<string>; stop: () => Promise<RecorderInfo | null>; last: RecorderInfo | null; lastBytes: Uint8Array | null; creditStripStd: () => number };
+    /** E.4 in-page scene switching: the host (go, load, pick, log of switches) and the switch under way or last done */
+    scenes?: unknown;
+    sceneSwitch?: Record<string, unknown>;
 }
 
 export const hook: TestHook = { status: 'loading', events: [], savedLogs: [] };

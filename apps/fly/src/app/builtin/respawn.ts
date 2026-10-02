@@ -15,9 +15,9 @@ import type { FlightSession } from '../../session';
 import type { Feature, FlightContext } from '../context';
 
 /** The settings the respawn rules are made of (A.8, the crash group). */
-export const POLICY_IDS: readonly string[] = ['respawn.auto', 'respawn.delayS', 'respawn.target', 'respawn.rewindS', 'respawn.platform', 'respawn.keepArmed', 'respawn.unstuck', 'battery.refill'];
+export const POLICY_IDS: readonly string[] = ['respawn.auto', 'respawn.delayS', 'respawn.target', 'respawn.rewindS', 'respawn.platform', 'respawn.keepArmed', 'respawn.unstuck', 'battery.refill', 'scenes.autoSwitch'];
 
-/** The respawn rules from the settings. scenes.autoSwitch (next scene after a crash) arrives with wave 3 (E.5). */
+/** The respawn rules from the settings; scenes.autoSwitch on: after a crash the next scene loads instead (E.5, app/builtin/rotation.ts). */
 export function policyFrom(prefs: PrefsStore): RespawnPolicy {
     const n = (id: string): number => Number(prefs.get(id));
     return {
@@ -25,7 +25,7 @@ export function policyFrom(prefs: PrefsStore): RespawnPolicy {
         delayTicks: Math.round(n('respawn.delayS') * 1000),
         rewindTicks: Math.round(n('respawn.rewindS') * 1000),
         target: prefs.get<string>('respawn.target') === 'start' ? 'start' : 'rewind',
-        onCrash: 'respawn',
+        onCrash: prefs.get<boolean>('scenes.autoSwitch') === true ? 'next-scene' : 'respawn',
         platform: prefs.get<boolean>('respawn.platform') === true,
         keepArmed: prefs.get<boolean>('respawn.keepArmed') === true,
         unstuck: prefs.get<boolean>('respawn.unstuck') === true,

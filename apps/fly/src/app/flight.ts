@@ -15,7 +15,8 @@ import { LoadingScreen } from '../ui/loading';
 import type { ShowcaseScene } from '../ui/scenes';
 import { t, locale } from '../i18n';
 import { Bus } from './context';
-import type { AppEvents, FlightContext, PauseReason, SceneRef, WallsHost } from './context';
+import type { AppEvents, FlightContext, PauseReason, SceneRef, SceneSwitcher, WallsHost } from './context';
+import { SceneHost } from './scene-host';
 import { PauseStack } from './pause-stack';
 import { KeyRouter } from './keys';
 import { PauseMenu } from './menu';
@@ -49,6 +50,8 @@ class Flight implements FlightContext {
     readonly walls: WallsHost;
     readonly voxels: VoxelController;
     readonly hook = hook;
+    /** set by fly() right after the context is built (the host needs the context) */
+    scenes!: SceneSwitcher;
     /** every screen's pause; the session has one holder for all of them ('menu'), the reasons live here */
     private readonly stack = new PauseStack<PauseReason>((on, reasons) => {
         this.session.pause(on, 'menu');
@@ -76,6 +79,27 @@ class Flight implements FlightContext {
 
     pause(reason: PauseReason): void {
         this.stack.hold(reason);
+    }
+
+    /**
+     * A new scene (E.4, app/scene-host.ts): the old session is disposed already. The input, the
+     * crash view and the voxel grid follow the new session; it stays paused while any reason holds
+     * the flight; then every feature hears 'session'.
+     */
+    swapSession(next: FlightSession, scene: SceneRef): void {
+        const old = this.session;
+        old.onEvent = null;
+        old.onFrame = null;
+        this.session = next;
+        this.scene = scene;
+        this.controls.setSession(next);
+        this.crash.setSession(next);
+        this.voxels.setSession(next);
+        next.pause(this.stack.paused, 'menu');
+        next.onEvent = (e) => this.events.emit('sim', e);
+        next.onFrame = () => this.frame();
+        this.hook.session = next;
+        this.events.emit('session', next);
     }
 
     resume(reason: PauseReason): void {
@@ -165,10 +189,14 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, sceneId: s
     // shows through the Controls screen (a phone has no room to move either), so it goes by itself
     const hidNote = ui.querySelector('.banner[data-kind="no-hid"]');
     if (hidNote) setTimeout(() => hidNote.remove(), HID_NOTE_FLIGHT_MS);
-    recordOpen(sceneId, !!session.collision, meta?.title);
+    recordOpen(sceneId, !!session.collision, meta?.title, session.scene.version);
     beacon('scene_loaded', { has_collision: !!session.collision, load_ms_bucket: Math.round((session.timings.visibleMs ?? 0) / 1000) });
 
     const ctx = new Flight(ui, canvas, session, { id: sceneId, meta }, prefs);
+    // E.4: the next scenes load in this page, on this renderer, with the same input
+    const host = new SceneHost({ ctx, canvas, showcase, base: { drawScan, latencyMarker: q.get('lat') === '1', lagFrames: Number(q.get('lagFrames') ?? 0), renderScale: q.get('scale') ? Number(q.get('scale')) : 1 } });
+    ctx.scenes = host;
+    hook.scenes = host;
     hook.controls = ctx.controls;
     hook.crash = ctx.crash;
     hook.governor = ctx.quality.governor;

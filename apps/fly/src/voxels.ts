@@ -113,6 +113,12 @@ export class VoxelController {
     private listeners = new Set<() => void>();
     maxInFlight = 4;
 
+    /** A new scene (E.4): the grid is rebuilt for its walls at the next frame; the mode and look stay. */
+    setSession(session: FlightSession): void {
+        this.session = session;
+        this.apply();
+    }
+
     constructor(session: FlightSession) {
         this.session = session;
         this.col = session.collision;

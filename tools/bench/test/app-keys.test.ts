@@ -85,8 +85,10 @@ describe('one handler per key press, no key bound twice', () => {
     });
 
     it('only shipped, routed bindings take handlers (a planned or flying one would never run)', () => {
-        const r = new KeyRouter();
+        // N as it was until W3-1 shipped it: a planned binding
+        const r = new KeyRouter({ map: KEYMAP.map((b) => (b.action === 'scene.next' ? { ...b, status: 'planned' as const } : b)) });
         expect(() => r.on('scene.next', () => undefined)).toThrow(/planned/);
+        expect(() => new KeyRouter().on('scene.next', () => undefined)).not.toThrow();
         expect(() => r.on('arm.toggle', () => undefined)).toThrow(/keyboard flying/);
         expect(() => r.on('mode.cycle', () => undefined)).not.toThrow();
         expect(() => r.on('no.such', () => undefined)).toThrow(/no key binding/);

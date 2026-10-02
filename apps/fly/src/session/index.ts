@@ -44,6 +44,22 @@ export interface SessionOptions {
     drawScan?: boolean;
     /** loading state every 100 ms until the first view is on screen */
     onProgress?: (p: LoadProgress) => void;
+    /**
+     * In-page scene switching (E.4): the page's renderer, kept from the first scene. The session
+     * draws with it and never starts or destroys it; dispose() only unloads this scene's splats.
+     */
+    renderer?: SplatRenderer;
+    /** start paused (the scene host holds the flight until the new scene is on screen) */
+    paused?: boolean;
+    /** the respawn rules and crash.enabled the first flight model is built with (a scene switch carries the page's) */
+    policy?: RespawnPolicy;
+    crashOn?: boolean;
+    /**
+     * C.4 'scene': the first life starts as a scene switch, on the platform, with these channels
+     * applied (they are in the life's header, so it replays): the arm switch still on keeps it armed
+     * when the rules keep it (respawn.keepArmed).
+     */
+    sceneStart?: { ch: ArrayLike<number> };
 }
 
 /** Who keeps the flight paused (FlightSession.pause). */
@@ -130,17 +146,44 @@ export class FlightSession {
     private loader: SessionLoader | null = null;
     /** the scan is drawn (false: ?render=off, see SessionOptions.drawScan) */
     drawScan = true;
+    /** the renderer is the page's (E.4): never destroyed here */
+    private sharedRenderer = false;
+    /** the first life's start as a scene switch (SessionOptions.sceneStart), used once */
+    private sceneStart: { ch: number[] } | null = null;
+    private offEngine: (() => void) | null = null;
+    /** dispose() ran: the scene is unloaded and nothing of this session runs any more */
+    disposed = false;
+    private sceneIntentCb: ((tick: number) => void) | null = null;
+
+    /**
+     * scenes.autoSwitch (E.5): with the rules' onCrash 'next-scene', the director calls this at
+     * crash + delay instead of a respawn (inside the runner's step: the scene host defers the load).
+     */
+    get onSceneIntent(): ((tick: number) => void) | null {
+        return this.sceneIntentCb;
+    }
+
+    set onSceneIntent(cb: ((tick: number) => void) | null) {
+        this.sceneIntentCb = cb;
+        if (this.director) this.director.onSceneIntent = cb;
+    }
 
     static async start(canvas: HTMLCanvasElement, o: SessionOptions): Promise<FlightSession> {
         const s = new FlightSession();
         s.drawScan = o.drawScan ?? true;
+        s.sharedRenderer = !!o.renderer;
+        if (o.policy) s.policy = { ...o.policy };
+        if (o.crashOn !== undefined) s.crashOn = o.crashOn;
+        if (o.sceneStart) s.sceneStart = { ch: Array.from(o.sceneStart.ch) };
         s.loader = new SessionLoader(s, o.onProgress);
         try {
             await s.init(canvas, o);
         } catch (e) {
             s.loader.stop();
             // the render loop starts before the walls land: stop it, the page shows the error instead
-            try { s.renderer?.destroy(); } catch { /* half-built */ }
+            // (the page's own renderer stays: only this scan goes)
+            if (s.sharedRenderer) s.dispose();
+            else try { s.renderer?.destroy(); } catch { /* half-built */ }
             throw e;
         }
         return s;
@@ -155,7 +198,8 @@ export class FlightSession {
         this.overrides = jsonSafe(o.overrides ?? {});
         this.wallsOn = o.wallsOn ?? true;
         this.params = compileParams(PRESETS[this.presetId], this.lifeOverrides());
-        this.renderer = await SplatRenderer.create(canvas, { renderScale: o.renderScale ?? 1, hFovDeg: this.params.cameraFovDeg, latencyMarker: !!o.latencyMarker });
+        this.renderer = o.renderer ?? await SplatRenderer.create(canvas, { renderScale: o.renderScale ?? 1, hFovDeg: this.params.cameraFovDeg, latencyMarker: !!o.latencyMarker });
+        if (o.renderer) this.renderer.setFov(this.params.cameraFovDeg);
         this.renderer.setToneMapping(this.scene.tonemapping);
         this.renderer.setBackground(this.scene.background);
         const splatLoad = this.drawScan ? this.renderer.loadSplat(this.scene.contentUrl) : Promise.resolve(null);
@@ -168,12 +212,18 @@ export class FlightSession {
         if (cam) this.renderer.setCameraLookAt(cam.position[0], cam.position[1], cam.position[2], cam.target[0], cam.target[1], cam.target[2]);
         // logic-only: nothing streams, so nothing to wait for (the walls are awaited below)
         const coarse = loader.watchCoarse();
-        this.renderer.app.on('update', () => this.frame());
-        this.renderer.app.on('frameend', () => {
+        const onUpdate = (): void => this.frame();
+        const onFrameEnd = (): void => {
             if (this.timings.firstFrameMs === null) this.timings.firstFrameMs = performance.now() - this.createdAt;
-        });
-        this.renderer.start();
+        };
+        const app = this.renderer.app;
+        app.on('update', onUpdate);
+        app.on('frameend', onFrameEnd);
+        this.offEngine = () => { app.off('update', onUpdate); app.off('frameend', onFrameEnd); };
+        // the page's renderer already runs (E.4); a session that made its own starts it
+        if (!this.sharedRenderer) this.renderer.start();
         const w = await walls;
+        if (this.disposed) throw new Error('the scene switch was cancelled');
         if (w) {
             this.collision = w.collision;
             this.world = w.world;
@@ -182,6 +232,7 @@ export class FlightSession {
         }
         this.spawn = this.findSpawn();
         this.buildSim();
+        if (o.paused) this.pause(true, 'menu');
         this.lagFrames = o.lagFrames ?? 0;
         // on screen = coarse level resident and walls in; only then the detail streams (it would slow the walls)
         this.visible = coarse.then(() => {
@@ -267,10 +318,16 @@ export class FlightSession {
      */
     private buildSim(): void {
         const sim = new Sim(this.params, this.flightWorld);
+        // C.4 'scene': the first life of a scene switch; the channels go in before the start, so the
+        // header holds them and a replay places the craft the same way (armed when kept armed)
+        const scene = this.sceneStart;
+        this.sceneStart = null;
+        if (scene) sim.setChannels(scene.ch);
         // hoverThr: the Sim constructor's own (hoverThrOf), the same in every replay (review C6)
-        this.runner = new Runner(sim, this.header(this.spawn, this.respawnOpts(false), 'start'), { traceHash: true });
+        this.runner = new Runner(sim, scene ? this.header(this.spawn, this.respawnOpts(), 'scene') : this.header(this.spawn, this.respawnOpts(false), 'start'), { traceHash: true });
         this.history = new StateHistory();
         this.director = new RespawnDirector(this.policy, () => this.spawn, this.history, () => this.runner.sim.contactWorld, this.params.boundRadius, hoverStickOf(this.params));
+        this.director.onSceneIntent = this.sceneIntentCb;
         this.runner.director = this.director;
         // FlightStats (design D.1) counted inside the step loop, lives included; a new flight model is a new count
         this.stats = new FlightStats([this.spawn[0], this.spawn[1], this.spawn[2]], (this.params.capacityAs * 1000) / 3600);
@@ -427,10 +484,13 @@ export class FlightSession {
     }
 
     /** The automatic respawn waiting to happen: when (sim ticks), and where it goes (the director's own preview: backoff included). */
-    pendingRespawn(): { inTicks: number; delayTicks: number; target: 'rewind' | 'start'; backS: number } | null {
+    pendingRespawn(): { inTicks: number; delayTicks: number; target: 'rewind' | 'start' | 'scene'; backS: number } | null {
         const p = this.director?.pending();
+        if (!p) return null;
+        // scenes.autoSwitch: the next scene loads instead (E.5)
+        if (this.policy.onCrash === 'next-scene' && this.sceneIntentCb) return { inTicks: Math.max(0, p.atTick - this.sim.tick), delayTicks: this.policy.delayTicks, target: 'scene', backS: 0 };
         const v = this.director?.preview();
-        if (!p || !v) return null;
+        if (!v) return null;
         return { inTicks: Math.max(0, p.atTick - this.sim.tick), delayTicks: this.policy.delayTicks, target: v.target, backS: v.backTicks === null ? 0 : Math.round(v.backTicks / 1000) };
     }
 
@@ -443,6 +503,33 @@ export class FlightSession {
         if (!this.collision || !this.wallsOn) return true;
         const push = { x: 0, y: 0, z: 0 };
         return !this.collision.querySphere(p[0], p[1], p[2], this.params.boundRadius + 0.01, push);
+    }
+
+    /**
+     * Leave this scene (E.4, in-page switching): the update handler stops, the scan's splats are
+     * unloaded from the page's renderer, the walls, the flight model and the replay are dropped, the
+     * loading reports stop. The renderer itself stays (the next scene draws with it). Idempotent.
+     */
+    dispose(): void {
+        if (this.disposed) return;
+        this.disposed = true;
+        this.loader?.stop();
+        this.offEngine?.();
+        this.offEngine = null;
+        this.onFrame = null;
+        this.onEvent = null;
+        this.onLife = null;
+        this.sceneIntentCb = null;
+        if (this.director) this.director.onSceneIntent = null;
+        this.replay = null;
+        this.pendingWalls = null;
+        this.cameraOverride = false;
+        try { this.renderer?.clearDebris(); this.renderer?.unloadSplat(); } catch { /* a renderer that never loaded */ }
+        this.collision = null;
+        this.world = null;
+        this.runner = undefined as unknown as Runner;
+        this.lagQueue = [];
+        this.frameTimes = [];
     }
 
     // ------------------------------------------------------------------ input, pause, frame

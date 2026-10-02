@@ -1,0 +1,493 @@
+{
+  "name": "v03-scenes",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "154.0.8037.59",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-02T01:34:21.007Z",
+    "gitHead": "05fdc25",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5331",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "154.0.8037.59",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "render": {
+    "S1": "off",
+    "S2": "on",
+    "S3": "off",
+    "S4": "off",
+    "S5": "off",
+    "S6": "off"
+  },
+  "S1": {
+    "pass": true,
+    "what": "N loads the next scene in the page: no reload, the simulated radio stays connected and armed, the throttle follows at once; a page load shows the Controls screen again",
+    "radio": "SimRadio EdgeTX Classic (simulated raw HID reports, NOT a real radio)",
+    "before": {
+      "scene": "39e63ce9",
+      "url": "39e63ce9",
+      "mark": 1,
+      "sameFake": true,
+      "controlsScreen": false,
+      "loading": false,
+      "source": "hid",
+      "paused": false,
+      "armed": true,
+      "gateArmed": true,
+      "life": "start",
+      "keepArmed": false,
+      "platform": true,
+      "switches": 0,
+      "first": {
+        "reason": "start",
+        "keepArmed": false,
+        "platform": true
+      }
+    },
+    "switch": {
+      "state": "done",
+      "from": "39e63ce9",
+      "to": "887f27aa",
+      "reason": "next",
+      "ms": 1349
+    },
+    "after": {
+      "scene": "887f27aa",
+      "url": "887f27aa",
+      "mark": 1,
+      "sameFake": true,
+      "controlsScreen": false,
+      "loading": false,
+      "source": "hid",
+      "paused": false,
+      "armed": true,
+      "gateArmed": true,
+      "life": "scene",
+      "keepArmed": true,
+      "platform": true,
+      "switches": 1,
+      "first": {
+        "reason": "scene",
+        "keepArmed": true,
+        "platform": true
+      }
+    },
+    "throttle": {
+      "samples": [
+        {
+          "stick": 0.5,
+          "ch2": 0.5172753930091858
+        },
+        {
+          "stick": -0.6,
+          "ch2": -0.5853899121284485
+        },
+        {
+          "stick": 0.2,
+          "ch2": 0.21520237624645233
+        }
+      ],
+      "ok": true
+    },
+    "control": {
+      "mark": null,
+      "controlsScreen": true,
+      "source": null,
+      "fired": true
+    },
+    "errors": []
+  },
+  "S2": {
+    "pass": true,
+    "what": "10 switches A<->B in one page: JS heap after GC and app.stats VRAM within +15 % of the first load of A; with unloadSplat disabled VRAM grows past it",
+    "first": {
+      "heapMb": 37.3,
+      "vramMb": 417.1,
+      "texMb": 196.2,
+      "sbMb": 220.3,
+      "receivedMb": 5.8,
+      "scene": "39e63ce9"
+    },
+    "steps": [
+      {
+        "to": "7a475d38",
+        "ms": 1603,
+        "state": "done",
+        "heapMb": 38.6,
+        "vramMb": 396.9,
+        "texMb": 282.7,
+        "sbMb": 113.6,
+        "receivedMb": 8.1,
+        "scene": "7a475d38"
+      },
+      {
+        "to": "39e63ce9",
+        "ms": 1726,
+        "state": "done",
+        "heapMb": 38.5,
+        "vramMb": 386.6,
+        "texMb": 209.8,
+        "sbMb": 176.2,
+        "receivedMb": 5.8,
+        "scene": "39e63ce9"
+      },
+      {
+        "to": "7a475d38",
+        "ms": 1688,
+        "state": "done",
+        "heapMb": 39.2,
+        "vramMb": 299.8,
+        "texMb": 232.4,
+        "sbMb": 67,
+        "receivedMb": 8.1,
+        "scene": "7a475d38"
+      },
+      {
+        "to": "39e63ce9",
+        "ms": 1551,
+        "state": "done",
+        "heapMb": 38.9,
+        "vramMb": 230.8,
+        "texMb": 135.8,
+        "sbMb": 94.4,
+        "receivedMb": 5.8,
+        "scene": "39e63ce9"
+      },
+      {
+        "to": "7a475d38",
+        "ms": 1660,
+        "state": "done",
+        "heapMb": 39.8,
+        "vramMb": 286.5,
+        "texMb": 203.7,
+        "sbMb": 82.3,
+        "receivedMb": 8.1,
+        "scene": "7a475d38"
+      },
+      {
+        "to": "39e63ce9",
+        "ms": 1576,
+        "state": "done",
+        "heapMb": 39.5,
+        "vramMb": 182.8,
+        "texMb": 96.3,
+        "sbMb": 86,
+        "receivedMb": 5.8,
+        "scene": "39e63ce9"
+      },
+      {
+        "to": "7a475d38",
+        "ms": 1673,
+        "state": "done",
+        "heapMb": 40,
+        "vramMb": 292,
+        "texMb": 205,
+        "sbMb": 86.6,
+        "receivedMb": 8.1,
+        "scene": "7a475d38"
+      },
+      {
+        "to": "39e63ce9",
+        "ms": 1583,
+        "state": "done",
+        "heapMb": 40,
+        "vramMb": 182.8,
+        "texMb": 96.3,
+        "sbMb": 86,
+        "receivedMb": 5.8,
+        "scene": "39e63ce9"
+      },
+      {
+        "to": "7a475d38",
+        "ms": 1660,
+        "state": "done",
+        "heapMb": 40.6,
+        "vramMb": 287.6,
+        "texMb": 204.8,
+        "sbMb": 82.3,
+        "receivedMb": 8.1,
+        "scene": "7a475d38"
+      },
+      {
+        "to": "39e63ce9",
+        "ms": 1591,
+        "state": "done",
+        "heapMb": 40.3,
+        "vramMb": 182.8,
+        "texMb": 96.3,
+        "sbMb": 86,
+        "receivedMb": 5.8,
+        "scene": "39e63ce9"
+      }
+    ],
+    "heapRatio": 1.08,
+    "vramRatio": 0.438,
+    "control": {
+      "leak": [
+        {
+          "to": "7a475d38",
+          "heapMb": 40.9,
+          "vramMb": 276.8,
+          "texMb": 190.3,
+          "sbMb": 86,
+          "receivedMb": 5.8,
+          "scene": "7a475d38"
+        },
+        {
+          "to": "39e63ce9",
+          "heapMb": 41,
+          "vramMb": 256.7,
+          "texMb": 169.2,
+          "sbMb": 86.9,
+          "receivedMb": 5.8,
+          "scene": "39e63ce9"
+        }
+      ],
+      "vramRatioToLastA": 1.404,
+      "fired": true
+    },
+    "errors": []
+  },
+  "S3": {
+    "pass": true,
+    "what": "scenes.autoSwitch on: after the crash delay the next scene loads (toast: next scene in ...), the radio stays; off: the crash respawns in the same scene; the crash panel has N / Shift+N / F and Next scene loads",
+    "onCrash": "next-scene",
+    "toast": "Crash 2.5 m/s \u00b7 next scene in 1.6 s",
+    "switch": {
+      "state": "done",
+      "from": "39e63ce9",
+      "to": "7a475d38",
+      "reason": "auto",
+      "ms": 1522
+    },
+    "after": {
+      "scene": "7a475d38",
+      "url": "7a475d38",
+      "mark": 1,
+      "sameFake": true,
+      "controlsScreen": false,
+      "loading": false,
+      "source": "hid",
+      "paused": false,
+      "armed": true,
+      "gateArmed": true,
+      "life": "settings",
+      "keepArmed": true,
+      "platform": true,
+      "switches": 3,
+      "first": {
+        "reason": "scene",
+        "keepArmed": true,
+        "platform": true
+      }
+    },
+    "throttle": {
+      "samples": [
+        {
+          "stick": 0.5,
+          "ch2": 0.5310957431793213
+        },
+        {
+          "stick": -0.6,
+          "ch2": -0.5863770842552185
+        },
+        {
+          "stick": 0.2,
+          "ch2": 0.22507403790950775
+        }
+      ],
+      "ok": true
+    },
+    "panel": {
+      "crashed": true,
+      "row": [
+        {
+          "action": "scene-next",
+          "keys": "N"
+        },
+        {
+          "action": "scene-random",
+          "keys": "Shift+N"
+        },
+        {
+          "action": "scene-favourite",
+          "keys": "F"
+        }
+      ],
+      "switch": {
+        "state": "done",
+        "from": "39e63ce9",
+        "to": "887f27aa",
+        "reason": "next",
+        "ms": 1460
+      },
+      "after": {
+        "scene": "887f27aa",
+        "sameFake": true,
+        "panel": false,
+        "controlsScreen": false
+      },
+      "ok": true
+    },
+    "control": {
+      "crashedBefore": true,
+      "onCrash": "respawn",
+      "crashed": false,
+      "respawned": true,
+      "scene": "39e63ce9",
+      "url": "39e63ce9",
+      "mark": 1,
+      "sameFake": true,
+      "controlsScreen": false,
+      "loading": false,
+      "source": "hid",
+      "paused": false,
+      "armed": true,
+      "gateArmed": true,
+      "life": "crash",
+      "keepArmed": true,
+      "platform": true,
+      "switches": 0,
+      "first": {
+        "reason": "start",
+        "keepArmed": false,
+        "platform": false
+      },
+      "fired": true
+    },
+    "errors": []
+  },
+  "S4": {
+    "pass": true,
+    "what": "F loads the next favourite in the favourites order (starred in the picker), Shift+N a random curated scene (never the current one); with no favourites F loads nothing",
+    "favourites": [
+      "7a475d38",
+      "887f27aa"
+    ],
+    "fav": [
+      {
+        "switch": {
+          "state": "done",
+          "from": "39e63ce9",
+          "to": "7a475d38",
+          "reason": "favourite",
+          "ms": 1508
+        },
+        "scene": "7a475d38"
+      },
+      {
+        "switch": {
+          "state": "done",
+          "from": "7a475d38",
+          "to": "887f27aa",
+          "reason": "favourite",
+          "ms": 1287
+        },
+        "scene": "887f27aa"
+      }
+    ],
+    "random": {
+      "switch": {
+        "state": "done",
+        "from": "887f27aa",
+        "to": "39e63ce9",
+        "reason": "random",
+        "ms": 1465
+      },
+      "scene": "39e63ce9"
+    },
+    "control": {
+      "switches": 0,
+      "scene": "39e63ce9",
+      "sceneSwitch": null,
+      "favourites": [],
+      "nWorks": true,
+      "fired": true
+    },
+    "errors": []
+  },
+  "S5": {
+    "pass": true,
+    "what": "the picker shows \"Continue: <last scene>\" first; a fresh browser has no such card",
+    "lastFlown": "39e63ce9",
+    "card": "39e63ce9",
+    "text": "Continue: Modlinek Villa \u2014 red room and bathroom",
+    "control": {
+      "freshCards": 0,
+      "fired": true
+    }
+  },
+  "S6": {
+    "pass": true,
+    "what": "pause menu -> Change scan: the picker over the flight; a card loads in the page with the simulated radio connected; Esc goes back to flying; a non-SuperSplat link is refused",
+    "esc": {
+      "open": false,
+      "paused": false,
+      "scene": "39e63ce9",
+      "switches": 0
+    },
+    "switch": {
+      "state": "done",
+      "from": "39e63ce9",
+      "to": "7a475d38",
+      "reason": "pick",
+      "ms": 1507
+    },
+    "after": {
+      "scene": "7a475d38",
+      "url": "7a475d38",
+      "mark": 1,
+      "sameFake": true,
+      "controlsScreen": false,
+      "loading": false,
+      "source": "hid",
+      "paused": false,
+      "armed": false,
+      "gateArmed": false,
+      "life": "scene",
+      "keepArmed": true,
+      "platform": true,
+      "switches": 1,
+      "first": {
+        "reason": "scene",
+        "keepArmed": true,
+        "platform": true
+      }
+    },
+    "throttle": {
+      "samples": [
+        {
+          "stick": 0.5,
+          "ch2": 0.5222112536430359
+        },
+        {
+          "stick": -0.6,
+          "ch2": -0.5804541110992432
+        },
+        {
+          "stick": 0.2,
+          "ch2": 0.21915103495121002
+        }
+      ],
+      "ok": true
+    },
+    "control": {
+      "error": "This is not a SuperSplat link or scene id. Paste a link like superspl.at/scene/39e63ce9.",
+      "switches": 0,
+      "scene": "39e63ce9",
+      "fired": true
+    },
+    "errors": []
+  },
+  "pass": true
+}

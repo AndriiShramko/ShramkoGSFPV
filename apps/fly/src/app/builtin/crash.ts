@@ -53,7 +53,12 @@ export const crash: Feature = {
                     start: { run: () => session.respawnStart(), keys: ctx.keys.caps('respawn.start') },
                     replay: () => replay(ctx, e),
                     save: () => saveLog(session, `crash ${sp}`),
-                    settings: settings ? { run: () => settings.run(), keys: ctx.keys.caps('settings.open') } : null
+                    settings: settings ? { run: () => settings.run(), keys: ctx.keys.caps('settings.open') } : null,
+                    scenes: {
+                        next: { run: () => void ctx.scenes.go('next'), keys: ctx.keys.caps('scene.next') },
+                        random: { run: () => void ctx.scenes.go('random'), keys: ctx.keys.caps('scene.random') },
+                        favourite: { run: () => void ctx.scenes.go('favourite'), keys: ctx.keys.caps('scene.favourite') }
+                    }
                 });
         };
 
@@ -77,7 +82,7 @@ export const crash: Feature = {
             void view.onCrash(e).then(() => { ctx.hook.lastCrash = { ...view.info!, event: e }; });
             const p = session.pendingRespawn();
             if (p) {
-                toast = new CrashToast(ctx.ui, `${e.speed.toFixed(1)} m/s`, { backS: p.backS, target: p.target, keys: { keep: ctx.keys.caps('crash.keep'), start: ctx.keys.caps('respawn.start') } });
+                toast = new CrashToast(ctx.ui, `${e.speed.toFixed(1)} m/s`, { backS: p.backS, target: p.target, keys: { keep: ctx.keys.caps('crash.keep'), start: ctx.keys.caps('respawn.start'), next: ctx.keys.caps('scene.next'), favourite: ctx.keys.caps('scene.favourite') } });
                 toast.update(p.inTicks / 1000, p.delayTicks / 1000);
             } else panelTimer = window.setTimeout(showPanel, PANEL_AFTER_MS);
         });

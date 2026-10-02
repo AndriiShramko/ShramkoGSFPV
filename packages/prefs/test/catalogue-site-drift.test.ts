@@ -39,11 +39,12 @@ describe('a branch that ships without regenerating keeps the catalogue checks gr
         const { gen, committed } = await inBranch((real) => {
             const base = committedSettings();
             const planned = real.SCHEMA.defs.filter((d) => d.status === 'planned');
+            // a branch may have shipped settings already (W3-1's scenes.* before the lead regenerates)
+            const now = real.SCHEMA.defs.filter((d) => d.status === 'shipped').length;
             let defs = real.SCHEMA.defs;
-            for (let k = 1; k <= planned.length; k++) {
+            for (let k = 1; k <= planned.length && ruCat(now + k - 1) === ruCat(base); k++) {
                 const ship = new Set(planned.slice(0, k).map((d) => d.id));
                 defs = real.SCHEMA.defs.map((d) => (ship.has(d.id) ? { ...d, status: 'shipped' as const } : d));
-                if (ruCat(base + k) !== ruCat(base)) break;
             }
             return { SCHEMA: real.defineSettings(defs) };
         });
@@ -55,7 +56,8 @@ describe('a branch that ships without regenerating keeps the catalogue checks gr
         const text = committed.siteText('ru');
         const fly = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'ru.json'), 'utf8')) as Record<string, string>;
         expect(gen.withSiteDerived(text, gen.siteDerived('ru', text, live, fly))).not.toBe(text);
-        expect(committed.tileMismatches('ru', text, live)).toEqual(['settings']);
+        // the settings tile; a key shipped in the same branch (W3-1's scene keys before the lead regenerates) is another tile
+        expect(committed.tileMismatches('ru', text, { ...live, keys: counts.keys, allKeys: counts.allKeys })).toEqual(['settings']);
         // the checks of catalogue-site.test.ts: green
         for (const l of committed.SITE_LANGS) {
             expect(committed.tileMismatches(l, committed.siteText(l), counts), l).toEqual([]);

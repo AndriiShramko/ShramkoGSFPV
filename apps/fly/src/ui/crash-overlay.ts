@@ -5,6 +5,9 @@
 // - CrashPanel: automatic respawn off, or Enter. The life's numbers and the actions: Rewind (Y),
 //   Back to start (R), Replay, Save log, Settings (O). data-action values: respawn (B12 clicks it),
 //   rewind, replay, save, settings.
+// - Scene keys (E.5, item 10): the toast hints N (next scene) and F (next favourite); the panel has
+//   Next scene (N), Random scene (Shift+N) and Next favourite (F): data-action scene-next,
+//   scene-random, scene-favourite. With scenes.autoSwitch the toast counts down to the next scene.
 // - RewindLabel: after a rewind a small "-5 s" at the top centre for 1.5 s. It fades, never flashes
 //   (WCAG 2.3.1).
 // app/builtin/crash.ts shows them and wires the actions.
@@ -21,7 +24,7 @@ function caps(keys: readonly KeyHint[]): HTMLElement | null {
 const aria = (keys: readonly KeyHint[]): string | undefined => (keys.length ? keys.map((k) => k.aria).join(' ') : undefined);
 
 /** The toast's key hints: a key-cap and a short word, never a button to click. */
-export interface ToastKeys { keep: readonly KeyHint[]; start: readonly KeyHint[] }
+export interface ToastKeys { keep: readonly KeyHint[]; start: readonly KeyHint[]; next?: readonly KeyHint[]; favourite?: readonly KeyHint[] }
 
 export class CrashToast {
     readonly root: HTMLDivElement;
@@ -30,11 +33,13 @@ export class CrashToast {
     private readonly speedText: string;
     private readonly back: number;
     private readonly toStart: boolean;
+    private readonly toScene: boolean;
 
-    constructor(parent: HTMLElement, speedText: string, o: { backS: number; target: 'rewind' | 'start'; keys: ToastKeys }) {
+    constructor(parent: HTMLElement, speedText: string, o: { backS: number; target: 'rewind' | 'start' | 'scene'; keys: ToastKeys }) {
         this.speedText = speedText;
         this.back = o.backS;
         this.toStart = o.target === 'start';
+        this.toScene = o.target === 'scene';
         this.text = h('span', { class: 'ct-text', 'aria-hidden': 'true' });
         this.bar = h('i', {});
         const hint = (keys: readonly KeyHint[], label: string): HTMLElement | null => (keys.length ? h('span', { class: 'ct-key' }, caps(keys), h('span', {}, label)) : null);
@@ -43,7 +48,8 @@ export class CrashToast {
             h('span', { class: 'visually-hidden' }, t('respawn.toast.sr', { speed: speedText })),
             this.text,
             h('span', { class: 'ct-bar', 'aria-hidden': 'true' }, this.bar),
-            h('span', { class: 'ct-keys' }, hint(o.keys.keep, t('respawn.keep')), hint(o.keys.start, t('respawn.start')))
+            h('span', { class: 'ct-keys' }, hint(o.keys.keep, t('respawn.keep')), hint(o.keys.start, t('respawn.start')),
+                this.toScene ? null : hint(o.keys.next ?? [], t('rotation.key.next')), hint(o.keys.favourite ?? [], t('rotation.key.favourite')))
         );
         parent.append(this.root);
     }
@@ -51,7 +57,9 @@ export class CrashToast {
     /** remaining: seconds to the respawn; total: the whole delay. */
     update(remainingS: number, totalS: number): void {
         const s = Math.max(0, remainingS);
-        const txt = this.toStart
+        const txt = this.toScene
+            ? t('rotation.toast', { speed: this.speedText, in: s.toFixed(1) })
+            : this.toStart
             ? t('respawn.toast.start', { speed: this.speedText, in: s.toFixed(1) })
             : t('respawn.toast', { speed: this.speedText, back: String(this.back), in: s.toFixed(1) });
         if (this.text.textContent !== txt) this.text.textContent = txt;
@@ -71,6 +79,8 @@ export interface PanelActions {
     replay: () => void;
     save: () => void;
     settings: { run: () => void; keys: readonly KeyHint[] } | null;
+    /** E.5: Next scene (N), Random scene (Shift+N), Next favourite (F); absent: no scene row */
+    scenes?: Record<'next' | 'random' | 'favourite', { run: () => void; keys: readonly KeyHint[] }>;
 }
 
 /** The life's numbers on the panel (session.stats.life()). */
@@ -93,7 +103,11 @@ export class CrashPanel {
                 btn('replay', t('crash.replay'), a.replay),
                 btn('save', t('crash.save'), a.save),
                 a.settings ? btn('settings', t('pause.settings'), a.settings.run, a.settings.keys) : null
-            )
+            ),
+            a.scenes ? h('div', { class: 'actions cp-scenes', 'data-testid': 'crash-scenes' },
+                btn('scene-next', t('keys.scene.next'), a.scenes.next.run, a.scenes.next.keys),
+                btn('scene-random', t('keys.scene.random'), a.scenes.random.run, a.scenes.random.keys),
+                btn('scene-favourite', t('keys.scene.favourite'), a.scenes.favourite.run, a.scenes.favourite.keys)) : null
         );
         parent.append(this.root);
     }

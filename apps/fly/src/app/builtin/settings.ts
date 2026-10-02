@@ -159,6 +159,8 @@ export const settings: Feature = {
         const store = ctx.prefs;
         // the start: what the store says, not what the link alone said (item 20; the craft is parked at the spawn)
         applyToFlight(ctx);
+        // a scene switched in the page (E.4): the same for the new session (the host carried most of it already)
+        const offSession = ctx.events.on('session', () => applyToFlight(ctx));
         ctx.hud.visible = store.get<boolean>('display.hud');
         ctx.crash.reducedMotion = reducedMotion(store.get<string>('display.reducedMotion'));
         // quality: only a pilot's (or a link's) value; untouched, the app's own ceiling stays (a bench's ?scale=)
@@ -189,6 +191,7 @@ export const settings: Feature = {
         });
         if (q.get('open') === 'settings') openSettings(ctx, q.get('focus'));
         return () => {
+            offSession();
             offVoxels();
             offStore();
             offO();
