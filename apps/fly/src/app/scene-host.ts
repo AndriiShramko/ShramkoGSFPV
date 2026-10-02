@@ -22,6 +22,7 @@ import { ScenePicker } from '../ui/scenes';
 import type { ShowcaseScene } from '../ui/scenes';
 import { h } from '../ui/dom';
 import { initialWallsOn, loadWallsChoice } from '../flightwalls';
+import { storedTransform } from './builtin/scale';
 import { t } from '../i18n';
 import { beacon, q } from './env';
 import { hook } from './test-hook';
@@ -155,6 +156,7 @@ export class SceneHost implements SceneSwitcher {
             crashOn: old.crashOn,
             sceneStart: ch ? { ch } : undefined,
             wallsOn: initialWallsOn(meta?.walls, loadWallsChoice(id), q.get('walls')),
+            transform: storedTransform(ctx.prefs, id),
             onProgress: (p) => loading.update(p)
         };
         old.dispose();

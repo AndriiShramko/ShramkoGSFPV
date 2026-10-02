@@ -66,8 +66,8 @@ export const KEYMAP: readonly KeyBinding[] = [
     { action: 'walls.toggle', keys: [letter('C')], when: 'always', labelKey: 'keys.walls.toggle', status: 'shipped' },
     // v0.2 (app/builtin/hud.ts): every text on the flight view off / on
     { action: 'hud.toggle', keys: [letter('H')], when: 'always', labelKey: 'keys.hud.toggle', status: 'shipped' },
-    { action: 'scale.down', keys: [{ code: 'BracketLeft', cap: '[', aria: '[' }], when: 'always', labelKey: 'keys.scale.down', status: 'planned' },
-    { action: 'scale.up', keys: [{ code: 'BracketRight', cap: ']', aria: ']' }], when: 'always', labelKey: 'keys.scale.up', status: 'planned' },
+    { action: 'scale.down', keys: [{ code: 'BracketLeft', cap: '[', aria: '[' }], when: 'always', labelKey: 'keys.scale.down', status: 'shipped' },
+    { action: 'scale.up', keys: [{ code: 'BracketRight', cap: ']', aria: ']' }], when: 'always', labelKey: 'keys.scale.up', status: 'shipped' },
     // W3-5 (app/builtin/cinema.ts): REC on the recording bar and in the pause menu (F.4)
     { action: 'record.toggle', keys: [{ code: 'F9', cap: 'F9', aria: 'F9' }], when: 'always', labelKey: 'keys.record.toggle', status: 'shipped' },
     // v0.2 (app/builtin/hud.ts)

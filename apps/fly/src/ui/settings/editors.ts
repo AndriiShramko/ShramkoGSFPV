@@ -1,10 +1,12 @@
 // Registered editors for the JSON settings (docs/architecture-v03.md A.9): the PID grid, the rates
 // (read-only, filled by "Import from Betaflight") and the throttle curve's mid and expo. A JSON value
 // of null means "the drone preset's own", so each editor shows the preset's numbers then, and the
-// first edit stores the whole value for that drone. Other JSON kinds (scene transform, recording
-// folder) belong to later waves and fall back to a read-only line.
+// first edit stores the whole value for that drone. The scene transform (E.7) shows its size on a
+// log slider; the flight applies a new size around the drone (app/builtin/scale.ts). Other JSON
+// kinds (recording folder) fall back to a read-only line.
 import { compileParams, setpointRate } from '@gsfpv/sim-core';
-import type { JsonDef, PidValue, RatesValue, ThrottleValue } from '@gsfpv/prefs';
+import { SCALE_MAX, SCALE_MIN } from '@gsfpv/prefs';
+import type { JsonDef, PidValue, RatesValue, SceneTransform, ThrottleValue } from '@gsfpv/prefs';
 import { PRESETS } from '../../presets';
 import { h } from '../dom';
 import { t } from '../../i18n';
@@ -129,6 +131,34 @@ function throttleEditor(io: EditorIo): Editor {
     return { el, focus: () => mid.focus({ preventScroll: true }), labelFor: mid.id, refresh };
 }
 
+/**
+ * The scene's size (E.7): x0.25 to x4 on a log slider. It stores the new size with the old offset;
+ * the flight takes a new size as "rescale around the drone" and stores the offset that gives.
+ */
+function transformEditor(io: EditorIo): Editor {
+    const value = (): SceneTransform => (io.get() as SceneTransform | null) ?? { s: 1, t: [0, 0, 0], v: 0 };
+    const out = h('output', { class: 'sc-value', for: `${io.uid}-s` });
+    const slider = h('input', { type: 'range', id: `${io.uid}-s`, class: 'sc-slider', min: Math.log2(SCALE_MIN), max: Math.log2(SCALE_MAX), step: 0.01 }) as HTMLInputElement;
+    const show = (s: number): void => {
+        out.textContent = `x${s.toFixed(2)}`;
+        slider.setAttribute('aria-valuetext', `x${s.toFixed(2)}`);
+    };
+    slider.addEventListener('input', () => show(2 ** Number(slider.value)));
+    slider.addEventListener('change', () => {
+        const v = value();
+        const s = Math.min(SCALE_MAX, Math.max(SCALE_MIN, 2 ** Number(slider.value)));
+        io.set({ s: Math.abs(s - 1) < 0.005 ? 1 : s, t: [...v.t], v: v.v });
+    });
+    const el = h('div', { class: 'scale-editor', role: 'group', 'aria-label': io.label }, slider, out);
+    const refresh = (): void => {
+        const s = value().s;
+        if (document.activeElement !== slider) slider.value = String(Math.log2(s));
+        show(s);
+    };
+    refresh();
+    return { el, focus: () => slider.focus({ preventScroll: true }), labelFor: slider.id, refresh };
+}
+
 /** A JSON kind without an editor yet: its value as text. */
 function plainEditor(io: EditorIo): Editor {
     const el = h('code', { class: 'json-view', tabindex: 0 });
@@ -137,7 +167,7 @@ function plainEditor(io: EditorIo): Editor {
     return { el, focus: () => el.focus({ preventScroll: true }), refresh };
 }
 
-const EDITORS: Partial<Record<JsonDef['kind'], (io: EditorIo) => Editor>> = { pid: pidEditor, rates: ratesEditor, throttle: throttleEditor };
+const EDITORS: Partial<Record<JsonDef['kind'], (io: EditorIo) => Editor>> = { pid: pidEditor, rates: ratesEditor, throttle: throttleEditor, transform: transformEditor };
 
 export function jsonEditor(def: JsonDef, io: EditorIo): Editor {
     return (EDITORS[def.kind] ?? plainEditor)(io);

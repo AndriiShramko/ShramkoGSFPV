@@ -90,6 +90,9 @@
 .rates-editor .btn { margin-top: 4px; min-height: 36px; padding: 6px 12px; }
 .rates-editor p { margin: 4px 0; }
 .thr-editor { display: inline-grid; grid-template-columns: auto auto; gap: 6px 10px; align-items: center; }
+.scale-editor { display: inline-flex; gap: 10px; align-items: center; }
+.scale-editor input[type=range] { width: 180px; accent-color: var(--accent); }
+.scale-editor output { min-width: 4.2em; font: 600 14px/1.2 ui-monospace, "Cascadia Mono", Consolas, monospace; }
 .json-view { font-size: 12px; overflow-wrap: anywhere; }
 
 /* Data */

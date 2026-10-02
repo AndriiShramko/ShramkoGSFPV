@@ -20,9 +20,9 @@ export interface PauseMenuEntry {
 /**
  * Show the menu; `pick` runs with the entry's index when a button is pressed (the menu is still on
  * the page then), `onClose` for the panel's x. `summary`: the stats and the keys beside the menu
- * (null: the menu alone). Returns the function that takes the menu off the page.
+ * (null: the menu alone); `rows`: whole-width rows above them. Returns the function that takes the menu off the page.
  */
-export function pauseMenu(parent: HTMLElement, entries: readonly PauseMenuEntry[], pick: (index: number) => void, onClose: () => void, summary: SummaryData | null = null): () => void {
+export function pauseMenu(parent: HTMLElement, entries: readonly PauseMenuEntry[], pick: (index: number) => void, onClose: () => void, summary: SummaryData | null = null, rows: readonly HTMLElement[] = []): () => void {
     const p = panel(t('pause.title'), onClose);
     p.root.classList.add('pause-menu', 'summary');
     if (summary) p.root.classList.add('has-stats');
@@ -38,6 +38,8 @@ export function pauseMenu(parent: HTMLElement, entries: readonly PauseMenuEntry[
     });
     menu.append(h('a', { class: 'btn block', href: `/${locale}/#contact`, target: '_blank', rel: 'noopener' }, h('span', { class: 'pm-label' }, t('pause.contact'))));
     // stats | menu | keys on a wide screen, stats | menu over keys below 1100 px, one column on a phone
+    // rows of other features above the columns (the scene size, E.7)
+    if (rows.length) p.body.append(h('div', { class: 'sum-rows' }, ...rows));
     p.body.append(h('div', { class: 'sum-grid' }, summary ? statsColumn(summary) : null, menu, summary ? keysBlock(summary) : null));
     // Up / Down walk the menu (arrows fly only outside a dialog: devices/keyboard.ts dialogOpen)
     p.root.addEventListener('keydown', (e) => {

@@ -1,1 +1,14 @@
-{}
+{
+  "scale.title": "Scene size",
+  "scale.smaller": "Scene smaller (÷1.1)",
+  "scale.larger": "Scene larger (×1.1)",
+  "scale.reset": "Reset",
+  "scale.resetAria": "Back to the scan's own size, around the drone",
+  "scale.toast": "Scene size x{x}",
+  "scale.toastLimit": "Scene size x{x} (the limit)",
+  "scale.voxel": "Walls: {cm} cm blocks",
+  "scale.voxelCoarse": "Walls: {cm} cm blocks — coarse: you may crash before you touch what you see",
+  "scale.pushed": "The smaller scene put the drone inside a wall: it moved to the nearest free spot",
+  "set.scene.transform": "Scene size",
+  "set.scene.transform.help": "Some scans are not in true metres, so the drone feels too big or too small. The scene scales around the drone; [ and ] change it in flight. Kept for each scan."
+}

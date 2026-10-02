@@ -295,6 +295,7 @@ export class SettingsScreen {
         if (def.type === 'bool') return t(v ? 'prefs.on' : 'prefs.off');
         if (def.type === 'enum') return texts.option(def, String(v));
         if (def.type === 'number') return `${formatNumber(v as number, def.step)}${unitSymbol(def.unit) ? ` ${unitSymbol(def.unit)}` : ''}`;
+        if (def.type === 'json' && def.kind === 'transform') return `x${((v as { s: number }).s).toFixed(2)}`;
         return t('prefs.fromPreset');
     }
 

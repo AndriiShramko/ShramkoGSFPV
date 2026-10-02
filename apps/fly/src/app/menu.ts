@@ -17,6 +17,7 @@ export class PauseMenu implements MenuRegistry {
     private keys: KeyRouter;
     private hold: { pause(r: PauseReason): void; resume(r: PauseReason): void };
     private summary: (() => SummaryData | null) | null = null;
+    private rows: (() => HTMLElement | null)[] = [];
 
     constructor(ui: HTMLElement, keys: KeyRouter, hold: { pause(r: PauseReason): void; resume(r: PauseReason): void }) {
         this.ui = ui;
@@ -38,6 +39,15 @@ export class PauseMenu implements MenuRegistry {
         this.summary = source;
     }
 
+    /** A row of the summary panel above its columns (the scene size, E.7), built each time the menu opens. */
+    addRow(make: () => HTMLElement | null): () => void {
+        this.rows.push(make);
+        return () => {
+            const i = this.rows.indexOf(make);
+            if (i >= 0) this.rows.splice(i, 1);
+        };
+    }
+
     /** The items in menu order (by `order`; equal orders keep the order they were added in). */
     items(): readonly MenuItem[] {
         return [...this.list].sort((a, b) => a.order - b.order);
@@ -53,7 +63,11 @@ export class PauseMenu implements MenuRegistry {
         this.hold.pause('menu');
         const items = this.items();
         const entries = items.map((it) => ({ id: it.id, labelKey: it.labelKey, keys: it.action ? this.keys.caps(it.action) : [], disabled: it.enabled?.() === false }));
-        this.closeUi = pauseMenu(this.ui, entries, (i) => this.pick(items[i]), () => this.close(), this.summary?.() ?? null);
+        const rows: HTMLElement[] = [];
+        for (const make of this.rows) {
+            try { const el = make(); if (el) rows.push(el); } catch (e) { console.error('summary panel row', e); }
+        }
+        this.closeUi = pauseMenu(this.ui, entries, (i) => this.pick(items[i]), () => this.close(), this.summary?.() ?? null, rows);
         // with the menu up, a key shown beside an item is that item (P / Esc continue, R restarts)
         for (const it of items) if (it.action && this.keys.routes(it.action)) this.unbind.push(this.keys.on(it.action, () => this.pick(it)));
     }
