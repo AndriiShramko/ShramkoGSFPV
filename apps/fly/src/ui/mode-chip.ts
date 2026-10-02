@@ -163,12 +163,22 @@ export class ModeChip {
             if (x < 0 || y < 0 || x + w > innerWidth - GAP || y + ch > innerHeight) return Infinity;
             if (hardR.some((b) => overlap(x, y, b, 4) > 0)) return Infinity;
             let c = 0;
-            for (const b of softR) c += overlap(x, y, b, 0);
+            // 1 px: offsetWidth rounds the chip's width down (78 for 78.35), which let it graze a box by half a pixel
+            for (const b of softR) c += overlap(x, y, b, 1);
             return c;
         };
         // beside the line; under its start; under it at the page's 16 px gutter (a phone, with a box in the middle of the top)
         const below = a.bottom + 4;
-        const spots: [number, number][] = [[a.right + GAP, a.top + a.height / 2 - ch / 2], [a.left, below], [16, below]];
+        // ...and, when boxes at the top cover all three (a 375 px phone: the walls box, the hint, the credit),
+        // the first free place at the gutter going down past them (never below the middle of the screen)
+        let underBoxes = below;
+        for (let moved = true; moved && underBoxes < innerHeight / 2;) {
+            moved = false;
+            for (const r of softR) {
+                if (overlap(16, underBoxes, r, 1) > 0) { underBoxes = r.bottom + 4; moved = true; }
+            }
+        }
+        const spots: [number, number][] = [[a.right + GAP, a.top + a.height / 2 - ch / 2], [a.left, below], [16, below], [16, underBoxes]];
         let [left, top] = spots[1];
         let best = Infinity;
         for (const [x, y] of spots) {

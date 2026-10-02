@@ -147,7 +147,8 @@ function mount(host: HTMLElement, ctx: PickerTabHost): () => void {
         const star = h('button', { type: 'button', class: `star${fav ? ' on' : ''}`, 'data-fav': it.id, 'aria-pressed': String(fav), 'aria-label': t(fav ? 'superspl.unfav' : 'superspl.fav', { title }) }, '★');
         star.addEventListener('click', (e) => {
             e.stopPropagation();
-            const on = toggleFavourite(it.id);
+            // title and walls go with the star, so the picker's Favourites tab shows it (walls only filter included)
+            const on = toggleFavourite(it.id, { title: it.title || it.id, hasCollision: it.walkable ? true : null, version: it.version });
             star.classList.toggle('on', on);
             star.setAttribute('aria-pressed', String(on));
             star.setAttribute('aria-label', t(on ? 'superspl.unfav' : 'superspl.fav', { title }));

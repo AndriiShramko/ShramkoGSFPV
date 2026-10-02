@@ -63,7 +63,7 @@ export const modes: Feature = {
         // clear of the right-hand OSD line, the top buttons and the boxes and notes at the top
         const place = (): void => chip.place(ctx.ui.querySelector<HTMLElement>('.hud .osd.tl'),
             [...ctx.ui.querySelectorAll('.hud .osd.tr, .top-actions')],
-            [...ctx.ui.querySelectorAll(':scope > .bake-box, .touch-hint, :scope > .voxel-legend, :scope > .banner')]);
+            [...ctx.ui.querySelectorAll(':scope > .bake-box, .touch-hint, :scope > .voxel-legend, :scope > .banner, .attribution')]);
         let last = 0;
         const offFrame = ctx.events.on('frame', ({ now }) => {
             if (now - last < 100) return;
