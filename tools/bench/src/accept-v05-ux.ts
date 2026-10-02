@@ -324,6 +324,7 @@ if (want('W5')) {
     await p.mouse.click(640, 300);
     await p.keyboard.press('KeyP');
     await p.waitForSelector('[data-testid=scene-size]');
+    await p.waitForTimeout(600); // the panel fades in over 0.4 s: the shot shows it settled
     const row = await p.evaluate("(() => { const r = document.querySelector('[data-testid=scene-size]'); const v = r.querySelector('[data-testid=scene-size-voxel]'); return { value: r.querySelector('[data-testid=scene-size-value]').textContent, voxel: v.textContent, warn: v.classList.contains('warn'), slider: r.querySelector('[data-testid=scene-size-slider]').max }; })()") as Any;
     const shotRow = await shot(p, 'w5-x100-summary');
     const layRow = await layout(p, ['[data-testid=scene-size] .sc-label', '[data-testid=scene-size] .sc-value', '[data-testid=scene-size] .sc-ctl', '[data-testid=scene-size] .sc-vox']);
@@ -345,6 +346,7 @@ if (want('W5')) {
     await m.page.waitForTimeout(800);
     await m.page.evaluate("document.querySelector('[data-action=pause]')?.click()");
     await m.page.waitForSelector('[data-testid=scene-size]');
+    await m.page.waitForTimeout(600); // the panel fades in over 0.4 s: the shot shows it settled
     const shot375 = await shot(m.page, 'w5-x100-summary');
     const lay375 = await layout(m.page, ['[data-testid=scene-size] .sc-label', '[data-testid=scene-size] .sc-value', '[data-testid=scene-size] .sc-ctl', '[data-testid=scene-size] .sc-vox']);
     await m.ctx.close();
@@ -379,6 +381,7 @@ if (want('W6')) {
     await r.pg.mouse.click(640, 300);
     await r.pg.keyboard.press('KeyP');
     await r.pg.waitForSelector('[data-action=stats-save]');
+    await r.pg.waitForTimeout(600); // the panel fades in over 0.4 s: the shot shows it settled
     const shot1280 = await shot(r.pg, 'w6-save-stats');
     const lay1280 = await layout(r.pg, ['.sum-actions .btn', '[data-testid=summary-stats]', '.sum-note']);
     const [dl] = await Promise.all([r.pg.waitForEvent('download'), r.pg.click('[data-action=stats-save]')]);
@@ -399,6 +402,7 @@ if (want('W6')) {
     await go(m.page, `scene=${A}&nowarn=1&input=touch&render=off`);
     await m.page.evaluate("document.querySelector('[data-action=pause]')?.click()");
     await m.page.waitForSelector('[data-action=stats-save]');
+    await m.page.waitForTimeout(600); // the panel fades in over 0.4 s: the shot shows it settled
     await m.page.locator('[data-action=stats-save]').scrollIntoViewIfNeeded();
     const shot375 = await shot(m.page, 'w6-save-stats');
     const lay375 = await layout(m.page, ['.sum-actions .btn', '.sum-note']);
