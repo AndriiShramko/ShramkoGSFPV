@@ -132,7 +132,7 @@
           "Panel podsumowania: statystyki lotu, każda pozycja menu i każdy klawisz",
           "Zapis logu lotu; eksport trajektorii do CSV lub JSON",
           "Panel pomiarów: odświeżanie ekranu, czasy klatek, częstotliwość fizyki i używane wejście; kopia raportu jako JSON",
-          "Zapis statystyk lotu do pliku",
+          "Statystyki lotów z całego czasu zachowane między wizytami; jeden przycisk pobiera je jako CSV i JSON",
           "Opinie z symulatora (B) i z każdej strony tej witryny: błąd, pomysł albo propozycja współpracy; dane techniczne są wysyłane tylko za Twoją zgodą"
         ]
       }

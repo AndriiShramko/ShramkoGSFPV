@@ -132,7 +132,7 @@
           "Summary panel: this flight's stats, every menu item and every key",
           "Save the flight log; export the trajectory as CSV or JSON",
           "Measurements panel: display refresh, frame times, physics rate and the input in use; copy the report as JSON",
-          "Save the flight stats to a file",
+          "Lifetime flight stats kept between visits; one button downloads them as CSV and JSON",
           "Feedback from the simulator (B) and from every page of this site: a bug, an idea or cooperation; technical details are sent only if you agree"
         ]
       }

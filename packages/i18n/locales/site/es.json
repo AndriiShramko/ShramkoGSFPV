@@ -132,7 +132,7 @@
           "Panel de resumen: las estadísticas del vuelo, cada opción del menú y cada tecla",
           "Guarda el registro de vuelo; exporta la trayectoria en CSV o JSON",
           "Panel de mediciones: refresco de pantalla, tiempos de fotograma, frecuencia de la física y el control en uso; copia el informe en JSON",
-          "Guarda las estadísticas de vuelo en un archivo",
+          "Estadísticas de vuelo de todo el tiempo guardadas entre visitas; un botón las descarga en CSV y JSON",
           "Comentarios desde el simulador (B) y desde cada página de este sitio: un error, una idea o una propuesta de colaboración; los datos técnicos se envían solo si aceptas"
         ]
       }

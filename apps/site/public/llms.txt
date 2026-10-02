@@ -4,8 +4,11 @@
 
 Key facts:
 - Runs in desktop Chrome or Edge with WebGPU; no install. Radios need WebHID (Chrome or Edge).
-- Scenes: any public SuperSplat scene by link or id; scenes with voxel collision data have solid walls.
-- Voxel grid and walls switch: V shows the scan's collision voxels over the scan or on their own with the scan hidden (solid cubes, wireframe, height colours, or floating pieces in red), so a pilot sees where the walls really are; C switches the walls (collisions) off or on, remembered per scan, and a scan's author can default a noisy scan to walls off.
+- Scenes: any public SuperSplat scene by link or id; scenes with voxel collision data have solid walls. The simulator's SuperSplat tab lists every public walkable scan (published with walls; 1,300+ on 2 October 2026) with superspl.at's own sorting, filters and search, a random top-rated pick and a star for favourites; the landing's "Fly a random location" opens one of the 200 best-liked at random.
+- Scene switching in the page: N next, Shift+N random, F next favourite, with the radio staying connected; optional "Next scene after a crash" (off by default) loads another scene after every crash, from Andrii's picks, your favourites or the scenes you flew, in random or fixed order.
+- Scene scale: [ and ] (Shift doubles a step) or the pause menu scale the whole scene around the drone from x0.25 to x100, kept per scan, the walls scaling with it: at x100 a room is flown like a city, a chair like a tower block.
+- Voxel grid and walls switch: V shows the scan's collision voxels over the scan or on their own with the scan hidden (solid cubes, wireframe, height colours, or floating pieces in red), so a pilot sees where the walls really are; C switches the walls (collisions) off or on, one choice for every scene; the floating specks of a noisy scan (phantom walls) can be dropped per scan with a live preview.
+- Recording and sharing: 60 fps recording (F9) and video from the flight log on Andrii's scans; share the landing or the scene being flown with a picture of the pilot's view; feedback (bug, idea, cooperation) from the simulator (B) and from every page of the site.
 - Default craft: BetaFPV Pavo20 Pro class, 3S (wheelbase 93.7 mm, LAVA 1104 7200KV — manufacturer; 70.1 g / 108 g with O3 — measured by Oscar Liang).
 - Crashes: impact speed decides; the craft tumbles and throws debris. Gravity: Earth, Moon, Mars, zero-g.
 - Deterministic replays from recorded stick input.

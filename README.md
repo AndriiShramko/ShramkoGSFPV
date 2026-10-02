@@ -35,7 +35,7 @@ Real screenshots of the live simulator, taken on 2 October 2026 by [`tools/bench
 </tr>
 <tr>
 <td width="50%" valign="top"><a href="docs/screenshots/superspl.webp"><img src="docs/screenshots/superspl.webp" alt="SuperSplat tab"></a><br><sub><b>SuperSplat tab</b> — superspl.at's catalogue in the picker with its sorting, time, walls and download filters, search, Random top-rated and a star for favourites.</sub></td>
-<td width="50%" valign="top"><a href="docs/screenshots/scene-size.webp"><img src="docs/screenshots/scene-size-panel.webp" alt="Scene size"></a><br><sub><b>Scene size</b> — A scan not in true metres? [ and ] scale it around the drone from 0.25× to 4×, kept for each scan; the walls' block size follows.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/scene-size.webp"><img src="docs/screenshots/scene-size-panel.webp" alt="Scene size"></a><br><sub><b>Scene size</b> — [ and ] scale the scan around the drone from 0.25× to 100×: fix a scan not in true metres, or shrink yourself and fly a room like a city. Kept for each scan; the walls' block size follows.</sub></td>
 </tr>
 <tr>
 <td width="50%" valign="top"><a href="docs/screenshots/rec-bar.webp"><img src="docs/screenshots/rec-bar-panel.webp" alt="Recording"></a><br><sub><b>Recording</b> — F9 records 60 fps video of Andrii's scans; Auto records every flight into the folder you choose, and the bar says what was saved where.</sub></td>
@@ -109,19 +109,20 @@ Status on 2 October 2026. **Live** means you can use it on https://gsfpv.flyreel
 | Camera, view & video | HUD on or off; F3 shows frame times | Live |
 | Camera, view & video | Reduced motion: a calmer crash camera (not tested yet) | Live |
 | Camera, view & video | Cinema mode: full detail and MP4 recording on the showcase scans (`d-cinema.json`) | Live |
-| Camera, view & video | Recording at 60 fps with `F9` on Andrii's scans, or auto-record every flight into a folder you choose (`v03-rec-R1-live-w41.json`: 60.0 Hz, 0.7 % repeated frames; the browser's own folder picker was not driven by a bench) | Live |
+| Camera, view & video | Recording at 60 fps with `F9` on Andrii's scans, a blinking red dot with the time while it records (`v05-ux.json`, W4), or auto-record every flight into a folder you choose (`v03-rec-R1-live-w41.json`: 60.0 Hz, 0.7 % repeated frames; the browser's own folder picker was not driven by a bench) | Live |
 | Camera, view & video | Video from the flight log on Andrii's scans, from the summary panel or the replays: 60 fps at 1080p, 1440p or 4K (`v03-export-E1.json`) | Live |
 | Camera, view & video | Simulator in English, Spanish, Polish or Russian | Live |
 | Scenes & SuperSplat | Any public SuperSplat scene in the current format, by link or id, re-published versions (v2, v3…) too; scenes in SuperSplat's older PLY format do not open yet | Live |
 | Scenes & SuperSplat | Tabs: Andrii's scans, Recent, Favourites; filters for walls, type and flown | Live |
-| Scenes & SuperSplat | A SuperSplat tab with superspl.at's filters and sorting, a random top-rated scene and a star for favourites (`v03-superspl-live.json`) | Live |
+| Scenes & SuperSplat | A SuperSplat tab listing every public walkable scan (1,300+ on 2 October 2026) with superspl.at's filters and sorting, a random top-rated scene and a star for favourites (`v03-superspl-live.json`) | Live |
 | Scenes & SuperSplat | Change scenes without reloading the page: `N` next, `Shift+N` random, `F` next favourite; the radio stays connected (`v03-scenes-live.json`) | Live |
-| Scenes & SuperSplat | After a crash, the next scene instead of a respawn: from Andrii's list, your favourites or the scenes you flew (off by default; `v03-scenes-live.json`, S3) | Live |
-| Scenes & SuperSplat | Scale a wrong-size scene around the drone with `[` and `]`, kept for each scan (`v03-scale.json`) | Live |
+| Scenes & SuperSplat | After a crash, the next scene instead of a respawn: in random or fixed order, from Andrii's list, your favourites or the scenes you flew (off by default; `v03-scenes-live.json`, S3) | Live |
+| Scenes & SuperSplat | Scene scale around the drone from ×0.25 to ×100 with `[` and `]` (`Shift` doubles a step) or the pause menu, kept for each scan, the walls scaling with it: fly a room like a city (`v03-scale.json`; ×100 in `v05-ux.json`, W5) | Live |
 | Scenes & SuperSplat | Loading progress: stage, MB, speed, time left and retry | Live |
+| Scenes & SuperSplat | Share the landing or the scene you fly, with a picture of your view (`/s/<id>` page; `v05-share-picture.jpg`) | Live |
 | Walls & voxel grid | Walls built in your browser for scans published without them, up to 4 M Gaussians (`c-bake.json`) | Live |
-| Walls & voxel grid | Walls (collisions) on or off (`C`, the walls menu or Settings), remembered per scan; the admin default per scan is `"walls": "on" \| "off"` in [`apps/fly/public/showcase.json`](apps/fly/public/showcase.json). A flight log records the setting and replays with it ([`walls-switch.test.ts`](packages/collision/test/walls-switch.test.ts)) | Live |
-| Walls & voxel grid | Drop the floating specks of a noisy scan that turn into invisible walls ("phantom walls"): pieces under N blocks, per scan; the admin default is `"dropFloaters"` in `showcase.json` (`v03-floaters.json`) | Live |
+| Walls & voxel grid | Walls (collisions) on or off (`C`, the walls menu or Settings), one choice for every scene, so it stays the same after a scene switch (`v05-ux.json`, W1); the admin default of a showcase scan is `"walls": "on" \| "off"` in [`apps/fly/public/showcase.json`](apps/fly/public/showcase.json). A flight log records the setting and replays with it ([`walls-switch.test.ts`](packages/collision/test/walls-switch.test.ts)) | Live |
+| Walls & voxel grid | Drop the floating specks of a noisy scan that turn into invisible walls ("phantom walls"): pieces under N blocks, per scan, with a live preview of what goes (`v05-ux.json`, W3); the admin default is `"dropFloaters"` in `showcase.json` (`v03-floaters.json`) | Live |
 | Walls & voxel grid | Voxel grid over the scan or on its own with the scan hidden (`V`): solid cubes, wireframe, height colours or floaters in red, opacity per mode; faces and floaters checked against brute force with controls ([`packages/collision/test/`](packages/collision/test/)) | Live |
 | Settings, stats & flight data | Every setting kept between visits, each drone with its own tune; export, import and reset one or all (`v03-prefs.json`) | Live |
 | Settings, stats & flight data | A catalogue of every setting with its default, range and key: [Everything you can tune](#everything-you-can-tune), [`docs/settings.md`](docs/settings.md) and the [landing page](https://gsfpv.flyreelstudio.eu/en/#tune) | Live |
@@ -129,6 +130,8 @@ Status on 2 October 2026. **Live** means you can use it on https://gsfpv.flyreel
 | Settings, stats & flight data | Summary panel: this flight's stats, every menu item and every key (`v03-summary-live.json`) | Live |
 | Settings, stats & flight data | Save the flight log; export the trajectory as CSV or JSON (CSV checked in `d-trajectory-export.json`, JSON not tested yet) | Live |
 | Settings, stats & flight data | Measurements panel: display refresh, frame times, physics rate and the input in use (its report rate is not measured yet); copy the report as JSON | Live |
+| Settings, stats & flight data | Lifetime flight stats kept between visits; one button downloads them as CSV and JSON (`v05-ux.json`, W6) | Live |
+| Settings, stats & flight data | Feedback from the simulator (`B`, the top bar, the pause menu) and from every page of the site: a bug, an idea or cooperation; technical details only with consent (`v05-feedback.json`) | Live |
 
 ### In progress (1)
 
