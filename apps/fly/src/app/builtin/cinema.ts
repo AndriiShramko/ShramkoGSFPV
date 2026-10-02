@@ -344,7 +344,7 @@ export const cinema: Feature = {
                 recording: rec.recording, autoRun: rec.autoRun, auto: rec.autoOn, seconds: rec.seconds, busy: rec.busy,
                 folder: rec.folder?.name ?? null, access: rec.access, pendingStopAt: rec.rules.pendingStopAt,
                 barHidden: cinemaBar.hidden, barShown: cinemaBar.offsetParent !== null, recHidden: recBtn.hidden,
-                dotShown: dot.offsetParent !== null && !dot.hidden, dotText: dot.hidden ? null : dot.getAttribute('aria-label'),
+                dotShown: !dot.hidden && dot.getClientRects().length > 0, dotText: dot.hidden ? null : dot.getAttribute('aria-label'),
                 autoDisabled: autoBtn.disabled, autoPressed: autoBtn.getAttribute('aria-pressed'), autoTitle: autoBtn.title,
                 folderChip: folderWrap.hidden ? null : folderBtn.textContent, allowChip: allowBtn.hidden ? null : allowBtn.textContent,
                 note: cinemaNote.textContent, last: rec.last?.info ?? null, offers: rec.last?.offer.map((o) => ({ name: o.name, bytes: o.bytes })) ?? []

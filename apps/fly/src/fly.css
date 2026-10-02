@@ -284,4 +284,10 @@ body.touch-on .panel.floaters-panel { left: auto; right: 16px; top: calc(max(10p
 .rec-dot.held .rec-dot-i { animation: none; }
 @keyframes rec-blink { 0% { opacity: 1; } 50% { opacity: .2; } }
 body.cinema .rec-dot { display: none; }
+/* a phone: the row of buttons fills the width, so the dot goes to the free corner left of the OSD's
+   top line (it starts at 44 px), the dot alone; its name keeps the time, the bar says it too */
+@media (max-width: 600px) {
+    .top-actions .btn.rec-dot { position: fixed; left: 6px; top: calc(max(14px, env(safe-area-inset-top)) - 6px + var(--banner-h, 0px)); width: 32px; height: 32px; min-height: 32px; padding: 0; justify-content: center; border-radius: 50%; }
+    .rec-dot-time { display: none; }
+}
 @media (prefers-reduced-motion: reduce) { .rec-dot-i { animation: none; } }

@@ -248,7 +248,7 @@ if (want('W3')) {
 // ------------------------------------------------------------------ W4 the recording dot
 if (want('W4')) {
     const DOT = `const d = document.querySelector('[data-testid=rec-dot]'); const i = d.querySelector('.rec-dot-i');
-        return { recording: h.rec.state().recording, shown: d.offsetParent !== null && !d.hidden, label: d.getAttribute('aria-label'), text: d.textContent, anim: getComputedStyle(i).animationName, held: d.classList.contains('held'),
+        return { recording: h.rec.state().recording, shown: !d.hidden && d.getClientRects().length > 0, label: d.getAttribute('aria-label'), text: d.textContent, anim: getComputedStyle(i).animationName, held: d.classList.contains('held'),
             bar: document.querySelector('[data-action=cinema-rec]')?.textContent ?? null };`;
     const { ctx, page: p } = await ctxOf(browser);
     await go(p, `scene=${A}&nowarn=1&input=touch`);
@@ -258,7 +258,7 @@ if (want('W4')) {
     await p.waitForTimeout(2600);
     const rec = await hook(p, DOT);
     const shot1280 = await shot(p, 'w4-rec-dot');
-    const lay1280 = await layout(p, ['[data-testid=rec-dot]', '.top-actions .btn:not(.rec-dot)', '.osd.tl', '.osd.tr']);
+    const lay1280 = await layout(p, ['[data-testid=rec-dot]', '.top-actions .btn:not(.rec-dot)', '.osd.tl', '.osd.tr', '.mode-chip', '.touch-hint', '.attribution']);
     await p.keyboard.press('KeyP');
     await p.waitForSelector('[data-action="pause.record"]');
     const menuOn = await p.textContent('[data-action="pause.record"] .pm-label');
@@ -286,7 +286,7 @@ if (want('W4')) {
     await m.page.waitForTimeout(2200);
     const phone = await hook(m.page, DOT);
     const shot375 = await shot(m.page, 'w4-rec-dot');
-    const lay375 = await layout(m.page, ['[data-testid=rec-dot]', '.top-actions .btn:not(.rec-dot)', '.osd.tl', '.osd.tr']);
+    const lay375 = await layout(m.page, ['[data-testid=rec-dot]', '.top-actions .btn:not(.rec-dot)', '.osd.tl', '.osd.tr', '.mode-chip', '.touch-hint', '.attribution']);
     await hook(m.page, 'return h.rec.stop().then(() => 0);');
     await m.ctx.close();
     const pass = rec.recording && rec.shown && /^Recording, 0:0[1-4]\. Stop recording$/.test(rec.label) && rec.anim === 'rec-blink'
