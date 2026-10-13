@@ -26,10 +26,19 @@ import type { ArmMap, Profile, RawFrame } from './calib';
 import { DEFAULT_SWITCH_MODES, sameInput, validSwitchInput } from './mode-switch';
 import type { SwitchInput, SwitchModes } from './mode-switch';
 
-/** The app's actions a switch can run: keymap action ids of @gsfpv/prefs (a test keeps them shipped). */
+/**
+ * The app's actions a switch can run: keymap action ids of @gsfpv/prefs, chosen by hand (the actions
+ * that make sense on a switch), NOT derived from the keymap. A new keymap action becomes a switch
+ * function only when its id is added here and to SWITCH_ACTIONS; the test "every switch action is a
+ * shipped, routed keymap action" (switches.test.ts) then checks it, the Switches screen offers it
+ * under its keymap name (keys.<id>) and KeyRouter.trigger runs its key handler.
+ */
 export type SwitchAction = 'respawn.rewind' | 'respawn.start' | 'record.toggle' | 'pause.toggle' | 'scene.next' | 'scene.random' | 'hud.toggle';
+/** SwitchAction's ids in the order the Switches screen lists them (and SwitchActionWatch runs them). */
 export const SWITCH_ACTIONS: readonly SwitchAction[] = ['respawn.rewind', 'respawn.start', 'record.toggle', 'pause.toggle', 'scene.next', 'scene.random', 'hud.toggle'];
+/** Every function a range can have: arm, the flight modes, then the actions. */
 export type SwitchFn = 'arm' | 'angle' | 'horizon' | SwitchAction;
+/** SwitchFn's values: what a stored range may name (readSwitches drops any other). */
 export const SWITCH_FNS: readonly SwitchFn[] = ['arm', 'angle', 'horizon', ...SWITCH_ACTIONS];
 
 /** One condition: `fn` is on while `input` reads lo <= us < hi (Betaflight's mode activation condition). */
