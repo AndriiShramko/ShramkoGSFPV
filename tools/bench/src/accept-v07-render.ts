@@ -8,7 +8,8 @@
 //       hostile values (budget=1e9, stochastic=<x>) draw sorted at the default top of 4 M.
 //   R2  the setting wins: drawing=sorted on a stochastic link draws sorted (the budget stays), drawing=
 //       stochastic on a plain link draws stochastic; switching the setting live reaches the engine.
-//   R3  a phone (user agent, touch, small viewport): the request is ignored, the HUD says why; the same
+//   R3  a phone (user agent, touch, small viewport): the request is ignored, the HUD says who asked and
+//       what was refused (the scene's stochastic, the pilot's setting, a budget alone); the same
 //       link on the desktop page (R1) is the control.
 //   R4  the picker over a flight: a pasted link with parameters loads with its drawing and the deep link
 //       follows; the next scene of the rotation (no request) draws sorted again and drops them.
@@ -125,12 +126,21 @@ if (want('R2')) {
 // ------------------------------------------------------------------ R3
 if (want('R3')) {
     const { ctx, page, log } = await context(browser, true);
+    // who asked decides the words: the scene's link, the pilot's setting, or only a budget (no word about stochastic)
     const st = await open(page, `scene=${A}&budget=8&stochastic`);
     const forced = await open(page, `scene=${A}&drawing=stochastic`);
-    out.R3 = { userAgent: PHONE_UA, link: st, forced, expectedNote: EN['drawing.note.handheld'], pageerrors: errors(log) };
-    pass.R3 = st.status === 'ready' && st.engine === false && st.top === 4 && st.drawing?.note === 'handheld' && st.note === EN['drawing.note.handheld']
-        && forced.engine === false && forced.drawing?.note === 'handheld' && errors(log).length === 0;
-    console.log('R3', pass.R3, JSON.stringify({ engine: st.engine, top: st.top, note: st.drawing?.note, text: st.note }));
+    const budgetOnly = await open(page, `scene=${A}&budget=8`);
+    const expected = {
+        link: EN['drawing.note.scene-handheld'],
+        forced: EN['drawing.note.setting-handheld'],
+        budgetOnly: EN['drawing.note.budget-handheld'].split('{budget}').join('8').split('{top}').join('4')
+    };
+    out.R3 = { userAgent: PHONE_UA, link: st, forced, budgetOnly, expected, pageerrors: errors(log) };
+    pass.R3 = st.status === 'ready' && st.engine === false && st.top === 4 && st.drawing?.note === 'scene-handheld' && st.note === expected.link
+        && forced.engine === false && forced.drawing?.note === 'setting-handheld' && forced.note === expected.forced
+        && budgetOnly.engine === false && budgetOnly.top === 4 && budgetOnly.drawing?.note === 'budget-handheld' && budgetOnly.note === expected.budgetOnly
+        && errors(log).length === 0;
+    console.log('R3', pass.R3, JSON.stringify({ link: [st.engine, st.top, st.drawing?.note, st.note], forced: [forced.drawing?.note, forced.note], budgetOnly: [budgetOnly.drawing?.note, budgetOnly.note] }));
     await ctx.close();
 }
 

@@ -5,6 +5,10 @@
   "set.display.drawing.opt.stochastic": "Stochastyczne (beta SuperSplat)",
   "set.display.drawing.opt.sorted": "Sortowane (klasyczne)",
   "drawing.on": "Rysowanie stochastyczne (beta SuperSplat), {budget} mln splatów · Ustawienia → Ekran",
-  "drawing.note.handheld": "Ta scena prosi o stochastyczne rysowanie SuperSplat. Działa ono tylko w przeglądarkach na komputerze, więc tutaj scena jest rysowana klasycznie.",
-  "drawing.note.webgl": "Rysowanie stochastyczne wymaga WebGPU, a ta przeglądarka go nie ma: scena jest rysowana klasycznie."
+  "drawing.note.scene-handheld": "Ta scena prosi o stochastyczne rysowanie SuperSplat. Działa ono tylko w przeglądarkach na komputerze, więc tutaj scena jest rysowana klasycznie.",
+  "drawing.note.scene-webgl": "Ta scena prosi o stochastyczne rysowanie SuperSplat. Wymaga ono WebGPU, a ta przeglądarka go nie ma, więc scena jest rysowana klasycznie.",
+  "drawing.note.setting-handheld": "Wybrano rysowanie stochastyczne w Ustawienia → Ekran. Działa ono tylko w przeglądarkach na komputerze, więc tutaj scena jest rysowana klasycznie.",
+  "drawing.note.setting-webgl": "Wybrano rysowanie stochastyczne w Ustawienia → Ekran. Wymaga ono WebGPU, a ta przeglądarka go nie ma, więc scena jest rysowana klasycznie.",
+  "drawing.note.budget-handheld": "Ta scena prosi o {budget} mln splatów, czyli budżet dla przeglądarek na komputerze. Na tym urządzeniu rysuje najwyżej {top} mln.",
+  "drawing.note.budget-webgl": "Ta scena prosi o {budget} mln splatów. Bez WebGPU rysuje najwyżej {top} mln."
 }

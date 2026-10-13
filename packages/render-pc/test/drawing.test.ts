@@ -3,7 +3,10 @@
 // has a control that must fail: a policy that ignores the device, an apply that ignores the renderer,
 // a governor that is not told the top.
 import { describe, it, expect } from 'vitest';
-import { resolveDrawing, isHandheld, applyDrawing, DEFAULT_BUDGET_M, DRAWING_MODES } from '../src/drawing';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { resolveDrawing, isHandheld, applyDrawing, DEFAULT_BUDGET_M, DRAWING_MODES, DRAWING_NOTES } from '../src/drawing';
 import type { Drawing, DrawingDevice, DrawingMode, DrawingRequest } from '../src/drawing';
 import { FrameGovernor, DEFAULT_STEPS } from '../src/governor';
 // the Display setting's definition (packages/prefs is pure data; render-pc does not depend on it at run time)
@@ -25,19 +28,30 @@ const ROWS: [DrawingMode, DrawingRequest | undefined, DrawingDevice, Drawing][] 
     ['sorted', OWNER, DESKTOP, { stochastic: false, budgetM: 8, note: null }],
     ['stochastic', undefined, DESKTOP, { stochastic: true, budgetM: DEFAULT_BUDGET_M, note: null }],
     ['stochastic', { stochastic: false }, DESKTOP, { stochastic: true, budgetM: DEFAULT_BUDGET_M, note: null }],
-    // phones and tablets: nothing of the request, a note
-    ['auto', OWNER, PHONE, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'handheld' }],
-    ['stochastic', undefined, PHONE, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'handheld' }],
+    // phones and tablets: nothing of the request; the note says who asked and what was refused
+    ['auto', OWNER, PHONE, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'scene-handheld' }],
+    ['stochastic', undefined, PHONE, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'setting-handheld' }],
+    ['stochastic', OWNER, PHONE, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'setting-handheld' }], // the pilot's choice is named, not the scene's
+    ['auto', { budgetM: 8 }, PHONE, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'budget-handheld' }], // a budget only: no word about stochastic
+    ['auto', { stochastic: false, budgetM: 2 }, PHONE, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'budget-handheld' }],
+    ['sorted', OWNER, PHONE, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'budget-handheld' }], // sorted chosen: only the budget was refused
+    ['sorted', { stochastic: true }, PHONE, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: null }], // sorted chosen, nothing refused
+    ['auto', { budgetM: DEFAULT_BUDGET_M }, PHONE, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: null }], // the default budget is not refused
     ['auto', undefined, PHONE, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: null }],
     ['sorted', undefined, PHONE, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: null }],
     // WebGL (no WebGPU, or the engine fell back): the CPU-sort renderer cannot draw it
-    ['auto', OWNER, DESKTOP_GL, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'webgl' }],
-    ['stochastic', undefined, DESKTOP_GL, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'webgl' }],
+    ['auto', OWNER, DESKTOP_GL, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'scene-webgl' }],
+    ['stochastic', undefined, DESKTOP_GL, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'setting-webgl' }],
+    ['auto', { budgetM: 8 }, DESKTOP_GL, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'budget-webgl' }],
+    ['sorted', OWNER, DESKTOP_GL, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'budget-webgl' }],
+    ['sorted', { stochastic: true }, DESKTOP_GL, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: null }],
     ['auto', undefined, DESKTOP_GL, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: null }]
 ];
 
+/** The rows a policy gets wrong. */
+const failingRows = (policy: Policy) => ROWS.filter(([m, r, d, want]) => JSON.stringify(policy(m, r, d)) !== JSON.stringify(want));
 function failures(policy: Policy): string[] {
-    return ROWS.filter(([m, r, d, want]) => JSON.stringify(policy(m, r, d)) !== JSON.stringify(want)).map(([m, r, d]) => `${m} ${JSON.stringify(r)} ${JSON.stringify(d)}`);
+    return failingRows(policy).map(([m, r, d]) => `${m} ${JSON.stringify(r)} ${JSON.stringify(d)}`);
 }
 
 describe('resolveDrawing: setting x request x device', () => {
@@ -56,8 +70,45 @@ describe('resolveDrawing: setting x request x device', () => {
     it('control: a policy that follows the request on every device fails the phone and WebGL rows', () => {
         const blind: Policy = (m, r) => ({ stochastic: m === 'stochastic' || (m === 'auto' && r?.stochastic === true), budgetM: r?.budgetM ?? DEFAULT_BUDGET_M, note: null });
         const f = failures(blind);
-        expect(f.length).toBe(4);
+        expect(f.length).toBe(10);
         expect(f.every((x) => x.includes('"handheld":true') || x.includes('"webgpu":false'))).toBe(true);
+    });
+
+    it('control: the old note (any request = "this scene asks for stochastic") fails every setting and budget row', () => {
+        const old: Policy = (m, r, d) => {
+            const real = resolveDrawing(m, r, d);
+            if (d.webgpu && !d.handheld) return real;
+            const asked = m === 'stochastic' || (m === 'auto' && r?.stochastic === true) || r?.budgetM !== undefined;
+            return { ...real, note: asked ? (d.handheld ? 'scene-handheld' : 'scene-webgl') : null };
+        };
+        const wrong = failingRows(old);
+        expect(wrong.length).toBe(9);
+        // what it got wrong: the pilot's own choice, a budget-only refusal, and a default budget it called a refusal
+        expect(wrong.map(([, , , want]) => want.note ?? 'none').sort()).toEqual(['budget-handheld', 'budget-handheld', 'budget-handheld', 'budget-webgl', 'budget-webgl', 'none', 'setting-handheld', 'setting-handheld', 'setting-webgl']);
+    });
+});
+
+describe('the HUD notes: a text for each in en, es, pl and ru', () => {
+    const LANGS = ['en', 'es', 'pl', 'ru'];
+    const DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'i18n', 'locales', 'fly', 'drawing');
+    const dict = (l: string) => JSON.parse(readFileSync(join(DIR, `${l}.json`), 'utf8')) as Record<string, string>;
+    const missing = (notes: readonly string[]) => LANGS.flatMap((l) => notes.filter((n) => typeof dict(l)[`drawing.note.${n}`] !== 'string').map((n) => `${l} ${n}`));
+
+    it('every note the policy gives, no text for a note that does not exist, numbers only in the budget notes', () => {
+        expect(missing(DRAWING_NOTES)).toEqual([]);
+        expect([...new Set(ROWS.map((r) => r[3].note).filter((n) => n !== null))].sort()).toEqual([...DRAWING_NOTES].sort());
+        for (const l of LANGS) {
+            const keys = Object.keys(dict(l)).filter((k) => k.startsWith('drawing.note.')).map((k) => k.slice('drawing.note.'.length));
+            expect(keys.sort()).toEqual([...DRAWING_NOTES].sort());
+            for (const n of DRAWING_NOTES) {
+                const s = dict(l)[`drawing.note.${n}`];
+                expect([s.includes('{budget}'), s.includes('{top}')]).toEqual(n.startsWith('budget-') ? [true, true] : [false, false]);
+            }
+        }
+    });
+
+    it('control: a note without texts is reported in every language', () => {
+        expect(missing(['scene-vr'])).toEqual(['en scene-vr', 'es scene-vr', 'pl scene-vr', 'ru scene-vr']);
     });
 });
 

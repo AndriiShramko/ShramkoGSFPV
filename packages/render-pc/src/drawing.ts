@@ -8,7 +8,8 @@
 //      default) does what the scene's link or the catalogue asks (packages/scenes link.ts sceneRender);
 //   2. the device: the engine draws stochastic only with its GPU-sort renderer, i.e. WebGPU. SuperSplat
 //      shows it on desktop browsers only, so on phones and tablets the request is ignored too, and so
-//      is the link's budget (a desktop number), with a short note for the HUD.
+//      is the scene's budget (a desktop number). The HUD's short note then says who asked (the scene
+//      or the pilot's setting) and what was refused (stochastic, or only the budget): DrawingNote.
 // The splat budget of a request becomes the quality governor's top level (governor.ts setTopBudget);
 // missed frames lower the budget from there and never switch stochastic off.
 
@@ -31,8 +32,16 @@ export interface DrawingDevice {
     handheld: boolean;
 }
 
-/** Why a request was not followed: the HUD's short note (i18n drawing.note.<kind>). */
-export type DrawingNote = 'handheld' | 'webgl';
+/**
+ * What this device did not do and who asked for it: the HUD's short note (i18n `drawing.note.<note>`,
+ * packages/i18n/locales/fly/drawing). `<who>-<why>`:
+ *   - who: `scene` = the scene asked for stochastic (its link or the catalogue, with the setting on
+ *     auto); `setting` = the pilot chose stochastic in Display -> Drawing; `budget` = nothing asked for
+ *     stochastic here, only the scene's splat budget (a number other than the default) was refused;
+ *   - why: `handheld` = a phone or a tablet; `webgl` = no WebGPU (the engine's CPU-sort renderer).
+ */
+export type DrawingNote = 'scene-handheld' | 'scene-webgl' | 'setting-handheld' | 'setting-webgl' | 'budget-handheld' | 'budget-webgl';
+export const DRAWING_NOTES: readonly DrawingNote[] = ['scene-handheld', 'scene-webgl', 'setting-handheld', 'setting-webgl', 'budget-handheld', 'budget-webgl'];
 
 /** The top of the splat budget when nothing asks for another one, millions (governor.ts DEFAULT_STEPS). */
 export const DEFAULT_BUDGET_M = 4;
@@ -41,19 +50,22 @@ export interface Drawing {
     stochastic: boolean;
     /** the governor's top splat budget, millions */
     budgetM: number;
-    /** set when the scene or the setting asked for something this device does not get */
+    /** set when the scene or the setting asked for something this device does not get (who and what: DrawingNote) */
     note: DrawingNote | null;
 }
 
 /** The drawing for a setting, a scene's request and a device (see the header for the rules). */
 export function resolveDrawing(mode: DrawingMode, request: DrawingRequest | undefined, device: DrawingDevice): Drawing {
-    const wantsStochastic = mode === 'stochastic' || (mode === 'auto' && request?.stochastic === true);
+    const sceneAsks = mode === 'auto' && request?.stochastic === true;
+    const wantsStochastic = mode === 'stochastic' || sceneAsks;
     const budget = request?.budgetM;
     if (device.webgpu && !device.handheld) {
         return { stochastic: wantsStochastic, budgetM: budget ?? DEFAULT_BUDGET_M, note: null };
     }
-    const asked = wantsStochastic || budget !== undefined;
-    return { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: asked ? (device.handheld ? 'handheld' : 'webgl') : null };
+    // refused here: the pilot's own choice outranks the scene's; a budget alone is named only when it differs
+    const who = mode === 'stochastic' ? 'setting' : sceneAsks ? 'scene' : budget !== undefined && budget !== DEFAULT_BUDGET_M ? 'budget' : null;
+    const why = device.handheld ? 'handheld' : 'webgl';
+    return { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: who ? `${who}-${why}` : null };
 }
 
 /**
