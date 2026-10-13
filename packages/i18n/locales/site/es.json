@@ -1007,8 +1007,9 @@
       "placeholder": "¿Qué haría el simulador mejor para ti?"
     },
     "contact": {
-      "label": "Contacto (opcional)",
-      "placeholder": "Email, Telegram, lo que quieras — solo si quieres respuesta"
+      "label": "Tu e-mail (opcional)",
+      "placeholder": "Tu dirección de e-mail",
+      "hint": "Deja tu e-mail si quieres respuesta: solo se usa para contestarte."
     },
     "diag": {
       "consent": "Adjuntar datos técnicos para ayudar a arreglarlo",

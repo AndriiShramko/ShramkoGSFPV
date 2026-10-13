@@ -5,8 +5,9 @@ import { REPORT_ENDPOINT } from "@/config/site";
 
 /**
  * "Feedback" on every page (bottom left, above the phone's Fly bar): a bug or an idea goes to
- * /api/report (the owner gets a Telegram note with the report's id; the simulator's dialog is the same,
- * apps/fly builtin/feedback.ts), cooperation goes to the contact form on the landing. A bug carries the
+ * /api/report (the whole report reaches the owner's Telegram, and he can answer the e-mail left here
+ * from his Gmail; the simulator's dialog is the same, apps/fly builtin/feedback.ts), cooperation goes
+ * to the contact form on the landing. A bug carries the
  * technical details listed under the consent box only when it is ticked. Anti-spam as the lead form:
  * a hidden honeypot and time-to-submit (a send sooner than 3 s waits, it never fails).
  */
@@ -219,11 +220,17 @@ export default function Feedback() {
                     type="text"
                     maxLength={CONTACT_MAX}
                     autoComplete="email"
+                    inputMode="email"
                     value={contact}
                     placeholder={t("contact.placeholder")}
+                    aria-describedby="feedback-contact-hint"
                     onChange={(e) => setContact(e.target.value)}
                     className="field mt-2"
                   />
+                  {/* the owner answers from his Gmail (v0.7): an e-mail here is what makes an answer possible */}
+                  <p id="feedback-contact-hint" className="mt-1 text-sm text-muted">
+                    {t("contact.hint")}
+                  </p>
                   {kind === "bug" ? (
                     <div className="mt-4">
                       <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm">

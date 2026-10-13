@@ -1,7 +1,8 @@
 // Feedback from the flight (W5): a bug, an idea or cooperation, from the top bar's Feedback button,
-// the pause menu and B. A bug or an idea goes to POST /api/report (the owner gets a Telegram note with
-// the report's id); a bug carries the technical details of app/diagnostics.ts only when the pilot ticks
-// the box that lists them. Cooperation is the landing's contact form (apps/site LeadForm): the same
+// the pause menu and B. A bug or an idea goes to POST /api/report (the whole report reaches the owner's
+// Telegram; he answers the e-mail left here from his Gmail, apps/api/ownerbot.py); a bug carries the
+// technical details of app/diagnostics.ts only when the pilot ticks the box that lists them.
+// Cooperation is the landing's contact form (apps/site LeadForm): the same
 // fields, the same words (the site dictionary's contact.form) and the same POST /api/lead.
 import { contact as enContact } from '@gsfpv/i18n/site/en.json';
 import { contact as esContact } from '@gsfpv/i18n/site/es.json';
@@ -75,12 +76,15 @@ export function openFeedback(ctx: FlightContext, first: FeedbackKind = 'bug'): v
         const msg = h('textarea', { id: 'fb-message', class: 'fb-text', rows: 5, maxlength: MESSAGE_MAX, placeholder: t(`fb.${kind}.placeholder`), 'data-testid': 'fb-message' }) as HTMLTextAreaElement;
         msg.value = draft.message;
         msg.addEventListener('input', () => { draft.message = msg.value; });
-        const contact = h('input', { id: 'fb-contact', type: 'text', class: 'fb-field', maxlength: CONTACT_MAX, autocomplete: 'email', placeholder: t('fb.contact.placeholder'), 'data-testid': 'fb-contact' }) as HTMLInputElement;
+        // the owner answers from his Gmail (v0.7): an e-mail here is what makes an answer possible
+        const contact = h('input', { id: 'fb-contact', type: 'text', class: 'fb-field', maxlength: CONTACT_MAX, autocomplete: 'email', inputmode: 'email',
+            placeholder: t('fb.contact.placeholder'), 'aria-describedby': 'fb-contact-hint', 'data-testid': 'fb-contact' }) as HTMLInputElement;
         contact.value = draft.contact;
         contact.addEventListener('input', () => { draft.contact = contact.value; });
         const form = h('form', { class: 'fb-form', novalidate: true },
             h('label', { class: 'fb-label', for: 'fb-message' }, t(`fb.${kind}.message`)), msg,
-            h('label', { class: 'fb-label', for: 'fb-contact' }, t('fb.contact.label')), contact);
+            h('label', { class: 'fb-label', for: 'fb-contact' }, t('fb.contact.label')), contact,
+            h('p', { class: 'fb-hint', id: 'fb-contact-hint', 'data-testid': 'fb-contact-hint' }, t('fb.contact.hint')));
         let consent: HTMLInputElement | null = null;
         let picture: HTMLInputElement | null = null;
         if (kind === 'bug') {

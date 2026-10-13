@@ -1007,8 +1007,9 @@
       "placeholder": "What would make the simulator better for you?"
     },
     "contact": {
-      "label": "Contact (optional)",
-      "placeholder": "Email, Telegram, anything — only if you want an answer"
+      "label": "Your e-mail (optional)",
+      "placeholder": "Your e-mail address",
+      "hint": "Leave your e-mail if you want an answer: it is used only to reply to you."
     },
     "diag": {
       "consent": "Attach technical details to help fix it",

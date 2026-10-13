@@ -1007,8 +1007,9 @@
       "placeholder": "Co sprawiłoby, że symulator byłby dla ciebie lepszy?"
     },
     "contact": {
-      "label": "Kontakt (opcjonalnie)",
-      "placeholder": "E-mail, Telegram, cokolwiek — tylko jeśli chcesz odpowiedzi"
+      "label": "Twój e-mail (opcjonalnie)",
+      "placeholder": "Twój adres e-mail",
+      "hint": "Zostaw e-mail, jeśli chcesz dostać odpowiedź: adres służy tylko do niej."
     },
     "diag": {
       "consent": "Dołącz dane techniczne, żeby pomóc to naprawić",
