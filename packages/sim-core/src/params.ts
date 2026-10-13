@@ -3,6 +3,8 @@
 import type { RatesConfig, RatesType, ThrottleCurve } from './rates';
 import { invertThrottle } from './rates';
 import type { LevelParams } from './contracts';
+import { compileWind } from './wind';
+import type { WindConfig } from './wind';
 
 export type FieldSource = 'manufacturer' | 'estimate' | 'bf-default' | `measured:${string}`;
 
@@ -69,6 +71,8 @@ export interface SimParams {
     itermWindup: number;
     /** lowest body point below the centre with the craft level, m: where the platform goes (C.2) */
     bodyBottom: number;
+    /** the wind of the place (wind.ts); null: still air, exactly the model without wind */
+    wind: WindConfig | null;
 }
 
 export const EARTH_G = 9.81;
@@ -108,6 +112,11 @@ export interface ParamOverrides {
     propInertia?: number;
     /** motor idle as a fraction of full output (0.10 = Betaflight dshot_idle_value 1000) */
     idle?: number;
+    /**
+     * the wind of the place (v0.7, wind.ts): absent = still air. Speed and gust 0 compile to still
+     * air too, so such a model flies exactly as one without the field (its configHash still differs).
+     */
+    wind?: WindConfig;
 }
 
 function num(p: PresetJson, key: string): number {
@@ -252,7 +261,9 @@ export function compileParams(p: PresetJson, o: ParamOverrides = {}): SimParams 
         ductDrag: o.ductDrag ?? num(p, 'rotor_drag_per_s'),
         rotorInertia: num(p, 'rotor_inertia_kgm2') * (o.propInertia ?? 1),
         itermWindup: 0.85,
-        bodyBottom
+        bodyBottom,
+        // validated here (a bad wind throws RangeError: a log carrying one refuses to replay)
+        wind: compileWind(o.wind) ? { ...o.wind! } : null
     };
 }
 

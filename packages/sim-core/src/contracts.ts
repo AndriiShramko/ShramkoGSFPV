@@ -63,19 +63,25 @@ export interface RespawnOpts {
 
 // ---------------------------------------------------------------- logs and lives (C.9, E.7)
 
-/** A scene-transform record (log kind 2): T(w) = s * w + t, plus the floater filter. */
+/**
+ * A scene-transform record (log kind 2): T(w) = s * w + t, the floater filter, and (log format /3)
+ * the collision ceiling: collisions are ignored above `ceilingM`, a height in the scan's own
+ * coordinates (the world before T, scale 1, metres along +Y); null = no ceiling (every /2 record).
+ */
 export interface WorldEvent {
     s: number;
     t: [number, number, number];
     floaterMinBlocks: number;
+    ceilingM: number | null;
 }
 
 /**
- * Header of one life in format gsfpv-input-log/2. A life is self-contained: the replay compiles
- * its params from this header (presetSha256 + overrides), never from the session (D-g).
+ * Header of one life in format gsfpv-input-log/2 or /3 (/3 adds the wind, overrides.wind, and the
+ * collision ceiling, scene.ceilingM and the world records' ceiling). A life is self-contained: the
+ * replay compiles its params from this header (presetSha256 + overrides), never from the session (D-g).
  */
 export interface LifeHeader {
-    format: 'gsfpv-input-log/2';
+    format: 'gsfpv-input-log/2' | 'gsfpv-input-log/3';
     simCore: string;
     preset: string;
     presetSha256: string;
@@ -89,9 +95,10 @@ export interface LifeHeader {
     collisionSha256: string | null;
     /**
      * transform = [s, tx, ty, tz] at the start of the life; floaterMinBlocks = the floater filter
-     * (G.3, 0 = off) and floaterSha256 = the hash of the filtered walls it gives (set when it is on)
+     * (G.3, 0 = off) and floaterSha256 = the hash of the filtered walls it gives (set when it is on);
+     * ceilingM = the collision ceiling in the scan's own coordinates (absent: none; format /3 only)
      */
-    scene: { id: string; version: number; transform: [number, number, number, number]; floaterMinBlocks: number; floaterSha256?: string } | null;
+    scene: { id: string; version: number; transform: [number, number, number, number]; floaterMinBlocks: number; floaterSha256?: string; ceilingM?: number } | null;
     /** at = [x, y, z, yawDeg]; ch = the last applied channels; the tick continues across lives */
     life: { index: number; startTick: number; at: [number, number, number, number]; opts: RespawnOpts; soc: number; ch: number[]; reason: RespawnReason | 'start' };
     seed: 0;
