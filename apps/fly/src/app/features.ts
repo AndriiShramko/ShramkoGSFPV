@@ -30,6 +30,7 @@ import { feedback } from './builtin/feedback';
 import { share } from './builtin/share';
 import { wind } from './builtin/wind';
 import { ceiling } from './builtin/ceiling';
+import { sceneDefault } from './builtin/scene-default';
 
 export const FEATURES: readonly Feature[] = [
     scene,
@@ -57,5 +58,6 @@ export const FEATURES: readonly Feature[] = [
     feedback,
     share,
     wind,
-    ceiling
+    ceiling,
+    sceneDefault
 ];
