@@ -7,8 +7,11 @@
 // v0.7 only showcase scans, D34): the credit (scan, author, licence, ShramkoGSFPV) is burned into
 // every frame, and the first recording of a scan outside the owner's catalogue shows one line over the
 // view: whose scan it is, that the video is the pilot's and theirs to answer for, credit the author
-// ("Don't show again": recording.authorNotice). After a recording stops the note line offers "Share
-// your flight" (the video through the share panel, builtin/share.ts). While flying (armed, not crashed) the bar steps aside
+// ("Don't show again": recording.authorNotice). After every recording, however it stopped (REC, F9,
+// the menu, auto-record after a disarm, by itself), and after a video export, the note line says what
+// was saved and offers "Share your flight" (every part of it through the share panel,
+// builtin/share.ts): Recording.onSaved is the one way in. A recording starting clears the last note.
+// While flying (armed, not crashed) the bar steps aside
 // outside cinema mode. While it records, a red dot blinks with the running time in the top-right
 // row (the owner's message 16: "unclear whether it records"); a click on it stops. In cinema mode
 // (the clean picture) the dot is not drawn: the bar at the bottom, always there, says "Stop 0:42".
@@ -45,13 +48,14 @@ export interface RecHook {
     setGuardHold(on: boolean): void;
 }
 
-/** The page's recording and the bar's stop and note: the video export (builtin/video-export.ts) uses them. */
+/**
+ * The page's recording and the bar's stop: the video export (builtin/video-export.ts) uses them (its
+ * saved file reaches the bar's note through Recording.onSaved like a recording's).
+ */
 export interface RecordingShare {
     rec: Recording;
-    /** stops a running recording and shows what was saved on the bar */
+    /** stops a running recording (the bar shows what was saved) */
     stop(): Promise<RecorderInfo | null>;
-    /** a saved file (the export's) on the bar's note line, with its link when it is offered */
-    show(s: Saved | null): void;
 }
 const SHARED = new WeakMap<FlightContext, RecordingShare>();
 /** The cinema feature's recording for this page (installed before the export). */
@@ -207,12 +211,18 @@ export const cinema: Feature = {
             else if (note) {
                 cinemaNote.append(note);
                 for (const f of noteOffer) cinemaNote.append(' ', h('a', { href: f.url, download: f.name, class: 'rec-offer', 'data-testid': 'rec-offer' }, t('rec.download')));
-                if (rec.last && rec.last.info.files.length) cinemaNote.append(' ', h('button', { type: 'button', class: 'btn primary rec-share', 'data-action': 'rec-share', onclick: () => openFlightShare(ctx, 'video', { video: () => rec.lastFile() }) }, t('share.video.after')));
+                if (rec.last && rec.last.info.files.length) cinemaNote.append(' ', h('button', { type: 'button', class: 'btn primary rec-share', 'data-action': 'rec-share', onclick: () => openFlightShare(ctx, 'video', { video: () => rec.lastFiles() }) }, t('share.video.after')));
             } else if (cinemaOn) cinemaNote.append(t('cinema.on'));
             placeAbove();
         }
         rec.onChange = render;
-        rec.onStarted = showNotice;
+        // a recording started (the pilot or auto-record): the last note goes (its button would share
+        // the new file under the old file's words), and the author notice comes when it is due
+        rec.onStarted = () => {
+            note = '';
+            noteOffer = [];
+            showNotice();
+        };
 
         function savedNote(s: Saved): string {
             const i = s.info;
@@ -224,8 +234,8 @@ export const cinema: Feature = {
             return `${head ? `${head} ` : ''}${where}${parts} · ${t('rec.drops', { fps: i.fps, dup: i.duplicated, drop: i.dropped })}`;
         }
 
-        function showSaved(s: Saved | null): void {
-            if (!s) return;
+        /** A file was saved (Recording.onSaved: every recording and the export): the note line says so. */
+        function showSaved(s: Saved): void {
             hideNotice(); // the notice was about this recording; the note line takes over
 
             note = savedNote(s);
@@ -233,21 +243,18 @@ export const cinema: Feature = {
             hookCinema.last = s.info;
             render();
         }
-        rec.onEnded = showSaved;
-        SHARED.set(ctx, { rec, stop: () => stopRec(), show: showSaved });
+        rec.onSaved = showSaved;
+        SHARED.set(ctx, { rec, stop: () => stopRec() });
 
         /** activation: inside a click or a key press, where the folder's permission may be asked */
         async function startRec(activation: boolean, legacyV02 = false): Promise<string> {
-            note = '';
-            noteOffer = [];
             // a bar click or F9 is a user activation: ask for the folder straight away, before any await
             if (activation && rec.folder && rec.access === 'prompt') await rec.allow();
             return rec.queue(() => rec.start({ auto: false, activation, legacyV02 }));
         }
 
         async function stopRec(): Promise<RecorderInfo | null> {
-            const s = await rec.queue(() => rec.stop());
-            showSaved(s);
+            const s = await rec.queue(() => rec.stop()); // the note: onSaved
             if (s && q.get('simradio')) {
                 // test modes keep the bytes for the phase-D acceptance (accept-d.ts reads lastBytes)
                 const last = await readLast();

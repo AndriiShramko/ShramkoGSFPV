@@ -271,7 +271,6 @@ export const videoExport: Feature = {
                     result.info = saved.info;
                     result.seconds = saved.info.seconds;
                     if (saved.info.ended === 'cap') result.ended = 'error';
-                    share.show(saved);
                     offer.replaceChildren(...saved.offer.map((f) => h('a', { href: f.url, download: f.name, class: 'rec-offer', 'data-testid': 'video-export-offer' }, t('rec.download'))));
                 }
             } catch (e) {

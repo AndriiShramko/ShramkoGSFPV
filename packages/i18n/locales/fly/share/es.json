@@ -23,6 +23,7 @@
   "share.instagram.caption": "Texto copiado. Para Instagram también necesitas una imagen: vuela esta escena y compártela desde el vuelo.",
   "share.video.native": "Compartir vídeo…",
   "share.video.save": "Guardar vídeo",
+  "share.video.savePart": "Guardar parte {k} de {n}",
   "share.video.making": "Preparando tu vídeo…",
   "share.video.gone": "El archivo de vídeo ya no está aquí: graba el vuelo de nuevo para compartirlo.",
   "share.video.after": "Comparte tu vuelo",

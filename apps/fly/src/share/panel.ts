@@ -3,8 +3,9 @@
 // once the link is known, the ways out: the phone's share sheet (Web Share API), LinkedIn,
 // Facebook, X, Telegram, WhatsApp, Reddit (@gsfpv/i18n/share.json, shared with the landing),
 // Instagram (no web share link: it saves the picture or the video and copies the caption), copy
-// link, save picture. After a recording the video itself goes through the share sheet where the
-// browser can share files (phones), else it is offered to save.
+// link, save picture. After a recording the video itself (every part of a split one) goes through
+// the share sheet where the browser can share files (phones), else each part is offered to save.
+// Copies go through share/clipboard.ts (never through the link field).
 //
 // Which link and which words: share/links.ts (pure). The picture: share/picture.ts. Selectors the
 // acceptance reads (tools/bench/src/accept-v05-feedback.ts): .panel.share, [data-testid=share-url],
@@ -16,8 +17,9 @@ import { creditText } from '../scene-facts';
 import { q } from '../app/env';
 import type { SceneCredit } from '../scene-facts';
 import { SHARE_W, SHARE_H } from './picture';
-import { dataUrlBytes, inFlight, instagramCaption, kindOf, shareLink, targetHref, wordsKey } from './links';
-import type { ShareEntry } from './links';
+import { copyText } from './clipboard';
+import { dataUrlBytes, inFlight, instagramCaption, kindOf, pageDrawing, shareLink, targetHref, wordsKey } from './links';
+import type { DrawingParams, ShareEntry } from './links';
 import './share.css';
 
 /** One share: where it started, the scene, and what the place it started from can add. */
@@ -26,8 +28,16 @@ export interface ShareRequest {
     scene: SceneCredit;
     /** makes the picture of the view (a flight); absent outside a flight */
     picture?: () => Promise<string | null>;
-    /** the video of the flight (after a recording), loaded when the panel opens; null: it is gone */
-    video?: () => Promise<File | null>;
+    /**
+     * the video of the flight (after a recording), loaded when the panel opens: every part in order
+     * (a flight longer than recording.splitMin is several files), null for a part that is gone
+     */
+    video?: () => Promise<(File | null)[]>;
+    /**
+     * the shared scene's own drawing parameters (lane R: from the link the pilot pasted); absent: the
+     * page's query, only when the page was opened for this scene (share/links.ts pageDrawing)
+     */
+    drawing?: DrawingParams;
     /** the crash's impact speed, m/s (the crash panel's words) */
     speed?: number;
 }
@@ -40,8 +50,8 @@ export interface ShareHost {
     onClose?(): void;
 }
 
-/** What a test or the acceptance reads of the panel shown last (window.__gsfpv.share). */
-export interface ShareState { entry: ShareEntry; kind: string; url: string | null; text: string; picture: boolean; video: 'none' | 'loading' | 'ready' | 'gone'; canShareFiles: boolean }
+/** What a test or the acceptance reads of the panel shown last (window.__gsfpv.share); `files`: the video's parts offered. */
+export interface ShareState { entry: ShareEntry; kind: string; url: string | null; text: string; picture: boolean; video: 'none' | 'loading' | 'ready' | 'gone'; files: string[]; canShareFiles: boolean }
 let lastState: ShareState | null = null;
 /** The last share panel's state (null: none opened in this page). */
 export function shareState(): ShareState | null {
@@ -67,18 +77,6 @@ function download(href: string, name: string): void {
     a.remove();
 }
 
-async function copyText(text: string, fallback?: HTMLInputElement): Promise<boolean> {
-    try {
-        await navigator.clipboard.writeText(text);
-        return true;
-    } catch {
-        if (!fallback) return false;
-        fallback.value = text;
-        fallback.select();
-        return document.execCommand('copy');
-    }
-}
-
 /**
  * Opens the share panel (one at a time: null when one is up already). The flight's caller pauses
  * through `host.onOpen` / `onClose`; Esc and the x close it.
@@ -91,7 +89,7 @@ export function openSharePanel(host: ShareHost, req: ShareRequest): { close(): v
     const text = t(wordsKey(kind), { scene: sceneName, speed: (req.speed ?? 0).toFixed(1) });
     const credit = creditText(req.scene);
     const nav = navigator as ShareNav;
-    const state: ShareState = { entry: req.entry, kind, url: null, text, picture: false, video: req.video ? 'loading' : 'none', canShareFiles: false };
+    const state: ShareState = { entry: req.entry, kind, url: null, text, picture: false, video: req.video ? 'loading' : 'none', files: [], canShareFiles: false };
     lastState = state;
 
     let closed = false;
@@ -126,26 +124,33 @@ export function openSharePanel(host: ShareHost, req: ShareRequest): { close(): v
     host.parent.append(p.root);
 
     let picture: string | null = null;
-    let video: File | null = null;
-    /** the video's object URL (made once, revoked when the panel closes) */
-    let videoHref = '';
+    /** the video's parts in order (null: a part that is gone) */
+    let parts: (File | null)[] = [];
+    /** the parts that are here, with their object URLs (made once, revoked when the panel closes) */
+    let videos: { file: File; href: string }[] = [];
 
-    /** The video row: the share sheet with the file where the browser can, else a download. */
+    /** The video row: the share sheet with every part where the browser can, else a download per part. */
     const showVideo = (): void => {
         clear(videoRow);
-        if (!video) {
+        const files = parts.filter((f): f is File => f !== null);
+        state.files = files.map((f) => f.name);
+        if (files.length === 0) {
             videoRow.append(h('span', { class: 'muted small' }, t('share.video.gone')));
             videoRow.hidden = false;
             return;
         }
-        const file = video;
-        state.canShareFiles = typeof nav.share === 'function' && !!nav.canShare?.({ files: [file] });
+        state.canShareFiles = typeof nav.share === 'function' && !!nav.canShare?.({ files });
         if (state.canShareFiles) {
-            videoRow.append(h('button', { type: 'button', class: 'btn primary', 'data-action': 'share-video', onclick: () => void nav.share({ files: [file], title, text: `${text} ${state.url ?? ''}`.trim() }).catch(() => undefined) }, t('share.video.native')));
+            videoRow.append(h('button', { type: 'button', class: 'btn primary', 'data-action': 'share-video', onclick: () => void nav.share({ files, title, text: `${text} ${state.url ?? ''}`.trim() }).catch(() => undefined) }, t('share.video.native')));
         }
-        videoHref = URL.createObjectURL(file);
-        objectUrls.push(videoHref);
-        videoRow.append(h('a', { class: state.canShareFiles ? 'btn' : 'btn primary', 'data-action': 'share-video-save', href: videoHref, download: file.name }, t('share.video.save')));
+        videos = files.map((file) => ({ file, href: URL.createObjectURL(file) }));
+        objectUrls.push(...videos.map((v) => v.href));
+        parts.forEach((file, i) => {
+            const v = file && videos.find((x) => x.file === file);
+            if (!v) return;
+            const label = parts.length > 1 ? t('share.video.savePart', { k: i + 1, n: parts.length }) : t('share.video.save');
+            videoRow.append(h('a', { class: state.canShareFiles ? 'btn' : 'btn primary', 'data-action': 'share-video-save', href: v.href, download: v.file.name }, label));
+        });
         videoRow.hidden = false;
     };
 
@@ -168,15 +173,14 @@ export function openSharePanel(host: ShareHost, req: ShareRequest): { close(): v
         }
         targets.append(h('button', { type: 'button', class: 'btn', 'data-action': 'share-instagram', onclick: () => void (async () => {
             const caption = instagramCaption({ text, url, credit: t('share.scanBy', { credit }), tags: t('share.tags') });
-            const copied = await copyText(caption, urlField);
-            if (video && videoHref) download(videoHref, video.name);
+            await copyText(caption);
+            if (videos.length) for (const v of videos) download(v.href, v.file.name);
             else if (picture) download(picture, `shramkogsfpv-${req.scene.id}.jpg`);
-            status.textContent = video || picture ? t('share.instagram.done') : t('share.instagram.caption');
-            if (!copied) urlField.value = url;
+            status.textContent = videos.length || picture ? t('share.instagram.done') : t('share.instagram.caption');
         })() }, t('share.instagram.button')));
         const copy = h('button', { type: 'button', class: 'btn', 'data-action': 'share-copy', onclick: () => void (async () => {
-            if (await copyText(url, urlField)) copy.textContent = t('share.copied');
-            urlField.value = url;
+            if (await copyText(url)) copy.textContent = t('share.copied');
+            else urlField.select(); // both ways refused: the link is selected for Ctrl+C
         })() }, t('share.copy'));
         targets.append(copy);
         if (picture) targets.append(h('a', { class: 'btn', 'data-action': 'share-save', href: picture, download: `shramkogsfpv-${req.scene.id}.jpg` }, t('share.save')));
@@ -185,12 +189,14 @@ export function openSharePanel(host: ShareHost, req: ShareRequest): { close(): v
         (videoRow.querySelector<HTMLElement>('.btn') ?? targets.querySelector<HTMLElement>('.btn'))?.focus({ preventScroll: true });
     };
 
-    // the page's query as it was opened (app/env.ts reads it once): lane R's drawing parameters
-    const at = { origin: location.origin, locale, search: q.toString() };
+    const at = { origin: location.origin, locale };
+    // the shared scene's drawing parameters: its own, else the page's query (app/env.ts reads it once)
+    // when the page was opened for this scene
+    const drawing = req.drawing ?? pageDrawing(req.scene.id, q.toString());
     void (async () => {
         if (req.video) {
-            try { video = await req.video(); } catch { video = null; }
-            state.video = video ? 'ready' : 'gone';
+            try { parts = await req.video(); } catch { parts = []; }
+            state.video = parts.some((f) => f !== null) ? 'ready' : 'gone';
             if (closed) return;
             showVideo();
         }
@@ -216,7 +222,7 @@ export function openSharePanel(host: ShareHost, req: ShareRequest): { close(): v
             }
         }
         if (closed) return;
-        const url = shareLink({ entry: req.entry, sceneId: req.scene.id, inCatalogue: req.scene.inCatalogue, at, pictureUrl });
+        const url = shareLink({ entry: req.entry, sceneId: req.scene.id, inCatalogue: req.scene.inCatalogue, at, pictureUrl, drawing });
         status.textContent = failed ? t('share.failed') : pictureUrl ? t('share.ready') : t('share.ready.page');
         show(url);
     })();

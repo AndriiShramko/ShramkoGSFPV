@@ -23,6 +23,7 @@
   "share.instagram.caption": "Opis skopiowany. Do Instagrama potrzebny jest też obrazek: przeleć tę scenę i udostępnij ją z lotu.",
   "share.video.native": "Udostępnij nagranie…",
   "share.video.save": "Zapisz nagranie",
+  "share.video.savePart": "Zapisz część {k} z {n}",
   "share.video.making": "Przygotowuję nagranie…",
   "share.video.gone": "Pliku nagrania już tu nie ma: nagraj lot jeszcze raz, żeby go udostępnić.",
   "share.video.after": "Udostępnij swój lot",

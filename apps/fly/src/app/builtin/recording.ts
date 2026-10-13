@@ -62,8 +62,12 @@ export class Recording {
     busy = false;
     /** something the bar shows changed */
     onChange: () => void = () => {};
-    /** the recording ended by itself (memory cap, disk full, access lost) */
-    onEnded: (s: Saved) => void = () => {};
+    /**
+     * A file was saved: every recording however it stopped (the pilot: REC, F9, the menu, the dot;
+     * auto-record 3 s after a disarm; by itself: memory cap, disk full, access lost) and the video
+     * export. The bar (builtin/cinema.ts) shows it with "Share your flight"; this is its one way in.
+     */
+    onSaved: (s: Saved) => void = () => {};
     /** a recording started (by REC, F9, the menu or auto-record): the bar shows the author notice once (D36) */
     onStarted: (auto: boolean) => void = () => {};
     readonly rules = new AutoRecordRules();
@@ -222,7 +226,7 @@ export class Recording {
             r.pause(this.paused.flight || this.paused.hidden);
             r.onEnded = (info) => {
                 if (this.recorder === r) this.recorder = null;
-                void this.finish(info, r.target).then((s) => this.onEnded(s));
+                void this.finish(info, r.target);
             };
             this.recorder = r;
             this.autoRun = o.auto;
@@ -273,7 +277,7 @@ export class Recording {
         }
     }
 
-    /** Stops and saves; the files to save by hand are in the result's offer. */
+    /** Stops and saves (onSaved hears of it too); the files to save by hand are in the result's offer. */
     async stop(): Promise<Saved | null> {
         const r = this.recorder;
         if (!r) return null;
@@ -289,7 +293,10 @@ export class Recording {
         }
     }
 
-    /** After stop: browser-storage files go on into the folder when it can be written now, the rest are offered. */
+    /**
+     * After stop: browser-storage files go on into the folder when it can be written now, the rest
+     * are offered; then onSaved. Every saved file passes here (stop, auto stop, ended by itself, the export).
+     */
     private async finish(info: RecorderInfo, from: RecordTarget): Promise<Saved> {
         for (const u of this.offerUrls.splice(0)) URL.revokeObjectURL(u);
         const saved: Saved = { info, offer: [], moved: 0 };
@@ -312,6 +319,7 @@ export class Recording {
             }
         }
         this.last = saved;
+        this.onSaved(saved);
         return saved;
     }
 
@@ -330,28 +338,29 @@ export class Recording {
         return this.strip;
     }
 
-    /** Once per frame: a pending auto stop that is due. */
+    /** Once per frame: a pending auto stop that is due (its file reaches the bar through onSaved). */
     tick(nowMs: number): void {
         if (this.rules.tick(nowMs) === 'stop' && this.recorder && this.autoRun) void this.queue(() => this.stop());
     }
 
     /**
-     * The newest file of the last recording, wherever it went (the folder, the browser's storage,
-     * memory): what "Share your flight" sends. null when it is gone (the folder lost its access, the
-     * browser's copy was pruned). Read straight from the file, never fetched: the page's CSP has no
-     * blob: in connect-src.
+     * Every part of the last recording in order (a flight longer than recording.splitMin is several
+     * files), wherever it went (the folder, the browser's storage, memory): what "Share your flight"
+     * sends. null for a part that is gone (the folder lost its access, the browser's copy was pruned).
+     * Read straight from the files, never fetched: the page's CSP has no blob: in connect-src.
      */
-    async lastFile(): Promise<File | null> {
+    async lastFiles(): Promise<(File | null)[]> {
         const s = this.last;
-        const f = s?.info.files[s.info.files.length - 1];
-        if (!s || !f) return null;
-        const offered = s.offer.find((o) => o.name === f.name);
-        if (offered) return new File([offered.blob], f.name, { type: offered.blob.type || 'video/mp4' });
-        try {
-            return this.folder ? await (await this.folder.getFileHandle(f.name)).getFile() : null;
-        } catch {
-            return null;
-        }
+        if (!s) return [];
+        return Promise.all(s.info.files.map(async (f): Promise<File | null> => {
+            const offered = s.offer.find((o) => o.name === f.name);
+            if (offered) return new File([offered.blob], f.name, { type: offered.blob.type || 'video/mp4' });
+            try {
+                return this.folder ? await (await this.folder.getFileHandle(f.name)).getFile() : null;
+            } catch {
+                return null;
+            }
+        }));
     }
 
     /** A flight event: auto-record starts at arm (with Auto on, in a browser that can encode video). */

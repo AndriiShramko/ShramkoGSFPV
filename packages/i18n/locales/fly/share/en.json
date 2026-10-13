@@ -23,6 +23,7 @@
   "share.instagram.caption": "Caption copied. For Instagram you also need a picture: fly this scene and share it from the flight.",
   "share.video.native": "Share video…",
   "share.video.save": "Save video",
+  "share.video.savePart": "Save part {k} of {n}",
   "share.video.making": "Getting your video ready…",
   "share.video.gone": "The video file is not here any more: record the flight again to share it.",
   "share.video.after": "Share your flight",
