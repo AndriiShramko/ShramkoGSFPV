@@ -11,14 +11,15 @@
 // edges. Each chunk arrives as one interleaved vertex buffer packed off the main thread
 // (voxel-colors.ts packChunk, in the app's worker; the engine's per-attribute path cost 3.4 ms per
 // chunk on the main thread in the Winter Garden, up to 22 ms); a style change rewrites only its
-// colour bytes, a few chunks per frame.
+// colour bytes, a few chunks per frame. Quads above the collision ceiling (v0.7) come classed by the
+// worker and take their own colour; the ceiling's translucent plane is drawn in the same layer.
 
 import {
     Layer, Mesh, MeshInstance, GraphNode, Entity, StandardMaterial, Texture, Color, BoundingBox, Vec3,
     VertexFormat, VertexBuffer, IndexBuffer,
     PRIMITIVE_TRIANGLES, BLEND_NORMAL, BLEND_NONE, PIXELFORMAT_RGBA8, ADDRESS_REPEAT, FILTER_LINEAR, FILTER_LINEAR_MIPMAP_LINEAR,
     SEMANTIC_POSITION, SEMANTIC_NORMAL, SEMANTIC_TEXCOORD0, SEMANTIC_COLOR, TYPE_FLOAT32, TYPE_UINT8,
-    BUFFER_STATIC, INDEXFORMAT_UINT16, INDEXFORMAT_UINT32
+    BUFFER_STATIC, INDEXFORMAT_UINT16, INDEXFORMAT_UINT32, CULLFACE_NONE
 } from 'playcanvas';
 import type { SplatRenderer } from './renderer';
 import { VOXEL_STYLES, writeColors } from './voxel-colors';
@@ -89,6 +90,9 @@ export class VoxelOverlay {
     private hi = 4;
     private quadsNow = 0;
     private up = { n: 0, ms: 0, max: 0, quads: 0 };
+    /** the collision ceiling's plane (setCeilingPlane), made on first use */
+    private plane: Entity | null = null;
+    private planeMat: StandardMaterial | null = null;
     /**
      * Uploads and recolours per frame: a burst of new chunks must not cost one long frame (about
      * 0.23 us per quad here, most of it the GPU buffer copy). A chunk larger than the budget still
@@ -221,6 +225,47 @@ export class VoxelOverlay {
         }
     }
 
+    /**
+     * The collision ceiling's plane (v0.7): a translucent violet square, `half` metres to each side of
+     * (x, z), at world height y, drawn with the voxels (in their layer, so only while the grid is
+     * shown); null hides it. Seen from above and below alike.
+     */
+    setCeilingPlane(p: { x: number; y: number; z: number; half: number } | null): void {
+        if (!p) {
+            if (this.plane) this.plane.enabled = false;
+            return;
+        }
+        if (!this.plane) {
+            const m = new StandardMaterial();
+            m.name = 'gsfpv-ceiling-plane';
+            m.useLighting = false;
+            m.useFog = false;
+            m.useSkybox = false;
+            m.useTonemap = false;
+            m.diffuse = new Color(0, 0, 0);
+            m.emissive = new Color(0.66, 0.6, 1);
+            m.opacity = 0.22;
+            m.blendType = BLEND_NORMAL;
+            m.depthWrite = false;
+            m.depthTest = true;
+            m.cull = CULLFACE_NONE;
+            m.update();
+            const e = new Entity('gsfpv-ceiling-plane', this.r.app);
+            e.addComponent('render', { type: 'plane', material: m, layers: [this.layer.id], castShadows: false });
+            this.r.app.root.addChild(e);
+            this.plane = e;
+            this.planeMat = m;
+        }
+        this.plane.enabled = true;
+        this.plane.setPosition(p.x, p.y, p.z);
+        this.plane.setLocalScale(2 * p.half, 1, 2 * p.half);
+    }
+
+    /** The ceiling plane is on (tests and the panel ask). */
+    get ceilingPlaneShown(): boolean {
+        return !!this.plane?.enabled;
+    }
+
     /** World heights (m) mapped to the ends of the height ramp (chunks recolour when the style is 'height'). */
     setHeightRange(lo: number, hi: number): void {
         this.lo = lo;
@@ -336,6 +381,8 @@ export class VoxelOverlay {
         layers.remove(this.layer);
         for (const s of VOXEL_STYLES) this.mats[s].destroy();
         for (const e of this.lights) e.destroy();
+        this.plane?.destroy();
+        this.planeMat?.destroy();
         this.tex.destroy();
     }
 }

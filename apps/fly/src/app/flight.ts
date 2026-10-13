@@ -13,6 +13,8 @@ import { VoxelController } from '../voxels';
 import { wallsWanted } from '../flightwalls';
 import { storedTransform } from './builtin/scale';
 import { storedDropFloaters } from './builtin/floaters';
+import { storedCeiling } from '../session/ceiling-source';
+import { windFor } from '../session/wind-source';
 import { Hud } from '../ui/hud';
 import { LoadingScreen } from '../ui/loading';
 import type { ShowcaseScene } from '../ui/scenes';
@@ -161,6 +163,9 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, sceneId: s
             wallsOn,
             transform: storedTransform(prefs, sceneId),
             dropFloaters: storedDropFloaters(prefs, sceneId),
+            ceilingM: storedCeiling(prefs, sceneId),
+            // the live wind's request runs while the scan loads (the session awaits it with the walls)
+            wind: windFor(prefs, sceneId, meta),
             drawScan,
             preset: q.get('drone') ?? undefined,
             overrides: { gravity: g ? Number(g) : undefined, gravityMode: gm ?? undefined },

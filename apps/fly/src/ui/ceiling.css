@@ -1,0 +1,5 @@
+/* "Ignore collisions above" (ui/ceiling.ts): the floaters panel's layout (fly.css .floaters-panel),
+   its own swatch for the voxels above the plane: the violet of render-pc voxel-colors.ts ABOVE. */
+.fl-swatch.ceiling-above { background: #a899ff; }
+.fl-swatch.ceiling-speck { margin-left: 10px; }
+.ceiling-panel .fl-legend { flex-wrap: wrap; row-gap: 4px; }

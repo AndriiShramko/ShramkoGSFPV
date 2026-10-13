@@ -76,8 +76,8 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['scene.dropFloaters', 'voxels', 'scene', 'number', 'curated:dropFloaters|0', 'life'],
     ['scene.walls', 'voxels', 'global', 'enum', 'curated:walls|on', 'life'],
     // v0.7 lane E: the collision ceiling (the admin's catalogue ceilingM per scan; 10 000 m ignores nothing)
-    ['scene.ceiling', 'voxels', 'scene', 'enum', 'scene', 'life'],
-    ['scene.ceilingM', 'voxels', 'scene', 'number', 'curated:ceilingM|10000', 'life'],
+    ['scene.ceiling', 'voxels', 'scene', 'enum', 'scene', 'live'],
+    ['scene.ceilingM', 'voxels', 'scene', 'number', 'curated:ceilingM|10000', 'live'],
     // v0.7 lane E: the wind of the place, beside gravity
     ['wind.mode', 'drone', 'global', 'enum', 'scene', 'life'],
     ['wind.fromDeg', 'drone', 'scene', 'number', 270, 'life'],

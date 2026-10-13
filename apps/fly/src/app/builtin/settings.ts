@@ -19,6 +19,8 @@ import { t } from '../../i18n';
 import { banner, q } from '../env';
 import { applyCamera, applyModel, bridgeVoxels, modelDiffers, pilotSet } from '../prefs';
 import { floatersRow } from './floaters';
+import { ceilingRow } from './ceiling';
+import { windRow } from './wind';
 import type { Feature, FlightContext } from '../context';
 
 let current: SettingsScreen | null = null;
@@ -114,7 +116,13 @@ export function openSettings(ctx: FlightContext, focus: string | null = null): v
             applyToFlight(ctx);
             ctx.resume('panel');
         },
-        extra: (id) => (id === 'scene.dropFloaters' ? floatersRow(ctx, () => current?.close()) : null)
+        // a row's live line and its panel, under the row (the setting's owner builds it)
+        extra: (id) => {
+            if (id === 'scene.dropFloaters') return floatersRow(ctx, () => current?.close());
+            if (id === 'scene.ceiling') return ceilingRow(ctx, () => current?.close());
+            if (id === 'wind.mode') return windRow(ctx);
+            return null;
+        }
     }, { focus });
 }
 

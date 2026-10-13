@@ -5,10 +5,12 @@
 // holds Float32), so the live walls, the life header and a replay are built from the same numbers.
 //
 // The floater filter (G.3, the owner's item 24: phantom walls) is applied first, to the scan's own
-// walls (collision dropFloaters: pieces smaller than N blocks removed), then the transform: a
-// filter never moves a voxel index, so the two commute, and the filtered walls' hash does not
-// depend on the scene's size.
-import { VoxelContactWorld, applyTransform, dropFloaters, findSphereSpawn, floaterDigestParts, relativeTransform, transformCollision } from '@gsfpv/collision';
+// walls (collision dropFloaters: pieces smaller than N blocks removed), then the collision ceiling
+// (v0.7 lane E: voxels at or above a height in the scan's own coordinates are no walls; collision
+// withCeiling), then the transform: neither the filter nor the ceiling moves a voxel index, so they
+// commute with the transform, the filtered walls' hash does not depend on the scene's size, and the
+// ceiling stays in scan metres at any size (sceneWalls).
+import { VoxelContactWorld, applyTransform, dropFloaters, findSphereSpawn, floaterDigestParts, relativeTransform, transformCollision, withCeiling } from '@gsfpv/collision';
 import type { FloaterFilter, SceneTransform, Vec3, VoxelCollision } from '@gsfpv/collision';
 import { Sha256 } from '@gsfpv/sim-core';
 import type { ContactWorld } from '@gsfpv/sim-core';
@@ -64,6 +66,16 @@ export function filteredWalls(base: VoxelCollision, minBlocks: number): { filter
     return { filter, collision: filter.collision, sha256: minBlocks > 0 ? wallsDigest(filter.collision) : null };
 }
 
+/**
+ * The scan's walls as a flight has them before the scene's size: the floater filter, then the
+ * collision ceiling (null: none; scan metres, Float32 as the log holds it). Unscaled: give the result
+ * to scaledCollision. The live session and a replay build them with this one function.
+ */
+export function sceneWalls(base: VoxelCollision, floaterMinBlocks: number, ceilingM: number | null): VoxelCollision {
+    const col = filteredWalls(base, floaterMinBlocks).collision;
+    return ceilingM === null ? col : withCeiling(col, ceilingM);
+}
+
 /** The walls a page has for replays: the scan's own (untransformed) collision and its contact world. */
 export interface BaseWalls {
     world: ContactWorld | null;
@@ -72,15 +84,15 @@ export interface BaseWalls {
 
 /**
  * The contact world under T (a life header's transform or a world record's) with the floater filter
- * applied first (G.3): the base world at the identity and no filter, so a flight that never
- * rescaled replays exactly as before; else a new one from the base
- * every time (never chained), so rounding never accumulates. null: no walls, or none to scale.
+ * and the collision ceiling applied first (sceneWalls): the base world at the identity with neither,
+ * so a flight that never rescaled replays exactly as before; else a new one from the base every time
+ * (never chained), so rounding never accumulates. null: no walls, or none to scale.
  */
-export function worldUnder(walls: BaseWalls, tr: { s: number; t: readonly number[] }, floaterMinBlocks = 0): ContactWorld | null {
+export function worldUnder(walls: BaseWalls, tr: { s: number; t: readonly number[] }, floaterMinBlocks = 0, ceilingM: number | null = null): ContactWorld | null {
     if (!walls.world) return null;
-    if (isIdentity(tr) && floaterMinBlocks === 0) return walls.world;
+    if (isIdentity(tr) && floaterMinBlocks === 0 && ceilingM === null) return walls.world;
     if (!walls.collision) return null;
-    const col = filteredWalls(walls.collision, floaterMinBlocks).collision;
+    const col = sceneWalls(walls.collision, floaterMinBlocks, ceilingM);
     return new VoxelContactWorld(isIdentity(tr) ? col : transformCollision(col, tr.s, [tr.t[0], tr.t[1], tr.t[2]]));
 }
 

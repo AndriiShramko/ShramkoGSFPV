@@ -11,7 +11,16 @@ export interface VoxelLayout { stride: number; pos: number; nrm: number; uv: num
 
 type RGB = [number, number, number];
 
+/**
+ * A chunk's per-quad class (packages/collision overlay.ts QUAD_*; render-pc does not import collision):
+ * 0 a wall, 1 a floating piece, 2 above the collision ceiling (drawn, but no longer a wall).
+ */
+export const QUAD_FLOATER = 1;
+export const QUAD_ABOVE_CEILING = 2;
+
 const FLOATER: Record<VoxelStyle, RGB> = { solid: [1, 0.28, 0.82], wire: [1, 0.3, 0.85], height: [1, 0.25, 0.8], floaters: [1, 0.16, 0.2] };
+/** above the collision ceiling: a pale violet in every style, apart from walls (cyan, grey, the ramp) and floaters (pink, red) */
+const ABOVE: RGB = [0.66, 0.6, 1];
 const BASE: Record<Exclude<VoxelStyle, 'height'>, RGB> = { solid: [0.66, 0.86, 0.95], wire: [0.3, 0.95, 1], floaters: [0.5, 0.53, 0.57] };
 // height ramp, low to high: indigo, blue, cyan, green, yellow, orange
 const RAMP: RGB[] = [[0.3, 0.22, 0.8], [0.1, 0.45, 1], [0, 0.85, 0.92], [0.35, 0.95, 0.4], [1, 0.86, 0.2], [1, 0.4, 0.15]];
@@ -25,25 +34,31 @@ export function heightColor(t: number): RGB {
     return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f];
 }
 
-/** A vertex's colour in a style: floaters stand out in every style; height maps y into [lo, hi]. */
-export function voxelColor(style: VoxelStyle, y: number, floater: boolean, lo: number, hi: number): RGB {
-    if (floater) return FLOATER[style];
+/**
+ * A vertex's colour in a style: quads above the collision ceiling and floaters stand out in every
+ * style; height maps y into [lo, hi]. `cls`: the quad's class (true = a floater, as before the ceiling).
+ */
+export function voxelColor(style: VoxelStyle, y: number, cls: boolean | number, lo: number, hi: number): RGB {
+    if (cls === QUAD_ABOVE_CEILING) return ABOVE;
+    if (cls) return FLOATER[style];
     if (style === 'height') return heightColor((y - lo) / Math.max(1e-6, hi - lo));
     return BASE[style];
 }
 
-/** Write the colour bytes of every vertex of an interleaved buffer (heights read from its positions). */
+/** Write the colour bytes of every vertex of an interleaved buffer (heights read from its positions); `floater`: the class per quad. */
 export function writeColors(buf: ArrayBuffer, L: VoxelLayout, nv: number, style: VoxelStyle, floater: Uint8Array, lo: number, hi: number): void {
     const f = new Float32Array(buf);
     const u8 = new Uint8Array(buf);
     const fs = L.stride / 4, py = L.pos / 4 + 1;
     const to8 = (c: RGB): number[] => c.map((v) => Math.round(v * 255));
     const fl = to8(FLOATER[style]);
+    const ab = to8(ABOVE);
     const flat = style === 'height' ? null : to8(BASE[style]);
     const span = Math.max(1e-6, hi - lo);
     for (let v = 0; v < nv; v++) {
         let r: number, g: number, b: number;
-        if (floater[v >> 2]) { r = fl[0]; g = fl[1]; b = fl[2]; } else if (flat) { r = flat[0]; g = flat[1]; b = flat[2]; } else {
+        const cls = floater[v >> 2];
+        if (cls === QUAD_ABOVE_CEILING) { r = ab[0]; g = ab[1]; b = ab[2]; } else if (cls) { r = fl[0]; g = fl[1]; b = fl[2]; } else if (flat) { r = flat[0]; g = flat[1]; b = flat[2]; } else {
             const c = heightColor((f[v * fs + py] - lo) / span);
             r = Math.round(c[0] * 255); g = Math.round(c[1] * 255); b = Math.round(c[2] * 255);
         }
@@ -56,7 +71,7 @@ export function writeColors(buf: ArrayBuffer, L: VoxelLayout, nv: number, style:
 export interface PackedChunk {
     vertices: ArrayBuffer;
     indices: Uint16Array | Uint32Array;
-    /** per quad: 1 = part of a floating piece (kept for recolouring) */
+    /** per quad, its class (kept for recolouring): 1 = part of a floating piece, 2 = above the collision ceiling */
     floater: Uint8Array;
     quads: number;
     /** min x, y, z, max x, y, z */

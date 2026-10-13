@@ -48,10 +48,11 @@ export const SCENE_DEFS: readonly SettingDef[] = [
     { id: 'scene.dropFloaters', group: 'voxels', scope: 'scene', type: 'number', min: 0, max: 64, step: 1, unit: 'blocks', default: { curated: 'dropFloaters', fallback: 0 }, apply: 'life', shown: ['settings'], status: 'shipped', since: 1, items: [24] },
     // v0.7 lane E, the owner's item 10: collisions are ignored above a height (outdoor scans have
     // floating sky splats). 'scene': the admin's ceiling for this scan (catalogue ceilingM), none where
-    // there is none; 'off': none; 'custom': scene.ceilingM. Per scan; it changes the walls: a life setting.
-    { id: 'scene.ceiling', group: 'voxels', scope: 'scene', type: 'enum', options: CEILING_OPTIONS, default: 'scene', apply: 'life', shown: ['settings'], status: 'shipped', since: 2 },
+    // there is none; 'off': none; 'custom': scene.ceilingM. Per scan. It changes the walls as the scene
+    // size does: a world record at once, the craft flies on (no new flight model): 'live'.
+    { id: 'scene.ceiling', group: 'voxels', scope: 'scene', type: 'enum', options: CEILING_OPTIONS, default: 'scene', apply: 'live', shown: ['settings'], status: 'shipped', since: 2 },
     // the height, in the scan's own coordinates (the world before Scene size, scale 1, metres up),
     // like the catalogue's ceilingM, which is its default. Set in the ceiling panel, where it reads as
     // metres above the start at the size flown; the raw number is an advanced row.
-    { id: 'scene.ceilingM', group: 'voxels', scope: 'scene', type: 'number', min: -CEILING_LIMIT_M, max: CEILING_LIMIT_M, step: 0.1, unit: 'm', default: { curated: 'ceilingM', fallback: CEILING_LIMIT_M }, apply: 'life', shown: ['settings'], advanced: true, status: 'shipped', since: 2 }
+    { id: 'scene.ceilingM', group: 'voxels', scope: 'scene', type: 'number', min: -CEILING_LIMIT_M, max: CEILING_LIMIT_M, step: 0.1, unit: 'm', default: { curated: 'ceilingM', fallback: CEILING_LIMIT_M }, apply: 'live', shown: ['settings'], advanced: true, status: 'shipped', since: 2 }
 ];
