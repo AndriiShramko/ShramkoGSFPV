@@ -21,7 +21,8 @@ A record (see docs/wip/v07-b.md for the meaning of each field):
     source (report|telegram|admin|seed), tg {card: message_id}.
 A mail (inside its idea's thread; this is the outbox):
     id (M-<n>), kind (reply|done), to, lang, subject, body, plain, html, messageId, inReplyTo,
-    references, state (draft|queued|sending|sent|failed|cancelled|waiting_setup|no_email|unknown),
+    references, state (draft|superseded|queued|sending|sent|failed|cancelled|waiting_setup|no_email|
+    unknown; superseded: a draft a newer done summary replaced, kept so its Send is refused),
     created, notBefore, attempts, nextAt, error, sentAt, by, tgMsg.
 
 Migration: the first transaction on a missing file imports every line of reports.jsonl (the visitors'
@@ -52,7 +53,7 @@ URGENCIES = ("urgent", "high", "normal", "low")  # most urgent first: the queue'
 LOCALES = ("en", "es", "pl", "ru")
 CONTACT_KINDS = ("email", "other", "none")
 MAIL_KINDS = ("reply", "done")
-MAIL_STATES = ("draft", "queued", "sending", "sent", "failed", "cancelled", "waiting_setup", "no_email", "unknown")
+MAIL_STATES = ("draft", "superseded", "queued", "sending", "sent", "failed", "cancelled", "waiting_setup", "no_email", "unknown")
 # the public roadmap: store status -> roadmap status, store kind -> roadmap kind (plan, "Contracts")
 ROADMAP_STATUS = {"accepted": "planned", "in_progress": "in_progress", "done": "done"}
 ROADMAP_KIND = {"feature": "feature", "idea": "idea", "note": "idea", "bug": "bug"}

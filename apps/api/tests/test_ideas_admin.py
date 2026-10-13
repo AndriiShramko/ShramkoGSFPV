@@ -129,18 +129,25 @@ class Routes(IdeasAdminTest):
         self.assertEqual(self.w.smtp.messages, [])                    # cancelled in the window
         st, doc = self.call("ideas/done", {"id": rid, "summary": {"pl": "Deszcz jest w scenach."}}, cookie, csrf)
         self.assertEqual((st, doc["idea"]["status"], doc["draft"]["state"]), (200, "done", "draft"))
+        seen = doc["draft"]["id"]                                      # the kanban shows this draft
+        st, doc = self.call("ideas/done", {"id": rid, "summary": {"pl": "Deszcz i wiatr są w scenach."}}, cookie, csrf)
+        current = doc["draft"]["id"]                                   # another tab (or an agent) rewrote it
         self.w.now[0] += 86400
         self.w.worker.run_once()
         self.assertEqual(self.w.smtp.messages, [])                    # a draft is not sent
         cookie, csrf = self.login()                                    # a day later: the 12 h session is over
-        st, doc = self.call("ideas/send-done", {"id": rid}, cookie, csrf)
+        self.assertEqual(self.call("ideas/send-done", {"id": rid}, cookie, csrf)[:1], (400,))   # which draft? must be named
+        st, doc = self.call("ideas/send-done", {"id": rid, "mail": seen}, cookie, csrf)
+        self.assertEqual((st, doc.get("reason")), (409, "stale-draft"))                        # a stale kanban sends nothing
+        st, doc = self.call("ideas/send-done", {"id": rid, "mail": current}, cookie, csrf)
         self.assertEqual((st, doc["mail"]["state"]), (200, "queued"))
         self.assertEqual(self.call("ideas/mail/cancel", {"id": "M-999"}, cookie, csrf)[0], 404)
         self.w.now[0] += 61
         self.w.worker.run_once()
         self.assertEqual(len(self.w.smtp.messages), 1)                # control: the explicit send went, once
         self.assertEqual(self.call("ideas/mail/cancel", {"id": doc["mail"]["id"]}, cookie, csrf)[0], 409)
-        self.assertEqual(self.call("ideas/send-done", {"id": rid}, cookie, csrf)[0], 409)
+        self.assertEqual(self.call("ideas/send-done", {"id": rid, "mail": current}, cookie, csrf)[0], 409)
+        self.assertIn("Deszcz i wiatr", self.w.smtp.messages[0]["data"].decode("utf-8", "replace"))
 
 
 class PublicRoadmap(IdeasAdminTest):

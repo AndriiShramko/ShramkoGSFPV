@@ -79,6 +79,7 @@
   "mail.failed": "El e-mail a {to} ({id}) no salió ({error}).",
   "mail.tooLate": "Demasiado tarde: se está enviando o ya se envió.",
   "mail.noDraft": "No hay borrador que enviar: ya se envió o se sustituyó.",
+  "mail.staleDraft": "Este borrador fue sustituido por uno más nuevo, así que no se envió nada. El borrador actual está abajo.",
   "note.created": "Nota {id} guardada. Acéptala y dale una urgencia para que entre en la cola de trabajo.",
   "note.empty": "Escribe la nota después del comando, por ejemplo: /note Un piloto quiere escenas nocturnas pilot@example.com #alta #pl",
   "queue.title": "Cola de trabajo ({n}):",

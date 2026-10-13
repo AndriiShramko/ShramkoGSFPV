@@ -79,6 +79,7 @@
   "mail.failed": "The e-mail to {to} ({id}) did not go ({error}).",
   "mail.tooLate": "Too late: it is being sent or has been sent.",
   "mail.noDraft": "No draft to send: it has already been sent or replaced.",
+  "mail.staleDraft": "This draft was replaced by a newer one, so nothing was sent. The current draft is below.",
   "note.created": "Note {id} saved. Accept it and give it an urgency to put it in the work queue.",
   "note.empty": "Write the note after the command, for example: /note A pilot wants night scenes pilot@example.com #high #pl",
   "queue.title": "Work queue ({n}):",

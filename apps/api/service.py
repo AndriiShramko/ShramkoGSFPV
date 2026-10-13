@@ -6,7 +6,9 @@ the outbox worker (outbox.py) all call these methods, so a rule lives in one pla
 - an e-mail is queued only by an explicit act of the owner: reply() (his answer to a pilot) and
   send_done() / send_mail() (his Send under a draft or a waiting e-mail); every queued e-mail waits
   UNDO seconds (MAIL_UNDO_S, default 60) in which cancel_mail() stops it;
-- set_done_summary() only writes a DRAFT of the thank-you e-mail, never queues it;
+- set_done_summary() only writes a DRAFT of the thank-you e-mail, never queues it; an older draft
+  becomes `superseded` (kept), and send_done() names the draft the owner saw, so a Send under a draft
+  that was replaced meanwhile is refused (stale-draft) instead of sending a text he never read;
 - no e-mail address -> the answer is kept in the thread as `no_email`; Gmail not configured -> it waits
   as `waiting_setup` and only goes after a later explicit send_mail();
 - the worker claims a due e-mail (queued -> sending) before it talks to SMTP and records the outcome
@@ -252,6 +254,8 @@ class IdeasService:
             if hit is None:
                 raise IdeaError("not-found", 404)
             rec, mail = hit
+            if mail["state"] == "superseded":
+                raise IdeaError("stale-draft", 409)
             if mail["state"] in ("sending", "sent", "no_email"):
                 raise IdeaError("too-late", 409)
             changed = mail["state"] != "cancelled"
@@ -282,7 +286,9 @@ class IdeasService:
                 lang_ = rec["lang"] if rec["lang"] in ideas.LOCALES else "en"
                 s = rec["done"]["summary"]
                 body = s.get(lang_) or s.get("en") or next(iter(s.values()))
-                rec["thread"] = [m for m in rec["thread"] if not (m["kind"] == "done" and m["state"] == "draft")]
+                for m in rec["thread"]:  # kept, so a Send pressed under an older draft is refused, not lost
+                    if m["kind"] == "done" and m["state"] == "draft":
+                        m["state"] = "superseded"
                 draft = self._mail(doc, rec, "done", body, by, "draft", stamp)
                 rec["thread"].append(draft)
             out = copy.deepcopy(rec)
@@ -291,12 +297,20 @@ class IdeasService:
         self._emit("draft", out, copy.deepcopy(draft), by)
         return out, copy.deepcopy(draft)
 
-    def send_done(self, rid: str, by: str) -> tuple[dict, dict]:
-        """The owner's Send under the draft thank-you e-mail: the only way it is queued."""
+    def send_done(self, rid: str, mail_id: str, by: str) -> tuple[dict, dict]:
+        """The owner's Send under the draft thank-you e-mail he was shown (mail_id: that draft): the only
+        way it is queued. A draft that a newer summary replaced meanwhile is refused (stale-draft), so
+        what goes is always the text he saw; one already sent or queued is refused (no-draft)."""
+        if not isinstance(mail_id, str) or not ideas.MAIL_ID_RE.fullmatch(mail_id):
+            raise IdeaError("bad-mail")
         t, _ = self._now()
         with self._idea(rid) as (_, rec):
-            draft = next((m for m in reversed(rec["thread"]) if m["kind"] == "done" and m["state"] == "draft"), None)
+            draft = next((m for m in rec["thread"] if m["id"] == mail_id and m["kind"] == "done"), None)
             if draft is None:
+                raise IdeaError("not-found", 404)
+            if draft["state"] == "superseded":
+                raise IdeaError("stale-draft", 409)
+            if draft["state"] != "draft":
                 raise IdeaError("no-draft", 409)
             event = self._queue(draft, t)
             out, m = copy.deepcopy(rec), copy.deepcopy(draft)
@@ -312,6 +326,8 @@ class IdeasService:
             if hit is None:
                 raise IdeaError("not-found", 404)
             rec, mail = hit
+            if mail["state"] == "superseded":
+                raise IdeaError("stale-draft", 409)
             if mail["state"] not in RESENDABLE + ("draft",):
                 raise IdeaError("not-resendable", 409)
             event = self._queue(mail, t)

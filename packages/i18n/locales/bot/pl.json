@@ -79,6 +79,7 @@
   "mail.failed": "E-mail do {to} ({id}) nie wyszedł ({error}).",
   "mail.tooLate": "Za późno: jest wysyłany albo już wysłany.",
   "mail.noDraft": "Nie ma szkicu do wysłania: został już wysłany albo zastąpiony.",
+  "mail.staleDraft": "Ten szkic został zastąpiony nowszym, więc nic nie wysłano. Aktualny szkic jest poniżej.",
   "note.created": "Notatka {id} zapisana. Przyjmij ją i nadaj pilność, żeby trafiła do kolejki prac.",
   "note.empty": "Napisz notatkę po komendzie, na przykład: /note Pilot chce nocnych scen pilot@example.com #wysoka #pl",
   "queue.title": "Kolejka prac ({n}):",

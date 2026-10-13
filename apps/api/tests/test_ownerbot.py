@@ -376,12 +376,13 @@ class Conversation(BotTest):
         draft = self.last()
         self.assertTrue(draft["text"].startswith(self.t("draft.head", to="pilot@example.com", lang="pl", id=rid)))
         self.assertIn("Rain is in every outdoor scene.", draft["text"])
-        self.assertEqual([b["callback_data"] for b in draft["reply_markup"]["inline_keyboard"][0]], [f"m:{rid}", f"e:{rid}"])
+        mail_id = self.w.service.get(rid)["thread"][-1]["id"]
+        self.assertEqual([b["callback_data"] for b in draft["reply_markup"]["inline_keyboard"][0]], [f"m:{mail_id}", f"e:{rid}"])
         self.assertEqual(self.at(86400 * 7), 0)                              # no Send, no e-mail, ever
         # control: Send queues it; it goes after the window, once
-        self.assertEqual(self.w.update(52, **self.w.press(f"m:{rid}", self.w.tg._next)), "send-done")
+        self.assertEqual(self.w.update(52, **self.w.press(f"m:{mail_id}", self.w.tg._next)), "send-done")
         self.assertEqual(self.at(61), 1)
-        self.assertEqual(self.w.update(53, **self.w.press(f"m:{rid}", self.w.tg._next)), "refused:no-draft")
+        self.assertEqual(self.w.update(53, **self.w.press(f"m:{mail_id}", self.w.tg._next)), "refused:no-draft")
         self.assertEqual(self.last("answerCallbackQuery")["text"], self.t("mail.noDraft"))
         self.assertEqual(self.at(86400), 1)
         self.assertIsNotNone(self.w.service.get(rid)["notified"])
@@ -390,12 +391,36 @@ class Conversation(BotTest):
         rec, card = self.card()
         self.w.service.set_done_summary(rec["id"], {"en": "Done by the agent"}, "agent")
         self.assertIn("Done by the agent", self.last()["text"])
-        self.assertEqual(self.last()["reply_markup"]["inline_keyboard"][0][0]["callback_data"], f"m:{rec['id']}")
+        draft = self.w.service.get(rec["id"])["thread"][-1]
+        self.assertEqual(self.last()["reply_markup"]["inline_keyboard"][0][0]["callback_data"], f"m:{draft['id']}")
         self.assertEqual(self.at(86400), 0)
         # the owner's Done afterwards shows that draft again instead of asking
         self.w.service.set_status(rec["id"], "in_progress", "admin")
         self.w.update(60, **self.w.press(f"s:d:{rec['id']}", card))
         self.assertIn("Done by the agent", self.last()["text"])
+
+    def test_send_under_a_replaced_draft_sends_nothing_and_shows_the_current_one(self):
+        """Review R2: the owner reads draft A; an agent rewrites the summary (draft B); Send under A's
+        message must not send B, a text he never saw."""
+        rec, _ = self.card(lang="pl")
+        rid = rec["id"]
+        self.w.service.set_done_summary(rid, {"pl": "TEXT A the owner reads"}, "agent")
+        msg_a, data_a = self.w.tg._next, self.last()["reply_markup"]["inline_keyboard"][0][0]["callback_data"]
+        self.w.service.set_done_summary(rid, {"pl": "TEXT B written later"}, "agent")
+        data_b = self.last()["reply_markup"]["inline_keyboard"][0][0]["callback_data"]
+        self.assertNotEqual(data_a, data_b)
+        self.assertEqual(self.w.update(70, **self.w.press(data_a, msg_a)), "refused:stale-draft")
+        self.assertEqual(self.last("answerCallbackQuery")["text"], self.t("mail.staleDraft"))
+        shown = self.last()                                   # the draft that would go now, with its own Send
+        self.assertIn("TEXT B written later", shown["text"])
+        self.assertEqual(shown["reply_markup"]["inline_keyboard"][0][0]["callback_data"], data_b)
+        self.assertEqual(self.at(86400), 0)
+        # control: Send under the current draft sends exactly what it showed
+        self.assertEqual(self.w.update(71, **self.w.press(data_b, self.w.tg._next)), "send-done")
+        self.assertEqual(self.at(61), 1)
+        body = self.w.smtp.messages[0]["data"].decode("utf-8", "replace")
+        self.assertIn("TEXT B written later", body)
+        self.assertNotIn("TEXT A", body)
 
 
 class Facts(unittest.TestCase):

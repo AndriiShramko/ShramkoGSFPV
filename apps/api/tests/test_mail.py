@@ -298,12 +298,13 @@ class Outbox(MailTest):
         rec, draft = self.w.service.set_done_summary(a["id"], {"es": "Lluvia en todas las escenas."}, "agent")
         self.assertEqual((rec["status"], draft["state"], draft["kind"]), ("done", "draft", "done"))
         self.assertEqual(self.at(86400 * 7), 0)          # a week later: still only a draft
-        # the owner edits the text: still a draft, one draft
+        first = draft
+        # the owner edits the text: one draft, the older one kept as superseded
         rec, draft = self.w.service.set_done_summary(a["id"], "Lluvia y viento en todas las escenas.", "telegram")
-        self.assertEqual([m["state"] for m in rec["thread"]], ["draft"])
+        self.assertEqual([m["state"] for m in rec["thread"]], ["superseded", "draft"])
         self.assertEqual(self.at(86400), 0)
         # control: Send queues it, it goes after the window, once
-        self.w.service.send_done(a["id"], "telegram")
+        self.w.service.send_done(a["id"], draft["id"], "telegram")
         self.assertEqual(self.at(61), 1)
         msg = parse(self.w.smtp.messages[0]["data"])
         es = mail_text("es")
@@ -312,10 +313,37 @@ class Outbox(MailTest):
         self.assertIn(es["doneIntro"].format(id=a["id"]), body)
         self.assertIn("Lluvia y viento en todas las escenas.", body)
         self.assertIsNotNone(self.w.service.get(a["id"])["notified"])
-        with self.assertRaises(Exception) as e:          # pressing Send again finds no draft
-            self.w.service.send_done(a["id"], "telegram")
+        with self.assertRaises(Exception) as e:          # pressing Send again: it is no draft any more
+            self.w.service.send_done(a["id"], draft["id"], "telegram")
         self.assertEqual(getattr(e.exception, "code", ""), "no-draft")
+        with self.assertRaises(Exception) as e:          # nor is the replaced one
+            self.w.service.send_done(a["id"], first["id"], "telegram")
+        self.assertEqual(getattr(e.exception, "code", ""), "stale-draft")
         self.assertEqual(self.at(86400), 1)
+
+    def test_send_under_a_replaced_draft_sends_nothing(self):
+        """Send names the draft the owner saw: when a newer summary replaced it meanwhile, nothing goes
+        (review R2); the text that would go now must be shown and sent by its own Send."""
+        a = self.w.report(lang="pl")
+        _, seen = self.w.service.set_done_summary(a["id"], {"pl": "TEXT A the owner reads"}, "agent")
+        _, newer = self.w.service.set_done_summary(a["id"], {"pl": "TEXT B written later"}, "agent")
+        with self.assertRaises(Exception) as e:
+            self.w.service.send_done(a["id"], seen["id"], "telegram")
+        self.assertEqual((getattr(e.exception, "code", ""), getattr(e.exception, "status", 0)), ("stale-draft", 409))
+        for fn in (self.w.service.send_mail, self.w.service.cancel_mail):   # nor by the other explicit paths
+            with self.assertRaises(Exception) as e:
+                fn(seen["id"], "telegram")
+            self.assertEqual(getattr(e.exception, "code", ""), "stale-draft")
+        self.assertEqual(self.at(86400), 0)
+        with self.assertRaises(Exception) as e:          # a draft must be named
+            self.w.service.send_done(a["id"], None, "telegram")
+        self.assertEqual(getattr(e.exception, "code", ""), "bad-mail")
+        # control: Send under the draft that is current sends exactly that text
+        self.w.service.send_done(a["id"], newer["id"], "telegram")
+        self.assertEqual(self.at(61), 1)
+        body = parse(self.w.smtp.messages[0]["data"]).get_body(("plain",)).get_content()
+        self.assertIn("TEXT B written later", body)
+        self.assertNotIn("TEXT A", body)
 
 
 if __name__ == "__main__":

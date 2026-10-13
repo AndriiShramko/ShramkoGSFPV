@@ -58,8 +58,8 @@ STATUS_CODES = {"a": "accepted", "r": "rejected", "p": "in_progress", "d": "done
 CODE_OF_STATUS = {v: k for k, v in STATUS_CODES.items()}
 COMMANDS = ("start", "help", "queue", "note")
 COMMAND_RE = re.compile(r"/([A-Za-z0-9_]{1,32})(?:@[A-Za-z0-9_]{1,64})?(?:\s+(.*))?\Z", re.S)
-IDEA_VERBS = ("s", "u", "c", "e", "m")   # button data "<verb>:[<code>:]<idea id>"
-MAIL_VERBS = ("x", "w")                  # button data "<verb>:<e-mail id>"
+IDEA_VERBS = ("s", "u", "c", "e")        # button data "<verb>:[<code>:]<idea id>"
+MAIL_VERBS = ("x", "w", "m")             # button data "<verb>:<e-mail id>" (m: Send under THAT draft)
 
 
 def _hhmm(iso: str | None) -> str:
@@ -390,10 +390,7 @@ class OwnerBot:
             if mail is None:
                 api.send(c.chat, t("ok.summaryNoEmail", id=rid))
                 return
-            mid = api.send(c.chat, self.draft_text(rec, mail), buttons=[[{"text": t("btn.send"), "callback_data": f"m:{rid}"},
-                                                                        {"text": t("btn.edit"), "callback_data": f"e:{rid}"}]])
-            if mid:
-                self.service.link_message(mid, rid, "draft", mail["id"])
+            self._show_draft(rec, mail)
             return
         if mail is None:
             return
@@ -592,7 +589,10 @@ class OwnerBot:
                 self._summary_prompt(rec, force=True)
                 result = "summary-prompt"
             elif verb == "m":
-                self.service.send_done(rest, "telegram")
+                hit = self.service.find_mail(rest)
+                if hit is None:
+                    raise IdeaError("not-found", 404)
+                self.service.send_done(hit[0]["id"], rest, "telegram")
                 result = "send-done"
             elif verb == "x":
                 self.service.cancel_mail(rest, "telegram")
@@ -601,8 +601,14 @@ class OwnerBot:
                 self.service.send_mail(rest, "telegram")
                 result = "send-again"
         except IdeaError as e:
-            toast = {"too-late": t("mail.tooLate"), "no-draft": t("mail.noDraft"), "not-found": t("notFound", id=rest.split(":")[-1])}.get(e.code, t("error", code=e.code))
+            toast = {"too-late": t("mail.tooLate"), "no-draft": t("mail.noDraft"), "stale-draft": t("mail.staleDraft"),
+                     "not-found": t("notFound", id=rest.split(":")[-1])}.get(e.code, t("error", code=e.code))
             result = f"refused:{e.code}"
+            if e.code == "stale-draft":   # Send under a replaced draft: nothing went; show the draft that would go now
+                hit = self.service.find_mail(rest)
+                current = self._current_draft(hit[0]) if hit else None
+                if current is not None:
+                    self._show_draft(hit[0], current)
         if isinstance(cb.get("id"), str):
             api.answer(cb["id"], toast)
         return result
@@ -611,17 +617,28 @@ class OwnerBot:
         """After Done: show the draft if the agent already wrote what was done, else ask for it."""
         c, api, t = self.cfg, self.api(), self.t
         summary = (rec.get("done") or {}).get("summary") or {}
-        draft = next((m for m in reversed(rec["thread"]) if m["kind"] == "done" and m["state"] == "draft"), None)
+        draft = self._current_draft(rec)
         if draft is not None and summary and not force:
-            m = api.send(c.chat, self.draft_text(rec, draft), buttons=[[{"text": t("btn.send"), "callback_data": f"m:{rec['id']}"},
-                                                                        {"text": t("btn.edit"), "callback_data": f"e:{rec['id']}"}]])
-            if m:
-                self.service.link_message(m, rec["id"], "draft", draft["id"])
+            self._show_draft(rec, draft)
             return
         key = "prompt.summary" if rec["contactKind"] == "email" else "prompt.summaryNoEmail"
         m = api.send(c.chat, t(key, id=rec["id"], lang=rec["lang"] or "en"), force_reply=t("placeholder.summary"))
         if m:
             self.service.link_message(m, rec["id"], "summary")
+
+    @staticmethod
+    def _current_draft(rec: dict) -> dict | None:
+        """The thank-you draft that Send would queue now (older ones are `superseded`)."""
+        return next((m for m in reversed(rec["thread"]) if m["kind"] == "done" and m["state"] == "draft"), None)
+
+    def _show_draft(self, rec: dict, draft: dict) -> None:
+        """The draft as it will go, with Send bound to THIS draft's e-mail id (a newer draft makes this
+        button refuse) and Edit (write the summary again)."""
+        c, t = self.cfg, self.t
+        m = self.api().send(c.chat, self.draft_text(rec, draft), buttons=[[{"text": t("btn.send"), "callback_data": f"m:{draft['id']}"},
+                                                                          {"text": t("btn.edit"), "callback_data": f"e:{rec['id']}"}]])
+        if m:
+            self.service.link_message(m, rec["id"], "draft", draft["id"])
 
     # ---------------- setup (ideas_cli.py) ----------------
 

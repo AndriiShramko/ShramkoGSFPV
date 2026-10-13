@@ -11,7 +11,8 @@ POST /api/admin/ideas/note             {text, contact?, lang?, urgency?, kind?: 
 POST /api/admin/ideas/reply            {id, text}: the owner's answer by e-mail (queued with the undo window)
 POST /api/admin/ideas/mail/cancel      {id: mail id}: 409 when it is already being sent or was sent
 POST /api/admin/ideas/done             {id, summary: {lang: text} | text}: done + the draft thank-you e-mail
-POST /api/admin/ideas/send-done        {id}: the owner's Send under the draft
+POST /api/admin/ideas/send-done        {id, mail: the draft's e-mail id}: the owner's Send under the draft he was
+                                       shown; 409 stale-draft when a newer summary replaced it (show the new one)
 POST /api/admin/ideas/mail/send        {id: mail id}: send again an e-mail that waited, failed or may not have gone
 """
 from __future__ import annotations
@@ -106,7 +107,7 @@ class IdeasAdmin:
             rec, draft = s.set_done_summary(rid, b.get("summary"), by)
             return _json(200, {"ok": True, "idea": rec, "draft": draft}), f"{rid}"
         if route == "ideas/send-done":
-            rec, mail = s.send_done(rid, by)
+            rec, mail = s.send_done(rid, b.get("mail"), by)
             return _json(200, {"ok": True, "idea": rec, "mail": mail}), f"{rid} {mail['id']} {mail['state']}"
         if route == "ideas/mail/send":
             rec, mail = s.send_mail(rid, by)

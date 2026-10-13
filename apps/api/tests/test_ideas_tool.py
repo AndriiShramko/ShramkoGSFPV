@@ -107,14 +107,15 @@ class Cli(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr.decode("utf-8", "replace"))
         got = s.get(rid)
         self.assertEqual((got["status"], [m["state"] for m in got["thread"]]), ("done", ["draft"]))
-        drafts = [p for p in self.w.tg.of("sendMessage") if any(b["callback_data"] == f"m:{rid}" for row in (p.get("reply_markup") or {}).get("inline_keyboard", []) for b in row)]
+        mail_id = got["thread"][-1]["id"]
+        drafts = [p for p in self.w.tg.of("sendMessage") if any(b["callback_data"] == f"m:{mail_id}" for row in (p.get("reply_markup") or {}).get("inline_keyboard", []) for b in row)]
         self.assertEqual(len(drafts), 1)
         self.assertIn(f"Deszcz jest {POLISH}", drafts[0]["text"])
         self.w.now[0] += 86400 * 7
         self.w.worker.run_once()
         self.assertEqual(self.w.smtp.messages, [])
         # control: the owner's Send in Telegram is what sends it
-        self.w.bot.handle_update({"update_id": 1, **self.w.press(f"m:{rid}", 1)})
+        self.w.bot.handle_update({"update_id": 1, **self.w.press(f"m:{mail_id}", 1)})
         self.w.now[0] += 61
         self.w.worker.run_once()
         self.assertEqual(len(self.w.smtp.messages), 1)
