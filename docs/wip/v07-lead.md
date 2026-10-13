@@ -32,3 +32,6 @@ Plan and contracts: `docs/wip/v07-plan.md`. Each lane's own status: `docs/wip/v0
    share button in flight; recording on a pasted scan; roadmap API + landing board; bot reply path with a test note.
 5. Ideas: mark R-20261006-0001..0003 and the LinkedIn pilot's ideas (wind, ceiling) done with public titles; the
    thank-you e-mails stay drafts until the owner presses Send.
+
+6. Privacy (site locales, 4 languages) after lane B: reports and ideas reach the owner's Telegram with the pilot's
+   text and contact; the owner's replies and thank-you e-mails go from his Gmail (Google) — say both plainly.
