@@ -3,7 +3,7 @@
 // the picker shows its built-in tabs (Showcase, Recent, Favourites) and then every registered tab in
 // `order`, and when one is selected it hands the tab the list area. The tab picks a scene through
 // the host, exactly like a card or a pasted link does (parseSceneInput -> resolveScene).
-import type { SceneFilter } from '@gsfpv/scenes';
+import type { SceneFacts, SceneFilter } from '@gsfpv/scenes';
 
 /** Where a picked scene came from (the scene_open beacon; apps/api/server.py EVENTS keeps the same list). */
 export type PickSource = 'showcase' | 'paste' | 'history' | 'superspl' | 'random' | 'next' | 'favourite';
@@ -13,6 +13,8 @@ export interface PickerTabHost {
     pick(idOrLink: string, source: PickSource): void;
     /** show a message in the picker's error line (codes as ScenePicker.showError) */
     showError(code: string, msg?: string): void;
+    /** share this scene without flying it (v0.7 D1: the share panel over the picker); `facts`: what the tab shows of it */
+    share(id: string, facts: SceneFacts): void;
     /** the picker's filter as the pilot set it (collision only, kind, flown) */
     readonly filter: Readonly<SceneFilter>;
 }

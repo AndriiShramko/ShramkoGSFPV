@@ -5,7 +5,7 @@
 // canvas draws at exactly the video's size with cinema's full detail, the camera is the replay's
 // (or the replay's own crash view, on the replay's clock), and a bar at the bottom shows the frames
 // done with Cancel (Esc). The file goes where a recording goes (recording.ts: the folder, the
-// browser's storage, memory) with the credit burned in. Showcase scenes only, like recording (D34).
+// browser's storage, memory) with the credit burned in. Every scan, like recording (D36; showcase scans only until v0.7, D34).
 import { S } from '@gsfpv/sim-core';
 import type { Life } from '@gsfpv/sim-core';
 import { h } from '../../ui/dom';
@@ -96,7 +96,6 @@ export const videoExport: Feature = {
         /** Why these lives cannot become a video here, or ''. */
         const why = (lives: readonly Life[], fromTick: number, toTick: number): string => {
             const share = recordingOf(ctx);
-            if (!ctx.scene.meta) return t('rec.onlyShowcase');
             if (!share || !share.rec.supported) return t('rec.unsupported');
             if (lives.length === 0) return t('rec.export.empty');
             const s = ctx.session;

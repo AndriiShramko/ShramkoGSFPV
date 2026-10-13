@@ -356,7 +356,6 @@
   "cinema.rec": "● Grabar",
   "cinema.stop": "■ Detener y guardar",
   "cinema.on": "Modo cine: detalle completo, sin calidad automática. El crédito de la escena queda grabado en el vídeo.",
-  "cinema.noRec": "Modo cine: detalle completo. La grabación solo está disponible para los escaneos del escaparate: sus autores lo aceptaron.",
   "cinema.unsupported": "Este navegador no puede codificar vídeo (WebCodecs).",
   "cinema.saved": "Guardados {s} s de vídeo ({mb} MB).",
   "pause.import": "Importar rates de Betaflight",

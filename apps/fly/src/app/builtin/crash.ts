@@ -1,12 +1,13 @@
 // A crash (docs/architecture-v03.md C.10): the crash camera takes the view (crashview.ts) and plays
 // while the respawn waits. Automatic respawn on (the default): a toast counts down to it, nothing to
 // click; Enter keeps the wreck and opens the panel. Automatic respawn off: the crash panel 1.5 s
-// later (the crash camera first). Any new life (the respawn, R, Y, a restart) takes all of it away
+// later (the crash camera first); its Share this crash opens the share panel (builtin/share.ts). Any new life (the respawn, R, Y, a restart) takes all of it away
 // (app/builtin/respawn.ts calls ctx.clearCrash()).
 import type { SimEvent } from '@gsfpv/sim-core';
 import { CrashToast, CrashPanel } from '../../ui/crash-overlay';
 import { beacon } from '../env';
 import { saveLog } from '../logs';
+import { openFlightShare } from './share';
 import type { Feature, FlightContext } from '../context';
 
 /** The panel waits this long after a crash when nothing respawns by itself: the crash camera plays first. */
@@ -54,6 +55,7 @@ export const crash: Feature = {
                     replay: () => replay(ctx, e),
                     save: () => saveLog(session, `crash ${sp}`),
                     settings: settings ? { run: () => settings.run(), keys: ctx.keys.caps('settings.open') } : null,
+                    share: { run: () => openFlightShare(ctx, 'crash', { speed: e.speed }), keys: ctx.keys.caps('share.open') },
                     scenes: {
                         next: { run: () => void ctx.scenes.go('next'), keys: ctx.keys.caps('scene.next') },
                         random: { run: () => void ctx.scenes.go('random'), keys: ctx.keys.caps('scene.random') },

@@ -1,4 +1,5 @@
-// Recording (docs/architecture-v03.md F.1, F.2; items 19 and 14; D34): where a recording goes, the
+// Recording (docs/architecture-v03.md F.1, F.2; items 19 and 14; D34, D36: every scan records since
+// v0.7, the credit is burned into every frame): where a recording goes, the
 // folder the pilot chose (its handle in IndexedDB, its name in recording.folder), the permission to
 // write it, and auto-record (starts at arm, stops 3 s after a disarm that is not a crash). The cinema
 // bar (builtin/cinema.ts) is its UI; the recorder itself is ../../cinema.ts.
@@ -26,8 +27,8 @@ export const KEEP_IN_BROWSER = 3;
 /** A finished recording as the pilot sees it. */
 export interface Saved {
     info: RecorderInfo;
-    /** files to save by hand (the browser's storage or memory): name, link, size */
-    offer: { name: string; url: string; bytes: number }[];
+    /** files to save by hand (the browser's storage or memory): name, link, size, the file itself */
+    offer: { name: string; url: string; bytes: number; blob: Blob }[];
     /** browser-storage files that went on into the folder once access was given */
     moved: number;
 }
@@ -35,8 +36,8 @@ export interface Saved {
 export interface RecordingDeps {
     prefs: PrefsStore;
     canvas: HTMLCanvasElement;
-    /** the scene flown: its id, and its credit when it is a showcase scene (null: recording not allowed, D34) */
-    scene: () => { id: string; credit: string | null };
+    /** the scene flown: its id, and the credit burned into every frame (scene-facts.ts videoCredit; every scan records, D36) */
+    scene: () => { id: string; credit: string };
     /** auto-respawn is on (then a crash does not stop auto-record) */
     autoRespawn: () => boolean;
 }
@@ -63,6 +64,8 @@ export class Recording {
     onChange: () => void = () => {};
     /** the recording ended by itself (memory cap, disk full, access lost) */
     onEnded: (s: Saved) => void = () => {};
+    /** a recording started (by REC, F9, the menu or auto-record): the bar shows the author notice once (D36) */
+    onStarted: (auto: boolean) => void = () => {};
     readonly rules = new AutoRecordRules();
     /** test only (the hook): minutes per file instead of recording.splitMin */
     splitMinOverride: number | null = null;
@@ -80,9 +83,9 @@ export class Recording {
         return CinemaRecorder.supported;
     }
 
-    /** A showcase scene (D34) in a browser that can encode video. */
+    /** The browser can encode video: every scan records (D36; until v0.7 only showcase scans, D34). */
     get allowed(): boolean {
-        return this.d.scene().credit !== null && this.supported;
+        return this.supported;
     }
 
     get canPick(): boolean {
@@ -194,7 +197,6 @@ export class Recording {
      */
     async start(o: { auto: boolean; activation: boolean; legacyV02?: boolean }): Promise<string> {
         const scene = this.d.scene();
-        if (scene.credit === null) throw new Error('recording is only for showcase scenes');
         if (!this.supported) throw new Error('WebCodecs unavailable');
         if (this.recorder?.recording || this.busy) return '';
         this.busy = true;
@@ -224,6 +226,7 @@ export class Recording {
             };
             this.recorder = r;
             this.autoRun = o.auto;
+            this.onStarted(o.auto);
             return codec;
         } finally {
             this.busy = false;
@@ -237,7 +240,6 @@ export class Recording {
      */
     async openExport(o: { width: number; height: number; activation: boolean }): Promise<CinemaRecorder> {
         const scene = this.d.scene();
-        if (scene.credit === null) throw new Error('recording is only for showcase scenes');
         if (!this.supported) throw new Error('WebCodecs unavailable');
         const target = await this.target(o.activation);
         if (target.kind === 'browser') await pruneBrowserRecordings(KEEP_IN_BROWSER - 1);
@@ -303,7 +305,7 @@ export class Recording {
                 if (!blob) continue;
                 const url = URL.createObjectURL(blob);
                 this.offerUrls.push(url);
-                saved.offer.push({ name: f.name, url, bytes: blob.size });
+                saved.offer.push({ name: f.name, url, bytes: blob.size, blob });
             }
             if (saved.moved === info.files.length && saved.moved > 0) {
                 saved.info = { ...info, where: 'folder', folder: this.folder?.name ?? '' };
@@ -333,7 +335,26 @@ export class Recording {
         if (this.rules.tick(nowMs) === 'stop' && this.recorder && this.autoRun) void this.queue(() => this.stop());
     }
 
-    /** A flight event: auto-record starts at arm (only on a showcase scene, with Auto on). */
+    /**
+     * The newest file of the last recording, wherever it went (the folder, the browser's storage,
+     * memory): what "Share your flight" sends. null when it is gone (the folder lost its access, the
+     * browser's copy was pruned). Read straight from the file, never fetched: the page's CSP has no
+     * blob: in connect-src.
+     */
+    async lastFile(): Promise<File | null> {
+        const s = this.last;
+        const f = s?.info.files[s.info.files.length - 1];
+        if (!s || !f) return null;
+        const offered = s.offer.find((o) => o.name === f.name);
+        if (offered) return new File([offered.blob], f.name, { type: offered.blob.type || 'video/mp4' });
+        try {
+            return this.folder ? await (await this.folder.getFileHandle(f.name)).getFile() : null;
+        } catch {
+            return null;
+        }
+    }
+
+    /** A flight event: auto-record starts at arm (with Auto on, in a browser that can encode video). */
     onSim(e: AutoEvent, nowMs: number, activation: boolean): void {
         if (!this.autoOn || !this.allowed) return;
         const act = this.rules.onEvent(e, nowMs, this.d.autoRespawn());

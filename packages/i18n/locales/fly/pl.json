@@ -356,7 +356,6 @@
   "cinema.rec": "● Nagrywaj",
   "cinema.stop": "■ Zatrzymaj i zapisz",
   "cinema.on": "Tryb kinowy: pełna szczegółowość, bez automatycznej jakości. Podpis sceny jest wtopiony w wideo.",
-  "cinema.noRec": "Tryb kinowy: pełna szczegółowość. Nagrywanie działa tylko dla skanów z wystawy — ich autorzy się zgodzili.",
   "cinema.unsupported": "Ta przeglądarka nie potrafi kodować wideo (WebCodecs).",
   "cinema.saved": "Zapisano {s} s wideo ({mb} MB).",
   "pause.import": "Importuj rates z Betaflight",

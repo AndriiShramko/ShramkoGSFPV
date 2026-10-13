@@ -1,6 +1,7 @@
-// The live video recorder (docs/architecture-v03.md F.1, F.2; items 19 and 14; decision D34).
-// Recording is offered only for showcase scenes (their authors agreed to it), and every recorded
-// frame carries the scene credit burned into the picture, so a clip shared anywhere keeps it.
+// The live video recorder (docs/architecture-v03.md F.1, F.2; items 19 and 14; decisions D34, D36).
+// Every scan records (since v0.7, D36: the pilot who records answers for the video), and every
+// recorded frame carries the scene credit burned into the picture (scan, author, licence,
+// ShramkoGSFPV; apps/fly/src/scene-facts.ts videoCredit), so a clip shared anywhere keeps it.
 // WebCodecs' VideoEncoder encodes; Mediabunny (MPL-2.0) only writes the MP4 container.
 //
 // 60 fps (item 19): the v0.2 recorder declared a 30 fps track and added every rendered frame, so a

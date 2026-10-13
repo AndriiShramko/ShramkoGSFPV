@@ -18,6 +18,7 @@ import type { SummaryData, SummaryShortcut } from '../../ui/summary';
 import { PauseMenu } from '../menu';
 import { StatsLedger, cardOnDisarm, throttleDismisses, statsCsv, statsFile, statsFileName, CARD_TIMEOUT_MS, COMMIT_EVERY_MS } from './summary-stats';
 import { askPersistence } from '../prefs';
+import { openFlightShare } from './share';
 import type { Units } from './summary-stats';
 import type { Feature, FlightContext } from '../context';
 
@@ -111,7 +112,7 @@ export const summary: Feature = {
         const showCard = (): void => {
             closeCard();
             const life = ledger.life();
-            card = new StatsCard(ctx.ui, life, units(), openPanel);
+            card = new StatsCard(ctx.ui, life, units(), openPanel, () => { closeCard(); openFlightShare(ctx, 'card'); });
             cardAt = performance.now();
             cardAir = life.airtimeS;
             thrAtCard = throttle();

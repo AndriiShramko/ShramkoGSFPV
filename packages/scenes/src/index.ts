@@ -391,6 +391,19 @@ export function toggleFavourite(id: string, meta?: lib.FavouriteMeta): boolean {
     return on;
 }
 
+/**
+ * Keep the title, author and licence a listing showed for a scene (the picker's SuperSplat tab, when
+ * the pilot picks a card): a flight over a scan outside the catalogue credits its author with them.
+ */
+export function rememberSceneFacts(id: string, f: lib.SceneFacts): void {
+    updateLibrary((d) => lib.rememberFacts(d, id, f));
+}
+
+/** What the library knows of a scene's title, author and licence; empty when nothing. */
+export function sceneFacts(id: string): lib.SceneFacts {
+    return lib.factsOf(libraryStore.read(), id);
+}
+
 export function getFilter(): SceneFilter {
     return { ...DEFAULT_FILTER, ...libraryStore.read().filter };
 }
@@ -412,4 +425,4 @@ export * from './rotation';
 export * from './catalog';
 export * as library from './library';
 export { DEFAULT_FILTER, HISTORY_CAP, emptyLibrary, mergeLibraries, lastScene, failedRecently, pickerRows, favouriteEntries } from './library';
-export type { SceneFilter, LibraryEntry, SceneLibraryData, FavouriteMeta, PickerRow, CuratedCard } from './library';
+export type { SceneFilter, LibraryEntry, SceneLibraryData, FavouriteMeta, PickerRow, CuratedCard, SceneFacts } from './library';

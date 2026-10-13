@@ -1,7 +1,8 @@
 // The goggles-style stats card (docs/architecture-v03.md D.2, item 7): after a disarm with the
 // switch it lists the flight like Betaflight's "--- STATS ---" screen, 8-10 monospace lines over
 // the view. It takes no focus and blocks nothing (the pilot can arm at once); app/builtin/summary.ts
-// decides when it comes and goes. "All stats" (and Enter or Esc) opens the summary panel.
+// decides when it comes and goes. "All stats" (and Enter or Esc) opens the summary panel; "Share"
+// (v0.7 D1, the moment after a landing a pilot is proud of) opens the share panel.
 import type { StatsBlock } from '@gsfpv/sim-core';
 import { STAT_ROWS, statText } from '../app/builtin/summary-stats';
 import type { Units, UnitWords } from '../app/builtin/summary-stats';
@@ -18,8 +19,8 @@ export class StatsCard {
     readonly el: HTMLDivElement;
     private said: HTMLSpanElement;
 
-    /** Put the card for `life` on `parent`; `onMore` opens the full panel. */
-    constructor(parent: HTMLElement, life: StatsBlock, units: Units, onMore: () => void) {
+    /** Put the card for `life` on `parent`; `onMore` opens the full panel, `onShare` the share panel (absent: no button). */
+    constructor(parent: HTMLElement, life: StatsBlock, units: Units, onMore: () => void, onShare?: () => void) {
         const w = unitWords();
         const rows = STAT_ROWS.filter((r) => r.card).map((r) =>
             h('div', { class: 'os-row', 'data-stat': r.id }, h('dt', {}, t(`stats.${r.id}`)), h('dd', {}, statText(r.id, life, null, units, w))));
@@ -29,7 +30,9 @@ export class StatsCard {
         this.el = h('div', { class: 'osd-stats interactive', role: 'region', 'aria-label': t('stats.title'), 'data-testid': 'osd-stats' },
             h('p', { class: 'os-title', 'aria-hidden': 'true' }, t('stats.card.title')),
             h('dl', {}, ...rows),
-            h('div', { class: 'os-foot' }, h('span', {}, t('stats.card.hint')), more));
+            h('div', { class: 'os-foot' }, h('span', {}, t('stats.card.hint')),
+                onShare ? h('button', { type: 'button', class: 'btn os-more os-share', 'data-action': 'stats-share', onclick: () => onShare() }, t('share.button')) : null,
+                more));
         this.said = h('span', { class: 'visually-hidden', role: 'status', 'data-testid': 'osd-stats-said' });
         parent.append(this.el, this.said);
         // a live region speaks when its text changes, not when it arrives with the text

@@ -1,0 +1,29 @@
+/* Sharing (share/panel.ts, builtin/share.ts): the panel, the top bar's button, the "Nice flight" row,
+   and the share buttons on the picker's cards (ui/scenes.ts). */
+.panel.share { width: min(640px, calc(100vw - 32px)); z-index: 8; } /* over the picker in flight (z-index 6) */
+.share-preview img { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); }
+.share-preview:empty { aspect-ratio: 1200 / 630; border-radius: 10px; background: var(--bg2); }
+.share-preview[hidden] { display: none; }
+.share-status { margin: 10px 0 6px; }
+.share-targets { display: flex; flex-wrap: wrap; gap: 8px; }
+.share-targets[hidden] { display: none; }
+.share-video { margin-bottom: 8px; }
+.share-url { width: 100%; box-sizing: border-box; margin-top: 10px; padding: 10px 12px; border-radius: 10px; border: 1px solid #5b6572; background: var(--bg); color: var(--fg); font: 14px ui-monospace, Consolas, monospace; }
+.share-url[hidden] { display: none; }
+.share-nice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid rgba(74, 222, 128, .4); border-radius: 12px; background: rgba(74, 222, 128, .06); }
+
+/* the top bar: icon and word on a computer, the icon alone on a phone (the word stays its accessible name) */
+.top-actions .btn.share-top { border-color: rgba(74, 222, 128, .55); color: #d1fae5; }
+.top-actions .btn.share-top svg { flex: none; }
+@media (max-width: 700px) {
+    .top-actions .btn.share-top { padding: 6px 10px; }
+    .top-actions .share-top-label { display: none; }
+}
+body.touch-on .top-actions .share-top-label { display: none; }
+
+/* a picker card's share button: under the favourite star, the same round shape */
+.scene-share { position: absolute; top: 56px; right: 8px; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; border: 0; background: rgba(0, 0, 0, .55); color: #cbd5e1; cursor: pointer; }
+.scene-share:hover { color: #fff; }
+.scene-share:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.scene-continue-wrap { position: relative; max-width: 520px; }
+.scene-continue-wrap > .scene-share { top: 50%; transform: translateY(-50%); right: 8px; }
