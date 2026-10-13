@@ -19,7 +19,7 @@ SSH="ssh -p $GSFPV_PORT -i $GSFPV_KEY -o BatchMode=yes $GSFPV_HOST"
 | `$GSFPV_BASE/compose.yml` | the two containers, `gsfpv-web` (nginx) and `gsfpv-api` (python) |
 | `$GSFPV_BASE/nginx.conf` | copy of [`deploy/nginx.conf`](nginx.conf); mounted read-only into `gsfpv-web` as `/etc/nginx/conf.d/default.conf` (a single-file bind mount) |
 | `$GSFPV_BASE/config.env` | secrets of the API; never in git |
-| `$GSFPV_BASE/api/`, `data/` | API code (`server.py`, `admin.py`, the catalogue seed `showcase.json`), counters, leads, bug reports (`reports.jsonl`, `reports/`), share pictures (`share/`), the scene catalogue and the admin's audit (see "Admin") |
+| `$GSFPV_BASE/api/`, `data/` | API code (`server.py`, `admin.py`, the ideas modules and `locales/` of "Ideas (v0.7)", the catalogue seed `showcase.json`, the roadmap seed `roadmap-seed.json`), counters, leads, bug reports (`reports.jsonl`, `reports/`), the ideas store (`ideas.json`), share pictures (`share/`), the scene catalogue and the admin's audit (see "Admin") |
 | `$GSFPV_BASE/releases/<sha12>/` | unpacked releases (the last 5 are kept) |
 | `$GSFPV_BASE/releases/current` | symlink to the live release; nginx serves `/srv/releases/current` |
 | `$GSFPV_BASE/incoming/` | uploaded tarballs |
@@ -119,7 +119,7 @@ The release with the Feedback dialog and "Share this scene" needs the new API an
 
 | Route | nginx | API |
 |---|---|---|
-| `POST /api/report` | `location = /api/report`, POST only, `client_max_body_size 512k`, no cookies | a bug or an idea: stored first in `data/reports.jsonl` (fsync, id `R-YYYYMMDD-NNNN`), then a short Telegram note to the lead bot (kind, id, page, scene, release, whether diagnostics came, the contact the visitor typed, the first 600 characters; never the diagnostics). A bug's diagnostics only with the visitor's consent, in `data/reports/<id>.json`. 8 KB of words, 512 KB on the wire, gzip accepted (unpacked at most 2 MB); honeypot and time-to-submit as for a lead (a suspect is stored, not sent, keeps no diagnostics); 10 an hour per visitor, 300 in all; the disk guard and `REPORTS_CAP_BYTES` (default 1 GB) skip diagnostics, never the record |
+| `POST /api/report` | `location = /api/report`, POST only, `client_max_body_size 512k`, no cookies | a bug or an idea: stored first in `data/reports.jsonl` (fsync, id `R-YYYYMMDD-NNNN`), then the report in the owner's Telegram (until v0.6 a short note without the diagnostics; since v0.7 the whole report, see "Ideas (v0.7)" below). A bug's diagnostics only with the visitor's consent, in `data/reports/<id>.json`. 8 KB of words, 512 KB on the wire, gzip accepted (unpacked at most 2 MB); honeypot and time-to-submit as for a lead (a suspect is stored, not sent, keeps no diagnostics); 10 an hour per visitor, 300 in all; the disk guard and `REPORTS_CAP_BYTES` (default 1 GB) skip diagnostics, never the record |
 | `POST /api/share` | `location = /api/share`, POST only, 512k | a whole JPEG of exactly 1200x630 (at most 400 KB) and its words: `data/share/<id>.jpg` + `.json`, id 11 random URL-safe characters; 12 an hour per visitor, 300 in all; 503 under the disk guard, 507 over `SHARE_CAP_BYTES` (default 1 GB) |
 | `GET /s/<id>`, `GET /s/<id>.jpg` | `location ~ "^/s/[A-Za-z0-9_-]{11}(\.jpg)?$"`, GET/HEAD only; any other `/s/...` is the static 404 | the share page: Open Graph and Twitter card tags (og:image is the picture), its own CSP (one hashed script sends a person on to `/<locale>/fly/?scene=<id>`; crawlers do not run it); the picture with `Cache-Control: immutable` |
 
@@ -134,19 +134,85 @@ curl -s -o /dev/null -w '%{http_code}\n' -X POST -H 'Content-Type: application/j
 curl -s https://gsfpv.flyreelstudio.eu/s/AAAAAAAAAAA | head -c 120                                                                                       # <title>Not found
 ```
 
-**Reading reports.** There is no public route that lists them. The owner's tool reads them from the
-hub over SSH (this file's `hub.env`) into `tools/reports/inbox/` (gitignored: visitors' words and
-contacts never go into git):
+**Reading reports.** There is no public route that lists them. Since v0.7 every report is an idea in
+`data/ideas.json` (next section); `tools/ideas/ideas.py` (it replaced `tools/reports/pull.py`) reads
+them over SSH (this file's `hub.env`), and `pull` copies the raw files into `tools/ideas/inbox/`
+(gitignored: visitors' words and contacts never go into git):
 
 ```bash
-python tools/reports/pull.py pull                  # reports.jsonl + every diagnostics file
-python tools/reports/pull.py list --kind bug       # the open bugs, newest first
-python tools/reports/pull.py show R-20261002-0007 --log   # one report; --log writes its flight log to replay
-python tools/reports/pull.py close R-20261002-0007 --note "fixed in <sha>"
+python tools/ideas/ideas.py queue                     # the work queue (an agent starts here)
+python tools/ideas/ideas.py pull                      # reports.jsonl, every diagnostics file, ideas.json
+python tools/ideas/ideas.py list --kind bug --local   # from the pulled copy
+python tools/ideas/ideas.py log R-20261002-0007       # its flight log to replay
 ```
 
-Open or closed is kept on that machine (`inbox/status.json`); the admin panel's Reports tab (below)
-keeps its own open/closed on the server (`data/report-status.json`), the two are not synced.
+## Ideas (v0.7): the owner's bot, answers from Gmail, the roadmap
+
+Owner's items 3, 7 and 8 of message 18; design `docs/wip/v07-b.md`. Every report (and every note the
+owner writes in Telegram) is an idea in `data/ideas.json` with a status (new, accepted, in progress,
+done, rejected), an urgency, the owner's comments, a public title for the roadmap and the e-mails to
+the pilot. The owner runs them from his own Telegram bot or from the admin; agents read the work queue
+over SSH. Code: `apps/api/ideas.py` (store), `service.py` (the rules), `ownerbot.py` (Telegram),
+`mailer.py` + `outbox.py` (Gmail), `ideas_admin.py` (admin routes), `ideas_cli.py` (agents' commands
+inside the container), `texts.py` (the bot's and the e-mails' words).
+
+| Route | nginx | API |
+|---|---|---|
+| `POST /api/report` | as before | stored as before, then the idea, then the WHOLE report in the owner's chat (the owner's request 2026-10-13): every field, a summary of the technical details, the technical details file and the picture of the view. Through the owner bot with buttons when it is configured, else through the shared lead bot (now with every field and the file, no buttons) |
+| `POST /api/tg/<32 hex>` | `location ^~ /api/tg/`, POST only, 64 KB, `limit_req` 60/min burst 30 (one bucket: behind nginx-proxy all requests share an address) | the owner bot's webhook: 404 unless the bot and its secret are configured and the path (an HMAC of `TG_WEBHOOK_SECRET`) is right; 403 unless `X-Telegram-Bot-Api-Secret-Token` equals the secret; only the owner's chat is obeyed; each update acted on once |
+| `GET /api/roadmap` | `location = /api/roadmap`, GET only, no cookies | `{"v":1,"items":[{id, kind, status: planned/in_progress/done, title {lang}, text?, fromPilot, done?, release?}]}`: only items with an English public title, accepted (planned), in progress or done, not hidden; never a pilot's words or contact. ETag/304, `max-age=60` |
+| `/api/admin/ideas...` | the admin's location | list, update (status, urgency, comment, public title/text, visibility, release, order), note, reply by e-mail, cancel, done + draft, send-done, send a waiting e-mail (`ideas_admin.py`); the Reports tab now reads the same store |
+
+**config.env (never in git; recreate `gsfpv-api` after a change: `docker compose up -d --force-recreate gsfpv-api`):**
+
+| Key | What |
+|---|---|
+| `TG_OWNER_BOT_TOKEN` | the GSFPV owner bot's token from @BotFather. A NEW bot, never the shared lead bot: the shared `TG_BOT_TOKEN` (every site on the hub) must never get a webhook; the API treats an equal token as "no owner bot" and `tg-setup` refuses it. Name it with the brand, e.g. "Shramko GSFPV Ideas" |
+| `TG_WEBHOOK_SECRET` | 16-256 characters of `A-Z a-z 0-9 _ -`: `python -c "import secrets; print(secrets.token_urlsafe(32))"` |
+| `TG_OWNER_CHAT_ID` | optional; default `TG_CHAT_ID`. In a private chat with the bot it is the owner's own Telegram user id. The owner must open the bot and press Start once, or the bot cannot write to him |
+| `TG_OWNER_USER_ID`, `TG_OWNER_LANG` | optional: also require this sender (when the chat is a group); the bot's language (default `ru`) |
+| `GMAIL_USER` | `zmei116@gmail.com` (From and Reply-To of every e-mail to a pilot; the name is `MAIL_FROM_NAME`, default "Andrii Shramko") |
+| `GMAIL_APP_PASSWORD` | a Gmail app password (Google account, Security, 2-Step Verification, App passwords: 16 letters). The normal password does not work over SMTP. Without it e-mails wait (`waiting_setup`) and the bot says so; once it is set the bot asks per waiting e-mail, nothing goes by itself |
+| `MAIL_UNDO_S` | optional; the window in which Cancel stops an e-mail (default 60 s) |
+
+**Why the e-mails land in the inbox.** They are submitted to Gmail's own SMTP server
+(`smtp.gmail.com:587`, STARTTLS, then the app password), so Google signs them (DKIM `d=gmail.com`) and
+sends them from its own servers (SPF of `gmail.com`), and From is the authenticated `gmail.com`
+address (DMARC aligned). Each one is a personal message: one recipient, text plus a simple HTML copy, no
+images, no tracking, no link shorteners, the pilot's own words quoted with their date, `Message-ID`,
+`In-Reply-To` and `References` per idea, a signature with the site and LinkedIn. Outbound
+`smtp.gmail.com:587` from `gsfpv-api` was checked on 2026-10-13 (EHLO 250, STARTTLS 220).
+
+**The rules the code holds** (tests in `apps/api/tests/test_mail.py`, `test_ownerbot.py`): an e-mail
+goes only on the owner's explicit act (his reply to a card, or Send) and after the undo window; the
+thank-you e-mail of a done idea is only a draft until he presses Send; an e-mail is never handed to
+SMTP twice by itself (a restart in the middle marks it `unknown` and the owner decides); a temporary
+failure is retried after 1, 5, 30, 120 and 360 minutes, a permanent one is not.
+
+**Files.** Upload with the API (step 2 of "Changing the API"), then recreate `gsfpv-api`:
+```bash
+scp -P $GSFPV_PORT -i $GSFPV_KEY apps/api/server.py apps/api/admin.py apps/api/ideas.py apps/api/ideas_admin.py \
+    apps/api/ideas_cli.py apps/api/mailer.py apps/api/outbox.py apps/api/ownerbot.py apps/api/service.py apps/api/texts.py \
+    $GSFPV_HOST:$GSFPV_BASE/api/
+scp -r -P $GSFPV_PORT -i $GSFPV_KEY packages/i18n/locales/bot packages/i18n/locales/mail $GSFPV_HOST:$GSFPV_BASE/api/locales/
+scp -P $GSFPV_PORT -i $GSFPV_KEY apps/api/roadmap-seed.json $GSFPV_HOST:$GSFPV_BASE/api/   # lane C's seed, loaded once
+```
+`data/ideas.json` (and `ideas.lock`) appear at the first start, made from `reports.jsonl` and the old
+`report-status.json` (closed -> done); `reports.jsonl` itself is never rewritten. The deploy backups
+already take the whole `data/`.
+
+**Order.** `nginx.conf` first (new `limit_req_zone`, `/api/roadmap`, `/api/tg/`), then the files above,
+then `config.env`, then recreate `gsfpv-api`, then register the webhook and check Gmail from inside the
+container (the agents' CLI uses the container's own environment):
+```bash
+$SSH "docker exec gsfpv-api python /app/ideas_cli.py tg-setup"     # {"webhook": true, "commands": true, "url_is_ours": true, ...}
+$SSH "docker exec gsfpv-api python /app/ideas_cli.py tg-info"      # pending updates, last error
+$SSH "docker exec gsfpv-api python /app/ideas_cli.py mail-check"   # ok (logs in, sends nothing)
+curl -sD- -o /dev/null https://gsfpv.flyreelstudio.eu/api/roadmap | grep -iE '^(HTTP|etag|cache-control)'   # 200, an ETag, max-age=60
+curl -s -o /dev/null -w '%{http_code}\n' -X POST -d '{}' https://gsfpv.flyreelstudio.eu/api/tg/00000000000000000000000000000000   # 404
+```
+Then the owner sends an idea from the landing with his own second address as the contact, replies to
+the card in Telegram and checks that the e-mail arrives in that inbox (not spam) after a minute.
 
 ## Admin (v0.6): /admin/, the scene catalogue, report status
 
