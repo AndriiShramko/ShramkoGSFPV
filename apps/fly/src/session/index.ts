@@ -14,7 +14,8 @@ import { validMinBlocks } from '@gsfpv/collision';
 import type { FloaterFilter, VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
 import { resolveScene, headingFromCamera } from '@gsfpv/scenes';
 import type { ResolvedScene } from '@gsfpv/scenes';
-import { SplatRenderer } from '@gsfpv/render-pc';
+import { SplatRenderer, drawOnDevice } from '@gsfpv/render-pc';
+import type { DrawingChoice } from '@gsfpv/render-pc';
 import { PRESETS, DEFAULT_PRESET } from '../presets';
 import { SimClock } from '../simclock';
 import { assertWalls } from '../bake';
@@ -67,6 +68,13 @@ export interface SessionOptions {
     transform?: { s: number; t: readonly number[]; v?: number } | null;
     /** the floater filter (G.3, prefs scene.dropFloaters): pieces of the walls under N blocks dropped; 0 or none = off */
     dropFloaters?: number;
+    /**
+     * How the scan is drawn from its first frame (v0.7 lane R, app/drawing.ts drawingFor): SuperSplat's
+     * stochastic drawing and the splat budget, millions. Asked with the renderer's real device (true =
+     * WebGPU) once the renderer exists, and written to it before the scan loads, so it streams with the
+     * budget this device gets (render-pc drawOnDevice); none = the renderer's default (sorted, 4 M).
+     */
+    drawing?: (webgpu: boolean) => DrawingChoice;
 }
 
 /** Who keeps the flight paused (FlightSession.pause). */
@@ -99,6 +107,12 @@ function jsonSafe(o: ParamOverrides): ParamOverrides {
 export class FlightSession {
     renderer!: SplatRenderer;
     scene!: ResolvedScene;
+    /**
+     * What the engine drew this scan with when its splats began to load (v0.7 lane R): the drawing
+     * decided with the renderer's real device (SessionOptions.drawing). Benches read it; the drawing
+     * feature takes over once the flight is built (the governor's top budget).
+     */
+    loadDrawing: (DrawingChoice & { webgpu: boolean }) | null = null;
     /** the walls the craft flies in: the scan's, seen through `transform` (E.7) */
     collision: VoxelCollision | null = null;
     collisionSha256: string | null = null;
@@ -219,6 +233,9 @@ export class FlightSession {
         this.params = compileParams(PRESETS[this.presetId], this.lifeOverrides());
         this.renderer = o.renderer ?? await SplatRenderer.create(canvas, { renderScale: o.renderScale ?? 1, hFovDeg: this.params.cameraFovDeg, latencyMarker: !!o.latencyMarker });
         if (o.renderer) this.renderer.setFov(this.params.cameraFovDeg);
+        // this scene's drawing, decided now that the device is known, before its splats load
+        if (o.drawing) drawOnDevice(this.renderer, o.drawing);
+        this.loadDrawing = { stochastic: this.renderer.stochastic, budgetM: this.renderer.splatBudgetMillions, webgpu: this.renderer.isWebGPU };
         this.renderer.setToneMapping(this.scene.tonemapping);
         this.renderer.setBackground(this.scene.background);
         // the scene's size (E.7) before its splats exist: the renderer gives the entity s and t when it makes it

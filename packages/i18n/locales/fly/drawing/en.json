@@ -1,0 +1,14 @@
+{
+  "set.display.drawing": "Drawing",
+  "set.display.drawing.help": "How the scan is drawn. Auto does what the scene's link asks (SuperSplat's ?stochastic and ?budget). Stochastic is SuperSplat's new drawing that skips sorting the splats and leaves a fine grain. Sorted is the classic, smooth drawing. Stochastic needs WebGPU in a desktop browser.",
+  "set.display.drawing.opt.auto": "Auto (as the link asks)",
+  "set.display.drawing.opt.stochastic": "Stochastic (SuperSplat beta)",
+  "set.display.drawing.opt.sorted": "Sorted (classic)",
+  "drawing.on": "Stochastic drawing (SuperSplat beta), {budget} M splats · Settings → Display",
+  "drawing.note.scene-handheld": "This scene asks for SuperSplat's stochastic drawing. It only runs in desktop browsers, so here the scene is drawn the classic way.",
+  "drawing.note.scene-webgl": "This scene asks for SuperSplat's stochastic drawing. It needs WebGPU, which this browser does not offer, so the scene is drawn the classic way.",
+  "drawing.note.setting-handheld": "You chose the stochastic drawing in Settings → Display. It only runs in desktop browsers, so here the scene is drawn the classic way.",
+  "drawing.note.setting-webgl": "You chose the stochastic drawing in Settings → Display. It needs WebGPU, which this browser does not offer, so the scene is drawn the classic way.",
+  "drawing.note.budget-handheld": "This scene asks for {budget} M splats, a budget for desktop browsers. On this device it draws at most {top} M.",
+  "drawing.note.budget-webgl": "This scene asks for {budget} M splats. Without WebGPU it draws at most {top} M."
+}

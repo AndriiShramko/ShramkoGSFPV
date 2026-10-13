@@ -1,10 +1,12 @@
 // "Share this scene" (W5): the view as it is, cropped to 1200x630 with the scene's credit and our
 // brand drawn in, goes to POST /api/share; the link it answers (/s/<id>) is a page whose Open Graph
 // card is that picture, so a post on LinkedIn, Facebook, X, Telegram, WhatsApp or Reddit shows it at
-// once and a click opens the simulator on this scene. Instagram has no share link: the Web Share API
+// once and a click opens the simulator on this scene, drawn as its link asked (SuperSplat's budget and
+// stochastic: flyDeepLink, and `render` to the API). Instagram has no share link: the Web Share API
 // (phones) and "Save picture" reach it. From the pause menu, and after a flight of at least 30 s the
 // summary panel asks for it in words (the moment a pilot is proud of a line).
 import { DT } from '@gsfpv/sim-core';
+import { flyDeepLink } from '@gsfpv/scenes';
 import shareTargets from '@gsfpv/i18n/share.json';
 import { h, clear, panel } from '../../ui/dom';
 import { t, locale } from '../../i18n';
@@ -153,7 +155,8 @@ export function openShare(ctx: FlightContext): void {
     const sceneName = ctx.scene.meta?.title ?? t('share.scan');
     const title = `ShramkoGSFPV — ${sceneName}`;
     const text = t('share.text', { scene: sceneName });
-    const plain = `${location.origin}/${locale}/fly/?scene=${ctx.scene.id}`;
+    // the scene drawn as its link asked (SuperSplat's ?budget= and ?stochastic, lane R); the catalogue's render applies anyway
+    const plain = `${location.origin}${flyDeepLink(`/${locale}/fly/`, ctx.scene.id, ctx.scene.render)}`;
 
     const show = (url: string, picture: string | null): void => {
         clear(targets);
@@ -188,7 +191,8 @@ export function openShare(ctx: FlightContext): void {
             if (!picture) throw new Error('no frame');
             const r = await fetch('/api/share', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ image: picture, scene: ctx.scene.id, title: ctx.scene.meta?.title ?? '', credit: creditOf(ctx), locale, hp: '' })
+                // render: the link's own drawing request, so /s/<id> opens the same deep link (apps/api/server.py fly_link)
+                body: JSON.stringify({ image: picture, scene: ctx.scene.id, render: ctx.scene.render ?? null, title: ctx.scene.meta?.title ?? '', credit: creditOf(ctx), locale, hp: '' })
             });
             const j = (await r.json()) as { ok?: boolean; url?: string };
             if (!r.ok || !j.ok || !j.url) throw new Error(`share ${r.status}`);

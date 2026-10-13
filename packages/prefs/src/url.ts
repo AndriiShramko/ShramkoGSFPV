@@ -16,6 +16,8 @@ const SIM_RADIO = 'test: the simulated EdgeTX radio (?simradio=raw)';
  */
 export const APP_URL_PARAMS_NOT_SETTINGS: Readonly<Record<string, string>> = {
     scene: 'navigation: which scan to open; the scans flown live in the scene library, not in a setting',
+    budget: 'navigation: the scene link\'s splat budget in millions (SuperSplat\'s ?budget=, the deep link /fly/?scene=<id>&budget=<M>&stochastic, v0.7): it belongs to that scene, not to the pilot (display.drawing is the pilot\'s)',
+    stochastic: 'navigation: the scene link asks for SuperSplat\'s stochastic drawing (?stochastic, v0.7); it belongs to that scene, the pilot\'s choice is display.drawing',
     open: 'navigation: ?open=settings opens the settings screen (the "Open in the simulator" links of the site catalogue, A.9)',
     focus: 'navigation: with ?open=settings, the setting whose row gets the focus (?focus=<id>); a link, not a value',
     simradio: 'test: the bot pilot or a simulated radio flies instead of a person',

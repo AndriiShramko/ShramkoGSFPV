@@ -32,7 +32,9 @@ import { FramePacer } from '../../../apps/fly/src/cinema';
 import { REPO, today, writeEvidence } from './evidence';
 
 const SITE = (process.env.SITE ?? 'http://127.0.0.1:5335').replace(/\/$/, '');
-const fly = (qs: string) => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}` : `${SITE}/en/fly/?${qs}`);
+// QS: more of every page's query, e.g. "drawing=stochastic" (v0.7 lane R: the recording with SuperSplat's stochastic drawing)
+const QS = process.env.QS ? `&${process.env.QS}` : '';
+const fly = (qs: string) => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}${QS}` : `${SITE}/en/fly/?${qs}${QS}`);
 const SHOWCASE = '39e63ce9';
 const PASTED = '723068d7'; // not in apps/fly/public/showcase.json
 const FFPROBE = process.env.FFPROBE ?? 'C:/Program Files/Shutter Encoder/Library/ffprobe.exe';
@@ -141,7 +143,7 @@ async function newContext(browser: Browser, force60: boolean): Promise<{ ctx: Br
 
 if (!existsSync(FFPROBE)) throw new Error(`ffprobe not found: ${FFPROBE}`);
 const { browser, which } = await launchChrome({ headless: false, args: ['--window-position=40,40', '--window-size=1296,920'] });
-const out: Record<string, unknown> = { site: SITE, browser: which, ffprobe: FFPROBE };
+const out: Record<string, unknown> = { site: SITE, browser: which, ffprobe: FFPROBE, qs: QS || null };
 const display = await displayRate(browser);
 const force60 = process.env.FORCE60 === '1' || (process.env.FORCE60 !== '0' && display < 55);
 out.display = { rafHz: display, force60, why: force60 ? 'the display runs below 60 Hz (the owner\'s 4K monitor: 30 Hz over HDMI): the 60 Hz render comes from a 60 Hz timer driving the page\'s frame loop, the scan drawn every frame' : 'the display itself runs at 60 Hz or more' };

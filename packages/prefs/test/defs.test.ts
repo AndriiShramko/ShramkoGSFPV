@@ -17,7 +17,9 @@ const V03_SHIPPED = [
     // W4-2 phantom walls (G.3): Settings -> Walls and voxel grid, admin default in showcase.json
     'scene.dropFloaters',
     // v0.5 (owner's message 16): angle mode's strength, tilt limit and horizon strength, advanced rows of Flight
-    'level.angleLimitDeg', 'level.strength', 'level.horizonStrength'
+    'level.angleLimitDeg', 'level.strength', 'level.horizonStrength',
+    // v0.7 lane R (owner's message 18, item 1): SuperSplat's stochastic drawing, Settings -> Display
+    'display.drawing'
 ];
 
 /**
@@ -49,6 +51,7 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['display.quality', 'display', 'global', 'number', 1, 'live'],
     ['display.governor', 'display', 'global', 'bool', true, 'live'],
     ['display.latencyGuard', 'display', 'global', 'bool', true, 'live'],
+    ['display.drawing', 'display', 'global', 'enum', 'auto', 'live'],
     ['display.reducedMotion', 'display', 'global', 'enum', 'system', 'live'],
     ['display.frameStats', 'display', 'global', 'bool', false, 'live'],
     ['stats.onDisarm', 'display', 'global', 'bool', true, 'live'],
@@ -121,8 +124,8 @@ const WAVE2_SETTINGS = [
 ];
 
 describe('SCHEMA is the A.8 table', () => {
-    it('has the 56 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard), each with its group, scope, type, default and apply', () => {
-        expect(SCHEMA.defs).toHaveLength(56);
+    it('has the 57 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard, v0.7\'s drawing), each with its group, scope, type, default and apply', () => {
+        expect(SCHEMA.defs).toHaveLength(57);
         const got = SCHEMA.defs.map((d) => [d.id, d.group, d.scope, d.type, isPresetRef(d.default) ? `preset:${d.default.preset}` : isCuratedRef(d.default) ? `curated:${d.default.curated}|${String(d.default.fallback)}` : d.default, d.apply]);
         // order inside a group follows the def files, not the table's rows
         const byId = (a: unknown[], b: unknown[]) => String(a[0]).localeCompare(String(b[0]));
@@ -213,7 +216,8 @@ describe('SCHEMA is the A.8 table', () => {
     it('legacy URL parameters: v0.2\'s ?g= ?gm= ?drone= ?governor=, main\'s ?guard= and its this-load switches ?walls= ?voxels= ?vstyle= ?vradius=', () => {
         expect(Object.fromEntries(SCHEMA.defs.filter((d) => d.url).map((d) => [d.url, d.id]))).toEqual({
             governor: 'display.governor', guard: 'display.latencyGuard', drone: 'drone.current', g: 'physics.gravity', gm: 'physics.gravityMode',
-            walls: 'scene.walls', voxels: 'voxels.show', vstyle: 'voxels.style', vradius: 'voxels.radiusM'
+            walls: 'scene.walls', voxels: 'voxels.show', vstyle: 'voxels.style', vradius: 'voxels.radiusM',
+            drawing: 'display.drawing' // v0.7 lane R: ?drawing=auto|stochastic|sorted for one load (benches)
         });
     });
 });

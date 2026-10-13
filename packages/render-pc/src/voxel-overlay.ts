@@ -4,9 +4,11 @@
 //
 // Engine side: one Mesh + MeshInstance per chunk in a layer of its own, after the World layer, so
 // it draws after the splats; two directional lights that light only that layer shade the cube
-// faces apart (the scene's light is on the World layer). Splats write no depth (the gsplat
-// material's depthWrite is off unless dithering), so the voxels show through the scan like an
-// x-ray: the point of an alignment check. Styles are StandardMaterials (no custom shaders: the
+// faces apart (the scene's light is on the World layer). The layer clears the depth buffer before
+// it draws, so the voxels show through the scan like an x-ray (the point of an alignment check)
+// whichever way the splats are drawn: sorted splats write no depth, but SuperSplat's stochastic
+// drawing (drawing.ts, engine 2.23) writes it, and without the clear the scan hid the voxels behind
+// its surfaces. The voxels still depth-test among themselves. Styles are StandardMaterials (no custom shaders: the
 // same code runs on WebGPU and WebGL2); a small repeating texture in cell units draws each voxel's
 // edges. Each chunk arrives as one interleaved vertex buffer packed off the main thread
 // (voxel-colors.ts packChunk, in the app's worker; the engine's per-attribute path cost 3.4 ms per
@@ -101,7 +103,8 @@ export class VoxelOverlay {
     constructor(r: SplatRenderer) {
         this.r = r;
         const layers = r.app.scene.layers;
-        this.layer = new Layer({ name: 'GSFPV Voxels' });
+        // clearDepthBuffer: the x-ray over a scan that writes depth (stochastic drawing), see the header
+        this.layer = new Layer({ name: 'GSFPV Voxels', clearDepthBuffer: true });
         const world = layers.getLayerByName('World');
         layers.insert(this.layer, world ? layers.getTransparentIndex(world) + 1 : layers.layerList.length);
         const cam = r.camera.camera!;

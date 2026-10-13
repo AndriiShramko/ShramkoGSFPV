@@ -253,6 +253,34 @@ class Share(Api):
         self.assertIn("immutable", h["cache-control"])
         self.assertEqual(self.call("HEAD", f"/s/{sid}.jpg")[0], 200)
 
+    def test_page_opens_the_flight_drawn_as_its_link_asked(self):
+        # the shared flight's link asked SuperSplat's stochastic drawing at 8 M: the page sends a visitor there
+        sid = self.share(scene="2f1ddf5f", render={"budgetM": 8, "stochastic": True})[1]["id"]
+        page = self.call("GET", f"/s/{sid}")[1].decode()
+        self.assertIn('href="/en/fly/?scene=2f1ddf5f&amp;budget=8&amp;stochastic"', page)
+        sid = self.share(scene="2f1ddf5f", render={"stochastic": False})[1]["id"]
+        self.assertIn('href="/en/fly/?scene=2f1ddf5f&amp;stochastic=0"', self.call("GET", f"/s/{sid}")[1].decode())
+        # hostile or malformed requests are dropped, never written into the page
+        for bad in ({"budgetM": 1e9, "stochastic": "<x>"}, {"budgetM": True}, {"budgetM": float("nan")}, {"budgetM": "8"}, "budget=8&stochastic", [8, True]):
+            s, b = self.share(scene="2f1ddf5f", render=bad)
+            self.assertEqual(s, 200, bad)
+            page = self.call("GET", f"/s/{b['id']}")[1].decode()
+            self.assertIn('href="/en/fly/?scene=2f1ddf5f"', page, bad)
+            self.assertNotIn("<x>", page)
+        # control: without a request the page links the plain scene, as before
+        sid = self.share(scene="2f1ddf5f")[1]["id"]
+        self.assertIn('href="/en/fly/?scene=2f1ddf5f"', self.call("GET", f"/s/{sid}")[1].decode())
+
+    def test_fly_link_is_the_page_deep_link(self):
+        # the same table packages/scenes link.ts flyDeepLink is tested with: the two writers cannot drift
+        table = json.loads((Path(__file__).resolve().parents[3] / "packages" / "scenes" / "test" / "fixtures" / "fly-deep-links.json").read_text(encoding="utf-8"))
+        self.assertGreater(len(table["rows"]), 5)
+        for row in table["rows"]:
+            self.assertEqual(server.fly_link("en", "2f1ddf5f", row["render"]), row["link"], row)
+        # control: the writer before (the scene only) gets every row with a request wrong
+        old = [r for r in table["rows"] if f"/en/fly/?scene=2f1ddf5f" == r["link"]]
+        self.assertEqual(len(old), 1)
+
     def test_unknown_and_malformed_ids(self):
         self.assertEqual(self.call("GET", "/s/AAAAAAAAAAA")[0], 404)
         self.assertEqual(self.call("GET", "/s/AAAAAAAAAAA.jpg")[0], 404)

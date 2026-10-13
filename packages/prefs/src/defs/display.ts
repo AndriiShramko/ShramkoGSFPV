@@ -14,6 +14,11 @@ export const DISPLAY_DEFS: readonly SettingDef[] = [
     // slow state. URL-only on main (?guard=0: measure, never skip), like the governor: planned
     // until a row exists.
     { id: 'display.latencyGuard', group: 'display', scope: 'global', type: 'bool', default: true, apply: 'live', shown: ['settings', 'url'], url: 'guard', advanced: true, status: 'planned', since: 1 },
+    // v0.7 (the owner's item 1, lane R): how the scan is drawn. 'auto' does what the scene's link
+    // (superspl.at/scene/<id>?budget=8&stochastic) or the catalogue asks; 'stochastic' is SuperSplat's
+    // sort-free beta, 'sorted' the classic drawing. Desktop WebGPU only: phones, tablets and WebGL keep
+    // the sorted drawing with a note (packages/render-pc drawing.ts). ?drawing= for a load (benches).
+    { id: 'display.drawing', group: 'display', scope: 'global', type: 'enum', options: ['auto', 'stochastic', 'sorted'], default: 'auto', apply: 'live', shown: ['settings', 'url'], url: 'drawing', status: 'shipped', since: 2 },
     // 'system' follows prefers-reduced-motion; v0.2 re-read the OS on every panel open (D-b)
     { id: 'display.reducedMotion', group: 'display', scope: 'global', type: 'enum', options: ['system', 'on', 'off'], default: 'system', apply: 'live', shown: ['settings'], status: 'shipped', since: 1, items: [20] },
     { id: 'display.frameStats', group: 'display', scope: 'global', type: 'bool', default: false, apply: 'live', shown: ['key'], action: 'frameStats.toggle', status: 'shipped', since: 1, items: [12] },

@@ -7,12 +7,13 @@ import {
     CameraComponentSystem, GSplatComponentSystem, RenderComponentSystem, LightComponentSystem,
     GSplatHandler, TextureHandler, BinaryHandler, ContainerHandler,
     createGraphicsDevice,
-    GSPLAT_RENDERER_RASTER_GPU_SORT, GSPLAT_RENDERER_RASTER_CPU_SORT, GSPLAT_LODMODE_DISTANCE,
+    GSPLAT_RENDERER_RASTER_GPU_SORT, GSPLAT_RENDERER_RASTER_CPU_SORT, GSPLAT_BUDGET_TARGET,
     FILLMODE_NONE, RESOLUTION_FIXED,
     TONEMAP_LINEAR, TONEMAP_NEUTRAL, TONEMAP_ACES, TONEMAP_ACES2, TONEMAP_FILMIC, TONEMAP_HEJL, TONEMAP_NONE
 } from 'playcanvas';
 import type { GraphicsDevice, GSplatComponent } from 'playcanvas';
 import { LatencyGuard, inputToScreenMs } from './governor';
+import { applyDrawing, DEFAULT_BUDGET_M } from './drawing';
 
 /** What the HUD shows about the delay (see LatencyGuard, inputToScreenMs). */
 
@@ -49,6 +50,11 @@ export interface RendererOptions {
     hFovDeg?: number;
     /** draw the 16x16 CSS-px latency marker in the top-left corner (?lat=1) */
     latencyMarker?: boolean;
+    /**
+     * the splat budget from the first frame, millions (default 4). A scene's drawing (its link's budget,
+     * stochastic) is not an option here: it depends on the device this creates, so the caller writes it
+     * afterwards with drawing.ts drawOnDevice (setSplatBudgetMillions, setStochastic)
+     */
     splatBudgetMillions?: number;
 }
 
@@ -220,13 +226,17 @@ export class SplatRenderer {
         const g = app.scene.gsplat;
         g.lodUpdateAngle = 90;
         g.lodBehindPenalty = 5;
-        g.lodMode = GSPLAT_LODMODE_DISTANCE;
+        // engine 2.23: LOD is always chosen by distance (lodMode is deprecated); the budget is a target
+        // the detail is raised to fill, as it was in 2.22 (stated, not left to the default)
+        g.splatBudgetMode = GSPLAT_BUDGET_TARGET;
         g.minContribution = 1;
         g.alphaClip = 1 / 255;
         g.radialSorting = true;
-        g.splatBudget = (opts.splatBudgetMillions ?? 4) * 1_000_000;
+        g.splatBudget = Math.round((opts.splatBudgetMillions ?? DEFAULT_BUDGET_M) * 1_000_000);
         g.colorUpdateAngle = 0.2;
         g.renderer = device.isWebGPU ? GSPLAT_RENDERER_RASTER_GPU_SORT : GSPLAT_RENDERER_RASTER_CPU_SORT;
+        // sorted until a scene's drawing is written (drawOnDevice -> setStochastic)
+        applyDrawing(g, false, g.currentRenderer === GSPLAT_RENDERER_RASTER_GPU_SORT);
 
         if (opts.latencyMarker) this.initMarker();
 
@@ -549,6 +559,26 @@ export class SplatRenderer {
     /** Upper bound of splats drawn per frame, in millions (the quality governor moves it). */
     setSplatBudgetMillions(m: number): void {
         this.app.scene.gsplat.splatBudget = Math.round(m * 1_000_000);
+    }
+
+    /** The splat budget the engine has now, millions. */
+    get splatBudgetMillions(): number {
+        return this.app.scene.gsplat.splatBudget / 1_000_000;
+    }
+
+    /**
+     * SuperSplat's stochastic drawing on or off (drawing.ts resolveDrawing decides; the engine's
+     * app.scene.gsplat.stochastic: no sorting, dithered coverage, opaque blending, depth writes). The
+     * engine takes it only in its GPU-sort renderer (WebGPU); elsewhere it stays off. Returns what the
+     * engine now draws with.
+     */
+    setStochastic(on: boolean): boolean {
+        return applyDrawing(this.app.scene.gsplat, on, this.currentRenderer === GSPLAT_RENDERER_RASTER_GPU_SORT);
+    }
+
+    /** The engine draws stochastic now (what the next frame uses). */
+    get stochastic(): boolean {
+        return this.app.scene.gsplat.stochastic === true;
     }
 
     /** Camera at the body pose, tilted up by the FPV camera uptilt. Quaternion (w, x, y, z). */

@@ -205,6 +205,31 @@ async function main(): Promise<void> {
         check('discard draft brings back the published list', JSON.stringify(await order(admin, '[data-testid=scene-list] li.row')) === JSON.stringify(want));
     } else check('SuperSplat search returned a scene that is not listed yet', false);
 
+    // v0.7 lane R: a pasted link's ?budget= and ?stochastic go into the new entry as its render (the
+    // catalogue contract field); the server's draft keeps them. Control: the same scene's plain link
+    // shows no render line in its preview.
+    const RENDER_SCENE = process.env.RENDER_SCENE ?? '2f1ddf5f';
+    if (!want.includes(RENDER_SCENE)) {
+        await admin.fill('[data-testid=add-input]', `https://superspl.at/scene/${RENDER_SCENE}`);
+        await admin.click('[data-action=find]');
+        await admin.waitForSelector('[data-testid=add-preview] [data-action=add]', { timeout: 30000 });
+        check('the plain link of the same scene shows no render line', (await admin.$('[data-testid=add-preview] [data-testid=add-render]')) === null, true);
+        await admin.fill('[data-testid=add-input]', `https://superspl.at/scene/${RENDER_SCENE}?budget=8&stochastic`);
+        await admin.click('[data-action=find]');
+        await admin.waitForSelector('[data-testid=add-preview] [data-testid=add-render]', { timeout: 30000 });
+        results.addRenderLine = await admin.$eval('[data-testid=add-render]', (e) => e.textContent);
+        await admin.fill('[data-testid=add-preview] [data-testid=add-title]', 'v07 render check');
+        await admin.click('[data-testid=add-preview] [data-action=add]');
+        await savedState(admin);
+        const draft = JSON.parse(readFileSync(join(DATA, 'catalog-draft.json'), 'utf8')) as { scenes: { id: string; render?: unknown }[] };
+        results.draftRender = draft.scenes.find((s) => s.id === RENDER_SCENE)?.render ?? null;
+        check('a pasted link\'s budget and stochastic are stored as the entry\'s render', JSON.stringify(results.draftRender) === JSON.stringify({ budgetM: 8, stochastic: true }));
+        check('the preview says how the link asks the scene to be drawn', /8/.test(String(results.addRenderLine)));
+        admin.once('dialog', (d) => void d.accept());
+        await admin.click('[data-action=discard]');
+        await admin.waitForFunction(() => document.querySelector('[data-testid=draft-status]')?.classList.contains('ok'), null, { timeout: 15000 });
+    } else check(`${RENDER_SCENE} is not in the list yet (the render check adds it)`, false);
+
     // reports: the pilot's idea is listed and can be closed; the status is stored server-side
     await admin.click('[data-tab=reports]');
     await admin.waitForSelector(`[data-report="${rep.id}"]`);
