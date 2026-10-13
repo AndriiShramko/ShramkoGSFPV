@@ -208,6 +208,10 @@ images, no tracking, no link shorteners, the pilot's own words quoted with their
 `In-Reply-To` and `References` per idea, a signature with the site and LinkedIn. Outbound
 `smtp.gmail.com:587` from `gsfpv-api` was checked on 2026-10-13 (EHLO 250, STARTTLS 220).
 
+**A pilot's answer to an e-mail** goes to the owner's Gmail inbox (From and Reply-To are
+`zmei116@gmail.com`) and is read there; the API sends only, it does not read the mailbox (no IMAP), so
+such an answer is not in the idea's thread, nor in Telegram.
+
 **The rules the code holds** (tests in `apps/api/tests/test_mail.py`, `test_ownerbot.py`): an e-mail
 goes only on the owner's explicit act (his reply to a card, or Send) and after the undo window; the
 thank-you e-mail of a done idea is only a draft until he presses Send; an e-mail is never handed to

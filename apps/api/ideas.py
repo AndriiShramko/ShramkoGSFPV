@@ -19,7 +19,8 @@ A record (see docs/wip/v07-b.md for the meaning of each field):
     statusAt, urgency (urgent|high|normal|low|None), comments [{at, text, by}], public {title, text,
     visible}, done {at, summary {lang: text}, by} | None, notified, releases [sha], thread [mail], order,
     source (report|telegram|admin|seed), tg {card: message_id}.
-A mail (inside its idea's thread; this is the outbox):
+A mail (inside its idea's thread; this is the outbox). The thread is OUT only: what came IN is the
+record's own text (the pilot's report); a pilot's e-mail answer stays in the owner's Gmail (no IMAP):
     id (M-<n>), kind (reply|done), to, lang, subject, body, plain, html, messageId, inReplyTo,
     references, state (draft|superseded|queued|sending|sent|failed|cancelled|waiting_setup|no_email|
     unknown; superseded: a draft a newer done summary replaced, kept so its Send is refused),
