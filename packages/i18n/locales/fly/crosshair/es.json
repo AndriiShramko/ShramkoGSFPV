@@ -1,0 +1,22 @@
+{
+  "set.crosshair.shape": "Mira",
+  "set.crosshair.shape.help": "Una marca en el centro de la imagen para apuntar a un hueco. Desactivada por defecto, como en una imagen FPV real. Nunca aparece en tus vídeos y se oculta en el modo cine.",
+  "set.crosshair.shape.opt.off": "Desactivada",
+  "set.crosshair.shape.opt.dot": "Punto",
+  "set.crosshair.shape.opt.cross": "Cruz",
+  "set.crosshair.shape.opt.circle": "Círculo",
+  "set.crosshair.shape.opt.ringDot": "Anillo con punto",
+  "set.crosshair.size": "Tamaño de la mira",
+  "set.crosshair.size.help": "En proporción al lado corto de la pantalla, para que se vea igual en un móvil que en un monitor grande.",
+  "set.crosshair.color": "Color de la mira",
+  "set.crosshair.color.help": "Elige uno que destaque sobre el escaneo que vuelas.",
+  "set.crosshair.color.opt.green": "Verde",
+  "set.crosshair.color.opt.white": "Blanco",
+  "set.crosshair.color.opt.yellow": "Amarillo",
+  "set.crosshair.color.opt.red": "Rojo",
+  "set.crosshair.color.opt.cyan": "Cian",
+  "set.crosshair.color.opt.magenta": "Magenta",
+  "set.crosshair.color.opt.black": "Negro",
+  "set.crosshair.opacity": "Opacidad de la mira",
+  "set.crosshair.opacity.help": "1 es opaca; con menos, el escaneo se ve a través."
+}

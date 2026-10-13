@@ -356,7 +356,6 @@
   "cinema.rec": "● Record",
   "cinema.stop": "■ Stop and save",
   "cinema.on": "Cinema mode: full detail, no automatic quality. The scene credit is burned into the video.",
-  "cinema.noRec": "Cinema mode: full detail. Recording is available for the showcase scans only — their authors agreed to it.",
   "cinema.unsupported": "This browser cannot encode video (WebCodecs).",
   "cinema.saved": "Saved {s} s of video ({mb} MB).",
   "pause.import": "Import rates from Betaflight",

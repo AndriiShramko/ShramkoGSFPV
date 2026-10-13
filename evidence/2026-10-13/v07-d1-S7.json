@@ -1,0 +1,36 @@
+{
+  "name": "v07-d1-S7",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-13T15:06:07.413Z",
+    "gitHead": "0a6c322",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "parts": [
+    "S7"
+  ],
+  "site": "http://127.0.0.1:5341",
+  "render": "off",
+  "S7": {
+    "pass": true,
+    "credit": "Modlinek Villa \u2014 red room and bathroom \u2014 Andrii Shramko, CC BY 4.0 \u00b7 ShramkoGSFPV \u00b7 gsfpv.flyreelstudio.eu",
+    "frame": {
+      "width": 500,
+      "height": 1080,
+      "maxLitX": 464,
+      "litRows": 59,
+      "lines": 3
+    },
+    "picture": "evidence/2026-10-13/d1-ui/credit-portrait.png",
+    "consoleErrors": []
+  }
+}

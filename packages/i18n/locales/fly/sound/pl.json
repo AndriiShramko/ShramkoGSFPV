@@ -1,0 +1,11 @@
+{
+  "group.sound": "Dźwięk",
+  "group.sound.help": "Silniki drona, z prędkości symulowanych silników.",
+  "set.sound.motors": "Dźwięk silników",
+  "set.sound.motors.help": "Wycie czterech silników i szum śmigieł w rytm gazu. Cisza w pauzie i po rozbiciu. Strona może zacząć grać dopiero po pierwszym kliknięciu lub naciśnięciu klawisza.",
+  "set.sound.volume": "Głośność",
+  "set.sound.volume.help": "Jak głośno grają silniki.",
+  "sound.menu": "Dźwięk silników (wł. / wył.)",
+  "sound.menu.on": "Dźwięk silników: wł. — wyłącz",
+  "sound.menu.off": "Dźwięk silników: wył. — włącz"
+}

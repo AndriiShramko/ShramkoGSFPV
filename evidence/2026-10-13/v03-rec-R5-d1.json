@@ -1,0 +1,246 @@
+{
+  "name": "v03-rec-R5",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-13T09:11:10.040Z",
+    "gitHead": "2094009",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5341",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "ffprobe": "C:/Program Files/Shutter Encoder/Library/ffprobe.exe",
+  "display": {
+    "rafHz": 28.1,
+    "force60": true,
+    "why": "the display runs below 60 Hz (the owner's 4K monitor: 30 Hz over HDMI): the 60 Hz render comes from a 60 Hz timer driving the page's frame loop, the scan drawn every frame"
+  },
+  "R5": {
+    "pass": true,
+    "what": "F9 starts and stops a recording; with no folder chosen it goes to the browser storage and the bar offers the file (the Firefox / Safari path); the pause menu lists Record / stop with its F9 key-cap",
+    "render": "off",
+    "on": {
+      "allowed": true,
+      "showcase": true,
+      "credit": "Modlinek Villa \u2014 red room and bathroom \u2014 Andrii Shramko, CC BY 4.0 \u00b7 ShramkoGSFPV \u00b7 gsfpv.flyreelstudio.eu",
+      "notice": null,
+      "supported": true,
+      "canPick": true,
+      "recording": true,
+      "autoRun": false,
+      "auto": false,
+      "seconds": 1.15,
+      "busy": false,
+      "folder": null,
+      "access": "none",
+      "pendingStopAt": null,
+      "barHidden": false,
+      "barShown": true,
+      "recHidden": false,
+      "dotShown": true,
+      "dotText": "Recording, 0:01. Stop recording",
+      "autoDisabled": false,
+      "autoPressed": "false",
+      "autoTitle": "Auto-record: starts when you arm, stops 3 s after you disarm.",
+      "folderChip": "Choose a folder \u25be",
+      "allowChip": null,
+      "note": "Recording 0:01",
+      "last": null,
+      "offers": []
+    },
+    "off": {
+      "allowed": true,
+      "showcase": true,
+      "credit": "Modlinek Villa \u2014 red room and bathroom \u2014 Andrii Shramko, CC BY 4.0 \u00b7 ShramkoGSFPV \u00b7 gsfpv.flyreelstudio.eu",
+      "notice": null,
+      "supported": true,
+      "canPick": true,
+      "recording": false,
+      "autoRun": false,
+      "auto": false,
+      "seconds": 0,
+      "busy": false,
+      "folder": null,
+      "access": "none",
+      "pendingStopAt": null,
+      "barHidden": false,
+      "barShown": true,
+      "recHidden": false,
+      "dotShown": false,
+      "dotText": null,
+      "autoDisabled": false,
+      "autoPressed": "false",
+      "autoTitle": "Auto-record: starts when you arm, stops 3 s after you disarm.",
+      "folderChip": "Choose a folder \u25be",
+      "allowChip": null,
+      "note": "Saved 1.1 s in the browser (0.0 MB) \u00b7 60 fps \u00b7 repeated frames: 34 \u00b7 dropped: 0 Save file Share your flight",
+      "last": {
+        "codec": "avc1.640033",
+        "width": 1728,
+        "height": 1080,
+        "fps": 60,
+        "frames": 69,
+        "bytes": 21727,
+        "seconds": 1.15,
+        "duplicated": 34,
+        "heldForEncoder": 0,
+        "heldWhy": {
+          "readback": 0,
+          "encoder": 0
+        },
+        "dropped": 0,
+        "file": "gsfpv-39e63ce9-20261013-111032.mp4",
+        "files": [
+          {
+            "name": "gsfpv-39e63ce9-20261013-111032.mp4",
+            "bytes": 21727,
+            "frames": 69,
+            "seconds": 1.15
+          }
+        ],
+        "where": "browser",
+        "folder": "",
+        "ended": "stop",
+        "picture": "webgpu"
+      },
+      "offers": [
+        {
+          "name": "gsfpv-39e63ce9-20261013-111032.mp4",
+          "bytes": 21727
+        }
+      ]
+    },
+    "offer": {
+      "download": "gsfpv-39e63ce9-20261013-111032.mp4",
+      "href": "blob:"
+    },
+    "menuItem": {
+      "label": "Start recording",
+      "caps": [
+        "F9"
+      ],
+      "aria": "F9",
+      "disabled": false
+    },
+    "d36": {
+      "what": "C5 (D36): scene 723068d7 (not in the showcase): F9 records too, the author notice on the first recording only, the menu item enabled",
+      "fired": true,
+      "state": {
+        "allowed": true,
+        "showcase": false,
+        "credit": "superspl.at/scene/723068d7 \u00b7 ShramkoGSFPV \u00b7 gsfpv.flyreelstudio.eu",
+        "notice": "This scan belongs to its author on SuperSplat. The video is yours, and so is the responsibility for how you use it: credit the author when you post it.",
+        "supported": true,
+        "canPick": true,
+        "recording": true,
+        "autoRun": false,
+        "auto": false,
+        "seconds": 1.45,
+        "busy": false,
+        "folder": null,
+        "access": "none",
+        "pendingStopAt": null,
+        "barHidden": false,
+        "barShown": true,
+        "recHidden": false,
+        "dotShown": true,
+        "dotText": "Recording, 0:00. Stop recording",
+        "autoDisabled": false,
+        "autoPressed": "false",
+        "autoTitle": "Auto-record: starts when you arm, stops 3 s after you disarm.",
+        "folderChip": "Choose a folder \u25be",
+        "allowChip": null,
+        "note": "Recording 0:00",
+        "last": null,
+        "offers": []
+      },
+      "again": {
+        "allowed": true,
+        "showcase": false,
+        "credit": "superspl.at/scene/723068d7 \u00b7 ShramkoGSFPV \u00b7 gsfpv.flyreelstudio.eu",
+        "notice": null,
+        "supported": true,
+        "canPick": true,
+        "recording": true,
+        "autoRun": false,
+        "auto": false,
+        "seconds": 0.95,
+        "busy": false,
+        "folder": null,
+        "access": "none",
+        "pendingStopAt": null,
+        "barHidden": false,
+        "barShown": true,
+        "recHidden": false,
+        "dotShown": true,
+        "dotText": "Recording, 0:00. Stop recording",
+        "autoDisabled": false,
+        "autoPressed": "false",
+        "autoTitle": "Auto-record: starts when you arm, stops 3 s after you disarm.",
+        "folderChip": "Choose a folder \u25be",
+        "allowChip": null,
+        "note": "Recording 0:00",
+        "last": {
+          "codec": "avc1.640033",
+          "width": 1728,
+          "height": 1080,
+          "fps": 60,
+          "frames": 87,
+          "bytes": 18078,
+          "seconds": 1.45,
+          "duplicated": 43,
+          "heldForEncoder": 0,
+          "heldWhy": {
+            "readback": 0,
+            "encoder": 0
+          },
+          "dropped": 0,
+          "file": "gsfpv-723068d7-20261013-111036.mp4",
+          "files": [
+            {
+              "name": "gsfpv-723068d7-20261013-111036.mp4",
+              "bytes": 18078,
+              "frames": 87,
+              "seconds": 1.45
+            }
+          ],
+          "where": "browser",
+          "folder": "",
+          "ended": "stop",
+          "picture": "webgpu"
+        },
+        "offers": [
+          {
+            "name": "gsfpv-723068d7-20261013-111036.mp4",
+            "bytes": 18078
+          }
+        ]
+      },
+      "menuItem": {
+        "label": "Start recording",
+        "caps": [
+          "F9"
+        ],
+        "aria": "F9",
+        "disabled": false
+      }
+    },
+    "consoleErrors": []
+  },
+  "parts": [
+    "R5"
+  ],
+  "pass": true
+}

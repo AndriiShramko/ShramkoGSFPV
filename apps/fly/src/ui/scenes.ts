@@ -1,10 +1,15 @@
 // Scene picker: paste a link, the catalogue the owner curates at /admin/ (Featured row, collections,
 // the rest in his order), recent, favourites, filters, the SuperSplat tab. History, favourites and the
-// filter live in the browser only and survive a reload.
-import { parseSceneLink, toggleFavourite, getFilter, setFilter, posterUrl, knownVersion, getLibrary, lastScene, pickerRows, readCatalog, storefront, localText } from '@gsfpv/scenes';
-import type { CatalogCollection, CatalogScene, PickerRow, SceneCatalog, SceneFilter } from '@gsfpv/scenes';
+// filter live in the browser only and survive a reload. Every card has a Share button (v0.7 D1: share a
+// scene without flying it; the link is the scene's page, share/links.ts).
+import { parseSceneLink, toggleFavourite, getFilter, setFilter, posterUrl, knownVersion, getLibrary, lastScene, pickerRows, readCatalog, storefront, localText, sceneFacts } from '@gsfpv/scenes';
+import type { CatalogCollection, CatalogScene, PickerRow, SceneCatalog, SceneFacts, SceneFilter } from '@gsfpv/scenes';
 import { h, clear } from './dom';
 import { t, locale } from '../i18n';
+import { creditFacts } from '../scene-facts';
+import { openSharePanel } from '../share/panel';
+import { shareIcon } from '../share/icon';
+import type { ShareEntry } from '../share/links';
 import { pickerTabs } from './picker-tabs';
 import type { PickSource, PickerTab } from './picker-tabs';
 
@@ -46,6 +51,8 @@ export class ScenePicker {
     private unmountExtra: (() => void) | null = null;
     /** a scene picked: `raw` is its id (a card) or the text pasted (a link, its ?budget= and ?stochastic kept) */
     onPick: ((raw: string, source: PickSource) => void) | null = null;
+    /** the share panel a card opened (it goes with the picker) */
+    private sharePanel: { close(): void } | null = null;
 
     constructor(parent: HTMLElement, showcase: ShowcaseScene[], collections: CatalogCollection[] = []) {
         this.showcase = showcase;
@@ -86,9 +93,11 @@ export class ScenePicker {
         const last = lastScene(getLibrary());
         const lastTitle = last ? showcase.find((s) => s.id === last.id)?.title ?? last.title ?? last.id : '';
         const cont = last
-            ? h('button', { type: 'button', class: 'scene-card scene-continue', 'data-testid': 'scene-continue', 'data-scene': last.id, onclick: () => this.onPick?.(last.id, 'history') },
-                h('img', { src: posterUrl(last.id), alt: '', loading: 'lazy', width: 160, height: 90 }),
-                h('span', { class: 'scene-title' }, t('scenes.continue', { title: lastTitle })))
+            ? h('div', { class: 'scene-continue-wrap' },
+                h('button', { type: 'button', class: 'scene-card scene-continue', 'data-testid': 'scene-continue', 'data-scene': last.id, onclick: () => this.onPick?.(last.id, 'history') },
+                    h('img', { src: posterUrl(last.id), alt: '', loading: 'lazy', width: 160, height: 90 }),
+                    h('span', { class: 'scene-title' }, t('scenes.continue', { title: lastTitle }))),
+                this.shareButton(last.id, lastTitle, 'recent'))
             : null;
         this.filters = h('div', { class: 'filters' }, h('label', { for: 'f-col' }, fCol, ' ', t('scenes.filter.collision')), fKind, fFlown);
         this.root = h('div', { class: 'screen scenes interactive' },
@@ -129,7 +138,7 @@ export class ScenePicker {
                 this.err.textContent = '';
                 this.onPick?.(raw.trim(), source);
             };
-            this.unmountExtra = x.mount(this.list, { pick, showError: (c, m) => this.showError(c, m), filter: this.filter }) || null;
+            this.unmountExtra = x.mount(this.list, { pick, showError: (c, m) => this.showError(c, m), share: (id, facts) => this.share(id, 'picker', facts), filter: this.filter }) || null;
             return;
         }
         const items = this.items();
@@ -177,10 +186,30 @@ export class ScenePicker {
             m?.author ? h('span', { class: 'scene-meta' }, t('scenes.card.by', { author: m.author })) : null,
             h('span', { class: 'scene-meta sf-meta' }, walls, extra ? h('span', {}, extra) : null)
         );
-        return h('div', { class: 'scene-cell' }, card, star);
+        return h('div', { class: 'scene-cell' }, card, star, this.shareButton(s.id, s.title, this.tab === 'recent' ? 'recent' : 'picker'));
+    }
+
+    /**
+     * Share a scene from the picker: no flight, no picture, so the link is the scene's page
+     * (share/links.ts). The panel goes beside the picker, not into it: the picker scrolls, a panel
+     * inside it would sit at the top of its content.
+     */
+    private share(id: string, entry: ShareEntry, listed: SceneFacts = {}): void {
+        const meta = this.showcase.find((s) => s.id === id);
+        this.sharePanel = openSharePanel({ parent: this.root.parentElement ?? document.body, onClose: () => { this.sharePanel = null; } },
+            { entry, scene: creditFacts(id, meta, { ...sceneFacts(id), ...listed }) }) ?? this.sharePanel;
+    }
+
+    /** A card's round Share button (under the star). */
+    private shareButton(id: string, title: string, entry: ShareEntry): HTMLButtonElement {
+        const name = t('share.picker', { title });
+        const b = h('button', { type: 'button', class: 'scene-share', 'data-action': 'scene-share', 'data-scene': id, 'aria-label': name, title: name, onclick: (e: Event) => { e.stopPropagation(); this.share(id, entry); } });
+        b.append(shareIcon());
+        return b;
     }
 
     remove(): void {
+        this.sharePanel?.close();
         this.unmountExtra?.();
         this.unmountExtra = null;
         this.root.remove();

@@ -1,0 +1,11 @@
+{
+  "group.sound": "Sound",
+  "group.sound.help": "The drone's motors, made from the simulated motor speeds.",
+  "set.sound.motors": "Motor sound",
+  "set.sound.motors.help": "The whine of the four motors and the prop wash, following your throttle. Silent while paused or after a crash. The page can only start sound after your first click or key press.",
+  "set.sound.volume": "Volume",
+  "set.sound.volume.help": "How loud the motors are.",
+  "sound.menu": "Motor sound on / off",
+  "sound.menu.on": "Motor sound: on — turn off",
+  "sound.menu.off": "Motor sound: off — turn on"
+}

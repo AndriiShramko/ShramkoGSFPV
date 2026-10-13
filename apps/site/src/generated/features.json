@@ -3,14 +3,14 @@
  "schemaVersion": 2,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
-  "settings": 56,
-  "groups": 10,
+  "settings": 63,
+  "groups": 11,
   "drones": 6,
   "modes": 3,
-  "keys": 21,
+  "keys": 22,
   "rateTypes": 5,
   "flyingKeys": 10,
-  "allKeys": 29
+  "allKeys": 30
  },
  "locales": {
   "en": {
@@ -444,6 +444,129 @@
         "Polish",
         "Russian"
        ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "crosshair.shape",
+       "label": "Crosshair",
+       "help": "A mark in the centre of the view for lining up a gap. Off by default, like a real FPV feed. Never drawn into your videos, hidden in cinema mode.",
+       "type": "enum",
+       "default": "Off",
+       "range": "Off / Dot / Cross / Circle / Ring with a dot",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Off",
+        "Dot",
+        "Cross",
+        "Circle",
+        "Ring with a dot"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "crosshair.size",
+       "label": "Crosshair size",
+       "help": "As a share of the screen's shorter side, so it looks the same on a phone and on a big monitor.",
+       "type": "number",
+       "default": "4 %",
+       "range": "1\u201320 %",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "crosshair.color",
+       "label": "Crosshair colour",
+       "help": "Pick one that stands out on the scan you fly.",
+       "type": "enum",
+       "default": "Green",
+       "range": "Green / White / Yellow / Red / Cyan / Magenta / Black",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Green",
+        "White",
+        "Yellow",
+        "Red",
+        "Cyan",
+        "Magenta",
+        "Black"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "crosshair.opacity",
+       "label": "Crosshair opacity",
+       "help": "1 is solid; lower lets the scan show through.",
+       "type": "number",
+       "default": "0.8",
+       "range": "0.1\u20131",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "sound",
+     "title": "Sound",
+     "settings": [
+      {
+       "id": "sound.motors",
+       "label": "Motor sound",
+       "help": "The whine of the four motors and the prop wash, following your throttle. Silent while paused or after a crash. The page can only start sound after your first click or key press.",
+       "type": "bool",
+       "default": "On",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "pause"
+       ]
+      },
+      {
+       "id": "sound.volume",
+       "label": "Volume",
+       "help": "How loud the motors are.",
+       "type": "number",
+       "default": "40 %",
+       "range": "0\u2013100 %",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
        "shown": [
         "settings"
        ]
@@ -1108,7 +1231,7 @@
       {
        "id": "recording.auto",
        "label": "Auto-record",
-       "help": "Starts when you arm, stops 3 s after you disarm, into the last chosen folder. Showcase scans only.",
+       "help": "Starts when you arm, stops 3 s after you disarm, into the last chosen folder.",
        "type": "bool",
        "default": "Off",
        "range": "",
@@ -1136,6 +1259,24 @@
        "preset": false,
        "options": [],
        "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "recording.authorNotice",
+       "label": "Whose scan it is",
+       "help": "The first video of a scan outside the showcase shows one line on the recording bar: whose scan it is, its licence, and that the video is yours to use and to credit.",
+       "type": "bool",
+       "default": "On",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "cinema",
         "settings"
        ]
       }
@@ -1270,6 +1411,13 @@
      "label": "Report a bug or an idea",
      "keys": [
       "B"
+     ]
+    },
+    {
+     "action": "share.open",
+     "label": "Share this scene",
+     "keys": [
+      "L"
      ]
     }
    ],
@@ -1993,6 +2141,129 @@
        "shown": [
         "settings"
        ]
+      },
+      {
+       "id": "crosshair.shape",
+       "label": "Mira",
+       "help": "Una marca en el centro de la imagen para apuntar a un hueco. Desactivada por defecto, como en una imagen FPV real. Nunca aparece en tus v\u00eddeos y se oculta en el modo cine.",
+       "type": "enum",
+       "default": "Desactivada",
+       "range": "Desactivada / Punto / Cruz / C\u00edrculo / Anillo con punto",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Desactivada",
+        "Punto",
+        "Cruz",
+        "C\u00edrculo",
+        "Anillo con punto"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "crosshair.size",
+       "label": "Tama\u00f1o de la mira",
+       "help": "En proporci\u00f3n al lado corto de la pantalla, para que se vea igual en un m\u00f3vil que en un monitor grande.",
+       "type": "number",
+       "default": "4 %",
+       "range": "1\u201320 %",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "crosshair.color",
+       "label": "Color de la mira",
+       "help": "Elige uno que destaque sobre el escaneo que vuelas.",
+       "type": "enum",
+       "default": "Verde",
+       "range": "Verde / Blanco / Amarillo / Rojo / Cian / Magenta / Negro",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Verde",
+        "Blanco",
+        "Amarillo",
+        "Rojo",
+        "Cian",
+        "Magenta",
+        "Negro"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "crosshair.opacity",
+       "label": "Opacidad de la mira",
+       "help": "1 es opaca; con menos, el escaneo se ve a trav\u00e9s.",
+       "type": "number",
+       "default": "0.8",
+       "range": "0.1\u20131",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "sound",
+     "title": "Sonido",
+     "settings": [
+      {
+       "id": "sound.motors",
+       "label": "Sonido de los motores",
+       "help": "El zumbido de los cuatro motores y el soplo de las h\u00e9lices, al ritmo de tu gas. En silencio en pausa o tras un choque. La p\u00e1gina solo puede empezar a sonar despu\u00e9s de tu primer clic o tecla.",
+       "type": "bool",
+       "default": "Activado",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "pause"
+       ]
+      },
+      {
+       "id": "sound.volume",
+       "label": "Volumen",
+       "help": "Lo fuerte que suenan los motores.",
+       "type": "number",
+       "default": "40 %",
+       "range": "0\u2013100 %",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
       }
      ]
     },
@@ -2654,7 +2925,7 @@
       {
        "id": "recording.auto",
        "label": "Grabaci\u00f3n autom\u00e1tica",
-       "help": "Empieza al armar y para 3 s despu\u00e9s de desarmar, en la \u00faltima carpeta elegida. Solo escaneos del escaparate.",
+       "help": "Empieza al armar y para 3 s despu\u00e9s de desarmar, en la \u00faltima carpeta elegida.",
        "type": "bool",
        "default": "Desactivado",
        "range": "",
@@ -2682,6 +2953,24 @@
        "preset": false,
        "options": [],
        "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "recording.authorNotice",
+       "label": "De qui\u00e9n es el escaneo",
+       "help": "El primer v\u00eddeo de un escaneo fuera del escaparate muestra una l\u00ednea en la barra de grabaci\u00f3n: de qui\u00e9n es el escaneo, su licencia, y que el v\u00eddeo es tuyo para usarlo citando al autor.",
+       "type": "bool",
+       "default": "Activado",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "cinema",
         "settings"
        ]
       }
@@ -2816,6 +3105,13 @@
      "label": "Informar de un error o una idea",
      "keys": [
       "B"
+     ]
+    },
+    {
+     "action": "share.open",
+     "label": "Compartir esta escena",
+     "keys": [
+      "L"
      ]
     }
    ],
@@ -3539,6 +3835,129 @@
        "shown": [
         "settings"
        ]
+      },
+      {
+       "id": "crosshair.shape",
+       "label": "Celownik",
+       "help": "Znacznik na \u015brodku obrazu do celowania w przerw\u0119. Domy\u015blnie wy\u0142\u0105czony, jak w prawdziwym obrazie FPV. Nigdy nie trafia do Twoich nagra\u0144 i znika w trybie kinowym.",
+       "type": "enum",
+       "default": "Wy\u0142\u0105czony",
+       "range": "Wy\u0142\u0105czony / Kropka / Krzy\u017cyk / Okr\u0105g / Pier\u015bcie\u0144 z kropk\u0105",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Wy\u0142\u0105czony",
+        "Kropka",
+        "Krzy\u017cyk",
+        "Okr\u0105g",
+        "Pier\u015bcie\u0144 z kropk\u0105"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "crosshair.size",
+       "label": "Rozmiar celownika",
+       "help": "Jako cz\u0119\u015b\u0107 kr\u00f3tszego boku ekranu, wi\u0119c wygl\u0105da tak samo na telefonie i na du\u017cym monitorze.",
+       "type": "number",
+       "default": "4 %",
+       "range": "1\u201320 %",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "crosshair.color",
+       "label": "Kolor celownika",
+       "help": "Wybierz taki, kt\u00f3ry dobrze wida\u0107 na skanie, nad kt\u00f3rym latasz.",
+       "type": "enum",
+       "default": "Zielony",
+       "range": "Zielony / Bia\u0142y / \u017b\u00f3\u0142ty / Czerwony / Cyjan / Magenta / Czarny",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Zielony",
+        "Bia\u0142y",
+        "\u017b\u00f3\u0142ty",
+        "Czerwony",
+        "Cyjan",
+        "Magenta",
+        "Czarny"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "crosshair.opacity",
+       "label": "Krycie celownika",
+       "help": "1 to pe\u0142ne krycie; mniej i skan prze\u015bwituje.",
+       "type": "number",
+       "default": "0.8",
+       "range": "0.1\u20131",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "sound",
+     "title": "D\u017awi\u0119k",
+     "settings": [
+      {
+       "id": "sound.motors",
+       "label": "D\u017awi\u0119k silnik\u00f3w",
+       "help": "Wycie czterech silnik\u00f3w i szum \u015bmigie\u0142 w rytm gazu. Cisza w pauzie i po rozbiciu. Strona mo\u017ce zacz\u0105\u0107 gra\u0107 dopiero po pierwszym klikni\u0119ciu lub naci\u015bni\u0119ciu klawisza.",
+       "type": "bool",
+       "default": "W\u0142\u0105czone",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "pause"
+       ]
+      },
+      {
+       "id": "sound.volume",
+       "label": "G\u0142o\u015bno\u015b\u0107",
+       "help": "Jak g\u0142o\u015bno graj\u0105 silniki.",
+       "type": "number",
+       "default": "40 %",
+       "range": "0\u2013100 %",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
       }
      ]
     },
@@ -4200,7 +4619,7 @@
       {
        "id": "recording.auto",
        "label": "Autonagrywanie",
-       "help": "Start przy uzbrojeniu, stop 3 s po rozbrojeniu, do ostatnio wybranego folderu. Tylko skany z wystawy.",
+       "help": "Start przy uzbrojeniu, stop 3 s po rozbrojeniu, do ostatnio wybranego folderu.",
        "type": "bool",
        "default": "Wy\u0142\u0105czone",
        "range": "",
@@ -4228,6 +4647,24 @@
        "preset": false,
        "options": [],
        "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "recording.authorNotice",
+       "label": "Czyj to skan",
+       "help": "Pierwsze nagranie skanu spoza wystawy pokazuje jedn\u0105 lini\u0119 na pasku nagrywania: czyj to skan, jaka licencja i \u017ce nagranie jest Twoje \u2014 do u\u017cycia z podaniem autora.",
+       "type": "bool",
+       "default": "W\u0142\u0105czone",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "cinema",
         "settings"
        ]
       }
@@ -4362,6 +4799,13 @@
      "label": "Zg\u0142o\u015b b\u0142\u0105d lub pomys\u0142",
      "keys": [
       "B"
+     ]
+    },
+    {
+     "action": "share.open",
+     "label": "Udost\u0119pnij t\u0119 scen\u0119",
+     "keys": [
+      "L"
      ]
     }
    ],
@@ -5085,6 +5529,129 @@
        "shown": [
         "settings"
        ]
+      },
+      {
+       "id": "crosshair.shape",
+       "label": "\u041f\u0440\u0438\u0446\u0435\u043b",
+       "help": "\u041c\u0435\u0442\u043a\u0430 \u0432 \u0446\u0435\u043d\u0442\u0440\u0435 \u043a\u0430\u0440\u0442\u0438\u043d\u043a\u0438, \u0447\u0442\u043e\u0431\u044b \u0446\u0435\u043b\u0438\u0442\u044c\u0441\u044f \u0432 \u043f\u0440\u043e\u0451\u043c. \u041f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e \u0432\u044b\u043a\u043b\u044e\u0447\u0435\u043d, \u043a\u0430\u043a \u0432 \u043d\u0430\u0441\u0442\u043e\u044f\u0449\u0435\u043c FPV. \u041d\u0438\u043a\u043e\u0433\u0434\u0430 \u043d\u0435 \u043f\u043e\u043f\u0430\u0434\u0430\u0435\u0442 \u0432 \u0432\u0430\u0448\u0438 \u0432\u0438\u0434\u0435\u043e \u0438 \u043f\u0440\u044f\u0447\u0435\u0442\u0441\u044f \u0432 \u0440\u0435\u0436\u0438\u043c\u0435 \u043a\u0438\u043d\u043e.",
+       "type": "enum",
+       "default": "\u0412\u044b\u043a\u043b\u044e\u0447\u0435\u043d",
+       "range": "\u0412\u044b\u043a\u043b\u044e\u0447\u0435\u043d / \u0422\u043e\u0447\u043a\u0430 / \u041a\u0440\u0435\u0441\u0442 / \u041a\u0440\u0443\u0433 / \u041a\u043e\u043b\u044c\u0446\u043e \u0441 \u0442\u043e\u0447\u043a\u043e\u0439",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "\u0412\u044b\u043a\u043b\u044e\u0447\u0435\u043d",
+        "\u0422\u043e\u0447\u043a\u0430",
+        "\u041a\u0440\u0435\u0441\u0442",
+        "\u041a\u0440\u0443\u0433",
+        "\u041a\u043e\u043b\u044c\u0446\u043e \u0441 \u0442\u043e\u0447\u043a\u043e\u0439"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "crosshair.size",
+       "label": "\u0420\u0430\u0437\u043c\u0435\u0440 \u043f\u0440\u0438\u0446\u0435\u043b\u0430",
+       "help": "\u0412 \u0434\u043e\u043b\u044f\u0445 \u043a\u043e\u0440\u043e\u0442\u043a\u043e\u0439 \u0441\u0442\u043e\u0440\u043e\u043d\u044b \u044d\u043a\u0440\u0430\u043d\u0430: \u043d\u0430 \u0442\u0435\u043b\u0435\u0444\u043e\u043d\u0435 \u0438 \u043d\u0430 \u0431\u043e\u043b\u044c\u0448\u043e\u043c \u043c\u043e\u043d\u0438\u0442\u043e\u0440\u0435 \u043e\u043d \u0432\u044b\u0433\u043b\u044f\u0434\u0438\u0442 \u043e\u0434\u0438\u043d\u0430\u043a\u043e\u0432\u043e.",
+       "type": "number",
+       "default": "4 %",
+       "range": "1\u201320 %",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "crosshair.color",
+       "label": "\u0426\u0432\u0435\u0442 \u043f\u0440\u0438\u0446\u0435\u043b\u0430",
+       "help": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0442\u043e\u0442, \u0447\u0442\u043e \u0445\u043e\u0440\u043e\u0448\u043e \u0432\u0438\u0434\u0435\u043d \u043d\u0430 \u0432\u0430\u0448\u0435\u043c \u0441\u043a\u0430\u043d\u0435.",
+       "type": "enum",
+       "default": "\u0417\u0435\u043b\u0451\u043d\u044b\u0439",
+       "range": "\u0417\u0435\u043b\u0451\u043d\u044b\u0439 / \u0411\u0435\u043b\u044b\u0439 / \u0416\u0451\u043b\u0442\u044b\u0439 / \u041a\u0440\u0430\u0441\u043d\u044b\u0439 / \u0413\u043e\u043b\u0443\u0431\u043e\u0439 / \u041f\u0443\u0440\u043f\u0443\u0440\u043d\u044b\u0439 / \u0427\u0451\u0440\u043d\u044b\u0439",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "\u0417\u0435\u043b\u0451\u043d\u044b\u0439",
+        "\u0411\u0435\u043b\u044b\u0439",
+        "\u0416\u0451\u043b\u0442\u044b\u0439",
+        "\u041a\u0440\u0430\u0441\u043d\u044b\u0439",
+        "\u0413\u043e\u043b\u0443\u0431\u043e\u0439",
+        "\u041f\u0443\u0440\u043f\u0443\u0440\u043d\u044b\u0439",
+        "\u0427\u0451\u0440\u043d\u044b\u0439"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "crosshair.opacity",
+       "label": "\u041d\u0435\u043f\u0440\u043e\u0437\u0440\u0430\u0447\u043d\u043e\u0441\u0442\u044c \u043f\u0440\u0438\u0446\u0435\u043b\u0430",
+       "help": "1 \u2014 \u0441\u043f\u043b\u043e\u0448\u043d\u043e\u0439; \u043c\u0435\u043d\u044c\u0448\u0435 \u2014 \u0441\u043a\u0432\u043e\u0437\u044c \u043d\u0435\u0433\u043e \u0432\u0438\u0434\u0435\u043d \u0441\u043a\u0430\u043d.",
+       "type": "number",
+       "default": "0.8",
+       "range": "0.1\u20131",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "sound",
+     "title": "\u0417\u0432\u0443\u043a",
+     "settings": [
+      {
+       "id": "sound.motors",
+       "label": "\u0417\u0432\u0443\u043a \u043c\u043e\u0442\u043e\u0440\u043e\u0432",
+       "help": "\u0421\u0432\u0438\u0441\u0442 \u0447\u0435\u0442\u044b\u0440\u0451\u0445 \u043c\u043e\u0442\u043e\u0440\u043e\u0432 \u0438 \u0448\u0443\u043c \u043f\u0440\u043e\u043f\u0435\u043b\u043b\u0435\u0440\u043e\u0432 \u0432 \u0442\u0430\u043a\u0442 \u0433\u0430\u0437\u0443. \u0422\u0438\u0448\u0438\u043d\u0430 \u043d\u0430 \u043f\u0430\u0443\u0437\u0435 \u0438 \u043f\u043e\u0441\u043b\u0435 \u043a\u0440\u0430\u0448\u0430. \u0421\u0442\u0440\u0430\u043d\u0438\u0446\u0430 \u043c\u043e\u0436\u0435\u0442 \u0432\u043a\u043b\u044e\u0447\u0438\u0442\u044c \u0437\u0432\u0443\u043a \u0442\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u0441\u043b\u0435 \u043f\u0435\u0440\u0432\u043e\u0433\u043e \u043a\u043b\u0438\u043a\u0430 \u0438\u043b\u0438 \u043d\u0430\u0436\u0430\u0442\u0438\u044f \u043a\u043b\u0430\u0432\u0438\u0448\u0438.",
+       "type": "bool",
+       "default": "\u0412\u043a\u043b.",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings",
+        "pause"
+       ]
+      },
+      {
+       "id": "sound.volume",
+       "label": "\u0413\u0440\u043e\u043c\u043a\u043e\u0441\u0442\u044c",
+       "help": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0433\u0440\u043e\u043c\u043a\u043e \u0437\u0432\u0443\u0447\u0430\u0442 \u043c\u043e\u0442\u043e\u0440\u044b.",
+       "type": "number",
+       "default": "40 %",
+       "range": "0\u2013100 %",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
       }
      ]
     },
@@ -5746,7 +6313,7 @@
       {
        "id": "recording.auto",
        "label": "\u0410\u0432\u0442\u043e\u0437\u0430\u043f\u0438\u0441\u044c",
-       "help": "\u0421\u0442\u0430\u0440\u0442 \u043f\u0440\u0438 \u0430\u0440\u043c\u0438\u043d\u0433\u0435, \u0441\u0442\u043e\u043f \u0447\u0435\u0440\u0435\u0437 3 \u0441 \u043f\u043e\u0441\u043b\u0435 \u0434\u0438\u0437\u0430\u0440\u043c\u0430, \u0432 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u044e\u044e \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u0443\u044e \u043f\u0430\u043f\u043a\u0443. \u0422\u043e\u043b\u044c\u043a\u043e \u0441\u043a\u0430\u043d\u044b \u0432\u0438\u0442\u0440\u0438\u043d\u044b.",
+       "help": "\u0421\u0442\u0430\u0440\u0442 \u043f\u0440\u0438 \u0430\u0440\u043c\u0438\u043d\u0433\u0435, \u0441\u0442\u043e\u043f \u0447\u0435\u0440\u0435\u0437 3 \u0441 \u043f\u043e\u0441\u043b\u0435 \u0434\u0438\u0437\u0430\u0440\u043c\u0430, \u0432 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u044e\u044e \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u0443\u044e \u043f\u0430\u043f\u043a\u0443.",
        "type": "bool",
        "default": "\u0412\u044b\u043a\u043b.",
        "range": "",
@@ -5774,6 +6341,24 @@
        "preset": false,
        "options": [],
        "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "recording.authorNotice",
+       "label": "\u0427\u0435\u0439 \u044d\u0442\u043e \u0441\u043a\u0430\u043d",
+       "help": "\u041f\u0435\u0440\u0432\u043e\u0435 \u0432\u0438\u0434\u0435\u043e \u0441\u043a\u0430\u043d\u0430 \u043d\u0435 \u0438\u0437 \u0432\u0438\u0442\u0440\u0438\u043d\u044b \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u0442 \u043e\u0434\u043d\u0443 \u0441\u0442\u0440\u043e\u043a\u0443 \u043d\u0430 \u043f\u0430\u043d\u0435\u043b\u0438 \u0437\u0430\u043f\u0438\u0441\u0438: \u0447\u0435\u0439 \u044d\u0442\u043e \u0441\u043a\u0430\u043d, \u0435\u0433\u043e \u043b\u0438\u0446\u0435\u043d\u0437\u0438\u044f \u0438 \u0447\u0442\u043e \u0432\u0438\u0434\u0435\u043e \u0432\u0430\u0448\u0435 \u2014 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0439\u0442\u0435 \u0435\u0433\u043e, \u0443\u043a\u0430\u0437\u044b\u0432\u0430\u044f \u0430\u0432\u0442\u043e\u0440\u0430.",
+       "type": "bool",
+       "default": "\u0412\u043a\u043b.",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "cinema",
         "settings"
        ]
       }
@@ -5908,6 +6493,13 @@
      "label": "\u0421\u043e\u043e\u0431\u0449\u0438\u0442\u044c \u043e\u0431 \u043e\u0448\u0438\u0431\u043a\u0435 \u0438\u043b\u0438 \u0438\u0434\u0435\u0435",
      "keys": [
       "B"
+     ]
+    },
+    {
+     "action": "share.open",
+     "label": "\u041f\u043e\u0434\u0435\u043b\u0438\u0442\u044c\u0441\u044f \u044d\u0442\u043e\u0439 \u0441\u0446\u0435\u043d\u043e\u0439",
+     "keys": [
+      "L"
      ]
     }
    ],

@@ -15,6 +15,7 @@
   "keys.scene.next": "Next scene",
   "keys.scene.random": "Random scene",
   "keys.settings.open": "Settings",
+  "keys.share.open": "Share this scene",
   "keys.voxels.cycle": "Voxel grid: off / over the scan / voxels only",
   "keys.walls.toggle": "Walls on / off for this scan"
 }

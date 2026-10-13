@@ -33,6 +33,8 @@ import { wind } from './builtin/wind';
 import { ceiling } from './builtin/ceiling';
 import { sceneDefault } from './builtin/scene-default';
 import { switches } from './builtin/switches';
+import { crosshair } from './builtin/crosshair';
+import { sound } from './builtin/sound';
 
 export const FEATURES: readonly Feature[] = [
     scene,
@@ -63,5 +65,7 @@ export const FEATURES: readonly Feature[] = [
     wind,
     ceiling,
     sceneDefault,
-    switches
+    switches,
+    crosshair,
+    sound
 ];

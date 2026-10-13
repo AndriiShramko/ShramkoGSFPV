@@ -6,7 +6,7 @@
 export type ActionId =
     | 'pause.toggle' | 'respawn.start' | 'respawn.rewind' | 'crash.keep' | 'scene.next' | 'scene.random' | 'scene.favourite'
     | 'mode.cycle' | 'voxels.cycle' | 'hud.toggle' | 'scale.down' | 'scale.up' | 'record.toggle' | 'frameStats.toggle'
-    | 'settings.open' | 'walls.toggle' | 'arm.toggle' | 'feedback.open' | (string & {}); // v0.2 pause items keep the keys v0.2 shipped
+    | 'settings.open' | 'walls.toggle' | 'arm.toggle' | 'feedback.open' | 'share.open' | (string & {}); // v0.2 pause items keep the keys v0.2 shipped
 
 /** A key as a menu shows it (`cap`) and as ARIA names it (`aria`, for aria-keyshortcuts). v0.2's shape. */
 export interface KeyHint { cap: string; aria: string }
@@ -77,7 +77,10 @@ export const KEYMAP: readonly KeyBinding[] = [
     { action: 'settings.open', keys: [letter('O')], when: 'always', labelKey: 'keys.settings.open', status: 'shipped' },
     // W5 (app/builtin/feedback.ts): the bug / idea / cooperation dialog, also on the top bar and in the
     // pause menu; B as in bug (and the Polish "blad"), and in the crash state too, where bugs show
-    { action: 'feedback.open', keys: [letter('B')], when: 'always', labelKey: 'keys.feedback.open', status: 'shipped' }
+    { action: 'feedback.open', keys: [letter('B')], when: 'always', labelKey: 'keys.feedback.open', status: 'shipped' },
+    // v0.7 lane D1 (app/builtin/share.ts): share the scene flown now, also on the top bar, in the pause
+    // menu, the crash panel and the stats card; L as in "link" (no other binding or flying key uses it)
+    { action: 'share.open', keys: [letter('L')], when: 'always', labelKey: 'keys.share.open', status: 'shipped' }
 ];
 
 /**

@@ -3,8 +3,9 @@
 //   countdown bar and key-caps (Enter stays and opens the panel, R goes to the start). Nothing to
 //   click: the drone comes back by itself.
 // - CrashPanel: automatic respawn off, or Enter. The life's numbers and the actions: Rewind (Y),
-//   Back to start (R), Replay, Save log, Settings (O). data-action values: respawn (B12 clicks it),
-//   rewind, replay, save, settings.
+//   Back to start (R), Replay, Save log, Settings (O), Share this crash (L, v0.7 D1: the share panel
+//   with the crash's words). data-action values: respawn (B12 clicks it), rewind, replay, save,
+//   settings, share-crash.
 // - Scene keys (E.5, item 10): the toast hints N (next scene) and F (next favourite); the panel has
 //   Next scene (N), Random scene (Shift+N) and Next favourite (F): data-action scene-next,
 //   scene-random, scene-favourite. With scenes.autoSwitch the toast counts down to the next scene.
@@ -79,6 +80,8 @@ export interface PanelActions {
     replay: () => void;
     save: () => void;
     settings: { run: () => void; keys: readonly KeyHint[] } | null;
+    /** v0.7 D1: Share this crash (the share panel, builtin/share.ts); absent: no button */
+    share?: { run: () => void; keys: readonly KeyHint[] };
     /** E.5: Next scene (N), Random scene (Shift+N), Next favourite (F); absent: no scene row */
     scenes?: Record<'next' | 'random' | 'favourite', { run: () => void; keys: readonly KeyHint[] }>;
 }
@@ -102,7 +105,8 @@ export class CrashPanel {
                 btn('respawn', t('respawn.start'), a.start.run, a.start.keys),
                 btn('replay', t('crash.replay'), a.replay),
                 btn('save', t('crash.save'), a.save),
-                a.settings ? btn('settings', t('pause.settings'), a.settings.run, a.settings.keys) : null
+                a.settings ? btn('settings', t('pause.settings'), a.settings.run, a.settings.keys) : null,
+                a.share ? btn('share-crash', t('share.crash'), a.share.run, a.share.keys) : null
             ),
             a.scenes ? h('div', { class: 'actions cp-scenes', 'data-testid': 'crash-scenes' },
                 btn('scene-next', t('keys.scene.next'), a.scenes.next.run, a.scenes.next.keys),

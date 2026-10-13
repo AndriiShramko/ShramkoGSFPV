@@ -15,6 +15,7 @@
   "keys.scene.next": "Siguiente escena",
   "keys.scene.random": "Escena aleatoria",
   "keys.settings.open": "Ajustes",
+  "keys.share.open": "Compartir esta escena",
   "keys.voxels.cycle": "Rejilla de vóxeles: oculta / sobre el escaneo / solo vóxeles",
   "keys.walls.toggle": "Paredes sí / no en este escaneo"
 }

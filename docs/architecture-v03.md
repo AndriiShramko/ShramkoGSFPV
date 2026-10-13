@@ -1161,7 +1161,7 @@ export class CinemaRecorder {
   - Recording starts at arm and stops 3 s after a disarm that is not a crash.
   - With auto-respawn on, a crash does not stop it.
   - File names: `gsfpv-<scene>-<YYYYMMDD-HHMMSS>.mp4`.
-- **Which scenes.** Showcase scenes only (D34). Elsewhere the toggle is disabled with the reason.
+- **Which scenes.** Showcase scenes only (D34). Elsewhere the toggle is disabled with the reason. *(Since v0.7 every scan records, D36: the credit stays in every frame and the first recording of a scan outside the catalogue shows a one-line author notice; docs/wip/v07-d1.md.)*
 - **REC is offered in normal flight too**, at the quality as flown. Cinema mode only raises the quality.
 - **Browsers without a picker** (Firefox, Safari): record to OPFS and offer the file after stop.
 

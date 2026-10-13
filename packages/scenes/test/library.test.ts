@@ -137,3 +137,33 @@ describe('scene library: a favourite keeps what it was starred with (title, wall
         expect(oldRule).toEqual([]);
     });
 });
+
+describe('scene library: what a listing knew of a scene (v0.7 D1: credit a scan outside the catalogue)', () => {
+    const facts = { title: 'Old Mill', author: 'Jane Scan', license: 'CC BY-SA' };
+
+    it('picked from the SuperSplat tab: the facts survive the open that follows, and a full history', () => {
+        let d = emptyLibrary();
+        for (let i = 0; i < HISTORY_CAP; i++) d = open(d, `s${i}`, 1000 + i);
+        d = L.rememberFacts(d, 'ab12cd34', facts);
+        expect(L.factsOf(d, 'ab12cd34')).toEqual(facts);
+        // the open a moment later (scene-host/flight: recordOpen with the title only) keeps author and licence
+        d = open(d, 'ab12cd34', 9000, { title: 'Old Mill' });
+        expect(L.factsOf(d, 'ab12cd34')).toEqual(facts);
+        expect(d.history.length).toBe(HISTORY_CAP);
+        // a never-opened entry is not "the last scene" and not in Recent
+        expect(lastScene(L.rememberFacts(emptyLibrary(), 'cafe0001', facts))).toBeNull();
+    });
+
+    it('an unknown never replaces a known value', () => {
+        const d = L.rememberFacts(L.rememberFacts(emptyLibrary(), 'ab12cd34', facts), 'ab12cd34', { title: 'Old Mill v2' });
+        expect(L.factsOf(d, 'ab12cd34')).toEqual({ ...facts, title: 'Old Mill v2' });
+        expect(L.factsOf(d, 'ffff0000')).toEqual({});
+    });
+
+    it('control: appended at the end like a star (toggleFavourite), a full history drops the facts at once', () => {
+        let d = emptyLibrary();
+        for (let i = 0; i < HISTORY_CAP; i++) d = open(d, `s${i}`, 1000 + i);
+        const appended = { ...d, history: [...d.history, { id: 'ab12cd34', version: 1, lastFlown: 0, flights: 0, airtimeS: 0, hasCollision: null, ...facts }].slice(0, HISTORY_CAP) };
+        expect(L.factsOf(appended, 'ab12cd34')).toEqual({});
+    });
+});

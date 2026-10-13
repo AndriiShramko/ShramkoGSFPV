@@ -4,11 +4,12 @@
 // favourites (the picker's own star list) and "Open on SuperSplat". The list comes from OUR caching
 // proxy (/api/superspl/explore) through SuperSplatCatalog; the browser never asks PlayCanvas. A scene
 // is opened through the picker's host, like a card or a pasted link. Registered once by main.ts.
-import { SuperSplatCatalog, supersplSearchUrl, getFavourites, toggleFavourite, getHistory, parseSceneInput, formatVerdict, EXPLORE_TIMES } from '@gsfpv/scenes';
-import type { CatalogStore, ExploreItem, ExplorePage } from '@gsfpv/scenes';
+import { SuperSplatCatalog, supersplSearchUrl, getFavourites, toggleFavourite, getHistory, parseSceneInput, formatVerdict, rememberSceneFacts, EXPLORE_TIMES } from '@gsfpv/scenes';
+import type { CatalogStore, ExploreItem, ExplorePage, SceneFacts } from '@gsfpv/scenes';
 import { h, clear } from './dom';
 import { t, locale } from '../i18n';
 import { registerPickerTab } from './picker-tabs';
+import { shareIcon } from '../share/icon';
 import type { PickerTab, PickerTabHost } from './picker-tabs';
 import { SORT_KEYS, appendPage, countLabel, defaultFilters, errorView, filtersFromStore, filtersToStore, hasMore, licenceLabel, nextSkip, randomExclusions, sizeParts, timeApplies, toQuery } from './superspl-tab-logic';
 import type { SortKey, TabFilters } from './superspl-tab-logic';
@@ -59,6 +60,17 @@ function writeFailed(ids: readonly string[]): void {
 function sceneInAddress(): string | null {
     const raw = new URL(location.href).searchParams.get('scene');
     return raw ? parseSceneInput(raw) : null;
+}
+
+/** What a card shows of its scene: the flight credits a scan outside the catalogue with it (v0.7 D1). */
+function factsOfItem(it: ExploreItem): SceneFacts {
+    return { title: it.title || undefined, author: it.author || undefined, license: licenceLabel(it.license) || undefined };
+}
+
+/** Fly a scene of the list; its title, author and licence go with it (the video's credit, the author notice). */
+function pickItem(ctx: PickerTabHost, it: ExploreItem, source: 'superspl' | 'random'): void {
+    rememberSceneFacts(it.id, factsOfItem(it));
+    ctx.pick(it.id, source);
 }
 
 function mount(host: HTMLElement, ctx: PickerTabHost): () => void {
@@ -138,7 +150,7 @@ function mount(host: HTMLElement, ctx: PickerTabHost): () => void {
             it.downloadable ? h('span', { class: 'ss-badge dl' }, t('superspl.badge.downloadable')) : null,
             formatVerdict(it.format) === 'unsupported' ? h('span', { class: 'ss-badge old' }, t('superspl.badge.old')) : null
         );
-        const btn = h('button', { type: 'button', class: 'scene-card ss-card', 'data-scene': it.id, onclick: () => ctx.pick(it.id, 'superspl') },
+        const btn = h('button', { type: 'button', class: 'scene-card ss-card', 'data-scene': it.id, onclick: () => pickItem(ctx, it, 'superspl') },
             img, badges,
             h('span', { class: 'scene-title' }, title),
             it.author ? h('span', { class: 'scene-meta ss-author' }, t('superspl.by', { author: it.author })) : null,
@@ -153,7 +165,9 @@ function mount(host: HTMLElement, ctx: PickerTabHost): () => void {
             star.setAttribute('aria-pressed', String(on));
             star.setAttribute('aria-label', t(on ? 'superspl.unfav' : 'superspl.fav', { title }));
         });
-        return h('div', { class: 'scene-cell' }, btn, star);
+        const share = h('button', { type: 'button', class: 'scene-share', 'data-action': 'scene-share', 'data-scene': it.id, 'aria-label': t('share.picker', { title }), title: t('share.picker', { title }), onclick: (e: Event) => { e.stopPropagation(); ctx.share(it.id, factsOfItem(it)); } });
+        share.append(shareIcon());
+        return h('div', { class: 'scene-cell' }, btn, star, share);
     };
 
     const load = async (reset: boolean): Promise<void> => {
@@ -222,7 +236,7 @@ function mount(host: HTMLElement, ctx: PickerTabHost): () => void {
                 status.textContent = t('superspl.random.none');
                 return;
             }
-            ctx.pick(r.item.id, 'random');
+            pickItem(ctx, r.item, 'random');
         } catch (e) {
             if (alive) showError(e, () => void pickRandom());
         } finally {

@@ -31,3 +31,17 @@ body.touch-on:not(.cinema) .cinema-bar { bottom: calc(max(24px, env(safe-area-in
 }
 /* the arm card, the key card and the arm hint go above the bar when they would meet it (rec-bar-up) */
 body:not(.cinema) #ui.rec-bar-up .hud > :is(.arm-card, .arm-disarm, .gate-msg) { bottom: calc(var(--cinema-top, 96px) + 8px); }
+
+/* the author notice (cinema.ts, D36): one line over the view while a scan outside the catalogue is
+   recorded for the first time; also while flying, when the bar steps aside. Under the top buttons
+   and under the walls box when it shows (a scan outside the catalogue has no walls yet: its "Build
+   walls" button stays reachable; --bake-bottom is kept by ui/top-row.ts) */
+.rec-notice { position: absolute; z-index: 4; left: 50%; transform: translateX(-50%); top: max(calc(max(10px, env(safe-area-inset-top)) + 84px + var(--banner-h, 0px)), calc(var(--bake-bottom, 0px) + 8px)); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; width: max-content; max-width: min(760px, calc(100vw - 32px)); box-sizing: border-box; padding: 8px 8px 8px 14px; border: 1px solid rgba(250, 204, 21, .45); border-radius: 12px; background: rgba(12, 14, 18, .88); color: var(--fg); font-size: 14px; line-height: 1.35; }
+.rec-notice[hidden] { display: none; }
+.rec-notice-text { flex: 1 1 260px; }
+.rec-notice a { color: #bbf7d0; }
+.rec-notice .btn { min-height: 36px; padding: 4px 10px; font-size: 13px; }
+.rec-notice .panel-x { width: 36px; height: 36px; font-size: 20px; }
+/* "Share your flight" after a recording: a primary button (.rec-bar .btn would paint it dark under
+   its dark-on-accent text, as both rules weigh the same and this file loads after fly.css) */
+.rec-bar .btn.rec-share { min-height: 32px; padding: 4px 10px; font-size: 13px; background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }

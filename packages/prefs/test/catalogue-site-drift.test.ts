@@ -40,13 +40,15 @@ describe('a branch that ships without regenerating keeps the catalogue checks gr
             const base = committedSettings();
             // a branch may have shipped settings already (W3-1's scenes.* before the lead regenerates)
             const now = real.SCHEMA.defs.filter((d) => d.status === 'shipped').length;
-            // the branch ships k more: copies of a shipped switch under new ids, with its texts (a planned
-            // setting may have none yet, and how many have them changes with every wave: v0.7 lane E)
-            const hud = real.SCHEMA.byId.get('display.hud')!;
-            const copy = (k: number) => ({ ...hud, id: `display.hudCopy${k}`, label: 'set.display.hud', help: 'set.display.hud.help', action: undefined, url: undefined });
-            let added: ReturnType<typeof copy>[] = [];
-            for (let k = 1; k <= 12 && ruCat(now + k - 1) === ruCat(base); k++) added = Array.from({ length: k }, (_, i) => copy(i + 1));
-            return { SCHEMA: real.defineSettings([...real.SCHEMA.defs, ...added]) };
+            // The settings the branch ships are copies of a shipped one under new ids, with its texts: the
+            // real planned settings ran out of translated ones (display.latencyGuard has none) once v0.7
+            // shipped its settings (lanes R, E and D1), and which ones ship does not matter here, only how many.
+            const like = real.SCHEMA.byId.get('crash.enabled')!;
+            const extra: Prefs.SettingDef[] = [];
+            for (let k = 1; k <= 30 && ruCat(now + k - 1) === ruCat(base); k++) {
+                extra.push({ ...like, id: `crash.drift${k}`, label: real.labelKey(like), help: real.helpKey(like), status: 'shipped' } as Prefs.SettingDef);
+            }
+            return { SCHEMA: real.defineSettings([...real.SCHEMA.defs, ...extra]) };
         });
         const live = gen.buildFeatures('2026-10-01').features.counts;
         const counts = committed.committedFeatures().counts;

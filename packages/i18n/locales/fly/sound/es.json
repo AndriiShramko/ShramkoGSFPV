@@ -1,0 +1,11 @@
+{
+  "group.sound": "Sonido",
+  "group.sound.help": "Los motores del dron, a partir de la velocidad simulada de cada motor.",
+  "set.sound.motors": "Sonido de los motores",
+  "set.sound.motors.help": "El zumbido de los cuatro motores y el soplo de las hélices, al ritmo de tu gas. En silencio en pausa o tras un choque. La página solo puede empezar a sonar después de tu primer clic o tecla.",
+  "set.sound.volume": "Volumen",
+  "set.sound.volume.help": "Lo fuerte que suenan los motores.",
+  "sound.menu": "Sonido de motores (activar / desactivar)",
+  "sound.menu.on": "Sonido de motores: activado — desactivar",
+  "sound.menu.off": "Sonido de motores: desactivado — activar"
+}

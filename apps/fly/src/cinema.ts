@@ -1,6 +1,8 @@
-// The live video recorder (docs/architecture-v03.md F.1, F.2; items 19 and 14; decision D34).
-// Recording is offered only for showcase scenes (their authors agreed to it), and every recorded
-// frame carries the scene credit burned into the picture, so a clip shared anywhere keeps it.
+// The live video recorder (docs/architecture-v03.md F.1, F.2; items 19 and 14; decisions D34, D36).
+// Every scan records (since v0.7, D36: the pilot who records answers for the video), and every
+// recorded frame carries the scene credit burned into the picture (scan, author, licence,
+// ShramkoGSFPV; apps/fly/src/scene-facts.ts videoCredit), whole in a frame of any shape
+// (cinema-credit.ts: shrunk, else broken into lines), so a clip shared anywhere keeps it.
 // WebCodecs' VideoEncoder encodes; Mediabunny (MPL-2.0) only writes the MP4 container.
 //
 // 60 fps (item 19): the v0.2 recorder declared a 30 fps track and added every rendered frame, so a
@@ -17,6 +19,8 @@
 // Mediabunny is loaded with the first recording, so the flight page can import this module.
 import type * as Mediabunny from 'mediabunny';
 import type { Output, Mp4OutputFormat, StreamTarget, StreamTargetChunk } from 'mediabunny';
+import { creditFont, creditLayout } from './cinema-credit';
+import type { CreditLayout } from './cinema-credit';
 
 /** Mediabunny loads with the first recording: the flight page itself never needs it. */
 let mediabunnyP: Promise<typeof Mediabunny> | null = null;
@@ -892,6 +896,8 @@ export class CinemaRecorder {
     private pictured = false;
     /** exact mode: slots encoded so far */
     private exactSlots = 0;
+    /** where the credit sits in this recording's frames (creditBox: measured once) */
+    private creditAt: CreditLayout | null = null;
 
     constructor(o: RecorderOptions) {
         this.o = o;
@@ -950,9 +956,7 @@ export class CinemaRecorder {
             const box = this.creditBox(this.ctx);
             const rect = { x: Math.round(box.x), y: Math.round(box.y), w: Math.min(Math.ceil(box.w), this.width - Math.round(box.x)), h: Math.min(Math.ceil(box.h), this.height - Math.round(box.y)) };
             const credit = new OffscreenCanvas(Math.max(1, rect.w), Math.max(1, rect.h));
-            const c = credit.getContext('2d')!;
-            c.font = this.ctx.font; // the font creditBox measured with
-            this.drawCredit(c, 0, 0, box);
+            this.drawCredit(credit.getContext('2d')!, 0, 0, box);
             this.gpu = await GpuPictures.create(this.o.canvas, this.width, this.height, credit, rect);
         }
         this.part = this.newPart(0);
@@ -965,23 +969,29 @@ export class CinemaRecorder {
         this.pacer.pause(on);
     }
 
-    /** The credit's box, bottom left, readable on any scene (D34: in every frame); sets the font on `c`. */
-    private creditBox(c: OffscreenCanvasRenderingContext2D): { pad: number; x: number; y: number; w: number; h: number } {
-        const fs = Math.max(14, Math.round(this.height / 40));
-        c.font = `600 ${fs}px system-ui, sans-serif`;
-        const pad = Math.round(fs * 0.6);
-        const w = c.measureText(this.credit).width + pad * 2;
-        const h = fs + pad * 2;
-        return { pad, x: pad, y: this.height - h - pad, w, h };
+    /**
+     * The credit's box, bottom left, readable on any scene (D34, D36: in every frame), whole in any
+     * frame (cinema-credit.ts: shrunk, else broken into lines); measured once per recording.
+     */
+    private creditBox(c: OffscreenCanvasRenderingContext2D): CreditLayout {
+        if (!this.creditAt) {
+            const measure = (text: string, px: number): number => {
+                c.font = creditFont(px);
+                return c.measureText(text).width;
+            };
+            this.creditAt = creditLayout(this.credit, this.width, this.height, measure);
+        }
+        return this.creditAt;
     }
 
-    /** The credit's box and text with the box's top left at (x, y). */
-    private drawCredit(c: OffscreenCanvasRenderingContext2D, x: number, y: number, b: { pad: number; w: number; h: number }): void {
+    /** The credit's box and lines with the box's top left at (x, y). */
+    private drawCredit(c: OffscreenCanvasRenderingContext2D, x: number, y: number, b: CreditLayout): void {
         c.fillStyle = 'rgba(0,0,0,0.55)';
         c.fillRect(x, y, b.w, b.h);
         c.fillStyle = '#ffffff';
+        c.font = creditFont(b.fontPx);
         c.textBaseline = 'middle';
-        c.fillText(this.credit, x + b.pad, y + b.h / 2);
+        b.lines.forEach((line, i) => c.fillText(line, x + b.pad, y + b.pad + b.fontPx / 2 + i * b.lineH));
     }
 
     /** Draws the canvas and the credit into the video picture (the 2D canvas path). */

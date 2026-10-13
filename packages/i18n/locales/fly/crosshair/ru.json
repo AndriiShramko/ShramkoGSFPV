@@ -1,0 +1,22 @@
+{
+  "set.crosshair.shape": "Прицел",
+  "set.crosshair.shape.help": "Метка в центре картинки, чтобы целиться в проём. По умолчанию выключен, как в настоящем FPV. Никогда не попадает в ваши видео и прячется в режиме кино.",
+  "set.crosshair.shape.opt.off": "Выключен",
+  "set.crosshair.shape.opt.dot": "Точка",
+  "set.crosshair.shape.opt.cross": "Крест",
+  "set.crosshair.shape.opt.circle": "Круг",
+  "set.crosshair.shape.opt.ringDot": "Кольцо с точкой",
+  "set.crosshair.size": "Размер прицела",
+  "set.crosshair.size.help": "В долях короткой стороны экрана: на телефоне и на большом мониторе он выглядит одинаково.",
+  "set.crosshair.color": "Цвет прицела",
+  "set.crosshair.color.help": "Выберите тот, что хорошо виден на вашем скане.",
+  "set.crosshair.color.opt.green": "Зелёный",
+  "set.crosshair.color.opt.white": "Белый",
+  "set.crosshair.color.opt.yellow": "Жёлтый",
+  "set.crosshair.color.opt.red": "Красный",
+  "set.crosshair.color.opt.cyan": "Голубой",
+  "set.crosshair.color.opt.magenta": "Пурпурный",
+  "set.crosshair.color.opt.black": "Чёрный",
+  "set.crosshair.opacity": "Непрозрачность прицела",
+  "set.crosshair.opacity.help": "1 — сплошной; меньше — сквозь него виден скан."
+}

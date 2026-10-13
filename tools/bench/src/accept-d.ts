@@ -59,16 +59,27 @@ if (want('cinema')) {
     writeFileSync(join(OUT, 'cinema-887f27aa.mp4'), mp4);
     const parsed = mp4Info(mp4);
     await page.screenshot({ path: join(OUT, 'cinema-on.jpg') });
-    // control: a pasted (non-showcase) scene offers no recording, and a direct call is refused
+    // D36 (v0.7; until then a control of D34's gate): a pasted scene outside the catalogue records too,
+    // its credit burned in (the strip is not flat) and the author notice on the bar
     await page.goto(fly('en', 'scene=723068d7&nowarn=1&input=touch'));
     await waitReady(page, 180000);
     await hook('h.cinema.toggle(); return 0;');
-    const ctl = await hook<Any>('let refused = false; try { await h.cinema.start(); } catch (e) { refused = true; } return { canRecord: h.cinema.canRecord, refused, recButtonVisible: !document.querySelector("[data-action=cinema-rec]").hidden, note: document.querySelector("[data-testid=cinema-note]").textContent };');
+    const ctl = await hook<Any>('let refused = false, info = null, notice = null; try { await h.cinema.start(); notice = h.rec.state().notice; await new Promise((r) => setTimeout(r, 3000)); info = await h.cinema.stop(); } catch (e) { refused = true; } return { canRecord: h.cinema.canRecord, refused, frames: info ? info.frames : 0, strip: h.cinema.creditStripStd(), recButtonVisible: !document.querySelector("[data-action=cinema-rec]").hidden, notice, credit: h.rec.state().credit, inCatalogue: h.rec.state().showcase };');
+    // control: the same scan and the same calls in a browser without WebCodecs (an init script takes
+    // VideoEncoder away): nothing can record there, so the checks above can fail
+    const nctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+    await nctx.addInitScript('delete window.VideoEncoder; delete window.VideoFrame;');
+    const np = await nctx.newPage();
+    await np.goto(fly('en', 'scene=723068d7&nowarn=1&input=touch&render=off'));
+    await waitReady(np, 180000);
+    const none = await np.evaluate(`(async () => { const h = window.__gsfpv; let refused = false; try { await h.cinema.start(); } catch (e) { refused = true; } return { canRecord: h.cinema.canRecord, refused, recording: h.rec.state().recording, recButtonVisible: !document.querySelector("[data-action=cinema-rec]").hidden }; })()`) as Any;
+    await nctx.close();
+    const fired = none.canRecord === false && none.refused === true && none.recording === false && none.recButtonVisible === false;
     const pass = state.on && state.governorEnabled === false && state.lodRangeMax === 0 && state.canRecord && !!codec && info && info.frames > 60 && parsed.samples === info.frames && parsed.boxes.includes('moov') && parsed.boxes.includes('mdat') && strip > 0.1
-        && ctl.canRecord === false && ctl.refused && !ctl.recButtonVisible;
+        && ctl.canRecord === true && !ctl.refused && ctl.frames > 30 && ctl.strip > 0.1 && ctl.recButtonVisible && !!ctl.notice && ctl.inCatalogue === false && String(ctl.credit).includes('ShramkoGSFPV') && fired;
     summary.cinema = pass;
-    writeEvidence('d-cinema', { site: SITE, pass, state, codec, recorder: info, mp4: { ...parsed, bytes: mp4.length, file: 'evidence/…/d/cinema-887f27aa.mp4' }, creditStripLuminanceStd: strip, control: ctl });
-    console.log('cinema', pass ? 'PASS' : 'FAIL', JSON.stringify({ info, parsed, strip, ctl }));
+    writeEvidence('d-cinema', { site: SITE, pass, state, codec, recorder: info, mp4: { ...parsed, bytes: mp4.length, file: 'evidence/…/d/cinema-887f27aa.mp4' }, creditStripLuminanceStd: strip, d36: ctl, control: { what: 'scene 723068d7 and h.cinema.start() in a browser without WebCodecs: refused, no REC', fired, state: none } });
+    console.log('cinema', pass ? 'PASS' : 'FAIL', 'control', fired ? 'FIRED' : 'DID NOT FIRE', JSON.stringify({ info, parsed, strip, ctl, none }));
 }
 
 // ------------------------------------------------------------------ quality governor

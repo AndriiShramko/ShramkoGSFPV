@@ -8,7 +8,7 @@ import type { ActionId } from './keymap';
 export type Scope = 'global' | 'drone' | 'scene';
 export type Apply = 'live' | 'life' | 'reload';
 export type Surface = 'settings' | 'hud' | 'pause' | 'crash' | 'picker' | 'controls' | 'cinema' | 'key' | 'url';
-export type GroupId = 'flight' | 'crash' | 'camera' | 'display' | 'input' | 'drone' | 'tune' | 'scenes' | 'voxels' | 'recording';
+export type GroupId = 'flight' | 'crash' | 'camera' | 'display' | 'sound' | 'input' | 'drone' | 'tune' | 'scenes' | 'voxels' | 'recording';
 export type Status = 'shipped' | 'planned' | 'test'; // planned: stored and validated, hidden from the UI and the catalogue
 export type Unit = 'deg' | 'ms' | 's' | 'm' | 'mps' | 'mps2' | 'x' | 'pct' | 'per_s' | 'blocks' | 'min';
 
@@ -65,7 +65,7 @@ export type SettingDef = BoolDef | NumDef | EnumDef | JsonDef;
 export const SCHEMA_VERSION = 2;
 
 /** Group order: the settings rail, the catalogue and SCHEMA follow it. */
-export const GROUPS: readonly GroupId[] = ['flight', 'crash', 'camera', 'display', 'input', 'drone', 'tune', 'scenes', 'voxels', 'recording'];
+export const GROUPS: readonly GroupId[] = ['flight', 'crash', 'camera', 'display', 'sound', 'input', 'drone', 'tune', 'scenes', 'voxels', 'recording'];
 
 export interface Schema { version: number; defs: readonly SettingDef[]; byId: ReadonlyMap<string, SettingDef>; groups: readonly GroupId[] }
 

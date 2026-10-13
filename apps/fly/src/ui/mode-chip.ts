@@ -9,6 +9,7 @@ import type { FlightMode } from '@gsfpv/sim-core';
 import type { KeyHint } from '@gsfpv/prefs';
 import { h } from './dom';
 import { t } from '../i18n';
+import { gutterTop, overlapArea } from './top-row';
 import './mode-chip.css';
 
 export const CHIP_MODES: readonly FlightMode[] = ['acro', 'angle', 'horizon'];
@@ -154,11 +155,7 @@ export class ModeChip {
         const hardR = rects(hard);
         const softR = rects(soft);
         // the OSD line and the top buttons keep 4 px from the chip; a box may touch it (half a pixel of rounding is not a touch)
-        const overlap = (x: number, y: number, b: DOMRect, gap: number): number => {
-            const ox = Math.min(x + w + gap, b.right) - Math.max(x - gap, b.left);
-            const oy = Math.min(y + ch, b.bottom) - Math.max(y, b.top);
-            return ox > 0.5 && oy > 0.5 ? ox * oy : 0;
-        };
+        const overlap = (x: number, y: number, b: DOMRect, gap: number): number => overlapArea(x, y, w, ch, b, gap);
         const cost = (x: number, y: number): number => {
             if (x < 0 || y < 0 || x + w > innerWidth - GAP || y + ch > innerHeight) return Infinity;
             if (hardR.some((b) => overlap(x, y, b, 4) > 0)) return Infinity;
@@ -169,15 +166,10 @@ export class ModeChip {
         };
         // beside the line; under its start; under it at the page's 16 px gutter (a phone, with a box in the middle of the top)
         const below = a.bottom + 4;
-        // ...and, when boxes at the top cover all three (a 375 px phone: the walls box, the hint, the credit),
-        // the first free place at the gutter going down past them (never below the middle of the screen)
-        let underBoxes = below;
-        for (let moved = true; moved && underBoxes < innerHeight / 2;) {
-            moved = false;
-            for (const r of softR) {
-                if (overlap(16, underBoxes, r, 1) > 0) { underBoxes = r.bottom + 4; moved = true; }
-            }
-        }
+        // ...and, when the top buttons and boxes at the top cover all three (a 375 px phone: the row of
+        // buttons, the walls box, the hint, the credit), the first free place at the gutter going down
+        // past them (never below the middle of the screen)
+        const underBoxes = gutterTop(16, below, w, ch, hardR, softR, innerHeight / 2);
         const spots: [number, number][] = [[a.right + GAP, a.top + a.height / 2 - ch / 2], [a.left, below], [16, below], [16, underBoxes]];
         let [left, top] = spots[1];
         let best = Infinity;

@@ -104,6 +104,35 @@ export function toggleFavourite(d: SceneLibraryData, id: string, meta: Favourite
     return { data: { ...d, favourites, history, versions }, on };
 }
 
+/** What a listing showed of a scene when the pilot picked it (a card of the SuperSplat tab). */
+export interface SceneFacts { title?: string; author?: string; license?: string }
+
+/**
+ * Keep what a listing knew of a scene (the SuperSplat tab's card: title, author, licence) on its
+ * history entry, so a flight over a scan outside the owner's catalogue can still credit its author:
+ * the credit burned into a recording, the share picture, the author notice (docs/wip/v07-d1.md 2).
+ * A known value is replaced only by a known one. A scene not in the history gets a never-opened
+ * entry (lastFlown 0) at the front, so a full history cannot drop it before the scene opens.
+ */
+export function rememberFacts(d: SceneLibraryData, id: string, f: SceneFacts): SceneLibraryData {
+    const old = d.history.find((x) => x.id === id);
+    const e: LibraryEntry = { ...(old ?? entry(id)) };
+    if (f.title) e.title = f.title;
+    if (f.author) e.author = f.author;
+    if (f.license) e.license = f.license;
+    return { ...d, history: old ? d.history.map((x) => (x.id === id ? e : x)) : capped([e, ...d.history]) };
+}
+
+/** What the library knows of a scene's title, author and licence (rememberFacts, a star, an open); empty when nothing. */
+export function factsOf(d: SceneLibraryData, id: string): SceneFacts {
+    const e = d.history.find((x) => x.id === id);
+    const out: SceneFacts = {};
+    if (e?.title) out.title = e.title;
+    if (e?.author) out.author = e.author;
+    if (e?.license) out.license = e.license;
+    return out;
+}
+
 /** The scenes opened here, newest first (the Recent tab, the history rotation): never-opened entries left out. */
 export function opened(d: SceneLibraryData): LibraryEntry[] {
     return d.history.filter((e) => e.lastFlown > 0);

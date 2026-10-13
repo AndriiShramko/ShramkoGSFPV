@@ -1,4 +1,4 @@
-// Recording (A.8, F.1-F.2; items 14 and 19). Owner: W3-5. The folder handle itself lives in
+// Recording (A.8, F.1-F.2; items 14 and 19; on every scan since v0.7, D36). Owner: W3-5. The folder handle itself lives in
 // IndexedDB (browser.ts IdbKv 'handles'); the setting keeps only its name for the chip.
 // Shipped with the recording bar (apps/fly/src/app/builtin/cinema.ts, evidence v03-rec.json); texts
 // in the rec namespace. recording.folder stays planned: the folder is picked on the bar, Settings has
@@ -19,5 +19,9 @@ export const RECORDING_DEFS: readonly SettingDef[] = [
     { id: 'recording.auto', group: 'recording', scope: 'global', type: 'bool', default: false, apply: 'live', shown: ['cinema'], status: 'shipped', since: 1, items: [14] },
     { id: 'recording.folder', group: 'recording', scope: 'global', type: 'json', kind: 'folder', validate: validateFolder, default: null, apply: 'live', shown: ['cinema'], status: 'planned', since: 1, items: [14] },
     // nothing reaches the disk before close(), so a split bounds what a tab crash loses (F.1)
-    { id: 'recording.splitMin', group: 'recording', scope: 'global', type: 'number', min: 1, max: 30, step: 1, unit: 'min', default: 10, apply: 'live', shown: ['settings'], advanced: true, status: 'shipped', since: 1, items: [14] }
+    { id: 'recording.splitMin', group: 'recording', scope: 'global', type: 'number', min: 1, max: 30, step: 1, unit: 'min', default: 10, apply: 'live', shown: ['settings'], advanced: true, status: 'shipped', since: 1, items: [14] },
+    // v0.7 (the owner's message 18, item 2; D36): every scan records. The first recording of a scan
+    // outside the owner's catalogue shows one line on the recording bar: whose scan it is, that the
+    // video is the pilot's to use and to credit. Its "Don't show again" turns this off; Settings turns it on.
+    { id: 'recording.authorNotice', group: 'recording', scope: 'global', type: 'bool', default: true, apply: 'live', shown: ['cinema', 'settings'], status: 'shipped', since: 2 }
 ];

@@ -101,7 +101,8 @@ export class SceneHost implements SceneSwitcher {
         // the flight's keys wait while it is up (its field takes letters); Esc closes it
         const offKeys = ctx.keys.block(() => true);
         const onKey = (e: KeyboardEvent): void => {
-            if (e.key !== 'Escape') return;
+            // a share panel over the picker (a card's Share) closes itself on Esc; the picker stays
+            if (e.key !== 'Escape' || document.querySelector('.panel.share')) return;
             e.preventDefault();
             e.stopPropagation();
             close(true);

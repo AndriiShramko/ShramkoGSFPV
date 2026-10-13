@@ -1,0 +1,22 @@
+{
+  "set.crosshair.shape": "Crosshair",
+  "set.crosshair.shape.help": "A mark in the centre of the view for lining up a gap. Off by default, like a real FPV feed. Never drawn into your videos, hidden in cinema mode.",
+  "set.crosshair.shape.opt.off": "Off",
+  "set.crosshair.shape.opt.dot": "Dot",
+  "set.crosshair.shape.opt.cross": "Cross",
+  "set.crosshair.shape.opt.circle": "Circle",
+  "set.crosshair.shape.opt.ringDot": "Ring with a dot",
+  "set.crosshair.size": "Crosshair size",
+  "set.crosshair.size.help": "As a share of the screen's shorter side, so it looks the same on a phone and on a big monitor.",
+  "set.crosshair.color": "Crosshair colour",
+  "set.crosshair.color.help": "Pick one that stands out on the scan you fly.",
+  "set.crosshair.color.opt.green": "Green",
+  "set.crosshair.color.opt.white": "White",
+  "set.crosshair.color.opt.yellow": "Yellow",
+  "set.crosshair.color.opt.red": "Red",
+  "set.crosshair.color.opt.cyan": "Cyan",
+  "set.crosshair.color.opt.magenta": "Magenta",
+  "set.crosshair.color.opt.black": "Black",
+  "set.crosshair.opacity": "Crosshair opacity",
+  "set.crosshair.opacity.help": "1 is solid; lower lets the scan show through."
+}

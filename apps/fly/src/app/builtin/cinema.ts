@@ -3,8 +3,15 @@
 // toggle right next to it (item 14), the folder chip "Folder: <name> ▾" (pick, change, forget), a
 // one-line "Allow saving to <folder>" when the browser asks again, and a note line (saved, frames
 // repeated or dropped, why not here). REC is offered in normal flight too, at the quality as flown;
-// cinema mode only raises the quality. Showcase scenes only (D34): elsewhere REC is not offered and
-// Auto is shown disabled with the reason. While flying (armed, not crashed) the bar steps aside
+// cinema mode only raises the quality. Every scan records (D36, the owner's message 18 item 2; until
+// v0.7 only showcase scans, D34): the credit (scan, author, licence, ShramkoGSFPV) is burned into
+// every frame, and the first recording of a scan outside the owner's catalogue shows one line over the
+// view: whose scan it is, that the video is the pilot's and theirs to answer for, credit the author
+// ("Don't show again": recording.authorNotice). After every recording, however it stopped (REC, F9,
+// the menu, auto-record after a disarm, by itself), and after a video export, the note line says what
+// was saved and offers "Share your flight" (every part of it through the share panel,
+// builtin/share.ts): Recording.onSaved is the one way in. A recording starting clears the last note.
+// While flying (armed, not crashed) the bar steps aside
 // outside cinema mode. While it records, a red dot blinks with the running time in the top-right
 // row (the owner's message 16: "unclear whether it records"); a click on it stops. In cinema mode
 // (the clean picture) the dot is not drawn: the bar at the bottom, always there, says "Stop 0:42".
@@ -13,6 +20,9 @@
 import { h } from '../../ui/dom';
 import { t } from '../../i18n';
 import { q } from '../env';
+import { authorNotice, sceneSource, videoCredit } from '../../scene-facts';
+import { sceneCredit } from './scene';
+import { openFlightShare } from './share';
 import type { RecorderInfo } from '../../cinema';
 import type { TestHook } from '../test-hook';
 import type { Feature, FlightContext } from '../context';
@@ -40,13 +50,14 @@ export interface RecHook {
     setGuardHold(on: boolean): void;
 }
 
-/** The page's recording and the bar's stop and note: the video export (builtin/video-export.ts) uses them. */
+/**
+ * The page's recording and the bar's stop: the video export (builtin/video-export.ts) uses them (its
+ * saved file reaches the bar's note through Recording.onSaved like a recording's).
+ */
 export interface RecordingShare {
     rec: Recording;
-    /** stops a running recording and shows what was saved on the bar */
+    /** stops a running recording (the bar shows what was saved) */
     stop(): Promise<RecorderInfo | null>;
-    /** a saved file (the export's) on the bar's note line, with its link when it is offered */
-    show(s: Saved | null): void;
 }
 const SHARED = new WeakMap<FlightContext, RecordingShare>();
 /** The cinema feature's recording for this page (installed before the export). */
@@ -68,15 +79,15 @@ export function recordAction(toggle: (activation: boolean) => void): ActionHandl
 }
 
 const mmss = (s: number): string => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+/** The author notice goes by itself after this long (it is one line; the pilot may be flying). */
+const NOTICE_MS = 15000;
 
 export const cinema: Feature = {
     id: 'cinema',
     install(ctx) {
         const { canvas, ui } = ctx;
-        const creditOf = (): string | null => {
-            const meta = ctx.scene.meta;
-            return meta ? `${meta.title} — ${meta.author}, ${meta.license} · gsfpv.flyreelstudio.eu` : null;
-        };
+        /** the line burned into every frame: the scan's credit, ShramkoGSFPV, the site (scene-facts.ts) */
+        const creditOf = (): string => videoCredit(sceneCredit(ctx));
         const rec = new Recording({
             prefs: ctx.prefs,
             canvas,
@@ -102,6 +113,32 @@ export const cinema: Feature = {
         const cinemaNote = h('div', { class: 'cinema-note', role: 'status', id: 'rec-note', 'data-testid': 'cinema-note' });
         const cinemaBar = h('div', { class: 'cinema-bar rec-bar interactive', 'data-testid': 'rec-bar' }, row, allowBtn, cinemaNote);
         ui.append(cinemaBar);
+        // the author notice (D36): one line over the view, also while flying (the bar steps aside then)
+        const notice = h('div', { class: 'rec-notice interactive', role: 'note', hidden: true, 'data-testid': 'rec-notice' });
+        ui.append(notice);
+        /** the scans the notice was shown for in this page (it comes once per scan; "Don't show again" for good) */
+        const noticeShown = new Set<string>();
+        let noticeTimer = 0;
+        const hideNotice = (): void => {
+            clearTimeout(noticeTimer);
+            notice.hidden = true;
+            notice.replaceChildren();
+        };
+        /** A recording started: the notice, when this scan is outside the owner's catalogue and it was not shown yet. */
+        const showNotice = (): void => {
+            const c = sceneCredit(ctx);
+            const n = authorNotice(c, { enabled: ctx.prefs.get<boolean>('recording.authorNotice') !== false, shownFor: noticeShown });
+            if (!n) return;
+            noticeShown.add(c.id);
+            notice.replaceChildren(
+                h('span', { class: 'rec-notice-text' }, t(n.key, n.vars)), ' ',
+                h('a', { href: `https://${sceneSource(c.id)}`, target: '_blank', rel: 'noopener' }, 'SuperSplat'),
+                h('button', { type: 'button', class: 'btn', 'data-action': 'rec-notice-hide', onclick: () => { ctx.prefs.set('recording.authorNotice', false); hideNotice(); } }, t('rec.notice.hide')),
+                h('button', { type: 'button', class: 'panel-x', 'data-action': 'rec-notice-close', 'aria-label': t('common.close'), onclick: hideNotice }, '\u00d7'));
+            notice.hidden = false;
+            clearTimeout(noticeTimer);
+            noticeTimer = window.setTimeout(hideNotice, NOTICE_MS);
+        };
         // the recording dot: first in the top-right row of buttons (builtin/top.ts, installed before this)
         const dotTime = h('span', { class: 'rec-dot-time' });
         const dot = h('button', { type: 'button', class: 'btn rec-dot', 'data-action': 'rec-dot', 'data-testid': 'rec-dot', hidden: true, 'aria-keyshortcuts': 'F9', onclick: () => toggle(true) },
@@ -152,12 +189,9 @@ export const cinema: Feature = {
         /** Everything the bar shows, from the recorder's state and the store. */
         function render(): void {
             const allowed = rec.allowed;
-            const showcase = creditOf() !== null;
             const recording = rec.recording;
             const cinemaOn = ctx.quality.cinema;
             const autoOn = rec.autoOn;
-            // a non-showcase scene shows the bar only when the pilot would expect a recording here
-            cinemaBar.hidden = !(showcase || cinemaOn || autoOn);
             recBtn.hidden = !allowed;
             recBtn.classList.toggle('on', recording);
             recBtn.disabled = rec.busy && !recording;
@@ -165,7 +199,7 @@ export const cinema: Feature = {
             autoBtn.textContent = t('rec.auto');
             autoBtn.setAttribute('aria-pressed', autoOn && allowed ? 'true' : 'false');
             autoBtn.disabled = !allowed;
-            autoBtn.title = allowed ? t('rec.auto.help') : !showcase ? t('rec.onlyShowcase') : t('rec.unsupported');
+            autoBtn.title = allowed ? t('rec.auto.help') : t('rec.unsupported');
             // disabled, it says why in the note right under it (a disabled button shows no tooltip everywhere)
             if (allowed) autoBtn.removeAttribute('aria-describedby');
             else autoBtn.setAttribute('aria-describedby', 'rec-note');
@@ -184,18 +218,26 @@ export const cinema: Feature = {
             }
             // the latency guard measures but does not skip while a file is written (each skip is 2-3 repeated slots)
             ctx.renderer.latencyGuard.holdSkips = !rec.guardHoldOff && (recording || rec.exporting);
-            // the note: why not here, else what happens now, else the last result
-            const why = !showcase ? t('rec.onlyShowcase') : !rec.supported ? t('rec.unsupported') : '';
+            // the note: why not here, else what happens now, else the last result and "Share your flight"
+            const why = !rec.supported ? t('rec.unsupported') : '';
             cinemaNote.replaceChildren();
-            if (why) cinemaNote.append(cinemaOn ? t('cinema.noRec') : why);
+            if (why) cinemaNote.append(why);
             else if (recording) cinemaNote.append(t('rec.recording', { t: mmss(rec.seconds) }));
             else if (note) {
                 cinemaNote.append(note);
                 for (const f of noteOffer) cinemaNote.append(' ', h('a', { href: f.url, download: f.name, class: 'rec-offer', 'data-testid': 'rec-offer' }, t('rec.download')));
+                if (rec.last && rec.last.info.files.length) cinemaNote.append(' ', h('button', { type: 'button', class: 'btn primary rec-share', 'data-action': 'rec-share', onclick: () => openFlightShare(ctx, 'video', { video: () => rec.lastFiles() }) }, t('share.video.after')));
             } else if (cinemaOn) cinemaNote.append(t('cinema.on'));
             placeAbove();
         }
         rec.onChange = render;
+        // a recording started (the pilot or auto-record): the last note goes (its button would share
+        // the new file under the old file's words), and the author notice comes when it is due
+        rec.onStarted = () => {
+            note = '';
+            noteOffer = [];
+            showNotice();
+        };
 
         function savedNote(s: Saved): string {
             const i = s.info;
@@ -207,26 +249,26 @@ export const cinema: Feature = {
             return `${head ? `${head} ` : ''}${where}${parts} · ${t('rec.drops', { fps: i.fps, dup: i.duplicated, drop: i.dropped })}`;
         }
 
-        function showSaved(s: Saved | null): void {
-            if (!s) return;
+        /** A file was saved (Recording.onSaved: every recording and the export): the note line says so. */
+        function showSaved(s: Saved): void {
+            hideNotice(); // the notice was about this recording; the note line takes over
+
             note = savedNote(s);
             noteOffer = s.offer;
             hookCinema.last = s.info;
             render();
         }
-        rec.onEnded = showSaved;
-        SHARED.set(ctx, { rec, stop: () => stopRec(), show: showSaved });
+        rec.onSaved = showSaved;
+        SHARED.set(ctx, { rec, stop: () => stopRec() });
 
         /** activation: inside a click or a key press, where the folder's permission may be asked */
         async function startRec(activation: boolean, legacyV02 = false): Promise<string> {
-            note = '';
-            noteOffer = [];
+            // the last note goes in rec.onStarted (every start, by hand or auto-record)
             return rec.startByHand(activation, legacyV02);
         }
 
         async function stopRec(): Promise<RecorderInfo | null> {
-            const s = await rec.queue(() => rec.stop());
-            showSaved(s);
+            const s = await rec.queue(() => rec.stop()); // the note: onSaved
             if (s && q.get('simradio')) {
                 // test modes keep the bytes for the phase-D acceptance (accept-d.ts reads lastBytes)
                 const last = await readLast();
@@ -309,6 +351,7 @@ export const cinema: Feature = {
         });
         // another scene in the same page (E.4): this scene's recording is finished first (its credit is in every frame)
         ctx.events.on('session', () => {
+            hideNotice();
             rec.rules.reset();
             if (rec.recording) void stopRec();
             else render();
@@ -350,7 +393,8 @@ export const cinema: Feature = {
         const recHook: RecHook = {
             rec,
             state: () => ({
-                allowed: rec.allowed, showcase: creditOf() !== null, supported: rec.supported, canPick: rec.canPick,
+                allowed: rec.allowed, showcase: !!ctx.scene.meta, credit: creditOf(), notice: notice.hidden ? null : notice.querySelector('.rec-notice-text')?.textContent ?? null,
+                supported: rec.supported, canPick: rec.canPick,
                 recording: rec.recording, autoRun: rec.autoRun, auto: rec.autoOn, seconds: rec.seconds, busy: rec.busy,
                 folder: rec.folder?.name ?? null, access: rec.access, pendingStopAt: rec.rules.pendingStopAt,
                 barHidden: cinemaBar.hidden, barShown: cinemaBar.offsetParent !== null, recHidden: recBtn.hidden,

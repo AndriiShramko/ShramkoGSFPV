@@ -21,7 +21,9 @@ const V03_SHIPPED = [
     // v0.7 lane R (owner's message 18, item 1): SuperSplat's stochastic drawing, Settings -> Display
     'display.drawing',
     // v0.7 lane E (owner's message 18 item 10): the wind of the place and the collision ceiling
-    'wind.mode', 'wind.fromDeg', 'wind.speed', 'wind.gust', 'scene.ceiling', 'scene.ceilingM'
+    'wind.mode', 'wind.fromDeg', 'wind.speed', 'wind.gust', 'scene.ceiling', 'scene.ceilingM',
+    // v0.7 D1 (docs/wip/v07-d1.md): the crosshair (Display), the motor sound (Sound), the scan author notice (Recording)
+    'crosshair.shape', 'crosshair.size', 'crosshair.color', 'crosshair.opacity', 'sound.motors', 'sound.volume', 'recording.authorNotice'
 ];
 
 /**
@@ -58,6 +60,12 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['display.frameStats', 'display', 'global', 'bool', false, 'live'],
     ['stats.onDisarm', 'display', 'global', 'bool', true, 'live'],
     ['ui.language', 'display', 'global', 'enum', 'browser', 'reload'],
+    ['crosshair.shape', 'display', 'global', 'enum', 'off', 'live'],
+    ['crosshair.size', 'display', 'global', 'number', 4, 'live'],
+    ['crosshair.color', 'display', 'global', 'enum', 'green', 'live'],
+    ['crosshair.opacity', 'display', 'global', 'number', 0.8, 'live'],
+    ['sound.motors', 'sound', 'global', 'bool', true, 'live'],
+    ['sound.volume', 'sound', 'global', 'number', 40, 'live'],
     ['input.stickMode', 'input', 'global', 'enum', '2', 'live'],
     ['drone.current', 'drone', 'global', 'enum', 'pavo20pro-3s', 'life'],
     ['physics.gravity', 'drone', 'global', 'number', 9.81, 'life'],
@@ -95,7 +103,8 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['recording.resolution', 'recording', 'global', 'enum', '1080p', 'live'],
     ['recording.auto', 'recording', 'global', 'bool', false, 'live'],
     ['recording.folder', 'recording', 'global', 'json', null, 'live'],
-    ['recording.splitMin', 'recording', 'global', 'number', 10, 'live']
+    ['recording.splitMin', 'recording', 'global', 'number', 10, 'live'],
+    ['recording.authorNotice', 'recording', 'global', 'bool', true, 'live']
 ];
 
 /**
@@ -134,8 +143,8 @@ const WAVE2_SETTINGS = [
 ];
 
 describe('SCHEMA is the A.8 table', () => {
-    it('has the 63 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard, v0.7\'s drawing, wind and ceiling), each with its group, scope, type, default and apply', () => {
-        expect(SCHEMA.defs).toHaveLength(63);
+    it('has the 70 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard, v0.7\'s drawing, wind and ceiling, v0.7 D1\'s seven), each with its group, scope, type, default and apply', () => {
+        expect(SCHEMA.defs).toHaveLength(70);
         const got = SCHEMA.defs.map((d) => [d.id, d.group, d.scope, d.type, isPresetRef(d.default) ? `preset:${d.default.preset}` : isCuratedRef(d.default) ? `curated:${d.default.curated}|${String(d.default.fallback)}` : d.default, d.apply]);
         // order inside a group follows the def files, not the table's rows
         const byId = (a: unknown[], b: unknown[]) => String(a[0]).localeCompare(String(b[0]));
@@ -180,6 +189,9 @@ describe('SCHEMA is the A.8 table', () => {
         expect(range('voxels.opacity')).toEqual([0.05, 1]);
         expect(range('voxels.opacityOnly')).toEqual([0.05, 1]);
         expect(range('recording.splitMin')).toEqual([1, 30]);
+        expect(range('crosshair.size')).toEqual([1, 20]);
+        expect(range('crosshair.opacity')).toEqual([0.1, 1]);
+        expect(range('sound.volume')).toEqual([0, 100]);
     });
 
     it('only the voxel view lasts one page load; nothing else opts out of storage', () => {

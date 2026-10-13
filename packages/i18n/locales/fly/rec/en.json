@@ -15,7 +15,6 @@
   "rec.download": "Save file",
   "rec.drops": "{fps} fps · repeated frames: {dup} · dropped: {drop}",
   "rec.parts": "files: {n}",
-  "rec.onlyShowcase": "Recording works on showcase scans only — their authors agreed to it.",
   "rec.unsupported": "This browser cannot encode video.",
   "rec.memoryCap": "Stopped at 2 min: this browser keeps the video in memory.",
   "rec.error": "Recording stopped: {e}.",
@@ -47,12 +46,18 @@
   "set.recording.resolution.opt.2160p": "4K (2160p)",
   "set.recording.resolution.opt.native": "As on screen",
   "set.recording.auto": "Auto-record",
-  "set.recording.auto.help": "Starts when you arm, stops 3 s after you disarm, into the last chosen folder. Showcase scans only.",
+  "set.recording.auto.help": "Starts when you arm, stops 3 s after you disarm, into the last chosen folder.",
   "set.recording.folder": "Folder",
   "set.recording.folder.help": "Where videos go without asking every time (Chrome and Edge on a computer). Other browsers keep the video and offer the file after the flight.",
   "set.recording.splitMin": "New file every",
   "set.recording.splitMin.help": "A long flight is split into files: if the tab crashes, only the last part is lost.",
   "rec.menu.start": "Start recording",
   "rec.menu.stop": "● Recording {t} — stop",
-  "rec.dot": "Recording, {t}. Stop recording"
+  "rec.dot": "Recording, {t}. Stop recording",
+  "set.recording.authorNotice": "Whose scan it is",
+  "set.recording.authorNotice.help": "The first video of a scan outside the showcase shows one line on the recording bar: whose scan it is, its licence, and that the video is yours to use and to credit.",
+  "rec.notice": "Scan by {author} ({license}). The video is yours, and so is the responsibility for how you use it: credit the author when you post it.",
+  "rec.notice.author": "Scan by {author}. The video is yours, and so is the responsibility for how you use it: credit the author when you post it.",
+  "rec.notice.unknown": "This scan belongs to its author on SuperSplat. The video is yours, and so is the responsibility for how you use it: credit the author when you post it.",
+  "rec.notice.hide": "Don't show again"
 }
