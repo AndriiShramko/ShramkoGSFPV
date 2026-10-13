@@ -1,8 +1,9 @@
 """The owner's Telegram bot (apps/api/ownerbot.py) end to end against a fake Telegram API and a fake SMTP
 server: the webhook's secret path and header, only the owner's chat obeyed, every report delivered whole
 (card with buttons, the technical details file and the picture), replies by e-mail with Cancel, the
-buttons, Comment, /note, /queue, the Done flow whose e-mail goes only on Send, and a shared lead bot that
-never gets a webhook.
+buttons, Comment, /note, /queue, the Done flow whose e-mail goes only on Send, and the shared lead bot as
+the default owner bot (the owner's decision 2026-10-13): it gets the webhook, and every update that is
+not GSFPV's (another site's lead note, a reply to it, a stranger's button) is answered 200 and does nothing.
 
 Run: python -m unittest discover -s apps/api/tests -v   (stdlib only, nothing leaves this machine: the
 tokens, the secret and the addresses are made up). Every check has a negative control that must fire.
@@ -166,8 +167,9 @@ class Reports(Http):
         # a button redraws the card: the technical summary stays on it (kept with the idea)
         self.w.bot.handle_update({"update_id": 90, **self.w.press(f"s:a:{rid}", 1001)})
         self.assertIn(self.t("diag.browser", value="Mozilla/5.0 Chrome/141"), self.last("editMessageText")["text"])
-        # control: without the owner bot, the shared lead bot gets every field and the file, as before plus more
-        self.w.env.pop("TG_OWNER_BOT_TOKEN")
+        # control: without the two-way setup (no webhook secret), the shared lead bot gets every field and
+        # the file as plain text, as before plus more, and no buttons that nothing would answer
+        self.w.env.pop("TG_WEBHOOK_SECRET")
         server._rhits.clear()
         r2 = self.bug()
         self.assertTrue(r2["delivered"])
@@ -189,28 +191,79 @@ class Reports(Http):
         self.assertEqual(len(self.w.tg.of("sendMessage", OWNER_TOKEN)), 1)
 
 
-class SharedBot(BotTest):
-    def test_the_shared_lead_bot_never_gets_a_webhook(self):
-        self.w.env["TG_OWNER_BOT_TOKEN"] = SHARED_TOKEN
+class SharedBot(Http):
+    """No new bot (the owner's decision 2026-10-13): without TG_OWNER_BOT_TOKEN the shared lead bot is the
+    owner bot, and its webhook carries every update of that bot, other sites' included."""
+
+    def setUp(self):
+        super().setUp()
+        self.w.env.pop("TG_OWNER_BOT_TOKEN")
+
+    def test_the_shared_bot_is_the_default_and_gets_the_webhook(self):
+        self.assertTrue(self.w.bot.configured and self.w.bot.cfg.shared)
+        info = self.w.bot.setup_webhook()
+        self.assertEqual([t for t, m, _ in self.w.tg.calls if m == "setWebhook"], [SHARED_TOKEN])
+        hook = self.w.tg.of("setWebhook")[0]
+        self.assertEqual(hook["url"], "https://gsfpv.example" + self.w.bot.cfg.webhook_path())
+        self.assertEqual((hook["secret_token"], hook["allowed_updates"], hook["max_connections"]), (SECRET, ["message", "callback_query"], 1))
+        self.assertEqual(self.w.tg.of("setMyCommands")[0]["scope"], {"type": "chat", "chat_id": OWNER_CHAT})  # the menu only in his chat
+        self.assertTrue(info["webhook"] and info["url_is_ours"] and info["sharedBot"])
+        self.assertNotIn("url", info)
+        # a report arrives as a card with buttons through the shared bot
+        rec, _ = self.card()
+        self.assertEqual(self.w.tg.of("sendMessage", SHARED_TOKEN)[-1]["reply_markup"]["inline_keyboard"][0][0]["callback_data"], f"s:a:{rec['id']}")
+        self.assertEqual(self.w.tg.tokens(), {SHARED_TOKEN})
+
+    def test_without_the_secret_no_buttons_and_no_webhook(self):
+        self.w.env.pop("TG_WEBHOOK_SECRET")
         self.assertFalse(self.w.bot.configured)
         with self.assertRaises(RuntimeError):
             self.w.bot.setup_webhook()
-        self.assertFalse(self.w.bot.remove_webhook())
-        self.w.env.pop("TG_OWNER_BOT_TOKEN")
+        self.assertEqual(self.w.bot.deliver_report(self.w.report(), "shared text", None, lambda t: 77), 77)  # the text, as before
+        self.assertEqual(self.w.tg.calls, [])                                   # no card, no webhook, nothing else
+        # control: with the secret the same report is a card with buttons
+        self.w.env["TG_WEBHOOK_SECRET"] = SECRET
+        self.assertNotEqual(self.w.bot.deliver_report(self.w.report(rid="R-20261013-0002"), "shared text", None, lambda t: 77), 77)
+        self.assertIn("inline_keyboard", self.last()["reply_markup"])
+
+    def test_another_services_webhook_is_not_taken(self):
+        self.w.tg.webhook_url = "https://other-site.example/telegram/hook"
         with self.assertRaises(RuntimeError):
             self.w.bot.setup_webhook()
-        self.assertEqual(self.w.tg.calls, [])
-        # control: the owner's own token gets it, with the secret and only the two update kinds
-        self.w.env["TG_OWNER_BOT_TOKEN"] = OWNER_TOKEN
-        info = self.w.bot.setup_webhook()
-        hook = self.w.tg.of("setWebhook")
-        self.assertEqual(len(hook), 1)
-        self.assertEqual([t for t, m, _ in self.w.tg.calls if m == "setWebhook"], [OWNER_TOKEN])
-        self.assertEqual(hook[0]["url"], "https://gsfpv.example" + self.w.bot.cfg.webhook_path())
-        self.assertEqual((hook[0]["secret_token"], hook[0]["allowed_updates"], hook[0]["max_connections"]), (SECRET, ["message", "callback_query"], 1))
-        self.assertTrue(info["webhook"] and info["url_is_ours"])
-        self.assertNotIn("url", info)
+        self.assertFalse(self.w.bot.remove_webhook())
+        self.assertEqual([m for _, m, _ in self.w.tg.calls if m in ("setWebhook", "deleteWebhook", "setMyCommands")], [])
+        # control: our own older webhook (another secret) is replaced without asking; --replace takes a foreign one
+        self.w.tg.webhook_url = "https://gsfpv.example/api/tg/" + "0" * 32
+        self.assertTrue(self.w.bot.setup_webhook()["url_is_ours"])
+        self.w.tg.webhook_url = "https://other-site.example/telegram/hook"
+        self.assertTrue(self.w.bot.setup_webhook(replace=True)["url_is_ours"])
+        self.assertTrue(self.w.bot.remove_webhook())
+        self.assertEqual(len(self.w.tg.of("deleteWebhook")), 1)
 
+    def test_updates_that_are_not_gsfpvs_do_nothing(self):
+        rec, card = self.card()
+        other_note = card + 5          # another site's lead note in the same chat: a message the store never mapped
+        store = self.w.data / "ideas.json"
+        before, calls = store.read_bytes(), len(self.w.tg.calls)
+        foreign = [self.w.owner_msg("Thanks, I will call you", reply_to=other_note),   # a reply to another site's note
+                   self.w.owner_msg("hello"),                                          # a plain message
+                   self.w.owner_msg("/start_other_site"),                             # a command that is not ours
+                   self.w.press("lead:accept:77", other_note),                         # another site's button
+                   self.w.press("s:a:R-20990101-0001", other_note),                    # our shape, an idea the store lacks
+                   self.w.press("x:M-99", other_note)]                                 # an e-mail the store lacks
+        for i, u in enumerate(foreign):
+            self.assertEqual(self.hook({"update_id": 500 + i, **u}), 200)              # acknowledged, so never resent
+            self.assertEqual(self.w.bot.handle_update({"update_id": 600 + i, **u}), "not-ours", u)
+        self.assertEqual(len(self.w.tg.calls), calls)                                 # no message, no toast
+        self.assertEqual(store.read_bytes(), before)                                  # no write, not even the update id
+        self.assertEqual(self.at(86400), 0)
+        # control: the same reply to the GSFPV card is acted on
+        self.assertEqual(self.hook({"update_id": 520, **self.w.owner_msg("Thanks, I will call you", reply_to=card)}), 200)
+        self.assertEqual([m["state"] for m in self.w.service.get(rec["id"])["thread"]], ["queued"])
+        self.assertEqual(self.at(61), 1)
+
+
+class Language(BotTest):
     def test_the_owner_reads_russian_by_default(self):
         self.w.env.pop("TG_OWNER_LANG")
         rec, _ = self.card()
@@ -349,6 +402,12 @@ class Facts(unittest.TestCase):
         self.assertIsNone(ownerbot.diag_picture(bad))
         good = json.dumps({"diagnostics": {"screenshot": "data:image/jpeg;base64," + base64.b64encode(JPEG).decode()}}).encode()
         self.assertEqual(ownerbot.diag_picture(good), JPEG)  # control
+
+    def test_commands(self):
+        for text in ("hello", "", "/", "a /note", "/note-x"):
+            self.assertIsNone(ownerbot.parse_command(text), text)
+        self.assertEqual(ownerbot.parse_command("/queue@GsfpvOwnerBot"), ("queue", ""))   # control
+        self.assertEqual(ownerbot.parse_command("/Note\nJan wants rain\non the bridge"), ("note", "Jan wants rain\non the bridge"))
 
 
 if __name__ == "__main__":

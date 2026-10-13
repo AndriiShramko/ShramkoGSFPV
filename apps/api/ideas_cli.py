@@ -14,7 +14,10 @@ code, configuration and data as the API (tools/ideas/ideas.py runs them over SSH
   ... summary <id>                        JSON on stdin: {"en": "what was done", "pl": "..."}: the idea is done and the
                                           owner gets the DRAFT thank-you e-mail in Telegram; nothing is sent from here
   ... release <id> <sha>                  the release that shipped it
-  ... tg-setup | tg-info | tg-remove      the owner bot's webhook (never the shared lead bot)
+  ... tg-setup [--replace] | tg-info | tg-remove
+                                          the bot's webhook (TG_OWNER_BOT_TOKEN, by default the shared lead
+                                          bot): this API then reads every update of that bot and acts only on
+                                          GSFPV's; --replace takes the bot over from another service's webhook
   ... mail-check                          connect to Gmail and log in, send nothing
 
 Text comes on stdin as UTF-8 so that no shell quoting meets the pilot's or the owner's language.
@@ -112,7 +115,9 @@ def main(argv: list[str] | None = None) -> int:
     rl = sub.add_parser("release")
     rl.add_argument("id")
     rl.add_argument("sha")
-    for name in ("tg-setup", "tg-info", "tg-remove", "mail-check"):
+    sub.add_parser("tg-setup").add_argument("--replace", action="store_true",
+                                            help="replace a webhook another service set on this bot")
+    for name in ("tg-info", "tg-remove", "mail-check"):
         sub.add_parser(name)
     a = p.parse_args(argv)
 
@@ -156,11 +161,11 @@ def main(argv: list[str] | None = None) -> int:
         elif a.cmd == "release":
             print(", ".join(svc.link_release(a.id, a.sha, AGENT)["releases"]))
         elif a.cmd == "tg-setup":
-            print(json.dumps(server.BOT.setup_webhook()))
+            print(json.dumps(server.BOT.setup_webhook(replace=a.replace)))
         elif a.cmd == "tg-info":
             print(json.dumps(server.BOT.webhook_info()))
         elif a.cmd == "tg-remove":
-            print("removed" if server.BOT.remove_webhook() else "not removed (owner bot not configured?)")
+            print("removed" if server.BOT.remove_webhook() else "not removed (no bot token, or the webhook is not this API's)")
         elif a.cmd == "mail-check":
             print(server.MAILER.check_login())
     except IdeaError as e:

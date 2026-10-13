@@ -84,13 +84,11 @@
   "queue.title": "Kolejka prac ({n}):",
   "queue.empty": "Kolejka prac jest pusta.",
   "queue.waiting": "Przyjęte, czekają na pilność ({n}):",
-  "unknown": "Nie zrozumiałem. Odpowiedz na kartę pomysłu albo zajrzyj do /help.",
-  "notMine": "Nie wiem, którego pomysłu to dotyczy. Odpowiedz na kartę pomysłu.",
   "needText": "Wyślij tekst, proszę.",
   "notFound": "{id} nie ma w magazynie.",
   "error": "Nie zrobiono ({code}).",
   "cmd.note": "Zapisz pomysł pilota: tekst, e-mail, #pilność, #język",
   "cmd.queue": "Kolejka prac według pilności",
   "cmd.help": "Co robi ten bot",
-  "help": "Pomysły ShramkoGSFPV.\n\nKażdy błąd i każdy pomysł ze strony trafia tu jako karta.\n- Odpowiedz na kartę: Twoja odpowiedź pójdzie do pilota e-mailem z Twojego Gmaila po {s} s (Anuluj ją zatrzyma).\n- Przyjmij, Odrzuć, W toku, Zrobione i przyciski pilności decydują, co się z nim stanie. Pomysł trafia do kolejki prac, gdy jest przyjęty i ma pilność.\n- Komentarz: notatka dla agenta, który to zrobi.\n- Zrobione: napisz, co zostało zrobione; dostaniesz szkic e-maila z podziękowaniem w języku pilota, a wyjdzie on dopiero po naciśnięciu Wyślij.\n\n/note <tekst>: pomysł pilota opowiedziany poza formularzem; dodaj jego e-mail, #pilne #wysoka #normalna #niska (albo #urgent #high #normal #low) i #en #es #pl #ru, jeśli je znasz.\n/queue: kolejka prac.\n/help: ten tekst."
+  "help": "Pomysły ShramkoGSFPV.\n\nKażdy błąd i każdy pomysł ze strony trafia tu jako karta.\n- Odpowiedz na kartę: Twoja odpowiedź pójdzie do pilota e-mailem z Twojego Gmaila po {s} s (Anuluj ją zatrzyma).\n- Przyjmij, Odrzuć, W toku, Zrobione i przyciski pilności decydują, co się z nim stanie. Pomysł trafia do kolejki prac, gdy jest przyjęty i ma pilność.\n- Komentarz: notatka dla agenta, który to zrobi.\n- Zrobione: napisz, co zostało zrobione; dostaniesz szkic e-maila z podziękowaniem w języku pilota, a wyjdzie on dopiero po naciśnięciu Wyślij.\n\n/note <tekst>: pomysł pilota opowiedziany poza formularzem; dodaj jego e-mail, #pilne #wysoka #normalna #niska (albo #urgent #high #normal #low) i #en #es #pl #ru, jeśli je znasz.\n/queue: kolejka prac.\n/help: ten tekst.\n\nReaguję tylko na karty GSFPV i te polecenia; resztę (zgłoszenie z innej strony albo odpowiedź na nie) zostawiam w spokoju."
 }

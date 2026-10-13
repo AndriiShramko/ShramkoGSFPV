@@ -1,12 +1,16 @@
-"""The owner's own Telegram bot (owner's items 3, 7, 8): every pilot's report reaches his chat whole, with
+"""The owner's Telegram bot (owner's items 3, 7, 8): every pilot's report reaches his chat whole, with
 buttons, and he runs the ideas from there.
 
-Configuration (config.env, never in git): TG_OWNER_BOT_TOKEN (a bot made for GSFPV only, with
-@BotFather), TG_WEBHOOK_SECRET (16-256 of A-Z a-z 0-9 _ -), TG_OWNER_CHAT_ID (default TG_CHAT_ID: in a
-private chat with the bot it is the owner's user id), optional TG_OWNER_USER_ID (also require this sender,
-for a group chat), TG_OWNER_LANG (default ru). TG_API_BASE is for tests (a fake Telegram server).
-The shared lead bot TG_BOT_TOKEN (every site on the hub uses it) is never given a webhook: the owner bot
-counts as not configured when its token is missing or equal to the shared one.
+Configuration (config.env, never in git): TG_WEBHOOK_SECRET (16-256 of A-Z a-z 0-9 _ -) turns the
+two-way work on; TG_OWNER_BOT_TOKEN is optional and defaults to the shared lead bot TG_BOT_TOKEN (the
+owner's decision 2026-10-13: no new bot); TG_OWNER_CHAT_ID (default TG_CHAT_ID: in a private chat with
+the bot it is the owner's user id), optional TG_OWNER_USER_ID (also require this sender, for a group
+chat), TG_OWNER_LANG (default ru). TG_API_BASE is for tests (a fake Telegram server).
+On the shared bot the webhook receives EVERY update of that bot, other sites' lead notes and replies to
+them included. So an update is acted on only when it is the owner's (his chat, his user) AND belongs to
+GSFPV: a reply to a bot message the store knows (a card, a prompt, a draft, an e-mail notice), a button
+whose idea or e-mail id the store knows, or one of the commands below. Everything else is answered 200
+to Telegram and left alone: no message, no toast, no write (see `_ours`).
 
 What the owner does in his chat:
 - every report arrives as a card (kind, id, status, urgency, contact, language, page, scene with a link,
@@ -20,13 +24,13 @@ What the owner does in his chat:
   thank-you e-mail in the pilot's language with Send and Edit; nothing goes without Send;
 - /note <text> [e-mail] [#urgent|#high|#normal|#low] [#en|#es|#pl|#ru]: a pilot's idea told outside the
   form; /queue: the work queue; /help.
-Only the owner's chat is obeyed; anything else is ignored without an answer. Each update is acted on
-once (service.first_update). The webhook is POST /api/tg/<path>, path = an HMAC of the secret, and the
-X-Telegram-Bot-Api-Secret-Token header must equal the secret (else 403). `ideas_cli.py tg-setup`
-registers it.
+Each update that is ours is acted on once (service.first_update). The webhook is POST /api/tg/<path>,
+path = an HMAC of the secret, and the X-Telegram-Bot-Api-Secret-Token header must equal the secret (else
+403). `ideas_cli.py tg-setup` registers it (and refuses to replace a webhook someone else set on the bot).
 
-Without the owner bot every report still goes to the shared lead bot as before (server.report_text, now
-with every field), plus the technical details file, and none of the two-way work is possible.
+Without the secret every report still goes to the shared lead bot as before (server.report_text, now
+with every field), plus the technical details file, and none of the two-way work is offered (no buttons
+that nothing would answer).
 """
 from __future__ import annotations
 
@@ -51,6 +55,10 @@ TEXT_LIMIT = 4000          # Telegram's limit is 4096 characters per message
 WEBHOOK_BODY_MAX = 64 * 1024
 STATUS_CODES = {"a": "accepted", "r": "rejected", "p": "in_progress", "d": "done"}
 CODE_OF_STATUS = {v: k for k, v in STATUS_CODES.items()}
+COMMANDS = ("start", "help", "queue", "note")
+COMMAND_RE = re.compile(r"/([A-Za-z0-9_]{1,32})(?:@[A-Za-z0-9_]{1,64})?(?:\s+(.*))?\Z", re.S)
+IDEA_VERBS = ("s", "u", "c", "e", "m")   # button data "<verb>:[<code>:]<idea id>"
+MAIL_VERBS = ("x", "w")                  # button data "<verb>:<e-mail id>"
 
 
 def _hhmm(iso: str | None) -> str:
@@ -59,6 +67,13 @@ def _hhmm(iso: str | None) -> str:
 
 def _cut(s: str, n: int) -> str:
     return s if len(s) <= n else s[: n - 3] + "..."
+
+
+def parse_command(text: str) -> tuple[str, str] | None:
+    """`/note@SomeBot text` -> ("note", "text"); None when the message is not a bot command. The text
+    after the command may start on the next line."""
+    m = COMMAND_RE.match(text)
+    return (m.group(1).lower(), (m.group(2) or "").strip()) if m else None
 
 
 class TelegramApi:
@@ -126,8 +141,9 @@ class TelegramApi:
 
 @dataclass(frozen=True)
 class BotConfig:
-    token: str = ""
-    shared_token: str = ""
+    """The bot's settings, read from the environment each time (see the module's docstring)."""
+    token: str = ""         # TG_OWNER_BOT_TOKEN, else the shared TG_BOT_TOKEN
+    shared_token: str = ""  # TG_BOT_TOKEN: the lead bot of every site on the hub
     shared_chat: str = ""   # TG_CHAT_ID: where the shared lead bot writes (server.send_telegram)
     chat: str = ""
     user: str = ""
@@ -138,20 +154,23 @@ class BotConfig:
     @classmethod
     def from_env(cls, env) -> "BotConfig":
         lang = env.get("TG_OWNER_LANG") or "ru"
-        return cls(token=(env.get("TG_OWNER_BOT_TOKEN") or "").strip(), shared_token=(env.get("TG_BOT_TOKEN") or "").strip(),
+        shared = (env.get("TG_BOT_TOKEN") or "").strip()
+        return cls(token=(env.get("TG_OWNER_BOT_TOKEN") or "").strip() or shared, shared_token=shared,
                    shared_chat=(env.get("TG_CHAT_ID") or "").strip(),
                    chat=(env.get("TG_OWNER_CHAT_ID") or env.get("TG_CHAT_ID") or "").strip(),
                    user=(env.get("TG_OWNER_USER_ID") or "").strip(), secret=(env.get("TG_WEBHOOK_SECRET") or "").strip(),
                    lang=lang if lang in ideas.LOCALES else "ru", api_base=(env.get("TG_API_BASE") or "https://api.telegram.org"))
 
     @property
-    def owner_ready(self) -> bool:
-        """The owner bot may send: its own token (never the shared lead bot's) and the owner's chat."""
-        return bool(self.token and self.chat and self.token != self.shared_token)
+    def ready(self) -> bool:
+        """The two-way work is on: a bot, the owner's chat and a valid webhook secret. Without the secret
+        nothing could come back, so no buttons are offered and reports go to the shared bot as before."""
+        return bool(self.token and self.chat and SECRET_RE.fullmatch(self.secret))
 
     @property
-    def webhook_ready(self) -> bool:
-        return self.owner_ready and bool(SECRET_RE.fullmatch(self.secret))
+    def shared(self) -> bool:
+        """The owner bot is the shared lead bot (the default): its webhook also carries other sites' updates."""
+        return self.token == self.shared_token
 
     def webhook_path(self) -> str:
         """/api/tg/<32 hex>: derived from the secret, so it is not guessable and needs no second setting."""
@@ -232,7 +251,7 @@ class OwnerBot:
 
     @property
     def configured(self) -> bool:
-        return self.cfg.owner_ready
+        return self.cfg.ready
 
     def api(self) -> TelegramApi:
         c = self.cfg
@@ -325,7 +344,7 @@ class OwnerBot:
         else the shared lead bot's text as before. The technical details file (and the picture) follow
         either way. Returns the card's message id (None: not delivered)."""
         c = self.cfg
-        if c.owner_ready and rec is not None:
+        if c.ready and rec is not None:
             api = self.api()
             mid = api.send(c.chat, self.card_text(rec, diag_facts(diag_blob) if diag_blob else None), buttons=self.card_buttons(rec))
             if mid:
@@ -351,7 +370,7 @@ class OwnerBot:
 
     def on_event(self, event: str, rec: dict, mail: dict | None, by: str) -> None:
         c = self.cfg
-        if not c.owner_ready:
+        if not c.ready:
             return
         api, t = self.api(), self.t
         rid = rec["id"]
@@ -411,12 +430,12 @@ class OwnerBot:
     # ---------------- the webhook ----------------
 
     def handle_webhook(self, path: str, headers, body: bytes) -> tuple[int, bytes, list]:
-        """POST /api/tg/<path>: 404 unless the owner bot and its secret are configured and the path is
-        right, 403 without the right secret header, 400 for a body that is not a JSON object, else 200
-        (also for what is ignored, so Telegram does not send it again)."""
+        """POST /api/tg/<path>: 404 unless the bot and its secret are configured and the path is right,
+        403 without the right secret header, 400 for a body that is not a JSON object, else 200 (also for
+        what is ignored, so Telegram does not send it again)."""
         c = self.cfg
         hdr = [("Content-Type", "application/json"), ("Cache-Control", "no-store")]
-        if not c.webhook_ready or not hmac.compare_digest(path.encode(), c.webhook_path().encode()):
+        if not c.ready or not hmac.compare_digest(path.encode(), c.webhook_path().encode()):
             return 404, b'{"ok":false}', hdr
         if not hmac.compare_digest((headers.get("X-Telegram-Bot-Api-Secret-Token") or "").encode(), c.secret.encode()):
             return 403, b'{"ok":false}', hdr
@@ -437,7 +456,8 @@ class OwnerBot:
         return str(chat_id) == c.chat and (not c.user or str(from_id) == c.user)
 
     def handle_update(self, u: dict) -> str:
-        """One Telegram update; returns what was done (for tests and logs)."""
+        """One Telegram update; returns what was done (for tests and logs): "ignored" (not the owner),
+        "not-ours" (the owner's, but not about GSFPV), "duplicate" (acted on before), else the action."""
         cb = u.get("callback_query") if isinstance(u.get("callback_query"), dict) else None
         msg = u.get("message") if isinstance(u.get("message"), dict) else None
         where = (cb.get("message") or {}) if cb else msg
@@ -447,35 +467,47 @@ class OwnerBot:
         sender = ((cb or msg).get("from") or {}).get("id")
         if chat is None or not self._owner(chat, sender):
             return "ignored"
+        if not self._ours(cb, msg):
+            return "not-ours"   # e.g. a reply to another site's lead note on the shared bot: no answer, no write
         uid = u.get("update_id")
         if isinstance(uid, int) and not self.service.first_update(uid):
             return "duplicate"
         return self._callback(cb) if cb else self._message(msg)
 
+    def _ours(self, cb: dict | None, msg: dict | None) -> bool:
+        """Whether an update of the owner's belongs to GSFPV. Reads only, so what is not ours leaves no
+        trace: a command of this bot, a reply to a bot message the store mapped to an idea, or a button
+        whose idea id (or e-mail id) the store knows."""
+        if cb is not None:
+            data = cb.get("data") if isinstance(cb.get("data"), str) else ""
+            verb, _, rest = data.partition(":")
+            if verb in IDEA_VERBS:
+                return self.service.get(rest.rpartition(":")[2] if verb in ("s", "u") else rest) is not None
+            return verb in MAIL_VERBS and self.service.find_mail(rest) is not None
+        text = (msg.get("text") or msg.get("caption") or "").strip()
+        cmd = parse_command(text)
+        if cmd is not None:
+            return cmd[0] in COMMANDS
+        reply = msg.get("reply_to_message")
+        return isinstance(reply, dict) and self.service.message_target(reply.get("message_id")) is not None
+
     def _message(self, m: dict) -> str:
+        """A command of this bot, or a reply to one of its messages (`_ours` let nothing else through)."""
         c, api, t = self.cfg, self.api(), self.t
         text = (m.get("text") or m.get("caption") or "").strip()
-        if text.startswith("/"):
-            head, _, arg = text.partition(" ")
-            cmd = head[1:].split("@", 1)[0].lower()
-            if cmd in ("start", "help"):
+        cmd = parse_command(text)
+        if cmd is not None:
+            name, arg = cmd
+            if name in ("start", "help"):
                 api.send(c.chat, t("help", s=int(self.service.undo_s)))
                 return "help"
-            if cmd == "queue":
+            if name == "queue":
                 api.send(c.chat, self.queue_text())
                 return "queue"
-            if cmd == "note":
-                return self._note(arg)
-            api.send(c.chat, t("unknown"))
-            return "unknown-command"
-        reply = m.get("reply_to_message")
-        if not isinstance(reply, dict):
-            api.send(c.chat, t("unknown"))
-            return "unknown"
-        target = self.service.message_target(reply.get("message_id"))
-        if target is None:
-            api.send(c.chat, t("notMine"), reply_to=m.get("message_id"))
-            return "not-mine"
+            return self._note(arg)
+        target = self.service.message_target(m["reply_to_message"].get("message_id"))
+        if target is None:      # trimmed from the map since `_ours` looked (TG_MSGS_KEPT)
+            return "not-ours"
         if not text:
             api.send(c.chat, t("needText"), reply_to=m.get("message_id"))
             return "no-text"
@@ -521,6 +553,7 @@ class OwnerBot:
         return "note"
 
     def _callback(self, cb: dict) -> str:
+        """A button under one of this bot's messages (`_ours` checked that its verb and id are GSFPV's)."""
         c, api, t = self.cfg, self.api(), self.t
         data = cb.get("data") if isinstance(cb.get("data"), str) else ""
         msg_id = (cb.get("message") or {}).get("message_id")
@@ -564,8 +597,6 @@ class OwnerBot:
             elif verb == "w":
                 self.service.send_mail(rest, "telegram")
                 result = "send-again"
-            else:
-                result = "unknown-button"
         except IdeaError as e:
             toast = {"too-late": t("mail.tooLate"), "no-draft": t("mail.noDraft"), "not-found": t("notFound", id=rest.split(":")[-1])}.get(e.code, t("error", code=e.code))
             result = f"refused:{e.code}"
@@ -591,31 +622,51 @@ class OwnerBot:
 
     # ---------------- setup (ideas_cli.py) ----------------
 
-    def setup_webhook(self) -> dict:
-        """Register the webhook of the OWNER bot (never the shared one) and its command list."""
+    def _hook_owner(self, url: str) -> str:
+        """Whose webhook a URL is: "none", "ours" (this API's /api/tg/, also under an older secret) or
+        "foreign" (another service reads this bot's updates)."""
+        return "none" if not url else "ours" if url.startswith(self.origin + "/api/tg/") else "foreign"
+
+    def setup_webhook(self, replace: bool = False) -> dict:
+        """Register this API as the bot's webhook and the commands in the owner's chat. On the shared bot
+        this makes gsfpv-api the reader of every update of that bot (other sites ignore their updates
+        today); a webhook another service set is never replaced unless `replace` says so."""
         c = self.cfg
-        if not c.token or c.token == c.shared_token:
-            raise RuntimeError("TG_OWNER_BOT_TOKEN is missing or is the shared lead bot's token: the shared bot never gets a webhook")
-        if not c.webhook_ready:
-            raise RuntimeError("TG_WEBHOOK_SECRET (16-256 of A-Z a-z 0-9 _ -) and TG_OWNER_CHAT_ID or TG_CHAT_ID are needed")
+        if not c.ready:
+            raise RuntimeError("TG_WEBHOOK_SECRET (16-256 of A-Z a-z 0-9 _ -), a bot token (TG_OWNER_BOT_TOKEN or TG_BOT_TOKEN) "
+                               "and TG_OWNER_CHAT_ID or TG_CHAT_ID are needed")
         api = self.api()
+        info = api.call("getWebhookInfo", {})
+        if not isinstance(info, dict):
+            raise RuntimeError("Telegram did not answer getWebhookInfo: nothing changed")
+        if self._hook_owner(info.get("url") or "") == "foreign" and not replace:
+            raise RuntimeError("this bot already has a webhook of another service; nothing changed "
+                               "(tg-setup --replace takes the bot's updates away from it)")
         ok = api.call("setWebhook", {"url": self.origin + c.webhook_path(), "secret_token": c.secret,
                                      "allowed_updates": ["message", "callback_query"], "max_connections": 1})
         cmds = api.call("setMyCommands", {"commands": [{"command": k, "description": t} for k, t in
-                                                       (("note", self.t("cmd.note")), ("queue", self.t("cmd.queue")), ("help", self.t("cmd.help")))]})
+                                                       (("note", self.t("cmd.note")), ("queue", self.t("cmd.queue")), ("help", self.t("cmd.help")))],
+                                          "scope": {"type": "chat", "chat_id": c.chat}})   # only in the owner's chat
         return {"webhook": ok is True, "commands": cmds is True, **self.webhook_info()}
 
     def webhook_info(self) -> dict:
         """What Telegram says about the webhook, without the URL (its path is derived from the secret)."""
         c = self.cfg
-        if not c.token or c.token == c.shared_token:
+        if not c.token:
             return {"configured": False}
         info = self.api().call("getWebhookInfo", {}) or {}
-        return {"configured": True, "url_set": bool(info.get("url")), "url_is_ours": info.get("url") == self.origin + c.webhook_path(),
+        return {"configured": c.ready, "sharedBot": c.shared, "url_set": bool(info.get("url")),
+                "url_is_ours": info.get("url") == self.origin + c.webhook_path(), "owner": self._hook_owner(info.get("url") or ""),
                 "pending": info.get("pending_update_count"), "last_error": info.get("last_error_message"), "max_connections": info.get("max_connections")}
 
     def remove_webhook(self) -> bool:
+        """Remove this API's webhook (the bot's updates then wait for getUpdates again); another service's
+        webhook is left alone."""
         c = self.cfg
-        if not c.token or c.token == c.shared_token:
+        if not c.token:
             return False
-        return self.api().call("deleteWebhook", {"drop_pending_updates": False}) is True
+        api = self.api()
+        info = api.call("getWebhookInfo", {})
+        if not isinstance(info, dict) or self._hook_owner(info.get("url") or "") != "ours":
+            return False
+        return api.call("deleteWebhook", {"drop_pending_updates": False}) is True

@@ -22,7 +22,7 @@ Reports, as before:
   python tools/ideas/ideas.py list [--kind bug] [--status new] [--local]
   python tools/ideas/ideas.py diag R-20261002-0007   # a bug's technical details in short (pulled copy)
   python tools/ideas/ideas.py log R-20261002-0007    # inbox/<id>.gsfpvlog: the life's flight log (format /2) to replay
-The owner's setup (once): tg-setup, tg-info, mail-check.
+The owner's setup (once): tg-setup [--replace], tg-info, mail-check (deploy/README.md "Ideas (v0.7)").
 
 Output is UTF-8 even on a Windows console (pull.py crashed on Polish letters under cp1252).
 IDEAS_INBOX overrides the inbox folder (tests).
@@ -180,7 +180,9 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("sha")
     sub.add_parser("log").add_argument("id")
     sub.add_parser("diag").add_argument("id")
-    for name in ("tg-setup", "tg-info", "mail-check"):
+    sub.add_parser("tg-setup").add_argument("--replace", action="store_true",
+                                            help="replace a webhook another service set on the bot")
+    for name in ("tg-info", "mail-check"):
         sub.add_parser(name)
     a = p.parse_args(argv)
 
@@ -215,7 +217,7 @@ def main(argv: list[str] | None = None) -> int:
         if not SHA_RE.fullmatch(a.sha):
             sys.exit(f"{a.sha}: not a commit sha")
         return remote(["release", a.id, a.sha])
-    return remote([a.cmd])
+    return remote([a.cmd] + (["--replace"] if getattr(a, "replace", False) else []))
 
 
 if __name__ == "__main__":

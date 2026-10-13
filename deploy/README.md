@@ -151,15 +151,15 @@ python tools/ideas/ideas.py log R-20261002-0007       # its flight log to replay
 Owner's items 3, 7 and 8 of message 18; design `docs/wip/v07-b.md`. Every report (and every note the
 owner writes in Telegram) is an idea in `data/ideas.json` with a status (new, accepted, in progress,
 done, rejected), an urgency, the owner's comments, a public title for the roadmap and the e-mails to
-the pilot. The owner runs them from his own Telegram bot or from the admin; agents read the work queue
-over SSH. Code: `apps/api/ideas.py` (store), `service.py` (the rules), `ownerbot.py` (Telegram),
+the pilot. The owner runs them from Telegram (the shared lead bot by default, see below) or from the
+admin; agents read the work queue over SSH. Code: `apps/api/ideas.py` (store), `service.py` (the rules), `ownerbot.py` (Telegram),
 `mailer.py` + `outbox.py` (Gmail), `ideas_admin.py` (admin routes), `ideas_cli.py` (agents' commands
 inside the container), `texts.py` (the bot's and the e-mails' words).
 
 | Route | nginx | API |
 |---|---|---|
-| `POST /api/report` | as before | stored as before, then the idea, then the WHOLE report in the owner's chat (the owner's request 2026-10-13): every field, a summary of the technical details, the technical details file and the picture of the view. Through the owner bot with buttons when it is configured, else through the shared lead bot (now with every field and the file, no buttons) |
-| `POST /api/tg/<32 hex>` | `location ^~ /api/tg/`, POST only, 64 KB, `limit_req` 60/min burst 30 (one bucket: behind nginx-proxy all requests share an address) | the owner bot's webhook: 404 unless the bot and its secret are configured and the path (an HMAC of `TG_WEBHOOK_SECRET`) is right; 403 unless `X-Telegram-Bot-Api-Secret-Token` equals the secret; only the owner's chat is obeyed; each update acted on once |
+| `POST /api/report` | as before | stored as before, then the idea, then the WHOLE report in the owner's chat (the owner's request 2026-10-13): every field, a summary of the technical details, the technical details file and the picture of the view. As a card with buttons when the two-way bot is set up (`TG_WEBHOOK_SECRET`), else as the shared lead bot's plain text (now with every field and the file, no buttons) |
+| `POST /api/tg/<32 hex>` | `location ^~ /api/tg/`, POST only, 64 KB, `limit_req` 60/min burst 30 (one bucket: behind nginx-proxy all requests share an address) | the bot's webhook: 404 unless the bot and its secret are configured and the path (an HMAC of `TG_WEBHOOK_SECRET`) is right; 403 unless `X-Telegram-Bot-Api-Secret-Token` equals the secret; only the owner's updates about GSFPV are acted on (each once); everything else gets 200 and nothing more |
 | `GET /api/roadmap` | `location = /api/roadmap`, GET only, no cookies | `{"v":1,"items":[{id, kind, status: planned/in_progress/done, title {lang}, text?, fromPilot, done?, release?}]}`: only items with an English public title, accepted (planned), in progress or done, not hidden; never a pilot's words or contact. ETag/304, `max-age=60` |
 | `/api/admin/ideas...` | the admin's location | list, update (status, urgency, comment, public title/text, visibility, release, order), note, reply by e-mail, cancel, done + draft, send-done, send a waiting e-mail (`ideas_admin.py`); the Reports tab now reads the same store |
 
@@ -167,13 +167,37 @@ inside the container), `texts.py` (the bot's and the e-mails' words).
 
 | Key | What |
 |---|---|
-| `TG_OWNER_BOT_TOKEN` | the GSFPV owner bot's token from @BotFather. A NEW bot, never the shared lead bot: the shared `TG_BOT_TOKEN` (every site on the hub) must never get a webhook; the API treats an equal token as "no owner bot" and `tg-setup` refuses it. Name it with the brand, e.g. "Shramko GSFPV Ideas" |
-| `TG_WEBHOOK_SECRET` | 16-256 characters of `A-Z a-z 0-9 _ -`: `python -c "import secrets; print(secrets.token_urlsafe(32))"` |
+| `TG_WEBHOOK_SECRET` | turns the two-way work on (cards with buttons, replies, /note, /queue). 16-256 characters of `A-Z a-z 0-9 _ -`: `python -c "import secrets; print(secrets.token_urlsafe(32))"`. Without it reports go to the shared lead bot as plain text, as before |
+| `TG_OWNER_BOT_TOKEN` | optional; default `TG_BOT_TOKEN`, the shared lead bot (the owner's decision 2026-10-13: no new bot). Set it only to move GSFPV's two-way work to a bot of its own |
 | `TG_OWNER_CHAT_ID` | optional; default `TG_CHAT_ID`. In a private chat with the bot it is the owner's own Telegram user id. The owner must open the bot and press Start once, or the bot cannot write to him |
 | `TG_OWNER_USER_ID`, `TG_OWNER_LANG` | optional: also require this sender (when the chat is a group); the bot's language (default `ru`) |
 | `GMAIL_USER` | `zmei116@gmail.com` (From and Reply-To of every e-mail to a pilot; the name is `MAIL_FROM_NAME`, default "Andrii Shramko") |
 | `GMAIL_APP_PASSWORD` | a Gmail app password (Google account, Security, 2-Step Verification, App passwords: 16 letters). The normal password does not work over SMTP. Without it e-mails wait (`waiting_setup`) and the bot says so; once it is set the bot asks per waiting e-mail, nothing goes by itself |
 | `MAIL_UNDO_S` | optional; the window in which Cancel stops an e-mail (default 60 s) |
+
+**The shared lead bot's updates are now read by `gsfpv-api`.** `tg-setup` gives the bot that
+`TG_OWNER_BOT_TOKEN` names (by default the shared `TG_BOT_TOKEN`, @leadformfromallsitesbot, which every
+site on the hub uses to send its lead notes) a webhook to `https://gsfpv.flyreelstudio.eu/api/tg/<32 hex>`.
+From then on Telegram delivers every update of that bot to `gsfpv-api`: the owner's replies and button
+presses under GSFPV's cards, but also his replies to other sites' lead notes and anything anyone writes to
+the bot. Until now nothing read them (the sites only send), so no site loses anything; but while the
+webhook is set, `getUpdates` on that bot answers 409 for everyone, so no other service can poll it.
+`gsfpv-api` acts only on an update from the owner (`TG_OWNER_CHAT_ID` or `TG_CHAT_ID`, and
+`TG_OWNER_USER_ID` when set) that belongs to GSFPV: one of its commands (`/note`, `/queue`, `/help`,
+`/start`; their menu is set for the owner's chat only), a reply to a bot message the ideas store mapped to
+an idea, or a button whose idea or e-mail id the store knows. Everything else (a reply to another site's
+lead note, a stranger's message, another site's button) gets 200 and nothing more: no answer, no toast,
+no write (`apps/api/ownerbot.py` `_ours`, test `test_ownerbot.SharedBot`). `tg-setup` refuses to replace a
+webhook another service has set on the bot (`--replace` overrides; `tg-remove` only removes ours).
+
+**When another site wants its replies too (later).** Telegram allows one webhook per bot, so the sites
+cannot each set their own. Two ways, both keeping GSFPV's code as it is: (1) that site gets its own bot
+for two-way work (`TG_OWNER_BOT_TOKEN` stays the shared bot for GSFPV, or GSFPV moves to its own bot);
+(2) one router on the hub owns the shared bot's webhook and forwards each update to the site that sent
+the message being answered: every site records the `message_id` of each note it sends (as
+`ideas.json` `tg.msgs` does for GSFPV) and the router asks each site, or a shared map, whose message it
+is; updates nobody claims are dropped. Until such a router exists, GSFPV's webhook is the router's place
+and the other sites' replies are ignored, as today.
 
 **Why the e-mails land in the inbox.** They are submitted to Gmail's own SMTP server
 (`smtp.gmail.com:587`, STARTTLS, then the app password), so Google signs them (DKIM `d=gmail.com`) and
@@ -205,7 +229,8 @@ already take the whole `data/`.
 then `config.env`, then recreate `gsfpv-api`, then register the webhook and check Gmail from inside the
 container (the agents' CLI uses the container's own environment):
 ```bash
-$SSH "docker exec gsfpv-api python /app/ideas_cli.py tg-setup"     # {"webhook": true, "commands": true, "url_is_ours": true, ...}
+$SSH "docker exec gsfpv-api python /app/ideas_cli.py tg-setup"     # {"webhook": true, "commands": true, "sharedBot": true, "url_is_ours": true, ...}
+                                                                    # refused if another service already set a webhook on the bot (see above)
 $SSH "docker exec gsfpv-api python /app/ideas_cli.py tg-info"      # pending updates, last error
 $SSH "docker exec gsfpv-api python /app/ideas_cli.py mail-check"   # ok (logs in, sends nothing)
 curl -sD- -o /dev/null https://gsfpv.flyreelstudio.eu/api/roadmap | grep -iE '^(HTTP|etag|cache-control)'   # 200, an ETag, max-age=60

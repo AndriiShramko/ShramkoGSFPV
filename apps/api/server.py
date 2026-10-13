@@ -10,14 +10,17 @@ POST /api/report a bug or an idea from the simulator or the landing, the same ru
                  FIRST (reports.jsonl, fsync, id R-YYYYMMDD-NNNN), then an idea in the ideas store
                  (ideas.py) and the whole report in the owner's Telegram chat (the owner's request
                  2026-10-13: every field the pilot sent, a summary of the technical details, and the
-                 technical details file and picture themselves): through the owner's own bot with
-                 buttons when TG_OWNER_BOT_TOKEN is set (ownerbot.py), else through the shared lead bot.
+                 technical details file and picture themselves): as a card with buttons when the
+                 two-way bot is set up (TG_WEBHOOK_SECRET; the bot is TG_OWNER_BOT_TOKEN, by default the
+                 shared lead bot; ownerbot.py), else as the shared lead bot's plain text.
                  A bug's technical details (diagnostics) only with the visitor's consent, kept apart in
                  reports/<id>.json; the only body allowed to be large (512 KB, gzip accepted).
                  There is no public way to read reports: tools/ideas/ideas.py reads them over SSH.
-POST /api/tg/<path>  the owner bot's webhook (ownerbot.py): secret path and secret header, only the
-                 owner's chat obeyed. The ideas, the owner's decisions and the e-mails to pilots:
-                 service.py (use-cases), mailer.py + outbox.py (Gmail SMTP, undo window, never twice).
+POST /api/tg/<path>  the bot's webhook (ownerbot.py): secret path and secret header; only the owner's
+                 updates about GSFPV are acted on (on the shared bot every other update, e.g. a reply
+                 to another site's lead note, gets 200 and nothing else). The ideas, the owner's
+                 decisions and the e-mails to pilots: service.py (use-cases), mailer.py + outbox.py
+                 (Gmail SMTP, undo window, never twice).
 GET  /api/roadmap the public roadmap from the ideas store (ETag/304, max-age 60): only our own titles and
                  texts of accepted, in-progress and done items, never a pilot's words or contact.
 POST /api/share  a picture of the view (JPEG 1200x630) for a link that shows it on social networks:

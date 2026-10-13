@@ -84,13 +84,11 @@
   "queue.title": "Cola de trabajo ({n}):",
   "queue.empty": "La cola de trabajo está vacía.",
   "queue.waiting": "Aceptadas, a la espera de urgencia ({n}):",
-  "unknown": "No lo he entendido. Responde a la tarjeta de una idea o mira /help.",
-  "notMine": "No sé a qué idea se refiere. Responde a la tarjeta de la idea.",
   "needText": "Envía texto, por favor.",
   "notFound": "{id} no está en el almacén.",
   "error": "No se hizo ({code}).",
   "cmd.note": "Apuntar la idea de un piloto: texto, e-mail, #urgencia, #idioma",
   "cmd.queue": "La cola de trabajo por urgencia",
   "cmd.help": "Qué hace este bot",
-  "help": "Ideas de ShramkoGSFPV.\n\nCada fallo y cada idea del sitio llegan aquí como una tarjeta.\n- Responde a una tarjeta: tu respuesta llega al piloto por e-mail desde tu Gmail, {s} s después (Cancelar lo detiene).\n- Aceptar, Rechazar, En curso, Hecho y los botones de urgencia deciden qué pasa con ella. Una idea entra en la cola de trabajo cuando está aceptada y tiene urgencia.\n- Comentario: una nota para el agente que la hará.\n- Hecho: escribe qué se hizo; recibirás el borrador del e-mail de agradecimiento en el idioma del piloto, y solo sale cuando pulses Enviar.\n\n/note <texto>: la idea de un piloto contada fuera del formulario; añade su e-mail, #urgente #alta #media #baja (o #urgent #high #normal #low) y #en #es #pl #ru si los sabes.\n/queue: la cola de trabajo.\n/help: este texto."
+  "help": "Ideas de ShramkoGSFPV.\n\nCada fallo y cada idea del sitio llegan aquí como una tarjeta.\n- Responde a una tarjeta: tu respuesta llega al piloto por e-mail desde tu Gmail, {s} s después (Cancelar lo detiene).\n- Aceptar, Rechazar, En curso, Hecho y los botones de urgencia deciden qué pasa con ella. Una idea entra en la cola de trabajo cuando está aceptada y tiene urgencia.\n- Comentario: una nota para el agente que la hará.\n- Hecho: escribe qué se hizo; recibirás el borrador del e-mail de agradecimiento en el idioma del piloto, y solo sale cuando pulses Enviar.\n\n/note <texto>: la idea de un piloto contada fuera del formulario; añade su e-mail, #urgente #alta #media #baja (o #urgent #high #normal #low) y #en #es #pl #ru si los sabes.\n/queue: la cola de trabajo.\n/help: este texto.\n\nSolo reacciono a las tarjetas de GSFPV y a estos comandos; lo demás (el aviso de otra web o una respuesta a él) no lo toco."
 }
