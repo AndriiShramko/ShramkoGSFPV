@@ -66,7 +66,7 @@ export default function CatalogGrid({ initial, locale, labels }: { initial: unkn
                 {s.geo?.place ? <span className="normal-case"> · {s.geo.place}</span> : null}
               </p>
               <h3 className="mt-2 text-lg font-semibold text-ink">
-                <a href={page} className="link">
+                <a href={page} className="link inline-flex min-h-11 items-center">
                   {title}
                 </a>
               </h3>

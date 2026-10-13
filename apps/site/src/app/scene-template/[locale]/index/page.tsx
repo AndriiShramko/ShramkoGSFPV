@@ -26,7 +26,7 @@ function IndexPage({ locale }: { locale: Locale }) {
             <nav aria-label={ui.crumbScenes}>
               <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
                 <li>
-                  <a href={slot("homeHref")} className="link">
+                  <a href={slot("homeHref")} className="link inline-flex min-h-11 items-center">
                     {ui.crumbHome}
                   </a>
                 </li>
@@ -55,7 +55,7 @@ function IndexPage({ locale }: { locale: Locale }) {
                       <If name="place"> · {slot("place")}</If>
                     </p>
                     <h2 className="mt-2 text-lg font-semibold text-ink">
-                      <a href={slot("href")} className="link">
+                      <a href={slot("href")} className="link inline-flex min-h-11 items-center">
                         {slot("title")}
                       </a>
                     </h2>

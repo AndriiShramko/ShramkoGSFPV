@@ -32,13 +32,13 @@ function ScenePage({ locale }: { locale: Locale }) {
             <nav aria-label={ui.crumbScenes}>
               <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
                 <li>
-                  <a href={slot("homeHref")} className="link">
+                  <a href={slot("homeHref")} className="link inline-flex min-h-11 items-center">
                     {ui.crumbHome}
                   </a>
                 </li>
                 <li aria-hidden="true">/</li>
                 <li>
-                  <a href={slot("indexHref")} className="link">
+                  <a href={slot("indexHref")} className="link inline-flex min-h-11 items-center">
                     {ui.crumbScenes}
                   </a>
                 </li>
