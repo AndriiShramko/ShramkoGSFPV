@@ -15,6 +15,7 @@ declare module '../test-hook' {
     }
 }
 
+/** The crosshair over the centre of the view, from the crosshair.* settings (hidden in cinema mode and the clean view). */
 export const crosshair: Feature = {
     id: 'crosshair',
     install(ctx) {

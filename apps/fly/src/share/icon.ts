@@ -1,6 +1,7 @@
 // The share icon (three linked dots), drawn as SVG: a glyph would turn into a colour emoji on some
 // systems. Used by the top bar's Share button (app/builtin/share.ts) and the picker's cards.
 
+/** The share icon, `size` px square, hidden from screen readers (its button carries the name). */
 export function shareIcon(size = 18): SVGSVGElement {
     const NS = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(NS, 'svg');

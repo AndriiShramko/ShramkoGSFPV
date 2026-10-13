@@ -62,6 +62,7 @@ function mmss(s: number): string {
     return `${m}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 }
 
+/** Sharing in a flight: the top bar's Share, L, the pause menu's item and its "Nice flight" row. */
 export const share: Feature = {
     id: 'share',
     install(ctx) {

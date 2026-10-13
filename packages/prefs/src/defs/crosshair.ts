@@ -10,6 +10,7 @@ export const CROSSHAIR_SHAPES: readonly string[] = ['off', 'dot', 'cross', 'circ
 /** The colours a pilot picks from (apps/fly/src/crosshair.ts maps each to its CSS colour). */
 export const CROSSHAIR_COLORS: readonly string[] = ['green', 'white', 'yellow', 'red', 'cyan', 'magenta', 'black'];
 
+/** The crosshair's settings (group Display): shape (off by default), size, colour, opacity. */
 export const CROSSHAIR_DEFS: readonly SettingDef[] = [
     { id: 'crosshair.shape', group: 'display', scope: 'global', type: 'enum', options: CROSSHAIR_SHAPES, default: 'off', apply: 'live', shown: ['settings'], status: 'shipped', since: 2 },
     // the mark's outer size as a share of the view's shorter side, so it looks the same on a phone and a 4K screen

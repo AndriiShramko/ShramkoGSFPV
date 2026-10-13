@@ -38,6 +38,7 @@ function motorState(ctx: FlightContext): MotorState | null {
     };
 }
 
+/** The motor sound in a flight: its AudioContext, started at the first click or key, fed once a frame. */
 export const sound: Feature = {
     id: 'sound',
     install(ctx) {

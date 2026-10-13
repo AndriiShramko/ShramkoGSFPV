@@ -8,6 +8,7 @@
 // app/builtin/crosshair.css). Pure: no DOM (tools/bench/test/flight-ux.test.ts).
 import { CROSSHAIR_COLORS, CROSSHAIR_SHAPES } from '@gsfpv/prefs';
 
+/** The marks crosshair.shape offers (@gsfpv/prefs CROSSHAIR_SHAPES); 'off' draws nothing. */
 export type CrosshairShape = 'off' | 'dot' | 'cross' | 'circle' | 'ringDot';
 
 /** What is drawn: the shape, its size (% of the view's shorter side), its CSS colour and opacity. */

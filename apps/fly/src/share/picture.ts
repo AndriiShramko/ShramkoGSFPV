@@ -6,7 +6,9 @@ import type { SplatRenderer } from '@gsfpv/render-pc';
 import { grabView } from '../app/diagnostics';
 import { BRAND, SITE_HOST } from '../scene-facts';
 
+/** The share picture's width, px (the Open Graph card size). */
 export const SHARE_W = 1200;
+/** The share picture's height, px. */
 export const SHARE_H = 630;
 /** the API keeps a picture up to 400 KB: the quality steps down until it fits */
 const MAX_BYTES = 380 * 1024;

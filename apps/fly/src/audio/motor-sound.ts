@@ -57,8 +57,9 @@ export interface Mix {
 
 /** The master gain at volume 100: the voices and the wash add up to at most about 1.4, so full throttle stays under clipping. */
 export const MASTER_MAX = 0.7;
-/** The audible band a voice's fundamental is kept in. */
+/** The audible band a voice's fundamental is kept in: its lowest frequency, Hz. */
 export const VOICE_MIN_HZ = 25;
+/** The audible band a voice's fundamental is kept in: its highest frequency, Hz. */
 export const VOICE_MAX_HZ = 3000;
 
 const clamp = (v: number, lo: number, hi: number): number => (v < lo ? lo : v > hi ? hi : v);
@@ -121,10 +122,15 @@ export function voiceHarmonics(blades: number): Float32Array {
 export interface ParamLike { value: number; setTargetAtTime(v: number, startTime: number, timeConstant: number): unknown }
 /** A node as this module wires it. */
 export interface NodeLike { connect(to: NodeLike): unknown; disconnect(): void }
+/** A GainNode as this module uses it (the master, each voice, the wash). */
 export interface GainLike extends NodeLike { gain: ParamLike }
+/** An OscillatorNode as this module uses it: one per motor, its wave the rotor's harmonics. */
 export interface OscLike extends NodeLike { frequency: ParamLike; setPeriodicWave(w: unknown): void; start(): void; stop(): void }
+/** A BiquadFilterNode as this module uses it: the band-pass over the prop-wash noise. */
 export interface FilterLike extends NodeLike { type: string; frequency: ParamLike; Q: ParamLike }
+/** An AudioBuffer as this module fills it: the looped noise. */
 export interface BufferLike { getChannelData(c: number): Float32Array }
+/** An AudioBufferSourceNode as this module uses it: the noise, looped. */
 export interface SourceLike extends NodeLike { buffer: unknown; loop: boolean; start(): void; stop(): void }
 /** The part of an AudioContext this module uses (a real one, or the tests' fake). */
 export interface AudioLike {
@@ -146,6 +152,11 @@ export interface AudioLike {
 /** How fast params glide to a new target (s): smooth, and a stop is heard within a frame or two. */
 const GLIDE_S = 0.03;
 
+/**
+ * The motor sound's Web Audio graph on one AudioContext: four motor voices and the prop wash into a
+ * master gain, built once (started silent). app/builtin/sound.ts owns it and calls apply() with
+ * motorMix() of the flight model every frame; close() ends it for good.
+ */
 export class MotorSound {
     private master: GainLike;
     private oscs: OscLike[] = [];

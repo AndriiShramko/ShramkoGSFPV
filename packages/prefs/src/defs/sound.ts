@@ -8,6 +8,7 @@
 // browser's rule), and the pause menu turns it off in one click (docs/wip/v07-d1.md section 4).
 import type { SettingDef } from '../schema';
 
+/** The Sound group's settings: the motor sound on or off, and its volume. */
 export const SOUND_DEFS: readonly SettingDef[] = [
     { id: 'sound.motors', group: 'sound', scope: 'global', type: 'bool', default: true, apply: 'live', shown: ['settings', 'pause'], status: 'shipped', since: 2 },
     { id: 'sound.volume', group: 'sound', scope: 'global', type: 'number', min: 0, max: 100, step: 5, unit: 'pct', default: 40, apply: 'live', shown: ['settings'], status: 'shipped', since: 2 }
