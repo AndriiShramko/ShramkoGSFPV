@@ -87,7 +87,7 @@ try {
         const other = post?.body?.catalog?.scenes?.find((x: Any) => x.id === OTHER.id);
         out.A1 = {
             flown, offered, items, label, calls: calls.map((c) => ({ method: c.method, path: c.path, csrf: c.csrf })), entry, other, note,
-            pass: offered && items.includes('pause.sceneDefault') && !!label && !!post && post.csrf === CSRF
+            pass: offered && items.includes('pause.sceneDefault') && !!label && !label.startsWith('scenedefault.') && !!post && post.csrf === CSRF
                 && calls[0]?.path === '/api/admin/session' && calls.some((c) => c.method === 'GET' && c.path === '/api/admin/catalog')
                 && entry?.walls === 'off' && entry?.ceilingM === flown.ceilingM && typeof flown.ceilingM === 'number'
                 && JSON.stringify(entry?.wind) === JSON.stringify({ fromDeg: 270, speed: 3, gust: 0, source: 'manual' })
