@@ -13,6 +13,7 @@ import shareTargets from '@gsfpv/i18n/share.json';
 import { h, clear, panel } from '../ui/dom';
 import { t, locale } from '../i18n';
 import { creditText } from '../scene-facts';
+import { q } from '../app/env';
 import type { SceneCredit } from '../scene-facts';
 import { SHARE_W, SHARE_H } from './picture';
 import { dataUrlBytes, inFlight, instagramCaption, kindOf, shareLink, targetHref, wordsKey } from './links';
@@ -184,7 +185,8 @@ export function openSharePanel(host: ShareHost, req: ShareRequest): { close(): v
         (videoRow.querySelector<HTMLElement>('.btn') ?? targets.querySelector<HTMLElement>('.btn'))?.focus({ preventScroll: true });
     };
 
-    const at = { origin: location.origin, locale, search: location.search };
+    // the page's query as it was opened (app/env.ts reads it once): lane R's drawing parameters
+    const at = { origin: location.origin, locale, search: q.toString() };
     void (async () => {
         if (req.video) {
             try { video = await req.video(); } catch { video = null; }
