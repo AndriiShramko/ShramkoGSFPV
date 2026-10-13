@@ -22,7 +22,7 @@ const LAST_LOG = { label: 'crash 12:04', header: { format: 'gsfpv-input-log/1', 
 
 /**
  * Every key written before v0.3 (v0.2, and main after it: gsfpv.voxels, gsfpv.walls.<scene>), with
- * a value in its real shape; plus the machine-local bake speed, which must never move.
+ * a value in its real shape; plus the machine-local keys (the bake speed, the admin hint), which must never move.
  */
 const V02: Record<string, string> = {
     // voxels.ts saves all three fields at every change: 0.55 is main's default, so only style and opacityOnly are choices
@@ -30,6 +30,7 @@ const V02: Record<string, string> = {
     'gsfpv.walls.39e63ce9': 'off',
     'gsfpv.walls.9d09ab82': 'on',
     'gsfpv.bakeSecondsPerMillion': '41.3',
+    'gsfpv.admin': '1',
     'gsfpv.profiles.v1': JSON.stringify({ [POCKET.deviceKey]: POCKET, [PAD.deviceKey]: PAD, [ALIEN.deviceKey]: ALIEN }),
     'gsfpv.stickMode': '1',
     'gsfpv.lastInput': JSON.stringify({ kind: 'hid', key: POCKET.deviceKey }),
@@ -103,12 +104,17 @@ describe('legacy migration v0 -> v1 (A.5)', () => {
         const m = migrateLegacy((k) => { asked.push(k); return V02[k] ?? null; }, {}, V02_KEYS);
         expect(asked).not.toContain('gsfpv.bakeSecondsPerMillion');
         expect(m.found).not.toContain('gsfpv.bakeSecondsPerMillion');
+        expect(asked).not.toContain('gsfpv.admin');
+        expect(m.found).not.toContain('gsfpv.admin');
         expect(canonicalJson(m.doc)).not.toContain('41.3');
     });
 
     it('control: without its exemption the bake speed would be an unclassified key', () => {
         const { 'gsfpv.bakeSecondsPerMillion': _, ...rest } = MACHINE_LOCAL_KEYS;
         expect([...keysInSource()].sort()).not.toEqual(classified(rest));
+        // and so would the admin hint (v0.7 lane E)
+        const { 'gsfpv.admin': __, ...noHint } = MACHINE_LOCAL_KEYS;
+        expect([...keysInSource()].sort()).not.toEqual(classified(noHint));
     });
 
     it('moves every key into the document, in its v0.3 shape', () => {
