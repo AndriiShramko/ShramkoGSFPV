@@ -4,13 +4,14 @@
 import * as lib from './library';
 import { DEFAULT_FILTER } from './library';
 import type { LibraryEntry, SceneFilter, SceneLibraryData } from './library';
+import { SCENE_ID_RE, parseSceneLink } from './link';
 
 export const CDN = 'https://d28zzqy0iyovbz.cloudfront.net';
 /** Posters live in their own bucket, in the same v<N> folder as the scene. */
 const POSTERS = 'https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat';
 
-/** Scene ids seen so far are 8 hex chars; accept 6..32 so a longer id is not rejected blindly. */
-const ID_RE = /^[0-9a-f]{6,32}$/i;
+/** Scene ids: 6..32 hex digits (link.ts). */
+const ID_RE = SCENE_ID_RE;
 
 /** 'unsupported': the scene exists, but in a format the simulator cannot open yet (2025 compressed PLY). */
 export type SceneErrorCode = 'invalid-link' | 'not-found' | 'network' | 'blocked' | 'unsupported';
@@ -26,26 +27,10 @@ export class SceneError extends Error {
 
 /**
  * Accepts: https://superspl.at/scene/<id>, https://superspl.at/s?id=<id>, or a bare id.
- * Returns the lower-case id or null.
+ * Returns the lower-case id or null. The link's drawing parameters (budget, stochastic): parseSceneLink.
  */
 export function parseSceneInput(raw: string): string | null {
-    const s = raw.trim();
-    if (ID_RE.test(s)) return s.toLowerCase();
-    let u: URL;
-    try {
-        u = new URL(s.includes('://') ? s : `https://${s}`);
-    } catch {
-        return null;
-    }
-    const host = u.hostname.toLowerCase();
-    if (host !== 'superspl.at' && host !== 'www.superspl.at') return null;
-    const m = u.pathname.match(/^\/scene\/([0-9a-f]+)\/?$/i);
-    if (m && ID_RE.test(m[1])) return m[1].toLowerCase();
-    if (u.pathname === '/s' || u.pathname === '/s/') {
-        const id = u.searchParams.get('id');
-        if (id && ID_RE.test(id)) return id.toLowerCase();
-    }
-    return null;
+    return parseSceneLink(raw)?.id ?? null;
 }
 
 export interface SceneCamera {
@@ -410,6 +395,7 @@ export function headingFromCamera(c: SceneCamera): number {
 export * from './superspl';
 export * from './rotation';
 export * from './catalog';
+export * from './link';
 export * as library from './library';
 export { DEFAULT_FILTER, HISTORY_CAP, emptyLibrary, mergeLibraries, lastScene, failedRecently, pickerRows, favouriteEntries } from './library';
 export type { SceneFilter, LibraryEntry, SceneLibraryData, FavouriteMeta, PickerRow, CuratedCard } from './library';
