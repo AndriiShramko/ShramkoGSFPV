@@ -1,0 +1,62 @@
+{
+  "name": "v07-d1-S1",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-13T14:48:32.370Z",
+    "gitHead": "2e9b754",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": false,
+  "parts": [
+    "S1"
+  ],
+  "site": "http://127.0.0.1:5341",
+  "render": "off",
+  "S1": {
+    "pass": false,
+    "top": {
+      "shown": true,
+      "label": true,
+      "aria": "Share this scene (L)"
+    },
+    "topPhone": {
+      "shown": true,
+      "label": false
+    },
+    "panel": {
+      "entry": "key",
+      "kind": "flight",
+      "url": "http://127.0.0.1:5341/en/scenes/39e63ce9/",
+      "text": "I just flew an FPV drone through Modlinek Villa \u2014 red room and bathroom \u2014 a real 3D scan, right in the browser. Free, and your own radio works. Can you fly this line?",
+      "picture": true,
+      "video": "none",
+      "canShareFiles": false,
+      "paused": true,
+      "status": "The picture link could not be made right now: the buttons share this scene's page, and you can still save the picture.",
+      "targets": 6,
+      "instagram": true
+    },
+    "instagramFallback": {
+      "field": "I just flew an FPV drone through Modlinek Villa \u2014 red room and bathroom \u2014 a real 3D scan, right in the browser. Free, and your own radio works. Can you fly this line?http://127.0.0.1:5341/en/scenes/39e63ce9/Scan: Modlinek Villa \u2014 red room and bathroom \u2014 Andrii Shramko, CC BY 4.0#fpv #fpvdrone #fpvfreestyle #cinewhoop #gaussiansplatting #ShramkoGSFPV",
+      "url": "http://127.0.0.1:5341/en/scenes/39e63ce9/",
+      "status": "Saved, and the caption is copied: open Instagram, post the file and paste the caption."
+    },
+    "after": {
+      "panel": false,
+      "paused": false
+    },
+    "control": {
+      "what": "before L: no share panel on the page",
+      "fired": true
+    },
+    "consoleErrors": []
+  }
+}

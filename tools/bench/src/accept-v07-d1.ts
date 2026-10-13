@@ -13,9 +13,11 @@
 //   S6  an auto-recorded flight (Auto on, ARM, DISARM, saved 3 s later), split into parts, after a
 //       manual recording: the bar offers "Share your flight" with the new note, and the share panel
 //       has every part of the new recording. Control: the review's run against e344977 (the auto stop
-//       dropped its result: no button), evidence/<date>/v07-d1-S1-S6-control-e344977.json.
+//       dropped its result: the manual note came back, its button shared the last part only),
+//       evidence/2026-10-13/v07-d1-S6-control-e344977.json.
 //   S1 also: Instagram with the clipboard API refused and the old execCommand copy working leaves the
-//       link in the link field (e344977 left the caption there: the same control run).
+//       link in the link field. Control: e344977 left the caption there, its line breaks stripped by
+//       the input, evidence/2026-10-13/v07-d1-S1-control-e344977.json.
 // Run (one port per agent; GPU lock as tools/bench/README.md, even though nothing is drawn):
 //   cd apps/fly && npx vite --port 5341 --strictPort --host 127.0.0.1
 //   cd tools/bench && LOCAL_FLY=1 SITE=http://127.0.0.1:5341 npx tsx src/accept-v07-d1.ts [S1 S6 ...]
@@ -204,12 +206,11 @@ if (want('S6')) {
     await waitReady(p, 240000);
     await p.waitForTimeout(1000);
     const idle = `(() => { const st = window.__gsfpv.rec.state(); return !st.recording && !st.busy && !!st.last; })()`;
-    // a manual recording first: its note is on the bar when the auto run starts
-    await p.keyboard.press('F9');
-    await p.waitForTimeout(1200);
-    await p.keyboard.press('F9');
+    // a manual recording first (the bar's REC path, through the hook: this page flies by touch): its
+    // note is on the bar when the auto run starts
+    await hook(p, 'await h.rec.start(); await new Promise((r) => setTimeout(r, 1200)); await h.rec.stop(); return 0;');
     await until(p, idle, 10000);
-    const manual = await hook(p, 'const st = h.rec.state(); return { note: st.note, files: st.last.files.map((f) => f.name), share: !!document.querySelector("[data-action=rec-share]") };');
+    const manual = await hook(p, 'const st = h.rec.state(); return { note: st.note, files: st.last ? st.last.files.map((f) => f.name) : [], share: !!document.querySelector("[data-action=rec-share]") };');
     // Auto on (set through the hook: the bar's button would open the OS folder picker), parts of 1.2 s
     await hook(p, 'h.rec.setAuto(true); h.rec.setSplitMin(0.02); return 0;');
     await p.click('.touch-arm');

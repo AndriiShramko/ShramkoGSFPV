@@ -1,0 +1,66 @@
+{
+  "name": "v07-d1-S6",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-13T14:47:35.307Z",
+    "gitHead": "2e9b754",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": false,
+  "parts": [
+    "S6"
+  ],
+  "site": "http://127.0.0.1:5341",
+  "render": "off",
+  "S6": {
+    "pass": false,
+    "manual": {
+      "note": "Saved 1.2 s in the browser (0.0 MB) \u00b7 60 fps \u00b7 repeated frames: 36 \u00b7 dropped: 0 Save file Share your flight",
+      "files": [
+        "gsfpv-723068d7-20261013-164726.mp4"
+      ],
+      "share": true
+    },
+    "armed": {
+      "armed": true,
+      "recording": true,
+      "autoRun": true,
+      "note": "Recording 0:00",
+      "share": false
+    },
+    "saved": true,
+    "after": {
+      "note": "Saved 1.2 s in the browser (0.0 MB) \u00b7 60 fps \u00b7 repeated frames: 36 \u00b7 dropped: 0 Save file Share your flight",
+      "files": [
+        "gsfpv-723068d7-20261013-164727.mp4",
+        "gsfpv-723068d7-20261013-164728.mp4",
+        "gsfpv-723068d7-20261013-164730.mp4",
+        "gsfpv-723068d7-20261013-164731.mp4",
+        "gsfpv-723068d7-20261013-164732.mp4",
+        "gsfpv-723068d7-20261013-164733.mp4"
+      ],
+      "share": true
+    },
+    "panel": {
+      "entry": "video",
+      "kind": "video",
+      "url": "http://127.0.0.1:5341/en/fly/?scene=723068d7",
+      "text": "My FPV line through a real 3D scan, flown in the browser over a real 3D scan. Free sim, your own radio works. Your turn:",
+      "picture": true,
+      "video": "ready",
+      "canShareFiles": true,
+      "saves": [
+        "gsfpv-723068d7-20261013-164733.mp4"
+      ]
+    },
+    "consoleErrors": []
+  }
+}
