@@ -1,7 +1,7 @@
 // Scene picker: paste a link, the catalogue the owner curates at /admin/ (Featured row, collections,
 // the rest in his order), recent, favourites, filters, the SuperSplat tab. History, favourites and the
 // filter live in the browser only and survive a reload.
-import { parseSceneInput, toggleFavourite, getFilter, setFilter, posterUrl, knownVersion, getLibrary, lastScene, pickerRows, readCatalog, storefront, localText, tabObeys } from '@gsfpv/scenes';
+import { parseSceneInput, toggleFavourite, getFilter, setFilter, posterUrl, knownVersion, getLibrary, lastScene, pickerList, pickerEmpty, readCatalog, storefront, localText, tabObeys } from '@gsfpv/scenes';
 import type { CatalogCollection, CatalogScene, FilterKey, PickerRow, PickerTabId, SceneCatalog, SceneFilter } from '@gsfpv/scenes';
 import { h, clear } from './dom';
 import { t, locale } from '../i18n';
@@ -116,11 +116,15 @@ export class ScenePicker {
         this.err.textContent = code === 'unsupported' ? t('scenes.unsupported') : t(`error.${code}`, { msg: msg ?? '' });
     }
 
-    /** The built-in tab's cards (@gsfpv/scenes pickerRows): favourites keep the title and walls they were starred with. */
-    private items(): (PickerRow & { meta?: ShowcaseScene })[] {
+    /**
+     * The built-in tab's cards (@gsfpv/scenes pickerList; favourites keep the title and walls they were
+     * starred with) and the text for an empty tab: the filter's when it hid every card, else the tab's own.
+     */
+    private items(): { rows: (PickerRow & { meta?: ShowcaseScene })[]; empty: string } {
         const tab = this.builtinTab();
         const byId = new Map(this.showcase.map((s) => [s.id, s]));
-        return pickerRows(tab, this.showcase, getLibrary(), this.filter).map((r) => ({ ...r, meta: byId.get(r.id) }));
+        const list = pickerList(tab, this.showcase, getLibrary(), this.filter);
+        return { rows: list.rows.map((r) => ({ ...r, meta: byId.get(r.id) })), empty: t(`scenes.empty.${pickerEmpty(tab, list)}`) };
     }
 
     private render(tabs: HTMLElement): void {
@@ -142,9 +146,9 @@ export class ScenePicker {
             this.unmountExtra = x.mount(this.list, { pick, showError: (c, m) => this.showError(c, m), filter: this.filter }) || null;
             return;
         }
-        const items = this.items();
+        const { rows: items, empty } = this.items();
         if (items.length === 0) {
-            this.list.append(h('p', { class: 'empty' }, this.tab === 'showcase' ? t('scenes.empty.filter') : t(`scenes.empty.${this.tab}`)));
+            this.list.append(h('p', { class: 'empty' }, empty));
             return;
         }
         if (this.tab !== 'showcase') {

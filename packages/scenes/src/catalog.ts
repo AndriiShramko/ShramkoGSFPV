@@ -242,7 +242,7 @@ export function localText(t: LocalText | undefined, locale: string): string {
 }
 
 /**
- * The picker's catalogue tab, from rows already filtered (pickerRows keeps the admin's order): the
+ * The picker's catalogue tab, from rows already filtered (pickerList keeps the admin's order): the
  * Featured row (pinned scenes), the collections that have a scene among the rows, and the rest
  * (not pinned; only the chosen collection's when one is chosen).
  */

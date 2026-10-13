@@ -72,6 +72,7 @@
   "scenes.empty.recent": "Tu pojawią się skany, które otworzysz.",
   "scenes.empty.favourites": "Kliknij gwiazdkę przy skanie, żeby go tu zachować.",
   "scenes.empty.filter": "Żaden skan nie pasuje do filtra.",
+  "scenes.empty.showcase": "Nie ma jeszcze opublikowanych skanów. Wklej powyżej link do SuperSplat, żeby polecieć w dowolnym skanie.",
   "scenes.noCollisionBadge": "Skan bez ścian: możesz latać, ale się nie rozbijesz",
   "scenes.noCollisionLine": "Ściany mają tylko skany z danymi kolizji. Ten jeszcze ich nie ma.",
   "scenes.byAuthor": "Scena należy do jej autora — oryginał zobaczysz na SuperSplat",

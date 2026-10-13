@@ -1,8 +1,11 @@
 // The scene library (docs/architecture-v03.md E.1, E.10): the history cap of 100, the favourites'
 // order and the merge. Each block ends with a negative control that must fire.
 import { describe, expect, it } from 'vitest';
-import { library as L, emptyLibrary, mergeLibraries, lastScene, HISTORY_CAP, failedRecently, pickerRows, favouriteEntries, DEFAULT_FILTER, TAB_FILTERS, tabObeys } from '../src/index';
-import type { SceneLibraryData } from '../src/index';
+import { library as L, emptyLibrary, mergeLibraries, lastScene, HISTORY_CAP, failedRecently, pickerList, pickerEmpty, tabCandidates, filterCandidates, favouriteEntries, DEFAULT_FILTER, TAB_FILTERS, tabObeys } from '../src/index';
+import type { CuratedCard, PickerTabId, SceneFilter, SceneLibraryData } from '../src/index';
+
+/** The cards a tab shows (pickerList without the hidden count). */
+const pickerRows = (tab: PickerTabId, curated: readonly CuratedCard[], d: SceneLibraryData, f: SceneFilter) => pickerList(tab, curated, d, f).rows;
 
 const open = (d: SceneLibraryData, id: string, now: number, extra: { title?: string; hasCollision?: boolean | null } = {}): SceneLibraryData =>
     L.recordOpen(d, { id, version: 1, title: extra.title, hasCollision: extra.hasCollision ?? true }, now);
@@ -116,10 +119,11 @@ describe('scene library: a favourite keeps what it was starred with (title, wall
         expect(L.toggleFavourite(d, 'ab12cd34').data.history).toEqual([]);
     });
 
-    it('starred without walls: hidden under the walls filter, shown (with its title) without it', () => {
+    it('starred without walls: stays in Favourites under the walls filter, with its title and collision false (the no-walls badge)', () => {
         const d = L.toggleFavourite(emptyLibrary(), 'ee00ee00', { title: 'Field', hasCollision: false }).data;
-        expect(pickerRows('favourites', CURATED, d, DEFAULT_FILTER)).toEqual([]);
-        expect(pickerRows('favourites', CURATED, d, { ...DEFAULT_FILTER, collisionOnly: false })).toEqual([{ id: 'ee00ee00', title: 'Field', collision: false, flights: 0, fav: true }]);
+        const card = { id: 'ee00ee00', title: 'Field', collision: false, flights: 0, fav: true };
+        expect(pickerRows('favourites', CURATED, d, DEFAULT_FILTER)).toEqual([card]);
+        expect(pickerRows('favourites', CURATED, d, { ...DEFAULT_FILTER, collisionOnly: false })).toEqual([card]);
     });
 
     it('an id-only list (stored by an older release) still reads: walls unknown, shown under the filter', () => {
@@ -153,25 +157,56 @@ describe('the owner\'s catalogue shows every published scene (item 4, v0.7)', ()
         expect(rows.find((r) => r.id === '70b50d42')?.collision).toBe(false);
     });
 
-    it('the walls filter still applies to Recent and Favourites; kind applies to the catalogue only', () => {
+    it('the walls filter applies to Recent only; a starred scene stays in Favourites; kind applies to the catalogue only', () => {
         let d = emptyLibrary();
         d = L.recordOpen(d, { id: '0230d903', version: 1, hasCollision: false }, 10);
         d = L.toggleFavourite(d, '0230d903').data;
         expect(pickerRows('recent', CATALOGUE, d, DEFAULT_FILTER)).toEqual([]);
-        expect(pickerRows('favourites', CATALOGUE, d, DEFAULT_FILTER)).toEqual([]);
+        expect(pickerRows('favourites', CATALOGUE, d, DEFAULT_FILTER)).toEqual([{ id: '0230d903', title: 'Muster Truck Show', collision: false, flights: 0, fav: true }]);
         expect(pickerRows('recent', CATALOGUE, d, { ...DEFAULT_FILTER, collisionOnly: false }).map((r) => r.id)).toEqual(['0230d903']);
         expect(pickerRows('showcase', CATALOGUE, d, { ...DEFAULT_FILTER, kind: 'interior' }).map((r) => r.id)).toEqual(['39e63ce9']);
         expect(pickerRows('recent', CATALOGUE, d, { ...DEFAULT_FILTER, collisionOnly: false, kind: 'interior' }).map((r) => r.id)).toEqual(['0230d903']);
     });
 
-    it('every tab says which controls it obeys; the catalogue never obeys the walls filter', () => {
+    it('every tab says which controls it obeys; only Recent obeys the walls filter', () => {
         expect(tabObeys('showcase', 'collisionOnly')).toBe(false);
+        expect(tabObeys('favourites', 'collisionOnly')).toBe(false);
         expect(TAB_FILTERS.recent).toContain('collisionOnly');
-        expect(TAB_FILTERS.favourites).toContain('collisionOnly');
     });
 
-    it('control: the v0.6 rule (every filter on every tab) hides the owner\'s two scenes under the default filter', () => {
-        const old = pickerRows('showcase', CATALOGUE, emptyLibrary(), DEFAULT_FILTER, () => true);
-        expect(old.map((r) => r.id)).toEqual(['39e63ce9']);
+    it('control: the v0.6 rule (every filter control on every tab) hides the owner\'s two scenes, and a starred one, under the default filter', () => {
+        const every = ['collisionOnly', 'kind', 'flown'] as const;
+        expect(filterCandidates(tabCandidates('showcase', CATALOGUE, emptyLibrary()), every, DEFAULT_FILTER).map((r) => r.id)).toEqual(['39e63ce9']);
+        const d = L.toggleFavourite(emptyLibrary(), '0230d903').data;
+        expect(filterCandidates(tabCandidates('favourites', CATALOGUE, d), every, DEFAULT_FILTER)).toEqual([]);
+    });
+});
+
+describe('an empty tab says why (item 4, v0.7)', () => {
+    const CATALOGUE = [
+        { id: '39e63ce9', title: 'Modlinek Villa', collision: true, kind: 'interior' },
+        { id: '0230d903', title: 'Muster Truck Show', collision: false, kind: 'exterior' }
+    ];
+
+    it('Recent with only a no-walls scene under the walls filter: "no scans match the filter", not "scans you open appear here"', () => {
+        const d = L.recordOpen(emptyLibrary(), { id: '0230d903', version: 1, hasCollision: false }, 10);
+        const list = pickerList('recent', CATALOGUE, d, DEFAULT_FILTER);
+        expect(list).toEqual({ rows: [], hidden: 1 });
+        expect(pickerEmpty('recent', list)).toBe('filter');
+    });
+
+    it('a tab with nothing in it says so in its own words; the catalogue too', () => {
+        expect(pickerEmpty('recent', pickerList('recent', CATALOGUE, emptyLibrary(), DEFAULT_FILTER))).toBe('recent');
+        expect(pickerEmpty('favourites', pickerList('favourites', CATALOGUE, emptyLibrary(), DEFAULT_FILTER))).toBe('favourites');
+        expect(pickerEmpty('showcase', pickerList('showcase', [], emptyLibrary(), DEFAULT_FILTER))).toBe('showcase');
+    });
+
+    it('the catalogue under a kind and flown filter that hides every scene: the filter\'s words', () => {
+        const list = pickerList('showcase', CATALOGUE, emptyLibrary(), { ...DEFAULT_FILTER, kind: 'interior', flown: 'flown' });
+        expect(list).toEqual({ rows: [], hidden: 2 });
+        expect(pickerEmpty('showcase', list)).toBe('filter');
+        // control: once the interior scene was flown, it is a card again
+        const d = L.recordFlight(L.recordOpen(emptyLibrary(), { id: '39e63ce9', version: 1, hasCollision: true }, 10), '39e63ce9', 30);
+        expect(pickerList('showcase', CATALOGUE, d, { ...DEFAULT_FILTER, kind: 'interior', flown: 'flown' }).rows.map((r) => r.id)).toEqual(['39e63ce9']);
     });
 });

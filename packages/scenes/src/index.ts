@@ -412,5 +412,5 @@ export * from './rotation';
 export * from './catalog';
 export * from './facts';
 export * as library from './library';
-export { DEFAULT_FILTER, HISTORY_CAP, TAB_FILTERS, emptyLibrary, mergeLibraries, lastScene, failedRecently, pickerRows, favouriteEntries, tabObeys } from './library';
-export type { SceneFilter, LibraryEntry, SceneLibraryData, FavouriteMeta, PickerRow, CuratedCard, PickerTabId, FilterKey } from './library';
+export { DEFAULT_FILTER, HISTORY_CAP, TAB_FILTERS, emptyLibrary, mergeLibraries, lastScene, failedRecently, pickerList, pickerEmpty, tabCandidates, filterCandidates, favouriteEntries, tabObeys } from './library';
+export type { SceneFilter, LibraryEntry, SceneLibraryData, FavouriteMeta, PickerRow, PickerCandidate, PickerList, CuratedCard, PickerTabId, FilterKey } from './library';

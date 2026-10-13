@@ -72,6 +72,7 @@
   "scenes.empty.recent": "Aquí aparecerán los escaneos que abras.",
   "scenes.empty.favourites": "Toca la estrella de un escaneo para tenerlo aquí.",
   "scenes.empty.filter": "Ningún escaneo coincide con el filtro.",
+  "scenes.empty.showcase": "Todavía no hay escaneos publicados. Pega arriba un enlace de SuperSplat para volar cualquier escaneo.",
   "scenes.noCollisionBadge": "Escaneo sin paredes: puedes volar por todas partes, pero no te puedes estrellar",
   "scenes.noCollisionLine": "Solo hay paredes en los escaneos con datos de colisión. Este aún no los tiene.",
   "scenes.byAuthor": "Escena de su autor — mira el original en SuperSplat",
