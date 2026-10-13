@@ -123,8 +123,36 @@ export interface CuratedCard { id: string; title: string; collision: boolean; ki
 /** One card of the picker's built-in tabs; collision null: not known (shown under the walls filter, never hidden on a guess). */
 export interface PickerRow { id: string; title: string; collision: boolean | null; flights: number; fav: boolean }
 
-/** The cards of the picker's Showcase, Recent and Favourites tabs after the filter (ui/scenes.ts draws them). */
-export function pickerRows(tab: 'showcase' | 'recent' | 'favourites', curated: readonly CuratedCard[], d: SceneLibraryData, f: SceneFilter): PickerRow[] {
+/** The picker's built-in tabs: the owner's catalogue (`showcase`), the pilot's own Recent and Favourites. */
+export type PickerTabId = 'showcase' | 'recent' | 'favourites';
+
+/** The parts of SceneFilter a tab can obey (maxMb is kept in the stored filter but no tab reads it yet). */
+export type FilterKey = 'collisionOnly' | 'kind' | 'flown';
+
+/**
+ * Which filter controls each built-in tab obeys (the owner's item 4, v0.7). The catalogue is the owner's
+ * shop window: every scene he published is on it, a scene without walls with a "no walls" badge, so the
+ * walls filter (a discovery tool, default on) never applies there. Kind only means something for the
+ * catalogue (Recent and Favourites have no kind for scenes outside it). The picker hides a control the
+ * open tab does not obey, so a filter never looks active while doing nothing.
+ */
+export const TAB_FILTERS: Readonly<Record<PickerTabId, readonly FilterKey[]>> = {
+    showcase: ['kind', 'flown'],
+    recent: ['collisionOnly', 'flown'],
+    favourites: ['collisionOnly', 'flown']
+};
+
+/** Does this tab obey this filter control (TAB_FILTERS)? */
+export function tabObeys(tab: PickerTabId, key: FilterKey): boolean {
+    return TAB_FILTERS[tab].includes(key);
+}
+
+/**
+ * The cards of the picker's Showcase, Recent and Favourites tabs after the filter (ui/scenes.ts draws
+ * them); only the filter keys the tab obeys (TAB_FILTERS, or `obeys` for a test's control) apply.
+ */
+export function pickerRows(tab: PickerTabId, curated: readonly CuratedCard[], d: SceneLibraryData, f: SceneFilter,
+    obeys: (tab: PickerTabId, key: FilterKey) => boolean = tabObeys): PickerRow[] {
     const byId = new Map(curated.map((s) => [s.id, s]));
     const flights = (id: string): number => d.history.find((e) => e.id === id)?.flights ?? 0;
     const base: { id: string; title: string; collision: boolean | null; kind: string | null }[] =
@@ -133,11 +161,14 @@ export function pickerRows(tab: 'showcase' | 'recent' | 'favourites', curated: r
             const c = byId.get(e.id);
             return { id: e.id, title: c?.title ?? e.title ?? e.id, collision: c ? c.collision : e.hasCollision, kind: c?.kind ?? null };
         });
+    const walls = obeys(tab, 'collisionOnly') && f.collisionOnly;
+    const kind = obeys(tab, 'kind') && f.kind !== 'all' ? f.kind : null;
+    const flown = obeys(tab, 'flown') ? f.flown : 'all';
     return base
         .map((s) => ({ ...s, flights: flights(s.id), fav: d.favourites.includes(s.id) }))
-        .filter((s) => !f.collisionOnly || s.collision !== false)
-        .filter((s) => f.kind === 'all' || tab !== 'showcase' || s.kind === f.kind)
-        .filter((s) => f.flown === 'all' || (f.flown === 'flown' ? s.flights > 0 : s.flights === 0))
+        .filter((s) => !walls || s.collision !== false)
+        .filter((s) => kind === null || s.kind === kind)
+        .filter((s) => flown === 'all' || (flown === 'flown' ? s.flights > 0 : s.flights === 0))
         .map(({ id, title, collision, flights: n, fav }) => ({ id, title, collision, flights: n, fav }));
 }
 

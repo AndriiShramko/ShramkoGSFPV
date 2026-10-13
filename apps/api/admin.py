@@ -73,6 +73,7 @@ _HISTORY_RE = re.compile(r"[0-9]{8}T[0-9]{6}Z(-[0-9]{1,3})?")
 _REPORT_ID_RE = re.compile(r"R-[0-9]{8}-[0-9]{4,}")
 _ORIGIN_RE = re.compile(r"https://superspl\.at/[A-Za-z0-9/_?=&.-]{1,200}")
 _DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?")
+_USER_RE = re.compile(r"[A-Za-z0-9_.-]{1,40}")  # a SuperSplat user name (origin.user)
 
 
 def _b64(b: bytes) -> str:
@@ -340,6 +341,8 @@ def _place_fields(e: dict) -> dict:
                 origin["tags"] = tags
         if isinstance(o.get("created"), str) and _DATE_RE.fullmatch(o["created"]):
             origin["created"] = o["created"]
+        if isinstance(o.get("user"), str) and _USER_RE.fullmatch(o["user"]):
+            origin["user"] = o["user"]
         out["origin"] = origin
     return out
 

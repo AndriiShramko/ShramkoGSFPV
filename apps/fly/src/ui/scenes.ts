@@ -1,8 +1,8 @@
 // Scene picker: paste a link, the catalogue the owner curates at /admin/ (Featured row, collections,
 // the rest in his order), recent, favourites, filters, the SuperSplat tab. History, favourites and the
 // filter live in the browser only and survive a reload.
-import { parseSceneInput, toggleFavourite, getFilter, setFilter, posterUrl, knownVersion, getLibrary, lastScene, pickerRows, readCatalog, storefront, localText } from '@gsfpv/scenes';
-import type { CatalogCollection, CatalogScene, PickerRow, SceneCatalog, SceneFilter } from '@gsfpv/scenes';
+import { parseSceneInput, toggleFavourite, getFilter, setFilter, posterUrl, knownVersion, getLibrary, lastScene, pickerRows, readCatalog, storefront, localText, tabObeys } from '@gsfpv/scenes';
+import type { CatalogCollection, CatalogScene, FilterKey, PickerRow, PickerTabId, SceneCatalog, SceneFilter } from '@gsfpv/scenes';
 import { h, clear } from './dom';
 import { t, locale } from '../i18n';
 import { pickerTabs } from './picker-tabs';
@@ -41,6 +41,8 @@ export class ScenePicker {
     private collection: string | null = null;
     private err: HTMLDivElement;
     private filters: HTMLDivElement;
+    /** each filter control and the key it sets: hidden on a tab that does not obey it (TAB_FILTERS) */
+    private controls: [FilterKey, HTMLElement][] = [];
     /** the registered tabs as the picker opened (a later registration shows in the next picker) */
     private extra: readonly PickerTab[] = pickerTabs().slice();
     private unmountExtra: (() => void) | null = null;
@@ -88,7 +90,9 @@ export class ScenePicker {
                 h('img', { src: posterUrl(last.id), alt: '', loading: 'lazy', width: 160, height: 90 }),
                 h('span', { class: 'scene-title' }, t('scenes.continue', { title: lastTitle })))
             : null;
-        this.filters = h('div', { class: 'filters' }, h('label', { for: 'f-col' }, fCol, ' ', t('scenes.filter.collision')), fKind, fFlown);
+        const fColLabel = h('label', { for: 'f-col' }, fCol, ' ', t('scenes.filter.collision'));
+        this.controls = [['collisionOnly', fColLabel], ['kind', fKind], ['flown', fFlown]];
+        this.filters = h('div', { class: 'filters' }, fColLabel, fKind, fFlown);
         this.root = h('div', { class: 'screen scenes interactive' },
             h('h1', {}, t('scenes.title')),
             h('div', { class: 'scene-paste' }, input, h('button', { type: 'button', class: 'btn primary', onclick: go }, t('scenes.go'))),
@@ -102,6 +106,11 @@ export class ScenePicker {
         this.render(tabs);
     }
 
+    /** The open tab as a built-in tab id (a registered tab counts as the catalogue; its own filters are its business). */
+    private builtinTab(): PickerTabId {
+        return this.tab === 'recent' || this.tab === 'favourites' ? this.tab : 'showcase';
+    }
+
     showError(code: string, msg?: string): void {
         // a scene in a format we cannot open yet is not "missing": its text lives with the picker
         this.err.textContent = code === 'unsupported' ? t('scenes.unsupported') : t(`error.${code}`, { msg: msg ?? '' });
@@ -109,7 +118,7 @@ export class ScenePicker {
 
     /** The built-in tab's cards (@gsfpv/scenes pickerRows): favourites keep the title and walls they were starred with. */
     private items(): (PickerRow & { meta?: ShowcaseScene })[] {
-        const tab = this.tab === 'recent' || this.tab === 'favourites' ? this.tab : 'showcase';
+        const tab = this.builtinTab();
         const byId = new Map(this.showcase.map((s) => [s.id, s]));
         return pickerRows(tab, this.showcase, getLibrary(), this.filter).map((r) => ({ ...r, meta: byId.get(r.id) }));
     }
@@ -121,6 +130,8 @@ export class ScenePicker {
         clear(this.list);
         const x = this.extra.find((e) => e.id === this.tab);
         this.filters.hidden = !!x?.ownFilters;
+        // a built-in tab shows only the controls it obeys (the catalogue has no walls filter: item 4)
+        for (const [key, el] of this.controls) el.hidden = !x && !tabObeys(this.builtinTab(), key);
         if (x) {
             const pick = (raw: string, source: PickSource): void => {
                 const id = parseSceneInput(raw);

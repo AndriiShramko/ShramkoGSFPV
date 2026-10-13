@@ -18,14 +18,18 @@ class PlaceFields(unittest.TestCase):
                                "wind": {"fromDeg": 270, "speed": 4.5, "gust": 2, "source": "climate"}, "ceilingM": 35,
                                "render": {"budgetM": 8, "stochastic": True}, "about": {"en": "Fly between the towers", "xx": "no"},
                                "origin": {"url": "https://superspl.at/scene/70b50d42", "description": "A scan", "tags": ["church", 5, ""],
-                                          "created": "2026-09-30"}})
+                                          "created": "2026-09-30", "user": "andriishramko"}})
         self.assertEqual(s["geo"], {"lat": 51.114, "lon": 17.046, "place": "Wroclaw, Poland"})
         self.assertEqual(s["compassDeg"], 90)
         self.assertEqual(s["wind"], {"fromDeg": 270, "speed": 4.5, "gust": 2, "source": "climate"})
         self.assertEqual(s["ceilingM"], 35)
         self.assertEqual(s["render"], {"budgetM": 8, "stochastic": True})
         self.assertEqual(s["about"], {"en": "Fly between the towers"})
-        self.assertEqual(s["origin"], {"url": "https://superspl.at/scene/70b50d42", "description": "A scan", "tags": ["church"], "created": "2026-09-30"})
+        self.assertEqual(s["origin"], {"url": "https://superspl.at/scene/70b50d42", "description": "A scan", "tags": ["church"], "created": "2026-09-30",
+                                           "user": "andriishramko"})
+        # control: a user name with markup is dropped, the rest of the origin stays
+        bad = admin.clean_scene({**BASE, "origin": {"url": "https://superspl.at/scene/70b50d42", "user": "<b>x</b>"}})
+        self.assertEqual(bad["origin"], {"url": "https://superspl.at/scene/70b50d42"})
 
     def test_dropped_out_of_range(self):
         s = admin.clean_scene({**BASE, "geo": {"lat": 91, "lon": 17}, "compassDeg": 400, "wind": {"fromDeg": 10, "speed": 50, "gust": 1},

@@ -1,7 +1,7 @@
 // The scene library (docs/architecture-v03.md E.1, E.10): the history cap of 100, the favourites'
 // order and the merge. Each block ends with a negative control that must fire.
 import { describe, expect, it } from 'vitest';
-import { library as L, emptyLibrary, mergeLibraries, lastScene, HISTORY_CAP, failedRecently, pickerRows, favouriteEntries, DEFAULT_FILTER } from '../src/index';
+import { library as L, emptyLibrary, mergeLibraries, lastScene, HISTORY_CAP, failedRecently, pickerRows, favouriteEntries, DEFAULT_FILTER, TAB_FILTERS, tabObeys } from '../src/index';
 import type { SceneLibraryData } from '../src/index';
 
 const open = (d: SceneLibraryData, id: string, now: number, extra: { title?: string; hasCollision?: boolean | null } = {}): SceneLibraryData =>
@@ -135,5 +135,43 @@ describe('scene library: a favourite keeps what it was starred with (title, wall
         expect(pickerRows('favourites', CURATED, d, DEFAULT_FILTER)[0]).toEqual(expect.objectContaining({ title: 'ab12cd34', collision: null }));
         const oldRule = favouriteEntries(d).map((e) => ({ id: e.id, collision: e.hasCollision ?? false })).filter((s) => s.collision);
         expect(oldRule).toEqual([]);
+    });
+});
+
+describe('the owner\'s catalogue shows every published scene (item 4, v0.7)', () => {
+    // the two scenes the owner added in /admin/ without a SuperSplat collision file
+    const CATALOGUE = [
+        { id: '39e63ce9', title: 'Modlinek Villa', collision: true, kind: 'interior' },
+        { id: '70b50d42', title: 'Wroclaw Cathedral', collision: false, kind: 'exterior' },
+        { id: '0230d903', title: 'Muster Truck Show', collision: false, kind: 'exterior' }
+    ];
+
+    it('the default filter (walls only) keeps the catalogue whole; scenes without walls stay, marked by collision: false', () => {
+        const rows = pickerRows('showcase', CATALOGUE, emptyLibrary(), DEFAULT_FILTER);
+        expect(DEFAULT_FILTER.collisionOnly).toBe(true);
+        expect(rows.map((r) => r.id)).toEqual(['39e63ce9', '70b50d42', '0230d903']);
+        expect(rows.find((r) => r.id === '70b50d42')?.collision).toBe(false);
+    });
+
+    it('the walls filter still applies to Recent and Favourites; kind applies to the catalogue only', () => {
+        let d = emptyLibrary();
+        d = L.recordOpen(d, { id: '0230d903', version: 1, hasCollision: false }, 10);
+        d = L.toggleFavourite(d, '0230d903').data;
+        expect(pickerRows('recent', CATALOGUE, d, DEFAULT_FILTER)).toEqual([]);
+        expect(pickerRows('favourites', CATALOGUE, d, DEFAULT_FILTER)).toEqual([]);
+        expect(pickerRows('recent', CATALOGUE, d, { ...DEFAULT_FILTER, collisionOnly: false }).map((r) => r.id)).toEqual(['0230d903']);
+        expect(pickerRows('showcase', CATALOGUE, d, { ...DEFAULT_FILTER, kind: 'interior' }).map((r) => r.id)).toEqual(['39e63ce9']);
+        expect(pickerRows('recent', CATALOGUE, d, { ...DEFAULT_FILTER, collisionOnly: false, kind: 'interior' }).map((r) => r.id)).toEqual(['0230d903']);
+    });
+
+    it('every tab says which controls it obeys; the catalogue never obeys the walls filter', () => {
+        expect(tabObeys('showcase', 'collisionOnly')).toBe(false);
+        expect(TAB_FILTERS.recent).toContain('collisionOnly');
+        expect(TAB_FILTERS.favourites).toContain('collisionOnly');
+    });
+
+    it('control: the v0.6 rule (every filter on every tab) hides the owner\'s two scenes under the default filter', () => {
+        const old = pickerRows('showcase', CATALOGUE, emptyLibrary(), DEFAULT_FILTER, () => true);
+        expect(old.map((r) => r.id)).toEqual(['39e63ce9']);
     });
 });

@@ -45,6 +45,8 @@ export interface SceneOrigin {
     tags?: string[];
     /** when it was published on SuperSplat, ISO date */
     created?: string;
+    /** the author's SuperSplat user name (the credit links to their page there); `author` is the name shown */
+    user?: string;
 }
 
 export interface CatalogScene {
@@ -148,6 +150,8 @@ function readRender(v: unknown): SceneRender | undefined {
 
 const ORIGIN_URL = /^https:\/\/superspl\.at\/[A-Za-z0-9/_?=&.-]{1,200}$/;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?$/;
+/** a SuperSplat user name (origin.user) */
+const USER = /^[A-Za-z0-9_.-]{1,40}$/;
 
 function readOrigin(v: unknown): SceneOrigin | undefined {
     if (!v || typeof v !== 'object') return undefined;
@@ -160,6 +164,7 @@ function readOrigin(v: unknown): SceneOrigin | undefined {
         if (tags.length) out.tags = tags;
     }
     if (typeof o.created === 'string' && ISO_DATE.test(o.created)) out.created = o.created;
+    if (typeof o.user === 'string' && USER.test(o.user)) out.user = o.user;
     return out;
 }
 
@@ -258,6 +263,112 @@ export function moveItem<T>(list: readonly T[], from: number, to: number): T[] {
     const [x] = out.splice(from, 1);
     out.splice(Math.max(0, Math.min(out.length, to)), 0, x);
     return out;
+}
+
+/** How one scene of the draft differs from the live catalogue (catalogDiff). */
+export interface SceneChange {
+    id: string;
+    title: string;
+    kind: 'added' | 'changed' | 'moved' | 'removed';
+    /** the fields that differ (a changed scene; sorted) */
+    fields?: string[];
+}
+
+/** Everything the draft changes against the live catalogue: the admin's "not published yet" list. */
+export interface CatalogDiff {
+    scenes: SceneChange[];
+    /** the collections list differs (added, removed, renamed or reordered) */
+    collections: boolean;
+    /** scenes, collections or the order differ: Publish has something to do */
+    dirty: boolean;
+}
+
+/** One value in a canonical form for comparing (object keys sorted, missing = undefined). */
+function canonical(v: unknown): string {
+    if (Array.isArray(v)) return `[${v.map(canonical).join(',')}]`;
+    if (v && typeof v === 'object') {
+        const o = v as Record<string, unknown>;
+        return `{${Object.keys(o).filter((k) => o[k] !== undefined).sort().map((k) => `${JSON.stringify(k)}:${canonical(o[k])}`).join(',')}}`;
+    }
+    return JSON.stringify(v ?? null);
+}
+
+/** Defaults the API writes for a field the admin never set: absent and default compare equal. */
+const FIELD_DEFAULTS: Record<string, unknown> = { walls: 'on', pinned: false, hidden: false, collections: [], collision: true };
+
+/**
+ * The admin's draft against the live catalogue (both as GET /api/admin/catalog sends them): scenes added,
+ * removed, changed (with the fields) and moved (same fields, another place among the scenes both keep).
+ * Pure; the admin page draws it as badges and the "N changes not published" line.
+ */
+export function catalogDiff(draft: SceneCatalog, live: SceneCatalog | null): CatalogDiff {
+    const liveScenes = live?.scenes ?? [];
+    const before = new Map(liveScenes.map((s) => [s.id, s]));
+    const after = new Map(draft.scenes.map((s) => [s.id, s]));
+    const value = (s: CatalogScene, k: string): string => canonical((s as unknown as Record<string, unknown>)[k] ?? FIELD_DEFAULTS[k]);
+    // the scenes both lists keep, in the draft's order: the fewest of them that moved are the ones outside
+    // the longest run that kept its live order (one scene dragged = one "moved", not every scene it passed)
+    const livePos = new Map(liveScenes.filter((s) => after.has(s.id)).map((s, i) => [s.id, i]));
+    const kept = draft.scenes.filter((s) => livePos.has(s.id)).map((s) => s.id);
+    const stayed = longestIncreasing(kept.map((id) => livePos.get(id)!)).map((i) => kept[i]);
+    const moved = new Set(kept.filter((id) => !stayed.includes(id)));
+    const scenes: SceneChange[] = [];
+    draft.scenes.forEach((s) => {
+        const old = before.get(s.id);
+        if (!old) {
+            scenes.push({ id: s.id, title: s.title, kind: 'added' });
+            return;
+        }
+        const keys = [...new Set([...Object.keys(old), ...Object.keys(s)])].filter((k) => value(old, k) !== value(s, k)).sort();
+        if (keys.length) scenes.push({ id: s.id, title: s.title, kind: 'changed', fields: keys });
+        else if (moved.has(s.id)) scenes.push({ id: s.id, title: s.title, kind: 'moved' });
+    });
+    for (const s of liveScenes) if (!after.has(s.id)) scenes.push({ id: s.id, title: s.title, kind: 'removed' });
+    const collections = canonical(draft.collections) !== canonical(live?.collections ?? []);
+    return { scenes, collections, dirty: collections || scenes.length > 0 };
+}
+
+/** The indexes of one longest strictly increasing subsequence of `a` (patience sorting, O(n log n)). */
+function longestIncreasing(a: readonly number[]): number[] {
+    const tails: number[] = []; // tails[k]: index in a of the smallest last value of an increasing run of length k+1
+    const prev: number[] = new Array(a.length).fill(-1);
+    for (let i = 0; i < a.length; i++) {
+        let lo = 0;
+        let hi = tails.length;
+        while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (a[tails[mid]] < a[i]) lo = mid + 1; else hi = mid;
+        }
+        if (lo > 0) prev[i] = tails[lo - 1];
+        tails[lo] = i;
+    }
+    const out: number[] = [];
+    for (let i = tails.length ? tails[tails.length - 1] : -1; i >= 0; i = prev[i]) out.push(i);
+    return out.reverse();
+}
+
+/**
+ * How a pasted SuperSplat link asks the viewer to draw the scene: `?budget=8&stochastic` -> the catalogue
+ * entry's `render` ({budgetM: 8, stochastic: true}); null when the link says nothing (or is not a link).
+ * The same parameters lane R's parseSceneInput keeps for the simulator; ranges as readScene's.
+ */
+export function linkRender(raw: string): SceneRender | null {
+    let u: URL;
+    try {
+        u = new URL(raw.trim().includes('://') ? raw.trim() : `https://${raw.trim()}`);
+    } catch {
+        return null;
+    }
+    if (!/^(www\.)?superspl\.at$/i.test(u.hostname)) return null;
+    const r: SceneRender = {};
+    const b = u.searchParams.get('budget');
+    if (b !== null && /^\d{1,2}(\.\d{1,3})?$/.test(b)) {
+        const n = Number(b);
+        if (n >= 0.25 && n <= 32) r.budgetM = n;
+    }
+    const st = u.searchParams.get('stochastic');
+    if (st !== null && st !== '0' && st !== 'false') r.stochastic = true;
+    return Object.keys(r).length ? r : null;
 }
 
 /** A collection id from its English title: lower case, ASCII letters and digits, dashes (the API's rule). */
