@@ -1,31 +1,36 @@
 // v0.7 lane D1, flight UX (docs/wip/v07-d1.md), in Node on the real modules. Claims, each with a
 // negative control that must fire:
 //  - sharing: every entry point carries the right link (the picture page /s/<id> from a flight, the
-//    scene page from the picker; a catalogue scan's page, else the fly deep link with lane R's drawing
-//    parameters) and the right words (control: v0.6's one plain fly link for every place);
-//  - recording on every scan: the gate is gone for a scan outside the catalogue (control: D34's rule
-//    refuses it), the burned-in credit always names the scan's author or its page and ShramkoGSFPV,
-//    the author notice comes once per scan and never after "Don't show again" (control: a notice
-//    that forgets it was shown);
+//    scene page from the picker; a catalogue scan's page, else the fly deep link with that scene's own
+//    drawing parameters, never another scene's: review R3) and the right words (control: v0.6's one
+//    plain fly link for every place; the page's parameters handed to any scene, as before R3);
+//  - copying (Instagram's caption, the link): the fallback copy keeps the caption's line breaks and
+//    leaves nothing on the page (control: an <input> scratch, which strips them; review R4);
+//  - recording on every scan: the browser's ability alone decides (the gate itself, with D34's put
+//    back as the control, is tested on the real start() in flight-ux-recording.test.ts), the
+//    burned-in credit always names the scan's author or its page and ShramkoGSFPV, the author notice
+//    comes once per scan and never after "Don't show again" (control: a notice that forgets it was shown);
 //  - the crosshair: settings -> the SVG on the page (control: a builder that ignores the shape);
 //    hidden in cinema mode (control: the stylesheet without its rule);
 //  - the motor sound: the graph is built, glides and closes on an AudioContext (a fake one here);
-//    silence when paused, crashed, disarmed, hidden, off (control: a mix that ignores the pause);
-//    the frequencies follow the motors; the flight model is only read;
+//    silence when paused, crashed, disarmed, hidden, off (control: the same check finds sound in the
+//    flight itself, so it is not always true); the frequencies follow the motors; the model is only read;
 //  - every text the new code names exists in English (control: a planted unknown key is reported);
 //  - L is the share key in flight and over a crash, and no other binding has it.
 //  - the always-visible Share makes the top row longer: the walls box and the author notice go under
-//    it wherever they would meet (control: the fixed 640 px breakpoint and a rule that ignores the
-//    box's width), and the mode chip on a phone goes under the row (control: the old search that
-//    stepped past the soft boxes only).
+//    it wherever they would meet (the check: the boxes measured in Chrome must not overlap; control:
+//    v0.6's fixed 640 px breakpoint leaves them overlapping), and the mode chip on a phone goes under
+//    the row (control: the old search that stepped past the soft boxes only).
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { KEYMAP, actionFor, keymapProblems } from '../../../packages/prefs/src';
 import { mkStore } from '../../../packages/prefs/test/helpers';
 import { REPO } from '../src/evidence';
-import { SHARE_ENTRIES, dataUrlBytes, inFlight, instagramCaption, kindOf, scenePageUrl, shareLink, targetHref, wordsKey } from '../../../apps/fly/src/share/links';
+import { SHARE_ENTRIES, dataUrlBytes, inFlight, instagramCaption, kindOf, pageDrawing, scenePageUrl, shareLink, targetHref, wordsKey } from '../../../apps/fly/src/share/links';
 import type { ShareEntry } from '../../../apps/fly/src/share/links';
+import { copyText } from '../../../apps/fly/src/share/clipboard';
+import type { ClipboardEnv } from '../../../apps/fly/src/share/clipboard';
 import { authorNotice, creditFacts, creditText, videoCredit } from '../../../apps/fly/src/scene-facts';
 import type { SceneCredit } from '../../../apps/fly/src/scene-facts';
 import { Recording } from '../../../apps/fly/src/app/builtin/recording';
@@ -38,7 +43,9 @@ import type { Box } from '../../../apps/fly/src/ui/top-row';
 import type { AudioLike, MixInput, MotorState } from '../../../apps/fly/src/audio/motor-sound';
 
 const FLY = join(REPO, 'apps', 'fly', 'src');
-const AT = { origin: 'https://gsfpv.flyreelstudio.eu', locale: 'pl', search: '?scene=ab12cd34&budget=8&stochastic&simradio=1' };
+const AT = { origin: 'https://gsfpv.flyreelstudio.eu', locale: 'pl' };
+/** the page was opened for scan cafe0001 with SuperSplat's drawing parameters (lane R) */
+const PAGE = '?scene=cafe0001&budget=8&stochastic&simradio=1';
 const PIC = 'https://gsfpv.flyreelstudio.eu/s/AbCdEfGhIjK';
 
 // ------------------------------------------------------------------ sharing
@@ -59,9 +66,24 @@ describe('share links: the right link from every place a share starts', () => {
     });
 
     it('a scan outside the catalogue has no page: the fly deep link, with budget and stochastic kept and nothing else', () => {
-        expect(scenePageUrl('cafe0001', false, AT)).toBe(`${AT.origin}/pl/fly/?scene=cafe0001&budget=8&stochastic`);
-        expect(scenePageUrl('cafe0001', false, { ...AT, search: '?scene=x&budget=8;alert(1)' })).toBe(`${AT.origin}/pl/fly/?scene=cafe0001`);
+        expect(scenePageUrl('cafe0001', false, AT, pageDrawing('cafe0001', PAGE))).toBe(`${AT.origin}/pl/fly/?scene=cafe0001&budget=8&stochastic`);
+        expect(scenePageUrl('cafe0001', false, AT, pageDrawing('cafe0001', '?scene=cafe0001&budget=8;alert(1)'))).toBe(`${AT.origin}/pl/fly/?scene=cafe0001`);
         expect(shareLink({ entry: 'picker', sceneId: 'cafe0001', inCatalogue: false, at: { origin: AT.origin, locale: 'en' }, pictureUrl: null })).toBe(`${AT.origin}/en/fly/?scene=cafe0001`);
+    });
+
+    it('the drawing parameters belong to their scene: another scene shared from the same page gets none, its own (a pasted link) win', () => {
+        // the picker's SuperSplat card for beef0002 while the page was opened for cafe0001 with budget 8
+        expect(shareLink({ entry: 'picker', sceneId: 'beef0002', inCatalogue: false, at: AT, pictureUrl: null, drawing: pageDrawing('beef0002', PAGE) })).toBe(`${AT.origin}/pl/fly/?scene=beef0002`);
+        // the scene the page was opened for keeps them, from the picker and from the flight
+        expect(shareLink({ entry: 'recent', sceneId: 'cafe0001', inCatalogue: false, at: AT, pictureUrl: null, drawing: pageDrawing('cafe0001', PAGE) })).toBe(`${AT.origin}/pl/fly/?scene=cafe0001&budget=8&stochastic`);
+        // the scene's own (lane R: the link the pilot pasted in the picker) go with it
+        expect(shareLink({ entry: 'picker', sceneId: 'beef0002', inCatalogue: false, at: AT, pictureUrl: null, drawing: { budgetM: 2.5 } })).toBe(`${AT.origin}/pl/fly/?scene=beef0002&budget=2.5`);
+        expect(scenePageUrl('beef0002', false, AT, { budgetM: Number.NaN, stochastic: true })).toBe(`${AT.origin}/pl/fly/?scene=beef0002&stochastic`);
+    });
+
+    it('control: the page\'s parameters handed to any scene (the panel before R3) put cafe0001\'s budget on beef0002\'s link', () => {
+        const pageForAny = (search: string) => pageDrawing(new URLSearchParams(search).get('scene') ?? '', search);
+        expect(shareLink({ entry: 'picker', sceneId: 'beef0002', inCatalogue: false, at: AT, pictureUrl: null, drawing: pageForAny(PAGE) })).toContain('budget=8');
     });
 
     it('the words follow the place: the crash brags, the video invites, the picker invites to fly', () => {
@@ -91,6 +113,63 @@ describe('share links: the right link from every place a share starts', () => {
     });
 });
 
+// ------------------------------------------------------------------ copying
+
+/** A fake page for copyText: the Clipboard API (or none), and the scratch elements it made. */
+function clipEnv(o: { api: 'ok' | 'refused' | 'none'; execOk: boolean; scratch?: 'textarea' | 'input' }): { env: ClipboardEnv; copied: string[]; made: { value: string; removed: boolean }[]; attached: () => number } {
+    const copied: string[] = [];
+    const made: { value: string; removed: boolean; attached: boolean }[] = [];
+    const env: ClipboardEnv = {
+        clipboard: o.api === 'none' ? undefined : { writeText: async (t: string) => { if (o.api === 'refused') throw new Error('denied'); copied.push(t); } },
+        document: {
+            activeElement: null,
+            body: { append: (n: Node) => { (n as unknown as { attached: boolean }).attached = true; } },
+            // an <input> strips line breaks from its value, as browsers do (the old fallback)
+            createElement: () => {
+                let v = '';
+                const el = {
+                    removed: false, attached: false, readOnly: false, style: { cssText: '' },
+                    get value() { return v; },
+                    set value(x: string) { v = o.scratch === 'input' ? x.replace(/[\r\n]/g, '') : x; },
+                    setAttribute() {}, select() {},
+                    remove() { el.removed = true; el.attached = false; }
+                };
+                made.push(el);
+                return el as unknown as HTMLTextAreaElement;
+            },
+            execCommand: () => {
+                const live = made.find((m) => m.attached);
+                if (o.execOk && live) copied.push(live.value);
+                return o.execOk && !!live;
+            }
+        }
+    };
+    return { env, copied, made, attached: () => made.filter((m) => m.attached).length };
+}
+
+describe('copying the caption and the link (review R4)', () => {
+    const CAPTION = 'Fly it\n\nhttps://gsfpv.flyreelstudio.eu/s/x\n\n#fpv';
+
+    it('the Clipboard API first; refused, a scratch text area copies it with its line breaks and is gone after', async () => {
+        const a = clipEnv({ api: 'ok', execOk: true });
+        expect(await copyText(CAPTION, a.env)).toBe(true);
+        expect([a.copied, a.made.length]).toEqual([[CAPTION], 0]);
+        for (const api of ['refused', 'none'] as const) {
+            const b = clipEnv({ api, execOk: true });
+            expect(await copyText(CAPTION, b.env), api).toBe(true);
+            expect(b.copied).toEqual([CAPTION]);
+            expect(b.made.every((m) => m.removed) && b.attached() === 0).toBe(true);
+        }
+        expect(await copyText(CAPTION, clipEnv({ api: 'refused', execOk: false }).env)).toBe(false);
+    });
+
+    it('control: an <input> as the scratch (the link field before R4) loses the caption\'s line breaks', async () => {
+        const c = clipEnv({ api: 'refused', execOk: true, scratch: 'input' });
+        await copyText(CAPTION, c.env);
+        expect(c.copied[0]).not.toBe(CAPTION);
+    });
+});
+
 // ------------------------------------------------------------------ recording on every scan
 
 const CATALOGUE = { title: 'Wroclaw Market Square', author: 'Owner Scans', license: 'CC BY 4.0' };
@@ -111,13 +190,6 @@ describe('recording works on every scan (the owner\'s item 2, D36)', () => {
         // without WebCodecs nothing records, whatever the scan
         vi.unstubAllGlobals();
         expect(recordingFor(NOT_IN_CATALOGUE).allowed).toBe(false);
-    });
-
-    it('control: D34\'s rule (catalogue scans only) refuses the same scans', () => {
-        const d34 = (c: SceneCredit): boolean => c.inCatalogue;
-        expect(d34(NOT_IN_CATALOGUE)).toBe(false);
-        expect(d34(PASTED)).toBe(false);
-        expect(d34(creditFacts('ab12cd34', CATALOGUE))).toBe(true);
     });
 
     it('the burned-in credit names the scan, its author and licence, ShramkoGSFPV and the site; a pasted scan its SuperSplat page', () => {
@@ -148,13 +220,6 @@ describe('recording works on every scan (the owner\'s item 2, D36)', () => {
         const shown = new Set([NOT_IN_CATALOGUE.id]);
         expect(forgetful(NOT_IN_CATALOGUE)).not.toBeNull();
         expect(authorNotice(NOT_IN_CATALOGUE, { enabled: true, shownFor: shown })).toBeNull();
-    });
-
-    it('no showcase-only gate is left in the recording code (the strings that refused it)', () => {
-        for (const f of ['app/builtin/recording.ts', 'app/builtin/cinema.ts', 'app/builtin/video-export.ts']) {
-            const s = readFileSync(join(FLY, f), 'utf8');
-            expect(s, f).not.toMatch(/only for showcase scenes|rec\.onlyShowcase|scene\.meta\)\s*return/);
-        }
     });
 });
 
@@ -269,9 +334,9 @@ describe('motor sound: from the simulated motors, silent whenever the flight is 
         }
     });
 
-    it('control: a mix that ignores the pause keeps playing in the menu', () => {
-        const ignoresPause = (i: MixInput) => motorMix({ ...i, paused: false });
-        expect(ignoresPause({ ...FLYING, paused: true }).master).toBeGreaterThan(0);
+    it('control: the same silence check finds sound in the flight itself (it is not always true)', () => {
+        expect(motorMix(FLYING).master).toBeGreaterThan(0);
+        expect(audible(FLYING)).toBe(true);
     });
 
     it('each voice sits at its rotor\'s turning frequency; faster motor, higher note; the model is only read', () => {
@@ -354,6 +419,17 @@ describe('every text the new code names exists', () => {
         for (const k of ['rec.notice', 'rec.notice.author', 'rec.notice.unknown']) expect(d[k], k).toBeTruthy();
     });
 
+    it('the Polish notice refers to "nagranie" (neuter) as "je", in all three variants (review R6)', () => {
+        const pl = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'rec', 'pl.json'), 'utf8')) as Record<string, string>;
+        const masculine = (s: string): boolean => /\bjak go\b/.test(s);
+        for (const k of ['rec.notice', 'rec.notice.author', 'rec.notice.unknown']) {
+            expect(masculine(pl[k]), k).toBe(false);
+            expect(pl[k], k).toContain('jak je wykorzystasz');
+        }
+        // control: the wording before the fix is caught
+        expect(masculine('Nagranie jest Twoje, podobnie jak odpowiedzialnosc za to, jak go uzyjesz')).toBe(true);
+    });
+
     it('control: a planted unknown key is reported', () => {
         expect(unknownKeys("t('share.button'); t('share.nope')", enDict())).toEqual(['share.nope']);
     });
@@ -387,10 +463,20 @@ describe('the longer top row prints over nothing', () => {
         expect(boxMeetsRow(1280, 0, 300)).toBe(false); // hidden while flying
     });
 
-    it('control: the fixed breakpoint and a rule blind to the box width leave text over the buttons', () => {
-        expect(v06Under(1280)).toBe(false);
-        const centreOnly = (viewW: number, _w: number, rowLeft: number) => viewW / 2 > rowLeft;
-        expect(centreOnly(1280, BADGE, 783)).not.toBe(boxMeetsRow(1280, BADGE, 783));
+    /** The walls box, centred at the top unless moved under the row, overlaps the row's first button (measured boxes). */
+    const textOverButtons = (viewW: number, rowLeft: number, under: boolean): boolean => {
+        const box: Box = { left: viewW / 2 - BADGE / 2, right: viewW / 2 + BADGE / 2, top: 38, bottom: 72 };
+        const row: Box = { left: rowLeft, right: viewW - 16, top: 38, bottom: 78 };
+        return !under && box.right + TOP_GAP > row.left && box.left < row.right && box.top < row.bottom && row.top < box.bottom;
+    };
+
+    it('the check: no text over the buttons with the real rule, recording at 1280 px and at 1024 px', () => {
+        for (const [viewW, rowLeft] of [[1280, 868], [1280, 783], [1024, 612]]) expect(textOverButtons(viewW, rowLeft, boxMeetsRow(viewW, BADGE, rowLeft)), `${viewW}/${rowLeft}`).toBe(false);
+    });
+
+    it('control: v0.6\'s fixed 640 px breakpoint leaves the walls text over the REC dot at 1280 px and over Share at 1024 px', () => {
+        expect(textOverButtons(1280, 783, v06Under(1280))).toBe(true);
+        expect(textOverButtons(1024, 612, v06Under(1024))).toBe(true);
     });
 
     it('fly.css moves the box under the row when crowded and the notice sits under the box; control: without the rules', () => {
