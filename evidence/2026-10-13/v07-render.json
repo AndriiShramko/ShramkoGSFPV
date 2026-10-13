@@ -7,9 +7,9 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-13T14:47:18.737Z",
-    "gitHead": "55db1c0",
-    "gitDirty": true,
+    "date": "2026-10-13T14:48:18.967Z",
+    "gitHead": "5183ee2",
+    "gitDirty": false,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
@@ -36,10 +36,10 @@
     "R9": true
   },
   "runs": {
-    "R1": "2026-10-13T09:10:22.435Z",
-    "R2": "2026-10-13T09:10:22.435Z",
+    "R1": "2026-10-13T14:48:18.966Z",
+    "R2": "2026-10-13T14:48:18.966Z",
     "R3": "2026-10-13T14:47:18.737Z",
-    "R4": "2026-10-13T09:10:22.435Z",
+    "R4": "2026-10-13T14:48:18.966Z",
     "R5": "2026-10-13T09:10:22.435Z",
     "R7": "2026-10-13T09:10:22.435Z",
     "R8": "2026-10-13T09:13:04.148Z",
@@ -106,7 +106,7 @@
           },
           "engine": true,
           "top": 8,
-          "budgetM": 6,
+          "budgetM": 8,
           "renderer": 2,
           "search": "?scene=39e63ce9&budget=8&stochastic&nowarn=1&input=touch",
           "note": "Stochastic drawing (SuperSplat beta), 8 M splats \u00b7 Settings \u2192 Display",
@@ -136,7 +136,7 @@
           },
           "engine": true,
           "top": 8,
-          "budgetM": 8,
+          "budgetM": 6,
           "renderer": 2,
           "search": "?scene=39e63ce9&nowarn=1&input=touch&budget=8&stochastic",
           "note": "Stochastic drawing (SuperSplat beta), 8 M splats \u00b7 Settings \u2192 Display",
@@ -190,7 +190,7 @@
           },
           "engine": false,
           "top": 4,
-          "budgetM": 3,
+          "budgetM": 4,
           "renderer": 2,
           "search": "?scene=39e63ce9&nowarn=1&input=touch",
           "note": "",
@@ -292,7 +292,7 @@
           },
           "engine": false,
           "top": 8,
-          "budgetM": 5,
+          "budgetM": 6,
           "renderer": 2,
           "search": "?scene=39e63ce9&budget=8&stochastic&nowarn=1&input=touch",
           "note": "Stochastic drawing (SuperSplat beta), 8 M splats \u00b7 Settings \u2192 Display",
@@ -311,7 +311,7 @@
             "budgetM": 8,
             "note": null,
             "engineStochastic": true,
-            "engineBudgetM": 5,
+            "engineBudgetM": 6,
             "handheld": false,
             "webgpu": true
           },
@@ -434,7 +434,7 @@
         "from": "39e63ce9",
         "to": "887f27aa",
         "reason": "pick",
-        "ms": 1865
+        "ms": 2424
       },
       "picked": {
         "status": "ready",
@@ -466,7 +466,7 @@
         "from": "887f27aa",
         "to": "7a475d38",
         "reason": "next",
-        "ms": 2274
+        "ms": 3713
       },
       "next": {
         "status": "ready",
@@ -488,7 +488,7 @@
         "renderer": 2,
         "search": "?scene=7a475d38&nowarn=1&input=touch",
         "note": "Stochastic drawing (SuperSplat beta), 6 M splats \u00b7 Settings \u2192 Display",
-        "noteShown": true
+        "noteShown": false
       },
       "pageerrors": []
     },
