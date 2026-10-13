@@ -4,8 +4,9 @@ buttons, and he runs the ideas from there.
 Configuration (config.env, never in git): TG_WEBHOOK_SECRET (16-256 of A-Z a-z 0-9 _ -) turns the
 two-way work on; TG_OWNER_BOT_TOKEN is optional and defaults to the shared lead bot TG_BOT_TOKEN (the
 owner's decision 2026-10-13: no new bot); TG_OWNER_CHAT_ID (default TG_CHAT_ID: in a private chat with
-the bot it is the owner's user id), optional TG_OWNER_USER_ID (also require this sender, for a group
-chat), TG_OWNER_LANG (default ru). TG_API_BASE is for tests (a fake Telegram server).
+the bot it is the owner's user id), TG_OWNER_USER_ID (also require this sender: REQUIRED when that chat
+is a group or a channel, i.e. its id is negative, else any member could answer pilots from the owner's
+Gmail; without it the two-way work stays off and BotConfig.problem says why), TG_OWNER_LANG (default ru). TG_API_BASE is for tests (a fake Telegram server).
 On the shared bot the webhook receives EVERY update of that bot, other sites' lead notes and replies to
 them included. So an update is acted on only when it is the owner's (his chat, his user) AND belongs to
 GSFPV: a reply to a bot message the store knows (a card, a prompt, a draft, an e-mail notice), a button
@@ -163,10 +164,26 @@ class BotConfig:
                    lang=lang if lang in ideas.LOCALES else "ru", api_base=(env.get("TG_API_BASE") or "https://api.telegram.org"))
 
     @property
+    def problem(self) -> str:
+        """Why the two-way work is off ("" when it is on). Without the secret nothing could come back,
+        so no buttons are offered and reports go to the shared bot as before. A group or channel chat
+        (a negative id) without TG_OWNER_USER_ID is refused: every member's reply or button would act
+        for the owner, an e-mail from his Gmail included."""
+        if not self.token:
+            return "no bot token (TG_OWNER_BOT_TOKEN or TG_BOT_TOKEN)"
+        if not self.chat:
+            return "no chat (TG_OWNER_CHAT_ID or TG_CHAT_ID)"
+        if not SECRET_RE.fullmatch(self.secret):
+            return "TG_WEBHOOK_SECRET is missing or not 16-256 of A-Z a-z 0-9 _ -"
+        if self.chat.startswith("-") and not self.user:
+            return ("the owner's chat is a group or a channel: set TG_OWNER_USER_ID to the owner's own Telegram user id, "
+                    "else every member could answer pilots from his Gmail")
+        return ""
+
+    @property
     def ready(self) -> bool:
-        """The two-way work is on: a bot, the owner's chat and a valid webhook secret. Without the secret
-        nothing could come back, so no buttons are offered and reports go to the shared bot as before."""
-        return bool(self.token and self.chat and SECRET_RE.fullmatch(self.secret))
+        """The two-way work is on (see `problem`)."""
+        return not self.problem
 
     @property
     def shared(self) -> bool:
@@ -657,8 +674,7 @@ class OwnerBot:
         today); a webhook another service set is never replaced unless `replace` says so."""
         c = self.cfg
         if not c.ready:
-            raise RuntimeError("TG_WEBHOOK_SECRET (16-256 of A-Z a-z 0-9 _ -), a bot token (TG_OWNER_BOT_TOKEN or TG_BOT_TOKEN) "
-                               "and TG_OWNER_CHAT_ID or TG_CHAT_ID are needed")
+            raise RuntimeError(f"the owner bot is not set up: {c.problem}; nothing changed")
         api = self.api()
         info = api.call("getWebhookInfo", {})
         if not isinstance(info, dict):
@@ -677,9 +693,9 @@ class OwnerBot:
         """What Telegram says about the webhook, without the URL (its path is derived from the secret)."""
         c = self.cfg
         if not c.token:
-            return {"configured": False}
+            return {"configured": False, "problem": c.problem}
         info = self.api().call("getWebhookInfo", {}) or {}
-        return {"configured": c.ready, "sharedBot": c.shared, "url_set": bool(info.get("url")),
+        return {"configured": c.ready, "problem": c.problem or None, "sharedBot": c.shared, "url_set": bool(info.get("url")),
                 "url_is_ours": info.get("url") == self.origin + c.webhook_path(), "owner": self._hook_owner(info.get("url") or ""),
                 "pending": info.get("pending_update_count"), "last_error": info.get("last_error_message"), "max_connections": info.get("max_connections")}
 

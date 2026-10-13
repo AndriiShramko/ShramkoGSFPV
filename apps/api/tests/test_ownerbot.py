@@ -277,6 +277,50 @@ class SharedBot(Http):
         self.assertEqual(self.at(61), 1)
 
 
+class GroupChat(Http):
+    """Review R7: when the owner's chat is a group (a negative id), only the owner's own user id may act:
+    without TG_OWNER_USER_ID the two-way work stays off, with it every other member is ignored."""
+
+    GROUP = "-1001234567890"
+
+    def member(self, uid: int, text: str, reply_to: int) -> dict:
+        return {"message": {"message_id": uid, "chat": {"id": int(self.GROUP), "type": "supergroup"}, "from": {"id": uid},
+                            "text": text, "reply_to_message": {"message_id": reply_to}}}
+
+    def test_a_group_needs_the_owners_user_id(self):
+        self.w.env["TG_CHAT_ID"] = self.GROUP
+        self.assertFalse(self.w.bot.configured)
+        self.assertIn("TG_OWNER_USER_ID", self.w.bot.cfg.problem)
+        with self.assertRaises(RuntimeError) as e:
+            self.w.bot.setup_webhook()
+        self.assertIn("TG_OWNER_USER_ID", str(e.exception))
+        self.assertEqual(self.w.tg.webhook_url, "")                        # nothing registered
+        rec = self.w.report()
+        shared: list[str] = []
+        self.w.bot.deliver_report(rec, "shared text", None, lambda t: shared.append(t) or 1)
+        self.assertEqual(shared, ["shared text"])                           # the plain note, as before
+        self.assertEqual(self.w.tg.of("sendMessage", OWNER_TOKEN), [])      # no card with buttons
+        self.assertEqual(self.hook({"update_id": 1, **self.member(77, "/help", 0)}), 404)
+        # with the owner's user id: ready, and a member's reply to the card does nothing
+        self.w.env["TG_OWNER_USER_ID"] = "4242"
+        self.assertTrue(self.w.bot.configured)
+        self.assertEqual(self.w.bot.cfg.problem, "")
+        rec2 = self.w.report(rid="R-20261013-0002")
+        card = self.w.bot.deliver_report(rec2, "shared text", None, lambda t: None)
+        self.assertEqual(self.hook({"update_id": 2, **self.member(77, "Answer from a member", card)}), 200)
+        self.assertEqual(self.w.service.get(rec2["id"])["thread"], [])
+        self.assertEqual(self.w.bot.handle_update({"update_id": 3, "callback_query": {"id": "c", "from": {"id": 77}, "data": f"s:a:{rec2['id']}",
+                                                   "message": {"message_id": card, "chat": {"id": int(self.GROUP)}}}}), "ignored")
+        self.assertEqual(self.w.service.get(rec2["id"])["status"], "new")
+        # control: the owner himself in that group is obeyed
+        self.assertEqual(self.hook({"update_id": 4, **self.member(4242, "Answer from the owner", card)}), 200)
+        self.assertEqual([m["state"] for m in self.w.service.get(rec2["id"])["thread"]], ["queued"])
+        # and a private chat (a positive id) needs no user id: the chat is the owner
+        self.w.env["TG_CHAT_ID"] = OWNER_CHAT
+        self.w.env.pop("TG_OWNER_USER_ID")
+        self.assertTrue(self.w.bot.configured)
+
+
 class Language(BotTest):
     def test_the_owner_reads_russian_by_default(self):
         self.w.env.pop("TG_OWNER_LANG")

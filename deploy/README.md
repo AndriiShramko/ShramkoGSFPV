@@ -170,7 +170,8 @@ inside the container), `texts.py` (the bot's and the e-mails' words).
 | `TG_WEBHOOK_SECRET` | turns the two-way work on (cards with buttons, replies, /note, /queue). 16-256 characters of `A-Z a-z 0-9 _ -`: `python -c "import secrets; print(secrets.token_urlsafe(32))"`. Without it reports go to the shared lead bot as plain text, as before |
 | `TG_OWNER_BOT_TOKEN` | optional; default `TG_BOT_TOKEN`, the shared lead bot (the owner's decision 2026-10-13: no new bot). Set it only to move GSFPV's two-way work to a bot of its own |
 | `TG_OWNER_CHAT_ID` | optional; default `TG_CHAT_ID`. In a private chat with the bot it is the owner's own Telegram user id. The owner must open the bot and press Start once, or the bot cannot write to him |
-| `TG_OWNER_USER_ID`, `TG_OWNER_LANG` | optional: also require this sender (when the chat is a group); the bot's language (default `ru`) |
+| `TG_OWNER_USER_ID` | the owner's own Telegram user id. REQUIRED when the owner's chat (`TG_OWNER_CHAT_ID`, else `TG_CHAT_ID`) is a group or a channel (a negative id): without it the two-way work stays off (`tg-setup` refuses and `tg-info` shows `problem`), because every member's reply would e-mail a pilot from the owner's Gmail. Not needed for a private chat with the bot (a positive id: the chat is the owner) |
+| `TG_OWNER_LANG` | optional: the bot's language (default `ru`) |
 | `GMAIL_USER` | `zmei116@gmail.com` (From and Reply-To of every e-mail to a pilot; the name is `MAIL_FROM_NAME`, default "Andrii Shramko") |
 | `GMAIL_APP_PASSWORD` | a Gmail app password (Google account, Security, 2-Step Verification, App passwords: 16 letters). The normal password does not work over SMTP. Without it e-mails wait (`waiting_setup`) and the bot says so; once it is set the bot asks per waiting e-mail, nothing goes by itself |
 | `MAIL_UNDO_S` | optional; the window in which Cancel stops an e-mail (default 60 s) |
