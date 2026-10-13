@@ -220,8 +220,8 @@ export class Sim {
         this.rest = new Float64Array(this.nS * 9);
         for (let i = 0; i < this.nS; i++) this.rr[i] = p.spheres[i * 4 + 3];
         const rc = p.rates;
-        this.maxR = setpointRate(rc.type, 1, rc.roll, rc.rateLimit);
-        this.maxP = setpointRate(rc.type, 1, rc.pitch, rc.rateLimit);
+        this.maxR = setpointRate(rc.type, 1, rc.roll, rc.rateLimit, rc.quickRcExpo === true);
+        this.maxP = setpointRate(rc.type, 1, rc.pitch, rc.rateLimit, rc.quickRcExpo === true);
         const lv = p.level;
         this.kAtt = p.levelOutputHz > 0 ? PT3(p.levelOutputHz) : 0;
         // Betaflight: angle feed-forward cutoff = 1000 / (2 pi smoothing_ms)
@@ -352,9 +352,9 @@ export class Sim {
 
         // ---- setpoints ----
         const rc = p.rates;
-        const acroR = setpointRate(rc.type, ch[0], rc.roll, rc.rateLimit);
-        const acroP = setpointRate(rc.type, ch[1], rc.pitch, rc.rateLimit);
-        const spY = setpointRate(rc.type, ch[3], rc.yaw, rc.rateLimit);
+        const acroR = setpointRate(rc.type, ch[0], rc.roll, rc.rateLimit, rc.quickRcExpo === true);
+        const acroP = setpointRate(rc.type, ch[1], rc.pitch, rc.rateLimit, rc.quickRcExpo === true);
+        const spY = setpointRate(rc.type, ch[3], rc.yaw, rc.rateLimit, rc.quickRcExpo === true);
         const mode = modeFromChannel(ch[5]);
         let spR = acroR, spP = acroP;
         if (mode === 'acro') {

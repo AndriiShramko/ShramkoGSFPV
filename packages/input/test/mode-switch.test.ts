@@ -4,7 +4,7 @@
 // border, a glitch and a tap are never taken; without a mode switch ch[5] is not the radio's.
 import { describe, expect, it } from 'vitest';
 import { CalibrationWizard, ModeSwitchDetector, MODE_SWITCH_TUNING, mapFrame, switchPos, validModeSwitch } from '../src/calib';
-import type { ModeSwitch, Profile, RawFrame, SwitchFlip } from '../src/calib';
+import type { ModeSwitch, Profile, RawFrame, SwitchFlip, Switches } from '../src/calib';
 import { idealHuman } from '../src/sim/human';
 import { invSet, Rig } from './helpers';
 
@@ -229,6 +229,53 @@ describe('the wizard finds the mode switch on its check screen with no click', (
         expect(w.state.profile?.modeSwitch).toEqual(ms);
         const old = checkRig(profile());
         expect(old.w.state.profile?.modeSwitch).toBeUndefined();
+    });
+
+    it('a saved profile with Switches keeps them through Set again (Back, or a measured stick); a profile without stays without', () => {
+        // the pilot's radio: arm on CH6, Angle on CH5 (Switches screen); the wizard never measures these
+        const switches: Switches = { v: 1, ranges: [
+            { fn: 'arm', input: { kind: 'axis', index: 5 }, lo: 1700, hi: 2100 },
+            { fn: 'angle', input: { kind: 'axis', index: 4 }, lo: 1700, hi: 2100 },
+            { fn: 'respawn.rewind', input: { kind: 'axis', index: 6 }, lo: 1700, hi: 2100 }
+        ] };
+        const resumeAt = (p: Profile) => {
+            const w = CalibrationWizard.resume(JSON.parse(JSON.stringify(p)) as Profile);
+            w.start(0);
+            let t = 0;
+            const f: RawFrame = { t: 0, axes: new Float32Array([0, 0, -1, 0, -1, -1, -1, -1]), buttons: 0 };
+            const feed = (ms: number) => { const end = t + ms; while (t < end) { t += 4; f.t = t; w.feed(f); } };
+            return { w, f, feed };
+        };
+        const { w, f, feed } = resumeAt({ ...profile(), switches });
+        expect(w.state.profile?.switches).toEqual(switches);
+        feed(600);
+        // Set again, then Back without measuring: the check rebuilds its profile
+        expect(w.redo('yaw').ok).toBe(true);
+        expect(w.back()).toBe(true);
+        expect(w.state.id).toBe('check');
+        expect(w.state.profile?.switches).toEqual(switches);
+        // Set again with a measured yaw: the rebuilt profile has the new yaw and still the Switches
+        expect(w.redo('yaw').ok).toBe(true);
+        expect(w.begin().ok).toBe(true);
+        f.axes[3] = 0.95;
+        feed(500);
+        expect([w.state.id, w.state.stage]).toEqual(['yaw', 'done']);
+        f.axes[3] = 0;
+        feed(1500);
+        expect(w.next()).toEqual({ ok: true });
+        expect(w.state.id).toBe('check');
+        expect(w.state.profile?.axes.yaw).toMatchObject({ index: 3, invert: false });
+        expect(w.state.profile?.switches).toEqual(switches);
+        // and they still decide: CH6 high arms although the wizard's arm (CH5 above 0.5) is off
+        f.axes[5] = 1;
+        feed(20);
+        expect(w.state.checks?.armOn).toBe(true);
+        // control: a profile without Switches gets none through the same Set again
+        const old = resumeAt(profile());
+        old.feed(600);
+        expect(old.w.redo('yaw').ok).toBe(true);
+        expect(old.w.back()).toBe(true);
+        expect(old.w.state.profile).not.toHaveProperty('switches');
     });
 
     it('the full no-click wizard (auto pacing): the ideal person reaches the check, flips CH6 there, and the profile has it without one more press', () => {

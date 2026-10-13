@@ -1,12 +1,13 @@
 // Registered editors for the JSON settings (docs/architecture-v03.md A.9): the PID grid, the rates
-// (read-only, filled by "Import from Betaflight") and the throttle curve's mid and expo. A JSON value
+// (rates-editor.ts: type, fields, chart, copy as CLI; v0.7) and the throttle curve's mid and expo. A JSON value
 // of null means "the drone preset's own", so each editor shows the preset's numbers then, and the
 // first edit stores the whole value for that drone. The scene transform (E.7) shows its size on a
 // log slider; the flight applies a new size around the drone (app/builtin/scale.ts). Other JSON
 // kinds (recording folder) fall back to a read-only line.
-import { compileParams, setpointRate } from '@gsfpv/sim-core';
+import { compileParams } from '@gsfpv/sim-core';
 import { SCALE_MAX, SCALE_MIN } from '@gsfpv/prefs';
-import type { JsonDef, PidValue, RatesValue, SceneTransform, ThrottleValue } from '@gsfpv/prefs';
+import type { JsonDef, PidValue, SceneTransform, ThrottleValue } from '@gsfpv/prefs';
+import { ratesEditor } from './rates-editor';
 import { PRESETS } from '../../presets';
 import { h } from '../dom';
 import { t } from '../../i18n';
@@ -77,30 +78,6 @@ function pidEditor(io: EditorIo): Editor {
     return { el: grid, focus: () => cells[0].focus({ preventScroll: true }), labelFor: cells[0].id, refresh };
 }
 
-/** The rate curves, read-only: the type, R / S / E per axis and the full-stick rate; the import button fills them. */
-function ratesEditor(io: EditorIo): Editor {
-    const body = h('div', { class: 'rates-view', 'data-testid': 'rates-view' });
-    const btn = io.importBetaflight
-        ? h('button', { type: 'button', class: 'btn', 'data-action': 'settings-import-bf', onclick: () => io.importBetaflight?.() }, t('prefs.rates.import'))
-        : null;
-    const el = h('div', { class: 'rates-editor', role: 'group', 'aria-label': io.label }, body, h('p', { class: 'muted small' }, t('prefs.rates.readOnly')), btn);
-    const refresh = (): void => {
-        const v = io.get() as RatesValue | null;
-        const r = v ?? presetParams(io.drone()).rates;
-        const table = h('table', { class: 'rates-table' },
-            h('thead', {}, h('tr', {}, h('th', { scope: 'col' }, r.type), h('th', { scope: 'col' }, 'R'), h('th', { scope: 'col' }, 'S'), h('th', { scope: 'col' }, 'E'), h('th', { scope: 'col' }, t('prefs.rates.max')))),
-            h('tbody', {}, ...AXES.map((ax) => {
-                const a = r[ax];
-                const max = setpointRate(r.type, 1, a, r.rateLimit);
-                return h('tr', {}, h('th', { scope: 'row' }, t(`wizard.axis.${ax}`)), h('td', {}, String(a.rcRate)), h('td', {}, String(a.rate)), h('td', {}, String(a.expo)), h('td', {}, `${Math.round(max)}°/s`));
-            })));
-        body.replaceChildren(table);
-    };
-    refresh();
-    if (!btn) el.tabIndex = 0;
-    return { el, focus: () => (btn ?? el).focus({ preventScroll: true }), refresh };
-}
-
 /** Throttle mid and expo, Betaflight's thr_mid / thr_expo (0-100). */
 function throttleEditor(io: EditorIo): Editor {
     const value = (): ThrottleValue => {
@@ -167,7 +144,12 @@ function plainEditor(io: EditorIo): Editor {
     return { el, focus: () => el.focus({ preventScroll: true }), refresh };
 }
 
-const EDITORS: Partial<Record<JsonDef['kind'], (io: EditorIo) => Editor>> = { pid: pidEditor, rates: ratesEditor, throttle: throttleEditor, transform: transformEditor };
+const EDITORS: Partial<Record<JsonDef['kind'], (io: EditorIo) => Editor>> = {
+    pid: pidEditor,
+    rates: (io) => ratesEditor(io, (drone) => presetParams(drone).rates),
+    throttle: throttleEditor,
+    transform: transformEditor
+};
 
 export function jsonEditor(def: JsonDef, io: EditorIo): Editor {
     return (EDITORS[def.kind] ?? plainEditor)(io);

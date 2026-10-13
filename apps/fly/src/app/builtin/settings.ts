@@ -21,6 +21,7 @@ import { applyCamera, applyModel, bridgeVoxels, modelDiffers, pilotSet } from '.
 import { floatersRow } from './floaters';
 import { ceilingRow } from './ceiling';
 import { windRow } from './wind';
+import { switchesRow } from './switches';
 import type { Feature, FlightContext } from '../context';
 
 let current: SettingsScreen | null = null;
@@ -107,7 +108,7 @@ export function openSettings(ctx: FlightContext, focus: string | null = null): v
         // the import panel has a pause of its own: settings closes first (its changes are in the store)
         importBetaflight: () => {
             current?.close();
-            ctx.menu.items().find((i) => i.id === 'pause.import')?.run();
+            ctx.menu.items().find((i) => i.id === 'pause.import')?.run(true); // the panel's button: a click
         },
         reload: (id) => { if (id === 'ui.language') reloadForLanguage(ctx.prefs); else location.reload(); },
         onClose: () => {
@@ -116,11 +117,13 @@ export function openSettings(ctx: FlightContext, focus: string | null = null): v
             applyToFlight(ctx);
             ctx.resume('panel');
         },
-        // a row's live line and its panel, under the row (the setting's owner builds it)
+        // a row's live line and its panel, under the row (the setting's owner builds it); the radio's Switches sit
+        // under the stick mode (where pilots look for channel functions)
         extra: (id) => {
             if (id === 'scene.dropFloaters') return floatersRow(ctx, () => current?.close());
             if (id === 'scene.ceiling') return ceilingRow(ctx, () => current?.close());
             if (id === 'wind.mode') return windRow(ctx);
+            if (id === 'input.stickMode') return switchesRow(ctx, () => current?.close());
             return null;
         }
     }, { focus });

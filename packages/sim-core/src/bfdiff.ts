@@ -8,8 +8,8 @@
 // src/main/fc/controlrate_profile.c (defaults, ratesSettingLimits), src/main/config/config.c
 // (validateAndFixRatesSettings), src/main/flight/pid.h, pid.c and pid_init.c (PID defaults,
 // the D boost), src/main/pg/motor.c and src/main/flight/mixer_init.c (idle, dynamic idle),
-// src/main/target/common_pre.h (profile counts) and src/main/build/version.h.
-// Nothing was copied; see docs/PROVENANCE.md.
+// src/main/target/common_pre.h (profile counts) and src/main/build/version.h; the mode switches
+// (`aux`, `map`) in bfaux.ts. Nothing was copied; see docs/PROVENANCE.md.
 //
 // A diff prints only values that differ from the defaults, so the parser starts from the
 // defaults and overrides what it finds. A missing `roll_rc_rate` means "default", not
@@ -20,7 +20,9 @@
 // silently.
 
 import type { AxisRates, RatesConfig, RatesType, ThrottleCurve } from './rates';
-import { RATE_BOUNDS, SETPOINT_RATE_LIMIT } from './rates';
+import { RATE_BOUNDS, RATES_TYPES, SETPOINT_RATE_LIMIT } from './rates';
+import { AuxCollector } from './bfaux';
+import type { BfAuxCondition } from './bfaux';
 
 export type PidTriple = [number, number, number, number]; // [P, I, D(peak), F]
 
@@ -75,6 +77,12 @@ export interface BfDiffResult {
     throttle: ThrottleCurve | null;
     /** Motor idle; null when the motor protocol makes the static idle meaningless (analog protocols in 4.x). */
     idle: BfIdle | null;
+    /**
+     * The mode switches in use (`aux` lines, Betaflight's Modes tab) in the radio's channel numbers,
+     * after the `map` line; empty when the dump has none. The radio's Switches screen applies the ones
+     * the simulator has (ARM, ANGLE, HORIZON); this parser only reads them.
+     */
+    aux: BfAuxCondition[];
     /** Every `set` of the master section and of the active profiles that the simulator does not use. */
     ignored: BfIgnored[];
     /** Non-`set` commands that were skipped, with how often each appeared (feature, serial, aux, ...). */
@@ -95,10 +103,11 @@ const MAX_VERSION_LINE = 300;
 // version line is known. 2025.12 lets a target raise CONTROL_RATE_PROFILE_COUNT to 6.
 const MAX_PROFILE_INDEX = 5;
 
-// lookupTableRatesType (cli/settings.c), identical in 4.3.2, 4.4.3, 4.5.1, 2025.12.1 and 2026.6.1.
-const BF_RATES_TYPES = ['BETAFLIGHT', 'RACEFLIGHT', 'KISS', 'ACTUAL', 'QUICK'];
-// The curves rates.ts implements. QUICK exists in firmware but not in our model yet.
-const IMPLEMENTED_RATES: RatesType[] = ['BETAFLIGHT', 'RACEFLIGHT', 'KISS', 'ACTUAL'];
+// lookupTableRatesType (cli/settings.c), identical in 4.3.2, 4.4.3, 4.5.1, 2025.12.1 and 2026.6.1;
+// rates.ts implements all five (RATES_TYPES is the same list in the same order).
+const BF_RATES_TYPES: readonly string[] = RATES_TYPES;
+// lookupTableOffOn (cli/settings.c), the values of `quickrates_rc_expo`.
+const OFF_ON = ['OFF', 'ON'];
 
 // Defaults, identical in 4.3.2, 4.4.3, 4.5.1, 2025.12.1 and 2026.6.1: controlrate_profile.c
 // (rates), pid.h (PID, D_MIN_DEFAULT / D_MAX_DEFAULT).
@@ -263,6 +272,7 @@ export function parseBetaflightDiff(text: string): BfDiffResult {
         dBase: null,
         throttle: null,
         idle: null,
+        aux: [],
         ignored: [],
         ignoredCommands: {},
         warnings: [],
@@ -294,6 +304,7 @@ export function parseBetaflightDiff(text: string): BfDiffResult {
     let customDefaultsMarker = false;
     let versionLines = 0;
     const commands = new Map<string, number>();
+    const aux = new AuxCollector(); // the mode switches (aux) and the channel order (map)
 
     // CRLF everywhere in firmware output; tolerate LF and bare CR.
     const lines = src.split(/\r\n|\r|\n/);
@@ -376,8 +387,14 @@ export function parseBetaflightDiff(text: string): BfDiffResult {
             sec.set(name, value);
             continue;
         }
-        // Everything else (batch, defaults, board_name, feature, serial, aux, save, ...) is not
-        // about flight feel and is skipped, but counted so the caller can show what was skipped.
+        // The mode switches and the channel order (global commands, printed before the profiles).
+        if (AuxCollector.takes(line)) {
+            const e = aux.add(line);
+            if (e) fail(`${e}. Paste one unedited diff.`);
+            continue;
+        }
+        // Everything else (batch, defaults, board_name, feature, serial, save, ...) is not about
+        // flight feel and is skipped, but counted so the caller can show what was skipped.
         const word = /^([A-Za-z_][A-Za-z0-9_]*)/.exec(line);
         if (word) {
             const c = word[1].toLowerCase();
@@ -501,8 +518,15 @@ export function parseBetaflightDiff(text: string): BfDiffResult {
     const typeRaw = (rp.get('rates_type') ?? DEFAULT_RATES.type).toUpperCase();
     if (!BF_RATES_TYPES.includes(typeRaw)) {
         fail(`rates_type = ${typeRaw} is not a Betaflight rates type.`);
-    } else if (!(IMPLEMENTED_RATES as string[]).includes(typeRaw)) {
-        fail(`rates_type = ${typeRaw} is not implemented in the simulator yet; switch the rate profile to ACTUAL, BETAFLIGHT, KISS or RACEFLIGHT.`);
+    }
+    // quickrates_rc_expo (OFF by default) changes the QUICK curve only; for any other type it is
+    // listed as ignored like every setting the simulator does not use.
+    const quickExpoRaw = rp.get('quickrates_rc_expo');
+    let quickRcExpo = false;
+    if (typeRaw === 'QUICK' && quickExpoRaw !== undefined) {
+        const v = quickExpoRaw.toUpperCase();
+        if (!OFF_ON.includes(v)) fail(`quickrates_rc_expo = ${quickExpoRaw} is neither OFF nor ON; the firmware cannot have printed it. Paste the diff unedited.`);
+        quickRcExpo = v === 'ON';
     }
     if (res.errors.length > 0) return res;
     const type = typeRaw as RatesType;
@@ -510,6 +534,7 @@ export function parseBetaflightDiff(text: string): BfDiffResult {
     const rateKey = `rate:${active.rate}`;
     const pidKey = `pid:${active.pid}`;
     used.add(`${rateKey}|rates_type`);
+    if (type === 'QUICK') used.add(`${rateKey}|quickrates_rc_expo`);
 
     // Read one integer within the CLI range. A firmware-printed diff cannot hold anything else,
     // so a non-integer or out-of-range value is an error, not a silent default.
@@ -683,7 +708,8 @@ export function parseBetaflightDiff(text: string): BfDiffResult {
         warn(`${quiet.length} setting(s) not used by the simulator were ignored (${some}${quiet.length > 5 ? ', ...' : ''}).`);
     }
     if (res.errors.length > 0) return res;
-    res.rates = { ...rates, rateLimit };
+    res.rates = type === 'QUICK' ? { ...rates, rateLimit, quickRcExpo } : { ...rates, rateLimit };
+    res.aux = aux.conditions();
     res.throttle = throttle;
     res.pid = pid;
     res.dBase = dBase;

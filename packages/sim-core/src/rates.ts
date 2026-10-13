@@ -2,9 +2,15 @@
 //
 // Formulas and constants were read from Betaflight 4.5.1 (src/main/fc/rc.c, GPL-3.0) and
 // re-implemented here; no Betaflight code was copied. See docs/PROVENANCE.md.
-// All parameters are the integers a pilot types in the Betaflight CLI.
+// All parameters are the integers a pilot types in the Betaflight CLI. The five types are
+// Betaflight's own (`rates_type`); rates-edit.ts holds what an editor needs on top (names, display
+// scales, the type switch, the CLI text).
 
-export type RatesType = 'BETAFLIGHT' | 'ACTUAL' | 'KISS' | 'RACEFLIGHT';
+/** Betaflight's `rates_type`; the order of its CLI lookup table is RATES_TYPES' order. */
+export type RatesType = 'BETAFLIGHT' | 'RACEFLIGHT' | 'KISS' | 'ACTUAL' | 'QUICK';
+
+/** Every type, in the order of Betaflight's `rates_type` lookup table (cli/settings.c). */
+export const RATES_TYPES: readonly RatesType[] = ['BETAFLIGHT', 'RACEFLIGHT', 'KISS', 'ACTUAL', 'QUICK'];
 
 export interface AxisRates {
     rcRate: number; // R
@@ -18,25 +24,34 @@ export interface RatesConfig {
     pitch: AxisRates;
     yaw: AxisRates;
     rateLimit: number; // deg/s, <= 1998
+    /**
+     * Betaflight's `quickrates_rc_expo` (OFF by default): with QUICK, ON puts the expo on the stick
+     * instead of on the super factor. Read only by the QUICK curve; absent means OFF.
+     */
+    quickRcExpo?: boolean;
 }
 
 export const SETPOINT_RATE_LIMIT = 1998;
 const RC_RATE_INCREMENTAL = 14.54;
 
-/** UI bounds {R, S, E} per curve type. */
+/** Upper bounds {R, S, E} per curve type: Betaflight's ratesSettingLimits (controlrate_profile.c). */
 export const RATE_BOUNDS: Record<RatesType, AxisRates> = {
     BETAFLIGHT: { rcRate: 255, rate: 100, expo: 100 },
     RACEFLIGHT: { rcRate: 200, rate: 255, expo: 100 },
     KISS: { rcRate: 255, rate: 99, expo: 100 },
-    ACTUAL: { rcRate: 200, rate: 200, expo: 100 }
+    ACTUAL: { rcRate: 200, rate: 200, expo: 100 },
+    QUICK: { rcRate: 255, rate: 200, expo: 100 }
 };
 
 function clampf(v: number, lo: number, hi: number): number {
     return v < lo ? lo : v > hi ? hi : v;
 }
 
-/** Setpoint in deg/s for stick x in [-1, 1], before the rate-limit clamp. */
-export function rawRate(type: RatesType, x: number, R: number, S: number, E: number): number {
+/**
+ * Setpoint in deg/s for stick x in [-1, 1], before the rate-limit clamp. `quickRcExpo`: Betaflight's
+ * `quickrates_rc_expo`, read by QUICK only.
+ */
+export function rawRate(type: RatesType, x: number, R: number, S: number, E: number, quickRcExpo = false): number {
     const a = x < 0 ? -x : x;
     switch (type) {
         case 'BETAFLIGHT': {
@@ -71,17 +86,36 @@ export function rawRate(type: RatesType, x: number, R: number, S: number, E: num
             w = w * (1 + a * S * 0.01);
             return w;
         }
+        case 'QUICK': {
+            // Centre sensitivity 2R deg/s per unit stick, full stick at max(10 S, 2R) deg/s; the firmware
+            // keeps both as uint16_t integers. The super factor bends the line between them: with the
+            // expo OFF on the stick (default) the expo shapes the factor's input, with it ON the stick.
+            const r = R * 2;
+            if (r <= 0) return 0; // the CLI's minimum is 1; the firmware would divide by zero
+            const m = S * 10 > r ? S * 10 : r;
+            const e = E / 100;
+            const k = (m / r - 1) / (m / r);
+            if (quickRcExpo) {
+                const curve = x * x * x * e + x * (1 - e);
+                const sf = 1 / clampf(1 - a * k, 0.01, 1);
+                return clampf(curve * r * sf, -SETPOINT_RATE_LIMIT, SETPOINT_RATE_LIMIT);
+            }
+            const curve = a * a * a * e + a * (1 - e);
+            const sf = 1 / clampf(1 - curve * k, 0.01, 1);
+            return clampf(x * r * sf, -SETPOINT_RATE_LIMIT, SETPOINT_RATE_LIMIT);
+        }
     }
 }
 
-export function setpointRate(type: RatesType, x: number, ax: AxisRates, rateLimit: number): number {
+/** The setpoint the PID loop gets: the curve, then the rate limit (Betaflight's final clamp). */
+export function setpointRate(type: RatesType, x: number, ax: AxisRates, rateLimit: number, quickRcExpo = false): number {
     const lim = Math.min(rateLimit, SETPOINT_RATE_LIMIT);
-    return clampf(rawRate(type, x, ax.rcRate, ax.rate, ax.expo), -lim, lim);
+    return clampf(rawRate(type, x, ax.rcRate, ax.rate, ax.expo, quickRcExpo), -lim, lim);
 }
 
 /** Max setpoint at full stick, used by UI previews and the full-stick physics check. */
 export function maxRate(cfg: RatesConfig, axis: 'roll' | 'pitch' | 'yaw'): number {
-    return setpointRate(cfg.type, 1, cfg[axis], cfg.rateLimit);
+    return setpointRate(cfg.type, 1, cfg[axis], cfg.rateLimit, cfg.quickRcExpo === true);
 }
 
 export interface ThrottleCurve {
@@ -124,12 +158,12 @@ export function invertThrottle(u: number, tc: ThrottleCurve): number {
 }
 
 /** Inverse of a monotone curve by bisection — used by the bot pilot, never by the physics. */
-export function invertRate(type: RatesType, target: number, ax: AxisRates, rateLimit: number): number {
+export function invertRate(type: RatesType, target: number, ax: AxisRates, rateLimit: number, quickRcExpo = false): number {
     let lo = -1;
     let hi = 1;
     for (let i = 0; i < 60; i++) {
         const mid = (lo + hi) / 2;
-        if (setpointRate(type, mid, ax, rateLimit) < target) lo = mid; else hi = mid;
+        if (setpointRate(type, mid, ax, rateLimit, quickRcExpo) < target) lo = mid; else hi = mid;
     }
     return (lo + hi) / 2;
 }

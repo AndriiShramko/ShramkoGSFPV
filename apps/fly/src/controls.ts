@@ -10,9 +10,12 @@
 // The flight mode (design B.2): ch[5] is the pilot's mode (prefs flight.mode, set by
 // app/builtin/modes.ts) unless the radio's profile has a mode switch, which then decides. The arm
 // gate keeps a craft armed through a crash and its respawn while respawn.keepArmed is on (C.3).
+// v0.7: a profile's channel functions (Profile.switches, @gsfpv/input switches.ts; the Switches
+// screen) decide the arm and the mode instead when it has them, and their action ranges run app
+// actions (onSwitchAction, wired to the key router by app/builtin/switches.ts).
 
-import { ArmGate, ArmLatch, mapFrame, validModeSwitch } from '@gsfpv/input';
-import type { Profile, RawFrame, ArmBlock } from '@gsfpv/input';
+import { ArmGate, ArmLatch, SwitchActionWatch, armByRanges, inputName, mapFrame, profileArmLevel, radioSetsMode, readSwitches, validModeSwitch } from '@gsfpv/input';
+import type { Profile, RawFrame, ArmBlock, RadioDevice, SwitchAction, SwitchInput } from '@gsfpv/input';
 import { MODE_CHANNEL, modeFromChannel } from '@gsfpv/sim-core';
 import type { FlightMode } from '@gsfpv/sim-core';
 import { LEGACY_KEYS } from '@gsfpv/prefs';
@@ -22,6 +25,15 @@ import { t } from './i18n';
 import { pagePrefs } from './app/prefs';
 
 export type InputKind = 'hid' | 'gamepad' | 'touch' | 'keyboard';
+
+/**
+ * A switch input as text, the one naming of @gsfpv/input inputName through the wizard's strings:
+ * "CH6" on a USB radio (buttons too: CH9..CH32), "CH5" or "button 3" on a gamepad.
+ */
+export function inputLabel(input: SwitchInput, device: RadioDevice): string {
+    const n = inputName(input, device);
+    return t(n.kind === 'ch' ? 'wizard.armSource.ch' : 'wizard.armSource.button', { n: n.n });
+}
 
 /** The input flown last time, so the next scan starts with it instead of the Controls screen. */
 export interface LastInput {
@@ -128,13 +140,23 @@ export function checkProfile(v: unknown): Profile | null {
     if (p.version !== 1 || !p.axes || typeof p.axes !== 'object' || !p.deviceKey) return null;
     const kind = (p.arm as { kind?: unknown } | null)?.kind;
     if (p.arm && kind !== 'axis' && kind !== 'button' && kind !== 'key') return null;
-    if (p.modeSwitch === undefined) return p;
-    const ms = validModeSwitch(p.modeSwitch);
+    if (p.modeSwitch === undefined && p.switches === undefined) return p;
     const out: Profile = { ...p };
-    if (ms) out.modeSwitch = ms;
-    else {
-        delete out.modeSwitch;
-        console.warn(`radio setup ${String(p.deviceName)}: its mode switch could not be read; it flies without one`);
+    if (p.modeSwitch !== undefined) {
+        const ms = validModeSwitch(p.modeSwitch);
+        if (ms) out.modeSwitch = ms;
+        else {
+            delete out.modeSwitch;
+            console.warn(`radio setup ${String(p.deviceName)}: its mode switch could not be read; it flies without one`);
+        }
+    }
+    if (p.switches !== undefined) {
+        // channel functions: the readable ranges stay; none readable, the wizard's arm and mode switch fly
+        const r = readSwitches(p.switches);
+        if (r.switches) out.switches = r.switches;
+        else delete out.switches;
+        if (!r.switches) console.warn(`radio setup ${String(p.deviceName)}: its switches could not be read; the setup wizard's arm and mode switch fly`);
+        else if (r.dropped > 0) console.warn(`radio setup ${String(p.deviceName)}: ${r.dropped} switch range(s) could not be read and were dropped`);
     }
     return out;
 }
@@ -165,6 +187,9 @@ export class Controls {
     source: 'hid' | 'gamepad' | 'touch' | 'keyboard' | 'sim' | null = null;
     private session: FlightSession;
     block: ArmBlock = 'noProfile';
+    /** A switch range of an action was entered (Profile.switches): app/builtin/switches.ts runs the action. */
+    onSwitchAction: ((a: SwitchAction) => void) | null = null;
+    private actions = new SwitchActionWatch();
 
     constructor(session: FlightSession) {
         this.session = session;
@@ -184,8 +209,20 @@ export class Controls {
     setProfile(p: Profile | null): void {
         this.profile = p;
         this.latch.reset();
+        this.actions.reset();
         this.gate = new ArmGate({ keepArmedAfterCrash: this.keepArmed });
         this.block = this.gate.block;
+    }
+
+    /**
+     * The device's frames come back to the flight after a screen borrowed them (Controls: the wizard,
+     * the Switches screen, where the pilot flips switches to try them). An action switch flipped
+     * meanwhile must not run its action now: the next frame only learns where the action switches
+     * are, as at connect. Arm and mode need nothing here: the arm gate wants the switch seen off
+     * first anyway, and the mode is read from every frame.
+     */
+    resumeFrames(): void {
+        this.actions.reset();
     }
 
     /**
@@ -201,10 +238,10 @@ export class Controls {
         this.gate.keepArmedAfterCrash = on;
     }
 
-    /** The radio's mode switch sets the mode (a radio or gamepad whose profile has one); the pilot's mode is not used then. */
+    /** The radio sets the mode (a radio or gamepad whose profile has a mode switch or mode ranges); the pilot's mode is not used then. */
     radioDecides(): boolean {
         const p = this.profile;
-        return (this.source === 'hid' || this.source === 'gamepad') && !!p && (!!p.modeSwitch || !!p.angleMode);
+        return (this.source === 'hid' || this.source === 'gamepad') && !!p && radioSetsMode(p);
     }
 
     /** The mode flying now: the radio switch's position, or the pilot's mode. */
@@ -223,28 +260,42 @@ export class Controls {
         if ((this.source === 'keyboard' || this.source === 'touch') && this.lastSampleAt > 0) this.push(performance.now());
     }
 
-    /** A raw device frame through the current profile. */
+    /** A raw device frame through the current profile; then the actions whose switch it just turned on. */
     raw(f: RawFrame): void {
-        if (!this.profile) return;
-        mapFrame(this.profile, f, this.ch);
-        this.ch[4] = this.latch.level(this.profile.arm, f) ? 1 : -1;
+        const p = this.profile;
+        if (!p) return;
+        mapFrame(p, f, this.ch);
+        this.ch[4] = profileArmLevel(p, f, this.latch) ? 1 : -1;
         this.push(f.t);
+        for (const a of this.actions.update(p.switches, f)) this.onSwitchAction?.(a);
     }
 
-    /** Space or the on-screen ARM button, for a profile that arms with the key (no switch). */
+    /** Space or the on-screen ARM button, for a profile that arms with the key (no switch, no arm range). */
     toggleArm(): void {
-        if (this.profile?.arm?.kind !== 'key') return;
+        if (this.profile?.arm?.kind !== 'key' || armByRanges(this.profile)) return;
         this.latch.toggle();
         this.ch[4] = this.latch.on ? 1 : -1;
         this.push(performance.now()); // act at once, not at the next radio report
+    }
+
+    /** A switch input of the device in use as the pilot reads it (inputLabel): "CH6", or "button 3" on a gamepad. */
+    nameOf(input: SwitchInput): string {
+        return inputLabel(input, this.source === 'gamepad' ? 'gamepad' : 'hid');
     }
 
     /** For the HUD; the same object every call (the HUD reads it at 10 Hz). */
     view(): ArmView {
         const v = this.armView;
         const a = this.profile?.arm ?? null;
-        v.armKind = !a ? null : a.kind === 'button' ? (a.toggle ? 'toggle' : 'button') : a.kind;
-        v.armLabel = !a ? '' : a.kind === 'axis' ? t('wizard.armSource.ch', { n: a.index + 1 }) : a.kind === 'button' ? t('wizard.armSource.button', { n: a.bit + 1 }) : t('wizard.armSource.key');
+        const range = armByRanges(this.profile) ? this.profile?.switches?.ranges.find((r) => r.fn === 'arm') ?? null : null;
+        if (range) {
+            // the channel functions arm: "CH6" ("button 3" on a gamepad), as the Switches screen names it
+            v.armKind = range.input.kind;
+            v.armLabel = this.nameOf(range.input);
+        } else {
+            v.armKind = !a ? null : a.kind === 'button' ? (a.toggle ? 'toggle' : 'button') : a.kind;
+            v.armLabel = !a ? '' : a.kind === 'axis' ? t('wizard.armSource.ch', { n: a.index + 1 }) : a.kind === 'button' ? t('wizard.armSource.button', { n: a.bit + 1 }) : t('wizard.armSource.key');
+        }
         v.mode = this.profile?.mode ?? getStickMode();
         v.source = this.source;
         return v;
@@ -282,7 +333,7 @@ export class Controls {
      */
     private dropLatch(): void {
         const a = this.profile?.arm;
-        const latched = !!a && (a.kind === 'key' || (a.kind === 'button' && !!a.toggle));
+        const latched = !!a && !armByRanges(this.profile) && (a.kind === 'key' || (a.kind === 'button' && !!a.toggle));
         if (!latched || !this.latch.on) return;
         const b = this.gate.block;
         if (b === 'stale' || (b === 'crashed' ? !this.keepArmed : !this.gate.armed)) {

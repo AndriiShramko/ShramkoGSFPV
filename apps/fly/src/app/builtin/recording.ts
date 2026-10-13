@@ -188,6 +188,17 @@ export class Recording {
     }
 
     /**
+     * A start by hand (REC, the dot, F9, the pause menu, a radio switch). `activation`: inside a click or
+     * a key press, so a folder whose permission is 'prompt' is asked first, before any other await
+     * (the activation does not outlive it). Without one (a radio switch) nothing is asked: the access
+     * stays 'prompt', the file goes to the browser's storage and the bar offers "Allow".
+     */
+    async startByHand(activation: boolean, legacyV02 = false): Promise<string> {
+        if (activation && this.folder && this.access === 'prompt') await this.allow();
+        return this.queue(() => this.start({ auto: false, activation, legacyV02 }));
+    }
+
+    /**
      * Starts a recording at the quality as flown (cinema mode only raises it). `activation`: called
      * inside a click or a key press, so the folder's permission may be asked. `legacyV02`: test only,
      * the negative control (v0.2's 30 fps track).

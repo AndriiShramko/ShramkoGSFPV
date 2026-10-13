@@ -97,6 +97,34 @@
 .rates-table th[scope="row"], .rates-table thead th:first-child { text-align: left; font-family: system-ui, sans-serif; }
 .rates-editor .btn { margin-top: 4px; min-height: 36px; padding: 6px 12px; }
 .rates-editor p { margin: 4px 0; }
+/* the rates editor (rates-editor.ts) is wide: its row puts the control under the name */
+.sr[data-id="tune.rates"] { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "head side" "meta side" "control control"; }
+.sr[data-id="tune.rates"] .sr-control { margin-top: 6px; }
+.rates-editor { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.re-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.re-type { min-height: 40px; background: var(--bg2); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; font: inherit; padding: 4px 8px; }
+.re-type:focus-visible, .re-qe input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.re-body { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+.re-left { display: flex; flex-direction: column; gap: 8px; min-width: 0; flex: 1 1 300px; }
+.re-table { width: 100%; }
+.re-table th { font-weight: 500; white-space: nowrap; }
+.re-table thead th { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: var(--muted); }
+.settings .re-table input.num { width: 100%; min-width: 52px; max-width: 76px; }
+.re-max { color: var(--muted); white-space: nowrap; }
+.re-limit { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.re-qe { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
+.re-qe[hidden] { display: none; }
+.re-qe input { flex: none; width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--accent); }
+.re-chart { flex: 1 1 260px; max-width: 420px; min-width: 0; height: auto; aspect-ratio: 320 / 180; border: 1px solid var(--line); border-radius: 10px; background: #0b0e12; }
+.re-grid line { stroke: #1f2630; stroke-width: 1; }
+.re-grid text, .re-legend text { fill: var(--muted); font: 10px/1 system-ui, sans-serif; }
+.re-line { stroke-width: 2; }
+.re-line.re-roll { stroke: #4ade80; } .re-line.re-pitch { stroke: #60a5fa; } .re-line.re-yaw { stroke: #fbbf24; }
+.re-legend .re-roll { fill: #4ade80; } .re-legend .re-pitch { fill: #60a5fa; } .re-legend .re-yaw { fill: #fbbf24; }
+.re-note:empty { display: none; }
+.re-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.re-cli { width: 100%; box-sizing: border-box; background: #0b0e12; color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font: 12px/1.4 ui-monospace, Consolas, monospace; }
+.re-cli[hidden] { display: none; }
 .thr-editor { display: inline-grid; grid-template-columns: auto auto; gap: 6px 10px; align-items: center; }
 .scale-editor { display: inline-flex; gap: 10px; align-items: center; }
 .scale-editor input[type=range] { width: 180px; accent-color: var(--accent); }

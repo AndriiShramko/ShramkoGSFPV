@@ -123,7 +123,11 @@ const PARAM_FIELDS: Readonly<Record<string, (o: ParamOverrides, v: unknown) => v
     // the setting is a percentage, sim-core a fraction (0.055 = Betaflight dshot_idle_value 550)
     'physics.idlePct': (o, v) => { o.idle = (v as number) / 100; },
     'tune.pid': (o, v) => { const p = v as PidValue; o.pid = { roll: [...p.roll], pitch: [...p.pitch], yaw: [...p.yaw] }; },
-    'tune.rates': (o, v) => { const r = v as RatesValue; o.rates = { type: r.type, roll: { ...r.roll }, pitch: { ...r.pitch }, yaw: { ...r.yaw }, rateLimit: r.rateLimit }; },
+    // quickrates_rc_expo travels with QUICK only (prefs keeps it only there)
+    'tune.rates': (o, v) => {
+        const r = v as RatesValue;
+        o.rates = { type: r.type, roll: { ...r.roll }, pitch: { ...r.pitch }, yaw: { ...r.yaw }, rateLimit: r.rateLimit, ...(r.type === 'QUICK' ? { quickRcExpo: r.quickRcExpo === true } : {}) };
+    },
     'tune.throttle': (o, v) => { const t = v as ThrottleValue; o.throttle = { mid: t.mid, expo: t.expo }; },
     'crash.enabled': (o, v) => { o.crashOn = v as boolean; },
     'level.angleLimitDeg': (o, v) => { o.level = { ...o.level, limitDeg: v as number }; },

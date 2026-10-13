@@ -63,8 +63,6 @@
   "prefs.storage.persisted.unknown": "Браузер может удалить их, если диск заполнится.",
   "prefs.storage.persist": "Защитить от удаления",
   "prefs.rates.import": "Импорт из Betaflight",
-  "prefs.rates.readOnly": "Из пресета дрона или вашего diff из Betaflight.",
-  "prefs.rates.max": "макс.",
   "prefs.throttle.mid": "Mid",
   "prefs.throttle.expo": "Expo"
 }

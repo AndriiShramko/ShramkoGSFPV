@@ -11,10 +11,20 @@ import { ModeChip, CHIP_MODES } from '../../ui/mode-chip';
 import { t } from '../../i18n';
 import type { Feature, FlightContext } from '../context';
 
-/** The radio input that decides the mode, as the pilot reads it on the radio ("CH6"), or null. */
-function radioSwitch(ctx: FlightContext): string | null {
+/**
+ * The radio input that decides the mode, as the pilot reads it on the radio ("CH6"), or null.
+ * With channel functions (Profile.switches) it names the inputs of the Angle / Horizon ranges as the
+ * Switches screen does (Controls.nameOf: "CH5", "CH5 / CH7" when they sit on two, "button 4" on a
+ * gamepad); else the wizard's mode switch or angle input.
+ */
+export function radioSwitch(ctx: Pick<FlightContext, 'controls'>): string | null {
     const c = ctx.controls;
     if (!c.radioDecides()) return null;
+    // the channel functions decide (the Switches screen): the channels of the Angle / Horizon ranges
+    const sw = c.profile?.switches;
+    if (sw) {
+        return [...new Set(sw.ranges.filter((r) => r.fn === 'angle' || r.fn === 'horizon').map((r) => c.nameOf(r.input)))].join(' / ');
+    }
     const ms = c.profile?.modeSwitch;
     if (ms) return ms.input.kind === 'axis' ? t('wizard.armSource.ch', { n: ms.input.index + 1 }) : t('wizard.armSource.button', { n: ms.input.bit + 1 });
     const a = c.profile?.angleMode;

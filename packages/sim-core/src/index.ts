@@ -1,6 +1,7 @@
 export * from './dmath';
 export * from './sha256';
 export * from './rates';
+export * from './rates-edit';
 export * from './params';
 export * from './sim';
 export * from './runner';
@@ -8,6 +9,7 @@ export * from './history';
 export * from './director';
 export * from './stats';
 export * from './bfdiff';
+export * from './bfaux';
 export * from './contracts';
 export * from './wind';
 

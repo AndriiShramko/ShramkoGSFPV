@@ -4,7 +4,7 @@ import type { Profile } from '@gsfpv/input';
 import { KeyboardSource } from '../devices/keyboard';
 import { findSavedHid, findSavedGamepad } from '../devices/reconnect';
 import { TouchSticks } from '../devices/touch';
-import { loadLastInput, saveLastInput, loadProfiles, profileFor } from '../controls';
+import { loadLastInput, saveLastInput, loadProfiles, profileFor, saveProfile } from '../controls';
 import type { LastInput } from '../controls';
 import { RadioScreen } from '../ui/radio';
 import type { RadioChoice } from '../ui/radio';
@@ -89,21 +89,26 @@ export class InputHost {
         }
     }
 
-    /** The Controls screen; the input in use is offered first (Fly, Recalibrate, Reverse channels). */
-    openRadio(firstOpen = false): void {
+    /**
+     * The Controls screen; the input in use is offered first (Fly, Recalibrate, Reverse channels,
+     * Switches). `view` 'switches' opens the radio in use on its Switches view (Settings' link).
+     */
+    openRadio(firstOpen = false, view?: 'switches'): void {
         const ctx = this.ctx;
         if (document.querySelector('.screen.radio')) return;
         ctx.pause('controls');
         // opened from the pause menu (its item or the top button): Controls takes the menu's place,
         // so closing Controls flies on, whichever way it was opened
         if (ctx.menu.isOpen) ctx.menu.close();
-        const r = new RadioScreen(ctx.ui, this.lastChoice, { firstOpen });
+        const r = new RadioScreen(ctx.ui, this.lastChoice, { firstOpen, view });
         ctx.hook.radio = r;
         r.onDone = (c) => { r.remove(); ctx.resume('controls'); this.use(c); };
         // Close / Esc: nothing changes (remove() gives the radio in use its frames back). Closed
         // before anything was chosen: the input from last time or the keyboard, never a dead screen
         r.onClose = () => {
             r.remove();
+            // the radio in use has its frames back (remove()): switches flipped on the screen run nothing
+            ctx.controls.resumeFrames();
             ctx.resume('controls');
             if (this.lastChoice) return;
             const c: RadioChoice = { kind: loadLastInput()?.kind === 'touch' ? 'touch' : 'keyboard', profile: null };
@@ -123,6 +128,9 @@ export class InputHost {
         this.touch = null;
         // the same input kept (Fly on the radio in use) stays armed; anything new starts disarmed
         if (c.profile !== ctx.controls.profile || c.kind !== ctx.controls.source) ctx.controls.setProfile(c.profile);
+        // the device's frames go (back) to the flight: an action switch flipped while a screen had
+        // them (Controls, Switches) runs nothing on the first frame
+        else ctx.controls.resumeFrames();
         ctx.controls.source = c.kind;
         if (c.kind === 'hid' && c.hid) c.hid.onFrame = (f) => ctx.controls.raw(f);
         if (c.kind === 'gamepad' && c.gamepad) c.gamepad.onFrame = (f) => ctx.controls.raw(f);
@@ -134,6 +142,25 @@ export class InputHost {
         this.lastChoice = c;
         if (remember) saveLastInput({ kind: c.kind, key: c.profile?.deviceKey });
         beacon('input_connected', { kind: c.kind });
+    }
+
+    /** The radio or gamepad in use, with its profile; null for touch, keyboard, or none. */
+    radioInUse(): RadioChoice | null {
+        const c = this.lastChoice;
+        return c && (c.kind === 'hid' || c.kind === 'gamepad') && c.profile ? c : null;
+    }
+
+    /**
+     * The radio in use with a changed setup (its switches from a Betaflight import): saved for that
+     * device and flown at once (a new arm gate: the switch must be seen off again). False when the
+     * profile is not the one of the radio in use.
+     */
+    replaceProfile(p: Profile): boolean {
+        const c = this.radioInUse();
+        if (!c || c.profile?.deviceKey !== p.deviceKey) return false;
+        saveProfile(p);
+        this.use({ ...c, profile: p });
+        return true;
     }
 
     /** "Connected: TX16S · Controls" on the Controls button for a while: what flies, and where to change it. */

@@ -60,7 +60,7 @@
   "set.tune.pid": "Ganancias PID (P / I / D / F)",
   "set.tune.pid.help": "P, I, D y feed-forward para alabeo, cabeceo y guiñada, para cada dron, como en Betaflight.",
   "set.tune.rates": "Rates (curvas de los sticks)",
-  "set.tune.rates.help": "Curvas de rates Betaflight, Actual, KISS o Raceflight, importadas de tu diff de la CLI de Betaflight, para cada dron.",
+  "set.tune.rates.help": "Curvas de los sticks para cada dron: Betaflight, Raceflight, KISS, Actual o Quick, con los números de Betaflight. Edítalas aquí o impórtalas de tu diff de la CLI de Betaflight; Copiar como CLI pasa los mismos rates a tu dron.",
   "set.tune.throttle": "Curva del acelerador",
   "set.tune.throttle.help": "Throttle mid y expo, como en Betaflight, para cada dron."
 }

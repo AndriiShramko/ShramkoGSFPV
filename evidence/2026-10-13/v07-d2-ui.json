@@ -1,0 +1,200 @@
+{
+  "name": "v07-d2-ui",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-13T09:24:02.967Z",
+    "gitHead": "37cb6de",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "base": "http://localhost:5297/fly/",
+  "pass": true,
+  "checks": {
+    "R1": {
+      "pass": true,
+      "types": [
+        "Betaflight",
+        "Raceflight",
+        "KISS",
+        "Actual",
+        "Quick"
+      ],
+      "heads": [
+        "Axis",
+        "Center Sensitivity \u00b0/s",
+        "Max Rate \u00b0/s",
+        "Expo",
+        "Full stick"
+      ],
+      "shown": {
+        "rc": "70",
+        "max": "670 \u00b0/s"
+      },
+      "stored": {
+        "type": "ACTUAL",
+        "roll": {
+          "rcRate": 7,
+          "rate": 80,
+          "expo": 0
+        },
+        "pitch": {
+          "rcRate": 7,
+          "rate": 67,
+          "expo": 0
+        },
+        "yaw": {
+          "rcRate": 7,
+          "rate": 67,
+          "expo": 0
+        },
+        "rateLimit": 1998
+      },
+      "after": {
+        "max": "800 \u00b0/s"
+      },
+      "refused": {
+        "value": "670",
+        "note": "\u201cfast\u201d is not a number, so Pitch Max Rate stays at 670 \u00b0/s.",
+        "stored": "ACTUAL"
+      }
+    },
+    "R2": {
+      "pass": true,
+      "quick": {
+        "type": "QUICK",
+        "roll": {
+          "rcRate": 161,
+          "rate": 81,
+          "expo": 0
+        },
+        "pitch": {
+          "rcRate": 139,
+          "rate": 67,
+          "expo": 0
+        },
+        "yaw": {
+          "rcRate": 139,
+          "rate": 67,
+          "expo": 0
+        },
+        "rateLimit": 1998,
+        "quickRcExpo": false
+      },
+      "maxQ": "810 \u00b0/s",
+      "note": "Switched from Actual to Quick: the Quick numbers whose curve is closest to yours over the whole stick travel, full stick first. The two curves differ by 32 \u00b0/s at most.",
+      "clip": [
+        "# ShramkoGSFPV rates\r",
+        "set rates_type = QUICK\r",
+        "set quickrates_rc_expo = OFF\r",
+        "set roll_rc_rate = 161\r"
+      ],
+      "reset": {
+        "stored": null,
+        "type": "ACTUAL"
+      }
+    },
+    "R3": {
+      "pass": true,
+      "line": "Switches of Lab EdgeTX radio: which channel arms, sets the flight mode or runs rewind, record and more.",
+      "opened": [
+        false,
+        "switches"
+      ]
+    },
+    "S1": {
+      "pass": true,
+      "start": {
+        "arm": "CH5",
+        "range": "1775\u20132100 \u00b5s"
+      },
+      "noFlip": "CH5",
+      "armNow": {
+        "ch": "CH6",
+        "range": "1675\u20132100 \u00b5s",
+        "on": "ON"
+      },
+      "modeSel": "CH5",
+      "positions": [
+        "Low: ACRO",
+        "Middle: HORIZON",
+        "High: ANGLE"
+      ],
+      "modeNow": "Now: HORIZON",
+      "ranges": [
+        {
+          "fn": "arm",
+          "input": {
+            "kind": "axis",
+            "index": 5
+          },
+          "lo": 1675,
+          "hi": 2100
+        },
+        {
+          "fn": "horizon",
+          "input": {
+            "kind": "axis",
+            "index": 4
+          },
+          "lo": 1325,
+          "hi": 1675
+        },
+        {
+          "fn": "angle",
+          "input": {
+            "kind": "axis",
+            "index": 4
+          },
+          "lo": 1675,
+          "hi": 2100
+        }
+      ],
+      "frames": {
+        "ch6High_ch5Low": [
+          1,
+          -1
+        ],
+        "ch6Low_ch5High": [
+          -1,
+          1
+        ],
+        "ch6High_ch5Mid": [
+          1,
+          0
+        ]
+      }
+    },
+    "S2": {
+      "pass": true,
+      "marks": {
+        "low": "7.33%",
+        "high": "92.67%"
+      },
+      "imported": {
+        "arm": "CH7",
+        "out": "Applied: ARM CH7 1700\u20132100, ANGLE CH5 900\u20131300, HORIZON CH5 1300\u20131700.Not in the simulator, left out: BEEPER, FLIP OVER AFTER CRASH, USER1."
+      },
+      "wide": {
+        "scroll": 1265,
+        "client": 1265
+      },
+      "narrow": {
+        "scroll": 360,
+        "client": 360,
+        "doc": 375,
+        "inner": 375
+      }
+    },
+    "E": {
+      "pass": true,
+      "errors": []
+    }
+  }
+}

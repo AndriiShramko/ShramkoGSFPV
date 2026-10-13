@@ -63,8 +63,6 @@
   "prefs.storage.persisted.unknown": "El navegador puede borrarlos si se llena el disco.",
   "prefs.storage.persist": "Protegerlos",
   "prefs.rates.import": "Importar de Betaflight",
-  "prefs.rates.readOnly": "Del preset del dron o de tu diff de Betaflight.",
-  "prefs.rates.max": "máx.",
   "prefs.throttle.mid": "Mid",
   "prefs.throttle.expo": "Expo"
 }

@@ -60,7 +60,7 @@
   "set.tune.pid": "PID gains (P / I / D / F)",
   "set.tune.pid.help": "P, I, D and feed-forward for roll, pitch and yaw, for each drone, as in Betaflight.",
   "set.tune.rates": "Rates (stick curves)",
-  "set.tune.rates.help": "Betaflight, Actual, KISS or Raceflight rate curves, imported from your Betaflight CLI diff, for each drone.",
+  "set.tune.rates.help": "Stick curves for each drone: Betaflight, Raceflight, KISS, Actual or Quick, with Betaflight's numbers. Edit them here or import them from your Betaflight CLI diff; Copy as CLI puts the same rates on your quad.",
   "set.tune.throttle": "Throttle curve",
   "set.tune.throttle.help": "Throttle mid and expo, as in Betaflight, for each drone."
 }

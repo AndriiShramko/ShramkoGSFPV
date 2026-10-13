@@ -242,12 +242,27 @@ describe('Betaflight diff import: refusals (negative controls)', () => {
         expect(twice.pid).toBeNull();
     });
 
-    it('(c) QUICK rates in the active rate profile are refused', () => {
+    it('(c) QUICK rates are read (v0.7); quickrates_rc_expo must be OFF or ON', () => {
         const quick = edit(D45, 'set thr_expo = 25', 'set thr_expo = 25\nset rates_type = QUICK');
         const r = parseBetaflightDiff(quick);
-        expect(r.errors.join(' ')).toMatch(/QUICK/);
-        expect(r.rates).toBeNull();
-        // ...but QUICK in an inactive rate profile does not matter.
+        expect(r.errors).toEqual([]);
+        expect(r.rates).toEqual({ type: 'QUICK', roll: { rcRate: 20, rate: 85, expo: 30 }, pitch: { rcRate: 20, rate: 85, expo: 30 }, yaw: { rcRate: 18, rate: 65, expo: 0 }, rateLimit: 1998, quickRcExpo: false });
+        // full stick of Quick = max(10 x srate, 2 x rc_rate)
+        expect(maxRate(r.rates!, 'roll')).toBeCloseTo(850, 9);
+        const on = parseBetaflightDiff(edit(quick, 'set rates_type = QUICK', 'set rates_type = QUICK\nset quickrates_rc_expo = ON'));
+        expect(on.errors).toEqual([]);
+        expect(on.rates?.quickRcExpo).toBe(true);
+        expect(on.ignored.map((g) => g.name)).not.toContain('quickrates_rc_expo');
+        // negative control: a value the lookup table does not have is refused, not read as OFF
+        const bad = parseBetaflightDiff(edit(quick, 'set rates_type = QUICK', 'set rates_type = QUICK\nset quickrates_rc_expo = 2'));
+        expect(bad.errors.join(' ')).toMatch(/quickrates_rc_expo/);
+        expect(bad.rates).toBeNull();
+        // with another type it changes nothing and is listed as ignored
+        const other = parseBetaflightDiff(edit(D45, 'set thr_expo = 25', 'set thr_expo = 25\nset quickrates_rc_expo = ON'));
+        expect(other.rates?.type).toBe('ACTUAL');
+        expect(other.rates).not.toHaveProperty('quickRcExpo');
+        expect(other.ignored.map((g) => g.name)).toContain('quickrates_rc_expo');
+        // QUICK in an inactive rate profile does not matter either.
         const inactive = edit(D45, 'set rates_type = BETAFLIGHT', 'set rates_type = QUICK');
         expect(parseBetaflightDiff(inactive).errors).toEqual([]);
         // An unknown lookup name is refused too; the lookup is case-insensitive like the CLI.

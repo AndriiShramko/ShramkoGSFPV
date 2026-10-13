@@ -63,8 +63,6 @@
   "prefs.storage.persisted.unknown": "The browser may delete them if the disk fills up.",
   "prefs.storage.persist": "Keep them safe",
   "prefs.rates.import": "Import from Betaflight",
-  "prefs.rates.readOnly": "From the drone preset or your Betaflight diff.",
-  "prefs.rates.max": "max",
   "prefs.throttle.mid": "Mid",
   "prefs.throttle.expo": "Expo"
 }

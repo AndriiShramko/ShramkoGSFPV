@@ -33,7 +33,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSy
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { DRONE_IDS, FLYING_CODES, KEYMAP, RATE_TYPES, SCALE_MAX, SCALE_MIN, SCHEMA, SHARED_WITH_FLYING, buildCatalogue, capText, helpKey, isPresetRef, labelKey } from '../packages/prefs/src/index';
-import type { CatalogueKey, CataloguePreset, CatalogueSetting, Dict, GroupId, SettingDef } from '../packages/prefs/src/index';
+import type { CatalogueKey, CataloguePreset, CatalogueSetting, Dict, GroupId, RatesType, SettingDef } from '../packages/prefs/src/index';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const LANGS = ['en', 'es', 'pl', 'ru'] as const;
@@ -196,7 +196,8 @@ export interface Features {
     locales: Record<Lang, FeatureLocale>;
 }
 
-const RATE_NAMES: Readonly<Record<string, string>> = { BETAFLIGHT: 'Betaflight', ACTUAL: 'Actual', KISS: 'KISS', RACEFLIGHT: 'Raceflight' };
+/** Betaflight Configurator's names of the rate types; a type without a name here is a type error. */
+const RATE_NAMES: Readonly<Record<RatesType, string>> = { BETAFLIGHT: 'Betaflight', RACEFLIGHT: 'Raceflight', KISS: 'KISS', ACTUAL: 'Actual', QUICK: 'Quick' };
 
 export interface Provenance { fly: number; derived: number; fallback: number; fallbackIds: string[] }
 
@@ -260,7 +261,7 @@ export function buildFeatures(date: string): { features: Features; provenance: P
                     if (def.kind === 'pid' || def.kind === 'rates' || def.kind === 'throttle') row.preset = true;
                     if (def.kind === 'pid') row.range = '0–250';
                     if (def.kind === 'throttle') row.range = '0–100';
-                    if (def.kind === 'rates') row.options = RATE_TYPES.map((r) => RATE_NAMES[r] ?? r);
+                    if (def.kind === 'rates') row.options = RATE_TYPES.map((r) => RATE_NAMES[r]);
                     if (def.kind === 'transform') {
                         row.default = '1×';
                         row.range = `${SCALE_MIN}×–${SCALE_MAX}×`;
@@ -340,7 +341,9 @@ const QA: readonly { needs: readonly string[]; q: string; a: (c: Lookup) => stri
     { needs: ['respawn.auto', 'respawn.delayS', 'respawn.rewindS'], q: 'Does the drone respawn by itself after a crash?', a: (c) => `Yes: ${c.row('respawn.delayS').default} after a crash it is back in the air, ${c.row('respawn.rewindS').default} before the crash, on an invisible platform. Both times are settings (${c.row('respawn.delayS').range} and ${c.row('respawn.rewindS').range}).` },
     { needs: ['camera.fovDeg', 'camera.uptiltDeg'], q: 'Can I change the FPV camera angle and field of view?', a: (c) => `Yes, for each drone separately: camera uptilt ${c.row('camera.uptiltDeg').range} and field of view ${c.row('camera.fovDeg').range} (${c.row('camera.uptiltDeg').default} and ${c.row('camera.fovDeg').default} on the default drone).` },
     { needs: ['physics.gravity', 'physics.gravityMode'], q: 'Can I fly an FPV drone on the Moon or Mars?', a: (c) => `Yes: gravity is a setting (${c.row('physics.gravity').range}): Earth 9.81, Moon 1.62, Mars 3.72, zero-g or anything in between. **${c.row('physics.gravityMode').label}** picks how the motors cope: ${anyOf(c.row('physics.gravityMode').options)}.` },
-    { needs: ['tune.pid', 'tune.rates', 'tune.throttle'], q: 'Can I use my own Betaflight rates and PID in the simulator?', a: (c) => `Yes: paste \`diff\` or \`diff all\` from the Betaflight CLI. The rates (${anyOf(c.row('tune.rates').options)} curves), the PID and the throttle curve are set for the drone you fly; every drone keeps its own.` },
+    { needs: ['tune.pid', 'tune.rates', 'tune.throttle'], q: 'Can I use my own Betaflight rates and PID in the simulator?', a: (c) => `Yes: edit the rates in Settings (${anyOf(c.row('tune.rates').options)} curves, under Betaflight Configurator's names, with a live chart and Copy as CLI back to your quad) or paste \`diff\` or \`diff all\` from the Betaflight CLI. The rates, the PID and the throttle curve are set for the drone you fly; every drone keeps its own.` },
+    // the radio's channel functions live on the Controls screen (Profile.switches), linked from the stick-mode row
+    { needs: ['input.stickMode'], q: 'Can I choose which radio channel arms the drone or switches the flight mode?', a: () => "Yes: Controls, then Switches. Arm, Angle / Horizon / Acro and functions such as rewind and record go on any channel from CH5 to CH16, with ranges as in Betaflight's Modes tab. Flip a switch to assign it, or paste a Betaflight `diff all` to take its aux lines." },
     { needs: ['physics.vCrash'], q: 'How hard can I hit a wall before it counts as a crash?', a: (c) => `That is the **${c.row('physics.vCrash').label}**: ${c.row('physics.vCrash').range} for each drone, ${c.row('physics.vCrash').default} by default. Slower touches slide along the wall.` },
     { needs: ['scene.transform'], q: 'Can I fix a scan that has the wrong size?', a: (c) => `Yes: **${c.row('scene.transform').label}** scales the scan around the drone (${c.row('scene.transform').range}) and is remembered for each scan.` },
     { needs: ['voxels.show'], q: 'Can I see the collision walls of a Gaussian Splatting scan?', a: (c) => `Yes: the **${c.row('voxels.show').label}** shows the voxels you crash into, ${c.row('voxels.show').options.slice(1).join(' or ').toLowerCase()}.` },

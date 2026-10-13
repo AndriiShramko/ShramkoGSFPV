@@ -16,6 +16,8 @@ import { q } from '../env';
 import type { RecorderInfo } from '../../cinema';
 import type { TestHook } from '../test-hook';
 import type { Feature, FlightContext } from '../context';
+import { isUserGesture } from '../keys';
+import type { ActionHandler } from '../keys';
 import { Recording, autoRespawnShipped } from './recording';
 import type { Saved } from './recording';
 import './cinema.css';
@@ -50,6 +52,19 @@ const SHARED = new WeakMap<FlightContext, RecordingShare>();
 /** The cinema feature's recording for this page (installed before the export). */
 export function recordingOf(ctx: FlightContext): RecordingShare | undefined {
     return SHARED.get(ctx);
+}
+
+/**
+ * The record action's handler (F9, or a radio switch's range): starts or stops through `toggle`. A key
+ * press may ask for the folder's permission straight away; a switch only while the page still holds a
+ * user activation (keys.ts isUserGesture), else its recording goes to the browser's storage and the
+ * bar keeps offering "Allow saving to <folder>".
+ */
+export function recordAction(toggle: (activation: boolean) => void): ActionHandler {
+    return (e, source) => {
+        e.preventDefault();
+        toggle(isUserGesture(source));
+    };
 }
 
 const mmss = (s: number): string => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -206,9 +221,7 @@ export const cinema: Feature = {
         async function startRec(activation: boolean, legacyV02 = false): Promise<string> {
             note = '';
             noteOffer = [];
-            // a bar click or F9 is a user activation: ask for the folder straight away, before any await
-            if (activation && rec.folder && rec.access === 'prompt') await rec.allow();
-            return rec.queue(() => rec.start({ auto: false, activation, legacyV02 }));
+            return rec.startByHand(activation, legacyV02);
         }
 
         async function stopRec(): Promise<RecorderInfo | null> {
@@ -315,13 +328,10 @@ export const cinema: Feature = {
             if (c.id === 'recording.auto' || c.id === 'recording.folder') render();
         });
 
-        ctx.keys.on('record.toggle', (e) => {
-            e.preventDefault();
-            toggle(true);
-        });
+        ctx.keys.on('record.toggle', recordAction(toggle));
         ctx.menu.add({ id: 'pause.cinema', action: null, labelKey: 'pause.cinema', order: 100, section: 'tools', run: toggleCinema });
         ctx.menu.add({
-            id: 'pause.record', action: 'record.toggle', labelKey: 'rec.menu', order: 101, section: 'tools', run: () => toggle(true), enabled: () => rec.allowed,
+            id: 'pause.record', action: 'record.toggle', labelKey: 'rec.menu', order: 101, section: 'tools', run: (gesture) => toggle(gesture), enabled: () => rec.allowed,
             label: () => (rec.recording ? t('rec.menu.stop', { t: mmss(rec.seconds) }) : t('rec.menu.start'))
         });
 

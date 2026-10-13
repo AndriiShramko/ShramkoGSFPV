@@ -10,7 +10,24 @@ import { typing } from '../devices/keyboard';
 /** Where bindings listen now: 'crash' while the crash view is up. */
 export type KeyState = 'flight' | 'crash';
 
-type Handler = (e: KeyboardEvent) => void;
+/**
+ * Where an action came from: 'key' (a key press, which the browser counts as the user's activation)
+ * or 'switch' (a radio switch's range through trigger(); a radio or gamepad frame is never one).
+ */
+export type ActionSource = 'key' | 'switch';
+
+/** A feature's handler of an action: the keydown (a synthetic one for a switch) and where it came from. */
+export type ActionHandler = (e: KeyboardEvent, source: ActionSource) => void;
+
+/**
+ * May the handler of an action from `source` use the user's activation (ask for a permission, open a
+ * picker)? A key press is one. A switch only while the page still holds one from a click or a key
+ * moments before (navigator.userActivation), as the auto-record start decides it; asked without one,
+ * the browser refuses and the refusal would stick (the recording folder reads "no access").
+ */
+export function isUserGesture(source: ActionSource, nav: { userActivation?: { isActive: boolean } } | undefined = globalThis.navigator): boolean {
+    return source === 'key' || !!nav?.userActivation?.isActive;
+}
 
 /** Keys that still count while a text field has the focus: Esc is never text (it closes the panel around the field). */
 const THROUGH_TEXT = new Set(['Escape']);
@@ -25,7 +42,7 @@ export interface KeyRouterOptions {
 }
 
 export class KeyRouter {
-    private handlers = new Map<ActionId, Handler[]>();
+    private handlers = new Map<ActionId, ActionHandler[]>();
     private blocks = new Set<() => boolean>();
     private readonly map: readonly KeyBinding[];
     private readonly isText: (target: EventTarget | null) => boolean;
@@ -44,7 +61,7 @@ export class KeyRouter {
      * bindings take handlers: a planned binding would never run, a flying one belongs to keyboard
      * flying, so both throw here instead of failing silently.
      */
-    on(action: ActionId, run: Handler): () => void {
+    on(action: ActionId, run: ActionHandler): () => void {
         const b = bindingOf(action, this.map);
         if (!b) throw new Error(`no key binding for ${action}`);
         if (b.flying) throw new Error(`${action} is read by keyboard flying, not routed`);
@@ -58,7 +75,7 @@ export class KeyRouter {
         return !!b && !b.flying && b.status === 'shipped';
     }
 
-    private push(action: ActionId, run: Handler): () => void {
+    private push(action: ActionId, run: ActionHandler): () => void {
         const list = this.handlers.get(action) ?? [];
         list.push(run);
         this.handlers.set(action, list);
@@ -89,7 +106,26 @@ export class KeyRouter {
         const list = this.handlers.get(action);
         const run = list?.[list.length - 1];
         if (!run) return null;
-        run(e);
+        run(e, 'key');
+        return action;
+    }
+
+    /**
+     * Run an action as if its first key were pressed (a radio switch's action, app/builtin/switches.ts):
+     * the same handler, the same blocks (a screen with keys of its own) and the same `when` (a
+     * crash-only action only in the crash state). The handler gets a synthetic keydown of that key
+     * and the source 'switch': no user activation (isUserGesture). The action that ran, or null.
+     */
+    trigger(action: ActionId): ActionId | null {
+        for (const b of this.blocks) if (b()) return null;
+        const binding = bindingOf(action, this.map);
+        if (!binding || !this.routes(action)) return null;
+        if (binding.when !== 'always' && binding.when !== this.state()) return null;
+        const list = this.handlers.get(action);
+        const run = list?.[list.length - 1];
+        if (!run) return null;
+        const k = binding.keys[0];
+        run(makeKeyEvent(k.code, !!k.shift), 'switch');
         return action;
     }
 
@@ -99,4 +135,10 @@ export class KeyRouter {
         target.addEventListener('keydown', onKey);
         return () => target.removeEventListener('keydown', onKey);
     }
+}
+
+/** A keydown for a triggered action: a real KeyboardEvent in the page, a plain stand-in where there is none (Node tests). */
+function makeKeyEvent(code: string, shiftKey: boolean): KeyboardEvent {
+    if (typeof KeyboardEvent === 'function') return new KeyboardEvent('keydown', { code, shiftKey, cancelable: true });
+    return { type: 'keydown', code, key: '', shiftKey, repeat: false, ctrlKey: false, altKey: false, metaKey: false, target: null, preventDefault: () => undefined } as unknown as KeyboardEvent;
 }
