@@ -100,7 +100,7 @@ if (want('S1')) {
     const topPhone = await phone.p.evaluate(`(() => { const b = document.querySelector('[data-action=share-top]'); const l = b && b.querySelector('.share-top-label'); return b ? { shown: b.getClientRects().length > 0, label: getComputedStyle(l).display !== 'none' } : null; })()`) as Any;
     await phone.close();
     const pass = !!top && top.shown && top.label === true && /\(L\)/.test(top.aria) && !!topPhone && topPhone.shown && topPhone.label === false
-        && opened && st.entry === 'key' && new RegExp(`/scenes/${SHOWCASE}/$`).test(st.url) && st.paused === true && st.targets === 6 && st.instagram
+        && opened && st.entry === 'key' && new RegExp(`(/s/[A-Za-z0-9_-]{11}|/scenes/${SHOWCASE}/)$`).test(st.url) /* the picture page /s/<id> when the API takes the picture (the live site), else the scene page */ && st.paused === true && st.targets === 6 && st.instagram
         && after.panel === false && after.paused === false && before === false && insta.field === insta.url;
     out.S1 = { pass, top, topPhone, panel: st, instagramFallback: insta, after, control: { what: 'before L: no share panel on the page', fired: before === false }, consoleErrors: errors };
     console.log('S1', pass ? 'PASS' : 'FAIL', JSON.stringify({ top, topPhone, url: st.url, entry: st.entry, paused: st.paused, after, insta }));
