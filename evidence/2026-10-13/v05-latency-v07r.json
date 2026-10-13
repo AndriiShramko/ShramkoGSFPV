@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-13T09:06:41.628Z",
-    "gitHead": "1101406",
+    "date": "2026-10-13T09:34:29.135Z",
+    "gitHead": "f803278",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -1265,6 +1265,4686 @@
           "evToRaf": 6.300000047682261,
           "evToPresent": 40,
           "handlerDelay": 0.30000001192092896
+        }
+      ]
+    },
+    "before-2.22.4-sorted-gov0": {
+      "label": "before-2.22.4-sorted-gov0",
+      "site": "http://127.0.0.1:5371",
+      "scene": "39e63ce9",
+      "visibility": "visible",
+      "render": "on",
+      "canvas": [
+        1280,
+        800
+      ],
+      "presses": 40,
+      "periodMs": 33.099999999998545,
+      "tickLagMs": {
+        "n": 40,
+        "p50": 0,
+        "p95": 0,
+        "min": 0,
+        "max": 0
+      },
+      "eventToFrameMs": {
+        "n": 40,
+        "p50": 16.6,
+        "p95": 28.4,
+        "min": 0.5,
+        "max": 30
+      },
+      "eventToDrawnFrameMs": {
+        "n": 40,
+        "p50": 16.6,
+        "p95": 28.4,
+        "min": 0.5,
+        "max": 30
+      },
+      "eventToGpuDoneMs": {
+        "n": 40,
+        "p50": 34.8,
+        "p95": 48.3,
+        "min": 17.8,
+        "max": 49.3
+      },
+      "eventToScreenEstMs": {
+        "n": 40,
+        "p50": 82.8,
+        "p95": 94.6,
+        "min": 66.7,
+        "max": 96.2
+      },
+      "eventToPresentationMs": {
+        "n": 40,
+        "p50": 48,
+        "p95": 64,
+        "min": 32,
+        "max": 64
+      },
+      "handlerDelayMs": {
+        "n": 40,
+        "p50": 0.2,
+        "p95": 0.3,
+        "min": 0.1,
+        "max": 0.8
+      },
+      "hog": null,
+      "qs": "governor=0",
+      "drawing": null,
+      "engineStochastic": false,
+      "budgetMAtEnd": 4,
+      "governor": {
+        "step": 0,
+        "changes": 0,
+        "enabled": false
+      },
+      "maxFramesInFlight": 2,
+      "webgpu": true,
+      "deviceLost": false,
+      "heldShare": 0,
+      "rafHz": 30,
+      "submitToDoneLast30Ms": {
+        "n": 30,
+        "p50": 17.1,
+        "p95": 22.4,
+        "min": 15.6,
+        "max": 24.2
+      },
+      "hud": {
+        "inputToScreenMs": 88.44999999999709,
+        "rafToPresentMs": 36.79999999999927,
+        "submitToDoneMs": 17.099999964237213,
+        "skips": 3
+      },
+      "guardTail": [
+        {
+          "t": 1759.2999999523163,
+          "what": "trigger"
+        },
+        {
+          "t": 1889.7999999523163,
+          "what": "sample",
+          "frames": 2.06
+        },
+        {
+          "t": 1889.7999999523163,
+          "what": "skip",
+          "ms": 101
+        },
+        {
+          "t": 2323.2999999523163,
+          "what": "sample",
+          "frames": 1.02
+        },
+        {
+          "t": 2722.7999999523163,
+          "what": "sample",
+          "frames": 3.04
+        },
+        {
+          "t": 2722.7999999523163,
+          "what": "skip",
+          "ms": 101
+        },
+        {
+          "t": 2921.699999988079,
+          "what": "sample",
+          "frames": 2.03
+        },
+        {
+          "t": 2921.699999988079,
+          "what": "skip",
+          "ms": 101
+        },
+        {
+          "t": 3355.7999999523163,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 3593.7999999523163,
+          "what": "sample",
+          "frames": 1.06
+        },
+        {
+          "t": 4156,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 6257,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 8355.899999976158,
+          "what": "sample",
+          "frames": 1.1
+        },
+        {
+          "t": 10456.899999976158,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 12556.599999964237,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 14656.099999964237,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 16755.69999998808,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 18857.099999964237,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 20956.69999998808,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 23057.099999964237,
+          "what": "sample",
+          "frames": 1.11
+        }
+      ],
+      "rows": [
+        {
+          "id": 1,
+          "ts": 10637.299999952316,
+          "evToDrawnRaf": 17.00000004768299,
+          "evToGpuDone": 36.60000002384186,
+          "evToScreenEst": 83.20000004768008,
+          "tickLag": 0,
+          "evToRaf": 17.00000004768299,
+          "evToPresent": 48,
+          "handlerDelay": 0.800000011920929
+        },
+        {
+          "id": 2,
+          "ts": 10895.899999976158,
+          "evToDrawnRaf": 25.000000023841494,
+          "evToGpuDone": 45.30000001192093,
+          "evToScreenEst": 91.20000002383858,
+          "tickLag": 0,
+          "evToRaf": 25.000000023841494,
+          "evToPresent": 56,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 3,
+          "ts": 11176.699999988079,
+          "evToDrawnRaf": 10.600000011920201,
+          "evToGpuDone": 29.599999964237213,
+          "evToScreenEst": 76.80000001191729,
+          "tickLag": 0,
+          "evToRaf": 10.600000011920201,
+          "evToPresent": 48,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 4,
+          "ts": 11515.399999976158,
+          "evToDrawnRaf": 5.500000023841494,
+          "evToGpuDone": 25.399999976158142,
+          "evToScreenEst": 71.70000002383858,
+          "tickLag": 0,
+          "evToRaf": 5.500000023841494,
+          "evToPresent": 40,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 5,
+          "ts": 11853,
+          "evToDrawnRaf": 1,
+          "evToGpuDone": 18.5,
+          "evToScreenEst": 67.19999999999709,
+          "tickLag": 0,
+          "evToRaf": 1,
+          "evToPresent": 32,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 6,
+          "ts": 12235.099999964237,
+          "evToDrawnRaf": 18.800000035762423,
+          "evToGpuDone": 37,
+          "evToScreenEst": 85.00000003575951,
+          "tickLag": 0,
+          "evToRaf": 18.800000035762423,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 7,
+          "ts": 12637.399999976158,
+          "evToDrawnRaf": 16.600000023841858,
+          "evToGpuDone": 34.80000001192093,
+          "evToScreenEst": 82.80000002383895,
+          "tickLag": 0,
+          "evToRaf": 16.600000023841858,
+          "evToPresent": 48,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 8,
+          "ts": 12899.899999976158,
+          "evToDrawnRaf": 21.000000023841494,
+          "evToGpuDone": 38,
+          "evToScreenEst": 87.20000002383858,
+          "tickLag": 0,
+          "evToRaf": 21.000000023841494,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 9,
+          "ts": 13195.5,
+          "evToDrawnRaf": 25.299999999999272,
+          "evToGpuDone": 44.39999997615814,
+          "evToScreenEst": 91.49999999999636,
+          "tickLag": 0,
+          "evToRaf": 25.299999999999272,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 10,
+          "ts": 13550.5,
+          "evToDrawnRaf": 3.600000000000364,
+          "evToGpuDone": 23.299999952316284,
+          "evToScreenEst": 69.79999999999745,
+          "tickLag": 0,
+          "evToRaf": 3.600000000000364,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 11,
+          "ts": 13886.799999952316,
+          "evToDrawnRaf": 0.5000000476829882,
+          "evToGpuDone": 17.80000001192093,
+          "evToScreenEst": 66.70000004768008,
+          "tickLag": 0,
+          "evToRaf": 0.5000000476829882,
+          "evToPresent": 32,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 12,
+          "ts": 14139.199999988079,
+          "evToDrawnRaf": 15.100000011920201,
+          "evToGpuDone": 32.30000001192093,
+          "evToScreenEst": 81.30000001191729,
+          "tickLag": 0,
+          "evToRaf": 15.100000011920201,
+          "evToPresent": 48,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 13,
+          "ts": 14432.099999964237,
+          "evToDrawnRaf": 21.800000035762423,
+          "evToGpuDone": 42.60000002384186,
+          "evToScreenEst": 88.00000003575951,
+          "tickLag": 0,
+          "evToRaf": 21.800000035762423,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 14,
+          "ts": 14693.199999988079,
+          "evToDrawnRaf": 27.6000000119202,
+          "evToGpuDone": 45.80000001192093,
+          "evToScreenEst": 93.80000001191729,
+          "tickLag": 0,
+          "evToRaf": 27.6000000119202,
+          "evToPresent": 64,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 15,
+          "ts": 15062,
+          "evToDrawnRaf": 25.399999999999636,
+          "evToGpuDone": 45.09999996423721,
+          "evToScreenEst": 91.59999999999673,
+          "tickLag": 0,
+          "evToRaf": 25.399999999999636,
+          "evToPresent": 56,
+          "handlerDelay": 0.09999996423721313
+        },
+        {
+          "id": 16,
+          "ts": 15291.399999976158,
+          "evToDrawnRaf": 29.500000023841494,
+          "evToGpuDone": 47.10000002384186,
+          "evToScreenEst": 95.70000002383858,
+          "tickLag": 0,
+          "evToRaf": 29.500000023841494,
+          "evToPresent": 64,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 17,
+          "ts": 15692.399999976158,
+          "evToDrawnRaf": 28.40000002384113,
+          "evToGpuDone": 49.30000001192093,
+          "evToScreenEst": 94.60000002383822,
+          "tickLag": 0,
+          "evToRaf": 28.40000002384113,
+          "evToPresent": 64,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 18,
+          "ts": 15999.799999952316,
+          "evToDrawnRaf": 21.100000047683352,
+          "evToGpuDone": 41.80000001192093,
+          "evToScreenEst": 87.30000004768044,
+          "tickLag": 0,
+          "evToRaf": 21.100000047683352,
+          "evToPresent": 56,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 19,
+          "ts": 16230.5,
+          "evToDrawnRaf": 23.5,
+          "evToGpuDone": 41.299999952316284,
+          "evToScreenEst": 89.69999999999709,
+          "tickLag": 0,
+          "evToRaf": 23.5,
+          "evToPresent": 56,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 20,
+          "ts": 16601,
+          "evToDrawnRaf": 19.799999999999272,
+          "evToGpuDone": 39,
+          "evToScreenEst": 85.99999999999636,
+          "tickLag": 0,
+          "evToRaf": 19.799999999999272,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 21,
+          "ts": 16910.899999976158,
+          "evToDrawnRaf": 10.000000023843313,
+          "evToGpuDone": 27.399999976158142,
+          "evToScreenEst": 76.2000000238404,
+          "tickLag": 0,
+          "evToRaf": 10.000000023843313,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 22,
+          "ts": 17219.5,
+          "evToDrawnRaf": 1.2999999999992724,
+          "evToGpuDone": 23.799999952316284,
+          "evToScreenEst": 67.49999999999636,
+          "tickLag": 0,
+          "evToRaf": 1.2999999999992724,
+          "evToPresent": 32,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 23,
+          "ts": 17451.799999952316,
+          "evToDrawnRaf": 2.4000000476844434,
+          "evToGpuDone": 19.900000035762787,
+          "evToScreenEst": 68.60000004768153,
+          "tickLag": 0,
+          "evToRaf": 2.4000000476844434,
+          "evToPresent": 32,
+          "handlerDelay": 0.10000002384185791
+        },
+        {
+          "id": 24,
+          "ts": 17745.69999998808,
+          "evToDrawnRaf": 8.500000011921657,
+          "evToGpuDone": 28.899999976158142,
+          "evToScreenEst": 74.70000001191875,
+          "tickLag": 0,
+          "evToRaf": 8.500000011921657,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 25,
+          "ts": 18119.399999976158,
+          "evToDrawnRaf": 1.4000000238411303,
+          "evToGpuDone": 20.399999976158142,
+          "evToScreenEst": 67.60000002383822,
+          "tickLag": 0,
+          "evToRaf": 1.4000000238411303,
+          "evToPresent": 32,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 26,
+          "ts": 18442.399999976158,
+          "evToDrawnRaf": 11.500000023843313,
+          "evToGpuDone": 31.19999998807907,
+          "evToScreenEst": 77.7000000238404,
+          "tickLag": 0,
+          "evToRaf": 11.500000023843313,
+          "evToPresent": 48,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 27,
+          "ts": 18816.19999998808,
+          "evToDrawnRaf": 4.600000011920201,
+          "evToGpuDone": 25,
+          "evToScreenEst": 70.80000001191729,
+          "tickLag": 0,
+          "evToRaf": 4.600000011920201,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 28,
+          "ts": 19049.69999998808,
+          "evToDrawnRaf": 4.400000011919474,
+          "evToGpuDone": 23.099999964237213,
+          "evToScreenEst": 70.60000001191656,
+          "tickLag": 0,
+          "evToRaf": 4.400000011919474,
+          "evToPresent": 40,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 29,
+          "ts": 19283.399999976158,
+          "evToDrawnRaf": 4.000000023843313,
+          "evToGpuDone": 22.5,
+          "evToScreenEst": 70.2000000238404,
+          "tickLag": 0,
+          "evToRaf": 4.000000023843313,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 30,
+          "ts": 19639.099999964237,
+          "evToDrawnRaf": 14.800000035764242,
+          "evToGpuDone": 33.90000003576279,
+          "evToScreenEst": 81.00000003576133,
+          "tickLag": 0,
+          "evToRaf": 14.800000035764242,
+          "evToPresent": 48,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 31,
+          "ts": 19902.599999964237,
+          "evToDrawnRaf": 18.20000003576206,
+          "evToGpuDone": 38.40000003576279,
+          "evToScreenEst": 84.40000003575915,
+          "tickLag": 0,
+          "evToRaf": 18.20000003576206,
+          "evToPresent": 48,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 32,
+          "ts": 20226.19999998808,
+          "evToDrawnRaf": 28.000000011921657,
+          "evToGpuDone": 48.30000001192093,
+          "evToScreenEst": 94.20000001191875,
+          "tickLag": 0,
+          "evToRaf": 28.000000011921657,
+          "evToPresent": 64,
+          "handlerDelay": 0.3999999761581421
+        },
+        {
+          "id": 33,
+          "ts": 20471.69999998808,
+          "evToDrawnRaf": 15.500000011921657,
+          "evToGpuDone": 34.30000001192093,
+          "evToScreenEst": 81.70000001191875,
+          "tickLag": 0,
+          "evToRaf": 15.500000011921657,
+          "evToPresent": 48,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 34,
+          "ts": 20674.399999976158,
+          "evToDrawnRaf": 13.000000023843313,
+          "evToGpuDone": 32.30000001192093,
+          "evToScreenEst": 79.2000000238404,
+          "tickLag": 0,
+          "evToRaf": 13.000000023843313,
+          "evToPresent": 48,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 35,
+          "ts": 20862.799999952316,
+          "evToDrawnRaf": 24.50000004768299,
+          "evToGpuDone": 45.30000001192093,
+          "evToScreenEst": 90.70000004768008,
+          "tickLag": 0,
+          "evToRaf": 24.50000004768299,
+          "evToPresent": 56,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 36,
+          "ts": 21063.399999976158,
+          "evToDrawnRaf": 23.90000002384113,
+          "evToGpuDone": 43.30000001192093,
+          "evToScreenEst": 90.10000002383822,
+          "tickLag": 0,
+          "evToRaf": 23.90000002384113,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 37,
+          "ts": 21308.299999952316,
+          "evToDrawnRaf": 12.600000047685171,
+          "evToGpuDone": 34.60000002384186,
+          "evToScreenEst": 78.80000004768226,
+          "tickLag": 0,
+          "evToRaf": 12.600000047685171,
+          "evToPresent": 48,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 38,
+          "ts": 21524,
+          "evToDrawnRaf": 30,
+          "evToGpuDone": 48.299999952316284,
+          "evToScreenEst": 96.19999999999709,
+          "tickLag": 0,
+          "evToRaf": 30,
+          "evToPresent": 64,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 39,
+          "ts": 21770.5,
+          "evToDrawnRaf": 16.700000000000728,
+          "evToGpuDone": 38.799999952316284,
+          "evToScreenEst": 82.89999999999782,
+          "tickLag": 0,
+          "evToRaf": 16.700000000000728,
+          "evToPresent": 48,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 40,
+          "ts": 22044,
+          "evToDrawnRaf": 10.200000000000728,
+          "evToGpuDone": 29.099999964237213,
+          "evToScreenEst": 76.39999999999782,
+          "tickLag": 0,
+          "evToRaf": 10.200000000000728,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        }
+      ]
+    },
+    "after-2.23.2-sorted-gov0": {
+      "label": "after-2.23.2-sorted-gov0",
+      "site": "http://127.0.0.1:5373",
+      "scene": "39e63ce9",
+      "visibility": "visible",
+      "render": "on",
+      "canvas": [
+        1280,
+        800
+      ],
+      "presses": 40,
+      "periodMs": 33.099999999998545,
+      "tickLagMs": {
+        "n": 40,
+        "p50": 0,
+        "p95": 0,
+        "min": 0,
+        "max": 0
+      },
+      "eventToFrameMs": {
+        "n": 40,
+        "p50": 21.8,
+        "p95": 31.6,
+        "min": 0.7,
+        "max": 32.9
+      },
+      "eventToDrawnFrameMs": {
+        "n": 40,
+        "p50": 21.8,
+        "p95": 31.6,
+        "min": 0.7,
+        "max": 32.9
+      },
+      "eventToGpuDoneMs": {
+        "n": 40,
+        "p50": 40,
+        "p95": 50.1,
+        "min": 6,
+        "max": 53.2
+      },
+      "eventToScreenEstMs": {
+        "n": 40,
+        "p50": 88,
+        "p95": 97.8,
+        "min": 66.9,
+        "max": 99.1
+      },
+      "eventToPresentationMs": {
+        "n": 40,
+        "p50": 56,
+        "p95": 64,
+        "min": 32,
+        "max": 64
+      },
+      "handlerDelayMs": {
+        "n": 40,
+        "p50": 0.3,
+        "p95": 0.6,
+        "min": 0.1,
+        "max": 1.5
+      },
+      "hog": null,
+      "qs": "governor=0",
+      "drawing": {
+        "scene": "39e63ce9",
+        "mode": "auto",
+        "request": null,
+        "stochastic": false,
+        "budgetM": 4,
+        "note": null,
+        "engineStochastic": false,
+        "engineBudgetM": 4,
+        "handheld": false,
+        "webgpu": true
+      },
+      "engineStochastic": false,
+      "budgetMAtEnd": 4,
+      "governor": {
+        "step": 0,
+        "changes": 0,
+        "enabled": false
+      },
+      "maxFramesInFlight": 2,
+      "webgpu": true,
+      "deviceLost": false,
+      "heldShare": 0,
+      "rafHz": 30,
+      "submitToDoneLast30Ms": {
+        "n": 30,
+        "p50": 4.6,
+        "p95": 8.1,
+        "min": 3.5,
+        "max": 9.5
+      },
+      "hud": {
+        "inputToScreenMs": 87.54999999999927,
+        "rafToPresentMs": 35.900000000001455,
+        "submitToDoneMs": 4.600000023841858,
+        "skips": 2
+      },
+      "guardTail": [
+        {
+          "t": 1971.8999999761581,
+          "what": "trigger"
+        },
+        {
+          "t": 2103,
+          "what": "sample",
+          "frames": 2.05
+        },
+        {
+          "t": 2103,
+          "what": "gpu",
+          "ms": 63
+        },
+        {
+          "t": 2938.699999988079,
+          "what": "sample",
+          "frames": 3.13
+        },
+        {
+          "t": 2938.699999988079,
+          "what": "skip",
+          "ms": 100
+        },
+        {
+          "t": 3136,
+          "what": "sample",
+          "frames": 2.12
+        },
+        {
+          "t": 3136,
+          "what": "skip",
+          "ms": 101
+        },
+        {
+          "t": 3569.199999988079,
+          "what": "sample",
+          "frames": 1.08
+        },
+        {
+          "t": 5668.699999988079,
+          "what": "sample",
+          "frames": 1.08
+        },
+        {
+          "t": 7769.099999964237,
+          "what": "sample",
+          "frames": 1.08
+        },
+        {
+          "t": 9868.599999964237,
+          "what": "sample",
+          "frames": 1.08
+        },
+        {
+          "t": 11969,
+          "what": "sample",
+          "frames": 1.08
+        },
+        {
+          "t": 14068.699999988079,
+          "what": "sample",
+          "frames": 1.08
+        },
+        {
+          "t": 16169.899999976158,
+          "what": "sample",
+          "frames": 1.08
+        },
+        {
+          "t": 18270.599999964237,
+          "what": "sample",
+          "frames": 1.08
+        },
+        {
+          "t": 20368.899999976158,
+          "what": "sample",
+          "frames": 1.08
+        },
+        {
+          "t": 22469.899999976158,
+          "what": "sample",
+          "frames": 1.08
+        }
+      ],
+      "rows": [
+        {
+          "id": 1,
+          "ts": 10849.599999964237,
+          "evToDrawnRaf": 17.20000003576206,
+          "evToGpuDone": 32.30000001192093,
+          "evToScreenEst": 83.40000003575915,
+          "tickLag": 0,
+          "evToRaf": 17.20000003576206,
+          "evToPresent": 48,
+          "handlerDelay": 0.40000003576278687
+        },
+        {
+          "id": 2,
+          "ts": 11234,
+          "evToDrawnRaf": 32.899999999999636,
+          "evToGpuDone": 48.80000001192093,
+          "evToScreenEst": 99.09999999999673,
+          "tickLag": 0,
+          "evToRaf": 32.899999999999636,
+          "evToPresent": 64,
+          "handlerDelay": 1.5
+        },
+        {
+          "id": 3,
+          "ts": 11436,
+          "evToDrawnRaf": 30.799999999999272,
+          "evToGpuDone": 46.30000001192093,
+          "evToScreenEst": 96.99999999999636,
+          "tickLag": 0,
+          "evToRaf": 30.799999999999272,
+          "evToPresent": 64,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 4,
+          "ts": 11742.599999964237,
+          "evToDrawnRaf": 24.20000003576206,
+          "evToGpuDone": 41.30000001192093,
+          "evToScreenEst": 90.40000003575915,
+          "tickLag": 0,
+          "evToRaf": 24.20000003576206,
+          "evToPresent": 56,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 5,
+          "ts": 11958,
+          "evToDrawnRaf": 8.799999999999272,
+          "evToGpuDone": 25.099999964237213,
+          "evToScreenEst": 74.99999999999636,
+          "tickLag": 0,
+          "evToRaf": 8.799999999999272,
+          "evToPresent": 40,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 6,
+          "ts": 12222.599999964237,
+          "evToDrawnRaf": 10.900000035762787,
+          "evToGpuDone": 29.900000035762787,
+          "evToScreenEst": 77.10000003575988,
+          "tickLag": 0,
+          "evToRaf": 10.900000035762787,
+          "evToPresent": 48,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 7,
+          "ts": 12592.300000011921,
+          "evToDrawnRaf": 8.099999988078707,
+          "evToGpuDone": 29,
+          "evToScreenEst": 74.2999999880758,
+          "tickLag": 0,
+          "evToRaf": 8.099999988078707,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 8,
+          "ts": 13007.199999988079,
+          "evToDrawnRaf": 26.500000011921657,
+          "evToGpuDone": 40,
+          "evToScreenEst": 92.70000001191875,
+          "tickLag": 0,
+          "evToRaf": 26.500000011921657,
+          "evToPresent": 56,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 9,
+          "ts": 13270.199999988079,
+          "evToDrawnRaf": 30.200000011920565,
+          "evToGpuDone": 42.60000002384186,
+          "evToScreenEst": 96.40000001191765,
+          "tickLag": 0,
+          "evToRaf": 30.200000011920565,
+          "evToPresent": 64,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 10,
+          "ts": 13503.099999964237,
+          "evToDrawnRaf": 30.600000035763514,
+          "evToGpuDone": 41.90000003576279,
+          "evToScreenEst": 96.8000000357606,
+          "tickLag": 0,
+          "evToRaf": 30.600000035763514,
+          "evToPresent": 64,
+          "handlerDelay": 0.5
+        },
+        {
+          "id": 11,
+          "ts": 13702.099999964237,
+          "evToDrawnRaf": 31.600000035763514,
+          "evToGpuDone": 43.30000001192093,
+          "evToScreenEst": 97.8000000357606,
+          "tickLag": 0,
+          "evToRaf": 31.600000035763514,
+          "evToPresent": 64,
+          "handlerDelay": 0.40000003576278687
+        },
+        {
+          "id": 12,
+          "ts": 14056.300000011921,
+          "evToDrawnRaf": 10.599999988078707,
+          "evToGpuDone": 21.299999952316284,
+          "evToScreenEst": 76.7999999880758,
+          "tickLag": 0,
+          "evToRaf": 10.599999988078707,
+          "evToPresent": 48,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 13,
+          "ts": 14319.699999988079,
+          "evToDrawnRaf": 14.100000011920201,
+          "evToGpuDone": 24.600000023841858,
+          "evToScreenEst": 80.30000001191729,
+          "tickLag": 0,
+          "evToRaf": 14.100000011920201,
+          "evToPresent": 48,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 14,
+          "ts": 14722.300000011921,
+          "evToDrawnRaf": 11.499999988078343,
+          "evToGpuDone": 31.19999998807907,
+          "evToScreenEst": 77.69999998807543,
+          "tickLag": 0,
+          "evToRaf": 11.499999988078343,
+          "evToPresent": 48,
+          "handlerDelay": 0.5999999642372131
+        },
+        {
+          "id": 15,
+          "ts": 14970,
+          "evToDrawnRaf": 30.5,
+          "evToGpuDone": 50.69999998807907,
+          "evToScreenEst": 96.69999999999709,
+          "tickLag": 0,
+          "evToRaf": 30.5,
+          "evToPresent": 64,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 16,
+          "ts": 15309.599999964237,
+          "evToDrawnRaf": 24.20000003576206,
+          "evToGpuDone": 44.90000003576279,
+          "evToScreenEst": 90.40000003575915,
+          "tickLag": 0,
+          "evToRaf": 24.20000003576206,
+          "evToPresent": 56,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 17,
+          "ts": 15713.399999976158,
+          "evToDrawnRaf": 20.300000023842586,
+          "evToGpuDone": 39.19999998807907,
+          "evToScreenEst": 86.50000002383968,
+          "tickLag": 0,
+          "evToRaf": 20.300000023842586,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 18,
+          "ts": 16055.699999988079,
+          "evToDrawnRaf": 11.100000011920201,
+          "evToGpuDone": 21.80000001192093,
+          "evToScreenEst": 77.30000001191729,
+          "tickLag": 0,
+          "evToRaf": 11.100000011920201,
+          "evToPresent": 48,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 19,
+          "ts": 16426.099999964237,
+          "evToDrawnRaf": 7.6000000357635145,
+          "evToGpuDone": 20.100000023841858,
+          "evToScreenEst": 73.8000000357606,
+          "tickLag": 0,
+          "evToRaf": 7.6000000357635145,
+          "evToPresent": 40,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 20,
+          "ts": 16656.099999964237,
+          "evToDrawnRaf": 10.70000003576206,
+          "evToGpuDone": 22.100000023841858,
+          "evToScreenEst": 76.90000003575915,
+          "tickLag": 0,
+          "evToRaf": 10.70000003576206,
+          "evToPresent": 48,
+          "handlerDelay": 0.10000002384185791
+        },
+        {
+          "id": 21,
+          "ts": 16917.399999976158,
+          "evToDrawnRaf": 16.100000023841858,
+          "evToGpuDone": 28,
+          "evToScreenEst": 82.30000002383895,
+          "tickLag": 0,
+          "evToRaf": 16.100000023841858,
+          "evToPresent": 48,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 22,
+          "ts": 17305.599999964237,
+          "evToDrawnRaf": 27.900000035762787,
+          "evToGpuDone": 39.30000001192093,
+          "evToScreenEst": 94.10000003575988,
+          "tickLag": 0,
+          "evToRaf": 27.900000035762787,
+          "evToPresent": 64,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 23,
+          "ts": 17629,
+          "evToDrawnRaf": 4.799999999999272,
+          "evToGpuDone": 24.399999976158142,
+          "evToScreenEst": 70.99999999999636,
+          "tickLag": 0,
+          "evToRaf": 4.799999999999272,
+          "evToPresent": 40,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 24,
+          "ts": 17876.5,
+          "evToDrawnRaf": 23.700000000000728,
+          "evToGpuDone": 42.89999997615814,
+          "evToScreenEst": 89.89999999999782,
+          "tickLag": 0,
+          "evToRaf": 23.700000000000728,
+          "evToPresent": 56,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 25,
+          "ts": 18139.399999976158,
+          "evToDrawnRaf": 27.500000023843313,
+          "evToGpuDone": 49.60000002384186,
+          "evToScreenEst": 93.7000000238404,
+          "tickLag": 0,
+          "evToRaf": 27.500000023843313,
+          "evToPresent": 64,
+          "handlerDelay": 0.10000002384185791
+        },
+        {
+          "id": 26,
+          "ts": 18510.5,
+          "evToDrawnRaf": 23.299999999999272,
+          "evToGpuDone": 42.09999996423721,
+          "evToScreenEst": 89.49999999999636,
+          "tickLag": 0,
+          "evToRaf": 23.299999999999272,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 27,
+          "ts": 18913.899999976158,
+          "evToDrawnRaf": 19.800000023842586,
+          "evToGpuDone": 44.80000001192093,
+          "evToScreenEst": 86.00000002383968,
+          "tickLag": 0,
+          "evToRaf": 19.800000023842586,
+          "evToPresent": 56,
+          "handlerDelay": 0.10000002384185791
+        },
+        {
+          "id": 28,
+          "ts": 19301.19999998808,
+          "evToDrawnRaf": 32.6000000119202,
+          "evToGpuDone": 50.10000002384186,
+          "evToScreenEst": 98.80000001191729,
+          "tickLag": 0,
+          "evToRaf": 32.6000000119202,
+          "evToPresent": 64,
+          "handlerDelay": 1.5
+        },
+        {
+          "id": 29,
+          "ts": 19505.30000001192,
+          "evToDrawnRaf": 28.299999988077616,
+          "evToGpuDone": 46.19999998807907,
+          "evToScreenEst": 94.4999999880747,
+          "tickLag": 0,
+          "evToRaf": 28.299999988077616,
+          "evToPresent": 64,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 30,
+          "ts": 19812,
+          "evToDrawnRaf": 21.799999999999272,
+          "evToGpuDone": 40.30000001192093,
+          "evToScreenEst": 87.99999999999636,
+          "tickLag": 0,
+          "evToRaf": 21.799999999999272,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 31,
+          "ts": 20060.19999998808,
+          "evToDrawnRaf": 6.700000011922384,
+          "evToGpuDone": 28,
+          "evToScreenEst": 72.90000001191947,
+          "tickLag": 0,
+          "evToRaf": 6.700000011922384,
+          "evToPresent": 40,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 32,
+          "ts": 20459.599999964237,
+          "evToDrawnRaf": 7.300000035764242,
+          "evToGpuDone": 34.90000003576279,
+          "evToScreenEst": 73.50000003576133,
+          "tickLag": 0,
+          "evToRaf": 7.300000035764242,
+          "evToPresent": 40,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 33,
+          "ts": 20676.30000001192,
+          "evToDrawnRaf": 24.099999988080526,
+          "evToGpuDone": 41.299999952316284,
+          "evToScreenEst": 90.29999998807762,
+          "tickLag": 0,
+          "evToRaf": 24.099999988080526,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 34,
+          "ts": 20970,
+          "evToDrawnRaf": 30.200000000000728,
+          "evToGpuDone": 47.5,
+          "evToScreenEst": 96.39999999999782,
+          "tickLag": 0,
+          "evToRaf": 30.200000000000728,
+          "evToPresent": 64,
+          "handlerDelay": 0.3999999761581421
+        },
+        {
+          "id": 35,
+          "ts": 21218.30000001192,
+          "evToDrawnRaf": 15.499999988078343,
+          "evToGpuDone": 35.299999952316284,
+          "evToScreenEst": 81.69999998807543,
+          "tickLag": 0,
+          "evToRaf": 15.499999988078343,
+          "evToPresent": 48,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 36,
+          "ts": 21435.19999998808,
+          "evToDrawnRaf": 31.6000000119202,
+          "evToGpuDone": 53.19999998807907,
+          "evToScreenEst": 97.80000001191729,
+          "tickLag": 0,
+          "evToRaf": 31.6000000119202,
+          "evToPresent": 64,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 37,
+          "ts": 21680.80000001192,
+          "evToDrawnRaf": 19.599999988080526,
+          "evToGpuDone": 46.19999998807907,
+          "evToScreenEst": 85.79999998807762,
+          "tickLag": 0,
+          "evToRaf": 19.599999988080526,
+          "evToPresent": 56,
+          "handlerDelay": 0.09999996423721313
+        },
+        {
+          "id": 38,
+          "ts": 21943.599999964237,
+          "evToDrawnRaf": 23.20000003576206,
+          "evToGpuDone": 29.900000035762787,
+          "evToScreenEst": 89.40000003575915,
+          "tickLag": 0,
+          "evToRaf": 23.20000003576206,
+          "evToPresent": 56,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 39,
+          "ts": 22299.30000001192,
+          "evToDrawnRaf": 0.699999988079071,
+          "evToGpuDone": 6,
+          "evToScreenEst": 66.89999998807616,
+          "tickLag": 0,
+          "evToRaf": 0.699999988079071,
+          "evToPresent": 32,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 40,
+          "ts": 22593,
+          "evToDrawnRaf": 7.200000000000728,
+          "evToGpuDone": 14.399999976158142,
+          "evToScreenEst": 73.39999999999782,
+          "tickLag": 0,
+          "evToRaf": 7.200000000000728,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        }
+      ]
+    },
+    "after-2.23.2-stochastic-gov0": {
+      "label": "after-2.23.2-stochastic-gov0",
+      "site": "http://127.0.0.1:5373",
+      "scene": "39e63ce9",
+      "visibility": "visible",
+      "render": "on",
+      "canvas": [
+        1280,
+        800
+      ],
+      "presses": 40,
+      "periodMs": 33.099999999998545,
+      "tickLagMs": {
+        "n": 40,
+        "p50": 0,
+        "p95": 0,
+        "min": 0,
+        "max": 1
+      },
+      "eventToFrameMs": {
+        "n": 40,
+        "p50": 14.6,
+        "p95": 31.5,
+        "min": 0.4,
+        "max": 33.2
+      },
+      "eventToDrawnFrameMs": {
+        "n": 40,
+        "p50": 14.6,
+        "p95": 31.5,
+        "min": 0.4,
+        "max": 33.2
+      },
+      "eventToGpuDoneMs": {
+        "n": 40,
+        "p50": 33.8,
+        "p95": 49.5,
+        "min": 17.4,
+        "max": 52
+      },
+      "eventToScreenEstMs": {
+        "n": 40,
+        "p50": 80.8,
+        "p95": 97.7,
+        "min": 66.6,
+        "max": 99.4
+      },
+      "eventToPresentationMs": {
+        "n": 40,
+        "p50": 48,
+        "p95": 64,
+        "min": 32,
+        "max": 64
+      },
+      "handlerDelayMs": {
+        "n": 40,
+        "p50": 0.3,
+        "p95": 0.4,
+        "min": 0.1,
+        "max": 1.5
+      },
+      "hog": null,
+      "qs": "governor=0&drawing=stochastic",
+      "drawing": {
+        "scene": "39e63ce9",
+        "mode": "stochastic",
+        "request": null,
+        "stochastic": true,
+        "budgetM": 4,
+        "note": null,
+        "engineStochastic": true,
+        "engineBudgetM": 4,
+        "handheld": false,
+        "webgpu": true
+      },
+      "engineStochastic": true,
+      "budgetMAtEnd": 4,
+      "governor": {
+        "step": 0,
+        "changes": 0,
+        "enabled": false
+      },
+      "maxFramesInFlight": 2,
+      "webgpu": true,
+      "deviceLost": false,
+      "heldShare": 0,
+      "rafHz": 30,
+      "submitToDoneLast30Ms": {
+        "n": 30,
+        "p50": 16,
+        "p95": 22.2,
+        "min": 13.9,
+        "max": 23.7
+      },
+      "hud": {
+        "inputToScreenMs": 87.84999999999854,
+        "rafToPresentMs": 36.20000000000073,
+        "submitToDoneMs": 16,
+        "skips": 2
+      },
+      "guardTail": [
+        {
+          "t": 1597.300000011921,
+          "what": "trigger"
+        },
+        {
+          "t": 1693.8999999761581,
+          "what": "sample",
+          "frames": 1.05
+        },
+        {
+          "t": 2561.599999964237,
+          "what": "sample",
+          "frames": 3.11
+        },
+        {
+          "t": 2561.599999964237,
+          "what": "skip",
+          "ms": 100
+        },
+        {
+          "t": 3026.300000011921,
+          "what": "sample",
+          "frames": 2.02
+        },
+        {
+          "t": 3026.300000011921,
+          "what": "skip",
+          "ms": 100
+        },
+        {
+          "t": 3466.5,
+          "what": "sample",
+          "frames": 1.09
+        },
+        {
+          "t": 5560.599999964237,
+          "what": "sample",
+          "frames": 1.09
+        },
+        {
+          "t": 7661.800000011921,
+          "what": "sample",
+          "frames": 1.09
+        },
+        {
+          "t": 9760.699999988079,
+          "what": "sample",
+          "frames": 1.09
+        },
+        {
+          "t": 11861.599999964237,
+          "what": "sample",
+          "frames": 1.09
+        },
+        {
+          "t": 13961.800000011921,
+          "what": "sample",
+          "frames": 1.09
+        },
+        {
+          "t": 16060.399999976158,
+          "what": "sample",
+          "frames": 1.09
+        },
+        {
+          "t": 18161,
+          "what": "sample",
+          "frames": 1.09
+        },
+        {
+          "t": 20260.599999964237,
+          "what": "sample",
+          "frames": 1.09
+        },
+        {
+          "t": 22360.5,
+          "what": "sample",
+          "frames": 1.09
+        }
+      ],
+      "rows": [
+        {
+          "id": 1,
+          "ts": 10573.800000011921,
+          "evToDrawnRaf": 18.299999988079435,
+          "evToGpuDone": 36.59999996423721,
+          "evToScreenEst": 84.49999998807652,
+          "tickLag": 0,
+          "evToRaf": 18.299999988079435,
+          "evToPresent": 48,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 2,
+          "ts": 10860.5,
+          "evToDrawnRaf": 31.399999999999636,
+          "evToGpuDone": 49.19999998807907,
+          "evToScreenEst": 97.59999999999673,
+          "tickLag": 0,
+          "evToRaf": 31.399999999999636,
+          "evToPresent": 64,
+          "handlerDelay": 0.3999999761581421
+        },
+        {
+          "id": 3,
+          "ts": 11154.399999976158,
+          "evToDrawnRaf": 4.200000023842222,
+          "evToGpuDone": 23.30000001192093,
+          "evToScreenEst": 70.40000002383931,
+          "tickLag": 0,
+          "evToRaf": 4.200000023842222,
+          "evToPresent": 40,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 4,
+          "ts": 11464,
+          "evToDrawnRaf": 27.899999999999636,
+          "evToGpuDone": 47.39999997615814,
+          "evToScreenEst": 94.09999999999673,
+          "tickLag": 0,
+          "evToRaf": 27.899999999999636,
+          "evToPresent": 64,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 5,
+          "ts": 11848.300000011921,
+          "evToDrawnRaf": 10.399999988079799,
+          "evToGpuDone": 31.19999998807907,
+          "evToScreenEst": 76.59999998807689,
+          "tickLag": 0,
+          "evToRaf": 10.399999988079799,
+          "evToPresent": 40,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 6,
+          "ts": 12123.699999988079,
+          "evToDrawnRaf": 1.6000000119202014,
+          "evToGpuDone": 21.100000023841858,
+          "evToScreenEst": 67.80000001191729,
+          "tickLag": 0,
+          "evToRaf": 1.6000000119202014,
+          "evToPresent": 32,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 7,
+          "ts": 12491.399999976158,
+          "evToDrawnRaf": 0.4000000238411303,
+          "evToGpuDone": 20.30000001192093,
+          "evToScreenEst": 66.60000002383822,
+          "tickLag": 0,
+          "evToRaf": 0.4000000238411303,
+          "evToPresent": 32,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 8,
+          "ts": 12784.300000011921,
+          "evToDrawnRaf": 7.699999988079071,
+          "evToGpuDone": 24.19999998807907,
+          "evToScreenEst": 73.89999998807616,
+          "tickLag": 0,
+          "evToRaf": 7.699999988079071,
+          "evToPresent": 40,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 9,
+          "ts": 13075.399999976158,
+          "evToDrawnRaf": 16.500000023841494,
+          "evToGpuDone": 37.80000001192093,
+          "evToScreenEst": 82.70000002383858,
+          "tickLag": 0,
+          "evToRaf": 16.500000023841494,
+          "evToPresent": 48,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 10,
+          "ts": 13445.300000011921,
+          "evToDrawnRaf": 13.399999988079799,
+          "evToGpuDone": 33.799999952316284,
+          "evToScreenEst": 79.59999998807689,
+          "tickLag": 0,
+          "evToRaf": 13.399999988079799,
+          "evToPresent": 48,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 11,
+          "ts": 13767.599999964237,
+          "evToDrawnRaf": 24.400000035762787,
+          "evToGpuDone": 42,
+          "evToScreenEst": 90.60000003575988,
+          "tickLag": 0,
+          "evToRaf": 24.400000035762787,
+          "evToPresent": 56,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 12,
+          "ts": 14025.5,
+          "evToDrawnRaf": 33.20000000000073,
+          "evToGpuDone": 52,
+          "evToScreenEst": 99.39999999999782,
+          "tickLag": 1,
+          "evToRaf": 33.20000000000073,
+          "evToPresent": 64,
+          "handlerDelay": 1.5
+        },
+        {
+          "id": 13,
+          "ts": 14240.300000011921,
+          "evToDrawnRaf": 18.299999988079435,
+          "evToGpuDone": 37.799999952316284,
+          "evToScreenEst": 84.49999998807652,
+          "tickLag": 0,
+          "evToRaf": 18.299999988079435,
+          "evToPresent": 48,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 14,
+          "ts": 14578.199999988079,
+          "evToDrawnRaf": 13.800000011920929,
+          "evToGpuDone": 30.899999976158142,
+          "evToScreenEst": 80.00000001191802,
+          "tickLag": 0,
+          "evToRaf": 13.800000011920929,
+          "evToPresent": 48,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 15,
+          "ts": 14979.300000011921,
+          "evToDrawnRaf": 12.699999988079071,
+          "evToGpuDone": 32.19999998807907,
+          "evToScreenEst": 78.89999998807616,
+          "tickLag": 0,
+          "evToRaf": 12.699999988079071,
+          "evToPresent": 48,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 16,
+          "ts": 15348.099999964237,
+          "evToDrawnRaf": 10.50000003576315,
+          "evToGpuDone": 28.400000035762787,
+          "evToScreenEst": 76.70000003576024,
+          "tickLag": 0,
+          "evToRaf": 10.50000003576315,
+          "evToPresent": 40,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 17,
+          "ts": 15546.699999988079,
+          "evToDrawnRaf": 12.000000011921657,
+          "evToGpuDone": 33.69999998807907,
+          "evToScreenEst": 78.20000001191875,
+          "tickLag": 0,
+          "evToRaf": 12.000000011921657,
+          "evToPresent": 48,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 18,
+          "ts": 15760.5,
+          "evToDrawnRaf": 31.5,
+          "evToGpuDone": 49.5,
+          "evToScreenEst": 97.69999999999709,
+          "tickLag": 0,
+          "evToRaf": 31.5,
+          "evToPresent": 64,
+          "handlerDelay": 0.3999999761581421
+        },
+        {
+          "id": 19,
+          "ts": 15962.099999964237,
+          "evToDrawnRaf": 29.70000003576206,
+          "evToGpuDone": 47.5,
+          "evToScreenEst": 95.90000003575915,
+          "tickLag": 0,
+          "evToRaf": 29.70000003576206,
+          "evToPresent": 64,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 20,
+          "ts": 16328.699999988079,
+          "evToDrawnRaf": 30.000000011921657,
+          "evToGpuDone": 48.39999997615814,
+          "evToScreenEst": 96.20000001191875,
+          "tickLag": 0,
+          "evToRaf": 30.000000011921657,
+          "evToPresent": 64,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 21,
+          "ts": 16620.899999976158,
+          "evToDrawnRaf": 4.200000023840403,
+          "evToGpuDone": 23.19999998807907,
+          "evToScreenEst": 70.40000002383749,
+          "tickLag": 0,
+          "evToRaf": 4.200000023840403,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 22,
+          "ts": 16912.69999998808,
+          "evToDrawnRaf": 12.300000011920929,
+          "evToGpuDone": 29.80000001192093,
+          "evToScreenEst": 78.50000001191802,
+          "tickLag": 0,
+          "evToRaf": 12.300000011920929,
+          "evToPresent": 48,
+          "handlerDelay": 0.3999999761581421
+        },
+        {
+          "id": 23,
+          "ts": 17174.69999998808,
+          "evToDrawnRaf": 17.200000011922384,
+          "evToGpuDone": 36,
+          "evToScreenEst": 83.40000001191947,
+          "tickLag": 0,
+          "evToRaf": 17.200000011922384,
+          "evToPresent": 48,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 24,
+          "ts": 17390.80000001192,
+          "evToDrawnRaf": 1.0999999880805262,
+          "evToGpuDone": 19.099999964237213,
+          "evToScreenEst": 67.29999998807762,
+          "tickLag": 0,
+          "evToRaf": 1.0999999880805262,
+          "evToPresent": 32,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 25,
+          "ts": 17778.69999998808,
+          "evToDrawnRaf": 13.300000011920929,
+          "evToGpuDone": 30,
+          "evToScreenEst": 79.50000001191802,
+          "tickLag": 0,
+          "evToRaf": 13.300000011920929,
+          "evToPresent": 48,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 26,
+          "ts": 18089,
+          "evToDrawnRaf": 2.900000000001455,
+          "evToGpuDone": 21.599999964237213,
+          "evToScreenEst": 69.09999999999854,
+          "tickLag": 0,
+          "evToRaf": 2.900000000001455,
+          "evToPresent": 40,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 27,
+          "ts": 18410.5,
+          "evToDrawnRaf": 14.599999999998545,
+          "evToGpuDone": 33.09999996423721,
+          "evToScreenEst": 80.79999999999563,
+          "tickLag": 0,
+          "evToRaf": 14.599999999998545,
+          "evToPresent": 48,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 28,
+          "ts": 18624.5,
+          "evToDrawnRaf": 0.5999999999985448,
+          "evToGpuDone": 17.399999976158142,
+          "evToScreenEst": 66.79999999999563,
+          "tickLag": 0,
+          "evToRaf": 0.5999999999985448,
+          "evToPresent": 32,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 29,
+          "ts": 18998,
+          "evToDrawnRaf": 27.200000000000728,
+          "evToGpuDone": 44.30000001192093,
+          "evToScreenEst": 93.39999999999782,
+          "tickLag": 0,
+          "evToRaf": 27.200000000000728,
+          "evToPresent": 64,
+          "handlerDelay": 0.09999996423721313
+        },
+        {
+          "id": 30,
+          "ts": 19228.30000001192,
+          "evToDrawnRaf": 30.3999999880798,
+          "evToGpuDone": 49.19999998807907,
+          "evToScreenEst": 96.59999998807689,
+          "tickLag": 0,
+          "evToRaf": 30.3999999880798,
+          "evToPresent": 64,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 31,
+          "ts": 19492.19999998808,
+          "evToDrawnRaf": 32.900000011919474,
+          "evToGpuDone": 50.30000001192093,
+          "evToScreenEst": 99.10000001191656,
+          "tickLag": 0,
+          "evToRaf": 32.900000011919474,
+          "evToPresent": 64,
+          "handlerDelay": 1.300000011920929
+        },
+        {
+          "id": 32,
+          "ts": 19770.80000001192,
+          "evToDrawnRaf": 21.19999998807907,
+          "evToGpuDone": 38.39999997615814,
+          "evToScreenEst": 87.39999998807616,
+          "tickLag": 0,
+          "evToRaf": 21.19999998807907,
+          "evToPresent": 56,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 33,
+          "ts": 20002,
+          "evToDrawnRaf": 23,
+          "evToGpuDone": 39.09999996423721,
+          "evToScreenEst": 89.19999999999709,
+          "tickLag": 0,
+          "evToRaf": 23,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 34,
+          "ts": 20232.099999964237,
+          "evToDrawnRaf": 26.300000035764242,
+          "evToGpuDone": 46.30000001192093,
+          "evToScreenEst": 92.50000003576133,
+          "tickLag": 0,
+          "evToRaf": 26.300000035764242,
+          "evToPresent": 56,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 35,
+          "ts": 20586.099999964237,
+          "evToDrawnRaf": 5.900000035762787,
+          "evToGpuDone": 23.30000001192093,
+          "evToScreenEst": 72.10000003575988,
+          "tickLag": 0,
+          "evToRaf": 5.900000035762787,
+          "evToPresent": 40,
+          "handlerDelay": 0.40000003576278687
+        },
+        {
+          "id": 36,
+          "ts": 20820.099999964237,
+          "evToDrawnRaf": 5.000000035761332,
+          "evToGpuDone": 22.600000023841858,
+          "evToScreenEst": 71.20000003575842,
+          "tickLag": 0,
+          "evToRaf": 5.000000035761332,
+          "evToPresent": 40,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 37,
+          "ts": 21052,
+          "evToDrawnRaf": 6.400000000001455,
+          "evToGpuDone": 24.19999998807907,
+          "evToScreenEst": 72.59999999999854,
+          "tickLag": 0,
+          "evToRaf": 6.400000000001455,
+          "evToPresent": 40,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 38,
+          "ts": 21405.899999976158,
+          "evToDrawnRaf": 19.200000023840403,
+          "evToGpuDone": 39.30000001192093,
+          "evToScreenEst": 85.40000002383749,
+          "tickLag": 0,
+          "evToRaf": 19.200000023840403,
+          "evToPresent": 56,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 39,
+          "ts": 21696.899999976158,
+          "evToDrawnRaf": 28.100000023841858,
+          "evToGpuDone": 46.80000001192093,
+          "evToScreenEst": 94.30000002383895,
+          "tickLag": 0,
+          "evToRaf": 28.100000023841858,
+          "evToPresent": 64,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 40,
+          "ts": 22083.599999964237,
+          "evToDrawnRaf": 8.100000035763514,
+          "evToGpuDone": 26.5,
+          "evToScreenEst": 74.3000000357606,
+          "tickLag": 0,
+          "evToRaf": 8.100000035763514,
+          "evToPresent": 40,
+          "handlerDelay": 0.20000004768371582
+        }
+      ]
+    },
+    "heavy-2f1ddf5f-sorted-8M": {
+      "label": "heavy-2f1ddf5f-sorted-8M",
+      "site": "http://127.0.0.1:5373",
+      "scene": "2f1ddf5f",
+      "visibility": "visible",
+      "render": "on",
+      "canvas": [
+        1280,
+        800
+      ],
+      "presses": 40,
+      "periodMs": 33.099999999998545,
+      "tickLagMs": {
+        "n": 40,
+        "p50": 0,
+        "p95": 0,
+        "min": 0,
+        "max": 0
+      },
+      "eventToFrameMs": {
+        "n": 40,
+        "p50": 21.8,
+        "p95": 31.9,
+        "min": 1.5,
+        "max": 33.6
+      },
+      "eventToDrawnFrameMs": {
+        "n": 40,
+        "p50": 21.8,
+        "p95": 31.9,
+        "min": 1.5,
+        "max": 33.6
+      },
+      "eventToGpuDoneMs": {
+        "n": 40,
+        "p50": 40.8,
+        "p95": 52.7,
+        "min": 21.4,
+        "max": 54.4
+      },
+      "eventToScreenEstMs": {
+        "n": 40,
+        "p50": 88,
+        "p95": 98.1,
+        "min": 67.7,
+        "max": 99.8
+      },
+      "eventToPresentationMs": {
+        "n": 40,
+        "p50": 56,
+        "p95": 64,
+        "min": 32,
+        "max": 64
+      },
+      "handlerDelayMs": {
+        "n": 40,
+        "p50": 0.3,
+        "p95": 0.6,
+        "min": 0.1,
+        "max": 2.2
+      },
+      "hog": null,
+      "qs": "budget=8&stochastic&drawing=sorted",
+      "drawing": {
+        "scene": "2f1ddf5f",
+        "mode": "sorted",
+        "request": {
+          "budgetM": 8,
+          "stochastic": true
+        },
+        "stochastic": false,
+        "budgetM": 8,
+        "note": null,
+        "engineStochastic": false,
+        "engineBudgetM": 8,
+        "handheld": false,
+        "webgpu": true
+      },
+      "engineStochastic": false,
+      "budgetMAtEnd": 8,
+      "governor": {
+        "step": 0,
+        "changes": 6,
+        "enabled": true
+      },
+      "maxFramesInFlight": 2,
+      "webgpu": true,
+      "deviceLost": false,
+      "heldShare": 0,
+      "rafHz": 30,
+      "submitToDoneLast30Ms": {
+        "n": 30,
+        "p50": 18.2,
+        "p95": 18.9,
+        "min": 17,
+        "max": 22.2
+      },
+      "hud": {
+        "inputToScreenMs": 84.95000000000073,
+        "rafToPresentMs": 33.30000000000291,
+        "submitToDoneMs": 18.19999998807907,
+        "skips": 2
+      },
+      "guardTail": [
+        {
+          "t": 2577,
+          "what": "trigger"
+        },
+        {
+          "t": 2704.199999988079,
+          "what": "sample",
+          "frames": 2.02
+        },
+        {
+          "t": 2704.199999988079,
+          "what": "skip",
+          "ms": 100
+        },
+        {
+          "t": 3137,
+          "what": "sample",
+          "frames": 1.09
+        },
+        {
+          "t": 3537.100000023842,
+          "what": "sample",
+          "frames": 3.1
+        },
+        {
+          "t": 3537.100000023842,
+          "what": "skip",
+          "ms": 101
+        },
+        {
+          "t": 3706.100000023842,
+          "what": "sample",
+          "frames": 1.01
+        },
+        {
+          "t": 5816,
+          "what": "sample",
+          "frames": 1.01
+        },
+        {
+          "t": 7905.800000011921,
+          "what": "sample",
+          "frames": 1.01
+        },
+        {
+          "t": 10004.300000011921,
+          "what": "sample",
+          "frames": 1.01
+        },
+        {
+          "t": 12103.899999976158,
+          "what": "sample",
+          "frames": 1.01
+        },
+        {
+          "t": 14204.600000023842,
+          "what": "sample",
+          "frames": 1.01
+        },
+        {
+          "t": 16303.699999988079,
+          "what": "sample",
+          "frames": 1.02
+        },
+        {
+          "t": 18403.69999998808,
+          "what": "sample",
+          "frames": 1.13
+        },
+        {
+          "t": 20504.100000023842,
+          "what": "sample",
+          "frames": 1.02
+        },
+        {
+          "t": 22603.30000001192,
+          "what": "sample",
+          "frames": 1.13
+        },
+        {
+          "t": 24703.100000023842,
+          "what": "sample",
+          "frames": 1.01
+        },
+        {
+          "t": 26804.30000001192,
+          "what": "sample",
+          "frames": 1.01
+        },
+        {
+          "t": 28903.30000001192,
+          "what": "sample",
+          "frames": 1.13
+        },
+        {
+          "t": 31003.80000001192,
+          "what": "sample",
+          "frames": 1.02
+        },
+        {
+          "t": 33104.19999998808,
+          "what": "sample",
+          "frames": 1.01
+        },
+        {
+          "t": 35204,
+          "what": "sample",
+          "frames": 1.01
+        },
+        {
+          "t": 37303.80000001192,
+          "what": "sample",
+          "frames": 1.01
+        },
+        {
+          "t": 39404.30000001192,
+          "what": "sample",
+          "frames": 1.01
+        },
+        {
+          "t": 41504.5,
+          "what": "sample",
+          "frames": 1.01
+        },
+        {
+          "t": 43603.39999997616,
+          "what": "sample",
+          "frames": 1.01
+        },
+        {
+          "t": 45703.5,
+          "what": "sample",
+          "frames": 1.01
+        }
+      ],
+      "rows": [
+        {
+          "id": 1,
+          "ts": 33406.10000002384,
+          "evToDrawnRaf": 28.299999976159597,
+          "evToGpuDone": 51.69999998807907,
+          "evToScreenEst": 94.49999997615669,
+          "tickLag": 0,
+          "evToRaf": 28.299999976159597,
+          "evToPresent": 64,
+          "handlerDelay": 0.5999999642372131
+        },
+        {
+          "id": 2,
+          "ts": 33690.19999998808,
+          "evToDrawnRaf": 11.10000001192384,
+          "evToGpuDone": 31.19999998807907,
+          "evToScreenEst": 77.30000001192093,
+          "tickLag": 0,
+          "evToRaf": 11.10000001192384,
+          "evToPresent": 48,
+          "handlerDelay": 0.40000003576278687
+        },
+        {
+          "id": 3,
+          "ts": 34002.5,
+          "evToDrawnRaf": 31.900000000001455,
+          "evToGpuDone": 52.69999998807907,
+          "evToScreenEst": 98.09999999999854,
+          "tickLag": 0,
+          "evToRaf": 31.900000000001455,
+          "evToPresent": 64,
+          "handlerDelay": 1.199999988079071
+        },
+        {
+          "id": 4,
+          "ts": 34404.39999997616,
+          "evToDrawnRaf": 30.000000023843313,
+          "evToGpuDone": 50.10000002384186,
+          "evToScreenEst": 96.2000000238404,
+          "tickLag": 0,
+          "evToRaf": 30.000000023843313,
+          "evToPresent": 64,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 5,
+          "ts": 34747.5,
+          "evToDrawnRaf": 20.30000000000291,
+          "evToGpuDone": 40.19999998807907,
+          "evToScreenEst": 86.5,
+          "tickLag": 0,
+          "evToRaf": 20.30000000000291,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 6,
+          "ts": 35062.89999997616,
+          "evToDrawnRaf": 4.900000023844768,
+          "evToGpuDone": 23.700000047683716,
+          "evToScreenEst": 71.10000002384186,
+          "tickLag": 0,
+          "evToRaf": 4.900000023844768,
+          "evToPresent": 40,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 7,
+          "ts": 35425.5,
+          "evToDrawnRaf": 9.19999999999709,
+          "evToGpuDone": 28.30000001192093,
+          "evToScreenEst": 75.39999999999418,
+          "tickLag": 0,
+          "evToRaf": 9.19999999999709,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 8,
+          "ts": 35676.19999998808,
+          "evToDrawnRaf": 25.10000001192384,
+          "evToGpuDone": 45.90000003576279,
+          "evToScreenEst": 91.30000001192093,
+          "tickLag": 0,
+          "evToRaf": 25.10000001192384,
+          "evToPresent": 56,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 9,
+          "ts": 36053,
+          "evToDrawnRaf": 14.80000000000291,
+          "evToGpuDone": 36.39999997615814,
+          "evToScreenEst": 81,
+          "tickLag": 0,
+          "evToRaf": 14.80000000000291,
+          "evToPresent": 48,
+          "handlerDelay": 0.3999999761581421
+        },
+        {
+          "id": 10,
+          "ts": 36350.10000002384,
+          "evToDrawnRaf": 17.699999976161052,
+          "evToGpuDone": 39.59999996423721,
+          "evToScreenEst": 83.89999997615814,
+          "tickLag": 0,
+          "evToRaf": 17.699999976161052,
+          "evToPresent": 48,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 11,
+          "ts": 36598.39999997616,
+          "evToDrawnRaf": 2.9000000238447683,
+          "evToGpuDone": 24.100000023841858,
+          "evToScreenEst": 69.10000002384186,
+          "tickLag": 0,
+          "evToRaf": 2.9000000238447683,
+          "evToPresent": 40,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 12,
+          "ts": 36848.5,
+          "evToDrawnRaf": 19.30000000000291,
+          "evToGpuDone": 44.60000002384186,
+          "evToScreenEst": 85.5,
+          "tickLag": 0,
+          "evToRaf": 19.30000000000291,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 13,
+          "ts": 37065.80000001192,
+          "evToDrawnRaf": 1.8999999880761607,
+          "evToGpuDone": 22.099999964237213,
+          "evToScreenEst": 68.09999998807325,
+          "tickLag": 0,
+          "evToRaf": 1.8999999880761607,
+          "evToPresent": 32,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 14,
+          "ts": 37375.19999998808,
+          "evToDrawnRaf": 26.10000001192384,
+          "evToGpuDone": 47.5,
+          "evToScreenEst": 92.30000001192093,
+          "tickLag": 0,
+          "evToRaf": 26.10000001192384,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 15,
+          "ts": 37610.5,
+          "evToDrawnRaf": 24,
+          "evToGpuDone": 44,
+          "evToScreenEst": 90.19999999999709,
+          "tickLag": 0,
+          "evToRaf": 24,
+          "evToPresent": 56,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 16,
+          "ts": 37953.30000001192,
+          "evToDrawnRaf": 14.499999988081981,
+          "evToGpuDone": 37.59999996423721,
+          "evToScreenEst": 80.69999998807907,
+          "tickLag": 0,
+          "evToRaf": 14.499999988081981,
+          "evToPresent": 48,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 17,
+          "ts": 38311.89999997616,
+          "evToDrawnRaf": 22.600000023841858,
+          "evToGpuDone": 40.80000001192093,
+          "evToScreenEst": 88.80000002383895,
+          "tickLag": 0,
+          "evToRaf": 22.600000023841858,
+          "evToPresent": 56,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 18,
+          "ts": 38624.10000002384,
+          "evToDrawnRaf": 10.599999976155232,
+          "evToGpuDone": 29.899999976158142,
+          "evToScreenEst": 76.79999997615232,
+          "tickLag": 0,
+          "evToRaf": 10.599999976155232,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 19,
+          "ts": 38842.39999997616,
+          "evToDrawnRaf": 25.40000002384477,
+          "evToGpuDone": 45.30000001192093,
+          "evToScreenEst": 91.60000002384186,
+          "tickLag": 0,
+          "evToRaf": 25.40000002384477,
+          "evToPresent": 56,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 20,
+          "ts": 39217.5,
+          "evToDrawnRaf": 16.900000000001455,
+          "evToGpuDone": 36.19999998807907,
+          "evToScreenEst": 83.09999999999854,
+          "tickLag": 0,
+          "evToRaf": 16.900000000001455,
+          "evToPresent": 48,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 21,
+          "ts": 39578.39999997616,
+          "evToDrawnRaf": 22.800000023838948,
+          "evToGpuDone": 41.60000002384186,
+          "evToScreenEst": 89.00000002383604,
+          "tickLag": 0,
+          "evToRaf": 22.800000023838948,
+          "evToPresent": 56,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 22,
+          "ts": 39827.39999997616,
+          "evToDrawnRaf": 7.000000023843313,
+          "evToGpuDone": 26.200000047683716,
+          "evToScreenEst": 73.2000000238404,
+          "tickLag": 0,
+          "evToRaf": 7.000000023843313,
+          "evToPresent": 40,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 23,
+          "ts": 40107.39999997616,
+          "evToDrawnRaf": 27.100000023841858,
+          "evToGpuDone": 47.60000002384186,
+          "evToScreenEst": 93.30000002383895,
+          "tickLag": 0,
+          "evToRaf": 27.100000023841858,
+          "evToPresent": 64,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 24,
+          "ts": 40513.39999997616,
+          "evToDrawnRaf": 21.100000023841858,
+          "evToGpuDone": 40.200000047683716,
+          "evToScreenEst": 87.30000002383895,
+          "tickLag": 0,
+          "evToRaf": 21.100000023841858,
+          "evToPresent": 56,
+          "handlerDelay": 0.40000003576278687
+        },
+        {
+          "id": 25,
+          "ts": 40840.60000002384,
+          "evToDrawnRaf": 27.09999997615523,
+          "evToGpuDone": 46.69999998807907,
+          "evToScreenEst": 93.29999997615232,
+          "tickLag": 0,
+          "evToRaf": 27.09999997615523,
+          "evToPresent": 64,
+          "handlerDelay": 0.09999996423721313
+        },
+        {
+          "id": 26,
+          "ts": 41241.39999997616,
+          "evToDrawnRaf": 26.300000023838948,
+          "evToGpuDone": 49.5,
+          "evToScreenEst": 92.50000002383604,
+          "tickLag": 0,
+          "evToRaf": 26.300000023838948,
+          "evToPresent": 56,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 27,
+          "ts": 41602,
+          "evToDrawnRaf": 32.400000000001455,
+          "evToGpuDone": 53,
+          "evToScreenEst": 98.59999999999854,
+          "tickLag": 0,
+          "evToRaf": 32.400000000001455,
+          "evToPresent": 64,
+          "handlerDelay": 0.5
+        },
+        {
+          "id": 28,
+          "ts": 41944.10000002384,
+          "evToDrawnRaf": 23.699999976161052,
+          "evToGpuDone": 46.69999998807907,
+          "evToScreenEst": 89.89999997615814,
+          "tickLag": 0,
+          "evToRaf": 23.699999976161052,
+          "evToPresent": 56,
+          "handlerDelay": 0.09999996423721313
+        },
+        {
+          "id": 29,
+          "ts": 42209.39999997616,
+          "evToDrawnRaf": 24.90000002384477,
+          "evToGpuDone": 44.40000003576279,
+          "evToScreenEst": 91.10000002384186,
+          "tickLag": 0,
+          "evToRaf": 24.90000002384477,
+          "evToPresent": 56,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 30,
+          "ts": 42571,
+          "evToDrawnRaf": 30.400000000001455,
+          "evToGpuDone": 49.10000002384186,
+          "evToScreenEst": 96.59999999999854,
+          "tickLag": 0,
+          "evToRaf": 30.400000000001455,
+          "evToPresent": 64,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 31,
+          "ts": 42867.60000002384,
+          "evToDrawnRaf": 33.59999997615523,
+          "evToGpuDone": 54.39999997615814,
+          "evToScreenEst": 99.79999997615232,
+          "tickLag": 0,
+          "evToRaf": 33.59999997615523,
+          "evToPresent": 64,
+          "handlerDelay": 2.199999988079071
+        },
+        {
+          "id": 32,
+          "ts": 43164.5,
+          "evToDrawnRaf": 3.3000000000029104,
+          "evToGpuDone": 23.80000001192093,
+          "evToScreenEst": 69.5,
+          "tickLag": 0,
+          "evToRaf": 3.3000000000029104,
+          "evToPresent": 40,
+          "handlerDelay": 0.3999999761581421
+        },
+        {
+          "id": 33,
+          "ts": 43379.5,
+          "evToDrawnRaf": 21.80000000000291,
+          "evToGpuDone": 40.69999998807907,
+          "evToScreenEst": 88,
+          "tickLag": 0,
+          "evToRaf": 21.80000000000291,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 34,
+          "ts": 43689.5,
+          "evToDrawnRaf": 11.900000000001455,
+          "evToGpuDone": 31.30000001192093,
+          "evToScreenEst": 78.09999999999854,
+          "tickLag": 0,
+          "evToRaf": 11.900000000001455,
+          "evToPresent": 48,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 35,
+          "ts": 44063.60000002384,
+          "evToDrawnRaf": 4.099999976155232,
+          "evToGpuDone": 24.19999998807907,
+          "evToScreenEst": 70.29999997615232,
+          "tickLag": 0,
+          "evToRaf": 4.099999976155232,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 36,
+          "ts": 44451,
+          "evToDrawnRaf": 16.69999999999709,
+          "evToGpuDone": 35.30000001192093,
+          "evToScreenEst": 82.89999999999418,
+          "tickLag": 0,
+          "evToRaf": 16.69999999999709,
+          "evToPresent": 48,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 37,
+          "ts": 44826.39999997616,
+          "evToDrawnRaf": 8.400000023844768,
+          "evToGpuDone": 27.200000047683716,
+          "evToScreenEst": 74.60000002384186,
+          "tickLag": 0,
+          "evToRaf": 8.400000023844768,
+          "evToPresent": 40,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 38,
+          "ts": 45170.89999997616,
+          "evToDrawnRaf": 30.500000023843313,
+          "evToGpuDone": 49.5,
+          "evToScreenEst": 96.7000000238404,
+          "tickLag": 0,
+          "evToRaf": 30.500000023843313,
+          "evToPresent": 64,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 39,
+          "ts": 45466.30000001192,
+          "evToDrawnRaf": 1.4999999880819814,
+          "evToGpuDone": 21.399999976158142,
+          "evToScreenEst": 67.69999998807907,
+          "tickLag": 0,
+          "evToRaf": 1.4999999880819814,
+          "evToPresent": 32,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 40,
+          "ts": 45704.39999997616,
+          "evToDrawnRaf": 30.200000023840403,
+          "evToGpuDone": 48.40000003576279,
+          "evToScreenEst": 96.40000002383749,
+          "tickLag": 0,
+          "evToRaf": 30.200000023840403,
+          "evToPresent": 64,
+          "handlerDelay": 0.40000003576278687
+        }
+      ]
+    },
+    "heavy-2f1ddf5f-stochastic-8M": {
+      "label": "heavy-2f1ddf5f-stochastic-8M",
+      "site": "http://127.0.0.1:5373",
+      "scene": "2f1ddf5f",
+      "visibility": "visible",
+      "render": "on",
+      "canvas": [
+        1280,
+        800
+      ],
+      "presses": 40,
+      "periodMs": 33.099999999998545,
+      "tickLagMs": {
+        "n": 40,
+        "p50": 0,
+        "p95": 0,
+        "min": 0,
+        "max": 0
+      },
+      "eventToFrameMs": {
+        "n": 40,
+        "p50": 14.5,
+        "p95": 31,
+        "min": 0.8,
+        "max": 31.4
+      },
+      "eventToDrawnFrameMs": {
+        "n": 40,
+        "p50": 14.5,
+        "p95": 31,
+        "min": 0.8,
+        "max": 31.4
+      },
+      "eventToGpuDoneMs": {
+        "n": 40,
+        "p50": 26.4,
+        "p95": 42.7,
+        "min": 8.1,
+        "max": 44.3
+      },
+      "eventToScreenEstMs": {
+        "n": 40,
+        "p50": 80.7,
+        "p95": 97.2,
+        "min": 67,
+        "max": 97.6
+      },
+      "eventToPresentationMs": {
+        "n": 40,
+        "p50": 48,
+        "p95": 64,
+        "min": 32,
+        "max": 64
+      },
+      "handlerDelayMs": {
+        "n": 40,
+        "p50": 0.3,
+        "p95": 0.4,
+        "min": 0.2,
+        "max": 0.5
+      },
+      "hog": null,
+      "qs": "budget=8&stochastic",
+      "drawing": {
+        "scene": "2f1ddf5f",
+        "mode": "auto",
+        "request": {
+          "budgetM": 8,
+          "stochastic": true
+        },
+        "stochastic": true,
+        "budgetM": 8,
+        "note": null,
+        "engineStochastic": true,
+        "engineBudgetM": 8,
+        "handheld": false,
+        "webgpu": true
+      },
+      "engineStochastic": true,
+      "budgetMAtEnd": 8,
+      "governor": {
+        "step": 0,
+        "changes": 2,
+        "enabled": true
+      },
+      "maxFramesInFlight": 2,
+      "webgpu": true,
+      "deviceLost": false,
+      "heldShare": 0,
+      "rafHz": 30,
+      "submitToDoneLast30Ms": {
+        "n": 30,
+        "p50": 7.1,
+        "p95": 8.7,
+        "min": 3.4,
+        "max": 9.4
+      },
+      "hud": {
+        "inputToScreenMs": 88.45000000000073,
+        "rafToPresentMs": 36.80000000000291,
+        "submitToDoneMs": 7.099999964237213,
+        "skips": 6
+      },
+      "guardTail": [
+        {
+          "t": 3199.099999964237,
+          "what": "trigger"
+        },
+        {
+          "t": 3325.800000011921,
+          "what": "sample",
+          "frames": 2.07
+        },
+        {
+          "t": 3325.800000011921,
+          "what": "skip",
+          "ms": 101
+        },
+        {
+          "t": 3758.800000011921,
+          "what": "sample",
+          "frames": 1.02
+        },
+        {
+          "t": 4159.399999976158,
+          "what": "sample",
+          "frames": 3.03
+        },
+        {
+          "t": 4159.399999976158,
+          "what": "skip",
+          "ms": 101
+        },
+        {
+          "t": 4358.699999988079,
+          "what": "sample",
+          "frames": 2.03
+        },
+        {
+          "t": 4358.699999988079,
+          "what": "skip",
+          "ms": 101
+        },
+        {
+          "t": 4836.800000011921,
+          "what": "sample",
+          "frames": 2.08
+        },
+        {
+          "t": 4836.800000011921,
+          "what": "skip",
+          "ms": 34
+        },
+        {
+          "t": 5225.300000011921,
+          "what": "sample",
+          "frames": 2.07
+        },
+        {
+          "t": 5225.300000011921,
+          "what": "skip",
+          "ms": 34
+        },
+        {
+          "t": 5625.300000011921,
+          "what": "sample",
+          "frames": 2.08
+        },
+        {
+          "t": 5625.300000011921,
+          "what": "backoff",
+          "ms": 10000
+        },
+        {
+          "t": 15759.199999988079,
+          "what": "sample",
+          "frames": 2.03
+        },
+        {
+          "t": 15759.199999988079,
+          "what": "skip",
+          "ms": 100
+        },
+        {
+          "t": 16192.5,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 18292.599999964237,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 20393.099999964237,
+          "what": "sample",
+          "frames": 1.1
+        },
+        {
+          "t": 22492.099999964237,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 24593.099999964237,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 26691.599999964237,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 28791.80000001192,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 30892,
+          "what": "sample",
+          "frames": 1.1
+        },
+        {
+          "t": 32993.30000001192,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 35092.30000001192,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 37192.09999996424,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 39292.5,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 41391.69999998808,
+          "what": "sample",
+          "frames": 1.11
+        },
+        {
+          "t": 43492.19999998808,
+          "what": "sample",
+          "frames": 1.1
+        },
+        {
+          "t": 45593.09999996424,
+          "what": "sample",
+          "frames": 1.11
+        }
+      ],
+      "rows": [
+        {
+          "id": 1,
+          "ts": 34188.39999997616,
+          "evToDrawnRaf": 1.500000023843313,
+          "evToGpuDone": 9.600000023841858,
+          "evToScreenEst": 67.7000000238404,
+          "tickLag": 0,
+          "evToRaf": 1.500000023843313,
+          "evToPresent": 32,
+          "handlerDelay": 0.5
+        },
+        {
+          "id": 2,
+          "ts": 34450.89999997616,
+          "evToDrawnRaf": 5.600000023841858,
+          "evToGpuDone": 12.800000011920929,
+          "evToScreenEst": 71.80000002383895,
+          "tickLag": 0,
+          "evToRaf": 5.600000023841858,
+          "evToPresent": 40,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 3,
+          "ts": 34780.39999997616,
+          "evToDrawnRaf": 9.400000023844768,
+          "evToGpuDone": 15.600000023841858,
+          "evToScreenEst": 75.60000002384186,
+          "tickLag": 0,
+          "evToRaf": 9.400000023844768,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 4,
+          "ts": 35060.59999996424,
+          "evToDrawnRaf": 29.300000035764242,
+          "evToGpuDone": 35.10000002384186,
+          "evToScreenEst": 95.50000003576133,
+          "tickLag": 0,
+          "evToRaf": 29.300000035764242,
+          "evToPresent": 64,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 5,
+          "ts": 35261.80000001192,
+          "evToDrawnRaf": 27.99999998808198,
+          "evToGpuDone": 32.89999997615814,
+          "evToScreenEst": 94.19999998807907,
+          "tickLag": 0,
+          "evToRaf": 27.99999998808198,
+          "evToPresent": 64,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 6,
+          "ts": 35529,
+          "evToDrawnRaf": 27.599999999998545,
+          "evToGpuDone": 33.89999997615814,
+          "evToScreenEst": 93.79999999999563,
+          "tickLag": 0,
+          "evToRaf": 27.599999999998545,
+          "evToPresent": 64,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 7,
+          "ts": 35750.09999996424,
+          "evToDrawnRaf": 6.400000035762787,
+          "evToGpuDone": 11.700000047683716,
+          "evToScreenEst": 72.60000003575988,
+          "tickLag": 0,
+          "evToRaf": 6.400000035762787,
+          "evToPresent": 40,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 8,
+          "ts": 35951.80000001192,
+          "evToDrawnRaf": 4.799999988077616,
+          "evToGpuDone": 13.5,
+          "evToScreenEst": 70.9999999880747,
+          "tickLag": 0,
+          "evToRaf": 4.799999988077616,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 9,
+          "ts": 36168.5,
+          "evToDrawnRaf": 21.400000000001455,
+          "evToGpuDone": 31,
+          "evToScreenEst": 87.59999999999854,
+          "tickLag": 0,
+          "evToRaf": 21.400000000001455,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 10,
+          "ts": 36414.89999997616,
+          "evToDrawnRaf": 8.400000023844768,
+          "evToGpuDone": 18.30000001192093,
+          "evToScreenEst": 74.60000002384186,
+          "tickLag": 0,
+          "evToRaf": 8.400000023844768,
+          "evToPresent": 40,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 11,
+          "ts": 36740.59999996424,
+          "evToDrawnRaf": 16.00000003576133,
+          "evToGpuDone": 25,
+          "evToScreenEst": 82.20000003575842,
+          "tickLag": 0,
+          "evToRaf": 16.00000003576133,
+          "evToPresent": 48,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 12,
+          "ts": 37068.80000001192,
+          "evToDrawnRaf": 21.099999988080526,
+          "evToGpuDone": 29.899999976158142,
+          "evToScreenEst": 87.29999998807762,
+          "tickLag": 0,
+          "evToRaf": 21.099999988080526,
+          "evToPresent": 56,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 13,
+          "ts": 37475.39999997616,
+          "evToDrawnRaf": 14.500000023843313,
+          "evToGpuDone": 24.400000035762787,
+          "evToScreenEst": 80.7000000238404,
+          "tickLag": 0,
+          "evToRaf": 14.500000023843313,
+          "evToPresent": 48,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 14,
+          "ts": 37891.80000001192,
+          "evToDrawnRaf": 31.39999998807616,
+          "evToGpuDone": 42.69999998807907,
+          "evToScreenEst": 97.59999998807325,
+          "tickLag": 0,
+          "evToRaf": 31.39999998807616,
+          "evToPresent": 64,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 15,
+          "ts": 38093.19999998808,
+          "evToDrawnRaf": 30.00000001191802,
+          "evToGpuDone": 40.69999998807907,
+          "evToScreenEst": 96.20000001191511,
+          "tickLag": 0,
+          "evToRaf": 30.00000001191802,
+          "evToPresent": 64,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 16,
+          "ts": 38401.89999997616,
+          "evToDrawnRaf": 21.200000023840403,
+          "evToGpuDone": 31.900000035762787,
+          "evToScreenEst": 87.40000002383749,
+          "tickLag": 0,
+          "evToRaf": 21.200000023840403,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 17,
+          "ts": 38678.59999996424,
+          "evToDrawnRaf": 11.400000035762787,
+          "evToGpuDone": 23.200000047683716,
+          "evToScreenEst": 77.60000003575988,
+          "tickLag": 0,
+          "evToRaf": 11.400000035762787,
+          "evToPresent": 48,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 18,
+          "ts": 38880.80000001192,
+          "evToDrawnRaf": 9.099999988080526,
+          "evToGpuDone": 21.599999964237213,
+          "evToScreenEst": 75.29999998807762,
+          "tickLag": 0,
+          "evToRaf": 9.099999988080526,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 19,
+          "ts": 39159.89999997616,
+          "evToDrawnRaf": 29.800000023838948,
+          "evToGpuDone": 38.90000003576279,
+          "evToScreenEst": 96.00000002383604,
+          "tickLag": 0,
+          "evToRaf": 29.800000023838948,
+          "evToPresent": 64,
+          "handlerDelay": 0.40000003576278687
+        },
+        {
+          "id": 20,
+          "ts": 39392.30000001192,
+          "evToDrawnRaf": 30.99999998808198,
+          "evToGpuDone": 42.5,
+          "evToScreenEst": 97.19999998807907,
+          "tickLag": 0,
+          "evToRaf": 30.99999998808198,
+          "evToPresent": 64,
+          "handlerDelay": 0.3999999761581421
+        },
+        {
+          "id": 21,
+          "ts": 39750.09999996424,
+          "evToDrawnRaf": 6.400000035762787,
+          "evToGpuDone": 16.30000001192093,
+          "evToScreenEst": 72.60000003575988,
+          "tickLag": 0,
+          "evToRaf": 6.400000035762787,
+          "evToPresent": 40,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 22,
+          "ts": 40122.39999997616,
+          "evToDrawnRaf": 0.8000000238389475,
+          "evToGpuDone": 11.100000023841858,
+          "evToScreenEst": 67.00000002383604,
+          "tickLag": 0,
+          "evToRaf": 0.8000000238389475,
+          "evToPresent": 32,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 23,
+          "ts": 40401,
+          "evToDrawnRaf": 22.30000000000291,
+          "evToGpuDone": 37.69999998807907,
+          "evToScreenEst": 88.5,
+          "tickLag": 0,
+          "evToRaf": 22.30000000000291,
+          "evToPresent": 56,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 24,
+          "ts": 40788.69999998808,
+          "evToDrawnRaf": 1.1000000119238393,
+          "evToGpuDone": 18.899999976158142,
+          "evToScreenEst": 67.30000001192093,
+          "tickLag": 0,
+          "evToRaf": 1.1000000119238393,
+          "evToPresent": 32,
+          "handlerDelay": 0.3999999761581421
+        },
+        {
+          "id": 25,
+          "ts": 41131.89999997616,
+          "evToDrawnRaf": 24.500000023843313,
+          "evToGpuDone": 43.10000002384186,
+          "evToScreenEst": 90.7000000238404,
+          "tickLag": 0,
+          "evToRaf": 24.500000023843313,
+          "evToPresent": 56,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 26,
+          "ts": 41521.30000001192,
+          "evToDrawnRaf": 2.0999999880805262,
+          "evToGpuDone": 16.5,
+          "evToScreenEst": 68.29999998807762,
+          "tickLag": 0,
+          "evToRaf": 2.0999999880805262,
+          "evToPresent": 32,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 27,
+          "ts": 41788.19999998808,
+          "evToDrawnRaf": 1.800000011920929,
+          "evToGpuDone": 17.899999976158142,
+          "evToScreenEst": 68.00000001191802,
+          "tickLag": 0,
+          "evToRaf": 1.800000011920929,
+          "evToPresent": 32,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 28,
+          "ts": 42178.69999998808,
+          "evToDrawnRaf": 11.300000011920929,
+          "evToGpuDone": 26.30000001192093,
+          "evToScreenEst": 77.50000001191802,
+          "tickLag": 0,
+          "evToRaf": 11.300000011920929,
+          "evToPresent": 48,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 29,
+          "ts": 42441.59999996424,
+          "evToDrawnRaf": 15.000000035761332,
+          "evToGpuDone": 35.30000001192093,
+          "evToScreenEst": 81.20000003575842,
+          "tickLag": 0,
+          "evToRaf": 15.000000035761332,
+          "evToPresent": 48,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 30,
+          "ts": 42849.5,
+          "evToDrawnRaf": 7,
+          "evToGpuDone": 26.399999976158142,
+          "evToScreenEst": 73.19999999999709,
+          "tickLag": 0,
+          "evToRaf": 7,
+          "evToPresent": 40,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 31,
+          "ts": 43175.69999998808,
+          "evToDrawnRaf": 14.300000011920929,
+          "evToGpuDone": 30.100000023841858,
+          "evToScreenEst": 80.50000001191802,
+          "tickLag": 0,
+          "evToRaf": 14.300000011920929,
+          "evToPresent": 48,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 32,
+          "ts": 43440.39999997616,
+          "evToDrawnRaf": 16.200000023840403,
+          "evToGpuDone": 31.30000001192093,
+          "evToScreenEst": 82.40000002383749,
+          "tickLag": 0,
+          "evToRaf": 16.200000023840403,
+          "evToPresent": 48,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 33,
+          "ts": 43627.80000001192,
+          "evToDrawnRaf": 28.799999988077616,
+          "evToGpuDone": 44.299999952316284,
+          "evToScreenEst": 94.9999999880747,
+          "tickLag": 0,
+          "evToRaf": 28.799999988077616,
+          "evToPresent": 64,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 34,
+          "ts": 43846.30000001192,
+          "evToDrawnRaf": 10.099999988080526,
+          "evToGpuDone": 30.399999976158142,
+          "evToScreenEst": 76.29999998807762,
+          "tickLag": 0,
+          "evToRaf": 10.099999988080526,
+          "evToPresent": 40,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 35,
+          "ts": 44186.59999996424,
+          "evToDrawnRaf": 3.300000035764242,
+          "evToGpuDone": 8.100000023841858,
+          "evToScreenEst": 69.50000003576133,
+          "tickLag": 0,
+          "evToRaf": 3.300000035764242,
+          "evToPresent": 40,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 36,
+          "ts": 44558.5,
+          "evToDrawnRaf": 31.30000000000291,
+          "evToGpuDone": 38.09999996423721,
+          "evToScreenEst": 97.5,
+          "tickLag": 0,
+          "evToRaf": 31.30000000000291,
+          "evToPresent": 64,
+          "handlerDelay": 0.3999999761581421
+        },
+        {
+          "id": 37,
+          "ts": 44964.30000001192,
+          "evToDrawnRaf": 25.599999988080526,
+          "evToGpuDone": 31.099999964237213,
+          "evToScreenEst": 91.79999998807762,
+          "tickLag": 0,
+          "evToRaf": 25.599999988080526,
+          "evToPresent": 56,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 38,
+          "ts": 45212.30000001192,
+          "evToDrawnRaf": 10.799999988077616,
+          "evToGpuDone": 17.399999976158142,
+          "evToScreenEst": 76.9999999880747,
+          "tickLag": 0,
+          "evToRaf": 10.799999988077616,
+          "evToPresent": 48,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 39,
+          "ts": 45509.69999998808,
+          "evToDrawnRaf": 13.500000011918019,
+          "evToGpuDone": 19.399999976158142,
+          "evToScreenEst": 79.70000001191511,
+          "tickLag": 0,
+          "evToRaf": 13.500000011918019,
+          "evToPresent": 48,
+          "handlerDelay": 0.3999999761581421
+        },
+        {
+          "id": 40,
+          "ts": 45774.89999997616,
+          "evToDrawnRaf": 14.900000023844768,
+          "evToGpuDone": 20.19999998807907,
+          "evToScreenEst": 81.10000002384186,
+          "tickLag": 0,
+          "evToRaf": 14.900000023844768,
+          "evToPresent": 48,
+          "handlerDelay": 0.30000001192092896
+        }
+      ]
+    },
+    "after-2.23.2-hog40-cap2": {
+      "label": "after-2.23.2-hog40-cap2",
+      "site": "http://127.0.0.1:5373",
+      "scene": "39e63ce9",
+      "visibility": "visible",
+      "render": "on",
+      "canvas": [
+        640,
+        400
+      ],
+      "presses": 40,
+      "periodMs": 33.19999999999709,
+      "tickLagMs": {
+        "n": 40,
+        "p50": 0,
+        "p95": 0,
+        "min": 0,
+        "max": 0
+      },
+      "eventToFrameMs": {
+        "n": 40,
+        "p50": 18.7,
+        "p95": 33.3,
+        "min": 0.4,
+        "max": 87.2
+      },
+      "eventToDrawnFrameMs": {
+        "n": 0,
+        "p50": null,
+        "p95": null,
+        "min": null,
+        "max": null
+      },
+      "eventToGpuDoneMs": {
+        "n": 0,
+        "p50": null,
+        "p95": null,
+        "min": null,
+        "max": null
+      },
+      "eventToScreenEstMs": {
+        "n": 0,
+        "p50": null,
+        "p95": null,
+        "min": null,
+        "max": null
+      },
+      "eventToPresentationMs": {
+        "n": 38,
+        "p50": 80,
+        "p95": 136,
+        "min": 32,
+        "max": 152
+      },
+      "handlerDelayMs": {
+        "n": 38,
+        "p50": 0.3,
+        "p95": 1.1,
+        "min": 0.1,
+        "max": 3.3
+      },
+      "hog": {
+        "iter": 1446311,
+        "ms": 39
+      },
+      "qs": "",
+      "drawing": {
+        "scene": "39e63ce9",
+        "mode": "auto",
+        "request": null,
+        "stochastic": false,
+        "budgetM": 4,
+        "note": null,
+        "engineStochastic": false,
+        "engineBudgetM": 4,
+        "handheld": false,
+        "webgpu": false
+      },
+      "engineStochastic": false,
+      "budgetMAtEnd": 1.5,
+      "governor": {
+        "step": 4,
+        "changes": 4,
+        "enabled": true
+      },
+      "maxFramesInFlight": 2,
+      "webgpu": false,
+      "deviceLost": false,
+      "heldShare": 0,
+      "rafHz": 28.9,
+      "submitToDoneLast30Ms": {
+        "n": 0,
+        "p50": null,
+        "p95": null,
+        "min": null,
+        "max": null
+      },
+      "hud": {
+        "inputToScreenMs": 86.40000000000146,
+        "rafToPresentMs": 34.60000000000582,
+        "submitToDoneMs": null,
+        "skips": 8
+      },
+      "guardTail": [
+        {
+          "t": 62863.19999998808,
+          "what": "trigger"
+        },
+        {
+          "t": 63059,
+          "what": "sample",
+          "frames": 4.02
+        },
+        {
+          "t": 63059,
+          "what": "skip",
+          "ms": 101
+        },
+        {
+          "t": 63560,
+          "what": "sample",
+          "frames": 3.13
+        },
+        {
+          "t": 63560,
+          "what": "skip",
+          "ms": 101
+        },
+        {
+          "t": 63926.40000003576,
+          "what": "sample",
+          "frames": 3.05
+        },
+        {
+          "t": 63926.40000003576,
+          "what": "skip",
+          "ms": 34
+        },
+        {
+          "t": 64125.40000003576,
+          "what": "sample",
+          "frames": 3.05
+        },
+        {
+          "t": 64125.40000003576,
+          "what": "skip",
+          "ms": 34
+        },
+        {
+          "t": 64559.60000002384,
+          "what": "sample",
+          "frames": 3.02
+        },
+        {
+          "t": 64559.60000002384,
+          "what": "backoff",
+          "ms": 10000
+        },
+        {
+          "t": 74758.60000002384,
+          "what": "sample",
+          "frames": 4.13
+        },
+        {
+          "t": 74758.60000002384,
+          "what": "skip",
+          "ms": 101
+        },
+        {
+          "t": 75261.40000003576,
+          "what": "sample",
+          "frames": 3.13
+        },
+        {
+          "t": 75261.40000003576,
+          "what": "skip",
+          "ms": 101
+        },
+        {
+          "t": 75692.90000003576,
+          "what": "sample",
+          "frames": 1.08
+        },
+        {
+          "t": 77825.80000001192,
+          "what": "sample",
+          "frames": 2.04
+        },
+        {
+          "t": 77825.80000001192,
+          "what": "skip",
+          "ms": 101
+        },
+        {
+          "t": 78259,
+          "what": "sample",
+          "frames": 1.12
+        },
+        {
+          "t": 80358.90000003576,
+          "what": "sample",
+          "frames": 1.12
+        },
+        {
+          "t": 82492.19999998808,
+          "what": "sample",
+          "frames": 2.09
+        },
+        {
+          "t": 82492.19999998808,
+          "what": "skip",
+          "ms": 101
+        },
+        {
+          "t": 82925.5,
+          "what": "sample",
+          "frames": 1.04
+        }
+      ],
+      "rows": [
+        {
+          "id": 1,
+          "ts": 71638.5,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 19,
+          "evToPresent": 120,
+          "handlerDelay": 0.5
+        },
+        {
+          "id": 2,
+          "ts": 72002.30000001192,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 21.69999998807907,
+          "evToPresent": 120,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 3,
+          "ts": 72397.30000001192,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 26.799999988084892,
+          "evToPresent": 128,
+          "handlerDelay": 3.300000011920929
+        },
+        {
+          "id": 4,
+          "ts": 72775.90000003576,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 14.699999964243034,
+          "evToPresent": 112,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 5,
+          "ts": 73120.80000001192,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 3.299999988084892,
+          "evToPresent": 136,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 6,
+          "ts": 73522.69999998808,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 1.300000011920929,
+          "evToPresent": 136,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 7,
+          "ts": 73805.40000003576,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 18.699999964243034,
+          "evToPresent": 152,
+          "handlerDelay": 0.3999999761581421
+        },
+        {
+          "id": 8,
+          "ts": 74085.40000003576,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 5.199999964243034,
+          "evToPresent": 136,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 9,
+          "ts": 74416,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 8,
+          "evToPresent": 144,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 10,
+          "ts": 74819.40000003576,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 38.09999996423721,
+          "evToPresent": null,
+          "handlerDelay": null
+        },
+        {
+          "id": 11,
+          "ts": 75052.10000002384,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 5.1999999761610525,
+          "evToPresent": 104,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 12,
+          "ts": 75303.60000002384,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 87.19999997616105,
+          "evToPresent": null,
+          "handlerDelay": null
+        },
+        {
+          "id": 13,
+          "ts": 75615.60000002384,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 8.599999976155232,
+          "evToPresent": 40,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 14,
+          "ts": 75914.40000003576,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 9.699999964243034,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 15,
+          "ts": 76160.69999998808,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 30.10000001192384,
+          "evToPresent": 96,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 16,
+          "ts": 76534.90000003576,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 22.499999964231392,
+          "evToPresent": 88,
+          "handlerDelay": 0.3999999761581421
+        },
+        {
+          "id": 17,
+          "ts": 76767.40000003576,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 23.199999964243034,
+          "evToPresent": 88,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 18,
+          "ts": 77004,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 20.10000000000582,
+          "evToPresent": 88,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 19,
+          "ts": 77346.10000002384,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 11.199999976161052,
+          "evToPresent": 80,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 20,
+          "ts": 77581.19999998808,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 9.500000011918019,
+          "evToPresent": 80,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 21,
+          "ts": 77958.80000001192,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 31.89999998807616,
+          "evToPresent": 64,
+          "handlerDelay": 1.100000023841858
+        },
+        {
+          "id": 22,
+          "ts": 78313.10000002384,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 10.999999976163963,
+          "evToPresent": 48,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 23,
+          "ts": 78657,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 0.39999999999417923,
+          "evToPresent": 32,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 24,
+          "ts": 78999.10000002384,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 25.09999997615523,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 25,
+          "ts": 79235.30000001192,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 22.09999998807325,
+          "evToPresent": 56,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 26,
+          "ts": 79499,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 25,
+          "evToPresent": 56,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 27,
+          "ts": 79734.30000001192,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 23.19999998807907,
+          "evToPresent": 56,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 28,
+          "ts": 80108.30000001192,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 15.799999988084892,
+          "evToPresent": 48,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 29,
+          "ts": 80451.30000001192,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 6.09999998807325,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 30,
+          "ts": 80780.10000002384,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 10.699999976161052,
+          "evToPresent": 40,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 31,
+          "ts": 81013.19999998808,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 10.90000001192675,
+          "evToPresent": 48,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 32,
+          "ts": 81277.90000003576,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 12.799999964234303,
+          "evToPresent": 48,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 33,
+          "ts": 81667.60000002384,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 23.09999997615523,
+          "evToPresent": 56,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 34,
+          "ts": 82027.40000003576,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 29.999999964231392,
+          "evToPresent": 64,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 35,
+          "ts": 82418.69999998808,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 5.40000001192675,
+          "evToPresent": 72,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 36,
+          "ts": 82790.69999998808,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 33.30000001192093,
+          "evToPresent": 64,
+          "handlerDelay": 1.100000023841858
+        },
+        {
+          "id": 37,
+          "ts": 83040.80000001192,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 16.59999998807325,
+          "evToPresent": 80,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 38,
+          "ts": 83302.69999998808,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 21.30000001192093,
+          "evToPresent": 88,
+          "handlerDelay": 0.10000002384185791
+        },
+        {
+          "id": 39,
+          "ts": 83536.40000003576,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 21.099999964237213,
+          "evToPresent": 88,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 40,
+          "ts": 83850.5,
+          "evToDrawnRaf": null,
+          "evToGpuDone": null,
+          "evToScreenEst": null,
+          "tickLag": 0,
+          "evToRaf": 6.80000000000291,
+          "evToPresent": 72,
+          "handlerDelay": 0.19999998807907104
+        }
+      ]
+    },
+    "after-2.23.2-hog40-nocap-control": {
+      "label": "after-2.23.2-hog40-nocap-control",
+      "site": "http://127.0.0.1:5373",
+      "scene": "39e63ce9",
+      "visibility": "visible",
+      "render": "on",
+      "canvas": [
+        640,
+        400
+      ],
+      "presses": 40,
+      "periodMs": 33.19999999999709,
+      "tickLagMs": {
+        "n": 40,
+        "p50": 0,
+        "p95": 0,
+        "min": 0,
+        "max": 0
+      },
+      "eventToFrameMs": {
+        "n": 40,
+        "p50": 11,
+        "p95": 31.9,
+        "min": -29.6,
+        "max": 33.5
+      },
+      "eventToDrawnFrameMs": {
+        "n": 40,
+        "p50": 11,
+        "p95": 31.9,
+        "min": -29.6,
+        "max": 33.5
+      },
+      "eventToGpuDoneMs": {
+        "n": 40,
+        "p50": 131.8,
+        "p95": 186,
+        "min": 97.4,
+        "max": 215.1
+      },
+      "eventToScreenEstMs": {
+        "n": 40,
+        "p50": 192.1,
+        "p95": 242.8,
+        "min": 161.5,
+        "max": 271.8
+      },
+      "eventToPresentationMs": {
+        "n": 40,
+        "p50": 144,
+        "p95": 176,
+        "min": 120,
+        "max": 240
+      },
+      "handlerDelayMs": {
+        "n": 40,
+        "p50": 0.2,
+        "p95": 0.5,
+        "min": 0.1,
+        "max": 1.4
+      },
+      "hog": {
+        "iter": 1398101,
+        "ms": 35
+      },
+      "qs": "",
+      "drawing": {
+        "scene": "39e63ce9",
+        "mode": "auto",
+        "request": null,
+        "stochastic": false,
+        "budgetM": 4,
+        "note": null,
+        "engineStochastic": false,
+        "engineBudgetM": 4,
+        "handheld": false,
+        "webgpu": true
+      },
+      "engineStochastic": false,
+      "budgetMAtEnd": 1.5,
+      "governor": {
+        "step": 4,
+        "changes": 4,
+        "enabled": true
+      },
+      "maxFramesInFlight": 0,
+      "webgpu": true,
+      "deviceLost": false,
+      "heldShare": 0,
+      "rafHz": 28.1,
+      "submitToDoneLast30Ms": {
+        "n": 30,
+        "p50": 106.4,
+        "p95": 160.8,
+        "min": 88.1,
+        "max": 172.3
+      },
+      "hud": {
+        "inputToScreenMs": 188.99999999999636,
+        "rafToPresentMs": 137.20000000000073,
+        "submitToDoneMs": 106.39999997615814,
+        "skips": 5
+      },
+      "guardTail": [
+        {
+          "t": 11070.100000023842,
+          "what": "sample",
+          "frames": 4.05
+        },
+        {
+          "t": 11070.100000023842,
+          "what": "gpu",
+          "ms": 127
+        },
+        {
+          "t": 12069.900000035763,
+          "what": "sample",
+          "frames": 4.05
+        },
+        {
+          "t": 12069.900000035763,
+          "what": "gpu",
+          "ms": 106
+        },
+        {
+          "t": 12967.600000023842,
+          "what": "sample",
+          "frames": 6.14
+        },
+        {
+          "t": 12967.600000023842,
+          "what": "gpu",
+          "ms": 109
+        },
+        {
+          "t": 13143,
+          "what": "sample",
+          "frames": 4.09
+        },
+        {
+          "t": 13143,
+          "what": "gpu",
+          "ms": 127
+        },
+        {
+          "t": 14569.900000035763,
+          "what": "sample",
+          "frames": 5.05
+        },
+        {
+          "t": 14569.900000035763,
+          "what": "gpu",
+          "ms": 101
+        },
+        {
+          "t": 14803.100000023842,
+          "what": "sample",
+          "frames": 4.13
+        },
+        {
+          "t": 14803.100000023842,
+          "what": "gpu",
+          "ms": 106
+        },
+        {
+          "t": 15103.5,
+          "what": "sample",
+          "frames": 6.14
+        },
+        {
+          "t": 15103.5,
+          "what": "gpu",
+          "ms": 133
+        },
+        {
+          "t": 15306.900000035763,
+          "what": "sample",
+          "frames": 4.14
+        },
+        {
+          "t": 15306.900000035763,
+          "what": "gpu",
+          "ms": 133
+        },
+        {
+          "t": 15543.800000011921,
+          "what": "sample",
+          "frames": 5.1
+        },
+        {
+          "t": 15543.800000011921,
+          "what": "gpu",
+          "ms": 134
+        },
+        {
+          "t": 15754.400000035763,
+          "what": "sample",
+          "frames": 4.09
+        },
+        {
+          "t": 15754.400000035763,
+          "what": "gpu",
+          "ms": 131
+        },
+        {
+          "t": 16021.900000035763,
+          "what": "sample",
+          "frames": 5.14
+        },
+        {
+          "t": 16021.900000035763,
+          "what": "gpu",
+          "ms": 131
+        },
+        {
+          "t": 16250.800000011921,
+          "what": "sample",
+          "frames": 5.1
+        },
+        {
+          "t": 16250.800000011921,
+          "what": "gpu",
+          "ms": 125
+        },
+        {
+          "t": 16476.5,
+          "what": "sample",
+          "frames": 5.05
+        },
+        {
+          "t": 16476.5,
+          "what": "gpu",
+          "ms": 127
+        },
+        {
+          "t": 16669.69999998808,
+          "what": "sample",
+          "frames": 4.05
+        },
+        {
+          "t": 16669.69999998808,
+          "what": "gpu",
+          "ms": 127
+        },
+        {
+          "t": 18875.69999998808,
+          "what": "sample",
+          "frames": 4.05
+        },
+        {
+          "t": 18875.69999998808,
+          "what": "gpu",
+          "ms": 101
+        },
+        {
+          "t": 20501.600000023842,
+          "what": "sample",
+          "frames": 4.06
+        },
+        {
+          "t": 20501.600000023842,
+          "what": "gpu",
+          "ms": 102
+        },
+        {
+          "t": 20777.69999998808,
+          "what": "sample",
+          "frames": 4.05
+        },
+        {
+          "t": 20777.69999998808,
+          "what": "gpu",
+          "ms": 108
+        },
+        {
+          "t": 22436.5,
+          "what": "sample",
+          "frames": 4.1
+        },
+        {
+          "t": 22436.5,
+          "what": "gpu",
+          "ms": 101
+        },
+        {
+          "t": 22769.80000001192,
+          "what": "sample",
+          "frames": 4.05
+        },
+        {
+          "t": 22769.80000001192,
+          "what": "gpu",
+          "ms": 103
+        },
+        {
+          "t": 23106.100000023842,
+          "what": "sample",
+          "frames": 4.13
+        },
+        {
+          "t": 23106.100000023842,
+          "what": "gpu",
+          "ms": 117
+        }
+      ],
+      "rows": [
+        {
+          "id": 1,
+          "ts": 10331.100000023842,
+          "evToDrawnRaf": -29.600000023841858,
+          "evToGpuDone": 105.5,
+          "evToScreenEst": 169.59999997614068,
+          "tickLag": 0,
+          "evToRaf": -29.600000023841858,
+          "evToPresent": 136,
+          "handlerDelay": 0.5
+        },
+        {
+          "id": 2,
+          "ts": 10608.699999988079,
+          "evToDrawnRaf": -7.099999988078707,
+          "evToGpuDone": 127.80000001192093,
+          "evToScreenEst": 192.10000001190383,
+          "tickLag": 0,
+          "evToRaf": -7.099999988078707,
+          "evToPresent": 128,
+          "handlerDelay": 0.40000003576278687
+        },
+        {
+          "id": 3,
+          "ts": 10938.199999988079,
+          "evToDrawnRaf": -3.199999988079071,
+          "evToGpuDone": 131.80000001192093,
+          "evToScreenEst": 196.00000001190347,
+          "tickLag": 0,
+          "evToRaf": -3.199999988079071,
+          "evToPresent": 128,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 4,
+          "ts": 11268,
+          "evToDrawnRaf": 33.5,
+          "evToGpuDone": 141.69999998807907,
+          "evToScreenEst": 199.49999999998545,
+          "tickLag": 0,
+          "evToRaf": 33.5,
+          "evToPresent": 136,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 5,
+          "ts": 11487.900000035763,
+          "evToDrawnRaf": 13.599999964237213,
+          "evToGpuDone": 164.69999998807907,
+          "evToScreenEst": 212.79999996421975,
+          "tickLag": 0,
+          "evToRaf": 13.599999964237213,
+          "evToPresent": 144,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 6,
+          "ts": 11692.199999988079,
+          "evToDrawnRaf": 9.300000011920929,
+          "evToGpuDone": 151.4000000357628,
+          "evToScreenEst": 208.50000001190347,
+          "tickLag": 0,
+          "evToRaf": 9.300000011920929,
+          "evToPresent": 144,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 7,
+          "ts": 12003.400000035763,
+          "evToDrawnRaf": 31.49999996423685,
+          "evToGpuDone": 134,
+          "evToScreenEst": 197.4999999642223,
+          "tickLag": 0,
+          "evToRaf": 31.49999996423685,
+          "evToPresent": 168,
+          "handlerDelay": 0.09999996423721313
+        },
+        {
+          "id": 8,
+          "ts": 12302.900000035763,
+          "evToDrawnRaf": 31.899999964236486,
+          "evToGpuDone": 133.5999999642372,
+          "evToScreenEst": 197.89999996422193,
+          "tickLag": 0,
+          "evToRaf": 31.899999964236486,
+          "evToPresent": 168,
+          "handlerDelay": 0.699999988079071
+        },
+        {
+          "id": 9,
+          "ts": 12695.300000011921,
+          "evToDrawnRaf": 6.199999988079071,
+          "evToGpuDone": 215.10000002384186,
+          "evToScreenEst": 271.7999999880558,
+          "tickLag": 0,
+          "evToRaf": 6.199999988079071,
+          "evToPresent": 240,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 10,
+          "ts": 13082.199999988079,
+          "evToDrawnRaf": 19.30000001192093,
+          "evToGpuDone": 120.90000003576279,
+          "evToScreenEst": 185.30000001190638,
+          "tickLag": 0,
+          "evToRaf": 19.30000001192093,
+          "evToPresent": 152,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 11,
+          "ts": 13285.199999988079,
+          "evToDrawnRaf": 16.30000001192093,
+          "evToGpuDone": 118.80000001192093,
+          "evToScreenEst": 182.30000001190638,
+          "tickLag": 0,
+          "evToRaf": 16.30000001192093,
+          "evToPresent": 152,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 12,
+          "ts": 13520.900000035763,
+          "evToDrawnRaf": 13.899999964236486,
+          "evToGpuDone": 117.39999997615814,
+          "evToScreenEst": 179.89999996422193,
+          "tickLag": 0,
+          "evToRaf": 13.899999964236486,
+          "evToPresent": 144,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 13,
+          "ts": 13818.699999988079,
+          "evToDrawnRaf": 16.000000011921657,
+          "evToGpuDone": 118,
+          "evToScreenEst": 182.0000000119071,
+          "tickLag": 0,
+          "evToRaf": 16.000000011921657,
+          "evToPresent": 152,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 14,
+          "ts": 14023.199999988079,
+          "evToDrawnRaf": 11.600000011920201,
+          "evToGpuDone": 117.30000001192093,
+          "evToScreenEst": 177.60000001190565,
+          "tickLag": 0,
+          "evToRaf": 11.600000011920201,
+          "evToPresent": 144,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 15,
+          "ts": 14433.600000023842,
+          "evToDrawnRaf": 1.2999999761577783,
+          "evToGpuDone": 136.19999998807907,
+          "evToScreenEst": 200.49999997614032,
+          "tickLag": 0,
+          "evToRaf": 1.2999999761577783,
+          "evToPresent": 136,
+          "handlerDelay": 0.3999999761581421
+        },
+        {
+          "id": 16,
+          "ts": 14729.900000035763,
+          "evToDrawnRaf": 4.8999999642364855,
+          "evToGpuDone": 145.89999997615814,
+          "evToScreenEst": 204.09999996421902,
+          "tickLag": 0,
+          "evToRaf": 4.8999999642364855,
+          "evToPresent": 168,
+          "handlerDelay": 0.09999996423721313
+        },
+        {
+          "id": 17,
+          "ts": 15044.300000011921,
+          "evToDrawnRaf": -9.500000011921657,
+          "evToGpuDone": 131.80000001192093,
+          "evToScreenEst": 189.69999998806088,
+          "tickLag": 0,
+          "evToRaf": -9.500000011921657,
+          "evToPresent": 120,
+          "handlerDelay": 0.3999999761581421
+        },
+        {
+          "id": 18,
+          "ts": 15357.800000011921,
+          "evToDrawnRaf": 10.399999988079799,
+          "evToGpuDone": 186,
+          "evToScreenEst": 242.79999998805943,
+          "tickLag": 0,
+          "evToRaf": 10.399999988079799,
+          "evToPresent": 176,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 19,
+          "ts": 15666.600000023842,
+          "evToDrawnRaf": 1.4999999761585059,
+          "evToGpuDone": 134.5,
+          "evToScreenEst": 167.49999997614395,
+          "tickLag": 0,
+          "evToRaf": 1.4999999761585059,
+          "evToPresent": 136,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 20,
+          "ts": 16054.300000011921,
+          "evToDrawnRaf": 13.899999988079799,
+          "evToGpuDone": 196.39999997615814,
+          "evToScreenEst": 246.29999998805943,
+          "tickLag": 0,
+          "evToRaf": 13.899999988079799,
+          "evToPresent": 184,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 21,
+          "ts": 16379.699999988079,
+          "evToDrawnRaf": 21.900000011919474,
+          "evToGpuDone": 169.4000000357628,
+          "evToScreenEst": 221.100000011902,
+          "tickLag": 0,
+          "evToRaf": 21.900000011919474,
+          "evToPresent": 152,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 22,
+          "ts": 16583.5,
+          "evToDrawnRaf": 18.099999999998545,
+          "evToGpuDone": 158.30000001192093,
+          "evToScreenEst": 217.29999999998108,
+          "tickLag": 0,
+          "evToRaf": 18.099999999998545,
+          "evToPresent": 152,
+          "handlerDelay": 0.10000002384185791
+        },
+        {
+          "id": 23,
+          "ts": 16912.400000035763,
+          "evToDrawnRaf": 22.49999996423867,
+          "evToGpuDone": 163,
+          "evToScreenEst": 221.6999999642212,
+          "tickLag": 0,
+          "evToRaf": 22.49999996423867,
+          "evToPresent": 152,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 24,
+          "ts": 17225.100000023842,
+          "evToDrawnRaf": 9.699999976157414,
+          "evToGpuDone": 111.19999998807907,
+          "evToScreenEst": 175.69999997614286,
+          "tickLag": 0,
+          "evToRaf": 9.699999976157414,
+          "evToPresent": 144,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 25,
+          "ts": 17603.600000023842,
+          "evToDrawnRaf": -2.100000023841858,
+          "evToGpuDone": 100.09999996423721,
+          "evToScreenEst": 163.8999999761436,
+          "tickLag": 0,
+          "evToRaf": -2.100000023841858,
+          "evToPresent": 128,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 26,
+          "ts": 17957.69999998808,
+          "evToDrawnRaf": 10.500000011921657,
+          "evToGpuDone": 112.10000002384186,
+          "evToScreenEst": 176.5000000119071,
+          "tickLag": 0,
+          "evToRaf": 10.500000011921657,
+          "evToPresent": 144,
+          "handlerDelay": 0.20000004768371582
+        },
+        {
+          "id": 27,
+          "ts": 18332.30000001192,
+          "evToDrawnRaf": 2.4999999880783434,
+          "evToGpuDone": 105.39999997615814,
+          "evToScreenEst": 168.4999999880638,
+          "tickLag": 0,
+          "evToRaf": 2.4999999880783434,
+          "evToPresent": 136,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 28,
+          "ts": 18672.600000023842,
+          "evToDrawnRaf": -4.500000023843313,
+          "evToGpuDone": 97.39999997615814,
+          "evToScreenEst": 161.49999997614213,
+          "tickLag": 0,
+          "evToRaf": -4.500000023843313,
+          "evToPresent": 128,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 29,
+          "ts": 18907.80000001192,
+          "evToDrawnRaf": 27.099999988080526,
+          "evToGpuDone": 134,
+          "evToScreenEst": 193.09999998806597,
+          "tickLag": 0,
+          "evToRaf": 27.099999988080526,
+          "evToPresent": 160,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 30,
+          "ts": 19190.5,
+          "evToDrawnRaf": 11,
+          "evToGpuDone": 113,
+          "evToScreenEst": 176.99999999998545,
+          "tickLag": 0,
+          "evToRaf": 11,
+          "evToPresent": 144,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 31,
+          "ts": 19473.400000035763,
+          "evToDrawnRaf": 28.199999964235758,
+          "evToGpuDone": 130,
+          "evToScreenEst": 194.1999999642212,
+          "tickLag": 0,
+          "evToRaf": 28.199999964235758,
+          "evToPresent": 160,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 32,
+          "ts": 19816.30000001192,
+          "evToDrawnRaf": 18.499999988078343,
+          "evToGpuDone": 120.60000002384186,
+          "evToScreenEst": 184.4999999880638,
+          "tickLag": 0,
+          "evToRaf": 18.499999988078343,
+          "evToPresent": 152,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 33,
+          "ts": 20003.80000001192,
+          "evToDrawnRaf": 31.19999998807907,
+          "evToGpuDone": 172.89999997615814,
+          "evToScreenEst": 230.3999999880616,
+          "tickLag": 0,
+          "evToRaf": 31.19999998807907,
+          "evToPresent": 168,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 34,
+          "ts": 20270.400000035763,
+          "evToDrawnRaf": -2.1000000357635145,
+          "evToGpuDone": 106.09999996423721,
+          "evToScreenEst": 163.89999996422193,
+          "tickLag": 0,
+          "evToRaf": -2.1000000357635145,
+          "evToPresent": 128,
+          "handlerDelay": 0.2999999523162842
+        },
+        {
+          "id": 35,
+          "ts": 20644.100000023842,
+          "evToDrawnRaf": -9.300000023842586,
+          "evToGpuDone": 133.5,
+          "evToScreenEst": 189.89999997613995,
+          "tickLag": 0,
+          "evToRaf": -9.300000023842586,
+          "evToPresent": 120,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 36,
+          "ts": 20861.600000023842,
+          "evToDrawnRaf": 6.499999976156687,
+          "evToGpuDone": 108.5,
+          "evToScreenEst": 172.49999997614213,
+          "tickLag": 0,
+          "evToRaf": 6.499999976156687,
+          "evToPresent": 136,
+          "handlerDelay": 0.19999998807907104
+        },
+        {
+          "id": 37,
+          "ts": 21235.100000023842,
+          "evToDrawnRaf": 32.99999997615669,
+          "evToGpuDone": 136.80000001192093,
+          "evToScreenEst": 198.99999997614213,
+          "tickLag": 0,
+          "evToRaf": 32.99999997615669,
+          "evToPresent": 168,
+          "handlerDelay": 1.399999976158142
+        },
+        {
+          "id": 38,
+          "ts": 21533.69999998808,
+          "evToDrawnRaf": 1.1000000119202014,
+          "evToGpuDone": 107.80000001192093,
+          "evToScreenEst": 167.10000001190565,
+          "tickLag": 0,
+          "evToRaf": 1.1000000119202014,
+          "evToPresent": 136,
+          "handlerDelay": 0.30000001192092896
+        },
+        {
+          "id": 39,
+          "ts": 21861.80000001192,
+          "evToDrawnRaf": 6.199999988079071,
+          "evToGpuDone": 108.10000002384186,
+          "evToScreenEst": 172.19999998806452,
+          "tickLag": 0,
+          "evToRaf": 6.199999988079071,
+          "evToPresent": 136,
+          "handlerDelay": 0.10000002384185791
+        },
+        {
+          "id": 40,
+          "ts": 22143.900000035763,
+          "evToDrawnRaf": 24.29999996423794,
+          "evToGpuDone": 159.0999999642372,
+          "evToScreenEst": 223.49999996422048,
+          "tickLag": 0,
+          "evToRaf": 24.29999996423794,
+          "evToPresent": 160,
+          "handlerDelay": 0.2999999523162842
         }
       ]
     }
