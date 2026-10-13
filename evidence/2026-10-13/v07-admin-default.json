@@ -1,0 +1,151 @@
+{
+  "name": "v07-admin-default",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-13T14:34:33.352Z",
+    "gitHead": "50eab64",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5463",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "scene": "39e63ce9",
+  "A0": {
+    "calls": [],
+    "items": [
+      "pause.continue",
+      "pause.restart",
+      "pause.rewind",
+      "pause.scene",
+      "pause.scene.next",
+      "pause.scene.random",
+      "pause.scene.favourite",
+      "pause.share",
+      "pause.drone",
+      "pause.radio",
+      "pause.settings",
+      "pause.replays",
+      "pause.measure",
+      "pause.import",
+      "pause.cinema",
+      "pause.record",
+      "pause.feedback"
+    ],
+    "pass": true
+  },
+  "A1": {
+    "flown": {
+      "walls": "off",
+      "dropFloaters": 0,
+      "scale": 1,
+      "ceilingM": 1.7809873819351196,
+      "wind": {
+        "source": "custom",
+        "fromDeg": 270,
+        "speed": 3,
+        "gust": 0
+      }
+    },
+    "offered": true,
+    "items": [
+      "pause.continue",
+      "pause.restart",
+      "pause.rewind",
+      "pause.scene",
+      "pause.scene.next",
+      "pause.scene.random",
+      "pause.scene.favourite",
+      "pause.share",
+      "pause.sceneDefault",
+      "pause.drone",
+      "pause.radio",
+      "pause.settings",
+      "pause.replays",
+      "pause.measure",
+      "pause.import",
+      "pause.cinema",
+      "pause.record",
+      "pause.feedback"
+    ],
+    "label": "Save as this scan's default",
+    "calls": [
+      {
+        "method": "GET",
+        "path": "/api/admin/session",
+        "csrf": null
+      },
+      {
+        "method": "GET",
+        "path": "/api/admin/catalog",
+        "csrf": null
+      },
+      {
+        "method": "POST",
+        "path": "/api/admin/catalog/draft",
+        "csrf": "test-csrf-not-a-secret"
+      }
+    ],
+    "entry": {
+      "id": "39e63ce9",
+      "title": "Modlinek Villa",
+      "author": "Andrii Shramko",
+      "license": "CC BY 4.0",
+      "kind": "interior",
+      "collision": true,
+      "walls": "off",
+      "wind": {
+        "fromDeg": 270,
+        "speed": 3,
+        "gust": 0,
+        "source": "manual"
+      },
+      "ceilingM": 1.7809873819351196
+    },
+    "other": {
+      "id": "bbbb2222",
+      "title": "Beta room",
+      "author": "Test",
+      "license": "CC BY 4.0",
+      "kind": "interior",
+      "collision": true,
+      "walls": "off",
+      "dropFloaters": 2
+    },
+    "note": "Saved what you fly now (walls, floating-voxel cleanup, scene size, collision ceiling, wind) as this scan's default in the catalogue draft. Publish the draft on the admin page.",
+    "pass": true
+  },
+  "L": {
+    "keys": [
+      {
+        "text": "above: no longer a wall",
+        "h": 19,
+        "lines": 1
+      },
+      {
+        "text": "a wall",
+        "h": 19,
+        "lines": 1
+      },
+      {
+        "text": "a small floating piece",
+        "h": 19,
+        "lines": 1
+      }
+    ],
+    "screenshot": "C:\\dev\\gsfpv-v07-e\\evidence\\2026-10-13\\v07-ceiling-legend.png",
+    "oneLineEach": true
+  },
+  "pass": true
+}
