@@ -8,6 +8,7 @@ export * from './history';
 export * from './director';
 export * from './stats';
 export * from './bfdiff';
+export * from './bfaux';
 export * from './contracts';
 
 /** Bumped whenever the model changes in a way that alters traces. Part of the log header. */

@@ -189,9 +189,9 @@ export class BotPilot {
         const wMax = 12;
         if (wm > wMax) { wx *= wMax / wm; wy *= wMax / wm; wz *= wMax / wm; }
         const rc = this.p.rates;
-        ch[0] = invertRate(rc.type, -wz * RAD2DEG, rc.roll, rc.rateLimit);
-        ch[1] = invertRate(rc.type, -wx * RAD2DEG, rc.pitch, rc.rateLimit);
-        ch[3] = invertRate(rc.type, -wy * RAD2DEG, rc.yaw, rc.rateLimit);
+        ch[0] = invertRate(rc.type, -wz * RAD2DEG, rc.roll, rc.rateLimit, rc.quickRcExpo === true);
+        ch[1] = invertRate(rc.type, -wx * RAD2DEG, rc.pitch, rc.rateLimit, rc.quickRcExpo === true);
+        ch[3] = invertRate(rc.type, -wy * RAD2DEG, rc.yaw, rc.rateLimit, rc.quickRcExpo === true);
         // thrust along the current body up axis
         const upDot = b3x * r01 + b3y * r11 + b3z * r21;
         const tNeed = T / Math.max(0.3, upDot);

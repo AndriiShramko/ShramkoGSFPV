@@ -74,7 +74,10 @@ describe('BetaFPV Pavo20 dumps (real firmware output)', () => {
             expect(r.ignored).toContainEqual({ section: 'master', name: 'dshot_bidir', value: 'ON' });
             expect(r.ignored.some((g) => g.section === 'profile 0' && g.name === 'tpa_breakpoint')).toBe(true);
             for (const used of ['p_roll', 'f_yaw', 'thr_mid', 'dshot_idle_value', 'motor_idle']) expect(r.ignored.map((g) => g.name)).not.toContain(used);
-            expect(r.ignoredCommands.aux).toBe(6);
+            // the six mode switches are read now (bfaux.ts), not skipped
+            expect(r.ignoredCommands.aux).toBeUndefined();
+            expect(r.aux.map((c) => c.mode).slice(0, 3)).toEqual(['ARM', 'ANGLE', 'HORIZON']);
+            expect(r.aux).toHaveLength(6);
             expect(has(r.warnings, 'not used by the simulator were ignored')).toBe(true);
             expect(has(r.warnings, 'Not modelled by the simulator')).toBe(true);
         });
