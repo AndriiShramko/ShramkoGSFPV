@@ -133,7 +133,8 @@ export function dropFloaters(base: VoxelCollision, minBlocks: number): FloaterFi
 }
 
 function rebuild(base: VoxelCollision, minBlocks: number, comps: BlockComponents): FloaterFilter {
-    if (!usesOctree(base)) throw new RangeError('the floater filter needs an octree collision (a scan\'s walls), not an analytic test world');
+    // a ceilinged collision (ceiling.ts) is not one either: the filter goes first, then the ceiling
+    if (!usesOctree(base)) throw new RangeError('the floater filter needs the plain octree of a scan\'s walls (filter before a collision ceiling), not an analytic test world');
     const drop = new Uint8Array(comps.count);
     let pieces = 0, blocks = 0;
     for (let id = 0; id < comps.count; id++) {
