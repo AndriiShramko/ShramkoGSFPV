@@ -1,7 +1,7 @@
 # v0.7 plan — the owner's message 18 (2026-10-13)
 
-Source: the owner's brief, message 18 (vault `01 - Projects/FPV-симулятор в 3DGS-сценах/Бриф Андрія — дословно.md`,
-recorded word for word). Seven lanes, each in its own git worktree and branch; the lead merges, runs the
+Source: the owner's brief, message 18 (the vault's verbatim brief of the FPV simulator project, recorded word for
+word). Seven lanes, each in its own git worktree and branch; the lead merges, runs the
 gates and ships. The catalogue contract (`packages/scenes/src/catalog.ts` + `apps/api/admin.py
 _place_fields`, commit "catalogue contract v0.7") is already on the base: every lane reads those fields,
 lane A writes them from the admin.
