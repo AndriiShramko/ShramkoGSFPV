@@ -1,0 +1,6 @@
+/* The crosshair (builtin/crosshair.ts): centred on the view, a share of its shorter side, under
+   everything else of the flight view, never taking a click. Not in cinema mode or the clean view. */
+.crosshair { position: absolute; left: 50%; top: 50%; width: var(--crosshair-size, 4vmin); height: var(--crosshair-size, 4vmin); transform: translate(-50%, -50%); pointer-events: none; }
+.crosshair[hidden] { display: none; }
+.crosshair svg { display: block; }
+body.cinema .crosshair, body.clean .crosshair { display: none; }
