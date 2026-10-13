@@ -76,3 +76,18 @@ input[type="checkbox"] { min-height: 0; width: 20px; height: 20px; accent-color:
     .col-row > code { grid-column: 1 / -1; }
     .preview { grid-template-columns: 1fr; }
 }
+/* v0.7: what Publish would change, refresh from SuperSplat, the place/wind/drawing fields */
+.btn.attention { box-shadow: 0 0 0 3px rgba(74,222,128,.35); }
+.changes { flex: 1 1 100%; font-size: 14px; color: var(--warn); }
+.changes summary { cursor: pointer; min-height: 32px; }
+.changes ul { margin: 4px 0 0; padding-left: 20px; color: var(--fg); }
+.badge.change-badge.added, .badge.change-badge.changed, .badge.change-badge.moved { color: var(--warn); border-color: rgba(251,191,36,.6); }
+.wide, .refresh-block, .place-editor { grid-column: 1 / -1; }
+.refresh { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
+.refresh-row { font-size: 14px; overflow-wrap: anywhere; }
+.place-editor { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+.place-editor legend { color: var(--muted); font-size: 13px; padding: 0 4px; }
+.place-hits { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+.place-editor p { margin: 0; grid-column: 1 / -1; }
+textarea { min-height: 64px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: #0b0e12; color: var(--fg); font: inherit; resize: vertical; }
+.field > textarea { color: var(--fg); font-size: 15px; }

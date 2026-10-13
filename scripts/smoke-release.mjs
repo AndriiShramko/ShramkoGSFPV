@@ -88,12 +88,34 @@ if (asset) {
     const { r } = await get(asset);
     expect(r.status === 200 && (r.headers.get('cache-control') ?? '').includes('immutable'), `${asset} immutable`);
 } else problems.push('no /fly/assets/*.js referenced from /en/fly/');
-// internal links on the EN landing
+// internal links on the EN landing; the scene pages are the API's (scenepages.py): checked when an API answers
+// (the live site), listed as not checked behind the CI's nginx, which has no API
 const en = pages.find((x) => x.p === '/en/')?.body ?? '';
 const links = [...new Set([...en.matchAll(/href="(\/[^"#?]*)/g)].map((m) => m[1]))].filter((h) => !h.startsWith('//'));
+const api = (await get('/api/health')).r.status === 200;
+const SCENE_PAGE = /^\/(en|es|pl|ru)\/scenes\/([0-9a-f]{6,32}\/)?$/;
 for (const h of links) {
+    if (SCENE_PAGE.test(h) && !api) continue;
     const { r } = await get(h);
     expect([200, 301, 302].includes(r.status), `link ${h} -> ${r.status}`);
+}
+// nginx alone (no API needed): the bare scene URLs are sent to their canonical slash form, the raw templates
+// are never served (apps/api/tests/test_nginx_routes.py reads the same rules from the config)
+for (const [path, want] of [['/en/scenes', '/en/scenes/'], ['/en/scenes/70b50d42', '/en/scenes/70b50d42/']]) {
+    const { r } = await get(path);
+    const loc = r.headers.get('location') ?? '';
+    expect(r.status === 301 && new URL(loc, BASE).pathname === want, `${path} -> ${r.status} ${loc} (want 301 ${want})`);
+}
+expect((await get('/scene-templates/manifest.json')).r.status === 404, '/scene-templates/ is not served');
+if (!api) console.log(`no API behind ${BASE}: ${links.filter((h) => SCENE_PAGE.test(h)).length} scene page links not checked`);
+else {
+    // a scene page: served by the API, no script at all, canonical and hreflang, its sitemap and list
+    const { r, body } = await get('/en/scenes/');
+    expect(r.status === 200 && (r.headers.get('content-security-policy') ?? '').includes("script-src 'none'"), `/en/scenes/ -> ${r.status}, CSP script-src 'none'`);
+    expect(/<link rel="canonical" href="[^"]+\/en\/scenes\/">/.test(body) && (body.match(/hreflang=/g) ?? []).length >= 5, '/en/scenes/ canonical + hreflang');
+    expect(!/<script(?![^>]*application\/ld\+json)/i.test(body) && !/\{\{|\[\[/.test(body), '/en/scenes/ has no script and no unfilled slot');
+    expect(r.headers.get('x-content-type-options') === 'nosniff', '/en/scenes/ nosniff');
+    for (const p of ['/scenes/sitemap.xml', '/scenes/llms.txt']) expect((await get(p)).r.status === 200, `${p} served`);
 }
 
 console.log(`${ok.length} checks passed`);

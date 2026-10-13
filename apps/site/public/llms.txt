@@ -18,6 +18,7 @@ Key facts:
 ## Links
 - [Website](https://gsfpv.flyreelstudio.eu/en/): the landing page (also in Spanish, Polish and Russian)
 - [Simulator](https://gsfpv.flyreelstudio.eu/en/fly/): fly in the browser
+- [Scene pages](https://gsfpv.flyreelstudio.eu/scenes/llms.txt): every place in the catalogue with its own page in four languages (facts of the 3D scan, author and licence, walls, wind, a link that opens it in the simulator); the catalogue page is https://gsfpv.flyreelstudio.eu/en/scenes/
 - [Source code](https://github.com/AndriiShramko/ShramkoGSFPV): MIT-licensed repository
 - [AGENTS.md](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/AGENTS.md): rules for coding agents working in the repository
 - [AGENT_SETUP.md](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/AGENT_SETUP.md): install, update and removal protocol for an AI agent

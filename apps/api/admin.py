@@ -16,6 +16,9 @@ GET  /api/admin/reports                visitors' bug reports and ideas, newest f
 POST /api/admin/reports/status {id, status: open|closed}   closed -> done, open -> new (ideas store)
 GET  /api/admin/reports/<id>/diagnostics  the technical details stored with a bug (consent given)
 GET|POST /api/admin/ideas...           the ideas store (v0.7): ideas_admin.py lists the routes
+...  and every route another module adds with AdminApi.add_route (server.py wires them: SuperSplat's facts
+     of a scene, superspl_facts.py; places by name and the prevailing wind, wind.py), behind the same
+     session and CSRF check
 
 Security (deploy/README.md, "Admin"):
 - Off unless ADMIN_PASSWORD_HASH holds a valid "scrypt:n:r:p:salt:hash" (tools/admin/hash_password.py);
@@ -75,6 +78,7 @@ _HISTORY_RE = re.compile(r"[0-9]{8}T[0-9]{6}Z(-[0-9]{1,3})?")
 _REPORT_ID_RE = re.compile(r"R-[0-9]{8}-[0-9]{4,}")
 _ORIGIN_RE = re.compile(r"https://superspl\.at/[A-Za-z0-9/_?=&.-]{1,200}")
 _DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?")
+_USER_RE = re.compile(r"[A-Za-z0-9_.-]{1,40}")  # a SuperSplat user name (origin.user)
 
 
 def _b64(b: bytes) -> str:
@@ -288,6 +292,9 @@ def clean_scene(e) -> dict:
     if isinstance(e.get("defaultDrone"), str) and _DRONE_RE.fullmatch(e["defaultDrone"]):
         out["defaultDrone"] = e["defaultDrone"]
     out["collision"] = e.get("collision") is not False
+    ext = [_number(v, 0, 100000) for v in e["extentM"]] if isinstance(e.get("extentM"), list) and len(e["extentM"]) == 3 else []
+    if ext and all(v is not None for v in ext):
+        out["extentM"] = ext  # the scan's bounding box in metres (the collision file's sceneBounds)
     out["walls"] = "off" if e.get("walls") == "off" else "on"
     pitch = _texts(e.get("pitch"), 140)
     if pitch:
@@ -342,6 +349,8 @@ def _place_fields(e: dict) -> dict:
                 origin["tags"] = tags
         if isinstance(o.get("created"), str) and _DATE_RE.fullmatch(o["created"]):
             origin["created"] = o["created"]
+        if isinstance(o.get("user"), str) and _USER_RE.fullmatch(o["user"]):
+            origin["user"] = o["user"]
         out["origin"] = origin
     return out
 
@@ -558,6 +567,13 @@ class AdminApi:
         self.reports = Reports(reports_dir)
         self.ideas = ideas
         self._kdf = threading.Lock()  # one scrypt at a time: memory, and a natural brake
+        self._extra: list[tuple[str, re.Pattern, Callable]] = []
+
+    def add_route(self, method: str, pattern: str, handler: Callable[[re.Match, str, Callable[[int], bytes], str], Response]) -> None:
+        """An admin route served by another module, behind the same session, CSRF and error handling:
+        `pattern` is matched (fullmatch) against the path after /api/admin/, `handler(match, query string,
+        read_body, client)` answers (status, body, headers)."""
+        self._extra.append((method, re.compile(pattern), handler))
 
     def config(self) -> tuple | None:
         return parse_hash(self.env.get("ADMIN_PASSWORD_HASH"))
@@ -585,7 +601,7 @@ class AdminApi:
             return 304, b"", hdrs
         return 200, body, hdrs
 
-    def handle(self, method: str, path: str, headers, read_body: Callable[[int], bytes], client: str) -> Response:
+    def handle(self, method: str, path: str, headers, read_body: Callable[[int], bytes], client: str, qs: str = "") -> Response:
         cfg = self.config()
         if cfg is None:
             return _json(503, {"ok": False, "reason": "admin-disabled"})
@@ -600,6 +616,9 @@ class AdminApi:
             self.audit(client, "csrf", False, route)
             return _json(403, {"ok": False, "reason": "csrf"})
         try:
+            for m_, pat, fn in self._extra:
+                if m_ == method and (hit := pat.fullmatch(route)):
+                    return fn(hit, qs, read_body, client)
             return self._route(method, route, read_body, client, sid, sess)
         except TooLarge:
             return _json(413, {"ok": False})

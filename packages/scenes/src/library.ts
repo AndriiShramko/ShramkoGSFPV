@@ -152,8 +152,44 @@ export interface CuratedCard { id: string; title: string; collision: boolean; ki
 /** One card of the picker's built-in tabs; collision null: not known (shown under the walls filter, never hidden on a guess). */
 export interface PickerRow { id: string; title: string; collision: boolean | null; flights: number; fav: boolean }
 
-/** The cards of the picker's Showcase, Recent and Favourites tabs after the filter (ui/scenes.ts draws them). */
-export function pickerRows(tab: 'showcase' | 'recent' | 'favourites', curated: readonly CuratedCard[], d: SceneLibraryData, f: SceneFilter): PickerRow[] {
+/** The picker's built-in tabs: the owner's catalogue (`showcase`), the pilot's own Recent and Favourites. */
+export type PickerTabId = 'showcase' | 'recent' | 'favourites';
+
+/** The parts of SceneFilter a tab can obey (maxMb is kept in the stored filter but no tab reads it yet). */
+export type FilterKey = 'collisionOnly' | 'kind' | 'flown';
+
+/**
+ * Which filter controls each built-in tab obeys (the owner's item 4, v0.7). The walls filter (default on)
+ * is a discovery tool: it applies where scenes come to the pilot (Recent, and the SuperSplat tab, which
+ * has its own filters), never to a list someone chose by hand. The catalogue is the owner's shop window:
+ * every scene he published is on it, a scene without walls with a "no walls" badge. Favourites are the
+ * pilot's own picks: a starred scene stays there, badge and all. Kind only means something for the
+ * catalogue (Recent and Favourites have no kind for scenes outside it). The picker hides a control the
+ * open tab does not obey, so a filter never looks active while doing nothing.
+ */
+export const TAB_FILTERS: Readonly<Record<PickerTabId, readonly FilterKey[]>> = {
+    showcase: ['kind', 'flown'],
+    recent: ['collisionOnly', 'flown'],
+    favourites: ['flown']
+};
+
+/** Does this tab obey this filter control (TAB_FILTERS)? */
+export function tabObeys(tab: PickerTabId, key: FilterKey): boolean {
+    return TAB_FILTERS[tab].includes(key);
+}
+
+/** A card before the filter: what the filter controls look at (kind null: not in the catalogue). */
+export interface PickerCandidate extends PickerRow { kind: string | null }
+
+/** One built-in tab after the filter: its cards, and how many the filter hid (an empty tab says why). */
+export interface PickerList { rows: PickerRow[]; hidden: number }
+
+/**
+ * The cards of one tab before any filter (pickerList filters them): the catalogue in the admin's order,
+ * Recent newest first, Favourites in the star order; a scene in the catalogue takes its title and walls
+ * from there, any other keeps what it was opened or starred with.
+ */
+export function tabCandidates(tab: PickerTabId, curated: readonly CuratedCard[], d: SceneLibraryData): PickerCandidate[] {
     const byId = new Map(curated.map((s) => [s.id, s]));
     const flights = (id: string): number => d.history.find((e) => e.id === id)?.flights ?? 0;
     const base: { id: string; title: string; collision: boolean | null; kind: string | null }[] =
@@ -162,12 +198,40 @@ export function pickerRows(tab: 'showcase' | 'recent' | 'favourites', curated: r
             const c = byId.get(e.id);
             return { id: e.id, title: c?.title ?? e.title ?? e.id, collision: c ? c.collision : e.hasCollision, kind: c?.kind ?? null };
         });
-    return base
-        .map((s) => ({ ...s, flights: flights(s.id), fav: d.favourites.includes(s.id) }))
-        .filter((s) => !f.collisionOnly || s.collision !== false)
-        .filter((s) => f.kind === 'all' || tab !== 'showcase' || s.kind === f.kind)
-        .filter((s) => f.flown === 'all' || (f.flown === 'flown' ? s.flights > 0 : s.flights === 0))
-        .map(({ id, title, collision, flights: n, fav }) => ({ id, title, collision, flights: n, fav }));
+    return base.map((s) => ({ ...s, flights: flights(s.id), fav: d.favourites.includes(s.id) }));
+}
+
+/**
+ * The candidates the given filter controls let through: walls (collision false is out; unknown stays,
+ * never hidden on a guess), kind, flown. The one place the filter's rules live; pickerList applies the
+ * controls a tab obeys (TAB_FILTERS).
+ */
+export function filterCandidates(cands: readonly PickerCandidate[], keys: readonly FilterKey[], f: SceneFilter): PickerCandidate[] {
+    const walls = keys.includes('collisionOnly') && f.collisionOnly;
+    const kind = keys.includes('kind') && f.kind !== 'all' ? f.kind : null;
+    const flown = keys.includes('flown') ? f.flown : 'all';
+    return cands
+        .filter((s) => !walls || s.collision !== false)
+        .filter((s) => kind === null || s.kind === kind)
+        .filter((s) => flown === 'all' || (flown === 'flown' ? s.flights > 0 : s.flights === 0));
+}
+
+/**
+ * The cards of the picker's Showcase, Recent and Favourites tabs after the filter controls the tab obeys
+ * (TAB_FILTERS), and how many the filter hid (ui/scenes.ts draws them; pickerEmpty says why a tab is empty).
+ */
+export function pickerList(tab: PickerTabId, curated: readonly CuratedCard[], d: SceneLibraryData, f: SceneFilter): PickerList {
+    const all = tabCandidates(tab, curated, d);
+    const rows = filterCandidates(all, TAB_FILTERS[tab], f).map(({ id, title, collision, flights, fav }) => ({ id, title, collision, flights, fav }));
+    return { rows, hidden: all.length - rows.length };
+}
+
+/**
+ * Why a built-in tab shows no card, as the key of its text (scenes.empty.<reason>): 'filter' when the
+ * filter hid every card (the tab is not empty, the filter is), else the tab's own "nothing here yet".
+ */
+export function pickerEmpty(tab: PickerTabId, list: PickerList): 'filter' | PickerTabId {
+    return list.hidden > 0 ? 'filter' : tab;
 }
 
 /** A scene that failed to load: kept in the history (the picker still lists it), skipped by the rotation for a day. */

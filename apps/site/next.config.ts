@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   poweredByHeader: false,
   images: { unoptimized: true },
+  // the catalogue reader (@gsfpv/scenes/catalog: one set of rules with the simulator and the admin) ships as TypeScript
+  transpilePackages: ["@gsfpv/scenes"],
 };
 
 export default withNextIntl(nextConfig);

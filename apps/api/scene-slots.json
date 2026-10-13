@@ -1,0 +1,26 @@
+{
+  "v": 1,
+  "about": "The slots of the scene page templates: apps/api/scenepages.py fills them, apps/site/scripts/scene-templates.mjs refuses a template that uses a name not listed here or misses a required one. Raw names hold markup the API builds and escapes itself; every other name is escaped text. Syntax: apps/api/templating.py.",
+  "raw": ["head", "jsonld"],
+  "kinds": {
+    "scene": {
+      "names": [
+        "lang", "path", "head", "jsonld", "name", "h1", "lede", "kindLabel", "place", "poster", "posterAlt", "flyHref", "originUrl",
+        "summary", "about", "quote", "quoteBy", "authorName", "authorUrl", "license", "licenseUrl", "updated", "indexHref", "homeHref",
+        "facts", "k", "v",
+        "tags", "tag",
+        "faq", "q", "a",
+        "share", "id", "label", "href",
+        "more", "title", "meta", "walls"
+      ],
+      "required": ["head", "jsonld", "h1", "flyHref", "originUrl", "poster", "summary", "facts", "faq", "share", "authorName", "license"]
+    },
+    "index": {
+      "names": [
+        "lang", "path", "head", "jsonld", "h1", "lede", "count", "updated", "homeHref",
+        "cards", "href", "flyHref", "title", "poster", "kindLabel", "place", "walls", "wallsLabel", "authorName"
+      ],
+      "required": ["head", "jsonld", "cards", "href", "flyHref", "title", "poster"]
+    }
+  }
+}

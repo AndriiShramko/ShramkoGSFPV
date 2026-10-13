@@ -676,7 +676,8 @@
     "randomNote": "Jeden z 200 najbardziej lubianych skanów ze ścianami na SuperSplat, wybrany losowo.",
     "own": "Dodaj własny skan: wklej jego link z SuperSplat",
     "ownHint": "Twój skan albo dowolny publiczny: link do sceny, link superspl.at/s?id= albo samo id sceny.",
-    "shotAlt": "Zakładka SuperSplat w symulatorze: sortowanie, filtry ścian i pobierania, Losowa z najlepszych i siatka skanów ze ścianami"
+    "shotAlt": "Zakładka SuperSplat w symulatorze: sortowanie, filtry ścian i pobierania, Losowa z najlepszych i siatka skanów ze ścianami",
+    "scenesLink": "Katalog: każde miejsce z własną stroną"
   },
   "scale": {
     "eyebrow": "Nowość: skala sceny",
@@ -702,19 +703,23 @@
     "fly": "Leć w tej scenie"
   },
   "scenes": {
-    "eyebrow": "Skany Andrija",
+    "eyebrow": "Katalog",
     "h2": "Zacznij od prawdziwego miejsca",
-    "lead": "Trzy skany Andrija Shramki, które możesz swobodnie oblatywać i udostępniać na licencji CC BY 4.0.",
+    "lead": "Wszystkie miejsca, które kurator opublikował do latania, w jego kolejności. Każde ma własną stronę z faktami, autorem i licencją.",
     "items": {
       "39e63ce9": "Willa Modlinek — czerwony pokój i łazienka",
       "7a475d38": "Ogród zimowy — Jastrzębia Góra, Polska",
       "887f27aa": "Tunis — uliczki starej medyny"
     },
-    "kind": { "interior": "Wnętrze", "exterior": "Plener" },
+    "kind": { "interior": "Wnętrze", "exterior": "Plener", "other": "Skan 3D" },
     "alt": "Podgląd skanu „{title}”",
     "author": "Autor: {name}",
     "fly": "Leć tutaj",
-    "original": "Oryginał na SuperSplat"
+    "original": "Oryginał na SuperSplat",
+    "page": "Strona sceny",
+    "walls": "ze ścianami",
+    "noWalls": "jeszcze bez ścian",
+    "all": "Wszystkie miejsca do latania"
   },
   "radios": {
     "eyebrow": "Działa z Twoją aparaturą",

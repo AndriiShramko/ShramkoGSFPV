@@ -40,6 +40,8 @@ services:
     volumes:
       - ./api:/app:ro
       - ./data:/data
+      # the scene page templates of the live release (scenepages.py reads releases/current/scene-templates/)
+      - ./releases:/srv/releases:ro
     env_file: [config.env]
     environment:
       DATA_DIR: /data

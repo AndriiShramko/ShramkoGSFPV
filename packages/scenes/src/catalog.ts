@@ -45,6 +45,8 @@ export interface SceneOrigin {
     tags?: string[];
     /** when it was published on SuperSplat, ISO date */
     created?: string;
+    /** the author's SuperSplat user name (the credit links to their page there); `author` is the name shown */
+    user?: string;
 }
 
 export interface CatalogScene {
@@ -62,6 +64,8 @@ export interface CatalogScene {
     sizeMb?: number;
     /** SuperSplat's storage format ('ssog', 'sog'...) as the admin saw it when adding the scene */
     format?: string;
+    /** the scan's bounding box in metres along its x, y, z (scale 1), from the collision file's sceneBounds; the scene page's size facts */
+    extentM?: [number, number, number];
     defaultDrone?: string;
     /** the admin's default for the walls switch: "off" for a noisy scan (floating splats make phantom walls); absent = on */
     walls?: 'on' | 'off';
@@ -98,6 +102,19 @@ export interface CatalogScene {
     about?: LocalText;
     origin?: SceneOrigin;
 }
+
+/**
+ * Every field of a CatalogScene, once, in the interface's order. The compiler checks the list against the
+ * interface both ways (a new field must be added here, a field here must exist there), so code that has to
+ * cover every field reads it from here: the admin page names each field catalogDiff or factChanges reports
+ * with the label admin.key.<field>, and a test (packages/i18n/test/admin-parity.test.ts) checks each one
+ * has that label in every language.
+ */
+export const CATALOG_SCENE_FIELDS = Object.keys({
+    id: 1, title: 1, author: 1, license: 1, kind: 1, collision: 1, version: 1, thumb: 1, voxelCm: 1, sizeMb: 1, format: 1, extentM: 1,
+    defaultDrone: 1, walls: 1, dropFloaters: 1, scale: 1, pitch: 1, collections: 1, pinned: 1, hidden: 1, geo: 1, compassDeg: 1, wind: 1,
+    ceilingM: 1, render: 1, about: 1, origin: 1
+} satisfies Record<keyof CatalogScene, 1>) as readonly (keyof CatalogScene)[];
 
 export interface CatalogCollection {
     id: string;
@@ -159,6 +176,8 @@ function readRender(v: unknown): SceneRender | undefined {
 
 const ORIGIN_URL = /^https:\/\/superspl\.at\/[A-Za-z0-9/_?=&.-]{1,200}$/;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?$/;
+/** a SuperSplat user name (origin.user) */
+const USER = /^[A-Za-z0-9_.-]{1,40}$/;
 
 function readOrigin(v: unknown): SceneOrigin | undefined {
     if (!v || typeof v !== 'object') return undefined;
@@ -171,6 +190,7 @@ function readOrigin(v: unknown): SceneOrigin | undefined {
         if (tags.length) out.tags = tags;
     }
     if (typeof o.created === 'string' && ISO_DATE.test(o.created)) out.created = o.created;
+    if (typeof o.user === 'string' && USER.test(o.user)) out.user = o.user;
     return out;
 }
 
@@ -194,6 +214,10 @@ export function readScene(v: unknown): CatalogScene | null {
     for (const [k, x] of n) if (x !== undefined) (s as unknown as Record<string, unknown>)[k] = x;
     if (typeof o.thumb === 'string' && /^https:\/\/[^\s"'<>]+\.webp$/.test(o.thumb)) s.thumb = o.thumb;
     if (typeof o.format === 'string' && o.format) s.format = o.format;
+    if (Array.isArray(o.extentM) && o.extentM.length === 3) {
+        const e = o.extentM.map((x) => num(x, 0, 100000));
+        if (e.every((x) => x !== undefined)) s.extentM = e as [number, number, number];
+    }
     if (typeof o.defaultDrone === 'string' && o.defaultDrone) s.defaultDrone = o.defaultDrone;
     if (o.walls === 'on' || o.walls === 'off') s.walls = o.walls;
     const pitch = texts(o.pitch);
@@ -242,7 +266,7 @@ export function localText(t: LocalText | undefined, locale: string): string {
 }
 
 /**
- * The picker's catalogue tab, from rows already filtered (pickerRows keeps the admin's order): the
+ * The picker's catalogue tab, from rows already filtered (pickerList keeps the admin's order): the
  * Featured row (pinned scenes), the collections that have a scene among the rows, and the rest
  * (not pinned; only the chosen collection's when one is chosen).
  */
@@ -269,6 +293,88 @@ export function moveItem<T>(list: readonly T[], from: number, to: number): T[] {
     const [x] = out.splice(from, 1);
     out.splice(Math.max(0, Math.min(out.length, to)), 0, x);
     return out;
+}
+
+/** How one scene of the draft differs from the live catalogue (catalogDiff). */
+export interface SceneChange {
+    id: string;
+    title: string;
+    kind: 'added' | 'changed' | 'moved' | 'removed';
+    /** the fields that differ (a changed scene; sorted) */
+    fields?: string[];
+}
+
+/** Everything the draft changes against the live catalogue: the admin's "not published yet" list. */
+export interface CatalogDiff {
+    scenes: SceneChange[];
+    /** the collections list differs (added, removed, renamed or reordered) */
+    collections: boolean;
+    /** scenes, collections or the order differ: Publish has something to do */
+    dirty: boolean;
+}
+
+/** One value in a canonical form for comparing (object keys sorted, missing = undefined). */
+function canonical(v: unknown): string {
+    if (Array.isArray(v)) return `[${v.map(canonical).join(',')}]`;
+    if (v && typeof v === 'object') {
+        const o = v as Record<string, unknown>;
+        return `{${Object.keys(o).filter((k) => o[k] !== undefined).sort().map((k) => `${JSON.stringify(k)}:${canonical(o[k])}`).join(',')}}`;
+    }
+    return JSON.stringify(v ?? null);
+}
+
+/** Defaults the API writes for a field the admin never set: absent and default compare equal. */
+const FIELD_DEFAULTS: Record<string, unknown> = { walls: 'on', pinned: false, hidden: false, collections: [], collision: true };
+
+/**
+ * The admin's draft against the live catalogue (both as GET /api/admin/catalog sends them): scenes added,
+ * removed, changed (with the fields) and moved (same fields, another place among the scenes both keep).
+ * Pure; the admin page draws it as badges and the "N changes not published" line.
+ */
+export function catalogDiff(draft: SceneCatalog, live: SceneCatalog | null): CatalogDiff {
+    const liveScenes = live?.scenes ?? [];
+    const before = new Map(liveScenes.map((s) => [s.id, s]));
+    const after = new Map(draft.scenes.map((s) => [s.id, s]));
+    const value = (s: CatalogScene, k: string): string => canonical((s as unknown as Record<string, unknown>)[k] ?? FIELD_DEFAULTS[k]);
+    // the scenes both lists keep, in the draft's order: the fewest of them that moved are the ones outside
+    // the longest run that kept its live order (one scene dragged = one "moved", not every scene it passed)
+    const livePos = new Map(liveScenes.filter((s) => after.has(s.id)).map((s, i) => [s.id, i]));
+    const kept = draft.scenes.filter((s) => livePos.has(s.id)).map((s) => s.id);
+    const stayed = longestIncreasing(kept.map((id) => livePos.get(id)!)).map((i) => kept[i]);
+    const moved = new Set(kept.filter((id) => !stayed.includes(id)));
+    const scenes: SceneChange[] = [];
+    draft.scenes.forEach((s) => {
+        const old = before.get(s.id);
+        if (!old) {
+            scenes.push({ id: s.id, title: s.title, kind: 'added' });
+            return;
+        }
+        const keys = [...new Set([...Object.keys(old), ...Object.keys(s)])].filter((k) => value(old, k) !== value(s, k)).sort();
+        if (keys.length) scenes.push({ id: s.id, title: s.title, kind: 'changed', fields: keys });
+        else if (moved.has(s.id)) scenes.push({ id: s.id, title: s.title, kind: 'moved' });
+    });
+    for (const s of liveScenes) if (!after.has(s.id)) scenes.push({ id: s.id, title: s.title, kind: 'removed' });
+    const collections = canonical(draft.collections) !== canonical(live?.collections ?? []);
+    return { scenes, collections, dirty: collections || scenes.length > 0 };
+}
+
+/** The indexes of one longest strictly increasing subsequence of `a` (patience sorting, O(n log n)). */
+function longestIncreasing(a: readonly number[]): number[] {
+    const tails: number[] = []; // tails[k]: index in a of the smallest last value of an increasing run of length k+1
+    const prev: number[] = new Array(a.length).fill(-1);
+    for (let i = 0; i < a.length; i++) {
+        let lo = 0;
+        let hi = tails.length;
+        while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (a[tails[mid]] < a[i]) lo = mid + 1; else hi = mid;
+        }
+        if (lo > 0) prev[i] = tails[lo - 1];
+        tails[lo] = i;
+    }
+    const out: number[] = [];
+    for (let i = tails.length ? tails[tails.length - 1] : -1; i >= 0; i = prev[i]) out.push(i);
+    return out.reverse();
 }
 
 /** A collection id from its English title: lower case, ASCII letters and digits, dashes (the API's rule). */

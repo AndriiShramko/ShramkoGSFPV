@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { AGENT_PROMPT, AUTHOR, GOOD_FIRST_ISSUES, REPO, REPO_BLOB, SHOWCASE, flyPath, posterUrl, superSplatUrl } from "@/config/site";
+import { AGENT_PROMPT, AUTHOR, GOOD_FIRST_ISSUES, REPO, REPO_BLOB, flyPath } from "@/config/site";
 import type { Locale } from "@/i18n/routing";
 import { Ext, Section } from "@/components/kit";
 import BgVideo from "@/components/BgVideo";
 import BgVideos from "@/components/BgVideos";
+import CatalogGrid from "@/components/CatalogGrid";
 import CopyBlock from "@/components/CopyBlock";
 import DeferImages from "@/components/DeferImages";
 import Footer from "@/components/Footer";
@@ -31,6 +32,7 @@ import type { VideoSlot } from "@/config/videos";
 import { pageMetadata } from "@/lib/meta";
 import { SHOTS, absolute, full, panel, shot, shotDate } from "@/lib/shots";
 import type { ShotCaption } from "@/lib/shots";
+import catalogSnapshot from "@/generated/catalog.json";
 
 type TD = { t: string; d: string };
 type QA = { q: string; a: string };
@@ -225,6 +227,12 @@ function Landing({ locale }: { locale: Locale }) {
               <div className="mt-8">
                 <ScenePaste id="scene-link-own" locale={locale} label={t("locations.own")} placeholder={t("hero.paste.placeholder")} button={t("hero.paste.button")} hint={t("locations.ownHint")} empty={t("hero.paste.empty")} />
               </div>
+              <p className="mt-8 text-sm">
+                <a href={`/${locale}/scenes/`} className="link inline-flex min-h-11 items-center">
+                  {t("locations.scenesLink")}
+                  <span aria-hidden="true">&nbsp;→</span>
+                </a>
+              </p>
             </div>
             <figure className="lg:mt-1">
               {/* the picker sits in the middle 60 % of the screen: the box (cover) shows that part, large enough to read */}
@@ -412,47 +420,28 @@ function Landing({ locale }: { locale: Locale }) {
           <LiveNumbers />
         </Section>
 
-        {/* 5. Andrii's scans */}
+        {/* 5. The published catalogue (the owner's admin): a build-time snapshot, refreshed from /api/catalog in the browser */}
         <Section id="scenes" index="10" eyebrow={t("scenes.eyebrow")} title={t("scenes.h2")} lead={t("scenes.lead")} tone="surface">
-          <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {SHOWCASE.map((s) => {
-              const title = t(`scenes.items.${s.id}`);
-              return (
-                <li key={s.id} className="flex flex-col overflow-hidden rounded-xl border border-line bg-bg">
-                  <img
-                    src={posterUrl(s.id, "m")}
-                    srcSet={`${posterUrl(s.id, "m")} 240w, ${posterUrl(s.id, "l")} 480w, ${posterUrl(s.id, "xl")} 960w`}
-                    sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
-                    width={240}
-                    height={240}
-                    alt={t("scenes.alt", { title })}
-                    loading="lazy"
-                    decoding="async"
-                    className="aspect-[4/3] w-full bg-surface-2 object-cover"
-                  />
-                  <div className="flex flex-1 flex-col p-5">
-                    <p className="font-mono text-xs uppercase tracking-wider text-muted">
-                      {t(`scenes.kind.${s.kind}`)} · <span className="normal-case">{s.id}</span>
-                    </p>
-                    <h3 className="mt-2 text-lg font-semibold text-ink">{title}</h3>
-                    <p className="mt-1 text-sm text-muted">
-                      {t("scenes.author", { name: AUTHOR.name })} · CC BY 4.0
-                    </p>
-                    <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 pt-5">
-                      <a href={`${fly}?scene=${s.id}`} data-track="scene_open" data-p="showcase" className="btn-primary min-h-11 px-4 text-sm">
-                        {t("scenes.fly")}
-                        <span className="sr-only">: {title}</span>
-                      </a>
-                      <Ext href={superSplatUrl(s.id)} className="link inline-flex min-h-11 items-center text-sm">
-                        {t("scenes.original")}
-                        <span className="sr-only">: {title}</span>
-                      </Ext>
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+          <CatalogGrid
+            initial={catalogSnapshot}
+            locale={locale}
+            labels={{
+              kind: { interior: t("scenes.kind.interior"), exterior: t("scenes.kind.exterior"), other: t("scenes.kind.other") },
+              by: t.raw("scenes.author") as string,
+              walls: t("scenes.walls"),
+              noWalls: t("scenes.noWalls"),
+              fly: t("scenes.fly"),
+              page: t("scenes.page"),
+              alt: t.raw("scenes.alt") as string,
+              titles: t.raw("scenes.items") as Record<string, string>,
+            }}
+          />
+          <p className="mt-8">
+            <a href={`/${locale}/scenes/`} className="btn-secondary min-h-12 px-6">
+              {t("scenes.all")}
+              <span aria-hidden="true">→</span>
+            </a>
+          </p>
         </Section>
 
         {/* 6. Works with your radio */}

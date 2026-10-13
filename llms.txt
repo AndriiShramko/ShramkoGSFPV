@@ -16,6 +16,7 @@ Key facts (measured, see the JSON files in evidence/2026-09-24/):
 
 ## Links
 - [Simulator and landing page](https://gsfpv.flyreelstudio.eu): fly in the browser, EN/ES/PL/RU
+- [Scene pages](https://gsfpv.flyreelstudio.eu/scenes/llms.txt): every place in the catalogue with its own page in four languages (facts of the 3D scan, author and licence, walls, wind, a link that opens it in the simulator); the catalogue page is https://gsfpv.flyreelstudio.eu/en/scenes/
 - [README](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/README.md): what it is, measured numbers, FAQ, contacts
 - [AGENT_SETUP.md](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/AGENT_SETUP.md): install, update and remove with a coding agent
 - [Decisions](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/decisions.md): architecture choices and reasons

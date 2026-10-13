@@ -676,7 +676,8 @@
     "randomNote": "One of the 200 best-liked walkable scans on SuperSplat, picked at random.",
     "own": "Add your own scan: paste its SuperSplat link",
     "ownHint": "Your scan or anyone's public one: a scene link, a superspl.at/s?id= link or just the scene id.",
-    "shotAlt": "The SuperSplat tab of the simulator: sorting, walls and download filters, Random top-rated and a grid of scans with walls"
+    "shotAlt": "The SuperSplat tab of the simulator: sorting, walls and download filters, Random top-rated and a grid of scans with walls",
+    "scenesLink": "The catalogue: every place with its own page"
   },
   "scale": {
     "eyebrow": "New: scene scale",
@@ -702,19 +703,23 @@
     "fly": "Fly this scene"
   },
   "scenes": {
-    "eyebrow": "Andrii's scans",
+    "eyebrow": "The catalogue",
     "h2": "Start with a real place",
-    "lead": "Three scans by Andrii Shramko, free to fly and share under CC BY 4.0.",
+    "lead": "Every place the curator has published for flying, in his order. Each one has its own page with the facts, the author and the licence.",
     "items": {
       "39e63ce9": "Modlinek Villa — red room and bathroom",
       "7a475d38": "Winter Garden — Jastrzębia Góra, Poland",
       "887f27aa": "Tunis — old town streets"
     },
-    "kind": { "interior": "Interior", "exterior": "Exterior" },
+    "kind": { "interior": "Interior", "exterior": "Exterior", "other": "3D scan" },
     "alt": "Preview of the scan “{title}”",
     "author": "By {name}",
     "fly": "Fly this",
-    "original": "Original on SuperSplat"
+    "original": "Original on SuperSplat",
+    "page": "Scene page",
+    "walls": "walls",
+    "noWalls": "no walls yet",
+    "all": "All places to fly"
   },
   "radios": {
     "eyebrow": "Works with your radio",

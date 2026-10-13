@@ -6,6 +6,8 @@ export const dynamic = "force-static";
 
 const PAGES = [
   { path: "", priority: 1, changeFrequency: "weekly" as const },
+  // the scene catalogue (rendered by the API; each scene's own page is in /scenes/sitemap.xml, named in robots.txt)
+  { path: "scenes/", priority: 0.8, changeFrequency: "weekly" as const },
   { path: "privacy/", priority: 0.3, changeFrequency: "yearly" as const },
   { path: "licenses/", priority: 0.3, changeFrequency: "monthly" as const },
 ];

@@ -22,6 +22,7 @@ const ORIGIN = "https://gsfpv.flyreelstudio.eu";
 const LOCALES = ["en", "es", "pl", "ru"];
 const PAGES = ["", "privacy/", "licenses/"];
 const DICT = Object.fromEntries(LOCALES.map((l) => [l, JSON.parse(readFileSync(join(SITE_DIR, "..", "..", "packages", "i18n", "locales", "site", `${l}.json`), "utf8"))]));
+const SNAPSHOT = JSON.parse(readFileSync(join(SITE_DIR, "src", "generated", "catalog.json"), "utf8"));
 const PROMPT = "Set up ShramkoGSFPV for me by following https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/AGENT_SETUP.md exactly. Install, run the checks, start the simulator locally and open it in Chrome. Do not change any system settings; ask me only if a step needs my password or a physical action.";
 
 const results = [];
@@ -76,7 +77,14 @@ const hits = walk(OUT).flatMap((f) => {
 });
 ok("built HTML/TXT/XML free of undefined|TODO|PLACEHOLDER|lorem|Liftoff-level|like Liftoff", hits.length === 0, hits.join("; "));
 const sitemap = readFileSync(join(OUT, "sitemap.xml"), "utf8");
-ok("sitemap lists 12 pages", (sitemap.match(/<loc>/g) ?? []).length === 12);
+{
+  // src/app/sitemap.ts: the static pages and the scene catalogue page (rendered by the API) in every language;
+  // each scene's own page is in /scenes/sitemap.xml (the API's), named in robots.txt
+  const SITEMAP_PAGES = ["", "scenes/", ...PAGES.filter((p) => p !== "")];
+  const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]).sort();
+  const want = LOCALES.flatMap((l) => SITEMAP_PAGES.map((p) => `${ORIGIN}/${l}/${p}`)).sort();
+  ok(`sitemap lists exactly the ${want.length} pages (${SITEMAP_PAGES.length} x ${LOCALES.length} languages)`, locs.join(" ") === want.join(" "), locs.join(" "));
+}
 const robots = readFileSync(join(OUT, "robots.txt"), "utf8");
 ok("robots allows AI crawlers + sitemap", ["GPTBot", "ClaudeBot", "PerplexityBot", "Google-Extended"].every((b) => robots.includes(`User-agent: ${b}`)) && robots.includes("Sitemap: https://gsfpv.flyreelstudio.eu/sitemap.xml"));
 
@@ -147,6 +155,8 @@ async function newCtx(viewport, opts = {}, consent = "no") {
     beacons.push(route.request().postData() ?? "");
     await route.fulfill({ status: 204 });
   });
+  // the landing refreshes its catalogue from the API (components/CatalogGrid): answer with the build's snapshot
+  await ctx.route("**/api/catalog", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(SNAPSHOT) }));
   return { ctx, beacons, google };
 }
 
@@ -570,8 +580,10 @@ for (const mode of ["ok", "fail"]) {
   const url = new URL(page.url());
   ok("hero paste navigates to /en/fly/?scene=<encoded>", url.pathname === "/en/fly/" && url.search === `?scene=${encodeURIComponent(raw)}`, url.pathname + url.search);
   await page.goto(`${BASE}/en/`, { waitUntil: "networkidle" });
-  const card = page.locator('#scenes a[href="/en/fly/?scene=7a475d38"]');
-  await Promise.all([page.waitForURL(/scene=7a475d38/), card.click()]);
+  // the first card of the build's snapshot (its fly link may carry the scene's render budget)
+  const first = SNAPSHOT.scenes[0].id;
+  const card = page.locator(`#scenes [data-scene="${first}"] a[data-track="scene_open"]`);
+  await Promise.all([page.waitForURL(new RegExp(`/en/fly/\\?scene=${first}`)), card.click()]);
   await page.goto(`${BASE}/en/`, { waitUntil: "networkidle" });
   await Promise.all([page.waitForURL(/\/en\/fly\/$/), page.click("#top a[href='/en/fly/']")]);
   await page.waitForTimeout(300);
@@ -585,6 +597,25 @@ for (const mode of ["ok", "fail"]) {
     }
   });
   ok("beacons: scene_open{paste|showcase}, fly_click, only {e,p}", want.every((w) => beacons.includes(w)) && allWhitelisted, beacons.join(" "));
+  await ctx.close();
+}
+
+// The published catalogue: every scene of the snapshot is a card in the HTML (no JavaScript needed), each
+// links to its scene page; in the browser the grid refreshes from /api/catalog (a scene published after the
+// build appears; the control: the built HTML alone does not have it)
+{
+  const html = readFileSync(join(OUT, "en", "index.html"), "utf8");
+  const cards = [...html.matchAll(/data-scene="([0-9a-f]+)"/g)].map((m) => m[1]);
+  ok("catalogue: every snapshot scene is a card in the built HTML", SNAPSHOT.scenes.every((x) => cards.includes(x.id)) && cards.length === SNAPSHOT.scenes.length, cards.join(","));
+  ok("catalogue: every card links to its scene page", SNAPSHOT.scenes.every((x) => html.includes(`href="/en/scenes/${x.id}/"`)));
+  ok("Places links to the scene catalogue page", /id="locations"[\s\S]*href="\/en\/scenes\/"/.test(html));
+  const { ctx } = await newCtx({ width: 1440, height: 900 });
+  const fresh = { ...SNAPSHOT, scenes: [...SNAPSHOT.scenes, { id: "ffffff01", title: "Published after the build", author: "Test", license: "", kind: "other", collision: false }] };
+  await ctx.route("**/api/catalog", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(fresh) }));
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/en/`, { waitUntil: "networkidle" });
+  const shown = await page.locator('#scenes [data-scene="ffffff01"]').count();
+  ok("catalogue: a scene published after the build appears from /api/catalog", shown === 1 && !html.includes("ffffff01"), String(shown));
   await ctx.close();
 }
 

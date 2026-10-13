@@ -1,9 +1,11 @@
 // Scene picker: paste a link, the catalogue the owner curates at /admin/ (Featured row, collections,
 // the rest in his order), recent, favourites, filters, the SuperSplat tab. History, favourites and the
-// filter live in the browser only and survive a reload. Every card has a Share button (v0.7 D1: share a
-// scene without flying it; the link is the scene's page, share/links.ts).
-import { parseSceneLink, toggleFavourite, getFilter, setFilter, posterUrl, knownVersion, getLibrary, lastScene, pickerRows, readCatalog, storefront, localText, sceneFacts } from '@gsfpv/scenes';
-import type { CatalogCollection, CatalogScene, PickerRow, SceneCatalog, SceneFacts, SceneFilter } from '@gsfpv/scenes';
+// filter live in the browser only and survive a reload. Each tab obeys only the filters TAB_FILTERS names
+// (v0.7 item 4: the owner's catalogue is never hidden by the walls filter; a no-walls scene carries a
+// badge). Every card has a Share button (v0.7 D1: share a scene without flying it; the link is the
+// scene's page, share/links.ts).
+import { parseSceneLink, toggleFavourite, getFilter, setFilter, posterUrl, knownVersion, getLibrary, lastScene, pickerList, pickerEmpty, readCatalog, storefront, localText, sceneFacts, tabObeys } from '@gsfpv/scenes';
+import type { CatalogCollection, CatalogScene, FilterKey, PickerRow, PickerTabId, SceneCatalog, SceneFacts, SceneFilter } from '@gsfpv/scenes';
 import { h, clear } from './dom';
 import { t, locale } from '../i18n';
 import { creditFacts } from '../scene-facts';
@@ -47,6 +49,8 @@ export class ScenePicker {
     private collection: string | null = null;
     private err: HTMLDivElement;
     private filters: HTMLDivElement;
+    /** each filter control and the key it sets: hidden on a tab that does not obey it (TAB_FILTERS) */
+    private controls: [FilterKey, HTMLElement][] = [];
     /** the registered tabs as the picker opened (a later registration shows in the next picker) */
     private extra: readonly PickerTab[] = pickerTabs().slice();
     private unmountExtra: (() => void) | null = null;
@@ -100,7 +104,9 @@ export class ScenePicker {
                     h('span', { class: 'scene-title' }, t('scenes.continue', { title: lastTitle }))),
                 this.shareButton(last.id, lastTitle, 'recent'))
             : null;
-        this.filters = h('div', { class: 'filters' }, h('label', { for: 'f-col' }, fCol, ' ', t('scenes.filter.collision')), fKind, fFlown);
+        const fColLabel = h('label', { for: 'f-col' }, fCol, ' ', t('scenes.filter.collision'));
+        this.controls = [['collisionOnly', fColLabel], ['kind', fKind], ['flown', fFlown]];
+        this.filters = h('div', { class: 'filters' }, fColLabel, fKind, fFlown);
         this.root = h('div', { class: 'screen scenes interactive' },
             h('h1', {}, t('scenes.title')),
             h('div', { class: 'scene-paste' }, input, h('button', { type: 'button', class: 'btn primary', onclick: go }, t('scenes.go'))),
@@ -114,16 +120,25 @@ export class ScenePicker {
         this.render(tabs);
     }
 
+    /** The open tab as a built-in tab id (a registered tab counts as the catalogue; its own filters are its business). */
+    private builtinTab(): PickerTabId {
+        return this.tab === 'recent' || this.tab === 'favourites' ? this.tab : 'showcase';
+    }
+
     showError(code: string, msg?: string): void {
         // a scene in a format we cannot open yet is not "missing": its text lives with the picker
         this.err.textContent = code === 'unsupported' ? t('scenes.unsupported') : t(`error.${code}`, { msg: msg ?? '' });
     }
 
-    /** The built-in tab's cards (@gsfpv/scenes pickerRows): favourites keep the title and walls they were starred with. */
-    private items(): (PickerRow & { meta?: ShowcaseScene })[] {
-        const tab = this.tab === 'recent' || this.tab === 'favourites' ? this.tab : 'showcase';
+    /**
+     * The built-in tab's cards (@gsfpv/scenes pickerList; favourites keep the title and walls they were
+     * starred with) and the text for an empty tab: the filter's when it hid every card, else the tab's own.
+     */
+    private items(): { rows: (PickerRow & { meta?: ShowcaseScene })[]; empty: string } {
+        const tab = this.builtinTab();
         const byId = new Map(this.showcase.map((s) => [s.id, s]));
-        return pickerRows(tab, this.showcase, getLibrary(), this.filter).map((r) => ({ ...r, meta: byId.get(r.id) }));
+        const list = pickerList(tab, this.showcase, getLibrary(), this.filter);
+        return { rows: list.rows.map((r) => ({ ...r, meta: byId.get(r.id) })), empty: t(`scenes.empty.${pickerEmpty(tab, list)}`) };
     }
 
     private render(tabs: HTMLElement): void {
@@ -133,6 +148,8 @@ export class ScenePicker {
         clear(this.list);
         const x = this.extra.find((e) => e.id === this.tab);
         this.filters.hidden = !!x?.ownFilters;
+        // a built-in tab shows only the controls it obeys (the catalogue has no walls filter: item 4)
+        for (const [key, el] of this.controls) el.hidden = !x && !tabObeys(this.builtinTab(), key);
         if (x) {
             const pick = (raw: string, source: PickSource): void => {
                 if (!parseSceneLink(raw)) { this.err.textContent = t('error.invalid-link'); return; }
@@ -142,9 +159,9 @@ export class ScenePicker {
             this.unmountExtra = x.mount(this.list, { pick, showError: (c, m) => this.showError(c, m), share: (id, facts) => this.share(id, 'picker', facts), filter: this.filter }) || null;
             return;
         }
-        const items = this.items();
+        const { rows: items, empty } = this.items();
         if (items.length === 0) {
-            this.list.append(h('p', { class: 'empty' }, this.tab === 'showcase' ? t('scenes.empty.filter') : t(`scenes.empty.${this.tab}`)));
+            this.list.append(h('p', { class: 'empty' }, empty));
             return;
         }
         if (this.tab !== 'showcase') {

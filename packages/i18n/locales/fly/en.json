@@ -72,6 +72,7 @@
   "scenes.empty.recent": "Scans you open appear here.",
   "scenes.empty.favourites": "Tap the star on a scan to keep it here.",
   "scenes.empty.filter": "No scans match the filter.",
+  "scenes.empty.showcase": "No scans are published yet. Paste a SuperSplat link above to fly any scan.",
   "scenes.noCollisionBadge": "Scan without walls: you can fly around, but you cannot crash",
   "scenes.noCollisionLine": "Walls exist only in scans that have collision data. This one has none yet.",
   "scenes.byAuthor": "Scene by its author — see the original on SuperSplat",
