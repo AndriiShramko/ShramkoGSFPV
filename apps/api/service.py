@@ -271,10 +271,12 @@ class IdeasService:
             clean = ideas.clean_texts(summary, ideas.SUMMARY_MAX, lines=True)
             if not clean:
                 raise IdeaError("empty")
-            if rec["status"] != "done":
+            became_done = rec["status"] != "done"
+            if became_done:
                 rec["status"], rec["statusAt"] = "done", stamp
-            done = rec.get("done") or {"at": stamp}
-            rec["done"] = {**done, "summary": {**(done.get("summary") or {}), **clean}, "by": by, "at": done.get("at") or stamp}
+            done = rec.get("done") or {}
+            rec["done"] = {"summary": {**(done.get("summary") or {}), **clean}, "by": by,
+                           "at": stamp if became_done or not done.get("at") else done["at"]}
             draft = None
             if rec["contactKind"] == "email":
                 lang_ = rec["lang"] if rec["lang"] in ideas.LOCALES else "en"
@@ -284,6 +286,8 @@ class IdeasService:
                 draft = self._mail(doc, rec, "done", body, by, "draft", stamp)
                 rec["thread"].append(draft)
             out = copy.deepcopy(rec)
+        if became_done:
+            self._emit("status", out, None, by)  # the owner's card shows "done" (an agent's summary, the admin)
         self._emit("draft", out, copy.deepcopy(draft), by)
         return out, copy.deepcopy(draft)
 

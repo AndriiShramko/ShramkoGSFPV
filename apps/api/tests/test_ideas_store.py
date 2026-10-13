@@ -126,6 +126,13 @@ class Seed(StoreTest):
         features = [r for r in self.w.store.read()["ideas"] if r["kind"] == "feature"]
         self.assertEqual([r["id"] for r in features], ["F-item-0", "F-item-1", "F-item-2"])
         self.assertEqual(features[0]["status"], "done")
+        # on the roadmap in the seed's order, statuses mapped; a seeded "done" has no made-up date
+        items = json.loads(self.w.store.public_roadmap(None)[1])["items"]
+        self.assertEqual([(x["id"], x["status"], x["fromPilot"]) for x in items],
+                         [("F-item-0", "done", False), ("F-item-1", "in_progress", False), ("F-item-2", "planned", False)])
+        self.assertNotIn("done", items[0])
+        self.w.service.set_status("F-item-1", "done", "admin")  # control: done now has its date
+        self.assertEqual(json.loads(self.w.store.public_roadmap(None)[1])["items"][1]["done"], ideas.now_iso(self.w.now[0]))
         # a later, longer seed is not loaded again
         self.w.seed_path = self.seed(5)
         self.w.store.sync()

@@ -178,7 +178,9 @@ def record_from_seed(item: dict, order: int, created: str) -> dict | None:
     o = item.get("order")
     rec["order"] = o if isinstance(o, int) and not isinstance(o, bool) else order
     if rec["status"] == "done":
-        rec["done"] = {"at": created, "summary": {}, "by": "seed"}
+        # the seed's own date when it gives one; never the day of loading (that would date everything to the deploy)
+        at = item.get("done") if parse_iso(item.get("done")) is not None else None
+        rec["done"] = {"at": at, "summary": {}, "by": "seed"}
     return rec
 
 
@@ -215,7 +217,7 @@ def roadmap_items(doc: dict) -> list[dict]:
         if text := clean_texts(pub.get("text"), PUBLIC_TEXT_MAX):
             item["text"] = text
         if st == "done":
-            at = (r.get("done") or {}).get("at") or r.get("statusAt")
+            at = (r.get("done") or {}).get("at")
             if isinstance(at, str) and parse_iso(at) is not None:
                 item["done"] = at
         rel = [x for x in r.get("releases") or [] if isinstance(x, str) and SHA_RE.fullmatch(x)]
