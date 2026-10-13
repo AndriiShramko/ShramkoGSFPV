@@ -31,6 +31,11 @@ class PlaceFields(unittest.TestCase):
         bad = admin.clean_scene({**BASE, "origin": {"url": "https://superspl.at/scene/70b50d42", "user": "<b>x</b>"}})
         self.assertEqual(bad["origin"], {"url": "https://superspl.at/scene/70b50d42"})
 
+    def test_extent(self):
+        self.assertEqual(admin.clean_scene({**BASE, "extentM": [25.31, 10, 17.7]})["extentM"], [25.31, 10.0, 17.7])
+        for bad in ([1, 2], [1, -2, 3], [1, "2", 3], "25x10x17"):
+            self.assertNotIn("extentM", admin.clean_scene({**BASE, "extentM": bad}), bad)
+
     def test_dropped_out_of_range(self):
         s = admin.clean_scene({**BASE, "geo": {"lat": 91, "lon": 17}, "compassDeg": 400, "wind": {"fromDeg": 10, "speed": 50, "gust": 1},
                                "ceilingM": "high", "render": {"budgetM": 100, "stochastic": "yes"}, "origin": {"url": "https://evil.example/s/1"}})

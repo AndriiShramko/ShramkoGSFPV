@@ -19,6 +19,11 @@ POST /api/share  a picture of the view (JPEG 1200x630) for a link that shows it 
 GET  /api/catalog the scene catalogue the scene picker shows (public, ETag/304, max-age 60), and
 /api/admin/...   the owner's admin behind a password (login, sessions, CSRF, brute-force guard, audit,
                  catalogue draft/publish/history, report status): admin.py, which documents both.
+GET  /{lang}/scenes/, /{lang}/scenes/<id>/, /scenes/sitemap.xml, /scenes/llms.txt
+                 the scene pages for search and answer engines (scenepages.py), from the published
+                 catalogue and the templates of the live release (SCENE_TEMPLATES)
+GET  /api/wind/<id>?mode=now
+                 the wind at a published scene's place now (wind.py, Open-Meteo, cached 15 min)
 GET  /api/health 200 {"ok": true, ...}; 503 when the disk guard has tripped.
 GET  /api/superspl/explore
                  SuperSplat catalogue (owner's decision 2026-09-27, docs/decisions.md D35): the
@@ -59,6 +64,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import admin
+import scenepages
+import superspl_facts
+import wind
 
 SITE = os.environ.get("SITE_TAG", "gsfpv")
 DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
@@ -1062,6 +1070,17 @@ def _catalog_seed() -> Path | None:
 ADMIN = admin.AdminApi(data_dir=lambda: DATA_DIR, reports_file=lambda: REPORTS_FILE, reports_dir=lambda: REPORTS_DIR,
                        seed=_catalog_seed, telegram=lambda text: send_telegram(text), site=SITE)
 
+# ---------------- scene pages, SuperSplat's facts, the wind of a place (v0.7 lane A) ----------------
+# the live release's scene-page templates: compose mounts releases/ read-only into gsfpv-api
+SCENE_TEMPLATES = Path(os.environ.get("SCENE_TEMPLATES", "/srv/releases/current/scene-templates"))
+SCENE_PAGES = scenepages.ScenePages(catalog=ADMIN.catalog.public, templates=scenepages.TemplateStore(lambda: SCENE_TEMPLATES),
+                                    origin=PUBLIC_ORIGIN)
+FACTS = superspl_facts.SupersplFacts(fetch=lambda *a: fetch_upstream(*a))
+WIND = wind.WindService(fetch=lambda *a: fetch_upstream(*a), data_dir=lambda: DATA_DIR, scene=SCENE_PAGES.scene)
+ADMIN.add_route("GET", r"superspl/([0-9a-f]{6,32})", lambda m, qs, body, client: FACTS.handle(m.group(1), fresh="fresh=1" in qs.split("&")))
+ADMIN.add_route("GET", r"geo/search", lambda m, qs, body, client: WIND.geocode(qs))
+ADMIN.add_route("GET", r"wind/climate", lambda m, qs, body, client: WIND.climate(qs))
+
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "gsfpv-api"
@@ -1138,9 +1157,9 @@ class Handler(BaseHTTPRequestHandler):
         self._admin_read = True
         return self.rfile.read(n) if n else b""
 
-    def _admin(self, method: str, path: str) -> None:
+    def _admin(self, method: str, path: str, qs: str = "") -> None:
         self._admin_read = False
-        res = ADMIN.handle(method, path, self.headers, self._admin_body, self._client())
+        res = ADMIN.handle(method, path, self.headers, self._admin_body, self._client(), qs)
         if not self._admin_read:
             # refused before the body was looked at (401/403/429/503): read a small one away, so the
             # client gets the answer instead of a reset connection
@@ -1180,6 +1199,9 @@ class Handler(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         if path.startswith("/s/"):
             return self._share(path, head=True)
+        page = SCENE_PAGES.handle(path, self.headers.get("If-None-Match"))
+        if page is not None:
+            return self._send(*page, head=True)
         self._send(404, b"", [("Content-Type", "application/json")], head=True)
 
     def do_GET(self):
@@ -1192,7 +1214,12 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/catalog":
             return self._send(*ADMIN.public_catalog(self.headers.get("If-None-Match")))
         if path.startswith("/api/admin/"):
-            return self._admin("GET", path)
+            return self._admin("GET", path, qs)
+        if path.startswith("/api/wind/"):
+            return self._send(*WIND.handle_now(path[len("/api/wind/"):], qs, self._client()))
+        page = SCENE_PAGES.handle(path, self.headers.get("If-None-Match"))
+        if page is not None:
+            return self._send(*page)
         if self.path.split("?")[0] == "/api/health":
             if _guard["tripped"]:
                 return self._json(503, {"ok": False, "reason": "disk", "free_gb": round(free_gb(), 2)})

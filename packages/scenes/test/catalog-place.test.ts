@@ -38,6 +38,10 @@ describe('readScene v0.7 fields', () => {
         })!;
         expect(s).toEqual({ id: '70b50d42', title: 'Wroclaw Cathedral', author: '', license: '', kind: 'other', collision: true });
     });
+    it('extentM: three sizes in metres or nothing', () => {
+        expect(readScene({ ...base, extentM: [25.3, 10, 17.7] })!.extentM).toEqual([25.3, 10, 17.7]);
+        for (const bad of [[1, 2], [1, -2, 3], [1, '2', 3], '25x10x17']) expect(readScene({ ...base, extentM: bad })!.extentM).toBeUndefined();
+    });
     it('a wind without a source is the admin\'s', () => {
         expect(readScene({ ...base, wind: { fromDeg: 0, speed: 3, gust: 0 } })!.wind).toEqual({ fromDeg: 0, speed: 3, gust: 0, source: 'manual' });
     });

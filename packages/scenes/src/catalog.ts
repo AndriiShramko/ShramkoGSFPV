@@ -64,6 +64,8 @@ export interface CatalogScene {
     sizeMb?: number;
     /** SuperSplat's storage format ('ssog', 'sog'...) as the admin saw it when adding the scene */
     format?: string;
+    /** the scan's bounding box in metres along its x, y, z (scale 1), from the collision file's sceneBounds; the scene page's size facts */
+    extentM?: [number, number, number];
     defaultDrone?: string;
     /** the admin's default for the walls switch: "off" for a noisy scan (floating splats make phantom walls); absent = on */
     walls?: 'on' | 'off';
@@ -188,6 +190,10 @@ export function readScene(v: unknown): CatalogScene | null {
     for (const [k, x] of n) if (x !== undefined) (s as unknown as Record<string, unknown>)[k] = x;
     if (typeof o.thumb === 'string' && /^https:\/\/[^\s"'<>]+\.webp$/.test(o.thumb)) s.thumb = o.thumb;
     if (typeof o.format === 'string' && o.format) s.format = o.format;
+    if (Array.isArray(o.extentM) && o.extentM.length === 3) {
+        const e = o.extentM.map((x) => num(x, 0, 100000));
+        if (e.every((x) => x !== undefined)) s.extentM = e as [number, number, number];
+    }
     if (typeof o.defaultDrone === 'string' && o.defaultDrone) s.defaultDrone = o.defaultDrone;
     if (o.walls === 'on' || o.walls === 'off') s.walls = o.walls;
     const pitch = texts(o.pitch);
