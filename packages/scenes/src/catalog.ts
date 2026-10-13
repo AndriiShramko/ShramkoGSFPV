@@ -77,10 +77,21 @@ export interface CatalogScene {
     /** kept in the admin's list, not shown to pilots (the public catalogue leaves it out) */
     hidden?: boolean;
     geo?: SceneGeo;
-    /** the compass heading (degrees, 0 north, clockwise) of the scene's forward axis: the direction the HUD calls heading 0 */
+    /**
+     * The compass bearing (degrees, 0 north, clockwise) of the scene's forward axis, the flown world's -z
+     * (PlayCanvas, +y up): the direction the HUD calls heading 0. Headings grow turning right, so a
+     * compass bearing B is scene heading B - compassDeg. Absent: the forward axis counts as north (the
+     * wind's fromDeg is then read against it). Lane E, docs/wip/v07-e.md section 1.
+     */
     compassDeg?: number;
+    /** the scene's wind; it blows the drone's own air: m/s around the real-size drone at any Scene size */
     wind?: SceneWind;
-    /** collisions are ignored above this height: metres along the scene's up axis in the scan's own coordinates (scale 1); outdoor scans with floating sky splats */
+    /**
+     * Collisions are ignored above this height (outdoor scans with floating sky splats): metres along +y
+     * in the scan's own coordinates, the world before the pilot's Scene size (E.7, T(w) = s*w + t) at
+     * scale 1, so it is flown at s * ceilingM + t_y. A voxel whose lower face is at or above it is
+     * ignored; one the plane cuts through still collides (packages/collision ceiling.ts).
+     */
     ceilingM?: number;
     render?: SceneRender;
     /** our own words about the scene for its page (search and answer engines), per language; never SuperSplat's text */
