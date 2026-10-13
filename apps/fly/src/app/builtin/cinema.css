@@ -40,4 +40,6 @@ body:not(.cinema) #ui.rec-bar-up .hud > :is(.arm-card, .arm-disarm, .gate-msg) {
 .rec-notice a { color: #bbf7d0; }
 .rec-notice .btn { min-height: 36px; padding: 4px 10px; font-size: 13px; }
 .rec-notice .panel-x { width: 36px; height: 36px; font-size: 20px; }
-.rec-bar .btn.rec-share { min-height: 32px; padding: 4px 10px; font-size: 13px; }
+/* "Share your flight" after a recording: a primary button (.rec-bar .btn would paint it dark under
+   its dark-on-accent text, as both rules weigh the same and this file loads after fly.css) */
+.rec-bar .btn.rec-share { min-height: 32px; padding: 4px 10px; font-size: 13px; background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
