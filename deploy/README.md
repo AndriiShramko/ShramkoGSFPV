@@ -260,8 +260,7 @@ release the API answers 503 for the pages; nothing else changes):
    ```bash
    curl -sI https://gsfpv.flyreelstudio.eu/en/scenes/ | grep -iE '^(HTTP|content-security-policy|etag)'   # 200, script-src 'none'
    curl -s https://gsfpv.flyreelstudio.eu/en/scenes/70b50d42/ | grep -c 'application/ld+json'                # 1
-   curl -s -o /dev/null -w '%{http_code}
-' https://gsfpv.flyreelstudio.eu/scene-templates/manifest.json      # 404
+   curl -s -o /dev/null -w '%{http_code}\n' https://gsfpv.flyreelstudio.eu/scene-templates/manifest.json      # 404
    curl -s 'https://gsfpv.flyreelstudio.eu/api/wind/70b50d42?mode=now'                                       # 404 until the scene has geo
    node scripts/smoke-release.mjs https://gsfpv.flyreelstudio.eu                                              # checks the scene pages when the API answers
    ```
