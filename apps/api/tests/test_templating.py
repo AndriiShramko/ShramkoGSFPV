@@ -45,10 +45,10 @@ class Templating(unittest.TestCase):
         Template("[[#a]]x[[/a]][[?b]]y[[/b]]{{{ok}}}", raw={"ok"})
 
     def test_json_for_script(self):
-        s = json_for_script(json.dumps({"name": "</script><script>alert(1)</script>& "}))
+        s = json_for_script(json.dumps({"name": "</script><script>alert(1)</script>&\u2028"}))
         self.assertNotIn("</script>", s)
         self.assertNotIn("<", s)
-        self.assertEqual(json.loads(s)["name"], "</script><script>alert(1)</script>& ")  # still the same data
+        self.assertEqual(json.loads(s)["name"], "</script><script>alert(1)</script>&\u2028")  # still the same data
         # control: plain json.dumps would close the script element
         self.assertIn("</script>", json.dumps({"name": "</script>"}))
 

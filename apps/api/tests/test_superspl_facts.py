@@ -89,11 +89,11 @@ class Facts(unittest.TestCase):
         self.assertNotIn("collision", doc["facts"])
 
     def test_description_tags_and_hostile_text(self):
-        desc = "Old town at dusk #Wroclaw #church #church ‮<script>alert(1)</script>\n\nmore https://example.com"
+        desc = "Old town at dusk #Wroclaw #church #church \u202e<script>alert(1)</script>\n\nmore https://example.com"
         st, doc = call(sf.SupersplFacts(Fake(data=(200, {}, with_description(desc))), Clock()))
         o = doc["facts"]["origin"]
         self.assertEqual(o["tags"], ["Wroclaw", "church"])
-        self.assertNotIn("‮", o["description"])  # format characters dropped
+        self.assertNotIn("\u202e", o["description"])  # format characters dropped
         self.assertNotIn("\n", o["description"])
         self.assertIn("<script>", o["description"])  # kept as text: the admin and the pages escape it, never run it
         # control: the description is really read from the answer (the recorded one has none of its own)

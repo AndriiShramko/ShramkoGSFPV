@@ -52,14 +52,14 @@ describe('scene-templates: a Next page becomes an API template', () => {
 });
 
 describe('catalog-snapshot', () => {
-    const doc = { published: '2026-10-07T17:04:42Z', collections: [], scenes: [{ id: '70b50d42', title: 'Wrocław Cathedral' }, { id: 'aaaaaa01', title: 'H', hidden: true }] };
+    const doc = { published: '2026-10-07T17:04:42Z', collections: [], scenes: [{ id: '70b50d42', title: 'Wroc\u0142aw Cathedral' }, { id: 'aaaaaa01', title: 'H', hidden: true }] };
 
     it('keeps a catalogue, leaves hidden scenes out, writes ASCII only with the same data', () => {
         const s = snapshotOf(doc);
         expect(s.scenes.map((x: { id: string }) => x.id)).toEqual(['70b50d42']);
         const text = asciiJson(s);
         expect(/^[\x20-\x7e\n]*$/.test(text)).toBe(true);
-        expect(JSON.parse(text).scenes[0].title).toBe('Wrocław Cathedral');
+        expect(JSON.parse(text).scenes[0].title).toBe('Wroc\u0142aw Cathedral');
         // control: plain JSON.stringify writes the letter itself (check B18 would flag the file)
         expect(/^[\x20-\x7e\n]*$/.test(JSON.stringify(s))).toBe(false);
     });
