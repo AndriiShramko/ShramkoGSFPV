@@ -147,7 +147,15 @@ export class FlightSession {
      * switching back on. Change it with setWallsOn.
      */
     wallsOn = true;
+    /** the flight model's params; set only by compileModel */
     params!: SimParams;
+    /**
+     * What `params` were compiled from (compileModel): the overrides every life header writes. A
+     * header therefore always describes the Sim it starts, whatever changed since (the wind's ground
+     * under new walls, crash.enabled or the wind waiting for applyLifeSettings): a replay rebuilds
+     * the Sim from the header alone, so a header made from the settings now could replay another flight.
+     */
+    private paramsFrom: ParamOverrides = {};
     /** the pilot's physics overrides (drone, settings); crash.enabled is crashOn, merged into each life's header */
     overrides: ParamOverrides = {};
     runner!: Runner;
@@ -247,7 +255,7 @@ export class FlightSession {
         this.ceilingM = typeof o.ceilingM === 'number' && validCeiling(Math.fround(o.ceilingM)) ? Math.fround(o.ceilingM) : null;
         this.windSeed = o.windSeed !== undefined && Number.isInteger(o.windSeed) && o.windSeed >= 0 && o.windSeed <= WIND_SEED_MAX ? o.windSeed : newWindSeed();
         // the wind joins the model once its ground is known (after the walls, below)
-        this.params = compileParams(PRESETS[this.presetId], this.lifeOverrides());
+        this.compileModel();
         this.renderer = o.renderer ?? await SplatRenderer.create(canvas, { renderScale: o.renderScale ?? 1, hFovDeg: this.params.cameraFovDeg, latencyMarker: !!o.latencyMarker });
         if (o.renderer) this.renderer.setFov(this.params.cameraFovDeg);
         this.renderer.setToneMapping(this.scene.tonemapping);
@@ -294,7 +302,7 @@ export class FlightSession {
         // the wind (a live one was asked for while the scan loaded): the first life flies in it
         this.windSpec = await Promise.resolve(o.wind ?? null).catch(() => null);
         if (this.disposed) throw new Error('the scene switch was cancelled');
-        this.params = compileParams(PRESETS[this.presetId], this.lifeOverrides());
+        this.compileModel();
         this.buildSim();
         if (o.paused) this.pause(true, 'menu');
         this.lagFrames = o.lagFrames ?? 0;
@@ -352,7 +360,10 @@ export class FlightSession {
         return { collisionSha256: this.collisionSha256, world: this.baseWorld, collision: this.baseCollision };
     }
 
-    /** The pilot's overrides plus crash.enabled and the wind: what a life's params and header are made from. */
+    /**
+     * The pilot's overrides plus crash.enabled and the wind, from the settings now: what the next
+     * compileModel compiles. Life headers write the compiled ones (paramsFrom), never these directly.
+     */
     lifeOverrides(): ParamOverrides {
         const o: ParamOverrides = this.crashOn ? { ...this.overrides } : { ...this.overrides, crashOn: false };
         const wind = this.windConfig();
@@ -393,12 +404,23 @@ export class FlightSession {
         return hit ? hit.y : sy;
     }
 
-    /** A life header for the current params and walls. */
+    /**
+     * Compile the flight model from the settings now (lifeOverrides: the pilot's overrides,
+     * crash.enabled, the wind with its seed and ground) and keep what it was compiled from for the
+     * life headers (paramsFrom). The only place `params` is set.
+     */
+    private compileModel(): void {
+        const from = this.lifeOverrides();
+        this.params = compileParams(PRESETS[this.presetId], from);
+        this.paramsFrom = from;
+    }
+
+    /** A life header for the current params (exactly what they were compiled from) and walls. */
     private header(at: [number, number, number, number], opts: RespawnOpts, reason: RespawnReason | 'start'): LifeHeader {
         return makeLifeHeader({
             simCore: SIM_CORE_VERSION,
             preset: PRESETS[this.presetId],
-            overrides: this.lifeOverrides(),
+            overrides: this.paramsFrom,
             collisionSha256: this.flightWorld ? this.collisionSha256 : null,
             scene: this.headerScene(),
             at,
@@ -525,15 +547,20 @@ export class FlightSession {
     private setModel(presetId: string, overrides: ParamOverrides): void {
         this.presetId = PRESETS[presetId] ? presetId : DEFAULT_PRESET;
         this.overrides = jsonSafe(overrides);
-        this.params = compileParams(PRESETS[this.presetId], this.lifeOverrides());
+        this.compileModel();
         this.renderer.setFov(this.cameraFovDeg);
     }
 
-    /** Change drone / physics settings: a new flight model at the same scene, at the spawn, a fresh log. */
+    /**
+     * Change drone / physics settings: a new flight model at the same scene, at the spawn, a fresh log.
+     * A restart is a moment the craft is not flying, so queued walls go in here: after the new drone
+     * (the spawn check measures its size), and the model is compiled again on them, because the wind
+     * measures from the new walls' floor (setWalls).
+     */
     rebuildSim(presetId: string, overrides: ParamOverrides): void {
         this.setModel(presetId, overrides);
         this.replay = null;
-        this.takePendingWalls(); // a restart is a moment the craft is not flying: queued walls go in
+        if (this.takePendingWalls()) this.compileModel();
         this.buildSim();
     }
 
@@ -744,12 +771,14 @@ export class FlightSession {
         return true;
     }
 
-    private takePendingWalls(): void {
+    /** Swap the queued walls in (setWalls); true when there were some. The caller recompiles the model. */
+    private takePendingWalls(): boolean {
         const w = this.pendingWalls;
-        if (!w) return;
+        if (!w) return false;
         this.pendingWalls = null;
         this.setWalls(w.json, w.bin, w.sha);
         w.onSwap?.(this.collisionSha256!);
+        return true;
     }
 
     private setWalls(json: Uint8Array, bin: Uint8Array, sha: string | null): void {
