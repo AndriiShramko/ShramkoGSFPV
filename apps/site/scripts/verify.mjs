@@ -22,6 +22,7 @@ const ORIGIN = "https://gsfpv.flyreelstudio.eu";
 const LOCALES = ["en", "es", "pl", "ru"];
 const PAGES = ["", "privacy/", "licenses/"];
 const DICT = Object.fromEntries(LOCALES.map((l) => [l, JSON.parse(readFileSync(join(SITE_DIR, "..", "..", "packages", "i18n", "locales", "site", `${l}.json`), "utf8"))]));
+const SNAPSHOT = JSON.parse(readFileSync(join(SITE_DIR, "src", "generated", "catalog.json"), "utf8"));
 const PROMPT = "Set up ShramkoGSFPV for me by following https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/AGENT_SETUP.md exactly. Install, run the checks, start the simulator locally and open it in Chrome. Do not change any system settings; ask me only if a step needs my password or a physical action.";
 
 const results = [];
@@ -147,6 +148,8 @@ async function newCtx(viewport, opts = {}, consent = "no") {
     beacons.push(route.request().postData() ?? "");
     await route.fulfill({ status: 204 });
   });
+  // the landing refreshes its catalogue from the API (components/CatalogGrid): answer with the build's snapshot
+  await ctx.route("**/api/catalog", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(SNAPSHOT) }));
   return { ctx, beacons, google };
 }
 
@@ -585,6 +588,25 @@ for (const mode of ["ok", "fail"]) {
     }
   });
   ok("beacons: scene_open{paste|showcase}, fly_click, only {e,p}", want.every((w) => beacons.includes(w)) && allWhitelisted, beacons.join(" "));
+  await ctx.close();
+}
+
+// The published catalogue: every scene of the snapshot is a card in the HTML (no JavaScript needed), each
+// links to its scene page; in the browser the grid refreshes from /api/catalog (a scene published after the
+// build appears; the control: the built HTML alone does not have it)
+{
+  const html = readFileSync(join(OUT, "en", "index.html"), "utf8");
+  const cards = [...html.matchAll(/data-scene="([0-9a-f]+)"/g)].map((m) => m[1]);
+  ok("catalogue: every snapshot scene is a card in the built HTML", SNAPSHOT.scenes.every((x) => cards.includes(x.id)) && cards.length === SNAPSHOT.scenes.length, cards.join(","));
+  ok("catalogue: every card links to its scene page", SNAPSHOT.scenes.every((x) => html.includes(`href="/en/scenes/${x.id}/"`)));
+  ok("Places links to the scene catalogue page", /id="locations"[\s\S]*href="\/en\/scenes\/"/.test(html));
+  const { ctx } = await newCtx({ width: 1440, height: 900 });
+  const fresh = { ...SNAPSHOT, scenes: [...SNAPSHOT.scenes, { id: "ffffff01", title: "Published after the build", author: "Test", license: "", kind: "other", collision: false }] };
+  await ctx.route("**/api/catalog", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(fresh) }));
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/en/`, { waitUntil: "networkidle" });
+  const shown = await page.locator('#scenes [data-scene="ffffff01"]').count();
+  ok("catalogue: a scene published after the build appears from /api/catalog", shown === 1 && !html.includes("ffffff01"), String(shown));
   await ctx.close();
 }
 

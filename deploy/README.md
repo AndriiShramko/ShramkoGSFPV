@@ -19,7 +19,7 @@ SSH="ssh -p $GSFPV_PORT -i $GSFPV_KEY -o BatchMode=yes $GSFPV_HOST"
 | `$GSFPV_BASE/compose.yml` | the two containers, `gsfpv-web` (nginx) and `gsfpv-api` (python) |
 | `$GSFPV_BASE/nginx.conf` | copy of [`deploy/nginx.conf`](nginx.conf); mounted read-only into `gsfpv-web` as `/etc/nginx/conf.d/default.conf` (a single-file bind mount) |
 | `$GSFPV_BASE/config.env` | secrets of the API; never in git |
-| `$GSFPV_BASE/api/`, `data/` | API code (`server.py`, `admin.py`, the catalogue seed `showcase.json`), counters, leads, bug reports (`reports.jsonl`, `reports/`), share pictures (`share/`), the scene catalogue and the admin's audit (see "Admin") |
+| `$GSFPV_BASE/api/`, `data/` | API code (`server.py`, `admin.py`, the v0.7 modules listed under "v0.7 lane A", the catalogue seed `showcase.json`), counters, leads, bug reports (`reports.jsonl`, `reports/`), share pictures (`share/`), the scene catalogue, the admin's audit (see "Admin") and the climate wind cache (`wind-climate/`) |
 | `$GSFPV_BASE/releases/<sha12>/` | unpacked releases (the last 5 are kept) |
 | `$GSFPV_BASE/releases/current` | symlink to the live release; nginx serves `/srv/releases/current` |
 | `$GSFPV_BASE/incoming/` | uploaded tarballs |
@@ -184,6 +184,15 @@ default of the walls switch), `dropFloaters` (0-64), `scale` (0.25-4), `voxelCm`
 catalogue's `collections`, each `{id, title: {en, es, pl, ru}}`), `pinned` (the Featured row), `hidden`
 (kept, not shown). `showcase.json`'s fields mean the same.
 
+v0.7 fields (`packages/scenes/src/catalog.ts` and `admin.py` keep the same rules; out of range = dropped):
+`geo` `{lat, lon, place?}` (WGS84, 3 decimals), `compassDeg` (0-360, the compass heading of the scene's
+forward axis), `wind` `{fromDeg 0-360, speed 0-30 m/s, gust 0-20 m/s above the mean, source manual|climate}`,
+`ceilingM` (collisions ignored above it, scan coordinates), `render` `{budgetM 0.25-32, stochastic}` (from a
+pasted link's `?budget=&stochastic`), `about` (our words for the scene page, per language, 1500 characters),
+`origin` `{url (superspl.at only), description (600), tags (12), created (ISO), user (SuperSplat user name)}`
+(what SuperSplat said: filled by "Add a scene" and "Refresh from SuperSplat"), `extentM` `[x, y, z]` (the
+scan's bounding box in metres, from its collision file).
+
 **Seeding.** The first time the catalogue is read and `data/catalog.json` does not exist, the API copies
 `showcase.json`'s scenes into it (none pinned or hidden, no collections). It looks for `CATALOG_SEED`, then
 `showcase.json` next to `server.py` (on the hub: `$GSFPV_BASE/api/showcase.json`). After that the file is
@@ -221,6 +230,41 @@ uses its static list). Do it in this order:
 
 Changing the password later: a new line from the tool, replace it in `config.env`, recreate `gsfpv-api`
 (step 4). Switching the admin off: remove the line and recreate.
+
+## v0.7 lane A: scene pages, SuperSplat's facts, the wind of a place
+
+New API modules, all next to `server.py` in `$GSFPV_BASE/api/`: `scenepages.py`, `templating.py`,
+`scene-slots.json`, `superspl_facts.py`, `turbostream.py`, `licences.py`, `wind.py` (plus the changed
+`server.py` and `admin.py`). Nothing new in `config.env`; Open-Meteo needs no key.
+
+| Route | nginx | API |
+|---|---|---|
+| `GET /{lang}/scenes/`, `/{lang}/scenes/<id>/` | `location ~ "^/(en\|es\|pl\|ru)/scenes/([0-9a-f]{6,32}/)?$"`, GET/HEAD, `$uri` only, no cookies; `/{lang}/scenes` -> 301 | the scene pages from the published catalogue and the live release's templates (`releases/current/scene-templates/`); their own CSP (`script-src 'none'`), ETag/304, `max-age=300`; 404 for a hidden or unknown scene, 503 while no release has templates |
+| `GET /scenes/sitemap.xml`, `/scenes/llms.txt` | two `location =` | every scene page in 4 languages (lastmod = the catalogue's publish time); the same list for answer engines. `robots.txt` names the sitemap, `llms.txt` links the list |
+| `GET /api/wind/<id>?mode=now` | `location ~ "^/api/wind/[0-9a-f]{6,32}$"`, GET only | `{"ok": true, "fromDeg", "speed", "gust", "at", "source": "now"}` from Open-Meteo's forecast, cached 15 min per place; 404 without geo; 30 a minute per visitor |
+| `GET /api/admin/superspl/<id>[?fresh=1]` | the existing `^~ /api/admin/` | SuperSplat's facts of a scene (`https://superspl.at/scene/<id>.data` + the CDN's `scene.voxel.json`), 10 min cache, 20 upstream calls a minute |
+| `GET /api/admin/geo/search?q=&lang=` | same | places by name (Open-Meteo geocoding) |
+| `GET /api/admin/wind/climate?lat=&lon=` | same | the prevailing wind (5 full years of Open-Meteo's archive), kept in `data/wind-climate/` |
+| `/scene-templates/` | `location ^~ /scene-templates/ { return 404; }` | - (read from the disk, never served) |
+
+**compose.yml changes:** `gsfpv-api` mounts `./releases:/srv/releases:ro` (the templates ship with each
+release, so a new design needs no API upload). `SCENE_TEMPLATES` overrides the directory.
+
+**Order** (each step is safe on its own: without the API the scene links 404/502 behind nginx, without the
+release the API answers 503 for the pages; nothing else changes):
+1. `nginx.conf` as in "Changing nginx.conf".
+2. The API files (`scp` the eight files above and `apps/api/locales/`), compare the sha256 sums.
+3. `compose.yml` with the new mount, then `$SSH "cd $GSFPV_BASE && docker compose up -d --force-recreate gsfpv-api"`.
+4. The release with `deploy.sh` (it carries `scene-templates/`).
+5. Check:
+   ```bash
+   curl -sI https://gsfpv.flyreelstudio.eu/en/scenes/ | grep -iE '^(HTTP|content-security-policy|etag)'   # 200, script-src 'none'
+   curl -s https://gsfpv.flyreelstudio.eu/en/scenes/70b50d42/ | grep -c 'application/ld+json'                # 1
+   curl -s -o /dev/null -w '%{http_code}
+' https://gsfpv.flyreelstudio.eu/scene-templates/manifest.json      # 404
+   curl -s 'https://gsfpv.flyreelstudio.eu/api/wind/70b50d42?mode=now'                                       # 404 until the scene has geo
+   node scripts/smoke-release.mjs https://gsfpv.flyreelstudio.eu                                              # checks the scene pages when the API answers
+   ```
 
 ## Deploying a release
 
