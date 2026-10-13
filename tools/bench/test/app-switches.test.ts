@@ -116,6 +116,18 @@ describe('Controls with channel functions: arm on CH6, mode on CH5', () => {
         c.raw(frame({ ch7: 2000 }));
         expect(fired).toEqual(['respawn.rewind']);
     });
+
+    it('the HUD mode chip names the channel of the Angle / Horizon ranges; control: moved to CH7 it says CH7, arm-only switches leave the mode to the pilot', async () => {
+        const { radioSwitch } = await import('../../../apps/fly/src/app/builtin/modes');
+        const label = (p: Profile): string | null => radioSwitch({ controls: controls(p).c } as never);
+        expect(label(PILOT)).toBe('CH5');
+        const moved: Profile = { ...TX16S, switches: { v: 1, ranges: [r('arm', 5, 1700, 2100), r('angle', 6, 900, 1300), r('horizon', 6, 1300, 1700)] } };
+        expect(label(moved)).toBe('CH7');
+        const split: Profile = { ...TX16S, switches: { v: 1, ranges: [r('angle', 4, 1700, 2100), r('horizon', 6, 1700, 2100)] } };
+        expect(label(split)).toBe('CH5 / CH7');
+        // no mode ranges: the radio does not decide, so the chip offers the pilot's choice
+        expect(label({ ...TX16S, switches: { v: 1, ranges: [r('arm', 5, 1700, 2100)] } })).toBeNull();
+    });
 });
 
 describe('KeyRouter.trigger: a switch presses the action\'s key', () => {
