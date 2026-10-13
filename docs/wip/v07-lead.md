@@ -20,6 +20,15 @@ Plan and contracts: `docs/wip/v07-plan.md`. Each lane's own status: `docs/wip/v0
   C's fix (review found 9) must adopt B's send-done contract {id, mail} (409 stale-draft) — then merge C; then
   privacy texts, build-release, site verify, accept-fly, deploy per steps below. Owner: Gmail app password pending;
   check TG_CHAT_ID sign on the hub (negative = group -> TG_OWNER_USER_ID needed).
+- v07-c merged (99bf62e; conflicts kept both sides: site prebuild runs catalog-snapshot and roadmap, verify mocks
+  /api/catalog and /api/roadmap, admin parity reads every namespace and ideas/ sources, accept-v06-admin keeps R's
+  render check). Then: B's store finds `apps/api/locales/roadmap-seed.json` and TITLE_MAX 240 (cab6bd2); one
+  contract file `apps/api/tests/ideas-admin-contract.json` replayed against the real handler and the kanban's mock
+  (72113f2); kanban: 503 ideas-store message + Try again, 409 re-read, stale-draft dialog (762693d); privacy names
+  message + contact in Telegram (2928f48). Checks on 2928f48: accept-v06-admin (real API) 37/37, accept-v07-ideas
+  65/65, site verify 153/154 (only the local Accept-Language redirect), scene-template tests run (not skipped),
+  typecheck exit 0, vitest 1229, API 167 (0 skipped), architecture, i18n 943x4, gen-catalog, B18 PASS.
+  NEXT: accept-fly B6 B7 B9-B16 on the local release, then deploy per the steps below.
 - If wave 2 is cut off too: `/limit-resume` again — digest of wf_8ea5f912-7bb, new continuation prompts; never rerun.
 
 ## Owner decisions since the plan
