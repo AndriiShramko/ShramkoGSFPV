@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { auxConditions, boxName, parseAuxLine, parseBetaflightDiff, parseMapLine } from '../src/index';
+import { auxConditions, boxName, parseAuxLine, parseAuxPaste, parseBetaflightDiff, parseMapLine } from '../src/index';
 
 const fixture = (name: string) => readFileSync(join(__dirname, 'fixtures', name), 'utf8');
 const D45 = fixture('bf-diff-4.5.1.txt');
@@ -78,5 +78,40 @@ describe('Betaflight aux lines (Modes tab)', () => {
             expect(r.rates, to).toBeNull();
         }
         expect(typeof parseAuxLine('aux 0 0 0 1800 2100 0 0')).toBe('object');
+    });
+});
+
+describe('bare aux lines (the CLI\'s aux command, a diff\'s aux block): parseAuxPaste', () => {
+    const block = (text: string) => text.split(/\r?\n/).filter((l) => /^(aux|map)\s/i.test(l.trim())).join('\n');
+
+    it('the aux block of each BetaFPV dump reads as the whole dump does (map included); control: the whole-diff parser refuses the bare lines', () => {
+        for (const dump of [ELRS, SBUS, D45]) {
+            const bare = block(dump);
+            expect(bare).toMatch(/^aux /m);
+            const r = parseAuxPaste(`# aux\n${bare}\n`);
+            expect(r?.errors).toEqual([]);
+            expect(r?.aux).toEqual(parseBetaflightDiff(dump).aux);
+            // control: the only path before, the whole-diff parser, finds no version line
+            const old = parseBetaflightDiff(bare);
+            expect(old.errors.join(' ')).toMatch(/Not a Betaflight diff/);
+            expect(old.aux).toEqual([]);
+        }
+        expect(parseAuxPaste('aux 0 0 0 1700 2100 0 0')?.aux.map((a) => `${a.mode} CH${a.channel} ${a.lo}-${a.hi}`)).toEqual(['ARM CH5 1700-2100']);
+    });
+
+    it('the CLI\'s aux command prints all 20 slots: the free ones (start = end) are left out', () => {
+        const all = Array.from({ length: 20 }, (_, i) => (i === 0 ? 'aux 0 0 1 1700 2100 0 0' : i === 1 ? 'aux 1 1 0 900 1300 0 0' : `aux ${i} 0 0 900 900 0 0`)).join('\r\n');
+        expect(parseAuxPaste(all)?.aux.map((a) => `${a.mode} CH${a.channel}`)).toEqual(['ARM CH6', 'ANGLE CH5']);
+    });
+
+    it('negative controls: a line the firmware cannot print or a slot twice is refused; anything else is a whole diff (null)', () => {
+        expect(parseAuxPaste('aux 0 0 0 1810 2100 0 0')?.errors.join(' ')).toMatch(/25 us grid/);
+        expect(parseAuxPaste('aux 0 0 0 1810 2100 0 0')?.aux).toEqual([]);
+        expect(parseAuxPaste('aux 0 0 0 1700 2100 0 0\naux 0 1 1 900 1300 0 0')?.errors.join(' ')).toMatch(/slot 0 appears twice/);
+        expect(parseAuxPaste('map AETR1234\nmap TAER1234\naux 0 0 0 1700 2100 0 0')?.errors.join(' ')).toMatch(/"map" appears twice/);
+        expect(parseAuxPaste(D45)).toBeNull();
+        expect(parseAuxPaste('aux 0 0 0 1700 2100 0 0\nset roll_rc_rate = 120')).toBeNull();
+        expect(parseAuxPaste('map AETR1234')).toBeNull();
+        expect(parseAuxPaste('')).toBeNull();
     });
 });

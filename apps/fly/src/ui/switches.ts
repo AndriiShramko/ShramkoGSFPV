@@ -3,7 +3,7 @@
 // body): what each switch does, as Betaflight's Modes tab. Rows for Arm, Flight mode (the channel,
 // what each position gives, then the Angle / Horizon ranges) and Functions (rewind, record...), each
 // with a channel, a live bar of 900..2100 us with two range handles and "Flip to assign"; a paste of
-// Betaflight's `diff all` reads its aux lines. Every decision is in @gsfpv/input switches.ts; this
+// Betaflight's `diff all`, or of its bare aux lines, sets arm and the flight mode as on the quad. Every decision is in @gsfpv/input switches.ts; this
 // file draws the state and passes the pilot's changes on.
 //
 // It starts from what the profile has: its switches, or the setup wizard's arm and mode switch as
@@ -15,7 +15,7 @@ import {
     defaultSwitchModes, fnOn, importOver, modeInput, modePositions, rangesMode, sameInput, setModePositions, snapUs, switchesFromBetaflight, switchesFromProfile
 } from '@gsfpv/input';
 import type { ImportOver, Profile, RawFrame, SwitchAction, SwitchFn, SwitchInput, SwitchModes, SwitchPos, Switches } from '@gsfpv/input';
-import { parseBetaflightDiff } from '@gsfpv/sim-core';
+import { parseAuxPaste, parseBetaflightDiff } from '@gsfpv/sim-core';
 import { h } from './dom';
 import { t } from '../i18n';
 import { inputLabel } from '../controls';
@@ -405,8 +405,9 @@ export class SwitchesView {
         return h('details', { class: 'swv-sec swv-importsec', open: this.importLines.length > 0 }, h('summary', {}, t('switches.import')), h('p', { class: 'muted small' }, t('switches.importHint')), area, go, out);
     }
 
+    /** A paste of bare aux lines (the CLI's `aux`, a diff's aux block) or a whole `diff all`. */
     private importText(text: string): void {
-        const r = parseBetaflightDiff(text);
+        const r = parseAuxPaste(text) ?? parseBetaflightDiff(text);
         const imp = r.errors.length ? null : switchesFromBetaflight(r.aux);
         if (!imp) this.importLines = [h('p', { class: 'error' }, t('switches.importError', { msg: r.errors.join(' ') }))];
         else if (!imp.applied.length) this.importLines = [h('p', { class: 'warn' }, t('switches.importNone'))];

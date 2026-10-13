@@ -46,7 +46,7 @@
   "switches.and": "AND",
   "switches.buttonOnly": "{src} доходит до компьютера только как вкл или выкл (EdgeTX передаёт каналы 9–16 кнопками): используйте диапазон у нижнего или верхнего края.",
   "switches.import": "Импорт из Betaflight",
-  "switches.importHint": "Вставьте вывод diff all из CLI Betaflight. Его строки aux (вкладка Modes) заменят эти тумблеры: ARM, ANGLE и HORIZON.",
+  "switches.importHint": "Вставьте diff all из CLI Betaflight или только его строки aux (вкладка Modes). Их ARM, ANGLE и HORIZON заменят эти тумблеры; ваши тумблеры функций останутся.",
   "switches.importApply": "Прочитать строки aux",
   "switches.importDone": "Применено: {list}.",
   "switches.importSkipped": "Этого нет в симуляторе, пропущено: {list}.",

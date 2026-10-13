@@ -110,3 +110,55 @@ export function auxConditions(lines: readonly AuxLine[], map: readonly number[] 
     }
     return out.sort((a, b) => a.slot - b.slot);
 }
+
+/**
+ * Collects a dump's `aux` and `map` lines under the firmware's rules (each slot printed once, one
+ * map), for a whole diff (parseBetaflightDiff) and for bare lines (parseAuxPaste) alike.
+ */
+export class AuxCollector {
+    private lines = new Map<number, AuxLine>();
+    private map: number[] | null = null;
+
+    /** Is this an `aux` or a `map` line? */
+    static takes(line: string): boolean {
+        return /^(aux|map)\s/i.test(line.trim());
+    }
+
+    /** Reads one `aux` or `map` line: null, or why the firmware cannot have printed it. */
+    add(line: string): string | null {
+        if (/^aux\s/i.test(line.trim())) {
+            const a = parseAuxLine(line);
+            if (typeof a === 'string') return `${a}; the firmware cannot have printed it`;
+            if (this.lines.has(a.slot)) return `aux slot ${a.slot} appears twice; the firmware prints each slot once`;
+            this.lines.set(a.slot, a);
+            return null;
+        }
+        const m = parseMapLine(line);
+        if (typeof m === 'string') return `${m}; the firmware cannot have printed it`;
+        if (this.map) return '"map" appears twice; the firmware prints it once';
+        this.map = m;
+        return null;
+    }
+
+    /** The conditions in use, in the radio's channel numbers (auxConditions with the map read). */
+    conditions(): BfAuxCondition[] {
+        return auxConditions([...this.lines.values()], this.map);
+    }
+}
+
+/**
+ * A paste of bare mode lines: the CLI's `aux` command output, or the aux block of a diff, with its
+ * `map` line if any; `#` comments and blank lines are skipped. null when the text has any other line
+ * (or no aux line at all): it is then a whole diff, for parseBetaflightDiff and its checks.
+ */
+export function parseAuxPaste(text: string): { aux: BfAuxCondition[]; errors: string[] } | null {
+    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter((l) => l !== '' && !l.startsWith('#'));
+    if (!lines.some((l) => /^aux\s/i.test(l)) || !lines.every((l) => AuxCollector.takes(l))) return null;
+    const c = new AuxCollector();
+    const errors: string[] = [];
+    for (const l of lines) {
+        const e = c.add(l);
+        if (e) errors.push(`${e}. Paste the lines unedited.`);
+    }
+    return { aux: errors.length ? [] : c.conditions(), errors };
+}

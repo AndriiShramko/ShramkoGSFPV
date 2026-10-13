@@ -46,7 +46,7 @@
   "switches.and": "AND",
   "switches.buttonOnly": "{src} dociera do komputera tylko jako włączony albo wyłączony (EdgeTX wysyła kanały 9–16 jako przyciski): użyj zakresu na dolnym albo górnym końcu.",
   "switches.import": "Import z Betaflight",
-  "switches.importHint": "Wklej wynik diff all z CLI Betaflight. Jego linie aux (zakładka Modes) zastąpią te przełączniki: ARM, ANGLE i HORIZON.",
+  "switches.importHint": "Wklej diff all z CLI Betaflight albo tylko jego linie aux (zakładka Modes). Ich ARM, ANGLE i HORIZON zastąpią te przełączniki; twoje przełączniki funkcji zostają.",
   "switches.importApply": "Wczytaj linie aux",
   "switches.importDone": "Zastosowano: {list}.",
   "switches.importSkipped": "Nie ma ich w symulatorze, pominięto: {list}.",

@@ -46,7 +46,7 @@
   "switches.and": "AND",
   "switches.buttonOnly": "{src} llega al ordenador solo como encendido o apagado (EdgeTX envía los canales 9 a 16 como botones): usa un rango en el extremo bajo o en el alto.",
   "switches.import": "Importar de Betaflight",
-  "switches.importHint": "Pega la salida de diff all de la CLI de Betaflight. Sus líneas aux (la pestaña Modes) sustituyen estos interruptores: ARM, ANGLE y HORIZON.",
+  "switches.importHint": "Pega diff all de la CLI de Betaflight, o solo sus líneas aux (la pestaña Modes). Sus ARM, ANGLE y HORIZON sustituyen estos interruptores; tus interruptores de funciones se mantienen.",
   "switches.importApply": "Leer las líneas aux",
   "switches.importDone": "Aplicado: {list}.",
   "switches.importSkipped": "No existen en el simulador, se omiten: {list}.",

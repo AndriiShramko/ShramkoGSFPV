@@ -21,8 +21,8 @@
 
 import type { AxisRates, RatesConfig, RatesType, ThrottleCurve } from './rates';
 import { RATE_BOUNDS, RATES_TYPES, SETPOINT_RATE_LIMIT } from './rates';
-import { auxConditions, parseAuxLine, parseMapLine } from './bfaux';
-import type { AuxLine, BfAuxCondition } from './bfaux';
+import { AuxCollector } from './bfaux';
+import type { BfAuxCondition } from './bfaux';
 
 export type PidTriple = [number, number, number, number]; // [P, I, D(peak), F]
 
@@ -304,8 +304,7 @@ export function parseBetaflightDiff(text: string): BfDiffResult {
     let customDefaultsMarker = false;
     let versionLines = 0;
     const commands = new Map<string, number>();
-    const auxLines = new Map<number, AuxLine>(); // by slot
-    let channelMap: number[] | null = null;
+    const aux = new AuxCollector(); // the mode switches (aux) and the channel order (map)
 
     // CRLF everywhere in firmware output; tolerate LF and bare CR.
     const lines = src.split(/\r\n|\r|\n/);
@@ -389,18 +388,9 @@ export function parseBetaflightDiff(text: string): BfDiffResult {
             continue;
         }
         // The mode switches and the channel order (global commands, printed before the profiles).
-        if (/^aux\s/i.test(line)) {
-            const a = parseAuxLine(line);
-            if (typeof a === 'string') fail(`${a}; the firmware cannot have printed it. Paste the diff unedited.`);
-            else if (auxLines.has(a.slot)) fail(`aux slot ${a.slot} appears twice; a firmware diff prints each slot once. Paste one unedited diff.`);
-            else auxLines.set(a.slot, a);
-            continue;
-        }
-        if (/^map\s/i.test(line)) {
-            const m = parseMapLine(line);
-            if (typeof m === 'string') fail(`${m}; the firmware cannot have printed it. Paste the diff unedited.`);
-            else if (channelMap) fail('"map" appears twice; a firmware diff prints it once. Paste one unedited diff.');
-            else channelMap = m;
+        if (AuxCollector.takes(line)) {
+            const e = aux.add(line);
+            if (e) fail(`${e}. Paste one unedited diff.`);
             continue;
         }
         // Everything else (batch, defaults, board_name, feature, serial, save, ...) is not about
@@ -719,7 +709,7 @@ export function parseBetaflightDiff(text: string): BfDiffResult {
     }
     if (res.errors.length > 0) return res;
     res.rates = type === 'QUICK' ? { ...rates, rateLimit, quickRcExpo } : { ...rates, rateLimit };
-    res.aux = auxConditions([...auxLines.values()], channelMap);
+    res.aux = aux.conditions();
     res.throttle = throttle;
     res.pid = pid;
     res.dBase = dBase;

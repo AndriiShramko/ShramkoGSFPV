@@ -46,7 +46,7 @@
   "switches.and": "AND",
   "switches.buttonOnly": "{src} reaches the computer only as on or off (EdgeTX sends channels 9 to 16 as buttons): use a range at the low or the high end.",
   "switches.import": "Import from Betaflight",
-  "switches.importHint": "Paste the output of diff all from the Betaflight CLI. Its aux lines (the Modes tab) replace these switches: ARM, ANGLE and HORIZON.",
+  "switches.importHint": "Paste diff all from the Betaflight CLI, or only its aux lines (the Modes tab). Their ARM, ANGLE and HORIZON replace these switches; your function switches stay.",
   "switches.importApply": "Read the aux lines",
   "switches.importDone": "Applied: {list}.",
   "switches.importSkipped": "Not in the simulator, left out: {list}.",
