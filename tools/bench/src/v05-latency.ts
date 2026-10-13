@@ -69,11 +69,15 @@ const { page } = L;
 await page.route('**/api/e', (r) => r.fulfill({ status: 204, body: '' }));
 // INFLIGHT=n: the renderer's frame cap (?inflight; 0 = no limit, the negative control)
 const INFLIGHT = process.env.INFLIGHT;
-await page.goto(fly(`scene=${SCENE}&lat=1&nowarn=1${INFLIGHT !== undefined ? `&inflight=${INFLIGHT}` : ''}`));
+// QS: more of the page's query, e.g. "budget=8&stochastic" or "drawing=sorted" (v0.7 lane R, the drawing);
+// SETTLE_MS: how long the scan streams before the presses (a heavy scan needs more than the 8 s default)
+const QS = process.env.QS ?? '';
+const SETTLE_MS = Number(process.env.SETTLE_MS ?? 8000);
+await page.goto(fly(`scene=${SCENE}&lat=1&nowarn=1${INFLIGHT !== undefined ? `&inflight=${INFLIGHT}` : ''}${QS ? `&${QS}` : ''}`));
 const ready = await waitReady(page, 180000);
 if (ready.status !== 'ready') throw new Error(`page: ${JSON.stringify(ready)}`);
 // the scan on screen and the guard settled
-await page.waitForTimeout(8000);
+await page.waitForTimeout(SETTLE_MS);
 
 await page.evaluate(() => {
     const w = window as unknown as Record<string, any>;
@@ -124,7 +128,7 @@ const raw = await page.evaluate(() => {
     const w = window as unknown as Record<string, any>;
     const ses = w.__gsfpv.session;
     const r = ses.renderer;
-    return { lat: w.__lat, submitDone: [...r.submitDone], held: r.framesHeld ?? null, webgpu: !!r.gpuQueue, lost: !!r.device?.contextLost || r.device?.isLost === true, cap: r.maxFramesInFlight ?? null, stats: r.latencyStats(), guard: r.latencyGuard.log.slice(-40), render: w.__gsfpv.info?.render, splat: r.splatFrame, canvas: [document.querySelector('canvas')!.width, document.querySelector('canvas')!.height] };
+    return { lat: w.__lat, submitDone: [...r.submitDone], held: r.framesHeld ?? null, webgpu: !!r.gpuQueue, lost: !!r.device?.contextLost || r.device?.isLost === true, cap: r.maxFramesInFlight ?? null, stats: r.latencyStats(), guard: r.latencyGuard.log.slice(-40), render: w.__gsfpv.info?.render, splat: r.splatFrame, canvas: [document.querySelector('canvas')!.width, document.querySelector('canvas')!.height], drawing: w.__gsfpv.drawing ?? null, engineStochastic: r.app.scene.gsplat.stochastic === true, budgetM: r.app.scene.gsplat.splatBudget / 1e6, governor: w.__gsfpv.governor ? { step: w.__gsfpv.governor.step, changes: w.__gsfpv.governor.changes, enabled: w.__gsfpv.governor.enabled } : null };
 });
 const vis = await visibility(page);
 const R = raw.lat;
@@ -165,6 +169,12 @@ const out = {
     eventToPresentationMs: sum(rows.map((r) => r.evToPresent)),
     handlerDelayMs: sum(rows.map((r) => r.handlerDelay)),
     hog: hogInfo,
+    /** the page's extra query (QS) and how it drew: the drawing as decided and the engine's own flag and budget at the end */
+    qs: QS,
+    drawing: raw.drawing,
+    engineStochastic: raw.engineStochastic,
+    budgetMAtEnd: raw.budgetM,
+    governor: raw.governor,
     maxFramesInFlight: raw.cap,
     webgpu: raw.webgpu,
     deviceLost: raw.lost,
