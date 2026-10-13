@@ -187,7 +187,9 @@ const out = {
     rows
 };
 console.log(JSON.stringify({ ...out, rows: undefined, guardTail: undefined }, null, 1));
-const prev = join(REPO, 'evidence', new Date().toISOString().slice(0, 10), 'v05-latency.json');
+// the runs already in the file this run writes (writeEvidence adds EVIDENCE_SUFFIX to the name): a
+// suffixed run used to read the unsuffixed file and drop every earlier run of its own file
+const prev = join(REPO, 'evidence', new Date().toISOString().slice(0, 10), `v05-latency${process.env.EVIDENCE_SUFFIX ?? ''}.json`);
 const all: Record<string, unknown> = existsSync(prev) ? JSON.parse(readFileSync(prev, 'utf8')).runs ?? {} : {};
 all[label] = out;
 console.log(writeEvidence('v05-latency', { runs: all }));
