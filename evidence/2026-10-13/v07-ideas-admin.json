@@ -7,15 +7,15 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-13T15:50:01.588Z",
-    "gitHead": "5af8c01",
+    "date": "2026-10-13T19:47:52.288Z",
+    "gitHead": "762693d",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "pass": true,
-  "fly": "http://127.0.0.1:5367",
+  "fly": "http://127.0.0.1:5364",
   "error": null,
   "checks": [
     {
@@ -264,7 +264,67 @@
       "control": false
     },
     {
+      "name": "a newer summary replaced the open draft on the server (draft 1 superseded)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "Send under the replaced draft: send-done {id, mail: draft 1} is refused, nothing is queued",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "the dialog re-reads the idea and shows the current draft with a warning",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the next Send queues the current draft, draft 1 stays superseded",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the superseded draft offers no Send and no Cancel on the card",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the queued one does (control)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "a refused Cancel (409) re-reads the card: the e-mail shows as sent, without Cancel, and the owner is told why",
+      "ok": true,
+      "control": false
+    },
+    {
       "name": "at 375 px the board is one column with no sideways scroll",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "with the store readable there is no store message (control)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "a move while ideas.json is unreadable: the board gives way to a plain reason with Try again",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "opening the Ideas tab while the store is unreadable says so, no page error",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "Try again while it is still unreadable keeps the reason (control)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "Try again once the file reads again brings the board back",
       "ok": true,
       "control": false
     },
@@ -279,7 +339,7 @@
       "control": false
     },
     {
-      "name": "no e-mail went out on its own: two thank-yous queued by Send, one reply cancelled, one waiting for Gmail",
+      "name": "no e-mail went out on its own: three thank-yous queued by Send (one then sent by the outbox), one draft superseded, one reply cancelled, one waiting for Gmail",
       "ok": true,
       "control": false
     }
@@ -376,6 +436,15 @@
       }
     ]
   ],
+  "staleSend": {
+    "calls": [
+      "POST ideas/send-done",
+      "GET ideas/R-20261006-0001"
+    ],
+    "note": "A newer draft replaced the one that was open. Read it, then press Send again."
+  },
+  "changedMeanwhile": "This e-mail changed meanwhile (another tab, Telegram or an agent). The card now shows it as it is.",
+  "storeDown": "The ideas file on the server cannot be read right now, so the board cannot be shown or changed. Nothing is lost and nothing was changed; the Scenes tab works. An agent can check data/ideas.json on the server, then press Try again.Try again",
   "pageErrors": [],
   "calls": [
     "GET session",
@@ -403,6 +472,19 @@
     "POST ideas/done",
     "POST ideas/send-done",
     "POST ideas/mail/send",
+    "POST ideas/update",
+    "POST ideas/done",
+    "POST ideas/done",
+    "POST ideas/send-done",
+    "GET ideas/R-20261006-0001",
+    "POST ideas/send-done",
+    "POST ideas/mail/cancel",
+    "GET ideas/R-20261006-0001",
+    "POST ideas/update",
+    "GET catalog",
+    "GET ideas",
+    "GET ideas",
+    "GET ideas",
     "GET catalog"
   ]
 }
