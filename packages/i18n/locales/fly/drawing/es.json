@@ -1,0 +1,10 @@
+{
+  "set.display.drawing": "Modo de dibujo",
+  "set.display.drawing.help": "Cómo se dibuja el escaneo. Automático hace lo que pide el enlace de la escena (?stochastic y ?budget de SuperSplat). Estocástico es el nuevo dibujo de SuperSplat que no ordena los splats y deja un grano fino. Ordenado es el dibujo clásico, suave. El estocástico necesita WebGPU en un navegador de escritorio.",
+  "set.display.drawing.opt.auto": "Automático (lo que pide el enlace)",
+  "set.display.drawing.opt.stochastic": "Estocástico (beta de SuperSplat)",
+  "set.display.drawing.opt.sorted": "Ordenado (clásico)",
+  "drawing.on": "Dibujo estocástico (beta de SuperSplat), {budget} M de splats · Ajustes → Pantalla",
+  "drawing.note.handheld": "Esta escena pide el dibujo estocástico de SuperSplat. Solo funciona en navegadores de escritorio, así que aquí la escena se dibuja de la forma clásica.",
+  "drawing.note.webgl": "El dibujo estocástico necesita WebGPU y este navegador no lo ofrece: la escena se dibuja de la forma clásica."
+}

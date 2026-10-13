@@ -1,0 +1,10 @@
+{
+  "set.display.drawing": "Rysowanie sceny",
+  "set.display.drawing.help": "Jak rysowany jest skan. Automatycznie robi to, o co prosi link sceny (?stochastic i ?budget z SuperSplat). Stochastyczne to nowe rysowanie SuperSplat, które nie sortuje splatów i zostawia drobne ziarno. Sortowane to klasyczne, gładkie rysowanie. Stochastyczne wymaga WebGPU w przeglądarce na komputerze.",
+  "set.display.drawing.opt.auto": "Automatycznie (jak prosi link)",
+  "set.display.drawing.opt.stochastic": "Stochastyczne (beta SuperSplat)",
+  "set.display.drawing.opt.sorted": "Sortowane (klasyczne)",
+  "drawing.on": "Rysowanie stochastyczne (beta SuperSplat), {budget} mln splatów · Ustawienia → Ekran",
+  "drawing.note.handheld": "Ta scena prosi o stochastyczne rysowanie SuperSplat. Działa ono tylko w przeglądarkach na komputerze, więc tutaj scena jest rysowana klasycznie.",
+  "drawing.note.webgl": "Rysowanie stochastyczne wymaga WebGPU, a ta przeglądarka go nie ma: scena jest rysowana klasycznie."
+}

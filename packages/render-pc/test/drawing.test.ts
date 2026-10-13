@@ -6,6 +6,8 @@ import { describe, it, expect } from 'vitest';
 import { resolveDrawing, isHandheld, applyDrawing, DEFAULT_BUDGET_M, DRAWING_MODES } from '../src/drawing';
 import type { Drawing, DrawingDevice, DrawingMode, DrawingRequest } from '../src/drawing';
 import { FrameGovernor, DEFAULT_STEPS } from '../src/governor';
+// the Display setting's definition (packages/prefs is pure data; render-pc does not depend on it at run time)
+import { DISPLAY_DEFS } from '../../prefs/src/defs/display';
 
 const DESKTOP: DrawingDevice = { webgpu: true, handheld: false };
 const DESKTOP_GL: DrawingDevice = { webgpu: false, handheld: false };
@@ -42,6 +44,13 @@ describe('resolveDrawing: setting x request x device', () => {
     it('every row', () => {
         expect(failures(resolveDrawing)).toEqual([]);
         expect(DRAWING_MODES).toEqual(['auto', 'stochastic', 'sorted']);
+    });
+
+    it('the Display setting display.drawing offers exactly these modes, auto by default, live', () => {
+        const d = DISPLAY_DEFS.find((x) => x.id === 'display.drawing');
+        expect(d && d.type === 'enum' ? [...d.options] : null).toEqual([...DRAWING_MODES]);
+        expect(d?.default).toBe('auto');
+        expect(d?.apply).toBe('live');
     });
 
     it('control: a policy that follows the request on every device fails the phone and WebGL rows', () => {
