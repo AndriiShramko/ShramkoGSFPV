@@ -1,7 +1,16 @@
 // The admin page's only door to the server: /api/admin/* (apps/api/admin.py). The session lives in an
 // HttpOnly cookie the page never sees; the CSRF token comes with the login (or /session after a reload)
 // and goes with every POST as X-CSRF. A 401 anywhere means the session is gone: back to the login.
-import type { SceneCatalog } from '@gsfpv/scenes';
+import { readFacts } from '@gsfpv/scenes';
+import type { SceneCatalog, SceneFacts } from '@gsfpv/scenes';
+
+/** One place found by name: what the editor puts into the scene's geo. */
+export interface PlaceHit { lat: number; lon: number; place: string }
+/** GET /api/admin/wind/climate: the prevailing wind and where it comes from. */
+export interface ClimateWind {
+    wind: { fromDeg: number; speed: number; gust: number; steadiness: number; hours: number; source: 'climate' };
+    years: [number, number];
+}
 
 export interface HistoryEntry { name: string; published: string | null; note: string; scenes: number }
 export interface CatalogState {
@@ -79,6 +88,21 @@ export class AdminClient {
 
     get<T>(path: string): Promise<T> {
         return this.call<T>('GET', path);
+    }
+
+    /** SuperSplat's facts of a scene (apps/api/superspl_facts.py); `fresh` skips the server's 10 min cache. */
+    facts(id: string, fresh = false): Promise<SceneFacts | null> {
+        return this.get<unknown>(`superspl/${encodeURIComponent(id)}${fresh ? '?fresh=1' : ''}`).then(readFacts);
+    }
+
+    /** Places by name (Open-Meteo geocoding through the server, apps/api/wind.py). */
+    findPlace(q: string, lang: string): Promise<PlaceHit[]> {
+        return this.get<{ places?: PlaceHit[] }>(`geo/search?${new URLSearchParams({ q, lang }).toString()}`).then((r) => r.places ?? []);
+    }
+
+    /** The prevailing wind of a place: five years of Open-Meteo's archive, worked out by the server. */
+    climateWind(lat: number, lon: number): Promise<ClimateWind> {
+        return this.get<ClimateWind>(`wind/climate?${new URLSearchParams({ lat: lat.toFixed(3), lon: lon.toFixed(3) }).toString()}`);
     }
 
     post<T>(path: string, body: unknown): Promise<T> {
