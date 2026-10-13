@@ -14,6 +14,8 @@
 //       follows; the next scene of the rotation (no request) draws sorted again and drops them.
 //   R5  the look, a still camera on one view: sorted twice (control: the same picture), stochastic twice;
 //       the luminance change and the fine-detail energy (mean |pixel - mean of its 4 neighbours|).
+ //   R7  the voxel overlay (V) over each drawing: the share of the picture the voxels change; control: the
+//       stochastic view with the overlay layer's depth clear off (the scan's depth then hides the voxels).
 //   R6  the cost on a heavy scan (2f1ddf5f, 259 M splats at full detail): GPU time per frame (submit ->
 //       done) with the camera turning, governor off so both draw the same 8 M budget.
 //   SITE=http://127.0.0.1:5372 npx tsx src/accept-v07-render.ts [R1 R2 ...]
@@ -240,6 +242,66 @@ if (want('R5')) {
     };
     pass.R5 = st0.engine === false && engine.engine === true && m.pairs.s1s2 < CONTROL_MAX && m.pairs.s1t1 > 3 * Math.max(m.pairs.s1s2, 1e-4) && errors(log).length === 0;
     console.log('R5', pass.R5, JSON.stringify(m));
+    await ctx.close();
+}
+
+// ------------------------------------------------------------------ R7
+// The voxel overlay (V) over each drawing: the share of the picture the voxels change. Stochastic
+// splats write depth; the overlay's layer clears it first (voxel-overlay.ts), so the x-ray stays.
+// Control: the same stochastic view with the layer's clear switched off in the page.
+if (want('R7')) {
+    const { ctx, page, log } = await context(browser);
+    const st0 = await open(page, `scene=${A}&governor=0`);
+    await hook(page, `s.pause(true, 'bake'); h.prefs.set('display.hud', false); return 0;`);
+    const settle = async () => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < 30000) {
+            if (await hook<boolean>(page, 'return s.renderer.sceneComplete;')) break;
+            await wait(page, 250);
+        }
+        await wait(page, 1200);
+    };
+    const canvas = page.locator('#view');
+    const coverage = async (): Promise<Any> => {
+        await hook(page, `h.voxels.setMode('off'); return 0;`);
+        await settle();
+        const off = await canvas.screenshot();
+        await hook(page, `h.voxels.setMode('overlay'); return 0;`);
+        const t0 = Date.now();
+        while (Date.now() - t0 < 60000 && !(await hook<boolean>(page, 'return h.voxels.settled();'))) await wait(page, 300);
+        await wait(page, 800);
+        const on = await canvas.screenshot();
+        await hook(page, `h.voxels.setMode('off'); return 0;`);
+        return page.evaluate(async (b64s: string[]) => {
+            const L: Float32Array[] = [];
+            for (const b of b64s) {
+                const bin = atob(b);
+                const u = new Uint8Array(bin.length);
+                for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+                const bmp = await createImageBitmap(new Blob([u], { type: 'image/png' }));
+                const c = new OffscreenCanvas(bmp.width, bmp.height);
+                const g = c.getContext('2d')!;
+                g.drawImage(bmp, 0, 0);
+                const d = g.getImageData(0, 0, bmp.width, bmp.height).data;
+                const l = new Float32Array(bmp.width * bmp.height);
+                for (let i = 0; i < l.length; i++) l[i] = (0.2126 * d[4 * i] + 0.7152 * d[4 * i + 1] + 0.0722 * d[4 * i + 2]) / 255;
+                L.push(l);
+            }
+            let n = 0;
+            for (let i = 0; i < L[0].length; i++) if (Math.abs(L[0][i] - L[1][i]) > 0.08) n++;
+            return { changedShare: n / L[0].length };
+        }, [off, on].map((b) => b.toString('base64')));
+    };
+    const sorted = await coverage();
+    await hook(page, `h.prefs.set('display.drawing', 'stochastic'); return 0;`);
+    const stochastic = await coverage();
+    const engine = await hook(page, STATE);
+    await hook(page, `s.renderer.app.scene.layers.getLayerByName('GSFPV Voxels').clearDepthBuffer = false; return 0;`);
+    const noClear = await coverage();
+    await hook(page, `s.renderer.app.scene.layers.getLayerByName('GSFPV Voxels').clearDepthBuffer = true; h.prefs.reset('display.drawing'); h.prefs.reset('display.hud'); return 0;`);
+    out.R7 = { scene: A, first: st0.engine, sortedShare: sorted.changedShare, stochasticShare: stochastic.changedShare, engineStochastic: engine.engine, control: { what: 'stochastic with the voxel layer\'s depth clear off', share: noClear.changedShare }, rule: 'sorted > 5 % of the picture; stochastic at least 70 % of sorted; the control under 60 % of stochastic', pageerrors: errors(log) };
+    pass.R7 = st0.engine === false && engine.engine === true && sorted.changedShare > 0.05 && stochastic.changedShare >= 0.7 * sorted.changedShare && noClear.changedShare < 0.6 * stochastic.changedShare && errors(log).length === 0;
+    console.log('R7', pass.R7, JSON.stringify(out.R7));
     await ctx.close();
 }
 
