@@ -27,6 +27,11 @@ export function validateTransform(v: unknown): SceneTransform | null {
 /** The walls switch's values, as showcase.json's "walls" field and main's gsfpv.walls.<scene> key write them. */
 export const WALLS_OPTIONS: readonly string[] = ['on', 'off'];
 
+/** scene.ceiling's options: the scan's own ceiling (the admin's), none, the pilot's height (scene.ceilingM). */
+export const CEILING_OPTIONS: readonly string[] = ['scene', 'off', 'custom'];
+/** scene.ceilingM's bound, the catalogue's range: a ceiling this high ignores nothing (the default where the admin set none). */
+export const CEILING_LIMIT_M = 10000;
+
 export const SCENE_DEFS: readonly SettingDef[] = [
     // The walls (collisions) switch (C, the walls menu, Settings). ONE choice for every scan (the
     // owner's message 16, schema 2; per scan before, migrate.ts 1 -> 2): a pilot who switched the
@@ -40,5 +45,14 @@ export const SCENE_DEFS: readonly SettingDef[] = [
     // G.3 phantom walls: drops the walls' connected pieces under N blocks (0 = off). Per scan like
     // the walls switch: the admin's default is showcase.json's "dropFloaters", the pilot's value for
     // a scan wins. It changes the walls, so a life setting (a world record and a new life).
-    { id: 'scene.dropFloaters', group: 'voxels', scope: 'scene', type: 'number', min: 0, max: 64, step: 1, unit: 'blocks', default: { curated: 'dropFloaters', fallback: 0 }, apply: 'life', shown: ['settings'], status: 'shipped', since: 1, items: [24] }
+    { id: 'scene.dropFloaters', group: 'voxels', scope: 'scene', type: 'number', min: 0, max: 64, step: 1, unit: 'blocks', default: { curated: 'dropFloaters', fallback: 0 }, apply: 'life', shown: ['settings'], status: 'shipped', since: 1, items: [24] },
+    // v0.7 lane E, the owner's item 10: collisions are ignored above a height (outdoor scans have
+    // floating sky splats). 'scene': the admin's ceiling for this scan (catalogue ceilingM), none where
+    // there is none; 'off': none; 'custom': scene.ceilingM. Per scan. It changes the walls as the scene
+    // size does: a world record at once, the craft flies on (no new flight model): 'live'.
+    { id: 'scene.ceiling', group: 'voxels', scope: 'scene', type: 'enum', options: CEILING_OPTIONS, default: 'scene', apply: 'live', shown: ['settings'], status: 'shipped', since: 2 },
+    // the height, in the scan's own coordinates (the world before Scene size, scale 1, metres up),
+    // like the catalogue's ceilingM, which is its default. Set in the ceiling panel, where it reads as
+    // metres above the start at the size flown; the raw number is an advanced row.
+    { id: 'scene.ceilingM', group: 'voxels', scope: 'scene', type: 'number', min: -CEILING_LIMIT_M, max: CEILING_LIMIT_M, step: 0.1, unit: 'm', default: { curated: 'ceilingM', fallback: CEILING_LIMIT_M }, apply: 'live', shown: ['settings'], advanced: true, status: 'shipped', since: 2 }
 ];

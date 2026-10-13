@@ -3,11 +3,12 @@
 // wall where there should be none stands out. Chunks around the camera are built in a worker
 // (voxels.worker.ts) and drawn by render-pc's VoxelOverlay: the nearest ones per voxel while a face
 // budget lasts, the rest of the radius per 4x4x4 block. The walls themselves are untouched:
-// flying on the voxels is just flying.
+// flying on the voxels is just flying. With a collision ceiling (v0.7) the voxels above it are drawn
+// in their own colour (no longer walls), and its panel's preview adds a translucent plane at the height.
 import { VoxelOverlay, VOXEL_STYLES } from '@gsfpv/render-pc';
 import type { VoxelStyle } from '@gsfpv/render-pc';
-import { FLOATER_MIN_BLOCKS_MAX, overlayChunkSize, planChunksAround } from '@gsfpv/collision';
-import type { VoxelCollision } from '@gsfpv/collision';
+import { FLOATER_MIN_BLOCKS_MAX, ceilingCut, overlayChunkSize, planChunksAround, validCeiling } from '@gsfpv/collision';
+import type { CeilingCut, VoxelCollision } from '@gsfpv/collision';
 import type { FlightSession } from './session';
 import type { FromWorker, ToWorker, WorkerGrid } from './voxels.worker';
 
@@ -75,6 +76,10 @@ export interface VoxelStats {
     preview: number | null;
     /** the floater filter (G.3, prefs scene.dropFloaters): pieces under minBlocks dropped from the walls; null = off */
     dropped: { minBlocks: number; pieces: number } | null;
+    /** the collision ceiling drawn (scan metres): the panel's preview, else the applied one; null = none */
+    ceilingM: number | null;
+    /** the ceiling's plane is on screen (only during the panel's preview) */
+    ceilingPlane: boolean;
     prepareMs: number | null;
     /** mean worker time per chunk so far, ms */
     chunkMs: number;
@@ -116,6 +121,10 @@ export class VoxelController {
     private loaded = new Map<number, 0 | 1 | typeof STALE>();
     /** the floater filter's preview (previewFloaters): N, or null when off */
     private previewN: number | null = null;
+    /** the collision ceiling's preview (previewCeiling): a height in scan metres, or null when off */
+    private previewC: number | null = null;
+    /** the ceiling the worker was told (its rows), as a height: what the chunks drawn are coloured for */
+    private cutM: number | null = null;
     private inFlight = new Set<string>();
     private plan = { fineRadius: 0, radius: 0 };
     /** a plan was made since the worker became ready (until then "settled" means nothing) */
@@ -155,14 +164,62 @@ export class VoxelController {
         return this.mode === 'only' ? this.prefs.opacityOnly : this.prefs.opacityOverlay;
     }
 
-    /** The mode drawn: the pilot's, but over the scan while a floater preview runs with the grid off. */
+    /** The mode drawn: the pilot's, but over the scan while a floater or ceiling preview runs with the grid off. */
     private get shown(): VoxelMode {
-        return this.previewN !== null && this.mode === 'off' ? 'overlay' : this.mode;
+        return (this.previewN !== null || this.previewC !== null) && this.mode === 'off' ? 'overlay' : this.mode;
     }
 
-    /** The colours drawn: the pilot's style, or the floater colours while a preview runs. */
+    /** The ceiling to draw: the panel's preview, else the one the walls have (scan metres); null = none. */
+    private ceilingNow(): number | null {
+        return this.previewC ?? this.session.ceilingM;
+    }
+
+    /** The rows above a ceiling, from the scan's own grid (every scaled or filtered copy shares it). */
+    private cutOf(c: number | null): CeilingCut | null {
+        const base = this.session.baseCollision;
+        return c === null || !base ? null : ceilingCut(base, c);
+    }
+
+    /** The collision ceiling's preview (null: none). */
+    get ceilingPreview(): number | null {
+        return this.previewC;
+    }
+
+    /**
+     * Preview the collision ceiling at `c` (scan metres; the ceiling panel, ui/ceiling.ts): the grid
+     * over the scan, the voxels above in their own colour, and a translucent plane at the height
+     * around the camera. null ends it: the grid is the pilot's again. Nothing here is remembered.
+     */
+    previewCeiling(c: number | null): void {
+        if (c !== null && !validCeiling(c)) return;
+        if (c === this.previewC) return;
+        this.previewC = c;
+        if (c === null) this.overlay?.setCeilingPlane(null);
+        this.recut();
+        this.apply();
+        this.notify();
+    }
+
+    /** The worker's ceiling follows ceilingNow(): the chunks drawn are asked for again in the new colours. */
+    private recut(): void {
+        const c = this.ceilingNow();
+        if (c === this.cutM) return;
+        this.cutM = c;
+        if (!this.worker) return; // the next init sends it
+        this.gen++;
+        const msg: ToWorker = { t: 'ceiling', gen: this.gen, cut: this.cutOf(c) };
+        this.worker.postMessage(msg);
+        this.inFlight.clear();
+        for (const k of this.loaded.keys()) this.loaded.set(k, STALE);
+        this.lastPlanAt = 0;
+    }
+
+    /**
+     * The colours drawn: the pilot's style, or the floater colours while a floater or ceiling preview
+     * runs (grey walls, red specks, violet above the ceiling: the colours the panels' legends name).
+     */
     private get look(): VoxelStyle {
-        return this.previewN !== null ? 'floaters' : this.prefs.style;
+        return this.previewN !== null || this.previewC !== null ? 'floaters' : this.prefs.style;
     }
 
     /** The walls drawn: the flown ones, or the scan's own (before the filter) while a preview runs. */
@@ -273,6 +330,8 @@ export class VoxelController {
     frame(now: number): void {
         const want = this.target();
         if (want !== this.col) this.resetFor(want);
+        this.recut();
+        this.ceilingPlane();
         if (this.shown === 'off' || !this.overlay || !this.col) return;
         const t0 = performance.now();
         this.overlay.update();
@@ -288,6 +347,15 @@ export class VoxelController {
             this.perf.replan += t2 - t1;
             this.perf.replanMax = Math.max(this.perf.replanMax, t2 - t1);
         }
+    }
+
+    /** During the ceiling preview: the plane at the previewed height in the flown world, centred under the camera. */
+    private ceilingPlane(): void {
+        const c = this.previewC;
+        if (c === null || !this.overlay || this.shown === 'off') return;
+        const tr = this.session.transform;
+        const p = this.session.renderer.camera.getPosition();
+        this.overlay.setCeilingPlane({ x: p.x, y: tr.s * c + tr.t[1], z: p.z, half: Math.max(this.radiusM, PREVIEW_RADIUS_M) });
     }
 
     /** Main-thread time of the overlay per frame so far: uploads (update) and chunk planning (ms). */
@@ -307,6 +375,7 @@ export class VoxelController {
         this.overlay?.clear();
         this.prepareMs = null;
         this.error = null;
+        this.cutM = null; // the next worker is told the ceiling at its init
         this.apply();
         this.notify();
     }
@@ -338,7 +407,8 @@ export class VoxelController {
         };
         // the worker gets its own copy: the flight keeps reading these arrays
         const nodes = col.nodes.slice(), leaf = col.leafData.slice();
-        const msg: ToWorker = { t: 'init', gen, grid, nodes, leaf, size: this.size, layout: this.overlay!.layout, minBlocks: this.previewN ?? 0 };
+        this.cutM = this.ceilingNow();
+        const msg: ToWorker = { t: 'init', gen, grid, nodes, leaf, size: this.size, layout: this.overlay!.layout, minBlocks: this.previewN ?? 0, cut: this.cutOf(this.cutM) };
         w.postMessage(msg, [nodes.buffer, leaf.buffer]);
         this.worker = w;
         this.prepStart = performance.now();
@@ -451,6 +521,8 @@ export class VoxelController {
             floaters: this.floaters,
             preview: this.previewN,
             dropped: this.session.floaterMinBlocks > 0 && this.session.floaterFilter ? { minBlocks: this.session.floaterMinBlocks, pieces: this.session.floaterFilter.pieces } : null,
+            ceilingM: this.ceilingNow(),
+            ceilingPlane: this.overlay?.ceilingPlaneShown ?? false,
             prepareMs: this.prepareMs,
             chunkMs: this.sum.n ? this.sum.ms / this.sum.n : 0,
             chunksBuilt: this.sum.n,

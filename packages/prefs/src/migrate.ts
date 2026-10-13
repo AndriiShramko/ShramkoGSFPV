@@ -37,7 +37,10 @@ export const MACHINE_LOCAL_KEYS: Readonly<Record<string, string>> = {
     // wallcache.ts: seconds per million Gaussians the last walls bake took on this machine
     // (download included). A measurement of this PC's GPU and network that sizes the next refine,
     // not a choice: another computer bakes at its own speed, and a pilot never sets it.
-    'gsfpv.bakeSecondsPerMillion': "this machine's measured walls-bake speed, a calibration of its GPU and network, not a pilot's choice"
+    'gsfpv.bakeSecondsPerMillion': "this machine's measured walls-bake speed, a calibration of its GPU and network, not a pilot's choice",
+    // apps/fly admin/api.ts (v0.7 lane E): '1' while this browser has an admin session, so the flight
+    // page may ask /api/admin/session (and only then) before offering "Save as this scan's default".
+    'gsfpv.admin': "this browser's sign-in to the admin page (a hint the server checks), not a pilot's choice; it must never travel in an exported file"
 };
 
 export interface LegacyBag { format: 'gsfpv-legacy'; version: 0; keys: Record<string, string> }

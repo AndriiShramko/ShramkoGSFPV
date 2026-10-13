@@ -9,9 +9,16 @@
 import type { VoxelCollision } from './vendor/voxel-collision';
 import type { BlockComponents } from './components';
 import { buildChunkBlockFaces, buildChunkFaces, chunkDims } from './mesh';
+import { blockAboveCut, rowAboveCut } from './ceiling';
+import type { CeilingCut } from './ceiling';
 
 /** A connected piece smaller than this (block volume, m³) and not the largest one is painted as a floater. */
 export const FLOATER_M3 = 0.5;
+
+/** OverlayChunk.floater's per-quad classes: a wall, a floating piece, a voxel above the collision ceiling (ignored). */
+export const QUAD_WALL = 0;
+export const QUAD_FLOATER = 1;
+export const QUAD_ABOVE_CEILING = 2;
 
 /** Chunk edge in voxels for a voxel size: about 2.4 m, a multiple of 4, from 32 to 128 voxels. */
 export function overlayChunkSize(res: number): number {
@@ -63,21 +70,29 @@ export interface OverlayChunk {
     /** Per vertex, in cells of the level (voxels at lod 0, blocks at lod 1): a repeating grid texture draws each cell's edges. */
     uvs: Float32Array;
     indices: Uint32Array;
-    /** Per quad: 1 when it belongs to a floater. */
+    /**
+     * Per quad, its class: QUAD_WALL, QUAD_FLOATER (a floating piece) or QUAD_ABOVE_CEILING (above the
+     * collision ceiling: drawn, but no longer a wall). The name is older than the ceiling.
+     */
     floater: Uint8Array;
     quads: number;
     /** Exposed cell faces before merging into quads. */
     faces: number;
     floaterQuads: number;
+    /** quads above the collision ceiling */
+    aboveQuads: number;
 }
 
 /**
  * Mesh chunk (x, y, z) of `size` voxels at level 0 (voxels) or 1 (blocks), with grid UVs and the
- * floater flag per quad (`floaters` from floaterComponents of the same `comp`).
+ * class per quad: floaters (`floaters` from floaterComponents of the same `comp`), and, with a
+ * collision ceiling's `cut` (ceiling.ts ceilingCut), the quads above it; a block the cut passes
+ * through stays a wall at level 1.
  */
-export function overlayChunk(col: VoxelCollision, chunk: { x: number; y: number; z: number }, size: number, lod: 0 | 1, comp?: BlockComponents, floaters?: Uint8Array): OverlayChunk {
+export function overlayChunk(col: VoxelCollision, chunk: { x: number; y: number; z: number }, size: number, lod: 0 | 1, comp?: BlockComponents, floaters?: Uint8Array, cut?: CeilingCut | null): OverlayChunk {
+    const rows = !!cut;
     // level 1 chunks are closed at their borders: next to a level 0 chunk they leave no crack
-    const m = lod === 0 ? buildChunkFaces(col, chunk, size, comp ? { components: comp } : {}) : buildChunkBlockFaces(col, chunk, size, { ...(comp ? { components: comp } : {}), closedBorder: true });
+    const m = lod === 0 ? buildChunkFaces(col, chunk, size, { ...(comp ? { components: comp } : {}), rows }) : buildChunkBlockFaces(col, chunk, size, { ...(comp ? { components: comp } : {}), closedBorder: true, rows });
     const quads = m.indices.length / 6;
     const nv = quads * 4;
     const normals = new Float32Array(nv * 3);
@@ -95,13 +110,24 @@ export function overlayChunk(col: VoxelCollision, chunk: { x: number; y: number;
         uvs[v * 2 + 1] = (p[v * 3 + b] - origin[b]) / cell;
     }
     const floater = new Uint8Array(quads);
-    let floaterQuads = 0;
+    let floaterQuads = 0, aboveQuads = 0;
     if (m.component && floaters) {
         for (let k = 0; k < quads; k++) {
-            if (floaters[m.component[k * 4]] === 1) { floater[k] = 1; floaterQuads++; }
+            if (floaters[m.component[k * 4]] === 1) { floater[k] = QUAD_FLOATER; floaterQuads++; }
         }
     }
-    return { positions: m.positions, normals, uvs, indices: m.indices, floater, quads, faces: m.faces, floaterQuads };
+    if (cut && m.rows) {
+        // above the ceiling wins: such a piece is no wall at all, floating or not
+        for (let k = 0; k < quads; k++) {
+            const row = m.rows[k];
+            if (lod === 0 ? rowAboveCut(cut, row) : blockAboveCut(cut, row)) {
+                if (floater[k] === QUAD_FLOATER) floaterQuads--;
+                floater[k] = QUAD_ABOVE_CEILING;
+                aboveQuads++;
+            }
+        }
+    }
+    return { positions: m.positions, normals, uvs, indices: m.indices, floater, quads, faces: m.faces, floaterQuads, aboveQuads };
 }
 
 export interface PlanOptions {

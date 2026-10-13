@@ -1,0 +1,11 @@
+{
+  "scenedefault.menu": "Zapisz jako domyślne dla tego skanu",
+  "scenedefault.saved": "To, czym teraz latasz (ściany, usuwanie latających wokseli, rozmiar sceny, sufit zderzeń, wiatr), zapisano jako domyślne dla tego skanu w szkicu katalogu. Opublikuj szkic na stronie administratora.",
+  "scenedefault.keptScale": "Rozmiar sceny x{s} przekracza x4 dopuszczalne w katalogu, więc skan zachowuje swój rozmiar.",
+  "scenedefault.keptWind": "Wiatr na żywo w tym miejscu to dzisiejsza pogoda, a nie ustawienie domyślne: skan zachowuje swój własny wiatr.",
+  "scenedefault.keptWindOff": "Masz wyłączony wiatr, a to twoje ustawienie dla wszystkich skanów, nie tego skanu: skan zachowuje swój wiatr.",
+  "scenedefault.fail.not-in-catalogue": "Tego skanu nie ma w katalogu. Najpierw dodaj go na stronie administratora.",
+  "scenedefault.fail.session": "Sesja administratora wygasła. Zaloguj się ponownie na stronie administratora i spróbuj jeszcze raz.",
+  "scenedefault.fail.refused": "Serwer nie przyjął szkicu. Nic nie zostało zapisane.",
+  "scenedefault.fail.network": "Brak połączenia z serwerem. Nic nie zostało zapisane."
+}

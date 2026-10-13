@@ -115,6 +115,11 @@ export interface ChunkMesh {
     faces: number;
     /** Component id per vertex (sizes[id] is its size in blocks), only when components were passed. */
     component?: Uint32Array;
+    /**
+     * Per quad, the y index of the cell it belongs to (a voxel row, or a block row for block faces),
+     * only when ChunkOptions.rows asked for it: the collision ceiling tints quads by row (overlay.ts).
+     */
+    rows?: Int32Array;
 }
 
 export interface ChunkOptions {
@@ -126,6 +131,8 @@ export interface ChunkOptions {
      * the voxels facing it across the border are empty, its side is still drawn.
      */
     closedBorder?: boolean;
+    /** fill ChunkMesh.rows: the cell row of each quad */
+    rows?: boolean;
 }
 
 /** The chunk (in units of `size` voxels) holding a world point of `col`. */
@@ -162,8 +169,8 @@ function checkChunkArgs(col: VoxelCollision, chunk: { x: number; y: number; z: n
     if (comp && (comp.dims[0] !== bd[0] || comp.dims[1] !== bd[1] || comp.dims[2] !== bd[2])) throw new Error('components were computed for another voxel grid');
 }
 
-function emptyMesh(comp: BlockComponents | undefined): ChunkMesh {
-    return { positions: new Float32Array(0), normals: new Int8Array(0), indices: new Uint32Array(0), faces: 0, ...(comp ? { component: new Uint32Array(0) } : {}) };
+function emptyMesh(comp: BlockComponents | undefined, rows = false): ChunkMesh {
+    return { positions: new Float32Array(0), normals: new Int8Array(0), indices: new Uint32Array(0), faces: 0, ...(comp ? { component: new Uint32Array(0) } : {}), ...(rows ? { rows: new Int32Array(0) } : {}) };
 }
 
 /**
@@ -195,8 +202,8 @@ export function buildChunkFaces(col: VoxelCollision, chunk: { x: number; y: numb
             }
         }
     });
-    if (solidInside === 0) return emptyMesh(comp);
-    return facesFromOcc(col, occ, size, o, 1, comp);
+    if (solidInside === 0) return emptyMesh(comp, opts.rows);
+    return facesFromOcc(col, occ, size, o, 1, comp, opts.rows);
 }
 
 /**
@@ -223,8 +230,8 @@ export function buildChunkBlockFaces(col: VoxelCollision, chunk: { x: number; y:
         occ[(lz * E + ly) * E + lx] = 1;
         if (inside) solidInside++;
     });
-    if (solidInside === 0) return emptyMesh(comp);
-    return facesFromOcc(col, occ, cells, o, 4, comp);
+    if (solidInside === 0) return emptyMesh(comp, opts.rows);
+    return facesFromOcc(col, occ, cells, o, 4, comp, opts.rows);
 }
 
 /**
@@ -232,7 +239,7 @@ export function buildChunkBlockFaces(col: VoxelCollision, chunk: { x: number; y:
  * is cell o - 1), merged into 1-D runs. A cell is `cellVox` voxels a side: 1 (voxels) or 4
  * (blocks). Positions are world metres of `col`.
  */
-function facesFromOcc(col: VoxelCollision, occ: Uint8Array, size: number, o: number[], cellVox: 1 | 4, comp: BlockComponents | undefined): ChunkMesh {
+function facesFromOcc(col: VoxelCollision, occ: Uint8Array, size: number, o: number[], cellVox: 1 | 4, comp: BlockComponents | undefined, wantRows = false): ChunkMesh {
     const E = size + 2;
     const stride = [1, E, E * E];
     let faces = 0;
@@ -270,6 +277,7 @@ function facesFromOcc(col: VoxelCollision, occ: Uint8Array, size: number, o: num
     const normals = new Int8Array(quads * 12);
     const indices = new Uint32Array(quads * 6);
     const component = comp ? new Uint32Array(quads * 4) : undefined;
+    const rows = wantRows ? new Int32Array(quads) : undefined;
     const flip = col.flipXY;
     const res = col.voxelResolution * cellVox; // cell size in metres
     const toBlock = cellVox === 1 ? 2 : 0; // cell index -> block index
@@ -300,13 +308,17 @@ function facesFromOcc(col: VoxelCollision, occ: Uint8Array, size: number, o: num
         const base = k * 4, ii = k * 6;
         indices[ii] = base; indices[ii + 1] = base + 1; indices[ii + 2] = base + 2;
         indices[ii + 3] = base; indices[ii + 4] = base + 2; indices[ii + 5] = base + 3;
+        // runs never run along y, so every cell of a run shares the first one's row
+        c[n] = a; c[q] = b; c[r] = r0;
+        if (rows) rows[k] = o[1] + c[1] - 1;
         if (component && comp) {
             // a run is one line of touching solid cells, so the block of its first cell names its component
-            c[n] = a; c[q] = b; c[r] = r0;
             const id = componentAt(comp, (o[0] + c[0] - 1) >> toBlock, (o[1] + c[1] - 1) >> toBlock, (o[2] + c[2] - 1) >> toBlock);
             if (id < 0) throw new Error('a face lies in a block the components do not list');
             component.fill(id, k * 4, k * 4 + 4);
         }
     }
-    return component ? { positions, normals, indices, faces, component } : { positions, normals, indices, faces };
+    const out: ChunkMesh = component ? { positions, normals, indices, faces, component } : { positions, normals, indices, faces };
+    if (rows) out.rows = rows;
+    return out;
 }

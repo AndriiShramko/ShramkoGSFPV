@@ -5,7 +5,11 @@
 // at or after that time. Each applied sample is logged together with the tick that actually
 // used it, so a replay reproduces the flight bit-for-bit no matter how frames were split.
 //
-// Two log formats (docs/architecture-v03.md C.9):
+// Log formats (docs/architecture-v03.md C.9):
+// - gsfpv-input-log/3 (v0.7, written now): /2 plus the wind of the place (the header's
+//   overrides.wind, wind.ts) and the collision ceiling (the header's scene.ceilingM, and ch[5] /
+//   ch[6] of world records). Readers take /2 and /3: a /2 log has neither, by construction, so it
+//   replays exactly as before; an older page refuses /3 by its format instead of replaying it wrong.
 // - gsfpv-input-log/2 (v0.3), `new Runner(sim, header)`. The run is a chain of lives: a life
 //   starts at the first spawn, at every respawn and at every change of a 'life' setting, and its
 //   LifeHeader carries the params, the scene and the start state, so each life replays on its own.
@@ -22,6 +26,7 @@ import { Sha256, sha256Hex } from './sha256';
 import { compileParams } from './params';
 import type { ParamOverrides, PresetJson, SimParams } from './params';
 import type { LifeHeader, RespawnOpts, RespawnReason, WorldEvent } from './contracts';
+import { windProblem } from './wind';
 import type { RespawnDirector } from './director';
 import type { FlightStats } from './stats';
 
@@ -118,6 +123,12 @@ export interface TrajectoryPoint {
 // ---------------------------------------------------------------- format /2 records (C.9)
 
 export const LOG_FORMAT_V2 = 'gsfpv-input-log/2';
+/** v0.7: the format writers write (wind, collision ceiling); same records and codes as /2 */
+export const LOG_FORMAT_V3 = 'gsfpv-input-log/3';
+/** The formats this version replays, oldest first. */
+export const LOG_FORMATS: readonly LifeHeader['format'][] = [LOG_FORMAT_V2, LOG_FORMAT_V3];
+/** World record ch[6] flag: ch[5] holds a collision ceiling (format /3). */
+export const WORLD_FLAG_CEILING = 1;
 /** bytes per record, the same 36 as format /1: Int32 code + 8 Float32 channels */
 export const REC_BYTES = 36;
 export const REC_INPUT = 0;
@@ -190,9 +201,34 @@ export function readRespawn(ch: ArrayLike<number>): RespawnRecord {
     return { at: [ch[0], ch[1], ch[2], ch[3]], opts, reason, rewind: (f & RESPAWN_FLAG_REWIND) !== 0 };
 }
 
-/** Decodes a world record: ch[0] = s, ch[1..3] = t, ch[4] = floater minBlocks. */
+/**
+ * Decodes a world record: ch[0] = s, ch[1..3] = t, ch[4] = floater minBlocks, ch[5] = collision
+ * ceiling (scan metres) when ch[6] has WORLD_FLAG_CEILING; a /2 record has 0 in both: no ceiling.
+ */
 export function readWorld(ch: ArrayLike<number>): WorldEvent {
-    return { s: ch[0], t: [ch[1], ch[2], ch[3]], floaterMinBlocks: ch[4] };
+    return { s: ch[0], t: [ch[1], ch[2], ch[3]], floaterMinBlocks: ch[4], ceilingM: ((ch[6] | 0) & WORLD_FLAG_CEILING) !== 0 ? ch[5] : null };
+}
+
+/** Encodes a world record (readWorld's layout) into `out`, which is cleared first. */
+export function writeWorld(out: Float32Array, ev: WorldEvent): void {
+    out.fill(0);
+    out[0] = ev.s; out[1] = ev.t[0]; out[2] = ev.t[1]; out[3] = ev.t[2]; out[4] = ev.floaterMinBlocks;
+    const c = ev.ceilingM ?? null;
+    if (c !== null) {
+        if (!Number.isFinite(c)) throw new RangeError(`collision ceiling must be finite, got ${c}`);
+        out[5] = c;
+        out[6] = WORLD_FLAG_CEILING;
+    }
+}
+
+/**
+ * The scene transform a sim flies under (Sim.setSceneFrame): a world record's, else the scene's
+ * at the life's start, else the identity. The runner and every replay place their sims with it.
+ */
+export function placeScene(sim: Sim, scene: LifeHeader['scene'], ev: WorldEvent | null): void {
+    if (ev) sim.setSceneFrame(ev.s, ev.t[1]);
+    else if (scene) sim.setSceneFrame(scene.transform[0], scene.transform[2]);
+    else sim.setSceneFrame(1, 0);
 }
 
 /** Calls f for every record of a format /2 stream (ch is reused); returns the record count. */
@@ -295,7 +331,7 @@ export function makeLifeHeader(o: LifeHeaderInput): LifeHeader {
     const overrides = JSON.parse(canonicalJson(o.overrides ?? {})) as ParamOverrides;
     const sha = presetSha256(o.preset);
     const h: LifeHeader = {
-        format: LOG_FORMAT_V2,
+        format: LOG_FORMAT_V3,
         simCore: o.simCore,
         preset: o.preset.id,
         presetSha256: sha,
@@ -313,7 +349,12 @@ export function makeLifeHeader(o: LifeHeaderInput): LifeHeader {
 /** Why a header cannot start or replay a life, or null. */
 export function lifeHeaderProblem(h: LifeHeader): string | null {
     const format = (h as { format?: unknown }).format;
-    if (format !== LOG_FORMAT_V2) return `log format ${String(format)} is not ${LOG_FORMAT_V2}: logs saved by v0.2 (format /1) cannot be replayed by this version`;
+    if (!LOG_FORMATS.includes(format as LifeHeader['format'])) return `log format ${String(format)} is not one of ${LOG_FORMATS.join(', ')}: logs saved by v0.2 (format /1) cannot be replayed by this version`;
+    // /2 had no wind and no ceiling: a /2 header with either was not written by a /2 writer
+    if (format === LOG_FORMAT_V2 && (h.overrides?.wind !== undefined || h.scene?.ceilingM !== undefined)) return `log format ${LOG_FORMAT_V2} cannot carry wind or a collision ceiling (they came with ${LOG_FORMAT_V3})`;
+    if (h.scene?.ceilingM !== undefined && !Number.isFinite(h.scene.ceilingM)) return `the collision ceiling ${String(h.scene.ceilingM)} is not a number`;
+    const wind = h.overrides?.wind === undefined ? null : windProblem(h.overrides.wind);
+    if (wind) return wind;
     let hash: string;
     try {
         hash = lifeConfigHash(h.presetSha256, h.overrides, h.simCore);
@@ -541,6 +582,7 @@ export class Runner {
         this.segCap = Number.isFinite(this.maxBytes) ? Math.max(16, Math.floor(this.maxBytes / 4 / REC_BYTES)) * REC_BYTES : Infinity;
         this.lastApplied.set(sim.ch);
         const h = cloneHeader(a);
+        placeScene(sim, h.scene, null);
         const opts = normalizeRespawnOpts(h.life.opts);
         const at = h.life.at;
         // the header is the life's start state by construction: a replay places its sim the same way
@@ -602,6 +644,8 @@ export class Runner {
         if (w) {
             out.transform = [w.s, w.t[0], w.t[1], w.t[2]];
             out.floaterMinBlocks = w.floaterMinBlocks;
+            if (w.ceilingM === null) delete out.ceilingM;
+            else out.ceilingM = w.ceilingM;
         }
         return out;
     }
@@ -630,15 +674,18 @@ export class Runner {
         this.nextLife(sim, h, readRespawn(this.rec));
     }
 
-    /** Logs a world record (E.7) at the tick boundary, then calls onWorld with the Float32 values. */
+    /**
+     * Logs a world record (E.7, G.3, the ceiling) at the tick boundary, moves the sim's scene frame,
+     * then calls onWorld with the Float32 values (the page installs the walls they describe).
+     */
     world(ev: WorldEvent): void {
         if (!this.v2) throw new Error('world records need a format /2 runner');
         const r = this.rec;
-        r.fill(0);
-        r[0] = ev.s; r[1] = ev.t[0]; r[2] = ev.t[1]; r[3] = ev.t[2]; r[4] = ev.floaterMinBlocks;
+        writeWorld(r, ev);
         this.push(recordCode(REC_WORLD, this.simRef.tick), r);
         const w = readWorld(r);
         this.worldNow = w;
+        placeScene(this.simRef, null, w);
         this.onWorld?.(w);
     }
 
@@ -753,6 +800,7 @@ export class Runner {
             this.hashBytes = stateBytes(next);
         }
         const nEv = next.events.length;
+        placeScene(next, header.scene, null);
         next.respawn(r.at[0], r.at[1], r.at[2], r.at[3], opts);
         const index = this.cur().header.life.index + 1;
         header.life = { index, startTick: tick, at: [r.at[0], r.at[1], r.at[2], r.at[3]], opts: { ...r.opts }, soc: next.s[S.soc], ch: Array.from(next.ch), reason: r.reason };
@@ -893,10 +941,14 @@ function startLife(sim: Sim, life: Life, deps: ReplayDeps): void {
         sim.s.set(snap.s);
         sim.tick = snap.tick;
         sim.setChannels(snap.ch);
-        if (snap.world) sim.world = deps.world(life.header.scene, snap.world);
+        // a snapshot saved before format /3 has no ceiling in its world record: none
+        const w = snap.world ? { ...snap.world, ceilingM: snap.world.ceilingM ?? null } : null;
+        if (w) sim.world = deps.world(life.header.scene, w);
+        placeScene(sim, life.header.scene, w);
         return;
     }
     const L = life.header.life;
+    placeScene(sim, life.header.scene, null);
     sim.tick = L.startTick;
     sim.setChannels(L.ch);
     const n = sim.events.length;
@@ -923,7 +975,11 @@ function applyDue(sim: Sim, cur: Cursor, scene: LifeHeader['scene'], deps: Repla
             sim.respawn(r.at[0], r.at[1], r.at[2], r.at[3], opts);
             hooks.onRespawn?.(r);
             emitFrom(sim, n, hooks);
-        } else if (kind === REC_WORLD) sim.world = deps.world(scene, readWorld(cur.ch));
+        } else if (kind === REC_WORLD) {
+            const ev = readWorld(cur.ch);
+            sim.world = deps.world(scene, ev);
+            placeScene(sim, scene, ev);
+        }
         cur.i++;
     }
 }
@@ -1034,6 +1090,8 @@ export function replayLives(
         }
         // the records at the life's last tick: the respawn that ended it, and any world change before it
         applyDue(sim, cur, next.header.scene, deps, hooks, carrySoc);
+        // the next life flies under its header's scene, as the live runner placed it (nextLife)
+        placeScene(sim, next.header.scene, null);
         o.onLife?.(next, i + 1);
     }
     return { hash: hash.digestHex(), sim };

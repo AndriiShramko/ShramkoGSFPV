@@ -9,6 +9,7 @@ export * from './director';
 export * from './stats';
 export * from './bfdiff';
 export * from './contracts';
+export * from './wind';
 
 /** Bumped whenever the model changes in a way that alters traces. Part of the log header. */
 export const SIM_CORE_VERSION = 'sim-core/0.2.0';

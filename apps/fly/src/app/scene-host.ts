@@ -26,6 +26,8 @@ import { h } from '../ui/dom';
 import { wallsWanted } from '../flightwalls';
 import { storedTransform } from './builtin/scale';
 import { storedDropFloaters } from './builtin/floaters';
+import { storedCeiling } from '../session/ceiling-source';
+import { windFor } from '../session/wind-source';
 import { t } from '../i18n';
 import { beacon, q } from './env';
 import { hook } from './test-hook';
@@ -177,6 +179,10 @@ export class SceneHost implements SceneSwitcher {
             transform: storedTransform(ctx.prefs, id),
             dropFloaters: storedDropFloaters(ctx.prefs, id),
             drawing: (webgpu) => drawingFor(ctx.prefs, ref, webgpu),
+            ceilingM: storedCeiling(ctx.prefs, id),
+            wind: windFor(ctx.prefs, id, meta),
+            // the gusts go on with the same seed in the next scene
+            windSeed: old.windSeed,
             onProgress: (p) => loading.update(p)
         };
         old.dispose();

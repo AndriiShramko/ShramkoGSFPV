@@ -2,15 +2,16 @@
 // Split from v0.2's session.ts (v0.3 W2-2): loading in loader.ts, replays in replay.ts, the
 // acceptance self-tests in selftest.ts; the flight model lives here.
 //
-// The flight model runs on the lives runner (log format /2, docs/architecture-v03.md C.9): a life
+// The flight model runs on the lives runner (log format /3, /2 still replays; docs/architecture-v03.md
+// C.9, docs/wip/v07-e.md section 3): a life
 // starts at the first spawn, at every respawn and at every change of a 'life' setting, and each
 // life's header carries its params, walls and start state, so it replays on its own. Respawns
 // are decided by the RespawnDirector inside the runner's step loop (C.6: after a crash, when stuck,
 // R and Y), so every respawn is a log record and lands on the same tick at any frame split.
-import { Sim, Runner, S, compileParams, SIM_CORE_VERSION, sha256Hex, attitude, FlightStats, RespawnDirector, StateHistory, DEFAULT_RESPAWN_POLICY, hoverStickOf, makeLifeHeader } from '@gsfpv/sim-core';
-import type { SimParams, ParamOverrides, SimEvent, Life, LifeHeader, RespawnOpts, RespawnPolicy, RespawnReason } from '@gsfpv/sim-core';
+import { Sim, Runner, S, compileParams, SIM_CORE_VERSION, sha256Hex, attitude, FlightStats, RespawnDirector, StateHistory, DEFAULT_RESPAWN_POLICY, hoverStickOf, makeLifeHeader, WIND_SEED_MAX } from '@gsfpv/sim-core';
+import type { SimParams, ParamOverrides, SimEvent, Life, LifeHeader, RespawnOpts, RespawnPolicy, RespawnReason, WindConfig } from '@gsfpv/sim-core';
 import { VoxelContactWorld, findSphereSpawn, openVoxelCollision } from '@gsfpv/collision';
-import { validMinBlocks } from '@gsfpv/collision';
+import { validCeiling, validMinBlocks } from '@gsfpv/collision';
 import type { FloaterFilter, VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
 import { resolveScene, headingFromCamera } from '@gsfpv/scenes';
 import type { ResolvedScene } from '@gsfpv/scenes';
@@ -26,8 +27,9 @@ import type { LoadProgress } from './loader';
 import { LivesPlayer, lifeProblem } from './replay';
 import type { WallsSource } from './replay';
 import { measureTwr, dropTest, tunnelSelfTest } from './selftest';
-import { IDENTITY, f32, filteredWalls, isIdentity, packed, pointMap, pushOut, sameTransform, scaledCollision } from './world';
+import { IDENTITY, f32, filteredWalls, isIdentity, packed, pointMap, pushOut, sameTransform, scaledCollision, sceneWalls } from './world';
 import type { SceneTransform } from './world';
+import type { WindSpec } from './wind-source';
 
 export type { LoadStage, LoadPart, LoadProgress } from './loader';
 
@@ -75,6 +77,15 @@ export interface SessionOptions {
      * budget this device gets (render-pc drawOnDevice); none = the renderer's default (sorted, 4 M).
      */
     drawing?: (webgpu: boolean) => DrawingChoice;
+    /** the collision ceiling (v0.7, prefs scene.ceiling): no walls at or above this height in the scan's own coordinates; null or none = off */
+    ceilingM?: number | null;
+    /**
+     * the wind (v0.7, app/builtin/wind.ts windFor): awaited with the walls, so the first life already
+     * flies in it (the live wind's request runs while the scan loads); null or none = still air
+     */
+    wind?: WindSpec | null | Promise<WindSpec | null>;
+    /** the gust noise's seed (tests); none = a random one per flight session */
+    windSeed?: number;
 }
 
 /** Who keeps the flight paused (FlightSession.pause). */
@@ -92,6 +103,15 @@ interface ReplayState {
     player: LivesPlayer;
     t0: number;
     startTick: number;
+}
+
+/** A gust seed for a new flight session (sim-core WindConfig.seed: an integer 0..2^31-1); it goes in every life header. */
+function newWindSeed(): number {
+    try {
+        return globalThis.crypto.getRandomValues(new Uint32Array(1))[0] & WIND_SEED_MAX;
+    } catch {
+        return Math.floor(Math.random() * WIND_SEED_MAX);
+    }
 }
 
 /** Overrides a log header can hold: no undefined, no non-finite numbers (JSON would turn them into null). */
@@ -128,12 +148,29 @@ export class FlightSession {
     floaterFilter: FloaterFilter | null = null;
     floaterSha256: string | null = null;
     /**
+     * The collision ceiling (v0.7): no walls at or above this height in the scan's own coordinates
+     * (scan metres, Float32 as a world record holds it); null = none. Change it with setCeiling.
+     */
+    ceilingM: number | null = null;
+    /** The wind the flight flies in (setWind; null: still air), the seed of its gusts, and the scan's ground height (scan metres). */
+    windSpec: WindSpec | null = null;
+    windSeed = 0;
+    windGroundM = 0;
+    /**
      * The pilot's walls switch. Off: the flight model gets no contact world (the craft flies
      * through everything, no crash) while the walls stay loaded for the voxel overlay and for
      * switching back on. Change it with setWallsOn.
      */
     wallsOn = true;
+    /** the flight model's params; set only by compileModel */
     params!: SimParams;
+    /**
+     * What `params` were compiled from (compileModel): the overrides every life header writes. A
+     * header therefore always describes the Sim it starts, whatever changed since (the wind's ground
+     * under new walls, crash.enabled or the wind waiting for applyLifeSettings): a replay rebuilds
+     * the Sim from the header alone, so a header made from the settings now could replay another flight.
+     */
+    private paramsFrom: ParamOverrides = {};
     /** the pilot's physics overrides (drone, settings); crash.enabled is crashOn, merged into each life's header */
     overrides: ParamOverrides = {};
     runner!: Runner;
@@ -230,7 +267,10 @@ export class FlightSession {
         this.overrides = jsonSafe(o.overrides ?? {});
         this.wallsOn = o.wallsOn ?? true;
         this.floaterMinBlocks = validMinBlocks(o.dropFloaters) ? o.dropFloaters : 0;
-        this.params = compileParams(PRESETS[this.presetId], this.lifeOverrides());
+        this.ceilingM = typeof o.ceilingM === 'number' && validCeiling(Math.fround(o.ceilingM)) ? Math.fround(o.ceilingM) : null;
+        this.windSeed = o.windSeed !== undefined && Number.isInteger(o.windSeed) && o.windSeed >= 0 && o.windSeed <= WIND_SEED_MAX ? o.windSeed : newWindSeed();
+        // the wind joins the model once its ground is known (after the walls, below)
+        this.compileModel();
         this.renderer = o.renderer ?? await SplatRenderer.create(canvas, { renderScale: o.renderScale ?? 1, hFovDeg: this.params.cameraFovDeg, latencyMarker: !!o.latencyMarker });
         if (o.renderer) this.renderer.setFov(this.params.cameraFovDeg);
         // this scene's drawing, decided now that the device is known, before its splats load
@@ -276,6 +316,11 @@ export class FlightSession {
             this.timings.collisionMs = w.ms;
         }
         this.spawn = this.findSpawn();
+        this.windGroundM = this.groundUnderSpawn();
+        // the wind (a live one was asked for while the scan loaded): the first life flies in it
+        this.windSpec = await Promise.resolve(o.wind ?? null).catch(() => null);
+        if (this.disposed) throw new Error('the scene switch was cancelled');
+        this.compileModel();
         this.buildSim();
         if (o.paused) this.pause(true, 'menu');
         this.lagFrames = o.lagFrames ?? 0;
@@ -333,17 +378,67 @@ export class FlightSession {
         return { collisionSha256: this.collisionSha256, world: this.baseWorld, collision: this.baseCollision };
     }
 
-    /** The pilot's overrides plus crash.enabled: what a life's params and header are made from. */
+    /**
+     * The pilot's overrides plus crash.enabled and the wind, from the settings now: what the next
+     * compileModel compiles. Life headers write the compiled ones (paramsFrom), never these directly.
+     */
     lifeOverrides(): ParamOverrides {
-        return this.crashOn ? { ...this.overrides } : { ...this.overrides, crashOn: false };
+        const o: ParamOverrides = this.crashOn ? { ...this.overrides } : { ...this.overrides, crashOn: false };
+        const wind = this.windConfig();
+        if (wind) o.wind = wind;
+        return o;
     }
 
-    /** A life header for the current params and walls. */
+    /**
+     * sim-core's wind for the flight model (ParamOverrides.wind): the wind spec with this session's
+     * gust seed and the scan's ground under the spawn; undefined in still air (no field in the header).
+     */
+    windConfig(): WindConfig | undefined {
+        const w = this.windSpec;
+        if (!w || (w.speed === 0 && w.gust === 0)) return undefined;
+        return { fromDeg: w.fromDeg, speed: w.speed, gust: w.gust, compassDeg: w.compassDeg, seed: this.windSeed, groundM: this.windGroundM };
+    }
+
+    /**
+     * The wind changed (wind.mode, the custom numbers, a live answer): true when the flight model's
+     * wind is another one. The caller applies it as a 'life' setting (applyLifeSettings: a new life
+     * where the craft is), as the settings screen's close does for the rest of the model.
+     */
+    setWind(spec: WindSpec | null): boolean {
+        const before = JSON.stringify(this.windConfig() ?? null);
+        this.windSpec = spec;
+        return JSON.stringify(this.windConfig() ?? null) !== before;
+    }
+
+    /**
+     * The ground the wind's gradient measures from, in the scan's own coordinates: the floor under the
+     * spawn (a ray down through the scan's own walls, filter and ceiling aside), else the spawn's own
+     * height (a scan without walls, or nothing below it).
+     */
+    private groundUnderSpawn(): number {
+        const tr = this.transform;
+        const sx = (this.spawn[0] - tr.t[0]) / tr.s, sy = (this.spawn[1] - tr.t[1]) / tr.s, sz = (this.spawn[2] - tr.t[2]) / tr.s;
+        const hit = this.baseCollision?.queryRay(sx, sy, sz, 0, -1, 0, 500) ?? null;
+        return hit ? hit.y : sy;
+    }
+
+    /**
+     * Compile the flight model from the settings now (lifeOverrides: the pilot's overrides,
+     * crash.enabled, the wind with its seed and ground) and keep what it was compiled from for the
+     * life headers (paramsFrom). The only place `params` is set.
+     */
+    private compileModel(): void {
+        const from = this.lifeOverrides();
+        this.params = compileParams(PRESETS[this.presetId], from);
+        this.paramsFrom = from;
+    }
+
+    /** A life header for the current params (exactly what they were compiled from) and walls. */
     private header(at: [number, number, number, number], opts: RespawnOpts, reason: RespawnReason | 'start'): LifeHeader {
         return makeLifeHeader({
             simCore: SIM_CORE_VERSION,
             preset: PRESETS[this.presetId],
-            overrides: this.lifeOverrides(),
+            overrides: this.paramsFrom,
             collisionSha256: this.flightWorld ? this.collisionSha256 : null,
             scene: this.headerScene(),
             at,
@@ -470,15 +565,20 @@ export class FlightSession {
     private setModel(presetId: string, overrides: ParamOverrides): void {
         this.presetId = PRESETS[presetId] ? presetId : DEFAULT_PRESET;
         this.overrides = jsonSafe(overrides);
-        this.params = compileParams(PRESETS[this.presetId], this.lifeOverrides());
+        this.compileModel();
         this.renderer.setFov(this.cameraFovDeg);
     }
 
-    /** Change drone / physics settings: a new flight model at the same scene, at the spawn, a fresh log. */
+    /**
+     * Change drone / physics settings: a new flight model at the same scene, at the spawn, a fresh log.
+     * A restart is a moment the craft is not flying, so queued walls go in here: after the new drone
+     * (the spawn check measures its size), and the model is compiled again on them, because the wind
+     * measures from the new walls' floor (setWalls).
+     */
     rebuildSim(presetId: string, overrides: ParamOverrides): void {
         this.setModel(presetId, overrides);
         this.replay = null;
-        this.takePendingWalls(); // a restart is a moment the craft is not flying: queued walls go in
+        if (this.takePendingWalls()) this.compileModel();
         this.buildSim();
     }
 
@@ -689,12 +789,14 @@ export class FlightSession {
         return true;
     }
 
-    private takePendingWalls(): void {
+    /** Swap the queued walls in (setWalls); true when there were some. The caller recompiles the model. */
+    private takePendingWalls(): boolean {
         const w = this.pendingWalls;
-        if (!w) return;
+        if (!w) return false;
         this.pendingWalls = null;
         this.setWalls(w.json, w.bin, w.sha);
         w.onSwap?.(this.collisionSha256!);
+        return true;
     }
 
     private setWalls(json: Uint8Array, bin: Uint8Array, sha: string | null): void {
@@ -712,6 +814,8 @@ export class FlightSession {
         this.scaleWalls();
         this.collisionSha256 = digest;
         if (!this.spawnIsFree()) this.spawn = this.findSpawn();
+        // new walls, a new floor under the spawn: the next flight model's wind measures from it
+        this.windGroundM = this.groundUnderSpawn();
     }
 
     private unfiltered: { base: VoxelCollision; tr: SceneTransform; col: VoxelCollision } | null = null;
@@ -726,8 +830,9 @@ export class FlightSession {
         if (!base) return null;
         const u = this.unfiltered;
         if (u && u.base === base && u.tr === this.transform) return u.col;
-        // the same object while base and size stay, also across a filter change (the grid is not rebuilt)
-        const col = this.floaterFilter && this.floaterFilter.collision !== base ? scaledCollision(base, this.transform) : this.collision!;
+        // the same object while base and size stay, also across a filter or ceiling change (the grid is
+        // not rebuilt); with a ceiling the flown walls answer "empty" above it, so the scan's own are drawn
+        const col = (this.floaterFilter && this.floaterFilter.collision !== base) || this.ceilingM !== null ? scaledCollision(base, this.transform) : this.collision!;
         this.unfiltered = { base, tr: this.transform, col };
         return col;
     }
@@ -741,8 +846,8 @@ export class FlightSession {
     }
 
     /**
-     * The flown walls from the scan's own: the floater filter first, then `transform` (the same
-     * functions a replay uses, session/world.ts).
+     * The flown walls from the scan's own: the floater filter first, then the collision ceiling, then
+     * `transform` (the same functions a replay uses, session/world.ts).
      */
     private scaleWalls(): void {
         const base = this.baseCollision;
@@ -750,15 +855,52 @@ export class FlightSession {
         const f = filteredWalls(base, this.floaterMinBlocks);
         this.floaterFilter = f.filter;
         this.floaterSha256 = f.sha256;
-        this.collision = scaledCollision(f.collision, this.transform);
-        this.world = isIdentity(this.transform) && f.collision === base ? this.baseWorld : new VoxelContactWorld(this.collision);
+        const walls = sceneWalls(base, this.floaterMinBlocks, this.ceilingM);
+        this.collision = scaledCollision(walls, this.transform);
+        this.world = isIdentity(this.transform) && walls === base ? this.baseWorld : new VoxelContactWorld(this.collision);
     }
 
-    /** The scene as a life header holds it: the transform and the floater filter with its walls' hash (G.3). */
+    /** The scene as a life header holds it: the transform, the floater filter with its walls' hash (G.3), the ceiling (v0.7). */
     private headerScene(): NonNullable<LifeHeader['scene']> {
         const sc: NonNullable<LifeHeader['scene']> = { id: this.scene.id, version: this.scene.version, transform: packed(this.transform), floaterMinBlocks: this.floaterMinBlocks };
         if (this.floaterMinBlocks > 0 && this.floaterSha256) sc.floaterSha256 = this.floaterSha256;
+        if (this.ceilingM !== null) sc.ceilingM = this.ceilingM;
         return sc;
+    }
+
+    /** The world record of the scene now (E.7, G.3, v0.7): transform, floater filter, ceiling. */
+    private worldNow(): { s: number; t: [number, number, number]; floaterMinBlocks: number; ceilingM: number | null } {
+        const tr = this.transform;
+        return { s: tr.s, t: [tr.t[0], tr.t[1], tr.t[2]], floaterMinBlocks: this.floaterMinBlocks, ceilingM: this.ceilingM };
+    }
+
+    /**
+     * The collision ceiling (v0.7, the owner's item 10): no walls at or above `c` (the scan's own
+     * coordinates, metres up; null = none). The walls change, so the log gets a world record with it
+     * (C.9 /3: ch[5], ch[6]); like a rescale the craft flies on (its state, the recorded path and the
+     * respawn rules are untouched), unless walls coming back hold it: then the nearest free spot with a
+     * 'world' respawn, and a spawn inside one moves out the same way. Returns false when nothing changed.
+     */
+    setCeiling(c: number | null): boolean {
+        const next = c === null ? null : Math.fround(c);
+        if (next !== null && !validCeiling(next)) throw new RangeError(`collision ceiling must be a height within +-10000 m, got ${c}`);
+        if (next === this.ceilingM) return false;
+        this.ceilingM = next;
+        this.scaleWalls();
+        if (!this.runner) return true;
+        this.replay = null;
+        this.runner.world(this.worldNow());
+        const r = this.params.boundRadius + 0.03;
+        const spawnOut = this.spawnIsFree() ? null : pushOut(this.collision, this.spawn, r);
+        if (spawnOut) {
+            this.spawn = spawnOut;
+            this.stats.moveSpawn([spawnOut[0], spawnOut[1], spawnOut[2]]);
+        }
+        const here = this.here();
+        if (!this.flying || this.spawnIsFree(here)) return true;
+        const at = pushOut(this.collision, here, r) ?? this.spawn;
+        this.runner.respawn(at[0], at[1], at[2], at[3], this.respawnOpts(), 'world');
+        return true;
     }
 
     /**
@@ -776,8 +918,7 @@ export class FlightSession {
         this.scaleWalls();
         if (!this.runner) return true;
         this.replay = null;
-        const tr = this.transform;
-        this.runner.world({ s: tr.s, t: [tr.t[0], tr.t[1], tr.t[2]], floaterMinBlocks: n });
+        this.runner.world(this.worldNow());
         // pieces coming back may cover the spawn: the nearest free spot, as after a scale-down
         const spawnOut = this.spawnIsFree() ? null : pushOut(this.collision, this.spawn, this.params.boundRadius + 0.03);
         if (spawnOut) {
@@ -820,7 +961,7 @@ export class FlightSession {
         this.replay = null;
         this.history.mapPositions(map);
         this.stats.moveSpawn(sp);
-        this.runner.world({ s: to.s, t: [to.t[0], to.t[1], to.t[2]], floaterMinBlocks: this.floaterMinBlocks });
+        this.runner.world(this.worldNow());
         const r = this.params.boundRadius + 0.03;
         const spawnOut = this.spawnIsFree() ? null : pushOut(this.collision, this.spawn, r);
         if (spawnOut) {
@@ -882,9 +1023,14 @@ export class FlightSession {
         return tunnelSelfTest(this, passes, speed, seed);
     }
 
+    /** The flight model on screen: the replay's while one plays, else the live one (the HUD reads it). */
+    get shownSim(): Sim {
+        return this.replay ? this.replay.player.sim : this.sim;
+    }
+
     /** HUD numbers */
     hud(): { armed: boolean; crashed: boolean; throttlePct: number; speed: number; altitude: number; timeS: number; crashes: number; volts: number; roll: number; pitch: number } {
-        const sim = this.replay ? this.replay.player.sim : this.sim;
+        const sim = this.shownSim;
         const s = sim.s;
         const a = attitude(s);
         return {

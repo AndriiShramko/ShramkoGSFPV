@@ -2,7 +2,7 @@
 // the chunk's positions, normals and grid UVs; floaters take the floater colour in every style;
 // the height style follows y; a recolour touches only the colour bytes. Controls included.
 import { describe, expect, it } from 'vitest';
-import { packChunk, writeColors, voxelColor, heightColor, VOXEL_STYLES } from '../src/voxel-colors';
+import { packChunk, writeColors, voxelColor, heightColor, VOXEL_STYLES, QUAD_ABOVE_CEILING, QUAD_FLOATER } from '../src/voxel-colors';
 import type { VoxelLayout } from '../src/voxel-colors';
 
 // the overlay's VertexFormat order: position, normal, uv0, colour -> 36 bytes
@@ -66,6 +66,22 @@ describe('packChunk', () => {
         }
         expect(otherChanged).toBe(0);
         expect(colourChanged).toBeGreaterThan(0);
+    });
+
+    it('quads above the collision ceiling (class 2) take their own colour in every style, apart from walls and floaters; control: class 0 keeps the wall colour', () => {
+        const c = chunk(30);
+        c.floater.fill(0);
+        for (let k = 0; k < 30; k += 2) c.floater[k] = QUAD_ABOVE_CEILING;
+        c.floater[1] = QUAD_FLOATER;
+        for (const style of VOXEL_STYLES) {
+            const u8 = new Uint8Array(packChunk(c, L, style, 0, 10).vertices);
+            const rgb = (q: number) => [u8[q * 4 * 36 + 32], u8[q * 4 * 36 + 33], u8[q * 4 * 36 + 34]];
+            const above = rgb(0), floater = rgb(1), wall = rgb(3);
+            expect(above).toEqual(voxelColor(style, 0, QUAD_ABOVE_CEILING, 0, 10).map((x) => Math.round(x * 255)));
+            expect(above).not.toEqual(floater);
+            expect(above).not.toEqual(wall);
+            expect(wall).toEqual(voxelColor(style, c.positions[3 * 4 * 3 + 1], false, 0, 10).map((x) => Math.round(x * 255)));
+        }
     });
 
     it('large chunks keep 32-bit indices; control: an unaligned layout is refused', () => {

@@ -8,6 +8,9 @@
 // Channels ch[0..7] in [-1, 1] after calibration: 0 roll (right +), 1 pitch (stick forward +),
 // 2 throttle (-1 = low, +1 = full), 3 yaw (right +), 4 arm switch (> 0.5 on), 5 flight mode
 // (modeFromChannel: -1 acro, 0 horizon, +1 angle), 6..7 spare.
+//
+// Air: with p.wind (wind.ts) the drag terms act on the airspeed, velocity minus the wind at the
+// craft's height above the scan's ground; without it the airspeed is the velocity (still air).
 
 import { dcos, dsin, datan2, RAD2DEG, DEG2RAD } from './dmath';
 import type { SimParams } from './params';
@@ -16,6 +19,8 @@ import { setpointRate, throttleCurve } from './rates';
 import { modeFromChannel } from './contracts';
 import type { LevelParams, RespawnOpts } from './contracts';
 import { PlatformContact } from './platform';
+import { compileWind } from './wind';
+import type { WindField } from './wind';
 
 export const DT = 0.001;
 export const DT_US = 1000;
@@ -193,6 +198,16 @@ export class Sim {
     private kAff: number;
     private kHz: number;
     private sqrtTwr: number;
+    /** the wind of the place (wind.ts), compiled from p.wind; null: still air, exactly the model without wind */
+    private readonly air: WindField | null;
+    /** the scene transform's scale and y offset (setSceneFrame): where the scan's heights are in the flown world */
+    private sceneS = 1;
+    private sceneTy = 0;
+    /**
+     * The wind the last step flew in, world frame, m/s (the HUD's wind dial); zeros in still air. Not
+     * part of the hashed state: the noise is a function of the tick, so nothing carries over a step.
+     */
+    readonly windNow = new Float64Array(3);
 
     constructor(p: SimParams, world: ContactWorld | null) {
         this.p = p;
@@ -217,6 +232,7 @@ export class Sim {
         // auto-throttle hover from the params alone, so a replay needs nothing from the page (D-g);
         // v0.2 defaulted to 0.4 and relied on the page setting hoverSolve().motor
         this.hoverThr = hoverThrOf(p);
+        this.air = compileWind(p.wind);
         this.s[S.soc] = 1; // a new model starts with a fresh pack; reset keeps the battery
         this.reset(0, 0, 0, 0);
         this.ch[2] = -1;
@@ -257,6 +273,27 @@ export class Sim {
         } else {
             s[S.hold] = 1; // held in place until the first arm
         }
+    }
+
+    /**
+     * The scene transform the craft flies under (E.7, T(w) = s*w + t), as far as the model needs it:
+     * the scan's heights in the flown world (the wind's ground, WindConfig.groundM). The runner and the
+     * replays set it from the life header and from every world record, so a rescale moves the ground
+     * without a new life. Not hashed state; identity until set.
+     */
+    setSceneFrame(s: number, ty: number): void {
+        this.sceneS = s;
+        this.sceneTy = ty;
+    }
+
+    /** The wind's ground in the flown world, m (the scan's ground through the scene transform); null in still air. */
+    get windGroundY(): number | null {
+        return this.air ? this.sceneS * this.air.groundM + this.sceneTy : null;
+    }
+
+    /** The wind field this model flies in, null in still air. */
+    get wind(): WindField | null {
+        return this.air;
     }
 
     get armed(): boolean { return this.s[S.armed] > 0; }
@@ -434,11 +471,22 @@ export class Sim {
 
         // ---- forces (world) ----
         const vx = s[S.vx], vy = s[S.vy], vz = s[S.vz];
-        // velocity in body frame: R^T v
-        const bvx = r00 * vx + r10 * vy + r20 * vz;
-        const bvy = r01 * vx + r11 * vy + r21 * vz;
-        const bvz = r02 * vx + r12 * vy + r22 * vz;
-        const speed = Math.sqrt(vx * vx + vy * vy + vz * vz);
+        // the air moves (wind.ts): every drag term below works on the airspeed, velocity minus wind.
+        // In still air the airspeed is the velocity itself, so the model is the one without wind bit for bit.
+        let airX = vx, airY = vy, airZ = vz;
+        const air = this.air;
+        if (air) {
+            const w = this.windNow;
+            air.at(this.tick, s[S.py] - (this.sceneS * air.groundM + this.sceneTy), w);
+            airX = vx - w[0];
+            airY = vy - w[1];
+            airZ = vz - w[2];
+        }
+        // airspeed in body frame: R^T (v - wind)
+        const bvx = r00 * airX + r10 * airY + r20 * airZ;
+        const bvy = r01 * airX + r11 * airY + r21 * airZ;
+        const bvz = r02 * airX + r12 * airY + r22 * airZ;
+        const speed = Math.sqrt(airX * airX + airY * airY + airZ * airZ);
         const kd = -0.5 * p.rho * speed;
         // rotor and duct momentum drag (H.2 item 1): the rotors ingest the in-plane airflow and send
         // it down the duct axis, so the force opposes the in-rotor-plane velocity and scales with the

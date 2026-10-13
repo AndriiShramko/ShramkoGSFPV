@@ -1,0 +1,14 @@
+/* The HUD's wind dial (ui/wind-dial.ts): under the OSD's top-right line and the top buttons, inside
+   .hud, so H hides it with the rest of the text. Colours reuse fly.css; the arrow is the accent. */
+.wind-dial { position: absolute; right: 16px; top: calc(max(14px, env(safe-area-inset-top)) + var(--banner-h, 0px) + 80px);
+    display: flex; flex-direction: column; align-items: center; gap: 2px; pointer-events: none;
+    font: 600 13px/1.2 ui-monospace, "Cascadia Mono", Consolas, monospace; color: #fff; text-shadow: 0 1px 2px #000, 0 0 4px #000; }
+.wind-dial[hidden] { display: none; }
+.wind-dial svg { overflow: visible; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .8)); }
+.wind-dial .wd-ring { fill: rgba(12, 14, 18, .45); stroke: rgba(255, 255, 255, .55); stroke-width: 1.5; }
+.wind-dial .wd-nose { stroke: #fff; stroke-width: 2.5; stroke-linecap: round; }
+.wind-dial .wd-shaft, .wind-dial .wd-head { fill: none; stroke: var(--accent, #4ade80); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.wind-dial .wd-n { fill: #fca5a5; font: 700 11px/1 ui-monospace, Consolas, monospace; }
+.wind-dial .wd-speed:empty { display: none; }
+/* touch: the pads sit low, the top-right stays free; keep the dial a little smaller */
+body.touch-on .wind-dial svg { width: 52px; height: 52px; }

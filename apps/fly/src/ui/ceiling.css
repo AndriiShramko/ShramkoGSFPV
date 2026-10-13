@@ -1,0 +1,7 @@
+/* "Ignore collisions above" (ui/ceiling.ts): the floaters panel's layout (fly.css .floaters-panel),
+   its own swatch for the voxels above the plane: the violet of render-pc voxel-colors.ts ABOVE.
+   A legend key (.ce-key) keeps its swatch and its words on one line; the keys wrap as wholes. */
+.fl-swatch.ceiling-above { background: #a899ff; }
+.ceiling-panel .fl-legend { flex-wrap: wrap; gap: 4px 14px; }
+.ceiling-panel .ce-key { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.ceiling-panel .ce-key .fl-swatch { margin-left: 0; }

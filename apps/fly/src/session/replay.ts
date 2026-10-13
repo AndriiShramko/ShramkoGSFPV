@@ -8,7 +8,7 @@
 import { LifePlayer, SIM_CORE_VERSION, lifeHeaderProblem, presetSha256, sha256Hex, trajPoint } from '@gsfpv/sim-core';
 import type { ContactWorld, Life, LifeHeader, PresetJson, ReplayDeps, Sim, SimEvent, TrajectoryPoint } from '@gsfpv/sim-core';
 import { PRESETS } from '../presets';
-import { validMinBlocks } from '@gsfpv/collision';
+import { validCeiling, validMinBlocks } from '@gsfpv/collision';
 import { IDENTITY, filteredWalls, isIdentity, worldUnder } from './world';
 import type { BaseWalls } from './world';
 
@@ -37,7 +37,16 @@ export function lifeProblem(h: LifeHeader, walls: WallsSource): string | null {
     if (!h.presetJson && !presetBySha(h.presetSha256)) return `preset ${h.preset} (${h.presetSha256.slice(0, 12)}) is not in this build`;
     if (h.collisionSha256 !== null && (h.collisionSha256 !== walls.collisionSha256 || !walls.world)) return 'flown on other walls';
     if (h.collisionSha256 !== null && h.scene && !isIdentity({ s: h.scene.transform[0], t: h.scene.transform.slice(1) }) && !walls.collision) return 'flown on rescaled walls this page cannot rebuild';
-    return floaterProblem(h, walls);
+    return floaterProblem(h, walls) ?? ceilingProblem(h, walls);
+}
+
+/** The collision ceiling (v0.7): a height the walls take, and walls this page can put it on. */
+function ceilingProblem(h: LifeHeader, walls: WallsSource): string | null {
+    const c = h.scene?.ceilingM;
+    if (c === undefined) return null;
+    if (!validCeiling(c)) return `collision ceiling ${String(c)} is not a height within the catalogue's range`;
+    if (h.collisionSha256 !== null && !walls.collision) return 'flown with a collision ceiling, on walls this page cannot rebuild';
+    return null;
 }
 
 /**
@@ -64,12 +73,14 @@ function floaterProblem(h: LifeHeader, walls: WallsSource): string | null {
 export function depsFor(h: LifeHeader, walls: WallsSource): ReplayDeps {
     return {
         preset: (sha) => (h.presetJson && sha === h.presetSha256 ? h.presetJson : presetBySha(sha)),
-        // the header scene's transform and floater filter, or a world record's (E.7, G.3), over the scan's own walls
+        // the header scene's transform, floater filter and ceiling, or a world record's (E.7, G.3, v0.7), over the scan's own walls
         world: (scene, ev) => {
             if (h.collisionSha256 === null) return null;
             const tr = ev ?? (scene ? { s: scene.transform[0], t: scene.transform.slice(1) } : IDENTITY);
             const n = ev ? ev.floaterMinBlocks : scene?.floaterMinBlocks ?? 0;
-            return worldUnder(walls, tr, validMinBlocks(n) ? n : 0);
+            // a snapshot's world record saved before log format /3 has no ceiling field: none
+            const c = ev ? ev.ceilingM ?? null : scene?.ceilingM ?? null;
+            return worldUnder(walls, tr, validMinBlocks(n) ? n : 0, c !== null && validCeiling(c) ? c : null);
         }
     };
 }

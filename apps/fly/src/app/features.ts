@@ -29,6 +29,9 @@ import { videoExport } from './builtin/video-export';
 import { feedback } from './builtin/feedback';
 import { share } from './builtin/share';
 import { drawing } from './builtin/drawing';
+import { wind } from './builtin/wind';
+import { ceiling } from './builtin/ceiling';
+import { sceneDefault } from './builtin/scene-default';
 
 export const FEATURES: readonly Feature[] = [
     scene,
@@ -55,5 +58,8 @@ export const FEATURES: readonly Feature[] = [
     videoExport,
     feedback,
     share,
-    drawing
+    drawing,
+    wind,
+    ceiling,
+    sceneDefault
 ];
