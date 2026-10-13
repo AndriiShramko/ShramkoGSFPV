@@ -1,0 +1,694 @@
+{
+ "v": 1,
+ "items": [
+  {
+   "id": "F-edgetx-radio-over-usb-webhid-in-chrome",
+   "kind": "feature",
+   "status": "done",
+   "group": "radio",
+   "order": 1,
+   "title": {
+    "en": "EdgeTX radio over USB (WebHID) in Chrome or Edge",
+    "es": "Emisora EdgeTX por USB (WebHID) en Chrome o Edge",
+    "pl": "Aparatura EdgeTX przez USB (WebHID) w Chrome lub Edge",
+    "ru": "Аппаратура EdgeTX по USB (WebHID) в Chrome или Edge"
+   }
+  },
+  {
+   "id": "F-calibration-with-a-drawn-radio-that",
+   "kind": "feature",
+   "status": "done",
+   "group": "radio",
+   "order": 2,
+   "title": {
+    "en": "Calibration with a drawn radio that shows which stick to move; each step waits until you really move it",
+    "es": "Calibración con una emisora dibujada que muestra qué stick mover; cada paso espera a que de verdad lo muevas",
+    "pl": "Kalibracja z narysowaną aparaturą, która pokazuje, którym drążkiem ruszyć; każdy krok czeka, aż naprawdę nim ruszysz",
+    "ru": "Калибровка с нарисованной аппаратурой, которая показывает, каким стиком двигать; каждый шаг ждёт, пока вы действительно сдвинете стик"
+   }
+  },
+  {
+   "id": "F-reverse-any-channel-after-calibration",
+   "kind": "feature",
+   "status": "done",
+   "group": "radio",
+   "order": 3,
+   "title": {
+    "en": "Reverse any channel after calibration",
+    "es": "Invierte cualquier canal después de calibrar",
+    "pl": "Odwrócenie dowolnego kanału po kalibracji",
+    "ru": "Реверс любого канала после калибровки"
+   }
+  },
+  {
+   "id": "F-recalibrate-button-in-controls",
+   "kind": "feature",
+   "status": "done",
+   "group": "radio",
+   "order": 4,
+   "title": {
+    "en": "Recalibrate button in Controls",
+    "es": "Botón «Recalibrar» en «Controles»",
+    "pl": "Przycisk „Kalibruj ponownie” w menu „Sterowanie”",
+    "ru": "Кнопка «Перекалибровать» в меню «Управление»"
+   }
+  },
+  {
+   "id": "F-a-known-radio-reconnects-by-itself",
+   "kind": "feature",
+   "status": "done",
+   "group": "radio",
+   "order": 5,
+   "title": {
+    "en": "A known radio reconnects by itself, and stays connected when you change scenes",
+    "es": "Una emisora conocida se reconecta sola y sigue conectada al cambiar de escena",
+    "pl": "Znana aparatura łączy się sama i zostaje połączona przy zmianie sceny",
+    "ru": "Знакомая аппаратура подключается сама и остаётся подключённой при смене сцены"
+   }
+  },
+  {
+   "id": "F-the-flight-mode-switch-on-your-radio",
+   "kind": "feature",
+   "status": "done",
+   "group": "radio",
+   "order": 6,
+   "title": {
+    "en": "The flight-mode switch on your radio is found on the check screen, with no click",
+    "es": "El interruptor de modo de vuelo de tu emisora se detecta en la pantalla de comprobación, sin hacer clic",
+    "pl": "Przełącznik trybu lotu na aparaturze jest wykrywany na ekranie sprawdzania, bez klikania",
+    "ru": "Тумблер режима полёта на аппаратуре находится сам на экране проверки, без кликов"
+   }
+  },
+  {
+   "id": "F-gamepad-through-the-browser-s-gamepad",
+   "kind": "feature",
+   "status": "done",
+   "group": "controls",
+   "order": 7,
+   "title": {
+    "en": "Gamepad through the browser's Gamepad API",
+    "es": "Mando (gamepad) a través de la Gamepad API del navegador",
+    "pl": "Pad (gamepad) przez Gamepad API przeglądarki",
+    "ru": "Геймпад через Gamepad API браузера"
+   }
+  },
+  {
+   "id": "F-touch-sticks-and-an-arm-button",
+   "kind": "feature",
+   "status": "done",
+   "group": "controls",
+   "order": 8,
+   "title": {
+    "en": "Touch sticks and an ARM button on a touch screen",
+    "es": "Sticks táctiles y botón ARMAR en una pantalla táctil",
+    "pl": "Drążki dotykowe i przycisk UZBRÓJ na ekranie dotykowym",
+    "ru": "Сенсорные стики и кнопка АРМ на сенсорном экране"
+   }
+  },
+  {
+   "id": "F-keyboard-with-every-flying-key-shown",
+   "kind": "feature",
+   "status": "done",
+   "group": "controls",
+   "order": 9,
+   "title": {
+    "en": "Keyboard, with every flying key shown on screen",
+    "es": "Teclado, con cada tecla de vuelo visible en pantalla",
+    "pl": "Klawiatura — każdy klawisz lotu widać na ekranie",
+    "ru": "Клавиатура — все клавиши полёта видны на экране"
+   }
+  },
+  {
+   "id": "F-flight-modes-angle-self-levelling",
+   "kind": "feature",
+   "status": "done",
+   "group": "controls",
+   "order": 10,
+   "title": {
+    "en": "Flight modes: Angle (self-levelling, the default for everyone), Horizon and Acro; M, the mode chip on screen or your radio's switch",
+    "es": "Modos de vuelo: Angle (autonivelado, por defecto para todos), Horizon y Acro; con M, el indicador de modo en pantalla o el interruptor de tu emisora",
+    "pl": "Tryby lotu: Angle (samopoziomowanie, domyślnie dla wszystkich), Horizon i Acro; klawisz M, przycisk trybu na ekranie albo przełącznik na aparaturze",
+    "ru": "Режимы полёта: Angle (автовыравнивание, по умолчанию у всех), Horizon и Acro; клавиша M, плашка режима на экране или тумблер на аппаратуре"
+   }
+  },
+  {
+   "id": "F-close-controls-with-x-or-esc-the-pause",
+   "kind": "feature",
+   "status": "done",
+   "group": "controls",
+   "order": 11,
+   "title": {
+    "en": "Close Controls with × or Esc; the pause menu shows its keys",
+    "es": "Cierra «Controles» con × o Esc; el menú de pausa muestra sus teclas",
+    "pl": "Zamknięcie „Sterowania” przez × lub Esc; menu pauzy pokazuje swoje klawisze",
+    "ru": "«Управление» закрывается крестиком или Esc; в меню паузы видны клавиши"
+   }
+  },
+  {
+   "id": "F-six-betafpv-class-presets-pavo20-pro-3s",
+   "kind": "feature",
+   "status": "done",
+   "group": "drone",
+   "order": 12,
+   "title": {
+    "en": "Six BetaFPV-class presets: Pavo20 Pro 3S, Pavo20 Pro II 3S and 4S, Pavo Pico 2S, Meteor65 Pro 1S, Air65 1S",
+    "es": "Seis presets de clase BetaFPV: Pavo20 Pro 3S, Pavo20 Pro II 3S y 4S, Pavo Pico 2S, Meteor65 Pro 1S, Air65 1S",
+    "pl": "Sześć presetów klasy BetaFPV: Pavo20 Pro 3S, Pavo20 Pro II 3S i 4S, Pavo Pico 2S, Meteor65 Pro 1S, Air65 1S",
+    "ru": "Шесть пресетов класса BetaFPV: Pavo20 Pro 3S, Pavo20 Pro II 3S и 4S, Pavo Pico 2S, Meteor65 Pro 1S, Air65 1S"
+   }
+  },
+  {
+   "id": "F-betaflight-actual-kiss-and-raceflight",
+   "kind": "feature",
+   "status": "done",
+   "group": "drone",
+   "order": 13,
+   "title": {
+    "en": "Betaflight, Actual, KISS and Raceflight rate curves (set through the diff import), checked against Betaflight 4.5.1",
+    "es": "Curvas de rates Betaflight, Actual, KISS y Raceflight (se cargan con la importación del diff), comprobadas con Betaflight 4.5.1",
+    "pl": "Krzywe rates Betaflight, Actual, KISS i Raceflight (ustawiane przez import diffu), sprawdzone z Betaflight 4.5.1",
+    "ru": "Кривые рейтов Betaflight, Actual, KISS и Raceflight (задаются импортом diff), сверенные с Betaflight 4.5.1"
+   }
+  },
+  {
+   "id": "F-import-rates-pid-and-throttle-curve",
+   "kind": "feature",
+   "status": "done",
+   "group": "drone",
+   "order": 14,
+   "title": {
+    "en": "Import rates, PID and throttle curve from a Betaflight CLI diff",
+    "es": "Importa rates, PID y curva de gas desde un diff de la CLI de Betaflight",
+    "pl": "Import rates, PID i krzywej gazu z diffu z CLI Betaflight",
+    "ru": "Импорт рейтов, PID и кривой газа из diff в CLI Betaflight"
+   }
+  },
+  {
+   "id": "F-pid-for-each-axis-p-i-d-and-f",
+   "kind": "feature",
+   "status": "done",
+   "group": "drone",
+   "order": 15,
+   "title": {
+    "en": "PID for each axis: P, I, D and F",
+    "es": "PID por eje: P, I, D y F",
+    "pl": "PID dla każdej osi: P, I, D i F",
+    "ru": "PID по каждой оси: P, I, D и F"
+   }
+  },
+  {
+   "id": "F-motor-spin-up-time-8-30-ms-and-air-drag",
+   "kind": "feature",
+   "status": "done",
+   "group": "drone",
+   "order": 16,
+   "title": {
+    "en": "Motor spin-up time 8–30 ms and air drag 0.5–2×",
+    "es": "Arranque de motores de 8 a 30 ms y resistencia del aire de 0,5 a 2×",
+    "pl": "Czas rozkręcania silników 8–30 ms i opór powietrza 0,5–2×",
+    "ru": "Время раскрутки моторов 8–30 мс и сопротивление воздуха 0,5–2×"
+   }
+  },
+  {
+   "id": "F-gravity-earth-and-moon-measured-mars",
+   "kind": "feature",
+   "status": "done",
+   "group": "crash",
+   "order": 17,
+   "title": {
+    "en": "Gravity: Earth and Moon (measured), Mars and zero-g (not tested yet)",
+    "es": "Gravedad: Tierra y Luna (medidas), Marte y gravedad cero (sin probar aún)",
+    "pl": "Grawitacja: Ziemia i Księżyc (zmierzone), Mars i zero g (jeszcze nie testowane)",
+    "ru": "Гравитация: Земля и Луна (измерено), Марс и невесомость (ещё не проверено)"
+   }
+  },
+  {
+   "id": "F-on-other-worlds-same-motors-keep-thrust",
+   "kind": "feature",
+   "status": "done",
+   "group": "crash",
+   "order": 18,
+   "title": {
+    "en": "On other worlds: same motors, keep thrust-to-weight or auto throttle (the last two not tested yet)",
+    "es": "En otros mundos: mismos motores, mantener empuje/peso o gas automático (los dos últimos sin probar aún)",
+    "pl": "Na innych planetach: te same silniki, stały stosunek ciągu do masy albo automatyczny gaz (dwa ostatnie jeszcze nie testowane)",
+    "ru": "На других планетах: те же моторы, та же тяговооружённость или автогаз (последние два ещё не проверены)"
+   }
+  },
+  {
+   "id": "F-crash-threshold-from-2-to-10-m",
+   "kind": "feature",
+   "status": "done",
+   "group": "crash",
+   "order": 19,
+   "title": {
+    "en": "Crash threshold from 2 to 10 m/s, or crashes off: a wall only bounces you off",
+    "es": "Umbral de choque de 2 a 10 m/s, o choques desactivados: la pared solo te hace rebotar",
+    "pl": "Próg kraksy od 2 do 10 m/s albo kraksy wyłączone: ściana tylko cię odbija",
+    "ru": "Порог краша от 2 до 10 м/с или краши выключены: стена только отталкивает"
+   }
+  },
+  {
+   "id": "F-after-a-crash-the-drone-is-back",
+   "kind": "feature",
+   "status": "done",
+   "group": "crash",
+   "order": 20,
+   "title": {
+    "en": "After a crash the drone is back by itself in 2 s, 5 s back along your path and still armed; R: the start, Y: rewind 5 s, Enter: keep the wreck",
+    "es": "Tras un choque el dron vuelve solo en 2 s, 5 s atrás en tu trayectoria y aún armado; R: al inicio, Y: rebobinar 5 s, Enter: quedarse con los restos",
+    "pl": "Po kraksie dron wraca sam po 2 s, 5 s wstecz na twojej trasie i nadal uzbrojony; R: na start, Y: cofnij 5 s, Enter: zostań przy wraku",
+    "ru": "После краша дрон сам возвращается через 2 с — на 5 с назад по вашей траектории и всё ещё в арме; R — в начало, Y — откат на 5 с, Enter — остаться у обломков"
+   }
+  },
+  {
+   "id": "F-start-on-an-invisible-pad-at-spawn",
+   "kind": "feature",
+   "status": "done",
+   "group": "crash",
+   "order": 21,
+   "title": {
+    "en": "Start on an invisible pad at spawn height, motors on, until you lift off",
+    "es": "Empiezas sobre una plataforma invisible a la altura de aparición, con los motores en marcha, hasta que despegas",
+    "pl": "Start z niewidzialnej platformy na wysokości pojawienia się, z włączonymi silnikami, aż się wzniesiesz",
+    "ru": "Старт с невидимой площадки на высоте появления, моторы крутятся, пока вы не взлетите"
+   }
+  },
+  {
+   "id": "F-upside-down-or-wedged-and-not-moving",
+   "kind": "feature",
+   "status": "done",
+   "group": "crash",
+   "order": 22,
+   "title": {
+    "en": "Upside down or wedged and not moving: the drone goes a few seconds back by itself",
+    "es": "Boca abajo o atascado sin moverse: el dron vuelve solo unos segundos atrás",
+    "pl": "Do góry nogami albo zaklinowany i bez ruchu: dron sam cofa się o kilka sekund",
+    "ru": "Перевернулись или застряли и не двигаетесь: дрон сам откатывается на несколько секунд назад"
+   }
+  },
+  {
+   "id": "F-replay-the-last-10-s-after-a-crash",
+   "kind": "feature",
+   "status": "done",
+   "group": "crash",
+   "order": 23,
+   "title": {
+    "en": "Replay the last 10 s after a crash; a list of replays",
+    "es": "Repite los últimos 10 s tras un choque; lista de repeticiones",
+    "pl": "Powtórka ostatnich 10 s po kraksie; lista powtórek",
+    "ru": "Повтор последних 10 с после краша; список повторов"
+   }
+  },
+  {
+   "id": "F-camera-field-of-view-70-150-and-uptilt-0",
+   "kind": "feature",
+   "status": "done",
+   "group": "camera",
+   "order": 24,
+   "title": {
+    "en": "Camera field of view 70–150° and uptilt 0–50°",
+    "es": "Campo de visión de la cámara de 70 a 150° e inclinación de 0 a 50°",
+    "pl": "Pole widzenia kamery 70–150° i jej pochylenie 0–50°",
+    "ru": "Угол обзора камеры 70–150° и её наклон 0–50°"
+   }
+  },
+  {
+   "id": "F-stable-frame-detail-slider-quality-steps",
+   "kind": "feature",
+   "status": "done",
+   "group": "camera",
+   "order": 25,
+   "title": {
+    "en": "Stable frame ↔ detail slider; quality steps down by itself when frames drop",
+    "es": "Control fluidez ↔ detalle; la calidad baja sola cuando se pierden fotogramas",
+    "pl": "Suwak płynność ↔ szczegóły; jakość sama spada, gdy gubią się klatki",
+    "ru": "Ползунок «плавность ↔ детализация»; качество само снижается, когда кадры не успевают"
+   }
+  },
+  {
+   "id": "F-hud-on-or-off-f3-shows-frame-times",
+   "kind": "feature",
+   "status": "done",
+   "group": "camera",
+   "order": 26,
+   "title": {
+    "en": "HUD on or off; F3 shows frame times",
+    "es": "HUD activado o desactivado; F3 muestra los tiempos de fotograma",
+    "pl": "HUD włączony lub wyłączony; F3 pokazuje czasy klatek",
+    "ru": "HUD вкл. или выкл.; F3 показывает время кадра"
+   }
+  },
+  {
+   "id": "F-reduced-motion-a-calmer-crash-camera",
+   "kind": "feature",
+   "status": "done",
+   "group": "camera",
+   "order": 27,
+   "title": {
+    "en": "Reduced motion: a calmer crash camera (not tested yet)",
+    "es": "Reducir movimiento: una cámara de choque más tranquila (sin probar aún)",
+    "pl": "Ograniczenie ruchu: spokojniejsza kamera po kraksie (jeszcze nie testowane)",
+    "ru": "Уменьшение движения: более спокойная камера при краше (ещё не проверено)"
+   }
+  },
+  {
+   "id": "F-cinema-mode-full-detail-and-mp4",
+   "kind": "feature",
+   "status": "done",
+   "group": "camera",
+   "order": 28,
+   "title": {
+    "en": "Cinema mode: full detail and MP4 recording on Andrii's scans",
+    "es": "Modo cine: detalle máximo y grabación en MP4 en los escaneos de Andrii",
+    "pl": "Tryb kinowy: pełne detale i nagrywanie MP4 na skanach Andrija",
+    "ru": "Режим кино: полная детализация и запись MP4 на сканах Андрия"
+   }
+  },
+  {
+   "id": "F-recording-at-60-fps-with-f9-on-andrii",
+   "kind": "feature",
+   "status": "done",
+   "group": "camera",
+   "order": 29,
+   "title": {
+    "en": "Recording at 60 fps with F9 on Andrii's scans, with a recording dot and the time on screen, or auto-record every flight into a folder you choose",
+    "es": "Grabación a 60 fps con F9 en los escaneos de Andrii, con un punto de grabación y el tiempo en pantalla, o grabación automática de cada vuelo en una carpeta que eliges",
+    "pl": "Nagrywanie w 60 fps klawiszem F9 na skanach Andrija, z kropką nagrywania i czasem na ekranie, albo automatyczne nagrywanie każdego lotu do wybranego folderu",
+    "ru": "Запись в 60 fps по F9 на сканах Андрия — с точкой записи и временем на экране, или автозапись каждого полёта в выбранную папку"
+   }
+  },
+  {
+   "id": "F-video-from-the-flight-log-on-andrii",
+   "kind": "feature",
+   "status": "done",
+   "group": "camera",
+   "order": 30,
+   "title": {
+    "en": "Video from the flight log on Andrii's scans, from the summary panel or the replays: 60 fps at 1080p, 1440p or 4K",
+    "es": "Vídeo desde el registro de vuelo en los escaneos de Andrii, desde el panel de resumen o las repeticiones: 60 fps en 1080p, 1440p o 4K",
+    "pl": "Wideo z logu lotu na skanach Andrija, z panelu podsumowania albo z powtórek: 60 fps w 1080p, 1440p albo 4K",
+    "ru": "Видео по логу полёта на сканах Андрия — из панели итогов или из повторов: 60 fps в 1080p, 1440p или 4K"
+   }
+  },
+  {
+   "id": "F-simulator-in-english-spanish-polish",
+   "kind": "feature",
+   "status": "done",
+   "group": "camera",
+   "order": 31,
+   "title": {
+    "en": "Simulator in English, Spanish, Polish or Russian",
+    "es": "Simulador en inglés, español, polaco o ruso",
+    "pl": "Symulator po angielsku, hiszpańsku, polsku lub rosyjsku",
+    "ru": "Симулятор на английском, испанском, польском или русском"
+   }
+  },
+  {
+   "id": "F-any-public-supersplat-scene-by-link",
+   "kind": "feature",
+   "status": "done",
+   "group": "scenes",
+   "order": 32,
+   "title": {
+    "en": "Any public SuperSplat scene by link or id, re-published versions (v2, v3…) too; scenes in the older PLY format do not open yet",
+    "es": "Cualquier escena pública de SuperSplat por enlace o id, también las republicadas (v2, v3…); las del antiguo formato PLY aún no se abren",
+    "pl": "Dowolna publiczna scena SuperSplat z linku lub id, także opublikowana ponownie (v2, v3…); sceny w starszym formacie PLY jeszcze się nie otwierają",
+    "ru": "Любая публичная сцена SuperSplat по ссылке или id, включая переопубликованные (v2, v3…); сцены в старом формате PLY пока не открываются"
+   }
+  },
+  {
+   "id": "F-tabs-andrii-s-scans-recent-favourites",
+   "kind": "feature",
+   "status": "done",
+   "group": "scenes",
+   "order": 33,
+   "title": {
+    "en": "Tabs: Andrii's scans, Recent, Favourites; filters for walls, type and flown",
+    "es": "Pestañas: Escaneos de Andrii, Recientes, Favoritos; filtros por paredes, tipo y ya voladas",
+    "pl": "Zakładki: Skany Andrija, Ostatnie, Ulubione; filtry: ściany, typ, już latane",
+    "ru": "Вкладки: Сканы Андрия, Недавние, Избранное; фильтры по стенам, типу и налёту"
+   }
+  },
+  {
+   "id": "F-a-supersplat-tab-with-superspl",
+   "kind": "feature",
+   "status": "done",
+   "group": "scenes",
+   "order": 34,
+   "title": {
+    "en": "A SuperSplat tab with superspl.at's filters and sorting, a random top-rated scene and a star for favourites",
+    "es": "Una pestaña de SuperSplat con los filtros y el orden de superspl.at, una escena al azar entre las mejor valoradas y una estrella para favoritas",
+    "pl": "Zakładka SuperSplat z filtrami i sortowaniem jak na superspl.at, losową sceną spośród najwyżej ocenianych i gwiazdką ulubionych",
+    "ru": "Вкладка SuperSplat с фильтрами и сортировкой как на superspl.at, случайной сценой из самых высоко оценённых и звёздочкой избранного"
+   }
+  },
+  {
+   "id": "F-change-scenes-without-reloading-the-page",
+   "kind": "feature",
+   "status": "done",
+   "group": "scenes",
+   "order": 35,
+   "title": {
+    "en": "Change scenes without reloading the page: N next, Shift+N random, F next favourite; the radio stays connected",
+    "es": "Cambia de escena sin recargar la página: N siguiente, Shift+N al azar, F siguiente favorita; la emisora sigue conectada",
+    "pl": "Zmiana sceny bez przeładowania strony: N następna, Shift+N losowa, F następna ulubiona; aparatura zostaje połączona",
+    "ru": "Смена сцены без перезагрузки страницы: N — следующая, Shift+N — случайная, F — следующая избранная; аппаратура остаётся подключённой"
+   }
+  },
+  {
+   "id": "F-after-a-crash-the-next-scene-instead",
+   "kind": "feature",
+   "status": "done",
+   "group": "scenes",
+   "order": 36,
+   "title": {
+    "en": "After a crash, the next scene instead of a respawn, in random or fixed order: from Andrii's picks, your favourites or the scenes you flew (off by default)",
+    "es": "Tras un choque, la siguiente escena en vez de reaparecer, en orden aleatorio o fijo: de la selección de Andrii, tus favoritas o las que ya volaste (desactivado por defecto)",
+    "pl": "Po kraksie następna scena zamiast respawnu, w losowej albo stałej kolejności: z wyboru Andrija, z ulubionych albo z już przelatanych (domyślnie wyłączone)",
+    "ru": "После краша — следующая сцена вместо респауна, в случайном или обычном порядке: из подборки Андрия, из избранного или из уже облетанных (по умолчанию выключено)"
+   }
+  },
+  {
+   "id": "F-scene-scale-around-the-drone-from-x0-25",
+   "kind": "feature",
+   "status": "done",
+   "group": "scenes",
+   "order": 37,
+   "title": {
+    "en": "Scene scale around the drone from ×0.25 to ×100 with [ and ] (Shift doubles a step) or the pause menu: fly a room like a city; kept for each scan, the walls scale with it",
+    "es": "Escala de la escena alrededor del dron de ×0,25 a ×100 con [ y ] (Shift duplica el paso) o desde el menú de pausa: vuela una habitación como una ciudad; se guarda para cada escaneo y las paredes escalan con ella",
+    "pl": "Skala sceny wokół drona od ×0,25 do ×100 klawiszami [ i ] (Shift podwaja krok) albo w menu pauzy: lataj po pokoju jak po mieście; zapamiętana dla każdego skanu, ściany skalują się razem z nią",
+    "ru": "Масштаб сцены вокруг дрона от ×0,25 до ×100 клавишами [ и ] (Shift удваивает шаг) или в меню паузы: летайте по комнате как по городу; запоминается для каждого скана, стены масштабируются вместе со сценой"
+   }
+  },
+  {
+   "id": "F-share-the-scene-you-are-flying-a-link",
+   "kind": "feature",
+   "status": "done",
+   "group": "scenes",
+   "order": 38,
+   "title": {
+    "en": "Share the scene you are flying: a link with a picture of your view",
+    "es": "Comparte la escena que vuelas: un enlace con una imagen de tu vista",
+    "pl": "Udostępnij scenę, po której latasz: link z obrazem Twojego widoku",
+    "ru": "Поделиться сценой, в которой летаете: ссылка с картинкой вашего вида"
+   }
+  },
+  {
+   "id": "F-loading-progress-stage-mb-speed-time",
+   "kind": "feature",
+   "status": "done",
+   "group": "scenes",
+   "order": 39,
+   "title": {
+    "en": "Loading progress: stage, MB, speed, time left and retry",
+    "es": "Progreso de carga: etapa, MB, velocidad, tiempo restante y reintento",
+    "pl": "Postęp ładowania: etap, MB, prędkość, pozostały czas i ponowienie",
+    "ru": "Прогресс загрузки: этап, МБ, скорость, сколько осталось и повтор"
+   }
+  },
+  {
+   "id": "F-walls-built-in-your-browser-for-scans",
+   "kind": "feature",
+   "status": "done",
+   "group": "walls",
+   "order": 40,
+   "title": {
+    "en": "Walls built in your browser for scans published without them (up to 4 M Gaussians)",
+    "es": "Paredes creadas en tu navegador para escaneos publicados sin ellas (hasta 4 M de gaussianas)",
+    "pl": "Ściany budowane w przeglądarce dla skanów opublikowanych bez nich (do 4 mln gaussianów)",
+    "ru": "Стены строятся прямо в браузере для сканов, опубликованных без них (до 4 млн гауссиан)"
+   }
+  },
+  {
+   "id": "F-walls-collisions-on-or-off-with-c",
+   "kind": "feature",
+   "status": "done",
+   "group": "walls",
+   "order": 41,
+   "title": {
+    "en": "Walls (collisions) on or off with C, one choice for every scene, so it stays the same after a scene switch",
+    "es": "Paredes (colisiones) activadas o desactivadas con C, una sola elección para todas las escenas, así no cambia al pasar de una escena a otra",
+    "pl": "Ściany (kolizje) włączone albo wyłączone klawiszem C, jeden wybór dla wszystkich scen, więc nie zmienia się po przejściu do innej sceny",
+    "ru": "Стены (столкновения) включаются и выключаются клавишей C — один выбор для всех сцен, поэтому он не меняется при переходе в другую сцену"
+   }
+  },
+  {
+   "id": "F-drop-the-floating-specks-of-a-noisy-scan",
+   "kind": "feature",
+   "status": "done",
+   "group": "walls",
+   "order": 42,
+   "title": {
+    "en": "Drop the floating specks of a noisy scan that turn into invisible walls, with a live preview of what goes; kept for each scan, the scan's author can set a default",
+    "es": "Quita las motas flotantes de un escaneo con ruido que se vuelven paredes invisibles, con una vista previa en vivo de lo que se quita; se guarda para cada escaneo y su autor puede fijar un valor por defecto",
+    "pl": "Usuwanie unoszących się drobin zaszumionego skanu, które stają się niewidzialnymi ścianami, z podglądem na żywo tego, co znika; zapamiętane dla każdego skanu, autor skanu może ustawić wartość domyślną",
+    "ru": "Удаление летающих крошек шумного скана, которые становятся невидимыми стенами, с живым предпросмотром того, что уберётся; запоминается для каждого скана, автор скана может задать значение по умолчанию"
+   }
+  },
+  {
+   "id": "F-voxel-grid-over-the-scan-or-on-its-own",
+   "kind": "feature",
+   "status": "done",
+   "group": "walls",
+   "order": 43,
+   "title": {
+    "en": "Voxel grid over the scan or on its own, the scan hidden (V): solid cubes, wireframe, height colours or floaters in red, with its own opacity",
+    "es": "Rejilla de vóxeles sobre el escaneo o sola, con el escaneo oculto (V): cubos sólidos, aristas, colores por altura o flotantes en rojo, con su propia opacidad",
+    "pl": "Siatka wokseli na skanie albo sama, ze skanem ukrytym (V): pełne sześciany, krawędzie, kolory według wysokości albo pływające na czerwono, z własną przezroczystością",
+    "ru": "Воксельная сетка поверх скана или сама по себе, со скрытым сканом (V): сплошные кубы, каркас, цвет по высоте или летающие куски красным, со своей прозрачностью"
+   }
+  },
+  {
+   "id": "F-every-setting-kept-between-visits-each",
+   "kind": "feature",
+   "status": "done",
+   "group": "settings",
+   "order": 44,
+   "title": {
+    "en": "Every setting kept between visits, each drone with its own tune; export, import and reset one or all",
+    "es": "Todos los ajustes se guardan entre visitas, cada dron con su propio ajuste; exportar, importar y restablecer uno o todos",
+    "pl": "Wszystkie ustawienia zapamiętane między wizytami, każdy dron z własnym strojeniem; eksport, import i reset jednego lub wszystkich",
+    "ru": "Все настройки сохраняются между визитами, у каждого дрона своя настройка; экспорт, импорт и сброс одной или всех"
+   }
+  },
+  {
+   "id": "F-a-catalogue-of-every-setting",
+   "kind": "feature",
+   "status": "done",
+   "group": "settings",
+   "order": 45,
+   "title": {
+    "en": "A catalogue of every setting with its default, range and key, on this site and on GitHub",
+    "es": "Un catálogo de todos los ajustes con su valor por defecto, rango y tecla, en este sitio y en GitHub",
+    "pl": "Katalog wszystkich ustawień z wartością domyślną, zakresem i klawiszem — na tej stronie i na GitHubie",
+    "ru": "Каталог всех настроек со значением по умолчанию, диапазоном и клавишей — на этом сайте и на GitHub"
+   }
+  },
+  {
+   "id": "F-flight-stats-when-you-disarm-like",
+   "kind": "feature",
+   "status": "done",
+   "group": "settings",
+   "order": 46,
+   "title": {
+    "en": "Flight stats when you disarm, like the goggles OSD",
+    "es": "Estadísticas del vuelo al desarmar, como el OSD de las gafas",
+    "pl": "Statystyki lotu po rozbrojeniu, jak OSD w goglach",
+    "ru": "Статистика полёта при дизарме, как OSD в очках"
+   }
+  },
+  {
+   "id": "F-summary-panel-this-flight-s-stats-every",
+   "kind": "feature",
+   "status": "done",
+   "group": "settings",
+   "order": 47,
+   "title": {
+    "en": "Summary panel: this flight's stats, every menu item and every key",
+    "es": "Panel de resumen: las estadísticas del vuelo, cada opción del menú y cada tecla",
+    "pl": "Panel podsumowania: statystyki lotu, każda pozycja menu i każdy klawisz",
+    "ru": "Панель итогов: статистика полёта, все пункты меню и все клавиши"
+   }
+  },
+  {
+   "id": "F-save-the-flight-log-export",
+   "kind": "feature",
+   "status": "done",
+   "group": "settings",
+   "order": 48,
+   "title": {
+    "en": "Save the flight log; export the trajectory as CSV or JSON",
+    "es": "Guarda el registro de vuelo; exporta la trayectoria en CSV o JSON",
+    "pl": "Zapis logu lotu; eksport trajektorii do CSV lub JSON",
+    "ru": "Сохранение лога полёта; экспорт траектории в CSV или JSON"
+   }
+  },
+  {
+   "id": "F-measurements-panel-display-refresh-frame",
+   "kind": "feature",
+   "status": "done",
+   "group": "settings",
+   "order": 49,
+   "title": {
+    "en": "Measurements panel: display refresh, frame times, physics rate and the input in use; copy the report as JSON",
+    "es": "Panel de mediciones: refresco de pantalla, tiempos de fotograma, frecuencia de la física y el control en uso; copia el informe en JSON",
+    "pl": "Panel pomiarów: odświeżanie ekranu, czasy klatek, częstotliwość fizyki i używane wejście; kopia raportu jako JSON",
+    "ru": "Панель замеров: частота экрана, время кадра, частота физики и текущее устройство ввода; копирование отчёта в JSON"
+   }
+  },
+  {
+   "id": "F-lifetime-flight-stats-kept-between",
+   "kind": "feature",
+   "status": "done",
+   "group": "settings",
+   "order": 50,
+   "title": {
+    "en": "Lifetime flight stats kept between visits; one button downloads them as CSV and JSON",
+    "es": "Estadísticas de vuelo de todo el tiempo guardadas entre visitas; un botón las descarga en CSV y JSON",
+    "pl": "Statystyki lotów z całego czasu zachowane między wizytami; jeden przycisk pobiera je jako CSV i JSON",
+    "ru": "Статистика полётов за всё время сохраняется между визитами; одна кнопка скачивает её в CSV и JSON"
+   }
+  },
+  {
+   "id": "F-feedback-from-the-simulator-b",
+   "kind": "feature",
+   "status": "done",
+   "group": "settings",
+   "order": 51,
+   "title": {
+    "en": "Feedback from the simulator (B) and from every page of this site: a bug, an idea or cooperation; technical details are sent only if you agree",
+    "es": "Comentarios desde el simulador (B) y desde cada página de este sitio: un error, una idea o una propuesta de colaboración; los datos técnicos se envían solo si aceptas",
+    "pl": "Opinie z symulatora (B) i z każdej strony tej witryny: błąd, pomysł albo propozycja współpracy; dane techniczne są wysyłane tylko za Twoją zgodą",
+    "ru": "Обратная связь из симулятора (B) и с каждой страницы этого сайта: ошибка, идея или предложение о сотрудничестве; технические данные отправляются только с вашего согласия"
+   }
+  },
+  {
+   "id": "F-pavo20-pro-and-pro-ii-physics-tuned",
+   "kind": "feature",
+   "status": "in_progress",
+   "group": "drone",
+   "order": 52,
+   "title": {
+    "en": "Pavo20 Pro and Pro II physics tuned against the real quads: the blackbox log tools and the Betaflight dump import are ready, waiting for logs from the real quads",
+    "es": "Física del Pavo20 Pro y Pro II ajustada con los drones reales: las herramientas para logs blackbox y la importación del volcado de Betaflight están listas; faltan logs de los drones reales",
+    "pl": "Fizyka Pavo20 Pro i Pro II dostrojona do prawdziwych dronów: narzędzia do logów blackbox i import zrzutu Betaflight są gotowe, czekamy na logi z prawdziwych dronów",
+    "ru": "Подгонка физики Pavo20 Pro и Pro II под реальные дроны: инструменты для blackbox-логов и импорт дампа Betaflight готовы, ждём логи с реальных дронов"
+   }
+  },
+  {
+   "id": "F-radio-switches-for-respawn-and-rewind",
+   "kind": "feature",
+   "status": "accepted",
+   "group": "radio",
+   "order": 53,
+   "title": {
+    "en": "Radio switches for respawn and rewind",
+    "es": "Interruptores de la emisora para reaparecer y rebobinar",
+    "pl": "Przełączniki na aparaturze do respawnu i cofania",
+    "ru": "Тумблеры аппаратуры для респауна и отката"
+   }
+  }
+ ]
+}
