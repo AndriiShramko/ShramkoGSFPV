@@ -19,6 +19,8 @@ import LeadForm from "@/components/LeadForm";
 import LiveNumbers from "@/components/LiveNumbers";
 import Parallax from "@/components/Parallax";
 import RandomScene from "@/components/RandomScene";
+import Roadmap from "@/components/Roadmap";
+import type { RoadmapLabels } from "@/components/Roadmap";
 import ScenePaste from "@/components/ScenePaste";
 import ShareButtons from "@/components/ShareButtons";
 import SettingsCatalog from "@/components/SettingsCatalog";
@@ -33,6 +35,10 @@ import { pageMetadata } from "@/lib/meta";
 import { SHOTS, absolute, full, panel, shot, shotDate } from "@/lib/shots";
 import type { ShotCaption } from "@/lib/shots";
 import catalogSnapshot from "@/generated/catalog.json";
+import { buildBoard, parseRoadmap, viewItems } from "@/lib/roadmap";
+import type { RoadmapItem } from "@/lib/roadmap";
+import { keepTogether } from "@/lib/text";
+import roadmapSnapshot from "@/generated/roadmap.json";
 
 type TD = { t: string; d: string };
 type QA = { q: string; a: string };
@@ -40,8 +46,17 @@ type CraftRow = { k: string; v: string; src: "manufacturer" | "measured" | "clai
 type RadioRow = { browser: string; input: string; status: string; level: "sim" | "emu" | "none" | "view" };
 type CompareRow = { k: string; cells: string[] };
 type Thanks = { name: string; license: string; d: string; href: string };
-type FeatureGroup = { t: string; items: string[] };
-type FeatureStatus = "live" | "progress" | "next";
+
+/**
+ * The roadmap the page is built with (src/generated/roadmap.json: the owner's store at build time, or the
+ * seed; scripts/roadmap.mjs). The Roadmap component refreshes it in the browser. A snapshot with nothing to
+ * show stops the build instead of shipping an empty board.
+ */
+const ROADMAP: RoadmapItem[] = (() => {
+  const items = parseRoadmap(roadmapSnapshot.roadmap);
+  if (!items?.length) throw new Error("src/generated/roadmap.json has no roadmap item to show (scripts/roadmap.mjs)");
+  return items;
+})();
 
 /** Screenshots named in the structured data (the rest are on the page). */
 const LD_SHOTS = ["flight-tunis", "voxels", "wizard-throttle", "pause", "drones", "settings", "crash", "cinema", "voxels-only", "walls", "betaflight", "keys", "m-touch", "picker", "superspl", "stats-card", "mode-chip", "crash-toast", "video-export"];
@@ -65,33 +80,6 @@ const LEVEL_STYLE: Record<RadioRow["level"], string> = {
   none: "border-warn/50 text-warn",
   view: "border-line-strong text-muted",
 };
-
-/** Feature board: one colour per status, the same pairs as the source chips above. */
-const STATUS_STYLE: Record<FeatureStatus, { chip: string; tile: string; num: string; bar: string }> = {
-  live: { chip: "border-accent/50 text-accent", tile: "border-accent/40", num: "text-accent", bar: "bg-accent" },
-  progress: { chip: "border-warn/50 text-warn", tile: "border-warn/40", num: "text-warn", bar: "bg-warn" },
-  next: { chip: "border-line-strong text-muted", tile: "border-line-strong", num: "text-ink", bar: "bg-line-strong" },
-};
-
-function StatusChip({ status, label }: { status: FeatureStatus; label: string }) {
-  return <span className={`mt-px inline-flex shrink-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs leading-5 ${STATUS_STYLE[status].chip}`}>{label}</span>;
-}
-
-/** Typography only: a range such as "8–30 ms" never breaks after its dash, a dash never starts a line. */
-const keepTogether = (s: string) => s.replace(/(\d)–(?=\d)/g, "$1–\u2060").replace(/ — /g, "\u00a0— ");
-
-function FeatureRows({ items, status, label }: { items: string[]; status: FeatureStatus; label: string }) {
-  return (
-    <ul className="mt-3 divide-y divide-line">
-      {items.map((it) => (
-        <li key={it} className="flex items-start justify-between gap-3 py-2.5">
-          <span className="text-[15px] leading-snug text-ink/90">{keepTogether(it)}</span>
-          <StatusChip status={status} label={label} />
-        </li>
-      ))}
-    </ul>
-  );
-}
 
 /**
  * A real flight behind a block: heavy veil under the text column, the flight clear on the right.
@@ -141,14 +129,21 @@ function Landing({ locale }: { locale: Locale }) {
   const locItems = t.raw("locations.items") as TD[];
   const scaleSteps = t.raw("scale.steps") as string[];
   const scaleStops = t.raw("scale.stops") as { k: string; d: string }[];
-  const featGroups = t.raw("features.groups") as FeatureGroup[];
-  const featProgress = t.raw("features.progress") as string[];
-  const featNext = t.raw("features.next") as string[];
-  const featCounts: [FeatureStatus, number][] = [
-    ["live", featGroups.reduce((n, g) => n + g.items.length, 0)],
-    ["progress", featProgress.length],
-    ["next", featNext.length],
-  ];
+  const featGroups = Object.entries(t.raw("features.groups") as Record<string, string>).map(([id, title]) => ({ id, title }));
+  const roadmap = viewItems(ROADMAP, locale);
+  const doneByGroup = Object.fromEntries(buildBoard(roadmap, featGroups.map((g) => g.id)).done.map((g) => [g.group ?? "more", g.items.length]));
+  const roadmapLabels: RoadmapLabels = {
+    status: { done: t("features.status.done"), in_progress: t("features.status.progress"), planned: t("features.status.planned") },
+    count: { done: t("features.count.done"), in_progress: t("features.count.progress"), planned: t("features.count.planned") },
+    nowTitle: t("features.nowTitle"),
+    progressTitle: t("features.progressTitle"),
+    progressNote: t("features.progressNote"),
+    plannedTitle: t("features.plannedTitle"),
+    plannedNote: t("features.plannedNote"),
+    more: t("features.more"),
+    pilot: t("features.pilot"),
+    empty: t("features.empty"),
+  };
   const fly = flyPath(locale);
   const caps = t.raw("shots.items") as Record<string, ShotCaption>;
   const shots = SHOTS.filter((s) => caps[s.id]);
@@ -164,7 +159,7 @@ function Landing({ locale }: { locale: Locale }) {
 
   return (
     <>
-      <JsonLd locale={locale} description={t("meta.description")} faq={faq} features={featGroups.flatMap((g) => g.items)} screenshots={ldShots} />
+      <JsonLd locale={locale} description={t("meta.description")} faq={faq} features={roadmap.filter((v) => v.status === "done").map((v) => v.title)} screenshots={ldShots} />
       <Parallax />
       <DeferImages />
       <BgVideos />
@@ -286,73 +281,31 @@ function Landing({ locale }: { locale: Locale }) {
 
         {/* 1c. Tour: each feature group next to the screens that show it */}
         <Section id="tour" index="03" eyebrow={t("shots.tour.eyebrow")} title={t("shots.tour.h2")} lead={t("shots.tour.lead", { n: shots.length, date: shotDate(locale) })}>
-          <Tour />
+          <Tour doneByGroup={doneByGroup} />
         </Section>
 
-        {/* 1d. What you can set up: live / in progress / next */}
+        {/* 1d. What you can set up: the roadmap (done / in progress / planned), from the owner's ideas store */}
         <Section id="features" index="04" eyebrow={t("features.eyebrow")} title={keepTogether(t("features.h2"))} lead={t("features.lead")} tone="surface">
-          <div className="mt-10 max-w-2xl">
-            <dl className="grid grid-cols-3 gap-3">
-              {featCounts.map(([k, n]) => (
-                <div key={k} className={`flex flex-col-reverse justify-end gap-1 rounded-xl border bg-bg p-4 ${STATUS_STYLE[k].tile}`}>
-                  <dt className="text-sm leading-snug text-muted">{t(`features.count.${k}`)}</dt>
-                  <dd className={`font-mono text-3xl font-semibold leading-none sm:text-4xl ${STATUS_STYLE[k].num}`}>{n}</dd>
-                </div>
-              ))}
-            </dl>
-            <div aria-hidden="true" className="mt-3 flex h-1.5 gap-1 overflow-hidden rounded-full">
-              {featCounts.map(([k, n]) => (
-                <span key={k} className={`rounded-full ${STATUS_STYLE[k].bar}`} style={{ flexGrow: n }} />
-              ))}
-            </div>
-          </div>
-
-          <h3 className="mt-14 text-2xl font-semibold text-ink">{t("features.nowTitle")}</h3>
-          <p className="mt-2 max-w-3xl text-sm text-muted">
-            {t.rich("features.nowNote", {
+          <Roadmap
+            locale={locale}
+            initial={roadmap}
+            groups={featGroups}
+            labels={roadmapLabels}
+            nowNote={t.rich("features.nowNote", {
               link: (chunks) => (
                 <a href="#radios" className="link">
                   {chunks}
                 </a>
               ),
             })}
-          </p>
-          <ul className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {featGroups.map((g) => (
-              <li key={g.t} className="rounded-xl border border-line bg-bg p-5">
-                <h4 className="flex items-baseline justify-between gap-3 text-lg font-semibold text-ink">
-                  {g.t}
-                  <span aria-hidden="true" className="font-mono text-sm font-normal text-muted">
-                    {g.items.length}
-                  </span>
-                </h4>
-                <FeatureRows items={g.items} status="live" label={t("features.status.live")} />
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-6 grid gap-5 lg:grid-cols-2">
-            <article aria-labelledby="features-progress" className="rounded-xl border border-warn/30 bg-bg p-5 sm:p-6">
-              <h3 id="features-progress" className="flex items-center gap-3 text-2xl font-semibold text-ink">
-                <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-warn" />
-                {t("features.progressTitle")}
-              </h3>
-              <p className="mt-2 text-sm text-muted">{t("features.progressNote")}</p>
-              <FeatureRows items={featProgress} status="progress" label={t("features.status.progress")} />
-            </article>
-            <article aria-labelledby="features-next" className="rounded-xl border border-line bg-bg p-5 sm:p-6">
-              <h3 id="features-next" className="flex items-center gap-3 text-2xl font-semibold text-ink">
-                <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-line-strong" />
-                {t("features.nextTitle")}
-              </h3>
-              <p className="mt-2 text-sm text-muted">{t("features.nextNote")}</p>
-              <FeatureRows items={featNext} status="next" label={t("features.status.next")} />
-            </article>
-          </div>
+          />
 
           <div className="mt-8 flex flex-col gap-4 rounded-xl border border-accent/30 bg-bg p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-            <p className="text-lg font-semibold text-ink">{t("features.suggest")}</p>
-            <a href="#contact" className="btn-secondary min-h-12 shrink-0 px-6">
+            <div>
+              <p className="text-lg font-semibold text-ink">{t("features.suggest")}</p>
+              <p className="mt-1 text-sm text-muted">{t("features.suggestNote")}</p>
+            </div>
+            <a href="#contact" data-feedback-open="idea" data-testid="roadmap-suggest" className="btn-secondary min-h-12 shrink-0 px-6">
               {t("features.suggestLink")}
               <span aria-hidden="true">→</span>
             </a>

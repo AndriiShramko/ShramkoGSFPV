@@ -10,7 +10,6 @@
   "admin.error.session": "La sesión terminó. Vuelve a entrar.",
   "admin.logout": "Salir",
   "admin.tab.scenes": "Escenas",
-  "admin.tab.reports": "Mensajes",
   "admin.status.live": "Los pilotos ven exactamente esta lista.",
   "admin.status.dirty": "Cambios sin publicar: los pilotos aún ven la lista publicada.",
   "admin.status.saving": "Guardando el borrador…",
@@ -152,17 +151,5 @@
   "admin.history.row": "{time}: {n} escenas",
   "admin.history.restore": "Volver a publicar",
   "admin.history.confirm": "¿Volver a publicar la versión del {time}? Los pilotos la verán en un minuto.",
-  "admin.history.empty": "Aún no se ha publicado nada desde aquí.",
-  "admin.reports.open": "Abiertos",
-  "admin.reports.closed": "Cerrados",
-  "admin.reports.all": "Todos",
-  "admin.reports.empty": "No hay mensajes aquí.",
-  "admin.reports.close": "Cerrar",
-  "admin.reports.reopen": "Reabrir",
-  "admin.reports.diagnostics": "Datos técnicos",
-  "admin.reports.scene": "Escena {id}",
-  "admin.reports.contact": "Contacto: {contact}",
-  "admin.reports.suspect": "Parece spam",
-  "admin.reports.bug": "Error",
-  "admin.reports.idea": "Idea"
+  "admin.history.empty": "Aún no se ha publicado nada desde aquí."
 }

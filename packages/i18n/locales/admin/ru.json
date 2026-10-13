@@ -10,7 +10,6 @@
   "admin.error.session": "Сессия закончилась. Войдите снова.",
   "admin.logout": "Выйти",
   "admin.tab.scenes": "Сцены",
-  "admin.tab.reports": "Сообщения",
   "admin.status.live": "Пилоты видят ровно этот список.",
   "admin.status.dirty": "Есть неопубликованные изменения: пилоты пока видят опубликованный список.",
   "admin.status.saving": "Сохраняю черновик…",
@@ -152,17 +151,5 @@
   "admin.history.row": "{time}: сцен {n}",
   "admin.history.restore": "Вернуть в эфир",
   "admin.history.confirm": "Вернуть в эфир версию от {time}? Пилоты увидят её в течение минуты.",
-  "admin.history.empty": "Отсюда ещё ничего не публиковали.",
-  "admin.reports.open": "Открытые",
-  "admin.reports.closed": "Закрытые",
-  "admin.reports.all": "Все",
-  "admin.reports.empty": "Здесь сообщений нет.",
-  "admin.reports.close": "Закрыть",
-  "admin.reports.reopen": "Открыть снова",
-  "admin.reports.diagnostics": "Технические данные",
-  "admin.reports.scene": "Сцена {id}",
-  "admin.reports.contact": "Контакт: {contact}",
-  "admin.reports.suspect": "Похоже на спам",
-  "admin.reports.bug": "Ошибка",
-  "admin.reports.idea": "Идея"
+  "admin.history.empty": "Отсюда ещё ничего не публиковали."
 }

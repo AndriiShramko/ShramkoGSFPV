@@ -230,18 +230,19 @@ async function main(): Promise<void> {
         await admin.waitForFunction(() => document.querySelector('[data-testid=draft-status]')?.classList.contains('ok'), null, { timeout: 15000 });
     } else check(`${RENDER_SCENE} is not in the list yet (the render check adds it)`, false);
 
-    // reports: the pilot's idea is listed and can be closed; the status is stored server-side
-    await admin.click('[data-tab=reports]');
-    await admin.waitForSelector(`[data-report="${rep.id}"]`);
-    check('the report is listed with its words', (await admin.$eval(`[data-report="${rep.id}"] .report-msg`, (e) => e.textContent)) === 'v06 acceptance: more night scenes please');
-    await admin.click(`[data-report="${rep.id}"] [data-action=close]`);
-    await admin.waitForSelector(`[data-report="${rep.id}"]`, { state: 'detached' });
-    await admin.click('[data-show=closed]');
-    await admin.waitForSelector(`[data-report="${rep.id}"].closed`);
-    const status = JSON.parse(readFileSync(join(DATA, 'report-status.json'), 'utf8'));
-    check('closing a report is stored server-side', status[rep.id]?.status === 'closed');
+    // ideas (v0.7: the Ideas kanban replaced the Reports tab; needs lane B's /api/admin/ideas, so this part
+    // passes only on the merged v0.7 branch): the pilot's idea is a card in New with its words; moved to
+    // Rejected with the card's Column select, the server keeps it; the visitor's report is unchanged
+    await admin.click('[data-tab=ideas]');
+    await admin.waitForSelector(`[data-idea="${rep.id}"][data-status=new]`);
+    check('the report is a card in New with its words', (await admin.$eval(`[data-idea="${rep.id}"] .idea-text`, (e) => e.textContent)) === 'v06 acceptance: more night scenes please');
+    await admin.click(`[data-idea="${rep.id}"] [data-action=details]`);
+    await admin.selectOption(`[data-idea="${rep.id}"] [data-field=status]`, 'rejected');
+    await admin.waitForSelector(`[data-idea="${rep.id}"][data-status=rejected]:not([aria-busy])`);
+    const stored = await admin.evaluate(async (id) => ((await (await fetch('/api/admin/ideas', { cache: 'no-store' })).json()) as { ideas: { id: string; status: string }[] }).ideas.find((x) => x.id === id)?.status, rep.id);
+    check('the move is stored server-side', stored === 'rejected');
     const reportsLine = readFileSync(join(DATA, 'reports.jsonl'), 'utf8');
-    check('the visitor\'s report itself is unchanged', reportsLine.includes('more night scenes please') && !reportsLine.includes('closed'), true);
+    check('the visitor\'s report itself is unchanged', reportsLine.includes('more night scenes please') && !reportsLine.includes('rejected'), true);
 
     // logout ends the session: the next admin call is 401
     await admin.click('[data-action=logout]');
@@ -252,8 +253,14 @@ async function main(): Promise<void> {
     const audit = readFileSync(join(DATA, 'admin-audit.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l));
     results.audit = audit.map((a) => `${a.action}:${a.ok}`);
     const everything = apiLog + audit.map((a) => JSON.stringify(a)).join('') + readFileSync(join(DATA, 'catalog.json'), 'utf8');
-    check('audit has the failed and the good login, the publish, the report status and the logout',
-        ['login:false', 'login:true', 'publish:true', 'report-status:true', 'logout:true'].every((x) => (results.audit as string[]).includes(x)));
+    check('audit has the failed and the good login, the publish and the logout',
+        ['login:false', 'login:true', 'publish:true', 'logout:true'].every((x) => (results.audit as string[]).includes(x)));
+    // the kanban move from the admin is audited by lane B's admin.py as the route with "-" for "/" and the
+    // changed fields in its detail (v0.6 audited the Reports tab's close as report-status)
+    const moveAudited = (lines: { action?: string; ok?: boolean; detail?: string }[]): boolean =>
+        lines.some((a) => a.action === 'ideas-update' && a.ok === true && (a.detail ?? '').startsWith(`${rep.id} `) && (a.detail ?? '').includes('status'));
+    check('audit has the ideas move of the pilot\'s card (ideas-update, its id, status)', moveAudited(audit));
+    check('without that line the audit check fails', !moveAudited(audit.filter((a) => a.action !== 'ideas-update')), true);
     check('the password is in no log, audit or data file', !everything.includes(secret.password));
     check('no page errors', errors.length === 0);
     results.pageErrors = errors;

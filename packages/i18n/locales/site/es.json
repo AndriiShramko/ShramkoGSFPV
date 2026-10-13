@@ -40,115 +40,30 @@
     "eyebrow": "Qué puedes configurar",
     "h2": "Todo lo que ya puedes ajustar, y lo que viene",
     "lead": "Emisoras, drones, física, escenas y vídeo: cada opción que ya funciona en el sitio, lo que se está construyendo ahora mismo y lo que llega después.",
-    "status": { "live": "Disponible", "progress": "En desarrollo", "next": "Próximamente" },
-    "count": { "live": "disponibles ya", "progress": "en desarrollo", "next": "en cola" },
+    "status": { "done": "Hecho", "progress": "En desarrollo", "planned": "Previsto" },
+    "count": { "done": "hechas", "progress": "en desarrollo", "planned": "previstas" },
     "nowTitle": "Disponible ahora",
-    "nowNote": "«Disponible» significa que ya puedes usarlo en el sitio. Cómo se probó cada dispositivo: <link>Compatible con tu emisora</link>.",
-    "groups": [
-      {
-        "t": "Emisora y calibración",
-        "items": [
-          "Emisora EdgeTX por USB (WebHID) en Chrome o Edge",
-          "Calibración con una emisora dibujada que muestra qué stick mover; cada paso espera a que de verdad lo muevas",
-          "Invierte cualquier canal después de calibrar",
-          "Botón «Recalibrar» en «Controles»",
-          "Una emisora conocida se reconecta sola y sigue conectada al cambiar de escena",
-          "El interruptor de modo de vuelo de tu emisora se detecta en la pantalla de comprobación, sin hacer clic"
-        ]
-      },
-      {
-        "t": "Controles y modos de vuelo",
-        "items": [
-          "Mando (gamepad) a través de la Gamepad API del navegador",
-          "Sticks táctiles y botón ARMAR en una pantalla táctil",
-          "Teclado, con cada tecla de vuelo visible en pantalla",
-          "Modos de vuelo: Angle (autonivelado, por defecto para todos), Horizon y Acro; con M, el indicador de modo en pantalla o el interruptor de tu emisora",
-          "Cierra «Controles» con × o Esc; el menú de pausa muestra sus teclas"
-        ]
-      },
-      {
-        "t": "Dron y ajuste fino",
-        "items": [
-          "Seis presets de clase BetaFPV: Pavo20 Pro 3S, Pavo20 Pro II 3S y 4S, Pavo Pico 2S, Meteor65 Pro 1S, Air65 1S",
-          "Curvas de rates Betaflight, Actual, KISS y Raceflight (se cargan con la importación del diff), comprobadas con Betaflight 4.5.1",
-          "Importa rates, PID y curva de gas desde un diff de la CLI de Betaflight",
-          "PID por eje: P, I, D y F",
-          "Arranque de motores de 8 a 30 ms y resistencia del aire de 0,5 a 2×"
-        ]
-      },
-      {
-        "t": "Gravedad, choques y reaparición",
-        "items": [
-          "Gravedad: Tierra y Luna (medidas), Marte y gravedad cero (sin probar aún)",
-          "En otros mundos: mismos motores, mantener empuje/peso o gas automático (los dos últimos sin probar aún)",
-          "Umbral de choque de 2 a 10 m/s, o choques desactivados: la pared solo te hace rebotar",
-          "Tras un choque el dron vuelve solo en 2 s, 5 s atrás en tu trayectoria y aún armado; R: al inicio, Y: rebobinar 5 s, Enter: quedarse con los restos",
-          "Empiezas sobre una plataforma invisible a la altura de aparición, con los motores en marcha, hasta que despegas",
-          "Boca abajo o atascado sin moverse: el dron vuelve solo unos segundos atrás",
-          "Repite los últimos 10 s tras un choque; lista de repeticiones"
-        ]
-      },
-      {
-        "t": "Cámara, vista y vídeo",
-        "items": [
-          "Campo de visión de la cámara de 70 a 150° e inclinación de 0 a 50°",
-          "Control fluidez ↔ detalle; la calidad baja sola cuando se pierden fotogramas",
-          "HUD activado o desactivado; F3 muestra los tiempos de fotograma",
-          "Reducir movimiento: una cámara de choque más tranquila (sin probar aún)",
-          "Modo cine: detalle máximo y grabación en MP4 en los escaneos de Andrii",
-          "Grabación a 60 fps con F9 en los escaneos de Andrii, con un punto de grabación y el tiempo en pantalla, o grabación automática de cada vuelo en una carpeta que eliges",
-          "Vídeo desde el registro de vuelo en los escaneos de Andrii, desde el panel de resumen o las repeticiones: 60 fps en 1080p, 1440p o 4K",
-          "Simulador en inglés, español, polaco o ruso"
-        ]
-      },
-      {
-        "t": "Escenas y SuperSplat",
-        "items": [
-          "Cualquier escena pública de SuperSplat por enlace o id, también las republicadas (v2, v3…); las del antiguo formato PLY aún no se abren",
-          "Pestañas: Escaneos de Andrii, Recientes, Favoritos; filtros por paredes, tipo y ya voladas",
-          "Una pestaña de SuperSplat con los filtros y el orden de superspl.at, una escena al azar entre las mejor valoradas y una estrella para favoritas",
-          "Cambia de escena sin recargar la página: N siguiente, Shift+N al azar, F siguiente favorita; la emisora sigue conectada",
-          "Tras un choque, la siguiente escena en vez de reaparecer, en orden aleatorio o fijo: de la selección de Andrii, tus favoritas o las que ya volaste (desactivado por defecto)",
-          "Escala de la escena alrededor del dron de ×0,25 a ×100 con [ y ] (Shift duplica el paso) o desde el menú de pausa: vuela una habitación como una ciudad; se guarda para cada escaneo y las paredes escalan con ella",
-          "Comparte la escena que vuelas: un enlace con una imagen de tu vista",
-          "Progreso de carga: etapa, MB, velocidad, tiempo restante y reintento"
-        ]
-      },
-      {
-        "t": "Paredes y rejilla de vóxeles",
-        "items": [
-          "Paredes creadas en tu navegador para escaneos publicados sin ellas (hasta 4 M de gaussianas)",
-          "Paredes (colisiones) activadas o desactivadas con C, una sola elección para todas las escenas, así no cambia al pasar de una escena a otra",
-          "Quita las motas flotantes de un escaneo con ruido que se vuelven paredes invisibles, con una vista previa en vivo de lo que se quita; se guarda para cada escaneo y su autor puede fijar un valor por defecto",
-          "Rejilla de vóxeles sobre el escaneo o sola, con el escaneo oculto (V): cubos sólidos, aristas, colores por altura o flotantes en rojo, con su propia opacidad"
-        ]
-      },
-      {
-        "t": "Ajustes, estadísticas y datos de vuelo",
-        "items": [
-          "Todos los ajustes se guardan entre visitas, cada dron con su propio ajuste; exportar, importar y restablecer uno o todos",
-          "Un catálogo de todos los ajustes con su valor por defecto, rango y tecla, en este sitio y en GitHub",
-          "Estadísticas del vuelo al desarmar, como el OSD de las gafas",
-          "Panel de resumen: las estadísticas del vuelo, cada opción del menú y cada tecla",
-          "Guarda el registro de vuelo; exporta la trayectoria en CSV o JSON",
-          "Panel de mediciones: refresco de pantalla, tiempos de fotograma, frecuencia de la física y el control en uso; copia el informe en JSON",
-          "Estadísticas de vuelo de todo el tiempo guardadas entre visitas; un botón las descarga en CSV y JSON",
-          "Comentarios desde el simulador (B) y desde cada página de este sitio: un error, una idea o una propuesta de colaboración; los datos técnicos se envían solo si aceptas"
-        ]
-      }
-    ],
+    "nowNote": "«Hecho» significa que ya puedes usarlo en el sitio. Cómo se probó cada dispositivo: <link>Compatible con tu emisora</link>.",
+    "groups": {
+      "radio": "Emisora y calibración",
+      "controls": "Controles y modos de vuelo",
+      "drone": "Dron y ajuste fino",
+      "crash": "Gravedad, choques y reaparición",
+      "camera": "Cámara, vista y vídeo",
+      "scenes": "Escenas y SuperSplat",
+      "walls": "Paredes y rejilla de vóxeles",
+      "settings": "Ajustes, estadísticas y datos de vuelo"
+    },
+    "more": "Más",
+    "pilot": "Idea de un piloto",
     "progressTitle": "En desarrollo",
     "progressNote": "Se construye ahora.",
-    "progress": [
-      "Física del Pavo20 Pro y Pro II ajustada con los drones reales: las herramientas para logs blackbox y la importación del volcado de Betaflight están listas; faltan logs de los drones reales"
-    ],
-    "nextTitle": "Próximamente",
-    "nextNote": "Diseñado y en cola para las próximas versiones.",
-    "next": [
-      "Interruptores de la emisora para reaparecer y rebobinar"
-    ],
-    "suggest": "¿Echas en falta algún ajuste?",
-    "suggestLink": "Propón una función"
+    "plannedTitle": "Previsto",
+    "plannedNote": "Aceptado y en cola para las próximas versiones.",
+    "empty": "Ahora mismo no hay nada aquí.",
+    "suggest": "¿Tienes una idea para el simulador?",
+    "suggestNote": "Las ideas aceptadas entran en esta lista con la marca «Idea de un piloto», sin nombres.",
+    "suggestLink": "Propón una idea"
   },
   "how": {
     "eyebrow": "Cómo funciona",

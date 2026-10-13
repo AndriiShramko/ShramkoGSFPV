@@ -10,6 +10,8 @@ import { REPORT_ENDPOINT } from "@/config/site";
  * to the contact form on the landing. A bug carries the
  * technical details listed under the consent box only when it is ticked. Anti-spam as the lead form:
  * a hidden honeypot and time-to-submit (a send sooner than 3 s waits, it never fails).
+ * Any link on the page with data-feedback-open="bug|idea|coop" opens this dialog on that kind (the
+ * roadmap's "Suggest an idea"); without JavaScript such a link keeps its own href (the contact form).
  */
 type Kind = "bug" | "idea" | "coop";
 const KINDS: readonly Kind[] = ["bug", "idea", "coop"];
@@ -61,7 +63,8 @@ export default function Feedback() {
     };
   }, []);
 
-  function open() {
+  function open(start?: Kind) {
+    if (start) setKind(start);
     openedAt.current = performance.now();
     setDoneId(null);
     setState("idle");
@@ -71,6 +74,22 @@ export default function Feedback() {
   function close() {
     dialog.current?.close();
   }
+
+  // links elsewhere on the page that open this dialog (one listener for all of them, present or future)
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const link = e.target instanceof Element ? e.target.closest("[data-feedback-open]") : null;
+      if (!link) return;
+      e.preventDefault();
+      const k = link.getAttribute("data-feedback-open");
+      open(KINDS.find((x) => x === k));
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+    // open() only calls state setters and refs, which never change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function toContact() {
     close();
@@ -134,7 +153,7 @@ export default function Feedback() {
     <>
       <button
         type="button"
-        onClick={open}
+        onClick={() => open()}
         aria-haspopup="dialog"
         aria-label={t("buttonLabel")}
         title={t("buttonLabel")}

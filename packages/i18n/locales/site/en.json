@@ -40,115 +40,30 @@
     "eyebrow": "What you can set up",
     "h2": "Everything you can tune today — and what is coming",
     "lead": "Radios, drones, physics, scenes and video: every option that works on the site today, what is being built right now and what comes next.",
-    "status": { "live": "Live", "progress": "In progress", "next": "Next" },
-    "count": { "live": "live now", "progress": "in progress", "next": "up next" },
+    "status": { "done": "Done", "progress": "In progress", "planned": "Planned" },
+    "count": { "done": "done", "progress": "in progress", "planned": "planned" },
     "nowTitle": "Available now",
-    "nowNote": "“Live” means you can use it on the site today. How each input was tested: <link>Works with your radio</link>.",
-    "groups": [
-      {
-        "t": "Radio & calibration",
-        "items": [
-          "EdgeTX radio over USB (WebHID) in Chrome or Edge",
-          "Calibration with a drawn radio that shows which stick to move; each step waits until you really move it",
-          "Reverse any channel after calibration",
-          "Recalibrate button in Controls",
-          "A known radio reconnects by itself, and stays connected when you change scenes",
-          "The flight-mode switch on your radio is found on the check screen, with no click"
-        ]
-      },
-      {
-        "t": "Controls & flight modes",
-        "items": [
-          "Gamepad through the browser's Gamepad API",
-          "Touch sticks and an ARM button on a touch screen",
-          "Keyboard, with every flying key shown on screen",
-          "Flight modes: Angle (self-levelling, the default for everyone), Horizon and Acro; M, the mode chip on screen or your radio's switch",
-          "Close Controls with × or Esc; the pause menu shows its keys"
-        ]
-      },
-      {
-        "t": "Drone & tuning",
-        "items": [
-          "Six BetaFPV-class presets: Pavo20 Pro 3S, Pavo20 Pro II 3S and 4S, Pavo Pico 2S, Meteor65 Pro 1S, Air65 1S",
-          "Betaflight, Actual, KISS and Raceflight rate curves (set through the diff import), checked against Betaflight 4.5.1",
-          "Import rates, PID and throttle curve from a Betaflight CLI diff",
-          "PID for each axis: P, I, D and F",
-          "Motor spin-up time 8–30 ms and air drag 0.5–2×"
-        ]
-      },
-      {
-        "t": "Gravity, crashes & respawn",
-        "items": [
-          "Gravity: Earth and Moon (measured), Mars and zero-g (not tested yet)",
-          "On other worlds: same motors, keep thrust-to-weight or auto throttle (the last two not tested yet)",
-          "Crash threshold from 2 to 10 m/s, or crashes off: a wall only bounces you off",
-          "After a crash the drone is back by itself in 2 s, 5 s back along your path and still armed; R: the start, Y: rewind 5 s, Enter: keep the wreck",
-          "Start on an invisible pad at spawn height, motors on, until you lift off",
-          "Upside down or wedged and not moving: the drone goes a few seconds back by itself",
-          "Replay the last 10 s after a crash; a list of replays"
-        ]
-      },
-      {
-        "t": "Camera, view & video",
-        "items": [
-          "Camera field of view 70–150° and uptilt 0–50°",
-          "Stable frame ↔ detail slider; quality steps down by itself when frames drop",
-          "HUD on or off; F3 shows frame times",
-          "Reduced motion: a calmer crash camera (not tested yet)",
-          "Cinema mode: full detail and MP4 recording on Andrii's scans",
-          "Recording at 60 fps with F9 on Andrii's scans, with a recording dot and the time on screen, or auto-record every flight into a folder you choose",
-          "Video from the flight log on Andrii's scans, from the summary panel or the replays: 60 fps at 1080p, 1440p or 4K",
-          "Simulator in English, Spanish, Polish or Russian"
-        ]
-      },
-      {
-        "t": "Scenes & SuperSplat",
-        "items": [
-          "Any public SuperSplat scene by link or id, re-published versions (v2, v3…) too; scenes in the older PLY format do not open yet",
-          "Tabs: Andrii's scans, Recent, Favourites; filters for walls, type and flown",
-          "A SuperSplat tab with superspl.at's filters and sorting, a random top-rated scene and a star for favourites",
-          "Change scenes without reloading the page: N next, Shift+N random, F next favourite; the radio stays connected",
-          "After a crash, the next scene instead of a respawn, in random or fixed order: from Andrii's picks, your favourites or the scenes you flew (off by default)",
-          "Scene scale around the drone from ×0.25 to ×100 with [ and ] (Shift doubles a step) or the pause menu: fly a room like a city; kept for each scan, the walls scale with it",
-          "Share the scene you are flying: a link with a picture of your view",
-          "Loading progress: stage, MB, speed, time left and retry"
-        ]
-      },
-      {
-        "t": "Walls & voxel grid",
-        "items": [
-          "Walls built in your browser for scans published without them (up to 4 M Gaussians)",
-          "Walls (collisions) on or off with C, one choice for every scene, so it stays the same after a scene switch",
-          "Drop the floating specks of a noisy scan that turn into invisible walls, with a live preview of what goes; kept for each scan, the scan's author can set a default",
-          "Voxel grid over the scan or on its own, the scan hidden (V): solid cubes, wireframe, height colours or floaters in red, with its own opacity"
-        ]
-      },
-      {
-        "t": "Settings, stats & flight data",
-        "items": [
-          "Every setting kept between visits, each drone with its own tune; export, import and reset one or all",
-          "A catalogue of every setting with its default, range and key, on this site and on GitHub",
-          "Flight stats when you disarm, like the goggles OSD",
-          "Summary panel: this flight's stats, every menu item and every key",
-          "Save the flight log; export the trajectory as CSV or JSON",
-          "Measurements panel: display refresh, frame times, physics rate and the input in use; copy the report as JSON",
-          "Lifetime flight stats kept between visits; one button downloads them as CSV and JSON",
-          "Feedback from the simulator (B) and from every page of this site: a bug, an idea or cooperation; technical details are sent only if you agree"
-        ]
-      }
-    ],
+    "nowNote": "“Done” means you can use it on the site today. How each input was tested: <link>Works with your radio</link>.",
+    "groups": {
+      "radio": "Radio & calibration",
+      "controls": "Controls & flight modes",
+      "drone": "Drone & tuning",
+      "crash": "Gravity, crashes & respawn",
+      "camera": "Camera, view & video",
+      "scenes": "Scenes & SuperSplat",
+      "walls": "Walls & voxel grid",
+      "settings": "Settings, stats & flight data"
+    },
+    "more": "More",
+    "pilot": "Pilot's idea",
     "progressTitle": "In progress",
     "progressNote": "Being built now.",
-    "progress": [
-      "Pavo20 Pro and Pro II physics tuned against the real quads: the blackbox log tools and the Betaflight dump import are ready, waiting for logs from the real quads"
-    ],
-    "nextTitle": "Next",
-    "nextNote": "Designed and queued for the next builds.",
-    "next": [
-      "Radio switches for respawn and rewind"
-    ],
-    "suggest": "Missing a setting you need?",
-    "suggestLink": "Suggest a feature"
+    "plannedTitle": "Planned",
+    "plannedNote": "Accepted and queued for the next builds.",
+    "empty": "Nothing here right now.",
+    "suggest": "Have an idea for the simulator?",
+    "suggestNote": "Accepted ideas join this list marked “Pilot's idea”; no names are shown.",
+    "suggestLink": "Suggest an idea"
   },
   "how": {
     "eyebrow": "How it works",

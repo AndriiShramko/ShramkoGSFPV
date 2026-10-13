@@ -1,16 +1,17 @@
 // The owner's admin page, /admin/ (static; every byte of data comes from /api/admin/*, behind his
 // password, see apps/api/admin.py). Sign in, then two tabs: Scenes (the picker's catalogue: order,
-// Featured, hidden, collections, publish and undo) and Reports (pilots' bugs and ideas).
+// Featured, hidden, collections, publish and undo) and Ideas (pilots' ideas and bugs and the owner's notes
+// as a kanban, in sync with the landing's roadmap: ideas/tab.ts).
 import { h, clear } from '../ui/dom';
 import { t } from './i18n';
 import { AdminClient } from './api';
 import { ScenesTab } from './scenes-tab';
-import { ReportsTab } from './reports-tab';
+import { IdeasTab } from './ideas/tab';
 
 const root = document.getElementById('admin')!;
 const api = new AdminClient();
 const note = h('p', { class: 'note', role: 'status', 'aria-live': 'polite' });
-let current: ScenesTab | ReportsTab | null = null;
+let current: ScenesTab | IdeasTab | null = null;
 document.title = t('admin.title');
 
 function say(msg: string, bad = false): void {
@@ -44,10 +45,10 @@ function shell(): void {
     clear(root);
     const body = h('div', {});
     const tabs = h('nav', { class: 'tabs', role: 'tablist' });
-    const open = async (which: 'scenes' | 'reports'): Promise<void> => {
+    const open = async (which: 'scenes' | 'ideas'): Promise<void> => {
         for (const b of tabs.querySelectorAll('button')) b.setAttribute('aria-selected', String(b.dataset.tab === which));
         await current?.flush();
-        const tab = which === 'scenes' ? new ScenesTab(api, say) : new ReportsTab(api, say);
+        const tab = which === 'scenes' ? new ScenesTab(api, say) : new IdeasTab(api, say);
         current = tab;
         clear(body);
         body.append(tab.root);
@@ -58,7 +59,7 @@ function shell(): void {
             say(e instanceof Error ? e.message : String(e), true);
         }
     };
-    for (const k of ['scenes', 'reports'] as const) {
+    for (const k of ['scenes', 'ideas'] as const) {
         tabs.append(h('button', { type: 'button', role: 'tab', class: 'tab', 'data-tab': k, onclick: () => void open(k) }, t(`admin.tab.${k}`)));
     }
     const out = h('button', { type: 'button', class: 'btn', 'data-action': 'logout', onclick: async () => { await current?.flush(); await api.logout().catch(() => undefined); login(); } }, t('admin.logout'));

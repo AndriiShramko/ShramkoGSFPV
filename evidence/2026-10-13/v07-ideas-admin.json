@@ -1,0 +1,408 @@
+{
+  "name": "v07-ideas-admin",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-13T15:50:01.588Z",
+    "gitHead": "5af8c01",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "fly": "http://127.0.0.1:5367",
+  "error": null,
+  "checks": [
+    {
+      "name": "five columns with their counts (New 2, Accepted 1, In progress 2, Done 1, Rejected 1)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the record with an unknown status is counted, not placed",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "the old Reports tab is gone",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the mail setup line names the sender",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "drag to Accepted sends one POST ideas/update {id, status: accepted}",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "drop on its own column sends nothing",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "ArrowLeft in New sends nothing (edge)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "ArrowRight on the handle moves the card to the next column",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the focus stays on the moved card's handle",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "Done opens the thank-you dialog at \"what was done\", after one status call and no e-mail",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "\"Make the e-mail\" with nothing written sends nothing",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "the summary goes in the pilot's language to ideas/done, and the server's draft is shown",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the draft is addressed to the pilot's e-mail",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the draft is only a draft (nothing queued)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "Not now sends nothing and leaves the draft a draft",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "the card reopens the waiting draft without a call",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "Send queues the thank-you once (ideas/send-done {id, mail: the draft read})",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the owner is told the thank-you is queued and when it goes",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "after it the card no longer offers a thank-you",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "a refused move leaves the card in its column and says why",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "Done for a note without an e-mail opens no thank-you dialog",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "search keeps only the card with every word",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "a word found nowhere empties the board",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "kind toggles: only bugs left",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "contact filter: the cards without a contact",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "technical details open from the card (the stored JSON)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "technical details download as R-20261008-0003.json",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the card shows what the pilot sent (language, page, scene, release)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "no e-mail left: no reply box, a reason instead",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "the contact itself is on the card",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "a refused reply keeps its text in the box",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "the reply is queued behind the undo window and the owner is told so",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "after the send the reply box is empty",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "a second click on Send reply sends nothing: the pilot gets one e-mail",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "Cancel on the queued reply stops it",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "after Add comment the comment box is empty (a second click adds nothing)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "reply, cancel, comment, urgency and public title each send their own call with their body",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the Column select moves the card (touch)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "a card with an English title in a shown status carries the landing chip",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "without an English title no landing chip",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "the card asks for the English title first, then names the languages still missing",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the unticked landing switch survives redraws before Save",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "Save sends visible: false and the card leaves the landing",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "an empty note sends nothing",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "the note goes to ideas/note and lands in New",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "without Gmail a reply is announced as saved for Gmail, not as queued",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "without Gmail the thank-you is announced as saved for Gmail, not as queued",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the card reopens that thank-you to Send: no new draft, no Edit, its state said",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "its Send goes to ideas/mail/send with that e-mail: one thank-you, queued, no longer offered",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "at 375 px the board is one column with no sideways scroll",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the Scenes tab still opens",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "no page errors",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "no e-mail went out on its own: two thank-yous queued by Send, one reply cancelled, one waiting for Gmail",
+      "ok": true,
+      "control": false
+    }
+  ],
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "countsAtStart": {
+    "new": "2",
+    "accepted": "1",
+    "in_progress": "2",
+    "done": "1",
+    "rejected": "1"
+  },
+  "dragCalls": [
+    [
+      "ideas/update",
+      {
+        "id": "R-20261006-0001",
+        "status": "accepted"
+      }
+    ]
+  ],
+  "doneCalls": [
+    [
+      "ideas/done",
+      {
+        "id": "R-20261012-0005",
+        "summary": {
+          "pl": "Funkcje kanalow radia sa juz w symulatorze: ARM i tryb na CH5 i CH6."
+        }
+      }
+    ]
+  ],
+  "sendCalls": [
+    [
+      "ideas/send-done",
+      {
+        "id": "R-20261012-0005",
+        "mail": "M-1"
+      }
+    ]
+  ],
+  "cardCalls": [
+    [
+      "ideas/reply",
+      {
+        "id": "R-20261006-0002",
+        "text": "Thanks! It is queued for the next build."
+      }
+    ],
+    [
+      "ideas/mail/cancel",
+      {
+        "id": "M-2"
+      }
+    ],
+    [
+      "ideas/update",
+      {
+        "id": "R-20261006-0002",
+        "comment": "With the HUD work"
+      }
+    ],
+    [
+      "ideas/update",
+      {
+        "id": "R-20261006-0002",
+        "urgency": "urgent"
+      }
+    ],
+    [
+      "ideas/update",
+      {
+        "id": "R-20261006-0002",
+        "publicTitle": {
+          "en": "A crosshair in the centre of the view",
+          "pl": "Celownik na srodku obrazu"
+        },
+        "visible": true
+      }
+    ]
+  ],
+  "replyWithoutGmail": "Reply to pilot.one@example.com saved but not sent: Gmail is not set up on the server. Once it is, press Send next to it on the card.",
+  "thanksWithoutGmail": "Thank-you to pilot.one@example.com saved but not sent: Gmail is not set up on the server. Once it is, press Send next to it on the card.",
+  "resendCalls": [
+    [
+      "ideas/mail/send",
+      {
+        "id": "M-4"
+      }
+    ]
+  ],
+  "pageErrors": [],
+  "calls": [
+    "GET session",
+    "GET catalog",
+    "GET ideas",
+    "POST ideas/update",
+    "POST ideas/update",
+    "POST ideas/update",
+    "POST ideas/done",
+    "POST ideas/send-done",
+    "POST ideas/update",
+    "POST ideas/update",
+    "GET reports/R-20261008-0003/diagnostics",
+    "POST ideas/reply",
+    "POST ideas/reply",
+    "POST ideas/mail/cancel",
+    "POST ideas/update",
+    "POST ideas/update",
+    "POST ideas/update",
+    "POST ideas/update",
+    "POST ideas/update",
+    "POST ideas/note",
+    "POST ideas/reply",
+    "POST ideas/update",
+    "POST ideas/done",
+    "POST ideas/send-done",
+    "POST ideas/mail/send",
+    "GET catalog"
+  ]
+}
