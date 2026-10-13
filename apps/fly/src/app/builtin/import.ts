@@ -2,8 +2,11 @@
 // diff become the tune of the drone flown, stored for that drone (tune.rates / tune.pid /
 // tune.throttle; W2-1, review finding C10: v0.2 put them into one set of overrides that the next
 // drone inherited and a reload forgot), then a new flight model from the store; every warning is
-// shown in full.
-import { parseBetaflightDiff } from '@gsfpv/sim-core';
+// shown in full. v0.7: Quick rates come with their quickrates_rc_expo, and a diff whose aux lines
+// set ARM / ANGLE / HORIZON offers them to the radio in use (its Switches, @gsfpv/input switches.ts).
+import { copyRates, parseBetaflightDiff } from '@gsfpv/sim-core';
+import type { BfAuxCondition } from '@gsfpv/sim-core';
+import { channelOf, switchesFromBetaflight } from '@gsfpv/input';
 import { h, clear, panel } from '../../ui/dom';
 import { t } from '../../i18n';
 import { applyModel, droneOf, pilotSet } from '../prefs';
@@ -12,9 +15,10 @@ import type { Feature, FlightContext } from '../context';
 
 type ImportResult = ReturnType<NonNullable<TestHook['importDiff']>>;
 
-function importDiff(ctx: FlightContext, text: string): ImportResult {
+/** The import, and the diff's mode switches for the panel (empty when refused). Exported for the Node tests. */
+export function importDiff(ctx: FlightContext, text: string): ImportResult & { aux: BfAuxCondition[] } {
     const r = parseBetaflightDiff(text);
-    if (r.errors.length || (!r.rates && !r.pid)) return { ok: false, errors: r.errors.length ? r.errors : ['nothing to import'], warnings: r.warnings };
+    if (r.errors.length || (!r.rates && !r.pid)) return { ok: false, errors: r.errors.length ? r.errors : ['nothing to import'], warnings: r.warnings, aux: [] };
     const store = ctx.prefs;
     const at = { drone: droneOf(store) };
     const warnings = [...r.warnings];
@@ -23,13 +27,33 @@ function importDiff(ctx: FlightContext, text: string): ImportResult {
         if (!s.ok) warnings.push(`${id}: not stored (${s.reason})`);
         else if (s.clamped) warnings.push(`${id}: adjusted into the simulator's range`);
     };
-    if (r.rates) put('tune.rates', { type: r.rates.type, roll: { ...r.rates.roll }, pitch: { ...r.rates.pitch }, yaw: { ...r.rates.yaw }, rateLimit: r.rates.rateLimit });
+    // copyRates keeps quickrates_rc_expo with QUICK (and only there)
+    if (r.rates) put('tune.rates', copyRates(r.rates));
     if (r.pid) put('tune.pid', { roll: [...r.pid.roll], pitch: [...r.pid.pitch], yaw: [...r.pid.yaw] });
     if (r.throttle) put('tune.throttle', { mid: r.throttle.mid, expo: r.throttle.expo });
     ctx.clearCrash();
     applyModel(ctx.session, store);
     const v = r.firmware.version;
-    return { ok: true, firmware: v ? `${r.firmware.name ?? 'Betaflight'} ${v.major}.${v.minor}.${v.patch}` : null, ratesType: r.rates?.type, warnings };
+    return { ok: true, firmware: v ? `${r.firmware.name ?? 'Betaflight'} ${v.major}.${v.minor}.${v.patch}` : null, ratesType: r.rates?.type, warnings, aux: r.aux };
+}
+
+/**
+ * The diff's ARM / ANGLE / HORIZON switches under an import's answer: a button puts them on the radio
+ * in use (saved for it, flown at once); without a radio the line says where to paste them later.
+ */
+function switchesOffer(ctx: FlightContext, aux: readonly BfAuxCondition[], out: HTMLElement): void {
+    const imp = switchesFromBetaflight(aux);
+    if (!imp.applied.length) return;
+    const list = imp.applied.map((c, i) => `${c.mode} CH${channelOf(imp.switches.ranges[i].input)} ${c.lo}–${c.hi}`).join(', ');
+    const radio = ctx.input.radioInUse();
+    if (!radio?.profile) { out.append(h('p', { class: 'muted' }, t('switches.diffNoRadio', { list }))); return; }
+    const name = radio.profile.deviceName;
+    const line = h('p', {}, t('switches.diffFound', { list }));
+    const use = h('button', { type: 'button', class: 'btn', 'data-action': 'import-switches', onclick: () => {
+        const p = { ...radio.profile!, switches: imp.switches };
+        if (ctx.input.replaceProfile(p)) { use.remove(); line.textContent = t('switches.diffApplied', { name }); }
+    } }, t('switches.diffApply', { name }));
+    out.append(line, use);
 }
 
 function openImport(ctx: FlightContext): void {
@@ -43,6 +67,7 @@ function openImport(ctx: FlightContext): void {
         out.append(h('p', {}, r.ok ? t('import.ok', { fw: r.firmware ?? '?', type: r.ratesType ?? '—', w: String(r.warnings?.length ?? 0) }) : t('import.refused', { msg: (r.errors ?? []).join(' · ') })));
         // every warning in full: a success with warnings must not read as a clean success
         if (r.warnings?.length) out.append(h('ul', { class: 'import-warnings' }, ...r.warnings.map((w) => h('li', {}, w))));
+        if (r.ok) switchesOffer(ctx, r.aux, out);
     } }, t('import.apply'));
     p.body.append(h('p', { class: 'muted' }, t('import.hint')), area, apply, out);
     ctx.ui.append(p.root);

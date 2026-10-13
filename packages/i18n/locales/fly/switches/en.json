@@ -63,5 +63,9 @@
   "switches.checkNote": "Arm and flight mode follow this radio's Switches (Controls, then Switches).",
   "switches.settingsLine": "Switches of {name}: which channel arms, sets the flight mode or runs rewind, record and more.",
   "switches.settingsNoRadio": "Radio switches (arm, flight mode, rewind, record…): connect your radio in Controls first.",
-  "switches.settingsBtn": "Open Switches"
+  "switches.settingsBtn": "Open Switches",
+  "switches.diffFound": "This diff also sets switches: {list}.",
+  "switches.diffApply": "Use them on {name}",
+  "switches.diffApplied": "{name} now arms and picks the flight mode as in this diff (Controls, then Switches). Flip the arm switch off and on to arm.",
+  "switches.diffNoRadio": "This diff also sets switches ({list}). Connect your radio in Controls, then paste the diff in Switches."
 }

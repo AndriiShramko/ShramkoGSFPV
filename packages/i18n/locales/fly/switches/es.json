@@ -63,5 +63,9 @@
   "switches.checkNote": "El armado y el modo de vuelo siguen los Interruptores de esta radio (Controles y luego Interruptores).",
   "switches.settingsLine": "Interruptores de {name}: qué canal arma, cambia el modo de vuelo o ejecuta retroceder, grabar y más.",
   "switches.settingsNoRadio": "Interruptores de la radio (armado, modo de vuelo, retroceder, grabar…): primero conecta tu radio en Controles.",
-  "switches.settingsBtn": "Abrir Interruptores"
+  "switches.settingsBtn": "Abrir Interruptores",
+  "switches.diffFound": "Este diff también configura interruptores: {list}.",
+  "switches.diffApply": "Usarlos en {name}",
+  "switches.diffApplied": "{name} ahora arma y elige el modo de vuelo como en este diff (Controles y luego Interruptores). Para armar, apaga y enciende el interruptor de armado.",
+  "switches.diffNoRadio": "Este diff también configura interruptores ({list}). Conecta tu radio en Controles y pega el diff en Interruptores."
 }

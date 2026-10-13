@@ -63,5 +63,9 @@
   "switches.checkNote": "Uzbrojenie i tryb lotu idą za Przełącznikami tej aparatury (Sterowanie, potem Przełączniki).",
   "switches.settingsLine": "Przełączniki {name}: który kanał uzbraja, zmienia tryb lotu albo uruchamia cofanie, nagrywanie i inne.",
   "switches.settingsNoRadio": "Przełączniki aparatury (uzbrojenie, tryb lotu, cofanie, nagrywanie…): najpierw podłącz aparaturę w Sterowaniu.",
-  "switches.settingsBtn": "Otwórz Przełączniki"
+  "switches.settingsBtn": "Otwórz Przełączniki",
+  "switches.diffFound": "Ten diff ustawia też przełączniki: {list}.",
+  "switches.diffApply": "Użyj ich w {name}",
+  "switches.diffApplied": "{name} uzbraja się i wybiera tryb lotu tak jak w tym diffie (Sterowanie, potem Przełączniki). Żeby uzbroić, wyłącz i włącz przełącznik uzbrojenia.",
+  "switches.diffNoRadio": "Ten diff ustawia też przełączniki ({list}). Podłącz aparaturę w Sterowaniu, potem wklej diff w Przełącznikach."
 }

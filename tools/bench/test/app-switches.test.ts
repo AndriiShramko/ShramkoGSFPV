@@ -144,6 +144,32 @@ describe('KeyRouter.trigger: a switch presses the action\'s key', () => {
     });
 });
 
+describe('the menu\'s Betaflight import (v0.7): Quick with its stick expo, and the diff\'s switches', () => {
+    const VERSION = '# Betaflight / STM32F405 (S405) 4.5.1 Mar 19 2025 / 10:06:16 (77d01ba3b) MSP API: 1.46';
+    const DIFF = `# version\n${VERSION}\n\naux 0 0 1 1700 2100 0 0\naux 1 1 0 900 1300 0 0\naux 2 28 2 1700 2100 0 0\n\nprofile 0\n\nrateprofile 0\nset rates_type = QUICK\nset quickrates_rc_expo = ON\nset roll_rc_rate = 120\n`;
+
+    it('stores QUICK with quickrates_rc_expo ON for the drone flown and hands over ARM / ANGLE (not AIR MODE); control: the pre-v0.7 copy lost the expo switch', async () => {
+        const { MemoryBackend, PrefsStore, SCHEMA } = await import('../../../packages/prefs/src');
+        const P = await import('../../../apps/fly/src/app/prefs');
+        const PR = await import('../../../apps/fly/src/presets');
+        const I = await import('../../../apps/fly/src/app/builtin/import');
+        const store = new PrefsStore(SCHEMA, new MemoryBackend(), P.presetResolver(PR.PRESETS, []), { debounceMs: 0 });
+        const session = { presetId: 'pavo20pro-3s', overrides: {}, applyLifeSettings(d: string, o: object) { this.presetId = d; this.overrides = o; } };
+        const ctx = { prefs: store, session, clearCrash: () => undefined } as never;
+        const r = I.importDiff(ctx, DIFF);
+        expect(r.ok).toBe(true);
+        const stored = store.get('tune.rates', { drone: P.droneOf(store) }) as { type: string; quickRcExpo?: boolean; roll: { rcRate: number } };
+        expect(stored.type).toBe('QUICK');
+        expect(stored.quickRcExpo).toBe(true);
+        expect(stored.roll.rcRate).toBe(120);
+        expect(r.aux.map((a) => `${a.mode} CH${a.channel}`)).toEqual(['ARM CH6', 'ANGLE CH5', 'AIR MODE CH7']);
+        // control: the import before v0.7 copied type, axes and limit only; the store then keeps the expo OFF
+        const old = { type: 'QUICK', roll: stored.roll, pitch: stored.roll, yaw: stored.roll, rateLimit: 1998 };
+        P.pilotSet(store, 'tune.rates', old, { drone: P.droneOf(store) });
+        expect((store.get('tune.rates', { drone: P.droneOf(store) }) as { quickRcExpo?: boolean }).quickRcExpo).toBe(false);
+    });
+});
+
 describe('stored switches are checked when a profile loads', () => {
     it('readable ranges stay; a broken entry is dropped with a warning; unreadable switches go, the wizard\'s arm stays', () => {
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);

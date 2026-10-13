@@ -4,7 +4,7 @@ import type { Profile } from '@gsfpv/input';
 import { KeyboardSource } from '../devices/keyboard';
 import { findSavedHid, findSavedGamepad } from '../devices/reconnect';
 import { TouchSticks } from '../devices/touch';
-import { loadLastInput, saveLastInput, loadProfiles, profileFor } from '../controls';
+import { loadLastInput, saveLastInput, loadProfiles, profileFor, saveProfile } from '../controls';
 import type { LastInput } from '../controls';
 import { RadioScreen } from '../ui/radio';
 import type { RadioChoice } from '../ui/radio';
@@ -137,6 +137,25 @@ export class InputHost {
         this.lastChoice = c;
         if (remember) saveLastInput({ kind: c.kind, key: c.profile?.deviceKey });
         beacon('input_connected', { kind: c.kind });
+    }
+
+    /** The radio or gamepad in use, with its profile; null for touch, keyboard, or none. */
+    radioInUse(): RadioChoice | null {
+        const c = this.lastChoice;
+        return c && (c.kind === 'hid' || c.kind === 'gamepad') && c.profile ? c : null;
+    }
+
+    /**
+     * The radio in use with a changed setup (its switches from a Betaflight import): saved for that
+     * device and flown at once (a new arm gate: the switch must be seen off again). False when the
+     * profile is not the one of the radio in use.
+     */
+    replaceProfile(p: Profile): boolean {
+        const c = this.radioInUse();
+        if (!c || c.profile?.deviceKey !== p.deviceKey) return false;
+        saveProfile(p);
+        this.use({ ...c, profile: p });
+        return true;
     }
 
     /** "Connected: TX16S · Controls" on the Controls button for a while: what flies, and where to change it. */

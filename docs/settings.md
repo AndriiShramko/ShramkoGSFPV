@@ -191,7 +191,10 @@ Yes, for each drone separately: camera uptilt 0–50° and field of view 70–15
 Yes: gravity is a setting (0–30 m/s²): Earth 9.81, Moon 1.62, Mars 3.72, zero-g or anything in between. **Thrust on other worlds** picks how the motors cope: Real (same motors), Keep thrust / weight or Auto throttle (stick centre hovers).
 
 **Can I use my own Betaflight rates and PID in the simulator?**
-Yes: paste `diff` or `diff all` from the Betaflight CLI. The rates (Betaflight, Raceflight, KISS, Actual or Quick curves), the PID and the throttle curve are set for the drone you fly; every drone keeps its own.
+Yes: edit the rates in Settings (Betaflight, Raceflight, KISS, Actual or Quick curves, under Betaflight Configurator's names, with a live chart and Copy as CLI back to your quad) or paste `diff` or `diff all` from the Betaflight CLI. The rates, the PID and the throttle curve are set for the drone you fly; every drone keeps its own.
+
+**Can I choose which radio channel arms the drone or switches the flight mode?**
+Yes: Controls, then Switches. Arm, Angle / Horizon / Acro and functions such as rewind and record go on any channel from CH5 to CH16, with ranges as in Betaflight's Modes tab. Flip a switch to assign it, or paste a Betaflight `diff all` to take its aux lines.
 
 **How hard can I hit a wall before it counts as a crash?**
 That is the **Crash threshold**: 2–10 m/s for each drone, 4 m/s by default. Slower touches slide along the wall.
