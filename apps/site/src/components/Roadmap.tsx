@@ -46,7 +46,10 @@ function Rows({ items, labels }: { items: ViewItem[]; labels: RoadmapLabels }) {
     <ul className="mt-3 divide-y divide-line">
       {items.map((it) => (
         <li key={it.id} data-roadmap-item={it.id} data-status={it.status} className="flex items-start justify-between gap-3 py-2.5">
-          <span className="text-[15px] leading-snug text-ink/90">{keepTogether(it.title)}</span>
+          <span className="text-[15px] leading-snug text-ink/90">
+            {keepTogether(it.title)}
+            {it.text ? <span className="mt-1 block text-sm leading-snug text-muted">{it.text}</span> : null}
+          </span>
           <span className="flex shrink-0 flex-wrap justify-end gap-1.5">
             {it.fromPilot ? (
               <Chip className="border-accent/30 text-ink/80">

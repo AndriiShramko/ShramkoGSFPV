@@ -70,6 +70,12 @@ describe('viewItems and buildBoard', () => {
         expect(b.planned.map((x) => x.id)).toEqual(['p']);
     });
 
+    it('the public text under a title comes in the language asked for, else English, else none', () => {
+        const withText = parseRoadmap(doc(item({ id: 't', text: { en: 'Off by default', pl: 'Domyslnie wylaczony' } }), item({ id: 'n' })))!;
+        expect(viewItems(withText, 'pl').map((v) => v.text)).toEqual(['Domyslnie wylaczony', undefined]);
+        expect(viewItems(withText, 'es')[0].text).toBe('Off by default');
+    });
+
     it('an answer without the optional group keeps the group the snapshot gave the id (control: without it, "More")', () => {
         const snap = viewItems(items, 'en');
         const bare = parseRoadmap(doc(item({ id: 'a' })))!;
@@ -123,14 +129,15 @@ describe('the prebuild snapshot (apps/site/scripts/roadmap.mjs)', () => {
     });
 
     it('with ROADMAP_URL: the live answer when usable, the seed when not (control)', async () => {
-        let body = JSON.stringify(doc(item({ id: 'live-only' })));
+        // lane B's store keeps no landing group: a seeded id takes its seed group, a new idea has none
+        let body = JSON.stringify(doc(item({ id: 'live-only' }), item({ id: 'F-recalibrate-button-in-controls' })));
         let status = 200;
         const srv = createServer((_q, r) => { r.writeHead(status, { 'content-type': 'application/json' }); r.end(body); });
         await new Promise<void>((ok) => srv.listen(0, '127.0.0.1', ok));
         const url = `http://127.0.0.1:${(srv.address() as AddressInfo).port}/api/roadmap`;
         try {
             const live = await run(url);
-            expect([live.source, parseRoadmap(live.roadmap)?.map((x) => x.id)]).toEqual(['live', ['live-only']]);
+            expect([live.source, parseRoadmap(live.roadmap)?.map((x) => [x.id, x.group ?? null])]).toEqual(['live', [['live-only', null], ['F-recalibrate-button-in-controls', 'radio']]]);
             status = 503;
             expect((await run(url)).source).toBe('seed');
             status = 200;
@@ -139,5 +146,30 @@ describe('the prebuild snapshot (apps/site/scripts/roadmap.mjs)', () => {
         } finally {
             srv.close();
         }
+    });
+});
+
+/** Everything that disagrees between the site dictionaries' groups and the seed's. */
+function groupProblems(site: Record<string, Record<string, string>>, seedGroups: ReadonlySet<string>): string[] {
+    const out: string[] = [];
+    const want = Object.keys(site.en).join(',');
+    for (const [l, groups] of Object.entries(site)) if (Object.keys(groups).join(',') !== want) out.push(`site ${l}: ${Object.keys(groups).join(',')}`);
+    for (const g of seedGroups) if (!(g in site.en)) out.push(`seed: ${g}`);
+    return out;
+}
+
+describe('the landing groups are one list', () => {
+    const site = Object.fromEntries(['en', 'es', 'pl', 'ru'].map((l) => [l, (JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'site', `${l}.json`), 'utf8')) as { features: { groups: Record<string, string> } }).features.groups]));
+    const seed = new Set((JSON.parse(readFileSync(join(REPO, 'apps', 'api', 'locales', 'roadmap-seed.json'), 'utf8')) as { items: { group: string }[] }).items.map((i) => i.group));
+
+    it('every seed group has a title in each site dictionary, the same groups in the same order', () => {
+        expect(Object.keys(site.en)).toEqual(GROUPS);
+        expect(groupProblems(site, seed)).toEqual([]);
+    });
+
+    it('a group in the seed only, or a dictionary out of step, is caught (control)', () => {
+        expect(groupProblems(site, new Set([...seed, 'wind']))).toEqual(['seed: wind']);
+        const { walls: _w, ...noWalls } = site.pl;
+        expect(groupProblems({ ...site, pl: noWalls }, seed)).toEqual(['site pl: radio,controls,drone,crash,camera,scenes,settings']);
     });
 });

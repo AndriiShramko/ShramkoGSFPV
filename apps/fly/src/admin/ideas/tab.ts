@@ -2,17 +2,18 @@
 // New / Accepted (the work queue) / In progress / Done / Rejected. It replaces the Reports tab and keeps
 // what that tab did (every report with its words and what the pilot sent, bug details to open or
 // download). Move a card by dragging it onto a column, by its handle and the left/right arrow keys, or
-// by the Column select in the open card (touch). Filters and a search narrow the board; nothing is
-// waiting to be saved here, every change goes to the server at once (ideas/api.ts) and the card shows
-// the server's answer. A pilot's idea that reaches Done opens the thank-you draft (ideas/mail.ts).
+// by the Column select in the open card (touch). Filters and a search narrow the board; a note form
+// writes down an idea a pilot told the owner outside the form (item 8). Nothing waits to be saved here:
+// every change goes to the server at once (ideas/api.ts) and the card shows the server's answer. A
+// pilot's idea that reaches Done opens the thank-you dialog (ideas/mail.ts); e-mails go only on Send.
 import { h, clear } from '../../ui/dom';
 import { t } from '../i18n';
 import type { AdminClient } from '../api';
-import { IDEA_KINDS, IDEA_STATUSES, IdeasClient } from './api';
-import type { Idea, IdeaKind, IdeaStatus } from './api';
+import { IDEA_KINDS, IDEA_STATUSES, IdeasClient, PUBLIC_LANGS, URGENCIES } from './api';
+import type { Idea, IdeaKind, IdeaStatus, IdeasSetup, Urgency } from './api';
 import { ALL_IDEAS, columns, moveBody, thanksDue } from './board';
 import type { IdeaFilter } from './board';
-import { card } from './card';
+import { card, field } from './card';
 import type { CardHost } from './card';
 import { openThanks } from './mail';
 
@@ -21,6 +22,7 @@ export class IdeasTab implements CardHost {
     readonly client: IdeasClient;
     private ideas: Idea[] = [];
     private unreadable = 0;
+    private setup: IdeasSetup = { mail: false, mailFrom: null, bot: false, undoSeconds: 60 };
     private filter: IdeaFilter = { ...ALL_IDEAS, kinds: new Set(ALL_IDEAS.kinds) };
     private readonly opened = new Set<string>();
     private readonly busy = new Set<string>();
@@ -29,19 +31,23 @@ export class IdeasTab implements CardHost {
     private readonly bar = h('div', { class: 'bar filters', role: 'search' });
     private readonly shown = h('span', { class: 'muted', 'data-testid': 'idea-shown', 'aria-live': 'polite' });
     private readonly warn = h('p', { class: 'warn', 'data-testid': 'idea-unreadable' });
+    private readonly setupNote = h('p', { class: 'muted', 'data-testid': 'idea-setup' });
 
     constructor(api: AdminClient, private readonly say: (msg: string, bad?: boolean) => void) {
         this.client = new IdeasClient(api);
         this.buildFilters();
         this.root = h('div', { class: 'tab-body' },
-            h('section', { class: 'card' }, this.bar, h('p', { class: 'muted' }, t('admin.ideas.help')), this.warn),
+            h('section', { class: 'card' }, this.bar, h('p', { class: 'muted' }, t('admin.ideas.help')), this.setupNote, this.warn, this.noteForm()),
             this.board);
     }
+
+    get undoSeconds(): number { return this.setup.undoSeconds; }
 
     async load(): Promise<void> {
         const r = await this.client.list();
         this.ideas = r.ideas;
         this.unreadable = r.unreadable;
+        this.setup = r.setup;
         this.render();
     }
 
@@ -68,7 +74,7 @@ export class IdeasTab implements CardHost {
         void this.run(id, () => this.client.setStatus(body.id, body.status), (done) => t('admin.ideas.moved', { id, column: t(`admin.ideas.col.${done.status}`) })).then((ok) => {
             if (focus) this.focus(id, '.handle');
             const now = this.ideas.find((x) => x.id === id);
-            if (ok && now && now.status === 'done' && i.status !== 'done' && thanksDue(now)) this.thanks(now);
+            if (ok && now && i.status !== 'done' && thanksDue(now)) this.thanks(now);
         });
     }
 
@@ -90,10 +96,10 @@ export class IdeasTab implements CardHost {
     }
 
     thanks(i: Idea): void {
-        openThanks(i, { client: this.client, update: (x) => this.update(x), say: this.say });
+        openThanks(i, { client: this.client, undoSeconds: this.setup.undoSeconds, update: (x) => this.update(x), say: this.say });
     }
 
-    /** The server's answer replaces the card (or adds it, if the store has a new one). */
+    /** The server's answer replaces the card (or adds it: a new note). */
     update(i: Idea): void {
         const at = this.ideas.findIndex((x) => x.id === i.id);
         if (at >= 0) this.ideas[at] = i; else this.ideas.unshift(i);
@@ -134,12 +140,50 @@ export class IdeasTab implements CardHost {
             kinds, this.shown);
     }
 
+    /** "Write down an idea": what a pilot told the owner outside the form goes on the board as a note (item 8). */
+    private noteForm(): HTMLElement {
+        const text = h('textarea', { rows: 3, maxlength: 4000, 'data-field': 'note-text', 'aria-label': t('admin.ideas.note.text') }) as HTMLTextAreaElement;
+        const contact = h('input', { type: 'text', maxlength: 200, 'data-field': 'note-contact' }) as HTMLInputElement;
+        const lang = h('select', { 'data-field': 'note-lang' }) as HTMLSelectElement;
+        lang.append(h('option', { value: '' }, t('admin.ideas.note.langNone')));
+        for (const l of PUBLIC_LANGS) lang.append(h('option', { value: l }, l));
+        const urgency = h('select', { 'data-field': 'note-urgency' }) as HTMLSelectElement;
+        urgency.append(h('option', { value: '' }, t('admin.ideas.urgency.none')));
+        for (const u of URGENCIES) urgency.append(h('option', { value: u }, t(`admin.ideas.urgency.${u}`)));
+        const add = h('button', { type: 'button', class: 'btn small primary', 'data-action': 'note-add' }, t('admin.ideas.note.add'));
+        add.addEventListener('click', async () => {
+            if (!text.value.trim()) return text.focus();
+            add.disabled = true;
+            try {
+                const idea = await this.client.addNote({ text: text.value.trim(), contact: contact.value.trim(), lang: lang.value, urgency: (urgency.value || null) as Urgency | null });
+                text.value = '';
+                contact.value = '';
+                this.update(idea);
+                this.say(t('admin.ideas.note.added', { id: idea.id }));
+            } catch (e) {
+                this.say(t('admin.ideas.error', { why: e instanceof Error ? e.message : String(e) }), true);
+            } finally {
+                add.disabled = false;
+            }
+        });
+        return h('details', { class: 'note-form', 'data-testid': 'note-form' },
+            h('summary', {}, t('admin.ideas.note.title')),
+            field(t('admin.ideas.note.text'), text),
+            h('div', { class: 'idea-row' }, field(t('admin.ideas.note.contact'), contact), field(t('admin.ideas.note.lang'), lang)),
+            h('div', { class: 'idea-row' }, field(t('admin.ideas.urgency.label'), urgency), h('div', { class: 'bar' }, add)));
+    }
+
     private render(): void {
         const cols = columns(this.ideas, this.filter);
         const n = IDEA_STATUSES.reduce((s, k) => s + cols[k].length, 0);
         this.shown.textContent = t('admin.ideas.filter.shown', { n, total: this.ideas.length });
         this.warn.textContent = this.unreadable ? t('admin.ideas.unreadable', { n: this.unreadable }) : '';
         this.warn.hidden = !this.unreadable;
+        this.setupNote.textContent = [
+            this.setup.mail ? t('admin.ideas.setup.mail', { from: this.setup.mailFrom ?? '' }) : t('admin.ideas.setup.noMail'),
+            this.setup.bot ? t('admin.ideas.setup.bot') : t('admin.ideas.setup.noBot')
+        ].join(' ');
+        this.setupNote.className = this.setup.mail ? 'muted' : 'warn';
         const scroll = [...this.board.querySelectorAll<HTMLElement>('.cards')].map((c) => c.scrollTop);
         const active = document.activeElement instanceof HTMLElement && this.board.contains(document.activeElement) ? document.activeElement : null;
         const activeKey = active ? [active.closest('[data-idea]')?.getAttribute('data-idea'), active.getAttribute('data-field') ?? active.getAttribute('data-action')] : null;
@@ -161,10 +205,10 @@ export class IdeasTab implements CardHost {
             this.board.append(col);
             list.scrollTop = scroll[k] ?? 0;
         });
-        // a redraw while typing (another card's answer came back) keeps the cursor where it was
+        // a redraw while typing (another card's answer came back) keeps the focus where it was
         if (activeKey?.[0] && activeKey[1]) {
-            const again = this.board.querySelector<HTMLElement>(`[data-idea="${CSS.escape(activeKey[0])}"] [data-field="${activeKey[1]}"], [data-idea="${CSS.escape(activeKey[0])}"] [data-action="${activeKey[1]}"]`);
-            again?.focus();
+            const at = `[data-idea="${CSS.escape(activeKey[0])}"]`;
+            this.board.querySelector<HTMLElement>(`${at} [data-field="${activeKey[1]}"], ${at} [data-action="${activeKey[1]}"]`)?.focus();
         }
     }
 }

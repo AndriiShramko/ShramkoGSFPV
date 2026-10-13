@@ -5,6 +5,8 @@
 // The static page shows this snapshot (what search engines read); the Roadmap component then refreshes it
 // from /api/roadmap in the visitor's browser. The page parses it with src/lib/roadmap.ts and fails the
 // build when nothing is left to show. No network at all unless ROADMAP_URL is set.
+// The landing groups done items (features.groups in the site dictionaries); the store does not keep that
+// group (lane B's /api/roadmap has none), so a live item without one takes its seed item's group by id.
 // ROADMAP_OUT=<file> writes elsewhere (tools/bench/test/site-roadmap.test.ts).
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -25,6 +27,12 @@ function fromSeed() {
     .filter((it) => it && it.status in STORE_TO_PUBLIC)
     .map((it) => ({ id: it.id, kind: it.kind, status: STORE_TO_PUBLIC[it.status], title: it.title, fromPilot: false, ...(it.group ? { group: it.group } : {}), ...(Number.isFinite(it.order) ? { order: it.order } : {}) }));
   return { v: 1, items };
+}
+
+/** Live items without a group take the group of the seed item with the same id (the seeded features). */
+function withSeedGroups(doc) {
+  const groups = new Map(fromSeed().items.filter((it) => it.group).map((it) => [it.id, it.group]));
+  return { ...doc, items: doc.items.map((it) => (it && !it.group && groups.has(it.id) ? { ...it, group: groups.get(it.id) } : it)) };
 }
 
 /** A usable answer: a v1 document with at least one item that has a known status and an English title. */
@@ -50,7 +58,7 @@ let snapshot;
 const url = process.env.ROADMAP_URL;
 if (url) {
   try {
-    snapshot = { source: "live", url, at: new Date().toISOString(), roadmap: await fromUrl(url) };
+    snapshot = { source: "live", url, at: new Date().toISOString(), roadmap: withSeedGroups(await fromUrl(url)) };
   } catch (e) {
     console.warn(`roadmap: WARNING ${url} gave no usable roadmap (${e instanceof Error ? e.message : String(e)}); building from the seed`);
   }

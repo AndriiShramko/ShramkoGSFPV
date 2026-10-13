@@ -50,6 +50,8 @@ export interface ViewItem {
   id: string;
   status: RoadmapStatus;
   title: string;
+  /** the owner's short public text under the title, when there is one */
+  text?: string;
   fromPilot: boolean;
   /** null: not in a known group (shown under "More" when done) */
   group: string | null;
@@ -136,7 +138,10 @@ export function viewItems(items: readonly RoadmapItem[], locale: string, known: 
   return items
     .map((it, i) => ({ it, i }))
     .sort((a, b) => (a.it.order ?? Infinity) - (b.it.order ?? Infinity) || a.i - b.i)
-    .map(({ it }) => ({ id: it.id, status: it.status, title: it.title[l] ?? it.title.en, fromPilot: it.fromPilot, group: it.group ?? known.get(it.id) ?? null }));
+    .map(({ it }) => {
+      const text = it.text?.[l] ?? it.text?.en;
+      return { id: it.id, status: it.status, title: it.title[l] ?? it.title.en, ...(text ? { text } : {}), fromPilot: it.fromPilot, group: it.group ?? known.get(it.id) ?? null };
+    });
 }
 
 /** id -> group of the items that have one (what `viewItems` keeps when a later answer lacks it). */

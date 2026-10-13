@@ -1,13 +1,14 @@
 // One card of the Ideas kanban. Closed: kind, urgency, pilot, contact and landing chips, the words (a
 // few lines), a move handle. Open: everything the pilot sent (contact, language, page, scene, release,
 // technical details to open or download), the column and urgency selects, the owner's comments, the
-// public title in four languages with the landing switch, the e-mail reply, the thank-you e-mail. A
-// visitor's words are always text, never markup. tab.ts owns the state; this file only draws and reports.
+// public title in four languages with the landing switch, the e-mail reply, the e-mails about it with
+// their state (Cancel while one has not gone, Send for one that waits). A visitor's words are always
+// text, never markup. tab.ts owns the state; this file only draws and reports.
 import { h } from '../../ui/dom';
 import { t } from '../i18n';
-import { IDEA_STATUSES, PUBLIC_LANGS, URGENCIES, diagnosticsUrl } from './api';
-import type { Idea, IdeaPublic, IdeaStatus, IdeasClient, Urgency } from './api';
-import { LANDING_GROUPS, emailOf, landingBlocker, missingLangs, onLanding, thanksDue } from './board';
+import { CANCELLABLE, IDEA_STATUSES, PUBLIC_LANGS, PUBLIC_TITLE_MAX, SENDABLE, URGENCIES, diagnosticsUrl } from './api';
+import type { Idea, IdeaMail, IdeaStatus, IdeasClient, Urgency } from './api';
+import { landingBlocker, missingLangs, onLanding, thanksDraft, thanksDue } from './board';
 import { replyForm } from './mail';
 
 /** What a card needs from the tab: the client, the per-card state, and how to report a change. */
@@ -25,6 +26,8 @@ export interface CardHost {
     setDraft(key: string, v: string | undefined): void;
     /** the thank-you dialog for this idea */
     thanks(i: Idea): void;
+    /** seconds an e-mail waits before it goes (the server's undo window) */
+    readonly undoSeconds: number;
 }
 
 const when = (iso: string | null): string => (iso ? new Date(iso).toLocaleString() : '');
@@ -52,21 +55,22 @@ export function card(i: Idea, host: CardHost): HTMLLIElement {
         if (at >= 0 && at < IDEA_STATUSES.length) host.move(i.id, IDEA_STATUSES[at], true);
     });
 
-    const email = emailOf(i.contact);
     const head = h('div', { class: 'idea-head' },
         handle,
         chip(`k-${i.kind}`, t(`admin.ideas.kind.${i.kind}`), { 'data-chip': 'kind' }),
-        chip(`u-${i.urgency}`, t(`admin.ideas.urgency.${i.urgency}`), { 'data-chip': 'urgency' }),
+        i.urgency ? chip(`u-${i.urgency}`, t(`admin.ideas.urgency.${i.urgency}`), { 'data-chip': 'urgency' }) : null,
         i.fromPilot ? chip('pilot', t('admin.ideas.card.pilot'), { 'data-chip': 'pilot' }) : null,
-        i.contact ? chip(email ? 'mail' : 'contact', email ? t('admin.ideas.card.hasEmail') : t('admin.ideas.card.hasContact'), { 'data-chip': 'contact' }) : null,
+        i.contact ? chip(i.email ? 'mail' : 'contact', i.email ? t('admin.ideas.card.hasEmail') : t('admin.ideas.card.hasContact'), { 'data-chip': 'contact' }) : null,
         onLanding(i) ? chip('landing', t('admin.ideas.card.onLanding'), { 'data-chip': 'landing' }) : null,
         i.suspect ? chip('warn', t('admin.ideas.card.suspect')) : null);
-    const words = h('p', { class: 'idea-text' }, i.text || t('admin.ideas.card.noText'));
+    // a seeded feature has no words of a pilot: its public title stands in
+    const words = h('p', { class: 'idea-text' }, i.text || i.public.title.en || t('admin.ideas.card.noText'));
     const meta = h('p', { class: 'idea-meta muted' }, [i.id, when(i.ts)].filter(Boolean).join(' · '));
     const toggle = h('button', { type: 'button', class: 'btn small', 'data-action': 'details', 'aria-expanded': String(open), onclick: () => host.toggle(i.id) },
         open ? t('admin.ideas.card.close') : t('admin.ideas.card.open'));
     const foot = h('div', { class: 'idea-foot' }, toggle,
-        thanksDue(i) ? h('button', { type: 'button', class: 'btn small', 'data-action': 'thanks', onclick: () => host.thanks(i) }, t('admin.ideas.thanks.open')) : null);
+        thanksDue(i) ? h('button', { type: 'button', class: 'btn small', 'data-action': 'thanks', onclick: () => host.thanks(i) },
+            thanksDraft(i) ? t('admin.ideas.thanks.review') : t('admin.ideas.thanks.open')) : null);
     li.append(head, words, meta, foot);
     if (open) li.append(details(i, host));
     return li;
@@ -74,7 +78,6 @@ export function card(i: Idea, host: CardHost): HTMLLIElement {
 
 /** Everything about one idea, and what the owner can do with it. */
 function details(i: Idea, host: CardHost): HTMLElement {
-    const email = emailOf(i.contact);
     const sent = [
         i.contact ? h('li', { 'data-field': 'contact' }, t('admin.ideas.card.contact', { contact: i.contact })) : h('li', { class: 'muted', 'data-field': 'contact' }, t('admin.ideas.card.noContact')),
         i.locale ? h('li', {}, t('admin.ideas.card.lang', { lang: i.locale })) : null,
@@ -93,20 +96,38 @@ function details(i: Idea, host: CardHost): HTMLElement {
     column.value = i.status;
     column.addEventListener('change', () => host.move(i.id, column.value as IdeaStatus));
     const urgency = h('select', { 'data-field': 'urgency', 'aria-label': t('admin.ideas.urgency.label') }) as HTMLSelectElement;
+    urgency.append(h('option', { value: '' }, t('admin.ideas.urgency.none')));
     for (const u of URGENCIES) urgency.append(h('option', { value: u }, t(`admin.ideas.urgency.${u}`)));
-    urgency.value = i.urgency;
-    urgency.addEventListener('change', () => void host.run(i.id, () => host.client.setUrgency(i.id, urgency.value as Urgency)));
+    urgency.value = i.urgency ?? '';
+    urgency.addEventListener('change', () => void host.run(i.id, () => host.client.setUrgency(i.id, (urgency.value || null) as Urgency | null)));
 
+    const summary = PUBLIC_LANGS.map((l) => i.summary[l]).find(Boolean);
     return h('div', { class: 'idea-details' },
         i.text ? h('p', { class: 'idea-full' }, i.text) : null,
         h('ul', { class: 'idea-sent' }, ...sent),
         h('div', { class: 'idea-row' }, field(t('admin.ideas.card.column'), column), field(t('admin.ideas.urgency.label'), urgency)),
+        summary ? h('section', { class: 'idea-sec' }, h('h3', {}, t('admin.ideas.thanks.summary')), h('p', { class: 'idea-full' }, summary)) : null,
         comments(i, host),
         publicEditor(i, host),
-        replyForm(i, email, host),
-        i.mails.length ? h('section', { class: 'idea-sec' }, h('h3', {}, t('admin.ideas.mails')),
-            h('ul', { class: 'idea-list' }, ...i.mails.map((m) => h('li', { class: m.ok ? '' : 'bad' },
-                `${when(m.ts)} · ${t(`admin.ideas.mail.${m.kind}`)} · ${m.to}${m.ok ? '' : ` · ${t('admin.ideas.mail.failed')}`}`)))) : null);
+        replyForm(i, host),
+        i.mails.length ? h('section', { class: 'idea-sec', 'data-field': 'mails' }, h('h3', {}, t('admin.ideas.mails')),
+            h('ul', { class: 'idea-list' }, ...i.mails.map((m) => mailRow(i, m, host)))) : null);
+}
+
+/** One e-mail of the thread: what, to whom, its state, and Cancel / Send while that still means something. */
+function mailRow(i: Idea, m: IdeaMail, host: CardHost): HTMLElement {
+    const state = m.state === 'queued' && m.notBefore ? t('admin.ideas.mail.queuedUntil', { time: when(m.notBefore) })
+        : m.state === 'sent' && m.sentAt ? t('admin.ideas.mail.sentAt', { time: when(m.sentAt) })
+            : t(`admin.ideas.mail.state.${m.state}`);
+    const act = (action: 'cancel' | 'send'): HTMLButtonElement => h('button', { type: 'button', class: 'btn small', 'data-action': `mail-${action}`, 'data-mail': m.id,
+        onclick: () => void host.run(i.id, () => (action === 'cancel' ? host.client.cancelMail(m.id) : host.client.sendMail(m.id))) }, t(`admin.ideas.mail.${action}`));
+    // a draft thank-you is sent from its dialog, where the owner reads it first
+    const draftThanks = m.kind === 'done' && m.state === 'draft';
+    return h('li', { 'data-mail': m.id, 'data-state': m.state, class: m.state === 'failed' || m.state === 'unknown' ? 'warn' : '' },
+        h('span', {}, `${t(`admin.ideas.mail.${m.kind}`)} · ${m.to || t('admin.ideas.mail.noAddress')} · `),
+        h('strong', {}, state),
+        m.error ? h('span', { class: 'muted' }, ` · ${m.error}`) : null,
+        draftThanks ? null : h('span', { class: 'mail-acts' }, SENDABLE.has(m.state) ? act('send') : null, CANCELLABLE.has(m.state) ? act('cancel') : null));
 }
 
 function comments(i: Idea, host: CardHost): HTMLElement {
@@ -120,31 +141,30 @@ function comments(i: Idea, host: CardHost): HTMLElement {
         if (!text) return input.focus();
         if (await host.run(i.id, () => host.client.comment(i.id, text))) host.setDraft(key, undefined);
     });
+    const by = (b: string): string => (b === 'telegram' ? ' · Telegram' : b && b !== 'admin' ? ` · ${b}` : '');
     return h('section', { class: 'idea-sec' }, h('h3', {}, t('admin.ideas.comments')),
-        i.comments.length ? h('ul', { class: 'idea-list' }, ...i.comments.map((c) => h('li', {}, h('span', { class: 'muted' }, `${when(c.ts)}${c.via === 'telegram' ? ' · Telegram' : ''}: `), c.text))) : null,
+        i.comments.length ? h('ul', { class: 'idea-list' }, ...i.comments.map((c) => h('li', {}, h('span', { class: 'muted' }, `${when(c.at)}${by(c.by)}: `), c.text))) : null,
         input, h('div', { class: 'bar' }, add));
 }
 
-/** The public title in four languages, the landing group and the switch; saved by its button. */
+/** The public title in four languages and the landing switch; saved by its button. */
 function publicEditor(i: Idea, host: CardHost): HTMLElement {
-    const pub: IdeaPublic = { title: { ...i.public.title }, roadmap: i.public.roadmap, group: i.public.group };
+    const title = { ...i.public.title };
     const note = h('p', { class: 'muted', 'data-field': 'public-note' });
-    const show = h('input', { type: 'checkbox', 'data-field': 'roadmap' }) as HTMLInputElement;
-    show.checked = pub.roadmap;
+    const show = h('input', { type: 'checkbox', 'data-field': 'visible' }) as HTMLInputElement;
+    show.checked = i.public.visible;
     const refresh = (): void => {
-        const block = landingBlocker(pub, i.status);
-        const missing = missingLangs(pub.title).filter((l) => l !== 'en');
+        const block = landingBlocker(title, i.status);
+        const missing = missingLangs(title).filter((l) => l !== 'en');
         note.textContent = block === 'title' ? t('admin.ideas.public.needTitle')
             : block === 'status' ? t('admin.ideas.public.needStatus')
                 : missing.length ? t('admin.ideas.public.missing', { langs: missing.join(', ') }) : '';
-        show.disabled = block === 'title';
-        if (show.disabled) show.checked = false;
     };
     const inputs = PUBLIC_LANGS.map((l) => {
         const key = `${i.id}:title:${l}`;
         const typed = host.draft(key);
-        const input = h('input', { type: 'text', maxlength: 240, 'data-field': `title-${l}`, value: typed ?? pub.title[l] ?? '' }) as HTMLInputElement;
-        const take = (): void => { if (input.value.trim()) pub.title[l] = input.value.trim(); else delete pub.title[l]; };
+        const input = h('input', { type: 'text', maxlength: PUBLIC_TITLE_MAX, 'data-field': `title-${l}`, value: typed ?? title[l] ?? '' }) as HTMLInputElement;
+        const take = (): void => { if (input.value.trim()) title[l] = input.value.trim(); else delete title[l]; };
         if (typed !== undefined) take();
         input.addEventListener('input', () => {
             host.setDraft(key, input.value);
@@ -153,22 +173,15 @@ function publicEditor(i: Idea, host: CardHost): HTMLElement {
         });
         return field(t('admin.ideas.public.field', { lang: l }), input);
     });
-    const group = h('select', { 'data-field': 'group', 'aria-label': t('admin.ideas.public.group') }) as HTMLSelectElement;
-    group.append(h('option', { value: '' }, t('admin.ideas.public.groupNone')));
-    for (const g of LANDING_GROUPS) group.append(h('option', { value: g }, t(`admin.ideas.group.${g}`)));
-    group.value = pub.group ?? '';
-    group.addEventListener('change', () => { pub.group = group.value || null; });
-    show.addEventListener('change', () => { pub.roadmap = show.checked; });
     const save = h('button', { type: 'button', class: 'btn small primary', 'data-action': 'save-public' }, t('admin.ideas.public.save'));
     save.addEventListener('click', async () => {
-        pub.roadmap = show.checked;
-        if (await host.run(i.id, () => host.client.setPublic(i.id, pub), () => t('admin.ideas.public.saved'))) {
+        if (await host.run(i.id, () => host.client.setPublic(i.id, title, show.checked), () => t('admin.ideas.public.saved'))) {
             for (const l of PUBLIC_LANGS) host.setDraft(`${i.id}:title:${l}`, undefined);
         }
     });
     refresh();
     return h('section', { class: 'idea-sec' }, h('h3', {}, t('admin.ideas.public.title')),
-        h('div', { class: 'idea-grid' }, ...inputs, field(t('admin.ideas.public.group'), group)),
+        h('div', { class: 'idea-grid' }, ...inputs),
         h('label', { class: 'check' }, show, ' ', t('admin.ideas.public.show')), note, h('div', { class: 'bar' }, save));
 }
 

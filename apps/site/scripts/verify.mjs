@@ -127,8 +127,8 @@ const SHOWN = ["done", "in_progress", "planned"];
 const snapItems = SNAPSHOT.roadmap.items.filter((it) => SHOWN.includes(it.status) && typeof it.title?.en === "string" && it.title.en.trim());
 const snapCount = (s) => snapItems.filter((it) => it.status === s).length;
 const htmlText = (s) => s.replace(/&amp;/g, "&").replace(/&#x27;|&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/\u2060/g, "").replace(/\u00a0/g, " ");
-/** id -> the title the static board shows for it in one page */
-const boardTitles = (html) => new Map([...html.matchAll(/data-roadmap-item="([^"]+)"[^>]*><span[^>]*>([^<]*)<\/span>/g)].map((m) => [m[1], htmlText(m[2])]));
+/** id -> the title the static board shows for it in one page (the text up to the title's end or its public text) */
+const boardTitles = (html) => new Map([...html.matchAll(/data-roadmap-item="([^"]+)"[^>]*><span[^>]*>([^<]*)</g)].map((m) => [m[1], htmlText(m[2])]));
 {
   const bad = [];
   let control = 0;
@@ -646,7 +646,7 @@ for (const mode of ["ok", "fail"]) {
 // Roadmap board: refreshed from /api/roadmap (mocked) when the section comes near; a failure keeps the
 // snapshot; an unknown status is dropped; a pilot's idea is marked; "Suggest an idea" opens the feedback form
 {
-  const PILOT = { id: "R-20261013-0001", kind: "idea", status: "in_progress", title: { en: "Motor sound you can turn on", pl: "Dzwiek silnikow do wlaczenia" }, fromPilot: true };
+  const PILOT = { id: "R-20261013-0001", kind: "idea", status: "in_progress", title: { en: "Motor sound you can turn on", pl: "Dzwiek silnikow do wlaczenia" }, text: { en: "Off by default, in Settings", pl: "Domyslnie wylaczony, w Ustawieniach" }, fromPilot: true };
   const ODD = { id: "R-20261013-0002", kind: "idea", status: "someday", title: { en: "A status this page does not know" }, fromPilot: true };
   const LOOSE = { id: "R-20261013-0003", kind: "bug", status: "done", title: { en: "A fixed bug without a group" }, fromPilot: true };
   const board = (page) =>
@@ -655,7 +655,8 @@ for (const mode of ["ok", "fail"]) {
       counts: Object.fromEntries([...document.querySelectorAll("[data-roadmap-count]")].map((e) => [e.getAttribute("data-roadmap-count"), Number(e.textContent)])),
       items: document.querySelectorAll("[data-roadmap-item]").length,
       pilot: !!document.querySelector('[data-roadmap-item="R-20261013-0001"] [data-roadmap-pilot]'),
-      pilotTitle: document.querySelector('[data-roadmap-item="R-20261013-0001"] span')?.textContent ?? null,
+      pilotTitle: document.querySelector('[data-roadmap-item="R-20261013-0001"] span')?.firstChild?.textContent ?? null,
+      pilotText: document.querySelector('[data-roadmap-item="R-20261013-0001"] span span')?.textContent ?? null,
       odd: !!document.querySelector('[data-roadmap-item="R-20261013-0002"]'),
       looseGroup: document.querySelector('[data-roadmap-item="R-20261013-0003"]')?.closest("[data-roadmap-group]")?.getAttribute("data-roadmap-group") ?? null,
       firstGroup: document.querySelector(`[data-roadmap-item="${CSS.escape(document.querySelector("[data-roadmap-item]")?.getAttribute("data-roadmap-item") ?? "")}"]`)?.closest("[data-roadmap-group]")?.getAttribute("data-roadmap-group") ?? null,
@@ -679,8 +680,8 @@ for (const mode of ["ok", "fail"]) {
     const b = await board(page);
     const want = { done: snapCount("done") + 1, in_progress: snapCount("in_progress") + 1, planned: snapCount("planned") };
     ok(
-      "roadmap: the board refreshes from /api/roadmap once (live), the pilot's idea marked and in Polish, the unknown status dropped, a done item without a group under More, the seeded groups kept",
-      asked() === 1 && b.state === "live" && JSON.stringify(b.counts) === JSON.stringify(want) && b.pilot && b.pilotTitle === PILOT.title.pl && !b.odd && b.looseGroup === "more" && b.firstGroup === firstSeeded?.group,
+      "roadmap: the board refreshes from /api/roadmap once (live), the pilot's idea marked and in Polish with its public text, the unknown status dropped, a done item without a group under More, the seeded groups kept",
+      asked() === 1 && b.state === "live" && JSON.stringify(b.counts) === JSON.stringify(want) && b.pilot && b.pilotTitle === PILOT.title.pl && b.pilotText === PILOT.text.pl && !b.odd && b.looseGroup === "more" && b.firstGroup === firstSeeded?.group,
       JSON.stringify({ asked: asked(), ...b, want })
     );
     await ctx.close();

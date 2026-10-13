@@ -1,23 +1,22 @@
-// The admin's Ideas kanban without a page (apps/fly/src/admin/ideas/api.ts + board.ts; owner's item 3,
-// docs/wip/v07-c.md), against the mock of lane B's contract (tools/bench/src/ideas-mock.ts):
-//  - a move sends exactly one status call with the right body and the session's CSRF token; a move to the
-//    same column, or to a column that does not exist, sends nothing (control);
+// The admin's Ideas kanban without a page (apps/fly/src/admin/ideas/api.ts + board.ts; owner's items 3,
+// 7, 8; docs/wip/v07-c.md), against the mock of lane B's contract (tools/bench/src/ideas-mock.ts):
+//  - a move sends exactly one ideas/update {id, status} with the session's CSRF token; a move to the same
+//    column, or to a column that does not exist, sends nothing (control);
+//  - every other change goes to its route with its body; e-mail: a reply is queued behind the undo window,
+//    a thank-you is only a draft until send-done, Cancel stops what has not gone;
 //  - the columns and their order, the filters and the search;
-//  - a thank-you is due only for a pilot's idea with an e-mail that reaches Done and was not thanked yet;
-//  - a record with an unknown status is counted, never guessed into a column;
-//  - the landing's groups are the same in the admin, the site dictionaries and the roadmap seed.
+//  - a thank-you is due only for a pilot's idea with an e-mail that is done and not thanked yet;
+//  - a record with an unknown status is counted, never guessed into a column.
 // Every rule is shown with the input that breaks it.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { IdeasMock, mockIdeas } from '../src/ideas-mock';
 
 const { AdminClient } = await import('../../../apps/fly/src/admin/api');
 const { IdeasClient, parseIdea, parseIdeas, IDEA_STATUSES } = await import('../../../apps/fly/src/admin/ideas/api');
 const B = await import('../../../apps/fly/src/admin/ideas/board');
 type Idea = import('../../../apps/fly/src/admin/ideas/api').Idea;
+type IdeaFilter = import('../../../apps/fly/src/admin/ideas/board').IdeaFilter;
 
-const REPO = join(__dirname, '..', '..', '..');
 let mock: IdeasMock;
 let client: InstanceType<typeof IdeasClient>;
 
@@ -30,24 +29,28 @@ beforeEach(async () => {
 });
 
 const idea = (o: Partial<Idea> = {}): Idea => ({ ...parseIdea(mockIdeas()[0])!, ...o });
+const P1 = 'R-20261006-0001';
 
-describe('the client speaks the contract', () => {
-    it('lists the store, counting the record it cannot place instead of guessing a column', async () => {
-        const { ideas, unreadable } = await client.list();
+describe('the client speaks lane B\'s contract', () => {
+    it('reads the store: the record fields mapped, the setup, the record it cannot place counted, not guessed', async () => {
+        const { ideas, unreadable, setup } = await client.list();
         expect(unreadable).toBe(1);
-        expect(ideas.map((i) => i.id)).not.toContain('X-unknown-status');
-        expect(ideas.length).toBe(mockIdeas().length - 1);
+        expect(ideas.map((i) => i.id)).not.toContain('R-20261012-0006');
+        expect(setup).toEqual({ mail: true, mailFrom: 'owner@example.com', bot: false, undoSeconds: 60 });
+        const p = ideas.find((i) => i.id === P1)!;
+        expect([p.ts, p.locale, p.email, p.urgency, p.fromPilot, p.public.visible]).toEqual(['2026-10-06T09:00:00Z', 'pl', 'pilot.one@example.com', null, true, true]);
+        const f = ideas.find((i) => i.kind === 'feature')!;
+        expect([f.fromPilot, f.done, f.order]).toEqual([false, '2026-09-24T00:00:00Z', 1]);
         // control: the same record with a status the board knows is placed
-        expect(parseIdeas({ ideas: [{ ...mockIdeas()[7], status: 'new' }] })).toMatchObject({ unreadable: 0, ideas: [{ id: 'X-unknown-status', status: 'new' }] });
+        expect(parseIdeas({ ideas: [{ ...mockIdeas()[7], status: 'new' }] })).toMatchObject({ unreadable: 0, ideas: [{ id: 'R-20261012-0006', status: 'new' }] });
     });
 
-    it('a kanban move is one POST ideas/status {id, status} with the CSRF token; the card takes the server answer', async () => {
+    it('a kanban move is one POST ideas/update {id, status} with the CSRF token; the card takes the server answer', async () => {
         const { ideas } = await client.list();
-        const card = ideas.find((i) => i.id === 'R-20261006-0001')!;
-        const body = B.moveBody(card, 'accepted');
-        expect(body).toEqual({ id: 'R-20261006-0001', status: 'accepted' });
+        const body = B.moveBody(ideas.find((i) => i.id === P1)!, 'accepted');
+        expect(body).toEqual({ id: P1, status: 'accepted' });
         const moved = await client.setStatus(body!.id, body!.status);
-        expect(mock.posts()).toEqual([{ method: 'POST', path: 'ideas/status', body: { id: 'R-20261006-0001', status: 'accepted' } }]);
+        expect(mock.posts()).toEqual([{ method: 'POST', path: 'ideas/update', body: { id: P1, status: 'accepted' } }]);
         expect(moved.status).toBe('accepted');
     });
 
@@ -61,64 +64,99 @@ describe('the client speaks the contract', () => {
 
     it('without the CSRF token the server refuses (the token really travels: control)', async () => {
         const bare = new IdeasClient(new AdminClient()); // never resumed: no token
-        await expect(bare.setStatus('R-20261006-0001', 'done')).rejects.toThrow(/csrf/);
-        await expect(client.setStatus('R-20261006-0001', 'done')).resolves.toMatchObject({ status: 'done' });
-        expect(mock.calls.filter((c) => c.path === 'ideas/status').length).toBe(2);
+        await expect(bare.setStatus(P1, 'done')).rejects.toThrow(/csrf/);
+        await expect(client.setStatus(P1, 'done')).resolves.toMatchObject({ status: 'done' });
     });
 
-    it('urgency, comment, public title, reply and thank-you go to their own routes with their bodies', async () => {
-        await client.setUrgency('R-20261006-0001', 'urgent');
-        await client.comment('R-20261006-0001', 'do it next');
-        await client.setPublic('R-20261006-0001', { title: { en: 'Rates types', pl: 'Typy rates' }, roadmap: true, group: 'drone' });
-        await client.reply('R-20261006-0001', 'Thanks, queued.');
-        const draft = await client.thanksDraft('R-20261006-0001');
-        const after = await client.sendThanks('R-20261006-0001', draft.subject, draft.body);
+    it('urgency (and clearing it), comment, public title, note: each its own body', async () => {
+        await client.setUrgency(P1, 'urgent');
+        await client.setUrgency(P1, null);
+        await client.comment(P1, 'do it next');
+        const pub = await client.setPublic(P1, { en: 'Rates types', pl: 'Typy rates' }, false);
+        const note = await client.addNote({ text: 'Wind from the north on the hill scan', contact: 'field.pilot@example.com', lang: 'pl', urgency: 'high' });
         expect(mock.posts().map((c) => [c.path, c.body])).toEqual([
-            ['ideas/urgency', { id: 'R-20261006-0001', urgency: 'urgent' }],
-            ['ideas/comment', { id: 'R-20261006-0001', text: 'do it next' }],
-            ['ideas/public', { id: 'R-20261006-0001', title: { en: 'Rates types', pl: 'Typy rates' }, roadmap: true, group: 'drone' }],
-            ['ideas/reply', { id: 'R-20261006-0001', text: 'Thanks, queued.' }],
-            ['ideas/thanks/draft', { id: 'R-20261006-0001' }],
-            ['ideas/thanks/send', { id: 'R-20261006-0001', subject: 'Your idea is in the simulator', body: draft.body }]
+            ['ideas/update', { id: P1, urgency: 'urgent' }],
+            ['ideas/update', { id: P1, urgency: null }],
+            ['ideas/update', { id: P1, comment: 'do it next' }],
+            ['ideas/update', { id: P1, publicTitle: { en: 'Rates types', pl: 'Typy rates' }, visible: false }],
+            ['ideas/note', { text: 'Wind from the north on the hill scan', contact: 'field.pilot@example.com', lang: 'pl', urgency: 'high', kind: 'note' }]
         ]);
-        expect(draft.to).toBe('pilot.one@example.com');
-        expect(after.mails.map((m) => m.kind)).toEqual(['reply', 'thanks']);
-        expect(after.comments.at(-1)?.text).toBe('do it next');
+        expect([pub.urgency, pub.comments.at(-1)?.text, pub.public.visible, pub.public.title.pl]).toEqual([null, 'do it next', false, 'Typy rates']);
+        expect([note.kind, note.status, note.fromPilot, note.email]).toEqual(['note', 'new', true, 'field.pilot@example.com']);
     });
 
-    it('a draft sends nothing: only thanks/send records a mail (control)', async () => {
-        await client.thanksDraft('R-20261006-0001');
-        expect(mock.ideas.find((i) => i.id === 'R-20261006-0001')!.mails).toEqual([]);
+    it('a reply is queued behind the undo window and can be cancelled until it goes', async () => {
+        const after = await client.reply(P1, 'Thanks, queued.');
+        const m = after.mails.at(-1)!;
+        expect([m.kind, m.state, m.to, !!m.notBefore]).toEqual(['reply', 'queued', 'pilot.one@example.com', true]);
+        const cancelled = await client.cancelMail(m.id);
+        expect(cancelled.mails.at(-1)?.state).toBe('cancelled');
+        expect(mock.posts().map((c) => c.body)).toEqual([{ id: P1, text: 'Thanks, queued.' }, { id: m.id }]);
+        // control: without Gmail the same reply waits, and only an explicit send queues it
+        mock.mailConfigured = false;
+        const waiting = (await client.reply(P1, 'Second answer')).mails.at(-1)!;
+        expect(waiting.state).toBe('waiting_setup');
+        mock.mailConfigured = true;
+        expect((await client.sendMail(waiting.id)).mails.at(-1)?.state).toBe('queued');
+    });
+
+    it('done makes a thank-you DRAFT only; send-done is the one call that queues it', async () => {
+        const id = 'R-20261012-0005';
+        const r = await client.done(id, { pl: 'Kanaly CH5 i CH6 mozna teraz przypisac w Sterowaniu.' });
+        expect([r.idea.status, r.draft?.state, r.draft?.kind, r.draft?.to]).toEqual(['done', 'draft', 'done', 'pilot.two@example.com']);
+        expect(r.idea.summary.pl).toMatch(/CH5/);
+        expect(mock.mails('queued', 'sending', 'sent')).toEqual([]); // control: nothing on its way after done
+        expect(B.thanksDue(r.idea) && B.thanksDraft(r.idea)?.id === r.draft?.id).toBe(true);
+        const sent = await client.sendDone(id);
+        expect(sent.mails.find((m) => m.kind === 'done')?.state).toBe('queued');
+        expect(B.thanksDue(sent)).toBe(false);
+        // no e-mail: done still works, no draft
+        const bug = await client.done('R-20261008-0003', { en: 'Fixed in the next release.' });
+        expect([bug.idea.status, bug.draft]).toEqual(['done', null]);
     });
 });
 
 describe('the board model', () => {
     const all = (): Idea[] => parseIdeas({ ideas: mockIdeas() }).ideas;
 
-    it('puts every card in its column; the queue is most urgent first, New newest first, Done latest first', () => {
+    it('puts every card in its column; the queue is most urgent first (not set last), New newest first, Done latest first', () => {
         const extra = [
             idea({ id: 'q-low', status: 'accepted', urgency: 'low', ts: '2026-01-01T00:00:00Z' }),
+            idea({ id: 'q-none', status: 'accepted', urgency: null, ts: '2025-01-01T00:00:00Z' }),
             idea({ id: 'q-urgent', status: 'accepted', urgency: 'urgent', ts: '2026-10-12T00:00:00Z' }),
             idea({ id: 'd-new', status: 'done', done: '2026-10-13T10:00:00Z' })
         ];
         const c = B.columns([...all(), ...extra], B.ALL_IDEAS);
-        expect(IDEA_STATUSES.map((s) => c[s].length)).toEqual([2, 3, 2, 2, 1]);
-        expect(c.accepted.map((i) => i.id)).toEqual(['q-urgent', 'R-20261006-0002', 'q-low']);
-        expect(c.new.map((i) => i.id)).toEqual(['R-20261008-0003', 'R-20261006-0001']);
+        expect(IDEA_STATUSES.map((s) => c[s].length)).toEqual([2, 4, 2, 2, 1]);
+        expect(c.accepted.map((i) => i.id)).toEqual(['q-urgent', 'R-20261006-0002', 'q-low', 'q-none']);
+        expect(c.new.map((i) => i.id)).toEqual(['R-20261008-0003', P1]);
         expect(c.done.map((i) => i.id)).toEqual(['d-new', 'F-edgetx-radio-over-usb-webhid-in-chrome']);
     });
 
     it('filters by kind, lowest urgency, contact and landing; every search word must be found', () => {
-        const ids = (f: Partial<import('../../../apps/fly/src/admin/ideas/board').IdeaFilter>) =>
-            IDEA_STATUSES.flatMap((s) => B.columns(all(), { ...B.ALL_IDEAS, ...f })[s].map((i) => i.id)).sort();
+        const ids = (f: Partial<IdeaFilter>) => IDEA_STATUSES.flatMap((s) => B.columns(all(), { ...B.ALL_IDEAS, ...f })[s].map((i) => i.id)).sort();
         expect(ids({ kinds: new Set(['bug']) })).toEqual(['R-20261008-0003']);
         expect(ids({ minUrgency: 'high' })).toEqual(['R-20261006-0002', 'R-20261008-0003']);
+        expect(ids({ minUrgency: 'low' })).not.toContain(P1); // not set is below every level
         expect(ids({ contact: 'no' })).toEqual(['F-edgetx-radio-over-usb-webhid-in-chrome', 'N-20261010-0001', 'R-20261008-0003']);
         expect(ids({ landing: 'yes' })).toEqual(['F-edgetx-radio-over-usb-webhid-in-chrome', 'N-20261010-0001', 'R-20261006-0002', 'R-20261012-0005']);
         expect(ids({ search: 'crosshair centre' })).toEqual(['R-20261006-0002']);
         expect(ids({ search: 'telegram hud' })).toEqual(['R-20261006-0002']); // contact + the owner's comment
         expect(ids({ search: 'crosshair motor' })).toEqual([]); // control: one word missing
         expect(ids({ search: 'PILOT.TWO@' })).toEqual(['R-20261012-0005']);
+    });
+
+    it('the landing follows lane B\'s rules: English title, a shown status, visible, not spam', () => {
+        const on = idea({ status: 'done', public: { title: { en: 'X' }, text: {}, visible: true } });
+        expect(B.onLanding(on)).toBe(true);
+        expect(B.onLanding({ ...on, public: { ...on.public, visible: false } })).toBe(false);
+        expect(B.onLanding({ ...on, status: 'new' })).toBe(false);
+        expect(B.onLanding({ ...on, suspect: true })).toBe(false);
+        expect(B.onLanding({ ...on, public: { title: { pl: 'tylko' }, text: {}, visible: true } })).toBe(false);
+        expect(B.landingBlocker({ pl: 'tylko' }, 'done')).toBe('title');
+        expect(B.landingBlocker({ en: 'X' }, 'rejected')).toBe('status');
+        expect(B.landingBlocker({ en: 'X' }, 'accepted')).toBeNull();
+        expect(B.missingLangs({ en: 'X', es: ' ' })).toEqual(['es', 'pl', 'ru']);
     });
 
     it('the keyboard move goes to the next column and stops at the edges', () => {
@@ -128,49 +166,20 @@ describe('the board model', () => {
         expect(B.neighbour('rejected', 1)).toBeNull();
     });
 
-    it('a thank-you is due for a pilot idea with an e-mail in Done, once', () => {
-        const due = idea({ status: 'done', contact: 'Pilot <pilot.one@example.com>' });
+    it('a thank-you is due for a pilot\'s idea with an e-mail in Done, until it is on its way', () => {
+        const due = idea({ status: 'done', email: 'pilot.one@example.com' });
         expect(B.thanksDue(due)).toBe(true);
-        expect(B.emailOf(due.contact)).toBe('pilot.one@example.com');
+        const mail = (state: Idea['mails'][number]['state']) => ({ id: 'M-1', kind: 'done' as const, to: 'pilot.one@example.com', lang: 'pl', subject: '', plain: '', state, created: '', notBefore: null, sentAt: null, error: '' });
         // controls: each condition alone stops it
         expect(B.thanksDue({ ...due, status: 'in_progress' })).toBe(false);
-        expect(B.thanksDue({ ...due, contact: '@pilotone on Telegram' })).toBe(false);
-        expect(B.thanksDue({ ...due, fromPilot: false })).toBe(false);
-        expect(B.thanksDue({ ...due, kind: 'feature' })).toBe(false);
-        expect(B.thanksDue({ ...due, mails: [{ ts: '', kind: 'thanks', to: 'pilot.one@example.com', ok: true }] })).toBe(false);
-        expect(B.thanksDue({ ...due, mails: [{ ts: '', kind: 'thanks', to: 'pilot.one@example.com', ok: false }] })).toBe(true);
-    });
-
-    it('the landing needs an English title and a status it shows; missing languages are named', () => {
-        expect(B.landingBlocker({ title: { pl: 'tylko' }, roadmap: true, group: null }, 'done')).toBe('title');
-        expect(B.landingBlocker({ title: { en: 'X' }, roadmap: true, group: null }, 'new')).toBe('status');
-        expect(B.landingBlocker({ title: { en: 'X' }, roadmap: true, group: null }, 'accepted')).toBeNull();
-        expect(B.missingLangs({ en: 'X', es: ' ' })).toEqual(['es', 'pl', 'ru']);
-        expect(B.onLanding(idea({ status: 'done', public: { title: { en: 'X' }, roadmap: false, group: null } }))).toBe(false);
-    });
-});
-
-/** Everything that disagrees between the admin's groups, the site dictionaries and the seed. */
-function groupProblems(admin: readonly string[], adminDict: Record<string, string>, site: Record<string, Record<string, string>>, seedGroups: Set<string>): string[] {
-    const out: string[] = [];
-    const want = [...admin].join(',');
-    for (const [l, groups] of Object.entries(site)) if (Object.keys(groups).join(',') !== want) out.push(`site ${l}: ${Object.keys(groups).join(',')}`);
-    for (const g of admin) if (!adminDict[`admin.ideas.group.${g}`]) out.push(`admin dictionary: ${g}`);
-    for (const g of seedGroups) if (!admin.includes(g)) out.push(`seed: ${g}`);
-    return out;
-}
-
-describe('the landing groups are one list', () => {
-    const site = Object.fromEntries(['en', 'es', 'pl', 'ru'].map((l) => [l, (JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'site', `${l}.json`), 'utf8')) as { features: { groups: Record<string, string> } }).features.groups]));
-    const adminDict = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'admin', 'ideas', 'en.json'), 'utf8')) as Record<string, string>;
-    const seed = new Set((JSON.parse(readFileSync(join(REPO, 'apps', 'api', 'locales', 'roadmap-seed.json'), 'utf8')) as { items: { group?: string }[] }).items.map((i) => i.group ?? ''));
-
-    it('in the admin, the site dictionaries and the seed', () => {
-        expect(groupProblems(B.LANDING_GROUPS, adminDict, site, seed)).toEqual([]);
-    });
-
-    it('a group added in one place only is caught (control)', () => {
-        expect(groupProblems([...B.LANDING_GROUPS, 'wind'], adminDict, site, seed)).toEqual(['site en: radio,controls,drone,crash,camera,scenes,walls,settings', 'site es: radio,controls,drone,crash,camera,scenes,walls,settings', 'site pl: radio,controls,drone,crash,camera,scenes,walls,settings', 'site ru: radio,controls,drone,crash,camera,scenes,walls,settings', 'admin dictionary: wind']);
-        expect(groupProblems(B.LANDING_GROUPS, adminDict, site, new Set([...seed, 'wind']))).toEqual(['seed: wind']);
+        expect(B.thanksDue({ ...due, email: '' })).toBe(false);
+        expect(B.thanksDue({ ...due, kind: 'feature', fromPilot: false })).toBe(false);
+        expect(B.thanksDue({ ...due, notified: '2026-10-13T12:00:00Z' })).toBe(false);
+        expect(B.thanksDue({ ...due, mails: [mail('queued')] })).toBe(false);
+        expect(B.thanksDue({ ...due, mails: [mail('sent')] })).toBe(false);
+        // a draft, a cancelled or a failed one still leaves it due
+        expect(B.thanksDue({ ...due, mails: [mail('draft')] })).toBe(true);
+        expect(B.thanksDue({ ...due, mails: [mail('cancelled')] })).toBe(true);
+        expect(B.thanksDraft({ ...due, mails: [mail('cancelled'), mail('draft')] })?.state).toBe('draft');
     });
 });
