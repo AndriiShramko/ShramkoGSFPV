@@ -115,6 +115,7 @@ export function rangesModeChannel(sw: Switches, f: RawFrame): number {
     return MODE_CHANNEL[rangesMode(sw, f) ?? 'acro'];
 }
 
+/** A deep copy (ranges and their inputs), so an edited copy never reaches a saved profile. */
 export function copySwitches(sw: Switches): Switches {
     return { v: 1, ranges: sw.ranges.map((r) => ({ ...r, input: { ...r.input } })) };
 }

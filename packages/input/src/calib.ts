@@ -19,7 +19,7 @@
 
 import { ModeSwitchDetector, DEFAULT_SWITCH_MODES, copyModeSwitch, sameInput, switchChannel, switchPos } from './mode-switch';
 import type { ModeSwitch, SwitchInput, SwitchPos } from './mode-switch';
-import { hasModeRanges, rangesArm, rangesModeChannel } from './switches';
+import { copySwitches, hasModeRanges, rangesArm, rangesModeChannel } from './switches';
 import type { Switches } from './switches';
 import type { FlightMode } from '@gsfpv/sim-core';
 
@@ -1536,7 +1536,10 @@ export class CalibrationWizard {
             deadband: 0,
             created: new Date().toISOString(),
             wizard: 2,
-            ...(this.modeSw ? { modeSwitch: copyModeSwitch(this.modeSw)! } : {})
+            ...(this.modeSw ? { modeSwitch: copyModeSwitch(this.modeSw)! } : {}),
+            // the channel functions (Switches screen) are not measured by the wizard: a resumed
+            // profile keeps them through Set again; a new wizard run has none (the default again)
+            ...(this.resumed?.switches ? { switches: copySwitches(this.resumed.switches) } : {})
         };
     }
 
