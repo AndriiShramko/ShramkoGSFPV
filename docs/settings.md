@@ -90,7 +90,7 @@ Everything you can change in [ShramkoGSFPV](https://gsfpv.flyreelstudio.eu), the
 | Setting | What it does | Default | Range or options | Scope | Key |
 |---|---|---|---|---|---|
 | **PID gains (P / I / D / F)**<br>`tune.pid` | P, I, D and feed-forward for roll, pitch and yaw, for each drone, as in Betaflight. | drone preset | 0–250 | per drone |  |
-| **Rates (stick curves)**<br>`tune.rates` | Betaflight, Actual, KISS or Raceflight rate curves, imported from your Betaflight CLI diff, for each drone. | drone preset | Betaflight · Raceflight · KISS · Actual · Quick | per drone |  |
+| **Rates (stick curves)**<br>`tune.rates` | Stick curves for each drone: Betaflight, Raceflight, KISS, Actual or Quick, with Betaflight's numbers. Edit them here or import them from your Betaflight CLI diff; Copy as CLI puts the same rates on your quad. | drone preset | Betaflight · Raceflight · KISS · Actual · Quick | per drone |  |
 | **Throttle curve**<br>`tune.throttle` | Throttle mid and expo, as in Betaflight, for each drone. | drone preset | 0–100 | per drone |  |
 
 ## Scenes

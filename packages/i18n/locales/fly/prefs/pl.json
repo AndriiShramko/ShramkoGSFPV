@@ -63,8 +63,6 @@
   "prefs.storage.persisted.unknown": "Przeglądarka może je usunąć, gdy zabraknie miejsca na dysku.",
   "prefs.storage.persist": "Chroń przed usunięciem",
   "prefs.rates.import": "Import z Betaflight",
-  "prefs.rates.readOnly": "Z presetu drona albo z twojego diffa Betaflight.",
-  "prefs.rates.max": "maks.",
   "prefs.throttle.mid": "Mid",
   "prefs.throttle.expo": "Expo"
 }

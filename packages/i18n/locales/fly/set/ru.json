@@ -60,7 +60,7 @@
   "set.tune.pid": "Коэффициенты PID (P / I / D / F)",
   "set.tune.pid.help": "P, I, D и feed-forward для крена, тангажа и рыскания, для каждого дрона, как в Betaflight.",
   "set.tune.rates": "Рейты (кривые стиков)",
-  "set.tune.rates.help": "Кривые рейтов Betaflight, Actual, KISS или Raceflight, импортируются из вашего diff из CLI Betaflight, для каждого дрона.",
+  "set.tune.rates.help": "Кривые стиков для каждого дрона: Betaflight, Raceflight, KISS, Actual или Quick, с числами как в Betaflight. Меняйте их здесь или импортируйте из diff в CLI Betaflight; «Копировать для CLI» перенесёт те же рейты на ваш дрон.",
   "set.tune.throttle": "Кривая газа",
   "set.tune.throttle.help": "Throttle mid и expo, как в Betaflight, для каждого дрона."
 }

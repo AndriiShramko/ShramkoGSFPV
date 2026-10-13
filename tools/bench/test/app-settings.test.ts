@@ -13,7 +13,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { compileParams } from '@gsfpv/sim-core';
+import { compileParams, maxRate, setpointRate } from '@gsfpv/sim-core';
 import type { ParamOverrides, PresetJson } from '@gsfpv/sim-core';
 import { FakeStorage, REPO } from '../../../packages/prefs/test/helpers';
 import { MemoryBackend, PrefsStore, SCHEMA, emptyDoc } from '../../../packages/prefs/src';
@@ -138,6 +138,19 @@ describe('each flight-model row the screen shows changes sim-core\'s model (and 
             expect(c.field(model(s, PAVO))).toEqual(before);
         });
     }
+
+    it('tune.rates QUICK (v0.7): the type and quickrates_rc_expo reach the model and its full-stick rate', () => {
+        const s = memStore();
+        const ax = { rcRate: 100, rate: 67, expo: 40 };
+        P.pilotSet(s, 'tune.rates', { type: 'QUICK', roll: ax, pitch: ax, yaw: ax, rateLimit: 1998, quickRcExpo: true }, { drone: PAVO });
+        const p = model(s, PAVO);
+        expect(p.rates).toEqual({ type: 'QUICK', roll: ax, pitch: ax, yaw: ax, rateLimit: 1998, quickRcExpo: true });
+        expect(maxRate(p.rates, 'roll')).toBeCloseTo(670, 9);
+        // control: the mapping before v0.7 dropped quickRcExpo, which changes the curve at half stick
+        const old = { ...p.rates };
+        delete old.quickRcExpo;
+        expect(setpointRate('QUICK', 0.5, old.roll, 1998, old.quickRcExpo === true)).not.toBeCloseTo(setpointRate('QUICK', 0.5, p.rates.roll, 1998, p.rates.quickRcExpo === true), 3);
+    });
 
     it('D-h: FOV and uptilt are render-only: the flight model is byte for byte the preset\'s', () => {
         const s = memStore();
