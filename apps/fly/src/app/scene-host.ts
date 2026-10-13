@@ -14,7 +14,7 @@
 // back. Which scene N, Shift+N and F load comes from the rotation (@gsfpv/scenes rotation.ts).
 // The pause menu's "Change scan" opens the scene picker over the flight (openPicker): a scene picked
 // there loads the same way, so changing the scan by hand keeps the radio too (item 5).
-import { SceneError, SceneRotation, flyQueryString, getLibrary, legacyLibraryStore, mergeLibraries, parseSceneLink, recordFailure, recordOpen, useLibraryStore, writeSceneQuery } from '@gsfpv/scenes';
+import { SceneError, SceneRotation, flyQueryString, getLibrary, legacyLibraryStore, mergeLibraries, parseSceneLink, recordFailure, recordOpen, sameRender, useLibraryStore, writeSceneQuery } from '@gsfpv/scenes';
 import type { CatalogCollection, RotationRules, RotationSource, RotationOrder, SceneLibraryData, SceneRender } from '@gsfpv/scenes';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { FlightSession } from '../session';
@@ -33,11 +33,6 @@ import { beacon, q } from './env';
 import { hook } from './test-hook';
 import type { FlightContext, SceneRef, SceneSwitchReason, SceneSwitcher } from './context';
 import { drawingFor } from './drawing';
-
-/** Two drawing requests ask for the same thing (none and none, or the same budget and flag). */
-function sameRender(a: SceneRender | undefined, b: SceneRender | undefined): boolean {
-    return a?.budgetM === b?.budgetM && a?.stochastic === b?.stochastic;
-}
 
 /** What the shell gives the host: the page's context with the swap, the canvas, the curated list. */
 export interface SceneHostDeps {

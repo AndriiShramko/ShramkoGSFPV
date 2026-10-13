@@ -14,12 +14,11 @@ import shareTargets from '@gsfpv/i18n/share.json';
 import { h, clear, panel } from '../ui/dom';
 import { t, locale } from '../i18n';
 import { creditText } from '../scene-facts';
-import { q } from '../app/env';
 import type { SceneCredit } from '../scene-facts';
 import { SHARE_W, SHARE_H } from './picture';
 import { copyText } from './clipboard';
-import { dataUrlBytes, inFlight, instagramCaption, kindOf, pageDrawing, shareLink, targetHref, wordsKey } from './links';
-import type { DrawingParams, ShareEntry } from './links';
+import { dataUrlBytes, inFlight, instagramCaption, kindOf, shareApiBody, shareLink, targetHref, wordsKey } from './links';
+import type { ShareDrawing, ShareEntry } from './links';
 import './share.css';
 
 /** One share: where it started, the scene, and what the place it started from can add. */
@@ -34,10 +33,11 @@ export interface ShareRequest {
      */
     video?: () => Promise<(File | null)[]>;
     /**
-     * the shared scene's own drawing parameters (lane R: from the link the pilot pasted); absent: the
-     * page's query, only when the page was opened for this scene (share/links.ts pageDrawing)
+     * how the shared scene is drawn (lane R): in a flight the scene flown when the share starts
+     * (share/links.ts flightDrawing), from the picker the card's scene (cardDrawing). The plain link
+     * carries it and POST /api/share sends it; the page's own query is never read for it.
      */
-    drawing?: DrawingParams;
+    drawing: ShareDrawing;
     /** the crash's impact speed, m/s (the crash panel's words) */
     speed?: number;
 }
@@ -190,9 +190,7 @@ export function openSharePanel(host: ShareHost, req: ShareRequest): { close(): v
     };
 
     const at = { origin: location.origin, locale };
-    // the shared scene's drawing parameters: its own, else the page's query (app/env.ts reads it once)
-    // when the page was opened for this scene
-    const drawing = req.drawing ?? pageDrawing(req.scene.id, q.toString());
+    const drawing = req.drawing;
     void (async () => {
         if (req.video) {
             try { parts = await req.video(); } catch { parts = []; }
@@ -212,7 +210,8 @@ export function openSharePanel(host: ShareHost, req: ShareRequest): { close(): v
                 if (!picture) throw new Error('no frame');
                 const r = await fetch('/api/share', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image: picture, scene: req.scene.id, title: req.scene.title ?? '', credit, locale, hp: '' })
+                    // render: how the scene is drawn, so /s/<id> opens the same deep link (apps/api/server.py fly_link)
+                    body: JSON.stringify(shareApiBody({ image: picture, sceneId: req.scene.id, title: req.scene.title, credit, locale, drawing }))
                 });
                 const j = (await r.json()) as { ok?: boolean; url?: string };
                 if (!r.ok || !j.ok || !j.url) throw new Error(`share ${r.status}`);

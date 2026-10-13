@@ -1,9 +1,11 @@
 // v0.7 lane D1, flight UX (docs/wip/v07-d1.md), in Node on the real modules. Claims, each with a
 // negative control that must fire:
 //  - sharing: every entry point carries the right link (the picture page /s/<id> from a flight, the
-//    scene page from the picker; a catalogue scan's page, else the fly deep link with that scene's own
-//    drawing parameters, never another scene's: review R3) and the right words (control: v0.6's one
-//    plain fly link for every place; the page's parameters handed to any scene, as before R3);
+//    scene page from the picker; a catalogue scan's page when drawn as the catalogue says, else the fly
+//    deep link with the drawing of the scene shared, read and written by lane R's packages/scenes
+//    only, and POST /api/share sends it as `render`) and the right words (control: v0.6's one plain
+//    fly link for every place; D1's own query reader before the merge, which turned stochastic=0 on,
+//    kept a budget of 100 and carried the opened page's drawing after an in-page scene switch);
 //  - copying (Instagram's caption, the link): the fallback copy keeps the caption's line breaks and
 //    leaves nothing on the page (control: an <input> scratch, which strips them; review R4);
 //  - recording on every scan: the browser's ability alone decides (the gate itself, with D34's put
@@ -27,8 +29,10 @@ import { join } from 'node:path';
 import { KEYMAP, actionFor, keymapProblems } from '../../../packages/prefs/src';
 import { mkStore } from '../../../packages/prefs/test/helpers';
 import { REPO } from '../src/evidence';
-import { SHARE_ENTRIES, dataUrlBytes, inFlight, instagramCaption, kindOf, pageDrawing, scenePageUrl, shareLink, targetHref, wordsKey } from '../../../apps/fly/src/share/links';
-import type { ShareEntry } from '../../../apps/fly/src/share/links';
+import { SHARE_ENTRIES, cardDrawing, dataUrlBytes, flightDrawing, inFlight, instagramCaption, kindOf, scenePageUrl, shareApiBody, shareLink, targetHref, wordsKey } from '../../../apps/fly/src/share/links';
+import type { DrawnScene, ShareEntry } from '../../../apps/fly/src/share/links';
+import { flyDeepLink, parseSceneLink, renderParams } from '../../../packages/scenes/src';
+import type { SceneRender } from '../../../packages/scenes/src';
 import { copyText } from '../../../apps/fly/src/share/clipboard';
 import type { ClipboardEnv } from '../../../apps/fly/src/share/clipboard';
 import { authorNotice, creditFacts, creditText, videoCredit } from '../../../apps/fly/src/scene-facts';
@@ -54,6 +58,32 @@ const PIC = 'https://gsfpv.flyreelstudio.eu/s/AbCdEfGhIjK';
 const v06Link = (o: { entry: ShareEntry; sceneId: string; pictureUrl: string | null }): string =>
     o.entry === 'pause' && o.pictureUrl ? o.pictureUrl : `${AT.origin}/${AT.locale}/fly/?scene=${o.sceneId}`;
 
+/**
+ * The control of the share-link fix: D1's own reader before the merge with lane R (share/links.ts
+ * pageDrawing). It read the query the page was OPENED with (when its ?scene= was the shared scene),
+ * took any stochastic as "on" and any budget up to 1000.
+ */
+const d1PageDrawing = (id: string, search: string): SceneRender => {
+    const q = new URLSearchParams(search);
+    if (q.get('scene') !== id) return {};
+    const out: SceneRender = {};
+    const b = q.get('budget');
+    if (b !== null && /^\d+(\.\d+)?$/.test(b) && Number(b) > 0 && Number(b) <= 1000) out.budgetM = Number(b);
+    if (q.has('stochastic')) out.stochastic = true;
+    return out;
+};
+
+/** The scene a page opened with `search` flies (app/boot.ts: the page's ?budget= and ?stochastic through lane R's reader). */
+const openedWith = (search: string): DrawnScene => {
+    const q = new URLSearchParams(search);
+    const render = renderParams(q.get('budget'), q.get('stochastic'));
+    return render ? { render } : {};
+};
+
+/** The plain link of a share from the flight's top bar whose picture failed (a scan outside the catalogue). */
+const plainFromFlight = (sceneId: string, scene: DrawnScene): string =>
+    shareLink({ entry: 'top', sceneId, inCatalogue: false, at: AT, pictureUrl: null, drawing: flightDrawing(scene) });
+
 describe('share links: the right link from every place a share starts', () => {
     it('in a flight the picture page, else the scene page; from the picker never a picture', () => {
         for (const entry of SHARE_ENTRIES) {
@@ -65,25 +95,82 @@ describe('share links: the right link from every place a share starts', () => {
         expect(SHARE_ENTRIES.filter((e) => !inFlight(e))).toEqual(['picker', 'recent']);
     });
 
-    it('a scan outside the catalogue has no page: the fly deep link, with budget and stochastic kept and nothing else', () => {
-        expect(scenePageUrl('cafe0001', false, AT, pageDrawing('cafe0001', PAGE))).toBe(`${AT.origin}/pl/fly/?scene=cafe0001&budget=8&stochastic`);
-        expect(scenePageUrl('cafe0001', false, AT, pageDrawing('cafe0001', '?scene=cafe0001&budget=8;alert(1)'))).toBe(`${AT.origin}/pl/fly/?scene=cafe0001`);
+    it('a scan outside the catalogue has no page: the fly deep link (lane R flyDeepLink), with budget and stochastic kept and nothing else', () => {
+        expect(plainFromFlight('cafe0001', openedWith(PAGE))).toBe(`${AT.origin}/pl/fly/?scene=cafe0001&budget=8&stochastic`);
+        expect(plainFromFlight('cafe0001', openedWith('?scene=cafe0001&budget=8;alert(1)'))).toBe(`${AT.origin}/pl/fly/?scene=cafe0001`);
         expect(shareLink({ entry: 'picker', sceneId: 'cafe0001', inCatalogue: false, at: { origin: AT.origin, locale: 'en' }, pictureUrl: null })).toBe(`${AT.origin}/en/fly/?scene=cafe0001`);
+        // the same writer as the page's own address and the server's /s/<id> page (packages/scenes link.ts)
+        expect(plainFromFlight('cafe0001', openedWith(PAGE))).toBe(`${AT.origin}${flyDeepLink('/pl/fly/', 'cafe0001', { budgetM: 8, stochastic: true })}`);
     });
 
-    it('the drawing parameters belong to their scene: another scene shared from the same page gets none, its own (a pasted link) win', () => {
-        // the picker's SuperSplat card for beef0002 while the page was opened for cafe0001 with budget 8
-        expect(shareLink({ entry: 'picker', sceneId: 'beef0002', inCatalogue: false, at: AT, pictureUrl: null, drawing: pageDrawing('beef0002', PAGE) })).toBe(`${AT.origin}/pl/fly/?scene=beef0002`);
-        // the scene the page was opened for keeps them, from the picker and from the flight
-        expect(shareLink({ entry: 'recent', sceneId: 'cafe0001', inCatalogue: false, at: AT, pictureUrl: null, drawing: pageDrawing('cafe0001', PAGE) })).toBe(`${AT.origin}/pl/fly/?scene=cafe0001&budget=8&stochastic`);
-        // the scene's own (lane R: the link the pilot pasted in the picker) go with it
-        expect(shareLink({ entry: 'picker', sceneId: 'beef0002', inCatalogue: false, at: AT, pictureUrl: null, drawing: { budgetM: 2.5 } })).toBe(`${AT.origin}/pl/fly/?scene=beef0002&budget=2.5`);
-        expect(scenePageUrl('beef0002', false, AT, { budgetM: Number.NaN, stochastic: true })).toBe(`${AT.origin}/pl/fly/?scene=beef0002&stochastic`);
+    it('stochastic=0 stays sorted (control: D1\'s reader turned it on)', () => {
+        const page = '?scene=cafe0001&budget=8&stochastic=0';
+        expect(plainFromFlight('cafe0001', openedWith(page))).toBe(`${AT.origin}/pl/fly/?scene=cafe0001&budget=8&stochastic=0`);
+        const before = shareLink({ entry: 'top', sceneId: 'cafe0001', inCatalogue: false, at: AT, pictureUrl: null, drawing: { render: d1PageDrawing('cafe0001', page) } });
+        expect(before).toBe(`${AT.origin}/pl/fly/?scene=cafe0001&budget=8&stochastic`);
     });
 
-    it('control: the page\'s parameters handed to any scene (the panel before R3) put cafe0001\'s budget on beef0002\'s link', () => {
-        const pageForAny = (search: string) => pageDrawing(new URLSearchParams(search).get('scene') ?? '', search);
-        expect(shareLink({ entry: 'picker', sceneId: 'beef0002', inCatalogue: false, at: AT, pictureUrl: null, drawing: pageForAny(PAGE) })).toContain('budget=8');
+    it('a budget outside 0.25..32 M is dropped (control: D1\'s reader kept 100)', () => {
+        const page = '?scene=cafe0001&budget=100&stochastic';
+        expect(plainFromFlight('cafe0001', openedWith(page))).toBe(`${AT.origin}/pl/fly/?scene=cafe0001&stochastic`);
+        expect(plainFromFlight('cafe0001', openedWith('?scene=cafe0001&budget=0.2'))).toBe(`${AT.origin}/pl/fly/?scene=cafe0001`);
+        const before = shareLink({ entry: 'top', sceneId: 'cafe0001', inCatalogue: false, at: AT, pictureUrl: null, drawing: { render: d1PageDrawing('cafe0001', page) } });
+        expect(before).toContain('budget=100');
+    });
+
+    it('after an in-page scene switch the share carries the scene flown now (control: D1 read the page as it was opened)', () => {
+        // the flight's ctx.scene, replaced by app/scene-host.ts on every switch; the share reads it when it starts
+        const ctx: { scene: DrawnScene & { id: string } } = { scene: { id: 'cafe0001', ...openedWith(PAGE) } };
+        const share = (): string => plainFromFlight(ctx.scene.id, ctx.scene);
+        expect(share()).toBe(`${AT.origin}/pl/fly/?scene=cafe0001&budget=8&stochastic`);
+        // a link pasted in the picker over the flight: its own drawing (lane R parseSceneLink)
+        const pasted = parseSceneLink('https://superspl.at/scene/beef0002?budget=2.5&stochastic=0')!;
+        ctx.scene = { id: pasted.id, render: pasted.render };
+        expect(share()).toBe(`${AT.origin}/pl/fly/?scene=beef0002&budget=2.5&stochastic=0`);
+        // back to cafe0001 by N (the rotation passes no link): drawn as the engine's default, shared so
+        ctx.scene = { id: 'cafe0001' };
+        expect(share()).toBe(`${AT.origin}/pl/fly/?scene=cafe0001`);
+        // control: the page's query as it was opened still names cafe0001, budget 8 and stochastic
+        const before = shareLink({ entry: 'top', sceneId: 'cafe0001', inCatalogue: false, at: AT, pictureUrl: null, drawing: { render: d1PageDrawing('cafe0001', PAGE) } });
+        expect(before).not.toBe(share());
+        expect(before).toContain('budget=8');
+    });
+
+    it('a catalogue scan: its page when drawn as the catalogue says, else the deep link keeps the link\'s own drawing', () => {
+        const meta = { render: { budgetM: 4, stochastic: true } };
+        const link = (scene: DrawnScene): string => shareLink({ entry: 'crash', sceneId: 'ab12cd34', inCatalogue: true, at: AT, pictureUrl: null, drawing: flightDrawing(scene) });
+        expect(link({ meta })).toBe(`${AT.origin}/pl/scenes/ab12cd34/`);
+        // a link asking for what the catalogue says already is the same drawing
+        expect(link({ meta, render: { stochastic: true } })).toBe(`${AT.origin}/pl/scenes/ab12cd34/`);
+        // a pasted link asking for the sorted drawing: the scene page would draw it stochastic
+        expect(link({ meta, render: { stochastic: false } })).toBe(`${AT.origin}/pl/fly/?scene=ab12cd34&budget=4&stochastic=0`);
+        expect(scenePageUrl('ab12cd34', true, AT)).toBe(`${AT.origin}/pl/scenes/ab12cd34/`);
+        // control: D1's rule (a catalogue scan always shares its page) gives the page there, and stochastic=0 is lost
+        const d1ScenePage = (id: string, inCatalogue: boolean): string => (inCatalogue ? `${AT.origin}/pl/scenes/${id}/` : `${AT.origin}/pl/fly/?scene=${id}`);
+        expect(d1ScenePage('ab12cd34', true)).not.toBe(link({ meta, render: { stochastic: false } }));
+    });
+
+    it('a picker card shares the scene as the card opens it: the catalogue\'s drawing, never the page\'s query (control: D1 gave the Continue card the page\'s)', () => {
+        expect(shareLink({ entry: 'recent', sceneId: 'cafe0001', inCatalogue: false, at: AT, pictureUrl: null, drawing: cardDrawing(undefined) })).toBe(`${AT.origin}/pl/fly/?scene=cafe0001`);
+        expect(shareLink({ entry: 'picker', sceneId: 'beef0002', inCatalogue: false, at: AT, pictureUrl: null, drawing: cardDrawing(undefined) })).toBe(`${AT.origin}/pl/fly/?scene=beef0002`);
+        expect(shareLink({ entry: 'picker', sceneId: 'ab12cd34', inCatalogue: true, at: AT, pictureUrl: null, drawing: cardDrawing({ render: { budgetM: 4 } }) })).toBe(`${AT.origin}/pl/scenes/ab12cd34/`);
+        expect(shareLink({ entry: 'recent', sceneId: 'cafe0001', inCatalogue: false, at: AT, pictureUrl: null, drawing: { render: d1PageDrawing('cafe0001', PAGE) } })).toContain('budget=8');
+    });
+
+    it('POST /api/share sends the scene\'s drawing as `render`: the server writes the same deep link (control: D1\'s body had none)', () => {
+        const table = JSON.parse(readFileSync(join(REPO, 'packages', 'scenes', 'test', 'fixtures', 'fly-deep-links.json'), 'utf8')) as { rows: { render: SceneRender | null; link: string }[] };
+        const serverLink = (render: unknown): string | undefined => table.rows.find((r) => JSON.stringify(r.render) === JSON.stringify(render ?? null))?.link;
+        const drawing = flightDrawing({ render: { budgetM: 1.25, stochastic: false } });
+        const body = shareApiBody({ image: 'data:image/jpeg;base64,', sceneId: '2f1ddf5f', title: null, credit: 'c', locale: 'en', drawing });
+        expect(body.render).toEqual({ budgetM: 1.25, stochastic: false });
+        expect(body.title).toBe('');
+        // the /s/<id> page's deep link (apps/api/server.py fly_link, held to the same table) = the plain link's
+        expect(serverLink(body.render)).toBe('/en/fly/?scene=2f1ddf5f&budget=1.25&stochastic=0');
+        expect(serverLink(body.render)).toBe(flyDeepLink('/en/fly/', '2f1ddf5f', drawing.render));
+        expect(shareApiBody({ image: '', sceneId: '2f1ddf5f', title: 'T', credit: 'c', locale: 'en', drawing: {} }).render).toBeNull();
+        // control: without `render` the server writes the plain link, not the one flown
+        const d1Body: Record<string, unknown> = { image: '', scene: '2f1ddf5f', title: '', credit: 'c', locale: 'en', hp: '' };
+        expect(serverLink(d1Body.render)).toBe('/en/fly/?scene=2f1ddf5f');
     });
 
     it('the words follow the place: the crash brags, the video invites, the picker invites to fly', () => {

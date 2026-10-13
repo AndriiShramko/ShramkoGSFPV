@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseSceneLink, parseSceneInput, renderParams, sceneRender, catalogueRender, writeSceneQuery, flyQueryString, flyDeepLink } from '../src/index';
+import { parseSceneLink, parseSceneInput, renderParams, sceneRender, sameRender, catalogueRender, writeSceneQuery, flyQueryString, flyDeepLink } from '../src/index';
 import type { SceneLink, SceneRender } from '../src/index';
 
 type Parser = (raw: string) => SceneLink | null;
@@ -169,5 +169,13 @@ describe('sceneRender: the link wins field by field, the catalogue is the defaul
         expect(catalogueRender({ stochastic: false })).toBeUndefined();
         expect(catalogueRender({ budgetM: 64 })).toBeUndefined();
         expect(catalogueRender(undefined)).toBeUndefined();
+    });
+
+    it('sameRender: the same budget and flag (an explicit "sorted" is not "nothing asked"; the controls differ)', () => {
+        expect(sameRender(undefined, undefined)).toBe(true);
+        expect(sameRender({ budgetM: 8, stochastic: true }, { stochastic: true, budgetM: 8 })).toBe(true);
+        expect(sameRender({ stochastic: false }, undefined)).toBe(false);
+        expect(sameRender({ budgetM: 8 }, { budgetM: 4 })).toBe(false);
+        expect(sameRender({ stochastic: true }, { stochastic: true, budgetM: 8 })).toBe(false);
     });
 });

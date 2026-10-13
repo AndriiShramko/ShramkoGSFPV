@@ -4,15 +4,21 @@
 //
 // The link (contract with lane A, docs/wip/v07-plan.md):
 //  - in a flight a picture of the view can be made: POST /api/share answers /s/<id>, a page whose
-//    Open Graph card is that picture (share/picture.ts, apps/api/server.py);
+//    Open Graph card is that picture (share/picture.ts, apps/api/server.py); the body sends how the
+//    scene is drawn (`render`), so the page opens the same deep link (server.py fly_link);
 //  - without one (the picker, no frame, the API down): the scene's page, /{lang}/scenes/<id>/ for a
-//    scan of the owner's catalogue (lane A builds those pages); a scan outside it has no page, so the
-//    simulator's own deep link /{lang}/fly/?scene=<id>, with that scene's own budget / stochastic
-//    drawing parameters (lane R's link contract): the ones its scene reference carries, else the
-//    page's query only when the page was opened for that very scene (they belong to it, not to a
-//    scene picked or shared later in the same page).
+//    scan of the owner's catalogue drawn as the catalogue says (lane A builds those pages); any other
+//    scan, or a catalogue scan whose link asked for a drawing of its own, the simulator's deep link
+//    /{lang}/fly/?scene=<id>&budget=<M>&stochastic.
+// How a scene is drawn is lane R's alone: @gsfpv/scenes reads a link (parseSceneLink, renderParams),
+// lays it over the catalogue's render (sceneRender) and writes the deep link (flyDeepLink, the same
+// table as the server's fly_link). Nothing here reads a query: the drawing a share carries is the one
+// of the scene shared, taken when the share starts (flightDrawing: the scene flown NOW, also after an
+// in-page scene switch; cardDrawing: a picker card's scene, which opens as the catalogue says).
 //
 // Pure: no DOM, no clock, no fetch (tools/bench/test/flight-ux.test.ts). share/panel.ts is the page.
+import { flyDeepLink, sameRender, sceneRender } from '@gsfpv/scenes';
+import type { SceneRender } from '@gsfpv/scenes';
 
 /**
  * Where a share starts. In a flight: `top` (the button on the top bar), `key` (L), `pause` (the pause
@@ -43,55 +49,63 @@ export function kindOf(e: ShareEntry): ShareKind {
 /** Where the page is: its origin and its language (the /{lang}/ of the path). */
 export interface PagePlace { origin: string; locale: string }
 
-/** How SuperSplat's viewer was asked to draw one scene (lane R; its link's ?budget=8&stochastic). */
-export interface DrawingParams {
-    /** the splat budget in millions */
-    budgetM?: number;
-    /** the sort-free, dithered drawing */
-    stochastic?: boolean;
+/**
+ * How the shared scene is drawn (lane R's SceneRender: SuperSplat's ?budget= and ?stochastic):
+ * `render`, what it is drawn with (its link's fields over the catalogue's render), and `catalogue`,
+ * the catalogue's own render (what its scene page flies it with). Both absent: the engine's default.
+ */
+export interface ShareDrawing {
+    render?: SceneRender;
+    catalogue?: SceneRender;
+}
+
+/** A scene as the flight holds it (app/context.ts SceneRef): the link's render and the catalogue entry's. */
+export interface DrawnScene {
+    render?: SceneRender;
+    meta?: { render?: SceneRender };
 }
 
 /**
- * The drawing parameters in the page's query (`search`), when the page was opened for scene `id`
- * (?scene=<id>&budget=<M>&stochastic); none for any other scene: they belong to the scene the page
- * was opened with.
+ * The drawing of the scene flown now. Read when the share starts, from the flight's current scene, so a
+ * share after an in-page scene switch carries the new scene's drawing (app/drawing.ts requestOf).
  */
-export function pageDrawing(id: string, search: string | undefined): DrawingParams {
-    const q = new URLSearchParams(search ?? '');
-    if (q.get('scene') !== id) return {};
-    const out: DrawingParams = {};
-    const budget = q.get('budget');
-    if (budget !== null && /^\d+(\.\d+)?$/.test(budget)) out.budgetM = Number(budget);
-    if (q.has('stochastic')) out.stochastic = true;
-    return out;
+export function flightDrawing(scene: DrawnScene): ShareDrawing {
+    return { render: sceneRender(scene.render, scene.meta?.render), catalogue: scene.meta?.render };
 }
 
-/** A fly link's query tail for these parameters: &budget=<M> (a plain positive number) and the bare &stochastic. */
-function drawingQuery(d: DrawingParams | undefined): string {
-    let out = '';
-    const b = d?.budgetM;
-    if (typeof b === 'number' && Number.isFinite(b) && b > 0 && b <= 1000) out += `&budget=${b}`;
-    if (d?.stochastic === true) out += '&stochastic';
-    return out;
+/** The drawing of a picker card's scene: a card opens it as the catalogue says (a card passes no link). */
+export function cardDrawing(meta: { render?: SceneRender } | undefined): ShareDrawing {
+    return { render: sceneRender(undefined, meta?.render), catalogue: meta?.render };
 }
 
 /**
- * The scene's own page: /{lang}/scenes/<id>/ for a scan of the owner's catalogue, else the simulator's
- * deep link /{lang}/fly/?scene=<id> with the scene's drawing parameters (no page exists for a scan
- * outside the catalogue; the catalogue's page carries its own).
+ * The scene's own page: /{lang}/scenes/<id>/ for a scan of the owner's catalogue drawn as the
+ * catalogue says (that page flies it so); else the simulator's deep link with the scene's drawing
+ * (@gsfpv/scenes flyDeepLink): a scan outside the catalogue has no page, and a catalogue scan whose
+ * link asked for another drawing would lose it there.
  */
-export function scenePageUrl(id: string, inCatalogue: boolean, at: PagePlace, drawing?: DrawingParams): string {
-    return inCatalogue ? `${at.origin}/${at.locale}/scenes/${id}/` : `${at.origin}/${at.locale}/fly/?scene=${id}${drawingQuery(drawing)}`;
+export function scenePageUrl(id: string, inCatalogue: boolean, at: PagePlace, drawing: ShareDrawing = {}): string {
+    if (inCatalogue && sameRender(drawing.render, sceneRender(undefined, drawing.catalogue))) return `${at.origin}/${at.locale}/scenes/${id}/`;
+    return `${at.origin}${flyDeepLink(`/${at.locale}/fly/`, id, drawing.render)}`;
 }
 
 /**
  * The link a share carries: the picture page (/s/<id>) when the share started in a flight and the
- * picture's page could be made (`pictureUrl`), else the scene's page (with `drawing`, the shared
- * scene's own drawing parameters).
+ * picture's page could be made (`pictureUrl`), else the scene's page (scenePageUrl, with `drawing`,
+ * the shared scene's drawing).
  */
-export function shareLink(o: { entry: ShareEntry; sceneId: string; inCatalogue: boolean; at: PagePlace; pictureUrl: string | null; drawing?: DrawingParams }): string {
+export function shareLink(o: { entry: ShareEntry; sceneId: string; inCatalogue: boolean; at: PagePlace; pictureUrl: string | null; drawing?: ShareDrawing }): string {
     if (inFlight(o.entry) && o.pictureUrl) return o.pictureUrl;
     return scenePageUrl(o.sceneId, o.inCatalogue, o.at, o.drawing);
+}
+
+/**
+ * The body of POST /api/share (apps/api/server.py): the picture, the scene, its words, and `render`,
+ * how the scene is drawn, from which the server writes the /s/<id> page's deep link (fly_link, the
+ * same table as flyDeepLink: packages/scenes/test/fixtures/fly-deep-links.json). `hp`: the honeypot.
+ */
+export function shareApiBody(o: { image: string; sceneId: string; title: string | null; credit: string; locale: string; drawing: ShareDrawing }): Record<string, unknown> {
+    return { image: o.image, scene: o.sceneId, render: o.drawing.render ?? null, title: o.title ?? '', credit: o.credit, locale: o.locale, hp: '' };
 }
 
 /** The i18n key of the words for a kind (packages/i18n/locales/fly/share/). */

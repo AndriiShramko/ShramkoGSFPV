@@ -95,6 +95,11 @@ export function sceneRender(link: SceneRender | undefined, catalogue: SceneRende
     return r.budgetM === undefined && r.stochastic === undefined ? undefined : r;
 }
 
+/** Two drawing requests ask for the same thing (none and none, or the same budget and flag). */
+export function sameRender(a: SceneRender | undefined, b: SceneRender | undefined): boolean {
+    return a?.budgetM === b?.budgetM && a?.stochastic === b?.stochastic;
+}
+
 /**
  * A link's request as the catalogue stores it (the contract field `render`): only a budget in range and
  * stochastic: true; an explicit "sorted" is the catalogue's default already. undefined when nothing is left.

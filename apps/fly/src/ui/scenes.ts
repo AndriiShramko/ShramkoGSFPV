@@ -9,6 +9,7 @@ import { t, locale } from '../i18n';
 import { creditFacts } from '../scene-facts';
 import { openSharePanel } from '../share/panel';
 import { shareIcon } from '../share/icon';
+import { cardDrawing } from '../share/links';
 import type { ShareEntry } from '../share/links';
 import { pickerTabs } from './picker-tabs';
 import type { PickSource, PickerTab } from './picker-tabs';
@@ -191,13 +192,14 @@ export class ScenePicker {
 
     /**
      * Share a scene from the picker: no flight, no picture, so the link is the scene's page
-     * (share/links.ts). The panel goes beside the picker, not into it: the picker scrolls, a panel
-     * inside it would sit at the top of its content.
+     * (share/links.ts), drawn as the card opens it (the catalogue's render: cardDrawing). The panel
+     * goes beside the picker, not into it: the picker scrolls, a panel inside it would sit at the top
+     * of its content.
      */
     private share(id: string, entry: ShareEntry, listed: SceneFacts = {}): void {
         const meta = this.showcase.find((s) => s.id === id);
         this.sharePanel = openSharePanel({ parent: this.root.parentElement ?? document.body, onClose: () => { this.sharePanel = null; } },
-            { entry, scene: creditFacts(id, meta, { ...sceneFacts(id), ...listed }) }) ?? this.sharePanel;
+            { entry, scene: creditFacts(id, meta, { ...sceneFacts(id), ...listed }), drawing: cardDrawing(meta) }) ?? this.sharePanel;
     }
 
     /** A card's round Share button (under the star). */

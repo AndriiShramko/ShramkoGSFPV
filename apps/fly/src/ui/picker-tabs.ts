@@ -2,7 +2,7 @@
 // A feature registers a tab here (the SuperSplat catalogue, W3-2) instead of editing ui/scenes.ts:
 // the picker shows its built-in tabs (Showcase, Recent, Favourites) and then every registered tab in
 // `order`, and when one is selected it hands the tab the list area. The tab picks a scene through
-// the host, exactly like a card or a pasted link does (parseSceneInput -> resolveScene).
+// the host, exactly like a card or a pasted link does (parseSceneLink, the link's drawing kept -> resolveScene).
 import type { SceneFacts, SceneFilter } from '@gsfpv/scenes';
 
 /** Where a picked scene came from (the scene_open beacon; apps/api/server.py EVENTS keeps the same list). */

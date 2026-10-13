@@ -9,6 +9,10 @@
 //   video  after a recording stops: "Share your flight" on the recording bar (builtin/cinema.ts)
 // In a flight the link is the picture page /s/<id> of the view as it is (share/picture.ts); the
 // picker's cards share the scene's page (ui/scenes.ts, share/links.ts).
+// The scene goes out drawn as it is flown (lane R: SuperSplat's ?budget= and ?stochastic, the link it
+// was opened with over the catalogue's render), taken from ctx.scene when the share starts, so after
+// an in-page scene switch it is the new scene's: the plain link is its fly deep link (flyDeepLink) and
+// POST /api/share sends it as `render`, so /s/<id> opens the same deep link (share/links.ts).
 import { DT } from '@gsfpv/sim-core';
 import { h } from '../../ui/dom';
 import { t } from '../../i18n';
@@ -16,6 +20,7 @@ import { dialogOpen } from '../../devices/keyboard';
 import { PauseMenu } from '../menu';
 import { openSharePanel, shareState } from '../../share/panel';
 import type { ShareRequest, ShareState } from '../../share/panel';
+import { flightDrawing } from '../../share/links';
 import type { ShareEntry } from '../../share/links';
 import { sharePicture } from '../../share/picture';
 import { shareIcon } from '../../share/icon';
@@ -33,12 +38,13 @@ declare module '../test-hook' {
     }
 }
 
-/** What a share from this flight sends: the scene flown, the picture of the view, and the place's extras. */
+/** What a share from this flight sends: the scene flown now and how it is drawn, the picture of the view, and the place's extras. */
 export function flightShareRequest(ctx: FlightContext, entry: ShareEntry, extra: Pick<ShareRequest, 'speed' | 'video'> = {}): ShareRequest {
     const scene = sceneCredit(ctx);
     return {
         entry,
         scene,
+        drawing: flightDrawing(ctx.scene),
         ...extra,
         picture: () => sharePicture(ctx.renderer, ctx.canvas, {
             hook: t('share.hook'),
