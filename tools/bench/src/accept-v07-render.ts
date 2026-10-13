@@ -14,13 +14,15 @@
 //       follows; the next scene of the rotation (no request) draws sorted again and drops them.
 //   R5  the look, a still camera on one view: sorted twice (control: the same picture), stochastic twice;
 //       the luminance change and the fine-detail energy (mean |pixel - mean of its 4 neighbours|).
- //   R7  the voxel overlay (V) over each drawing: the share of the picture the voxels change; control: the
+//   R7  the voxel overlay (V) over each drawing: the share of the picture the voxels change; control: the
 //       stochastic view with the overlay layer's depth clear off (the scan's depth then hides the voxels).
+//   R8  missed frames (a simulated overload) lower the budget from the link's top of 8 M and keep stochastic;
+//       the calm state before is the control.
 //   R6  the cost on a heavy scan (2f1ddf5f, 259 M splats at full detail): GPU time per frame (submit ->
 //       done) with the camera turning, governor off so both draw the same 8 M budget.
 //   SITE=http://127.0.0.1:5372 npx tsx src/accept-v07-render.ts [R1 R2 ...]
 // Evidence: evidence/<date>/v07-render.json and v07-render/ (crops of R5).
-import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { launchChrome, waitReady } from './browser';
@@ -49,6 +51,8 @@ async function context(browser: Browser, phone = false): Promise<{ ctx: BrowserC
         ? { viewport: { width: 412, height: 915 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true, userAgent: PHONE_UA }
         : { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
     await ctx.route('**/api/e', (r) => r.fulfill({ status: 204, body: '' }));
+    // tsx keeps function names with __name(); functions sent to page.evaluate need it in the page
+    await ctx.addInitScript('window.__name = window.__name || ((f) => f);');
     const page = await ctx.newPage();
     const log: string[] = [];
     page.on('console', (m) => log.push(`${m.type()}: ${m.text()}`.slice(0, 300)));
@@ -145,7 +149,7 @@ if (want('R4')) {
     await wait(page, 600);
     const next = await hook(page, STATE);
     out.R4 = { before, switch: sw, picked, nextSwitch: sw2, next, pageerrors: errors(log) };
-    pass.R4 = before.engine === false && sw.state === 'done' && picked.engine === true && picked.top === 6 && /[?&]scene=887f27aa&budget=6&stochastic/.test(picked.search)
+    pass.R4 = before.engine === false && sw.state === 'done' && picked.engine === true && picked.top === 6 && /[?&]scene=887f27aa(&|$)/.test(picked.search) && /[?&]budget=6&stochastic(&|$)/.test(picked.search)
         && sw2.state === 'done' && next.engine === false && next.top === 4 && !/[?&](budget|stochastic)/.test(next.search) && errors(log).length === 0;
     console.log('R4', pass.R4, JSON.stringify({ before: before.engine, picked: [picked.engine, picked.top, picked.search], next: [next.engine, next.top, next.search] }));
     await ctx.close();
@@ -305,14 +309,51 @@ if (want('R7')) {
     await ctx.close();
 }
 
+// ------------------------------------------------------------------ R8
+// Missed frames lower the budget from the link's top and keep stochastic. A simulated overload (the
+// test hook's setFrameDelay burns CPU in every frame, 1.4 display periods); the state before is the control.
+if (want('R8')) {
+    const { ctx, page, log } = await context(browser);
+    const before = await open(page, `scene=${A}&budget=8&stochastic`);
+    // the scan streams its finer levels after the reveal and the hitches step the governor down; it
+    // steps back up one level per calm 5 s: wait for the top (or 60 s) before the overload
+    const g = `return { step: h.governor.step, budgetM: s.renderer.app.scene.gsplat.splatBudget / 1e6, engine: s.renderer.app.scene.gsplat.stochastic === true, top: h.governor.topBudgetMillions, changes: h.governor.changes };`;
+    const tc = Date.now();
+    const afterLoad = await hook(page, g);
+    let calm: Any = afterLoad;
+    while (Date.now() - tc < 60000 && calm.step !== 0) { await wait(page, 1000); calm = await hook(page, g); }
+    calm.waitedS = Math.round((Date.now() - tc) / 1000);
+    await hook(page, 'h.setFrameDelay(Math.round(h.governor.displayPeriodMs * 1.4)); return 0;');
+    const t0 = Date.now();
+    let loaded: Any = null;
+    while (Date.now() - t0 < 12000) {
+        await wait(page, 500);
+        loaded = await hook(page, `return { step: h.governor.step, budgetM: s.renderer.app.scene.gsplat.splatBudget / 1e6, engine: s.renderer.app.scene.gsplat.stochastic === true, top: h.governor.topBudgetMillions };`);
+        if (loaded.step >= 2) break;
+    }
+    await hook(page, 'h.setFrameDelay(0); return 0;');
+    out.R8 = { before, afterLoad, calm, overloaded: loaded, pageerrors: errors(log) };
+    pass.R8 = before.engine === true && calm.step === 0 && calm.budgetM === 8 && loaded.step >= 1 && loaded.budgetM < 8 && loaded.budgetM >= 3 && loaded.engine === true && loaded.top === 8 && errors(log).length === 0;
+    console.log('R8', pass.R8, JSON.stringify(out.R8));
+    await ctx.close();
+}
+
 // ------------------------------------------------------------------ R6
+// R6_BUDGET (millions, default 8) and R6_RES ("3840x2160": a fixed backbuffer, the GPU kept busy so its
+// clock does not drop at a light load) shape the run; R6_TAG names the item (R6-<tag>) so runs add up.
 if (want('R6')) {
     const { ctx, page, log } = await context(browser);
     const runs: Any[] = [];
-    for (const [mode, qs] of [['sorted', `scene=${HEAVY}&budget=8&stochastic&drawing=sorted&governor=0`], ['stochastic', `scene=${HEAVY}&budget=8&stochastic&governor=0`], ['sorted again', `scene=${HEAVY}&budget=8&stochastic&drawing=sorted&governor=0`]] as const) {
+    const B = Number(process.env.R6_BUDGET ?? 8);
+    const res = /^(\d+)x(\d+)$/.exec(process.env.R6_RES ?? '');
+    const key = process.env.R6_TAG ? `R6-${process.env.R6_TAG}` : 'R6';
+    const sortedQs = `scene=${HEAVY}&budget=${B}&stochastic&drawing=sorted&governor=0`;
+    const stochQs = `scene=${HEAVY}&budget=${B}&stochastic&governor=0`;
+    for (const [mode, qs] of [['sorted', sortedQs], ['stochastic', stochQs], ['sorted again', sortedQs], ['stochastic again', stochQs]] as const) {
         const t0 = Date.now();
         const st = await open(page, qs);
         if (st.status !== 'ready') { runs.push({ mode, ...st }); continue; }
+        if (res) await hook(page, `s.renderer.setFixedResolution({ w: ${res[1]}, h: ${res[2]} }); return 0;`);
         // let it stream at the spawn view (every level of detail in place, or 45 s)
         while (Date.now() - t0 < 60000 && !(await hook<boolean>(page, 'return s.renderer.sceneComplete;'))) await wait(page, 500);
         const settledMs = Date.now() - t0;
@@ -320,10 +361,14 @@ if (want('R6')) {
         await hook(page, `s.pause(true, 'bake'); s.cameraOverride = true;
             const c = s.renderer.camera.getPosition(); const p = [c.x, c.y, c.z]; const t0 = performance.now();
             window.__turn = () => { const a = (performance.now() - t0) / 1000 * Math.PI / 3; s.renderer.setCameraLookAt(p[0], p[1], p[2], p[0] + Math.sin(a), p[1] - 0.1, p[2] - Math.cos(a)); };
-            s.renderer.app.on('update', window.__turn); window.__frames = []; s.renderer.app.on('frameend', () => window.__frames.push(performance.now())); return 0;`);
+            s.renderer.app.on('update', window.__turn); window.__frames = []; window.__gpuT = []; window.__pass = null;
+            const prof = s.renderer.device.gpuProfiler; if (prof) prof.enabled = true;
+            s.renderer.app.on('frameend', () => { window.__frames.push(performance.now()); const t = prof && prof.frameTime; if (typeof t === 'number') { window.__gpuT.push(t); window.__pass = Object.fromEntries([...prof.passTimings].map(([k, v]) => [k, Math.round(v * 100) / 100])); } });
+            return 0;`);
         await wait(page, 3000);
         const gpu: number[] = [];
-        await hook(page, 'window.__frames.length = 0; return 0;');
+        await hook(page, 'window.__frames.length = 0; window.__gpuT.length = 0; return 0;');
+        const held0 = await hook<number>(page, 'return s.renderer.framesHeld;');
         for (let i = 0; i < 10; i++) {
             await wait(page, 1000);
             gpu.push(...await hook<number[]>(page, 'return [...s.renderer.submitDone];'));
@@ -332,15 +377,25 @@ if (want('R6')) {
         const end = await hook(page, STATE);
         const sorted = [...gpu].sort((a, b) => a - b);
         const q = (x: number) => Math.round(sorted[Math.min(sorted.length - 1, Math.floor(x * (sorted.length - 1)))] * 10) / 10;
-        runs.push({ mode, qs, settledMs, sceneComplete: await hook(page, 'return s.renderer.sceneComplete;'), gpuSubmitToDoneMs: { n: gpu.length, p50: q(0.5), p95: q(0.95) }, drawnHz: fr.length > 1 ? Math.round((fr.length - 1) * 10000 / (fr[fr.length - 1] - fr[0])) / 10 : null, framesHeld: await hook(page, 'return s.renderer.framesHeld;'), period: await hook(page, 'return s.renderer.latencyStats().periodMs;'), engine: end.engine, budgetM: end.budgetM });
+        const held = (await hook<number>(page, 'return s.renderer.framesHeld;')) - held0;
+        // the engine's GPU profiler (WebGPU timestamp queries): the GPU's own time for each frame's passes
+        const gpuT = [...await hook<number[]>(page, 'return window.__gpuT.slice();')].sort((a, b) => a - b);
+        const gq = (x: number) => (gpuT.length ? Math.round(gpuT[Math.min(gpuT.length - 1, Math.floor(x * (gpuT.length - 1)))] * 100) / 100 : null);
+        const passes = await hook(page, 'return window.__pass;');
+        const backbuffer = await hook<number[]>(page, 'return [s.renderer.canvas.width, s.renderer.canvas.height];');
+        runs.push({ mode, qs, backbuffer, settledMs, sceneComplete: await hook(page, 'return s.renderer.sceneComplete;'), gpuSubmitToDoneMs: { n: gpu.length, p50: q(0.5), p95: q(0.95) }, gpuProfilerFrameMs: { n: gpuT.length, p50: gq(0.5), p95: gq(0.95) }, lastPassTimingsMs: passes, drawnHz: fr.length > 1 ? Math.round((fr.length - 1) * 10000 / (fr[fr.length - 1] - fr[0])) / 10 : null, framesHeldIn10s: held, period: await hook(page, 'return s.renderer.latencyStats().periodMs;'), engine: end.engine, budgetM: end.budgetM });
         console.log('R6', JSON.stringify(runs[runs.length - 1]));
     }
-    out.R6 = { scene: HEAVY, runs, pageerrors: errors(log), note: 'governor off: both draw the same 8 M budget; submit -> done is GPU time per frame (WebGPU onSubmittedWorkDone); the display caps drawn frames at its rate' };
+    out[key] = { scene: HEAVY, budgetM: B, fixedResolution: res ? res[0] : null, runs, pageerrors: errors(log), note: 'governor off: both draw the same budget; submit -> done is GPU time per frame (WebGPU onSubmittedWorkDone), which also moves with the GPU clock (the driver lowers it at a light load); the display caps drawn frames at its rate; frames held = the GPU still had 2 frames in flight' };
     const [s0, st, s1] = runs;
-    pass.R6 = !!(s0?.engine === false && st?.engine === true && s1?.engine === false && s0.gpuSubmitToDoneMs?.n > 30 && st.gpuSubmitToDoneMs?.n > 30);
+    pass[key] = !!(s0?.engine === false && st?.engine === true && s1?.engine === false && s0.gpuSubmitToDoneMs?.n > 30 && st.gpuSubmitToDoneMs?.n > 30);
     await ctx.close();
 }
 
 await browser.close();
-const file = writeEvidence('v07-render', { site: SITE, browser: which, pass, items: out });
+// items run separately land in one file: the earlier items of the day stay, a re-run item replaces its own
+const prevFile = join(REPO, 'evidence', today(), `v07-render${process.env.EVIDENCE_SUFFIX ?? ''}.json`);
+const prev = existsSync(prevFile) ? JSON.parse(readFileSync(prevFile, 'utf8')) as { pass?: Record<string, boolean>; items?: Record<string, unknown>; runs?: Record<string, string> } : {};
+const ran = Object.fromEntries(Object.keys(pass).map((k) => [k, new Date().toISOString()]));
+const file = writeEvidence('v07-render', { site: SITE, browser: which, pass: { ...prev.pass, ...pass }, runs: { ...prev.runs, ...ran }, items: { ...prev.items, ...out } });
 console.log(JSON.stringify(pass), file);
