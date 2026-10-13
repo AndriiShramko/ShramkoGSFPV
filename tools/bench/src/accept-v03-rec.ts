@@ -8,12 +8,13 @@
 //   R3  the display's own rate (this PC: 30 Hz over HDMI): still 60/1 and 0 duplicate pts, the
 //       repeated frames counted and shown on the bar after stop.
 //   R5  F9 and the pause menu's key-cap; with no folder the file goes to the browser's storage and
-//       is offered after stop (logic-only page). Control C5: outside the showcase F9 does nothing.
+//       is offered after stop (logic-only page). C5 (D36, v0.7; until then a control of D34's gate):
+//       outside the showcase F9 records too, the author notice shows once, the menu item is enabled.
 //   R4  the settings that ship with it: recording.fps 30, recording.resolution 2160p, a file split.
 //   R2  auto-record into "the folder" (an OPFS folder handed over the way the picker hands one;
 //       Playwright cannot drive the OS picker): Auto clicked, ARM, a throttle blip, DISARM; the file
-//       appears 3 s after the disarm, not before; Auto and the folder survive a reload. Control C2:
-//       on a scene outside the showcase nothing is written and the Auto toggle says why.
+//       appears 3 s after the disarm, not before; Auto and the folder survive a reload. C2 (D36, v0.7;
+//       until then a control of D34's gate): on a scene outside the showcase Auto records too.
 //   R6  W4-1, the live repeats: a busy main thread (callbacks late, as while a scan streams) still
 //       gives at most 6 % repeated pictures, frames stamped at their rAF time and no latency-guard
 //       skip while recording. Control C6: the code before (stamped when the work ended, the guard free).
@@ -365,7 +366,7 @@ if (want('R2')) {
         && !!pr && pr.r_frame_rate === '60/1' && pr.dupPts === 0 && pr.decoded === pr.packets && (after.last?.where === 'folder')
         && reloaded.auto === true && reloaded.folder === dir && reloaded.autoPressed === 'true';
 
-    // control C2: a scene outside the showcase, the same browser (Auto on, the folder set): nothing is written, Auto says why
+    // C2 (D36): a scene outside the showcase, the same browser (Auto on, the folder set): ARM records it too
     await page.goto(fly(`scene=${PASTED}&nowarn=1&input=touch&render=off`));
     await waitReady(page, 240000);
     await page.waitForTimeout(1500);
@@ -374,17 +375,17 @@ if (want('R2')) {
     await page.waitForTimeout(1200);
     const c2Armed = await hook(page, 'return { armed: s.sim.armed, ...h.rec.state() };');
     await page.click('.touch-arm');
-    await page.waitForTimeout(3600);
-    const c2After = await hook(page, 'return h.rec.state();');
+    const c2After = await hook(page, `const t0 = performance.now(); while (performance.now() - t0 < 9000) { const st = h.rec.state(); if (!st.recording && !st.busy && st.last) return st; await new Promise((r) => setTimeout(r, 100)); } return h.rec.state();`);
     const c2Files = await hook<Any[]>(page, listFolder(dir));
     const autoTitle = await page.locator('[data-action=rec-auto]').getAttribute('title');
     const autoDisabled = await page.locator('[data-action=rec-auto]').isDisabled();
     await page.screenshot({ path: join(OUT, 'c2-not-showcase.jpg'), quality: 70 });
     await ctx.close();
-    const fired = c2State.allowed === false && c2State.auto === true && c2State.barShown === true && autoDisabled && !!autoTitle && autoTitle === c2State.autoTitle && /showcase/i.test(autoTitle)
-        && c2Armed.armed === true && c2Armed.recording === false && c2After.recording === false && c2Files.length === files.length && c2State.recHidden === true;
+    const fired = c2State.allowed === true && c2State.showcase === false && c2State.auto === true && c2State.barShown === true && !autoDisabled && c2State.recHidden === false
+        && c2Armed.armed === true && c2Armed.recording === true && !!c2Armed.notice && c2After.recording === false && c2Files.length === files.length + 1
+        && String(c2State.credit).includes('ShramkoGSFPV') && String(c2State.credit).includes(`superspl.at/scene/${PASTED}`);
     out.R2 = { pass: pass && fired, what: 'auto-record into the chosen folder (an OPFS folder handed over like the picker\'s): Auto clicked, ARM starts it, a throttle blip, DISARM; still recording 1.5 s later (the file still empty: writes land on close), the file saved 3-10 s after the disarm; Auto and the folder survive a reload', scene: SHOWCASE, folder: dir, before, afterAuto, armed, flew, mid, midFiles, savedAfterDisarmS: savedS, after, files, armToDisarmS: (tDisarm - tArm) / 1000, file: f && { ...f, file: undefined }, ffprobe: pr, reloaded,
-        control: { what: `C2: scene ${PASTED} (not in the showcase), Auto still on and the folder set: ARM and DISARM write nothing, Auto is disabled and says why (logic-only page, the gate does not depend on drawing)`, fired, state: c2State, armed: c2Armed, after: c2After, files: c2Files, autoTitle, autoDisabled }, consoleErrors: errors };
+        d36: { what: `C2 (D36): scene ${PASTED} (not in the showcase), Auto still on and the folder set: ARM records it too (the author notice shows), DISARM saves one more file; the credit names ShramkoGSFPV and the scan's SuperSplat page (logic-only page)`, fired, state: c2State, armed: c2Armed, after: c2After, files: c2Files, autoTitle, autoDisabled }, consoleErrors: errors };
     console.log('R2', pass ? 'PASS' : 'FAIL', 'C2', fired ? 'FIRED' : 'DID NOT FIRE', JSON.stringify({ armed: { a: armed.armed, r: armed.recording }, mid: { r: mid.recording, files: midFiles.length }, after: { r: after.recording, files }, reloaded: { auto: reloaded.auto, folder: reloaded.folder }, c2: { allowed: c2State.allowed, autoDisabled, autoTitle, rec: c2Armed.recording, files: c2Files.length } }));
 }
 
@@ -451,21 +452,29 @@ if (want('R5')) {
     await page.waitForTimeout(400);
     const item = await hook(page, menuItem);
     await page.keyboard.press('Escape');
-    // control: outside the showcase
+    // C5 (D36): outside the showcase F9 records too; the author notice once (a second recording: none)
     await page.goto(fly(`scene=${PASTED}&nowarn=1&lat=1&render=off`));
     await waitReady(page, 240000);
     await page.waitForTimeout(1000);
     await page.keyboard.press('F9');
     await page.waitForTimeout(1500);
     const c5 = await hook(page, 'return h.rec.state();');
+    await page.keyboard.press('F9');
+    await hook(page, waitSaved);
+    await page.click('[data-action=rec-notice-close]').catch(() => undefined);
+    await page.keyboard.press('F9');
+    await page.waitForTimeout(1000);
+    const c5Again = await hook(page, 'return h.rec.state();');
+    await page.keyboard.press('F9');
+    await hook(page, waitSaved);
     await page.keyboard.press('KeyP');
     await page.waitForTimeout(400);
     const c5Item = await hook(page, menuItem);
     await ctx.close();
     const pass = on.recording === true && on.folder === null && off.recording === false && off.last?.where === 'browser' && off.offers.length === 1 && !!offer && offer.download === off.offers[0].name && offer.href === 'blob:'
         && !!item && item.caps.includes('F9') && item.aria === 'F9' && item.disabled === false;
-    const fired = c5.allowed === false && c5.recording === false && c5.last === null && !!c5Item && c5Item.disabled === true;
-    out.R5 = { pass: pass && fired, what: 'F9 starts and stops a recording; with no folder chosen it goes to the browser storage and the bar offers the file (the Firefox / Safari path); the pause menu lists Record / stop with its F9 key-cap', render: 'off', on, off, offer, menuItem: item, control: { what: `C5: scene ${PASTED} (not in the showcase): F9 records nothing, the menu item is disabled`, fired, state: c5, menuItem: c5Item }, consoleErrors: errors };
+    const fired = c5.allowed === true && c5.recording === true && !!c5.notice && c5Again.recording === true && c5Again.notice === null && !!c5Item && c5Item.disabled === false;
+    out.R5 = { pass: pass && fired, what: 'F9 starts and stops a recording; with no folder chosen it goes to the browser storage and the bar offers the file (the Firefox / Safari path); the pause menu lists Record / stop with its F9 key-cap', render: 'off', on, off, offer, menuItem: item, d36: { what: `C5 (D36): scene ${PASTED} (not in the showcase): F9 records too, the author notice on the first recording only, the menu item enabled`, fired, state: c5, again: c5Again, menuItem: c5Item }, consoleErrors: errors };
     console.log('R5', pass ? 'PASS' : 'FAIL', 'C5', fired ? 'FIRED' : 'DID NOT FIRE', JSON.stringify({ on: on.recording, where: off.last?.where, offers: off.offers, offer, item, c5: { rec: c5.recording, item: c5Item } }));
 }
 
