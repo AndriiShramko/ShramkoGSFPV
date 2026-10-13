@@ -18,21 +18,30 @@
 //   S1 also: Instagram with the clipboard API refused and the old execCommand copy working leaves the
 //       link in the link field. Control: e344977 left the caption there, its line breaks stripped by
 //       the input, evidence/2026-10-13/v07-d1-S1-control-e344977.json.
+//   S7  the burned-in credit is whole in an upright recording (a phone, 390 x 844 -> a 498 x 1080
+//       file at 1080p) of the catalogue's longest credit: a frame of the file (ffmpeg) has the text on
+//       two lines or more and no letter at the right edge (the page is not drawn: the text is the only
+//       light thing in the frame). Picture: evidence/<date>/d1-ui/credit-portrait.png. Control:
+//       e344977's recorder (one clipped line), evidence/2026-10-13/v07-d1-S7-control-e344977.json.
 // Run (one port per agent; GPU lock as tools/bench/README.md, even though nothing is drawn):
 //   cd apps/fly && npx vite --port 5341 --strictPort --host 127.0.0.1
 //   cd tools/bench && LOCAL_FLY=1 SITE=http://127.0.0.1:5341 npx tsx src/accept-v07-d1.ts [S1 S6 ...]
 // Evidence: evidence/<date>/v07-d1.json (v07-d1-<parts>.json when only some parts run;
 // EVIDENCE_SUFFIX names a second run, e.g. -control-e344977 against an older commit).
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { Browser, Page } from 'playwright';
 import { launchChrome, waitReady } from './browser';
-import { noteBrowser, writeEvidence } from './evidence';
+import { REPO, noteBrowser, today, writeEvidence } from './evidence';
 
 const SITE = (process.env.SITE ?? 'http://127.0.0.1:5341').replace(/\/$/, '');
 const fly = (qs: string) => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}` : `${SITE}/en/fly/?${qs}`);
 const SHOWCASE = '39e63ce9'; // in apps/fly/public/showcase.json
 const PASTED = '723068d7'; // not in it
 const BOT = '887f27aa'; // the tour bot's scene (accept-d.ts)
-const PARTS = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'];
+const PARTS = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7'];
+const FFMPEG = process.env.FFMPEG ?? 'C:/Program Files/Shutter Encoder/Library/ffmpeg.exe';
 /** `npx tsx src/accept-v07-d1.ts S1 S6`: only these parts */
 const only = process.argv.slice(2).filter((a) => PARTS.includes(a));
 const want = (part: string): boolean => only.length === 0 || only.includes(part);
@@ -237,6 +246,44 @@ if (want('S6')) {
         && !!panel && panel.entry === 'video' && panel.video === 'ready' && sameList(panel.files, after.files) && sameList(panel.saves, after.files);
     out.S6 = { pass, manual, armed, saved, after, panel, consoleErrors: errors };
     console.log('S6', pass ? 'PASS' : 'FAIL', JSON.stringify({ manual, armed, saved, after, panel: panel && { entry: panel.entry, video: panel.video, files: panel.files, saves: panel.saves } }));
+}
+
+// ------------------------------------------------------------------ S7
+if (want('S7')) {
+    const { p, errors, close } = await page(browser, 390, 844);
+    await p.goto(fly(`scene=${SHOWCASE}&nowarn=1&input=touch&render=off`));
+    await waitReady(p, 240000);
+    await p.waitForTimeout(800);
+    await hook(p, 'await h.rec.start(); await new Promise((r) => setTimeout(r, 1500)); await h.rec.stop(); return 0;');
+    await until(p, `(() => { const st = window.__gsfpv.rec.state(); return !st.recording && !st.busy && !!st.last; })()`, 10000);
+    const rec = await hook(p, 'const st = h.rec.state(); const f = await h.rec.readLast(); return { credit: st.credit, width: st.last && st.last.width, height: st.last && st.last.height, b64: f ? f.b64 : null };');
+    await close();
+    const dir = join(REPO, 'evidence', today(), 'd1-ui');
+    mkdirSync(dir, { recursive: true });
+    const tag = process.env.EVIDENCE_SUFFIX ?? '';
+    const mp4 = join(dir, `credit-portrait${tag}.mp4`); // gitignored
+    let shape: Any = { why: 'no file or no ffmpeg' };
+    if (rec.b64 && existsSync(FFMPEG)) {
+        writeFileSync(mp4, Buffer.from(rec.b64, 'base64'));
+        const w = rec.width as number, hgt = rec.height as number;
+        // one frame as 8-bit luma; the credit sits in the bottom quarter
+        const y = execFileSync(FFMPEG, ['-v', 'error', '-ss', '0.8', '-i', mp4, '-frames:v', '1', '-f', 'rawvideo', '-pix_fmt', 'gray', '-'], { maxBuffer: 64 << 20 });
+        execFileSync(FFMPEG, ['-v', 'error', '-y', '-ss', '0.8', '-i', mp4, '-frames:v', '1', '-vf', `crop=${w}:${Math.round(hgt / 4)}:0:${hgt - Math.round(hgt / 4)}`, join(dir, `credit-portrait${tag}.png`)]);
+        let maxX = -1;
+        const rows: number[] = [];
+        for (let r = Math.round(hgt * 0.75); r < hgt; r++) {
+            let lit = false;
+            for (let x = 0; x < w; x++) if (y[r * w + x] > 128) { lit = true; if (x > maxX) maxX = x; }
+            if (lit) rows.push(r);
+        }
+        // the text's lines: runs of lit rows more than 3 rows apart
+        let lines = 0;
+        rows.forEach((r, i) => { if (i === 0 || r - rows[i - 1] > 3) lines++; });
+        shape = { width: w, height: hgt, maxLitX: maxX, litRows: rows.length, lines };
+    }
+    const pass = rec.width === 498 && rec.height === 1080 && shape.lines >= 2 && shape.maxLitX > 0 && shape.maxLitX < rec.width - 8 && String(rec.credit).includes('ShramkoGSFPV');
+    out.S7 = { pass, credit: rec.credit, frame: shape, picture: `evidence/${today()}/d1-ui/credit-portrait${tag}.png`, consoleErrors: errors };
+    console.log('S7', pass ? 'PASS' : 'FAIL', JSON.stringify({ credit: rec.credit, shape }));
 }
 
 await browser.close();
