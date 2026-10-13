@@ -7,6 +7,46 @@ export type CatalogKind = 'interior' | 'exterior' | 'other';
 /** a text per language; English is the fallback */
 export type LocalText = Partial<Record<'en' | 'es' | 'pl' | 'ru', string>>;
 
+/** Where the scanned place is (WGS84 degrees, 3 decimals: about 100 m); feeds the wind of the place and the scene's page. */
+export interface SceneGeo {
+    lat: number;
+    lon: number;
+    /** a human name of the place, "Wroclaw, Poland" */
+    place?: string;
+}
+
+/**
+ * The scene's wind, as a weather report gives it: fromDeg is the compass direction the wind blows FROM
+ * (0 north, 90 east, clockwise), speed the mean in m/s at 10 m, gust the amplitude of the gusts above
+ * the mean in m/s. source: typed by the admin, or the prevailing wind of the place (climate data).
+ */
+export interface SceneWind {
+    fromDeg: number;
+    speed: number;
+    gust: number;
+    source: 'manual' | 'climate';
+}
+
+/**
+ * How SuperSplat's viewer was asked to draw the scene (its link's ?budget=8&stochastic): budgetM is the
+ * splat budget in millions; stochastic is the sort-free, dithered drawing (desktop WebGPU only).
+ */
+export interface SceneRender {
+    budgetM?: number;
+    stochastic?: boolean;
+}
+
+/** What SuperSplat said about the scene when the admin added it (quoted short and credited on the scene's page). */
+export interface SceneOrigin {
+    /** the scene's page on superspl.at */
+    url: string;
+    /** the author's description, at most 600 characters */
+    description?: string;
+    tags?: string[];
+    /** when it was published on SuperSplat, ISO date */
+    created?: string;
+}
+
 export interface CatalogScene {
     id: string;
     title: string;
@@ -36,6 +76,16 @@ export interface CatalogScene {
     pinned?: boolean;
     /** kept in the admin's list, not shown to pilots (the public catalogue leaves it out) */
     hidden?: boolean;
+    geo?: SceneGeo;
+    /** the compass heading (degrees, 0 north, clockwise) of the scene's forward axis: the direction the HUD calls heading 0 */
+    compassDeg?: number;
+    wind?: SceneWind;
+    /** collisions are ignored above this height: metres along the scene's up axis in the scan's own coordinates (scale 1); outdoor scans with floating sky splats */
+    ceilingM?: number;
+    render?: SceneRender;
+    /** our own words about the scene for its page (search and answer engines), per language; never SuperSplat's text */
+    about?: LocalText;
+    origin?: SceneOrigin;
 }
 
 export interface CatalogCollection {
@@ -65,6 +115,54 @@ function texts(v: unknown): LocalText | undefined {
     return Object.keys(out).length ? out : undefined;
 }
 
+function readGeo(v: unknown): SceneGeo | undefined {
+    if (!v || typeof v !== 'object') return undefined;
+    const o = v as Record<string, unknown>;
+    const lat = num(o.lat, -90, 90);
+    const lon = num(o.lon, -180, 180);
+    if (lat === undefined || lon === undefined) return undefined;
+    const g: SceneGeo = { lat, lon };
+    if (typeof o.place === 'string' && o.place) g.place = o.place.slice(0, 80);
+    return g;
+}
+
+function readWind(v: unknown): SceneWind | undefined {
+    if (!v || typeof v !== 'object') return undefined;
+    const o = v as Record<string, unknown>;
+    const fromDeg = num(o.fromDeg, 0, 360);
+    const speed = num(o.speed, 0, 30);
+    const gust = num(o.gust, 0, 20);
+    if (fromDeg === undefined || speed === undefined || gust === undefined) return undefined;
+    return { fromDeg, speed, gust, source: o.source === 'climate' ? 'climate' : 'manual' };
+}
+
+function readRender(v: unknown): SceneRender | undefined {
+    if (!v || typeof v !== 'object') return undefined;
+    const o = v as Record<string, unknown>;
+    const r: SceneRender = {};
+    const b = num(o.budgetM, 0.25, 32);
+    if (b !== undefined) r.budgetM = b;
+    if (o.stochastic === true) r.stochastic = true;
+    return Object.keys(r).length ? r : undefined;
+}
+
+const ORIGIN_URL = /^https:\/\/superspl\.at\/[A-Za-z0-9/_?=&.-]{1,200}$/;
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?$/;
+
+function readOrigin(v: unknown): SceneOrigin | undefined {
+    if (!v || typeof v !== 'object') return undefined;
+    const o = v as Record<string, unknown>;
+    if (typeof o.url !== 'string' || !ORIGIN_URL.test(o.url)) return undefined;
+    const out: SceneOrigin = { url: o.url };
+    if (typeof o.description === 'string' && o.description) out.description = o.description.slice(0, 600);
+    if (Array.isArray(o.tags)) {
+        const tags = o.tags.filter((t): t is string => typeof t === 'string' && t.length > 0).map((t) => t.slice(0, 30)).slice(0, 12);
+        if (tags.length) out.tags = tags;
+    }
+    if (typeof o.created === 'string' && ISO_DATE.test(o.created)) out.created = o.created;
+    return out;
+}
+
 /** One entry from the network, or null when it is not a scene; unknown fields are dropped. */
 export function readScene(v: unknown): CatalogScene | null {
     if (!v || typeof v !== 'object') return null;
@@ -92,6 +190,20 @@ export function readScene(v: unknown): CatalogScene | null {
     if (Array.isArray(o.collections)) s.collections = o.collections.filter((c): c is string => typeof c === 'string');
     if (o.pinned === true) s.pinned = true;
     if (o.hidden === true) s.hidden = true;
+    const geo = readGeo(o.geo);
+    if (geo) s.geo = geo;
+    const compass = num(o.compassDeg, 0, 360);
+    if (compass !== undefined) s.compassDeg = compass;
+    const wind = readWind(o.wind);
+    if (wind) s.wind = wind;
+    const ceiling = num(o.ceilingM, -10000, 10000);
+    if (ceiling !== undefined) s.ceilingM = ceiling;
+    const render = readRender(o.render);
+    if (render) s.render = render;
+    const about = texts(o.about);
+    if (about) s.about = about;
+    const origin = readOrigin(o.origin);
+    if (origin) s.origin = origin;
     return s;
 }
 

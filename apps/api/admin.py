@@ -71,6 +71,8 @@ _FORMAT_RE = re.compile(r"[a-z0-9.]{1,24}")
 _THUMB_RE = re.compile(r"https://(s3-eu-west-1\.amazonaws\.com/images\.playcanvas\.com/splat|d28zzqy0iyovbz\.cloudfront\.net)/[0-9a-f]{6,32}/v[0-9]{1,6}/[a-z]{1,4}\.webp")
 _HISTORY_RE = re.compile(r"[0-9]{8}T[0-9]{6}Z(-[0-9]{1,3})?")
 _REPORT_ID_RE = re.compile(r"R-[0-9]{8}-[0-9]{4,}")
+_ORIGIN_RE = re.compile(r"https://superspl\.at/[A-Za-z0-9/_?=&.-]{1,200}")
+_DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?")
 
 
 def _b64(b: bytes) -> str:
@@ -292,6 +294,53 @@ def clean_scene(e) -> dict:
     out["collections"] = list(dict.fromkeys(c for c in cols if isinstance(c, str) and _SLUG_RE.fullmatch(c)))[:8] if isinstance(cols, list) else []
     out["pinned"] = e.get("pinned") is True
     out["hidden"] = e.get("hidden") is True
+    out.update(_place_fields(e))
+    return out
+
+
+def _place_fields(e: dict) -> dict:
+    """The v0.7 fields (packages/scenes/src/catalog.ts has the same rules): where the place is, the
+    compass heading of the scene's forward axis, the wind, the collision ceiling, how SuperSplat draws it,
+    our words for the scene's page and what SuperSplat said. A field out of range is dropped."""
+    out: dict = {}
+    geo = e.get("geo")
+    if isinstance(geo, dict):
+        lat, lon = _number(geo.get("lat"), -90, 90), _number(geo.get("lon"), -180, 180)
+        if lat is not None and lon is not None:
+            out["geo"] = {"lat": lat, "lon": lon}
+            if place := _words(geo.get("place"), 80):
+                out["geo"]["place"] = place
+    if (x := _number(e.get("compassDeg"), 0, 360)) is not None:
+        out["compassDeg"] = x
+    w = e.get("wind")
+    if isinstance(w, dict):
+        f, sp, g = _number(w.get("fromDeg"), 0, 360), _number(w.get("speed"), 0, 30), _number(w.get("gust"), 0, 20)
+        if f is not None and sp is not None and g is not None:
+            out["wind"] = {"fromDeg": f, "speed": sp, "gust": g, "source": "climate" if w.get("source") == "climate" else "manual"}
+    if (x := _number(e.get("ceilingM"), -10000, 10000)) is not None:
+        out["ceilingM"] = x
+    r = e.get("render")
+    if isinstance(r, dict):
+        render: dict = {}
+        if (b := _number(r.get("budgetM"), 0.25, 32)) is not None:
+            render["budgetM"] = b
+        if r.get("stochastic") is True:
+            render["stochastic"] = True
+        if render:
+            out["render"] = render
+    if about := _texts(e.get("about"), 1500):
+        out["about"] = about
+    o = e.get("origin")
+    if isinstance(o, dict) and isinstance(o.get("url"), str) and _ORIGIN_RE.fullmatch(o["url"]):
+        origin: dict = {"url": o["url"]}
+        if d := _words(o.get("description"), 600):
+            origin["description"] = d
+        if isinstance(o.get("tags"), list):
+            if tags := [t for t in (_words(x, 30) for x in o["tags"][:12]) if t]:
+                origin["tags"] = tags
+        if isinstance(o.get("created"), str) and _DATE_RE.fullmatch(o["created"]):
+            origin["created"] = o["created"]
+        out["origin"] = origin
     return out
 
 
