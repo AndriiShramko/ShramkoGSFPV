@@ -119,7 +119,8 @@ export function ceilingPanel(parent: HTMLElement, host: CeilingPanelHost): Ceili
     x.addEventListener('click', close);
     addEventListener('keydown', onKey, true);
     parent.append(root);
-    host.preview(start);
+    // the slider's own value: the browser snaps `start` to the step
+    host.preview(value());
     render();
     root.focus({ preventScroll: true });
     return { root, value, close, };
