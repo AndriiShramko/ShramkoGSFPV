@@ -7,11 +7,22 @@ POST /api/e      cookieless first-party counter. No cookies, no device id, no IP
 POST /api/lead   collaboration form and scene takedown reports: stored FIRST (JSONL, fsync),
                  then forwarded to the shared Telegram lead bot. Honeypot + time-to-submit.
 POST /api/report a bug or an idea from the simulator or the landing, the same rules as a lead: stored
-                 FIRST (reports.jsonl, fsync, id R-YYYYMMDD-NNNN), then a short Telegram message
-                 (no contact details beyond what the visitor typed, no logs). A bug's technical
-                 details (diagnostics) only with the visitor's consent, kept apart in
+                 FIRST (reports.jsonl, fsync, id R-YYYYMMDD-NNNN), then an idea in the ideas store
+                 (ideas.py) and the whole report in the owner's Telegram chat (the owner's request
+                 2026-10-13: every field the pilot sent, a summary of the technical details, and the
+                 technical details file and picture themselves): as a card with buttons when the
+                 two-way bot is set up (TG_WEBHOOK_SECRET; the bot is TG_OWNER_BOT_TOKEN, by default the
+                 shared lead bot; ownerbot.py), else as the shared lead bot's plain text.
+                 A bug's technical details (diagnostics) only with the visitor's consent, kept apart in
                  reports/<id>.json; the only body allowed to be large (512 KB, gzip accepted).
-                 There is no public way to read reports: tools/reports/pull.py reads them over SSH.
+                 There is no public way to read reports: tools/ideas/ideas.py reads them over SSH.
+POST /api/tg/<path>  the bot's webhook (ownerbot.py): secret path and secret header; only the owner's
+                 updates about GSFPV are acted on (on the shared bot every other update, e.g. a reply
+                 to another site's lead note, gets 200 and nothing else). The ideas, the owner's
+                 decisions and the e-mails to pilots: service.py (use-cases), mailer.py + outbox.py
+                 (Gmail SMTP, undo window, never twice).
+GET  /api/roadmap the public roadmap from the ideas store (ETag/304, max-age 60): only our own titles and
+                 texts of accepted, in-progress and done items, never a pilot's words or contact.
 POST /api/share  a picture of the view (JPEG 1200x630) for a link that shows it on social networks:
                  share/<id>.jpg + share/<id>.json. GET /s/<id> is a tiny page with Open Graph and
                  Twitter card tags that sends a visitor on to the simulator with that scene, drawn
@@ -31,8 +42,10 @@ GET  /api/superspl/explore
                  scene picker shows. Nothing from the visitor (cookies, headers, address) goes on.
 
 Disk guard: below MIN_FREE_GB free, events are no longer written, /api/health answers 503 and
-one warning goes to the lead bot. Secrets (TG_BOT_TOKEN, TG_CHAT_ID) come from the environment
-only (config.env on the server, never in git). Logs contain method + path + status, no PII.
+one warning goes to the lead bot. Secrets (TG_BOT_TOKEN, TG_CHAT_ID, TG_OWNER_BOT_TOKEN,
+TG_WEBHOOK_SECRET, GMAIL_APP_PASSWORD, ADMIN_PASSWORD_HASH) come from the environment only (config.env on
+the server, never in git). Logs contain method + path + status, no PII; the webhook's path (derived
+from its secret) is logged as /api/tg/... only.
 """
 from __future__ import annotations
 
@@ -61,6 +74,12 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import admin
+import ideas
+import ideas_admin
+import mailer
+import outbox
+import ownerbot
+import service
 
 SITE = os.environ.get("SITE_TAG", "gsfpv")
 DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
@@ -109,6 +128,9 @@ _lhits: dict[str, deque] = defaultdict(deque)
 _rhits: dict[str, deque] = defaultdict(deque)
 _shits: dict[str, deque] = defaultdict(deque)
 _all_hits: dict[str, deque] = defaultdict(deque)  # per endpoint, every visitor together
+_tghits: dict[str, deque] = defaultdict(deque)    # the owner bot's webhook, per client address (not shared:
+                                                  # a stranger's flood must not use up Telegram's deliveries)
+DRAIN_MAX = 1 << 20  # Handler._refuse: the largest body read and dropped before an early refusal (reports and shares: 512 KB)
 _guard = {"tripped": False, "warned": False}
 
 
@@ -737,14 +759,14 @@ SUPERSPL = SupersplProxy()
 # A report is a visitor's own words (bug or idea) plus, for a bug and only with the visitor's consent,
 # the technical details the page collected (diagnostics: release, browser, GPU, settings, recent
 # errors, frame stats, the current life's flight log, a small picture of the view). It is stored
-# before anything else happens; Telegram gets a short note with the id, never the diagnostics.
+# before anything else happens; then the owner's chat gets all of it (deliver_report below).
 
 LOCALES = ("en", "es", "pl", "ru")
 REPORT_KINDS = ("bug", "idea")
 REPORT_PAGES = ("fly", "site")
 REPORT_MESSAGE_MAX = 2000
 REPORT_CONTACT_MAX = 200
-TELEGRAM_MESSAGE_MAX = 600
+TELEGRAM_MESSAGE_MAX = 3000  # the whole message (at most 2000) always fits; Telegram's limit is 4096
 _RELEASE_RE = re.compile(r"[0-9A-Za-z._-]{1,40}")
 _REPORT_LINE_RE = re.compile(r'^\{"id": "R-([0-9]{8})-([0-9]{4,})"')
 _SHARE_ID_RE = re.compile(r"[A-Za-z0-9_-]{11}")
@@ -889,17 +911,25 @@ def store_report(r: dict, now: float | None = None) -> dict:
     return rec
 
 
-def report_text(rec: dict) -> str:
-    """The Telegram note: what, where, the id to look it up by; no diagnostics, no logs."""
+def report_text(rec: dict, facts: dict | None = None) -> str:
+    """The shared lead bot's message (used while the owner bot is not configured): what, where, the id,
+    the contact, the pilot's whole message and, for a bug with consent, a summary of the technical
+    details (ownerbot.diag_facts; the file itself follows as a document)."""
     where = " · ".join(x for x in (f"Page: {rec['page'] or '-'}", f"Lang: {rec['locale'] or '-'}",
                                    f"Scene: {rec['scene']}" if rec["scene"] else "",
                                    f"Release: {rec['release']}" if rec["release"] else "") if x)
     d = rec["diagnostics"]
-    diag = f"attached ({max(1, round(rec['diagBytes'] / 1024))} KB)" if d is True else ("not stored, disk full" if d == "skipped" else "none")
+    diag = f"attached ({max(1, round(rec['diagBytes'] / 1024))} KB, the file follows)" if d is True else ("not stored, disk full" if d == "skipped" else "none")
+    lines = [f"[{rec['kind'].upper()}][site={SITE}] {rec['id']}", where, f"Time: {rec['ts']}", f"Diagnostics: {diag}"]
+    f = facts or {}
+    lines += [f"{label}: {f[k]}" for k, label in (("browser", "Browser"), ("gpu", "GPU"), ("screen", "Screen"), ("input", "Input")) if f.get(k)]
+    if f.get("frames"):
+        lines.append(f"Frames: {f['frames'].get('hz')} Hz, p50 {f['frames'].get('p50')} ms, p99 {f['frames'].get('p99')} ms")
+    if facts:
+        lines.append(f"Page errors: {f.get('errors', 0)}" + (f"; last: {f['lastError']}" if f.get("lastError") else ""))
     msg = rec["message"]
     short = msg if len(msg) <= TELEGRAM_MESSAGE_MAX else msg[: TELEGRAM_MESSAGE_MAX - 3] + "..."
-    return (f"[{rec['kind'].upper()}][site={SITE}] {rec['id']}\n{where}\nDiagnostics: {diag}\n"
-            f"Contact: {rec['contact'] or '-'}\nMessage:\n{short}")
+    return "\n".join(lines) + f"\nContact: {rec['contact'] or '-'}\nMessage:\n{short}"
 
 
 # Share pages: the words follow what FPV pilots answer to (a real place, real physics, their own radio,
@@ -1099,16 +1129,61 @@ def _catalog_seed() -> Path | None:
     return None
 
 
-ADMIN = admin.AdminApi(data_dir=lambda: DATA_DIR, reports_file=lambda: REPORTS_FILE, reports_dir=lambda: REPORTS_DIR,
-                       seed=_catalog_seed, telegram=lambda text: send_telegram(text), site=SITE)
+def _roadmap_seed() -> Path | None:
+    """The roadmap's first items (lane C writes apps/api/roadmap-seed.json; on the hub api/roadmap-seed.json),
+    loaded once into a store without features: ROADMAP_SEED, else the file next to this one."""
+    p = os.environ.get("ROADMAP_SEED") or str(Path(__file__).resolve().parent / "roadmap-seed.json")
+    return Path(p) if Path(p).is_file() else None
+
+
+# ---------------- ideas: the store, the owner's decisions, Gmail, the owner bot ----------------
+IDEAS = ideas.IdeaStore(data_dir=lambda: DATA_DIR, reports_file=lambda: REPORTS_FILE,
+                        report_status=lambda: DATA_DIR / "report-status.json", seed=_roadmap_seed)
+MAILER = mailer.Mailer(lambda: mailer.MailConfig.from_env(os.environ), public_origin=PUBLIC_ORIGIN)
+SERVICE = service.IdeasService(IDEAS, MAILER, public_origin=PUBLIC_ORIGIN)
+BOT = ownerbot.OwnerBot(SERVICE, public_origin=PUBLIC_ORIGIN)
+WORKER = outbox.OutboxWorker(SERVICE, MAILER)
+
+ADMIN = admin.AdminApi(data_dir=lambda: DATA_DIR, reports_dir=lambda: REPORTS_DIR, seed=_catalog_seed,
+                       telegram=lambda text: send_telegram(text), site=SITE,
+                       ideas=ideas_admin.IdeasAdmin(SERVICE, bot_ready=lambda: BOT.configured))
+
+
+def deliver_report(rec: dict) -> object:
+    """After a report is stored: its idea in the store, then the whole report in the owner's chat (the
+    owner bot's card with buttons, else the shared lead bot). The message id, or None (not delivered or
+    a suspect, which is stored and not sent)."""
+    blob = None
+    if rec["diagnostics"] is True:
+        try:
+            blob = (REPORTS_DIR / f"{rec['id']}.json").read_bytes()
+        except OSError:
+            blob = None
+    facts = ownerbot.diag_facts(blob) if blob else None
+    idea = None
+    try:
+        idea = SERVICE.add_report(rec, facts)
+    except (OSError, ValueError) as e:  # ideas.StoreError is a ValueError
+        # the line is in reports.jsonl, so the report is kept: the store's next sync() makes the idea, and
+        # without an idea the shared bot below delivers the plain note (no buttons nothing could answer)
+        print(f"report {rec['id']}: no idea made ({type(e).__name__})", flush=True)
+    if rec["suspect"]:
+        return None
+    text = report_text(rec, facts)
+    try:
+        return BOT.deliver_report(idea, text, blob, lambda t: send_telegram(t))
+    except Exception as e:  # noqa: BLE001  (the bot's dictionaries missing on the hub...): the plain note still goes
+        print(f"report delivery failed: {type(e).__name__}", flush=True)
+        return send_telegram(text)
 
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "gsfpv-api"
     sys_version = ""
 
-    def log_message(self, fmt, *args):  # no client address, no query strings
-        print(f"{time.strftime('%H:%M:%S')} {self.command} {self.path.split('?')[0]}", flush=True)
+    def log_message(self, fmt, *args):  # no client address, no query strings, not the webhook's secret path
+        path = self.path.split("?")[0]
+        print(f"{time.strftime('%H:%M:%S')} {self.command} {'/api/tg/...' if path.startswith('/api/tg/') else path}", flush=True)
 
     def _json(self, code: int, obj: dict) -> None:
         b = json.dumps(obj).encode()
@@ -1121,6 +1196,19 @@ class Handler(BaseHTTPRequestHandler):
 
     def _client(self) -> str:
         return (self.headers.get("X-Forwarded-For") or "?").split(",")[0].strip()
+
+    def _refuse(self, code: int) -> None:
+        """An early refusal (429) before the body was read: the body (at most DRAIN_MAX, which covers
+        every route's own limit) is read and dropped first. A socket closed with unread data is reset,
+        and the peer (nginx, or a test client on Windows) can lose the answer: a 502 or an aborted
+        connection instead of the 429."""
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            n = 0
+        if 0 < n <= DRAIN_MAX:
+            self.rfile.read(n)
+        self._json(code, {"ok": False})
 
     def _body(self) -> dict | None:
         try:
@@ -1192,6 +1280,21 @@ class Handler(BaseHTTPRequestHandler):
                 self.rfile.read(n)
         self._send(*res)
 
+    def _tg(self, path: str) -> None:
+        """The owner bot's webhook: a small body (Telegram's updates are a few KB), checked by ownerbot.
+        Limited per client address (nginx passes the real one in X-Forwarded-For), never one bucket for
+        everyone: a stranger posting to a guessed /api/tg/<x> only uses up his own allowance."""
+        if not _rate(_tghits, self._client(), 120, 60.0):
+            return self._refuse(429)
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            n = -1
+        if n < 0 or n > ownerbot.WEBHOOK_BODY_MAX:
+            return self._json(413, {"ok": False})
+        body = self.rfile.read(n) if n else b""
+        self._send(*BOT.handle_webhook(path, self.headers, body))
+
     def _send(self, code: int, body: bytes, headers: list, head: bool = False) -> None:
         self.send_response(code)
         for k, v in headers:
@@ -1231,6 +1334,11 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(*SUPERSPL.handle(qs, self._client()))
         if path == "/api/catalog":
             return self._send(*ADMIN.public_catalog(self.headers.get("If-None-Match")))
+        if path == "/api/roadmap":
+            try:
+                return self._send(*IDEAS.public_roadmap(self.headers.get("If-None-Match")))
+            except (OSError, ValueError):  # ideas.json unreadable (ideas.StoreError): the landing keeps its own list
+                return self._json(503, {"ok": False})
         if path.startswith("/api/admin/"):
             return self._admin("GET", path)
         if self.path.split("?")[0] == "/api/health":
@@ -1243,7 +1351,7 @@ class Handler(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         if path == "/api/e":
             if not _rate(_ehits, self._client(), 120, 600.0):
-                return self._json(429, {"ok": False})
+                return self._refuse(429)
             body = self._body()
             rec = clean_event(body) if body else None
             if rec is None:
@@ -1257,7 +1365,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/api/lead":
             if not _rate(_lhits, self._client(), 8, 3600.0):
-                return self._json(429, {"ok": False})
+                return self._refuse(429)
             b = self._body()
             if b is None:
                 return self._json(400, {"ok": False})
@@ -1291,7 +1399,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, {"ok": True, "id": rec["id"], "delivered": mid is not None})
         if path == "/api/report":
             if not _rate(_rhits, self._client(), 10, 3600.0) or not _rate(_all_hits, "report", 300, 3600.0):
-                return self._json(429, {"ok": False})
+                return self._refuse(429)
             try:
                 r = parse_report(self._upload())
                 rec = store_report(r)
@@ -1299,13 +1407,15 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(e.status, {"ok": False})
             except OSError:  # not stored: nothing is sent either
                 return self._json(500, {"ok": False})
-            mid = None if rec["suspect"] else send_telegram(report_text(rec))
+            mid = deliver_report(rec)
             return self._json(200, {"ok": True, "id": rec["id"], "diagnostics": rec["diagnostics"], "delivered": mid is not None})
+        if path.startswith("/api/tg/"):
+            return self._tg(path)
         if path.startswith("/api/admin/"):
             return self._admin("POST", path)
         if path == "/api/share":
             if not _rate(_shits, self._client(), 12, 3600.0) or not _rate(_all_hits, "share", 300, 3600.0):
-                return self._json(429, {"ok": False})
+                return self._refuse(429)
             try:
                 data, meta = parse_share(self._upload())
                 sid = store_share(data, meta)
@@ -1314,11 +1424,24 @@ class Handler(BaseHTTPRequestHandler):
             except OSError:
                 return self._json(500, {"ok": False})
             return self._json(200, {"ok": True, "id": sid, "url": f"{PUBLIC_ORIGIN}/s/{sid}", "image": f"{PUBLIC_ORIGIN}/s/{sid}.jpg"})
-        self._json(404, {"ok": False})
+        # an unknown POST: its body is read away first, or the client can get a reset instead of the 404
+        self._refuse(404)
+
+
+def start_ideas() -> None:
+    """The ideas side at start. It is optional for the rest of the API: an unreadable ideas.json
+    (ideas.StoreError) or a full disk is logged and the API still serves leads, reports (to the shared
+    bot), the catalog and shares; the outbox thread retries the store every round."""
+    try:
+        IDEAS.sync()  # the first start makes the store from reports.jsonl; later ones pick up any report missed
+    except (OSError, ValueError) as e:
+        print(f"ideas sync failed: {type(e).__name__}: {e}"[:300], flush=True)
+    WORKER.start()
 
 
 def main() -> None:
     check_disk()
+    start_ideas()
     threading.Thread(target=housekeeping, daemon=True).start()
     port = int(os.environ.get("PORT", "8090"))
     ThreadingHTTPServer(("0.0.0.0", port), Handler).serve_forever()

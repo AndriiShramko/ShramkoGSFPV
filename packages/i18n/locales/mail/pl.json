@@ -1,0 +1,14 @@
+{
+  "replySubject": "Re: Twoja wiadomość o ShramkoGSFPV ({id})",
+  "replySubjectNote": "Twój pomysł na ShramkoGSFPV ({id})",
+  "doneSubject": "Twój pomysł jest już w ShramkoGSFPV, dziękuję ({id})",
+  "doneSubjectBug": "Zgłoszony przez Ciebie problem jest już naprawiony w ShramkoGSFPV, dziękuję ({id})",
+  "hello": "Cześć,",
+  "doneIntro": "Dobra wiadomość: Twoja propozycja ({id}) jest już w symulatorze. Oto co zostało zrobione:",
+  "doneIntroBug": "Dobra wiadomość: zgłoszony przez Ciebie problem ({id}) jest już naprawiony w symulatorze. Oto co zostało zrobione:",
+  "doneThanks": "Dziękuję za pomoc w ulepszaniu ShramkoGSFPV. Wypróbuj na {site} i daj znać, jak się lata: wystarczy odpowiedzieć na tego e-maila.",
+  "quoteHeader": "Twoja wiadomość z {date} ({id}):",
+  "tagline": "ShramkoGSFPV: symulator drona FPV w prawdziwych skanach 3D, za darmo w przeglądarce",
+  "footer": "Dostajesz ten e-mail, bo Twój adres został podany w formularzu opinii ShramkoGSFPV. Używam go tylko po to, żeby Ci odpowiedzieć.",
+  "footerNote": "Dostajesz ten e-mail, bo Twój adres dostałem razem z Twoim pomysłem. Używam go tylko po to, żeby Ci odpowiedzieć."
+}

@@ -9,6 +9,7 @@
 .fb-label { margin: 8px 0 0; font-weight: 600; }
 .fb-text, .fb-field { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid #5b6572; background: var(--bg); color: var(--fg); font: inherit; }
 .fb-text { resize: vertical; min-height: 96px; }
+.fb-hint { margin: 0; font-size: 14px; color: var(--muted); }
 .fb-text:focus-visible, .fb-field:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
 .fb-check { display: flex; gap: 10px; align-items: flex-start; min-height: 44px; padding-top: 10px; cursor: pointer; }
 .fb-check input { width: 22px; height: 22px; flex: none; margin: 0; accent-color: var(--accent); }

@@ -14,6 +14,12 @@ Plan and contracts: `docs/wip/v07-plan.md`. Each lane's own status: `docs/wip/v0
   Gates on the merged tree: typecheck 12/12, vitest 1157, API 55, architecture, i18n, gen-catalog, B18 PASS.
   Waiting: A (catalogue/SEO, the plan's first), B (ideas server), C (ideas UI; its continuation finished, under review).
   Not run on the merged tree yet: browser benches, site verify, build-release.
+- v07-b merged (deploy/README report row from B, share row from R; unknown POST now drains its body before the 404
+  — the roadmap test aborted 1 run in ~3 on Windows). Gates after B: typecheck ok, vitest 1161, API 112 (the flaky one
+  fixed), architecture, i18n 875x4, gen-catalog ok. NEXT: A's fix (wf_8ea5f912-7bb, review found 9) then merge A;
+  C's fix (review found 9) must adopt B's send-done contract {id, mail} (409 stale-draft) — then merge C; then
+  privacy texts, build-release, site verify, accept-fly, deploy per steps below. Owner: Gmail app password pending;
+  check TG_CHAT_ID sign on the hub (negative = group -> TG_OWNER_USER_ID needed).
 - If wave 2 is cut off too: `/limit-resume` again — digest of wf_8ea5f912-7bb, new continuation prompts; never rerun.
 
 ## Owner decisions since the plan

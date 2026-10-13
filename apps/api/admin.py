@@ -11,9 +11,11 @@ POST /api/admin/catalog/draft {catalog}   save the draft (the whole list)
 POST /api/admin/catalog/publish        draft -> live; the version goes to catalog-history/
 POST /api/admin/catalog/discard        draft = live again
 POST /api/admin/catalog/restore {name} an earlier version goes live (itself a new history entry)
-GET  /api/admin/reports                visitors' bug reports and ideas, newest first, with status
-POST /api/admin/reports/status {id, status: open|closed}
+GET  /api/admin/reports                visitors' bug reports and ideas, newest first, with status (open: new,
+                                       accepted or in progress in the ideas store; closed: done or rejected)
+POST /api/admin/reports/status {id, status: open|closed}   closed -> done, open -> new (ideas store)
 GET  /api/admin/reports/<id>/diagnostics  the technical details stored with a bug (consent given)
+GET|POST /api/admin/ideas...           the ideas store (v0.7): ideas_admin.py lists the routes
 
 Security (deploy/README.md, "Admin"):
 - Off unless ADMIN_PASSWORD_HASH holds a valid "scrypt:n:r:p:salt:hash" (tools/admin/hash_password.py);
@@ -504,62 +506,15 @@ class CatalogStore:
         return out
 
 
-# ---------------- reports (read-only, plus a status) ----------------
+# ---------------- reports: the diagnostics files (the list and the status live in the ideas store) ----------------
 
 class Reports:
-    """Visitors' reports as /api/report stored them (reports.jsonl, reports/<id>.json) and the admin's
-    status per report (report-status.json). Nothing here changes what a visitor sent."""
+    """A bug's technical details as /api/report stored them (reports/<id>.json), read-only. The reports
+    themselves and their status are ideas now (ideas.py, service.reports_view): the old report-status.json
+    is read once, when the ideas store is first made."""
 
-    def __init__(self, reports_file: Callable[[], Path], reports_dir: Callable[[], Path], status_file: Callable[[], Path]):
-        self.reports_file, self.reports_dir, self.status_file = reports_file, reports_dir, status_file
-        self._mu = threading.Lock()
-
-    def _status(self) -> dict:
-        try:
-            return json.loads(self.status_file().read_text(encoding="utf-8"))
-        except FileNotFoundError:
-            return {}
-
-    def list(self, limit: int = 500) -> list[dict]:
-        rows: deque = deque(maxlen=limit)
-        f = self.reports_file()
-        if f.exists():
-            with f.open(encoding="utf-8") as fh:
-                for line in fh:
-                    try:
-                        rows.append(json.loads(line))
-                    except ValueError:
-                        continue
-        st = self._status()
-        keep = ("id", "ts", "kind", "page", "locale", "scene", "release", "message", "contact", "suspect", "diagnostics")
-        out = []
-        for r in reversed(rows):
-            if not isinstance(r, dict) or not isinstance(r.get("id"), str):
-                continue
-            x = {k: r.get(k) for k in keep}
-            s = st.get(r["id"]) or {}
-            x["status"] = s.get("status", "open")
-            x["statusTs"] = s.get("ts")
-            out.append(x)
-        return out
-
-    def exists(self, rid: str) -> bool:
-        f = self.reports_file()
-        if not f.exists():
-            return False
-        needle = f'{{"id": "{rid}"'
-        with f.open(encoding="utf-8") as fh:
-            return any(line.startswith(needle) for line in fh)
-
-    def set_status(self, rid: str, status: str, ts: str) -> bool:
-        if not isinstance(rid, str) or not _REPORT_ID_RE.fullmatch(rid) or status not in REPORT_STATUSES or not self.exists(rid):
-            return False
-        with self._mu:
-            st = self._status()
-            st[rid] = {"status": status, "ts": ts}
-            self.status_file().parent.mkdir(parents=True, exist_ok=True)
-            write_durable(self.status_file(), (json.dumps(st, ensure_ascii=False, indent=1) + "\n").encode("utf-8"))
-        return True
+    def __init__(self, reports_dir: Callable[[], Path]):
+        self.reports_dir = reports_dir
 
     def diagnostics(self, rid: str) -> bytes | None:
         if not _REPORT_ID_RE.fullmatch(rid):
@@ -590,14 +545,18 @@ def _cookie(header: str | None) -> str | None:
 
 
 class AdminApi:
-    def __init__(self, data_dir: Callable[[], Path], reports_file: Callable[[], Path], reports_dir: Callable[[], Path],
+    """`ideas` (ideas_admin.IdeasAdmin) serves /api/admin/ideas... and the Reports tab; without it those
+    routes answer 503."""
+
+    def __init__(self, data_dir: Callable[[], Path], reports_dir: Callable[[], Path],
                  seed: Callable[[], Path | None], telegram: Callable[[str], object], site: str = "gsfpv",
-                 env=os.environ, clock: Callable[[], float] = time.time):
+                 env=os.environ, clock: Callable[[], float] = time.time, ideas=None):
         self.data_dir, self.telegram, self.site, self.env, self.clock = data_dir, telegram, site, env, clock
         self.guard = LoginGuard(clock)
         self.sessions = Sessions(clock)
         self.catalog = CatalogStore(data_dir, seed, clock)
-        self.reports = Reports(reports_file, reports_dir, lambda: data_dir() / "report-status.json")
+        self.reports = Reports(reports_dir)
+        self.ideas = ideas
         self._kdf = threading.Lock()  # one scrypt at a time: memory, and a natural brake
 
     def config(self) -> tuple | None:
@@ -688,14 +647,13 @@ class AdminApi:
         return _json(200, {"ok": True, "csrf": csrf, "expires": int(expires)}, [("Set-Cookie", cookie)])
 
     def _route(self, method: str, route: str, read_body, client: str, sid: str | None, sess: dict) -> Response:
-        stamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(self.clock()))
+        if route == "reports" or route == "reports/status" or route == "ideas" or route.startswith("ideas/"):
+            return self._ideas_route(method, route, read_body, client)
         if method == "GET":
             if route == "session":
                 return _json(200, {"ok": True, "csrf": sess["csrf"], "expires": int(sess["expires"])})
             if route == "catalog":
                 return _json(200, {"ok": True, **self.catalog.state()})
-            if route == "reports":
-                return _json(200, {"ok": True, "reports": self.reports.list()})
             m = re.fullmatch(r"reports/(R-[0-9]{8}-[0-9]{4,})/diagnostics", route)
             if m:
                 blob = self.reports.diagnostics(m.group(1))
@@ -725,11 +683,36 @@ class AdminApi:
             name = self.catalog.restore(self._body(read_body).get("name"))
             self.audit(client, "restore", True, name)
             return _json(200, {"ok": True, "version": name, **self.catalog.state()})
-        if route == "reports/status":
-            b = self._body(read_body)
-            if not self.reports.set_status(b.get("id"), b.get("status"), stamp):
-                return _json(400, {"ok": False})
-            self.audit(client, "report-status", True, f"{b.get('id')} {b.get('status')}")
-            return _json(200, {"ok": True})
         return _json(404, {"ok": False})
+
+    def _ideas_route(self, method: str, route: str, read_body, client: str) -> Response:
+        """The Reports tab and /api/admin/ideas..., both answered from the ideas store; 503 while the
+        store cannot be used (an unreadable ideas.json), the rest of the admin keeps working."""
+        if self.ideas is None:
+            return _json(503, {"ok": False, "reason": "ideas-disabled"})
+        try:
+            return self._ideas_routes(method, route, read_body, client)
+        except self.ideas.unavailable:
+            return _json(503, {"ok": False, "reason": "ideas-store"})
+
+    def _ideas_routes(self, method: str, route: str, read_body, client: str) -> Response:
+        if route == "reports":
+            if method != "GET":
+                return _json(404, {"ok": False})
+            return _json(200, {"ok": True, "reports": self.ideas.service.reports_view()})
+        if route == "reports/status":
+            if method != "POST":
+                return _json(404, {"ok": False})
+            b = self._body(read_body)
+            rid, status = b.get("id"), b.get("status")
+            if not isinstance(rid, str) or not _REPORT_ID_RE.fullmatch(rid) or status not in REPORT_STATUSES \
+                    or not self.ideas.service.reports_set_status(rid, status, "admin"):
+                return _json(400, {"ok": False})
+            self.audit(client, "report-status", True, f"{rid} {status}")
+            return _json(200, {"ok": True})
+        if method == "GET":
+            return self.ideas.get(route)
+        res, detail = self.ideas.post(route, self._body(read_body))
+        self.audit(client, route.replace("/", "-"), res[0] == 200, detail)
+        return res
 
