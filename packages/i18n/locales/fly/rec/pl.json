@@ -56,8 +56,8 @@
   "rec.dot": "Nagrywanie, {t}. Zatrzymaj nagrywanie",
   "set.recording.authorNotice": "Czyj to skan",
   "set.recording.authorNotice.help": "Pierwsze nagranie skanu spoza wystawy pokazuje jedną linię na pasku nagrywania: czyj to skan, jaka licencja i że nagranie jest Twoje — do użycia z podaniem autora.",
-  "rec.notice": "Skan: {author} ({license}). Nagranie jest Twoje, podobnie jak odpowiedzialność za to, jak go użyjesz: podaj autora skanu przy publikacji.",
-  "rec.notice.author": "Skan: {author}. Nagranie jest Twoje, podobnie jak odpowiedzialność za to, jak go użyjesz: podaj autora skanu przy publikacji.",
-  "rec.notice.unknown": "Ten skan należy do swojego autora na SuperSplat. Nagranie jest Twoje, podobnie jak odpowiedzialność za to, jak go użyjesz: podaj autora skanu przy publikacji.",
+  "rec.notice": "Skan: {author} ({license}). Nagranie jest Twoje, podobnie jak odpowiedzialność za to, jak je wykorzystasz: podaj autora skanu przy publikacji.",
+  "rec.notice.author": "Skan: {author}. Nagranie jest Twoje, podobnie jak odpowiedzialność za to, jak je wykorzystasz: podaj autora skanu przy publikacji.",
+  "rec.notice.unknown": "Ten skan należy do swojego autora na SuperSplat. Nagranie jest Twoje, podobnie jak odpowiedzialność za to, jak je wykorzystasz: podaj autora skanu przy publikacji.",
   "rec.notice.hide": "Nie pokazuj więcej"
 }
