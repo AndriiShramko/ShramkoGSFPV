@@ -240,6 +240,22 @@ export function channelOf(input: SwitchInput): number {
     return input.kind === 'axis' ? input.index + 1 : input.bit + 9;
 }
 
+/** The device a radio profile is for: a USB radio through WebHID ('hid') or a gamepad ('gamepad'). */
+export type RadioDevice = 'hid' | 'gamepad';
+
+/** How the pilot reads an input: a channel number ("CH6") or a gamepad's button ("button 3"). */
+export interface InputName { kind: 'ch' | 'button'; n: number }
+
+/**
+ * The one naming of a switch input (the Switches screen, the HUD's arm label and mode chip). A USB
+ * radio: its channel (channelOf, buttons are CH9..CH32 on EdgeTX). A gamepad: an axis by its number
+ * and a button as "button n", 1-based, as the wizard names them (a gamepad has no channels).
+ */
+export function inputName(input: SwitchInput, device: RadioDevice): InputName {
+    if (device === 'hid') return { kind: 'ch', n: channelOf(input) };
+    return input.kind === 'axis' ? { kind: 'ch', n: input.index + 1 } : { kind: 'button', n: input.bit + 1 };
+}
+
 /** The input a radio channel arrives on over USB (EdgeTX joystick, classic layout). */
 export function channelInput(ch: number): SwitchInput {
     return ch <= 8 ? { kind: 'axis', index: ch - 1 } : { kind: 'button', bit: ch - 9 };

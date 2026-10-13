@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { MODE_CHANNEL, parseBetaflightDiff } from '@gsfpv/sim-core';
 import type { FlightMode } from '@gsfpv/sim-core';
 import {
-    POSITION_BANDS, SWITCH_ACTIONS, SwitchActionWatch, armByRanges, bandOf, channelInput, channelOf, channelUs, fnOn, mapFrame, modeInput,
+    POSITION_BANDS, SWITCH_ACTIONS, SwitchActionWatch, armByRanges, bandOf, channelInput, channelOf, channelUs, fnOn, inputName, mapFrame, modeInput,
     modePositions, profileArmLevel, ArmLatch, radioSetsMode, rangeOn, rangesMode, readSwitches, setModePositions, switchesFromBetaflight,
     switchesFromProfile
 } from '../src/calib';
@@ -53,6 +53,16 @@ describe('channel values and Betaflight\'s range test', () => {
         // control: an inclusive end puts 1300 in both bands of a 3-position switch
         const inclusive = (x: SwitchRange, f: RawFrame) => { const u = channelUs(x.input, f)!; return u >= x.lo && u <= x.hi; };
         expect(inclusive(low, frame({ 5: 1300 })) && inclusive(mid, frame({ 5: 1300 }))).toBe(true);
+    });
+
+    it('one naming of an input: a USB radio by its channel (buttons CH9..), a gamepad by its axis number or "button n"', () => {
+        expect(inputName(ax(5), 'hid')).toEqual({ kind: 'ch', n: 6 });
+        expect(inputName(btn(2), 'hid')).toEqual({ kind: 'ch', n: 11 });
+        expect(inputName(ax(5), 'gamepad')).toEqual({ kind: 'ch', n: 6 });
+        expect(inputName(btn(2), 'gamepad')).toEqual({ kind: 'button', n: 3 });
+        // control: the radio's channel layout on a gamepad's button (what the HUD said in v0.7) is CH11, not button 3
+        expect(channelOf(btn(2))).toBe(11);
+        expect(inputName(btn(2), 'gamepad')).not.toEqual({ kind: 'ch', n: channelOf(btn(2)) });
     });
 });
 

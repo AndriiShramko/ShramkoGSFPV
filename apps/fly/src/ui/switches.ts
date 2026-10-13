@@ -11,13 +11,14 @@
 // setup wizard's switches" does the same after edits.
 import './switches.css';
 import {
-    FLIGHT_MODES, ModeSwitchDetector, POSITION_BANDS, SWITCH_ACTIONS, US_MAX, US_MIN, US_STEP, bandOf, channelOf, channelUs, copySwitches,
+    FLIGHT_MODES, ModeSwitchDetector, POSITION_BANDS, SWITCH_ACTIONS, US_MAX, US_MIN, US_STEP, bandOf, channelUs, copySwitches,
     defaultSwitchModes, fnOn, modeInput, modePositions, rangesMode, sameInput, setModePositions, snapUs, switchesFromBetaflight, switchesFromProfile
 } from '@gsfpv/input';
 import type { Profile, RawFrame, SwitchAction, SwitchFn, SwitchInput, SwitchModes, SwitchPos, Switches } from '@gsfpv/input';
 import { parseBetaflightDiff } from '@gsfpv/sim-core';
 import { h } from './dom';
 import { t } from '../i18n';
+import { inputLabel } from '../controls';
 
 export interface SwitchesViewOptions {
     profile: Profile;
@@ -120,10 +121,9 @@ export class SwitchesView {
 
     // ------------------------------------------------------------------ names
 
-    /** "CH6"; on a gamepad a button is "button 3" (its channels are not known). */
+    /** "CH6"; on a gamepad a button is "button 3" (its channels are not known): controls.ts inputLabel, as the HUD. */
     private label(i: SwitchInput): string {
-        if (this.o.kind === 'gamepad' && i.kind === 'button') return t('wizard.armSource.button', { n: i.bit + 1 });
-        return t('wizard.armSource.ch', { n: this.o.kind === 'hid' ? channelOf(i) : i.kind === 'axis' ? i.index + 1 : i.bit + 1 });
+        return inputLabel(i, this.o.kind);
     }
 
     private fnLabel(fn: SwitchFn): string {

@@ -128,6 +128,20 @@ describe('Controls with channel functions: arm on CH6, mode on CH5', () => {
         // no mode ranges: the radio does not decide, so the chip offers the pilot's choice
         expect(label({ ...TX16S, switches: { v: 1, ranges: [r('arm', 5, 1700, 2100)] } })).toBeNull();
     });
+
+    it('gamepad button ranges read "button n" on the HUD (arm label and mode chip), as on the Switches screen; on a USB radio CHn', async () => {
+        const { radioSwitch } = await import('../../../apps/fly/src/app/builtin/modes');
+        const b = (fn: SwitchRange['fn'], bit: number, lo: number, hi: number): SwitchRange => ({ fn, input: { kind: 'button', bit }, lo, hi });
+        const pad: Profile = { ...TX16S, deviceKey: 'gp:xbox', switches: { v: 1, ranges: [b('arm', 2, 1700, 2100), b('angle', 3, 1700, 2100)] } };
+        const on = (source: 'hid' | 'gamepad') => {
+            const k = controls(pad);
+            k.c.source = source;
+            return { arm: k.c.view().armLabel, chip: radioSwitch({ controls: k.c } as never) };
+        };
+        expect(on('gamepad')).toEqual({ arm: 'button 3', chip: 'button 4' });
+        // control: the same ranges on a USB radio are its channels CH11 / CH12 (EdgeTX: buttons from CH9)
+        expect(on('hid')).toEqual({ arm: 'CH11', chip: 'CH12' });
+    });
 });
 
 describe('switches flipped while Controls had the radio\'s frames run nothing when the flight gets them back', () => {

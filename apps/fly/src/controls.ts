@@ -14,8 +14,8 @@
 // screen) decide the arm and the mode instead when it has them, and their action ranges run app
 // actions (onSwitchAction, wired to the key router by app/builtin/switches.ts).
 
-import { ArmGate, ArmLatch, SwitchActionWatch, armByRanges, channelOf, mapFrame, profileArmLevel, radioSetsMode, readSwitches, validModeSwitch } from '@gsfpv/input';
-import type { Profile, RawFrame, ArmBlock, SwitchAction } from '@gsfpv/input';
+import { ArmGate, ArmLatch, SwitchActionWatch, armByRanges, inputName, mapFrame, profileArmLevel, radioSetsMode, readSwitches, validModeSwitch } from '@gsfpv/input';
+import type { Profile, RawFrame, ArmBlock, RadioDevice, SwitchAction, SwitchInput } from '@gsfpv/input';
 import { MODE_CHANNEL, modeFromChannel } from '@gsfpv/sim-core';
 import type { FlightMode } from '@gsfpv/sim-core';
 import { LEGACY_KEYS } from '@gsfpv/prefs';
@@ -25,6 +25,15 @@ import { t } from './i18n';
 import { pagePrefs } from './app/prefs';
 
 export type InputKind = 'hid' | 'gamepad' | 'touch' | 'keyboard';
+
+/**
+ * A switch input as text, the one naming of @gsfpv/input inputName through the wizard's strings:
+ * "CH6" on a USB radio (buttons too: CH9..CH32), "CH5" or "button 3" on a gamepad.
+ */
+export function inputLabel(input: SwitchInput, device: RadioDevice): string {
+    const n = inputName(input, device);
+    return t(n.kind === 'ch' ? 'wizard.armSource.ch' : 'wizard.armSource.button', { n: n.n });
+}
 
 /** The input flown last time, so the next scan starts with it instead of the Controls screen. */
 export interface LastInput {
@@ -269,15 +278,20 @@ export class Controls {
         this.push(performance.now()); // act at once, not at the next radio report
     }
 
+    /** A switch input of the device in use as the pilot reads it (inputLabel): "CH6", or "button 3" on a gamepad. */
+    nameOf(input: SwitchInput): string {
+        return inputLabel(input, this.source === 'gamepad' ? 'gamepad' : 'hid');
+    }
+
     /** For the HUD; the same object every call (the HUD reads it at 10 Hz). */
     view(): ArmView {
         const v = this.armView;
         const a = this.profile?.arm ?? null;
         const range = armByRanges(this.profile) ? this.profile?.switches?.ranges.find((r) => r.fn === 'arm') ?? null : null;
         if (range) {
-            // the channel functions arm: "CH6", as the Switches screen names the channel
+            // the channel functions arm: "CH6" ("button 3" on a gamepad), as the Switches screen names it
             v.armKind = range.input.kind;
-            v.armLabel = t('wizard.armSource.ch', { n: channelOf(range.input) });
+            v.armLabel = this.nameOf(range.input);
         } else {
             v.armKind = !a ? null : a.kind === 'button' ? (a.toggle ? 'toggle' : 'button') : a.kind;
             v.armLabel = !a ? '' : a.kind === 'axis' ? t('wizard.armSource.ch', { n: a.index + 1 }) : a.kind === 'button' ? t('wizard.armSource.button', { n: a.bit + 1 }) : t('wizard.armSource.key');
