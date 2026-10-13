@@ -10,10 +10,17 @@
 //   S4  the crosshair: off by default, 'cross' shows it, cinema mode hides it. Control: off = no mark.
 //   S5  the motor sound: a click makes the AudioContext run; the bot flying armed is heard, the pause
 //       menu is silence. Control: sound.motors off is silence while flying.
+//   S6  an auto-recorded flight (Auto on, ARM, DISARM, saved 3 s later), split into parts, after a
+//       manual recording: the bar offers "Share your flight" with the new note, and the share panel
+//       has every part of the new recording. Control: the review's run against e344977 (the auto stop
+//       dropped its result: no button), evidence/<date>/v07-d1-S1-S6-control-e344977.json.
+//   S1 also: Instagram with the clipboard API refused and the old execCommand copy working leaves the
+//       link in the link field (e344977 left the caption there: the same control run).
 // Run (one port per agent; GPU lock as tools/bench/README.md, even though nothing is drawn):
 //   cd apps/fly && npx vite --port 5341 --strictPort --host 127.0.0.1
-//   cd tools/bench && LOCAL_FLY=1 SITE=http://127.0.0.1:5341 npx tsx src/accept-v07-d1.ts
-// Evidence: evidence/<date>/v07-d1.json.
+//   cd tools/bench && LOCAL_FLY=1 SITE=http://127.0.0.1:5341 npx tsx src/accept-v07-d1.ts [S1 S6 ...]
+// Evidence: evidence/<date>/v07-d1.json (v07-d1-<parts>.json when only some parts run;
+// EVIDENCE_SUFFIX names a second run, e.g. -control-e344977 against an older commit).
 import type { Browser, Page } from 'playwright';
 import { launchChrome, waitReady } from './browser';
 import { noteBrowser, writeEvidence } from './evidence';
@@ -23,6 +30,10 @@ const fly = (qs: string) => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}` : `${S
 const SHOWCASE = '39e63ce9'; // in apps/fly/public/showcase.json
 const PASTED = '723068d7'; // not in it
 const BOT = '887f27aa'; // the tour bot's scene (accept-d.ts)
+const PARTS = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'];
+/** `npx tsx src/accept-v07-d1.ts S1 S6`: only these parts */
+const only = process.argv.slice(2).filter((a) => PARTS.includes(a));
+const want = (part: string): boolean => only.length === 0 || only.includes(part);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Any = any;
@@ -50,7 +61,7 @@ noteBrowser(which);
 const out: Record<string, Any> = { site: SITE, render: 'off' };
 
 // ------------------------------------------------------------------ S1
-{
+if (want('S1')) {
     const { p, errors, close } = await page(browser);
     // the keyboard path (lat=1): touch sticks (input=touch) show the icon alone, as on a phone
     await p.goto(fly(`scene=${SHOWCASE}&nowarn=1&lat=1&render=off`));
@@ -62,6 +73,11 @@ const out: Record<string, Any> = { site: SITE, render: 'off' };
     const opened = await until(p, `!!document.querySelector('.panel.share')`);
     await until(p, `(() => { const st = window.__gsfpv.share.state(); return !!(st && st.url); })()`, 20000);
     const st = await hook(p, 'return { ...h.share.state(), paused: s.paused, status: document.querySelector("[data-testid=share-status]").textContent, targets: document.querySelectorAll(".panel.share [data-share]").length, instagram: !!document.querySelector("[data-action=share-instagram]") };');
+    // Instagram where the clipboard API is refused but the old execCommand copy works (an http page,
+    // an older browser): the caption is copied, the link field still shows the link
+    const insta = await hook(p, `navigator.clipboard.writeText = () => Promise.reject(new Error('denied')); document.execCommand = () => true;
+        document.querySelector('[data-action=share-instagram]').click(); await new Promise((r) => setTimeout(r, 500));
+        return { field: document.querySelector('[data-testid=share-url]').value, url: h.share.state().url, status: document.querySelector('[data-testid=share-status]').textContent };`);
     await p.keyboard.press('Escape');
     await p.waitForTimeout(400);
     const after = await hook(p, 'return { panel: !!document.querySelector(".panel.share"), paused: s.paused };');
@@ -74,13 +90,13 @@ const out: Record<string, Any> = { site: SITE, render: 'off' };
     await phone.close();
     const pass = !!top && top.shown && top.label === true && /\(L\)/.test(top.aria) && !!topPhone && topPhone.shown && topPhone.label === false
         && opened && st.entry === 'key' && new RegExp(`/scenes/${SHOWCASE}/$`).test(st.url) && st.paused === true && st.targets === 6 && st.instagram
-        && after.panel === false && after.paused === false && before === false;
-    out.S1 = { pass, top, topPhone, panel: st, after, control: { what: 'before L: no share panel on the page', fired: before === false }, consoleErrors: errors };
-    console.log('S1', pass ? 'PASS' : 'FAIL', JSON.stringify({ top, topPhone, url: st.url, entry: st.entry, paused: st.paused, after }));
+        && after.panel === false && after.paused === false && before === false && insta.field === insta.url;
+    out.S1 = { pass, top, topPhone, panel: st, instagramFallback: insta, after, control: { what: 'before L: no share panel on the page', fired: before === false }, consoleErrors: errors };
+    console.log('S1', pass ? 'PASS' : 'FAIL', JSON.stringify({ top, topPhone, url: st.url, entry: st.entry, paused: st.paused, after, insta }));
 }
 
 // ------------------------------------------------------------------ S2
-{
+if (want('S2')) {
     const { p, errors, close } = await page(browser);
     await p.goto(fly('nowarn=1&render=off'));
     await waitReady(p, 120000);
@@ -96,7 +112,7 @@ const out: Record<string, Any> = { site: SITE, render: 'off' };
 }
 
 // ------------------------------------------------------------------ S3
-{
+if (want('S3')) {
     const { p, errors, close } = await page(browser);
     await p.goto(fly(`scene=${PASTED}&nowarn=1&lat=1&render=off`));
     await waitReady(p, 240000);
@@ -142,7 +158,7 @@ const out: Record<string, Any> = { site: SITE, render: 'off' };
 }
 
 // ------------------------------------------------------------------ S4 and S5
-{
+if (want('S4') || want('S5')) {
     const { p, errors, close } = await page(browser);
     await p.goto(fly(`scene=${BOT}&simradio=scenario&tour=1&nowarn=1&render=off`));
     await waitReady(p, 240000);
@@ -181,8 +197,50 @@ const out: Record<string, Any> = { site: SITE, render: 'off' };
     console.log('S5', soundPass ? 'PASS' : 'FAIL', 'control', fired ? 'FIRED' : 'DID NOT FIRE', JSON.stringify({ flying, paused, switchedOff }));
 }
 
+// ------------------------------------------------------------------ S6
+if (want('S6')) {
+    const { p, errors, close } = await page(browser);
+    await p.goto(fly(`scene=${PASTED}&nowarn=1&input=touch&render=off`));
+    await waitReady(p, 240000);
+    await p.waitForTimeout(1000);
+    const idle = `(() => { const st = window.__gsfpv.rec.state(); return !st.recording && !st.busy && !!st.last; })()`;
+    // a manual recording first: its note is on the bar when the auto run starts
+    await p.keyboard.press('F9');
+    await p.waitForTimeout(1200);
+    await p.keyboard.press('F9');
+    await until(p, idle, 10000);
+    const manual = await hook(p, 'const st = h.rec.state(); return { note: st.note, files: st.last.files.map((f) => f.name), share: !!document.querySelector("[data-action=rec-share]") };');
+    // Auto on (set through the hook: the bar's button would open the OS folder picker), parts of 1.2 s
+    await hook(p, 'h.rec.setAuto(true); h.rec.setSplitMin(0.02); return 0;');
+    await p.click('.touch-arm');
+    await p.waitForTimeout(1000);
+    const armed = await hook(p, 'const st = h.rec.state(); return { armed: s.sim.armed, recording: st.recording, autoRun: st.autoRun, note: st.note, share: !!document.querySelector("[data-action=rec-share]") };');
+    await p.waitForTimeout(2800);
+    await p.click('.touch-arm');
+    // the stop is due 3 s after the disarm, then the parts are closed
+    const newFile = `(() => { const st = window.__gsfpv.rec.state(); return !st.recording && !st.busy && !!st.last && !${JSON.stringify(manual.files)}.includes(st.last.files[0].name); })()`;
+    const saved = await until(p, newFile, 12000);
+    const after = await hook(p, 'const st = h.rec.state(); return { note: st.note, files: st.last ? st.last.files.map((f) => f.name) : [], share: !!document.querySelector("[data-action=rec-share]") };');
+    let panel: Any = null;
+    if (after.share) {
+        await p.click('[data-action=rec-share]');
+        await until(p, `(() => { const st = window.__gsfpv.share.state(); return !!(st && st.url && st.video !== 'loading'); })()`, 20000);
+        panel = await hook(p, 'return { ...h.share.state(), saves: [...document.querySelectorAll("[data-action=share-video-save]")].map((a) => a.getAttribute("download")) };');
+        await p.keyboard.press('Escape');
+    }
+    await hook(p, 'h.rec.setAuto(false); h.rec.setSplitMin(null); return 0;');
+    await close();
+    const sameList = (a: string[] | undefined, b: string[]) => !!a && a.length === b.length && a.every((x, i) => x === b[i]);
+    const pass = manual.share === true && armed.armed === true && armed.recording === true && armed.autoRun === true && armed.share === false
+        && saved && after.share === true && after.files.length >= 2 && after.note !== manual.note
+        && !!panel && panel.entry === 'video' && panel.video === 'ready' && sameList(panel.files, after.files) && sameList(panel.saves, after.files);
+    out.S6 = { pass, manual, armed, saved, after, panel, consoleErrors: errors };
+    console.log('S6', pass ? 'PASS' : 'FAIL', JSON.stringify({ manual, armed, saved, after, panel: panel && { entry: panel.entry, video: panel.video, files: panel.files, saves: panel.saves } }));
+}
+
 await browser.close();
-const all = ['S1', 'S2', 'S3', 'S4', 'S5'].every((k) => out[k]?.pass);
-const file = writeEvidence('v07-d1', { pass: all, ...out });
+const ran = PARTS.filter((k) => k in out);
+const all = ran.length > 0 && ran.every((k) => out[k]?.pass);
+const file = writeEvidence(only.length ? `v07-d1-${only.join('-')}` : 'v07-d1', { pass: all, parts: ran, ...out });
 console.log('v07-d1', all ? 'PASS' : 'FAIL', file);
 process.exit(all ? 0 : 1);
