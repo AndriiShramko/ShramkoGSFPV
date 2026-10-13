@@ -1,6 +1,7 @@
 export * from './dmath';
 export * from './sha256';
 export * from './rates';
+export * from './rates-edit';
 export * from './params';
 export * from './sim';
 export * from './runner';

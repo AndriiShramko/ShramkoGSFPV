@@ -96,7 +96,7 @@ describe('buildCatalogue (I.6)', () => {
         const pro = c.locales.en.drones.find((d) => d.id === 'pavo20pro-3s')!;
         expect(pro.fields.map((f) => f.label)).toEqual(['drone.twr-en', 'drone.weight-en', 'drone.wheelbase-en', 'drone.motor-en', 'drone.battery-en']);
         expect(pro.fields[1].source).toBe(PRESETS.find((p) => p.id === 'pavo20pro-3s')!.fields.auw_g.source);
-        expect(c.counts).toMatchObject({ groups: withShipped.length, drones: 6, rateTypes: 4 });
+        expect(c.counts).toMatchObject({ groups: withShipped.length, drones: 6, rateTypes: 5 });
         expect(c.counts.modes).toBe(SCHEMA.byId.get('flight.mode')!.status === 'shipped' ? 3 : 2);
         expect(c.generated).toBe('2026-10-05');
         expect(c.schemaVersion).toBe(SCHEMA.version);

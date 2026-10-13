@@ -1,22 +1,27 @@
 // Tune (A.8, H.3). Owner: W2-1. null means "the drone preset's own values", which is also what
 // ParamOverrides means by an absent field. PID came from v0.2's panel; rates and throttle from
-// v0.2's "Import rates from Betaflight", so all three are existing settings.
+// v0.2's "Import rates from Betaflight", so all three are existing settings. v0.7 (lane D2): the
+// rates are edited in Settings (apps/fly ui/settings/rates-editor.ts) and Quick is the fifth type.
 import type { SettingDef } from '../schema';
 
-export type RatesType = 'BETAFLIGHT' | 'ACTUAL' | 'KISS' | 'RACEFLIGHT';
+/** Betaflight's `rates_type`, as sim-core's RatesType (a test keeps the lists equal). */
+export type RatesType = 'BETAFLIGHT' | 'RACEFLIGHT' | 'KISS' | 'ACTUAL' | 'QUICK';
 export interface AxisRates { rcRate: number; rate: number; expo: number }
-export interface RatesValue { type: RatesType; roll: AxisRates; pitch: AxisRates; yaw: AxisRates; rateLimit: number }
+/** sim-core's RatesConfig as stored: CLI integers; `quickRcExpo` (quickrates_rc_expo) only with QUICK. */
+export interface RatesValue { type: RatesType; roll: AxisRates; pitch: AxisRates; yaw: AxisRates; rateLimit: number; quickRcExpo?: boolean }
 export interface PidValue { roll: number[]; pitch: number[]; yaw: number[] }
 export interface ThrottleValue { mid: number; expo: number }
 
-export const RATE_TYPES: readonly RatesType[] = ['BETAFLIGHT', 'ACTUAL', 'KISS', 'RACEFLIGHT'];
+/** In Betaflight's lookup-table order, as sim-core RATES_TYPES. */
+export const RATE_TYPES: readonly RatesType[] = ['BETAFLIGHT', 'RACEFLIGHT', 'KISS', 'ACTUAL', 'QUICK'];
 
 /** CLI bounds of R, S, E per curve type, as sim-core RATE_BOUNDS (a test keeps the two equal). */
 export const RATE_BOUNDS: Readonly<Record<RatesType, AxisRates>> = {
     BETAFLIGHT: { rcRate: 255, rate: 100, expo: 100 },
     RACEFLIGHT: { rcRate: 200, rate: 255, expo: 100 },
     KISS: { rcRate: 255, rate: 99, expo: 100 },
-    ACTUAL: { rcRate: 200, rate: 200, expo: 100 }
+    ACTUAL: { rcRate: 200, rate: 200, expo: 100 },
+    QUICK: { rcRate: 255, rate: 200, expo: 100 }
 };
 
 const obj = (v: unknown): Record<string, unknown> | null => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : null);
@@ -49,7 +54,10 @@ export function validateRates(v: unknown): RatesValue | null {
     const roll = axis(o.roll), pitch = axis(o.pitch), yaw = axis(o.yaw);
     if (!roll || !pitch || !yaw) return null;
     // Betaflight's rate_limit range
-    return { type, roll, pitch, yaw, rateLimit: clamp(o.rateLimit, 200, 1998) };
+    const out: RatesValue = { type, roll, pitch, yaw, rateLimit: clamp(o.rateLimit, 200, 1998) };
+    // quickrates_rc_expo belongs to QUICK alone; anything but true is OFF
+    if (type === 'QUICK') out.quickRcExpo = o.quickRcExpo === true;
+    return out;
 }
 
 /** Betaflight thr_mid / thr_expo as CLI integers 0-100. */
@@ -61,7 +69,7 @@ export function validateThrottle(v: unknown): ThrottleValue | null {
 
 export const TUNE_DEFS: readonly SettingDef[] = [
     { id: 'tune.pid', group: 'tune', scope: 'drone', type: 'json', kind: 'pid', validate: validatePid, default: null, apply: 'life', shown: ['settings'], status: 'shipped', since: 1, items: [20] },
-    // read-only in the panel, filled by "Import from Betaflight"
+    // the rates editor in Settings (type, per-axis fields, chart, copy as CLI) and "Import from Betaflight"
     { id: 'tune.rates', group: 'tune', scope: 'drone', type: 'json', kind: 'rates', validate: validateRates, default: null, apply: 'life', shown: ['settings'], status: 'shipped', since: 1, items: [21] },
     { id: 'tune.throttle', group: 'tune', scope: 'drone', type: 'json', kind: 'throttle', validate: validateThrottle, default: null, apply: 'life', shown: ['settings'], status: 'shipped', since: 1, items: [21] }
 ];

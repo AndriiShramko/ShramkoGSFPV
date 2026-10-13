@@ -33,7 +33,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSy
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { DRONE_IDS, FLYING_CODES, KEYMAP, RATE_TYPES, SCALE_MAX, SCALE_MIN, SCHEMA, SHARED_WITH_FLYING, buildCatalogue, capText, helpKey, isPresetRef, labelKey } from '../packages/prefs/src/index';
-import type { CatalogueKey, CataloguePreset, CatalogueSetting, Dict, GroupId, SettingDef } from '../packages/prefs/src/index';
+import type { CatalogueKey, CataloguePreset, CatalogueSetting, Dict, GroupId, RatesType, SettingDef } from '../packages/prefs/src/index';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const LANGS = ['en', 'es', 'pl', 'ru'] as const;
@@ -196,7 +196,8 @@ export interface Features {
     locales: Record<Lang, FeatureLocale>;
 }
 
-const RATE_NAMES: Readonly<Record<string, string>> = { BETAFLIGHT: 'Betaflight', ACTUAL: 'Actual', KISS: 'KISS', RACEFLIGHT: 'Raceflight' };
+/** Betaflight Configurator's names of the rate types; a type without a name here is a type error. */
+const RATE_NAMES: Readonly<Record<RatesType, string>> = { BETAFLIGHT: 'Betaflight', RACEFLIGHT: 'Raceflight', KISS: 'KISS', ACTUAL: 'Actual', QUICK: 'Quick' };
 
 export interface Provenance { fly: number; derived: number; fallback: number; fallbackIds: string[] }
 
@@ -260,7 +261,7 @@ export function buildFeatures(date: string): { features: Features; provenance: P
                     if (def.kind === 'pid' || def.kind === 'rates' || def.kind === 'throttle') row.preset = true;
                     if (def.kind === 'pid') row.range = '0–250';
                     if (def.kind === 'throttle') row.range = '0–100';
-                    if (def.kind === 'rates') row.options = RATE_TYPES.map((r) => RATE_NAMES[r] ?? r);
+                    if (def.kind === 'rates') row.options = RATE_TYPES.map((r) => RATE_NAMES[r]);
                     if (def.kind === 'transform') {
                         row.default = '1×';
                         row.range = `${SCALE_MIN}×–${SCALE_MAX}×`;

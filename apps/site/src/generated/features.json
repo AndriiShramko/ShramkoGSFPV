@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-02",
+ "generated": "2026-10-13",
  "schemaVersion": 2,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
@@ -8,7 +8,7 @@
   "drones": 6,
   "modes": 3,
   "keys": 21,
-  "rateTypes": 4,
+  "rateTypes": 5,
   "flyingKeys": 10,
   "allKeys": 29
  },
@@ -662,9 +662,10 @@
        "preset": true,
        "options": [
         "Betaflight",
-        "Actual",
+        "Raceflight",
         "KISS",
-        "Raceflight"
+        "Actual",
+        "Quick"
        ],
        "shown": [
         "settings"
@@ -2074,9 +2075,10 @@
        "preset": true,
        "options": [
         "Betaflight",
-        "Actual",
+        "Raceflight",
         "KISS",
-        "Raceflight"
+        "Actual",
+        "Quick"
        ],
        "shown": [
         "settings"
@@ -3486,9 +3488,10 @@
        "preset": true,
        "options": [
         "Betaflight",
-        "Actual",
+        "Raceflight",
         "KISS",
-        "Raceflight"
+        "Actual",
+        "Quick"
        ],
        "shown": [
         "settings"
@@ -4898,9 +4901,10 @@
        "preset": true,
        "options": [
         "Betaflight",
-        "Actual",
+        "Raceflight",
         "KISS",
-        "Raceflight"
+        "Actual",
+        "Quick"
        ],
        "shown": [
         "settings"

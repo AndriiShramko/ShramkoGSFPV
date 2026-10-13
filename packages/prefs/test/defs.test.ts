@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { DRONE_IDS, RATE_BOUNDS, SCHEMA, actionsOf, bindingOf, defineSettings, isCuratedRef, isPresetRef, validateFolder, validatePid, validateRates, validateThrottle, validateTransform } from '../src';
+import { DRONE_IDS, RATE_BOUNDS, RATE_TYPES, SCHEMA, actionsOf, bindingOf, defineSettings, isCuratedRef, isPresetRef, validateFolder, validatePid, validateRates, validateThrottle, validateTransform } from '../src';
 import type { EnumDef, NumDef, SettingDef } from '../src';
-import { RATE_BOUNDS as SIM_RATE_BOUNDS } from '../../sim-core/src/rates';
+import { RATE_BOUNDS as SIM_RATE_BOUNDS, RATES_TYPES as SIM_RATES_TYPES } from '../../sim-core/src/rates';
 import { MAIN_SETTINGS, PRESETS, REPO, V02_SETTINGS } from './helpers';
 
 /** Settings a v0.3 wave shipped with its feature (the agent that flips one adds it here). */
@@ -241,8 +241,18 @@ describe('defineSettings: a per-scan default and a setting that is never stored'
 });
 
 describe('JSON validators', () => {
-    it('rate bounds equal sim-core RATE_BOUNDS', () => {
+    it('rate bounds and types equal sim-core RATE_BOUNDS / RATES_TYPES', () => {
         expect(RATE_BOUNDS).toEqual(SIM_RATE_BOUNDS);
+        expect(RATE_TYPES).toEqual(SIM_RATES_TYPES);
+    });
+
+    it('rates: QUICK is stored with quickrates_rc_expo; other types never carry it', () => {
+        const ax = { rcRate: 100, rate: 230, expo: 20 };
+        const q = validateRates({ type: 'QUICK', roll: ax, pitch: ax, yaw: ax, rateLimit: 1998, quickRcExpo: true });
+        expect(q?.roll).toEqual({ rcRate: 100, rate: 200, expo: 20 }); // Quick's max rate limit 200 (2000 deg/s)
+        expect(q?.quickRcExpo).toBe(true);
+        expect(validateRates({ type: 'QUICK', roll: ax, pitch: ax, yaw: ax, rateLimit: 1998, quickRcExpo: 'yes' })?.quickRcExpo).toBe(false);
+        expect(validateRates({ type: 'ACTUAL', roll: ax, pitch: ax, yaw: ax, rateLimit: 1998, quickRcExpo: true })).not.toHaveProperty('quickRcExpo');
     });
 
     it('pid: clamps into 0-250, refuses a missing F term or a string', () => {
