@@ -3,7 +3,8 @@
 //   BASE=http://127.0.0.1:8138 node scripts/verify.mjs
 // Static checks (files, lang, canonical, hreflang, JSON-LD, forbidden words) + browser checks
 // (screenshots, overflow at 375 px, every language switcher, copy button, lead form against a
-// mocked /api/lead, scene paste, whitelisted beacons, no Google requests without GA id) + the
+// mocked /api/lead, scene paste, whitelisted beacons, no Google requests without GA id, the roadmap board:
+// built from its snapshot, refreshed from a mocked /api/roadmap, a failure keeps the snapshot) + the
 // screenshots (files and byte caps, captions in 4 languages, parallax moves and stands still for
 // reduced motion, no layout shift while scrolling, the gallery works from the keyboard).
 import { chromium } from "playwright";
@@ -117,6 +118,36 @@ const DOCS = join(SITE_DIR, "..", "..", "docs", "screenshots");
   ok("every screenshot is on each landing (gallery) and JSON-LD lists screenshots that exist", missing.length === 0, missing.slice(0, 8).join(" "));
 }
 
+// ---------- roadmap (static) ----------
+// The board is built from src/generated/roadmap.json (scripts/roadmap.mjs at prebuild): every item the
+// page can show is in each language's HTML with that language's title (or the English one), and the
+// count tiles match. That HTML is what search engines and visitors without JavaScript read.
+const SNAPSHOT = JSON.parse(readFileSync(join(SITE_DIR, "src", "generated", "roadmap.json"), "utf8"));
+const SHOWN = ["done", "in_progress", "planned"];
+const snapItems = SNAPSHOT.roadmap.items.filter((it) => SHOWN.includes(it.status) && typeof it.title?.en === "string" && it.title.en.trim());
+const snapCount = (s) => snapItems.filter((it) => it.status === s).length;
+const htmlText = (s) => s.replace(/&amp;/g, "&").replace(/&#x27;|&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/\u2060/g, "").replace(/\u00a0/g, " ");
+/** id -> the title the static board shows for it in one page */
+const boardTitles = (html) => new Map([...html.matchAll(/data-roadmap-item="([^"]+)"[^>]*><span[^>]*>([^<]*)<\/span>/g)].map((m) => [m[1], htmlText(m[2])]));
+{
+  const bad = [];
+  let control = 0;
+  for (const l of LOCALES) {
+    const html = readFileSync(join(OUT, l, "index.html"), "utf8");
+    const titles = boardTitles(html);
+    if (titles.size !== snapItems.length) bad.push(`${l}: ${titles.size} items, the snapshot has ${snapItems.length}`);
+    for (const it of snapItems) if (titles.get(it.id) !== (it.title[l] ?? it.title.en).trim()) bad.push(`${l}: ${it.id} shows ${JSON.stringify(titles.get(it.id))}`);
+    for (const s of SHOWN) {
+      const m = html.match(new RegExp(`data-roadmap-count="${s}"[^>]*>(\\d+)<`));
+      if (!m || Number(m[1]) !== snapCount(s)) bad.push(`${l}: tile ${s} = ${m?.[1]}, the snapshot has ${snapCount(s)}`);
+    }
+    // control: the same comparison against the English titles must fail on the other pages
+    if (l !== "en") control += snapItems.filter((it) => it.title[l] && titles.get(it.id) !== it.title.en.trim()).length;
+  }
+  ok(`roadmap: every one of the ${snapItems.length} snapshot items (${SNAPSHOT.source}) is in each page's static HTML in its language, tiles ${SHOWN.map(snapCount).join("/")}`, bad.length === 0, bad.slice(0, 6).join("; "));
+  ok("roadmap: comparing ES/PL/RU pages with the English titles fails (control)", control >= 3 * (snapItems.length - 5), `${control} mismatches`);
+}
+
 // ---------- browser ----------
 mkdirSync(SHOTS, { recursive: true });
 const pick = pickBrowser({ expected: chromium.executablePath() });
@@ -147,6 +178,9 @@ async function newCtx(viewport, opts = {}, consent = "no") {
     beacons.push(route.request().postData() ?? "");
     await route.fulfill({ status: 204 });
   });
+  // the roadmap board asks /api/roadmap once it is near the screen: by default the API says what the
+  // snapshot says (nothing changes, no 404 in the console); the roadmap checks below route their own
+  await ctx.route("**/api/roadmap", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(SNAPSHOT.roadmap) }));
   return { ctx, beacons, google };
 }
 
@@ -607,6 +641,73 @@ for (const mode of ["ok", "fail"]) {
   const bad = await page.evaluate(() => ({ takedown: !!document.querySelector("#contact input[value=takedown]"), msg: document.querySelector("#lead-message")?.value ?? "" }));
   ok("?report with an invalid id is ignored", !bad.takedown && bad.msg === "", JSON.stringify(bad));
   await ctx.close();
+}
+
+// Roadmap board: refreshed from /api/roadmap (mocked) when the section comes near; a failure keeps the
+// snapshot; an unknown status is dropped; a pilot's idea is marked; "Suggest an idea" opens the feedback form
+{
+  const PILOT = { id: "R-20261013-0001", kind: "idea", status: "in_progress", title: { en: "Motor sound you can turn on", pl: "Dzwiek silnikow do wlaczenia" }, fromPilot: true };
+  const ODD = { id: "R-20261013-0002", kind: "idea", status: "someday", title: { en: "A status this page does not know" }, fromPilot: true };
+  const LOOSE = { id: "R-20261013-0003", kind: "bug", status: "done", title: { en: "A fixed bug without a group" }, fromPilot: true };
+  const board = (page) =>
+    page.evaluate(() => ({
+      state: document.querySelector("[data-testid=roadmap]")?.getAttribute("data-roadmap-state"),
+      counts: Object.fromEntries([...document.querySelectorAll("[data-roadmap-count]")].map((e) => [e.getAttribute("data-roadmap-count"), Number(e.textContent)])),
+      items: document.querySelectorAll("[data-roadmap-item]").length,
+      pilot: !!document.querySelector('[data-roadmap-item="R-20261013-0001"] [data-roadmap-pilot]'),
+      pilotTitle: document.querySelector('[data-roadmap-item="R-20261013-0001"] span')?.textContent ?? null,
+      odd: !!document.querySelector('[data-roadmap-item="R-20261013-0002"]'),
+      looseGroup: document.querySelector('[data-roadmap-item="R-20261013-0003"]')?.closest("[data-roadmap-group]")?.getAttribute("data-roadmap-group") ?? null,
+      firstGroup: document.querySelector(`[data-roadmap-item="${CSS.escape(document.querySelector("[data-roadmap-item]")?.getAttribute("data-roadmap-item") ?? "")}"]`)?.closest("[data-roadmap-group]")?.getAttribute("data-roadmap-group") ?? null,
+    }));
+  const open = async (path, answer) => {
+    const { ctx } = await newCtx({ width: 1440, height: 900 });
+    let asked = 0;
+    await ctx.route("**/api/roadmap", (route) => {
+      asked++;
+      return route.fulfill(answer);
+    });
+    const page = await ctx.newPage();
+    await page.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
+    await page.locator("#features").scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => document.querySelector("[data-testid=roadmap]")?.getAttribute("data-roadmap-state") !== "snapshot", undefined, { timeout: 10000 }).catch(() => null);
+    return { ctx, page, asked: () => asked };
+  };
+  const firstSeeded = snapItems.find((it) => it.status === "done");
+  {
+    const { ctx, page, asked } = await open("/pl/", { status: 200, contentType: "application/json", body: JSON.stringify({ v: 1, items: [...SNAPSHOT.roadmap.items, PILOT, ODD, LOOSE] }) });
+    const b = await board(page);
+    const want = { done: snapCount("done") + 1, in_progress: snapCount("in_progress") + 1, planned: snapCount("planned") };
+    ok(
+      "roadmap: the board refreshes from /api/roadmap once (live), the pilot's idea marked and in Polish, the unknown status dropped, a done item without a group under More, the seeded groups kept",
+      asked() === 1 && b.state === "live" && JSON.stringify(b.counts) === JSON.stringify(want) && b.pilot && b.pilotTitle === PILOT.title.pl && !b.odd && b.looseGroup === "more" && b.firstGroup === firstSeeded?.group,
+      JSON.stringify({ asked: asked(), ...b, want })
+    );
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await open("/en/", { status: 500, contentType: "application/json", body: '{"ok":false}' });
+    const b = await board(page);
+    ok(
+      "roadmap: a failing /api/roadmap keeps the snapshot (state kept, every item, the same tiles)",
+      b.state === "kept" && b.items === snapItems.length && SHOWN.every((s) => b.counts[s] === snapCount(s)),
+      JSON.stringify(b)
+    );
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await open("/en/", { status: 200, contentType: "application/json", body: JSON.stringify({ v: 1, items: [ODD] }) });
+    const b = await board(page);
+    ok("roadmap: an answer with nothing this page can show keeps the snapshot too", b.state === "kept" && b.items === snapItems.length && !b.odd, JSON.stringify(b));
+    const href = await page.getAttribute("[data-testid=roadmap-suggest]", "href");
+    await page.click("[data-testid=roadmap-suggest]");
+    const form = await page
+      .waitForFunction(() => document.querySelector("dialog[data-testid=feedback]")?.open === true, undefined, { timeout: 5000 })
+      .then(() => page.evaluate(() => document.querySelector("[data-testid=feedback-kind-idea]")?.checked === true))
+      .catch(() => false);
+    ok('roadmap: "Suggest an idea" opens the feedback form on Idea (without JavaScript the link goes to #contact)', href === "#contact" && form, `href=${href} ideaChecked=${form}`);
+    await ctx.close();
+  }
 }
 
 // Consent banner and Google Analytics (only when the build has NEXT_PUBLIC_GA_ID)
