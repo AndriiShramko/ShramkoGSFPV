@@ -5,5 +5,8 @@ out/
 # scripts/gen-catalog.ts writes it and CI checks it is not stale
 src/generated/*
 !src/generated/features.json
+# catalog.json: the published scene catalogue as of the last build (scripts/catalog-snapshot.mjs refreshes it
+# from the live /api/catalog at prebuild); committed so an offline build still shows the catalogue
+!src/generated/catalog.json
 next-env.d.ts
 *.tsbuildinfo

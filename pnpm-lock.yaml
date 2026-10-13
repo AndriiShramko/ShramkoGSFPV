@@ -75,6 +75,9 @@ importers:
       '@gsfpv/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@gsfpv/scenes':
+        specifier: workspace:*
+        version: link:../../packages/scenes
       next:
         specifier: 16.3.6
         version: 16.3.6(@types/node@22.20.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)

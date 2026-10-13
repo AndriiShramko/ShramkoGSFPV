@@ -1,11 +1,12 @@
-// Dictionary check: same keys and ICU placeholders in every locale, and no ES/PL/RU string left
+// Dictionary check (site/ and scenepage/): same keys and ICU placeholders in every locale, and no ES/PL/RU string left
 // identical to English except brand names, technical terms, units and URLs (ALLOW below).
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const DIR = join(here, "..", "..", "..", "packages", "i18n", "locales", "site");
+// the landing (site/) and the scene pages (scenepage/: the template words and the API's sentences)
+const DIRS = ["site", "scenepage"].map((d) => join(here, "..", "..", "..", "packages", "i18n", "locales", d));
 const LOCALES = ["en", "es", "pl", "ru"];
 const ALLOW = new Set([
   "ShramkoGSFPV", "PlayCanvas", "PlayCanvas Engine", "Rapier", "Betaflight", "SplatFPV", "MIT", "Apache-2.0", "GPL-3.0",
@@ -15,6 +16,8 @@ const ALLOW = new Set([
   "https://superspl.at/scene/…", "Betaflight, Actual, KISS, Raceflight", "≈ 45 g",
   // scene scale factors (scale.stops)
   "×1", "×10", "×100",
+  // scene pages: a date pattern, not words (scenepage gen.date)
+  "{d} {month} {y}",
 ]);
 
 const flat = (o, p = "", out = {}) => {
@@ -23,11 +26,14 @@ const flat = (o, p = "", out = {}) => {
   else if (o && typeof o === "object") for (const [k, v] of Object.entries(o)) flat(v, p ? `${p}.${k}` : k, out);
   return out;
 };
-const dict = Object.fromEntries(LOCALES.map((l) => [l, flat(JSON.parse(readFileSync(join(DIR, `${l}.json`), "utf8")))]));
 const placeholders = (s) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(",");
 
 let problems = 0;
+let strings = 0;
+for (const DIR of DIRS) {
+const dict = Object.fromEntries(LOCALES.map((l) => [l, flat(JSON.parse(readFileSync(join(DIR, `${l}.json`), "utf8")))]));
 const en = dict.en;
+strings += Object.keys(en).length;
 for (const l of LOCALES.slice(1)) {
   const d = dict[l];
   for (const k of Object.keys(en)) {
@@ -58,5 +64,6 @@ for (const l of LOCALES) for (const [k, v] of Object.entries(dict[l])) if (bad.t
   console.log(`${l}: forbidden phrase at ${k}: ${v}`);
   problems++;
 }
-console.log(problems ? `i18n-check: ${problems} problem(s)` : `i18n-check: OK (${Object.keys(en).length} strings x ${LOCALES.length} locales)`);
+}
+console.log(problems ? `i18n-check: ${problems} problem(s)` : `i18n-check: OK (${strings} strings x ${LOCALES.length} locales, ${DIRS.length} dictionaries)`);
 process.exit(problems ? 1 : 0);

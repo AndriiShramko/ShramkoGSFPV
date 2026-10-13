@@ -6,7 +6,8 @@ import LangSwitcher from "./LangSwitcher";
 import ShareButtons from "./ShareButtons";
 import Logo from "./Logo";
 
-export default function Footer({ locale, page }: { locale: Locale; page: string }) {
+/** `share={false}`: no landing share buttons (a page that runs no script, the scene pages, has its own links). */
+export default function Footer({ locale, page, share = true }: { locale: Locale; page: string; share?: boolean }) {
   const t = useTranslations("footer");
   const nav = useTranslations("nav");
   const link = "inline-flex min-h-11 items-center text-muted hover:text-ink";
@@ -25,7 +26,7 @@ export default function Footer({ locale, page }: { locale: Locale; page: string 
             </p>
             <LangSwitcher locale={locale} page={page} label={nav("language")} where="footer" />
           </div>
-          <ShareButtons where="footer" />
+          {share ? <ShareButtons where="footer" /> : null}
         </div>
         <nav aria-label={t("linksLabel")}>
           <ul className="space-y-1 text-sm">

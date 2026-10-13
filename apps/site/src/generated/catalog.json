@@ -1,0 +1,82 @@
+{
+ "source": "https://gsfpv.flyreelstudio.eu/api/catalog",
+ "published": "2026-10-07T17:04:42Z",
+ "collections": [],
+ "scenes": [
+  {
+   "id": "887f27aa",
+   "title": "Tunis \u2014 old town streets",
+   "author": "Andrii Shramko",
+   "license": "CC BY 4.0",
+   "kind": "exterior",
+   "voxelCm": 5,
+   "defaultDrone": "pavo20pro-3s",
+   "collision": true,
+   "walls": "on",
+   "collections": [],
+   "pinned": false
+  },
+  {
+   "id": "39e63ce9",
+   "title": "Modlinek Villa \u2014 red room and bathroom",
+   "author": "Andrii Shramko",
+   "license": "CC BY 4.0",
+   "kind": "interior",
+   "voxelCm": 5,
+   "defaultDrone": "pavo20pro-3s",
+   "collision": true,
+   "walls": "on",
+   "collections": [],
+   "pinned": false
+  },
+  {
+   "id": "7a475d38",
+   "title": "Winter Garden, Poland",
+   "author": "Andrii Shramko",
+   "license": "CC BY 4.0",
+   "kind": "interior",
+   "voxelCm": 3.2,
+   "defaultDrone": "pavo20pro-3s",
+   "collision": true,
+   "walls": "on",
+   "collections": [],
+   "pinned": false
+  },
+  {
+   "id": "70b50d42",
+   "title": "Wroc\u0142aw Cathedral & Historic Streets \u2014 FPV Simulator Scan",
+   "author": "Andrii Shramko",
+   "license": "",
+   "kind": "other",
+   "version": 1,
+   "collision": false,
+   "walls": "on",
+   "collections": [],
+   "pinned": false
+  },
+  {
+   "id": "b11e45d1",
+   "title": "yamato koriyama castle",
+   "author": "",
+   "license": "",
+   "kind": "other",
+   "version": 1,
+   "collision": true,
+   "walls": "on",
+   "collections": [],
+   "pinned": false
+  },
+  {
+   "id": "0230d903",
+   "title": "Muster Truck Show Opole Poland 2024",
+   "author": "Andrii Shramko",
+   "license": "",
+   "kind": "other",
+   "version": 1,
+   "collision": false,
+   "walls": "on",
+   "collections": [],
+   "pinned": false
+  }
+ ]
+}

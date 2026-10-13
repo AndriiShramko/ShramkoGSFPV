@@ -676,7 +676,8 @@
     "randomNote": "Uno de los 200 escaneos con paredes con más «me gusta» de SuperSplat, elegido al azar.",
     "own": "Añade tu propio escaneo: pega su enlace de SuperSplat",
     "ownHint": "Tu escaneo o cualquiera público: un enlace de escena, un enlace superspl.at/s?id= o solo el id de la escena.",
-    "shotAlt": "La pestaña SuperSplat del simulador: ordenación, filtros de paredes y descarga, Aleatoria entre las mejores y una cuadrícula de escaneos con paredes"
+    "shotAlt": "La pestaña SuperSplat del simulador: ordenación, filtros de paredes y descarga, Aleatoria entre las mejores y una cuadrícula de escaneos con paredes",
+    "scenesLink": "El catálogo: cada lugar con su propia página"
   },
   "scale": {
     "eyebrow": "Novedad: escala de la escena",
@@ -702,19 +703,23 @@
     "fly": "Vuela esta escena"
   },
   "scenes": {
-    "eyebrow": "Escaneos de Andrii",
+    "eyebrow": "El catálogo",
     "h2": "Empieza por un lugar real",
-    "lead": "Tres escaneos de Andrii Shramko que puedes volar y compartir libremente bajo CC BY 4.0.",
+    "lead": "Todos los lugares que el curador ha publicado para volar, en su orden. Cada uno tiene su propia página con los datos, el autor y la licencia.",
     "items": {
       "39e63ce9": "Villa Modlinek: habitación roja y baño",
       "7a475d38": "Jardín de invierno — Jastrzębia Góra, Polonia",
       "887f27aa": "Túnez: calles de la medina"
     },
-    "kind": { "interior": "Interiores", "exterior": "Exteriores" },
+    "kind": { "interior": "Interiores", "exterior": "Exteriores", "other": "Escaneo 3D" },
     "alt": "Vista previa del escaneo «{title}»",
     "author": "De {name}",
     "fly": "Volar aquí",
-    "original": "Original en SuperSplat"
+    "original": "Original en SuperSplat",
+    "page": "Página de la escena",
+    "walls": "con paredes",
+    "noWalls": "aún sin paredes",
+    "all": "Todos los lugares para volar"
   },
   "radios": {
     "eyebrow": "Compatible con tu emisora",
