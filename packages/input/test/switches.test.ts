@@ -279,11 +279,22 @@ describe('Betaflight aux import', () => {
         expect([out[4], out[5]]).toEqual([-1, MODE_CHANNEL.acro]);
     });
 
-    it('SBUS variant: arm on CH7, modes on CH5; control: reading AUX n as CH n would put the arm on CH3 (the throttle)', () => {
-        const imp = switchesFromBetaflight(read('pavo20pro-bf450-sbus-20250610.txt').aux);
+    it('SBUS variant: arm on CH7, modes on CH5; control: AUX n read as CH n puts the arm on CH3 (the throttle), so CH7 no longer arms', () => {
+        const aux = read('pavo20pro-bf450-sbus-20250610.txt').aux;
+        const imp = switchesFromBetaflight(aux);
         expect(imp.switches.ranges.slice(0, 3)).toEqual([r('arm', ax(6), 1700, 2100), r('angle', ax(4), 900, 1300), r('horizon', ax(4), 1300, 1700)]);
         expect(channelOf(imp.switches.ranges[0].input)).toBe(7);
-        expect(channelOf(ax(2))).toBe(3);
+        // the pilot flips CH7 with the throttle low: armed
+        const out = new Float32Array(8);
+        const armed = (s: Switches, f: RawFrame): number => mapFrame({ ...PROFILE, arm: { kind: 'key' }, switches: s }, f, out)[4];
+        expect(armed(imp.switches, frame({ 6: 2000 }))).toBe(1);
+        expect(armed(imp.switches, frame({ 6: 1000 }))).toBe(-1);
+        // control: the same conditions with AUX n read as CH n (no +4 for the sticks): the arm range sits on
+        // the throttle, CH7 does nothing, and full throttle would "arm"
+        const broken = switchesFromBetaflight(aux.map((c) => ({ ...c, channel: c.channel - 4 }))).switches;
+        expect(channelOf(broken.ranges[0].input)).toBe(3);
+        expect(armed(broken, frame({ 6: 2000 }))).toBe(-1);
+        expect(armed(broken, frame({ 2: 2000 }))).toBe(1);
     });
 
     it('channels above 8 arrive as buttons (EdgeTX USB joystick); AND and linked conditions', () => {
