@@ -19,11 +19,15 @@ export type IdeaKind = (typeof IDEA_KINDS)[number];
 /** The languages of the public words and of the e-mails (the landing's). */
 export const PUBLIC_LANGS = ['en', 'es', 'pl', 'ru'] as const;
 export type PublicLang = (typeof PUBLIC_LANGS)[number];
-/** The longest public title the landing's seed carries (211 characters, es); see docs/wip/v07-c.md. */
+/**
+ * The longest public title, in characters (the landing's seed carries up to 211, es). The same limit must
+ * hold in lane B's store (ideas.TITLE_MAX), the seed's contract test (apps/api/tests/test_roadmap_seed.py)
+ * and the landing's parser (apps/site/src/lib/roadmap.ts TITLE_MAX); see docs/wip/v07-c.md.
+ */
 export const PUBLIC_TITLE_MAX = 240;
 
-/** States of an e-mail in an idea's thread (lane B's outbox). */
-export const MAIL_STATES = ['draft', 'queued', 'sending', 'sent', 'failed', 'cancelled', 'waiting_setup', 'no_email', 'unknown'] as const;
+/** States of an e-mail in an idea's thread (lane B's outbox; superseded: a draft thank-you a newer one replaced). */
+export const MAIL_STATES = ['draft', 'superseded', 'queued', 'sending', 'sent', 'failed', 'cancelled', 'waiting_setup', 'no_email', 'unknown'] as const;
 export type MailState = (typeof MAIL_STATES)[number];
 /** States the owner may still cancel, and the ones Send (again) applies to. */
 export const CANCELLABLE: ReadonlySet<MailState> = new Set(['draft', 'queued', 'waiting_setup', 'failed', 'unknown']);
@@ -86,10 +90,13 @@ export interface Idea {
     mails: IdeaMail[];
 }
 
+/** The server's answer to a change: the idea as it is now, and the e-mail the call queued or changed (null: none). */
+export interface IdeaAnswer { idea: Idea; mail: IdeaMail | null }
+
 /** Whether the server can send e-mail and reach the owner's bot (shown above the board). */
 export interface IdeasSetup { mail: boolean; mailFrom: string | null; bot: boolean; undoSeconds: number }
 
-/** Paths under /api/admin/ (lane B's ideas_admin.py). */
+/** Paths under /api/admin/ (lane B's ideas_admin.py); one idea is `ideas/<id>` (ideaPath). */
 export const IDEAS_ROUTES = {
     list: 'ideas',
     update: 'ideas/update',
@@ -100,6 +107,9 @@ export const IDEAS_ROUTES = {
     mailCancel: 'ideas/mail/cancel',
     mailSend: 'ideas/mail/send'
 } as const;
+
+/** GET one idea (after a refused Send, to show what the server has now). */
+export const ideaPath = (id: string): string => `${IDEAS_ROUTES.list}/${encodeURIComponent(id)}`;
 
 const isOneOf = <T extends string>(list: readonly T[], v: unknown): v is T => typeof v === 'string' && (list as readonly string[]).includes(v);
 const str = (v: unknown): string => (typeof v === 'string' ? v : '');
@@ -184,62 +194,73 @@ export class IdeasClient {
         return parseIdeas(await this.api.get<unknown>(IDEAS_ROUTES.list));
     }
 
+    /** One idea as the server has it now. */
+    async get(id: string): Promise<Idea> {
+        return this.answer(await this.api.get<{ idea?: unknown }>(ideaPath(id))).idea;
+    }
+
     /** A kanban move. */
-    setStatus(id: string, status: IdeaStatus): Promise<Idea> {
+    setStatus(id: string, status: IdeaStatus): Promise<IdeaAnswer> {
         return this.update({ id, status });
     }
 
     /** null clears it (the idea leaves the work queue until it gets one again). */
-    setUrgency(id: string, urgency: Urgency | null): Promise<Idea> {
+    setUrgency(id: string, urgency: Urgency | null): Promise<IdeaAnswer> {
         return this.update({ id, urgency });
     }
 
-    comment(id: string, text: string): Promise<Idea> {
+    comment(id: string, text: string): Promise<IdeaAnswer> {
         return this.update({ id, comment: text });
     }
 
     /** The landing's title in four languages and whether the idea is shown there (its public text is left as it is). */
-    setPublic(id: string, title: LocalText, visible: boolean): Promise<Idea> {
+    setPublic(id: string, title: LocalText, visible: boolean): Promise<IdeaAnswer> {
         return this.update({ id, publicTitle: title, visible });
     }
 
-    async addNote(n: NewNote): Promise<Idea> {
-        return this.idea(await this.api.post<{ idea?: unknown }>(IDEAS_ROUTES.note, { text: n.text, contact: n.contact ?? '', lang: n.lang ?? '', urgency: n.urgency ?? null, kind: 'note', ...(n.publicTitle ? { publicTitle: n.publicTitle } : {}) }));
+    async addNote(n: NewNote): Promise<IdeaAnswer> {
+        return this.answer(await this.api.post<{ idea?: unknown }>(IDEAS_ROUTES.note, { text: n.text, contact: n.contact ?? '', lang: n.lang ?? '', urgency: n.urgency ?? null, kind: 'note', ...(n.publicTitle ? { publicTitle: n.publicTitle } : {}) }));
     }
 
-    /** E-mail the pilot the owner's answer: queued behind the undo window (the server quotes the pilot's words). */
-    async reply(id: string, text: string): Promise<Idea> {
-        return this.idea(await this.api.post<{ idea?: unknown }>(IDEAS_ROUTES.reply, { id, text }));
+    /**
+     * E-mail the pilot the owner's answer (the server quotes the pilot's words). The answer's mail says what
+     * happened: queued behind the undo window, waiting_setup while Gmail is not set up, no_email.
+     */
+    async reply(id: string, text: string): Promise<IdeaAnswer> {
+        return this.answer(await this.api.post<{ idea?: unknown; mail?: unknown }>(IDEAS_ROUTES.reply, { id, text }));
     }
 
     /** Done, with what was done per language: the server writes the thank-you as a DRAFT (none without an e-mail). */
     async done(id: string, summary: LocalText): Promise<{ idea: Idea; draft: IdeaMail | null }> {
         const r = await this.api.post<{ idea?: unknown; draft?: unknown }>(IDEAS_ROUTES.done, { id, summary });
-        return { idea: this.idea(r), draft: r.draft ? parseMail(r.draft) : null };
+        return { idea: this.answer(r).idea, draft: r.draft ? parseMail(r.draft) : null };
     }
 
-    /** The owner's Send under the draft thank-you: the only call that queues it. */
-    async sendDone(id: string): Promise<Idea> {
-        return this.idea(await this.api.post<{ idea?: unknown }>(IDEAS_ROUTES.sendDone, { id }));
+    /**
+     * The owner's Send under the draft thank-you he was shown (`mailId`: that draft): the only call that
+     * queues it. The server refuses a draft a newer summary replaced (409 stale-draft).
+     */
+    async sendDone(id: string, mailId: string): Promise<IdeaAnswer> {
+        return this.answer(await this.api.post<{ idea?: unknown; mail?: unknown }>(IDEAS_ROUTES.sendDone, { id, mail: mailId }));
     }
 
     /** Stop an e-mail that has not gone yet (its id, not the idea's). */
-    async cancelMail(mailId: string): Promise<Idea> {
-        return this.idea(await this.api.post<{ idea?: unknown }>(IDEAS_ROUTES.mailCancel, { id: mailId }));
+    async cancelMail(mailId: string): Promise<IdeaAnswer> {
+        return this.answer(await this.api.post<{ idea?: unknown; mail?: unknown }>(IDEAS_ROUTES.mailCancel, { id: mailId }));
     }
 
     /** Send an e-mail that waited for Gmail's setup, failed or may not have gone, or a draft. */
-    async sendMail(mailId: string): Promise<Idea> {
-        return this.idea(await this.api.post<{ idea?: unknown }>(IDEAS_ROUTES.mailSend, { id: mailId }));
+    async sendMail(mailId: string): Promise<IdeaAnswer> {
+        return this.answer(await this.api.post<{ idea?: unknown; mail?: unknown }>(IDEAS_ROUTES.mailSend, { id: mailId }));
     }
 
-    private async update(body: Record<string, unknown>): Promise<Idea> {
-        return this.idea(await this.api.post<{ idea?: unknown }>(IDEAS_ROUTES.update, body));
+    private async update(body: Record<string, unknown>): Promise<IdeaAnswer> {
+        return this.answer(await this.api.post<{ idea?: unknown }>(IDEAS_ROUTES.update, body));
     }
 
-    private idea(r: { idea?: unknown }): Idea {
+    private answer(r: { idea?: unknown; mail?: unknown }): IdeaAnswer {
         const idea = parseIdea(r.idea);
         if (!idea) throw new Error('the server answered without the idea');
-        return idea;
+        return { idea, mail: r.mail ? parseMail(r.mail) : null };
     }
 }

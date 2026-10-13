@@ -81,6 +81,7 @@
   "admin.ideas.reply.placeholder": "Your answer to the pilot",
   "admin.ideas.reply.send": "Send reply",
   "admin.ideas.reply.queued": "Reply to {email} queued: it goes in {s} s, until then you can cancel it on the card.",
+  "admin.ideas.reply.waiting": "Reply to {email} saved but not sent: Gmail is not set up on the server. Once it is, press Send next to it on the card.",
   "admin.ideas.reply.noEmail": "The pilot left no e-mail address, so there is no one to write to.",
   "admin.ideas.mails": "E-mails",
   "admin.ideas.mail.reply": "Reply",
@@ -90,7 +91,9 @@
   "admin.ideas.mail.sentAt": "sent {time}",
   "admin.ideas.mail.cancel": "Cancel",
   "admin.ideas.mail.send": "Send",
+  "admin.ideas.mail.now": "E-mail state: {state}.",
   "admin.ideas.mail.state.draft": "draft, not sent",
+  "admin.ideas.mail.state.superseded": "replaced by a newer draft",
   "admin.ideas.mail.state.queued": "queued",
   "admin.ideas.mail.state.sending": "sending",
   "admin.ideas.mail.state.sent": "sent",
@@ -112,6 +115,10 @@
   "admin.ideas.thanks.subject": "Subject",
   "admin.ideas.thanks.body": "The e-mail as it will go",
   "admin.ideas.thanks.send": "Send",
+  "admin.ideas.thanks.notSent": "Not sent yet: {state}. Send tries again.",
+  "admin.ideas.thanks.stale": "A newer draft replaced the one that was open. Read it, then press Send again.",
+  "admin.ideas.thanks.gone": "The thank-you was changed elsewhere meanwhile; the card shows where it is now.",
   "admin.ideas.thanks.later": "Not now",
-  "admin.ideas.thanks.queued": "Thank-you to {email} queued: it goes in {s} s, until then you can cancel it on the card."
+  "admin.ideas.thanks.queued": "Thank-you to {email} queued: it goes in {s} s, until then you can cancel it on the card.",
+  "admin.ideas.thanks.waiting": "Thank-you to {email} saved but not sent: Gmail is not set up on the server. Once it is, press Send next to it on the card."
 }

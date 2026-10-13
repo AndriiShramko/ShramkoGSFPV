@@ -10,11 +10,11 @@ import { h, clear } from '../../ui/dom';
 import { t } from '../i18n';
 import type { AdminClient } from '../api';
 import { IDEA_KINDS, IDEA_STATUSES, IdeasClient, PUBLIC_LANGS, URGENCIES } from './api';
-import type { Idea, IdeaKind, IdeaStatus, IdeasSetup, Urgency } from './api';
+import type { Idea, IdeaAnswer, IdeaKind, IdeaStatus, IdeasSetup, Urgency } from './api';
 import { ALL_IDEAS, columns, moveBody, thanksDue } from './board';
 import type { IdeaFilter } from './board';
 import { card, field } from './card';
-import type { CardHost } from './card';
+import type { CardHost, RunAfter } from './card';
 import { openThanks } from './mail';
 
 export class IdeasTab implements CardHost {
@@ -71,21 +71,25 @@ export class IdeasTab implements CardHost {
         const i = this.ideas.find((x) => x.id === id);
         const body = i ? moveBody(i, to) : null;
         if (!i || !body || this.busy.has(id)) return;
-        void this.run(id, () => this.client.setStatus(body.id, body.status), (done) => t('admin.ideas.moved', { id, column: t(`admin.ideas.col.${done.status}`) })).then((ok) => {
+        void this.run(id, () => this.client.setStatus(body.id, body.status), { say: (a) => t('admin.ideas.moved', { id, column: t(`admin.ideas.col.${a.idea.status}`) }) }).then((ok) => {
             if (focus) this.focus(id, '.handle');
             const now = this.ideas.find((x) => x.id === id);
             if (ok && now && i.status !== 'done' && thanksDue(now)) this.thanks(now);
         });
     }
 
-    async run(id: string, call: () => Promise<Idea>, done?: (i: Idea) => string): Promise<boolean> {
+    async run(id: string, call: () => Promise<IdeaAnswer>, after: RunAfter = {}): Promise<boolean> {
+        if (this.busy.has(id)) return false; // a second click while the first call runs sends nothing
         this.busy.add(id);
         this.render();
         try {
-            const idea = await call();
+            const a = await call();
             this.busy.delete(id);
-            this.update(idea);
-            if (done) this.say(done(idea));
+            // the sent text leaves its draft BEFORE the redraw, or the new boxes would show it again
+            for (const k of after.clear ?? []) this.drafts.delete(k);
+            this.update(a.idea);
+            const msg = after.say?.(a);
+            if (msg) this.say(msg);
             return true;
         } catch (e) {
             this.busy.delete(id);
@@ -155,7 +159,7 @@ export class IdeasTab implements CardHost {
             if (!text.value.trim()) return text.focus();
             add.disabled = true;
             try {
-                const idea = await this.client.addNote({ text: text.value.trim(), contact: contact.value.trim(), lang: lang.value, urgency: (urgency.value || null) as Urgency | null });
+                const { idea } = await this.client.addNote({ text: text.value.trim(), contact: contact.value.trim(), lang: lang.value, urgency: (urgency.value || null) as Urgency | null });
                 text.value = '';
                 contact.value = '';
                 this.update(idea);

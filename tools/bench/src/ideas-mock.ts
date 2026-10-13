@@ -1,8 +1,9 @@
 // A mock of lane B's admin ideas API (apps/api/ideas_admin.py + service.py; contract in docs/wip/v07-b.md,
-// "Contracts for lane C"), in memory, recording every call: session + CSRF, GET ideas, POST ideas/update
-// (all or nothing, unknown fields refused), ideas/note, ideas/reply (queued behind the undo window, or
-// no_email), ideas/mail/cancel, ideas/done (done + a DRAFT thank-you), ideas/send-done, ideas/mail/send,
-// and the existing reports/<id>/diagnostics. Used by tools/bench/test/admin-ideas.test.ts (a fake fetch)
+// "Contracts for lane C"; B's 8b1fef4), in memory, recording every call: session + CSRF, GET ideas and
+// ideas/<id>, POST ideas/update (all or nothing, unknown fields refused), ideas/note, ideas/reply (queued
+// behind the undo window, waiting_setup without Gmail, or no_email), ideas/mail/cancel, ideas/done (done +
+// a DRAFT thank-you; an older draft becomes superseded), ideas/send-done {id, mail: the draft's id} (409
+// stale-draft for a superseded one), ideas/mail/send, and the existing reports/<id>/diagnostics. Used by tools/bench/test/admin-ideas.test.ts (a fake fetch)
 // and tools/bench/src/accept-v07-ideas.ts (Playwright routing). It sends nothing anywhere: an e-mail is
 // only a record with a state. Fixture people are made up (example.com addresses).
 
@@ -12,6 +13,7 @@ export interface MockAnswer { status: number; json: unknown; headers?: Record<st
 const STATUSES = ['new', 'accepted', 'in_progress', 'done', 'rejected'];
 const URGENCIES = ['urgent', 'high', 'normal', 'low'];
 const UPDATE_KEYS = ['id', 'status', 'urgency', 'comment', 'publicTitle', 'publicText', 'visible', 'release', 'order'];
+const MAIL_ID = /^M-[0-9]{1,9}$/;
 const EMAIL = /[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9-]{1,63}(?:\.[A-Za-z0-9-]{1,63})*\.[A-Za-z]{2,24}/;
 export const MOCK_CSRF = 'csrf-test-token';
 export const MOCK_UNDO_S = 60;
@@ -100,6 +102,11 @@ export class IdeasMock {
         if (method === 'GET' && path === 'ideas') {
             return { status: 200, json: { ok: true, ideas: this.ideas, mail: { configured: this.mailConfigured, from: this.mailConfigured ? 'owner@example.com' : null }, bot: { configured: false }, undoSeconds: MOCK_UNDO_S } };
         }
+        const one = /^ideas\/([RNF]-[A-Za-z0-9][A-Za-z0-9-]{0,47})$/.exec(path);
+        if (method === 'GET' && one) {
+            const it = this.ideas.find((x) => x.id === one[1]);
+            return it ? { status: 200, json: { ok: true, idea: it } } : { status: 404, json: { ok: false } };
+        }
         const diag = /^reports\/([A-Za-z0-9-]+)\/diagnostics$/.exec(path);
         if (method === 'GET' && diag) {
             const it = this.ideas.find((x) => x.id === diag[1]);
@@ -118,11 +125,12 @@ export class IdeasMock {
             const it = this.ideas.find((x) => (x.thread as Mail[]).some((m) => m.id === b.id));
             const m = it && (it.thread as Mail[]).find((x) => x.id === b.id);
             if (!it || !m) return refuse('not-found', 404);
+            if (m.state === 'superseded') return refuse('stale-draft', 409);
             if (path === 'ideas/mail/cancel') {
                 if (['sending', 'sent', 'no_email'].includes(m.state)) return refuse('too-late', 409);
                 m.state = 'cancelled';
             } else {
-                if (!['waiting_setup', 'failed', 'unknown', 'draft'].includes(m.state)) return refuse('not-waiting', 409);
+                if (!['waiting_setup', 'failed', 'unknown', 'draft'].includes(m.state)) return refuse('not-resendable', 409);
                 this.queue(m);
             }
             return { status: 200, json: { ok: true, idea: it, mail: m } };
@@ -136,7 +144,7 @@ export class IdeasMock {
         }
         const it = this.ideas.find((x) => x.id === b.id);
         if (!it) return refuse('not-found', 404);
-        const one = (extra: Record<string, unknown> = {}): MockAnswer => ({ status: 200, json: { ok: true, idea: it, ...extra } });
+        const answer = (extra: Record<string, unknown> = {}): MockAnswer => ({ status: 200, json: { ok: true, idea: it, ...extra } });
         switch (path) {
             case 'ideas/update': {
                 if (Object.keys(b).some((k) => !UPDATE_KEYS.includes(k))) return refuse('unknown-field');
@@ -154,14 +162,14 @@ export class IdeasMock {
                 if ('publicTitle' in b) pub.title = b.publicTitle;
                 if ('publicText' in b) pub.text = b.publicText;
                 if (typeof b.visible === 'boolean') pub.visible = b.visible;
-                return one();
+                return answer();
             }
             case 'ideas/reply': {
                 if (typeof b.text !== 'string' || !b.text.trim()) return refuse('empty');
                 const m = this.mail(it, 'reply', b.text, 'no_email');
                 if (it.contactKind === 'email') this.queue(m);
                 (it.thread as Mail[]).push(m);
-                return one({ mail: m });
+                return answer({ mail: m });
             }
             case 'ideas/done': {
                 const s = b.summary && typeof b.summary === 'object' ? (b.summary as Record<string, string>) : null;
@@ -171,17 +179,20 @@ export class IdeasMock {
                 it.done = { ...done, summary: { ...((done.summary as object) ?? {}), ...s }, by: 'admin' };
                 let draft: Mail | null = null;
                 if (it.contactKind === 'email') {
-                    it.thread = (it.thread as Mail[]).filter((m) => !(m.kind === 'done' && m.state === 'draft'));
+                    for (const m of it.thread as Mail[]) if (m.kind === 'done' && m.state === 'draft') m.state = 'superseded';
                     draft = this.mail(it, 'done', Object.values(s)[0], 'draft');
                     (it.thread as Mail[]).push(draft);
                 }
-                return one({ draft });
+                return answer({ draft });
             }
             case 'ideas/send-done': {
-                const draft = [...(it.thread as Mail[])].reverse().find((m) => m.kind === 'done' && m.state === 'draft');
-                if (!draft) return refuse('no-draft', 409);
+                if (typeof b.mail !== 'string' || !MAIL_ID.test(b.mail)) return refuse('bad-mail');
+                const draft = (it.thread as Mail[]).find((m) => m.id === b.mail && m.kind === 'done');
+                if (!draft) return refuse('not-found', 404);
+                if (draft.state === 'superseded') return refuse('stale-draft', 409);
+                if (draft.state !== 'draft') return refuse('no-draft', 409);
                 this.queue(draft);
-                return one({ mail: draft });
+                return answer({ mail: draft });
             }
             default:
                 return refuse('no-route', 404);

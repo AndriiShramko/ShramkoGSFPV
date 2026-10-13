@@ -81,6 +81,7 @@
   "admin.ideas.reply.placeholder": "Ваш ответ пилоту",
   "admin.ideas.reply.send": "Отправить ответ",
   "admin.ideas.reply.queued": "Ответ на {email} в очереди: уйдёт через {s} с, до этого его можно отменить на карточке.",
+  "admin.ideas.reply.waiting": "Ответ на {email} сохранён, но не отправлен: Gmail на сервере не настроен. Когда его настроят, нажмите «Отправить» рядом с ним на карточке.",
   "admin.ideas.reply.noEmail": "Пилот не оставил адрес e-mail, поэтому написать некому.",
   "admin.ideas.mails": "Письма",
   "admin.ideas.mail.reply": "Ответ",
@@ -90,7 +91,9 @@
   "admin.ideas.mail.sentAt": "отправлено {time}",
   "admin.ideas.mail.cancel": "Отменить",
   "admin.ideas.mail.send": "Отправить",
+  "admin.ideas.mail.now": "Состояние письма: {state}.",
   "admin.ideas.mail.state.draft": "черновик, не отправлен",
+  "admin.ideas.mail.state.superseded": "заменён более новым черновиком",
   "admin.ideas.mail.state.queued": "в очереди",
   "admin.ideas.mail.state.sending": "отправляется",
   "admin.ideas.mail.state.sent": "отправлено",
@@ -112,6 +115,10 @@
   "admin.ideas.thanks.subject": "Тема",
   "admin.ideas.thanks.body": "Письмо в том виде, в каком оно уйдёт",
   "admin.ideas.thanks.send": "Отправить",
+  "admin.ideas.thanks.notSent": "Ещё не отправлено: {state}. «Отправить» попробует снова.",
+  "admin.ideas.thanks.stale": "Более новый черновик заменил тот, что был открыт. Прочитайте его и нажмите «Отправить» ещё раз.",
+  "admin.ideas.thanks.gone": "Благодарность тем временем изменили в другом месте; её текущее состояние — на карточке.",
   "admin.ideas.thanks.later": "Не сейчас",
-  "admin.ideas.thanks.queued": "Благодарность на {email} в очереди: уйдёт через {s} с, до этого её можно отменить на карточке."
+  "admin.ideas.thanks.queued": "Благодарность на {email} в очереди: уйдёт через {s} с, до этого её можно отменить на карточке.",
+  "admin.ideas.thanks.waiting": "Благодарность на {email} сохранена, но не отправлена: Gmail на сервере не настроен. Когда его настроят, нажмите «Отправить» рядом с ней на карточке."
 }

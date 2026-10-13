@@ -4,7 +4,7 @@
 // The landing's rules are lane B's (apps/api/ideas.py roadmap_items): an English title, a status the
 // landing shows (accepted is published as "planned"), not hidden, not marked as spam.
 import { IDEA_KINDS, IDEA_STATUSES, PUBLIC_LANGS, URGENCIES } from './api';
-import type { Idea, IdeaKind, IdeaMail, IdeaPublic, IdeaStatus, PublicLang, Urgency } from './api';
+import type { Idea, IdeaKind, IdeaMail, IdeaPublic, IdeaStatus, MailState, PublicLang, Urgency } from './api';
 
 /** Statuses the landing shows; new and rejected never are. */
 export const ON_LANDING: ReadonlySet<IdeaStatus> = new Set(['accepted', 'in_progress', 'done']);
@@ -73,18 +73,34 @@ export function moveBody(i: Idea, to: string): { id: string; status: IdeaStatus 
     return { id: i.id, status: to as IdeaStatus };
 }
 
-/** The thank-you e-mail waiting for the owner's Send, if there is one. */
-export function thanksDraft(i: Idea): IdeaMail | null {
-    return [...i.mails].reverse().find((m) => m.kind === 'done' && m.state === 'draft') ?? null;
+/** A thank-you in one of these states has gone, may have gone, or is on its way: no other is offered. */
+const THANKS_GOING: ReadonlySet<MailState> = new Set(['queued', 'sending', 'sent', 'unknown']);
+/** A thank-you in one of these states waits for the owner's Send: a draft, one saved until Gmail is set up, one that failed. */
+const THANKS_PENDING: ReadonlySet<MailState> = new Set(['draft', 'waiting_setup', 'failed']);
+
+/**
+ * The thank-you e-mail waiting for the owner's Send, if there is one (the latest). The dialog shows it and
+ * Sends it instead of writing a new one, so a pilot is never thanked twice.
+ */
+export function thanksPending(i: Idea): IdeaMail | null {
+    return [...i.mails].reverse().find((m) => m.kind === 'done' && THANKS_PENDING.has(m.state)) ?? null;
 }
 
 /**
  * A thank-you e-mail is offered when a pilot's idea is Done and the pilot left an e-mail, until it has
- * gone or is on its way (queued, sending, sent): owner's item 7.
+ * gone, may have gone or is on its way (owner's item 7). A pending one (thanksPending) is offered to Send.
  */
 export function thanksDue(i: Idea): boolean {
     return i.status === 'done' && i.fromPilot && i.email !== '' && i.notified === null
-        && !i.mails.some((m) => m.kind === 'done' && (m.state === 'queued' || m.state === 'sending' || m.state === 'sent'));
+        && !i.mails.some((m) => m.kind === 'done' && THANKS_GOING.has(m.state));
+}
+
+/**
+ * What the owner is told after an e-mail call, by the state of the e-mail in the server's answer: on its
+ * way after the undo window (queued), saved until Gmail is set up (waiting), or just its state.
+ */
+export function mailNotice(m: IdeaMail | null): 'queued' | 'waiting' | 'state' {
+    return m?.state === 'queued' ? 'queued' : m?.state === 'waiting_setup' ? 'waiting' : 'state';
 }
 
 /** Languages of the public title still empty (the landing shows English there). */

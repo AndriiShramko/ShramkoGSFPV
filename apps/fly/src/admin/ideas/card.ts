@@ -7,9 +7,17 @@
 import { h } from '../../ui/dom';
 import { t } from '../i18n';
 import { CANCELLABLE, IDEA_STATUSES, PUBLIC_LANGS, PUBLIC_TITLE_MAX, SENDABLE, URGENCIES, diagnosticsUrl } from './api';
-import type { Idea, IdeaMail, IdeaStatus, IdeasClient, Urgency } from './api';
-import { landingBlocker, missingLangs, onLanding, thanksDraft, thanksDue } from './board';
-import { replyForm } from './mail';
+import type { Idea, IdeaAnswer, IdeaMail, IdeaStatus, IdeasClient, Urgency } from './api';
+import { landingBlocker, missingLangs, neighbour, onLanding, thanksDue, thanksPending } from './board';
+import { mailSaid, replyForm } from './mail';
+
+/** What happens once the server accepted a card's call, before the card is redrawn from its answer. */
+export interface RunAfter {
+    /** draft keys whose text was just sent: emptied first, so the redrawn boxes are empty and a second click sends nothing */
+    clear?: readonly string[];
+    /** what the owner is told, from the server's answer ('' says nothing) */
+    say?: (a: IdeaAnswer) => string;
+}
 
 /** What a card needs from the tab: the client, the per-card state, and how to report a change. */
 export interface CardHost {
@@ -19,9 +27,13 @@ export interface CardHost {
     isBusy(id: string): boolean;
     /** a kanban move (drag, keys, select); `focus` puts the focus back on the card's handle after it */
     move(id: string, to: IdeaStatus, focus?: boolean): void;
-    /** one call for one card: busy while it runs, the card replaced by the server's answer, `done` said */
-    run(id: string, call: () => Promise<Idea>, done?: (i: Idea) => string): Promise<boolean>;
-    /** unsent text of a field, kept across redraws (undefined: none, show the stored value) */
+    /**
+     * One call for one card (none while another call of the card runs): busy while it runs; on success the
+     * `after.clear` drafts are emptied, the card is redrawn from the server's answer and `after.say` is
+     * shown; on failure every draft is kept. Resolves whether the server accepted it.
+     */
+    run(id: string, call: () => Promise<IdeaAnswer>, after?: RunAfter): Promise<boolean>;
+    /** unsent value of a field (text, or 'true'/'false' for a switch), kept across redraws (undefined: none, show the stored value) */
     draft(key: string): string | undefined;
     setDraft(key: string, v: string | undefined): void;
     /** the thank-you dialog for this idea */
@@ -51,8 +63,8 @@ export function card(i: Idea, host: CardHost): HTMLLIElement {
     handle.addEventListener('keydown', (e) => {
         if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
         e.preventDefault();
-        const at = IDEA_STATUSES.indexOf(i.status) + (e.key === 'ArrowLeft' ? -1 : 1);
-        if (at >= 0 && at < IDEA_STATUSES.length) host.move(i.id, IDEA_STATUSES[at], true);
+        const to = neighbour(i.status, e.key === 'ArrowLeft' ? -1 : 1);
+        if (to) host.move(i.id, to, true);
     });
 
     const head = h('div', { class: 'idea-head' },
@@ -70,7 +82,7 @@ export function card(i: Idea, host: CardHost): HTMLLIElement {
         open ? t('admin.ideas.card.close') : t('admin.ideas.card.open'));
     const foot = h('div', { class: 'idea-foot' }, toggle,
         thanksDue(i) ? h('button', { type: 'button', class: 'btn small', 'data-action': 'thanks', onclick: () => host.thanks(i) },
-            thanksDraft(i) ? t('admin.ideas.thanks.review') : t('admin.ideas.thanks.open')) : null);
+            thanksPending(i) ? t('admin.ideas.thanks.review') : t('admin.ideas.thanks.open')) : null);
     li.append(head, words, meta, foot);
     if (open) li.append(details(i, host));
     return li;
@@ -120,7 +132,8 @@ function mailRow(i: Idea, m: IdeaMail, host: CardHost): HTMLElement {
         : m.state === 'sent' && m.sentAt ? t('admin.ideas.mail.sentAt', { time: when(m.sentAt) })
             : t(`admin.ideas.mail.state.${m.state}`);
     const act = (action: 'cancel' | 'send'): HTMLButtonElement => h('button', { type: 'button', class: 'btn small', 'data-action': `mail-${action}`, 'data-mail': m.id,
-        onclick: () => void host.run(i.id, () => (action === 'cancel' ? host.client.cancelMail(m.id) : host.client.sendMail(m.id))) }, t(`admin.ideas.mail.${action}`));
+        onclick: () => void host.run(i.id, () => (action === 'cancel' ? host.client.cancelMail(m.id) : host.client.sendMail(m.id)),
+            { say: (a) => mailSaid(m.kind, a.mail, host.undoSeconds) }) }, t(`admin.ideas.mail.${action}`));
     // a draft thank-you is sent from its dialog, where the owner reads it first
     const draftThanks = m.kind === 'done' && m.state === 'draft';
     return h('li', { 'data-mail': m.id, 'data-state': m.state, class: m.state === 'failed' || m.state === 'unknown' ? 'warn' : '' },
@@ -139,7 +152,7 @@ function comments(i: Idea, host: CardHost): HTMLElement {
     add.addEventListener('click', async () => {
         const text = input.value.trim();
         if (!text) return input.focus();
-        if (await host.run(i.id, () => host.client.comment(i.id, text))) host.setDraft(key, undefined);
+        void host.run(i.id, () => host.client.comment(i.id, text), { clear: [key] });
     });
     const by = (b: string): string => (b === 'telegram' ? ' · Telegram' : b && b !== 'admin' ? ` · ${b}` : '');
     return h('section', { class: 'idea-sec' }, h('h3', {}, t('admin.ideas.comments')),
@@ -151,8 +164,12 @@ function comments(i: Idea, host: CardHost): HTMLElement {
 function publicEditor(i: Idea, host: CardHost): HTMLElement {
     const title = { ...i.public.title };
     const note = h('p', { class: 'muted', 'data-field': 'public-note' });
+    // the switch is a draft like the titles: a redraw before Save (another card's answer, a filter) keeps it
+    const showKey = `${i.id}:visible`;
     const show = h('input', { type: 'checkbox', 'data-field': 'visible' }) as HTMLInputElement;
-    show.checked = i.public.visible;
+    const shown = host.draft(showKey);
+    show.checked = shown === undefined ? i.public.visible : shown === 'true';
+    show.addEventListener('change', () => host.setDraft(showKey, String(show.checked)));
     const refresh = (): void => {
         const block = landingBlocker(title, i.status);
         const missing = missingLangs(title).filter((l) => l !== 'en');
@@ -174,11 +191,8 @@ function publicEditor(i: Idea, host: CardHost): HTMLElement {
         return field(t('admin.ideas.public.field', { lang: l }), input);
     });
     const save = h('button', { type: 'button', class: 'btn small primary', 'data-action': 'save-public' }, t('admin.ideas.public.save'));
-    save.addEventListener('click', async () => {
-        if (await host.run(i.id, () => host.client.setPublic(i.id, title, show.checked), () => t('admin.ideas.public.saved'))) {
-            for (const l of PUBLIC_LANGS) host.setDraft(`${i.id}:title:${l}`, undefined);
-        }
-    });
+    save.addEventListener('click', () => void host.run(i.id, () => host.client.setPublic(i.id, title, show.checked),
+        { clear: [...PUBLIC_LANGS.map((l) => `${i.id}:title:${l}`), showKey], say: () => t('admin.ideas.public.saved') }));
     refresh();
     return h('section', { class: 'idea-sec' }, h('h3', {}, t('admin.ideas.public.title')),
         h('div', { class: 'idea-grid' }, ...inputs),

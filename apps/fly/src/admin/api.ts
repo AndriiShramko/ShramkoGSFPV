@@ -11,20 +11,6 @@ export interface CatalogState {
     history: HistoryEntry[];
     version?: string;
 }
-export interface ReportRow {
-    id: string;
-    ts: string;
-    kind: 'bug' | 'idea';
-    page: string;
-    locale: string;
-    scene: string;
-    release: string;
-    message: string;
-    contact: string;
-    suspect: boolean;
-    diagnostics: boolean | 'skipped';
-    status: 'open' | 'closed';
-}
 
 export class ApiError extends Error {
     constructor(readonly status: number, readonly reason: string) {

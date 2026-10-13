@@ -81,6 +81,7 @@
   "admin.ideas.reply.placeholder": "Tu respuesta al piloto",
   "admin.ideas.reply.send": "Enviar respuesta",
   "admin.ideas.reply.queued": "Respuesta a {email} en cola: sale dentro de {s} s y hasta entonces puedes cancelarla en la tarjeta.",
+  "admin.ideas.reply.waiting": "Respuesta a {email} guardada, pero no enviada: Gmail no está configurado en el servidor. Cuando lo esté, pulsa Enviar junto a ella en la tarjeta.",
   "admin.ideas.reply.noEmail": "El piloto no dejó ninguna dirección de correo, así que no hay a quién escribir.",
   "admin.ideas.mails": "Correos",
   "admin.ideas.mail.reply": "Respuesta",
@@ -90,7 +91,9 @@
   "admin.ideas.mail.sentAt": "enviado el {time}",
   "admin.ideas.mail.cancel": "Cancelar",
   "admin.ideas.mail.send": "Enviar",
+  "admin.ideas.mail.now": "Estado del correo: {state}.",
   "admin.ideas.mail.state.draft": "borrador, sin enviar",
+  "admin.ideas.mail.state.superseded": "sustituido por un borrador más reciente",
   "admin.ideas.mail.state.queued": "en cola",
   "admin.ideas.mail.state.sending": "enviándose",
   "admin.ideas.mail.state.sent": "enviado",
@@ -112,6 +115,10 @@
   "admin.ideas.thanks.subject": "Asunto",
   "admin.ideas.thanks.body": "El correo tal como saldrá",
   "admin.ideas.thanks.send": "Enviar",
+  "admin.ideas.thanks.notSent": "Aún no enviado: {state}. Enviar lo intenta de nuevo.",
+  "admin.ideas.thanks.stale": "Un borrador más reciente sustituyó al que estaba abierto. Léelo y vuelve a pulsar Enviar.",
+  "admin.ideas.thanks.gone": "El agradecimiento cambió mientras tanto en otro sitio; la tarjeta muestra su estado actual.",
   "admin.ideas.thanks.later": "Ahora no",
-  "admin.ideas.thanks.queued": "Agradecimiento a {email} en cola: sale dentro de {s} s y hasta entonces puedes cancelarlo en la tarjeta."
+  "admin.ideas.thanks.queued": "Agradecimiento a {email} en cola: sale dentro de {s} s y hasta entonces puedes cancelarlo en la tarjeta.",
+  "admin.ideas.thanks.waiting": "Agradecimiento a {email} guardado, pero no enviado: Gmail no está configurado en el servidor. Cuando lo esté, pulsa Enviar junto a él en la tarjeta."
 }

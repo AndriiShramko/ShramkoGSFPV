@@ -4,12 +4,30 @@
 // - the thank-you when a pilot's idea is done (owner's item 7): the owner writes what was done and how in
 //   the pilot's language, the server makes the e-mail as a DRAFT, the owner reads the whole e-mail and only
 //   its Send queues it (again behind the undo window). Not now, Esc or Edit send nothing.
+// Without Gmail set up on the server an e-mail is saved as waiting_setup and goes only after another Send:
+// the owner is told what the server's answer says (mailSaid), never "queued" by default. A thank-you that
+// waits for Gmail or failed is Sent again from the dialog, never written a second time.
 import { h } from '../../ui/dom';
 import { t } from '../i18n';
+import { ApiError } from '../api';
 import { PUBLIC_LANGS } from './api';
 import type { Idea, IdeaMail, IdeasClient, PublicLang } from './api';
-import { thanksDraft } from './board';
+import { mailNotice, thanksPending } from './board';
 import type { CardHost } from './card';
+
+/**
+ * What the owner is told about an e-mail the server just took, from its state in the answer: when it goes
+ * (queued), that it is saved until Gmail is set up (waiting_setup), else its state. '' without a mail.
+ */
+export function mailSaid(kind: IdeaMail['kind'], m: IdeaMail | null, undoSeconds: number): string {
+    if (!m) return '';
+    const email = m.to || t('admin.ideas.mail.noAddress');
+    switch (mailNotice(m)) {
+        case 'queued': return t(kind === 'done' ? 'admin.ideas.thanks.queued' : 'admin.ideas.reply.queued', { email, s: undoSeconds });
+        case 'waiting': return t(kind === 'done' ? 'admin.ideas.thanks.waiting' : 'admin.ideas.reply.waiting', { email });
+        default: return t('admin.ideas.mail.now', { state: t(`admin.ideas.mail.state.${m.state}`) });
+    }
+}
 
 /** The reply form of an open card; without an e-mail address it only says why there is no one to write to. */
 export function replyForm(i: Idea, host: CardHost): HTMLElement {
@@ -23,11 +41,11 @@ export function replyForm(i: Idea, host: CardHost): HTMLElement {
     text.value = host.draft(key) ?? '';
     text.addEventListener('input', () => host.setDraft(key, text.value));
     const send = h('button', { type: 'button', class: 'btn small primary', 'data-action': 'reply' }, t('admin.ideas.reply.send'));
-    send.addEventListener('click', async () => {
+    send.addEventListener('click', () => {
         const answer = text.value.trim();
         if (!answer) return text.focus();
-        const ok = await host.run(i.id, () => host.client.reply(i.id, answer), () => t('admin.ideas.reply.queued', { email: i.email, s: host.undoSeconds }));
-        if (ok) host.setDraft(key, undefined);
+        // the sent text leaves the box before the card is redrawn: a second click has nothing to send
+        void host.run(i.id, () => host.client.reply(i.id, answer), { clear: [key], say: (a) => mailSaid('reply', a.mail, host.undoSeconds) });
     });
     sec.append(h('p', { class: 'muted' }, t('admin.ideas.reply.to', { email: i.email })), text, h('div', { class: 'bar' }, send));
     return sec;
@@ -48,10 +66,13 @@ const pilotLang = (i: Idea): PublicLang => ((PUBLIC_LANGS as readonly string[]).
 /**
  * The thank-you dialog. Step 1: what was done and how, in the pilot's language (the summary the server
  * keeps); "Make the e-mail" asks the server for the draft (POST ideas/done, nothing is sent). Step 2: the
- * whole e-mail as it will go; Send queues it (POST ideas/send-done). A draft already waiting opens at step 2.
+ * whole e-mail as it will go; Send queues exactly that e-mail (a draft: POST ideas/send-done with its id;
+ * one that waited for Gmail or failed: ideas/mail/send). A pending thank-you opens at step 2. When the
+ * server says a newer draft replaced the one shown (409 stale-draft), the newer one is shown to read again.
  */
 export function openThanks(start: Idea, host: ThanksHost): HTMLDialogElement {
     let idea = start;
+    let shown: IdeaMail | null = null;
     const lang = pilotLang(idea);
     const status = h('p', { class: 'muted', role: 'status', 'data-field': 'thanks-status' });
     const summary = h('textarea', { rows: 6, maxlength: 2000, 'data-field': 'thanks-summary' }) as HTMLTextAreaElement;
@@ -76,17 +97,22 @@ export function openThanks(start: Idea, host: ThanksHost): HTMLDialogElement {
         h('p', {}, t('admin.ideas.thanks.lead')),
         step1, step2, status, h('div', { class: 'bar' }, later)) as HTMLDialogElement;
 
-    const fail = (e: unknown): void => {
-        status.textContent = t('admin.ideas.error', { why: e instanceof Error ? e.message : String(e) });
-        status.className = 'bad';
+    const tell = (msg: string, cls: string): void => {
+        status.textContent = msg;
+        status.className = cls;
     };
-    const showDraft = (d: IdeaMail): void => {
-        to.value = d.to;
-        subject.value = d.subject;
-        body.value = d.plain;
+    const fail = (e: unknown): void => tell(t('admin.ideas.error', { why: e instanceof Error ? e.message : String(e) }), 'bad');
+    const showDraft = (m: IdeaMail): void => {
+        shown = m;
+        to.value = m.to;
+        subject.value = m.subject;
+        body.value = m.plain;
         step1.hidden = true;
         step2.hidden = false;
-        status.textContent = '';
+        // a new text would be a second thank-you next to one that only waits: Edit is for a draft only
+        edit.hidden = m.state !== 'draft';
+        if (m.state === 'draft') tell('', 'muted');
+        else tell(t('admin.ideas.thanks.notSent', { state: t(`admin.ideas.mail.state.${m.state}`) }), 'warn');
         send.focus();
     };
     make.addEventListener('click', async () => {
@@ -98,7 +124,7 @@ export function openThanks(start: Idea, host: ThanksHost): HTMLDialogElement {
             idea = r.idea;
             host.update(idea);
             if (r.draft) showDraft(r.draft);
-            else { status.textContent = t('admin.ideas.thanks.noEmail'); status.className = 'warn'; }
+            else tell(t('admin.ideas.thanks.noEmail'), 'warn');
         } catch (e) {
             fail(e);
         } finally {
@@ -107,22 +133,45 @@ export function openThanks(start: Idea, host: ThanksHost): HTMLDialogElement {
     });
     edit.addEventListener('click', () => { step2.hidden = true; step1.hidden = false; summary.focus(); });
     send.addEventListener('click', async () => {
+        const m = shown;
+        if (!m) return;
         send.disabled = true;
         try {
-            const done = await host.client.sendDone(idea.id);
-            host.update(done);
-            host.say(t('admin.ideas.thanks.queued', { email: to.value, s: host.undoSeconds }));
+            const a = m.state === 'draft' ? await host.client.sendDone(idea.id, m.id) : await host.client.sendMail(m.id);
+            idea = a.idea;
+            host.update(idea);
+            host.say(mailSaid('done', a.mail, host.undoSeconds));
             dialog.close();
         } catch (e) {
-            send.disabled = false;
+            if (e instanceof ApiError && e.status === 409 && e.reason === 'stale-draft') return void showNewer();
             fail(e);
+        } finally {
+            send.disabled = false;
         }
     });
+    /** A newer draft replaced the one shown: fetch the idea and show what the server has now. */
+    const showNewer = async (): Promise<void> => {
+        try {
+            idea = await host.client.get(idea.id);
+            host.update(idea);
+            const pending = thanksPending(idea);
+            if (pending) {
+                showDraft(pending);
+                tell(t('admin.ideas.thanks.stale'), 'warn');
+            } else {
+                // sent, queued or cancelled meanwhile (Telegram, an agent): the card shows where it is
+                dialog.close();
+                host.say(t('admin.ideas.thanks.gone'), true);
+            }
+        } catch (e) {
+            fail(e);
+        }
+    };
     later.addEventListener('click', () => dialog.close());
     dialog.addEventListener('close', () => dialog.remove());
     document.body.append(dialog);
     dialog.showModal();
-    const waiting = thanksDraft(idea);
+    const waiting = thanksPending(idea);
     if (waiting) showDraft(waiting);
     else summary.focus();
     return dialog;

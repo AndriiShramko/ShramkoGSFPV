@@ -3,9 +3,12 @@
 //  - a move sends exactly one ideas/update {id, status} with the session's CSRF token; a move to the same
 //    column, or to a column that does not exist, sends nothing (control);
 //  - every other change goes to its route with its body; e-mail: a reply is queued behind the undo window,
-//    a thank-you is only a draft until send-done, Cancel stops what has not gone;
+//    a thank-you is only a draft until send-done names it, Cancel stops what has not gone; the owner is
+//    told what the answer's mail state says (Gmail off: saved, not "queued"); a draft a newer one replaced
+//    is refused (stale-draft);
 //  - the columns and their order, the filters and the search;
-//  - a thank-you is due only for a pilot's idea with an e-mail that is done and not thanked yet;
+//  - a thank-you is due only for a pilot's idea with an e-mail that is done and not thanked yet; one that
+//    waits for Gmail or failed is the pending one (Sent again, never written twice);
 //  - a record with an unknown status is counted, never guessed into a column.
 // Every rule is shown with the input that breaks it.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -51,7 +54,7 @@ describe('the client speaks lane B\'s contract', () => {
         expect(body).toEqual({ id: P1, status: 'accepted' });
         const moved = await client.setStatus(body!.id, body!.status);
         expect(mock.posts()).toEqual([{ method: 'POST', path: 'ideas/update', body: { id: P1, status: 'accepted' } }]);
-        expect(moved.status).toBe('accepted');
+        expect([moved.idea.status, moved.mail]).toEqual(['accepted', null]);
     });
 
     it('a move to the same column or to an unknown column sends nothing (control)', () => {
@@ -65,15 +68,15 @@ describe('the client speaks lane B\'s contract', () => {
     it('without the CSRF token the server refuses (the token really travels: control)', async () => {
         const bare = new IdeasClient(new AdminClient()); // never resumed: no token
         await expect(bare.setStatus(P1, 'done')).rejects.toThrow(/csrf/);
-        await expect(client.setStatus(P1, 'done')).resolves.toMatchObject({ status: 'done' });
+        await expect(client.setStatus(P1, 'done')).resolves.toMatchObject({ idea: { status: 'done' } });
     });
 
     it('urgency (and clearing it), comment, public title, note: each its own body', async () => {
         await client.setUrgency(P1, 'urgent');
         await client.setUrgency(P1, null);
         await client.comment(P1, 'do it next');
-        const pub = await client.setPublic(P1, { en: 'Rates types', pl: 'Typy rates' }, false);
-        const note = await client.addNote({ text: 'Wind from the north on the hill scan', contact: 'field.pilot@example.com', lang: 'pl', urgency: 'high' });
+        const { idea: pub } = await client.setPublic(P1, { en: 'Rates types', pl: 'Typy rates' }, false);
+        const { idea: note } = await client.addNote({ text: 'Wind from the north on the hill scan', contact: 'field.pilot@example.com', lang: 'pl', urgency: 'high' });
         expect(mock.posts().map((c) => [c.path, c.body])).toEqual([
             ['ideas/update', { id: P1, urgency: 'urgent' }],
             ['ideas/update', { id: P1, urgency: null }],
@@ -87,17 +90,20 @@ describe('the client speaks lane B\'s contract', () => {
 
     it('a reply is queued behind the undo window and can be cancelled until it goes', async () => {
         const after = await client.reply(P1, 'Thanks, queued.');
-        const m = after.mails.at(-1)!;
+        const m = after.idea.mails.at(-1)!;
         expect([m.kind, m.state, m.to, !!m.notBefore]).toEqual(['reply', 'queued', 'pilot.one@example.com', true]);
+        expect([after.mail?.id, B.mailNotice(after.mail)]).toEqual([m.id, 'queued']); // the answer's mail: what the owner is told
         const cancelled = await client.cancelMail(m.id);
-        expect(cancelled.mails.at(-1)?.state).toBe('cancelled');
+        expect(cancelled.idea.mails.at(-1)?.state).toBe('cancelled');
         expect(mock.posts().map((c) => c.body)).toEqual([{ id: P1, text: 'Thanks, queued.' }, { id: m.id }]);
-        // control: without Gmail the same reply waits, and only an explicit send queues it
+        // control: without Gmail the same reply waits (and is not announced as queued); only an explicit send queues it
         mock.mailConfigured = false;
-        const waiting = (await client.reply(P1, 'Second answer')).mails.at(-1)!;
-        expect(waiting.state).toBe('waiting_setup');
+        const waiting = await client.reply(P1, 'Second answer');
+        expect([waiting.mail?.state, B.mailNotice(waiting.mail)]).toEqual(['waiting_setup', 'waiting']);
         mock.mailConfigured = true;
-        expect((await client.sendMail(waiting.id)).mails.at(-1)?.state).toBe('queued');
+        const resent = await client.sendMail(waiting.mail!.id);
+        expect([resent.mail?.state, B.mailNotice(resent.mail)]).toEqual(['queued', 'queued']);
+        expect(B.mailNotice(null)).toBe('state');
     });
 
     it('done makes a thank-you DRAFT only; send-done is the one call that queues it', async () => {
@@ -106,13 +112,40 @@ describe('the client speaks lane B\'s contract', () => {
         expect([r.idea.status, r.draft?.state, r.draft?.kind, r.draft?.to]).toEqual(['done', 'draft', 'done', 'pilot.two@example.com']);
         expect(r.idea.summary.pl).toMatch(/CH5/);
         expect(mock.mails('queued', 'sending', 'sent')).toEqual([]); // control: nothing on its way after done
-        expect(B.thanksDue(r.idea) && B.thanksDraft(r.idea)?.id === r.draft?.id).toBe(true);
-        const sent = await client.sendDone(id);
-        expect(sent.mails.find((m) => m.kind === 'done')?.state).toBe('queued');
-        expect(B.thanksDue(sent)).toBe(false);
+        expect(B.thanksDue(r.idea) && B.thanksPending(r.idea)?.id === r.draft?.id).toBe(true);
+        const sent = await client.sendDone(id, r.draft!.id);
+        expect(mock.posts().at(-1)?.body).toEqual({ id, mail: r.draft!.id });
+        expect([sent.mail?.state, sent.idea.mails.find((m) => m.kind === 'done')?.state]).toEqual(['queued', 'queued']);
+        expect(B.thanksDue(sent.idea)).toBe(false);
         // no e-mail: done still works, no draft
         const bug = await client.done('R-20261008-0003', { en: 'Fixed in the next release.' });
         expect([bug.idea.status, bug.draft]).toEqual(['done', null]);
+    });
+
+    it('Send names the draft the owner read: a draft a newer summary replaced is refused (stale-draft), the newer one goes', async () => {
+        const id = 'R-20261012-0005';
+        const first = await client.done(id, { pl: 'Pierwsza wersja.' });
+        const second = await client.done(id, { pl: 'Druga wersja.' });
+        expect(second.idea.mails.map((m) => m.state)).toEqual(['superseded', 'draft']); // kept, not dropped
+        await expect(client.sendDone(id, first.draft!.id)).rejects.toMatchObject({ status: 409, reason: 'stale-draft' });
+        await expect(client.sendDone(id, '')).rejects.toMatchObject({ status: 400, reason: 'bad-mail' }); // control: a Send must name its draft
+        expect(mock.mails('queued')).toEqual([]);
+        const now = await client.get(id);
+        expect(B.thanksPending(now)?.id).toBe(second.draft!.id);
+        expect((await client.sendDone(id, second.draft!.id)).mail?.state).toBe('queued');
+    });
+
+    it('a thank-you saved while Gmail is off is the pending one: Sent again, never written a second time', async () => {
+        const id = 'R-20261012-0005';
+        const r = await client.done(id, { pl: 'Zrobione.' });
+        mock.mailConfigured = false;
+        const saved = await client.sendDone(id, r.draft!.id);
+        expect([saved.mail?.state, B.mailNotice(saved.mail)]).toEqual(['waiting_setup', 'waiting']);
+        // still due, but as the one waiting: the dialog Sends it (mail/send), it does not make a new draft
+        expect([B.thanksDue(saved.idea), B.thanksPending(saved.idea)?.id]).toEqual([true, r.draft!.id]);
+        mock.mailConfigured = true;
+        const sent = await client.sendMail(r.draft!.id);
+        expect([sent.mail?.state, B.thanksDue(sent.idea), sent.idea.mails.length]).toEqual(['queued', false, 1]);
     });
 });
 
@@ -177,9 +210,15 @@ describe('the board model', () => {
         expect(B.thanksDue({ ...due, notified: '2026-10-13T12:00:00Z' })).toBe(false);
         expect(B.thanksDue({ ...due, mails: [mail('queued')] })).toBe(false);
         expect(B.thanksDue({ ...due, mails: [mail('sent')] })).toBe(false);
-        // a draft, a cancelled or a failed one still leaves it due
-        expect(B.thanksDue({ ...due, mails: [mail('draft')] })).toBe(true);
-        expect(B.thanksDue({ ...due, mails: [mail('cancelled')] })).toBe(true);
-        expect(B.thanksDraft({ ...due, mails: [mail('cancelled'), mail('draft')] })?.state).toBe('draft');
+        expect(B.thanksDue({ ...due, mails: [mail('unknown')] })).toBe(false); // may have gone: decided on the card's e-mail row
+        // a draft, one waiting for Gmail, a failed one: still due, and that one is pending (Sent, not re-drafted)
+        for (const s of ['draft', 'waiting_setup', 'failed'] as const) {
+            expect([B.thanksDue({ ...due, mails: [mail(s)] }), B.thanksPending({ ...due, mails: [mail(s)] })?.state]).toEqual([true, s]);
+        }
+        // cancelled or replaced: due, nothing pending (a new draft may be written)
+        for (const s of ['cancelled', 'superseded'] as const) {
+            expect([B.thanksDue({ ...due, mails: [mail(s)] }), B.thanksPending({ ...due, mails: [mail(s)] })]).toEqual([true, null]);
+        }
+        expect(B.thanksPending({ ...due, mails: [mail('cancelled'), mail('draft')] })?.state).toBe('draft');
     });
 });

@@ -81,6 +81,7 @@
   "admin.ideas.reply.placeholder": "Twoja odpowiedź dla pilota",
   "admin.ideas.reply.send": "Wyślij odpowiedź",
   "admin.ideas.reply.queued": "Odpowiedź do {email} w kolejce: wyjdzie za {s} s, do tego czasu możesz ją anulować na karcie.",
+  "admin.ideas.reply.waiting": "Odpowiedź do {email} zapisana, ale niewysłana: Gmail nie jest skonfigurowany na serwerze. Gdy będzie, naciśnij Wyślij obok niej na karcie.",
   "admin.ideas.reply.noEmail": "Pilot nie zostawił adresu e-mail, więc nie ma do kogo napisać.",
   "admin.ideas.mails": "E-maile",
   "admin.ideas.mail.reply": "Odpowiedź",
@@ -90,7 +91,9 @@
   "admin.ideas.mail.sentAt": "wysłano {time}",
   "admin.ideas.mail.cancel": "Anuluj",
   "admin.ideas.mail.send": "Wyślij",
+  "admin.ideas.mail.now": "Stan e-maila: {state}.",
   "admin.ideas.mail.state.draft": "szkic, niewysłany",
+  "admin.ideas.mail.state.superseded": "zastąpiony nowszym szkicem",
   "admin.ideas.mail.state.queued": "w kolejce",
   "admin.ideas.mail.state.sending": "wysyłanie",
   "admin.ideas.mail.state.sent": "wysłano",
@@ -112,6 +115,10 @@
   "admin.ideas.thanks.subject": "Temat",
   "admin.ideas.thanks.body": "E-mail w takiej postaci, w jakiej wyjdzie",
   "admin.ideas.thanks.send": "Wyślij",
+  "admin.ideas.thanks.notSent": "Jeszcze niewysłane: {state}. Wyślij spróbuje ponownie.",
+  "admin.ideas.thanks.stale": "Nowszy szkic zastąpił ten, który był otwarty. Przeczytaj go i naciśnij Wyślij jeszcze raz.",
+  "admin.ideas.thanks.gone": "Podziękowanie zmieniło się w międzyczasie gdzie indziej; karta pokazuje jego obecny stan.",
   "admin.ideas.thanks.later": "Nie teraz",
-  "admin.ideas.thanks.queued": "Podziękowanie do {email} w kolejce: wyjdzie za {s} s, do tego czasu możesz je anulować na karcie."
+  "admin.ideas.thanks.queued": "Podziękowanie do {email} w kolejce: wyjdzie za {s} s, do tego czasu możesz je anulować na karcie.",
+  "admin.ideas.thanks.waiting": "Podziękowanie do {email} zapisane, ale niewysłane: Gmail nie jest skonfigurowany na serwerze. Gdy będzie, naciśnij Wyślij obok niego na karcie."
 }
