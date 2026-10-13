@@ -66,6 +66,10 @@
   "switches.settingsBtn": "Open Switches",
   "switches.diffFound": "This diff also sets switches: {list}.",
   "switches.diffApply": "Use them on {name}",
-  "switches.diffApplied": "{name} now arms and picks the flight mode as in this diff (Controls, then Switches). Flip the arm switch off and on to arm.",
-  "switches.diffNoRadio": "This diff also sets switches ({list}). Connect your radio in Controls, then paste the diff in Switches."
+  "switches.diffApplied": "{name} now uses the switches from this diff (Controls, then Switches). Flip the arm switch off and on to arm.",
+  "switches.diffNoRadio": "This diff also sets switches ({list}). Connect your radio in Controls, then paste the diff in Switches.",
+  "switches.importKept": "Your function switches stay as they were: {list}.",
+  "switches.importDropped": "Betaflight allows 20 ranges at most. Function ranges removed because they no longer fit: {n}.",
+  "switches.importNoArm": "This diff sets no ARM, so the setup wizard's arm switch still arms.",
+  "switches.importNoMode": "This diff sets no ANGLE or HORIZON, so the quad flies Acro. Here you pick the mode yourself (M or the mode chip)."
 }

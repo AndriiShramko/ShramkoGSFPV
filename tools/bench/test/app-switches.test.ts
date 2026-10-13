@@ -337,6 +337,25 @@ describe('the menu\'s Betaflight import (v0.7): Quick with its stick expo, and t
         P.pilotSet(store, 'tune.rates', old, { drone: P.droneOf(store) });
         expect((store.get('tune.rates', { drone: P.droneOf(store) }) as { quickRcExpo?: boolean }).quickRcExpo).toBe(false);
     });
+
+    it('"Use them on <radio>" keeps the pilot\'s rewind on CH7 and takes ARM / ANGLE from the diff; control: the v0.7 button stored the diff\'s switches alone', async () => {
+        const { parseBetaflightDiff } = await import('../../../packages/sim-core/src');
+        const { switchesFromBetaflight } = await import('../../../packages/input/src/calib');
+        const I = await import('../../../apps/fly/src/app/builtin/import');
+        const aux = parseBetaflightDiff(DIFF).aux;
+        const { profile, over } = I.withDiffSwitches(PILOT, aux);
+        expect(profile.switches?.ranges).toEqual([r('arm', 5, 1700, 2100), r('angle', 4, 900, 1300), r('respawn.rewind', 6, 1700, 2100)]);
+        expect(over.kept.map((x) => x.fn)).toEqual(['respawn.rewind']);
+        expect(profile.arm).toEqual(PILOT.arm);
+        // the rewind switch still runs on the imported profile
+        const { c, fired } = controls(profile);
+        c.raw(frame({ ch7: 1000 }));
+        c.raw(frame({ ch7: 2000 }));
+        expect(fired).toEqual(['respawn.rewind']);
+        // control: the v0.7 button's `{ ...profile, switches: imp.switches }` dropped it
+        const old = { ...PILOT, switches: switchesFromBetaflight(aux).switches };
+        expect(old.switches.ranges.some((x) => x.fn === 'respawn.rewind')).toBe(false);
+    });
 });
 
 describe('stored switches are checked when a profile loads', () => {

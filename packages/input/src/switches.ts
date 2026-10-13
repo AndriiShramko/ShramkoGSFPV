@@ -77,6 +77,7 @@ export function rangeOn(r: SwitchRange, f: RawFrame): boolean {
     return us !== null && r.lo < r.hi && us >= r.lo && us < r.hi;
 }
 
+/** Does any range serve this function? */
 export function hasFn(sw: Switches, fn: SwitchFn): boolean {
     return sw.ranges.some((r) => r.fn === fn);
 }
@@ -287,6 +288,48 @@ export function switchesFromBetaflight(aux: readonly BfAuxCondition[]): AuxImpor
         out.applied.push(c);
     }
     return out;
+}
+
+/** The functions a Betaflight diff decides (the quad's Modes tab): arm and the flight mode. */
+export const BETAFLIGHT_FNS: readonly SwitchFn[] = ['arm', 'angle', 'horizon'];
+
+/** A Betaflight import laid over the pilot's switches (importOver): the result and what the pilot is told. */
+export interface ImportOver {
+    switches: Switches;
+    /** the simulator's own function ranges kept from before (rewind, record...), in their order */
+    kept: SwitchRange[];
+    /** kept ranges that did not fit under MAX_RANGES after the diff's (removed) */
+    dropped: number;
+    /** the diff sets no ARM: the setup wizard's arm still arms (Profile.arm) */
+    noArm: boolean;
+    /** the diff sets no ANGLE / HORIZON (the quad flies Acro): the pilot picks the mode in the simulator */
+    noMode: boolean;
+}
+
+/**
+ * The diff's ARM / ANGLE / HORIZON ranges (switchesFromBetaflight) over the pilot's switches: they
+ * replace arm and the flight mode as a whole, as loading the quad's Modes tab does; the simulator's
+ * own functions (rewind, record...), which no diff has, stay as they were, after the diff's ranges
+ * while MAX_RANGES allows. `current` undefined: the wizard's setup, nothing of the pilot's to keep.
+ */
+export function importOver(current: Switches | undefined, imported: Switches): ImportOver {
+    const ranges = copySwitches(imported).ranges;
+    const kept: SwitchRange[] = [];
+    let dropped = 0;
+    for (const r of current?.ranges ?? []) {
+        if (BETAFLIGHT_FNS.includes(r.fn)) continue;
+        if (ranges.length >= MAX_RANGES) { dropped++; continue; }
+        const k = { ...r, input: { ...r.input } };
+        ranges.push(k);
+        kept.push(k);
+    }
+    return {
+        switches: { v: 1, ranges },
+        kept,
+        dropped,
+        noArm: !hasFn(imported, 'arm'),
+        noMode: !hasModeRanges(imported)
+    };
 }
 
 /**

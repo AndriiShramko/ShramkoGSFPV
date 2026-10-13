@@ -12,9 +12,9 @@
 import './switches.css';
 import {
     FLIGHT_MODES, ModeSwitchDetector, POSITION_BANDS, SWITCH_ACTIONS, US_MAX, US_MIN, US_STEP, bandOf, channelUs, copySwitches,
-    defaultSwitchModes, fnOn, modeInput, modePositions, rangesMode, sameInput, setModePositions, snapUs, switchesFromBetaflight, switchesFromProfile
+    defaultSwitchModes, fnOn, importOver, modeInput, modePositions, rangesMode, sameInput, setModePositions, snapUs, switchesFromBetaflight, switchesFromProfile
 } from '@gsfpv/input';
-import type { Profile, RawFrame, SwitchAction, SwitchFn, SwitchInput, SwitchModes, SwitchPos, Switches } from '@gsfpv/input';
+import type { ImportOver, Profile, RawFrame, SwitchAction, SwitchFn, SwitchInput, SwitchModes, SwitchPos, Switches } from '@gsfpv/input';
 import { parseBetaflightDiff } from '@gsfpv/sim-core';
 import { h } from './dom';
 import { t } from '../i18n';
@@ -27,6 +27,21 @@ export interface SwitchesViewOptions {
     close: HTMLElement;
     onSave(p: Profile): void;
     onCancel(): void;
+}
+
+/**
+ * What a Betaflight import over the pilot's switches (importOver) means for them, one line each: the
+ * function switches kept ("Rewind CH7"), those that no longer fit, and an arm or a flight mode the
+ * diff does not set. `name`: the input as the pilot reads it (controls.ts inputLabel). The Switches
+ * screen's import and the menu's (app/builtin/import.ts) say the same.
+ */
+export function importOverNotes(over: ImportOver, name: (i: SwitchInput) => string): string[] {
+    const out: string[] = [];
+    if (over.kept.length) out.push(t('switches.importKept', { list: over.kept.map((r) => `${t(`keys.${r.fn}`)} ${name(r.input)}`).join(', ') }));
+    if (over.dropped) out.push(t('switches.importDropped', { n: over.dropped }));
+    if (over.noArm) out.push(t('switches.importNoArm'));
+    if (over.noMode) out.push(t('switches.importNoMode'));
+    return out;
 }
 
 /** What "Flip to assign" waits for. */
@@ -396,7 +411,9 @@ export class SwitchesView {
         if (!imp) this.importLines = [h('p', { class: 'error' }, t('switches.importError', { msg: r.errors.join(' ') }))];
         else if (!imp.applied.length) this.importLines = [h('p', { class: 'warn' }, t('switches.importNone'))];
         else {
-            this.sw = imp.switches;
+            // ARM / ANGLE / HORIZON replaced as on the quad; the simulator's own functions stay
+            const over = importOver(this.sw, imp.switches);
+            this.sw = over.switches;
             this.listen = null;
             this.wizard = false;
             const list = imp.applied.map((c, i) => `${c.mode} ${this.label(imp.switches.ranges[i].input)} ${c.lo}–${c.hi}${c.and ? ' AND' : ''}`).join(', ');
@@ -404,6 +421,7 @@ export class SwitchesView {
             const skipped = [...new Set(imp.skipped.filter((x) => x.why === 'notInSimulator').map((x) => x.cond.mode))];
             if (skipped.length) this.importLines.push(h('p', { class: 'muted' }, t('switches.importSkipped', { list: skipped.join(', ') })));
             for (const x of imp.skipped.filter((y) => y.why !== 'notInSimulator')) this.importLines.push(h('p', { class: 'warn' }, t(x.why === 'linked' ? 'switches.importLinked' : 'switches.full', { mode: x.cond.mode })));
+            for (const n of importOverNotes(over, (i) => this.label(i))) this.importLines.push(h('p', { class: 'muted' }, n));
             this.say(t('switches.importDone', { list }));
         }
         this.render();

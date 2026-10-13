@@ -66,6 +66,10 @@
   "switches.settingsBtn": "Otwórz Przełączniki",
   "switches.diffFound": "Ten diff ustawia też przełączniki: {list}.",
   "switches.diffApply": "Użyj ich w {name}",
-  "switches.diffApplied": "{name} uzbraja się i wybiera tryb lotu tak jak w tym diffie (Sterowanie, potem Przełączniki). Żeby uzbroić, wyłącz i włącz przełącznik uzbrojenia.",
-  "switches.diffNoRadio": "Ten diff ustawia też przełączniki ({list}). Podłącz aparaturę w Sterowaniu, potem wklej diff w Przełącznikach."
+  "switches.diffApplied": "{name} używa teraz przełączników z tego diffa (Sterowanie, potem Przełączniki). Żeby uzbroić, wyłącz i włącz przełącznik uzbrojenia.",
+  "switches.diffNoRadio": "Ten diff ustawia też przełączniki ({list}). Podłącz aparaturę w Sterowaniu, potem wklej diff w Przełącznikach.",
+  "switches.importKept": "Twoje przełączniki funkcji zostają bez zmian: {list}.",
+  "switches.importDropped": "Betaflight pozwala na najwyżej 20 zakresów. Usunięte zakresy funkcji, które się już nie zmieściły: {n}.",
+  "switches.importNoArm": "Ten diff nie ustawia ARM, więc nadal uzbrajasz przełącznikiem z kreatora konfiguracji.",
+  "switches.importNoMode": "Ten diff nie ustawia ANGLE ani HORIZON, więc dron lata w Acro. Tutaj tryb wybierasz sam (M albo wskaźnik trybu)."
 }

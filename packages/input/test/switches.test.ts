@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { MODE_CHANNEL, parseBetaflightDiff } from '@gsfpv/sim-core';
 import type { FlightMode } from '@gsfpv/sim-core';
 import {
-    POSITION_BANDS, SWITCH_ACTIONS, SwitchActionWatch, armByRanges, bandOf, channelInput, channelOf, channelUs, fnOn, inputName, mapFrame, modeInput,
+    POSITION_BANDS, SWITCH_ACTIONS, SwitchActionWatch, armByRanges, bandOf, channelInput, channelOf, channelUs, fnOn, importOver, inputName, mapFrame, modeInput,
     modePositions, profileArmLevel, ArmLatch, radioSetsMode, rangeOn, rangesMode, readSwitches, setModePositions, switchesFromBetaflight,
     switchesFromProfile
 } from '../src/calib';
@@ -294,5 +294,44 @@ describe('Betaflight aux import', () => {
         const imp = switchesFromBetaflight([cond({}), cond({ slot: 1, mode: 'ANGLE', modeId: 1, and: true }), cond({ slot: 2, mode: 'HORIZON', modeId: 2, linkedTo: 'ANGLE' })]);
         expect(imp.switches.ranges).toEqual([r('arm', btn(1), 1700, 2100), r('angle', btn(1), 1700, 2100, true)]);
         expect(imp.skipped.map((x) => x.why)).toEqual(['linked']);
+    });
+});
+
+describe('a Betaflight import over the pilot\'s switches (importOver)', () => {
+    // the pilot's setup: arm CH6, Angle CH5 low, rewind CH7, record CH8
+    const mine = sw(r('arm', ax(5), 1700, 2100), r('angle', ax(4), 900, 1300), r('respawn.rewind', ax(6), 1700, 2100), r('record.toggle', ax(7), 1700, 2100));
+    const cond = (o: Partial<import('@gsfpv/sim-core').BfAuxCondition>) => ({ slot: 0, modeId: 0, mode: 'ARM', channel: 5, lo: 1700, hi: 2100, and: false, linkedTo: null, ...o });
+
+    it('the diff\'s ARM / ANGLE replace arm and the mode; rewind and record stay; control: the v0.7 import (the diff\'s switches as they are) lost them', () => {
+        const diff = switchesFromBetaflight([cond({}), cond({ slot: 1, modeId: 1, mode: 'ANGLE', channel: 6, lo: 1300, hi: 2100 })]).switches;
+        const over = importOver(mine, diff);
+        expect(over.switches.ranges).toEqual([r('arm', ax(4), 1700, 2100), r('angle', ax(5), 1300, 2100), r('respawn.rewind', ax(6), 1700, 2100), r('record.toggle', ax(7), 1700, 2100)]);
+        expect(over.kept).toEqual([r('respawn.rewind', ax(6), 1700, 2100), r('record.toggle', ax(7), 1700, 2100)]);
+        expect([over.dropped, over.noArm, over.noMode]).toEqual([0, false, false]);
+        // the kept ranges still run their actions (a copy, not the pilot's objects)
+        expect(fnOn(over.switches, 'respawn.rewind', frame({ 6: 2000 }))).toBe(true);
+        expect(over.kept[0]).not.toBe(mine.ranges[2]);
+        // control: what v0.7 stored, the diff's switches alone
+        expect(diff.ranges.some((x) => x.fn === 'respawn.rewind' || x.fn === 'record.toggle')).toBe(false);
+    });
+
+    it('a diff without ANGLE / HORIZON leaves the mode to the pilot (noMode), one without ARM to the wizard\'s arm (noArm); the wizard\'s setup has nothing to keep', () => {
+        const armOnly = importOver(mine, switchesFromBetaflight([cond({})]).switches);
+        expect(armOnly.noMode).toBe(true);
+        expect(armOnly.switches.ranges.filter((x) => x.fn === 'angle' || x.fn === 'horizon')).toEqual([]);
+        expect(rangesMode(armOnly.switches, frame({ 4: 1000 }))).toBeNull();
+        const angleOnly = importOver(mine, switchesFromBetaflight([cond({ mode: 'ANGLE', modeId: 1 })]).switches);
+        expect([angleOnly.noArm, angleOnly.noMode]).toEqual([true, false]);
+        expect(armByRanges({ ...PROFILE, switches: angleOnly.switches })).toBe(false);
+        const fresh = importOver(undefined, switchesFromBetaflight([cond({})]).switches);
+        expect([fresh.kept, fresh.dropped]).toEqual([[], 0]);
+    });
+
+    it('kept ranges that no longer fit under 20 are counted, never silently lost', () => {
+        const many = sw(...Array.from({ length: 6 }, (_, i) => r('hud.toggle', ax(6), 900 + i * 100, 1000 + i * 100)));
+        const full = switchesFromBetaflight(Array.from({ length: 17 }, (_, i) => cond({ slot: i, lo: 900 + i * 25, hi: 2100 }))).switches;
+        const over = importOver(many, full);
+        expect(over.switches.ranges.length).toBe(20);
+        expect([over.kept.length, over.dropped]).toEqual([3, 3]);
     });
 });

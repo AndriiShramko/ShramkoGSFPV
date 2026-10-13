@@ -3,11 +3,15 @@
 // tune.throttle; W2-1, review finding C10: v0.2 put them into one set of overrides that the next
 // drone inherited and a reload forgot), then a new flight model from the store; every warning is
 // shown in full. v0.7: Quick rates come with their quickrates_rc_expo, and a diff whose aux lines
-// set ARM / ANGLE / HORIZON offers them to the radio in use (its Switches, @gsfpv/input switches.ts).
+// set ARM / ANGLE / HORIZON offers them to the radio in use (its Switches, @gsfpv/input switches.ts):
+// they replace its arm and flight-mode ranges, its function switches (rewind, record...) stay.
 import { copyRates, parseBetaflightDiff } from '@gsfpv/sim-core';
 import type { BfAuxCondition } from '@gsfpv/sim-core';
-import { channelOf, switchesFromBetaflight } from '@gsfpv/input';
+import { channelOf, importOver, switchesFromBetaflight } from '@gsfpv/input';
+import type { ImportOver, Profile } from '@gsfpv/input';
 import { h, clear, panel } from '../../ui/dom';
+import { importOverNotes } from '../../ui/switches';
+import { inputLabel } from '../../controls';
 import { t } from '../../i18n';
 import { applyModel, droneOf, pilotSet } from '../prefs';
 import type { TestHook } from '../test-hook';
@@ -38,6 +42,15 @@ export function importDiff(ctx: FlightContext, text: string): ImportResult & { a
 }
 
 /**
+ * The radio's profile with a diff's switches laid over its own (importOver: ARM / ANGLE / HORIZON
+ * replaced, the simulator's function switches kept), and what that did. Exported for the Node tests.
+ */
+export function withDiffSwitches(profile: Profile, aux: readonly BfAuxCondition[]): { profile: Profile; over: ImportOver } {
+    const over = importOver(profile.switches, switchesFromBetaflight(aux).switches);
+    return { profile: { ...profile, switches: over.switches }, over };
+}
+
+/**
  * The diff's ARM / ANGLE / HORIZON switches under an import's answer: a button puts them on the radio
  * in use (saved for it, flown at once); without a radio the line says where to paste them later.
  */
@@ -49,9 +62,13 @@ function switchesOffer(ctx: FlightContext, aux: readonly BfAuxCondition[], out: 
     if (!radio?.profile) { out.append(h('p', { class: 'muted' }, t('switches.diffNoRadio', { list }))); return; }
     const name = radio.profile.deviceName;
     const line = h('p', {}, t('switches.diffFound', { list }));
+    const device = radio.kind === 'gamepad' ? 'gamepad' : 'hid';
     const use = h('button', { type: 'button', class: 'btn', 'data-action': 'import-switches', onclick: () => {
-        const p = { ...radio.profile!, switches: imp.switches };
-        if (ctx.input.replaceProfile(p)) { use.remove(); line.textContent = t('switches.diffApplied', { name }); }
+        const { profile: p, over } = withDiffSwitches(radio.profile!, aux);
+        if (!ctx.input.replaceProfile(p)) return;
+        use.remove();
+        line.textContent = t('switches.diffApplied', { name });
+        for (const n of importOverNotes(over, (i) => inputLabel(i, device))) out.append(h('p', { class: 'muted' }, n));
     } }, t('switches.diffApply', { name }));
     out.append(line, use);
 }

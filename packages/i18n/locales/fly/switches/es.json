@@ -66,6 +66,10 @@
   "switches.settingsBtn": "Abrir Interruptores",
   "switches.diffFound": "Este diff también configura interruptores: {list}.",
   "switches.diffApply": "Usarlos en {name}",
-  "switches.diffApplied": "{name} ahora arma y elige el modo de vuelo como en este diff (Controles y luego Interruptores). Para armar, apaga y enciende el interruptor de armado.",
-  "switches.diffNoRadio": "Este diff también configura interruptores ({list}). Conecta tu radio en Controles y pega el diff en Interruptores."
+  "switches.diffApplied": "{name} ahora usa los interruptores de este diff (Controles y luego Interruptores). Para armar, apaga y enciende el interruptor de armado.",
+  "switches.diffNoRadio": "Este diff también configura interruptores ({list}). Conecta tu radio en Controles y pega el diff en Interruptores.",
+  "switches.importKept": "Tus interruptores de funciones siguen como estaban: {list}.",
+  "switches.importDropped": "Betaflight admite 20 rangos como máximo. Rangos de funciones quitados porque ya no cabían: {n}.",
+  "switches.importNoArm": "Este diff no define ARM, así que sigues armando con el interruptor del asistente de configuración.",
+  "switches.importNoMode": "Este diff no define ANGLE ni HORIZON, así que el dron vuela en Acro. Aquí eliges tú el modo (M o el indicador de modo)."
 }
