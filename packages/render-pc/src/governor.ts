@@ -14,6 +14,11 @@ export interface QualityStep {
     splatBudgetMillions: number;
 }
 
+/**
+ * The steps at the default top budget (4 M splats). A scene that asks for another budget (its link's
+ * ?budget=, drawing.ts) moves the top: FrameGovernor.setTopBudget scales every step's budget by the
+ * same factor, so the shares stay 1, 3/4, 5/8, 1/2, 3/8 of the top and the render scales stay as here.
+ */
 export const DEFAULT_STEPS: QualityStep[] = [
     { renderScale: 1, splatBudgetMillions: 4 },
     { renderScale: 0.85, splatBudgetMillions: 3 },
@@ -56,8 +61,11 @@ export class DisplayPeriod {
 export class FrameGovernor {
     enabled = true;
     step = 0;
-    readonly steps: QualityStep[];
+    /** the steps at the current top budget (setTopBudget); the first is the top */
+    steps: QualityStep[];
     readonly opts: GovernorOptions;
+    /** the constructor's steps: setTopBudget scales their budgets */
+    private readonly base: QualityStep[];
     private last = -1;
     private period = new DisplayPeriod();
     private log: { t: number; missed: boolean }[] = [];
@@ -65,12 +73,33 @@ export class FrameGovernor {
     changes = 0;
 
     constructor(steps: QualityStep[] = DEFAULT_STEPS, opts: GovernorOptions = DEFAULT_GOVERNOR) {
-        this.steps = steps;
+        this.base = steps;
+        this.steps = steps.map((s) => ({ ...s }));
         this.opts = opts;
     }
 
     get current(): QualityStep {
         return this.steps[this.step];
+    }
+
+    /** The top step's splat budget, millions: what the governor gives when no frame is missed. */
+    get topBudgetMillions(): number {
+        return this.steps[0].splatBudgetMillions;
+    }
+
+    /**
+     * Make `m` million splats the top level (a scene's link asked for that budget, drawing.ts). Every
+     * step's budget scales by m / the constructor's top, so the governor lowers the budget from there
+     * in the same proportions; the step it is on and its history stay (a missed frame a moment ago
+     * still counts). Returns true when the steps changed.
+     */
+    setTopBudget(m: number): boolean {
+        if (!(m > 0) || !Number.isFinite(m)) throw new RangeError(`bad top budget ${m}`);
+        const k = m / this.base[0].splatBudgetMillions;
+        const next = this.base.map((s) => ({ renderScale: s.renderScale, splatBudgetMillions: s.splatBudgetMillions * k }));
+        if (next.every((s, i) => s.splatBudgetMillions === this.steps[i].splatBudgetMillions)) return false;
+        this.steps = next;
+        return true;
     }
 
     get displayPeriodMs(): number {
