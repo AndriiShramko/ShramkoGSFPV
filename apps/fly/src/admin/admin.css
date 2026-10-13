@@ -1,6 +1,8 @@
 /* The owner's admin page (/admin/): the simulator's palette, desktop first, one column on a phone. */
 :root { color-scheme: dark; --bg: #07080a; --bg2: #0e1116; --line: #1f2630; --fg: #e8eaed; --muted: #9aa3ad; --accent: #4ade80; --accent-ink: #052e16; --warn: #fbbf24; --bad: #f87171; --r: 12px; }
 * { box-sizing: border-box; }
+/* `hidden` hides whatever the element's own display rule says (a .btn is inline-flex) */
+[hidden] { display: none !important; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
 main { max-width: 1100px; margin: 0 auto; padding: max(12px, env(safe-area-inset-top)) 16px 64px; }
 h1 { font-size: 20px; margin: 0; }

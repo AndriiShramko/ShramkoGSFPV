@@ -315,7 +315,8 @@ async function main(): Promise<void> {
     await quiet(page, id2);
     const replyOff = (await page.textContent('.note')) ?? '';
     results.replyWithoutGmail = replyOff;
-    check('without Gmail a reply is announced as saved for Gmail, not as queued', mock.mails().at(-1)?.state === 'waiting_setup' && /Gmail/.test(replyOff) && !replyOff.includes('60 s') && replyOff !== queuedNote);
+    const id2Replies = (mock.ideas.find((x) => x.id === id2)?.thread as { kind: string; state: string }[]).filter((m) => m.kind === 'reply');
+    check('without Gmail a reply is announced as saved for Gmail, not as queued', id2Replies.at(-1)?.state === 'waiting_setup' && /Gmail/.test(replyOff) && !replyOff.includes('60 s') && replyOff !== queuedNote);
     await page.selectOption(`${card(id2)} [data-field=status]`, 'done');
     await page.waitForSelector('[data-testid=thanks-dialog] [data-field=thanks-summary]');
     await settled(page, id2, 'done');
