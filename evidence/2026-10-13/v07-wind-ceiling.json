@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-13T14:20:56.449Z",
-    "gitHead": "b2b4957",
+    "date": "2026-10-13T20:58:17.157Z",
+    "gitHead": "33fd335",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://127.0.0.1:5463",
+  "site": "https://gsfpv.flyreelstudio.eu",
   "browser": {
     "kind": "system-chrome",
     "version": "155.0.8059.40",
@@ -30,7 +30,7 @@
         "speed": 3,
         "gust": 0,
         "compassDeg": 0,
-        "seed": 1534637174,
+        "seed": 719342319,
         "groundM": -0.2000000000000013
       },
       "spec": {
@@ -46,26 +46,26 @@
         "fromDeg": 270,
         "groundM": -0.2000000000000013,
         "gust": 0,
-        "seed": 1534637174,
+        "seed": 719342319,
         "speed": 3
       },
       "format": "gsfpv-input-log/3"
     },
     "wallsOff": false,
     "flyWind": {
-      "vx": 1.6288500381929563,
-      "vz": 0.000026388313754535847,
+      "vx": 1.6234085769574478,
+      "vz": 0.000026663442748895965,
       "armed": true,
       "crashed": false,
       "windNow": [
-        2.4152365152761384,
+        2.415228247731267,
         0,
-        -7.394529169041827e-16
+        -7.394503856985917e-16
       ],
       "mode": 1,
       "dial": {
-        "toRelDeg": -162.78716196543442,
-        "speed": 2.4152365152761384,
+        "toRelDeg": -162.7872431097171,
+        "speed": 2.415228247731267,
         "side": "head",
         "northRelDeg": null
       }
@@ -75,9 +75,9 @@
       "label": "Wind 2.4 m/s, headwind"
     },
     "saved": {
-      "saved": "2bfe40baf50b12798d3c0ceb15e0f5bbc4c0dbf6556bceb63d1711f3f937a896",
-      "replayed": "2bfe40baf50b12798d3c0ceb15e0f5bbc4c0dbf6556bceb63d1711f3f937a896",
-      "tampered": "876ef5a7f3dc4717b753bc999b59702235559f8180983d139ee48bdc4b73ca94",
+      "saved": "f6751a5646027fe12869b1515519cb6f07d0d15f04cb8c698438f73595198f41",
+      "replayed": "f6751a5646027fe12869b1515519cb6f07d0d15f04cb8c698438f73595198f41",
+      "tampered": "bac20ab7ba3e75572bdbe9d364fed730ddef900f7b1544a4b253227c62456782",
       "refused": null
     },
     "windOff": {
@@ -85,8 +85,8 @@
       "header": null
     },
     "flyCalm": {
-      "vx": -2.1680699111245937e-11,
-      "vz": 5.952920350397715e-11,
+      "vx": -2.1387202458268503e-11,
+      "vz": 5.962743386840102e-11,
       "armed": true,
       "crashed": false,
       "windNow": [
@@ -190,25 +190,23 @@
       "ceilingPlane": false,
       "gridCeiling": null
     },
-    "screenshot": "C:\\dev\\gsfpv-v07-e\\evidence\\2026-10-13\\v07-ceiling-panel.png",
+    "screenshot": "C:\\dev\\gsfpv-v03\\evidence\\2026-10-13\\v07-ceiling-panel.png",
     "pass": true
   },
   "log": [
-    "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
-    "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
-    "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "console: Failed to load resource: the server responded with a status of 429 ()",
     "console: Failed to load resource: the server responded with a status of 403 ()",
     "console: Failed to load resource: the server responded with a status of 403 ()",
     "console: Failed to load resource: the server responded with a status of 403 ()",
     "console: Failed to load resource: the server responded with a status of 403 ()",
     "console: Failed to load resource: the server responded with a status of 403 ()",
-    "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
-    "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
-    "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
-    "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
-    "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
-    "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
-    "console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    "console: Failed to load resource: the server responded with a status of 429 ()",
+    "console: Failed to load resource: the server responded with a status of 429 ()",
+    "console: Failed to load resource: the server responded with a status of 429 ()",
+    "console: Failed to load resource: the server responded with a status of 429 ()",
+    "console: Failed to load resource: the server responded with a status of 429 ()",
+    "console: Failed to load resource: the server responded with a status of 404 ()",
+    "console: Failed to load resource: the server responded with a status of 429 ()"
   ],
   "pass": true
 }

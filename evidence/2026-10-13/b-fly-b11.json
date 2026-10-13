@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-13T20:15:49.316Z",
-    "gitHead": "56ee7dd",
+    "date": "2026-10-13T20:53:11.231Z",
+    "gitHead": "33fd335",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5320",
+  "site": "https://gsfpv.flyreelstudio.eu",
   "render": "on",
   "pass": true,
   "positive": {

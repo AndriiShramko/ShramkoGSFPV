@@ -55,3 +55,12 @@ Plan and contracts: `docs/wip/v07-plan.md`. Each lane's own status: `docs/wip/v0
 
 6. Privacy (site locales, 4 languages) after lane B: reports and ideas reach the owner's Telegram with the pilot's
    text and contact; the owner's replies and thank-you e-mails go from his Gmail (Google) — say both plainly.
+
+## Shipped (2026-10-13 evening)
+
+All seven lanes merged; release 55fbccae0af5 (`main` 33fd335) live; API files, nginx.conf, compose.yml (releases mount)
+and config.env (TG_WEBHOOK_SECRET) on the hub; webhook registered on the shared bot (tg-info: no errors). Ideas: the
+Polish pilot's R-20261006-0001..0003 done with thank-you DRAFTS in the owner's Telegram (sent only on Send, needs Gmail);
+F-radio-switches done; roadmap items F-20261013-0001..0004 and N-20261013-0001 (the LinkedIn pilot's wind + ceiling).
+Open: GMAIL_APP_PASSWORD from the owner (then `ideas_cli.py mail-check`); the owner's own end-to-end reply test;
+remove the merged worktrees C:/dev/gsfpv-v07-*.

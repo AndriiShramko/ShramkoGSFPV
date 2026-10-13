@@ -1,0 +1,63 @@
+{
+  "name": "v07-d1-S1",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-13T20:58:52.289Z",
+    "gitHead": "33fd335",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "parts": [
+    "S1"
+  ],
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "render": "off",
+  "S1": {
+    "pass": true,
+    "top": {
+      "shown": true,
+      "label": true,
+      "aria": "Share this scene (L)"
+    },
+    "topPhone": {
+      "shown": true,
+      "label": false
+    },
+    "panel": {
+      "entry": "key",
+      "kind": "flight",
+      "url": "https://gsfpv.flyreelstudio.eu/s/cm6GXwnHpNA",
+      "text": "I just flew an FPV drone through Modlinek Villa \u2014 red room and bathroom \u2014 a real 3D scan, right in the browser. Free, and your own radio works. Can you fly this line?",
+      "picture": true,
+      "video": "none",
+      "files": [],
+      "canShareFiles": false,
+      "paused": true,
+      "status": "Your link is ready. Pick where to post it:",
+      "targets": 6,
+      "instagram": true
+    },
+    "instagramFallback": {
+      "field": "https://gsfpv.flyreelstudio.eu/s/cm6GXwnHpNA",
+      "url": "https://gsfpv.flyreelstudio.eu/s/cm6GXwnHpNA",
+      "status": "Saved, and the caption is copied: open Instagram, post the file and paste the caption."
+    },
+    "after": {
+      "panel": false,
+      "paused": false
+    },
+    "control": {
+      "what": "before L: no share panel on the page",
+      "fired": true
+    },
+    "consoleErrors": []
+  }
+}
