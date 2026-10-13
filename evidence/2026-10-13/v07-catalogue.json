@@ -7,15 +7,15 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-13T09:34:49.796Z",
-    "gitHead": "14e19e3",
+    "date": "2026-10-13T15:48:52.437Z",
+    "gitHead": "4980463",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "pass": true,
-  "fly": "http://127.0.0.1:54888",
+  "fly": "http://127.0.0.1:5372",
   "error": null,
   "checks": [
     {
@@ -54,7 +54,7 @@
       "control": false
     },
     {
-      "name": "the change list names the scene and the field",
+      "name": "the change list names the scene and the field in words (\"Featured\", not \"pinned\")",
       "ok": true,
       "control": false
     },
@@ -67,6 +67,16 @@
       "name": "Refresh offers the licence from SuperSplat, ticked; the title unticked",
       "ok": true,
       "control": false
+    },
+    {
+      "name": "each Refresh row reads \"field: old -> new\" in words (the licence row: its name, \"(empty)\" and the new licence)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "control: the raw-key detector fires on what the first cut showed",
+      "ok": true,
+      "control": true
     },
     {
       "name": "control: without a place the prevailing wind cannot be asked",
@@ -182,6 +192,7 @@
     "attention": true,
     "text": "Publish (1)"
   },
+  "changeText": "Changed: Modlinek Villa \u2014 red room and bathroom (Featured)",
   "refreshOffered": [
     [
       "license",
@@ -203,6 +214,13 @@
       "origin",
       true
     ]
+  ],
+  "refreshRows": [
+    " Licence: (empty) \u2192 CC BY 4.0",
+    " Poster: (empty) \u2192 https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/0230d903/v1/m.webp",
+    " Format: (empty) \u2192 ssog",
+    " Download size: (empty) \u2192 1559",
+    " What SuperSplat says: (empty) \u2192 https://superspl.at/scene/0230d903 \u00b7 2026-10-07T13:31:29Z \u00b7 andriishramko"
   ],
   "places": [
     "Wroclaw, Lower Silesia, Poland"
@@ -291,10 +309,10 @@
   },
   "windNow": {
     "ok": true,
-    "fromDeg": 277,
-    "speed": 0.8,
-    "gust": 1.7,
-    "at": "2026-10-13T09:30:00Z",
+    "fromDeg": 142,
+    "speed": 1.6,
+    "gust": 2.2,
+    "at": "2026-10-13T15:45:00Z",
     "source": "now"
   },
   "scenePage": {
