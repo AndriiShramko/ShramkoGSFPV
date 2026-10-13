@@ -1,0 +1,324 @@
+{
+  "name": "v07-catalogue",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-13T09:34:49.796Z",
+    "gitHead": "14e19e3",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "fly": "http://127.0.0.1:54888",
+  "error": null,
+  "checks": [
+    {
+      "name": "the default filter is \"walls only\"",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "every published scene is in the catalogue tab, the two without walls too",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "a scene without walls carries the \"no walls\" badge",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the walls filter is not shown on the catalogue tab",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "control: the walls filter shows on Recent, where it applies",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "control: a clean draft has Publish off and no change list",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "one change: Publish is on, highlighted and counts it",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the change list names the scene and the field",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the changed row carries a badge",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "Refresh offers the licence from SuperSplat, ticked; the title unticked",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "control: without a place the prevailing wind cannot be asked",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "Find place fills latitude and longitude",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the prevailing wind fills the wind fields",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the preview shows SuperSplat's facts",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the preview keeps the link's budget and stochastic",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "after Publish: Publish is off again",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "published: the refreshed licence and SuperSplat's origin",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "published: geo, a climate wind and our words",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "published: the added scene with render {budgetM 8, stochastic} and origin",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the picker shows the scene added and published from the admin",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "/api/wind/<id>?mode=now answers for a scene with geo",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "control: /api/wind for a scene without geo is 404",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "the scene page renders with the site's design (its CSS loaded)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the scene page carries the curator's words, the wind and the credit",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the scene page runs no script",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the index lists the published scenes",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "no page errors",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the password is in no log or data file",
+      "ok": true,
+      "control": false
+    }
+  ],
+  "noWalls": [
+    "70b50d42",
+    "0230d903"
+  ],
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "pickerGrid": [
+    "887f27aa",
+    "39e63ce9",
+    "7a475d38",
+    "70b50d42",
+    "b11e45d1",
+    "0230d903"
+  ],
+  "publishAfterPin": {
+    "disabled": false,
+    "attention": true,
+    "text": "Publish (1)"
+  },
+  "refreshOffered": [
+    [
+      "license",
+      true
+    ],
+    [
+      "thumb",
+      true
+    ],
+    [
+      "format",
+      true
+    ],
+    [
+      "sizeMb",
+      true
+    ],
+    [
+      "origin",
+      true
+    ]
+  ],
+  "places": [
+    "Wroclaw, Lower Silesia, Poland"
+  ],
+  "wind": {
+    "from": "257",
+    "speed": "2.8",
+    "gust": "3"
+  },
+  "addPreview": "2f1ddf5fOpens in the simulator: ssog, CDN folder v1.From SuperSplat: \"Lublin Poland 2025\" by Andrii Shramko, CC BY 4.0.From the link: splat budget 8 M, stochastic drawing.No walls file: pilots fly through everything, no crashes.TitleAuthorLicenceAdd to the top of the list",
+  "live": {
+    "muster": {
+      "id": "0230d903",
+      "title": "Muster Truck Show Opole Poland 2024",
+      "author": "Andrii Shramko",
+      "license": "CC BY 4.0",
+      "kind": "other",
+      "version": 1,
+      "sizeMb": 1559,
+      "thumb": "https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/0230d903/v1/m.webp",
+      "format": "ssog",
+      "collision": false,
+      "walls": "on",
+      "collections": [],
+      "pinned": false,
+      "hidden": false,
+      "origin": {
+        "url": "https://superspl.at/scene/0230d903",
+        "created": "2026-10-07T13:31:29Z",
+        "user": "andriishramko"
+      }
+    },
+    "wroclaw": {
+      "id": "70b50d42",
+      "title": "Wroc\u0142aw Cathedral & Historic Streets \u2014 FPV Simulator Scan",
+      "author": "Andrii Shramko",
+      "license": "",
+      "kind": "other",
+      "version": 1,
+      "collision": false,
+      "walls": "on",
+      "collections": [],
+      "pinned": false,
+      "hidden": false,
+      "geo": {
+        "lat": 51.103,
+        "lon": 17.03,
+        "place": "Wroclaw, Lower Silesia, Poland"
+      },
+      "wind": {
+        "fromDeg": 257,
+        "speed": 2.8,
+        "gust": 3,
+        "source": "climate"
+      },
+      "about": {
+        "en": "Fly low along the river front, then up between the two towers."
+      }
+    },
+    "added": {
+      "id": "2f1ddf5f",
+      "title": "Lublin Poland 2025",
+      "author": "Andrii Shramko",
+      "license": "CC BY 4.0",
+      "kind": "other",
+      "version": 1,
+      "sizeMb": 6492.4,
+      "thumb": "https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/2f1ddf5f/v1/m.webp",
+      "format": "ssog",
+      "collision": false,
+      "walls": "on",
+      "collections": [],
+      "pinned": false,
+      "hidden": false,
+      "render": {
+        "budgetM": 8,
+        "stochastic": true
+      },
+      "origin": {
+        "url": "https://superspl.at/scene/2f1ddf5f",
+        "description": "Subscribe and like. I'll be adding the free download link for this scan in the description for your research purposes. RAW colmap data for your researches is also avalable For traning this 250M splat scan was used https://www.greenvalleyintl.com/LiDAR360MLS on one RTX 4090 Here is a RAW PLY file for your researches https://drive.google.com/drive/folders/1pvx8aDRXkTU2QDuLsnqmAyHARBQmFLpq?usp=sharing Contact me to discuss yourt project ) https://www.linkedin.com/in/andrii-shramko/ https://calendar.app.google/LrB1jsTV8wBNcNxN8",
+        "created": "2026-10-05T10:08:30Z",
+        "user": "andriishramko"
+      }
+    }
+  },
+  "windNow": {
+    "ok": true,
+    "fromDeg": 277,
+    "speed": 0.8,
+    "gust": 1.7,
+    "at": "2026-10-13T09:30:00Z",
+    "source": "now"
+  },
+  "scenePage": {
+    "status": 200,
+    "csp": "default-src 'none'; script-src 'none'; img-src 'self' https://s3-eu-west-1.amazonaws.com https://d28zzqy0iyovbz.cloudfront.net; style-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'"
+  },
+  "pageErrors": [],
+  "apiCalls": [
+    "GET /api/catalog 200",
+    "GET /api/admin/session 401",
+    "POST /api/admin/login 200",
+    "GET /api/admin/catalog 200",
+    "POST /api/admin/catalog/draft 200",
+    "GET /api/admin/superspl/0230d903?fresh=1 200",
+    "POST /api/admin/catalog/draft 200",
+    "GET /api/admin/geo/search?q=Wroclaw&lang=en 200",
+    "POST /api/admin/catalog/draft 200",
+    "GET /api/admin/wind/climate?lat=51.103&lon=17.030 200",
+    "POST /api/admin/catalog/draft 200",
+    "GET /api/admin/superspl/2f1ddf5f 200",
+    "POST /api/admin/catalog/draft 200",
+    "POST /api/admin/catalog/publish 200",
+    "GET /api/catalog 200",
+    "GET /en/scenes/70b50d42/ 200",
+    "GET /pl/scenes/ 200"
+  ]
+}
