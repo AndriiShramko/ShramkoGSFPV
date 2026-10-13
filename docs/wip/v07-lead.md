@@ -9,6 +9,11 @@ Plan and contracts: `docs/wip/v07-plan.md`. Each lane's own status: `docs/wip/v0
   cut off by the usage limit near the end of every lane: 7-10 commits each, some uncommitted work in progress.
 - Wave 2 (workflow wf_8ea5f912-7bb, script `gsfpv-v07-continue.js` in the session scratchpad): each lane continues from
   where it stopped (resume_digest of wave 1), then one review and one fix pass; at most 4 lanes at a time.
+- Merged into v03-lead (not pushed): v07-r (ec50efa), v07-e (ecdeaf7), v07-d2 (eb26dcb), v07-d1 (c03159f + share-link
+  fix 19119c6: one link parser/writer = lane R's packages/scenes; + e2876bc recordAction moved to builtin/recording.ts).
+  Gates on the merged tree: typecheck 12/12, vitest 1157, API 55, architecture, i18n, gen-catalog, B18 PASS.
+  Waiting: A (catalogue/SEO, the plan's first), B (ideas server), C (ideas UI; its continuation finished, under review).
+  Not run on the merged tree yet: browser benches, site verify, build-release.
 - If wave 2 is cut off too: `/limit-resume` again — digest of wf_8ea5f912-7bb, new continuation prompts; never rerun.
 
 ## Owner decisions since the plan
