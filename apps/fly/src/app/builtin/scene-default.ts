@@ -6,8 +6,10 @@
 // the admin page publishes it. A visitor's page never asks the admin API anything.
 import { AdminClient, adminHinted } from '../../admin/api';
 import type { FlightSession } from '../../session';
-import { saveSceneDefault } from '../scene-default';
+import { flownWind, saveSceneDefault } from '../scene-default';
 import type { FlownDefaults, SaveDefaultResult } from '../scene-default';
+import { customWind, windMode } from '../../session/wind-source';
+import type { PrefsStore } from '@gsfpv/prefs';
 import { t } from '../../i18n';
 import type { Feature } from '../context';
 
@@ -23,15 +25,17 @@ declare module '../test-hook' {
     }
 }
 
-/** What the session flies now, in the terms of the catalogue's defaults. */
-export function flownDefaults(ses: FlightSession): FlownDefaults {
-    const w = ses.windSpec;
+/**
+ * What the session flies now, in the terms of the catalogue's defaults; the pilot's wind.mode and this
+ * scan's custom numbers tell still air picked for the scan from wind switched off (flownWind).
+ */
+export function flownDefaults(ses: FlightSession, prefs: Pick<PrefsStore, 'get'>, sceneId: string): FlownDefaults {
     return {
         walls: ses.baseCollision ? (ses.wallsOn ? 'on' : 'off') : null,
         dropFloaters: ses.floaterMinBlocks,
         scale: ses.transform.s,
         ceilingM: ses.ceilingM,
-        wind: w ? { source: w.source, fromDeg: w.fromDeg, speed: w.speed, gust: w.gust } : null
+        wind: flownWind(ses.windSpec, windMode(prefs.get('wind.mode')), customWind(prefs, sceneId))
     };
 }
 
@@ -40,7 +44,8 @@ function resultText(r: SaveDefaultResult, scale: number): string {
     if (!r.ok) return t(`scenedefault.fail.${r.why}`);
     const notes = [t('scenedefault.saved')];
     if (r.patch.kept.includes('scale')) notes.push(t('scenedefault.keptScale', { s: scale.toFixed(2).replace(/\.?0+$/, '') }));
-    if (r.patch.kept.includes('wind')) notes.push(t('scenedefault.keptWind'));
+    if (r.patch.kept.includes('wind-live')) notes.push(t('scenedefault.keptWind'));
+    if (r.patch.kept.includes('wind-off') && r.entry.wind) notes.push(t('scenedefault.keptWindOff'));
     return notes.join(' ');
 }
 
@@ -51,14 +56,14 @@ export const sceneDefault: Feature = {
         let gone = false;
         const client = new AdminClient();
         const save = async (): Promise<SaveDefaultResult> => {
-            const flown = flownDefaults(ctx.session);
+            const flown = flownDefaults(ctx.session, ctx.prefs, ctx.scene.id);
             const r = await saveSceneDefault(client, ctx.scene.id, flown);
             if (!gone) ctx.hud.flash(resultText(r, flown.scale), 7000);
             return r;
         };
         ctx.hook.sceneDefault = {
             offered: () => offItem !== null,
-            flown: () => flownDefaults(ctx.session),
+            flown: () => flownDefaults(ctx.session, ctx.prefs, ctx.scene.id),
             save
         };
         // the hint first: without it no request at all; with it, the session decides

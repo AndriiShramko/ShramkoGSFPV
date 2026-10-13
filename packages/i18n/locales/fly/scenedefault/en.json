@@ -3,6 +3,7 @@
   "scenedefault.saved": "Saved what you fly now (walls, floating-voxel cleanup, scene size, collision ceiling, wind) as this scan's default in the catalogue draft. Publish the draft on the admin page.",
   "scenedefault.keptScale": "Scene size x{s} is beyond the catalogue's x4, so the scan keeps its own size.",
   "scenedefault.keptWind": "The live wind at the place is today's weather, not a default: the scan keeps its own wind.",
+  "scenedefault.keptWindOff": "Your wind is switched off, and that is your own setting for every scan, not this scan's: the scan keeps its wind.",
   "scenedefault.fail.not-in-catalogue": "This scan is not in the catalogue. Add it on the admin page first.",
   "scenedefault.fail.session": "Your admin session has ended. Sign in on the admin page and try again.",
   "scenedefault.fail.refused": "The server did not accept the draft. Nothing was saved.",

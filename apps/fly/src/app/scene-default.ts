@@ -16,10 +16,14 @@
 //    pilot goes to x100) the entry keeps its scale and the result says so. The pilot's offset (Scene
 //    size scales around the drone) has no catalogue field: the default scales as the catalogue does.
 //  - ceilingM: the ceiling flown, scan metres (the number the walls were cut with); none = no field.
-//  - wind: the custom wind as 'manual'; still air flown (wind off, or a scan without wind) = no field;
-//    the scan's own wind flown = the entry's wind untouched (its source, e.g. 'climate', stays); the
-//    live wind of the place is weather, not a default: the entry keeps its wind and the result says so.
+//  - wind (FlownWind, from flownWind): the entry's wind is never removed. The admin's own wind for this
+//    scan is saved as 'manual', still air picked for it (0 m/s, no gusts) as a calm 'manual' wind. The
+//    scan's own wind flown, or none to fly: the entry's wind untouched (its source, e.g. 'climate',
+//    stays). The live wind of the place is weather, not a default: kept, and the result says so. Wind
+//    switched off is the pilot's own setting for every scan (prefs wind.mode is global), not the scan's:
+//    kept, and the result says so when the entry has a wind.
 import type { CatalogScene, SceneCatalog, SceneWind } from '@gsfpv/scenes';
+import type { WindMode, WindSpec } from '../session/wind-source';
 
 /** The catalogue's range of `scale` (packages/scenes catalog.ts, apps/api/admin.py clean_scene). */
 export const CATALOG_SCALE_MIN = 0.25;
@@ -37,19 +41,46 @@ export interface FlownDefaults {
     scale: number;
     /** the collision ceiling flown, scan metres; null = none */
     ceilingM: number | null;
-    /** the wind flown and where it came from; null = still air */
-    wind: { source: 'scene' | 'now' | 'custom'; fromDeg: number; speed: number; gust: number } | null;
+    /** the wind flown, in the terms of the scan's default (flownWind) */
+    wind: FlownWind;
+}
+
+/**
+ * The wind flown, as the scan's default sees it: the scan's own (or none to fly), the live wind of
+ * the place, the pilot's wind switched off, or the admin's own numbers for this scan (0 m/s without
+ * gusts: still air picked for it).
+ */
+export type FlownWind =
+    | { source: 'scene' | 'now' | 'off' }
+    | { source: 'custom'; fromDeg: number; speed: number; gust: number };
+
+/**
+ * The wind flown, from the session's wind (null: still air) and the pilot's wind.mode with this scan's
+ * custom numbers. Still air alone says nothing about the scan: wind off is the pilot's setting for
+ * every scan ('off'); a custom wind of 0 m/s without gusts is still air picked for this scan ('custom',
+ * calm); anything else (no wind on the scan, no live answer, a change not flown yet) is 'scene'.
+ */
+export function flownWind(spec: WindSpec | null, mode: WindMode, custom: { fromDeg: number; speed: number; gust: number }): FlownWind {
+    if (spec) return spec.source === 'custom' ? { source: 'custom', fromDeg: spec.fromDeg, speed: spec.speed, gust: spec.gust } : { source: spec.source };
+    if (mode === 'off') return { source: 'off' };
+    if (mode === 'custom' && custom.speed <= 0 && custom.gust <= 0) return { source: 'custom', fromDeg: custom.fromDeg, speed: 0, gust: 0 };
+    return { source: 'scene' };
 }
 
 /** The catalogue fields the action writes. */
 export type DefaultField = 'walls' | 'dropFloaters' | 'scale' | 'ceilingM' | 'wind';
 
+/**
+ * Left untouched on purpose, each said to the admin: 'scale' above the catalogue's x4; 'wind-live' the
+ * live wind (weather); 'wind-off' the pilot's wind switched off (a personal setting, not the scan's).
+ */
+export type KeptField = 'scale' | 'wind-live' | 'wind-off';
+
 /** What a save changes in the scan's entry: fields set, fields removed (= the catalogue's default), fields left as they are on purpose. */
 export interface SceneDefaultPatch {
     set: Partial<Pick<CatalogScene, DefaultField>>;
     drop: DefaultField[];
-    /** left untouched because the catalogue cannot hold what is flown: scale above x4, the live wind */
-    kept: ('scale' | 'wind')[];
+    kept: KeptField[];
 }
 
 const fin = (v: number): boolean => typeof v === 'number' && Number.isFinite(v);
@@ -67,10 +98,10 @@ export function sceneDefaultPatch(f: FlownDefaults): SceneDefaultPatch {
     if (f.ceilingM !== null && fin(f.ceilingM)) p.set.ceilingM = f.ceilingM;
     else p.drop.push('ceilingM');
     const w = f.wind;
-    if (w === null) p.drop.push('wind');
-    else if (w.source === 'custom') p.set.wind = { fromDeg: w.fromDeg, speed: w.speed, gust: w.gust, source: 'manual' } satisfies SceneWind;
-    else if (w.source === 'now') p.kept.push('wind');
-    // 'scene': the entry's own wind is what is flown; nothing to write
+    if (w.source === 'custom') p.set.wind = { fromDeg: w.fromDeg, speed: w.speed, gust: w.gust, source: 'manual' } satisfies SceneWind;
+    else if (w.source === 'now') p.kept.push('wind-live');
+    else if (w.source === 'off') p.kept.push('wind-off');
+    // 'scene': the entry's own wind is what is flown (or it has none); nothing to write
     return p;
 }
 

@@ -10,12 +10,13 @@ import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { CatalogScene, SceneCatalog } from '../../../packages/scenes/src';
 import { ADMIN_HINT_KEY, AdminClient, adminHinted } from '../../../apps/fly/src/admin/api';
-import { sceneDefaultPatch, saveSceneDefault, withSceneDefault } from '../../../apps/fly/src/app/scene-default';
+import { flownWind, sceneDefaultPatch, saveSceneDefault, withSceneDefault } from '../../../apps/fly/src/app/scene-default';
 import type { FlownDefaults } from '../../../apps/fly/src/app/scene-default';
+import type { WindSpec } from '../../../apps/fly/src/session/wind-source';
 
 const REPO = join(__dirname, '..', '..', '..');
 
-const PLAIN: FlownDefaults = { walls: 'on', dropFloaters: 0, scale: 1, ceilingM: null, wind: null };
+const PLAIN: FlownDefaults = { walls: 'on', dropFloaters: 0, scale: 1, ceilingM: null, wind: { source: 'scene' } };
 const TUNED: FlownDefaults = { walls: 'off', dropFloaters: 6, scale: 2, ceilingM: 12.5, wind: { source: 'custom', fromDeg: 0, speed: 5, gust: 2 } };
 
 const ALPHA: CatalogScene = {
@@ -33,12 +34,13 @@ describe('what is flown -> the catalogue entry (sceneDefaultPatch, withSceneDefa
         expect(p.kept).toEqual([]);
     });
 
-    it('the catalogue defaults are written as absent fields (no filter, size 1, no ceiling, still air)', () => {
+    it('the catalogue defaults are written as absent fields (no filter, size 1, no ceiling); the scan\'s wind is not removed', () => {
         const p = sceneDefaultPatch(PLAIN);
         expect(p.set).toEqual({ walls: 'on' });
-        expect(p.drop.sort()).toEqual(['ceilingM', 'dropFloaters', 'scale', 'wind']);
+        expect(p.drop.sort()).toEqual(['ceilingM', 'dropFloaters', 'scale']);
         const e = withSceneDefault(CAT, ALPHA.id, p)!.scenes[0];
-        for (const k of ['ceilingM', 'dropFloaters', 'scale', 'wind'] as const) expect(k in e).toBe(false);
+        for (const k of ['ceilingM', 'dropFloaters', 'scale'] as const) expect(k in e).toBe(false);
+        expect(e.wind).toEqual(ALPHA.wind);
     });
 
     it('Scene size above the catalogue\'s x4 keeps the entry\'s size; control: x4 itself is saved', () => {
@@ -50,13 +52,41 @@ describe('what is flown -> the catalogue entry (sceneDefaultPatch, withSceneDefa
     });
 
     it('the scan\'s own wind flown leaves the entry\'s wind (and its climate source) alone; the live wind is kept and said', () => {
-        const own = sceneDefaultPatch({ ...TUNED, wind: { source: 'scene', fromDeg: 200, speed: 3, gust: 1 } });
+        const own = sceneDefaultPatch({ ...TUNED, wind: { source: 'scene' } });
+        expect(own.kept).toEqual([]);
         expect(withSceneDefault(CAT, ALPHA.id, own)!.scenes[0].wind).toEqual(ALPHA.wind);
-        const live = sceneDefaultPatch({ ...TUNED, wind: { source: 'now', fromDeg: 10, speed: 9, gust: 4 } });
-        expect(live.kept).toEqual(['wind']);
+        const live = sceneDefaultPatch({ ...TUNED, wind: { source: 'now' } });
+        expect(live.kept).toEqual(['wind-live']);
         expect(withSceneDefault(CAT, ALPHA.id, live)!.scenes[0].wind).toEqual(ALPHA.wind);
         // control: the custom wind does replace it
         expect(withSceneDefault(CAT, ALPHA.id, sceneDefaultPatch(TUNED))!.scenes[0].wind?.source).toBe('manual');
+    });
+
+    it('wind switched off (the pilot\'s setting for every scan) keeps the entry\'s climate wind and says so; still air picked for the scan is saved as a calm manual wind', () => {
+        const off = sceneDefaultPatch({ ...TUNED, wind: { source: 'off' } });
+        expect(off.kept).toEqual(['wind-off']);
+        expect('wind' in off.set || off.drop.includes('wind')).toBe(false);
+        expect(withSceneDefault(CAT, ALPHA.id, off)!.scenes[0].wind).toEqual(ALPHA.wind);
+        // control: still air picked for this scan does change the entry (a known calm, not "no wind known")
+        const calm = sceneDefaultPatch({ ...TUNED, wind: { source: 'custom', fromDeg: 90, speed: 0, gust: 0 } });
+        expect(calm.kept).toEqual([]);
+        expect(withSceneDefault(CAT, ALPHA.id, calm)!.scenes[0].wind).toEqual({ fromDeg: 90, speed: 0, gust: 0, source: 'manual' });
+    });
+
+    it('which wind was flown: still air from wind off, from a calm custom wind, from a scan without wind; a flown wind by its source', () => {
+        const spec = (source: WindSpec['source']): WindSpec => ({ fromDeg: 120, speed: 4, gust: 1, compassDeg: 0, hasCompass: false, source });
+        const mine = { fromDeg: 45, speed: 7, gust: 3 };
+        const calm = { fromDeg: 45, speed: 0, gust: 0 };
+        expect(flownWind(null, 'off', mine)).toEqual({ source: 'off' });
+        expect(flownWind(null, 'custom', calm)).toEqual({ source: 'custom', fromDeg: 45, speed: 0, gust: 0 });
+        expect(flownWind(null, 'scene', calm)).toEqual({ source: 'scene' }); // the scan has no wind
+        expect(flownWind(null, 'now', calm)).toEqual({ source: 'scene' }); // no live answer, no wind of its own
+        // control: custom numbers with wind that do not fly yet (a change waiting for the flight) save nothing
+        expect(flownWind(null, 'custom', mine)).toEqual({ source: 'scene' });
+        // a flown wind is what it is, whatever the mode says now; custom keeps the flown numbers (control: not the stored ones)
+        expect(flownWind(spec('custom'), 'custom', mine)).toEqual({ source: 'custom', fromDeg: 120, speed: 4, gust: 1 });
+        expect(flownWind(spec('now'), 'now', mine)).toEqual({ source: 'now' });
+        expect(flownWind(spec('scene'), 'now', mine)).toEqual({ source: 'scene' }); // the live wind fell back to the scan's
     });
 
     it('a scan without walls says nothing about them; control: one with walls does', () => {
@@ -140,6 +170,10 @@ describe('the save through the admin API (session cookie + X-CSRF, the server cl
         const before = await draftOf(admin);
         const betaBefore = before.scenes.find((s) => s.id === BETA.id);
 
+        // wind switched off: the server keeps the entry's climate wind
+        expect((await saveSceneDefault(admin, ALPHA.id, { ...TUNED, wind: { source: 'off' } })).ok).toBe(true);
+        expect((await draftOf(admin)).scenes.find((s) => s.id === ALPHA.id)!.wind).toEqual(ALPHA.wind);
+
         const r = await saveSceneDefault(admin, ALPHA.id, TUNED);
         expect(r.ok).toBe(true);
         const after = await draftOf(admin);
@@ -149,10 +183,11 @@ describe('the save through the admin API (session cookie + X-CSRF, the server cl
         expect(a.title).toBe(ALPHA.title);
         expect(after.scenes.find((s) => s.id === BETA.id)).toEqual(betaBefore);
 
-        // back to the catalogue defaults: the server keeps the fields absent
+        // back to the catalogue defaults: the server keeps the fields absent; the scan's wind stays
         expect((await saveSceneDefault(admin, ALPHA.id, PLAIN)).ok).toBe(true);
         const plain = (await draftOf(admin)).scenes.find((s) => s.id === ALPHA.id)!;
-        for (const k of ['ceilingM', 'dropFloaters', 'scale', 'wind'] as const) expect(k in plain).toBe(false);
+        for (const k of ['ceilingM', 'dropFloaters', 'scale'] as const) expect(k in plain).toBe(false);
+        expect(plain.wind).toEqual({ fromDeg: 0, speed: 5, gust: 2, source: 'manual' });
 
         // control: an unknown scan is refused before any write
         const n = posts.length;

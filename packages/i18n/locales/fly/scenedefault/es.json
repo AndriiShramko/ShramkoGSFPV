@@ -3,6 +3,7 @@
   "scenedefault.saved": "Lo que vuelas ahora (paredes, limpieza de vóxeles flotantes, tamaño de la escena, techo de colisiones, viento) se ha guardado como predeterminado de este escaneo en el borrador del catálogo. Publica el borrador en la página de administración.",
   "scenedefault.keptScale": "El tamaño x{s} supera el x4 que admite el catálogo, así que el escaneo conserva su propio tamaño.",
   "scenedefault.keptWind": "El viento en directo del lugar es el tiempo de hoy, no un valor predeterminado: el escaneo conserva su propio viento.",
+  "scenedefault.keptWindOff": "Tienes el viento desactivado, y eso es un ajuste tuyo para todos los escaneos, no de este: el escaneo conserva su viento.",
   "scenedefault.fail.not-in-catalogue": "Este escaneo no está en el catálogo. Añádelo primero en la página de administración.",
   "scenedefault.fail.session": "Tu sesión de administración ha terminado. Vuelve a entrar en la página de administración e inténtalo de nuevo.",
   "scenedefault.fail.refused": "El servidor no aceptó el borrador. No se ha guardado nada.",
