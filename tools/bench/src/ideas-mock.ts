@@ -3,9 +3,14 @@
 // ideas/<id>, POST ideas/update (all or nothing, unknown fields refused), ideas/note, ideas/reply (queued
 // behind the undo window, waiting_setup without Gmail, or no_email), ideas/mail/cancel, ideas/done (done +
 // a DRAFT thank-you; an older draft becomes superseded), ideas/send-done {id, mail: the draft's id} (409
-// stale-draft for a superseded one), ideas/mail/send, and the existing reports/<id>/diagnostics. Used by tools/bench/test/admin-ideas.test.ts (a fake fetch)
-// and tools/bench/src/accept-v07-ideas.ts (Playwright routing). It sends nothing anywhere: an e-mail is
-// only a record with a state. Fixture people are made up (example.com addresses).
+// stale-draft for a superseded one), ideas/mail/send, and the existing reports/<id>/diagnostics; 503
+// ideas-store for the ideas routes while the store is unreadable (storeBroken). Used by
+// tools/bench/test/admin-ideas.test.ts (a fake fetch) and tools/bench/src/accept-v07-ideas.ts (Playwright
+// routing). It sends nothing anywhere: an e-mail is only a record with a state. Fixture people are made up
+// (example.com addresses).
+// Held to the server: apps/api/tests/ideas-admin-contract.json is replayed against the real handler
+// (apps/api/tests/test_ideas_contract.py) and against this mock (tools/bench/test/ideas-contract.test.ts),
+// so a difference between the two fails one of them. Change the three together.
 
 export interface MockCall { method: string; path: string; body: Record<string, unknown> | null }
 export interface MockAnswer { status: number; json: unknown; headers?: Record<string, string> }
@@ -22,6 +27,10 @@ type Rec = Record<string, unknown> & { id: string };
 type Mail = Record<string, unknown> & { id: string; kind: string; state: string };
 
 /** A record as lane B's new_record() makes it, with these fields over the defaults. */
+export function mockRecord(o: Record<string, unknown> & { id: string; kind: string }): Rec {
+    return rec(o);
+}
+
 function rec(o: Record<string, unknown> & { id: string; kind: string }): Rec {
     const contact = typeof o.contact === 'string' ? o.contact : '';
     const email = EMAIL.exec(contact)?.[0] ?? '';
@@ -59,6 +68,8 @@ export class IdeasMock {
     mailConfigured = true;
     /** answer the next POST to this route with this status (a failing server) */
     failNext: { path: string; status: number } | null = null;
+    /** ideas.json unreadable on the server: the ideas routes answer 503 ideas-store, the rest of the admin works */
+    storeBroken = false;
     private clock = Date.parse('2026-10-13T12:00:00Z');
     private mailSeq = 0;
     private noteSeq = 0;
@@ -94,11 +105,21 @@ export class IdeasMock {
         m.notBefore = this.now(MOCK_UNDO_S);
     }
 
+    /** A world step of the contract file: Gmail set up or not, the store unreadable. */
+    world(change: { mail?: boolean; store?: string }): void {
+        if (typeof change.mail === 'boolean') this.mailConfigured = change.mail;
+        if (change.store === 'broken') this.storeBroken = true;
+    }
+
     /** One request: `path` is under /api/admin/ (no leading slash). */
     handle(method: string, path: string, headers: Record<string, string>, body: Record<string, unknown> | null): MockAnswer {
         this.calls.push({ method, path, body });
         if (method === 'GET' && path === 'session') return { status: 200, json: { ok: true, csrf: MOCK_CSRF, expires: 0 } };
         if (method === 'GET' && path === 'catalog') return { status: 200, json: { ok: true, draft: { collections: [], scenes: [] }, published: null, dirty: false, history: [] } };
+        // admin.py checks the session and the CSRF token first, then answers 503 for the store
+        const storeRoute = path === 'ideas' || path.startsWith('ideas/') || path === 'reports' || path === 'reports/status';
+        if (method === 'POST' && (headers['x-csrf'] ?? '') !== MOCK_CSRF) return { status: 403, json: { ok: false, reason: 'csrf' } };
+        if (this.storeBroken && storeRoute) return { status: 503, json: { ok: false, reason: 'ideas-store' } };
         if (method === 'GET' && path === 'ideas') {
             return { status: 200, json: { ok: true, ideas: this.ideas, mail: { configured: this.mailConfigured, from: this.mailConfigured ? 'owner@example.com' : null }, bot: { configured: false }, undoSeconds: MOCK_UNDO_S } };
         }
@@ -113,7 +134,6 @@ export class IdeasMock {
             return it?.diagnostics === true ? { status: 200, json: { id: it.id, diagnostics: { browser: { userAgent: 'test' }, errors: [] } }, headers: { 'content-disposition': `inline; filename="${it.id}.json"` } } : { status: 404, json: { ok: false } };
         }
         if (method !== 'POST') return { status: 404, json: { ok: false } };
-        if ((headers['x-csrf'] ?? '') !== MOCK_CSRF) return { status: 403, json: { ok: false, reason: 'csrf' } };
         if (this.failNext && this.failNext.path === path) {
             const s = this.failNext.status;
             this.failNext = null;
