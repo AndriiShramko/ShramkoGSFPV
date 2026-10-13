@@ -1,8 +1,8 @@
 {
   "name": "v03-a6-determinism",
   "context": {
-    "date": "2026-10-13T14:20:42.628Z",
-    "gitHead": "016693d",
+    "date": "2026-10-13T14:57:44.462Z",
+    "gitHead": "39f481f",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -64,7 +64,7 @@
   "visibility": null,
   "control": {
     "name": "Math.random in the sim step must change the hash",
-    "nodeHash": "98717e6ad74c165e0400eb6b7591b07fbd62681bcf92bae70adff00bfe70098e",
+    "nodeHash": "0b8a8f190b0269cf5b3c24a21d843206f042b47c0ce253de4ace32ee250e98b5",
     "chromeHash": null,
     "fired": true
   },
