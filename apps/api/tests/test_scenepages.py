@@ -3,6 +3,7 @@ site build's (written here; the real ones are checked too when apps/site/out/sce
 hostile titles as the negative controls of the escaping. No network. Every check has a negative control."""
 from __future__ import annotations
 
+import html
 import http.client
 import json
 import re
@@ -57,6 +58,11 @@ SCENES = [
      "voxelCm": 5, "extentM": [25.3, 10.0, 17.7], "scale": 2},
     {"id": "aaaaaa01", "title": "Hidden one", "author": "x", "license": "", "kind": "other", "collision": True, "hidden": True},
 ]
+# b11e45d1 in the real catalogue: SuperSplat names no author for it
+ANON = {"id": "b11e45d1", "title": "yamato koriyama castle", "author": "", "license": "", "kind": "exterior", "collision": True,
+        "origin": {"url": "https://superspl.at/scene/b11e45d1", "description": "The castle walls and the moat at dusk, from the air."}}
+USER_ONLY = {"id": "b11e45d2", "title": "Castle by user", "author": "", "license": "", "kind": "exterior", "collision": True,
+             "origin": {"url": "https://superspl.at/scene/b11e45d2", "user": "castle_fan"}}
 
 
 def catalog(scenes=None, published="2026-10-13T08:00:00Z"):
@@ -208,6 +214,42 @@ class Pages(unittest.TestCase):
         # control: the good templates load
         write_templates(self.dir)
         self.assertIsNotNone(sp.TemplateStore(lambda: self.dir).get()[0])
+
+    def test_a_scene_without_an_author_is_credited_to_no_one(self):
+        """The credited name is the author's, else the SuperSplat user's, else empty: never a placeholder."""
+        pages = sp.ScenePages(catalog(SCENES + [ANON, USER_ONLY]), self.store, ORIGIN)
+        doc, tset = pages._doc()[0], self.store.get()[0]
+        names = {sid: (pages.scene_context(doc, sid, "en", tset)["authorName"], pages.scene_context(doc, sid, "en", tset)["quoteBy"])
+                 for sid in (ANON["id"], USER_ONLY["id"], "70b50d42")}
+        self.assertEqual(names[ANON["id"]], ("", ""))
+        self.assertEqual(names[USER_ONLY["id"]], ("castle_fan", "castle_fan"))
+        cards = {c["href"].split("/")[3]: c["authorName"] for c in pages.index_context(doc, "en", tset)["cards"]}
+        self.assertEqual((cards[ANON["id"]], cards[USER_ONLY["id"]]), ("", "castle_fan"))
+        # control: a scene with an author is credited to the author, in the page and on its card
+        self.assertEqual(names["70b50d42"], ("Andrii Shramko", "Andrii Shramko"))
+        self.assertEqual(cards["70b50d42"], "Andrii Shramko")
+
+    @unittest.skipUnless((BUILT / "manifest.json").is_file(), "the site build's templates are not there (pnpm --filter @gsfpv/site build)")
+    def test_the_site_build_reads_well_without_an_author(self):
+        """No "by -", no "by ·", no dangling separator, no quote line starting with a comma; with an author all of it is there."""
+        pages = sp.ScenePages(catalog(SCENES + [ANON]), sp.TemplateStore(lambda: BUILT), ORIGIN)
+        plain = lambda h: html.unescape(re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", h)))
+        text = lambda path: plain(self.get(path, pages)[1])
+        for lang in sp.LANGS:
+            ui = json.loads((LOCALES / "scenepage" / f"{lang}.json").read_text(encoding="utf-8"))["ui"]
+            anon, authored = text(f"/{lang}/scenes/{ANON['id']}/"), text(f"/{lang}/scenes/70b50d42/")
+            by = ui["creditBy"]
+            for bad in (f"{by} -", f"{by} ·", "· ·", f" , {ui['quoteSource']}"):
+                self.assertNotIn(bad, anon, f"{lang}: {bad!r}")
+            self.assertIn(f"{ui['creditScan']} {ANON['title']} · ", anon, lang)
+            self.assertIn(ui["quoteSourceAlone"], anon, lang)
+            # control: the authored scene keeps "by <author>" and "<author>, from the description"
+            self.assertIn(f"{by} Andrii Shramko ·", authored, lang)
+            self.assertIn(f"Andrii Shramko, {ui['quoteSource']}", authored, lang)
+            index = self.get(f"/{lang}/scenes/", pages)[1]
+            card = lambda sid: plain(index.split(f'/{lang}/scenes/{sid}/"', 1)[1].split("</li>", 1)[0])
+            self.assertNotIn(f"· {ui['wallsYes']}", card(ANON["id"]), lang)
+            self.assertIn(f"Andrii Shramko · {ui['wallsNo']}", card("70b50d42"), lang)
 
     @unittest.skipUnless((BUILT / "manifest.json").is_file(), "the site build's templates are not there (pnpm --filter @gsfpv/site build)")
     def test_the_site_build_templates(self):

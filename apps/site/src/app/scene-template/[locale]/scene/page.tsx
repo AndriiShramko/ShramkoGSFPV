@@ -84,11 +84,19 @@ function ScenePage({ locale }: { locale: Locale }) {
               <figure className="mt-10 border-l-2 border-accent pl-5">
                 <figcaption className="eyebrow">{ui.quoteTitle}</figcaption>
                 <blockquote className="mt-3 text-ink/85 italic">{slot("quote")}</blockquote>
+                {/* "Author, from the scene's description on SuperSplat"; a scene without an author name only the source */}
                 <p className="mt-2 text-sm text-muted">
-                  {slot("quoteBy")},{" "}
-                  <a href={slot("originUrl")} target="_blank" rel="noopener noreferrer" className="link">
-                    {ui.quoteSource}
-                  </a>
+                  <If name="quoteBy">
+                    {slot("quoteBy")},{" "}
+                    <a href={slot("originUrl")} target="_blank" rel="noopener noreferrer" className="link">
+                      {ui.quoteSource}
+                    </a>
+                  </If>
+                  <Unless name="quoteBy">
+                    <a href={slot("originUrl")} target="_blank" rel="noopener noreferrer" className="link">
+                      {ui.quoteSourceAlone}
+                    </a>
+                  </Unless>
                 </p>
               </figure>
             </If>
@@ -158,13 +166,17 @@ function ScenePage({ locale }: { locale: Locale }) {
               <a href={slot("originUrl")} target="_blank" rel="noopener noreferrer" className="link">
                 {slot("name")}
               </a>{" "}
-              · {ui.creditBy}{" "}
-              <If name="authorUrl">
-                <a href={slot("authorUrl")} target="_blank" rel="noopener noreferrer" className="link">
-                  {slot("authorName")}
-                </a>
+              {/* "by <author>" only when SuperSplat names one (a scene without an author reads "Scan X · licence") */}
+              <If name="authorName">
+                · {ui.creditBy}{" "}
+                <If name="authorUrl">
+                  <a href={slot("authorUrl")} target="_blank" rel="noopener noreferrer" className="link">
+                    {slot("authorName")}
+                  </a>
+                </If>
+                <Unless name="authorUrl">{slot("authorName")}</Unless>{" "}
               </If>
-              <Unless name="authorUrl">{slot("authorName")}</Unless> ·{" "}
+              ·{" "}
               {/* "licence CC BY 4.0" when SuperSplat names a known licence; otherwise the slot alone, which is
                   either the licence text or the "no licence stated" phrase (never "licence no licence stated"). */}
               <If name="licenseUrl">

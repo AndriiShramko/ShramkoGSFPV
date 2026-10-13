@@ -134,6 +134,19 @@ def quote_of(description: str | None, title: str) -> str:
     return cut.rstrip(" ,;:.-") + "…"
 
 
+def origin_user(s: dict) -> str | None:
+    """The author's SuperSplat user name from the entry's origin, when it is a plain user name."""
+    origin = s.get("origin") if isinstance(s.get("origin"), dict) else {}
+    u = origin.get("user")
+    return u if isinstance(u, str) and _USER_RE.fullmatch(u) else None
+
+
+def credited(s: dict) -> str:
+    """The name a scene is credited to: the author's, else their SuperSplat user name, else "" (the templates
+    then leave out "by ..." and the separators around it; never a placeholder such as "-")."""
+    return s.get("author") or origin_user(s) or ""
+
+
 def poster(s: dict, size: str = "m") -> str:
     th = s.get("thumb")
     if isinstance(th, str) and _THUMB_RE.fullmatch(th):
@@ -272,7 +285,7 @@ class ScenePages:
         author = s.get("author") or ""
         origin = s.get("origin") if isinstance(s.get("origin"), dict) else {}
         origin_url = origin.get("url") if isinstance(origin.get("url"), str) and _ORIGIN_RE.fullmatch(origin["url"]) else f"https://superspl.at/scene/{sid}"
-        user = origin.get("user") if isinstance(origin.get("user"), str) and _USER_RE.fullmatch(origin["user"]) else None
+        user = origin_user(s)
         geo = s.get("geo") if isinstance(s.get("geo"), dict) else None
         place = (geo or {}).get("place") or ""
         walls = s.get("collision") is not False
@@ -366,7 +379,7 @@ class ScenePages:
         ctx = {
             "lang": lang, "path": f"{sid}/", "name": name, "h1": ph["h1"].format(name=name), "lede": ph["lede"], "kindLabel": kind,
             "place": place, "poster": big, "posterAlt": name, "flyHref": fly_href(s, lang), "originUrl": origin_url, "summary": summary,
-            "about": about, "quote": quote, "quoteBy": author, "authorName": author or (user or "-"),
+            "about": about, "quote": quote, "quoteBy": credited(s), "authorName": credited(s),
             "authorUrl": f"https://superspl.at/user/{user}" if user else "", "license": lic or ph["licenseNone"], "licenseUrl": lic_url or "",
             "updated": fmt_date(doc.get("published"), ph), "indexHref": f"/{lang}/scenes/", "homeHref": f"/{lang}/",
             "facts": facts, "tags": tags, "faq": faq, "share": self.share(tset, page_url, ph["shareText"].format(name=name)), "more": more,
@@ -418,7 +431,7 @@ class ScenePages:
         count = str(len(scenes))
         cards = [{"href": f"/{lang}/scenes/{s['id']}/", "flyHref": fly_href(s, lang), "title": s["title"], "poster": poster(s, "m"),
                   "kindLabel": self.kind_label(s, ph), "place": (s.get("geo") or {}).get("place") or "",
-                  "walls": s.get("collision") is not False, "authorName": s.get("author") or ""} for s in scenes]
+                  "walls": s.get("collision") is not False, "authorName": credited(s)} for s in scenes]
         url = self.url(lang)
         title = ph["indexPageTitle"]
         desc = ph["indexDescription"].format(count=count)

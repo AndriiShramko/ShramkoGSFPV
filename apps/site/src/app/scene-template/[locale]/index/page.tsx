@@ -60,7 +60,7 @@ function IndexPage({ locale }: { locale: Locale }) {
                       </a>
                     </h2>
                     <p className="mt-1 text-sm text-muted">
-                      {slot("authorName")} ·{" "}
+                      <If name="authorName">{slot("authorName")} · </If>
                       <If name="walls">
                         <span className="text-accent">{ui.wallsYes}</span>
                       </If>
