@@ -1,7 +1,7 @@
 // What the HUD's wind dial shows (v0.7 lane E; ui/wind-dial.ts draws it), without the DOM: the wind
 // the craft flies in now relative to its nose, and where north is when the scene has a compass
 // heading. Angles are degrees clockwise from the nose (screen up), as the craft turns right.
-// Node tests: tools/bench/test/wind-source.test.ts.
+// Node tests: tools/bench/test/wind-ceiling-app.test.ts.
 
 /** Which way the wind comes at the craft: on the nose, from behind, or from a side. */
 export type WindSide = 'head' | 'tail' | 'left' | 'right';

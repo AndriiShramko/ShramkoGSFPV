@@ -1,6 +1,6 @@
 // Which collision ceiling a flight flies with, and how its height reads to the pilot (v0.7 lane E,
 // the owner's item 10; docs/wip/v07-e.md). No DOM: the flight shell, the scene host, the ceiling
-// feature (app/builtin/ceiling.ts) and tools/bench/test/ceiling-source.test.ts share it.
+// feature (app/builtin/ceiling.ts) and tools/bench/test/wind-ceiling-app.test.ts share it.
 //
 // Heights are stored in the scan's own coordinates (scale 1, metres up: the catalogue's ceilingM, the
 // log's) and shown as metres above the start at the size flown: h = s * c + t_y - spawn y.

@@ -2,7 +2,8 @@
 // Split from v0.2's session.ts (v0.3 W2-2): loading in loader.ts, replays in replay.ts, the
 // acceptance self-tests in selftest.ts; the flight model lives here.
 //
-// The flight model runs on the lives runner (log format /2, docs/architecture-v03.md C.9): a life
+// The flight model runs on the lives runner (log format /3, /2 still replays; docs/architecture-v03.md
+// C.9, docs/wip/v07-e.md section 3): a life
 // starts at the first spawn, at every respawn and at every change of a 'life' setting, and each
 // life's header carries its params, walls and start state, so it replays on its own. Respawns
 // are decided by the RespawnDirector inside the runner's step loop (C.6: after a crash, when stuck,

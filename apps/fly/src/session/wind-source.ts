@@ -1,7 +1,7 @@
 // Which wind a flight flies in (v0.7 lane E, the owner's item 10; docs/wip/v07-e.md section 6): the
 // pilot's wind.mode over the scene's catalogue entry (its `wind` and `compassDeg`), the live wind of
 // the place (lane A's GET /api/wind/<sceneId>?mode=now), and the pilot's own numbers for this scan.
-// No DOM: fetch is injected, so tools/bench/test/wind-source.test.ts runs it in Node. The session
+// No DOM: fetch is injected, so tools/bench/test/wind-ceiling-app.test.ts runs it in Node. The session
 // turns the result into sim-core's WindConfig (it adds the gust seed and the ground's height).
 import type { CatalogScene } from '@gsfpv/scenes';
 import type { PrefsStore } from '@gsfpv/prefs';
