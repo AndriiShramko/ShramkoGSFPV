@@ -15,7 +15,6 @@
   "rec.download": "Zapisz plik",
   "rec.drops": "{fps} fps · powtórzone klatki: {dup} · utracone: {drop}",
   "rec.parts": "pliki: {n}",
-  "rec.onlyShowcase": "Nagrywać można tylko skany z wystawy — ich autorzy się zgodzili.",
   "rec.unsupported": "Ta przeglądarka nie potrafi kodować wideo.",
   "rec.memoryCap": "Zatrzymano po 2 min: ta przeglądarka trzyma wideo w pamięci.",
   "rec.error": "Nagrywanie przerwane: {e}.",
@@ -47,12 +46,18 @@
   "set.recording.resolution.opt.2160p": "4K (2160p)",
   "set.recording.resolution.opt.native": "Jak na ekranie",
   "set.recording.auto": "Autonagrywanie",
-  "set.recording.auto.help": "Start przy uzbrojeniu, stop 3 s po rozbrojeniu, do ostatnio wybranego folderu. Tylko skany z wystawy.",
+  "set.recording.auto.help": "Start przy uzbrojeniu, stop 3 s po rozbrojeniu, do ostatnio wybranego folderu.",
   "set.recording.folder": "Folder",
   "set.recording.folder.help": "Gdzie trafiają filmy bez pytania za każdym razem (Chrome i Edge na komputerze). Inne przeglądarki trzymają wideo i dają plik po locie.",
   "set.recording.splitMin": "Nowy plik co",
   "set.recording.splitMin.help": "Długi lot dzieli się na pliki: gdy karta padnie, przepada tylko ostatnia część.",
   "rec.menu.start": "Zacznij nagrywać",
   "rec.menu.stop": "● Nagrywanie {t} — zatrzymaj",
-  "rec.dot": "Nagrywanie, {t}. Zatrzymaj nagrywanie"
+  "rec.dot": "Nagrywanie, {t}. Zatrzymaj nagrywanie",
+  "set.recording.authorNotice": "Czyj to skan",
+  "set.recording.authorNotice.help": "Pierwsze nagranie skanu spoza wystawy pokazuje jedną linię na pasku nagrywania: czyj to skan, jaka licencja i że nagranie jest Twoje — do użycia z podaniem autora.",
+  "rec.notice": "Skan: {author} ({license}). Nagranie jest Twoje, podobnie jak odpowiedzialność za to, jak go użyjesz: podaj autora skanu przy publikacji.",
+  "rec.notice.author": "Skan: {author}. Nagranie jest Twoje, podobnie jak odpowiedzialność za to, jak go użyjesz: podaj autora skanu przy publikacji.",
+  "rec.notice.unknown": "Ten skan należy do swojego autora na SuperSplat. Nagranie jest Twoje, podobnie jak odpowiedzialność za to, jak go użyjesz: podaj autora skanu przy publikacji.",
+  "rec.notice.hide": "Nie pokazuj więcej"
 }

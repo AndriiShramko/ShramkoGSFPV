@@ -13,6 +13,8 @@ import { SCENES_DEFS } from './scenes';
 import { SCENE_DEFS } from './scene';
 import { VOXELS_DEFS } from './voxels';
 import { RECORDING_DEFS } from './recording';
+import { CROSSHAIR_DEFS } from './crosshair';
+import { SOUND_DEFS } from './sound';
 
 export const SCHEMA = defineSettings([
     ...FLIGHT_DEFS,
@@ -26,7 +28,9 @@ export const SCHEMA = defineSettings([
     ...SCENES_DEFS,
     ...SCENE_DEFS,
     ...VOXELS_DEFS,
-    ...RECORDING_DEFS
+    ...RECORDING_DEFS,
+    ...CROSSHAIR_DEFS,
+    ...SOUND_DEFS
 ]);
 
 export { DRONE_IDS } from './drone';
@@ -36,4 +40,5 @@ export { validateTransform, SCALE_MIN, SCALE_MAX, WALLS_OPTIONS } from './scene'
 export { VOXEL_STYLES, VOXEL_VIEWS } from './voxels';
 export type { SceneTransform } from './scene';
 export { validateFolder } from './recording';
+export { CROSSHAIR_SHAPES, CROSSHAIR_COLORS } from './crosshair';
 export type { FolderValue } from './recording';

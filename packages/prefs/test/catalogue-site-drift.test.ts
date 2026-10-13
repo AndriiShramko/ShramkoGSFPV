@@ -38,15 +38,17 @@ describe('a branch that ships without regenerating keeps the catalogue checks gr
     it('settings shipped until the Russian word for their count changes: the committed check is green, the live comparison red', async () => {
         const { gen, committed } = await inBranch((real) => {
             const base = committedSettings();
-            const planned = real.SCHEMA.defs.filter((d) => d.status === 'planned');
             // a branch may have shipped settings already (W3-1's scenes.* before the lead regenerates)
             const now = real.SCHEMA.defs.filter((d) => d.status === 'shipped').length;
-            let defs = real.SCHEMA.defs;
-            for (let k = 1; k <= planned.length && ruCat(now + k - 1) === ruCat(base); k++) {
-                const ship = new Set(planned.slice(0, k).map((d) => d.id));
-                defs = real.SCHEMA.defs.map((d) => (ship.has(d.id) ? { ...d, status: 'shipped' as const } : d));
+            // The settings the branch ships are copies of a shipped one under new ids, with its texts: the
+            // real planned settings ran out of translated ones (display.latencyGuard has none) once v0.7
+            // shipped seven settings, and which ones ship does not matter here, only how many.
+            const like = real.SCHEMA.byId.get('crash.enabled')!;
+            const extra: Prefs.SettingDef[] = [];
+            for (let k = 1; k <= 30 && ruCat(now + k - 1) === ruCat(base); k++) {
+                extra.push({ ...like, id: `crash.drift${k}`, label: real.labelKey(like), help: real.helpKey(like), status: 'shipped' } as Prefs.SettingDef);
             }
-            return { SCHEMA: real.defineSettings(defs) };
+            return { SCHEMA: real.defineSettings([...real.SCHEMA.defs, ...extra]) };
         });
         const live = gen.buildFeatures('2026-10-01').features.counts;
         const counts = committed.committedFeatures().counts;

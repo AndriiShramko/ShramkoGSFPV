@@ -1,0 +1,22 @@
+{
+  "set.crosshair.shape": "Celownik",
+  "set.crosshair.shape.help": "Znacznik na środku obrazu do celowania w przerwę. Domyślnie wyłączony, jak w prawdziwym obrazie FPV. Nigdy nie trafia do Twoich nagrań i znika w trybie kinowym.",
+  "set.crosshair.shape.opt.off": "Wyłączony",
+  "set.crosshair.shape.opt.dot": "Kropka",
+  "set.crosshair.shape.opt.cross": "Krzyżyk",
+  "set.crosshair.shape.opt.circle": "Okrąg",
+  "set.crosshair.shape.opt.ringDot": "Pierścień z kropką",
+  "set.crosshair.size": "Rozmiar celownika",
+  "set.crosshair.size.help": "Jako część krótszego boku ekranu, więc wygląda tak samo na telefonie i na dużym monitorze.",
+  "set.crosshair.color": "Kolor celownika",
+  "set.crosshair.color.help": "Wybierz taki, który dobrze widać na skanie, nad którym latasz.",
+  "set.crosshair.color.opt.green": "Zielony",
+  "set.crosshair.color.opt.white": "Biały",
+  "set.crosshair.color.opt.yellow": "Żółty",
+  "set.crosshair.color.opt.red": "Czerwony",
+  "set.crosshair.color.opt.cyan": "Cyjan",
+  "set.crosshair.color.opt.magenta": "Magenta",
+  "set.crosshair.color.opt.black": "Czarny",
+  "set.crosshair.opacity": "Krycie celownika",
+  "set.crosshair.opacity.help": "1 to pełne krycie; mniej i skan prześwituje."
+}

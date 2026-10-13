@@ -15,6 +15,7 @@
   "keys.scene.next": "Следующая сцена",
   "keys.scene.random": "Случайная сцена",
   "keys.settings.open": "Настройки",
+  "keys.share.open": "Поделиться этой сценой",
   "keys.voxels.cycle": "Воксельная сетка: скрыта / поверх скана / только воксели",
   "keys.walls.toggle": "Стены вкл. / выкл. для этого скана"
 }

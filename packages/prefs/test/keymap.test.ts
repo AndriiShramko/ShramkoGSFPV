@@ -55,12 +55,15 @@ const SHIPPED_IN_WAVE2: readonly string[] = [
     // W3-3: [ and ] scene smaller / larger around the drone (E.7)
     'scale.down', 'scale.up',
     // W5: B opens the feedback dialog (bug / idea / cooperation)
-    'feedback.open'
+    'feedback.open',
+    // v0.7 D1: L shares the scene flown (the share panel)
+    'share.open'
 ];
 
 /** Keys added after the design table, by the agent whose feature handles them. */
 const ADDED_AFTER_DESIGN: Record<string, string[]> = {
-    'feedback.open': ['B']
+    'feedback.open': ['B'],
+    'share.open': ['L']
 };
 
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });

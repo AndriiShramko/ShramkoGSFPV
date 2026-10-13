@@ -15,7 +15,6 @@
   "rec.download": "Guardar archivo",
   "rec.drops": "{fps} fps · fotogramas repetidos: {dup} · perdidos: {drop}",
   "rec.parts": "archivos: {n}",
-  "rec.onlyShowcase": "Solo se graba en los escaneos del escaparate: sus autores lo aceptaron.",
   "rec.unsupported": "Este navegador no puede codificar vídeo.",
   "rec.memoryCap": "Parado a los 2 min: este navegador guarda el vídeo en memoria.",
   "rec.error": "Grabación detenida: {e}.",
@@ -47,12 +46,18 @@
   "set.recording.resolution.opt.2160p": "4K (2160p)",
   "set.recording.resolution.opt.native": "Como en pantalla",
   "set.recording.auto": "Grabación automática",
-  "set.recording.auto.help": "Empieza al armar y para 3 s después de desarmar, en la última carpeta elegida. Solo escaneos del escaparate.",
+  "set.recording.auto.help": "Empieza al armar y para 3 s después de desarmar, en la última carpeta elegida.",
   "set.recording.folder": "Carpeta",
   "set.recording.folder.help": "Dónde van los vídeos sin preguntar cada vez (Chrome y Edge en ordenador). Otros navegadores guardan el vídeo y ofrecen el archivo al terminar.",
   "set.recording.splitMin": "Nuevo archivo cada",
   "set.recording.splitMin.help": "Un vuelo largo se divide en archivos: si la pestaña falla, solo se pierde la última parte.",
   "rec.menu.start": "Empezar a grabar",
   "rec.menu.stop": "● Grabando {t} — parar",
-  "rec.dot": "Grabando, {t}. Parar la grabación"
+  "rec.dot": "Grabando, {t}. Parar la grabación",
+  "set.recording.authorNotice": "De quién es el escaneo",
+  "set.recording.authorNotice.help": "El primer vídeo de un escaneo fuera del escaparate muestra una línea en la barra de grabación: de quién es el escaneo, su licencia, y que el vídeo es tuyo para usarlo citando al autor.",
+  "rec.notice": "Escaneo de {author} ({license}). El vídeo es tuyo, y también la responsabilidad de cómo lo uses: cita al autor al publicarlo.",
+  "rec.notice.author": "Escaneo de {author}. El vídeo es tuyo, y también la responsabilidad de cómo lo uses: cita al autor al publicarlo.",
+  "rec.notice.unknown": "Este escaneo pertenece a su autor en SuperSplat. El vídeo es tuyo, y también la responsabilidad de cómo lo uses: cita al autor al publicarlo.",
+  "rec.notice.hide": "No volver a mostrar"
 }
