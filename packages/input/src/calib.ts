@@ -19,10 +19,14 @@
 
 import { ModeSwitchDetector, DEFAULT_SWITCH_MODES, copyModeSwitch, sameInput, switchChannel, switchPos } from './mode-switch';
 import type { ModeSwitch, SwitchInput, SwitchPos } from './mode-switch';
+import { hasModeRanges, rangesArm, rangesModeChannel } from './switches';
+import type { Switches } from './switches';
 import type { FlightMode } from '@gsfpv/sim-core';
 
-// the radio's flight-mode switch (Profile.modeSwitch) lives in its own module; one import path for the app
+// the radio's flight-mode switch (Profile.modeSwitch) and its channel functions (Profile.switches)
+// live in their own modules; one import path for the app
 export * from './mode-switch';
+export * from './switches';
 
 export type Fn = 'roll' | 'pitch' | 'throttle' | 'yaw';
 export const FNS: Fn[] = ['throttle', 'yaw', 'pitch', 'roll']; // prompt order: left stick first in Mode 2
@@ -69,6 +73,13 @@ export interface Profile {
      * the mode. Optional, so every older profile loads as it is and the format stays version 1.
      */
     modeSwitch?: ModeSwitch;
+    /**
+     * The radio's channel functions as Betaflight-style ranges (switches.ts; the Switches screen, v0.7).
+     * Present: its arm ranges decide the arm (none: the wizard's arm above) and its angle / horizon
+     * ranges the flight mode (none: the pilot's own mode); modeSwitch is then not read. Optional:
+     * absent, everything is the wizard's as before.
+     */
+    switches?: Switches;
 }
 
 /** The check screen's mode-switch row: the switch (null = none), where it is now, the positions seen, and whether a flip is watched for. */
@@ -1550,7 +1561,8 @@ export class CalibrationWizard {
         if (this.id === 'check' && p) {
             const out = mapFrame(p, f, this.mapOut);
             m.roll = out[0]; m.pitch = out[1]; m.throttle = out[2]; m.yaw = out[3];
-            m.arm = isLevel(p.arm) ? armOn(p.arm, f) : null;
+            // the channel functions decide the arm when they have an arm range (switches.ts)
+            m.arm = rangesArm(p.switches, f) ?? (isLevel(p.arm) ? armOn(p.arm, f) : null);
             const u = (out[2] + 1) / 2;
             const cks = st.checks ?? (st.checks = { throttleLow: false, armOn: null, centred: false });
             cks.throttleLow = u <= 0.05;
@@ -1721,6 +1733,24 @@ export function channelOrder(p: Profile): string {
     return (Object.entries(p.axes) as [Fn, AxisMap][]).sort((a, b) => a[1].index - b[1].index).map(([fn]) => letters[fn]).join('');
 }
 
+/**
+ * Does the radio set the flight mode (so the pilot's own mode is not used)? With `switches`: when they
+ * have an angle or horizon range; without: a mode switch from the wizard (or v0.1's angle switch).
+ */
+export function radioSetsMode(p: Profile): boolean {
+    return p.switches ? hasModeRanges(p.switches) : !!p.modeSwitch || !!p.angleMode;
+}
+
+/** Does the arm come from the channel ranges (not from the wizard's arm, a latch or Space)? */
+export function armByRanges(p: Profile | null): boolean {
+    return !!p?.switches && p.switches.ranges.some((r) => r.fn === 'arm');
+}
+
+/** The arm level of a frame: the arm ranges when the profile has any, else the wizard's arm (latching buttons and Space through `latch`). */
+export function profileArmLevel(p: Profile, f: RawFrame, latch: ArmLatch): boolean {
+    return rangesArm(p.switches, f) ?? latch.level(p.arm, f);
+}
+
 /** Map a raw frame through a profile to channels ch[0..5] (roll, pitch, throttle, yaw, arm, mode). */
 export function mapFrame(p: Profile, f: RawFrame, out: Float32Array): Float32Array {
     for (const fn of ['roll', 'pitch', 'yaw'] as Fn[]) {
@@ -1738,10 +1768,12 @@ export function mapFrame(p: Profile, f: RawFrame, out: Float32Array): Float32Arr
     if (th.invert) u = 1 - u;
     u = u < 0 ? 0 : u > 1 ? 1 : u;
     out[2] = u * 2 - 1;
-    out[4] = armOn(p.arm, f) ? 1 : -1;
-    // the radio's mode switch: MODE_CHANNEL of the mode its position selects; without one, the
-    // first wizard's angle switch (never set since) or acro, and Controls writes the pilot's mode
-    out[5] = p.modeSwitch ? switchChannel(p.modeSwitch, f) : p.angleMode && armOn(p.angleMode, f) ? 1 : -1;
+    out[4] = (rangesArm(p.switches, f) ?? armOn(p.arm, f)) ? 1 : -1;
+    // the channel functions' mode (switches.ts) or the radio's mode switch: MODE_CHANNEL of the mode
+    // selected; without either, the first wizard's angle switch (never set since) or acro, and
+    // Controls writes the pilot's mode
+    if (p.switches) out[5] = rangesModeChannel(p.switches, f);
+    else out[5] = p.modeSwitch ? switchChannel(p.modeSwitch, f) : p.angleMode && armOn(p.angleMode, f) ? 1 : -1;
     return out;
 }
 

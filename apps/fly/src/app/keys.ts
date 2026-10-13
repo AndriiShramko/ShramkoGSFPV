@@ -93,10 +93,35 @@ export class KeyRouter {
         return action;
     }
 
+    /**
+     * Run an action as if its first key were pressed (a radio switch's action, app/builtin/switches.ts):
+     * the same handler, the same blocks (a screen with keys of its own) and the same `when` (a
+     * crash-only action only in the crash state). The handler gets a synthetic keydown of that key.
+     * The action that ran, or null.
+     */
+    trigger(action: ActionId): ActionId | null {
+        for (const b of this.blocks) if (b()) return null;
+        const binding = bindingOf(action, this.map);
+        if (!binding || !this.routes(action)) return null;
+        if (binding.when !== 'always' && binding.when !== this.state()) return null;
+        const list = this.handlers.get(action);
+        const run = list?.[list.length - 1];
+        if (!run) return null;
+        const k = binding.keys[0];
+        run(makeKeyEvent(k.code, !!k.shift));
+        return action;
+    }
+
     /** Listen on `target` (the window) until the returned function is called. */
     attach(target: Pick<Window, 'addEventListener' | 'removeEventListener'> = window): () => void {
         const onKey = (e: Event): void => { this.route(e as KeyboardEvent); };
         target.addEventListener('keydown', onKey);
         return () => target.removeEventListener('keydown', onKey);
     }
+}
+
+/** A keydown for a triggered action: a real KeyboardEvent in the page, a plain stand-in where there is none (Node tests). */
+function makeKeyEvent(code: string, shiftKey: boolean): KeyboardEvent {
+    if (typeof KeyboardEvent === 'function') return new KeyboardEvent('keydown', { code, shiftKey, cancelable: true });
+    return { type: 'keydown', code, key: '', shiftKey, repeat: false, ctrlKey: false, altKey: false, metaKey: false, target: null, preventDefault: () => undefined } as unknown as KeyboardEvent;
 }

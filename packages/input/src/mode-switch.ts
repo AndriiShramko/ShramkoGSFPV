@@ -55,6 +55,14 @@ export function isFlightMode(v: unknown): v is FlightMode {
     return typeof v === 'string' && (FLIGHT_MODES as readonly string[]).includes(v);
 }
 
+/** A stored or imported switch input, checked (an axis 0..31 or a button bit 0..23); null when it cannot be read. */
+export function validSwitchInput(v: unknown): SwitchInput | null {
+    const i = v as { kind?: unknown; index?: unknown; bit?: unknown } | null | undefined;
+    if (i?.kind === 'axis' && Number.isInteger(i.index) && (i.index as number) >= 0 && (i.index as number) <= MAX_AXIS) return { kind: 'axis', index: i.index as number };
+    if (i?.kind === 'button' && Number.isInteger(i.bit) && (i.bit as number) >= 0 && (i.bit as number) <= MAX_BIT) return { kind: 'button', bit: i.bit as number };
+    return null;
+}
+
 /**
  * A stored or imported mode switch, checked: null when it cannot be read (the profile then loads
  * without one, so its sticks are never lost over a broken extra). Unknown fields are dropped.
@@ -62,11 +70,8 @@ export function isFlightMode(v: unknown): v is FlightMode {
 export function validModeSwitch(v: unknown): ModeSwitch | null {
     if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
     const o = v as { input?: unknown; modes?: unknown };
-    const i = o.input as { kind?: unknown; index?: unknown; bit?: unknown } | null | undefined;
-    let input: SwitchInput;
-    if (i?.kind === 'axis' && Number.isInteger(i.index) && (i.index as number) >= 0 && (i.index as number) <= MAX_AXIS) input = { kind: 'axis', index: i.index as number };
-    else if (i?.kind === 'button' && Number.isInteger(i.bit) && (i.bit as number) >= 0 && (i.bit as number) <= MAX_BIT) input = { kind: 'button', bit: i.bit as number };
-    else return null;
+    const input = validSwitchInput(o.input);
+    if (!input) return null;
     const m = o.modes;
     if (!Array.isArray(m) || m.length !== 3 || !m.every(isFlightMode)) return null;
     return { input, modes: [m[0], m[1], m[2]] };
