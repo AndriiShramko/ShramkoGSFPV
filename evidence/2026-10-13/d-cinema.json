@@ -1,0 +1,89 @@
+{
+  "name": "d-cinema",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-13T15:04:05.956Z",
+    "gitHead": "03ff24d",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5341",
+  "pass": true,
+  "state": {
+    "on": true,
+    "governorEnabled": false,
+    "lodRangeMax": 0,
+    "canRecord": true
+  },
+  "codec": "avc1.640033",
+  "recorder": {
+    "codec": "avc1.640033",
+    "width": 1728,
+    "height": 1080,
+    "fps": 60,
+    "frames": 361,
+    "bytes": 7934020,
+    "seconds": 6.016666666666667,
+    "duplicated": 180,
+    "heldForEncoder": 0,
+    "heldWhy": {
+      "readback": 0,
+      "encoder": 0
+    },
+    "dropped": 0,
+    "file": "gsfpv-887f27aa-20261013-170318.mp4",
+    "files": [
+      {
+        "name": "gsfpv-887f27aa-20261013-170318.mp4",
+        "bytes": 7934020,
+        "frames": 361,
+        "seconds": 6.016666666666667
+      }
+    ],
+    "where": "browser",
+    "folder": "",
+    "ended": "stop",
+    "picture": "webgpu"
+  },
+  "mp4": {
+    "boxes": [
+      "ftyp",
+      "mdat",
+      "moov"
+    ],
+    "samples": 361,
+    "width": 1728,
+    "height": 1080,
+    "codec": "avc1",
+    "bytes": 7934020,
+    "file": "evidence/\u2026/d/cinema-887f27aa.mp4"
+  },
+  "creditStripLuminanceStd": 0.268545352050994,
+  "d36": {
+    "canRecord": true,
+    "refused": false,
+    "frames": 181,
+    "strip": 0.3057205975687671,
+    "recButtonVisible": true,
+    "notice": "This scan belongs to its author on SuperSplat. The video is yours, and so is the responsibility for how you use it: credit the author when you post it.",
+    "credit": "superspl.at/scene/723068d7 \u00b7 ShramkoGSFPV \u00b7 gsfpv.flyreelstudio.eu",
+    "inCatalogue": false
+  },
+  "control": {
+    "what": "scene 723068d7 and h.cinema.start() in a browser without WebCodecs: refused, no REC",
+    "fired": true,
+    "state": {
+      "canRecord": false,
+      "refused": true,
+      "recording": false,
+      "recButtonVisible": false
+    }
+  }
+}

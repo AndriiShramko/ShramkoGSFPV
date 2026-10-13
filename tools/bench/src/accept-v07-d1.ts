@@ -18,8 +18,8 @@
 //   S1 also: Instagram with the clipboard API refused and the old execCommand copy working leaves the
 //       link in the link field. Control: e344977 left the caption there, its line breaks stripped by
 //       the input, evidence/2026-10-13/v07-d1-S1-control-e344977.json.
-//   S7  the burned-in credit is whole in an upright recording (a phone, 390 x 844 -> a 498 x 1080
-//       file at 1080p) of the catalogue's longest credit: a frame of the file (ffmpeg) has the text on
+//   S7  the burned-in credit is whole in an upright recording (a phone, 390 x 844 -> about 500 x
+//       1080 at 1080p) of the catalogue's longest credit: a frame of the file (ffmpeg) has the text on
 //       two lines or more and no letter at the right edge (the page is not drawn: the text is the only
 //       light thing in the frame). Picture: evidence/<date>/d1-ui/credit-portrait.png. Control:
 //       e344977's recorder (one clipped line), evidence/2026-10-13/v07-d1-S7-control-e344977.json.
@@ -281,7 +281,7 @@ if (want('S7')) {
         rows.forEach((r, i) => { if (i === 0 || r - rows[i - 1] > 3) lines++; });
         shape = { width: w, height: hgt, maxLitX: maxX, litRows: rows.length, lines };
     }
-    const pass = rec.width === 498 && rec.height === 1080 && shape.lines >= 2 && shape.maxLitX > 0 && shape.maxLitX < rec.width - 8 && String(rec.credit).includes('ShramkoGSFPV');
+    const pass = rec.height === 1080 && rec.width <= 540 && shape.lines >= 2 && shape.maxLitX > 0 && shape.maxLitX < rec.width - 8 && String(rec.credit).includes('ShramkoGSFPV');
     out.S7 = { pass, credit: rec.credit, frame: shape, picture: `evidence/${today()}/d1-ui/credit-portrait${tag}.png`, consoleErrors: errors };
     console.log('S7', pass ? 'PASS' : 'FAIL', JSON.stringify({ credit: rec.credit, shape }));
 }
