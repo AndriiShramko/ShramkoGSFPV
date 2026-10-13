@@ -107,6 +107,8 @@ export class InputHost {
         // before anything was chosen: the input from last time or the keyboard, never a dead screen
         r.onClose = () => {
             r.remove();
+            // the radio in use has its frames back (remove()): switches flipped on the screen run nothing
+            ctx.controls.resumeFrames();
             ctx.resume('controls');
             if (this.lastChoice) return;
             const c: RadioChoice = { kind: loadLastInput()?.kind === 'touch' ? 'touch' : 'keyboard', profile: null };
@@ -126,6 +128,9 @@ export class InputHost {
         this.touch = null;
         // the same input kept (Fly on the radio in use) stays armed; anything new starts disarmed
         if (c.profile !== ctx.controls.profile || c.kind !== ctx.controls.source) ctx.controls.setProfile(c.profile);
+        // the device's frames go (back) to the flight: an action switch flipped while a screen had
+        // them (Controls, Switches) runs nothing on the first frame
+        else ctx.controls.resumeFrames();
         ctx.controls.source = c.kind;
         if (c.kind === 'hid' && c.hid) c.hid.onFrame = (f) => ctx.controls.raw(f);
         if (c.kind === 'gamepad' && c.gamepad) c.gamepad.onFrame = (f) => ctx.controls.raw(f);

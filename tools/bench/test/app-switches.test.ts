@@ -130,6 +130,55 @@ describe('Controls with channel functions: arm on CH6, mode on CH5', () => {
     });
 });
 
+describe('switches flipped while Controls had the radio\'s frames run nothing when the flight gets them back', () => {
+    it('Fly on the radio in use (same profile): the first frame back only learns CH7, a flip after it runs; control: the frames handed back as they were fire', async () => {
+        // KeyboardSource (made by InputHost) listens on the window and the document, and samples on a timer
+        vi.stubGlobal('addEventListener', () => undefined);
+        vi.stubGlobal('window', { setInterval: () => 0, clearInterval: () => undefined });
+        vi.stubGlobal('document', { ...doc, addEventListener: () => undefined, querySelector: () => null });
+        try {
+            const { InputHost } = await import('../../../apps/fly/src/app/input');
+            const { c, fired } = controls(PILOT);
+            const hid = { onFrame: null as ((f: RawFrame) => void) | null, close: () => undefined };
+            const host = new InputHost({ controls: c } as never);
+            const choice = { kind: 'hid' as const, profile: PILOT, hid: hid as never };
+            host.use(choice, false);
+            const feed = (o: { ch7: number }) => hid.onFrame!(frame(o));
+            feed({ ch7: 1000 });
+            // Controls -> Switches borrows the frames (ui/radio.ts); the pilot flips CH7 on to watch its marker
+            const flight = hid.onFrame;
+            hid.onFrame = () => undefined;
+            hid.onFrame(frame({ ch7: 2000 }));
+            // Fly: the same profile handed back (InputHost.use keeps the gate, so no setProfile)
+            host.use(choice, false);
+            feed({ ch7: 2000 });
+            expect(fired).toEqual([]);
+            feed({ ch7: 1000 });
+            feed({ ch7: 2000 });
+            expect(fired).toEqual(['respawn.rewind']);
+            // control: the flight's callback put back as it was (what RadioScreen.remove() does on x)
+            // without the hand-back's reset: the switch flipped meanwhile fires on the first frame
+            feed({ ch7: 1000 });
+            hid.onFrame = () => undefined;
+            hid.onFrame(frame({ ch7: 2000 }));
+            hid.onFrame = flight;
+            feed({ ch7: 2000 });
+            expect(fired).toEqual(['respawn.rewind', 'respawn.rewind']);
+            // with it (InputHost's onClose calls resumeFrames after remove()): nothing
+            feed({ ch7: 1000 });
+            hid.onFrame = () => undefined;
+            hid.onFrame(frame({ ch7: 2000 }));
+            hid.onFrame = flight;
+            c.resumeFrames();
+            feed({ ch7: 2000 });
+            expect(fired).toEqual(['respawn.rewind', 'respawn.rewind']);
+        } finally {
+            vi.stubGlobal('document', doc);
+            vi.stubGlobal('window', undefined);
+        }
+    });
+});
+
 describe('KeyRouter.trigger: a switch presses the action\'s key', () => {
     it('runs the last handler with a keydown of the action\'s first key; respects blocks and the crash state', () => {
         let state: 'flight' | 'crash' = 'flight';

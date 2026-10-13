@@ -206,6 +206,17 @@ export class Controls {
     }
 
     /**
+     * The device's frames come back to the flight after a screen borrowed them (Controls: the wizard,
+     * the Switches screen, where the pilot flips switches to try them). An action switch flipped
+     * meanwhile must not run its action now: the next frame only learns where the action switches
+     * are, as at connect. Arm and mode need nothing here: the arm gate wants the switch seen off
+     * first anyway, and the mode is read from every frame.
+     */
+    resumeFrames(): void {
+        this.actions.reset();
+    }
+
+    /**
      * respawn.keepArmed (design C.3, item 23): a switch left on through a crash arms the respawned
      * craft with no new flip. Applies to the gate in use at once and to every new one.
      */
