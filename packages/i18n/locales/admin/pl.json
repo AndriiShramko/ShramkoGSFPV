@@ -10,7 +10,6 @@
   "admin.error.session": "Sesja wygasła. Zaloguj się ponownie.",
   "admin.logout": "Wyloguj",
   "admin.tab.scenes": "Sceny",
-  "admin.tab.reports": "Zgłoszenia",
   "admin.status.live": "Piloci widzą dokładnie tę listę.",
   "admin.status.dirty": "Nieopublikowane zmiany: piloci wciąż widzą opublikowaną listę.",
   "admin.status.saving": "Zapisuję szkic…",
@@ -74,17 +73,5 @@
   "admin.history.row": "{time}: scen {n}",
   "admin.history.restore": "Przywróć",
   "admin.history.confirm": "Przywrócić wersję z {time}? Piloci zobaczą ją w ciągu minuty.",
-  "admin.history.empty": "Stąd jeszcze nic nie opublikowano.",
-  "admin.reports.open": "Otwarte",
-  "admin.reports.closed": "Zamknięte",
-  "admin.reports.all": "Wszystkie",
-  "admin.reports.empty": "Brak zgłoszeń.",
-  "admin.reports.close": "Zamknij",
-  "admin.reports.reopen": "Otwórz ponownie",
-  "admin.reports.diagnostics": "Dane techniczne",
-  "admin.reports.scene": "Scena {id}",
-  "admin.reports.contact": "Kontakt: {contact}",
-  "admin.reports.suspect": "Wygląda na spam",
-  "admin.reports.bug": "Błąd",
-  "admin.reports.idea": "Pomysł"
+  "admin.history.empty": "Stąd jeszcze nic nie opublikowano."
 }
