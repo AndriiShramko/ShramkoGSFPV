@@ -209,6 +209,15 @@ class Reports(Api):
         s, _, _ = self.call("POST", "/api/report", {"kind": "idea", "message": "more scans", "t": 9000}, ip="198.51.100.7")
         self.assertEqual(s, 200)
 
+    def test_a_refusal_reads_the_body_first(self):
+        """A 429 sent before the body is read used to reach a client still sending a large body as a reset
+        connection (on Windows: ConnectionAbortedError; behind nginx: a 502), not as the 429."""
+        for _ in range(10):
+            server._rate(server._rhits, "203.0.113.5", 10, 3600.0)       # this visitor's allowance is used up
+        big = json.dumps({"kind": "bug", "message": "x", "t": 9000, "pad": "p" * 480_000}).encode()
+        for _ in range(12):   # the reset is a race: a dozen tries make the old early answer fail every run
+            self.assertEqual(self.call("POST", "/api/report", big)[0], 429)
+
     def test_disk_guard_keeps_the_record_skips_diagnostics(self):
         server._guard["tripped"] = True
         try:

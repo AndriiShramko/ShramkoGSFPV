@@ -130,7 +130,7 @@ class Routes(IdeasAdminTest):
         st, doc = self.call("ideas/done", {"id": rid, "summary": {"pl": "Deszcz jest w scenach."}}, cookie, csrf)
         self.assertEqual((st, doc["idea"]["status"], doc["draft"]["state"]), (200, "done", "draft"))
         seen = doc["draft"]["id"]                                      # the kanban shows this draft
-        st, doc = self.call("ideas/done", {"id": rid, "summary": {"pl": "Deszcz i wiatr są w scenach."}}, cookie, csrf)
+        st, doc = self.call("ideas/done", {"id": rid, "summary": {"pl": "Deszcz i wiatr s\u0105 w scenach."}}, cookie, csrf)
         current = doc["draft"]["id"]                                   # another tab (or an agent) rewrote it
         self.w.now[0] += 86400
         self.w.worker.run_once()

@@ -128,6 +128,7 @@ _shits: dict[str, deque] = defaultdict(deque)
 _all_hits: dict[str, deque] = defaultdict(deque)  # per endpoint, every visitor together
 _tghits: dict[str, deque] = defaultdict(deque)    # the owner bot's webhook, per client address (not shared:
                                                   # a stranger's flood must not use up Telegram's deliveries)
+DRAIN_MAX = 1 << 20  # Handler._refuse: the largest body read and dropped before an early refusal (reports and shares: 512 KB)
 _guard = {"tripped": False, "warned": False}
 
 
@@ -1156,6 +1157,19 @@ class Handler(BaseHTTPRequestHandler):
     def _client(self) -> str:
         return (self.headers.get("X-Forwarded-For") or "?").split(",")[0].strip()
 
+    def _refuse(self, code: int) -> None:
+        """An early refusal (429) before the body was read: the body (at most DRAIN_MAX, which covers
+        every route's own limit) is read and dropped first. A socket closed with unread data is reset,
+        and the peer (nginx, or a test client on Windows) can lose the answer: a 502 or an aborted
+        connection instead of the 429."""
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            n = 0
+        if 0 < n <= DRAIN_MAX:
+            self.rfile.read(n)
+        self._json(code, {"ok": False})
+
     def _body(self) -> dict | None:
         try:
             n = int(self.headers.get("Content-Length") or 0)
@@ -1231,7 +1245,7 @@ class Handler(BaseHTTPRequestHandler):
         Limited per client address (nginx passes the real one in X-Forwarded-For), never one bucket for
         everyone: a stranger posting to a guessed /api/tg/<x> only uses up his own allowance."""
         if not _rate(_tghits, self._client(), 120, 60.0):
-            return self._json(429, {"ok": False})
+            return self._refuse(429)
         try:
             n = int(self.headers.get("Content-Length") or 0)
         except ValueError:
@@ -1297,7 +1311,7 @@ class Handler(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         if path == "/api/e":
             if not _rate(_ehits, self._client(), 120, 600.0):
-                return self._json(429, {"ok": False})
+                return self._refuse(429)
             body = self._body()
             rec = clean_event(body) if body else None
             if rec is None:
@@ -1311,7 +1325,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/api/lead":
             if not _rate(_lhits, self._client(), 8, 3600.0):
-                return self._json(429, {"ok": False})
+                return self._refuse(429)
             b = self._body()
             if b is None:
                 return self._json(400, {"ok": False})
@@ -1345,7 +1359,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, {"ok": True, "id": rec["id"], "delivered": mid is not None})
         if path == "/api/report":
             if not _rate(_rhits, self._client(), 10, 3600.0) or not _rate(_all_hits, "report", 300, 3600.0):
-                return self._json(429, {"ok": False})
+                return self._refuse(429)
             try:
                 r = parse_report(self._upload())
                 rec = store_report(r)
@@ -1361,7 +1375,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._admin("POST", path)
         if path == "/api/share":
             if not _rate(_shits, self._client(), 12, 3600.0) or not _rate(_all_hits, "share", 300, 3600.0):
-                return self._json(429, {"ok": False})
+                return self._refuse(429)
             try:
                 data, meta = parse_share(self._upload())
                 sid = store_share(data, meta)

@@ -94,22 +94,22 @@ class Compose(MailTest):
         pl = mail_text("pl")
         note = self.w.service.add_note("Pilot Jan wants night scenes, told me at the meetup", "telegram",
                                        contact="jan@example.com", lang="pl")
-        self.w.service.reply(note["id"], "Nocne sceny są w planie.", "telegram")
+        self.w.service.reply(note["id"], "Nocne sceny s\u0105 w planie.", "telegram")   # escaped: no Polish letters outside locales/ (B18)
         self.assertEqual(self.at(61), 1)
         m = parse(self.w.smtp.messages[0]["data"])
         plain = m.get_body(("plain",)).get_content().replace("\r\n", "\n")
         html = m.get_body(("html",)).get_content()
         self.assertEqual(m["Subject"], pl["replySubjectNote"].format(id=note["id"]))
         for body in (plain, html):
-            self.assertIn("Nocne sceny są w planie.", body)
+            self.assertIn("Nocne sceny s\u0105 w planie.", body)
             self.assertNotIn("told me at the meetup", body)
-            self.assertNotIn("Twoja wiadomość z", body)          # the quote's header
+            self.assertNotIn(pl["quoteHeader"].split("{date}")[0], body)   # the quote's header ("Twoja ... z ")
             self.assertNotIn(pl["footer"], body)                 # "...w formularzu opinii..."
             self.assertIn(pl["footerNote"], body)
         self.assertNotIn("<blockquote", html)
         # control: a pilot's own report IS quoted, under the form's footer
         a = self.w.report(message="Add rain", lang="pl")
-        self.w.service.reply(a["id"], "Odpowiedź", "telegram")
+        self.w.service.reply(a["id"], "Odpowiedz", "telegram")
         self.assertEqual(self.at(61), 2)
         r = parse(self.w.smtp.messages[1]["data"]).get_body(("plain",)).get_content().replace("\r\n", "\n")
         self.assertIn("> Add rain", r)
