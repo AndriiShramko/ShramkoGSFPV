@@ -15,7 +15,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { IdeasMock, mockIdeas } from '../src/ideas-mock';
 
 const { AdminClient } = await import('../../../apps/fly/src/admin/api');
-const { IdeasClient, parseIdea, parseIdeas, IDEA_STATUSES } = await import('../../../apps/fly/src/admin/ideas/api');
+const { IdeasClient, parseIdea, parseIdeas, IDEA_STATUSES, SENDABLE, CANCELLABLE } = await import('../../../apps/fly/src/admin/ideas/api');
 const B = await import('../../../apps/fly/src/admin/ideas/board');
 type Idea = import('../../../apps/fly/src/admin/ideas/api').Idea;
 type IdeaFilter = import('../../../apps/fly/src/admin/ideas/board').IdeaFilter;
@@ -146,6 +146,27 @@ describe('the client speaks lane B\'s contract', () => {
         mock.mailConfigured = true;
         const sent = await client.sendMail(r.draft!.id);
         expect([sent.mail?.state, B.thanksDue(sent.idea), sent.idea.mails.length]).toEqual(['queued', false, 1]);
+    });
+
+    it('a superseded draft is history: never pending, never Sendable or Cancellable, its own Send refused', async () => {
+        const id = 'R-20261012-0005';
+        const first = await client.done(id, { pl: 'Pierwsza.' });
+        const second = await client.done(id, { pl: 'Druga.' });
+        const old = second.idea.mails.find((m) => m.id === first.draft!.id)!;
+        expect([old.state, SENDABLE.has(old.state), CANCELLABLE.has(old.state), B.thanksPending(second.idea)?.id]).toEqual(['superseded', false, false, second.draft!.id]);
+        await expect(client.sendMail(old.id)).rejects.toMatchObject({ status: 409, reason: 'stale-draft' });
+        await expect(client.cancelMail(old.id)).rejects.toMatchObject({ status: 409, reason: 'stale-draft' });
+        // control: the current draft is the pending one and Cancellable
+        expect(CANCELLABLE.has(second.draft!.state)).toBe(true);
+    });
+
+    it('an unreadable store answers every ideas call 503 ideas-store; the rest of the admin answers', async () => {
+        mock.storeBroken = true;
+        await expect(client.list()).rejects.toMatchObject({ status: 503, reason: 'ideas-store' });
+        await expect(client.setStatus(P1, 'accepted')).rejects.toMatchObject({ status: 503, reason: 'ideas-store' });
+        expect((await fetch('/api/admin/catalog')).status).toBe(200);
+        mock.storeBroken = false; // control: the same call answers once the file reads again
+        expect((await client.list()).ideas.length).toBeGreaterThan(0);
     });
 });
 

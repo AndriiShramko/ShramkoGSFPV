@@ -9,11 +9,11 @@
 // waits for Gmail or failed is Sent again from the dialog, never written a second time.
 import { h } from '../../ui/dom';
 import { t } from '../i18n';
-import { ApiError } from '../api';
 import { PUBLIC_LANGS } from './api';
 import type { Idea, IdeaMail, IdeasClient, PublicLang } from './api';
 import { mailNotice, thanksPending } from './board';
 import type { CardHost } from './card';
+import { changedMeanwhile, refusal } from './errors';
 
 /**
  * What the owner is told about an e-mail the server just took, from its state in the answer: when it goes
@@ -68,7 +68,8 @@ const pilotLang = (i: Idea): PublicLang => ((PUBLIC_LANGS as readonly string[]).
  * keeps); "Make the e-mail" asks the server for the draft (POST ideas/done, nothing is sent). Step 2: the
  * whole e-mail as it will go; Send queues exactly that e-mail (a draft: POST ideas/send-done with its id;
  * one that waited for Gmail or failed: ideas/mail/send). A pending thank-you opens at step 2. When the
- * server says a newer draft replaced the one shown (409 stale-draft), the newer one is shown to read again.
+ * server says a newer draft replaced the one shown (409 stale-draft), the newer one is shown to read again;
+ * when it went meanwhile (409 no-draft, not-resendable) the dialog closes and the card shows where it is.
  */
 export function openThanks(start: Idea, host: ThanksHost): HTMLDialogElement {
     let idea = start;
@@ -101,7 +102,7 @@ export function openThanks(start: Idea, host: ThanksHost): HTMLDialogElement {
         status.textContent = msg;
         status.className = cls;
     };
-    const fail = (e: unknown): void => tell(t('admin.ideas.error', { why: e instanceof Error ? e.message : String(e) }), 'bad');
+    const fail = (e: unknown): void => tell(refusal(e), 'bad');
     const showDraft = (m: IdeaMail): void => {
         shown = m;
         to.value = m.to;
@@ -143,7 +144,8 @@ export function openThanks(start: Idea, host: ThanksHost): HTMLDialogElement {
             host.say(mailSaid('done', a.mail, host.undoSeconds));
             dialog.close();
         } catch (e) {
-            if (e instanceof ApiError && e.status === 409 && e.reason === 'stale-draft') return void showNewer();
+            // 409: stale-draft (a newer summary replaced it), no-draft or not-resendable (it went meanwhile)
+            if (changedMeanwhile(e)) return void showNewer();
             fail(e);
         } finally {
             send.disabled = false;

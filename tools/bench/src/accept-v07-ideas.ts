@@ -4,11 +4,17 @@
 // the API as exactly the calls the contract names, and nothing else: above all, no e-mail is queued
 // without the owner's own Send (the thank-you) or reply button, a sent text leaves its box (a second click
 // sends nothing), a refused one stays, the owner is told what the server did with an e-mail (Gmail off:
-// saved, not queued) and a thank-you is never written twice. Every check has a negative control.
+// saved, not queued) and a thank-you is never written twice. Send names the draft the owner read
+// (send-done {id, mail}); a draft replaced meanwhile is refused (409 stale-draft) and the dialog shows the
+// current one; a Cancel refused because the e-mail went meanwhile (409) re-reads the card; while the
+// server cannot read ideas.json (503 ideas-store) the tab says so with Try again and the Scenes tab works.
+// The mock is held to the real server by apps/api/tests/ideas-admin-contract.json (both replay it).
+// Every check has a negative control.
 //   npx tsx src/accept-v07-ideas.ts                      (from tools/bench; FLY_PORT=5364 by default)
 // Draws nothing heavy, but holds the shared GPU lock like every browser run on this PC (the caller takes
 // it). Evidence: evidence/<date>/v07-ideas-admin.json + 2 PNG.
-// Not covered here: lane B's real server (accept-v06-admin.ts drives the Ideas tab against it after the merge).
+// The real server: accept-v06-admin.ts drives the Ideas tab against apps/api (move, the thank-you with a
+// stale draft, the unreadable store).
 import { spawn } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
@@ -16,7 +22,7 @@ import { join } from 'node:path';
 import type { BrowserContext, Page } from 'playwright';
 import { launchChrome } from './browser';
 import { REPO, today, writeEvidence } from './evidence';
-import { IdeasMock } from './ideas-mock';
+import { IdeasMock, MOCK_CSRF } from './ideas-mock';
 
 const PORT = Number(process.env.FLY_PORT ?? 5364);
 const FLY = `http://127.0.0.1:${PORT}`;
@@ -343,6 +349,54 @@ async function main(): Promise<void> {
     check('its Send goes to ideas/mail/send with that e-mail: one thank-you, queued, no longer offered', same(sentSince(mock, before), [['ideas/mail/send', { id: id2Draft }]])
         && same(doneMails(mock, id2).map((m) => m.state), ['queued']) && !(await page.$(`${card(id2)} [data-action=thanks]`)));
 
+    // lane B's send-done names the draft the owner read: while the dialog shows draft 1, a newer summary
+    // (Telegram, an agent) replaces it; Send is refused (409 stale-draft), the dialog shows the current draft
+    // with a warning, and only the next Send queues it. Draft 1 never goes (it stays superseded, with no
+    // Send or Cancel on the card).
+    const sid = 'R-20261006-0001';
+    if (!(await page.$(`${card(sid)} [data-field=status]`))) await page.click(`${card(sid)} [data-action=details]`);
+    await page.selectOption(`${card(sid)} [data-field=status]`, 'done');
+    await page.waitForSelector('[data-testid=thanks-dialog] [data-field=thanks-summary]');
+    await settled(page, sid, 'done');
+    await page.fill('[data-field=thanks-summary]', 'Typy rates sa juz w ustawieniach.');
+    await page.click('[data-action=thanks-make]');
+    await page.waitForSelector('[data-testid=thanks-dialog] [data-step=draft]:not([hidden])');
+    const staleDraft = doneMails(mock, sid)[0]?.id;
+    const newer = mock.handle('POST', 'ideas/done', { 'x-csrf': MOCK_CSRF }, { id: sid, summary: { pl: 'Typy rates i edytor sa juz w ustawieniach.' } });
+    const current = (newer.json as { draft?: { id: string } }).draft?.id;
+    check('a newer summary replaced the open draft on the server (draft 1 superseded)', same(doneMails(mock, sid).map((m) => m.state), ['superseded', 'draft']) && !!current && current !== staleDraft);
+    before = mock.posts().length;
+    const calls0 = mock.calls.length;
+    await page.click('[data-action=thanks-send]');
+    await page.waitForFunction((want) => (document.querySelector('[data-field=thanks-body]') as HTMLTextAreaElement | null)?.value.includes(want), 'i edytor', { timeout: 10000 });
+    const staleNote = (await page.textContent('[data-field=thanks-status]')) ?? '';
+    results.staleSend = { calls: mock.calls.slice(calls0).map((c) => `${c.method} ${c.path}`), note: staleNote };
+    check('Send under the replaced draft: send-done {id, mail: draft 1} is refused, nothing is queued', same(sentSince(mock, before), [['ideas/send-done', { id: sid, mail: staleDraft }]])
+        && same(doneMails(mock, sid).map((m) => m.state), ['superseded', 'draft']), true);
+    check('the dialog re-reads the idea and shows the current draft with a warning', mock.calls.slice(calls0).some((c) => c.method === 'GET' && c.path === `ideas/${sid}`)
+        && (await dialogStep(page)) === 'draft' && /newer draft/i.test(staleNote));
+    await page.click('[data-action=thanks-send]');
+    await page.waitForSelector('[data-testid=thanks-dialog]', { state: 'detached' });
+    await quiet(page, sid);
+    check('the next Send queues the current draft, draft 1 stays superseded', same(sentSince(mock, before), [['ideas/send-done', { id: sid, mail: staleDraft }], ['ideas/send-done', { id: sid, mail: current }]])
+        && same(doneMails(mock, sid).map((m) => m.state), ['superseded', 'queued']));
+    const rowActs = (state: string): Promise<number> => page.$$eval(`${card(sid)} [data-field=mails] [data-state=${state}] [data-action^=mail-]`, (els) => els.length);
+    check('the superseded draft offers no Send and no Cancel on the card', (await rowActs('superseded')) === 0 && (await page.$(`${card(sid)} [data-field=mails] [data-state=superseded]`)) !== null);
+    check('the queued one does (control)', (await rowActs('queued')) > 0, true);
+
+    // an e-mail that changed meanwhile: the outbox sent the queued thank-you while the card still offers
+    // Cancel; Cancel is refused (409 too-late), the card re-reads the idea and shows it sent
+    (mock.ideas.find((x) => x.id === sid)!.thread as { id: string; state: string }[]).find((m) => m.id === current)!.state = 'sent';
+    before = mock.posts().length;
+    const calls1 = mock.calls.length;
+    await page.click(`${card(sid)} [data-field=mails] [data-mail="${current}"] [data-action=mail-cancel]`);
+    await page.waitForSelector(`${card(sid)}:not([aria-busy]) [data-field=mails] [data-state=sent]`);
+    const changedNote = (await page.textContent('.note')) ?? '';
+    results.changedMeanwhile = changedNote;
+    check('a refused Cancel (409) re-reads the card: the e-mail shows as sent, without Cancel, and the owner is told why',
+        same(sentSince(mock, before), [['ideas/mail/cancel', { id: current }]]) && mock.calls.slice(calls1).some((c) => c.method === 'GET' && c.path === `ideas/${sid}`)
+        && (await rowActs('sent')) === 0 && /changed meanwhile/.test(changedNote));
+
     await page.screenshot({ path: join(dir, 'v07-ideas-admin-1280.png'), fullPage: false });
     // a phone: one column, nothing wider than the screen
     await page.setViewportSize({ width: 375, height: 800 });
@@ -351,13 +405,40 @@ async function main(): Promise<void> {
     check('at 375 px the board is one column with no sideways scroll', wide <= 0);
     await page.screenshot({ path: join(dir, 'v07-ideas-admin-375.png'), fullPage: false });
 
+    // the server cannot read ideas.json (lane B: 503 ideas-store on every ideas route): a move is refused
+    // and the board gives way to the reason with Try again; the Scenes tab keeps working; once the file
+    // reads again Try again brings the board back (the board drawn before is the control)
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const downShown = (): Promise<boolean> => page.isVisible('[data-testid=idea-down]');
+    check('with the store readable there is no store message (control)', !(await downShown()), true);
+    mock.storeBroken = true;
+    await page.focus(`${card('R-20261008-0003')} .handle`);
+    await page.keyboard.press('ArrowRight');
+    await page.waitForSelector('[data-testid=idea-down]:not([hidden])', { timeout: 10000 });
+    const downText = (await page.textContent('[data-testid=idea-down]')) ?? '';
+    results.storeDown = downText;
+    check('a move while ideas.json is unreadable: the board gives way to a plain reason with Try again', /cannot be read/.test(downText) && /Scenes tab works/.test(downText)
+        && !(await page.isVisible('[data-testid=idea-board]')) && !!(await page.$('[data-testid=idea-down] [data-action=ideas-retry]')) && (await statusOf(page, 'R-20261008-0003')) === 'accepted');
+    await page.click('[data-tab=scenes]');
+    await page.waitForSelector('[data-testid=scene-list]');
+    await page.click('[data-tab=ideas]');
+    await page.waitForSelector('[data-testid=idea-down]:not([hidden])', { timeout: 10000 });
+    check('opening the Ideas tab while the store is unreadable says so, no page error', /cannot be read/.test((await page.textContent('[data-testid=idea-down]')) ?? '') && /cannot be read/.test((await page.textContent('.note')) ?? ''));
+    await page.click('[data-action=ideas-retry]');
+    await sleep(400);
+    check('Try again while it is still unreadable keeps the reason (control)', await downShown(), true);
+    mock.storeBroken = false;
+    await page.click('[data-action=ideas-retry]');
+    await page.waitForSelector('[data-testid=idea-board] [data-idea]', { timeout: 10000 });
+    check('Try again once the file reads again brings the board back', !(await downShown()) && (await page.isVisible('[data-testid=idea-board]')));
+
     // the Scenes tab still opens
     await page.click('[data-tab=scenes]');
     await page.waitForSelector('[data-testid=scene-list]');
     check('the Scenes tab still opens', true);
     check('no page errors', errors.length === 0);
-    check('no e-mail went out on its own: two thank-yous queued by Send, one reply cancelled, one waiting for Gmail',
-        same(mock.mails().map((m) => [m.kind, m.state]).sort(), [['done', 'queued'], ['done', 'queued'], ['reply', 'cancelled'], ['reply', 'waiting_setup']]));
+    check('no e-mail went out on its own: three thank-yous queued by Send (one then sent by the outbox), one draft superseded, one reply cancelled, one waiting for Gmail',
+        same(mock.mails().map((m) => [m.kind, m.state]).sort(), [['done', 'queued'], ['done', 'queued'], ['done', 'sent'], ['done', 'superseded'], ['reply', 'cancelled'], ['reply', 'waiting_setup']]));
     results.pageErrors = errors;
     results.calls = mock.calls.map((c) => `${c.method} ${c.path}`);
     await browser.close();

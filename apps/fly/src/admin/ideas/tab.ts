@@ -6,6 +6,8 @@
 // writes down an idea a pilot told the owner outside the form (item 8). Nothing waits to be saved here:
 // every change goes to the server at once (ideas/api.ts) and the card shows the server's answer. A
 // pilot's idea that reaches Done opens the thank-you dialog (ideas/mail.ts); e-mails go only on Send.
+// While the server cannot read its ideas file (503 ideas-store) the tab says so in place of the board,
+// with Try again; the Scenes tab is not affected. An e-mail that changed meanwhile (409) is re-read.
 import { h, clear } from '../../ui/dom';
 import { t } from '../i18n';
 import type { AdminClient } from '../api';
@@ -15,6 +17,7 @@ import { ALL_IDEAS, columns, moveBody, thanksDue } from './board';
 import type { IdeaFilter } from './board';
 import { card, field } from './card';
 import type { CardHost, RunAfter } from './card';
+import { changedMeanwhile, refusal, storeDown } from './errors';
 import { openThanks } from './mail';
 
 export class IdeasTab implements CardHost {
@@ -32,23 +35,50 @@ export class IdeasTab implements CardHost {
     private readonly shown = h('span', { class: 'muted', 'data-testid': 'idea-shown', 'aria-live': 'polite' });
     private readonly warn = h('p', { class: 'warn', 'data-testid': 'idea-unreadable' });
     private readonly setupNote = h('p', { class: 'muted', 'data-testid': 'idea-setup' });
+    private readonly down = h('section', { class: 'card', 'data-testid': 'idea-down', role: 'alert', hidden: true });
+    private readonly controls: HTMLElement;
 
     constructor(api: AdminClient, private readonly say: (msg: string, bad?: boolean) => void) {
         this.client = new IdeasClient(api);
         this.buildFilters();
-        this.root = h('div', { class: 'tab-body' },
-            h('section', { class: 'card' }, this.bar, h('p', { class: 'muted' }, t('admin.ideas.help')), this.setupNote, this.warn, this.noteForm()),
-            this.board);
+        this.controls = h('section', { class: 'card' }, this.bar, h('p', { class: 'muted' }, t('admin.ideas.help')), this.setupNote, this.warn, this.noteForm());
+        this.root = h('div', { class: 'tab-body' }, this.down, this.controls, this.board);
     }
 
     get undoSeconds(): number { return this.setup.undoSeconds; }
 
+    /** The board from the server; while the store cannot be read, the reason in its place (other errors go up). */
     async load(): Promise<void> {
-        const r = await this.client.list();
+        let r: Awaited<ReturnType<IdeasClient['list']>>;
+        try {
+            r = await this.client.list();
+        } catch (e) {
+            if (!storeDown(e)) throw e;
+            this.showDown(e);
+            return;
+        }
+        this.showDown(null);
         this.ideas = r.ideas;
         this.unreadable = r.unreadable;
         this.setup = r.setup;
         this.render();
+    }
+
+    /** The store's state: unusable (e: the 503) hides the board and offers Try again; null shows it. */
+    private showDown(e: unknown): void {
+        clear(this.down);
+        this.down.hidden = this.board.hidden = this.controls.hidden = false;
+        if (!e) { this.down.hidden = true; return; }
+        this.board.hidden = this.controls.hidden = true;
+        const msg = refusal(e);
+        const retry = h('button', { type: 'button', class: 'btn small', 'data-action': 'ideas-retry' }, t('admin.ideas.down.retry'));
+        retry.addEventListener('click', () => {
+            retry.disabled = true;
+            this.say('');
+            void this.load().catch((x) => this.say(refusal(x), true)).finally(() => { retry.disabled = false; });
+        });
+        this.down.append(h('p', { class: 'warn' }, msg), h('div', { class: 'bar' }, retry));
+        this.say(msg, true);
     }
 
     /** Nothing waits to be saved here: every change is sent at once. */
@@ -93,8 +123,12 @@ export class IdeasTab implements CardHost {
             return true;
         } catch (e) {
             this.busy.delete(id);
+            // an e-mail that changed meanwhile (409): the card shows the idea as the server has it now
+            if (changedMeanwhile(e)) await this.client.get(id).then((i) => this.update(i), () => undefined);
             this.render();
-            this.say(t('admin.ideas.error', { why: e instanceof Error ? e.message : String(e) }), true);
+            // the store became unreadable after the board was drawn: the board gives way to the reason
+            if (storeDown(e)) this.showDown(e);
+            else this.say(refusal(e), true);
             return false;
         }
     }
@@ -165,7 +199,7 @@ export class IdeasTab implements CardHost {
                 this.update(idea);
                 this.say(t('admin.ideas.note.added', { id: idea.id }));
             } catch (e) {
-                this.say(t('admin.ideas.error', { why: e instanceof Error ? e.message : String(e) }), true);
+                this.say(refusal(e), true);
             } finally {
                 add.disabled = false;
             }

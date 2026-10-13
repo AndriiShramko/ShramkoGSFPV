@@ -91,8 +91,10 @@ const savedState = (page: Page): Promise<unknown> => page.waitForFunction(() => 
 async function main(): Promise<void> {
     const secret = testSecret();
     mkdirSync(join(REPO, 'evidence', today()), { recursive: true });
+    // no Telegram and no Gmail whatever the shell has: an e-mail the owner Sends here waits (waiting_setup)
     const child = spawn('python', [join(REPO, 'apps', 'api', 'server.py')], {
-        env: { ...process.env, DATA_DIR: DATA, PORT: String(API_PORT), ADMIN_PASSWORD_HASH: secret.hash, TG_BOT_TOKEN: '', TG_CHAT_ID: '', MIN_FREE_GB: '0' },
+        env: { ...process.env, DATA_DIR: DATA, PORT: String(API_PORT), ADMIN_PASSWORD_HASH: secret.hash, TG_BOT_TOKEN: '', TG_CHAT_ID: '', TG_OWNER_BOT_TOKEN: '',
+            TG_WEBHOOK_SECRET: '', GMAIL_USER: '', GMAIL_APP_PASSWORD: '', MIN_FREE_GB: '0' },
         stdio: ['ignore', 'pipe', 'pipe']
     });
     children.push(child);
@@ -104,6 +106,10 @@ async function main(): Promise<void> {
     const rep = await (await fetch(`${API}/api/report`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': '198.51.100.9' },
         body: JSON.stringify({ kind: 'idea', message: 'v06 acceptance: more night scenes please', page: 'fly', locale: 'en', t: 9000 }) })).json();
     results.reportId = rep.id;
+    // a second pilot left an e-mail: the thank-you step below (made-up example.com address; nothing is sent)
+    const rep2 = await (await fetch(`${API}/api/report`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': '198.51.100.10' },
+        body: JSON.stringify({ kind: 'idea', message: 'v07 acceptance: a darker night sky', contact: 'pilot.v07@example.com', page: 'fly', locale: 'en', t: 9000 }) })).json();
+    results.report2Id = rep2.id;
 
     const { browser, which } = await launchChrome({ headless: true });
     results.browser = which;
@@ -243,6 +249,74 @@ async function main(): Promise<void> {
     check('the move is stored server-side', stored === 'rejected');
     const reportsLine = readFileSync(join(DATA, 'reports.jsonl'), 'utf8');
     check('the visitor\'s report itself is unchanged', reportsLine.includes('more night scenes please') && !reportsLine.includes('rejected'), true);
+
+    // the thank-you against the real server (lane B's send-done {id, mail}): the second pilot's idea goes to
+    // Done, the owner writes what was done, the server's draft is shown; meanwhile a newer summary replaces
+    // it (as an agent or Telegram would: ideas/done again); Send under the draft he read is refused (409
+    // stale-draft), the dialog shows the current draft, and Send takes that one. Gmail is not set up on this
+    // server: the e-mail waits (waiting_setup), nothing can leave this machine.
+    const pid = String(rep2.id);
+    type Mail = { id: string; kind: string; state: string };
+    const doneThread = async (): Promise<Mail[]> => (await admin.evaluate(async (id) => ((await (await fetch(`/api/admin/ideas/${id}`, { cache: 'no-store' })).json()) as { idea: { thread: Mail[] } }).idea.thread, pid))
+        .filter((m) => m.kind === 'done');
+    /** A POST with the page's own session and CSRF token (what another tab of the admin would send). */
+    const post = (route: string, body: unknown): Promise<{ status: number; json: Any }> => admin.evaluate(async ([r, b]) => {
+        const s = (await (await fetch('/api/admin/session', { cache: 'no-store' })).json()) as { csrf: string };
+        const res = await fetch(`/api/admin/${r}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF': s.csrf }, body: JSON.stringify(b) });
+        return { status: res.status, json: await res.json() };
+    }, [route, body] as const);
+    await admin.waitForSelector(`[data-idea="${pid}"][data-status=new]`);
+    await admin.click(`[data-idea="${pid}"] [data-action=details]`);
+    await admin.selectOption(`[data-idea="${pid}"] [data-field=status]`, 'done');
+    await admin.waitForSelector('[data-testid=thanks-dialog] [data-field=thanks-summary]');
+    await admin.fill('[data-field=thanks-summary]', 'Night scenes are in the list now.');
+    await admin.click('[data-action=thanks-make]');
+    await admin.waitForSelector('[data-testid=thanks-dialog] [data-step=draft]:not([hidden])');
+    const read = await doneThread();
+    check('the real server wrote the thank-you as a draft only', JSON.stringify(read.map((m) => m.state)) === '["draft"]');
+    const newer = await post('ideas/done', { id: pid, summary: { en: 'Night scenes and a darker sky are in the list now.' } });
+    const oldBody = await post('ideas/send-done', { id: pid });
+    results.sendDoneWithoutDraft = oldBody;
+    check('the real server refuses send-done without the draft id (the old {id} body): 400 bad-mail', oldBody.status === 400 && oldBody.json.reason === 'bad-mail', true);
+    await admin.click('[data-action=thanks-send]');
+    const shownNewer = await admin.waitForFunction(() => (document.querySelector('[data-field=thanks-body]') as HTMLTextAreaElement | null)?.value.includes('darker sky'), null, { timeout: 10000 }).then(() => true, () => false);
+    const staleNote = await admin.textContent('[data-field=thanks-status]');
+    const mid = await doneThread();
+    results.staleDraft = { states: mid.map((m) => m.state), note: staleNote };
+    check('Send under the replaced draft: the real server says stale-draft, nothing waits or goes, the dialog shows the current draft',
+        newer.status === 200 && shownNewer && /newer draft/i.test(staleNote ?? '') && JSON.stringify(mid.map((m) => m.state)) === '["superseded","draft"]' && mid[0].id === read[0].id);
+    await admin.click('[data-action=thanks-send]');
+    await admin.waitForSelector('[data-testid=thanks-dialog]', { state: 'detached' });
+    await admin.waitForSelector(`[data-idea="${pid}"]:not([aria-busy])`);
+    const end = await doneThread();
+    const said = (await admin.textContent('.note')) ?? '';
+    results.thanksEnd = { states: end.map((m) => m.state), note: said };
+    check('the next Send takes the current draft: it waits for Gmail here (said so), the replaced one never goes',
+        JSON.stringify(end.map((m) => m.state)) === '["superseded","waiting_setup"]' && end[1].id === newer.json.draft?.id && /Gmail/.test(said));
+
+    // the ideas file unreadable on the real server (503 ideas-store): the tab says so, the Scenes tab works,
+    // the server never writes over the file; once it reads again the board is back (control)
+    const ideasFile = join(DATA, 'ideas.json');
+    const good = readFileSync(ideasFile);
+    writeFileSync(ideasFile, '{not json');
+    try {
+        await admin.click('[data-tab=scenes]');
+        await admin.waitForSelector('[data-testid=scene-list] li.row');
+        await admin.click('[data-tab=ideas]');
+        await admin.waitForSelector('[data-testid=idea-down]:not([hidden])', { timeout: 10000 });
+        const down = (await admin.textContent('[data-testid=idea-down]')) ?? '';
+        results.storeDown = down;
+        check('ideas.json unreadable: the Ideas tab says so in plain words (503 ideas-store), no board', /cannot be read/.test(down) && !(await admin.isVisible('[data-testid=idea-board]')));
+        await admin.click('[data-tab=scenes]');
+        await admin.waitForSelector('[data-testid=scene-list] li.row');
+        check('the Scenes tab works meanwhile', (await admin.$$('[data-testid=scene-list] li.row')).length > 0);
+        check('the server did not write over the unreadable file', readFileSync(ideasFile, 'utf8') === '{not json');
+    } finally {
+        writeFileSync(ideasFile, good);
+    }
+    await admin.click('[data-tab=ideas]');
+    await admin.waitForSelector(`[data-idea="${pid}"]`);
+    check('once the file reads again the board is back (control)', !(await admin.isVisible('[data-testid=idea-down]')), true);
 
     // logout ends the session: the next admin call is 401
     await admin.click('[data-action=logout]');
