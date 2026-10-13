@@ -1,9 +1,9 @@
 {
- "generated": "2026-10-02",
+ "generated": "2026-10-13",
  "schemaVersion": 2,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
-  "settings": 49,
+  "settings": 55,
   "groups": 10,
   "drones": 6,
   "modes": 3,
@@ -624,6 +624,79 @@
        "shown": [
         "settings"
        ]
+      },
+      {
+       "id": "wind.mode",
+       "label": "Wind",
+       "help": "Moving air, as outdoors: it pushes the drone and carries it along, blows harder higher above the ground, and comes in gusts. The scan's wind is the one its author or the admin set for the place; live is the real wind there right now (scans with a known location); custom is your own wind for this scan.",
+       "type": "enum",
+       "default": "The scan's wind",
+       "range": "Off (still air) / The scan's wind / Live at the place / Custom",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Off (still air)",
+        "The scan's wind",
+        "Live at the place",
+        "Custom"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "wind.fromDeg",
+       "label": "Custom wind: from",
+       "help": "Where the wind comes from, in compass degrees: 0 north, 90 east, 180 south, 270 west. On a scan without a compass heading, 0 is the direction the scan faces at the start.",
+       "type": "number",
+       "default": "270\u00b0",
+       "range": "0\u2013360\u00b0",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "wind.speed",
+       "label": "Custom wind: speed",
+       "help": "Mean speed 10 m above the ground, as a weather forecast gives it. Near the ground it is weaker, higher up stronger. A small whoop already struggles at 8-10 m/s.",
+       "type": "number",
+       "default": "4 m/s",
+       "range": "0\u201330 m/s",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "wind.gust",
+       "label": "Custom wind: gusts",
+       "help": "How far the wind rises and drops around its mean speed. Gusts come and go over a few seconds; 0 is a steady wind.",
+       "type": "number",
+       "default": "2 m/s",
+       "range": "0\u201320 m/s",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
       }
      ]
     },
@@ -834,6 +907,44 @@
        "apply": "life",
        "keys": [],
        "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "scene.ceiling",
+       "label": "Ignore collisions above",
+       "help": "Outdoor scans often have specks floating in the sky that turn into invisible walls. Above this height nothing counts as a wall. The scan's height is the one its admin set; custom is yours, set in a panel that shows it on the scan.",
+       "type": "enum",
+       "default": "The scan's height",
+       "range": "The scan's height / Off / Custom height",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "The scan's height",
+        "Off",
+        "Custom height"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "scene.ceilingM",
+       "label": "Custom ceiling: height in scan metres",
+       "help": "The height in the scan's own coordinates, before Scene size: what \"Show and set the height\" stores for you. 10000 ignores nothing.",
+       "type": "number",
+       "default": "10000 m (per scan, set by its author)",
+       "range": "-10000\u201310000 m",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
        "preset": false,
        "options": [],
        "shown": [
@@ -2036,6 +2147,79 @@
        "shown": [
         "settings"
        ]
+      },
+      {
+       "id": "wind.mode",
+       "label": "Viento",
+       "help": "Aire en movimiento, como al aire libre: empuja al dron y lo arrastra, sopla m\u00e1s fuerte cuanto m\u00e1s alto est\u00e1s sobre el suelo y llega en rachas. El viento del escaneo es el que su autor o el administrador fij\u00f3 para el lugar; \u00aben directo\u00bb es el viento real que sopla all\u00ed ahora mismo (escaneos con ubicaci\u00f3n conocida); personalizado es tu propio viento para este escaneo.",
+       "type": "enum",
+       "default": "Viento del escaneo",
+       "range": "Apagado (aire en calma) / Viento del escaneo / En directo en el lugar / Personalizado",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Apagado (aire en calma)",
+        "Viento del escaneo",
+        "En directo en el lugar",
+        "Personalizado"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "wind.fromDeg",
+       "label": "Viento personalizado: de d\u00f3nde",
+       "help": "De d\u00f3nde viene el viento, en grados de br\u00fajula: 0 norte, 90 este, 180 sur, 270 oeste. En un escaneo sin rumbo de br\u00fajula, 0 es la direcci\u00f3n hacia la que mira el escaneo al empezar.",
+       "type": "number",
+       "default": "270\u00b0",
+       "range": "0\u2013360\u00b0",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "wind.speed",
+       "label": "Viento personalizado: velocidad",
+       "help": "Velocidad media a 10 m del suelo, como la da el pron\u00f3stico del tiempo. Cerca del suelo es m\u00e1s floja y m\u00e1s arriba, m\u00e1s fuerte. Un whoop peque\u00f1o ya sufre a 8-10 m/s.",
+       "type": "number",
+       "default": "4 m/s",
+       "range": "0\u201330 m/s",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "wind.gust",
+       "label": "Viento personalizado: rachas",
+       "help": "Cu\u00e1nto sube y baja el viento alrededor de su velocidad media. Las rachas van y vienen en pocos segundos; 0 es un viento constante.",
+       "type": "number",
+       "default": "2 m/s",
+       "range": "0\u201320 m/s",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
       }
      ]
     },
@@ -2246,6 +2430,44 @@
        "apply": "life",
        "keys": [],
        "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "scene.ceiling",
+       "label": "Ignorar choques por encima de",
+       "help": "Los escaneos al aire libre suelen tener motas flotando en el cielo que se convierten en paredes invisibles. Por encima de esta altura nada cuenta como pared. La altura del escaneo es la que fij\u00f3 su administrador; la personalizada es la tuya, y la eliges en un panel que la muestra sobre el escaneo.",
+       "type": "enum",
+       "default": "Altura del escaneo",
+       "range": "Altura del escaneo / Apagado / Altura personalizada",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Altura del escaneo",
+        "Apagado",
+        "Altura personalizada"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "scene.ceilingM",
+       "label": "Techo personalizado: altura en metros del escaneo",
+       "help": "La altura en las coordenadas propias del escaneo, antes del tama\u00f1o de escena: lo que guarda por ti \u00abMostrar y fijar la altura\u00bb. 10000 no ignora nada.",
+       "type": "number",
+       "default": "10000 m (por escaneo, lo fija su autor)",
+       "range": "-10000\u201310000 m",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
        "preset": false,
        "options": [],
        "shown": [
@@ -3448,6 +3670,79 @@
        "shown": [
         "settings"
        ]
+      },
+      {
+       "id": "wind.mode",
+       "label": "Wiatr",
+       "help": "Ruchome powietrze, jak na zewn\u0105trz: popycha drona i go znosi, wy\u017cej nad ziemi\u0105 wieje mocniej i przychodzi porywami. Wiatr skanu to ten, kt\u00f3ry autor albo admin ustawi\u0142 dla tego miejsca; \u201eteraz na miejscu\u201d to prawdziwy wiatr, kt\u00f3ry wieje tam w tej chwili (skany ze znan\u0105 lokalizacj\u0105); w\u0142asny to tw\u00f3j wiatr dla tego skanu.",
+       "type": "enum",
+       "default": "Wiatr skanu",
+       "range": "Wy\u0142\u0105czony (cisza) / Wiatr skanu / Teraz na miejscu / W\u0142asny",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Wy\u0142\u0105czony (cisza)",
+        "Wiatr skanu",
+        "Teraz na miejscu",
+        "W\u0142asny"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "wind.fromDeg",
+       "label": "W\u0142asny wiatr: sk\u0105d",
+       "help": "Sk\u0105d wieje wiatr, w stopniach kompasu: 0 p\u00f3\u0142noc, 90 wsch\u00f3d, 180 po\u0142udnie, 270 zach\u00f3d. Je\u015bli skan nie ma kierunku p\u00f3\u0142nocy, 0 to kierunek, w kt\u00f3rym skan patrzy na starcie.",
+       "type": "number",
+       "default": "270\u00b0",
+       "range": "0\u2013360\u00b0",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "wind.speed",
+       "label": "W\u0142asny wiatr: pr\u0119dko\u015b\u0107",
+       "help": "\u015arednia pr\u0119dko\u015b\u0107 10 m nad ziemi\u0105, tak jak podaje prognoza pogody. Przy ziemi wieje s\u0142abiej, wy\u017cej mocniej. Ma\u0142y whoop ma k\u0142opot ju\u017c przy 8-10 m/s.",
+       "type": "number",
+       "default": "4 m/s",
+       "range": "0\u201330 m/s",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "wind.gust",
+       "label": "W\u0142asny wiatr: porywy",
+       "help": "O ile wiatr ro\u015bnie i s\u0142abnie wok\u00f3\u0142 \u015bredniej pr\u0119dko\u015bci. Porywy przychodz\u0105 i mijaj\u0105 w ci\u0105gu kilku sekund; 0 to r\u00f3wny wiatr.",
+       "type": "number",
+       "default": "2 m/s",
+       "range": "0\u201320 m/s",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
       }
      ]
     },
@@ -3658,6 +3953,44 @@
        "apply": "life",
        "keys": [],
        "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "scene.ceiling",
+       "label": "Ignoruj zderzenia powy\u017cej",
+       "help": "Skany plenerowe cz\u0119sto maj\u0105 drobinki unosz\u0105ce si\u0119 na niebie, kt\u00f3re staj\u0105 si\u0119 niewidzialnymi \u015bcianami. Powy\u017cej tej wysoko\u015bci nic nie liczy si\u0119 jako \u015bciana. Wysoko\u015b\u0107 skanu to ta, kt\u00f3r\u0105 ustawi\u0142 jego admin; w\u0142asna jest twoja i ustawiasz j\u0105 w panelu, kt\u00f3ry pokazuje j\u0105 na skanie.",
+       "type": "enum",
+       "default": "Wysoko\u015b\u0107 skanu",
+       "range": "Wysoko\u015b\u0107 skanu / Wy\u0142\u0105czone / W\u0142asna wysoko\u015b\u0107",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Wysoko\u015b\u0107 skanu",
+        "Wy\u0142\u0105czone",
+        "W\u0142asna wysoko\u015b\u0107"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "scene.ceilingM",
+       "label": "W\u0142asny sufit: wysoko\u015b\u0107 w metrach skanu",
+       "help": "Wysoko\u015b\u0107 we w\u0142asnych wsp\u00f3\u0142rz\u0119dnych skanu, przed rozmiarem sceny: to, co zapisuje za ciebie \u201ePoka\u017c i ustaw wysoko\u015b\u0107\u201d. 10000 niczego nie ignoruje.",
+       "type": "number",
+       "default": "10000 m (dla ka\u017cdego skanu, ustala autor)",
+       "range": "-10000\u201310000 m",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
        "preset": false,
        "options": [],
        "shown": [
@@ -4860,6 +5193,79 @@
        "shown": [
         "settings"
        ]
+      },
+      {
+       "id": "wind.mode",
+       "label": "\u0412\u0435\u0442\u0435\u0440",
+       "help": "\u0414\u0432\u0438\u0436\u0443\u0449\u0438\u0439\u0441\u044f \u0432\u043e\u0437\u0434\u0443\u0445, \u043a\u0430\u043a \u043d\u0430 \u0443\u043b\u0438\u0446\u0435: \u043e\u043d \u0442\u043e\u043b\u043a\u0430\u0435\u0442 \u0434\u0440\u043e\u043d \u0438 \u0441\u043d\u043e\u0441\u0438\u0442 \u0435\u0433\u043e, \u0432\u044b\u0448\u0435 \u043d\u0430\u0434 \u0437\u0435\u043c\u043b\u0451\u0439 \u0434\u0443\u0435\u0442 \u0441\u0438\u043b\u044c\u043d\u0435\u0435 \u0438 \u043d\u0430\u043b\u0435\u0442\u0430\u0435\u0442 \u043f\u043e\u0440\u044b\u0432\u0430\u043c\u0438. \u0412\u0435\u0442\u0435\u0440 \u0441\u043a\u0430\u043d\u0430 \u2014 \u0442\u043e\u0442, \u0447\u0442\u043e \u0430\u0432\u0442\u043e\u0440 \u0438\u043b\u0438 \u0430\u0434\u043c\u0438\u043d \u0437\u0430\u0434\u0430\u043b \u0434\u043b\u044f \u044d\u0442\u043e\u0433\u043e \u043c\u0435\u0441\u0442\u0430; \u00ab\u0441\u0435\u0439\u0447\u0430\u0441 \u043d\u0430 \u043c\u0435\u0441\u0442\u0435\u00bb \u2014 \u043d\u0430\u0441\u0442\u043e\u044f\u0449\u0438\u0439 \u0432\u0435\u0442\u0435\u0440, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u0434\u0443\u0435\u0442 \u0442\u0430\u043c \u043f\u0440\u044f\u043c\u043e \u0441\u0435\u0439\u0447\u0430\u0441 (\u0434\u043b\u044f \u0441\u043a\u0430\u043d\u043e\u0432 \u0441 \u0438\u0437\u0432\u0435\u0441\u0442\u043d\u044b\u043c \u043c\u0435\u0441\u0442\u043e\u043c); \u0441\u0432\u043e\u0439 \u2014 \u0442\u0432\u043e\u0439 \u0441\u043e\u0431\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0439 \u0432\u0435\u0442\u0435\u0440 \u0434\u043b\u044f \u044d\u0442\u043e\u0433\u043e \u0441\u043a\u0430\u043d\u0430.",
+       "type": "enum",
+       "default": "\u0412\u0435\u0442\u0435\u0440 \u0441\u043a\u0430\u043d\u0430",
+       "range": "\u0412\u044b\u043a\u043b\u044e\u0447\u0435\u043d (\u0448\u0442\u0438\u043b\u044c) / \u0412\u0435\u0442\u0435\u0440 \u0441\u043a\u0430\u043d\u0430 / \u0421\u0435\u0439\u0447\u0430\u0441 \u043d\u0430 \u043c\u0435\u0441\u0442\u0435 / \u0421\u0432\u043e\u0439",
+       "scope": "global",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "\u0412\u044b\u043a\u043b\u044e\u0447\u0435\u043d (\u0448\u0442\u0438\u043b\u044c)",
+        "\u0412\u0435\u0442\u0435\u0440 \u0441\u043a\u0430\u043d\u0430",
+        "\u0421\u0435\u0439\u0447\u0430\u0441 \u043d\u0430 \u043c\u0435\u0441\u0442\u0435",
+        "\u0421\u0432\u043e\u0439"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "wind.fromDeg",
+       "label": "\u0421\u0432\u043e\u0439 \u0432\u0435\u0442\u0435\u0440: \u043e\u0442\u043a\u0443\u0434\u0430",
+       "help": "\u041e\u0442\u043a\u0443\u0434\u0430 \u0434\u0443\u0435\u0442 \u0432\u0435\u0442\u0435\u0440, \u0432 \u0433\u0440\u0430\u0434\u0443\u0441\u0430\u0445 \u043f\u043e \u043a\u043e\u043c\u043f\u0430\u0441\u0443: 0 \u2014 \u0441\u0435\u0432\u0435\u0440, 90 \u2014 \u0432\u043e\u0441\u0442\u043e\u043a, 180 \u2014 \u044e\u0433, 270 \u2014 \u0437\u0430\u043f\u0430\u0434. \u0415\u0441\u043b\u0438 \u0443 \u0441\u043a\u0430\u043d\u0430 \u043d\u0435 \u0437\u0430\u0434\u0430\u043d\u043e, \u0433\u0434\u0435 \u0441\u0435\u0432\u0435\u0440, 0 \u2014 \u043d\u0430\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0438\u0435, \u043a\u0443\u0434\u0430 \u0441\u043a\u0430\u043d \u0441\u043c\u043e\u0442\u0440\u0438\u0442 \u0432 \u043d\u0430\u0447\u0430\u043b\u0435.",
+       "type": "number",
+       "default": "270\u00b0",
+       "range": "0\u2013360\u00b0",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "wind.speed",
+       "label": "\u0421\u0432\u043e\u0439 \u0432\u0435\u0442\u0435\u0440: \u0441\u043a\u043e\u0440\u043e\u0441\u0442\u044c",
+       "help": "\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u0441\u043a\u043e\u0440\u043e\u0441\u0442\u044c \u043d\u0430 \u0432\u044b\u0441\u043e\u0442\u0435 10 \u043c, \u043a\u0430\u043a \u0432 \u043f\u0440\u043e\u0433\u043d\u043e\u0437\u0435 \u043f\u043e\u0433\u043e\u0434\u044b. \u0423 \u0437\u0435\u043c\u043b\u0438 \u0432\u0435\u0442\u0435\u0440 \u0441\u043b\u0430\u0431\u0435\u0435, \u0432\u044b\u0448\u0435 \u2014 \u0441\u0438\u043b\u044c\u043d\u0435\u0435. \u041c\u0430\u043b\u0435\u043d\u044c\u043a\u043e\u043c\u0443 \u0432\u0443\u043f\u0443 \u0442\u044f\u0436\u0435\u043b\u043e \u0443\u0436\u0435 \u043f\u0440\u0438 8\u201310 \u043c/\u0441.",
+       "type": "number",
+       "default": "4 \u043c/\u0441",
+       "range": "0\u201330 \u043c/\u0441",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "wind.gust",
+       "label": "\u0421\u0432\u043e\u0439 \u0432\u0435\u0442\u0435\u0440: \u043f\u043e\u0440\u044b\u0432\u044b",
+       "help": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0432\u0435\u0442\u0435\u0440 \u0443\u0441\u0438\u043b\u0438\u0432\u0430\u0435\u0442\u0441\u044f \u0438 \u0441\u0442\u0438\u0445\u0430\u0435\u0442 \u0432\u043e\u043a\u0440\u0443\u0433 \u0441\u0440\u0435\u0434\u043d\u0435\u0439 \u0441\u043a\u043e\u0440\u043e\u0441\u0442\u0438. \u041f\u043e\u0440\u044b\u0432\u044b \u043d\u0430\u043b\u0435\u0442\u0430\u044e\u0442 \u0438 \u0443\u0445\u043e\u0434\u044f\u0442 \u0437\u0430 \u043d\u0435\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0441\u0435\u043a\u0443\u043d\u0434; 0 \u2014 \u0440\u043e\u0432\u043d\u044b\u0439 \u0432\u0435\u0442\u0435\u0440.",
+       "type": "number",
+       "default": "2 \u043c/\u0441",
+       "range": "0\u201320 \u043c/\u0441",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
       }
      ]
     },
@@ -5070,6 +5476,44 @@
        "apply": "life",
        "keys": [],
        "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "scene.ceiling",
+       "label": "\u041d\u0435 \u0441\u0447\u0438\u0442\u0430\u0442\u044c \u0441\u0442\u043e\u043b\u043a\u043d\u043e\u0432\u0435\u043d\u0438\u044f \u0432\u044b\u0448\u0435",
+       "help": "\u0423 \u0441\u043a\u0430\u043d\u043e\u0432 \u043f\u043e\u0434 \u043e\u0442\u043a\u0440\u044b\u0442\u044b\u043c \u043d\u0435\u0431\u043e\u043c \u0432 \u043d\u0435\u0431\u0435 \u0447\u0430\u0441\u0442\u043e \u0432\u0438\u0441\u044f\u0442 \u043f\u044b\u043b\u0438\u043d\u043a\u0438, \u043a\u043e\u0442\u043e\u0440\u044b\u0435 \u043f\u0440\u0435\u0432\u0440\u0430\u0449\u0430\u044e\u0442\u0441\u044f \u0432 \u043d\u0435\u0432\u0438\u0434\u0438\u043c\u044b\u0435 \u0441\u0442\u0435\u043d\u044b. \u0412\u044b\u0448\u0435 \u044d\u0442\u043e\u0439 \u0432\u044b\u0441\u043e\u0442\u044b \u043d\u0438\u0447\u0442\u043e \u043d\u0435 \u0441\u0447\u0438\u0442\u0430\u0435\u0442\u0441\u044f \u0441\u0442\u0435\u043d\u043e\u0439. \u0412\u044b\u0441\u043e\u0442\u0430 \u0441\u043a\u0430\u043d\u0430 \u2014 \u0442\u0430, \u0447\u0442\u043e \u0437\u0430\u0434\u0430\u043b \u0435\u0433\u043e \u0430\u0434\u043c\u0438\u043d; \u0441\u0432\u043e\u044f \u2014 \u0442\u0432\u043e\u044f, \u0435\u0451 \u0437\u0430\u0434\u0430\u044e\u0442 \u043d\u0430 \u043f\u0430\u043d\u0435\u043b\u0438, \u0433\u0434\u0435 \u043e\u043d\u0430 \u0432\u0438\u0434\u043d\u0430 \u043f\u0440\u044f\u043c\u043e \u043d\u0430 \u0441\u043a\u0430\u043d\u0435.",
+       "type": "enum",
+       "default": "\u0412\u044b\u0441\u043e\u0442\u0430 \u0441\u043a\u0430\u043d\u0430",
+       "range": "\u0412\u044b\u0441\u043e\u0442\u0430 \u0441\u043a\u0430\u043d\u0430 / \u0412\u044b\u043a\u043b\u044e\u0447\u0435\u043d\u043e / \u0421\u0432\u043e\u044f \u0432\u044b\u0441\u043e\u0442\u0430",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "\u0412\u044b\u0441\u043e\u0442\u0430 \u0441\u043a\u0430\u043d\u0430",
+        "\u0412\u044b\u043a\u043b\u044e\u0447\u0435\u043d\u043e",
+        "\u0421\u0432\u043e\u044f \u0432\u044b\u0441\u043e\u0442\u0430"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "scene.ceilingM",
+       "label": "\u0421\u0432\u043e\u0439 \u043f\u043e\u0442\u043e\u043b\u043e\u043a: \u0432\u044b\u0441\u043e\u0442\u0430 \u0432 \u043c\u0435\u0442\u0440\u0430\u0445 \u0441\u043a\u0430\u043d\u0430",
+       "help": "\u0412\u044b\u0441\u043e\u0442\u0430 \u0432 \u0441\u043e\u0431\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0445 \u043a\u043e\u043e\u0440\u0434\u0438\u043d\u0430\u0442\u0430\u0445 \u0441\u043a\u0430\u043d\u0430, \u0434\u043e \u00ab\u0420\u0430\u0437\u043c\u0435\u0440\u0430 \u0441\u0446\u0435\u043d\u044b\u00bb: \u0435\u0451 \u0441\u043e\u0445\u0440\u0430\u043d\u044f\u0435\u0442 \u0437\u0430 \u0442\u0435\u0431\u044f \u043a\u043d\u043e\u043f\u043a\u0430 \u00ab\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u0438 \u0437\u0430\u0434\u0430\u0442\u044c \u0432\u044b\u0441\u043e\u0442\u0443\u00bb. 10000 \u043d\u0438\u0447\u0435\u0433\u043e \u043d\u0435 \u043e\u0442\u043a\u043b\u044e\u0447\u0430\u0435\u0442.",
+       "type": "number",
+       "default": "10000 \u043c (\u0434\u043b\u044f \u043a\u0430\u0436\u0434\u043e\u0433\u043e \u0441\u043a\u0430\u043d\u0430, \u0437\u0430\u0434\u0430\u0451\u0442 \u0430\u0432\u0442\u043e\u0440)",
+       "range": "-10000\u201310000 \u043c",
+       "scope": "scene",
+       "apply": "life",
+       "keys": [],
+       "advanced": true,
        "preset": false,
        "options": [],
        "shown": [

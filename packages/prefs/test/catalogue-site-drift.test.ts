@@ -38,15 +38,15 @@ describe('a branch that ships without regenerating keeps the catalogue checks gr
     it('settings shipped until the Russian word for their count changes: the committed check is green, the live comparison red', async () => {
         const { gen, committed } = await inBranch((real) => {
             const base = committedSettings();
-            const planned = real.SCHEMA.defs.filter((d) => d.status === 'planned');
             // a branch may have shipped settings already (W3-1's scenes.* before the lead regenerates)
             const now = real.SCHEMA.defs.filter((d) => d.status === 'shipped').length;
-            let defs = real.SCHEMA.defs;
-            for (let k = 1; k <= planned.length && ruCat(now + k - 1) === ruCat(base); k++) {
-                const ship = new Set(planned.slice(0, k).map((d) => d.id));
-                defs = real.SCHEMA.defs.map((d) => (ship.has(d.id) ? { ...d, status: 'shipped' as const } : d));
-            }
-            return { SCHEMA: real.defineSettings(defs) };
+            // the branch ships k more: copies of a shipped switch under new ids, with its texts (a planned
+            // setting may have none yet, and how many have them changes with every wave: v0.7 lane E)
+            const hud = real.SCHEMA.byId.get('display.hud')!;
+            const copy = (k: number) => ({ ...hud, id: `display.hudCopy${k}`, label: 'set.display.hud', help: 'set.display.hud.help', action: undefined, url: undefined });
+            let added: ReturnType<typeof copy>[] = [];
+            for (let k = 1; k <= 12 && ruCat(now + k - 1) === ruCat(base); k++) added = Array.from({ length: k }, (_, i) => copy(i + 1));
+            return { SCHEMA: real.defineSettings([...real.SCHEMA.defs, ...added]) };
         });
         const live = gen.buildFeatures('2026-10-01').features.counts;
         const counts = committed.committedFeatures().counts;

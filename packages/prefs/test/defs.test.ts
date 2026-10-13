@@ -17,7 +17,9 @@ const V03_SHIPPED = [
     // W4-2 phantom walls (G.3): Settings -> Walls and voxel grid, admin default in showcase.json
     'scene.dropFloaters',
     // v0.5 (owner's message 16): angle mode's strength, tilt limit and horizon strength, advanced rows of Flight
-    'level.angleLimitDeg', 'level.strength', 'level.horizonStrength'
+    'level.angleLimitDeg', 'level.strength', 'level.horizonStrength',
+    // v0.7 lane E (owner's message 18 item 10): the wind of the place and the collision ceiling
+    'wind.mode', 'wind.fromDeg', 'wind.speed', 'wind.gust', 'scene.ceiling', 'scene.ceilingM'
 ];
 
 /**
@@ -73,6 +75,14 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['scene.transform', 'scenes', 'scene', 'json', null, 'live'],
     ['scene.dropFloaters', 'voxels', 'scene', 'number', 'curated:dropFloaters|0', 'life'],
     ['scene.walls', 'voxels', 'global', 'enum', 'curated:walls|on', 'life'],
+    // v0.7 lane E: the collision ceiling (the admin's catalogue ceilingM per scan; 10 000 m ignores nothing)
+    ['scene.ceiling', 'voxels', 'scene', 'enum', 'scene', 'life'],
+    ['scene.ceilingM', 'voxels', 'scene', 'number', 'curated:ceilingM|10000', 'life'],
+    // v0.7 lane E: the wind of the place, beside gravity
+    ['wind.mode', 'drone', 'global', 'enum', 'scene', 'life'],
+    ['wind.fromDeg', 'drone', 'scene', 'number', 270, 'life'],
+    ['wind.speed', 'drone', 'scene', 'number', 4, 'life'],
+    ['wind.gust', 'drone', 'scene', 'number', 2, 'life'],
     ['voxels.show', 'voxels', 'global', 'enum', 'off', 'live'],
     ['voxels.opacity', 'voxels', 'global', 'number', 0.55, 'live'],
     ['voxels.opacityOnly', 'voxels', 'global', 'number', 1, 'live'],
@@ -121,8 +131,8 @@ const WAVE2_SETTINGS = [
 ];
 
 describe('SCHEMA is the A.8 table', () => {
-    it('has the 56 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard), each with its group, scope, type, default and apply', () => {
-        expect(SCHEMA.defs).toHaveLength(56);
+    it('has the 62 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard, v0.7\'s wind and ceiling), each with its group, scope, type, default and apply', () => {
+        expect(SCHEMA.defs).toHaveLength(62);
         const got = SCHEMA.defs.map((d) => [d.id, d.group, d.scope, d.type, isPresetRef(d.default) ? `preset:${d.default.preset}` : isCuratedRef(d.default) ? `curated:${d.default.curated}|${String(d.default.fallback)}` : d.default, d.apply]);
         // order inside a group follows the def files, not the table's rows
         const byId = (a: unknown[], b: unknown[]) => String(a[0]).localeCompare(String(b[0]));

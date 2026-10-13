@@ -9,5 +9,5 @@ export * from './store';
 export * from './url';
 export * from './catalog';
 export * from './browser';
-export { SCHEMA, DRONE_IDS, RATE_TYPES, RATE_BOUNDS, validatePid, validateRates, validateThrottle, validateTransform, validateFolder, SCALE_MIN, SCALE_MAX, WALLS_OPTIONS, VOXEL_STYLES, VOXEL_VIEWS } from './defs';
+export { SCHEMA, DRONE_IDS, RATE_TYPES, RATE_BOUNDS, validatePid, validateRates, validateThrottle, validateTransform, validateFolder, SCALE_MIN, SCALE_MAX, WALLS_OPTIONS, VOXEL_STYLES, VOXEL_VIEWS, CEILING_OPTIONS, CEILING_LIMIT_M, WIND_MODES } from './defs';
 export type { RatesType, AxisRates, RatesValue, PidValue, ThrottleValue, SceneTransform, FolderValue } from './defs';
