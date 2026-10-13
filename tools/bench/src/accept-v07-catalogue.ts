@@ -29,6 +29,12 @@ const TMP = process.env.GSFPV_TMP ?? join(REPO, '.cache');
 mkdirSync(TMP, { recursive: true });
 const DATA = mkdtempSync(join(TMP, 'gsfpv-v07-api-'));
 const NEW_SCENE = '2f1ddf5f'; // the owner's stochastic example (message 18, item 1)
+/** the admin page's English words (the browser here asks for English): what the owner reads, checked as text */
+const ADMIN_EN: Record<string, string> = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'admin', 'en.json'), 'utf8'));
+/** a raw dictionary key, an unfilled placeholder or a bare field identifier where the owner should read a word */
+const RAW_WORDS = /\badmin\.|\{\w+\}|\b(pinned|geo|wind|render|collections|defaultDrone|license|about|origin|extentM|sizeMb|voxelCm|true|false)\b/;
+/** the field part of a Refresh row ("Licence: (empty) -> CC BY 4.0" -> "Licence"); the values are SuperSplat's own words */
+const rowField = (row: string): string => row.split(': ')[0];
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Any = any;
@@ -149,7 +155,9 @@ async function main(): Promise<void> {
     const bar = await admin.$eval('[data-action=publish]', (b) => ({ disabled: (b as HTMLButtonElement).disabled, attention: b.classList.contains('attention'), text: b.textContent }));
     results.publishAfterPin = bar;
     check('one change: Publish is on, highlighted and counts it', !bar.disabled && bar.attention && /\(1\)/.test(bar.text ?? ''));
-    check('the change list names the scene and the field', await admin.$eval(`[data-testid=draft-changes] li[data-change=changed][data-scene="${pinId}"]`, (e) => /pinned/.test(e.textContent ?? '')).catch(() => false));
+    const changeText = await admin.$eval(`[data-testid=draft-changes] li[data-change=changed][data-scene="${pinId}"]`, (e) => e.textContent ?? '').catch(() => '');
+    results.changeText = changeText;
+    check('the change list names the scene and the field in words ("Featured", not "pinned")', changeText.includes(ADMIN_EN['admin.key.pinned']) && !RAW_WORDS.test(changeText));
     check('the changed row carries a badge', await admin.$eval(`li.row[data-scene="${pinId}"] .change-badge.changed`, (e) => !(e as HTMLElement).hidden === true).catch(() => false));
 
     // ---- Refresh from SuperSplat on the Muster Truck Show (its licence is empty in the catalogue) ----
@@ -160,6 +168,13 @@ async function main(): Promise<void> {
     const offered = await admin.$$eval(`li.row[data-scene="${muster}"] [data-refresh]`, (els) => els.map((e) => [e.getAttribute('data-refresh'), (e as HTMLInputElement).checked]));
     results.refreshOffered = offered;
     check('Refresh offers the licence from SuperSplat, ticked; the title unticked', offered.some(([f, c]) => f === 'license' && c) && !offered.some(([f, c]) => f === 'title' && c));
+    const rowText = await admin.$$eval(`li.row[data-scene="${muster}"] label.refresh-row`, (els) => els.map((e) => e.textContent ?? ''));
+    results.refreshRows = rowText;
+    const licRow = rowText.find((x) => x.includes(ADMIN_EN['admin.key.license'])) ?? '';
+    check('each Refresh row reads "field: old -> new" in words (the licence row: its name, "(empty)" and the new licence)',
+        rowText.length === offered.length && rowText.every((x) => x.includes('\u2192') && !RAW_WORDS.test(rowField(x)) && !/\badmin\.|\{\w+\}|\[object/.test(x))
+        && licRow.includes(ADMIN_EN['admin.refresh.empty']) && /CC|BY|MIT|licen/i.test(licRow.split('\u2192')[1] ?? ''));
+    check('control: the raw-key detector fires on what the first cut showed', RAW_WORDS.test(rowField('admin.refresh.field')) && RAW_WORDS.test('Changed: Modlinek (pinned, geo)') && !RAW_WORDS.test(rowField(`${ADMIN_EN['admin.key.license']}: x`)), true);
     await admin.click(`li.row[data-scene="${muster}"] [data-action=refresh-apply]`);
     await saved(admin);
 

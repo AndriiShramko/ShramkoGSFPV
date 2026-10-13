@@ -92,6 +92,19 @@ export interface CatalogScene {
     origin?: SceneOrigin;
 }
 
+/**
+ * Every field of a CatalogScene, once, in the interface's order. The compiler checks the list against the
+ * interface both ways (a new field must be added here, a field here must exist there), so code that has to
+ * cover every field reads it from here: the admin page names each field catalogDiff or factChanges reports
+ * with the label admin.key.<field>, and a test (packages/i18n/test/admin-parity.test.ts) checks each one
+ * has that label in every language.
+ */
+export const CATALOG_SCENE_FIELDS = Object.keys({
+    id: 1, title: 1, author: 1, license: 1, kind: 1, collision: 1, version: 1, thumb: 1, voxelCm: 1, sizeMb: 1, format: 1, extentM: 1,
+    defaultDrone: 1, walls: 1, dropFloaters: 1, scale: 1, pitch: 1, collections: 1, pinned: 1, hidden: 1, geo: 1, compassDeg: 1, wind: 1,
+    ceilingM: 1, render: 1, about: 1, origin: 1
+} satisfies Record<keyof CatalogScene, 1>) as readonly (keyof CatalogScene)[];
+
 export interface CatalogCollection {
     id: string;
     title: LocalText;

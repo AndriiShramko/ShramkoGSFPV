@@ -473,20 +473,28 @@ export class ScenesTab {
     }
 }
 
-/** The admin's word for a catalogue field (the editor's labels), else the field's own name. */
+/**
+ * The short name of a catalogue field in the change lists (admin.key.<field>; every CatalogScene field has
+ * one in every language, packages/i18n/test/admin-parity.test.ts). A field the type does not know (an
+ * older or newer server's extra) keeps its own name.
+ */
 function fieldLabel(f: string): string {
-    const key = `admin.field.${f}`;
+    const key = `admin.key.${f}`;
     const s = t(key);
     return s === key ? f : s;
 }
 
-/** A short text for a value in the refresh list. */
+/**
+ * A value in the refresh list, in words and short: "(empty)", yes/no, a size as 25.3 × 10 × 17.7, an object
+ * (SuperSplat's origin) as its values without field names (link · description · tags · date), at most 160 characters.
+ */
 function show(v: unknown): string {
     if (isEmpty(v)) return t('admin.refresh.empty');
+    if (typeof v === 'boolean') return t(v ? 'admin.value.yes' : 'admin.value.no');
+    if (Array.isArray(v)) return v.join(' × ');
     if (typeof v === 'object') {
-        const o = v as Record<string, unknown>;
-        if (Array.isArray(v)) return v.join(' × ');
-        return Object.entries(o).map(([k, x]) => `${k}: ${Array.isArray(x) ? x.join(', ') : String(x)}`).join('; ').slice(0, 160);
+        const parts = Object.values(v as Record<string, unknown>).filter((x) => !isEmpty(x));
+        return parts.map((x) => (Array.isArray(x) ? x.join(', ') : String(x))).join(' · ').slice(0, 160);
     }
     return String(v);
 }
