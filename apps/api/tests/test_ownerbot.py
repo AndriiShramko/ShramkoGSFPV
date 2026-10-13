@@ -72,7 +72,7 @@ class Http(BotTest):
         server.IDEAS, server.SERVICE, server.BOT = self.w.store, self.w.service, self.w.bot
         self.shared: list[str] = []
         server.send_telegram = lambda text: self.shared.append(text) or 7
-        for b in (server._rhits, server._all_hits):
+        for b in (server._rhits, server._all_hits, server._tghits):
             b.clear()
         self.api = ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)
         threading.Thread(target=self.api.serve_forever, daemon=True).start()
@@ -128,6 +128,18 @@ class Webhook(Http):
         # control: the owner's own chat
         self.assertEqual(self.hook({"update_id": 6, **self.w.owner_msg("send this to the pilot", reply_to=card)}), 200)
         self.assertEqual([m["state"] for m in self.w.service.get(rec["id"])["thread"]], ["queued"])
+
+    def test_a_strangers_flood_does_not_use_up_telegrams_allowance(self):
+        """Review R6: the webhook's limit is per client address (nginx passes the real one), so a stranger
+        posting to a guessed path is cut off while Telegram's deliveries still pass."""
+        stranger = {"X-Forwarded-For": "198.51.100.66"}
+        codes = [self.post("/api/tg/" + "0" * 32, {"update_id": i}, stranger)[0] for i in range(121)]
+        self.assertEqual(codes[:120], [404] * 120)
+        self.assertEqual(codes[120], 429)                                   # the stranger is cut off
+        telegram = {"X-Forwarded-For": "149.154.167.220", "X-Telegram-Bot-Api-Secret-Token": SECRET}
+        st, _ = self.post(self.w.bot.cfg.webhook_path(), {"update_id": 9, **self.w.owner_msg("/help")}, telegram)
+        self.assertEqual(st, 200)                                           # control: Telegram is not
+        self.assertEqual(self.texts(), [self.t("help", s=60)])
 
     def test_an_unreadable_store_makes_telegram_retry(self):
         """Review R3: while ideas.json cannot be read the owner's update is answered 503, so Telegram

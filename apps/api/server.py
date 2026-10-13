@@ -126,6 +126,8 @@ _lhits: dict[str, deque] = defaultdict(deque)
 _rhits: dict[str, deque] = defaultdict(deque)
 _shits: dict[str, deque] = defaultdict(deque)
 _all_hits: dict[str, deque] = defaultdict(deque)  # per endpoint, every visitor together
+_tghits: dict[str, deque] = defaultdict(deque)    # the owner bot's webhook, per client address (not shared:
+                                                  # a stranger's flood must not use up Telegram's deliveries)
 _guard = {"tripped": False, "warned": False}
 
 
@@ -1225,8 +1227,10 @@ class Handler(BaseHTTPRequestHandler):
         self._send(*res)
 
     def _tg(self, path: str) -> None:
-        """The owner bot's webhook: a small body (Telegram's updates are a few KB), checked by ownerbot."""
-        if not _rate(_all_hits, "tg", 120, 60.0):
+        """The owner bot's webhook: a small body (Telegram's updates are a few KB), checked by ownerbot.
+        Limited per client address (nginx passes the real one in X-Forwarded-For), never one bucket for
+        everyone: a stranger posting to a guessed /api/tg/<x> only uses up his own allowance."""
+        if not _rate(_tghits, self._client(), 120, 60.0):
             return self._json(429, {"ok": False})
         try:
             n = int(self.headers.get("Content-Length") or 0)
