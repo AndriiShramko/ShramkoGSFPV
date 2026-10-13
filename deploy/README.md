@@ -239,9 +239,9 @@ New API modules, all next to `server.py` in `$GSFPV_BASE/api/`: `scenepages.py`,
 
 | Route | nginx | API |
 |---|---|---|
-| `GET /{lang}/scenes/`, `/{lang}/scenes/<id>/` | `location ~ "^/(en\|es\|pl\|ru)/scenes/([0-9a-f]{6,32}/)?$"`, GET/HEAD, `$uri` only, no cookies; `/{lang}/scenes` -> 301 | the scene pages from the published catalogue and the live release's templates (`releases/current/scene-templates/`); their own CSP (`script-src 'none'`), ETag/304, `max-age=300`; 404 for a hidden or unknown scene, 503 while no release has templates |
+| `GET /{lang}/scenes/`, `/{lang}/scenes/<id>/` | `location ~ "^/(en\|es\|pl\|ru)/scenes/([0-9a-f]{6,32}/)?$"`, GET/HEAD, `$uri` only, no cookies; `/{lang}/scenes` and `/{lang}/scenes/<id>` (no slash) -> 301 to the slash form | the scene pages from the published catalogue and the live release's templates (`releases/current/scene-templates/`); their own CSP (`script-src 'none'`), ETag/304, `max-age=300`; 404 for a hidden or unknown scene, 503 while no release has templates |
 | `GET /scenes/sitemap.xml`, `/scenes/llms.txt` | two `location =` | every scene page in 4 languages (lastmod = the catalogue's publish time); the same list for answer engines. `robots.txt` names the sitemap, `llms.txt` links the list |
-| `GET /api/wind/<id>?mode=now` | `location ~ "^/api/wind/[0-9a-f]{6,32}$"`, GET only | `{"ok": true, "fromDeg", "speed", "gust", "at", "source": "now"}` from Open-Meteo's forecast, cached 15 min per place; 404 without geo; 30 a minute per visitor |
+| `GET /api/wind/<id>?mode=now` | `location ~ "^/api/wind/[0-9a-f]{6,32}$"`, GET only; the client address from the real-IP module (as `/api/admin/`), `X-Forwarded-For $remote_addr` | `{"ok": true, "fromDeg", "speed", "gust", "at", "source": "now"}` from Open-Meteo's forecast, cached 15 min per place; 404 without geo; 30 a minute per visitor |
 | `GET /api/admin/superspl/<id>[?fresh=1]` | the existing `^~ /api/admin/` | SuperSplat's facts of a scene (`https://superspl.at/scene/<id>.data` + the CDN's `scene.voxel.json`), 10 min cache, 20 upstream calls a minute |
 | `GET /api/admin/geo/search?q=&lang=` | same | places by name (Open-Meteo geocoding) |
 | `GET /api/admin/wind/climate?lat=&lon=` | same | the prevailing wind (5 full years of Open-Meteo's archive), kept in `data/wind-climate/` |
@@ -261,6 +261,7 @@ release the API answers 503 for the pages; nothing else changes):
    curl -sI https://gsfpv.flyreelstudio.eu/en/scenes/ | grep -iE '^(HTTP|content-security-policy|etag)'   # 200, script-src 'none'
    curl -s https://gsfpv.flyreelstudio.eu/en/scenes/70b50d42/ | grep -c 'application/ld+json'                # 1
    curl -s -o /dev/null -w '%{http_code}\n' https://gsfpv.flyreelstudio.eu/scene-templates/manifest.json      # 404
+   curl -sI https://gsfpv.flyreelstudio.eu/en/scenes/70b50d42 | grep -iE '^(HTTP|location)'                    # 301, /en/scenes/70b50d42/
    curl -s 'https://gsfpv.flyreelstudio.eu/api/wind/70b50d42?mode=now'                                       # 404 until the scene has geo
    node scripts/smoke-release.mjs https://gsfpv.flyreelstudio.eu                                              # checks the scene pages when the API answers
    ```
