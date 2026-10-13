@@ -9,11 +9,12 @@ import { describe, expect, it } from 'vitest';
 import { execFile } from 'node:child_process';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { TEXT_MAX, TITLE_MAX, buildBoard, coversSnapshot, groupsOf, loadLive, parseRoadmap, viewItems } from '../../../apps/site/src/lib/roadmap';
 import type { ViewItem } from '../../../apps/site/src/lib/roadmap';
+import { keepTogether } from '../../../apps/site/src/lib/text';
 
 const REPO = join(__dirname, '..', '..', '..');
 const GROUPS = ['radio', 'controls', 'drone', 'crash', 'camera', 'scenes', 'walls', 'settings'];
@@ -201,5 +202,26 @@ describe('the landing groups are one list', () => {
         expect(groupProblems(site, new Set([...seed, 'wind']))).toEqual(['seed: wind']);
         const { walls: _w, ...noWalls } = site.pl;
         expect(groupProblems({ ...site, pl: noWalls }, seed)).toEqual(['site pl: radio,controls,drone,crash,camera,scenes,settings']);
+    });
+});
+
+/** Invisible characters a reader cannot tell from a space or from nothing: no-break space, soft hyphen, zero-width ones, word joiner, BOM. */
+const INVISIBLE = /[\u00a0\u00ad\u200b-\u200d\u2060\ufeff]/;
+/** Source files under these directories (recursively) that hold an invisible character as itself. */
+function invisibleIn(...dirs: string[]): string[] {
+    const files = dirs.flatMap((d) => readdirSync(d, { recursive: true, encoding: 'utf8' }).filter((f) => /\.(ts|tsx|mjs|css)$/.test(f)).map((f) => join(d, f)));
+    return files.filter((f) => INVISIBLE.test(readFileSync(f, 'utf8')));
+}
+
+describe('invisible characters are written as escapes', () => {
+    it('the landing and the fly app sources hold none as themselves; keepTogether still inserts them', () => {
+        expect(invisibleIn(join(REPO, 'apps', 'site', 'src'), join(REPO, 'apps', 'fly', 'src'))).toEqual([]);
+        expect(keepTogether('8\u201330 ms, then \u2014 done')).toBe('8\u2013\u206030 ms, then\u00a0\u2014 done');
+    });
+
+    it('a literal word joiner or no-break space is caught (control)', () => {
+        expect(INVISIBLE.test('"$1\u2013' + String.fromCharCode(0x2060) + '"')).toBe(true);
+        expect(INVISIBLE.test('a' + String.fromCharCode(0xa0) + 'b')).toBe(true);
+        expect(INVISIBLE.test('"$1\\u2013\\u2060"')).toBe(false); // the escape as text is fine
     });
 });
