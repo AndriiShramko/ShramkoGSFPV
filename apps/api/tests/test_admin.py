@@ -22,6 +22,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve()
 sys.path.insert(0, str(HERE.parents[1]))
 import admin  # noqa: E402
+import ideas_admin  # noqa: E402
 import server  # noqa: E402
 
 REPO = HERE.parents[3]
@@ -40,9 +41,9 @@ class AdminApi(unittest.TestCase):
         self.now = [1_790_000_000.0]
         self.sent: list[str] = []
         self.env = {"ADMIN_PASSWORD_HASH": HASH}
-        server.ADMIN = admin.AdminApi(data_dir=lambda: server.DATA_DIR, reports_file=lambda: server.REPORTS_FILE,
-                                      reports_dir=lambda: server.REPORTS_DIR, seed=lambda: SHOWCASE,
-                                      telegram=self.sent.append, env=self.env, clock=lambda: self.now[0])
+        server.ADMIN = admin.AdminApi(data_dir=lambda: server.DATA_DIR, reports_dir=lambda: server.REPORTS_DIR, seed=lambda: SHOWCASE,
+                                      telegram=self.sent.append, env=self.env, clock=lambda: self.now[0],
+                                      ideas=ideas_admin.IdeasAdmin(server.SERVICE, bot_ready=lambda: False))
         self.api = ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)
         threading.Thread(target=self.api.serve_forever, daemon=True).start()
 
@@ -321,7 +322,12 @@ class ReportsTab(AdminApi):
         rows = json.loads(self.req("GET", "/api/admin/reports", cookie=cookie)[2])["reports"]
         self.assertEqual(rows[1]["status"], "closed")
         self.assertEqual(rows[0]["status"], "open")  # control: the other one is untouched
-        self.assertIn("R-20261001-0001", json.loads((self.data / "report-status.json").read_text(encoding="utf-8")))
+        # the status lives in the ideas store now (closed = done there)
+        store = {r["id"]: r for r in json.loads((self.data / "ideas.json").read_text(encoding="utf-8"))["ideas"]}
+        self.assertEqual((store["R-20261001-0001"]["status"], store["R-20261002-0001"]["status"]), ("done", "new"))
+        self.assertEqual(self.req("POST", "/api/admin/reports/status", {"id": "R-20261001-0001", "status": "open"}, cookie=cookie, csrf=csrf)[0], 200)
+        self.assertEqual(json.loads(self.req("GET", "/api/admin/reports", cookie=cookie)[2])["reports"][1]["status"], "open")
+        self.req("POST", "/api/admin/reports/status", {"id": "R-20261001-0001", "status": "closed"}, cookie=cookie, csrf=csrf)
         before = server.REPORTS_FILE.read_text(encoding="utf-8")
         for b in ({"id": "R-20990101-0001", "status": "closed"}, {"id": "R-20261001-0001", "status": "deleted"}, {"id": "../x", "status": "open"}):
             self.assertEqual(self.req("POST", "/api/admin/reports/status", b, cookie=cookie, csrf=csrf)[0], 400, b)

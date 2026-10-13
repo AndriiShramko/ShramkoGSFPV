@@ -1,0 +1,10 @@
+{
+  "replySubject": "Re: your message about ShramkoGSFPV ({id})",
+  "doneSubject": "Your idea is now in ShramkoGSFPV, thank you ({id})",
+  "hello": "Hello,",
+  "doneIntro": "Good news: what you suggested ({id}) is now in the simulator. Here is what was done:",
+  "doneThanks": "Thank you for helping to make ShramkoGSFPV better. Try it at {site} and tell me how it feels: just reply to this e-mail.",
+  "quoteHeader": "On {date} you wrote ({id}):",
+  "tagline": "ShramkoGSFPV: an FPV drone simulator in real 3D scans, free in your browser",
+  "footer": "You received this e-mail because you left your address in the ShramkoGSFPV feedback form. It is used only to answer you."
+}

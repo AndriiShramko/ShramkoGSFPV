@@ -117,7 +117,11 @@ class Reports(Api):
         self.assertIn("Scene: 39e63ce9", text)
         self.assertIn("Release: 608259b", text)
         self.assertIn("Diagnostics: attached", text)
-        self.assertNotIn("TypeError", text)  # no logs in Telegram
+        # the owner's request (2026-10-13): everything in his chat; the text has a summary (the last
+        # error), the whole file goes as a document, never inlined (the settings list stays in it)
+        self.assertIn("Page errors: 1; last: TypeError: x", text)
+        self.assertIn("Contact: @pilot", text)
+        self.assertNotIn('"walls"', text)
         # control: storage that fails sends nothing (the order is store, then send)
         server.REPORTS_FILE = Path(self.tmp.name) / "missing-dir" / "x" / "reports.jsonl"
         s2, _ = self.report()
