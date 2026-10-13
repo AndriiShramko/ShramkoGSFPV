@@ -36,7 +36,7 @@ function chip(cls: string, text: string, attrs: Record<string, string> = {}): HT
 export function card(i: Idea, host: CardHost): HTMLLIElement {
     const open = host.isOpen(i.id);
     const busy = host.isBusy(i.id);
-    const li = h('li', { class: `idea${open ? ' open' : ''}${busy ? ' busy' : ''}`, 'data-idea': i.id, 'data-status': i.status, draggable: open ? 'false' : 'true', 'aria-busy': busy ? 'true' : undefined });
+    const li = h('li', { class: `idea-card${open ? ' open' : ''}${busy ? ' busy' : ''}`, 'data-idea': i.id, 'data-status': i.status, draggable: open ? 'false' : 'true', 'aria-busy': busy ? 'true' : undefined });
     li.addEventListener('dragstart', (e) => {
         e.dataTransfer?.setData('text/plain', i.id);
         if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
@@ -55,8 +55,8 @@ export function card(i: Idea, host: CardHost): HTMLLIElement {
     const email = emailOf(i.contact);
     const head = h('div', { class: 'idea-head' },
         handle,
-        chip(`kind ${i.kind}`, t(`admin.ideas.kind.${i.kind}`), { 'data-chip': 'kind' }),
-        chip(`urg ${i.urgency}`, t(`admin.ideas.urgency.${i.urgency}`), { 'data-chip': 'urgency' }),
+        chip(`k-${i.kind}`, t(`admin.ideas.kind.${i.kind}`), { 'data-chip': 'kind' }),
+        chip(`u-${i.urgency}`, t(`admin.ideas.urgency.${i.urgency}`), { 'data-chip': 'urgency' }),
         i.fromPilot ? chip('pilot', t('admin.ideas.card.pilot'), { 'data-chip': 'pilot' }) : null,
         i.contact ? chip(email ? 'mail' : 'contact', email ? t('admin.ideas.card.hasEmail') : t('admin.ideas.card.hasContact'), { 'data-chip': 'contact' }) : null,
         onLanding(i) ? chip('landing', t('admin.ideas.card.onLanding'), { 'data-chip': 'landing' }) : null,

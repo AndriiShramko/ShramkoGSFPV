@@ -1,7 +1,7 @@
 {
   "admin.tab.ideas": "Ideas",
   "admin.ideas.help": "Arrastra una tarjeta a otra columna, o enfoca su asa y pulsa las flechas izquierda y derecha. Aceptadas es la cola de trabajo: lo más urgente, primero.",
-  "admin.ideas.unreadable": "No se pudieron mostrar {n} registros: esta página no conoce su estado o su tipo.",
+  "admin.ideas.unreadable": "Registros sin mostrar: {n}. Esta página no conoce su estado o su tipo.",
   "admin.ideas.moved": "{id} pasó a {column}.",
   "admin.ideas.error": "No se guardó: {why}",
   "admin.ideas.col.new": "Nuevas",

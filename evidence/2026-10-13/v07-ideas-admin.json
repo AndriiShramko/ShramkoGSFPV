@@ -1,0 +1,254 @@
+{
+  "name": "v07-ideas-admin",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-13T09:08:23.646Z",
+    "gitHead": "2a6404b",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "fly": "http://127.0.0.1:5364",
+  "error": null,
+  "checks": [
+    {
+      "name": "five columns with their counts (New 2, Accepted 1, In progress 2, Done 1, Rejected 1)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the record with an unknown status is counted, not placed",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the old Reports tab is gone",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "drag to Accepted sends one POST ideas/status {id, status: accepted}",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "drop on its own column sends nothing",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "ArrowLeft in New sends nothing (edge)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "ArrowRight on the handle moves the card to the next column",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the focus stays on the moved card's handle",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "Done opens the thank-you draft (status, then thanks/draft) and sends nothing",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the draft is addressed to the pilot's e-mail",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "Not now sends nothing",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "Send sends the thank-you once, with the subject as edited",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "after it the card no longer offers a thank-you",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "a refused move leaves the card in its column and says why",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "search keeps only the card with every word",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "a word found nowhere empties the board",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "kind toggles: only bugs left",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "contact filter: the cards without a contact",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "technical details open from the card (the stored JSON)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "technical details download as R-20261008-0003.json",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the card shows what the pilot sent (language, page, scene, release)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "no e-mail left: no reply box, a reason instead",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "the contact itself is on the card",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "reply, comment, urgency and public title each send their own call with their body",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the Column select moves the card (touch)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "without an English title the landing switch is off and disabled",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "with it the switch can be ticked",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "at 375 px the board is one column with no sideways scroll",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the Scenes tab still opens",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "no page errors",
+      "ok": true,
+      "control": false
+    }
+  ],
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "countsAtStart": {
+    "new": "2",
+    "accepted": "1",
+    "in_progress": "2",
+    "done": "1",
+    "rejected": "1"
+  },
+  "dragCalls": [
+    {
+      "method": "POST",
+      "path": "ideas/status",
+      "body": {
+        "id": "R-20261006-0001",
+        "status": "accepted"
+      }
+    }
+  ],
+  "doneCalls": [
+    "ideas/status",
+    "ideas/thanks/draft"
+  ],
+  "cardCalls": [
+    [
+      "ideas/reply",
+      {
+        "id": "R-20261006-0002",
+        "text": "Thanks! It is queued for the next build."
+      }
+    ],
+    [
+      "ideas/comment",
+      {
+        "id": "R-20261006-0002",
+        "text": "With the HUD work"
+      }
+    ],
+    [
+      "ideas/urgency",
+      {
+        "id": "R-20261006-0002",
+        "urgency": "urgent"
+      }
+    ],
+    [
+      "ideas/public",
+      {
+        "id": "R-20261006-0002",
+        "title": {
+          "en": "A crosshair in the centre of the view",
+          "pl": "Celownik na srodku obrazu"
+        },
+        "roadmap": true,
+        "group": "controls"
+      }
+    ]
+  ],
+  "pageErrors": [],
+  "calls": [
+    "GET session",
+    "GET catalog",
+    "GET ideas",
+    "POST ideas/status",
+    "POST ideas/status",
+    "POST ideas/status",
+    "POST ideas/thanks/draft",
+    "POST ideas/thanks/draft",
+    "POST ideas/thanks/send",
+    "POST ideas/status",
+    "GET reports/R-20261008-0003/diagnostics",
+    "POST ideas/reply",
+    "POST ideas/comment",
+    "POST ideas/urgency",
+    "POST ideas/public",
+    "POST ideas/status",
+    "GET catalog"
+  ]
+}

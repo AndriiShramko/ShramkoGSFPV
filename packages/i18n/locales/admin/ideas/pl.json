@@ -1,7 +1,7 @@
 {
   "admin.tab.ideas": "Pomysły",
   "admin.ideas.help": "Przeciągnij kartę do innej kolumny albo ustaw fokus na jej uchwycie i naciskaj strzałki w lewo i w prawo. Przyjęte to kolejka pracy: najpilniejsze na górze.",
-  "admin.ideas.unreadable": "Nie udało się pokazać wpisów: {n}. Ta strona nie zna ich statusu albo rodzaju.",
+  "admin.ideas.unreadable": "Niepokazane wpisy: {n}. Ta strona nie zna ich statusu albo rodzaju.",
   "admin.ideas.moved": "{id} przeniesiono do kolumny {column}.",
   "admin.ideas.error": "Nie zapisano: {why}",
   "admin.ideas.col.new": "Nowe",

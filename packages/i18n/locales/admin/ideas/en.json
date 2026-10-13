@@ -1,7 +1,7 @@
 {
   "admin.tab.ideas": "Ideas",
   "admin.ideas.help": "Drag a card to another column, or focus its handle and press the left and right arrow keys. Accepted is the work queue: most urgent first.",
-  "admin.ideas.unreadable": "{n} records could not be shown: their status or kind is not one this page knows.",
+  "admin.ideas.unreadable": "Records not shown: {n}. Their status or kind is not one this page knows.",
   "admin.ideas.moved": "{id} moved to {column}.",
   "admin.ideas.error": "Not saved: {why}",
   "admin.ideas.col.new": "New",
