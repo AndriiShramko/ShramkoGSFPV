@@ -1,0 +1,12 @@
+{
+  "about": "The simulator's deep link of scene 2f1ddf5f (locale en) for each drawing request. Two writers must agree: packages/scenes/src/link.ts flyDeepLink (the page, the plain share link) and apps/api/server.py fly_link (the /s/<id> share page). packages/scenes/test/link.test.ts and apps/api/tests/test_feedback.py both read this table.",
+  "rows": [
+    { "render": null, "link": "/en/fly/?scene=2f1ddf5f" },
+    { "render": { "budgetM": 8, "stochastic": true }, "link": "/en/fly/?scene=2f1ddf5f&budget=8&stochastic" },
+    { "render": { "stochastic": true }, "link": "/en/fly/?scene=2f1ddf5f&stochastic" },
+    { "render": { "budgetM": 0.5 }, "link": "/en/fly/?scene=2f1ddf5f&budget=0.5" },
+    { "render": { "stochastic": false }, "link": "/en/fly/?scene=2f1ddf5f&stochastic=0" },
+    { "render": { "budgetM": 32, "stochastic": true }, "link": "/en/fly/?scene=2f1ddf5f&budget=32&stochastic" },
+    { "render": { "budgetM": 1.25, "stochastic": false }, "link": "/en/fly/?scene=2f1ddf5f&budget=1.25&stochastic=0" }
+  ]
+}

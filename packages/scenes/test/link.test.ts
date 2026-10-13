@@ -3,8 +3,11 @@
 // deliberately naive parser (SuperSplat's own rules: Number(budget), has('stochastic')) and an
 // id-only parser: those must fail, or the table would not be checking anything.
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { parseSceneLink, parseSceneInput, renderParams, sceneRender, catalogueRender, writeSceneQuery, flyQueryString, flyDeepLink } from '../src/index';
-import type { SceneLink } from '../src/index';
+import type { SceneLink, SceneRender } from '../src/index';
 
 type Parser = (raw: string) => SceneLink | null;
 
@@ -117,6 +120,18 @@ describe('the fly deep link /fly/?scene=<id>&budget=<M>&stochastic', () => {
         const q = new URL(href, 'https://gsfpv.flyreelstudio.eu').searchParams;
         expect(q.get('scene')).toBe('2f1ddf5f');
         expect(renderParams(q.get('budget'), q.get('stochastic'))).toEqual({ budgetM: 8, stochastic: true });
+    });
+
+    it('the table the share page\'s writer (apps/api/server.py fly_link) is held to as well, and every row reads back', () => {
+        const table = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'fixtures', 'fly-deep-links.json'), 'utf8')) as { rows: { render: SceneRender | null; link: string }[] };
+        expect(table.rows.length).toBeGreaterThan(5);
+        for (const { render, link } of table.rows) {
+            expect(flyDeepLink('/en/fly/', '2f1ddf5f', render ?? undefined)).toBe(link);
+            const q = new URL(link, 'https://gsfpv.flyreelstudio.eu').searchParams;
+            expect(renderParams(q.get('budget'), q.get('stochastic')) ?? null).toEqual(render);
+        }
+        // control: the link without the request (what share wrote before) matches only the row without one
+        expect(table.rows.filter((r) => r.link === '/en/fly/?scene=2f1ddf5f').length).toBe(1);
     });
 
     it('keeps the page\'s other parameters and removes a budget or flag left from another scene', () => {

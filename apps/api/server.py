@@ -14,8 +14,10 @@ POST /api/report a bug or an idea from the simulator or the landing, the same ru
                  There is no public way to read reports: tools/reports/pull.py reads them over SSH.
 POST /api/share  a picture of the view (JPEG 1200x630) for a link that shows it on social networks:
                  share/<id>.jpg + share/<id>.json. GET /s/<id> is a tiny page with Open Graph and
-                 Twitter card tags that sends a visitor on to the simulator with that scene;
-                 GET /s/<id>.jpg is the picture (immutable).
+                 Twitter card tags that sends a visitor on to the simulator with that scene, drawn
+                 as the shared flight's link asked (optional "render": SuperSplat's budget and
+                 stochastic, as /fly/?scene=<id>&budget=<M>&stochastic); GET /s/<id>.jpg is the
+                 picture (immutable).
 GET  /api/catalog the scene catalogue the scene picker shows (public, ETag/304, max-age 60), and
 /api/admin/...   the owner's admin behind a password (login, sessions, CSRF, brute-force guard, audit,
                  catalogue draft/publish/history, report status): admin.py, which documents both.
@@ -961,8 +963,46 @@ def parse_share(b: dict) -> tuple[bytes, dict]:
     scene, locale = b.get("scene"), b.get("locale")
     if not isinstance(scene, str) or not _ID_RE.fullmatch(scene):
         raise BadBody(400)
-    return data, {"scene": scene, "title": _plain(b.get("title"), 80), "credit": _plain(b.get("credit"), 160),
-                  "locale": locale if locale in LOCALES else "en"}
+    meta = {"scene": scene, "title": _plain(b.get("title"), 80), "credit": _plain(b.get("credit"), 160),
+            "locale": locale if locale in LOCALES else "en"}
+    if render := link_render(b.get("render")):
+        meta["render"] = render
+    return data, meta
+
+
+# the budget range a scene link may ask for, millions of splats (packages/scenes link.ts BUDGET_MIN_M/MAX_M)
+_BUDGET_MIN_M, _BUDGET_MAX_M = 0.25, 32
+
+
+def link_render(r) -> dict | None:
+    """How a scene link asked the scene to be drawn (packages/scenes link.ts SceneRender, lane R): budgetM,
+    a number of millions of splats in 0.25..32, and stochastic, true (SuperSplat's stochastic drawing) or
+    false (the link asked for the sorted one, stochastic=0). Anything else is dropped; None when nothing is left."""
+    if not isinstance(r, dict):
+        return None
+    out: dict = {}
+    b = r.get("budgetM")
+    if not isinstance(b, bool) and isinstance(b, (int, float)) and math.isfinite(b) and _BUDGET_MIN_M <= b <= _BUDGET_MAX_M:
+        out["budgetM"] = round(float(b), 4)  # at most 4 decimals, as a link (link.ts DECIMAL)
+    if isinstance(r.get("stochastic"), bool):
+        out["stochastic"] = r["stochastic"]
+    return out or None
+
+
+def fly_link(loc: str, scene: str, render=None) -> str:
+    """The simulator's deep link of a scene, written as packages/scenes link.ts flyDeepLink writes it:
+    /{loc}/fly/?scene=<id>, then &budget=<M> and the bare &stochastic flag (or &stochastic=0) when the
+    link asked for them. The budget is printed as JavaScript prints a number (8, not 8.0)."""
+    out = f"/{loc}/fly/?scene={scene}"
+    r = link_render(render) or {}
+    if "budgetM" in r:
+        b = repr(r["budgetM"])
+        out += "&budget=" + (b[:-2] if b.endswith(".0") else b)
+    if r.get("stochastic") is True:
+        out += "&stochastic"
+    elif r.get("stochastic") is False:
+        out += "&stochastic=0"
+    return out
 
 
 def store_share(data: bytes, meta: dict, now: float | None = None) -> str:
@@ -1011,7 +1051,7 @@ def share_page(sid: str) -> bytes | None:
     alt = tx["alt"].format(scene=name)
     page = f"{PUBLIC_ORIGIN}/s/{sid}"
     img = f"{PUBLIC_ORIGIN}/s/{sid}.jpg"
-    fly = f"/{loc}/fly/?scene={meta['scene']}"
+    fly = fly_link(loc, meta["scene"], meta.get("render"))
     e = lambda s: html.escape(s, quote=True)  # noqa: E731
     tags = [("property", "og:type", "website"), ("property", "og:site_name", "ShramkoGSFPV"), ("property", "og:title", title),
             ("property", "og:description", desc), ("property", "og:url", page), ("property", "og:image", img),
