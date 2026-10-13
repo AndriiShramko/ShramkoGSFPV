@@ -4,8 +4,11 @@ An e-mail is due when it is `queued` and its undo window (notBefore) has passed,
 retry time (nextAt) that has passed. For each: service.claim() marks it `sending` on disk, mailer.send()
 talks to SMTP, service.finish() records sent / failed / unknown. Because the claim is written before the
 send and checked inside one transaction, a cancel that won the race leaves nothing to send, and an
-e-mail is never handed to SMTP twice by the worker itself. At start, recover() turns a `sending` left by a
-restart into `unknown` (the owner decides whether to send it again).
+e-mail is never handed to SMTP twice by the worker itself. Before its first round, the worker's thread
+runs recover(): a `sending` left by a restart becomes `unknown` (the owner decides whether to send it
+again). start() itself never touches the store: an unreadable ideas.json (ideas.StoreError) must not stop
+the API's start (leads, reports, catalog and shares do not need it); the thread logs it once and tries
+recover() again every round, sending nothing until the store reads.
 
 The worker polls the store every POLL_S seconds (the agents' CLI writes the same file from another
 process); wake() makes it look at once.
@@ -47,16 +50,23 @@ class OutboxWorker:
         return n
 
     def _loop(self) -> None:
+        recovered, told = False, False
         while not self._stop.is_set():
             try:
+                if not recovered:
+                    self.service.recover()   # before anything is sent (see the module's docstring)
+                    recovered = True
                 self.run_once()
-            except Exception:  # noqa: BLE001  the store unreadable for a moment: try again next round
-                pass
+                told = False
+            except Exception as e:  # noqa: BLE001  the store unreadable (now or for a moment): try again next round
+                if not told:
+                    print(f"outbox: the ideas store cannot be used ({type(e).__name__}); nothing is sent until it can", flush=True)
+                    told = True
             self._wake.wait(self.poll_s)
             self._wake.clear()
 
     def start(self) -> None:
-        self.service.recover()
+        """Start the worker's thread; never raises (the store is read by the thread, see _loop)."""
         self._thread = threading.Thread(target=self._loop, name="outbox", daemon=True)
         self._thread.start()
 

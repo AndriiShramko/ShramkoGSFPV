@@ -431,8 +431,9 @@ class OwnerBot:
 
     def handle_webhook(self, path: str, headers, body: bytes) -> tuple[int, bytes, list]:
         """POST /api/tg/<path>: 404 unless the bot and its secret are configured and the path is right,
-        403 without the right secret header, 400 for a body that is not a JSON object, else 200 (also for
-        what is ignored, so Telegram does not send it again)."""
+        403 without the right secret header, 400 for a body that is not a JSON object, 503 while the
+        ideas store cannot be used (Telegram retries it later), else 200 (also for what is ignored, so
+        Telegram does not send it again)."""
         c = self.cfg
         hdr = [("Content-Type", "application/json"), ("Cache-Control", "no-store")]
         if not c.ready or not hmac.compare_digest(path.encode(), c.webhook_path().encode()):
@@ -447,6 +448,9 @@ class OwnerBot:
             return 400, b'{"ok":false}', hdr
         try:
             self.handle_update(update)
+        except (ideas.StoreError, OSError):  # the store cannot be read or written: Telegram delivers it again later
+            print("tg update: the ideas store cannot be used; Telegram will retry", flush=True)
+            return 503, b'{"ok":false}', hdr
         except Exception:  # noqa: BLE001  a bug here must not make Telegram resend the update for a day
             print("tg update failed", flush=True)
         return 200, b'{"ok":true}', hdr

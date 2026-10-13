@@ -1120,8 +1120,10 @@ def deliver_report(rec: dict) -> object:
     idea = None
     try:
         idea = SERVICE.add_report(rec, facts)
-    except OSError:  # the line is in reports.jsonl: the next start's IDEAS.sync() makes the idea
-        pass
+    except (OSError, ValueError) as e:  # ideas.StoreError is a ValueError
+        # the line is in reports.jsonl, so the report is kept: the store's next sync() makes the idea, and
+        # without an idea the shared bot below delivers the plain note (no buttons nothing could answer)
+        print(f"report {rec['id']}: no idea made ({type(e).__name__})", flush=True)
     if rec["suspect"]:
         return None
     text = report_text(rec, facts)
@@ -1275,7 +1277,10 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/catalog":
             return self._send(*ADMIN.public_catalog(self.headers.get("If-None-Match")))
         if path == "/api/roadmap":
-            return self._send(*IDEAS.public_roadmap(self.headers.get("If-None-Match")))
+            try:
+                return self._send(*IDEAS.public_roadmap(self.headers.get("If-None-Match")))
+            except (OSError, ValueError):  # ideas.json unreadable (ideas.StoreError): the landing keeps its own list
+                return self._json(503, {"ok": False})
         if path.startswith("/api/admin/"):
             return self._admin("GET", path)
         if self.path.split("?")[0] == "/api/health":
@@ -1364,13 +1369,20 @@ class Handler(BaseHTTPRequestHandler):
         self._json(404, {"ok": False})
 
 
-def main() -> None:
-    check_disk()
+def start_ideas() -> None:
+    """The ideas side at start. It is optional for the rest of the API: an unreadable ideas.json
+    (ideas.StoreError) or a full disk is logged and the API still serves leads, reports (to the shared
+    bot), the catalog and shares; the outbox thread retries the store every round."""
     try:
         IDEAS.sync()  # the first start makes the store from reports.jsonl; later ones pick up any report missed
     except (OSError, ValueError) as e:
-        print(f"ideas sync failed: {type(e).__name__}", flush=True)
+        print(f"ideas sync failed: {type(e).__name__}: {e}"[:300], flush=True)
     WORKER.start()
+
+
+def main() -> None:
+    check_disk()
+    start_ideas()
     threading.Thread(target=housekeeping, daemon=True).start()
     port = int(os.environ.get("PORT", "8090"))
     ThreadingHTTPServer(("0.0.0.0", port), Handler).serve_forever()

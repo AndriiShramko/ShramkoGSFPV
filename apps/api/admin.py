@@ -686,9 +686,16 @@ class AdminApi:
         return _json(404, {"ok": False})
 
     def _ideas_route(self, method: str, route: str, read_body, client: str) -> Response:
-        """The Reports tab and /api/admin/ideas..., both answered from the ideas store."""
+        """The Reports tab and /api/admin/ideas..., both answered from the ideas store; 503 while the
+        store cannot be used (an unreadable ideas.json), the rest of the admin keeps working."""
         if self.ideas is None:
             return _json(503, {"ok": False, "reason": "ideas-disabled"})
+        try:
+            return self._ideas_routes(method, route, read_body, client)
+        except self.ideas.unavailable:
+            return _json(503, {"ok": False, "reason": "ideas-store"})
+
+    def _ideas_routes(self, method: str, route: str, read_body, client: str) -> Response:
         if route == "reports":
             if method != "GET":
                 return _json(404, {"ok": False})

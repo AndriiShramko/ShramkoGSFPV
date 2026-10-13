@@ -21,9 +21,11 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve()
 sys.path.insert(0, str(HERE.parents[1]))
+sys.path.insert(0, str(HERE.parent))
 import admin  # noqa: E402
 import ideas_admin  # noqa: E402
 import server  # noqa: E402
+from fakes import offline_server  # noqa: E402
 
 REPO = HERE.parents[3]
 PASSWORD = "t3st-" + secrets.token_urlsafe(12)  # a fresh one per run
@@ -44,6 +46,7 @@ class AdminApi(unittest.TestCase):
         server.ADMIN = admin.AdminApi(data_dir=lambda: server.DATA_DIR, reports_dir=lambda: server.REPORTS_DIR, seed=lambda: SHOWCASE,
                                       telegram=self.sent.append, env=self.env, clock=lambda: self.now[0],
                                       ideas=ideas_admin.IdeasAdmin(server.SERVICE, bot_ready=lambda: False))
+        self.tg_calls = offline_server(self, server)   # the Reports tab's changes reach a recorder, never Telegram
         self.api = ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)
         threading.Thread(target=self.api.serve_forever, daemon=True).start()
 
@@ -336,6 +339,21 @@ class ReportsTab(AdminApi):
         self.assertEqual((st, json.loads(blob)["diagnostics"]["gpu"]), (200, "x"))
         self.assertEqual(h["cache-control"], "no-store")
         self.assertEqual(self.req("GET", "/api/admin/reports/R-20261002-0001/diagnostics", cookie=cookie)[0], 404)
+
+    def test_an_unreadable_ideas_store_is_503_and_the_rest_works(self):
+        """Review R3: the Reports tab and the ideas routes answer 503 while ideas.json cannot be read;
+        the catalogue and the session keep working."""
+        _, cookie, csrf, _ = self.login()
+        (self.data / "ideas.json").write_bytes(b"{not json")
+        for m, p, b in (("GET", "/api/admin/reports", None), ("GET", "/api/admin/ideas", None),
+                        ("POST", "/api/admin/reports/status", {"id": "R-20261001-0001", "status": "closed"}),
+                        ("POST", "/api/admin/ideas/update", {"id": "R-20261001-0001", "status": "accepted"})):
+            st, _, body = self.req(m, p, b, cookie=cookie, csrf=csrf if m == "POST" else None)
+            self.assertEqual((st, json.loads(body).get("reason")), (503, "ideas-store"), p)
+        self.assertEqual((self.data / "ideas.json").read_bytes(), b"{not json")   # never written over
+        # control: the rest of the admin answers
+        self.assertEqual(self.req("GET", "/api/admin/catalog", cookie=cookie)[0], 200)
+        self.assertEqual(self.req("GET", "/api/admin/session", cookie=cookie)[0], 200)
 
 
 class HashTool(unittest.TestCase):

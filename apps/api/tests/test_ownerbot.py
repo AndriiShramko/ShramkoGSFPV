@@ -129,6 +129,20 @@ class Webhook(Http):
         self.assertEqual(self.hook({"update_id": 6, **self.w.owner_msg("send this to the pilot", reply_to=card)}), 200)
         self.assertEqual([m["state"] for m in self.w.service.get(rec["id"])["thread"]], ["queued"])
 
+    def test_an_unreadable_store_makes_telegram_retry(self):
+        """Review R3: while ideas.json cannot be read the owner's update is answered 503, so Telegram
+        delivers it again later instead of it being dropped with a 200."""
+        rec, card = self.card()
+        good = self.w.store.path().read_bytes()
+        self.w.store.path().write_bytes(b"{not json")
+        upd = {"update_id": 7, **self.w.owner_msg("send this to the pilot", reply_to=card)}
+        self.assertEqual(self.hook(upd), 503)
+        self.assertEqual(self.w.store.path().read_bytes(), b"{not json")   # never written over
+        # control: the same update after the owner restored the file is acted on
+        self.w.store.path().write_bytes(good)
+        self.assertEqual(self.hook(upd), 200)
+        self.assertEqual([m["state"] for m in self.w.service.get(rec["id"])["thread"]], ["queued"])
+
 
 class Reports(Http):
     def bug(self) -> dict:

@@ -7,6 +7,8 @@ FakeSMTP      an SMTP server on 127.0.0.1: EHLO, optional STARTTLS (a certificat
               once with a code, or drop the connection inside DATA, to test retries and the "unknown" state.
 World         a store, Gmail, the service, the owner bot and the outbox worker on a temporary data
               directory, wired to the two fakes and to a clock the test moves.
+RecordingApi  a Telegram client that records and never connects; offline_server() puts it under
+              server.BOT for tests of the API process, whatever TG_* the shell has.
 make_cert()   a throwaway self-signed certificate for localhost (None without openssl).
 
 No real token, password or address is used: everything here is made up per run.
@@ -236,6 +238,38 @@ class FakeSMTP:
                 return
             else:
                 send("250 ok" if verb in ("RSET", "NOOP") else "502 not implemented")
+
+
+class RecordingApi(ownerbot.TelegramApi):
+    """A TelegramApi that records every call (method, content type, body) and never opens a socket."""
+
+    def __init__(self, calls: list):
+        super().__init__("0:offline", "http://offline.invalid")
+        self.calls = calls
+
+    def _post(self, method: str, data: bytes, ctype: str):
+        self.calls.append((method, ctype, data))
+        return {"message_id": len(self.calls)} if method.startswith("send") else True
+
+
+def offline_server(test: "unittest.TestCase", server, env: dict | None = None) -> list:
+    """For one test of the API process itself (server.py's module-level objects): server.BOT becomes
+    an owner bot with its OWN environment (default: the shared lead bot's fake token and chat, no
+    webhook secret) whose Telegram is a RecordingApi, and it is the only listener of server.SERVICE.
+    The real BOT reads TG_* from os.environ, so without this a shell with TG_* set would make a test
+    post to a real chat (review R4). Undone by the test's cleanup. Returns the recorded calls."""
+    calls: list = []
+    saved_bot, saved_listeners = server.BOT, list(server.SERVICE.listeners)
+    server.SERVICE.listeners[:] = []
+    server.BOT = ownerbot.OwnerBot(server.SERVICE, env=env or {"TG_BOT_TOKEN": "1:fake", "TG_CHAT_ID": "1"},
+                                   public_origin=server.PUBLIC_ORIGIN, api_factory=lambda token, base: RecordingApi(calls))
+
+    def restore() -> None:
+        server.BOT = saved_bot
+        server.SERVICE.listeners[:] = saved_listeners
+
+    test.addCleanup(restore)
+    return calls
 
 
 def make_cert(d: Path) -> tuple[str, str] | None:

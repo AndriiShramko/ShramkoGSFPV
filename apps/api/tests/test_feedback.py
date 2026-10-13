@@ -2,7 +2,8 @@
 apps/api/server.py.
 
 Run: python3 -m unittest discover -s apps/api/tests -v   (stdlib only, no network: Telegram is a fake
-function, the data directory a temporary one). Every check has a negative control that must fire.
+function and a recording owner bot (fakes.offline_server), whatever TG_* the shell has; the data directory
+a temporary one). Every check has a negative control that must fire.
 """
 from __future__ import annotations
 
@@ -10,16 +11,24 @@ import base64
 import gzip
 import http.client
 import json
+import os
 import sys
 import tempfile
 import threading
+import time
 import unittest
 from html.parser import HTMLParser
 from http.server import ThreadingHTTPServer
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import ideas  # noqa: E402
+import mailer  # noqa: E402
+import outbox  # noqa: E402
 import server  # noqa: E402
+from fakes import FakeTelegram, offline_server  # noqa: E402
 
 
 def jpeg(w: int = 1200, h: int = 630) -> bytes:
@@ -69,6 +78,7 @@ class Api(unittest.TestCase):
             return 1
 
         server.send_telegram = fake_telegram
+        self.tg_calls = offline_server(self, server)   # the owner bot's uploads are recorded, never sent
         for b in (server._rhits, server._shits, server._all_hits):
             b.clear()
         server._guard["tripped"] = False
@@ -208,6 +218,64 @@ class Reports(Api):
         self.assertEqual((s, b["diagnostics"]), (200, "skipped"))
         self.assertIn("not stored", self.sent[-1][0])
         self.assertEqual(self.report()[1]["diagnostics"], True)  # control
+
+
+class Offline(Api):
+    def test_no_telegram_call_leaves_a_test_even_with_tg_settings_in_the_shell(self):
+        """Review R4: a report's diagnostics file goes through the owner bot, which reads TG_* from the
+        environment; a shell that has them set must not make the suite post to Telegram."""
+        tg = FakeTelegram()   # stands for api.telegram.org: it must receive nothing
+        self.addCleanup(tg.close)
+        with mock.patch.dict(os.environ, {"TG_BOT_TOKEN": "9:shell-token", "TG_CHAT_ID": "9", "TG_API_BASE": tg.base}):
+            s, b = self.report()
+        self.assertEqual((s, b["diagnostics"]), (200, True))
+        self.assertEqual(tg.calls, [])
+        # control: the file did go, to the recorder in place of Telegram
+        self.assertEqual([m for m, _, _ in self.tg_calls], ["sendDocument"])
+        self.assertIn(f'filename="{b["id"]}.json"'.encode(), self.tg_calls[0][2])
+
+
+class BrokenIdeasStore(Api):
+    """Review R3: an unreadable ideas.json must not take down the API (leads, reports, catalog, shares)."""
+
+    def setUp(self):
+        super().setUp()
+        self.ideas_file = server.DATA_DIR / "ideas.json"
+        self.ideas_file.write_bytes(b"{not json")
+        self.saved["WORKER"] = server.WORKER
+        quiet = mailer.Mailer(lambda: mailer.MailConfig(), public_origin=server.PUBLIC_ORIGIN)   # never configured
+        server.WORKER = outbox.OutboxWorker(server.SERVICE, quiet, poll_s=0.05)
+        self.addCleanup(server.WORKER.stop)
+
+    def test_the_api_starts_and_serves_without_it(self):
+        server.start_ideas()                                    # what main() runs before serve_forever
+        s, raw, _ = self.call("GET", "/api/health")
+        self.assertEqual((s, json.loads(raw)["ok"]), (200, True))
+        s, b = self.report()
+        self.assertEqual((s, b["ok"]), (200, True))             # the pilot is not told to send it again
+        self.assertEqual([r["id"] for r in self.records()], [b["id"]])   # the line is kept for the next sync()
+        self.assertEqual(len(self.sent), 1)                     # the plain note went to the shared bot
+        self.assertIn(b["id"], self.sent[0][0])
+        self.assertEqual(self.call("GET", "/api/roadmap")[0], 503)
+        self.assertEqual(self.ideas_file.read_bytes(), b"{not json")   # never written over
+        # control: once the owner restores the file, the worker recovers it by itself (a `sending`
+        # left by the restart becomes `unknown`) and the roadmap answers again
+        doc = ideas.empty_doc()
+        rec = ideas.new_record("R-20261013-0099", "idea", "2026-10-13T10:00:00Z", "report")
+        rec["thread"].append({"id": "M-1", "kind": "reply", "state": "sending", "to": "p@example.com"})
+        doc["ideas"].append(rec)
+        self.ideas_file.write_text(json.dumps(doc), encoding="utf-8")
+        deadline = time.time() + 5
+        while time.time() < deadline and server.SERVICE.find_mail("M-1")[1]["state"] != "unknown":
+            time.sleep(0.05)
+        self.assertEqual(server.SERVICE.find_mail("M-1")[1]["state"], "unknown")
+        self.assertEqual(self.call("GET", "/api/roadmap")[0], 200)
+
+    def test_a_wrong_shape_is_unreadable_too(self):
+        for bad in (b"[]", b"{}", b'{"ideas": {}}', b"\xff\xfe"):
+            self.ideas_file.write_bytes(bad)
+            self.assertEqual(self.call("GET", "/api/roadmap")[0], 503, bad)
+            self.assertEqual(self.ideas_file.read_bytes(), bad)
 
 
 class Share(Api):

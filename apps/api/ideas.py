@@ -228,6 +228,23 @@ def roadmap_items(doc: dict) -> list[dict]:
     return out
 
 
+class StoreError(ValueError):
+    """ideas.json exists but is not a store document (broken JSON, wrong shape). Nothing is written over
+    it: every caller fails cleanly instead (the API keeps serving its other routes, a report still goes
+    to the shared bot, /api/roadmap answers 503) until the owner restores the file from a backup."""
+
+
+def parse_doc(raw: bytes) -> dict:
+    """The store document in ideas.json, or StoreError."""
+    try:
+        doc = json.loads(raw)
+    except ValueError as e:  # JSONDecodeError, UnicodeDecodeError
+        raise StoreError(f"ideas.json is not JSON ({type(e).__name__})") from e
+    if not (isinstance(doc, dict) and isinstance(doc.get("ideas"), list) and all(isinstance(doc.get(k), dict) for k in ("meta", "seq", "tg"))):
+        raise StoreError("ideas.json is not an ideas store document")
+    return doc
+
+
 def write_durable(path: Path, data: bytes) -> None:
     """Whole file or nothing: a temporary file, fsync, then the rename."""
     tmp = path.with_name(path.name + ".tmp")
@@ -312,7 +329,7 @@ class IdeaStore:
                         raw = self.path().read_bytes()
                     except FileNotFoundError:
                         raw = b""
-                    doc = json.loads(raw) if raw else empty_doc()
+                    doc = parse_doc(raw) if raw else empty_doc()
                     if not raw:
                         self._import_reports(doc, first=True)
                         self._load_seed(doc)
@@ -333,7 +350,7 @@ class IdeaStore:
                     pass
                 key = self._key()
             if self._cache is None or self._cache[0] != key:
-                self._cache = (key, json.loads(self.path().read_bytes()))
+                self._cache = (key, parse_doc(self.path().read_bytes()))
             return self._cache[1]
 
     def sync(self) -> int:

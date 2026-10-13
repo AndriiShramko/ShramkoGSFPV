@@ -34,7 +34,10 @@ def _json(code: int, obj: dict) -> Response:
 
 
 class IdeasAdmin:
-    """Routes below /api/admin/ for ideas; `bot_ready` says whether the owner bot is configured."""
+    """Routes below /api/admin/ for ideas; `bot_ready` says whether the owner bot is configured.
+    `unavailable`: the errors that mean the store cannot be used now (admin.py answers them 503)."""
+
+    unavailable = (ideas.StoreError, OSError)
 
     def __init__(self, service: IdeasService, bot_ready: Callable[[], bool]):
         self.service, self.bot_ready = service, bot_ready
