@@ -20,6 +20,9 @@ import { launch, waitReady } from './browser';
 import { writeEvidence, REPO, today } from './evidence';
 
 const SITE = (process.env.SITE ?? 'https://gsfpv.flyreelstudio.eu').replace(/\/$/, '');
+// The target is SITE. A run given only BASE (site verify's name) would silently test the live site; refuse it.
+if (process.env.BASE && !process.env.SITE) throw new Error(`accept-fly reads SITE, not BASE: set SITE=${process.env.BASE}`);
+console.log(`accept-fly target: ${SITE}`);
 const HOST = new URL(SITE).host;
 const LOCALES = ['en', 'es', 'pl', 'ru'] as const;
 const ONLY = process.argv.slice(2).map((x) => x.toUpperCase());
