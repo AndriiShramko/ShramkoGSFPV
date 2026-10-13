@@ -2,7 +2,9 @@
 // dev server, started here) with /api/** answered by the mock of lane B's ideas API (src/ideas-mock.ts,
 // the contract of docs/wip/v07-b.md "Contracts for lane C"). What the owner does on the kanban must reach
 // the API as exactly the calls the contract names, and nothing else: above all, no e-mail is queued
-// without the owner's own Send (the thank-you) or reply button, and every check has a negative control.
+// without the owner's own Send (the thank-you) or reply button, a sent text leaves its box (a second click
+// sends nothing), a refused one stays, the owner is told what the server did with an e-mail (Gmail off:
+// saved, not queued) and a thank-you is never written twice. Every check has a negative control.
 //   npx tsx src/accept-v07-ideas.ts                      (from tools/bench; FLY_PORT=5364 by default)
 // Draws nothing heavy, but holds the shared GPU lock like every browser run on this PC (the caller takes
 // it). Evidence: evidence/<date>/v07-ideas-admin.json + 2 PNG.
@@ -78,6 +80,9 @@ async function posts(mock: IdeasMock, n: number, ms = 10000): Promise<void> {
 const settled = (page: Page, id: string, status: string): Promise<unknown> =>
     page.waitForSelector(`${card(id)}[data-status="${status}"]:not([aria-busy])`, { timeout: 10000 });
 const quiet = (page: Page, id: string): Promise<unknown> => page.waitForSelector(`${card(id)}:not([aria-busy])`, { timeout: 10000 });
+/** the thank-you e-mails of one idea in the mock's store */
+const doneMails = (mock: IdeasMock, id: string): { id: string; state: string }[] =>
+    (mock.ideas.find((x) => x.id === id)?.thread as { id: string; kind: string; state: string }[]).filter((m) => m.kind === 'done');
 const dialogStep = (page: Page): Promise<string | null> =>
     page.evaluate(() => document.querySelector('[data-testid=thanks-dialog] [data-step]:not([hidden])')?.getAttribute('data-step') ?? null);
 
@@ -154,6 +159,7 @@ async function main(): Promise<void> {
         && (await page.inputValue('[data-field=thanks-body]')).includes('Funkcje kanalow radia'));
     check('the draft is addressed to the pilot\'s e-mail', (await page.inputValue('[data-field=thanks-to]')) === 'pilot.two@example.com');
     check('the draft is only a draft (nothing queued)', same(mock.mails().map((m) => m.state), ['draft']), true);
+    const pidDraft = mock.mails('draft')[0]?.id;
     before = mock.posts().length;
     await page.click('[data-action=thanks-later]');
     await page.waitForSelector('[data-testid=thanks-dialog]', { state: 'detached' });
@@ -165,7 +171,9 @@ async function main(): Promise<void> {
     await page.waitForSelector('[data-testid=thanks-dialog]', { state: 'detached' });
     await quiet(page, pid);
     results.sendCalls = sentSince(mock, before);
-    check('Send queues the thank-you once (ideas/send-done {id})', same(sentSince(mock, before), [['ideas/send-done', { id: pid }]]) && same(mock.mails().map((m) => m.state), ['queued']));
+    check('Send queues the thank-you once (ideas/send-done {id, mail: the draft read})', same(sentSince(mock, before), [['ideas/send-done', { id: pid, mail: pidDraft }]]) && same(mock.mails().map((m) => m.state), ['queued']));
+    const queuedNote = (await page.textContent('.note')) ?? '';
+    check('the owner is told the thank-you is queued and when it goes', queuedNote.includes('pilot.two@example.com') && queuedNote.includes('60 s'));
     check('after it the card no longer offers a thank-you', !(await page.$(`${card(pid)} [data-action=thanks]`)));
 
     // a failing server: the card stays where it was and the owner is told; then a note without an e-mail
@@ -213,12 +221,25 @@ async function main(): Promise<void> {
     const id2 = 'R-20261006-0002';
     await page.click(`${card(id2)} [data-action=details]`);
     check('the contact itself is on the card', ((await page.textContent(`${card(id2)} [data-field=contact]`)) ?? '').includes('pilot.one@example.com or @pilotone on Telegram'));
+    const replyBox = `${card(id2)} [data-field=reply-text]`;
+    const answer = 'Thanks! It is queued for the next build.';
+    // the server refuses the first send: the text stays in the box, nothing is queued
+    mock.failNext = { path: 'ideas/reply', status: 500 };
+    await page.fill(replyBox, answer);
+    await page.click(`${card(id2)} [data-action=reply]`);
+    await page.waitForSelector('.note.bad');
+    await quiet(page, id2);
+    check('a refused reply keeps its text in the box', (await page.inputValue(replyBox)) === answer && !mock.mails().some((m) => m.kind === 'reply'), true);
     before = mock.posts().length;
-    await page.fill(`${card(id2)} [data-field=reply-text]`, 'Thanks! It is queued for the next build.');
     await page.click(`${card(id2)} [data-action=reply]`);
     await posts(mock, before + 1);
     await page.waitForSelector(`${card(id2)}:not([aria-busy]) [data-field=mails] [data-state=queued] [data-action=mail-cancel]`);
     check('the reply is queued behind the undo window and the owner is told so', ((await page.textContent('.note')) ?? '').includes('pilot.one@example.com') && mock.mails('queued').some((m) => m.kind === 'reply'));
+    check('after the send the reply box is empty', (await page.inputValue(replyBox)) === '');
+    const oneReply = mock.posts().length;
+    await page.click(`${card(id2)} [data-action=reply]`);
+    await sleep(300);
+    check('a second click on Send reply sends nothing: the pilot gets one e-mail', mock.posts().length === oneReply && mock.mails().filter((m) => m.kind === 'reply').length === 1, true);
     const replyId = await page.getAttribute(`${card(id2)} [data-field=mails] [data-state=queued] [data-action=mail-cancel]`, 'data-mail');
     await page.click(`${card(id2)} [data-field=mails] [data-state=queued] [data-action=mail-cancel]`);
     await posts(mock, before + 2);
@@ -228,6 +249,7 @@ async function main(): Promise<void> {
     await page.click(`${card(id2)} [data-action=comment]`);
     await posts(mock, before + 3);
     await page.waitForSelector(`${card(id2)}:not([aria-busy]) [data-field=urgency]`);
+    check('after Add comment the comment box is empty (a second click adds nothing)', (await page.inputValue(`${card(id2)} [data-field=comment]`)) === '');
     await page.selectOption(`${card(id2)} [data-field=urgency]`, 'urgent');
     await page.waitForSelector(`${card(id2)}:not([aria-busy]) [data-chip=urgency].u-urgent`);
     await page.fill(`${card(id2)} [data-field=title-pl]`, 'Celownik na srodku obrazu');
@@ -256,6 +278,17 @@ async function main(): Promise<void> {
     const missing = await noteOf();
     check('the card asks for the English title first, then names the languages still missing', /English/.test(needTitle) && missing !== needTitle && ['es', 'pl', 'ru'].every((l) => missing.includes(l)));
 
+    // the landing switch is a draft like the titles: redraws before Save (here: the search) keep it unticked
+    await page.uncheck(`${card(id2)} [data-field=visible]`);
+    await page.fill('[data-testid=idea-search]', 'R-2026');
+    await page.fill('[data-testid=idea-search]', '');
+    check('the unticked landing switch survives redraws before Save', !(await page.isChecked(`${card(id2)} [data-field=visible]`)));
+    before = mock.posts().length;
+    await page.click(`${card(id2)} [data-action=save-public]`);
+    await posts(mock, before + 1);
+    await quiet(page, id2);
+    check('Save sends visible: false and the card leaves the landing', (mock.posts().at(-1)?.body as { visible?: unknown } | null)?.visible === false && !(await page.$(`${card(id2)} [data-chip=landing]`)));
+
     // the owner writes down an idea a pilot told him (item 8): nothing goes without words
     await page.click('[data-testid=note-form] summary');
     before = mock.posts().length;
@@ -270,6 +303,45 @@ async function main(): Promise<void> {
     await page.waitForSelector(`${card('N-20261013-0001')}[data-status=new]`);
     check('the note goes to ideas/note and lands in New', same(sentSince(mock, before), [['ideas/note', { text: 'A pilot at the field asked for a lap timer.', contact: 'pilot.three@example.com', lang: 'es', urgency: 'high', kind: 'note' }]]));
 
+    // Gmail not set up on the server: the owner is told an e-mail is saved, not "queued, goes in 60 s" (the
+    // queued notes above are the control); a thank-you saved that way is the one the card offers to Send
+    // again (ideas/mail/send), never written a second time
+    mock.failNext = null;
+    mock.mailConfigured = false;
+    await page.fill(replyBox, 'Second answer while Gmail is off.');
+    before = mock.posts().length;
+    await page.click(`${card(id2)} [data-action=reply]`);
+    await posts(mock, before + 1);
+    await quiet(page, id2);
+    const replyOff = (await page.textContent('.note')) ?? '';
+    results.replyWithoutGmail = replyOff;
+    check('without Gmail a reply is announced as saved for Gmail, not as queued', mock.mails().at(-1)?.state === 'waiting_setup' && /Gmail/.test(replyOff) && !replyOff.includes('60 s') && replyOff !== queuedNote);
+    await page.selectOption(`${card(id2)} [data-field=status]`, 'done');
+    await page.waitForSelector('[data-testid=thanks-dialog] [data-field=thanks-summary]');
+    await settled(page, id2, 'done');
+    await page.fill('[data-field=thanks-summary]', 'Celownik jest teraz w ustawieniach HUD.');
+    await page.click('[data-action=thanks-make]');
+    await page.waitForSelector('[data-testid=thanks-dialog] [data-step=draft]:not([hidden])');
+    const id2Draft = doneMails(mock, id2)[0]?.id;
+    await page.click('[data-action=thanks-send]');
+    await page.waitForSelector('[data-testid=thanks-dialog]', { state: 'detached' });
+    await quiet(page, id2);
+    const thanksOff = (await page.textContent('.note')) ?? '';
+    results.thanksWithoutGmail = thanksOff;
+    check('without Gmail the thank-you is announced as saved for Gmail, not as queued', same(doneMails(mock, id2).map((m) => m.state), ['waiting_setup']) && /Gmail/.test(thanksOff) && !thanksOff.includes('60 s'));
+    before = mock.posts().length;
+    await page.click(`${card(id2)} [data-action=thanks]`);
+    await page.waitForSelector('[data-testid=thanks-dialog] [data-step=draft]:not([hidden])');
+    check('the card reopens that thank-you to Send: no new draft, no Edit, its state said', mock.posts().length === before && await page.isHidden('[data-action=thanks-edit]')
+        && ((await page.textContent('[data-field=thanks-status]')) ?? '').includes('Gmail'), true);
+    mock.mailConfigured = true;
+    await page.click('[data-action=thanks-send]');
+    await page.waitForSelector('[data-testid=thanks-dialog]', { state: 'detached' });
+    await quiet(page, id2);
+    results.resendCalls = sentSince(mock, before);
+    check('its Send goes to ideas/mail/send with that e-mail: one thank-you, queued, no longer offered', same(sentSince(mock, before), [['ideas/mail/send', { id: id2Draft }]])
+        && same(doneMails(mock, id2).map((m) => m.state), ['queued']) && !(await page.$(`${card(id2)} [data-action=thanks]`)));
+
     await page.screenshot({ path: join(dir, 'v07-ideas-admin-1280.png'), fullPage: false });
     // a phone: one column, nothing wider than the screen
     await page.setViewportSize({ width: 375, height: 800 });
@@ -283,7 +355,8 @@ async function main(): Promise<void> {
     await page.waitForSelector('[data-testid=scene-list]');
     check('the Scenes tab still opens', true);
     check('no page errors', errors.length === 0);
-    check('no e-mail went out on its own: one thank-you queued by Send, one reply cancelled', same(mock.mails().map((m) => [m.kind, m.state]).sort(), [['done', 'queued'], ['reply', 'cancelled']]));
+    check('no e-mail went out on its own: two thank-yous queued by Send, one reply cancelled, one waiting for Gmail',
+        same(mock.mails().map((m) => [m.kind, m.state]).sort(), [['done', 'queued'], ['done', 'queued'], ['reply', 'cancelled'], ['reply', 'waiting_setup']]));
     results.pageErrors = errors;
     results.calls = mock.calls.map((c) => `${c.method} ${c.path}`);
     await browser.close();
