@@ -16,6 +16,22 @@ import {
     AutoRecordRules, CinemaRecorder, askFolderAccess, folderAccess, folderPicker, folderTarget, memoryTarget, moveRecording, opfsTarget, outputSize, pruneBrowserRecordings
 } from '../../cinema';
 import type { AutoEvent, FolderAccess, RecFps, RecResolution, RecorderInfo, RecordTarget } from '../../cinema';
+import { isUserGesture } from '../keys';
+import type { ActionHandler } from '../keys';
+
+/**
+ * The record action's handler (F9, or a radio switch's range): starts or stops through `toggle`. A key
+ * press may ask for the folder's permission straight away; a switch only while the page still holds a
+ * user activation (keys.ts isUserGesture), else its recording goes to the browser's storage and the
+ * bar keeps offering "Allow saving to <folder>". It sits here with Recording.startByHand, the other
+ * half of that rule, so it loads without the bar's page (builtin/cinema.ts binds it to record.toggle).
+ */
+export function recordAction(toggle: (activation: boolean) => void): ActionHandler {
+    return (e, source) => {
+        e.preventDefault();
+        toggle(isUserGesture(source));
+    };
+}
 
 /** IndexedDB key of the folder handle in the 'handles' store. */
 export const FOLDER_KEY = 'recording.folder';

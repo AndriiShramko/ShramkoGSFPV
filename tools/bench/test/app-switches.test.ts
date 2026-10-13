@@ -250,7 +250,7 @@ describe('a switch is no user activation: a record switch never asks for the fol
     });
 
     it('the record handler starts a switch\'s recording without activation, F9\'s with it; control: the v0.7 handler claimed one for both', async () => {
-        const { recordAction } = await import('../../../apps/fly/src/app/builtin/cinema');
+        const { recordAction } = await import('../../../apps/fly/src/app/builtin/recording');
         const keys = new KeyRouter({ map: KEYMAP, isText: () => false });
         const asked: boolean[] = [];
         keys.on('record.toggle', recordAction((activation) => asked.push(activation)));
@@ -290,6 +290,8 @@ describe('a switch is no user activation: a record switch never asks for the fol
     });
 
     it('a switch picking a pause-menu item (Start recording) passes no gesture; a click on it does', async () => {
+        // app/menu.ts may be loaded already (an earlier test's import reaches it): load it again, with the mock
+        vi.resetModules();
         vi.doMock('../../../apps/fly/src/ui/pause', () => ({ pauseMenu: (_ui: unknown, _e: unknown, pick: (i: number) => void) => { clickItem = pick; return () => undefined; } }));
         let clickItem: (i: number) => void = () => undefined;
         vi.stubGlobal('document', { ...doc, querySelector: () => null });

@@ -26,9 +26,7 @@ import { openFlightShare } from './share';
 import type { RecorderInfo } from '../../cinema';
 import type { TestHook } from '../test-hook';
 import type { Feature, FlightContext } from '../context';
-import { isUserGesture } from '../keys';
-import type { ActionHandler } from '../keys';
-import { Recording, autoRespawnShipped } from './recording';
+import { Recording, autoRespawnShipped, recordAction } from './recording';
 import type { Saved } from './recording';
 import './cinema.css';
 
@@ -63,19 +61,6 @@ const SHARED = new WeakMap<FlightContext, RecordingShare>();
 /** The cinema feature's recording for this page (installed before the export). */
 export function recordingOf(ctx: FlightContext): RecordingShare | undefined {
     return SHARED.get(ctx);
-}
-
-/**
- * The record action's handler (F9, or a radio switch's range): starts or stops through `toggle`. A key
- * press may ask for the folder's permission straight away; a switch only while the page still holds a
- * user activation (keys.ts isUserGesture), else its recording goes to the browser's storage and the
- * bar keeps offering "Allow saving to <folder>".
- */
-export function recordAction(toggle: (activation: boolean) => void): ActionHandler {
-    return (e, source) => {
-        e.preventDefault();
-        toggle(isUserGesture(source));
-    };
 }
 
 const mmss = (s: number): string => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
