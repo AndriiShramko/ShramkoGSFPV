@@ -1,0 +1,111 @@
+{
+  "name": "b-fly-b14",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-13T08:48:05.694Z",
+    "gitHead": "6822039",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5371",
+  "render": "on",
+  "pass": true,
+  "note": "touch through CDP Input.dispatchTouchEvent in Chrome (which one: context.browser) with hasTouch; input=touch because desktop Chrome has WebHID",
+  "rows": [
+    {
+      "viewport": "375x812",
+      "pauseButtonReachable": true,
+      "armedByButton": true,
+      "bothPairsOneFrame": {
+        "ch": [
+          -0.4168365001678467,
+          0.31262579560279846,
+          -0.9378824234008789,
+          0.31262752413749695
+        ],
+        "ok": true
+      },
+      "hover": {
+        "seconds": 10,
+        "crashed": false,
+        "armedAll": true,
+        "minY": 3.3895485629455893,
+        "maxY": 3.853955566998808,
+        "target": 2.798023254651558
+      },
+      "view": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "scale": 1
+      },
+      "control": {
+        "outsideTouch": {
+          "before": [
+            0,
+            0,
+            -1,
+            0
+          ],
+          "after": [
+            0,
+            0,
+            -1,
+            0
+          ],
+          "fired": true
+        }
+      }
+    },
+    {
+      "viewport": "1024x768",
+      "pauseButtonReachable": true,
+      "armedByButton": true,
+      "bothPairsOneFrame": {
+        "ch": [
+          -0.4095241129398346,
+          0.3071419894695282,
+          -0.9214295744895935,
+          0.30714306235313416
+        ],
+        "ok": true
+      },
+      "hover": {
+        "seconds": 10,
+        "crashed": false,
+        "armedAll": true,
+        "minY": 3.4103582601662534,
+        "maxY": 3.778272462581295,
+        "target": 2.798015078406764
+      },
+      "view": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "scale": 1
+      },
+      "control": {
+        "outsideTouch": {
+          "before": [
+            0,
+            0,
+            -1,
+            0
+          ],
+          "after": [
+            0,
+            0,
+            -1,
+            0
+          ],
+          "fired": true
+        }
+      }
+    }
+  ]
+}
