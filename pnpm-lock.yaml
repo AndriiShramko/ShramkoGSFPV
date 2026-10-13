@@ -49,17 +49,17 @@ importers:
         version: link:../../packages/sim-core
       '@playcanvas/splat-transform':
         specifier: 3.6.4
-        version: 3.6.4(playcanvas@2.22.4)
+        version: 3.6.4(playcanvas@2.23.2)
       mediabunny:
         specifier: 1.59.1
         version: 1.59.1
       playcanvas:
-        specifier: 2.22.4
-        version: 2.22.4
+        specifier: 2.23.2
+        version: 2.23.2
     devDependencies:
       '@playcanvas/supersplat-viewer':
         specifier: 1.35.0
-        version: 1.35.0(playcanvas@2.22.4)
+        version: 1.35.0(playcanvas@2.23.2)
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@22.20.4)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)
@@ -140,8 +140,8 @@ importers:
   packages/render-pc:
     dependencies:
       playcanvas:
-        specifier: 2.22.4
-        version: 2.22.4
+        specifier: 2.23.2
+        version: 2.23.2
 
   packages/scenes: {}
 
@@ -1356,8 +1356,8 @@ packages:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
 
-  playcanvas@2.22.4:
-    resolution: {integrity: sha512-mcL+1Bl1q/apzU0CLMHMQ3eYrvr3kzPtXtJe8rOYbu7xVPA47fvpL73oCzx6dtCyOxj6bldKIA0GC8maJRtYgA==}
+  playcanvas@2.23.2:
+    resolution: {integrity: sha512-NplQOAJ0jtgBrP4Q1d7IooAsMDvu5NfiXDToEzlg7VuqDqfLSyqilwElEXZDbGUKKYm2Y7iGrEJD8tWUMc7xwA==}
     engines: {node: '>=18.3.0'}
 
   playwright-core@1.63.0:
@@ -1908,17 +1908,17 @@ snapshots:
       '@parcel/watcher-win32-arm64': 2.6.0
       '@parcel/watcher-win32-x64': 2.6.0
 
-  '@playcanvas/splat-transform@3.6.4(playcanvas@2.22.4)':
+  '@playcanvas/splat-transform@3.6.4(playcanvas@2.23.2)':
     dependencies:
       '@adobe/spz': 0.2.3
-      playcanvas: 2.22.4
+      playcanvas: 2.23.2
       webgpu: 0.4.0
     transitivePeerDependencies:
       - supports-color
 
-  '@playcanvas/supersplat-viewer@1.35.0(playcanvas@2.22.4)':
+  '@playcanvas/supersplat-viewer@1.35.0(playcanvas@2.23.2)':
     optionalDependencies:
-      playcanvas: 2.22.4
+      playcanvas: 2.23.2
 
   '@rolldown/binding-android-arm-eabi@1.2.9':
     optional: true
@@ -2406,7 +2406,7 @@ snapshots:
 
   picomatch@4.0.7: {}
 
-  playcanvas@2.22.4:
+  playcanvas@2.23.2:
     dependencies:
       '@types/webxr': 0.5.24
       '@webgpu/types': 0.1.74

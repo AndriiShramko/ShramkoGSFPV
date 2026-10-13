@@ -12,7 +12,8 @@ export const USED: Record<string, string[]> = {
     Entity: ['addComponent', 'camera', 'render', 'gsplat'],
     GraphNode: ['setPosition', 'setRotation', 'setLocalPosition', 'setLocalEulerAngles', 'setLocalScale', 'setEulerAngles', 'addChild', 'getPosition', 'children', 'destroy'],
     Scene: ['gsplat', 'ambientLight', 'layers'],
-    GSplatParams: ['lodUpdateAngle', 'lodBehindPenalty', 'lodMode', 'minContribution', 'alphaClip', 'radialSorting', 'splatBudget', 'colorUpdateAngle', 'renderer', 'currentRenderer'],
+    // engine 2.23.2 (v0.7 lane R): lodMode is deprecated and no longer set; splatBudgetMode and stochastic are new
+    GSplatParams: ['lodUpdateAngle', 'lodBehindPenalty', 'splatBudgetMode', 'minContribution', 'alphaClip', 'radialSorting', 'splatBudget', 'colorUpdateAngle', 'renderer', 'currentRenderer', 'stochastic'],
     GSplatComponent: ['lodRangeMin', 'lodRangeMax', 'resource', 'asset'],
     GSplatOctreeResource: ['octree'],
     GSplatOctree: ['lodLevels'],

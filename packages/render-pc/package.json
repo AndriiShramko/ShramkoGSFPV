@@ -12,6 +12,6 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "playcanvas": "2.22.4"
+    "playcanvas": "2.23.2"
   }
 }
