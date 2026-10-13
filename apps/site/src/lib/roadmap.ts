@@ -5,7 +5,9 @@
  * page is built from a snapshot of `GET /api/roadmap` (scripts/roadmap.mjs, falling back to the seed
  * apps/api/locales/roadmap-seed.json) and the Roadmap component refreshes it from the same endpoint in the
  * visitor's browser. Both paths go through `parseRoadmap`, so a status or kind this page does not know is
- * dropped the same way at build time and at run time.
+ * dropped the same way at build time and at run time. Both also refuse an answer that misses most of the
+ * snapshot's items (`coversSnapshot` here, its twin `coversSeed` in the prebuild): the roadmap only grows,
+ * so such an answer comes from a store that was never seeded, not from the owner.
  *
  * Pure module: no DOM, no React, no path aliases (unit-tested in Node: tools/bench/test/site-roadmap.test.ts).
  */
@@ -70,20 +72,28 @@ const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 const GROUP_RE = /^[a-z][a-z0-9-]{0,31}$/;
 const RELEASE_RE = /^[0-9a-f]{7,40}$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}(T[0-9:.]+Z?)?$/;
-const TEXT_MAX = 400;
+/**
+ * The longest title and public text the page takes, in characters: lane B's store limits (ideas.TITLE_MAX
+ * once raised to the admin's PUBLIC_TITLE_MAX, ideas.PUBLIC_TEXT_MAX). A longer one is not shown (a title
+ * without English drops the item), so the store must never send one: docs/wip/v07-c.md.
+ */
+export const TITLE_MAX = 240;
+export const TEXT_MAX = 600;
 const ITEMS_MAX = 500;
+/** An answer must hold at least this share of the snapshot's ids (coversSnapshot). */
+export const KEEP_SHARE = 0.5;
 
-function text(v: unknown): string | undefined {
+function text(v: unknown, max: number): string | undefined {
   if (typeof v !== "string") return undefined;
   const s = v.trim();
-  return s && s.length <= TEXT_MAX ? s : undefined;
+  return s && s.length <= max ? s : undefined;
 }
 
-function localText(v: unknown): LocalText | undefined {
+function localText(v: unknown, max: number): LocalText | undefined {
   if (!v || typeof v !== "object" || Array.isArray(v)) return undefined;
   const out: LocalText = {};
   for (const l of ROADMAP_LOCALES) {
-    const s = text((v as Record<string, unknown>)[l]);
+    const s = text((v as Record<string, unknown>)[l], max);
     if (s) out[l] = s;
   }
   return Object.keys(out).length ? out : undefined;
@@ -97,10 +107,10 @@ export function parseItem(raw: unknown): RoadmapItem | null {
   const o = raw as Record<string, unknown>;
   if (typeof o.id !== "string" || !ID_RE.test(o.id)) return null;
   if (!isOneOf(ROADMAP_STATUSES, o.status) || !isOneOf(ROADMAP_KINDS, o.kind)) return null;
-  const title = localText(o.title);
+  const title = localText(o.title, TITLE_MAX);
   if (!title?.en) return null;
   const item: RoadmapItem = { id: o.id, kind: o.kind, status: o.status, title: { ...title, en: title.en }, fromPilot: o.fromPilot === true };
-  const body = localText(o.text);
+  const body = localText(o.text, TEXT_MAX);
   if (body) item.text = body;
   if (typeof o.done === "string" && DATE_RE.test(o.done)) item.done = o.done;
   if (typeof o.release === "string" && RELEASE_RE.test(o.release)) item.release = o.release;
@@ -153,18 +163,31 @@ export function groupsOf(items: readonly ViewItem[]): Map<string, string> {
 export const ROADMAP_ENDPOINT = "/api/roadmap";
 
 /**
- * The live roadmap in one language, or null when the page must keep its snapshot: the request failed or
- * timed out, the answer was not 200, not JSON, not a v1 roadmap, or had no item this page can show
- * (the roadmap is never legitimately empty: done items stay done). `fetchImpl` is injected for tests.
+ * Whether a live answer is the same roadmap as the snapshot, grown or edited: it holds at least KEEP_SHARE
+ * of the snapshot's ids. The roadmap only grows (done items stay done; the owner may hide a few), so an
+ * answer without most of them comes from a store that lost or never got the seed, and showing it would
+ * wipe the board for every visitor. An empty snapshot accepts anything. Twin: coversSeed in scripts/roadmap.mjs.
  */
-export async function loadLive(fetchImpl: typeof fetch, locale: string, known: ReadonlyMap<string, string>, timeoutMs = 8000): Promise<ViewItem[] | null> {
+export function coversSnapshot(live: readonly { id: string }[], snapshot: readonly { id: string }[]): boolean {
+  if (!snapshot.length) return true;
+  const have = new Set(live.map((x) => x.id));
+  return snapshot.filter((x) => have.has(x.id)).length >= KEEP_SHARE * snapshot.length;
+}
+
+/**
+ * The live roadmap in one language, or null when the page must keep its snapshot: the request failed or
+ * timed out, the answer was not 200, not JSON, not a v1 roadmap, had no item this page can show, or does
+ * not cover the snapshot (coversSnapshot). Live items without a group keep the group the snapshot gave
+ * their id. `fetchImpl` is injected for tests.
+ */
+export async function loadLive(fetchImpl: typeof fetch, locale: string, snapshot: readonly ViewItem[], timeoutMs = 8000): Promise<ViewItem[] | null> {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), timeoutMs);
   try {
     const r = await fetchImpl(ROADMAP_ENDPOINT, { headers: { accept: "application/json" }, cache: "no-cache", signal: ctl.signal });
     if (r.status !== 200) return null;
     const items = parseRoadmap(await r.json());
-    return items && items.length ? viewItems(items, locale, known) : null;
+    return items && items.length && coversSnapshot(items, snapshot) ? viewItems(items, locale, groupsOf(snapshot)) : null;
   } catch {
     return null;
   } finally {

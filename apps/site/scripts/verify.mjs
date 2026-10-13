@@ -697,6 +697,14 @@ for (const mode of ["ok", "fail"]) {
     await ctx.close();
   }
   {
+    // a store that was never seeded (e.g. the seed not found on the server) answers with the pilot's idea alone:
+    // showing it would wipe the list for every visitor, so the snapshot stays (the first check is the control)
+    const { ctx, page } = await open("/en/", { status: 200, contentType: "application/json", body: JSON.stringify({ v: 1, items: [PILOT] }) });
+    const b = await board(page);
+    ok("roadmap: an answer that misses most of the snapshot (a store never seeded) keeps the snapshot", b.state === "kept" && b.items === snapItems.length && !b.pilot, JSON.stringify(b));
+    await ctx.close();
+  }
+  {
     const { ctx, page } = await open("/en/", { status: 200, contentType: "application/json", body: JSON.stringify({ v: 1, items: [ODD] }) });
     const b = await board(page);
     ok("roadmap: an answer with nothing this page can show keeps the snapshot too", b.state === "kept" && b.items === snapItems.length && !b.odd, JSON.stringify(b));

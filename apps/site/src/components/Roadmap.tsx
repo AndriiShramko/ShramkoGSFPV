@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { buildBoard, groupsOf, loadLive } from "@/lib/roadmap";
+import { buildBoard, loadLive } from "@/lib/roadmap";
 import type { RoadmapStatus, ViewItem } from "@/lib/roadmap";
 import { keepTogether } from "@/lib/text";
 
@@ -9,7 +9,8 @@ import { keepTogether } from "@/lib/text";
  * The landing's roadmap board (section #features): counts, Done by group, In progress, Planned; a pilot's
  * idea is marked, never named. The HTML is the build-time snapshot (scripts/roadmap.mjs), so search engines
  * and visitors without JavaScript read it; when the section comes within a screen of view the board asks
- * GET /api/roadmap once and shows the owner's store as it is now. Any failure keeps the snapshot.
+ * GET /api/roadmap once and shows the owner's store as it is now. Any failure, or an answer that misses
+ * most of the snapshot (a store that was never seeded: lib/roadmap.ts coversSnapshot), keeps the snapshot.
  * `data-roadmap-state`: "snapshot" (not asked yet), "live" (refreshed), "kept" (asked, snapshot kept).
  */
 export type RoadmapLabels = {
@@ -74,12 +75,11 @@ export default function Roadmap({ locale, initial, groups, labels, nowNote }: { 
     if (!el) return;
     let asked = false;
     let alive = true;
-    const known = groupsOf(initial);
     const ask = () => {
       if (asked) return;
       asked = true;
       io?.disconnect();
-      void loadLive(fetch, locale, known).then((live) => {
+      void loadLive(fetch, locale, initial).then((live) => {
         if (!alive) return;
         if (live) setItems(live);
         setState(live ? "live" : "kept");

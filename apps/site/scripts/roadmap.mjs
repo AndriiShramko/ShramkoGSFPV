@@ -1,7 +1,7 @@
 // Prebuild: the roadmap snapshot the landing is built from (src/generated/roadmap.json, not committed).
 //   ROADMAP_URL=https://gsfpv.flyreelstudio.eu/api/roadmap   the owner's store as it is now (CI sets it);
-//   unset, or that answer is not a usable v1 roadmap:          the seed, apps/api/locales/roadmap-seed.json
-//                                                              (store statuses mapped: accepted -> planned)
+//   unset, or that answer is not a usable v1 roadmap, or it   the seed, apps/api/locales/roadmap-seed.json
+//   misses most of the seed's ids (a store never seeded):     (store statuses mapped: accepted -> planned)
 // The static page shows this snapshot (what search engines read); the Roadmap component then refreshes it
 // from /api/roadmap in the visitor's browser. The page parses it with src/lib/roadmap.ts and fails the
 // build when nothing is left to show. No network at all unless ROADMAP_URL is set.
@@ -40,6 +40,17 @@ function usable(doc) {
   return doc?.v === 1 && Array.isArray(doc.items) && doc.items.some((it) => it && ["done", "in_progress", "planned"].includes(it.status) && typeof it.title?.en === "string" && it.title.en.trim());
 }
 
+/**
+ * The answer holds at least half of the seed's ids. The roadmap only grows, so an answer without most of
+ * them comes from a store that lost or never got the seed (a wrong seed path on the server), and building
+ * the page from it would drop the whole list. Twin of coversSnapshot in src/lib/roadmap.ts (KEEP_SHARE).
+ */
+function coversSeed(doc) {
+  const have = new Set(doc.items.map((it) => it?.id));
+  const seed = fromSeed().items;
+  return seed.filter((it) => have.has(it.id)).length >= 0.5 * seed.length;
+}
+
 async function fromUrl(url) {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), TIMEOUT_MS);
@@ -48,6 +59,7 @@ async function fromUrl(url) {
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const doc = await r.json();
     if (!usable(doc)) throw new Error("not a usable v1 roadmap");
+    if (!coversSeed(doc)) throw new Error("it misses most of the seed's items (was the store seeded?)");
     return doc;
   } finally {
     clearTimeout(timer);
