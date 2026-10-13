@@ -27,7 +27,7 @@ class ExtraRoutes(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         d = Path(self.tmp.name)
-        self.api = admin.AdminApi(data_dir=lambda: d, reports_file=lambda: d / "r.jsonl", reports_dir=lambda: d / "r",
+        self.api = admin.AdminApi(data_dir=lambda: d, reports_dir=lambda: d / "r",
                                   seed=lambda: None, telegram=lambda t: None, env={"ADMIN_PASSWORD_HASH": HASH})
         self.seen: list[tuple[str, str]] = []
         self.api.add_route("GET", r"geo/search", lambda m, qs, body, client: self._answer("geo", qs))
