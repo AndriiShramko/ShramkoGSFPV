@@ -1,7 +1,7 @@
 // The scene library (docs/architecture-v03.md E.1, E.10): the history cap of 100, the favourites'
 // order and the merge. Each block ends with a negative control that must fire.
 import { describe, expect, it } from 'vitest';
-import { library as L, emptyLibrary, mergeLibraries, lastScene, HISTORY_CAP, failedRecently, pickerList, pickerEmpty, tabCandidates, filterCandidates, favouriteEntries, DEFAULT_FILTER, TAB_FILTERS, tabObeys } from '../src/index';
+import { library as L, emptyLibrary, mergeLibraries, lastScene, HISTORY_CAP, failedRecently, pickerList, pickerEmpty, tabCandidates, filterCandidates, favouriteEntries, DEFAULT_FILTER, TAB_FILTERS, tabObeys, parseSceneLink, parseSceneInput } from '../src/index';
 import type { CuratedCard, PickerTabId, SceneFilter, SceneLibraryData } from '../src/index';
 
 /** The cards a tab shows (pickerList without the hidden count). */
@@ -238,5 +238,45 @@ describe('an empty tab says why (item 4, v0.7)', () => {
         // control: once the interior scene was flown, it is a card again
         const d = L.recordFlight(L.recordOpen(emptyLibrary(), { id: '39e63ce9', version: 1, hasCollision: true }, 10), '39e63ce9', 30);
         expect(pickerList('showcase', CATALOGUE, d, { ...DEFAULT_FILTER, kind: 'interior', flown: 'flown' }).rows.map((r) => r.id)).toEqual(['39e63ce9']);
+    });
+});
+
+describe('the merged picker on one library (v0.7: lane A per-tab filter, lane R link parser, D1 share facts)', () => {
+    // apps/fly/src/ui/scenes.ts draws these: a paste goes through parseSceneLink and the raw text is picked,
+    // the built-in tabs come from pickerList (controls shown per tabObeys), a card's Share uses the library's facts
+    const CATALOGUE = [
+        { id: '39e63ce9', title: 'Modlinek Villa', collision: true, kind: 'interior' },
+        { id: '70b50d42', title: 'Wroclaw Cathedral', collision: false, kind: 'exterior' }
+    ];
+    const PASTE = '  https://superspl.at/scene/2f1ddf5f?budget=8&stochastic ';
+    const FACTS = { title: 'Old Mill', author: 'Jane Scan', license: 'CC BY' };
+
+    /** A pilot's evening: a SuperSplat-tab pick without walls (facts remembered, then opened and starred), the owner's no-walls scene opened. */
+    const evening = (): SceneLibraryData => {
+        let d = L.rememberFacts(emptyLibrary(), 'ab12cd34', FACTS);
+        d = L.recordOpen(d, { id: 'ab12cd34', version: 1, title: 'Old Mill', hasCollision: false }, 10);
+        d = L.toggleFavourite(d, 'ab12cd34', { title: 'Old Mill', hasCollision: false }).data;
+        return L.recordOpen(d, { id: '70b50d42', version: 1, hasCollision: false }, 20);
+    };
+
+    it('paste keeps the drawing; the catalogue shows every scene; Recent filters with its reason; a starred scan stays and keeps its credit', () => {
+        expect(parseSceneLink(PASTE)).toEqual({ id: '2f1ddf5f', render: { budgetM: 8, stochastic: true } });
+        expect(parseSceneLink('https://evil.example/scene/2f1ddf5f')).toBeNull();
+        const d = evening();
+        expect(pickerList('showcase', CATALOGUE, d, DEFAULT_FILTER).rows.map((r) => [r.id, r.collision])).toEqual([['39e63ce9', true], ['70b50d42', false]]);
+        expect((['collisionOnly', 'kind', 'flown'] as const).map((k) => tabObeys('showcase', k))).toEqual([false, true, true]);
+        const recent = pickerList('recent', CATALOGUE, d, DEFAULT_FILTER);
+        expect(recent).toEqual({ rows: [], hidden: 2 });
+        expect(pickerEmpty('recent', recent)).toBe('filter');
+        expect(pickerList('favourites', CATALOGUE, d, DEFAULT_FILTER).rows).toEqual([{ id: 'ab12cd34', title: 'Old Mill', collision: false, flights: 0, fav: true }]);
+        expect(L.factsOf(d, 'ab12cd34')).toEqual(FACTS);
+    });
+
+    it('control: the v0.6 pieces (id-only paste, every control on every tab) lose the drawing and the owner\'s and the starred no-walls scenes', () => {
+        expect(parseSceneInput(PASTE)).toBe('2f1ddf5f');
+        const d = evening();
+        const every = ['collisionOnly', 'kind', 'flown'] as const;
+        expect(filterCandidates(tabCandidates('showcase', CATALOGUE, d), every, DEFAULT_FILTER).map((r) => r.id)).toEqual(['39e63ce9']);
+        expect(filterCandidates(tabCandidates('favourites', CATALOGUE, d), every, DEFAULT_FILTER)).toEqual([]);
     });
 });
