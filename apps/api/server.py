@@ -1138,9 +1138,10 @@ def _catalog_seed() -> Path | None:
 
 
 def _roadmap_seed() -> Path | None:
-    """The roadmap's first items (lane C writes apps/api/roadmap-seed.json; on the hub api/roadmap-seed.json),
-    loaded once into a store without features: ROADMAP_SEED, else the file next to this one."""
-    p = os.environ.get("ROADMAP_SEED") or str(Path(__file__).resolve().parent / "roadmap-seed.json")
+    """The roadmap's first items (apps/api/locales/roadmap-seed.json, the landing's status list in four
+    languages, hence under locales/ for B18; on the hub api/locales/ with the other texts), loaded once into
+    a store without features: ROADMAP_SEED, else locales/roadmap-seed.json next to this file."""
+    p = os.environ.get("ROADMAP_SEED") or str(Path(__file__).resolve().parent / "locales" / "roadmap-seed.json")
     return Path(p) if Path(p).is_file() else None
 
 

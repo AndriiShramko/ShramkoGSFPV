@@ -29,7 +29,7 @@ record's own text (the pilot's report); a pilot's e-mail answer stays in the own
 Migration: the first transaction on a missing file imports every line of reports.jsonl (the visitors'
 own file, never rewritten) and the old admin flags of report-status.json (open -> new, closed -> done);
 sync() imports any report line still missing, so a report whose idea could not be written is picked up
-at the next start. The roadmap seed (roadmap-seed.json, written by lane C from the landing's status list)
+at the next start. The roadmap seed (locales/roadmap-seed.json, the landing's status list in four languages)
 is loaded once, while the store has no feature and was never seeded.
 
 Nothing here talks to the network: service.py holds the use-cases, ownerbot.py and mailer.py the I/O.
@@ -68,8 +68,8 @@ EMAIL_FIND_RE = re.compile(r"(?<![A-Za-z0-9._%+-])[A-Za-z0-9._%+-]{1,64}@[A-Za-z
 
 TEXT_MAX = 4000        # a note or a pilot's words (a report is at most 2000)
 COMMENT_MAX = 2000
-TITLE_MAX = 140
-PUBLIC_TEXT_MAX = 600
+TITLE_MAX = 240        # a public title: the same limit in the admin card, the landing and the seed test
+PUBLIC_TEXT_MAX = 600  # (apps/api/tests/test_roadmap_seed.py); the landing's longest seeded line is 211
 SUMMARY_MAX = 2000
 SEEN_KEPT = 300        # Telegram update ids remembered (each update is handled once)
 TG_MSGS_KEPT = 3000    # bot message -> idea links remembered

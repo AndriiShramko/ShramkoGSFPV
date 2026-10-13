@@ -19,7 +19,7 @@ SSH="ssh -p $GSFPV_PORT -i $GSFPV_KEY -o BatchMode=yes $GSFPV_HOST"
 | `$GSFPV_BASE/compose.yml` | the two containers, `gsfpv-web` (nginx) and `gsfpv-api` (python) |
 | `$GSFPV_BASE/nginx.conf` | copy of [`deploy/nginx.conf`](nginx.conf); mounted read-only into `gsfpv-web` as `/etc/nginx/conf.d/default.conf` (a single-file bind mount) |
 | `$GSFPV_BASE/config.env` | secrets of the API; never in git |
-| `$GSFPV_BASE/api/`, `data/` | API code (`server.py`, `admin.py`, the ideas modules and `locales/` of "Ideas (v0.7)", the v0.7 modules listed under "v0.7 lane A", the catalogue seed `showcase.json`, the roadmap seed `roadmap-seed.json`), counters, leads, bug reports (`reports.jsonl`, `reports/`), the ideas store (`ideas.json`), share pictures (`share/`), the scene catalogue, the admin's audit (see "Admin") and the climate wind cache (`wind-climate/`) |
+| `$GSFPV_BASE/api/`, `data/` | API code (`server.py`, `admin.py`, the ideas modules and `locales/` of "Ideas (v0.7)", the v0.7 modules listed under "v0.7 lane A", the catalogue seed `showcase.json`, the roadmap seed `locales/roadmap-seed.json`), counters, leads, bug reports (`reports.jsonl`, `reports/`), the ideas store (`ideas.json`), share pictures (`share/`), the scene catalogue, the admin's audit (see "Admin") and the climate wind cache (`wind-climate/`) |
 | `$GSFPV_BASE/releases/<sha12>/` | unpacked releases (the last 5 are kept) |
 | `$GSFPV_BASE/releases/current` | symlink to the live release; nginx serves `/srv/releases/current` |
 | `$GSFPV_BASE/incoming/` | uploaded tarballs |
@@ -224,7 +224,7 @@ scp -P $GSFPV_PORT -i $GSFPV_KEY apps/api/server.py apps/api/admin.py apps/api/i
     apps/api/ideas_cli.py apps/api/mailer.py apps/api/outbox.py apps/api/ownerbot.py apps/api/service.py apps/api/texts.py \
     $GSFPV_HOST:$GSFPV_BASE/api/
 scp -r -P $GSFPV_PORT -i $GSFPV_KEY packages/i18n/locales/bot packages/i18n/locales/mail $GSFPV_HOST:$GSFPV_BASE/api/locales/
-scp -P $GSFPV_PORT -i $GSFPV_KEY apps/api/roadmap-seed.json $GSFPV_HOST:$GSFPV_BASE/api/   # lane C's seed, loaded once
+scp -P $GSFPV_PORT -i $GSFPV_KEY apps/api/locales/roadmap-seed.json $GSFPV_HOST:$GSFPV_BASE/api/locales/   # the roadmap seed, loaded once
 ```
 `data/ideas.json` (and `ideas.lock`) appear at the first start, made from `reports.jsonl` and the old
 `report-status.json` (closed -> done); `reports.jsonl` itself is never rewritten. The deploy backups
