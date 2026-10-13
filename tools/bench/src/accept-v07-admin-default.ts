@@ -5,6 +5,8 @@
 //   A1 the hint + a live session: the item is in the scene section; picking it reads the draft, posts
 //      the whole draft back with the session's X-CSRF, this scan's entry carries what is flown (walls
 //      off, the ceiling, the custom wind as manual), the other scan is untouched, the pilot reads it.
+//   A2 wind switched off (a setting of the pilot's for every scan): the save keeps the entry's climate
+//      wind and the note says so (A1, a custom wind saved as manual, is its control).
 //   L  the "Ignore collisions above" panel's legend after its wrap fix: a screenshot of the panel and
 //      each key's swatch and words on one line (evidence for the owner's eyes; the gate is A0/A1).
 //   LOCAL_FLY=1 SITE=http://127.0.0.1:5377 npx tsx src/accept-v07-admin-default.ts
@@ -104,11 +106,33 @@ try {
         out.L = { keys, screenshot: shot, oneLineEach: keys.length === 3 && keys.every((k: Any) => k.lines === 1 && k.h < 24) };
         await ctx.close();
     }
+    // ---- A2: wind switched off (the pilot's setting for every scan) keeps the entry's climate wind, said
+    {
+        const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+        await ctx.addInitScript(() => { try { localStorage.setItem('gsfpv.admin', '1'); } catch { /* none */ } });
+        const calls: Any[] = [];
+        const p = await open(ctx, calls, true);
+        await hook(p, `h.prefs.set('wind.mode', 'off'); await h.wind.apply(); await new Promise((r) => setTimeout(r, 100)); return 0;`);
+        const flown = await hook(p, 'return h.sceneDefault.flown();');
+        await menuItems(p);
+        await p.click('[data-action="pause.sceneDefault"]');
+        await p.waitForFunction(() => { const n = document.querySelector('.hud-note'); return !!n && !(n as HTMLElement).hidden && /draft/.test(n.textContent ?? ''); }, null, { timeout: 10000 }).catch(() => null);
+        const note = await p.locator('.hud-note').textContent();
+        const post = calls.find((c) => c.method === 'POST' && c.path === '/api/admin/catalog/draft');
+        const entry = post?.body?.catalog?.scenes?.find((x: Any) => x.id === SCENE);
+        out.A2 = {
+            flown, entry, note,
+            pass: flown?.wind?.source === 'off' && !!post
+                && JSON.stringify(entry?.wind) === JSON.stringify({ fromDeg: 200, speed: 3, gust: 1, source: 'climate' })
+                && /switched off/.test(note ?? '')
+        };
+        await ctx.close();
+    }
 } catch (e) {
     out.error = String((e as Error)?.stack ?? e).slice(0, 2000);
 } finally {
-    out.pass = !out.error && out.A0?.pass === true && out.A1?.pass === true;
+    out.pass = !out.error && out.A0?.pass === true && out.A1?.pass === true && out.A2?.pass === true;
     const file = writeEvidence('v07-admin-default', out);
-    console.log('v07 admin default', out.pass ? 'PASS' : 'FAIL', JSON.stringify({ A0: out.A0?.pass, A1: out.A1?.pass, legend: out.L?.oneLineEach, error: out.error?.slice(0, 300) }), '->', file);
+    console.log('v07 admin default', out.pass ? 'PASS' : 'FAIL', JSON.stringify({ A0: out.A0?.pass, A1: out.A1?.pass, A2: out.A2?.pass, legend: out.L?.oneLineEach, error: out.error?.slice(0, 300) }), '->', file);
     await browser.close();
 }
