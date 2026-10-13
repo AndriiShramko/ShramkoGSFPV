@@ -89,15 +89,18 @@ export class InputHost {
         }
     }
 
-    /** The Controls screen; the input in use is offered first (Fly, Recalibrate, Reverse channels). */
-    openRadio(firstOpen = false): void {
+    /**
+     * The Controls screen; the input in use is offered first (Fly, Recalibrate, Reverse channels,
+     * Switches). `view` 'switches' opens the radio in use on its Switches view (Settings' link).
+     */
+    openRadio(firstOpen = false, view?: 'switches'): void {
         const ctx = this.ctx;
         if (document.querySelector('.screen.radio')) return;
         ctx.pause('controls');
         // opened from the pause menu (its item or the top button): Controls takes the menu's place,
         // so closing Controls flies on, whichever way it was opened
         if (ctx.menu.isOpen) ctx.menu.close();
-        const r = new RadioScreen(ctx.ui, this.lastChoice, { firstOpen });
+        const r = new RadioScreen(ctx.ui, this.lastChoice, { firstOpen, view });
         ctx.hook.radio = r;
         r.onDone = (c) => { r.remove(); ctx.resume('controls'); this.use(c); };
         // Close / Esc: nothing changes (remove() gives the radio in use its frames back). Closed

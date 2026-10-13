@@ -5,7 +5,8 @@
 // one instruction on a drawing of a radio (which stick, which way, how far it has gone), live
 // channel bars, a hint with numbers when a press is refused, and a way out on every screen (Back,
 // Start again, and Close / Esc, which leaves the whole screen with nothing changed). The radio in
-// use gets Recalibrate and Reverse channels at the top, so neither hides behind "connect a device".
+// use gets Recalibrate, Reverse channels and Switches (ui/switches.ts: which channel arms, sets the
+// flight mode or runs an action; v0.7) at the top, so none hides behind "connect a device".
 import './wizard.css';
 import { ArmLatch, CalibrationWizard, STEP_IDS, TUNING, channelOrder } from '@gsfpv/input';
 import type { ArmSource, Fn, Hint, Profile, RawFrame, StepResult, Verdict, WizardState } from '@gsfpv/input';
@@ -17,6 +18,7 @@ import { saveProfile, profileFor, downloadProfile, parseProfile, getStickMode, s
 import { radioArt, sideOf, knobsFrom, tickIcon } from './radio-art';
 import type { ArtState, ArtTarget } from './radio-art';
 import { modeSwitchRow, modeRowKey } from './mode-switch-row';
+import { SwitchesView } from './switches';
 
 export type SourceKind = 'hid' | 'gamepad' | 'touch' | 'keyboard';
 
@@ -32,6 +34,8 @@ export interface RadioScreenOptions {
      *  will you fly?". Left out: true for the first Controls screen of this page (a new scan is a
      *  new page, and main.ts opens Controls as soon as the scan is in). */
     firstOpen?: boolean;
+    /** 'switches': open on the Switches view of the radio in use (Settings' link); the device choice when there is none. */
+    view?: 'switches';
 }
 
 type Subscribe = (cb: (f: RawFrame) => void) => void;
@@ -145,7 +149,8 @@ export class RadioScreen {
         this.root = h('div', { class: 'screen radio interactive', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'radio-title' }, this.body);
         parent.append(this.root);
         addEventListener('keydown', this.onKey, { capture: true });
-        this.choose();
+        if (opts.view === 'switches' && current?.profile && this.curDev) this.openSwitches(current);
+        else this.choose();
     }
 
     /** Leave the screen with nothing changed (x and Esc on every screen). */
@@ -240,7 +245,8 @@ export class RadioScreen {
                 h('div', { class: 'actions' },
                     h('button', { type: 'button', class: 'btn primary', 'data-action': 'radio-keep', onclick: () => this.keepCurrent() }, t('common.fly')),
                     h('button', { type: 'button', class: 'btn', 'data-action': 'radio-setup', onclick: () => this.setupCurrent(cur) }, t('radio.recalibrate')),
-                    h('button', { type: 'button', class: 'btn', 'data-action': 'radio-reverse', onclick: () => this.checkCurrent(cur) }, t('radio.reverse')))));
+                    h('button', { type: 'button', class: 'btn', 'data-action': 'radio-reverse', onclick: () => this.checkCurrent(cur) }, t('radio.reverse')),
+                    h('button', { type: 'button', class: 'btn', 'data-action': 'radio-switches', onclick: () => this.openSwitches(cur) }, t('switches.open')))));
         }
         this.body.append(
             h('div', { class: 'choice' },
@@ -289,6 +295,38 @@ export class RadioScreen {
             this.gp = g;
             this.mount(CalibrationWizard.resume(p), g.key, p.deviceName, (cb) => { g.onFrame = cb; }, () => g.rateHz, 'gamepad', p);
         }
+    }
+
+    /**
+     * "Switches" on the radio in use: its channel functions, with its own frames lent to the view. Save
+     * flies with the new profile (saved for this device); Cancel goes back to the device choice.
+     */
+    private openSwitches(cur: RadioChoice): void {
+        const dev = cur.kind === 'hid' ? cur.hid : cur.kind === 'gamepad' ? cur.gamepad : undefined;
+        if (!cur.profile || !dev || (cur.kind !== 'hid' && cur.kind !== 'gamepad')) return;
+        this.leave();
+        const gen = this.gen;
+        const view = new SwitchesView({
+            profile: structuredClone(cur.profile),
+            kind: cur.kind,
+            close: this.closeBtn(),
+            onSave: (p) => {
+                saveProfile(p);
+                this.handed = dev;
+                this.done({ ...cur, profile: p });
+            },
+            onCancel: () => this.choose()
+        });
+        this.root.setAttribute('aria-labelledby', 'radio-title');
+        this.body.append(view.el);
+        dev.onFrame = (f) => { if (gen === this.gen) view.frame(f); };
+        const loop = (): void => {
+            if (gen !== this.gen) return;
+            view.live();
+            this.raf = requestAnimationFrame(loop);
+        };
+        this.raf = requestAnimationFrame(loop);
+        view.el.querySelector<HTMLElement>('select, button')?.focus({ preventScroll: true });
     }
 
     private async connectHid(status: HTMLElement): Promise<void> {
@@ -738,9 +776,11 @@ export class RadioScreen {
                     h('span', { class: 'nm' }, t('wizard.axis.arm')), h('span', { class: 'ch' }, armText(st.armSource)), armNow,
                     h('div', { class: 'acts' }, canRev ? checkRev('arm') : null, redo('arm'))));
             }
-            // the radio's flight-mode switch: found by a flip, no press (mode-switch-row.ts)
+            // the radio's flight-mode switch: found by a flip, no press (mode-switch-row.ts); a radio
+            // with channel functions (the Switches screen) takes its arm and mode from them instead
             const modeRow = modeSwitchRow(wz, (l, a, f) => btn(l, a, f), () => { sig = ''; render(); });
-            rows.append(modeRow.el);
+            if (p.switches) rows.append(h('p', { class: 'wz-row-note small warn', 'data-testid': 'switches-check-note' }, t('switches.checkNote')));
+            else rows.append(modeRow.el);
             const row = (k: string, info = false): HTMLLIElement => h('li', { class: info ? 'info' : '' }, h('span', { class: 'mk' }, tickIcon()), h('span', {}, t(k)));
             const rThr = row('wizard.check.throttle');
             const rArm = armKind === 'key' ? row('wizard.check.armKey', true) : row(armKind === 'toggle' ? 'wizard.check.armToggle' : 'wizard.check.arm');

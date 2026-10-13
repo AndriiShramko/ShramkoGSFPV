@@ -1,0 +1,68 @@
+/* The Switches screen (ui/switches.ts), inside the Controls screen. One row per range: name, channel,
+   the 900..2100 us bar with the range (green), the channel's live marker and two handles, ON / off,
+   Flip to assign, remove. Below 700 px a row wraps: name and channel, then the bar, then the buttons. */
+.swv { max-width: 980px; }
+.swv-intro { margin: 6px 0 12px; max-width: 760px; }
+.swv-sec { border: 1px solid var(--line); border-radius: var(--r); padding: 10px 14px 12px; margin: 0 0 12px; background: var(--bg2); }
+.swv-sec h2 { margin: 0 0 6px; font-size: 17px; }
+.swv-sec > p { margin: 4px 0 8px; }
+details.swv-sec > summary, .swv-ranges > summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
+.swv-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px 10px; }
+.swv-chan { display: flex; flex-direction: column; gap: 3px; font: 12px ui-monospace, Consolas, monospace; color: var(--muted); }
+.swv-chan.missing { opacity: .45; }
+.swv-mini { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.swv-mini i { display: block; height: 100%; background: #60a5fa; width: 0; }
+.swv-row { display: grid; grid-template-columns: 110px 96px minmax(160px, 1fr) 48px auto auto auto; grid-template-areas: "name ch mid on logic flip x" "warn warn warn warn warn warn warn"; gap: 4px 10px; align-items: center; padding: 8px 0; border-top: 1px dashed var(--line); }
+.swv-row:first-of-type { border-top: 0; }
+.swv-row .swv-name { grid-area: name; font-weight: 600; }
+.swv-row .swv-ch { grid-area: ch; }
+.swv-row .swv-mid { grid-area: mid; min-width: 0; }
+.swv-row .swv-on { grid-area: on; font: 600 13px system-ui, sans-serif; color: var(--muted); text-align: center; }
+.swv-row.on .swv-on { color: var(--accent); }
+.swv-row .swv-logic { grid-area: logic; }
+.swv-row .swv-flip { grid-area: flip; }
+.swv-row .swv-x { grid-area: x; min-width: 36px; padding: 4px 10px; }
+.swv-row .swv-warn { grid-area: warn; margin: 0; }
+.swv-row .swv-warn:empty { display: none; }
+.swv-ch, .swv-logic, .swv-add { min-height: 36px; background: #0b0e12; color: var(--fg); border: 1px solid var(--line); border-radius: 8px; font: inherit; padding: 4px 6px; max-width: 100%; }
+.swv-ch:focus-visible, .swv-logic:focus-visible, .swv-add:focus-visible, .swv-import:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.swv-sec .btn, .swv-row .btn { min-height: 36px; padding: 4px 12px; font-size: 14px; }
+.swv-flip.listening { border-color: var(--warn); color: var(--warn); }
+/* the bar: 900 us on the left, 2100 us on the right */
+.swv-bar { position: relative; height: 28px; border-radius: 6px; background: #0b0e12; border: 1px solid var(--line); }
+.swv-bar::before, .swv-bar::after { content: ""; position: absolute; top: 4px; bottom: 4px; width: 1px; background: #2a3340; }
+.swv-bar::before { left: 7.33%; } /* 988 us: -100 % */
+.swv-bar::after { left: 92.67%; } /* 2012 us: +100 % */
+.swv-band { position: absolute; top: 3px; bottom: 3px; border-radius: 4px; background: rgba(74, 222, 128, .28); border: 1px solid rgba(74, 222, 128, .7); }
+.swv-row.on .swv-band { background: rgba(74, 222, 128, .5); }
+.swv-mark { position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1px; border-radius: 2px; background: #fbbf24; pointer-events: none; }
+.swv-mark[hidden] { display: none; }
+/* two native sliders over the bar: only their thumbs take the pointer, so both handles can be dragged */
+.swv-h { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; background: transparent; pointer-events: none; -webkit-appearance: none; appearance: none; }
+.swv-h::-webkit-slider-runnable-track { background: transparent; height: 100%; }
+.swv-h::-moz-range-track { background: transparent; }
+.swv-h::-webkit-slider-thumb { -webkit-appearance: none; pointer-events: auto; width: 14px; height: 26px; margin-top: 0; border-radius: 4px; background: var(--fg); border: 2px solid #0b0e12; cursor: ew-resize; }
+.swv-h::-moz-range-thumb { pointer-events: auto; width: 12px; height: 24px; border-radius: 4px; background: var(--fg); border: 2px solid #0b0e12; cursor: ew-resize; }
+.swv-h:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--accent); outline-offset: 1px; }
+.swv-h:focus-visible::-moz-range-thumb { outline: 2px solid var(--accent); outline-offset: 1px; }
+.swv-under { display: flex; justify-content: space-between; gap: 8px; margin-top: 2px; font: 12px ui-monospace, Consolas, monospace; }
+.swv-val { color: var(--fg); }
+.swv-modehead { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-bottom: 8px; }
+.swv-modehead .swv-name { font-weight: 600; }
+.swv-positions { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0; }
+.swv-pos.now { border-color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
+.swv-modenow { margin: 6px 0; font-weight: 600; }
+.swv-ranges { margin-top: 6px; }
+.swv-ranges .btn { margin: 6px 6px 0 0; }
+.swv-import { width: 100%; box-sizing: border-box; margin: 6px 0; background: #0b0e12; color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font: 12px/1.4 ui-monospace, Consolas, monospace; }
+.swv-import-out p { margin: 6px 0 0; }
+.swv-foot { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 24px; }
+.swv-foot p { margin: 0; }
+.swv-foot .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.swv-note { min-height: 1.4em; color: var(--accent); }
+/* the setup wizard's check screen, for a radio whose Switches decide arm and mode */
+.wz-row-note { margin: 6px 0; }
+@media (max-width: 700px) {
+    .swv-row { grid-template-columns: minmax(0, 1fr) auto 48px; grid-template-areas: "name ch on" "mid mid mid" "logic flip x" "warn warn warn"; }
+    .swv-row .swv-flip { justify-self: start; }
+}

@@ -108,11 +108,13 @@
 .re-left { display: flex; flex-direction: column; gap: 8px; min-width: 0; flex: 1 1 300px; }
 .re-table { width: 100%; }
 .re-table th { font-weight: 500; white-space: nowrap; }
+.re-table thead th { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: var(--muted); }
 .settings .re-table input.num { width: 100%; min-width: 52px; max-width: 76px; }
 .re-max { color: var(--muted); white-space: nowrap; }
-.re-limit, .re-qe { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.re-limit { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.re-qe { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
 .re-qe[hidden] { display: none; }
-.re-qe input { width: 18px; height: 18px; accent-color: var(--accent); }
+.re-qe input { flex: none; width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--accent); }
 .re-chart { flex: 1 1 260px; max-width: 420px; min-width: 0; height: auto; aspect-ratio: 320 / 180; border: 1px solid var(--line); border-radius: 10px; background: #0b0e12; }
 .re-grid line { stroke: #1f2630; stroke-width: 1; }
 .re-grid text, .re-legend text { fill: var(--muted); font: 10px/1 system-ui, sans-serif; }

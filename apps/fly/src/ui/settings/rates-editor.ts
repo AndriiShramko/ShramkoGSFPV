@@ -128,7 +128,7 @@ export function ratesEditor(io: EditorIo, preset: (drone: string) => RatesConfig
     });
     const qe = h('input', { type: 'checkbox', id: `${uid}-qe`, 'data-testid': 'rates-quick-expo' }) as HTMLInputElement;
     qe.addEventListener('change', () => store({ ...value(), quickRcExpo: qe.checked }));
-    const qeRow = h('label', { class: 're-qe', for: qe.id }, qe, ' ', t('rates.quickRcExpo'));
+    const qeRow = h('label', { class: 're-qe', for: qe.id }, qe, h('span', {}, t('rates.quickRcExpo')));
 
     // ---- chart
     const grid = svg('g', { class: 're-grid' });

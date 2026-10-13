@@ -19,6 +19,7 @@ import { t } from '../../i18n';
 import { banner, q } from '../env';
 import { applyCamera, applyModel, bridgeVoxels, modelDiffers, pilotSet } from '../prefs';
 import { floatersRow } from './floaters';
+import { switchesRow } from './switches';
 import type { Feature, FlightContext } from '../context';
 
 let current: SettingsScreen | null = null;
@@ -114,7 +115,8 @@ export function openSettings(ctx: FlightContext, focus: string | null = null): v
             applyToFlight(ctx);
             ctx.resume('panel');
         },
-        extra: (id) => (id === 'scene.dropFloaters' ? floatersRow(ctx, () => current?.close()) : null)
+        // live lines under a row: the floater filter; the radio's Switches (where pilots look for channel functions)
+        extra: (id) => (id === 'scene.dropFloaters' ? floatersRow(ctx, () => current?.close()) : id === 'input.stickMode' ? switchesRow(ctx, () => current?.close()) : null)
     }, { focus });
 }
 
