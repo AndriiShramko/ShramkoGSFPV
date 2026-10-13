@@ -80,6 +80,31 @@ export function isHandheld(userAgent: string, maxTouchPoints: number, uaDataMobi
     return /Macintosh/.test(userAgent) && maxTouchPoints > 1;
 }
 
+/** The two numbers a scan is drawn with (a Drawing without its note). */
+export type DrawingChoice = Pick<Drawing, 'stochastic' | 'budgetM'>;
+
+/** What drawOnDevice needs of a renderer (SplatRenderer; a plain object in tests). */
+export interface DrawingTarget {
+    /** the device the renderer really got (the engine may fall back to WebGL where the browser offers WebGPU) */
+    readonly isWebGPU: boolean;
+    setSplatBudgetMillions(m: number): void;
+    /** returns what the engine now draws with (applyDrawing) */
+    setStochastic(on: boolean): boolean;
+}
+
+/**
+ * Decide a scan's drawing with the renderer's real device and write it to the renderer, before the
+ * scan's splats load, so it streams with the budget this device gets. `decide` is asked only here,
+ * once the device exists: a browser that offers WebGPU (navigator.gpu) can still end up on WebGL (no
+ * adapter, a blocked GPU), and that device must not stream at a link's desktop budget.
+ */
+export function drawOnDevice(target: DrawingTarget, decide: (webgpu: boolean) => DrawingChoice): DrawingChoice {
+    const d = decide(target.isWebGPU);
+    target.setSplatBudgetMillions(d.budgetM);
+    target.setStochastic(d.stochastic);
+    return d;
+}
+
 /** The engine's gsplat parameters this module writes (playcanvas GSplatParams; a plain object in tests). */
 export interface GsplatDrawingParams {
     stochastic: boolean;

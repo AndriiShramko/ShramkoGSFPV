@@ -5,15 +5,16 @@
 //     link, or this page's own deep link /fly/?scene=<id>&budget=<M>&stochastic) field by field over
 //     the catalogue's render (the admin's choice, @gsfpv/scenes sceneRender);
 //   - the device: desktop WebGPU only; phones, tablets and WebGL get the sorted drawing and a note.
-// fly() and the scene host ask drawingFor() before a scene loads, so the scan streams with its budget
-// and draws stochastic from its first frame; the drawing feature (builtin/drawing.ts) applies it again
+// fly() and the scene host hand drawingFor() to the session, which asks it once its renderer's device
+// exists and before the scan loads (render-pc drawOnDevice), so the scan streams with the budget this
+// device gets and draws stochastic from its first frame; the drawing feature (builtin/drawing.ts) applies it again
 // once the flight is built (the governor's top budget), on every scene switch and setting change.
 import { isHandheld, resolveDrawing } from '@gsfpv/render-pc';
 import type { Drawing, DrawingMode } from '@gsfpv/render-pc';
 import { renderParams, sceneRender } from '@gsfpv/scenes';
 import type { SceneRender } from '@gsfpv/scenes';
 import type { PrefsStore } from '@gsfpv/prefs';
-import { hasWebGPU, q } from './env';
+import { q } from './env';
 import type { SceneRef } from './context';
 
 /** This page's own drawing parameters (its deep link): they belong to the scene of the page's ?scene=. */
@@ -38,10 +39,10 @@ export function requestOf(scene: SceneRef): SceneRender | undefined {
 }
 
 /**
- * The drawing for this scene. `webgpu`: the renderer's real device once it exists; before the first
- * scene loads, whether the browser offers WebGPU at all (the engine may still fall back to WebGL, and
- * then the renderer keeps stochastic off by itself and the feature shows the note).
+ * The drawing for this scene. `webgpu`: the renderer's real device (SplatRenderer.isWebGPU), never the
+ * browser's navigator.gpu: the engine can fall back to WebGL where the browser offers WebGPU, and that
+ * device gets neither stochastic nor the link's budget (the session asks once its renderer exists).
  */
-export function drawingFor(prefs: PrefsStore, scene: SceneRef, webgpu: boolean = hasWebGPU): Drawing {
+export function drawingFor(prefs: PrefsStore, scene: SceneRef, webgpu: boolean): Drawing {
     return resolveDrawing(drawingMode(prefs), requestOf(scene), { webgpu, handheld });
 }

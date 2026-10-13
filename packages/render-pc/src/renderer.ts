@@ -50,10 +50,12 @@ export interface RendererOptions {
     hFovDeg?: number;
     /** draw the 16x16 CSS-px latency marker in the top-left corner (?lat=1) */
     latencyMarker?: boolean;
-    /** the splat budget from the first frame, millions (default 4; a scene's link may ask for more, drawing.ts) */
+    /**
+     * the splat budget from the first frame, millions (default 4). A scene's drawing (its link's budget,
+     * stochastic) is not an option here: it depends on the device this creates, so the caller writes it
+     * afterwards with drawing.ts drawOnDevice (setSplatBudgetMillions, setStochastic)
+     */
     splatBudgetMillions?: number;
-    /** SuperSplat's stochastic drawing from the first frame (drawing.ts; taken only by the WebGPU GPU-sort renderer) */
-    stochastic?: boolean;
 }
 
 export const TONEMAPS: Record<string, number> = {
@@ -233,7 +235,8 @@ export class SplatRenderer {
         g.splatBudget = Math.round((opts.splatBudgetMillions ?? DEFAULT_BUDGET_M) * 1_000_000);
         g.colorUpdateAngle = 0.2;
         g.renderer = device.isWebGPU ? GSPLAT_RENDERER_RASTER_GPU_SORT : GSPLAT_RENDERER_RASTER_CPU_SORT;
-        applyDrawing(g, opts.stochastic === true, g.currentRenderer === GSPLAT_RENDERER_RASTER_GPU_SORT);
+        // sorted until a scene's drawing is written (drawOnDevice -> setStochastic)
+        applyDrawing(g, false, g.currentRenderer === GSPLAT_RENDERER_RASTER_GPU_SORT);
 
         if (opts.latencyMarker) this.initMarker();
 

@@ -19,6 +19,8 @@
 //       stochastic view with the overlay layer's depth clear off (the scan's depth then hides the voxels).
 //   R8  missed frames (a simulated overload) lower the budget from the link's top of 8 M and keep stochastic;
 //       the calm state before is the control.
+//   R9  a browser that offers WebGPU but whose engine falls back to WebGL loads the scan at the default
+//       budget, sorted, with the scene's WebGL note; control: the same link on WebGPU loads at 8 M.
 //   R6  the cost on a heavy scan (2f1ddf5f, 259 M splats at full detail): GPU time per frame (submit ->
 //       done) with the camera turning, governor off so both draw the same 8 M budget.
 //   SITE=http://127.0.0.1:5372 npx tsx src/accept-v07-render.ts [R1 R2 ...]
@@ -47,13 +49,15 @@ type Any = any;
 const hook = <T = Any>(p: Page, body: string): Promise<T> => p.evaluate(`(() => { const h = window.__gsfpv; const s = h.session; ${body} })()`) as Promise<T>;
 const wait = (p: Page, ms: number) => p.waitForTimeout(ms);
 
-async function context(browser: Browser, phone = false): Promise<{ ctx: BrowserContext; page: Page; log: string[] }> {
+/** A fresh context: desktop or a phone; `init`: one more script that runs before the page's own. */
+async function context(browser: Browser, phone = false, init?: string): Promise<{ ctx: BrowserContext; page: Page; log: string[] }> {
     const ctx = await browser.newContext(phone
         ? { viewport: { width: 412, height: 915 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true, userAgent: PHONE_UA }
         : { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
     await ctx.route('**/api/e', (r) => r.fulfill({ status: 204, body: '' }));
     // tsx keeps function names with __name(); functions sent to page.evaluate need it in the page
     await ctx.addInitScript('window.__name = window.__name || ((f) => f);');
+    if (init) await ctx.addInitScript(init);
     const page = await ctx.newPage();
     const log: string[] = [];
     page.on('console', (m) => log.push(`${m.type()}: ${m.text()}`.slice(0, 300)));
@@ -346,6 +350,28 @@ if (want('R8')) {
     pass.R8 = before.engine === true && calm.step === 0 && calm.budgetM === 8 && loaded.step >= 1 && loaded.budgetM < 8 && loaded.budgetM >= 3 && loaded.engine === true && loaded.top === 8 && errors(log).length === 0;
     console.log('R8', pass.R8, JSON.stringify(out.R8));
     await ctx.close();
+}
+
+// ------------------------------------------------------------------ R9
+// A browser that offers WebGPU (navigator.gpu) but gives no adapter: the engine falls back to WebGL. The
+// scan must load at the default budget, sorted, with the scene's WebGL note: the drawing is decided with
+// the renderer's device (render-pc drawOnDevice), not with navigator.gpu. s.loadDrawing is what the
+// engine had when the splats began to load. Control: the same link on WebGPU loads at the link's 8 M.
+if (want('R9')) {
+    const run = async (fallback: boolean): Promise<Any> => {
+        const { ctx, page, log } = await context(browser, false, fallback ? 'if (navigator.gpu) navigator.gpu.requestAdapter = async () => null;' : undefined);
+        const st = await open(page, `scene=${A}&budget=8&stochastic`);
+        const extra = st.status === 'ready' ? await hook(page, 'return { load: s.loadDrawing, gpuApi: !!navigator.gpu, isWebGPU: s.renderer.isWebGPU };') : {};
+        await ctx.close();
+        return { ...st, ...extra, pageerrors: errors(log) };
+    };
+    const gl = await run(true);
+    const control = await run(false);
+    out.R9 = { webglFallback: gl, controlWebGPU: control, expectedNote: EN['drawing.note.scene-webgl'] };
+    pass.R9 = gl.status === 'ready' && gl.gpuApi === true && gl.isWebGPU === false && gl.load?.webgpu === false && gl.load.budgetM === 4 && gl.load.stochastic === false
+        && gl.engine === false && gl.top === 4 && gl.drawing?.note === 'scene-webgl' && gl.note === EN['drawing.note.scene-webgl'] && gl.pageerrors.length === 0
+        && control.status === 'ready' && control.isWebGPU === true && control.load?.webgpu === true && control.load.budgetM === 8 && control.load.stochastic === true && control.drawing?.note === null;
+    console.log('R9', pass.R9, JSON.stringify({ gl: [gl.isWebGPU, gl.load, gl.drawing?.note, gl.note], control: [control.isWebGPU, control.load, control.drawing?.note] }));
 }
 
 // ------------------------------------------------------------------ R6

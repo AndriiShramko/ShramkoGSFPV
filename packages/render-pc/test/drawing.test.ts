@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { resolveDrawing, isHandheld, applyDrawing, DEFAULT_BUDGET_M, DRAWING_MODES, DRAWING_NOTES } from '../src/drawing';
+import { resolveDrawing, isHandheld, applyDrawing, drawOnDevice, DEFAULT_BUDGET_M, DRAWING_MODES, DRAWING_NOTES } from '../src/drawing';
 import type { Drawing, DrawingDevice, DrawingMode, DrawingRequest } from '../src/drawing';
 import { FrameGovernor, DEFAULT_STEPS } from '../src/governor';
 // the Display setting's definition (packages/prefs is pure data; render-pc does not depend on it at run time)
@@ -167,6 +167,38 @@ describe('applyDrawing: the choice reaches the engine\'s gsplat params', () => {
         const naive = (p: { stochastic: boolean }, on: boolean) => { p.stochastic = on; return on; };
         naive(g, true);
         expect(g.stochastic).not.toBe(applyDrawing({ stochastic: false }, true, false));
+    });
+});
+
+describe('drawOnDevice: a scan\'s drawing is decided with the device the renderer really got', () => {
+    /** A renderer as the session sees it: its device, its budget, and stochastic only on WebGPU (as applyDrawing). */
+    const renderer = (webgpu: boolean) => {
+        const r = { isWebGPU: webgpu, budgetM: DEFAULT_BUDGET_M, stochastic: false, asked: [] as boolean[],
+            setSplatBudgetMillions(m: number) { r.budgetM = m; },
+            setStochastic(on: boolean) { r.stochastic = on && webgpu; return r.stochastic; } };
+        return r;
+    };
+    const owner = (r: { asked: boolean[] }) => (webgpu: boolean) => { r.asked.push(webgpu); return resolveDrawing('auto', OWNER, { webgpu, handheld: false }); };
+
+    it('WebGPU: the link\'s budget and stochastic before the scan loads', () => {
+        const r = renderer(true);
+        expect(drawOnDevice(r, owner(r))).toEqual({ stochastic: true, budgetM: 8, note: null });
+        expect([r.budgetM, r.stochastic, r.asked]).toEqual([8, true, [true]]);
+    });
+
+    it('a browser that offers WebGPU but whose engine fell back to WebGL: the default budget, sorted', () => {
+        const r = renderer(false);
+        drawOnDevice(r, owner(r));
+        expect([r.budgetM, r.stochastic, r.asked]).toEqual([DEFAULT_BUDGET_M, false, [false]]);
+    });
+
+    it('control: deciding with the browser\'s navigator.gpu before the device exists streams the WebGL fallback at the link\'s 8 M', () => {
+        const r = renderer(false);
+        const guess = resolveDrawing('auto', OWNER, { webgpu: true, handheld: false }); // what fly() did before
+        r.setSplatBudgetMillions(guess.budgetM);
+        r.setStochastic(guess.stochastic);
+        expect(r.budgetM).toBe(8);
+        expect(r.stochastic).toBe(false); // stochastic itself was always kept off by the renderer
     });
 });
 

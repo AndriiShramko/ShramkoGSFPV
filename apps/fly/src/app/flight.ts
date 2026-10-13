@@ -140,7 +140,6 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
     const sceneId = link.id;
     const meta = showcase.find((s) => s.id === sceneId);
     const sceneRef: SceneRef = link.render ? { id: sceneId, meta, render: link.render } : { id: sceneId, meta };
-    const drawing = drawingFor(prefs, sceneRef);
     // the Controls screen follows the loading screen unless a test mode or touch sticks take over
     const sim = q.get('simradio');
     // no test mode, no forced input: the input from last time is looked for while the scan loads
@@ -175,7 +174,8 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
             latencyMarker: q.get('lat') === '1',
             lagFrames: Number(q.get('lagFrames') ?? 0),
             renderScale: q.get('scale') ? Number(q.get('scale')) : 1,
-            drawing: { stochastic: drawing.stochastic, budgetM: drawing.budgetM },
+            // asked once the renderer's device exists (a WebGL fallback gets the default budget)
+            drawing: (webgpu) => drawingFor(prefs, sceneRef, webgpu),
             onProgress: (p) => {
                 loading.update(p);
                 hook.loading = { stage: p.stage, loaded: p.loaded, total: p.total, fraction: p.fraction, exact: p.exact, elapsedMs: Math.round(performance.now() - tLoad) };

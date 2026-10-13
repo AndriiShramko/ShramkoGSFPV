@@ -153,7 +153,6 @@ export class SceneHost implements SceneSwitcher {
         const old = ctx.session;
         const meta = showcase.find((s) => s.id === id);
         const ref: SceneRef = render ? { id, meta, render } : { id, meta };
-        const drawing = drawingFor(ctx.prefs, ref, old.renderer.isWebGPU);
         const loading = new LoadingScreen(ctx.ui, {
             sceneId: id,
             title: meta?.title,
@@ -177,7 +176,7 @@ export class SceneHost implements SceneSwitcher {
             wallsOn: wallsWanted(ctx.prefs, id),
             transform: storedTransform(ctx.prefs, id),
             dropFloaters: storedDropFloaters(ctx.prefs, id),
-            drawing: { stochastic: drawing.stochastic, budgetM: drawing.budgetM },
+            drawing: (webgpu) => drawingFor(ctx.prefs, ref, webgpu),
             onProgress: (p) => loading.update(p)
         };
         old.dispose();
