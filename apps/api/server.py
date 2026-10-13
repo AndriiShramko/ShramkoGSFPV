@@ -1121,7 +1121,12 @@ def deliver_report(rec: dict) -> object:
         except OSError:
             blob = None
     facts = ownerbot.diag_facts(blob) if blob else None
-    return BOT.deliver_report(idea, report_text(rec, facts), blob, lambda text: send_telegram(text))
+    text = report_text(rec, facts)
+    try:
+        return BOT.deliver_report(idea, text, blob, lambda t: send_telegram(t))
+    except Exception as e:  # noqa: BLE001  (the bot's dictionaries missing on the hub...): the plain note still goes
+        print(f"report delivery failed: {type(e).__name__}", flush=True)
+        return send_telegram(text)
 
 
 class Handler(BaseHTTPRequestHandler):

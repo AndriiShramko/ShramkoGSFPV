@@ -63,8 +63,8 @@ class IdeasService:
         for fn in list(self.listeners):
             try:
                 fn(event, copy.deepcopy(idea), copy.deepcopy(mail), by)
-            except Exception:  # noqa: BLE001  a listener (Telegram down) never undoes a change
-                pass
+            except Exception as e:  # noqa: BLE001  a listener (Telegram down) never undoes a change; it is logged
+                print(f"ideas listener failed on {event}: {type(e).__name__}: {e}"[:300], flush=True)
 
     @contextlib.contextmanager
     def _idea(self, rid: str) -> Iterator[tuple[dict, dict]]:

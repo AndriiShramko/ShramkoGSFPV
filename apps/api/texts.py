@@ -37,7 +37,7 @@ class Texts:
     def lang(self, lang: str | None) -> str:
         return lang if lang in LANGS else "en"
 
-    def t(self, lang: str | None, key: str, **values) -> str:
+    def t(self, lang: str | None, key: str, /, **values) -> str:  # positional-only: a text may have a {lang} of its own
         table = self.d[self.lang(lang)]
         tpl = table.get(key, self.d["en"].get(key))
         if tpl is None:

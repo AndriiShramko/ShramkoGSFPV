@@ -106,7 +106,14 @@ class Mailer:
     def __init__(self, config: Callable[[], MailConfig], public_origin: str, texts: Texts | None = None,
                  smtp_class: type = _SMTP):
         self.config, self.origin, self.smtp_class = config, public_origin.rstrip("/"), smtp_class
-        self.texts = texts or Texts("mail")
+        self._texts = texts
+
+    @property
+    def texts(self) -> Texts:
+        """Loaded on first use: missing dictionaries on the hub break e-mails, not the API's start."""
+        if self._texts is None:
+            self._texts = Texts("mail")
+        return self._texts
 
     @property
     def configured(self) -> bool:
@@ -163,9 +170,9 @@ class Mailer:
             m["In-Reply-To"] = mail["inReplyTo"]
         if mail.get("references"):
             m["References"] = " ".join(mail["references"])
-        m["Content-Language"] = mail.get("lang") or "en"
         m.set_content(mail["plain"])
         m.add_alternative(mail["html"], subtype="html")
+        m["Content-Language"] = mail.get("lang") or "en"  # after the body: set_content drops Content-* headers
         return m
 
     def send(self, mail: dict) -> None:

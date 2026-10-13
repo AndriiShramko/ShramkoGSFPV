@@ -211,9 +211,16 @@ class OwnerBot:
     def __init__(self, service: IdeasService, env=os.environ, public_origin: str = "https://gsfpv.flyreelstudio.eu",
                  texts: Texts | None = None, api_factory: Callable[[str, str], TelegramApi] = TelegramApi):
         self.service, self.env, self.origin = service, env, public_origin.rstrip("/")
-        self.texts = texts or Texts("bot")
+        self._texts = texts
         self.api_factory = api_factory
         service.listeners.append(self.on_event)
+
+    @property
+    def texts(self) -> Texts:
+        """Loaded on first use: missing dictionaries on the hub break the bot's words, not the API's start."""
+        if self._texts is None:
+            self._texts = Texts("bot")
+        return self._texts
 
     # ---------------- configuration ----------------
 
