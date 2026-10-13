@@ -52,7 +52,8 @@ const out: Record<string, Any> = { site: SITE, render: 'off' };
 // ------------------------------------------------------------------ S1
 {
     const { p, errors, close } = await page(browser);
-    await p.goto(fly(`scene=${SHOWCASE}&nowarn=1&input=touch&render=off`));
+    // the keyboard path (lat=1): touch sticks (input=touch) show the icon alone, as on a phone
+    await p.goto(fly(`scene=${SHOWCASE}&nowarn=1&lat=1&render=off`));
     await waitReady(p, 240000);
     await p.waitForTimeout(800);
     const top = await p.evaluate(`(() => { const b = document.querySelector('[data-action=share-top]'); const l = b && b.querySelector('.share-top-label'); return b ? { shown: b.getClientRects().length > 0, label: l ? getComputedStyle(l).display !== 'none' : null, aria: b.getAttribute('aria-label') } : null; })()`) as Any;

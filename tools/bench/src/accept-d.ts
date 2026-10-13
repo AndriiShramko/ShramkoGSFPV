@@ -64,7 +64,7 @@ if (want('cinema')) {
     await page.goto(fly('en', 'scene=723068d7&nowarn=1&input=touch'));
     await waitReady(page, 180000);
     await hook('h.cinema.toggle(); return 0;');
-    const ctl = await hook<Any>('let refused = false, info = null; try { await h.cinema.start(); await new Promise((r) => setTimeout(r, 3000)); info = await h.cinema.stop(); } catch (e) { refused = true; } return { canRecord: h.cinema.canRecord, refused, frames: info ? info.frames : 0, strip: h.cinema.creditStripStd(), recButtonVisible: !document.querySelector("[data-action=cinema-rec]").hidden, notice: h.rec.state().notice, credit: h.rec.state().credit, inCatalogue: h.rec.state().showcase };');
+    const ctl = await hook<Any>('let refused = false, info = null, notice = null; try { await h.cinema.start(); notice = h.rec.state().notice; await new Promise((r) => setTimeout(r, 3000)); info = await h.cinema.stop(); } catch (e) { refused = true; } return { canRecord: h.cinema.canRecord, refused, frames: info ? info.frames : 0, strip: h.cinema.creditStripStd(), recButtonVisible: !document.querySelector("[data-action=cinema-rec]").hidden, notice, credit: h.rec.state().credit, inCatalogue: h.rec.state().showcase };');
     const pass = state.on && state.governorEnabled === false && state.lodRangeMax === 0 && state.canRecord && !!codec && info && info.frames > 60 && parsed.samples === info.frames && parsed.boxes.includes('moov') && parsed.boxes.includes('mdat') && strip > 0.1
         && ctl.canRecord === true && !ctl.refused && ctl.frames > 30 && ctl.strip > 0.1 && ctl.recButtonVisible && !!ctl.notice && ctl.inCatalogue === false && String(ctl.credit).includes('ShramkoGSFPV');
     summary.cinema = pass;

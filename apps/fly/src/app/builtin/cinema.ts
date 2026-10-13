@@ -226,6 +226,8 @@ export const cinema: Feature = {
 
         function showSaved(s: Saved | null): void {
             if (!s) return;
+            hideNotice(); // the notice was about this recording; the note line takes over
+
             note = savedNote(s);
             noteOffer = s.offer;
             hookCinema.last = s.info;
