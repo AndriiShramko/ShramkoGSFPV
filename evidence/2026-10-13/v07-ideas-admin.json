@@ -7,15 +7,15 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-13T15:04:33.070Z",
-    "gitHead": "831f5e2",
+    "date": "2026-10-13T15:50:01.588Z",
+    "gitHead": "5af8c01",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "pass": true,
-  "fly": "http://127.0.0.1:5364",
+  "fly": "http://127.0.0.1:5367",
   "error": null,
   "checks": [
     {
@@ -99,7 +99,12 @@
       "control": false
     },
     {
-      "name": "Send queues the thank-you once (ideas/send-done {id})",
+      "name": "Send queues the thank-you once (ideas/send-done {id, mail: the draft read})",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the owner is told the thank-you is queued and when it goes",
       "ok": true,
       "control": false
     },
@@ -164,12 +169,32 @@
       "control": false
     },
     {
+      "name": "a refused reply keeps its text in the box",
+      "ok": true,
+      "control": true
+    },
+    {
       "name": "the reply is queued behind the undo window and the owner is told so",
       "ok": true,
       "control": false
     },
     {
+      "name": "after the send the reply box is empty",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "a second click on Send reply sends nothing: the pilot gets one e-mail",
+      "ok": true,
+      "control": true
+    },
+    {
       "name": "Cancel on the queued reply stops it",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "after Add comment the comment box is empty (a second click adds nothing)",
       "ok": true,
       "control": false
     },
@@ -199,12 +224,42 @@
       "control": false
     },
     {
+      "name": "the unticked landing switch survives redraws before Save",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "Save sends visible: false and the card leaves the landing",
+      "ok": true,
+      "control": false
+    },
+    {
       "name": "an empty note sends nothing",
       "ok": true,
       "control": true
     },
     {
       "name": "the note goes to ideas/note and lands in New",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "without Gmail a reply is announced as saved for Gmail, not as queued",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "without Gmail the thank-you is announced as saved for Gmail, not as queued",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the card reopens that thank-you to Send: no new draft, no Edit, its state said",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "its Send goes to ideas/mail/send with that e-mail: one thank-you, queued, no longer offered",
       "ok": true,
       "control": false
     },
@@ -224,7 +279,7 @@
       "control": false
     },
     {
-      "name": "no e-mail went out on its own: one thank-you queued by Send, one reply cancelled",
+      "name": "no e-mail went out on its own: two thank-yous queued by Send, one reply cancelled, one waiting for Gmail",
       "ok": true,
       "control": false
     }
@@ -266,7 +321,8 @@
     [
       "ideas/send-done",
       {
-        "id": "R-20261012-0005"
+        "id": "R-20261012-0005",
+        "mail": "M-1"
       }
     ]
   ],
@@ -310,6 +366,16 @@
       }
     ]
   ],
+  "replyWithoutGmail": "Reply to pilot.one@example.com saved but not sent: Gmail is not set up on the server. Once it is, press Send next to it on the card.",
+  "thanksWithoutGmail": "Thank-you to pilot.one@example.com saved but not sent: Gmail is not set up on the server. Once it is, press Send next to it on the card.",
+  "resendCalls": [
+    [
+      "ideas/mail/send",
+      {
+        "id": "M-4"
+      }
+    ]
+  ],
   "pageErrors": [],
   "calls": [
     "GET session",
@@ -324,12 +390,19 @@
     "POST ideas/update",
     "GET reports/R-20261008-0003/diagnostics",
     "POST ideas/reply",
+    "POST ideas/reply",
     "POST ideas/mail/cancel",
     "POST ideas/update",
     "POST ideas/update",
     "POST ideas/update",
     "POST ideas/update",
+    "POST ideas/update",
     "POST ideas/note",
+    "POST ideas/reply",
+    "POST ideas/update",
+    "POST ideas/done",
+    "POST ideas/send-done",
+    "POST ideas/mail/send",
     "GET catalog"
   ]
 }
