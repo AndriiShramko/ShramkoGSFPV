@@ -2,8 +2,12 @@
 // scripts/scene-templates.mjs (a Next page -> an API template: scripts out, slots checked against
 // apps/api/scene-slots.json) and scripts/catalog-snapshot.mjs (the catalogue snapshot). Each block ends with
 // a negative control that must fire.
+import { execFile } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
+import { createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { join } from 'node:path';
+import { promisify } from 'node:util';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error plain ESM build scripts without type declarations
 import { checkTemplate, stripPage } from '../scripts/scene-templates.mjs';
@@ -73,5 +77,25 @@ describe('catalog-snapshot', () => {
 
     it('the committed snapshot is a catalogue', () => {
         expect(snapshotOf(JSON.parse(readFileSync(join(__dirname, '..', 'src', 'generated', 'catalog.json'), 'utf8')))).not.toBeNull();
+    });
+
+    it('the build (prebuild, no flag) asks no server: a build depends on the commit alone; --refresh does ask (control)', async () => {
+        const file = join(__dirname, '..', 'src', 'generated', 'catalog.json');
+        const before = readFileSync(file, 'utf8');
+        let hits = 0;
+        // answers something that is not a catalogue, so even the --refresh run keeps the committed file
+        const server = createServer((_req, res) => { hits++; res.writeHead(200, { 'Content-Type': 'application/json' }).end('{"scenes":[]}'); });
+        await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
+        const url = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api/catalog`;
+        const run = (...args: string[]) => promisify(execFile)(process.execPath, [join(__dirname, '..', 'scripts', 'catalog-snapshot.mjs'), ...args], { env: { ...process.env, CATALOG_URL: url } });
+        try {
+            await run();
+            expect(hits).toBe(0);
+            await run('--refresh');
+            expect(hits).toBe(1);
+        } finally {
+            server.close();
+        }
+        expect(readFileSync(file, 'utf8')).toBe(before);
     });
 });

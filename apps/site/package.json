@@ -13,6 +13,7 @@
     "build": "next build",
     "postbuild": "node scripts/fix-lang.mjs && node scripts/scene-templates.mjs",
     "og": "node scripts/og.mjs",
+    "catalog:refresh": "node scripts/catalog-snapshot.mjs --refresh",
     "i18n:check": "node scripts/i18n-check.mjs",
     "serve": "node scripts/serve.mjs 8138",
     "verify": "node scripts/verify.mjs",

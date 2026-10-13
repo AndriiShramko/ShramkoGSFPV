@@ -1,12 +1,15 @@
-// Prebuild: a snapshot of the published scene catalogue for the landing (docs/wip/v07-a.md section 2).
-// GET <CATALOG_URL, default the live site's /api/catalog> with a 4 s timeout; a well-formed answer replaces
-// src/generated/catalog.json, anything else (offline, an error, a wrong shape) keeps the committed file, so
-// a build never fails for the network. The landing renders the snapshot (crawlers and visitors without
-// JavaScript see every card) and refreshes it from /api/catalog in the browser (components/CatalogGrid.tsx,
-// which validates both with @gsfpv/scenes readCatalog). Written with \u escapes: the repository keeps
-// non-English letters inside locales/ only (check B18), and scene titles come in every language.
-//   node scripts/catalog-snapshot.mjs            fetch, then write or keep
-//   node scripts/catalog-snapshot.mjs --offline  keep the committed file (prints what it holds)
+// The snapshot of the published scene catalogue the landing is built with (docs/wip/v07-a.md section 2):
+// src/generated/catalog.json, a committed input like any other, so a build depends on the commit alone (CI
+// and two builds of one commit give the same landing; the prebuild only reports what the file holds). The
+// landing renders it (crawlers and visitors without JavaScript see every card) and refreshes it from
+// /api/catalog in the browser (components/CatalogGrid.tsx, which validates both with @gsfpv/scenes
+// readCatalog), so a scene the owner publishes shows without a new release. Refreshing the file is a
+// deliberate step, then a commit: GET <CATALOG_URL, default the live site's /api/catalog> with a 4 s
+// timeout; a well-formed answer replaces the file, anything else (offline, an error, a wrong shape) keeps
+// it. Written with \u escapes: the repository keeps non-English letters inside locales/ only (check B18),
+// and scene titles come in every language.
+//   node scripts/catalog-snapshot.mjs            (prebuild) keep the committed file, print what it holds
+//   node scripts/catalog-snapshot.mjs --refresh  (pnpm --filter @gsfpv/site catalog:refresh) fetch, write or keep
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -41,8 +44,8 @@ async function main() {
       return null;
     }
   })();
-  if (process.argv.includes("--offline")) {
-    console.log(`catalog-snapshot: kept (${old?.scenes?.length ?? 0} scenes, published ${old?.published ?? "?"})`);
+  if (!process.argv.includes("--refresh")) {
+    console.log(`catalog-snapshot: the committed snapshot (${old?.scenes?.length ?? 0} scenes, published ${old?.published ?? "?"}); refresh with --refresh`);
     return;
   }
   let snap = null;

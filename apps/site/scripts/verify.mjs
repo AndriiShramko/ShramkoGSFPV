@@ -77,7 +77,14 @@ const hits = walk(OUT).flatMap((f) => {
 });
 ok("built HTML/TXT/XML free of undefined|TODO|PLACEHOLDER|lorem|Liftoff-level|like Liftoff", hits.length === 0, hits.join("; "));
 const sitemap = readFileSync(join(OUT, "sitemap.xml"), "utf8");
-ok("sitemap lists 12 pages", (sitemap.match(/<loc>/g) ?? []).length === 12);
+{
+  // src/app/sitemap.ts: the static pages and the scene catalogue page (rendered by the API) in every language;
+  // each scene's own page is in /scenes/sitemap.xml (the API's), named in robots.txt
+  const SITEMAP_PAGES = ["", "scenes/", ...PAGES.filter((p) => p !== "")];
+  const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]).sort();
+  const want = LOCALES.flatMap((l) => SITEMAP_PAGES.map((p) => `${ORIGIN}/${l}/${p}`)).sort();
+  ok(`sitemap lists exactly the ${want.length} pages (${SITEMAP_PAGES.length} x ${LOCALES.length} languages)`, locs.join(" ") === want.join(" "), locs.join(" "));
+}
 const robots = readFileSync(join(OUT, "robots.txt"), "utf8");
 ok("robots allows AI crawlers + sitemap", ["GPTBot", "ClaudeBot", "PerplexityBot", "Google-Extended"].every((b) => robots.includes(`User-agent: ${b}`)) && robots.includes("Sitemap: https://gsfpv.flyreelstudio.eu/sitemap.xml"));
 
@@ -573,8 +580,10 @@ for (const mode of ["ok", "fail"]) {
   const url = new URL(page.url());
   ok("hero paste navigates to /en/fly/?scene=<encoded>", url.pathname === "/en/fly/" && url.search === `?scene=${encodeURIComponent(raw)}`, url.pathname + url.search);
   await page.goto(`${BASE}/en/`, { waitUntil: "networkidle" });
-  const card = page.locator('#scenes a[href="/en/fly/?scene=7a475d38"]');
-  await Promise.all([page.waitForURL(/scene=7a475d38/), card.click()]);
+  // the first card of the build's snapshot (its fly link may carry the scene's render budget)
+  const first = SNAPSHOT.scenes[0].id;
+  const card = page.locator(`#scenes [data-scene="${first}"] a[data-track="scene_open"]`);
+  await Promise.all([page.waitForURL(new RegExp(`/en/fly/\\?scene=${first}`)), card.click()]);
   await page.goto(`${BASE}/en/`, { waitUntil: "networkidle" });
   await Promise.all([page.waitForURL(/\/en\/fly\/$/), page.click("#top a[href='/en/fly/']")]);
   await page.waitForTimeout(300);

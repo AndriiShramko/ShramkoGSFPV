@@ -250,6 +250,11 @@ New API modules, all next to `server.py` in `$GSFPV_BASE/api/`: `scenepages.py`,
 **compose.yml changes:** `gsfpv-api` mounts `./releases:/srv/releases:ro` (the templates ship with each
 release, so a new design needs no API upload). `SCENE_TEMPLATES` overrides the directory.
 
+**The landing's catalogue** is built from the committed snapshot `apps/site/src/generated/catalog.json`
+(a build depends on the commit alone) and refreshed from `/api/catalog` in the visitor's browser. To have
+the newest published scenes in the built HTML (crawlers, no JavaScript), refresh it before a release:
+`pnpm --filter @gsfpv/site catalog:refresh`, then commit the file.
+
 **Order** (each step is safe on its own: without the API the scene links 404/502 behind nginx, without the
 release the API answers 503 for the pages; nothing else changes):
 1. `nginx.conf` as in "Changing nginx.conf".
