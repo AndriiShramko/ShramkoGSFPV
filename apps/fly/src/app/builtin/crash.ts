@@ -53,7 +53,7 @@ export const crash: Feature = {
                     start: { run: () => session.respawnStart(), keys: ctx.keys.caps('respawn.start') },
                     replay: () => replay(ctx, e),
                     save: () => saveLog(session, `crash ${sp}`),
-                    settings: settings ? { run: () => settings.run(), keys: ctx.keys.caps('settings.open') } : null,
+                    settings: settings ? { run: () => settings.run(true), keys: ctx.keys.caps('settings.open') } : null,
                     scenes: {
                         next: { run: () => void ctx.scenes.go('next'), keys: ctx.keys.caps('scene.next') },
                         random: { run: () => void ctx.scenes.go('random'), keys: ctx.keys.caps('scene.random') },

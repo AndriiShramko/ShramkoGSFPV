@@ -7,6 +7,7 @@ import { dialogOpen } from '../devices/keyboard';
 import { pauseMenu } from '../ui/pause';
 import type { SummaryData } from '../ui/summary';
 import type { MenuItem, MenuRegistry, PauseReason } from './context';
+import { isUserGesture } from './keys';
 import type { KeyRouter } from './keys';
 
 export class PauseMenu implements MenuRegistry {
@@ -67,9 +68,10 @@ export class PauseMenu implements MenuRegistry {
         for (const make of this.rows) {
             try { const el = make(); if (el) rows.push(el); } catch (e) { console.error('summary panel row', e); }
         }
-        this.closeUi = pauseMenu(this.ui, entries, (i) => this.pick(items[i]), () => this.close(), this.summary?.() ?? null, rows);
-        // with the menu up, a key shown beside an item is that item (P / Esc continue, R restarts)
-        for (const it of items) if (it.action && this.keys.routes(it.action)) this.unbind.push(this.keys.on(it.action, () => this.pick(it)));
+        this.closeUi = pauseMenu(this.ui, entries, (i) => this.pick(items[i], true), () => this.close(), this.summary?.() ?? null, rows);
+        // with the menu up, a key shown beside an item is that item (P / Esc continue, R restarts); so is
+        // a radio switch's action (KeyRouter.trigger), which is no user activation
+        for (const it of items) if (it.action && this.keys.routes(it.action)) this.unbind.push(this.keys.on(it.action, (_e, source) => this.pick(it, isUserGesture(source))));
     }
 
     close(): void {
@@ -78,10 +80,10 @@ export class PauseMenu implements MenuRegistry {
         this.hold.resume('menu');
     }
 
-    private pick(it: MenuItem): void {
+    private pick(it: MenuItem, gesture: boolean): void {
         if (it.enabled?.() === false) return; // a disabled item's key does nothing either
         this.dismiss();
-        it.run();
+        it.run(gesture);
         this.hold.resume('menu');
     }
 

@@ -106,7 +106,7 @@ export function openSettings(ctx: FlightContext, focus: string | null = null): v
         // the import panel has a pause of its own: settings closes first (its changes are in the store)
         importBetaflight: () => {
             current?.close();
-            ctx.menu.items().find((i) => i.id === 'pause.import')?.run();
+            ctx.menu.items().find((i) => i.id === 'pause.import')?.run(true); // the panel's button: a click
         },
         reload: (id) => { if (id === 'ui.language') reloadForLanguage(ctx.prefs); else location.reload(); },
         onClose: () => {

@@ -113,7 +113,15 @@ export interface FlightContext {
 export interface Feature { id: string; install(ctx: FlightContext): (() => void) | void }
 
 /** `label`: the text when it says a state (taken each time the menu opens); else t(labelKey). */
-export interface MenuItem { id: string; action: ActionId | null; labelKey: string; order: number; section: 'flight' | 'scene' | 'setup' | 'tools'; run(): void; enabled?(): boolean; label?(): string }
+export interface MenuItem {
+    id: string; action: ActionId | null; labelKey: string; order: number; section: 'flight' | 'scene' | 'setup' | 'tools';
+    /**
+     * Runs the item. `gesture`: picked by a click or a key, a user activation (the item may ask for a
+     * permission); false when a radio switch's action picked it while the menu was up (keys.ts isUserGesture).
+     */
+    run(gesture: boolean): void;
+    enabled?(): boolean; label?(): string;
+}
 
 /**
  * The pause menu's items, and the menu that shows them. `id` is the item's data-action on the page.

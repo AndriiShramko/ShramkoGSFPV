@@ -156,6 +156,100 @@ describe('KeyRouter.trigger: a switch presses the action\'s key', () => {
     });
 });
 
+describe('a switch is no user activation: a record switch never asks for the folder\'s permission', () => {
+    const F9 = { type: 'keydown', code: 'F9', key: 'F9', shiftKey: false, repeat: false, ctrlKey: false, altKey: false, metaKey: false, target: null, preventDefault: () => undefined } as unknown as KeyboardEvent;
+    /** A pilot's folder whose permission the browser would still ask for (the start of a visit). */
+    function promptFolder() {
+        let state: 'prompt' | 'granted' = 'prompt';
+        const requestPermission = vi.fn(async () => (state = 'granted'));
+        const dir = { name: 'FPV', kind: 'directory', queryPermission: async () => state, requestPermission };
+        return { dir: dir as unknown as FileSystemDirectoryHandle, requestPermission };
+    }
+
+    it('the router says where an action came from: a key press \'key\', trigger() \'switch\'', () => {
+        const keys = new KeyRouter({ map: KEYMAP, isText: () => false });
+        const seen: string[] = [];
+        keys.on('record.toggle', (e, source) => seen.push(`${e.code}:${source}`));
+        keys.route(F9);
+        keys.trigger('record.toggle');
+        expect(seen).toEqual(['F9:key', 'F9:switch']);
+    });
+
+    it('isUserGesture: a key always; a switch only while the page still holds an activation', async () => {
+        const { isUserGesture } = await import('../../../apps/fly/src/app/keys');
+        expect(isUserGesture('key', undefined)).toBe(true);
+        expect(isUserGesture('switch', undefined)).toBe(false);
+        expect(isUserGesture('switch', {})).toBe(false);
+        expect(isUserGesture('switch', { userActivation: { isActive: false } })).toBe(false);
+        expect(isUserGesture('switch', { userActivation: { isActive: true } })).toBe(true);
+        // Node's own navigator has no userActivation: the default reads it as none
+        expect(isUserGesture('switch')).toBe(false);
+    });
+
+    it('the record handler starts a switch\'s recording without activation, F9\'s with it; control: the v0.7 handler claimed one for both', async () => {
+        const { recordAction } = await import('../../../apps/fly/src/app/builtin/cinema');
+        const keys = new KeyRouter({ map: KEYMAP, isText: () => false });
+        const asked: boolean[] = [];
+        keys.on('record.toggle', recordAction((activation) => asked.push(activation)));
+        keys.trigger('record.toggle');
+        keys.route(F9);
+        expect(asked).toEqual([false, true]);
+        // control: the handler before the fix, `toggle(true)` whatever the source
+        const old = new KeyRouter({ map: KEYMAP, isText: () => false });
+        const oldAsked: boolean[] = [];
+        old.on('record.toggle', (e) => { e.preventDefault(); oldAsked.push(true); });
+        old.trigger('record.toggle');
+        expect(oldAsked).toEqual([true]);
+        expect(oldAsked).not.toEqual(asked.slice(0, 1));
+    });
+
+    it('a start without activation leaves a \'prompt\' folder unasked (access stays \'prompt\'); control: with one it asks once', async () => {
+        const { Recording } = await import('../../../apps/fly/src/app/builtin/recording');
+        const { CinemaRecorder } = await import('../../../apps/fly/src/cinema');
+        // past the WebCodecs check, so the start reaches the choice of its target; it fails later in Node
+        vi.spyOn(CinemaRecorder, 'supported', 'get').mockReturnValue(true);
+        const make = () => {
+            const rec = new Recording({ prefs: { get: () => null } as never, canvas: {} as never, scene: () => ({ id: 's', credit: 'credit' }), autoRespawn: () => false });
+            const f = promptFolder();
+            rec.folder = f.dir;
+            rec.access = 'prompt';
+            return { rec, ...f };
+        };
+        const sw = make();
+        await sw.rec.startByHand(false).catch(() => '');
+        expect(sw.requestPermission).not.toHaveBeenCalled();
+        expect(sw.rec.access).toBe('prompt');
+        // control: a click or F9 (activation) asks, and the answer is kept
+        const key = make();
+        await key.rec.startByHand(true).catch(() => '');
+        expect(key.requestPermission).toHaveBeenCalledTimes(1);
+        expect(key.rec.access).toBe('granted');
+    });
+
+    it('a switch picking a pause-menu item (Start recording) passes no gesture; a click on it does', async () => {
+        vi.doMock('../../../apps/fly/src/ui/pause', () => ({ pauseMenu: (_ui: unknown, _e: unknown, pick: (i: number) => void) => { clickItem = pick; return () => undefined; } }));
+        let clickItem: (i: number) => void = () => undefined;
+        vi.stubGlobal('document', { ...doc, querySelector: () => null });
+        try {
+            const { PauseMenu } = await import('../../../apps/fly/src/app/menu');
+            const keys = new KeyRouter({ map: KEYMAP, isText: () => false });
+            const menu = new PauseMenu({} as HTMLElement, keys, { pause: () => undefined, resume: () => undefined });
+            const runs: boolean[] = [];
+            menu.add({ id: 'pause.record', action: 'record.toggle', labelKey: 'rec.menu', order: 1, section: 'tools', run: (gesture) => runs.push(gesture) });
+            menu.open();
+            keys.trigger('record.toggle');
+            menu.open();
+            clickItem(0);
+            menu.open();
+            keys.route(F9);
+            expect(runs).toEqual([false, true, true]);
+        } finally {
+            vi.doUnmock('../../../apps/fly/src/ui/pause');
+            vi.stubGlobal('document', doc);
+        }
+    });
+});
+
 describe('the menu\'s Betaflight import (v0.7): Quick with its stick expo, and the diff\'s switches', () => {
     const VERSION = '# Betaflight / STM32F405 (S405) 4.5.1 Mar 19 2025 / 10:06:16 (77d01ba3b) MSP API: 1.46';
     const DIFF = `# version\n${VERSION}\n\naux 0 0 1 1700 2100 0 0\naux 1 1 0 900 1300 0 0\naux 2 28 2 1700 2100 0 0\n\nprofile 0\n\nrateprofile 0\nset rates_type = QUICK\nset quickrates_rc_expo = ON\nset roll_rc_rate = 120\n`;
