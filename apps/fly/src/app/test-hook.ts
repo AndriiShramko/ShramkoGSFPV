@@ -64,6 +64,11 @@ export interface TestHook {
     trajectoryText?: (kind: 'csv' | 'json') => string;
     governor?: FrameGovernor;
     setFrameDelay?: (ms: number) => void;
+    /**
+     * v0.7 lane R (builtin/drawing.ts): the scan's drawing as decided (mode, the scene's request,
+     * stochastic, budgetM, note) and as the engine has it now (engineStochastic, engineBudgetM).
+     */
+    drawing?: Record<string, unknown>;
     /** phase D: import rates and PID from a Betaflight CLI diff (the same path as the import panel) */
     importDiff?: (text: string) => { ok: boolean; firmware?: string | null; ratesType?: string; warnings?: string[]; errors?: string[] };
     /** phase D: cinema mode and the recorder */

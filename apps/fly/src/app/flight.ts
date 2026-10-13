@@ -3,7 +3,7 @@
 import type { ParamOverrides } from '@gsfpv/sim-core';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { recordOpen, SceneError } from '@gsfpv/scenes';
-import type { CatalogCollection } from '@gsfpv/scenes';
+import type { CatalogCollection, SceneLink } from '@gsfpv/scenes';
 import type { SplatRenderer } from '@gsfpv/render-pc';
 import { GSPLAT_RENDERER_RASTER_GPU_SORT } from 'playcanvas';
 import { FlightSession } from '../session';
@@ -25,6 +25,7 @@ import { KeyRouter } from './keys';
 import { PauseMenu } from './menu';
 import { InputHost, expectResume, ownInput, resumeInput, release } from './input';
 import { Quality } from './quality';
+import { drawingFor } from './drawing';
 import { wallsHost } from './walls';
 import { FEATURES } from './features';
 import { startTestMode, latencyHarness, voxelSwitches, logicOnly, logicOnlyTag } from './test-modes';
@@ -130,9 +131,16 @@ class Flight implements FlightContext {
     }
 }
 
-/** Load `sceneId` and fly it; a scan that fails to load goes back to the picker through `onFail`. */
-export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, sceneId: string, showcase: ShowcaseScene[], prefs: PrefsStore, onFail: (code: string, msg: string) => void, collections: CatalogCollection[] = []): Promise<void> {
+/**
+ * Load the scene of `link` and fly it; a scan that fails to load goes back to the picker through
+ * `onFail`. `link.render`: how the link asked the scene to be drawn (SuperSplat's ?budget= and
+ * ?stochastic, app/drawing.ts); the catalogue's render is the default under it.
+ */
+export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: SceneLink, showcase: ShowcaseScene[], prefs: PrefsStore, onFail: (code: string, msg: string) => void, collections: CatalogCollection[] = []): Promise<void> {
+    const sceneId = link.id;
     const meta = showcase.find((s) => s.id === sceneId);
+    const sceneRef: SceneRef = link.render ? { id: sceneId, meta, render: link.render } : { id: sceneId, meta };
+    const drawing = drawingFor(prefs, sceneRef);
     // the Controls screen follows the loading screen unless a test mode or touch sticks take over
     const sim = q.get('simradio');
     // no test mode, no forced input: the input from last time is looked for while the scan loads
@@ -167,6 +175,7 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, sceneId: s
             latencyMarker: q.get('lat') === '1',
             lagFrames: Number(q.get('lagFrames') ?? 0),
             renderScale: q.get('scale') ? Number(q.get('scale')) : 1,
+            drawing: { stochastic: drawing.stochastic, budgetM: drawing.budgetM },
             onProgress: (p) => {
                 loading.update(p);
                 hook.loading = { stage: p.stage, loaded: p.loaded, total: p.total, fraction: p.fraction, exact: p.exact, elapsedMs: Math.round(performance.now() - tLoad) };
@@ -199,7 +208,7 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, sceneId: s
     recordOpen(sceneId, !!session.collision, meta?.title, session.scene.version);
     beacon('scene_loaded', { has_collision: !!session.collision, load_ms_bucket: Math.round((session.timings.visibleMs ?? 0) / 1000) });
 
-    const ctx = new Flight(ui, canvas, session, { id: sceneId, meta }, prefs);
+    const ctx = new Flight(ui, canvas, session, sceneRef, prefs);
     // E.4: the next scenes load in this page, on this renderer, with the same input
     const host = new SceneHost({ ctx, canvas, showcase, collections, base: { drawScan, latencyMarker: q.get('lat') === '1', lagFrames: Number(q.get('lagFrames') ?? 0), renderScale: q.get('scale') ? Number(q.get('scale')) : 1 } });
     ctx.scenes = host;

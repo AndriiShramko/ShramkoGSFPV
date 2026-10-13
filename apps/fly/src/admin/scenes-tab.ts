@@ -1,10 +1,11 @@
 // The admin's Scenes tab: the catalogue pilots see in the picker, edited like a shop's front page.
 // Every change saves the draft on the server (a short pause after the last one); pilots see nothing
 // until Publish. Reorder by drag and drop, by the arrow keys on a row's handle, or by the up/down
-// buttons (touch). Adding a scene: a SuperSplat link (checked on the CDN: format, walls, CDN folder)
-// or words from a title (SuperSplat's list through our proxy, which also fills author, licence, size).
-import { SceneError, SuperSplatCatalog, collectionId, formatVerdict, moveItem, parseSceneInput, posterUrl, resolveScene } from '@gsfpv/scenes';
-import type { CatalogKind, CatalogScene, ExploreItem, LocalText, SceneCatalog } from '@gsfpv/scenes';
+// buttons (touch). Adding a scene: a SuperSplat link (checked on the CDN: format, walls, CDN folder;
+// its ?budget= and ?stochastic kept as the entry's render, v0.7 lane R) or words from a title
+// (SuperSplat's list through our proxy, which also fills author, licence, size).
+import { SceneError, SuperSplatCatalog, catalogueRender, collectionId, formatVerdict, moveItem, parseSceneLink, posterUrl, resolveScene } from '@gsfpv/scenes';
+import type { CatalogKind, CatalogScene, ExploreItem, LocalText, SceneCatalog, SceneRender } from '@gsfpv/scenes';
 import { h, clear } from '../ui/dom';
 import { t } from './i18n';
 import { ApiError } from './api';
@@ -286,8 +287,10 @@ export class ScenesTab {
 
     private async find(q: string): Promise<void> {
         clear(this.found);
-        const id = parseSceneInput(q);
-        if (id) return this.preview({ id }, null);
+        const link = parseSceneLink(q);
+        // a link's ?budget= and ?stochastic become the entry's render (the catalogue contract, v0.7 lane R)
+        const render = catalogueRender(link?.render);
+        if (link) return this.preview(render ? { id: link.id, render } : { id: link.id }, null);
         try {
             const page = await this.ss.explore({ sort: 'trending', order: -1, search: q, skip: 0, limit: 12 });
             if (!page.items.length) { this.found.append(h('p', { class: 'muted' }, t('admin.add.noResults'))); return; }
@@ -343,9 +346,18 @@ export class ScenesTab {
                 ok ? h('p', { class: 'ok' }, ok) : null,
                 ...[...new Set(warn)].map((w) => h('p', { class: 'warn' }, w)),
                 item ? null : h('p', { class: 'muted' }, t('admin.add.unknown')),
+                entry.render ? h('p', { class: 'ok', 'data-testid': 'add-render' }, renderLine(entry.render)) : null,
                 field(t('admin.field.title'), title), field(t('admin.field.author'), author), field(t('admin.field.license'), lic),
                 add));
     }
+}
+
+/** What the added link asks for, in one line: "Drawn as the link asks: stochastic, 8 M splats." */
+function renderLine(r: SceneRender): string {
+    const parts: string[] = [];
+    if (r.stochastic) parts.push(t('admin.add.render.stochastic'));
+    if (r.budgetM !== undefined) parts.push(t('admin.add.render.budget', { m: r.budgetM }));
+    return t('admin.add.render', { what: parts.join(', ') });
 }
 
 function field(label: string, input: HTMLElement): HTMLElement {

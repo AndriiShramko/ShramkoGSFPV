@@ -4,6 +4,7 @@
 import type { SimEvent, RespawnReason } from '@gsfpv/sim-core';
 import type { ActionId, PrefsStore } from '@gsfpv/prefs';
 import type { SplatRenderer } from '@gsfpv/render-pc';
+import type { SceneRender } from '@gsfpv/scenes';
 import type { FlightSession } from '../session';
 import type { Controls } from '../controls';
 import type { CrashView } from '../crashview';
@@ -47,6 +48,12 @@ export interface AppEvents {
 export interface SceneRef {
     id: string;
     meta?: ShowcaseScene;
+    /**
+     * How the link this scene came from asked it to be drawn (SuperSplat's ?budget= and ?stochastic,
+     * v0.7 lane R; app/drawing.ts): set only for a scene opened from such a link; the catalogue's
+     * meta.render is the default under it.
+     */
+    render?: SceneRender;
 }
 
 /** Why a scene loads in flight (E.4, E.5): N, Shift+N, F, scenes.autoSwitch after a crash, a pick, back after a failed load. */
@@ -56,8 +63,8 @@ export type SceneSwitchReason = 'next' | 'random' | 'favourite' | 'auto' | 'pick
 export interface SceneSwitcher {
     /** N (next), Shift+N (random), F (next favourite), auto (the crash with scenes.autoSwitch): pick from the rotation and load; false when nothing loaded */
     go(kind: 'next' | 'random' | 'favourite' | 'auto'): Promise<boolean>;
-    /** load this scene in place of the one flown */
-    load(id: string, reason: SceneSwitchReason): Promise<boolean>;
+    /** load this scene in place of the one flown; `render`: the drawing its link asked for (a pasted SuperSplat link) */
+    load(id: string, reason: SceneSwitchReason, render?: SceneRender): Promise<boolean>;
     /** the scene picker over the flight (the pause menu's "Change scan"); a pick loads in the page */
     openPicker(): void;
     /** a switch is under way */

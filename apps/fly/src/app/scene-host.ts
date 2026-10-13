@@ -8,12 +8,14 @@
 //      the switch is still on and respawn.keepArmed keeps it;
 //   4. hands it to the page (Flight.swapSession: every feature follows the 'session' event),
 //      keeps ?scene= current with history.replaceState, records the open in the library, resumes.
+// A scene picked from a SuperSplat link keeps the drawing the link asked for (?budget=, ?stochastic;
+// v0.7 lane R, app/drawing.ts): the new session loads with it and the deep link carries it.
 // A scene that fails to load is noted (the rotation skips it for a day) and the scene left comes
 // back. Which scene N, Shift+N and F load comes from the rotation (@gsfpv/scenes rotation.ts).
 // The pause menu's "Change scan" opens the scene picker over the flight (openPicker): a scene picked
 // there loads the same way, so changing the scan by hand keeps the radio too (item 5).
-import { SceneError, SceneRotation, getLibrary, legacyLibraryStore, mergeLibraries, parseSceneInput, recordFailure, recordOpen, useLibraryStore } from '@gsfpv/scenes';
-import type { CatalogCollection, RotationRules, RotationSource, RotationOrder, SceneLibraryData } from '@gsfpv/scenes';
+import { SceneError, SceneRotation, flyQueryString, getLibrary, legacyLibraryStore, mergeLibraries, parseSceneLink, recordFailure, recordOpen, useLibraryStore, writeSceneQuery } from '@gsfpv/scenes';
+import type { CatalogCollection, RotationRules, RotationSource, RotationOrder, SceneLibraryData, SceneRender } from '@gsfpv/scenes';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { FlightSession } from '../session';
 import type { SessionOptions } from '../session';
@@ -28,6 +30,12 @@ import { t } from '../i18n';
 import { beacon, q } from './env';
 import { hook } from './test-hook';
 import type { FlightContext, SceneRef, SceneSwitchReason, SceneSwitcher } from './context';
+import { drawingFor } from './drawing';
+
+/** Two drawing requests ask for the same thing (none and none, or the same budget and flag). */
+function sameRender(a: SceneRender | undefined, b: SceneRender | undefined): boolean {
+    return a?.budgetM === b?.budgetM && a?.stochastic === b?.stochastic;
+}
 
 /** What the shell gives the host: the page's context with the swap, the canvas, the curated list. */
 export interface SceneHostDeps {
@@ -106,13 +114,14 @@ export class SceneHost implements SceneSwitcher {
         addEventListener('keydown', onKey, true);
         picker.root.prepend(h('button', { type: 'button', class: 'panel-x', 'data-action': 'scenes-close', 'aria-label': t('common.close'), 'aria-keyshortcuts': 'Escape', title: `${t('common.close')} (Esc)`, onclick: () => close(true) }, '×'));
         picker.onPick = (raw, source) => {
-            const id = parseSceneInput(raw);
-            if (!id) { picker.showError('invalid-link'); return; }
-            // the same scene: back to it as it was
-            if (id === ctx.scene.id) { close(true); return; }
+            const link = parseSceneLink(raw);
+            if (!link) { picker.showError('invalid-link'); return; }
+            // the same scene with the same drawing: back to it as it was (a link asking another
+            // drawing for it loads it again with that drawing)
+            if (link.id === ctx.scene.id && sameRender(link.render, ctx.scene.render)) { close(true); return; }
             close(false); // the 'scene' pause stays: load() holds it and releases it when the new scene flies
             beacon('scene_open', { source });
-            void this.load(id, 'pick');
+            void this.load(link.id, 'pick', link.render);
         };
     }
 
@@ -126,18 +135,25 @@ export class SceneHost implements SceneSwitcher {
         return this.load(id, kind);
     }
 
-    async load(id: string, reason: SceneSwitchReason): Promise<boolean> {
+    /**
+     * Load `id` in place of the scene flown. `render`: the drawing a pasted link asked for (SuperSplat's
+     * ?budget= and ?stochastic); the rotation and the cards pass none, so the catalogue's render applies.
+     */
+    async load(id: string, reason: SceneSwitchReason, render?: SceneRender): Promise<boolean> {
         const { ctx, canvas, showcase, base } = this.d;
-        if (this.busyNow || (id === ctx.scene.id && reason !== 'back')) return false;
+        if (this.busyNow || (id === ctx.scene.id && reason !== 'back' && sameRender(render, ctx.scene.render))) return false;
         this.busyNow = true;
         const t0 = performance.now();
         const from = ctx.scene.id;
+        const fromRender = ctx.scene.render;
         hook.sceneSwitch = { state: 'loading', from, to: id, reason };
         ctx.pause('scene');
         if (ctx.menu.isOpen) ctx.menu.close();
         ctx.clearCrash();
         const old = ctx.session;
         const meta = showcase.find((s) => s.id === id);
+        const ref: SceneRef = render ? { id, meta, render } : { id, meta };
+        const drawing = drawingFor(ctx.prefs, ref, old.renderer.isWebGPU);
         const loading = new LoadingScreen(ctx.ui, {
             sceneId: id,
             title: meta?.title,
@@ -161,6 +177,7 @@ export class SceneHost implements SceneSwitcher {
             wallsOn: wallsWanted(ctx.prefs, id),
             transform: storedTransform(ctx.prefs, id),
             dropFloaters: storedDropFloaters(ctx.prefs, id),
+            drawing: { stochastic: drawing.stochastic, budgetM: drawing.budgetM },
             onProgress: (p) => loading.update(p)
         };
         old.dispose();
@@ -178,7 +195,7 @@ export class SceneHost implements SceneSwitcher {
             console.warn(`scene ${id} did not load`, e);
             // the scene left loaded a moment ago: back to it; when even that fails, the picker
             if (reason !== 'back' && from !== id) {
-                await this.load(from, 'back');
+                await this.load(from, 'back', fromRender);
                 ctx.hud.flash(t('rotation.failed', { id }), 5000);
                 return false;
             }
@@ -188,9 +205,11 @@ export class SceneHost implements SceneSwitcher {
         if (base.drawScan !== false) next.renderer.startLatencyGuard(q.get('guard') !== '0');
         if (q.get('inflight') !== null) next.renderer.maxFramesInFlight = Number(q.get('inflight'));
         await loading.finish();
-        ctx.swapSession(next, { id, meta });
+        ctx.swapSession(next, ref);
+        // the deep link follows the scene: its own budget and flag, none left from the scene before
         const u = new URL(location.href);
-        u.searchParams.set('scene', id);
+        writeSceneQuery(u.searchParams, id, render);
+        u.search = flyQueryString(u.searchParams);
         history.replaceState(history.state, '', u);
         recordOpen(id, !!next.collision, meta?.title, next.scene.version);
         if (hook.info) Object.assign(hook.info, { hasCollision: !!next.collision, collisionSha256: next.collisionSha256, walls: next.walls, timings: next.timings, spawn: next.spawn });

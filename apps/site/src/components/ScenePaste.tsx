@@ -6,7 +6,9 @@ import { track } from "@/lib/track";
 /**
  * "Paste a SuperSplat link" → /{locale}/fly/?scene=<encoded raw value>. The simulator validates
  * the value. Without JS the same thing happens through a plain GET form. `id`: a second copy on the
- * page (the locations block) needs its own field id.
+ * page (the locations block) needs its own field id. The whole link goes over encoded, so its own
+ * parameters survive: superspl.at/scene/<id>?budget=8&stochastic opens with SuperSplat's stochastic
+ * drawing and an 8 M splat budget (the simulator's @gsfpv/scenes parseSceneLink reads them, v0.7).
  */
 export default function ScenePaste({ locale, label, placeholder, button, hint, empty, id = "scene-link" }: { locale: string; label: string; placeholder: string; button: string; hint: string; empty: string; id?: string }) {
   const input = useRef<HTMLInputElement>(null);

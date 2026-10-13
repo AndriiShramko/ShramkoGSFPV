@@ -1,7 +1,7 @@
 // Scene picker: paste a link, the catalogue the owner curates at /admin/ (Featured row, collections,
 // the rest in his order), recent, favourites, filters, the SuperSplat tab. History, favourites and the
 // filter live in the browser only and survive a reload.
-import { parseSceneInput, toggleFavourite, getFilter, setFilter, posterUrl, knownVersion, getLibrary, lastScene, pickerRows, readCatalog, storefront, localText } from '@gsfpv/scenes';
+import { parseSceneLink, toggleFavourite, getFilter, setFilter, posterUrl, knownVersion, getLibrary, lastScene, pickerRows, readCatalog, storefront, localText } from '@gsfpv/scenes';
 import type { CatalogCollection, CatalogScene, PickerRow, SceneCatalog, SceneFilter } from '@gsfpv/scenes';
 import { h, clear } from './dom';
 import { t, locale } from '../i18n';
@@ -44,7 +44,8 @@ export class ScenePicker {
     /** the registered tabs as the picker opened (a later registration shows in the next picker) */
     private extra: readonly PickerTab[] = pickerTabs().slice();
     private unmountExtra: (() => void) | null = null;
-    onPick: ((id: string, source: PickSource) => void) | null = null;
+    /** a scene picked: `raw` is its id (a card) or the text pasted (a link, its ?budget= and ?stochastic kept) */
+    onPick: ((raw: string, source: PickSource) => void) | null = null;
 
     constructor(parent: HTMLElement, showcase: ShowcaseScene[], collections: CatalogCollection[] = []) {
         this.showcase = showcase;
@@ -52,13 +53,14 @@ export class ScenePicker {
         const input = h('input', { type: 'url', inputmode: 'url', class: 'scene-input', placeholder: 'superspl.at/scene/…', 'aria-label': t('scenes.paste'), autocomplete: 'off' }) as HTMLInputElement;
         this.err = h('div', { class: 'scene-error', role: 'alert' });
         const go = () => {
-            const id = parseSceneInput(input.value);
-            if (!id) {
+            const link = input.value.trim();
+            if (!parseSceneLink(link)) {
                 this.err.textContent = t('error.invalid-link');
                 return;
             }
             this.err.textContent = '';
-            this.onPick?.(id, 'paste');
+            // the whole link, not only its id: SuperSplat's ?budget= and ?stochastic go with it (v0.7 lane R)
+            this.onPick?.(link, 'paste');
         };
         input.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
         const tabs = h('div', { class: 'tabs', role: 'tablist' });
@@ -123,10 +125,9 @@ export class ScenePicker {
         this.filters.hidden = !!x?.ownFilters;
         if (x) {
             const pick = (raw: string, source: PickSource): void => {
-                const id = parseSceneInput(raw);
-                if (!id) { this.err.textContent = t('error.invalid-link'); return; }
+                if (!parseSceneLink(raw)) { this.err.textContent = t('error.invalid-link'); return; }
                 this.err.textContent = '';
-                this.onPick?.(id, source);
+                this.onPick?.(raw.trim(), source);
             };
             this.unmountExtra = x.mount(this.list, { pick, showError: (c, m) => this.showError(c, m), filter: this.filter }) || null;
             return;

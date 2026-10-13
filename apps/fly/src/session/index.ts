@@ -67,6 +67,12 @@ export interface SessionOptions {
     transform?: { s: number; t: readonly number[]; v?: number } | null;
     /** the floater filter (G.3, prefs scene.dropFloaters): pieces of the walls under N blocks dropped; 0 or none = off */
     dropFloaters?: number;
+    /**
+     * How the scan is drawn from its first frame (v0.7 lane R, app/drawing.ts drawingFor): SuperSplat's
+     * stochastic drawing and the splat budget, millions. Applied to the page's renderer before the scan
+     * loads, so it streams with this budget; none = the renderer's default (sorted, 4 M).
+     */
+    drawing?: { stochastic: boolean; budgetM: number };
 }
 
 /** Who keeps the flight paused (FlightSession.pause). */
@@ -217,8 +223,13 @@ export class FlightSession {
         this.wallsOn = o.wallsOn ?? true;
         this.floaterMinBlocks = validMinBlocks(o.dropFloaters) ? o.dropFloaters : 0;
         this.params = compileParams(PRESETS[this.presetId], this.lifeOverrides());
-        this.renderer = o.renderer ?? await SplatRenderer.create(canvas, { renderScale: o.renderScale ?? 1, hFovDeg: this.params.cameraFovDeg, latencyMarker: !!o.latencyMarker });
+        this.renderer = o.renderer ?? await SplatRenderer.create(canvas, { renderScale: o.renderScale ?? 1, hFovDeg: this.params.cameraFovDeg, latencyMarker: !!o.latencyMarker, splatBudgetMillions: o.drawing?.budgetM, stochastic: o.drawing?.stochastic });
         if (o.renderer) this.renderer.setFov(this.params.cameraFovDeg);
+        // the page's renderer from the scene before: this scene's drawing before its splats load
+        if (o.renderer && o.drawing) {
+            this.renderer.setSplatBudgetMillions(o.drawing.budgetM);
+            this.renderer.setStochastic(o.drawing.stochastic);
+        }
         this.renderer.setToneMapping(this.scene.tonemapping);
         this.renderer.setBackground(this.scene.background);
         // the scene's size (E.7) before its splats exist: the renderer gives the entity s and t when it makes it

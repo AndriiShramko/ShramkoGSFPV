@@ -28,6 +28,7 @@ import { floaters } from './builtin/floaters';
 import { videoExport } from './builtin/video-export';
 import { feedback } from './builtin/feedback';
 import { share } from './builtin/share';
+import { drawing } from './builtin/drawing';
 
 export const FEATURES: readonly Feature[] = [
     scene,
@@ -53,5 +54,6 @@ export const FEATURES: readonly Feature[] = [
     floaters,
     videoExport,
     feedback,
-    share
+    share,
+    drawing
 ];
