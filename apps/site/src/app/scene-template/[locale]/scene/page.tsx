@@ -164,8 +164,11 @@ function ScenePage({ locale }: { locale: Locale }) {
                   {slot("authorName")}
                 </a>
               </If>
-              <Unless name="authorUrl">{slot("authorName")}</Unless> · {ui.creditLicence}{" "}
+              <Unless name="authorUrl">{slot("authorName")}</Unless> ·{" "}
+              {/* "licence CC BY 4.0" when SuperSplat names a known licence; otherwise the slot alone, which is
+                  either the licence text or the "no licence stated" phrase (never "licence no licence stated"). */}
               <If name="licenseUrl">
+                {ui.creditLicence}{" "}
                 <a href={slot("licenseUrl")} target="_blank" rel="noopener noreferrer license" className="link">
                   {slot("license")}
                 </a>

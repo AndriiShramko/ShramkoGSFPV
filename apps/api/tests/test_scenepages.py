@@ -221,6 +221,22 @@ class Pages(unittest.TestCase):
                 self.assertEqual(re.findall(r"<script(?![^>]*application/ld\+json)", body), [], path)
                 jsonld(body)
 
+    @unittest.skipUnless((BUILT / "manifest.json").is_file(), "the site build's templates are not there (pnpm --filter @gsfpv/site build)")
+    def test_the_credit_line_reads_well_without_a_licence(self):
+        """The credit names the licence ("licence CC BY 4.0"), or says none is stated, never "licence no licence stated"."""
+        unlicensed = [dict(s, license="") if s["id"] == "70b50d42" else s for s in SCENES]
+        bare = sp.ScenePages(catalog(unlicensed), sp.TemplateStore(lambda: BUILT), ORIGIN)
+        licensed = sp.ScenePages(catalog(), sp.TemplateStore(lambda: BUILT), ORIGIN)
+        for lang in sp.LANGS:
+            ph = json.loads((LOCALES / "scenepage" / f"{lang}.json").read_text(encoding="utf-8"))
+            label, none = ph["ui"]["creditLicence"], ph["gen"]["licenseNone"]
+            text = lambda pages: re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", self.get(f"/{lang}/scenes/70b50d42/", pages)[1]))
+            plain = text(bare)
+            self.assertIn(none, plain, lang)
+            self.assertNotIn(f"{label} {none}", plain, lang)
+            # control: with a known licence the label stands in front of it
+            self.assertIn(f"{label} CC BY 4.0", text(licensed), lang)
+
 
 class Http(unittest.TestCase):
     """The routes through server.Handler: the page, HEAD, the wind route's 404."""
