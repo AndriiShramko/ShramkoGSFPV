@@ -218,7 +218,7 @@ class IdeasService:
         mid = ideas.next_mail_id(doc)
         lang = rec["lang"] if rec["lang"] in ideas.LOCALES else "en"
         plain, html = self.mailer.compose(kind, lang, body, rec)
-        return {"id": mid, "kind": kind, "to": rec["email"], "lang": lang, "subject": self.mailer.subject(kind, lang, rec["id"]),
+        return {"id": mid, "kind": kind, "to": rec["email"], "lang": lang, "subject": self.mailer.subject(kind, lang, rec),
                 "body": body, "plain": plain, "html": html,
                 "messageId": f"<gsfpv.{rec['id']}.{mid}.{secrets.token_hex(4)}@{self.host}>",
                 "inReplyTo": None, "references": [], "state": state, "created": stamp, "notBefore": None,

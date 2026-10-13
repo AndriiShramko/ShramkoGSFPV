@@ -277,7 +277,12 @@ class Conversation(BotTest):
         rec, card = self.card(message="Add rain")
         self.assertEqual(self.w.update(10, **self.w.owner_msg("Thanks! Planned for November.", reply_to=card)), "reply")
         note = self.last()
-        self.assertEqual(note["text"], self.t("mail.queued", to="pilot@example.com", id=rec["id"], s=60))
+        queued = self.w.service.find_mail("M-1")[1]
+        # the whole e-mail is shown inside the undo window: the owner's answer, the quote, the footer
+        self.assertEqual(note["text"], self.t("mail.queued", to="pilot@example.com", id=rec["id"], s=60) + "\n\n"
+                         + self.t("draft.subject", subject=queued["subject"]) + "\n\n" + queued["plain"])
+        self.assertIn("Thanks! Planned for November.", note["text"])
+        self.assertIn("> Add rain", note["text"])
         self.assertEqual(note["reply_markup"]["inline_keyboard"][0][0]["callback_data"], "x:M-1")
         self.assertEqual(self.at(59), 0)
         self.assertEqual(self.at(2), 1)

@@ -18,7 +18,8 @@ What the owner does in his chat:
   Reject / In progress / Done, the four urgencies and Comment; a bug's technical details follow as a
   JSON file, the picture of the view as a photo (the owner's words, 2026-10-13: all the pilot's data
   straight into the chat);
-- a reply to a card is his answer to the pilot by e-mail: the bot says "goes in 60 s" with Cancel;
+- a reply to a card is his answer to the pilot by e-mail: the bot says "goes in 60 s" with Cancel and
+  shows the whole e-mail as it will go (a report's words are quoted; a note's never are, mailer.keys);
 - Comment -> his reply to the bot's prompt is a comment for the agent who will build it;
 - Done -> his reply to the prompt (or the agent's summary) is what was done -> the bot shows the DRAFT
   thank-you e-mail in the pilot's language with Send and Edit; nothing goes without Send;
@@ -400,7 +401,9 @@ class OwnerBot:
         cancel = [[{"text": t("btn.cancel"), "callback_data": f"x:{mid_}"}]]
         again = [[{"text": t("btn.sendAgain"), "callback_data": f"w:{mid_}"}, {"text": t("btn.cancel"), "callback_data": f"x:{mid_}"}]]
         if event == "mail-queued":
-            m = api.send(c.chat, t("mail.queued", to=to, id=rid, s=int(self.service.undo_s)), buttons=cancel)
+            # the whole e-mail as it will go (subject, quote, footer), so the owner sees it inside the undo window
+            preview = t("draft.subject", subject=mail.get("subject") or "") + "\n\n" + (mail.get("plain") or "")
+            m = api.send(c.chat, t("mail.queued", to=to, id=rid, s=int(self.service.undo_s)) + "\n\n" + preview, buttons=cancel)
             if m:
                 self.service.link_message(m, rid, "mail", mid_)
         elif event == "mail-waiting":

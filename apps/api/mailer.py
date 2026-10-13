@@ -7,7 +7,8 @@ AUTH with the owner's address and a Gmail app password), so Google itself signs 
 and sends it from its own servers (SPF of gmail.com), and the From address is the authenticated
 gmail.com address (DMARC aligned). On top of that the message looks like a person's reply, because it
 is one: plain text plus a simple HTML copy, no images, no tracking pixels, no link shorteners, one
-recipient, the pilot's own words quoted with their date, In-Reply-To/References per idea thread.
+recipient, the pilot's own words (a report, never the owner's note) quoted with their date,
+In-Reply-To/References per idea thread.
 
 Configuration (config.env on the hub, never in git): GMAIL_USER (zmei116@gmail.com), GMAIL_APP_PASSWORD
 (a Gmail app password: Google account -> Security -> 2-Step Verification -> App passwords; the normal
@@ -122,27 +123,45 @@ class Mailer:
     def sender(self) -> str:
         return self.config().user
 
-    def subject(self, kind: str, lang: str, idea_id: str) -> str:
-        return self.texts.t(lang, "doneSubject" if kind == "done" else "replySubject", id=idea_id)
+    @staticmethod
+    def keys(kind: str, idea: dict) -> dict:
+        """Which template parts an e-mail uses, by where the idea came from and what it is:
+        - quote: only a pilot's own words (source "report") are quoted back to them. A note (the owner's
+          /note, or the admin's) holds the OWNER's words about the pilot: never quoted, never presented
+          as "you wrote";
+        - footer: a report's pilot left the address in the feedback form; a note's pilot gave it to the
+          owner in person ("footerNote"), so the form is not mentioned;
+        - subject/intro: a fixed bug is thanked as a fixed problem, not as "your idea" (doneSubjectBug)."""
+        from_form = idea.get("source") == "report"
+        bug = idea.get("kind") == "bug"
+        if kind == "done":
+            subject, intro = ("doneSubjectBug", "doneIntroBug") if bug else ("doneSubject", "doneIntro")
+        else:
+            subject, intro = ("replySubject" if from_form else "replySubjectNote"), None
+        return {"subject": subject, "intro": intro, "quote": from_form, "footer": "footer" if from_form else "footerNote"}
+
+    def subject(self, kind: str, lang: str, idea: dict) -> str:
+        return self.texts.t(lang, self.keys(kind, idea)["subject"], id=idea["id"])
 
     def compose(self, kind: str, lang: str, body: str, idea: dict) -> tuple[str, str]:
         """(text/plain, text/html) of a reply (body = the owner's answer) or a thank-you (body = what was
-        done). Both end with the signature and the pilot's own message quoted with its date."""
+        done). Both end with the signature; a pilot's report is quoted with its date (see keys())."""
         t = lambda key, **v: self.texts.t(lang, key, **v)  # noqa: E731
+        k = self.keys(kind, idea)
         site = f"{self.origin}/{self.texts.lang(lang)}/"
         parts = [t("hello")]
         if kind == "done":
-            parts += [t("doneIntro", id=idea["id"]), body, t("doneThanks", site=site)]
+            parts += [t(k["intro"], id=idea["id"]), body, t("doneThanks", site=site)]
         else:
             parts += [body]
         name = self.config().from_name
         sig = ["--", name, t("tagline"), site, LINKEDIN]
-        quoted = idea.get("text") or ""
+        quoted = (idea.get("text") or "") if k["quote"] else ""
         quote_head = t("quoteHeader", date=_date(idea.get("created")), id=idea["id"])
         plain = "\n\n".join(parts) + "\n\n" + "\n".join(sig) + "\n\n"
         if quoted:
             plain += quote_head + "\n" + _quote(quoted) + "\n\n"
-        plain += t("footer") + "\n"
+        plain += t(k["footer"]) + "\n"
         h = ['<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;color:#111">\n']
         h += [_p(x) for x in parts]
         h.append('<p style="color:#555">--<br>\n' + html.escape(name) + "<br>\n" + html.escape(t("tagline")) + "<br>\n"
@@ -152,7 +171,7 @@ class Mailer:
             h.append("<p>" + html.escape(quote_head) + "</p>\n")
             h.append('<blockquote style="margin:0 0 0 .8ex;border-left:2px solid #ccc;padding-left:1ex;color:#444">'
                      + _p(quoted if len(quoted) <= QUOTE_MAX else quoted[: QUOTE_MAX - 3] + "...") + "</blockquote>\n")
-        h.append('<p style="color:#777;font-size:12px">' + html.escape(t("footer")) + "</p>\n</div>\n")
+        h.append('<p style="color:#777;font-size:12px">' + html.escape(t(k["footer"])) + "</p>\n</div>\n")
         return plain, "".join(h)
 
     def message(self, mail: dict) -> EmailMessage:

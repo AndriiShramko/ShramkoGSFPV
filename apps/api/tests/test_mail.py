@@ -88,6 +88,49 @@ class Compose(MailTest):
         self.at(61)
         self.assertEqual(parse(self.w.smtp.messages[-1]["data"])["Subject"], mail_text("ru")["replySubject"].format(id=b["id"]))
 
+    def test_a_reply_to_a_note_never_quotes_the_owners_note(self):
+        """A /note holds the OWNER's words about the pilot: they are not quoted back as "you wrote" and
+        the footer does not claim a feedback form (review R1)."""
+        pl = mail_text("pl")
+        note = self.w.service.add_note("Pilot Jan wants night scenes, told me at the meetup", "telegram",
+                                       contact="jan@example.com", lang="pl")
+        self.w.service.reply(note["id"], "Nocne sceny są w planie.", "telegram")
+        self.assertEqual(self.at(61), 1)
+        m = parse(self.w.smtp.messages[0]["data"])
+        plain = m.get_body(("plain",)).get_content().replace("\r\n", "\n")
+        html = m.get_body(("html",)).get_content()
+        self.assertEqual(m["Subject"], pl["replySubjectNote"].format(id=note["id"]))
+        for body in (plain, html):
+            self.assertIn("Nocne sceny są w planie.", body)
+            self.assertNotIn("told me at the meetup", body)
+            self.assertNotIn("Twoja wiadomość z", body)          # the quote's header
+            self.assertNotIn(pl["footer"], body)                 # "...w formularzu opinii..."
+            self.assertIn(pl["footerNote"], body)
+        self.assertNotIn("<blockquote", html)
+        # control: a pilot's own report IS quoted, under the form's footer
+        a = self.w.report(message="Add rain", lang="pl")
+        self.w.service.reply(a["id"], "Odpowiedź", "telegram")
+        self.assertEqual(self.at(61), 2)
+        r = parse(self.w.smtp.messages[1]["data"]).get_body(("plain",)).get_content().replace("\r\n", "\n")
+        self.assertIn("> Add rain", r)
+        self.assertIn(pl["footer"], r)
+        self.assertNotIn(pl["footerNote"], r)
+
+    def test_a_fixed_bug_is_thanked_as_a_fixed_problem(self):
+        """The thank-you for a bug speaks of the problem the pilot reported, not of "your idea" (review R5)."""
+        en = mail_text("en")
+        bug = self.w.report(kind="bug", message="Drone falls through floor", lang="en")
+        idea = self.w.report(rid="R-20261013-0002", kind="idea", lang="en")
+        _, d_bug = self.w.service.set_done_summary(bug["id"], {"en": "Fixed the floor collision"}, "agent")
+        _, d_idea = self.w.service.set_done_summary(idea["id"], {"en": "Rain is in"}, "agent")
+        self.assertEqual(d_bug["subject"], en["doneSubjectBug"].format(id=bug["id"]))
+        self.assertIn(en["doneIntroBug"].format(id=bug["id"]), d_bug["plain"])
+        self.assertNotIn(en["doneIntro"].format(id=bug["id"]), d_bug["plain"])
+        self.assertNotIn("Your idea", d_bug["subject"])
+        # control: an idea keeps the idea's thank-you
+        self.assertEqual(d_idea["subject"], en["doneSubject"].format(id=idea["id"]))
+        self.assertIn(en["doneIntro"].format(id=idea["id"]), d_idea["plain"])
+
     def test_tls_none_only_on_this_machine(self):
         env = {"GMAIL_USER": GMAIL_USER, "GMAIL_APP_PASSWORD": GMAIL_PASS, "SMTP_TLS": "none"}
         self.assertEqual(mailer.MailConfig.from_env({**env, "SMTP_HOST": "smtp.gmail.com"}).tls, "starttls")

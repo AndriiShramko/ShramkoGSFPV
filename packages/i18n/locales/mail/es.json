@@ -1,10 +1,14 @@
 {
   "replySubject": "Re: tu mensaje sobre ShramkoGSFPV ({id})",
+  "replySubjectNote": "Tu idea para ShramkoGSFPV ({id})",
   "doneSubject": "Tu idea ya está en ShramkoGSFPV, gracias ({id})",
+  "doneSubjectBug": "El problema que reportaste ya está resuelto en ShramkoGSFPV, gracias ({id})",
   "hello": "Hola:",
   "doneIntro": "Buenas noticias: lo que propusiste ({id}) ya está en el simulador. Esto es lo que se hizo:",
+  "doneIntroBug": "Buenas noticias: el problema que reportaste ({id}) ya está resuelto en el simulador. Esto es lo que se hizo:",
   "doneThanks": "Gracias por ayudar a mejorar ShramkoGSFPV. Pruébalo en {site} y cuéntame qué tal: basta con responder a este e-mail.",
   "quoteHeader": "El {date} escribiste ({id}):",
   "tagline": "ShramkoGSFPV: un simulador de dron FPV en escaneos 3D reales, gratis en el navegador",
-  "footer": "Recibes este e-mail porque dejaste tu dirección en el formulario de opiniones de ShramkoGSFPV. Solo se usa para responderte."
+  "footer": "Recibes este e-mail porque dejaste tu dirección en el formulario de opiniones de ShramkoGSFPV. Solo se usa para responderte.",
+  "footerNote": "Recibes este e-mail porque me diste tu dirección cuando me contaste tu idea. Solo se usa para responderte."
 }
