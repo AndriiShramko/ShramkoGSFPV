@@ -228,9 +228,14 @@ async function main(): Promise<void> {
     const audit = readFileSync(join(DATA, 'admin-audit.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l));
     results.audit = audit.map((a) => `${a.action}:${a.ok}`);
     const everything = apiLog + audit.map((a) => JSON.stringify(a)).join('') + readFileSync(join(DATA, 'catalog.json'), 'utf8');
-    // (the audit line of the ideas move is lane B's to name; the v0.6 actions stay checked)
     check('audit has the failed and the good login, the publish and the logout',
         ['login:false', 'login:true', 'publish:true', 'logout:true'].every((x) => (results.audit as string[]).includes(x)));
+    // the kanban move from the admin is audited by lane B's admin.py as the route with "-" for "/" and the
+    // changed fields in its detail (v0.6 audited the Reports tab's close as report-status)
+    const moveAudited = (lines: { action?: string; ok?: boolean; detail?: string }[]): boolean =>
+        lines.some((a) => a.action === 'ideas-update' && a.ok === true && (a.detail ?? '').startsWith(`${rep.id} `) && (a.detail ?? '').includes('status'));
+    check('audit has the ideas move of the pilot\'s card (ideas-update, its id, status)', moveAudited(audit));
+    check('without that line the audit check fails', !moveAudited(audit.filter((a) => a.action !== 'ideas-update')), true);
     check('the password is in no log, audit or data file', !everything.includes(secret.password));
     check('no page errors', errors.length === 0);
     results.pageErrors = errors;
