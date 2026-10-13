@@ -1,10 +1,12 @@
 // v0.7 owner's item 3, the admin side, end to end in a browser: the admin page (apps/fly/admin on the Vite
 // dev server, started here) with /api/** answered by the mock of lane B's ideas API (src/ideas-mock.ts,
-// the contract of docs/wip/v07-c.md). What the owner does on the kanban must reach the API as exactly
-// the calls the contract names, and nothing else; every check has a negative control.
+// the contract of docs/wip/v07-b.md "Contracts for lane C"). What the owner does on the kanban must reach
+// the API as exactly the calls the contract names, and nothing else: above all, no e-mail is queued
+// without the owner's own Send (the thank-you) or reply button, and every check has a negative control.
 //   npx tsx src/accept-v07-ideas.ts                      (from tools/bench; FLY_PORT=5364 by default)
-// No GPU needed (no drawing). Evidence: evidence/<date>/v07-ideas-admin.json + 2 PNG.
-// Not covered here: lane B's real server (run accept-v06-admin.ts after the v0.7 merge for that).
+// Draws nothing heavy, but holds the shared GPU lock like every browser run on this PC (the caller takes
+// it). Evidence: evidence/<date>/v07-ideas-admin.json + 2 PNG.
+// Not covered here: lane B's real server (accept-v06-admin.ts drives the Ideas tab against it after the merge).
 import { spawn } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
@@ -25,6 +27,14 @@ function check(name: string, ok: boolean, control = false): void {
     checks.push({ name, ok, control });
     console.log(`${ok ? 'ok  ' : 'FAIL'} ${control ? '[control] ' : ''}${name}`);
 }
+
+/** JSON with object keys sorted, so a body is compared by its content, not by the order it was built in. */
+function canon(v: unknown): string {
+    const sort = (x: unknown): unknown => (Array.isArray(x) ? x.map(sort)
+        : x && typeof x === 'object' ? Object.fromEntries(Object.entries(x as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)).map(([k, y]) => [k, sort(y)])) : x);
+    return JSON.stringify(sort(v));
+}
+const same = (a: unknown, b: unknown): boolean => canon(a) === canon(b);
 
 async function until(url: string, ms = 60000): Promise<void> {
     const t0 = Date.now();
@@ -53,6 +63,9 @@ const card = (id: string): string => `[data-idea="${id}"]`;
 const statusOf = (page: Page, id: string): Promise<string | null> => page.$eval(card(id), (e) => e.getAttribute('data-status')).catch(() => null);
 const counts = (page: Page): Promise<Record<string, string>> =>
     page.$$eval('[data-count]', (els) => Object.fromEntries(els.map((e) => [e.getAttribute('data-count') ?? '', e.textContent ?? ''])));
+const ids = (page: Page): Promise<(string | null)[]> => page.$$eval('[data-idea]', (els) => els.map((e) => e.getAttribute('data-idea')));
+/** POSTs to ideas routes since `from`, as [path, body] */
+const sentSince = (mock: IdeasMock, from: number): [string, unknown][] => mock.posts().slice(from).map((c) => [c.path, c.body]);
 /** wait until the mock has seen n POSTs to ideas routes */
 async function posts(mock: IdeasMock, n: number, ms = 10000): Promise<void> {
     const t0 = Date.now();
@@ -64,6 +77,9 @@ async function posts(mock: IdeasMock, n: number, ms = 10000): Promise<void> {
 /** wait until the card sits in that column and is no longer busy */
 const settled = (page: Page, id: string, status: string): Promise<unknown> =>
     page.waitForSelector(`${card(id)}[data-status="${status}"]:not([aria-busy])`, { timeout: 10000 });
+const quiet = (page: Page, id: string): Promise<unknown> => page.waitForSelector(`${card(id)}:not([aria-busy])`, { timeout: 10000 });
+const dialogStep = (page: Page): Promise<string | null> =>
+    page.evaluate(() => document.querySelector('[data-testid=thanks-dialog] [data-step]:not([hidden])')?.getAttribute('data-step') ?? null);
 
 async function main(): Promise<void> {
     const dir = join(REPO, 'evidence', today());
@@ -89,17 +105,17 @@ async function main(): Promise<void> {
     await page.waitForSelector('[data-testid=idea-board] [data-idea]');
     const c0 = await counts(page);
     results.countsAtStart = c0;
-    check('five columns with their counts (New 2, Accepted 1, In progress 2, Done 1, Rejected 1)', JSON.stringify(c0) === JSON.stringify({ new: '2', accepted: '1', in_progress: '2', done: '1', rejected: '1' }));
-    check('the record with an unknown status is counted, not placed', (await page.textContent('[data-testid=idea-unreadable]'))?.includes('1') === true && !(await page.$(card('X-unknown-status'))));
+    check('five columns with their counts (New 2, Accepted 1, In progress 2, Done 1, Rejected 1)', same(c0, { new: '2', accepted: '1', in_progress: '2', done: '1', rejected: '1' }));
+    check('the record with an unknown status is counted, not placed', (await page.textContent('[data-testid=idea-unreadable]'))?.includes('1') === true && !(await page.$(card('R-20261012-0006'))), true);
     check('the old Reports tab is gone', !(await page.$('[data-tab=reports]')));
+    check('the mail setup line names the sender', ((await page.textContent('[data-testid=idea-setup]')) ?? '').includes('owner@example.com'));
 
-    // drag New -> Accepted: exactly one status call with the right body
+    // drag New -> Accepted: exactly one update call with the right body
     let before = mock.posts().length;
     await page.dragAndDrop(card('R-20261006-0001'), '[data-column=accepted]');
     await settled(page, 'R-20261006-0001', 'accepted');
-    const drag = mock.posts().slice(before);
-    results.dragCalls = drag;
-    check('drag to Accepted sends one POST ideas/status {id, status: accepted}', JSON.stringify(drag) === JSON.stringify([{ method: 'POST', path: 'ideas/status', body: { id: 'R-20261006-0001', status: 'accepted' } }]));
+    results.dragCalls = sentSince(mock, before);
+    check('drag to Accepted sends one POST ideas/update {id, status: accepted}', same(sentSince(mock, before), [['ideas/update', { id: 'R-20261006-0001', status: 'accepted' }]]));
     before = mock.posts().length;
     await page.dragAndDrop(card('R-20261006-0001'), '[data-column=accepted]');
     await sleep(400);
@@ -113,59 +129,73 @@ async function main(): Promise<void> {
     check('ArrowLeft in New sends nothing (edge)', mock.posts().length === before, true);
     await page.keyboard.press('ArrowRight');
     await settled(page, 'R-20261008-0003', 'accepted');
-    check('ArrowRight on the handle moves the card to the next column', JSON.stringify(mock.posts().slice(before)) === JSON.stringify([{ method: 'POST', path: 'ideas/status', body: { id: 'R-20261008-0003', status: 'accepted' } }]));
+    check('ArrowRight on the handle moves the card to the next column', same(sentSince(mock, before), [['ideas/update', { id: 'R-20261008-0003', status: 'accepted' }]]));
     check('the focus stays on the moved card\'s handle', await page.evaluate(() => document.activeElement?.closest('[data-idea]')?.getAttribute('data-idea') === 'R-20261008-0003' && document.activeElement.classList.contains('handle')));
 
-    // a pilot's idea with an e-mail reaches Done: the draft opens, nothing is sent until Send
-    await page.focus(`${card('R-20261012-0005')} .handle`);
+    // a pilot's idea with an e-mail reaches Done: the dialog asks what was done; nothing is sent until Send
+    const pid = 'R-20261012-0005';
+    await page.focus(`${card(pid)} .handle`);
     before = mock.posts().length;
     await page.keyboard.press('ArrowRight');
-    await page.waitForSelector('[data-testid=thanks-dialog] [data-field=thanks-body]');
+    await page.waitForSelector('[data-testid=thanks-dialog] [data-field=thanks-summary]');
+    await settled(page, pid, 'done');
+    check('Done opens the thank-you dialog at "what was done", after one status call and no e-mail', (await dialogStep(page)) === 'summary'
+        && same(sentSince(mock, before), [['ideas/update', { id: pid, status: 'done' }]]) && mock.mails().length === 0);
+    before = mock.posts().length;
+    await page.click('[data-action=thanks-make]');
+    await sleep(300);
+    check('"Make the e-mail" with nothing written sends nothing', mock.posts().length === before, true);
+    await page.fill('[data-field=thanks-summary]', 'Funkcje kanalow radia sa juz w symulatorze: ARM i tryb na CH5 i CH6.');
+    await page.click('[data-action=thanks-make]');
     await page.waitForFunction(() => (document.querySelector('[data-field=thanks-body]') as HTMLTextAreaElement | null)?.value.length);
-    const afterDone = mock.posts().slice(before).map((c) => c.path);
-    results.doneCalls = afterDone;
-    check('Done opens the thank-you draft (status, then thanks/draft) and sends nothing', JSON.stringify(afterDone) === JSON.stringify(['ideas/status', 'ideas/thanks/draft']));
+    results.doneCalls = sentSince(mock, before);
+    check('the summary goes in the pilot\'s language to ideas/done, and the server\'s draft is shown', (await dialogStep(page)) === 'draft'
+        && same(sentSince(mock, before), [['ideas/done', { id: pid, summary: { pl: 'Funkcje kanalow radia sa juz w symulatorze: ARM i tryb na CH5 i CH6.' } }]])
+        && (await page.inputValue('[data-field=thanks-body]')).includes('Funkcje kanalow radia'));
     check('the draft is addressed to the pilot\'s e-mail', (await page.inputValue('[data-field=thanks-to]')) === 'pilot.two@example.com');
+    check('the draft is only a draft (nothing queued)', same(mock.mails().map((m) => m.state), ['draft']), true);
+    before = mock.posts().length;
     await page.click('[data-action=thanks-later]');
     await page.waitForSelector('[data-testid=thanks-dialog]', { state: 'detached' });
-    check('Not now sends nothing', !mock.posts().some((c) => c.path === 'ideas/thanks/send') && (mock.ideas.find((i) => i.id === 'R-20261012-0005')!.mails as unknown[]).length === 0, true);
-    await page.click(`${card('R-20261012-0005')} [data-action=thanks]`);
-    await page.waitForFunction(() => (document.querySelector('[data-field=thanks-body]') as HTMLTextAreaElement | null)?.value.length);
-    await page.fill('[data-field=thanks-subject]', 'Channel functions are in the simulator');
-    before = mock.posts().length;
+    check('Not now sends nothing and leaves the draft a draft', mock.posts().length === before && same(mock.mails().map((m) => m.state), ['draft']), true);
+    await page.click(`${card(pid)} [data-action=thanks]`);
+    await page.waitForSelector('[data-testid=thanks-dialog] [data-step=draft]:not([hidden])');
+    check('the card reopens the waiting draft without a call', mock.posts().length === before && (await page.inputValue('[data-field=thanks-to]')) === 'pilot.two@example.com');
     await page.click('[data-action=thanks-send]');
     await page.waitForSelector('[data-testid=thanks-dialog]', { state: 'detached' });
-    const sent = mock.posts().slice(before);
-    check('Send sends the thank-you once, with the subject as edited', sent.length === 1 && sent[0].path === 'ideas/thanks/send' && sent[0].body?.subject === 'Channel functions are in the simulator');
-    check('after it the card no longer offers a thank-you', !(await page.$(`${card('R-20261012-0005')} [data-action=thanks]`)));
+    await quiet(page, pid);
+    results.sendCalls = sentSince(mock, before);
+    check('Send queues the thank-you once (ideas/send-done {id})', same(sentSince(mock, before), [['ideas/send-done', { id: pid }]]) && same(mock.mails().map((m) => m.state), ['queued']));
+    check('after it the card no longer offers a thank-you', !(await page.$(`${card(pid)} [data-action=thanks]`)));
 
-    // a failing server: the card stays where it was and the owner is told
-    mock.failNext = { path: 'ideas/status', status: 500 };
+    // a failing server: the card stays where it was and the owner is told; then a note without an e-mail
+    // reaches Done without any thank-you dialog
+    mock.failNext = { path: 'ideas/update', status: 500 };
     await page.focus(`${card('N-20261010-0001')} .handle`);
     await page.keyboard.press('ArrowRight');
     await page.waitForSelector('.note.bad');
     check('a refused move leaves the card in its column and says why', (await statusOf(page, 'N-20261010-0001')) === 'in_progress' && /test-failure/.test((await page.textContent('.note')) ?? ''), true);
+    await page.focus(`${card('N-20261010-0001')} .handle`);
+    await page.keyboard.press('ArrowRight');
+    await settled(page, 'N-20261010-0001', 'done');
+    await sleep(300);
+    check('Done for a note without an e-mail opens no thank-you dialog', !(await page.$('[data-testid=thanks-dialog]')), true);
 
     // filters and search
     await page.fill('[data-testid=idea-search]', 'crosshair centre');
     await sleep(100);
-    const found = await page.$$eval('[data-idea]', (els) => els.map((e) => e.getAttribute('data-idea')));
-    check('search keeps only the card with every word', JSON.stringify(found) === JSON.stringify(['R-20261006-0002']));
+    check('search keeps only the card with every word', same(await ids(page), ['R-20261006-0002']));
     await page.fill('[data-testid=idea-search]', 'crosshair motor');
     await sleep(100);
     check('a word found nowhere empties the board', (await page.$$('[data-idea]')).length === 0, true);
     await page.fill('[data-testid=idea-search]', '');
-    await page.click('[data-kind=feature]');
-    await page.click('[data-kind=note]');
-    await page.click('[data-kind=idea]');
+    for (const k of ['feature', 'note', 'idea']) await page.click(`[data-kind=${k}]`);
     await sleep(100);
-    const bugs = await page.$$eval('[data-idea]', (els) => els.map((e) => e.getAttribute('data-idea')));
-    check('kind toggles: only bugs left', JSON.stringify(bugs) === JSON.stringify(['R-20261008-0003']));
+    check('kind toggles: only bugs left', same(await ids(page), ['R-20261008-0003']));
     for (const k of ['feature', 'note', 'idea']) await page.click(`[data-kind=${k}]`);
     await page.selectOption('[data-filter=contact]', 'no');
     await sleep(100);
-    const noContact = (await page.$$eval('[data-idea]', (els) => els.map((e) => e.getAttribute('data-idea')))).sort();
-    check('contact filter: the cards without a contact', JSON.stringify(noContact) === JSON.stringify(['F-edgetx-radio-over-usb-webhid-in-chrome', 'N-20261010-0001', 'R-20261008-0003']));
+    check('contact filter: the cards without a contact', same((await ids(page)).sort(), ['F-edgetx-radio-over-usb-webhid-in-chrome', 'N-20261010-0001', 'R-20261008-0003']));
     await page.selectOption('[data-filter=contact]', 'any');
 
     // the bug's card: everything the pilot sent, technical details to open and to download
@@ -179,7 +209,7 @@ async function main(): Promise<void> {
     check('the card shows what the pilot sent (language, page, scene, release)', ['en', 'fly', '887f27aa', 'f92d98b'].every((x) => sentFields.includes(x)));
     check('no e-mail left: no reply box, a reason instead', !(await page.$(`${card('R-20261008-0003')} [data-field=reply-text]`)) && !!(await page.$(`${card('R-20261008-0003')} [data-field=reply] p`)), true);
 
-    // a card with a contact: reply, comment, urgency, public title, the Column select
+    // a card with a contact: reply (then Cancel in the undo window), comment, urgency, public title, the Column select
     const id2 = 'R-20261006-0002';
     await page.click(`${card(id2)} [data-action=details]`);
     check('the contact itself is on the card', ((await page.textContent(`${card(id2)} [data-field=contact]`)) ?? '').includes('pilot.one@example.com or @pilotone on Telegram'));
@@ -187,35 +217,58 @@ async function main(): Promise<void> {
     await page.fill(`${card(id2)} [data-field=reply-text]`, 'Thanks! It is queued for the next build.');
     await page.click(`${card(id2)} [data-action=reply]`);
     await posts(mock, before + 1);
-    await page.waitForSelector(`${card(id2)}:not([aria-busy]) [data-field=comment]`);
+    await page.waitForSelector(`${card(id2)}:not([aria-busy]) [data-field=mails] [data-state=queued] [data-action=mail-cancel]`);
+    check('the reply is queued behind the undo window and the owner is told so', ((await page.textContent('.note')) ?? '').includes('pilot.one@example.com') && mock.mails('queued').some((m) => m.kind === 'reply'));
+    const replyId = await page.getAttribute(`${card(id2)} [data-field=mails] [data-state=queued] [data-action=mail-cancel]`, 'data-mail');
+    await page.click(`${card(id2)} [data-field=mails] [data-state=queued] [data-action=mail-cancel]`);
+    await posts(mock, before + 2);
+    await page.waitForSelector(`${card(id2)}:not([aria-busy]) [data-field=mails] [data-state=cancelled]`);
+    check('Cancel on the queued reply stops it', mock.mails().find((m) => m.id === replyId)?.state === 'cancelled');
     await page.fill(`${card(id2)} [data-field=comment]`, 'With the HUD work');
     await page.click(`${card(id2)} [data-action=comment]`);
-    await posts(mock, before + 2);
+    await posts(mock, before + 3);
     await page.waitForSelector(`${card(id2)}:not([aria-busy]) [data-field=urgency]`);
     await page.selectOption(`${card(id2)} [data-field=urgency]`, 'urgent');
     await page.waitForSelector(`${card(id2)}:not([aria-busy]) [data-chip=urgency].u-urgent`);
     await page.fill(`${card(id2)} [data-field=title-pl]`, 'Celownik na srodku obrazu');
-    await page.selectOption(`${card(id2)} [data-field=group]`, 'controls');
     await page.click(`${card(id2)} [data-action=save-public]`);
-    await posts(mock, before + 4);
-    await page.waitForSelector(`${card(id2)}:not([aria-busy])`);
-    const edits = mock.posts().slice(before).map((c) => [c.path, c.body]);
-    results.cardCalls = edits;
-    check('reply, comment, urgency and public title each send their own call with their body', JSON.stringify(edits) === JSON.stringify([
+    await posts(mock, before + 5);
+    await quiet(page, id2);
+    results.cardCalls = sentSince(mock, before);
+    check('reply, cancel, comment, urgency and public title each send their own call with their body', same(sentSince(mock, before), [
         ['ideas/reply', { id: id2, text: 'Thanks! It is queued for the next build.' }],
-        ['ideas/comment', { id: id2, text: 'With the HUD work' }],
-        ['ideas/urgency', { id: id2, urgency: 'urgent' }],
-        ['ideas/public', { id: id2, title: { en: 'A crosshair in the centre of the view', pl: 'Celownik na srodku obrazu' }, roadmap: true, group: 'controls' }]
+        ['ideas/mail/cancel', { id: replyId }],
+        ['ideas/update', { id: id2, comment: 'With the HUD work' }],
+        ['ideas/update', { id: id2, urgency: 'urgent' }],
+        ['ideas/update', { id: id2, publicTitle: { en: 'A crosshair in the centre of the view', pl: 'Celownik na srodku obrazu' }, visible: true }]
     ]));
     await page.selectOption(`${card(id2)} [data-field=status]`, 'in_progress');
     await settled(page, id2, 'in_progress');
-    check('the Column select moves the card (touch)', mock.posts().at(-1)?.path === 'ideas/status' && mock.posts().at(-1)?.body?.status === 'in_progress');
+    check('the Column select moves the card (touch)', same(mock.posts().at(-1)?.body, { id: id2, status: 'in_progress' }));
 
-    // the landing switch needs an English title (control: the box is disabled without one)
+    // the landing: shown with an English title and a status the landing shows; the card says what is missing
+    check('a card with an English title in a shown status carries the landing chip', !!(await page.$(`${card(id2)} [data-chip=landing]`)));
+    check('without an English title no landing chip', !(await page.$(`${card('R-20261006-0001')} [data-chip=landing]`)), true);
     await page.click(`${card('R-20261006-0001')} [data-action=details]`);
-    check('without an English title the landing switch is off and disabled', await page.$eval(`${card('R-20261006-0001')} [data-field=roadmap]`, (e) => (e as HTMLInputElement).disabled && !(e as HTMLInputElement).checked), true);
+    const noteOf = (): Promise<string> => page.textContent(`${card('R-20261006-0001')} [data-field=public-note]`).then((s) => s ?? '');
+    const needTitle = await noteOf();
     await page.fill(`${card('R-20261006-0001')} [data-field=title-en]`, 'Rates types with manual editing');
-    check('with it the switch can be ticked', await page.$eval(`${card('R-20261006-0001')} [data-field=roadmap]`, (e) => !(e as HTMLInputElement).disabled));
+    const missing = await noteOf();
+    check('the card asks for the English title first, then names the languages still missing', /English/.test(needTitle) && missing !== needTitle && ['es', 'pl', 'ru'].every((l) => missing.includes(l)));
+
+    // the owner writes down an idea a pilot told him (item 8): nothing goes without words
+    await page.click('[data-testid=note-form] summary');
+    before = mock.posts().length;
+    await page.click('[data-action=note-add]');
+    await sleep(300);
+    check('an empty note sends nothing', mock.posts().length === before, true);
+    await page.fill('[data-field=note-text]', 'A pilot at the field asked for a lap timer.');
+    await page.fill('[data-field=note-contact]', 'pilot.three@example.com');
+    await page.selectOption('[data-field=note-lang]', 'es');
+    await page.selectOption('[data-field=note-urgency]', 'high');
+    await page.click('[data-action=note-add]');
+    await page.waitForSelector(`${card('N-20261013-0001')}[data-status=new]`);
+    check('the note goes to ideas/note and lands in New', same(sentSince(mock, before), [['ideas/note', { text: 'A pilot at the field asked for a lap timer.', contact: 'pilot.three@example.com', lang: 'es', urgency: 'high', kind: 'note' }]]));
 
     await page.screenshot({ path: join(dir, 'v07-ideas-admin-1280.png'), fullPage: false });
     // a phone: one column, nothing wider than the screen
@@ -230,6 +283,7 @@ async function main(): Promise<void> {
     await page.waitForSelector('[data-testid=scene-list]');
     check('the Scenes tab still opens', true);
     check('no page errors', errors.length === 0);
+    check('no e-mail went out on its own: one thank-you queued by Send, one reply cancelled', same(mock.mails().map((m) => [m.kind, m.state]).sort(), [['done', 'queued'], ['reply', 'cancelled']]));
     results.pageErrors = errors;
     results.calls = mock.calls.map((c) => `${c.method} ${c.path}`);
     await browser.close();

@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-13T09:08:23.646Z",
-    "gitHead": "2a6404b",
+    "date": "2026-10-13T15:04:33.070Z",
+    "gitHead": "831f5e2",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -26,7 +26,7 @@
     {
       "name": "the record with an unknown status is counted, not placed",
       "ok": true,
-      "control": false
+      "control": true
     },
     {
       "name": "the old Reports tab is gone",
@@ -34,7 +34,12 @@
       "control": false
     },
     {
-      "name": "drag to Accepted sends one POST ideas/status {id, status: accepted}",
+      "name": "the mail setup line names the sender",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "drag to Accepted sends one POST ideas/update {id, status: accepted}",
       "ok": true,
       "control": false
     },
@@ -59,7 +64,17 @@
       "control": false
     },
     {
-      "name": "Done opens the thank-you draft (status, then thanks/draft) and sends nothing",
+      "name": "Done opens the thank-you dialog at \"what was done\", after one status call and no e-mail",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "\"Make the e-mail\" with nothing written sends nothing",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "the summary goes in the pilot's language to ideas/done, and the server's draft is shown",
       "ok": true,
       "control": false
     },
@@ -69,12 +84,22 @@
       "control": false
     },
     {
-      "name": "Not now sends nothing",
+      "name": "the draft is only a draft (nothing queued)",
       "ok": true,
       "control": true
     },
     {
-      "name": "Send sends the thank-you once, with the subject as edited",
+      "name": "Not now sends nothing and leaves the draft a draft",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "the card reopens the waiting draft without a call",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "Send queues the thank-you once (ideas/send-done {id})",
       "ok": true,
       "control": false
     },
@@ -85,6 +110,11 @@
     },
     {
       "name": "a refused move leaves the card in its column and says why",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "Done for a note without an e-mail opens no thank-you dialog",
       "ok": true,
       "control": true
     },
@@ -134,7 +164,17 @@
       "control": false
     },
     {
-      "name": "reply, comment, urgency and public title each send their own call with their body",
+      "name": "the reply is queued behind the undo window and the owner is told so",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "Cancel on the queued reply stops it",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "reply, cancel, comment, urgency and public title each send their own call with their body",
       "ok": true,
       "control": false
     },
@@ -144,12 +184,27 @@
       "control": false
     },
     {
-      "name": "without an English title the landing switch is off and disabled",
+      "name": "a card with an English title in a shown status carries the landing chip",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "without an English title no landing chip",
       "ok": true,
       "control": true
     },
     {
-      "name": "with it the switch can be ticked",
+      "name": "the card asks for the English title first, then names the languages still missing",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "an empty note sends nothing",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "the note goes to ideas/note and lands in New",
       "ok": true,
       "control": false
     },
@@ -165,6 +220,11 @@
     },
     {
       "name": "no page errors",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "no e-mail went out on its own: one thank-you queued by Send, one reply cancelled",
       "ok": true,
       "control": false
     }
@@ -183,18 +243,32 @@
     "rejected": "1"
   },
   "dragCalls": [
-    {
-      "method": "POST",
-      "path": "ideas/status",
-      "body": {
+    [
+      "ideas/update",
+      {
         "id": "R-20261006-0001",
         "status": "accepted"
       }
-    }
+    ]
   ],
   "doneCalls": [
-    "ideas/status",
-    "ideas/thanks/draft"
+    [
+      "ideas/done",
+      {
+        "id": "R-20261012-0005",
+        "summary": {
+          "pl": "Funkcje kanalow radia sa juz w symulatorze: ARM i tryb na CH5 i CH6."
+        }
+      }
+    ]
+  ],
+  "sendCalls": [
+    [
+      "ideas/send-done",
+      {
+        "id": "R-20261012-0005"
+      }
+    ]
   ],
   "cardCalls": [
     [
@@ -205,29 +279,34 @@
       }
     ],
     [
-      "ideas/comment",
+      "ideas/mail/cancel",
       {
-        "id": "R-20261006-0002",
-        "text": "With the HUD work"
+        "id": "M-2"
       }
     ],
     [
-      "ideas/urgency",
+      "ideas/update",
+      {
+        "id": "R-20261006-0002",
+        "comment": "With the HUD work"
+      }
+    ],
+    [
+      "ideas/update",
       {
         "id": "R-20261006-0002",
         "urgency": "urgent"
       }
     ],
     [
-      "ideas/public",
+      "ideas/update",
       {
         "id": "R-20261006-0002",
-        "title": {
+        "publicTitle": {
           "en": "A crosshair in the centre of the view",
           "pl": "Celownik na srodku obrazu"
         },
-        "roadmap": true,
-        "group": "controls"
+        "visible": true
       }
     ]
   ],
@@ -236,19 +315,21 @@
     "GET session",
     "GET catalog",
     "GET ideas",
-    "POST ideas/status",
-    "POST ideas/status",
-    "POST ideas/status",
-    "POST ideas/thanks/draft",
-    "POST ideas/thanks/draft",
-    "POST ideas/thanks/send",
-    "POST ideas/status",
+    "POST ideas/update",
+    "POST ideas/update",
+    "POST ideas/update",
+    "POST ideas/done",
+    "POST ideas/send-done",
+    "POST ideas/update",
+    "POST ideas/update",
     "GET reports/R-20261008-0003/diagnostics",
     "POST ideas/reply",
-    "POST ideas/comment",
-    "POST ideas/urgency",
-    "POST ideas/public",
-    "POST ideas/status",
+    "POST ideas/mail/cancel",
+    "POST ideas/update",
+    "POST ideas/update",
+    "POST ideas/update",
+    "POST ideas/update",
+    "POST ideas/note",
     "GET catalog"
   ]
 }
