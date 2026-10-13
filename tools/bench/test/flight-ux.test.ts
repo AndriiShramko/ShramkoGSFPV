@@ -14,6 +14,10 @@
 //    the frequencies follow the motors; the flight model is only read;
 //  - every text the new code names exists in English (control: a planted unknown key is reported);
 //  - L is the share key in flight and over a crash, and no other binding has it.
+//  - the always-visible Share makes the top row longer: the walls box and the author notice go under
+//    it wherever they would meet (control: the fixed 640 px breakpoint and a rule that ignores the
+//    box's width), and the mode chip on a phone goes under the row (control: the old search that
+//    stepped past the soft boxes only).
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
@@ -28,6 +32,9 @@ import { Recording } from '../../../apps/fly/src/app/builtin/recording';
 import { CROSSHAIR_CSS, crosshairSpec, crosshairSvg } from '../../../apps/fly/src/crosshair';
 import type { CrosshairSpec } from '../../../apps/fly/src/crosshair';
 import { MASTER_MAX, MotorSound, audible, bladesOf, motorMix, rotorHz, voiceHarmonics } from '../../../apps/fly/src/audio/motor-sound';
+import { TOP_GAP, boxMeetsRow } from '../../../apps/fly/src/ui/top-row';
+import { gutterTop } from '../../../apps/fly/src/ui/top-row';
+import type { Box } from '../../../apps/fly/src/ui/top-row';
 import type { AudioLike, MixInput, MotorState } from '../../../apps/fly/src/audio/motor-sound';
 
 const FLY = join(REPO, 'apps', 'fly', 'src');
@@ -361,5 +368,57 @@ describe('L shares, and nothing else is bound to it', () => {
     it('control: a second action on L is a conflict the keymap check reports', () => {
         const planted = [...KEYMAP, { action: 'test.l', keys: [{ code: 'KeyL', cap: 'L', aria: 'L' }], when: 'flight' as const, labelKey: 'keys.test.l', status: 'shipped' as const }];
         expect(keymapProblems(planted)).toEqual(['KeyL is bound to share.open and test.l (always / flight)']);
+    });
+});
+
+// ------------------------------------------------------------------ the top edge
+
+describe('the longer top row prints over nothing', () => {
+    // measured in Chrome (evidence/2026-10-13/d1-ui): at 1280 px the row starts at 868 px, with the
+    // REC dot at 783 px; the walls box ("Scan without walls: ...") is 370 px wide, centred
+    const BADGE = 370;
+    const v06Under = (viewW: number): boolean => viewW <= 640; // fly.css before v0.7: a phone only
+
+    it('the walls box goes under the row wherever the two would meet', () => {
+        expect(boxMeetsRow(1280, BADGE, 868)).toBe(false);
+        expect(boxMeetsRow(1280, BADGE, 783)).toBe(true); // recording
+        expect(boxMeetsRow(1024, BADGE, 612)).toBe(true);
+        expect(boxMeetsRow(1280, BADGE, 640 + BADGE / 2 + TOP_GAP)).toBe(false); // exactly the gap apart
+        expect(boxMeetsRow(1280, 0, 300)).toBe(false); // hidden while flying
+    });
+
+    it('control: the fixed breakpoint and a rule blind to the box width leave text over the buttons', () => {
+        expect(v06Under(1280)).toBe(false);
+        const centreOnly = (viewW: number, _w: number, rowLeft: number) => viewW / 2 > rowLeft;
+        expect(centreOnly(1280, BADGE, 783)).not.toBe(boxMeetsRow(1280, BADGE, 783));
+    });
+
+    it('fly.css moves the box under the row when crowded and the notice sits under the box; control: without the rules', () => {
+        const fly = readFileSync(join(FLY, 'fly.css'), 'utf8');
+        const cinema = readFileSync(join(FLY, 'app', 'builtin', 'cinema.css'), 'utf8');
+        const under = (s: string) => /#ui\.top-crowded > \.bake-box \{ top: calc\(var\(--top-row-bottom/.test(s);
+        const noticeUnderBox = (s: string) => /\.rec-notice \{[^}]*top: max\([^}]*var\(--bake-bottom/.test(s);
+        expect(under(fly)).toBe(true);
+        expect(noticeUnderBox(cinema)).toBe(true);
+        expect(under(fly.replace('#ui.top-crowded > .bake-box', '#ui.top-crowded > .nothing'))).toBe(false);
+        expect(noticeUnderBox(cinema.replace(/top: max\([^;]*;/, 'top: 84px;'))).toBe(false);
+    });
+
+    it('on a phone the mode chip goes under the row of buttons, past the hint', () => {
+        // 390 px: buttons 25..374 x 38..78, the pad hint 16..374 x 88..104; chip 75 x 36 under the OSD line (38)
+        const row: Box = { left: 25, right: 374, top: 38, bottom: 78 };
+        const hint: Box = { left: 16, right: 374, top: 88, bottom: 104 };
+        const y = gutterTop(16, 38, 75, 36, [row], [hint], 390);
+        expect(y).toBeGreaterThanOrEqual(row.bottom + 4);
+        expect(y).toBeGreaterThanOrEqual(hint.bottom);
+        const meets = (b: Box, top: number) => Math.min(16 + 75, b.right) > Math.max(16, b.left) && Math.min(top + 36, b.bottom) > Math.max(top, b.top);
+        expect(meets(row, y) || meets(hint, y)).toBe(false);
+    });
+
+    it('control: the old search (soft boxes only) leaves the chip under the buttons', () => {
+        const row: Box = { left: 25, right: 374, top: 38, bottom: 78 };
+        const old = gutterTop(16, 38, 75, 36, [], [{ left: 16, right: 374, top: 88, bottom: 104 }], 390);
+        expect(old).toBe(38);
+        expect(Math.min(38 + 36, row.bottom) > Math.max(old, row.top)).toBe(true);
     });
 });

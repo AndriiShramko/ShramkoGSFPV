@@ -9,6 +9,7 @@ import type { ArmBlock } from '@gsfpv/input';
 import type { ArmView } from '../controls';
 import { radioArt, knobsFrom, sideOf, tickIcon } from './radio-art';
 import type { ArtTarget } from './radio-art';
+import { watchTopRow } from './top-row';
 
 /** Disarmed with a radio: what is still needed to arm, in order, with a small live radio drawing. */
 class ArmCard {
@@ -190,12 +191,16 @@ export class Hud {
         this.root = h('div', { class: 'hud' }, this.tl, this.tr, this.bl, this.br, this.gate, this.card.el, this.card.disarm, this.keys.el, this.frameStats);
     }
 
-    /** Put the OSD on the page (once) and keep the top-edge banners stacked from now on. */
+    /**
+     * Put the OSD on the page (once) and from now on keep the top-edge banners stacked and the
+     * walls box and the author notice clear of the top buttons (ui/top-row.ts).
+     */
     mount(parent: HTMLElement): void {
         this.ui = parent;
         // outside .hud: it says how to get the text back while the rest is hidden
         parent.append(this.root, this.note);
         watchBanners(parent);
+        watchTopRow(parent);
     }
 
     /** H: every text on the flight view off, or back on. */
