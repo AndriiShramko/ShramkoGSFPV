@@ -128,6 +128,7 @@ class TelegramApi:
 class BotConfig:
     token: str = ""
     shared_token: str = ""
+    shared_chat: str = ""   # TG_CHAT_ID: where the shared lead bot writes (server.send_telegram)
     chat: str = ""
     user: str = ""
     secret: str = ""
@@ -138,6 +139,7 @@ class BotConfig:
     def from_env(cls, env) -> "BotConfig":
         lang = env.get("TG_OWNER_LANG") or "ru"
         return cls(token=(env.get("TG_OWNER_BOT_TOKEN") or "").strip(), shared_token=(env.get("TG_BOT_TOKEN") or "").strip(),
+                   shared_chat=(env.get("TG_CHAT_ID") or "").strip(),
                    chat=(env.get("TG_OWNER_CHAT_ID") or env.get("TG_CHAT_ID") or "").strip(),
                    user=(env.get("TG_OWNER_USER_ID") or "").strip(), secret=(env.get("TG_WEBHOOK_SECRET") or "").strip(),
                    lang=lang if lang in ideas.LOCALES else "ru", api_base=(env.get("TG_API_BASE") or "https://api.telegram.org"))
@@ -259,6 +261,7 @@ class OwnerBot:
             d = rec.get("diagnostics")
             lines.append(t("card.diag.yes", kb=max(1, round((rec.get("diagBytes") or 0) / 1024))) if d is True
                          else t("card.diag.skipped") if d == "skipped" else t("card.diag.no"))
+        facts = facts if facts is not None else rec.get("diagFacts")  # kept with the idea: a redrawn card keeps them
         f = facts or {}
         for k in ("browser", "gpu", "screen", "input"):
             if f.get(k):
@@ -331,9 +334,9 @@ class OwnerBot:
                 return mid
             # the owner bot did not answer (blocked, Telegram down): the shared bot below still delivers it
         mid = shared_send(shared_text)
-        if mid and diag_blob and c.shared_token and c.chat:
+        if mid and diag_blob and c.shared_token and c.shared_chat:
             rid = rec["id"] if rec else "report"
-            self._attachments(self.api_factory(c.shared_token, c.api_base), c.chat, rid, diag_blob, mid if isinstance(mid, int) else None)
+            self._attachments(self.api_factory(c.shared_token, c.api_base), c.shared_chat, rid, diag_blob, mid if isinstance(mid, int) else None)
         return mid
 
     def _attachments(self, api: TelegramApi, chat: str, rid: str, blob: bytes | None, reply_to: int | None) -> None:

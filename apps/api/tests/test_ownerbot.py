@@ -163,6 +163,9 @@ class Reports(Http):
         self.assertEqual(self.w.tg.tokens(), {OWNER_TOKEN})
         self.assertEqual(self.shared, [])
         self.assertEqual(self.w.card_id(rid), 1001)  # the fake's first message id: replies to it find the idea
+        # a button redraws the card: the technical summary stays on it (kept with the idea)
+        self.w.bot.handle_update({"update_id": 90, **self.w.press(f"s:a:{rid}", 1001)})
+        self.assertIn(self.t("diag.browser", value="Mozilla/5.0 Chrome/141"), self.last("editMessageText")["text"])
         # control: without the owner bot, the shared lead bot gets every field and the file, as before plus more
         self.w.env.pop("TG_OWNER_BOT_TOKEN")
         server._rhits.clear()

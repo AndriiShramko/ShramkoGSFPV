@@ -103,14 +103,20 @@ class IdeasService:
 
     # ---------------- new ideas ----------------
 
-    def add_report(self, line: dict) -> dict | None:
-        """The idea of a report just stored in reports.jsonl (server.store_report); None if malformed."""
+    def add_report(self, line: dict, facts: dict | None = None) -> dict | None:
+        """The idea of a report just stored in reports.jsonl (server.store_report); None if malformed.
+        `facts`: the short summary of a bug's technical details (ownerbot.diag_facts), kept so the
+        owner's card shows it every time it is redrawn."""
         rec = ideas.record_from_report(line)
         if rec is None:
             return None
+        if facts:
+            rec["diagFacts"] = facts
         with self.store.tx() as doc:
             have = index(doc).get(rec["id"])
-            if have is not None:
+            if have is not None:  # already imported from reports.jsonl (the store's first transaction does that)
+                if facts and not have.get("diagFacts"):
+                    have["diagFacts"] = facts
                 return copy.deepcopy(have)
             doc["ideas"].append(rec)
         return copy.deepcopy(rec)

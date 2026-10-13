@@ -1107,13 +1107,6 @@ def deliver_report(rec: dict) -> object:
     """After a report is stored: its idea in the store, then the whole report in the owner's chat (the
     owner bot's card with buttons, else the shared lead bot). The message id, or None (not delivered or
     a suspect, which is stored and not sent)."""
-    idea = None
-    try:
-        idea = SERVICE.add_report(rec)
-    except OSError:  # the line is in reports.jsonl: the next start's IDEAS.sync() makes the idea
-        pass
-    if rec["suspect"]:
-        return None
     blob = None
     if rec["diagnostics"] is True:
         try:
@@ -1121,6 +1114,13 @@ def deliver_report(rec: dict) -> object:
         except OSError:
             blob = None
     facts = ownerbot.diag_facts(blob) if blob else None
+    idea = None
+    try:
+        idea = SERVICE.add_report(rec, facts)
+    except OSError:  # the line is in reports.jsonl: the next start's IDEAS.sync() makes the idea
+        pass
+    if rec["suspect"]:
+        return None
     text = report_text(rec, facts)
     try:
         return BOT.deliver_report(idea, text, blob, lambda t: send_telegram(t))
