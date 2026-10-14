@@ -19,6 +19,9 @@ for (const line of conf.split('\n')) {
 // copied from deploy/nginx.conf ($gsfpv_csp_rest and the enforced script-src)
 const nginx = readFileSync(new URL('../../../deploy/nginx.conf', import.meta.url), 'utf8');
 const rest = nginx.match(/map \$uri \$gsfpv_csp_rest \{\s*default "([^"]+)";/)[1];
+// the owner's admin page has its own location in nginx.conf (location ^~ /admin/): its own strict CSP in
+// place of the site's, and try_files $uri /admin/index.html; mirrored here so /admin/ runs under the live policy
+const adminCsp = nginx.match(/location \^~ \/admin\/ \{[^}]*?add_header Content-Security-Policy "([^"]+)" always;/)[1];
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.wasm': 'application/wasm', '.webp': 'image/webp', '.png': 'image/png', '.svg': 'image/svg+xml', '.txt': 'text/plain', '.xml': 'application/xml', '.ico': 'image/x-icon', '.woff2': 'font/woff2' };
 
 createServer((req, res) => {
@@ -26,6 +29,15 @@ createServer((req, res) => {
     let p = decodeURIComponent(url.pathname);
     if (p.startsWith('/api/')) { res.writeHead(204).end(); return; }
     if (p === '/') { res.writeHead(302, { location: '/en/' }).end(); return; }
+    if (p === '/admin') { res.writeHead(301, { location: '/admin/' }).end(); return; }
+    if (p.startsWith('/admin/')) {
+        let file = join(dist, p);
+        if (!existsSync(file) || statSync(file).isDirectory()) file = join(dist, 'admin', 'index.html');
+        res.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream', 'cache-control': 'no-store',
+            'content-security-policy': adminCsp, 'x-frame-options': 'DENY', 'x-csp-mode': 'admin' });
+        res.end(readFileSync(file));
+        return;
+    }
     let file = join(dist, p);
     // nginx: try_files $uri $uri/ /$1/fly/index.html for /{locale}/fly/...
     if (existsSync(file) && statSync(file).isDirectory()) { file = join(file, 'index.html'); p = p.replace(/\/?$/, '/index.html'); }
