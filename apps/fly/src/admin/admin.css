@@ -67,32 +67,45 @@ input[type="checkbox"] { min-height: 0; width: 20px; height: 20px; accent-color:
 .history li { display: flex; align-items: center; gap: 10px; }
 /* Ideas tab (ideas/tab.ts): five columns side by side, each scrolling on its own; one column on a phone */
 .filters select { flex: 0 1 auto; }
-/* flex, not grid: the column holding an open card widens (:has), so its details are not squeezed */
 .board { display: flex; gap: 10px; align-items: flex-start; }
-.column { flex: 1 1 0; min-width: 190px; background: var(--bg2); border: 1px solid var(--line); border-radius: var(--r); padding: 8px; transition: flex-grow .15s; }
-.column:has(.idea-card.open) { flex-grow: 2.6; }
+.column { flex: 1 1 0; min-width: 190px; background: var(--bg2); border: 1px solid var(--line); border-radius: var(--r); padding: 8px; }
 .column.drop { outline: 2px dashed var(--accent); outline-offset: 2px; }
 .column > h2 { display: flex; justify-content: space-between; gap: 6px; font-size: 15px; margin: 2px 4px 8px; }
 .cards { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 240px); overflow-y: auto; }
 .cards .empty { font-size: 14px; padding: 6px 4px; }
+/* under a long archive column: how many older cards are not drawn, Show all (n) */
+.col-foot { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.col-foot p { margin: 0 4px; font-size: 13px; }
+.col-more { width: 100%; white-space: normal; }
 .idea-card { border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: var(--bg); font-size: 14px; }
 .idea-card.dragging { opacity: .4; }
 .idea-card.busy { opacity: .6; }
-.idea-card.open { border-color: rgba(74,222,128,.45); }
+/* the card whose details are open in the side panel */
+.idea-card.open { border-color: var(--accent); }
 .idea-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 .idea-head .handle { width: 30px; min-height: 30px; font-size: 16px; cursor: grab; }
 .idea-text { white-space: pre-wrap; overflow-wrap: anywhere; margin: 6px 0 4px; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
-.idea-card.open .idea-text { display: none; }
 .idea-full { white-space: pre-wrap; overflow-wrap: anywhere; margin: 6px 0; }
 .idea-meta { font-size: 12px; margin: 0 0 6px; overflow-wrap: anywhere; }
 .idea-foot { display: flex; flex-wrap: wrap; gap: 6px; }
-.idea-details { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; border-top: 1px solid var(--line); padding-top: 8px; }
+.idea-details { display: flex; flex-direction: column; gap: 14px; margin-top: 4px; border-top: 1px solid var(--line); padding-top: 12px; }
 .idea-sent, .idea-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; overflow-wrap: anywhere; }
-.idea-row, .idea-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.idea-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.idea-titles { display: flex; flex-direction: column; gap: 8px; }
 .idea-sec { display: flex; flex-direction: column; gap: 6px; }
 .idea-sec > h3 { font-size: 14px; margin: 0; }
-.idea-card textarea, .dialog textarea { width: 100%; min-height: 60px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: #0b0e12; color: var(--fg); font: inherit; resize: vertical; }
-.idea-card select, .idea-card input[type="text"] { width: 100%; }
+.idea-panel textarea, .dialog textarea { width: 100%; min-height: 60px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: #0b0e12; color: var(--fg); font: inherit; resize: vertical; }
+.idea-panel select, .idea-panel input[type="text"] { width: 100%; }
+/* a public title (up to 240 characters, one line): the box grows with the words, wrapped, never cut off */
+.idea-panel textarea.title-input { min-height: 40px; field-sizing: content; resize: none; font-size: 15px; color: var(--fg); }
+/* the open card (ideas/panel.ts): a modal sheet on the right, 720 px at most; the whole screen on a phone */
+.idea-panel { width: min(720px, 100vw); max-width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0 0 0 auto; padding: 0; border: 0; border-left: 1px solid var(--line); background: var(--bg2); color: var(--fg); overflow-y: auto; overscroll-behavior: contain; font-size: 15px; }
+.idea-panel::backdrop { background: rgba(0,0,0,.6); }
+.idea-panel.busy .panel-body { opacity: .6; }
+.panel-head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px; background: var(--bg2); border-bottom: 1px solid var(--line); }
+.panel-head h2 { margin: 0; font-size: 17px; overflow-wrap: anywhere; }
+.panel-body { display: flex; flex-direction: column; gap: 8px; padding: 14px 20px 40px; }
+.panel-body .idea-meta { margin: 0; }
 .badge.k-bug, .badge.u-high { color: var(--warn); border-color: rgba(251,191,36,.45); }
 .badge.k-idea, .badge.pilot, .badge.landing, .badge.mail { color: var(--accent); border-color: rgba(74,222,128,.45); }
 .badge.u-urgent { color: var(--bad); border-color: rgba(248,113,113,.55); font-weight: 600; }
@@ -107,8 +120,13 @@ input[type="checkbox"] { min-height: 0; width: 20px; height: 20px; accent-color:
 @media (max-width: 720px) {
     .board { flex-direction: column; align-items: stretch; overflow-x: visible; }
     .column { min-width: 0; }
+    /* columns stacked in the page: a short list in the page's flow, a long one (Show all, a filter's
+       finds, a long queue) in its own scroll box, so no column runs the page thousands of pixels long */
     .cards { max-height: none; }
-    .idea-row, .idea-grid { grid-template-columns: 1fr; }
+    .cards.long { max-height: 75vh; }
+    .idea-row { grid-template-columns: 1fr; }
+    .panel-head { padding: 10px 16px; }
+    .panel-body { padding: 12px 16px 32px; }
     .row-main { flex-wrap: wrap; }
     .row-actions { width: 100%; justify-content: flex-start; }
     .col-row { grid-template-columns: 1fr 1fr; }

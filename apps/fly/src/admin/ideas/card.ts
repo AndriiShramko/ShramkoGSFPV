@@ -1,9 +1,10 @@
-// One card of the Ideas kanban. Closed: kind, urgency, pilot, contact and landing chips, the words (a
-// few lines), a move handle. Open: everything the pilot sent (contact, language, page, scene, release,
-// technical details to open or download), the column and urgency selects, the owner's comments, the
-// public title in four languages with the landing switch, the e-mail reply, the e-mails about it with
-// their state (Cancel while one has not gone, Send for one that waits). A visitor's words are always
-// text, never markup. tab.ts owns the state; this file only draws and reports.
+// One card of the Ideas kanban: kind, urgency, pilot, contact and landing chips, the words (a few lines),
+// a move handle and Details. Details opens the card in the side panel (ideas/panel.ts; a kanban column is
+// too narrow for it), which draws `details` below: everything the pilot sent (contact, language, page,
+// scene, release, technical details to open or download), the column and urgency selects, the owner's
+// comments, the public title in four languages with the landing switch, the e-mail reply, the e-mails
+// about it with their state (Cancel while one has not gone, Send for one that waits). A visitor's words
+// are always text, never markup. tab.ts owns the state; this file only draws and reports.
 import { h } from '../../ui/dom';
 import { t } from '../i18n';
 import { CANCELLABLE, IDEA_STATUSES, PUBLIC_LANGS, PUBLIC_TITLE_MAX, SENDABLE, URGENCIES, diagnosticsUrl } from './api';
@@ -22,8 +23,10 @@ export interface RunAfter {
 /** What a card needs from the tab: the client, the per-card state, and how to report a change. */
 export interface CardHost {
     readonly client: IdeasClient;
+    /** whether this card is the one open in the side panel */
     isOpen(id: string): boolean;
-    toggle(id: string): void;
+    /** open this card in the side panel (one at a time; Esc or Close puts the focus back on the card) */
+    open(id: string): void;
     isBusy(id: string): boolean;
     /** a kanban move (drag, keys, select); `focus` puts the focus back on the card's handle after it */
     move(id: string, to: IdeaStatus, focus?: boolean): void;
@@ -42,16 +45,34 @@ export interface CardHost {
     readonly undoSeconds: number;
 }
 
-const when = (iso: string | null): string => (iso ? new Date(iso).toLocaleString() : '');
+export const when = (iso: string | null): string => (iso ? new Date(iso).toLocaleString() : '');
 
 function chip(cls: string, text: string, attrs: Record<string, string> = {}): HTMLElement {
     return h('span', { class: `badge ${cls}`, ...attrs }, text);
 }
 
+/** The card's chips: kind, urgency, pilot, contact, landing, spam (on the card and at the top of the panel). */
+export function chips(i: Idea): (HTMLElement | null)[] {
+    return [
+        chip(`k-${i.kind}`, t(`admin.ideas.kind.${i.kind}`), { 'data-chip': 'kind' }),
+        i.urgency ? chip(`u-${i.urgency}`, t(`admin.ideas.urgency.${i.urgency}`), { 'data-chip': 'urgency' }) : null,
+        i.fromPilot ? chip('pilot', t('admin.ideas.card.pilot'), { 'data-chip': 'pilot' }) : null,
+        i.contact ? chip(i.email ? 'mail' : 'contact', i.email ? t('admin.ideas.card.hasEmail') : t('admin.ideas.card.hasContact'), { 'data-chip': 'contact' }) : null,
+        onLanding(i) ? chip('landing', t('admin.ideas.card.onLanding'), { 'data-chip': 'landing' }) : null,
+        i.suspect ? chip('warn', t('admin.ideas.card.suspect')) : null
+    ];
+}
+
+/** The thank-you button while one is due (owner's item 7), else null. */
+export function thanksButton(i: Idea, host: CardHost): HTMLButtonElement | null {
+    return thanksDue(i) ? h('button', { type: 'button', class: 'btn small', 'data-action': 'thanks', onclick: () => host.thanks(i) },
+        thanksPending(i) ? t('admin.ideas.thanks.review') : t('admin.ideas.thanks.open')) : null;
+}
+
 export function card(i: Idea, host: CardHost): HTMLLIElement {
     const open = host.isOpen(i.id);
     const busy = host.isBusy(i.id);
-    const li = h('li', { class: `idea-card${open ? ' open' : ''}${busy ? ' busy' : ''}`, 'data-idea': i.id, 'data-status': i.status, draggable: open ? 'false' : 'true', 'aria-busy': busy ? 'true' : undefined });
+    const li = h('li', { class: `idea-card${open ? ' open' : ''}${busy ? ' busy' : ''}`, 'data-idea': i.id, 'data-status': i.status, draggable: 'true', 'aria-busy': busy ? 'true' : undefined });
     li.addEventListener('dragstart', (e) => {
         e.dataTransfer?.setData('text/plain', i.id);
         if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
@@ -67,29 +88,18 @@ export function card(i: Idea, host: CardHost): HTMLLIElement {
         if (to) host.move(i.id, to, true);
     });
 
-    const head = h('div', { class: 'idea-head' },
-        handle,
-        chip(`k-${i.kind}`, t(`admin.ideas.kind.${i.kind}`), { 'data-chip': 'kind' }),
-        i.urgency ? chip(`u-${i.urgency}`, t(`admin.ideas.urgency.${i.urgency}`), { 'data-chip': 'urgency' }) : null,
-        i.fromPilot ? chip('pilot', t('admin.ideas.card.pilot'), { 'data-chip': 'pilot' }) : null,
-        i.contact ? chip(i.email ? 'mail' : 'contact', i.email ? t('admin.ideas.card.hasEmail') : t('admin.ideas.card.hasContact'), { 'data-chip': 'contact' }) : null,
-        onLanding(i) ? chip('landing', t('admin.ideas.card.onLanding'), { 'data-chip': 'landing' }) : null,
-        i.suspect ? chip('warn', t('admin.ideas.card.suspect')) : null);
+    const head = h('div', { class: 'idea-head' }, handle, ...chips(i));
     // a seeded feature has no words of a pilot: its public title stands in
     const words = h('p', { class: 'idea-text' }, i.text || i.public.title.en || t('admin.ideas.card.noText'));
     const meta = h('p', { class: 'idea-meta muted' }, [i.id, when(i.ts)].filter(Boolean).join(' · '));
-    const toggle = h('button', { type: 'button', class: 'btn small', 'data-action': 'details', 'aria-expanded': String(open), onclick: () => host.toggle(i.id) },
-        open ? t('admin.ideas.card.close') : t('admin.ideas.card.open'));
-    const foot = h('div', { class: 'idea-foot' }, toggle,
-        thanksDue(i) ? h('button', { type: 'button', class: 'btn small', 'data-action': 'thanks', onclick: () => host.thanks(i) },
-            thanksPending(i) ? t('admin.ideas.thanks.review') : t('admin.ideas.thanks.open')) : null);
-    li.append(head, words, meta, foot);
-    if (open) li.append(details(i, host));
+    const details = h('button', { type: 'button', class: 'btn small', 'data-action': 'details', 'aria-haspopup': 'dialog', 'aria-expanded': String(open), onclick: () => host.open(i.id) },
+        t('admin.ideas.card.open'));
+    li.append(head, words, meta, h('div', { class: 'idea-foot' }, details, thanksButton(i, host)));
     return li;
 }
 
-/** Everything about one idea, and what the owner can do with it. */
-function details(i: Idea, host: CardHost): HTMLElement {
+/** Everything about one idea, and what the owner can do with it (drawn in the side panel). */
+export function details(i: Idea, host: CardHost): HTMLElement {
     const sent = [
         i.contact ? h('li', { 'data-field': 'contact' }, t('admin.ideas.card.contact', { contact: i.contact })) : h('li', { class: 'muted', 'data-field': 'contact' }, t('admin.ideas.card.noContact')),
         i.locale ? h('li', {}, t('admin.ideas.card.lang', { lang: i.locale })) : null,
@@ -160,7 +170,11 @@ function comments(i: Idea, host: CardHost): HTMLElement {
         input, h('div', { class: 'bar' }, add));
 }
 
-/** The public title in four languages and the landing switch; saved by its button. */
+/**
+ * The public title in four languages and the landing switch; saved by its button. A title is one line of
+ * up to 240 characters: each language gets the panel's whole width and a box that grows with the words
+ * (wrapped, never cut off at the box's edge); Enter and pasted line breaks never put a break into it.
+ */
 function publicEditor(i: Idea, host: CardHost): HTMLElement {
     const title = { ...i.public.title };
     const note = h('p', { class: 'muted', 'data-field': 'public-note' });
@@ -180,10 +194,13 @@ function publicEditor(i: Idea, host: CardHost): HTMLElement {
     const inputs = PUBLIC_LANGS.map((l) => {
         const key = `${i.id}:title:${l}`;
         const typed = host.draft(key);
-        const input = h('input', { type: 'text', maxlength: PUBLIC_TITLE_MAX, 'data-field': `title-${l}`, value: typed ?? title[l] ?? '' }) as HTMLInputElement;
+        const input = h('textarea', { rows: 1, maxlength: PUBLIC_TITLE_MAX, class: 'title-input', lang: l, 'data-field': `title-${l}` }) as HTMLTextAreaElement;
+        input.value = typed ?? title[l] ?? '';
         const take = (): void => { if (input.value.trim()) title[l] = input.value.trim(); else delete title[l]; };
         if (typed !== undefined) take();
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) e.preventDefault(); });
         input.addEventListener('input', () => {
+            if (/[\r\n]/.test(input.value)) input.value = input.value.replace(/\s*[\r\n]+\s*/g, ' ');
             host.setDraft(key, input.value);
             take();
             refresh();
@@ -195,7 +212,7 @@ function publicEditor(i: Idea, host: CardHost): HTMLElement {
         { clear: [...PUBLIC_LANGS.map((l) => `${i.id}:title:${l}`), showKey], say: () => t('admin.ideas.public.saved') }));
     refresh();
     return h('section', { class: 'idea-sec' }, h('h3', {}, t('admin.ideas.public.title')),
-        h('div', { class: 'idea-grid' }, ...inputs),
+        h('div', { class: 'idea-titles' }, ...inputs),
         h('label', { class: 'check' }, show, ' ', t('admin.ideas.public.show')), note, h('div', { class: 'bar' }, save));
 }
 

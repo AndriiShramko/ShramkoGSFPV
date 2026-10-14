@@ -2,7 +2,10 @@
 // New / Accepted (the work queue) / In progress / Done / Rejected. It replaces the Reports tab and keeps
 // what that tab did (every report with its words and what the pilot sent, bug details to open or
 // download). Move a card by dragging it onto a column, by its handle and the left/right arrow keys, or
-// by the Column select in the open card (touch). Filters and a search narrow the board; a note form
+// by the Column select in the open card (touch). Details opens one card at a time in the side panel
+// (ideas/panel.ts); Esc or Close puts the focus back on that card. The archive columns (Done, Rejected)
+// draw their newest few cards with "Show all (n)", their count always the whole column; the search and
+// the filters draw every card they find. Filters and a search narrow the board; a note form
 // writes down an idea a pilot told the owner outside the form (item 8). Nothing waits to be saved here:
 // every change goes to the server at once (ideas/api.ts) and the card shows the server's answer. A
 // pilot's idea that reaches Done opens the thank-you dialog (ideas/mail.ts); e-mails go only on Send.
@@ -13,12 +16,13 @@ import { t } from '../i18n';
 import type { AdminClient } from '../api';
 import { IDEA_KINDS, IDEA_STATUSES, IdeasClient, PUBLIC_LANGS, URGENCIES } from './api';
 import type { Idea, IdeaAnswer, IdeaKind, IdeaStatus, IdeasSetup, Urgency } from './api';
-import { ALL_IDEAS, columns, moveBody, thanksDue } from './board';
+import { ALL_IDEAS, CLIP_AT, CLIPPED, clip, columns, moveBody, narrowed, thanksDue } from './board';
 import type { IdeaFilter } from './board';
 import { card, field } from './card';
 import type { CardHost, RunAfter } from './card';
 import { changedMeanwhile, refusal, storeDown } from './errors';
 import { openThanks } from './mail';
+import { IdeaPanel } from './panel';
 
 export class IdeasTab implements CardHost {
     readonly root: HTMLElement;
@@ -27,9 +31,14 @@ export class IdeasTab implements CardHost {
     private unreadable = 0;
     private setup: IdeasSetup = { mail: false, mailFrom: null, bot: false, undoSeconds: 60 };
     private filter: IdeaFilter = { ...ALL_IDEAS, kinds: new Set(ALL_IDEAS.kinds) };
-    private readonly opened = new Set<string>();
+    /** archive columns the owner opened whole (Show all) */
+    private readonly expanded = new Set<IdeaStatus>();
+    /** the card last opened or moved: drawn even beyond an archive column's newest few, so the focus can return to it */
+    private last: string | null = null;
     private readonly busy = new Set<string>();
     private readonly drafts = new Map<string, string>();
+    private readonly panel = new IdeaPanel((id) => this.closed(id));
+    private readonly search = h('input', { type: 'search', class: 'grow', 'data-testid': 'idea-search', 'aria-label': t('admin.ideas.filter.search'), placeholder: t('admin.ideas.filter.search') }) as HTMLInputElement;
     private readonly board = h('div', { class: 'board', 'data-testid': 'idea-board' });
     private readonly bar = h('div', { class: 'bar filters', role: 'search' });
     private readonly shown = h('span', { class: 'muted', 'data-testid': 'idea-shown', 'aria-live': 'polite' });
@@ -42,7 +51,7 @@ export class IdeasTab implements CardHost {
         this.client = new IdeasClient(api);
         this.buildFilters();
         this.controls = h('section', { class: 'card' }, this.bar, h('p', { class: 'muted' }, t('admin.ideas.help')), this.setupNote, this.warn, this.noteForm());
-        this.root = h('div', { class: 'tab-body' }, this.down, this.controls, this.board);
+        this.root = h('div', { class: 'tab-body' }, this.down, this.controls, this.board, this.panel.dialog);
     }
 
     get undoSeconds(): number { return this.setup.undoSeconds; }
@@ -70,6 +79,7 @@ export class IdeasTab implements CardHost {
         this.down.hidden = this.board.hidden = this.controls.hidden = false;
         if (!e) { this.down.hidden = true; return; }
         this.board.hidden = this.controls.hidden = true;
+        this.panel.close();
         const msg = refusal(e);
         const retry = h('button', { type: 'button', class: 'btn small', 'data-action': 'ideas-retry' }, t('admin.ideas.down.retry'));
         retry.addEventListener('click', () => {
@@ -86,21 +96,32 @@ export class IdeasTab implements CardHost {
 
     // ---------------- CardHost ----------------
 
-    isOpen(id: string): boolean { return this.opened.has(id); }
+    isOpen(id: string): boolean { return this.panel.id === id; }
     isBusy(id: string): boolean { return this.busy.has(id); }
     draft(key: string): string | undefined { return this.drafts.get(key); }
     setDraft(key: string, v: string | undefined): void { if (v === undefined) this.drafts.delete(key); else this.drafts.set(key, v); }
 
-    toggle(id: string): void {
-        if (!this.opened.delete(id)) this.opened.add(id);
-        this.render();
-        this.focus(id, '[data-action=details]');
+    open(id: string): void {
+        const i = this.ideas.find((x) => x.id === id);
+        if (!i) return;
+        this.last = id;
+        this.panel.open(i, this);
+        this.renderBoard(); // the card shows it is the open one
+    }
+
+    /** The panel closed (Esc, Close, the store went down): the focus goes back to the card's Details. */
+    private closed(id: string): void {
+        this.renderBoard();
+        if (this.board.hidden) return;
+        // a card the filters no longer keep (a move from the panel left the landing filter): the search
+        (this.board.querySelector<HTMLElement>(`[data-idea="${CSS.escape(id)}"] [data-action=details]`) ?? this.search).focus();
     }
 
     move(id: string, to: IdeaStatus, focus = false): void {
         const i = this.ideas.find((x) => x.id === id);
         const body = i ? moveBody(i, to) : null;
         if (!i || !body || this.busy.has(id)) return;
+        this.last = id;
         void this.run(id, () => this.client.setStatus(body.id, body.status), { say: (a) => t('admin.ideas.moved', { id, column: t(`admin.ideas.col.${a.idea.status}`) }) }).then((ok) => {
             if (focus) this.focus(id, '.handle');
             const now = this.ideas.find((x) => x.id === id);
@@ -134,7 +155,14 @@ export class IdeasTab implements CardHost {
     }
 
     thanks(i: Idea): void {
-        openThanks(i, { client: this.client, undoSeconds: this.setup.undoSeconds, update: (x) => this.update(x), say: this.say });
+        const d = openThanks(i, { client: this.client, undoSeconds: this.setup.undoSeconds, update: (x) => this.update(x), say: this.say });
+        // the browser puts the focus back where it was; when that button was redrawn meanwhile (the card
+        // took the server's answer), on the thank-you button again, else the panel's Close or the card's Details
+        d.addEventListener('close', () => {
+            if (document.activeElement && document.activeElement !== document.body) return;
+            const where = this.panel.id ? this.panel.dialog : this.board.querySelector<HTMLElement>(`[data-idea="${CSS.escape(i.id)}"]`);
+            (where?.querySelector<HTMLElement>('[data-action=thanks]') ?? where?.querySelector<HTMLElement>(this.panel.id ? '[data-action=panel-close]' : '[data-action=details]'))?.focus();
+        });
     }
 
     /** The server's answer replaces the card (or adds it: a new note). */
@@ -151,7 +179,7 @@ export class IdeasTab implements CardHost {
     }
 
     private buildFilters(): void {
-        const search = h('input', { type: 'search', class: 'grow', 'data-testid': 'idea-search', 'aria-label': t('admin.ideas.filter.search'), placeholder: t('admin.ideas.filter.search') }) as HTMLInputElement;
+        const search = this.search;
         search.addEventListener('input', () => { this.filter = { ...this.filter, search: search.value }; this.render(); });
         const kinds = h('div', { class: 'bar', role: 'group', 'aria-label': t('admin.ideas.filter.kinds') });
         for (const k of IDEA_KINDS) {
@@ -211,7 +239,33 @@ export class IdeasTab implements CardHost {
             h('div', { class: 'idea-row' }, field(t('admin.ideas.urgency.label'), urgency), h('div', { class: 'bar' }, add)));
     }
 
+    /** The board, and the open panel from the idea as it is now (closed if the idea is gone). */
     private render(): void {
+        this.renderBoard();
+        const id = this.panel.id;
+        if (!id) return;
+        const i = this.ideas.find((x) => x.id === id);
+        if (i) this.panel.draw(i, this); else this.panel.close();
+    }
+
+    /**
+     * Under a long archive column: how many older cards are not drawn and Show all (n); once shown whole,
+     * Show only the newest. Nothing while the column is short or the filters draw every match.
+     */
+    private more(s: IdeaStatus, total: number, hidden: number): HTMLElement | null {
+        const whole = this.expanded.has(s);
+        if (!hidden && !(whole && CLIPPED.has(s) && total > CLIP_AT && !narrowed(this.filter))) return null;
+        const b = h('button', { type: 'button', class: 'btn small col-more', 'data-action': 'col-all', 'aria-expanded': String(whole) },
+            whole ? t('admin.ideas.col.showNewest', { n: CLIP_AT }) : t('admin.ideas.col.showAll', { n: total }));
+        b.addEventListener('click', () => {
+            if (!this.expanded.delete(s)) this.expanded.add(s);
+            this.renderBoard();
+            this.board.querySelector<HTMLElement>(`[data-column="${s}"] [data-action=col-all]`)?.focus();
+        });
+        return h('div', { class: 'col-foot' }, hidden ? h('p', { class: 'muted', 'data-hidden': s }, t('admin.ideas.col.hidden', { n: hidden })) : null, b);
+    }
+
+    private renderBoard(): void {
         const cols = columns(this.ideas, this.filter);
         const n = IDEA_STATUSES.reduce((s, k) => s + cols[k].length, 0);
         this.shown.textContent = t('admin.ideas.filter.shown', { n, total: this.ideas.length });
@@ -226,12 +280,17 @@ export class IdeasTab implements CardHost {
         const active = document.activeElement instanceof HTMLElement && this.board.contains(document.activeElement) ? document.activeElement : null;
         const activeKey = active ? [active.closest('[data-idea]')?.getAttribute('data-idea'), active.getAttribute('data-field') ?? active.getAttribute('data-action')] : null;
         clear(this.board);
+        const view = { narrowed: narrowed(this.filter), keep: this.last };
         IDEA_STATUSES.forEach((s, k) => {
-            const list = h('ol', { class: 'cards' });
-            for (const i of cols[s]) list.append(card(i, this));
+            const { cards, hidden } = clip(s, cols[s], { ...view, all: this.expanded.has(s) });
+            // a long list scrolls in its own box on every width (a phone too), so no column runs the page long
+            const list = h('ol', { class: `cards${cards.length > CLIP_AT ? ' long' : ''}` });
+            for (const i of cards) list.append(card(i, this));
             if (!cols[s].length) list.append(h('li', { class: 'muted empty' }, t('admin.ideas.col.empty')));
+            // the count is the whole column, drawn or not
             const col = h('section', { class: 'column', 'data-column': s, 'aria-label': t(`admin.ideas.col.${s}`) },
-                h('h2', {}, t(`admin.ideas.col.${s}`), ' ', h('span', { class: 'muted', 'data-count': s }, String(cols[s].length))), list);
+                h('h2', {}, t(`admin.ideas.col.${s}`), ' ', h('span', { class: 'muted', 'data-count': s }, String(cols[s].length))), list,
+                this.more(s, cols[s].length, hidden));
             col.addEventListener('dragover', (e) => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'; col.classList.add('drop'); });
             col.addEventListener('dragleave', (e) => { if (!col.contains(e.relatedTarget as Node | null)) col.classList.remove('drop'); });
             col.addEventListener('drop', (e) => {
@@ -243,7 +302,7 @@ export class IdeasTab implements CardHost {
             this.board.append(col);
             list.scrollTop = scroll[k] ?? 0;
         });
-        // a redraw while typing (another card's answer came back) keeps the focus where it was
+        // a redraw (a card's answer came back) keeps the focus on the card's handle or button where it was
         if (activeKey?.[0] && activeKey[1]) {
             const at = `[data-idea="${CSS.escape(activeKey[0])}"]`;
             this.board.querySelector<HTMLElement>(`${at} [data-field="${activeKey[1]}"], ${at} [data-action="${activeKey[1]}"]`)?.focus();

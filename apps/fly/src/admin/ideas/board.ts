@@ -1,6 +1,7 @@
 // The Ideas kanban as a model, no DOM: which card is in which column and in what order, what the
-// filters and the search keep, what a move sends, when a thank-you e-mail is due, whether a public
-// title is ready for the landing. tab.ts draws it; tools/bench/test/admin-ideas.test.ts checks it.
+// filters and the search keep, how much of a long archive column is drawn, what a move sends, when a
+// thank-you e-mail is due, whether a public title is ready for the landing. tab.ts draws it;
+// tools/bench/test/admin-ideas.test.ts checks it.
 // The landing's rules are lane B's (apps/api/ideas.py roadmap_items): an English title, a status the
 // landing shows (accepted is published as "planned"), not hidden, not marked as spam.
 import { IDEA_KINDS, IDEA_STATUSES, PUBLIC_LANGS, URGENCIES } from './api';
@@ -60,6 +61,37 @@ export function columns(ideas: readonly Idea[], f: IdeaFilter): Record<IdeaStatu
     for (const i of ideas) if (matches(i, f)) out[i.status].push(i);
     for (const s of IDEA_STATUSES) out[s].sort(ORDER[s]);
     return out;
+}
+
+/** Whether the filters narrow the board (a search word, a kind left out, a select set): then every match is drawn. */
+export function narrowed(f: IdeaFilter): boolean {
+    return f.search.trim() !== '' || IDEA_KINDS.some((k) => !f.kinds.has(k)) || f.minUrgency !== 'any' || f.contact !== 'any' || f.landing !== 'any';
+}
+
+/** The archive columns: they grow without end (the live Done held 60 cards), so they draw their newest few. */
+export const CLIPPED: ReadonlySet<IdeaStatus> = new Set(['done', 'rejected']);
+/** How many cards an archive column draws until the owner asks for all of them. */
+export const CLIP_AT = 8;
+
+/** How a column is drawn: the whole column (`all`: Show all pressed), and the card to keep in view. */
+export interface ClipView {
+    all: boolean;
+    narrowed: boolean;
+    /** the card the owner last opened or moved: drawn even beyond the newest few, so the focus can go back to it */
+    keep: string | null;
+}
+
+/**
+ * The cards a column draws, in its order, and how many it leaves out. The work columns (New, Accepted,
+ * In progress) draw everything; an archive column (Done, Rejected) with more than CLIP_AT cards draws its
+ * newest CLIP_AT (its own order: Done by done date, Rejected by date) plus the kept card, unless the
+ * owner pressed Show all or the filters narrow the board (a search finds every card it matches, drawn).
+ * The column's count is always its whole length, never the drawn part.
+ */
+export function clip(status: IdeaStatus, list: readonly Idea[], v: ClipView): { cards: Idea[]; hidden: number } {
+    if (!CLIPPED.has(status) || v.all || v.narrowed || list.length <= CLIP_AT) return { cards: [...list], hidden: 0 };
+    const cards = list.filter((i, k) => k < CLIP_AT || i.id === v.keep);
+    return { cards, hidden: list.length - cards.length };
 }
 
 /** The column left (-1) or right (+1) of this one, or null at the edge (the keyboard move). */

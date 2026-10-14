@@ -6,7 +6,8 @@
 //    a thank-you is only a draft until send-done names it, Cancel stops what has not gone; the owner is
 //    told what the answer's mail state says (Gmail off: saved, not "queued"); a draft a newer one replaced
 //    is refused (stale-draft);
-//  - the columns and their order, the filters and the search;
+//  - the columns and their order, the filters and the search; a long archive column (Done, Rejected)
+//    draws its newest 8 plus the card last opened or moved, unless Show all or the filters draw everything;
 //  - a thank-you is due only for a pilot's idea with an e-mail that is done and not thanked yet; one that
 //    waits for Gmail or failed is the pending one (Sent again, never written twice);
 //  - a record with an unknown status is counted, never guessed into a column.
@@ -211,6 +212,38 @@ describe('the board model', () => {
         expect(B.landingBlocker({ en: 'X' }, 'rejected')).toBe('status');
         expect(B.landingBlocker({ en: 'X' }, 'accepted')).toBeNull();
         expect(B.missingLangs({ en: 'X', es: ' ' })).toEqual(['es', 'pl', 'ru']);
+    });
+
+    it('a long archive column draws its newest 8 (the count stays the whole column); work columns, Show all and filters draw everything', () => {
+        const day = (n: number): string => `2026-09-${String(n).padStart(2, '0')}T10:00:00Z`;
+        const done = Array.from({ length: 20 }, (_, n) => idea({ id: `d-${String(n + 1).padStart(2, '0')}`, status: 'done', done: day(n + 1), ts: day(n + 1) }));
+        const queue = Array.from({ length: 20 }, (_, n) => idea({ id: `n-${n + 1}`, status: 'new', ts: day(n + 1) }));
+        const c = B.columns([...done, ...queue], B.ALL_IDEAS);
+        const view = { all: false, narrowed: false, keep: null };
+        const d = B.clip('done', c.done, view);
+        // the newest done first, 12 older ones left out; the column itself still holds all 20 (its count)
+        expect([d.cards.length, d.hidden, c.done.length]).toEqual([8, 12, 20]);
+        expect(d.cards.map((i) => i.id)).toEqual(['d-20', 'd-19', 'd-18', 'd-17', 'd-16', 'd-15', 'd-14', 'd-13']);
+        expect(B.clip('rejected', c.done, view).cards.length).toBe(8); // Rejected is an archive column too
+        // controls: the work queue is never clipped; Show all, a narrowed board, a short column draw everything
+        expect(B.clip('new', c.new, view)).toEqual({ cards: c.new, hidden: 0 });
+        expect(B.clip('done', c.done, { ...view, all: true }).cards.length).toBe(20);
+        expect(B.clip('done', c.done, { ...view, narrowed: true }).cards.length).toBe(20);
+        expect(B.clip('done', c.done.slice(0, 8), view).hidden).toBe(0);
+        // the card the owner last opened or moved stays drawn where it sits (the focus goes back to it)
+        const kept = B.clip('done', c.done, { ...view, keep: 'd-02' });
+        expect([kept.cards.length, kept.hidden, kept.cards.at(-1)?.id]).toEqual([9, 11, 'd-02']);
+        expect(B.clip('done', c.done, { ...view, keep: 'd-19' }).cards.length).toBe(8); // already among the newest
+    });
+
+    it('the board counts as narrowed by a search word, a kind left out or any select; not by spaces', () => {
+        expect(B.narrowed(B.ALL_IDEAS)).toBe(false);
+        expect(B.narrowed({ ...B.ALL_IDEAS, search: '   ' })).toBe(false); // control
+        expect(B.narrowed({ ...B.ALL_IDEAS, search: 'R-2026' })).toBe(true);
+        expect(B.narrowed({ ...B.ALL_IDEAS, kinds: new Set(['idea', 'bug', 'note']) })).toBe(true);
+        expect(B.narrowed({ ...B.ALL_IDEAS, minUrgency: 'high' })).toBe(true);
+        expect(B.narrowed({ ...B.ALL_IDEAS, contact: 'no' })).toBe(true);
+        expect(B.narrowed({ ...B.ALL_IDEAS, landing: 'yes' })).toBe(true);
     });
 
     it('the keyboard move goes to the next column and stops at the edges', () => {
