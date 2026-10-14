@@ -9,6 +9,8 @@
 // current one; a Cancel refused because the e-mail went meanwhile (409) re-reads the card; while the
 // server cannot read ideas.json (503 ideas-store) the tab says so with Try again and the Scenes tab works.
 // The mock is held to the real server by apps/api/tests/ideas-admin-contract.json (both replay it).
+// An open card is the side panel (one at a time, modal): it is as wide as its fields need, Esc or Close
+// closes it and the focus returns to the card; the thank-you dialog opens over it.
 // Every check has a negative control.
 //   npx tsx src/accept-v07-ideas.ts                      (from tools/bench; FLY_PORT=5364 by default)
 // Draws nothing heavy, but holds the shared GPU lock like every browser run on this PC (the caller takes
@@ -68,6 +70,18 @@ async function routeApi(ctx: BrowserContext, mock: IdeasMock): Promise<void> {
 }
 
 const card = (id: string): string => `[data-idea="${id}"]`;
+/** The side panel an open card's details are drawn in (one card at a time, a modal dialog). */
+const PANEL = '[data-testid=idea-panel]';
+/** Open a card's details: its Details button, then the panel showing that card. */
+async function openCard(page: Page, id: string): Promise<void> {
+    await page.click(`${card(id)} [data-action=details]`);
+    await page.waitForSelector(`${PANEL}[open][data-panel-idea="${id}"]`);
+}
+/** Esc closes the panel (the board behind is inert while it is open). */
+async function closeCard(page: Page): Promise<void> {
+    await page.keyboard.press('Escape');
+    await page.waitForSelector(`${PANEL}:not([open])`, { state: 'attached' });
+}
 const statusOf = (page: Page, id: string): Promise<string | null> => page.$eval(card(id), (e) => e.getAttribute('data-status')).catch(() => null);
 const counts = (page: Page): Promise<Record<string, string>> =>
     page.$$eval('[data-count]', (els) => Object.fromEntries(els.map((e) => [e.getAttribute('data-count') ?? '', e.textContent ?? ''])));
@@ -212,54 +226,71 @@ async function main(): Promise<void> {
     check('contact filter: the cards without a contact', same((await ids(page)).sort(), ['F-edgetx-radio-over-usb-webhid-in-chrome', 'N-20261010-0001', 'R-20261008-0003']));
     await page.selectOption('[data-filter=contact]', 'any');
 
-    // the bug's card: everything the pilot sent, technical details to open and to download
-    await page.click(`${card('R-20261008-0003')} [data-action=details]`);
-    const href = await page.getAttribute(`${card('R-20261008-0003')} [data-action=diagnostics]`, 'href');
+    // the bug's card: Details opens it in the side panel (a modal dialog as wide as its contents need, the
+    // board behind inert); everything the pilot sent, technical details to open and to download
+    await openCard(page, 'R-20261008-0003');
+    const panelBox = await page.$eval(PANEL, (e) => ({ modal: e.matches(':modal'), width: Math.round(e.getBoundingClientRect().width), focusIn: e.contains(document.activeElement),
+        onCard: !!document.activeElement?.closest('[data-idea]') }));
+    results.panel = panelBox;
+    check('Details opens the card in a modal side panel, 720 px wide at 1280, the focus in it', panelBox.modal && panelBox.width === 720 && panelBox.focusIn);
+    check('while the panel is open the focus is not on the board (control for the return below)', !panelBox.onCard, true);
+    const href = await page.getAttribute(`${PANEL} [data-action=diagnostics]`, 'href');
     const diag = await page.evaluate(async (u) => { const r = await fetch(u!); return { status: r.status, id: (await r.json()).id }; }, href);
     check('technical details open from the card (the stored JSON)', href === '/api/admin/reports/R-20261008-0003/diagnostics' && diag.status === 200 && diag.id === 'R-20261008-0003');
-    const [download] = await Promise.all([page.waitForEvent('download'), page.click(`${card('R-20261008-0003')} [data-action=download]`)]);
+    const [download] = await Promise.all([page.waitForEvent('download'), page.click(`${PANEL} [data-action=download]`)]);
     check('technical details download as R-20261008-0003.json', download.suggestedFilename() === 'R-20261008-0003.json');
-    const sentFields = (await page.textContent(`${card('R-20261008-0003')} .idea-sent`)) ?? '';
+    const sentFields = (await page.textContent(`${PANEL} .idea-sent`)) ?? '';
     check('the card shows what the pilot sent (language, page, scene, release)', ['en', 'fly', '887f27aa', 'f92d98b'].every((x) => sentFields.includes(x)));
-    check('no e-mail left: no reply box, a reason instead', !(await page.$(`${card('R-20261008-0003')} [data-field=reply-text]`)) && !!(await page.$(`${card('R-20261008-0003')} [data-field=reply] p`)), true);
+    check('no e-mail left: no reply box, a reason instead', !(await page.$(`${PANEL} [data-field=reply-text]`)) && !!(await page.$(`${PANEL} [data-field=reply] p`)), true);
+    await closeCard(page);
+    const back = await page.evaluate(() => [document.activeElement?.closest('[data-idea]')?.getAttribute('data-idea'), document.activeElement?.getAttribute('data-action')]);
+    check('Esc closes the panel and the focus is back on the card\'s Details', same(back, ['R-20261008-0003', 'details']));
+    await openCard(page, 'R-20261008-0003');
+    await page.click(`${PANEL} [data-action=panel-close]`);
+    await page.waitForSelector(`${PANEL}:not([open])`, { state: 'attached' });
+    check('Close closes it too, the focus on the same Details', await page.evaluate(() => document.activeElement?.closest('[data-idea]')?.getAttribute('data-idea') === 'R-20261008-0003'));
 
     // a card with a contact: reply (then Cancel in the undo window), comment, urgency, public title, the Column select
     const id2 = 'R-20261006-0002';
-    await page.click(`${card(id2)} [data-action=details]`);
-    check('the contact itself is on the card', ((await page.textContent(`${card(id2)} [data-field=contact]`)) ?? '').includes('pilot.one@example.com or @pilotone on Telegram'));
-    const replyBox = `${card(id2)} [data-field=reply-text]`;
+    await openCard(page, id2);
+    check('the contact itself is on the card', ((await page.textContent(`${PANEL} [data-field=contact]`)) ?? '').includes('pilot.one@example.com or @pilotone on Telegram'));
+    const titleFit = await page.$$eval(`${PANEL} [data-field^=title-]`, (els) => els.map((e) => ({ w: Math.round(e.getBoundingClientRect().width), whole: e.scrollWidth <= e.clientWidth && e.scrollHeight <= e.clientHeight + 1 })));
+    results.titleFields = titleFit;
+    check('the four public titles each get the panel\'s width (> 600 px) and show their words whole', titleFit.length === 4 && titleFit.every((x) => x.w > 600 && x.whole));
+    const replyBox = `${PANEL} [data-field=reply-text]`;
     const answer = 'Thanks! It is queued for the next build.';
     // the server refuses the first send: the text stays in the box, nothing is queued
     mock.failNext = { path: 'ideas/reply', status: 500 };
     await page.fill(replyBox, answer);
-    await page.click(`${card(id2)} [data-action=reply]`);
+    await page.click(`${PANEL} [data-action=reply]`);
     await page.waitForSelector('.note.bad');
     await quiet(page, id2);
     check('a refused reply keeps its text in the box', (await page.inputValue(replyBox)) === answer && !mock.mails().some((m) => m.kind === 'reply'), true);
     before = mock.posts().length;
-    await page.click(`${card(id2)} [data-action=reply]`);
+    await page.click(`${PANEL} [data-action=reply]`);
     await posts(mock, before + 1);
-    await page.waitForSelector(`${card(id2)}:not([aria-busy]) [data-field=mails] [data-state=queued] [data-action=mail-cancel]`);
+    await page.waitForSelector(`${PANEL}:not([aria-busy]) [data-field=mails] [data-state=queued] [data-action=mail-cancel]`);
     check('the reply is queued behind the undo window and the owner is told so', ((await page.textContent('.note')) ?? '').includes('pilot.one@example.com') && mock.mails('queued').some((m) => m.kind === 'reply'));
     check('after the send the reply box is empty', (await page.inputValue(replyBox)) === '');
     const oneReply = mock.posts().length;
-    await page.click(`${card(id2)} [data-action=reply]`);
+    await page.click(`${PANEL} [data-action=reply]`);
     await sleep(300);
     check('a second click on Send reply sends nothing: the pilot gets one e-mail', mock.posts().length === oneReply && mock.mails().filter((m) => m.kind === 'reply').length === 1, true);
-    const replyId = await page.getAttribute(`${card(id2)} [data-field=mails] [data-state=queued] [data-action=mail-cancel]`, 'data-mail');
-    await page.click(`${card(id2)} [data-field=mails] [data-state=queued] [data-action=mail-cancel]`);
+    const replyId = await page.getAttribute(`${PANEL} [data-field=mails] [data-state=queued] [data-action=mail-cancel]`, 'data-mail');
+    await page.click(`${PANEL} [data-field=mails] [data-state=queued] [data-action=mail-cancel]`);
     await posts(mock, before + 2);
-    await page.waitForSelector(`${card(id2)}:not([aria-busy]) [data-field=mails] [data-state=cancelled]`);
+    await page.waitForSelector(`${PANEL}:not([aria-busy]) [data-field=mails] [data-state=cancelled]`);
     check('Cancel on the queued reply stops it', mock.mails().find((m) => m.id === replyId)?.state === 'cancelled');
-    await page.fill(`${card(id2)} [data-field=comment]`, 'With the HUD work');
-    await page.click(`${card(id2)} [data-action=comment]`);
+    await page.fill(`${PANEL} [data-field=comment]`, 'With the HUD work');
+    await page.click(`${PANEL} [data-action=comment]`);
     await posts(mock, before + 3);
-    await page.waitForSelector(`${card(id2)}:not([aria-busy]) [data-field=urgency]`);
-    check('after Add comment the comment box is empty (a second click adds nothing)', (await page.inputValue(`${card(id2)} [data-field=comment]`)) === '');
-    await page.selectOption(`${card(id2)} [data-field=urgency]`, 'urgent');
+    await page.waitForSelector(`${PANEL}:not([aria-busy]) [data-field=urgency]`);
+    check('after Add comment the comment box is empty (a second click adds nothing)', (await page.inputValue(`${PANEL} [data-field=comment]`)) === '');
+    await page.selectOption(`${PANEL} [data-field=urgency]`, 'urgent');
     await page.waitForSelector(`${card(id2)}:not([aria-busy]) [data-chip=urgency].u-urgent`);
-    await page.fill(`${card(id2)} [data-field=title-pl]`, 'Celownik na srodku obrazu');
-    await page.click(`${card(id2)} [data-action=save-public]`);
+    check('the panel stays open across the server\'s answers (redrawn in place, the same card)', await page.isVisible(`${PANEL}[open][data-panel-idea="${id2}"] [data-chip=urgency].u-urgent`));
+    await page.fill(`${PANEL} [data-field=title-pl]`, 'Celownik na srodku obrazu');
+    await page.click(`${PANEL} [data-action=save-public]`);
     await posts(mock, before + 5);
     await quiet(page, id2);
     results.cardCalls = sentSince(mock, before);
@@ -270,30 +301,40 @@ async function main(): Promise<void> {
         ['ideas/update', { id: id2, urgency: 'urgent' }],
         ['ideas/update', { id: id2, publicTitle: { en: 'A crosshair in the centre of the view', pl: 'Celownik na srodku obrazu' }, visible: true }]
     ]));
-    await page.selectOption(`${card(id2)} [data-field=status]`, 'in_progress');
+    await page.selectOption(`${PANEL} [data-field=status]`, 'in_progress');
     await settled(page, id2, 'in_progress');
     check('the Column select moves the card (touch)', same(mock.posts().at(-1)?.body, { id: id2, status: 'in_progress' }));
+    await closeCard(page);
 
     // the landing: shown with an English title and a status the landing shows; the card says what is missing
     check('a card with an English title in a shown status carries the landing chip', !!(await page.$(`${card(id2)} [data-chip=landing]`)));
     check('without an English title no landing chip', !(await page.$(`${card('R-20261006-0001')} [data-chip=landing]`)), true);
-    await page.click(`${card('R-20261006-0001')} [data-action=details]`);
-    const noteOf = (): Promise<string> => page.textContent(`${card('R-20261006-0001')} [data-field=public-note]`).then((s) => s ?? '');
+    await openCard(page, 'R-20261006-0001');
+    const noteOf = (): Promise<string> => page.textContent(`${PANEL} [data-field=public-note]`).then((s) => s ?? '');
     const needTitle = await noteOf();
-    await page.fill(`${card('R-20261006-0001')} [data-field=title-en]`, 'Rates types with manual editing');
+    await page.fill(`${PANEL} [data-field=title-en]`, 'Rates types with manual editing');
     const missing = await noteOf();
     check('the card asks for the English title first, then names the languages still missing', /English/.test(needTitle) && missing !== needTitle && ['es', 'pl', 'ru'].every((l) => missing.includes(l)));
+    // a title is one line: Enter puts no line break into it
+    await page.press(`${PANEL} [data-field=title-en]`, 'Enter');
+    check('Enter in a public title adds no line break', (await page.inputValue(`${PANEL} [data-field=title-en]`)) === 'Rates types with manual editing');
+    await closeCard(page);
 
-    // the landing switch is a draft like the titles: redraws before Save (here: the search) keep it unticked
-    await page.uncheck(`${card(id2)} [data-field=visible]`);
+    // the landing switch is a draft like the titles: closing the panel and redraws before Save (here: the
+    // search) keep it unticked
+    await openCard(page, id2);
+    await page.uncheck(`${PANEL} [data-field=visible]`);
+    await closeCard(page);
     await page.fill('[data-testid=idea-search]', 'R-2026');
     await page.fill('[data-testid=idea-search]', '');
-    check('the unticked landing switch survives redraws before Save', !(await page.isChecked(`${card(id2)} [data-field=visible]`)));
+    await openCard(page, id2);
+    check('the unticked landing switch survives closing the panel and redraws before Save', !(await page.isChecked(`${PANEL} [data-field=visible]`)));
     before = mock.posts().length;
-    await page.click(`${card(id2)} [data-action=save-public]`);
+    await page.click(`${PANEL} [data-action=save-public]`);
     await posts(mock, before + 1);
     await quiet(page, id2);
     check('Save sends visible: false and the card leaves the landing', (mock.posts().at(-1)?.body as { visible?: unknown } | null)?.visible === false && !(await page.$(`${card(id2)} [data-chip=landing]`)));
+    await closeCard(page);
 
     // the owner writes down an idea a pilot told him (item 8): nothing goes without words
     await page.click('[data-testid=note-form] summary');
@@ -314,18 +355,20 @@ async function main(): Promise<void> {
     // again (ideas/mail/send), never written a second time
     mock.failNext = null;
     mock.mailConfigured = false;
+    await openCard(page, id2);
     await page.fill(replyBox, 'Second answer while Gmail is off.');
     before = mock.posts().length;
-    await page.click(`${card(id2)} [data-action=reply]`);
+    await page.click(`${PANEL} [data-action=reply]`);
     await posts(mock, before + 1);
     await quiet(page, id2);
     const replyOff = (await page.textContent('.note')) ?? '';
     results.replyWithoutGmail = replyOff;
     const id2Replies = (mock.ideas.find((x) => x.id === id2)?.thread as { kind: string; state: string }[]).filter((m) => m.kind === 'reply');
     check('without Gmail a reply is announced as saved for Gmail, not as queued', id2Replies.at(-1)?.state === 'waiting_setup' && /Gmail/.test(replyOff) && !replyOff.includes('60 s') && replyOff !== queuedNote);
-    await page.selectOption(`${card(id2)} [data-field=status]`, 'done');
+    await page.selectOption(`${PANEL} [data-field=status]`, 'done');
     await page.waitForSelector('[data-testid=thanks-dialog] [data-field=thanks-summary]');
     await settled(page, id2, 'done');
+    check('the thank-you dialog opens over the open panel (a move to Done from its Column select)', await page.isVisible(`${PANEL}[open][data-panel-idea="${id2}"]`));
     await page.fill('[data-field=thanks-summary]', 'Celownik jest teraz w ustawieniach HUD.');
     await page.click('[data-action=thanks-make]');
     await page.waitForSelector('[data-testid=thanks-dialog] [data-step=draft]:not([hidden])');
@@ -337,7 +380,7 @@ async function main(): Promise<void> {
     results.thanksWithoutGmail = thanksOff;
     check('without Gmail the thank-you is announced as saved for Gmail, not as queued', same(doneMails(mock, id2).map((m) => m.state), ['waiting_setup']) && /Gmail/.test(thanksOff) && !thanksOff.includes('60 s'));
     before = mock.posts().length;
-    await page.click(`${card(id2)} [data-action=thanks]`);
+    await page.click(`${PANEL} [data-action=thanks]`);
     await page.waitForSelector('[data-testid=thanks-dialog] [data-step=draft]:not([hidden])');
     check('the card reopens that thank-you to Send: no new draft, no Edit, its state said', mock.posts().length === before && await page.isHidden('[data-action=thanks-edit]')
         && ((await page.textContent('[data-field=thanks-status]')) ?? '').includes('Gmail'), true);
@@ -347,15 +390,17 @@ async function main(): Promise<void> {
     await quiet(page, id2);
     results.resendCalls = sentSince(mock, before);
     check('its Send goes to ideas/mail/send with that e-mail: one thank-you, queued, no longer offered', same(sentSince(mock, before), [['ideas/mail/send', { id: id2Draft }]])
-        && same(doneMails(mock, id2).map((m) => m.state), ['queued']) && !(await page.$(`${card(id2)} [data-action=thanks]`)));
+        && same(doneMails(mock, id2).map((m) => m.state), ['queued']) && !(await page.$(`${card(id2)} [data-action=thanks]`)) && !(await page.$(`${PANEL} [data-action=thanks]`)));
+    check('after the thank-you dialog the focus is back in the open panel', await page.evaluate(() => !!document.activeElement?.closest('[data-testid=idea-panel]')));
+    await closeCard(page);
 
     // lane B's send-done names the draft the owner read: while the dialog shows draft 1, a newer summary
     // (Telegram, an agent) replaces it; Send is refused (409 stale-draft), the dialog shows the current draft
     // with a warning, and only the next Send queues it. Draft 1 never goes (it stays superseded, with no
     // Send or Cancel on the card).
     const sid = 'R-20261006-0001';
-    if (!(await page.$(`${card(sid)} [data-field=status]`))) await page.click(`${card(sid)} [data-action=details]`);
-    await page.selectOption(`${card(sid)} [data-field=status]`, 'done');
+    await openCard(page, sid);
+    await page.selectOption(`${PANEL} [data-field=status]`, 'done');
     await page.waitForSelector('[data-testid=thanks-dialog] [data-field=thanks-summary]');
     await settled(page, sid, 'done');
     await page.fill('[data-field=thanks-summary]', 'Typy rates sa juz w ustawieniach.');
@@ -380,8 +425,8 @@ async function main(): Promise<void> {
     await quiet(page, sid);
     check('the next Send queues the current draft, draft 1 stays superseded', same(sentSince(mock, before), [['ideas/send-done', { id: sid, mail: staleDraft }], ['ideas/send-done', { id: sid, mail: current }]])
         && same(doneMails(mock, sid).map((m) => m.state), ['superseded', 'queued']));
-    const rowActs = (state: string): Promise<number> => page.$$eval(`${card(sid)} [data-field=mails] [data-state=${state}] [data-action^=mail-]`, (els) => els.length);
-    check('the superseded draft offers no Send and no Cancel on the card', (await rowActs('superseded')) === 0 && (await page.$(`${card(sid)} [data-field=mails] [data-state=superseded]`)) !== null);
+    const rowActs = (state: string): Promise<number> => page.$$eval(`${PANEL} [data-field=mails] [data-state=${state}] [data-action^=mail-]`, (els) => els.length);
+    check('the superseded draft offers no Send and no Cancel on the card', (await rowActs('superseded')) === 0 && (await page.$(`${PANEL} [data-field=mails] [data-state=superseded]`)) !== null);
     check('the queued one does (control)', (await rowActs('queued')) > 0, true);
 
     // an e-mail that changed meanwhile: the outbox sent the queued thank-you while the card still offers
@@ -389,21 +434,30 @@ async function main(): Promise<void> {
     (mock.ideas.find((x) => x.id === sid)!.thread as { id: string; state: string }[]).find((m) => m.id === current)!.state = 'sent';
     before = mock.posts().length;
     const calls1 = mock.calls.length;
-    await page.click(`${card(sid)} [data-field=mails] [data-mail="${current}"] [data-action=mail-cancel]`);
-    await page.waitForSelector(`${card(sid)}:not([aria-busy]) [data-field=mails] [data-state=sent]`);
+    await page.click(`${PANEL} [data-field=mails] [data-mail="${current}"] [data-action=mail-cancel]`);
+    await page.waitForSelector(`${PANEL}:not([aria-busy]) [data-field=mails] [data-state=sent]`);
     const changedNote = (await page.textContent('.note')) ?? '';
     results.changedMeanwhile = changedNote;
     check('a refused Cancel (409) re-reads the card: the e-mail shows as sent, without Cancel, and the owner is told why',
         same(sentSince(mock, before), [['ideas/mail/cancel', { id: current }]]) && mock.calls.slice(calls1).some((c) => c.method === 'GET' && c.path === `ideas/${sid}`)
         && (await rowActs('sent')) === 0 && /changed meanwhile/.test(changedNote));
 
+    // the open card in its panel at 1280
     await page.screenshot({ path: join(dir, 'v07-ideas-admin-1280.png'), fullPage: false });
-    // a phone: one column, nothing wider than the screen
+    await closeCard(page);
+    // a phone: one column, nothing wider than the screen; the panel takes the whole screen
     await page.setViewportSize({ width: 375, height: 800 });
     await sleep(300);
     const wide = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     check('at 375 px the board is one column with no sideways scroll', wide <= 0);
+    await openCard(page, id2);
+    const phonePanel = await page.$eval(PANEL, (e) => ({ width: Math.round(e.getBoundingClientRect().width), screen: document.documentElement.clientWidth, sideways: e.scrollWidth - e.clientWidth, top: e.scrollTop }));
+    results.phonePanel = phonePanel;
+    check('at 375 px the open card takes the whole screen width, nothing sideways', phonePanel.width === phonePanel.screen && phonePanel.sideways <= 0);
+    // the panel was last closed scrolled down (the e-mails of R-20261006-0001): a card opens at its top
+    check('another card opens at the top of the panel, not where the last one was scrolled', phonePanel.top === 0);
     await page.screenshot({ path: join(dir, 'v07-ideas-admin-375.png'), fullPage: false });
+    await closeCard(page);
 
     // the server cannot read ideas.json (lane B: 503 ideas-store on every ideas route): a move is refused
     // and the board gives way to the reason with Try again; the Scenes tab keeps working; once the file

@@ -18,16 +18,16 @@ export class IdeaPanel {
     readonly dialog: HTMLDialogElement;
     private shown: string | null = null;
 
-    /** `closed` runs once the panel has closed (Esc, Close, or close()), with the idea it showed. */
-    constructor(closed: (id: string) => void) {
+    /** `closed` runs as the panel closes (Esc, Close, or close()), with the idea it showed. */
+    constructor(private readonly closed: (id: string) => void) {
         this.dialog = h('dialog', { class: 'idea-panel', 'data-testid': 'idea-panel', 'aria-labelledby': 'idea-panel-title' }) as HTMLDialogElement;
-        this.dialog.addEventListener('close', () => {
-            const id = this.shown;
-            this.shown = null;
-            clear(this.dialog);
-            for (const a of ['data-panel-idea', 'data-status', 'aria-busy']) this.dialog.removeAttribute(a);
-            if (id) closed(id);
+        // Esc closes it here and now, like Close: the focus is back on the card before the next key is
+        // handled (the dialog's own close event comes a task later; it is the fallback if Esc cannot be held)
+        this.dialog.addEventListener('cancel', (e) => {
+            e.preventDefault();
+            this.close();
         });
+        this.dialog.addEventListener('close', () => this.finish());
     }
 
     /** The idea the panel shows, or null while it is closed. */
@@ -37,8 +37,11 @@ export class IdeaPanel {
 
     /** Shows this idea; the focus goes to the panel's Close button (the first thing Tab reaches in it). */
     open(i: Idea, host: CardHost): void {
+        const fresh = !this.dialog.open || this.shown !== i.id;
         this.draw(i, host);
         if (!this.dialog.open) this.dialog.showModal();
+        // another card starts at its top (the browser would bring back where the last one was scrolled)
+        if (fresh) this.dialog.scrollTop = 0;
         this.dialog.querySelector<HTMLElement>('[data-action=panel-close]')?.focus();
     }
 
@@ -70,5 +73,16 @@ export class IdeaPanel {
 
     close(): void {
         if (this.dialog.open) this.dialog.close();
+        this.finish();
+    }
+
+    /** Once per close: empty the panel and tell the tab (which puts the focus back on the card). */
+    private finish(): void {
+        const id = this.shown;
+        if (!id) return;
+        this.shown = null;
+        clear(this.dialog);
+        for (const a of ['data-panel-idea', 'data-status', 'aria-busy']) this.dialog.removeAttribute(a);
+        this.closed(id);
     }
 }

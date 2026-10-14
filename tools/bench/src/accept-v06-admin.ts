@@ -242,9 +242,14 @@ async function main(): Promise<void> {
     await admin.click('[data-tab=ideas]');
     await admin.waitForSelector(`[data-idea="${rep.id}"][data-status=new]`);
     check('the report is a card in New with its words', (await admin.$eval(`[data-idea="${rep.id}"] .idea-text`, (e) => e.textContent)) === 'v06 acceptance: more night scenes please');
+    // Details opens the card in the side panel (modal); Esc closes it
+    const PANEL = '[data-testid=idea-panel]';
     await admin.click(`[data-idea="${rep.id}"] [data-action=details]`);
-    await admin.selectOption(`[data-idea="${rep.id}"] [data-field=status]`, 'rejected');
+    await admin.waitForSelector(`${PANEL}[open][data-panel-idea="${rep.id}"]`);
+    await admin.selectOption(`${PANEL} [data-field=status]`, 'rejected');
     await admin.waitForSelector(`[data-idea="${rep.id}"][data-status=rejected]:not([aria-busy])`);
+    await admin.keyboard.press('Escape');
+    await admin.waitForSelector(`${PANEL}:not([open])`, { state: 'attached' });
     const stored = await admin.evaluate(async (id) => ((await (await fetch('/api/admin/ideas', { cache: 'no-store' })).json()) as { ideas: { id: string; status: string }[] }).ideas.find((x) => x.id === id)?.status, rep.id);
     check('the move is stored server-side', stored === 'rejected');
     const reportsLine = readFileSync(join(DATA, 'reports.jsonl'), 'utf8');
@@ -267,7 +272,8 @@ async function main(): Promise<void> {
     }, [route, body] as const);
     await admin.waitForSelector(`[data-idea="${pid}"][data-status=new]`);
     await admin.click(`[data-idea="${pid}"] [data-action=details]`);
-    await admin.selectOption(`[data-idea="${pid}"] [data-field=status]`, 'done');
+    await admin.waitForSelector(`${PANEL}[open][data-panel-idea="${pid}"]`);
+    await admin.selectOption(`${PANEL} [data-field=status]`, 'done');
     await admin.waitForSelector('[data-testid=thanks-dialog] [data-field=thanks-summary]');
     await admin.fill('[data-field=thanks-summary]', 'Night scenes are in the list now.');
     await admin.click('[data-action=thanks-make]');
@@ -288,6 +294,8 @@ async function main(): Promise<void> {
     await admin.click('[data-action=thanks-send]');
     await admin.waitForSelector('[data-testid=thanks-dialog]', { state: 'detached' });
     await admin.waitForSelector(`[data-idea="${pid}"]:not([aria-busy])`);
+    await admin.keyboard.press('Escape'); // the card's panel, under the thank-you dialog
+    await admin.waitForSelector(`${PANEL}:not([open])`, { state: 'attached' });
     const end = await doneThread();
     const said = (await admin.textContent('.note')) ?? '';
     results.thanksEnd = { states: end.map((m) => m.state), note: said };
