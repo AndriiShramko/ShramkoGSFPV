@@ -7,7 +7,7 @@
 // are always text, never markup. tab.ts owns the state; this file only draws and reports.
 import { h } from '../../ui/dom';
 import { t } from '../i18n';
-import { CANCELLABLE, IDEA_STATUSES, PUBLIC_LANGS, PUBLIC_TITLE_MAX, SENDABLE, URGENCIES, diagnosticsUrl } from './api';
+import { CANCELLABLE, IDEA_STATUSES, PUBLIC_LANGS, PUBLIC_TITLE_MAX, SENDABLE, URGENCIES, diagnosticsDownloadUrl, diagnosticsUrl } from './api';
 import type { Idea, IdeaAnswer, IdeaMail, IdeaStatus, IdeasClient, Urgency } from './api';
 import { landingBlocker, missingLangs, neighbour, onLanding, thanksDue, thanksPending } from './board';
 import { mailSaid, replyForm } from './mail';
@@ -109,7 +109,7 @@ export function details(i: Idea, host: CardHost): HTMLElement {
         i.diagnostics === true
             ? h('li', { 'data-field': 'diagnostics' },
                 h('a', { href: diagnosticsUrl(i.id), target: '_blank', rel: 'noopener', 'data-action': 'diagnostics' }, t('admin.ideas.card.diagnostics')), ' · ',
-                h('a', { href: diagnosticsUrl(i.id), download: `${i.id}.json`, 'data-action': 'download' }, t('admin.ideas.card.download')))
+                h('a', { href: diagnosticsDownloadUrl(i.id), download: `${i.id}.json`, 'data-action': 'download' }, t('admin.ideas.card.download')))
             : i.diagnostics === 'skipped' ? h('li', { class: 'warn' }, t('admin.ideas.card.diagSkipped')) : null
     ];
 

@@ -338,7 +338,12 @@ class ReportsTab(AdminApi):
         st, h, blob = self.req("GET", "/api/admin/reports/R-20261001-0001/diagnostics", cookie=cookie)
         self.assertEqual((st, json.loads(blob)["diagnostics"]["gpu"]), (200, "x"))
         self.assertEqual(h["cache-control"], "no-store")
+        self.assertTrue(h["content-disposition"].startswith("inline;"))  # control: the tab view stays inline
+        st, h, blob2 = self.req("GET", "/api/admin/reports/R-20261001-0001/diagnostics/download", cookie=cookie)
+        self.assertEqual((st, blob2), (200, blob))  # the same bytes, saved as a file
+        self.assertEqual(h["content-disposition"], 'attachment; filename="R-20261001-0001.json"')
         self.assertEqual(self.req("GET", "/api/admin/reports/R-20261002-0001/diagnostics", cookie=cookie)[0], 404)
+        self.assertEqual(self.req("GET", "/api/admin/reports/R-20261002-0001/diagnostics/download", cookie=cookie)[0], 404)
 
     def test_an_unreadable_ideas_store_is_503_and_the_rest_works(self):
         """Review R3: the Reports tab and the ideas routes answer 503 while ideas.json cannot be read;

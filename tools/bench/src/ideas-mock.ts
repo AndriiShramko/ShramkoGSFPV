@@ -128,10 +128,10 @@ export class IdeasMock {
             const it = this.ideas.find((x) => x.id === one[1]);
             return it ? { status: 200, json: { ok: true, idea: it } } : { status: 404, json: { ok: false } };
         }
-        const diag = /^reports\/([A-Za-z0-9-]+)\/diagnostics$/.exec(path);
+        const diag = /^reports\/([A-Za-z0-9-]+)\/diagnostics(\/download)?$/.exec(path); // as admin.py: /download is the attachment
         if (method === 'GET' && diag) {
             const it = this.ideas.find((x) => x.id === diag[1]);
-            return it?.diagnostics === true ? { status: 200, json: { id: it.id, diagnostics: { browser: { userAgent: 'test' }, errors: [] } }, headers: { 'content-disposition': `inline; filename="${it.id}.json"` } } : { status: 404, json: { ok: false } };
+            return it?.diagnostics === true ? { status: 200, json: { id: it.id, diagnostics: { browser: { userAgent: 'test' }, errors: [] } }, headers: { 'content-disposition': `${diag[2] ? 'attachment' : 'inline'}; filename="${it.id}.json"` } } : { status: 404, json: { ok: false } };
         }
         if (method !== 'POST') return { status: 404, json: { ok: false } };
         if (this.failNext && this.failNext.path === path) {

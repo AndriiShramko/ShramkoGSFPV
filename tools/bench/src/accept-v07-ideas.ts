@@ -238,7 +238,11 @@ async function main(): Promise<void> {
     const diag = await page.evaluate(async (u) => { const r = await fetch(u!); return { status: r.status, id: (await r.json()).id }; }, href);
     check('technical details open from the card (the stored JSON)', href === '/api/admin/reports/R-20261008-0003/diagnostics' && diag.status === 200 && diag.id === 'R-20261008-0003');
     const [download] = await Promise.all([page.waitForEvent('download'), page.click(`${PANEL} [data-action=download]`)]);
-    check('technical details download as R-20261008-0003.json', download.suggestedFilename() === 'R-20261008-0003.json');
+    // the mock answers through route.fulfill, where Chromium cancels any download: the saved bytes are checked by
+    // probe-admin-live-copy (real API over HTTP); here the link and the server's attachment header
+    const dl = await page.evaluate(async (sel) => { const a = document.querySelector(sel) as HTMLAnchorElement; const r = await fetch(a.href); return { href: a.getAttribute('href'), disp: r.headers.get('content-disposition') }; }, `${PANEL} [data-action=download]`);
+    check('technical details download as R-20261008-0003.json from /download, served as an attachment', download.suggestedFilename() === 'R-20261008-0003.json'
+        && dl.href === '/api/admin/reports/R-20261008-0003/diagnostics/download' && /^attachment;/.test(dl.disp ?? ''));
     const sentFields = (await page.textContent(`${PANEL} .idea-sent`)) ?? '';
     check('the card shows what the pilot sent (language, page, scene, release)', ['en', 'fly', '887f27aa', 'f92d98b'].every((x) => sentFields.includes(x)));
     check('no e-mail left: no reply box, a reason instead', !(await page.$(`${PANEL} [data-field=reply-text]`)) && !!(await page.$(`${PANEL} [data-field=reply] p`)), true);

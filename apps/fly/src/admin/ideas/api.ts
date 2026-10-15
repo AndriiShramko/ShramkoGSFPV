@@ -182,6 +182,8 @@ export function parseIdeas(raw: unknown): { ideas: Idea[]; unreadable: number; s
 
 /** Where a bug's stored technical details are served (the admin's existing route). */
 export const diagnosticsUrl = (id: string): string => `/api/admin/reports/${encodeURIComponent(id)}/diagnostics`;
+/** The same file as an attachment: the API marks it so, because Chrome cancels an <a download> the server sends inline. */
+export const diagnosticsDownloadUrl = (id: string): string => `${diagnosticsUrl(id)}/download`;
 
 /** A new note from this page (the owner writes down an idea a pilot told him outside the form, item 8). */
 export interface NewNote { text: string; contact?: string; lang?: string; urgency?: Urgency | null; publicTitle?: LocalText }

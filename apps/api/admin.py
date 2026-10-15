@@ -14,7 +14,9 @@ POST /api/admin/catalog/restore {name} an earlier version goes live (itself a ne
 GET  /api/admin/reports                visitors' bug reports and ideas, newest first, with status (open: new,
                                        accepted or in progress in the ideas store; closed: done or rejected)
 POST /api/admin/reports/status {id, status: open|closed}   closed -> done, open -> new (ideas store)
-GET  /api/admin/reports/<id>/diagnostics  the technical details stored with a bug (consent given)
+GET  /api/admin/reports/<id>/diagnostics  the technical details stored with a bug (consent given), shown in a tab
+GET  /api/admin/reports/<id>/diagnostics/download   the same file as an attachment (Save; <a download> alone is
+                                         not enough: Chrome cancels a download the server marks inline)
 GET|POST /api/admin/ideas...           the ideas store (v0.7): ideas_admin.py lists the routes
 ...  and every route another module adds with AdminApi.add_route (server.py wires them: SuperSplat's facts
      of a scene, superspl_facts.py; places by name and the prevailing wind, wind.py), behind the same
@@ -673,13 +675,14 @@ class AdminApi:
                 return _json(200, {"ok": True, "csrf": sess["csrf"], "expires": int(sess["expires"])})
             if route == "catalog":
                 return _json(200, {"ok": True, **self.catalog.state()})
-            m = re.fullmatch(r"reports/(R-[0-9]{8}-[0-9]{4,})/diagnostics", route)
+            m = re.fullmatch(r"reports/(R-[0-9]{8}-[0-9]{4,})/diagnostics(/download)?", route)
             if m:
                 blob = self.reports.diagnostics(m.group(1))
                 if blob is None:
                     return _json(404, {"ok": False})
+                disposition = "attachment" if m.group(2) else "inline"
                 return 200, blob, [("Content-Type", "application/json"), ("Cache-Control", "no-store"),
-                                   ("Content-Disposition", f'inline; filename="{m.group(1)}.json"')]
+                                   ("Content-Disposition", f'{disposition}; filename="{m.group(1)}.json"')]
             return _json(404, {"ok": False})
         if route == "logout":
             self.sessions.drop(sid)
