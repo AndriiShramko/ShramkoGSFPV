@@ -1,19 +1,30 @@
 // The owner's admin (/admin/: Scenes and Ideas tabs) end to end in a browser against an EXACT local copy of
-// production: the live release's dist (its CI artifact, served by scripts/serve-csp.mjs with nginx.conf's
-// admin CSP), the live API code (apps/api, same files as the live commit) and a copy of the live data
-// (ideas.json, catalog.json, catalog-history/, reports.jsonl, fetched read-only from the hub by the caller).
+// production: a release's dist (the live CI artifact, or a release built here with scripts/build-release.mjs,
+// served by scripts/serve-csp.mjs with nginx.conf's admin CSP), the live API code (apps/api, same files as
+// the live commit) and a copy of the live data (ideas.json, catalog.json, catalog-history/, reports.jsonl,
+// fetched read-only from the hub by the caller).
 // The live site is never touched: the login happens only here, with the TEST password of the gitignored
 // .cache/admin-test.json. No e-mail and no Telegram can leave: every TG_*/GMAIL_* is empty and the SMTP and
-// Telegram hosts point at a closed local port. Read-only by design: the probe opens cards and the thank-you
-// draft but never moves, saves or sends (Not now closes the draft); it checks that only login/logout were
-// POSTed and that the data files are byte for byte the same afterwards.
-//   DIST=<extracted dist.tgz> DATA=<data copy> npx tsx src/probe-admin-live-copy.ts      (from tools/bench)
+// Telegram hosts point at a closed local port. The page never moves, saves or sends (Not now closes the
+// thank-you draft); it checks that only login/logout were POSTed by the browser.
+// The live data holds no bug with technical details, so the probe itself POSTs ONE synthetic bug report
+// with a small diagnostics file to the LOCAL API (/api/report, exactly as a pilot's page would; nothing is
+// delivered: Telegram is blanked) and opens and downloads its details. Afterwards the data files must be
+// the copy's plus that one report and nothing else (catalog.json and catalog-history/ byte for byte).
+// The layout (2026-10-14, defects found on the first run): an open card must be usable - at least 400 px
+// wide, its public titles shown whole, modal, Esc closes it and the focus returns to the card (the old
+// layout grew the card inside its ~200 px column: the titles showed 13 characters); no column may be taller
+// than 3 viewports (the old phone board drew Done's 60 cards in the page flow, ~12,000 px); Done keeps its
+// whole count in the header, draws its newest cards with Show all, and every card stays reachable (search).
+// Run against the OLD release (DIST of the live dist.tgz, TAG=old-build), those checks are the negative
+// controls: they must fail there.
+//   DIST=<extracted dist.tgz> DATA=<data copy> [TAG=<name>] npx tsx src/probe-admin-live-copy.ts      (from tools/bench)
 //   (+ RELEASE, DIST_SHA256, API_COMMIT, DATA_FETCHED: written into the evidence as its source)
 // The copy: ssh the hub "cd <base>/data && tar cf - ideas.json catalog.json catalog-draft.json catalog-history
 // reports.jsonl" into a gitignored .cache folder; delete it afterwards (ideas.json holds pilots' e-mail addresses).
 // Holds no GPU work but runs a browser: the caller takes the shared GPU lock (C:/dev/.gpu-lock).
-// Evidence: evidence/<date>/admin-live-copy.json (no e-mail addresses: "contact present") and
-// evidence/<date>/admin-live-copy/*.png (e-mail addresses blanked in the page before every screenshot).
+// Evidence: evidence/<date>/admin-live-copy[-TAG].json (no e-mail addresses: "contact present") and
+// evidence/<date>/admin-live-copy[-TAG]/*.png (e-mail addresses blanked in the page before every screenshot).
 import { spawn, execFileSync } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
@@ -25,17 +36,33 @@ import { REPO, today, writeEvidence } from './evidence';
 
 const DIST = process.env.DIST ?? join(REPO, '.cache', 'admin-live', 'dist');
 const DATA = process.env.DATA ?? join(REPO, '.cache', 'admin-live', 'data');
+const NAME = `admin-live-copy${process.env.TAG ? `-${process.env.TAG}` : ''}`;
 const SITE_PORT = 5400 + Math.floor(Math.random() * 90);
 const API_PORT = 8100 + Math.floor(Math.random() * 800);
 const SITE = `http://127.0.0.1:${SITE_PORT}`;
 const API = `http://127.0.0.1:${API_PORT}`;
-const SHOTS = join(REPO, 'evidence', today(), 'admin-live-copy');
+const SHOTS = join(REPO, 'evidence', today(), NAME);
 const PILOT = ['R-20261006-0001', 'R-20261006-0002', 'R-20261006-0003'];
 const SCENES = ['887f27aa', '39e63ce9', '7a475d38', '70b50d42', 'b11e45d1', '0230d903'];
 const STATUSES = ['new', 'accepted', 'in_progress', 'done', 'rejected'] as const;
 const KINDS = ['idea', 'bug', 'note', 'feature'];
 const HEADINGS: Record<string, string> = { new: 'New', accepted: 'Accepted: the queue', in_progress: 'In progress', done: 'Done', rejected: 'Rejected' };
 const EMAIL_RE = /[\w.+-]+@[\w-]+(\.[\w-]+)+/g;
+/** An open card narrower than this cannot hold its fields (the old layout: ~250 px). */
+const MIN_OPEN_WIDTH = 400;
+/** No column may be taller than this many viewports (the old phone board: Done ~14 viewports). */
+const MAX_COLUMN_VIEWPORTS = 3;
+/** What an archive column draws before Show all (apps/fly/src/admin/ideas/board.ts CLIP_AT). */
+const CLIP_AT = 8;
+/** The synthetic bug's technical details: small, like the simulator's shape, no real device or person. */
+const SYNTH_DIAG = {
+    release: 'probe',
+    browser: { userAgent: 'Mozilla/5.0 (synthetic; probe-admin-live-copy) no real browser', screen: { w: 1440, h: 900, dpr: 1 }, input: 'keyboard',
+        gpu: { api: 'webgpu', adapter: { vendor: 'synthetic', architecture: 'none', description: 'written by the probe, no real device' } } },
+    frames: { renderHz: 60, p50ms: 16.7, p99ms: 21.4 },
+    errors: ['synthetic: no real error, written by probe-admin-live-copy on a local data copy'],
+    settings: { rates: 'betaflight', cameraAngle: 25 }
+};
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Any = any;
@@ -59,10 +86,12 @@ function testSecret(): { password: string; hash: string } {
     return s;
 }
 
-/** sha256 of every data file the admin reads (the probe must change none of them). */
+const sha256 = (b: Buffer | string): string => createHash('sha256').update(b).digest('hex');
+
+/** sha256 of every data file the admin reads (catalog files must not change at all). */
 function dataHashes(): Record<string, string> {
     const out: Record<string, string> = {};
-    const add = (rel: string): void => { const p = join(DATA, rel); if (existsSync(p) && statSync(p).isFile()) out[rel] = createHash('sha256').update(readFileSync(p)).digest('hex'); };
+    const add = (rel: string): void => { const p = join(DATA, rel); if (existsSync(p) && statSync(p).isFile()) out[rel] = sha256(readFileSync(p)); };
     for (const f of ['ideas.json', 'catalog.json', 'catalog-draft.json', 'reports.jsonl']) add(f);
     if (existsSync(join(DATA, 'catalog-history'))) for (const f of readdirSync(join(DATA, 'catalog-history'))) add(`catalog-history/${f}`);
     return out;
@@ -88,7 +117,10 @@ async function poll(page: Page, fn: () => boolean, what: string, ms = 15000): Pr
 
 /** /api/** of the page goes to the local API (nginx's role), with the page's cookie, CSRF and cache headers. */
 async function routeApi(ctx: BrowserContext, seen: string[]): Promise<void> {
-    await ctx.route((u) => u.origin === SITE && u.pathname.startsWith('/api/'), async (route) => {
+    // the diagnostics download goes over plain HTTP through serve-csp's API_PROXY (Chromium cancels a download
+    // served by route.fulfill); every other /api/ call is fulfilled here so the probe sees each one
+    ctx.on('request', (q) => { const u = new URL(q.url()); if (u.pathname.endsWith('/diagnostics/download')) seen.push(`${q.method()} ${u.pathname} (proxied)`); });
+    await ctx.route((u) => u.origin === SITE && u.pathname.startsWith('/api/') && !u.pathname.endsWith('/diagnostics/download'), async (route) => {
         const req = route.request();
         const u = new URL(req.url());
         const inH = await req.allHeaders();
@@ -98,7 +130,7 @@ async function routeApi(ctx: BrowserContext, seen: string[]): Promise<void> {
         const r = await fetch(API + u.pathname + u.search, { method: req.method(), headers, body: req.method() === 'POST' && raw ? new Uint8Array(raw) : undefined });
         seen.push(`${req.method()} ${u.pathname} ${r.status}`);
         const out: Record<string, string> = {};
-        for (const k of ['content-type', 'cache-control', 'etag', 'retry-after', 'set-cookie']) { const v = r.headers.get(k); if (v) out[k] = v; }
+        for (const k of ['content-type', 'cache-control', 'etag', 'retry-after', 'set-cookie', 'content-disposition']) { const v = r.headers.get(k); if (v) out[k] = v; }
         await route.fulfill({ status: r.status, headers: out, body: Buffer.from(await r.arrayBuffer()) });
     });
 }
@@ -138,7 +170,7 @@ async function shot(page: Page, name: string, fullPage = false): Promise<string>
     mkdirSync(SHOTS, { recursive: true });
     const file = join(SHOTS, `${name}.png`);
     await page.screenshot({ path: file, fullPage, scale: 'css' });
-    return `evidence/${today()}/admin-live-copy/${name}.png`;
+    return `evidence/${today()}/${NAME}/${name}.png`;
 }
 
 async function login(page: Page, password: string): Promise<void> {
@@ -153,26 +185,131 @@ const counts = (page: Page): Promise<Record<string, string>> =>
     page.$$eval('[data-count]', (els) => Object.fromEntries(els.map((e) => [e.getAttribute('data-count') ?? '', e.textContent ?? ''])));
 const boardIds = (page: Page): Promise<string[]> => page.$$eval('[data-testid=idea-board] [data-idea]', (els) => els.map((e) => e.getAttribute('data-idea') ?? ''));
 const shownText = (page: Page): Promise<string> => page.$eval('[data-testid=idea-shown]', (e) => e.textContent ?? '');
+const drawnIn = (page: Page, col: string): Promise<string[]> => page.$$eval(`[data-column=${col}] [data-idea]`, (els) => els.map((e) => e.getAttribute('data-idea') ?? ''));
+
+// ---------------- an open card, in either layout ----------------
+// The release under test decides where an open card's details are drawn: the side panel (the fix:
+// [data-panel-idea]) or inside the card in its column (the old layout). The helpers find either, so the
+// same checks run on both builds and the old one fails the layout checks (the negative control).
+
+/** Opens a card's details; the selector of what holds them (the panel, or the card itself in the old layout). */
+async function openCard(page: Page, id: string): Promise<string> {
+    await page.click(`[data-testid=idea-board] [data-idea="${id}"] [data-action=details]`);
+    const panel = `[data-panel-idea="${id}"]`;
+    const inCard = `[data-testid=idea-board] [data-idea="${id}"]`;
+    await page.waitForSelector(`${panel} .idea-details, ${inCard} .idea-details`);
+    return (await page.$(`${panel} .idea-details`)) ? panel : inCard;
+}
+
+/** Esc; if the details are still open (the old layout has no Esc), its Details button closes them. */
+async function closeCard(page: Page, id: string): Promise<void> {
+    await page.keyboard.press('Escape');
+    if (await page.$(`[data-testid=idea-board] [data-idea="${id}"] .idea-details`)) await page.click(`[data-testid=idea-board] [data-idea="${id}"] [data-action=details]`);
+    await page.waitForSelector(`[data-panel-idea="${id}"] .idea-details, [data-testid=idea-board] [data-idea="${id}"] .idea-details`, { state: 'detached' });
+}
+
+/** How an open card is laid out: its width, whether it is modal, its public titles' boxes, where the focus is. */
+const openLayout = (page: Page, scope: string): Promise<{ width: number; modal: boolean; focusIn: boolean; titles: { lang: string; width: number; whole: boolean; chars: number }[] }> =>
+    page.$eval(scope, (e) => ({
+        width: Math.round(e.getBoundingClientRect().width),
+        modal: e.matches(':modal'),
+        focusIn: e.contains(document.activeElement),
+        titles: [...e.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-field^=title-]')].map((t) => ({
+            lang: (t.getAttribute('data-field') ?? '').slice(6),
+            width: Math.round(t.getBoundingClientRect().width),
+            // nothing of the words hidden past the box's edge (a single-line input scrolls sideways)
+            whole: t.scrollWidth <= t.clientWidth + 1 && t.scrollHeight <= t.clientHeight + 1,
+            chars: t.value.length
+        }))
+    }));
+
+/** Where the focus is: the card (data-idea) and the control (data-action / data-field), or the panel. */
+const focusAt = (page: Page): Promise<{ idea: string | null; action: string | null; inPanel: boolean }> => page.evaluate(() => {
+    const a = document.activeElement;
+    return { idea: a?.closest('[data-testid=idea-board] [data-idea]')?.getAttribute('data-idea') ?? null, action: a?.getAttribute('data-action') ?? a?.getAttribute('data-field') ?? null,
+        inPanel: !!a?.closest('[data-panel-idea]') };
+});
+
+/** Height of every column of the board, and the page's. */
+const heights = (page: Page): Promise<{ page: number; viewport: number; columns: Record<string, number> }> => page.evaluate(() => ({
+    page: document.documentElement.scrollHeight,
+    viewport: innerHeight,
+    columns: Object.fromEntries([...document.querySelectorAll('[data-testid=idea-board] .column')].map((c) => [c.getAttribute('data-column') ?? '', Math.round(c.getBoundingClientRect().height)]))
+}));
+
+/** Show all on a column when it has one that is not pressed (the old layout has none): true if pressed. */
+async function showAll(page: Page, col: string): Promise<boolean> {
+    const b = await page.$(`[data-column=${col}] [data-action=col-all][aria-expanded=false]`);
+    if (!b) return false;
+    await b.click();
+    return true;
+}
+async function showNewest(page: Page, col: string): Promise<void> {
+    const b = await page.$(`[data-column=${col}] [data-action=col-all][aria-expanded=true]`);
+    if (b) await b.click();
+}
+
+/**
+ * The column checks of one width: no column taller than MAX_COLUMN_VIEWPORTS viewports; Done draws its
+ * newest CLIP_AT with Show all (n) and its header still counts all of them; after Show all every card is
+ * drawn and the column is still not taller (its own scroll box); the oldest Done card, not drawn before
+ * Show all, is found by the search.
+ */
+async function columnChecks(page: Page, tag: string, want: Record<string, string>): Promise<Record<string, Any>> {
+    const out: Record<string, Any> = {};
+    const total = Number(want.done);
+    const h0 = await heights(page);
+    out.heights = h0;
+    const limit = MAX_COLUMN_VIEWPORTS * h0.viewport;
+    const tall = Object.entries(h0.columns).filter(([, v]) => v > limit);
+    check(`${tag}: no column is taller than ${MAX_COLUMN_VIEWPORTS} viewports (${limit} px)`, tall.length === 0, h0.columns);
+    const drawn = await drawnIn(page, 'done');
+    const count = (await counts(page)).done;
+    const button = await page.$eval('[data-column=done] [data-action=col-all]', (e) => e.textContent ?? '').catch(() => null);
+    out.done = { drawn: drawn.length, count, button };
+    check(`${tag}: Done draws its newest ${CLIP_AT}, its header still counts all ${total}, with "Show all (${total})"`,
+        drawn.length === CLIP_AT && count === String(total) && button === `Show all (${total})`, out.done);
+    if (!(await showAll(page, 'done'))) {
+        check(`${tag}: Show all draws every Done card in the column's own scroll box`, false, 'no Show all button');
+        return out;
+    }
+    const all = await drawnIn(page, 'done');
+    const h1 = await heights(page);
+    const box = await page.$eval('[data-column=done] .cards', (e) => ({ scrolls: e.scrollHeight > e.clientHeight + 1, height: Math.round(e.clientHeight) }));
+    out.showAll = { drawn: all.length, column: h1.columns.done, box, page: h1.page };
+    check(`${tag}: Show all draws every Done card (${total}) in the column's own scroll box, the column still under ${limit} px`,
+        all.length === total && h1.columns.done <= limit && box.scrolls, out.showAll);
+    const oldest = all.at(-1) ?? '';
+    await showNewest(page, 'done');
+    const hiddenAgain = !(await drawnIn(page, 'done')).includes(oldest);
+    check(`${tag}: Show only the newest ${CLIP_AT} draws ${CLIP_AT} again; the oldest Done card ${oldest} is not drawn then`, (await drawnIn(page, 'done')).length === CLIP_AT && hiddenAgain, null, true);
+    await page.fill('[data-testid=idea-search]', oldest);
+    const found = await boardIds(page);
+    out.oldest = { id: oldest, found };
+    check(`${tag}: the search finds the oldest Done card ${oldest} (not drawn before): no card is out of reach`, JSON.stringify(found) === JSON.stringify([oldest]), found);
+    await page.fill('[data-testid=idea-search]', '');
+    return out;
+}
+
+/** POST one synthetic bug report with diagnostics to the LOCAL API, as the pilot's page would. */
+async function postSyntheticBug(): Promise<{ status: number; body: Any; sent: Any }> {
+    const sent = {
+        kind: 'bug', locale: 'en', page: 'fly', scene: SCENES[0], release: (process.env.RELEASE ?? 'probe').slice(0, 40), t: 5000, hp: '', contact: '',
+        message: '[TEST] Synthetic bug report written by probe-admin-live-copy on the LOCAL copy of the data only, to open and download its technical details. Not a real report.',
+        diagnosticsConsent: true, diagnostics: SYNTH_DIAG
+    };
+    if (!API.startsWith('http://127.0.0.1:')) throw new Error('the synthetic report goes to the local API only');
+    const r = await fetch(`${API}/api/report`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': '198.51.100.2' }, body: JSON.stringify(sent) });
+    return { status: r.status, body: await r.json().catch(() => null), sent };
+}
 
 async function main(): Promise<void> {
     const secret = testSecret();
     const before = dataHashes();
     results.dataFiles = Object.keys(before);
-
-    // what the board must show, from the data copy itself (the UI's own placement rules: api.ts parseIdea)
+    const reportsBefore = existsSync(join(DATA, 'reports.jsonl')) ? readFileSync(join(DATA, 'reports.jsonl'), 'utf8') : '';
     const store = JSON.parse(readFileSync(join(DATA, 'ideas.json'), 'utf8')) as { ideas: Any[] };
-    const placeable = store.ideas.filter((r) => typeof r.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(r.id) && (STATUSES as readonly string[]).includes(r.status) && KINDS.includes(r.kind));
-    const want = Object.fromEntries(STATUSES.map((s) => [s, String(placeable.filter((r) => r.status === s).length)]));
-    const URG = ['low', 'normal', 'high', 'urgent'];
-    const onLanding = (r: Any): boolean => r.public?.visible !== false && !!String(r.public?.title?.en ?? '').trim() && ['accepted', 'in_progress', 'done'].includes(r.status) && r.suspect !== true;
-    results.expected = {
-        records: store.ideas.length, placeable: placeable.length, columns: want,
-        kinds: Object.fromEntries(KINDS.map((k) => [k, placeable.filter((r) => r.kind === k).length])),
-        withContact: placeable.filter((r) => String(r.contact ?? '') !== '').length,
-        onLanding: placeable.filter(onLanding).length,
-        highOrAbove: placeable.filter((r) => URG.indexOf(r.urgency) >= 2).length,
-        withDiagnostics: placeable.filter((r) => r.diagnostics === true).length
-    };
+    const liveWithDiagnostics = store.ideas.filter((r) => r.diagnostics === true).length;
     const catalog = JSON.parse(readFileSync(join(DATA, 'catalog.json'), 'utf8')) as { scenes: Any[] };
     const historyFiles = existsSync(join(DATA, 'catalog-history')) ? readdirSync(join(DATA, 'catalog-history')).length : 0;
 
@@ -187,7 +324,7 @@ async function main(): Promise<void> {
     let apiLog = '';
     api.stdout.on('data', (b) => { apiLog += String(b); });
     api.stderr.on('data', (b) => { apiLog += String(b); });
-    const site = spawn(process.execPath, [join(REPO, 'tools', 'bench', 'scripts', 'serve-csp.mjs'), DIST, String(SITE_PORT)], { stdio: 'ignore' });
+    const site = spawn(process.execPath, [join(REPO, 'tools', 'bench', 'scripts', 'serve-csp.mjs'), DIST, String(SITE_PORT)], { stdio: 'ignore', env: { ...process.env, API_PROXY: API } });
     children.push(site);
     await until(`${API}/api/health`);
     await until(`${SITE}/admin/`);
@@ -195,13 +332,41 @@ async function main(): Promise<void> {
     results.adminCsp = adminHead.headers.get('content-security-policy');
     check('the admin page is served under nginx.conf\'s admin CSP (script-src \'self\' only)', /script-src 'self';/.test(results.adminCsp ?? '') && adminHead.headers.get('x-csp-mode') === 'admin');
 
+    // the one synthetic bug with technical details (the live data has none), stored by the local API
+    const synth = await postSyntheticBug();
+    const SB = String(synth.body?.id ?? '');
+    const diagFile = join(DATA, 'reports', `${SB}.json`);
+    results.synthetic = { status: synth.status, answer: synth.body, diagnosticsFileBytes: existsSync(diagFile) ? statSync(diagFile).size : null };
+    check('a synthetic bug report with diagnostics is stored by the LOCAL API (POST /api/report 200, diagnostics true, delivered to nobody)',
+        synth.status === 200 && /^R-\d{8}-\d{4,}$/.test(SB) && synth.body?.diagnostics === true && synth.body?.delivered === false && existsSync(diagFile), results.synthetic);
+    const stored = JSON.parse(readFileSync(join(DATA, 'ideas.json'), 'utf8')) as { ideas: Any[] };
+    const synthRec = stored.ideas.find((r) => r.id === SB);
+    check('the synthetic report became a bug card in New with diagnostics in ideas.json (the API\'s own path)', synthRec?.kind === 'bug' && synthRec?.status === 'new' && synthRec?.diagnostics === true,
+        synthRec ? { kind: synthRec.kind, status: synthRec.status, diagnostics: synthRec.diagnostics } : null);
+    const board = { ideas: [...store.ideas, ...(synthRec ? [synthRec] : [])] };
+
+    // what the board must show, from the data copy itself (the UI's own placement rules: api.ts parseIdea)
+    const placeable = board.ideas.filter((r) => typeof r.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(r.id) && (STATUSES as readonly string[]).includes(r.status) && KINDS.includes(r.kind));
+    const want = Object.fromEntries(STATUSES.map((s) => [s, String(placeable.filter((r) => r.status === s).length)]));
+    const URG = ['low', 'normal', 'high', 'urgent'];
+    const onLanding = (r: Any): boolean => r.public?.visible !== false && !!String(r.public?.title?.en ?? '').trim() && ['accepted', 'in_progress', 'done'].includes(r.status) && r.suspect !== true;
+    results.expected = {
+        records: board.ideas.length, placeable: placeable.length, columns: want,
+        kinds: Object.fromEntries(KINDS.map((k) => [k, placeable.filter((r) => r.kind === k).length])),
+        withContact: placeable.filter((r) => String(r.contact ?? '') !== '').length,
+        onLanding: placeable.filter(onLanding).length,
+        highOrAbove: placeable.filter((r) => URG.indexOf(r.urgency) >= 2).length,
+        withDiagnostics: placeable.filter((r) => r.diagnostics === true).length,
+        liveWithDiagnostics
+    };
+
     const { browser, which } = await launchChrome({ headless: true });
     results.browser = which;
     const sink = { errors: [] as string[], hosts: new Set<string>() };
     const seen: string[] = [];
 
     // ---------------- desktop 1440x900 ----------------
-    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: 'en-US' });
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: 'en-US', acceptDownloads: true });
     await routeApi(ctx, seen);
     const page = await ctx.newPage();
     watch(page, 'desktop', sink);
@@ -237,7 +402,7 @@ async function main(): Promise<void> {
     const shots: Record<string, string> = {};
     shots.scenes = await shot(page, 'scenes-desktop');
 
-    // Ideas: the five columns with the counts of ideas.json
+    // Ideas: the five columns with the counts of ideas.json (+ the synthetic bug in New)
     await page.click('[data-tab=ideas]');
     await page.waitForSelector('[data-testid=idea-board] [data-idea]', { timeout: 20000 });
     const c0 = await counts(page);
@@ -246,47 +411,79 @@ async function main(): Promise<void> {
     const heads = await page.$$eval('[data-testid=idea-board] .column', (els) => els.map((e) => [e.getAttribute('data-column'), e.querySelector('h2')?.firstChild?.textContent ?? '']));
     check('the column headings, in board order', JSON.stringify(heads) === JSON.stringify(STATUSES.map((s) => [s, HEADINGS[s]])), heads.map((x) => x[1]));
     const total = await shownText(page);
-    check(`every record is placed: "${placeable.length} of ${store.ideas.length} shown"`, total === `${placeable.length} of ${store.ideas.length} shown`, total);
+    check(`every record is placed: "${placeable.length} of ${board.ideas.length} shown"`, total === `${placeable.length} of ${board.ideas.length} shown`, total);
     check('no record is reported unreadable', await page.$eval('[data-testid=idea-unreadable]', (e) => (e as HTMLElement).hidden === true));
     results.setupNote = await page.$eval('[data-testid=idea-setup]', (e) => e.textContent ?? '');
     check('the copy\'s API has no Gmail and no Telegram webhook (the page says so): nothing can be sent from here',
         /Gmail is not set up/.test(results.setupNote) && /Telegram only receives reports/.test(results.setupNote), results.setupNote);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    shots.board = await shot(page, 'ideas-board-desktop');
 
-    // the Polish pilot's three ideas: in Done, their public titles, a thank-you DRAFT waiting
+    // long columns at 1440 (Done holds 60): drawn newest first with Show all, every card reachable
+    results.desktopColumns = await columnChecks(page, 'desktop 1440', want);
+
+    // the Polish pilot's three ideas: in Done, their public titles, a thank-you DRAFT waiting. The owner
+    // reaches them with Show all (the newest 8 of Done are the latest features).
+    await showAll(page, 'done');
     const pilot: Record<string, Any> = {};
-    for (const id of PILOT) {
+    // R-20261006-0002 last: it stays open for the layout checks below, and an open side panel is modal (the
+    // board behind it takes no clicks), so every other card is opened and closed before it
+    for (const id of [...PILOT.filter((x) => x !== 'R-20261006-0002'), 'R-20261006-0002']) {
         const rec = store.ideas.find((r) => r.id === id);
-        const sel = `[data-idea="${id}"]`;
+        const sel = `[data-testid=idea-board] [data-idea="${id}"]`;
         const st = await page.$eval(sel, (e) => e.getAttribute('data-status')).catch(() => null);
         const chips = await page.$$eval(`${sel} [data-chip]`, (els) => els.map((e) => e.getAttribute('data-chip')));
         const thanksBtn = await page.$eval(`${sel} [data-action=thanks]`, (e) => e.textContent ?? '').catch(() => null);
-        await page.click(`${sel} [data-action=details]`);
-        await page.waitForSelector(`${sel} .idea-details`);
-        const titles = Object.fromEntries(await page.$$eval(`${sel} [data-field^=title-]`, (els) => els.map((e) => [e.getAttribute('data-field')?.slice(6), (e as HTMLInputElement).value])));
-        const mails = await page.$$eval(`${sel} [data-field=mails] li[data-mail]`, (els) => els.map((e) => e.getAttribute('data-state')));
-        const contactShown = await page.$eval(`${sel} [data-field=contact]`, (e) => !e.classList.contains('muted')).catch(() => false);
+        const scope = await openCard(page, id);
+        const titles = Object.fromEntries(await page.$$eval(`${scope} [data-field^=title-]`, (els) => els.map((e) => [e.getAttribute('data-field')?.slice(6), (e as HTMLInputElement).value])));
+        const mails = await page.$$eval(`${scope} [data-field=mails] li[data-mail]`, (els) => els.map((e) => e.getAttribute('data-state')));
+        const contactShown = await page.$eval(`${scope} [data-field=contact]`, (e) => !e.classList.contains('muted')).catch(() => false);
         const wantTitles = Object.fromEntries(Object.entries(rec?.public?.title ?? {}).filter(([, v]) => String(v).trim()));
         pilot[id] = { status: st, chips, titleLangs: Object.keys(titles).filter((l) => titles[l]), titleEn: titles.en, mails, contact: contactShown ? 'contact present' : 'none', thanksButton: thanksBtn };
         check(`${id} is in Done`, st === 'done', st);
         check(`${id} shows its public titles (4 languages, as ideas.json)`, JSON.stringify(Object.fromEntries(Object.entries(titles).filter(([, v]) => v))) === JSON.stringify(wantTitles), titles.en);
         check(`${id} is on the landing (chip) and has the pilot's contact`, chips.includes('landing') && chips.includes('contact') && contactShown);
         check(`${id} has exactly one thank-you e-mail, a draft not sent, and offers "read and send"`, JSON.stringify(mails) === '["draft"]' && /read and send/.test(thanksBtn ?? ''), { mails, button: thanksBtn });
-        if (id !== 'R-20261006-0002') await page.click(`${sel} [data-action=details]`); // close again
+        if (id !== 'R-20261006-0002') await closeCard(page, id);
     }
     results.pilot = pilot;
 
-    // the open pilot card (details: public titles, the draft e-mail row), then its draft in the dialog
-    const P2 = '[data-idea="R-20261006-0002"]';
-    // the whole open card in one picture: its column's own scroll box is let out for the screenshot (display only)
-    await page.$eval(P2, (e) => { (e.closest('.cards') as HTMLElement).style.maxHeight = 'none'; });
+    // defect 1: the open card at 1440 (R-20261006-0002 is open): wide enough, its titles whole, modal; Esc
+    // closes it and the focus returns to the card. The old layout (the card grew in its column) fails these.
+    const P2id = 'R-20261006-0002';
+    const P2 = await openCard(page, P2id).catch(() => `[data-panel-idea="${P2id}"]`); // already open: the same scope
+    const lay = await openLayout(page, P2);
+    results.openCard = { scope: P2.includes('panel') ? 'side panel' : 'card in its column', ...lay };
+    check(`desktop: the open card is at least ${MIN_OPEN_WIDTH} px wide`, lay.width >= MIN_OPEN_WIDTH, lay.width);
+    check('desktop: its four public titles are shown whole (no words hidden past the box), each box at least 400 px wide',
+        lay.titles.length === 4 && lay.titles.every((x) => x.whole && x.width >= 400), lay.titles);
+    check('desktop: the open card is modal (the board behind takes no clicks or Tab), the focus inside it', lay.modal && lay.focusIn, { modal: lay.modal, focusIn: lay.focusIn });
+    const f0 = await focusAt(page);
+    check('desktop: while it is open the focus is not on the board (control for the return)', f0.idea === null, f0, true);
+
+    // the open card in one picture: what the owner sees at 1440, and the whole panel (let out for the shot)
     await blankEmails(page);
     check('screenshot ideas-pilot-card-open-desktop: no e-mail address visible', (await emailsVisible(page)) === 0);
     mkdirSync(SHOTS, { recursive: true });
-    await page.locator(P2).screenshot({ path: join(SHOTS, 'ideas-pilot-card-open-desktop.png'), scale: 'css' });
-    shots.pilotCard = `evidence/${today()}/admin-live-copy/ideas-pilot-card-open-desktop.png`;
-    await page.$eval(P2, (e) => { (e.closest('.cards') as HTMLElement).style.maxHeight = ''; e.scrollIntoView({ block: 'start' }); });
+    await page.screenshot({ path: join(SHOTS, 'ideas-pilot-card-open-desktop.png'), scale: 'css' });
+    shots.pilotCard = `evidence/${today()}/${NAME}/ideas-pilot-card-open-desktop.png`;
+    const isPanel = P2.startsWith('[data-panel-idea');
+    await page.$eval(P2, (e, panel) => {
+        const box = (panel ? e : e.closest('.cards')) as HTMLElement;
+        box.style.height = 'auto';
+        box.style.maxHeight = 'none';
+        box.style.overflow = 'visible';
+    }, isPanel);
+    await page.locator(P2).screenshot({ path: join(SHOTS, 'ideas-pilot-card-open-full.png'), scale: 'css' });
+    shots.pilotCardFull = `evidence/${today()}/${NAME}/ideas-pilot-card-open-full.png`;
+    await page.$eval(P2, (e, panel) => {
+        const box = (panel ? e : e.closest('.cards')) as HTMLElement;
+        box.style.height = box.style.maxHeight = box.style.overflow = '';
+    }, isPanel);
+
+    // its thank-you draft in the dialog (opened from the open card), then Not now
     const posts0 = seen.filter((s) => s.startsWith('POST')).length;
-    await page.click(`${P2} [data-action=thanks]`);
+    await page.click(`${P2} [data-action=thanks]`).catch(async () => page.click(`[data-testid=idea-board] [data-idea="${P2id}"] [data-action=thanks]`));
     await page.waitForSelector('[data-testid=thanks-dialog] [data-step=draft]:not([hidden])');
     const dlg = await page.evaluate(() => ({
         subject: (document.querySelector('[data-field=thanks-subject]') as HTMLInputElement).value,
@@ -296,7 +493,7 @@ async function main(): Promise<void> {
         editShown: !(document.querySelector('[data-action=thanks-edit]') as HTMLElement).hidden,
         sendLabel: document.querySelector('[data-action=thanks-send]')?.textContent ?? ''
     }));
-    const m2 = store.ideas.find((r) => r.id === 'R-20261006-0002')?.thread?.find((m: Any) => m.kind === 'done');
+    const m2 = store.ideas.find((r) => r.id === P2id)?.thread?.find((m: Any) => m.kind === 'done');
     results.draftDialog = { subject: dlg.subject, bodyChars: dlg.body.length, to: dlg.toSet ? 'contact present' : 'none', sendLabel: dlg.sendLabel };
     check('the thank-you dialog opens straight at the DRAFT (step 2), the whole e-mail as stored', dlg.summaryHidden && dlg.subject === m2?.subject && dlg.body === m2?.plain && dlg.toSet,
         { subject: dlg.subject, bodyChars: dlg.body.length });
@@ -305,7 +502,16 @@ async function main(): Promise<void> {
     await page.click('[data-action=thanks-later]'); // Not now: sends nothing
     await page.waitForSelector('[data-testid=thanks-dialog]', { state: 'detached' });
     check('opening the draft and Not now sent nothing (no POST)', seen.filter((s) => s.startsWith('POST')).length === posts0);
-    await page.click(`${P2} [data-action=details]`);
+    const stillOpen = !!(await page.$(`${P2} .idea-details`));
+    check('after Not now the open card is still open (the dialog was over it)', stillOpen);
+    await page.keyboard.press('Escape');
+    await sleep(150);
+    const f1 = await focusAt(page);
+    const closedByEsc = !(await page.$(`${P2} .idea-details`));
+    results.escape = { closed: closedByEsc, focus: f1 };
+    check('desktop: Esc closes the open card and the focus returns to its Details button', closedByEsc && f1.idea === P2id && f1.action === 'details', results.escape);
+    if (!closedByEsc) await closeCard(page, P2id);
+    await showNewest(page, 'done');
 
     // search and filters
     const reset = async (): Promise<void> => {
@@ -316,7 +522,7 @@ async function main(): Promise<void> {
     const filtered: Record<string, Any> = {};
     await page.fill('[data-testid=idea-search]', 'R-20261006-0002');
     filtered.searchId = { ids: await boardIds(page), shown: await shownText(page) };
-    check('search "R-20261006-0002" finds exactly that card', JSON.stringify(filtered.searchId.ids) === '["R-20261006-0002"]' && filtered.searchId.shown === `1 of ${store.ideas.length} shown`, filtered.searchId);
+    check('search "R-20261006-0002" finds exactly that card', JSON.stringify(filtered.searchId.ids) === '["R-20261006-0002"]' && filtered.searchId.shown === `1 of ${board.ideas.length} shown`, filtered.searchId);
     await page.fill('[data-testid=idea-search]', 'R-20261006-9999');
     const none = await boardIds(page);
     check('search for an id that does not exist finds nothing', none.length === 0, none.length, true);
@@ -332,11 +538,11 @@ async function main(): Promise<void> {
     await reset();
     await page.click('[data-kind=feature]');
     filtered.noFeatures = (await boardIds(page)).length;
-    check('kind filter: without seeded features the board keeps ideas, bugs and notes', filtered.noFeatures === placeable.length - results.expected.kinds.feature, filtered.noFeatures);
+    check('kind filter: without seeded features the board keeps ideas, bugs and notes (every match drawn)', filtered.noFeatures === placeable.length - results.expected.kinds.feature, filtered.noFeatures);
     await reset();
     await page.selectOption('[data-filter=landing]', 'yes');
     filtered.onLanding = (await boardIds(page)).length;
-    check('filter "on the landing" keeps what the roadmap shows', filtered.onLanding === results.expected.onLanding, filtered.onLanding);
+    check('filter "on the landing" keeps what the roadmap shows, every one drawn (Done included)', filtered.onLanding === results.expected.onLanding, filtered.onLanding);
     await reset();
     await page.selectOption('[data-filter=minUrgency]', 'high');
     filtered.highOrAbove = (await boardIds(page)).length;
@@ -345,14 +551,46 @@ async function main(): Promise<void> {
     check('after the filters are reset the board is whole again', JSON.stringify(await counts(page)) === JSON.stringify(want));
     results.filters = filtered;
 
-    // bug details / download: only where a record has stored diagnostics
-    const diagLinks = await page.$$eval('[data-action=diagnostics]', (els) => els.length);
-    results.diagnostics = { recordsWithDiagnostics: results.expected.withDiagnostics, linksOnOpenCards: diagLinks };
-    check('no record of the live data has stored diagnostics, so no details/download view to open (none shown either)', results.expected.withDiagnostics === 0 && diagLinks === 0, results.diagnostics);
+    // 3. a bug's technical details: the synthetic bug's card, the details view (a new tab with the stored
+    // JSON) and the download (the same bytes); the pilot's idea without diagnostics offers neither (control)
+    const bugSel = `[data-testid=idea-board] [data-idea="${SB}"]`;
+    const bugCard = await page.$eval(bugSel, (e) => ({ status: e.getAttribute('data-status'), chips: [...e.querySelectorAll('[data-chip]')].map((c) => c.textContent) })).catch(() => null);
+    check(`the synthetic bug ${SB} is a card in New with the Bug chip`, bugCard?.status === 'new' && (bugCard?.chips ?? []).includes('Bug'), bugCard);
+    const bug = await openCard(page, SB);
+    const links = await page.$eval(bug, (e) => ({
+        details: e.querySelector('[data-action=diagnostics]')?.getAttribute('href') ?? null,
+        download: e.querySelector('[data-action=download]')?.getAttribute('download') ?? null,
+        downloadHref: e.querySelector('[data-action=download]')?.getAttribute('href') ?? null,
+        sent: e.querySelector('.idea-sent')?.textContent ?? ''
+    }));
+    results.bugDetails = links;
+    const diagUrl = `/api/admin/reports/${SB}/diagnostics`;
+    check('its open card offers Technical details and Download, both to the stored file', links.details === diagUrl && links.downloadHref === `${diagUrl}/download` && links.download === `${SB}.json`, links);
+    check('it shows what the page sent (language, page, scene, release)', ['Language: en', 'Sent from: fly', `Scene ${SCENES[0]}`, `Release: ${synth.sent.release}`].every((x) => links.sent.includes(x)), links.sent);
+    const fileBytes = readFileSync(diagFile);
+    const [tab] = await Promise.all([ctx.waitForEvent('page'), page.click(`${bug} [data-action=diagnostics]`)]);
+    await tab.waitForLoadState();
+    const viewText = await tab.evaluate(() => document.body.innerText);
+    let viewJson: Any = null;
+    try { viewJson = JSON.parse(viewText); } catch { /* not JSON */ }
+    results.bugView = { url: new URL(tab.url()).pathname, chars: viewText.length, id: viewJson?.id ?? null };
+    check('Technical details opens a tab with the stored JSON: the same file, the diagnostics as the page sent them',
+        new URL(tab.url()).pathname === diagUrl && JSON.stringify(viewJson) === JSON.stringify(JSON.parse(fileBytes.toString('utf8'))) && JSON.stringify(viewJson?.diagnostics) === JSON.stringify(SYNTH_DIAG), results.bugView);
+    await tab.close();
+    const [download] = await Promise.all([page.waitForEvent('download'), page.click(`${bug} [data-action=download]`)]);
+    const dlPath = await download.path();
+    const dlBytes = dlPath ? readFileSync(dlPath) : Buffer.alloc(0);
+    results.bugDownload = { name: download.suggestedFilename(), bytes: dlBytes.length, sha256: sha256(dlBytes), fileSha256: sha256(fileBytes) };
+    check(`Download saves ${SB}.json, byte for byte the stored diagnostics file`, download.suggestedFilename() === `${SB}.json` && dlBytes.length > 0 && sha256(dlBytes) === sha256(fileBytes), results.bugDownload);
+    shots.bugDetails = await shot(page, 'ideas-bug-details-desktop');
+    await closeCard(page, SB);
+    const p2 = await openCard(page, P2id);
+    const noDiag = !(await page.$(`${p2} [data-action=diagnostics]`)) && !(await page.$(`${p2} [data-action=download]`));
+    const noFile = await page.evaluate(async (u) => (await fetch(u, { cache: 'no-store' })).status, `/api/admin/reports/${P2id}/diagnostics`);
+    check('an idea without diagnostics offers neither, and its diagnostics route answers 404 (control)', noDiag && noFile === 404, { links: !noDiag, status: noFile }, true);
+    await closeCard(page, P2id);
 
-    await page.$eval('[data-testid=idea-board]', (e) => e.scrollIntoView({ block: 'start' }));
     await page.evaluate(() => window.scrollTo(0, 0));
-    shots.board = await shot(page, 'ideas-board-desktop');
 
     // ---------------- phone 390x844 ----------------
     const phoneCtx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, locale: 'en-US' });
@@ -368,16 +606,34 @@ async function main(): Promise<void> {
     check('phone: the board has the same five columns and counts', JSON.stringify(pc) === JSON.stringify(want), pc);
     const layout = await phone.evaluate(() => ({
         pageWidth: document.documentElement.scrollWidth,
+        pageHeight: document.documentElement.scrollHeight,
         columns: [...document.querySelectorAll('[data-testid=idea-board] .column')].map((c) => Math.round(c.getBoundingClientRect().width))
     }));
     results.phoneLayout = layout;
     check('phone: no sideways page scroll, one column at a time', layout.pageWidth <= 390 && layout.columns.every((w) => w <= 390), layout);
-    // two screens, not the whole page (the 60 Done cards make it ~12000 px tall): the top with the filters and
-    // New, then from the Done column's heading
     await phone.evaluate(() => window.scrollTo(0, 0));
     shots.phoneBoard = await shot(phone, 'ideas-board-phone');
     await phone.$eval('[data-column=done]', (e) => e.scrollIntoView({ block: 'start' }));
     shots.phoneDone = await shot(phone, 'ideas-board-phone-done');
+    // defect 2: the long Done column on a phone
+    results.phoneColumns = await columnChecks(phone, 'phone 390', want);
+    // the whole board on a phone in one picture, now that no column runs it long
+    await phone.evaluate(() => window.scrollTo(0, 0));
+    shots.phoneBoardFull = await shot(phone, 'ideas-board-phone-full', true);
+
+    // defect 1 on a phone: the open card takes the screen, its titles whole; Esc returns the focus
+    const pp = await openCard(phone, P2id);
+    const play = await phone.$eval(pp, (e) => ({ width: Math.round(e.getBoundingClientRect().width), screen: document.documentElement.clientWidth }));
+    const ptitles = (await openLayout(phone, pp)).titles;
+    results.phoneOpenCard = { ...play, titles: ptitles };
+    check('phone: the open card is the whole screen width, its four public titles shown whole',
+        play.width === play.screen && ptitles.length === 4 && ptitles.every((x) => x.whole), results.phoneOpenCard);
+    shots.phoneCard = await shot(phone, 'ideas-pilot-card-open-phone');
+    await phone.keyboard.press('Escape');
+    await sleep(150);
+    const pf = await focusAt(phone);
+    check('phone: Esc closes it and the focus returns to the card', !(await phone.$(`${pp} .idea-details`)) && pf.idea === P2id, pf);
+    if (await phone.$(`${pp} .idea-details`)) await closeCard(phone, P2id);
 
     // logout ends both sessions
     for (const p of [page, phone]) {
@@ -386,7 +642,7 @@ async function main(): Promise<void> {
     }
     const posts = seen.filter((s) => s.startsWith('POST'));
     results.posts = posts;
-    check('the only POSTs were the two logins and the two logouts (nothing moved, saved or sent)',
+    check('the only POSTs of the browser were the two logins and the two logouts (nothing moved, saved or sent)',
         posts.length === 4 && posts.filter((s) => s === 'POST /api/admin/login 200').length === 2 && posts.filter((s) => s === 'POST /api/admin/logout 200').length === 2, posts);
     results.screenshots = shots;
     await browser.close();
@@ -396,19 +652,29 @@ async function main(): Promise<void> {
     const allowed = new Set([`127.0.0.1:${SITE_PORT}`, 's3-eu-west-1.amazonaws.com', 'd28zzqy0iyovbz.cloudfront.net']);
     check('the browser reached only this machine and the scene posters\' CDN (never the live site)', results.hosts.every((h: string) => allowed.has(h)), results.hosts);
     // console: the browser logs the page's own session probe before the login (api.resume: GET
-    // /api/admin/session -> 401 when signed out) as "Failed to load resource"; everything else counts
+    // /api/admin/session -> 401 when signed out) as "Failed to load resource"; the 404 of the control
+    // above (an idea without diagnostics) likewise; everything else counts
     const errs = sink.errors.map((e) => e.replace(EMAIL_RE, '[e-mail]'));
     const probe401 = (e: string): boolean => / console: Failed to load resource: the server responded with a status of 401 .*\/api\/admin\/session$/.test(e);
+    const control404 = (e: string): boolean => new RegExp(` console: Failed to load resource: the server responded with a status of 404 .*/api/admin/reports/${P2id}/diagnostics$`).test(e);
     results.consoleErrors = errs;
-    check('no script error, CSP violation or failed request in the console', errs.filter((e) => !probe401(e)).length === 0, errs.filter((e) => !probe401(e)));
-    check('the console\'s only error lines are the signed-out session probe\'s 401, one per page load (2 loads)', errs.length === 2 && errs.every(probe401), errs.length);
+    check('no script error, CSP violation or failed request in the console', errs.filter((e) => !probe401(e) && !control404(e)).length === 0, errs.filter((e) => !probe401(e) && !control404(e)));
+    check('the console\'s only error lines are the signed-out session probe\'s 401 (one per page load, 2 loads) and the control\'s 404',
+        errs.filter(probe401).length === 2 && errs.filter(control404).length <= 1, errs.length);
 
-    // the data: the page changed nothing. The API's outbox thread (live code) does act on an e-mail the live
-    // store had QUEUED: with Gmail not set up here it marks it failed / not-configured in the COPY, sends nothing.
+    // the data: the page changed nothing; the only addition is the synthetic report (its line, its idea,
+    // its diagnostics file). The API's outbox thread (live code) does act on an e-mail the live store had
+    // QUEUED: with Gmail not set up here it marks it failed / not-configured in the COPY, sends nothing.
     const after = dataHashes();
-    const others = (h: Record<string, string>): string => JSON.stringify(Object.entries(h).filter(([k]) => k !== 'ideas.json'));
-    check('catalog.json, catalog-history/ and reports.jsonl are byte for byte unchanged, no draft was written', others(after) === others(before));
+    const catalogOnly = (h: Record<string, string>): string => JSON.stringify(Object.entries(h).filter(([k]) => k !== 'ideas.json' && k !== 'reports.jsonl'));
+    check('catalog.json and catalog-history/ are byte for byte unchanged, no draft was written', catalogOnly(after) === catalogOnly(before));
+    const reportsAfter = readFileSync(join(DATA, 'reports.jsonl'), 'utf8');
+    const added = reportsAfter.startsWith(reportsBefore) ? reportsAfter.slice(reportsBefore.length).split('\n').filter(Boolean) : null;
+    check('reports.jsonl: the copy\'s lines unchanged plus exactly the synthetic report\'s line', !!added && added.length === 1 && JSON.parse(added[0]).id === SB, added?.length ?? 'rewritten');
     const now = JSON.parse(readFileSync(join(DATA, 'ideas.json'), 'utf8')) as { ideas: Any[] };
+    const synthNow = now.ideas.find((r) => r.id === SB);
+    check('the synthetic bug is in ideas.json exactly as the API made it (the page moved or saved nothing)', JSON.stringify(synthNow) === JSON.stringify(synthRec));
+    now.ideas = now.ideas.filter((r) => r.id !== SB);
     const outbox: string[] = [];
     for (const [i, rec] of now.ideas.entries()) for (const [j, m] of (rec.thread ?? []).entries()) {
         const was = store.ideas[i]?.thread?.[j];
@@ -418,7 +684,10 @@ async function main(): Promise<void> {
         }
     }
     results.outboxOnCopy = outbox;
-    check('ideas.json: no change but the outbox thread\'s local "not-configured" on e-mails the live store had queued', JSON.stringify(now) === JSON.stringify(store), outbox);
+    // the store's file may carry its own top-level fields (version, seq): compared whole, the ideas aside
+    const rest = (s: Any): string => JSON.stringify({ ...s, ideas: undefined, seq: undefined });
+    check('ideas.json: every live record unchanged but the outbox thread\'s local "not-configured" on e-mails the live store had queued',
+        JSON.stringify(now.ideas) === JSON.stringify(store.ideas) && rest(now) === rest(store), outbox);
     // what the API printed (no request log: only start-up and errors), e-mail addresses scrubbed
     results.apiLog = apiLog.split('\n').map((l) => l.trim()).filter(Boolean).slice(0, 40).map((l) => l.replace(EMAIL_RE, '[e-mail]').slice(0, 200));
     check('the API printed no traceback', !/Traceback/.test(apiLog));
@@ -436,11 +705,11 @@ try {
 }
 const pass = !failed && checks.length > 0 && checks.every((c) => c.ok);
 // what was run (the caller says: the release id and its dist.tgz sha256, the API's commit, when the data was copied)
-const source = { release: process.env.RELEASE ?? null, distSha256: process.env.DIST_SHA256 ?? null, apiCommit: process.env.API_COMMIT ?? null, dataFetched: process.env.DATA_FETCHED ?? null };
+const source = { release: process.env.RELEASE ?? null, distSha256: process.env.DIST_SHA256 ?? null, apiCommit: process.env.API_COMMIT ?? null, dataFetched: process.env.DATA_FETCHED ?? null, tag: process.env.TAG ?? null };
 const summary = { pass, source, error: failed ? String(failed).slice(0, 400) : null,
-    passed: checks.filter((c) => c.ok).length, failed: checks.filter((c) => !c.ok).length, checks, ...results };
+    passed: checks.filter((c) => c.ok).length, failed: checks.filter((c) => !c.ok).length, failedChecks: checks.filter((c) => !c.ok).map((c) => c.name), checks, ...results };
 // the summary holds no e-mail address: refuse to write one that does
 const text = JSON.stringify(summary).replace(EMAIL_RE, '[e-mail]');
-const file = writeEvidence('admin-live-copy', JSON.parse(text));
+const file = writeEvidence(NAME, JSON.parse(text));
 console.log(`${pass ? 'PASS' : 'FAIL'} ${file}`);
 process.exit(pass ? 0 : 1);

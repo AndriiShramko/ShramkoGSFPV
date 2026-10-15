@@ -1,10 +1,13 @@
 // Serve a release dist/ like deploy/nginx.conf does, with the ENFORCED CSP built from the release's
 // csp-hashes.conf and the same policy text as nginx.conf, so the simulator can be tried under the
 // real policy before it reaches the hub. Usage: node serve-csp.mjs <dist> <port>
+// API_PROXY=http://127.0.0.1:<port> sends /api/** to a local API the way nginx does (method, body, cookie, CSRF and
+// cache headers in; status and headers out, streamed): without it /api/** answers 204. A browser download of an
+// /api/ file then goes over plain HTTP, which a Playwright route.fulfill cannot do (Chromium cancels it).
 import { fileURLToPath } from 'node:url';
 // repo root (tools/bench/scripts/ -> ../../..): no machine-specific paths
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\\/g, '/').replace(/\/$/, '');
-import { createServer } from 'node:http';
+import { createServer, request as httpRequest } from 'node:http';
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { join, extname } from 'node:path';
 
@@ -27,7 +30,16 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '
 createServer((req, res) => {
     const url = new URL(req.url, 'http://x');
     let p = decodeURIComponent(url.pathname);
-    if (p.startsWith('/api/')) { res.writeHead(204).end(); return; }
+    if (p.startsWith('/api/')) {
+        const target = process.env.API_PROXY;
+        if (!target) { res.writeHead(204).end(); return; }
+        const headers = { 'x-forwarded-for': '198.51.100.1' };
+        for (const k of ['content-type', 'content-length', 'cookie', 'x-csrf', 'if-none-match']) if (req.headers[k]) headers[k] = req.headers[k];
+        const up = httpRequest(new URL(req.url, target), { method: req.method, headers }, (r) => { res.writeHead(r.statusCode ?? 502, r.headers); r.pipe(res); });
+        up.on('error', () => { if (!res.headersSent) res.writeHead(502); res.end(); });
+        req.pipe(up);
+        return;
+    }
     if (p === '/') { res.writeHead(302, { location: '/en/' }).end(); return; }
     if (p === '/admin') { res.writeHead(301, { location: '/admin/' }).end(); return; }
     if (p.startsWith('/admin/')) {

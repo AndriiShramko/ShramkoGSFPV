@@ -1,0 +1,508 @@
+{
+  "name": "admin-live-copy-old-build",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-15T12:00:48.689Z",
+    "gitHead": "3c70803",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": false,
+  "source": {
+    "release": "55fbccae0af5",
+    "distSha256": null,
+    "apiCommit": "3c70803",
+    "dataFetched": null,
+    "tag": "old-build"
+  },
+  "error": "Error: page.$eval: Failed to find element matching selector \"[data-panel-idea=\"R-20261006-0002\"]\"",
+  "passed": 31,
+  "failed": 2,
+  "failedChecks": [
+    "desktop 1440: Done draws its newest 8, its header still counts all 60, with \"Show all (60)\"",
+    "desktop 1440: Show all draws every Done card in the column's own scroll box"
+  ],
+  "checks": [
+    {
+      "name": "the admin page is served under nginx.conf's admin CSP (script-src 'self' only)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "a synthetic bug report with diagnostics is stored by the LOCAL API (POST /api/report 200, diagnostics true, delivered to nobody)",
+      "ok": true,
+      "control": false,
+      "got": {
+        "status": 200,
+        "answer": {
+          "ok": true,
+          "id": "R-20261015-0001",
+          "diagnostics": true,
+          "delivered": false
+        },
+        "diagnosticsFileBytes": 556
+      }
+    },
+    {
+      "name": "the synthetic report became a bug card in New with diagnostics in ideas.json (the API's own path)",
+      "ok": true,
+      "control": false,
+      "got": {
+        "kind": "bug",
+        "status": "new",
+        "diagnostics": true
+      }
+    },
+    {
+      "name": "login on localhost with the test password",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "Scenes lists the 6 published scenes in the live order",
+      "ok": true,
+      "control": false,
+      "got": [
+        "887f27aa",
+        "39e63ce9",
+        "7a475d38",
+        "70b50d42",
+        "b11e45d1",
+        "0230d903"
+      ]
+    },
+    {
+      "name": "the list equals catalog.json of the copy",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "each scene shows its state (Featured / Hidden / No walls / Walls off) as catalog.json says",
+      "ok": true,
+      "control": false,
+      "got": {
+        "887f27aa": [
+          "visible, walls on"
+        ],
+        "39e63ce9": [
+          "visible, walls on"
+        ],
+        "7a475d38": [
+          "visible, walls on"
+        ],
+        "70b50d42": [
+          "No walls"
+        ],
+        "b11e45d1": [
+          "visible, walls on"
+        ],
+        "0230d903": [
+          "No walls"
+        ]
+      }
+    },
+    {
+      "name": "no scene carries an unpublished-change badge",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the draft status says pilots see exactly this list (no draft on the hub)",
+      "ok": true,
+      "control": false,
+      "got": "Pilots see exactly this list."
+    },
+    {
+      "name": "the publish history lists the 6 versions of catalog-history/",
+      "ok": true,
+      "control": false,
+      "got": 6
+    },
+    {
+      "name": "every scene row shows its poster",
+      "ok": true,
+      "control": false,
+      "got": 6
+    },
+    {
+      "name": "screenshot scenes-desktop: no e-mail address visible (blanked 0)",
+      "ok": true,
+      "control": false,
+      "got": 0
+    },
+    {
+      "name": "the kanban columns New / Accepted / In progress / Done / Rejected count what ideas.json holds",
+      "ok": true,
+      "control": false,
+      "got": {
+        "new": "1",
+        "accepted": "0",
+        "in_progress": "1",
+        "done": "60",
+        "rejected": "1"
+      }
+    },
+    {
+      "name": "the column headings, in board order",
+      "ok": true,
+      "control": false,
+      "got": [
+        "New",
+        "Accepted: the queue",
+        "In progress",
+        "Done",
+        "Rejected"
+      ]
+    },
+    {
+      "name": "every record is placed: \"63 of 63 shown\"",
+      "ok": true,
+      "control": false,
+      "got": "63 of 63 shown"
+    },
+    {
+      "name": "no record is reported unreadable",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the copy's API has no Gmail and no Telegram webhook (the page says so): nothing can be sent from here",
+      "ok": true,
+      "control": false,
+      "got": "Gmail is not set up on the server: e-mails wait until it is, then each one asks for your Send. Telegram only receives reports (the server has no webhook secret): they arrive as plain text, without buttons."
+    },
+    {
+      "name": "screenshot ideas-board-desktop: no e-mail address visible (blanked 0)",
+      "ok": true,
+      "control": false,
+      "got": 0
+    },
+    {
+      "name": "desktop 1440: no column is taller than 3 viewports (2700 px)",
+      "ok": true,
+      "control": false,
+      "got": {
+        "new": 264,
+        "accepted": 82,
+        "in_progress": 305,
+        "done": 710,
+        "rejected": 288
+      }
+    },
+    {
+      "name": "desktop 1440: Done draws its newest 8, its header still counts all 60, with \"Show all (60)\"",
+      "ok": false,
+      "control": false,
+      "got": {
+        "drawn": 60,
+        "count": "60",
+        "button": null
+      }
+    },
+    {
+      "name": "desktop 1440: Show all draws every Done card in the column's own scroll box",
+      "ok": false,
+      "control": false,
+      "got": "no Show all button"
+    },
+    {
+      "name": "R-20261006-0001 is in Done",
+      "ok": true,
+      "control": false,
+      "got": "done"
+    },
+    {
+      "name": "R-20261006-0001 shows its public titles (4 languages, as ideas.json)",
+      "ok": true,
+      "control": false,
+      "got": "Rates types Betaflight, Raceflight, KISS, Actual and Quick with manual editing, and a crosshair"
+    },
+    {
+      "name": "R-20261006-0001 is on the landing (chip) and has the pilot's contact",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R-20261006-0001 has exactly one thank-you e-mail, a draft not sent, and offers \"read and send\"",
+      "ok": true,
+      "control": false,
+      "got": {
+        "mails": [
+          "draft"
+        ],
+        "button": "Thank-you draft: read and send\u2026"
+      }
+    },
+    {
+      "name": "R-20261006-0003 is in Done",
+      "ok": true,
+      "control": false,
+      "got": "done"
+    },
+    {
+      "name": "R-20261006-0003 shows its public titles (4 languages, as ideas.json)",
+      "ok": true,
+      "control": false,
+      "got": "Radio channels for every function: arm, flight mode, rewind and more (e.g. mode on CH5, arm on CH6)"
+    },
+    {
+      "name": "R-20261006-0003 is on the landing (chip) and has the pilot's contact",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R-20261006-0003 has exactly one thank-you e-mail, a draft not sent, and offers \"read and send\"",
+      "ok": true,
+      "control": false,
+      "got": {
+        "mails": [
+          "draft"
+        ],
+        "button": "Thank-you draft: read and send\u2026"
+      }
+    },
+    {
+      "name": "R-20261006-0002 is in Done",
+      "ok": true,
+      "control": false,
+      "got": "done"
+    },
+    {
+      "name": "R-20261006-0002 shows its public titles (4 languages, as ideas.json)",
+      "ok": true,
+      "control": false,
+      "got": "The drone's motor sound (on/off, volume)"
+    },
+    {
+      "name": "R-20261006-0002 is on the landing (chip) and has the pilot's contact",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R-20261006-0002 has exactly one thank-you e-mail, a draft not sent, and offers \"read and send\"",
+      "ok": true,
+      "control": false,
+      "got": {
+        "mails": [
+          "draft"
+        ],
+        "button": "Thank-you draft: read and send\u2026"
+      }
+    }
+  ],
+  "dataFiles": [
+    "ideas.json",
+    "catalog.json",
+    "reports.jsonl",
+    "catalog-history/20261006T105626Z.json",
+    "catalog-history/20261006T125625Z.json",
+    "catalog-history/20261006T125627Z.json",
+    "catalog-history/20261006T125640Z.json",
+    "catalog-history/20261007T140233Z.json",
+    "catalog-history/20261007T170442Z.json"
+  ],
+  "adminCsp": "default-src 'self'; script-src 'self'; connect-src 'self' https://d28zzqy0iyovbz.cloudfront.net; img-src 'self' data: https://s3-eu-west-1.amazonaws.com https://d28zzqy0iyovbz.cloudfront.net; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+  "synthetic": {
+    "status": 200,
+    "answer": {
+      "ok": true,
+      "id": "R-20261015-0001",
+      "diagnostics": true,
+      "delivered": false
+    },
+    "diagnosticsFileBytes": 556
+  },
+  "expected": {
+    "records": 63,
+    "placeable": 63,
+    "columns": {
+      "new": "1",
+      "accepted": "0",
+      "in_progress": "1",
+      "done": "60",
+      "rejected": "1"
+    },
+    "kinds": {
+      "idea": 3,
+      "bug": 1,
+      "note": 2,
+      "feature": 57
+    },
+    "withContact": 4,
+    "onLanding": 61,
+    "highOrAbove": 0,
+    "withDiagnostics": 1,
+    "liveWithDiagnostics": 0
+  },
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "scenes": [
+    {
+      "id": "887f27aa",
+      "title": "Tunis \u2014 old town streets",
+      "badges": [],
+      "changed": false,
+      "hiddenRow": false,
+      "pinnedRow": false
+    },
+    {
+      "id": "39e63ce9",
+      "title": "Modlinek Villa \u2014 red room and bathroom",
+      "badges": [],
+      "changed": false,
+      "hiddenRow": false,
+      "pinnedRow": false
+    },
+    {
+      "id": "7a475d38",
+      "title": "Winter Garden, Poland",
+      "badges": [],
+      "changed": false,
+      "hiddenRow": false,
+      "pinnedRow": false
+    },
+    {
+      "id": "70b50d42",
+      "title": "Wroc\u0142aw Cathedral & Historic Streets \u2014 FPV Simulator Scan",
+      "badges": [
+        "No walls"
+      ],
+      "changed": false,
+      "hiddenRow": false,
+      "pinnedRow": false
+    },
+    {
+      "id": "b11e45d1",
+      "title": "yamato koriyama castle",
+      "badges": [],
+      "changed": false,
+      "hiddenRow": false,
+      "pinnedRow": false
+    },
+    {
+      "id": "0230d903",
+      "title": "Muster Truck Show Opole Poland 2024",
+      "badges": [
+        "No walls"
+      ],
+      "changed": false,
+      "hiddenRow": false,
+      "pinnedRow": false
+    }
+  ],
+  "draftStatus": {
+    "text": "Pilots see exactly this list.",
+    "cls": "status ok"
+  },
+  "history": [
+    "20261007T170442Z",
+    "20261007T140233Z",
+    "20261006T125640Z",
+    "20261006T125627Z",
+    "20261006T125625Z",
+    "20261006T105626Z"
+  ],
+  "postersLoaded": 6,
+  "columns": {
+    "new": "1",
+    "accepted": "0",
+    "in_progress": "1",
+    "done": "60",
+    "rejected": "1"
+  },
+  "setupNote": "Gmail is not set up on the server: e-mails wait until it is, then each one asks for your Send. Telegram only receives reports (the server has no webhook secret): they arrive as plain text, without buttons.",
+  "desktopColumns": {
+    "heights": {
+      "page": 1151,
+      "viewport": 900,
+      "columns": {
+        "new": 264,
+        "accepted": 82,
+        "in_progress": 305,
+        "done": 710,
+        "rejected": 288
+      }
+    },
+    "done": {
+      "drawn": 60,
+      "count": "60",
+      "button": null
+    }
+  },
+  "pilot": {
+    "R-20261006-0001": {
+      "status": "done",
+      "chips": [
+        "kind",
+        "pilot",
+        "contact",
+        "landing"
+      ],
+      "titleLangs": [
+        "en",
+        "es",
+        "pl",
+        "ru"
+      ],
+      "titleEn": "Rates types Betaflight, Raceflight, KISS, Actual and Quick with manual editing, and a crosshair",
+      "mails": [
+        "draft"
+      ],
+      "contact": "contact present",
+      "thanksButton": "Thank-you draft: read and send\u2026"
+    },
+    "R-20261006-0003": {
+      "status": "done",
+      "chips": [
+        "kind",
+        "pilot",
+        "contact",
+        "landing"
+      ],
+      "titleLangs": [
+        "en",
+        "es",
+        "pl",
+        "ru"
+      ],
+      "titleEn": "Radio channels for every function: arm, flight mode, rewind and more (e.g. mode on CH5, arm on CH6)",
+      "mails": [
+        "draft"
+      ],
+      "contact": "contact present",
+      "thanksButton": "Thank-you draft: read and send\u2026"
+    },
+    "R-20261006-0002": {
+      "status": "done",
+      "chips": [
+        "kind",
+        "pilot",
+        "contact",
+        "landing"
+      ],
+      "titleLangs": [
+        "en",
+        "es",
+        "pl",
+        "ru"
+      ],
+      "titleEn": "The drone's motor sound (on/off, volume)",
+      "mails": [
+        "draft"
+      ],
+      "contact": "contact present",
+      "thanksButton": "Thank-you draft: read and send\u2026"
+    }
+  }
+}
