@@ -12,7 +12,7 @@ import { ArmLatch, CalibrationWizard, STEP_IDS, TUNING, channelOrder } from '@gs
 import type { ArmSource, Fn, Hint, Profile, RawFrame, StepResult, Verdict, WizardState } from '@gsfpv/input';
 import { h, clear } from './dom';
 import { t } from '../i18n';
-import { HidSource } from '../devices/hid';
+import { HidSource, hidDisplayName } from '../devices/hid';
 import { GamepadSource } from '../devices/gamepad';
 import { saveProfile, profileFor, downloadProfile, parseProfile, getStickMode, setStickMode } from '../controls';
 import { radioArt, sideOf, knobsFrom, tickIcon } from './radio-art';
@@ -343,7 +343,7 @@ export class RadioScreen {
             await new Promise<void>((res) => { src.onFrame = () => { src.onFrame = null; res(); }; setTimeout(res, 1500); });
             if (gen !== this.gen) return;
             this.hid = src;
-            const name = d.productName || 'radio';
+            const name = hidDisplayName(d);
             const sub: Subscribe = (cb) => { src.onFrame = cb; };
             const saved = profileFor(src.key);
             // a saved setup is shown for checking, never handed over blindly

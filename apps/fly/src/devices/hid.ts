@@ -1,8 +1,12 @@
-// EdgeTX radio in "USB Joystick" mode over WebHID. Report layout from the EdgeTX source (not
-// measured on hardware yet): 3 bytes of buttons + 8 x uint16 little-endian, 0..2048, centre 1024.
-// Timestamps are the browser's event.timeStamp (same clock as performance.now()).
+// A radio or gamepad over WebHID. An EdgeTX radio in "USB Joystick" mode sends the layout from the
+// EdgeTX source: 3 bytes of buttons + 8 x uint16 little-endian, 0..2048, centre 1024. Any other HID
+// joystick or gamepad (a DJI controller in its simulator mode, 13 bytes: 5 x int16 and 24 button bits)
+// is read through its own report descriptor, which the browser hands over as device.collections
+// (packages/input/src/hid-layout.ts). The chooser lists every HID joystick, gamepad and multi-axis
+// controller. Timestamps are the browser's event.timeStamp (same clock as performance.now()).
 
-import type { RawFrame } from '@gsfpv/input';
+import { hidDisplayName, makeHidReader, parseEdgeTxReport } from '@gsfpv/input';
+import type { HidReader, RawFrame } from '@gsfpv/input';
 
 export const EDGETX_FILTERS: HIDDeviceFilter[] = [
     { vendorId: 0x1209, productId: 0x4f54 }, // EdgeTX / OpenTX
@@ -11,21 +15,7 @@ export const EDGETX_FILTERS: HIDDeviceFilter[] = [
     { usagePage: 0x01, usage: 0x08 } // multi-axis controller
 ];
 
-export function parseEdgeTxReport(data: DataView, out: RawFrame): boolean {
-    const n = data.byteLength;
-    if (n >= 19) {
-        out.buttons = data.getUint8(0) | (data.getUint8(1) << 8) | (data.getUint8(2) << 16);
-        for (let i = 0; i < 8; i++) out.axes[i] = (data.getUint16(3 + i * 2, true) - 1024) / 1024;
-        return true;
-    }
-    if (n >= 16) {
-        // no button bytes
-        out.buttons = 0;
-        for (let i = 0; i < 8; i++) out.axes[i] = (data.getUint16(i * 2, true) - 1024) / 1024;
-        return true;
-    }
-    return false;
-}
+export { hidDisplayName, parseEdgeTxReport };
 
 export function hidDeviceKey(d: { vendorId: number; productId: number; productName: string }, reportLen: number): string {
     return `hid:${d.vendorId.toString(16)}:${d.productId.toString(16)}:${d.productName}:${reportLen}`;
@@ -42,6 +32,8 @@ export class HidSource {
     private rateN = 0;
     rateHz = 0;
     reportLen = 0;
+    /** EdgeTX's fixed layout, or the device's own descriptor (makeHidReader) */
+    private read: HidReader = (_id, data, out) => parseEdgeTxReport(data, out);
     onFrame: ((f: RawFrame) => void) | null = null;
 
     static supported(): boolean {
@@ -58,13 +50,14 @@ export class HidSource {
     async open(d: HIDDevice): Promise<void> {
         if (!d.opened) await d.open();
         this.device = d;
+        this.read = makeHidReader(d);
         d.addEventListener('inputreport', this.onReport);
     }
 
     private onReport = (e: HIDInputReportEvent): void => {
         this.reportLen = e.data.byteLength;
         const f = this.frame;
-        if (!parseEdgeTxReport(e.data, f)) {
+        if (!this.read(e.reportId, e.data, f)) {
             // the wizard's connect screen says so instead of waiting for frames that never come
             this.badReports++;
             this.lastBadLen = e.data.byteLength;
