@@ -9,6 +9,13 @@
 // is read this way: 5 axes of int16 -660..660 and 24 buttons in 13 bytes, nothing like the EdgeTX layout
 // (docs/research/radios/dji-rc3.md).
 //
+// A device that splits its axes over several report ids (a 3D mouse: translation in report 1, rotation
+// in report 2; a twin-pad adapter: one report per pad) gets one fixed channel per axis over all its
+// reports, in report-id order, and a report updates only its own channels and buttons; the others
+// keep what their report last said. Chromium lists every item of a report in the top-level collection
+// as well as in the nested one it sits in, so the first (outermost) listing of a report id is the
+// whole report and the nested repeats are skipped.
+//
 // Not read: hat switches (usage 0x39), the Simulation Controls page, vendor pages, and array items
 // (their bits are skipped, so the fields behind them still line up).
 
@@ -39,6 +46,7 @@ export interface HidCollectionInfo {
 }
 
 export interface HidAxisField {
+    ch: number; // the frame channel (0-based) this axis drives; -1 = past the 8 channels of a frame, not read
     bit: number; // first bit of the field in the report data (without the report id)
     size: number; // bits, 1..32
     signed: boolean;
@@ -52,8 +60,10 @@ export interface HidLayout {
     /** data bytes of this report (the report id is not counted) */
     bytes: number;
     axes: HidAxisField[];
-    /** bit position of Button n (index n-1) */
+    /** bit position of each button and its bit in the frame (Button n of the first report = bit n-1) */
     buttons: { bit: number; index: number }[];
+    /** the frame's button bits this report owns */
+    buttonMask: number;
 }
 
 const GENERIC_DESKTOP = 0x01;
@@ -76,14 +86,21 @@ function walkReports(cols: readonly HidCollectionInfo[], out: HidReportInfo[]): 
 }
 
 /**
- * The input reports of a device with at least one axis, one layout per report id; [] when the descriptor
- * has none (a keyboard, a mouse, a device with only vendor pages) or when `cols` is missing.
+ * The input reports of a device with at least one axis, one layout per report id (with axes or buttons),
+ * channels numbered over all of them in report-id order; [] when the descriptor has no axis at all (a
+ * keyboard, a mouse, a device with only vendor pages) or when `cols` is missing.
  */
 export function layoutsFromCollections(cols: readonly HidCollectionInfo[] | undefined | null): HidLayout[] {
     if (!cols || cols.length === 0) return [];
-    const reports: HidReportInfo[] = [];
-    walkReports(cols, reports);
+    const all: HidReportInfo[] = [];
+    walkReports(cols, all);
+    const seen = new Set<number>();
+    const reports = all.filter((r) => (seen.has(r.reportId) ? false : (seen.add(r.reportId), true)));
+    reports.sort((a, b) => a.reportId - b.reportId);
     const out: HidLayout[] = [];
+    let nextCh = 0;
+    let btnBase = 0;
+    let anyAxis = false;
     for (const rep of reports) {
         let bit = 0;
         const axes: HidAxisField[] = [];
@@ -109,17 +126,25 @@ export function layoutsFromCollections(cols: readonly HidCollectionInfo[] | unde
                         [page, id] = split(us[k < us.length ? k : us.length - 1], size === 1 ? BUTTON_PAGE : GENERIC_DESKTOP);
                     }
                     const at = bit + k * size;
-                    if (page === BUTTON_PAGE && size === 1 && id >= 1 && id <= MAX_BUTTONS) buttons.push({ bit: at, index: id - 1 });
-                    else if (page === GENERIC_DESKTOP && id >= AXIS_FIRST && id <= AXIS_LAST && size >= 2 && size <= 32 && hi > lo) {
-                        axes.push({ bit: at, size, signed: lo < 0, lo, hi, usage: id });
+                    if (page === BUTTON_PAGE && size === 1 && id >= 1) {
+                        if (btnBase + id <= MAX_BUTTONS) buttons.push({ bit: at, index: btnBase + id - 1 });
+                    } else if (page === GENERIC_DESKTOP && id >= AXIS_FIRST && id <= AXIS_LAST && size >= 2 && size <= 32 && hi > lo) {
+                        axes.push({ ch: nextCh < MAX_AXES ? nextCh : -1, bit: at, size, signed: lo < 0, lo, hi, usage: id });
+                        nextCh++;
                     }
                 }
             }
             bit += size * count;
         }
-        if (axes.length > 0) out.push({ reportId: rep.reportId, bytes: Math.ceil(bit / 8), axes, buttons });
+        if (axes.length === 0 && buttons.length === 0) continue;
+        anyAxis ||= axes.length > 0;
+        let mask = 0;
+        let top = 0;
+        for (const b of buttons) { mask |= 1 << b.index; if (b.index + 1 > top) top = b.index + 1; }
+        out.push({ reportId: rep.reportId, bytes: Math.ceil(bit / 8), axes, buttons, buttonMask: mask });
+        if (top > btnBase) btnBase = top; // the next report's Button 1 comes after this report's last button
     }
-    return out;
+    return anyAxis ? out : [];
 }
 
 /** `size` bits at bit position `at` (little-endian bit order, as HID packs fields). */
@@ -137,23 +162,22 @@ function field(data: DataView, at: number, size: number, signed: boolean): numbe
 }
 
 /**
- * Decode one report into `out` (axes beyond the 8 of a frame are dropped, the missing ones read 0).
- * False when this report id has no layout or the data is shorter than the layout needs.
+ * Decode one report into `out`: this report's channels and button bits only; the channels and buttons
+ * of the device's other reports keep their values (a frame that never had them reads 0). False, with
+ * `out` untouched, when this report id has no layout or the data is shorter than the layout needs.
  */
 export function decodeHidReport(layouts: readonly HidLayout[], reportId: number, data: DataView, out: RawFrame): boolean {
     let lay: HidLayout | undefined;
     for (const l of layouts) if (l.reportId === reportId) { lay = l; break; }
     if (!lay || data.byteLength < lay.bytes) return false;
-    out.axes.fill(0);
-    const n = lay.axes.length < MAX_AXES ? lay.axes.length : MAX_AXES;
-    for (let i = 0; i < n; i++) {
-        const a = lay.axes[i];
+    for (const a of lay.axes) {
+        if (a.ch < 0 || a.ch >= out.axes.length) continue;
         const v = (field(data, a.bit, a.size, a.signed) - (a.lo + a.hi) / 2) / ((a.hi - a.lo) / 2);
-        out.axes[i] = v < -1 ? -1 : v > 1 ? 1 : v;
+        out.axes[a.ch] = v < -1 ? -1 : v > 1 ? 1 : v;
     }
     let b = 0;
     for (const bt of lay.buttons) if ((data.getUint8(bt.bit >> 3) >> (bt.bit & 7)) & 1) b |= 1 << bt.index;
-    out.buttons = b;
+    out.buttons = (out.buttons & ~lay.buttonMask) | b;
     return true;
 }
 

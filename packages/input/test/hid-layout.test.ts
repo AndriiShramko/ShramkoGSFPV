@@ -94,6 +94,57 @@ describe('decoding by the descriptor', () => {
         expect(Math.abs(f.axes[1])).toBeLessThan(0.001);
     });
 
+    it('axes in two report ids get their own channels; a report updates only its own channels and buttons', () => {
+        // a 3D mouse / twin-pad adapter shape: report 1 = X Y + buttons 1..4, report 2 = Rx Ry + buttons 1..4
+        const pad = (id: number, u1: number, u2: number) => ({ reportId: id, items: [
+            { isConstant: false, isRange: false, usages: [P1 | u1, P1 | u2], reportSize: 8, reportCount: 2, logicalMinimum: -127, logicalMaximum: 127 },
+            { isConstant: false, isRange: true, usageMinimum: P9 | 1, usageMaximum: P9 | 4, reportSize: 1, reportCount: 4, logicalMinimum: 0, logicalMaximum: 1 },
+            { isConstant: true, reportSize: 4, reportCount: 1 }
+        ] });
+        const lay = layoutsFromCollections([{ usagePage: 1, usage: 8, inputReports: [pad(2, 0x33, 0x34), pad(1, 0x30, 0x31)] }]);
+        expect(lay.map((l) => [l.reportId, l.axes.map((a) => a.ch), l.buttons.map((b) => b.index)])).toEqual([
+            [1, [0, 1], [0, 1, 2, 3]], [2, [2, 3], [4, 5, 6, 7]]
+        ]);
+        const f = newFrame();
+        expect(decodeHidReport(lay, 1, hex('7F 81 05'), f)).toBe(true); // X +127, Y -127, buttons 1 and 3
+        expect(decodeHidReport(lay, 2, hex('00 7F 02'), f)).toBe(true); // Rx 0, Ry +127, button 2
+        // report 1's values survive report 2 (the pre-fix decoder zeroed the frame and wrote both to CH1..2)
+        expect(Array.from(f.axes.slice(0, 4))).toEqual([1, -1, 0, 1]);
+        expect(f.buttons).toBe(0b0010_0101);
+        expect(decodeHidReport(lay, 1, hex('00 00 00'), f)).toBe(true); // report 1 back at rest, nothing pressed
+        expect(Array.from(f.axes.slice(0, 4))).toEqual([0, 0, 0, 1]);
+        expect(f.buttons).toBe(0b0010_0000);
+    });
+
+    it('a report repeated in a nested collection (as Chromium lists it) is read once, from the outermost listing', () => {
+        const whole = { reportId: 0, items: [
+            { isConstant: false, isRange: true, usageMinimum: P9 | 1, usageMaximum: P9 | 8, reportSize: 1, reportCount: 8, logicalMinimum: 0, logicalMaximum: 1 },
+            { isConstant: false, isRange: false, usages: [P1 | 0x30, P1 | 0x31], reportSize: 16, reportCount: 2, logicalMinimum: 0, logicalMaximum: 2047 }
+        ] };
+        const axesOnly = { reportId: 0, items: [whole.items[1]] }; // the Physical child: its own items from bit 0
+        const lay = layoutsFromCollections([{ usagePage: 1, usage: 4, inputReports: [whole], children: [{ usagePage: 1, usage: 1, inputReports: [axesOnly] }] }]);
+        expect(lay).toHaveLength(1);
+        expect(lay[0].axes.map((a) => [a.ch, a.bit])).toEqual([[0, 8], [1, 24]]);
+        const f = newFrame();
+        expect(decodeHidReport(lay, 0, hex('81 FF 07 00 00'), f)).toBe(true); // buttons 1 and 8, X 2047, Y 0
+        expect(f.buttons).toBe(0x81);
+        expect(Array.from(f.axes.slice(0, 2))).toEqual([1, -1]);
+    });
+
+    it('a report with buttons only is read too when the device has axes elsewhere', () => {
+        const lay = layoutsFromCollections([{ usagePage: 1, usage: 5, inputReports: [
+            { reportId: 1, items: [{ isConstant: false, isRange: false, usages: [P1 | 0x30], reportSize: 8, reportCount: 1, logicalMinimum: -127, logicalMaximum: 127 }] },
+            { reportId: 2, items: [{ isConstant: false, isRange: true, usageMinimum: P9 | 1, usageMaximum: P9 | 8, reportSize: 1, reportCount: 8, logicalMinimum: 0, logicalMaximum: 1 }] }
+        ] }]);
+        const f = newFrame();
+        expect(decodeHidReport(lay, 2, hex('03'), f)).toBe(true);
+        expect(f.buttons).toBe(3);
+        // without any axis the device is not a joystick for this reader
+        expect(layoutsFromCollections([{ usagePage: 1, usage: 5, inputReports: [
+            { reportId: 2, items: [{ isConstant: false, isRange: true, usageMinimum: P9 | 1, usageMaximum: P9 | 8, reportSize: 1, reportCount: 8, logicalMinimum: 0, logicalMaximum: 1 }] }
+        ] }])).toEqual([]);
+    });
+
     it('names a device by its product name, or by its USB ids when it only says "HID Interface"', () => {
         expect(hidDisplayName({ vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface' })).toBe('USB 2ca3:1021');
         expect(hidDisplayName({ vendorId: 0x2ca3, productId: 0x1021, productName: '' })).toBe('USB 2ca3:1021');
@@ -121,6 +172,10 @@ describe('the reader HidSource picks for a device', () => {
 
     it('a device without a usable descriptor falls back to the EdgeTX layout, as before', () => {
         const r = makeHidReader({ vendorId: 0x1234, productId: 0x5678 });
+        const f = newFrame();
+        expect(r(0, hex('01 00 00 00 08 00 00 00 04 00 04 00 04 00 04 00 04 00 04'), f)).toBe(true);
+        expect(Array.from(f.axes)).toEqual([1, -1, 0, 0, 0, 0, 0, 0]);
+        expect(f.buttons).toBe(1);
         expect(r(0, hex('F5 FF 00 00 00 00 F8 FF 00 00 50 00 00'), newFrame())).toBe(false);
     });
 });
@@ -175,7 +230,7 @@ describe('the wizard with a DJI RC 3', () => {
         return w;
     }
 
-    it('the real stir of both sticks is recognised: four sticks, the wheel is not one', () => {
+    it('the real stir of both sticks is recognised: four sticks move, the untouched wheel stays idle', () => {
         const w = stirTrace(byDescriptor);
         expect(w.state.id).toBe('stir');
         expect(w.state.sticksDone).toBe(4);
