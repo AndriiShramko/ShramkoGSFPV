@@ -10,9 +10,10 @@
 // and drops every press (the page-level negative control: the wizard must then stay put).
 
 import type { RawFrame, WizardState } from '@gsfpv/input';
-import { Human, emptyInstruction, instructionOf, quantize11, randomHuman } from '@gsfpv/input/sim';
+import { makeHidReader } from '@gsfpv/input';
+import { DJI_RC3, Human, djiRc3Report, emptyInstruction, instructionOf, quantize11, randomHuman } from '@gsfpv/input/sim';
 import type { Stick, UiAction } from '@gsfpv/input/sim';
-import { parseEdgeTxReport } from './hid';
+import { hidDeviceKey, parseEdgeTxReport } from './hid';
 
 export interface FakeRadioConfig {
     order: string; // e.g. "TAER" or "AETR": which function sits on channel 1..4
@@ -26,6 +27,7 @@ export interface FakeRadioConfig {
     reactMs?: number; // the robot starts on a new screen this long after it appears (default 0)
     humanSeed?: number; // behave like simulated person number N instead of the robot
     noButtons?: boolean; // move the hands as usual, never press a button (negative control)
+    device?: 'edgetx' | 'dji-rc3'; // the report the hands go out as (default: EdgeTX Classic, 19 bytes)
 }
 
 type S = 'A' | 'E' | 'T' | 'R';
@@ -78,8 +80,17 @@ export class FakeEdgeTx {
         }
     }
 
+    private djiRead = makeHidReader(DJI_RC3);
+    private djiAxes = [0, 0, 0, 0, 0];
+
     get key(): string {
+        if (this.cfg.device === 'dji-rc3') return hidDeviceKey(DJI_RC3, DJI_RC3.reportBytes);
         return `hid:1209:4f54:SimRadio EdgeTX Classic ${this.cfg.order}:19`;
+    }
+
+    /** The profile name the radio screen shows. */
+    get name(): string {
+        return this.cfg.device === 'dji-rc3' ? `SimRadio ${DJI_RC3.name}` : 'SimRadio EdgeTX Classic';
     }
 
     start(): void {
@@ -216,6 +227,12 @@ export class FakeEdgeTx {
             }
         }
         parseEdgeTxReport(d, this.frame);
+        if (this.cfg.device === 'dji-rc3') {
+            // the controller has 5 axes: channels 1..5 in its own units, the rest are not sent
+            for (let i = 0; i < 5; i++) this.djiAxes[i] = this.frame.axes[i] * DJI_RC3.axisRange[1];
+            const rep = djiRc3Report(this.djiAxes, this.frame.buttons | DJI_RC3.restButtons);
+            this.djiRead(0, new DataView(rep.buffer), this.frame);
+        }
         this.frame.t = now;
         this.reports++;
         this.onFrame?.(this.frame);
