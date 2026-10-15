@@ -1,0 +1,54 @@
+{
+ "what": "review fixes at e828e46: local release (build-release.mjs), serve-csp :5390 with the enforced CSP, Chrome 140.0.7339.81",
+ "wizardAutoCheck": {
+  "nobuttons": {
+   "seconds": 27,
+   "end": {
+    "id": "check",
+    "profile": true,
+    "startOrNextVisible": false
+   },
+   "screens": 22,
+   "errors": []
+  },
+  "human": {
+   "seconds": 35,
+   "end": {
+    "id": "check",
+    "profile": true,
+    "startOrNextVisible": false
+   },
+   "screens": 22,
+   "errors": []
+  },
+  "dji": {
+   "seconds": 20,
+   "end": {
+    "id": "check",
+    "profile": true,
+    "startOrNextVisible": false
+   },
+   "screens": 20,
+   "errors": []
+  }
+ },
+ "djiPageProbe": {
+  "seconds": 19,
+  "key": "hid:2ca3:1021:SimRadio DJI RC 3 (simulator mode):13",
+  "reports": 4068,
+  "badReports": 0,
+  "step": "check",
+  "profileKey": "hid:2ca3:1021:SimRadio DJI RC 3 (simulator mode):13",
+  "errors": []
+ },
+ "djiPageNegativeControl": {
+  "how": "fakehid djiRead temporarily replaced by the EdgeTX reader (the pre-fix behaviour), fly rebuilt; not committed",
+  "seconds": 45,
+  "reports": 0,
+  "badReports": 10933,
+  "step": "connect",
+  "profileKey": null,
+  "errors": []
+ },
+ "note": "the real DJI controller was not connected; the real-controller key is hid:2ca3:1021:HID Interface:13 on Windows, the fake no longer uses it"
+}
