@@ -3,6 +3,12 @@
 // channel order, per-channel inversion, a centre offset and noise, and it can follow the
 // calibration wizard's screens like an ideal robot (optionally with a reaction delay), or like one
 // of the simulated people of @gsfpv/input/sim (humanSeed). SimRadio is NOT a real radio.
+// With `device: 'dji-rc3'` the same hands go out as the DJI RC 3's own report (13 bytes: 5 x int16
+// -660..660 and 24 button bits, bits 4 and 6 held as on the real controller) and are read back by its
+// descriptor (makeHidReader), the path HidSource takes for that controller (?simradio=raw&device=dji).
+// A report that reader refuses sends no frame (counted in badReports), so a page check fails on it. Its
+// profile key names the SimRadio, never the real controller's key, so a test run cannot leave a
+// calibration that the real DJI controller would then fly with.
 //
 // The wizard is user-paced (v3): nothing advances unless a button is pressed. The robot therefore
 // moves the sticks AND presses the buttons (Start, Done, Measure, Next) through `onAct`, the same
@@ -82,9 +88,12 @@ export class FakeEdgeTx {
 
     private djiRead = makeHidReader(DJI_RC3);
     private djiAxes = [0, 0, 0, 0, 0];
+    private hands: RawFrame = { t: 0, axes: new Float32Array(8), buttons: 0 }; // the robot's channels before the DJI report
+    /** DJI reports the reader refused (each one sent no frame) */
+    badReports = 0;
 
     get key(): string {
-        if (this.cfg.device === 'dji-rc3') return hidDeviceKey(DJI_RC3, DJI_RC3.reportBytes);
+        if (this.cfg.device === 'dji-rc3') return hidDeviceKey({ ...DJI_RC3, productName: `SimRadio ${DJI_RC3.name}` }, DJI_RC3.reportBytes);
         return `hid:1209:4f54:SimRadio EdgeTX Classic ${this.cfg.order}:19`;
     }
 
@@ -226,13 +235,14 @@ export class FakeEdgeTx {
                 d.setUint16(3 + ch * 2, Math.round(1024 + v * 1024 * 0.999), true);
             }
         }
-        parseEdgeTxReport(d, this.frame);
         if (this.cfg.device === 'dji-rc3') {
-            // the controller has 5 axes: channels 1..5 in its own units, the rest are not sent
-            for (let i = 0; i < 5; i++) this.djiAxes[i] = this.frame.axes[i] * DJI_RC3.axisRange[1];
-            const rep = djiRc3Report(this.djiAxes, this.frame.buttons | DJI_RC3.restButtons);
-            this.djiRead(0, new DataView(rep.buffer), this.frame);
-        }
+            // the controller has 5 axes: channels 1..5 in its own units, the rest are not sent; the frame
+            // the wizard gets is only what the DJI reader made of the 13 bytes
+            parseEdgeTxReport(d, this.hands);
+            for (let i = 0; i < 5; i++) this.djiAxes[i] = this.hands.axes[i] * DJI_RC3.axisRange[1];
+            const rep = djiRc3Report(this.djiAxes, this.hands.buttons | DJI_RC3.restButtons);
+            if (!this.djiRead(0, new DataView(rep.buffer), this.frame)) { this.badReports++; return; }
+        } else parseEdgeTxReport(d, this.frame);
         this.frame.t = now;
         this.reports++;
         this.onFrame?.(this.frame);
