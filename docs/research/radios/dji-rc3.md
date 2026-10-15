@@ -18,8 +18,9 @@ Nothing special was needed: the controller switched on and plugged into the PC w
 appeared at once as a Windows game controller (no driver install, no mode switch). Retailer and review
 pages say the same for the FPV Remote Controller 3 with PC simulators (e.g.
 https://www.comms-express.com/products/dji-fpv-remote-controller-3/,
-https://www.aerovisiondrones.com/?p=3588). If Windows shows only a storage / COM / RNDIS device, the
-cable is charge-only or the controller is off.
+https://www.aerovisiondrones.com/?p=3588). If nothing appears in Windows, the cable is charge-only or
+the controller is off. If a storage / COM / RNDIS device appears but no game controller, the link works
+and the controller is in another USB mode (not seen here, not checked).
 
 ## USB and HID (measured)
 
@@ -31,15 +32,17 @@ cable is charge-only or the controller is off.
 | Input report | 14 bytes with the report id (id 0: **13 data bytes**); no output or feature reports |
 | Axes | 5 values, usages `0x30` X, `0x31` Y, `0x32` Z, `0x33` Rx, `0x34` Ry; **16 bits signed, logical −660..660**; physical range unset |
 | Buttons | Button page `0x09`, usages 1..24, one bit each (3 bytes) |
-| Rate | about 160 reports a second (150–170 state changes a second while stirring) |
+| Rate | at least about 160 reports a second: 143–169 state changes a second while stirring (winmm, polled every 5–7 ms) and 150–170 in Chrome 152; both probes sit near their own polling rate, so the device may send more |
 
 Method: `hid.dll` (`HidD_GetAttributes`, `HidD_GetProductString`, `HidP_GetCaps`, `HidP_GetValueCaps`,
 `HidP_GetButtonCaps`), winmm `joyGetDevCaps` / `joyGetPosEx`, PnP properties.
 
 **Not measured:** the order of the fields inside the 13 bytes (the controller was unplugged before the
-raw reports could be read). Nothing depends on it: the simulator reads the order from the descriptor the
-browser gives. The fixture (`packages/input/src/sim/devices.ts`, `DJI_RC3`) assumes axes first, then
-the three button bytes.
+raw reports could be read). The simulator's reader takes the order from the descriptor the browser
+gives, not from the fixture; the fixture (`packages/input/src/sim/devices.ts`, `DJI_RC3`) assumes axes
+first, then the three button bytes. **Not yet run on the real controller:** the new WebHID path itself
+(the browser's `device.collections` for this controller and its real reports through `makeHidReader`);
+that is Phase E step 1 (docs/phase-e-real-radio.md).
 
 ## Values (measured, 40 s recording)
 
@@ -65,12 +68,15 @@ the three button bytes.
   `[null, null, null, null]` from `getGamepads()` and the simulator's gamepad source no frame in about
   4 s. Chrome exposes a pad only after an input; a run with a stick moved was not recorded.
 - **WebHID ("Radio or controller over USB"):** the chooser already lists every HID joystick / gamepad,
-  so the controller is offered. **Before the fix** the simulator read every report with the EdgeTX
+  so the controller is offered. **Before the fix** (this follows from the code at 4ab126c and the
+  measured 13-byte report; the chooser was not tried with the controller) the simulator read every report with the EdgeTX
   layout (19 bytes, or 16 and more); the 13-byte reports were all refused, the radio screen said "The
   radio sends 13-byte reports we cannot read" and the wizard never left its first step — the
   simulator "did not see" the controller. **Now** every non-EdgeTX HID device is read through its own
   report descriptor (`packages/input/src/hid-layout.ts`, `makeHidReader`); EdgeTX radios keep their
-  fixed layout. The profile is named `USB 2ca3:1021`, since the device calls itself "HID Interface".
+  fixed layout. On Windows the device calls itself "HID Interface" and the profile is named
+  `USB 2ca3:1021`; on macOS and Linux the browser takes the USB product string, "DJI Virtual
+  Joystick" (Linux may put the maker in front), and the profile keeps that name.
 
 ## Tests without the hardware
 

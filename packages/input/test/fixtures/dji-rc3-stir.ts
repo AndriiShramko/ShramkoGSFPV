@@ -1,5 +1,5 @@
 // Real stick traffic of a DJI RC 3 in its simulator mode (docs/research/radios/dji-rc3.md), recorded
-// 2026-10-15 on Windows through winmm joyGetPosEx at 200 Hz while a person stirred both sticks into every
+// 2026-10-15 on Windows through winmm joyGetPosEx (polled every 5-7 ms) while a person stirred both sticks into every
 // corner for 25 s (only changes are kept, then every 6th of them): [ms, X, Y, Z, Rx, Ry, buttons] with the
 // axes as the controller's own int16 units (-660..660, the winmm 0..65535 positions mapped back) and the
 // button bits as read (bits 4 and 6 are held at rest). The wheel (Ry) was not touched. The raw report

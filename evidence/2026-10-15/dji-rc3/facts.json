@@ -27,7 +27,7 @@
   },
   "recording": {
     "file": "winmm-40s-recording.csv",
-    "method": "winmm joyGetPosEx polled every 5 ms for 40 s, only changes kept; the owner stirred the sticks (about 0-25 s), then switches and buttons and the wheel",
+    "method": "winmm joyGetPosEx polled for 40 s (5 ms sleep, 5-7 ms between polls, about 165 polls a second), only changes kept; the owner stirred the sticks (about 0-25 s), then switches and buttons and the wheel",
     "changes": 6297,
     "axes": { "x": [0, 65535], "y": [0, 65535], "z": [0, 65535], "u": [0, 65535], "r": [0, 65535], "rDistinct": 75, "v": [0, 0] },
     "buttonStatesSeen": ["0x00", "0x10", "0x20", "0x40", "0x50", "0x54", "0x58", "0x60", "0x61", "0x62", "0x64", "0x68", "0x6c", "0x80", "0x90", "0xa0"],
