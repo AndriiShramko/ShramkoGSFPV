@@ -22,8 +22,8 @@ const out = {};
     out.browser = await browserRecord(pick, await probe.newPage(), { visual: false, version: browser.version() });
     await probe.close();
 }
-// dji: the same robot through the DJI RC 3's 13-byte report and its descriptor (no arm switch: Skip, Space)
-for (const [name, qs, size] of [['nobuttons', '&nobuttons=1&react=900', { width: 1600, height: 900 }], ['human', '&human=5', { width: 375, height: 812 }], ['dji', '&device=dji&armch=-1&react=400', { width: 1600, height: 900 }]]) {
+// dji: the same robot through the DJI RC 3's 13-byte report and its descriptor (the robot's arm switch is CH5, the wheel)
+for (const [name, qs, size] of [['nobuttons', '&nobuttons=1&react=900', { width: 1600, height: 900 }], ['human', '&human=5', { width: 375, height: 812 }], ['dji', '&device=dji&react=400', { width: 1600, height: 900 }]]) {
     const ctx = await browser.newContext({ viewport: size });
     const page = await ctx.newPage();
     const errors = [];

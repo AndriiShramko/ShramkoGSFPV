@@ -1,0 +1,116 @@
+{
+ "what": "tools/bench/scripts/wizard-auto-check.mjs on the local release (node scripts/build-release.mjs at a258c4e + this run, served by serve-csp.mjs on :5390 with the enforced CSP), SimRadio robot; dji = the robot through the DJI RC 3 13-byte report and makeHidReader",
+ "base": "http://localhost:5390/en",
+ "browser": {
+  "kind": "system-chrome",
+  "version": "140.0.7339.81",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+  "webgl": "ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "softwareGl": false,
+  "counts": true
+ },
+ "nobuttons": {
+  "seconds": 26,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "startOrNextVisible": false
+  },
+  "screens": 22,
+  "errors": [],
+  "path": [
+   "17 connect/null",
+   "700 stir/active",
+   "4233 stir/done",
+   "5260 centre/ready",
+   "5869 centre/active",
+   "6468 centre/done",
+   "7303 throttle/ready",
+   "7923 throttle/active",
+   "9387 throttle/done",
+   "10439 yaw/ready",
+   "11057 yaw/active",
+   "12496 yaw/done",
+   "14161 pitch/ready",
+   "14804 pitch/active",
+   "16261 pitch/done",
+   "17914 roll/ready",
+   "18551 roll/active",
+   "19841 roll/done",
+   "21894 arm/ready",
+   "22511 arm/active",
+   "24823 arm/done",
+   "25850 check/null"
+  ]
+ },
+ "human": {
+  "seconds": 34,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "startOrNextVisible": false
+  },
+  "screens": 22,
+  "errors": [],
+  "path": [
+   "18 stir/ready",
+   "758 stir/active",
+   "4950 stir/done",
+   "5852 centre/ready",
+   "6569 centre/active",
+   "8092 centre/done",
+   "9001 throttle/ready",
+   "9493 throttle/active",
+   "10593 throttle/done",
+   "11506 yaw/ready",
+   "12205 yaw/active",
+   "13088 yaw/done",
+   "14407 pitch/ready",
+   "15118 pitch/active",
+   "15828 pitch/done",
+   "17341 roll/ready",
+   "17840 roll/active",
+   "18751 roll/done",
+   "19871 arm/ready",
+   "20571 arm/active",
+   "32687 arm/done",
+   "33594 check/null"
+  ]
+ },
+ "dji": {
+  "seconds": 19,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "startOrNextVisible": false
+  },
+  "screens": 22,
+  "errors": [],
+  "path": [
+   "14 stir/ready",
+   "732 stir/active",
+   "2828 stir/done",
+   "3304 centre/ready",
+   "3748 centre/active",
+   "4576 centre/done",
+   "5385 throttle/ready",
+   "6020 throttle/active",
+   "6867 throttle/done",
+   "7952 yaw/ready",
+   "8565 yaw/active",
+   "9386 yaw/done",
+   "10639 pitch/ready",
+   "11102 pitch/active",
+   "11931 pitch/done",
+   "13213 roll/ready",
+   "13916 roll/active",
+   "14755 roll/done",
+   "15820 arm/ready",
+   "16411 arm/active",
+   "17869 arm/done",
+   "18903 check/null"
+  ]
+ }
+}
