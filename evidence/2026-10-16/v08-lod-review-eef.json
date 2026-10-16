@@ -1,0 +1,1307 @@
+{
+  "name": "v08-lod",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-16T19:45:46.438Z",
+    "gitHead": "100732c",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5441",
+  "siteBefore": "http://localhost:5443",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "holdS": 30,
+  "pass": {
+    "L1": false
+  },
+  "items": {
+    "L1": {
+      "after": {
+        "site": "http://localhost:5441",
+        "atReveal": {
+          "status": "ready",
+          "errorCode": null,
+          "lod": {
+            "kind": "lod-meta",
+            "levels": 10,
+            "range": [
+              0,
+              9
+            ],
+            "mode": "auto",
+            "drawn": 58994,
+            "budgetM": 4,
+            "loading": 154,
+            "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/ba7aa29d/v1/lod-meta.json",
+            "contentFailures": [],
+            "renderScale": 1,
+            "topBudgetM": 4,
+            "governorStep": 0,
+            "streamHitches": 0
+          },
+          "contentKind": "lod-meta",
+          "rangeMin": 0,
+          "rangeMax": 1000,
+          "budgetM": 4,
+          "scale": 1,
+          "step": 0,
+          "top": 4,
+          "changes": 0,
+          "hitches": 0,
+          "drawn": 58994,
+          "perLevel": {
+            "9": 58994
+          },
+          "visibleMs": 3139.4000000953674,
+          "firstFrameMs": 689.4000000953674,
+          "detailLine": null
+        },
+        "samples": [
+          {
+            "s": 1,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 58994,
+            "perLevel": {
+              "9": 58994
+            }
+          },
+          {
+            "s": 2,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 79289,
+            "perLevel": {
+              "5": 21239,
+              "9": 58050
+            }
+          },
+          {
+            "s": 3,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 79289,
+            "perLevel": {
+              "5": 21239,
+              "9": 58050
+            }
+          },
+          {
+            "s": 4,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 315555,
+            "perLevel": {
+              "4": 241496,
+              "5": 21239,
+              "9": 52820
+            }
+          },
+          {
+            "s": 5,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 820087,
+            "perLevel": {
+              "3": 165224,
+              "4": 590250,
+              "5": 21239,
+              "9": 43374
+            }
+          },
+          {
+            "s": 6,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1000869,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "7": 1725,
+              "8": 7673,
+              "9": 36284
+            }
+          },
+          {
+            "s": 7,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1016676,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "6": 7308,
+              "7": 21911,
+              "8": 7673,
+              "9": 24597
+            }
+          },
+          {
+            "s": 8,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1027465,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "6": 26379,
+              "7": 21911,
+              "8": 7673,
+              "9": 21366
+            }
+          },
+          {
+            "s": 9,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1033075,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 36084,
+              "6": 27008,
+              "7": 21911,
+              "8": 7673,
+              "9": 20340
+            }
+          },
+          {
+            "s": 10,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1079826,
+            "perLevel": {
+              "3": 343698,
+              "4": 591182,
+              "5": 70769,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 17853
+            }
+          },
+          {
+            "s": 11,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1085422,
+            "perLevel": {
+              "3": 345295,
+              "4": 591182,
+              "5": 75084,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 17511
+            }
+          },
+          {
+            "s": 12,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1151180,
+            "perLevel": {
+              "3": 345295,
+              "4": 657386,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 15969
+            }
+          },
+          {
+            "s": 13,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1294051,
+            "perLevel": {
+              "3": 345295,
+              "4": 804496,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 11730
+            }
+          },
+          {
+            "s": 14,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1325545,
+            "perLevel": {
+              "3": 345295,
+              "4": 837954,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 9766
+            }
+          },
+          {
+            "s": 15,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1403195,
+            "perLevel": {
+              "3": 423697,
+              "4": 837954,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 9014
+            }
+          },
+          {
+            "s": 16,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1502210,
+            "perLevel": {
+              "3": 523220,
+              "4": 837954,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 8506
+            }
+          },
+          {
+            "s": 17,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1671994,
+            "perLevel": {
+              "3": 694182,
+              "4": 837954,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 7328
+            }
+          },
+          {
+            "s": 18,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1703466,
+            "perLevel": {
+              "3": 725570,
+              "4": 838585,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 6781
+            }
+          },
+          {
+            "s": 19,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1822220,
+            "perLevel": {
+              "3": 843834,
+              "4": 839582,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 6008
+            }
+          },
+          {
+            "s": 20,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 2151998,
+            "perLevel": {
+              "3": 1177558,
+              "4": 838585,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 3325
+            }
+          },
+          {
+            "s": 21,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 2473148,
+            "perLevel": {
+              "2": 299280,
+              "3": 1200213,
+              "4": 838585,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 2540
+            }
+          },
+          {
+            "s": 22,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 2702759,
+            "perLevel": {
+              "2": 534961,
+              "3": 1193786,
+              "4": 839582,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 1634
+            }
+          },
+          {
+            "s": 23,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 2852069,
+            "perLevel": {
+              "2": 683645,
+              "3": 1194688,
+              "4": 839582,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 1358
+            }
+          },
+          {
+            "s": 24,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 2997200,
+            "perLevel": {
+              "2": 832720,
+              "3": 1189244,
+              "4": 841694,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 746
+            }
+          },
+          {
+            "s": 25,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3100624,
+            "perLevel": {
+              "2": 936273,
+              "3": 1189244,
+              "4": 841694,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 617
+            }
+          },
+          {
+            "s": 26,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3222431,
+            "perLevel": {
+              "2": 1055524,
+              "3": 1192316,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673,
+              "9": 480
+            }
+          },
+          {
+            "s": 27,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3222431,
+            "perLevel": {
+              "2": 1055524,
+              "3": 1192316,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673,
+              "9": 480
+            }
+          },
+          {
+            "s": 28,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3327501,
+            "perLevel": {
+              "1": 120721,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673,
+              "9": 355
+            }
+          },
+          {
+            "s": 29,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3434378,
+            "perLevel": {
+              "1": 227611,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673,
+              "9": 342
+            }
+          },
+          {
+            "s": 30,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3545777,
+            "perLevel": {
+              "1": 339099,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673,
+              "9": 253
+            }
+          }
+        ],
+        "end": {
+          "status": "ready",
+          "errorCode": null,
+          "lod": {
+            "kind": "lod-meta",
+            "levels": 10,
+            "range": [
+              0,
+              9
+            ],
+            "mode": "auto",
+            "drawn": 3545777,
+            "budgetM": 4,
+            "loading": 12,
+            "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/ba7aa29d/v1/lod-meta.json",
+            "contentFailures": [],
+            "renderScale": 1,
+            "topBudgetM": 4,
+            "governorStep": 0,
+            "streamHitches": 0
+          },
+          "contentKind": "lod-meta",
+          "rangeMin": 0,
+          "rangeMax": 1000,
+          "budgetM": 4,
+          "scale": 1,
+          "step": 0,
+          "top": 4,
+          "changes": 0,
+          "hitches": 0,
+          "drawn": 3545777,
+          "perLevel": {
+            "1": 339099,
+            "2": 1029780,
+            "3": 1202534,
+            "4": 841694,
+            "5": 75630,
+            "6": 26607,
+            "7": 22507,
+            "8": 7673,
+            "9": 253
+          },
+          "visibleMs": 3139.4000000953674,
+          "firstFrameMs": 689.4000000953674,
+          "detailLine": "Levels of detail: 10, chosen by distance \u00b7 3.5 of 4.0 M splats \u00b7 100 % resolution"
+        },
+        "finestAtEnd": 1,
+        "lowered": false,
+        "pageerrors": []
+      },
+      "before": {
+        "site": "http://localhost:5443",
+        "atReveal": {
+          "status": "ready",
+          "errorCode": null,
+          "lod": {
+            "kind": "lod-meta",
+            "levels": 10,
+            "range": [
+              0,
+              9
+            ],
+            "mode": "auto",
+            "drawn": 58994,
+            "budgetM": 4,
+            "loading": 154,
+            "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/ba7aa29d/v1/lod-meta.json",
+            "contentFailures": [],
+            "renderScale": 1,
+            "topBudgetM": 4,
+            "governorStep": 0,
+            "governorBudgetM": 4,
+            "settingBudgetM": 4,
+            "streamHitches": 0
+          },
+          "contentKind": "lod-meta",
+          "rangeMin": 0,
+          "rangeMax": 1000,
+          "budgetM": 4,
+          "scale": 1,
+          "step": 0,
+          "top": 4,
+          "changes": 0,
+          "hitches": 0,
+          "drawn": 58994,
+          "perLevel": {
+            "9": 58994
+          },
+          "visibleMs": 2768.2999999523163,
+          "firstFrameMs": 1349.3999999761581,
+          "detailLine": null
+        },
+        "samples": [
+          {
+            "s": 1,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 315555,
+            "perLevel": {
+              "4": 241496,
+              "5": 21239,
+              "9": 52820
+            }
+          },
+          {
+            "s": 2,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 820087,
+            "perLevel": {
+              "3": 165224,
+              "4": 590250,
+              "5": 21239,
+              "9": 43374
+            }
+          },
+          {
+            "s": 3,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1005771,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "7": 13356,
+              "8": 7673,
+              "9": 29555
+            }
+          },
+          {
+            "s": 4,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 2,
+            "drawn": 1033075,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "6": 27008,
+              "7": 21911,
+              "8": 7673,
+              "9": 21296
+            }
+          },
+          {
+            "s": 5,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 2,
+            "drawn": 1088733,
+            "perLevel": {
+              "3": 345295,
+              "4": 593528,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 17380
+            }
+          },
+          {
+            "s": 6,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 2,
+            "drawn": 1294051,
+            "perLevel": {
+              "3": 345295,
+              "4": 804496,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 11730
+            }
+          },
+          {
+            "s": 7,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 2,
+            "drawn": 1403195,
+            "perLevel": {
+              "3": 423697,
+              "4": 837954,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 9014
+            }
+          },
+          {
+            "s": 8,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 2,
+            "drawn": 1502210,
+            "perLevel": {
+              "3": 523220,
+              "4": 837954,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 8506
+            }
+          },
+          {
+            "s": 9,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 1567229,
+            "perLevel": {
+              "3": 588816,
+              "4": 837954,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 7929
+            }
+          },
+          {
+            "s": 10,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 1671994,
+            "perLevel": {
+              "3": 694182,
+              "4": 837954,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 7328
+            }
+          },
+          {
+            "s": 11,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 1703466,
+            "perLevel": {
+              "3": 725570,
+              "4": 838585,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 6781
+            }
+          },
+          {
+            "s": 12,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 1822220,
+            "perLevel": {
+              "3": 843834,
+              "4": 839582,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 6008
+            }
+          },
+          {
+            "s": 13,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 1974852,
+            "perLevel": {
+              "3": 997806,
+              "4": 839582,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 4668
+            }
+          },
+          {
+            "s": 14,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 2041170,
+            "perLevel": {
+              "3": 1066212,
+              "4": 838585,
+              "5": 76180,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 4031
+            }
+          },
+          {
+            "s": 15,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 2091078,
+            "perLevel": {
+              "3": 1116156,
+              "4": 838585,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 3807
+            }
+          },
+          {
+            "s": 16,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 2334113,
+            "perLevel": {
+              "2": 160042,
+              "3": 1200213,
+              "4": 838585,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 2743
+            }
+          },
+          {
+            "s": 17,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 2702759,
+            "perLevel": {
+              "2": 534961,
+              "3": 1193786,
+              "4": 839582,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 1634
+            }
+          },
+          {
+            "s": 18,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 2775362,
+            "perLevel": {
+              "2": 607807,
+              "3": 1193786,
+              "4": 839582,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 1391
+            }
+          },
+          {
+            "s": 19,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 2852069,
+            "perLevel": {
+              "2": 683645,
+              "3": 1194688,
+              "4": 839582,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 1358
+            }
+          },
+          {
+            "s": 20,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 2852069,
+            "perLevel": {
+              "2": 683645,
+              "3": 1194688,
+              "4": 839582,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 1358
+            }
+          },
+          {
+            "s": 21,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 2852069,
+            "perLevel": {
+              "2": 683645,
+              "3": 1194688,
+              "4": 839582,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 1358
+            }
+          },
+          {
+            "s": 22,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 2997200,
+            "perLevel": {
+              "2": 832720,
+              "3": 1189244,
+              "4": 841694,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 746
+            }
+          },
+          {
+            "s": 23,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 3100624,
+            "perLevel": {
+              "2": 936273,
+              "3": 1189244,
+              "4": 841694,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 617
+            }
+          },
+          {
+            "s": 24,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 3380452,
+            "perLevel": {
+              "1": 173678,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673,
+              "9": 349
+            }
+          },
+          {
+            "s": 25,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 3505174,
+            "perLevel": {
+              "1": 282966,
+              "2": 1055524,
+              "3": 1192316,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673,
+              "9": 257
+            }
+          },
+          {
+            "s": 26,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 3592472,
+            "perLevel": {
+              "1": 385907,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673,
+              "9": 140
+            }
+          },
+          {
+            "s": 27,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 3787892,
+            "perLevel": {
+              "0": 121487,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673,
+              "9": 12
+            }
+          },
+          {
+            "s": 28,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 3923895,
+            "perLevel": {
+              "0": 257502,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673
+            }
+          },
+          {
+            "s": 29,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 3923895,
+            "perLevel": {
+              "0": 257502,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673
+            }
+          },
+          {
+            "s": 30,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 3,
+            "drawn": 3923895,
+            "perLevel": {
+              "0": 257502,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673
+            }
+          }
+        ],
+        "end": {
+          "status": "ready",
+          "errorCode": null,
+          "lod": {
+            "kind": "lod-meta",
+            "levels": 10,
+            "range": [
+              0,
+              9
+            ],
+            "mode": "auto",
+            "drawn": 3923895,
+            "budgetM": 4,
+            "loading": 0,
+            "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/ba7aa29d/v1/lod-meta.json",
+            "contentFailures": [],
+            "renderScale": 1,
+            "topBudgetM": 4,
+            "governorStep": 0,
+            "governorBudgetM": 4,
+            "settingBudgetM": 4,
+            "streamHitches": 3
+          },
+          "contentKind": "lod-meta",
+          "rangeMin": 0,
+          "rangeMax": 1000,
+          "budgetM": 4,
+          "scale": 1,
+          "step": 0,
+          "top": 4,
+          "changes": 0,
+          "hitches": 3,
+          "drawn": 3923895,
+          "perLevel": {
+            "0": 257502,
+            "1": 459968,
+            "2": 1029780,
+            "3": 1202534,
+            "4": 841694,
+            "5": 75630,
+            "6": 26607,
+            "7": 22507,
+            "8": 7673
+          },
+          "visibleMs": 2768.2999999523163,
+          "firstFrameMs": 1349.3999999761581,
+          "detailLine": "Levels of detail: 10, chosen by distance \u00b7 3.9 of 4.0 M splats \u00b7 100 % resolution"
+        },
+        "finestAtEnd": 0,
+        "lowered": false,
+        "pageerrors": []
+      },
+      "okAfter": true,
+      "controlFired": false
+    }
+  }
+}
