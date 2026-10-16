@@ -6,6 +6,7 @@
   "drone.tune.lead": "Te drony powstały z opublikowanych danych i szacunków. Latasz którymś naprawdę, a tu czuje się inaczej? Wyślij swój diff all z Betaflight, log z blackboxa i kilka słów: tak stają się lepsze. Brakuje twojego drona? Poproś o niego.",
   "drone.tune.button": "Pomóż go dostroić",
   "drone.tune.ask": "Poproś o innego drona",
+  "drone.hover": "Zawisa przy {full} % gazu na pełnej baterii, {low} % na prawie pustej",
   "fb.kind.drone": "Fizyka drona",
   "fb.drone.lead": "Latasz tym dronem naprawdę? Napisz Andriiemu, co tu czuć inaczej; twoje ustawienia Betaflight i log z blackboxa pozwolą mu dopasować drona do prawdziwego. Brakuje twojego drona? Wybierz ostatnią pozycję i podaj, jaki to dron.",
   "fb.drone.which": "Który dron",

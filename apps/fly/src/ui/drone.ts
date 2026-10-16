@@ -1,13 +1,15 @@
 // Drone picker: preset cards; every number shows where it comes from (manufacturer / measured /
 // estimate / Betaflight default). Also draws the rate curve of the preset. Each drone keeps its own
 // settings (W2-1, D-c): a card says how many of them the pilot changed for that drone.
+// The hover throttle on a card is a full pack and near empty, as the HUD shows THR (ui/drone-card.ts).
 // v0.8 (docs/wip/v08-d.md): "help us tune this drone": a line on top, "Help tune it" on every card and
 // "Ask for another drone"; they call onTune (the feedback dialog's Drone physics kind) when it is set.
 import { compileParams, setpointRate } from '@gsfpv/sim-core';
 import type { PresetJson } from '@gsfpv/sim-core';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { PRESETS, DEFAULT_PRESET } from '../presets';
-import { h, fmt } from './dom';
+import { h } from './dom';
+import { cardHover } from './drone-card';
 import { t } from '../i18n';
 import './drone-tune.css';
 
@@ -69,7 +71,7 @@ export class DronePicker {
         const cards = h('div', { class: 'drone-grid' });
         let keep: HTMLButtonElement | null = null;
         for (const [id, p] of Object.entries(PRESETS)) {
-            const sp = compileParams(p);
+            const hover = cardHover(compileParams(p));
             const isCur = id === current;
             // the drone in use says so, and its button leaves without rebuilding the flight model
             const btn = isCur
@@ -85,7 +87,7 @@ export class DronePicker {
                 row(p, 'motor', t('drone.motor'), (v) => String(v)),
                 row(p, 'battery', t('drone.battery'), (v) => String(v)),
                 curve(p),
-                h('p', { class: 'muted small' }, `hover ≈ ${fmt(((1 / Math.sqrt(sp.twr) - sp.idle) / (1 - sp.idle)) * 100, 0)} % throttle`),
+                hover ? h('p', { class: 'muted small', 'data-testid': 'drone-hover' }, t('drone.hover', { full: String(hover.full), low: String(hover.low) })) : null,
                 changed(id) ? h('p', { class: 'small ok', 'data-testid': 'drone-changed' }, t('prefs.droneChanged', { n: String(changed(id)) })) : null,
                 h('div', { class: 'drone-actions' }, btn,
                     o.tune ? h('button', { type: 'button', class: 'btn', 'data-action': 'drone-tune', onclick: () => this.onTune?.(id) }, t('drone.tune.button')) : null)

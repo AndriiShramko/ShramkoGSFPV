@@ -6,6 +6,7 @@
   "drone.tune.lead": "These drones are built from published numbers and estimates. Fly one of them for real and it feels different here? Send your Betaflight diff all, a blackbox log and a few words: that is how they get better. Missing your drone? Ask for it.",
   "drone.tune.button": "Help tune it",
   "drone.tune.ask": "Ask for another drone",
+  "drone.hover": "Hovers at {full} % throttle on a full pack, {low} % near empty",
   "fb.kind.drone": "Drone physics",
   "fb.drone.lead": "Fly this drone for real? Tell Andrii what feels different here; your Betaflight settings and a blackbox log let him fit the drone to the real one. Missing your drone? Pick the last entry and name it.",
   "fb.drone.which": "Which drone",

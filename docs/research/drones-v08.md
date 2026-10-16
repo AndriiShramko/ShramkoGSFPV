@@ -144,7 +144,8 @@ thrust v_i is so large that the sink rate falls below its band almost at once.
 
 | | Freestyle | Race | Cinelifter | Pavo20 Pro (default, for scale) |
 |---|---|---|---|---|
-| Hover throttle | 24.8 % | 17.9 % | 41.1 % | 32.7 % |
+| Hover throttle, full pack (motor command) | 24.8 % | 17.9 % | 41.1 % | 32.7 % |
+| Picker card (the stick, as the HUD's THR): full pack / 15 % left | 25 / 32 % | 18 / 23 % | 41 / 53 % | 28 / 39 % (thr_mid 65, expo 20) |
 | Roll, full stick step: t63 / overshoot | 15 ms / 1.3 % (670 deg/s) | 12 ms / 1.2 % | 44 ms / 9.7 % (350 deg/s) | 19 ms / 1.8 % |
 | Angle mode, full roll (80 ms ramp): peak / past level on release | 60.2 deg / 0.05 deg | 60.2 deg / 0.06 deg | 60.0 deg / 0 deg | 60.0 deg / 0 deg |
 | Climb after 8 s full throttle | 41.6 m/s | 51.2 m/s | 24.4 m/s | 24.2 m/s |
