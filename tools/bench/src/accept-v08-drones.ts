@@ -3,6 +3,8 @@
 // picker and the settings screen offer "help us tune this drone", the Drone physics form sends a report the
 // real API stores (drone, log link, Betaflight text and the pilot's settings in the technical-details file,
 // the idea's text naming the drone), and the landing's deep link /{lang}/fly/?drone=<id>&open=tune opens it.
+// After the review (docs/wip/v08-d.md R2, R3, R6): D2 has controls that can fail its predicate and checks the cards'
+// hover line (full pack / near empty); D3 checks that the form's line names the scene, version, mode and input.
 // The API (apps/api/server.py) is started here on a temporary DATA_DIR without Telegram; the page's /api/**
 // is routed to it. Every check has a negative control that must fire.
 //   node scripts/build-release.mjs && node tools/bench/scripts/serve-csp.mjs dist <port>     (another shell)
@@ -122,27 +124,61 @@ try {
     }
 
     // ---------------------------------------------------------------- D2 the picker offers help-us-tune, the form opens on that drone
+    // One predicate (offered), run three times on a real picker. Controls (review R6: the old control counted the
+    // buttons before the picker was open, which is 0 whatever the picker draws): (a) the same picker with what its
+    // `tune` option draws taken out (every card's Help tune it and the note on top: DronePicker without tune) must
+    // fail it; (b) Help tune it on another card (the freestyle quad) must fail it for the race quad, so the form
+    // follows the button pressed, not the drone flown or a fixed one. Also the cards' hover line (review R3): the
+    // cinelifter shows 41 % on a full pack and 53 % near empty; control: the default whoop's card shows other numbers.
     {
-        await open(page, 'drone=pavo20pro-3s');
-        const before = await page.locator('[data-action="drone-tune"]').count();
-        await openPicker(page);
-        const cards = await page.locator('.drone-card').count();
-        const tuneButtons = await page.locator('.drone-card [data-action="drone-tune"]').count();
-        const note = await page.locator('[data-testid="drone-tune"]').isVisible();
-        await page.click('.drone-card[data-preset="machr5sport-6s"] [data-action="drone-tune"]');
-        await page.waitForSelector('[data-testid="feedback"]');
-        const form = {
-            pickerGone: (await page.locator('.screen.drones').count()) === 0,
-            kindChecked: await page.getAttribute('[data-testid="fb-kind-drone"]', 'aria-checked'),
-            drone: await page.inputValue('[data-testid="fb-drone"]')
+        const CLICK = 'machr5sport-6s';
+        const tuneOffer = async (click: string): Promise<{ cards: number; tuneButtons: number; note: boolean; form: { pickerGone: boolean; kindChecked: string | null; drone: string } | null }> => {
+            const cards = await page.locator('.drone-card').count();
+            const tuneButtons = await page.locator('.drone-card [data-action="drone-tune"]').count();
+            const note = (await page.locator('[data-testid="drone-tune"]').count()) > 0 && (await page.locator('[data-testid="drone-tune"]').isVisible());
+            const btn = page.locator(`.drone-card[data-preset="${click}"] [data-action="drone-tune"]`);
+            let form = null;
+            if ((await btn.count()) > 0) {
+                await btn.click();
+                await page.waitForSelector('[data-testid="feedback"]', { timeout: 10000 });
+                form = {
+                    pickerGone: (await page.locator('.screen.drones').count()) === 0,
+                    kindChecked: await page.getAttribute('[data-testid="fb-kind-drone"]', 'aria-checked'),
+                    drone: await page.inputValue('[data-testid="fb-drone"]')
+                };
+            }
+            return { cards, tuneButtons, note, form };
         };
-        const pass = before === 0 && cards === 9 && tuneButtons === cards && note && form.pickerGone && form.kindChecked === 'true' && form.drone === 'machr5sport-6s';
-        results.D2 = { pass, cards, tuneButtons, note, form, control: { tuneButtonsBeforeThePicker: before, fired: before === 0 } };
+        type Offer = Awaited<ReturnType<typeof tuneOffer>>;
+        const offered = (r: Offer, click: string): boolean => r.cards === 9 && r.tuneButtons === r.cards && r.note && !!r.form && r.form.pickerGone && r.form.kindChecked === 'true' && r.form.drone === click;
+        const hoverOf = async (id: string): Promise<number[]> => ((await page.textContent(`.drone-card[data-preset="${id}"] [data-testid="drone-hover"]`)) ?? '').match(/\d+(?= %)/g)?.map(Number) ?? [];
+
+        await open(page, 'drone=pavo20pro-3s');
+        // control (a): the picker without what its tune option draws
+        await openPicker(page);
+        const hover = { cine: await hoverOf('taurusx8-komodo-6s'), pavo: await hoverOf('pavo20pro-3s') };
+        await page.evaluate(() => { for (const el of document.querySelectorAll('.drone-card [data-action="drone-tune"], [data-testid="drone-tune"]')) el.remove(); });
+        const noTune = await tuneOffer(CLICK);
+        await page.click('[data-action="drone-close"]');
+        await page.waitForSelector('.screen.drones', { state: 'detached' });
+        // control (b): Help tune it on the freestyle quad's card
+        await openPicker(page);
+        const other = await tuneOffer('nazgulf5v3-6s');
+        await page.click('[data-testid="feedback"] .panel-x');
+        await page.waitForSelector('[data-testid="feedback"]', { state: 'detached' });
+        // the check: Help tune it on the race quad's card (D3 goes on in the form it opens)
+        await openPicker(page);
+        const real = await tuneOffer(CLICK);
+        const hoverOk = JSON.stringify(hover.cine) === JSON.stringify([41, 53]) && hover.pavo.length === 2 && JSON.stringify(hover.pavo) !== JSON.stringify(hover.cine);
+        const controls = { withoutTune: !offered(noTune, CLICK), otherCard: !offered(other, CLICK) && other.form?.drone === 'nazgulf5v3-6s' };
+        const pass = offered(real, CLICK) && controls.withoutTune && controls.otherCard && hoverOk;
+        results.D2 = { pass, ...real, hover, control: { withoutTune: noTune, otherCard: other, fired: controls } };
         console.log('D2', pass, JSON.stringify(results.D2));
     }
 
     // ---------------------------------------------------------------- D3 the form sends a report the API stores (bad link refused first)
     {
+        const sentText = await page.textContent('[data-testid="fb-drone-sent"]');
         await page.fill('[data-testid="fb-message"]', 'Hover throttle feels lower than on my real one [v08-d acceptance]');
         await page.fill('[data-testid="fb-betaflight"]', DIFF);
         await page.fill('[data-testid="fb-log"]', 'ftp://example.com/log.bbl');
@@ -159,9 +195,13 @@ try {
         const tune = tuneFile(id);
         const body = posted[posted.length - 1]?.json ?? null;
         const text = ideaText(id);
-        const pass = refused && !!rec && rec.kind === 'drone' && rec.drone === 'machr5sport-6s' && rec.logUrl === LOG && !!tune && tune.betaflight === DIFF.trim()
+        // review R2: the form's line names what the body carries beyond the drone, the words and the e-mail
+        const sentLine = sentText ?? '';
+        const lineTrue = ['the scene you fly', "the simulator's version and language", 'the flight mode', 'the input you fly with'].every((p) => sentLine.includes(p))
+            && typeof body?.scene === 'string' && typeof body?.release === 'string' && 'input' in (body?.settings ?? {}) && 'flightMode' in (body?.settings ?? {});
+        const pass = refused && lineTrue && !!rec && rec.kind === 'drone' && rec.drone === 'machr5sport-6s' && rec.logUrl === LOG && !!tune && tune.betaflight === DIFF.trim()
             && !!tune.settings && typeof tune.settings.flightMode === 'string' && body?.kind === 'drone' && text.startsWith(`Drone physics: machr5sport-6s\nBlackbox log: ${LOG}`);
-        results.D3 = { pass, id, record: rec, tuneKeys: tune ? Object.keys(tune) : null, settings: tune?.settings ?? null, ideaHead: text.split('\n').slice(0, 3), control: { badLinkRefusedBeforeSending: refused, status: badText } };
+        results.D3 = { pass, id, record: rec, tuneKeys: tune ? Object.keys(tune) : null, settings: tune?.settings ?? null, ideaHead: text.split('\n').slice(0, 3), sentLine, bodyKeys: body ? Object.keys(body) : null, control: { badLinkRefusedBeforeSending: refused, status: badText } };
         console.log('D3', pass, id);
         await page.click('[data-action="feedback-close"]');
     }
