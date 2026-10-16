@@ -16,7 +16,7 @@
   "admin.outreach.stat.groups": "Groups studied",
   "admin.outreach.stat.posted": "Posted to",
   "admin.outreach.stat.published": "Post is up",
-  "admin.outreach.stat.removed": "Removed",
+  "admin.outreach.stat.removed": "A post was removed",
   "admin.outreach.stat.reactions": "Reactions",
   "admin.outreach.sub.groups": "of {n} known",
   "admin.outreach.sub.posted": "{n} posts in all",

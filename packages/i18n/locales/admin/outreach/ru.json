@@ -16,7 +16,7 @@
   "admin.outreach.stat.groups": "Изучено групп",
   "admin.outreach.stat.posted": "С постом",
   "admin.outreach.stat.published": "Пост опубликован",
-  "admin.outreach.stat.removed": "Удалено",
+  "admin.outreach.stat.removed": "Пост удалён",
   "admin.outreach.stat.reactions": "Реакции",
   "admin.outreach.sub.groups": "из {n} известных",
   "admin.outreach.sub.posted": "всего постов: {n}",
