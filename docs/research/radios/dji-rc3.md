@@ -258,6 +258,12 @@ Everything marked "not confirmed yet" there is confirmed or corrected in half a 
 controller, and each answer moves a fact in `packages/input/src/known-devices.ts` from assumed to
 measured:
 
+0. If a setup was saved for this controller before v0.8 (it was flown with the wizard's setup), the
+   Controls screen opens by itself when the scene loads and says "Recognised: DJI FPV Remote
+   Controller ... Use the known setup / Keep my setup" (the same offer is on the Controls screen's
+   radio-in-use panel). Press **Use the known setup**: its check screen opens with the labelled
+   controls, and steps 1-5 below are done there (Fly saves it). With no saved setup: open Controls
+   and move a stick, the check screen opens by itself.
 1. Move each stick: the four rows Roll / Pitch / Throttle / Yaw and the matching "Right stick left /
    right"... rows must follow; a bar that moves the other way = that direction is wrong (Reverse fixes it
    for this browser; tell us so it is fixed for everyone).
