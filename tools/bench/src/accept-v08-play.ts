@@ -216,12 +216,13 @@ for (const size of SIZES) {
         const chip = document.querySelector('[data-testid="school-chip"]');
         const keep = chip.style.top;
         if (moveChip) { const row = document.querySelector('.top-actions').getBoundingClientRect(); chip.style.top = (row.top + 2) + 'px'; chip.style.left = (row.left + 2) + 'px'; }
-        const items = [...document.querySelectorAll('.top-actions > .btn, [data-testid="school-chip"], .mode-chip, .attribution, .osd.tl, .osd.tr')]
-            .filter((el) => el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden')
+        // getClientRects, not offsetParent: the speaker is position: fixed on a phone (offsetParent null)
+        const items = [...document.querySelectorAll('.top-actions > .btn, [data-testid="school-chip"], .mode-chip, .attribution, .osd.tl, .osd.tr, .touch-hint')]
+            .filter((el) => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden' && getComputedStyle(el).display !== 'none')
             // the credit is a wide block with a short text: its text lines count, not its box
             .flatMap((el) => {
                 const n = (el.getAttribute('data-action') || el.getAttribute('data-testid') || el.className).toString().slice(0, 24);
-                if (n !== 'attribution') return [{ n, r: el.getBoundingClientRect() }];
+                if (n !== 'attribution' && n !== 'touch-hint') return [{ n, r: el.getBoundingClientRect() }];
                 const rg = document.createRange(); rg.selectNodeContents(el);
                 return [...rg.getClientRects()].map((r) => ({ n, r }));
             })
@@ -233,7 +234,7 @@ for (const size of SIZES) {
             // not judged here: the two OSD lines with each other (v0.7's long "WALLS OFF" line meets the
             // voltage on a 375 px phone: reported in docs/wip/v08-a.md, not this lane's part)
             const pair = [items[i].n, items[j].n].sort().join('|');
-            if (ox > 1 && oy > 1 && pair !== 'osd tl|osd tr') hits.push(items[i].n + ' x ' + items[j].n);
+            if (ox > 1 && oy > 1 && pair !== 'osd tl|osd tr' && items[i].n !== items[j].n) hits.push(items[i].n + ' x ' + items[j].n);
         }
         const sp = document.querySelector('[data-action="sound-toggle"]').getBoundingClientRect();
         const speakerOnScreen = sp.left >= 0 && sp.top >= 0 && sp.right <= innerWidth && sp.bottom <= innerHeight && sp.width > 0;

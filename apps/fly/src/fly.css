@@ -136,7 +136,9 @@ dl.measure { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; } dl
 .top-actions .btn.speaker.muted { color: #9ca3af; }
 /* a phone, upright or on its side (the row of buttons fills the width, or the credit shares its height):
    the speaker leaves the row for the right edge under it, like the REC dot */
-@media (max-width: 640px), (max-height: 500px) { .top-actions .btn.speaker { position: fixed; right: 16px; top: calc(var(--top-row-bottom, 78px) + 8px); width: 40px; height: 40px; min-height: 40px; padding: 0; justify-content: center; border-radius: 50%; } }
+@media (max-width: 640px), (max-height: 500px) { .top-actions .btn.speaker { position: fixed; right: 16px; top: calc(var(--top-row-bottom, 78px) + 8px); width: 40px; height: 40px; min-height: 40px; padding: 0; justify-content: center; border-radius: 50%; }
+    /* the touch hint at the same height keeps clear of it on both sides */
+    .touch-hint { width: calc(100vw - 128px); } }
 /* loading: every row has a fixed height (numbers change, nothing moves); the bar and the sweep are
    transforms, which keep animating while the main thread decodes the scan. Above the screens, so
    its fade shows what comes next underneath. */
@@ -201,7 +203,8 @@ body.touch-on .attribution { top: calc(max(10px, env(safe-area-inset-top)) + 128
 /* a short window (a phone on its side): the credit goes up under the OSD's top line, so the bottom
    middle stays free for the arm card and nothing sits over the middle of the view */
 @media (max-height: 500px) {
-    .attribution, body.touch-on .attribution { top: calc(max(10px, env(safe-area-inset-top)) + 34px + var(--banner-h, 0px)); bottom: auto; left: 16px; max-width: calc(100vw - 260px); }
+    /* ...and ends 16 px before the row of buttons, however wide the row is (ui/top-row.ts --top-row-left) */
+    .attribution, body.touch-on .attribution { top: calc(max(10px, env(safe-area-inset-top)) + 34px + var(--banner-h, 0px)); bottom: auto; left: 16px; max-width: calc(var(--top-row-left, calc(100vw - 244px)) - 32px); }
 }
 body.clean .top-actions, body.clean .attribution, body.clean .osd.br, body.clean .crash-overlay, body.clean .gate-msg, body.clean .banner { display: none; }
 /* cinema mode: clean picture, only the record control and its note */

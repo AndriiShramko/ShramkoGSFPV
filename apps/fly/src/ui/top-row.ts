@@ -64,6 +64,8 @@ export function layoutTopRow(ui: HTMLElement): void {
     const crowded = !!r && r.width > 0 && boxMeetsRow(u.width, boxW, r.left - u.left);
     if (ui.classList.contains('top-crowded') !== crowded) ui.classList.toggle('top-crowded', crowded);
     if (r && r.height > 0) px(ui, '--top-row-bottom', r.bottom - u.top);
+    // where the row starts: on a phone on its side the credit shares the row's height and ends before it (fly.css)
+    if (r && r.width > 0) px(ui, '--top-row-left', r.left - u.left);
     // after the class: the box may just have moved under the row
     const b = boxW > 0 && box ? box.getBoundingClientRect() : null;
     px(ui, '--bake-bottom', b && b.height > 0 ? b.bottom - u.top : 0);
