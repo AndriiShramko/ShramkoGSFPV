@@ -15,11 +15,34 @@ declare global {
         readonly data: DataView;
     }
 
+    /** The part of the report descriptor the reader uses (HIDCollectionInfo / HIDReportInfo / HIDReportItem). */
+    interface HIDReportItemInfo {
+        readonly isConstant?: boolean;
+        /** an array field (a keyboard's keys): its value is the index of a usage that is on; the reader skips it */
+        readonly isArray?: boolean;
+        readonly isRange?: boolean;
+        readonly usages?: readonly number[];
+        readonly usageMinimum?: number;
+        readonly usageMaximum?: number;
+        readonly reportSize?: number;
+        readonly reportCount?: number;
+        readonly logicalMinimum?: number;
+        readonly logicalMaximum?: number;
+    }
+
+    interface HIDCollectionInfoLike {
+        readonly usagePage?: number;
+        readonly usage?: number;
+        readonly children?: readonly HIDCollectionInfoLike[];
+        readonly inputReports?: readonly { readonly reportId: number; readonly items?: readonly HIDReportItemInfo[] }[];
+    }
+
     interface HIDDevice extends EventTarget {
         readonly opened: boolean;
         readonly vendorId: number;
         readonly productId: number;
         readonly productName: string;
+        readonly collections?: readonly HIDCollectionInfoLike[];
         open(): Promise<void>;
         close(): Promise<void>;
         addEventListener(type: 'inputreport', listener: (e: HIDInputReportEvent) => void): void;

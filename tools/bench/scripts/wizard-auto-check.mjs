@@ -1,6 +1,6 @@
 // Wizard with auto pacing on a release build: the fake radio moves its sticks like a person and
 // never presses a button (&nobuttons=1) -> must reach the check screen by itself; screenshots of
-// the screens it passes; then Fly (the one click). Usage: node auto-check.mjs <base> <shotsDir>
+// the screens it passes; then Fly (the one click). Also the fake DJI RC 3 (&device=dji) to the check. Usage: node auto-check.mjs <base> <shotsDir>
 import { fileURLToPath } from 'node:url';
 // repo root (tools/bench/scripts/ -> ../../..): no machine-specific paths
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\\/g, '/').replace(/\/$/, '');
@@ -22,7 +22,8 @@ const out = {};
     out.browser = await browserRecord(pick, await probe.newPage(), { visual: false, version: browser.version() });
     await probe.close();
 }
-for (const [name, qs, size] of [['nobuttons', '&nobuttons=1&react=900', { width: 1600, height: 900 }], ['human', '&human=5', { width: 375, height: 812 }]]) {
+// dji: the same robot through the DJI RC 3's 13-byte report and its descriptor (the robot's arm switch is CH5, the wheel)
+for (const [name, qs, size] of [['nobuttons', '&nobuttons=1&react=900', { width: 1600, height: 900 }], ['human', '&human=5', { width: 375, height: 812 }], ['dji', '&device=dji&react=400', { width: 1600, height: 900 }]]) {
     const ctx = await browser.newContext({ viewport: size });
     const page = await ctx.newPage();
     const errors = [];

@@ -2,7 +2,8 @@
 //   ?simradio=scenario|open  the bot pilot flies a plan (&tour=1, &dash=m/s, &quick=1, &flip=1,
 //                            &loop=N crash loops for B17); open: in a synthetic open volume
 //   ?simradio=raw            a simulated EdgeTX radio runs the calibration wizard like a person
-//                            (&order= &inv= &offset= &noise= &armch= &rate= &broken= &react= &human= &nobuttons=1)
+//                            (&order= &inv= &offset= &noise= &armch= &rate= &broken= &react= &human= &nobuttons=1;
+//                            &device=dji: the same hands through the DJI RC 3's 13-byte report and its descriptor)
 //   ?lat=1                   latency harness: keyboard input, F20 toggles 2 lag frames, F24 reports
 //   ?voxels=overlay|only &vstyle= &vopacity= &vradius=   the voxel grid for screenshots and checks
 //   ?render=off              logic-only: the scan is never downloaded or drawn (the engine clears the
@@ -108,7 +109,8 @@ function simRadio(ctx: FlightContext): void {
         // &human=<seed>: one of the simulated people (their mistakes, hints read, buttons pressed)
         humanSeed: q.get('human') !== null ? Number(q.get('human')) : undefined,
         // &nobuttons=1: the hands follow the screens, no button is ever pressed (the wizard must stay put)
-        noButtons: q.get('nobuttons') === '1'
+        noButtons: q.get('nobuttons') === '1',
+        device: q.get('device') === 'dji' ? 'dji-rc3' : 'edgetx'
     });
     hook.fake = fake;
     ctx.pause('controls');
@@ -122,7 +124,7 @@ function simRadio(ctx: FlightContext): void {
         if (a.kind === 'fly') document.querySelector<HTMLButtonElement>('[data-action="wizard-done"]')?.click();
         else act(w, a, performance.now());
     };
-    r.runWizard(fake.key, 'SimRadio EdgeTX Classic', (cb) => { fake.onFrame = cb; }, () => fake.cfg.rateHz, 'hid');
+    r.runWizard(fake.key, fake.name, (cb) => { fake.onFrame = cb; }, () => fake.cfg.rateHz, 'hid');
     r.onDone = (c) => {
         r.remove();
         ctx.resume('controls');

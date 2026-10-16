@@ -7,6 +7,7 @@
 // (arrival = this poll) before the arm gate's 100 ms stale rule would disarm them in flight. A pad
 // that is gone sends nothing, so the gate still goes stale and disarms.
 
+import { FRAME_BUTTONS } from '@gsfpv/input';
 import type { RawFrame } from '@gsfpv/input';
 
 /** A connected pad with no new hardware sample repeats its last values this often (gate: 100 ms). */
@@ -91,7 +92,7 @@ export class GamepadSource {
         f.t = now;
         for (let i = 0; i < 8; i++) f.axes[i] = i < g.axes.length ? g.axes[i] : 0;
         let b = 0;
-        for (let i = 0; i < Math.min(24, g.buttons.length); i++) if (g.buttons[i].pressed) b |= 1 << i;
+        for (let i = 0; i < Math.min(FRAME_BUTTONS, g.buttons.length); i++) if (g.buttons[i].pressed) b |= 1 << i;
         f.buttons = b;
         if (fresh) {
             this.rateN++;

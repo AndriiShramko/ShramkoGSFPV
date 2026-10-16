@@ -1,0 +1,54 @@
+{
+  "what": "DJI controller (the owner's DJI RC 3) on USB: what Windows, Chrome and the simulator saw, 2026-10-15, owner's PC (Windows 11 26200)",
+  "windows": {
+    "pnp": [
+      { "instance": "USB\\VID_2CA3&PID_1021\\123456789FEDCBA", "name": "USB Composite Device", "busReportedDescription": "DJI Virtual Joystick", "service": "usbccgp", "hardwareId": "USB\\VID_2CA3&PID_1021&REV_0100" },
+      { "instance": "USB\\VID_2CA3&PID_1021&MI_00", "name": "1021_MI00", "busReportedDescription": "BULK Interface", "service": "libusb0_device", "driver": "DEVICE BULK 5.0.0.7 (libusb-win32)" },
+      { "instance": "USB\\VID_2CA3&PID_1021&MI_02", "name": "USB Input Device", "busReportedDescription": "HID Interface", "service": "HidUsb" },
+      { "instance": "HID\\VID_2CA3&PID_1021&MI_02", "name": "HID-compliant game controller", "hardwareIds": ["HID\\VID_2CA3&UP:0001_U:0005", "HID_DEVICE_SYSTEM_GAME"] }
+    ],
+    "hidCaps": {
+      "method": "hid.dll HidD_GetAttributes / HidD_GetProductString / HidP_GetCaps / HidP_GetValueCaps / HidP_GetButtonCaps",
+      "vendorId": "0x2CA3", "productId": "0x1021", "version": "0x0100", "manufacturer": "DJI", "product": "HID Interface",
+      "usagePage": "0x01", "usage": "0x05 (gamepad)",
+      "inputReportByteLength": 14, "outputReportByteLength": 0, "featureReportByteLength": 0,
+      "valueCaps": [
+        { "usage": "0x34 Ry", "bits": 16, "count": 1, "logical": [-660, 660], "physical": [0, 0], "absolute": true },
+        { "usage": "0x33 Rx", "bits": 16, "count": 1, "logical": [-660, 660], "physical": [0, 0], "absolute": true },
+        { "usage": "0x32 Z", "bits": 16, "count": 1, "logical": [-660, 660], "physical": [0, 0], "absolute": true },
+        { "usage": "0x31 Y", "bits": 16, "count": 1, "logical": [-660, 660], "physical": [0, 0], "absolute": true },
+        { "usage": "0x30 X", "bits": 16, "count": 1, "logical": [-660, 660], "physical": [0, 0], "absolute": true }
+      ],
+      "buttonCaps": [{ "usagePage": "0x09", "range": [1, 24] }],
+      "dataIndices": 29,
+      "note": "valueCaps in the order HidP_GetValueCaps returned them; the byte order inside the report was not read (the controller was unplugged before the raw-report probe ran)"
+    },
+    "winmm": { "name": "Microsoft PC-joystick driver", "mid": "0x2CA3", "pid": "0x1021", "axes": 5, "buttons": 24, "restSample": { "x": 32221, "y": 32767, "z": 32767, "r": 32767, "u": 32370, "buttons": "0x50" } }
+  },
+  "recording": {
+    "file": "winmm-40s-recording.csv",
+    "method": "winmm joyGetPosEx polled for 40 s (5 ms sleep, 5-7 ms between polls, about 165 polls a second), only changes kept; the owner stirred the sticks (about 0-25 s), then switches and buttons and the wheel",
+    "changes": 6297,
+    "axes": { "x": [0, 65535], "y": [0, 65535], "z": [0, 65535], "u": [0, 65535], "r": [0, 65535], "rDistinct": 75, "v": [0, 0] },
+    "buttonStatesSeen": ["0x00", "0x10", "0x20", "0x40", "0x50", "0x54", "0x58", "0x60", "0x61", "0x62", "0x64", "0x68", "0x6c", "0x80", "0x90", "0xa0"],
+    "buttonBitsSeen": [0, 1, 2, 3, 4, 5, 6, 7],
+    "rest": "x -11 and u (Rx) -8 in the controller's units with jitter of a few units; y, z and r exactly 0; buttons 0x50 (bits 4 and 6)"
+  },
+  "chrome152InClaudeApp": {
+    "userAgent": "Chrome/152.0.7977.130 (Claude app browser pane)",
+    "getGamepads": { "id": "HID Interface (Vendor: 2ca3 Product: 1021)", "mapping": "", "axes": 5, "buttons": 24, "atRest": [-0.017, 0, 0, -0.012, 0] },
+    "liveTrace40s": "axes 0-3 reached -1 and +1 while stirring (150-170 changes a second), axis 4 (the wheel) reached -1..+1 only when turned (30-31 s), button bitmask 80 at rest",
+    "simulatorGamepadPath": "release 55fbccae0af5 on the live site, ?render=off: the Controls screen's gamepad button started the wizard (screenshot live-gamepad-path-stir-chrome152.jpg); the stir passed (5 stick-like channels: the owner turned the wheel too); at the Throttle step the owner's free movement gave 'wizard.hint.push.two' 11 times and 'push.hold' 4 times in 30 s and no push was taken (wizardLog below); a clean one-stick push was not recorded",
+    "wizardLog": [
+      "t0 throttle/active push.two", "t1204 push.two", "t2875 push.two", "t4967 push.hold", "t6427 push.two", "t9872 push.hold", "t12058 push.two", "t13623 push.two", "t15297 push.two", "t16764 push.hold", "t18435 push.two", "t20263 push.two", "t22057 push.hold", "t23611 push.two", "t27746 push.two"
+    ]
+  },
+  "chrome140OwnersBrowser": {
+    "userAgent": "Chrome/140.0.0.0",
+    "getGamepads": "[null, null, null, null] in a visible, focused tab with the controller at rest; the simulator's gamepad source ran for about 4 s and received no frame (gp.index -1)",
+    "notChecked": "the same with a stick moved (browsers expose a pad only after an input)"
+  },
+  "webhidPathBeforeFixFromCode": "NOT observed (the chooser was not tried with the controller); derived from the code at 4ab126c and the measured 13-byte report length: the chooser filters take usage page 1 usage 4/5/8, so the controller should be listed; every 13-byte report fails parseEdgeTxReport (it needs 19 or 16 bytes and more), HidSource counts it as bad, the wizard stays at connect with 'The radio sends 13-byte reports we cannot read'",
+  "fix": "HidSource reads a non-EdgeTX device through its descriptor (packages/input/src/hid-layout.ts, makeHidReader); EdgeTX keeps its fixed layout",
+  "screenshots": ["live-controls-screen-chrome152.jpg", "live-gamepad-path-stir-chrome152.jpg", "live-gamepad-path-throttle-chrome152.jpg", "live-controls-screen-chrome140.jpg"]
+}

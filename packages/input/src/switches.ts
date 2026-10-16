@@ -24,6 +24,7 @@ import { MODE_CHANNEL } from '@gsfpv/sim-core';
 import type { BfAuxCondition, FlightMode } from '@gsfpv/sim-core';
 import type { ArmMap, Profile, RawFrame } from './calib';
 import { DEFAULT_SWITCH_MODES, sameInput, validSwitchInput } from './mode-switch';
+import { FRAME_BUTTONS } from './frame';
 import type { SwitchInput, SwitchModes } from './mode-switch';
 
 /**
@@ -72,7 +73,7 @@ const BUTTON_BANDS: readonly (readonly [number, number])[] = [[900, 1500], [900,
 
 /** The channel's value in us on this frame (Betaflight's clamp to 900..2099), or null when the frame has no such input. */
 export function channelUs(input: SwitchInput, f: RawFrame): number | null {
-    if (input.kind === 'button') return input.bit >= 0 && input.bit <= 23 ? (((f.buttons >> input.bit) & 1) === 1 ? US_CENTRE + US_HALF : US_CENTRE - US_HALF) : null;
+    if (input.kind === 'button') return input.bit >= 0 && input.bit < FRAME_BUTTONS ? (((f.buttons >> input.bit) & 1) === 1 ? US_CENTRE + US_HALF : US_CENTRE - US_HALF) : null;
     if (input.index >= f.axes.length) return null;
     const v = f.axes[input.index];
     if (!Number.isFinite(v)) return null;

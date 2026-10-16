@@ -34,7 +34,7 @@ export const APP_URL_PARAMS_NOT_SETTINGS: Readonly<Record<string, string>> = {
     clean: 'capture: the flight view and the OSD only, for recording the landing video',
     render: 'test: ?render=off, the logic-only mode for machines without a GPU (the cloud): the scan is never downloaded or drawn, the walls, flight model, input, HUD and crash handling run; never a visual or latency check',
     tour: BOT, dash: BOT, quick: BOT, flip: BOT, loop: BOT,
-    order: SIM_RADIO, inv: SIM_RADIO, offset: SIM_RADIO, noise: SIM_RADIO, armch: SIM_RADIO, rate: SIM_RADIO, broken: SIM_RADIO, react: SIM_RADIO, human: SIM_RADIO, nobuttons: SIM_RADIO
+    order: SIM_RADIO, inv: SIM_RADIO, offset: SIM_RADIO, noise: SIM_RADIO, armch: SIM_RADIO, rate: SIM_RADIO, broken: SIM_RADIO, react: SIM_RADIO, human: SIM_RADIO, nobuttons: SIM_RADIO, device: SIM_RADIO
 };
 
 /** A URL string as a typed value for its def, or undefined when it cannot be one. */

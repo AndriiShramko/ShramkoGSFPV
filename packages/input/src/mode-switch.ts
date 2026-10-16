@@ -13,6 +13,7 @@
 import { MODE_CHANNEL } from '@gsfpv/sim-core';
 import type { FlightMode } from '@gsfpv/sim-core';
 import type { RawFrame } from './calib';
+import { FRAME_BUTTONS } from './frame';
 
 /** The input a mode switch is read from: an axis channel (0-based) or a button bit. */
 export type SwitchInput = { kind: 'axis'; index: number } | { kind: 'button'; bit: number };
@@ -28,9 +29,9 @@ export const FLIGHT_MODES: readonly FlightMode[] = ['acro', 'angle', 'horizon'];
  */
 export const DEFAULT_SWITCH_MODES: Readonly<SwitchModes> = ['acro', 'horizon', 'angle'];
 
-/** Highest axis index and button bit a profile may name (8 HID channels, 24 report bits; pads have fewer). */
+/** Highest axis index and button bit a profile may name (8 HID channels, a frame's 24 button bits; pads have fewer). */
 const MAX_AXIS = 31;
-const MAX_BIT = 23;
+const MAX_BIT = FRAME_BUTTONS - 1;
 
 /** Which position the switch is in on this frame; null when the frame has no such input. */
 export function switchPos(input: SwitchInput, f: RawFrame): SwitchPos | null {
@@ -114,7 +115,9 @@ export interface SwitchFlip { input: SwitchInput; from: SwitchPos; to: SwitchPos
  * still level held LEVEL_MS, then a jump to a level in another position, held LEVEL_MS again.
  * Noise and drift stay in one position; a knob or a slider is a sweep (no single big step) and is
  * never taken in this watch; a glitch shorter than LEVEL_MS is not a level. Buttons: a bit that
- * changed and holds LEVEL_MS. Nothing is ever taken because time passed: only a held new position.
+ * changed and holds LEVEL_MS; when one bit goes off as another comes on (a switch that reports each
+ * end as a bit, flipped end to end), the one that came on. Nothing is ever taken because time
+ * passed: only a held new position.
  */
 export class ModeSwitchDetector {
     private n = 0;
@@ -128,7 +131,7 @@ export class ModeSwitchDetector {
     private stepMax = new Float64Array(0); // biggest single-report step since that level
     private swept = new Uint8Array(0);
     private bits = 0;
-    private bitSince = new Float64Array(24);
+    private bitSince = new Float64Array(FRAME_BUTTONS);
     private bitLevel = 0; // the held value of every bit
     private started = false;
     private now = 0;
@@ -164,7 +167,7 @@ export class ModeSwitchDetector {
         }
         const changed = f.buttons ^ this.bits;
         if (changed) {
-            for (let b = 0; b < 24; b++) if (changed & (1 << b)) this.bitSince[b] = t;
+            for (let b = 0; b < FRAME_BUTTONS; b++) if (changed & (1 << b)) this.bitSince[b] = t;
             this.bits = f.buttons;
         }
         return this.evaluate(t);
@@ -212,14 +215,29 @@ export class ModeSwitchDetector {
         }
         const diff = this.bits ^ this.bitLevel;
         if (diff) {
-            for (let b = 0; b < 24; b++) {
+            for (let b = 0; b < FRAME_BUTTONS; b++) {
                 if (!(diff & (1 << b)) || t - this.bitSince[b] < MT.LEVEL_MS) continue;
                 const on = (this.bits >> b) & 1;
                 this.bitLevel = on ? this.bitLevel | (1 << b) : this.bitLevel & ~(1 << b);
+                // a switch that reports its positions as bits (one bit per end, neither = middle, as
+                // the DJI controller's) flipped from one end to the other: one bit goes off as another
+                // comes on. The flip is to the position whose bit came on; that one is reported once it
+                // holds, never the one that went off
+                if (!on && this.cameOnWith(b)) continue;
                 if (!this.exBits.has(b) && !found) found = { input: { kind: 'button', bit: b }, from: on ? 0 : 2, to: on ? 2 : 0 };
             }
         }
         return found;
+    }
+
+    /** Another bit (not excluded) came on within LEVEL_MS of bit `b` going off and has not been taken yet. */
+    private cameOnWith(b: number): boolean {
+        for (let c = 0; c < FRAME_BUTTONS; c++) {
+            if (c === b || this.exBits.has(c)) continue;
+            const pending = ((this.bits >> c) & 1) === 1 && ((this.bitLevel >> c) & 1) === 0;
+            if (pending && Math.abs(this.bitSince[c] - this.bitSince[b]) < MT.LEVEL_MS) return true;
+        }
+        return false;
     }
 }
 

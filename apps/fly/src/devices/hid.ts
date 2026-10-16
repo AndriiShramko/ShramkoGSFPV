@@ -1,47 +1,36 @@
-// EdgeTX radio in "USB Joystick" mode over WebHID. Report layout from the EdgeTX source (not
-// measured on hardware yet): 3 bytes of buttons + 8 x uint16 little-endian, 0..2048, centre 1024.
-// Timestamps are the browser's event.timeStamp (same clock as performance.now()).
+// A radio or game controller over WebHID. Every device is read through its own report descriptor,
+// which the browser hands over as device.collections (packages/input/src/hid-layout.ts): an EdgeTX
+// radio in "USB Joystick" mode (its descriptor gives the layout of the EdgeTX source: 3 bytes of
+// buttons + 8 x uint16 little-endian, 0..2047, centre 1024), a DJI controller in its simulator mode
+// (13 bytes: 5 x int16 and 24 button bits), any HID joystick, gamepad or multi-axis controller. The
+// fixed EdgeTX layout is only the fallback when the browser hands over no usable descriptor. The
+// chooser lists every HID game control and the EdgeTX USB ids. Timestamps are the browser's
+// event.timeStamp (same clock as performance.now()).
 
-import type { RawFrame } from '@gsfpv/input';
+import { EDGETX_USB, GAME_CONTROL_USAGES, hidDisplayName, hidProfileKey, makeHidReader, parseEdgeTxReport } from '@gsfpv/input';
+import type { HidReader, RawFrame } from '@gsfpv/input';
 
-export const EDGETX_FILTERS: HIDDeviceFilter[] = [
-    { vendorId: 0x1209, productId: 0x4f54 }, // EdgeTX / OpenTX
-    { usagePage: 0x01, usage: 0x04 }, // joystick
-    { usagePage: 0x01, usage: 0x05 }, // gamepad
-    { usagePage: 0x01, usage: 0x08 } // multi-axis controller
+/** What the browser's chooser offers: the EdgeTX / OpenTX joystick by its USB ids, and every HID game control (joystick, gamepad, multi-axis controller), the collections the reader reads. */
+export const HID_CHOOSER_FILTERS: HIDDeviceFilter[] = [
+    { ...EDGETX_USB },
+    ...GAME_CONTROL_USAGES.map((usage) => ({ usagePage: 0x01, usage }))
 ];
 
-export function parseEdgeTxReport(data: DataView, out: RawFrame): boolean {
-    const n = data.byteLength;
-    if (n >= 19) {
-        out.buttons = data.getUint8(0) | (data.getUint8(1) << 8) | (data.getUint8(2) << 16);
-        for (let i = 0; i < 8; i++) out.axes[i] = (data.getUint16(3 + i * 2, true) - 1024) / 1024;
-        return true;
-    }
-    if (n >= 16) {
-        // no button bytes
-        out.buttons = 0;
-        for (let i = 0; i < 8; i++) out.axes[i] = (data.getUint16(i * 2, true) - 1024) / 1024;
-        return true;
-    }
-    return false;
-}
-
-export function hidDeviceKey(d: { vendorId: number; productId: number; productName: string }, reportLen: number): string {
-    return `hid:${d.vendorId.toString(16)}:${d.productId.toString(16)}:${d.productName}:${reportLen}`;
-}
+export { hidDisplayName, parseEdgeTxReport };
 
 export class HidSource {
     device: HIDDevice | null = null;
     frame: RawFrame = { t: 0, axes: new Float32Array(8), buttons: 0 };
     reports = 0;
-    /** reports this parser cannot read (e.g. EdgeTX "Advanced" joystick layouts) and the last one's length */
+    /** reports the reader cannot read (shorter than the layout, an unknown report id) and the last one's length */
     badReports = 0;
     lastBadLen = 0;
     private rateT0 = 0;
     private rateN = 0;
     rateHz = 0;
     reportLen = 0;
+    /** the device's own descriptor, or the fixed EdgeTX layout without one (makeHidReader) */
+    private read: HidReader = makeHidReader({});
     onFrame: ((f: RawFrame) => void) | null = null;
 
     static supported(): boolean {
@@ -51,20 +40,21 @@ export class HidSource {
     /** Must be called from a user gesture. */
     async request(): Promise<HIDDevice | null> {
         const hid = (navigator as Navigator & { hid: HID }).hid;
-        const list = await hid.requestDevice({ filters: EDGETX_FILTERS });
+        const list = await hid.requestDevice({ filters: HID_CHOOSER_FILTERS });
         return list[0] ?? null;
     }
 
     async open(d: HIDDevice): Promise<void> {
         if (!d.opened) await d.open();
         this.device = d;
+        this.read = makeHidReader(d);
         d.addEventListener('inputreport', this.onReport);
     }
 
     private onReport = (e: HIDInputReportEvent): void => {
         this.reportLen = e.data.byteLength;
         const f = this.frame;
-        if (!parseEdgeTxReport(e.data, f)) {
+        if (!this.read(e.reportId, e.data, f)) {
             // the wizard's connect screen says so instead of waiting for frames that never come
             this.badReports++;
             this.lastBadLen = e.data.byteLength;
@@ -81,8 +71,9 @@ export class HidSource {
         this.onFrame?.(f);
     };
 
+    /** The profile key (hidProfileKey): a descriptor-read device's axis report length and ':d'; the EdgeTX layout's arriving length, as before. */
     get key(): string {
-        return this.device ? hidDeviceKey(this.device, this.reportLen) : '';
+        return this.device ? hidProfileKey(this.device, this.read, this.reportLen) : '';
     }
 
     close(): void {
