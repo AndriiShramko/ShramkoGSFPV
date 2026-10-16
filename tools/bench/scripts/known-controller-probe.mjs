@@ -13,7 +13,20 @@
 //   offer   a setup saved by the wizard for the same pad: its check offers the known setup, one press uses it
 // Negative control `not-dji`: a pad with the DJI's ids but 4 axes (not its shape) is not recognised:
 // the device choice stays (no check screen within 4 s).
-// Usage: node known-controller-probe.mjs <base with the locale, e.g. http://localhost:5390/en> <outDir>
+// Review fixes (v0.8 R1, R4):
+//   old-at-load    the pad shown at load with the wizard's setup from before v0.8 (flown last time):
+//                  it comes back by itself, and the Controls screen opens on its in-use panel with the
+//                  offer; Use the known setup -> its check -> Fly flies the known setup; a reload flies
+//                  at once (answered)
+//   keep-at-load   the same, Keep my setup: flies his own setup (narrow roll, one-bit switch) with the
+//                  device's table and id; a reload flies at once (answered)
+//   control old-other-at-load: the same old setup on a pad that is not a known controller flies at
+//                  once, no Controls screen (the offer is only for a recognised controller)
+//   two-pads       an Xbox pad and the DJI: the pilot picks Gamepad (the Xbox's wizard opens), goes
+//                  Back, then moves the DJI: the DJI's known check opens, not the Xbox's wizard
+// A pre-fix release (`--expect-fail old-at-load,keep-at-load,two-pads`) is the control for the fixes:
+// those steps must fail there and the rest pass.
+// Usage: node known-controller-probe.mjs <base with the locale, e.g. http://localhost:5390/en> <outDir> [--only a,b] [--expect-fail a,b]
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -21,26 +34,84 @@ import { browserRecord, pickHarnessBrowser } from './visual-browser.mjs';
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\\/g, '/').replace(/\/$/, '');
 const require = createRequire(ROOT + '/tools/bench/package.json');
 const { chromium } = require('playwright');
-const base = process.argv[2] ?? 'http://localhost:5390/en';
-const outDir = process.argv[3] ?? ROOT + '/.cache/known-controller-probe';
+const args = process.argv.slice(2);
+const flag = (name) => { const i = args.indexOf(name); if (i < 0) return null; const v = args[i + 1]; args.splice(i, 2); return v.split(','); };
+const only = flag('--only');
+const expectFail = flag('--expect-fail') ?? [];
+const base = args[0] ?? 'http://localhost:5390/en';
+const outDir = args[1] ?? ROOT + '/.cache/known-controller-probe';
 mkdirSync(outDir, { recursive: true });
+const runs = (name) => !only || only.includes(name);
+const DJI_ID = 'HID Interface (Vendor: 2ca3 Product: 1021)';
+const DJI_KEY = `gp:${DJI_ID}:5:24:`;
 
-/** In the page: a fake DJI pad on the Gamepad API whose state the probe sets (window.__pad). */
+/**
+ * In the page: fake pads on the Gamepad API. The DJI (or `cfg.id`) at `cfg.index` (0), its state set by
+ * the probe (window.__pad); `cfg.shown`: shown from the start (the browser has seen it before);
+ * `cfg.other`: a second, plain pad at slot 0 (an Xbox pad, standard mapping), shown from the start.
+ */
 function installPad(cfg) {
     // shown once a stick moved; a reload keeps it shown (the browser remembers a pad it has seen)
-    const s = { axes: [0, 0, -1, 0, 0], buttons: 0x50, ts: performance.now(), present: sessionStorage.getItem('__padShown') === '1' };
+    const s = { axes: [0, 0, -1, 0, 0], buttons: 0x50, ts: performance.now(), present: !!cfg.shown || sessionStorage.getItem('__padShown') === '1' };
     window.__pad = {
         set(axes, buttons) { if (axes) s.axes = axes.slice(); if (buttons !== undefined && buttons !== null) s.buttons = buttons; s.ts = performance.now(); s.present = true; sessionStorage.setItem('__padShown', '1'); }
     };
     const buttons = Array.from({ length: 24 }, (_, i) => ({ get pressed() { return ((s.buttons >> i) & 1) === 1; }, get value() { return (s.buttons >> i) & 1; }, touched: false }));
+    const index = cfg.index ?? 0;
     const pad = {
-        id: 'HID Interface (Vendor: 2ca3 Product: 1021)', index: 0, connected: true, mapping: '', vibrationActuator: null,
+        id: cfg.id ?? 'HID Interface (Vendor: 2ca3 Product: 1021)', index, connected: true, mapping: '', vibrationActuator: null,
         get axes() { return s.axes.slice(0, cfg.axes); },
         buttons,
         get timestamp() { return s.ts; }
     };
+    const t0 = performance.now();
+    const other = cfg.other ? {
+        id: cfg.other, index: 0, connected: true, mapping: 'standard', vibrationActuator: null,
+        axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0, touched: false })),
+        get timestamp() { return t0; }
+    } : null;
     // a browser shows a pad only after an input: before the first set() / show() there is none
-    Object.defineProperty(Navigator.prototype, 'getGamepads', { value: () => [s.present ? pad : null, null, null, null], configurable: true });
+    Object.defineProperty(Navigator.prototype, 'getGamepads', { value: () => { const a = [null, null, null, null]; if (other) a[0] = other; if (s.present) a[index] = pad; return a; }, configurable: true });
+}
+
+/** The pilot's saved setups and the input of last time, put into the page's store as a settings file brings them (Settings -> import). */
+async function seedProfiles(page, items, last) {
+    return page.evaluate(([its, l]) => {
+        const p = window.__gsfpv.prefs;
+        const f = p.export();
+        f.collections.radioProfiles = { v: 1, items: its, last: l };
+        p.importFile(f, 'replace');
+        p.flush();
+        return Object.keys(its).every((k) => !!p.collection('radioProfiles').items[k]);
+    }, [items, last]).catch((e) => String(e));
+}
+
+/** The wizard's v0.7 setup of a pad (key `key`): CH1..CH4, a narrow roll, start/stop as the arm, the mode switch on ONE bit. */
+const oldSetup = (key, name) => ({
+    version: 1, deviceKey: key, deviceName: name, created: '2026-10-15T20:00:00.000Z', wizard: 2, deadband: 0, angleMode: null, mode: 2,
+    axes: { roll: { index: 0, invert: false, center: -0.017, min: -0.9, max: 0.88 }, pitch: { index: 1, invert: false, center: 0, min: -1, max: 1 }, throttle: { index: 2, invert: false, center: -1, min: -1, max: 1 }, yaw: { index: 3, invert: false, center: -0.012, min: -1, max: 1 } },
+    arm: { kind: 'button', bit: 2, toggle: true },
+    modeSwitch: { input: { kind: 'button', bit: 7 }, modes: ['acro', 'horizon', 'angle'] }
+});
+
+/** After a load: is the Controls screen open, with the offer on its in-use panel, and what flies. */
+const atLoad = (page) => page.evaluate(() => ({
+    screen: !!document.querySelector('.screen.radio'),
+    offer: !!document.querySelector('.radio-current [data-testid=known-offer]'),
+    wizard: window.__gsfpv?.radio?.wizard?.state?.id ?? null,
+    source: window.__gsfpv?.controls?.source ?? null,
+    known: window.__gsfpv?.controls?.profile?.known ?? null,
+    rollMax: window.__gsfpv?.controls?.profile?.axes?.roll?.max ?? null,
+    modeInput: window.__gsfpv?.controls?.profile?.modeSwitch?.input ?? null,
+    channels: window.__gsfpv?.controls?.profile?.channels?.length ?? null
+}));
+
+/** Load, wait for the scene and for the input from last time to settle (it flies, or Controls opens). */
+async function loadAndSettle(page) {
+    await page.goto(url, { waitUntil: 'load' });
+    await page.waitForFunction(() => window.__gsfpv?.status === 'ready', null, { timeout: 120000 });
+    await page.waitForFunction(() => window.__gsfpv?.controls?.source === 'gamepad' || document.querySelector('.screen.radio'), null, { timeout: 15000 }).catch(() => undefined);
+    await page.waitForTimeout(600);
 }
 
 const pick = pickHarnessBrowser({ expected: chromium.executablePath() }, false);
@@ -55,7 +126,7 @@ const ok = (name, pass, detail) => { out.steps[name] = { pass, ...detail }; cons
 const url = `${base}/fly/?scene=39e63ce9&nowarn=1`;
 
 // ---- the DJI
-{
+if (runs('dji')) {
     const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
     const page = await ctx.newPage();
     const errors = [];
@@ -141,7 +212,7 @@ const url = `${base}/fly/?scene=39e63ce9&nowarn=1`;
 }
 
 // ---- offer: a setup the wizard saved for this pad before it was recognised
-{
+if (runs('offer')) {
     const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
     const page = await ctx.newPage();
     await page.addInitScript(installPad, { axes: 5 });
@@ -178,7 +249,7 @@ const url = `${base}/fly/?scene=39e63ce9&nowarn=1`;
 }
 
 // ---- negative control: the DJI's ids, another shape
-{
+if (runs('not-dji')) {
     const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
     const page = await ctx.newPage();
     await page.addInitScript(installPad, { axes: 4 });
@@ -190,7 +261,93 @@ const url = `${base}/fly/?scene=39e63ce9&nowarn=1`;
     ok('not-dji', s.wizard === null && s.choice, s);
     await ctx.close();
 }
+// ---- R1: the wizard's setup from before v0.8 comes back by itself at load (the pad shown at load)
+for (const answer of ['use', 'keep']) {
+    const name = answer === 'use' ? 'old-at-load' : 'keep-at-load';
+    if (!runs(name)) continue;
+    const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
+    const page = await ctx.newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(String(e.message).slice(0, 160)));
+    await page.addInitScript(installPad, { axes: 5, shown: true });
+    await loadAndSettle(page);
+    const seeded = await seedProfiles(page, { [DJI_KEY]: oldSetup(DJI_KEY, DJI_ID) }, { kind: 'gamepad', key: DJI_KEY });
+    await loadAndSettle(page);
+    const load = await atLoad(page);
+    await page.screenshot({ path: `${outDir}/05-${name}-offer.png` });
+    let after = null;
+    if (load.offer) {
+        await page.locator(`.radio-current [data-action=${answer === 'use' ? 'use-known' : 'keep-own'}]`).click();
+        await page.waitForTimeout(500);
+        if (answer === 'use') {
+            const check = await page.evaluate(() => ({ id: window.__gsfpv?.radio?.wizard?.state?.id ?? null, known: window.__gsfpv?.radio?.wizard?.state?.profile?.known ?? null, note: !!document.querySelector('[data-testid=known-note]') }));
+            await page.locator('[data-action=wizard-done]').click();
+            await page.waitForFunction(() => !document.querySelector('.screen.radio'), null, { timeout: 10000 }).catch(() => undefined);
+            after = { check, flying: await atLoad(page) };
+        } else {
+            await page.waitForFunction(() => !document.querySelector('.screen.radio'), null, { timeout: 10000 }).catch(() => undefined);
+            after = { flying: await atLoad(page) };
+        }
+    }
+    await page.evaluate(() => window.__gsfpv.prefs.flush()).catch(() => undefined);
+    await loadAndSettle(page);
+    const reload = await atLoad(page);
+    const f = after?.flying;
+    const answered = answer === 'use'
+        ? after?.check?.id === 'check' && after.check.known === 'dji-virtual-joystick' && after.check.note && f?.known === 'dji-virtual-joystick' && f.rollMax === 1 && f.modeInput?.kind === 'bits'
+        : f?.known === 'dji-virtual-joystick' && f.rollMax === 0.88 && f.modeInput?.kind === 'button' && f.channels === 9;
+    ok(name, seeded === true && load.screen && load.offer && load.source === 'gamepad' && load.known === null && !!f && !f.screen && f.source === 'gamepad' && answered
+        && !reload.screen && reload.source === 'gamepad' && reload.known === 'dji-virtual-joystick' && errors.length === 0, { seeded, load, after, reload, errors });
+    await ctx.close();
+}
+
+// ---- R1 control: the same old setup on a pad that is not a known controller flies at once
+if (runs('old-other-at-load')) {
+    const other = 'Generic USB Joystick (Vendor: 0079 Product: 0006)';
+    const key = `gp:${other}:5:24:`;
+    const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
+    const page = await ctx.newPage();
+    await page.addInitScript(installPad, { axes: 5, shown: true, id: other });
+    await loadAndSettle(page);
+    const seeded = await seedProfiles(page, { [key]: oldSetup(key, other) }, { kind: 'gamepad', key });
+    await loadAndSettle(page);
+    const load = await atLoad(page);
+    ok('old-other-at-load', seeded === true && !load.screen && load.source === 'gamepad' && load.rollMax === 0.88, { seeded, load });
+    await ctx.close();
+}
+
+// ---- R4: an Xbox pad picked first, Back, then the DJI moved: the DJI's known check, not the Xbox's wizard
+if (runs('two-pads')) {
+    const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
+    const page = await ctx.newPage();
+    await page.addInitScript(installPad, { axes: 5, index: 1, other: 'Xbox 360 Controller (XInput STANDARD GAMEPAD)' });
+    await page.goto(url, { waitUntil: 'load' });
+    await page.waitForFunction(() => window.__gsfpv?.status === 'ready' && document.querySelector('.screen.radio .choice'), null, { timeout: 120000 });
+    // the pilot picks "Gamepad": the Xbox pad (the only one shown) opens its wizard
+    await page.locator('.screen.radio .choice button').nth(1).click();
+    await page.waitForFunction(() => !!window.__gsfpv?.radio?.wizard, null, { timeout: 8000 }).catch(() => undefined);
+    const xbox = await page.evaluate(() => ({ step: window.__gsfpv?.radio?.wizard?.state?.id ?? null }));
+    // Back on the first step: the device choice again
+    await page.keyboard.press('Backspace');
+    await page.waitForFunction(() => document.querySelector('.screen.radio .choice') && !window.__gsfpv?.radio?.wizard, null, { timeout: 5000 }).catch(() => undefined);
+    const back = await page.evaluate(() => ({ choice: !!document.querySelector('.screen.radio .choice'), wizard: window.__gsfpv?.radio?.wizard?.state?.id ?? null }));
+    // the DJI is moved: the browser shows it at slot 1
+    await page.evaluate(() => window.__pad.set([0, 0, 0.3, 0, 0], 0x50));
+    await page.waitForFunction(() => window.__gsfpv?.radio?.wizard?.state?.id === 'check', null, { timeout: 6000 }).catch(() => undefined);
+    await page.waitForTimeout(300);
+    const dji = await page.evaluate(() => {
+        const s = window.__gsfpv?.radio?.wizard?.state;
+        return { id: s?.id ?? null, known: s?.profile?.known ?? null, name: s?.profile?.deviceName ?? null, key: s?.profile?.deviceKey ?? null };
+    });
+    await page.screenshot({ path: `${outDir}/07-two-pads.png` });
+    ok('two-pads', xbox.step !== null && xbox.step !== 'check' && back.choice && back.wizard === null && dji.id === 'check' && dji.known === 'dji-virtual-joystick' && dji.key === DJI_KEY, { xbox, back, dji });
+    await ctx.close();
+}
+
 await browser.close();
-out.pass = Object.values(out.steps).every((s) => s.pass) && (out.errorsDji ?? []).length === 0;
+// a step listed in --expect-fail (a pre-fix release) passes the run by failing
+for (const [n, s] of Object.entries(out.steps)) s.expected = expectFail.includes(n) ? 'fail' : 'pass';
+out.expectFail = expectFail;
+out.pass = Object.values(out.steps).every((s) => (s.expected === 'fail' ? !s.pass : s.pass)) && (out.errorsDji ?? []).length === 0;
 writeFileSync(`${outDir}/result.json`, JSON.stringify(out, null, 1));
 console.log(JSON.stringify({ pass: out.pass, browser: out.browser?.version, errors: out.errorsDji }, null, 1));
