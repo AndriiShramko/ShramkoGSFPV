@@ -21,7 +21,7 @@ export class Quality {
     private frameDelay = 0;
     /** renderer.framesHeld at the last frame */
     private heldSeen = 0;
-    /** renderer.streamTicks at the last frame: the scan's streamer at work since (governor `streamed`) */
+    /** renderer.streamTicks at the last frame: the scan's streamer at work since (governor `streamed`, report only) */
     private streamSeen = 0;
 
     constructor(renderer: SplatRenderer) {
@@ -85,8 +85,8 @@ export class Quality {
         // a frame the renderer held for the GPU queue (maxFramesInFlight) is a missed one
         const held = this.renderer.framesHeld !== this.heldSeen;
         this.heldSeen = this.renderer.framesHeld;
-        // a level-of-detail file requested or arrived since the last frame: a late frame now is the
-        // streamer's work, not a GPU that cannot draw the budget (governor.ts onFrame, v0.8 item 8)
+        // a level-of-detail file requested or arrived since the last frame: the governor counts a missed
+        // frame now like any other and also as a streaming one, for the report (governor.ts onFrame `streamed`)
         const streamed = this.renderer.streamTicks !== this.streamSeen;
         this.streamSeen = this.renderer.streamTicks;
         // the governor's clock is the frame's rAF timestamp (the display's frame time), not the moment

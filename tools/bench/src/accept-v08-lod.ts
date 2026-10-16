@@ -2,10 +2,10 @@
 // under the GPU lock (C:/dev/.gpu-lock). Every item has a control that must come out the other way.
 //   L1  the owner's streamed city scan ba7aa29d (60.3 M splats, 10 levels) on a desktop: it opens from
 //       lod-meta.json, the LOD range opens to every level after the reveal, and for 20 s after the reveal
-//       the drawing stays at the top (4 M, render scale 1: the governor does not count the streamer's
-//       hitches), the finest level is in use near the camera, and F3 says "Levels of detail: 10".
-//       Control: the same page of the release before lane C (SITE_BEFORE) lowers the drawing within those
-//       20 s (the governor counted the hitches), with the camera standing still as well.
+//       the drawing stays at the top (4 M, render scale 1: the governor judges frames on the rAF clock
+//       against a period learned from 60 frames), the finest level is in use near the camera, and F3
+//       says "Levels of detail: 10". Control: the same page of the release before lane C (SITE_BEFORE)
+//       lowers the drawing within those 20 s (its clock read on-time frames as missed), the camera still.
 //   L2  a phone (user agent, touch, small viewport): the same scan streams its levels under SuperSplat's
 //       mobile budget, a 2 M top. Control: the desktop's 4 M top in L1.
 //   L3  a broken lod-meta.json falls back: 723068d7 is told it has a lod-meta.json (HEAD 200, the body an

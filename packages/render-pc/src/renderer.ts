@@ -192,8 +192,8 @@ export class SplatRenderer {
     /**
      * Grows whenever the scan's streamer makes progress: a file of the scan is requested or arrives (its
      * assets are added or loaded), or the engine's count of files in flight changes. The quality governor
-     * compares it frame to frame: a late frame while it grows is a streaming hitch, not overload
-     * (governor.ts onFrame `streamed`). Only ever increases.
+     * compares it frame to frame and counts the missed frames that came while it grew apart, for the
+     * report; they count like any other (governor.ts onFrame `streamed`). Only ever increases.
      */
     streamTicks = 0;
     /** what the scan on screen was loaded from (lodState) */

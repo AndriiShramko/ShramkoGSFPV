@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { FrameGovernor, LatencyGuard, DEFAULT_GOVERNOR, DEFAULT_LATENCY_GUARD, MAX_HITCH_SHARE, PERIOD_MIN_SAMPLES, inputToScreenMs } from '../src/governor';
+import { FrameGovernor, LatencyGuard, DEFAULT_GOVERNOR, DEFAULT_LATENCY_GUARD, PERIOD_MIN_SAMPLES, inputToScreenMs } from '../src/governor';
 
 /** Frames at a display period; `load(t)` says how many periods each frame takes (1 = on time). */
 function run(g: FrameGovernor, period: number, seconds: number, load: (t: number) => number, t0 = 0): { t: number; steps: number[] } {
@@ -96,11 +96,14 @@ describe('quality governor', () => {
     });
 });
 
-// v0.8 item 8 (docs/wip/v08-c.md): a streamed scan's hitches are not GPU overload. Measured on
-// ba7aa29d (evidence/2026-10-16/v08-lod-probe-before-2.json): after the reveal 154 files were requested
-// at once and frames of 124, 67 and 42 ms followed, then 34-41 ms frames while they arrived; the old
-// rule stepped 4 M -> 2 M and render scale 1 -> 0.6 in 2.5 s and needed 17 s to climb back.
-describe('quality governor: streaming hitches', () => {
+// v0.8 item 8, review R1 (docs/wip/v08-c.md): while a streamed scan streams, every missed frame counts.
+// The owner's coarse city (ba7aa29d) came from the governor's clock (the moment the callback ran, not the
+// frame's rAF timestamp) and a display period learned from a few short intervals; with those fixed the
+// still camera stepped down 0 times (evidence/2026-10-16/v08-lod-final.json L1). An excuse for "streaming
+// hitches" (above a third of the frames only) made 0-1 difference there, but hid an overload of up to
+// ~43 % dropped frames for as long as a city streams, which in a flight is all the time (the streamer
+// reported progress on 80-97 % of frames). It is gone: `streamed` is only counted (streamHitches).
+describe('quality governor: a streamed scan is judged like any other', () => {
     const P = 1000 / 30;
     /** 30 Hz frames for `n` frames; `late(i)`: periods frame i takes; `streamed(i)`, `held(i)`: its flags. */
     function feed(g: FrameGovernor, n: number, late: (i: number) => number, streamed: (i: number) => boolean, held: (i: number) => boolean = () => false): void {
@@ -113,61 +116,50 @@ describe('quality governor: streaming hitches', () => {
             g.onFrame(t, false, held(i), streamed(i));
         }
     }
-    // the reveal's burst, then every 4th frame 1.4 periods while files arrive (6 s)
-    const revealLate = (i: number) => (i < 3 ? [3.7, 2, 1.3][i] : i % 4 === 0 ? 1.4 : 1);
+    /** `pct` % of the frames missed (2 periods), spread evenly. */
+    const missing = (pct: number) => (i: number) => (Math.floor((i + 1) * pct / 100) > Math.floor(i * pct / 100) ? 2 : 1);
 
-    it('late frames while the streamer works are not counted: full quality stays', () => {
+    it.each([15, 20, 25, 30, 35, 40])('%i per cent of the frames missed while the streamer reports progress on every frame steps down', (pct) => {
         const g = new FrameGovernor();
-        // the streamer reports progress on the frame before each late one (its work lands in the next interval)
-        feed(g, 180, revealLate, (i) => i < 3 || (i + 1) % 4 === 0 || i % 4 === 0);
-        expect(g.changes).toBe(0);
-        expect(g.streamHitches).toBeGreaterThan(40);
-    });
-
-    it('a late frame right after the frame that streamed is excused too (the work lands in the next interval)', () => {
-        const g = new FrameGovernor();
-        // progress only on the frame BEFORE each late one
-        feed(g, 180, (i) => (i % 4 === 0 ? 1.4 : 1), (i) => (i + 1) % 4 === 0);
-        expect(g.changes).toBe(0);
-        // control: progress two frames before is too old: counted, 25 % missed, a step down
-        const old = new FrameGovernor();
-        feed(old, 180, (i) => (i % 4 === 0 ? 1.4 : 1), (i) => (i + 2) % 4 === 0);
-        expect(old.changes).toBeGreaterThan(0);
-    });
-
-    it('negative control: the same frames without the streaming flag step down (the v0.7 rule)', () => {
-        const g = new FrameGovernor();
-        feed(g, 180, revealLate, () => false);
-        expect(g.changes).toBeGreaterThan(0);
+        feed(g, 120, missing(pct), () => true);
         expect(g.step).toBeGreaterThan(0);
+        // every one of them was a missed frame while streaming: counted for the report, and counted by the governor
+        expect(g.streamHitches).toBeGreaterThan(0);
+        // control: the same frames on time do not
+        const calm = new FrameGovernor();
+        feed(calm, 120, () => 1, () => true);
+        expect(calm.changes).toBe(0);
+        expect(calm.streamHitches).toBe(0);
     });
 
-    it('a real overload while streaming still lowers the drawing: every frame late, progress on 1 frame in 4', () => {
-        const g = new FrameGovernor();
-        feed(g, 90, () => 2, (i) => i % 4 === 0);
-        expect(g.step).toBeGreaterThan(0);
+    it('the streaming flag changes nothing: the same frames with and without it give the same steps', () => {
+        for (const pct of [5, 15, 30, 60]) {
+            const a = new FrameGovernor();
+            const b = new FrameGovernor();
+            feed(a, 150, missing(pct), () => true);
+            feed(b, 150, missing(pct), () => false);
+            expect([a.step, a.changes], `${pct} %`).toEqual([b.step, b.changes]);
+        }
     });
 
-    it('a real overload while the streamer reports progress on EVERY frame still lowers it: hitches above a third count', () => {
-        // a GPU that cannot draw the budget: every frame late (2 periods), and streaming never stops
-        const g = new FrameGovernor();
-        feed(g, 90, () => 2, () => true);
-        expect(g.step).toBeGreaterThan(0);
-        // the same with every other frame held: half the frames, above the cap
-        const h = new FrameGovernor();
-        feed(h, 90, () => 1, () => true, (i) => i % 2 === 0);
-        expect(h.step).toBeGreaterThan(0);
-        expect(MAX_HITCH_SHARE).toBeCloseTo(1 / 3, 9);
-    });
-
-    it('frames held while streaming, below the cap, are hitches too (uploads keep the GPU busy); control: without streaming they count', () => {
-        // one frame in 5 held (20 %), as the reveal's uploads did; the streamer reports progress throughout
+    it('frames held while streaming count (the GPU is behind): 20 % held steps down', () => {
         const g = new FrameGovernor();
         feed(g, 150, () => 1, () => true, (i) => i % 5 === 0);
-        expect(g.changes).toBe(0);
-        expect(g.streamHitches).toBeGreaterThan(20);
+        expect(g.step).toBeGreaterThan(0);
+        // control: nothing held, nothing lowered
         const c = new FrameGovernor();
-        feed(c, 150, () => 1, () => false, (i) => i % 5 === 0);
+        feed(c, 150, () => 1, () => true);
+        expect(c.changes).toBe(0);
+    });
+
+    it('a reveal\'s short burst (one 124 ms frame, then on time) does not step down: under a tenth of a second\'s frames', () => {
+        // ba7aa29d's reveal on the rAF clock: one frame of ~3.7 periods, the rest on time while files arrive
+        const g = new FrameGovernor();
+        feed(g, 180, (i) => (i === 0 ? 3.7 : 1), () => true);
+        expect(g.changes).toBe(0);
+        // control: four missed frames in one second (13 %) do
+        const c = new FrameGovernor();
+        feed(c, 180, (i) => (i >= 30 && i < 34 ? 2 : 1), () => true);
         expect(c.step).toBeGreaterThan(0);
     });
 

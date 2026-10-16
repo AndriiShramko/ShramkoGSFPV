@@ -24,7 +24,7 @@ export interface LodReport extends LodState {
     governorBudgetM: number;
     /** the Quality setting's cap on the splat budget, millions (the top at full detail; Quality.settingBudgetMillions) */
     settingBudgetM: number;
-    /** late frames the governor did not count because the scan was streaming */
+    /** missed frames that came while the scan was streaming (counted by the governor like any other; FrameGovernor.streamHitches) */
     streamHitches: number;
 }
 
