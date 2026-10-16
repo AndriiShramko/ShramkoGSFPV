@@ -7,52 +7,52 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-16T11:44:26.386Z",
-    "gitHead": "ac493cd",
+    "date": "2026-10-16T12:22:48.398Z",
+    "gitHead": "097300d",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5332",
+  "site": "https://gsfpv.flyreelstudio.eu",
   "render": "on",
   "pass": true,
   "flight": {
     "phase": "rest",
     "flip": {
-      "startTick": 5813,
-      "endTick": 6263,
+      "startTick": 5693,
+      "endTick": 6143,
       "minUpY": -0.9999998748515548
     },
     "crash": {
-      "tick": 19330,
+      "tick": 19210,
       "speed": 8.565648919042033,
       "px": -4.899018282169666,
       "py": 2.1660896045074054,
       "pz": 0.8999678014733062
     },
-    "tick": 30178
+    "tick": 30124
   },
   "saved": {
-    "hash": "3bb3498a8453d44f059bbdef4cb29b92e5302e8bd4627a93150931bf39c46084",
-    "endTick": 30178,
+    "hash": "4bf28a5ef37c02fa0ac239ee545dacf02ba9153368451a5aa76f29eba932c3da",
+    "endTick": 30124,
     "records": 5631,
     "lives": 2
   },
   "newTab": {
-    "saved": "3bb3498a8453d44f059bbdef4cb29b92e5302e8bd4627a93150931bf39c46084",
-    "hash": "3bb3498a8453d44f059bbdef4cb29b92e5302e8bd4627a93150931bf39c46084",
-    "endTick": 30178,
+    "saved": "4bf28a5ef37c02fa0ac239ee545dacf02ba9153368451a5aa76f29eba932c3da",
+    "hash": "4bf28a5ef37c02fa0ac239ee545dacf02ba9153368451a5aa76f29eba932c3da",
+    "endTick": 30124,
     "lives": 2,
     "refused": null
   },
   "cpuThrottle": {
     "x1": {
-      "stepsPerWallSecond": 998.6019572836115,
+      "stepsPerWallSecond": 998.8513209749252,
       "hitches": 0
     },
     "x4": {
-      "stepsPerWallSecond": 996.0179193628671,
+      "stepsPerWallSecond": 996.1151509055312,
       "hitches": 0
     }
   },
@@ -60,18 +60,18 @@
     "atTick": 10000,
     "channel": "throttle",
     "lsb": {
-      "hash": "0b90e683bffcf03f7d8a3374597e26cd15d4bb5c4fdc3a6eb847bbed14663ef0",
+      "hash": "3fb9927c1e3b8a224869736a3c08da4866028469fda3055f751fcd0a0aa05eb3",
       "differs": true,
-      "maxDivergenceM": 0.008610047031937304,
-      "tamperedValue": -0.364230751991272,
+      "maxDivergenceM": 0.01642754251486738,
+      "tamperedValue": -0.3749227821826935,
       "fired": true
     },
     "twitch": {
       "delta": 0.05,
-      "hash": "8510c0fd762641eb7f4189da8d9e4b3bb9776acb521a8c69628e94446c08888c",
+      "hash": "bc6e334c0312518ae0db4924a19479dfeb60d9e24ab06d2c8b9791a55e29f693",
       "differs": true,
-      "maxDivergenceM": 0.35685036998713815,
-      "tamperedValue": -0.364230751991272,
+      "maxDivergenceM": 0.3455526135545554,
+      "tamperedValue": -0.3749227821826935,
       "fired": true
     }
   }
