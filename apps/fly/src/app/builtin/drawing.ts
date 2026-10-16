@@ -9,7 +9,7 @@
 import type { PrefChange } from '@gsfpv/prefs';
 import { t } from '../../i18n';
 import type { Feature, FlightContext } from '../context';
-import { drawingFor, drawingMode, handheld, requestOf } from '../drawing';
+import { drawingFor, drawingMode, handheld, mobile, requestOf } from '../drawing';
 
 /** How long the HUD line stays, ms: a refused request is read once, the "on" line is a reminder. */
 const NOTE_MS = 7000;
@@ -23,7 +23,7 @@ function apply(ctx: FlightContext, announce: boolean): void {
     ctx.quality.setTopBudget(d.budgetM);
     // a scene switch set the shared renderer's budget to the top while it loaded: back to the governor's step
     ctx.quality.apply();
-    ctx.hook.drawing = { scene: ctx.scene.id, mode: drawingMode(ctx.prefs), request: request ?? null, stochastic: d.stochastic, budgetM: d.budgetM, note: d.note, engineStochastic: engine, engineBudgetM: r.splatBudgetMillions, handheld, webgpu: r.isWebGPU };
+    ctx.hook.drawing = { scene: ctx.scene.id, mode: drawingMode(ctx.prefs), request: request ?? null, stochastic: d.stochastic, budgetM: d.budgetM, note: d.note, engineStochastic: engine, engineBudgetM: r.splatBudgetMillions, handheld, mobile, webgpu: r.isWebGPU };
     if (!announce) return;
     // the note names who asked and what was refused (render-pc DrawingNote); a budget note quotes both numbers
     if (d.note) ctx.hud.flash(t(`drawing.note.${d.note}`, { budget: request?.budgetM ?? d.budgetM, top: d.budgetM }), NOTE_MS);

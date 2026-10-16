@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { FrameGovernor, LatencyGuard, DEFAULT_LATENCY_GUARD, inputToScreenMs } from '../src/governor';
+import { FrameGovernor, LatencyGuard, DEFAULT_GOVERNOR, DEFAULT_LATENCY_GUARD, PERIOD_MIN_SAMPLES, inputToScreenMs } from '../src/governor';
 
 /** Frames at a display period; `load(t)` says how many periods each frame takes (1 = on time). */
 function run(g: FrameGovernor, period: number, seconds: number, load: (t: number) => number, t0 = 0): { t: number; steps: number[] } {
@@ -28,8 +28,10 @@ describe('quality governor', () => {
     it('steps down within ~1 s when half the frames are missed, and back up after a calm 5 s', () => {
         const g = new FrameGovernor();
         const p = 1000 / 60;
+        // the display period is learned first (PERIOD_MIN_SAMPLES frames, v0.8): 1 s at 60 Hz
+        const calm = run(g, p, PERIOD_MIN_SAMPLES / 60, () => 1);
         let k = 0;
-        const heavy = run(g, p, 3, () => (k++ % 2 ? 2 : 1)); // every other frame takes two periods
+        const heavy = run(g, p, 3, () => (k++ % 2 ? 2 : 1), calm.t); // every other frame takes two periods
         expect(g.step).toBeGreaterThan(0);
         const firstDown = heavy.steps.findIndex((s) => s > 0);
         expect(firstDown * p * 1.5).toBeLessThan(1500);
@@ -57,12 +59,13 @@ describe('quality governor', () => {
     });
 
     it('frames the renderer held for the GPU queue are missed frames although rAF stays on time', () => {
-        // the frame cap (SplatRenderer.maxFramesInFlight) holds every other picture for 3 s: the
-        // animation frames still come every period, only the 'held' flag says the display repeated one
+        // the frame cap (SplatRenderer.maxFramesInFlight) holds every other picture for 3 s (after the
+        // 2 s the display period is learned in, v0.8): the animation frames still come every period,
+        // only the 'held' flag says the display repeated one
         const heldEvery = (g: FrameGovernor, flag: boolean) => {
             const p = 1000 / 30;
             g.onFrame(0);
-            for (let i = 1; i <= 90; i++) g.onFrame(i * p, false, flag && i % 2 === 0);
+            for (let i = 1; i <= 150; i++) g.onFrame(i * p, false, flag && i > PERIOD_MIN_SAMPLES && i % 2 === 0);
         };
         const held = new FrameGovernor();
         heldEvery(held, true);
@@ -90,6 +93,113 @@ describe('quality governor', () => {
         const counted = new FrameGovernor(); // control: the same frames, not excused
         skipsEvery(counted, false);
         expect(counted.changes).toBeGreaterThan(0);
+    });
+});
+
+// v0.8 item 8, review R1 (docs/wip/v08-c.md): while a streamed scan streams, every missed frame counts.
+// The owner's coarse city (ba7aa29d) came from the governor's clock (the moment the callback ran, not the
+// frame's rAF timestamp) and a display period learned from a few short intervals; with those fixed the
+// still camera stepped down 0 times (evidence/2026-10-16/v08-lod-final.json L1). An excuse for "streaming
+// hitches" (above a third of the frames only) made 0-1 difference there, but hid an overload of up to
+// ~43 % dropped frames for as long as a city streams, which in a flight is all the time (the streamer
+// reported progress on 80-97 % of frames). It is gone: `streamed` is only counted (streamHitches).
+describe('quality governor: a streamed scan is judged like any other', () => {
+    const P = 1000 / 30;
+    /** 30 Hz frames for `n` frames; `late(i)`: periods frame i takes; `streamed(i)`, `held(i)`: its flags. */
+    function feed(g: FrameGovernor, n: number, late: (i: number) => number, streamed: (i: number) => boolean, held: (i: number) => boolean = () => false): void {
+        let t = 0;
+        // 2 s of calm first: the display period is learned before anything happens
+        g.onFrame(t);
+        for (let i = 0; i < 60; i++) g.onFrame(t += P);
+        for (let i = 0; i < n; i++) {
+            t += P * late(i);
+            g.onFrame(t, false, held(i), streamed(i));
+        }
+    }
+    /** `pct` % of the frames missed (2 periods), spread evenly. */
+    const missing = (pct: number) => (i: number) => (Math.floor((i + 1) * pct / 100) > Math.floor(i * pct / 100) ? 2 : 1);
+
+    it.each([15, 20, 25, 30, 35, 40])('%i per cent of the frames missed while the streamer reports progress on every frame steps down', (pct) => {
+        const g = new FrameGovernor();
+        feed(g, 120, missing(pct), () => true);
+        expect(g.step).toBeGreaterThan(0);
+        // every one of them was a missed frame while streaming: counted for the report, and counted by the governor
+        expect(g.streamHitches).toBeGreaterThan(0);
+        // control: the same frames on time do not
+        const calm = new FrameGovernor();
+        feed(calm, 120, () => 1, () => true);
+        expect(calm.changes).toBe(0);
+        expect(calm.streamHitches).toBe(0);
+    });
+
+    it('the streaming flag changes nothing: the same frames with and without it give the same steps', () => {
+        for (const pct of [5, 15, 30, 60]) {
+            const a = new FrameGovernor();
+            const b = new FrameGovernor();
+            feed(a, 150, missing(pct), () => true);
+            feed(b, 150, missing(pct), () => false);
+            expect([a.step, a.changes], `${pct} %`).toEqual([b.step, b.changes]);
+        }
+    });
+
+    it('frames held while streaming count (the GPU is behind): 20 % held steps down', () => {
+        const g = new FrameGovernor();
+        feed(g, 150, () => 1, () => true, (i) => i % 5 === 0);
+        expect(g.step).toBeGreaterThan(0);
+        // control: nothing held, nothing lowered
+        const c = new FrameGovernor();
+        feed(c, 150, () => 1, () => true);
+        expect(c.changes).toBe(0);
+    });
+
+    it('a reveal\'s short burst (one 124 ms frame, then on time) does not step down: under a tenth of a second\'s frames', () => {
+        // ba7aa29d's reveal on the rAF clock: one frame of ~3.7 periods, the rest on time while files arrive
+        const g = new FrameGovernor();
+        feed(g, 180, (i) => (i === 0 ? 3.7 : 1), () => true);
+        expect(g.changes).toBe(0);
+        // control: four missed frames in one second (13 %) do
+        const c = new FrameGovernor();
+        feed(c, 180, (i) => (i >= 30 && i < 34 ? 2 : 1), () => true);
+        expect(c.step).toBeGreaterThan(0);
+    });
+
+    it('a single held frame right after judging starts is not a share of a second: the first step needs a whole window', () => {
+        // the governor is made at the reveal: 4 frames later one held frame was 25 % of the log, a step down
+        const P = 1000 / 30;
+        const g = new FrameGovernor();
+        let t = 0;
+        g.onFrame(t);
+        for (let i = 1; i <= PERIOD_MIN_SAMPLES + 60; i++) g.onFrame(t += P, false, i === PERIOD_MIN_SAMPLES + 3);
+        expect(g.changes).toBe(0);
+        // control: 4 held frames a second after judging started (13 % of the window) are a step down
+        const c = new FrameGovernor();
+        t = 0;
+        c.onFrame(t);
+        for (let i = 1; i <= PERIOD_MIN_SAMPLES + 60; i++) c.onFrame(t += P, false, i >= PERIOD_MIN_SAMPLES + 40 && i < PERIOD_MIN_SAMPLES + 44);
+        expect(c.step).toBe(1);
+    });
+
+    it('the display period is learned from enough frames before any frame is judged', () => {
+        // measured on ba7aa29d: right after the reveal the period read 9-16 ms on a 30 Hz screen (a few
+        // short intervals), so on-time frames read as missed and the drawing stepped down
+        const P = 1000 / 30;
+        const shortFirst = (g: FrameGovernor) => {
+            let t = 0;
+            g.onFrame(t);
+            // two short intervals first (a catch-up after a late callback, a 60 Hz BeginFrame), then on time
+            g.onFrame(t += 5.5);
+            g.onFrame(t += 16.5);
+            for (let i = 0; i < 300; i++) g.onFrame(t += P, false, false, false);
+        };
+        const g = new FrameGovernor();
+        shortFirst(g);
+        expect(g.changes).toBe(0);
+        expect(g.displayPeriodMs).toBeCloseTo(P, 3);
+        expect(PERIOD_MIN_SAMPLES).toBe(60);
+        // control: judging from the first interval (the v0.7 governor) takes 5.5 ms for the period and steps down
+        const old = new FrameGovernor(undefined, { ...DEFAULT_GOVERNOR, periodMinSamples: 1 });
+        shortFirst(old);
+        expect(old.changes).toBeGreaterThan(0);
     });
 });
 

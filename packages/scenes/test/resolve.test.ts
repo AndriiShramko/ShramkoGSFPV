@@ -101,6 +101,8 @@ describe('resolveScene against the recorded CDN', () => {
         expect(s.version).toBe(v);
         expect(s.contentKind).toBe(kind);
         expect(s.contentUrl).toBe(`${CDN}/${id}/v${v}/${kind}.json`);
+        // every recorded folder holds one content file: it is the whole list, confirmed
+        expect(s.content).toEqual([{ url: s.contentUrl, kind, verified: true }]);
         // walls come from the CDN, from the same version folder
         expect(s.collisionUrl).toBe(walls ? `${CDN}/${id}/v${v}/scene.voxel.json` : null);
         expect(s.settings).toEqual(LAYOUT.scenes[id].bodies[String(v)]);
@@ -205,6 +207,29 @@ describe('resolveScene when requests fail (faults injected into the recording)',
         const c = cdn({ '3994d932/v2/scene.voxel.json': [500, 500] });
         const { s } = await c.run(resolveScene('3994d932', c.f));
         expect(s!.collisionUrl).toBe(`${CDN}/3994d932/v2/scene.voxel.json`);
+    });
+
+    it('v0.8 item 8: a folder with both files streams the levels of detail and keeps meta.json as the fallback', async () => {
+        // no recorded scene has both yet (SuperSplat is moving uploads to streamed SOG): 3994d932 v2 is told it has lod-meta.json too
+        const c = cdn({ '3994d932/v2/lod-meta.json': [200] });
+        const { s } = await c.run(resolveScene('3994d932', c.f));
+        expect(s!.contentKind).toBe('lod-meta');
+        expect(s!.content).toEqual([
+            { url: `${CDN}/3994d932/v2/lod-meta.json`, kind: 'lod-meta', verified: true },
+            { url: `${CDN}/3994d932/v2/meta.json`, kind: 'meta', verified: true }
+        ]);
+    });
+
+    it('v0.8 item 8: a lod-meta.json lookup that does not answer is still tried first, before meta.json', async () => {
+        // the old rule took the first confirmed file: meta.json, and the scene silently lost its levels of detail
+        const c = cdn({ '3994d932/v2/lod-meta.json': [503, 503] });
+        const { s } = await c.run(resolveScene('3994d932', c.f));
+        expect(s!.content.map((x) => [x.kind, x.verified])).toEqual([['lod-meta', false], ['meta', true]]);
+        expect(s!.contentKind).toBe('lod-meta');
+        // control: the same scene without the fault has only meta.json (lod-meta.json denied with a 403)
+        const plain = cdn();
+        const { s: p } = await plain.run(resolveScene('3994d932', plain.f));
+        expect(p!.content.map((x) => x.kind)).toEqual(['meta']);
     });
 
     it('trade-off: with a stale v1 AND v2 silent twice, the older edit opens instead of an error', async () => {

@@ -179,7 +179,9 @@ export class Hud {
     // F3: display rate and estimated stick -> screen delay, then a hint when the screen is slow
     private statsMain = h('div', { 'data-testid': 'latency-line' });
     private statsHint = h('div', { 'data-testid': 'display-hint', hidden: true });
-    private frameStats = h('div', { class: 'osd frame hidden' }, this.statsMain, this.statsHint);
+    // F3: the levels of detail at work (app/lod.ts lodLine, written by app/builtin/hud.ts)
+    private statsDetail = h('div', { 'data-testid': 'detail-line', class: 'detail', hidden: true });
+    private frameStats = h('div', { class: 'osd frame hidden' }, this.statsMain, this.statsDetail, this.statsHint);
     private card = new ArmCard(() => this.onArm?.());
     private keys = new KeyCard();
     private last = 0;
@@ -251,6 +253,17 @@ export class Hud {
 
     toggleFrameStats(): void {
         this.frameStats.classList.toggle('hidden');
+    }
+
+    /** The F3 frame line is on screen. */
+    get frameStatsShown(): boolean {
+        return !this.frameStats.classList.contains('hidden');
+    }
+
+    /** The F3 line about the levels of detail (app/lod.ts lodLine); null hides it. */
+    setDetailLine(text: string | null): void {
+        this.statsDetail.hidden = text === null;
+        if (text !== null && this.statsDetail.textContent !== text) this.statsDetail.textContent = text;
     }
 
     update(s: FlightSession, block: ArmBlock, frameMs: { p50: number; p99: number }, view?: ArmView): void {

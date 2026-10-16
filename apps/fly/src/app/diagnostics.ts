@@ -7,6 +7,7 @@
 import type { SplatRenderer } from '@gsfpv/render-pc';
 import { droneOf } from './prefs';
 import { savedFlight } from './logs';
+import { lodReport } from './lod';
 import { q } from './env';
 import type { FlightContext } from './context';
 
@@ -145,6 +146,8 @@ export async function collectDiagnostics(ctx: FlightContext, picture: boolean): 
         settings: store.explicitList(at),
         errors: recentErrors(),
         frames: { renderHz: Math.round(fs.hz * 10) / 10, p50ms: Math.round(fs.p50 * 10) / 10, p99ms: Math.round(fs.p99 * 10) / 10, held: ctx.renderer.framesHeld },
+        // the levels of detail at work (v0.8 item 8): what was loaded, levels, mode, splats, budget, governor
+        lod: lodReport(ctx),
         flightLog: logText.length <= LOG_MAX_CHARS ? flight : { omitted: 'too long', chars: logText.length, records: flight.records },
         screenshot: shot ? shot.toDataURL('image/jpeg', 0.7) : null
     };

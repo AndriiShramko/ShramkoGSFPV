@@ -1,0 +1,9 @@
+{
+  "lod.line.auto": "Levels of detail: {levels}, chosen by distance · {drawn} of {budget} M splats · {scale} % resolution",
+  "lod.line.coarse": "Levels of detail: {levels}, the coarsest while the scan loads · {drawn} of {budget} M splats · {scale} % resolution",
+  "lod.line.final": "Levels of detail: {levels}, the finest everywhere (cinema mode) · {drawn} of {budget} M splats · {scale} % resolution",
+  "lod.line.single": "One level of detail (this scan has no others) · {drawn} of {budget} M splats · {scale} % resolution",
+  "lod.lowered": "· lowered from {top} M to hold the frame rate",
+  "lod.capped": "· kept below {top} M by the setting Stable frame ↔ detail",
+  "lod.fallback": "· the streamed file did not open, the single file is shown"
+}

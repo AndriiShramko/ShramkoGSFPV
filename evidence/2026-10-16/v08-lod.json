@@ -1,0 +1,1364 @@
+{
+  "name": "v08-lod",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-16T14:26:59.775Z",
+    "gitHead": "9331cc8",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5382",
+  "siteBefore": "http://127.0.0.1:5381",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "holdS": 20,
+  "pass": {
+    "L1": true,
+    "L2": true,
+    "L3": true,
+    "L4": true
+  },
+  "items": {
+    "L1": {
+      "after": {
+        "site": "http://127.0.0.1:5382",
+        "atReveal": {
+          "status": "ready",
+          "errorCode": null,
+          "lod": {
+            "kind": "lod-meta",
+            "levels": 10,
+            "range": [
+              0,
+              9
+            ],
+            "mode": "auto",
+            "drawn": 58994,
+            "budgetM": 4,
+            "loading": 154,
+            "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/ba7aa29d/v1/lod-meta.json",
+            "contentFailures": [],
+            "renderScale": 1,
+            "topBudgetM": 4,
+            "governorStep": 0,
+            "streamHitches": 0
+          },
+          "contentKind": "lod-meta",
+          "rangeMin": 0,
+          "rangeMax": 1000,
+          "budgetM": 4,
+          "scale": 1,
+          "step": 0,
+          "top": 4,
+          "changes": 0,
+          "hitches": 0,
+          "drawn": 58994,
+          "perLevel": {
+            "9": 58994
+          },
+          "visibleMs": 1816.9000000953674,
+          "firstFrameMs": 597.6000000238419,
+          "detailLine": null
+        },
+        "samples": [
+          {
+            "s": 1,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 475244,
+            "perLevel": {
+              "4": 405578,
+              "5": 21239,
+              "9": 48427
+            }
+          },
+          {
+            "s": 2,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1004520,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "7": 11574,
+              "8": 7673,
+              "9": 30086
+            }
+          },
+          {
+            "s": 3,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1046964,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 36084,
+              "6": 27008,
+              "7": 21911,
+              "8": 7673,
+              "9": 20340
+            }
+          },
+          {
+            "s": 4,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1294051,
+            "perLevel": {
+              "3": 345295,
+              "4": 804496,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 11730
+            }
+          },
+          {
+            "s": 5,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1703466,
+            "perLevel": {
+              "3": 725570,
+              "4": 838585,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 6781
+            }
+          },
+          {
+            "s": 6,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 2091078,
+            "perLevel": {
+              "3": 1116156,
+              "4": 838585,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 3807
+            }
+          },
+          {
+            "s": 7,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 2653627,
+            "perLevel": {
+              "2": 485459,
+              "3": 1193786,
+              "4": 839582,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 2004
+            }
+          },
+          {
+            "s": 8,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 2958230,
+            "perLevel": {
+              "2": 790192,
+              "3": 1194688,
+              "4": 839582,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 972
+            }
+          },
+          {
+            "s": 9,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3202121,
+            "perLevel": {
+              "2": 1038276,
+              "3": 1189244,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673,
+              "9": 490
+            }
+          },
+          {
+            "s": 10,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3545777,
+            "perLevel": {
+              "1": 339099,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673,
+              "9": 253
+            }
+          },
+          {
+            "s": 11,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3787892,
+            "perLevel": {
+              "0": 121487,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673,
+              "9": 12
+            }
+          },
+          {
+            "s": 12,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3923895,
+            "perLevel": {
+              "0": 257502,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673
+            }
+          },
+          {
+            "s": 13,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3923895,
+            "perLevel": {
+              "0": 257502,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673
+            }
+          },
+          {
+            "s": 14,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3923895,
+            "perLevel": {
+              "0": 257502,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673
+            }
+          },
+          {
+            "s": 15,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3923895,
+            "perLevel": {
+              "0": 257502,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673
+            }
+          },
+          {
+            "s": 16,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3923895,
+            "perLevel": {
+              "0": 257502,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673
+            }
+          },
+          {
+            "s": 17,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3923895,
+            "perLevel": {
+              "0": 257502,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673
+            }
+          },
+          {
+            "s": 18,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3923895,
+            "perLevel": {
+              "0": 257502,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673
+            }
+          },
+          {
+            "s": 19,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3923895,
+            "perLevel": {
+              "0": 257502,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673
+            }
+          },
+          {
+            "s": 20,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 3923895,
+            "perLevel": {
+              "0": 257502,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673
+            }
+          }
+        ],
+        "end": {
+          "status": "ready",
+          "errorCode": null,
+          "lod": {
+            "kind": "lod-meta",
+            "levels": 10,
+            "range": [
+              0,
+              9
+            ],
+            "mode": "auto",
+            "drawn": 3923895,
+            "budgetM": 4,
+            "loading": 0,
+            "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/ba7aa29d/v1/lod-meta.json",
+            "contentFailures": [],
+            "renderScale": 1,
+            "topBudgetM": 4,
+            "governorStep": 0,
+            "streamHitches": 0
+          },
+          "contentKind": "lod-meta",
+          "rangeMin": 0,
+          "rangeMax": 1000,
+          "budgetM": 4,
+          "scale": 1,
+          "step": 0,
+          "top": 4,
+          "changes": 0,
+          "hitches": 0,
+          "drawn": 3923895,
+          "perLevel": {
+            "0": 257502,
+            "1": 459968,
+            "2": 1029780,
+            "3": 1202534,
+            "4": 841694,
+            "5": 75630,
+            "6": 26607,
+            "7": 22507,
+            "8": 7673
+          },
+          "visibleMs": 1816.9000000953674,
+          "firstFrameMs": 597.6000000238419,
+          "detailLine": "Levels of detail: 10, chosen by distance \u00b7 3.9 of 4.0 M splats \u00b7 100 % resolution"
+        },
+        "finestAtEnd": 0,
+        "lowered": false,
+        "pageerrors": []
+      },
+      "before": {
+        "site": "http://127.0.0.1:5381",
+        "atReveal": {
+          "status": "ready",
+          "errorCode": null,
+          "lod": null,
+          "contentKind": "lod-meta",
+          "rangeMin": 0,
+          "rangeMax": 1000,
+          "budgetM": 3,
+          "scale": 0.85,
+          "step": 1,
+          "top": 4,
+          "changes": 1,
+          "drawn": 58994,
+          "perLevel": {
+            "9": 58994
+          },
+          "visibleMs": 1661.1999999284744,
+          "firstFrameMs": 411,
+          "detailLine": null
+        },
+        "samples": [
+          {
+            "s": 1,
+            "budgetM": 2.5,
+            "scale": 0.7,
+            "step": 2,
+            "changes": 2,
+            "drawn": 842482,
+            "perLevel": {
+              "3": 159627,
+              "4": 656388,
+              "5": 36533,
+              "9": 44162
+            }
+          },
+          {
+            "s": 2,
+            "budgetM": 2,
+            "scale": 0.6,
+            "step": 3,
+            "changes": 3,
+            "drawn": 914097,
+            "perLevel": {
+              "3": 160703,
+              "4": 719812,
+              "5": 42943,
+              "7": 19685,
+              "8": 15395,
+              "9": 27227
+            }
+          },
+          {
+            "s": 3,
+            "budgetM": 1.5,
+            "scale": 0.5,
+            "step": 4,
+            "changes": 4,
+            "drawn": 986836,
+            "perLevel": {
+              "3": 160703,
+              "4": 567461,
+              "5": 135128,
+              "6": 89790,
+              "7": 13232,
+              "8": 20468,
+              "9": 17894
+            }
+          },
+          {
+            "s": 4,
+            "budgetM": 1.5,
+            "scale": 0.5,
+            "step": 4,
+            "changes": 4,
+            "drawn": 958623,
+            "perLevel": {
+              "3": 1076,
+              "4": 397997,
+              "5": 421293,
+              "6": 95750,
+              "7": 13232,
+              "8": 20468,
+              "9": 8807
+            }
+          },
+          {
+            "s": 5,
+            "budgetM": 1.5,
+            "scale": 0.5,
+            "step": 4,
+            "changes": 4,
+            "drawn": 1213273,
+            "perLevel": {
+              "3": 240559,
+              "4": 415638,
+              "5": 420087,
+              "6": 95516,
+              "7": 13765,
+              "8": 20468,
+              "9": 7240
+            }
+          },
+          {
+            "s": 6,
+            "budgetM": 1.5,
+            "scale": 0.5,
+            "step": 4,
+            "changes": 4,
+            "drawn": 1454869,
+            "perLevel": {
+              "0": 121487,
+              "2": 68102,
+              "3": 291862,
+              "4": 417791,
+              "5": 418629,
+              "6": 95608,
+              "7": 14091,
+              "8": 20468,
+              "9": 6831
+            }
+          },
+          {
+            "s": 7,
+            "budgetM": 1.5,
+            "scale": 0.5,
+            "step": 4,
+            "changes": 4,
+            "drawn": 1454869,
+            "perLevel": {
+              "0": 121487,
+              "2": 68102,
+              "3": 291862,
+              "4": 417791,
+              "5": 418629,
+              "6": 95608,
+              "7": 14091,
+              "8": 20468,
+              "9": 6831
+            }
+          },
+          {
+            "s": 8,
+            "budgetM": 1.5,
+            "scale": 0.5,
+            "step": 4,
+            "changes": 4,
+            "drawn": 1454869,
+            "perLevel": {
+              "0": 121487,
+              "2": 68102,
+              "3": 291862,
+              "4": 417791,
+              "5": 418629,
+              "6": 95608,
+              "7": 14091,
+              "8": 20468,
+              "9": 6831
+            }
+          },
+          {
+            "s": 9,
+            "budgetM": 2,
+            "scale": 0.6,
+            "step": 3,
+            "changes": 5,
+            "drawn": 1823140,
+            "perLevel": {
+              "0": 121487,
+              "2": 114037,
+              "3": 546738,
+              "4": 519788,
+              "5": 438930,
+              "6": 41963,
+              "7": 16196,
+              "8": 18403,
+              "9": 5598
+            }
+          },
+          {
+            "s": 10,
+            "budgetM": 2,
+            "scale": 0.6,
+            "step": 3,
+            "changes": 5,
+            "drawn": 1854489,
+            "perLevel": {
+              "0": 121487,
+              "2": 133387,
+              "3": 540030,
+              "4": 556565,
+              "5": 420683,
+              "6": 41963,
+              "7": 16502,
+              "8": 18274,
+              "9": 5598
+            }
+          },
+          {
+            "s": 11,
+            "budgetM": 2,
+            "scale": 0.6,
+            "step": 3,
+            "changes": 5,
+            "drawn": 1943234,
+            "perLevel": {
+              "0": 121487,
+              "1": 59461,
+              "2": 212682,
+              "3": 490019,
+              "4": 556565,
+              "5": 420683,
+              "6": 41963,
+              "7": 16502,
+              "8": 18274,
+              "9": 5598
+            }
+          },
+          {
+            "s": 12,
+            "budgetM": 2,
+            "scale": 0.6,
+            "step": 3,
+            "changes": 5,
+            "drawn": 1943234,
+            "perLevel": {
+              "0": 121487,
+              "1": 59461,
+              "2": 212682,
+              "3": 490019,
+              "4": 556565,
+              "5": 420683,
+              "6": 41963,
+              "7": 16502,
+              "8": 18274,
+              "9": 5598
+            }
+          },
+          {
+            "s": 13,
+            "budgetM": 2,
+            "scale": 0.6,
+            "step": 3,
+            "changes": 5,
+            "drawn": 1943234,
+            "perLevel": {
+              "0": 121487,
+              "1": 59461,
+              "2": 212682,
+              "3": 490019,
+              "4": 556565,
+              "5": 420683,
+              "6": 41963,
+              "7": 16502,
+              "8": 18274,
+              "9": 5598
+            }
+          },
+          {
+            "s": 14,
+            "budgetM": 2.5,
+            "scale": 0.7,
+            "step": 2,
+            "changes": 6,
+            "drawn": 2410993,
+            "perLevel": {
+              "0": 121487,
+              "1": 59461,
+              "2": 401347,
+              "3": 735139,
+              "4": 724089,
+              "5": 300643,
+              "6": 28424,
+              "7": 26158,
+              "8": 12108,
+              "9": 2137
+            }
+          },
+          {
+            "s": 15,
+            "budgetM": 2.5,
+            "scale": 0.7,
+            "step": 2,
+            "changes": 6,
+            "drawn": 2449244,
+            "perLevel": {
+              "0": 121487,
+              "1": 59461,
+              "2": 443264,
+              "3": 745984,
+              "4": 708695,
+              "5": 299929,
+              "6": 32565,
+              "7": 23614,
+              "8": 12108,
+              "9": 2137
+            }
+          },
+          {
+            "s": 16,
+            "budgetM": 2.5,
+            "scale": 0.7,
+            "step": 2,
+            "changes": 6,
+            "drawn": 2449244,
+            "perLevel": {
+              "0": 121487,
+              "1": 59461,
+              "2": 443264,
+              "3": 745984,
+              "4": 708695,
+              "5": 299929,
+              "6": 32565,
+              "7": 23614,
+              "8": 12108,
+              "9": 2137
+            }
+          },
+          {
+            "s": 17,
+            "budgetM": 2.5,
+            "scale": 0.7,
+            "step": 2,
+            "changes": 6,
+            "drawn": 2449244,
+            "perLevel": {
+              "0": 121487,
+              "1": 59461,
+              "2": 443264,
+              "3": 745984,
+              "4": 708695,
+              "5": 299929,
+              "6": 32565,
+              "7": 23614,
+              "8": 12108,
+              "9": 2137
+            }
+          },
+          {
+            "s": 18,
+            "budgetM": 2.5,
+            "scale": 0.7,
+            "step": 2,
+            "changes": 6,
+            "drawn": 2449244,
+            "perLevel": {
+              "0": 121487,
+              "1": 59461,
+              "2": 443264,
+              "3": 745984,
+              "4": 708695,
+              "5": 299929,
+              "6": 32565,
+              "7": 23614,
+              "8": 12108,
+              "9": 2137
+            }
+          },
+          {
+            "s": 19,
+            "budgetM": 3,
+            "scale": 0.85,
+            "step": 1,
+            "changes": 7,
+            "drawn": 2837034,
+            "perLevel": {
+              "0": 121487,
+              "1": 112418,
+              "2": 597634,
+              "3": 849247,
+              "4": 919436,
+              "5": 177539,
+              "6": 23134,
+              "7": 26667,
+              "8": 8381,
+              "9": 1091
+            }
+          },
+          {
+            "s": 20,
+            "budgetM": 3,
+            "scale": 0.85,
+            "step": 1,
+            "changes": 7,
+            "drawn": 2887661,
+            "perLevel": {
+              "0": 121487,
+              "1": 112418,
+              "2": 597634,
+              "3": 937613,
+              "4": 881439,
+              "5": 177539,
+              "6": 23134,
+              "7": 26667,
+              "8": 9730
+            }
+          }
+        ],
+        "end": {
+          "status": "ready",
+          "errorCode": null,
+          "lod": null,
+          "contentKind": "lod-meta",
+          "rangeMin": 0,
+          "rangeMax": 1000,
+          "budgetM": 3,
+          "scale": 0.85,
+          "step": 1,
+          "top": 4,
+          "changes": 7,
+          "drawn": 2887661,
+          "perLevel": {
+            "0": 121487,
+            "1": 112418,
+            "2": 597634,
+            "3": 937613,
+            "4": 881439,
+            "5": 177539,
+            "6": 23134,
+            "7": 26667,
+            "8": 9730
+          },
+          "visibleMs": 1661.1999999284744,
+          "firstFrameMs": 411,
+          "detailLine": null
+        },
+        "finestAtEnd": 0,
+        "lowered": true,
+        "pageerrors": []
+      },
+      "okAfter": true,
+      "controlFired": true
+    },
+    "L2": {
+      "atReveal": {
+        "status": "ready",
+        "errorCode": null,
+        "lod": {
+          "kind": "lod-meta",
+          "levels": 10,
+          "range": [
+            0,
+            9
+          ],
+          "mode": "auto",
+          "drawn": 58994,
+          "budgetM": 2,
+          "loading": 112,
+          "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/ba7aa29d/v1/lod-meta.json",
+          "contentFailures": [],
+          "renderScale": 1,
+          "topBudgetM": 2,
+          "governorStep": 0,
+          "streamHitches": 0
+        },
+        "contentKind": "lod-meta",
+        "rangeMin": 0,
+        "rangeMax": 1000,
+        "budgetM": 2,
+        "scale": 1,
+        "step": 0,
+        "top": 2,
+        "changes": 0,
+        "hitches": 0,
+        "drawn": 58994,
+        "perLevel": {
+          "9": 58994
+        },
+        "visibleMs": 1496.0999999046326,
+        "firstFrameMs": 452.2999999523163,
+        "detailLine": null
+      },
+      "end": {
+        "status": "ready",
+        "errorCode": null,
+        "lod": {
+          "kind": "lod-meta",
+          "levels": 10,
+          "range": [
+            0,
+            9
+          ],
+          "mode": "auto",
+          "drawn": 736688,
+          "budgetM": 2,
+          "loading": 44,
+          "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/ba7aa29d/v1/lod-meta.json",
+          "contentFailures": [],
+          "renderScale": 1,
+          "topBudgetM": 2,
+          "governorStep": 0,
+          "streamHitches": 0
+        },
+        "contentKind": "lod-meta",
+        "rangeMin": 0,
+        "rangeMax": 1000,
+        "budgetM": 2,
+        "scale": 1,
+        "step": 0,
+        "top": 2,
+        "changes": 0,
+        "hitches": 0,
+        "drawn": 736688,
+        "perLevel": {
+          "4": 225106,
+          "5": 420683,
+          "6": 41963,
+          "7": 16502,
+          "8": 18274,
+          "9": 14160
+        },
+        "visibleMs": 1496.0999999046326,
+        "firstFrameMs": 452.2999999523163,
+        "detailLine": null
+      },
+      "pageerrors": []
+    },
+    "L3": {
+      "fallback": {
+        "atReveal": {
+          "status": "ready",
+          "errorCode": null,
+          "lod": {
+            "kind": "meta",
+            "levels": 1,
+            "range": [
+              0,
+              0
+            ],
+            "mode": "single",
+            "drawn": 2144439,
+            "budgetM": 4,
+            "loading": 0,
+            "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/723068d7/v1/meta.json",
+            "contentFailures": [
+              {
+                "url": "https://d28zzqy0iyovbz.cloudfront.net/723068d7/v1/lod-meta.json",
+                "error": "lod-meta.json is not an octree the engine can open: lodLevels undefined is not a whole number from 1 to 64"
+              }
+            ],
+            "renderScale": 1,
+            "topBudgetM": 4,
+            "governorStep": 0,
+            "streamHitches": 0
+          },
+          "contentKind": "meta",
+          "rangeMin": 0,
+          "rangeMax": 1000,
+          "budgetM": 4,
+          "scale": 1,
+          "step": 0,
+          "top": 4,
+          "changes": 0,
+          "hitches": 0,
+          "drawn": 2144439,
+          "perLevel": {},
+          "visibleMs": 33172.799999952316,
+          "firstFrameMs": 2216.899999976158,
+          "detailLine": null
+        },
+        "end": {
+          "status": "ready",
+          "errorCode": null,
+          "lod": {
+            "kind": "meta",
+            "levels": 1,
+            "range": [
+              0,
+              0
+            ],
+            "mode": "single",
+            "drawn": 2144439,
+            "budgetM": 4,
+            "loading": 0,
+            "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/723068d7/v1/meta.json",
+            "contentFailures": [
+              {
+                "url": "https://d28zzqy0iyovbz.cloudfront.net/723068d7/v1/lod-meta.json",
+                "error": "lod-meta.json is not an octree the engine can open: lodLevels undefined is not a whole number from 1 to 64"
+              }
+            ],
+            "renderScale": 1,
+            "topBudgetM": 4,
+            "governorStep": 0,
+            "streamHitches": 0
+          },
+          "contentKind": "meta",
+          "rangeMin": 0,
+          "rangeMax": 1000,
+          "budgetM": 4,
+          "scale": 1,
+          "step": 0,
+          "top": 4,
+          "changes": 0,
+          "hitches": 0,
+          "drawn": 2144439,
+          "perLevel": {},
+          "visibleMs": 33172.799999952316,
+          "firstFrameMs": 2216.899999976158,
+          "detailLine": "One level of detail (this scan has no others) \u00b7 2.1 of 4.0 M splats \u00b7 100 % resolution \u00b7 the streamed file did not open, the single file is shown"
+        },
+        "cdn": [
+          "HEAD /723068d7/v1/lod-meta.json",
+          "HEAD /723068d7/v1/meta.json",
+          "HEAD /723068d7/v1/scene.voxel.json",
+          "GET /723068d7/v1/settings.json",
+          "GET /723068d7/v2/settings.json",
+          "GET /723068d7/v3/settings.json",
+          "GET /723068d7/v4/settings.json",
+          "GET /723068d7/v5/settings.json",
+          "GET /723068d7/v1/lod-meta.json",
+          "GET /723068d7/v1/meta.json",
+          "GET /723068d7/v1/means_l.webp",
+          "GET /723068d7/v1/means_u.webp",
+          "GET /723068d7/v1/quats.webp",
+          "GET /723068d7/v1/scales.webp",
+          "GET /723068d7/v1/sh0.webp",
+          "GET /723068d7/v1/shN_centroids.webp",
+          "GET /723068d7/v1/shN_labels.webp",
+          "GET /723068d7/v1/meta.json"
+        ],
+        "pageerrors": []
+      },
+      "plain": {
+        "status": "ready",
+        "errorCode": null,
+        "lod": {
+          "kind": "meta",
+          "levels": 1,
+          "range": [
+            0,
+            0
+          ],
+          "mode": "single",
+          "drawn": 2144439,
+          "budgetM": 4,
+          "loading": 0,
+          "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/723068d7/v1/meta.json",
+          "contentFailures": [],
+          "renderScale": 1,
+          "topBudgetM": 4,
+          "governorStep": 0,
+          "streamHitches": 0
+        },
+        "contentKind": "meta",
+        "rangeMin": 0,
+        "rangeMax": 1000,
+        "budgetM": 4,
+        "scale": 1,
+        "step": 0,
+        "top": 4,
+        "changes": 0,
+        "hitches": 0,
+        "drawn": 2144439,
+        "perLevel": {},
+        "visibleMs": 32684.799999952316,
+        "firstFrameMs": 1717.6000000238419,
+        "detailLine": null
+      },
+      "noFallback": {
+        "status": "error",
+        "error": "lod-meta.json is not an octree the engine can open: lodLevels undefined is not a whole number from 1 to 64",
+        "errorCode": "generic",
+        "ms": 743
+      }
+    },
+    "L4": {
+      "both": {
+        "atReveal": {
+          "status": "ready",
+          "errorCode": null,
+          "lod": {
+            "kind": "lod-meta",
+            "levels": 4,
+            "range": [
+              0,
+              3
+            ],
+            "mode": "auto",
+            "drawn": 472336,
+            "budgetM": 4,
+            "loading": 0,
+            "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/lod-meta.json",
+            "contentFailures": [],
+            "renderScale": 1,
+            "topBudgetM": 4,
+            "governorStep": 0,
+            "streamHitches": 0
+          },
+          "contentKind": "lod-meta",
+          "rangeMin": 0,
+          "rangeMax": 1000,
+          "budgetM": 4,
+          "scale": 1,
+          "step": 0,
+          "top": 4,
+          "changes": 0,
+          "hitches": 0,
+          "drawn": 472336,
+          "perLevel": {
+            "3": 471251
+          },
+          "visibleMs": 1334.6000000238419,
+          "firstFrameMs": 632.7999999523163,
+          "detailLine": null
+        },
+        "end": {
+          "status": "ready",
+          "errorCode": null,
+          "lod": {
+            "kind": "lod-meta",
+            "levels": 4,
+            "range": [
+              0,
+              3
+            ],
+            "mode": "auto",
+            "drawn": 1657768,
+            "budgetM": 4,
+            "loading": 8,
+            "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/lod-meta.json",
+            "contentFailures": [],
+            "renderScale": 1,
+            "topBudgetM": 4,
+            "governorStep": 0,
+            "streamHitches": 0
+          },
+          "contentKind": "lod-meta",
+          "rangeMin": 0,
+          "rangeMax": 1000,
+          "budgetM": 4,
+          "scale": 1,
+          "step": 0,
+          "top": 4,
+          "changes": 0,
+          "hitches": 0,
+          "drawn": 1657768,
+          "perLevel": {
+            "0": 1375343,
+            "3": 281340
+          },
+          "visibleMs": 1334.6000000238419,
+          "firstFrameMs": 632.7999999523163,
+          "detailLine": null
+        },
+        "cdn": [
+          "HEAD /39e63ce9/v1/lod-meta.json",
+          "HEAD /39e63ce9/v1/meta.json",
+          "HEAD /39e63ce9/v1/scene.voxel.json",
+          "GET /39e63ce9/v1/settings.json",
+          "GET /39e63ce9/v2/settings.json",
+          "GET /39e63ce9/v3/settings.json",
+          "GET /39e63ce9/v4/settings.json",
+          "GET /39e63ce9/v5/settings.json",
+          "GET /39e63ce9/v1/lod-meta.json",
+          "GET /39e63ce9/v1/scene.voxel.json",
+          "GET /39e63ce9/v1/scene.voxel.bin",
+          "GET /39e63ce9/v1/lod-meta.json",
+          "GET /39e63ce9/v1/env/meta.json",
+          "GET /39e63ce9/v1/3_0/meta.json",
+          "GET /39e63ce9/v1/env/means_l.webp",
+          "GET /39e63ce9/v1/env/means_u.webp",
+          "GET /39e63ce9/v1/env/quats.webp",
+          "GET /39e63ce9/v1/env/scales.webp",
+          "GET /39e63ce9/v1/env/sh0.webp",
+          "GET /39e63ce9/v1/3_0/means_l.webp",
+          "GET /39e63ce9/v1/3_0/means_u.webp",
+          "GET /39e63ce9/v1/3_0/quats.webp",
+          "GET /39e63ce9/v1/3_0/scales.webp",
+          "GET /39e63ce9/v1/3_0/sh0.webp",
+          "GET /39e63ce9/v1/lod-meta.json",
+          "GET /39e63ce9/v1/0_0/meta.json",
+          "GET /39e63ce9/v1/0_1/meta.json",
+          "GET /39e63ce9/v1/0_1/means_l.webp",
+          "GET /39e63ce9/v1/0_1/means_u.webp",
+          "GET /39e63ce9/v1/0_1/quats.webp",
+          "GET /39e63ce9/v1/0_1/scales.webp",
+          "GET /39e63ce9/v1/0_1/sh0.webp",
+          "GET /39e63ce9/v1/0_0/means_l.webp",
+          "GET /39e63ce9/v1/0_0/means_u.webp",
+          "GET /39e63ce9/v1/0_0/quats.webp",
+          "GET /39e63ce9/v1/0_0/scales.webp",
+          "GET /39e63ce9/v1/0_0/sh0.webp",
+          "GET /39e63ce9/v1/0_2/meta.json",
+          "GET /39e63ce9/v1/0_3/meta.json",
+          "GET /39e63ce9/v1/0_2/means_l.webp",
+          "GET /39e63ce9/v1/0_2/means_u.webp",
+          "GET /39e63ce9/v1/0_2/quats.webp",
+          "GET /39e63ce9/v1/0_2/scales.webp",
+          "GET /39e63ce9/v1/0_2/sh0.webp",
+          "GET /39e63ce9/v1/0_3/means_l.webp",
+          "GET /39e63ce9/v1/0_3/means_u.webp",
+          "GET /39e63ce9/v1/0_3/quats.webp",
+          "GET /39e63ce9/v1/0_3/scales.webp",
+          "GET /39e63ce9/v1/0_3/sh0.webp"
+        ]
+      },
+      "control": {
+        "state": {
+          "status": "ready",
+          "errorCode": null,
+          "lod": {
+            "kind": "meta",
+            "levels": 1,
+            "range": [
+              0,
+              0
+            ],
+            "mode": "single",
+            "drawn": 2144439,
+            "budgetM": 4,
+            "loading": 0,
+            "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/723068d7/v1/meta.json",
+            "contentFailures": [],
+            "renderScale": 1,
+            "topBudgetM": 4,
+            "governorStep": 0,
+            "streamHitches": 0
+          },
+          "contentKind": "meta",
+          "rangeMin": 0,
+          "rangeMax": 1000,
+          "budgetM": 4,
+          "scale": 1,
+          "step": 0,
+          "top": 4,
+          "changes": 0,
+          "hitches": 0,
+          "drawn": 2144439,
+          "perLevel": {},
+          "visibleMs": 32724.200000047684,
+          "firstFrameMs": 1770.6000000238419,
+          "detailLine": null
+        },
+        "cdn": [
+          "HEAD /723068d7/v1/lod-meta.json",
+          "HEAD /723068d7/v1/meta.json",
+          "HEAD /723068d7/v1/scene.voxel.json",
+          "GET /723068d7/v1/settings.json",
+          "GET /723068d7/v2/settings.json",
+          "GET /723068d7/v3/settings.json",
+          "GET /723068d7/v4/settings.json",
+          "GET /723068d7/v5/settings.json",
+          "GET /723068d7/v1/meta.json",
+          "GET /723068d7/v1/means_l.webp",
+          "GET /723068d7/v1/means_u.webp",
+          "GET /723068d7/v1/quats.webp",
+          "GET /723068d7/v1/scales.webp",
+          "GET /723068d7/v1/sh0.webp",
+          "GET /723068d7/v1/shN_centroids.webp",
+          "GET /723068d7/v1/shN_labels.webp",
+          "GET /723068d7/v1/meta.json"
+        ]
+      }
+    }
+  }
+}

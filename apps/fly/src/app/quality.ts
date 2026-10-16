@@ -21,6 +21,8 @@ export class Quality {
     private frameDelay = 0;
     /** renderer.framesHeld at the last frame */
     private heldSeen = 0;
+    /** renderer.streamTicks at the last frame: the scan's streamer at work since (governor `streamed`, report only) */
+    private streamSeen = 0;
 
     constructor(renderer: SplatRenderer) {
         this.renderer = renderer;
@@ -32,8 +34,11 @@ export class Quality {
         return this.cinemaOn;
     }
 
-    /** The slider's splat budget: a quarter of the top at 0, the top at 1 (1..4 M at the default top). */
-    private get userBudget(): number {
+    /**
+     * The Quality setting's cap on the splat budget, millions: a quarter of the top at 0, the top at 1
+     * (1..4 M at the default top). apply() draws the smaller of this and the governor's step budget.
+     */
+    get settingBudgetMillions(): number {
         return this.governor.topBudgetMillions * (0.25 + 0.75 * this.userQuality);
     }
 
@@ -71,7 +76,7 @@ export class Quality {
         }
         const st = this.governor.current;
         r.setRenderScale(Math.min(this.userMaxScale, st.renderScale));
-        r.setSplatBudgetMillions(Math.min(this.userBudget, st.splatBudgetMillions));
+        r.setSplatBudgetMillions(Math.min(this.settingBudgetMillions, st.splatBudgetMillions));
     }
 
     /** Once per frame, first: the simulated overload (tests), then the governor's step. */
@@ -80,6 +85,14 @@ export class Quality {
         // a frame the renderer held for the GPU queue (maxFramesInFlight) is a missed one
         const held = this.renderer.framesHeld !== this.heldSeen;
         this.heldSeen = this.renderer.framesHeld;
-        if (!this.cinemaOn && this.governor.onFrame(now, this.renderer.frameAfterSkip, held)) this.apply();
+        // a level-of-detail file requested or arrived since the last frame: the governor counts a missed
+        // frame now like any other and also as a streaming one, for the report (governor.ts onFrame `streamed`)
+        const streamed = this.renderer.streamTicks !== this.streamSeen;
+        this.streamSeen = this.renderer.streamTicks;
+        // the governor's clock is the frame's rAF timestamp (the display's frame time), not the moment
+        // this code runs: late work shows as whole skipped periods, and the short catch-up interval
+        // after a late callback (5.5 ms after a 120 ms one, measured on ba7aa29d) never teaches it a
+        // display period of 9-13 ms, which made every on-time frame "missed" (docs/wip/v08-c.md)
+        if (!this.cinemaOn && this.governor.onFrame(this.renderer.frameTime, this.renderer.frameAfterSkip, held, streamed)) this.apply();
     }
 }

@@ -14,6 +14,7 @@ import type { WallsHook } from '../walls';
 import type { VoxelController, VoxelMode, VoxelStats, VoxelStyle } from '../voxels';
 import type { PrefsHook } from './prefs';
 import type { SavedFlight, Tamper } from './logs';
+import type { LodReport } from './lod';
 
 /** A flight saved in this tab (app/logs.ts, log format /2: the kept lives). */
 export interface SavedLog {
@@ -63,6 +64,8 @@ export interface TestHook {
     /** phase D: the exported trajectory as text (the same text the export button saves) */
     trajectoryText?: (kind: 'csv' | 'json') => string;
     governor?: FrameGovernor;
+    /** v0.8 lane C: the levels of detail at work now (app/lod.ts: content, levels, mode, splats, budget, governor) */
+    lod?: () => LodReport;
     setFrameDelay?: (ms: number) => void;
     /**
      * v0.7 lane R (builtin/drawing.ts): the scan's drawing as decided (mode, the scene's request,

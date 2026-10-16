@@ -207,6 +207,16 @@ class Trim(unittest.TestCase):
         self.assertEqual(c["title"], "a b\u202ec")
         self.assertEqual(server.trim_item(scene(0))["description"], "about scene 0")  # control: short text is untouched
 
+    def test_a_renamed_or_listed_format_reads_as_unknown(self):
+        # v0.8 item 8: SuperSplat may list several formats for a scene or rename the field when it makes
+        # streamed SOG (levels of detail) its default. The item still passes, its format reads "" (unknown),
+        # and the simulator decides by the CDN (resolveScene, randomTopRated's check), never by the label.
+        variants = [scene(0, format=["ssog", "sog"]), scene(1, format="ssog,sog"), scene(2, format=None, formats=["ssog"]),
+                    scene(3, format={"name": "ssog"}), scene(4, format="ssog")]
+        out = [server.trim_item(x) for x in variants]
+        self.assertEqual([x["id"] for x in out], ["00000000", "00000001", "00000002", "00000003", "00000004"])
+        self.assertEqual([x["format"] for x in out], ["", "", "", "", "ssog"])  # control: the plain label passes as it is
+
     def test_limit_caps_the_items_passed_on(self):
         p, _, _ = proxy(fake=FakeUpstream(answer=lambda url: (200, {}, page(n=10))))
         self.assertEqual(len(body(p.handle("limit=4", "c"))["items"]), 4)

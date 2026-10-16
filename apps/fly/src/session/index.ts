@@ -13,9 +13,9 @@ import type { SimParams, ParamOverrides, SimEvent, Life, LifeHeader, RespawnOpts
 import { VoxelContactWorld, findSphereSpawn, openVoxelCollision } from '@gsfpv/collision';
 import { validCeiling, validMinBlocks } from '@gsfpv/collision';
 import type { FloaterFilter, VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
-import { resolveScene, headingFromCamera } from '@gsfpv/scenes';
-import type { ResolvedScene } from '@gsfpv/scenes';
-import { SplatRenderer, drawOnDevice } from '@gsfpv/render-pc';
+import { resolveScene, headingFromCamera, noContentError } from '@gsfpv/scenes';
+import type { ContentAttempt, ResolvedScene } from '@gsfpv/scenes';
+import { BrokenFileError, SplatRenderer, drawOnDevice } from '@gsfpv/render-pc';
 import type { DrawingChoice } from '@gsfpv/render-pc';
 import { PRESETS, DEFAULT_PRESET } from '../presets';
 import { SimClock } from '../simclock';
@@ -133,6 +133,12 @@ export class FlightSession {
      * feature takes over once the flight is built (the governor's top budget).
      */
     loadDrawing: (DrawingChoice & { webgpu: boolean }) | null = null;
+    /**
+     * Content files that did not open before the one on screen (v0.8 item 8: a broken lod-meta.json and
+     * the scene's meta.json shown instead), with why; empty when the first file opened. Benches and the
+     * bug report's technical details read it.
+     */
+    contentFailures: { url: string; error: string }[] = [];
     /** the walls the craft flies in: the scan's, seen through `transform` (E.7) */
     collision: VoxelCollision | null = null;
     collisionSha256: string | null = null;
@@ -283,7 +289,7 @@ export class FlightSession {
         const tr = o.transform;
         this.transform = tr ? f32(tr.v && tr.v !== this.scene.version ? { s: tr.s, t: [0, 0, 0] } : tr) : IDENTITY;
         this.renderer.setSceneTransform(this.transform.s, [...this.transform.t]);
-        const splatLoad = this.drawScan ? this.renderer.loadSplat(this.scene.contentUrl) : Promise.resolve(null);
+        const splatLoad = this.drawScan ? this.loadContent() : Promise.resolve(null);
         // the walls download beside the scan, not before it: one slow host no longer holds up the other
         const walls = this.scene.collisionUrl ? loader.loadWalls(this.scene.collisionUrl) : Promise.resolve(null);
         walls.catch(() => { /* awaited below; this only keeps an early failure from counting as unhandled */ });
@@ -330,6 +336,32 @@ export class FlightSession {
             this.renderer.revealFullDetail();
             loader.done();
         });
+    }
+
+    /**
+     * Open the scan: the first of scene.content that loads (@gsfpv/scenes content.ts: levels of detail
+     * first, then the single file). A file that fails (unreadable, not an octree the engine can open: the
+     * renderer's loadSplat rejects) is unloaded with whatever it started and the next one is tried; the
+     * scene then names the file really on screen (walls baking reads contentUrl). When none opens, the
+     * error is @gsfpv/scenes noContentError's: every file damaged (render-pc BrokenFileError) is 'broken',
+     * a file whose lookup never answered makes it 'network', otherwise the first file's own error.
+     */
+    private async loadContent(): Promise<void> {
+        const failures: ContentAttempt[] = [];
+        for (const c of this.scene.content) {
+            try {
+                await this.renderer.loadSplat(c.url);
+                this.contentFailures = failures.map(({ url, error }) => ({ url, error }));
+                if (c.url !== this.scene.contentUrl) this.scene = { ...this.scene, contentUrl: c.url, contentKind: c.kind };
+                return;
+            } catch (e) {
+                if (this.disposed) throw e;
+                failures.push({ url: c.url, error: String((e as Error)?.message ?? e), verified: c.verified, broken: e instanceof BrokenFileError, e });
+                this.renderer.unloadSplat();
+            }
+        }
+        this.contentFailures = failures.map(({ url, error }) => ({ url, error }));
+        throw noContentError(this.scene.id, failures);
     }
 
     private findSpawn(): [number, number, number, number] {

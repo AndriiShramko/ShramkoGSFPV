@@ -14,6 +14,8 @@ import {
 import type { GraphicsDevice, GSplatComponent } from 'playcanvas';
 import { LatencyGuard, inputToScreenMs } from './governor';
 import { applyDrawing, DEFAULT_BUDGET_M } from './drawing';
+import { BrokenFileError, lodMetaProblem, lodMode } from './lod';
+import type { LodState } from './lod';
 
 /** What the HUD shows about the delay (see LatencyGuard, inputToScreenMs). */
 
@@ -187,6 +189,15 @@ export class SplatRenderer {
      * on their way. The video export (F.3) encodes a frame only when both say the view is complete.
      */
     readonly splatFrame = { frame: -1, ready: false, loading: 0 };
+    /**
+     * Grows whenever the scan's streamer makes progress: a file of the scan is requested or arrives (its
+     * assets are added or loaded), or the engine's count of files in flight changes. The quality governor
+     * compares it frame to frame and counts the missed frames that came while it grew apart, for the
+     * report; they count like any other (governor.ts onFrame `streamed`). Only ever increases.
+     */
+    streamTicks = 0;
+    /** what the scan on screen was loaded from (lodState) */
+    private contentKind: 'lod-meta' | 'meta' | null = null;
 
     private constructor(canvas: HTMLCanvasElement, device: GraphicsDevice, opts: RendererOptions) {
         this.canvas = canvas;
@@ -245,9 +256,11 @@ export class SplatRenderer {
 
         app.on('frameupdate', this.onFrameUpdate);
         (app.systems as unknown as { gsplat: { on(name: string, cb: (...a: unknown[]) => void): void } }).gsplat.on('frame:ready', (_camera: unknown, _layer: unknown, ready: unknown, loading: unknown) => {
+            const n = typeof loading === 'number' ? loading : 0;
+            if (n !== this.splatFrame.loading) this.streamTicks++;
             this.splatFrame.frame = this.frameNumber;
             this.splatFrame.ready = ready === true;
-            this.splatFrame.loading = typeof loading === 'number' ? loading : 0;
+            this.splatFrame.loading = n;
         });
         this.gpuQueue = (device as unknown as { wgpu?: { queue?: WgpuQueue } }).wgpu?.queue ?? null;
         if (this.gpuQueue) {
@@ -346,16 +359,41 @@ export class SplatRenderer {
         if (this.camera.camera) this.camera.camera.fov = hFovDeg;
     }
 
-    /** Load splat content: lod-meta.json (streamed octree) or meta.json (single SOG). */
+    /**
+     * Load splat content: lod-meta.json (streamed octree, levels of detail) or meta.json (single SOG).
+     * Rejects when the file cannot be read or is not an octree the engine can open (lod.ts
+     * lodMetaProblem), so the caller can open the scene's next content file; unloadSplat() then frees
+     * whatever the attempt left. A file that arrived damaged (not JSON, not an octree) rejects with a
+     * BrokenFileError; an HTTP or network failure with a plain Error.
+     */
     loadSplat(url: string, onProgress?: (pct: number) => void): Promise<Entity> {
         this.loadStartedAt = performance.now();
         const filename = new URL(url, location.href).pathname.split('/').pop() || 'scene';
         const isMeta = filename.toLowerCase() === 'meta.json';
+        this.contentKind = isMeta ? 'meta' : 'lod-meta';
         const c = this.count;
         c.base = dirOf(url);
+        /** The file's JSON; HTTP failures are plain errors, a body that is not JSON a damaged file. */
+        const readJson = async (): Promise<unknown> => {
+            const r = await fetch(url);
+            if (!r.ok) throw new Error(`${filename}: HTTP ${r.status}`);
+            try {
+                return await r.json();
+            } catch (e) {
+                throw new BrokenFileError(`${filename} is not JSON: ${String((e as Error)?.message ?? e)}`);
+            }
+        };
         const start = async (): Promise<unknown> => {
-            if (!isMeta) return undefined;
-            const data = (await (await fetch(url)).json()) as { count?: number; means?: { shape?: number[] } };
+            if (!isMeta) {
+                // the engine fetches lod-meta.json itself and cannot be handed it; read it first so a broken
+                // one is a BrokenFileError here, before an engine asset exists, instead of the engine's own
+                // English error (lod.ts lodMetaProblem; its own request then comes from the HTTP cache: the
+                // CDN sends Last-Modified and no Cache-Control)
+                const problem = lodMetaProblem(await readJson());
+                if (problem) throw new BrokenFileError(`${filename} is not an octree the engine can open: ${problem}`);
+                return undefined;
+            }
+            const data = (await readJson()) as { count?: number; means?: { shape?: number[] } };
             // a single SOG: all of it is the first view
             c.expected.set(c.base, data.count ?? data.means?.shape?.[0] ?? 0);
             c.listed = true;
@@ -407,7 +445,12 @@ export class SplatRenderer {
         const c = this.count;
         const url = (a.file as { url?: string } | null)?.url;
         // everything under the scan's folder belongs to the scan: unloadSplat() frees it
-        if (c.base && url && url.startsWith(c.base) && a !== this.splatAsset) this.sceneAssets.add(a);
+        if (c.base && url && url.startsWith(c.base) && a !== this.splatAsset) {
+            this.sceneAssets.add(a);
+            // the streamer at work: a file requested now, its data arriving later (streamTicks)
+            this.streamTicks++;
+            a.once('load', () => { this.streamTicks++; });
+        }
         if (c.frozen || !c.base || a.type !== 'texture') return;
         if (!url || !url.startsWith(c.base)) return;
         // keyed by URL: an image the engine retries keeps what already arrived (never goes back)
@@ -492,6 +535,27 @@ export class SplatRenderer {
     }
 
     /**
+     * The levels of detail at work now (lod.ts LodState): what the scan was loaded from, its levels, the
+     * range the engine may pick from and what it drew in the last frame. Public engine fields only.
+     */
+    lodState(): LodState {
+        const comp = this.splat?.gsplat as GSplatComponent | undefined;
+        const octree = (comp?.resource as unknown as { octree?: OctreeView } | null | undefined)?.octree;
+        const levels = this.contentKind === 'lod-meta' ? octree?.lodLevels ?? 1 : this.contentKind ? 1 : 0;
+        const min = comp ? comp.lodRangeMin : 0;
+        const max = comp ? Math.min(comp.lodRangeMax, Math.max(0, levels - 1)) : 0;
+        return {
+            kind: this.splat ? this.contentKind : null,
+            levels,
+            range: [min, max],
+            mode: lodMode(this.contentKind, levels, min, max),
+            drawn: (this.app.stats as unknown as { frame?: { gsplats?: number } }).frame?.gsplats ?? 0,
+            budgetM: this.splatBudgetMillions,
+            loading: this.splatFrame.loading
+        };
+    }
+
+    /**
      * Drop the scan (design E.4, in-page scene switching): the entity, its asset and every asset the
      * engine loaded for it (SOG images, streamed LOD files) are unloaded and removed, and the load
      * counters start over, so the next loadSplat() is a first load again. The camera, the debris,
@@ -509,6 +573,7 @@ export class SplatRenderer {
             this.app.assets.remove(a);
         }
         this.splatAsset = null;
+        this.contentKind = null;
         this.sceneAssets.clear();
         this.count = { base: '', listed: false, expected: new Map(), images: new Map(), lastByteAt: 0, frozen: false };
         this.loadStartedAt = 0;

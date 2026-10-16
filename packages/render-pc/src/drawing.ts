@@ -8,8 +8,12 @@
 //      default) does what the scene's link or the catalogue asks (packages/scenes link.ts sceneRender);
 //   2. the device: the engine draws stochastic only with its GPU-sort renderer, i.e. WebGPU. SuperSplat
 //      shows it on desktop browsers only, so on phones and tablets the request is ignored too, and so
-//      is the scene's budget (a desktop number). The HUD's short note then says who asked (the scene
-//      or the pilot's setting) and what was refused (stochastic, or only the budget): DrawingNote.
+//      is the scene's budget (a desktop number). The budget a refused device draws under is the one
+//      SuperSplat's viewer gives it, by the viewer's own rule (isViewerMobile, v0.8): MOBILE_BUDGET_M
+//      (2 M) on Android, iPhone, iPad and iPod, else DEFAULT_BUDGET_M (4 M) - so an iPad whose Safari
+//      says "Macintosh" is refused stochastic (isHandheld) but draws 4 M as on superspl.at. The HUD's short
+//      note then says who asked (the scene or the pilot's setting) and what was refused (stochastic,
+//      or only the budget): DrawingNote.
 // The splat budget of a request becomes the quality governor's top level (governor.ts setTopBudget);
 // missed frames lower the budget from there and never switch stochastic off.
 
@@ -28,8 +32,10 @@ export interface DrawingRequest {
 export interface DrawingDevice {
     /** the renderer runs on WebGPU (its GPU-sort renderer) */
     webgpu: boolean;
-    /** a phone or a tablet (isHandheld) */
+    /** a phone or a tablet (isHandheld): no stochastic drawing, no scene budget */
     handheld: boolean;
+    /** what SuperSplat's viewer calls mobile (isViewerMobile): the top budget is MOBILE_BUDGET_M */
+    mobile: boolean;
 }
 
 /**
@@ -45,6 +51,29 @@ export const DRAWING_NOTES: readonly DrawingNote[] = ['scene-handheld', 'scene-w
 
 /** The top of the splat budget when nothing asks for another one, millions (governor.ts DEFAULT_STEPS). */
 export const DEFAULT_BUDGET_M = 4;
+
+/**
+ * The top of the splat budget on a device SuperSplat's viewer calls mobile (isViewerMobile), millions
+ * (v0.8 item 8): the viewer's `budgets.mobile.high` (@playcanvas/supersplat-viewer 1.35-1.37; 4 M is its
+ * `budgets.desktop.high`, DEFAULT_BUDGET_M). The levels of detail stream on every device; a phone gets
+ * them under a smaller budget, and the governor still lowers it from there.
+ */
+export const MOBILE_BUDGET_M = 2;
+
+/**
+ * SuperSplat's viewer's own "mobile" (it picks `budgets.mobile` by PlayCanvas `platform.mobile`, which
+ * is Android, iPad, iPhone or iPod in the user agent, any case). Not isHandheld: an iPad whose Safari
+ * says "Macintosh" is desktop here (the viewer gives it 4 M), and Client Hints or a bare "Mobile" do
+ * not count. Used only for the budget, so a scan draws with the detail superspl.at shows on that device.
+ */
+export function isViewerMobile(userAgent: string): boolean {
+    return /android|ip(?:[ao]d|hone)/i.test(userAgent);
+}
+
+/** The top splat budget a device gets when nothing asks for another one, millions (SuperSplat's viewer's). */
+export function defaultBudgetM(device: Pick<DrawingDevice, 'mobile'>): number {
+    return device.mobile ? MOBILE_BUDGET_M : DEFAULT_BUDGET_M;
+}
 
 export interface Drawing {
     stochastic: boolean;
@@ -62,10 +91,12 @@ export function resolveDrawing(mode: DrawingMode, request: DrawingRequest | unde
     if (device.webgpu && !device.handheld) {
         return { stochastic: wantsStochastic, budgetM: budget ?? DEFAULT_BUDGET_M, note: null };
     }
-    // refused here: the pilot's own choice outranks the scene's; a budget alone is named only when it differs
-    const who = mode === 'stochastic' ? 'setting' : sceneAsks ? 'scene' : budget !== undefined && budget !== DEFAULT_BUDGET_M ? 'budget' : null;
+    // refused here: the pilot's own choice outranks the scene's; a budget alone is named only when it
+    // differs from what this device gets anyway (defaultBudgetM: 2 M where SuperSplat's viewer says mobile, else 4 M)
+    const top = defaultBudgetM(device);
+    const who = mode === 'stochastic' ? 'setting' : sceneAsks ? 'scene' : budget !== undefined && budget !== top ? 'budget' : null;
     const why = device.handheld ? 'handheld' : 'webgl';
-    return { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: who ? `${who}-${why}` : null };
+    return { stochastic: false, budgetM: top, note: who ? `${who}-${why}` : null };
 }
 
 /**

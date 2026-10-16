@@ -1,0 +1,63 @@
+{
+  "name": "d-governor",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-16T14:53:56.653Z",
+    "gitHead": "eef522b",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5382",
+  "pass": true,
+  "method": "normal frames 6 s (display period learned), then a busy-wait of 1.4 display periods in every frame for 4 s, then normal again",
+  "enabled": {
+    "calm": {
+      "step": 0,
+      "changes": 0,
+      "periodMs": 33.099999999999454,
+      "scale": 1
+    },
+    "loaded": {
+      "step": 4,
+      "changes": 4,
+      "periodMs": 33.099999999999454,
+      "scale": 0.5
+    },
+    "recovered": {
+      "step": 0,
+      "changes": 8,
+      "periodMs": 33,
+      "scale": 1
+    }
+  },
+  "control": {
+    "governorOff": {
+      "calm": {
+        "step": 0,
+        "changes": 0,
+        "periodMs": 33,
+        "scale": 1
+      },
+      "loaded": {
+        "step": 0,
+        "changes": 0,
+        "periodMs": 33.099999999999454,
+        "scale": 1
+      },
+      "recovered": {
+        "step": 0,
+        "changes": 0,
+        "periodMs": 33,
+        "scale": 1
+      }
+    },
+    "fired": true
+  }
+}

@@ -9,6 +9,9 @@
 /** a frame interval above this many display periods counts as a missed frame */
 export const MISSED_PERIODS = 1.25;
 
+/** Frame intervals the display period is learned from before the governor judges any frame (2 s at 30 Hz). */
+export const PERIOD_MIN_SAMPLES = 60;
+
 export interface QualityStep {
     renderScale: number; // backbuffer / CSS pixels * devicePixelRatio
     splatBudgetMillions: number;
@@ -32,6 +35,8 @@ export interface GovernorOptions {
     downMissRatio: number; // step down above this share of missed frames
     upWindowMs: number; // a calm period this long before stepping up
     upMissRatio: number; // ... with at most this share of missed frames
+    /** frame intervals the display period is learned from before any frame is judged (PERIOD_MIN_SAMPLES) */
+    periodMinSamples?: number;
 }
 
 export const DEFAULT_GOVERNOR: GovernorOptions = { downWindowMs: 1000, downMissRatio: 0.1, upWindowMs: 5000, upMissRatio: 0.01 };
@@ -45,12 +50,27 @@ export class DisplayPeriod {
     private dts: { t: number; dt: number }[] = [];
     private sinceSort = 0;
     ms = Infinity;
+    private readonly minSamples: number;
+
+    constructor(minSamples = PERIOD_MIN_SAMPLES) {
+        this.minSamples = minSamples;
+    }
+
+    /**
+     * Enough intervals to trust the period (PERIOD_MIN_SAMPLES). Before that the estimate is a few
+     * intervals' 5th percentile, i.e. their smallest: measured on ba7aa29d, the first intervals after a
+     * reveal taught 9-16 ms on a 30 Hz display, and every on-time frame then read as missed.
+     */
+    get learned(): boolean {
+        return this.dts.length >= this.minSamples;
+    }
 
     /** One frame interval `dt` ending at `t` (both ms). */
     add(t: number, dt: number): void {
         this.dts.push({ t, dt });
         while (this.dts.length && t - this.dts[0].t > 30000) this.dts.shift();
-        if (this.ms === Infinity || ++this.sinceSort >= 30) {
+        // every frame while learning (few samples, cheap), then every 30 frames
+        if (this.ms === Infinity || !this.learned || ++this.sinceSort >= 30) {
             this.sinceSort = 0;
             const s = this.dts.map((x) => x.dt).sort((a, b) => a - b);
             this.ms = s[Math.floor(0.05 * (s.length - 1))];
@@ -67,15 +87,26 @@ export class FrameGovernor {
     /** the constructor's steps: setTopBudget scales their budgets */
     private readonly base: QualityStep[];
     private last = -1;
-    private period = new DisplayPeriod();
+    private period: DisplayPeriod;
+    /** each judged frame: missed or not */
     private log: { t: number; missed: boolean }[] = [];
     private lastChange = -Infinity;
     changes = 0;
+    /**
+     * Missed frames that came while the scan was streaming (onFrame `streamed`): counted like every other
+     * missed frame, kept apart only for the report (F3's data, a bug report's details).
+     */
+    streamHitches = 0;
+    /** the previous frame reported streaming: its work can make this interval late */
+    private streamedBefore = false;
+    /** the display period is learned and frames are judged (see onFrame) */
+    private judging = false;
 
     constructor(steps: QualityStep[] = DEFAULT_STEPS, opts: GovernorOptions = DEFAULT_GOVERNOR) {
         this.base = steps;
         this.steps = steps.map((s) => ({ ...s }));
         this.opts = opts;
+        this.period = new DisplayPeriod(opts.periodMinSamples ?? PERIOD_MIN_SAMPLES);
     }
 
     get current(): QualityStep {
@@ -113,24 +144,52 @@ export class FrameGovernor {
      * `held`: the renderer did not draw the frame before this one because the GPU had not finished
      * the previous one (SplatRenderer.maxFramesInFlight): the display repeated a picture, a missed
      * frame although the animation frames themselves came on time.
+     * `streamed`: the scan's streamer made progress since the previous frame (SplatRenderer.streamTicks:
+     * a level-of-detail file requested or arrived, the count of files in flight changed). It does not
+     * change the judgement: a missed or held frame here or at the next frame counts like any other and is
+     * also counted in streamHitches, for the report. A streamed scan (levels of detail, D27) streams all
+     * the time it is flown, so an excuse for streaming would hide a real overload for the whole flight;
+     * and a lower budget does lighten the streamer (fewer, coarser nodes). The owner's coarse city scan
+     * came from this governor's clock and period, not from streaming (v0.8 item 8, review R1,
+     * docs/wip/v08-c.md).
      */
-    onFrame(t: number, excused = false, held = false): QualityStep | null {
-        if (this.last < 0) { this.last = t; return null; }
+    onFrame(t: number, excused = false, held = false, streamed = false): QualityStep | null {
+        if (this.last < 0) {
+            this.last = t;
+            this.streamedBefore = streamed;
+            return null;
+        }
         const dt = t - this.last;
         this.last = t;
+        const streaming = streamed || this.streamedBefore;
+        this.streamedBefore = streamed;
         if (excused) return null;
         if (dt <= 0 || dt > 1000) return null; // paused tab, debugger: not a frame-rate signal
         this.period.add(t, dt);
+        // a frame is late only against a display period learned from enough frames
+        if (!this.period.learned) return null;
+        // the first judged frame starts the clock as a change would: a share of missed frames needs a
+        // whole window of judged frames (one held frame among the first four is not "25 % of a second")
+        if (!this.judging) {
+            this.judging = true;
+            this.lastChange = t;
+        }
         const period = this.period.ms;
         // 1.25 periods: a frame that took ~1.4 periods already makes the display repeat one (a 45 ms
         // frame on a 30 Hz screen); 1.5 let a steady 22 fps pass as 'on time'
-        this.log.push({ t, missed: held || dt > MISSED_PERIODS * period });
+        const missed = held || dt > MISSED_PERIODS * period;
+        if (missed && streaming) this.streamHitches++;
+        this.log.push({ t, missed });
         while (this.log.length && t - this.log[0].t > this.opts.upWindowMs) this.log.shift();
         if (!this.enabled) return null;
         const since = t - this.lastChange;
+        // the share of missed frames in the last `win` ms
         const ratio = (win: number) => {
             let n = 0, m = 0;
-            for (let i = this.log.length - 1; i >= 0 && t - this.log[i].t <= win; i--) { n++; if (this.log[i].missed) m++; }
+            for (let i = this.log.length - 1; i >= 0 && t - this.log[i].t <= win; i--) {
+                n++;
+                if (this.log[i].missed) m++;
+            }
             return n ? m / n : 0;
         };
         if (since >= this.opts.downWindowMs && this.step < this.steps.length - 1 && ratio(this.opts.downWindowMs) > this.opts.downMissRatio) {
