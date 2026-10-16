@@ -1790,6 +1790,20 @@ export function profileArmLevel(p: Profile, f: RawFrame, latch: ArmLatch): boole
     return rangesArm(p.switches, f) ?? latch.level(p.arm, f);
 }
 
+/**
+ * The stick deadband: 0 inside it, and outside it the rest of the travel scaled back onto 0..1, so
+ * the reading is continuous at its edge and full deflection still reads 1 (Betaflight subtracts its
+ * deadband the same way, rc.c, without the rescale). Every wizard builds profiles with deadband 0;
+ * a recognised controller's profile carries one sized to its measured rest offsets (known-devices.ts).
+ */
+export function applyDeadband(x: number, db: number): number {
+    if (!(db > 0)) return x;
+    const m = Math.abs(x);
+    if (m <= db) return 0;
+    const y = (m - db) / (1 - db);
+    return x < 0 ? -y : y;
+}
+
 /** Map a raw frame through a profile to channels ch[0..5] (roll, pitch, throttle, yaw, arm, mode). */
 export function mapFrame(p: Profile, f: RawFrame, out: Float32Array): Float32Array {
     for (const fn of ['roll', 'pitch', 'yaw'] as Fn[]) {
@@ -1797,8 +1811,8 @@ export function mapFrame(p: Profile, f: RawFrame, out: Float32Array): Float32Arr
         const v = f.axes[a.index] - a.center;
         const half = v >= 0 ? a.max - a.center : a.center - a.min;
         let x = half > 1e-6 ? v / half : 0;
-        if (Math.abs(x) < p.deadband) x = 0;
         x = x < -1 ? -1 : x > 1 ? 1 : x;
+        x = applyDeadband(x, p.deadband);
         if (a.invert) x = -x;
         out[fn === 'roll' ? 0 : fn === 'pitch' ? 1 : 3] = x;
     }

@@ -341,7 +341,9 @@ describe('calibration wizard v3 (user-paced)', () => {
         const outA = new Float32Array(8), outB = new Float32Array(8);
         for (let k = 0; k < 500; k++) {
             const ax = (index: number, c: number) => ({ index, invert: r() < 0.5, center: c, min: U(-1, -0.7), max: U(0.7, 1) });
-            const p = { version: 1 as const, deviceKey: 'k', deviceName: 'n', deadband: r() < 0.5 ? 0 : 0.02, created: '', angleMode: null,
+            // deadband 0: what every wizard (the first one too) builds. A deadband > 0 reads continuous
+            // since v0.8 (applyDeadband, known-devices.test.ts); the draw stays so the sequence is the same
+            const p = { version: 1 as const, deviceKey: 'k', deviceName: 'n', deadband: (r(), 0), created: '', angleMode: null,
                 axes: { roll: ax(0, U(-0.05, 0.05)), pitch: ax(1, U(-0.05, 0.05)), throttle: ax(2, -1), yaw: ax(3, U(-0.05, 0.05)) },
                 arm: { kind: 'axis' as const, index: 4, threshold: U(-0.5, 0.5), onAbove: r() < 0.5 } };
             const f: RawFrame = { t: 0, axes: Float32Array.from({ length: 8 }, () => U(-1, 1)), buttons: 0 };
