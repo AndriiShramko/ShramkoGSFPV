@@ -128,6 +128,30 @@ describe('Betaflight channel numbers: a device channel table puts a two-bit swit
         expect(edgetx.ranges.map((x) => x.input)).toEqual([{ kind: 'axis', index: 4 }, { kind: 'axis', index: 4 }]);
     });
 
+    it('a channel past the device\'s table is not on that radio: never put on a control the table numbers otherwise (review R2)', () => {
+        // the DJI has 9 channels: CH10 (AUX6), CH11 (AUX7), CH13, CH15 do not exist on it; under the
+        // EdgeTX numbering they would be buttons 2, 3, 5, 7: the pause/RTH and start/stop buttons and
+        // single bits of the C2 and mode switches
+        for (const ch of [10, 11, 13, 15, 16]) expect(channelInput(ch, DJI_TABLE)).toBeNull();
+        expect(channelInput(9, DJI_TABLE)).toEqual({ kind: 'button', bit: 0 }); // its last channel (AUX5, C1)
+        // a quad armed on AUX7 (CH11) with Angle on AUX1: ARM is left out with its reason, Angle lands on the mode switch
+        const r = parseAuxPaste('aux 0 0 6 1700 2100 0 0\naux 1 1 0 900 1300 0 0');
+        expect(r?.errors).toEqual([]);
+        const imp = switchesFromBetaflight(r!.aux, DJI_TABLE);
+        expect(imp.switches.ranges.map((x) => [x.fn, x.input])).toEqual([['angle', MODE]]);
+        expect(imp.applied.map((c) => c.mode)).toEqual(['ANGLE']);
+        expect(imp.skipped.map((x) => `${x.cond.mode}:${x.cond.channel}:${x.why}`)).toEqual(['ARM:11:notOnRadio']);
+    });
+
+    it('control: without a table every channel keeps the EdgeTX USB numbering (CH11 = button 3), so the same paste arms on it', () => {
+        expect(channelInput(11)).toEqual({ kind: 'button', bit: 2 });
+        expect(channelInput(32)).toEqual({ kind: 'button', bit: 23 });
+        const r = parseAuxPaste('aux 0 0 6 1700 2100 0 0\naux 1 1 0 900 1300 0 0');
+        const imp = switchesFromBetaflight(r!.aux);
+        expect(imp.switches.ranges.map((x) => [x.fn, x.input])).toEqual([['arm', { kind: 'button', bit: 2 }], ['angle', { kind: 'axis', index: 4 }]]);
+        expect(imp.skipped).toEqual([]);
+    });
+
     it('tablePairs lists the two-bit switches of a table', () => {
         expect(tablePairs(DJI_TABLE)).toEqual([{ lo: 6, hi: 7 }, { lo: 4, hi: 5 }]);
         expect(tablePairs(undefined)).toEqual([]);

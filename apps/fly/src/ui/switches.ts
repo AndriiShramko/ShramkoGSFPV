@@ -14,7 +14,7 @@ import {
     FLIGHT_MODES, ModeSwitchDetector, POSITION_BANDS, SWITCH_ACTIONS, US_MAX, US_MIN, US_STEP, bandOf, channelUs, copySwitches,
     defaultSwitchModes, fnOn, importOver, inputFromKey, inputKey, modeInput, modePositions, rangesMode, sameInput, setModePositions, snapUs, switchesFromBetaflight, switchesFromProfile, tablePairs
 } from '@gsfpv/input';
-import type { ImportOver, Profile, RawFrame, SwitchAction, SwitchFn, SwitchInput, SwitchModes, SwitchPos, Switches } from '@gsfpv/input';
+import type { AuxSkip, ImportOver, Profile, RawFrame, SwitchAction, SwitchFn, SwitchInput, SwitchModes, SwitchPos, Switches } from '@gsfpv/input';
 import { parseAuxPaste, parseBetaflightDiff } from '@gsfpv/sim-core';
 import { h } from './dom';
 import { t } from '../i18n';
@@ -42,6 +42,18 @@ export function importOverNotes(over: ImportOver, name: (i: SwitchInput) => stri
     if (over.noArm) out.push(t('switches.importNoArm'));
     if (over.noMode) out.push(t('switches.importNoMode'));
     return out;
+}
+
+/**
+ * Why a Betaflight condition was left out (switchesFromBetaflight's `skipped`, not `notInSimulator`,
+ * which is listed as one line): it follows another mode, Betaflight's range limit, or a channel the
+ * radio does not have (`channels`: how many its channel table has). The Switches screen's import and
+ * the menu's say the same.
+ */
+export function skipText(x: { cond: { mode: string; channel: number }; why: AuxSkip }, channels: number): string {
+    if (x.why === 'linked') return t('switches.importLinked', { mode: x.cond.mode });
+    if (x.why === 'notOnRadio') return t('switches.importNotOnRadio', { mode: x.cond.mode, ch: x.cond.channel, n: channels });
+    return t('switches.full', { mode: x.cond.mode });
 }
 
 /** What "Flip to assign" waits for. */
@@ -431,7 +443,7 @@ export class SwitchesView {
             this.importLines = [h('p', { class: 'ok' }, t('switches.importDone', { list }))];
             const skipped = [...new Set(imp.skipped.filter((x) => x.why === 'notInSimulator').map((x) => x.cond.mode))];
             if (skipped.length) this.importLines.push(h('p', { class: 'muted' }, t('switches.importSkipped', { list: skipped.join(', ') })));
-            for (const x of imp.skipped.filter((y) => y.why !== 'notInSimulator')) this.importLines.push(h('p', { class: 'warn' }, t(x.why === 'linked' ? 'switches.importLinked' : 'switches.full', { mode: x.cond.mode })));
+            for (const x of imp.skipped.filter((y) => y.why !== 'notInSimulator')) this.importLines.push(h('p', { class: 'warn' }, skipText(x, this.o.profile.channels?.length ?? 0)));
             for (const n of importOverNotes(over, (i) => this.label(i))) this.importLines.push(h('p', { class: 'muted' }, n));
             this.say(t('switches.importDone', { list }));
         }

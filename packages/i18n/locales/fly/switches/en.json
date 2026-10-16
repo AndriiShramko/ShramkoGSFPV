@@ -51,6 +51,7 @@
   "switches.importDone": "Applied: {list}.",
   "switches.importSkipped": "Not in the simulator, left out: {list}.",
   "switches.importLinked": "{mode} follows another mode in Betaflight; left out.",
+  "switches.importNotOnRadio": "{mode} is on CH{ch}, a channel this controller does not have (it has {n}); left out, not put on another control.",
   "switches.importNone": "No aux line with ARM, ANGLE or HORIZON in this text.",
   "switches.importError": "This text could not be read: {msg}",
   "switches.save": "Save and fly",

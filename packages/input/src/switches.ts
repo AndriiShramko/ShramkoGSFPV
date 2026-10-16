@@ -21,6 +21,9 @@
 // (Profile.channels, ChannelTable below: the inputs in channel order, a two-bit switch being ONE
 // channel), as a recognised controller does (known-devices.ts); without one a channel is the EdgeTX
 // USB joystick's (axes CH1..CH8, buttons CH9..CH32). channelOf, channelInput and inputName take it.
+// A table is the whole radio: a channel past its end does not exist on that device (channelInput
+// null), it is never read through the EdgeTX numbering, which would put it on a control the table
+// numbers otherwise (the DJI's CH11 would be its start/stop button).
 //
 // Who decides (calib.ts mapFrame / profileArmLevel, apps/fly controls.ts): arm = the arm ranges when a
 // profile has any, else the setup wizard's arm (Profile.arm: a switch, a latching button, Space).
@@ -330,19 +333,28 @@ export function inputName(input: SwitchInput, device: RadioDevice, table?: Chann
     return input.kind === 'axis' ? { kind: 'ch', n: input.index + 1 } : { kind: 'button', n: input.bit + 1 };
 }
 
-/** The input a radio channel arrives on: the device's channel table when it names that channel, else the EdgeTX USB joystick's (classic layout). */
-export function channelInput(ch: number, table?: ChannelTable): SwitchInput {
-    const i = table && ch >= 1 && ch <= table.length ? table[ch - 1] : null;
-    if (i) return { ...i };
+/**
+ * The input a radio channel (1-based) arrives on. With the device's channel table: its entry, or null
+ * when the device has no such channel (past the table's end; never the EdgeTX numbering, which would
+ * name another control of it). Without one: the EdgeTX USB joystick's (classic layout).
+ */
+export function channelInput(ch: number, table?: ChannelTable): SwitchInput | null {
+    if (table) return ch >= 1 && ch <= table.length ? { ...table[ch - 1] } : null;
     return ch <= 8 ? { kind: 'axis', index: ch - 1 } : { kind: 'button', bit: ch - 9 };
 }
+
+/** Why a Betaflight condition was not applied (i18n: the Switches screen and the drone import list them). */
+export type AuxSkip = 'notInSimulator' | 'linked' | 'tooMany' | 'notOnRadio';
 
 /** What a Betaflight import did with each condition. */
 export interface AuxImport {
     switches: Switches;
     applied: BfAuxCondition[];
-    /** conditions not applied: a mode the simulator does not have, or one that follows another mode */
-    skipped: { cond: BfAuxCondition; why: 'notInSimulator' | 'linked' | 'tooMany' }[];
+    /**
+     * conditions not applied: a mode the simulator does not have, one that follows another mode, past
+     * MAX_RANGES, or on a channel the radio does not have (its channel table ends before it)
+     */
+    skipped: { cond: BfAuxCondition; why: AuxSkip }[];
 }
 
 const BF_MODES: Readonly<Record<string, SwitchFn>> = { ARM: 'arm', ANGLE: 'angle', HORIZON: 'horizon' };
@@ -359,8 +371,10 @@ export function switchesFromBetaflight(aux: readonly BfAuxCondition[], table?: C
         const fn = Object.hasOwn(BF_MODES, c.mode) ? BF_MODES[c.mode] : null;
         if (!fn) { out.skipped.push({ cond: c, why: 'notInSimulator' }); continue; }
         if (c.linkedTo !== null) { out.skipped.push({ cond: c, why: 'linked' }); continue; }
+        const input = channelInput(c.channel, table);
+        if (!input) { out.skipped.push({ cond: c, why: 'notOnRadio' }); continue; }
         if (out.switches.ranges.length >= MAX_RANGES) { out.skipped.push({ cond: c, why: 'tooMany' }); continue; }
-        out.switches.ranges.push({ fn, input: channelInput(c.channel, table), lo: c.lo, hi: c.hi, ...(c.and ? { and: true as const } : {}) });
+        out.switches.ranges.push({ fn, input, lo: c.lo, hi: c.hi, ...(c.and ? { and: true as const } : {}) });
         out.applied.push(c);
     }
     return out;

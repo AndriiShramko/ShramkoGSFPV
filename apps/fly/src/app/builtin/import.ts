@@ -10,7 +10,7 @@ import type { BfAuxCondition } from '@gsfpv/sim-core';
 import { importOver, switchesFromBetaflight } from '@gsfpv/input';
 import type { ImportOver, Profile } from '@gsfpv/input';
 import { h, clear, panel } from '../../ui/dom';
-import { importOverNotes } from '../../ui/switches';
+import { importOverNotes, skipText } from '../../ui/switches';
 import { inputLabel } from '../../controls';
 import { t } from '../../i18n';
 import { applyModel, droneOf, pilotSet } from '../prefs';
@@ -59,9 +59,12 @@ function switchesOffer(ctx: FlightContext, aux: readonly BfAuxCondition[], out: 
     // the radio's own channel numbering (a recognised controller's table) decides which control AUX1.. lands on
     const table = radio?.profile?.channels;
     const imp = switchesFromBetaflight(aux, table);
-    if (!imp.applied.length) return;
+    // a condition on a channel this radio does not have (past its table) is named, not put on another control
+    const notOnRadio = imp.skipped.filter((x) => x.why === 'notOnRadio').map((x) => h('p', { class: 'warn' }, skipText(x, table?.length ?? 0)));
+    if (!imp.applied.length) { out.append(...notOnRadio); return; }
     const list = imp.applied.map((c, i) => `${c.mode} ${inputLabel(imp.switches.ranges[i].input, radio?.kind === 'gamepad' ? 'gamepad' : 'hid', table)} ${c.lo}–${c.hi}`).join(', ');
     if (!radio?.profile) { out.append(h('p', { class: 'muted' }, t('switches.diffNoRadio', { list }))); return; }
+    out.append(...notOnRadio);
     const name = radio.profile.deviceName;
     const line = h('p', {}, t('switches.diffFound', { list }));
     const device = radio.kind === 'gamepad' ? 'gamepad' : 'hid';
