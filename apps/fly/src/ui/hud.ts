@@ -180,7 +180,7 @@ export class Hud {
     private statsMain = h('div', { 'data-testid': 'latency-line' });
     private statsHint = h('div', { 'data-testid': 'display-hint', hidden: true });
     // F3: the levels of detail at work (app/lod.ts lodLine, written by app/builtin/hud.ts)
-    private statsDetail = h('div', { 'data-testid': 'detail-line', hidden: true });
+    private statsDetail = h('div', { 'data-testid': 'detail-line', class: 'detail', hidden: true });
     private frameStats = h('div', { class: 'osd frame hidden' }, this.statsMain, this.statsDetail, this.statsHint);
     private card = new ArmCard(() => this.onArm?.());
     private keys = new KeyCard();
