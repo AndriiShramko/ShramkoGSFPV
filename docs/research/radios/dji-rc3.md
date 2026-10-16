@@ -110,14 +110,15 @@ One rule for every device, no USB-id special case (`hid-layout.ts` header):
 ### The switches as button bits
 
 Bits 4/5 and 6/7 behave like 3-position switches (one end's bit, the other end's bit, or neither in
-the middle). One switch input of the simulator is one axis or one bit, so such a switch is **not**
-one channel: a pair would be a new input kind for saved profiles, Betaflight's channel numbers and
-every screen that names a channel, and which bits pair is neither in the descriptor nor measured.
-It is usable as two inputs, the way Betaflight's modes work: on the Switches screen an Angle range on
-one end's bit and a Horizon range on the other's give Angle / Acro / Horizon over the three positions
-(test through the DJI reader). "Flip to assign" takes the bit that came on when a switch goes from
-one end to the other. The setup wizard's own mode switch (one input) sees only one end's bit:
-2 positions. Known limitation.
+the middle). Until v0.8 a switch input was one axis or one bit, so such a switch gave the wizard's
+mode switch 2 positions. **Since v0.8 (lane B) it is one input of its own kind**, `{ kind: 'bits', lo,
+hi }` (packages/input mode-switch.ts): lo on = low, neither = middle, hi on = high, 988 / 1500 / 2012 us
+on the Switches screen. The three reasons it was skipped are solved: saved profiles stay version 1
+(an older build drops what it cannot read and keeps the sticks), a device's channel table
+(`Profile.channels`) gives a pair ONE Betaflight channel (the DJI's flight-mode switch is CH5 = AUX1,
+as on a quad with the O4 air unit), and every screen names inputs through one function
+(`inputName`). The mode-switch watch knows a recognised controller's pairs up front and learns an
+unknown pair from an end-to-end flip (`packages/input/test/bits-switch.test.ts`).
 
 ## Which control is which (v0.8 lane B, 2026-10-16)
 

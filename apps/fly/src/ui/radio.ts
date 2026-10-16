@@ -778,7 +778,7 @@ export class RadioScreen {
             }
             // the radio's flight-mode switch: found by a flip, no press (mode-switch-row.ts); a radio
             // with channel functions (the Switches screen) takes its arm and mode from them instead
-            const modeRow = modeSwitchRow(wz, (l, a, f) => btn(l, a, f), () => { sig = ''; render(); });
+            const modeRow = modeSwitchRow(wz, (l, a, f) => btn(l, a, f), () => { sig = ''; render(); }, p.channels);
             if (p.switches) rows.append(h('p', { class: 'wz-row-note small warn', 'data-testid': 'switches-check-note' }, t('switches.checkNote')));
             else rows.append(modeRow.el);
             const row = (k: string, info = false): HTMLLIElement => h('li', { class: info ? 'info' : '' }, h('span', { class: 'mk' }, tickIcon()), h('span', {}, t(k)));

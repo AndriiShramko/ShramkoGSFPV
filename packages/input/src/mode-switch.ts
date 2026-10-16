@@ -10,13 +10,23 @@
 // Positions are thirds of the channel's travel, like Betaflight's AUX ranges: below -1/3 low,
 // above +1/3 high, the middle third the middle. An EdgeTX 2-position switch sends -100 % / +100 %
 // (low / high), a 3-position one -100 / 0 / +100. A button reads low released, high pressed.
+//
+// A 3-position switch some controllers report as two button bits (the DJI FPV Remote Controller 3:
+// one bit per end, neither in the middle; docs/research/radios/dji-rc3.md) is ONE input of its own
+// kind, 'bits': `lo` on = low, `hi` on = high, neither = middle. Both on, which such a switch never
+// sends, reads as the middle (no end is clearly selected). Everything that reads a switch input
+// (positions here, microseconds and channel numbers in switches.ts, the screens' names) takes it like
+// an axis switch with three positions.
 import { MODE_CHANNEL } from '@gsfpv/sim-core';
 import type { FlightMode } from '@gsfpv/sim-core';
 import type { RawFrame } from './calib';
 import { FRAME_BUTTONS } from './frame';
 
-/** The input a mode switch is read from: an axis channel (0-based) or a button bit. */
-export type SwitchInput = { kind: 'axis'; index: number } | { kind: 'button'; bit: number };
+/**
+ * The input a switch is read from: an axis channel (0-based), a button bit, or a 3-position switch
+ * sent as two mutually exclusive button bits (`lo` on = low position, `hi` on = high, neither = middle).
+ */
+export type SwitchInput = { kind: 'axis'; index: number } | { kind: 'button'; bit: number } | { kind: 'bits'; lo: number; hi: number };
 /** 0 low, 1 middle, 2 high. */
 export type SwitchPos = 0 | 1 | 2;
 export type SwitchModes = [FlightMode, FlightMode, FlightMode];
@@ -36,6 +46,7 @@ const MAX_BIT = FRAME_BUTTONS - 1;
 /** Which position the switch is in on this frame; null when the frame has no such input. */
 export function switchPos(input: SwitchInput, f: RawFrame): SwitchPos | null {
     if (input.kind === 'button') return ((f.buttons >> input.bit) & 1) === 1 ? 2 : 0;
+    if (input.kind === 'bits') return bitsPos(input, f.buttons);
     if (input.index >= f.axes.length) return null;
     const v = f.axes[input.index];
     if (!Number.isFinite(v)) return null;
@@ -52,15 +63,28 @@ export function switchChannel(ms: ModeSwitch, f: RawFrame): number {
     return MODE_CHANNEL[switchMode(ms, f)];
 }
 
+/** The position of a two-bit switch for a button mask: lo on = low, hi on = high, neither (or both) = middle. */
+export function bitsPos(input: { lo: number; hi: number }, buttons: number): SwitchPos {
+    const lo = ((buttons >> input.lo) & 1) === 1;
+    const hi = ((buttons >> input.hi) & 1) === 1;
+    return lo === hi ? 1 : lo ? 0 : 2;
+}
+
 export function isFlightMode(v: unknown): v is FlightMode {
     return typeof v === 'string' && (FLIGHT_MODES as readonly string[]).includes(v);
 }
 
-/** A stored or imported switch input, checked (an axis 0..31 or a button bit 0..23); null when it cannot be read. */
+/**
+ * A stored or imported switch input, checked (an axis 0..31, a button bit 0..23, or two different bits
+ * 0..23); null when it cannot be read. A build from before the 'bits' kind returns null for one, so it
+ * drops that range or mode switch and keeps the profile (its rule for anything it cannot read).
+ */
 export function validSwitchInput(v: unknown): SwitchInput | null {
-    const i = v as { kind?: unknown; index?: unknown; bit?: unknown } | null | undefined;
+    const i = v as { kind?: unknown; index?: unknown; bit?: unknown; lo?: unknown; hi?: unknown } | null | undefined;
+    const isBit = (b: unknown): b is number => Number.isInteger(b) && (b as number) >= 0 && (b as number) <= MAX_BIT;
     if (i?.kind === 'axis' && Number.isInteger(i.index) && (i.index as number) >= 0 && (i.index as number) <= MAX_AXIS) return { kind: 'axis', index: i.index as number };
-    if (i?.kind === 'button' && Number.isInteger(i.bit) && (i.bit as number) >= 0 && (i.bit as number) <= MAX_BIT) return { kind: 'button', bit: i.bit as number };
+    if (i?.kind === 'button' && isBit(i.bit)) return { kind: 'button', bit: i.bit };
+    if (i?.kind === 'bits' && isBit(i.lo) && isBit(i.hi) && i.lo !== i.hi) return { kind: 'bits', lo: i.lo, hi: i.hi };
     return null;
 }
 
@@ -83,7 +107,28 @@ export function copyModeSwitch(ms: ModeSwitch | null | undefined): ModeSwitch | 
 }
 
 export function sameInput(a: SwitchInput, b: SwitchInput): boolean {
-    return a.kind === 'axis' ? b.kind === 'axis' && a.index === b.index : b.kind === 'button' && a.bit === b.bit;
+    if (a.kind === 'axis') return b.kind === 'axis' && a.index === b.index;
+    if (a.kind === 'button') return b.kind === 'button' && a.bit === b.bit;
+    return b.kind === 'bits' && a.lo === b.lo && a.hi === b.hi;
+}
+
+/** The button bits an input reads (none for an axis). */
+export function inputBits(i: SwitchInput): number[] {
+    return i.kind === 'button' ? [i.bit] : i.kind === 'bits' ? [i.lo, i.hi] : [];
+}
+
+/** A short stable text for an input (a select's value, a rebuild key): a6, b4, p6.7. */
+export function inputKey(i: SwitchInput): string {
+    return i.kind === 'axis' ? `a${i.index}` : i.kind === 'button' ? `b${i.bit}` : `p${i.lo}.${i.hi}`;
+}
+
+/** inputKey back to an input; null for a text that is not one. */
+export function inputFromKey(k: string): SwitchInput | null {
+    const m = /^(?:a(\d+)|b(\d+)|p(\d+)\.(\d+))$/.exec(k);
+    if (!m) return null;
+    if (m[1] !== undefined) return validSwitchInput({ kind: 'axis', index: Number(m[1]) });
+    if (m[2] !== undefined) return validSwitchInput({ kind: 'button', bit: Number(m[2]) });
+    return validSwitchInput({ kind: 'bits', lo: Number(m[3]), hi: Number(m[4]) });
 }
 
 // -------------------------------------------------------------- finding the switch (check screen)
@@ -115,9 +160,12 @@ export interface SwitchFlip { input: SwitchInput; from: SwitchPos; to: SwitchPos
  * still level held LEVEL_MS, then a jump to a level in another position, held LEVEL_MS again.
  * Noise and drift stay in one position; a knob or a slider is a sweep (no single big step) and is
  * never taken in this watch; a glitch shorter than LEVEL_MS is not a level. Buttons: a bit that
- * changed and holds LEVEL_MS; when one bit goes off as another comes on (a switch that reports each
- * end as a bit, flipped end to end), the one that came on. Nothing is ever taken because time
- * passed: only a held new position.
+ * changed and holds LEVEL_MS. Two-bit switches (kind 'bits'): a pair named up front (`pairs`, a
+ * recognised controller's switches) is watched as one 3-position switch, so a flip into its middle
+ * (one bit off, none on) is that switch too; an unknown pair is learned from an end-to-end flip, one
+ * bit going off as another comes on within LEVEL_MS (through a short middle or none), and reported as
+ * the pair; from then on it is one switch as well. Before a pair is known, a bit going off alone is
+ * that button released. Nothing is ever taken because time passed: only a held new position.
  */
 export class ModeSwitchDetector {
     private n = 0;
@@ -137,6 +185,10 @@ export class ModeSwitchDetector {
     private now = 0;
     private exAxes = new Set<number>();
     private exBits = new Set<number>();
+    /** two-bit switches named up front (`pairs`) */
+    private given: { lo: number; hi: number }[] = [];
+    /** the given ones and those learned from an end-to-end flip in this watch */
+    private pairList: { lo: number; hi: number }[] = [];
 
     /** Inputs never taken: the stick channels and the arm switch. */
     exclude(axes: Iterable<number>, bits: Iterable<number>): void {
@@ -144,10 +196,22 @@ export class ModeSwitchDetector {
         this.exBits = new Set(bits);
     }
 
-    /** Forget every level: a new watch (a new check screen, or "find the switch again"). */
+    /** Two-bit 3-position switches known before any flip (a recognised controller's): each is watched as one switch. */
+    pairs(list: Iterable<{ lo: number; hi: number }>): void {
+        this.given = [...list].map((p) => ({ lo: p.lo, hi: p.hi }));
+        this.pairList = this.given.map((p) => ({ ...p }));
+    }
+
+    /** The two-bit switches this watch knows now (given and learned). */
+    knownPairs(): { lo: number; hi: number }[] {
+        return this.pairList.map((p) => ({ ...p }));
+    }
+
+    /** Forget every level and every learned pair: a new watch (a new check screen, or "find the switch again"). */
     reset(): void {
         this.started = false;
         this.n = 0;
+        this.pairList = this.given.map((p) => ({ ...p }));
     }
 
     /** One frame; a flip that just completed, or null. */
@@ -213,31 +277,71 @@ export class ModeSwitchDetector {
             this.level[i] = m;
             this.stepMax[i] = 0;
         }
-        const diff = this.bits ^ this.bitLevel;
-        if (diff) {
+        if (this.bits ^ this.bitLevel) {
+            // the two-bit switches first: a pair moves as one switch once both its bits have held
+            for (const p of this.pairList) {
+                const mask = (1 << p.lo) | (1 << p.hi);
+                const diff = (this.bits ^ this.bitLevel) & mask;
+                if (!diff || !this.settled(diff, t)) continue;
+                const from = bitsPos(p, this.bitLevel);
+                this.bitLevel = (this.bitLevel & ~mask) | (this.bits & mask);
+                const to = bitsPos(p, this.bitLevel);
+                if (from !== to && !this.exBits.has(p.lo) && !this.exBits.has(p.hi) && !found) found = { input: { kind: 'bits', lo: p.lo, hi: p.hi }, from, to };
+            }
+            const diff = this.bits ^ this.bitLevel;
             for (let b = 0; b < FRAME_BUTTONS; b++) {
-                if (!(diff & (1 << b)) || t - this.bitSince[b] < MT.LEVEL_MS) continue;
+                if (!(diff & (1 << b)) || t - this.bitSince[b] < MT.LEVEL_MS || this.paired(b)) continue;
                 const on = (this.bits >> b) & 1;
+                // a bit that went off while another came on within LEVEL_MS: an end-to-end flip of a
+                // two-bit switch, reported by the bit that came on (below), never by this one
+                if (!on && this.partnerOf(b, 1, t) >= 0) continue;
+                const off = on ? this.partnerOf(b, 0, t) : -1;
+                if (off === -2) continue; // the other end went off just after this one came on: wait until it has held
+                if (off >= 0) {
+                    // learned: one switch from now on; the flip goes from the end that went off to this one
+                    const p = { lo: Math.min(b, off), hi: Math.max(b, off) };
+                    this.pairList.push(p);
+                    const mask = (1 << p.lo) | (1 << p.hi);
+                    const from = bitsPos(p, this.bitLevel);
+                    this.bitLevel = (this.bitLevel & ~mask) | (this.bits & mask);
+                    const to = bitsPos(p, this.bitLevel);
+                    if (!this.exBits.has(b) && !this.exBits.has(off) && !found) found = { input: { kind: 'bits', lo: p.lo, hi: p.hi }, from, to };
+                    continue;
+                }
                 this.bitLevel = on ? this.bitLevel | (1 << b) : this.bitLevel & ~(1 << b);
-                // a switch that reports its positions as bits (one bit per end, neither = middle, as
-                // the DJI controller's) flipped from one end to the other: one bit goes off as another
-                // comes on. The flip is to the position whose bit came on; that one is reported once it
-                // holds, never the one that went off
-                if (!on && this.cameOnWith(b)) continue;
                 if (!this.exBits.has(b) && !found) found = { input: { kind: 'button', bit: b }, from: on ? 0 : 2, to: on ? 2 : 0 };
             }
         }
         return found;
     }
 
-    /** Another bit (not excluded) came on within LEVEL_MS of bit `b` going off and has not been taken yet. */
-    private cameOnWith(b: number): boolean {
+    /** Every changed bit of `mask` has held LEVEL_MS. */
+    private settled(mask: number, t: number): boolean {
+        for (let b = 0; b < FRAME_BUTTONS; b++) if (mask & (1 << b) && t - this.bitSince[b] < MT.LEVEL_MS) return false;
+        return true;
+    }
+
+    private paired(b: number): boolean {
+        return this.pairList.some((p) => p.lo === b || p.hi === b);
+    }
+
+    /**
+     * An unpaired, not excluded bit other than `b` whose change is pending in the other direction:
+     * `want` 1 = it came on, 0 = it went off, within LEVEL_MS of `b`'s change. -1 = none; for `want` 0,
+     * -2 = there is one but it has not held yet (the end-to-end flip is complete only when both ends have).
+     */
+    private partnerOf(b: number, want: 0 | 1, t: number): number {
+        let waiting = false;
         for (let c = 0; c < FRAME_BUTTONS; c++) {
-            if (c === b || this.exBits.has(c)) continue;
-            const pending = ((this.bits >> c) & 1) === 1 && ((this.bitLevel >> c) & 1) === 0;
-            if (pending && Math.abs(this.bitSince[c] - this.bitSince[b]) < MT.LEVEL_MS) return true;
+            if (c === b || this.exBits.has(c) || this.paired(c)) continue;
+            const now = (this.bits >> c) & 1;
+            const held = (this.bitLevel >> c) & 1;
+            if (now !== want || held === want) continue;
+            if (Math.abs(this.bitSince[c] - this.bitSince[b]) >= MT.LEVEL_MS) continue;
+            if (want === 0 && t - this.bitSince[c] < MT.LEVEL_MS) { waiting = true; continue; }
+            return c;
         }
-        return false;
+        return waiting ? -2 : -1;
     }
 }
 

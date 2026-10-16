@@ -20,7 +20,7 @@
 
 import { ModeSwitchDetector, DEFAULT_SWITCH_MODES, copyModeSwitch, sameInput, switchChannel, switchPos } from './mode-switch';
 import type { ModeSwitch, SwitchInput, SwitchPos } from './mode-switch';
-import { copySwitches, hasModeRanges, rangesArm, rangesModeChannel } from './switches';
+import { copySwitches, hasModeRanges, rangesArm, rangesModeChannel, tablePairs } from './switches';
 import type { Switches } from './switches';
 import type { FlightMode } from '@gsfpv/sim-core';
 import { FRAME_BUTTONS } from './frame';
@@ -82,7 +82,18 @@ export interface Profile {
      * absent, everything is the wizard's as before.
      */
     switches?: Switches;
+    /**
+     * The device's radio channels in order, CH1 first (switches.ts ChannelTable): how its controls are
+     * numbered as Betaflight numbers them, a two-bit 3-position switch being one channel. A recognised
+     * controller has one (known-devices.ts); absent, channels are the EdgeTX USB joystick's.
+     */
+    channels?: SwitchInput[];
+    /** The known-controller entry this profile came from (known-devices.ts KnownDevice.id): its labels on the check screen. */
+    known?: string;
 }
+
+/** What a recognised device brings to a wizard run: its channel table and its known-controller id, kept in the profile. */
+export interface WizardDevice { channels?: SwitchInput[]; known?: string }
 
 /** The check screen's mode-switch row: the switch (null = none), where it is now, the positions seen, and whether a flip is watched for. */
 export interface ModeSwitchState { sw: ModeSwitch | null; pos: SwitchPos | null; seen: [boolean, boolean, boolean]; listening: boolean }
@@ -378,14 +389,18 @@ export class CalibrationWizard {
     private modeListen = true;
     private modeDet = new ModeSwitchDetector();
 
-    constructor(deviceKey: string, deviceName: string) {
+    private device: WizardDevice;
+
+    /** `device`: a recognised device's channel table and id (known-devices.ts), kept in the profile the wizard builds. */
+    constructor(deviceKey: string, deviceName: string, device: WizardDevice = {}) {
         this.deviceKey = deviceKey;
         this.deviceName = deviceName;
+        this.device = { ...(device.channels ? { channels: device.channels.map((i) => ({ ...i })) } : {}), ...(device.known ? { known: device.known } : {}) };
     }
 
     /** Resume at the check with a saved profile: ranges seeded from it, so Set again works. */
     static resume(p: Profile): CalibrationWizard {
-        const w = new CalibrationWizard(p.deviceKey, p.deviceName);
+        const w = new CalibrationWizard(p.deviceKey, p.deviceName, { channels: p.channels, known: p.known });
         w.resumed = p;
         w.started = true;
         w.assigned = copyAssigned(p.axes);
@@ -1473,6 +1488,8 @@ export class CalibrationWizard {
         if (m?.kind === 'button') bits.push(m.bit);
         if (p?.arm?.kind === 'button') bits.push(p.arm.bit);
         this.modeDet.exclude(axes, bits);
+        // a recognised controller's two-bit switches are one switch each from the first flip
+        this.modeDet.pairs(tablePairs(this.device.channels));
         this.modeDet.reset();
         this.state.modeSwitch = { sw: null, pos: null, seen: [false, false, false], listening: this.modeListen };
         this.modeSync();
@@ -1480,7 +1497,20 @@ export class CalibrationWizard {
 
     /** A completed flip of a free switch while nothing is set and the pilot did not say none: that is the mode switch. */
     private modeWatch(flip: { input: SwitchInput; from: SwitchPos; to: SwitchPos } | null): void {
-        if (!flip || this.modeSw || !this.modeListen) return;
+        if (!flip) return;
+        // a switch taken as one button bit (its first flip went to the middle, before the watch knew
+        // the other end's bit) turns out to be a two-bit 3-position switch: it becomes that switch,
+        // each end keeping the mode it had (the button "pressed" is the end its bit stands for)
+        const cur = this.modeSw?.input;
+        if (cur?.kind === 'button' && flip.input.kind === 'bits' && (flip.input.lo === cur.bit || flip.input.hi === cur.bit) && this.modeSw) {
+            const m = this.modeSw.modes;
+            this.modeSw = { input: { ...flip.input }, modes: flip.input.hi === cur.bit ? [m[0], m[1], m[2]] : [m[2], m[1], m[0]] };
+            this.modeSync();
+            const ms = this.state.modeSwitch;
+            if (ms) { ms.seen[flip.from] = true; ms.seen[flip.to] = true; }
+            return;
+        }
+        if (this.modeSw || !this.modeListen) return;
         this.modeSw = { input: flip.input, modes: [DEFAULT_SWITCH_MODES[0], DEFAULT_SWITCH_MODES[1], DEFAULT_SWITCH_MODES[2]] };
         this.modeSync();
         const ms = this.state.modeSwitch;
@@ -1541,7 +1571,11 @@ export class CalibrationWizard {
             ...(this.modeSw ? { modeSwitch: copyModeSwitch(this.modeSw)! } : {}),
             // the channel functions (Switches screen) are not measured by the wizard: a resumed
             // profile keeps them through Set again; a new wizard run has none (the default again)
-            ...(this.resumed?.switches ? { switches: copySwitches(this.resumed.switches) } : {})
+            ...(this.resumed?.switches ? { switches: copySwitches(this.resumed.switches) } : {}),
+            // the device's channel numbering and its known entry are not measured either: they come
+            // with the device (a recognised controller) and stay through Set again and Recalibrate
+            ...(this.device.channels ? { channels: this.device.channels.map((i) => ({ ...i })) } : {}),
+            ...(this.device.known ? { known: this.device.known } : {})
         };
     }
 

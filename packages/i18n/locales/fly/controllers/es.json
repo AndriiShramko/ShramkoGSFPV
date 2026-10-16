@@ -1,0 +1,5 @@
+{
+  "controllers.input.chs": "CH{a}/{b}",
+  "controllers.input.buttons": "botones {a}/{b}",
+  "controllers.input.axis": "eje {n}"
+}

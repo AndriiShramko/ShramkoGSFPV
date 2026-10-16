@@ -26,7 +26,7 @@ export function radioSwitch(ctx: Pick<FlightContext, 'controls'>): string | null
         return [...new Set(sw.ranges.filter((r) => r.fn === 'angle' || r.fn === 'horizon').map((r) => c.nameOf(r.input)))].join(' / ');
     }
     const ms = c.profile?.modeSwitch;
-    if (ms) return ms.input.kind === 'axis' ? t('wizard.armSource.ch', { n: ms.input.index + 1 }) : t('wizard.armSource.button', { n: ms.input.bit + 1 });
+    if (ms) return c.nameOf(ms.input);
     const a = c.profile?.angleMode;
     return a?.kind === 'axis' ? t('wizard.armSource.ch', { n: a.index + 1 }) : a?.kind === 'button' ? t('wizard.armSource.button', { n: a.bit + 1 }) : '';
 }

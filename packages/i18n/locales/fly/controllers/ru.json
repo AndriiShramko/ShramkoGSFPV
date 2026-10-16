@@ -1,0 +1,5 @@
+{
+  "controllers.input.chs": "CH{a}/{b}",
+  "controllers.input.buttons": "кнопки {a}/{b}",
+  "controllers.input.axis": "ось {n}"
+}
