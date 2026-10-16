@@ -1,0 +1,422 @@
+{
+ "what": "HidSource on the local release with a fake navigator.hid (hid-source-probe.mjs)",
+ "base": "http://localhost:5391/en",
+ "browser": {
+  "kind": "system-chrome",
+  "version": "155.0.8059.40",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+  "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "softwareGl": false,
+  "counts": true
+ },
+ "dji": {
+  "pass": true,
+  "expect": {
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "name": "USB 2ca3:1021",
+   "end": "check"
+  },
+  "seconds": 22,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "profileKey": "hid:2ca3:1021:HID Interface:13:d",
+   "profileName": "USB 2ca3:1021",
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "reports": 3365,
+   "badReports": 0,
+   "lastBadLen": 0,
+   "rateHz": 166,
+   "deviceName": "HID Interface",
+   "hint": "",
+   "probe": {
+    "requested": 1,
+    "opened": 1,
+    "sent": 3365,
+    "listeners": 1
+   }
+  },
+  "screens": 22,
+  "path": [
+   {
+    "t": 462,
+    "k": "connect/null"
+   },
+   {
+    "t": 1304,
+    "k": "stir/active"
+   },
+   {
+    "t": 4149,
+    "k": "stir/done"
+   },
+   {
+    "t": 5113,
+    "k": "centre/ready"
+   },
+   {
+    "t": 5657,
+    "k": "centre/active"
+   },
+   {
+    "t": 6403,
+    "k": "centre/done"
+   },
+   {
+    "t": 7433,
+    "k": "throttle/ready"
+   },
+   {
+    "t": 7956,
+    "k": "throttle/active"
+   },
+   {
+    "t": 8898,
+    "k": "throttle/done"
+   },
+   {
+    "t": 9779,
+    "k": "yaw/ready"
+   },
+   {
+    "t": 10310,
+    "k": "yaw/active"
+   },
+   {
+    "t": 11241,
+    "k": "yaw/done"
+   },
+   {
+    "t": 12670,
+    "k": "pitch/ready"
+   },
+   {
+    "t": 13298,
+    "k": "pitch/active"
+   },
+   {
+    "t": 14067,
+    "k": "pitch/done"
+   },
+   {
+    "t": 15200,
+    "k": "roll/ready"
+   },
+   {
+    "t": 15952,
+    "k": "roll/active"
+   },
+   {
+    "t": 16774,
+    "k": "roll/done"
+   },
+   {
+    "t": 17983,
+    "k": "arm/ready"
+   },
+   {
+    "t": 18572,
+    "k": "arm/active"
+   },
+   {
+    "t": 20151,
+    "k": "arm/done"
+   },
+   {
+    "t": 20883,
+    "k": "check/null"
+   }
+  ],
+  "errors": []
+ },
+ "dji-windows": {
+  "pass": true,
+  "expect": {
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "name": "USB 2ca3:1021",
+   "end": "check"
+  },
+  "seconds": 22,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "profileKey": "hid:2ca3:1021:HID Interface:13:d",
+   "profileName": "USB 2ca3:1021",
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "reports": 3387,
+   "badReports": 0,
+   "lastBadLen": 0,
+   "rateHz": 164,
+   "deviceName": "HID Interface",
+   "hint": "",
+   "probe": {
+    "requested": 1,
+    "opened": 1,
+    "sent": 3387,
+    "listeners": 1
+   }
+  },
+  "screens": 23,
+  "path": [
+   {
+    "t": 273,
+    "k": "none"
+   },
+   {
+    "t": 897,
+    "k": "stir/ready"
+   },
+   {
+    "t": 1482,
+    "k": "stir/active"
+   },
+   {
+    "t": 4213,
+    "k": "stir/done"
+   },
+   {
+    "t": 5053,
+    "k": "centre/ready"
+   },
+   {
+    "t": 5833,
+    "k": "centre/active"
+   },
+   {
+    "t": 6399,
+    "k": "centre/done"
+   },
+   {
+    "t": 7323,
+    "k": "throttle/ready"
+   },
+   {
+    "t": 8062,
+    "k": "throttle/active"
+   },
+   {
+    "t": 8810,
+    "k": "throttle/done"
+   },
+   {
+    "t": 9739,
+    "k": "yaw/ready"
+   },
+   {
+    "t": 10469,
+    "k": "yaw/active"
+   },
+   {
+    "t": 11281,
+    "k": "yaw/done"
+   },
+   {
+    "t": 12721,
+    "k": "pitch/ready"
+   },
+   {
+    "t": 13198,
+    "k": "pitch/active"
+   },
+   {
+    "t": 14111,
+    "k": "pitch/done"
+   },
+   {
+    "t": 15474,
+    "k": "roll/ready"
+   },
+   {
+    "t": 15984,
+    "k": "roll/active"
+   },
+   {
+    "t": 16905,
+    "k": "roll/done"
+   },
+   {
+    "t": 18038,
+    "k": "arm/ready"
+   },
+   {
+    "t": 18707,
+    "k": "arm/active"
+   },
+   {
+    "t": 20198,
+    "k": "arm/done"
+   },
+   {
+    "t": 21122,
+    "k": "check/null"
+   }
+  ],
+  "errors": []
+ },
+ "edgetx": {
+  "pass": true,
+  "expect": {
+   "key": "hid:1209:4f54:RadioMaster TX16S Joystick:19",
+   "name": "RadioMaster TX16S Joystick",
+   "end": "check"
+  },
+  "seconds": 21,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "profileKey": "hid:1209:4f54:RadioMaster TX16S Joystick:19",
+   "profileName": "RadioMaster TX16S Joystick",
+   "key": "hid:1209:4f54:RadioMaster TX16S Joystick:19",
+   "reports": 5100,
+   "badReports": 0,
+   "lastBadLen": 0,
+   "rateHz": 249,
+   "deviceName": "RadioMaster TX16S Joystick",
+   "hint": "",
+   "probe": {
+    "requested": 1,
+    "opened": 1,
+    "sent": 5100,
+    "listeners": 1
+   }
+  },
+  "screens": 23,
+  "path": [
+   {
+    "t": 169,
+    "k": "none"
+   },
+   {
+    "t": 638,
+    "k": "stir/ready"
+   },
+   {
+    "t": 1109,
+    "k": "stir/active"
+   },
+   {
+    "t": 4064,
+    "k": "stir/done"
+   },
+   {
+    "t": 4993,
+    "k": "centre/ready"
+   },
+   {
+    "t": 5440,
+    "k": "centre/active"
+   },
+   {
+    "t": 6095,
+    "k": "centre/done"
+   },
+   {
+    "t": 7191,
+    "k": "throttle/ready"
+   },
+   {
+    "t": 7636,
+    "k": "throttle/active"
+   },
+   {
+    "t": 8689,
+    "k": "throttle/done"
+   },
+   {
+    "t": 9569,
+    "k": "yaw/ready"
+   },
+   {
+    "t": 10050,
+    "k": "yaw/active"
+   },
+   {
+    "t": 10946,
+    "k": "yaw/done"
+   },
+   {
+    "t": 12318,
+    "k": "pitch/ready"
+   },
+   {
+    "t": 12996,
+    "k": "pitch/active"
+   },
+   {
+    "t": 13674,
+    "k": "pitch/done"
+   },
+   {
+    "t": 14961,
+    "k": "roll/ready"
+   },
+   {
+    "t": 15616,
+    "k": "roll/active"
+   },
+   {
+    "t": 16531,
+    "k": "roll/done"
+   },
+   {
+    "t": 17833,
+    "k": "arm/ready"
+   },
+   {
+    "t": 18489,
+    "k": "arm/active"
+   },
+   {
+    "t": 19776,
+    "k": "arm/done"
+   },
+   {
+    "t": 20635,
+    "k": "check/null"
+   }
+  ],
+  "errors": []
+ },
+ "dji-none": {
+  "pass": true,
+  "expect": {
+   "end": "connect",
+   "refused": true
+  },
+  "seconds": 30,
+  "end": {
+   "id": "connect",
+   "profile": false,
+   "profileKey": null,
+   "profileName": null,
+   "key": "hid:2ca3:1021:HID Interface:13",
+   "reports": 0,
+   "badReports": 4961,
+   "lastBadLen": 13,
+   "rateHz": 0,
+   "deviceName": "HID Interface",
+   "hint": "The device sends 13-byte reports we cannot read. Try the \"Gamepad or radio as gamepad\" button instead; an EdgeTX radio can also be set to USB Joystick mode Classic in its model settings.",
+   "probe": {
+    "requested": 1,
+    "opened": 1,
+    "sent": 4961,
+    "listeners": 1
+   }
+  },
+  "screens": 2,
+  "path": [
+   {
+    "t": 176,
+    "k": "none"
+   },
+   {
+    "t": 1796,
+    "k": "connect/null"
+   }
+  ],
+  "errors": []
+ },
+ "pass": true
+}

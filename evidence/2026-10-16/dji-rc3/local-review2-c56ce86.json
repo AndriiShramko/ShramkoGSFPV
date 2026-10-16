@@ -1,0 +1,280 @@
+{
+ "what": "review fixes of dji-rc3 (M1 M2 M3 L1-L8): unit, mutation and page checks; the release built from c56ce86 (build-release.mjs), served by serve-csp.mjs on :5391 with the enforced CSP; later commits change only docs and evidence",
+ "release": {
+  "sha": "c56ce86",
+  "sha256": "f3b65a053f13c7a0715e6add2ad7695254475c93562bb3e5ab6d8a033f62fa63",
+  "served": "http://localhost:5391"
+ },
+ "browser": {
+  "kind": "system-chrome",
+  "version": "155.0.8059.40",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+  "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "softwareGl": false,
+  "counts": true
+ },
+ "unit": {
+  "vitest": {
+   "files": 109,
+   "passed": 1280,
+   "skipped": 1,
+   "failed": 0
+  },
+  "hidLayoutTests": 44,
+  "hidSourceTests": 7,
+  "modeSwitchTests": 22
+ },
+ "mutations": {
+  "how": "scratch script, never committed: each mutant of hid-layout.ts / hid.ts written, packages/input/test/hid-layout.test.ts and tools/bench/test/app-hid-source.test.ts run, original restored",
+  "reviewer15": "the reviewer mutate.mjs on the new hid-layout.ts: 11 apply verbatim and are killed; 4 patterns changed by the fixes (no button shift, EdgeTX by descriptor too, range one usage, > 24 buttons) are ported to the new text (R4 R7 R9 R14) and killed: 15/15",
+  "result": [
+   "KILLED   R1 signed never  (10 failed | 41 passed (51))",
+   "KILLED   R2 constant items take no bits  (5 failed | 46 passed (51))",
+   "KILLED   R3 innermost listing wins  (5 failed | 46 passed (51))",
+   "KILLED   R4 no button shift (ported)  (3 failed | 48 passed (51))",
+   "KILLED   R5 report id ignored  (6 failed | 45 passed (51))",
+   "KILLED   R6 byte-aligned fields  (1 failed | 50 passed (51))",
+   "KILLED   R7 EdgeTX by its USB ids again (ported: the old special case back, the inverse of the old mutation)  (5 failed | 46 passed (51))",
+   "KILLED   R8 no clamp  (1 failed | 50 passed (51))",
+   "KILLED   R9 range: one usage for all fields (ported)  (29 failed | 22 passed (51))",
+   "KILLED   R10 other reports zero the frame  (24 failed | 27 passed (51))",
+   "KILLED   R11 buttons: page check dropped (vendor 1-bit fields become buttons)  (1 failed | 50 passed (51))",
+   "KILLED   R12 axis: any 2..32-bit generic desktop usage (hat 0x39 too)  (2 failed | 49 passed (51))",
+   "KILLED   R13 > 8 axes not capped  (1 failed | 50 passed (51))",
+   "KILLED   R14 > 24 buttons kept (ported)  (1 failed | 50 passed (51))",
+   "KILLED   R15 keyBytes of the last layout  (1 failed | 50 passed (51))",
+   "KILLED   N1 M1 every collection read (the old walk)  (3 failed | 48 passed (51))",
+   "KILLED   N2 M1 any Generic Desktop collection counts  (3 failed | 48 passed (51))",
+   "KILLED   N3 M2 symmetric scaling ((lo+hi)/2, the reader before)  (14 failed | 37 passed (51))",
+   "KILLED   N4 M2 EdgeTX key not kept (every descriptor device gets :d)  (4 failed | 47 passed (51))",
+   "KILLED   N5 M2 no fallback without a descriptor  (1 failed | 50 passed (51))",
+   "KILLED   N6 L1 array fields read  (1 failed | 50 passed (51))",
+   "KILLED   N7 L2 usages made up past the range  (1 failed | 50 passed (51))",
+   "KILLED   N8 L3 sign-extended maximum not fixed  (1 failed | 50 passed (51))",
+   "KILLED   N9 L4 Simulation Controls page not read  (4 failed | 47 passed (51))",
+   "KILLED   N10 L4 every Simulation Controls usage an axis (on/off controls too)  (1 failed | 50 passed (51))",
+   "KILLED   N11 L5 move past the highest taken bit (the rule before)  (1 failed | 50 passed (51))",
+   "KILLED   N12 L6 no :d suffix  (6 failed | 45 passed (51))",
+   "KILLED   N13 Generic Desktop 1-bit fields (EdgeTX d-pad bits) become buttons  (1 failed | 50 passed (51))",
+   "KILLED   H1 e.reportId ignored (always 0)  (2 failed | 49 passed (51))",
+   "KILLED   H2 open keeps the fallback reader (makeHidReader not called)  (3 failed | 48 passed (51))",
+   "KILLED   H3 key from the arriving length only (reader ignored)  (3 failed | 48 passed (51))",
+   "KILLED   H4 open does not open the device  (2 failed | 49 passed (51))",
+   "KILLED   H5 the event time stamp not used  (2 failed | 49 passed (51))",
+   "KILLED   H6 chooser without the multi-axis filter  (1 failed | 50 passed (51))",
+   "killed 34 of 34 applied (34 listed)"
+  ],
+  "reviewerScriptVerbatim": [
+   "KILLED   signed never  (8 failed | 36 passed (44))",
+   "KILLED   constant items take no bits  (5 failed | 39 passed (44))",
+   "KILLED   innermost listing wins  (5 failed | 39 passed (44))",
+   "no button shift: PATTERN NOT FOUND",
+   "KILLED   report id ignored  (4 failed | 40 passed (44))",
+   "KILLED   byte-aligned fields  (1 failed | 43 passed (44))",
+   "EdgeTX by descriptor too: PATTERN NOT FOUND",
+   "KILLED   no clamp  (1 failed | 43 passed (44))",
+   "range: one usage for all fields: PATTERN NOT FOUND",
+   "KILLED   other reports zero the frame  (20 failed | 24 passed (44))",
+   "KILLED   buttons: page check dropped (vendor 1-bit fields become buttons)  (1 failed | 43 passed (44))",
+   "KILLED   axis: any 2..32-bit generic desktop usage (hat 0x39 too)  (2 failed | 42 passed (44))",
+   "KILLED   > 8 axes not capped  (1 failed | 43 passed (44))",
+   "> 24 buttons kept: PATTERN NOT FOUND",
+   "KILLED   keyBytes of the last layout  (1 failed | 43 passed (44))"
+  ]
+ },
+ "reviewerDeviceShapes": {
+  "how": "the reviewer devices.ts run against this branch (layouts as it prints them; the \"descriptor 1\" in its EdgeTX line is a literal of the script, the measured difference is the max axis diff)",
+  "output": [
+   "EdgeTX Classic descriptor (as a non-1209:4f54 radio, e.g. OpenTX 2.2 on 0483:5710): id0 19B axes[ch0:u30@24/16u ch1:u31@40/16u ch2:u32@56/16u ch3:u33@72/16u ch4:u34@88/16u ch5:u35@104/16u ch6:u36@120/16u ch7:u36@136/16u] buttons 24 (0..23)",
+   "  EdgeTX layout vs descriptor on 20000 random Classic reports: max axis diff 0.00000, button mismatches 0, keyBytes undefined (EdgeTX path key used the arriving length 19)",
+   "  centre 1024: EdgeTX 0, descriptor 0.00000; top 2047: EdgeTX 0.9990234375, descriptor 1",
+   "DJI RC 3, Windows shape (5 single-usage items + button range): id0 13B axes[ch0:u30@0/16s ch1:u31@16/16s ch2:u32@32/16s ch3:u33@48/16s ch4:u34@64/16s] buttons 24 (0..23)",
+   "ELRS BLE joystick (report id 3): id3 17B axes[ch0:u30@8/16u ch1:u31@24/16u ch2:u32@40/16u ch3:u35@56/16u ch4:u33@72/16u ch5:u34@88/16u ch6:u36@104/16u ch7:u36@120/16u] buttons 8 (0..7)",
+   "  descriptor: axes 1.000 -1.000 0.000 0.000 0.000 0.000 0.000 0.000, buttons 81",
+   "  the EdgeTX reader (the only reader before the fix) on the same 17 bytes: true axes 62.88 -0.88 -1.00 -0.94 -0.94 -0.94 -0.94 -0.94",
+   "DualShock 4 USB: id1 63B axes[ch0:u30@0/8u ch1:u31@8/8u ch2:u32@16/8u ch3:u35@24/8u ch4:u33@56/8u ch5:u34@64/8u] buttons 14 (0..13)",
+   "Xbox Wireless BT: id1 16B axes[ch0:u30@0/16u ch1:u31@16/16u ch2:u32@32/16u ch3:u35@48/16u ch4:uc5@64/10u ch5:uc4@80/10u] buttons 15 (0..14)",
+   "Mouse+gamepad combo (Linux/macOS shape): id2 6B axes[ch0:u30@0/8u ch1:u31@8/8u ch2:u32@16/8u ch3:u35@24/8u] buttons 12 (0..11)",
+   "Buttons usage 1..10 with report count 12 (2 data bits beyond the range): id0 4B axes[ch0:u30@0/8u ch1:u31@8/8u] buttons 12 (0..9)",
+   "Axes usage range X..Y with report count 4 (HID: fields 3, 4 are Y): id0 4B axes[ch0:u30@0/8u ch1:u31@8/8u ch2:u31@16/8u ch3:u31@24/8u] buttons 0 ()",
+   "Cheap pad, LOGICAL_MAXIMUM(255) as 1 byte -> -1 (descriptor path): id0 6B axes[ch0:u30@0/8u ch1:u31@8/8u ch2:u32@16/8u ch3:u35@24/8u] buttons 12 (0..11)",
+   "Same, 16-bit 0..65535 written as 2 bytes (0x26 0xFF 0xFF) -> -1: id0 10B axes[ch0:u30@0/16u ch1:u31@16/16u ch2:u32@32/16u ch3:u35@48/16u] buttons 16 (0..15)",
+   "Flight stick: X Y + Simulation Throttle/Rudder: id0 6B axes[ch0:u30@0/10u ch1:u31@10/10u ch2:ubb@24/8u ch3:uba@32/8u] buttons 8 (0..7)",
+   "RC sim dongle: all 4 on the Simulation page (Aileron Elevator Throttle Rudder): id0 5B axes[ch0:ub0@0/8u ch1:ub8@8/8u ch2:ubb@16/8u ch3:uba@24/8u] buttons 8 (0..7)",
+   "Array of GD usages 0x30..0x37 (an index, not values): id0 4B axes[ch0:u30@0/8u ch1:u31@8/8u] buttons 0 ()"
+  ]
+ },
+ "wizardAutoCheck": {
+  "nobuttons": {
+   "seconds": 26,
+   "end": {
+    "id": "check",
+    "profile": true,
+    "startOrNextVisible": false
+   },
+   "screens": 22,
+   "errors": []
+  },
+  "human": {
+   "seconds": 35,
+   "end": {
+    "id": "check",
+    "profile": true,
+    "startOrNextVisible": false
+   },
+   "screens": 23,
+   "errors": []
+  },
+  "dji": {
+   "seconds": 20,
+   "end": {
+    "id": "check",
+    "profile": true,
+    "startOrNextVisible": false
+   },
+   "screens": 22,
+   "errors": []
+  }
+ },
+ "hidSourceProbe": {
+  "what": "HidSource on the local release with a fake navigator.hid (hid-source-probe.mjs)",
+  "base": "http://localhost:5391/en",
+  "dji": {
+   "pass": true,
+   "expect": {
+    "key": "hid:2ca3:1021:HID Interface:13:d",
+    "name": "USB 2ca3:1021",
+    "end": "check"
+   },
+   "seconds": 22,
+   "end": {
+    "id": "check",
+    "profile": true,
+    "profileKey": "hid:2ca3:1021:HID Interface:13:d",
+    "profileName": "USB 2ca3:1021",
+    "key": "hid:2ca3:1021:HID Interface:13:d",
+    "reports": 3365,
+    "badReports": 0,
+    "lastBadLen": 0,
+    "rateHz": 166,
+    "deviceName": "HID Interface",
+    "hint": "",
+    "probe": {
+     "requested": 1,
+     "opened": 1,
+     "sent": 3365,
+     "listeners": 1
+    }
+   },
+   "screens": 22,
+   "errors": []
+  },
+  "dji-windows": {
+   "pass": true,
+   "expect": {
+    "key": "hid:2ca3:1021:HID Interface:13:d",
+    "name": "USB 2ca3:1021",
+    "end": "check"
+   },
+   "seconds": 22,
+   "end": {
+    "id": "check",
+    "profile": true,
+    "profileKey": "hid:2ca3:1021:HID Interface:13:d",
+    "profileName": "USB 2ca3:1021",
+    "key": "hid:2ca3:1021:HID Interface:13:d",
+    "reports": 3387,
+    "badReports": 0,
+    "lastBadLen": 0,
+    "rateHz": 164,
+    "deviceName": "HID Interface",
+    "hint": "",
+    "probe": {
+     "requested": 1,
+     "opened": 1,
+     "sent": 3387,
+     "listeners": 1
+    }
+   },
+   "screens": 23,
+   "errors": []
+  },
+  "edgetx": {
+   "pass": true,
+   "expect": {
+    "key": "hid:1209:4f54:RadioMaster TX16S Joystick:19",
+    "name": "RadioMaster TX16S Joystick",
+    "end": "check"
+   },
+   "seconds": 21,
+   "end": {
+    "id": "check",
+    "profile": true,
+    "profileKey": "hid:1209:4f54:RadioMaster TX16S Joystick:19",
+    "profileName": "RadioMaster TX16S Joystick",
+    "key": "hid:1209:4f54:RadioMaster TX16S Joystick:19",
+    "reports": 5100,
+    "badReports": 0,
+    "lastBadLen": 0,
+    "rateHz": 249,
+    "deviceName": "RadioMaster TX16S Joystick",
+    "hint": "",
+    "probe": {
+     "requested": 1,
+     "opened": 1,
+     "sent": 5100,
+     "listeners": 1
+    }
+   },
+   "screens": 23,
+   "errors": []
+  },
+  "dji-none": {
+   "pass": true,
+   "expect": {
+    "end": "connect",
+    "refused": true
+   },
+   "seconds": 30,
+   "end": {
+    "id": "connect",
+    "profile": false,
+    "profileKey": null,
+    "profileName": null,
+    "key": "hid:2ca3:1021:HID Interface:13",
+    "reports": 0,
+    "badReports": 4961,
+    "lastBadLen": 13,
+    "rateHz": 0,
+    "deviceName": "HID Interface",
+    "hint": "The device sends 13-byte reports we cannot read. Try the \"Gamepad or radio as gamepad\" button instead; an EdgeTX radio can also be set to USB Joystick mode Classic in its model settings.",
+    "probe": {
+     "requested": 1,
+     "opened": 1,
+     "sent": 4961,
+     "listeners": 1
+    }
+   },
+   "screens": 2,
+   "errors": []
+  },
+  "pass": true
+ },
+ "acceptFly": {
+  "target": "http://localhost:5391 (the \"accept-fly target\" line)",
+  "items": {
+   "B6": true,
+   "B7": true,
+   "B9": true,
+   "B10": true,
+   "B11": true,
+   "B12": true,
+   "B13": true,
+   "B14": true,
+   "B15": true,
+   "B16": true
+  }
+ }
+}
