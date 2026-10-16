@@ -9,7 +9,7 @@
 // exists and before the scan loads (render-pc drawOnDevice), so the scan streams with the budget this
 // device gets and draws stochastic from its first frame; the drawing feature (builtin/drawing.ts) applies it again
 // once the flight is built (the governor's top budget), on every scene switch and setting change.
-import { isHandheld, resolveDrawing } from '@gsfpv/render-pc';
+import { isHandheld, isViewerMobile, resolveDrawing } from '@gsfpv/render-pc';
 import type { Drawing, DrawingMode } from '@gsfpv/render-pc';
 import { renderParams, sceneRender } from '@gsfpv/scenes';
 import type { SceneRender } from '@gsfpv/scenes';
@@ -26,6 +26,9 @@ export const handheld: boolean = isHandheld(
     navigator.maxTouchPoints ?? 0,
     (navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData?.mobile
 );
+
+/** What SuperSplat's viewer calls mobile (render-pc isViewerMobile): it sets the top splat budget, 2 M or 4 M. */
+export const mobile: boolean = isViewerMobile(navigator.userAgent);
 
 /** The pilot's Display setting (anything unknown reads as auto). */
 export function drawingMode(prefs: PrefsStore): DrawingMode {
@@ -44,5 +47,5 @@ export function requestOf(scene: SceneRef): SceneRender | undefined {
  * device gets neither stochastic nor the link's budget (the session asks once its renderer exists).
  */
 export function drawingFor(prefs: PrefsStore, scene: SceneRef, webgpu: boolean): Drawing {
-    return resolveDrawing(drawingMode(prefs), requestOf(scene), { webgpu, handheld });
+    return resolveDrawing(drawingMode(prefs), requestOf(scene), { webgpu, handheld, mobile });
 }

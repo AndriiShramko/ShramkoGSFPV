@@ -6,15 +6,18 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { resolveDrawing, isHandheld, applyDrawing, drawOnDevice, defaultBudgetM, DEFAULT_BUDGET_M, HANDHELD_BUDGET_M, DRAWING_MODES, DRAWING_NOTES } from '../src/drawing';
+import { createRequire } from 'node:module';
+import { resolveDrawing, isHandheld, isViewerMobile, applyDrawing, drawOnDevice, defaultBudgetM, DEFAULT_BUDGET_M, MOBILE_BUDGET_M, DRAWING_MODES, DRAWING_NOTES } from '../src/drawing';
 import type { Drawing, DrawingDevice, DrawingMode, DrawingRequest } from '../src/drawing';
 import { FrameGovernor, DEFAULT_STEPS } from '../src/governor';
 // the Display setting's definition (packages/prefs is pure data; render-pc does not depend on it at run time)
 import { DISPLAY_DEFS } from '../../prefs/src/defs/display';
 
-const DESKTOP: DrawingDevice = { webgpu: true, handheld: false };
-const DESKTOP_GL: DrawingDevice = { webgpu: false, handheld: false };
-const PHONE: DrawingDevice = { webgpu: true, handheld: true };
+const DESKTOP: DrawingDevice = { webgpu: true, handheld: false, mobile: false };
+const DESKTOP_GL: DrawingDevice = { webgpu: false, handheld: false, mobile: false };
+const PHONE: DrawingDevice = { webgpu: true, handheld: true, mobile: true };
+/** iPadOS Safari: says "Macintosh", has touch points; a tablet to us (no stochastic), desktop to SuperSplat's viewer (4 M). */
+const IPAD_OS: DrawingDevice = { webgpu: true, handheld: true, mobile: false };
 const OWNER: DrawingRequest = { budgetM: 8, stochastic: true }; // superspl.at/scene/2f1ddf5f?budget=8&stochastic
 
 type Policy = (m: DrawingMode, r: DrawingRequest | undefined, d: DrawingDevice) => Drawing;
@@ -29,18 +32,23 @@ const ROWS: [DrawingMode, DrawingRequest | undefined, DrawingDevice, Drawing][] 
     ['stochastic', undefined, DESKTOP, { stochastic: true, budgetM: DEFAULT_BUDGET_M, note: null }],
     ['stochastic', { stochastic: false }, DESKTOP, { stochastic: true, budgetM: DEFAULT_BUDGET_M, note: null }],
     // phones and tablets: nothing of the request; the note says who asked and what was refused
-    ['auto', OWNER, PHONE, { stochastic: false, budgetM: HANDHELD_BUDGET_M, note: 'scene-handheld' }],
-    ['stochastic', undefined, PHONE, { stochastic: false, budgetM: HANDHELD_BUDGET_M, note: 'setting-handheld' }],
-    ['stochastic', OWNER, PHONE, { stochastic: false, budgetM: HANDHELD_BUDGET_M, note: 'setting-handheld' }], // the pilot's choice is named, not the scene's
-    ['auto', { budgetM: 8 }, PHONE, { stochastic: false, budgetM: HANDHELD_BUDGET_M, note: 'budget-handheld' }], // a budget only: no word about stochastic
-    ['auto', { stochastic: false, budgetM: 1 }, PHONE, { stochastic: false, budgetM: HANDHELD_BUDGET_M, note: 'budget-handheld' }],
-    ['sorted', OWNER, PHONE, { stochastic: false, budgetM: HANDHELD_BUDGET_M, note: 'budget-handheld' }], // sorted chosen: only the budget was refused
-    ['sorted', { stochastic: true }, PHONE, { stochastic: false, budgetM: HANDHELD_BUDGET_M, note: null }], // sorted chosen, nothing refused
-    ['auto', { budgetM: HANDHELD_BUDGET_M }, PHONE, { stochastic: false, budgetM: HANDHELD_BUDGET_M, note: null }], // the phone's own budget is not refused
+    ['auto', OWNER, PHONE, { stochastic: false, budgetM: MOBILE_BUDGET_M, note: 'scene-handheld' }],
+    ['stochastic', undefined, PHONE, { stochastic: false, budgetM: MOBILE_BUDGET_M, note: 'setting-handheld' }],
+    ['stochastic', OWNER, PHONE, { stochastic: false, budgetM: MOBILE_BUDGET_M, note: 'setting-handheld' }], // the pilot's choice is named, not the scene's
+    ['auto', { budgetM: 8 }, PHONE, { stochastic: false, budgetM: MOBILE_BUDGET_M, note: 'budget-handheld' }], // a budget only: no word about stochastic
+    ['auto', { stochastic: false, budgetM: 1 }, PHONE, { stochastic: false, budgetM: MOBILE_BUDGET_M, note: 'budget-handheld' }],
+    ['sorted', OWNER, PHONE, { stochastic: false, budgetM: MOBILE_BUDGET_M, note: 'budget-handheld' }], // sorted chosen: only the budget was refused
+    ['sorted', { stochastic: true }, PHONE, { stochastic: false, budgetM: MOBILE_BUDGET_M, note: null }], // sorted chosen, nothing refused
+    ['auto', { budgetM: MOBILE_BUDGET_M }, PHONE, { stochastic: false, budgetM: MOBILE_BUDGET_M, note: null }], // the phone's own budget is not refused
     // v0.8: a phone draws under SuperSplat's mobile budget, so the desktop's 4 M asked by a link is a refusal there
-    ['auto', { budgetM: DEFAULT_BUDGET_M }, PHONE, { stochastic: false, budgetM: HANDHELD_BUDGET_M, note: 'budget-handheld' }],
-    ['auto', undefined, PHONE, { stochastic: false, budgetM: HANDHELD_BUDGET_M, note: null }],
-    ['sorted', undefined, PHONE, { stochastic: false, budgetM: HANDHELD_BUDGET_M, note: null }],
+    ['auto', { budgetM: DEFAULT_BUDGET_M }, PHONE, { stochastic: false, budgetM: MOBILE_BUDGET_M, note: 'budget-handheld' }],
+    ['auto', undefined, PHONE, { stochastic: false, budgetM: MOBILE_BUDGET_M, note: null }],
+    ['sorted', undefined, PHONE, { stochastic: false, budgetM: MOBILE_BUDGET_M, note: null }],
+    // review R5: an iPad whose Safari says "Macintosh" draws the 4 M superspl.at gives it; stochastic is still refused
+    ['auto', undefined, IPAD_OS, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: null }],
+    ['auto', OWNER, IPAD_OS, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'scene-handheld' }],
+    ['auto', { budgetM: 8 }, IPAD_OS, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'budget-handheld' }],
+    ['auto', { budgetM: DEFAULT_BUDGET_M }, IPAD_OS, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: null }],
     // WebGL (no WebGPU, or the engine fell back): the CPU-sort renderer cannot draw it
     ['auto', OWNER, DESKTOP_GL, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'scene-webgl' }],
     ['stochastic', undefined, DESKTOP_GL, { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: 'setting-webgl' }],
@@ -70,7 +78,7 @@ describe('resolveDrawing: setting x request x device', () => {
     });
 
     it('v0.8: a phone or tablet draws under SuperSplat\'s mobile budget (2 M), a desktop under its desktop budget (4 M)', () => {
-        expect([HANDHELD_BUDGET_M, DEFAULT_BUDGET_M]).toEqual([2, 4]);
+        expect([MOBILE_BUDGET_M, DEFAULT_BUDGET_M]).toEqual([2, 4]);
         expect(defaultBudgetM(PHONE)).toBe(2);
         expect(defaultBudgetM(DESKTOP)).toBe(4);
         expect(defaultBudgetM(DESKTOP_GL)).toBe(4);
@@ -78,14 +86,25 @@ describe('resolveDrawing: setting x request x device', () => {
         // control: the v0.7 rule gave a phone the desktop's 4 M; it fails every phone row now
         const v07: Policy = (m, r, d) => ({ ...resolveDrawing(m, r, d), budgetM: d.webgpu && !d.handheld ? resolveDrawing(m, r, d).budgetM : DEFAULT_BUDGET_M });
         const f = failures(v07);
-        expect(f.length).toBe(ROWS.filter(([, , d]) => d.handheld).length);
-        expect(f.every((x) => x.includes('"handheld":true'))).toBe(true);
+        expect(f.length).toBe(ROWS.filter(([, , d]) => d.mobile).length);
+        expect(f.every((x) => x.includes('"mobile":true'))).toBe(true);
+    });
+
+    it('review R5: the budget follows SuperSplat\'s viewer, so iPadOS (a tablet that says "Macintosh") draws 4 M; stochastic stays refused', () => {
+        expect(defaultBudgetM(IPAD_OS)).toBe(DEFAULT_BUDGET_M);
+        expect(resolveDrawing('auto', undefined, IPAD_OS)).toEqual({ stochastic: false, budgetM: DEFAULT_BUDGET_M, note: null });
+        expect(resolveDrawing('stochastic', undefined, IPAD_OS).stochastic).toBe(false);
+        // control: the rule before R5 (the budget by isHandheld) gives the iPad 2 M and fails exactly the iPad rows
+        const byHandheld: Policy = (m, r, d) => resolveDrawing(m, r, { ...d, mobile: d.handheld });
+        const f = failures(byHandheld);
+        expect(f.length).toBe(ROWS.filter(([, , d]) => d === IPAD_OS).length);
+        expect(f.every((x) => x.includes('"handheld":true,"mobile":false'))).toBe(true);
     });
 
     it('control: a policy that follows the request on every device fails the phone and WebGL rows', () => {
         const blind: Policy = (m, r) => ({ stochastic: m === 'stochastic' || (m === 'auto' && r?.stochastic === true), budgetM: r?.budgetM ?? DEFAULT_BUDGET_M, note: null });
         const f = failures(blind);
-        expect(f.length).toBe(14); // v0.8: every phone row too, the blind policy gives a phone the desktop's 4 M
+        expect(f.length).toBe(16); // v0.8: every phone row too, the blind policy gives a phone the desktop's 4 M; R5: 2 iPad rows
         expect(f.every((x) => x.includes('"handheld":true') || x.includes('"webgpu":false'))).toBe(true);
     });
 
@@ -97,9 +116,9 @@ describe('resolveDrawing: setting x request x device', () => {
             return { ...real, note: asked ? (d.handheld ? 'scene-handheld' : 'scene-webgl') : null };
         };
         const wrong = failingRows(old);
-        expect(wrong.length).toBe(10);
+        expect(wrong.length).toBe(12);
         // what it got wrong: the pilot's own choice, a budget-only refusal, and a default budget it called a refusal
-        expect(wrong.map(([, , , want]) => want.note ?? 'none').sort()).toEqual(['budget-handheld', 'budget-handheld', 'budget-handheld', 'budget-handheld', 'budget-webgl', 'budget-webgl', 'none', 'setting-handheld', 'setting-handheld', 'setting-webgl']);
+        expect(wrong.map(([, , , want]) => want.note ?? 'none').sort()).toEqual(['budget-handheld', 'budget-handheld', 'budget-handheld', 'budget-handheld', 'budget-handheld', 'budget-webgl', 'budget-webgl', 'none', 'none', 'setting-handheld', 'setting-handheld', 'setting-webgl']);
     });
 });
 
@@ -159,6 +178,20 @@ describe('isHandheld: phones and tablets, from the user agent', () => {
         const byTouch = (_ua: string, tp: number) => tp > 0;
         expect(byTouch(UA.windows, 10)).not.toBe(isHandheld(UA.windows, 10));
     });
+
+    it('review R5: isViewerMobile is SuperSplat\'s viewer\'s rule (PlayCanvas platform.mobile) on every user agent', () => {
+        // the engine's own rule, read from the playcanvas build this repo ships (platform.js): mobile is
+        // platformName android or ios, decided from the user agent in this order
+        const build = readFileSync(createRequire(import.meta.url).resolve('playcanvas'), 'utf8');
+        const rule = build.match(/platformName = (\/android\/i)\.test\(ua\) \? "android" : (\/ip\(\?:\[ao\]d\|hone\)\/i)\.test\(ua\) \? "ios"/);
+        expect(rule, 'the engine\'s platform rule moved: re-read playcanvas platform.js').not.toBeNull();
+        const engineMobile = (ua: string) => /android/i.test(ua) || /ip(?:[ao]d|hone)/i.test(ua);
+        for (const ua of Object.values(UA)) expect(isViewerMobile(ua), ua).toBe(engineMobile(ua));
+        expect(isViewerMobile(UA.ipadOS)).toBe(false); // the viewer gives an iPadOS Safari the desktop budget
+        expect(isViewerMobile(UA.androidTablet)).toBe(true);
+        // control: isHandheld differs from the viewer exactly on iPadOS
+        expect(Object.values(UA).filter((ua) => isHandheld(ua, 5) !== isViewerMobile(ua))).toEqual([UA.ipadOS]);
+    });
 });
 
 describe('applyDrawing: the choice reaches the engine\'s gsplat params', () => {
@@ -193,7 +226,7 @@ describe('drawOnDevice: a scan\'s drawing is decided with the device the rendere
             setStochastic(on: boolean) { r.stochastic = on && webgpu; return r.stochastic; } };
         return r;
     };
-    const owner = (r: { asked: boolean[] }) => (webgpu: boolean) => { r.asked.push(webgpu); return resolveDrawing('auto', OWNER, { webgpu, handheld: false }); };
+    const owner = (r: { asked: boolean[] }) => (webgpu: boolean) => { r.asked.push(webgpu); return resolveDrawing('auto', OWNER, { webgpu, handheld: false, mobile: false }); };
 
     it('WebGPU: the link\'s budget and stochastic before the scan loads', () => {
         const r = renderer(true);
@@ -209,7 +242,7 @@ describe('drawOnDevice: a scan\'s drawing is decided with the device the rendere
 
     it('control: deciding with the browser\'s navigator.gpu before the device exists streams the WebGL fallback at the link\'s 8 M', () => {
         const r = renderer(false);
-        const guess = resolveDrawing('auto', OWNER, { webgpu: true, handheld: false }); // what fly() did before
+        const guess = resolveDrawing('auto', OWNER, { webgpu: true, handheld: false, mobile: false }); // what fly() did before
         r.setSplatBudgetMillions(guess.budgetM);
         r.setStochastic(guess.stochastic);
         expect(r.budgetM).toBe(8);
