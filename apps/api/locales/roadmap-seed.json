@@ -203,10 +203,10 @@
    "group": "drone",
    "order": 16,
    "title": {
-    "en": "Motor spin-up time 8–30 ms and air drag 0.5–2×",
-    "es": "Arranque de motores de 8 a 30 ms y resistencia del aire de 0,5 a 2×",
-    "pl": "Czas rozkręcania silników 8–30 ms i opór powietrza 0,5–2×",
-    "ru": "Время раскрутки моторов 8–30 мс и сопротивление воздуха 0,5–2×"
+    "en": "Motor spin-up time 8–80 ms and air drag 0.5–2×",
+    "es": "Arranque de motores de 8 a 80 ms y resistencia del aire de 0,5 a 2×",
+    "pl": "Czas rozkręcania silników 8–80 ms i opór powietrza 0,5–2×",
+    "ru": "Время раскрутки моторов 8–80 мс и сопротивление воздуха 0,5–2×"
    }
   },
   {
@@ -688,6 +688,45 @@
     "es": "Interruptores de la emisora para reaparecer y rebobinar",
     "pl": "Przełączniki na aparaturze do respawnu i cofania",
     "ru": "Тумблеры аппаратуры для респауна и отката"
+   }
+  },
+  {
+   "id": "F-three-open-prop-drones-for-big-scans",
+   "kind": "feature",
+   "status": "done",
+   "group": "drone",
+   "order": 54,
+   "title": {
+    "en": "Three open-prop drones for big scans: a 5″ freestyle quad (iFlight Nazgul Evoque F5 class), a 5″ race quad (iFlight Mach R5 Sport class) and an X8 cinelifter carrying a RED Komodo (iFlight Taurus X8 class)",
+    "es": "Tres drones de hélices abiertas para escaneos grandes: un quad freestyle de 5″ (clase iFlight Nazgul Evoque F5), un quad de carreras de 5″ (clase iFlight Mach R5 Sport) y un cinelifter X8 con una RED Komodo (clase iFlight Taurus X8)",
+    "pl": "Trzy drony z odkrytymi śmigłami do dużych skanów: 5″ freestyle (klasa iFlight Nazgul Evoque F5), 5″ wyścigowy (klasa iFlight Mach R5 Sport) i cinelifter X8 z kamerą RED Komodo (klasa iFlight Taurus X8)",
+    "ru": "Три дрона с открытыми пропеллерами для больших сканов: 5″ фристайл (класс iFlight Nazgul Evoque F5), 5″ гоночный (класс iFlight Mach R5 Sport) и синелифтер X8 с камерой RED Komodo (класс iFlight Taurus X8)"
+   }
+  },
+  {
+   "id": "F-prop-wash-on-the-open-prop-drones",
+   "kind": "feature",
+   "status": "done",
+   "group": "drone",
+   "order": 55,
+   "title": {
+    "en": "Prop wash on the open-prop drones: thrust lost and shaking while the drone sinks into its own downwash, 0–2× per drone",
+    "es": "Prop wash en los drones de hélices abiertas: pierden empuje y tiemblan al hundirse en su propia corriente descendente, de 0 a 2× por dron",
+    "pl": "Prop wash w dronach z odkrytymi śmigłami: utrata ciągu i drgania, gdy dron opada we własny strumień, 0–2× dla każdego drona",
+    "ru": "Prop wash у дронов с открытыми пропеллерами: потеря тяги и тряска, когда дрон проседает в собственный поток, 0–2× для каждого дрона"
+   }
+  },
+  {
+   "id": "F-help-tune-a-drone-drone-physics-reports",
+   "kind": "feature",
+   "status": "done",
+   "group": "drone",
+   "order": 56,
+   "title": {
+    "en": "Help tune a drone: send Andrii your Betaflight diff all, a blackbox log link and what feels different, or ask for a drone that is missing",
+    "es": "Ayuda a ajustar un dron: envía a Andrii tu diff all de Betaflight, un enlace a un log de blackbox y lo que notas distinto, o pide un dron que falta",
+    "pl": "Pomóż dostroić drona: wyślij Andriiemu swój diff all z Betaflight, link do logu blackbox i to, co czujesz inaczej, albo poproś o brakującego drona",
+    "ru": "Помогите настроить дрон: пришлите Андрею свой diff all из Betaflight, ссылку на лог blackbox и что ощущается иначе, или попросите добавить дрон"
    }
   }
  ]
