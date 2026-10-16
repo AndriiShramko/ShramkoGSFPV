@@ -26,6 +26,7 @@ import { ARM_RETRY_MS, AltitudeHelp, AutoArm, CLIMB_BOOST, CLIMB_MPS, SINK_MPS, 
 import { BOOST_CODES, GAME_KEYS, KEY_ACRO_DPS, KEY_TILT_DEG, KEY_YAW_DPS, MODE2_KEYS, MOTOR_STOP_HOLD_MS, MotorKey, RAMP_FALL_PER_S, RAMP_RISE_PER_S, axisDirs, flyingKeyCodes, keyTargets, slew, stickForRate } from '../../../apps/fly/src/play/keys';
 import { PadGrab, absoluteRead, padTravel } from '../../../apps/fly/src/play/touch-map';
 import { GOAL_S, SCHOOL_STEPS, SchoolProgress, settingsOf, stepOf } from '../../../apps/fly/src/play/school';
+import { KeyCardShow } from '../../../apps/fly/src/ui/key-card-state';
 
 const PRESET_DIR = join(REPO, 'packages', 'sim-core', 'presets');
 const PRESET_IDS = readdirSync(PRESET_DIR).filter((f) => f.endsWith('.json')).map((f) => f.replace(/\.json$/, ''));
@@ -419,6 +420,38 @@ describe('every text easy play names exists in all four languages', () => {
         }
         // control: a key that does not exist is caught
         expect(dict('en')['play.school.step5']).toBeUndefined();
+    });
+});
+
+describe('the key card: K hides it when it is up, shows and pins it when it is not', () => {
+    interface CardRule { shown(ground: boolean): boolean; toggle(): boolean }
+    /** What the player sees through a ground wait, K, take-off, K in the air: the broken promises, [] when none. */
+    const scenario = (k: CardRule): string[] => {
+        const bad: string[] = [];
+        const want = (what: string, got: boolean, exp: boolean): void => { if (got !== exp) bad.push(`${what}: ${got}`); };
+        want('ground: up by itself', k.shown(true), true);
+        want('K over the ground card: away', k.toggle(), false);
+        want('still away on the ground', k.shown(true), false);
+        want('take-off: not over the flight', k.shown(false), false);
+        want('the next ground wait: up again', k.shown(true), true);
+        k.shown(false);
+        want('K in the air: up', k.toggle(), true);
+        want('pinned through the flight', k.shown(false), true);
+        want('pinned on the ground', k.shown(true), true);
+        want('K again: away', k.toggle(), false);
+        want('away in the air', k.shown(false), false);
+        return bad;
+    };
+
+    it('K on the ground hides the card until take-off without pinning it; K in the air pins it; control: the first rule (K flips a pin) fails the same walk', () => {
+        expect(scenario(new KeyCardShow())).toEqual([]);
+        // the first version: shown = ground || pinned, K flipped the pin
+        const first = new (class implements CardRule {
+            private pinned = false;
+            shown(ground: boolean): boolean { return ground || this.pinned; }
+            toggle(): boolean { this.pinned = !this.pinned; return this.pinned; }
+        })();
+        expect(scenario(first)).toContain('take-off: not over the flight: true');
     });
 });
 

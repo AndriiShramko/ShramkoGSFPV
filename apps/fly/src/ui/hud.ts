@@ -10,6 +10,7 @@ import type { ArmView } from '../controls';
 import { radioArt, knobsFrom, sideOf, tickIcon } from './radio-art';
 import type { ArtTarget } from './radio-art';
 import { watchTopRow } from './top-row';
+import { KeyCardShow } from './key-card-state';
 
 /** Disarmed with a radio: what is still needed to arm, in order, with a small live radio drawing. */
 class ArmCard {
@@ -228,8 +229,8 @@ export class Hud {
     private card = new ArmCard(() => this.onArm?.());
     private keys = new KeyCard();
     private last = 0;
-    /** K (app/builtin/play.ts): the key card stays up while flying until K again */
-    private keysPinned = false;
+    /** when the key card is up: by itself on the ground, K hides or pins it (ui/key-card-state.ts) */
+    private keyShow = new KeyCardShow();
     visible = true;
     /** easy play's altitude help flies now (on, angle mode; set by app/builtin/play.ts): the key card's up/down row */
     altitudeHelp: () => boolean = () => true;
@@ -298,11 +299,10 @@ export class Hud {
         if (this.br.textContent !== pick) this.br.textContent = pick;
     }
 
-    /** K: the keyboard's key card on (it stays while flying) or off again. Returns whether it is on now. */
+    /** K: the keyboard's key card away when it is up, else up (and it stays while flying). Returns whether it is up now. */
     toggleKeys(): boolean {
-        this.keysPinned = !this.keysPinned;
         this.last = 0; // draw it at the next frame, not up to 100 ms later
-        return this.keysPinned;
+        return this.keyShow.toggle();
     }
 
     toggleFrameStats(): void {
@@ -337,7 +337,8 @@ export class Hud {
         // the test pilot (?simradio=scenario) flies the model directly, past the arm gate: the gate's
         // "Calibrate your controls first" was never true for it, and it printed into every bot frame
         const say = !hd.armed && !hd.crashed && block && src !== 'sim' ? gateText(block, view) : '';
-        const keyCard = kbd && (say !== '' || this.keysPinned) && !document.querySelector('.screen.radio');
+        const cardUp = this.keyShow.shown(kbd && say !== '');
+        const keyCard = kbd && cardUp && !document.querySelector('.screen.radio');
         const easy = !!view?.easy;
         this.keys.update(keyCard, say, block, easy, this.altitudeHelp());
         // keyboard: the flying keys stay in the corner once the key card is gone (armed, crashed)
