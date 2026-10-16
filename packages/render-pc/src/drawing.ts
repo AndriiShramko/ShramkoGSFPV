@@ -8,8 +8,10 @@
 //      default) does what the scene's link or the catalogue asks (packages/scenes link.ts sceneRender);
 //   2. the device: the engine draws stochastic only with its GPU-sort renderer, i.e. WebGPU. SuperSplat
 //      shows it on desktop browsers only, so on phones and tablets the request is ignored too, and so
-//      is the scene's budget (a desktop number). The HUD's short note then says who asked (the scene
-//      or the pilot's setting) and what was refused (stochastic, or only the budget): DrawingNote.
+//      is the scene's budget (a desktop number): a phone or tablet draws under HANDHELD_BUDGET_M (2 M,
+//      SuperSplat's mobile budget; v0.8), a WebGL desktop under DEFAULT_BUDGET_M (4 M). The HUD's short
+//      note then says who asked (the scene or the pilot's setting) and what was refused (stochastic,
+//      or only the budget): DrawingNote.
 // The splat budget of a request becomes the quality governor's top level (governor.ts setTopBudget);
 // missed frames lower the budget from there and never switch stochastic off.
 
@@ -46,6 +48,19 @@ export const DRAWING_NOTES: readonly DrawingNote[] = ['scene-handheld', 'scene-w
 /** The top of the splat budget when nothing asks for another one, millions (governor.ts DEFAULT_STEPS). */
 export const DEFAULT_BUDGET_M = 4;
 
+/**
+ * The top of the splat budget on a phone or a tablet, millions (v0.8 item 8): what SuperSplat's own
+ * viewer gives a mobile device (@playcanvas/supersplat-viewer 1.37 `budgets.mobile.high`; 4 M is its
+ * desktop `budgets.desktop.high`, DEFAULT_BUDGET_M). The levels of detail stream on every device; a
+ * phone gets them under a smaller budget, and the governor still lowers it from there.
+ */
+export const HANDHELD_BUDGET_M = 2;
+
+/** The top splat budget a device gets when nothing asks for another one, millions. */
+export function defaultBudgetM(device: Pick<DrawingDevice, 'handheld'>): number {
+    return device.handheld ? HANDHELD_BUDGET_M : DEFAULT_BUDGET_M;
+}
+
 export interface Drawing {
     stochastic: boolean;
     /** the governor's top splat budget, millions */
@@ -62,10 +77,12 @@ export function resolveDrawing(mode: DrawingMode, request: DrawingRequest | unde
     if (device.webgpu && !device.handheld) {
         return { stochastic: wantsStochastic, budgetM: budget ?? DEFAULT_BUDGET_M, note: null };
     }
-    // refused here: the pilot's own choice outranks the scene's; a budget alone is named only when it differs
-    const who = mode === 'stochastic' ? 'setting' : sceneAsks ? 'scene' : budget !== undefined && budget !== DEFAULT_BUDGET_M ? 'budget' : null;
+    // refused here: the pilot's own choice outranks the scene's; a budget alone is named only when it
+    // differs from what this device gets anyway (2 M on a phone or tablet, 4 M on a WebGL desktop)
+    const top = defaultBudgetM(device);
+    const who = mode === 'stochastic' ? 'setting' : sceneAsks ? 'scene' : budget !== undefined && budget !== top ? 'budget' : null;
     const why = device.handheld ? 'handheld' : 'webgl';
-    return { stochastic: false, budgetM: DEFAULT_BUDGET_M, note: who ? `${who}-${why}` : null };
+    return { stochastic: false, budgetM: top, note: who ? `${who}-${why}` : null };
 }
 
 /**
