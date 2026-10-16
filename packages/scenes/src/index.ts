@@ -5,6 +5,8 @@ import * as lib from './library';
 import { DEFAULT_FILTER } from './library';
 import type { LibraryEntry, SceneFilter, SceneLibraryData } from './library';
 import { SCENE_ID_RE, parseSceneLink } from './link';
+import { contentOrder } from './content';
+import type { ContentKind, ContentSeen as Seen, SceneContent } from './content';
 
 export const CDN = 'https://d28zzqy0iyovbz.cloudfront.net';
 /** Posters live in their own bucket, in the same v<N> folder as the scene. */
@@ -45,8 +47,11 @@ export interface ResolvedScene {
     version: number;
     settings: Record<string, unknown>;
     camera: SceneCamera | null;
+    /** the file to open first: content[0] (content.ts: levels of detail first) */
     contentUrl: string;
-    contentKind: 'lod-meta' | 'meta';
+    contentKind: ContentKind;
+    /** every file to try, best first (content.ts contentOrder); the session opens the first that works */
+    content: SceneContent[];
     collisionUrl: string | null;
     background: number[] | undefined;
     tonemapping: string | undefined;
@@ -98,11 +103,8 @@ function readCamera(settings: Record<string, unknown>): SceneCamera | null {
     return { position, target, fov: typeof c.fov === 'number' ? c.fov : 90 };
 }
 
-/**
- * What one lookup learned. S3 behind the CDN answers 403 alike for a missing file, a deleted old
- * version and a private scene, so 403/404 is "no"; a 5xx, a 429 or no answer at all is "unknown".
- */
-type Seen = 'yes' | 'no' | 'unknown';
+// What one lookup learned (content.ts ContentSeen). S3 behind the CDN answers 403 alike for a missing file, a
+// deleted old version and a private scene, so 403/404 is "no"; a 5xx, a 429 or no answer at all is "unknown".
 
 function seen(status: number): Seen {
     if (status >= 200 && status < 300) return 'yes';
@@ -204,20 +206,12 @@ export async function resolveScene(id: string, f: FetchLike = fetch, blocked: st
     const { v, r } = await findVersion(id, f, (found) => { void ask(found); });
     const at = files(v);
     const [lod, meta, walls] = await ask(v);
-    let contentUrl: string;
-    let contentKind: 'lod-meta' | 'meta';
-    if (lod === 'yes') {
-        contentUrl = at.lod;
-        contentKind = 'lod-meta';
-    } else if (meta === 'yes') {
-        contentUrl = at.meta;
-        contentKind = 'meta';
-    } else if (lod === 'unknown' || meta === 'unknown') {
-        throw new SceneError('network', `scene ${id} v${v}: the CDN did not say which format it is`);
-    } else if ((await exists(at.ply, f)) === 'yes') {
+    // levels of detail first; a file whose lookup did not answer is still tried before the next one
+    const content = contentOrder(`${CDN}/${id}/v${v}`, { 'lod-meta': lod, meta });
+    if (content.length === 0) {
+        if (lod === 'unknown' || meta === 'unknown') throw new SceneError('network', `scene ${id} v${v}: the CDN did not say which format it is`);
         // 2025 uploads (19% of the catalogue): the engine parses PLY, but bake and load progress know only lod-meta/meta
-        throw new SceneError('unsupported', `scene ${id} v${v} is a legacy compressed PLY, not supported yet`);
-    } else {
+        if ((await exists(at.ply, f)) === 'yes') throw new SceneError('unsupported', `scene ${id} v${v} is a legacy compressed PLY, not supported yet`);
         throw new SceneError('not-found', `scene ${id} v${v} has no splat content on the CDN`);
     }
     const settings = (await r.json()) as Record<string, unknown>;
@@ -228,8 +222,9 @@ export async function resolveScene(id: string, f: FetchLike = fetch, blocked: st
         version: v,
         settings,
         camera: readCamera(settings),
-        contentUrl,
-        contentKind,
+        contentUrl: content[0].url,
+        contentKind: content[0].kind,
+        content,
         // "unknown" is worth a try: the walls loader reads a 403 as "no walls" and a real failure as one
         collisionUrl: walls === 'no' ? null : at.walls,
         background: bg,
@@ -410,6 +405,7 @@ export * from './rotation';
 export * from './catalog';
 export * from './link';
 export * from './facts';
+export * from './content';
 export * as library from './library';
 export { DEFAULT_FILTER, HISTORY_CAP, TAB_FILTERS, emptyLibrary, mergeLibraries, lastScene, failedRecently, pickerList, pickerEmpty, tabCandidates, filterCandidates, favouriteEntries, tabObeys } from './library';
 export type { SceneFilter, LibraryEntry, SceneLibraryData, FavouriteMeta, PickerRow, PickerCandidate, PickerList, CuratedCard, PickerTabId, FilterKey, SceneFacts } from './library';

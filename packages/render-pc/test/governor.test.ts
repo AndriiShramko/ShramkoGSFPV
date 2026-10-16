@@ -93,6 +93,66 @@ describe('quality governor', () => {
     });
 });
 
+// v0.8 item 8 (docs/wip/v08-c.md): a streamed scan's hitches are not GPU overload. Measured on
+// ba7aa29d (evidence/2026-10-16/v08-lod-probe-before-2.json): after the reveal 154 files were requested
+// at once and frames of 124, 67 and 42 ms followed, then 34-41 ms frames while they arrived; the old
+// rule stepped 4 M -> 2 M and render scale 1 -> 0.6 in 2.5 s and needed 17 s to climb back.
+describe('quality governor: streaming hitches', () => {
+    const P = 1000 / 30;
+    /** 30 Hz frames for `n` frames; `late(i)`: periods frame i takes; `streamed(i)`, `held(i)`: its flags. */
+    function feed(g: FrameGovernor, n: number, late: (i: number) => number, streamed: (i: number) => boolean, held: (i: number) => boolean = () => false): void {
+        let t = 0;
+        // 2 s of calm first: the display period is learned before anything happens
+        g.onFrame(t);
+        for (let i = 0; i < 60; i++) g.onFrame(t += P);
+        for (let i = 0; i < n; i++) {
+            t += P * late(i);
+            g.onFrame(t, false, held(i), streamed(i));
+        }
+    }
+    // the reveal's burst, then every 4th frame 1.4 periods while files arrive (6 s)
+    const revealLate = (i: number) => (i < 3 ? [3.7, 2, 1.3][i] : i % 4 === 0 ? 1.4 : 1);
+
+    it('late frames while the streamer works are not counted: full quality stays', () => {
+        const g = new FrameGovernor();
+        // the streamer reports progress on the frame before each late one (its work lands in the next interval)
+        feed(g, 180, revealLate, (i) => i < 3 || (i + 1) % 4 === 0 || i % 4 === 0);
+        expect(g.changes).toBe(0);
+        expect(g.streamHitches).toBeGreaterThan(40);
+    });
+
+    it('a late frame right after the frame that streamed is excused too (the work lands in the next interval)', () => {
+        const g = new FrameGovernor();
+        // progress only on the frame BEFORE each late one
+        feed(g, 180, (i) => (i % 4 === 0 ? 1.4 : 1), (i) => (i + 1) % 4 === 0);
+        expect(g.changes).toBe(0);
+        // control: progress two frames before is too old: counted, 25 % missed, a step down
+        const old = new FrameGovernor();
+        feed(old, 180, (i) => (i % 4 === 0 ? 1.4 : 1), (i) => (i + 2) % 4 === 0);
+        expect(old.changes).toBeGreaterThan(0);
+    });
+
+    it('negative control: the same frames without the streaming flag step down (the v0.7 rule)', () => {
+        const g = new FrameGovernor();
+        feed(g, 180, revealLate, () => false);
+        expect(g.changes).toBeGreaterThan(0);
+        expect(g.step).toBeGreaterThan(0);
+    });
+
+    it('a real overload while streaming still lowers the drawing: every frame late, progress on 1 frame in 4', () => {
+        const g = new FrameGovernor();
+        feed(g, 90, () => 2, (i) => i % 4 === 0);
+        expect(g.step).toBeGreaterThan(0);
+    });
+
+    it('frames held for the GPU count even while streaming (that is the GPU, not the streamer)', () => {
+        const g = new FrameGovernor();
+        feed(g, 90, () => 1, () => true, (i) => i % 2 === 0);
+        expect(g.step).toBeGreaterThan(0);
+        expect(g.streamHitches).toBe(0);
+    });
+});
+
 /**
  * A simulated Chrome compositor: it presents `late` frames after the one that committed, the
  * load leaves it at 2 late frames, a skip of 1 period removes one and a skip of 3 periods all of

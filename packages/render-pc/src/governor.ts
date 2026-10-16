@@ -71,6 +71,10 @@ export class FrameGovernor {
     private log: { t: number; missed: boolean }[] = [];
     private lastChange = -Infinity;
     changes = 0;
+    /** late frames not counted because the scan was streaming (see onFrame `streamed`) */
+    streamHitches = 0;
+    /** the previous frame reported streaming: its work can make this interval late */
+    private streamedBefore = false;
 
     constructor(steps: QualityStep[] = DEFAULT_STEPS, opts: GovernorOptions = DEFAULT_GOVERNOR) {
         this.base = steps;
@@ -113,18 +117,30 @@ export class FrameGovernor {
      * `held`: the renderer did not draw the frame before this one because the GPU had not finished
      * the previous one (SplatRenderer.maxFramesInFlight): the display repeated a picture, a missed
      * frame although the animation frames themselves came on time.
+     * `streamed`: the scan's streamer made progress since the previous frame (SplatRenderer.streamTicks:
+     * a level-of-detail file requested or arrived, the count of files in flight changed). A late interval
+     * ending here or at the next frame is that work (requests, image decodes, uploads, the work-buffer
+     * copy), not a GPU that cannot draw the budget, so it is not counted: lowering the budget and the
+     * render scale would not shorten it, and a streamed scan (levels of detail, D27) streams all the
+     * time it is flown, so counting it kept the scan coarse (v0.8 item 8, docs/wip/v08-c.md). A held
+     * frame still counts, and so does every late frame without streaming: a real overload still lowers
+     * the drawing.
      */
-    onFrame(t: number, excused = false, held = false): QualityStep | null {
-        if (this.last < 0) { this.last = t; return null; }
+    onFrame(t: number, excused = false, held = false, streamed = false): QualityStep | null {
+        if (this.last < 0) { this.last = t; this.streamedBefore = streamed; return null; }
         const dt = t - this.last;
         this.last = t;
+        const streaming = streamed || this.streamedBefore;
+        this.streamedBefore = streamed;
         if (excused) return null;
         if (dt <= 0 || dt > 1000) return null; // paused tab, debugger: not a frame-rate signal
         this.period.add(t, dt);
         const period = this.period.ms;
         // 1.25 periods: a frame that took ~1.4 periods already makes the display repeat one (a 45 ms
         // frame on a 30 Hz screen); 1.5 let a steady 22 fps pass as 'on time'
-        this.log.push({ t, missed: held || dt > MISSED_PERIODS * period });
+        const late = dt > MISSED_PERIODS * period;
+        if (late && streaming && !held) this.streamHitches++;
+        this.log.push({ t, missed: held || (late && !streaming) });
         while (this.log.length && t - this.log[0].t > this.opts.upWindowMs) this.log.shift();
         if (!this.enabled) return null;
         const since = t - this.lastChange;
