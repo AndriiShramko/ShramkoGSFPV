@@ -2,15 +2,23 @@
 // path (the owner's message 21, item 7: "with the DJI controller the delay feels much higher"), on a
 // release build drawing a real scan, in this machine's Chrome at this display's rate. No hardware: a
 // fake controller in the page (an init script) changes its roll stick at known moments E (every
-// ~0.4 s, off any frame rhythm) and the page's own source reads it as it reads the real one:
+// ~0.4 s, off any frame rhythm) and the page's own source reads it as it reads the real one. Both
+// paths get the same device: a report every REPORT_MS (6 ms, the DJI's ~160 reports a second,
+// measured), so the new value arrives with the first report at or after E (arrival A, 0..6 ms after E):
 //   gamepad  navigator.getGamepads() returns a DJI pad ("HID Interface (Vendor: 2ca3 Product: 1021)",
-//            5 axes, 24 buttons) whose state changes at E with Gamepad.timestamp = E, as the browser's
-//            gamepad thread fills its shared buffer whatever the page's main thread is doing;
-//            GamepadSource polls it (devices/gamepad.ts);
-//   hid      navigator.hid hands over a DJI device (its descriptor, 13-byte reports at 160 Hz from a
-//            timer: a report after E carries the new value and is dispatched when the main thread is
-//            free, stamped then; whether Chrome stamps a real HIDInputReportEvent at arrival or when
-//            the page handles it was not checked).
+//            5 axes, 24 buttons) modelled on Chromium's gamepad path (device/gamepad, read 2026-10-16):
+//            the browser takes each report as it arrives and stamps it (Gamepad.timestamp = A, the
+//            arrival, never E: raw_input_gamepad_device_win.cc sets it when a report is processed),
+//            and its provider thread publishes the pads to the page every TICK_MS (4 ms,
+//            gamepad_provider.cc kPollingIntervalMilliseconds), so the page sees A at the first tick
+//            after it, whatever its main thread is doing; GamepadSource polls it (devices/gamepad.ts).
+//            The DJI reports only changes, so the timestamp stands still between edges. Not modelled:
+//            whether a real Chrome's Gamepad.timestamp is on the page clock (gamepadStamp falls back
+//            to the poll time when it is not plausible) - the owner's Chrome decides that;
+//   hid      navigator.hid hands over a DJI device (its descriptor, 13-byte reports every REPORT_MS from
+//            a timer on the page's main thread: a report after E carries the new value and is
+//            dispatched when the main thread is free, stamped then; whether Chrome stamps a real
+//            HIDInputReportEvent at arrival or when the page handles it was not checked).
 // Both go through the recognised controller's check screen (no wizard: known-devices.ts) and Fly. Then
 // every channel frame the session receives is recorded (FlightSession.input wrapped): its arrival
 // (performance.now()) and its stamp (the page time the physics applies it at, simclock.ts). Per edge:
@@ -18,8 +26,14 @@
 //   stamp    = its stamp - E                           (how late the physics thinks it happened)
 //   frame    = first animation frame at or after the arrival - E (the frame that can show it)
 // `busy`: every animation frame also blocks the main thread for that many ms (a heavier scan).
-// Negative control `hid-late20`: the fake HID device dispatches every report 20 ms late; its delivery
-// must come out ~20 ms above the plain hid run, or this probe does not measure what it says.
+// Before v0.8's fix a gamepad sample was stamped at the poll that found it, i.e. at its delivery: the
+// "before" stamp of a gamepad run is its delivery column (the 2026-10-16 runs of the old build show
+// stamp = delivery within 0.1 ms on all five runs).
+// Negative controls: `hid-late20`: the fake HID device dispatches every report 20 ms late; its delivery
+// must come out ~20 ms above the plain hid run. `gamepad-lag8`: the fake browser takes each report
+// 8 ms after it arrives (Gamepad.timestamp and the page's view both 8 ms later); its stamp and its
+// delivery must both come out ~8 ms above the plain gamepad run, or the stamp does not follow
+// Gamepad.timestamp.
 // Usage: node input-latency-probe.mjs <base with the locale, e.g. http://localhost:5390/en> <outDir> [runs]
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
@@ -44,8 +58,13 @@ const RUNS = [
     { name: 'hid', path: 'hid', busy: 0 },
     { name: 'gamepad-busy25', path: 'gamepad', busy: 25 },
     { name: 'hid-busy25', path: 'hid', busy: 25 },
-    { name: 'hid-late20', path: 'hid', busy: 0, late: 20 }
+    { name: 'hid-late20', path: 'hid', busy: 0, late: 20 },
+    { name: 'gamepad-lag8', path: 'gamepad', busy: 0, lag: 8 }
 ].filter((r) => !only || only.includes(r.name));
+/** the device's report period on both paths (the DJI: ~160 reports a second, measured) */
+const REPORT_MS = 6;
+/** Chromium's gamepad provider publishes the pads to pages this often (gamepad_provider.cc) */
+const TICK_MS = 4;
 const EDGES = 36;
 
 /** In the page, before the app: the fake DJI controller on the asked path, its roll stick on a schedule. */
@@ -65,11 +84,22 @@ function installFake(cfg) {
     if (cfg.path === 'gamepad') {
         const buttons = Array.from({ length: 24 }, (_, i) => ({ get pressed() { return i === 4 || i === 6; }, get value() { return i === 4 || i === 6 ? 1 : 0; }, touched: false }));
         const loaded = performance.now();
+        // the device's report clock and the browser's provider clock, each with its own phase
+        const rt0 = loaded + 1.7, pt0 = loaded + 0.9;
+        const lag = cfg.lag ?? 0;
+        const reportAt = (t) => rt0 + Math.floor((t - rt0) / cfg.reportMs) * cfg.reportMs; // the last report at or before t
+        const arrivalOf = (e) => rt0 + Math.ceil((e - rt0) / cfg.reportMs) * cfg.reportMs; // the first report at or after e
+        /** What the page reads at `now`: the snapshot of the provider's last tick, holding the last report the browser had taken by then. */
+        const view = (now) => {
+            const tick = pt0 + Math.floor((now - pt0) / cfg.tickMs) * cfg.tickMs;
+            const s = state(reportAt(tick - lag));
+            return { v: s.v, ts: s.k >= 0 ? arrivalOf(s.e) + lag : loaded };
+        };
         const pad = {
             id: 'HID Interface (Vendor: 2ca3 Product: 1021)', index: 0, connected: true, mapping: '', vibrationActuator: null,
-            get axes() { const s = state(performance.now()); return [s.v, 0, 0, 0, 0]; },
+            get axes() { return [view(performance.now()).v, 0, 0, 0, 0]; },
             buttons,
-            get timestamp() { const s = state(performance.now()); return s.k >= 0 ? s.e : loaded; }
+            get timestamp() { return view(performance.now()).ts; }
         };
         Object.defineProperty(Navigator.prototype, 'getGamepads', { value: () => [pad, null, null, null], configurable: true });
     } else {
@@ -89,7 +119,7 @@ function installFake(cfg) {
                         this.dispatchEvent(e);
                     };
                     if (cfg.late) setTimeout(send, cfg.late); else send();
-                }, 6);
+                }, cfg.reportMs);
             }
             async close() { this.opened = false; clearInterval(this.timer); }
         }
@@ -129,7 +159,7 @@ for (const run of RUNS) {
     const page = await ctx.newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(String(e.message).slice(0, 160)));
-    await page.addInitScript(installFake, { path: run.path, collections: DJI, late: run.late ?? 0 });
+    await page.addInitScript(installFake, { path: run.path, collections: DJI, late: run.late ?? 0, lag: run.lag ?? 0, reportMs: REPORT_MS, tickMs: TICK_MS });
     await page.goto(`${base}/fly/?scene=39e63ce9&nowarn=1`, { waitUntil: 'load' });
     await page.waitForFunction(() => window.__gsfpv?.status === 'ready' && document.querySelector('.screen.radio'), null, { timeout: 120000 });
     // the gamepad path opens its check screen by itself (a recognised pad on the device choice); WebHID by its button
@@ -173,5 +203,13 @@ if (out.hid && out['hid-late20']) {
     const d = out['hid-late20'].delivery.p50 - out.hid.delivery.p50;
     out.control = { addedMs: 20, measuredMs: Math.round(d * 10) / 10, fired: d > 15 && d < 25 };
 }
+// the gamepad control: the browser taking reports 8 ms late must show as ~8 ms more stamp AND delivery
+if (out.gamepad && out['gamepad-lag8']) {
+    const ds = out['gamepad-lag8'].stamp.p50 - out.gamepad.stamp.p50;
+    const dd = out['gamepad-lag8'].delivery.p50 - out.gamepad.delivery.p50;
+    out.controlPad = { addedMs: 8, stampMs: Math.round(ds * 10) / 10, deliveryMs: Math.round(dd * 10) / 10, fired: ds > 5 && ds < 11 && dd > 5 && dd < 11 };
+}
+// before the v0.8 fix a gamepad sample's stamp was its poll time = its delivery (header)
+for (const n of ['gamepad', 'gamepad-busy25']) if (out[n]) out[n].stampBeforeFix = { ...out[n].delivery, how: 'the poll time = the delivery column (stamped at the poll before d11e7ed)' };
 writeFileSync(`${outDir}/result.json`, JSON.stringify(out, null, 1));
-console.log(JSON.stringify({ browser: out.browser?.version, webgl: out.browser?.webgl, control: out.control }, null, 1));
+console.log(JSON.stringify({ browser: out.browser?.version, webgl: out.browser?.webgl, control: out.control, controlPad: out.controlPad }, null, 1));
