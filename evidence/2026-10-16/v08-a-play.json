@@ -1,0 +1,367 @@
+{
+  "name": "v08-a-play",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-16T14:14:38.129Z",
+    "gitHead": "193d150",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5481",
+  "pass": false,
+  "checks": [
+    {
+      "id": "K1 the key card shows on the ground with the game keys and \"press a flying key to take off\"",
+      "ok": true,
+      "detail": {
+        "shown": true,
+        "title": "Keyboard \u00b7 easy play",
+        "now": "Press a flying key to take off",
+        "rows": 10
+      }
+    },
+    {
+      "id": "K2 the up arrow starts the motors (no Space) and climbs at about 2.5 m/s",
+      "ok": true,
+      "detail": {
+        "armedBefore": false,
+        "armed": true,
+        "climbMps": 2.627,
+        "gainedM": 5.896
+      }
+    },
+    {
+      "id": "K3 keys released: the height holds (altitude help)",
+      "ok": true,
+      "detail": {
+        "spreadM": 0.036,
+        "meanVy": 0.01
+      }
+    },
+    {
+      "id": "K4 W tilts the drone forward about 25 deg and the height holds through it",
+      "ok": true,
+      "detail": {
+        "pitchDeg": 24.996,
+        "maxHeightChangeM": 0.067
+      }
+    },
+    {
+      "id": "K5 in the air the card goes; K shows it, K again hides it",
+      "ok": true,
+      "detail": {
+        "hiddenFlying": true,
+        "shownAfterK": true,
+        "hiddenAfterK": true
+      }
+    },
+    {
+      "id": "K6 the school chip counts toward 30 s; the goal offers step 2, which switches the altitude help off",
+      "ok": true,
+      "detail": {
+        "chipStart": "School 1/4 \u00b7 12 / 30 s",
+        "chipAtGoal": "School 1/4 \u00b7 done",
+        "offer": true,
+        "after": {
+          "help": false,
+          "mode": "angle",
+          "play": {
+            "profile": "easy",
+            "arm": "on",
+            "want": true,
+            "helpActive": false,
+            "throttle": 0.2833059068471899,
+            "target": 0,
+            "step": 2,
+            "school": {
+              "seconds": 0.26599999999999824,
+              "goal": 45
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "K7 without the help the arrows move a throttle that stays where it is left",
+      "ok": true,
+      "detail": {
+        "throttleAfterRelease": 0,
+        "throttle500msLater": 0
+      }
+    },
+    {
+      "id": "S1 the motor sound is 15 % by default; the speaker on the top bar mutes and unmutes it",
+      "ok": true,
+      "detail": {
+        "volume": 15,
+        "before": true,
+        "afterClick": false,
+        "ariaPressed": "true",
+        "afterSecondClick": true
+      }
+    },
+    {
+      "id": "K8 no page errors",
+      "ok": true,
+      "detail": {
+        "errors": []
+      }
+    },
+    {
+      "id": "K-control the pilot profile: the same key does not start the motors, its card is the Mode 2 one",
+      "ok": true,
+      "detail": {
+        "armed": false,
+        "cardTitle": "Keyboard"
+      }
+    },
+    {
+      "id": "T1-tablet easy play: no ARM button, the hint says what the sticks do, \"touch a stick to take off\"",
+      "ok": true,
+      "detail": {
+        "armShown": false,
+        "hint": "Left stick: up / down and turn. Right stick: fly.",
+        "gate": "Touch a stick to take off",
+        "padPx": 220,
+        "travelPx": 86
+      }
+    },
+    {
+      "id": "T2-tablet a touch-down off-centre moves no stick; control: v0.7's absolute pad read it as a deflection",
+      "ok": true,
+      "detail": {
+        "chAtTouchDown": [
+          0,
+          0
+        ],
+        "v07AbsolutePad": [
+          0.5,
+          0.4
+        ]
+      }
+    },
+    {
+      "id": "T3-tablet a touch starts the motors; the left stick at 60 % climbs about 1.5 m/s; released, it springs to centre",
+      "ok": true,
+      "detail": {
+        "armedByTouch": true,
+        "climbMps": 1.65,
+        "gainedM": 4.033,
+        "leftStickAfterRelease": 0
+      }
+    },
+    {
+      "id": "T4-tablet the height holds with no finger on the sticks",
+      "ok": true,
+      "detail": {
+        "spreadM": 0.036
+      }
+    },
+    {
+      "id": "T5-tablet the right stick at half forward tilts the drone (angle mode); the page handles a move within a frame",
+      "ok": false,
+      "detail": {
+        "pitchDeg": 17.284,
+        "pointerMoves": 12,
+        "handlerDelayMs": {
+          "p50": 60.6,
+          "p95": 122
+        }
+      }
+    },
+    {
+      "id": "T6-tablet the pilot school chip is on screen",
+      "ok": true,
+      "detail": {
+        "chip": "School 1/4 \u00b7 10 / 30 s"
+      }
+    },
+    {
+      "id": "T7-tablet no scroll or zoom from the touches",
+      "ok": true,
+      "detail": {
+        "sx": 0,
+        "sy": 0,
+        "scale": 1
+      }
+    },
+    {
+      "id": "T8-tablet no page errors",
+      "ok": true,
+      "detail": {
+        "errors": []
+      }
+    },
+    {
+      "id": "T1-phone easy play: no ARM button, the hint says what the sticks do, \"touch a stick to take off\"",
+      "ok": true,
+      "detail": {
+        "armShown": false,
+        "hint": "Left stick: up / down and turn. Right stick: fly.",
+        "gate": "Touch a stick to take off",
+        "padPx": 150.125,
+        "travelPx": 51.0625
+      }
+    },
+    {
+      "id": "T2-phone a touch-down off-centre moves no stick; control: v0.7's absolute pad read it as a deflection",
+      "ok": true,
+      "detail": {
+        "chAtTouchDown": [
+          0,
+          0
+        ],
+        "v07AbsolutePad": [
+          0.5,
+          0.4
+        ]
+      }
+    },
+    {
+      "id": "T3-phone a touch starts the motors; the left stick at 60 % climbs about 1.5 m/s; released, it springs to centre",
+      "ok": true,
+      "detail": {
+        "armedByTouch": true,
+        "climbMps": 1.664,
+        "gainedM": 4.11,
+        "leftStickAfterRelease": 0
+      }
+    },
+    {
+      "id": "T4-phone the height holds with no finger on the sticks",
+      "ok": true,
+      "detail": {
+        "spreadM": 0.036
+      }
+    },
+    {
+      "id": "T5-phone the right stick at half forward tilts the drone (angle mode); the page handles a move within a frame",
+      "ok": false,
+      "detail": {
+        "pitchDeg": 17.848,
+        "pointerMoves": 12,
+        "handlerDelayMs": {
+          "p50": 44.1,
+          "p95": 79.6
+        }
+      }
+    },
+    {
+      "id": "T6-phone the pilot school chip is on screen",
+      "ok": true,
+      "detail": {
+        "chip": "School 1/4 \u00b7 10 / 30 s"
+      }
+    },
+    {
+      "id": "T7-phone no scroll or zoom from the touches",
+      "ok": true,
+      "detail": {
+        "sx": 0,
+        "sy": 0,
+        "scale": 1
+      }
+    },
+    {
+      "id": "T8-phone no page errors",
+      "ok": true,
+      "detail": {
+        "errors": []
+      }
+    },
+    {
+      "id": "T1-phone-landscape easy play: no ARM button, the hint says what the sticks do, \"touch a stick to take off\"",
+      "ok": true,
+      "detail": {
+        "armShown": false,
+        "hint": "Left stick: up / down and turn. Right stick: fly.",
+        "gate": "Touch a stick to take off",
+        "padPx": 220,
+        "travelPx": 86
+      }
+    },
+    {
+      "id": "T2-phone-landscape a touch-down off-centre moves no stick; control: v0.7's absolute pad read it as a deflection",
+      "ok": true,
+      "detail": {
+        "chAtTouchDown": [
+          0,
+          0
+        ],
+        "v07AbsolutePad": [
+          0.5,
+          0.4
+        ]
+      }
+    },
+    {
+      "id": "T3-phone-landscape a touch starts the motors; the left stick at 60 % climbs about 1.5 m/s; released, it springs to centre",
+      "ok": true,
+      "detail": {
+        "armedByTouch": true,
+        "climbMps": 1.642,
+        "gainedM": 3.984,
+        "leftStickAfterRelease": 0
+      }
+    },
+    {
+      "id": "T4-phone-landscape the height holds with no finger on the sticks",
+      "ok": true,
+      "detail": {
+        "spreadM": 0.036
+      }
+    },
+    {
+      "id": "T5-phone-landscape the right stick at half forward tilts the drone (angle mode); the page handles a move within a frame",
+      "ok": false,
+      "detail": {
+        "pitchDeg": 17.284,
+        "pointerMoves": 12,
+        "handlerDelayMs": {
+          "p50": 59.3,
+          "p95": 87.7
+        }
+      }
+    },
+    {
+      "id": "T6-phone-landscape the pilot school chip is on screen",
+      "ok": true,
+      "detail": {
+        "chip": "School 1/4 \u00b7 10 / 30 s"
+      }
+    },
+    {
+      "id": "T7-phone-landscape no scroll or zoom from the touches",
+      "ok": true,
+      "detail": {
+        "sx": 0,
+        "sy": 0,
+        "scale": 1
+      }
+    },
+    {
+      "id": "T8-phone-landscape no page errors",
+      "ok": true,
+      "detail": {
+        "errors": []
+      }
+    },
+    {
+      "id": "T-control the pilot profile: the ARM button is shown and a touch on a stick starts no motor",
+      "ok": true,
+      "detail": {
+        "armed": false,
+        "armShown": true
+      }
+    }
+  ],
+  "shots": "evidence/2026-10-16/v08-a/",
+  "note": "touch = CDP synthetic touches (the page path, not a real digitiser); keyboard = Playwright key events; the scan drawn (visible system Chrome)"
+}

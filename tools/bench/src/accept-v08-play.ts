@@ -121,11 +121,11 @@ async function keyboardFlight(p: Page, qs: string): Promise<void> {
     const step2 = await ev<Any>(p, 'return { help: h.prefs.get("input.altitudeHelp"), mode: h.prefs.get("flight.mode"), play: h.play() };');
     check('K6 the school chip counts toward 30 s; the goal offers step 2, which switches the altitude help off', !!chip0 && /^School 1\/4/.test(chip0) && offer && step2.help === false && step2.mode === 'angle' && step2.play.step === 2, { chipStart: chip0, chipAtGoal: chip1, offer, after: step2 });
     // step 2: the up arrow is a throttle that stays (no help): released, it keeps its value
-    await p.keyboard.down('ArrowDown'); await sleep(200); await p.keyboard.up('ArrowDown');
+    await p.keyboard.down('ArrowUp'); await sleep(150); await p.keyboard.up('ArrowUp');
     const t1 = await ev<number>(p, 'return h.play().throttle;');
     await sleep(500);
     const t2 = await ev<number>(p, 'return h.play().throttle;');
-    check('K7 without the help the arrows move a throttle that stays where it is left', Math.abs(t1 - t2) < 1e-6 && !(await ev<boolean>(p, 'return h.play().helpActive;')), { throttleAfterRelease: r3(t1), throttle500msLater: r3(t2) });
+    check('K7 without the help the arrows move a throttle that stays where it is left (it took over from the help without a jump)', Math.abs(t1 - t2) < 1e-6 && t1 > step2.play.throttle + 0.05 && !(await ev<boolean>(p, 'return h.play().helpActive;')), { throttleWhenHelpWentOff: r3(step2.play.throttle), throttleAfterRelease: r3(t1), throttle500msLater: r3(t2) });
     await ev(p, 'h.prefs.set("input.altitudeHelp", true); return 0;');
     // the quiet sound and the quick mute
     const vol = await ev<number>(p, 'return h.prefs.get("sound.volume");');
@@ -170,8 +170,9 @@ for (const size of SIZES) {
     const ui = await p.evaluate(`(() => { const a = document.querySelector('.touch-arm'); return { armShown: !!a && getComputedStyle(a).display !== 'none' && !a.hidden, hint: document.querySelector('.touch-hint')?.textContent, gate: document.querySelector('.gate-msg')?.textContent }; })()`) as Any;
     check(`T1-${size.name} easy play: no ARM button, the hint says what the sticks do, "touch a stick to take off"`, !ui.armShown && ui.hint === EN['play.touch.hint.climb'] && ui.gate === EN['play.gate.touch'], { ...ui, padPx: Lb.width, travelPx: travel });
     await p.screenshot({ path: join(SHOTS, `t-${size.name}-ground.jpg`), quality: 80 });
-    // the page's handling delay of pointer events (event timestamp -> handler), synthetic touches
-    await p.evaluate(`(() => { window.__lat = []; for (const el of document.querySelectorAll('.touch-pad')) el.addEventListener('pointermove', (e) => window.__lat.push(performance.now() - e.timeStamp), { capture: true }); })()`);
+    // the page's handling delay of pointer events (event timestamp -> handler), synthetic touches: the
+    // sticks read pointerrawupdate where the browser has it; pointermove (rAF-aligned) is the control
+    await p.evaluate(`(() => { window.__lat = { raw: [], move: [] }; for (const el of document.querySelectorAll('.touch-pad')) { el.addEventListener('pointerrawupdate', (e) => window.__lat.raw.push(performance.now() - e.timeStamp), { capture: true }); el.addEventListener('pointermove', (e) => window.__lat.move.push(performance.now() - e.timeStamp), { capture: true }); } })()`);
     // a touch-down off-centre moves no stick (v0.7's absolute pad: the control, by geometry)
     const off = { x: rc.x + 0.5 * travel, y: rc.y - 0.4 * travel };
     await touch('touchStart', [{ ...off, id: 1 }]);
@@ -201,9 +202,10 @@ for (const size of SIZES) {
     const pitch = await ev<number>(p, PITCH);
     await p.screenshot({ path: join(SHOTS, `t-${size.name}-flying.jpg`), quality: 80 });
     await touch('touchEnd', []);
-    const lat = await p.evaluate(`window.__lat.slice()`) as number[];
-    const sorted = [...lat].sort((a, b) => a - b);
-    check(`T5-${size.name} the right stick at half forward tilts the drone (angle mode); the page handles a move within a frame`, pitch > 8 && sorted.length > 5 && sorted[Math.floor(sorted.length / 2)] < 17, { pitchDeg: r3(pitch), pointerMoves: sorted.length, handlerDelayMs: { p50: r3(sorted[Math.floor(sorted.length / 2)] ?? NaN), p95: r3(sorted[Math.floor(sorted.length * 0.95)] ?? NaN) } });
+    const lat = await p.evaluate(`({ raw: window.__lat.raw.slice(), move: window.__lat.move.slice(), frameMs: (() => { const f = window.__gsfpv.session.frameStats(); return f.p50; })() })`) as { raw: number[]; move: number[]; frameMs: number };
+    const pct = (a: number[], q: number): number => { const x = [...a].sort((m, n) => m - n); return x.length ? x[Math.min(x.length - 1, Math.floor(x.length * q))] : NaN; };
+    const raw50 = pct(lat.raw, 0.5), move50 = pct(lat.move, 0.5);
+    check(`T5-${size.name} the right stick at half forward tilts the drone (angle mode); moves are read from pointerrawupdate, earlier than the rAF-aligned pointermove (control)`, pitch > 8 && lat.raw.length > 5 && raw50 < move50, { pitchDeg: r3(pitch), pageFrameP50Ms: r3(lat.frameMs), rawupdate: { n: lat.raw.length, p50: r3(raw50), p95: r3(pct(lat.raw, 0.95)) }, pointermoveControl: { n: lat.move.length, p50: r3(move50), p95: r3(pct(lat.move, 0.95)) } });
     const chipText = await p.evaluate(`(() => { const c = document.querySelector('[data-testid="school-chip"]'); return c && !c.hidden ? c.textContent : null; })()`);
     check(`T6-${size.name} the pilot school chip is on screen`, typeof chipText === 'string' && /^School 1\/4/.test(chipText), { chip: chipText });
     const view = await p.evaluate(`({ sx: scrollX, sy: scrollY, scale: visualViewport ? visualViewport.scale : 1 })`) as Any;
