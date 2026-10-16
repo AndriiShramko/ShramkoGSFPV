@@ -9,6 +9,11 @@ Plan: `docs/wip/v08-plan.md`. Each lane's own status: `docs/wip/v08-<lane>.md` i
   each lane implement -> one review -> fix, all four at once, RESUME-FIRST prompts with checkpoints.
 - If cut off: `/limit-resume` (digest of wf_07841db3-172), new continuation prompts per lane, never rerun.
 
+- 2026-10-16 evening: wave 1 cut off by the limit (implement a and b mid-way; c and d reviewed: findings saved in the
+  session scratchpad v08-review-c.json / v08-review-d.json; their fixes cut mid-way). Wave 2 = workflow wf_730f8377-b1d
+  (script gsfpv-v08-continue.js): a/b continue implement -> review -> fix; c/d continue their fixes. If cut again:
+  /limit-resume on wf_730f8377-b1d. The stale GPU lock of the dead agents was removed (no browser process alive).
+
 ## Merge and ship (after the lanes)
 
 1. Merge a, b, c, d into v03-lead (fetch origin/main first: other sessions push there); gates; B18 checked explicitly.
