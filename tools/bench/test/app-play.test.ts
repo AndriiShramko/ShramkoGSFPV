@@ -324,6 +324,27 @@ describe('touch: a touch-down never moves a stick; a finger moves it like a radi
     });
 });
 
+describe('every text easy play names exists in all four languages', () => {
+    const FLY = join(REPO, 'packages', 'i18n', 'locales', 'fly');
+    const dict = (l: string): Record<string, string> => {
+        const d = JSON.parse(readFileSync(join(FLY, `${l}.json`), 'utf8')) as Record<string, string>;
+        for (const ns of readdirSync(FLY)) if (!ns.endsWith('.json')) Object.assign(d, JSON.parse(readFileSync(join(FLY, ns, `${l}.json`), 'utf8')));
+        return d;
+    };
+    const SRC = ['app/builtin/play.ts', 'devices/keyboard.ts', 'devices/touch.ts', 'ui/hud.ts', 'app/builtin/sound.ts'];
+    it('literal t() keys of the changed files, and the school steps built from a template', () => {
+        const names = new Set<string>();
+        for (const f of SRC) for (const m of readFileSync(join(REPO, 'apps', 'fly', 'src', f), 'utf8').matchAll(/\bt\(\s*'([a-zA-Z0-9_.]+)'/g)) names.add(m[1]);
+        for (const s of SCHOOL_STEPS) { names.add(`play.school.step${s}`); names.add(`play.school.step${s}.about`); }
+        for (const l of ['en', 'es', 'pl', 'ru']) {
+            const d = dict(l);
+            expect([...names].filter((k) => !d[k]), l).toEqual([]);
+        }
+        // control: a key that does not exist is caught
+        expect(dict('en')['play.school.step5']).toBeUndefined();
+    });
+});
+
 describe('pilot school', () => {
     it('steps come from the settings and go back to them', () => {
         for (const s of SCHOOL_STEPS) { const o = settingsOf(s); expect(stepOf(o.mode, o.altitudeHelp)).toBe(s); }

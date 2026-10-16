@@ -35,6 +35,7 @@ import { sceneDefault } from './builtin/scene-default';
 import { switches } from './builtin/switches';
 import { crosshair } from './builtin/crosshair';
 import { sound } from './builtin/sound';
+import { play } from './builtin/play';
 
 export const FEATURES: readonly Feature[] = [
     scene,
@@ -67,5 +68,6 @@ export const FEATURES: readonly Feature[] = [
     sceneDefault,
     switches,
     crosshair,
-    sound
+    sound,
+    play
 ];

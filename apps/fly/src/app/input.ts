@@ -4,6 +4,8 @@ import type { Profile } from '@gsfpv/input';
 import { KeyboardSource } from '../devices/keyboard';
 import { findSavedHid, findSavedGamepad } from '../devices/reconnect';
 import { TouchSticks } from '../devices/touch';
+import { EasyPilot } from '../play/easy';
+import type { PlayProfile } from '../play/keys';
 import { loadLastInput, saveLastInput, loadProfiles, profileFor, saveProfile } from '../controls';
 import type { LastInput } from '../controls';
 import { RadioScreen } from '../ui/radio';
@@ -62,6 +64,13 @@ export class InputHost {
     /** passive until the keyboard is the chosen input; Space then arms a radio without an arm switch */
     readonly keyboard: KeyboardSource;
     touch: TouchSticks | null = null;
+    /**
+     * Easy play (v0.8, play/easy.ts): the auto-arm and the altitude help shared by the keyboard and
+     * the touch sticks when prefs input.play is 'easy'. A radio or gamepad never goes through it.
+     */
+    readonly easy: EasyPilot;
+    /** How touch and keyboard fly now (prefs input.play, set by app/builtin/play.ts through setPlay). */
+    private play: PlayProfile = 'pilot';
     private lastChoice: RadioChoice | null = null;
     private noteTimer = 0;
     private ctx: FlightContext;
@@ -70,6 +79,31 @@ export class InputHost {
         this.ctx = ctx;
         this.keyboard = new KeyboardSource(ctx.controls);
         this.keyboard.onArm = () => ctx.controls.toggleArm();
+        this.easy = new EasyPilot(ctx.controls, { session: () => ctx.session, altitudeHelp: () => ctx.prefs.get('input.altitudeHelp') !== false });
+        this.keyboard.easy = { pilot: this.easy, params: () => ctx.session.sim.p, mode: () => ctx.controls.flyingMode() };
+    }
+
+    /**
+     * How touch and keyboard fly (prefs input.play). The keyboard switches at once; touch sticks on
+     * screen are built again for the other profile (the ARM button, the left stick's job).
+     */
+    setPlay(p: PlayProfile): void {
+        if (p === this.play) return;
+        this.play = p;
+        this.ctx.controls.play = p;
+        this.keyboard.setProfile(p);
+        if (this.touch) {
+            this.touch.dispose();
+            this.easy.reset();
+            this.touch = this.makeTouch();
+        }
+    }
+
+    /** Touch sticks for the profile in use. */
+    private makeTouch(): TouchSticks {
+        const ts = new TouchSticks(this.ctx.ui, this.ctx.controls, this.play === 'easy' ? this.easy : null);
+        this.ctx.hook.touch = ts;
+        return ts;
     }
 
     /** The pilot's own input once the scan is in: forced by the device or the URL, else the one from last time. */
@@ -134,10 +168,9 @@ export class InputHost {
         ctx.controls.source = c.kind;
         if (c.kind === 'hid' && c.hid) c.hid.onFrame = (f) => ctx.controls.raw(f);
         if (c.kind === 'gamepad' && c.gamepad) c.gamepad.onFrame = (f) => ctx.controls.raw(f);
-        if (c.kind === 'touch') {
-            this.touch = new TouchSticks(ctx.session, ctx.ui, ctx.controls);
-            ctx.hook.touch = this.touch;
-        }
+        // a new input starts easy play from the ground: motors off until its first flying input
+        if (c.kind !== prev?.kind) this.easy.reset();
+        if (c.kind === 'touch') this.touch = this.makeTouch();
         this.keyboard.setActive(c.kind === 'keyboard');
         this.lastChoice = c;
         if (remember) saveLastInput({ kind: c.kind, key: c.profile?.deviceKey });
