@@ -15,8 +15,17 @@ const POSTERS = 'https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat'
 /** Scene ids: 6..32 hex digits (link.ts). */
 const ID_RE = SCENE_ID_RE;
 
-/** 'unsupported': the scene exists, but in a format the simulator cannot open yet (2025 compressed PLY). */
-export type SceneErrorCode = 'invalid-link' | 'not-found' | 'network' | 'blocked' | 'unsupported';
+/**
+ * Why a scene does not open. The scene picker (apps/fly ui/scenes.ts showError) shows each code as the
+ * fly locale's `error.<code>` in every language, except 'unsupported' (scenes.unsupported); a test holds
+ * every code to that. The technical reason stays in the error's message (the test hook's error, a bug
+ * report's details), never on screen.
+ * 'unsupported': the scene exists, but in a format the simulator cannot open yet (2025 compressed PLY).
+ * 'broken': the scene's content files arrived, but none is a scan the engine can open (a damaged
+ * lod-meta.json and nothing to fall back to).
+ */
+export const SCENE_ERROR_CODES = ['invalid-link', 'not-found', 'network', 'blocked', 'unsupported', 'broken'] as const;
+export type SceneErrorCode = (typeof SCENE_ERROR_CODES)[number];
 
 export class SceneError extends Error {
     code: SceneErrorCode;
@@ -25,6 +34,32 @@ export class SceneError extends Error {
         this.code = code;
         this.name = 'SceneError';
     }
+}
+
+/** One content file of scene.content that did not open (the session's loadContent tries them in order). */
+export interface ContentAttempt {
+    url: string;
+    /** the technical reason (the renderer's error message) */
+    error: string;
+    /** the CDN confirmed the file before it was tried (SceneContent.verified) */
+    verified: boolean;
+    /** the file arrived but is not a scan the engine can open (render-pc BrokenFileError), not a network failure */
+    broken: boolean;
+    /** what the renderer threw */
+    e: unknown;
+}
+
+/**
+ * The error for a scene none of whose content files opened, in this order: nothing to try is
+ * 'not-found'; every file arrived damaged is 'broken'; a file whose lookup never answered makes it
+ * 'network'; otherwise the first file's own error (an engine failure: the picker's generic text).
+ */
+export function noContentError(id: string, failures: readonly ContentAttempt[]): unknown {
+    const first = failures[0];
+    if (!first) return new SceneError('not-found', `scene ${id}: no content file to open`);
+    if (failures.every((x) => x.broken)) return new SceneError('broken', `scene ${id}: no content file the engine can open (${failures.map((x) => `${x.url}: ${x.error}`).join('; ')})`);
+    if (failures.some((x) => !x.verified)) return new SceneError('network', `scene ${id}: the scan could not be read (${first.error})`);
+    return first.e;
 }
 
 /**

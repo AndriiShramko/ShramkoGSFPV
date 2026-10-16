@@ -83,6 +83,7 @@
   "error.not-found": "Tej sceny nie ma na SuperSplat albo nie jest publiczna.",
   "error.network": "Serwery SuperSplat nie odpowiedziały. Sprawdź połączenie i spróbuj ponownie.",
   "error.blocked": "Ta scena została usunięta na prośbę autora.",
+  "error.broken": "Pliki tego skanu na SuperSplat są uszkodzone, więc symulator nie może go otworzyć. Wybierz inną scenę albo daj znać autorowi.",
   "error.generic": "Coś poszło nie tak: {msg}",
   "drone.title": "Twój dron",
   "drone.default": "domyślny",

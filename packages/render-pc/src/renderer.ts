@@ -14,7 +14,7 @@ import {
 import type { GraphicsDevice, GSplatComponent } from 'playcanvas';
 import { LatencyGuard, inputToScreenMs } from './governor';
 import { applyDrawing, DEFAULT_BUDGET_M } from './drawing';
-import { lodMetaProblem, lodMode } from './lod';
+import { BrokenFileError, lodMetaProblem, lodMode } from './lod';
 import type { LodState } from './lod';
 
 /** What the HUD shows about the delay (see LatencyGuard, inputToScreenMs). */
@@ -363,7 +363,8 @@ export class SplatRenderer {
      * Load splat content: lod-meta.json (streamed octree, levels of detail) or meta.json (single SOG).
      * Rejects when the file cannot be read or is not an octree the engine can open (lod.ts
      * lodMetaProblem), so the caller can open the scene's next content file; unloadSplat() then frees
-     * whatever the attempt left.
+     * whatever the attempt left. A file that arrived damaged (not JSON, not an octree) rejects with a
+     * BrokenFileError; an HTTP or network failure with a plain Error.
      */
     loadSplat(url: string, onProgress?: (pct: number) => void): Promise<Entity> {
         this.loadStartedAt = performance.now();
@@ -372,18 +373,26 @@ export class SplatRenderer {
         this.contentKind = isMeta ? 'meta' : 'lod-meta';
         const c = this.count;
         c.base = dirOf(url);
+        /** The file's JSON; HTTP failures are plain errors, a body that is not JSON a damaged file. */
+        const readJson = async (): Promise<unknown> => {
+            const r = await fetch(url);
+            if (!r.ok) throw new Error(`${filename}: HTTP ${r.status}`);
+            try {
+                return await r.json();
+            } catch (e) {
+                throw new BrokenFileError(`${filename} is not JSON: ${String((e as Error)?.message ?? e)}`);
+            }
+        };
         const start = async (): Promise<unknown> => {
             if (!isMeta) {
                 // the engine fetches lod-meta.json itself and cannot be handed it; read it first so a broken
                 // one is an error here instead of an asset that never loads (its own request then comes
                 // from the HTTP cache: the CDN sends Last-Modified and no Cache-Control)
-                const r = await fetch(url);
-                if (!r.ok) throw new Error(`${filename}: HTTP ${r.status}`);
-                const problem = lodMetaProblem(await r.json());
-                if (problem) throw new Error(`${filename} is not an octree the engine can open: ${problem}`);
+                const problem = lodMetaProblem(await readJson());
+                if (problem) throw new BrokenFileError(`${filename} is not an octree the engine can open: ${problem}`);
                 return undefined;
             }
-            const data = (await (await fetch(url)).json()) as { count?: number; means?: { shape?: number[] } };
+            const data = (await readJson()) as { count?: number; means?: { shape?: number[] } };
             // a single SOG: all of it is the first view
             c.expected.set(c.base, data.count ?? data.means?.shape?.[0] ?? 0);
             c.listed = true;

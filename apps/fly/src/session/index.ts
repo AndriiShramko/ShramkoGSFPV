@@ -13,9 +13,9 @@ import type { SimParams, ParamOverrides, SimEvent, Life, LifeHeader, RespawnOpts
 import { VoxelContactWorld, findSphereSpawn, openVoxelCollision } from '@gsfpv/collision';
 import { validCeiling, validMinBlocks } from '@gsfpv/collision';
 import type { FloaterFilter, VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
-import { resolveScene, headingFromCamera, SceneError } from '@gsfpv/scenes';
-import type { ResolvedScene } from '@gsfpv/scenes';
-import { SplatRenderer, drawOnDevice } from '@gsfpv/render-pc';
+import { resolveScene, headingFromCamera, noContentError } from '@gsfpv/scenes';
+import type { ContentAttempt, ResolvedScene } from '@gsfpv/scenes';
+import { BrokenFileError, SplatRenderer, drawOnDevice } from '@gsfpv/render-pc';
 import type { DrawingChoice } from '@gsfpv/render-pc';
 import { PRESETS, DEFAULT_PRESET } from '../presets';
 import { SimClock } from '../simclock';
@@ -342,11 +342,12 @@ export class FlightSession {
      * Open the scan: the first of scene.content that loads (@gsfpv/scenes content.ts: levels of detail
      * first, then the single file). A file that fails (unreadable, not an octree the engine can open: the
      * renderer's loadSplat rejects) is unloaded with whatever it started and the next one is tried; the
-     * scene then names the file really on screen (walls baking reads contentUrl). When none opens: a
-     * file whose lookup never answered makes it a network error, otherwise the first file's own error.
+     * scene then names the file really on screen (walls baking reads contentUrl). When none opens, the
+     * error is @gsfpv/scenes noContentError's: every file damaged (render-pc BrokenFileError) is 'broken',
+     * a file whose lookup never answered makes it 'network', otherwise the first file's own error.
      */
     private async loadContent(): Promise<void> {
-        const failures: { url: string; error: string; verified: boolean; e: unknown }[] = [];
+        const failures: ContentAttempt[] = [];
         for (const c of this.scene.content) {
             try {
                 await this.renderer.loadSplat(c.url);
@@ -355,15 +356,12 @@ export class FlightSession {
                 return;
             } catch (e) {
                 if (this.disposed) throw e;
-                failures.push({ url: c.url, error: String((e as Error)?.message ?? e), verified: c.verified, e });
+                failures.push({ url: c.url, error: String((e as Error)?.message ?? e), verified: c.verified, broken: e instanceof BrokenFileError, e });
                 this.renderer.unloadSplat();
             }
         }
         this.contentFailures = failures.map(({ url, error }) => ({ url, error }));
-        const first = failures[0];
-        if (!first) throw new SceneError('not-found', `scene ${this.scene.id}: no content file to open`);
-        if (failures.some((x) => !x.verified)) throw new SceneError('network', `scene ${this.scene.id}: the scan could not be read (${first.error})`);
-        throw first.e;
+        throw noContentError(this.scene.id, failures);
     }
 
     private findSpawn(): [number, number, number, number] {

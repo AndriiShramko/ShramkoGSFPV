@@ -5,6 +5,19 @@
 /** The deepest octree the check accepts (SuperSplat's policy: 1 + ceil(log2(N / 1 M)) levels; 13 seen). */
 export const MAX_LOD_LEVELS = 64;
 
+/**
+ * A scan file that arrived but is not one the engine can open (not JSON, or a lod-meta.json that fails
+ * lodMetaProblem): the file is damaged, not the network. SplatRenderer.loadSplat rejects with it so the
+ * session can tell the pilot "this scan's files are damaged" (@gsfpv/scenes SceneError 'broken') instead
+ * of a network or a generic error.
+ */
+export class BrokenFileError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'BrokenFileError';
+    }
+}
+
 /** A plain JSON object (not null, not an array). */
 function isObject(x: unknown): x is Record<string, unknown> {
     return !!x && typeof x === 'object' && !Array.isArray(x);

@@ -83,6 +83,7 @@
   "error.not-found": "This scene does not exist on SuperSplat or is not public.",
   "error.network": "The SuperSplat servers did not answer. Check your connection and try again.",
   "error.blocked": "This scene was removed at its author's request.",
+  "error.broken": "This scan's files on SuperSplat are damaged, so the simulator cannot open it. Try another scene, or tell its author.",
   "error.generic": "Something went wrong: {msg}",
   "drone.title": "Your drone",
   "drone.default": "default",
