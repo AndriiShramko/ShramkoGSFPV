@@ -1,0 +1,108 @@
+{
+ "what": "a recognised DJI FPV Remote Controller 3 flies out of the box on the Gamepad API (known-controller-probe.mjs)",
+ "base": "http://localhost:5394/en",
+ "steps": {
+  "open": {
+   "pass": true,
+   "id": "check",
+   "known": "dji-virtual-joystick",
+   "name": "DJI FPV Remote Controller 3",
+   "note": "Recognised: DJI FPV Remote Controller 3. Set up from its known layout, nothing to assign.Check it in half a minute: move",
+   "controls": [
+    "rightStickX",
+    "rightStickY",
+    "leftStickY",
+    "leftStickX",
+    "gimbalDial",
+    "flightModeSwitch",
+    "c2Switch",
+    "c1Button",
+    "pauseRthButton",
+    "startStopButton",
+    "shutterButton"
+   ],
+   "stepsDone": 8,
+   "mode": {
+    "input": {
+     "kind": "bits",
+     "lo": 6,
+     "hi": 7
+    },
+    "modes": [
+     "angle",
+     "horizon",
+     "acro"
+    ]
+   },
+   "channels": 9
+  },
+  "live": {
+   "pass": true,
+   "rightX": 40,
+   "leftX": 0,
+   "modeNow": "high",
+   "c2Now": "low",
+   "rollBar": "39.7%"
+  },
+  "fly": {
+   "pass": true,
+   "source": "gamepad",
+   "known": "dji-virtual-joystick",
+   "screen": false
+  },
+  "modes": {
+   "pass": true,
+   "modes": [
+    "angle",
+    "horizon",
+    "acro",
+    "angle"
+   ]
+  },
+  "arm": {
+   "pass": true,
+   "armed1": true,
+   "armed2": false,
+   "throttleMiddle": {
+    "armed": false,
+    "block": "throttle"
+   }
+  },
+  "resume": {
+   "pass": true,
+   "source": "gamepad",
+   "known": "dji-virtual-joystick",
+   "screen": false
+  },
+  "offer": {
+   "pass": true,
+   "saved": true,
+   "before": {
+    "known": null,
+    "offer": true
+   },
+   "after": {
+    "known": "dji-virtual-joystick",
+    "rollMax": 1,
+    "note": true
+   }
+  },
+  "not-dji": {
+   "pass": true,
+   "wizard": null,
+   "choice": true
+  }
+ },
+ "browser": {
+  "kind": "system-chrome",
+  "version": "155.0.8059.40",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+  "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "softwareGl": false,
+  "counts": true
+ },
+ "errorsDji": [],
+ "pass": true
+}

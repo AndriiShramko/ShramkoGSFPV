@@ -1,0 +1,321 @@
+{
+ "what": "HidSource on the local release with a fake navigator.hid (hid-source-probe.mjs)",
+ "base": "http://localhost:5394/en",
+ "browser": {
+  "kind": "system-chrome",
+  "version": "155.0.8059.40",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+  "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "softwareGl": false,
+  "counts": true
+ },
+ "dji": {
+  "pass": true,
+  "expect": {
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "name": "DJI FPV Remote Controller 3",
+   "end": "check",
+   "known": "dji-virtual-joystick",
+   "controls": 11,
+   "wizard": false
+  },
+  "seconds": 1,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "profileKey": "hid:2ca3:1021:HID Interface:13:d",
+   "profileName": "DJI FPV Remote Controller 3",
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "reports": 59,
+   "badReports": 0,
+   "lastBadLen": 0,
+   "rateHz": 0,
+   "deviceName": "HID Interface",
+   "hint": "",
+   "probe": {
+    "requested": 1,
+    "opened": 1,
+    "sent": 59,
+    "listeners": 1
+   },
+   "known": "dji-virtual-joystick",
+   "knownNote": true,
+   "controls": 11
+  },
+  "screens": 1,
+  "path": [
+   {
+    "t": 268,
+    "k": "check/null"
+   }
+  ],
+  "errors": []
+ },
+ "dji-windows": {
+  "pass": true,
+  "expect": {
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "name": "DJI FPV Remote Controller 3",
+   "end": "check",
+   "known": "dji-virtual-joystick",
+   "controls": 11,
+   "wizard": false
+  },
+  "seconds": 1,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "profileKey": "hid:2ca3:1021:HID Interface:13:d",
+   "profileName": "DJI FPV Remote Controller 3",
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "reports": 117,
+   "badReports": 0,
+   "lastBadLen": 0,
+   "rateHz": 0,
+   "deviceName": "HID Interface",
+   "hint": "",
+   "probe": {
+    "requested": 1,
+    "opened": 1,
+    "sent": 117,
+    "listeners": 1
+   },
+   "known": "dji-virtual-joystick",
+   "knownNote": true,
+   "controls": 11
+  },
+  "screens": 2,
+  "path": [
+   {
+    "t": 154,
+    "k": "none"
+   },
+   {
+    "t": 671,
+    "k": "check/null"
+   }
+  ],
+  "errors": []
+ },
+ "edgetx": {
+  "pass": true,
+  "expect": {
+   "key": "hid:1209:4f54:RadioMaster TX16S Joystick:19",
+   "name": "RadioMaster TX16S Joystick",
+   "end": "check",
+   "known": "edgetx-joystick",
+   "controls": 0,
+   "wizard": true
+  },
+  "seconds": 22,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "profileKey": "hid:1209:4f54:RadioMaster TX16S Joystick:19",
+   "profileName": "RadioMaster TX16S Joystick",
+   "key": "hid:1209:4f54:RadioMaster TX16S Joystick:19",
+   "reports": 5211,
+   "badReports": 0,
+   "lastBadLen": 0,
+   "rateHz": 246,
+   "deviceName": "RadioMaster TX16S Joystick",
+   "hint": "",
+   "probe": {
+    "requested": 1,
+    "opened": 1,
+    "sent": 5211,
+    "listeners": 1
+   },
+   "known": "edgetx-joystick",
+   "knownNote": true,
+   "controls": 0
+  },
+  "screens": 23,
+  "path": [
+   {
+    "t": 146,
+    "k": "none"
+   },
+   {
+    "t": 673,
+    "k": "stir/ready"
+   },
+   {
+    "t": 1131,
+    "k": "stir/active"
+   },
+   {
+    "t": 4129,
+    "k": "stir/done"
+   },
+   {
+    "t": 5051,
+    "k": "centre/ready"
+   },
+   {
+    "t": 5514,
+    "k": "centre/active"
+   },
+   {
+    "t": 6181,
+    "k": "centre/done"
+   },
+   {
+    "t": 7109,
+    "k": "throttle/ready"
+   },
+   {
+    "t": 7772,
+    "k": "throttle/active"
+   },
+   {
+    "t": 8625,
+    "k": "throttle/done"
+   },
+   {
+    "t": 9520,
+    "k": "yaw/ready"
+   },
+   {
+    "t": 10156,
+    "k": "yaw/active"
+   },
+   {
+    "t": 10993,
+    "k": "yaw/done"
+   },
+   {
+    "t": 12581,
+    "k": "pitch/ready"
+   },
+   {
+    "t": 13015,
+    "k": "pitch/active"
+   },
+   {
+    "t": 13855,
+    "k": "pitch/done"
+   },
+   {
+    "t": 15319,
+    "k": "roll/ready"
+   },
+   {
+    "t": 15757,
+    "k": "roll/active"
+   },
+   {
+    "t": 16610,
+    "k": "roll/done"
+   },
+   {
+    "t": 17943,
+    "k": "arm/ready"
+   },
+   {
+    "t": 18592,
+    "k": "arm/active"
+   },
+   {
+    "t": 20093,
+    "k": "arm/done"
+   },
+   {
+    "t": 21041,
+    "k": "check/null"
+   }
+  ],
+  "errors": []
+ },
+ "dji-other": {
+  "pass": true,
+  "expect": {
+   "end": "wizard",
+   "known": null
+  },
+  "seconds": 12,
+  "end": {
+   "id": "stir",
+   "profile": false,
+   "profileKey": null,
+   "profileName": null,
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "reports": 1959,
+   "badReports": 0,
+   "lastBadLen": 0,
+   "rateHz": 167,
+   "deviceName": "HID Interface",
+   "hint": "Now stir the other stick too, into every corner. If it moves but no new bar below turns green, set the radio to USB Joystick mode.",
+   "probe": {
+    "requested": 1,
+    "opened": 1,
+    "sent": 1959,
+    "listeners": 1
+   },
+   "known": null,
+   "knownNote": false,
+   "controls": 0
+  },
+  "screens": 3,
+  "path": [
+   {
+    "t": 169,
+    "k": "none"
+   },
+   {
+    "t": 649,
+    "k": "stir/ready"
+   },
+   {
+    "t": 1121,
+    "k": "stir/active"
+   }
+  ],
+  "errors": []
+ },
+ "dji-none": {
+  "pass": true,
+  "expect": {
+   "end": "connect",
+   "refused": true
+  },
+  "seconds": 30,
+  "end": {
+   "id": "connect",
+   "profile": false,
+   "profileKey": null,
+   "profileName": null,
+   "key": "hid:2ca3:1021:HID Interface:13",
+   "reports": 0,
+   "badReports": 4888,
+   "lastBadLen": 13,
+   "rateHz": 0,
+   "deviceName": "HID Interface",
+   "hint": "The device sends 13-byte reports we cannot read. Try the \"Gamepad or radio as gamepad\" button instead; an EdgeTX radio can also be set to USB Joystick mode Classic in its model settings.",
+   "probe": {
+    "requested": 1,
+    "opened": 1,
+    "sent": 4888,
+    "listeners": 1
+   },
+   "known": null,
+   "knownNote": false,
+   "controls": 0
+  },
+  "screens": 2,
+  "path": [
+   {
+    "t": 164,
+    "k": "none"
+   },
+   {
+    "t": 1724,
+    "k": "connect/null"
+   }
+  ],
+  "errors": []
+ },
+ "pass": true
+}

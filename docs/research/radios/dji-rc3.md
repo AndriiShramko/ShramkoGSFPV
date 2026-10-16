@@ -236,3 +236,25 @@ recognises the controller by its ids **and** the shape of its HID gamepad (5 axe
 - Which axis is which stick, whether the throttle springs back, which bits are which switch and which
   are buttons, and whether bits 4/5 and 6/7 really are 3-position switches.
 - Whether the Gamepad API path finishes the wizard (Chrome 140 exposed no pad at rest).
+
+### The owner's 30-second check (v0.8)
+
+Since v0.8 the controller is recognised and opens its check screen with the known layout (no wizard).
+Everything marked "not confirmed yet" there is confirmed or corrected in half a minute on the real
+controller, and each answer moves a fact in `packages/input/src/known-devices.ts` from assumed to
+measured:
+
+1. Move each stick: the four rows Roll / Pitch / Throttle / Yaw and the matching "Right stick left /
+   right"... rows must follow; a bar that moves the other way = that direction is wrong (Reverse fixes it
+   for this browser; tell us so it is fixed for everyone).
+2. Flip the flight mode switch N / S / M: the "Flight mode switch" row must light low / middle / high
+   and the Mode switch row read Angle / Horizon / Acro. If the C2 row lights instead, the two switches
+   are the other way round (bits 4/5 and 6/7).
+3. Press C1, pause / RTH, start/stop and shutter one at a time: each must light its own row. Which one
+   lit for which press is the button order (assumed from the manual's order).
+4. Throttle down, press start/stop: Arm ON; again: OFF.
+5. In the browser's own list (chrome://gamepad or the Controls screen's rate): the reports per second
+   while a stick moves (measured 150-170 on Windows with winmm).
+
+Sending the result: the report button (B) on the check screen with "which row lit for which control"
+is enough to fix the table for every pilot.
