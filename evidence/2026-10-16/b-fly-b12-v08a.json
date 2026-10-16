@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-16T18:45:11.418Z",
-    "gitHead": "88cc57d",
+    "date": "2026-10-16T19:40:39.510Z",
+    "gitHead": "0fa4fa8",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -32,7 +32,7 @@
     "tick": 10094,
     "engine": "rapier",
     "debris": 3,
-    "maxAngularSpeed": 17.223228046315693,
+    "maxAngularSpeed": 151.40840436669455,
     "staticBoxes": 1420,
     "event": {
       "type": "crash",

@@ -7,15 +7,16 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-16T14:56:00.193Z",
-    "gitHead": "8265312",
+    "date": "2026-10-16T19:31:45.833Z",
+    "gitHead": "0fa4fa8",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5481",
-  "pass": false,
+  "site": "http://localhost:5491",
+  "pass": true,
+  "only": "all",
   "checks": [
     {
       "id": "K1 the key card shows on the ground with the game keys and \"press a flying key to take off\"",
@@ -33,15 +34,24 @@
       "detail": {
         "armedBefore": false,
         "armed": true,
-        "climbMps": 2.63,
-        "gainedM": 5.787
+        "climbMps": 2.629,
+        "gainedM": 5.799
+      }
+    },
+    {
+      "id": "K9 K over the ground card hides it, and it does not come back over the flight; control: the card was up on the ground before K (K1)",
+      "ok": true,
+      "detail": {
+        "upBeforeK": true,
+        "hiddenByKOnTheGround": true,
+        "hiddenAfterTakeOff": true
       }
     },
     {
       "id": "K3 keys released: the height holds (altitude help)",
       "ok": true,
       "detail": {
-        "spreadM": 0.034,
+        "spreadM": 0.036,
         "meanVy": 0.01
       }
     },
@@ -63,6 +73,15 @@
       }
     },
     {
+      "id": "K10 Esc pauses while Shift is held as the boost with W (and Esc resumes); control: Shift alone is the modifier, Shift+Esc pauses nothing",
+      "ok": true,
+      "detail": {
+        "pausedWhileBoosting": true,
+        "resumedByEsc": true,
+        "pausedByShiftEscAlone": false
+      }
+    },
+    {
       "id": "K6 the school chip counts toward 30 s; the goal offers step 2, which switches the altitude help off",
       "ok": true,
       "detail": {
@@ -77,11 +96,11 @@
             "arm": "on",
             "want": true,
             "helpActive": false,
-            "throttle": 0.283304226066152,
+            "throttle": 0.2832469824897904,
             "target": 0,
             "step": 2,
             "school": {
-              "seconds": 0,
+              "seconds": 0.26699999999999946,
               "goal": 45
             }
           }
@@ -93,8 +112,8 @@
       "ok": true,
       "detail": {
         "throttleWhenHelpWentOff": 0.283,
-        "throttleAfterRelease": 0.445,
-        "throttle500msLater": 0.445
+        "throttleAfterRelease": 0.45,
+        "throttle500msLater": 0.45
       }
     },
     {
@@ -106,6 +125,43 @@
         "afterClick": false,
         "ariaPressed": "true",
         "afterSecondClick": true
+      }
+    },
+    {
+      "id": "K11 Space: a tap in the air keeps the drone flying and its height; held 0.8 s it stops the motors (control)",
+      "ok": true,
+      "detail": {
+        "afterTap": {
+          "armed": true,
+          "want": true,
+          "heightChangeM": 0.15
+        },
+        "afterHold": {
+          "armed": false,
+          "want": false,
+          "arm": "off"
+        }
+      }
+    },
+    {
+      "id": "K12 the easy-play flight (auto-arm, altitude help, Space) replays from its log to the same hash; controls: one LSB and a 0.05 stick twitch in one record change it",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "saved": "203074655b63e4c9692d6813be6574416950c1eb0bb232d5793d46b70c35af44",
+        "replayed": "203074655b63e4c9692d6813be6574416950c1eb0bb232d5793d46b70c35af44",
+        "endTick": 40986,
+        "lives": 1,
+        "refused": null,
+        "tamperedAtTick": 20493,
+        "lsb": {
+          "was": -0.438484251499176,
+          "differs": true
+        },
+        "twitch": {
+          "was": 0,
+          "differs": true
+        }
       }
     },
     {
@@ -153,8 +209,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.618,
-        "gainedM": 4.017,
+        "climbMps": 1.636,
+        "gainedM": 4,
         "leftStickAfterRelease": 0
       }
     },
@@ -166,20 +222,41 @@
       }
     },
     {
-      "id": "T5-tablet the right stick at half forward tilts the drone (angle mode); moves are read from pointerrawupdate, earlier than the rAF-aligned pointermove (control)",
+      "id": "T5-tablet the right stick at half forward tilts the drone (angle mode); a touch sample reaches the flight at the frame measured for pointermove and for pointerrawupdate (100 % the same frame); control: a sample held to the next animation frame is measured a frame later",
       "ok": true,
       "detail": {
-        "pitchDeg": 17.284,
-        "pageFrameP50Ms": 33.4,
-        "rawupdate": {
-          "n": 12,
-          "p50": 27.1,
-          "p95": 61
+        "pitchDeg": 17.283,
+        "matched": 51,
+        "sameFramePct": 100,
+        "moveLaterPct": 0,
+        "moveEarlierPct": 0,
+        "rawToFlightMs": {
+          "p50": 48.3,
+          "p95": 56.6
         },
-        "pointermoveControl": {
-          "n": 12,
-          "p50": 61.4,
-          "p95": 85.9
+        "moveToFlightMs": {
+          "p50": 48.3,
+          "p95": 56.6
+        },
+        "controlN": 51,
+        "controlLaterPct": 100,
+        "framePeriodP50Ms": 33.3,
+        "samples": {
+          "raw": 51,
+          "move": 51,
+          "frames": 403
+        }
+      }
+    },
+    {
+      "id": "T10-tablet from a touch-down on the pad's outer rim the screen's edge is full stick (roll and pitch back); control: the first grab reached 0.256 / -0.256",
+      "ok": true,
+      "detail": {
+        "rollAtRightEdge": 1,
+        "pitchAtBottomEdge": -1,
+        "firstGrab": {
+          "roll": 0.256,
+          "pitch": -0.256
         }
       }
     },
@@ -187,20 +264,24 @@
       "id": "T6-tablet the pilot school chip is on screen",
       "ok": true,
       "detail": {
-        "chip": "School 1/4 \u00b7 10 / 30 s"
+        "chip": "School 1/4 \u00b7 15 / 30 s"
       }
     },
     {
-      "id": "T9-tablet the speaker is on screen and nothing at the top prints over anything else; control: the school chip moved onto the buttons is caught",
+      "id": "T9-tablet the speaker is on screen and nothing at the top prints over anything else; controls: the school chip moved onto the buttons, and onto the credit's text, is caught",
       "ok": true,
       "detail": {
         "speakerOnScreen": true,
         "overlaps": [],
         "control": [
-          "sound-toggle x school-chip",
-          "share-top x school-chip",
-          "open-settings x school-chip",
-          "open-feedback x school-chip"
+          "sound-toggle[605,38,647,78] x school-chip[607,40,796,68]",
+          "share-top[655,38,698,78] x school-chip[607,40,796,68]",
+          "open-settings[706,38,751,78] x school-chip[607,40,796,68]",
+          "open-feedback[759,38,847,78] x school-chip[607,40,796,68]"
+        ],
+        "controlCredit": [
+          "attribution[16,139,342,155] x school-chip[18,141,207,169]",
+          "attribution[16,167,75,183] x school-chip[18,141,207,169]"
         ]
       }
     },
@@ -211,6 +292,27 @@
         "sx": 0,
         "sy": 0,
         "scale": 1
+      }
+    },
+    {
+      "id": "T11-tablet the touch flight (auto-arm, altitude help, grab) replays from its log to the same hash; controls: one LSB and a 0.05 stick twitch in one record change it",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "saved": "24fcd00a212ce5c8ba8fa372f1c75cb1e49ef516029f89ddc82e6584145df59e",
+        "replayed": "24fcd00a212ce5c8ba8fa372f1c75cb1e49ef516029f89ddc82e6584145df59e",
+        "endTick": 18448,
+        "lives": 1,
+        "refused": null,
+        "tamperedAtTick": 9224,
+        "lsb": {
+          "was": -0.44307830929756165,
+          "differs": true
+        },
+        "twitch": {
+          "was": 0,
+          "differs": true
+        }
       }
     },
     {
@@ -250,8 +352,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.642,
-        "gainedM": 4.068,
+        "climbMps": 1.667,
+        "gainedM": 4.053,
         "leftStickAfterRelease": 0
       }
     },
@@ -263,20 +365,41 @@
       }
     },
     {
-      "id": "T5-phone the right stick at half forward tilts the drone (angle mode); moves are read from pointerrawupdate, earlier than the rAF-aligned pointermove (control)",
+      "id": "T5-phone the right stick at half forward tilts the drone (angle mode); a touch sample reaches the flight at the frame measured for pointermove and for pointerrawupdate (100 % the same frame); control: a sample held to the next animation frame is measured a frame later",
       "ok": true,
       "detail": {
-        "pitchDeg": 17.848,
-        "pageFrameP50Ms": 33.3,
-        "rawupdate": {
-          "n": 12,
-          "p50": 16.3,
-          "p95": 31.2
+        "pitchDeg": 17.847,
+        "matched": 51,
+        "sameFramePct": 100,
+        "moveLaterPct": 0,
+        "moveEarlierPct": 0,
+        "rawToFlightMs": {
+          "p50": 49.8,
+          "p95": 62.3
         },
-        "pointermoveControl": {
-          "n": 12,
-          "p50": 46.2,
-          "p95": 91.6
+        "moveToFlightMs": {
+          "p50": 49.8,
+          "p95": 62.3
+        },
+        "controlN": 51,
+        "controlLaterPct": 100,
+        "framePeriodP50Ms": 33.3,
+        "samples": {
+          "raw": 51,
+          "move": 51,
+          "frames": 404
+        }
+      }
+    },
+    {
+      "id": "T10-phone from a touch-down on the pad's outer rim the screen's edge is full stick (roll and pitch back); control: the first grab reached 0.424 / -0.431",
+      "ok": true,
+      "detail": {
+        "rollAtRightEdge": 1,
+        "pitchAtBottomEdge": -1,
+        "firstGrab": {
+          "roll": 0.424,
+          "pitch": -0.431
         }
       }
     },
@@ -284,21 +407,25 @@
       "id": "T6-phone the pilot school chip is on screen",
       "ok": true,
       "detail": {
-        "chip": "School 1/4 \u00b7 10 / 30 s"
+        "chip": "School 1/4 \u00b7 15 / 30 s"
       }
     },
     {
-      "id": "T9-phone the speaker is on screen and nothing at the top prints over anything else; control: the school chip moved onto the buttons is caught",
-      "ok": false,
+      "id": "T9-phone the speaker is on screen and nothing at the top prints over anything else; controls: the school chip moved onto the buttons, and onto the credit's text, is caught",
+      "ok": true,
       "detail": {
         "speakerOnScreen": true,
-        "overlaps": [
-          "attribution x school-chip"
-        ],
+        "overlaps": [],
         "control": [
-          "share-top x school-chip",
-          "open-settings x school-chip",
-          "open-feedback x school-chip"
+          "share-top[10,38,49,78] x school-chip[12,40,201,68]",
+          "open-settings[57,38,103,78] x school-chip[12,40,201,68]",
+          "open-feedback[111,38,199,78] x school-chip[12,40,201,68]"
+        ],
+        "controlCredit": [
+          "attribution[16,139,342,155] x school-chip[18,141,207,169]",
+          "attribution[16,156,73,172] x school-chip[18,141,207,169]",
+          "attribution[73,156,82,172] x school-chip[18,141,207,169]",
+          "attribution[82,156,173,172] x school-chip[18,141,207,169]"
         ]
       }
     },
@@ -309,6 +436,27 @@
         "sx": 0,
         "sy": 0,
         "scale": 1
+      }
+    },
+    {
+      "id": "T11-phone the touch flight (auto-arm, altitude help, grab) replays from its log to the same hash; controls: one LSB and a 0.05 stick twitch in one record change it",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "saved": "23d4dafddf847b35aacf863a216abe86165c04e291b3b7044b56d75a9af4a7c8",
+        "replayed": "23d4dafddf847b35aacf863a216abe86165c04e291b3b7044b56d75a9af4a7c8",
+        "endTick": 18394,
+        "lives": 1,
+        "refused": null,
+        "tamperedAtTick": 9197,
+        "lsb": {
+          "was": -0.44310304522514343,
+          "differs": true
+        },
+        "twitch": {
+          "was": 0,
+          "differs": true
+        }
       }
     },
     {
@@ -348,8 +496,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.624,
-        "gainedM": 4.037,
+        "climbMps": 1.639,
+        "gainedM": 3.93,
         "leftStickAfterRelease": 0
       }
     },
@@ -357,24 +505,45 @@
       "id": "T4-phone-landscape the height holds with no finger on the sticks",
       "ok": true,
       "detail": {
-        "spreadM": 0.036
+        "spreadM": 0.034
       }
     },
     {
-      "id": "T5-phone-landscape the right stick at half forward tilts the drone (angle mode); moves are read from pointerrawupdate, earlier than the rAF-aligned pointermove (control)",
+      "id": "T5-phone-landscape the right stick at half forward tilts the drone (angle mode); a touch sample reaches the flight at the frame measured for pointermove and for pointerrawupdate (100 % the same frame); control: a sample held to the next animation frame is measured a frame later",
       "ok": true,
       "detail": {
         "pitchDeg": 17.283,
-        "pageFrameP50Ms": 33.3,
-        "rawupdate": {
-          "n": 12,
-          "p50": 30.8,
-          "p95": 64
+        "matched": 51,
+        "sameFramePct": 100,
+        "moveLaterPct": 0,
+        "moveEarlierPct": 0,
+        "rawToFlightMs": {
+          "p50": 49.4,
+          "p95": 61.5
         },
-        "pointermoveControl": {
-          "n": 12,
-          "p50": 61,
-          "p95": 84.2
+        "moveToFlightMs": {
+          "p50": 49.4,
+          "p95": 61.5
+        },
+        "controlN": 51,
+        "controlLaterPct": 100,
+        "framePeriodP50Ms": 33.3,
+        "samples": {
+          "raw": 51,
+          "move": 51,
+          "frames": 398
+        }
+      }
+    },
+    {
+      "id": "T10-phone-landscape from a touch-down on the pad's outer rim the screen's edge is full stick (roll and pitch back); control: the first grab reached 0.256 / -0.252",
+      "ok": true,
+      "detail": {
+        "rollAtRightEdge": 1,
+        "pitchAtBottomEdge": -1,
+        "firstGrab": {
+          "roll": 0.256,
+          "pitch": -0.252
         }
       }
     },
@@ -382,19 +551,23 @@
       "id": "T6-phone-landscape the pilot school chip is on screen",
       "ok": true,
       "detail": {
-        "chip": "School 1/4 \u00b7 10 / 30 s"
+        "chip": "School 1/4 \u00b7 15 / 30 s"
       }
     },
     {
-      "id": "T9-phone-landscape the speaker is on screen and nothing at the top prints over anything else; control: the school chip moved onto the buttons is caught",
+      "id": "T9-phone-landscape the speaker is on screen and nothing at the top prints over anything else; controls: the school chip moved onto the buttons, and onto the credit's text, is caught",
       "ok": true,
       "detail": {
         "speakerOnScreen": true,
         "overlaps": [],
         "control": [
-          "share-top x school-chip",
-          "open-settings x school-chip",
-          "open-feedback x school-chip"
+          "share-top[443,38,486,78] x school-chip[445,40,634,68]",
+          "open-settings[494,38,539,78] x school-chip[445,40,634,68]",
+          "open-feedback[547,38,635,78] x school-chip[445,40,634,68]"
+        ],
+        "controlCredit": [
+          "attribution[16,45,342,61] x school-chip[18,47,207,75]",
+          "attribution[16,62,107,78] x school-chip[18,47,207,75]"
         ]
       }
     },
@@ -405,6 +578,27 @@
         "sx": 0,
         "sy": 0,
         "scale": 1
+      }
+    },
+    {
+      "id": "T11-phone-landscape the touch flight (auto-arm, altitude help, grab) replays from its log to the same hash; controls: one LSB and a 0.05 stick twitch in one record change it",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "saved": "03c04def45aaa02fd30b59607f7872dc37f761abb942870332c4a96cec913610",
+        "replayed": "03c04def45aaa02fd30b59607f7872dc37f761abb942870332c4a96cec913610",
+        "endTick": 18393,
+        "lives": 1,
+        "refused": null,
+        "tamperedAtTick": 9196,
+        "lsb": {
+          "was": -0.4431549608707428,
+          "differs": true
+        },
+        "twitch": {
+          "was": 0,
+          "differs": true
+        }
       }
     },
     {
