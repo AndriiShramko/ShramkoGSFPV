@@ -25,6 +25,12 @@
 
 import { smoothNoise } from './wind';
 
+/**
+ * The largest share of thrust the wake may take (wakeLoss): a preset's wake_loss must lie in 0..this, and
+ * a preset's wake_loss times the pilot's prop wash multiplier is capped here (params.ts wakeOf), so no
+ * setting can make a flight model that cannot be built.
+ */
+export const WAKE_LOSS_MAX = 0.9;
 /** Below this descent ratio v_d / v_i the craft is still in normal working state (no loss). */
 export const WAKE_LO = 0.25;
 /** At and above this ratio the flow goes up through the disk (windmill brake state): no loss. */

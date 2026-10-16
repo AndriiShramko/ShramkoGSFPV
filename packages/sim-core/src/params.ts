@@ -4,6 +4,7 @@ import type { RatesConfig, RatesType, ThrottleCurve } from './rates';
 import { invertThrottle } from './rates';
 import type { LevelParams } from './contracts';
 import { compileWind } from './wind';
+import { WAKE_LOSS_MAX } from './wake';
 import type { WindConfig } from './wind';
 
 export type FieldSource = 'manufacturer' | 'estimate' | 'bf-default' | `measured:${string}`;
@@ -150,12 +151,16 @@ function optNum(p: PresetJson, key: string, fallback: number): number {
 /**
  * The prop-wash terms of a preset (wake.ts): wake_loss and wake_shake (both optional, 0 when absent)
  * times the override, and the disk area from prop_diameter_mm, which a preset with prop wash must have.
+ * A preset's own wake_loss outside 0..WAKE_LOSS_MAX is an authoring error (thrown); the override (the
+ * pilot's prop wash setting, up to 2x) can push the product past it, and that is capped, never thrown:
+ * a setting must not make a drone that cannot be flown (review R5, docs/wip/v08-d.md).
  */
 function wakeOf(p: PresetJson, scale: number): { wakeLoss: number; wakeShake: number; wakeArea: number } {
     if (!(scale >= 0) || !Number.isFinite(scale)) throw new RangeError(`wake must be a number >= 0, got ${String(scale)}`);
-    const loss = optNum(p, 'wake_loss', 0) * scale;
-    const shake = optNum(p, 'wake_shake', 0) * scale;
-    if (loss < 0 || loss > 0.9 || shake < 0) throw new RangeError(`preset ${p.id}: wake_loss x wake must be 0..0.9 and wake_shake >= 0`);
+    const own = optNum(p, 'wake_loss', 0), ownShake = optNum(p, 'wake_shake', 0);
+    if (own < 0 || own > WAKE_LOSS_MAX || ownShake < 0) throw new RangeError(`preset ${p.id}: wake_loss must be 0..${WAKE_LOSS_MAX} and wake_shake >= 0`);
+    const loss = Math.min(WAKE_LOSS_MAX, own * scale);
+    const shake = ownShake * scale;
     if (loss === 0 && shake === 0) return { wakeLoss: 0, wakeShake: 0, wakeArea: 0 };
     const r = num(p, 'prop_diameter_mm') / 2000;
     return { wakeLoss: loss, wakeShake: shake, wakeArea: 4 * Math.PI * r * r };
