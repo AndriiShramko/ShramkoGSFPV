@@ -14,7 +14,7 @@
 // screen) decide the arm and the mode instead when it has them, and their action ranges run app
 // actions (onSwitchAction, wired to the key router by app/builtin/switches.ts).
 
-import { ArmGate, ArmLatch, SwitchActionWatch, armByRanges, inputName, mapFrame, profileArmLevel, radioSetsMode, readChannelTable, readSwitches, validModeSwitch } from '@gsfpv/input';
+import { ArmGate, ArmLatch, SwitchActionWatch, armByRanges, inputName, knownDevice, mapFrame, profileArmLevel, radioSetsMode, readChannelTable, readSwitches, validModeSwitch } from '@gsfpv/input';
 import type { ChannelTable, Profile, RawFrame, ArmBlock, RadioDevice, SwitchAction, SwitchInput } from '@gsfpv/input';
 import { MODE_CHANNEL, modeFromChannel } from '@gsfpv/sim-core';
 import type { FlightMode } from '@gsfpv/sim-core';
@@ -310,6 +310,9 @@ export class Controls {
         } else {
             v.armKind = !a ? null : a.kind === 'button' ? (a.toggle ? 'toggle' : 'button') : a.kind;
             v.armLabel = !a ? '' : a.kind === 'axis' ? t('wizard.armSource.ch', { n: a.index + 1 }) : a.kind === 'button' ? t('wizard.armSource.button', { n: a.bit + 1 }) : t('wizard.armSource.key');
+            // a recognised controller's arm by the name printed on it (the DJI: "Start/stop button")
+            const known = a && a.kind === 'button' ? knownDevice(this.profile?.known)?.controls.find((c) => c.input.kind === 'button' && c.input.bit === a.bit) : undefined;
+            if (known) v.armLabel = t(`controllers.control.${known.label}`);
         }
         v.mode = this.profile?.mode ?? getStickMode();
         v.source = this.source;

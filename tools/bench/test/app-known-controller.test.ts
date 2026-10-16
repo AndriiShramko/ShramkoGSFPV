@@ -87,6 +87,15 @@ describe('the DJI flies with its known setup', () => {
         expect(k.c.nameOf({ kind: 'bits', lo: 6, hi: 7 })).toBe('buttons 7/8');
     });
 
+    it('the HUD\'s arm card names the arm by what is printed on the controller; control: the same profile not recognised says "button 3"', () => {
+        const { c } = controls(dji());
+        expect(c.view().armLabel).toBe('Start/stop button');
+        expect(c.view().armKind).toBe('toggle');
+        const plain = { ...dji() };
+        delete plain.known;
+        expect(controls(plain).c.view().armLabel).toBe('button 3');
+    });
+
     it('a full roll reads 1 and the measured rest offset reads 0 (its deadband)', () => {
         const { c, s } = controls(dji());
         c.raw(f({ roll: 1 }));
