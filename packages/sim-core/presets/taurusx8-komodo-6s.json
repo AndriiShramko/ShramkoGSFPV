@@ -20,7 +20,7 @@
     "inertia_roll_pitch_kgm2": { "value": 0.036, "source": "estimate", "note": "sum of parts: 8 motors and props at the arm ends, arms, the 2 kg camera above and ahead of the centre, the pack" },
     "inertia_yaw_kgm2": { "value": 0.045, "source": "estimate" },
     "motor_tau_ms": { "value": 50, "source": "estimate", "min": 35, "max": 70, "note": "J / (Kt^2/R + 2 Q0/w0) for a 3110 1250KV with an 8-inch tri-blade (about 14 g): about 50 ms, three times a 5-inch motor" },
-    "motor_kappa_m": { "value": 0.0165, "source": "estimate", "note": "reaction torque / thrust of one thrust point (a coaxial pair): an 8x4 tri-blade alone is about 0.014 m (Cq/Ct about 0.07 x diameter), the lower prop needs more torque for its thrust in the upper one's wash; with it the model draws about 51 A in a hover, which gives iFlight's 5.5 min" },
+    "motor_kappa_m": { "value": 0.0165, "source": "estimate", "note": "reaction torque / thrust of one thrust point (a coaxial pair): an 8x4 tri-blade alone is about 0.014 m (Cq/Ct about 0.07 x diameter), the lower prop needs more torque for its thrust in the upper one's wash; with it the model draws about 49 A in a hover: 5.8 min on 85 % of the pack, iFlight states 5.5 min" },
     "motor_idle": { "value": 0.055, "source": "bf-default", "note": "dshot_idle_value 550" },
     "rpm_loaded_fraction": { "value": 0.75, "source": "estimate", "note": "loaded rpm / (KV * V), only used for battery current" },
     "cda_horizontal_cm2": { "value": 350, "source": "estimate", "note": "the camera, the pack and the frame side-on" },

@@ -204,6 +204,8 @@ def diag_facts(blob: bytes | None) -> dict:
         return {}
     if not isinstance(d, dict):
         return {}
+    if "tune" in d and "browser" not in d:  # a drone-physics report's file: the pilot's text, no page facts
+        return {}
     out: dict = {}
     br = d.get("browser") if isinstance(d.get("browser"), dict) else {}
     if isinstance(br.get("userAgent"), str):
