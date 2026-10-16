@@ -3,7 +3,8 @@
 // state says, feeds frames in and calls the commands its buttons stand for; every decision is
 // made here, so simulated people can test it.
 //
-// Raw frames: axes normalised to [-1, 1] (HID 0..2048 -> -1..1, gamepad as is), buttons bitmask.
+// Raw frames: axes normalised to [-1, 1] (HID: the logical range of each axis, hid-layout.ts axisScale;
+// gamepad as is), buttons a bitmask of FRAME_BUTTONS bits.
 //
 // Wizard v3 (2026-09-26), user-paced. v2 advanced by itself: a screen ended once the sticks were
 // still for a moment, a push counted from the middle of the stirred range (a throttle parked mid
@@ -22,6 +23,7 @@ import type { ModeSwitch, SwitchInput, SwitchPos } from './mode-switch';
 import { copySwitches, hasModeRanges, rangesArm, rangesModeChannel } from './switches';
 import type { Switches } from './switches';
 import type { FlightMode } from '@gsfpv/sim-core';
+import { FRAME_BUTTONS } from './frame';
 
 // the radio's flight-mode switch (Profile.modeSwitch) and its channel functions (Profile.switches)
 // live in their own modules; one import path for the app
@@ -202,7 +204,7 @@ export const TUNING = {
 
 const T = TUNING;
 const NB = 32; // stir histogram bins over [-1, 1]
-const NBITS = 24;
+const NBITS = FRAME_BUTTONS;
 
 interface Snap {
     assigned: Partial<Record<Fn, AxisMap>>;

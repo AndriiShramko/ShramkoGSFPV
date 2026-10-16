@@ -1,8 +1,14 @@
-// The EdgeTX "USB Joystick" (Classic) report. Layout from the EdgeTX source (not measured on hardware
-// yet): 3 bytes of buttons + 8 x uint16 little-endian, 0..2048, centre 1024; 16 bytes = no button bytes.
-// Every other HID joystick or gamepad is read through its own descriptor (hid-layout.ts).
+// The EdgeTX "USB Joystick" (Classic) report as a fixed layout, from the EdgeTX source
+// (usbd_hid_joystick.c; not measured on a radio): 3 bytes of buttons + 8 x uint16 little-endian,
+// 0..2047, centre 1024; 16 bytes = no button bytes. No device is read with it by its USB ids: every
+// device, the EdgeTX radio too, is read through its own report descriptor (hid-layout.ts), and the
+// EdgeTX radio's descriptor gives exactly this layout. It stays only as the fallback for a device whose
+// browser hands over no usable descriptor (hid-layout.ts makeHidReader), as every device was read before.
 
 import type { RawFrame } from './calib';
+
+/** The USB ids EdgeTX and OpenTX radios use for their joystick (pid.codes 1209:4F54), the one place they are written. */
+export const EDGETX_USB = { vendorId: 0x1209, productId: 0x4f54 } as const;
 
 export function parseEdgeTxReport(data: DataView, out: RawFrame): boolean {
     const n = data.byteLength;
@@ -18,9 +24,4 @@ export function parseEdgeTxReport(data: DataView, out: RawFrame): boolean {
         return true;
     }
     return false;
-}
-
-/** The EdgeTX radio keeps its documented fixed layout (it works on the real radio); every other device goes by its descriptor. */
-export function isEdgeTx(d: { vendorId: number; productId: number }): boolean {
-    return d.vendorId === 0x1209 && d.productId === 0x4f54;
 }

@@ -1,39 +1,36 @@
-// A radio or gamepad over WebHID. An EdgeTX radio in "USB Joystick" mode sends the layout from the
-// EdgeTX source: 3 bytes of buttons + 8 x uint16 little-endian, 0..2048, centre 1024. Any other HID
-// joystick or gamepad (a DJI controller in its simulator mode, 13 bytes: 5 x int16 and 24 button bits)
-// is read through its own report descriptor, which the browser hands over as device.collections
-// (packages/input/src/hid-layout.ts). The chooser lists every HID joystick, gamepad and multi-axis
-// controller. Timestamps are the browser's event.timeStamp (same clock as performance.now()).
+// A radio or game controller over WebHID. Every device is read through its own report descriptor,
+// which the browser hands over as device.collections (packages/input/src/hid-layout.ts): an EdgeTX
+// radio in "USB Joystick" mode (its descriptor gives the layout of the EdgeTX source: 3 bytes of
+// buttons + 8 x uint16 little-endian, 0..2047, centre 1024), a DJI controller in its simulator mode
+// (13 bytes: 5 x int16 and 24 button bits), any HID joystick, gamepad or multi-axis controller. The
+// fixed EdgeTX layout is only the fallback when the browser hands over no usable descriptor. The
+// chooser lists every HID game control and the EdgeTX USB ids. Timestamps are the browser's
+// event.timeStamp (same clock as performance.now()).
 
-import { hidDisplayName, makeHidReader, parseEdgeTxReport } from '@gsfpv/input';
+import { EDGETX_USB, GAME_CONTROL_USAGES, hidDisplayName, hidProfileKey, makeHidReader, parseEdgeTxReport } from '@gsfpv/input';
 import type { HidReader, RawFrame } from '@gsfpv/input';
 
-export const EDGETX_FILTERS: HIDDeviceFilter[] = [
-    { vendorId: 0x1209, productId: 0x4f54 }, // EdgeTX / OpenTX
-    { usagePage: 0x01, usage: 0x04 }, // joystick
-    { usagePage: 0x01, usage: 0x05 }, // gamepad
-    { usagePage: 0x01, usage: 0x08 } // multi-axis controller
+/** What the browser's chooser offers: the EdgeTX / OpenTX joystick by its USB ids, and every HID game control (joystick, gamepad, multi-axis controller), the collections the reader reads. */
+export const HID_CHOOSER_FILTERS: HIDDeviceFilter[] = [
+    { ...EDGETX_USB },
+    ...GAME_CONTROL_USAGES.map((usage) => ({ usagePage: 0x01, usage }))
 ];
 
 export { hidDisplayName, parseEdgeTxReport };
-
-export function hidDeviceKey(d: { vendorId: number; productId: number; productName: string }, reportLen: number): string {
-    return `hid:${d.vendorId.toString(16)}:${d.productId.toString(16)}:${d.productName}:${reportLen}`;
-}
 
 export class HidSource {
     device: HIDDevice | null = null;
     frame: RawFrame = { t: 0, axes: new Float32Array(8), buttons: 0 };
     reports = 0;
-    /** reports this parser cannot read (e.g. EdgeTX "Advanced" joystick layouts) and the last one's length */
+    /** reports the reader cannot read (shorter than the layout, an unknown report id) and the last one's length */
     badReports = 0;
     lastBadLen = 0;
     private rateT0 = 0;
     private rateN = 0;
     rateHz = 0;
     reportLen = 0;
-    /** EdgeTX's fixed layout, or the device's own descriptor (makeHidReader) */
-    private read: HidReader = (_id, data, out) => parseEdgeTxReport(data, out);
+    /** the device's own descriptor, or the fixed EdgeTX layout without one (makeHidReader) */
+    private read: HidReader = makeHidReader({});
     onFrame: ((f: RawFrame) => void) | null = null;
 
     static supported(): boolean {
@@ -43,7 +40,7 @@ export class HidSource {
     /** Must be called from a user gesture. */
     async request(): Promise<HIDDevice | null> {
         const hid = (navigator as Navigator & { hid: HID }).hid;
-        const list = await hid.requestDevice({ filters: EDGETX_FILTERS });
+        const list = await hid.requestDevice({ filters: HID_CHOOSER_FILTERS });
         return list[0] ?? null;
     }
 
@@ -74,9 +71,9 @@ export class HidSource {
         this.onFrame?.(f);
     };
 
+    /** The profile key (hidProfileKey): a descriptor-read device's axis report length and ':d'; the EdgeTX layout's arriving length, as before. */
     get key(): string {
-        // a descriptor-read device: its axis report's length, whichever of its reports came first
-        return this.device ? hidDeviceKey(this.device, this.read.keyBytes ?? this.reportLen) : '';
+        return this.device ? hidProfileKey(this.device, this.read, this.reportLen) : '';
     }
 
     close(): void {

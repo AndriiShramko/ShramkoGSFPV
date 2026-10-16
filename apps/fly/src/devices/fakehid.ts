@@ -1,25 +1,26 @@
 // SimRadio, raw level: a fake "EdgeTX Classic" radio that emits real 19-byte joystick reports
-// (3 button bytes + 8 x uint16 LE, 0..2048) through the same parser as a real radio. It has a
-// channel order, per-channel inversion, a centre offset and noise, and it can follow the
-// calibration wizard's screens like an ideal robot (optionally with a reaction delay), or like one
-// of the simulated people of @gsfpv/input/sim (humanSeed). SimRadio is NOT a real radio.
-// With `device: 'dji-rc3'` the same hands go out as the DJI RC 3's own report (13 bytes: 5 x int16
-// -660..660 and 24 button bits, bits 4 and 6 held as on the real controller) and are read back by its
-// descriptor (makeHidReader), the path HidSource takes for that controller (?simradio=raw&device=dji).
-// A report that reader refuses sends no frame (counted in badReports), so a page check fails on it. Its
-// profile key names the SimRadio, never the real controller's key, so a test run cannot leave a
-// calibration that the real DJI controller would then fly with.
+// (3 button bytes + 8 x uint16 LE, 0..2047) and reads them back through the reader HidSource builds
+// for a real EdgeTX radio: makeHidReader on the radio's descriptor (sim/devices.ts EDGETX_CLASSIC,
+// from the EdgeTX source). It has a channel order, per-channel inversion, a centre offset and noise,
+// and it can follow the calibration wizard's screens like an ideal robot (optionally with a reaction
+// delay), or like one of the simulated people of @gsfpv/input/sim (humanSeed). SimRadio is NOT a
+// real radio. With `device: 'dji-rc3'` the same hands go out as the DJI RC 3's own report (13 bytes:
+// 5 x int16 -660..660 and 24 button bits, bits 4 and 6 held as on the real controller) and are read
+// back by its descriptor (?simradio=raw&device=dji). A report the reader refuses sends no frame
+// (counted in badReports), so a page check fails on it. The profile key is made as HidSource makes it
+// (hidProfileKey) but names the SimRadio, never the real device's key, so a test run cannot leave a
+// calibration that a real radio or controller would then fly with.
 //
 // The wizard is user-paced (v3): nothing advances unless a button is pressed. The robot therefore
 // moves the sticks AND presses the buttons (Start, Done, Measure, Next) through `onAct`, the same
 // commands the page's buttons call; it never calls the wizard itself. `noButtons` keeps the hands
 // and drops every press (the page-level negative control: the wizard must then stay put).
 
-import type { RawFrame, WizardState } from '@gsfpv/input';
-import { makeHidReader } from '@gsfpv/input';
-import { DJI_RC3, Human, djiRc3Report, emptyInstruction, instructionOf, quantize11, randomHuman } from '@gsfpv/input/sim';
-import type { Stick, UiAction } from '@gsfpv/input/sim';
-import { hidDeviceKey, parseEdgeTxReport } from './hid';
+import type { HidReader, RawFrame, WizardState } from '@gsfpv/input';
+import { hidProfileKey, makeHidReader } from '@gsfpv/input';
+import { DJI_RC3, EDGETX_CLASSIC, Human, djiRc3Report, emptyInstruction, instructionOf, quantize11, randomHuman } from '@gsfpv/input/sim';
+import type { HidPadSpec, Stick, UiAction } from '@gsfpv/input/sim';
+import { parseEdgeTxReport } from './hid';
 
 export interface FakeRadioConfig {
     order: string; // e.g. "TAER" or "AETR": which function sits on channel 1..4
@@ -77,6 +78,7 @@ export class FakeEdgeTx {
 
     constructor(cfg: FakeRadioConfig) {
         this.cfg = cfg;
+        this.read = makeHidReader(this.spec);
         let a = cfg.seed >>> 0;
         this.rng = () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
         if (cfg.humanSeed !== undefined) {
@@ -86,20 +88,26 @@ export class FakeEdgeTx {
         }
     }
 
-    private djiRead = makeHidReader(DJI_RC3);
+    /** the reader HidSource makes for the real device's descriptor */
+    private get spec(): HidPadSpec { return this.cfg.device === 'dji-rc3' ? DJI_RC3 : EDGETX_CLASSIC; }
+    private read: HidReader;
     private djiAxes = [0, 0, 0, 0, 0];
     private hands: RawFrame = { t: 0, axes: new Float32Array(8), buttons: 0 }; // the robot's channels before the DJI report
-    /** DJI reports the reader refused (each one sent no frame) */
+    /** reports the reader refused (each one sent no frame) */
     badReports = 0;
 
     get key(): string {
-        if (this.cfg.device === 'dji-rc3') return hidDeviceKey({ ...DJI_RC3, productName: `SimRadio ${DJI_RC3.name}` }, DJI_RC3.reportBytes);
-        return `hid:1209:4f54:SimRadio EdgeTX Classic ${this.cfg.order}:19`;
+        return hidProfileKey({ vendorId: this.spec.vendorId, productId: this.spec.productId, productName: this.keyName }, this.read, this.spec.reportBytes);
     }
 
     /** The profile name the radio screen shows. */
     get name(): string {
         return this.cfg.device === 'dji-rc3' ? `SimRadio ${DJI_RC3.name}` : 'SimRadio EdgeTX Classic';
+    }
+
+    /** The product name in the key: the EdgeTX SimRadio's carries its channel order, as before. */
+    private get keyName(): string {
+        return this.cfg.device === 'dji-rc3' ? this.name : `${this.name} ${this.cfg.order}`;
     }
 
     start(): void {
@@ -241,8 +249,8 @@ export class FakeEdgeTx {
             parseEdgeTxReport(d, this.hands);
             for (let i = 0; i < 5; i++) this.djiAxes[i] = this.hands.axes[i] * DJI_RC3.axisRange[1];
             const rep = djiRc3Report(this.djiAxes, this.hands.buttons | DJI_RC3.restButtons);
-            if (!this.djiRead(0, new DataView(rep.buffer), this.frame)) { this.badReports++; return; }
-        } else parseEdgeTxReport(d, this.frame);
+            if (!this.read(0, new DataView(rep.buffer), this.frame)) { this.badReports++; return; }
+        } else if (!this.read(0, d, this.frame)) { this.badReports++; return; }
         this.frame.t = now;
         this.reports++;
         this.onFrame?.(this.frame);

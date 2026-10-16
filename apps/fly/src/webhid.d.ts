@@ -18,6 +18,8 @@ declare global {
     /** The part of the report descriptor the reader uses (HIDCollectionInfo / HIDReportInfo / HIDReportItem). */
     interface HIDReportItemInfo {
         readonly isConstant?: boolean;
+        /** an array field (a keyboard's keys): its value is the index of a usage that is on; the reader skips it */
+        readonly isArray?: boolean;
         readonly isRange?: boolean;
         readonly usages?: readonly number[];
         readonly usageMinimum?: number;

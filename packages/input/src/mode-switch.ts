@@ -13,6 +13,7 @@
 import { MODE_CHANNEL } from '@gsfpv/sim-core';
 import type { FlightMode } from '@gsfpv/sim-core';
 import type { RawFrame } from './calib';
+import { FRAME_BUTTONS } from './frame';
 
 /** The input a mode switch is read from: an axis channel (0-based) or a button bit. */
 export type SwitchInput = { kind: 'axis'; index: number } | { kind: 'button'; bit: number };
@@ -28,9 +29,9 @@ export const FLIGHT_MODES: readonly FlightMode[] = ['acro', 'angle', 'horizon'];
  */
 export const DEFAULT_SWITCH_MODES: Readonly<SwitchModes> = ['acro', 'horizon', 'angle'];
 
-/** Highest axis index and button bit a profile may name (8 HID channels, 24 report bits; pads have fewer). */
+/** Highest axis index and button bit a profile may name (8 HID channels, a frame's 24 button bits; pads have fewer). */
 const MAX_AXIS = 31;
-const MAX_BIT = 23;
+const MAX_BIT = FRAME_BUTTONS - 1;
 
 /** Which position the switch is in on this frame; null when the frame has no such input. */
 export function switchPos(input: SwitchInput, f: RawFrame): SwitchPos | null {
@@ -128,7 +129,7 @@ export class ModeSwitchDetector {
     private stepMax = new Float64Array(0); // biggest single-report step since that level
     private swept = new Uint8Array(0);
     private bits = 0;
-    private bitSince = new Float64Array(24);
+    private bitSince = new Float64Array(FRAME_BUTTONS);
     private bitLevel = 0; // the held value of every bit
     private started = false;
     private now = 0;
@@ -164,7 +165,7 @@ export class ModeSwitchDetector {
         }
         const changed = f.buttons ^ this.bits;
         if (changed) {
-            for (let b = 0; b < 24; b++) if (changed & (1 << b)) this.bitSince[b] = t;
+            for (let b = 0; b < FRAME_BUTTONS; b++) if (changed & (1 << b)) this.bitSince[b] = t;
             this.bits = f.buttons;
         }
         return this.evaluate(t);
@@ -212,7 +213,7 @@ export class ModeSwitchDetector {
         }
         const diff = this.bits ^ this.bitLevel;
         if (diff) {
-            for (let b = 0; b < 24; b++) {
+            for (let b = 0; b < FRAME_BUTTONS; b++) {
                 if (!(diff & (1 << b)) || t - this.bitSince[b] < MT.LEVEL_MS) continue;
                 const on = (this.bits >> b) & 1;
                 this.bitLevel = on ? this.bitLevel | (1 << b) : this.bitLevel & ~(1 << b);
