@@ -40,6 +40,7 @@
     "pid_pitch": { "value": [47, 47, 72, 60], "source": "estimate", "note": "as roll" },
     "pid_yaw": { "value": [45, 80, 0, 60], "source": "estimate", "note": "Betaflight default with half the feed-forward" },
     "throttle": { "value": { "mid": 50, "expo": 0 }, "source": "bf-default" },
+    "level": { "value": { "angle_feedforward": 30 }, "source": "estimate", "note": "Betaflight angle_feedforward (default 50), lowered with the PID above: at 50 this mass and 50 ms motors overshoot the 60 deg angle limit by 10 % and swing 6 deg past level when the stick is released; at 30 angle mode stops at the limit and returns to level without swinging past (sim-core test model-drones-v08, review R4)" },
     "rotor_drag_per_s": { "value": 0.31, "source": "estimate", "ref": "https://arxiv.org/abs/1712.02402", "min": 0.2, "max": 0.5, "note": "momentum theory sqrt(g rho A_rotors / m) = 0.57 1/s (4 disks of 8 inch, 4.87 kg) times 0.55, the open-prop share of Faessler et al. 2018" },
     "rotor_inertia_kgm2": { "value": 1.2e-4, "source": "estimate", "min": 6e-5, "max": 1.8e-4, "note": "two rotors per thrust point, each an 8x4 tri-blade (about 14 g, 4.8e-5 kg m^2) + a 3110 bell (about 1.1e-5)" },
     "wake_loss": { "value": 0.3, "source": "estimate", "min": 0, "max": 0.5, "note": "share of thrust lost at the worst point of a descent through the rotors' own wake; a little more than a 5-inch because the lower props already fly in the upper ones' wash; sim-core wake.ts" },

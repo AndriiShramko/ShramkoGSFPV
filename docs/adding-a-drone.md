@@ -19,12 +19,17 @@ is skipped.
    - Open props: `prop_diameter_mm`, `wake_loss`, `wake_shake` (prop wash, `sim-core/src/wake.ts`). Ducted whoops
      have none.
    - An X8 is four thrust points each carrying its coaxial pair (decision D37).
+   - Optional `level`: `{ "angle_feedforward": n, "angle_feedforward_smoothing_ms": n }` (Betaflight CLI names) when
+     angle mode overshoots with Betaflight's level defaults (a heavy, slow craft: the cinelifter sets 30). Only this
+     pair: angle_limit, angle_p_gain and horizon strength are the pilot's settings and are refused in a preset.
 3. **Register it**: `DRONE_IDS` in `packages/prefs/src/defs/drone.ts` (the picker's order) and `apps/fly/src/presets.ts`.
    `packages/prefs/test/defs.test.ts` fails until `DRONE_IDS` equals the presets folder; the preset-wide tests
    (`PRESET_IDS` in `packages/sim-core/test/model-helpers.ts`) pick the new file up by themselves.
 4. **Its behaviour tests**, with negative controls, like `packages/sim-core/test/model-drones-v08.test.ts`: hover
-   throttle band, climb, top speed, roll response, the maker's hover time from the hover current. A preset whose
-   step response rings with the Betaflight default PID gets its own tune (and a control showing the default rings).
+   throttle band, climb, top speed, roll response, the maker's hover time from the hover current, and angle mode
+   (everyone's default: full stick, hold, release; it must stop at the limit and not swing past level). A preset whose
+   step response rings with the Betaflight default PID gets its own tune (and a control showing the default rings);
+   check angle mode again after any PID change (the cinelifter's acro tune made its angle mode overshoot, review R4).
 5. **A6 stays**: `tools/bench/test/a6-reference.test.ts` (the default drone's trace hash `1d01ca5b...`).
 6. **Settings ranges**: `packages/prefs/test/defs.test.ts` "every preset default resolves inside its range" fails
    when a number is outside a setting's range; widen the range in `defs/drone.ts` (no schema bump).

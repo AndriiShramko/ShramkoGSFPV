@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { MODE_CHANNEL, S, Sim, WAKE_HI, WAKE_LO, compileParams, hoverSolve, inducedVelocity, setpointRate, wakeIntensity, wakeNoise } from '../src/index';
 import type { ParamOverrides, SimParams } from '../src/index';
-import { PRESET_IDS, preset, tracer } from './model-helpers';
+import { PRESET_IDS, pitch, preset, roll, tracer } from './model-helpers';
 
 const FREE = 'nazgulf5v3-6s', RACE = 'machr5sport-6s', CINE = 'taurusx8-komodo-6s';
 const NEW = [FREE, RACE, CINE];
@@ -69,6 +69,41 @@ function rollStep(sp: SimParams, rampMs = 0): { t63: number; over: number; cross
         if (sgn !== 0) side = sgn;
     }
     return { t63, over: (peak / target - 1) * 100, cross };
+}
+
+/**
+ * Angle mode (everyone's default) on one axis (0 roll, 1 pitch): from a hover, the full stick with a thumb ramp
+ * (`rampMs`), held 1.5 s, then released for 2.5 s. Peak tilt and its overshoot of the angle limit (%), crossings
+ * of the limit +-2 % once near it, and how far (deg) the craft swings past level after the release.
+ */
+function angleStep(sp: SimParams, axis: 0 | 1, rampMs = 80): { peak: number; over: number; cross: number; pastLevel: number } {
+    const { sim, ch } = hover(sp, 'angle');
+    const tilt = (): number => (axis === 0 ? roll(sim) : pitch(sim));
+    const lim = sp.level.limitDeg;
+    let peak = 0, cross = 0, side = 0, held = 0;
+    for (let i = 0; i < 1500; i++) {
+        ch[axis] = Math.min(1, (i + 1) / rampMs);
+        sim.setChannels(ch);
+        sim.step();
+        const a = Math.abs(tilt());
+        if (a > peak) peak = a;
+        const e = a - lim;
+        const sgn = e > 0.02 * lim ? 1 : e < -0.02 * lim ? -1 : 0;
+        if (a > 0.9 * lim) {
+            if (sgn !== 0 && side !== 0 && sgn !== side) cross++;
+            if (sgn !== 0) side = sgn;
+        }
+        held = tilt();
+    }
+    let pastLevel = 0;
+    ch[axis] = 0;
+    sim.setChannels(ch);
+    for (let i = 0; i < 2500; i++) {
+        sim.step();
+        const back = -Math.sign(held) * tilt(); // > 0: on the other side of level
+        if (back > pastLevel) pastLevel = back;
+    }
+    return { peak, over: (peak / lim - 1) * 100, cross, pastLevel };
 }
 
 /**
@@ -206,6 +241,53 @@ describe('v0.8 presets fly like a race quad, a freestyle quad and a heavy cineli
         const max = (id: string, ax: 'roll' | 'yaw') => setpointRate(p(id).rates.type, 1, p(id).rates[ax], p(id).rates.rateLimit);
         expect([max(CINE, 'roll'), max(CINE, 'yaw')]).toEqual([350, 300]);
         expect([max(RACE, 'roll'), max(FREE, 'roll')]).toEqual([670, 670]);
+    });
+});
+
+describe('angle mode, everyone\'s default (review R4): full stick with a thumb ramp, hold, release', () => {
+    const clean = (r: ReturnType<typeof angleStep>) => r.over < 5 && r.cross === 0 && r.pastLevel < 1;
+
+    it('the three new drones and the default whoop stop at the angle limit (overshoot < 5 %, no crossing) and return to level without swinging past it (< 1 deg), on roll and pitch', () => {
+        for (const id of [...NEW, 'pavo20pro-3s']) {
+            for (const axis of [0, 1] as const) {
+                const r = angleStep(p(id), axis);
+                expect(clean(r), `${id} axis ${axis}: ${JSON.stringify(r)}`).toBe(true);
+                expect(r.peak, `${id} reaches its limit`).toBeGreaterThan(0.95 * p(id).level.limitDeg);
+            }
+        }
+    });
+
+    it('the cinelifter keeps it clean for a fast and a slow thumb (0 and 200 ms ramps)', () => {
+        for (const ramp of [0, 200]) expect(clean(angleStep(p(CINE), 0, ramp)), `ramp ${ramp}`).toBe(true);
+    });
+
+    it('control: the cinelifter at Betaflight\'s default angle feed-forward (50) overshoots the limit and swings past level (why its preset sets 30)', () => {
+        const r = angleStep(p(CINE, { level: { ffGain: 0.5 } }), 0);
+        expect(clean(r)).toBe(false);
+        expect(r.over).toBeGreaterThan(5);
+        expect(r.pastLevel).toBeGreaterThan(3);
+        expect(p(CINE).level.ffGain).toBe(0.3);
+    });
+
+    it('a preset sets only the angle feed-forward pair; only the cinelifter does, the others fly Betaflight\'s level defaults (A6 unchanged)', () => {
+        expect(PRESET_IDS.filter((id) => preset(id).fields.level !== undefined)).toEqual([CINE]);
+        for (const id of OLD) expect(p(id).level).toEqual(compileParams(preset(id), { level: {} }).level);
+        expect(p('pavo20pro-3s').level.ffGain).toBe(0.5);
+        // the pilot's override still wins over the preset
+        expect(p(CINE, { level: { ffGain: 0.4 } }).level.ffGain).toBe(0.4);
+    });
+
+    it('control: a preset that sets a level number the pilot owns (angle_limit) or an unknown one is refused', () => {
+        const withLevel = (value: unknown) => {
+            const c = structuredClone(preset(CINE));
+            c.fields.level = { ...c.fields.level, value };
+            return c;
+        };
+        expect(() => compileParams(withLevel({ angle_limit: 45 }))).toThrow(/angle_limit is not a level number a preset sets/);
+        expect(() => compileParams(withLevel({ angle_feedforwrd: 30 }))).toThrow(/not a level number/);
+        expect(() => compileParams(withLevel({ angle_feedforward: -1 }))).toThrow(/>= 0/);
+        expect(() => compileParams(withLevel(30))).toThrow(/must be an object/);
+        expect(compileParams(withLevel({ angle_feedforward: 30, angle_feedforward_smoothing_ms: 120 })).level.ffSmoothMs).toBe(120);
     });
 });
 

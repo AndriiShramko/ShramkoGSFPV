@@ -106,6 +106,14 @@ How each estimate was made:
   winding up while the craft lags; P 45, I 45, D 70, F 60 brings it to about 8-10 % (full stick) with one crossing,
   which is how cinelifter pilots describe their tunes ("reduce P gains, increase D gains", rates "around 200 to 400
   degrees per second": https://www.unmannedtechshop.co.uk/blogs/knowledge-base/cinelifter-fpv-drone-heavy-lift-build-guide).
+- **Cinelifter angle mode** (review R4, after the PID above was tuned on acro steps only): angle mode is everyone's
+  default, and with Betaflight's angle_feedforward 50 the cinelifter overshot the 60 deg limit by 10 % (66.1 deg) and
+  swung 5.9 deg past level when the stick was released (the whoop and the 5-inch quads: 60.0-60.2 deg, 0 deg). The
+  angle feed-forward asks for a tilt rate the slow craft cannot follow, then the rate loop catches up past the target.
+  The preset sets `level: { angle_feedforward: 30 }` (a preset field read by `compileParams`; only the angle
+  feed-forward pair, the level numbers the pilot sets stay Betaflight's): 60.0 deg, no crossing, 0 deg past level for
+  ramps of 0, 80 and 200 ms. Lowering angle strength instead (angle_p_gain 30) also cures it but makes the self-levelling
+  softer everywhere; the feed-forward is the term that over-drives.
 - **The 5-inch PIDs and rates** stay Betaflight's defaults: they are made on 5-inch quads, both makers ship Betaflight
   presets, and racers and freestylers fly their own rates (paste `diff all`).
 
@@ -138,6 +146,7 @@ thrust v_i is so large that the sink rate falls below its band almost at once.
 |---|---|---|---|---|
 | Hover throttle | 24.8 % | 17.9 % | 41.1 % | 32.7 % |
 | Roll, full stick step: t63 / overshoot | 15 ms / 1.3 % (670 deg/s) | 12 ms / 1.2 % | 44 ms / 9.7 % (350 deg/s) | 19 ms / 1.8 % |
+| Angle mode, full roll (80 ms ramp): peak / past level on release | 60.2 deg / 0.05 deg | 60.2 deg / 0.06 deg | 60.0 deg / 0 deg | 60.0 deg / 0 deg |
 | Climb after 8 s full throttle | 41.6 m/s | 51.2 m/s | 24.4 m/s | 24.2 m/s |
 | Top speed, level | 150 km/h | 177 km/h | 101 km/h | 92 km/h |
 | Hover current / time on 85 % of the pack | 5.7 A / 13.4 min | 4.0 A / 18 min | 48.9 A / 5.8 min | 3.5 A / 8.0 min |

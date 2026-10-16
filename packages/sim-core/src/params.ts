@@ -166,6 +166,38 @@ function wakeOf(p: PresetJson, scale: number): { wakeLoss: number; wakeShake: nu
     return { wakeLoss: loss, wakeShake: shake, wakeArea: 4 * Math.PI * r * r };
 }
 
+/**
+ * The level-mode numbers a preset may set (optional field `level`, its value an object of Betaflight CLI
+ * names): the angle feed-forward and its smoothing, which a drone's tune sets as it sets its PID (a heavy,
+ * slow craft needs less feed-forward or angle mode overshoots its limit and swings past level on release:
+ * review R4, docs/wip/v08-d.md). Absent = Betaflight's defaults (LEVEL_DEFAULTS), so the presets without
+ * the field fly as before. The level numbers the pilot sets (angle_limit, angle_p_gain,
+ * horizon_level_strength: the settings level.*) are refused here: their settings show Betaflight's
+ * defaults, and a preset value under them would make the settings screen show a number the drone does
+ * not fly. ParamOverrides.level still wins over the preset.
+ */
+const PRESET_LEVEL_KEYS: Readonly<Record<string, (v: number) => Partial<LevelParams>>> = {
+    /** Betaflight angle_feedforward, 0-200 (default 50): the feed-forward gain is it / 100 */
+    angle_feedforward: (v) => ({ ffGain: v / 100 }),
+    /** Betaflight angle_feedforward_smoothing_ms (default 80) */
+    angle_feedforward_smoothing_ms: (v) => ({ ffSmoothMs: v })
+};
+
+function presetLevel(p: PresetJson): Partial<LevelParams> {
+    const f = p.fields.level;
+    if (f === undefined) return {};
+    const v = f.value;
+    if (typeof v !== 'object' || v === null || Array.isArray(v)) throw new Error(`preset ${p.id}: field level must be an object of Betaflight names`);
+    let out: Partial<LevelParams> = {};
+    for (const [k, n] of Object.entries(v as Record<string, unknown>)) {
+        const put = Object.hasOwn(PRESET_LEVEL_KEYS, k) ? PRESET_LEVEL_KEYS[k] : undefined;
+        if (!put) throw new Error(`preset ${p.id}: level.${k} is not a level number a preset sets (${Object.keys(PRESET_LEVEL_KEYS).join(', ')})`);
+        if (typeof n !== 'number' || !Number.isFinite(n) || n < 0) throw new Error(`preset ${p.id}: level.${k} must be a number >= 0`);
+        out = { ...out, ...put(n) };
+    }
+    return out;
+}
+
 function voc(soc: number): number {
     // per cell, piecewise linear 4.2 / 3.7 / 3.3 V at SoC 1 / 0.5 / 0
     return soc >= 0.5 ? 3.7 + (soc - 0.5) * 1.0 : 3.3 + soc * 0.8;
@@ -236,6 +268,7 @@ export function compileParams(p: PresetJson, o: ParamOverrides = {}): SimParams 
         if (below > bodyBottom) bodyBottom = below;
     }
     const lv = o.level ?? {};
+    const pl = presetLevel(p);
 
     const rj = p.fields.rates.value as { type: RatesType; roll: number[]; pitch: number[]; yaw: number[]; rate_limit: number };
     const rates: RatesConfig = o.rates ?? {
@@ -290,8 +323,8 @@ export function compileParams(p: PresetJson, o: ParamOverrides = {}): SimParams 
         level: {
             limitDeg: lv.limitDeg ?? LEVEL_DEFAULTS.limitDeg,
             gain: lv.gain ?? LEVEL_DEFAULTS.gain,
-            ffGain: lv.ffGain ?? LEVEL_DEFAULTS.ffGain,
-            ffSmoothMs: lv.ffSmoothMs ?? LEVEL_DEFAULTS.ffSmoothMs,
+            ffGain: lv.ffGain ?? pl.ffGain ?? LEVEL_DEFAULTS.ffGain,
+            ffSmoothMs: lv.ffSmoothMs ?? pl.ffSmoothMs ?? LEVEL_DEFAULTS.ffSmoothMs,
             horizonStrength: lv.horizonStrength ?? LEVEL_DEFAULTS.horizonStrength,
             horizonLimitSticks: lv.horizonLimitSticks ?? LEVEL_DEFAULTS.horizonLimitSticks,
             horizonLimitDeg: lv.horizonLimitDeg ?? LEVEL_DEFAULTS.horizonLimitDeg,
