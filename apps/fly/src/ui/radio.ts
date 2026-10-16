@@ -362,6 +362,7 @@ export class RadioScreen {
     }
 
     private async connectHid(status: HTMLElement): Promise<void> {
+        clearInterval(this.timer); // the pilot chose: the device choice's pad watch stops (choose())
         const gen = this.gen;
         const src = new HidSource();
         this.owned.add(src);
@@ -388,6 +389,7 @@ export class RadioScreen {
     }
 
     private connectGamepad(rate: HTMLElement): void {
+        clearInterval(this.timer); // the device choice's pad watch stops (choose())
         const gp = this.gp;
         if (gp !== this.current?.gamepad) this.owned.add(gp);
         gp.start();
