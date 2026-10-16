@@ -15,6 +15,7 @@ import copy
 import importlib.util
 import io
 import json
+import os
 import secrets
 import sys
 import tempfile
@@ -28,6 +29,7 @@ import outreach  # noqa: E402
 import outreach_cli  # noqa: E402
 
 SAMPLE = HERE / "fixtures" / "outreach-snapshot.sample.json"
+GOLDEN = HERE / "fixtures" / "outreach-view.sample.json"  # what GET /api/admin/outreach answers for the sample at NOW + 3 h
 PASSWORD = "t3st-" + secrets.token_urlsafe(12)
 HASH = admin.make_hash(PASSWORD)
 NOW = 1792227600.0  # 2026-10-17T09:00:00Z, the sample's `generated`
@@ -87,6 +89,20 @@ class Contract(Base):
         doc = self.store.read()
         self.assertEqual({k: v for k, v in doc.items() if k != "received"}, sample())
         self.assertEqual(doc["received"], "2026-10-17T09:00:05Z")
+
+    def test_the_golden_view_is_what_the_server_works_out(self):
+        """The tab's TypeScript tests (tools/bench/test/admin-outreach.test.ts) parse this same file, so the server
+        and the page cannot drift apart. After a deliberate change: UPDATE_GOLDEN=1 python -m unittest ... then review the diff."""
+        self.store.put(SAMPLE.read_bytes())
+        got = {"ok": True, "empty": False, "unreadable": False, **outreach.build_view(self.store.read(), NOW + 3 * 3600)}
+        text = json.dumps(got, ensure_ascii=False, indent=1) + chr(10)
+        if os.environ.get("UPDATE_GOLDEN"):
+            GOLDEN.write_text(text, encoding="utf-8", newline=chr(10))
+        self.assertEqual(json.loads(GOLDEN.read_text(encoding="utf-8")), json.loads(text))
+        # control: a golden with one number changed is not equal
+        changed = json.loads(text)
+        changed["groups"][0]["score"] = 70.8
+        self.assertNotEqual(json.loads(GOLDEN.read_text(encoding="utf-8")), changed)
 
     def test_control_a_field_off_the_contract_is_refused(self):
         for mutate in (lambda d: d["groups"][0].pop("fit"), lambda d: d["groups"][0].update(extra=1), lambda d: d["posts"][0]["checks"][0].pop("views"),

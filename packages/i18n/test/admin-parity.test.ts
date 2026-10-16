@@ -1,5 +1,5 @@
 // The owner's admin page dictionaries (apps/fly/src/admin/i18n.ts): the flat locales/admin/<lang>.json and
-// one folder per tab, locales/admin/<ns>/<lang>.json (the Ideas tab: ideas/). In every file the same keys
+// one folder per tab, locales/admin/<ns>/<lang>.json (the Ideas tab: ideas/, the Outreach tab: outreach/). In every file the same keys
 // and placeholders in en/es/pl/ru, English is English, and a key lives in one file only (i18n.ts merges
 // them, so the merge order must never pick a text). Kept apart from the simulator's dictionaries so the
 // simulator bundle never carries the admin's words.
@@ -119,7 +119,7 @@ describe('the admin page names only words the dictionaries have', () => {
 describe('admin dictionaries', () => {
     const sets = readSets();
     it('have the same keys and placeholders in every language, each key in one file', () => {
-        expect(Object.keys(sets).sort()).toEqual(['', 'ideas']);
+        expect(Object.keys(sets).sort()).toEqual(['', 'ideas', 'outreach']);
         expect(allProblems(sets)).toEqual([]);
     });
     it('the check fires (negative control)', () => {
