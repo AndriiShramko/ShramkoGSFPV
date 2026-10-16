@@ -1,7 +1,8 @@
 // Keyboard input (flying without a radio, latency measurement). Two profiles (prefs input.play;
 // docs/wip/v08-a.md, the owner's message 21 item 1: "for gamers the keys are incomprehensible"):
 //  - easy (default): the game layout of play/keys.ts (W/S forward/back, A/D left/right, the side
-//    arrows or Q/E turn, the up/down arrows climb and sink, Shift faster, Space motors off/on). A key
+//    arrows or Q/E turn, the up/down arrows climb and sink, Shift faster, Space: a tap starts the
+//    motors, a 0.5 s hold stops them, so a tap in the air never drops the drone). A key
 //    ramps its stick toward a target in physical units (play/keys.ts keyTargets: 25 deg of tilt,
 //    110 deg/s of turn, the drone's own rates turned back into a stick); the motors start with the
 //    first flying key and the altitude help flies the throttle (play/easy.ts EasyPilot). Without the
@@ -19,7 +20,7 @@
 
 import type { Controls } from '../controls';
 import type { EasyPilot } from '../play/easy';
-import { BOOST_CODES, EASY_THR_DOWN_S, EASY_THR_UP_S, GAME_KEYS, MODE2_KEYS, axisDirs, keyTargets, slew } from '../play/keys';
+import { BOOST_CODES, EASY_THR_DOWN_S, EASY_THR_UP_S, GAME_KEYS, MODE2_KEYS, MotorKey, axisDirs, keyTargets, slew } from '../play/keys';
 import type { KeyTargets, PlayProfile } from '../play/keys';
 import type { FlightMode, SimParams } from '@gsfpv/sim-core';
 
@@ -86,6 +87,8 @@ export class KeyboardSource {
     private sticks = { roll: 0, pitch: 0, yaw: 0 };
     private sticksT = 0;
     private lastEasyEmit = -1e9;
+    /** easy play's Space: a tap starts the motors, a hold stops them */
+    private readonly motorKey = new MotorKey();
     private targets: { key: SimParams | null; mode: FlightMode | null; t: KeyTargets | null } = { key: null, mode: null, t: null };
 
     constructor(controls: Controls) {
@@ -108,6 +111,7 @@ export class KeyboardSource {
     setActive(on: boolean): void {
         this.passive = !on;
         this.down.clear();
+        this.motorKey.release();
         this.rampT = performance.now();
         this.sticks = { roll: 0, pitch: 0, yaw: 0 };
         this.sticksT = this.rampT;
@@ -119,6 +123,7 @@ export class KeyboardSource {
         if (p === this.profile) return;
         this.profile = p;
         this.down.clear();
+        this.motorKey.release();
         this.sticks = { roll: 0, pitch: 0, yaw: 0 };
         this.armed = false;
         if (!this.passive) this.emit(performance.now());
@@ -158,12 +163,12 @@ export class KeyboardSource {
         }
     };
 
-    /** Easy play: Space stops or starts the motors; a flying key starts them and moves its stick. */
+    /** Easy play: Space starts the motors (a tap) or stops them (held, play/keys.ts MotorKey); a flying key starts them and moves its stick. */
     private onDownEasy(e: KeyboardEvent): void {
         const pilot = this.easy!.pilot;
         if (e.code === 'Space') {
-            if (!e.repeat) {
-                if (pilot.arm.want) pilot.arm.stop(); else pilot.arm.request();
+            if (!e.repeat && this.motorKey.press(e.timeStamp, pilot.arm.want) === 'start') {
+                pilot.arm.request();
                 this.emitEasy(e.timeStamp);
             }
             e.preventDefault();
@@ -179,6 +184,7 @@ export class KeyboardSource {
 
     private onUp = (e: KeyboardEvent): void => {
         if (this.isEasy) {
+            if (e.code === 'Space') this.motorKey.release();
             this.moveSticks(e.timeStamp);
             if (this.down.delete(e.code) && !this.passive) this.emitEasy(e.timeStamp);
             return;
@@ -193,6 +199,7 @@ export class KeyboardSource {
         if (this.isEasy) this.moveSticks(performance.now());
         else this.ramp(performance.now());
         this.down.clear();
+        this.motorKey.release();
     };
 
     /** Move the throttle by the time W / S were held since the last call (not by timer ticks). */
@@ -208,6 +215,7 @@ export class KeyboardSource {
         if (this.passive) return;
         if (this.isEasy) {
             this.moveSticks(t);
+            if (this.motorKey.tick(t) === 'stop') { this.easy!.pilot.arm.stop(); this.emitEasy(t); }
             if (t - this.lastEasyEmit >= EASY_FRAME_MS) this.emitEasy(t);
             return;
         }

@@ -23,7 +23,7 @@ import { REPO } from '../../../packages/prefs/test/helpers';
 import { FLYING_CODES, KEYMAP, keymapProblems } from '../../../packages/prefs/src';
 import type { KeyBinding } from '../../../packages/prefs/src';
 import { ARM_RETRY_MS, AltitudeHelp, AutoArm, CLIMB_BOOST, CLIMB_MPS, SINK_MPS, helpFlies, stickForThrust } from '../../../apps/fly/src/play/assist';
-import { BOOST_CODES, GAME_KEYS, KEY_ACRO_DPS, KEY_TILT_DEG, KEY_YAW_DPS, MODE2_KEYS, RAMP_FALL_PER_S, RAMP_RISE_PER_S, axisDirs, flyingKeyCodes, keyTargets, slew, stickForRate } from '../../../apps/fly/src/play/keys';
+import { BOOST_CODES, GAME_KEYS, KEY_ACRO_DPS, KEY_TILT_DEG, KEY_YAW_DPS, MODE2_KEYS, MOTOR_STOP_HOLD_MS, MotorKey, RAMP_FALL_PER_S, RAMP_RISE_PER_S, axisDirs, flyingKeyCodes, keyTargets, slew, stickForRate } from '../../../apps/fly/src/play/keys';
 import { PadGrab, absoluteRead, padTravel } from '../../../apps/fly/src/play/touch-map';
 import { GOAL_S, SCHOOL_STEPS, SchoolProgress, settingsOf, stepOf } from '../../../apps/fly/src/play/school';
 
@@ -145,6 +145,35 @@ describe('easy play: the motors start from a flying input, no switch', () => {
         b.step({ simArmed: false, crashed: false, paused: false, now: 0 });
         b.step({ simArmed: false, crashed: false, paused: false, now: 0 });
         for (let t = 10; t < ARM_RETRY_MS * 3; t += 10) expect(b.step({ simArmed: false, crashed: false, paused: true, now: t }).arm).toBe(1);
+    });
+
+    it('Space: a tap in the air keeps the motors on, a 0.5 s hold stops them; control: the hold drops the drone', () => {
+        const k = new MotorKey();
+        expect(k.press(0, false)).toBe('start');
+        expect(k.press(1000, true)).toBe(null);
+        for (let t = 1000; t < 1000 + MOTOR_STOP_HOLD_MS; t += 2) expect(k.tick(t)).toBe(null);
+        k.release();
+        expect(k.tick(9000)).toBe(null); // released before the hold ended: nothing pending
+        k.press(10000, true);
+        expect(k.tick(10000 + MOTOR_STOP_HOLD_MS)).toBe('stop');
+        expect(k.tick(11000)).toBe(null); // once per press
+        // in flight with the help: Space as the keyboard drives it (press, 500 Hz ticks, release)
+        const space = (holdMs: number): { armed: boolean; lossM: number } => {
+            const L = airborne(params());
+            const key = new MotorKey();
+            const y0 = L.y;
+            if (key.press(L.t, L.arm.want) === 'start') L.arm.request();
+            for (let i = 0; i < holdMs; i += 2) { L.run(2, {}); if (key.tick(L.t) === 'stop') L.arm.stop(); }
+            key.release();
+            L.run(2000, {});
+            return { armed: L.sim.armed, lossM: y0 - L.y };
+        };
+        const tap = space(150);
+        expect(tap.armed).toBe(true);
+        expect(Math.abs(tap.lossM)).toBeLessThan(0.3);
+        const hold = space(600);
+        expect(hold.armed).toBe(false);
+        expect(hold.lossM).toBeGreaterThan(1);
     });
 
     it('a model that drops out by itself waits for the next input; a crash keeps the switch on (keepArmed)', () => {

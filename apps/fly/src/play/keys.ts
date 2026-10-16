@@ -149,6 +149,41 @@ export function slew(cur: number, target: number, dtS: number, rise = RAMP_RISE_
     return target;
 }
 
+// ------------------------------------------------------------------ Space in easy play
+
+/** Easy play: Space must be held this long to stop the motors (a tap never does). */
+export const MOTOR_STOP_HOLD_MS = 500;
+
+/**
+ * Space in easy play (the review of 2026-10-16: many games climb on Space, so a gamer's tap in the
+ * air must not drop the drone). Motors off: a press starts them at once. Motors on: a press starts a
+ * hold; held MOTOR_STOP_HOLD_MS it stops them, released earlier it does nothing. Pure: the keyboard
+ * passes the event times and asks tick() from its 500 Hz sampling.
+ */
+export class MotorKey {
+    /** when Space went down with the motors on; null: no stop pending */
+    private since: number | null = null;
+
+    /** Space went down at `t` (not a key repeat); `on`: the motors are wanted now. 'start' starts them. */
+    press(t: number, on: boolean): 'start' | null {
+        if (!on) { this.since = null; return 'start'; }
+        this.since = t;
+        return null;
+    }
+
+    /** Space went up (or the window lost the keys): a pending stop is dropped. */
+    release(): void {
+        this.since = null;
+    }
+
+    /** Time `t` with Space still down: 'stop' once, when it has been held long enough. */
+    tick(t: number): 'stop' | null {
+        if (this.since === null || t - this.since < MOTOR_STOP_HOLD_MS) return null;
+        this.since = null;
+        return 'stop';
+    }
+}
+
 /** Keyboard throttle in easy play without altitude help: 0 -> 100 % in this long (the pilot layout: 0.5 s). */
 export const EASY_THR_UP_S = 1.0;
 /** ... and 100 % -> 0 in this long (the pilot layout: 0.333 s). */
