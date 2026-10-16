@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { FrameGovernor, LatencyGuard, DEFAULT_LATENCY_GUARD, inputToScreenMs } from '../src/governor';
+import { FrameGovernor, LatencyGuard, DEFAULT_LATENCY_GUARD, MAX_HITCH_SHARE, inputToScreenMs } from '../src/governor';
 
 /** Frames at a display period; `load(t)` says how many periods each frame takes (1 = on time). */
 function run(g: FrameGovernor, period: number, seconds: number, load: (t: number) => number, t0 = 0): { t: number; steps: number[] } {
@@ -145,11 +145,43 @@ describe('quality governor: streaming hitches', () => {
         expect(g.step).toBeGreaterThan(0);
     });
 
-    it('frames held for the GPU count even while streaming (that is the GPU, not the streamer)', () => {
+    it('a real overload while the streamer reports progress on EVERY frame still lowers it: hitches above a third count', () => {
+        // a GPU that cannot draw the budget: every frame late (2 periods), and streaming never stops
         const g = new FrameGovernor();
-        feed(g, 90, () => 1, () => true, (i) => i % 2 === 0);
+        feed(g, 90, () => 2, () => true);
         expect(g.step).toBeGreaterThan(0);
-        expect(g.streamHitches).toBe(0);
+        // the same with every other frame held: half the frames, above the cap
+        const h = new FrameGovernor();
+        feed(h, 90, () => 1, () => true, (i) => i % 2 === 0);
+        expect(h.step).toBeGreaterThan(0);
+        expect(MAX_HITCH_SHARE).toBeCloseTo(1 / 3, 9);
+    });
+
+    it('frames held while streaming, below the cap, are hitches too (uploads keep the GPU busy); control: without streaming they count', () => {
+        // one frame in 5 held (20 %), as the reveal's uploads did; the streamer reports progress throughout
+        const g = new FrameGovernor();
+        feed(g, 150, () => 1, () => true, (i) => i % 5 === 0);
+        expect(g.changes).toBe(0);
+        expect(g.streamHitches).toBeGreaterThan(20);
+        const c = new FrameGovernor();
+        feed(c, 150, () => 1, () => false, (i) => i % 5 === 0);
+        expect(c.step).toBeGreaterThan(0);
+    });
+
+    it('a single held frame right after the start is not a share of a second: the first step needs a whole window', () => {
+        // the governor is made at the reveal: 4 frames later one held frame was 25 % of the log, a step down
+        const g = new FrameGovernor();
+        let t = 0;
+        g.onFrame(t);
+        for (let i = 1; i <= 60; i++) g.onFrame(t += 1000 / 30, false, i === 3);
+        expect(g.changes).toBe(0);
+        // control: the same held frame a second into a run of calm frames is 1 of 30: still no step,
+        // while 4 held frames in a second (13 %) are one
+        const c = new FrameGovernor();
+        t = 0;
+        c.onFrame(t);
+        for (let i = 1; i <= 60; i++) c.onFrame(t += 1000 / 30, false, i >= 40 && i < 44);
+        expect(c.step).toBe(1);
     });
 });
 

@@ -9,6 +9,15 @@
 /** a frame interval above this many display periods counts as a missed frame */
 export const MISSED_PERIODS = 1.25;
 
+/**
+ * At most this share of a window's frames may be streaming hitches that are not counted (onFrame
+ * `streamed`). Measured on the streamed city scan ba7aa29d (evidence/2026-10-16/v08-lod-probe-before-2
+ * .json): the reveal's burst made 5 of about 30 frames late (17 %), steady streaming 1-2 a second; a
+ * GPU that cannot draw the budget misses half the frames or more, which stays above the cap and is
+ * counted. Hitches above the cap count as missed frames.
+ */
+export const MAX_HITCH_SHARE = 1 / 3;
+
 export interface QualityStep {
     renderScale: number; // backbuffer / CSS pixels * devicePixelRatio
     splatBudgetMillions: number;
@@ -68,7 +77,8 @@ export class FrameGovernor {
     private readonly base: QualityStep[];
     private last = -1;
     private period = new DisplayPeriod();
-    private log: { t: number; missed: boolean }[] = [];
+    /** each frame: missed (counted) or a streaming hitch (counted only above MAX_HITCH_SHARE) */
+    private log: { t: number; missed: boolean; hitch: boolean }[] = [];
     private lastChange = -Infinity;
     changes = 0;
     /** late frames not counted because the scan was streaming (see onFrame `streamed`) */
@@ -118,16 +128,23 @@ export class FrameGovernor {
      * the previous one (SplatRenderer.maxFramesInFlight): the display repeated a picture, a missed
      * frame although the animation frames themselves came on time.
      * `streamed`: the scan's streamer made progress since the previous frame (SplatRenderer.streamTicks:
-     * a level-of-detail file requested or arrived, the count of files in flight changed). A late interval
-     * ending here or at the next frame is that work (requests, image decodes, uploads, the work-buffer
-     * copy), not a GPU that cannot draw the budget, so it is not counted: lowering the budget and the
-     * render scale would not shorten it, and a streamed scan (levels of detail, D27) streams all the
-     * time it is flown, so counting it kept the scan coarse (v0.8 item 8, docs/wip/v08-c.md). A held
-     * frame still counts, and so does every late frame without streaming: a real overload still lowers
-     * the drawing.
+     * a level-of-detail file requested or arrived, the count of files in flight changed). A late or held
+     * frame here or at the next frame is a streaming hitch: that work (requests, image decodes, uploads,
+     * the work-buffer copy), not a GPU that cannot draw the budget. Lowering the budget and the render
+     * scale would not shorten it, and a streamed scan (levels of detail, D27) streams all the time it is
+     * flown, so counting it kept the scan coarse (v0.8 item 8, docs/wip/v08-c.md). Hitches are counted
+     * only above MAX_HITCH_SHARE of the window's frames, and every miss without streaming counts: a real
+     * overload still lowers the drawing.
      */
     onFrame(t: number, excused = false, held = false, streamed = false): QualityStep | null {
-        if (this.last < 0) { this.last = t; this.streamedBefore = streamed; return null; }
+        if (this.last < 0) {
+            // the first frame starts the clock as a change would: a share of missed frames needs a
+            // whole window of frames (four frames after a reveal are not "a second of frames")
+            this.last = t;
+            this.lastChange = t;
+            this.streamedBefore = streamed;
+            return null;
+        }
         const dt = t - this.last;
         this.last = t;
         const streaming = streamed || this.streamedBefore;
@@ -138,16 +155,23 @@ export class FrameGovernor {
         const period = this.period.ms;
         // 1.25 periods: a frame that took ~1.4 periods already makes the display repeat one (a 45 ms
         // frame on a 30 Hz screen); 1.5 let a steady 22 fps pass as 'on time'
-        const late = dt > MISSED_PERIODS * period;
-        if (late && streaming && !held) this.streamHitches++;
-        this.log.push({ t, missed: held || (late && !streaming) });
+        const missed = held || dt > MISSED_PERIODS * period;
+        const hitch = missed && streaming;
+        if (hitch) this.streamHitches++;
+        this.log.push({ t, missed: missed && !hitch, hitch });
         while (this.log.length && t - this.log[0].t > this.opts.upWindowMs) this.log.shift();
         if (!this.enabled) return null;
         const since = t - this.lastChange;
+        // the share of missed frames in the last `win` ms; streaming hitches count only above
+        // MAX_HITCH_SHARE of the frames, so a real overload while streaming still shows
         const ratio = (win: number) => {
-            let n = 0, m = 0;
-            for (let i = this.log.length - 1; i >= 0 && t - this.log[i].t <= win; i--) { n++; if (this.log[i].missed) m++; }
-            return n ? m / n : 0;
+            let n = 0, m = 0, h = 0;
+            for (let i = this.log.length - 1; i >= 0 && t - this.log[i].t <= win; i--) {
+                n++;
+                if (this.log[i].missed) m++;
+                else if (this.log[i].hitch) h++;
+            }
+            return n ? (m + Math.max(0, h - Math.floor(n * MAX_HITCH_SHARE))) / n : 0;
         };
         if (since >= this.opts.downWindowMs && this.step < this.steps.length - 1 && ratio(this.opts.downWindowMs) > this.opts.downMissRatio) {
             this.step++;
