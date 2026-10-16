@@ -18,7 +18,7 @@
 //       Control: L3's scene, whose only file is meta.json, fetches it.
 //   SITE=http://127.0.0.1:5382 SITE_BEFORE=http://127.0.0.1:5381 npx tsx src/accept-v08-lod.ts [L1 L2 ...]
 // Evidence: evidence/<date>/v08-lod.json and v08-lod/*.png.
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { launchChrome, waitReady } from './browser';
@@ -161,6 +161,23 @@ async function pretend(ctx: BrowserContext, path: string, body: string | null): 
     });
 }
 const BROKEN = JSON.stringify({ message: 'Access Denied' });
+/** The simulator's English texts (the picker's error card must say error.broken, not the engine's words). */
+const FLY_EN = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'en.json'), 'utf8')) as Record<string, string>;
+
+/** The scene's real lod-meta.json with the `bound` of its first leaf removed: the top level stays right. */
+async function leafBroken(id: string): Promise<{ body: string; removed: string }> {
+    const json = (await (await fetch(`${CDN}/${id}/v1/lod-meta.json`)).json()) as Any;
+    const stack: Any[] = [json.tree];
+    while (stack.length > 0) {
+        const node = stack.pop();
+        if (node.lods) {
+            delete node.bound;
+            return { body: JSON.stringify(json), removed: 'the bound of the first leaf found' };
+        }
+        for (const c of node.children ?? []) stack.push(c);
+    }
+    throw new Error(`${id}: lod-meta.json has no leaf`);
+}
 
 // ------------------------------------------------------------------ L3
 if (want('L3')) {
@@ -184,15 +201,35 @@ if (want('L3')) {
     const t0 = Date.now();
     const dead = await open(c.page, SITE, STREAMED, 60000).catch((e: Error) => ({ status: 'timeout', error: e.message }));
     const deadMs = Date.now() - t0;
+    const deadText = await c.page.evaluate('(document.querySelector(".scene-error") || {}).textContent || null');
     await c.page.screenshot({ path: join(SHOTS, 'L3-no-fallback.png') });
     await c.ctx.close();
-    out.L3 = { fallback: { atReveal: fell, end: fellEnd, cdn: fellUrls, pageerrors: errors(a.log) }, plain, noFallback: { ...dead, ms: deadMs } };
+    // review R2/R3: a lod-meta.json whose top level is right but one leaf has no bound (the engine throws on
+    // it inside its HTTP callback and the page waits forever): an error card 'broken' with the pilot's text.
+    // Control (SITE_BEFORE, a release without the leaf check): the same file and no answer within a minute.
+    const leaf = await leafBroken(STREAMED);
+    const leafRun = async (site: string) => {
+        const x = await context(browser);
+        await x.ctx.route(`${CDN}/${STREAMED}/v1/lod-meta.json`, (route) => (route.request().method() === 'HEAD' ? route.continue() : route.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*', 'content-type': 'application/json' }, body: leaf.body })));
+        const t1 = Date.now();
+        const st: Any = await open(x.page, site, STREAMED, 60000).catch((e: Error) => ({ status: 'timeout', error: e.message }));
+        const ms = Date.now() - t1;
+        const text = await x.page.evaluate('(document.querySelector(".scene-error") || {}).textContent || null');
+        await x.page.screenshot({ path: join(SHOTS, `L3-leaf-${site === SITE ? 'after' : 'before'}.png`) });
+        await x.ctx.close();
+        return { ...st, ms, text };
+    };
+    const leafAfter = await leafRun(SITE);
+    const leafBefore = SITE_BEFORE ? await leafRun(SITE_BEFORE) : null;
+    out.L3 = { fallback: { atReveal: fell, end: fellEnd, cdn: fellUrls, pageerrors: errors(a.log) }, plain, noFallback: { ...dead, ms: deadMs, text: deadText }, leaf: { removed: leaf.removed, after: leafAfter, before: leafBefore } };
     pass.L3 = fell.status === 'ready' && fellEnd.contentKind === 'meta' && fellEnd.lod?.contentFailures?.length === 1 && /not an octree/.test(fellEnd.lod.contentFailures[0].error)
         && fellUrls.some((u: string) => u === `GET /${SINGLE}/v1/lod-meta.json`) && fellUrls.some((u: string) => u === `GET /${SINGLE}/v1/meta.json`)
         && /did not open/.test(fellEnd.detailLine ?? '') && errors(a.log).length === 0
         && plain.status === 'ready' && plain.contentKind === 'meta' && plain.lod?.contentFailures?.length === 0
-        && dead.status === 'error' && deadMs < 60000;
-    console.log('L3', pass.L3, JSON.stringify({ fell: [fell.status, fellEnd.contentKind, fellEnd.lod?.contentFailures], plain: [plain.status, plain.contentKind], dead: [dead.status, (dead as Any).errorCode, deadMs] }));
+        && dead.status === 'error' && deadMs < 60000 && (dead as Any).errorCode === 'broken' && deadText === FLY_EN['error.broken']
+        && leafAfter.status === 'error' && leafAfter.errorCode === 'broken' && leafAfter.text === FLY_EN['error.broken'] && leafAfter.ms < 60000
+        && (leafBefore === null || leafBefore.status === 'timeout');
+    console.log('L3', pass.L3, JSON.stringify({ fell: [fell.status, fellEnd.contentKind, fellEnd.lod?.contentFailures], plain: [plain.status, plain.contentKind], dead: [dead.status, (dead as Any).errorCode, deadMs, deadText], leaf: leaf.removed, leafAfter: [leafAfter.status, leafAfter.errorCode, leafAfter.ms], leafBefore: leafBefore && [leafBefore.status, leafBefore.errorCode, leafBefore.ms] }));
 }
 
 // ------------------------------------------------------------------ L4

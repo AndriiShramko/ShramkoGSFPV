@@ -131,7 +131,7 @@ async function main(): Promise<void> {
     const mid: Any[] = [];
     for (let i = 0; i < FLY_S; i++) {
         await page.waitForTimeout(1000);
-        mid.push({ s: i + 1, ...(await page.evaluate(FINEST)) });
+        mid.push({ s: i + 1, ...((await page.evaluate(FINEST)) as Any) });
         if (i === Math.floor(FLY_S / 2)) await page.screenshot({ path: join(REPO, 'evidence', today(), `v08-flight-${LABEL}-mid.png`) });
     }
     await page.waitForTimeout(1500);
