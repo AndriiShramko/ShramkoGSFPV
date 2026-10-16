@@ -152,7 +152,7 @@
   "wizard.sub.arm.off": "Sprawdź: ON zapala Arm, OFF gasi. Zostaw OFF, aby przejść dalej.",
   "wizard.sub.check": "Poruszaj drążkami: gałki na rysunku i paski muszą za nimi podążać. Potem naciśnij Leć.",
   "wizard.hint.noData": "Na razie brak danych z aparatury. Wybierz na aparaturze USB Joystick (nie USB Storage) i odczekaj sekundę.",
-  "wizard.hint.badReport": "Urządzenie wysyła pakiety po {len} bajtów, których nie umiemy odczytać. Aparatura EdgeTX: w ustawieniach modelu ustaw tryb USB Joystick na Classic.",
+  "wizard.hint.badReport": "Urządzenie wysyła pakiety po {len} bajtów, których nie umiemy odczytać. Spróbuj zamiast tego przycisku „Gamepad albo aparatura jako gamepad”; aparaturę EdgeTX można też przełączyć w ustawieniach modelu na tryb USB Joystick Classic.",
   "wizard.hint.stir.few": "Kanałów, które ruszają się jak drążki: {n}. Potrzebne są 4. Czy aparatura jest w trybie USB Joystick?",
   "wizard.hint.stir.coverage": "CH{ch} przeszedł tylko {pct} % swojego zakresu. Wychyl ten drążek do oporu w obie strony.",
   "wizard.hint.stir.other": "Teraz pokręć też drugim drążkiem, aż do każdego rogu. Jeśli się rusza, a żaden nowy pasek poniżej nie robi się zielony, ustaw aparaturę w tryb USB Joystick.",
