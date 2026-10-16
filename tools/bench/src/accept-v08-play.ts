@@ -21,6 +21,8 @@ console.log(`accept-v08-play target: ${SITE}`);
 const SHOTS = join(REPO, 'evidence', today(), 'v08-a');
 mkdirSync(SHOTS, { recursive: true });
 const SCENE = '887f27aa';
+/** PLAY_ONLY=K or T: only the keyboard or only the touch part (a re-run of one part; the evidence says which). */
+const ONLY = (process.env.PLAY_ONLY ?? '').toUpperCase();
 const fly = (qs: string): string => `${SITE}/en/fly/?scene=${SCENE}&nowarn=1&${qs}&cb=${Math.random().toString(36).slice(2)}`;
 
 /** The English fly dictionary as the page merges it. */
@@ -75,7 +77,7 @@ async function keyboardFlight(p: Page, qs: string): Promise<void> {
 }
 
 // ------------------------------------------------------------------ K: keyboard, easy play, desktop
-{
+if (ONLY !== 'T') {
     const L = await launch({ width: 1280, height: 800 });
     const p = L.page;
     await keyboardFlight(p, 'x=1');
@@ -154,7 +156,7 @@ async function keyboardFlight(p: Page, qs: string): Promise<void> {
 
 // ------------------------------------------------------------------ T: touch sticks, easy play, tablet and phone
 const SIZES = [{ name: 'tablet', w: 1024, h: 768 }, { name: 'phone', w: 375, h: 812 }, { name: 'phone-landscape', w: 812, h: 375 }] as const;
-for (const size of SIZES) {
+for (const size of ONLY === 'K' ? [] : SIZES) {
     const T = await launch({ width: size.w, height: size.h, mobile: true });
     const p = T.page;
     await p.goto(fly('input=touch'));
@@ -219,12 +221,19 @@ for (const size of SIZES) {
         // getClientRects, not offsetParent: the speaker is position: fixed on a phone (offsetParent null)
         const items = [...document.querySelectorAll('.top-actions > .btn, [data-testid="school-chip"], .mode-chip, .attribution, .osd.tl, .osd.tr, .touch-hint')]
             .filter((el) => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden' && getComputedStyle(el).display !== 'none')
-            // the credit is a wide block with a short text: its text lines count, not its box
+            // the credit and the hint are wide blocks with a short text: their visible text lines count,
+            // not their boxes (the credit's closed walls <details> keeps laid-out, unseen text)
             .flatMap((el) => {
                 const n = (el.getAttribute('data-action') || el.getAttribute('data-testid') || el.className).toString().slice(0, 24);
                 if (n !== 'attribution' && n !== 'touch-hint') return [{ n, r: el.getBoundingClientRect() }];
-                const rg = document.createRange(); rg.selectNodeContents(el);
-                return [...rg.getClientRects()].map((r) => ({ n, r }));
+                const out = [];
+                const tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+                for (let t = tw.nextNode(); t; t = tw.nextNode()) {
+                    if (!t.textContent.trim() || !t.parentElement.checkVisibility({ visibilityProperty: true })) continue;
+                    const rg = document.createRange(); rg.selectNodeContents(t);
+                    for (const r of rg.getClientRects()) out.push({ n, r });
+                }
+                return out;
             })
             .filter((x) => x.r.width > 0 && x.r.height > 0);
         const hits = [];
@@ -234,7 +243,8 @@ for (const size of SIZES) {
             // not judged here: the two OSD lines with each other (v0.7's long "WALLS OFF" line meets the
             // voltage on a 375 px phone: reported in docs/wip/v08-a.md, not this lane's part)
             const pair = [items[i].n, items[j].n].sort().join('|');
-            if (ox > 1 && oy > 1 && pair !== 'osd tl|osd tr' && items[i].n !== items[j].n) hits.push(items[i].n + ' x ' + items[j].n);
+            const at = (r) => '[' + Math.round(r.left) + ',' + Math.round(r.top) + ',' + Math.round(r.right) + ',' + Math.round(r.bottom) + ']';
+            if (ox > 1 && oy > 1 && pair !== 'osd tl|osd tr' && items[i].n !== items[j].n) hits.push(items[i].n + at(a) + ' x ' + items[j].n + at(b));
         }
         const sp = document.querySelector('[data-action="sound-toggle"]').getBoundingClientRect();
         const speakerOnScreen = sp.left >= 0 && sp.top >= 0 && sp.right <= innerWidth && sp.bottom <= innerHeight && sp.width > 0;
@@ -253,7 +263,7 @@ for (const size of SIZES) {
 }
 
 // control: the pilot profile on a tablet: the ARM button is there and a touch on a stick starts nothing
-{
+if (ONLY !== 'K') {
     const T = await launch({ width: 1024, height: 768, mobile: true });
     const p = T.page;
     await p.goto(fly('input=touch&set.input.play=pilot'));
@@ -273,6 +283,6 @@ for (const size of SIZES) {
 }
 
 const pass = checks.every((c) => c.ok);
-const file = writeEvidence('v08-a-play', { site: SITE, pass, checks, shots: 'evidence/' + today() + '/v08-a/', note: 'touch = CDP synthetic touches (the page path, not a real digitiser); keyboard = Playwright key events; the scan drawn (visible system Chrome)' });
+const file = writeEvidence(ONLY ? `v08-a-play-${ONLY.toLowerCase()}` : 'v08-a-play', { site: SITE, pass, only: ONLY || 'all', checks, shots: 'evidence/' + today() + '/v08-a/', note: 'touch = CDP synthetic touches (the page path, not a real digitiser); keyboard = Playwright key events; the scan drawn (visible system Chrome)' });
 console.log(`accept-v08-play ${pass ? 'PASS' : 'FAIL'} (${checks.filter((c) => c.ok).length}/${checks.length}) -> ${file}`);
 process.exit(pass ? 0 : 1);
