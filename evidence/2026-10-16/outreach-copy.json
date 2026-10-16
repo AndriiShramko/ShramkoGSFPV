@@ -1,0 +1,946 @@
+{
+  "name": "outreach-copy",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-16T11:32:35.177Z",
+    "gitHead": "3358999",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "source": {
+    "release": "outreach-tab@3358999",
+    "distSha256": null,
+    "tag": null
+  },
+  "error": null,
+  "passed": 85,
+  "failed": 0,
+  "failedChecks": [],
+  "checks": [
+    {
+      "name": "the admin page is served under nginx.conf's admin CSP (script-src 'self', style-src 'self')",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "login on localhost with the test password",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the admin has an Outreach tab next to Scenes and Ideas",
+      "ok": true,
+      "control": false,
+      "got": [
+        "Scenes",
+        "Ideas",
+        "Outreach"
+      ]
+    },
+    {
+      "name": "empty state: \"No snapshot yet\" with the push command, no table drawn",
+      "ok": true,
+      "control": false,
+      "got": "No snapshot yetThe records of the Facebook campaign live in the vault. This tab shows them after an agent pushes the fir"
+    },
+    {
+      "name": "empty state: CSV buttons are not offered without data",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the CLI accepts the synthetic snapshot (push -, stdin)",
+      "ok": true,
+      "control": false,
+      "got": "accepted: 140 groups, 59 posts, 105514 bytes (ceiling 262144), campaign gsfpv"
+    },
+    {
+      "name": "exactly one new data file: outreach.json, within 256 KB",
+      "ok": true,
+      "control": false,
+      "got": 105514
+    },
+    {
+      "name": "Refresh shows the snapshot (the empty state is gone)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "summary cards: studied / posted to / post is up / removed / reactions equal the oracle",
+      "ok": true,
+      "control": false,
+      "got": {
+        "got": {
+          "groups": 140,
+          "posted": 52,
+          "published": 37,
+          "removed": 4,
+          "reactions": 737
+        },
+        "want": {
+          "groups": 140,
+          "posted": 52,
+          "published": 37,
+          "removed": 4,
+          "reactions": 737
+        }
+      }
+    },
+    {
+      "name": "funnel: groups -> posted -> published -> removed with the same counts",
+      "ok": true,
+      "control": false,
+      "got": [
+        [
+          "groups",
+          "140"
+        ],
+        [
+          "posted",
+          "52"
+        ],
+        [
+          "published",
+          "37"
+        ],
+        [
+          "removed",
+          "4"
+        ]
+      ]
+    },
+    {
+      "name": "the first card says \"of 188 known\" (meta.groups_total)",
+      "ok": true,
+      "control": false,
+      "got": "of 188 known"
+    },
+    {
+      "name": "the snapshot stamp names the campaign and when it was built and received",
+      "ok": true,
+      "control": false,
+      "got": "Campaign gsfpv. Snapshot built 10/16/26, 01:32 PM, received 10/16/26, 01:32 PM (0 h ago)."
+    },
+    {
+      "name": "groups table: one row per group (140)",
+      "ok": true,
+      "control": false,
+      "got": 140
+    },
+    {
+      "name": "groups table: the default order is score, best first, groups without a post last",
+      "ok": true,
+      "control": false,
+      "got": [
+        100,
+        100,
+        84.4,
+        84.4,
+        83.8,
+        83.8,
+        83.8,
+        83.8,
+        83.8,
+        82.6,
+        82.6,
+        80.2
+      ]
+    },
+    {
+      "name": "the top row shows the highest score of the oracle",
+      "ok": true,
+      "control": false,
+      "got": {
+        "shown": 100,
+        "oracle": 100
+      }
+    },
+    {
+      "name": "every group's score on the page equals the oracle's formula (50 pub + 30 eng + 20 kept)",
+      "ok": true,
+      "control": false,
+      "got": []
+    },
+    {
+      "name": "\"worth more work\" highlights exactly the groups with score >= 75, nothing removed, not banned",
+      "ok": true,
+      "control": false,
+      "got": {
+        "page": 21,
+        "oracle": 21
+      }
+    },
+    {
+      "name": "groups with a removal or a ban are marked",
+      "ok": true,
+      "control": false,
+      "got": 5
+    },
+    {
+      "name": "ranking: 8 groups, best score first, the same scores as the oracle's top 8",
+      "ok": true,
+      "control": false,
+      "got": [
+        100,
+        100,
+        84.4,
+        84.4,
+        83.8,
+        83.8,
+        83.8,
+        83.8
+      ]
+    },
+    {
+      "name": "sort by Members: largest first, groups with unknown membership last",
+      "ok": true,
+      "control": false,
+      "got": [
+        79696,
+        79640,
+        79211,
+        78325,
+        78142,
+        78098
+      ]
+    },
+    {
+      "name": "the pressed header says so (aria-sort descending), the others none",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "pressing it again flips: smallest first, unknown still last",
+      "ok": true,
+      "control": false,
+      "got": [
+        913,
+        1778,
+        2251,
+        3347,
+        4387,
+        4696
+      ]
+    },
+    {
+      "name": "sort by Group: A to Z",
+      "ok": true,
+      "control": false,
+      "got": [
+        "Synthetic group 000",
+        "Synthetic group 001",
+        "Synthetic group 002"
+      ]
+    },
+    {
+      "name": "filter Verdict = comments only keeps exactly those groups",
+      "ok": true,
+      "control": false,
+      "got": "23 of 140 shown"
+    },
+    {
+      "name": "and Language = pl narrows it further (two filters together)",
+      "ok": true,
+      "control": false,
+      "got": {
+        "page": 5,
+        "oracle": 5
+      }
+    },
+    {
+      "name": "\"not set\" finds the groups with no language",
+      "ok": true,
+      "control": false,
+      "got": 7
+    },
+    {
+      "name": "search finds a group by its words",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "search looks in the notes too",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "a search that matches nothing shows 0 rows, not an error",
+      "ok": true,
+      "control": false,
+      "got": "0 of 140 shown"
+    },
+    {
+      "name": "\"Worth more work only\" keeps exactly the highlighted groups",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "clearing the filters brings all 140 back",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "posts table: one row per post",
+      "ok": true,
+      "control": false,
+      "got": {
+        "page": 59,
+        "oracle": 59
+      }
+    },
+    {
+      "name": "checkpoint strip of P-DUE-24: taken / due / future / future / future",
+      "ok": true,
+      "control": false,
+      "got": [
+        "taken",
+        "due",
+        "future",
+        "future",
+        "future"
+      ]
+    },
+    {
+      "name": "checkpoint strip of P-DUE-72: taken / taken / due / future / future",
+      "ok": true,
+      "control": false,
+      "got": [
+        "taken",
+        "taken",
+        "due",
+        "future",
+        "future"
+      ]
+    },
+    {
+      "name": "checkpoint strip of P-DUE-720: taken / taken / missed / missed / due",
+      "ok": true,
+      "control": false,
+      "got": [
+        "taken",
+        "taken",
+        "missed",
+        "missed",
+        "due"
+      ]
+    },
+    {
+      "name": "checkpoint strip of P-SENT-5H: due / future / future / future / future",
+      "ok": true,
+      "control": false,
+      "got": [
+        "due",
+        "future",
+        "future",
+        "future",
+        "future"
+      ]
+    },
+    {
+      "name": "checkpoint strip of P-REMOVED: taken / taken / taken / missed / future",
+      "ok": true,
+      "control": false,
+      "got": [
+        "taken",
+        "taken",
+        "taken",
+        "missed",
+        "future"
+      ]
+    },
+    {
+      "name": "checkpoint strip of P-PENDING-80H: taken / missed / due / future / future",
+      "ok": true,
+      "control": false,
+      "got": [
+        "taken",
+        "missed",
+        "due",
+        "future",
+        "future"
+      ]
+    },
+    {
+      "name": "a taken checkpoint shows reactions/comments/shares of that measurement (and the details on hover)",
+      "ok": true,
+      "control": false,
+      "got": {
+        "text": "+7 d279/56/2",
+        "title": "+7 d (measured at 7 d): 279 reactions, 56 comments, 2 shares, 1,600 views. Admin: no action."
+      }
+    },
+    {
+      "name": "an admin action on a measurement is flagged (!) with its words",
+      "ok": true,
+      "control": false,
+      "got": "removed by an admin"
+    },
+    {
+      "name": "the removed post's row is marked",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "What next lists P-DUE-24 as a measurement due",
+      "ok": true,
+      "control": false,
+      "got": 8
+    },
+    {
+      "name": "What next lists P-DUE-72 as a measurement due",
+      "ok": true,
+      "control": false,
+      "got": 8
+    },
+    {
+      "name": "What next lists P-DUE-720 as a measurement due",
+      "ok": true,
+      "control": false,
+      "got": 8
+    },
+    {
+      "name": "What next lists P-SENT-5H as a measurement due",
+      "ok": true,
+      "control": false,
+      "got": 8
+    },
+    {
+      "name": "What next lists P-PENDING-80H as a measurement due",
+      "ok": true,
+      "control": false,
+      "got": 8
+    },
+    {
+      "name": "the number of posts with a \"due\" cell equals the number in What next",
+      "ok": true,
+      "control": false,
+      "got": {
+        "next": "16",
+        "strips": 16
+      }
+    },
+    {
+      "name": "unresolved: the sent post (5 h) and the pending one (80 h) are listed",
+      "ok": true,
+      "control": false,
+      "got": [
+        "P-SENT-5H",
+        "P-PENDING-80H",
+        "P-SYN-009",
+        "P-SYN-014",
+        "P-SYN-021",
+        "P-SYN-024",
+        "P-SYN-027",
+        "P-SYN-028"
+      ]
+    },
+    {
+      "name": "wave 1 without a post: the count equals the oracle's",
+      "ok": true,
+      "control": false,
+      "got": {
+        "badge": "12",
+        "oracle": 12
+      }
+    },
+    {
+      "name": "posts: filter State = removed keeps exactly the removed posts",
+      "ok": true,
+      "control": false,
+      "got": 4
+    },
+    {
+      "name": "posts: the search finds a post by its angle",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "posts: sort by Engagement, best first, unmeasured last",
+      "ok": true,
+      "control": false,
+      "got": [
+        457,
+        94,
+        38,
+        31,
+        24,
+        24
+      ]
+    },
+    {
+      "name": "the best engagement on the page is the oracle's",
+      "ok": true,
+      "control": false,
+      "got": {
+        "page": 457
+      }
+    },
+    {
+      "name": "slices by format: posts, measured and the medians of reactions and engagement equal the oracle",
+      "ok": true,
+      "control": false,
+      "got": {
+        "bad": [],
+        "page": {
+          "image": [
+            "image",
+            "20",
+            "15",
+            "14",
+            "1",
+            "10",
+            "2",
+            "16"
+          ],
+          "video": [
+            "video",
+            "32",
+            "25",
+            "17",
+            "3",
+            "9",
+            "2",
+            "15"
+          ],
+          "text": [
+            "text",
+            "7",
+            "5",
+            "6",
+            "0",
+            "8",
+            "2",
+            "14"
+          ]
+        }
+      }
+    },
+    {
+      "name": "slices by topic: the topics are those of the posts' groups",
+      "ok": true,
+      "control": false,
+      "got": 14
+    },
+    {
+      "name": "slices by format x language x topic: one row per combination, the first column holds the format",
+      "ok": true,
+      "control": false,
+      "got": {
+        "page": 46,
+        "oracle": 46
+      }
+    },
+    {
+      "name": "the best medians come first",
+      "ok": true,
+      "control": false,
+      "got": [
+        457,
+        50.5,
+        38,
+        24,
+        24,
+        24
+      ]
+    },
+    {
+      "name": "arrivals from Facebook: the total of the snapshot, by group",
+      "ok": true,
+      "control": false,
+      "got": {
+        "visitSum": 435
+      }
+    },
+    {
+      "name": "CSV groups: downloaded as an attachment named outreach-gsfpv-groups-<date>.csv, UTF-8 with BOM",
+      "ok": true,
+      "control": false,
+      "got": "outreach-gsfpv-groups-2026-10-16.csv"
+    },
+    {
+      "name": "CSV groups: a header and one line per group (140)",
+      "ok": true,
+      "control": false,
+      "got": 141
+    },
+    {
+      "name": "CSV posts: downloaded as an attachment named outreach-gsfpv-posts-<date>.csv, UTF-8 with BOM",
+      "ok": true,
+      "control": false,
+      "got": "outreach-gsfpv-posts-2026-10-16.csv"
+    },
+    {
+      "name": "CSV posts: a header and one line per post (59)",
+      "ok": true,
+      "control": false,
+      "got": 60
+    },
+    {
+      "name": "the downloads did not take the page away from the admin",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "switching Scenes -> Ideas -> Outreach redraws the tab with the same data",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "a snapshot older than 2 days is marked as old, with what to ask for",
+      "ok": true,
+      "control": false,
+      "got": "This snapshot is more than 2 days old. Ask an agent to run the vault's push (fbgroups.py push)."
+    },
+    {
+      "name": "a damaged file: \"cannot be read\", an alert, the push command, nothing lost",
+      "ok": true,
+      "control": false,
+      "got": "The stored snapshot cannot be readThe file on the server is damaged. Nothing is lost: the vault has "
+    },
+    {
+      "name": "the next push restores the tab (140 groups again), still one file",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "a refused push (v:2) is refused with its reason and the stored file is unchanged",
+      "ok": true,
+      "control": false,
+      "got": "refused, the previous snapshot is untouched:\r\n  - v must be 1"
+    },
+    {
+      "name": "a push over the ceilings (280 groups) is refused",
+      "ok": true,
+      "control": false,
+      "got": "refused, the previous snapshot is untouched:\r\n  - 280 groups, the ceiling is 250"
+    },
+    {
+      "name": "and the file is still the same bytes",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "light-scheme browser: the page stays on the admin's dark palette (as Scenes and Ideas) and the table text is light on dark",
+      "ok": true,
+      "control": false,
+      "got": {
+        "body": "rgb(7, 8, 10)",
+        "cellText": "rgb(232, 234, 237)",
+        "headBg": "rgb(14, 17, 22)",
+        "scheme": "dark",
+        "bodyLum": 0.031105098039215684,
+        "cellTextLum": 0.9168290196078431
+      }
+    },
+    {
+      "name": "phone 390: the page does not scroll sideways (document width = viewport)",
+      "ok": true,
+      "control": false,
+      "got": {
+        "scrollW": 390,
+        "innerW": 390
+      }
+    },
+    {
+      "name": "phone 390: the summary is two columns",
+      "ok": true,
+      "control": false,
+      "got": 2
+    },
+    {
+      "name": "phone 390: each table is in its own scroll box, no taller than a viewport, scrolling sideways inside",
+      "ok": true,
+      "control": false,
+      "got": {
+        "box0": {
+          "h": 591,
+          "scrollsX": true,
+          "w": 328
+        },
+        "box1": {
+          "h": 591,
+          "scrollsX": true,
+          "w": 328
+        },
+        "box2": {
+          "h": 142,
+          "scrollsX": true,
+          "w": 328
+        }
+      }
+    },
+    {
+      "name": "phone 390: the tabs fit on one line and every button is at least 34 px tall",
+      "ok": true,
+      "control": false,
+      "got": {
+        "right": 259,
+        "tap": 34
+      }
+    },
+    {
+      "name": "phone 390: the page is not absurdly long (under 9 viewports)",
+      "ok": true,
+      "control": false,
+      "got": 7.170616113744076
+    },
+    {
+      "name": "phone: a tap on a header sorts the table",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "no script error, CSP violation or failed request in the console (the signed-out session probe's 401 aside)",
+      "ok": true,
+      "control": false,
+      "got": []
+    },
+    {
+      "name": "the console's only error lines are the session probe's 401 (one per login page: 3 contexts)",
+      "ok": true,
+      "control": false,
+      "got": 3
+    },
+    {
+      "name": "the browser sent only GETs and the logins (no write of any kind from the Outreach tab)",
+      "ok": true,
+      "control": false,
+      "got": []
+    },
+    {
+      "name": "every outreach request answered 200",
+      "ok": true,
+      "control": false,
+      "got": []
+    },
+    {
+      "name": "the Outreach tab reached no host but the local site and API (the posters of the Scenes tab come from the scene CDN, asked for before)",
+      "ok": true,
+      "control": false,
+      "got": {
+        "all": [
+          "127.0.0.1:5546",
+          "s3-eu-west-1.amazonaws.com"
+        ],
+        "beforeOutreach": [
+          "127.0.0.1:5546",
+          "s3-eu-west-1.amazonaws.com"
+        ]
+      }
+    },
+    {
+      "name": "the API printed no traceback",
+      "ok": true,
+      "control": false,
+      "got": "13:32:25 GET /api/health\r\n13:32:25 GET /api/admin/session\r\n13:32:25 POST /api/admin/login\r\n13:32:26 GET /api/admin/catalog\r\n13:32:27 GET /api/admin/outreach\r\n13:32:28 GET /api/admin/outreach\r\n13:32:30"
+    },
+    {
+      "name": "the test password is in no log or data file",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the data folder holds one outreach file (no history, no temp file) after 4 pushes",
+      "ok": true,
+      "control": false,
+      "got": [
+        "outreach.json"
+      ]
+    }
+  ],
+  "adminCsp": "default-src 'self'; script-src 'self'; connect-src 'self' https://d28zzqy0iyovbz.cloudfront.net; img-src 'self' data: https://s3-eu-west-1.amazonaws.com https://d28zzqy0iyovbz.cloudfront.net; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+  "distAdminSha256": "5dc4f4093e568de69248d9159ea25ffba7266e38de4d1348600751861090b152",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "shots": {
+    "emptyDesktop": "evidence/2026-10-16/outreach-copy/outreach-empty-desktop.png",
+    "topDesktop": "evidence/2026-10-16/outreach-copy/outreach-top-desktop.png",
+    "groupsDesktop": "evidence/2026-10-16/outreach-copy/outreach-groups-desktop.png",
+    "postsDesktop": "evidence/2026-10-16/outreach-copy/outreach-posts-desktop.png",
+    "slicesDesktop": "evidence/2026-10-16/outreach-copy/outreach-slices-desktop.png",
+    "lightDesktop": "evidence/2026-10-16/outreach-copy/outreach-top-light-desktop.png",
+    "topPhone": "evidence/2026-10-16/outreach-copy/outreach-top-phone.png",
+    "rankPhone": "evidence/2026-10-16/outreach-copy/outreach-rank-phone.png",
+    "groupsPhone": "evidence/2026-10-16/outreach-copy/outreach-groups-phone.png",
+    "postsPhone": "evidence/2026-10-16/outreach-copy/outreach-posts-phone.png"
+  },
+  "push": "accepted: 140 groups, 59 posts, 105514 bytes (ceiling 262144), campaign gsfpv",
+  "stats": {
+    "got": {
+      "groups": 140,
+      "posted": 52,
+      "published": 37,
+      "removed": 4,
+      "reactions": 737
+    },
+    "want": {
+      "groups": 140,
+      "posted": 52,
+      "published": 37,
+      "removed": 4,
+      "reactions": 737
+    }
+  },
+  "strips": {
+    "P-DUE-24": [
+      "taken",
+      "due",
+      "future",
+      "future",
+      "future"
+    ],
+    "P-DUE-72": [
+      "taken",
+      "taken",
+      "due",
+      "future",
+      "future"
+    ],
+    "P-DUE-720": [
+      "taken",
+      "taken",
+      "missed",
+      "missed",
+      "due"
+    ],
+    "P-SENT-5H": [
+      "due",
+      "future",
+      "future",
+      "future",
+      "future"
+    ],
+    "P-REMOVED": [
+      "taken",
+      "taken",
+      "taken",
+      "missed",
+      "future"
+    ],
+    "P-PENDING-80H": [
+      "taken",
+      "missed",
+      "due",
+      "future",
+      "future"
+    ]
+  },
+  "next": {
+    "checks": [
+      "P-DUE-24",
+      "P-DUE-72",
+      "P-DUE-720",
+      "P-SENT-5H",
+      "P-PENDING-80H",
+      "P-SYN-008",
+      "P-SYN-009",
+      "P-SYN-019"
+    ],
+    "unresolved": [
+      "P-SENT-5H",
+      "P-PENDING-80H",
+      "P-SYN-009",
+      "P-SYN-014",
+      "P-SYN-021",
+      "P-SYN-024",
+      "P-SYN-027",
+      "P-SYN-028"
+    ]
+  },
+  "csv_groups": {
+    "filename": "outreach-gsfpv-groups-2026-10-16.csv",
+    "bytes": 28495,
+    "lines": 141,
+    "header": [
+      "id",
+      "name",
+      "url",
+      "lang",
+      "members"
+    ]
+  },
+  "csv_posts": {
+    "filename": "outreach-gsfpv-posts-2026-10-16.csv",
+    "bytes": 16356,
+    "lines": 60,
+    "header": [
+      "id",
+      "group",
+      "group_name",
+      "kind",
+      "format"
+    ]
+  },
+  "light": {
+    "body": "rgb(7, 8, 10)",
+    "cellText": "rgb(232, 234, 237)",
+    "headBg": "rgb(14, 17, 22)",
+    "scheme": "dark",
+    "bodyLum": 0.031105098039215684,
+    "cellTextLum": 0.9168290196078431
+  },
+  "phone": {
+    "scrollW": 390,
+    "innerW": 390,
+    "pageH": 6052,
+    "innerH": 844,
+    "boxes": {
+      "box0": {
+        "h": 591,
+        "scrollsX": true,
+        "w": 328
+      },
+      "box1": {
+        "h": 591,
+        "scrollsX": true,
+        "w": 328
+      },
+      "box2": {
+        "h": 142,
+        "scrollsX": true,
+        "w": 328
+      }
+    },
+    "statCols": 2,
+    "tabs": [
+      91,
+      162,
+      259
+    ],
+    "tap": 34
+  },
+  "consoleErrors": [
+    "desktop console: Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://127.0.0.1:5546/api/admin/session",
+    "light console: Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://127.0.0.1:5546/api/admin/session",
+    "phone console: Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://127.0.0.1:5546/api/admin/session"
+  ],
+  "requests": [
+    "GET /api/admin/session",
+    "POST /api/admin/login",
+    "GET /api/admin/catalog",
+    "GET /api/admin/outreach",
+    "GET /api/admin/ideas"
+  ],
+  "hosts": {
+    "all": [
+      "127.0.0.1:5546",
+      "s3-eu-west-1.amazonaws.com"
+    ],
+    "beforeOutreach": [
+      "127.0.0.1:5546",
+      "s3-eu-west-1.amazonaws.com"
+    ]
+  }
+}
