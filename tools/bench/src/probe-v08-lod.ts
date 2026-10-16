@@ -6,11 +6,13 @@
 //     own GSplatOctreeInstance.nodeInfos; read-only, for measuring only) and the files fetched per level;
 //   - the cost: bytes downloaded, JS heap, the engine's GPU memory count, frames per second, time to the
 //     first frame and to the reveal (session.timings), and a screenshot.
+// The octree instances are read through renderer.gsplatDirector -> camerasMap -> layersMap ->
+// gsplatManager.world._octreeInstances (engine 2.23 internals, read-only, for measuring only).
 // Draws the scan: run it under the GPU lock (C:/dev/.gpu-lock). It measures; the pass/fail rules of the
 // lane live in accept-v08-lod.ts.
 //   SITE=http://127.0.0.1:5381 LABEL=before npx tsx src/probe-v08-lod.ts [scene]
 // Options: PHONE=1 (a phone's user agent, touch and viewport), SETTLE_S (seconds sampled after the reveal,
-// default 20), QS (more query, e.g. "&lod=off"). Evidence: evidence/<date>/v08-lod-probe-<label>.json and .png.
+// default 20), QS (more query, e.g. "&governor=0"). Evidence: evidence/<date>/v08-lod-probe-<label>.json and .png.
 import { join } from 'node:path';
 import { mkdirSync } from 'node:fs';
 import type { Page } from 'playwright';
@@ -30,7 +32,7 @@ type Any = any;
 
 /**
  * The page's state in one object (a string: tsx would wrap a function in __name). Reads the engine's
- * octree instances through renderer.gsplatDirector -> camerasMap -> layersMap -> gsplatManager.
+ * octree instances (see the header).
  */
 const STATE = `(() => {
     const h = window.__gsfpv; const s = h && h.session; const r = s && s.renderer; const a = r && r.app;
@@ -43,7 +45,8 @@ const STATE = `(() => {
     const dbg = { director: !!dir, cameras: dir ? dir.camerasMap.size : -1, layers: 0, managers: 0, managerKeys: '' };
     if (dir) dir.camerasMap.forEach((cd) => cd.layersMap.forEach((ld) => {
         dbg.layers++;
-        const m = ld.gsplatManager; if (m) { dbg.managers++; dbg.managerKeys = Object.keys(m).filter((k) => /octree|instance/i.test(k)).join(','); }
+        const mg = ld.gsplatManager; const m = mg && mg.world;
+        if (m) { dbg.managers++; dbg.managerKeys = Object.keys(m).filter((k) => /octree|instance/i.test(k)).join(','); }
         if (!m || !m._octreeInstances) return;
         m._octreeInstances.forEach((inst) => {
             inst.nodeInfos.forEach((ni, i) => {
@@ -60,7 +63,8 @@ const STATE = `(() => {
     const gov = h.governor;
     return {
         status: h.status, error: h.error || null,
-        contentKind: s.scene.contentKind, contentUrl: s.scene.contentUrl, lod: h.lod || null,
+        contentKind: s.scene.contentKind, contentUrl: s.scene.contentUrl, lod: typeof h.lod === 'function' ? h.lod() : null,
+        detailLine: (document.querySelector('[data-testid=detail-line]') || {}).textContent || null,
         lodLevels: oct ? oct.lodLevels : null, rangeMin: comp ? comp.lodRangeMin : null, rangeMax: comp ? comp.lodRangeMax : null,
         budgetM: g.splatBudget / 1e6, budgetMode: g.splatBudgetMode, stochastic: g.stochastic === true, rendererKind: g.currentRenderer,
         governorStep: gov ? gov.step : null, governorTopM: gov ? gov.topBudgetMillions : null, governorChanges: gov ? gov.changes : null,
