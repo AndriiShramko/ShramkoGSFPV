@@ -9,7 +9,8 @@
 //            GamepadSource polls it (devices/gamepad.ts);
 //   hid      navigator.hid hands over a DJI device (its descriptor, 13-byte reports at 160 Hz from a
 //            timer: a report after E carries the new value and is dispatched when the main thread is
-//            free, stamped then, as Chrome stamps a HIDInputReportEvent when it handles it).
+//            free, stamped then; whether Chrome stamps a real HIDInputReportEvent at arrival or when
+//            the page handles it was not checked).
 // Both go through the recognised controller's check screen (no wizard: known-devices.ts) and Fly. Then
 // every channel frame the session receives is recorded (FlightSession.input wrapped): its arrival
 // (performance.now()) and its stamp (the page time the physics applies it at, simclock.ts). Per edge:

@@ -317,7 +317,7 @@
  },
  "findings": [
   "The gamepad is not polled once per display frame: at 30 Hz (33.3 ms frames) a change reaches the page in 0.9 ms median (p90 2.8) before and 1.5 ms (p90 4.7) after; WebHID 3.6 / 2.8 ms (its 160 Hz reports). The Gamepad API path is not slower than WebHID in the page.",
-  "Under 25 ms of main-thread load per frame both paths deliver late (gamepad p50 10.6 / p90 25.3, WebHID 13.7 / 25.3 ms) and, before the fix, the physics applied the gamepad move at the poll time: stamp error = delivery. After: the gamepad stamp error is 0 / 0 / 0 ms (p50 / p90 / max) in both runs; the WebHID stamp is the event time (Chrome stamps it when the page handles it), unchanged.",
+  "Under 25 ms of main-thread load per frame both paths deliver late (gamepad p50 10.6 / p90 25.3, WebHID 13.7 / 25.3 ms) and, before the fix, the physics applied the gamepad move at the poll time: stamp error = delivery. After: the gamepad stamp error is 0 / 0 / 0 ms (p50 / p90 / max) in both runs; the WebHID stamp is the event's own timeStamp, unchanged (in the fake it is the dispatch time; whether Chrome sets it when the report arrives or when the page handles it was not checked).",
   "What the pilot sees is bound by the display: the first frame that can show a change comes 17-25 ms after it (median) on this 30 Hz display, the same on both paths; the display then adds its own scan-out.",
   "Not measurable here: the DJI controller's own delay between a stick move and its USB report (its sampling, any filtering in simulator mode), and Chrome's gamepad thread delay; both need the real controller (and a camera or a photodiode)."
  ]
