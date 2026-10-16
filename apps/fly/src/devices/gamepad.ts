@@ -106,6 +106,13 @@ export class GamepadSource {
         this.onFrame?.(f);
     }
 
+    /** What the known-controller table needs of this source's pad (its id string and its counts), or null when none is connected. */
+    info(): { id: string; axes: { length: number }; buttons: { length: number } } | null {
+        const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+        const g = this.index >= 0 ? pads[this.index] : null;
+        return g ? { id: g.id, axes: { length: g.axes.length }, buttons: { length: g.buttons.length } } : null;
+    }
+
     get key(): string {
         const pads = navigator.getGamepads ? navigator.getGamepads() : [];
         const g = this.index >= 0 ? pads[this.index] : null;
