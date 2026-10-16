@@ -17,7 +17,16 @@
 //   dji-none     negative control: the DJI's reports from a device whose browser gives no descriptor
 //                (the fixed EdgeTX layout, as every device was read before the fix): every report is
 //                refused, the wizard stays at connect and says so
-// Usage: node hid-source-probe.mjs <base with the locale, e.g. http://localhost:5390/en> <outDir>
+// The device choice's pad watch (ui/radio.ts watchPads: a recognised pad on the Gamepad API opens by
+// itself) with the same DJI also on the Gamepad API, shown 300 ms after the click (a stick moved):
+//   dji-pad-chooser  WebHID picked, the chooser open 1.5 s: the pick stands, the WebHID device opens
+//                    (not the pad that showed meanwhile)
+//   dji-pad-cancel   the chooser closed with no device after 0.8 s: the watch runs again, the pad
+//                    opens its check after the chooser closed
+//   dji-pad-nopick   control of dji-pad-chooser: nothing clicked, the same pad opens its check well
+//                    inside the 1.5 s the chooser was open there, so a watch left running would have
+//                    taken over
+// Usage: node hid-source-probe.mjs <base with the locale, e.g. http://localhost:5390/en> <outDir> [run,run...]
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -28,6 +37,7 @@ const require = createRequire(ROOT + '/tools/bench/package.json');
 const { chromium } = require('playwright');
 const base = process.argv[2] ?? 'http://localhost:5390/en';
 const outDir = process.argv[3] ?? ROOT + '/.cache/hid-source-probe';
+const only = process.argv[4] ? process.argv[4].split(',') : null; // some runs by name (default: all)
 mkdirSync(outDir, { recursive: true });
 
 // the descriptors, as WebHID's device.collections (packages/input/src/sim/devices.ts DJI_RC3,
@@ -44,6 +54,11 @@ const edgeItems = [
     { isConstant: false, isArray: false, isRange: false, usages: [0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37].map((u) => P1 | u), reportSize: 16, reportCount: 8, logicalMinimum: 0, logicalMaximum: 2047 }];
 const EDGETX = [{ usagePage: 1, usage: 5, inputReports: [{ reportId: 0, items: edgeItems }], children: [{ usagePage: 1, usage: 0, inputReports: [{ reportId: 0, items: edgeItems }], children: [] }] }];
 
+// the DJI on the Gamepad API (its id string as Chrome on Windows gives it, 5 axes, 24 buttons, no
+// standard mapping): its profile key (apps/fly/src/devices/gamepad.ts gamepadKey)
+const PAD_ID = 'HID Interface (Vendor: 2ca3 Product: 1021)';
+const PAD_KEY = `gp:${PAD_ID}:5:24:`;
+
 const DJI_2AXES = [{ usagePage: 1, usage: 5, children: [], inputReports: [{ reportId: 0, items: [
     { isConstant: false, isArray: false, isRange: false, usages: [0x30, 0x31].map((u) => P1 | u), reportSize: 16, reportCount: 2, logicalMinimum: -660, logicalMaximum: 660 },
     { isConstant: true, reportSize: 16, reportCount: 3 }, djiButtons] }] }];
@@ -53,7 +68,10 @@ const RUNS = [
     { name: 'dji-windows', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: DJI_WIN, rateHz: 160, expect: { key: 'hid:2ca3:1021:HID Interface:13:d', name: 'DJI FPV Remote Controller 3', end: 'check', known: 'dji-virtual-joystick', controls: 11, wizard: false } },
     { name: 'edgetx', kind: 'edgetx', vendorId: 0x1209, productId: 0x4f54, productName: 'RadioMaster TX16S Joystick', collections: EDGETX, rateHz: 500, expect: { key: 'hid:1209:4f54:RadioMaster TX16S Joystick:19', name: 'RadioMaster TX16S Joystick', end: 'check', known: 'edgetx-joystick', controls: 0, wizard: true } },
     { name: 'dji-other', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: DJI_2AXES, rateHz: 160, expect: { end: 'wizard', known: null } },
-    { name: 'dji-none', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: [], rateHz: 160, expect: { end: 'connect', refused: true } }
+    { name: 'dji-none', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: [], rateHz: 160, expect: { end: 'connect', refused: true } },
+    { name: 'dji-pad-chooser', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: DJI, rateHz: 160, pad: { showMs: 300 }, chooserMs: 1500, expect: { key: 'hid:2ca3:1021:HID Interface:13:d', name: 'DJI FPV Remote Controller 3', end: 'check', known: 'dji-virtual-joystick', controls: 11, wizard: false, requested: 1 } },
+    { name: 'dji-pad-cancel', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: DJI, rateHz: 160, pad: { showMs: 300 }, chooserMs: 800, cancel: true, expect: { end: 'pad', key: PAD_KEY, known: 'dji-virtual-joystick', requested: 1, afterMs: 800 } },
+    { name: 'dji-pad-nopick', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: DJI, rateHz: 160, pad: { showMs: 300 }, click: false, expect: { end: 'pad', key: PAD_KEY, known: 'dji-virtual-joystick', requested: 0, withinMs: 1500 } }
 ];
 
 /** In the page, before the app: navigator.hid with one fake device whose hands follow the wizard. */
@@ -144,8 +162,25 @@ function installFakeHid(cfg) {
         addEventListener(type, l, o) { if (type === 'inputreport') probe.listeners++; super.addEventListener(type, l, o); }
     }
     const dev = new FakeHidDevice();
-    const hid = { requestDevice: async () => { probe.requested++; return [dev]; }, getDevices: async () => [], addEventListener() {}, removeEventListener() {} };
+    // the chooser: open cfg.chooserMs (the pilot looking for the device), then the device or none (cancelled)
+    const hid = {
+        requestDevice: async () => {
+            probe.requested++;
+            if (cfg.chooserMs) await new Promise((r) => setTimeout(r, cfg.chooserMs));
+            return cfg.cancel ? [] : [dev];
+        },
+        getDevices: async () => [], addEventListener() {}, removeEventListener() {}
+    };
     Object.defineProperty(Navigator.prototype, 'hid', { get: () => hid, configurable: true });
+    if (cfg.pad) {
+        // the same controller on the Gamepad API, at rest (throttle down, bits 4 and 6 held); a browser
+        // shows a pad only after an input: none until the probe calls window.__padShow()
+        let shown = false;
+        window.__padShow = () => { shown = true; };
+        const buttons = Array.from({ length: 24 }, (_, i) => ({ pressed: ((0x50 >> i) & 1) === 1, value: (0x50 >> i) & 1, touched: false }));
+        const pad = { id: cfg.padId, index: 0, connected: true, mapping: '', vibrationActuator: null, axes: [0, 0, -1, 0, 0], buttons, timestamp: 1 };
+        Object.defineProperty(Navigator.prototype, 'getGamepads', { value: () => [shown ? pad : null, null, null, null], configurable: true });
+    }
 }
 
 const pick = pickHarnessBrowser({ expected: chromium.executablePath() }, false);
@@ -157,20 +192,24 @@ const out = { what: 'HidSource on the local release with a fake navigator.hid (h
     await probe.close();
 }
 let allPass = true;
-for (const run of RUNS) {
+const runs = RUNS.filter((r) => !only || only.includes(r.name));
+for (const run of runs) {
     const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
     const page = await ctx.newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(String(e.message).slice(0, 160)));
-    await page.addInitScript(installFakeHid, { kind: run.kind, vendorId: run.vendorId, productId: run.productId, productName: run.productName, collections: run.collections, rateHz: run.rateHz });
+    await page.addInitScript(installFakeHid, { kind: run.kind, vendorId: run.vendorId, productId: run.productId, productName: run.productName, collections: run.collections, rateHz: run.rateHz, chooserMs: run.chooserMs ?? 0, cancel: !!run.cancel, pad: !!run.pad, padId: PAD_ID });
     await page.goto(`${base}/fly/?scene=39e63ce9&nowarn=1`, { waitUntil: 'load' }); // nowarn: past the first-visit warning
     await page.waitForFunction(() => window.__gsfpv?.status === 'ready' && document.querySelector('.screen.radio .choice button'), null, { timeout: 120000 });
     const t0 = Date.now();
     // the first choice of the Controls screen: "Radio or controller over USB"
-    await page.locator('.screen.radio .choice button').first().click();
+    if (run.click !== false) await page.locator('.screen.radio .choice button').first().click();
+    // a stick moved: the browser shows the pad (the WebHID chooser, if any, still open)
+    if (run.pad) { await page.waitForTimeout(run.pad.showMs); await page.evaluate(() => window.__padShow()); }
     const path = [];
     let last = '';
-    const limit = run.expect.end === 'connect' ? 30000 : run.expect.end === 'wizard' ? 12000 : 150000;
+    let checkAt = null; // ms from t0 to the first check screen
+    const limit = run.expect.end === 'connect' ? 30000 : run.expect.end === 'wizard' ? 12000 : run.expect.end === 'pad' ? 8000 : 150000;
     while (Date.now() - t0 < limit) {
         const s = await page.evaluate(() => { const w = window.__gsfpv?.radio?.wizard?.state; return w ? { id: w.id, stage: w.stage, step: w.step } : null; });
         const k = s ? `${s.id}/${s.stage}` : 'none';
@@ -179,8 +218,8 @@ for (const run of RUNS) {
             if (path.length <= 30) await page.screenshot({ path: `${outDir}/${run.name}-${String(path.length).padStart(2, '0')}-${k.replace('/', '-')}.png` });
             last = k;
         }
-        if (s?.id === 'check') break;
-        await page.waitForTimeout(200);
+        if (s?.id === 'check') { checkAt = Date.now() - t0; break; }
+        await page.waitForTimeout(run.pad ? 50 : 200);
     }
     const end = await page.evaluate(() => {
         const r = window.__gsfpv?.radio;
@@ -198,12 +237,17 @@ for (const run of RUNS) {
     const e = run.expect;
     // the wizard ran = a screen of it was passed before the check (a recognised controller opens on the check)
     const wizardRan = path.some((p) => !p.k.startsWith('check') && p.k !== 'none');
-    const pass = e.end === 'check'
+    end.checkAt = checkAt;
+    const pass = (e.requested === undefined || end.probe.requested === e.requested) && (e.end === 'check'
         ? end.id === 'check' && end.profile && end.key === e.key && end.profileKey === e.key && end.profileName === e.name && end.badReports === 0 && end.reports > 0 && errors.length === 0
             && end.known === e.known && end.controls === e.controls && wizardRan === e.wizard && end.knownNote === (e.known !== null)
-        : e.end === 'wizard'
-            ? end.id !== 'check' && end.id !== null && !end.knownNote && end.known === null && end.reports > 0 && errors.length === 0
-            : end.id === 'connect' && end.reports === 0 && end.badReports > 0 && end.lastBadLen === 13 && /13/.test(end.hint) && errors.length === 0;
+        : e.end === 'pad'
+            // the pad's check: its profile on the Gamepad API key, recognised, within / after the given time
+            ? end.id === 'check' && end.profileKey === e.key && end.known === e.known && end.knownNote && end.probe.opened === 0 && errors.length === 0
+                && (e.withinMs === undefined || checkAt <= e.withinMs) && (e.afterMs === undefined || checkAt >= e.afterMs)
+            : e.end === 'wizard'
+                ? end.id !== 'check' && end.id !== null && !end.knownNote && end.known === null && end.reports > 0 && errors.length === 0
+                : end.id === 'connect' && end.reports === 0 && end.badReports > 0 && end.lastBadLen === 13 && /13/.test(end.hint) && errors.length === 0);
     allPass &&= pass;
     out[run.name] = { pass, expect: e, seconds: Math.round((Date.now() - t0) / 1000), end, screens: path.length, path, errors };
     await ctx.close();
@@ -211,4 +255,4 @@ for (const run of RUNS) {
 await browser.close();
 out.pass = allPass;
 writeFileSync(`${outDir}/result.json`, JSON.stringify(out, null, 1));
-console.log(JSON.stringify({ pass: allPass, browser: out.browser?.version, ...Object.fromEntries(RUNS.map((r) => [r.name, { pass: out[r.name].pass, seconds: out[r.name].seconds, end: out[r.name].end.id, key: out[r.name].end.key, profileName: out[r.name].end.profileName, reports: out[r.name].end.reports, badReports: out[r.name].end.badReports, rateHz: out[r.name].end.rateHz, hint: out[r.name].end.hint.slice(0, 80), errors: out[r.name].errors.length }])) }, null, 1));
+console.log(JSON.stringify({ pass: allPass, browser: out.browser?.version, ...Object.fromEntries(runs.map((r) => [r.name, { pass: out[r.name].pass, seconds: out[r.name].seconds, end: out[r.name].end.id, key: out[r.name].end.key, profileKey: out[r.name].end.profileKey, checkAt: out[r.name].end.checkAt, profileName: out[r.name].end.profileName, reports: out[r.name].end.reports, badReports: out[r.name].end.badReports, rateHz: out[r.name].end.rateHz, hint: out[r.name].end.hint.slice(0, 80), errors: out[r.name].errors.length }])) }, null, 1));

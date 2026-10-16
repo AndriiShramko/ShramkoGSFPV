@@ -265,7 +265,7 @@ export class RadioScreen {
         }
         this.body.append(
             h('div', { class: 'choice' },
-                h('button', { type: 'button', class: cls('hid'), disabled: !hidOk, onclick: () => void this.connectHid(hidStatus) }, t('radio.hid')),
+                h('button', { type: 'button', class: cls('hid'), disabled: !hidOk, onclick: () => void this.connectHid(hidStatus, gpRate) }, t('radio.hid')),
                 h('p', { class: 'muted small' }, hidOk ? t('radio.hidHint') : t('preflight.noHid')),
                 hidStatus),
             h('div', { class: 'choice' },
@@ -280,23 +280,32 @@ export class RadioScreen {
             h('p', { class: 'muted small' }, t('radio.real'))
         );
         (this.body.querySelector<HTMLElement>('.btn.primary:not([disabled])') ?? this.body.querySelector<HTMLElement>('.btn:not([disabled])'))?.focus({ preventScroll: true });
-        // a recognised controller on the Gamepad API (the DJI: a stick moved makes the browser show it)
-        // opens its check screen by itself: plugged in, nothing to click (the owner's item 4)
-        if (!curDev) {
-            const gen = this.gen;
-            this.timer = window.setInterval(() => {
-                if (gen !== this.gen) return;
-                const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : [];
-                for (const p of pads) {
-                    if (!p || p.connected === false || !recognise(seenFromGamepad(p))?.device.mapping) continue;
-                    clearInterval(this.timer);
-                    // that pad, not another one connected beside it
-                    if (this.gp !== this.current?.gamepad && this.gp.index < 0) { this.gp.index = p.index; this.gp.id = p.id; }
-                    this.connectGamepad(gpRate);
-                    return;
-                }
-            }, 250);
-        }
+        this.watchPads(gpRate);
+    }
+
+    /**
+     * The device choice's pad watch: a recognised controller on the Gamepad API (the DJI: a stick moved
+     * makes the browser show it) opens its check screen by itself, plugged in, nothing to click (the
+     * owner's item 4). Only while no radio is in use. A pick of the pilot stops it (connectHid,
+     * connectGamepad: a pad shown while the WebHID chooser is open must not take over), a chooser
+     * closed with no device starts it again.
+     */
+    private watchPads(gpRate: HTMLElement): void {
+        clearInterval(this.timer);
+        if (this.curDev) return;
+        const gen = this.gen;
+        this.timer = window.setInterval(() => {
+            if (gen !== this.gen) return;
+            const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : [];
+            for (const p of pads) {
+                if (!p || p.connected === false || !recognise(seenFromGamepad(p))?.device.mapping) continue;
+                clearInterval(this.timer);
+                // that pad, not another one connected beside it
+                if (this.gp !== this.current?.gamepad && this.gp.index < 0) { this.gp.index = p.index; this.gp.id = p.id; }
+                this.connectGamepad(gpRate);
+                return;
+            }
+        }, 250);
     }
 
     /** "Recalibrate" on the radio that is already in use. */
@@ -361,14 +370,15 @@ export class RadioScreen {
         view.el.querySelector<HTMLElement>('select, button')?.focus({ preventScroll: true });
     }
 
-    private async connectHid(status: HTMLElement): Promise<void> {
-        clearInterval(this.timer); // the pilot chose: the device choice's pad watch stops (choose())
+    private async connectHid(status: HTMLElement, gpRate: HTMLElement): Promise<void> {
+        clearInterval(this.timer); // the pilot chose: the device choice's pad watch stops (watchPads())
         const gen = this.gen;
         const src = new HidSource();
         this.owned.add(src);
         try {
             const d = await src.request();
-            if (!d || gen !== this.gen) return;
+            if (gen !== this.gen) return;
+            if (!d) { this.watchPads(gpRate); return; } // the chooser closed with no device: back to the choice as it was
             await src.open(d);
             status.className = 'muted small radio-status';
             status.textContent = t('wizard.say.connect');
@@ -385,11 +395,12 @@ export class RadioScreen {
             if (gen !== this.gen) return;
             status.className = 'error small radio-status';
             status.textContent = String((e as Error).message ?? e);
+            this.watchPads(gpRate); // still on the choice: the same controller on the Gamepad API may work
         }
     }
 
     private connectGamepad(rate: HTMLElement): void {
-        clearInterval(this.timer); // the device choice's pad watch stops (choose())
+        clearInterval(this.timer); // the pilot chose: the device choice's pad watch stops (watchPads())
         const gp = this.gp;
         if (gp !== this.current?.gamepad) this.owned.add(gp);
         gp.start();
