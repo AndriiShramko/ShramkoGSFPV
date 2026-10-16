@@ -114,7 +114,7 @@ class Contract(Base):
 
     def test_the_vault_copy_of_the_sample_is_this_one(self):
         for root in VAULT_ROOTS:
-            f = root / "01 - Projects" / "ShramkoGSFPV — продвижение в FB-группах" / "fixtures" / "outreach-snapshot.sample.json"
+            f = root / "01 - Projects" / "ShramkoGSFPV \u2014 \u043f\u0440\u043e\u0434\u0432\u0438\u0436\u0435\u043d\u0438\u0435 \u0432 FB-\u0433\u0440\u0443\u043f\u043f\u0430\u0445" / "fixtures" / "outreach-snapshot.sample.json"
             if f.is_file():
                 self.assertEqual(f.read_bytes().replace(b"\r\n", b"\n"), SAMPLE.read_bytes().replace(b"\r\n", b"\n"), "the sample drifted: copy the newer one to the other side")
                 return
@@ -499,7 +499,7 @@ class Routes(Base):
     def test_csv_groups_and_posts(self):
         d = sample()
         d["groups"][0]["name"] = '=HYPERLINK("http://x")'
-        d["groups"][1]["name"] = "Zażółć, \"gęślą\" jaźń"
+        d["groups"][1]["name"] = "Za\u017c\u00f3\u0142\u0107, \"g\u0119\u015bl\u0105\" ja\u017a\u0144"
         d["posts"][0]["angle"] = "@cmd | +1"
         self.store.put(raw(d))
         st, body, hdrs = self.get("/api/admin/outreach/export.csv", "table=groups")
@@ -513,7 +513,7 @@ class Routes(Base):
         self.assertEqual(rows[0][:4], ["id", "name", "url", "lang"])
         self.assertEqual(len(rows), 3)
         self.assertEqual(rows[1][1], "'" + '=HYPERLINK("http://x")')  # a spreadsheet would run it: made text
-        self.assertEqual(rows[2][1], 'Zażółć, "gęślą" jaźń')          # quotes and Polish letters survive
+        self.assertEqual(rows[2][1], 'Za\u017c\u00f3\u0142\u0107, "g\u0119\u015bl\u0105" ja\u017a\u0144')          # quotes and Polish letters survive
         self.assertEqual(dict(zip(rows[0], rows[1]))["score"], "100.0")
         self.assertEqual(dict(zip(rows[0], rows[1]))["policy_links"], "comments_only")
         st, body, hdrs = self.get("/api/admin/outreach/export.csv", "table=posts")

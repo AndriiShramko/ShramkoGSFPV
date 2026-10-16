@@ -2,7 +2,7 @@
 
 The owner's request: see, in one place, how the simulator's posts in Facebook groups are doing and which groups and
 which kinds of post are worth more work. The brief and the data contract live in the owner's vault
-(`01 - Projects/ShramkoGSFPV - продвижение в FB-группах/FBG-SPEC-admin.md`, `02 - Areas/FB-группы/FBG-SPEC.md`).
+(the vault's notes `FBG-SPEC-admin.md` in the ShramkoGSFPV FB-groups project and `FBG-SPEC.md` in the FB-groups area).
 **Not deployed. Not pushed.** The lead decides.
 
 ## What it is
