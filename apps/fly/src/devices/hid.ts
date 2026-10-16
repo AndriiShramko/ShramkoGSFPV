@@ -75,7 +75,8 @@ export class HidSource {
     };
 
     get key(): string {
-        return this.device ? hidDeviceKey(this.device, this.reportLen) : '';
+        // a descriptor-read device: its axis report's length, whichever of its reports came first
+        return this.device ? hidDeviceKey(this.device, this.read.keyBytes ?? this.reportLen) : '';
     }
 
     close(): void {

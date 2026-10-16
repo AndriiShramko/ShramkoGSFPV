@@ -12,7 +12,9 @@
 // A device that splits its axes over several report ids (a 3D mouse: translation in report 1, rotation
 // in report 2; a twin-pad adapter: one report per pad) gets one fixed channel per axis over all its
 // reports, in report-id order, and a report updates only its own channels and buttons; the others
-// keep what their report last said. Chromium lists every item of a report in the top-level collection
+// keep what their report last said. Button n is frame bit n-1 unless an earlier report already owns
+// that bit (each pad of a twin adapter numbers its buttons from 1): then the report's buttons move up
+// past the earlier ones. A device that numbers its buttons through its reports keeps their numbers. Chromium lists every item of a report in the top-level collection
 // as well as in the nested one it sits in, so the first (outermost) listing of a report id is the
 // whole report and the nested repeats are skipped.
 //
@@ -104,7 +106,7 @@ export function layoutsFromCollections(cols: readonly HidCollectionInfo[] | unde
     for (const rep of reports) {
         let bit = 0;
         const axes: HidAxisField[] = [];
-        const buttons: { bit: number; index: number }[] = [];
+        const ids: { bit: number; id: number }[] = []; // Button page fields of this report
         for (const it of rep.items ?? []) {
             const size = it.reportSize ?? 0;
             const count = it.reportCount ?? 0;
@@ -126,9 +128,8 @@ export function layoutsFromCollections(cols: readonly HidCollectionInfo[] | unde
                         [page, id] = split(us[k < us.length ? k : us.length - 1], size === 1 ? BUTTON_PAGE : GENERIC_DESKTOP);
                     }
                     const at = bit + k * size;
-                    if (page === BUTTON_PAGE && size === 1 && id >= 1) {
-                        if (btnBase + id <= MAX_BUTTONS) buttons.push({ bit: at, index: btnBase + id - 1 });
-                    } else if (page === GENERIC_DESKTOP && id >= AXIS_FIRST && id <= AXIS_LAST && size >= 2 && size <= 32 && hi > lo) {
+                    if (page === BUTTON_PAGE && size === 1 && id >= 1) ids.push({ bit: at, id });
+                    else if (page === GENERIC_DESKTOP && id >= AXIS_FIRST && id <= AXIS_LAST && size >= 2 && size <= 32 && hi > lo) {
                         axes.push({ ch: nextCh < MAX_AXES ? nextCh : -1, bit: at, size, signed: lo < 0, lo, hi, usage: id });
                         nextCh++;
                     }
@@ -136,13 +137,24 @@ export function layoutsFromCollections(cols: readonly HidCollectionInfo[] | unde
             }
             bit += size * count;
         }
-        if (axes.length === 0 && buttons.length === 0) continue;
-        anyAxis ||= axes.length > 0;
+        // its own numbers, or moved up past the bits earlier reports own when its lowest button would land on them
+        let minId = Infinity;
+        for (const b of ids) if (b.id < minId) minId = b.id;
+        const shift = ids.length > 0 && btnBase > minId - 1 ? btnBase - (minId - 1) : 0;
+        const buttons: { bit: number; index: number }[] = [];
         let mask = 0;
         let top = 0;
-        for (const b of buttons) { mask |= 1 << b.index; if (b.index + 1 > top) top = b.index + 1; }
+        for (const b of ids) {
+            const index = b.id - 1 + shift;
+            if (index >= MAX_BUTTONS) continue;
+            buttons.push({ bit: b.bit, index });
+            mask |= 1 << index;
+            if (index + 1 > top) top = index + 1;
+        }
+        if (axes.length === 0 && buttons.length === 0) continue;
+        anyAxis ||= axes.length > 0;
         out.push({ reportId: rep.reportId, bytes: Math.ceil(bit / 8), axes, buttons, buttonMask: mask });
-        if (top > btnBase) btnBase = top; // the next report's Button 1 comes after this report's last button
+        if (top > btnBase) btnBase = top;
     }
     return anyAxis ? out : [];
 }
@@ -188,8 +200,13 @@ export function hidDisplayName(d: { vendorId: number; productId: number; product
     return `USB ${d.vendorId.toString(16).padStart(4, '0')}:${d.productId.toString(16).padStart(4, '0')}`;
 }
 
-/** Reads one input report (its id and data, as WebHID's inputreport event gives them) into a frame; false = unreadable. */
-export type HidReader = (reportId: number, data: DataView, out: RawFrame) => boolean;
+/**
+ * Reads one input report (its id and data, as WebHID's inputreport event gives them) into a frame;
+ * false = unreadable. `keyBytes`: the report length that goes into the device's profile key, fixed for
+ * a device read by its descriptor (the first report with axes), so the key does not depend on which of
+ * its reports arrives first; absent for the EdgeTX layout (the key keeps the length that arrived).
+ */
+export type HidReader = ((reportId: number, data: DataView, out: RawFrame) => boolean) & { keyBytes?: number };
 
 /**
  * The reader for a device: an EdgeTX radio, or a device whose descriptor shows no axis, keeps the fixed
@@ -198,5 +215,7 @@ export type HidReader = (reportId: number, data: DataView, out: RawFrame) => boo
 export function makeHidReader(d: { vendorId: number; productId: number; collections?: readonly HidCollectionInfo[] }): HidReader {
     const layouts = isEdgeTx(d) ? [] : layoutsFromCollections(d.collections);
     if (layouts.length === 0) return (_id, data, out) => parseEdgeTxReport(data, out);
-    return (id, data, out) => decodeHidReport(layouts, id, data, out);
+    const read: HidReader = (id, data, out) => decodeHidReport(layouts, id, data, out);
+    read.keyBytes = layouts.find((l) => l.axes.length > 0)?.bytes;
+    return read;
 }

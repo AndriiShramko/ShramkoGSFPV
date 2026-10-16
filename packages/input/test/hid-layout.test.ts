@@ -116,6 +116,34 @@ describe('decoding by the descriptor', () => {
         expect(f.buttons).toBe(0b0010_0000);
     });
 
+    it('buttons numbered through the reports keep their numbers (Button 13 of report 2 is bit 12)', () => {
+        const rep = (id: number, u1: number, u2: number, bMin: number, bMax: number) => ({ reportId: id, items: [
+            { isConstant: false, isRange: false, usages: [P1 | u1, P1 | u2], reportSize: 8, reportCount: 2, logicalMinimum: -127, logicalMaximum: 127 },
+            { isConstant: false, isRange: true, usageMinimum: P9 | bMin, usageMaximum: P9 | bMax, reportSize: 1, reportCount: bMax - bMin + 1, logicalMinimum: 0, logicalMaximum: 1 },
+            { isConstant: true, reportSize: 4, reportCount: 1 }
+        ] });
+        const lay = layoutsFromCollections([{ usagePage: 1, usage: 5, inputReports: [rep(1, 0x30, 0x31, 1, 12), rep(2, 0x32, 0x35, 13, 24)] }]);
+        expect(lay.map((l) => [l.reportId, l.axes.map((a) => a.ch), l.buttons[0].index, l.buttons[l.buttons.length - 1].index])).toEqual([[1, [0, 1], 0, 11], [2, [2, 3], 12, 23]]);
+        const f = newFrame();
+        expect(decodeHidReport(lay, 2, hex('00 00 01 00'), f)).toBe(true); // Button 13 pressed
+        expect(f.buttons).toBe(1 << 12);
+        // 1..8 then 9..16: Button 9 is bit 8, not shifted past report 1
+        const lay2 = layoutsFromCollections([{ usagePage: 1, usage: 5, inputReports: [rep(1, 0x30, 0x31, 1, 8), rep(2, 0x32, 0x35, 9, 16)] }]);
+        expect(lay2[1].buttons.map((b) => b.index)).toEqual([8, 9, 10, 11, 12, 13, 14, 15]);
+    });
+
+    it('the profile key length of a descriptor-read device is its axis report, whichever report comes first', () => {
+        // a 3D-mouse shape: report 1 X Y Z (6 bytes), report 2 Rx Ry Rz (6 bytes), report 3 two buttons (2 bytes)
+        const axes3 = (id: number, u: number[]) => ({ reportId: id, items: [{ isConstant: false, isRange: false, usages: u.map((x) => P1 | x), reportSize: 16, reportCount: 3, logicalMinimum: -350, logicalMaximum: 350 }] });
+        const cols: HidCollectionInfo[] = [{ usagePage: 1, usage: 8, inputReports: [axes3(1, [0x30, 0x31, 0x32]), axes3(2, [0x33, 0x34, 0x35]), { reportId: 3, items: [
+            { isConstant: false, isRange: true, usageMinimum: P9 | 1, usageMaximum: P9 | 2, reportSize: 1, reportCount: 2, logicalMinimum: 0, logicalMaximum: 1 },
+            { isConstant: true, reportSize: 14, reportCount: 1 }
+        ] }] }];
+        expect(makeHidReader({ vendorId: 0x046d, productId: 0xc626, collections: cols }).keyBytes).toBe(6);
+        expect(djiReader.keyBytes).toBe(13);
+        expect(makeHidReader({ vendorId: 0x1209, productId: 0x4f54, collections: cols }).keyBytes).toBeUndefined(); // EdgeTX: the length that arrives
+    });
+
     it('a report repeated in a nested collection (as Chromium lists it) is read once, from the outermost listing', () => {
         const whole = { reportId: 0, items: [
             { isConstant: false, isRange: true, usageMinimum: P9 | 1, usageMaximum: P9 | 8, reportSize: 1, reportCount: 8, logicalMinimum: 0, logicalMaximum: 1 },
