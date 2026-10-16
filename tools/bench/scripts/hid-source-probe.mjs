@@ -19,12 +19,12 @@
 //                refused, the wizard stays at connect and says so
 // The device choice's pad watch (ui/radio.ts watchPads: a recognised pad on the Gamepad API opens by
 // itself) with the same DJI also on the Gamepad API, shown 300 ms after the click (a stick moved):
-//   dji-pad-chooser  WebHID picked, the chooser open 1.5 s: the pick stands, the WebHID device opens
+//   dji-pad-chooser  WebHID picked, the chooser open 3 s: the pick stands, the WebHID device opens
 //                    (not the pad that showed meanwhile)
 //   dji-pad-cancel   the chooser closed with no device after 0.8 s: the watch runs again, the pad
 //                    opens its check after the chooser closed
 //   dji-pad-nopick   control of dji-pad-chooser: nothing clicked, the same pad opens its check well
-//                    inside the 1.5 s the chooser was open there, so a watch left running would have
+//                    inside the 3 s the chooser was open there, so a watch left running would have
 //                    taken over
 // Usage: node hid-source-probe.mjs <base with the locale, e.g. http://localhost:5390/en> <outDir> [run,run...]
 import { fileURLToPath } from 'node:url';
@@ -58,6 +58,7 @@ const EDGETX = [{ usagePage: 1, usage: 5, inputReports: [{ reportId: 0, items: e
 // standard mapping): its profile key (apps/fly/src/devices/gamepad.ts gamepadKey)
 const PAD_ID = 'HID Interface (Vendor: 2ca3 Product: 1021)';
 const PAD_KEY = `gp:${PAD_ID}:5:24:`;
+const CHOOSER_MS = 3000; // the pilot looking for the device in the WebHID chooser (dji-pad-chooser)
 
 const DJI_2AXES = [{ usagePage: 1, usage: 5, children: [], inputReports: [{ reportId: 0, items: [
     { isConstant: false, isArray: false, isRange: false, usages: [0x30, 0x31].map((u) => P1 | u), reportSize: 16, reportCount: 2, logicalMinimum: -660, logicalMaximum: 660 },
@@ -69,9 +70,9 @@ const RUNS = [
     { name: 'edgetx', kind: 'edgetx', vendorId: 0x1209, productId: 0x4f54, productName: 'RadioMaster TX16S Joystick', collections: EDGETX, rateHz: 500, expect: { key: 'hid:1209:4f54:RadioMaster TX16S Joystick:19', name: 'RadioMaster TX16S Joystick', end: 'check', known: 'edgetx-joystick', controls: 0, wizard: true } },
     { name: 'dji-other', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: DJI_2AXES, rateHz: 160, expect: { end: 'wizard', known: null } },
     { name: 'dji-none', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: [], rateHz: 160, expect: { end: 'connect', refused: true } },
-    { name: 'dji-pad-chooser', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: DJI, rateHz: 160, pad: { showMs: 300 }, chooserMs: 1500, expect: { key: 'hid:2ca3:1021:HID Interface:13:d', name: 'DJI FPV Remote Controller 3', end: 'check', known: 'dji-virtual-joystick', controls: 11, wizard: false, requested: 1 } },
+    { name: 'dji-pad-chooser', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: DJI, rateHz: 160, pad: { showMs: 300 }, chooserMs: CHOOSER_MS, expect: { key: 'hid:2ca3:1021:HID Interface:13:d', name: 'DJI FPV Remote Controller 3', end: 'check', known: 'dji-virtual-joystick', controls: 11, wizard: false, requested: 1 } },
     { name: 'dji-pad-cancel', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: DJI, rateHz: 160, pad: { showMs: 300 }, chooserMs: 800, cancel: true, expect: { end: 'pad', key: PAD_KEY, known: 'dji-virtual-joystick', requested: 1, afterMs: 800 } },
-    { name: 'dji-pad-nopick', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: DJI, rateHz: 160, pad: { showMs: 300 }, click: false, expect: { end: 'pad', key: PAD_KEY, known: 'dji-virtual-joystick', requested: 0, withinMs: 1500 } }
+    { name: 'dji-pad-nopick', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: DJI, rateHz: 160, pad: { showMs: 300 }, click: false, expect: { end: 'pad', key: PAD_KEY, known: 'dji-virtual-joystick', requested: 0, withinMs: CHOOSER_MS } }
 ];
 
 /** In the page, before the app: navigator.hid with one fake device whose hands follow the wizard. */
@@ -215,7 +216,8 @@ for (const run of runs) {
         const k = s ? `${s.id}/${s.stage}` : 'none';
         if (k !== last) {
             path.push({ t: Date.now() - t0, k });
-            if (path.length <= 30) await page.screenshot({ path: `${outDir}/${run.name}-${String(path.length).padStart(2, '0')}-${k.replace('/', '-')}.png` });
+            // no shots while a pad run is timed (a shot takes hundreds of ms)
+            if (path.length <= 30 && !run.pad) await page.screenshot({ path: `${outDir}/${run.name}-${String(path.length).padStart(2, '0')}-${k.replace('/', '-')}.png` });
             last = k;
         }
         if (s?.id === 'check') { checkAt = Date.now() - t0; break; }

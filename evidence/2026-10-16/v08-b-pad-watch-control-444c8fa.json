@@ -1,0 +1,151 @@
+{
+ "what": "HidSource on the local release with a fake navigator.hid (hid-source-probe.mjs)",
+ "base": "http://localhost:5394/en",
+ "browser": {
+  "kind": "system-chrome",
+  "version": "155.0.8059.40",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+  "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "softwareGl": false,
+  "counts": true
+ },
+ "dji-pad-chooser": {
+  "pass": true,
+  "expect": {
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "name": "DJI FPV Remote Controller 3",
+   "end": "check",
+   "known": "dji-virtual-joystick",
+   "controls": 11,
+   "wizard": false,
+   "requested": 1
+  },
+  "seconds": 4,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "profileKey": "hid:2ca3:1021:HID Interface:13:d",
+   "profileName": "DJI FPV Remote Controller 3",
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "reports": 2,
+   "badReports": 0,
+   "lastBadLen": 0,
+   "rateHz": 0,
+   "deviceName": "HID Interface",
+   "hint": "",
+   "probe": {
+    "requested": 1,
+    "opened": 1,
+    "sent": 2,
+    "listeners": 1
+   },
+   "known": "dji-virtual-joystick",
+   "knownNote": true,
+   "controls": 11,
+   "checkAt": 3246
+  },
+  "screens": 2,
+  "path": [
+   {
+    "t": 499,
+    "k": "none"
+   },
+   {
+    "t": 3246,
+    "k": "check/null"
+   }
+  ],
+  "errors": []
+ },
+ "dji-pad-cancel": {
+  "pass": false,
+  "expect": {
+   "end": "pad",
+   "key": "gp:HID Interface (Vendor: 2ca3 Product: 1021):5:24:",
+   "known": "dji-virtual-joystick",
+   "requested": 1,
+   "afterMs": 800
+  },
+  "seconds": 8,
+  "end": {
+   "id": null,
+   "profile": false,
+   "profileKey": null,
+   "profileName": null,
+   "key": "",
+   "reports": 0,
+   "badReports": 0,
+   "lastBadLen": 0,
+   "rateHz": 0,
+   "deviceName": null,
+   "hint": "",
+   "probe": {
+    "requested": 1,
+    "opened": 0,
+    "sent": 0,
+    "listeners": 0
+   },
+   "known": null,
+   "knownNote": false,
+   "controls": 0,
+   "checkAt": null
+  },
+  "screens": 1,
+  "path": [
+   {
+    "t": 482,
+    "k": "none"
+   }
+  ],
+  "errors": []
+ },
+ "dji-pad-nopick": {
+  "pass": true,
+  "expect": {
+   "end": "pad",
+   "key": "gp:HID Interface (Vendor: 2ca3 Product: 1021):5:24:",
+   "known": "dji-virtual-joystick",
+   "requested": 0,
+   "withinMs": 3000
+  },
+  "seconds": 1,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "profileKey": "gp:HID Interface (Vendor: 2ca3 Product: 1021):5:24:",
+   "profileName": "DJI FPV Remote Controller 3",
+   "key": "",
+   "reports": 0,
+   "badReports": 0,
+   "lastBadLen": 0,
+   "rateHz": 0,
+   "deviceName": null,
+   "hint": "",
+   "probe": {
+    "requested": 0,
+    "opened": 0,
+    "sent": 0,
+    "listeners": 0
+   },
+   "known": "dji-virtual-joystick",
+   "knownNote": true,
+   "controls": 11,
+   "checkAt": 549
+  },
+  "screens": 2,
+  "path": [
+   {
+    "t": 317,
+    "k": "none"
+   },
+   {
+    "t": 549,
+    "k": "check/null"
+   }
+  ],
+  "errors": []
+ },
+ "pass": false
+}
