@@ -170,3 +170,5 @@ the whoops is in `blackbox-fit.md`; the same tools apply.
 - Best 5-inch parts (KV guidance, packs): https://oscarliang.com/best-5-inch-fpv-drone-parts/
 - XING2 2207 prop tables: https://thingbits.in/products/iflight-xing2-2207-unibell-fpv-brushless-motor
 - Rotor drag: Faessler, Franchi, Scaramuzza, RA-L 2018, https://arxiv.org/abs/1712.02402
+
+The guide for the next drone, and for fitting one to a pilot's report: [`../adding-a-drone.md`](../adding-a-drone.md).
