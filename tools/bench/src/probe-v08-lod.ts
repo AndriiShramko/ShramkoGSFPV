@@ -40,8 +40,11 @@ const STATE = `(() => {
     const oct = comp && comp.resource && comp.resource.octree;
     const perLevel = {}; let nodes = 0; let unloaded = 0;
     const dir = a.renderer.gsplatDirector;
+    const dbg = { director: !!dir, cameras: dir ? dir.camerasMap.size : -1, layers: 0, managers: 0, managerKeys: '' };
     if (dir) dir.camerasMap.forEach((cd) => cd.layersMap.forEach((ld) => {
-        const m = ld.gsplatManager; if (!m || !m._octreeInstances) return;
+        dbg.layers++;
+        const m = ld.gsplatManager; if (m) { dbg.managers++; dbg.managerKeys = Object.keys(m).filter((k) => /octree|instance/i.test(k)).join(','); }
+        if (!m || !m._octreeInstances) return;
         m._octreeInstances.forEach((inst) => {
             inst.nodeInfos.forEach((ni, i) => {
                 nodes++;
@@ -63,7 +66,7 @@ const STATE = `(() => {
         governorStep: gov ? gov.step : null, governorTopM: gov ? gov.topBudgetMillions : null, governorChanges: gov ? gov.changes : null,
         renderScale: r.renderScale, backbuffer: [a.graphicsDevice.width, a.graphicsDevice.height],
         drawn: a.stats.frame.gsplats, loading: r.splatFrame.loading, ready: r.splatFrame.ready,
-        splatsPerLevel: perLevel, nodes, nodesUnloaded: unloaded,
+        splatsPerLevel: perLevel, nodes, nodesUnloaded: unloaded, engineDebug: dbg,
         jsHeapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null,
         vramMB: Math.round(vramBytes / 1048576),
         timings: s.timings, drawing: h.drawing || null, visibility: document.visibilityState, webgpu: r.isWebGPU
@@ -98,6 +101,17 @@ async function main(): Promise<void> {
             if (u.endsWith('/meta.json')) bytes.filesPerLevel[m[1]] = (bytes.filesPerLevel[m[1]] ?? 0) + 1;
         } else if (/(lod-meta|meta)\.json$|\.ply$/.test(u)) bytes.content.push(u.slice(u.indexOf(`/${SCENE}/`)));
     });
+    // per frame from the start: interval, files the streamer still loads, frames held, the governor's step
+    await ctx.addInitScript(`window.__lodTrace = []; (function hookTrace() {
+        const h = window.__gsfpv; const s = h && h.session; const r = s && s.renderer;
+        if (!r) { setTimeout(hookTrace, 50); return; }
+        let last = 0;
+        r.app.on('frameend', () => {
+            const t = performance.now(); const g = h.governor;
+            if (window.__lodTrace.length < 20000) window.__lodTrace.push([Math.round(t), last ? Math.round((t - last) * 10) / 10 : 0, r.splatFrame.loading, r.framesHeld, g ? g.step : -1]);
+            last = t;
+        });
+    })();`);
     const t0 = Date.now();
     await page.goto(`${SITE}/en/fly/?scene=${SCENE}&nowarn=1&input=touch${QS}`);
     const ready = await waitReady(page, 240000);
@@ -117,6 +131,7 @@ async function main(): Promise<void> {
     }
     const fps = await page.evaluate(FPS(5000));
     const end: Any = await page.evaluate(STATE);
+    const trace: number[][] = await page.evaluate('window.__lodTrace || []');
     const dir = join(REPO, 'evidence', today());
     mkdirSync(dir, { recursive: true });
     const shot = join(dir, `v08-lod-probe-${LABEL}.png`);
@@ -134,7 +149,7 @@ async function main(): Promise<void> {
         jsHeapMB: end.jsHeapMB, vramMB: end.vramMB, fps, webgpu: end.webgpu, visibility: end.visibility, drawing: end.drawing
     };
     console.log(JSON.stringify(summary, null, 1));
-    writeEvidence(`v08-lod-probe-${LABEL}`, { summary, atReveal, samples, end, screenshot: shot.slice(REPO.length + 1).split('\\').join('/'), pageerrors: log.filter((l) => l.startsWith('pageerror')), console: log.slice(-40) });
+    writeEvidence(`v08-lod-probe-${LABEL}`, { summary, atReveal, samples, end, traceColumns: ['t', 'dtMs', 'loading', 'framesHeld', 'governorStep'], trace, screenshot: shot.slice(REPO.length + 1).split('\\').join('/'), pageerrors: log.filter((l) => l.startsWith('pageerror')), console: log.slice(-40) });
     await browser.close();
 }
 
