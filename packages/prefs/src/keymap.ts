@@ -6,7 +6,7 @@
 export type ActionId =
     | 'pause.toggle' | 'respawn.start' | 'respawn.rewind' | 'crash.keep' | 'scene.next' | 'scene.random' | 'scene.favourite'
     | 'mode.cycle' | 'voxels.cycle' | 'hud.toggle' | 'scale.down' | 'scale.up' | 'record.toggle' | 'frameStats.toggle'
-    | 'settings.open' | 'walls.toggle' | 'arm.toggle' | 'feedback.open' | 'share.open' | (string & {}); // v0.2 pause items keep the keys v0.2 shipped
+    | 'settings.open' | 'walls.toggle' | 'arm.toggle' | 'feedback.open' | 'share.open' | 'help.keys' | (string & {}); // v0.2 pause items keep the keys v0.2 shipped
 
 /** A key as a menu shows it (`cap`) and as ARIA names it (`aria`, for aria-keyshortcuts). v0.2's shape. */
 export interface KeyHint { cap: string; aria: string }
@@ -80,7 +80,10 @@ export const KEYMAP: readonly KeyBinding[] = [
     { action: 'feedback.open', keys: [letter('B')], when: 'always', labelKey: 'keys.feedback.open', status: 'shipped' },
     // v0.7 lane D1 (app/builtin/share.ts): share the scene flown now, also on the top bar, in the pause
     // menu, the crash panel and the stats card; L as in "link" (no other binding or flying key uses it)
-    { action: 'share.open', keys: [letter('L')], when: 'always', labelKey: 'keys.share.open', status: 'shipped' }
+    { action: 'share.open', keys: [letter('L')], when: 'always', labelKey: 'keys.share.open', status: 'shipped' },
+    // v0.8 lane A (app/builtin/play.ts): the keyboard's key card on demand (it shows by itself while the
+    // drone waits on the ground); K as in "keys"
+    { action: 'help.keys', keys: [letter('K')], when: 'always', labelKey: 'keys.help.keys', status: 'shipped' }
 ];
 
 /**
@@ -90,10 +93,11 @@ export const KEYMAP: readonly KeyBinding[] = [
 export const V02_PAUSE_ITEMS: Readonly<Record<'resume' | 'restart', ActionId>> = { resume: 'pause.toggle', restart: 'respawn.start' };
 
 /**
- * Keyboard flying (devices/keyboard.ts FLY_KEYS, plus Space = arm): no menu action may take one;
- * only a binding marked `flying` (read by devices/keyboard.ts itself, never routed) lists one.
+ * Keyboard flying (devices/keyboard.ts with the layouts of apps/fly/src/play/keys.ts, plus Space =
+ * arm): no menu action may take one; only a binding marked `flying` (read by devices/keyboard.ts
+ * itself, never routed) lists one. Q and E turn in the game layout of easy play (v0.8).
  */
-export const FLYING_CODES: readonly string[] = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
+export const FLYING_CODES: readonly string[] = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
 
 /**
  * Keys keyboard pilots know from keyboard flying, each with the one action allowed on it (the same

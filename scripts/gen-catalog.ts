@@ -150,15 +150,20 @@ function derivedDict(lang: Lang, presets: readonly CataloguePreset[]): Record<st
 const NOT_IN_ENGLISH = /[\u0400-\u04ff\u0104-\u0107\u0118\u0119\u0141-\u0144\u015a\u015b\u0179-\u017c]/;
 
 /**
- * Keyboard flying (apps/fly devices/keyboard.ts): not menu actions, so not in KEYMAP, but keys a
- * pilot uses. The texts are the simulator's own key card (arm.keys.*). Every flying code of the
- * keymap module must be listed here, or the generator stops: the site must not miss a key.
+ * Keyboard flying (apps/fly devices/keyboard.ts, layouts in apps/fly/src/play/keys.ts): not menu
+ * actions, so not in KEYMAP, but keys a pilot uses. Listed as the default layout flies them (easy
+ * play's game layout, v0.8); the pilot layout (Mode 2 on the keys) is described by the input.play
+ * setting's help. The texts are the simulator's own key card (play.keys.*, arm.keys.mode). Every
+ * flying code of the keymap module must be listed here, or the generator stops: the site must not
+ * miss a key. Shift (faster) is no flying code (it runs nothing alone), so it lists no code.
  */
 const FLYING: readonly { codes: readonly string[]; caps: readonly string[]; label: string }[] = [
-    { codes: ['Space'], caps: ['Space'], label: 'arm.keys.arm' },
-    { codes: ['KeyW', 'KeyS'], caps: ['W', 'S'], label: 'arm.keys.throttle' },
-    { codes: ['KeyA', 'KeyD'], caps: ['A', 'D'], label: 'arm.keys.yaw' },
-    { codes: ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'], caps: ['↑', '↓', '←', '→'], label: 'arm.keys.sticks' },
+    { codes: ['KeyW', 'KeyS'], caps: ['W', 'S'], label: 'play.keys.forward' },
+    { codes: ['KeyA', 'KeyD'], caps: ['A', 'D'], label: 'play.keys.side' },
+    { codes: ['ArrowLeft', 'ArrowRight', 'KeyQ', 'KeyE'], caps: ['←', '→', 'Q', 'E'], label: 'play.keys.turn' },
+    { codes: ['ArrowUp', 'ArrowDown'], caps: ['↑', '↓'], label: 'play.keys.updown' },
+    { codes: [], caps: ['Shift'], label: 'play.keys.boost' },
+    { codes: ['Space'], caps: ['Space'], label: 'play.keys.motors' },
     { codes: ['KeyM'], caps: ['M'], label: 'arm.keys.mode' }
 ];
 

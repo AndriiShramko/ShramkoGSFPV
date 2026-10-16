@@ -16,6 +16,7 @@ import { VOXELS_DEFS } from './voxels';
 import { RECORDING_DEFS } from './recording';
 import { CROSSHAIR_DEFS } from './crosshair';
 import { SOUND_DEFS } from './sound';
+import { PLAY_DEFS } from './play';
 
 export const SCHEMA = defineSettings([
     ...FLIGHT_DEFS,
@@ -32,7 +33,8 @@ export const SCHEMA = defineSettings([
     ...VOXELS_DEFS,
     ...RECORDING_DEFS,
     ...CROSSHAIR_DEFS,
-    ...SOUND_DEFS
+    ...SOUND_DEFS,
+    ...PLAY_DEFS
 ]);
 
 export { DRONE_IDS } from './drone';
