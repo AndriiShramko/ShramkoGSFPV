@@ -728,6 +728,45 @@
     "pl": "Pomóż dostroić drona: wyślij Andriiemu swój diff all z Betaflight, link do logu blackbox i to, co czujesz inaczej, albo poproś o brakującego drona",
     "ru": "Помогите настроить дрон: пришлите Андрею свой diff all из Betaflight, ссылку на лог blackbox и что ощущается иначе, или попросите добавить дрон"
    }
+  },
+  {
+   "id": "F-easy-play-on-a-phone-tablet-or-keyboard",
+   "kind": "feature",
+   "status": "done",
+   "group": "controls",
+   "order": 57,
+   "title": {
+    "en": "Easy play on a phone, tablet or keyboard: no arming, game keys with altitude help, and a pilot school from angle to acro",
+    "es": "Juego fácil en móvil, tableta o teclado: sin armar, teclas de juego con ayuda de altura y una escuela de piloto de angle a acro",
+    "pl": "Łatwa gra na telefonie, tablecie lub klawiaturze: bez uzbrajania, klawisze jak w grze z pomocą wysokości i szkoła pilota od angle do acro",
+    "ru": "Простая игра на телефоне, планшете или клавиатуре: без арма, игровые клавиши с удержанием высоты и школа пилота от angle до acro"
+   }
+  },
+  {
+   "id": "F-controllers-recognised-dji-flies-with-no-setup",
+   "kind": "feature",
+   "status": "done",
+   "group": "radio",
+   "order": 58,
+   "title": {
+    "en": "Controllers recognised by themselves: a DJI FPV Remote Controller flies with no setup, and a 3-position switch sent as two buttons works as one switch",
+    "es": "Mandos reconocidos solos: un DJI FPV Remote Controller vuela sin configurar, y un interruptor de 3 posiciones enviado como dos botones funciona como uno",
+    "pl": "Kontrolery rozpoznawane same: DJI FPV Remote Controller lata bez ustawiania, a przełącznik 3-pozycyjny wysyłany jako dwa przyciski działa jak jeden",
+    "ru": "Пульты распознаются сами: DJI FPV Remote Controller летает без настройки, а 3-позиционный переключатель, который пульт шлёт двумя кнопками, работает как один"
+   }
+  },
+  {
+   "id": "F-big-streamed-scans-stay-sharp",
+   "kind": "feature",
+   "status": "done",
+   "group": "scenes",
+   "order": 59,
+   "title": {
+    "en": "Big streamed scans stay sharp: levels of detail at full quality on a computer, a lighter budget on phones, and a broken detail file falls back to the plain scan",
+    "es": "Los escaneos grandes en streaming se ven nítidos: niveles de detalle a calidad completa en el ordenador, menos carga en móviles y, si falla el archivo de detalle, se abre el escaneo normal",
+    "pl": "Duże skany strumieniowe zostają ostre: poziomy szczegółów w pełnej jakości na komputerze, lżej na telefonach, a uszkodzony plik szczegółów otwiera zwykły skan",
+    "ru": "Большие потоковые сканы остаются чёткими: уровни детализации в полном качестве на компьютере, облегчённо на телефонах, а при битом файле детализации открывается обычный скан"
+   }
   }
  ]
 }
