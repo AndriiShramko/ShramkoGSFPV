@@ -134,8 +134,9 @@ dl.measure { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; } dl
 /* v0.8: the quick mute (app/builtin/sound.ts); dimmed while the motor sound is off */
 .top-actions .btn.speaker { padding: 6px 10px; display: inline-flex; align-items: center; }
 .top-actions .btn.speaker.muted { color: #9ca3af; }
-/* a phone (the row of buttons fills the width): the speaker leaves the row for the right edge under it, like the REC dot */
-@media (max-width: 640px) { .top-actions .btn.speaker { position: fixed; right: 16px; top: calc(var(--top-row-bottom, 78px) + 8px); width: 40px; height: 40px; min-height: 40px; padding: 0; justify-content: center; border-radius: 50%; } }
+/* a phone, upright or on its side (the row of buttons fills the width, or the credit shares its height):
+   the speaker leaves the row for the right edge under it, like the REC dot */
+@media (max-width: 640px), (max-height: 500px) { .top-actions .btn.speaker { position: fixed; right: 16px; top: calc(var(--top-row-bottom, 78px) + 8px); width: 40px; height: 40px; min-height: 40px; padding: 0; justify-content: center; border-radius: 50%; } }
 /* loading: every row has a fixed height (numbers change, nothing moves); the bar and the sweep are
    transforms, which keep animating while the main thread decodes the scan. Above the screens, so
    its fade shows what comes next underneath. */

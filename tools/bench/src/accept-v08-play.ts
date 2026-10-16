@@ -218,7 +218,13 @@ for (const size of SIZES) {
         if (moveChip) { const row = document.querySelector('.top-actions').getBoundingClientRect(); chip.style.top = (row.top + 2) + 'px'; chip.style.left = (row.left + 2) + 'px'; }
         const items = [...document.querySelectorAll('.top-actions > .btn, [data-testid="school-chip"], .mode-chip, .attribution, .osd.tl, .osd.tr')]
             .filter((el) => el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden')
-            .map((el) => ({ n: (el.getAttribute('data-action') || el.getAttribute('data-testid') || el.className).toString().slice(0, 24), r: el.getBoundingClientRect() }))
+            // the credit is a wide block with a short text: its text lines count, not its box
+            .flatMap((el) => {
+                const n = (el.getAttribute('data-action') || el.getAttribute('data-testid') || el.className).toString().slice(0, 24);
+                if (n !== 'attribution') return [{ n, r: el.getBoundingClientRect() }];
+                const rg = document.createRange(); rg.selectNodeContents(el);
+                return [...rg.getClientRects()].map((r) => ({ n, r }));
+            })
             .filter((x) => x.r.width > 0 && x.r.height > 0);
         const hits = [];
         for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {
