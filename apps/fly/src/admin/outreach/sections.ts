@@ -99,8 +99,8 @@ export class SlicesCard {
         const rows = this.view.slices[this.mode] ?? [];
         if (!rows.length) { this.wrap.append(h('p', { class: 'muted pad' }, t('admin.outreach.slices.none'))); return; }
         const dims = SLICE_DIMS[this.mode];
-        const head = h('tr', {}, ...dims.map((d) => h('th', { scope: 'col', class: 'first-dim' }, t(`admin.outreach.col.${d}`))),
-            ...['n', 'measured', 'published', 'removed', 'reactions', 'comments', 'eng'].map((k) => h('th', { scope: 'col', class: 'n' }, t(`admin.outreach.slices.col.${k}`))));
+        const head = h('tr', {}, ...dims.map((d) => h('th', { scope: 'col', class: 'first' }, h('span', { class: 'th-text' }, t(`admin.outreach.col.${d}`)))),
+            ...['n', 'measured', 'published', 'removed', 'reactions', 'comments', 'eng'].map((k) => h('th', { scope: 'col', class: 'n' }, h('span', { class: 'th-text' }, t(`admin.outreach.slices.col.${k}`)))));
         const body = rows.map((r) => h('tr', { 'data-slice-row': sliceName(r, this.mode).join('|') },
             ...sliceName(r, this.mode).map((s, i) => h('td', { class: i === 0 ? 'first' : '' }, dims[i] === 'kind' ? word('k', s) : s)),
             h('td', { class: 'n' }, int(r.n)), h('td', { class: 'n' }, int(r.measured)), h('td', { class: 'n' }, int(r.published)), h('td', { class: 'n' }, int(r.removed)),

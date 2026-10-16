@@ -94,15 +94,15 @@ export class GroupsSection {
         const rules = (g: GroupRow): string => Object.entries(g.policy).filter(([, v]) => v).map(([k, v]) => `${t(`admin.outreach.rule.${k}`)}: ${word('rv', v)}`).join(' · ');
         const cols: Col<GroupRow>[] = [
             { key: 'name', label: t('admin.outreach.col.name'), sortable: true, cls: 'first', cell: (g) => h('span', { class: 'gname', title: g.id }, link(g.url, g.name)) },
+            { key: 'score', label: t('admin.outreach.col.score'), sortable: true, cls: 'n', cell: (g) => this.scoreCell(g) },
+            { key: 'state', label: t('admin.outreach.col.state'), sortable: true, cell: (g) => stateBadge(g.state) },
+            { key: 'posts', label: t('admin.outreach.col.posts'), sortable: true, cls: 'n', cell: (g) => h('span', { title: t('admin.outreach.posts.tip', { posts: g.posts, published: g.published, removed: g.removed }) }, String(g.posts), g.posts ? h('span', { class: 'muted' }, ` ${g.published}↑ ${g.removed}✕`) : null) },
+            { key: 'verdict', label: t('admin.outreach.col.verdict'), sortable: true, cell: (g) => word('v', g.verdict) },
+            { key: 'wave', label: t('admin.outreach.col.wave'), sortable: true, cls: 'n', cell: (g) => (g.wave === null ? '—' : String(g.wave)) },
             { key: 'lang', label: t('admin.outreach.col.lang'), sortable: true, cell: (g) => g.lang ?? '—' },
             { key: 'topic', label: t('admin.outreach.col.topic'), sortable: true, cell: (g) => g.topic ?? '—' },
             { key: 'members', label: t('admin.outreach.col.members'), sortable: true, cls: 'n', cell: (g) => int(g.members) },
             { key: 'fit', label: t('admin.outreach.col.fit'), sortable: true, cls: 'n', cell: (g) => (g.fit === null ? '—' : String(g.fit)) },
-            { key: 'verdict', label: t('admin.outreach.col.verdict'), sortable: true, cell: (g) => word('v', g.verdict) },
-            { key: 'wave', label: t('admin.outreach.col.wave'), sortable: true, cls: 'n', cell: (g) => (g.wave === null ? '—' : String(g.wave)) },
-            { key: 'state', label: t('admin.outreach.col.state'), sortable: true, cell: (g) => stateBadge(g.state) },
-            { key: 'posts', label: t('admin.outreach.col.posts'), sortable: true, cls: 'n', cell: (g) => h('span', { title: t('admin.outreach.posts.tip', { posts: g.posts, published: g.published, removed: g.removed }) }, String(g.posts), g.posts ? h('span', { class: 'muted' }, ` ${g.published}↑ ${g.removed}✕`) : null) },
-            { key: 'score', label: t('admin.outreach.col.score'), sortable: true, cls: 'n', cell: (g) => this.scoreCell(g) },
             { key: 'best_reactions', label: t('admin.outreach.col.best_reactions'), sortable: true, cls: 'n', cell: (g) => int(g.best_reactions) },
             { key: 'best_comments', label: t('admin.outreach.col.best_comments'), sortable: true, cls: 'n', cell: (g) => int(g.best_comments) },
             { key: 'last_post_at', label: t('admin.outreach.col.last_post_at'), sortable: true, cell: (g) => date(g.last_post_at) },
@@ -176,7 +176,7 @@ export class PostsSection {
             { key: 'state', label: t('admin.outreach.col.state'), sortable: true, cell: (p) => stateBadge(p.state) },
             { key: 'checks', label: t('admin.outreach.col.checks'), sortable: false, cls: 'strip', cell: (p) => this.strip(p) },
             { key: 'eng', label: t('admin.outreach.col.eng'), sortable: true, cls: 'n', cell: (p) => (p.eng === null ? '—' : num(p.eng)) },
-            { key: 'link', label: t('admin.outreach.col.link'), sortable: false, cell: (p) => `${word('lp', p.link_placement)}${p.first_comment !== 'none' ? ` · ${word('fc', p.first_comment)}` : ''}` },
+            { key: 'link', label: t('admin.outreach.col.link'), sortable: false, cell: (p) => clipped(`${word('lp', p.link_placement)}${p.first_comment !== 'none' ? ` · ${word('fc', p.first_comment)}` : ''}`) },
             { key: 'angle', label: t('admin.outreach.col.angle'), sortable: false, cell: (p) => clipped(p.angle) }
         ];
         this.table = new DataTable(cols, (p) => ({ id: p.id, cls: p.state === 'removed' ? 'is-bad' : '' }),
