@@ -123,3 +123,9 @@ deletes the one data file (the vault keeps the truth; a push brings it back). Th
 - Visits by `utm_content` (see 2 above): needs the lead's decision on a new event.
 - Nothing was pushed to `origin` and nothing was deployed; the live admin was never logged in to (only its public
   static files were read, once, for the control build).
+
+## Commits (branch `outreach-tab`, from `origin/main` 814efc9)
+
+`ded2f8e` API store, routes, CLI, 32 tests - `1b2931d` the tab, words, model tests, golden view - `2c021d3` acceptance
+probe, `admin-dist.mjs`, column order - `3358999` the Removed card's words, this note (the last code change) -
+`d525654` acceptance evidence at `3358999`. The commit that adds this list follows them and changes only this file.
