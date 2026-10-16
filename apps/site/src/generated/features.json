@@ -620,7 +620,7 @@
       {
        "id": "input.altitudeHelp",
        "label": "Altitude help (easy play)",
-       "help": "The drone holds its height by itself; up and down (the arrows, or the left stick on a touch screen) climb and sink at a steady speed. Works in angle and horizon modes, never in acro. Step 1 of the pilot school.",
+       "help": "The drone holds its height by itself; up and down (the arrows, or the left stick on a touch screen) climb and sink at a steady speed. Works in angle mode only: horizon and acro can flip, and there your throttle flies. Step 1 of the pilot school.",
        "type": "bool",
        "default": "On",
        "range": "",
@@ -1520,7 +1520,7 @@
      ]
     },
     {
-     "label": "motors off / on (easy play; pilot keys: arm / disarm)",
+     "label": "tap: motors on; hold half a second: motors off (easy play; pilot keys: arm / disarm)",
      "keys": [
       "Space"
      ]
@@ -2388,7 +2388,7 @@
       {
        "id": "input.altitudeHelp",
        "label": "Ayuda de altura (juego f\u00e1cil)",
-       "help": "El dron mantiene la altura solo; arriba y abajo (las flechas, o el stick izquierdo en una pantalla t\u00e1ctil) suben y bajan a velocidad constante. Funciona en los modos angle y horizon, nunca en acro. Paso 1 de la escuela de pilotos.",
+       "help": "El dron mantiene la altura solo; arriba y abajo (las flechas, o el stick izquierdo en una pantalla t\u00e1ctil) suben y bajan a velocidad constante. Solo funciona en el modo angle: en horizon y acro el dron puede dar la vuelta, y ah\u00ed vuela tu acelerador. Paso 1 de la escuela de pilotos.",
        "type": "bool",
        "default": "Activado",
        "range": "",
@@ -3288,7 +3288,7 @@
      ]
     },
     {
-     "label": "motores apagar / encender (juego f\u00e1cil; teclas de piloto: armar / desarmar)",
+     "label": "toque: encender los motores; mantener medio segundo: apagarlos (juego f\u00e1cil; teclas de piloto: armar / desarmar)",
      "keys": [
       "Espacio"
      ]
@@ -4156,7 +4156,7 @@
       {
        "id": "input.altitudeHelp",
        "label": "Pomoc wysoko\u015bci (\u0142atwa gra)",
-       "help": "Dron sam trzyma wysoko\u015b\u0107; g\u00f3ra i d\u00f3\u0142 (strza\u0142ki albo lewy dr\u0105\u017cek na ekranie dotykowym) wznosz\u0105 i opuszczaj\u0105 ze sta\u0142\u0105 pr\u0119dko\u015bci\u0105. Dzia\u0142a w trybach angle i horizon, nigdy w acro. Krok 1 szko\u0142y pilot\u00f3w.",
+       "help": "Dron sam trzyma wysoko\u015b\u0107; g\u00f3ra i d\u00f3\u0142 (strza\u0142ki albo lewy dr\u0105\u017cek na ekranie dotykowym) wznosz\u0105 i opuszczaj\u0105 ze sta\u0142\u0105 pr\u0119dko\u015bci\u0105. Dzia\u0142a tylko w trybie angle: w horizon i acro dron mo\u017ce si\u0119 przewr\u00f3ci\u0107, tam leci tw\u00f3j gaz. Krok 1 szko\u0142y pilot\u00f3w.",
        "type": "bool",
        "default": "W\u0142\u0105czone",
        "range": "",
@@ -5056,7 +5056,7 @@
      ]
     },
     {
-     "label": "silniki wy\u0142\u0105cz / w\u0142\u0105cz (\u0142atwa gra; klawisze pilota: uzbr\u00f3j / rozbr\u00f3j)",
+     "label": "stuknij: w\u0142\u0105cz silniki; przytrzymaj p\u00f3\u0142 sekundy: wy\u0142\u0105cz (\u0142atwa gra; klawisze pilota: uzbr\u00f3j / rozbr\u00f3j)",
      "keys": [
       "Spacja"
      ]
@@ -5924,7 +5924,7 @@
       {
        "id": "input.altitudeHelp",
        "label": "\u041f\u043e\u043c\u043e\u0449\u044c \u043f\u043e \u0432\u044b\u0441\u043e\u0442\u0435 (\u043b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430)",
-       "help": "\u0414\u0440\u043e\u043d \u0441\u0430\u043c \u0434\u0435\u0440\u0436\u0438\u0442 \u0432\u044b\u0441\u043e\u0442\u0443; \u0432\u0432\u0435\u0440\u0445 \u0438 \u0432\u043d\u0438\u0437 (\u0441\u0442\u0440\u0435\u043b\u043a\u0438 \u0438\u043b\u0438 \u043b\u0435\u0432\u044b\u0439 \u0441\u0442\u0438\u043a \u043d\u0430 \u0441\u0435\u043d\u0441\u043e\u0440\u043d\u043e\u043c \u044d\u043a\u0440\u0430\u043d\u0435) \u043f\u043e\u0434\u043d\u0438\u043c\u0430\u044e\u0442 \u0438 \u043e\u043f\u0443\u0441\u043a\u0430\u044e\u0442 \u0441 \u043f\u043e\u0441\u0442\u043e\u044f\u043d\u043d\u043e\u0439 \u0441\u043a\u043e\u0440\u043e\u0441\u0442\u044c\u044e. \u0420\u0430\u0431\u043e\u0442\u0430\u0435\u0442 \u0432 \u0440\u0435\u0436\u0438\u043c\u0430\u0445 angle \u0438 horizon, \u043d\u0438\u043a\u043e\u0433\u0434\u0430 \u0432 acro. \u0428\u0430\u0433 1 \u0448\u043a\u043e\u043b\u044b \u043f\u0438\u043b\u043e\u0442\u043e\u0432.",
+       "help": "\u0414\u0440\u043e\u043d \u0441\u0430\u043c \u0434\u0435\u0440\u0436\u0438\u0442 \u0432\u044b\u0441\u043e\u0442\u0443; \u0432\u0432\u0435\u0440\u0445 \u0438 \u0432\u043d\u0438\u0437 (\u0441\u0442\u0440\u0435\u043b\u043a\u0438 \u0438\u043b\u0438 \u043b\u0435\u0432\u044b\u0439 \u0441\u0442\u0438\u043a \u043d\u0430 \u0441\u0435\u043d\u0441\u043e\u0440\u043d\u043e\u043c \u044d\u043a\u0440\u0430\u043d\u0435) \u043f\u043e\u0434\u043d\u0438\u043c\u0430\u044e\u0442 \u0438 \u043e\u043f\u0443\u0441\u043a\u0430\u044e\u0442 \u0441 \u043f\u043e\u0441\u0442\u043e\u044f\u043d\u043d\u043e\u0439 \u0441\u043a\u043e\u0440\u043e\u0441\u0442\u044c\u044e. \u0420\u0430\u0431\u043e\u0442\u0430\u0435\u0442 \u0442\u043e\u043b\u044c\u043a\u043e \u0432 \u0440\u0435\u0436\u0438\u043c\u0435 angle: \u0432 horizon \u0438 acro \u0434\u0440\u043e\u043d \u043c\u043e\u0436\u0435\u0442 \u043f\u0435\u0440\u0435\u0432\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f, \u0442\u0430\u043c \u043b\u0435\u0442\u0438\u0442 \u0432\u0430\u0448 \u0433\u0430\u0437. \u0428\u0430\u0433 1 \u0448\u043a\u043e\u043b\u044b \u043f\u0438\u043b\u043e\u0442\u043e\u0432.",
        "type": "bool",
        "default": "\u0412\u043a\u043b.",
        "range": "",
@@ -6824,7 +6824,7 @@
      ]
     },
     {
-     "label": "\u043c\u043e\u0442\u043e\u0440\u044b \u0432\u044b\u043a\u043b / \u0432\u043a\u043b (\u043b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430; \u043a\u043b\u0430\u0432\u0438\u0448\u0438 \u043f\u0438\u043b\u043e\u0442\u0430: \u0430\u0440\u043c / \u0434\u0438\u0437\u0430\u0440\u043c)",
+     "label": "\u043d\u0430\u0436\u0430\u0442\u044c: \u043c\u043e\u0442\u043e\u0440\u044b \u0432\u043a\u043b; \u0443\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0442\u044c \u043f\u043e\u043b\u0441\u0435\u043a\u0443\u043d\u0434\u044b: \u0432\u044b\u043a\u043b (\u043b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430; \u043a\u043b\u0430\u0432\u0438\u0448\u0438 \u043f\u0438\u043b\u043e\u0442\u0430: \u0430\u0440\u043c / \u0434\u0438\u0437\u0430\u0440\u043c)",
      "keys": [
       "\u041f\u0440\u043e\u0431\u0435\u043b"
      ]

@@ -84,7 +84,7 @@ Everything you can change in [ShramkoGSFPV](https://gsfpv.flyreelstudio.eu), the
 |---|---|---|---|---|---|
 | **Stick mode**<br>`input.stickMode` | Which stick is the throttle in the calibration drawings: Mode 2 on the left, Mode 1 on the right. | Mode 2 | Mode 1 · Mode 2 | global |  |
 | **How touch and keyboard fly**<br>`input.play` | Easy play: no arming (the first stick or key starts the motors), the drone holds its height, keys like a game (W A S D move, arrows turn and climb), and a pilot school that takes the help away step by step. Pilot: as a radio — the ARM button or Space, a throttle that stays where you leave it, Mode 2 keys (W/S throttle, A/D yaw, arrows pitch and roll). A radio or a gamepad always flies as a radio. | Easy play | Easy play · Pilot (as a radio) | global |  |
-| **Altitude help (easy play)**<br>`input.altitudeHelp` | The drone holds its height by itself; up and down (the arrows, or the left stick on a touch screen) climb and sink at a steady speed. Works in angle and horizon modes, never in acro. Step 1 of the pilot school. | On |  | global |  |
+| **Altitude help (easy play)**<br>`input.altitudeHelp` | The drone holds its height by itself; up and down (the arrows, or the left stick on a touch screen) climb and sink at a steady speed. Works in angle mode only: horizon and acro can flip, and there your throttle flies. Step 1 of the pilot school. | On |  | global |  |
 | **Vibrate on a crash**<br>`input.haptics` | A short buzz when you crash with the touch sticks, on phones that allow it (most Android phones; not iPhone). | On |  | global |  |
 
 ## Drone & physics
@@ -184,7 +184,7 @@ No radio? These keys are the sticks.
 | `←` `→` `Q` `E` | turn left / right |
 | `↑` `↓` | up / down (with altitude help; without it, the throttle, which stays where you leave it) |
 | `Shift` | hold: faster |
-| `Space` | motors off / on (easy play; pilot keys: arm / disarm) |
+| `Space` | tap: motors on; hold half a second: motors off (easy play; pilot keys: arm / disarm) |
 | `M` | self-levelling (ANGLE) or ACRO |
 
 ## Drone presets
