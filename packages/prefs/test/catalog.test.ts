@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { DEFAULT_DRONE_FIELDS, KEYMAP, SCHEMA, buildCatalogue, helpKey, keysFor, labelKey } from '../src';
+import { DEFAULT_DRONE_FIELDS, DRONE_IDS, KEYMAP, SCHEMA, buildCatalogue, helpKey, keysFor, labelKey } from '../src';
 import type { Dict, KeyBinding } from '../src';
 import { MAIN_SETTINGS, PRESETS, REPO } from './helpers';
 
@@ -96,7 +96,7 @@ describe('buildCatalogue (I.6)', () => {
         const pro = c.locales.en.drones.find((d) => d.id === 'pavo20pro-3s')!;
         expect(pro.fields.map((f) => f.label)).toEqual(['drone.twr-en', 'drone.weight-en', 'drone.wheelbase-en', 'drone.motor-en', 'drone.battery-en']);
         expect(pro.fields[1].source).toBe(PRESETS.find((p) => p.id === 'pavo20pro-3s')!.fields.auw_g.source);
-        expect(c.counts).toMatchObject({ groups: withShipped.length, drones: 6, rateTypes: 5 });
+        expect(c.counts).toMatchObject({ groups: withShipped.length, drones: DRONE_IDS.length, rateTypes: 5 });
         expect(c.counts.modes).toBe(SCHEMA.byId.get('flight.mode')!.status === 'shipped' ? 3 : 2);
         expect(c.generated).toBe('2026-10-05');
         expect(c.schemaVersion).toBe(SCHEMA.version);

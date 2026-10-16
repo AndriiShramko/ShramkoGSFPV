@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { Sim, attitude, hoverSolve, invertRate, maxRate, setpointRate, throttleCurve, itermGain } from '../src/index';
 import type { ParamOverrides, SimParams } from '../src/index';
-import { S, params, hovering, rate } from './model-helpers';
+import { PRESET_IDS, S, params, hovering, rate } from './model-helpers';
 
 const pro = (o: ParamOverrides = {}) => params('pavo20pro-3s', o);
 
@@ -229,7 +229,7 @@ describe('H.1 preset data (Pavo20 Pro 3S / Pro II 3S)', () => {
     });
 
     it('every preset has the two new fields, labelled estimate, inside their own min/max', () => {
-        for (const id of ['pavo20pro-3s', 'pavo20pro2-3s', 'pavo20pro2-4s', 'pavopico-2s', 'meteor65pro-1s', 'air65-1s']) {
+        for (const id of PRESET_IDS) {
             const p = params(id);
             expect(p.ductDrag).toBeGreaterThan(0.3);
             expect(p.ductDrag).toBeLessThan(1.5);

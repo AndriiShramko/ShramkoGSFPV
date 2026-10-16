@@ -73,6 +73,15 @@ export interface SimParams {
     bodyBottom: number;
     /** the wind of the place (wind.ts); null: still air, exactly the model without wind */
     wind: WindConfig | null;
+    /**
+     * prop wash (wake.ts): the share of thrust lost at the worst point of a descent through the rotors'
+     * own wake (preset wake_loss x the wake override); 0 = no prop-wash term, the model without it bit for bit
+     */
+    wakeLoss: number;
+    /** prop wash: turbulent roll/pitch torque, share of one rotor's thrust times the arm (preset wake_shake) */
+    wakeShake: number;
+    /** total rotor disk area, m^2 (4 disks of preset prop_diameter_mm); 0 when the preset has no prop wash */
+    wakeArea: number;
 }
 
 export const EARTH_G = 9.81;
@@ -117,12 +126,39 @@ export interface ParamOverrides {
      * air too, so such a model flies exactly as one without the field (its configHash still differs).
      */
     wind?: WindConfig;
+    /**
+     * multiplier on the preset's prop wash (wake_loss and wake_shake; 1 = preset, 0 = off). Presets
+     * without those fields have no prop wash whatever this says.
+     */
+    wake?: number;
 }
 
 function num(p: PresetJson, key: string): number {
     const f = p.fields[key];
     if (!f || typeof f.value !== 'number') throw new Error(`preset ${p.id}: numeric field ${key} missing`);
     return f.value;
+}
+
+/** An optional numeric field: its value, or `fallback` when the preset does not have it. */
+function optNum(p: PresetJson, key: string, fallback: number): number {
+    const f = p.fields[key];
+    if (f === undefined) return fallback;
+    if (typeof f.value !== 'number' || !Number.isFinite(f.value)) throw new Error(`preset ${p.id}: field ${key} is not a number`);
+    return f.value;
+}
+
+/**
+ * The prop-wash terms of a preset (wake.ts): wake_loss and wake_shake (both optional, 0 when absent)
+ * times the override, and the disk area from prop_diameter_mm, which a preset with prop wash must have.
+ */
+function wakeOf(p: PresetJson, scale: number): { wakeLoss: number; wakeShake: number; wakeArea: number } {
+    if (!(scale >= 0) || !Number.isFinite(scale)) throw new RangeError(`wake must be a number >= 0, got ${String(scale)}`);
+    const loss = optNum(p, 'wake_loss', 0) * scale;
+    const shake = optNum(p, 'wake_shake', 0) * scale;
+    if (loss < 0 || loss > 0.9 || shake < 0) throw new RangeError(`preset ${p.id}: wake_loss x wake must be 0..0.9 and wake_shake >= 0`);
+    if (loss === 0 && shake === 0) return { wakeLoss: 0, wakeShake: 0, wakeArea: 0 };
+    const r = num(p, 'prop_diameter_mm') / 2000;
+    return { wakeLoss: loss, wakeShake: shake, wakeArea: 4 * Math.PI * r * r };
 }
 
 function voc(soc: number): number {
@@ -263,7 +299,8 @@ export function compileParams(p: PresetJson, o: ParamOverrides = {}): SimParams 
         itermWindup: 0.85,
         bodyBottom,
         // validated here (a bad wind throws RangeError: a log carrying one refuses to replay)
-        wind: compileWind(o.wind) ? { ...o.wind! } : null
+        wind: compileWind(o.wind) ? { ...o.wind! } : null,
+        ...wakeOf(p, o.wake ?? 1)
     };
 }
 
