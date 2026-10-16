@@ -115,7 +115,9 @@ export interface SwitchFlip { input: SwitchInput; from: SwitchPos; to: SwitchPos
  * still level held LEVEL_MS, then a jump to a level in another position, held LEVEL_MS again.
  * Noise and drift stay in one position; a knob or a slider is a sweep (no single big step) and is
  * never taken in this watch; a glitch shorter than LEVEL_MS is not a level. Buttons: a bit that
- * changed and holds LEVEL_MS. Nothing is ever taken because time passed: only a held new position.
+ * changed and holds LEVEL_MS; when one bit goes off as another comes on (a switch that reports each
+ * end as a bit, flipped end to end), the one that came on. Nothing is ever taken because time
+ * passed: only a held new position.
  */
 export class ModeSwitchDetector {
     private n = 0;
@@ -217,10 +219,25 @@ export class ModeSwitchDetector {
                 if (!(diff & (1 << b)) || t - this.bitSince[b] < MT.LEVEL_MS) continue;
                 const on = (this.bits >> b) & 1;
                 this.bitLevel = on ? this.bitLevel | (1 << b) : this.bitLevel & ~(1 << b);
+                // a switch that reports its positions as bits (one bit per end, neither = middle, as
+                // the DJI controller's) flipped from one end to the other: one bit goes off as another
+                // comes on. The flip is to the position whose bit came on; that one is reported once it
+                // holds, never the one that went off
+                if (!on && this.cameOnWith(b)) continue;
                 if (!this.exBits.has(b) && !found) found = { input: { kind: 'button', bit: b }, from: on ? 0 : 2, to: on ? 2 : 0 };
             }
         }
         return found;
+    }
+
+    /** Another bit (not excluded) came on within LEVEL_MS of bit `b` going off and has not been taken yet. */
+    private cameOnWith(b: number): boolean {
+        for (let c = 0; c < FRAME_BUTTONS; c++) {
+            if (c === b || this.exBits.has(c)) continue;
+            const pending = ((this.bits >> c) & 1) === 1 && ((this.bitLevel >> c) & 1) === 0;
+            if (pending && Math.abs(this.bitSince[c] - this.bitSince[b]) < MT.LEVEL_MS) return true;
+        }
+        return false;
     }
 }
 

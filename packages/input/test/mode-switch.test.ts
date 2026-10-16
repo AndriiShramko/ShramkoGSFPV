@@ -95,6 +95,21 @@ describe('ModeSwitchDetector: a flip is a held jump between positions, never tim
         expect(run(tap, radio(() => undefined, { buttons: (t) => (t >= 600 && t < 700 ? 1 << 3 : 0) }), 1500)).toEqual([]);
     });
 
+    it('a switch sent as position bits (DJI: bit 4 one end, bit 5 the other) flipped end to end: the bit that came on is the flip', () => {
+        // through the middle in 40 ms: bit 4 off at 800, bit 5 on at 840
+        const det = new ModeSwitchDetector();
+        det.exclude([0, 1, 2, 3, 4], []);
+        expect(run(det, radio(() => undefined, { buttons: (t) => (t < 800 ? 1 << 4 : t < 840 ? 0 : 1 << 5) }), 2000)).toEqual([{ input: { kind: 'button', bit: 5 }, from: 0, to: 2 }]);
+        // to the middle only (bit 4 off, nothing comes on): bit 4 released is the flip
+        const mid = new ModeSwitchDetector();
+        mid.exclude([0, 1, 2, 3, 4], []);
+        expect(run(mid, radio(() => undefined, { buttons: (t) => (t < 800 ? 1 << 4 : 0) }), 2000)).toEqual([{ input: { kind: 'button', bit: 4 }, from: 2, to: 0 }]);
+        // control: a bit that comes on long after the other went off is a flip of its own (both reported, in order)
+        const slow = new ModeSwitchDetector();
+        slow.exclude([0, 1, 2, 3, 4], []);
+        expect(run(slow, radio(() => undefined, { buttons: (t) => (t < 800 ? 1 << 4 : t < 1600 ? 0 : 1 << 5) }), 2600).map((f) => f.input)).toEqual([{ kind: 'button', bit: 4 }, { kind: 'button', bit: 5 }]);
+    });
+
     it('the arm button (excluded) is never the mode switch', () => {
         const det = new ModeSwitchDetector();
         det.exclude([0, 1, 2, 3], [0]);

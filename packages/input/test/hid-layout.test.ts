@@ -161,7 +161,8 @@ describe('what is an axis, what is a button (M3)', () => {
     });
 
     it('only the Button page makes buttons: 1-bit fields of a vendor page, the consumer page and Generic Desktop are skipped', () => {
-        const lay = layoutsFromCollections(pad1([val([0x30], 8, 0, 255), val([0x01, 0x02], 1, 0, 1, PV), val([0xe9, 0xea], 1, 0, 1, PC), val([0x90, 0x91], 1, 0, 1, P1), pad(2), btn(2)]));
+        // Generic Desktop: EdgeTX's d-pad bits (0x90, 0x91) and a low id that would land inside the 24 bits
+        const lay = layoutsFromCollections(pad1([val([0x30], 8, 0, 255), val([0x01, 0x02], 1, 0, 1, PV), val([0xe9, 0xea], 1, 0, 1, PC), val([0x90, 0x91], 1, 0, 1, P1), val([0x05], 1, 0, 1, P1), pad(1), btn(2)]));
         expect(lay[0].buttons).toEqual([{ bit: 16, index: 0 }, { bit: 17, index: 1 }]);
         const f = newFrame();
         expect(decodeHidReport(lay, 0, hex('80 FF 03'), f)).toBe(true); // every 1-bit field on, then Buttons 1 and 2
