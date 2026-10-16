@@ -5,10 +5,15 @@
 // display name (apps/fly/src/devices/hid.ts, ui/radio.ts connectHid). No ?simradio: not the fake radio
 // of the page tests (that one calls makeHidReader itself). The device's hands follow the wizard's
 // screens like the SimRadio robot that presses nothing (auto pacing), so a readable device reaches
-// the check screen by itself. Runs:
-//   dji          DJI RC 3, its descriptor as Chromium builds it from the report descriptor, 13-byte reports
+// the check screen by itself. v0.8: a recognised controller (packages/input known-devices.ts) skips
+// the wizard: its known setup opens on the check screen at once. Runs:
+//   dji          DJI RC 3, its descriptor as Chromium builds it from the report descriptor, 13-byte reports:
+//                recognised, the check screen at once (no wizard step), its name, 11 controls live
 //   dji-windows  the same controller in the shape Chromium builds on Windows (one item per axis)
-//   edgetx       an EdgeTX radio (Classic), its descriptor from the EdgeTX source, 19-byte reports
+//   edgetx       an EdgeTX radio (Classic), its descriptor from the EdgeTX source, 19-byte reports:
+//                named (its channels are the pilot's model), the wizard to the check as before
+//   dji-other    negative control of the recognition: the DJI's USB ids with another shape (2 axes):
+//                not recognised, the wizard starts (and cannot finish with 2 axes)
 //   dji-none     negative control: the DJI's reports from a device whose browser gives no descriptor
 //                (the fixed EdgeTX layout, as every device was read before the fix): every report is
 //                refused, the wizard stays at connect and says so
@@ -39,10 +44,15 @@ const edgeItems = [
     { isConstant: false, isArray: false, isRange: false, usages: [0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37].map((u) => P1 | u), reportSize: 16, reportCount: 8, logicalMinimum: 0, logicalMaximum: 2047 }];
 const EDGETX = [{ usagePage: 1, usage: 5, inputReports: [{ reportId: 0, items: edgeItems }], children: [{ usagePage: 1, usage: 0, inputReports: [{ reportId: 0, items: edgeItems }], children: [] }] }];
 
+const DJI_2AXES = [{ usagePage: 1, usage: 5, children: [], inputReports: [{ reportId: 0, items: [
+    { isConstant: false, isArray: false, isRange: false, usages: [0x30, 0x31].map((u) => P1 | u), reportSize: 16, reportCount: 2, logicalMinimum: -660, logicalMaximum: 660 },
+    { isConstant: true, reportSize: 16, reportCount: 3 }, djiButtons] }] }];
+
 const RUNS = [
-    { name: 'dji', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: DJI, rateHz: 160, expect: { key: 'hid:2ca3:1021:HID Interface:13:d', name: 'USB 2ca3:1021', end: 'check' } },
-    { name: 'dji-windows', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: DJI_WIN, rateHz: 160, expect: { key: 'hid:2ca3:1021:HID Interface:13:d', name: 'USB 2ca3:1021', end: 'check' } },
-    { name: 'edgetx', kind: 'edgetx', vendorId: 0x1209, productId: 0x4f54, productName: 'RadioMaster TX16S Joystick', collections: EDGETX, rateHz: 500, expect: { key: 'hid:1209:4f54:RadioMaster TX16S Joystick:19', name: 'RadioMaster TX16S Joystick', end: 'check' } },
+    { name: 'dji', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: DJI, rateHz: 160, expect: { key: 'hid:2ca3:1021:HID Interface:13:d', name: 'DJI FPV Remote Controller 3', end: 'check', known: 'dji-virtual-joystick', controls: 11, wizard: false } },
+    { name: 'dji-windows', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: DJI_WIN, rateHz: 160, expect: { key: 'hid:2ca3:1021:HID Interface:13:d', name: 'DJI FPV Remote Controller 3', end: 'check', known: 'dji-virtual-joystick', controls: 11, wizard: false } },
+    { name: 'edgetx', kind: 'edgetx', vendorId: 0x1209, productId: 0x4f54, productName: 'RadioMaster TX16S Joystick', collections: EDGETX, rateHz: 500, expect: { key: 'hid:1209:4f54:RadioMaster TX16S Joystick:19', name: 'RadioMaster TX16S Joystick', end: 'check', known: 'edgetx-joystick', controls: 0, wizard: true } },
+    { name: 'dji-other', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: DJI_2AXES, rateHz: 160, expect: { end: 'wizard', known: null } },
     { name: 'dji-none', kind: 'dji', vendorId: 0x2ca3, productId: 0x1021, productName: 'HID Interface', collections: [], rateHz: 160, expect: { end: 'connect', refused: true } }
 ];
 
@@ -160,7 +170,7 @@ for (const run of RUNS) {
     await page.locator('.screen.radio .choice button').first().click();
     const path = [];
     let last = '';
-    const limit = run.expect.end === 'connect' ? 30000 : 150000;
+    const limit = run.expect.end === 'connect' ? 30000 : run.expect.end === 'wizard' ? 12000 : 150000;
     while (Date.now() - t0 < limit) {
         const s = await page.evaluate(() => { const w = window.__gsfpv?.radio?.wizard?.state; return w ? { id: w.id, stage: w.stage, step: w.step } : null; });
         const k = s ? `${s.id}/${s.stage}` : 'none';
@@ -179,14 +189,21 @@ for (const run of RUNS) {
         return {
             id: w?.id ?? null, profile: !!w?.profile, profileKey: w?.profile?.deviceKey ?? null, profileName: w?.profile?.deviceName ?? null,
             key: src?.key ?? null, reports: src?.reports ?? null, badReports: src?.badReports ?? null, lastBadLen: src?.lastBadLen ?? null, rateHz: src ? Math.round(src.rateHz) : null,
-            deviceName: src?.device?.productName ?? null, hint: document.querySelector('.wz-hint:not([hidden])')?.textContent ?? '', probe: window.__hidProbe
+            deviceName: src?.device?.productName ?? null, hint: document.querySelector('.wz-hint:not([hidden])')?.textContent ?? '', probe: window.__hidProbe,
+            known: w?.profile?.known ?? null, knownNote: !!document.querySelector('[data-testid=known-note]'),
+            controls: document.querySelectorAll('[data-testid=known-controls] .kp-row').length
         };
     });
     await page.screenshot({ path: `${outDir}/${run.name}-end.png` });
     const e = run.expect;
+    // the wizard ran = a screen of it was passed before the check (a recognised controller opens on the check)
+    const wizardRan = path.some((p) => !p.k.startsWith('check') && p.k !== 'none');
     const pass = e.end === 'check'
         ? end.id === 'check' && end.profile && end.key === e.key && end.profileKey === e.key && end.profileName === e.name && end.badReports === 0 && end.reports > 0 && errors.length === 0
-        : end.id === 'connect' && end.reports === 0 && end.badReports > 0 && end.lastBadLen === 13 && /13/.test(end.hint) && errors.length === 0;
+            && end.known === e.known && end.controls === e.controls && wizardRan === e.wizard && end.knownNote === (e.known !== null)
+        : e.end === 'wizard'
+            ? end.id !== 'check' && end.id !== null && !end.knownNote && end.known === null && end.reports > 0 && errors.length === 0
+            : end.id === 'connect' && end.reports === 0 && end.badReports > 0 && end.lastBadLen === 13 && /13/.test(end.hint) && errors.length === 0;
     allPass &&= pass;
     out[run.name] = { pass, expect: e, seconds: Math.round((Date.now() - t0) / 1000), end, screens: path.length, path, errors };
     await ctx.close();
