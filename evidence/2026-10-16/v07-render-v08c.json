@@ -1,0 +1,263 @@
+{
+  "name": "v07-render",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-16T14:52:52.229Z",
+    "gitHead": "eef522b",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5382",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "pass": {
+    "R1": true,
+    "R3": true
+  },
+  "runs": {
+    "R1": "2026-10-16T14:52:52.229Z",
+    "R3": "2026-10-16T14:52:52.229Z"
+  },
+  "items": {
+    "R1": {
+      "rows": [
+        {
+          "name": "landing paste (encoded SuperSplat link)",
+          "qs": "scene=https%3A%2F%2Fsuperspl.at%2Fscene%2F39e63ce9%3Fbudget%3D8%26stochastic",
+          "expectStochastic": true,
+          "ok": true,
+          "canonical": true,
+          "status": "ready",
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "request": {
+              "budgetM": 8,
+              "stochastic": true
+            },
+            "stochastic": true,
+            "budgetM": 8,
+            "note": null,
+            "engineStochastic": true,
+            "engineBudgetM": 8,
+            "handheld": false,
+            "webgpu": true
+          },
+          "engine": true,
+          "top": 8,
+          "budgetM": 8,
+          "renderer": 2,
+          "search": "?scene=39e63ce9&nowarn=1&input=touch&budget=8&stochastic",
+          "note": "Stochastic drawing (SuperSplat beta), 8 M splats \u00b7 Settings \u2192 Display",
+          "noteShown": true
+        },
+        {
+          "name": "deep link",
+          "qs": "scene=39e63ce9&budget=8&stochastic",
+          "expectStochastic": true,
+          "ok": true,
+          "canonical": true,
+          "status": "ready",
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "request": {
+              "budgetM": 8,
+              "stochastic": true
+            },
+            "stochastic": true,
+            "budgetM": 8,
+            "note": null,
+            "engineStochastic": true,
+            "engineBudgetM": 8,
+            "handheld": false,
+            "webgpu": true
+          },
+          "engine": true,
+          "top": 8,
+          "budgetM": 8,
+          "renderer": 2,
+          "search": "?scene=39e63ce9&budget=8&stochastic&nowarn=1&input=touch",
+          "note": "Stochastic drawing (SuperSplat beta), 8 M splats \u00b7 Settings \u2192 Display",
+          "noteShown": true
+        },
+        {
+          "name": "/s?id= form, stochastic=1",
+          "qs": "scene=superspl.at%2Fs%3Fid%3D39e63ce9%26budget%3D8%26stochastic%3D1",
+          "expectStochastic": true,
+          "ok": true,
+          "canonical": true,
+          "status": "ready",
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "request": {
+              "budgetM": 8,
+              "stochastic": true
+            },
+            "stochastic": true,
+            "budgetM": 8,
+            "note": null,
+            "engineStochastic": true,
+            "engineBudgetM": 8,
+            "handheld": false,
+            "webgpu": true
+          },
+          "engine": true,
+          "top": 8,
+          "budgetM": 8,
+          "renderer": 2,
+          "search": "?scene=39e63ce9&nowarn=1&input=touch&budget=8&stochastic",
+          "note": "Stochastic drawing (SuperSplat beta), 8 M splats \u00b7 Settings \u2192 Display",
+          "noteShown": true
+        },
+        {
+          "name": "control: plain link",
+          "qs": "scene=https%3A%2F%2Fsuperspl.at%2Fscene%2F39e63ce9",
+          "expectStochastic": false,
+          "ok": true,
+          "canonical": true,
+          "status": "ready",
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "request": null,
+            "stochastic": false,
+            "budgetM": 4,
+            "note": null,
+            "engineStochastic": false,
+            "engineBudgetM": 4,
+            "handheld": false,
+            "webgpu": true
+          },
+          "engine": false,
+          "top": 4,
+          "budgetM": 4,
+          "renderer": 2,
+          "search": "?scene=39e63ce9&nowarn=1&input=touch",
+          "note": "",
+          "noteShown": false
+        },
+        {
+          "name": "control: hostile values",
+          "qs": "scene=39e63ce9&budget=1e9&stochastic=%3Cx%3E",
+          "expectStochastic": false,
+          "ok": true,
+          "canonical": true,
+          "status": "ready",
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "request": null,
+            "stochastic": false,
+            "budgetM": 4,
+            "note": null,
+            "engineStochastic": false,
+            "engineBudgetM": 4,
+            "handheld": false,
+            "webgpu": true
+          },
+          "engine": false,
+          "top": 4,
+          "budgetM": 4,
+          "renderer": 2,
+          "search": "?scene=39e63ce9&nowarn=1&input=touch",
+          "note": "",
+          "noteShown": false
+        }
+      ],
+      "pageerrors": []
+    },
+    "R3": {
+      "userAgent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36",
+      "link": {
+        "status": "ready",
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "request": {
+            "budgetM": 8,
+            "stochastic": true
+          },
+          "stochastic": false,
+          "budgetM": 2,
+          "note": "scene-handheld",
+          "engineStochastic": false,
+          "engineBudgetM": 2,
+          "handheld": true,
+          "webgpu": true
+        },
+        "engine": false,
+        "top": 2,
+        "budgetM": 2,
+        "renderer": 2,
+        "search": "?scene=39e63ce9&budget=8&stochastic&nowarn=1&input=touch",
+        "note": "This scene asks for SuperSplat's stochastic drawing. It only runs in desktop browsers, so here the scene is drawn the classic way.",
+        "noteShown": true
+      },
+      "forced": {
+        "status": "ready",
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "stochastic",
+          "request": null,
+          "stochastic": false,
+          "budgetM": 2,
+          "note": "setting-handheld",
+          "engineStochastic": false,
+          "engineBudgetM": 2,
+          "handheld": true,
+          "webgpu": true
+        },
+        "engine": false,
+        "top": 2,
+        "budgetM": 2,
+        "renderer": 2,
+        "search": "?scene=39e63ce9&drawing=stochastic&nowarn=1&input=touch",
+        "note": "You chose the stochastic drawing in Settings \u2192 Display. It only runs in desktop browsers, so here the scene is drawn the classic way.",
+        "noteShown": true
+      },
+      "budgetOnly": {
+        "status": "ready",
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "request": {
+            "budgetM": 8
+          },
+          "stochastic": false,
+          "budgetM": 2,
+          "note": "budget-handheld",
+          "engineStochastic": false,
+          "engineBudgetM": 2,
+          "handheld": true,
+          "webgpu": true
+        },
+        "engine": false,
+        "top": 2,
+        "budgetM": 2,
+        "renderer": 2,
+        "search": "?scene=39e63ce9&budget=8&nowarn=1&input=touch",
+        "note": "This scene asks for 8 M splats, a budget for desktop browsers. On this device it draws at most 2 M.",
+        "noteShown": true
+      },
+      "expected": {
+        "link": "This scene asks for SuperSplat's stochastic drawing. It only runs in desktop browsers, so here the scene is drawn the classic way.",
+        "forced": "You chose the stochastic drawing in Settings \u2192 Display. It only runs in desktop browsers, so here the scene is drawn the classic way.",
+        "budgetOnly": "This scene asks for 8 M splats, a budget for desktop browsers. On this device it draws at most 2 M."
+      },
+      "pageerrors": []
+    }
+  }
+}
