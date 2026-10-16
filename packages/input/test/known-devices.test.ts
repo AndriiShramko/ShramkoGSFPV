@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { MODE_CHANNEL } from '@gsfpv/sim-core';
 import {
-    KNOWN_DEVICES, USAGE, applyDeadband, gamepadUsbIds, keepOwnSetup, knownDevice, knownOffer, knownProfile, makeHidReader, mapFrame, recognise, seenFromGamepad, seenFromHid
+    KNOWN_DEVICES, USAGE, applyDeadband, gamepadSlots, gamepadUsbIds, keepOwnSetup, knownDevice, knownOffer, knownProfile, makeHidReader, mapFrame, recognise, seenFromGamepad, seenFromHid
 } from '../src/index';
 import type { KnownDevice, Profile, RawFrame } from '../src/index';
 import { DJI_RC3, DJI_RC3_WINDOWS, EDGETX_CLASSIC, djiRc3Report, edgeTxAdvanced } from '../src/sim/devices';
@@ -224,6 +224,30 @@ describe('the table itself', () => {
                 if (d.whyNoMapping) expect(t[d.whyNoMapping], `${lang} ${d.whyNoMapping}`).toBeTruthy();
             }
         }
+    });
+
+    it('every entry with a stick mapping is recognisable on the Gamepad API: its axis usages run X, Y, Z... with no gap (the same index on Chromium\'s Windows, macOS and Linux)', () => {
+        const webHidOnly = KNOWN_DEVICES.filter((d) => d.mapping && d.match.axisUsages && !gamepadSlots(d.match.axisUsages)).map((d) => d.id);
+        expect(webHidOnly).toEqual([]);
+    });
+
+    it('an entry whose usages have a gap (X, Y, Rx, Ry) is recognised on WebHID (its descriptor) but not on the Gamepad API, where Windows / macOS put Rx at 3 and Linux at 2 (review R5)', () => {
+        const gap: KnownDevice = {
+            ...KNOWN_DEVICES[0], id: 'gap', name: 'Gap',
+            match: { usb: [{ vendorId: 0x1234, productId: 0x5678 }], axisUsages: [USAGE.X, USAGE.Y, USAGE.Rx, USAGE.Ry], logical: null, minButtons: 0 }
+        };
+        // Windows / macOS: slots 0, 1, 3, 4 -> 5 axes with slot 2 empty; Linux joydev: 4 axes, Rx at 2
+        expect(recognise(seenFromGamepad(pad('Gap (Vendor: 1234 Product: 5678)', 4, 8)), [gap])).toBeNull();
+        expect(recognise(seenFromGamepad(pad('Gap (Vendor: 1234 Product: 5678)', 5, 8)), [gap])).toBeNull();
+        const hid = recognise({ path: 'hid', vendorId: 0x1234, productId: 0x5678, axisUsages: [USAGE.X, USAGE.Y, USAGE.Rx, USAGE.Ry], logical: [[0, 1], [0, 1], [0, 1], [0, 1]], axisCount: 4, buttonCount: 8, edgeTxLayout: false }, [gap]);
+        expect([USAGE.X, USAGE.Y, USAGE.Rx, USAGE.Ry].map((u) => hid?.axisIndex(u))).toEqual([0, 1, 2, 3]);
+        expect(gamepadSlots([USAGE.X, USAGE.Y, USAGE.Rx, USAGE.Ry])).toBeNull();
+    });
+
+    it('control: the DJI\'s X..Ry (no gap) on the Gamepad API is each axis at usage - 0x30, its rank', () => {
+        expect(gamepadSlots([USAGE.X, USAGE.Y, USAGE.Z, USAGE.Rx, USAGE.Ry])).toEqual([0x30, 0x31, 0x32, 0x33, 0x34]);
+        const m = recognise(seenFromGamepad(pad(DJI_ID_CHROME, 5, 24)));
+        expect([USAGE.X, USAGE.Y, USAGE.Z, USAGE.Rx, USAGE.Ry, USAGE.Rz].map((u) => m?.axisIndex(u))).toEqual([0, 1, 2, 3, 4, null]);
     });
 
     it('ids are unique, and knownDevice finds an entry by the id a profile keeps', () => {

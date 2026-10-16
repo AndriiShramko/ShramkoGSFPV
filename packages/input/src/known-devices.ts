@@ -8,9 +8,15 @@
 //   usages and logical ranges, the number of buttons). DJI reuses one id for several controllers
 //   (docs/research/radios/dji-rc3.md), so the id alone never decides.
 // - Gamepad API: the vendor / product id inside the id string (Chrome "HID Interface (Vendor: 2ca3
-//   Product: 1021)", Firefox "2ca3-1021-HID Interface") and the axis / button counts. Chrome lists a
-//   generic HID gamepad's axes in HID usage order (X, Y, Z, Rx, Ry...; measured for the DJI on Chrome
-//   152), so an axis is found by the rank of its usage among the device's axis usages.
+//   Product: 1021)", Firefox "2ca3-1021-HID Interface") and the axis / button counts. No descriptor,
+//   so where an axis lands is the browser's rule, and Chromium has two: on Windows and macOS a
+//   Generic Desktop axis sits at slot usage - 0x30 (X 0, Y 1, Z 2, Rx 3, Ry 4..., gaps left empty;
+//   device/gamepad/raw_input_gamepad_device_win.cc and gamepad_device_mac.mm, "kAxisMinimumUsageNumber
+//   = 0x30"), on Linux at the joydev number, which counts only the axes the device has, in order
+//   (gamepad_device_linux.cc reads js_event.number). They agree only when the usages run X, Y, Z...
+//   with no gap, so an entry is matched on the Gamepad API only then (gamepadSlots), with axis =
+//   usage - 0x30 (= its rank); one with a gap is left to the wizard there (recognised on WebHID,
+//   where its descriptor tells each axis). The DJI's X..Ry run without a gap (5 axes on Chrome 152).
 //
 // What an entry gives (`KnownDevice`): the sticks by HID usage (Mode 2) and direction, the arm control,
 // the flight-mode switch and the mode of each position, the device's Betaflight channel table (a
@@ -24,6 +30,8 @@
 //
 // Adding a controller: one entry in KNOWN_DEVICES, facts marked, a recognition test with its descriptor
 // (sim/devices.ts) and a negative control (a device with the same ids and another shape is not it).
+// Its axis usages decide whether the Gamepad API can recognise it (gamepadSlots: X, Y, Z... with no
+// gap); the table test lists the entries that are WebHID-only for that reason.
 
 import type { Fn, Profile, ArmMap } from './calib';
 import type { SwitchInput, SwitchModes } from './mode-switch';
@@ -258,11 +266,21 @@ export function recognise(seen: DeviceSeen, table: readonly KnownDevice[] = KNOW
             if (seen.axisCount < 1) continue;
             return { device, axisIndex: (u) => (u >= USAGE.X && u - USAGE.X < seen.axisCount ? u - USAGE.X : null) };
         }
-        if (m.axisUsages && seen.axisCount !== m.axisUsages.length) continue;
-        const order = m.axisUsages ? [...m.axisUsages].sort((a, b) => a - b) : [];
-        return { device, axisIndex: (u) => { const i = order.indexOf(u); return i >= 0 ? i : null; } };
+        const slots = m.axisUsages ? gamepadSlots(m.axisUsages) : null;
+        if (m.axisUsages && (!slots || seen.axisCount !== m.axisUsages.length)) continue;
+        return { device, axisIndex: (u) => (slots?.includes(u) ? u - USAGE.X : null) };
     }
     return null;
+}
+
+/**
+ * The axis usages of an entry when the Gamepad API puts them at the same index on every Chromium
+ * platform: Generic Desktop X, Y, Z... from X with no gap (each at usage - 0x30, which is also its
+ * rank); null otherwise (see the header: Windows / macOS use the slot, Linux the rank).
+ */
+export function gamepadSlots(usages: readonly number[]): number[] | null {
+    const s = [...usages].sort((a, b) => a - b);
+    return s.every((u, i) => u === USAGE.X + i) && s.length > 0 && s[s.length - 1] <= USAGE.Wheel ? s : null;
 }
 
 /** A known input as a profile's switch input on the path it was matched on; null when an axis is missing. */
