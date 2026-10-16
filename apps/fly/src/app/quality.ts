@@ -21,6 +21,8 @@ export class Quality {
     private frameDelay = 0;
     /** renderer.framesHeld at the last frame */
     private heldSeen = 0;
+    /** renderer.streamTicks at the last frame: the scan's streamer at work since (governor `streamed`) */
+    private streamSeen = 0;
 
     constructor(renderer: SplatRenderer) {
         this.renderer = renderer;
@@ -80,6 +82,10 @@ export class Quality {
         // a frame the renderer held for the GPU queue (maxFramesInFlight) is a missed one
         const held = this.renderer.framesHeld !== this.heldSeen;
         this.heldSeen = this.renderer.framesHeld;
-        if (!this.cinemaOn && this.governor.onFrame(now, this.renderer.frameAfterSkip, held)) this.apply();
+        // a level-of-detail file requested or arrived since the last frame: a late frame now is the
+        // streamer's work, not a GPU that cannot draw the budget (governor.ts onFrame, v0.8 item 8)
+        const streamed = this.renderer.streamTicks !== this.streamSeen;
+        this.streamSeen = this.renderer.streamTicks;
+        if (!this.cinemaOn && this.governor.onFrame(now, this.renderer.frameAfterSkip, held, streamed)) this.apply();
     }
 }
