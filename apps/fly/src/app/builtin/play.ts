@@ -15,6 +15,7 @@ import { GOAL_S, SCHOOL_STEPS, SchoolProgress, settingsOf, stepOf } from '../../
 import type { SchoolStep } from '../../play/school';
 import type { PlayProfile } from '../../play/keys';
 import { h } from '../../ui/dom';
+import { gutterTop } from '../../ui/top-row';
 import { t } from '../../i18n';
 import { q } from '../env';
 import type { Feature, FlightContext } from '../context';
@@ -118,17 +119,27 @@ export const play: Feature = {
             offerTimer = window.setTimeout(hideOffer, 15000);
         };
 
-        /** The chip right under the mode chip at the left gutter (it follows it there, ui/mode-chip.ts). */
+        /**
+         * The chip at the mode chip's left edge, the first free height under it (ui/top-row.ts
+         * gutterTop, as the mode chip finds its own place): never over the top buttons or the
+         * right-hand OSD line, past the boxes and notes at the top (the credit, the walls box, the
+         * touch hint). Its list of steps opens right under it.
+         */
         const place = (): void => {
             const mc = ctx.ui.querySelector<HTMLElement>(':scope > .mode-chip');
             if (!mc || mc.hidden || mc.offsetParent === null) { chip.style.visibility = 'hidden'; return; }
             chip.style.visibility = '';
-            const left = `${mc.offsetLeft}px`;
-            const top = `${mc.offsetTop + mc.offsetHeight + 6}px`;
+            const rects = (sel: string): DOMRect[] => [...ctx.ui.querySelectorAll<HTMLElement>(sel)].filter((el) => el.offsetParent !== null).map((el) => el.getBoundingClientRect()).filter((r) => r.width > 0 && r.height > 0);
+            const m = mc.getBoundingClientRect();
+            const hard = rects('.hud .osd.tr, :scope > .top-actions, :scope > .top-actions > .btn, :scope > .mode-chip');
+            const soft = rects(':scope > .bake-box, .touch-hint, :scope > .voxel-legend, :scope > .banner, .attribution');
+            const top = gutterTop(m.left, m.bottom + 6, chip.offsetWidth, chip.offsetHeight, hard, soft, innerHeight / 2);
+            const left = `${Math.round(m.left)}px`;
+            const y = `${Math.round(top)}px`;
             if (chip.style.left !== left) chip.style.left = left;
-            if (chip.style.top !== top) chip.style.top = top;
+            if (chip.style.top !== y) chip.style.top = y;
             panel.style.left = left;
-            panel.style.top = `${mc.offsetTop + mc.offsetHeight + 6 + chip.offsetHeight + 6}px`;
+            panel.style.top = `${Math.round(top + chip.offsetHeight + 6)}px`;
         };
 
         let lastAt = 0;

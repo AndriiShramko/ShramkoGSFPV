@@ -7,15 +7,15 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-16T14:14:38.129Z",
-    "gitHead": "193d150",
+    "date": "2026-10-16T14:18:53.548Z",
+    "gitHead": "a1e1ec3",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "site": "http://localhost:5481",
-  "pass": false,
+  "pass": true,
   "checks": [
     {
       "id": "K1 the key card shows on the ground with the game keys and \"press a flying key to take off\"",
@@ -33,16 +33,16 @@
       "detail": {
         "armedBefore": false,
         "armed": true,
-        "climbMps": 2.627,
-        "gainedM": 5.896
+        "climbMps": 2.634,
+        "gainedM": 5.634
       }
     },
     {
       "id": "K3 keys released: the height holds (altitude help)",
       "ok": true,
       "detail": {
-        "spreadM": 0.036,
-        "meanVy": 0.01
+        "spreadM": 0.034,
+        "meanVy": 0.009
       }
     },
     {
@@ -77,7 +77,7 @@
             "arm": "on",
             "want": true,
             "helpActive": false,
-            "throttle": 0.2833059068471899,
+            "throttle": 0.28328278027989573,
             "target": 0,
             "step": 2,
             "school": {
@@ -89,11 +89,12 @@
       }
     },
     {
-      "id": "K7 without the help the arrows move a throttle that stays where it is left",
+      "id": "K7 without the help the arrows move a throttle that stays where it is left (it took over from the help without a jump)",
       "ok": true,
       "detail": {
-        "throttleAfterRelease": 0,
-        "throttle500msLater": 0
+        "throttleWhenHelpWentOff": 0.283,
+        "throttleAfterRelease": 0.449,
+        "throttle500msLater": 0.449
       }
     },
     {
@@ -152,8 +153,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.65,
-        "gainedM": 4.033,
+        "climbMps": 1.613,
+        "gainedM": 3.963,
         "leftStickAfterRelease": 0
       }
     },
@@ -161,18 +162,24 @@
       "id": "T4-tablet the height holds with no finger on the sticks",
       "ok": true,
       "detail": {
-        "spreadM": 0.036
+        "spreadM": 0.037
       }
     },
     {
-      "id": "T5-tablet the right stick at half forward tilts the drone (angle mode); the page handles a move within a frame",
-      "ok": false,
+      "id": "T5-tablet the right stick at half forward tilts the drone (angle mode); moves are read from pointerrawupdate, earlier than the rAF-aligned pointermove (control)",
+      "ok": true,
       "detail": {
         "pitchDeg": 17.284,
-        "pointerMoves": 12,
-        "handlerDelayMs": {
-          "p50": 60.6,
-          "p95": 122
+        "pageFrameP50Ms": 33.3,
+        "rawupdate": {
+          "n": 12,
+          "p50": 19.5,
+          "p95": 36.4
+        },
+        "pointermoveControl": {
+          "n": 12,
+          "p50": 48.2,
+          "p95": 122.7
         }
       }
     },
@@ -229,8 +236,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.664,
-        "gainedM": 4.11,
+        "climbMps": 1.645,
+        "gainedM": 3.969,
         "leftStickAfterRelease": 0
       }
     },
@@ -238,18 +245,24 @@
       "id": "T4-phone the height holds with no finger on the sticks",
       "ok": true,
       "detail": {
-        "spreadM": 0.036
+        "spreadM": 0.035
       }
     },
     {
-      "id": "T5-phone the right stick at half forward tilts the drone (angle mode); the page handles a move within a frame",
-      "ok": false,
+      "id": "T5-phone the right stick at half forward tilts the drone (angle mode); moves are read from pointerrawupdate, earlier than the rAF-aligned pointermove (control)",
+      "ok": true,
       "detail": {
         "pitchDeg": 17.848,
-        "pointerMoves": 12,
-        "handlerDelayMs": {
-          "p50": 44.1,
-          "p95": 79.6
+        "pageFrameP50Ms": 33.3,
+        "rawupdate": {
+          "n": 12,
+          "p50": 16.4,
+          "p95": 33
+        },
+        "pointermoveControl": {
+          "n": 12,
+          "p50": 46.3,
+          "p95": 94.4
         }
       }
     },
@@ -306,8 +319,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.642,
-        "gainedM": 3.984,
+        "climbMps": 1.621,
+        "gainedM": 4.019,
         "leftStickAfterRelease": 0
       }
     },
@@ -319,14 +332,20 @@
       }
     },
     {
-      "id": "T5-phone-landscape the right stick at half forward tilts the drone (angle mode); the page handles a move within a frame",
-      "ok": false,
+      "id": "T5-phone-landscape the right stick at half forward tilts the drone (angle mode); moves are read from pointerrawupdate, earlier than the rAF-aligned pointermove (control)",
+      "ok": true,
       "detail": {
         "pitchDeg": 17.284,
-        "pointerMoves": 12,
-        "handlerDelayMs": {
-          "p50": 59.3,
-          "p95": 87.7
+        "pageFrameP50Ms": 33.3,
+        "rawupdate": {
+          "n": 12,
+          "p50": 31.3,
+          "p95": 66.5
+        },
+        "pointermoveControl": {
+          "n": 12,
+          "p50": 61.5,
+          "p95": 82.9
         }
       }
     },

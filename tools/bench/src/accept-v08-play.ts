@@ -208,6 +208,36 @@ for (const size of SIZES) {
     check(`T5-${size.name} the right stick at half forward tilts the drone (angle mode); moves are read from pointerrawupdate, earlier than the rAF-aligned pointermove (control)`, pitch > 8 && lat.raw.length > 5 && raw50 < move50, { pitchDeg: r3(pitch), pageFrameP50Ms: r3(lat.frameMs), rawupdate: { n: lat.raw.length, p50: r3(raw50), p95: r3(pct(lat.raw, 0.95)) }, pointermoveControl: { n: lat.move.length, p50: r3(move50), p95: r3(pct(lat.move, 0.95)) } });
     const chipText = await p.evaluate(`(() => { const c = document.querySelector('[data-testid="school-chip"]'); return c && !c.hidden ? c.textContent : null; })()`);
     check(`T6-${size.name} the pilot school chip is on screen`, typeof chipText === 'string' && /^School 1\/4/.test(chipText), { chip: chipText });
+    // layout: the speaker fully on screen, nothing of the school chip, the mode chip, the top buttons, the
+    // credit and the OSD lines over another (text never prints over text); control: the school chip
+    // moved onto the top row must be reported by the same check
+    const LAYOUT = `((moveChip) => {
+        const ui = document.getElementById('ui');
+        const chip = document.querySelector('[data-testid="school-chip"]');
+        const keep = chip.style.top;
+        if (moveChip) { const row = document.querySelector('.top-actions').getBoundingClientRect(); chip.style.top = (row.top + 2) + 'px'; chip.style.left = (row.left + 2) + 'px'; }
+        const items = [...document.querySelectorAll('.top-actions > .btn, [data-testid="school-chip"], .mode-chip, .attribution, .osd.tl, .osd.tr')]
+            .filter((el) => el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden')
+            .map((el) => ({ n: (el.getAttribute('data-action') || el.getAttribute('data-testid') || el.className).toString().slice(0, 24), r: el.getBoundingClientRect() }))
+            .filter((x) => x.r.width > 0 && x.r.height > 0);
+        const hits = [];
+        for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {
+            const a = items[i].r, b = items[j].r;
+            const ox = Math.min(a.right, b.right) - Math.max(a.left, b.left), oy = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+            // not judged here: the two OSD lines with each other (v0.7's long "WALLS OFF" line meets the
+            // voltage on a 375 px phone: reported in docs/wip/v08-a.md, not this lane's part)
+            const pair = [items[i].n, items[j].n].sort().join('|');
+            if (ox > 1 && oy > 1 && pair !== 'osd tl|osd tr') hits.push(items[i].n + ' x ' + items[j].n);
+        }
+        const sp = document.querySelector('[data-action="sound-toggle"]').getBoundingClientRect();
+        const speakerOnScreen = sp.left >= 0 && sp.top >= 0 && sp.right <= innerWidth && sp.bottom <= innerHeight && sp.width > 0;
+        if (moveChip) chip.style.top = keep;
+        return { hits, speakerOnScreen };
+    })`;
+    const lay = await p.evaluate(`${LAYOUT}(false)`) as { hits: string[]; speakerOnScreen: boolean };
+    const layCtl = await p.evaluate(`${LAYOUT}(true)`) as { hits: string[]; speakerOnScreen: boolean };
+    await sleep(400); // the chip goes back to its place at the next placement
+    check(`T9-${size.name} the speaker is on screen and nothing at the top prints over anything else; control: the school chip moved onto the buttons is caught`, lay.speakerOnScreen && lay.hits.length === 0 && layCtl.hits.some((x) => x.includes('school-chip')), { speakerOnScreen: lay.speakerOnScreen, overlaps: lay.hits, control: layCtl.hits });
     const view = await p.evaluate(`({ sx: scrollX, sy: scrollY, scale: visualViewport ? visualViewport.scale : 1 })`) as Any;
     check(`T7-${size.name} no scroll or zoom from the touches`, view.sx === 0 && view.sy === 0 && view.scale === 1, view);
     const errs = T.console.filter((l) => l.startsWith('pageerror'));

@@ -125,6 +125,8 @@ dl.measure { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; } dl
 @media (max-width: 640px) { .bake-box { top: calc(max(10px, env(safe-area-inset-top)) + 100px + var(--banner-h, 0px)); } }
 /* wider, but the top buttons still reach the box (a narrow window, a long language, the REC dot): under them (ui/top-row.ts) */
 @media (min-width: 641px) { #ui.top-crowded > .bake-box { top: calc(var(--top-row-bottom, 78px) + 8px); } }
+/* a key's note that would meet the top row goes under the row and the walls box (ui/top-row.ts, v0.8) */
+@media (min-width: 641px) { #ui.note-crowded > .hud-note { top: calc(max(var(--top-row-bottom, 78px), var(--bake-bottom, 0px)) + 8px); } }
 .bake-status { font-size: 13px; color: #d1d5db; text-shadow: 0 1px 2px #000; text-align: center; }
 .badge-nowalls { background: rgba(12,14,18,.85); border: 1px solid var(--warn); color: var(--warn); padding: 6px 12px; border-radius: 999px; font-size: 13px; max-width: 92vw; text-align: center; }
 .top-actions { position: absolute; top: calc(max(10px, env(safe-area-inset-top)) + var(--banner-h, 0px)); right: 16px; display: flex; gap: 8px; margin-top: 28px; }
@@ -132,6 +134,8 @@ dl.measure { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; } dl
 /* v0.8: the quick mute (app/builtin/sound.ts); dimmed while the motor sound is off */
 .top-actions .btn.speaker { padding: 6px 10px; display: inline-flex; align-items: center; }
 .top-actions .btn.speaker.muted { color: #9ca3af; }
+/* a phone (the row of buttons fills the width): the speaker leaves the row for the right edge under it, like the REC dot */
+@media (max-width: 640px) { .top-actions .btn.speaker { position: fixed; right: 16px; top: calc(var(--top-row-bottom, 78px) + 8px); width: 40px; height: 40px; min-height: 40px; padding: 0; justify-content: center; border-radius: 50%; } }
 /* loading: every row has a fixed height (numbers change, nothing moves); the bar and the sweep are
    transforms, which keep animating while the main thread decodes the scan. Above the screens, so
    its fade shows what comes next underneath. */

@@ -67,6 +67,13 @@ export function layoutTopRow(ui: HTMLElement): void {
     // after the class: the box may just have moved under the row
     const b = boxW > 0 && box ? box.getBoundingClientRect() : null;
     px(ui, '--bake-bottom', b && b.height > 0 ? b.bottom - u.top : 0);
+    // the short note a key leaves (H, C, V; ui/hud.ts flash) is centred at the top like the box: when
+    // it would meet the row (a wide row: the speaker of v0.8, a long language), fly.css puts it under
+    // the row and the box
+    const note = ui.querySelector<HTMLElement>(':scope > .hud-note');
+    const noteW = note && !note.hidden && note.offsetParent !== null ? note.offsetWidth : 0;
+    const noteCrowded = !!r && r.width > 0 && boxMeetsRow(u.width, noteW, r.left - u.left);
+    if (ui.classList.contains('note-crowded') !== noteCrowded) ui.classList.toggle('note-crowded', noteCrowded);
 }
 
 /**
@@ -83,7 +90,7 @@ export function watchTopRow(ui: HTMLElement): void {
     };
     const sizes = new ResizeObserver(again);
     const observe = (): void => {
-        for (const el of ui.querySelectorAll(':scope > .top-actions, :scope > .bake-box')) sizes.observe(el);
+        for (const el of ui.querySelectorAll(':scope > .top-actions, :scope > .bake-box, :scope > .hud-note')) sizes.observe(el);
     };
     new MutationObserver(() => { observe(); again(); }).observe(ui, { childList: true });
     addEventListener('resize', again);
