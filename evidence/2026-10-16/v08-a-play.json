@@ -7,15 +7,15 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-16T14:18:53.548Z",
-    "gitHead": "a1e1ec3",
+    "date": "2026-10-16T14:56:00.193Z",
+    "gitHead": "8265312",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "site": "http://localhost:5481",
-  "pass": true,
+  "pass": false,
   "checks": [
     {
       "id": "K1 the key card shows on the ground with the game keys and \"press a flying key to take off\"",
@@ -33,8 +33,8 @@
       "detail": {
         "armedBefore": false,
         "armed": true,
-        "climbMps": 2.634,
-        "gainedM": 5.634
+        "climbMps": 2.63,
+        "gainedM": 5.787
       }
     },
     {
@@ -42,7 +42,7 @@
       "ok": true,
       "detail": {
         "spreadM": 0.034,
-        "meanVy": 0.009
+        "meanVy": 0.01
       }
     },
     {
@@ -77,11 +77,11 @@
             "arm": "on",
             "want": true,
             "helpActive": false,
-            "throttle": 0.28328278027989573,
+            "throttle": 0.283304226066152,
             "target": 0,
             "step": 2,
             "school": {
-              "seconds": 0.26599999999999824,
+              "seconds": 0,
               "goal": 45
             }
           }
@@ -93,8 +93,8 @@
       "ok": true,
       "detail": {
         "throttleWhenHelpWentOff": 0.283,
-        "throttleAfterRelease": 0.449,
-        "throttle500msLater": 0.449
+        "throttleAfterRelease": 0.445,
+        "throttle500msLater": 0.445
       }
     },
     {
@@ -153,8 +153,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.613,
-        "gainedM": 3.963,
+        "climbMps": 1.618,
+        "gainedM": 4.017,
         "leftStickAfterRelease": 0
       }
     },
@@ -170,16 +170,16 @@
       "ok": true,
       "detail": {
         "pitchDeg": 17.284,
-        "pageFrameP50Ms": 33.3,
+        "pageFrameP50Ms": 33.4,
         "rawupdate": {
           "n": 12,
-          "p50": 19.5,
-          "p95": 36.4
+          "p50": 27.1,
+          "p95": 61
         },
         "pointermoveControl": {
           "n": 12,
-          "p50": 48.2,
-          "p95": 122.7
+          "p50": 61.4,
+          "p95": 85.9
         }
       }
     },
@@ -188,6 +188,20 @@
       "ok": true,
       "detail": {
         "chip": "School 1/4 \u00b7 10 / 30 s"
+      }
+    },
+    {
+      "id": "T9-tablet the speaker is on screen and nothing at the top prints over anything else; control: the school chip moved onto the buttons is caught",
+      "ok": true,
+      "detail": {
+        "speakerOnScreen": true,
+        "overlaps": [],
+        "control": [
+          "sound-toggle x school-chip",
+          "share-top x school-chip",
+          "open-settings x school-chip",
+          "open-feedback x school-chip"
+        ]
       }
     },
     {
@@ -236,8 +250,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.645,
-        "gainedM": 3.969,
+        "climbMps": 1.642,
+        "gainedM": 4.068,
         "leftStickAfterRelease": 0
       }
     },
@@ -245,7 +259,7 @@
       "id": "T4-phone the height holds with no finger on the sticks",
       "ok": true,
       "detail": {
-        "spreadM": 0.035
+        "spreadM": 0.037
       }
     },
     {
@@ -256,13 +270,13 @@
         "pageFrameP50Ms": 33.3,
         "rawupdate": {
           "n": 12,
-          "p50": 16.4,
-          "p95": 33
+          "p50": 16.3,
+          "p95": 31.2
         },
         "pointermoveControl": {
           "n": 12,
-          "p50": 46.3,
-          "p95": 94.4
+          "p50": 46.2,
+          "p95": 91.6
         }
       }
     },
@@ -271,6 +285,21 @@
       "ok": true,
       "detail": {
         "chip": "School 1/4 \u00b7 10 / 30 s"
+      }
+    },
+    {
+      "id": "T9-phone the speaker is on screen and nothing at the top prints over anything else; control: the school chip moved onto the buttons is caught",
+      "ok": false,
+      "detail": {
+        "speakerOnScreen": true,
+        "overlaps": [
+          "attribution x school-chip"
+        ],
+        "control": [
+          "share-top x school-chip",
+          "open-settings x school-chip",
+          "open-feedback x school-chip"
+        ]
       }
     },
     {
@@ -319,8 +348,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.621,
-        "gainedM": 4.019,
+        "climbMps": 1.624,
+        "gainedM": 4.037,
         "leftStickAfterRelease": 0
       }
     },
@@ -335,17 +364,17 @@
       "id": "T5-phone-landscape the right stick at half forward tilts the drone (angle mode); moves are read from pointerrawupdate, earlier than the rAF-aligned pointermove (control)",
       "ok": true,
       "detail": {
-        "pitchDeg": 17.284,
+        "pitchDeg": 17.283,
         "pageFrameP50Ms": 33.3,
         "rawupdate": {
           "n": 12,
-          "p50": 31.3,
-          "p95": 66.5
+          "p50": 30.8,
+          "p95": 64
         },
         "pointermoveControl": {
           "n": 12,
-          "p50": 61.5,
-          "p95": 82.9
+          "p50": 61,
+          "p95": 84.2
         }
       }
     },
@@ -354,6 +383,19 @@
       "ok": true,
       "detail": {
         "chip": "School 1/4 \u00b7 10 / 30 s"
+      }
+    },
+    {
+      "id": "T9-phone-landscape the speaker is on screen and nothing at the top prints over anything else; control: the school chip moved onto the buttons is caught",
+      "ok": true,
+      "detail": {
+        "speakerOnScreen": true,
+        "overlaps": [],
+        "control": [
+          "share-top x school-chip",
+          "open-settings x school-chip",
+          "open-feedback x school-chip"
+        ]
       }
     },
     {
