@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-16T18:39:04.704Z",
-    "gitHead": "e54e462",
+    "date": "2026-10-16T19:26:29.874Z",
+    "gitHead": "dda2eba",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -48,8 +48,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.622,
-        "gainedM": 3.986,
+        "climbMps": 1.624,
+        "gainedM": 3.965,
         "leftStickAfterRelease": 0
       }
     },
@@ -57,24 +57,45 @@
       "id": "T4-tablet the height holds with no finger on the sticks",
       "ok": true,
       "detail": {
-        "spreadM": 0.036
+        "spreadM": 0.035
       }
     },
     {
-      "id": "T5-tablet the right stick at half forward tilts the drone (angle mode); moves are read from pointerrawupdate, earlier than the rAF-aligned pointermove (control)",
+      "id": "T5-tablet the right stick at half forward tilts the drone (angle mode); a touch sample reaches the flight at the frame measured for pointermove and for pointerrawupdate (100 % the same frame); control: a sample held to the next animation frame is measured a frame later",
       "ok": true,
       "detail": {
         "pitchDeg": 17.284,
-        "pageFrameP50Ms": 33.3,
-        "rawupdate": {
-          "n": 12,
-          "p50": 25.1,
-          "p95": 88.2
+        "matched": 51,
+        "sameFramePct": 100,
+        "moveLaterPct": 0,
+        "moveEarlierPct": 0,
+        "rawToFlightMs": {
+          "p50": 50,
+          "p95": 82.5
         },
-        "pointermoveControl": {
-          "n": 12,
-          "p50": 49.1,
-          "p95": 113.5
+        "moveToFlightMs": {
+          "p50": 50,
+          "p95": 82.5
+        },
+        "controlN": 51,
+        "controlLaterPct": 94.1,
+        "framePeriodP50Ms": 33.3,
+        "samples": {
+          "raw": 51,
+          "move": 51,
+          "frames": 397
+        }
+      }
+    },
+    {
+      "id": "T10-tablet from a touch-down on the pad's outer rim the screen's edge is full stick (roll and pitch back); control: the first grab reached 0.256 / -0.256",
+      "ok": true,
+      "detail": {
+        "rollAtRightEdge": 1,
+        "pitchAtBottomEdge": -1,
+        "firstGrab": {
+          "roll": 0.256,
+          "pitch": -0.256
         }
       }
     },
@@ -82,7 +103,7 @@
       "id": "T6-tablet the pilot school chip is on screen",
       "ok": true,
       "detail": {
-        "chip": "School 1/4 \u00b7 10 / 30 s"
+        "chip": "School 1/4 \u00b7 15 / 30 s"
       }
     },
     {
@@ -110,6 +131,27 @@
         "sx": 0,
         "sy": 0,
         "scale": 1
+      }
+    },
+    {
+      "id": "T11-tablet the touch flight (auto-arm, altitude help, grab) replays from its log to the same hash; controls: one LSB and a 0.05 stick twitch in one record change it",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "saved": "61950544a4ba34428376409935838995f15cb388189c2adc9d86dd842caf2be1",
+        "replayed": "61950544a4ba34428376409935838995f15cb388189c2adc9d86dd842caf2be1",
+        "endTick": 18310,
+        "lives": 1,
+        "refused": null,
+        "tamperedAtTick": 9155,
+        "lsb": {
+          "was": -0.44309720396995544,
+          "differs": true
+        },
+        "twitch": {
+          "was": 0,
+          "differs": true
+        }
       }
     },
     {
@@ -149,8 +191,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.651,
-        "gainedM": 3.984,
+        "climbMps": 1.639,
+        "gainedM": 4.122,
         "leftStickAfterRelease": 0
       }
     },
@@ -158,24 +200,45 @@
       "id": "T4-phone the height holds with no finger on the sticks",
       "ok": true,
       "detail": {
-        "spreadM": 0.038
+        "spreadM": 0.037
       }
     },
     {
-      "id": "T5-phone the right stick at half forward tilts the drone (angle mode); moves are read from pointerrawupdate, earlier than the rAF-aligned pointermove (control)",
+      "id": "T5-phone the right stick at half forward tilts the drone (angle mode); a touch sample reaches the flight at the frame measured for pointermove and for pointerrawupdate (100 % the same frame); control: a sample held to the next animation frame is measured a frame later",
       "ok": true,
       "detail": {
-        "pitchDeg": 17.85,
-        "pageFrameP50Ms": 33.3,
-        "rawupdate": {
-          "n": 12,
-          "p50": 22.9,
-          "p95": 189.5
+        "pitchDeg": 17.849,
+        "matched": 51,
+        "sameFramePct": 100,
+        "moveLaterPct": 0,
+        "moveEarlierPct": 0,
+        "rawToFlightMs": {
+          "p50": 50.4,
+          "p95": 58.6
         },
-        "pointermoveControl": {
-          "n": 12,
-          "p50": 49.3,
-          "p95": 200.3
+        "moveToFlightMs": {
+          "p50": 50.4,
+          "p95": 58.6
+        },
+        "controlN": 51,
+        "controlLaterPct": 100,
+        "framePeriodP50Ms": 33.3,
+        "samples": {
+          "raw": 51,
+          "move": 51,
+          "frames": 401
+        }
+      }
+    },
+    {
+      "id": "T10-phone from a touch-down on the pad's outer rim the screen's edge is full stick (roll and pitch back); control: the first grab reached 0.424 / -0.431",
+      "ok": true,
+      "detail": {
+        "rollAtRightEdge": 1,
+        "pitchAtBottomEdge": -1,
+        "firstGrab": {
+          "roll": 0.424,
+          "pitch": -0.431
         }
       }
     },
@@ -183,7 +246,7 @@
       "id": "T6-phone the pilot school chip is on screen",
       "ok": true,
       "detail": {
-        "chip": "School 1/4 \u00b7 10 / 30 s"
+        "chip": "School 1/4 \u00b7 15 / 30 s"
       }
     },
     {
@@ -212,6 +275,27 @@
         "sx": 0,
         "sy": 0,
         "scale": 1
+      }
+    },
+    {
+      "id": "T11-phone the touch flight (auto-arm, altitude help, grab) replays from its log to the same hash; controls: one LSB and a 0.05 stick twitch in one record change it",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "saved": "4d066e9f996d3101049993aa187f8995d00b303ae1e57cc3752add9cfe7decd1",
+        "replayed": "4d066e9f996d3101049993aa187f8995d00b303ae1e57cc3752add9cfe7decd1",
+        "endTick": 18472,
+        "lives": 1,
+        "refused": null,
+        "tamperedAtTick": 9236,
+        "lsb": {
+          "was": -0.44309622049331665,
+          "differs": true
+        },
+        "twitch": {
+          "was": 0,
+          "differs": true
+        }
       }
     },
     {
@@ -251,8 +335,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.621,
-        "gainedM": 3.99,
+        "climbMps": 1.62,
+        "gainedM": 3.932,
         "leftStickAfterRelease": 0
       }
     },
@@ -260,24 +344,45 @@
       "id": "T4-phone-landscape the height holds with no finger on the sticks",
       "ok": true,
       "detail": {
-        "spreadM": 0.037
+        "spreadM": 0.034
       }
     },
     {
-      "id": "T5-phone-landscape the right stick at half forward tilts the drone (angle mode); moves are read from pointerrawupdate, earlier than the rAF-aligned pointermove (control)",
+      "id": "T5-phone-landscape the right stick at half forward tilts the drone (angle mode); a touch sample reaches the flight at the frame measured for pointermove and for pointerrawupdate (100 % the same frame); control: a sample held to the next animation frame is measured a frame later",
       "ok": true,
       "detail": {
-        "pitchDeg": 17.283,
-        "pageFrameP50Ms": 33.3,
-        "rawupdate": {
-          "n": 12,
-          "p50": 19.1,
-          "p95": 98.5
+        "pitchDeg": 17.284,
+        "matched": 51,
+        "sameFramePct": 100,
+        "moveLaterPct": 0,
+        "moveEarlierPct": 0,
+        "rawToFlightMs": {
+          "p50": 48.5,
+          "p95": 62.8
         },
-        "pointermoveControl": {
-          "n": 12,
-          "p50": 49.1,
-          "p95": 136.7
+        "moveToFlightMs": {
+          "p50": 48.5,
+          "p95": 62.8
+        },
+        "controlN": 51,
+        "controlLaterPct": 100,
+        "framePeriodP50Ms": 33.3,
+        "samples": {
+          "raw": 51,
+          "move": 51,
+          "frames": 404
+        }
+      }
+    },
+    {
+      "id": "T10-phone-landscape from a touch-down on the pad's outer rim the screen's edge is full stick (roll and pitch back); control: the first grab reached 0.256 / -0.252",
+      "ok": true,
+      "detail": {
+        "rollAtRightEdge": 1,
+        "pitchAtBottomEdge": -1,
+        "firstGrab": {
+          "roll": 0.256,
+          "pitch": -0.252
         }
       }
     },
@@ -285,7 +390,7 @@
       "id": "T6-phone-landscape the pilot school chip is on screen",
       "ok": true,
       "detail": {
-        "chip": "School 1/4 \u00b7 10 / 30 s"
+        "chip": "School 1/4 \u00b7 15 / 30 s"
       }
     },
     {
@@ -312,6 +417,27 @@
         "sx": 0,
         "sy": 0,
         "scale": 1
+      }
+    },
+    {
+      "id": "T11-phone-landscape the touch flight (auto-arm, altitude help, grab) replays from its log to the same hash; controls: one LSB and a 0.05 stick twitch in one record change it",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "saved": "8dedf79055298a579c2d8d08dc5c9b2d1944701c8922885c48123d632d1d1c54",
+        "replayed": "8dedf79055298a579c2d8d08dc5c9b2d1944701c8922885c48123d632d1d1c54",
+        "endTick": 18400,
+        "lives": 1,
+        "refused": null,
+        "tamperedAtTick": 9200,
+        "lsb": {
+          "was": -0.44306665658950806,
+          "differs": true
+        },
+        "twitch": {
+          "was": 0,
+          "differs": true
+        }
       }
     },
     {

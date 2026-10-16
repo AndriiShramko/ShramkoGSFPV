@@ -27,15 +27,6 @@ import type { PlayProfile } from '../play/keys';
 import { PadGrab, padTravel, reachOf } from '../play/touch-map';
 import { t } from '../i18n';
 
-/**
- * Chrome holds pointermove until just before the next animation frame (rAF-aligned input, since
- * Chrome 60), so on a busy page a finger's move reached the flight up to one frame late, while a
- * radio's HID report or a polled gamepad arrives between frames. pointerrawupdate is delivered as
- * soon as the main thread is free (secure contexts; Chrome 77+, Firefox 148+): moves are read from it
- * where the browser has it, from pointermove elsewhere (accept-v08-play.ts measures both).
- */
-const RAW_MOVES = typeof window !== 'undefined' && 'onpointerrawupdate' in window;
-
 /** Keep-alive of the pilot profile (the stale-input gate never applies to touch, the HUD reads it). */
 const KEEPALIVE_MS = 20;
 /** Easy play sends a frame this often: the altitude help needs a steady stream. */
@@ -83,9 +74,11 @@ export class TouchSticks {
             const pad: Pad = { el, knob, id: null, grab: new PadGrab(), left, px: 0, py: 0 };
             this.pads.push(pad);
             el.addEventListener('pointerdown', (e) => this.down(pad, e));
-            el.addEventListener(RAW_MOVES ? 'pointerrawupdate' : 'pointermove', ((e: PointerEvent) => this.move(pad, e)) as EventListener);
-            // pointermove after its rawupdate brings no new sample; its default (a scroll) is still stopped
-            if (RAW_MOVES) el.addEventListener('pointermove', (e) => { if (pad.id === e.pointerId) e.preventDefault(); });
+            // pointermove (rAF-aligned, its coalesced samples read in move()): Chrome dispatches it just
+            // before the frame whose physics step takes the samples by their own timestamps, so a touch
+            // reaches the flight at the same frame as the earliest handling (pointerrawupdate, a radio's
+            // report between frames) would; measured: accept-v08-play.ts T5, docs/wip/v08-a.md section 3
+            el.addEventListener('pointermove', (e) => this.move(pad, e));
             el.addEventListener('pointerup', (e) => this.up(pad, e));
             el.addEventListener('pointercancel', (e) => this.up(pad, e));
         }
