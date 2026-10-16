@@ -107,6 +107,16 @@ export class KeyboardSource {
         return this.profile === 'easy' && this.easy !== null;
     }
 
+    /**
+     * Shift is held as easy play's boost: the keyboard flies easy play and Shift is down together
+     * with a flying key. Shift alone boosts nothing, so then it stays the shortcut modifier (Shift+N).
+     * The key router reads it to choose shortcuts as if Shift were up (app/keys.ts shiftIsBoost).
+     */
+    boosting(): boolean {
+        if (this.passive || !this.isEasy) return false;
+        return BOOST_CODES.some((c) => this.down.has(c)) && EASY_FLYING.some((c) => this.down.has(c));
+    }
+
     /** Fly with the keyboard (true) or leave the sticks to another source (false). */
     setActive(on: boolean): void {
         this.passive = !on;

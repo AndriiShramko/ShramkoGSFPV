@@ -77,7 +77,8 @@ class Flight implements FlightContext {
         this.crash = new CrashView(session);
         this.quality = new Quality(session.renderer);
         // the Controls screen has its own keys (it stops Esc, P, R and Space itself)
-        this.keys = new KeyRouter({ state: () => (this.crash.active ? 'crash' : 'flight') });
+        // Shift held with a flying key is easy play's boost, not a modifier (app/keys.ts shiftIsBoost)
+        this.keys = new KeyRouter({ state: () => (this.crash.active ? 'crash' : 'flight'), shiftIsBoost: () => this.input.keyboard.boosting() });
         this.keys.block(() => !!document.querySelector('.screen.radio'));
         this.menu = new PauseMenu(ui, this.keys, this);
         this.input = new InputHost(this);
