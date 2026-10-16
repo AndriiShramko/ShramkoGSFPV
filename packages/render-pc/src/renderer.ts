@@ -386,8 +386,9 @@ export class SplatRenderer {
         const start = async (): Promise<unknown> => {
             if (!isMeta) {
                 // the engine fetches lod-meta.json itself and cannot be handed it; read it first so a broken
-                // one is an error here instead of an asset that never loads (its own request then comes
-                // from the HTTP cache: the CDN sends Last-Modified and no Cache-Control)
+                // one is a BrokenFileError here, before an engine asset exists, instead of the engine's own
+                // English error (lod.ts lodMetaProblem; its own request then comes from the HTTP cache: the
+                // CDN sends Last-Modified and no Cache-Control)
                 const problem = lodMetaProblem(await readJson());
                 if (problem) throw new BrokenFileError(`${filename} is not an octree the engine can open: ${problem}`);
                 return undefined;

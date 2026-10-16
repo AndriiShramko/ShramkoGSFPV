@@ -1,18 +1,22 @@
 // v0.8 lane C (the owner's item 8): levels of detail by default, in the real page. Draws scans: run it
 // under the GPU lock (C:/dev/.gpu-lock). Every item has a control that must come out the other way.
 //   L1  the owner's streamed city scan ba7aa29d (60.3 M splats, 10 levels) on a desktop: it opens from
-//       lod-meta.json, the LOD range opens to every level after the reveal, and for 20 s after the reveal
-//       the drawing stays at the top (4 M, render scale 1: the governor judges frames on the rAF clock
-//       against a period learned from 60 frames), the finest level is in use near the camera, and F3
-//       says "Levels of detail: 10". Control: the same page of the release before lane C (SITE_BEFORE)
-//       lowers the drawing within those 20 s (its clock read on-time frames as missed), the camera still.
+//       lod-meta.json, the LOD range opens to every level after the reveal, and in the 20 s after the
+//       reveal the governor never cascades (at most one step below the top, 4 M at render scale 1) and
+//       is back at the top at the end; the finest level is in use near the camera, and F3 says "Levels
+//       of detail: 10". One step is the governor's answer to one burst of missed frames (10 % of a
+//       second), which the reveal's streaming can cause now that every missed frame counts (review R1:
+//       measured once, 3 missed frames, step 1 for 5 s); the owner's coarse city was a cascade.
+//       Control: the same page of the release before lane C (SITE_BEFORE) cascades, 2 steps or more,
+//       within those 20 s (its clock read on-time frames as missed), the camera still.
 //   L2  a phone (user agent, touch, small viewport): the same scan streams its levels under SuperSplat's
 //       mobile budget, a 2 M top. Control: the desktop's 4 M top in L1.
 //   L3  a broken lod-meta.json falls back: 723068d7 is told it has a lod-meta.json (HEAD 200, the body an
 //       error page as JSON); the session refuses it, opens meta.json and says so (window.__gsfpv.lod():
 //       one content failure, kind meta, F3 "did not open"). Controls: the same scene without the route
-//       opens meta.json with no failure; 39e63ce9 with the same broken lod-meta.json and no meta.json ends
-//       in an error card within a minute instead of a page that waits forever.
+//       opens meta.json with no failure; 39e63ce9 with the same broken lod-meta.json, or with one whose
+//       first leaf has no bound, and no meta.json ends in the pilot's error card 'broken' (error.broken)
+//       within a minute; a release without the check (SITE_BEFORE) does not show that card.
 //   L4  SuperSplat's next default, a folder with both files: 39e63ce9 is told it also has a meta.json
 //       (HEAD 200); the scan still streams its levels from lod-meta.json and meta.json is never fetched.
 //       Control: L3's scene, whose only file is meta.json, fetches it.
@@ -108,6 +112,8 @@ async function hold(page: Page): Promise<Any[]> {
 }
 const finest = (o: Record<string, number>) => { const ks = Object.keys(o ?? {}).map(Number).filter((k) => o[k] > 0); return ks.length ? Math.min(...ks) : null; };
 const lowered = (samples: Any[]) => samples.some((x) => x.budgetM < 4 - 1e-9 || x.scale < 1 - 1e-9);
+/** The governor's deepest step in the samples (0 = the top). */
+const deepest = (samples: Any[]) => Math.max(0, ...samples.map((x) => x.step ?? 0));
 
 const out: Record<string, unknown> = {};
 const pass: Record<string, boolean> = {};
@@ -129,13 +135,14 @@ if (want('L1')) {
     const before = SITE_BEFORE ? await run(SITE_BEFORE, 'before') : null;
     const a = after;
     const okAfter = a.atReveal.status === 'ready' && a.end.contentKind === 'lod-meta' && a.end.lod?.levels === 10 && a.end.lod?.mode === 'auto'
-        && a.end.rangeMin === 0 && a.end.rangeMax >= 9 && !a.lowered && a.end.top === 4 && a.finestAtEnd !== null && a.finestAtEnd <= 1
+        && a.end.rangeMin === 0 && a.end.rangeMax >= 9 && deepest(a.samples) <= 1 && a.end.step === 0 && a.end.budgetM === 4 && a.end.scale === 1
+        && a.end.top === 4 && a.finestAtEnd !== null && a.finestAtEnd <= 1
         && /^Levels of detail: 10, chosen by distance/.test(a.end.detailLine ?? '') && a.pageerrors.length === 0;
-    // the control proves the check can fail: the old governor lowers the same scan in the same window
-    const controlFired = before === null ? null : before.atReveal.status === 'ready' && before.lowered;
+    // the control proves the check can fail: the old governor's cascade (2 steps or more) on the same scan
+    const controlFired = before === null ? null : before.atReveal.status === 'ready' && deepest(before.samples) >= 2;
     out.L1 = { after, before, okAfter, controlFired };
     pass.L1 = okAfter && controlFired !== false;
-    console.log('L1', pass.L1, JSON.stringify({ okAfter, controlFired, after: { finest: a.finestAtEnd, lowered: a.lowered, hitches: a.end.hitches, line: a.end.detailLine }, before: before && { lowered: before.lowered, changes: before.end.changes } }));
+    console.log('L1', pass.L1, JSON.stringify({ okAfter, controlFired, after: { finest: a.finestAtEnd, lowered: a.lowered, deepest: deepest(a.samples), changes: a.end.changes, hitches: a.end.hitches, line: a.end.detailLine }, before: before && { lowered: before.lowered, deepest: deepest(before.samples), changes: before.end.changes } }));
 }
 
 // ------------------------------------------------------------------ L2
@@ -195,41 +202,39 @@ if (want('L3')) {
     const b = await context(browser);
     const plain = await open(b.page, SITE, SINGLE);
     await b.ctx.close();
-    // control 2: the broken lod-meta.json with nothing to fall back to: an error card, not an endless wait
-    const c = await context(browser);
-    await c.ctx.route(`${CDN}/${STREAMED}/v1/lod-meta.json`, (route) => (route.request().method() === 'HEAD' ? route.continue() : route.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*', 'content-type': 'application/json' }, body: BROKEN })));
-    const t0 = Date.now();
-    const dead = await open(c.page, SITE, STREAMED, 60000).catch((e: Error) => ({ status: 'timeout', error: e.message }));
-    const deadMs = Date.now() - t0;
-    const deadText = await c.page.evaluate('(document.querySelector(".scene-error") || {}).textContent || null');
-    await c.page.screenshot({ path: join(SHOTS, 'L3-no-fallback.png') });
-    await c.ctx.close();
-    // review R2/R3: a lod-meta.json whose top level is right but one leaf has no bound (the engine throws on
-    // it inside its HTTP callback and the page waits forever): an error card 'broken' with the pilot's text.
-    // Control (SITE_BEFORE, a release without the leaf check): the same file and no answer within a minute.
+    // control 2: a broken lod-meta.json with nothing to fall back to, and (review R2/R3) one whose top
+    // level is right but whose first leaf has no bound: an error card 'broken' with the pilot's text within
+    // a minute. Control (SITE_BEFORE, a release without the check): not the pilot's text. Measured: the
+    // engine itself fails such a file ("Error loading gsplat octree": its Http calls the parser's callback
+    // inside a try/catch), so a release without the check shows that English message (errorCode
+    // 'generic'); the review's "the page waits forever" did not happen for a leaf without a bound.
     const leaf = await leafBroken(STREAMED);
-    const leafRun = async (site: string) => {
+    const brokenRun = async (site: string, body: string, shot: string) => {
         const x = await context(browser);
-        await x.ctx.route(`${CDN}/${STREAMED}/v1/lod-meta.json`, (route) => (route.request().method() === 'HEAD' ? route.continue() : route.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*', 'content-type': 'application/json' }, body: leaf.body })));
+        await x.ctx.route(`${CDN}/${STREAMED}/v1/lod-meta.json`, (route) => (route.request().method() === 'HEAD' ? route.continue() : route.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*', 'content-type': 'application/json' }, body })));
         const t1 = Date.now();
         const st: Any = await open(x.page, site, STREAMED, 60000).catch((e: Error) => ({ status: 'timeout', error: e.message }));
         const ms = Date.now() - t1;
         const text = await x.page.evaluate('(document.querySelector(".scene-error") || {}).textContent || null');
-        await x.page.screenshot({ path: join(SHOTS, `L3-leaf-${site === SITE ? 'after' : 'before'}.png`) });
+        await x.page.screenshot({ path: join(SHOTS, `${shot}.png`) });
         await x.ctx.close();
         return { ...st, ms, text };
     };
-    const leafAfter = await leafRun(SITE);
-    const leafBefore = SITE_BEFORE ? await leafRun(SITE_BEFORE) : null;
-    out.L3 = { fallback: { atReveal: fell, end: fellEnd, cdn: fellUrls, pageerrors: errors(a.log) }, plain, noFallback: { ...dead, ms: deadMs, text: deadText }, leaf: { removed: leaf.removed, after: leafAfter, before: leafBefore } };
+    const dead = await brokenRun(SITE, BROKEN, 'L3-no-fallback');
+    const leafAfter = await brokenRun(SITE, leaf.body, 'L3-leaf-after');
+    const deadBefore = SITE_BEFORE ? await brokenRun(SITE_BEFORE, BROKEN, 'L3-no-fallback-before') : null;
+    const leafBefore = SITE_BEFORE ? await brokenRun(SITE_BEFORE, leaf.body, 'L3-leaf-before') : null;
+    /** The pilot's card for a damaged scan, in time. */
+    const card = (x: Any) => x.status === 'error' && x.errorCode === 'broken' && x.text === FLY_EN['error.broken'] && x.ms < 60000;
+    out.L3 = { fallback: { atReveal: fell, end: fellEnd, cdn: fellUrls, pageerrors: errors(a.log) }, plain, noFallback: { after: dead, before: deadBefore }, leaf: { removed: leaf.removed, after: leafAfter, before: leafBefore } };
     pass.L3 = fell.status === 'ready' && fellEnd.contentKind === 'meta' && fellEnd.lod?.contentFailures?.length === 1 && /not an octree/.test(fellEnd.lod.contentFailures[0].error)
         && fellUrls.some((u: string) => u === `GET /${SINGLE}/v1/lod-meta.json`) && fellUrls.some((u: string) => u === `GET /${SINGLE}/v1/meta.json`)
         && /did not open/.test(fellEnd.detailLine ?? '') && errors(a.log).length === 0
         && plain.status === 'ready' && plain.contentKind === 'meta' && plain.lod?.contentFailures?.length === 0
-        && dead.status === 'error' && deadMs < 60000 && (dead as Any).errorCode === 'broken' && deadText === FLY_EN['error.broken']
-        && leafAfter.status === 'error' && leafAfter.errorCode === 'broken' && leafAfter.text === FLY_EN['error.broken'] && leafAfter.ms < 60000
-        && (leafBefore === null || leafBefore.status === 'timeout');
-    console.log('L3', pass.L3, JSON.stringify({ fell: [fell.status, fellEnd.contentKind, fellEnd.lod?.contentFailures], plain: [plain.status, plain.contentKind], dead: [dead.status, (dead as Any).errorCode, deadMs, deadText], leaf: leaf.removed, leafAfter: [leafAfter.status, leafAfter.errorCode, leafAfter.ms], leafBefore: leafBefore && [leafBefore.status, leafBefore.errorCode, leafBefore.ms] }));
+        && card(dead) && card(leafAfter)
+        && (leafBefore === null || (leafBefore.status !== 'ready' && !card(leafBefore)));
+    const brief = (x: Any) => x && [x.status, x.errorCode, x.ms, x.error && String(x.error).slice(0, 90)];
+    console.log('L3', pass.L3, JSON.stringify({ fell: [fell.status, fellEnd.contentKind, fellEnd.lod?.contentFailures], plain: [plain.status, plain.contentKind], dead: brief(dead), leaf: leaf.removed, leafAfter: brief(leafAfter), deadBefore: brief(deadBefore), leafBefore: brief(leafBefore) }));
 }
 
 // ------------------------------------------------------------------ L4

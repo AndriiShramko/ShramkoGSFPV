@@ -32,9 +32,12 @@ function isBound(b: unknown): boolean {
 /**
  * Why the engine cannot open this lod-meta.json, or null when it can. The engine (playcanvas 2.23
  * GSplatOctreeResource -> GSplatOctree -> GSplatOctreeNode) builds the whole octree in its constructor,
- * inside the HTTP callback of its own request, with no try/catch: anything it throws on there leaves an
- * asset that neither loads nor fails, so the scan would wait forever. Checked first, such a file is an
- * error the session can fall back from (the scene's next content file, @gsfpv/scenes content.ts).
+ * inside the HTTP callback of its own request. What it throws on there comes back as the asset's own
+ * error ("Error loading gsplat octree: ... [TypeError ...]": its Http calls the callback inside a
+ * try/catch; measured in review R2 on releases 0df437d and eef522b with a leaf that has no bound), in
+ * English and only after the asset was made. Checked first, such a file is told apart as damaged
+ * (BrokenFileError: the scene error 'broken' and the pilot's own text) and the scene's next content file
+ * is tried before any engine asset exists (@gsfpv/scenes content.ts).
  *
  * What the engine reads, and so what is checked (tested against the engine's own constructor, lod.test.ts):
  *   - `lodLevels` (a whole number; 0 or a fraction would build an octree with no levels);
