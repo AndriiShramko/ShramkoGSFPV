@@ -38,6 +38,10 @@ The formulas and constants below were **read** from Betaflight 4.5.1 (tag `4.5.1
 
 Every preset number carries its own `source` (`manufacturer`, `measured:<who>`, `estimate`, `bf-default`) and, where it exists, a link. Estimates are labelled as estimates everywhere they are shown.
 
+**v0.8 presets** (`nazgulf5v3-6s`, `machr5sport-6s`, `taurusx8-komodo-6s`): weights, geometry, motors, props and packs from iFlight's published specifications (the RED Komodo 6K body weight from its rental and dealer listings); thrust-to-weight, inertia, motor lag, drag and the cinelifter's PID are estimates, each derivation written out with its sources in [`research/drones-v08.md`](research/drones-v08.md).
+
+**Prop wash** (`packages/sim-core/src/wake.ts`, v0.8): our own model from textbook momentum theory (induced velocity `sqrt(T / (2 rho A))`, the vortex-ring band of axial descent between about 0.25 and 2 induced velocities). No code or table from another simulator. Its turbulence uses the seeded noise of `wind.ts` (murmur3's 32-bit finaliser constants, public domain).
+
 ## Scenes
 
 No scene data is part of this repository except the collision fixture of scene `39e63ce9` (scan by Andrii Shramko, CC BY 4.0), see [`fixtures/39e63ce9/ATTRIBUTION.md`](../fixtures/39e63ce9/ATTRIBUTION.md). Scenes are loaded at runtime from the SuperSplat CDN.
