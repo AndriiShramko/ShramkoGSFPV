@@ -119,6 +119,90 @@ one end's bit and a Horizon range on the other's give Angle / Acro / Horizon ove
 one end to the other. The setup wizard's own mode switch (one input) sees only one end's bit:
 2 positions. Known limitation.
 
+## Which control is which (v0.8 lane B, 2026-10-16)
+
+Every fact below is marked **measured** (from the owner's recording, re-run with
+`python tools/radios/dji-recording.py`), **sourced** (a page, linked) or **assumed** (the reason given).
+The simulator's known-controller table (`packages/input/src/known-devices.ts`) carries the same marks;
+the check screen shows them so the owner can confirm on his controller in half a minute.
+
+### The controller's controls (sourced)
+
+DJI FPV Remote Controller 3 User Manual v1.0, 2024.04 (copy at
+https://www.lensrentals.com/product-assets/874ea987-4063-4505-8cfd-fcddd02c7a19/1110698.pdf), page 5 and
+pages 13-17: power button, C1 button (customizable: ESC beeping or turtle mode), two control sticks,
+flight pause / RTH button, gimbal dial, **flight mode switch** (Normal / Sport / Manual, the figure lists
+Manual, Sport, Normal from top to bottom; Manual is off by default and the M position then gives the
+"custom mode", Sport by default), **C2 switch** (customizable, by default gimbal tilt up / recenter /
+tilt down), start/stop button (Manual mode: "press the start/stop button twice" with the throttle at
+its lowest to start and stop the motors), shutter/record button. Default stick mode: **Mode 2**. The
+throttle stick **springs to the centre** unless the F1/F2 screws behind it are adjusted ("tighten the
+screws behind the throttle stick to keep the stick from auto recentering", Manual mode section).
+Supported simulators named there: Liftoff, Uncrashed, DRL, DCL.
+
+Linux names it the same as Windows: `lsusb` shows `2ca3:1021 DJI Technology Co., Ltd. DJI Virtual
+Joystick` (Liftoff forum, 2025-03-15,
+https://steamcommunity.com/app/410340/discussions/1/640179666902122415/). **DJI uses 2ca3:1021 for other
+controllers too** (an RC Motion 3 with only a bulk interface, https://github.com/v1kr4m-ai/DJI_RC_Motion_Bridge/issues/1;
+the DJI RC 2 screen controller, https://github.com/rusty407/dji-rc2-linux-joystick), so the simulator
+recognises the controller by its ids **and** the shape of its HID gamepad (5 axes of -660..660, buttons).
+
+### Which axis is which stick
+
+- **measured: X and Rx are the two horizontal axes, Y and Z the two vertical ones.** While both sticks
+  are stirred, horizontals move mirrored and verticals together: correlation X/Rx -0.86, Y/Z +0.84,
+  every other pair between -0.30 and +0.26 (negative control, each axis shifted in time: -0.33..+0.02).
+  At rest X and Rx sit a little off centre with a jitter (-11 and -8 units), Y and Z read exactly 0.
+- **measured (weaker): X pairs with Y, Z with Rx.** The angle atan2 of a stick's two axes turns one way
+  while it is stirred: X/Y 5 and Z/Rx 1 direction reversals, against X/Z 11 + Y/Rx 3 for the other
+  pairing (control: 20-38). Both pairings trace circles in a perfect mirror stir, so this rests on
+  the hands not being exactly in step.
+- **sourced: X roll, Y pitch, Z throttle, Rx yaw** (Mode 2: right stick X/Y, left stick Z/Rx). Uncrashed's
+  developer for the DJI FPV Remote Controller 2: "throttle: axis3, Roll: Axis1, Pitch: Axis2, Yaw:
+  Axis4", confirmed by users (2021-09-03, https://steamcommunity.com/app/1682970/discussions/0/3037103480425804141).
+  Consistent with both measurements above.
+- **measured: the throttle stick rested in the centre** (Z exactly 0 between stirs, e.g. 1.0-1.4 s of
+  the fixture): the owner's controller had the factory spring, so throttle in the middle = 50 %.
+- **assumed: stick up and stick right read positive.** DJI's own RC units are 1024 +- 660 (the reports'
+  -660..660), and in DJI's Onboard SDK virtual RC "move upwards" is 1684 on the throttle
+  (https://developer.dji.com/onboard-sdk/documentation/Protocol-Documents/virtual-rc-protocol.html). Not
+  measured: the recording does not say what the hands did. A wrong sign shows on the check screen at
+  once (the bar moves the other way) and Reverse fixes it.
+- **measured: the fifth axis (Ry) is the gimbal dial**; it has no Betaflight channel (Oscar Liang's
+  readers: the dial cannot be mapped as an AUX channel).
+
+### The switches and buttons
+
+- **measured: bits 4/5 and 6/7 are two 3-position switches** (one end's bit, the other end's bit,
+  neither = middle), bits 0..3 four push buttons. Both switches rested at their lower bit (0x50).
+  Pair 6/7 passes through its middle (no bit) for 28-62 ms on every end-to-end flip (4 of 4) and sat
+  in the middle for 120 ms once; pair 4/5 went end to end with no middle sample 3 times out of 3 at
+  ~165 polls a second, and sat in its middle for 520 ms once.
+- **sourced: the flight mode switch is a 3-position toggle and the C2 switch the other** (Oscar Liang,
+  RC 3 + O4 air unit in Betaflight: "AUX1 - M/S/N Mode switch (top-left 3-position toggle)", "AUX2 -
+  Top-right 3-position toggle", AUX3 the return-to-home button, AUX4 the start/stop button (a reader
+  says it is the record button), AUX5 the C1 button; https://oscarliang.com/setup-dji-rc3-o4-betaflight/).
+- **assumed: the flight mode switch is bits 6/7**, with bit 6 = N (Normal, where it rested), no bit =
+  S, bit 7 = M. Reason: it behaves like a plain toggle passing through its middle detent, as a 3-way
+  N/S/M toggle does; DJI ships the switch in N. In the simulator N -> Angle, S -> Horizon, M -> Acro
+  (Normal is the self-levelling mode, Manual the full-manual one; Sport sits between).
+- **assumed: buttons in the manual's order**: bit 0 C1, bit 1 flight pause / RTH, bit 2 start/stop,
+  bit 3 shutter/record. Arm = the start/stop button (it starts the motors in DJI's Manual mode), a
+  press toggles the arm (the simulator's arm gate still wants the throttle low).
+- **Betaflight channels (sourced order, assumed bits)**: CH1 roll, CH2 pitch, CH3 throttle, CH4 yaw,
+  CH5 flight mode switch, CH6 C2 switch, CH7 pause / RTH, CH8 start/stop, CH9 C1.
+
+### Feel: delay and sensitivity reported by others (sourced, not measured here)
+
+- An RC 3 owner's yaw stick lagged in Manual mode only, and Liftoff reproduced it; DJI support asked
+  to recalibrate the sticks in the goggles (DJI forum, 2024-07, https://forum.dji.com/thread-314556-1-1.html).
+- A DJI FPV Remote Controller 2 read full deflection at about 10 % of the right stick's travel, in the
+  goggles' calibration and in Velocidrone alike (DJI forum, https://forum.dji.com/thread-287422-1-1.html);
+  an Uncrashed user fixed over-sensitive sticks by calibrating (same Steam thread as above, 2022-09-30).
+- With the O4 air unit DJI claims 8 ms end to end; a review measured 9-11 ms (Race) and 12-15 ms
+  (Standard) against 4-6 ms for ELRS at 500 Hz (https://blog.uavmodel.com/dji-fpv-remote-controller-3-complete-setup-and-review/).
+  Over USB in simulator mode the controller sent about 160 reports a second (measured, above).
+
 ## Tests without the hardware
 
 - `packages/input/test/hid-layout.test.ts`: the DJI descriptor's layout in both Chromium shapes
