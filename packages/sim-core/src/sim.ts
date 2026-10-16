@@ -21,6 +21,7 @@ import type { LevelParams, RespawnOpts } from './contracts';
 import { PlatformContact } from './platform';
 import { compileWind } from './wind';
 import type { WindField } from './wind';
+import { inducedVelocity, wakeIntensity, wakeNoise } from './wake';
 
 export const DT = 0.001;
 export const DT_US = 1000;
@@ -208,6 +209,11 @@ export class Sim {
      * part of the hashed state: the noise is a function of the tick, so nothing carries over a step.
      */
     readonly windNow = new Float64Array(3);
+    /**
+     * The prop-wash intensity of the last step, 0..1 (wake.ts); always 0 for a preset without prop wash.
+     * Not part of the hashed state: it is recomputed from the state and the tick every step.
+     */
+    washNow = 0;
 
     constructor(p: SimParams, world: ContactWorld | null) {
         this.p = p;
@@ -313,6 +319,35 @@ export class Sim {
     respawn(x: number, y: number, z: number, yawDeg: number, opts: RespawnOpts = {}): void {
         this.events.push({ type: 'respawn', tick: this.tick });
         this.reset(x, y, z, yawDeg, opts);
+    }
+
+    /**
+     * Prop-wash intensity 0..1 for this step (wake.ts) from the hashed state and the tick only: the
+     * thrust the rotors make now (motor state before this step's lag, at the pack's voltage) sets the
+     * induced velocity; the airspeed (velocity minus the wind at this tick, the same wind the drag uses
+     * below) split along the body's up axis and its rotor plane sets where the craft is in its wake.
+     * r01..r21 = body up in world, r00..r20 = body right, r02..r22 = body back.
+     */
+    private washIntensity(tmax: number, ux: number, uy: number, uz: number, rx: number, ry: number, rz: number, bx: number, by: number, bz: number): number {
+        const s = this.s;
+        const p = this.p;
+        let tNow = 0;
+        for (let i = 0; i < 4; i++) tNow += tmax * s[S.m0 + i] * s[S.m0 + i];
+        const vi = inducedVelocity(tNow, p.rho, p.wakeArea);
+        if (!(vi > 0)) return 0;
+        let ax = s[S.vx], ay = s[S.vy], az = s[S.vz];
+        const air = this.air;
+        if (air) {
+            const w = this.windNow;
+            air.at(this.tick, s[S.py] - (this.sceneS * air.groundM + this.sceneTy), w);
+            ax -= w[0];
+            ay -= w[1];
+            az -= w[2];
+        }
+        const up = ux * ax + uy * ay + uz * az;
+        const right = rx * ax + ry * ay + rz * az;
+        const back = bx * ax + by * ay + bz * az;
+        return wakeIntensity(-up, Math.sqrt(right * right + back * back), vi);
     }
 
     step(): void {
@@ -443,12 +478,22 @@ export class Sim {
         // spinning a rotor up takes torque, and the body takes the reaction about the motor axis:
         // J_r * d(omega)/dt with omega = w * omega_max(V) (H.2 item 3); CW props (+1) push +y like their drag
         const jr = (p.rotorInertia * p.omegaMaxPerVolt * volt) / DT;
+        // prop wash (wake.ts): only a preset that has it; without it `keep` stays exactly 1 (x 1 is exact
+        // in IEEE arithmetic) and no torque is added, so such a model flies bit for bit as before
+        let keep = 1;
+        let wash = 0;
+        if (p.wakeLoss > 0 || p.wakeShake > 0) {
+            wash = this.washIntensity(tmax, r01, r11, r21, r00, r10, r20, r02, r12, r22);
+            keep = 1 - p.wakeLoss * wash;
+        }
+        this.washNow = wash;
         for (let i = 0; i < 4; i++) {
             const k = S.m0 + i;
             const dw = (out[i] - s[k]) * aa;
             s[k] += dw;
             const w = s[k];
-            const T = tmax * w * w;
+            const T0 = tmax * w * w;
+            const T = T0 * keep;
             th[i] = T;
             tSum += T;
             wSum += w;
@@ -456,7 +501,15 @@ export class Sim {
             tauX += -mp[i * 3 + 2] * T;
             tauZ += mp[i * 3] * T;
             tauY += p.motorYaw[i] * (p.kappa * T + jr * dw);
-            power += p.kappa * T * (w * p.omegaMaxPerVolt * volt);
+            // the rotors turn as fast in the wash: the power follows the thrust they would make in clean air
+            power += p.kappa * T0 * (w * p.omegaMaxPerVolt * volt);
+        }
+        if (wash > 0 && p.wakeShake > 0) {
+            // turbulent roll (about body z) and pitch (about body x) torque: the rotors' thrust fluctuates by a
+            // share of what they make, unevenly from side to side; amplitude = share x one rotor's thrust x arm
+            const amp = p.wakeShake * wash * (tSum * 0.25) * Math.sqrt(mp[0] * mp[0] + mp[2] * mp[2]);
+            tauZ += amp * wakeNoise(0, this.tick);
+            tauX += amp * wakeNoise(1, this.tick);
         }
 
         if (this.perturb) tSum += this.perturb() * 1e-9;

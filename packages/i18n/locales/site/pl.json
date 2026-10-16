@@ -151,7 +151,9 @@
       "title": "Presety dronów: {n}",
       "note": "Każda liczba mówi, skąd pochodzi: producent, niezależny pomiar albo szacunek.",
       "fly": "Leć tym dronem",
-      "default": "domyślny"
+      "default": "domyślny",
+      "tuneNote": "Zbudowane z opublikowanych danych i szacunków. Latasz którymś z nich naprawdę, a tu czuje się inaczej? Wyślij swój diff all z Betaflight, log z blackboxa i kilka słów przez formularz Fizyka drona w symulatorze albo poproś tam o drona, którego brakuje.",
+      "tune": "Pomóż go dostroić"
     },
     "footer": {
       "note": "Wygenerowano {date} ze schematu ustawień. Ustawienie, które jest jeszcze w budowie, pojawi się tu w dniu wydania.",
@@ -712,7 +714,8 @@
       { "q": "Czy to open source?", "a": "Tak, na licencji MIT. Kod, pomiary i decyzje projektowe są na GitHubie. Wzory Betaflight zostały zaimplementowane od nowa; żaden kod na GPL nie został skopiowany." },
       { "q": "Czy symulator może po każdej kraksie przenieść mnie w nowe miejsce?", "a": "Tak. „Losowa z najlepszych” w zakładce SuperSplat otwiera skan, którego jeszcze nie widziałeś, Shift+N wczytuje losową scenę w locie, a z włączoną opcją „Następna scena po kraksie” każda kraksa przenosi Cię do innej sceny: z wyboru Andrija, z ulubionych albo z już przelatanych, w losowej albo stałej kolejności. Aparatura zostaje połączona." },
       { "q": "Czy mogę latać po pokoju jak po mieście?", "a": "Tak. Rozmiar sceny skaluje cały skan wokół drona od ×0,25 do ×100 klawiszami [ i ] (Shift+] podwaja) albo w menu pauzy. Przy ×100 krzesło jest jak wieżowiec i możesz zanurkować wzdłuż jego nóg; ściany skalują się razem ze sceną, więc nadal się o nie rozbijasz. Skala jest zapamiętana dla każdego skanu." },
-      { "q": "Czy mogę latać po własnym skanie 3D?", "a": "Tak. Opublikuj go na SuperSplat (superspl.at) i wklej jego link albo id na tej stronie lub w symulatorze. Opublikowany ze ścianami (danymi kolizji wokseli) jest twardy od razu; bez nich możesz zbudować ściany w przeglądarce dla skanów do 4 mln gaussianów." }
+      { "q": "Czy mogę latać po własnym skanie 3D?", "a": "Tak. Opublikuj go na SuperSplat (superspl.at) i wklej jego link albo id na tej stronie lub w symulatorze. Opublikowany ze ścianami (danymi kolizji wokseli) jest twardy od razu; bez nich możesz zbudować ściany w przeglądarce dla skanów do 4 mln gaussianów." },
+      { "q": "Czy mogę pomóc, żeby dron w symulatorze latał jak mój prawdziwy, albo poprosić o nowego drona?", "a": "Tak. Drony powstały z opublikowanych danych i szacunków: whoopy klasy BetaFPV, 5-calowy quad freestyle klasy iFlight Nazgul Evoque F5, 5-calowy quad wyścigowy klasy Mach R5 Sport i cinelifter klasy Taurus X8 z kamerą RED Komodo. Jeśli latasz którymś z nich naprawdę, a tu czuje się inaczej, naciśnij Pomóż go dostroić w wyborze drona lub w Ustawieniach i wyślij swój diff all z Betaflight, link do logu z blackboxa i kilka słów; Andrii dopasuje do nich drona. W tym samym formularzu poprosisz o drona, którego nie ma na liście." }
     ]
   },
   "opensource": {
@@ -783,7 +786,7 @@
       "rows": [
         "Podłącz aparaturę EdgeTX, a narysowana aparatura poprowadzi cię krok po kroku: drążek po drążku, potem przełącznik uzbrojenia, a przed lotem sprawdzenie każdego kanału. Każdy krok czeka, aż naprawdę ruszysz drążkiem.",
         "Domyślnie Angle z samopoziomowaniem dla wszystkich; przycisk na ekranie, M albo przełącznik na aparaturze wybiera Horizon lub Acro. Nie masz aparatury pod ręką? Klawiatura pokazuje każdy używany klawisz, na ekranie dotykowym pojawiają się drążki, a pad łączy się przez przeglądarkę (jeszcze nie testowany na prawdziwym sprzęcie).",
-        "Sześć quadów klasy BetaFPV, a każda liczba na ich kartach mówi, skąd pochodzi. Wklej diff z CLI Betaflight i lataj na własnych rates i PID.",
+        "Whoopy klasy BetaFPV, 5-calowy quad freestyle i wyścigowy oraz cinelifter X8 z kamerą kinową, a każda liczba na ich kartach mówi, skąd pochodzi. Wklej diff z CLI Betaflight i lataj na własnych rates i PID.",
         "Uderz w ścianę, a dron rozbije się z prędkością uderzenia, a wrak potoczy się z odłamkami; dwie sekundy później jest znów w powietrzu, 5 s wstecz na trasie i nadal uzbrojony. Wyłączenie kraks, opóźnienie i miejsce powrotu są w Ustawieniach.",
         "OSD jak w goglach, pole widzenia i pochylenie kamery. F9 nagrywa wideo 60 fps ze skanów Andrija z podpisem autora w kadrze, automatyczne nagrywanie zapisuje każdy lot w twoim folderze, a log lotu staje się wideo 60 fps do 4K.",
         "Wybierz jeden z ponad 1300 skanów ze ścianami w zakładce SuperSplat z jej filtrami, skan Andrija albo wklej link i zobacz, jak się wczytuje z prawdziwymi liczbami. N, Shift+N i F zmieniają scenę na tej samej stronie przy podłączonej aparaturze; [ i ] skalują scenę od ×0,25 do ×100.",
@@ -825,7 +828,7 @@
       "voxels-floaters": { "t": "Pływające na czerwono", "d": "Kawałki siatki, które niczego nie dotykają i mają mniej niż 0,5 m³, robią się czerwone, więc widać fantomową ścianę wśród roślin." },
       "pause": { "t": "Panel podsumowania", "d": "Pauza pokazuje statystyki tego lotu obok sesji i wszystkich lotów, rozmiar sceny, zapis jako wideo, każdą pozycję menu i każdy klawisz." },
       "settings": { "t": "Ustawienia", "d": "Wszystkie ustawienia na jednym ekranie, w grupach i z wyszukiwarką; tu kraksy i respawn: kraksy, próg, automatyczny respawn, opóźnienie, gdzie i jak daleko wstecz, niewidzialna platforma." },
-      "drones": { "t": "Sześć dronów", "d": "Presety klasy BetaFPV, każdy z krzywą rates; każda liczba mówi, skąd pochodzi: producent, pomiar albo szacunek." },
+      "drones": { "t": "Drony", "d": "Presety dronów, każdy z krzywą rates; każda liczba mówi, skąd pochodzi: producent, pomiar albo szacunek." },
       "betaflight": { "t": "Import z Betaflight", "d": "Wklej diff z CLI, a jego rates i PID przejdą na drona; ustawienia, których symulator nie używa, są wypisane (tu testowy diff)." },
       "measure": { "t": "Pomiary", "d": "Renderer, odświeżanie ekranu, czasy klatek, częstotliwość fizyki, czas wczytania, ściany w użyciu i autotest przelotu przez ściany, do skopiowania jako JSON." },
       "cinema": { "t": "Tryb kinowy", "d": "Pełny detal, automatyczna jakość wyłączona, bez HUD; „Nagrywaj” zapisuje MP4 z podpisem autora skanu w kadrze." },
@@ -865,14 +868,14 @@
     "privacy": "Prywatność",
     "licenses": "Licencje",
     "license": "licencja MIT",
-    "disclaimer": "Projekt nie jest powiązany z PlayCanvas, BetaFPV, projektem Betaflight, LuGus Studios (Liftoff), DJI ani RadioMaster i nie jest przez nie wspierany. Znaki towarowe należą do ich właścicieli."
+    "disclaimer": "Projekt nie jest powiązany z PlayCanvas, BetaFPV, iFlight, RED Digital Cinema, projektem Betaflight, LuGus Studios (Liftoff), DJI ani RadioMaster i nie jest przez nie wspierany. Znaki towarowe należą do ich właścicieli."
   },
   "privacy": {
     "title": "Prywatność — ShramkoGSFPV",
     "description": "Jakie dane zbiera ShramkoGSFPV, w jakim celu, jak długo je przechowuje i jakie masz prawa według RODO.",
     "eyebrow": "Prywatność",
     "h1": "Informacja o prywatności",
-    "updated": "Ostatnia aktualizacja: 13 października 2026",
+    "updated": "Ostatnia aktualizacja: 16 października 2026",
     "review": "Tekst nie przeszedł jeszcze weryfikacji prawnej.",
     "sections": [
       { "h": "Kto odpowiada za dane", "p": ["Administratorem Twoich danych jest Andrii Shramko. Możesz się z nim skontaktować pod adresem zmei116@gmail.com lub przez formularz kontaktowy na tej stronie."] },
@@ -880,7 +883,7 @@
       { "h": "Google Analytics — tylko za Twoją zgodą", "p": ["Jeśli na tej stronie włączono analitykę, najpierw pojawia się baner z pytaniem. Skrypt Google nie wczytuje się, dopóki nie klikniesz „Akceptuję”. Tryb zgody startuje z odmową dla wszystkich rodzajów przechowywania, a akceptacja zezwala wyłącznie na przechowywanie danych analitycznych.", "Podstawa prawna: Twoja zgoda (art. 6 ust. 1 lit. a RODO). Możesz ją wycofać w każdej chwili."] },
       { "h": "Tylko w Twojej przeglądarce", "p": ["Kalibracja aparatury, historia lotów i ulubione zostają w pamięci Twojej przeglądarki. Są niezbędne do działania symulatora, nigdy nie opuszczają Twojego urządzenia i nie wymagają zgody."] },
       { "h": "Formularz współpracy", "p": ["Jeśli wyślesz formularz, Twój e-mail, wybrana rola i wiadomość zostaną zapisane na serwerze i przekazane do bota powiadomień właściciela w Telegramie.", "Przechowujemy je do czasu obsłużenia zgłoszenia albo do chwili, gdy poprosisz o ich usunięcie. Podstawa prawna: Twoja zgoda (art. 6 ust. 1 lit. a RODO)."] },
-      { "h": "Zgłoszenia błędów i pomysły", "p": ["Jeśli wyślesz zgłoszenie błędu albo pomysł z symulatora lub z tej strony, na serwerze zapisujemy Twoją wiadomość, stronę i scenę, z których wysyłasz zgłoszenie, wersję, język oraz, jeśli go podasz, Twój kontakt (adres e-mail albo inny identyfikator). Dane techniczne (przeglądarka, karta graficzna, ekran, czasy klatek, ostatnie błędy, ustawienia, zapis lotu i mały obraz widoku) dołączamy tylko wtedy, gdy zaznaczysz odpowiednie pole.", "Wszystko, co wysyłasz, w tym Twoja wiadomość, Twój kontakt oraz, jeśli je dołączysz, dane techniczne i obraz, trafia na czat właściciela w Telegramie (a więc przechodzi przez serwery Telegrama), gdzie czyta i porządkuje zgłoszenia. Twój adres e-mail służy wyłącznie do odpowiedzi: odpowiedzi właściciela i podziękowanie, gdy Twój pomysł jest już w symulatorze, przychodzą z jego adresu Gmail (zmei116@gmail.com) przez serwery pocztowe Google. Nic nie wychodzi automatycznie, a jeśli odpiszesz, Twoja odpowiedź trafi do jego skrzynki Gmail. Jeśli opowiesz mu o pomyśle osobiście i podasz swój adres, przechowujemy go i używamy tak samo.", "Zgłoszenia przechowujemy, dopóki trwa praca nad pomysłem lub problemem, a potem jako zapis tego, jak symulator był ulepszany. Publiczna mapa rozwoju pokazuje tylko tytuły napisane przez nas, nigdy Twoich słów ani kontaktu. W każdej chwili możesz poprosić o usunięcie zgłoszenia albo samego adresu e-mail. Podstawa prawna: Twoja zgoda (art. 6 ust. 1 lit. a RODO), wyrażona przez wysłanie zgłoszenia i zaznaczenie pola danych technicznych."] },
+      { "h": "Zgłoszenia błędów i pomysły", "p": ["Jeśli wyślesz zgłoszenie błędu albo pomysł z symulatora lub z tej strony, na serwerze zapisujemy Twoją wiadomość, stronę i scenę, z których wysyłasz zgłoszenie, wersję, język oraz, jeśli go podasz, Twój kontakt (adres e-mail albo inny identyfikator). Dane techniczne (przeglądarka, karta graficzna, ekran, czasy klatek, ostatnie błędy, ustawienia, zapis lotu i mały obraz widoku) dołączamy tylko wtedy, gdy zaznaczysz odpowiednie pole.", "Zgłoszenie Fizyka drona („Pomóż go dostroić” w symulatorze) zawiera też drona, którego dotyczy, wklejony tekst z Betaflight i link do logu blackbox, a jeśli nie odznaczysz jego pola, także ustawienia symulatora zmienione dla tego drona, tryb lotu i sterowanie, którym latasz (aparatura, gamepad, klawiatura lub ekran dotykowy). Są zapisywane i przekazywane tak jak szczegóły techniczne zgłoszenia błędu.", "Wszystko, co wysyłasz, w tym Twoja wiadomość, Twój kontakt oraz, jeśli je dołączysz, dane techniczne i obraz, trafia na czat właściciela w Telegramie (a więc przechodzi przez serwery Telegrama), gdzie czyta i porządkuje zgłoszenia. Twój adres e-mail służy wyłącznie do odpowiedzi: odpowiedzi właściciela i podziękowanie, gdy Twój pomysł jest już w symulatorze, przychodzą z jego adresu Gmail (zmei116@gmail.com) przez serwery pocztowe Google. Nic nie wychodzi automatycznie, a jeśli odpiszesz, Twoja odpowiedź trafi do jego skrzynki Gmail. Jeśli opowiesz mu o pomyśle osobiście i podasz swój adres, przechowujemy go i używamy tak samo.", "Zgłoszenia przechowujemy, dopóki trwa praca nad pomysłem lub problemem, a potem jako zapis tego, jak symulator był ulepszany. Publiczna mapa rozwoju pokazuje tylko tytuły napisane przez nas, nigdy Twoich słów ani kontaktu. W każdej chwili możesz poprosić o usunięcie zgłoszenia albo samego adresu e-mail. Podstawa prawna: Twoja zgoda (art. 6 ust. 1 lit. a RODO), wyrażona przez wysłanie zgłoszenia i zaznaczenie pola danych technicznych."] },
       { "h": "Obrazy i dane scen", "p": ["Podglądy scen na tej stronie, a w symulatorze same sceny, Twoja przeglądarka pobiera bezpośrednio z serwerów PlayCanvas (SuperSplat). Jak w przypadku każdej strony, serwery te widzą Twój adres IP."] },
       { "h": "Twoje prawa", "p": ["Możesz zażądać dostępu do swoich danych, ich sprostowania lub usunięcia, ograniczenia przetwarzania i przeniesienia danych, a także wnieść sprzeciw wobec przetwarzania albo wycofać zgodę — przez formularz kontaktowy lub e-mailem.", "Masz też prawo wnieść skargę do Prezesa Urzędu Ochrony Danych Osobowych (UODO)."] }
     ],

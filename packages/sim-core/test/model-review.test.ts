@@ -4,9 +4,9 @@
 import { describe, expect, it } from 'vitest';
 import { MODE_CHANNEL, Sha256, Sim, attitude, hoverSolve, invertThrottle, lifeSim, normalizeRespawnOpts, setpointRate } from '../src/index';
 import type { FlightMode, SimParams } from '../src/index';
-import { S, hovering, params, roll } from './model-helpers';
+import { PRESET_IDS, S, hovering, params, roll } from './model-helpers';
 
-const PRESETS = ['pavo20pro-3s', 'pavo20pro2-3s', 'pavo20pro2-4s', 'pavopico-2s', 'meteor65pro-1s', 'air65-1s'];
+const PRESETS = PRESET_IDS;
 
 /** Armed at (0, 100, 0) through a keepArmed reset with pack `soc`, holding throttle stick `stick` in angle mode for `ms`. */
 function holdStick(p: SimParams, soc: number, stick: number, ms: number, sim = new Sim(p, null)): Sim {
@@ -181,7 +181,7 @@ describe('angle mode beyond the author\'s table (B.5)', () => {
     }
     const want = (p: SimParams, x: number) => (60 * setpointRate(p.rates.type, x, p.rates.roll, p.rates.rateLimit)) / setpointRate(p.rates.type, 1, p.rates.roll, p.rates.rateLimit);
 
-    it('on all six presets: a left stick mirrors the right one, and a diagonal stick tilts both axes as the table says', () => {
+    it('on every preset: a left stick mirrors the right one, and a diagonal stick tilts both axes as the table says', () => {
         const bad: string[] = [];
         for (const id of PRESETS) {
             const p = params(id);

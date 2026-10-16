@@ -17,7 +17,7 @@ Each menu has two files: `<name>-panel.webp` is the menu itself with a little of
 </tr>
 <tr>
 <td width="50%" valign="top"><a href="scene-size.webp"><img src="scene-size-panel.webp" alt="Scene size"></a><br><sub><b>Scene size</b> — A scan not in true metres? [ and ] scale it around the drone from 0.25× to 4×, kept for each scan; the walls' block size follows. <a href="scene-size.webp">Whole screen</a>.</sub></td>
-<td width="50%" valign="top"><a href="drones.webp"><img src="drones-panel.webp" alt="Six drones"></a><br><sub><b>Six drones</b> — BetaFPV-class presets with a rate curve each; every number says where it comes from: manufacturer, measured or estimate. <a href="drones.webp">Whole screen</a>.</sub></td>
+<td width="50%" valign="top"><a href="drones.webp"><img src="drones-panel.webp" alt="Drones"></a><br><sub><b>Drones</b> — Drone presets with a rate curve each; every number says where it comes from: manufacturer, measured or estimate. <a href="drones.webp">Whole screen</a>.</sub></td>
 </tr>
 <tr>
 <td width="50%" valign="top"><a href="wizard-stir.webp"><img src="wizard-stir-panel.webp" alt="Calibration: stir the sticks"></a><br><sub><b>Calibration: stir the sticks</b> — The drawn radio shows what to do, and the channel bars follow the reports (here a simulated EdgeTX radio). <a href="wizard-stir.webp">Whole screen</a>.</sub></td>

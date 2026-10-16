@@ -28,3 +28,5 @@
 .fb-done-title { font-size: 18px; font-weight: 600; color: var(--accent); margin: 8px 0 4px; }
 .fb-id code { font-size: 18px; padding: 4px 10px; border-radius: 8px; background: var(--bg2); border: 1px solid var(--line); user-select: all; }
 .fb-hp { position: absolute; left: -9999px; top: 0; width: 1px; height: 1px; overflow: hidden; }
+/* v0.8 Drone physics: the pasted Betaflight text reads as code */
+.fb-code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }

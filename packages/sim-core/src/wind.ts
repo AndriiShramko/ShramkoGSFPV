@@ -111,6 +111,18 @@ function knot(seed: number, stream: number, k: number): number {
 }
 
 /**
+ * One octave of the same noise: seeded knots every `periodTicks` ticks, Catmull-Rom between them, in
+ * about [-1, 1] (a spline may overshoot a knot a little; the caller scales it). A pure function of
+ * its arguments, for any deterministic disturbance of the model (wake.ts: the turbulence of prop wash).
+ */
+export function smoothNoise(seed: number, stream: number, tick: number, periodTicks: number): number {
+    const k = Math.floor(tick / periodTicks);
+    const f = (tick - k * periodTicks) / periodTicks;
+    const p0 = knot(seed, stream, k - 1), p1 = knot(seed, stream, k), p2 = knot(seed, stream, k + 1), p3 = knot(seed, stream, k + 2);
+    return p1 + 0.5 * f * (p2 - p0 + f * (2 * p0 - 5 * p1 + 4 * p2 - p3 + f * (3 * (p1 - p2) + p3 - p0)));
+}
+
+/**
  * Gust noise of one axis (0 along the wind, 1 across, 2 vertical) at a tick, in [-1, 1]: knots of
  * seeded hash values, Catmull-Rom between them (smooth, no corners), three octaves (GUST_OCTAVES).
  * A pure function of its arguments.

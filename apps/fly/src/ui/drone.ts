@@ -1,12 +1,17 @@
 // Drone picker: preset cards; every number shows where it comes from (manufacturer / measured /
 // estimate / Betaflight default). Also draws the rate curve of the preset. Each drone keeps its own
 // settings (W2-1, D-c): a card says how many of them the pilot changed for that drone.
+// The hover throttle on a card is a full pack and near empty, as the HUD shows THR (ui/drone-card.ts).
+// v0.8 (docs/wip/v08-d.md): "help us tune this drone": a line on top, "Help tune it" on every card and
+// "Ask for another drone"; they call onTune (the feedback dialog's Drone physics kind) when it is set.
 import { compileParams, setpointRate } from '@gsfpv/sim-core';
 import type { PresetJson } from '@gsfpv/sim-core';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { PRESETS, DEFAULT_PRESET } from '../presets';
-import { h, fmt } from './dom';
+import { h } from './dom';
+import { cardHover } from './drone-card';
 import { t } from '../i18n';
+import './drone-tune.css';
 
 function srcLabel(src: string): string {
     if (src === 'manufacturer') return t('common.manufacturer');
@@ -51,16 +56,22 @@ export class DronePicker {
     onPick: ((id: string) => void) | null = null;
     /** Leave with nothing changed: keep the drone and fly on (the same path as Esc in main.ts). */
     onClose: (() => void) | null = null;
+    /**
+     * "Help tune it" on a card (that preset's id) or "Ask for another drone" ('new'): the drone feedback.
+     * Read when a button is pressed, so the owner may set it after construction; without it the buttons
+     * are not drawn (o.tune false).
+     */
+    onTune: ((id: string) => void) | null = null;
     private readonly current: string;
 
-    /** `store`: the page's settings, for the per-drone count on each card */
-    constructor(parent: HTMLElement, current: string, o: { store?: PrefsStore } = {}) {
+    /** `store`: the page's settings, for the per-drone count on each card; `tune`: draw the help-us-tune buttons */
+    constructor(parent: HTMLElement, current: string, o: { store?: PrefsStore; tune?: boolean } = {}) {
         this.current = current;
         const changed = (id: string): number => o.store?.explicitList({ drone: id }).filter((e) => e.scope === 'drone').length ?? 0;
         const cards = h('div', { class: 'drone-grid' });
         let keep: HTMLButtonElement | null = null;
         for (const [id, p] of Object.entries(PRESETS)) {
-            const sp = compileParams(p);
+            const hover = cardHover(compileParams(p));
             const isCur = id === current;
             // the drone in use says so, and its button leaves without rebuilding the flight model
             const btn = isCur
@@ -76,9 +87,10 @@ export class DronePicker {
                 row(p, 'motor', t('drone.motor'), (v) => String(v)),
                 row(p, 'battery', t('drone.battery'), (v) => String(v)),
                 curve(p),
-                h('p', { class: 'muted small' }, `hover ≈ ${fmt(((1 / Math.sqrt(sp.twr) - sp.idle) / (1 - sp.idle)) * 100, 0)} % throttle`),
+                hover ? h('p', { class: 'muted small', 'data-testid': 'drone-hover' }, t('drone.hover', { full: String(hover.full), low: String(hover.low) })) : null,
                 changed(id) ? h('p', { class: 'small ok', 'data-testid': 'drone-changed' }, t('prefs.droneChanged', { n: String(changed(id)) })) : null,
-                btn
+                h('div', { class: 'drone-actions' }, btn,
+                    o.tune ? h('button', { type: 'button', class: 'btn', 'data-action': 'drone-tune', onclick: () => this.onTune?.(id) }, t('drone.tune.button')) : null)
             );
             cards.append(card);
         }
@@ -86,7 +98,10 @@ export class DronePicker {
         // not modal: the top Controls and Pause buttons stay reachable above it (fly.css)
         this.root = h('div', { class: 'screen drones interactive', role: 'dialog', 'aria-labelledby': 'drone-title' },
             h('div', { class: 'drone-head' }, h('h1', { id: 'drone-title' }, t('drone.title')), x),
-            h('p', { class: 'muted' }, t('drone.sourceNote')), cards);
+            h('p', { class: 'muted' }, t('drone.sourceNote')),
+            o.tune ? h('div', { class: 'drone-tune', 'data-testid': 'drone-tune' }, h('p', {}, t('drone.tune.lead')),
+                h('button', { type: 'button', class: 'btn', 'data-action': 'drone-ask', onclick: () => this.onTune?.('new') }, t('drone.tune.ask'))) : null,
+            cards);
         parent.append(this.root);
         // Enter keeps the drone in use; Tab reaches the others
         (keep ?? x).focus({ preventScroll: true });

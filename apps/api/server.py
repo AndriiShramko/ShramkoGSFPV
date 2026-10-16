@@ -6,7 +6,10 @@ POST /api/e      cookieless first-party counter. No cookies, no device id, no IP
                  per client (in RAM only). Retention: 12 months and at most 50 MB in total.
 POST /api/lead   collaboration form and scene takedown reports: stored FIRST (JSONL, fsync),
                  then forwarded to the shared Telegram lead bot. Honeypot + time-to-submit.
-POST /api/report a bug or an idea from the simulator or the landing, the same rules as a lead: stored
+POST /api/report a bug, an idea or a drone-physics report (kind "drone", v0.8: a pilot who flies one of the
+                 presets for real sends the drone, a link to a blackbox log, and as text the Betaflight
+                 `diff all` plus their simulator settings for it) from the simulator or the landing, the
+                 same rules as a lead: stored
                  FIRST (reports.jsonl, fsync, id R-YYYYMMDD-NNNN), then an idea in the ideas store
                  (ideas.py) and the whole report in the owner's Telegram chat (the owner's request
                  2026-10-13: every field the pilot sent, a summary of the technical details, and the
@@ -771,7 +774,7 @@ SUPERSPL = SupersplProxy()
 # before anything else happens; then the owner's chat gets all of it (deliver_report below).
 
 LOCALES = ("en", "es", "pl", "ru")
-REPORT_KINDS = ("bug", "idea")
+REPORT_KINDS = ("bug", "idea", "drone")
 REPORT_PAGES = ("fly", "site")
 REPORT_MESSAGE_MAX = 2000
 REPORT_CONTACT_MAX = 200
@@ -779,6 +782,17 @@ TELEGRAM_MESSAGE_MAX = 3000  # the whole message (at most 2000) always fits; Tel
 _RELEASE_RE = re.compile(r"[0-9A-Za-z._-]{1,40}")
 _REPORT_LINE_RE = re.compile(r'^\{"id": "R-([0-9]{8})-([0-9]{4,})"')
 _SHARE_ID_RE = re.compile(r"[A-Za-z0-9_-]{11}")
+# "Drone physics" (kind "drone", v0.8, docs/wip/v08-d.md): what fits a preset to a real quad. The bulky
+# parts (the pasted Betaflight text, the pilot's simulator settings) go to the report's technical-details
+# file reports/<id>.json, as a bug's diagnostics do, so the admin's download, the owner's Telegram file and
+# the ideas store treat them the same; the drone and the log link stay on the record.
+DRONE_TUNE_TEXT_MAX = 100_000  # characters: a `diff all` is 5-30 KB, a whole `dump` up to about 60 KB
+DRONE_LOG_URL_MAX = 500
+DRONE_SETTINGS_MAX = 8 * 1024  # bytes of JSON: the pilot's per-drone settings in the simulator
+DRONE_NEW = "new"              # the pilot asks for a drone that is not in the list
+_DRONE_ID_RE = re.compile(r"[a-z0-9][a-z0-9-]{0,39}")
+_LOG_URL_RE = re.compile(r"https?://[^\s<>\"'`]{3,}", re.IGNORECASE)
+REPORT_BULKY = ("diagnostics", "betaflight", "settings")  # checked by their own limits, not MAX_BODY
 SHARE_W, SHARE_H = 1200, 630
 SHARE_IMAGE_MAX = 400 * 1024
 
@@ -850,8 +864,8 @@ def parse_report(b: dict) -> dict:
     message = _plain(b.get("message"), REPORT_MESSAGE_MAX, lines=True)
     if not message:
         raise BadBody(400)
-    # everything but the diagnostics: the size of a lead
-    if len(json.dumps({k: v for k, v in b.items() if k != "diagnostics"}, ensure_ascii=False).encode()) > MAX_BODY:
+    # everything but the bulky fields: the size of a lead
+    if len(json.dumps({k: v for k, v in b.items() if k not in REPORT_BULKY}, ensure_ascii=False).encode()) > MAX_BODY:
         raise BadBody(413)
     try:
         t_ms = float(b.get("t") or 0)
@@ -860,7 +874,7 @@ def parse_report(b: dict) -> dict:
     diag = b.get("diagnostics")
     consent = b.get("diagnosticsConsent") is True
     locale, page, scene, release = b.get("locale"), b.get("page"), b.get("scene"), b.get("release")
-    return {
+    out = {
         "kind": kind,
         "page": page if page in REPORT_PAGES else "",
         "locale": locale if locale in LOCALES else "",
@@ -871,6 +885,26 @@ def parse_report(b: dict) -> dict:
         "suspect": bool(b.get("hp")) or t_ms < 3000,
         "diagnostics": diag if kind == "bug" and consent and isinstance(diag, dict) and diag else None,
     }
+    if kind == "drone":
+        out.update(parse_drone_tune(b))
+    return out
+
+
+def parse_drone_tune(b: dict) -> dict:
+    """The whitelist of a drone-physics report's own fields: the preset id ("new" for a drone that is not in
+    the list, "" when unknown), the blackbox log's link (http or https only, else dropped), and the bulky part
+    as the report's technical details: {"tune": {"drone", "betaflight", "settings"}}, only when the pilot
+    pasted a text or sent settings (the form lists both). Nothing else of the body is kept."""
+    drone = b.get("drone")
+    drone = drone if isinstance(drone, str) and (drone == DRONE_NEW or _DRONE_ID_RE.fullmatch(drone)) else ""
+    url = b.get("logUrl").strip() if isinstance(b.get("logUrl"), str) else ""
+    url = url if len(url) <= DRONE_LOG_URL_MAX and _LOG_URL_RE.fullmatch(url) else ""
+    text = _plain(b.get("betaflight"), DRONE_TUNE_TEXT_MAX, lines=True)
+    settings = b.get("settings")
+    if not isinstance(settings, dict) or not settings or len(json.dumps(settings, ensure_ascii=False).encode()) > DRONE_SETTINGS_MAX:
+        settings = None
+    tune = {k: v for k, v in (("drone", drone), ("betaflight", text), ("settings", settings)) if v}
+    return {"drone": drone, "logUrl": url, "diagnostics": {"tune": tune} if text or settings else None}
 
 
 _seq: dict = {"day": "", "n": 0, "file": None}
@@ -927,6 +961,8 @@ def report_text(rec: dict, facts: dict | None = None) -> str:
     where = " · ".join(x for x in (f"Page: {rec['page'] or '-'}", f"Lang: {rec['locale'] or '-'}",
                                    f"Scene: {rec['scene']}" if rec["scene"] else "",
                                    f"Release: {rec['release']}" if rec["release"] else "") if x)
+    if rec["kind"] == "drone":
+        where += f"\nDrone: {rec.get('drone') or '-'}" + (f"\nBlackbox log: {rec['logUrl']}" if rec.get("logUrl") else "")
     d = rec["diagnostics"]
     diag = f"attached ({max(1, round(rec['diagBytes'] / 1024))} KB, the file follows)" if d is True else ("not stored, disk full" if d == "skipped" else "none")
     lines = [f"[{rec['kind'].upper()}][site={SITE}] {rec['id']}", where, f"Time: {rec['ts']}", f"Diagnostics: {diag}"]

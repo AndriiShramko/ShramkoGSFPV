@@ -96,8 +96,11 @@ describe('per drone: a drone flies its own values (D-c, review C1/C10)', () => {
     });
 });
 
-/** A value other than the default, in range, for each setting the screen shows for the flight model. */
-const CHANGES: Record<string, { v: unknown; field: (p: ReturnType<typeof compileParams>) => unknown }> = {
+/**
+ * A value other than the default, in range, for each setting the screen shows for the flight model;
+ * `drone`: the drone it is tested on when the Pavo20 does not have what it changes (default PAVO).
+ */
+const CHANGES: Record<string, { v: unknown; field: (p: ReturnType<typeof compileParams>) => unknown; drone?: string }> = {
     'physics.vCrash': { v: 6.5, field: (p) => p.vCrash },
     // shipped by W2-2 (crashes off, item 3): the model's crashOn flag
     'crash.enabled': { v: false, field: (p) => p.crashOn },
@@ -108,6 +111,8 @@ const CHANGES: Record<string, { v: unknown; field: (p: ReturnType<typeof compile
     'physics.dragScale': { v: 1.5, field: (p) => JSON.stringify(p) },
     'physics.ductDrag': { v: 1.2, field: (p) => p.ductDrag },
     'physics.propInertia': { v: 2, field: (p) => p.rotorInertia },
+    // v0.8: prop wash exists only on presets that have it (the 5-inch quads, the cinelifter), so it is tested on one
+    'physics.propWash': { v: 0.5, field: (p) => [p.wakeLoss, p.wakeShake], drone: 'nazgulf5v3-6s' },
     'physics.idlePct': { v: 3, field: (p) => p.idle },
     'tune.pid': { v: { roll: [60, 100, 40, 0], pitch: [60, 100, 40, 0], yaw: [50, 90, 0, 0] }, field: (p) => p.pid },
     'tune.rates': { v: { type: 'BETAFLIGHT', roll: { rcRate: 100, rate: 70, expo: 0 }, pitch: { rcRate: 100, rate: 70, expo: 0 }, yaw: { rcRate: 100, rate: 70, expo: 0 }, rateLimit: 1998 }, field: (p) => p.rates },
@@ -128,14 +133,15 @@ describe('each flight-model row the screen shows changes sim-core\'s model (and 
     for (const [id, c] of Object.entries(CHANGES)) {
         it(`${id}: set for the drone flown -> the model differs; reset -> the preset's model again`, () => {
             const s = memStore();
-            const before = c.field(model(s, PAVO));
-            P.pilotSet(s, id, c.v, { drone: PAVO });
-            expect(c.field(model(s, PAVO))).not.toEqual(before);
+            const d = c.drone ?? PAVO;
+            const before = c.field(model(s, d));
+            P.pilotSet(s, id, c.v, { drone: d });
+            expect(c.field(model(s, d))).not.toEqual(before);
             // a per-drone value stays that drone's: the Air65 keeps its own model (gravity is one world for all)
             const air = JSON.stringify(model(s, AIR)) === JSON.stringify(compileParams(PR.PRESETS[AIR]));
             expect(air).toBe(SCHEMA.byId.get(id)!.scope === 'drone');
-            P.pilotReset(s, id, { drone: PAVO });
-            expect(c.field(model(s, PAVO))).toEqual(before);
+            P.pilotReset(s, id, { drone: d });
+            expect(c.field(model(s, d))).toEqual(before);
         });
     }
 

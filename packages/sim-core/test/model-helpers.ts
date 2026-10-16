@@ -1,6 +1,6 @@
 // Shared set-ups for the model tests (test/model-*.test.ts): real Sim, presets from disk, and
 // synthetic contact worlds (a half-space) instead of a scan.
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { Sim, S, compileParams, hoverSolve, attitude, MODE_CHANNEL, Sha256 } from '../src/index';
 import type { ContactOut, ContactWorld, FlightMode, ParamOverrides, PresetJson, SimParams } from '../src/index';
@@ -8,6 +8,9 @@ import type { ContactOut, ContactWorld, FlightMode, ParamOverrides, PresetJson, 
 export function preset(id: string): PresetJson {
     return JSON.parse(readFileSync(join(__dirname, '..', 'presets', `${id}.json`), 'utf8')) as PresetJson;
 }
+
+/** Every preset in packages/sim-core/presets, sorted: tests over "all presets" cover a new drone by themselves. */
+export const PRESET_IDS: readonly string[] = readdirSync(join(__dirname, '..', 'presets')).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).sort();
 
 export function params(id = 'pavo20pro-3s', o: ParamOverrides = {}): SimParams {
     return compileParams(preset(id), o);

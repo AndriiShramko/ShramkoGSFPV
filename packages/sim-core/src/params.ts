@@ -4,6 +4,7 @@ import type { RatesConfig, RatesType, ThrottleCurve } from './rates';
 import { invertThrottle } from './rates';
 import type { LevelParams } from './contracts';
 import { compileWind } from './wind';
+import { WAKE_LOSS_MAX } from './wake';
 import type { WindConfig } from './wind';
 
 export type FieldSource = 'manufacturer' | 'estimate' | 'bf-default' | `measured:${string}`;
@@ -73,6 +74,15 @@ export interface SimParams {
     bodyBottom: number;
     /** the wind of the place (wind.ts); null: still air, exactly the model without wind */
     wind: WindConfig | null;
+    /**
+     * prop wash (wake.ts): the share of thrust lost at the worst point of a descent through the rotors'
+     * own wake (preset wake_loss x the wake override); 0 = no prop-wash term, the model without it bit for bit
+     */
+    wakeLoss: number;
+    /** prop wash: turbulent roll/pitch torque, share of one rotor's thrust times the arm (preset wake_shake) */
+    wakeShake: number;
+    /** total rotor disk area, m^2 (4 disks of preset prop_diameter_mm); 0 when the preset has no prop wash */
+    wakeArea: number;
 }
 
 export const EARTH_G = 9.81;
@@ -117,12 +127,75 @@ export interface ParamOverrides {
      * air too, so such a model flies exactly as one without the field (its configHash still differs).
      */
     wind?: WindConfig;
+    /**
+     * multiplier on the preset's prop wash (wake_loss and wake_shake; 1 = preset, 0 = off). Presets
+     * without those fields have no prop wash whatever this says.
+     */
+    wake?: number;
 }
 
 function num(p: PresetJson, key: string): number {
     const f = p.fields[key];
     if (!f || typeof f.value !== 'number') throw new Error(`preset ${p.id}: numeric field ${key} missing`);
     return f.value;
+}
+
+/** An optional numeric field: its value, or `fallback` when the preset does not have it. */
+function optNum(p: PresetJson, key: string, fallback: number): number {
+    const f = p.fields[key];
+    if (f === undefined) return fallback;
+    if (typeof f.value !== 'number' || !Number.isFinite(f.value)) throw new Error(`preset ${p.id}: field ${key} is not a number`);
+    return f.value;
+}
+
+/**
+ * The prop-wash terms of a preset (wake.ts): wake_loss and wake_shake (both optional, 0 when absent)
+ * times the override, and the disk area from prop_diameter_mm, which a preset with prop wash must have.
+ * A preset's own wake_loss outside 0..WAKE_LOSS_MAX is an authoring error (thrown); the override (the
+ * pilot's prop wash setting, up to 2x) can push the product past it, and that is capped, never thrown:
+ * a setting must not make a drone that cannot be flown (review R5, docs/wip/v08-d.md).
+ */
+function wakeOf(p: PresetJson, scale: number): { wakeLoss: number; wakeShake: number; wakeArea: number } {
+    if (!(scale >= 0) || !Number.isFinite(scale)) throw new RangeError(`wake must be a number >= 0, got ${String(scale)}`);
+    const own = optNum(p, 'wake_loss', 0), ownShake = optNum(p, 'wake_shake', 0);
+    if (own < 0 || own > WAKE_LOSS_MAX || ownShake < 0) throw new RangeError(`preset ${p.id}: wake_loss must be 0..${WAKE_LOSS_MAX} and wake_shake >= 0`);
+    const loss = Math.min(WAKE_LOSS_MAX, own * scale);
+    const shake = ownShake * scale;
+    if (loss === 0 && shake === 0) return { wakeLoss: 0, wakeShake: 0, wakeArea: 0 };
+    const r = num(p, 'prop_diameter_mm') / 2000;
+    return { wakeLoss: loss, wakeShake: shake, wakeArea: 4 * Math.PI * r * r };
+}
+
+/**
+ * The level-mode numbers a preset may set (optional field `level`, its value an object of Betaflight CLI
+ * names): the angle feed-forward and its smoothing, which a drone's tune sets as it sets its PID (a heavy,
+ * slow craft needs less feed-forward or angle mode overshoots its limit and swings past level on release:
+ * review R4, docs/wip/v08-d.md). Absent = Betaflight's defaults (LEVEL_DEFAULTS), so the presets without
+ * the field fly as before. The level numbers the pilot sets (angle_limit, angle_p_gain,
+ * horizon_level_strength: the settings level.*) are refused here: their settings show Betaflight's
+ * defaults, and a preset value under them would make the settings screen show a number the drone does
+ * not fly. ParamOverrides.level still wins over the preset.
+ */
+const PRESET_LEVEL_KEYS: Readonly<Record<string, (v: number) => Partial<LevelParams>>> = {
+    /** Betaflight angle_feedforward, 0-200 (default 50): the feed-forward gain is it / 100 */
+    angle_feedforward: (v) => ({ ffGain: v / 100 }),
+    /** Betaflight angle_feedforward_smoothing_ms (default 80) */
+    angle_feedforward_smoothing_ms: (v) => ({ ffSmoothMs: v })
+};
+
+function presetLevel(p: PresetJson): Partial<LevelParams> {
+    const f = p.fields.level;
+    if (f === undefined) return {};
+    const v = f.value;
+    if (typeof v !== 'object' || v === null || Array.isArray(v)) throw new Error(`preset ${p.id}: field level must be an object of Betaflight names`);
+    let out: Partial<LevelParams> = {};
+    for (const [k, n] of Object.entries(v as Record<string, unknown>)) {
+        const put = Object.hasOwn(PRESET_LEVEL_KEYS, k) ? PRESET_LEVEL_KEYS[k] : undefined;
+        if (!put) throw new Error(`preset ${p.id}: level.${k} is not a level number a preset sets (${Object.keys(PRESET_LEVEL_KEYS).join(', ')})`);
+        if (typeof n !== 'number' || !Number.isFinite(n) || n < 0) throw new Error(`preset ${p.id}: level.${k} must be a number >= 0`);
+        out = { ...out, ...put(n) };
+    }
+    return out;
 }
 
 function voc(soc: number): number {
@@ -195,6 +268,7 @@ export function compileParams(p: PresetJson, o: ParamOverrides = {}): SimParams 
         if (below > bodyBottom) bodyBottom = below;
     }
     const lv = o.level ?? {};
+    const pl = presetLevel(p);
 
     const rj = p.fields.rates.value as { type: RatesType; roll: number[]; pitch: number[]; yaw: number[]; rate_limit: number };
     const rates: RatesConfig = o.rates ?? {
@@ -249,8 +323,8 @@ export function compileParams(p: PresetJson, o: ParamOverrides = {}): SimParams 
         level: {
             limitDeg: lv.limitDeg ?? LEVEL_DEFAULTS.limitDeg,
             gain: lv.gain ?? LEVEL_DEFAULTS.gain,
-            ffGain: lv.ffGain ?? LEVEL_DEFAULTS.ffGain,
-            ffSmoothMs: lv.ffSmoothMs ?? LEVEL_DEFAULTS.ffSmoothMs,
+            ffGain: lv.ffGain ?? pl.ffGain ?? LEVEL_DEFAULTS.ffGain,
+            ffSmoothMs: lv.ffSmoothMs ?? pl.ffSmoothMs ?? LEVEL_DEFAULTS.ffSmoothMs,
             horizonStrength: lv.horizonStrength ?? LEVEL_DEFAULTS.horizonStrength,
             horizonLimitSticks: lv.horizonLimitSticks ?? LEVEL_DEFAULTS.horizonLimitSticks,
             horizonLimitDeg: lv.horizonLimitDeg ?? LEVEL_DEFAULTS.horizonLimitDeg,
@@ -263,7 +337,8 @@ export function compileParams(p: PresetJson, o: ParamOverrides = {}): SimParams 
         itermWindup: 0.85,
         bodyBottom,
         // validated here (a bad wind throws RangeError: a log carrying one refuses to replay)
-        wind: compileWind(o.wind) ? { ...o.wind! } : null
+        wind: compileWind(o.wind) ? { ...o.wind! } : null,
+        ...wakeOf(p, o.wake ?? 1)
     };
 }
 

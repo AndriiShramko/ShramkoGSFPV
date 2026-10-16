@@ -46,7 +46,7 @@ Real screenshots of the live simulator, taken on 2 October 2026 by [`tools/bench
 <td width="50%" valign="top"><a href="docs/screenshots/walls.webp"><img src="docs/screenshots/walls-panel.webp" alt="Walls on or off"></a><br><sub><b>Walls on or off</b> — The walls line on the credit opens the walls menu: the walls (collisions) switch, the voxel grid and the stored walls. Here the walls are off (C): the drone flies through everything, no crashes.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><a href="docs/screenshots/drones.webp"><img src="docs/screenshots/drones-panel.webp" alt="Six drones"></a><br><sub><b>Six drones</b> — BetaFPV-class presets with a rate curve each; every number says where it comes from: manufacturer, measured or estimate.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/drones.webp"><img src="docs/screenshots/drones-panel.webp" alt="Drones"></a><br><sub><b>Drones</b> — Drone presets with a rate curve each; every number says where it comes from: manufacturer, measured or estimate.</sub></td>
 <td width="50%" valign="top"><a href="docs/screenshots/betaflight.webp"><img src="docs/screenshots/betaflight-panel.webp" alt="Betaflight import"></a><br><sub><b>Betaflight import</b> — Paste a CLI diff and its rates and PID fly the quad; every setting the simulator does not use is listed (here a test diff).</sub></td>
 </tr>
 <tr>
@@ -71,13 +71,13 @@ FPV pilots train in simulators like Liftoff or VelociDrone because the physics a
 
 ShramkoGSFPV joins the two: pick a real scanned place, arm, and fly it with a drone that behaves like the one in your hands. Rehearse an indoor line before flying it for real, plan a cinematic shot in the actual location, or fly your own house on the Moon.
 
-The default craft is a **BetaFPV Pavo20 Pro** class 2.2″ cinewhoop, with five more presets: Pavo20 Pro II on 3S and 4S, Pavo Pico, Meteor65 Pro and Air65. Most scans are rooms and streets, where a 5″ freestyle quad has no room to move. On each preset card the spec rows (thrust-to-weight, weight, wheelbase, motor, battery) say where the number comes from: manufacturer, independent measurement or estimate. The card's maximum rate (°/s) and hover-throttle figures do not carry a source label yet. The thrust-to-weight of three presets (Pavo20 Pro 3S, Pavo20 Pro II 3S, Pavo Pico 2S) was measured in the model and is within 0.4 % of the preset value (`b-fly-b9.json`); the other three are **not measured yet**.
+The default craft is a **BetaFPV Pavo20 Pro** class 2.2″ cinewhoop, with five more BetaFPV-class whoops for rooms and streets: Pavo20 Pro II on 3S and 4S, Pavo Pico, Meteor65 Pro and Air65. For big scans (city blocks, landscapes) there are three open-prop drones since v0.8: an **iFlight Nazgul Evoque F5** class 5″ freestyle quad, an **iFlight Mach R5 Sport** class 5″ race quad and an **iFlight Taurus X8** class cinelifter carrying a RED Komodo, 4.9 kg with slow 8″ props, a lot of inertia and prop wash. Their weights and parts are the maker's; thrust, inertia, motor lag, drag and the cinelifter's tune are estimates, written out in [`docs/research/drones-v08.md`](docs/research/drones-v08.md). If you fly one of these drones for real and it feels different here, **Help tune it** in the drone picker or in Settings sends Andrii your Betaflight `diff all`, a blackbox log link and a few words; the same form asks for a drone that is missing. On each preset card the spec rows (thrust-to-weight, weight, wheelbase, motor, battery) say where the number comes from: manufacturer, independent measurement or estimate. The card's maximum rate (°/s) and hover throttle (on a full pack and near empty, as the HUD shows THR) are computed by the simulator's own model and carry no source label. The thrust-to-weight of three presets (Pavo20 Pro 3S, Pavo20 Pro II 3S, Pavo Pico 2S) was measured in the model and is within 0.4 % of the preset value (`b-fly-b9.json`), and that of the three v0.8 drones in the app within 0.6 % (`v08-drones.json`, D1); the other three whoops are **not measured yet**.
 
 ## Features and roadmap
 
 Status on 2 October 2026. **Live** means you can use it on https://gsfpv.flyreelstudio.eu today; **In progress** is being built now; **Next** is designed and queued. How each input device was tested is in [Radios and devices](#radios-and-devices), and the numbers behind the physics are in [What is measured](#what-is-measured-not-claimed). The same list, in four languages, is on the [landing page](https://gsfpv.flyreelstudio.eu/en/#features). The v0.3 items name the check that accepted them on the live site (JSON files in [`evidence/`](evidence/); the list is in [`evidence/2026-10-02/v03-release.json`](evidence/2026-10-02/v03-release.json)).
 
-### Available now (48)
+### Available now (51)
 
 | Area | Feature | Status |
 |---|---|---|
@@ -93,10 +93,13 @@ Status on 2 October 2026. **Live** means you can use it on https://gsfpv.flyreel
 | Controls & flight modes | Flight modes: Angle (self-levelling, the default for everyone), Horizon and Acro; `M`, the mode chip on screen or your radio's switch (`v03-modes-live.json`) | Live |
 | Controls & flight modes | Close Controls with × or Esc; the summary panel shows every key | Live |
 | Drone & tuning | Six BetaFPV-class presets: Pavo20 Pro 3S (default), Pavo20 Pro II 3S and 4S, Pavo Pico 2S, Meteor65 Pro 1S, Air65 1S | Live |
+| Drone & tuning | Three open-prop drones for big scans (v0.8): an iFlight Nazgul Evoque F5 class 5″ freestyle quad, an iFlight Mach R5 Sport class 5″ race quad and an iFlight Taurus X8 class cinelifter carrying a RED Komodo (4.9 kg); their thrust-to-weight measured in the app within 0.6 % (`v08-drones.json`, D1) | Live |
+| Drone & tuning | Prop wash on the open-prop drones: thrust lost and shaking while the drone sinks into its own downwash, 0–2× per drone (the ducted whoops have none) | Live |
+| Drone & tuning | Help tune a drone: Help tune it in the drone picker and in Settings sends Andrii what feels different, your Betaflight `diff all`, a blackbox log link and your settings for that drone, or asks for a drone that is missing (`v08-drones.json`, D2–D5) | Live |
 | Drone & tuning | Betaflight, Actual, KISS and Raceflight rate curves (set through the diff import), checked against Betaflight 4.5.1 (`a3-rates-vectors.json`) | Live |
 | Drone & tuning | Import rates, PID and throttle curve from a Betaflight CLI `diff` / `diff all` (`d-bf-diff-import.json`) | Live |
 | Drone & tuning | PID for each axis: P, I, D and F | Live |
-| Drone & tuning | Motor spin-up time 8–30 ms and air drag 0.5–2× | Live |
+| Drone & tuning | Motor spin-up time 8–80 ms and air drag 0.5–2× | Live |
 | Gravity, crashes & respawn | Gravity: Earth and Moon (measured, `b-fly-b16.json`), Mars, zero-g and a custom value through the `?g=` link parameter (not tested yet) | Live |
 | Gravity, crashes & respawn | On other worlds: same motors, keep thrust-to-weight or auto throttle (the last two not tested yet) | Live |
 | Gravity, crashes & respawn | Crash threshold from 2 to 10 m/s, or crashes off: a wall only bounces you off (`v03-respawn.json`, R18) | Live |
@@ -151,7 +154,7 @@ Missing a setting you need? Suggest it through the [contact form](https://gsfpv.
 
 <!-- settings:start -->
 <!-- Generated by scripts/gen-catalog.ts from the settings schema; edit the schema or the dictionaries, not this block. -->
-**63 settings in 11 groups, 30 keyboard keys, 6 drone presets and 5 rate-curve types**, generated from the simulator's own settings schema, so this list shows only what ships today. Every setting with its default, range, scope and key: [`docs/settings.md`](docs/settings.md); in English, Spanish, Polish and Russian on the [landing page](https://gsfpv.flyreelstudio.eu/en/#tune).
+**64 settings in 11 groups, 30 keyboard keys, 9 drone presets and 5 rate-curve types**, generated from the simulator's own settings schema, so this list shows only what ships today. Every setting with its default, range, scope and key: [`docs/settings.md`](docs/settings.md); in English, Spanish, Polish and Russian on the [landing page](https://gsfpv.flyreelstudio.eu/en/#tune).
 
 | Group | Settings |
 |---|---|
@@ -161,7 +164,7 @@ Missing a setting you need? Suggest it through the [contact form](https://gsfpv.
 | Display (10) | Show HUD (`H`) · Stable frame ↔ detail 0–1 · Drawing · Reduced motion · Frame stats (`F3`) · Language · Crosshair · Crosshair size 1–20 % · Crosshair colour · Crosshair opacity 0.1–1 |
 | Sound (2) | Motor sound · Volume 0–100 % |
 | Controls (1) | Stick mode |
-| Drone & physics (13) | Drone · Gravity 0–30 m/s² · Thrust on other worlds · Thrust-to-weight 2–8 · Motor spin-up time 8–30 ms · Air drag 0.5–2× · Duct drag 0–1.5 1/s · Propeller inertia 0–3× · Motor idle 0–15 % · Wind · Custom wind: from 0–360° · Custom wind: speed 0–30 m/s · Custom wind: gusts 0–20 m/s |
+| Drone & physics (14) | Drone · Gravity 0–30 m/s² · Thrust on other worlds · Thrust-to-weight 2–16 · Motor spin-up time 8–80 ms · Air drag 0.5–2× · Duct drag 0–1.5 1/s · Propeller inertia 0–3× · Prop wash 0–2× · Motor idle 0–15 % · Wind · Custom wind: from 0–360° · Custom wind: speed 0–30 m/s · Custom wind: gusts 0–20 m/s |
 | Tune (3) | PID gains (P / I / D / F) · Rates (stick curves) · Throttle curve |
 | Scenes (5) | Next scene after a crash · Scenes to rotate through · Order · Include scenes without walls · Scene size (`[` `Shift+[` `]` `Shift+]`) |
 | Walls and voxel grid (8) | Walls (collisions) (`C`) · Drop floating pieces under N blocks 0–64 blocks · Ignore collisions above · Custom ceiling: height in scan metres -10000–10000 m · Voxel grid (`V`) · Voxel style · Voxel opacity over the scan 0.05–1 · Voxel opacity, voxels only 0.05–1 |
@@ -201,6 +204,15 @@ Yes: the **Voxel grid** shows the voxels you crash into, over the scan or voxels
 
 **Can I record 60 fps video of my flight?**
 Yes: **Frame rate** is 30 fps or 60 fps, 60 fps by default.
+
+**Can I fly a 5-inch freestyle quad, a 5-inch race quad or a heavy cinelifter with a cinema camera?**
+Yes: besides the BetaFPV-class whoops, **Drone** offers an iFlight Nazgul Evoque F5 class 5-inch freestyle quad, an iFlight Mach R5 Sport class 5-inch race quad and an iFlight Taurus X8 class cinelifter carrying a RED Komodo, all on 6S. Each has its own weight, thrust-to-weight, inertia, motor lag, battery and rates, and every number says where it comes from (the drone presets below).
+
+**Does the simulator have prop wash?**
+Yes, on the 5-inch quads and the cinelifter: sinking into its own downwash (catching a dive or a fast drop) the drone loses thrust and shakes. **Prop wash** scales it for each drone (0–2×; 0 switches it off).
+
+**Can I help make a simulator drone fly like my real one, or ask for a new drone?**
+Yes. The presets are built from published numbers and estimates. If you fly one of them for real and it feels different, press **Help tune it** in the drone picker or under Drone in Settings (or open `/en/fly/?drone=<id>&open=tune`) and send your Betaflight `diff all`, a link to a blackbox log and a few words; Andrii fits the drone to it. The same form asks for a drone that is not in the list. How every number was made: [docs/research/drones-v08.md](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/research/drones-v08.md).
 
 <!-- settings:end -->
 

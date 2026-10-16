@@ -1,0 +1,6 @@
+/* v0.8 "help us tune this drone" in the drone picker (ui/drone.ts) and the settings screen (app/builtin/tune.ts). */
+.drone-tune { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 4px 0 14px; padding: 10px 14px; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: var(--r); background: var(--bg2); }
+.drone-tune p { flex: 1 1 320px; margin: 0; }
+.drone-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.tune-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 6px 0 2px; font-size: 14px; color: var(--muted); }
+.tune-row p { flex: 1 1 260px; margin: 0; }

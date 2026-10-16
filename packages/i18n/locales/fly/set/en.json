@@ -37,7 +37,7 @@
   "set.ui.language.help": "English, Spanish, Polish or Russian; by default the language of the page.",
   "set.ui.language.opt.browser": "Page language",
   "set.drone.current": "Drone",
-  "set.drone.current.help": "One of the BetaFPV-class presets; every number on its card says where it comes from. Each drone keeps its own settings.",
+  "set.drone.current.help": "One of the presets: BetaFPV-class whoops, a 5-inch freestyle and a 5-inch race quad, an X8 cinelifter with a cinema camera; every number on its card says where it comes from. Each drone keeps its own settings.",
   "set.physics.gravity": "Gravity",
   "set.physics.gravity.help": "Earth 9.81, Moon 1.62, Mars 3.72, zero-g, or any value in between.",
   "set.physics.gravityMode": "Thrust on other worlds",

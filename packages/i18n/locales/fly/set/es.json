@@ -37,7 +37,7 @@
   "set.ui.language.help": "Inglés, español, polaco o ruso; por defecto, el idioma de la página.",
   "set.ui.language.opt.browser": "Idioma de la página",
   "set.drone.current": "Dron",
-  "set.drone.current.help": "Uno de los presets de clase BetaFPV; cada número de su ficha indica de dónde viene. Cada dron guarda sus propios ajustes.",
+  "set.drone.current.help": "Uno de los presets: whoops de clase BetaFPV, un quad de 5 pulgadas de freestyle y otro de carreras, un cinelifter X8 con cámara de cine; cada número de su ficha indica de dónde viene. Cada dron guarda sus propios ajustes.",
   "set.physics.gravity": "Gravedad",
   "set.physics.gravity.help": "Tierra 9,81, Luna 1,62, Marte 3,72, gravedad cero o cualquier valor intermedio.",
   "set.physics.gravityMode": "Empuje en otros mundos",
