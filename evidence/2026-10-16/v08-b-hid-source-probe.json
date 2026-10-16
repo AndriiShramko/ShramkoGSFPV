@@ -28,7 +28,7 @@
    "profileKey": "hid:2ca3:1021:HID Interface:13:d",
    "profileName": "DJI FPV Remote Controller 3",
    "key": "hid:2ca3:1021:HID Interface:13:d",
-   "reports": 59,
+   "reports": 66,
    "badReports": 0,
    "lastBadLen": 0,
    "rateHz": 0,
@@ -37,7 +37,7 @@
    "probe": {
     "requested": 1,
     "opened": 1,
-    "sent": 59,
+    "sent": 66,
     "listeners": 1
    },
    "known": "dji-virtual-joystick",
@@ -47,7 +47,7 @@
   "screens": 1,
   "path": [
    {
-    "t": 268,
+    "t": 328,
     "k": "check/null"
    }
   ],
@@ -70,16 +70,16 @@
    "profileKey": "hid:2ca3:1021:HID Interface:13:d",
    "profileName": "DJI FPV Remote Controller 3",
    "key": "hid:2ca3:1021:HID Interface:13:d",
-   "reports": 117,
+   "reports": 132,
    "badReports": 0,
    "lastBadLen": 0,
-   "rateHz": 0,
+   "rateHz": 1,
    "deviceName": "HID Interface",
    "hint": "",
    "probe": {
     "requested": 1,
     "opened": 1,
-    "sent": 117,
+    "sent": 132,
     "listeners": 1
    },
    "known": "dji-virtual-joystick",
@@ -89,11 +89,11 @@
   "screens": 2,
   "path": [
    {
-    "t": 154,
+    "t": 148,
     "k": "none"
    },
    {
-    "t": 671,
+    "t": 675,
     "k": "check/null"
    }
   ],
@@ -109,23 +109,23 @@
    "controls": 0,
    "wizard": true
   },
-  "seconds": 22,
+  "seconds": 21,
   "end": {
    "id": "check",
    "profile": true,
    "profileKey": "hid:1209:4f54:RadioMaster TX16S Joystick:19",
    "profileName": "RadioMaster TX16S Joystick",
    "key": "hid:1209:4f54:RadioMaster TX16S Joystick:19",
-   "reports": 5211,
+   "reports": 5043,
    "badReports": 0,
    "lastBadLen": 0,
-   "rateHz": 246,
+   "rateHz": 249,
    "deviceName": "RadioMaster TX16S Joystick",
    "hint": "",
    "probe": {
     "requested": 1,
     "opened": 1,
-    "sent": 5211,
+    "sent": 5043,
     "listeners": 1
    },
    "known": "edgetx-joystick",
@@ -135,95 +135,95 @@
   "screens": 23,
   "path": [
    {
-    "t": 146,
+    "t": 149,
     "k": "none"
    },
    {
-    "t": 673,
+    "t": 700,
     "k": "stir/ready"
    },
    {
-    "t": 1131,
+    "t": 1161,
     "k": "stir/active"
    },
    {
-    "t": 4129,
+    "t": 3933,
     "k": "stir/done"
    },
    {
-    "t": 5051,
+    "t": 4905,
     "k": "centre/ready"
    },
    {
-    "t": 5514,
+    "t": 5355,
     "k": "centre/active"
    },
    {
-    "t": 6181,
+    "t": 6220,
     "k": "centre/done"
    },
    {
-    "t": 7109,
+    "t": 7113,
     "k": "throttle/ready"
    },
    {
-    "t": 7772,
+    "t": 7564,
     "k": "throttle/active"
    },
    {
-    "t": 8625,
+    "t": 8450,
     "k": "throttle/done"
    },
    {
-    "t": 9520,
+    "t": 9515,
     "k": "yaw/ready"
    },
    {
-    "t": 10156,
+    "t": 9963,
     "k": "yaw/active"
    },
    {
-    "t": 10993,
+    "t": 10863,
     "k": "yaw/done"
    },
    {
-    "t": 12581,
+    "t": 12193,
     "k": "pitch/ready"
    },
    {
-    "t": 13015,
+    "t": 12630,
     "k": "pitch/active"
    },
    {
-    "t": 13855,
+    "t": 13508,
     "k": "pitch/done"
    },
    {
-    "t": 15319,
+    "t": 14869,
     "k": "roll/ready"
    },
    {
-    "t": 15757,
+    "t": 15332,
     "k": "roll/active"
    },
    {
-    "t": 16610,
+    "t": 16209,
     "k": "roll/done"
    },
    {
-    "t": 17943,
+    "t": 17512,
     "k": "arm/ready"
    },
    {
-    "t": 18592,
+    "t": 18207,
     "k": "arm/active"
    },
    {
-    "t": 20093,
+    "t": 19478,
     "k": "arm/done"
    },
    {
-    "t": 21041,
+    "t": 20347,
     "k": "check/null"
    }
   ],
@@ -242,7 +242,7 @@
    "profileKey": null,
    "profileName": null,
    "key": "hid:2ca3:1021:HID Interface:13:d",
-   "reports": 1959,
+   "reports": 1952,
    "badReports": 0,
    "lastBadLen": 0,
    "rateHz": 167,
@@ -251,25 +251,21 @@
    "probe": {
     "requested": 1,
     "opened": 1,
-    "sent": 1959,
+    "sent": 1952,
     "listeners": 1
    },
    "known": null,
    "knownNote": false,
    "controls": 0
   },
-  "screens": 3,
+  "screens": 2,
   "path": [
    {
-    "t": 169,
+    "t": 175,
     "k": "none"
    },
    {
-    "t": 649,
-    "k": "stir/ready"
-   },
-   {
-    "t": 1121,
+    "t": 934,
     "k": "stir/active"
    }
   ],
@@ -289,7 +285,7 @@
    "profileName": null,
    "key": "hid:2ca3:1021:HID Interface:13",
    "reports": 0,
-   "badReports": 4888,
+   "badReports": 4940,
    "lastBadLen": 13,
    "rateHz": 0,
    "deviceName": "HID Interface",
@@ -297,7 +293,7 @@
    "probe": {
     "requested": 1,
     "opened": 1,
-    "sent": 4888,
+    "sent": 4940,
     "listeners": 1
    },
    "known": null,
@@ -307,11 +303,11 @@
   "screens": 2,
   "path": [
    {
-    "t": 164,
+    "t": 172,
     "k": "none"
    },
    {
-    "t": 1724,
+    "t": 1790,
     "k": "connect/null"
    }
   ],
