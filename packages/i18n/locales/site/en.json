@@ -151,7 +151,9 @@
       "title": "{n} drone presets",
       "note": "Every number says where it comes from: manufacturer, independent measurement or estimate.",
       "fly": "Fly this drone",
-      "default": "default"
+      "default": "default",
+      "tuneNote": "Built from published numbers and estimates. Fly one of them for real and it feels different here? Send your Betaflight diff all, a blackbox log and a few words through the simulator's Drone physics form, or ask there for a drone that is missing.",
+      "tune": "Help tune it"
     },
     "footer": {
       "note": "Generated on {date} from the settings schema. A setting that is still being built appears here the day it ships.",
@@ -712,7 +714,8 @@
       { "q": "Is it open source?", "a": "Yes, MIT. Code, measurements and design decisions are on GitHub. Betaflight's formulas were re-implemented; no GPL code was copied." },
       { "q": "Can the simulator take me to a new place after every crash?", "a": "Yes. Random top-rated in the SuperSplat tab opens a scan you have not seen, Shift+N loads a random scene in flight, and with “Next scene after a crash” switched on every crash takes you to another scene: from Andrii's picks, your favourites or the scenes you have flown, in random or fixed order. The radio stays connected." },
       { "q": "Can I fly a room as if it were a city?", "a": "Yes. Scene size scales the whole scan around the drone from ×0.25 to ×100 with [ and ] (Shift+] doubles it) or in the pause menu. At ×100 a chair is the size of a tower block and you can dive along its legs; the walls scale with the scene, so you still crash into them. The scale is kept for each scan." },
-      { "q": "Can I fly my own 3D scan?", "a": "Yes. Publish it on SuperSplat (superspl.at) and paste its link or id on this page or in the simulator. Published with walls (voxel collision data), it is solid at once; without them you can build walls in the browser for scans up to 4 million Gaussians." }
+      { "q": "Can I fly my own 3D scan?", "a": "Yes. Publish it on SuperSplat (superspl.at) and paste its link or id on this page or in the simulator. Published with walls (voxel collision data), it is solid at once; without them you can build walls in the browser for scans up to 4 million Gaussians." },
+      { "q": "Can I help make a simulator drone fly like my real one, or ask for a new drone?", "a": "Yes. The drones are built from published numbers and estimates: BetaFPV-class whoops, an iFlight Nazgul Evoque F5 class 5-inch freestyle quad, a Mach R5 Sport class 5-inch race quad and a Taurus X8 class cinelifter carrying a RED Komodo. If you fly one of them for real and it feels different, press Help tune it in the drone picker or in Settings and send your Betaflight diff all, a link to a blackbox log and a few words; Andrii fits the drone to it. The same form asks for a drone that is not in the list." }
     ]
   },
   "opensource": {
@@ -783,7 +786,7 @@
       "rows": [
         "Plug in an EdgeTX radio and a drawn radio walks you through it: stick by stick, then the switch you arm with, then a check of every channel before you fly. Each step waits until you really move the stick.",
         "Angle self-levelling by default for everyone; the chip on screen, M or a switch on your radio picks Horizon or Acro. No radio at hand? The keyboard shows every key it uses, touch sticks appear on a touch screen, and a gamepad connects through the browser (not tested on real hardware yet).",
-        "Six BetaFPV-class quads, and every number on their cards says where it comes from. Paste a Betaflight CLI diff to fly with your own rates and PID.",
+        "BetaFPV-class whoops, a 5-inch freestyle and a 5-inch race quad and an X8 cinelifter with a cinema camera, and every number on their cards says where it comes from. Paste a Betaflight CLI diff to fly with your own rates and PID.",
         "Hit a wall and the quad crashes at the speed it hit, the wreck tumbling with debris; two seconds later it is back in the air, 5 s back along your path and still armed. Crashes off, the delay and where you come back sit in Settings.",
         "An OSD like in your goggles, field of view and camera uptilt. F9 records 60 fps video of Andrii's scans with their credit in the picture, auto-record catches every flight into your folder, and a flight log becomes a 60 fps video up to 4K.",
         "Pick one of 1,300+ walkable scans in the SuperSplat tab with its own filters, one of Andrii's, or paste a link, and watch it load with real numbers. N, Shift+N and F change the scene in the page with the radio still connected; [ and ] scale the scene from ×0.25 to ×100.",
@@ -825,7 +828,7 @@
       "voxels-floaters": { "t": "Floaters in red", "d": "Pieces of the grid that touch nothing else and are smaller than 0.5 m³ turn red, so a phantom wall in the plants stands out." },
       "pause": { "t": "Summary panel", "d": "Pause shows this flight's stats beside the session and all-time ones, the scene size, saving as video, every menu item and every key." },
       "settings": { "t": "Settings", "d": "Every setting on one screen, by group and with search; here Crashes & respawn: crashes, threshold, automatic respawn, delay, where and how far back, the invisible platform." },
-      "drones": { "t": "Six drones", "d": "BetaFPV-class presets with a rate curve each; every number says where it comes from: manufacturer, measured or estimate." },
+      "drones": { "t": "Drones", "d": "Drone presets with a rate curve each; every number says where it comes from: manufacturer, measured or estimate." },
       "betaflight": { "t": "Betaflight import", "d": "Paste a CLI diff and its rates and PID fly the quad; every setting the simulator does not use is listed (here a test diff)." },
       "measure": { "t": "Measurements", "d": "Renderer, display refresh, frame times, physics rate, load time, the walls in use and a tunnelling self-test, copyable as JSON." },
       "cinema": { "t": "Cinema mode", "d": "Full detail, automatic quality off, no HUD; Record saves an MP4 with the scan's credit in the picture." },
@@ -865,7 +868,7 @@
     "privacy": "Privacy",
     "licenses": "Licenses",
     "license": "MIT license",
-    "disclaimer": "Not affiliated with or endorsed by PlayCanvas, BetaFPV, the Betaflight project, LuGus Studios (Liftoff), DJI or RadioMaster. Trademarks belong to their owners."
+    "disclaimer": "Not affiliated with or endorsed by PlayCanvas, BetaFPV, iFlight, RED Digital Cinema, the Betaflight project, LuGus Studios (Liftoff), DJI or RadioMaster. Trademarks belong to their owners."
   },
   "privacy": {
     "title": "Privacy — ShramkoGSFPV",

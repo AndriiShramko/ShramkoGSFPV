@@ -268,6 +268,10 @@ export default function SettingsCatalog({ locale }: { locale: Locale }) {
             {t("drones.title", { n: cat.drones.length })}
           </h3>
           <p className="mt-1 text-sm text-muted">{t("drones.note")}</p>
+          {/* v0.8 help us tune this drone: the simulator's Drone physics form (?open=tune, apps/fly builtin/feedback.ts) */}
+          <p className="mt-2 text-sm text-ink/90" data-testid="drones-tune-note">
+            {t("drones.tuneNote")}
+          </p>
           <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {cat.drones.map((d) => (
               <li key={d.id} className="flex flex-col rounded-lg border border-line bg-bg p-4">
@@ -286,13 +290,19 @@ export default function SettingsCatalog({ locale }: { locale: Locale }) {
                     </div>
                   ))}
                 </dl>
-                <a href={`${fly}?scene=${scene}&drone=${encodeURIComponent(d.id)}`} className="link mt-auto inline-flex min-h-11 items-center pt-3 text-sm">
-                  {t("drones.fly")}
-                  <span className="sr-only">: {d.name}</span>
-                  <span aria-hidden="true" className="ml-1">
-                    →
-                  </span>
-                </a>
+                <div className="mt-auto flex flex-wrap gap-x-5 pt-3">
+                  <a href={`${fly}?scene=${scene}&drone=${encodeURIComponent(d.id)}`} className="link inline-flex min-h-11 items-center text-sm">
+                    {t("drones.fly")}
+                    <span className="sr-only">: {d.name}</span>
+                    <span aria-hidden="true" className="ml-1">
+                      →
+                    </span>
+                  </a>
+                  <a href={`${fly}?scene=${scene}&drone=${encodeURIComponent(d.id)}&open=tune`} className="link inline-flex min-h-11 items-center text-sm text-muted" data-testid="drone-tune-link">
+                    {t("drones.tune")}
+                    <span className="sr-only">: {d.name}</span>
+                  </a>
+                </div>
               </li>
             ))}
           </ul>

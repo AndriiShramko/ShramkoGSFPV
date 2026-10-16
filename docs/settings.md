@@ -233,6 +233,15 @@ Yes: the **Voxel grid** shows the voxels you crash into, over the scan or voxels
 **Can I record 60 fps video of my flight?**
 Yes: **Frame rate** is 30 fps or 60 fps, 60 fps by default.
 
+**Can I fly a 5-inch freestyle quad, a 5-inch race quad or a heavy cinelifter with a cinema camera?**
+Yes: besides the BetaFPV-class whoops, **Drone** offers an iFlight Nazgul Evoque F5 class 5-inch freestyle quad, an iFlight Mach R5 Sport class 5-inch race quad and an iFlight Taurus X8 class cinelifter carrying a RED Komodo, all on 6S. Each has its own weight, thrust-to-weight, inertia, motor lag, battery and rates, and every number says where it comes from (the drone presets below).
+
+**Does the simulator have prop wash?**
+Yes, on the 5-inch quads and the cinelifter: sinking into its own downwash (catching a dive or a fast drop) the drone loses thrust and shakes. **Prop wash** scales it for each drone (0–2×; 0 switches it off).
+
+**Can I help make a simulator drone fly like my real one, or ask for a new drone?**
+Yes. The presets are built from published numbers and estimates. If you fly one of them for real and it feels different, press **Help tune it** in the drone picker or under Drone in Settings (or open `/en/fly/?drone=<id>&open=tune`) and send your Betaflight `diff all`, a link to a blackbox log and a few words; Andrii fits the drone to it. The same form asks for a drone that is not in the list. How every number was made: [docs/research/drones-v08.md](https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/docs/research/drones-v08.md).
+
 ## Author and collaboration
 
 ShramkoGSFPV is built by **Andrii Shramko**, FPV pilot and 3D/4D Gaussian Splatting specialist. I am open to partnership, integration, licensing, sponsorship and funding, and ready to assemble and lead a team around this simulator: FPV pilots, scanning studios, drone makers, simulator developers, 3DGS platforms and investors, get in touch.

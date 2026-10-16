@@ -151,7 +151,9 @@
       "title": "Presety dronów: {n}",
       "note": "Każda liczba mówi, skąd pochodzi: producent, niezależny pomiar albo szacunek.",
       "fly": "Leć tym dronem",
-      "default": "domyślny"
+      "default": "domyślny",
+      "tuneNote": "Zbudowane z opublikowanych danych i szacunków. Latasz którymś z nich naprawdę, a tu czuje się inaczej? Wyślij swój diff all z Betaflight, log z blackboxa i kilka słów przez formularz Fizyka drona w symulatorze albo poproś tam o drona, którego brakuje.",
+      "tune": "Pomóż go dostroić"
     },
     "footer": {
       "note": "Wygenerowano {date} ze schematu ustawień. Ustawienie, które jest jeszcze w budowie, pojawi się tu w dniu wydania.",
@@ -712,7 +714,8 @@
       { "q": "Czy to open source?", "a": "Tak, na licencji MIT. Kod, pomiary i decyzje projektowe są na GitHubie. Wzory Betaflight zostały zaimplementowane od nowa; żaden kod na GPL nie został skopiowany." },
       { "q": "Czy symulator może po każdej kraksie przenieść mnie w nowe miejsce?", "a": "Tak. „Losowa z najlepszych” w zakładce SuperSplat otwiera skan, którego jeszcze nie widziałeś, Shift+N wczytuje losową scenę w locie, a z włączoną opcją „Następna scena po kraksie” każda kraksa przenosi Cię do innej sceny: z wyboru Andrija, z ulubionych albo z już przelatanych, w losowej albo stałej kolejności. Aparatura zostaje połączona." },
       { "q": "Czy mogę latać po pokoju jak po mieście?", "a": "Tak. Rozmiar sceny skaluje cały skan wokół drona od ×0,25 do ×100 klawiszami [ i ] (Shift+] podwaja) albo w menu pauzy. Przy ×100 krzesło jest jak wieżowiec i możesz zanurkować wzdłuż jego nóg; ściany skalują się razem ze sceną, więc nadal się o nie rozbijasz. Skala jest zapamiętana dla każdego skanu." },
-      { "q": "Czy mogę latać po własnym skanie 3D?", "a": "Tak. Opublikuj go na SuperSplat (superspl.at) i wklej jego link albo id na tej stronie lub w symulatorze. Opublikowany ze ścianami (danymi kolizji wokseli) jest twardy od razu; bez nich możesz zbudować ściany w przeglądarce dla skanów do 4 mln gaussianów." }
+      { "q": "Czy mogę latać po własnym skanie 3D?", "a": "Tak. Opublikuj go na SuperSplat (superspl.at) i wklej jego link albo id na tej stronie lub w symulatorze. Opublikowany ze ścianami (danymi kolizji wokseli) jest twardy od razu; bez nich możesz zbudować ściany w przeglądarce dla skanów do 4 mln gaussianów." },
+      { "q": "Czy mogę pomóc, żeby dron w symulatorze latał jak mój prawdziwy, albo poprosić o nowego drona?", "a": "Tak. Drony powstały z opublikowanych danych i szacunków: whoopy klasy BetaFPV, 5-calowy quad freestyle klasy iFlight Nazgul Evoque F5, 5-calowy quad wyścigowy klasy Mach R5 Sport i cinelifter klasy Taurus X8 z kamerą RED Komodo. Jeśli latasz którymś z nich naprawdę, a tu czuje się inaczej, naciśnij Pomóż go dostroić w wyborze drona lub w Ustawieniach i wyślij swój diff all z Betaflight, link do logu z blackboxa i kilka słów; Andrii dopasuje do nich drona. W tym samym formularzu poprosisz o drona, którego nie ma na liście." }
     ]
   },
   "opensource": {
@@ -783,7 +786,7 @@
       "rows": [
         "Podłącz aparaturę EdgeTX, a narysowana aparatura poprowadzi cię krok po kroku: drążek po drążku, potem przełącznik uzbrojenia, a przed lotem sprawdzenie każdego kanału. Każdy krok czeka, aż naprawdę ruszysz drążkiem.",
         "Domyślnie Angle z samopoziomowaniem dla wszystkich; przycisk na ekranie, M albo przełącznik na aparaturze wybiera Horizon lub Acro. Nie masz aparatury pod ręką? Klawiatura pokazuje każdy używany klawisz, na ekranie dotykowym pojawiają się drążki, a pad łączy się przez przeglądarkę (jeszcze nie testowany na prawdziwym sprzęcie).",
-        "Sześć quadów klasy BetaFPV, a każda liczba na ich kartach mówi, skąd pochodzi. Wklej diff z CLI Betaflight i lataj na własnych rates i PID.",
+        "Whoopy klasy BetaFPV, 5-calowy quad freestyle i wyścigowy oraz cinelifter X8 z kamerą kinową, a każda liczba na ich kartach mówi, skąd pochodzi. Wklej diff z CLI Betaflight i lataj na własnych rates i PID.",
         "Uderz w ścianę, a dron rozbije się z prędkością uderzenia, a wrak potoczy się z odłamkami; dwie sekundy później jest znów w powietrzu, 5 s wstecz na trasie i nadal uzbrojony. Wyłączenie kraks, opóźnienie i miejsce powrotu są w Ustawieniach.",
         "OSD jak w goglach, pole widzenia i pochylenie kamery. F9 nagrywa wideo 60 fps ze skanów Andrija z podpisem autora w kadrze, automatyczne nagrywanie zapisuje każdy lot w twoim folderze, a log lotu staje się wideo 60 fps do 4K.",
         "Wybierz jeden z ponad 1300 skanów ze ścianami w zakładce SuperSplat z jej filtrami, skan Andrija albo wklej link i zobacz, jak się wczytuje z prawdziwymi liczbami. N, Shift+N i F zmieniają scenę na tej samej stronie przy podłączonej aparaturze; [ i ] skalują scenę od ×0,25 do ×100.",
@@ -825,7 +828,7 @@
       "voxels-floaters": { "t": "Pływające na czerwono", "d": "Kawałki siatki, które niczego nie dotykają i mają mniej niż 0,5 m³, robią się czerwone, więc widać fantomową ścianę wśród roślin." },
       "pause": { "t": "Panel podsumowania", "d": "Pauza pokazuje statystyki tego lotu obok sesji i wszystkich lotów, rozmiar sceny, zapis jako wideo, każdą pozycję menu i każdy klawisz." },
       "settings": { "t": "Ustawienia", "d": "Wszystkie ustawienia na jednym ekranie, w grupach i z wyszukiwarką; tu kraksy i respawn: kraksy, próg, automatyczny respawn, opóźnienie, gdzie i jak daleko wstecz, niewidzialna platforma." },
-      "drones": { "t": "Sześć dronów", "d": "Presety klasy BetaFPV, każdy z krzywą rates; każda liczba mówi, skąd pochodzi: producent, pomiar albo szacunek." },
+      "drones": { "t": "Drony", "d": "Presety dronów, każdy z krzywą rates; każda liczba mówi, skąd pochodzi: producent, pomiar albo szacunek." },
       "betaflight": { "t": "Import z Betaflight", "d": "Wklej diff z CLI, a jego rates i PID przejdą na drona; ustawienia, których symulator nie używa, są wypisane (tu testowy diff)." },
       "measure": { "t": "Pomiary", "d": "Renderer, odświeżanie ekranu, czasy klatek, częstotliwość fizyki, czas wczytania, ściany w użyciu i autotest przelotu przez ściany, do skopiowania jako JSON." },
       "cinema": { "t": "Tryb kinowy", "d": "Pełny detal, automatyczna jakość wyłączona, bez HUD; „Nagrywaj” zapisuje MP4 z podpisem autora skanu w kadrze." },
@@ -865,7 +868,7 @@
     "privacy": "Prywatność",
     "licenses": "Licencje",
     "license": "licencja MIT",
-    "disclaimer": "Projekt nie jest powiązany z PlayCanvas, BetaFPV, projektem Betaflight, LuGus Studios (Liftoff), DJI ani RadioMaster i nie jest przez nie wspierany. Znaki towarowe należą do ich właścicieli."
+    "disclaimer": "Projekt nie jest powiązany z PlayCanvas, BetaFPV, iFlight, RED Digital Cinema, projektem Betaflight, LuGus Studios (Liftoff), DJI ani RadioMaster i nie jest przez nie wspierany. Znaki towarowe należą do ich właścicieli."
   },
   "privacy": {
     "title": "Prywatność — ShramkoGSFPV",
