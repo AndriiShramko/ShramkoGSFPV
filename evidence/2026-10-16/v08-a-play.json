@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-16T20:29:00.654Z",
-    "gitHead": "ed03295",
+    "date": "2026-10-16T21:04:46.471Z",
+    "gitHead": "334e840",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5340",
+  "site": "https://gsfpv.flyreelstudio.eu",
   "pass": true,
   "only": "all",
   "checks": [
@@ -34,8 +34,8 @@
       "detail": {
         "armedBefore": false,
         "armed": true,
-        "climbMps": 2.632,
-        "gainedM": 5.889
+        "climbMps": 2.633,
+        "gainedM": 5.604
       }
     },
     {
@@ -51,7 +51,7 @@
       "id": "K3 keys released: the height holds (altitude help)",
       "ok": true,
       "detail": {
-        "spreadM": 0.035,
+        "spreadM": 0.033,
         "meanVy": 0.009
       }
     },
@@ -60,7 +60,7 @@
       "ok": true,
       "detail": {
         "pitchDeg": 24.996,
-        "maxHeightChangeM": 0.068
+        "maxHeightChangeM": 0.066
       }
     },
     {
@@ -96,7 +96,7 @@
             "arm": "on",
             "want": true,
             "helpActive": false,
-            "throttle": 0.2832877151608213,
+            "throttle": 0.2832705960960701,
             "target": 0,
             "step": 2,
             "school": {
@@ -112,8 +112,8 @@
       "ok": true,
       "detail": {
         "throttleWhenHelpWentOff": 0.283,
-        "throttleAfterRelease": 0.45,
-        "throttle500msLater": 0.45
+        "throttleAfterRelease": 0.448,
+        "throttle500msLater": 0.448
       }
     },
     {
@@ -134,7 +134,7 @@
         "afterTap": {
           "armed": true,
           "want": true,
-          "heightChangeM": 0.149
+          "heightChangeM": 0.146
         },
         "afterHold": {
           "armed": false,
@@ -148,14 +148,14 @@
       "ok": true,
       "detail": {
         "ok": true,
-        "saved": "0dfffa418f2cdea58937011a16a60c7fdc18f8d69be093b58cc2bddaba9f9d45",
-        "replayed": "0dfffa418f2cdea58937011a16a60c7fdc18f8d69be093b58cc2bddaba9f9d45",
-        "endTick": 41300,
+        "saved": "fa7f4869ecf1f49c3996778a28b4c8195ea99eb73d3928c43d672ad4e3a07b59",
+        "replayed": "fa7f4869ecf1f49c3996778a28b4c8195ea99eb73d3928c43d672ad4e3a07b59",
+        "endTick": 41207,
         "lives": 1,
         "refused": null,
-        "tamperedAtTick": 20650,
+        "tamperedAtTick": 20603,
         "lsb": {
-          "was": -0.4384397864341736,
+          "was": -0.43844330310821533,
           "differs": true
         },
         "twitch": {
@@ -209,8 +209,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.635,
-        "gainedM": 3.954,
+        "climbMps": 1.639,
+        "gainedM": 3.989,
         "leftStickAfterRelease": 0
       }
     },
@@ -218,7 +218,7 @@
       "id": "T4-tablet the height holds with no finger on the sticks",
       "ok": true,
       "detail": {
-        "spreadM": 0.037
+        "spreadM": 0.034
       }
     },
     {
@@ -231,12 +231,12 @@
         "moveLaterPct": 0,
         "moveEarlierPct": 0,
         "rawToFlightMs": {
-          "p50": 53.6,
-          "p95": 62.8
+          "p50": 49.4,
+          "p95": 63.3
         },
         "moveToFlightMs": {
-          "p50": 53.6,
-          "p95": 62.8
+          "p50": 49.4,
+          "p95": 63.3
         },
         "controlN": 51,
         "controlLaterPct": 100,
@@ -244,7 +244,7 @@
         "samples": {
           "raw": 51,
           "move": 51,
-          "frames": 402
+          "frames": 404
         }
       }
     },
@@ -299,14 +299,14 @@
       "ok": true,
       "detail": {
         "ok": true,
-        "saved": "4f2eef59c35e8eb913e1df9420850e50ec71366dd6277a3ad32cd2c4351cfb15",
-        "replayed": "4f2eef59c35e8eb913e1df9420850e50ec71366dd6277a3ad32cd2c4351cfb15",
-        "endTick": 18360,
+        "saved": "b52f24065376185ff95acf8ef59f40e7a6a1e785965bae54b515a927f70e44b9",
+        "replayed": "b52f24065376185ff95acf8ef59f40e7a6a1e785965bae54b515a927f70e44b9",
+        "endTick": 18447,
         "lives": 1,
         "refused": null,
-        "tamperedAtTick": 9180,
+        "tamperedAtTick": 9223,
         "lsb": {
-          "was": -0.44308769702911377,
+          "was": -0.4429978132247925,
           "differs": true
         },
         "twitch": {
@@ -352,8 +352,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.663,
-        "gainedM": 4.013,
+        "climbMps": 1.667,
+        "gainedM": 4.103,
         "leftStickAfterRelease": 0
       }
     },
@@ -361,25 +361,25 @@
       "id": "T4-phone the height holds with no finger on the sticks",
       "ok": true,
       "detail": {
-        "spreadM": 0.033
+        "spreadM": 0.034
       }
     },
     {
       "id": "T5-phone the right stick at half forward tilts the drone (angle mode); a touch sample reaches the flight at the frame measured for pointermove and for pointerrawupdate (100 % the same frame); control: a sample held to the next animation frame is measured a frame later",
       "ok": true,
       "detail": {
-        "pitchDeg": 17.847,
+        "pitchDeg": 17.848,
         "matched": 51,
         "sameFramePct": 100,
         "moveLaterPct": 0,
         "moveEarlierPct": 0,
         "rawToFlightMs": {
-          "p50": 54.4,
-          "p95": 65.8
+          "p50": 51.8,
+          "p95": 63.1
         },
         "moveToFlightMs": {
-          "p50": 54.4,
-          "p95": 65.8
+          "p50": 51.8,
+          "p95": 63.1
         },
         "controlN": 51,
         "controlLaterPct": 100,
@@ -387,7 +387,7 @@
         "samples": {
           "raw": 51,
           "move": 51,
-          "frames": 400
+          "frames": 404
         }
       }
     },
@@ -443,14 +443,14 @@
       "ok": true,
       "detail": {
         "ok": true,
-        "saved": "d2a8763d879b215df3b2053fea27d8a46bb9316416aea3125a67f16cb3241f80",
-        "replayed": "d2a8763d879b215df3b2053fea27d8a46bb9316416aea3125a67f16cb3241f80",
-        "endTick": 18409,
+        "saved": "f3edd89e852501cbfb3cda5af6831eb92240396a627a58695bc78da971c43ee3",
+        "replayed": "f3edd89e852501cbfb3cda5af6831eb92240396a627a58695bc78da971c43ee3",
+        "endTick": 18475,
         "lives": 1,
         "refused": null,
-        "tamperedAtTick": 9204,
+        "tamperedAtTick": 9237,
         "lsb": {
-          "was": -0.4430350065231323,
+          "was": -0.44308868050575256,
           "differs": true
         },
         "twitch": {
@@ -496,8 +496,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.645,
-        "gainedM": 4.035,
+        "climbMps": 1.635,
+        "gainedM": 4.001,
         "leftStickAfterRelease": 0
       }
     },
@@ -505,7 +505,7 @@
       "id": "T4-phone-landscape the height holds with no finger on the sticks",
       "ok": true,
       "detail": {
-        "spreadM": 0.036
+        "spreadM": 0.034
       }
     },
     {
@@ -518,12 +518,12 @@
         "moveLaterPct": 0,
         "moveEarlierPct": 0,
         "rawToFlightMs": {
-          "p50": 51.2,
-          "p95": 65.9
+          "p50": 49.1,
+          "p95": 62.1
         },
         "moveToFlightMs": {
-          "p50": 51.2,
-          "p95": 65.9
+          "p50": 49.1,
+          "p95": 62.1
         },
         "controlN": 51,
         "controlLaterPct": 100,
@@ -531,7 +531,7 @@
         "samples": {
           "raw": 51,
           "move": 51,
-          "frames": 405
+          "frames": 401
         }
       }
     },
@@ -585,14 +585,14 @@
       "ok": true,
       "detail": {
         "ok": true,
-        "saved": "415f4863313e9b52ef880623d2330095781b7eb4358734aa768ff9468307da48",
-        "replayed": "415f4863313e9b52ef880623d2330095781b7eb4358734aa768ff9468307da48",
-        "endTick": 18528,
+        "saved": "cc6184877f4fc6623233dbb68dc197b4cb572d3cf2319f03129af13d18681ab6",
+        "replayed": "cc6184877f4fc6623233dbb68dc197b4cb572d3cf2319f03129af13d18681ab6",
+        "endTick": 18307,
         "lives": 1,
         "refused": null,
-        "tamperedAtTick": 9264,
+        "tamperedAtTick": 9153,
         "lsb": {
-          "was": -0.4430729150772095,
+          "was": -0.44309699535369873,
           "differs": true
         },
         "twitch": {
