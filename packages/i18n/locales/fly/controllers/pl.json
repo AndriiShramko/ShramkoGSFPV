@@ -27,6 +27,7 @@
   "controllers.note.djiThrottle": "Drążek gazu wraca na środek tak, jak dostarcza go DJI, czyli pół gazu. Do latania FPV wyłącz sprężynę śrubami F1 / F2 za drążkiem (instrukcja DJI, tryb Manual).",
   "controllers.note.djiArm": "Uzbrajanie: gaz w dół, naciśnij start/stop (kolejne naciśnięcie rozbraja).",
   "controllers.note.djiMode": "Przełącznik trybu lotu: N = Angle, S = Horizon, M = Acro.",
+  "controllers.note.djiFamily": "To układ DJI FPV Remote Controller 3. DJI używa tych samych identyfikatorów USB w innych kontrolerach: w FPV Remote Controller 2 drążki powinny się zgadzać (według pilotów), ale przełączniki i przyciski mogą nie; sprawdź każdy wiersz poniżej.",
   "controllers.edgetx.why": "Aparatura EdgeTX: jej kanały to ustawienia twojego własnego modelu, więc kreator raz pyta o każdy drążek.",
   "controllers.useKnown": "Rozpoznano: {name}. Twoje zapisane ustawienia pochodzą sprzed czasu, gdy symulator znał ten kontroler. Jego znane ustawienia: drążki w trybie 2 na pełnym zakresie, przełącznik trybu lotu N / S / M = Angle / Horizon / Acro, jego kanały Betaflight.",
   "controllers.offerHint": "«Użyj znanych ustawień» pokazuje je na ekranie sprawdzenia («Leć» je zapisuje). «Zostaw moje ustawienia» zachowuje twoje bez zmian. Każda z tych odpowiedzi kończy to pytanie; «Leć» bez wyboru zapyta znowu następnym razem.",

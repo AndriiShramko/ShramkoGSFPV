@@ -30,7 +30,7 @@ class FakeSession {
 const ID = 'HID Interface (Vendor: 2ca3 Product: 1021)';
 function dji(): Profile {
     const m = recognise(seenFromGamepad({ id: ID, axes: { length: 5 }, buttons: { length: 24 } }));
-    return knownProfile(m!, `gp:${ID}:5:24:`, 'DJI FPV Remote Controller 3')!;
+    return knownProfile(m!, `gp:${ID}:5:24:`, 'DJI FPV Remote Controller')!;
 }
 /** A DJI frame: sticks (-1..1) X Y Z Rx, the dial, and the button mask (0x50 = both switches at their low end). */
 const f = (o: { thr?: number; roll?: number; buttons?: number } = {}): RawFrame =>

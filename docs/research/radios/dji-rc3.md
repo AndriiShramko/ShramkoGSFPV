@@ -148,6 +148,20 @@ controllers too** (an RC Motion 3 with only a bulk interface, https://github.com
 the DJI RC 2 screen controller, https://github.com/rusty407/dji-rc2-linux-joystick), so the simulator
 recognises the controller by its ids **and** the shape of its HID gamepad (5 axes of -660..660, buttons).
 
+**The DJI FPV Remote Controller 2 (v0.8 review R6): its USB ids and HID shape were not found written.**
+Searched 2026-10-16 (web search for its VID/PID, "DJI Virtual Joystick", lsusb, Hardware Ids, joy.cpl;
+retailer pages, DJI forum, Steam forums): no page gives them. What is known: it works with simulators
+over USB-C and DJI Virtual Flight on Windows names it (https://support.dji.com/help/content?customId=en-us03400008917&spaceId=34&re=US&lang=en),
+and Uncrashed reads its axes 1-4 as roll, pitch, throttle, yaw (the Steam thread above), the same order
+as the RC 3's. Not the same controller: the DJI RC 2 *screen* controller (Mini 4 Pro) enumerates as
+2ca3:1021 too but has no HID interface at all (MTP, ADB and a DUML bulk interface; the GitHub project
+above), and Liftoff's developer says it is not an input device (Steam, 2024-02-22,
+https://steamcommunity.com/app/410340/discussions/1/4337599680238862343). So an FPV Remote Controller 2
+that enumerates as 2ca3:1021 with five -660..660 axes would be recognised as the RC 3's entry. The entry
+is therefore named for the family ("DJI FPV Remote Controller"), and the first note on its check screen
+says the layout is the RC 3's: the sticks should match an FPV RC 2, its switch and button rows may not.
+The RC Motion 3 shares the ids with a bulk interface only (above): no HID gamepad, never recognised.
+
 ### Which axis is which stick
 
 - **measured: X and Rx are the two horizontal axes, Y and Z the two vertical ones.** While both sticks

@@ -121,7 +121,10 @@ const ASSUMED_BUTTONS: Fact = { kind: 'assumed', why: `buttons in the order of D
 export const KNOWN_DEVICES: readonly KnownDevice[] = [
     {
         id: 'dji-virtual-joystick',
-        name: 'DJI FPV Remote Controller 3',
+        // the family's name, not a model's: the ids and this shape cannot tell an FPV Remote Controller
+        // 2 from the 3 if the 2 enumerates the same way (its ids were not found written, dji-rc3.md);
+        // the layout is the RC 3's, and the first note says so (the button and switch bits may differ)
+        name: 'DJI FPV Remote Controller',
         match: {
             usb: [{ vendorId: 0x2ca3, productId: 0x1021 }],
             axisUsages: [USAGE.X, USAGE.Y, USAGE.Z, USAGE.Rx, USAGE.Ry],
@@ -164,7 +167,7 @@ export const KNOWN_DEVICES: readonly KnownDevice[] = [
             { label: 'startStopButton', input: { kind: 'button', bit: 2 }, fact: ASSUMED_BUTTONS },
             { label: 'shutterButton', input: { kind: 'button', bit: 3 }, fact: ASSUMED_BUTTONS }
         ],
-        notes: ['controllers.note.djiThrottle', 'controllers.note.djiArm', 'controllers.note.djiMode']
+        notes: ['controllers.note.djiFamily', 'controllers.note.djiThrottle', 'controllers.note.djiArm', 'controllers.note.djiMode']
     },
     {
         id: 'edgetx-joystick',

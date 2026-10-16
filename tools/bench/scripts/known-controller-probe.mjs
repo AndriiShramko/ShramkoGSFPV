@@ -79,7 +79,7 @@ const url = `${base}/fly/?scene=39e63ce9&nowarn=1`;
     });
     await page.locator('[data-testid=known-controls]').scrollIntoViewIfNeeded().catch(() => undefined);
     await page.screenshot({ path: `${outDir}/02-check-known.png`, fullPage: true });
-    ok('open', open.id === 'check' && open.known === 'dji-virtual-joystick' && open.name === 'DJI FPV Remote Controller 3' && !!open.note && open.controls.length === 11 && open.mode?.input?.kind === 'bits' && open.channels === 9, open);
+    ok('open', open.id === 'check' && open.known === 'dji-virtual-joystick' && open.name === 'DJI FPV Remote Controller' && !!open.note && open.controls.length === 11 && open.mode?.input?.kind === 'bits' && open.channels === 9, open);
     // live: the right stick to the right lights its bar; the mode switch at M lights "high"
     await page.evaluate(() => window.__pad.set([0.8, 0, -1, 0, 0], 0x90));
     await page.waitForTimeout(400);

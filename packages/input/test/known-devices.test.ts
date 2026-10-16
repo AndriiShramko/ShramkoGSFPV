@@ -250,9 +250,16 @@ describe('the table itself', () => {
         expect([USAGE.X, USAGE.Y, USAGE.Z, USAGE.Rx, USAGE.Ry, USAGE.Rz].map((u) => m?.axisIndex(u))).toEqual([0, 1, 2, 3, 4, null]);
     });
 
+    it('the DJI entry is named for the family (an FPV Remote Controller 2 may share the ids, not found written) and its first note says the layout is the RC 3\'s (review R6)', () => {
+        const d = knownDevice('dji-virtual-joystick')!;
+        expect(d.name).not.toMatch(/\b3\b/);
+        expect(d.notes[0]).toBe('controllers.note.djiFamily');
+        expect(dict('en')['controllers.note.djiFamily']).toMatch(/Remote Controller 3.*Remote Controller 2/s);
+    });
+
     it('ids are unique, and knownDevice finds an entry by the id a profile keeps', () => {
         expect(new Set(KNOWN_DEVICES.map((d) => d.id)).size).toBe(KNOWN_DEVICES.length);
-        expect(knownDevice('dji-virtual-joystick')?.name).toBe('DJI FPV Remote Controller 3');
+        expect(knownDevice('dji-virtual-joystick')?.name).toBe('DJI FPV Remote Controller');
         expect(knownDevice('gone')).toBeNull();
         expect(knownDevice(undefined)).toBeNull();
     });

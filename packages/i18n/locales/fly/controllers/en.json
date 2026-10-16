@@ -27,6 +27,7 @@
   "controllers.note.djiThrottle": "The throttle stick springs back to the middle as DJI ships it, which is half throttle. For FPV flying stop the spring with the F1 / F2 screws behind the stick (DJI manual, Manual mode).",
   "controllers.note.djiArm": "Arm: throttle down, press start/stop (the next press disarms).",
   "controllers.note.djiMode": "Flight mode switch: N = Angle, S = Horizon, M = Acro.",
+  "controllers.note.djiFamily": "This is the layout of the DJI FPV Remote Controller 3. DJI uses the same USB ids for other controllers: on an FPV Remote Controller 2 the sticks should match (pilots' reports), but its switch and button rows may not; check each one below.",
   "controllers.edgetx.why": "EdgeTX radio: its channels are your model's own setup, so the wizard asks for each stick once.",
   "controllers.useKnown": "Recognised: {name}. Your saved setup is from before the simulator knew this controller. Its known setup: Mode 2 sticks at full range, the flight mode switch N / S / M = Angle / Horizon / Acro, its Betaflight channels.",
   "controllers.offerHint": "“Use the known setup” shows it on the check screen (“Fly” saves it). “Keep my setup” keeps yours as it is. Either answer ends this question; “Fly” without one asks again next time.",
