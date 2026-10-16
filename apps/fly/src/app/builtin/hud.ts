@@ -4,6 +4,7 @@
 import { isFormField } from '../../ui/hud';
 import { t } from '../../i18n';
 import type { Feature } from '../context';
+import { lodLine, lodReport } from '../lod';
 
 export const hud: Feature = {
     id: 'hud',
@@ -24,6 +25,13 @@ export const hud: Feature = {
         ctx.keys.on('frameStats.toggle', (e) => {
             h.toggleFrameStats();
             e.preventDefault();
+        });
+        // F3's second line: the levels of detail at work (v0.8 item 8), four times a second while shown
+        let lastDetail = 0;
+        ctx.events.on('frame', ({ now }) => {
+            if (!h.frameStatsShown || now - lastDetail < 250) return;
+            lastDetail = now;
+            h.setDetailLine(ctx.renderer.splatVisible ? lodLine(lodReport(ctx), t) : null);
         });
     }
 };

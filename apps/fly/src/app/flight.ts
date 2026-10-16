@@ -33,6 +33,7 @@ import { FEATURES } from './features';
 import { startTestMode, latencyHarness, voxelSwitches, logicOnly, logicOnlyTag } from './test-modes';
 import { hook, keepEvent } from './test-hook';
 import { saveLog, verifyLastLog, trajectoryText } from './logs';
+import { lodReport } from './lod';
 import { beacon, hasHid, isTouch, q } from './env';
 
 /** The "radios over USB need Chrome or Edge" note stays this long into a flight. */
@@ -221,6 +222,7 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
     hook.controls = ctx.controls;
     hook.crash = ctx.crash;
     hook.governor = ctx.quality.governor;
+    hook.lod = () => lodReport(ctx);
     hook.setFrameDelay = (ms: number) => ctx.quality.setFrameDelay(ms);
     hook.saveLog = (label: string) => saveLog(ctx.session, label);
     hook.verifyLastLog = (tamper) => verifyLastLog(ctx.session, tamper);

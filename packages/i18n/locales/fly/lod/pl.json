@@ -1,0 +1,8 @@
+{
+  "lod.line.auto": "Poziomy szczegółów: {levels}, dobierane według odległości · {drawn} z {budget} mln splatów · rozdzielczość {scale} %",
+  "lod.line.coarse": "Poziomy szczegółów: {levels}, najprostszy podczas ładowania skanu · {drawn} z {budget} mln splatów · rozdzielczość {scale} %",
+  "lod.line.final": "Poziomy szczegółów: {levels}, najdokładniejszy wszędzie (tryb kinowy) · {drawn} z {budget} mln splatów · rozdzielczość {scale} %",
+  "lod.line.single": "Jeden poziom szczegółów (ten skan nie ma innych) · {drawn} z {budget} mln splatów · rozdzielczość {scale} %",
+  "lod.lowered": "· obniżono z {top} mln, aby utrzymać płynność",
+  "lod.fallback": "· plik strumieniowy się nie otworzył, pokazano pojedynczy plik"
+}
