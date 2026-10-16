@@ -18,7 +18,16 @@
   "fb.drone.log": "Link to a blackbox log (optional)",
   "fb.drone.log.hint": "Fly a minute with the blackbox on (hover, a few punch-outs, flips and rolls), upload the .bbl or .bfl file to Google Drive, Dropbox or similar, and paste a link anyone can open.",
   "fb.drone.log.bad": "A log link starts with https:// or http://.",
-  "fb.drone.settings": "Also send my simulator settings for this drone ({n} changed)",
-  "fb.drone.sent": "Sent: the drone, what you write and paste here, and your e-mail if you leave one. Nothing else.",
+  "fb.drone.settings": "Also send my simulator settings for this drone ({n} changed), the flight mode and the input I fly with",
+  "fb.drone.sent": "Sent: {list}.",
+  "fb.drone.sentBox": "With the box ticked, also {list}.",
+  "fb.drone.sends.drone": "the drone",
+  "fb.drone.sends.words": "what you write and paste here",
+  "fb.drone.sends.email": "your e-mail if you leave one",
+  "fb.drone.sends.scene": "the scene you fly",
+  "fb.drone.sends.version": "the simulator's version and language",
+  "fb.drone.sends.settings": "the settings you changed for this drone",
+  "fb.drone.sends.mode": "the flight mode",
+  "fb.drone.sends.input": "the input you fly with (radio, gamepad, keyboard or touch)",
   "fb.drone.done": "Thank you! Andrii compares it with the simulator and writes back if you left an e-mail. Your report number: {id}."
 }

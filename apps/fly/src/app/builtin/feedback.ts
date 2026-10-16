@@ -7,8 +7,9 @@
 // Drone physics (v0.8, docs/wip/v08-d.md): a pilot who flies one of the presets for real tells what
 // feels different and sends what fits the drone to the real one: the Betaflight `diff all` as text, a
 // link to a blackbox log, and (ticked by default, counted on the box) their simulator settings for that
-// drone; or asks for a drone that is missing. POST /api/report kind 'drone' (apps/api/server.py
-// parse_drone_tune). Ways in: the drone picker's buttons, the settings screen's row under Drone, this
+// drone with the flight mode and the input; or asks for a drone that is missing. POST /api/report kind
+// 'drone' (apps/api/server.py parse_drone_tune); the body and the form's line that says what is sent come
+// from drone-report.ts. Ways in: the drone picker's buttons, the settings screen's row under Drone, this
 // dialog's tab, and the landing's links /{lang}/fly/?drone=<id>&open=tune.
 import { contact as enContact } from '@gsfpv/i18n/site/en.json';
 import { contact as esContact } from '@gsfpv/i18n/site/es.json';
@@ -20,6 +21,8 @@ import { t, locale } from '../../i18n';
 import { PRESETS } from '../../presets';
 import { q } from '../env';
 import { DIAG_ITEMS, collectDiagnostics, releaseId } from '../diagnostics';
+import { BETAFLIGHT_MAX, DRONE_NEW, DRONE_REPORT_ITEMS, LOG_URL_MAX, LOG_URL_RE, droneReportBody } from './drone-report';
+import type { DroneSettings } from './drone-report';
 import type { Feature, FlightContext } from '../context';
 import './feedback.css';
 
@@ -29,15 +32,8 @@ const KINDS: readonly FeedbackKind[] = ['bug', 'idea', 'drone', 'coop'];
 const MIN_MS = 3000;
 const MESSAGE_MAX = 2000;
 const CONTACT_MAX = 200;
-/** the API's limits of a drone-physics report (server.py DRONE_TUNE_TEXT_MAX, DRONE_LOG_URL_MAX) */
-const BETAFLIGHT_MAX = 100_000;
-const LOG_URL_MAX = 500;
-/** the drone select's value for a drone that is not in the list (server.py DRONE_NEW) */
-export const DRONE_NEW = 'new';
-const LOG_URL_RE = /^https?:\/\/[^\s<>"'`]{3,}$/i;
-
 /** What a drone-physics report carries of the simulator: the pilot's settings for that drone, the flight mode and the input. */
-function droneSettings(ctx: FlightContext, drone: string): { changed: Record<string, unknown>; flightMode: unknown; input: string | null } {
+function droneSettings(ctx: FlightContext, drone: string): DroneSettings {
     const changed: Record<string, unknown> = {};
     for (const e of ctx.prefs.explicitList({ drone })) if (e.scope === 'drone') changed[e.id] = e.value;
     return { changed, flightMode: ctx.prefs.get('flight.mode'), input: ctx.controls.source };
@@ -207,6 +203,8 @@ export function openFeedback(ctx: FlightContext, first: FeedbackKind = 'bug', o:
         syncDrone();
         const out = status();
         const send = h('button', { type: 'submit', class: 'btn primary', 'data-action': 'feedback-send' }, t('fb.send'));
+        const list = new Intl.ListFormat(locale, { type: 'conjunction' });
+        const sends = (withBox: boolean): string => list.format(DRONE_REPORT_ITEMS.filter((i) => i.withBox === withBox).map((i) => t(`fb.drone.sends.${i.item}`)));
         const form = h('form', { class: 'fb-form', novalidate: true, 'data-testid': 'fb-drone-form' },
             h('p', { class: 'fb-hint' }, t('fb.drone.lead')),
             h('label', { class: 'fb-label', for: 'fb-drone' }, t('fb.drone.which')), sel,
@@ -218,7 +216,8 @@ export function openFeedback(ctx: FlightContext, first: FeedbackKind = 'bug', o:
             set.row,
             h('label', { class: 'fb-label', for: 'fb-contact' }, t('fb.contact.label')), contact,
             h('p', { class: 'fb-hint', id: 'fb-contact-hint' }, t('fb.contact.hint')),
-            h('p', { class: 'muted small' }, t('fb.drone.sent')),
+            // what is sent, built from the fields the body carries (drone-report.ts: a field without a phrase fails its test)
+            h('p', { class: 'muted small', 'data-testid': 'fb-drone-sent' }, t('fb.drone.sent', { list: sends(false) }), ' ', t('fb.drone.sentBox', { list: sends(true) })),
             send, out);
         form.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -232,12 +231,12 @@ export function openFeedback(ctx: FlightContext, first: FeedbackKind = 'bug', o:
                 const drone = sel.value;
                 const ms = await wait();
                 try {
-                    const r = await post('/api/report', {
-                        kind: 'drone', message: draft.message.trim().slice(0, MESSAGE_MAX), contact: draft.contact.trim().slice(0, CONTACT_MAX),
-                        locale, page: 'fly', scene: ctx.scene.id, release: await releaseId(), t: ms, hp: hp.value,
-                        drone, logUrl: url || undefined, betaflight: draft.betaflight.trim().slice(0, BETAFLIGHT_MAX) || undefined,
+                    const r = await post('/api/report', droneReportBody({
+                        message: draft.message.trim().slice(0, MESSAGE_MAX), contact: draft.contact.trim().slice(0, CONTACT_MAX),
+                        locale, scene: ctx.scene.id, release: await releaseId(), t: ms, hp: hp.value,
+                        drone, logUrl: url, betaflight: draft.betaflight.trim().slice(0, BETAFLIGHT_MAX),
                         settings: draft.settings && drone !== DRONE_NEW ? droneSettings(ctx, drone) : undefined
-                    });
+                    }));
                     const j = (await r.json()) as { ok?: boolean; id?: string };
                     if (!r.ok || !j.ok || !j.id) throw new Error(`report ${r.status}`);
                     draft.message = '';
