@@ -1,13 +1,14 @@
 {
+ "release": "local release of cf81fbb (review fixes R1-R6), node scripts/build-release.mjs, serve-csp :5461",
  "what": "a recognised DJI FPV Remote Controller 3 flies out of the box on the Gamepad API (known-controller-probe.mjs)",
- "base": "http://localhost:5394/en",
+ "base": "http://localhost:5461/en",
  "steps": {
   "open": {
    "pass": true,
    "id": "check",
    "known": "dji-virtual-joystick",
-   "name": "DJI FPV Remote Controller 3",
-   "note": "Recognised: DJI FPV Remote Controller 3. Set up from its known layout, nothing to assign.Check it in half a minute: move",
+   "name": "DJI FPV Remote Controller",
+   "note": "Recognised: DJI FPV Remote Controller. Set up from its known layout, nothing to assign.Check it in half a minute: move e",
    "controls": [
     "rightStickX",
     "rightStickY",
@@ -34,7 +35,8 @@
      "acro"
     ]
    },
-   "channels": 9
+   "channels": 9,
+   "expected": "pass"
   },
   "live": {
    "pass": true,
@@ -42,13 +44,15 @@
    "leftX": 0,
    "modeNow": "high",
    "c2Now": "low",
-   "rollBar": "39.7%"
+   "rollBar": "39.7%",
+   "expected": "pass"
   },
   "fly": {
    "pass": true,
    "source": "gamepad",
    "known": "dji-virtual-joystick",
-   "screen": false
+   "screen": false,
+   "expected": "pass"
   },
   "modes": {
    "pass": true,
@@ -57,7 +61,8 @@
     "horizon",
     "acro",
     "angle"
-   ]
+   ],
+   "expected": "pass"
   },
   "arm": {
    "pass": true,
@@ -66,13 +71,15 @@
    "throttleMiddle": {
     "armed": false,
     "block": "throttle"
-   }
+   },
+   "expected": "pass"
   },
   "resume": {
    "pass": true,
    "source": "gamepad",
    "known": "dji-virtual-joystick",
-   "screen": false
+   "screen": false,
+   "expected": "pass"
   },
   "offer": {
    "pass": true,
@@ -85,12 +92,150 @@
     "known": "dji-virtual-joystick",
     "rollMax": 1,
     "note": true
-   }
+   },
+   "expected": "pass"
   },
   "not-dji": {
    "pass": true,
    "wizard": null,
-   "choice": true
+   "choice": true,
+   "expected": "pass"
+  },
+  "old-at-load": {
+   "pass": true,
+   "seeded": true,
+   "load": {
+    "screen": true,
+    "offer": true,
+    "wizard": null,
+    "source": "gamepad",
+    "known": null,
+    "rollMax": 0.88,
+    "modeInput": {
+     "kind": "button",
+     "bit": 7
+    },
+    "channels": null
+   },
+   "after": {
+    "check": {
+     "id": "check",
+     "known": "dji-virtual-joystick",
+     "note": true
+    },
+    "flying": {
+     "screen": false,
+     "offer": false,
+     "wizard": null,
+     "source": "gamepad",
+     "known": "dji-virtual-joystick",
+     "rollMax": 1,
+     "modeInput": {
+      "kind": "bits",
+      "lo": 6,
+      "hi": 7
+     },
+     "channels": 9
+    }
+   },
+   "reload": {
+    "screen": false,
+    "offer": false,
+    "wizard": null,
+    "source": "gamepad",
+    "known": "dji-virtual-joystick",
+    "rollMax": 1,
+    "modeInput": {
+     "kind": "bits",
+     "lo": 6,
+     "hi": 7
+    },
+    "channels": 9
+   },
+   "errors": [],
+   "expected": "pass"
+  },
+  "keep-at-load": {
+   "pass": true,
+   "seeded": true,
+   "load": {
+    "screen": true,
+    "offer": true,
+    "wizard": null,
+    "source": "gamepad",
+    "known": null,
+    "rollMax": 0.88,
+    "modeInput": {
+     "kind": "button",
+     "bit": 7
+    },
+    "channels": null
+   },
+   "after": {
+    "flying": {
+     "screen": false,
+     "offer": false,
+     "wizard": null,
+     "source": "gamepad",
+     "known": "dji-virtual-joystick",
+     "rollMax": 0.88,
+     "modeInput": {
+      "kind": "button",
+      "bit": 7
+     },
+     "channels": 9
+    }
+   },
+   "reload": {
+    "screen": false,
+    "offer": false,
+    "wizard": null,
+    "source": "gamepad",
+    "known": "dji-virtual-joystick",
+    "rollMax": 0.88,
+    "modeInput": {
+     "kind": "button",
+     "bit": 7
+    },
+    "channels": 9
+   },
+   "errors": [],
+   "expected": "pass"
+  },
+  "old-other-at-load": {
+   "pass": true,
+   "seeded": true,
+   "load": {
+    "screen": false,
+    "offer": false,
+    "wizard": null,
+    "source": "gamepad",
+    "known": null,
+    "rollMax": 0.88,
+    "modeInput": {
+     "kind": "button",
+     "bit": 7
+    },
+    "channels": null
+   },
+   "expected": "pass"
+  },
+  "two-pads": {
+   "pass": true,
+   "xbox": {
+    "step": "stir"
+   },
+   "back": {
+    "choice": true,
+    "wizard": null
+   },
+   "dji": {
+    "id": "check",
+    "known": "dji-virtual-joystick",
+    "name": "DJI FPV Remote Controller",
+    "key": "gp:HID Interface (Vendor: 2ca3 Product: 1021):5:24:"
+   },
+   "expected": "pass"
   }
  },
  "browser": {
@@ -104,5 +249,6 @@
   "counts": true
  },
  "errorsDji": [],
+ "expectFail": [],
  "pass": true
 }

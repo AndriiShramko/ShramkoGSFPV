@@ -1,0 +1,124 @@
+{
+ "release": "control: the pre-fix local release of 6ba3356 (= 5f547e9 code), serve-csp :5462; old-at-load, keep-at-load, two-pads must fail there",
+ "what": "a recognised DJI FPV Remote Controller 3 flies out of the box on the Gamepad API (known-controller-probe.mjs)",
+ "base": "http://localhost:5462/en",
+ "steps": {
+  "old-at-load": {
+   "pass": false,
+   "seeded": true,
+   "load": {
+    "screen": false,
+    "offer": false,
+    "wizard": null,
+    "source": "gamepad",
+    "known": null,
+    "rollMax": 0.88,
+    "modeInput": {
+     "kind": "button",
+     "bit": 7
+    },
+    "channels": null
+   },
+   "after": null,
+   "reload": {
+    "screen": false,
+    "offer": false,
+    "wizard": null,
+    "source": "gamepad",
+    "known": null,
+    "rollMax": 0.88,
+    "modeInput": {
+     "kind": "button",
+     "bit": 7
+    },
+    "channels": null
+   },
+   "errors": [],
+   "expected": "fail"
+  },
+  "keep-at-load": {
+   "pass": false,
+   "seeded": true,
+   "load": {
+    "screen": false,
+    "offer": false,
+    "wizard": null,
+    "source": "gamepad",
+    "known": null,
+    "rollMax": 0.88,
+    "modeInput": {
+     "kind": "button",
+     "bit": 7
+    },
+    "channels": null
+   },
+   "after": null,
+   "reload": {
+    "screen": false,
+    "offer": false,
+    "wizard": null,
+    "source": "gamepad",
+    "known": null,
+    "rollMax": 0.88,
+    "modeInput": {
+     "kind": "button",
+     "bit": 7
+    },
+    "channels": null
+   },
+   "errors": [],
+   "expected": "fail"
+  },
+  "old-other-at-load": {
+   "pass": true,
+   "seeded": true,
+   "load": {
+    "screen": false,
+    "offer": false,
+    "wizard": null,
+    "source": "gamepad",
+    "known": null,
+    "rollMax": 0.88,
+    "modeInput": {
+     "kind": "button",
+     "bit": 7
+    },
+    "channels": null
+   },
+   "expected": "pass"
+  },
+  "two-pads": {
+   "pass": false,
+   "xbox": {
+    "step": "stir"
+   },
+   "back": {
+    "choice": true,
+    "wizard": null
+   },
+   "dji": {
+    "id": "stir",
+    "known": null,
+    "name": null,
+    "key": null
+   },
+   "expected": "fail"
+  }
+ },
+ "browser": {
+  "kind": "system-chrome",
+  "version": "155.0.8059.40",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+  "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "softwareGl": false,
+  "counts": true
+ },
+ "expectFail": [
+  "old-at-load",
+  "keep-at-load",
+  "two-pads"
+ ],
+ "pass": true
+}
