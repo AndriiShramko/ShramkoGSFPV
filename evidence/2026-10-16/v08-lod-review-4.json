@@ -1,0 +1,1101 @@
+{
+  "name": "v08-lod",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-16T19:27:51.975Z",
+    "gitHead": "3a42f2b",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5443",
+  "siteBefore": "http://localhost:5442",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "holdS": 30,
+  "pass": {
+    "L1": true
+  },
+  "items": {
+    "L1": {
+      "after": {
+        "site": "http://localhost:5443",
+        "atReveal": {
+          "status": "ready",
+          "errorCode": null,
+          "lod": {
+            "kind": "lod-meta",
+            "levels": 10,
+            "range": [
+              0,
+              9
+            ],
+            "mode": "auto",
+            "drawn": 58994,
+            "budgetM": 4,
+            "loading": 154,
+            "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/ba7aa29d/v1/lod-meta.json",
+            "contentFailures": [],
+            "renderScale": 1,
+            "topBudgetM": 4,
+            "governorStep": 0,
+            "governorBudgetM": 4,
+            "settingBudgetM": 4,
+            "streamHitches": 0
+          },
+          "contentKind": "lod-meta",
+          "rangeMin": 0,
+          "rangeMax": 1000,
+          "budgetM": 4,
+          "scale": 1,
+          "step": 0,
+          "top": 4,
+          "changes": 0,
+          "hitches": 0,
+          "drawn": 58994,
+          "perLevel": {
+            "9": 58994
+          },
+          "visibleMs": 3493.0999999046326,
+          "firstFrameMs": 1708.7999999523163,
+          "detailLine": null
+        },
+        "samples": [
+          {
+            "s": 1,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 58994,
+            "perLevel": {
+              "9": 58994
+            }
+          },
+          {
+            "s": 2,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 112175,
+            "perLevel": {
+              "4": 33891,
+              "5": 21239,
+              "9": 57045
+            }
+          },
+          {
+            "s": 3,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 112175,
+            "perLevel": {
+              "4": 33891,
+              "5": 21239,
+              "9": 57045
+            }
+          },
+          {
+            "s": 4,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 160147,
+            "perLevel": {
+              "4": 82842,
+              "5": 21239,
+              "9": 56066
+            }
+          },
+          {
+            "s": 5,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 160147,
+            "perLevel": {
+              "4": 82842,
+              "5": 21239,
+              "9": 56066
+            }
+          },
+          {
+            "s": 6,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 315555,
+            "perLevel": {
+              "4": 241496,
+              "5": 21239,
+              "9": 52820
+            }
+          },
+          {
+            "s": 7,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 315555,
+            "perLevel": {
+              "4": 241496,
+              "5": 21239,
+              "9": 52820
+            }
+          },
+          {
+            "s": 8,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 475244,
+            "perLevel": {
+              "4": 405578,
+              "5": 21239,
+              "9": 48427
+            }
+          },
+          {
+            "s": 9,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 475244,
+            "perLevel": {
+              "4": 405578,
+              "5": 21239,
+              "9": 48427
+            }
+          },
+          {
+            "s": 10,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 475244,
+            "perLevel": {
+              "4": 405578,
+              "5": 21239,
+              "9": 48427
+            }
+          },
+          {
+            "s": 11,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 475244,
+            "perLevel": {
+              "4": 405578,
+              "5": 21239,
+              "9": 48427
+            }
+          },
+          {
+            "s": 12,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 475244,
+            "perLevel": {
+              "4": 405578,
+              "5": 21239,
+              "9": 48427
+            }
+          },
+          {
+            "s": 13,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 656652,
+            "perLevel": {
+              "4": 590250,
+              "5": 21239,
+              "9": 45163
+            }
+          },
+          {
+            "s": 14,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 656652,
+            "perLevel": {
+              "4": 590250,
+              "5": 21239,
+              "9": 45163
+            }
+          },
+          {
+            "s": 15,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 820087,
+            "perLevel": {
+              "3": 165224,
+              "4": 590250,
+              "5": 21239,
+              "9": 43374
+            }
+          },
+          {
+            "s": 16,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 820087,
+            "perLevel": {
+              "3": 165224,
+              "4": 590250,
+              "5": 21239,
+              "9": 43374
+            }
+          },
+          {
+            "s": 17,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 904731,
+            "perLevel": {
+              "3": 250004,
+              "4": 590250,
+              "5": 21239,
+              "9": 43238
+            }
+          },
+          {
+            "s": 18,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 904731,
+            "perLevel": {
+              "3": 250004,
+              "4": 590250,
+              "5": 21239,
+              "9": 43238
+            }
+          },
+          {
+            "s": 19,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 904731,
+            "perLevel": {
+              "3": 250004,
+              "4": 590250,
+              "5": 21239,
+              "9": 43238
+            }
+          },
+          {
+            "s": 20,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 999026,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "8": 2509,
+              "9": 41330
+            }
+          },
+          {
+            "s": 21,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 999805,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "8": 5086,
+              "9": 39532
+            }
+          },
+          {
+            "s": 22,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1000063,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "8": 6435,
+              "9": 38441
+            }
+          },
+          {
+            "s": 23,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1000063,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "8": 6435,
+              "9": 38441
+            }
+          },
+          {
+            "s": 24,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1000255,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "8": 7673,
+              "9": 37395
+            }
+          },
+          {
+            "s": 25,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1000255,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "8": 7673,
+              "9": 37395
+            }
+          },
+          {
+            "s": 26,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1000869,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "7": 1725,
+              "8": 7673,
+              "9": 36284
+            }
+          },
+          {
+            "s": 27,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1000869,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "7": 1725,
+              "8": 7673,
+              "9": 36284
+            }
+          },
+          {
+            "s": 28,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1000869,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "7": 1725,
+              "8": 7673,
+              "9": 36284
+            }
+          },
+          {
+            "s": 29,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1002476,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "7": 6078,
+              "8": 7673,
+              "9": 33538
+            }
+          },
+          {
+            "s": 30,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "hitches": 0,
+            "drawn": 1002476,
+            "perLevel": {
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "7": 6078,
+              "8": 7673,
+              "9": 33538
+            }
+          }
+        ],
+        "end": {
+          "status": "ready",
+          "errorCode": null,
+          "lod": {
+            "kind": "lod-meta",
+            "levels": 10,
+            "range": [
+              0,
+              9
+            ],
+            "mode": "auto",
+            "drawn": 1002476,
+            "budgetM": 4,
+            "loading": 124,
+            "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/ba7aa29d/v1/lod-meta.json",
+            "contentFailures": [],
+            "renderScale": 1,
+            "topBudgetM": 4,
+            "governorStep": 0,
+            "governorBudgetM": 4,
+            "settingBudgetM": 4,
+            "streamHitches": 0
+          },
+          "contentKind": "lod-meta",
+          "rangeMin": 0,
+          "rangeMax": 1000,
+          "budgetM": 4,
+          "scale": 1,
+          "step": 0,
+          "top": 4,
+          "changes": 0,
+          "hitches": 0,
+          "drawn": 1002476,
+          "perLevel": {
+            "3": 343698,
+            "4": 590250,
+            "5": 21239,
+            "7": 6078,
+            "8": 7673,
+            "9": 33538
+          },
+          "visibleMs": 3493.0999999046326,
+          "firstFrameMs": 1708.7999999523163,
+          "detailLine": "Levels of detail: 10, chosen by distance \u00b7 1.0 of 4.0 M splats \u00b7 100 % resolution"
+        },
+        "finestAtEnd": 3,
+        "lowered": false,
+        "pageerrors": []
+      },
+      "before": {
+        "site": "http://localhost:5442",
+        "atReveal": {
+          "status": "ready",
+          "errorCode": null,
+          "lod": null,
+          "contentKind": "lod-meta",
+          "rangeMin": 0,
+          "rangeMax": 1000,
+          "budgetM": 3,
+          "scale": 0.85,
+          "step": 1,
+          "top": 4,
+          "changes": 1,
+          "drawn": 58994,
+          "perLevel": {
+            "9": 58994
+          },
+          "visibleMs": 5284.300000071526,
+          "firstFrameMs": 1208.2000000476837,
+          "detailLine": null
+        },
+        "samples": [
+          {
+            "s": 1,
+            "budgetM": 3,
+            "scale": 0.85,
+            "step": 1,
+            "changes": 1,
+            "drawn": 58994,
+            "perLevel": {
+              "9": 58994
+            }
+          },
+          {
+            "s": 2,
+            "budgetM": 2.5,
+            "scale": 0.7,
+            "step": 2,
+            "changes": 2,
+            "drawn": 58994,
+            "perLevel": {
+              "9": 58994
+            }
+          },
+          {
+            "s": 3,
+            "budgetM": 2,
+            "scale": 0.6,
+            "step": 3,
+            "changes": 3,
+            "drawn": 58994,
+            "perLevel": {
+              "9": 58994
+            }
+          },
+          {
+            "s": 4,
+            "budgetM": 2,
+            "scale": 0.6,
+            "step": 3,
+            "changes": 3,
+            "drawn": 58994,
+            "perLevel": {
+              "9": 58994
+            }
+          },
+          {
+            "s": 5,
+            "budgetM": 2,
+            "scale": 0.6,
+            "step": 3,
+            "changes": 3,
+            "drawn": 58994,
+            "perLevel": {
+              "9": 58994
+            }
+          },
+          {
+            "s": 6,
+            "budgetM": 2,
+            "scale": 0.6,
+            "step": 3,
+            "changes": 3,
+            "drawn": 83794,
+            "perLevel": {
+              "5": 25839,
+              "9": 57955
+            }
+          },
+          {
+            "s": 7,
+            "budgetM": 2,
+            "scale": 0.6,
+            "step": 3,
+            "changes": 3,
+            "drawn": 83794,
+            "perLevel": {
+              "5": 25839,
+              "9": 57955
+            }
+          },
+          {
+            "s": 8,
+            "budgetM": 2.5,
+            "scale": 0.7,
+            "step": 2,
+            "changes": 4,
+            "drawn": 158698,
+            "perLevel": {
+              "4": 68865,
+              "5": 33733,
+              "9": 56100
+            }
+          },
+          {
+            "s": 9,
+            "budgetM": 2.5,
+            "scale": 0.7,
+            "step": 2,
+            "changes": 4,
+            "drawn": 158698,
+            "perLevel": {
+              "4": 68865,
+              "5": 33733,
+              "9": 56100
+            }
+          },
+          {
+            "s": 10,
+            "budgetM": 2.5,
+            "scale": 0.7,
+            "step": 2,
+            "changes": 4,
+            "drawn": 217861,
+            "perLevel": {
+              "4": 68865,
+              "5": 162555,
+              "6": 6717,
+              "9": 50390
+            }
+          },
+          {
+            "s": 11,
+            "budgetM": 2.5,
+            "scale": 0.7,
+            "step": 2,
+            "changes": 4,
+            "drawn": 393192,
+            "perLevel": {
+              "4": 174704,
+              "5": 162555,
+              "6": 6717,
+              "9": 49216
+            }
+          },
+          {
+            "s": 12,
+            "budgetM": 2.5,
+            "scale": 0.7,
+            "step": 2,
+            "changes": 4,
+            "drawn": 423746,
+            "perLevel": {
+              "4": 211967,
+              "5": 156145,
+              "6": 6717,
+              "9": 48917
+            }
+          },
+          {
+            "s": 13,
+            "budgetM": 3,
+            "scale": 0.85,
+            "step": 1,
+            "changes": 5,
+            "drawn": 681441,
+            "perLevel": {
+              "4": 508467,
+              "5": 126327,
+              "6": 2413,
+              "9": 44234
+            }
+          },
+          {
+            "s": 14,
+            "budgetM": 3,
+            "scale": 0.85,
+            "step": 1,
+            "changes": 5,
+            "drawn": 842337,
+            "perLevel": {
+              "3": 159627,
+              "4": 508467,
+              "5": 126327,
+              "6": 2413,
+              "8": 9730,
+              "9": 35773
+            }
+          },
+          {
+            "s": 15,
+            "budgetM": 3,
+            "scale": 0.85,
+            "step": 1,
+            "changes": 5,
+            "drawn": 856516,
+            "perLevel": {
+              "3": 159627,
+              "4": 508467,
+              "5": 126327,
+              "6": 2413,
+              "7": 26667,
+              "8": 9730,
+              "9": 23285
+            }
+          },
+          {
+            "s": 16,
+            "budgetM": 3,
+            "scale": 0.85,
+            "step": 1,
+            "changes": 5,
+            "drawn": 869167,
+            "perLevel": {
+              "3": 159627,
+              "4": 508467,
+              "5": 126327,
+              "6": 17132,
+              "7": 26667,
+              "8": 9730,
+              "9": 21217
+            }
+          },
+          {
+            "s": 17,
+            "budgetM": 3,
+            "scale": 0.85,
+            "step": 1,
+            "changes": 5,
+            "drawn": 998201,
+            "perLevel": {
+              "3": 159627,
+              "4": 555620,
+              "5": 210586,
+              "6": 22286,
+              "7": 26667,
+              "8": 9730,
+              "9": 13685
+            }
+          },
+          {
+            "s": 18,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 6,
+            "drawn": 1461874,
+            "perLevel": {
+              "3": 508884,
+              "4": 1028813,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 5362
+            }
+          },
+          {
+            "s": 19,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 6,
+            "drawn": 1872898,
+            "perLevel": {
+              "3": 855109,
+              "4": 923331,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 4605
+            }
+          },
+          {
+            "s": 20,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 6,
+            "drawn": 2127525,
+            "perLevel": {
+              "3": 1206589,
+              "4": 837954,
+              "5": 76180,
+              "6": 26534,
+              "7": 22143,
+              "8": 7673,
+              "9": 3034
+            }
+          },
+          {
+            "s": 21,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 6,
+            "drawn": 2655076,
+            "perLevel": {
+              "2": 485459,
+              "3": 1195274,
+              "4": 839582,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 1965
+            }
+          },
+          {
+            "s": 22,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 6,
+            "drawn": 2958230,
+            "perLevel": {
+              "2": 790192,
+              "3": 1194688,
+              "4": 839582,
+              "5": 76634,
+              "6": 25982,
+              "7": 22507,
+              "8": 7673,
+              "9": 972
+            }
+          },
+          {
+            "s": 23,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 6,
+            "drawn": 3194126,
+            "perLevel": {
+              "2": 1030239,
+              "3": 1189244,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673,
+              "9": 532
+            }
+          },
+          {
+            "s": 24,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 6,
+            "drawn": 3434378,
+            "perLevel": {
+              "1": 227611,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673,
+              "9": 342
+            }
+          },
+          {
+            "s": 25,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 6,
+            "drawn": 3592472,
+            "perLevel": {
+              "1": 385907,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673,
+              "9": 140
+            }
+          },
+          {
+            "s": 26,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 6,
+            "drawn": 3787892,
+            "perLevel": {
+              "0": 121487,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673,
+              "9": 12
+            }
+          },
+          {
+            "s": 27,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 6,
+            "drawn": 3923895,
+            "perLevel": {
+              "0": 257502,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673
+            }
+          },
+          {
+            "s": 28,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 6,
+            "drawn": 3923895,
+            "perLevel": {
+              "0": 257502,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673
+            }
+          },
+          {
+            "s": 29,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 6,
+            "drawn": 3923895,
+            "perLevel": {
+              "0": 257502,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673
+            }
+          },
+          {
+            "s": 30,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 6,
+            "drawn": 3923895,
+            "perLevel": {
+              "0": 257502,
+              "1": 459968,
+              "2": 1029780,
+              "3": 1202534,
+              "4": 841694,
+              "5": 75630,
+              "6": 26607,
+              "7": 22507,
+              "8": 7673
+            }
+          }
+        ],
+        "end": {
+          "status": "ready",
+          "errorCode": null,
+          "lod": null,
+          "contentKind": "lod-meta",
+          "rangeMin": 0,
+          "rangeMax": 1000,
+          "budgetM": 4,
+          "scale": 1,
+          "step": 0,
+          "top": 4,
+          "changes": 6,
+          "drawn": 3923895,
+          "perLevel": {
+            "0": 257502,
+            "1": 459968,
+            "2": 1029780,
+            "3": 1202534,
+            "4": 841694,
+            "5": 75630,
+            "6": 26607,
+            "7": 22507,
+            "8": 7673
+          },
+          "visibleMs": 5284.300000071526,
+          "firstFrameMs": 1208.2000000476837,
+          "detailLine": null
+        },
+        "finestAtEnd": 0,
+        "lowered": true,
+        "pageerrors": []
+      },
+      "okAfter": true,
+      "controlFired": true
+    }
+  }
+}
