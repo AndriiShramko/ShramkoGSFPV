@@ -211,13 +211,24 @@ for (const size of ONLY === 'K' ? [] : SIZES) {
     const chipText = await p.evaluate(`(() => { const c = document.querySelector('[data-testid="school-chip"]'); return c && !c.hidden ? c.textContent : null; })()`);
     check(`T6-${size.name} the pilot school chip is on screen`, typeof chipText === 'string' && /^School 1\/4/.test(chipText), { chip: chipText });
     // layout: the speaker fully on screen, nothing of the school chip, the mode chip, the top buttons, the
-    // credit and the OSD lines over another (text never prints over text); control: the school chip
-    // moved onto the top row must be reported by the same check
+    // credit and the OSD lines over another (text never prints over text); controls: the school chip
+    // moved onto the top row, and onto the credit's first visible text line, must be reported by the
+    // same check (the second proves the credit's text lines are still counted after the visibility filter)
     const LAYOUT = `((moveChip) => {
-        const ui = document.getElementById('ui');
         const chip = document.querySelector('[data-testid="school-chip"]');
-        const keep = chip.style.top;
-        if (moveChip) { const row = document.querySelector('.top-actions').getBoundingClientRect(); chip.style.top = (row.top + 2) + 'px'; chip.style.left = (row.left + 2) + 'px'; }
+        const keep = { top: chip.style.top, left: chip.style.left };
+        const firstCreditLine = () => {
+            const tw = document.createTreeWalker(document.querySelector('.attribution'), NodeFilter.SHOW_TEXT);
+            for (let t = tw.nextNode(); t; t = tw.nextNode()) {
+                if (!t.textContent.trim() || !t.parentElement.checkVisibility({ visibilityProperty: true })) continue;
+                const rg = document.createRange(); rg.selectNodeContents(t);
+                const r = rg.getClientRects()[0];
+                if (r && r.width > 0) return r;
+            }
+            return null;
+        };
+        const target = moveChip === 'row' ? document.querySelector('.top-actions').getBoundingClientRect() : moveChip === 'credit' ? firstCreditLine() : null;
+        if (target) { chip.style.top = (target.top + 2) + 'px'; chip.style.left = (target.left + 2) + 'px'; }
         // getClientRects, not offsetParent: the speaker is position: fixed on a phone (offsetParent null)
         const items = [...document.querySelectorAll('.top-actions > .btn, [data-testid="school-chip"], .mode-chip, .attribution, .osd.tl, .osd.tr, .touch-hint')]
             .filter((el) => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden' && getComputedStyle(el).display !== 'none')
@@ -248,13 +259,16 @@ for (const size of ONLY === 'K' ? [] : SIZES) {
         }
         const sp = document.querySelector('[data-action="sound-toggle"]').getBoundingClientRect();
         const speakerOnScreen = sp.left >= 0 && sp.top >= 0 && sp.right <= innerWidth && sp.bottom <= innerHeight && sp.width > 0;
-        if (moveChip) chip.style.top = keep;
-        return { hits, speakerOnScreen };
+        if (target) { chip.style.top = keep.top; chip.style.left = keep.left; }
+        return { hits, speakerOnScreen, moved: !!target };
     })`;
-    const lay = await p.evaluate(`${LAYOUT}(false)`) as { hits: string[]; speakerOnScreen: boolean };
-    const layCtl = await p.evaluate(`${LAYOUT}(true)`) as { hits: string[]; speakerOnScreen: boolean };
+    type Lay = { hits: string[]; speakerOnScreen: boolean; moved: boolean };
+    const lay = await p.evaluate(`${LAYOUT}(null)`) as Lay;
+    const layCtl = await p.evaluate(`${LAYOUT}('row')`) as Lay;
+    const layCredit = await p.evaluate(`${LAYOUT}('credit')`) as Lay;
     await sleep(400); // the chip goes back to its place at the next placement
-    check(`T9-${size.name} the speaker is on screen and nothing at the top prints over anything else; control: the school chip moved onto the buttons is caught`, lay.speakerOnScreen && lay.hits.length === 0 && layCtl.hits.some((x) => x.includes('school-chip')), { speakerOnScreen: lay.speakerOnScreen, overlaps: lay.hits, control: layCtl.hits });
+    const caught = (l: Lay, other: string): boolean => l.moved && l.hits.some((x) => x.includes('school-chip') && x.includes(other));
+    check(`T9-${size.name} the speaker is on screen and nothing at the top prints over anything else; controls: the school chip moved onto the buttons, and onto the credit's text, is caught`, lay.speakerOnScreen && lay.hits.length === 0 && caught(layCtl, '[') && caught(layCredit, 'attribution'), { speakerOnScreen: lay.speakerOnScreen, overlaps: lay.hits, control: layCtl.hits, controlCredit: layCredit.hits });
     const view = await p.evaluate(`({ sx: scrollX, sy: scrollY, scale: visualViewport ? visualViewport.scale : 1 })`) as Any;
     check(`T7-${size.name} no scroll or zoom from the touches`, view.sx === 0 && view.sy === 0 && view.scale === 1, view);
     const errs = T.console.filter((l) => l.startsWith('pageerror'));

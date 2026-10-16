@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-16T18:37:22.425Z",
-    "gitHead": "77885b0",
+    "date": "2026-10-16T18:39:04.704Z",
+    "gitHead": "e54e462",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -48,8 +48,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.619,
-        "gainedM": 4.002,
+        "climbMps": 1.622,
+        "gainedM": 3.986,
         "leftStickAfterRelease": 0
       }
     },
@@ -57,24 +57,24 @@
       "id": "T4-tablet the height holds with no finger on the sticks",
       "ok": true,
       "detail": {
-        "spreadM": 0.039
+        "spreadM": 0.036
       }
     },
     {
       "id": "T5-tablet the right stick at half forward tilts the drone (angle mode); moves are read from pointerrawupdate, earlier than the rAF-aligned pointermove (control)",
       "ok": true,
       "detail": {
-        "pitchDeg": 17.283,
+        "pitchDeg": 17.284,
         "pageFrameP50Ms": 33.3,
         "rawupdate": {
           "n": 12,
-          "p50": 14.2,
-          "p95": 74
+          "p50": 25.1,
+          "p95": 88.2
         },
         "pointermoveControl": {
           "n": 12,
-          "p50": 44.2,
-          "p95": 109.8
+          "p50": 49.1,
+          "p95": 113.5
         }
       }
     },
@@ -86,7 +86,7 @@
       }
     },
     {
-      "id": "T9-tablet the speaker is on screen and nothing at the top prints over anything else; control: the school chip moved onto the buttons is caught",
+      "id": "T9-tablet the speaker is on screen and nothing at the top prints over anything else; controls: the school chip moved onto the buttons, and onto the credit's text, is caught",
       "ok": true,
       "detail": {
         "speakerOnScreen": true,
@@ -96,6 +96,10 @@
           "share-top[655,38,698,78] x school-chip[607,40,796,68]",
           "open-settings[706,38,751,78] x school-chip[607,40,796,68]",
           "open-feedback[759,38,847,78] x school-chip[607,40,796,68]"
+        ],
+        "controlCredit": [
+          "attribution[16,139,342,155] x school-chip[18,141,207,169]",
+          "attribution[16,167,75,183] x school-chip[18,141,207,169]"
         ]
       }
     },
@@ -145,8 +149,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.642,
-        "gainedM": 4.069,
+        "climbMps": 1.651,
+        "gainedM": 3.984,
         "leftStickAfterRelease": 0
       }
     },
@@ -154,24 +158,24 @@
       "id": "T4-phone the height holds with no finger on the sticks",
       "ok": true,
       "detail": {
-        "spreadM": 0.037
+        "spreadM": 0.038
       }
     },
     {
       "id": "T5-phone the right stick at half forward tilts the drone (angle mode); moves are read from pointerrawupdate, earlier than the rAF-aligned pointermove (control)",
       "ok": true,
       "detail": {
-        "pitchDeg": 17.849,
+        "pitchDeg": 17.85,
         "pageFrameP50Ms": 33.3,
         "rawupdate": {
           "n": 12,
-          "p50": 16.3,
-          "p95": 34.7
+          "p50": 22.9,
+          "p95": 189.5
         },
         "pointermoveControl": {
           "n": 12,
-          "p50": 45,
-          "p95": 92.1
+          "p50": 49.3,
+          "p95": 200.3
         }
       }
     },
@@ -183,7 +187,7 @@
       }
     },
     {
-      "id": "T9-phone the speaker is on screen and nothing at the top prints over anything else; control: the school chip moved onto the buttons is caught",
+      "id": "T9-phone the speaker is on screen and nothing at the top prints over anything else; controls: the school chip moved onto the buttons, and onto the credit's text, is caught",
       "ok": true,
       "detail": {
         "speakerOnScreen": true,
@@ -192,6 +196,12 @@
           "share-top[10,38,49,78] x school-chip[12,40,201,68]",
           "open-settings[57,38,103,78] x school-chip[12,40,201,68]",
           "open-feedback[111,38,199,78] x school-chip[12,40,201,68]"
+        ],
+        "controlCredit": [
+          "attribution[16,139,342,155] x school-chip[18,141,207,169]",
+          "attribution[16,156,73,172] x school-chip[18,141,207,169]",
+          "attribution[73,156,82,172] x school-chip[18,141,207,169]",
+          "attribution[82,156,173,172] x school-chip[18,141,207,169]"
         ]
       }
     },
@@ -241,8 +251,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.625,
-        "gainedM": 4.039,
+        "climbMps": 1.621,
+        "gainedM": 3.99,
         "leftStickAfterRelease": 0
       }
     },
@@ -250,24 +260,24 @@
       "id": "T4-phone-landscape the height holds with no finger on the sticks",
       "ok": true,
       "detail": {
-        "spreadM": 0.038
+        "spreadM": 0.037
       }
     },
     {
       "id": "T5-phone-landscape the right stick at half forward tilts the drone (angle mode); moves are read from pointerrawupdate, earlier than the rAF-aligned pointermove (control)",
       "ok": true,
       "detail": {
-        "pitchDeg": 17.284,
+        "pitchDeg": 17.283,
         "pageFrameP50Ms": 33.3,
         "rawupdate": {
           "n": 12,
-          "p50": 29.5,
-          "p95": 84.5
+          "p50": 19.1,
+          "p95": 98.5
         },
         "pointermoveControl": {
           "n": 12,
-          "p50": 45.9,
-          "p95": 110
+          "p50": 49.1,
+          "p95": 136.7
         }
       }
     },
@@ -279,7 +289,7 @@
       }
     },
     {
-      "id": "T9-phone-landscape the speaker is on screen and nothing at the top prints over anything else; control: the school chip moved onto the buttons is caught",
+      "id": "T9-phone-landscape the speaker is on screen and nothing at the top prints over anything else; controls: the school chip moved onto the buttons, and onto the credit's text, is caught",
       "ok": true,
       "detail": {
         "speakerOnScreen": true,
@@ -288,6 +298,10 @@
           "share-top[443,38,486,78] x school-chip[445,40,634,68]",
           "open-settings[494,38,539,78] x school-chip[445,40,634,68]",
           "open-feedback[547,38,635,78] x school-chip[445,40,634,68]"
+        ],
+        "controlCredit": [
+          "attribution[16,45,342,61] x school-chip[18,47,207,75]",
+          "attribution[16,62,107,78] x school-chip[18,47,207,75]"
         ]
       }
     },
