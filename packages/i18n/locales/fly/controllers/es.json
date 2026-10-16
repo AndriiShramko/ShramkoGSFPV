@@ -27,5 +27,7 @@
   "controllers.note.djiThrottle": "El stick del acelerador vuelve al centro tal como lo entrega DJI, lo que equivale a medio gas. Para volar FPV quita el muelle con los tornillos F1 / F2 detrás del stick (manual de DJI, modo Manual).",
   "controllers.note.djiArm": "Armar: gas abajo y pulsa arranque/parada (la siguiente pulsación desarma).",
   "controllers.note.djiMode": "Selector de modo de vuelo: N = Angle, S = Horizon, M = Acro.",
-  "controllers.edgetx.why": "Radio EdgeTX: sus canales son la configuración de tu propio modelo, así que el asistente pregunta por cada stick una vez."
+  "controllers.edgetx.why": "Radio EdgeTX: sus canales son la configuración de tu propio modelo, así que el asistente pregunta por cada stick una vez.",
+  "controllers.useKnown": "Reconocido: {name}. Su configuración conocida (sticks en Modo 2 con todo su recorrido, selector de modo de vuelo N / S / M = Angle / Horizon / Acro) puede sustituir a esta guardada.",
+  "controllers.useKnownBtn": "Usar la configuración conocida"
 }

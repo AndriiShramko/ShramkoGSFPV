@@ -195,6 +195,12 @@ export const TUNING = {
     ARM_LEVEL_MS: 300,
     ARM_FAR_MS: 20,
     RANGE_ONE_SIDED: 0.5,
+    // a stick end seen this close to the device's own full scale (+-1: EdgeTX +-100 %, the DJI's
+    // +-660, a gamepad's normalised range) IS the full scale: people seldom push a stick quite to its
+    // end while setting up (simulated people: full deflection read at 95.6 % of the travel for the
+    // 10th percentile, sticks up to 18 % more sensitive; tools/radios/sensitivity.ts). Ends seen
+    // short of it (a radio with reduced weights, 70-85 %) stay as seen.
+    END_SNAP: 0.85,
     TAKEN_HOLD_MS: 400,
     CLASSIFY_EVERY_MS: 100,
     HINT_MIN_MS: 1500,
@@ -1548,6 +1554,11 @@ export class CalibrationWizard {
             let min = c < this.n ? this.mins[c] : a.min;
             let max = c < this.n ? this.maxs[c] : a.max;
             if (fn !== 'throttle') {
+                // an end that came near the device's full scale is the full scale (TUNING.END_SNAP,
+                // v0.8). Not the throttle: its bottom is where the arm gate wants it (<= 5 %), so a
+                // radio whose throttle stops at 85 % must keep reading 0 % at its bottom
+                if (max >= T.END_SNAP) max = Math.max(max, 1);
+                if (min <= -T.END_SNAP) min = Math.min(min, -1);
                 // gimbals travel as far each way: a side seen less than half as far as the other
                 // was never explored, and its short half would turn a nudge into full deflection
                 const up = max - a.center, dn = a.center - min;

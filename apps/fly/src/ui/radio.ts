@@ -466,10 +466,16 @@ export class RadioScreen {
         // a recognised controller (known-devices.ts): what it is and how to check it; one known by
         // name only (EdgeTX): why the wizard asks; a saved setup: that it is the saved one
         const kdev = known.match?.device ?? null;
+        // a setup saved for a recognised controller before it was recognised (the wizard's): its known
+        // setup is one press away (the pilot keeps the saved one by doing nothing)
+        const m0 = known.match;
+        const offer = saved && m0 && kdev?.mapping && saved.known !== kdev.id ? knownProfile(m0, key, kdev.name) : null;
         const note = kdev?.mapping && known.fresh ? knownNote(kdev)
             : saved ? h('div', { class: 'wz-note' },
                 h('p', {}, t('radio.saved', { name: saved.deviceName })),
-                saved.wizard ? null : h('p', { class: 'warn small' }, t('wizard.oldProfile')))
+                saved.wizard ? null : h('p', { class: 'warn small' }, t('wizard.oldProfile')),
+                offer && m0 ? h('p', { class: 'kp-offer' }, t('controllers.useKnown', { name: kdev!.name }), ' ',
+                    h('button', { type: 'button', class: 'btn', 'data-action': 'use-known', onclick: () => this.mount(CalibrationWizard.resume(offer), key, kdev!.name, subscribe, rate, kind, offer, { match: m0, fresh: true }) }, t('controllers.useKnownBtn'))) : null)
                 : kdev && !kdev.mapping ? knownNameNote(kdev) : null;
         const wzEl = h('div', { class: 'wz' },
             h('ol', { class: 'wz-steps' }, ...stepEls),

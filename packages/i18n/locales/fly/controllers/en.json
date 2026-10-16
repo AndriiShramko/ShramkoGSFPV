@@ -27,5 +27,7 @@
   "controllers.note.djiThrottle": "The throttle stick springs back to the middle as DJI ships it, which is half throttle. For FPV flying stop the spring with the F1 / F2 screws behind the stick (DJI manual, Manual mode).",
   "controllers.note.djiArm": "Arm: throttle down, press start/stop (the next press disarms).",
   "controllers.note.djiMode": "Flight mode switch: N = Angle, S = Horizon, M = Acro.",
-  "controllers.edgetx.why": "EdgeTX radio: its channels are your model's own setup, so the wizard asks for each stick once."
+  "controllers.edgetx.why": "EdgeTX radio: its channels are your model's own setup, so the wizard asks for each stick once.",
+  "controllers.useKnown": "Recognised: {name}. Its known setup (Mode 2 sticks at full range, flight mode switch N / S / M = Angle / Horizon / Acro) can replace this saved one.",
+  "controllers.useKnownBtn": "Use the known setup"
 }

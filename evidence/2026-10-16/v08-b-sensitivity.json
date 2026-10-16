@@ -1,0 +1,106 @@
+{
+ "what": "Stick sensitivity (the owner's item 7: 'the DJI feels much more sensitive than my previous radio'). How a stick reaches the physics: HID logical range -> -1..1 (DJI raw / 660 on WebHID and on the Gamepad API alike; EdgeTX (v - 1024) / 1024), then the profile's centre and ends, the deadband, then the rates (expo lives in the rates). The wizard took each stick's ends from the farthest it saw while setting up.",
+ "tool": "tools/radios/sensitivity.ts (480 simulated people, packages/input/src/sim/human.ts: a model, not measured humans) and the owner's real DJI stir (packages/input/test/fixtures/dji-rc3-stir.ts)",
+ "metric": "halfReading: what roll / pitch / yaw read at half the physical stick travel, the more sensitive direction (ideal 0.5; 0.55 = 10 % more sensitive). fullAtTravel: the share of the travel at which a stick already reads full (ideal 1). peopleAnyStickOver10pct: people with at least one stick more than 10 % too sensitive.",
+ "before": {
+  "rule": "ends = the extremes seen (v0.7)",
+  "radio": {
+   "people": 480,
+   "correct": 432,
+   "halfReading": {
+    "p50": 0.518,
+    "p90": 0.564,
+    "p99": 0.585,
+    "max": 0.588
+   },
+   "fullAtTravel": {
+    "p50": 0.988,
+    "p10": 0.956,
+    "p1": 0.917,
+    "min": 0.907
+   },
+   "peopleAnyStickOver10pct": 72
+  },
+  "pad": {
+   "people": 480,
+   "correct": 480,
+   "halfReading": {
+    "p50": 0.518,
+    "p90": 0.565,
+    "p99": 0.589,
+    "max": 0.591
+   },
+   "fullAtTravel": {
+    "p50": 0.987,
+    "p10": 0.956,
+    "p1": 0.923,
+    "min": 0.91
+   },
+   "peopleAnyStickOver10pct": 96
+  }
+ },
+ "after": {
+  "rule": "TUNING.END_SNAP 0.85: a roll / pitch / yaw end seen at 85 % or more of the device scale is the full scale; the throttle keeps its ends (its bottom must read 0 % for the arm gate)",
+  "radio": {
+   "people": 480,
+   "correct": 432,
+   "halfReading": {
+    "p50": 0.508,
+    "p90": 0.516,
+    "p99": 0.582,
+    "max": 0.586
+   },
+   "fullAtTravel": {
+    "p50": 1,
+    "p10": 0.977,
+    "p1": 0.971,
+    "min": 0.97
+   },
+   "peopleAnyStickOver10pct": 13
+  },
+  "pad": {
+   "people": 480,
+   "correct": 480,
+   "halfReading": {
+    "p50": 0.509,
+    "p90": 0.517,
+    "p99": 0.586,
+    "max": 0.591
+   },
+   "fullAtTravel": {
+    "p50": 1,
+    "p10": 0.975,
+    "p1": 0.969,
+    "min": 0.969
+   },
+   "peopleAnyStickOver10pct": 23
+  }
+ },
+ "djiRealStir": {
+  "axes": [
+   "X",
+   "Y",
+   "Z",
+   "Rx"
+  ],
+  "min": [
+   -1,
+   -1,
+   -1,
+   -1
+  ],
+  "max": [
+   1,
+   1,
+   1,
+   1
+  ],
+  "note": "the wizard sets each stick end to the farthest value seen; -1 and +1 = the full range, so this stir gives no extra sensitivity"
+ },
+ "findings": [
+  "The DJI controller itself: the owner's real 25 s stir reached -660 and +660 on all four sticks, so a wizard run with a full stir gives it the full range: the calibration did not make the DJI more sensitive than an EdgeTX radio, both read their full scale as +-1 by the same rule (hid-layout.ts axisScale, Chrome's Gamepad API normalisation).",
+  "The wizard in general: people seldom push a stick quite to its end while setting up; before, 10 % of the simulated people had a stick reading at least 12.8 % too much (p90 0.564) and 72 of 432 radio / 96 of 480 pad people at least one stick over 10 %. After END_SNAP: p90 0.516, 13 / 23 people (the rest stirred below 85 %).",
+  "The recognised DJI profile (known-devices.ts) uses the full logical range by design (no stir) and a continuous 2.5 % deadband for its measured rest offsets (1.7 % and 1.2 %), which otherwise read as a slow drift.",
+  "Not in the simulator's hands, so the owner can compare: the DJI sticks are shorter than a full-size radio's gimbals (the same rate at a smaller thumb movement feels more sensitive), the DJI throttle springs to the middle (= 50 %), and expo or reduced rates set in his previous radio's EdgeTX model would have softened that radio. Rates (and Quick rates expo) in Settings apply to every controller."
+ ]
+}

@@ -27,5 +27,7 @@
   "controllers.note.djiThrottle": "Drążek gazu wraca na środek tak, jak dostarcza go DJI, czyli pół gazu. Do latania FPV wyłącz sprężynę śrubami F1 / F2 za drążkiem (instrukcja DJI, tryb Manual).",
   "controllers.note.djiArm": "Uzbrajanie: gaz w dół, naciśnij start/stop (kolejne naciśnięcie rozbraja).",
   "controllers.note.djiMode": "Przełącznik trybu lotu: N = Angle, S = Horizon, M = Acro.",
-  "controllers.edgetx.why": "Aparatura EdgeTX: jej kanały to ustawienia twojego własnego modelu, więc kreator raz pyta o każdy drążek."
+  "controllers.edgetx.why": "Aparatura EdgeTX: jej kanały to ustawienia twojego własnego modelu, więc kreator raz pyta o każdy drążek.",
+  "controllers.useKnown": "Rozpoznano: {name}. Jego znane ustawienia (drążki w Mode 2 na pełnym zakresie, przełącznik trybu lotu N / S / M = Angle / Horizon / Acro) mogą zastąpić te zapisane.",
+  "controllers.useKnownBtn": "Użyj znanych ustawień"
 }
