@@ -1,6 +1,7 @@
 {
+ "release": "local release of cf81fbb (review fixes), serve-csp :5461",
  "what": "HidSource on the local release with a fake navigator.hid (hid-source-probe.mjs)",
- "base": "http://localhost:5394/en",
+ "base": "http://localhost:5461/en",
  "browser": {
   "kind": "system-chrome",
   "version": "155.0.8059.40",
@@ -15,7 +16,7 @@
   "pass": true,
   "expect": {
    "key": "hid:2ca3:1021:HID Interface:13:d",
-   "name": "DJI FPV Remote Controller 3",
+   "name": "DJI FPV Remote Controller",
    "end": "check",
    "known": "dji-virtual-joystick",
    "controls": 11,
@@ -26,9 +27,9 @@
    "id": "check",
    "profile": true,
    "profileKey": "hid:2ca3:1021:HID Interface:13:d",
-   "profileName": "DJI FPV Remote Controller 3",
+   "profileName": "DJI FPV Remote Controller",
    "key": "hid:2ca3:1021:HID Interface:13:d",
-   "reports": 130,
+   "reports": 129,
    "badReports": 0,
    "lastBadLen": 0,
    "rateHz": 0,
@@ -37,22 +38,22 @@
    "probe": {
     "requested": 1,
     "opened": 1,
-    "sent": 130,
+    "sent": 129,
     "listeners": 1
    },
    "known": "dji-virtual-joystick",
    "knownNote": true,
    "controls": 11,
-   "checkAt": 1122
+   "checkAt": 1121
   },
   "screens": 2,
   "path": [
    {
-    "t": 212,
+    "t": 181,
     "k": "none"
    },
    {
-    "t": 808,
+    "t": 809,
     "k": "check/null"
    }
   ],
@@ -62,7 +63,7 @@
   "pass": true,
   "expect": {
    "key": "hid:2ca3:1021:HID Interface:13:d",
-   "name": "DJI FPV Remote Controller 3",
+   "name": "DJI FPV Remote Controller",
    "end": "check",
    "known": "dji-virtual-joystick",
    "controls": 11,
@@ -73,9 +74,9 @@
    "id": "check",
    "profile": true,
    "profileKey": "hid:2ca3:1021:HID Interface:13:d",
-   "profileName": "DJI FPV Remote Controller 3",
+   "profileName": "DJI FPV Remote Controller",
    "key": "hid:2ca3:1021:HID Interface:13:d",
-   "reports": 134,
+   "reports": 124,
    "badReports": 0,
    "lastBadLen": 0,
    "rateHz": 0,
@@ -84,22 +85,22 @@
    "probe": {
     "requested": 1,
     "opened": 1,
-    "sent": 134,
+    "sent": 124,
     "listeners": 1
    },
    "known": "dji-virtual-joystick",
    "knownNote": true,
    "controls": 11,
-   "checkAt": 1099
+   "checkAt": 1052
   },
   "screens": 2,
   "path": [
    {
-    "t": 151,
+    "t": 173,
     "k": "none"
    },
    {
-    "t": 785,
+    "t": 752,
     "k": "check/null"
    }
   ],
@@ -122,115 +123,115 @@
    "profileKey": "hid:1209:4f54:RadioMaster TX16S Joystick:19",
    "profileName": "RadioMaster TX16S Joystick",
    "key": "hid:1209:4f54:RadioMaster TX16S Joystick:19",
-   "reports": 4975,
+   "reports": 5083,
    "badReports": 0,
    "lastBadLen": 0,
-   "rateHz": 249,
+   "rateHz": 240,
    "deviceName": "RadioMaster TX16S Joystick",
    "hint": "",
    "probe": {
     "requested": 1,
     "opened": 1,
-    "sent": 4975,
+    "sent": 5083,
     "listeners": 1
    },
    "known": "edgetx-joystick",
    "knownNote": true,
    "controls": 0,
-   "checkAt": 20704
+   "checkAt": 20903
   },
   "screens": 23,
   "path": [
    {
-    "t": 180,
+    "t": 178,
     "k": "none"
    },
    {
-    "t": 783,
+    "t": 680,
     "k": "stir/ready"
    },
    {
-    "t": 1262,
+    "t": 1150,
     "k": "stir/active"
    },
    {
-    "t": 4024,
+    "t": 3926,
     "k": "stir/done"
    },
    {
-    "t": 4923,
+    "t": 4799,
     "k": "centre/ready"
    },
    {
-    "t": 5404,
+    "t": 5504,
     "k": "centre/active"
    },
    {
-    "t": 6073,
+    "t": 6226,
     "k": "centre/done"
    },
    {
-    "t": 7180,
+    "t": 7112,
     "k": "throttle/ready"
    },
    {
-    "t": 7612,
+    "t": 7581,
     "k": "throttle/active"
    },
    {
-    "t": 8665,
+    "t": 8697,
     "k": "throttle/done"
    },
    {
-    "t": 9540,
+    "t": 9412,
     "k": "yaw/ready"
    },
    {
-    "t": 10002,
+    "t": 10084,
     "k": "yaw/active"
    },
    {
-    "t": 10878,
+    "t": 10952,
     "k": "yaw/done"
    },
    {
-    "t": 12182,
+    "t": 12256,
     "k": "pitch/ready"
    },
    {
-    "t": 12848,
+    "t": 12714,
     "k": "pitch/active"
    },
    {
-    "t": 13729,
+    "t": 13585,
     "k": "pitch/done"
    },
    {
-    "t": 14806,
+    "t": 14843,
     "k": "roll/ready"
    },
    {
-    "t": 15474,
+    "t": 15509,
     "k": "roll/active"
    },
    {
-    "t": 16343,
+    "t": 16361,
     "k": "roll/done"
    },
    {
-    "t": 17608,
+    "t": 17658,
     "k": "arm/ready"
    },
    {
-    "t": 18046,
+    "t": 18293,
     "k": "arm/active"
    },
    {
-    "t": 19545,
+    "t": 19728,
     "k": "arm/done"
    },
    {
-    "t": 20428,
+    "t": 20609,
     "k": "check/null"
    }
   ],
@@ -249,7 +250,7 @@
    "profileKey": null,
    "profileName": null,
    "key": "hid:2ca3:1021:HID Interface:13:d",
-   "reports": 1924,
+   "reports": 1954,
    "badReports": 0,
    "lastBadLen": 0,
    "rateHz": 167,
@@ -258,7 +259,7 @@
    "probe": {
     "requested": 1,
     "opened": 1,
-    "sent": 1924,
+    "sent": 1954,
     "listeners": 1
    },
    "known": null,
@@ -269,15 +270,15 @@
   "screens": 3,
   "path": [
    {
-    "t": 173,
+    "t": 160,
     "k": "none"
    },
    {
-    "t": 725,
+    "t": 672,
     "k": "stir/ready"
    },
    {
-    "t": 1210,
+    "t": 1143,
     "k": "stir/active"
    }
   ],
@@ -297,7 +298,7 @@
    "profileName": null,
    "key": "hid:2ca3:1021:HID Interface:13",
    "reports": 0,
-   "badReports": 4915,
+   "badReports": 4920,
    "lastBadLen": 13,
    "rateHz": 0,
    "deviceName": "HID Interface",
@@ -305,7 +306,7 @@
    "probe": {
     "requested": 1,
     "opened": 1,
-    "sent": 4915,
+    "sent": 4920,
     "listeners": 1
    },
    "known": null,
@@ -316,11 +317,11 @@
   "screens": 2,
   "path": [
    {
-    "t": 199,
+    "t": 184,
     "k": "none"
    },
    {
-    "t": 1863,
+    "t": 1759,
     "k": "connect/null"
    }
   ],
@@ -330,7 +331,7 @@
   "pass": true,
   "expect": {
    "key": "hid:2ca3:1021:HID Interface:13:d",
-   "name": "DJI FPV Remote Controller 3",
+   "name": "DJI FPV Remote Controller",
    "end": "check",
    "known": "dji-virtual-joystick",
    "controls": 11,
@@ -342,7 +343,7 @@
    "id": "check",
    "profile": true,
    "profileKey": "hid:2ca3:1021:HID Interface:13:d",
-   "profileName": "DJI FPV Remote Controller 3",
+   "profileName": "DJI FPV Remote Controller",
    "key": "hid:2ca3:1021:HID Interface:13:d",
    "reports": 3,
    "badReports": 0,
@@ -359,16 +360,16 @@
    "known": "dji-virtual-joystick",
    "knownNote": true,
    "controls": 11,
-   "checkAt": 3218
+   "checkAt": 3233
   },
   "screens": 2,
   "path": [
    {
-    "t": 473,
+    "t": 493,
     "k": "none"
    },
    {
-    "t": 3218,
+    "t": 3233,
     "k": "check/null"
    }
   ],
@@ -388,7 +389,7 @@
    "id": "check",
    "profile": true,
    "profileKey": "gp:HID Interface (Vendor: 2ca3 Product: 1021):5:24:",
-   "profileName": "DJI FPV Remote Controller 3",
+   "profileName": "DJI FPV Remote Controller",
    "key": "",
    "reports": 0,
    "badReports": 0,
@@ -405,16 +406,16 @@
    "known": "dji-virtual-joystick",
    "knownNote": true,
    "controls": 11,
-   "checkAt": 1337
+   "checkAt": 1276
   },
   "screens": 2,
   "path": [
    {
-    "t": 539,
+    "t": 485,
     "k": "none"
    },
    {
-    "t": 1337,
+    "t": 1276,
     "k": "check/null"
    }
   ],
@@ -434,7 +435,7 @@
    "id": "check",
    "profile": true,
    "profileKey": "gp:HID Interface (Vendor: 2ca3 Product: 1021):5:24:",
-   "profileName": "DJI FPV Remote Controller 3",
+   "profileName": "DJI FPV Remote Controller",
    "key": "",
    "reports": 0,
    "badReports": 0,
@@ -451,16 +452,16 @@
    "known": "dji-virtual-joystick",
    "knownNote": true,
    "controls": 11,
-   "checkAt": 551
+   "checkAt": 559
   },
   "screens": 2,
   "path": [
    {
-    "t": 303,
+    "t": 310,
     "k": "none"
    },
    {
-    "t": 551,
+    "t": 559,
     "k": "check/null"
    }
   ],
