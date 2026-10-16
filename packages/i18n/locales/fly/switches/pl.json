@@ -51,6 +51,7 @@
   "switches.importDone": "Zastosowano: {list}.",
   "switches.importSkipped": "Nie ma ich w symulatorze, pominięto: {list}.",
   "switches.importLinked": "{mode} w Betaflight podąża za innym trybem; pominięto.",
+  "switches.importNotOnRadio": "{mode} jest na CH{ch}, kanale, którego ten kontroler nie ma (ma ich {n}); pominięto, nie trafia na inny element.",
   "switches.importNone": "W tym tekście nie ma linii aux z ARM, ANGLE ani HORIZON.",
   "switches.importError": "Nie udało się odczytać tego tekstu: {msg}",
   "switches.save": "Zapisz i leć",

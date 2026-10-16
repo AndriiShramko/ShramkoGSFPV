@@ -14,6 +14,16 @@
 // Channel values: an axis is 1500 + 512 x its -1..1 reading (EdgeTX sends +-100 % as 988..2012 us
 // over CRSF; its USB joystick carries the same +-100 % as +-1). EdgeTX's USB joystick reports
 // channels 9..32 as buttons, on when the channel is above its centre, so a button reads 2012 or 988.
+// A two-bit 3-position switch (SwitchInput kind 'bits', the DJI controller's) reads 988 / 1500 / 2012
+// for low / middle / high, as a 3-position switch on a radio channel does.
+//
+// Channel numbers (Betaflight's CH1.., AUX1 = CH5): a profile may carry its device's channel table
+// (Profile.channels, ChannelTable below: the inputs in channel order, a two-bit switch being ONE
+// channel), as a recognised controller does (known-devices.ts); without one a channel is the EdgeTX
+// USB joystick's (axes CH1..CH8, buttons CH9..CH32). channelOf, channelInput and inputName take it.
+// A table is the whole radio: a channel past its end does not exist on that device (channelInput
+// null), it is never read through the EdgeTX numbering, which would put it on a control the table
+// numbers otherwise (the DJI's CH11 would be its start/stop button).
 //
 // Who decides (calib.ts mapFrame / profileArmLevel, apps/fly controls.ts): arm = the arm ranges when a
 // profile has any, else the setup wizard's arm (Profile.arm: a switch, a latching button, Space).
@@ -23,7 +33,7 @@
 import { MODE_CHANNEL } from '@gsfpv/sim-core';
 import type { BfAuxCondition, FlightMode } from '@gsfpv/sim-core';
 import type { ArmMap, Profile, RawFrame } from './calib';
-import { DEFAULT_SWITCH_MODES, sameInput, validSwitchInput } from './mode-switch';
+import { DEFAULT_SWITCH_MODES, bitsPos, sameInput, validSwitchInput } from './mode-switch';
 import { FRAME_BUTTONS } from './frame';
 import type { SwitchInput, SwitchModes } from './mode-switch';
 
@@ -74,6 +84,10 @@ const BUTTON_BANDS: readonly (readonly [number, number])[] = [[900, 1500], [900,
 /** The channel's value in us on this frame (Betaflight's clamp to 900..2099), or null when the frame has no such input. */
 export function channelUs(input: SwitchInput, f: RawFrame): number | null {
     if (input.kind === 'button') return input.bit >= 0 && input.bit < FRAME_BUTTONS ? (((f.buttons >> input.bit) & 1) === 1 ? US_CENTRE + US_HALF : US_CENTRE - US_HALF) : null;
+    if (input.kind === 'bits') {
+        if (input.lo < 0 || input.lo >= FRAME_BUTTONS || input.hi < 0 || input.hi >= FRAME_BUTTONS) return null;
+        return US_CENTRE + US_HALF * (bitsPos(input, f.buttons) - 1);
+    }
     if (input.index >= f.axes.length) return null;
     const v = f.axes[input.index];
     if (!Number.isFinite(v)) return null;
@@ -184,6 +198,10 @@ export function modeInput(sw: Switches): SwitchInput | null {
 export function modePositions(sw: Switches, input: SwitchInput): SwitchModes {
     const frameAt = (us: number): RawFrame => {
         if (input.kind === 'button') return { t: 0, axes: new Float32Array(0), buttons: us >= US_CENTRE ? 1 << input.bit : 0 };
+        if (input.kind === 'bits') {
+            const pos = POSITION_BANDS.findIndex(([lo, hi]) => us >= lo && us < hi);
+            return { t: 0, axes: new Float32Array(0), buttons: pos === 0 ? 1 << input.lo : pos === 2 ? 1 << input.hi : 0 };
+        }
         const axes = new Float32Array(input.index + 1);
         axes[input.index] = (us - US_CENTRE) / US_HALF;
         return { t: 0, axes, buttons: 0 };
@@ -246,38 +264,97 @@ export function switchesFromProfile(p: Profile): Switches {
     return sw;
 }
 
-/** The radio channel (1-based) an input is on a USB EdgeTX radio: axes CH1..CH8, buttons CH9..CH32. */
-export function channelOf(input: SwitchInput): number {
-    return input.kind === 'axis' ? input.index + 1 : input.bit + 9;
+/**
+ * A device's radio channels in order, CH1 first (Profile.channels): the input each channel arrives on,
+ * a two-bit 3-position switch being one channel. A recognised controller has one (known-devices.ts);
+ * absent, a channel is the EdgeTX USB joystick's.
+ */
+export type ChannelTable = readonly SwitchInput[];
+
+/** Betaflight's channel count (MAX_SUPPORTED_RC_CHANNEL_COUNT): a longer stored table is cut there. */
+export const MAX_CHANNELS = 18;
+
+/** A stored or imported channel table: every entry readable, no input twice, at most MAX_CHANNELS; null when it is not one (names fall back to the EdgeTX numbering). */
+export function readChannelTable(v: unknown): SwitchInput[] | null {
+    if (!Array.isArray(v) || v.length === 0) return null;
+    const out: SwitchInput[] = [];
+    for (const x of v.slice(0, MAX_CHANNELS)) {
+        const i = validSwitchInput(x);
+        if (!i || out.some((o) => sameInput(o, i))) return null;
+        out.push(i);
+    }
+    return out;
+}
+
+/** The two-bit switches of a channel table, as ModeSwitchDetector.pairs takes them. */
+export function tablePairs(table: ChannelTable | undefined): { lo: number; hi: number }[] {
+    return (table ?? []).flatMap((i) => (i.kind === 'bits' ? [{ lo: i.lo, hi: i.hi }] : []));
+}
+
+/**
+ * The radio channel (1-based) an input is on: its place in the device's channel table when there is
+ * one, else the EdgeTX USB joystick's (axes CH1..CH8, buttons CH9..CH32). Null for a two-bit switch
+ * the table does not name: on the EdgeTX numbering it would be two channels.
+ */
+export function channelOf(input: SwitchInput, table?: ChannelTable): number | null {
+    const at = table ? table.findIndex((i) => sameInput(i, input)) : -1;
+    if (at >= 0) return at + 1;
+    return input.kind === 'axis' ? input.index + 1 : input.kind === 'button' ? input.bit + 9 : null;
 }
 
 /** The device a radio profile is for: a USB radio through WebHID ('hid') or a gamepad ('gamepad'). */
 export type RadioDevice = 'hid' | 'gamepad';
 
-/** How the pilot reads an input: a channel number ("CH6") or a gamepad's button ("button 3"). */
-export interface InputName { kind: 'ch' | 'button'; n: number }
+/**
+ * How the pilot reads an input: a channel number ("CH6"), a button ("button 3"), an axis with no
+ * channel ("axis 5"), or the two bits of a two-bit switch with no channel of its own ("CH13/14" on a
+ * USB radio, "buttons 5/6" elsewhere).
+ */
+export type InputName = { kind: 'ch' | 'button' | 'axis'; n: number } | { kind: 'chs' | 'buttons'; a: number; b: number };
 
 /**
- * The one naming of a switch input (the Switches screen, the HUD's arm label and mode chip). A USB
- * radio: its channel (channelOf, buttons are CH9..CH32 on EdgeTX). A gamepad: an axis by its number
- * and a button as "button n", 1-based, as the wizard names them (a gamepad has no channels).
+ * The one naming of a switch input (the Switches screen, the check screen, the HUD's arm label and
+ * mode chip). With the device's channel table (a recognised controller): its channel ("CH5" is a DJI
+ * controller's flight-mode switch, as on the quad), and a control outside the table by what it is
+ * ("button 4", "axis 5"), never a channel number the table gives to another control. Without one, a
+ * USB radio: its EdgeTX channel (buttons are CH9..CH32). A gamepad: an axis by its number and a
+ * button as "button n", 1-based, as the wizard names them.
  */
-export function inputName(input: SwitchInput, device: RadioDevice): InputName {
-    if (device === 'hid') return { kind: 'ch', n: channelOf(input) };
+export function inputName(input: SwitchInput, device: RadioDevice, table?: ChannelTable): InputName {
+    const at = table ? table.findIndex((i) => sameInput(i, input)) : -1;
+    if (at >= 0) return { kind: 'ch', n: at + 1 };
+    if (table) {
+        if (input.kind === 'axis') return { kind: 'axis', n: input.index + 1 };
+        if (input.kind === 'button') return { kind: 'button', n: input.bit + 1 };
+        return { kind: 'buttons', a: input.lo + 1, b: input.hi + 1 };
+    }
+    if (input.kind === 'bits') return device === 'hid' ? { kind: 'chs', a: input.lo + 9, b: input.hi + 9 } : { kind: 'buttons', a: input.lo + 1, b: input.hi + 1 };
+    if (device === 'hid') return { kind: 'ch', n: input.kind === 'axis' ? input.index + 1 : input.bit + 9 };
     return input.kind === 'axis' ? { kind: 'ch', n: input.index + 1 } : { kind: 'button', n: input.bit + 1 };
 }
 
-/** The input a radio channel arrives on over USB (EdgeTX joystick, classic layout). */
-export function channelInput(ch: number): SwitchInput {
+/**
+ * The input a radio channel (1-based) arrives on. With the device's channel table: its entry, or null
+ * when the device has no such channel (past the table's end; never the EdgeTX numbering, which would
+ * name another control of it). Without one: the EdgeTX USB joystick's (classic layout).
+ */
+export function channelInput(ch: number, table?: ChannelTable): SwitchInput | null {
+    if (table) return ch >= 1 && ch <= table.length ? { ...table[ch - 1] } : null;
     return ch <= 8 ? { kind: 'axis', index: ch - 1 } : { kind: 'button', bit: ch - 9 };
 }
+
+/** Why a Betaflight condition was not applied (i18n: the Switches screen and the drone import list them). */
+export type AuxSkip = 'notInSimulator' | 'linked' | 'tooMany' | 'notOnRadio';
 
 /** What a Betaflight import did with each condition. */
 export interface AuxImport {
     switches: Switches;
     applied: BfAuxCondition[];
-    /** conditions not applied: a mode the simulator does not have, or one that follows another mode */
-    skipped: { cond: BfAuxCondition; why: 'notInSimulator' | 'linked' | 'tooMany' }[];
+    /**
+     * conditions not applied: a mode the simulator does not have, one that follows another mode, past
+     * MAX_RANGES, or on a channel the radio does not have (its channel table ends before it)
+     */
+    skipped: { cond: BfAuxCondition; why: AuxSkip }[];
 }
 
 const BF_MODES: Readonly<Record<string, SwitchFn>> = { ARM: 'arm', ANGLE: 'angle', HORIZON: 'horizon' };
@@ -285,16 +362,19 @@ const BF_MODES: Readonly<Record<string, SwitchFn>> = { ARM: 'arm', ANGLE: 'angle
 /**
  * Betaflight's `aux` conditions (parseBetaflightDiff(...).aux) as switches: ARM, ANGLE and HORIZON
  * with their channel, range and logic; everything else is listed as skipped. The result replaces the
- * switches as a whole, like loading the Modes tab of the quad.
+ * switches as a whole, like loading the Modes tab of the quad. `table`: the radio's channel table
+ * (Profile.channels), so AUX1 lands on the control that is CH5 on that radio (channelInput).
  */
-export function switchesFromBetaflight(aux: readonly BfAuxCondition[]): AuxImport {
+export function switchesFromBetaflight(aux: readonly BfAuxCondition[], table?: ChannelTable): AuxImport {
     const out: AuxImport = { switches: { v: 1, ranges: [] }, applied: [], skipped: [] };
     for (const c of aux) {
         const fn = Object.hasOwn(BF_MODES, c.mode) ? BF_MODES[c.mode] : null;
         if (!fn) { out.skipped.push({ cond: c, why: 'notInSimulator' }); continue; }
         if (c.linkedTo !== null) { out.skipped.push({ cond: c, why: 'linked' }); continue; }
+        const input = channelInput(c.channel, table);
+        if (!input) { out.skipped.push({ cond: c, why: 'notOnRadio' }); continue; }
         if (out.switches.ranges.length >= MAX_RANGES) { out.skipped.push({ cond: c, why: 'tooMany' }); continue; }
-        out.switches.ranges.push({ fn, input: channelInput(c.channel), lo: c.lo, hi: c.hi, ...(c.and ? { and: true as const } : {}) });
+        out.switches.ranges.push({ fn, input, lo: c.lo, hi: c.hi, ...(c.and ? { and: true as const } : {}) });
         out.applied.push(c);
     }
     return out;

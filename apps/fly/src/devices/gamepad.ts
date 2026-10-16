@@ -6,12 +6,32 @@
 // sticks do. Their held values are still true while the pad is connected, so they are sent again
 // (arrival = this poll) before the arm gate's 100 ms stale rule would disarm them in flight. A pad
 // that is gone sends nothing, so the gate still goes stale and disarms.
+//
+// The stamp (v0.8, the owner's item 7): a new sample is stamped with Gamepad.timestamp, the moment
+// the browser's gamepad thread took it (the page clock, as WebHID's event.timeStamp), not the moment
+// this loop got to it: while the main thread draws a heavy scan the loop waits, and the physics,
+// which applies an input at its stamp (simclock.ts), would then start the move that much later.
+// Measured on a release drawing a scan at the owner's 30 Hz with 25 ms of load per frame
+// (tools/bench/scripts/input-latency-probe.mjs, evidence/2026-10-16/v08-b-latency.json).
+// gamepadStamp has the rule: a repeat keeps its arrival, and stamps never go backwards.
 
 import { FRAME_BUTTONS } from '@gsfpv/input';
 import type { RawFrame } from '@gsfpv/input';
 
 /** A connected pad with no new hardware sample repeats its last values this often (gate: 100 ms). */
 const KEEPALIVE_MS = 20;
+/** Gamepad.timestamp older than this (or ahead of now) is not this page clock's sample time: the poll time is used. */
+const STAMP_MAX_AGE_MS = 100;
+
+/**
+ * The page time a polled sample is stamped with: a new sample (`fresh`) its Gamepad.timestamp when
+ * that is a plausible time on this page's clock (not ahead of `now`, at most STAMP_MAX_AGE_MS old),
+ * else `now`; never before the previous stamp `prev` (the physics takes samples in order).
+ */
+export function gamepadStamp(fresh: boolean, timestamp: number, now: number, prev: number): number {
+    const t = fresh && Number.isFinite(timestamp) && timestamp <= now && now - timestamp <= STAMP_MAX_AGE_MS ? timestamp : now;
+    return t > prev ? t : prev;
+}
 
 export function gamepadKey(g: Gamepad): string {
     return `gp:${g.id}:${g.axes.length}:${g.buttons.length}:${g.mapping}`;
@@ -89,7 +109,7 @@ export class GamepadSource {
         if (!fresh && now - this.lastEmit < KEEPALIVE_MS) return;
         this.lastTs = g.timestamp;
         const f = this.frame;
-        f.t = now;
+        f.t = gamepadStamp(fresh, g.timestamp, now, f.t);
         for (let i = 0; i < 8; i++) f.axes[i] = i < g.axes.length ? g.axes[i] : 0;
         let b = 0;
         for (let i = 0; i < Math.min(FRAME_BUTTONS, g.buttons.length); i++) if (g.buttons[i].pressed) b |= 1 << i;
@@ -104,6 +124,13 @@ export class GamepadSource {
         }
         this.lastEmit = now;
         this.onFrame?.(f);
+    }
+
+    /** What the known-controller table needs of this source's pad (its id string and its counts), or null when none is connected. */
+    info(): { id: string; axes: { length: number }; buttons: { length: number } } | null {
+        const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+        const g = this.index >= 0 ? pads[this.index] : null;
+        return g ? { id: g.id, axes: { length: g.axes.length }, buttons: { length: g.buttons.length } } : null;
     }
 
     get key(): string {

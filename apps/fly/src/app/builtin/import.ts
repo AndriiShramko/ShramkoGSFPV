@@ -7,10 +7,10 @@
 // they replace its arm and flight-mode ranges, its function switches (rewind, record...) stay.
 import { copyRates, parseBetaflightDiff } from '@gsfpv/sim-core';
 import type { BfAuxCondition } from '@gsfpv/sim-core';
-import { channelOf, importOver, switchesFromBetaflight } from '@gsfpv/input';
+import { importOver, switchesFromBetaflight } from '@gsfpv/input';
 import type { ImportOver, Profile } from '@gsfpv/input';
 import { h, clear, panel } from '../../ui/dom';
-import { importOverNotes } from '../../ui/switches';
+import { importOverNotes, skipText } from '../../ui/switches';
 import { inputLabel } from '../../controls';
 import { t } from '../../i18n';
 import { applyModel, droneOf, pilotSet } from '../prefs';
@@ -46,7 +46,7 @@ export function importDiff(ctx: FlightContext, text: string): ImportResult & { a
  * replaced, the simulator's function switches kept), and what that did. Exported for the Node tests.
  */
 export function withDiffSwitches(profile: Profile, aux: readonly BfAuxCondition[]): { profile: Profile; over: ImportOver } {
-    const over = importOver(profile.switches, switchesFromBetaflight(aux).switches);
+    const over = importOver(profile.switches, switchesFromBetaflight(aux, profile.channels).switches);
     return { profile: { ...profile, switches: over.switches }, over };
 }
 
@@ -55,11 +55,16 @@ export function withDiffSwitches(profile: Profile, aux: readonly BfAuxCondition[
  * in use (saved for it, flown at once); without a radio the line says where to paste them later.
  */
 function switchesOffer(ctx: FlightContext, aux: readonly BfAuxCondition[], out: HTMLElement): void {
-    const imp = switchesFromBetaflight(aux);
-    if (!imp.applied.length) return;
-    const list = imp.applied.map((c, i) => `${c.mode} CH${channelOf(imp.switches.ranges[i].input)} ${c.lo}–${c.hi}`).join(', ');
     const radio = ctx.input.radioInUse();
+    // the radio's own channel numbering (a recognised controller's table) decides which control AUX1.. lands on
+    const table = radio?.profile?.channels;
+    const imp = switchesFromBetaflight(aux, table);
+    // a condition on a channel this radio does not have (past its table) is named, not put on another control
+    const notOnRadio = imp.skipped.filter((x) => x.why === 'notOnRadio').map((x) => h('p', { class: 'warn' }, skipText(x, table?.length ?? 0)));
+    if (!imp.applied.length) { out.append(...notOnRadio); return; }
+    const list = imp.applied.map((c, i) => `${c.mode} ${inputLabel(imp.switches.ranges[i].input, radio?.kind === 'gamepad' ? 'gamepad' : 'hid', table)} ${c.lo}–${c.hi}`).join(', ');
     if (!radio?.profile) { out.append(h('p', { class: 'muted' }, t('switches.diffNoRadio', { list }))); return; }
+    out.append(...notOnRadio);
     const name = radio.profile.deviceName;
     const line = h('p', {}, t('switches.diffFound', { list }));
     const device = radio.kind === 'gamepad' ? 'gamepad' : 'hid';
@@ -68,7 +73,7 @@ function switchesOffer(ctx: FlightContext, aux: readonly BfAuxCondition[], out: 
         if (!ctx.input.replaceProfile(p)) return;
         use.remove();
         line.textContent = t('switches.diffApplied', { name });
-        for (const n of importOverNotes(over, (i) => inputLabel(i, device))) out.append(h('p', { class: 'muted' }, n));
+        for (const n of importOverNotes(over, (i) => inputLabel(i, device, p.channels))) out.append(h('p', { class: 'muted' }, n));
     } }, t('switches.diffApply', { name }));
     out.append(line, use);
 }

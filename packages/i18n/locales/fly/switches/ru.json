@@ -51,6 +51,7 @@
   "switches.importDone": "Применено: {list}.",
   "switches.importSkipped": "Этого нет в симуляторе, пропущено: {list}.",
   "switches.importLinked": "{mode} в Betaflight следует за другим режимом; пропущено.",
+  "switches.importNotOnRadio": "{mode} на CH{ch}, а такого канала у этого пульта нет (их {n}); пропущено, на другой орган управления не ставится.",
   "switches.importNone": "В этом тексте нет строк aux с ARM, ANGLE или HORIZON.",
   "switches.importError": "Не удалось прочитать этот текст: {msg}",
   "switches.save": "Сохранить и лететь",

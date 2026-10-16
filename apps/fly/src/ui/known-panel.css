@@ -1,0 +1,28 @@
+/* The controller check of a recognised controller (known-panel.ts): every control, live, with where its layout comes from. */
+.kp { margin-top: 12px; }
+.kp h3 { margin: 0 0 6px; font-size: 15px; }
+.kp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.kp-row { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr) auto; gap: 10px; align-items: center; padding: 4px 6px; border-radius: 6px; background: rgba(255, 255, 255, .03); }
+.kp-name { overflow-wrap: anywhere; }
+.kp-bar { position: relative; display: block; height: 8px; border-radius: 4px; background: var(--rb-well, #0b0f14); border: 1px solid var(--rb-edge, #2c3643); }
+.kp-bar::before { content: ''; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--muted); }
+.kp-bar i { position: absolute; top: 0; bottom: 0; background: var(--accent); border-radius: 4px; }
+.kp-lamp { display: inline-flex; gap: 6px; align-items: center; }
+.kp-lamp .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--rb-well, #0b0f14); border: 1px solid var(--rb-edge, #2c3643); }
+.kp-lamp[data-on='true'] .dot { background: var(--accent); border-color: var(--accent); }
+.kp-sw { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.kp-pos { padding: 1px 6px; border-radius: 4px; border: 1px solid var(--rb-edge, #2c3643); color: var(--muted); font-size: 12px; }
+.kp-pos.now { color: var(--accent-ink, #04130a); background: var(--accent); border-color: var(--accent); }
+.kp-fact { font-size: 11px; padding: 1px 6px; border-radius: 10px; white-space: nowrap; border: 1px solid currentColor; }
+.kp-fact.measured { color: var(--accent); }
+.kp-fact.sourced { color: #7dd3fc; }
+.kp-fact.assumed { color: var(--hint-fg, #fde68a); }
+.kp-notes { margin: 6px 0 0; padding-left: 18px; }
+.kp-recognised { font-weight: 600; }
+.kp-offer { margin: 8px 0 10px; padding: 10px 12px; border: 1px solid var(--accent); border-radius: var(--r, 10px); background: rgba(255, 255, 255, .03); }
+.kp-offer p { margin: 0 0 6px; }
+.kp-offer .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 520px) {
+    .kp-row { grid-template-columns: minmax(0, 1fr) auto; }
+    .kp-row > :nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
+}

@@ -12,9 +12,9 @@
 import './switches.css';
 import {
     FLIGHT_MODES, ModeSwitchDetector, POSITION_BANDS, SWITCH_ACTIONS, US_MAX, US_MIN, US_STEP, bandOf, channelUs, copySwitches,
-    defaultSwitchModes, fnOn, importOver, modeInput, modePositions, rangesMode, sameInput, setModePositions, snapUs, switchesFromBetaflight, switchesFromProfile
+    defaultSwitchModes, fnOn, importOver, inputFromKey, inputKey, modeInput, modePositions, rangesMode, sameInput, setModePositions, snapUs, switchesFromBetaflight, switchesFromProfile, tablePairs
 } from '@gsfpv/input';
-import type { ImportOver, Profile, RawFrame, SwitchAction, SwitchFn, SwitchInput, SwitchModes, SwitchPos, Switches } from '@gsfpv/input';
+import type { AuxSkip, ImportOver, Profile, RawFrame, SwitchAction, SwitchFn, SwitchInput, SwitchModes, SwitchPos, Switches } from '@gsfpv/input';
 import { parseAuxPaste, parseBetaflightDiff } from '@gsfpv/sim-core';
 import { h } from './dom';
 import { t } from '../i18n';
@@ -44,13 +44,24 @@ export function importOverNotes(over: ImportOver, name: (i: SwitchInput) => stri
     return out;
 }
 
+/**
+ * Why a Betaflight condition was left out (switchesFromBetaflight's `skipped`, not `notInSimulator`,
+ * which is listed as one line): it follows another mode, Betaflight's range limit, or a channel the
+ * radio does not have (`channels`: how many its channel table has). The Switches screen's import and
+ * the menu's say the same.
+ */
+export function skipText(x: { cond: { mode: string; channel: number }; why: AuxSkip }, channels: number): string {
+    if (x.why === 'linked') return t('switches.importLinked', { mode: x.cond.mode });
+    if (x.why === 'notOnRadio') return t('switches.importNotOnRadio', { mode: x.cond.mode, ch: x.cond.channel, n: channels });
+    return t('switches.full', { mode: x.cond.mode });
+}
+
 /** What "Flip to assign" waits for. */
 type Listen = { what: 'range'; index: number } | { what: 'mode' } | null;
 
 const SPAN = US_MAX - US_MIN;
 const pct = (us: number): number => ((us - US_MIN) / SPAN) * 100;
-const keyOf = (i: SwitchInput): string => (i.kind === 'axis' ? `a${i.index}` : `b${i.bit}`);
-const inputOf = (k: string): SwitchInput => (k[0] === 'a' ? { kind: 'axis', index: Number(k.slice(1)) } : { kind: 'button', bit: Number(k.slice(1)) });
+const keyOf = inputKey;
 
 export class SwitchesView {
     readonly el: HTMLElement;
@@ -72,8 +83,9 @@ export class SwitchesView {
         this.o = o;
         this.wizard = !o.profile.switches;
         this.sw = o.profile.switches ? copySwitches(o.profile.switches) : switchesFromProfile(o.profile);
-        // the sticks are never a switch
+        // the sticks are never a switch; a recognised controller's two-bit switches are one switch each
         this.det.exclude(Object.values(o.profile.axes).map((a) => a.index), []);
+        this.det.pairs(tablePairs(o.profile.channels));
         this.note = h('p', { class: 'swv-note small', role: 'status', 'aria-live': 'polite' });
         this.body = h('div', { class: 'swv-body' });
         this.el = h('div', { class: 'swv', 'data-testid': 'switches-screen' },
@@ -136,9 +148,9 @@ export class SwitchesView {
 
     // ------------------------------------------------------------------ names
 
-    /** "CH6"; on a gamepad a button is "button 3" (its channels are not known): controls.ts inputLabel, as the HUD. */
+    /** "CH6"; on a gamepad a button is "button 3" (its channels are not known); the device's own channel with its table: controls.ts inputLabel, as the HUD. */
     private label(i: SwitchInput): string {
-        return inputLabel(i, this.o.kind);
+        return inputLabel(i, this.o.kind, this.o.profile.channels);
     }
 
     private fnLabel(fn: SwitchFn): string {
@@ -149,6 +161,16 @@ export class SwitchesView {
     private candidates(): SwitchInput[] {
         const out: SwitchInput[] = [];
         const sticks = new Set(Object.values(this.o.profile.axes).map((a) => a.index));
+        const table = this.o.profile.channels;
+        if (table) {
+            // a recognised controller: its channels from CH5 (its switches and buttons, a two-bit
+            // switch as one), then its other buttons, so a bit of a two-bit switch is never offered alone
+            const inPairs = new Set(table.flatMap((i) => (i.kind === 'bits' ? [i.lo, i.hi] : [])));
+            for (const i of table) if (!(i.kind === 'axis' && sticks.has(i.index))) out.push({ ...i });
+            for (let b = 0; b < 16; b++) if (!inPairs.has(b) && !out.some((x) => x.kind === 'button' && x.bit === b)) out.push({ kind: 'button', bit: b });
+            for (const r of this.sw.ranges) if (!out.some((x) => sameInput(x, r.input))) out.push({ ...r.input });
+            return out;
+        }
         const axes = this.o.kind === 'hid' ? 8 : this.axesSeen;
         for (let i = 0; i < axes; i++) if (!sticks.has(i) && (this.o.kind === 'gamepad' || i >= 4)) out.push({ kind: 'axis', index: i });
         for (let b = 0; b < (this.o.kind === 'hid' ? 8 : 16); b++) out.push({ kind: 'button', bit: b });
@@ -161,7 +183,7 @@ export class SwitchesView {
         if (withNone) sel.append(h('option', { value: '' }, t('switches.none')));
         for (const i of this.candidates()) sel.append(h('option', { value: keyOf(i) }, this.label(i)));
         sel.value = value ? keyOf(value) : '';
-        sel.addEventListener('change', () => onPick(sel.value ? inputOf(sel.value) : null));
+        sel.addEventListener('change', () => onPick(sel.value ? inputFromKey(sel.value) : null));
         return sel;
     }
 
@@ -408,7 +430,7 @@ export class SwitchesView {
     /** A paste of bare aux lines (the CLI's `aux`, a diff's aux block) or a whole `diff all`. */
     private importText(text: string): void {
         const r = parseAuxPaste(text) ?? parseBetaflightDiff(text);
-        const imp = r.errors.length ? null : switchesFromBetaflight(r.aux);
+        const imp = r.errors.length ? null : switchesFromBetaflight(r.aux, this.o.profile.channels);
         if (!imp) this.importLines = [h('p', { class: 'error' }, t('switches.importError', { msg: r.errors.join(' ') }))];
         else if (!imp.applied.length) this.importLines = [h('p', { class: 'warn' }, t('switches.importNone'))];
         else {
@@ -421,7 +443,7 @@ export class SwitchesView {
             this.importLines = [h('p', { class: 'ok' }, t('switches.importDone', { list }))];
             const skipped = [...new Set(imp.skipped.filter((x) => x.why === 'notInSimulator').map((x) => x.cond.mode))];
             if (skipped.length) this.importLines.push(h('p', { class: 'muted' }, t('switches.importSkipped', { list: skipped.join(', ') })));
-            for (const x of imp.skipped.filter((y) => y.why !== 'notInSimulator')) this.importLines.push(h('p', { class: 'warn' }, t(x.why === 'linked' ? 'switches.importLinked' : 'switches.full', { mode: x.cond.mode })));
+            for (const x of imp.skipped.filter((y) => y.why !== 'notInSimulator')) this.importLines.push(h('p', { class: 'warn' }, skipText(x, this.o.profile.channels?.length ?? 0)));
             for (const n of importOverNotes(over, (i) => this.label(i))) this.importLines.push(h('p', { class: 'muted' }, n));
             this.say(t('switches.importDone', { list }));
         }

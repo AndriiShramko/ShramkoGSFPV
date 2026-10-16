@@ -14,8 +14,8 @@
 // screen) decide the arm and the mode instead when it has them, and their action ranges run app
 // actions (onSwitchAction, wired to the key router by app/builtin/switches.ts).
 
-import { ArmGate, ArmLatch, SwitchActionWatch, armByRanges, inputName, mapFrame, profileArmLevel, radioSetsMode, readSwitches, validModeSwitch } from '@gsfpv/input';
-import type { Profile, RawFrame, ArmBlock, RadioDevice, SwitchAction, SwitchInput } from '@gsfpv/input';
+import { ArmGate, ArmLatch, SwitchActionWatch, armByRanges, inputName, knownDevice, mapFrame, profileArmLevel, radioSetsMode, readChannelTable, readSwitches, validModeSwitch } from '@gsfpv/input';
+import type { ChannelTable, Profile, RawFrame, ArmBlock, RadioDevice, SwitchAction, SwitchInput } from '@gsfpv/input';
 import { MODE_CHANNEL, modeFromChannel } from '@gsfpv/sim-core';
 import type { FlightMode } from '@gsfpv/sim-core';
 import { LEGACY_KEYS } from '@gsfpv/prefs';
@@ -28,10 +28,14 @@ export type InputKind = 'hid' | 'gamepad' | 'touch' | 'keyboard';
 
 /**
  * A switch input as text, the one naming of @gsfpv/input inputName through the wizard's strings:
- * "CH6" on a USB radio (buttons too: CH9..CH32), "CH5" or "button 3" on a gamepad.
+ * the device's own channel when its profile has a channel table (`table`, Profile.channels: "CH5" is
+ * a DJI controller's flight-mode switch), else "CH6" on a USB radio (buttons too: CH9..CH32), "CH5"
+ * or "button 3" on a gamepad; a two-bit switch with no channel of its own "CH13/14" or "buttons 5/6".
  */
-export function inputLabel(input: SwitchInput, device: RadioDevice): string {
-    const n = inputName(input, device);
+export function inputLabel(input: SwitchInput, device: RadioDevice, table?: ChannelTable): string {
+    const n = inputName(input, device, table);
+    if ('a' in n) return t(`controllers.input.${n.kind}`, { a: n.a, b: n.b });
+    if (n.kind === 'axis') return t('controllers.input.axis', { n: n.n });
     return t(n.kind === 'ch' ? 'wizard.armSource.ch' : 'wizard.armSource.button', { n: n.n });
 }
 
@@ -140,8 +144,18 @@ export function checkProfile(v: unknown): Profile | null {
     if (p.version !== 1 || !p.axes || typeof p.axes !== 'object' || !p.deviceKey) return null;
     const kind = (p.arm as { kind?: unknown } | null)?.kind;
     if (p.arm && kind !== 'axis' && kind !== 'button' && kind !== 'key') return null;
-    if (p.modeSwitch === undefined && p.switches === undefined) return p;
+    if (p.modeSwitch === undefined && p.switches === undefined && p.channels === undefined && p.known === undefined) return p;
     const out: Profile = { ...p };
+    if (p.channels !== undefined) {
+        // the device's channel numbering (a recognised controller's): names only, so one that cannot be read goes and the profile stays
+        const table = readChannelTable(p.channels);
+        if (table) out.channels = table;
+        else {
+            delete out.channels;
+            console.warn(`radio setup ${String(p.deviceName)}: its channel numbering could not be read; channels are named as on an EdgeTX radio`);
+        }
+    }
+    if (p.known !== undefined && typeof p.known !== 'string') delete out.known;
     if (p.modeSwitch !== undefined) {
         const ms = validModeSwitch(p.modeSwitch);
         if (ms) out.modeSwitch = ms;
@@ -278,9 +292,9 @@ export class Controls {
         this.push(performance.now()); // act at once, not at the next radio report
     }
 
-    /** A switch input of the device in use as the pilot reads it (inputLabel): "CH6", or "button 3" on a gamepad. */
+    /** A switch input of the device in use as the pilot reads it (inputLabel, with the profile's channel table): "CH6", or "button 3" on a gamepad. */
     nameOf(input: SwitchInput): string {
-        return inputLabel(input, this.source === 'gamepad' ? 'gamepad' : 'hid');
+        return inputLabel(input, this.source === 'gamepad' ? 'gamepad' : 'hid', this.profile?.channels);
     }
 
     /** For the HUD; the same object every call (the HUD reads it at 10 Hz). */
@@ -289,12 +303,16 @@ export class Controls {
         const a = this.profile?.arm ?? null;
         const range = armByRanges(this.profile) ? this.profile?.switches?.ranges.find((r) => r.fn === 'arm') ?? null : null;
         if (range) {
-            // the channel functions arm: "CH6" ("button 3" on a gamepad), as the Switches screen names it
-            v.armKind = range.input.kind;
+            // the channel functions arm: "CH6" ("button 3" on a gamepad), as the Switches screen names it;
+            // a two-bit switch is a level switch like a channel
+            v.armKind = range.input.kind === 'bits' ? 'axis' : range.input.kind;
             v.armLabel = this.nameOf(range.input);
         } else {
             v.armKind = !a ? null : a.kind === 'button' ? (a.toggle ? 'toggle' : 'button') : a.kind;
             v.armLabel = !a ? '' : a.kind === 'axis' ? t('wizard.armSource.ch', { n: a.index + 1 }) : a.kind === 'button' ? t('wizard.armSource.button', { n: a.bit + 1 }) : t('wizard.armSource.key');
+            // a recognised controller's arm by the name printed on it (the DJI: "Start/stop button")
+            const known = a && a.kind === 'button' ? knownDevice(this.profile?.known)?.controls.find((c) => c.input.kind === 'button' && c.input.bit === a.bit) : undefined;
+            if (known) v.armLabel = t(`controllers.control.${known.label}`);
         }
         v.mode = this.profile?.mode ?? getStickMode();
         v.source = this.source;

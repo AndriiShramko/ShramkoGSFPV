@@ -3,15 +3,19 @@
 // wizard takes it (CalibrationWizard.modeWatch). The row shows what was found, where the switch is
 // now and which mode each position gives; its buttons are only overrides (no switch, use a
 // switch, another mode for a position). ui/radio.ts puts it under the arm row.
-import { FLIGHT_MODES } from '@gsfpv/input';
-import type { CalibrationWizard, SwitchInput, SwitchPos, WizardState } from '@gsfpv/input';
+import { FLIGHT_MODES, inputKey } from '@gsfpv/input';
+import type { CalibrationWizard, ChannelTable, SwitchInput, SwitchPos, WizardState } from '@gsfpv/input';
 import { h } from './dom';
 import { t } from '../i18n';
+import { inputLabel } from '../controls';
 import './mode-switch-row.css';
 
-/** "CH6" or "button 3", as the arm row names its source. */
-export function switchText(i: SwitchInput): string {
-    return i.kind === 'axis' ? t('wizard.armSource.ch', { n: i.index + 1 }) : t('wizard.armSource.button', { n: i.bit + 1 });
+/**
+ * "CH6" or "button 3", as the arm row names its source (the wizard's naming: a button by its number);
+ * a two-bit switch "buttons 7/8"; with the device's channel table its channel ("CH5" on a DJI controller).
+ */
+export function switchText(i: SwitchInput, table?: ChannelTable): string {
+    return inputLabel(i, 'gamepad', table);
 }
 
 /** What the row was built for: a new switch, none, or watching rebuilds it (ui/radio.ts adds this to its rebuild key). */
@@ -19,12 +23,13 @@ export function modeRowKey(st: WizardState): string {
     const m = st.modeSwitch;
     if (!m) return '';
     if (!m.sw) return m.listening ? 'listen' : 'none';
-    return m.sw.input.kind === 'axis' ? `ch${m.sw.input.index}` : `b${m.sw.input.bit}`;
+    return inputKey(m.sw.input);
 }
 
-/** Position names: the channel's value on an axis (EdgeTX -100 / 0 / +100), released / pressed on a button. */
+/** Position names: the channel's value on an axis (EdgeTX -100 / 0 / +100), released / pressed on a button, low / middle / high on a two-bit switch. */
 function posText(i: SwitchInput, p: SwitchPos): string {
     if (i.kind === 'button') return t(p === 2 ? 'mode.switch.pressed' : 'mode.switch.released');
+    if (i.kind === 'bits') return t(p === 0 ? 'switches.pos.low' : p === 1 ? 'switches.pos.mid' : 'switches.pos.high');
     return p === 0 ? '−100' : p === 1 ? '0' : '+100';
 }
 
@@ -32,12 +37,12 @@ function posText(i: SwitchInput, p: SwitchPos): string {
  * The row and its per-frame update. `btn` makes a wizard button (radio.ts's own, so focus and
  * Enter behave as everywhere on the screen); `changed` redraws the screen after an override.
  */
-export function modeSwitchRow(wz: CalibrationWizard, btn: (label: string, action: string, onclick: () => void) => HTMLButtonElement, changed: () => void): { el: HTMLElement; live: () => void } {
+export function modeSwitchRow(wz: CalibrationWizard, btn: (label: string, action: string, onclick: () => void) => HTMLButtonElement, changed: () => void, table?: ChannelTable): { el: HTMLElement; live: () => void } {
     const st = wz.state;
     const m = st.modeSwitch;
     const sw = m?.sw ?? null;
     const name = h('span', { class: 'nm' }, t('mode.switch.title'));
-    const ch = h('span', { class: 'ch' }, sw ? switchText(sw.input) : '-');
+    const ch = h('span', { class: 'ch' }, sw ? switchText(sw.input, table) : '-');
     const body = h('div', { class: 'wz-modesw', role: 'status' });
     const acts = h('div', { class: 'acts' });
     const el = h('div', { class: 'wz-row mode', 'data-fn': 'mode', 'data-testid': 'mode-switch-row' }, name, ch, body, acts);
@@ -55,7 +60,7 @@ export function modeSwitchRow(wz: CalibrationWizard, btn: (label: string, action
             pos.push({ p, b });
             body.append(b);
         }
-        body.append(h('span', { class: 'wz-modesw-say muted small' }, t('mode.switch.found', { src: switchText(sw.input) })));
+        body.append(h('span', { class: 'wz-modesw-say muted small' }, t('mode.switch.found', { src: switchText(sw.input, table) })));
         acts.append(btn(t('mode.switch.btnNone'), 'mode-switch-none', () => { wz.modeSwitchNone(); changed(); }));
     } else if (m?.listening) {
         body.append(h('span', { class: 'wz-modesw-say' }, t('mode.switch.listen')));

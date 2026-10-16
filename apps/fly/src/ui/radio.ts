@@ -8,17 +8,19 @@
 // use gets Recalibrate, Reverse channels and Switches (ui/switches.ts: which channel arms, sets the
 // flight mode or runs an action; v0.7) at the top, so none hides behind "connect a device".
 import './wizard.css';
-import { ArmLatch, CalibrationWizard, STEP_IDS, TUNING, channelOrder } from '@gsfpv/input';
-import type { ArmSource, Fn, Hint, Profile, RawFrame, StepResult, Verdict, WizardState } from '@gsfpv/input';
+import { ArmLatch, CalibrationWizard, STEP_IDS, TUNING, channelOrder, keepOwnSetup, knownOffer, knownProfile, recognise, resolveInput, seenFromGamepad } from '@gsfpv/input';
+import type { ArmSource, Fn, Hint, KnownMatch, Profile, RawFrame, StepResult, Verdict, WizardState } from '@gsfpv/input';
 import { h, clear } from './dom';
 import { t } from '../i18n';
 import { HidSource, hidDisplayName } from '../devices/hid';
 import { GamepadSource } from '../devices/gamepad';
+import { choiceOffer, recogniseSource } from '../devices/known';
 import { saveProfile, profileFor, downloadProfile, parseProfile, getStickMode, setStickMode } from '../controls';
 import { radioArt, sideOf, knobsFrom, tickIcon } from './radio-art';
 import type { ArtState, ArtTarget } from './radio-art';
 import { modeSwitchRow, modeRowKey } from './mode-switch-row';
 import { SwitchesView } from './switches';
+import { knownNameNote, knownNote, knownOfferBlock, knownPanel } from './known-panel';
 
 export type SourceKind = 'hid' | 'gamepad' | 'touch' | 'keyboard';
 
@@ -41,6 +43,16 @@ export interface RadioScreenOptions {
 type Subscribe = (cb: (f: RawFrame) => void) => void;
 type Device = HidSource | GamepadSource;
 type Cmd = () => Verdict | boolean | void;
+
+/**
+ * A setup screen for a recognised controller (@gsfpv/input known-devices.ts): `match` names it and
+ * resolves its controls on this path; `fresh` = its known profile, shown for checking before it was
+ * ever saved (the "Recognised" note), not a saved setup checked again.
+ */
+interface KnownOpts { match?: KnownMatch | null; fresh?: boolean }
+
+/** Which known controller a device of the Controls screen is, if any (devices/known.ts: USB ids and descriptor, or the Gamepad API id and counts). */
+const recogniseDevice = (kind: SourceKind, dev: Device | undefined): KnownMatch | null => recogniseSource(kind, dev);
 
 let screensOpened = 0; // per page: tells the first open after loading from later ones
 
@@ -238,19 +250,24 @@ export class RadioScreen {
                 this.firstOpen ? h('p', { class: 'radio-ask' }, t('loading.readyAsk')) : null),
             this.closeBtn()));
         if (cur && cur.profile && curDev) {
-            // the radio in use: fly on, recalibrate it or reverse a channel, without connecting again
+            // the radio in use: fly on, recalibrate it or reverse a channel, without connecting again.
+            // A recognised controller flying a setup from before it was recognised (choiceOffer): its
+            // known setup is offered first (the load opens this screen for it, app/input.ts); Fly
+            // flies on with nothing changed and the offer comes again, its two buttons decide
+            const kn = choiceOffer(cur);
             this.body.append(h('div', { class: 'radio-current' },
                 h('p', { class: 'radio-cur-name' }, t('radio.connected', { name: cur.profile.deviceName })),
                 h('p', { class: 'muted small' }, t('radio.rate', { hz: Math.round(curDev.rateHz) })),
+                kn ? knownOfferBlock(kn.match.device, { use: () => this.useKnownCurrent(cur, kn.offer, kn.match), keep: () => this.keepOwnCurrent(cur, kn.match) }) : null,
                 h('div', { class: 'actions' },
-                    h('button', { type: 'button', class: 'btn primary', 'data-action': 'radio-keep', onclick: () => this.keepCurrent() }, t('common.fly')),
+                    h('button', { type: 'button', class: kn ? 'btn' : 'btn primary', 'data-action': 'radio-keep', onclick: () => this.keepCurrent() }, t('common.fly')),
                     h('button', { type: 'button', class: 'btn', 'data-action': 'radio-setup', onclick: () => this.setupCurrent(cur) }, t('radio.recalibrate')),
                     h('button', { type: 'button', class: 'btn', 'data-action': 'radio-reverse', onclick: () => this.checkCurrent(cur) }, t('radio.reverse')),
                     h('button', { type: 'button', class: 'btn', 'data-action': 'radio-switches', onclick: () => this.openSwitches(cur) }, t('switches.open')))));
         }
         this.body.append(
             h('div', { class: 'choice' },
-                h('button', { type: 'button', class: cls('hid'), disabled: !hidOk, onclick: () => void this.connectHid(hidStatus) }, t('radio.hid')),
+                h('button', { type: 'button', class: cls('hid'), disabled: !hidOk, onclick: () => void this.connectHid(hidStatus, gpRate) }, t('radio.hid')),
                 h('p', { class: 'muted small' }, hidOk ? t('radio.hidHint') : t('preflight.noHid')),
                 hidStatus),
             h('div', { class: 'choice' },
@@ -265,6 +282,50 @@ export class RadioScreen {
             h('p', { class: 'muted small' }, t('radio.real'))
         );
         (this.body.querySelector<HTMLElement>('.btn.primary:not([disabled])') ?? this.body.querySelector<HTMLElement>('.btn:not([disabled])'))?.focus({ preventScroll: true });
+        this.watchPads(gpRate);
+    }
+
+    /**
+     * The device choice's pad watch: a recognised controller on the Gamepad API (the DJI: a stick moved
+     * makes the browser show it) opens its check screen by itself, plugged in, nothing to click (the
+     * owner's item 4). Only while no radio is in use. A pick of the pilot stops it (connectHid,
+     * connectGamepad: a pad shown while the WebHID chooser is open must not take over), a chooser
+     * closed with no device starts it again.
+     */
+    private watchPads(gpRate: HTMLElement): void {
+        clearInterval(this.timer);
+        if (this.curDev) return;
+        const gen = this.gen;
+        this.timer = window.setInterval(() => {
+            if (gen !== this.gen) return;
+            const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : [];
+            for (const p of pads) {
+                if (!p || p.connected === false || !recognise(seenFromGamepad(p))?.device.mapping) continue;
+                clearInterval(this.timer);
+                this.bindPad(p);
+                this.connectGamepad(gpRate);
+                return;
+            }
+        }, 250);
+    }
+
+    /**
+     * Point the screen's Gamepad API source at pad `p` (the pad watch found a recognised controller).
+     * A source never switches pads once bound (GamepadSource.pad), so one bound to another pad (the
+     * pilot picked "Gamepad" with an Xbox pad, then went Back) or the radio in use's own source is not
+     * re-aimed: the recognised pad gets a new source, and one opened here is stopped. An unbound one
+     * opened here is aimed at it.
+     */
+    private bindPad(p: Gamepad): void {
+        const g = this.gp;
+        if (g.index === p.index && g.id === p.id) return;
+        const free = g !== this.current?.gamepad && g.index < 0 && !g.id;
+        if (!free) {
+            if (this.owned.has(g)) { g.onFrame = null; g.stop(); this.owned.delete(g); }
+            this.gp = new GamepadSource();
+        }
+        this.gp.index = p.index;
+        this.gp.id = p.id;
     }
 
     /** "Recalibrate" on the radio that is already in use. */
@@ -273,11 +334,11 @@ export class RadioScreen {
         if (cur.kind === 'hid' && cur.hid) {
             const d = cur.hid;
             this.hid = d;
-            this.runWizard(d.key, name, (cb) => { d.onFrame = cb; }, () => d.rateHz, 'hid');
+            this.runWizard(d.key, name, (cb) => { d.onFrame = cb; }, () => d.rateHz, 'hid', recogniseDevice('hid', d));
         } else if (cur.kind === 'gamepad' && cur.gamepad) {
             const g = cur.gamepad;
             this.gp = g;
-            this.runWizard(g.key, name, (cb) => { g.onFrame = cb; }, () => g.rateHz, 'gamepad');
+            this.runWizard(g.key, name, (cb) => { g.onFrame = cb; }, () => g.rateHz, 'gamepad', recogniseDevice('gamepad', g));
         }
     }
 
@@ -289,12 +350,36 @@ export class RadioScreen {
         if (cur.kind === 'hid' && cur.hid) {
             const d = cur.hid;
             this.hid = d;
-            this.mount(CalibrationWizard.resume(p), d.key, p.deviceName, (cb) => { d.onFrame = cb; }, () => d.rateHz, 'hid', p);
+            this.mount(CalibrationWizard.resume(p), d.key, p.deviceName, (cb) => { d.onFrame = cb; }, () => d.rateHz, 'hid', p, { match: recogniseDevice('hid', d) });
         } else if (cur.kind === 'gamepad' && cur.gamepad) {
             const g = cur.gamepad;
             this.gp = g;
-            this.mount(CalibrationWizard.resume(p), g.key, p.deviceName, (cb) => { g.onFrame = cb; }, () => g.rateHz, 'gamepad', p);
+            this.mount(CalibrationWizard.resume(p), g.key, p.deviceName, (cb) => { g.onFrame = cb; }, () => g.rateHz, 'gamepad', p, { match: recogniseDevice('gamepad', g) });
         }
+    }
+
+    /** The offer's "Use the known setup" on the radio in use: the known setup on its check screen (Fly there saves it, as for a new controller). */
+    private useKnownCurrent(cur: RadioChoice, offer: Profile, match: KnownMatch): void {
+        const p = structuredClone(offer);
+        const name = match.device.name;
+        if (cur.kind === 'hid' && cur.hid) {
+            const d = cur.hid;
+            this.hid = d;
+            this.mount(CalibrationWizard.resume(p), d.key, name, (cb) => { d.onFrame = cb; }, () => d.rateHz, 'hid', p, { match, fresh: true });
+        } else if (cur.kind === 'gamepad' && cur.gamepad) {
+            const g = cur.gamepad;
+            this.gp = g;
+            this.mount(CalibrationWizard.resume(p), g.key, name, (cb) => { g.onFrame = cb; }, () => g.rateHz, 'gamepad', p, { match, fresh: true });
+        }
+    }
+
+    /** The offer's "Keep my setup" on the radio in use: saved with the device's table and id (keepOwnSetup: not offered again), flown at once. */
+    private keepOwnCurrent(cur: RadioChoice, match: KnownMatch): void {
+        if (!cur.profile) return;
+        const p = keepOwnSetup(cur.profile, match);
+        saveProfile(p);
+        this.handed = this.curDev ?? null;
+        this.done({ ...cur, profile: p });
     }
 
     /**
@@ -329,13 +414,15 @@ export class RadioScreen {
         view.el.querySelector<HTMLElement>('select, button')?.focus({ preventScroll: true });
     }
 
-    private async connectHid(status: HTMLElement): Promise<void> {
+    private async connectHid(status: HTMLElement, gpRate: HTMLElement): Promise<void> {
+        clearInterval(this.timer); // the pilot chose: the device choice's pad watch stops (watchPads())
         const gen = this.gen;
         const src = new HidSource();
         this.owned.add(src);
         try {
             const d = await src.request();
-            if (!d || gen !== this.gen) return;
+            if (gen !== this.gen) return;
+            if (!d) { this.watchPads(gpRate); return; } // the chooser closed with no device: back to the choice as it was
             await src.open(d);
             status.className = 'muted small radio-status';
             status.textContent = t('wizard.say.connect');
@@ -343,20 +430,21 @@ export class RadioScreen {
             await new Promise<void>((res) => { src.onFrame = () => { src.onFrame = null; res(); }; setTimeout(res, 1500); });
             if (gen !== this.gen) return;
             this.hid = src;
-            const name = hidDisplayName(d);
+            // a recognised controller by its maker's name (Windows calls the DJI only "HID Interface")
+            const match = recogniseDevice('hid', src);
+            const name = match?.device.mapping ? match.device.name : hidDisplayName(d);
             const sub: Subscribe = (cb) => { src.onFrame = cb; };
-            const saved = profileFor(src.key);
-            // a saved setup is shown for checking, never handed over blindly
-            if (saved) this.mount(CalibrationWizard.resume(saved), src.key, name, sub, () => src.rateHz, 'hid', saved);
-            else this.runWizard(src.key, name, sub, () => src.rateHz, 'hid');
+            this.open(src.key, name, sub, () => src.rateHz, 'hid', match);
         } catch (e) {
             if (gen !== this.gen) return;
             status.className = 'error small radio-status';
             status.textContent = String((e as Error).message ?? e);
+            this.watchPads(gpRate); // still on the choice: the same controller on the Gamepad API may work
         }
     }
 
     private connectGamepad(rate: HTMLElement): void {
+        clearInterval(this.timer); // the pilot chose: the device choice's pad watch stops (watchPads())
         const gp = this.gp;
         if (gp !== this.current?.gamepad) this.owned.add(gp);
         gp.start();
@@ -369,16 +457,30 @@ export class RadioScreen {
             if (started) return;
             started = true;
             const sub: Subscribe = (cb) => { gp.onFrame = cb; };
-            const name = gp.id || 'gamepad';
-            const saved = profileFor(gp.key);
-            if (saved) this.mount(CalibrationWizard.resume(saved), gp.key, name, sub, () => gp.rateHz, 'gamepad', saved);
-            else this.runWizard(gp.key, name, sub, () => gp.rateHz, 'gamepad');
+            const match = recogniseDevice('gamepad', gp);
+            this.open(gp.key, match?.device.mapping ? match.device.name : gp.id || 'gamepad', sub, () => gp.rateHz, 'gamepad', match);
         };
     }
 
-    /** Also used by tests with the simulated radio (fake HID device). */
-    runWizard(key: string, name: string, subscribe: Subscribe, rate: () => number, kind: SourceKind): void {
-        this.mount(new CalibrationWizard(key, name), key, name, subscribe, rate, kind, null);
+    /**
+     * A device just connected: its saved setup shown for checking (never handed over blindly); else a
+     * recognised controller's known setup on the same check screen (nothing to assign: the pilot moves
+     * each control to confirm it and presses Fly); else the setup wizard (told about a controller
+     * recognised by name only, as an EdgeTX radio).
+     */
+    private open(key: string, name: string, sub: Subscribe, rate: () => number, kind: SourceKind, match: KnownMatch | null): void {
+        const saved = profileFor(key);
+        if (saved) { this.mount(CalibrationWizard.resume(saved), key, name, sub, rate, kind, saved, { match }); return; }
+        const known = match ? knownProfile(match, key, name) : null;
+        if (known && match) { this.mount(CalibrationWizard.resume(known), key, name, sub, rate, kind, known, { match, fresh: true }); return; }
+        this.runWizard(key, name, sub, rate, kind, match);
+    }
+
+    /** Also used by tests with the simulated radio (fake HID device). `match`: a controller recognised by name, or with a channel table the wizard's profile keeps. */
+    runWizard(key: string, name: string, subscribe: Subscribe, rate: () => number, kind: SourceKind, match: KnownMatch | null = null): void {
+        const known = match ? knownProfile(match, key, name) : null;
+        const device = known?.channels ? { channels: known.channels, known: known.known } : match ? { known: match.device.id } : {};
+        this.mount(new CalibrationWizard(key, name, device), key, name, subscribe, rate, kind, null, { match });
     }
 
     private finish(kind: SourceKind, p: Profile): void {
@@ -387,7 +489,7 @@ export class RadioScreen {
         this.done({ kind, profile: p, hid: kind === 'hid' ? this.hid : undefined, gamepad: kind === 'gamepad' ? this.gp : undefined });
     }
 
-    private mount(wz: CalibrationWizard, key: string, name: string, subscribe: Subscribe, rate: () => number, kind: SourceKind, saved: Profile | null): void {
+    private mount(wz: CalibrationWizard, key: string, name: string, subscribe: Subscribe, rate: () => number, kind: SourceKind, saved: Profile | null, known: KnownOpts = {}): void {
         this.leave();
         const gen = this.gen;
         // Liftoff-style: the sticks move the wizard on, no Start / Next per step (Andrii 2026-09-27)
@@ -418,9 +520,28 @@ export class RadioScreen {
         const chans = h('div', { class: 'wz-chans', hidden: true });
         const rateEl = h('p', { class: 'wz-rate muted small' });
         const actions = h('div', { class: 'wz-actions' });
-        const note = saved ? h('div', { class: 'wz-note' },
-            h('p', {}, t('radio.saved', { name: saved.deviceName })),
-            saved.wizard ? null : h('p', { class: 'warn small' }, t('wizard.oldProfile'))) : null;
+        // a recognised controller (known-devices.ts): what it is and how to check it; one known by
+        // name only (EdgeTX): why the wizard asks; a saved setup: that it is the saved one
+        const kdev = known.match?.device ?? null;
+        // a setup saved for a recognised controller before it was recognised (the wizard's): its known
+        // setup is offered (knownOffer). Use: the known setup on this check screen; Keep: the saved one
+        // takes the device's table and id (keepOwnSetup), is saved, and stays on this check screen;
+        // Fly without either flies the saved one and the offer comes again next time
+        const m0 = known.match;
+        const offer = saved && m0 ? knownOffer(saved, m0) : null;
+        const note = kdev?.mapping && known.fresh ? knownNote(kdev)
+            : saved ? h('div', { class: 'wz-note' },
+                h('p', {}, t('radio.saved', { name: saved.deviceName })),
+                saved.wizard ? null : h('p', { class: 'warn small' }, t('wizard.oldProfile')),
+                offer && m0 ? knownOfferBlock(m0.device, {
+                    use: () => this.mount(CalibrationWizard.resume(offer), key, m0.device.name, subscribe, rate, kind, offer, { match: m0, fresh: true }),
+                    keep: () => {
+                        const kept = keepOwnSetup(wz.state.profile ?? saved, m0);
+                        saveProfile(kept);
+                        this.mount(CalibrationWizard.resume(kept), key, name, subscribe, rate, kind, kept, { match: m0 });
+                    }
+                }) : null)
+                : kdev && !kdev.mapping ? knownNameNote(kdev) : null;
         const wzEl = h('div', { class: 'wz' },
             h('ol', { class: 'wz-steps' }, ...stepEls),
             h('div', { class: 'wz-main' },
@@ -778,7 +899,7 @@ export class RadioScreen {
             }
             // the radio's flight-mode switch: found by a flip, no press (mode-switch-row.ts); a radio
             // with channel functions (the Switches screen) takes its arm and mode from them instead
-            const modeRow = modeSwitchRow(wz, (l, a, f) => btn(l, a, f), () => { sig = ''; render(); });
+            const modeRow = modeSwitchRow(wz, (l, a, f) => btn(l, a, f), () => { sig = ''; render(); }, p.channels);
             if (p.switches) rows.append(h('p', { class: 'wz-row-note small warn', 'data-testid': 'switches-check-note' }, t('switches.checkNote')));
             else rows.append(modeRow.el);
             const row = (k: string, info = false): HTMLLIElement => h('li', { class: info ? 'info' : '' }, h('span', { class: 'mk' }, tickIcon()), h('span', {}, t(k)));
@@ -800,9 +921,14 @@ export class RadioScreen {
                 h('div', { class: 'wz-files' },
                     btn(t('wizard.export'), 'wizard-export', () => { p.mode = this.mode; downloadProfile(p); }),
                     btn(t('wizard.import'), 'wizard-import', () => fileIn.click()), fileIn));
+            // a recognised controller: every control of it, live, with where its layout comes from
+            const m = known.match;
+            const kp = m?.device.mapping && p.known === m.device.id ? knownPanel(m.device, (k) => resolveInput(k, m)) : null;
+            if (kp) extra.append(kp.el);
             live = () => {
                 const s = wz.state;
                 const ck = s.checks;
+                kp?.live(last);
                 toggle(rThr, 'done', !!ck?.throttleLow);
                 if (armKind !== 'key') toggle(rArm, 'done', armKind === 'toggle' ? armLevel(s) === true : !!ck?.armOn);
                 toggle(rCen, 'done', !!ck?.centred);
