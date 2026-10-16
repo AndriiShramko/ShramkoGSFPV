@@ -32,7 +32,7 @@ and the controller is in another USB mode (not seen here, not checked).
 | Input report | 14 bytes with the report id (id 0: **13 data bytes**); no output or feature reports |
 | Axes | 5 values, usages `0x30` X, `0x31` Y, `0x32` Z, `0x33` Rx, `0x34` Ry; **16 bits signed, logical −660..660**; physical range unset |
 | Buttons | Button page `0x09`, usages 1..24, one bit each (3 bytes) |
-| Rate | at least about 160 reports a second: 143–169 state changes a second while stirring (winmm, polled every 5–7 ms) and 150–170 in Chrome 152; both probes sit near their own polling rate, so the device may send more |
+| Rate | about 160 reports a second: the page probe in Chrome 152 read `getGamepads()` every ~4 ms (~250 a second) and saw 150–170 state changes a second while stirring; winmm, polled every 5–7 ms, saw 143–169 (near its own ceiling) |
 
 Method: `hid.dll` (`HidD_GetAttributes`, `HidD_GetProductString`, `HidP_GetCaps`, `HidP_GetValueCaps`,
 `HidP_GetButtonCaps`), winmm `joyGetDevCaps` / `joyGetPosEx`, PnP properties.
@@ -67,16 +67,16 @@ that is Phase E step 1 (docs/phase-e-real-radio.md).
 - **Chrome 140 (the owner's Chrome):** with the controller at rest, a visible focused tab got
   `[null, null, null, null]` from `getGamepads()` and the simulator's gamepad source no frame in about
   4 s. Chrome exposes a pad only after an input; a run with a stick moved was not recorded.
-- **WebHID ("Radio or controller over USB"):** the chooser already lists every HID joystick / gamepad,
-  so the controller is offered. **Before the fix** (this follows from the code at 4ab126c and the
-  measured 13-byte report; the chooser was not tried with the controller) the simulator read every report with the EdgeTX
+- **WebHID ("Radio or controller over USB"):** not tried with the controller, before or after the fix.
+  From the code at 4ab126c and the measured 13-byte report: the chooser's filters take any HID
+  joystick / gamepad, so the controller should be offered; **before the fix** the simulator read every report with the EdgeTX
   layout (19 bytes, or 16 and more); the 13-byte reports were all refused, the radio screen said "The
   radio sends 13-byte reports we cannot read" and the wizard never left its first step — the
   simulator "did not see" the controller. **Now** every non-EdgeTX HID device is read through its own
   report descriptor (`packages/input/src/hid-layout.ts`, `makeHidReader`); EdgeTX radios keep their
-  fixed layout. On Windows the device calls itself "HID Interface" and the profile is named
-  `USB 2ca3:1021`; on macOS and Linux the browser takes the USB product string, "DJI Virtual
-  Joystick" (Linux may put the maker in front), and the profile keeps that name.
+  fixed layout. On Windows the device calls itself "HID Interface" (measured) and the profile is
+  named `USB 2ca3:1021`. On macOS and Linux the name is expected to come from the USB product string
+  "DJI Virtual Joystick" (Linux may put the maker in front: "DJI DJI Virtual Joystick"); not checked.
 
 ## Tests without the hardware
 

@@ -97,7 +97,7 @@
   "drone.keep": "Actual · mantener",
   "radio.title": "Controles",
   "radio.hid": "Emisora o mando por USB (EdgeTX, DJI)",
-  "radio.hidHint": "EdgeTX: elige \"USB Joystick\" y apaga el módulo RF: así los datos llegan hasta 1000 veces por segundo. Un mando DJI: enciéndelo y conéctalo; en la lista del navegador aparece como \"HID Interface\" en Windows y \"DJI Virtual Joystick\" en macOS y Linux.",
+  "radio.hidHint": "EdgeTX: elige \"USB Joystick\" y apaga el módulo RF: así los datos llegan hasta 1000 veces por segundo. Un mando DJI: enciéndelo y conéctalo; en la lista del navegador aparece como \"HID Interface\" en Windows y, en otros sistemas, con un nombre que contiene \"DJI\".",
   "radio.gamepad": "Mando o emisora como mando",
   "radio.touch": "Sticks táctiles",
   "radio.touchHint": "Sirve para mirar alrededor y enseñárselo a tus amigos. Para aprender a volar, usa una emisora.",

@@ -97,7 +97,7 @@
   "drone.keep": "Obecny · zostaw",
   "radio.title": "Sterowanie",
   "radio.hid": "Aparatura albo kontroler przez USB (EdgeTX, DJI)",
-  "radio.hidHint": "EdgeTX: wybierz „USB Joystick” i wyłącz moduł RF — wtedy odczyty przychodzą nawet 1000 razy na sekundę. Kontroler DJI: włącz go i podłącz; na liście przeglądarki to „HID Interface” w Windows i „DJI Virtual Joystick” w macOS i Linuksie.",
+  "radio.hidHint": "EdgeTX: wybierz „USB Joystick” i wyłącz moduł RF — wtedy odczyty przychodzą nawet 1000 razy na sekundę. Kontroler DJI: włącz go i podłącz; na liście przeglądarki to „HID Interface” w Windows, a w innych systemach nazwa ze słowem „DJI”.",
   "radio.gamepad": "Gamepad albo aparatura jako gamepad",
   "radio.touch": "Dotykowe drążki",
   "radio.touchHint": "Wystarczy, żeby się rozejrzeć i pokazać znajomym. Do nauki latania użyj aparatury.",

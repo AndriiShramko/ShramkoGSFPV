@@ -48,7 +48,7 @@
     "getGamepads": "[null, null, null, null] in a visible, focused tab with the controller at rest; the simulator's gamepad source ran for about 4 s and received no frame (gp.index -1)",
     "notChecked": "the same with a stick moved (browsers expose a pad only after an input)"
   },
-  "webhidPathBeforeFix": "the chooser filters already take usage page 1 usage 4/5/8, so the controller is listed; every 13-byte report failed parseEdgeTxReport (it needs 19 or 16 bytes and more), HidSource counted it as bad, the wizard stayed at connect with 'The radio sends 13-byte reports we cannot read'",
+  "webhidPathBeforeFixFromCode": "NOT observed (the chooser was not tried with the controller); derived from the code at 4ab126c and the measured 13-byte report length: the chooser filters take usage page 1 usage 4/5/8, so the controller should be listed; every 13-byte report fails parseEdgeTxReport (it needs 19 or 16 bytes and more), HidSource counts it as bad, the wizard stays at connect with 'The radio sends 13-byte reports we cannot read'",
   "fix": "HidSource reads a non-EdgeTX device through its descriptor (packages/input/src/hid-layout.ts, makeHidReader); EdgeTX keeps its fixed layout",
   "screenshots": ["live-controls-screen-chrome152.jpg", "live-gamepad-path-stir-chrome152.jpg", "live-gamepad-path-throttle-chrome152.jpg", "live-controls-screen-chrome140.jpg"]
 }

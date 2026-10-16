@@ -97,7 +97,7 @@
   "drone.keep": "Current · keep",
   "radio.title": "Controls",
   "radio.hid": "Radio or controller over USB (EdgeTX, DJI)",
-  "radio.hidHint": "EdgeTX: choose \"USB Joystick\" and switch the RF module off — reports then arrive up to 1000 times a second. A DJI controller: switch it on and plug it in; in the browser's list it is \"HID Interface\" on Windows, \"DJI Virtual Joystick\" on macOS and Linux.",
+  "radio.hidHint": "EdgeTX: choose \"USB Joystick\" and switch the RF module off — reports then arrive up to 1000 times a second. A DJI controller: switch it on and plug it in; in the browser's list it is \"HID Interface\" on Windows, elsewhere a name with \"DJI\" in it.",
   "radio.gamepad": "Gamepad or radio as gamepad",
   "radio.touch": "Touch sticks",
   "radio.touchHint": "Good for looking around and showing friends. To learn to fly, use a radio.",
