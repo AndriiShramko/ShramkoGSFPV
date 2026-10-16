@@ -19,117 +19,117 @@
   "screens": 23,
   "path": [
    {
-    "t": 39,
+    "t": 53,
     "k": "connect/null",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 622,
+    "t": 618,
     "k": "stir/ready",
     "buttons": "wizard-mode,radio-close,wizard-mode-2,wizard-mode-1,wizard-back,wizard-restart"
    },
    {
-    "t": 1126,
+    "t": 1147,
     "k": "stir/active",
     "buttons": "wizard-mode,radio-close,wizard-mode-2,wizard-mode-1,wizard-back,wizard-restart"
    },
    {
-    "t": 4332,
+    "t": 4354,
     "k": "stir/done",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 5257,
+    "t": 5228,
     "k": "centre/ready",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 5903,
+    "t": 5898,
     "k": "centre/active",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 6569,
+    "t": 6582,
     "k": "centre/done",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 7434,
+    "t": 7459,
     "k": "throttle/ready",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 8117,
+    "t": 8115,
     "k": "throttle/active",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 9378,
+    "t": 9379,
     "k": "throttle/done",
-    "buttons": "wizard-mode,radio-close,reverse-throttle,wizard-back,wizard-restart"
+    "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 10513,
+    "t": 10455,
     "k": "yaw/ready",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 11167,
+    "t": 11113,
     "k": "yaw/active",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 12517,
+    "t": 12378,
     "k": "yaw/done",
     "buttons": "wizard-mode,radio-close,reverse-yaw,wizard-back,wizard-restart"
    },
    {
-    "t": 14222,
+    "t": 14105,
     "k": "pitch/ready",
-    "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    "buttons": "wizard-mode,radio-close,reverse-yaw,wizard-back,wizard-restart"
    },
    {
-    "t": 14734,
+    "t": 14776,
     "k": "pitch/active",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 16239,
+    "t": 16254,
     "k": "pitch/done",
     "buttons": "wizard-mode,radio-close,reverse-pitch,wizard-back,wizard-restart"
    },
    {
-    "t": 17962,
+    "t": 17777,
     "k": "roll/ready",
-    "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    "buttons": "wizard-mode,radio-close,reverse-pitch,wizard-back,wizard-restart"
    },
    {
-    "t": 18474,
+    "t": 18436,
     "k": "roll/active",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 19735,
+    "t": 19760,
     "k": "roll/done",
     "buttons": "wizard-mode,radio-close,reverse-roll,wizard-back,wizard-restart"
    },
    {
-    "t": 21504,
+    "t": 21468,
     "k": "arm/ready",
-    "buttons": "wizard-mode,radio-close,pick-ch-5,pick-ch-6,pick-ch-7,pick-ch-8,wizard-skip-arm,wizard-back,wizard-restart"
+    "buttons": "wizard-mode,radio-close,reverse-roll,wizard-back,wizard-restart"
    },
    {
-    "t": 22216,
+    "t": 22137,
     "k": "arm/active",
     "buttons": "wizard-mode,radio-close,pick-ch-5,pick-ch-6,pick-ch-7,pick-ch-8,wizard-skip-arm,wizard-back,wizard-restart"
    },
    {
-    "t": 24530,
+    "t": 24693,
     "k": "arm/done",
     "buttons": "wizard-mode,radio-close,reverse-arm,pick-ch-5,pick-ch-6,pick-ch-7,pick-ch-8,wizard-skip-arm,wizard-back,wizard-restart"
    },
    {
-    "t": 25494,
+    "t": 25606,
     "k": "check/null",
     "buttons": "wizard-mode,radio-close,reverse-throttle,wizard-redo-throttle,reverse-yaw,wizard-redo-yaw,reverse-pitch,wizard-redo-pitch,reverse-roll,wizard-redo-roll,reverse-arm,wizard-redo-arm,wizard-export,wizard-import,wizard-done,wizard-back,wizard-restart"
    }
@@ -146,117 +146,117 @@
   "screens": 23,
   "path": [
    {
-    "t": 36,
+    "t": 40,
     "k": "connect/null",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 481,
+    "t": 439,
     "k": "stir/ready",
     "buttons": "wizard-mode,radio-close,wizard-mode-2,wizard-mode-1,wizard-back,wizard-restart"
    },
    {
-    "t": 794,
+    "t": 745,
     "k": "stir/active",
     "buttons": "wizard-mode,radio-close,wizard-mode-2,wizard-mode-1,wizard-back,wizard-restart"
    },
    {
-    "t": 4980,
+    "t": 4469,
     "k": "stir/done",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 6012,
+    "t": 5486,
     "k": "centre/ready",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 6564,
+    "t": 6044,
     "k": "centre/active",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 7767,
+    "t": 7028,
     "k": "centre/done",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 8541,
+    "t": 7969,
     "k": "throttle/ready",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 9103,
+    "t": 8502,
     "k": "throttle/active",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 10274,
+    "t": 9671,
     "k": "throttle/done",
-    "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
+    "buttons": "wizard-mode,radio-close,reverse-throttle,wizard-back,wizard-restart"
    },
    {
-    "t": 11305,
+    "t": 10434,
     "k": "yaw/ready",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 11886,
+    "t": 11182,
     "k": "yaw/active",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 12860,
+    "t": 11933,
     "k": "yaw/done",
-    "buttons": "wizard-mode,radio-close,reverse-yaw,wizard-back,wizard-restart"
+    "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 14356,
+    "t": 13317,
     "k": "pitch/ready",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 14967,
+    "t": 13862,
     "k": "pitch/active",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 15580,
+    "t": 15033,
     "k": "pitch/done",
     "buttons": "wizard-mode,radio-close,reverse-pitch,wizard-back,wizard-restart"
    },
    {
-    "t": 17003,
+    "t": 16191,
     "k": "roll/ready",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 17579,
+    "t": 16956,
     "k": "roll/active",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 18172,
+    "t": 17504,
     "k": "roll/done",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 19787,
+    "t": 19107,
     "k": "arm/ready",
     "buttons": "wizard-mode,radio-close,pick-ch-5,pick-ch-6,pick-ch-7,pick-ch-8,wizard-skip-arm,wizard-back,wizard-restart"
    },
    {
-    "t": 20303,
+    "t": 19840,
     "k": "arm/active",
     "buttons": "wizard-mode,radio-close,pick-ch-5,pick-ch-6,pick-ch-7,pick-ch-8,wizard-skip-arm,wizard-back,wizard-restart"
    },
    {
-    "t": 31771,
+    "t": 31467,
     "k": "arm/done",
     "buttons": "wizard-mode,radio-close,pick-ch-5,pick-ch-6,pick-ch-7,pick-ch-8,wizard-back,wizard-restart"
    },
    {
-    "t": 32765,
+    "t": 32422,
     "k": "check/null",
     "buttons": "wizard-mode,radio-close,reverse-throttle,wizard-redo-throttle,reverse-yaw,wizard-redo-yaw,reverse-pitch,wizard-redo-pitch,reverse-roll,wizard-redo-roll,wizard-redo-arm,wizard-export,wizard-import,wizard-done,wizard-back,wizard-restart"
    }
@@ -270,120 +270,115 @@
    "profile": true,
    "startOrNextVisible": false
   },
-  "screens": 23,
+  "screens": 22,
   "path": [
    {
-    "t": 36,
+    "t": 34,
     "k": "connect/null",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 584,
-    "k": "stir/ready",
-    "buttons": "wizard-mode,radio-close,wizard-mode-2,wizard-mode-1,wizard-back,wizard-restart"
-   },
-   {
-    "t": 1044,
+    "t": 658,
     "k": "stir/active",
     "buttons": "wizard-mode,radio-close,wizard-mode-2,wizard-mode-1,wizard-back,wizard-restart"
    },
    {
-    "t": 2768,
+    "t": 2850,
     "k": "stir/done",
-    "buttons": "wizard-mode,radio-close,wizard-mode-2,wizard-mode-1,wizard-back,wizard-restart"
+    "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 3246,
+    "t": 3742,
     "k": "centre/ready",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 3889,
+    "t": 4432,
     "k": "centre/active",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 4800,
+    "t": 5100,
     "k": "centre/done",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 5672,
+    "t": 6000,
     "k": "throttle/ready",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 6343,
+    "t": 6459,
     "k": "throttle/active",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 7200,
+    "t": 7537,
     "k": "throttle/done",
     "buttons": "wizard-mode,radio-close,reverse-throttle,wizard-back,wizard-restart"
    },
    {
-    "t": 8083,
+    "t": 8422,
     "k": "yaw/ready",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 8581,
+    "t": 9078,
     "k": "yaw/active",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 9422,
+    "t": 9936,
     "k": "yaw/done",
     "buttons": "wizard-mode,radio-close,reverse-yaw,wizard-back,wizard-restart"
    },
    {
-    "t": 11163,
+    "t": 11041,
     "k": "pitch/ready",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 11786,
+    "t": 11714,
     "k": "pitch/active",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 12619,
+    "t": 12571,
     "k": "pitch/done",
     "buttons": "wizard-mode,radio-close,reverse-pitch,wizard-back,wizard-restart"
    },
    {
-    "t": 13907,
+    "t": 13675,
     "k": "roll/ready",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 14439,
+    "t": 14346,
     "k": "roll/active",
     "buttons": "wizard-mode,radio-close,wizard-back,wizard-restart"
    },
    {
-    "t": 15298,
+    "t": 15199,
     "k": "roll/done",
     "buttons": "wizard-mode,radio-close,reverse-roll,wizard-back,wizard-restart"
    },
    {
-    "t": 16630,
+    "t": 16735,
     "k": "arm/ready",
     "buttons": "wizard-mode,radio-close,pick-ch-5,pick-ch-6,pick-ch-7,pick-ch-8,wizard-skip-arm,wizard-back,wizard-restart"
    },
    {
-    "t": 17159,
+    "t": 17378,
     "k": "arm/active",
     "buttons": "wizard-mode,radio-close,pick-ch-5,pick-ch-6,pick-ch-7,pick-ch-8,wizard-skip-arm,wizard-back,wizard-restart"
    },
    {
-    "t": 18628,
+    "t": 18623,
     "k": "arm/done",
-    "buttons": "wizard-mode,radio-close,reverse-arm,pick-ch-5,pick-ch-6,pick-ch-7,pick-ch-8,wizard-skip-arm,wizard-back,wizard-restart"
+    "buttons": "wizard-mode,radio-close,pick-ch-5,pick-ch-6,pick-ch-7,pick-ch-8,wizard-skip-arm,wizard-back,wizard-restart"
    },
    {
-    "t": 19463,
+    "t": 19684,
     "k": "check/null",
     "buttons": "wizard-mode,radio-close,reverse-throttle,wizard-redo-throttle,reverse-yaw,wizard-redo-yaw,reverse-pitch,wizard-redo-pitch,reverse-roll,wizard-redo-roll,reverse-arm,wizard-redo-arm,wizard-export,wizard-import,wizard-done,wizard-back,wizard-restart"
    }
