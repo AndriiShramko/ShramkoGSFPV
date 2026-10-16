@@ -3,13 +3,13 @@
 // flies; a radio, a gamepad or a HID device never goes through it.
 //
 // Each frame: AutoArm decides the arm channel (no switch: a flying input starts the motors), the
-// altitude help turns the climb/sink command into a throttle stick (angle and horizon; never in acro),
+// altitude help turns the climb/sink command into a throttle stick (angle mode only: assist.ts helpFlies),
 // and the frame goes through Controls and its arm gate like every source's. The model only ever sees
 // channels, so the flight log replays without any of this (assist.ts header).
 
 import type { Controls } from '../controls';
 import type { FlightSession } from '../session';
-import { AltitudeHelp, AutoArm } from './assist';
+import { AltitudeHelp, AutoArm, helpFlies } from './assist';
 
 /** What easy play reads around it: the flight on screen now (a scene switch replaces it) and the help setting. */
 export interface EasyEnv {
@@ -40,9 +40,9 @@ export class EasyPilot {
         this.env = env;
     }
 
-    /** The altitude help flies the throttle now: switched on, and the mode flown is not acro. */
+    /** The altitude help flies the throttle now: switched on, and the mode flown is one it flies in (angle; assist.ts helpFlies). */
     helpActive(): boolean {
-        return this.env.altitudeHelp() && this.controls.flyingMode() !== 'acro';
+        return this.env.altitudeHelp() && helpFlies(this.controls.flyingMode());
     }
 
     /** A new life or a new scene: the height to hold and the integral start again. */

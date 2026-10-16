@@ -3,7 +3,7 @@
 //
 // Four steps from the most help to none, each a pair of settings, so the step is never stored on
 // its own and cannot disagree with what the craft flies:
-//   1 angle + altitude help   2 angle, own throttle   3 horizon   4 acro (as real FPV pilots fly)
+//   1 angle + altitude help   2 angle, own throttle   3 horizon, own throttle   4 acro (as real FPV pilots fly)
 // Each step has a goal: seconds of flight in one go without a crash. Reaching it offers the next step.
 
 import type { FlightMode } from '@gsfpv/sim-core';
@@ -11,7 +11,11 @@ import type { FlightMode } from '@gsfpv/sim-core';
 export type SchoolStep = 1 | 2 | 3 | 4;
 export const SCHOOL_STEPS: readonly SchoolStep[] = [1, 2, 3, 4];
 
-/** The step the settings fly now (flight.mode, input.altitudeHelp). Acro ignores the help: it is never on in acro. */
+/**
+ * The step the settings fly now (flight.mode, input.altitudeHelp). The help flies in angle mode only
+ * (assist.ts helpFlies), so horizon and acro are steps 3 and 4 whatever input.altitudeHelp says: the
+ * step shown is what the craft flies (app-play.test.ts checks every mode with the help on and off).
+ */
 export function stepOf(mode: FlightMode, altitudeHelp: boolean): SchoolStep {
     if (mode === 'acro') return 4;
     if (mode === 'horizon') return 3;

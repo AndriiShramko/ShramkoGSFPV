@@ -231,7 +231,7 @@ export class Hud {
     /** K (app/builtin/play.ts): the key card stays up while flying until K again */
     private keysPinned = false;
     visible = true;
-    /** easy play's altitude help is on (prefs input.altitudeHelp; set by app/builtin/play.ts): the key card's up/down row */
+    /** easy play's altitude help flies now (on, angle mode; set by app/builtin/play.ts): the key card's up/down row */
     altitudeHelp: () => boolean = () => true;
     /** Arm kind 'key' (no switch on the radio): the on-screen ARM / DISARM button. */
     onArm: (() => void) | null = null;

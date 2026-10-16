@@ -54,7 +54,7 @@ export const play: Feature = {
     install(ctx) {
         const prefs = ctx.prefs;
         ctx.input.setPlay(playProfile(ctx));
-        ctx.hud.altitudeHelp = () => prefs.get('input.altitudeHelp') !== false;
+        ctx.hud.altitudeHelp = () => ctx.input.easy.helpActive(); // the help as flown: on, and in angle mode
         const offPrefs = prefs.onChange((c) => {
             if (c.id === 'input.play') ctx.input.setPlay(playProfile(ctx));
         });

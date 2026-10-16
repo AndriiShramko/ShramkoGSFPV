@@ -4,7 +4,7 @@
   "set.input.play.opt.easy": "Easy play",
   "set.input.play.opt.pilot": "Pilot (as a radio)",
   "set.input.altitudeHelp": "Altitude help (easy play)",
-  "set.input.altitudeHelp.help": "The drone holds its height by itself; up and down (the arrows, or the left stick on a touch screen) climb and sink at a steady speed. Works in angle and horizon modes, never in acro. Step 1 of the pilot school.",
+  "set.input.altitudeHelp.help": "The drone holds its height by itself; up and down (the arrows, or the left stick on a touch screen) climb and sink at a steady speed. Works in angle mode only: horizon and acro can flip, and there your throttle flies. Step 1 of the pilot school.",
   "set.input.haptics": "Vibrate on a crash",
   "set.input.haptics.help": "A short buzz when you crash with the touch sticks, on phones that allow it (most Android phones; not iPhone).",
   "keys.help.keys": "Keyboard keys (show / hide)",

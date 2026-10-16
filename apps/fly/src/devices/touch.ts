@@ -11,7 +11,7 @@
 //
 // Two profiles (prefs input.play, docs/wip/v08-a.md):
 //  - easy (default): no ARM button; touching a pad starts the motors (play/easy.ts EasyPilot); with
-//    the altitude help on (angle, horizon) the left stick's up/down asks for a climb or sink speed and
+//    the altitude help on (angle mode) the left stick's up/down asks for a climb or sink speed and
 //    springs back to centre (= hold the height), like a camera drone's left stick; without it the left
 //    stick is a throttle that stays where it is left.
 //  - pilot: the big ARM button, the throttle stays where it is left (v0.7's behaviour).
@@ -113,7 +113,7 @@ export class TouchSticks {
         this.timer = window.setInterval(() => this.emit(performance.now()), this.easy ? EASY_FRAME_MS : KEEPALIVE_MS);
     }
 
-    /** Easy play's left stick flies the altitude help now (on, and not acro). */
+    /** Easy play's left stick flies the altitude help now (on, and in angle mode). */
     private wantClimb(): boolean {
         return !!this.easy && this.easy.helpActive();
     }

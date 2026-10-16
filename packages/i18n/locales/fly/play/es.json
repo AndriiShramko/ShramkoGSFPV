@@ -4,7 +4,7 @@
   "set.input.play.opt.easy": "Juego fácil",
   "set.input.play.opt.pilot": "Piloto (como una emisora)",
   "set.input.altitudeHelp": "Ayuda de altura (juego fácil)",
-  "set.input.altitudeHelp.help": "El dron mantiene la altura solo; arriba y abajo (las flechas, o el stick izquierdo en una pantalla táctil) suben y bajan a velocidad constante. Funciona en los modos angle y horizon, nunca en acro. Paso 1 de la escuela de pilotos.",
+  "set.input.altitudeHelp.help": "El dron mantiene la altura solo; arriba y abajo (las flechas, o el stick izquierdo en una pantalla táctil) suben y bajan a velocidad constante. Solo funciona en el modo angle: en horizon y acro el dron puede dar la vuelta, y ahí vuela tu acelerador. Paso 1 de la escuela de pilotos.",
   "set.input.haptics": "Vibrar al chocar",
   "set.input.haptics.help": "Una vibración corta cuando chocas con los sticks táctiles, en los teléfonos que lo permiten (la mayoría de Android; no iPhone).",
   "keys.help.keys": "Teclas del teclado (mostrar / ocultar)",

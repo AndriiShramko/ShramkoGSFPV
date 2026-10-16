@@ -9,12 +9,14 @@
 //    a throttle. A vertical-speed PI with a feed-forward computed from the model's own numbers: the
 //    thrust that gives the wanted acceleration at the craft's tilt, through the motor law
 //    T = tmax(V) w^2, idle and the throttle curve (or the auto-throttle map) back to a stick.
+//    It flies in angle mode only (helpFlies) and gives idle when the craft is on its side or
+//    upside down (UPRIGHT_MIN_COS): thrust cannot hold the height there, it would push the craft down.
 //  - AutoArm: starts the motors without an arm switch. The sim arms on an off -> on edge of the arm
 //    channel with the throttle at the bottom (sim.ts step()), so the throttle is held low until the
 //    model says armed, and a refused edge is retried.
 
 import { S, autoThrottleStick, hoverThrOf, invertThrottle } from '@gsfpv/sim-core';
-import type { SimParams } from '@gsfpv/sim-core';
+import type { FlightMode, SimParams } from '@gsfpv/sim-core';
 
 /** Climb speed at full command, m/s (Shift: x CLIMB_BOOST). */
 export const CLIMB_MPS = 2.5;
@@ -33,8 +35,27 @@ export const HOLD_GAIN = 1.5;
 export const HOLD_MAX_MPS = 1;
 /** Command below this is "no command": hold the height. */
 export const DEADBAND = 0.05;
-/** The steepest tilt the thrust is compensated for (cos 60 deg = 0.5): past it the help gives up height, not control. */
+/**
+ * The steepest tilt the thrust is compensated for (cos 60 deg = 0.5, angle mode's default limit):
+ * tilted further, the help asks for no more than twice the level thrust and the craft sinks.
+ */
 export const MIN_COS_TILT = 0.5;
+/**
+ * Below this cosine (about 78 deg: on its side or upside down) thrust cannot hold the height: it
+ * pushes the craft sideways or toward the ground, and a speed controller that sees the craft fall
+ * would push harder. The help then gives idle and holds its integral until the craft is upright
+ * again (the 2026-10-16 review: a horizon flip with the thrust kept on lost about twice the height).
+ */
+export const UPRIGHT_MIN_COS = 0.2;
+
+/**
+ * The flight modes the altitude help flies in: angle only. Angle mode levels the craft within its
+ * angle limit, so the thrust is always mostly up; horizon flips at full stick and acro does not
+ * level at all, and there the pilot's own throttle flies (pilot school steps 3 and 4).
+ */
+export function helpFlies(mode: FlightMode): boolean {
+    return mode === 'angle';
+}
 
 /**
  * The throttle stick (0..1) that makes `thrustN` in total from the four motors at loaded pack
@@ -64,11 +85,23 @@ export class AltitudeHelp {
     private iAcc = 0;
     /** the vertical speed asked for in the last update, m/s (for tests and the HUD) */
     target = 0;
+    /** the craft was past UPRIGHT_MIN_COS in the last update: idle was sent (for tests and the bench) */
+    tipped = false;
+    /**
+     * The cosine below which the help gives idle: UPRIGHT_MIN_COS. Only the tests' negative control
+     * passes another value (-1: never, the help as first shipped, which pushed an upside-down craft down).
+     */
+    private readonly uprightMinCos: number;
+
+    constructor(uprightMinCos = UPRIGHT_MIN_COS) {
+        this.uprightMinCos = uprightMinCos;
+    }
 
     reset(): void {
         this.holdY = null;
         this.iAcc = 0;
         this.target = 0;
+        this.tipped = false;
     }
 
     /**
@@ -91,11 +124,15 @@ export class AltitudeHelp {
         }
         this.target = vt;
         const err = vt - vy;
+        const cosTilt = upCos(s);
+        // on its side or upside down: idle, and the integral waits (the fall is not an error thrust can fix)
+        this.tipped = cosTilt < this.uprightMinCos;
+        if (this.tipped) return stickForThrust(p, s[S.volt], 0);
         const dt = dtS > 0 && dtS < 0.25 ? dtS : 0; // a stalled page is not time the help should integrate
         this.iAcc = Math.max(-I_MAX, Math.min(I_MAX, this.iAcc + KI * err * dt));
         const g = p.gravity;
         const a = Math.max(-0.9 * g, Math.min(1.5 * g + 3, KV * err + this.iAcc));
-        const up = Math.max(MIN_COS_TILT, upCos(s));
+        const up = Math.max(MIN_COS_TILT, cosTilt);
         return stickForThrust(p, s[S.volt], (p.mass * (g + a)) / up);
     }
 }

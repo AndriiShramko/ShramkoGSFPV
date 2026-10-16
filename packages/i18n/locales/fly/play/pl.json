@@ -4,7 +4,7 @@
   "set.input.play.opt.easy": "Łatwa gra",
   "set.input.play.opt.pilot": "Pilot (jak z aparatury)",
   "set.input.altitudeHelp": "Pomoc wysokości (łatwa gra)",
-  "set.input.altitudeHelp.help": "Dron sam trzyma wysokość; góra i dół (strzałki albo lewy drążek na ekranie dotykowym) wznoszą i opuszczają ze stałą prędkością. Działa w trybach angle i horizon, nigdy w acro. Krok 1 szkoły pilotów.",
+  "set.input.altitudeHelp.help": "Dron sam trzyma wysokość; góra i dół (strzałki albo lewy drążek na ekranie dotykowym) wznoszą i opuszczają ze stałą prędkością. Działa tylko w trybie angle: w horizon i acro dron może się przewrócić, tam leci twój gaz. Krok 1 szkoły pilotów.",
   "set.input.haptics": "Wibracja przy kraksie",
   "set.input.haptics.help": "Krótka wibracja, gdy zaliczysz kraksę na drążkach dotykowych, w telefonach, które na to pozwalają (większość Androidów; nie iPhone).",
   "keys.help.keys": "Klawisze klawiatury (pokaż / ukryj)",

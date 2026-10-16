@@ -22,7 +22,7 @@ import type { Profile } from '@gsfpv/input';
 import { REPO } from '../../../packages/prefs/test/helpers';
 import { FLYING_CODES, KEYMAP, keymapProblems } from '../../../packages/prefs/src';
 import type { KeyBinding } from '../../../packages/prefs/src';
-import { ARM_RETRY_MS, AltitudeHelp, AutoArm, CLIMB_BOOST, CLIMB_MPS, SINK_MPS, stickForThrust } from '../../../apps/fly/src/play/assist';
+import { ARM_RETRY_MS, AltitudeHelp, AutoArm, CLIMB_BOOST, CLIMB_MPS, SINK_MPS, helpFlies, stickForThrust } from '../../../apps/fly/src/play/assist';
 import { BOOST_CODES, GAME_KEYS, KEY_ACRO_DPS, KEY_TILT_DEG, KEY_YAW_DPS, MODE2_KEYS, RAMP_FALL_PER_S, RAMP_RISE_PER_S, axisDirs, flyingKeyCodes, keyTargets, slew, stickForRate } from '../../../apps/fly/src/play/keys';
 import { PadGrab, absoluteRead, padTravel } from '../../../apps/fly/src/play/touch-map';
 import { GOAL_S, SCHOOL_STEPS, SchoolProgress, settingsOf, stepOf } from '../../../apps/fly/src/play/school';
@@ -42,7 +42,6 @@ interface Ask { roll?: number; pitch?: number; yaw?: number; lift?: number; boos
 class PageLoop {
     readonly sim: Sim;
     readonly gate = new ArmGate({ keepArmedAfterCrash: true });
-    readonly help = new AltitudeHelp();
     readonly arm = new AutoArm();
     snap: Float64Array;
     snapArmed = false;
@@ -50,7 +49,7 @@ class PageLoop {
     private lastEmit = -1e9;
     readonly sent: number[][] = [];
 
-    constructor(readonly p: SimParams, readonly mode: FlightMode, readonly assist = true, soc = 1) {
+    constructor(readonly p: SimParams, readonly mode: FlightMode, readonly assist = true, soc = 1, readonly help = new AltitudeHelp()) {
         this.sim = new Sim(p, null);
         this.sim.reset(0, 50, 0, 0, { soc });
         this.snap = new Float64Array(this.sim.s);
@@ -90,8 +89,8 @@ class PageLoop {
 }
 
 /** Armed by easy play and hovering at about 50 m for `settleMs`. */
-function airborne(p: SimParams, mode: FlightMode = 'angle', soc = 1, settleMs = 3000): PageLoop {
-    const L = new PageLoop(p, mode, true, soc);
+function airborne(p: SimParams, mode: FlightMode = 'angle', soc = 1, settleMs = 3000, help = new AltitudeHelp()): PageLoop {
+    const L = new PageLoop(p, mode, true, soc, help);
     L.run(200, {});
     L.run(settleMs, { fly: true });
     if (!L.sim.armed) throw new Error('easy play did not arm');
@@ -203,6 +202,55 @@ describe('altitude help: holds the height, climbs and sinks at the asked speed',
         const c0 = C.y;
         C.run(4000, { thrStick: hover, pitch, fly: true });
         expect(c0 - C.y).toBeGreaterThan(2);
+    });
+
+    it('upside down the help gives idle: a horizon flip loses no more height than a cut throttle; control: the help as first shipped pushes the craft down', () => {
+        // the review of 2026-10-16: the help forced on in horizon, full roll held, then released. The
+        // shipped page never flies the help in horizon (helpFlies); this proves the guard for any tip-over
+        // (a collision in angle mode, a high angle limit) and that the test sees the old fault
+        const flip = (id: string, holdMs: number, help: AltitudeHelp): { lossM: number; tippedThr: number[] } => {
+            const L = airborne(params(id), 'horizon', 1, 3000, help);
+            const y0 = L.y;
+            let low = y0;
+            const tippedThr: number[] = [];
+            const watch = (ms: number, ask: Ask): void => {
+                for (let i = 0; i < ms; i += 10) {
+                    L.run(10, ask);
+                    low = Math.min(low, L.y);
+                    if (help.tipped) tippedThr.push((L.sent.at(-1)![2] + 1) / 2);
+                }
+            };
+            watch(holdMs, { fly: true, roll: 1 });
+            watch(4000, { fly: true });
+            return { lossM: y0 - low, tippedThr };
+        };
+        for (const id of ['pavo20pro-3s', 'air65-1s']) {
+            for (const holdMs of [400, 700]) {
+                const guarded = flip(id, holdMs, new AltitudeHelp());
+                const first = flip(id, holdMs, new AltitudeHelp(-1)); // never gives idle: v0.8's first help
+                const idle = stickForThrust(params(id), params(id).vNom, 0);
+                expect(guarded.tippedThr.length, `${id} ${holdMs} ms: the craft went past 78 deg`).toBeGreaterThan(0);
+                for (const thr of guarded.tippedThr) expect(thr, `${id} ${holdMs} ms`).toBeCloseTo(idle, 6);
+                expect(guarded.lossM, `${id} ${holdMs} ms`).toBeLessThan(3);
+                // control: the first help kept pushing while inverted and lost at least 1 m more
+                expect(first.lossM - guarded.lossM, `${id} ${holdMs} ms`).toBeGreaterThan(1);
+            }
+        }
+    });
+
+    it('the help flies in angle mode only, and the school step shown is what flies; control: the first rule (all but acro) disagreed in horizon', () => {
+        expect(helpFlies('angle')).toBe(true);
+        expect(helpFlies('horizon')).toBe(false);
+        expect(helpFlies('acro')).toBe(false);
+        for (const m of ['angle', 'horizon', 'acro'] as FlightMode[]) {
+            for (const on of [true, false]) {
+                const o = settingsOf(stepOf(m, on));
+                expect(o.mode, `${m} ${on}`).toBe(m);
+                expect(o.altitudeHelp && helpFlies(o.mode), `${m} ${on}`).toBe(on && helpFlies(m));
+            }
+        }
+        const firstRule = (m: FlightMode): boolean => m !== 'acro';
+        expect(settingsOf(stepOf('horizon', true)).altitudeHelp).not.toBe(firstRule('horizon'));
     });
 
     it('climbs at 2.5 m/s, sinks at 2 m/s, twice as fast with Shift', () => {
