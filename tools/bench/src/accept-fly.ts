@@ -397,12 +397,18 @@ if (want('B13')) {
 }
 
 // ------------------------------------------------------------------ B14 touch sticks
+// v0.8 (docs/wip/v08-a.md): the touch sticks default to easy play (no ARM button, the motors start
+// with a touch, the left stick climbs and sinks); B14 checks the pilot profile (?set.input.play=pilot:
+// the ARM button, a throttle that stays), as before. A finger grabs a stick where it is, so the
+// touches start on the knobs and move from there; a touch-down off-centre must not move a stick (the
+// owner's item 2; v0.7's absolute pads jumped, the control below says by how much). Easy play's touch
+// and keyboard are accept-v08-play.ts.
 if (want('B14')) {
     const rows: Record<string, unknown>[] = [];
     for (const [w, hgt] of [[375, 812], [1024, 768]] as const) {
         const T = await launch({ width: w, height: hgt, mobile: true });
         const tp = T.page;
-        await tp.goto(flyLogic('en', 'scene=887f27aa&nowarn=1&input=touch'));
+        await tp.goto(flyLogic('en', 'scene=887f27aa&nowarn=1&input=touch&set.input.play=pilot'));
         await waitLogic(tp, 180000);
         const cdp = await T.context.newCDPSession(tp);
         const box = async (sel: string) => (await tp.locator(sel).boundingBox())!;
@@ -416,9 +422,19 @@ if (want('B14')) {
         await touch('touchEnd', []);
         const chOut = await chNow();
         const outsideZero = ch0.slice(0, 4).every((v, i) => Math.abs(v - chOut[i]) < 1e-6);
-        // two touches at once, still disarmed: both pairs of axes in one frame
         const lc = c(L), rc = c(R), rl = L.width / 2 - 24, rr = R.width / 2 - 24;
-        await touch('touchStart', [{ x: lc.x + 0.3 * rl, y: lc.y + 0.9 * rl, id: 2 }, { x: rc.x - 0.4 * rr, y: rc.y - 0.3 * rr, id: 3 }]);
+        // a touch-down off-centre moves no stick (the finger grabs it where it is); control: v0.7's
+        // absolute pad read the same point as a deflection
+        const off = { x: rc.x - 0.5 * rr, y: rc.y + 0.4 * rr };
+        await touch('touchStart', [{ ...off, id: 5 }]);
+        const grabbed = await chNow();
+        await touch('touchEnd', []);
+        const absolute = [Math.max(-1, Math.min(1, (off.x - rc.x) / rr)), Math.max(-1, Math.min(1, -(off.y - rc.y) / rr))];
+        const grabOk = Math.abs(grabbed[0]) < 0.01 && Math.abs(grabbed[1]) < 0.01;
+        // two touches at once, still disarmed: both pairs of axes in one frame (each finger lands on its
+        // knob: the left one at the bottom, the throttle sticky there; the right one at centre)
+        await touch('touchStart', [{ x: lc.x, y: lc.y + rl, id: 2 }, { x: rc.x, y: rc.y, id: 3 }]);
+        await touch('touchMove', [{ x: lc.x + 0.3 * rl, y: lc.y + 0.95 * rl, id: 2 }, { x: rc.x - 0.4 * rr, y: rc.y - 0.3 * rr, id: 3 }]);
         const both = await chNow();
         const bothChanged = Math.abs(both[0]) > 0.2 && Math.abs(both[1]) > 0.2 && Math.abs(both[3]) > 0.2 && both[2] < -0.5;
         await touch('touchEnd', []);
@@ -432,7 +448,10 @@ if (want('B14')) {
         const y0 = await hookEval<number>(tp, 'return s.sim.s[1];');
         const target = y0 + 0.8;
         let thr = -0.15, lastY = y0, minY = 1e9, maxY = -1e9;
-        await touch('touchStart', [{ x: lc.x, y: lc.y - thr * rl, id: 4 }]);
+        // the finger lands on the knob (where the sticky throttle is), so the pad's centre is its zero
+        // and the controller below can name absolute stick positions
+        const thrNow = (await chNow())[2];
+        await touch('touchStart', [{ x: lc.x, y: lc.y - thrNow * rl, id: 4 }]);
         const t0 = Date.now();
         let crashed = false, armedAll = true;
         while (Date.now() - t0 < 12000) {
@@ -455,14 +474,14 @@ if (want('B14')) {
         const view = await tp.evaluate(() => ({ scrollX, scrollY, scale: visualViewport?.scale ?? 1 }));
         await tp.screenshot({ path: join(SHOTS, shot(`b14-${w}x${hgt}.jpg`)) });
         await T.browser.close();
-        rows.push({ viewport: `${w}x${hgt}`, pauseButtonReachable: pauseOpened, armedByButton: armed, bothPairsOneFrame: { ch: both.slice(0, 4), ok: bothChanged }, hover: { seconds: 10, crashed, armedAll, minY, maxY, target }, view, control: { outsideTouch: { before: ch0.slice(0, 4), after: chOut.slice(0, 4), fired: outsideZero } } });
+        rows.push({ viewport: `${w}x${hgt}`, pauseButtonReachable: pauseOpened, armedByButton: armed, touchDownMovesNothing: { at: off, ch: grabbed.slice(0, 2), ok: grabOk, control: { v07AbsolutePad: absolute, fired: Math.abs(absolute[0]) > 0.2 && Math.abs(absolute[1]) > 0.2 } }, bothPairsOneFrame: { ch: both.slice(0, 4), ok: bothChanged }, hover: { seconds: 10, crashed, armedAll, minY, maxY, target }, view, control: { outsideTouch: { before: ch0.slice(0, 4), after: chOut.slice(0, 4), fired: outsideZero } } });
         console.log('B14', JSON.stringify(rows[rows.length - 1]));
     }
     const pass = rows.every((r) => {
-        const x = r as { pauseButtonReachable: boolean; armedByButton: boolean; bothPairsOneFrame: { ok: boolean }; hover: { crashed: boolean; armedAll: boolean; minY: number }; view: { scrollX: number; scrollY: number; scale: number }; control: { outsideTouch: { fired: boolean } } };
-        return x.pauseButtonReachable && x.armedByButton && x.bothPairsOneFrame.ok && !x.hover.crashed && x.hover.armedAll && x.view.scrollX === 0 && x.view.scrollY === 0 && x.view.scale === 1 && x.control.outsideTouch.fired;
+        const x = r as { pauseButtonReachable: boolean; armedByButton: boolean; touchDownMovesNothing: { ok: boolean; control: { fired: boolean } }; bothPairsOneFrame: { ok: boolean }; hover: { crashed: boolean; armedAll: boolean; minY: number }; view: { scrollX: number; scrollY: number; scale: number }; control: { outsideTouch: { fired: boolean } } };
+        return x.pauseButtonReachable && x.armedByButton && x.touchDownMovesNothing.ok && x.touchDownMovesNothing.control.fired && x.bothPairsOneFrame.ok && !x.hover.crashed && x.hover.armedAll && x.view.scrollX === 0 && x.view.scrollY === 0 && x.view.scale === 1 && x.control.outsideTouch.fired;
     });
-    record('B14', { pass, note: 'touch through CDP Input.dispatchTouchEvent in Chrome (which one: context.browser) with hasTouch; input=touch because desktop Chrome has WebHID', rows });
+    record('B14', { pass, note: 'touch through CDP Input.dispatchTouchEvent in Chrome (which one: context.browser) with hasTouch; input=touch because desktop Chrome has WebHID; the pilot profile (set.input.play=pilot), easy play is accept-v08-play.ts', rows });
 }
 
 // ------------------------------------------------------------------ B15 replay from inputs only

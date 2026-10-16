@@ -665,7 +665,7 @@ const flows: Record<string, (b: Browser) => Promise<void>> = {
         // throttle for 3.5 s of climb over the roofs, disarm; the card is taken as the quad starts to fall
         const ctx2 = await context(b, 'desktop');
         const p2 = await open(ctx2);
-        await p2.goto(fly(`scene=887f27aa&refine=off&${DESK_Q}`));
+        await p2.goto(fly(`scene=887f27aa&refine=off&${DESK_Q}&set.input.play=pilot`)); // v0.8: the pilot keys (Space, W)
         await ready(p2);
         await p2.click('[data-action="radio-keyboard"]');
         await until(p2, 'return h.controls.source;', (v) => v === 'keyboard', 10000, 100);
