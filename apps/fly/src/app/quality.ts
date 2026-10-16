@@ -34,8 +34,11 @@ export class Quality {
         return this.cinemaOn;
     }
 
-    /** The slider's splat budget: a quarter of the top at 0, the top at 1 (1..4 M at the default top). */
-    private get userBudget(): number {
+    /**
+     * The Quality setting's cap on the splat budget, millions: a quarter of the top at 0, the top at 1
+     * (1..4 M at the default top). apply() draws the smaller of this and the governor's step budget.
+     */
+    get settingBudgetMillions(): number {
         return this.governor.topBudgetMillions * (0.25 + 0.75 * this.userQuality);
     }
 
@@ -73,7 +76,7 @@ export class Quality {
         }
         const st = this.governor.current;
         r.setRenderScale(Math.min(this.userMaxScale, st.renderScale));
-        r.setSplatBudgetMillions(Math.min(this.userBudget, st.splatBudgetMillions));
+        r.setSplatBudgetMillions(Math.min(this.settingBudgetMillions, st.splatBudgetMillions));
     }
 
     /** Once per frame, first: the simulated overload (tests), then the governor's step. */

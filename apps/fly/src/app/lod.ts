@@ -20,6 +20,10 @@ export interface LodReport extends LodState {
     topBudgetM: number;
     /** the governor's step (0 = the top) */
     governorStep: number;
+    /** the governor's splat budget at that step, millions (the top at step 0) */
+    governorBudgetM: number;
+    /** the Quality setting's cap on the splat budget, millions (the top at full detail; Quality.settingBudgetMillions) */
+    settingBudgetM: number;
     /** late frames the governor did not count because the scan was streaming */
     streamHitches: number;
 }
@@ -34,6 +38,8 @@ export function lodReport(ctx: Pick<FlightContext, 'renderer' | 'session' | 'qua
         renderScale: ctx.renderer.renderScale,
         topBudgetM: g.topBudgetMillions,
         governorStep: g.step,
+        governorBudgetM: g.current.splatBudgetMillions,
+        settingBudgetM: ctx.quality.settingBudgetMillions,
         streamHitches: g.streamHitches
     };
 }
@@ -43,12 +49,28 @@ function millions(m: number): string {
     return m < 10 ? (Math.round(m * 10) / 10).toFixed(1) : String(Math.round(m));
 }
 
+/**
+ * What holds the splat budget below the top, if anything (Quality.apply draws the smaller of the two):
+ * 'governor' when the governor has stepped down and its budget is the smaller, 'setting' when the
+ * pilot's Quality setting (Stable frame <-> detail) caps it, null at the top or in cinema mode (which
+ * draws above the top on purpose).
+ */
+export function budgetLimit(r: LodReport): 'governor' | 'setting' | null {
+    const EPS = 1e-6;
+    if (r.mode === 'final' || r.budgetM >= r.topBudgetM - EPS) return null;
+    if (r.governorStep > 0 && r.governorBudgetM <= r.settingBudgetM + EPS) return 'governor';
+    if (r.settingBudgetM < r.topBudgetM - EPS) return 'setting';
+    return null;
+}
+
 /** The F3 line about the levels of detail (i18n lod.*, packages/i18n/locales/fly/lod). */
 export function lodLine(r: LodReport, say: Say): string {
     const vars = { levels: r.levels, drawn: millions(r.drawn / 1e6), budget: millions(r.budgetM), scale: Math.round(r.renderScale * 100) };
     let s = say(`lod.line.${r.mode}`, vars);
-    // the governor lowered the budget to hold the frame rate: say from what
-    if (r.mode !== 'final' && r.budgetM < r.topBudgetM - 1e-6) s += ` ${say('lod.lowered', { top: millions(r.topBudgetM) })}`;
+    // below the top: say from what, and who lowered it (the governor, or the pilot's own setting)
+    const limit = budgetLimit(r);
+    if (limit === 'governor') s += ` ${say('lod.lowered', { top: millions(r.topBudgetM) })}`;
+    if (limit === 'setting') s += ` ${say('lod.capped', { top: millions(r.topBudgetM) })}`;
     if (r.contentFailures.length > 0) s += ` ${say('lod.fallback')}`;
     return s;
 }

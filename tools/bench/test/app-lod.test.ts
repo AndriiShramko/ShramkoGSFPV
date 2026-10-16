@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { lodLine, lodReport } from '../../../apps/fly/src/app/lod';
+import { budgetLimit, lodLine, lodReport } from '../../../apps/fly/src/app/lod';
 import type { LodReport, Say } from '../../../apps/fly/src/app/lod';
 import { REPO } from '../src/evidence';
 
@@ -18,8 +18,11 @@ const EN = sayIn(dict('en'));
 
 const base: LodReport = {
     kind: 'lod-meta', levels: 10, range: [0, 9], mode: 'auto', drawn: 3_923_895, budgetM: 4, loading: 0,
-    contentUrl: 'https://cdn/ba7aa29d/v1/lod-meta.json', contentFailures: [], renderScale: 1, topBudgetM: 4, governorStep: 0, streamHitches: 0
+    contentUrl: 'https://cdn/ba7aa29d/v1/lod-meta.json', contentFailures: [], renderScale: 1, topBudgetM: 4, governorStep: 0, governorBudgetM: 4, settingBudgetM: 4, streamHitches: 0
 };
+
+/** The rule before review R4: any budget below the top was the governor's lowering. */
+const loweredBefore = (r: LodReport): boolean => r.mode !== 'final' && r.budgetM < r.topBudgetM - 1e-6;
 
 describe('lodLine', () => {
     it('the streamed city scan at full quality: levels, how they are chosen, splats of the budget, resolution', () => {
@@ -35,11 +38,29 @@ describe('lodLine', () => {
     });
 
     it('the governor lowered the drawing: from what it was lowered is said; control: at the top nothing is', () => {
-        const low = lodLine({ ...base, budgetM: 2, renderScale: 0.6, governorStep: 3 }, EN);
+        const low = lodLine({ ...base, budgetM: 2, renderScale: 0.6, governorStep: 3, governorBudgetM: 2 }, EN);
         expect(low).toMatch(/of 2\.0 M splats · 60 % resolution · lowered from 4\.0 M to hold the frame rate$/);
-        expect(lodLine(base, EN)).not.toMatch(/lowered/);
+        expect(lodLine(base, EN)).not.toMatch(/lowered|kept below/);
         // cinema draws above the top on purpose: not a lowering either way
-        expect(lodLine({ ...base, mode: 'final', budgetM: 16 }, EN)).not.toMatch(/lowered/);
+        expect(lodLine({ ...base, mode: 'final', budgetM: 16 }, EN)).not.toMatch(/lowered|kept below/);
+    });
+
+    it('review R4: the pilot\'s Quality setting lowered the budget, the governor is at the top: the setting is named, not the governor', () => {
+        // Quality at 0.5: the cap is 4 * (0.25 + 0.75 * 0.5) = 2.5 M; the governor is at step 0 (4 M)
+        const own: LodReport = { ...base, budgetM: 2.5, renderScale: 0.75, governorStep: 0, governorBudgetM: 4, settingBudgetM: 2.5 };
+        expect(budgetLimit(own)).toBe('setting');
+        expect(lodLine(own, EN)).toMatch(/of 2\.5 M splats · 75 % resolution · kept below 4\.0 M by the setting Stable frame ↔ detail$/);
+        expect(lodLine(own, EN)).not.toMatch(/frame rate/);
+        // control: the rule before the fix blamed the governor for the same report
+        expect(loweredBefore(own)).toBe(true);
+    });
+
+    it('review R4: both lowered it, the smaller budget is the one on screen and says who', () => {
+        // the governor's step 3 (2 M) under a 2.5 M setting: the governor's budget is drawn
+        expect(budgetLimit({ ...base, budgetM: 2, governorStep: 3, governorBudgetM: 2, settingBudgetM: 2.5 })).toBe('governor');
+        // the governor's step 1 (3 M) above a 2.5 M setting: the setting's budget is drawn
+        expect(budgetLimit({ ...base, budgetM: 2.5, governorStep: 1, governorBudgetM: 3, settingBudgetM: 2.5 })).toBe('setting');
+        expect(budgetLimit(base)).toBeNull();
     });
 
     it('a broken lod-meta.json and the single file shown instead is said; control: no failure, no words', () => {
@@ -70,8 +91,8 @@ describe('lodReport', () => {
         const ctx = {
             renderer: { renderScale: 0.85, lodState: () => ({ kind: 'lod-meta' as const, levels: 10, range: [0, 9] as [number, number], mode: 'auto' as const, drawn: 2_000_000, budgetM: 3, loading: 4 }) },
             session: { scene: { contentUrl: 'u/lod-meta.json' }, contentFailures: [] },
-            quality: { governor: { topBudgetMillions: 4, step: 1, streamHitches: 7 } }
+            quality: { governor: { topBudgetMillions: 4, step: 1, streamHitches: 7, current: { renderScale: 0.85, splatBudgetMillions: 3 } }, settingBudgetMillions: 4 }
         } as unknown as Parameters<typeof lodReport>[0];
-        expect(lodReport(ctx)).toEqual({ kind: 'lod-meta', levels: 10, range: [0, 9], mode: 'auto', drawn: 2_000_000, budgetM: 3, loading: 4, contentUrl: 'u/lod-meta.json', contentFailures: [], renderScale: 0.85, topBudgetM: 4, governorStep: 1, streamHitches: 7 });
+        expect(lodReport(ctx)).toEqual({ kind: 'lod-meta', levels: 10, range: [0, 9], mode: 'auto', drawn: 2_000_000, budgetM: 3, loading: 4, contentUrl: 'u/lod-meta.json', contentFailures: [], renderScale: 0.85, topBudgetM: 4, governorStep: 1, governorBudgetM: 3, settingBudgetM: 4, streamHitches: 7 });
     });
 });

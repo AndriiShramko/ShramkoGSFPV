@@ -4,5 +4,6 @@
   "lod.line.final": "Poziomy szczegółów: {levels}, najdokładniejszy wszędzie (tryb kinowy) · {drawn} z {budget} mln splatów · rozdzielczość {scale} %",
   "lod.line.single": "Jeden poziom szczegółów (ten skan nie ma innych) · {drawn} z {budget} mln splatów · rozdzielczość {scale} %",
   "lod.lowered": "· obniżono z {top} mln, aby utrzymać płynność",
+  "lod.capped": "· poniżej {top} mln przez ustawienie Płynność ↔ szczegóły",
   "lod.fallback": "· plik strumieniowy się nie otworzył, pokazano pojedynczy plik"
 }

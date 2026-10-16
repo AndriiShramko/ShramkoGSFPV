@@ -4,5 +4,6 @@
   "lod.line.final": "Niveles de detalle: {levels}, el más fino en todas partes (modo cine) · {drawn} de {budget} M de splats · resolución {scale} %",
   "lod.line.single": "Un solo nivel de detalle (este escaneo no tiene otros) · {drawn} de {budget} M de splats · resolución {scale} %",
   "lod.lowered": "· reducido desde {top} M para mantener la fluidez",
+  "lod.capped": "· por debajo de {top} M por el ajuste Fluidez ↔ detalle",
   "lod.fallback": "· el archivo por niveles no se abrió, se muestra el archivo único"
 }
