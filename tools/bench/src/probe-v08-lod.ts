@@ -68,6 +68,7 @@ const STATE = `(() => {
         lodLevels: oct ? oct.lodLevels : null, rangeMin: comp ? comp.lodRangeMin : null, rangeMax: comp ? comp.lodRangeMax : null,
         budgetM: g.splatBudget / 1e6, budgetMode: g.splatBudgetMode, stochastic: g.stochastic === true, rendererKind: g.currentRenderer,
         governorStep: gov ? gov.step : null, governorTopM: gov ? gov.topBudgetMillions : null, governorChanges: gov ? gov.changes : null,
+        governorPeriodMs: gov ? Math.round(gov.displayPeriodMs * 10) / 10 : null, governorHitches: gov ? gov.streamHitches : null,
         renderScale: r.renderScale, backbuffer: [a.graphicsDevice.width, a.graphicsDevice.height],
         drawn: a.stats.frame.gsplats, loading: r.splatFrame.loading, ready: r.splatFrame.ready,
         splatsPerLevel: perLevel, nodes, nodesUnloaded: unloaded, engineDebug: dbg,
@@ -131,7 +132,7 @@ async function main(): Promise<void> {
     for (let i = 0; i < SETTLE_S; i++) {
         await page.waitForTimeout(1000);
         const x: Any = await page.evaluate(STATE);
-        samples.push({ s: i + 1, budgetM: x.budgetM, step: x.governorStep, scale: x.renderScale, drawn: x.drawn, loading: x.loading, perLevel: x.splatsPerLevel, vramMB: x.vramMB, jsHeapMB: x.jsHeapMB });
+        samples.push({ s: i + 1, budgetM: x.budgetM, step: x.governorStep, periodMs: x.governorPeriodMs, hitches: x.governorHitches, scale: x.renderScale, drawn: x.drawn, loading: x.loading, perLevel: x.splatsPerLevel, vramMB: x.vramMB, jsHeapMB: x.jsHeapMB });
     }
     const fps = await page.evaluate(FPS(5000));
     const end: Any = await page.evaluate(STATE);

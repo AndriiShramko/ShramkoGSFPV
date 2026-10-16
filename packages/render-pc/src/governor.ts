@@ -18,6 +18,9 @@ export const MISSED_PERIODS = 1.25;
  */
 export const MAX_HITCH_SHARE = 1 / 3;
 
+/** Frame intervals the display period is learned from before the governor judges any frame (2 s at 30 Hz). */
+export const PERIOD_MIN_SAMPLES = 60;
+
 export interface QualityStep {
     renderScale: number; // backbuffer / CSS pixels * devicePixelRatio
     splatBudgetMillions: number;
@@ -41,6 +44,8 @@ export interface GovernorOptions {
     downMissRatio: number; // step down above this share of missed frames
     upWindowMs: number; // a calm period this long before stepping up
     upMissRatio: number; // ... with at most this share of missed frames
+    /** frame intervals the display period is learned from before any frame is judged (PERIOD_MIN_SAMPLES) */
+    periodMinSamples?: number;
 }
 
 export const DEFAULT_GOVERNOR: GovernorOptions = { downWindowMs: 1000, downMissRatio: 0.1, upWindowMs: 5000, upMissRatio: 0.01 };
@@ -54,12 +59,27 @@ export class DisplayPeriod {
     private dts: { t: number; dt: number }[] = [];
     private sinceSort = 0;
     ms = Infinity;
+    private readonly minSamples: number;
+
+    constructor(minSamples = PERIOD_MIN_SAMPLES) {
+        this.minSamples = minSamples;
+    }
+
+    /**
+     * Enough intervals to trust the period (PERIOD_MIN_SAMPLES). Before that the estimate is a few
+     * intervals' 5th percentile, i.e. their smallest: measured on ba7aa29d, the first intervals after a
+     * reveal taught 9-16 ms on a 30 Hz display, and every on-time frame then read as missed.
+     */
+    get learned(): boolean {
+        return this.dts.length >= this.minSamples;
+    }
 
     /** One frame interval `dt` ending at `t` (both ms). */
     add(t: number, dt: number): void {
         this.dts.push({ t, dt });
         while (this.dts.length && t - this.dts[0].t > 30000) this.dts.shift();
-        if (this.ms === Infinity || ++this.sinceSort >= 30) {
+        // every frame while learning (few samples, cheap), then every 30 frames
+        if (this.ms === Infinity || !this.learned || ++this.sinceSort >= 30) {
             this.sinceSort = 0;
             const s = this.dts.map((x) => x.dt).sort((a, b) => a - b);
             this.ms = s[Math.floor(0.05 * (s.length - 1))];
@@ -76,7 +96,7 @@ export class FrameGovernor {
     /** the constructor's steps: setTopBudget scales their budgets */
     private readonly base: QualityStep[];
     private last = -1;
-    private period = new DisplayPeriod();
+    private period: DisplayPeriod;
     /** each frame: missed (counted) or a streaming hitch (counted only above MAX_HITCH_SHARE) */
     private log: { t: number; missed: boolean; hitch: boolean }[] = [];
     private lastChange = -Infinity;
@@ -85,11 +105,14 @@ export class FrameGovernor {
     streamHitches = 0;
     /** the previous frame reported streaming: its work can make this interval late */
     private streamedBefore = false;
+    /** the display period is learned and frames are judged (see onFrame) */
+    private judging = false;
 
     constructor(steps: QualityStep[] = DEFAULT_STEPS, opts: GovernorOptions = DEFAULT_GOVERNOR) {
         this.base = steps;
         this.steps = steps.map((s) => ({ ...s }));
         this.opts = opts;
+        this.period = new DisplayPeriod(opts.periodMinSamples ?? PERIOD_MIN_SAMPLES);
     }
 
     get current(): QualityStep {
@@ -138,10 +161,7 @@ export class FrameGovernor {
      */
     onFrame(t: number, excused = false, held = false, streamed = false): QualityStep | null {
         if (this.last < 0) {
-            // the first frame starts the clock as a change would: a share of missed frames needs a
-            // whole window of frames (four frames after a reveal are not "a second of frames")
             this.last = t;
-            this.lastChange = t;
             this.streamedBefore = streamed;
             return null;
         }
@@ -152,6 +172,14 @@ export class FrameGovernor {
         if (excused) return null;
         if (dt <= 0 || dt > 1000) return null; // paused tab, debugger: not a frame-rate signal
         this.period.add(t, dt);
+        // a frame is late only against a display period learned from enough frames
+        if (!this.period.learned) return null;
+        // the first judged frame starts the clock as a change would: a share of missed frames needs a
+        // whole window of judged frames (one held frame among the first four is not "25 % of a second")
+        if (!this.judging) {
+            this.judging = true;
+            this.lastChange = t;
+        }
         const period = this.period.ms;
         // 1.25 periods: a frame that took ~1.4 periods already makes the display repeat one (a 45 ms
         // frame on a 30 Hz screen); 1.5 let a steady 22 fps pass as 'on time'

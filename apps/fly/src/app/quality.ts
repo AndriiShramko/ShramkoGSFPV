@@ -86,6 +86,10 @@ export class Quality {
         // streamer's work, not a GPU that cannot draw the budget (governor.ts onFrame, v0.8 item 8)
         const streamed = this.renderer.streamTicks !== this.streamSeen;
         this.streamSeen = this.renderer.streamTicks;
-        if (!this.cinemaOn && this.governor.onFrame(now, this.renderer.frameAfterSkip, held, streamed)) this.apply();
+        // the governor's clock is the frame's rAF timestamp (the display's frame time), not the moment
+        // this code runs: late work shows as whole skipped periods, and the short catch-up interval
+        // after a late callback (5.5 ms after a 120 ms one, measured on ba7aa29d) never teaches it a
+        // display period of 9-13 ms, which made every on-time frame "missed" (docs/wip/v08-c.md)
+        if (!this.cinemaOn && this.governor.onFrame(this.renderer.frameTime, this.renderer.frameAfterSkip, held, streamed)) this.apply();
     }
 }
