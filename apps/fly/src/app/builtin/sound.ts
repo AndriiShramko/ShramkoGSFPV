@@ -7,10 +7,12 @@
 //    written: the A6 hash and the input path are untouched), the pause, the tab, the settings.
 //  - Silent when disarmed, crashed, paused, in a menu, the tab hidden, or sound.motors off; the
 //    context sleeps while the tab is hidden or the sound is off.
-//  - The pause menu's "Motor sound: on / off" flips sound.motors; Settings -> Sound has it and the volume.
+//  - The pause menu's "Motor sound: on / off" and the speaker on the top bar (v0.8) flip sound.motors;
+//    Settings -> Sound has it and the volume (15 % by default since v0.8: prefs defs/sound.ts).
 // Not in recordings (the recorder writes video only).
 import { S } from '@gsfpv/sim-core';
 import { t } from '../../i18n';
+import { h } from '../../ui/dom';
 import { PRESETS } from '../../presets';
 import { MotorSound, bladesOf, motorMix } from '../../audio/motor-sound';
 import type { AudioLike, Mix, MotorState } from '../../audio/motor-sound';
@@ -21,6 +23,31 @@ declare module '../test-hook' {
     interface TestHook {
         sound?: () => { context: string | null; mix: Mix | null; blades: number };
     }
+}
+
+/**
+ * A speaker drawn as SVG (an emoji glyph turns colourful on some systems, see top.ts's gear): with
+ * sound waves when the motors are heard, crossed out when the sound is off.
+ */
+function speakerIcon(on: boolean): SVGSVGElement {
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('width', '20');
+    svg.setAttribute('height', '20');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    const body = document.createElementNS(NS, 'path');
+    body.setAttribute('fill', 'currentColor');
+    body.setAttribute('d', 'M4 9h4l5-4v14l-5-4H4z');
+    const mark = document.createElementNS(NS, 'path');
+    mark.setAttribute('fill', 'none');
+    mark.setAttribute('stroke', 'currentColor');
+    mark.setAttribute('stroke-width', '2');
+    mark.setAttribute('stroke-linecap', 'round');
+    mark.setAttribute('d', on ? 'M16 9.5a3.5 3.5 0 0 1 0 5M18.5 7a7 7 0 0 1 0 10' : 'M16 9l5 6M21 9l-5 6');
+    svg.append(body, mark);
+    return svg;
 }
 
 /** The flight model's numbers the sound follows, or null before there is one. */
@@ -109,6 +136,23 @@ export const sound: Feature = {
             run: () => ctx.prefs.set('sound.motors', !enabled()),
             label: () => t(enabled() ? 'sound.menu.on' : 'sound.menu.off')
         });
+
+        // v0.8 (the owner's message 21, item 3): the quick mute on the top bar, one tap on a phone
+        // (no keyboard there) and one click on a computer; it flips sound.motors like the pause menu
+        const speakerBtn = h('button', { type: 'button', class: 'btn icon speaker', 'data-action': 'sound-toggle', onclick: () => ctx.prefs.set('sound.motors', !enabled()) });
+        const drawSpeaker = (): void => {
+            const on = enabled();
+            const label = t(on ? 'sound.menu.on' : 'sound.menu.off');
+            speakerBtn.setAttribute('aria-label', label);
+            speakerBtn.title = label;
+            speakerBtn.setAttribute('aria-pressed', String(!on));
+            speakerBtn.classList.toggle('muted', !on);
+            speakerBtn.replaceChildren(speakerIcon(on));
+        };
+        drawSpeaker();
+        // the row is built by the top-actions feature, installed before this one: first in the row
+        ctx.ui.querySelector(':scope > .top-actions')?.prepend(speakerBtn);
+        ctx.prefs.onChange((c) => { if (c.id === 'sound.motors') drawSpeaker(); });
         ctx.hook.sound = () => ({ context: graph ? graph.ac.state : null, mix: last, blades });
     }
 };

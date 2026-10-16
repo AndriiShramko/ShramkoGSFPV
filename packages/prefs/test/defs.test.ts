@@ -65,7 +65,7 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['crosshair.color', 'display', 'global', 'enum', 'green', 'live'],
     ['crosshair.opacity', 'display', 'global', 'number', 0.8, 'live'],
     ['sound.motors', 'sound', 'global', 'bool', true, 'live'],
-    ['sound.volume', 'sound', 'global', 'number', 40, 'live'],
+    ['sound.volume', 'sound', 'global', 'number', 15, 'live'],
     ['input.stickMode', 'input', 'global', 'enum', '2', 'live'],
     ['drone.current', 'drone', 'global', 'enum', 'pavo20pro-3s', 'life'],
     ['physics.gravity', 'drone', 'global', 'number', 9.81, 'life'],
