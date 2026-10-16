@@ -7,15 +7,15 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-16T14:32:36.503Z",
-    "gitHead": "70bd8b6",
-    "gitDirty": true,
+    "date": "2026-10-16T15:17:02.886Z",
+    "gitHead": "dfb8f5c",
+    "gitDirty": false,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "pass": true,
-  "site": "http://localhost:5391",
+  "site": "http://localhost:5398",
   "scene": "39e63ce9",
   "D1": {
     "pass": true,
@@ -69,9 +69,37 @@
       "kindChecked": "true",
       "drone": "machr5sport-6s"
     },
+    "hover": {
+      "cine": [
+        41,
+        53
+      ],
+      "pavo": [
+        28,
+        39
+      ]
+    },
     "control": {
-      "tuneButtonsBeforeThePicker": 0,
-      "fired": true
+      "withoutTune": {
+        "cards": 9,
+        "tuneButtons": 0,
+        "note": false,
+        "form": null
+      },
+      "otherCard": {
+        "cards": 9,
+        "tuneButtons": 9,
+        "note": true,
+        "form": {
+          "pickerGone": true,
+          "kindChecked": "true",
+          "drone": "nazgulf5v3-6s"
+        }
+      },
+      "fired": {
+        "withoutTune": true,
+        "otherCard": true
+      }
     }
   },
   "D3": {
@@ -79,13 +107,13 @@
     "id": "R-20261016-0001",
     "record": {
       "id": "R-20261016-0001",
-      "ts": "2026-10-16T14:32:29Z",
+      "ts": "2026-10-16T15:16:56Z",
       "site": "gsfpv",
       "kind": "drone",
       "page": "fly",
       "locale": "en",
       "scene": "39e63ce9",
-      "release": "70bd8b6",
+      "release": "dfb8f5c",
       "message": "Hover throttle feels lower than on my real one [v08-d acceptance]",
       "contact": "",
       "suspect": false,
@@ -108,6 +136,22 @@
       "Drone physics: machr5sport-6s",
       "Blackbox log: https://drive.example.com/file/d/v08d/view",
       "Betaflight text / simulator settings: in the technical details file"
+    ],
+    "sentLine": "Sent: the drone, what you write and paste here, your e-mail if you leave one, the scene you fly, and the simulator's version and language. With the box ticked, also the settings you changed for this drone, the flight mode, and the input you fly with (radio, gamepad, keyboard or touch).",
+    "bodyKeys": [
+      "kind",
+      "message",
+      "contact",
+      "locale",
+      "page",
+      "scene",
+      "release",
+      "t",
+      "hp",
+      "drone",
+      "logUrl",
+      "betaflight",
+      "settings"
     ],
     "control": {
       "badLinkRefusedBeforeSending": true,
