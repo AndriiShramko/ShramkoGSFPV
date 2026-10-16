@@ -79,7 +79,7 @@ p.on('pageerror', (e) => log.push(`pageerror: ${e.message}`.slice(0, 300)));
 p.on('console', (m) => { if (m.type() === 'error') log.push(`console: ${m.text()}`.slice(0, 300)); });
 
 try {
-    await p.goto(fly(`scene=${SCENE}&nowarn=1&input=touch`));
+    await p.goto(fly(`scene=${SCENE}&nowarn=1&input=touch&set.input.play=pilot`));
     await waitReady(p, 240000);
     await hook(p, 'await s.visible; return 0;');
 

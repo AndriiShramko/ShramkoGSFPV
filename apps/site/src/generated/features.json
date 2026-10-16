@@ -3,14 +3,14 @@
  "schemaVersion": 2,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
-  "settings": 64,
+  "settings": 67,
   "groups": 11,
   "drones": 9,
   "modes": 3,
-  "keys": 22,
+  "keys": 23,
   "rateTypes": 5,
-  "flyingKeys": 10,
-  "allKeys": 30
+  "flyingKeys": 13,
+  "allKeys": 34
  },
  "locales": {
   "en": {
@@ -559,7 +559,7 @@
        "label": "Volume",
        "help": "How loud the motors are.",
        "type": "number",
-       "default": "40 %",
+       "default": "15 %",
        "range": "0\u2013100 %",
        "scope": "global",
        "apply": "live",
@@ -595,6 +595,60 @@
        ],
        "shown": [
         "controls"
+       ]
+      },
+      {
+       "id": "input.play",
+       "label": "How touch and keyboard fly",
+       "help": "Easy play: no arming (the first stick or key starts the motors), the drone holds its height, keys like a game (W A S D move, arrows turn and climb), and a pilot school that takes the help away step by step. Pilot: as a radio \u2014 the ARM button or Space, a throttle that stays where you leave it, Mode 2 keys (W/S throttle, A/D yaw, arrows pitch and roll). A radio or a gamepad always flies as a radio.",
+       "type": "enum",
+       "default": "Easy play",
+       "range": "Easy play / Pilot (as a radio)",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Easy play",
+        "Pilot (as a radio)"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.altitudeHelp",
+       "label": "Altitude help (easy play)",
+       "help": "The drone holds its height by itself; up and down (the arrows, or the left stick on a touch screen) climb and sink at a steady speed. Works in angle mode only: horizon and acro can flip, and there your throttle flies. Step 1 of the pilot school.",
+       "type": "bool",
+       "default": "On",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.haptics",
+       "label": "Vibrate on a crash",
+       "help": "A short buzz when you crash with the touch sticks, on phones that allow it (most Android phones; not iPhone).",
+       "type": "bool",
+       "default": "On",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
        ]
       }
      ]
@@ -1439,36 +1493,56 @@
      "keys": [
       "L"
      ]
+    },
+    {
+     "action": "help.keys",
+     "label": "Keyboard keys (show / hide)",
+     "keys": [
+      "K"
+     ]
     }
    ],
    "flying": [
     {
-     "label": "arm / disarm",
-     "keys": [
-      "Space"
-     ]
-    },
-    {
-     "label": "throttle up / down, stays where you leave it",
+     "label": "forward / back",
      "keys": [
       "W",
       "S"
      ]
     },
     {
-     "label": "yaw: turn left / right",
+     "label": "left / right",
      "keys": [
       "A",
       "D"
      ]
     },
     {
-     "label": "pitch and roll: tilt",
+     "label": "turn left / right",
+     "keys": [
+      "\u2190",
+      "\u2192",
+      "Q",
+      "E"
+     ]
+    },
+    {
+     "label": "up / down (with altitude help; without it, the throttle, which stays where you leave it)",
      "keys": [
       "\u2191",
-      "\u2193",
-      "\u2190",
-      "\u2192"
+      "\u2193"
+     ]
+    },
+    {
+     "label": "hold: faster",
+     "keys": [
+      "Shift"
+     ]
+    },
+    {
+     "label": "tap: motors on; hold half a second: motors off (easy play; pilot keys: arm / disarm)",
+     "keys": [
+      "Space"
      ]
     },
     {
@@ -2396,7 +2470,7 @@
        "label": "Volumen",
        "help": "Lo fuerte que suenan los motores.",
        "type": "number",
-       "default": "40 %",
+       "default": "15 %",
        "range": "0\u2013100 %",
        "scope": "global",
        "apply": "live",
@@ -2432,6 +2506,60 @@
        ],
        "shown": [
         "controls"
+       ]
+      },
+      {
+       "id": "input.play",
+       "label": "C\u00f3mo vuelan la pantalla t\u00e1ctil y el teclado",
+       "help": "Juego f\u00e1cil: sin armar (el primer stick o tecla arranca los motores), el dron mantiene la altura, teclas como en un juego (W A S D para moverse, flechas para girar y subir) y una escuela de pilotos que retira la ayuda paso a paso. Piloto: como una emisora: el bot\u00f3n ARMAR o Espacio, un acelerador que se queda donde lo dejas, teclas en Modo 2 (W/S acelerador, A/D gui\u00f1ada, flechas cabeceo y alabeo). Una emisora o un mando siempre vuela como una emisora.",
+       "type": "enum",
+       "default": "Juego f\u00e1cil",
+       "range": "Juego f\u00e1cil / Piloto (como una emisora)",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Juego f\u00e1cil",
+        "Piloto (como una emisora)"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.altitudeHelp",
+       "label": "Ayuda de altura (juego f\u00e1cil)",
+       "help": "El dron mantiene la altura solo; arriba y abajo (las flechas, o el stick izquierdo en una pantalla t\u00e1ctil) suben y bajan a velocidad constante. Solo funciona en el modo angle: en horizon y acro el dron puede dar la vuelta, y ah\u00ed vuela tu acelerador. Paso 1 de la escuela de pilotos.",
+       "type": "bool",
+       "default": "Activado",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.haptics",
+       "label": "Vibrar al chocar",
+       "help": "Una vibraci\u00f3n corta cuando chocas con los sticks t\u00e1ctiles, en los tel\u00e9fonos que lo permiten (la mayor\u00eda de Android; no iPhone).",
+       "type": "bool",
+       "default": "Activado",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
        ]
       }
      ]
@@ -3276,36 +3404,56 @@
      "keys": [
       "L"
      ]
+    },
+    {
+     "action": "help.keys",
+     "label": "Teclas del teclado (mostrar / ocultar)",
+     "keys": [
+      "K"
+     ]
     }
    ],
    "flying": [
     {
-     "label": "armar / desarmar",
-     "keys": [
-      "Espacio"
-     ]
-    },
-    {
-     "label": "acelerador arriba / abajo, se queda donde lo dejas",
+     "label": "adelante / atr\u00e1s",
      "keys": [
       "W",
       "S"
      ]
     },
     {
-     "label": "gui\u00f1ada: girar a la izquierda / derecha",
+     "label": "izquierda / derecha",
      "keys": [
       "A",
       "D"
      ]
     },
     {
-     "label": "cabeceo y alabeo: inclinar",
+     "label": "girar a la izquierda / derecha",
+     "keys": [
+      "\u2190",
+      "\u2192",
+      "Q",
+      "E"
+     ]
+    },
+    {
+     "label": "subir / bajar (con la ayuda de altura; sin ella, el acelerador, que se queda donde lo dejas)",
      "keys": [
       "\u2191",
-      "\u2193",
-      "\u2190",
-      "\u2192"
+      "\u2193"
+     ]
+    },
+    {
+     "label": "mantener: m\u00e1s r\u00e1pido",
+     "keys": [
+      "Shift"
+     ]
+    },
+    {
+     "label": "toque: encender los motores; mantener medio segundo: apagarlos (juego f\u00e1cil; teclas de piloto: armar / desarmar)",
+     "keys": [
+      "Espacio"
      ]
     },
     {
@@ -4233,7 +4381,7 @@
        "label": "G\u0142o\u015bno\u015b\u0107",
        "help": "Jak g\u0142o\u015bno graj\u0105 silniki.",
        "type": "number",
-       "default": "40 %",
+       "default": "15 %",
        "range": "0\u2013100 %",
        "scope": "global",
        "apply": "live",
@@ -4269,6 +4417,60 @@
        ],
        "shown": [
         "controls"
+       ]
+      },
+      {
+       "id": "input.play",
+       "label": "Jak lataj\u0105 ekran dotykowy i klawiatura",
+       "help": "\u0141atwa gra: bez uzbrajania (pierwszy dr\u0105\u017cek lub klawisz uruchamia silniki), dron sam trzyma wysoko\u015b\u0107, klawisze jak w grze (W A S D ruch, strza\u0142ki obr\u00f3t i wznoszenie) i szko\u0142a pilot\u00f3w, kt\u00f3ra krok po kroku zabiera pomoc. Pilot: jak z aparatury \u2014 przycisk UZBR\u00d3J lub Spacja, gaz zostaje tam, gdzie go zostawisz, klawisze w Mode 2 (W/S gaz, A/D odchylenie, strza\u0142ki pochylenie i przechy\u0142). Aparatura lub pad zawsze lata jak aparatura.",
+       "type": "enum",
+       "default": "\u0141atwa gra",
+       "range": "\u0141atwa gra / Pilot (jak z aparatury)",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "\u0141atwa gra",
+        "Pilot (jak z aparatury)"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.altitudeHelp",
+       "label": "Pomoc wysoko\u015bci (\u0142atwa gra)",
+       "help": "Dron sam trzyma wysoko\u015b\u0107; g\u00f3ra i d\u00f3\u0142 (strza\u0142ki albo lewy dr\u0105\u017cek na ekranie dotykowym) wznosz\u0105 i opuszczaj\u0105 ze sta\u0142\u0105 pr\u0119dko\u015bci\u0105. Dzia\u0142a tylko w trybie angle: w horizon i acro dron mo\u017ce si\u0119 przewr\u00f3ci\u0107, tam leci tw\u00f3j gaz. Krok 1 szko\u0142y pilot\u00f3w.",
+       "type": "bool",
+       "default": "W\u0142\u0105czone",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.haptics",
+       "label": "Wibracja przy kraksie",
+       "help": "Kr\u00f3tka wibracja, gdy zaliczysz kraks\u0119 na dr\u0105\u017ckach dotykowych, w telefonach, kt\u00f3re na to pozwalaj\u0105 (wi\u0119kszo\u015b\u0107 Android\u00f3w; nie iPhone).",
+       "type": "bool",
+       "default": "W\u0142\u0105czone",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
        ]
       }
      ]
@@ -5113,36 +5315,56 @@
      "keys": [
       "L"
      ]
+    },
+    {
+     "action": "help.keys",
+     "label": "Klawisze klawiatury (poka\u017c / ukryj)",
+     "keys": [
+      "K"
+     ]
     }
    ],
    "flying": [
     {
-     "label": "uzbr\u00f3j / rozbr\u00f3j",
-     "keys": [
-      "Spacja"
-     ]
-    },
-    {
-     "label": "gaz w g\u00f3r\u0119 / w d\u00f3\u0142, zostaje tam, gdzie go zostawisz",
+     "label": "do przodu / do ty\u0142u",
      "keys": [
       "W",
       "S"
      ]
     },
     {
-     "label": "odchylenie: obr\u00f3t w lewo / w prawo",
+     "label": "w lewo / w prawo",
      "keys": [
       "A",
       "D"
      ]
     },
     {
-     "label": "pochylenie i przechy\u0142: przechylanie",
+     "label": "obr\u00f3t w lewo / w prawo",
+     "keys": [
+      "\u2190",
+      "\u2192",
+      "Q",
+      "E"
+     ]
+    },
+    {
+     "label": "w g\u00f3r\u0119 / w d\u00f3\u0142 (z pomoc\u0105 wysoko\u015bci; bez niej gaz, kt\u00f3ry zostaje tam, gdzie go zostawisz)",
      "keys": [
       "\u2191",
-      "\u2193",
-      "\u2190",
-      "\u2192"
+      "\u2193"
+     ]
+    },
+    {
+     "label": "przytrzymaj: szybciej",
+     "keys": [
+      "Shift"
+     ]
+    },
+    {
+     "label": "stuknij: w\u0142\u0105cz silniki; przytrzymaj p\u00f3\u0142 sekundy: wy\u0142\u0105cz (\u0142atwa gra; klawisze pilota: uzbr\u00f3j / rozbr\u00f3j)",
+     "keys": [
+      "Spacja"
      ]
     },
     {
@@ -6070,7 +6292,7 @@
        "label": "\u0413\u0440\u043e\u043c\u043a\u043e\u0441\u0442\u044c",
        "help": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0433\u0440\u043e\u043c\u043a\u043e \u0437\u0432\u0443\u0447\u0430\u0442 \u043c\u043e\u0442\u043e\u0440\u044b.",
        "type": "number",
-       "default": "40 %",
+       "default": "15 %",
        "range": "0\u2013100 %",
        "scope": "global",
        "apply": "live",
@@ -6106,6 +6328,60 @@
        ],
        "shown": [
         "controls"
+       ]
+      },
+      {
+       "id": "input.play",
+       "label": "\u041a\u0430\u043a \u043b\u0435\u0442\u0430\u044e\u0442 \u0441\u0435\u043d\u0441\u043e\u0440\u043d\u044b\u0439 \u044d\u043a\u0440\u0430\u043d \u0438 \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u0430",
+       "help": "\u041b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430: \u0431\u0435\u0437 \u0430\u0440\u043c\u0430 (\u043f\u0435\u0440\u0432\u044b\u0439 \u0441\u0442\u0438\u043a \u0438\u043b\u0438 \u043a\u043b\u0430\u0432\u0438\u0448\u0430 \u0437\u0430\u043f\u0443\u0441\u043a\u0430\u0435\u0442 \u043c\u043e\u0442\u043e\u0440\u044b), \u0434\u0440\u043e\u043d \u0441\u0430\u043c \u0434\u0435\u0440\u0436\u0438\u0442 \u0432\u044b\u0441\u043e\u0442\u0443, \u043a\u043b\u0430\u0432\u0438\u0448\u0438 \u043a\u0430\u043a \u0432 \u0438\u0433\u0440\u0435 (W A S D \u2014 \u0434\u0432\u0438\u0436\u0435\u043d\u0438\u0435, \u0441\u0442\u0440\u0435\u043b\u043a\u0438 \u2014 \u043f\u043e\u0432\u043e\u0440\u043e\u0442 \u0438 \u0432\u044b\u0441\u043e\u0442\u0430) \u0438 \u0448\u043a\u043e\u043b\u0430 \u043f\u0438\u043b\u043e\u0442\u043e\u0432, \u043a\u043e\u0442\u043e\u0440\u0430\u044f \u0448\u0430\u0433 \u0437\u0430 \u0448\u0430\u0433\u043e\u043c \u0443\u0431\u0438\u0440\u0430\u0435\u0442 \u043f\u043e\u043c\u043e\u0449\u044c. \u041f\u0438\u043b\u043e\u0442: \u043a\u0430\u043a \u0441 \u0430\u043f\u043f\u0430\u0440\u0430\u0442\u0443\u0440\u044b \u2014 \u043a\u043d\u043e\u043f\u043a\u0430 \u0410\u0420\u041c \u0438\u043b\u0438 \u041f\u0440\u043e\u0431\u0435\u043b, \u0433\u0430\u0437 \u043e\u0441\u0442\u0430\u0451\u0442\u0441\u044f \u0442\u0430\u043c, \u0433\u0434\u0435 \u0435\u0433\u043e \u043e\u0441\u0442\u0430\u0432\u0438\u043b\u0438, \u043a\u043b\u0430\u0432\u0438\u0448\u0438 \u0432 Mode 2 (W/S \u0433\u0430\u0437, A/D \u0440\u044b\u0441\u043a\u0430\u043d\u0438\u0435, \u0441\u0442\u0440\u0435\u043b\u043a\u0438 \u0442\u0430\u043d\u0433\u0430\u0436 \u0438 \u043a\u0440\u0435\u043d). \u0410\u043f\u043f\u0430\u0440\u0430\u0442\u0443\u0440\u0430 \u0438\u043b\u0438 \u0433\u0435\u0439\u043c\u043f\u0430\u0434 \u0432\u0441\u0435\u0433\u0434\u0430 \u043b\u0435\u0442\u0430\u044e\u0442 \u043a\u0430\u043a \u0430\u043f\u043f\u0430\u0440\u0430\u0442\u0443\u0440\u0430.",
+       "type": "enum",
+       "default": "\u041b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430",
+       "range": "\u041b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430 / \u041f\u0438\u043b\u043e\u0442 (\u043a\u0430\u043a \u0441 \u0430\u043f\u043f\u0430\u0440\u0430\u0442\u0443\u0440\u044b)",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "\u041b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430",
+        "\u041f\u0438\u043b\u043e\u0442 (\u043a\u0430\u043a \u0441 \u0430\u043f\u043f\u0430\u0440\u0430\u0442\u0443\u0440\u044b)"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.altitudeHelp",
+       "label": "\u041f\u043e\u043c\u043e\u0449\u044c \u043f\u043e \u0432\u044b\u0441\u043e\u0442\u0435 (\u043b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430)",
+       "help": "\u0414\u0440\u043e\u043d \u0441\u0430\u043c \u0434\u0435\u0440\u0436\u0438\u0442 \u0432\u044b\u0441\u043e\u0442\u0443; \u0432\u0432\u0435\u0440\u0445 \u0438 \u0432\u043d\u0438\u0437 (\u0441\u0442\u0440\u0435\u043b\u043a\u0438 \u0438\u043b\u0438 \u043b\u0435\u0432\u044b\u0439 \u0441\u0442\u0438\u043a \u043d\u0430 \u0441\u0435\u043d\u0441\u043e\u0440\u043d\u043e\u043c \u044d\u043a\u0440\u0430\u043d\u0435) \u043f\u043e\u0434\u043d\u0438\u043c\u0430\u044e\u0442 \u0438 \u043e\u043f\u0443\u0441\u043a\u0430\u044e\u0442 \u0441 \u043f\u043e\u0441\u0442\u043e\u044f\u043d\u043d\u043e\u0439 \u0441\u043a\u043e\u0440\u043e\u0441\u0442\u044c\u044e. \u0420\u0430\u0431\u043e\u0442\u0430\u0435\u0442 \u0442\u043e\u043b\u044c\u043a\u043e \u0432 \u0440\u0435\u0436\u0438\u043c\u0435 angle: \u0432 horizon \u0438 acro \u0434\u0440\u043e\u043d \u043c\u043e\u0436\u0435\u0442 \u043f\u0435\u0440\u0435\u0432\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f, \u0442\u0430\u043c \u043b\u0435\u0442\u0438\u0442 \u0432\u0430\u0448 \u0433\u0430\u0437. \u0428\u0430\u0433 1 \u0448\u043a\u043e\u043b\u044b \u043f\u0438\u043b\u043e\u0442\u043e\u0432.",
+       "type": "bool",
+       "default": "\u0412\u043a\u043b.",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.haptics",
+       "label": "\u0412\u0438\u0431\u0440\u0430\u0446\u0438\u044f \u043f\u0440\u0438 \u043a\u0440\u0430\u0448\u0435",
+       "help": "\u041a\u043e\u0440\u043e\u0442\u043a\u0430\u044f \u0432\u0438\u0431\u0440\u0430\u0446\u0438\u044f \u043f\u0440\u0438 \u043a\u0440\u0430\u0448\u0435 \u043d\u0430 \u0441\u0435\u043d\u0441\u043e\u0440\u043d\u044b\u0445 \u0441\u0442\u0438\u043a\u0430\u0445, \u043d\u0430 \u0442\u0435\u043b\u0435\u0444\u043e\u043d\u0430\u0445, \u043a\u043e\u0442\u043e\u0440\u044b\u0435 \u044d\u0442\u043e \u043f\u043e\u0437\u0432\u043e\u043b\u044f\u044e\u0442 (\u0431\u043e\u043b\u044c\u0448\u0438\u043d\u0441\u0442\u0432\u043e Android; \u043d\u0435 iPhone).",
+       "type": "bool",
+       "default": "\u0412\u043a\u043b.",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
        ]
       }
      ]
@@ -6950,36 +7226,56 @@
      "keys": [
       "L"
      ]
+    },
+    {
+     "action": "help.keys",
+     "label": "\u041a\u043b\u0430\u0432\u0438\u0448\u0438 \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u044b (\u043f\u043e\u043a\u0430\u0437\u0430\u0442\u044c / \u0441\u043a\u0440\u044b\u0442\u044c)",
+     "keys": [
+      "K"
+     ]
     }
    ],
    "flying": [
     {
-     "label": "\u0430\u0440\u043c / \u0434\u0438\u0437\u0430\u0440\u043c",
-     "keys": [
-      "\u041f\u0440\u043e\u0431\u0435\u043b"
-     ]
-    },
-    {
-     "label": "\u0433\u0430\u0437 \u0432\u0432\u0435\u0440\u0445 / \u0432\u043d\u0438\u0437, \u043e\u0441\u0442\u0430\u0451\u0442\u0441\u044f \u0442\u0430\u043c, \u0433\u0434\u0435 \u043e\u0441\u0442\u0430\u0432\u0438\u043b",
+     "label": "\u0432\u043f\u0435\u0440\u0451\u0434 / \u043d\u0430\u0437\u0430\u0434",
      "keys": [
       "W",
       "S"
      ]
     },
     {
-     "label": "\u0440\u044b\u0441\u043a\u0430\u043d\u0438\u0435: \u043f\u043e\u0432\u043e\u0440\u043e\u0442 \u0432\u043b\u0435\u0432\u043e / \u0432\u043f\u0440\u0430\u0432\u043e",
+     "label": "\u0432\u043b\u0435\u0432\u043e / \u0432\u043f\u0440\u0430\u0432\u043e",
      "keys": [
       "A",
       "D"
      ]
     },
     {
-     "label": "\u0442\u0430\u043d\u0433\u0430\u0436 \u0438 \u043a\u0440\u0435\u043d: \u043d\u0430\u043a\u043b\u043e\u043d",
+     "label": "\u043f\u043e\u0432\u043e\u0440\u043e\u0442 \u0432\u043b\u0435\u0432\u043e / \u0432\u043f\u0440\u0430\u0432\u043e",
+     "keys": [
+      "\u2190",
+      "\u2192",
+      "Q",
+      "E"
+     ]
+    },
+    {
+     "label": "\u0432\u0432\u0435\u0440\u0445 / \u0432\u043d\u0438\u0437 (\u0441 \u043f\u043e\u043c\u043e\u0449\u044c\u044e \u043f\u043e \u0432\u044b\u0441\u043e\u0442\u0435; \u0431\u0435\u0437 \u043d\u0435\u0451 \u2014 \u0433\u0430\u0437, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u043e\u0441\u0442\u0430\u0451\u0442\u0441\u044f \u0442\u0430\u043c, \u0433\u0434\u0435 \u0435\u0433\u043e \u043e\u0441\u0442\u0430\u0432\u0438\u043b\u0438)",
      "keys": [
       "\u2191",
-      "\u2193",
-      "\u2190",
-      "\u2192"
+      "\u2193"
+     ]
+    },
+    {
+     "label": "\u0443\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0442\u044c: \u0431\u044b\u0441\u0442\u0440\u0435\u0435",
+     "keys": [
+      "Shift"
+     ]
+    },
+    {
+     "label": "\u043d\u0430\u0436\u0430\u0442\u044c: \u043c\u043e\u0442\u043e\u0440\u044b \u0432\u043a\u043b; \u0443\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0442\u044c \u043f\u043e\u043b\u0441\u0435\u043a\u0443\u043d\u0434\u044b: \u0432\u044b\u043a\u043b (\u043b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430; \u043a\u043b\u0430\u0432\u0438\u0448\u0438 \u043f\u0438\u043b\u043e\u0442\u0430: \u0430\u0440\u043c / \u0434\u0438\u0437\u0430\u0440\u043c)",
+     "keys": [
+      "\u041f\u0440\u043e\u0431\u0435\u043b"
      ]
     },
     {

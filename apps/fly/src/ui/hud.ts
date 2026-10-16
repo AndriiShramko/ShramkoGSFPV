@@ -10,6 +10,7 @@ import type { ArmView } from '../controls';
 import { radioArt, knobsFrom, sideOf, tickIcon } from './radio-art';
 import type { ArtTarget } from './radio-art';
 import { watchTopRow } from './top-row';
+import { KeyCardShow } from './key-card-state';
 
 /** Disarmed with a radio: what is still needed to arm, in order, with a small live radio drawing. */
 class ArmCard {
@@ -70,47 +71,92 @@ class ArmCard {
 }
 
 /**
- * Keyboard pilot, disarmed: what to press now, then every flying key (they live only in
- * devices/keyboard.ts, so a first-time pilot had no way to learn them). A keyboard has no arm switch.
+ * The keyboard's key card: what to press now, then every flying key (they live only in
+ * devices/keyboard.ts and play/keys.ts, so a first-time player had no way to learn them). It shows
+ * while the drone waits on the ground and on demand (K, app/builtin/play.ts). Two layouts (v0.8):
+ * easy play's game keys, or the pilot's Mode 2 keys with Space to arm.
  */
 class KeyCard {
     readonly el: HTMLDivElement;
     private now = h('p', { class: 'reason now' });
-    private rows: Record<'arm' | 'thr' | 'sticks', HTMLLIElement>;
+    private title = h('h3', {});
+    private list = h('ul', { class: 'kc-list' });
+    private foot = h('p', { class: 'kc-foot' });
+    private rows: Partial<Record<'arm' | 'thr' | 'sticks', HTMLLIElement>> = {};
+    /** the layout drawn: easy or pilot, and with the easy play's altitude help or not */
+    private drawn = '';
 
     constructor() {
-        const caps = (...ks: string[]): HTMLSpanElement => h('span', { class: 'kc-keys' }, ...ks.map((k) => h('kbd', {}, k)));
-        const row = (keys: HTMLSpanElement, text: string): HTMLLIElement => h('li', {}, keys, h('span', {}, text));
-        this.rows = {
-            arm: row(caps(t('arm.keys.space')), t('arm.keys.arm')),
-            thr: row(caps('W', 'S'), t('arm.keys.throttle')),
-            sticks: row(caps('↑', '↓', '←', '→'), t('arm.keys.sticks'))
-        };
-        const list = h('ul', { class: 'kc-list' },
-            this.rows.arm, this.rows.thr,
-            row(caps('A', 'D'), t('arm.keys.yaw')),
-            this.rows.sticks,
-            row(caps('M'), t('arm.keys.mode')),
-            row(caps('V'), t('arm.keys.voxels')),
-            row(caps('C'), t('arm.keys.walls')),
-            row(caps('R'), t('arm.keys.respawn')),
-            row(caps('P', 'Esc'), t('arm.keys.pause')));
-        this.el = h('div', { class: 'arm-card key-card hidden' }, h('div', {}, h('h3', {}, t('arm.keys.title')), this.now, list));
+        this.el = h('div', { class: 'arm-card key-card hidden', 'data-testid': 'key-card' }, h('div', {}, this.title, this.now, this.list, this.foot));
+        this.build(false, true);
     }
 
-    update(show: boolean, say: string, block: ArmBlock): void {
+    /** The rows of a layout (rebuilt only when the layout changes). */
+    private build(easy: boolean, help: boolean): void {
+        const id = easy ? `easy:${help}` : 'pilot';
+        if (id === this.drawn) return;
+        this.drawn = id;
+        const caps = (...ks: string[]): HTMLSpanElement => h('span', { class: 'kc-keys' }, ...ks.map((k) => h('kbd', {}, k)));
+        const row = (keys: HTMLSpanElement, text: string): HTMLLIElement => h('li', {}, keys, h('span', {}, text));
+        const space = t('arm.keys.space');
+        let rows: HTMLLIElement[];
+        if (easy) {
+            this.rows = {};
+            this.title.textContent = t('play.keys.title');
+            rows = [
+                row(caps('W', 'S'), t('play.keys.forward')),
+                row(caps('A', 'D'), t('play.keys.side')),
+                row(caps('←', '→', 'Q', 'E'), t('play.keys.turn')),
+                row(caps('↑', '↓'), t(help ? 'play.keys.climb' : 'play.keys.throttle')),
+                row(caps('Shift'), t('play.keys.boost')),
+                row(caps(space), t('play.keys.motorsShort')),
+                row(caps('M'), t('arm.keys.mode')),
+                row(caps('R'), t('arm.keys.respawn')),
+                row(caps('P', 'Esc'), t('arm.keys.pause')),
+                row(caps('K'), t('play.keys.toggle'))
+            ];
+            this.foot.textContent = t('play.keys.pilotNote');
+        } else {
+            this.title.textContent = t('arm.keys.title');
+            this.rows = {
+                arm: row(caps(space), t('arm.keys.arm')),
+                thr: row(caps('W', 'S'), t('arm.keys.throttle')),
+                sticks: row(caps('↑', '↓', '←', '→'), t('arm.keys.sticks'))
+            };
+            rows = [
+                this.rows.arm!, this.rows.thr!,
+                row(caps('A', 'D'), t('arm.keys.yaw')),
+                this.rows.sticks!,
+                row(caps('M'), t('arm.keys.mode')),
+                row(caps('V'), t('arm.keys.voxels')),
+                row(caps('C'), t('arm.keys.walls')),
+                row(caps('R'), t('arm.keys.respawn')),
+                row(caps('P', 'Esc'), t('arm.keys.pause')),
+                row(caps('K'), t('play.keys.toggle'))
+            ];
+            this.foot.textContent = '';
+        }
+        this.list.replaceChildren(...rows);
+        this.foot.hidden = !this.foot.textContent;
+    }
+
+    update(show: boolean, say: string, block: ArmBlock, easy: boolean, help: boolean): void {
         this.el.classList.toggle('hidden', !show);
         if (!show) return;
+        this.build(easy, help);
         if (this.now.textContent !== say) this.now.textContent = say;
-        this.rows.arm.classList.toggle('now', block === 'switch');
-        this.rows.thr.classList.toggle('now', block === 'throttle');
-        this.rows.sticks.classList.toggle('now', block === 'center');
+        this.now.hidden = !say;
+        this.rows.arm?.classList.toggle('now', block === 'switch');
+        this.rows.thr?.classList.toggle('now', block === 'throttle');
+        this.rows.sticks?.classList.toggle('now', block === 'center');
     }
 }
 
 /** The arm hint in the words of the input in use: keyboard and touch pilots have no arm switch. */
 function gateText(block: Exclude<ArmBlock, null>, v: ArmView | undefined): string {
     const src = v?.source ?? null;
+    // easy play (v0.8): no arming; the first flying key or touch starts the motors
+    if (v?.easy && block !== 'hidden' && block !== 'stale') return t(src === 'touch' ? 'play.gate.touch' : 'play.gate.keys');
     if (src === 'keyboard') {
         if (block === 'switch') return t('arm.blocked.switchKey');
         if (block === 'throttle') return t('arm.blocked.throttleKey');
@@ -185,7 +231,11 @@ export class Hud {
     private card = new ArmCard(() => this.onArm?.());
     private keys = new KeyCard();
     private last = 0;
+    /** when the key card is up: by itself on the ground, K hides or pins it (ui/key-card-state.ts) */
+    private keyShow = new KeyCardShow();
     visible = true;
+    /** easy play's altitude help flies now (on, angle mode; set by app/builtin/play.ts): the key card's up/down row */
+    altitudeHelp: () => boolean = () => true;
     /** Arm kind 'key' (no switch on the radio): the on-screen ARM / DISARM button. */
     onArm: (() => void) | null = null;
 
@@ -251,6 +301,12 @@ export class Hud {
         if (this.br.textContent !== pick) this.br.textContent = pick;
     }
 
+    /** K: the keyboard's key card away when it is up, else up (and it stays while flying). Returns whether it is up now. */
+    toggleKeys(): boolean {
+        this.last = 0; // draw it at the next frame, not up to 100 ms later
+        return this.keyShow.toggle();
+    }
+
     toggleFrameStats(): void {
         this.frameStats.classList.toggle('hidden');
     }
@@ -294,10 +350,12 @@ export class Hud {
         // the test pilot (?simradio=scenario) flies the model directly, past the arm gate: the gate's
         // "Calibrate your controls first" was never true for it, and it printed into every bot frame
         const say = !hd.armed && !hd.crashed && block && src !== 'sim' ? gateText(block, view) : '';
-        const keyCard = kbd && say !== '' && !document.querySelector('.screen.radio');
-        this.keys.update(keyCard, say, block);
+        const cardUp = this.keyShow.shown(kbd && say !== '');
+        const keyCard = kbd && cardUp && !document.querySelector('.screen.radio');
+        const easy = !!view?.easy;
+        this.keys.update(keyCard, say, block, easy, this.altitudeHelp());
         // keyboard: the flying keys stay in the corner once the key card is gone (armed, crashed)
-        const keysLine = kbd ? (keyCard ? '' : t('hud.keysKbd')) : t('hud.keys');
+        const keysLine = kbd ? (keyCard ? '' : t(easy ? 'play.hud.keys' : 'hud.keysKbd')) : t('hud.keys');
         const n = t('hud.crashes', { n: hd.crashes });
         const short = t('hud.keysShort');
         this.setCorner(keysLine ? [`${n}  ·  ${keysLine}`, `${n}  ·  ${short}`, short, n] : [n]);

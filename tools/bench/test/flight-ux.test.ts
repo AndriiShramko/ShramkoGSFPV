@@ -474,9 +474,9 @@ describe('motor sound: from the simulated motors, silent whenever the flight is 
         expect((master.gain as FakeParam).targets.length).toBe(n);
     });
 
-    it('the settings are real: on by default at 40 %', () => {
+    it('the settings are real: on by default, quiet at 15 % (v0.8, the owner: not loud by default)', () => {
         const store = mkStore();
-        expect([store.get('sound.motors'), store.get('sound.volume')]).toEqual([true, 40]);
+        expect([store.get('sound.motors'), store.get('sound.volume')]).toEqual([true, 15]);
     });
 });
 

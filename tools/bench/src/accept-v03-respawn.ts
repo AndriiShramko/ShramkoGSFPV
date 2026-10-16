@@ -72,8 +72,8 @@ async function platformRun(qs: string): Promise<Record<string, unknown>> {
     return { ...r, dyUp: r.maxY - r.y0, dyDown: r.y0 - r.minY };
 }
 if (want('R16')) {
-    const on = await platformRun('scene=39e63ce9&nowarn=1&input=touch');
-    const off = await platformRun('scene=39e63ce9&nowarn=1&input=touch&set.respawn.platform=0');
+    const on = await platformRun('scene=39e63ce9&nowarn=1&input=touch&set.input.play=pilot');
+    const off = await platformRun('scene=39e63ce9&nowarn=1&input=touch&set.input.play=pilot&set.respawn.platform=0');
     const held = on.plat0 === 1 && (on.armedTicks as number) >= 5000 && !on.crashed && Math.max(on.dyUp as number, on.dyDown as number) < 0.02;
     const fell = off.plat0 === 0 && (off.dyDown as number) > 0.3;
     record('R16', { pass: held && fell, item: 16, rule: 'armed at idle on the spawn: |dy| < 2 cm for 5 s', platform: on, control: { query: 'set.respawn.platform=0', run: off, fired: fell } });
@@ -203,8 +203,8 @@ async function rRun(qs: string): Promise<Record<string, unknown>> {
     return { spawn, away, after, later };
 }
 if (want('RR')) {
-    const on = await rRun('scene=39e63ce9&nowarn=1&input=touch');
-    const off = await rRun('scene=39e63ce9&nowarn=1&input=touch&set.respawn.keepArmed=0');
+    const on = await rRun('scene=39e63ce9&nowarn=1&input=touch&set.input.play=pilot');
+    const off = await rRun('scene=39e63ce9&nowarn=1&input=touch&set.input.play=pilot&set.respawn.keepArmed=0');
     const a = on.after as Any, l = on.later as Any, aw = on.away as Any;
     const pass = aw.d > 0.3 && aw.armed && a.reason === 'manual-start' && a.off < 0.005 && a.platOn === 1 && a.armed === true && l.armed && !l.crashed && Math.abs(l.dy) < 0.02;
     const oa = off.after as Any;
@@ -215,7 +215,7 @@ if (want('RR')) {
 // ------------------------------------------------------------------ SHOTS the scan drawn: toast, label, panel; no overlaps
 // Draws the scan: take C:/dev/.gpu-lock first (the owner's PC also renders video).
 async function shots(size: { width: number; height: number; mobile?: boolean }, name: string): Promise<Record<string, unknown>> {
-    const qs = `scene=39e63ce9&simradio=scenario&nowarn=1${size.mobile ? '&input=touch' : ''}`;
+    const qs = `scene=39e63ce9&simradio=scenario&nowarn=1${size.mobile ? '&input=touch&set.input.play=pilot' : ''}`;
     const p = await page(qs, true, size);
     await hook(p, BOT_23);
     await until(p, R23_STATE, (v: Any) => v.toast === true, 90000, 50);

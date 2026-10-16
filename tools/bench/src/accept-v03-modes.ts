@@ -59,7 +59,7 @@ const out: Record<string, Any> = { site: SITE, browser: which, render: { M1: 'of
 // ------------------------------------------------------------------ M1 chip, persistence, M
 if (want('M1')) {
     const { ctx, page: p, log } = await context(browser);
-    await p.goto(fly(`scene=${SCENE}&nowarn=1&input=touch&render=off`));
+    await p.goto(fly(`scene=${SCENE}&nowarn=1&input=touch&set.input.play=pilot&render=off`));
     await waitReady(p, 180000);
     await wait(p, 400);
     const start = await hook(p, STATE);
@@ -88,7 +88,7 @@ if (want('M1')) {
     await ctx.close();
     // control: a fresh browser (nothing stored) flies the default, angle: HORIZON above came from the store
     const c = await context(browser);
-    await c.page.goto(fly(`scene=${SCENE}&nowarn=1&input=touch&render=off`));
+    await c.page.goto(fly(`scene=${SCENE}&nowarn=1&input=touch&set.input.play=pilot&render=off`));
     await waitReady(c.page, 180000);
     await wait(c.page, 400);
     const fresh = await hook(c.page, STATE);
@@ -323,7 +323,7 @@ const OVERLAP = `const box = (el, name) => { if (!el || el.offsetParent === null
 
 async function layout(size: { width: number; height: number; mobile: boolean }, tag: string): Promise<Any> {
     const { ctx, page: p, log } = await context(browser, size);
-    await p.goto(fly(`scene=${SCENE}&nowarn=1&input=touch`));
+    await p.goto(fly(`scene=${SCENE}&nowarn=1&input=touch&set.input.play=pilot`));
     const ready = await waitReady(p, 240000);
     await wait(p, 2500);
     const closed = await hook(p, OVERLAP);

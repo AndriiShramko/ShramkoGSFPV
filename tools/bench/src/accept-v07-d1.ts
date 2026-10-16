@@ -74,7 +74,7 @@ const out: Record<string, Any> = { site: SITE, render: 'off' };
 // ------------------------------------------------------------------ S1
 if (want('S1')) {
     const { p, errors, close } = await page(browser);
-    // the keyboard path (lat=1): touch sticks (input=touch) show the icon alone, as on a phone
+    // the keyboard path (lat=1): touch sticks (input=touch&set.input.play=pilot) show the icon alone, as on a phone
     await p.goto(fly(`scene=${SHOWCASE}&nowarn=1&lat=1&render=off`));
     await waitReady(p, 240000);
     await p.waitForTimeout(800);
@@ -94,7 +94,7 @@ if (want('S1')) {
     const after = await hook(p, 'return { panel: !!document.querySelector(".panel.share"), paused: s.paused };');
     await close();
     const phone = await page(browser, 390, 780);
-    await phone.p.goto(fly(`scene=${SHOWCASE}&nowarn=1&input=touch&render=off`));
+    await phone.p.goto(fly(`scene=${SHOWCASE}&nowarn=1&input=touch&set.input.play=pilot&render=off`));
     await waitReady(phone.p, 240000);
     await phone.p.waitForTimeout(800);
     const topPhone = await phone.p.evaluate(`(() => { const b = document.querySelector('[data-action=share-top]'); const l = b && b.querySelector('.share-top-label'); return b ? { shown: b.getClientRects().length > 0, label: getComputedStyle(l).display !== 'none' } : null; })()`) as Any;
@@ -211,7 +211,7 @@ if (want('S4') || want('S5')) {
 // ------------------------------------------------------------------ S6
 if (want('S6')) {
     const { p, errors, close } = await page(browser);
-    await p.goto(fly(`scene=${PASTED}&nowarn=1&input=touch&render=off`));
+    await p.goto(fly(`scene=${PASTED}&nowarn=1&input=touch&set.input.play=pilot&render=off`));
     await waitReady(p, 240000);
     await p.waitForTimeout(1000);
     const idle = `(() => { const st = window.__gsfpv.rec.state(); return !st.recording && !st.busy && !!st.last; })()`;
@@ -251,7 +251,7 @@ if (want('S6')) {
 // ------------------------------------------------------------------ S7
 if (want('S7')) {
     const { p, errors, close } = await page(browser, 390, 844);
-    await p.goto(fly(`scene=${SHOWCASE}&nowarn=1&input=touch&render=off`));
+    await p.goto(fly(`scene=${SHOWCASE}&nowarn=1&input=touch&set.input.play=pilot&render=off`));
     await waitReady(p, 240000);
     await p.waitForTimeout(800);
     await hook(p, 'await h.rec.start(); await new Promise((r) => setTimeout(r, 1500)); await h.rec.stop(); return 0;');

@@ -57,13 +57,16 @@ const SHIPPED_IN_WAVE2: readonly string[] = [
     // W5: B opens the feedback dialog (bug / idea / cooperation)
     'feedback.open',
     // v0.7 D1: L shares the scene flown (the share panel)
-    'share.open'
+    'share.open',
+    // v0.8 lane A: K shows the keyboard's key card on demand (app/builtin/play.ts)
+    'help.keys'
 ];
 
 /** Keys added after the design table, by the agent whose feature handles them. */
 const ADDED_AFTER_DESIGN: Record<string, string[]> = {
     'feedback.open': ['B'],
-    'share.open': ['L']
+    'share.open': ['L'],
+    'help.keys': ['K']
 };
 
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });

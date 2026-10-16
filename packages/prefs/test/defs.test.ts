@@ -25,7 +25,9 @@ const V03_SHIPPED = [
     // v0.7 D1 (docs/wip/v07-d1.md): the crosshair (Display), the motor sound (Sound), the scan author notice (Recording)
     'crosshair.shape', 'crosshair.size', 'crosshair.color', 'crosshair.opacity', 'sound.motors', 'sound.volume', 'recording.authorNotice',
     // v0.8 lane D (docs/wip/v08-d.md): prop wash of the 5-inch and cinelifter presets, Settings -> Drone & physics
-    'physics.propWash'
+    'physics.propWash',
+    // v0.8 lane A (docs/wip/v08-a.md): easy play for touch and keyboard, Settings -> Controls
+    'input.play', 'input.altitudeHelp', 'input.haptics'
 ];
 
 /**
@@ -67,8 +69,12 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['crosshair.color', 'display', 'global', 'enum', 'green', 'live'],
     ['crosshair.opacity', 'display', 'global', 'number', 0.8, 'live'],
     ['sound.motors', 'sound', 'global', 'bool', true, 'live'],
-    ['sound.volume', 'sound', 'global', 'number', 40, 'live'],
+    ['sound.volume', 'sound', 'global', 'number', 15, 'live'],
     ['input.stickMode', 'input', 'global', 'enum', '2', 'live'],
+    // v0.8 lane A: easy play (touch and keyboard)
+    ['input.play', 'input', 'global', 'enum', 'easy', 'live'],
+    ['input.altitudeHelp', 'input', 'global', 'bool', true, 'live'],
+    ['input.haptics', 'input', 'global', 'bool', true, 'live'],
     ['drone.current', 'drone', 'global', 'enum', 'pavo20pro-3s', 'life'],
     ['physics.gravity', 'drone', 'global', 'number', 9.81, 'life'],
     ['physics.gravityMode', 'drone', 'global', 'enum', 'honest', 'life'],
@@ -146,8 +152,8 @@ const WAVE2_SETTINGS = [
 ];
 
 describe('SCHEMA is the A.8 table', () => {
-    it('has the 70 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard, v0.7\'s drawing, wind and ceiling, v0.7 D1\'s seven, v0.8\'s prop wash), each with its group, scope, type, default and apply', () => {
-        expect(SCHEMA.defs).toHaveLength(71);
+    it('has the 74 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard, v0.7\'s drawing, wind and ceiling, v0.7 D1\'s seven, v0.8\'s prop wash and lane A\'s three), each with its group, scope, type, default and apply', () => {
+        expect(SCHEMA.defs).toHaveLength(74);
         const got = SCHEMA.defs.map((d) => [d.id, d.group, d.scope, d.type, isPresetRef(d.default) ? `preset:${d.default.preset}` : isCuratedRef(d.default) ? `curated:${d.default.curated}|${String(d.default.fallback)}` : d.default, d.apply]);
         // order inside a group follows the def files, not the table's rows
         const byId = (a: unknown[], b: unknown[]) => String(a[0]).localeCompare(String(b[0]));

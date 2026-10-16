@@ -39,6 +39,12 @@ export interface KeyRouterOptions {
     isText?: (target: EventTarget | null) => boolean;
     /** the page's state for the bindings' `when` */
     state?: () => KeyState;
+    /**
+     * Shift is held as easy play's boost now (devices/keyboard.ts boosting(): Shift with a flying key).
+     * A shortcut is then chosen as if Shift were up, so pause, respawn and the rest work while boosting
+     * and N stays "next scene"; the handler still gets the real event.
+     */
+    shiftIsBoost?: () => boolean;
 }
 
 export class KeyRouter {
@@ -47,11 +53,13 @@ export class KeyRouter {
     private readonly map: readonly KeyBinding[];
     private readonly isText: (target: EventTarget | null) => boolean;
     private readonly state: () => KeyState;
+    private readonly shiftIsBoost: () => boolean;
 
     constructor(o: KeyRouterOptions = {}) {
         this.map = o.map ?? KEYMAP;
         this.isText = o.isText ?? typing;
         this.state = o.state ?? (() => 'flight');
+        this.shiftIsBoost = o.shiftIsBoost ?? (() => false);
     }
 
     /**
@@ -101,7 +109,9 @@ export class KeyRouter {
         for (const b of this.blocks) if (b()) return null;
         // a text field takes R and P as letters; Esc is never text, so it still closes the panel around it
         if (this.isText(e.target) && !THROUGH_TEXT.has(e.code)) return null;
-        const action = actionFor(e, this.state(), { map: this.map });
+        // Shift held as the boost is not a modifier: the shortcut is the one of the key alone
+        const press = e.shiftKey && this.shiftIsBoost() ? { code: e.code, shiftKey: false, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey } : e;
+        const action = actionFor(press, this.state(), { map: this.map });
         if (action === null) return null;
         const list = this.handlers.get(action);
         const run = list?.[list.length - 1];

@@ -1,0 +1,461 @@
+{
+  "name": "v08-a-play-t",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-16T19:26:29.874Z",
+    "gitHead": "dda2eba",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5491",
+  "pass": true,
+  "only": "T",
+  "checks": [
+    {
+      "id": "T1-tablet easy play: no ARM button, the hint says what the sticks do, \"touch a stick to take off\"",
+      "ok": true,
+      "detail": {
+        "armShown": false,
+        "hint": "Left stick: up / down and turn. Right stick: fly.",
+        "gate": "Touch a stick to take off",
+        "padPx": 220,
+        "travelPx": 86
+      }
+    },
+    {
+      "id": "T2-tablet a touch-down off-centre moves no stick; control: v0.7's absolute pad read it as a deflection",
+      "ok": true,
+      "detail": {
+        "chAtTouchDown": [
+          0,
+          0
+        ],
+        "v07AbsolutePad": [
+          0.5,
+          0.4
+        ]
+      }
+    },
+    {
+      "id": "T3-tablet a touch starts the motors; the left stick at 60 % climbs about 1.5 m/s; released, it springs to centre",
+      "ok": true,
+      "detail": {
+        "armedByTouch": true,
+        "climbMps": 1.624,
+        "gainedM": 3.965,
+        "leftStickAfterRelease": 0
+      }
+    },
+    {
+      "id": "T4-tablet the height holds with no finger on the sticks",
+      "ok": true,
+      "detail": {
+        "spreadM": 0.035
+      }
+    },
+    {
+      "id": "T5-tablet the right stick at half forward tilts the drone (angle mode); a touch sample reaches the flight at the frame measured for pointermove and for pointerrawupdate (100 % the same frame); control: a sample held to the next animation frame is measured a frame later",
+      "ok": true,
+      "detail": {
+        "pitchDeg": 17.284,
+        "matched": 51,
+        "sameFramePct": 100,
+        "moveLaterPct": 0,
+        "moveEarlierPct": 0,
+        "rawToFlightMs": {
+          "p50": 50,
+          "p95": 82.5
+        },
+        "moveToFlightMs": {
+          "p50": 50,
+          "p95": 82.5
+        },
+        "controlN": 51,
+        "controlLaterPct": 94.1,
+        "framePeriodP50Ms": 33.3,
+        "samples": {
+          "raw": 51,
+          "move": 51,
+          "frames": 397
+        }
+      }
+    },
+    {
+      "id": "T10-tablet from a touch-down on the pad's outer rim the screen's edge is full stick (roll and pitch back); control: the first grab reached 0.256 / -0.256",
+      "ok": true,
+      "detail": {
+        "rollAtRightEdge": 1,
+        "pitchAtBottomEdge": -1,
+        "firstGrab": {
+          "roll": 0.256,
+          "pitch": -0.256
+        }
+      }
+    },
+    {
+      "id": "T6-tablet the pilot school chip is on screen",
+      "ok": true,
+      "detail": {
+        "chip": "School 1/4 \u00b7 15 / 30 s"
+      }
+    },
+    {
+      "id": "T9-tablet the speaker is on screen and nothing at the top prints over anything else; controls: the school chip moved onto the buttons, and onto the credit's text, is caught",
+      "ok": true,
+      "detail": {
+        "speakerOnScreen": true,
+        "overlaps": [],
+        "control": [
+          "sound-toggle[605,38,647,78] x school-chip[607,40,796,68]",
+          "share-top[655,38,698,78] x school-chip[607,40,796,68]",
+          "open-settings[706,38,751,78] x school-chip[607,40,796,68]",
+          "open-feedback[759,38,847,78] x school-chip[607,40,796,68]"
+        ],
+        "controlCredit": [
+          "attribution[16,139,342,155] x school-chip[18,141,207,169]",
+          "attribution[16,167,75,183] x school-chip[18,141,207,169]"
+        ]
+      }
+    },
+    {
+      "id": "T7-tablet no scroll or zoom from the touches",
+      "ok": true,
+      "detail": {
+        "sx": 0,
+        "sy": 0,
+        "scale": 1
+      }
+    },
+    {
+      "id": "T11-tablet the touch flight (auto-arm, altitude help, grab) replays from its log to the same hash; controls: one LSB and a 0.05 stick twitch in one record change it",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "saved": "61950544a4ba34428376409935838995f15cb388189c2adc9d86dd842caf2be1",
+        "replayed": "61950544a4ba34428376409935838995f15cb388189c2adc9d86dd842caf2be1",
+        "endTick": 18310,
+        "lives": 1,
+        "refused": null,
+        "tamperedAtTick": 9155,
+        "lsb": {
+          "was": -0.44309720396995544,
+          "differs": true
+        },
+        "twitch": {
+          "was": 0,
+          "differs": true
+        }
+      }
+    },
+    {
+      "id": "T8-tablet no page errors",
+      "ok": true,
+      "detail": {
+        "errors": []
+      }
+    },
+    {
+      "id": "T1-phone easy play: no ARM button, the hint says what the sticks do, \"touch a stick to take off\"",
+      "ok": true,
+      "detail": {
+        "armShown": false,
+        "hint": "Left stick: up / down and turn. Right stick: fly.",
+        "gate": "Touch a stick to take off",
+        "padPx": 150.125,
+        "travelPx": 51.0625
+      }
+    },
+    {
+      "id": "T2-phone a touch-down off-centre moves no stick; control: v0.7's absolute pad read it as a deflection",
+      "ok": true,
+      "detail": {
+        "chAtTouchDown": [
+          0,
+          0
+        ],
+        "v07AbsolutePad": [
+          0.5,
+          0.4
+        ]
+      }
+    },
+    {
+      "id": "T3-phone a touch starts the motors; the left stick at 60 % climbs about 1.5 m/s; released, it springs to centre",
+      "ok": true,
+      "detail": {
+        "armedByTouch": true,
+        "climbMps": 1.639,
+        "gainedM": 4.122,
+        "leftStickAfterRelease": 0
+      }
+    },
+    {
+      "id": "T4-phone the height holds with no finger on the sticks",
+      "ok": true,
+      "detail": {
+        "spreadM": 0.037
+      }
+    },
+    {
+      "id": "T5-phone the right stick at half forward tilts the drone (angle mode); a touch sample reaches the flight at the frame measured for pointermove and for pointerrawupdate (100 % the same frame); control: a sample held to the next animation frame is measured a frame later",
+      "ok": true,
+      "detail": {
+        "pitchDeg": 17.849,
+        "matched": 51,
+        "sameFramePct": 100,
+        "moveLaterPct": 0,
+        "moveEarlierPct": 0,
+        "rawToFlightMs": {
+          "p50": 50.4,
+          "p95": 58.6
+        },
+        "moveToFlightMs": {
+          "p50": 50.4,
+          "p95": 58.6
+        },
+        "controlN": 51,
+        "controlLaterPct": 100,
+        "framePeriodP50Ms": 33.3,
+        "samples": {
+          "raw": 51,
+          "move": 51,
+          "frames": 401
+        }
+      }
+    },
+    {
+      "id": "T10-phone from a touch-down on the pad's outer rim the screen's edge is full stick (roll and pitch back); control: the first grab reached 0.424 / -0.431",
+      "ok": true,
+      "detail": {
+        "rollAtRightEdge": 1,
+        "pitchAtBottomEdge": -1,
+        "firstGrab": {
+          "roll": 0.424,
+          "pitch": -0.431
+        }
+      }
+    },
+    {
+      "id": "T6-phone the pilot school chip is on screen",
+      "ok": true,
+      "detail": {
+        "chip": "School 1/4 \u00b7 15 / 30 s"
+      }
+    },
+    {
+      "id": "T9-phone the speaker is on screen and nothing at the top prints over anything else; controls: the school chip moved onto the buttons, and onto the credit's text, is caught",
+      "ok": true,
+      "detail": {
+        "speakerOnScreen": true,
+        "overlaps": [],
+        "control": [
+          "share-top[10,38,49,78] x school-chip[12,40,201,68]",
+          "open-settings[57,38,103,78] x school-chip[12,40,201,68]",
+          "open-feedback[111,38,199,78] x school-chip[12,40,201,68]"
+        ],
+        "controlCredit": [
+          "attribution[16,139,342,155] x school-chip[18,141,207,169]",
+          "attribution[16,156,73,172] x school-chip[18,141,207,169]",
+          "attribution[73,156,82,172] x school-chip[18,141,207,169]",
+          "attribution[82,156,173,172] x school-chip[18,141,207,169]"
+        ]
+      }
+    },
+    {
+      "id": "T7-phone no scroll or zoom from the touches",
+      "ok": true,
+      "detail": {
+        "sx": 0,
+        "sy": 0,
+        "scale": 1
+      }
+    },
+    {
+      "id": "T11-phone the touch flight (auto-arm, altitude help, grab) replays from its log to the same hash; controls: one LSB and a 0.05 stick twitch in one record change it",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "saved": "4d066e9f996d3101049993aa187f8995d00b303ae1e57cc3752add9cfe7decd1",
+        "replayed": "4d066e9f996d3101049993aa187f8995d00b303ae1e57cc3752add9cfe7decd1",
+        "endTick": 18472,
+        "lives": 1,
+        "refused": null,
+        "tamperedAtTick": 9236,
+        "lsb": {
+          "was": -0.44309622049331665,
+          "differs": true
+        },
+        "twitch": {
+          "was": 0,
+          "differs": true
+        }
+      }
+    },
+    {
+      "id": "T8-phone no page errors",
+      "ok": true,
+      "detail": {
+        "errors": []
+      }
+    },
+    {
+      "id": "T1-phone-landscape easy play: no ARM button, the hint says what the sticks do, \"touch a stick to take off\"",
+      "ok": true,
+      "detail": {
+        "armShown": false,
+        "hint": "Left stick: up / down and turn. Right stick: fly.",
+        "gate": "Touch a stick to take off",
+        "padPx": 220,
+        "travelPx": 86
+      }
+    },
+    {
+      "id": "T2-phone-landscape a touch-down off-centre moves no stick; control: v0.7's absolute pad read it as a deflection",
+      "ok": true,
+      "detail": {
+        "chAtTouchDown": [
+          0,
+          0
+        ],
+        "v07AbsolutePad": [
+          0.5,
+          0.4
+        ]
+      }
+    },
+    {
+      "id": "T3-phone-landscape a touch starts the motors; the left stick at 60 % climbs about 1.5 m/s; released, it springs to centre",
+      "ok": true,
+      "detail": {
+        "armedByTouch": true,
+        "climbMps": 1.62,
+        "gainedM": 3.932,
+        "leftStickAfterRelease": 0
+      }
+    },
+    {
+      "id": "T4-phone-landscape the height holds with no finger on the sticks",
+      "ok": true,
+      "detail": {
+        "spreadM": 0.034
+      }
+    },
+    {
+      "id": "T5-phone-landscape the right stick at half forward tilts the drone (angle mode); a touch sample reaches the flight at the frame measured for pointermove and for pointerrawupdate (100 % the same frame); control: a sample held to the next animation frame is measured a frame later",
+      "ok": true,
+      "detail": {
+        "pitchDeg": 17.284,
+        "matched": 51,
+        "sameFramePct": 100,
+        "moveLaterPct": 0,
+        "moveEarlierPct": 0,
+        "rawToFlightMs": {
+          "p50": 48.5,
+          "p95": 62.8
+        },
+        "moveToFlightMs": {
+          "p50": 48.5,
+          "p95": 62.8
+        },
+        "controlN": 51,
+        "controlLaterPct": 100,
+        "framePeriodP50Ms": 33.3,
+        "samples": {
+          "raw": 51,
+          "move": 51,
+          "frames": 404
+        }
+      }
+    },
+    {
+      "id": "T10-phone-landscape from a touch-down on the pad's outer rim the screen's edge is full stick (roll and pitch back); control: the first grab reached 0.256 / -0.252",
+      "ok": true,
+      "detail": {
+        "rollAtRightEdge": 1,
+        "pitchAtBottomEdge": -1,
+        "firstGrab": {
+          "roll": 0.256,
+          "pitch": -0.252
+        }
+      }
+    },
+    {
+      "id": "T6-phone-landscape the pilot school chip is on screen",
+      "ok": true,
+      "detail": {
+        "chip": "School 1/4 \u00b7 15 / 30 s"
+      }
+    },
+    {
+      "id": "T9-phone-landscape the speaker is on screen and nothing at the top prints over anything else; controls: the school chip moved onto the buttons, and onto the credit's text, is caught",
+      "ok": true,
+      "detail": {
+        "speakerOnScreen": true,
+        "overlaps": [],
+        "control": [
+          "share-top[443,38,486,78] x school-chip[445,40,634,68]",
+          "open-settings[494,38,539,78] x school-chip[445,40,634,68]",
+          "open-feedback[547,38,635,78] x school-chip[445,40,634,68]"
+        ],
+        "controlCredit": [
+          "attribution[16,45,342,61] x school-chip[18,47,207,75]",
+          "attribution[16,62,107,78] x school-chip[18,47,207,75]"
+        ]
+      }
+    },
+    {
+      "id": "T7-phone-landscape no scroll or zoom from the touches",
+      "ok": true,
+      "detail": {
+        "sx": 0,
+        "sy": 0,
+        "scale": 1
+      }
+    },
+    {
+      "id": "T11-phone-landscape the touch flight (auto-arm, altitude help, grab) replays from its log to the same hash; controls: one LSB and a 0.05 stick twitch in one record change it",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "saved": "8dedf79055298a579c2d8d08dc5c9b2d1944701c8922885c48123d632d1d1c54",
+        "replayed": "8dedf79055298a579c2d8d08dc5c9b2d1944701c8922885c48123d632d1d1c54",
+        "endTick": 18400,
+        "lives": 1,
+        "refused": null,
+        "tamperedAtTick": 9200,
+        "lsb": {
+          "was": -0.44306665658950806,
+          "differs": true
+        },
+        "twitch": {
+          "was": 0,
+          "differs": true
+        }
+      }
+    },
+    {
+      "id": "T8-phone-landscape no page errors",
+      "ok": true,
+      "detail": {
+        "errors": []
+      }
+    },
+    {
+      "id": "T-control the pilot profile: the ARM button is shown and a touch on a stick starts no motor",
+      "ok": true,
+      "detail": {
+        "armed": false,
+        "armShown": true
+      }
+    }
+  ],
+  "shots": "evidence/2026-10-16/v08-a/",
+  "note": "touch = CDP synthetic touches (the page path, not a real digitiser); keyboard = Playwright key events; the scan drawn (visible system Chrome)"
+}

@@ -325,7 +325,7 @@ if (want('R3')) {
 // ------------------------------------------------------------------ R2 + C2: auto-record into the folder
 if (want('R2')) {
     const { ctx, page, console: errors } = await newContext(browser, false);
-    await page.goto(fly(`scene=${SHOWCASE}&nowarn=1&input=touch`));
+    await page.goto(fly(`scene=${SHOWCASE}&nowarn=1&input=touch&set.input.play=pilot`));
     await waitReady(page, 240000);
     await page.waitForTimeout(3000);
     const dir = `gsfpv-auto-${RUN}`;
@@ -376,7 +376,7 @@ if (want('R2')) {
         && reloaded.auto === true && reloaded.folder === dir && reloaded.autoPressed === 'true';
 
     // C2 (D36): a scene outside the showcase, the same browser (Auto on, the folder set): ARM records it too
-    await page.goto(fly(`scene=${PASTED}&nowarn=1&input=touch&render=off`));
+    await page.goto(fly(`scene=${PASTED}&nowarn=1&input=touch&set.input.play=pilot&render=off`));
     await waitReady(page, 240000);
     await page.waitForTimeout(1500);
     const c2State = await hook(page, 'return h.rec.state();');
@@ -392,7 +392,7 @@ if (want('R2')) {
     await ctx.close();
     // N2: the same scan, Auto on, ARM, in a browser without WebCodecs: nothing records (the checks above can fail)
     const n2 = await newContext(browser, false, true);
-    await n2.page.goto(fly(`scene=${PASTED}&nowarn=1&input=touch&render=off`));
+    await n2.page.goto(fly(`scene=${PASTED}&nowarn=1&input=touch&set.input.play=pilot&render=off`));
     await waitReady(n2.page, 240000);
     await n2.page.waitForTimeout(1500);
     await hook(n2.page, 'h.rec.setAuto(true); return 0;');

@@ -182,6 +182,8 @@ export interface ArmView {
     armLabel: string; // "CH5", "button 3", or the Space / ARM text
     mode: 1 | 2;
     source: Controls['source'];
+    /** easy play flies (touch or keyboard with prefs input.play 'easy', v0.8): no arming, the HUD says "take off" */
+    easy: boolean;
 }
 
 /** Routes mapped channels through the arm gate into the session. */
@@ -192,6 +194,11 @@ export class Controls {
     profile: Profile | null = null;
     /** The pilot's flight mode (prefs flight.mode, app/builtin/modes.ts): ch[5] unless the radio's switch decides. */
     mode: FlightMode = 'angle';
+    /**
+     * How touch and keyboard fly (prefs input.play, set by app/builtin/play.ts; v0.8 lane A): 'easy'
+     * starts the motors with the first flying input (play/easy.ts). Never read for a radio or gamepad.
+     */
+    play: 'easy' | 'pilot' = 'pilot';
     private latch = new ArmLatch(); // keyboard arm and momentary arm buttons
     private armView: ArmView;
     private ch = new Float32Array([0, 0, -1, 0, -1, -1, 0, 0]);
@@ -207,7 +214,7 @@ export class Controls {
 
     constructor(session: FlightSession) {
         this.session = session;
-        this.armView = { ch: this.ch, armKind: null, armLabel: '', mode: 2, source: null };
+        this.armView = { ch: this.ch, armKind: null, armLabel: '', mode: 2, source: null, easy: false };
     }
 
     /** A new scene (E.4): the same input, profile and arm gate feed the new session. */
@@ -316,6 +323,7 @@ export class Controls {
         }
         v.mode = this.profile?.mode ?? getStickMode();
         v.source = this.source;
+        v.easy = this.play === 'easy' && (this.source === 'touch' || this.source === 'keyboard');
         return v;
     }
 

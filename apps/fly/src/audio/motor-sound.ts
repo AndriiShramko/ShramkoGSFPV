@@ -79,7 +79,7 @@ export function audible(i: MixInput): boolean {
 export function motorMix(i: MixInput): Mix {
     const st = i.state;
     const vol = clamp(i.volume, 0, 100) / 100;
-    // a slider that sounds even: loudness grows faster than the amplitude (40 % is about -15 dB)
+    // a slider that sounds even: loudness grows faster than the amplitude (40 % is about -15 dB, the default 15 % about -28 dB)
     const master = audible(i) ? Math.pow(vol, 1.5) * MASTER_MAX : 0;
     const voices: Voice[] = [0, 1, 2, 3].map((k) => {
         const m = st ? clamp(st.motors[k] ?? 0, 0, 1) : 0;

@@ -57,7 +57,8 @@ async function newContext(browser: Browser, w = 1280, hgt = 800): Promise<Browse
 /** A flight with the keyboard as the input: the Controls screen of a first visit closed with its x (the keyboard stands in). */
 async function openFlight(ctx: BrowserContext, qs = LOGIC): Promise<Page> {
     const p = await ctx.newPage();
-    await p.goto(fly(qs));
+    // v0.8: the keyboard flies easy play by default; these checks fly the pilot keys (Space arms, W/S throttle)
+    await p.goto(fly(`${qs}&set.input.play=pilot`));
     const r = await waitReady(p, 240000);
     if (r.status !== 'ready') throw new Error(`flight did not start: ${String(r.status)} ${String(r.error ?? '')}`);
     await keyboardInput(p);
