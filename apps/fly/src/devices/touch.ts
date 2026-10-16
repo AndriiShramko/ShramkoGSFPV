@@ -5,7 +5,9 @@
 //
 // A finger grabs a stick where it is (play/touch-map.ts PadGrab; the owner's message 21 item 2): a
 // touch-down never moves a stick, then the finger moves it by the same amount per pixel as before
-// (full deflection at the pad's half width minus the knob). v0.7's pads were absolute, so a finger
+// (full deflection at the pad's half width minus the knob), or sooner on a side where the screen's
+// edge is nearer, so full deflection is always reachable. The knob shows the stick's position on
+// its pad, as a radio's gimbal would. v0.7's pads were absolute, so a finger
 // landing off-centre was a step on that stick and every touch on the left pad set the throttle to
 // where the thumb landed: a radio's stick never does either.
 //
@@ -22,7 +24,7 @@
 import type { Controls } from '../controls';
 import type { EasyPilot } from '../play/easy';
 import type { PlayProfile } from '../play/keys';
-import { PadGrab, padTravel } from '../play/touch-map';
+import { PadGrab, padTravel, reachOf } from '../play/touch-map';
 import { t } from '../i18n';
 
 /**
@@ -146,7 +148,7 @@ export class TouchSticks {
         p.id = e.pointerId;
         p.el.setPointerCapture(e.pointerId);
         // the finger takes the stick where it is: the spring axes at centre, the throttle where it was left
-        p.grab.grab(e.clientX, e.clientY, p.left ? this.ch[3] : this.ch[0], p.left ? this.leftY() : this.ch[1], this.travel(p));
+        p.grab.grab(e.clientX, e.clientY, p.left ? this.ch[3] : this.ch[0], p.left ? this.leftY() : this.ch[1], this.travel(p), reachOf(innerWidth, innerHeight));
         this.easy?.arm.request(); // easy play: a touch on a stick starts the motors
         this.move(p, e);
         e.preventDefault();
@@ -156,11 +158,10 @@ export class TouchSticks {
         if (p.id !== e.pointerId) return;
         const evs = typeof e.getCoalescedEvents === 'function' ? e.getCoalescedEvents() : [];
         const list = evs.length ? evs : [e];
-        const r = this.travel(p);
         for (const ev of list) {
             p.px = ev.clientX;
             p.py = ev.clientY;
-            const [x, y] = p.grab.read(ev.clientX, ev.clientY, r);
+            const [x, y] = p.grab.read(ev.clientX, ev.clientY);
             if (p.left) {
                 this.ch[3] = x;
                 if (this.climbStick) this.lift = y;
@@ -203,7 +204,7 @@ export class TouchSticks {
                 this.drawHint();
                 // a finger on the left pad keeps its place: the stick's new value is under it from now on
                 const lp = this.pads[0];
-                if (lp.id !== null) lp.grab.grab(lp.px, lp.py, this.ch[3], this.leftY(), this.travel(lp));
+                if (lp.id !== null) lp.grab.grab(lp.px, lp.py, this.ch[3], this.leftY(), this.travel(lp), reachOf(innerWidth, innerHeight));
                 this.place(lp, this.ch[3], this.leftY());
             } else if (climb) this.throttle = this.easy.throttleSent;
             this.easy.send({ roll: this.ch[0], pitch: this.ch[1], yaw: this.ch[3], lift: this.lift, throttle: this.throttle, boost: false }, tMs);

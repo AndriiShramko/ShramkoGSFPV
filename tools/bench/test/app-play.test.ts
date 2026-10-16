@@ -24,7 +24,7 @@ import { FLYING_CODES, KEYMAP, keymapProblems } from '../../../packages/prefs/sr
 import type { KeyBinding } from '../../../packages/prefs/src';
 import { ARM_RETRY_MS, AltitudeHelp, AutoArm, CLIMB_BOOST, CLIMB_MPS, SINK_MPS, helpFlies, stickForThrust } from '../../../apps/fly/src/play/assist';
 import { BOOST_CODES, GAME_KEYS, KEY_ACRO_DPS, KEY_TILT_DEG, KEY_YAW_DPS, MODE2_KEYS, MOTOR_STOP_HOLD_MS, MotorKey, RAMP_FALL_PER_S, RAMP_RISE_PER_S, axisDirs, flyingKeyCodes, keyTargets, slew, stickForRate } from '../../../apps/fly/src/play/keys';
-import { PadGrab, absoluteRead, padTravel } from '../../../apps/fly/src/play/touch-map';
+import { PadGrab, SCREEN_EDGE_PX, UNBOUNDED, absoluteRead, padTravel, reachOf } from '../../../apps/fly/src/play/touch-map';
 import { GOAL_S, SCHOOL_STEPS, SchoolProgress, settingsOf, stepOf } from '../../../apps/fly/src/play/school';
 import { KeyCardShow } from '../../../apps/fly/src/ui/key-card-state';
 
@@ -377,8 +377,8 @@ describe('touch: a touch-down never moves a stick; a finger moves it like a radi
         const cases: [number, number, number, number][] = [[cx + 30, cy - 20, 0, 0], [cx - 50, cy + 40, 0, -1], [cx + 10, cy + 70, 0, -0.4]];
         let jumps = 0;
         for (const [px, py, curX, curY] of cases) {
-            g.grab(px, py, curX, curY, travel);
-            const [x, y] = g.read(px, py, travel);
+            g.grab(px, py, curX, curY, travel, reachOf(1024, 768));
+            const [x, y] = g.read(px, py);
             expect(x).toBeCloseTo(curX, 9);
             expect(y).toBeCloseTo(curY, 9);
             const [ax, ay] = absoluteRead(px, py, cx, cy, travel);
@@ -394,11 +394,53 @@ describe('touch: a touch-down never moves a stick; a finger moves it like a radi
         } as unknown as Profile;
         const g = new PadGrab();
         for (const f of [0.1, 0.25, 0.5, 0.9]) {
-            g.grab(300, 400, 0, 0, W.phone);
-            const [x] = g.read(300 + f * W.phone, 400, W.phone);
+            g.grab(300, 400, 0, 0, W.phone, reachOf(375, 812));
+            const [x] = g.read(300 + f * W.phone, 400);
             const out = mapFrame(radio, { t: 0, axes: new Float32Array([f, 0, -1, 0, 0, 0, 0, 0]), buttons: 0 }, new Float32Array(8));
             expect(x).toBeCloseTo(out[0], 6); // the radio's channel is a float32
         }
+    });
+
+    it('full deflection is reachable on screen from any touch-down inside a pad, and the touch-down still moves nothing; control: the first grab (radio travel on every side) left about half of full stick unreachable at the edge', () => {
+        // fly.css: .touch-pad 24 px from the left / right / bottom edges, a circle min(40vw, 220 px) wide
+        const SIZES: [string, number, number][] = [['phone', 375, 812], ['tablet', 1024, 768], ['phone-landscape', 812, 375]];
+        const rows: Record<string, { landings: number; worstFirstGrab: number }> = {};
+        for (const [name, w, hgt] of SIZES) {
+            const size = Math.min(0.4 * w, 220);
+            const travel = padTravel(size);
+            const reach = reachOf(w, hgt);
+            let landings = 0;
+            let worstFirst = 1;
+            for (const left of [true, false]) {
+                const cx = left ? 24 + size / 2 : w - 24 - size / 2;
+                const cy = hgt - 24 - size / 2;
+                for (let px = cx - size / 2; px <= cx + size / 2; px += 4) {
+                    for (let py = cy - size / 2; py <= cy + size / 2; py += 4) {
+                        if (Math.hypot(px - cx, py - cy) > size / 2 - 1) continue; // the pad is a circle
+                        // spring axes at centre; the left pad's sticky throttle anywhere
+                        for (const curY of left ? [-1, -0.2, 0.6, 1] : [0]) {
+                            const g = new PadGrab();
+                            g.grab(px, py, 0, curY, travel, reach);
+                            const at = g.read(px, py);
+                            expect(Math.abs(at[0]) + Math.abs(at[1] - curY), `${name} ${px},${py}`).toBeLessThan(1e-9);
+                            expect([g.read(reach.left, py)[0], g.read(reach.right, py)[0], g.read(px, reach.top)[1], g.read(px, reach.bottom)[1]], `${name} ${left ? 'L' : 'R'} ${px},${py} cur ${curY}`).toEqual([-1, 1, 1, -1]);
+                            const first = new PadGrab();
+                            first.grab(px, py, 0, curY, travel, UNBOUNDED);
+                            worstFirst = Math.min(worstFirst, -first.read(reach.left, py)[0], first.read(reach.right, py)[0], -first.read(px, reach.bottom)[1]);
+                            landings++;
+                        }
+                    }
+                }
+            }
+            rows[name] = { landings, worstFirstGrab: worstFirst };
+            expect(landings).toBeGreaterThan(500);
+            expect(worstFirst, name).toBeLessThan(0.6);
+        }
+        // a finger landing well inside the screen keeps the radio's travel: half the travel = half stick
+        const g = new PadGrab();
+        g.grab(24 + 110, 768 - 24 - 110, 0, 0, padTravel(220), reachOf(1024, 768));
+        expect(g.read(24 + 110 + padTravel(220) / 2, 768 - 24 - 110)[0]).toBeCloseTo(0.5, 9);
+        expect(SCREEN_EDGE_PX).toBeLessThan(24); // the edge margin is inside the pads' 24 px gutter
     });
 });
 
