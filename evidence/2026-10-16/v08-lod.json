@@ -7,15 +7,15 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-16T14:26:59.775Z",
-    "gitHead": "9331cc8",
+    "date": "2026-10-16T20:33:18.656Z",
+    "gitHead": "ed03295",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://127.0.0.1:5382",
-  "siteBefore": "http://127.0.0.1:5381",
+  "site": "http://localhost:5340",
+  "siteBefore": "https://gsfpv.flyreelstudio.eu",
   "browser": {
     "kind": "system-chrome",
     "version": "155.0.8059.40",
@@ -32,7 +32,7 @@
   "items": {
     "L1": {
       "after": {
-        "site": "http://127.0.0.1:5382",
+        "site": "http://localhost:5340",
         "atReveal": {
           "status": "ready",
           "errorCode": null,
@@ -52,6 +52,8 @@
             "renderScale": 1,
             "topBudgetM": 4,
             "governorStep": 0,
+            "governorBudgetM": 4,
+            "settingBudgetM": 4,
             "streamHitches": 0
           },
           "contentKind": "lod-meta",
@@ -67,8 +69,8 @@
           "perLevel": {
             "9": 58994
           },
-          "visibleMs": 1816.9000000953674,
-          "firstFrameMs": 597.6000000238419,
+          "visibleMs": 4764.099999904633,
+          "firstFrameMs": 1981.7999999523163,
           "detailLine": null
         },
         "samples": [
@@ -79,11 +81,9 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 475244,
+            "drawn": 58994,
             "perLevel": {
-              "4": 405578,
-              "5": 21239,
-              "9": 48427
+              "9": 58994
             }
           },
           {
@@ -93,14 +93,9 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 1004520,
+            "drawn": 58994,
             "perLevel": {
-              "3": 343698,
-              "4": 590250,
-              "5": 21239,
-              "7": 11574,
-              "8": 7673,
-              "9": 30086
+              "9": 58994
             }
           },
           {
@@ -110,15 +105,9 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 1046964,
+            "drawn": 58994,
             "perLevel": {
-              "3": 343698,
-              "4": 590250,
-              "5": 36084,
-              "6": 27008,
-              "7": 21911,
-              "8": 7673,
-              "9": 20340
+              "9": 58994
             }
           },
           {
@@ -128,15 +117,9 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 1294051,
+            "drawn": 58994,
             "perLevel": {
-              "3": 345295,
-              "4": 804496,
-              "5": 76180,
-              "6": 26534,
-              "7": 22143,
-              "8": 7673,
-              "9": 11730
+              "9": 58994
             }
           },
           {
@@ -146,15 +129,11 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 1703466,
+            "drawn": 112175,
             "perLevel": {
-              "3": 725570,
-              "4": 838585,
-              "5": 76180,
-              "6": 26534,
-              "7": 22143,
-              "8": 7673,
-              "9": 6781
+              "4": 33891,
+              "5": 21239,
+              "9": 57045
             }
           },
           {
@@ -164,15 +143,11 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 2091078,
+            "drawn": 112175,
             "perLevel": {
-              "3": 1116156,
-              "4": 838585,
-              "5": 76180,
-              "6": 26534,
-              "7": 22143,
-              "8": 7673,
-              "9": 3807
+              "4": 33891,
+              "5": 21239,
+              "9": 57045
             }
           },
           {
@@ -182,16 +157,11 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 2653627,
+            "drawn": 112175,
             "perLevel": {
-              "2": 485459,
-              "3": 1193786,
-              "4": 839582,
-              "5": 76634,
-              "6": 25982,
-              "7": 22507,
-              "8": 7673,
-              "9": 2004
+              "4": 33891,
+              "5": 21239,
+              "9": 57045
             }
           },
           {
@@ -201,16 +171,11 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 2958230,
+            "drawn": 112175,
             "perLevel": {
-              "2": 790192,
-              "3": 1194688,
-              "4": 839582,
-              "5": 76634,
-              "6": 25982,
-              "7": 22507,
-              "8": 7673,
-              "9": 972
+              "4": 33891,
+              "5": 21239,
+              "9": 57045
             }
           },
           {
@@ -220,16 +185,11 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 3202121,
+            "drawn": 112175,
             "perLevel": {
-              "2": 1038276,
-              "3": 1189244,
-              "4": 841694,
-              "5": 75630,
-              "6": 26607,
-              "7": 22507,
-              "8": 7673,
-              "9": 490
+              "4": 33891,
+              "5": 21239,
+              "9": 57045
             }
           },
           {
@@ -239,17 +199,11 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 3545777,
+            "drawn": 112175,
             "perLevel": {
-              "1": 339099,
-              "2": 1029780,
-              "3": 1202534,
-              "4": 841694,
-              "5": 75630,
-              "6": 26607,
-              "7": 22507,
-              "8": 7673,
-              "9": 253
+              "4": 33891,
+              "5": 21239,
+              "9": 57045
             }
           },
           {
@@ -259,18 +213,11 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 3787892,
+            "drawn": 160147,
             "perLevel": {
-              "0": 121487,
-              "1": 459968,
-              "2": 1029780,
-              "3": 1202534,
-              "4": 841694,
-              "5": 75630,
-              "6": 26607,
-              "7": 22507,
-              "8": 7673,
-              "9": 12
+              "4": 82842,
+              "5": 21239,
+              "9": 56066
             }
           },
           {
@@ -280,17 +227,11 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 3923895,
+            "drawn": 656652,
             "perLevel": {
-              "0": 257502,
-              "1": 459968,
-              "2": 1029780,
-              "3": 1202534,
-              "4": 841694,
-              "5": 75630,
-              "6": 26607,
-              "7": 22507,
-              "8": 7673
+              "4": 590250,
+              "5": 21239,
+              "9": 45163
             }
           },
           {
@@ -300,17 +241,12 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 3923895,
+            "drawn": 904731,
             "perLevel": {
-              "0": 257502,
-              "1": 459968,
-              "2": 1029780,
-              "3": 1202534,
-              "4": 841694,
-              "5": 75630,
-              "6": 26607,
-              "7": 22507,
-              "8": 7673
+              "3": 250004,
+              "4": 590250,
+              "5": 21239,
+              "9": 43238
             }
           },
           {
@@ -320,17 +256,13 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 3923895,
+            "drawn": 1000063,
             "perLevel": {
-              "0": 257502,
-              "1": 459968,
-              "2": 1029780,
-              "3": 1202534,
-              "4": 841694,
-              "5": 75630,
-              "6": 26607,
-              "7": 22507,
-              "8": 7673
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "8": 6435,
+              "9": 38441
             }
           },
           {
@@ -340,17 +272,14 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 3923895,
+            "drawn": 1003950,
             "perLevel": {
-              "0": 257502,
-              "1": 459968,
-              "2": 1029780,
-              "3": 1202534,
-              "4": 841694,
-              "5": 75630,
-              "6": 26607,
-              "7": 22507,
-              "8": 7673
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "7": 10053,
+              "8": 7673,
+              "9": 31037
             }
           },
           {
@@ -360,17 +289,14 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 3923895,
+            "drawn": 1010158,
             "perLevel": {
-              "0": 257502,
-              "1": 459968,
-              "2": 1029780,
-              "3": 1202534,
-              "4": 841694,
-              "5": 75630,
-              "6": 26607,
-              "7": 22507,
-              "8": 7673
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "7": 20453,
+              "8": 7673,
+              "9": 26845
             }
           },
           {
@@ -380,17 +306,15 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 3923895,
+            "drawn": 1016676,
             "perLevel": {
-              "0": 257502,
-              "1": 459968,
-              "2": 1029780,
-              "3": 1202534,
-              "4": 841694,
-              "5": 75630,
-              "6": 26607,
-              "7": 22507,
-              "8": 7673
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "6": 7308,
+              "7": 21911,
+              "8": 7673,
+              "9": 24597
             }
           },
           {
@@ -400,17 +324,15 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 3923895,
+            "drawn": 1018264,
             "perLevel": {
-              "0": 257502,
-              "1": 459968,
-              "2": 1029780,
-              "3": 1202534,
-              "4": 841694,
-              "5": 75630,
-              "6": 26607,
-              "7": 22507,
-              "8": 7673
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "6": 9172,
+              "7": 21911,
+              "8": 7673,
+              "9": 24321
             }
           },
           {
@@ -420,17 +342,15 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 3923895,
+            "drawn": 1018264,
             "perLevel": {
-              "0": 257502,
-              "1": 459968,
-              "2": 1029780,
-              "3": 1202534,
-              "4": 841694,
-              "5": 75630,
-              "6": 26607,
-              "7": 22507,
-              "8": 7673
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "6": 15246,
+              "7": 21911,
+              "8": 7673,
+              "9": 23047
             }
           },
           {
@@ -440,17 +360,15 @@
             "step": 0,
             "changes": 0,
             "hitches": 0,
-            "drawn": 3923895,
+            "drawn": 1023064,
             "perLevel": {
-              "0": 257502,
-              "1": 459968,
-              "2": 1029780,
-              "3": 1202534,
-              "4": 841694,
-              "5": 75630,
-              "6": 26607,
-              "7": 22507,
-              "8": 7673
+              "3": 343698,
+              "4": 590250,
+              "5": 21239,
+              "6": 15246,
+              "7": 21911,
+              "8": 7673,
+              "9": 23047
             }
           }
         ],
@@ -465,14 +383,16 @@
               9
             ],
             "mode": "auto",
-            "drawn": 3923895,
+            "drawn": 1023064,
             "budgetM": 4,
-            "loading": 0,
+            "loading": 106,
             "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/ba7aa29d/v1/lod-meta.json",
             "contentFailures": [],
             "renderScale": 1,
             "topBudgetM": 4,
             "governorStep": 0,
+            "governorBudgetM": 4,
+            "settingBudgetM": 4,
             "streamHitches": 0
           },
           "contentKind": "lod-meta",
@@ -484,28 +404,26 @@
           "top": 4,
           "changes": 0,
           "hitches": 0,
-          "drawn": 3923895,
+          "drawn": 1023064,
           "perLevel": {
-            "0": 257502,
-            "1": 459968,
-            "2": 1029780,
-            "3": 1202534,
-            "4": 841694,
-            "5": 75630,
-            "6": 26607,
-            "7": 22507,
-            "8": 7673
+            "3": 343698,
+            "4": 590250,
+            "5": 21239,
+            "6": 15246,
+            "7": 21911,
+            "8": 7673,
+            "9": 23047
           },
-          "visibleMs": 1816.9000000953674,
-          "firstFrameMs": 597.6000000238419,
-          "detailLine": "Levels of detail: 10, chosen by distance \u00b7 3.9 of 4.0 M splats \u00b7 100 % resolution"
+          "visibleMs": 4764.099999904633,
+          "firstFrameMs": 1981.7999999523163,
+          "detailLine": "Levels of detail: 10, chosen by distance \u00b7 1.0 of 4.0 M splats \u00b7 100 % resolution"
         },
-        "finestAtEnd": 0,
+        "finestAtEnd": 3,
         "lowered": false,
         "pageerrors": []
       },
       "before": {
-        "site": "http://127.0.0.1:5381",
+        "site": "https://gsfpv.flyreelstudio.eu",
         "atReveal": {
           "status": "ready",
           "errorCode": null,
@@ -513,393 +431,264 @@
           "contentKind": "lod-meta",
           "rangeMin": 0,
           "rangeMax": 1000,
-          "budgetM": 3,
-          "scale": 0.85,
-          "step": 1,
+          "budgetM": 4,
+          "scale": 1,
+          "step": 0,
           "top": 4,
-          "changes": 1,
+          "changes": 0,
           "drawn": 58994,
           "perLevel": {
             "9": 58994
           },
-          "visibleMs": 1661.1999999284744,
-          "firstFrameMs": 411,
+          "visibleMs": 11996.799999952316,
+          "firstFrameMs": 951.6999999284744,
           "detailLine": null
         },
         "samples": [
           {
             "s": 1,
-            "budgetM": 2.5,
-            "scale": 0.7,
-            "step": 2,
-            "changes": 2,
-            "drawn": 842482,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 0,
+            "drawn": 58994,
             "perLevel": {
-              "3": 159627,
-              "4": 656388,
-              "5": 36533,
-              "9": 44162
+              "9": 58994
             }
           },
           {
             "s": 2,
-            "budgetM": 2,
-            "scale": 0.6,
-            "step": 3,
-            "changes": 3,
-            "drawn": 914097,
+            "budgetM": 3,
+            "scale": 0.85,
+            "step": 1,
+            "changes": 1,
+            "drawn": 58994,
             "perLevel": {
-              "3": 160703,
-              "4": 719812,
-              "5": 42943,
-              "7": 19685,
-              "8": 15395,
-              "9": 27227
+              "9": 58994
             }
           },
           {
             "s": 3,
-            "budgetM": 1.5,
-            "scale": 0.5,
-            "step": 4,
-            "changes": 4,
-            "drawn": 986836,
+            "budgetM": 2.5,
+            "scale": 0.7,
+            "step": 2,
+            "changes": 2,
+            "drawn": 58994,
             "perLevel": {
-              "3": 160703,
-              "4": 567461,
-              "5": 135128,
-              "6": 89790,
-              "7": 13232,
-              "8": 20468,
-              "9": 17894
+              "9": 58994
             }
           },
           {
             "s": 4,
-            "budgetM": 1.5,
-            "scale": 0.5,
-            "step": 4,
-            "changes": 4,
-            "drawn": 958623,
+            "budgetM": 2.5,
+            "scale": 0.7,
+            "step": 2,
+            "changes": 2,
+            "drawn": 85182,
             "perLevel": {
-              "3": 1076,
-              "4": 397997,
-              "5": 421293,
-              "6": 95750,
-              "7": 13232,
-              "8": 20468,
-              "9": 8807
+              "5": 27323,
+              "9": 57859
             }
           },
           {
             "s": 5,
-            "budgetM": 1.5,
-            "scale": 0.5,
-            "step": 4,
-            "changes": 4,
-            "drawn": 1213273,
+            "budgetM": 2.5,
+            "scale": 0.7,
+            "step": 2,
+            "changes": 2,
+            "drawn": 85182,
             "perLevel": {
-              "3": 240559,
-              "4": 415638,
-              "5": 420087,
-              "6": 95516,
-              "7": 13765,
-              "8": 20468,
-              "9": 7240
+              "5": 27323,
+              "9": 57859
             }
           },
           {
             "s": 6,
-            "budgetM": 1.5,
-            "scale": 0.5,
-            "step": 4,
-            "changes": 4,
-            "drawn": 1454869,
+            "budgetM": 2.5,
+            "scale": 0.7,
+            "step": 2,
+            "changes": 2,
+            "drawn": 85182,
             "perLevel": {
-              "0": 121487,
-              "2": 68102,
-              "3": 291862,
-              "4": 417791,
-              "5": 418629,
-              "6": 95608,
-              "7": 14091,
-              "8": 20468,
-              "9": 6831
+              "5": 27323,
+              "9": 57859
             }
           },
           {
             "s": 7,
-            "budgetM": 1.5,
-            "scale": 0.5,
-            "step": 4,
-            "changes": 4,
-            "drawn": 1454869,
+            "budgetM": 2.5,
+            "scale": 0.7,
+            "step": 2,
+            "changes": 2,
+            "drawn": 85182,
             "perLevel": {
-              "0": 121487,
-              "2": 68102,
-              "3": 291862,
-              "4": 417791,
-              "5": 418629,
-              "6": 95608,
-              "7": 14091,
-              "8": 20468,
-              "9": 6831
+              "5": 27323,
+              "9": 57859
             }
           },
           {
             "s": 8,
-            "budgetM": 1.5,
-            "scale": 0.5,
-            "step": 4,
-            "changes": 4,
-            "drawn": 1454869,
+            "budgetM": 3,
+            "scale": 0.85,
+            "step": 1,
+            "changes": 3,
+            "drawn": 93967,
             "perLevel": {
-              "0": 121487,
-              "2": 68102,
-              "3": 291862,
-              "4": 417791,
-              "5": 418629,
-              "6": 95608,
-              "7": 14091,
-              "8": 20468,
-              "9": 6831
+              "5": 36533,
+              "9": 57434
             }
           },
           {
             "s": 9,
-            "budgetM": 2,
-            "scale": 0.6,
-            "step": 3,
-            "changes": 5,
-            "drawn": 1823140,
+            "budgetM": 3,
+            "scale": 0.85,
+            "step": 1,
+            "changes": 3,
+            "drawn": 93967,
             "perLevel": {
-              "0": 121487,
-              "2": 114037,
-              "3": 546738,
-              "4": 519788,
-              "5": 438930,
-              "6": 41963,
-              "7": 16196,
-              "8": 18403,
-              "9": 5598
+              "5": 36533,
+              "9": 57434
             }
           },
           {
             "s": 10,
-            "budgetM": 2,
-            "scale": 0.6,
-            "step": 3,
-            "changes": 5,
-            "drawn": 1854489,
+            "budgetM": 3,
+            "scale": 0.85,
+            "step": 1,
+            "changes": 3,
+            "drawn": 93967,
             "perLevel": {
-              "0": 121487,
-              "2": 133387,
-              "3": 540030,
-              "4": 556565,
-              "5": 420683,
-              "6": 41963,
-              "7": 16502,
-              "8": 18274,
-              "9": 5598
+              "5": 36533,
+              "9": 57434
             }
           },
           {
             "s": 11,
-            "budgetM": 2,
-            "scale": 0.6,
-            "step": 3,
-            "changes": 5,
-            "drawn": 1943234,
+            "budgetM": 3,
+            "scale": 0.85,
+            "step": 1,
+            "changes": 3,
+            "drawn": 93967,
             "perLevel": {
-              "0": 121487,
-              "1": 59461,
-              "2": 212682,
-              "3": 490019,
-              "4": 556565,
-              "5": 420683,
-              "6": 41963,
-              "7": 16502,
-              "8": 18274,
-              "9": 5598
+              "5": 36533,
+              "9": 57434
             }
           },
           {
             "s": 12,
-            "budgetM": 2,
-            "scale": 0.6,
-            "step": 3,
-            "changes": 5,
-            "drawn": 1943234,
+            "budgetM": 3,
+            "scale": 0.85,
+            "step": 1,
+            "changes": 3,
+            "drawn": 93967,
             "perLevel": {
-              "0": 121487,
-              "1": 59461,
-              "2": 212682,
-              "3": 490019,
-              "4": 556565,
-              "5": 420683,
-              "6": 41963,
-              "7": 16502,
-              "8": 18274,
-              "9": 5598
+              "5": 36533,
+              "9": 57434
             }
           },
           {
             "s": 13,
-            "budgetM": 2,
-            "scale": 0.6,
-            "step": 3,
-            "changes": 5,
-            "drawn": 1943234,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 4,
+            "drawn": 97138,
             "perLevel": {
-              "0": 121487,
-              "1": 59461,
-              "2": 212682,
-              "3": 490019,
-              "4": 556565,
-              "5": 420683,
-              "6": 41963,
-              "7": 16502,
-              "8": 18274,
-              "9": 5598
+              "5": 39926,
+              "9": 57212
             }
           },
           {
             "s": 14,
-            "budgetM": 2.5,
-            "scale": 0.7,
-            "step": 2,
-            "changes": 6,
-            "drawn": 2410993,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 4,
+            "drawn": 97138,
             "perLevel": {
-              "0": 121487,
-              "1": 59461,
-              "2": 401347,
-              "3": 735139,
-              "4": 724089,
-              "5": 300643,
-              "6": 28424,
-              "7": 26158,
-              "8": 12108,
-              "9": 2137
+              "5": 39926,
+              "9": 57212
             }
           },
           {
             "s": 15,
-            "budgetM": 2.5,
-            "scale": 0.7,
-            "step": 2,
-            "changes": 6,
-            "drawn": 2449244,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 4,
+            "drawn": 97138,
             "perLevel": {
-              "0": 121487,
-              "1": 59461,
-              "2": 443264,
-              "3": 745984,
-              "4": 708695,
-              "5": 299929,
-              "6": 32565,
-              "7": 23614,
-              "8": 12108,
-              "9": 2137
+              "5": 39926,
+              "9": 57212
             }
           },
           {
             "s": 16,
-            "budgetM": 2.5,
-            "scale": 0.7,
-            "step": 2,
-            "changes": 6,
-            "drawn": 2449244,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 4,
+            "drawn": 130024,
             "perLevel": {
-              "0": 121487,
-              "1": 59461,
-              "2": 443264,
-              "3": 745984,
-              "4": 708695,
-              "5": 299929,
-              "6": 32565,
-              "7": 23614,
-              "8": 12108,
-              "9": 2137
+              "4": 33891,
+              "5": 39926,
+              "9": 56207
             }
           },
           {
             "s": 17,
-            "budgetM": 2.5,
-            "scale": 0.7,
-            "step": 2,
-            "changes": 6,
-            "drawn": 2449244,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 4,
+            "drawn": 130935,
             "perLevel": {
-              "0": 121487,
-              "1": 59461,
-              "2": 443264,
-              "3": 745984,
-              "4": 708695,
-              "5": 299929,
-              "6": 32565,
-              "7": 23614,
-              "8": 12108,
-              "9": 2137
+              "4": 33891,
+              "5": 39926,
+              "6": 1072,
+              "9": 56046
             }
           },
           {
             "s": 18,
-            "budgetM": 2.5,
-            "scale": 0.7,
-            "step": 2,
-            "changes": 6,
-            "drawn": 2449244,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 4,
+            "drawn": 161058,
             "perLevel": {
-              "0": 121487,
-              "1": 59461,
-              "2": 443264,
-              "3": 745984,
-              "4": 708695,
-              "5": 299929,
-              "6": 32565,
-              "7": 23614,
-              "8": 12108,
-              "9": 2137
+              "4": 241496,
+              "5": 21239,
+              "6": 1072,
+              "9": 52659
             }
           },
           {
             "s": 19,
-            "budgetM": 3,
-            "scale": 0.85,
-            "step": 1,
-            "changes": 7,
-            "drawn": 2837034,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 4,
+            "drawn": 476155,
             "perLevel": {
-              "0": 121487,
-              "1": 112418,
-              "2": 597634,
-              "3": 849247,
-              "4": 919436,
-              "5": 177539,
-              "6": 23134,
-              "7": 26667,
-              "8": 8381,
-              "9": 1091
+              "4": 405578,
+              "5": 21239,
+              "6": 1072,
+              "9": 48266
             }
           },
           {
             "s": 20,
-            "budgetM": 3,
-            "scale": 0.85,
-            "step": 1,
-            "changes": 7,
-            "drawn": 2887661,
+            "budgetM": 4,
+            "scale": 1,
+            "step": 0,
+            "changes": 4,
+            "drawn": 476155,
             "perLevel": {
-              "0": 121487,
-              "1": 112418,
-              "2": 597634,
-              "3": 937613,
-              "4": 881439,
-              "5": 177539,
-              "6": 23134,
-              "7": 26667,
-              "8": 9730
+              "4": 405578,
+              "5": 21239,
+              "6": 1072,
+              "9": 48266
             }
           }
         ],
@@ -910,28 +699,23 @@
           "contentKind": "lod-meta",
           "rangeMin": 0,
           "rangeMax": 1000,
-          "budgetM": 3,
-          "scale": 0.85,
-          "step": 1,
+          "budgetM": 4,
+          "scale": 1,
+          "step": 0,
           "top": 4,
-          "changes": 7,
-          "drawn": 2887661,
+          "changes": 4,
+          "drawn": 476155,
           "perLevel": {
-            "0": 121487,
-            "1": 112418,
-            "2": 597634,
-            "3": 937613,
-            "4": 881439,
-            "5": 177539,
-            "6": 23134,
-            "7": 26667,
-            "8": 9730
+            "4": 405578,
+            "5": 21239,
+            "6": 1072,
+            "9": 48266
           },
-          "visibleMs": 1661.1999999284744,
-          "firstFrameMs": 411,
+          "visibleMs": 11996.799999952316,
+          "firstFrameMs": 951.6999999284744,
           "detailLine": null
         },
-        "finestAtEnd": 0,
+        "finestAtEnd": 4,
         "lowered": true,
         "pageerrors": []
       },
@@ -958,6 +742,8 @@
           "renderScale": 1,
           "topBudgetM": 2,
           "governorStep": 0,
+          "governorBudgetM": 2,
+          "settingBudgetM": 2,
           "streamHitches": 0
         },
         "contentKind": "lod-meta",
@@ -973,8 +759,8 @@
         "perLevel": {
           "9": 58994
         },
-        "visibleMs": 1496.0999999046326,
-        "firstFrameMs": 452.2999999523163,
+        "visibleMs": 4762.300000071526,
+        "firstFrameMs": 2082.7000000476837,
         "detailLine": null
       },
       "end": {
@@ -988,14 +774,16 @@
             9
           ],
           "mode": "auto",
-          "drawn": 736688,
+          "drawn": 509075,
           "budgetM": 2,
-          "loading": 44,
+          "loading": 96,
           "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/ba7aa29d/v1/lod-meta.json",
           "contentFailures": [],
           "renderScale": 1,
           "topBudgetM": 2,
           "governorStep": 0,
+          "governorBudgetM": 2,
+          "settingBudgetM": 2,
           "streamHitches": 0
         },
         "contentKind": "lod-meta",
@@ -1007,17 +795,15 @@
         "top": 2,
         "changes": 0,
         "hitches": 0,
-        "drawn": 736688,
+        "drawn": 509075,
         "perLevel": {
-          "4": 225106,
-          "5": 420683,
-          "6": 41963,
-          "7": 16502,
-          "8": 18274,
-          "9": 14160
+          "4": 158863,
+          "5": 297565,
+          "6": 10240,
+          "9": 42407
         },
-        "visibleMs": 1496.0999999046326,
-        "firstFrameMs": 452.2999999523163,
+        "visibleMs": 4762.300000071526,
+        "firstFrameMs": 2082.7000000476837,
         "detailLine": null
       },
       "pageerrors": []
@@ -1048,6 +834,8 @@
             "renderScale": 1,
             "topBudgetM": 4,
             "governorStep": 0,
+            "governorBudgetM": 4,
+            "settingBudgetM": 4,
             "streamHitches": 0
           },
           "contentKind": "meta",
@@ -1061,8 +849,8 @@
           "hitches": 0,
           "drawn": 2144439,
           "perLevel": {},
-          "visibleMs": 33172.799999952316,
-          "firstFrameMs": 2216.899999976158,
+          "visibleMs": 34274,
+          "firstFrameMs": 3300.2000000476837,
           "detailLine": null
         },
         "end": {
@@ -1089,6 +877,8 @@
             "renderScale": 1,
             "topBudgetM": 4,
             "governorStep": 0,
+            "governorBudgetM": 4,
+            "settingBudgetM": 4,
             "streamHitches": 0
           },
           "contentKind": "meta",
@@ -1102,8 +892,8 @@
           "hitches": 0,
           "drawn": 2144439,
           "perLevel": {},
-          "visibleMs": 33172.799999952316,
-          "firstFrameMs": 2216.899999976158,
+          "visibleMs": 34274,
+          "firstFrameMs": 3300.2000000476837,
           "detailLine": "One level of detail (this scan has no others) \u00b7 2.1 of 4.0 M splats \u00b7 100 % resolution \u00b7 the streamed file did not open, the single file is shown"
         },
         "cdn": [
@@ -1147,6 +937,8 @@
           "renderScale": 1,
           "topBudgetM": 4,
           "governorStep": 0,
+          "governorBudgetM": 4,
+          "settingBudgetM": 4,
           "streamHitches": 0
         },
         "contentKind": "meta",
@@ -1160,15 +952,42 @@
         "hitches": 0,
         "drawn": 2144439,
         "perLevel": {},
-        "visibleMs": 32684.799999952316,
-        "firstFrameMs": 1717.6000000238419,
+        "visibleMs": 77065.10000002384,
+        "firstFrameMs": 46122.299999952316,
         "detailLine": null
       },
       "noFallback": {
-        "status": "error",
-        "error": "lod-meta.json is not an octree the engine can open: lodLevels undefined is not a whole number from 1 to 64",
-        "errorCode": "generic",
-        "ms": 743
+        "after": {
+          "status": "error",
+          "error": "scene 39e63ce9: no content file the engine can open (https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/lod-meta.json: lod-meta.json is not an octree the engine can open: lodLevels undefined is not a whole number from 1 to 64)",
+          "errorCode": "broken",
+          "ms": 1367,
+          "text": "This scan's files on SuperSplat are damaged, so the simulator cannot open it. Try another scene, or tell its author."
+        },
+        "before": {
+          "status": "error",
+          "error": "Error loading gsplat octree: lod-meta.json [TypeError: Cannot read properties of undefined (reading 'map')]",
+          "errorCode": "generic",
+          "ms": 3377,
+          "text": "Something went wrong: Error loading gsplat octree: lod-meta.json [TypeError: Cannot read properties of undefined (reading 'map')]"
+        }
+      },
+      "leaf": {
+        "removed": "the bound of the first leaf found",
+        "after": {
+          "status": "error",
+          "error": "scene 39e63ce9: no content file the engine can open (https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/lod-meta.json: lod-meta.json is not an octree the engine can open: leaf 1 has no bound (min and max of three numbers))",
+          "errorCode": "broken",
+          "ms": 1289,
+          "text": "This scan's files on SuperSplat are damaged, so the simulator cannot open it. Try another scene, or tell its author."
+        },
+        "before": {
+          "status": "error",
+          "error": "Error loading gsplat octree: lod-meta.json [TypeError: Cannot read properties of undefined (reading 'min')]",
+          "errorCode": "generic",
+          "ms": 1994,
+          "text": "Something went wrong: Error loading gsplat octree: lod-meta.json [TypeError: Cannot read properties of undefined (reading 'min')]"
+        }
       }
     },
     "L4": {
@@ -1192,6 +1011,8 @@
             "renderScale": 1,
             "topBudgetM": 4,
             "governorStep": 0,
+            "governorBudgetM": 4,
+            "settingBudgetM": 4,
             "streamHitches": 0
           },
           "contentKind": "lod-meta",
@@ -1207,8 +1028,8 @@
           "perLevel": {
             "3": 471251
           },
-          "visibleMs": 1334.6000000238419,
-          "firstFrameMs": 632.7999999523163,
+          "visibleMs": 1441.1999999284744,
+          "firstFrameMs": 760.2999999523163,
           "detailLine": null
         },
         "end": {
@@ -1230,6 +1051,8 @@
             "renderScale": 1,
             "topBudgetM": 4,
             "governorStep": 0,
+            "governorBudgetM": 4,
+            "settingBudgetM": 4,
             "streamHitches": 0
           },
           "contentKind": "lod-meta",
@@ -1246,8 +1069,8 @@
             "0": 1375343,
             "3": 281340
           },
-          "visibleMs": 1334.6000000238419,
-          "firstFrameMs": 632.7999999523163,
+          "visibleMs": 1441.1999999284744,
+          "firstFrameMs": 760.2999999523163,
           "detailLine": null
         },
         "cdn": [
@@ -1261,33 +1084,33 @@
           "GET /39e63ce9/v5/settings.json",
           "GET /39e63ce9/v1/lod-meta.json",
           "GET /39e63ce9/v1/scene.voxel.json",
-          "GET /39e63ce9/v1/scene.voxel.bin",
           "GET /39e63ce9/v1/lod-meta.json",
+          "GET /39e63ce9/v1/scene.voxel.bin",
           "GET /39e63ce9/v1/env/meta.json",
           "GET /39e63ce9/v1/3_0/meta.json",
-          "GET /39e63ce9/v1/env/means_l.webp",
-          "GET /39e63ce9/v1/env/means_u.webp",
-          "GET /39e63ce9/v1/env/quats.webp",
-          "GET /39e63ce9/v1/env/scales.webp",
-          "GET /39e63ce9/v1/env/sh0.webp",
           "GET /39e63ce9/v1/3_0/means_l.webp",
           "GET /39e63ce9/v1/3_0/means_u.webp",
           "GET /39e63ce9/v1/3_0/quats.webp",
           "GET /39e63ce9/v1/3_0/scales.webp",
           "GET /39e63ce9/v1/3_0/sh0.webp",
+          "GET /39e63ce9/v1/env/means_l.webp",
+          "GET /39e63ce9/v1/env/means_u.webp",
+          "GET /39e63ce9/v1/env/quats.webp",
+          "GET /39e63ce9/v1/env/scales.webp",
+          "GET /39e63ce9/v1/env/sh0.webp",
           "GET /39e63ce9/v1/lod-meta.json",
           "GET /39e63ce9/v1/0_0/meta.json",
           "GET /39e63ce9/v1/0_1/meta.json",
-          "GET /39e63ce9/v1/0_1/means_l.webp",
-          "GET /39e63ce9/v1/0_1/means_u.webp",
-          "GET /39e63ce9/v1/0_1/quats.webp",
-          "GET /39e63ce9/v1/0_1/scales.webp",
-          "GET /39e63ce9/v1/0_1/sh0.webp",
           "GET /39e63ce9/v1/0_0/means_l.webp",
           "GET /39e63ce9/v1/0_0/means_u.webp",
           "GET /39e63ce9/v1/0_0/quats.webp",
           "GET /39e63ce9/v1/0_0/scales.webp",
           "GET /39e63ce9/v1/0_0/sh0.webp",
+          "GET /39e63ce9/v1/0_1/means_l.webp",
+          "GET /39e63ce9/v1/0_1/means_u.webp",
+          "GET /39e63ce9/v1/0_1/quats.webp",
+          "GET /39e63ce9/v1/0_1/scales.webp",
+          "GET /39e63ce9/v1/0_1/sh0.webp",
           "GET /39e63ce9/v1/0_2/meta.json",
           "GET /39e63ce9/v1/0_3/meta.json",
           "GET /39e63ce9/v1/0_2/means_l.webp",
@@ -1322,6 +1145,8 @@
             "renderScale": 1,
             "topBudgetM": 4,
             "governorStep": 0,
+            "governorBudgetM": 4,
+            "settingBudgetM": 4,
             "streamHitches": 0
           },
           "contentKind": "meta",
@@ -1335,8 +1160,8 @@
           "hitches": 0,
           "drawn": 2144439,
           "perLevel": {},
-          "visibleMs": 32724.200000047684,
-          "firstFrameMs": 1770.6000000238419,
+          "visibleMs": 34851,
+          "firstFrameMs": 3897.2999999523163,
           "detailLine": null
         },
         "cdn": [

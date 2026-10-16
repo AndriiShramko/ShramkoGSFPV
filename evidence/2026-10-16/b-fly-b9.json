@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-16T12:18:54.463Z",
-    "gitHead": "097300d",
+    "date": "2026-10-16T20:17:08.874Z",
+    "gitHead": "ed03295",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "https://gsfpv.flyreelstudio.eu",
+  "site": "http://localhost:5340",
   "render": "on",
   "pass": true,
   "method": "thrust stand in the model: motors spun up while held, released 20 ms, (a+g)/g",
@@ -35,8 +35,8 @@
       "twrMeasured": 3.9896946009128404
     }
   ],
-  "sourceLabels": 30,
-  "cards": 6,
+  "sourceLabels": 45,
+  "cards": 9,
   "control": {
     "picoMeasured": 3.9896946009128404,
     "defaultMeasured": 4.9851679102691735,
