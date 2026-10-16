@@ -23,7 +23,7 @@ import { REPO } from '../../../packages/prefs/test/helpers';
 import { FLYING_CODES, KEYMAP, keymapProblems } from '../../../packages/prefs/src';
 import type { KeyBinding } from '../../../packages/prefs/src';
 import { ARM_RETRY_MS, AltitudeHelp, AutoArm, CLIMB_BOOST, CLIMB_MPS, SINK_MPS, helpFlies, stickForThrust } from '../../../apps/fly/src/play/assist';
-import { BOOST_CODES, GAME_KEYS, KEY_ACRO_DPS, KEY_TILT_DEG, KEY_YAW_DPS, MODE2_KEYS, MOTOR_STOP_HOLD_MS, MotorKey, RAMP_FALL_PER_S, RAMP_RISE_PER_S, axisDirs, flyingKeyCodes, keyTargets, slew, stickForRate } from '../../../apps/fly/src/play/keys';
+import { BOOST_CODES, GAME_KEYS, KEY_ACRO_DPS, KEY_TILT_DEG, KEY_YAW_DPS, MODE2_KEYS, MODE2_TILT_STICK, MODE2_YAW_STICK, MOTOR_STOP_HOLD_MS, MotorKey, mode2Sticks, RAMP_FALL_PER_S, RAMP_RISE_PER_S, axisDirs, flyingKeyCodes, keyTargets, slew, stickForRate } from '../../../apps/fly/src/play/keys';
 import { PadGrab, SCREEN_EDGE_PX, UNBOUNDED, absoluteRead, padTravel, reachOf } from '../../../apps/fly/src/play/touch-map';
 import { GOAL_S, SCHOOL_STEPS, SchoolProgress, settingsOf, stepOf } from '../../../apps/fly/src/play/school';
 import { KeyCardShow } from '../../../apps/fly/src/ui/key-card-state';
@@ -332,14 +332,17 @@ describe('keys: physical targets through the drone\'s rates, ramps, layouts', ()
         expect(Math.abs(fixed[0] - fixed[1]) / Math.min(...fixed)).toBeGreaterThan(0.2);
     });
 
-    it('a key ramps the stick: 0 -> 0.5 in 0.2 s, back in 0.08 s; a reversal crosses centre at the fall rate; control: bang-bang is there at once', () => {
+    it('a key ramps the stick: 0 -> 0.5 in 0.2 s, back in 0.08 s; a reversal crosses centre at the fall rate; control: the pilot layout\'s keys are there at once', () => {
         const steps = (from: number, to: number): number => { let x = from; let n = 0; while (Math.abs(x - to) > 1e-9 && n < 10000) { x = slew(x, to, 0.001); n++; } return n; };
         expect(Math.abs(steps(0, 0.5) - (0.5 / RAMP_RISE_PER_S) * 1000)).toBeLessThanOrEqual(1);
         expect(Math.abs(steps(0.5, 0) - (0.5 / RAMP_FALL_PER_S) * 1000)).toBeLessThanOrEqual(1);
         expect(slew(0.3, -0.3, 0.05)).toBeCloseTo(-(0.05 - 0.3 / RAMP_FALL_PER_S) * RAMP_RISE_PER_S, 9);
-        const bangBang = (_from: number, to: number): number => to; // the pilot layout
-        expect(bangBang(0, 0.6)).toBe(0.6);
-        expect(slew(0, 0.6, 0.001)).toBeLessThan(0.01);
+        // control: the pilot layout as devices/keyboard.ts emits it (mode2Sticks) is a step, full at the press
+        expect(readFileSync(join(REPO, 'apps', 'fly', 'src', 'devices', 'keyboard.ts'), 'utf8')).toMatch(/const st = mode2Sticks\(this\.down\)/);
+        const pressed = mode2Sticks(new Set(['ArrowRight', 'KeyD']));
+        expect([pressed.roll, pressed.yaw]).toEqual([MODE2_TILT_STICK, MODE2_YAW_STICK]);
+        expect(slew(0, MODE2_TILT_STICK, 0.001)).toBeLessThan(0.01);
+        expect(slew(0, MODE2_YAW_STICK, 0.001)).toBeLessThan(0.01);
     });
 
     it('both layouts read only keyboard-flying keys, the keymap is sound, and no shortcut sits on a flying key', () => {

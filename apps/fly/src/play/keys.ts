@@ -42,6 +42,17 @@ export const MODE2_KEYS: readonly KeyBind[] = [
     { code: 'ArrowRight', axis: 'roll', dir: 1 }, { code: 'ArrowLeft', axis: 'roll', dir: -1 }
 ];
 
+/** The pilot layout's keys are bang-bang (v0.2-v0.7): pitch and roll this much of full stick the moment a key goes down ... */
+export const MODE2_TILT_STICK = 0.6;
+/** ... and yaw this much. */
+export const MODE2_YAW_STICK = 0.5;
+
+/** The pilot layout's sticks for the held keys (devices/keyboard.ts emit): a step to the magnitude, no ramp. */
+export function mode2Sticks(held: ReadonlySet<string>): { roll: number; pitch: number; yaw: number } {
+    const d = axisDirs(held, MODE2_KEYS);
+    return { roll: d.roll * MODE2_TILT_STICK, pitch: d.pitch * MODE2_TILT_STICK, yaw: d.yaw * MODE2_YAW_STICK };
+}
+
 /** Held for "faster" in easy play (game layout). Not a shortcut: Shift alone runs no action. */
 export const BOOST_CODES: readonly string[] = ['ShiftLeft', 'ShiftRight'];
 

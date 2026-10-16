@@ -20,7 +20,7 @@
 
 import type { Controls } from '../controls';
 import type { EasyPilot } from '../play/easy';
-import { BOOST_CODES, EASY_THR_DOWN_S, EASY_THR_UP_S, GAME_KEYS, MODE2_KEYS, MotorKey, axisDirs, keyTargets, slew } from '../play/keys';
+import { BOOST_CODES, EASY_THR_DOWN_S, EASY_THR_UP_S, GAME_KEYS, MODE2_KEYS, MotorKey, axisDirs, keyTargets, mode2Sticks, slew } from '../play/keys';
 import type { KeyTargets, PlayProfile } from '../play/keys';
 import type { FlightMode, SimParams } from '@gsfpv/sim-core';
 
@@ -238,10 +238,10 @@ export class KeyboardSource {
     private emit(t: number): void {
         if (this.passive) return;
         if (this.isEasy) { this.emitEasy(t); return; }
-        const d = this.down;
-        this.ch[0] = (d.has('ArrowRight') ? 0.6 : 0) - (d.has('ArrowLeft') ? 0.6 : 0);
-        this.ch[1] = (d.has('ArrowUp') ? 0.6 : 0) - (d.has('ArrowDown') ? 0.6 : 0);
-        this.ch[3] = (d.has('KeyD') ? 0.5 : 0) - (d.has('KeyA') ? 0.5 : 0);
+        const st = mode2Sticks(this.down); // bang-bang, as v0.2-v0.7
+        this.ch[0] = st.roll;
+        this.ch[1] = st.pitch;
+        this.ch[3] = st.yaw;
         this.ch[2] = this.throttle * 2 - 1;
         this.ch[4] = this.armed ? 1 : -1;
         this.controls.channels(this.ch, t);
