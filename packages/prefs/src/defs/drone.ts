@@ -27,6 +27,9 @@ export const DRONE_DEFS: readonly SettingDef[] = [
     // rotor and duct momentum drag (H.2 item 1); presets gain the field with W1-3
     { id: 'physics.ductDrag', group: 'drone', scope: 'drone', type: 'number', min: 0, max: 1.5, step: 0.05, unit: 'per_s', default: { preset: 'rotor_drag_per_s', fallback: 0.6 }, apply: 'life', shown: ['settings'], advanced: true, status: 'shipped', since: 1, items: [21] },
     { id: 'physics.propInertia', group: 'drone', scope: 'drone', type: 'number', min: 0, max: 3, step: 0.1, unit: 'x', default: 1, apply: 'life', shown: ['settings'], advanced: true, status: 'shipped', since: 1, items: [21] },
+    // v0.8 (docs/wip/v08-d.md): prop wash, sim-core wake.ts; a multiplier on the preset's wake_loss and
+    // wake_shake (ParamOverrides.wake). The whoop presets have no prop wash (their ducts), so it does nothing there.
+    { id: 'physics.propWash', group: 'drone', scope: 'drone', type: 'number', min: 0, max: 2, step: 0.1, unit: 'x', default: 1, apply: 'life', shown: ['settings'], advanced: true, status: 'shipped', since: 2 },
     // presets store motor_idle as a fraction (0.055 = Betaflight dshot_idle_value 550)
     { id: 'physics.idlePct', group: 'drone', scope: 'drone', type: 'number', min: 0, max: 15, step: 0.1, unit: 'pct', default: { preset: 'motor_idle', scale: 100, fallback: 5.5 }, apply: 'life', shown: ['settings'], advanced: true, status: 'shipped', since: 1, items: [21] }
 ];

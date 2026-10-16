@@ -1,0 +1,23 @@
+{
+  "set.physics.propWash": "Prop wash (estela propia)",
+  "set.physics.propWash.help": "Cuánto empuje pierde el dron, y cuánto tiembla, mientras se hunde en su propia corriente descendente (al frenar una caída o un picado). 1 = el preset, 0 = apagado. Los whoops no tienen prop wash en el simulador.",
+  "set.drone.tune": "¿Vuelas este dron de verdad y aquí su física no te convence? Envía a Andrii tu diff all de Betaflight, un log de blackbox y unas palabras, o pide un dron que falte.",
+  "set.drone.tuneButton": "Ayuda a ajustar este dron",
+  "drone.tune.lead": "Estos drones están hechos con cifras publicadas y estimaciones. ¿Vuelas uno de verdad y aquí se siente distinto? Envía tu diff all de Betaflight, un log de blackbox y unas palabras: así mejoran. ¿Falta tu dron? Pídelo.",
+  "drone.tune.button": "Ayuda a ajustarlo",
+  "drone.tune.ask": "Pedir otro dron",
+  "fb.kind.drone": "Física del dron",
+  "fb.drone.lead": "¿Vuelas este dron de verdad? Cuéntale a Andrii qué se siente distinto aquí; tus ajustes de Betaflight y un log de blackbox le permiten ajustar el dron al real. ¿Falta tu dron? Elige la última opción y dinos cuál es.",
+  "fb.drone.which": "Qué dron",
+  "fb.drone.new": "Un dron que no está en la lista",
+  "fb.drone.message": "Qué se siente distinto, o qué dron añadir",
+  "fb.drone.placeholder": "P. ej.: el mío flota al 35 % de gas y este al 25 %; los flips van más lentos. Para un dron nuevo: nombre, frame, motores, hélices, batería y peso.",
+  "fb.drone.diff": "diff all de Betaflight (opcional)",
+  "fb.drone.diff.hint": "Betaflight Configurator, pestaña CLI: escribe diff all, pulsa Enter, copia toda la respuesta y pégala aquí. Lleva tus rates, PID, filtros y ajustes de motores.",
+  "fb.drone.log": "Enlace a un log de blackbox (opcional)",
+  "fb.drone.log.hint": "Vuela un minuto con la blackbox activada (estacionario, algunos punch-outs, flips y rolls), sube el archivo .bbl o .bfl a Google Drive, Dropbox o similar y pega un enlace que cualquiera pueda abrir.",
+  "fb.drone.log.bad": "Un enlace al log empieza por https:// o http://.",
+  "fb.drone.settings": "Enviar también mis ajustes del simulador para este dron ({n} cambiados)",
+  "fb.drone.sent": "Se envía: el dron, lo que escribes y pegas aquí, y tu e-mail si lo dejas. Nada más.",
+  "fb.drone.done": "¡Gracias! Andrii lo compara con el simulador y te responde si dejaste un e-mail. Tu número de informe: {id}."
+}

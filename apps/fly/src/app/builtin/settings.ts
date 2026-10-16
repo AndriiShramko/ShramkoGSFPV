@@ -22,6 +22,7 @@ import { floatersRow } from './floaters';
 import { ceilingRow } from './ceiling';
 import { windRow } from './wind';
 import { switchesRow } from './switches';
+import { tuneRow } from './tune';
 import type { Feature, FlightContext } from '../context';
 
 let current: SettingsScreen | null = null;
@@ -124,6 +125,8 @@ export function openSettings(ctx: FlightContext, focus: string | null = null): v
             if (id === 'scene.ceiling') return ceilingRow(ctx, () => current?.close());
             if (id === 'wind.mode') return windRow(ctx);
             if (id === 'input.stickMode') return switchesRow(ctx, () => current?.close());
+            // v0.8: help us tune this drone (app/builtin/tune.ts) under the drone
+            if (id === 'drone.current') return tuneRow(ctx, () => current?.close());
             return null;
         }
     }, { focus });

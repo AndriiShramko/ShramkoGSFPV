@@ -1,0 +1,23 @@
+{
+  "set.physics.propWash": "Prop wash",
+  "set.physics.propWash.help": "How much thrust the drone loses, and how much it shakes, while it sinks into its own downwash (catching a dive or a fast drop). 1 = the preset, 0 = off. The whoops have no prop wash in the simulator.",
+  "set.drone.tune": "Fly this drone for real and its physics feels wrong here? Send Andrii your Betaflight diff all, a blackbox log and a few words, or ask for a drone that is missing.",
+  "set.drone.tuneButton": "Help tune this drone",
+  "drone.tune.lead": "These drones are built from published numbers and estimates. Fly one of them for real and it feels different here? Send your Betaflight diff all, a blackbox log and a few words: that is how they get better. Missing your drone? Ask for it.",
+  "drone.tune.button": "Help tune it",
+  "drone.tune.ask": "Ask for another drone",
+  "fb.kind.drone": "Drone physics",
+  "fb.drone.lead": "Fly this drone for real? Tell Andrii what feels different here; your Betaflight settings and a blackbox log let him fit the drone to the real one. Missing your drone? Pick the last entry and name it.",
+  "fb.drone.which": "Which drone",
+  "fb.drone.new": "A drone that is not in the list",
+  "fb.drone.message": "What feels different, or which drone to add",
+  "fb.drone.placeholder": "E.g. my real one hovers at 35 % throttle and this one at 25 %; flips feel slower. For a new drone: its name, frame, motors, props, battery and weight.",
+  "fb.drone.diff": "Betaflight diff all (optional)",
+  "fb.drone.diff.hint": "Betaflight Configurator, CLI tab: type diff all, press Enter, copy the whole answer and paste it here. It has your rates, PID, filters and motor settings.",
+  "fb.drone.log": "Link to a blackbox log (optional)",
+  "fb.drone.log.hint": "Fly a minute with the blackbox on (hover, a few punch-outs, flips and rolls), upload the .bbl or .bfl file to Google Drive, Dropbox or similar, and paste a link anyone can open.",
+  "fb.drone.log.bad": "A log link starts with https:// or http://.",
+  "fb.drone.settings": "Also send my simulator settings for this drone ({n} changed)",
+  "fb.drone.sent": "Sent: the drone, what you write and paste here, and your e-mail if you leave one. Nothing else.",
+  "fb.drone.done": "Thank you! Andrii compares it with the simulator and writes back if you left an e-mail. Your report number: {id}."
+}

@@ -23,7 +23,9 @@ const V03_SHIPPED = [
     // v0.7 lane E (owner's message 18 item 10): the wind of the place and the collision ceiling
     'wind.mode', 'wind.fromDeg', 'wind.speed', 'wind.gust', 'scene.ceiling', 'scene.ceilingM',
     // v0.7 D1 (docs/wip/v07-d1.md): the crosshair (Display), the motor sound (Sound), the scan author notice (Recording)
-    'crosshair.shape', 'crosshair.size', 'crosshair.color', 'crosshair.opacity', 'sound.motors', 'sound.volume', 'recording.authorNotice'
+    'crosshair.shape', 'crosshair.size', 'crosshair.color', 'crosshair.opacity', 'sound.motors', 'sound.volume', 'recording.authorNotice',
+    // v0.8 lane D (docs/wip/v08-d.md): prop wash of the 5-inch and cinelifter presets, Settings -> Drone & physics
+    'physics.propWash'
 ];
 
 /**
@@ -75,6 +77,7 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['physics.dragScale', 'drone', 'drone', 'number', 1, 'life'],
     ['physics.ductDrag', 'drone', 'drone', 'number', 'preset:rotor_drag_per_s', 'life'],
     ['physics.propInertia', 'drone', 'drone', 'number', 1, 'life'],
+    ['physics.propWash', 'drone', 'drone', 'number', 1, 'life'],
     ['physics.idlePct', 'drone', 'drone', 'number', 'preset:motor_idle', 'life'],
     ['tune.pid', 'tune', 'drone', 'json', null, 'life'],
     ['tune.rates', 'tune', 'drone', 'json', null, 'life'],
@@ -143,8 +146,8 @@ const WAVE2_SETTINGS = [
 ];
 
 describe('SCHEMA is the A.8 table', () => {
-    it('has the 70 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard, v0.7\'s drawing, wind and ceiling, v0.7 D1\'s seven), each with its group, scope, type, default and apply', () => {
-        expect(SCHEMA.defs).toHaveLength(70);
+    it('has the 70 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard, v0.7\'s drawing, wind and ceiling, v0.7 D1\'s seven, v0.8\'s prop wash), each with its group, scope, type, default and apply', () => {
+        expect(SCHEMA.defs).toHaveLength(71);
         const got = SCHEMA.defs.map((d) => [d.id, d.group, d.scope, d.type, isPresetRef(d.default) ? `preset:${d.default.preset}` : isCuratedRef(d.default) ? `curated:${d.default.curated}|${String(d.default.fallback)}` : d.default, d.apply]);
         // order inside a group follows the def files, not the table's rows
         const byId = (a: unknown[], b: unknown[]) => String(a[0]).localeCompare(String(b[0]));
@@ -183,6 +186,10 @@ describe('SCHEMA is the A.8 table', () => {
         expect(range('respawn.delayS')).toEqual([0.5, 10]);
         expect(range('level.angleLimitDeg')).toEqual([10, 85]);
         expect(range('physics.idlePct')).toEqual([0, 15]);
+        // v0.8: the race quad's 12.5:1 and the cinelifter's 50 ms motors fit; prop wash 0 (off) to 2x
+        expect(range('physics.twr')).toEqual([2, 16]);
+        expect(range('physics.tauMs')).toEqual([8, 80]);
+        expect(range('physics.propWash')).toEqual([0, 2]);
         expect(range('scene.dropFloaters')).toEqual([0, 64]);
         // main's: the test hook clamps the radius to 2-60 m, the opacity slider runs 5-100 %
         expect(range('voxels.radiusM')).toEqual([2, 60]);

@@ -7,6 +7,7 @@
 // the drone and fly on: no new flight model, no respawn.
 import { DronePicker } from '../../ui/drone';
 import { applyCamera, applyModel, pilotSet } from '../prefs';
+import { openFeedback } from './feedback';
 import type { Feature } from '../context';
 
 export const drone: Feature = {
@@ -17,7 +18,7 @@ export const drone: Feature = {
             run: () => {
                 const session = ctx.session;
                 ctx.pause('panel');
-                const d = new DronePicker(ctx.ui, session.presetId, { store: ctx.prefs });
+                const d = new DronePicker(ctx.ui, session.presetId, { store: ctx.prefs, tune: true });
                 // the picker is a screen, not a panel: while it is up, Esc is its close (P does nothing)
                 const unEsc = ctx.keys.on('pause.toggle', (e) => { if (e.code === 'Escape') close(); });
                 let open = true;
@@ -28,6 +29,12 @@ export const drone: Feature = {
                     ctx.resume('panel');
                 }
                 d.onClose = close;
+                // v0.8 help us tune this drone: the picker goes, the feedback form takes the pause over (the same reason)
+                d.onTune = (id) => {
+                    if (!open) return;
+                    gone();
+                    openFeedback(ctx, 'drone', { drone: id });
+                };
                 d.onPick = (id) => {
                     if (id === session.presetId) { close(); return; }
                     if (!open) return;

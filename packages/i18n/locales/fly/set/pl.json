@@ -37,7 +37,7 @@
   "set.ui.language.help": "Angielski, hiszpański, polski lub rosyjski; domyślnie język strony.",
   "set.ui.language.opt.browser": "Język strony",
   "set.drone.current": "Dron",
-  "set.drone.current.help": "Jeden z presetów klasy BetaFPV; każda liczba na jego karcie mówi, skąd pochodzi. Każdy dron ma własne ustawienia.",
+  "set.drone.current.help": "Jeden z presetów: whoopy klasy BetaFPV, 5-calowy quad freestyle i wyścigowy, cinelifter X8 z kamerą kinową; każda liczba na jego karcie mówi, skąd pochodzi. Każdy dron ma własne ustawienia.",
   "set.physics.gravity": "Grawitacja",
   "set.physics.gravity.help": "Ziemia 9,81, Księżyc 1,62, Mars 3,72, zero g albo dowolna wartość pomiędzy.",
   "set.physics.gravityMode": "Ciąg w innych światach",

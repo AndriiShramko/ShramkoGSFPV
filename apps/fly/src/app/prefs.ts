@@ -120,6 +120,8 @@ const PARAM_FIELDS: Readonly<Record<string, (o: ParamOverrides, v: unknown) => v
     'physics.dragScale': (o, v) => { o.cdaScale = v as number; },
     'physics.ductDrag': (o, v) => { o.ductDrag = v as number; },
     'physics.propInertia': (o, v) => { o.propInertia = v as number; },
+    // v0.8: prop wash, a multiplier on the preset's (sim-core wake.ts); presets without prop wash ignore it
+    'physics.propWash': (o, v) => { o.wake = v as number; },
     // the setting is a percentage, sim-core a fraction (0.055 = Betaflight dshot_idle_value 550)
     'physics.idlePct': (o, v) => { o.idle = (v as number) / 100; },
     'tune.pid': (o, v) => { const p = v as PidValue; o.pid = { roll: [...p.roll], pitch: [...p.pitch], yaw: [...p.yaw] }; },
