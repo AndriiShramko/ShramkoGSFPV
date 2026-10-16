@@ -83,6 +83,7 @@ import ideas
 import ideas_admin
 import mailer
 import outbox
+import outreach
 import ownerbot
 import scenepages
 import service
@@ -1195,6 +1196,11 @@ WIND = wind.WindService(fetch=lambda *a: fetch_upstream(*a), data_dir=lambda: DA
 ADMIN.add_route("GET", r"superspl/([0-9a-f]{6,32})", lambda m, qs, body, client: FACTS.handle(m.group(1), fresh="fresh=1" in qs.split("&")))
 ADMIN.add_route("GET", r"geo/search", lambda m, qs, body, client: WIND.geocode(qs))
 ADMIN.add_route("GET", r"wind/climate", lambda m, qs, body, client: WIND.climate(qs))
+
+# ---------------- the Outreach tab: a read-only window on the vault's snapshot (outreach.py) ----------------
+# The only way in is `docker exec gsfpv-api python /app/outreach_cli.py push -` (the vault's fbgroups.py push); no write over HTTP.
+OUTREACH = outreach.OutreachStore(lambda: DATA_DIR)
+outreach.OutreachAdmin(OUTREACH).register(ADMIN)
 
 
 class Handler(BaseHTTPRequestHandler):

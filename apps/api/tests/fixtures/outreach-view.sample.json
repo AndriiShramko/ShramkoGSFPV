@@ -1,0 +1,258 @@
+{
+ "ok": true,
+ "empty": false,
+ "unreadable": false,
+ "campaign": "gsfpv",
+ "generated": "2026-10-17T09:00:00Z",
+ "received": "2026-10-17T09:00:05Z",
+ "meta": {
+  "groups_total": 142,
+  "groups_researched": 71,
+  "waves": 1
+ },
+ "age_h": 3.0,
+ "stale": false,
+ "worth_min": 75.0,
+ "totals": {
+  "groups": 2,
+  "groups_known": 142,
+  "posted": 1,
+  "published": 1,
+  "removed": 0,
+  "banned": 0,
+  "posts": 1,
+  "posts_published": 1,
+  "posts_removed": 0,
+  "posts_declined": 0,
+  "posts_waiting": 0,
+  "reactions": 34,
+  "comments": 9,
+  "shares": 2,
+  "views": 1200
+ },
+ "funnel": [
+  {
+   "stage": "groups",
+   "n": 2
+  },
+  {
+   "stage": "posted",
+   "n": 1
+  },
+  {
+   "stage": "published",
+   "n": 1
+  },
+  {
+   "stage": "removed",
+   "n": 0
+  }
+ ],
+ "groups": [
+  {
+   "id": "1647715522108395",
+   "name": "Drony RC FPV Polska",
+   "url": "https://www.facebook.com/groups/1647715522108395/",
+   "lang": "pl",
+   "members": 41000,
+   "topic": "polish-drone",
+   "fit": 5,
+   "verdict": "post",
+   "wave": 1,
+   "policy": {
+    "video": "allowed",
+    "images": "allowed",
+    "links": "comments_only",
+    "self_promo": "showcase_only",
+    "post_approval": "yes"
+   },
+   "state": "published",
+   "prior_sim_post": "none",
+   "last_post_at": "2026-10-17T08:10:00Z",
+   "posts": 1,
+   "published": 1,
+   "removed": 0,
+   "best_reactions": 34,
+   "best_comments": 9,
+   "score": 100.0,
+   "note": "Wideo OK, link tylko w komentarzu",
+   "score_pushed": 70.8,
+   "eng": 71.0,
+   "pub_rate": 1.0,
+   "removed_rate": 0.0,
+   "worth": true,
+   "due_n": 0
+  },
+  {
+   "id": "velocidronesim",
+   "name": "VelociDrone Community",
+   "url": "https://www.facebook.com/groups/velocidronesim/",
+   "lang": "en",
+   "members": 22000,
+   "topic": "sim",
+   "fit": 3,
+   "verdict": "comment_only",
+   "wave": 3,
+   "policy": {
+    "video": "allowed",
+    "images": "allowed",
+    "links": "forbidden",
+    "self_promo": "forbidden",
+    "post_approval": "yes"
+   },
+   "state": "researched",
+   "prior_sim_post": "none",
+   "last_post_at": null,
+   "posts": 0,
+   "published": 0,
+   "removed": 0,
+   "best_reactions": 0,
+   "best_comments": 0,
+   "score": null,
+   "note": "Rule 3: no other simulators promo; comment in threads only",
+   "score_pushed": null,
+   "eng": 0.0,
+   "pub_rate": null,
+   "removed_rate": null,
+   "worth": false,
+   "due_n": 0
+  }
+ ],
+ "posts": [
+  {
+   "id": "P-20261017-01",
+   "group": "1647715522108395",
+   "group_name": "Drony RC FPV Polska",
+   "kind": "post",
+   "format": "video",
+   "lang": "pl",
+   "sent_at": "2026-10-17T08:10:00Z",
+   "state": "published",
+   "url": "https://www.facebook.com/groups/1647715522108395/posts/1111/",
+   "link_placement": "first_comment",
+   "first_comment": "posted",
+   "angle": "Trening bez ryzyka: Pavo20 Pro w skanie 3DGS",
+   "checks": [
+    {
+     "age_h": 1,
+     "state": "pending",
+     "reactions": 0,
+     "comments": 0,
+     "shares": 0,
+     "views": null,
+     "admin_action": "none"
+    },
+    {
+     "age_h": 24,
+     "state": "published",
+     "reactions": 34,
+     "comments": 9,
+     "shares": 2,
+     "views": 1200,
+     "admin_action": "none"
+    }
+   ],
+   "note": "Zatwierdzony przez admina po 5 h",
+   "topic": "polish-drone",
+   "latest": {
+    "age_h": 24,
+    "state": "published",
+    "reactions": 34,
+    "comments": 9,
+    "shares": 2,
+    "views": 1200,
+    "admin_action": "none"
+   },
+   "eng": 71.0,
+   "age_h": 3.8
+  }
+ ],
+ "slices": {
+  "format": [
+   {
+    "format": "video",
+    "n": 1,
+    "published": 1,
+    "removed": 0,
+    "measured": 1,
+    "median_reactions": 34.0,
+    "median_comments": 9.0,
+    "median_eng": 71.0
+   }
+  ],
+  "lang": [
+   {
+    "lang": "pl",
+    "n": 1,
+    "published": 1,
+    "removed": 0,
+    "measured": 1,
+    "median_reactions": 34.0,
+    "median_comments": 9.0,
+    "median_eng": 71.0
+   }
+  ],
+  "topic": [
+   {
+    "topic": "polish-drone",
+    "n": 1,
+    "published": 1,
+    "removed": 0,
+    "measured": 1,
+    "median_reactions": 34.0,
+    "median_comments": 9.0,
+    "median_eng": 71.0
+   }
+  ],
+  "kind": [
+   {
+    "kind": "post",
+    "n": 1,
+    "published": 1,
+    "removed": 0,
+    "measured": 1,
+    "median_reactions": 34.0,
+    "median_comments": 9.0,
+    "median_eng": 71.0
+   }
+  ],
+  "format_lang_topic": [
+   {
+    "format": "video",
+    "lang": "pl",
+    "topic": "polish-drone",
+    "n": 1,
+    "published": 1,
+    "removed": 0,
+    "measured": 1,
+    "median_reactions": 34.0,
+    "median_comments": 9.0,
+    "median_eng": 71.0
+   }
+  ]
+ },
+ "ranking": [
+  {
+   "id": "1647715522108395",
+   "name": "Drony RC FPV Polska",
+   "score": 100.0,
+   "eng": 71.0,
+   "pub_rate": 1.0,
+   "removed_rate": 0.0,
+   "worth": true
+  }
+ ],
+ "due": {
+  "checks": [],
+  "unresolved": [],
+  "ready": []
+ },
+ "visits": {
+  "days": 30,
+  "by_content": {
+   "1647715522108395": 18
+  },
+  "note": "arrivals with utm_content, aggregate counts only",
+  "total": 18
+ }
+}

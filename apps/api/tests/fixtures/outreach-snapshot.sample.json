@@ -1,0 +1,74 @@
+{
+  "v": 1,
+  "campaign": "gsfpv",
+  "generated": "2026-10-17T09:00:00Z",
+  "groups": [
+    {
+      "id": "1647715522108395",
+      "name": "Drony RC FPV Polska",
+      "url": "https://www.facebook.com/groups/1647715522108395/",
+      "lang": "pl",
+      "members": 41000,
+      "topic": "polish-drone",
+      "fit": 5,
+      "verdict": "post",
+      "wave": 1,
+      "policy": {"video": "allowed", "images": "allowed", "links": "comments_only", "self_promo": "showcase_only", "post_approval": "yes"},
+      "state": "published",
+      "prior_sim_post": "none",
+      "last_post_at": "2026-10-17T08:10:00Z",
+      "posts": 1,
+      "published": 1,
+      "removed": 0,
+      "best_reactions": 34,
+      "best_comments": 9,
+      "score": 70.8,
+      "note": "Wideo OK, link tylko w komentarzu"
+    },
+    {
+      "id": "velocidronesim",
+      "name": "VelociDrone Community",
+      "url": "https://www.facebook.com/groups/velocidronesim/",
+      "lang": "en",
+      "members": 22000,
+      "topic": "sim",
+      "fit": 3,
+      "verdict": "comment_only",
+      "wave": 3,
+      "policy": {"video": "allowed", "images": "allowed", "links": "forbidden", "self_promo": "forbidden", "post_approval": "yes"},
+      "state": "researched",
+      "prior_sim_post": "none",
+      "last_post_at": null,
+      "posts": 0,
+      "published": 0,
+      "removed": 0,
+      "best_reactions": 0,
+      "best_comments": 0,
+      "score": null,
+      "note": "Rule 3: no other simulators promo; comment in threads only"
+    }
+  ],
+  "posts": [
+    {
+      "id": "P-20261017-01",
+      "group": "1647715522108395",
+      "group_name": "Drony RC FPV Polska",
+      "kind": "post",
+      "format": "video",
+      "lang": "pl",
+      "sent_at": "2026-10-17T08:10:00Z",
+      "state": "published",
+      "url": "https://www.facebook.com/groups/1647715522108395/posts/1111/",
+      "link_placement": "first_comment",
+      "first_comment": "posted",
+      "angle": "Trening bez ryzyka: Pavo20 Pro w skanie 3DGS",
+      "checks": [
+        {"age_h": 1, "state": "pending", "reactions": 0, "comments": 0, "shares": 0, "views": null, "admin_action": "none"},
+        {"age_h": 24, "state": "published", "reactions": 34, "comments": 9, "shares": 2, "views": 1200, "admin_action": "none"}
+      ],
+      "note": "Zatwierdzony przez admina po 5 h"
+    }
+  ],
+  "visits": {"days": 30, "by_content": {"1647715522108395": 18}, "note": "arrivals with utm_content, aggregate counts only"},
+  "meta": {"groups_total": 142, "groups_researched": 71, "waves": 1}
+}

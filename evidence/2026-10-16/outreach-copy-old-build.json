@@ -1,0 +1,59 @@
+{
+  "name": "outreach-copy-old-build",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-16T11:32:41.540Z",
+    "gitHead": "3358999",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": false,
+  "source": {
+    "release": "live-49c1b75eb365 (public static files of /admin/, fetched 2026-10-16, no login)",
+    "distSha256": null,
+    "tag": "old-build"
+  },
+  "error": null,
+  "passed": 2,
+  "failed": 1,
+  "failedChecks": [
+    "the admin has an Outreach tab next to Scenes and Ideas"
+  ],
+  "checks": [
+    {
+      "name": "the admin page is served under nginx.conf's admin CSP (script-src 'self', style-src 'self')",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "login on localhost with the test password",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the admin has an Outreach tab next to Scenes and Ideas",
+      "ok": false,
+      "control": false,
+      "got": [
+        "Scenes",
+        "Ideas"
+      ]
+    }
+  ],
+  "adminCsp": "default-src 'self'; script-src 'self'; connect-src 'self' https://d28zzqy0iyovbz.cloudfront.net; img-src 'self' data: https://s3-eu-west-1.amazonaws.com https://d28zzqy0iyovbz.cloudfront.net; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+  "distAdminSha256": "4bf48a4239e6c6bd5d2cc9d6ff86b9d21d9941852177fac24f85875e982146ba",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "note": "the Outreach tab is missing in this build (the control for the previous build)"
+}
