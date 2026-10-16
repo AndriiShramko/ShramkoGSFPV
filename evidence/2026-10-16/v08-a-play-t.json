@@ -7,15 +7,15 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-16T15:00:19.026Z",
-    "gitHead": "8265312",
+    "date": "2026-10-16T18:37:22.425Z",
+    "gitHead": "77885b0",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5481",
-  "pass": false,
+  "site": "http://localhost:5491",
+  "pass": true,
   "only": "T",
   "checks": [
     {
@@ -48,8 +48,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.62,
-        "gainedM": 4.008,
+        "climbMps": 1.619,
+        "gainedM": 4.002,
         "leftStickAfterRelease": 0
       }
     },
@@ -57,24 +57,24 @@
       "id": "T4-tablet the height holds with no finger on the sticks",
       "ok": true,
       "detail": {
-        "spreadM": 0.036
+        "spreadM": 0.039
       }
     },
     {
       "id": "T5-tablet the right stick at half forward tilts the drone (angle mode); moves are read from pointerrawupdate, earlier than the rAF-aligned pointermove (control)",
       "ok": true,
       "detail": {
-        "pitchDeg": 17.284,
+        "pitchDeg": 17.283,
         "pageFrameP50Ms": 33.3,
         "rawupdate": {
           "n": 12,
-          "p50": 19.2,
-          "p95": 65.1
+          "p50": 14.2,
+          "p95": 74
         },
         "pointermoveControl": {
           "n": 12,
-          "p50": 47.4,
-          "p95": 81.2
+          "p50": 44.2,
+          "p95": 109.8
         }
       }
     },
@@ -146,7 +146,7 @@
       "detail": {
         "armedByTouch": true,
         "climbMps": 1.642,
-        "gainedM": 4.072,
+        "gainedM": 4.069,
         "leftStickAfterRelease": 0
       }
     },
@@ -165,13 +165,13 @@
         "pageFrameP50Ms": 33.3,
         "rawupdate": {
           "n": 12,
-          "p50": 18.6,
-          "p95": 38.6
+          "p50": 16.3,
+          "p95": 34.7
         },
         "pointermoveControl": {
           "n": 12,
-          "p50": 48.7,
-          "p95": 100.1
+          "p50": 45,
+          "p95": 92.1
         }
       }
     },
@@ -184,12 +184,10 @@
     },
     {
       "id": "T9-phone the speaker is on screen and nothing at the top prints over anything else; control: the school chip moved onto the buttons is caught",
-      "ok": false,
+      "ok": true,
       "detail": {
         "speakerOnScreen": true,
-        "overlaps": [
-          "attribution[27,235,124,252] x school-chip[16,217,205,245]"
-        ],
+        "overlaps": [],
         "control": [
           "share-top[10,38,49,78] x school-chip[12,40,201,68]",
           "open-settings[57,38,103,78] x school-chip[12,40,201,68]",
@@ -243,8 +241,8 @@
       "ok": true,
       "detail": {
         "armedByTouch": true,
-        "climbMps": 1.621,
-        "gainedM": 4.029,
+        "climbMps": 1.625,
+        "gainedM": 4.039,
         "leftStickAfterRelease": 0
       }
     },
@@ -252,7 +250,7 @@
       "id": "T4-phone-landscape the height holds with no finger on the sticks",
       "ok": true,
       "detail": {
-        "spreadM": 0.037
+        "spreadM": 0.038
       }
     },
     {
@@ -263,13 +261,13 @@
         "pageFrameP50Ms": 33.3,
         "rawupdate": {
           "n": 12,
-          "p50": 14.1,
-          "p95": 60.6
+          "p50": 29.5,
+          "p95": 84.5
         },
         "pointermoveControl": {
           "n": 12,
-          "p50": 43.2,
-          "p95": 92.7
+          "p50": 45.9,
+          "p95": 110
         }
       }
     },
