@@ -187,6 +187,8 @@ try {
     // ---------------------------------------------------------------- D5 the settings screen: the row under Drone and the prop wash setting
     {
         await page.keyboard.press('KeyO');
+        // the screen opens on its first group: the rail's Drone & physics shows the drone's rows
+        await page.click('.set-rail-btn[data-group="drone"]');
         await page.waitForSelector('[data-testid="settings-tune-row"]', { timeout: 10000 });
         const propWash = await page.locator('[data-testid="setting-physics.propWash"]').count();
         await page.click('[data-testid="settings-drone-tune"]');
