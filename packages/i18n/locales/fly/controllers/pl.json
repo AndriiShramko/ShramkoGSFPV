@@ -28,6 +28,8 @@
   "controllers.note.djiArm": "Uzbrajanie: gaz w dół, naciśnij start/stop (kolejne naciśnięcie rozbraja).",
   "controllers.note.djiMode": "Przełącznik trybu lotu: N = Angle, S = Horizon, M = Acro.",
   "controllers.edgetx.why": "Aparatura EdgeTX: jej kanały to ustawienia twojego własnego modelu, więc kreator raz pyta o każdy drążek.",
-  "controllers.useKnown": "Rozpoznano: {name}. Jego znane ustawienia (drążki w Mode 2 na pełnym zakresie, przełącznik trybu lotu N / S / M = Angle / Horizon / Acro) mogą zastąpić te zapisane.",
+  "controllers.useKnown": "Rozpoznano: {name}. Twoje zapisane ustawienia pochodzą sprzed czasu, gdy symulator znał ten kontroler. Jego znane ustawienia: drążki w trybie 2 na pełnym zakresie, przełącznik trybu lotu N / S / M = Angle / Horizon / Acro, jego kanały Betaflight.",
+  "controllers.offerHint": "«Użyj znanych ustawień» pokazuje je na ekranie sprawdzenia («Leć» je zapisuje). «Zostaw moje ustawienia» zachowuje twoje bez zmian. Każda z tych odpowiedzi kończy to pytanie; «Leć» bez wyboru zapyta znowu następnym razem.",
+  "controllers.keepOwnBtn": "Zostaw moje ustawienia",
   "controllers.useKnownBtn": "Użyj znanych ustawień"
 }

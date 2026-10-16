@@ -317,6 +317,30 @@ export function knownProfile(match: KnownMatch, deviceKey: string, deviceName: s
     };
 }
 
+/**
+ * The known setup to offer for a saved setup of a recognised controller that does not know the
+ * controller (no `known`: the wizard's, saved before v0.8 recognised it, such as a DJI setup with the
+ * flight-mode switch on one bit), or null: the device has no known mapping, or the setup already knows
+ * it (its known setup, a wizard run on it since v0.8, or one the pilot kept: keepOwnSetup). The app
+ * shows the offer where the pilot meets that setup: on the Controls screen's radio in use, on the
+ * saved setup's check screen, and once at load when the setup came back by itself (app/input.ts).
+ */
+export function knownOffer(saved: Profile, match: KnownMatch | null): Profile | null {
+    if (!match?.device.mapping || saved.known === match.device.id) return null;
+    return knownProfile(match, saved.deviceKey, match.device.name);
+}
+
+/**
+ * The pilot keeps his own setup of a recognised controller (the offer declined): his sticks, arm,
+ * mode switch and switches as they are; what belongs to the device joins it (its channel table, if
+ * the setup has none, and its id), so its controls are named and labelled as the device's and the
+ * offer is not made again (knownOffer).
+ */
+export function keepOwnSetup(saved: Profile, match: KnownMatch): Profile {
+    const channels = saved.channels ?? knownProfile(match, saved.deviceKey, saved.deviceName)?.channels;
+    return { ...saved, ...(channels ? { channels: channels.map((i) => ({ ...i })) } : {}), known: match.device.id };
+}
+
 /** The entry a profile came from (Profile.known), for the check screen's labels. */
 export function knownDevice(id: string | undefined, table: readonly KnownDevice[] = KNOWN_DEVICES): KnownDevice | null {
     return (id && table.find((d) => d.id === id)) || null;

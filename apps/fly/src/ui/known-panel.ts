@@ -82,6 +82,21 @@ export function knownNote(device: KnownDevice): HTMLElement {
         device.notes.length ? h('ul', { class: 'kp-notes small' }, ...device.notes.map((n) => h('li', {}, t(n)))) : null);
 }
 
+/**
+ * The offer for a recognised controller whose saved setup is older than its recognition (@gsfpv/input
+ * knownOffer): what its known setup is, and the two answers. `use`: the known setup on its check
+ * screen; `keep`: the pilot's setup kept for good (keepOwnSetup). Shown on the Controls screen's radio
+ * in use and on the saved setup's check screen (ui/radio.ts).
+ */
+export function knownOfferBlock(device: KnownDevice, on: { use: () => void; keep: () => void }): HTMLElement {
+    return h('div', { class: 'kp-offer', 'data-testid': 'known-offer' },
+        h('p', { class: 'kp-recognised' }, t('controllers.useKnown', { name: device.name })),
+        h('p', { class: 'muted small' }, t('controllers.offerHint')),
+        h('div', { class: 'actions' },
+            h('button', { type: 'button', class: 'btn primary', 'data-action': 'use-known', onclick: on.use }, t('controllers.useKnownBtn')),
+            h('button', { type: 'button', class: 'btn', 'data-action': 'keep-own', onclick: on.keep }, t('controllers.keepOwnBtn'))));
+}
+
 /** A controller recognised by name only (EdgeTX): why the wizard runs. */
 export function knownNameNote(device: KnownDevice): HTMLElement | null {
     return device.whyNoMapping ? h('div', { class: 'wz-note kp-note', 'data-testid': 'known-note' }, h('p', {}, t(device.whyNoMapping))) : null;

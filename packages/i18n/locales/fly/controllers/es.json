@@ -28,6 +28,8 @@
   "controllers.note.djiArm": "Armar: gas abajo y pulsa arranque/parada (la siguiente pulsación desarma).",
   "controllers.note.djiMode": "Selector de modo de vuelo: N = Angle, S = Horizon, M = Acro.",
   "controllers.edgetx.why": "Radio EdgeTX: sus canales son la configuración de tu propio modelo, así que el asistente pregunta por cada stick una vez.",
-  "controllers.useKnown": "Reconocido: {name}. Su configuración conocida (sticks en Modo 2 con todo su recorrido, selector de modo de vuelo N / S / M = Angle / Horizon / Acro) puede sustituir a esta guardada.",
+  "controllers.useKnown": "Reconocido: {name}. Tu configuración guardada es de antes de que el simulador conociera este control. Su configuración conocida: sticks en modo 2 a todo el recorrido, el interruptor de modo de vuelo N / S / M = Angle / Horizon / Acro, sus canales de Betaflight.",
+  "controllers.offerHint": "«Usar la configuración conocida» la muestra en la pantalla de comprobación («Volar» la guarda). «Mantener la mía» conserva la tuya tal cual. Cualquiera de las dos respuestas cierra esta pregunta; «Volar» sin elegir la vuelve a hacer la próxima vez.",
+  "controllers.keepOwnBtn": "Mantener la mía",
   "controllers.useKnownBtn": "Usar la configuración conocida"
 }

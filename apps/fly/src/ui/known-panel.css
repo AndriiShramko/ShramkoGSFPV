@@ -19,6 +19,9 @@
 .kp-fact.assumed { color: var(--hint-fg, #fde68a); }
 .kp-notes { margin: 6px 0 0; padding-left: 18px; }
 .kp-recognised { font-weight: 600; }
+.kp-offer { margin: 8px 0 10px; padding: 10px 12px; border: 1px solid var(--accent); border-radius: var(--r, 10px); background: rgba(255, 255, 255, .03); }
+.kp-offer p { margin: 0 0 6px; }
+.kp-offer .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 @media (max-width: 520px) {
     .kp-row { grid-template-columns: minmax(0, 1fr) auto; }
     .kp-row > :nth-child(2) { grid-column: 1 / -1; grid-row: 2; }

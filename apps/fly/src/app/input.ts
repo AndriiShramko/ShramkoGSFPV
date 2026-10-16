@@ -1,8 +1,11 @@
 // The input the pilot flies with: the radio or gamepad from last time (item 5), the Controls screen,
-// the keyboard and the touch sticks. The mapping and the arm gate live in controls.ts.
+// the keyboard and the touch sticks. The mapping and the arm gate live in controls.ts. A recognised
+// controller whose setup is older than its recognition opens the Controls screen once on its known
+// setup's offer (devices/known.ts choiceOffer; v0.8 review R1).
 import type { Profile } from '@gsfpv/input';
 import { KeyboardSource } from '../devices/keyboard';
 import { findSavedHid, findSavedGamepad } from '../devices/reconnect';
+import { choiceOffer } from '../devices/known';
 import { TouchSticks } from '../devices/touch';
 import { loadLastInput, saveLastInput, loadProfiles, profileFor, saveProfile } from '../controls';
 import type { LastInput } from '../controls';
@@ -80,11 +83,16 @@ export class InputHost {
             this.use({ kind: 'touch', profile: null }, false);
         } else {
             // item 5: the same radio (or keyboard, touch) as last time flies at once; a note on the
-            // Controls button says so. Nothing found: the Controls screen as before
+            // Controls button says so. Nothing found: the Controls screen as before. A recognised
+            // controller whose setup came back from before it was recognised (choiceOffer: the DJI's
+            // wizard setup, its flight-mode switch on one bit): it is the radio in use and the Controls
+            // screen opens on its offer (Use the known setup / Keep my setup); Fly there flies on with
+            // nothing changed, and the offer comes again next time until the pilot picks one
             const c = await resumed;
             if (c) {
                 this.use(c);
-                this.note(c);
+                if (choiceOffer(c)) this.openRadio(true);
+                else this.note(c);
             } else this.openRadio(true);
         }
     }

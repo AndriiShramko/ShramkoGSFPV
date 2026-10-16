@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { MODE_CHANNEL } from '@gsfpv/sim-core';
 import {
-    KNOWN_DEVICES, USAGE, applyDeadband, gamepadUsbIds, knownDevice, knownProfile, makeHidReader, mapFrame, recognise, seenFromGamepad, seenFromHid
+    KNOWN_DEVICES, USAGE, applyDeadband, gamepadUsbIds, keepOwnSetup, knownDevice, knownOffer, knownProfile, makeHidReader, mapFrame, recognise, seenFromGamepad, seenFromHid
 } from '../src/index';
 import type { KnownDevice, Profile, RawFrame } from '../src/index';
 import { DJI_RC3, DJI_RC3_WINDOWS, EDGETX_CLASSIC, djiRc3Report, edgeTxAdvanced } from '../src/sim/devices';
@@ -138,6 +138,48 @@ describe('the deadband is continuous (v0.8)', () => {
     it('control: the deadband as v0.1-v0.7 applied it (zero inside, unchanged outside) jumps by the whole deadband at its edge', () => {
         const old = (x: number, db: number) => (Math.abs(x) < db ? 0 : x);
         expect(old(0.0251, 0.025) - old(0.0249, 0.025)).toBeGreaterThan(0.025);
+    });
+});
+
+describe('a DJI setup saved before v0.8 (the wizard\'s) is offered the known one (review R1)', () => {
+    const KEY = `gp:${DJI_ID_CHROME}:5:24:`;
+    /** The wizard's v0.7 setup of the DJI: a narrow roll, the mode switch on ONE bit (2 positions), no channel table, no known id. */
+    const OLD: Profile = {
+        version: 1, deviceKey: KEY, deviceName: DJI_ID_CHROME, created: '2026-10-15T20:00:00.000Z', wizard: 2, deadband: 0, angleMode: null, mode: 2,
+        axes: { roll: { index: 0, invert: false, center: -0.017, min: -0.9, max: 0.88 }, pitch: { index: 1, invert: false, center: 0, min: -1, max: 1 }, throttle: { index: 2, invert: false, center: -1, min: -1, max: 1 }, yaw: { index: 3, invert: false, center: -0.012, min: -1, max: 1 } },
+        arm: { kind: 'button', bit: 2, toggle: true },
+        modeSwitch: { input: { kind: 'button', bit: 7 }, modes: ['acro', 'horizon', 'angle'] }
+    };
+    const dji = () => recognise(seenFromGamepad(pad(DJI_ID_CHROME, 5, 24)));
+
+    it('the offer is the known setup for that device key: full sticks, the three-position mode switch, its channel table', () => {
+        const offer = knownOffer(OLD, dji());
+        expect(offer?.known).toBe('dji-virtual-joystick');
+        expect(offer?.deviceKey).toBe(KEY);
+        expect(offer?.axes.roll).toEqual({ index: 0, invert: false, center: 0, min: -1, max: 1 });
+        expect(offer?.modeSwitch?.input).toEqual({ kind: 'bits', lo: 6, hi: 7 });
+        expect(offer?.channels).toHaveLength(9);
+    });
+
+    it('keeping his own: his sticks, arm and one-bit switch stay, the device\'s table and id join, and the offer ends', () => {
+        const kept = keepOwnSetup(OLD, dji()!);
+        expect(kept.axes).toEqual(OLD.axes);
+        expect(kept.arm).toEqual(OLD.arm);
+        expect(kept.modeSwitch).toEqual(OLD.modeSwitch);
+        expect(kept.channels).toEqual(knownOffer(OLD, dji())!.channels);
+        expect(kept.known).toBe('dji-virtual-joystick');
+        expect(knownOffer(kept, dji())).toBeNull();
+        expect(OLD.known).toBeUndefined(); // the saved one is not changed in place
+    });
+
+    it('control: no offer for the known setup itself, for a wizard run on the recognised DJI since v0.8, for an EdgeTX radio or an unrecognised pad', () => {
+        expect(knownOffer(knownOffer(OLD, dji())!, dji())).toBeNull();
+        expect(knownOffer({ ...OLD, known: 'dji-virtual-joystick' }, dji())).toBeNull();
+        const edgetx = recognise(seenFromHid(EDGETX_CLASSIC));
+        expect(edgetx?.device.mapping).toBeNull();
+        expect(knownOffer(OLD, edgetx)).toBeNull();
+        expect(knownOffer(OLD, recognise(seenFromGamepad(pad('Xbox 360 Controller (XInput STANDARD GAMEPAD)', 4, 17))))).toBeNull();
+        expect(knownOffer(OLD, null)).toBeNull();
     });
 });
 

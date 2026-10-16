@@ -105,6 +105,52 @@ describe('the DJI flies with its known setup', () => {
     });
 });
 
+describe('a DJI setup saved before v0.8 that comes back by itself at load opens Controls on its offer (review R1)', () => {
+    /** The wizard's v0.7 setup of the DJI: the mode switch on one bit (2 positions), a narrow roll, no channel table, no known id. */
+    const old = (): Profile => ({
+        version: 1, deviceKey: `gp:${ID}:5:24:`, deviceName: ID, created: '2026-10-15T20:00:00.000Z', wizard: 2, deadband: 0, angleMode: null, mode: 2,
+        axes: { roll: { index: 0, invert: false, center: -0.017, min: -0.9, max: 0.88 }, pitch: { index: 1, invert: false, center: 0, min: -1, max: 1 }, throttle: { index: 2, invert: false, center: -1, min: -1, max: 1 }, yaw: { index: 3, invert: false, center: -0.012, min: -1, max: 1 } },
+        arm: { kind: 'button', bit: 2, toggle: true },
+        modeSwitch: { input: { kind: 'button', bit: 7 }, modes: ['acro', 'horizon', 'angle'] }
+    });
+
+    /** InputHost.start with the input from last time found (resumeInput's answer): what it opened. */
+    async function startWith(profile: Profile, padId: string) {
+        // KeyboardSource (made by InputHost) listens on the window and the document, and samples on a timer
+        vi.stubGlobal('addEventListener', () => undefined);
+        vi.stubGlobal('window', { setInterval: () => 0, clearInterval: () => undefined, setTimeout: () => 0, clearTimeout: () => undefined });
+        vi.stubGlobal('document', { ...doc, addEventListener: () => undefined, querySelector: () => null });
+        try {
+            const { InputHost } = await import('../../../apps/fly/src/app/input');
+            const { c } = controls(profile);
+            const host = new InputHost({ controls: c } as never);
+            const opened: boolean[] = [];
+            let noted = 0;
+            host.openRadio = (first = false) => { opened.push(first); };
+            host.note = () => { noted++; };
+            const gamepad = { onFrame: null, stop: () => undefined, info: () => ({ id: padId, axes: { length: 5 }, buttons: { length: 24 } }) };
+            await host.start(Promise.resolve({ kind: 'gamepad', profile, gamepad } as never));
+            return { opened, noted, inUse: host.radioInUse()?.profile === profile };
+        } finally {
+            vi.stubGlobal('document', doc);
+            vi.stubGlobal('window', undefined);
+        }
+    }
+
+    it('the DJI\'s old setup is the radio in use and the Controls screen opens (its in-use panel offers the known setup)', async () => {
+        expect(await startWith(old(), ID)).toEqual({ opened: [true], noted: 0, inUse: true });
+    });
+
+    it('control: its known setup, the old setup kept by the pilot, and an old setup of an unrecognised pad fly at once with the note', async () => {
+        const { keepOwnSetup } = await import('../../../packages/input/src/index');
+        const m = recognise(seenFromGamepad({ id: ID, axes: { length: 5 }, buttons: { length: 24 } }))!;
+        expect(await startWith(dji(), ID)).toEqual({ opened: [], noted: 1, inUse: true });
+        expect(await startWith(keepOwnSetup(old(), m), ID)).toEqual({ opened: [], noted: 1, inUse: true });
+        const other = 'Generic USB Joystick (Vendor: 0079 Product: 0006)';
+        expect(await startWith({ ...old(), deviceKey: `gp:${other}:5:24:`, deviceName: other }, other)).toEqual({ opened: [], noted: 1, inUse: true });
+    });
+});
+
 describe('saved profiles keep loading', () => {
     const OLD = {
         version: 1, deviceKey: 'hid:1209:4f54:Radiomaster TX16S Joystick:19', deviceName: 'Radiomaster TX16S Joystick', deadband: 0, created: '2026-09-26T19:44:02.118Z', mode: 2, wizard: 2, angleMode: null,
