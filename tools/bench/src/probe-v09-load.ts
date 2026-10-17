@@ -3,9 +3,12 @@
 // acceptance (accept-v09-load.ts) decides. Draws scans: run it under the GPU lock (C:/dev/.gpu-lock).
 //
 // Cases (argv; default: all of the owner's reports):
-//   link:<id>[:stochastic]   a fresh browser profile opens /en/fly/?scene=<id> (a link)
+//   link:<id>[:<query>]      a fresh browser profile opens /en/fly/?scene=<id>[&<query>] (a link; e.g. budget=8&stochastic)
 //   revisit:<id>             the same profile opens it twice (the browser's HTTP cache warm the second time)
-//   switch:<from>:<to>       open <from>, fly, then N-style in-page switch to <to> (the page's shared renderer)
+//   switch:<from>:<to>[:<s>] open <from>, fly <s> s (3), then N-style in-page switch to <to> (the page's shared renderer)
+//   export:<id>[:<s>]        open <id>, let the parked drone's life run <s> s (5), then "Save this flight as video"
+//                            (1080p): the export's frame count, waits and the bar's text every second, the engine's state
+// VIEW=4k: a 1920 x 1080 window at device pixel ratio 2 (the owner's 4K monitor: a 3840 x 2160 backbuffer).
 // For each case, every 250 ms until the first view is revealed (or LIMIT_S): the loading card's stage, hint
 // and numbers, and the engine's own state of the scan (gsplat 'frame:ready': ready / files loading, how
 // often each flips, splats drawn, the octree's pending and prefetch files, the environment file, the LOD
@@ -19,7 +22,7 @@ import { writeEvidence } from './evidence';
 
 const SITE = (process.env.SITE ?? 'http://127.0.0.1:5391').replace(/\/$/, '');
 const LIMIT_S = Number(process.env.LIMIT_S ?? 75);
-const DEFAULT_CASES = ['link:d8ba72a6', 'link:a8cfc66e', 'link:b11e45d1', 'link:a8cfc66e:stochastic', 'switch:39e63ce9:a8cfc66e', 'switch:39e63ce9:d8ba72a6', 'revisit:a8cfc66e'];
+const DEFAULT_CASES = ['link:d8ba72a6', 'link:a8cfc66e', 'link:b11e45d1', 'link:a8cfc66e:budget=8&stochastic', 'switch:39e63ce9:a8cfc66e', 'switch:39e63ce9:d8ba72a6', 'revisit:a8cfc66e'];
 const CASES = process.argv.slice(2).length ? process.argv.slice(2) : DEFAULT_CASES;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -104,7 +107,7 @@ async function revealOf(page: Page, label: string, t0: number, isSwitch: boolean
 }
 
 async function newPage(browser: Browser): Promise<{ page: Page; log: string[]; close: () => Promise<void> }> {
-    const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+    const ctx = await browser.newContext(process.env.VIEW === '4k' ? { viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 2 } : { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
     await ctx.route('**/api/e', (r) => r.fulfill({ status: 204, body: '' }));
     await ctx.addInitScript('window.__name = window.__name || ((f) => f);');
     const page = await ctx.newPage();
@@ -126,7 +129,7 @@ try {
         try {
             if (kind === 'link') {
                 const t0 = Date.now();
-                await page.goto(flyUrl(a, b === 'stochastic' ? '&stochastic' : ''));
+                await page.goto(flyUrl(a, b ? `&${c.split(':').slice(2).join(':')}` : ''));
                 results.push({ case: c, ...(await revealOf(page, c, t0, false)), log: log.slice(0, 20) });
             } else if (kind === 'revisit') {
                 for (const pass of ['cold', 'warm']) {
@@ -138,10 +141,31 @@ try {
                 const t0 = Date.now();
                 await page.goto(flyUrl(a));
                 const first = await revealOf(page, `${c}:first`, t0, false);
-                await page.waitForTimeout(3000);
+                await page.waitForTimeout(1000 * Number(c.split(':')[3] ?? 3));
                 const t1 = Date.now();
                 await page.evaluate(`window.__gsfpv.scenes.load(${JSON.stringify(b)}, 'pick')`);
                 results.push({ case: c, first: { revealedMs: first.revealedMs }, ...(await revealOf(page, c, t1, true)), log: log.slice(0, 20) });
+            } else if (kind === 'export') {
+                // the parked drone's life for <b> s (5), then "Save this flight as video" at 1080p
+                const t0 = Date.now();
+                await page.goto(flyUrl(a));
+                const first = await revealOf(page, `${c}:load`, t0, false);
+                await page.waitForTimeout(1000 * Number(b ?? 5));
+                await page.evaluate(`(window.__vx = null, window.__gsfpv.videoExport.run({ size: '1080p' }).then((r) => { window.__vx = r; }))`);
+                const t1 = Date.now();
+                const samples: Any[] = [];
+                let result: Any = null;
+                while (Date.now() - t1 < LIMIT_S * 1000) {
+                    await page.waitForTimeout(1000);
+                    result = await page.evaluate('window.__vx');
+                    const x: Any = await page.evaluate(`({ st: window.__gsfpv.videoExport.state(), bar: (document.querySelector('[data-testid=video-export-status]') || {}).textContent || null, eng: ${SAMPLE}.engine || null })`);
+                    samples.push({ t: Date.now() - t1, k: x.st.k, frames: x.st.frames, waited: x.st.waited, bar: x.bar, splatFrame: x.eng?.splatFrame, octrees: x.eng?.octrees, budgetM: x.eng?.budgetM, range: x.eng?.range });
+                    if (result) break;
+                }
+                const last = samples[samples.length - 1];
+                console.log(`${c}: export ${result ? `${result.ended} ${result.encoded}/${result.frames} in ${((Date.now() - t1) / 1000).toFixed(0)} s error=${result.error ?? ''}` : `still running after ${LIMIT_S} s: frame ${last?.k}/${last?.frames}, waited ${last?.waited}, bar "${last?.bar}", engine ${JSON.stringify(last?.splatFrame)} ${JSON.stringify(last?.octrees)}`}`);
+                if (!result) await page.evaluate('window.__gsfpv.videoExport.cancel()').catch(() => undefined);
+                results.push({ case: c, load: { revealedMs: first.revealedMs }, result, samples, log: log.slice(0, 20) });
             } else throw new Error(`unknown case ${c}`);
         } finally {
             await close();
@@ -150,4 +174,4 @@ try {
 } finally {
     await browser.close();
 }
-writeEvidence(`v09-load-probe${process.env.EVIDENCE_SUFFIX ?? ''}`, { site: SITE, limitS: LIMIT_S, cases: results });
+writeEvidence('v09-load-probe', { site: SITE, limitS: LIMIT_S, cases: results });
