@@ -95,6 +95,19 @@ const v08: Policy = (a, d) => {
     return { stochastic: false, budgetM: top, note: who ? `${who}-${d.handheld ? 'handheld' : 'webgl'}` as Drawing['note'] : null };
 };
 
+describe('the desktop default budget of the stochastic drawing', () => {
+    it('is the sorted drawing\'s 4 M, SuperSplat\'s desktop budget: a desktop streams no more bytes and holds no more VRAM than before, and a link that loses ?budget=8&stochastic draws what a bare link draws', () => {
+        expect(STOCHASTIC_BUDGET_M).toBe(DEFAULT_BUDGET_M);
+        expect(DEFAULT_BUDGET_M).toBe(4);
+        const bare = resolveDrawing(ask({}), DESKTOP);
+        expect(bare).toMatchObject({ stochastic: true, budgetM: 4 });
+        // the budget SuperSplat's example link asks for is still honoured, from the link
+        expect(resolveDrawing(ask({ link: OWNER }), DESKTOP)).toMatchObject({ stochastic: true, budgetM: 8 });
+        // control: the first v0.9 cut gave 8 M by default, which the load measurement (+65 % bytes, ~1.7x VRAM) refused
+        expect(bare.budgetM).not.toBe(8);
+    });
+});
+
 describe('resolveDrawing: link x pilot x owner\'s entry x device', () => {
     it('every row', () => {
         expect(failures(real)).toEqual([]);

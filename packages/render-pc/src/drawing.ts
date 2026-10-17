@@ -84,9 +84,15 @@ export const DEFAULT_BUDGET_M = 4;
 
 /**
  * The top of the splat budget of the stochastic drawing on a desktop when nobody asks for another one,
- * millions. Measured, not guessed: docs/wip/v09-r.md "Numbers" (evidence/2026-10-17/v09-r-cost.json).
+ * millions. The same 4 M as the sorted drawing's, SuperSplat's viewer's desktop budget: a link that loses
+ * `?budget=8&stochastic` the day SuperSplat makes stochastic its default must draw what a link without
+ * parameters draws, and a desktop must not stream or hold more than it did. Measured (docs/wip/v09-r.md
+ * "Numbers" and "Load cost"; evidence v09-r-cost-*.json, v09-r-load.json): at the same budget stochastic costs
+ * 25 to 45 % less GPU time at 4K than sorted, so 4 M is cheaper than before; 8 M would draw the same GPU time
+ * as the old default but stream 65 % more bytes (Opole 300 -> 502 MB, `2f1ddf5f` 98 -> 162 MB) and hold about
+ * 1.7x the VRAM, for a gain nobody has shown. A pilot or a link asks for more (Splat budget, `?budget=8`).
  */
-export const STOCHASTIC_BUDGET_M = 8;
+export const STOCHASTIC_BUDGET_M = 4;
 
 /**
  * The top of the splat budget on a device SuperSplat's viewer calls mobile (isViewerMobile), millions
