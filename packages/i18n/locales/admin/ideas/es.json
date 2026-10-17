@@ -107,6 +107,7 @@
   "admin.ideas.mail.state.failed": "no entregado",
   "admin.ideas.mail.state.cancelled": "cancelado",
   "admin.ideas.mail.state.waiting_setup": "esperando a que se configure Gmail",
+  "admin.ideas.mail.state.waiting_language": "retenido: no está en el idioma del piloto y no se pudo traducir (Enviar lo envía tal cual)",
   "admin.ideas.mail.state.no_email": "sin dirección de correo",
   "admin.ideas.mail.state.unknown": "quizá no salió",
   "admin.ideas.thanks.open": "Correo de agradecimiento…",

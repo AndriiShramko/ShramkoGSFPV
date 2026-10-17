@@ -40,6 +40,7 @@ import service  # noqa: E402
 import translate  # noqa: E402
 
 GEMINI_KEY = "test-gemini-key-" + "0123456789" * 3
+os.environ.pop("GEMINI_API_KEY", None)   # a shell's real key must never let a test of server.py's objects call Google
 OWNER_CHAT = "4242"
 OWNER_TOKEN = "111111:owner-bot-fake-token"
 SHARED_TOKEN = "222222:shared-lead-bot-fake-token"
@@ -76,7 +77,7 @@ class FakeTelegram:
                 self.wfile.write(b)
 
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), H)
-        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        threading.Thread(target=self.server.serve_forever, kwargs={"poll_interval": 0.02}, daemon=True).start()
 
     @property
     def base(self) -> str:
@@ -165,7 +166,7 @@ class FakeGemini:
                     pass
 
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), H)
-        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        threading.Thread(target=self.server.serve_forever, kwargs={"poll_interval": 0.02}, daemon=True).start()
 
     @property
     def base(self) -> str:
@@ -242,7 +243,7 @@ class FakeSMTP:
             daemon_threads = True
 
         self.server = S(("127.0.0.1", 0), H)
-        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        threading.Thread(target=self.server.serve_forever, kwargs={"poll_interval": 0.02}, daemon=True).start()
 
     @property
     def port(self) -> int:

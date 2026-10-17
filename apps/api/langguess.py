@@ -39,22 +39,22 @@ _WORDS = {
 }
 # letters (written as escapes) that point to one language
 _HINTS = {
-    "pl": "ąćęłńśźżĄĆĘŁŃŚŹŻ",
-    "es": "ñ¿¡áéíúÑÁÉÍÚ",
+    "pl": "\u0105\u0107\u0119\u0142\u0144\u015b\u017a\u017c\u0104\u0106\u0118\u0141\u0143\u015a\u0179\u017b",
+    "es": "\u00f1\u00bf\u00a1\u00e1\u00e9\u00ed\u00fa\u00d1\u00c1\u00c9\u00cd\u00da",
 }
 # Ukrainian, Belarusian, Serbian and Macedonian letters Russian does not have
-_NOT_RUSSIAN = set("іїєґІЇЄҐўЎђћјљњѓќѕ")
+_NOT_RUSSIAN = set("\u0456\u0457\u0454\u0491\u0406\u0407\u0404\u0490\u045e\u040e\u0452\u045b\u0458\u0459\u045a\u0453\u045c\u0455")
 _TOKEN = re.compile(r"[^\W\d_]+")
 
 
 def _fold(word: str) -> str:
-    """Lower case without accents ("Dziękuję" -> "dziekuje"); the Polish l with a stroke has no decomposition."""
-    w = word.lower().replace("ł", "l")
+    """Lower case without accents ("Dzi\u0119kuj\u0119" -> "dziekuje"); the Polish l with a stroke has no decomposition."""
+    w = word.lower().replace("\u0142", "l")
     return "".join(c for c in unicodedata.normalize("NFD", w) if not unicodedata.combining(c))
 
 
 def _cyrillic(c: str) -> bool:
-    return "Ѐ" <= c <= "ԯ"
+    return "\u0400" <= c <= "\u052f"
 
 
 def classify(text: str) -> str:
