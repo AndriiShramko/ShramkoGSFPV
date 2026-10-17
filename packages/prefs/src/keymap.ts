@@ -6,7 +6,7 @@
 export type ActionId =
     | 'pause.toggle' | 'respawn.start' | 'respawn.rewind' | 'crash.keep' | 'scene.next' | 'scene.random' | 'scene.favourite'
     | 'mode.cycle' | 'voxels.cycle' | 'hud.toggle' | 'scale.down' | 'scale.up' | 'record.toggle' | 'frameStats.toggle'
-    | 'settings.open' | 'walls.toggle' | 'arm.toggle' | 'feedback.open' | 'share.open' | 'help.keys' | (string & {}); // v0.2 pause items keep the keys v0.2 shipped
+    | 'settings.open' | 'walls.toggle' | 'arm.toggle' | 'feedback.open' | 'share.open' | 'help.keys' | 'fullscreen.toggle' | (string & {}); // v0.2 pause items keep the keys v0.2 shipped
 
 /** A key as a menu shows it (`cap`) and as ARIA names it (`aria`, for aria-keyshortcuts). v0.2's shape. */
 export interface KeyHint { cap: string; aria: string }
@@ -53,7 +53,8 @@ export const KEYMAP: readonly KeyBinding[] = [
     { action: 'crash.keep', keys: [{ code: 'Enter', cap: 'Enter', aria: 'Enter' }], when: 'crash', labelKey: 'keys.crash.keep', status: 'shipped' },
     { action: 'scene.next', keys: [letter('N')], when: 'always', labelKey: 'keys.scene.next', status: 'shipped' },
     { action: 'scene.random', keys: [{ code: 'KeyN', shift: true, cap: 'Shift+N', aria: 'Shift+N' }], when: 'always', labelKey: 'keys.scene.random', status: 'shipped' },
-    { action: 'scene.favourite', keys: [letter('F')], when: 'always', labelKey: 'keys.scene.favourite', status: 'shipped' },
+    // F is full screen since v0.9 (below); the next favourite scene is Shift+F
+    { action: 'scene.favourite', keys: [{ code: 'KeyF', shift: true, cap: 'Shift+F', aria: 'Shift+F' }], when: 'always', labelKey: 'keys.scene.favourite', status: 'shipped' },
     // M cycles acro / angle / horizon for every input (app/builtin/modes.ts, the HUD mode chip; with
     // a radio whose mode switch decides, it says so). v0.2's keyboard flying toggled angle on M,
     // so keyboard pilots keep their key
@@ -83,7 +84,10 @@ export const KEYMAP: readonly KeyBinding[] = [
     { action: 'share.open', keys: [letter('L')], when: 'always', labelKey: 'keys.share.open', status: 'shipped' },
     // v0.8 lane A (app/builtin/play.ts): the keyboard's key card on demand (it shows by itself while the
     // drone waits on the ground); K as in "keys"
-    { action: 'help.keys', keys: [letter('K')], when: 'always', labelKey: 'keys.help.keys', status: 'shipped' }
+    { action: 'help.keys', keys: [letter('K')], when: 'always', labelKey: 'keys.help.keys', status: 'shipped' },
+    // v0.9 lane B (app/builtin/play.ts, play/fullscreen.ts): full screen on and off, also on the top bar; F as in
+    // "full screen", the key games use; it works with the mouse captured. The next favourite scene moved to Shift+F
+    { action: 'fullscreen.toggle', keys: [letter('F')], when: 'always', labelKey: 'keys.fullscreen.toggle', status: 'shipped' }
 ];
 
 /**
@@ -94,10 +98,11 @@ export const V02_PAUSE_ITEMS: Readonly<Record<'resume' | 'restart', ActionId>> =
 
 /**
  * Keyboard flying (devices/keyboard.ts with the layouts of apps/fly/src/play/keys.ts, plus Space =
- * arm): no menu action may take one; only a binding marked `flying` (read by devices/keyboard.ts
- * itself, never routed) lists one. Q and E turn in the game layout of easy play (v0.8).
+ * arm in the pilot profile): no menu action may take one; only a binding marked `flying` (read by
+ * devices/keyboard.ts itself, never routed) lists one. Q and E turn in the game layout (v0.9; Shift
+ * is its descent and is a modifier for the chords that name it: Shift+N, Shift+F, Shift+[ ]).
  */
-export const FLYING_CODES: readonly string[] = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
+export const FLYING_CODES: readonly string[] = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'ShiftLeft', 'ShiftRight'];
 
 /**
  * Keys keyboard pilots know from keyboard flying, each with the one action allowed on it (the same

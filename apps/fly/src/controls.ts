@@ -184,6 +184,8 @@ export interface ArmView {
     source: Controls['source'];
     /** easy play flies (touch or keyboard with prefs input.play 'easy', v0.8): no arming, the HUD says "take off" */
     easy: boolean;
+    /** the game scheme flies (easy play with the keyboard, v0.9): mouse look, W A S D, Space and Shift; its card is the key card */
+    game: boolean;
 }
 
 /** Routes mapped channels through the arm gate into the session. */
@@ -214,7 +216,7 @@ export class Controls {
 
     constructor(session: FlightSession) {
         this.session = session;
-        this.armView = { ch: this.ch, armKind: null, armLabel: '', mode: 2, source: null, easy: false };
+        this.armView = { ch: this.ch, armKind: null, armLabel: '', mode: 2, source: null, easy: false, game: false };
     }
 
     /** A new scene (E.4): the same input, profile and arm gate feed the new session. */
@@ -265,9 +267,18 @@ export class Controls {
         return (this.source === 'hid' || this.source === 'gamepad') && !!p && radioSetsMode(p);
     }
 
-    /** The mode flying now: the radio switch's position, or the pilot's mode. */
+    /**
+     * The game scheme flies: easy play with the keyboard as the input (v0.9, play/game.ts). Its velocity
+     * loop commands tilt angles, which only angle mode turns into a tilt, so it always flies angle mode.
+     */
+    gameKeys(): boolean {
+        return this.play === 'easy' && this.source === 'keyboard';
+    }
+
+    /** The mode flying now: the radio switch's position, angle for the game scheme, or the pilot's mode. */
     flyingMode(): FlightMode {
-        return this.radioDecides() ? modeFromChannel(this.ch[5]) : this.mode;
+        if (this.radioDecides()) return modeFromChannel(this.ch[5]);
+        return this.gameKeys() ? 'angle' : this.mode;
     }
 
     /**
@@ -324,6 +335,7 @@ export class Controls {
         v.mode = this.profile?.mode ?? getStickMode();
         v.source = this.source;
         v.easy = this.play === 'easy' && (this.source === 'touch' || this.source === 'keyboard');
+        v.game = this.gameKeys();
         return v;
     }
 
@@ -349,7 +361,7 @@ export class Controls {
     /** The channels as they go out: the pilot's mode on ch[5] unless the radio's switch decides (the bot pilot sets its own). */
     private fill(): void {
         this.out.set(this.ch);
-        if (this.source !== 'sim' && !this.radioDecides()) this.out[5] = MODE_CHANNEL[this.mode];
+        if (this.source !== 'sim' && !this.radioDecides()) this.out[5] = MODE_CHANNEL[this.gameKeys() ? 'angle' : this.mode];
     }
 
     /**

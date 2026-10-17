@@ -109,13 +109,28 @@ export class AltitudeHelp {
      * `s`: the sim's state slots (S), `dtS`: seconds since the last update (0 on the first one).
      */
     update(lift: number, boost: boolean, p: SimParams, s: ArrayLike<number>, dtS: number): number {
-        const vy = s[S.vy];
-        const py = s[S.py];
         const k = boost ? CLIMB_BOOST : 1;
-        let vt: number;
         if (Math.abs(lift) > DEADBAND) {
             const c = Math.max(-1, Math.min(1, lift));
-            vt = c > 0 ? c * CLIMB_MPS * k : c * SINK_MPS * k;
+            return this.follow(c > 0 ? c * CLIMB_MPS * k : c * SINK_MPS * k, p, s, dtS);
+        }
+        return this.follow(null, p, s, dtS);
+    }
+
+    /** Hold this height from now on (until a speed is asked for): a take-off that climbs to it. */
+    holdAt(y: number): void {
+        this.holdY = y;
+    }
+
+    /**
+     * The throttle stick (0..1) that flies the vertical speed `vt` (m/s, up positive), or, with null,
+     * holds the height (where the craft will stop, unless holdAt() set it). update() asks for the
+     * speeds of easy play's climb and sink; the game scheme (play/game.ts) asks for its own.
+     */
+    follow(vt: number | null, p: SimParams, s: ArrayLike<number>, dtS: number): number {
+        const vy = s[S.vy];
+        const py = s[S.py];
+        if (vt !== null) {
             this.holdY = null;
         } else {
             // released: hold where the craft will stop (about one time constant of travel ahead)

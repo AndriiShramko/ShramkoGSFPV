@@ -59,14 +59,19 @@ const SHIPPED_IN_WAVE2: readonly string[] = [
     // v0.7 D1: L shares the scene flown (the share panel)
     'share.open',
     // v0.8 lane A: K shows the keyboard's key card on demand (app/builtin/play.ts)
-    'help.keys'
+    'help.keys',
+    // v0.9 lane B: F toggles full screen (app/builtin/play.ts)
+    'fullscreen.toggle'
 ];
 
 /** Keys added after the design table, by the agent whose feature handles them. */
 const ADDED_AFTER_DESIGN: Record<string, string[]> = {
     'feedback.open': ['B'],
     'share.open': ['L'],
-    'help.keys': ['K']
+    'help.keys': ['K'],
+    // v0.9 lane B: F is full screen; the design table's F (next favourite scene) moved to Shift+F
+    'fullscreen.toggle': ['F'],
+    'scene.favourite': ['Shift+F']
 };
 
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });

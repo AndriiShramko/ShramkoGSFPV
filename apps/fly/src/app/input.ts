@@ -8,6 +8,9 @@ import { findSavedHid, findSavedGamepad } from '../devices/reconnect';
 import { choiceOffer } from '../devices/known';
 import { TouchSticks } from '../devices/touch';
 import { EasyPilot } from '../play/easy';
+import { GAME_SPEED_IDS } from '../play/game';
+import type { GameSpeed } from '../play/game';
+import { GamePilot } from '../play/game-pilot';
 import type { PlayProfile } from '../play/keys';
 import { loadLastInput, saveLastInput, loadProfiles, profileFor, saveProfile } from '../controls';
 import type { LastInput } from '../controls';
@@ -68,10 +71,15 @@ export class InputHost {
     readonly keyboard: KeyboardSource;
     touch: TouchSticks | null = null;
     /**
-     * Easy play (v0.8, play/easy.ts): the auto-arm and the altitude help shared by the keyboard and
-     * the touch sticks when prefs input.play is 'easy'. A radio or gamepad never goes through it.
+     * Easy play (v0.8, play/easy.ts): the auto-arm and the altitude help of the touch sticks when prefs
+     * input.play is 'easy'. A radio or gamepad never goes through it.
      */
     readonly easy: EasyPilot;
+    /**
+     * The game scheme (v0.9, play/game-pilot.ts): the keyboard and the mouse when prefs input.play is
+     * 'easy'. Auto-arm, velocity and height hold, mouse look. A radio or gamepad never goes through it.
+     */
+    readonly game: GamePilot;
     /** How touch and keyboard fly now (prefs input.play, set by app/builtin/play.ts through setPlay). */
     private play: PlayProfile = 'pilot';
     private lastChoice: RadioChoice | null = null;
@@ -83,7 +91,19 @@ export class InputHost {
         this.keyboard = new KeyboardSource(ctx.controls);
         this.keyboard.onArm = () => ctx.controls.toggleArm();
         this.easy = new EasyPilot(ctx.controls, { session: () => ctx.session, altitudeHelp: () => ctx.prefs.get('input.altitudeHelp') !== false });
-        this.keyboard.easy = { pilot: this.easy, params: () => ctx.session.sim.p, mode: () => ctx.controls.flyingMode() };
+        const speed = (): GameSpeed => {
+            const v = ctx.prefs.get('input.gameSpeed');
+            return GAME_SPEED_IDS.find((id) => id === v) ?? 'normal';
+        };
+        this.game = new GamePilot(ctx.controls, { session: () => ctx.session, speed });
+        this.keyboard.game = {
+            pilot: this.game,
+            sensitivity: () => {
+                const v = ctx.prefs.get('input.mouseSensitivity');
+                return typeof v === 'number' && v > 0 ? v : 1;
+            },
+            invertY: () => ctx.prefs.get('input.mouseInvertY') === true
+        };
     }
 
     /**
@@ -95,6 +115,7 @@ export class InputHost {
         this.play = p;
         this.ctx.controls.play = p;
         this.keyboard.setProfile(p);
+        this.game.reset();
         if (this.touch) {
             this.touch.dispose();
             this.easy.reset();
@@ -177,7 +198,7 @@ export class InputHost {
         if (c.kind === 'hid' && c.hid) c.hid.onFrame = (f) => ctx.controls.raw(f);
         if (c.kind === 'gamepad' && c.gamepad) c.gamepad.onFrame = (f) => ctx.controls.raw(f);
         // a new input starts easy play from the ground: motors off until its first flying input
-        if (c.kind !== prev?.kind) this.easy.reset();
+        if (c.kind !== prev?.kind) { this.easy.reset(); this.game.reset(); }
         if (c.kind === 'touch') this.touch = this.makeTouch();
         this.keyboard.setActive(c.kind === 'keyboard');
         this.lastChoice = c;

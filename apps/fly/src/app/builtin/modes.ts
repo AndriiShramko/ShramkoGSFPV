@@ -63,6 +63,8 @@ export const modes: Feature = {
             if (e.repeat || document.querySelector('#ui .screen, #ui .panel')) return;
             const radio = radioSwitch(ctx);
             if (radio !== null) { ctx.hud.flash(t('mode.radioDecides', { src: radio }), 3000); return; }
+            // the game keys command tilt angles, which only angle mode turns into a tilt (play/game.ts)
+            if (ctx.controls.gameKeys()) { ctx.hud.flash(t('play.game.angleOnly'), 4000); return; }
             const next = CHIP_MODES[(CHIP_MODES.indexOf(mode()) + 1) % CHIP_MODES.length];
             prefs.set('flight.mode', next);
             prefs.clearSession('flight.mode');

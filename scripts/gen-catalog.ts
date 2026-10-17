@@ -152,18 +152,19 @@ const NOT_IN_ENGLISH = /[\u0400-\u04ff\u0104-\u0107\u0118\u0119\u0141-\u0144\u01
 /**
  * Keyboard flying (apps/fly devices/keyboard.ts, layouts in apps/fly/src/play/keys.ts): not menu
  * actions, so not in KEYMAP, but keys a pilot uses. Listed as the default layout flies them (easy
- * play's game layout, v0.8); the pilot layout (Mode 2 on the keys) is described by the input.play
- * setting's help. The texts are the simulator's own key card (play.keys.*, arm.keys.mode). Every
- * flying code of the keymap module must be listed here, or the generator stops: the site must not
- * miss a key. Shift (faster) is no flying code (it runs nothing alone), so it lists no code.
+ * play's game scheme, v0.9: the mouse looks, W A S D move, Space up, Shift down); the pilot layout
+ * (Mode 2 on the keys) is described by the input.play setting's help. The texts are the simulator's
+ * own key card (play.game.*, play.catalog.*, arm.keys.mode). Every flying code of the keymap module
+ * must be listed here, or the generator stops: the site must not miss a key. The mouse is no key
+ * code, so it lists none.
  */
 const FLYING: readonly { codes: readonly string[]; caps: readonly string[]; label: string }[] = [
-    { codes: ['KeyW', 'KeyS'], caps: ['W', 'S'], label: 'play.keys.forward' },
-    { codes: ['KeyA', 'KeyD'], caps: ['A', 'D'], label: 'play.keys.side' },
-    { codes: ['ArrowLeft', 'ArrowRight', 'KeyQ', 'KeyE'], caps: ['←', '→', 'Q', 'E'], label: 'play.keys.turn' },
-    { codes: ['ArrowUp', 'ArrowDown'], caps: ['↑', '↓'], label: 'play.keys.updown' },
-    { codes: [], caps: ['Shift'], label: 'play.keys.boost' },
-    { codes: ['Space'], caps: ['Space'], label: 'play.keys.motors' },
+    { codes: [], caps: ['Mouse'], label: 'play.game.mouse' },
+    { codes: ['KeyW', 'KeyS', 'ArrowUp', 'ArrowDown'], caps: ['W', 'S'], label: 'play.catalog.forward' },
+    { codes: ['KeyA', 'KeyD'], caps: ['A', 'D'], label: 'play.catalog.side' },
+    { codes: ['ArrowLeft', 'ArrowRight', 'KeyQ', 'KeyE'], caps: ['\u2190', '\u2192', 'Q', 'E'], label: 'play.game.turnKeys' },
+    { codes: ['Space'], caps: ['Space'], label: 'play.game.up' },
+    { codes: ['ShiftLeft', 'ShiftRight'], caps: ['Shift'], label: 'play.game.down' },
     { codes: ['KeyM'], caps: ['M'], label: 'arm.keys.mode' }
 ];
 
