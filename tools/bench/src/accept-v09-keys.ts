@@ -45,6 +45,7 @@ function ev<T = Any>(p: Page, code: string): Promise<T> {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const r3 = (v: number): number => Math.round(v * 1000) / 1000;
 
+let strayMouse: unknown = null;
 const checks: { id: string; ok: boolean; discriminating: boolean; detail: Record<string, unknown> }[] = [];
 /** `discriminating` false: a check the base build is expected to pass too (nothing of the new scheme in it). */
 function check(id: string, ok: boolean, detail: Record<string, unknown> = {}, discriminating = true): void {
@@ -61,6 +62,16 @@ const wrap = (d: number): number => { let x = d % 360; if (x > 180) x -= 360; el
 
 /** The flight with the keyboard as the input (the first visit's Controls screen closed: the keyboard stands in). */
 async function keyboardFlight(p: Page, qs: string, wallsOff: boolean): Promise<void> {
+    // While the mouse is captured, a real mouse (a hand on this machine, another tool) moves the aim like the test's own
+    // events do and spoils a measurement: real (trusted) mousemove events are dropped in the capture phase while the lock
+    // is held, and counted (evidence: strayMouse). The test's events are untrusted and pass; clicks and moves with the
+    // lock off pass as well.
+    await p.addInitScript(`(() => {
+        window.__stray = { n: 0, px: 0 };
+        window.addEventListener('mousemove', (e) => {
+            if (e.isTrusted && document.pointerLockElement) { window.__stray.n++; window.__stray.px += Math.abs(e.movementX) + Math.abs(e.movementY); e.stopImmediatePropagation(); }
+        }, true);
+    })();`);
     await p.goto(fly(qs));
     const r = await waitReady(p, 240000);
     if (r.status !== 'ready') throw new Error(`flight did not start: ${String(r.status)}`);
@@ -195,7 +206,7 @@ await p.keyboard.down('ShiftLeft');
 await sleep(1200);
 const down = await ev<Pos>(p, POS);
 await p.keyboard.up('ShiftLeft');
-check('V7b Shift descends', yD0 - down.y > 2 && down.vy < -2, { lostM: r3(yD0 - down.y), vy: r3(down.vy) });
+check('V7b Shift descends', yD0 - down.y > 2 && down.vy < -2, { lostM: r3(yD0 - down.y), vy: r3(down.vy) }, false); // not discriminating: the base build also loses height here (its motors were stopped by Space in V7)
 await sleep(1500);
 
 // ------------------------------------------------------------------ the mode: the game keys fly angle
@@ -210,7 +221,7 @@ await ev(p, 'try { h.prefs.set("input.mouseInvertY", true); h.prefs.set("input.m
 const g0 = (await ev<Any>(p, 'return h.play().game;'));
 await moveMouse(p, 100, -100);
 const g1 = (await ev<Any>(p, 'return h.play().game;'));
-check('V9 invert-Y flips the pitch of the same movement; sensitivity 2 doubles the turn (100 px = 20 degrees)', !!g1 && (g1.gimbalDeg - g0.gimbalDeg) < -15 && Math.abs(wrap(g1.aimYawDeg - g0.aimYawDeg) - 20) < 2.5, { gimbalChange: r3((g1?.gimbalDeg ?? 0) - g0.gimbalDeg), yawChange: r3(wrap((g1?.aimYawDeg ?? 0) - g0.aimYawDeg)) });
+check('V9 invert-Y flips the pitch of the same movement; sensitivity 2 doubles the turn (100 px = 20 degrees)', !!g0 && !!g1 && (g1.gimbalDeg - g0.gimbalDeg) < -15 && Math.abs(wrap(g1.aimYawDeg - g0.aimYawDeg) - 20) < 2.5, { gimbalChange: r3((g1?.gimbalDeg ?? 0) - (g0?.gimbalDeg ?? 0)), yawChange: r3(wrap((g1?.aimYawDeg ?? 0) - (g0?.aimYawDeg ?? 0))) });
 await ev(p, 'try { h.prefs.set("input.mouseInvertY", false); h.prefs.set("input.mouseSensitivity", 1); h.prefs.set("input.gameSpeed", "slow"); } catch (e) { /* the base build has no such settings */ } return 0;');
 await moveMouse(p, 0, 400, 8);
 await p.keyboard.down('KeyW');
@@ -235,8 +246,8 @@ check('V10b the mouse stays captured through full screen on and off', fsBefore.l
 // the top-bar button does the same
 await ev(p, 'document.pointerLockElement && document.exitPointerLock(); return 0;');
 await sleep(300);
-await p.keyboard.press('Escape'); // a resumed menu if the lock loss paused
-await sleep(300);
+// the pause menu is up and the mouse is free (as after Esc): the button is clicked there. With the mouse captured no
+// button can be clicked at all (every mouse event goes to the locked canvas), which is why the lock is released first.
 const btn = p.locator('[data-action="fullscreen-toggle"]');
 const btnShown = (await btn.count()) > 0 && (await btn.isVisible());
 let btnWorks = false;
@@ -319,6 +330,7 @@ const rep = await ev<Any>(p, `const e = h.saveLog("v09-keys"); const v = h.verif
     return { saved: e.hash, replayed: v.hash, endTick: v.endTick, refused: v.refused ?? null, lsb: { differs: lsb.hash !== v.hash }, twitch: { differs: tw.hash !== v.hash } };`);
 check('V13 the game-scheme flight replays from its log to the same hash; controls: one LSB of the throttle and a 0.05 stick twitch change it', rep.saved === rep.replayed && !!rep.saved && !rep.refused && rep.lsb.differs && rep.twitch.differs, rep, false);
 const errs = L.console.filter((l) => l.startsWith('pageerror'));
+strayMouse = await ev<Any>(p, 'return window.__stray || null;');
 check('V14 no page errors', errs.length === 0, { errors: errs.slice(0, 5) }, false);
 await L.browser.close();
 
@@ -375,6 +387,6 @@ const notDiscriminating = checks.filter((c) => !c.discriminating).map((c) => c.i
 const discriminating = checks.filter((c) => c.discriminating);
 const controlOk = discriminating.every((c) => !c.ok);
 const passed = CONTROL ? controlOk : failed.length === 0;
-const file = writeEvidence(CONTROL ? 'v09-keys-control' : 'v09-keys', { site: SITE, control: CONTROL, delivery, passed, controlAllDiscriminatingFail: CONTROL ? controlOk : null, notDiscriminating, checks });
+const file = writeEvidence(CONTROL ? 'v09-keys-control' : 'v09-keys', { site: SITE, control: CONTROL, delivery, strayMouse, passed, controlAllDiscriminatingFail: CONTROL ? controlOk : null, notDiscriminating, checks });
 console.log(`${CONTROL ? 'CONTROL' : 'ACCEPT'} ${passed ? 'PASS' : 'FAIL'}: ${checks.length - failed.length}/${checks.length} checks pass${CONTROL ? `; ${discriminating.filter((c) => c.ok).length} discriminating checks passed on the base build (must be 0)` : ''}. Evidence ${file}`);
 process.exit(passed ? 0 : 1);

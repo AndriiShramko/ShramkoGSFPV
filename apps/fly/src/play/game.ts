@@ -209,6 +209,7 @@ export class GameAssist {
     /** The motors just started: from the ground, climb a short hop so W does not drag the drone over the floor. */
     liftoff(sense: GameSense): void {
         this.help.reset();
+        this.lift = 0; // the descent command of the landing (Shift held) must not ramp back through a sink and drop the hop
         this.tvx = this.tvz = this.ix = this.iz = 0;
         this.landedFor = 0;
         this.landed = false;
@@ -260,6 +261,7 @@ export class GameAssist {
         this.aimYawDeg = wrap180(this.aimYawDeg + this.turn * KEY_TURN_DPS * dtc);
         if (!flying) {
             this.help.reset();
+            this.lift = 0;
             this.landedFor = 0;
             this.landed = false;
             return { roll: 0, pitch: 0, yaw: 0, throttle: 0 };

@@ -261,6 +261,23 @@ describe('Space climbs, Shift descends and lands softly; landed, the motors stop
         }
     });
 
+    it('after a landing, W (not only Space) takes off with the short hop: the descent command of the landing does not leak into the take-off', () => {
+        // found by the browser bench on the real scan (v09 V16b): the lift ramp stood at -1 from the landing, ramped back through
+        // a sink command and took the hop target away, so W flew the drone along the floor until it crashed
+        for (const id of ['pavo20pro-3s', 'taurusx8-komodo-6s', 'air65-1s']) {
+            const L = new GameLoop(params(id), new FloorWorld(), 20, 'fast');
+            hover(L);
+            for (let i = 0; i < 120 && L.sim.armed; i++) L.run(250, { lift: -1 });
+            expect(L.sim.armed, `${id} landed`).toBe(false);
+            L.run(500, {});
+            L.run(1500, { forward: 1 });
+            expect(L.sim.armed, `${id} started again`).toBe(true);
+            expect(L.sim.crashed, `${id} crashed`).toBe(false);
+            expect(L.y, `${id} hopped`).toBeGreaterThan(0.6);
+            expect(L.y, `${id} hop height`).toBeLessThan(2);
+        }
+    });
+
     it('control: told there is no ground below, the same descent from 20 m hits the floor at a crash speed', () => {
         for (const id of ['pavo20pro-3s', 'taurusx8-komodo-6s']) {
             const L = new GameLoop(params(id), new FloorWorld(), 20, 'fast', { blindGround: true });
