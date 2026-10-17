@@ -195,6 +195,9 @@ try {
         rows.encoded = await open(page, SITE, `scene=${encodeURIComponent(link)}`);
         rows.raw = await open(page, SITE, `scene=${link}`);
         rows.deep = await open(page, SITE, `scene=${OWNER_SCENE}&budget=8&stochastic`);
+        // SuperSplat's "add ?budget=8&stochastic to the URL" copied literally into our address: a second "?"
+        rows.literal = await open(page, SITE, `scene=${OWNER_SCENE}?budget=8&stochastic`);
+        const literalBase = await open(page, BASE_SITE, `scene=${OWNER_SCENE}?budget=8&stochastic`);
         // the picker's own field, no scene in the address
         await page.goto(`${SITE}/en/fly/?nowarn=1&input=touch`);
         await page.waitForSelector('.scene-input', { timeout: 60000 });
@@ -212,7 +215,8 @@ try {
         rows.inFlight = await hook(page, STATE);
         const all = Object.entries(rows).map(([k, v]) => [k, stochasticOn(v as Any) && (v as Any).top === 8 && /[?&]scene=2f1ddf5f(&|$)/.test((v as Any).search)] as const);
         out.D5 = { rows, pageerrors: errors(log) };
-        check('D5 the owner\'s link draws stochastic at 8 M by every way it is pasted (deep link encoded and raw, deep link, the picker\'s field, the picker over a flight, wrapped in <> and a full stop)', all.every(([, ok]) => ok));
+        check('D5 control: the base build answers the literal "...?scene=2f1ddf5f?budget=8&stochastic" with the picker ("not a SuperSplat link")', literalBase.status === 'picker', true);
+        check('D5 the owner\'s link draws stochastic at 8 M by every way it is pasted (deep link encoded and raw, deep link, the literal second "?", the picker\'s field, the picker over a flight, wrapped in <> and a full stop)', all.every(([, ok]) => ok));
         console.log('D5', JSON.stringify(all));
         pass.D5 = all.every(([, ok]) => ok) && errors(log).length === 0;
         await ctx.close();

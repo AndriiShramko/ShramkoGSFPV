@@ -28,6 +28,8 @@ const MAX_LINK_CHARS = 2048;
 
 /** A plain decimal: digits, at most one point; no sign, exponent, hex, spaces or units. */
 const DECIMAL = /^(?:\d{1,3}(?:\.\d{1,4})?|\.\d{1,4})$/;
+/** A scene id, then ? or &, then its parameters (a fragment after # is not one). */
+const BARE_ID_PARAMS = /^([0-9a-f]{6,32})[?&]([^#]*)(?:#.*)?$/i;
 const ON = new Set(['', '1', 'true', 'yes', 'on']);
 const OFF = new Set(['0', 'false', 'no', 'off']);
 
@@ -67,14 +69,24 @@ function unwrap(raw: string): string {
 }
 
 /**
- * Accepts a bare id, https://superspl.at/scene/<id>[?...], https://superspl.at/s?id=<id>[&...] or the
- * viewer's https://superspl.at/view?id=<id> (with or without the scheme, www. allowed). Returns the lower-case id and the link's drawing
+ * Accepts a bare id (also with its parameters: 2f1ddf5f?budget=8&stochastic), https://superspl.at/scene/<id>[?...],
+ * https://superspl.at/s?id=<id>[&...] or the viewer's https://superspl.at/view?id=<id> (with or without the
+ * scheme, www. allowed). Returns the lower-case id and the link's drawing
  * parameters, or null when the text is not a SuperSplat scene link.
  */
 export function parseSceneLink(raw: string): SceneLink | null {
     const s = unwrap(raw);
     if (!s || s.length > MAX_LINK_CHARS) return null;
     if (SCENE_ID_RE.test(s)) return { id: s.toLowerCase() };
+    // a scene id and its parameters without the address in front: SuperSplat says "add ?budget=8&stochastic to the
+    // URL", and copied literally into OUR address that reads /fly/?scene=2f1ddf5f?budget=8&stochastic (v0.9: it was
+    // "not a SuperSplat link"); the same in the picker's field
+    const bare = BARE_ID_PARAMS.exec(s);
+    if (bare) {
+        const q = new URLSearchParams(bare[2]);
+        const render = renderParams(q.get('budget'), q.get('stochastic'));
+        return render ? { id: bare[1].toLowerCase(), render } : { id: bare[1].toLowerCase() };
+    }
     let u: URL;
     try {
         u = new URL(s.includes('://') ? s : `https://${s}`);

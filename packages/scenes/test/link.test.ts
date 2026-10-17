@@ -33,6 +33,14 @@ const CASES: [string, SceneLink | null][] = [
     ['"https://superspl.at/scene/2f1ddf5f?budget=8&stochastic".', { id: '2f1ddf5f', render: { budgetM: 8, stochastic: true } }],
     ['(https://superspl.at/scene/2f1ddf5f?budget=8&stochastic),', { id: '2f1ddf5f', render: { budgetM: 8, stochastic: true } }],
     ['  https://superspl.at/scene/2f1ddf5f?budget=8&stochastic\r\n', { id: '2f1ddf5f', render: { budgetM: 8, stochastic: true } }],
+    // SuperSplat's "add ?budget=8&stochastic to the URL" copied into OUR address: /fly/?scene=2f1ddf5f?budget=8&stochastic
+    ['2f1ddf5f?budget=8', { id: '2f1ddf5f', render: { budgetM: 8 } }],
+    ['2F1DDF5F?budget=8&stochastic', { id: '2f1ddf5f', render: { budgetM: 8, stochastic: true } }],
+    ['2f1ddf5f&budget=8&stochastic', { id: '2f1ddf5f', render: { budgetM: 8, stochastic: true } }],
+    ['2f1ddf5f?', { id: '2f1ddf5f' }],
+    ['2f1ddf5f?lod=high#stochastic', { id: '2f1ddf5f' }],
+    ['xyz123?budget=8&stochastic', null],
+    ['2f1ddf5f/edit?budget=8', null],
     // the viewer's own address form
     ['https://superspl.at/view?id=2f1ddf5f&budget=8&stochastic', { id: '2f1ddf5f', render: { budgetM: 8, stochastic: true } }],
     // plain links and ids: no render at all
