@@ -65,7 +65,8 @@ async function context(browser: Browser, phone = false, init?: string): Promise<
     const page = await ctx.newPage();
     const log: string[] = [];
     page.on('console', (m) => log.push(`${m.type()}: ${m.text()}`.slice(0, 300)));
-    page.on('pageerror', (e) => log.push(`pageerror: ${e.message}`.slice(0, 300)));
+    // the message and the top stack frame (a release is minified, but the frame says which chunk and where)
+    page.on('pageerror', (e) => log.push(`pageerror: ${e.message} @ ${(e.stack ?? '').split('\n')[1]?.trim() ?? ''}`.slice(0, 400)));
     return { ctx, page, log };
 }
 const errors = (log: string[]) => log.filter((l) => l.startsWith('pageerror'));
