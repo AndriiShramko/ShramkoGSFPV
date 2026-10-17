@@ -142,12 +142,32 @@ describe('share links: the right link from every place a share starts', () => {
         expect(link({ meta })).toBe(`${AT.origin}/pl/scenes/ab12cd34/`);
         // a link asking for what the catalogue says already is the same drawing
         expect(link({ meta, render: { stochastic: true } })).toBe(`${AT.origin}/pl/scenes/ab12cd34/`);
-        // a pasted link asking for the sorted drawing: the scene page would draw it stochastic
-        expect(link({ meta, render: { stochastic: false } })).toBe(`${AT.origin}/pl/fly/?scene=ab12cd34&budget=4&stochastic=0`);
+        // a pasted link asking for the sorted drawing: the scene page would draw it stochastic. The deep link
+        // carries the link's OWN fields only: the owner's budget stays the catalogue's to apply (v0.9 order:
+        // link > pilot > owner), a `budget=4` here would make it a link parameter that outranks the visitor's Splat budget
+        expect(link({ meta, render: { stochastic: false } })).toBe(`${AT.origin}/pl/fly/?scene=ab12cd34&stochastic=0`);
         expect(scenePageUrl('ab12cd34', true, AT)).toBe(`${AT.origin}/pl/scenes/ab12cd34/`);
         // control: D1's rule (a catalogue scan always shares its page) gives the page there, and stochastic=0 is lost
         const d1ScenePage = (id: string, inCatalogue: boolean): string => (inCatalogue ? `${AT.origin}/pl/scenes/${id}/` : `${AT.origin}/pl/fly/?scene=${id}`);
         expect(d1ScenePage('ab12cd34', true)).not.toBe(link({ meta, render: { stochastic: false } }));
+    });
+
+    it('the owner\'s per-scene entry never becomes a link parameter, on any share path (link > pilot > owner: a parameter outranks the visitor\'s Render and Splat budget)', () => {
+        const owner = { budgetM: 4, stochastic: false };
+        const sent = (drawing: ReturnType<typeof flightDrawing>): unknown => shareApiBody({ image: '', sceneId: '2f1ddf5f', title: null, credit: 'c', locale: 'en', drawing }).render;
+        // flown with no link of its own: the /s/<id> page must open `/fly/?scene=<id>`, nothing else
+        expect(sent(flightDrawing({ meta: { render: owner } }))).toBeNull();
+        expect(sent(cardDrawing({ render: owner }))).toBeNull();
+        expect(sent(cardDrawing({ render: { budgetM: 8, stochastic: true } }))).toBeNull();
+        // flown with a link that names one field: that field only, the owner's other field stays the owner's
+        expect(sent(flightDrawing({ meta: { render: owner }, render: { stochastic: true } }))).toEqual({ stochastic: true });
+        expect(sent(flightDrawing({ meta: { render: owner }, render: { budgetM: 2 } }))).toEqual({ budgetM: 2 });
+        // what the visitor is sent to: the link's own fields, never `&budget=4` / `&stochastic=0` from the owner
+        const body = shareApiBody({ image: '', sceneId: '2f1ddf5f', title: null, credit: 'c', locale: 'en', drawing: flightDrawing({ meta: { render: owner } }) });
+        expect(flyDeepLink('/en/fly/', '2f1ddf5f', body.render as SceneRender | undefined)).toBe('/en/fly/?scene=2f1ddf5f');
+        // the scene page and the deep link, from the share link: no owner field in the deep link
+        expect(shareLink({ entry: 'picker', sceneId: '2f1ddf5f', inCatalogue: false, at: AT, pictureUrl: null, drawing: cardDrawing({ render: owner }) })).toBe(`${AT.origin}/pl/fly/?scene=2f1ddf5f`);
+        expect(shareLink({ entry: 'crash', sceneId: '2f1ddf5f', inCatalogue: false, at: AT, pictureUrl: null, drawing: flightDrawing({ meta: { render: owner }, render: { stochastic: true } }) })).toBe(`${AT.origin}/pl/fly/?scene=2f1ddf5f&stochastic`);
     });
 
     it('a picker card shares the scene as the card opens it: the catalogue\'s drawing, never the page\'s query (control: D1 gave the Continue card the page\'s)', () => {

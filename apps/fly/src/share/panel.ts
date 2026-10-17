@@ -35,7 +35,8 @@ export interface ShareRequest {
     /**
      * how the shared scene is drawn (lane R): in a flight the scene flown when the share starts
      * (share/links.ts flightDrawing), from the picker the card's scene (cardDrawing). The plain link
-     * carries it and POST /api/share sends it; the page's own query is never read for it.
+     * carries its link's own fields and POST /api/share sends them (never the owner's catalogue entry);
+     * the page's own query is never read for it.
      */
     drawing: ShareDrawing;
     /** the crash's impact speed, m/s (the crash panel's words) */
