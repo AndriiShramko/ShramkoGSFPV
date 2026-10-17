@@ -12,7 +12,10 @@ code, configuration and data as the API (tools/ideas/ideas.py runs them over SSH
   ... title <id>                          JSON on stdin: {"title": {"en","es","pl","ru"}, "text"?: {...}, "visible"?: bool}
                                           the roadmap's words (all four languages for the title)
   ... summary <id>                        JSON on stdin: {"en": "what was done", "pl": "..."}: the idea is done and the
-                                          owner gets the DRAFT thank-you e-mail in Telegram; nothing is sent from here
+                                          owner gets the DRAFT thank-you e-mail in Telegram; nothing is sent from here.
+                                          The draft is in the language the pilot wrote in (`wrote=` in show/queue): the
+                                          summary written in it is used as it is, else the English one is translated
+                                          (the owner sees both); write in that language when you can
   ... release <id> <sha>                  the release that shipped it
   ... tg-setup [--replace] | tg-info | tg-remove
                                           the bot's webhook (TG_OWNER_BOT_TOKEN, by default the shared lead
@@ -55,6 +58,9 @@ def render_idea(r: dict) -> str:
     out = [f"{r['id']}  {r['kind']}  status={r['status']}  urgency={r.get('urgency') or '-'}  created={r['created']}",
            f"lang={r.get('lang') or '-'} page={r.get('page') or '-'} scene={r.get('scene') or '-'} release={r.get('release') or '-'}"
            f" contact={r.get('contact') or '-'} ({r.get('contactKind')}) diagnostics={r.get('diagnostics')}"]
+    pl = r.get("pilotLang")
+    if isinstance(pl, dict) and pl.get("code"):   # found by translate.py in the pilot's own text: write the done summary in it
+        out[-1] += f" wrote={pl['code']} ({pl.get('name') or pl['code']})"
     if r.get("suspect"):
         out.append("SUSPECT (honeypot or too fast)")
     out += ["", "Pilot's words:" if r["kind"] in ("idea", "bug") else "Text:", r.get("text") or "-"]
@@ -68,7 +74,9 @@ def render_idea(r: dict) -> str:
     if r.get("releases"):
         out += ["Releases: " + ", ".join(r["releases"])]
     if r.get("thread"):
-        out += ["", "E-mails:"] + [f"  {m['id']} {m['kind']} {m['state']} to={m.get('to') or '-'} {m.get('sentAt') or m.get('created')}" for m in r["thread"]]
+        out += ["", "E-mails:"] + [f"  {m['id']} {m['kind']} {m['state']} to={m.get('to') or '-'} {m.get('sentAt') or m.get('created')}"
+                                          + (f" translated {m['tr']['from'] or '?'}->{m['tr']['to']}" if m.get("tr") else "")
+                                          + (f" HELD ({m['wait']})" if m.get("state") == "waiting_language" else "") for m in r["thread"]]
     return "\n".join(out)
 
 
