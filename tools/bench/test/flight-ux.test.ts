@@ -29,7 +29,7 @@ import { join } from 'node:path';
 import { KEYMAP, actionFor, keymapProblems } from '../../../packages/prefs/src';
 import { mkStore } from '../../../packages/prefs/test/helpers';
 import { REPO } from '../src/evidence';
-import { SHARE_ENTRIES, cardDrawing, dataUrlBytes, flightDrawing, inFlight, instagramCaption, kindOf, scenePageUrl, shareApiBody, shareLink, targetHref, wordsKey } from '../../../apps/fly/src/share/links';
+import { SHARE_ENTRIES, cardDrawing, dataUrlBytes, dataUrlSize, encodeUnder, flightDrawing, inFlight, instagramCaption, kindOf, scenePageUrl, shareApiBody, shareLink, targetHref, wordsKey } from '../../../apps/fly/src/share/links';
 import type { DrawnScene, ShareEntry } from '../../../apps/fly/src/share/links';
 import { flyDeepLink, parseSceneLink, renderParams } from '../../../packages/scenes/src';
 import type { SceneRender } from '../../../packages/scenes/src';
@@ -217,6 +217,31 @@ describe('share links: the right link from every place a share starts', () => {
         expect(b?.type).toBe('image/jpeg');
         expect(Array.from(b!.bytes)).toEqual([0xff, 0xd8, 0xff, 0xd9]);
         expect(dataUrlBytes('https://example.com/x.jpg')).toBeNull();
+    });
+
+    it('the share picture steps its quality down to fit the API\'s limit, and says so when nothing fits (control: it used to return the last, too large, one)', () => {
+        // a fake encoder: the lower the quality, the smaller the picture (a grainy stochastic frame needs the low steps)
+        const sizes: Record<number, number> = { 0.88: 500_000, 0.8: 420_000, 0.72: 390_000, 0.64: 370_000, 0.56: 300_000 };
+        const make = (bytes: number): string => `data:image/jpeg;base64,${'A'.repeat(Math.ceil((bytes * 4) / 3))}`;
+        const tried: number[] = [];
+        const encode = (q: number): string => { tried.push(q); return make(sizes[q]); };
+        const Q = [0.88, 0.8, 0.72, 0.64, 0.56] as const;
+        const MAX = 380 * 1024;
+        expect(dataUrlSize(make(1000))).toBeGreaterThanOrEqual(1000);
+        expect(dataUrlSize(make(1000))).toBeLessThanOrEqual(1003);
+        const url = encodeUnder(encode, MAX, Q);
+        expect(url && dataUrlSize(url)).toBeLessThanOrEqual(MAX);
+        expect(tried).toEqual([0.88, 0.8, 0.72, 0.64]); // stops at the first that fits
+        // nothing fits: null, every step tried
+        tried.length = 0;
+        expect(encodeUnder((q) => { tried.push(q); return make(900_000); }, MAX, Q)).toBeNull();
+        expect(tried).toEqual([...Q]);
+        // control: the loop it replaced handed back the last attempt however large
+        const old = (enc: (q: number) => string): string => { let u = ''; for (const q of Q) { u = enc(q); if ((u.length - 23) * 0.75 <= MAX) break; } return u; };
+        expect(dataUrlSize(old(() => make(900_000)))).toBeGreaterThan(MAX);
+        // the boundary is the old comparison's: exactly the limit fits, one byte over does not
+        expect(encodeUnder(() => make(300_000), 300_000, [0.9])).not.toBeNull();
+        expect(encodeUnder(() => make(300_003), 300_000, [0.9])).toBeNull();
     });
 });
 

@@ -13,12 +13,18 @@
 //       link for that scene and Auto hands over to the link again; the Splat budget setting; the owner's
 //       entry (a fake /api/catalog) beats the device but not the pilot.
 //   D5  the owner's exact link (superspl.at/scene/2f1ddf5f?budget=8&stochastic) by every way it is pasted:
-//       the deep link in two spellings, the picker's field, the picker over a flight: stochastic at 8 M.
+//       the deep link in two spellings, the literal second "?", the picker's field, the picker over a flight:
+//       stochastic at 8 M. Then the pilot's Render setting is set to Sorted and a link is pasted over the
+//       flight (another scene): the link still wins for the scene it opens (control: the base build lets the
+//       setting win, D4b).
 //       The HUD's share (a refused request still says who asked, the default on a phone does not) is D1 and D3.
+//   D6  the share picture (L, the card of /s/<id>) of a stochastic desktop is made from one sorted frame: far
+//       fewer bytes than a stochastic grab of the same view, and the pilot's drawing is back right after.
+//       Control: the same view grabbed stochastic weighs well over the sorted grab (the measurement can tell).
 //   SITE=http://127.0.0.1:5391 BASE_SITE=http://127.0.0.1:5392 npx tsx src/accept-v09-render.ts [D1 D2 ...]
 // Evidence: evidence/<date>/v09-render.json; items run alone (EVIDENCE_DATE: the day of the file to add to) replace
 // their own entries in it and the others stay, as accept-v07-render.ts does.
-import { mkdirSync, rmdirSync, readFileSync, existsSync } from 'node:fs';
+import { mkdirSync, rmdirSync, readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { launchChrome, waitReady } from './browser';
@@ -209,7 +215,7 @@ try {
         await page.waitForFunction(() => (window as unknown as { __gsfpv?: { status?: string } }).__gsfpv?.status === 'ready', null, { timeout: 240000 });
         await sleep(900);
         rows.field = await hook(page, STATE);
-        // the same, but with a "Sorted" setting and the picker over a flight
+        // the picker over a flight
         await hook(page, `h.scenes.openPicker(); return 0;`);
         await page.fill('.scenes.in-flight .scene-input', `<${link}>.`);
         await page.press('.scenes.in-flight .scene-input', 'Enter');
@@ -217,11 +223,63 @@ try {
         await sleep(900);
         rows.inFlight = await hook(page, STATE);
         const all = Object.entries(rows).map(([k, v]) => [k, stochasticOn(v as Any) && (v as Any).top === 8 && /[?&]scene=2f1ddf5f(&|$)/.test((v as Any).search)] as const);
+        // the pilot has Render = Sorted stored (the setting the owner's link must not lose to), the picker over the flight
+        // again with a link to another scene: that scene opens stochastic at 8 M, "from the link"
+        await hook(page, `h.prefs.set('display.drawing', 'sorted'); return 0;`);
+        await sleep(500);
+        await hook(page, `h.scenes.openPicker(); return 0;`);
+        await page.fill('.scenes.in-flight .scene-input', `https://superspl.at/scene/${A}?budget=8&stochastic`);
+        await page.press('.scenes.in-flight .scene-input', 'Enter');
+        for (let i = 0; i < 480; i++) { const sw = await hook<Any>(page, 'return h.sceneSwitch ? { ...h.sceneSwitch } : null;'); if (sw && (sw.state === 'done' || sw.state === 'failed')) break; await sleep(250); }
+        await sleep(900);
+        rows.inFlightOverSorted = await hook(page, STATE);
+        const overSorted = stochasticOn(rows.inFlightOverSorted) && rows.inFlightOverSorted.top === 8 && rows.inFlightOverSorted.drawing?.from?.stochastic === 'link' && new RegExp(`[?&]scene=${A}(&|$)`).test(rows.inFlightOverSorted.search);
         out.D5 = { rows, pageerrors: errors(log) };
         check('D5 control: the base build answers the literal "...?scene=2f1ddf5f?budget=8&stochastic" with the picker ("not a SuperSplat link")', literalBase.status === 'picker', true);
         check('D5 the owner\'s link draws stochastic at 8 M by every way it is pasted (deep link encoded and raw, deep link, the literal second "?", the picker\'s field, the picker over a flight, wrapped in <> and a full stop)', all.every(([, ok]) => ok));
-        console.log('D5', JSON.stringify(all));
-        pass.D5 = all.every(([, ok]) => ok) && errors(log).length === 0;
+        check('D5 a link pasted over a flight beats a stored Render = Sorted for the scene it opens (stochastic at 8 M, "from the link")', overSorted);
+        console.log('D5', JSON.stringify(all), 'overSorted', overSorted);
+        pass.D5 = all.every(([, ok]) => ok) && overSorted && errors(log).length === 0;
+        await ctx.close();
+    }
+
+    // ------------------------------------------------------------------ D6
+    if (want('D6')) {
+        const { ctx, page, log } = await context(browser);
+        const st = await open(page, SITE, `scene=${OPOLE}&governor=0`);
+        for (let i = 0; i < 120; i++) { if (await hook<boolean>(page, 'return s.renderer.sceneComplete;')) break; await sleep(500); }
+        await sleep(1500);
+        // the same crop and JPEG as share/picture.ts makes, of the drawing the engine has NOW (before the brand is drawn)
+        const plainGrab = `(async () => { const r = window.__gsfpv.session.renderer; const canvas = r.canvas; const W = 1200, H = 630;
+            const frame = await new Promise((res) => { const t = setTimeout(() => res(null), 4000); const on = () => { r.app.off('frameend', on); clearTimeout(t);
+                const o = document.createElement('canvas'); o.width = W; o.height = H; const g = o.getContext('2d'); const k = Math.max(W / canvas.width, H / canvas.height);
+                g.drawImage(canvas, (canvas.width - W / k) / 2, (canvas.height - H / k) / 2, W / k, H / k, 0, 0, W, H); res(o); }; r.app.on('frameend', on); r.renderOnce(); });
+            const u = frame ? frame.toDataURL('image/jpeg', 0.88) : ''; return { bytes: Math.round((u.length - 23) * 0.75), stochastic: r.stochastic }; })()`;
+        const stochasticGrab = await page.evaluate(plainGrab) as Any;
+        await hook(page, 's.renderer.setStochastic(false); return 0;');
+        await sleep(1500);
+        const sortedGrab = await page.evaluate(plainGrab) as Any;
+        await hook(page, 's.renderer.setStochastic(true); return 0;');
+        await sleep(1500);
+        const before = await hook(page, STATE);
+        // the app's own share picture: L opens the share panel, which makes the card from the view
+        const t0 = Date.now();
+        await page.keyboard.press('KeyL');
+        await page.waitForSelector('[data-testid=share-picture]', { timeout: 30000 });
+        const ms = Date.now() - t0;
+        const src = await page.evaluate(`document.querySelector('[data-testid=share-picture]').src`) as string;
+        const bytes = Math.round((src.length - 23) * 0.75);
+        await sleep(800);
+        const after = await hook(page, STATE);
+        const day6 = process.env.EVIDENCE_DATE ?? today();
+        mkdirSync(join(REPO, 'evidence', day6), { recursive: true });
+        writeFileSync(join(REPO, 'evidence', day6, 'v09-render-share-picture.jpg'), Buffer.from(src.slice(src.indexOf(',') + 1), 'base64'));
+        out.D6 = { before: { engine: before.engine, top: before.top }, stochasticGrabBytes: stochasticGrab.bytes, sortedGrabBytes: sortedGrab.bytes, appPictureBytes: bytes, appPictureMs: ms, after: { engine: after.engine, hybrid: after.hybrid, top: after.top }, pageerrors: errors(log) };
+        check('D6 control: the grab of the same view is rougher stochastic than sorted (the stochastic grab weighs 1.25x or more of the sorted one)', stochasticGrab.stochastic === true && sortedGrab.stochastic === false && stochasticGrab.bytes >= 1.25 * sortedGrab.bytes, true);
+        check("D6 the share picture of a stochastic desktop is made from the sorted frame: at most 0.8 of the stochastic grab's bytes, and well under the API's 400 KB", stochasticOn(st) && stochasticOn(before) && bytes <= 0.8 * stochasticGrab.bytes && bytes < 380 * 1024);
+        check("D6 the pilot's drawing is back right after (stochastic in the engine and the shader, the same budget)", stochasticOn(after) && after.top === before.top);
+        console.log('D6', JSON.stringify(out.D6));
+        pass.D6 = errors(log).length === 0;
         await ctx.close();
     }
 } finally {

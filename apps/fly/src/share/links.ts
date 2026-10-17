@@ -136,6 +136,24 @@ export function instagramCaption(o: { text: string; url: string; credit: string 
     return [o.text, o.url, o.credit ?? '', o.tags].filter((s) => s.length > 0).join('\n\n');
 }
 
+/** The size in bytes, rounded up, of the data inside a base64 data: URL with `prefixLength` characters before the data (data:image/jpeg;base64, = 23). */
+export function dataUrlSize(url: string, prefixLength = 23): number {
+    return Math.ceil((url.length - prefixLength) * 0.75);
+}
+
+/**
+ * The first encoding of a picture, trying `qualities` in order, whose data is at most `maxBytes`; null when
+ * even the last one is over (a grainy frame at a size the API refuses): the caller says so and the share
+ * falls back to the scene's page, instead of uploading a picture the API will turn away.
+ */
+export function encodeUnder(encode: (quality: number) => string, maxBytes: number, qualities: readonly number[]): string | null {
+    for (const q of qualities) {
+        const url = encode(q);
+        if (dataUrlSize(url) <= maxBytes) return url;
+    }
+    return null;
+}
+
 /** A data: URL (the share picture) as bytes and type, without fetch (the page's CSP has no data: in connect-src). */
 export function dataUrlBytes(url: string): { type: string; bytes: Uint8Array<ArrayBuffer> } | null {
     const m = /^data:([\w/+.-]+);base64,([A-Za-z0-9+/=]*)$/.exec(url);

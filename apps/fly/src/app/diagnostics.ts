@@ -85,13 +85,23 @@ async function gpu(renderer: SplatRenderer): Promise<{ api: string; adapter?: Gp
  * one frame on purpose (also while paused) and the canvas is read in that frame's 'frameend', the only
  * moment a WebGPU canvas still holds its picture (cinema.ts reads it the same way). Null when no frame
  * comes within 2 s (a hidden tab).
+ *
+ * `sorted`: draw that one frame the classic way when the pilot's drawing is stochastic, and give the pilot's
+ * drawing back right after. Stochastic drawing leaves a dither grain along every edge that a JPEG spends its
+ * bytes on (the share picture of a scan: 1.3 to 2.6 times the bytes of the sorted frame, and visibly rougher
+ * in the sky and on walls, evidence v09-r-load.json and v09-r-load-share-*.jpg); a picture that is shared
+ * is made once and nobody watches it being made, so it is the clean one (the video export does the same for
+ * a whole render, builtin/video-export.ts). The bug report's thumbnail is NOT: it shows what the pilot saw.
  */
-export function grabView(renderer: SplatRenderer, canvas: HTMLCanvasElement, w: number, h: number): Promise<HTMLCanvasElement | null> {
+export function grabView(renderer: SplatRenderer, canvas: HTMLCanvasElement, w: number, h: number, opts: { sorted?: boolean } = {}): Promise<HTMLCanvasElement | null> {
     return new Promise((resolve) => {
         const app = renderer.app;
+        const switched = opts.sorted === true && renderer.stochastic;
+        if (switched) renderer.setStochastic(false);
         const done = (c: HTMLCanvasElement | null): void => {
             clearTimeout(timer);
             app.off('frameend', onEnd);
+            if (switched) renderer.setStochastic(true);
             resolve(c);
         };
         const onEnd = (): void => {
