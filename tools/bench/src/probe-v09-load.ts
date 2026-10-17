@@ -63,8 +63,8 @@ const SAMPLE = `(() => {
     const comp = r.splat && r.splat.gsplat;
     const eng = { splatFrame: Object.assign({}, r.splatFrame), frameNumber: r.frameNumber, drawn: r.app.stats.frame.gsplats, budgetM: r.app.scene.gsplat.splatBudget / 1e6,
         stochastic: r.app.scene.gsplat.stochastic === true, range: comp ? [comp.lodRangeMin, comp.lodRangeMax] : null, visibleMs: s.timings.visibleMs, probe: r.__probe ? { ...r.__probe, tail: r.__probe.tail.join(' ') } : null };
-    try { const dir = r.app.renderer.gsplatDirector;
     const insts = [];
+    try { const dir = r.app.renderer.gsplatDirector;
     if (dir) dir.camerasMap.forEach((cd) => cd.layersMap.forEach((ld) => {
         const w = ld.gsplatManager && ld.gsplatManager.world;
         if (!w) return;
