@@ -392,7 +392,8 @@ export class ScenesTab {
         clear(this.found);
         const link = parseSceneLink(q);
         // a link's ?budget= and ?stochastic become the entry's render (the catalogue contract, v0.7 lane R):
-        // a budget outside 0.25..32 M is dropped, stochastic=0 is the default sorted drawing (nothing stored)
+        // a budget outside 0.25..32 M is dropped; stochastic=0 is kept as an explicit "sorted" (v0.9: stochastic
+        // is the desktop default, so the owner's "draw THIS scene the classic way" has to be stored)
         const render = catalogueRender(link?.render);
         if (link) return this.preview(render ? { id: link.id, render } : { id: link.id }, null);
         try {
