@@ -263,6 +263,18 @@ describe('the receiver: the link\'s settings, for that visit and that scene', ()
         expect(FW.wallsWanted(prefs, A)).toBe(true);
     });
 
+    it('a wind (a mode and three numbers) or a ceiling (a mode and a height) stands only while all of it is the link\'s', () => {
+        const prefs = store();
+        const applied = V.applyShared(prefs, A, { wind: { fromDeg: 270, speed: 4, gust: 2 }, ceiling: 12.5 }, NOLINK);
+        expect(Object.keys(V.stillShared(prefs, A, applied, NOLINK))).toEqual(['wind', 'ceiling']);
+        prefs.set('wind.speed', 9, { scene: A }); // the pilot dials his own wind speed
+        prefs.set('scene.ceilingM', 20, { scene: A });
+        expect(V.stillShared(prefs, A, applied, NOLINK)).toEqual({});
+        // control: an untouched share stands whole
+        const other = store();
+        expect(Object.keys(V.stillShared(other, B, V.applyShared(other, B, { wind: 'off' }, NOLINK), NOLINK))).toEqual(['wind']);
+    });
+
     it('an item the store refuses is not applied, whole; the rest stands', () => {
         const prefs = store();
         const applied = V.applyShared(prefs, A, { size: 3, floaters: 4 }, NOLINK);

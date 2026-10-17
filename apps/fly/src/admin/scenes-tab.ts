@@ -294,7 +294,7 @@ export class ScenesTab {
             return field(t(`admin.field.${key}`), i);
         };
         const number = (key: 'dropFloaters' | 'scale' | 'voxelCm' | 'sizeMb' | 'version', min: number, max: number, step: number): HTMLElement => {
-            const i = h('input', { type: 'number', min, max, step, inputmode: 'decimal', value: bag[key] === undefined ? '' : String(bag[key]) }) as HTMLInputElement;
+            const i = h('input', { type: 'number', min, max, step, inputmode: 'decimal', value: bag[key] === undefined ? '' : String(bag[key]), 'data-field': key }) as HTMLInputElement;
             i.addEventListener('input', () => {
                 const v = i.valueAsNumber;
                 if (Number.isFinite(v) && v >= min && v <= max) bag[key] = v; else delete bag[key];

@@ -17,30 +17,28 @@ import type { SharedSettings } from '@gsfpv/scenes';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { forgetLinkValue, pilotSet } from './prefs';
 
-/** One shared item and the settings of the store it becomes: `main` tells whether the item still stands. */
+/** One shared item and the settings of the store it becomes. */
 interface Item {
     item: keyof SharedSettings;
-    main: string;
     entries: [id: string, value: unknown][];
 }
 
 /** The store settings each item of a share becomes (the drone is not here: it is the URL layer's). */
 export function visitItems(s: SharedSettings): Item[] {
     const out: Item[] = [];
-    if (s.size !== undefined) out.push({ item: 'size', main: 'scene.transform', entries: [['scene.transform', { s: s.size, t: [0, 0, 0], v: 0 }]] });
-    if (s.walls !== undefined) out.push({ item: 'walls', main: 'scene.walls', entries: [['scene.walls', s.walls]] });
-    if (s.floaters !== undefined) out.push({ item: 'floaters', main: 'scene.dropFloaters', entries: [['scene.dropFloaters', s.floaters]] });
+    if (s.size !== undefined) out.push({ item: 'size', entries: [['scene.transform', { s: s.size, t: [0, 0, 0], v: 0 }]] });
+    if (s.walls !== undefined) out.push({ item: 'walls', entries: [['scene.walls', s.walls]] });
+    if (s.floaters !== undefined) out.push({ item: 'floaters', entries: [['scene.dropFloaters', s.floaters]] });
     if (s.wind !== undefined) {
         out.push({
             item: 'wind',
-            main: 'wind.mode',
             entries: s.wind === 'off'
                 ? [['wind.mode', 'off']]
                 : [['wind.mode', 'custom'], ['wind.fromDeg', s.wind.fromDeg], ['wind.speed', s.wind.speed], ['wind.gust', s.wind.gust]]
         });
     }
     if (s.ceiling !== undefined) {
-        out.push({ item: 'ceiling', main: 'scene.ceiling', entries: s.ceiling === 'off' ? [['scene.ceiling', 'off']] : [['scene.ceiling', 'custom'], ['scene.ceilingM', s.ceiling]] });
+        out.push({ item: 'ceiling', entries: s.ceiling === 'off' ? [['scene.ceiling', 'off']] : [['scene.ceiling', 'custom'], ['scene.ceilingM', s.ceiling]] });
     }
     return out;
 }
@@ -70,7 +68,8 @@ export function applyShared(prefs: PrefsStore, scene: string, shared: SharedSett
 export function stillShared(prefs: PrefsStore, scene: string, applied: SharedSettings, link: ReadonlyMap<string, string>): SharedSettings {
     const live = prefs.visitOf(scene);
     const out: SharedSettings = {};
-    for (const it of visitItems(applied)) if (Object.hasOwn(live, it.main)) (out as Record<string, unknown>)[it.item] = applied[it.item];
+    // an item stands while every setting it became is still the link's (a wind is a mode and three numbers: the pilot's own number ends it)
+    for (const it of visitItems(applied)) if (it.entries.every(([id]) => Object.hasOwn(live, id))) (out as Record<string, unknown>)[it.item] = applied[it.item];
     if (applied.drone !== undefined && link.has('drone.current') && prefs.get('drone.current') === applied.drone) out.drone = applied.drone;
     return out;
 }
