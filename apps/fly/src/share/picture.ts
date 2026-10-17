@@ -5,6 +5,7 @@
 import type { SplatRenderer } from '@gsfpv/render-pc';
 import { grabView } from '../app/diagnostics';
 import { BRAND, SITE_HOST } from '../scene-facts';
+import { encodeUnder } from './links';
 
 /** The share picture's width, px (the Open Graph card size). */
 export const SHARE_W = 1200;
