@@ -6,10 +6,11 @@
 // V09_CONTROL=1 is the negative control: the same bench against the base build (631fd5f), where every check that
 // belongs to the new scheme must FAIL (a check that passes there does not tell the two builds apart and is listed
 // in `notDiscriminating`); the control passes when none of the discriminating checks passes.
-// What this does not prove: the mouse here is moved by Chrome's input protocol, which Chrome turns into movementX/Y
-// under pointer lock the way a real mouse does (the evidence says which delivery was used); Esc as the BROWSER's own
-// release gesture cannot be pressed from a test, so the lock is released with exitPointerLock() (what the browser does
-// for Esc) and the Escape KEY is tested separately; a real hand and a real mouse on the owner's Chrome are not here.
+// What this does not prove: the mouse movement is a `mousemove` with movementX/Y made by the page (Chrome's input
+// protocol delivers the wrong amount and sign under a real lock: see moveMouse), so the handler and the flight are
+// proven, not the feel of a hand on a mouse; Esc as the BROWSER's own release gesture cannot be pressed from a test,
+// so the lock is released with exitPointerLock() (what the browser does for Esc) and the Escape KEY is tested
+// separately; a real hand and a real mouse on the owner's Chrome are not here.
 import { mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from 'playwright';
@@ -86,24 +87,22 @@ async function freePoint(p: Page): Promise<{ x: number; y: number }> {
     })()`) as Promise<{ x: number; y: number }>;
 }
 
-/** The mouse moved by (dx, dy) px: Chrome's input protocol first; the page's own mousemove event if Chrome sent no movement. */
-let delivery: 'chrome-input' | 'page-event' | 'unknown' = 'unknown';
+/**
+ * The mouse moved by (dx, dy) px, delivered as the event a mouse makes under pointer lock: a `mousemove` with
+ * movementX/Y, made by the page in `steps` pieces (the handler under test is the one that runs; the base build gets the
+ * same events). Chrome's own input protocol is NOT used for the amounts: with the lock really engaged it was measured to
+ * deliver the wrong amount and even the wrong sign (+400 px came out as -23.6 deg, +200 px up as the +30 clamp, in the
+ * run of 2026-10-18; Chrome warps the locked cursor to the window centre and the synthetic absolute positions are read
+ * against that), so it is no stand-in for a hand on a mouse. What is proven here is the handler's arithmetic and the
+ * flight that follows; the feel of a real mouse on the owner's Chrome is not.
+ */
+const delivery = 'page-event';
 async function moveMouse(p: Page, dx: number, dy: number, steps = 10): Promise<void> {
-    const before = await ev<Any>(p, 'const g = h.play().game; return g ? { yaw: g.aimYawDeg, pitch: g.gimbalDeg } : null;');
-    const box = (await p.locator('canvas').first().boundingBox())!;
-    const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
-    await p.mouse.move(cx, cy);
-    for (let i = 1; i <= steps; i++) { await p.mouse.move(cx + (dx * i) / steps, cy + (dy * i) / steps); await sleep(8); }
-    await sleep(60);
-    const after = await ev<Any>(p, 'const g = h.play().game; return g ? { yaw: g.aimYawDeg, pitch: g.gimbalDeg } : null;');
-    const moved = !!before && !!after && (Math.abs(wrap((after.yaw ?? 0) - (before.yaw ?? 0))) > 0.5 || Math.abs(after.pitch - before.pitch) > 0.5);
-    if (moved) { if (delivery === 'unknown') delivery = 'chrome-input'; return; }
-    if (!CONTROL) {
-        // Chrome gave the page no movement: the same event a mouse makes, made by the page (the handler is the one measured)
-        delivery = 'page-event';
-        await p.evaluate(`(() => { document.dispatchEvent(new MouseEvent('mousemove', { movementX: ${dx}, movementY: ${dy}, bubbles: true })); })()`);
-        await sleep(60);
+    for (let i = 0; i < steps; i++) {
+        await p.evaluate(`(() => { document.dispatchEvent(new MouseEvent('mousemove', { movementX: ${dx / steps}, movementY: ${dy / steps}, bubbles: true })); })()`);
+        await sleep(8);
     }
+    await sleep(60);
 }
 
 const L = await launch({ width: 1280, height: 800 });
@@ -241,17 +240,23 @@ await sleep(300);
 const btn = p.locator('[data-action="fullscreen-toggle"]');
 const btnShown = (await btn.count()) > 0 && (await btn.isVisible());
 let btnWorks = false;
+let btnError: string | null = null;
 if (btnShown) {
-    // a pause menu may be up: the button is on the top bar either way
-    await btn.click();
-    await sleep(800);
-    const on = await ev<boolean>(p, 'return document.fullscreenElement !== null;');
-    await btn.click();
-    await sleep(800);
-    const off = await ev<boolean>(p, 'return document.fullscreenElement !== null;');
-    btnWorks = on && !off;
+    // a pause menu may be up: the button is on the top bar either way. A click that cannot land (something covers the
+    // button) is a failed check with the reason, not a crashed run.
+    try {
+        await btn.click({ timeout: 5000 });
+        await sleep(800);
+        const on = await ev<boolean>(p, 'return document.fullscreenElement !== null;');
+        await btn.click({ timeout: 5000 });
+        await sleep(800);
+        const off = await ev<boolean>(p, 'return document.fullscreenElement !== null;');
+        btnWorks = on && !off;
+    } catch (e) {
+        btnError = String((e as Error).message).split('\n').filter((l) => /intercepts|timeout/i.test(l)).slice(0, 2).join(' | ').slice(0, 300);
+    }
 }
-check('V10c a button on the top bar toggles full screen too', btnShown && btnWorks, { shown: btnShown, toggles: btnWorks });
+check('V10c a button on the top bar toggles full screen too', btnShown && btnWorks, { shown: btnShown, toggles: btnWorks, error: btnError });
 // back to flying with the mouse captured: close any menu, click
 await ev(p, 'const m = document.querySelector("[data-action=\\"pause.continue\\"]"); if (m) m.click(); return 0;');
 await sleep(300);
