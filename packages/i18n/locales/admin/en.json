@@ -141,7 +141,7 @@
   "admin.wind.clear": "No wind",
   "admin.field.ceilingM": "Collisions off above this height, m (scan coordinates)",
   "admin.field.budgetM": "SuperSplat splat budget, millions (0.25-32)",
-  "admin.field.stochastic": "Stochastic drawing (SuperSplat beta, desktop WebGPU)",
+  "admin.field.stochastic": "How this scene is drawn (a pilot's own Render setting outranks it)",
   "admin.field.about": "Our words for the scene page ({lang})",
   "admin.scenePage": "Scene page",
   "admin.kind.interior": "Interior",
@@ -151,5 +151,10 @@
   "admin.history.row": "{time}: {n} scenes",
   "admin.history.restore": "Make live again",
   "admin.history.confirm": "Make the version of {time} live again? Pilots see it within a minute.",
-  "admin.history.empty": "Nothing has been published from here yet."
+  "admin.history.empty": "Nothing has been published from here yet.",
+  "admin.add.render.sorted": "sorted (the classic drawing)",
+  "admin.add.updateRender": "Give the scene in the list this drawing",
+  "admin.render.auto": "Auto (stochastic on a desktop)",
+  "admin.render.stochastic": "Stochastic",
+  "admin.render.sorted": "Sorted (classic)"
 }

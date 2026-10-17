@@ -141,7 +141,7 @@
   "admin.wind.clear": "Bez wiatru",
   "admin.field.ceilingM": "Bez kolizji powyżej tej wysokości, m (współrzędne skanu)",
   "admin.field.budgetM": "Budżet splatów SuperSplat, mln (0,25-32)",
-  "admin.field.stochastic": "Rysowanie stochastyczne (beta SuperSplat, WebGPU na komputerze)",
+  "admin.field.stochastic": "Jak rysowana jest ta scena (własne ustawienie Renderowanie pilota ma pierwszeństwo)",
   "admin.field.about": "Nasz tekst na stronę sceny ({lang})",
   "admin.scenePage": "Strona sceny",
   "admin.kind.interior": "Wnętrze",
@@ -151,5 +151,10 @@
   "admin.history.row": "{time}: scen {n}",
   "admin.history.restore": "Przywróć",
   "admin.history.confirm": "Przywrócić wersję z {time}? Piloci zobaczą ją w ciągu minuty.",
-  "admin.history.empty": "Stąd jeszcze nic nie opublikowano."
+  "admin.history.empty": "Stąd jeszcze nic nie opublikowano.",
+  "admin.add.render.sorted": "sortowane (klasyczne rysowanie)",
+  "admin.add.updateRender": "Nadaj scenie z listy to rysowanie",
+  "admin.render.auto": "Automatycznie (na komputerze stochastyczne)",
+  "admin.render.stochastic": "Stochastyczne",
+  "admin.render.sorted": "Sortowane (klasyczne)"
 }

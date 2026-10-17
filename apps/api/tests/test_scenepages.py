@@ -109,7 +109,11 @@ class Pages(unittest.TestCase):
         self.assertEqual(len(re.findall(r'hreflang="(en|es|pl|ru|x-default)"', body)), 5)
         self.assertIn('content="https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/70b50d42/v1/xl.webp"', body)
         self.assertIn("<h1>FPV drone flight: Wroclaw Cathedral</h1>", body)
-        self.assertIn('href="/en/fly/?scene=70b50d42&amp;budget=8&amp;stochastic"', body)
+        # the fixture scene has render {budgetM 8, stochastic}: the deep link carries the scene only (v0.9: the owner's
+        # per-scene render is the simulator's to apply, a link's own parameters would outrank the pilot's setting)
+        self.assertIn('href="/en/fly/?scene=70b50d42"', body)
+        self.assertNotIn("budget=8", body)
+        self.assertNotIn("&amp;stochastic", body)
         self.assertIn("no collision file yet", body)
         self.assertIn("from the west, 4.5 m/s", body)
         self.assertIn('<p id="about">Fly between the two towers.</p>', body)

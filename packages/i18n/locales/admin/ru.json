@@ -141,7 +141,7 @@
   "admin.wind.clear": "Без ветра",
   "admin.field.ceilingM": "Без столкновений выше этой высоты, м (координаты скана)",
   "admin.field.budgetM": "Бюджет сплатов SuperSplat, млн (0,25-32)",
-  "admin.field.stochastic": "Стохастическая отрисовка (бета SuperSplat, WebGPU на компьютере)",
+  "admin.field.stochastic": "Как рисуется эта сцена (собственная настройка «Рендер» у пилота главнее)",
   "admin.field.about": "Наш текст для страницы сцены ({lang})",
   "admin.scenePage": "Страница сцены",
   "admin.kind.interior": "Интерьер",
@@ -151,5 +151,10 @@
   "admin.history.row": "{time}: сцен {n}",
   "admin.history.restore": "Вернуть в эфир",
   "admin.history.confirm": "Вернуть в эфир версию от {time}? Пилоты увидят её в течение минуты.",
-  "admin.history.empty": "Отсюда ещё ничего не публиковали."
+  "admin.history.empty": "Отсюда ещё ничего не публиковали.",
+  "admin.add.render.sorted": "сортированно (классическая отрисовка)",
+  "admin.add.updateRender": "Задать эту отрисовку сцене из списка",
+  "admin.render.auto": "Авто (на компьютере стохастическая)",
+  "admin.render.stochastic": "Стохастическая",
+  "admin.render.sorted": "Сортированная (классическая)"
 }

@@ -453,6 +453,19 @@ export class ScenesTab {
         const author = h('input', { type: 'text', maxlength: 80, value: entry.author }) as HTMLInputElement;
         const lic = h('input', { type: 'text', maxlength: 40, value: entry.license }) as HTMLInputElement;
         const add = h('button', { type: 'button', class: 'btn primary', 'data-action': 'add', disabled: already }, already ? t('admin.add.already') : t('admin.add.add'));
+        // a scene that is in the list already, pasted again with a drawing (?budget=8&stochastic): the way to give the
+        // listed scene that drawing (v0.9: the button used to stop at "Already in the list", the link's drawing was lost)
+        const listed = this.draft.scenes.find((x) => x.id === entry.id);
+        const setDrawing = already && listed && entry.render
+            ? h('button', { type: 'button', class: 'btn', 'data-action': 'update-render', onclick: () => {
+                const r = entry.render;
+                if (!r) return;
+                const i = this.draft.scenes.indexOf(listed);
+                if (i >= 0) this.draft.scenes[i] = { ...listed, render: { ...listed.render, ...r } };
+                clear(this.found);
+                this.changed(true);
+            } }, t('admin.add.updateRender'))
+            : null;
         const sync = (): void => { add.disabled = already || !title.value.trim(); };
         title.addEventListener('input', sync);
         sync();
@@ -471,14 +484,15 @@ export class ScenesTab {
                 ...[...new Set(warn)].map((w) => h('p', { class: 'warn' }, w)),
                 item || f ? null : h('p', { class: 'muted' }, t('admin.add.unknown')),
                 field(t('admin.field.title'), title), field(t('admin.field.author'), author), field(t('admin.field.license'), lic),
-                add));
+                add, setDrawing));
     }
 }
 
 /** What the added link asks for, in one line: "Drawn as the link asks: stochastic, 8 M splats." */
 function renderLine(r: SceneRender): string {
     const parts: string[] = [];
-    if (r.stochastic) parts.push(t('admin.add.render.stochastic'));
+    if (r.stochastic === true) parts.push(t('admin.add.render.stochastic'));
+    if (r.stochastic === false) parts.push(t('admin.add.render.sorted'));
     if (r.budgetM !== undefined) parts.push(t('admin.add.render.budget', { m: r.budgetM }));
     return t('admin.add.render', { what: parts.join(', ') });
 }

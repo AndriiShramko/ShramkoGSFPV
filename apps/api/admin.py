@@ -335,8 +335,10 @@ def _place_fields(e: dict) -> dict:
         render: dict = {}
         if (b := _number(r.get("budgetM"), 0.25, 32)) is not None:
             render["budgetM"] = b
-        if r.get("stochastic") is True:
-            render["stochastic"] = True
+        # True: stochastic; False: the owner wants this scene drawn the classic sorted way (v0.9: stochastic is
+        # the desktop default now, so "sorted" is a choice worth keeping); absent: the device's default
+        if isinstance(r.get("stochastic"), bool):
+            render["stochastic"] = r["stochastic"]
         if render:
             out["render"] = render
     if about := _texts(e.get("about"), 1500):

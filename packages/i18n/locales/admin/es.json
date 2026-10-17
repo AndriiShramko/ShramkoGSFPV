@@ -141,7 +141,7 @@
   "admin.wind.clear": "Sin viento",
   "admin.field.ceilingM": "Sin colisiones por encima de esta altura, m (coordenadas del escaneo)",
   "admin.field.budgetM": "Presupuesto de splats de SuperSplat, millones (0,25-32)",
-  "admin.field.stochastic": "Dibujo estocástico (beta de SuperSplat, WebGPU de escritorio)",
+  "admin.field.stochastic": "Cómo se dibuja esta escena (el ajuste Renderizado del piloto manda sobre esto)",
   "admin.field.about": "Nuestro texto para la página de la escena ({lang})",
   "admin.scenePage": "Página de la escena",
   "admin.kind.interior": "Interior",
@@ -151,5 +151,10 @@
   "admin.history.row": "{time}: {n} escenas",
   "admin.history.restore": "Volver a publicar",
   "admin.history.confirm": "¿Volver a publicar la versión del {time}? Los pilotos la verán en un minuto.",
-  "admin.history.empty": "Aún no se ha publicado nada desde aquí."
+  "admin.history.empty": "Aún no se ha publicado nada desde aquí.",
+  "admin.add.render.sorted": "ordenado (el dibujo clásico)",
+  "admin.add.updateRender": "Dar este dibujo a la escena de la lista",
+  "admin.render.auto": "Automático (estocástico en escritorio)",
+  "admin.render.stochastic": "Estocástico",
+  "admin.render.sorted": "Ordenado (clásico)"
 }

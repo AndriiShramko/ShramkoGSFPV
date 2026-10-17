@@ -23,10 +23,13 @@ function poster(s: CatalogScene): string {
   return s.thumb ?? `${POSTERS}/${s.id}/v${s.version ?? 1}/m.webp`;
 }
 
+/**
+ * The simulator's link of a card: the scene only. The owner's per-scene render (budget, stochastic) is not
+ * written into it (v0.9): the simulator applies the catalogue entry itself, and a link's own parameters
+ * would outrank the pilot's Render setting (link > the pilot's setting > the owner's entry > the device).
+ */
 function flyHref(locale: string, s: CatalogScene): string {
-  const q = new URLSearchParams({ scene: s.id });
-  if (s.render?.budgetM) q.set("budget", String(s.render.budgetM));
-  return `/${locale}/fly/?${q.toString()}${s.render?.stochastic ? "&stochastic" : ""}`;
+  return `/${locale}/fly/?${new URLSearchParams({ scene: s.id }).toString()}`;
 }
 
 /**
