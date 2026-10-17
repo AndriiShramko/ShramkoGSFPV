@@ -378,8 +378,10 @@ try {
         const viewTouch = await hintView(c.page);
         const toastTouch = await toastBox();
         await c.page.screenshot({ path: join(SHOTS, 'h4-phone-touch-on-hint-and-toast.png') });
-        const pass = view.present && view.overlaps.length === 0 && inView(view) && toast !== null && viewTouch.present && viewTouch.overlaps.length === 0 && inView(viewTouch) && toastTouch !== null;
-        out.H4 = { pass, what: 'on a 390 px phone the hint sits inside the screen and overlaps neither the crash toast (at the top there) nor any button; the same with the body class of a touch screen', view, toast, touchOn: { view: viewTouch, toast: toastTouch }, errors: errors(c.log) };
+        const pass = view.present && view.overlaps.length === 0 && inView(view) && toast !== null && viewTouch.present && viewTouch.overlaps.length === 0 && inView(viewTouch) && toastTouch !== null
+            // the crash toast of a narrow touch screen is a toast, not a box stretched between its top and bottom (546 px before v0.9)
+            && toastTouch.h < 160;
+        out.H4 = { pass, what: 'on a 390 px phone the hint sits inside the screen and overlaps neither the crash toast (at the top there) nor any button; the same with the body class of a touch screen, where the crash toast is a small box above the pads (before v0.9 it stretched 546 px down the screen)', view, toast, touchOn: { view: viewTouch, toast: toastTouch }, errors: errors(c.log) };
         console.log('H4', pass ? 'PASS' : 'FAIL', JSON.stringify({ rect: view.rect, overlaps: view.overlaps, toast, touchOn: { rect: viewTouch.rect, overlaps: viewTouch.overlaps, toast: toastTouch } }));
         await c.ctx.close();
     }
