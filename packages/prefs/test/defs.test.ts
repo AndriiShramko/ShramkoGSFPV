@@ -20,6 +20,8 @@ const V03_SHIPPED = [
     'level.angleLimitDeg', 'level.strength', 'level.horizonStrength',
     // v0.7 lane R (owner's message 18, item 1): SuperSplat's stochastic drawing, Settings -> Display
     'display.drawing',
+    // v0.9 lane R (owner's message 22, item 13): the pilot's splat budget next to Render, Settings -> Display
+    'display.budget',
     // v0.7 lane E (owner's message 18 item 10): the wind of the place and the collision ceiling
     'wind.mode', 'wind.fromDeg', 'wind.speed', 'wind.gust', 'scene.ceiling', 'scene.ceilingM',
     // v0.7 D1 (docs/wip/v07-d1.md): the crosshair (Display), the motor sound (Sound), the scan author notice (Recording)
@@ -60,6 +62,7 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['display.governor', 'display', 'global', 'bool', true, 'live'],
     ['display.latencyGuard', 'display', 'global', 'bool', true, 'live'],
     ['display.drawing', 'display', 'global', 'enum', 'auto', 'live'],
+    ['display.budget', 'display', 'global', 'enum', 'auto', 'live'],
     ['display.reducedMotion', 'display', 'global', 'enum', 'system', 'live'],
     ['display.frameStats', 'display', 'global', 'bool', false, 'live'],
     ['stats.onDisarm', 'display', 'global', 'bool', true, 'live'],
@@ -152,8 +155,8 @@ const WAVE2_SETTINGS = [
 ];
 
 describe('SCHEMA is the A.8 table', () => {
-    it('has the 74 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard, v0.7\'s drawing, wind and ceiling, v0.7 D1\'s seven, v0.8\'s prop wash and lane A\'s three), each with its group, scope, type, default and apply', () => {
-        expect(SCHEMA.defs).toHaveLength(74);
+    it('has the 75 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard, v0.7\'s drawing, wind and ceiling, v0.7 D1\'s seven, v0.8\'s prop wash and lane A\'s three, v0.9\'s splat budget), each with its group, scope, type, default and apply', () => {
+        expect(SCHEMA.defs).toHaveLength(75);
         const got = SCHEMA.defs.map((d) => [d.id, d.group, d.scope, d.type, isPresetRef(d.default) ? `preset:${d.default.preset}` : isCuratedRef(d.default) ? `curated:${d.default.curated}|${String(d.default.fallback)}` : d.default, d.apply]);
         // order inside a group follows the def files, not the table's rows
         const byId = (a: unknown[], b: unknown[]) => String(a[0]).localeCompare(String(b[0]));

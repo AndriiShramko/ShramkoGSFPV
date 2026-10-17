@@ -5,6 +5,7 @@ import { isFormField } from '../../ui/hud';
 import { t } from '../../i18n';
 import type { Feature } from '../context';
 import { lodLine, lodReport } from '../lod';
+import { drawingFor, drawingLine } from '../drawing';
 
 export const hud: Feature = {
     id: 'hud',
@@ -26,12 +27,14 @@ export const hud: Feature = {
             h.toggleFrameStats();
             e.preventDefault();
         });
-        // F3's second line: the levels of detail at work (v0.8 item 8), four times a second while shown
+        // F3's second line: the levels of detail at work (v0.8 item 8), and a third: how the scan is drawn (v0.9:
+        // stochastic or sorted, who decided), four times a second while shown
         let lastDetail = 0;
         ctx.events.on('frame', ({ now }) => {
             if (!h.frameStatsShown || now - lastDetail < 250) return;
             lastDetail = now;
             h.setDetailLine(ctx.renderer.splatVisible ? lodLine(lodReport(ctx), t) : null);
+            h.setDrawingLine(ctx.renderer.splatVisible ? drawingLine(drawingFor(ctx.prefs, ctx.scene, ctx.renderer.isWebGPU), t) : null);
         });
     }
 };

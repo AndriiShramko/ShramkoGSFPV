@@ -227,7 +227,9 @@ export class Hud {
     private statsHint = h('div', { 'data-testid': 'display-hint', hidden: true });
     // F3: the levels of detail at work (app/lod.ts lodLine, written by app/builtin/hud.ts)
     private statsDetail = h('div', { 'data-testid': 'detail-line', class: 'detail', hidden: true });
-    private frameStats = h('div', { class: 'osd frame hidden' }, this.statsMain, this.statsDetail, this.statsHint);
+    // F3: how the scan is drawn and who decided it (app/drawing.ts drawingLine, written by app/builtin/hud.ts)
+    private statsDrawing = h('div', { 'data-testid': 'drawing-line', class: 'detail', hidden: true });
+    private frameStats = h('div', { class: 'osd frame hidden' }, this.statsMain, this.statsDetail, this.statsDrawing, this.statsHint);
     private card = new ArmCard(() => this.onArm?.());
     private keys = new KeyCard();
     private last = 0;
@@ -320,6 +322,12 @@ export class Hud {
     setDetailLine(text: string | null): void {
         this.statsDetail.hidden = text === null;
         if (text !== null && this.statsDetail.textContent !== text) this.statsDetail.textContent = text;
+    }
+
+    /** The F3 line about the drawing (app/drawing.ts drawingLine); null hides it. */
+    setDrawingLine(text: string | null): void {
+        this.statsDrawing.hidden = text === null;
+        if (text !== null && this.statsDrawing.textContent !== text) this.statsDrawing.textContent = text;
     }
 
     update(s: FlightSession, block: ArmBlock, frameMs: { p50: number; p99: number }, view?: ArmView): void {
