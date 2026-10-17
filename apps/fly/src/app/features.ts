@@ -36,6 +36,7 @@ import { switches } from './builtin/switches';
 import { crosshair } from './builtin/crosshair';
 import { sound } from './builtin/sound';
 import { play } from './builtin/play';
+import { nextHint } from './builtin/next-hint';
 
 export const FEATURES: readonly Feature[] = [
     scene,
@@ -69,5 +70,6 @@ export const FEATURES: readonly Feature[] = [
     switches,
     crosshair,
     sound,
-    play
+    play,
+    nextHint
 ];
