@@ -190,8 +190,12 @@ class Client(Gem):
 
     def test_nothing_prints_a_key_or_a_text(self):
         rec = self.w.report(rid="R-20261013-0042", message="a private sentence of a pilot who writes", lang="pl")
-        self.g.script = [("http", 503)] * 4                          # the detector and the translation both fail, twice each
+        self.g.script = [("http", 503)] * 2                          # the detector fails twice
         _, out = self.silent(self.tr.plan, rec, "my private answer to that pilot")
+        rec["pilotLang"] = {"code": "pl", "name": "Polish", "at": "2026-10-17T10:00:00Z"}
+        self.g.script = [("http", 503)] * 2                          # ... and then the translation, twice
+        _, out_b = self.silent(self.tr.plan, rec, "my private answer to that pilot")
+        out += out_b
         self.g.script = [("http", 403)]
         _, out2 = self.silent(self.tr.check)
         for printed in (out, out2):
@@ -387,10 +391,24 @@ class Decision(Gem):
         self.g.script = [("pass",), ("http", 503), ("http", 503)]  # the detector answers, the translation fails twice
         plan, _ = self.silent(self.tr.plan, self.rec(), RU_THANKS)
         self.assertEqual((plan.ok, plan.why, plan.body, plan.tr), (False, "failed:http-503", RU_THANKS, None))
-        self.g.script = [("http", 503)] * 4                         # everything fails: the detector, then the translation
+        self.g.script = [("http", 503)] * 2                         # the detector fails twice: the service looks down
         english = "Thanks, it is planned for November."
+        asked = len(self.g.requests)
         plan, _ = self.silent(self.tr.plan, self.rec(rid="R-20261013-0002"), english)
         self.assertEqual((plan.ok, plan.body, plan.lang), (True, english, "pl"))     # control: English still goes, in the pilot's frame
+        self.assertEqual(len(self.g.requests) - asked, 2)           # the detector's two tries and nothing more
+
+    def test_a_service_that_does_not_answer_is_not_asked_a_second_thing(self):
+        """The owner's webhook waits for this: two slow questions in a row would double the wait."""
+        self.g.script = [("sleep", 1.2), ("sleep", 1.2)]
+        plan, _ = self.silent(self.tr.plan, self.rec(), RU_THANKS)
+        self.assertEqual((plan.ok, plan.why), (False, "failed:timeout"))
+        self.assertEqual((len(self.g.of("detect")), len(self.g.of("translate"))), (2, 0))
+        # control: a service that ANSWERED no (a rejected key, 403) is asked the second thing too
+        self.g.requests.clear()
+        self.g.script = [("http", 403), ("http", 403)]
+        plan, _ = self.silent(self.tr.plan, self.rec(rid="R-20261013-0002"), RU_THANKS)
+        self.assertEqual((plan.ok, plan.why, len(self.g.of("detect")), len(self.g.of("translate"))), (False, "failed:http-403", 1, 1))
 
     def test_a_done_summary_is_picked_by_the_pilots_language(self):
         rec = self.rec()

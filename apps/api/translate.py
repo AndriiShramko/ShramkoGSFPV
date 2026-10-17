@@ -145,7 +145,7 @@ class Gemini:
     def __init__(self, config: Callable[[], GeminiConfig], opener=urllib.request.urlopen, sleep=time.sleep, retry_wait: float = 1.0):
         self.config, self.opener, self.sleep, self.retry_wait = config, opener, sleep, retry_wait
 
-    def call_json(self, system: str, payload: dict, schema: dict, max_tokens: int = 4096) -> dict:
+    def call_json(self, system: str, payload: dict, schema: dict, max_tokens: int = 8192) -> dict:
         cfg = self.config()
         if not cfg.configured:
             raise TranslateError("no-key")
@@ -293,7 +293,7 @@ class Translator:
     # ---------------- the engine ----------------
 
     def detect(self, text: str) -> Lang:
-        out = self.gemini.call_json(DETECT_SYSTEM, {"task": "detect", "text": text[:DETECT_CHARS]}, DETECT_SCHEMA, 256)
+        out = self.gemini.call_json(DETECT_SYSTEM, {"task": "detect", "text": text[:DETECT_CHARS]}, DETECT_SCHEMA, 1024)
         code = _code(out.get("code"))
         if not code or out.get("confident") is not True:
             raise TranslateError("unsure")
@@ -339,8 +339,9 @@ class Translator:
         en = self._texts().d["en"]
         return strings if isinstance(strings, dict) and set(strings) == set(en) else None
 
-    def frame(self, code: str) -> dict | None:
-        """cached_frame(), else built now (the network, once per language), else None: English at worst."""
+    def frame(self, code: str, name: str = "") -> dict | None:
+        """cached_frame(), else built now (the network, once per language), else None: English at worst.
+        `name`: the English name of the language, when the detector gave one."""
         have = self.cached_frame(code)
         if have is not None or code in LANGS or not self.available:
             return have
@@ -350,7 +351,7 @@ class Translator:
                 return have
             en = self._texts().d["en"]
             try:
-                out = self.gemini.call_json(FRAME_SYSTEM, {"task": "translate_strings", "target_language": {"code": code, "name": code},
+                out = self.gemini.call_json(FRAME_SYSTEM, {"task": "translate_strings", "target_language": {"code": code, "name": name or code},
                                                           "strings": [{"key": k, "text": v} for k, v in en.items()]}, FRAME_SCHEMA, 8192)
                 rows = out.get("strings")
                 got = {r["key"]: r["text"] for r in rows if isinstance(r, dict) and isinstance(r.get("key"), str) and isinstance(r.get("text"), str)} \
@@ -386,29 +387,42 @@ class Translator:
 
     def pilot_language(self, rec: dict) -> tuple[Lang, bool]:
         """(the language the pilot writes in, whether it was detected just now). See the module's docstring."""
+        lang, new, _ = self._pilot(rec)
+        return lang, new
+
+    def _pilot(self, rec: dict) -> tuple[Lang, bool, str]:
+        """pilot_language() and, when asking the service failed, why ("" otherwise)."""
         cached = rec.get("pilotLang")
         if isinstance(cached, dict) and _code(cached.get("code")):
             code = _code(cached["code"])
-            return Lang(code, _name(cached.get("name"), code)), False
+            return Lang(code, _name(cached.get("name"), code)), False, ""
         form = rec.get("lang") if rec.get("lang") in LANGS else "en"
         own = pilot_words(rec.get("text") or "") if rec.get("source") == "report" else ""
+        failed = ""
         if self.available and sum(c.isalpha() for c in own) >= LETTERS_MIN:
             try:
-                return self.detect(own), True
+                return self.detect(own), True, ""
             except TranslateError as e:
                 self._note("detect", e)
-        return Lang(form, NAMES[form]), False
+                failed = e.reason
+        return Lang(form, NAMES[form]), False, failed
 
     def frame_language(self, pilot: Lang) -> Lang:
         """The language the e-mail can be written in: the pilot's if the frame exists, else English."""
-        if pilot.code in LANGS or self.frame(pilot.code) is not None:
+        if pilot.code in LANGS or self.frame(pilot.code, pilot.name) is not None:
             return pilot
         return Lang("en", NAMES["en"])
+
+    @staticmethod
+    def _looks_down(reason: str) -> bool:
+        """The service did not answer at all (not: it answered no). Asking it a second thing in the same breath
+        would only double the wait of the owner's webhook, so the decision goes offline at once."""
+        return reason in ("timeout", "network") or reason.startswith("http-5")
 
     def plan(self, rec: dict, text: str | dict) -> Plan:
         """What goes to this idea's pilot for `text`: the owner's words (a str, language unknown), or a done
         summary (a dict language -> text: the one in the e-mail's language, else English, else the first)."""
-        pilot, new = self.pilot_language(rec)
+        pilot, new, failed = self._pilot(rec)
         target = self.frame_language(pilot)
         if isinstance(text, dict):
             known = target.code if target.code in text else "en" if "en" in text else next(iter(text))
@@ -417,15 +431,15 @@ class Translator:
                 known = ""     # filed under a language it is not in (an older summary, a wrong key): do not trust the key
         else:
             known, words = "", text
-        plan = self._decide(words, known, target)
+        plan = self._decide(words, known, target, failed if self._looks_down(failed) else "")
         plan.pilot, plan.pilot_new = pilot, new
         return plan
 
-    def _decide(self, words: str, known: str, target: Lang) -> Plan:
+    def _decide(self, words: str, known: str, target: Lang, down: str = "") -> Plan:
         if known == target.code:
             return Plan(True, words, target.code, source=known)       # written in the pilot's language already
-        why = "no-key"
-        if self.available:
+        why = f"failed:{down}" if down else "no-key"
+        if self.available and not down:
             try:
                 got = self.translate(words, target)
             except TranslateError as e:
