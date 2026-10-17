@@ -156,26 +156,39 @@ describe('a frame waits for the scan only so long (the export always finishes)',
         const ex = new LogExport(LIVES, WALLS, { fromTick: FROM, toTick: FROM + 1000, now: () => clock, ...o }, engine, view, { canTake: true, take: () => true });
         await ex.prepare();
         const waits: string[] = [];
+        const tookAt: number[] = [];
         let drawn = 0;
         for (; drawn < 50_000 && !ex.done; drawn++) {
             engine.frameNumber++;
             clock += 33;
-            if (ex.onFrameEnd() === 'took') await ex.prepare();
+            const step = ex.onFrameEnd();
+            if (step === 'took' || step === 'done') tookAt.push(clock);
+            if (step === 'took') await ex.prepare();
             else if (ex.waitingFor && waits[waits.length - 1] !== ex.waitingFor) waits.push(ex.waitingFor);
         }
-        return { ex, drawn, seconds: clock / 1000, waits };
+        return { ex, drawn, seconds: clock / 1000, waits, tookAt };
     }
 
-    it('60 frames: the first after 20 s, the next ones after 4 s until their share (60 x 0.15 s) is spent, all forced; the bar is told', async () => {
+    it('60 frames: the first after 20 s, the others together after their share (60 x 0.15 s), all forced; the bar is told', async () => {
         const r = await never({});
         expect(r.ex.frames).toBe(60);
         expect(r.ex.k).toBe(60);
         expect(r.ex.forced).toBe(60);
         expect(r.ex.encodedIncomplete).toBe(60);
-        // 20 s for frame 0, then 9 s for all the others together (4 + 4 + 1), within a frame each
+        // 20 s for frame 0, then 9 s for all the others together, within a frame each
         expect(r.seconds).toBeGreaterThan(20 + 9 - 0.1);
         expect(r.seconds).toBeLessThan(20 + 9 + 60 * 0.1);
         expect(r.waits).toContain('scan');
+    });
+
+    it('the share is spread: the last frames of a slow export wait their part too (v0.9 review: the first ones took it all, the rest waited 0)', async () => {
+        const r = await never({});
+        const gaps = r.tookAt.slice(1).map((t, i) => t - r.tookAt[i]);
+        // each later frame waits about 9 s / 59 = 0.15 s (a frame of 33 ms more at most); front-loaded, the
+        // last 50 frames came 33 ms apart (drawn, then encoded at once: their share was gone)
+        expect(gaps.length).toBe(59);
+        expect(Math.min(...gaps.slice(-10))).toBeGreaterThanOrEqual(100);
+        expect(Math.max(...gaps)).toBeLessThan(250);
     });
 
     it('a share large enough: every later frame waits its full 4 s', async () => {
@@ -185,11 +198,104 @@ describe('a frame waits for the scan only so long (the export always finishes)',
         expect(r.seconds).toBeLessThan(20 + 59 * 4 + 60 * 0.1);
     });
 
+    it('control (of the spread): a share of 0 makes every later frame go at once, 33 ms apart', async () => {
+        const r = await never({ waitShareMs: 0 });
+        const gaps = r.tookAt.slice(1).map((t, i) => t - r.tookAt[i]);
+        expect(Math.max(...gaps.slice(-10))).toBe(33);
+    });
+
     it('control: v0.8\'s unbounded wait (Infinity) never gets past frame 0', async () => {
         const r = await never({ firstWaitMs: Infinity, frameWaitMs: Infinity });
         expect(r.drawn).toBe(50_000);
         expect(r.ex.k).toBe(0);
         expect(r.ex.forced).toBe(0);
         expect(r.ex.forcedInMs()).toBeNull();
+    });
+});
+
+/**
+ * v0.9 review: a hidden tab draws no frames (no requestAnimationFrame), so the clock jumps between two
+ * 'frameend's. That time must not count as waiting: before, one 50 s tab switch spent the whole share of a
+ * 300-frame export (294 frames then encoded without a wait) or forced frame 0 with a scan the hidden tab
+ * never streamed. Each case runs without the jump as its control; `forced` is 0 in both.
+ */
+describe('a hidden tab\'s time is not waiting', () => {
+    /**
+     * A fake engine on a fake clock, 33 ms a frame. A view is complete `needMs` after its pose was placed
+     * (the downloads go on while hidden), or after `needDrawn` drawn frames of its wait (`firstNeedDrawn`
+     * for frame 0: the engine streams only while it draws). `gap` jumps the clock once while frame `k`
+     * waits for the scan (the tab hidden for `ms`).
+     */
+    async function hidden(o: { needMs?: number; needDrawn?: number; firstNeedDrawn?: number; gap?: { k: number; ms: number } }) {
+        let clock = 0;
+        const engine = { frameNumber: 0, sceneComplete: false };
+        let current: Sim | null = null;
+        const view: ExportView = {
+            beforeStep: () => undefined, crash: async () => undefined, respawn: () => undefined, transform: () => undefined,
+            show: (sim) => { current = sim; },
+            camera: () => { const s = current!.s; return [s[S.px], s[S.py], s[S.pz]]; }
+        };
+        const ex = new LogExport(LIVES, WALLS, { fromTick: FROM, toTick: TO, now: () => clock }, engine, view, { canTake: true, take: () => true });
+        await ex.prepare();
+        let poseAt = clock;
+        let drawnInWait = 0;
+        let jumped = false;
+        for (let drawn = 0; drawn < 100_000 && !ex.done; drawn++) {
+            engine.frameNumber++;
+            clock += 33;
+            drawnInWait++;
+            engine.sceneComplete = o.needMs !== undefined
+                ? clock - poseAt >= o.needMs
+                : drawnInWait >= (ex.k === 0 ? o.firstNeedDrawn ?? 1 : o.needDrawn ?? 1);
+            const step = ex.onFrameEnd();
+            if (step === 'took') {
+                await ex.prepare();
+                poseAt = clock;
+                drawnInWait = 0;
+            } else if (o.gap && !jumped && ex.k === o.gap.k && ex.waitingFor === 'scan') {
+                clock += o.gap.ms;
+                jumped = true;
+            }
+        }
+        return { ex, jumped, seconds: clock / 1000 };
+    }
+
+    it('a 50 s tab switch while frame 5 waits leaves the share for the other frames (each view needs 66 ms)', async () => {
+        const r = await hidden({ needMs: 66, gap: { k: 5, ms: 50_000 } });
+        expect(r.jumped).toBe(true);
+        expect(r.ex.k).toBe(300);
+        expect(r.ex.forced).toBe(0);
+        const control = await hidden({ needMs: 66 });
+        expect(control.ex.k).toBe(300);
+        expect(control.ex.forced).toBe(0);
+    });
+
+    it('a 50 s tab switch at frame 0 does not force it before the scan it needs was drawn in (10 s of frames)', async () => {
+        const r = await hidden({ firstNeedDrawn: 300, needDrawn: 2, gap: { k: 0, ms: 50_000 } });
+        expect(r.jumped).toBe(true);
+        expect(r.ex.k).toBe(300);
+        expect(r.ex.forced).toBe(0);
+        const control = await hidden({ firstNeedDrawn: 300, needDrawn: 2 });
+        expect(control.ex.forced).toBe(0);
+    });
+
+    it('the bound still holds across tab switches: a scan never complete, hidden 30 s at every frame, still finishes', async () => {
+        let clock = 0;
+        const engine = { frameNumber: 0, sceneComplete: false };
+        let current: Sim | null = null;
+        const view: ExportView = {
+            beforeStep: () => undefined, crash: async () => undefined, respawn: () => undefined, transform: () => undefined,
+            show: (sim) => { current = sim; },
+            camera: () => { const s = current!.s; return [s[S.px], s[S.py], s[S.pz]]; }
+        };
+        const ex = new LogExport(LIVES, WALLS, { fromTick: FROM, toTick: FROM + 1000, now: () => clock }, engine, view, { canTake: true, take: () => true });
+        await ex.prepare();
+        for (let drawn = 0; drawn < 50_000 && !ex.done; drawn++) {
+            engine.frameNumber++;
+            clock += drawn % 10 === 9 ? 30_000 : 33;
+            if (ex.onFrameEnd() === 'took') await ex.prepare();
+        }
+        expect(ex.k).toBe(60);
+        expect(ex.forced).toBe(60);
     });
 });

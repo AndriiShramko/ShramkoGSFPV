@@ -5,8 +5,10 @@
 // 'frame:ready'), so the file is the clean 60 fps a live recording cannot be (a live one repeats
 // what the screen missed). The wait for a frame is bounded (v0.9, the owner's item 3b: 10 minutes at
 // "frame 0" on 1994c65c, then Chrome reclaimed the idle encoder): after FIRST_WAIT_MS for the first
-// frame and FRAME_WAIT_MS for any other (and WAIT_SHARE_MS per frame for all of them together), the
-// frame is encoded with what the engine has (counted in `forced`), so the export always finishes. The flight model is the log's own (LivesPlayer: params and walls from
+// frame and FRAME_WAIT_MS for any other (and WAIT_SHARE_MS per frame for all of them together, spread
+// over the frames still to come), the frame is encoded with what the engine has (counted in `forced`),
+// so the export always finishes. A wait counts drawn time only: a hidden tab draws no frames, so the
+// time between two frames adds at most MAX_WAIT_STEP_MS. The flight model is the log's own (LivesPlayer: params and walls from
 // each life's header); the scan is drawn under the transform the life was flown at (its header,
 // then each world record, E.7); a crash is drawn by a CrashView on this replay's clock.
 //
@@ -41,9 +43,18 @@ export const FRAME_WAIT_MS = 4000;
  * All frames after the first together wait at most this much per frame of the video, ms: on a slow link
  * a moving view can keep files on their way at every frame, and 4 s each would make a 4929-frame flight
  * a 5-hour export; with this the waiting adds at most ~0.15 s per frame (12 min for 4929 frames, never
- * more), and once it is spent frames wait only for the encoder.
+ * more). It is spread: frame k may wait what is left of it divided by the frames still to come (at most
+ * FRAME_WAIT_MS), so the last frames of a slow export wait as much as the first ones, and what a quick
+ * frame did not use goes to the later ones.
  */
 export const WAIT_SHARE_MS = 150;
+/**
+ * The most one gap between two drawn frames adds to a wait, ms: a hidden tab draws no frames (no
+ * requestAnimationFrame) and a stalled page none either, and that time is neither the scan streaming
+ * for this view in front of the pilot nor time the share should lose (v0.9 review: one tab switch of
+ * 50 s spent the whole share of a 300-frame export, and 294 frames were then encoded without a wait).
+ */
+export const MAX_WAIT_STEP_MS = 1000;
 
 /** Frames of `durationTicks` ms of flight at `fps`: frame k shows k/fps s (300 for 5 s at 60; ticks x fps first, so no period is rounded). */
 export function exportFrameCount(durationTicks: number, fps: number = EXPORT_FPS): number {
@@ -150,8 +161,10 @@ export class LogExport {
     /** ms the frames after the first spent waiting so far */
     private waitSpentMs = 0;
     private readonly now: () => number;
-    /** when frame k's pose was first drawn (its wait began), -1 before */
-    private waitFrom = -1;
+    /** ms frame k has waited so far, drawn time only (each gap between frames adds at most MAX_WAIT_STEP_MS) */
+    private waitedMs = 0;
+    /** when the last frame of frame k's wait was drawn, -1 before its pose was first drawn */
+    private lastDrawnAt = -1;
     first: ExportPose | null = null;
     last: ExportPose | null = null;
     crashes = 0;
@@ -201,18 +214,21 @@ export class LogExport {
         return this.k >= this.frames;
     }
 
-    /** How long frame k may wait for the scan, ms: the first frame's bound, else the smaller of a frame's bound and what is left of the share. */
+    /**
+     * How long frame k may wait for the scan, ms: the first frame's bound, else the smaller of a frame's
+     * bound and its part of what is left of the share (spread over the frames still to come).
+     */
     private boundMs(): number {
         if (this.k === 0) return this.firstWaitMs;
         const left = this.frames * this.waitShareMs - this.waitSpentMs;
-        return Math.min(this.frameWaitMs, Math.max(0, left));
+        return Math.min(this.frameWaitMs, Math.max(0, left) / Math.max(1, this.frames - this.k));
     }
 
     /** ms until the frame being made is encoded whatever the scan's state (null: not waiting for the scan). */
     forcedInMs(): number | null {
-        if (this.waitingFor !== 'scan' || this.waitFrom < 0) return null;
+        if (this.waitingFor !== 'scan' || this.lastDrawnAt < 0) return null;
         const bound = this.boundMs();
-        return Number.isFinite(bound) ? Math.max(0, bound - (this.now() - this.waitFrom)) : null;
+        return Number.isFinite(bound) ? Math.max(0, bound - this.waitedMs) : null;
     }
 
     /** Steps the replay to frame k's tick and places the camera. Async only when a crash shows (Rapier). */
@@ -264,12 +280,14 @@ export class LogExport {
             this.waitingFor = 'pose';
             return 'wait';
         }
+        // the wait counts drawn time: a gap (a hidden tab, a stalled page) adds at most MAX_WAIT_STEP_MS
         const now = this.now();
-        if (this.waitFrom < 0) this.waitFrom = now;
+        if (this.lastDrawnAt >= 0) this.waitedMs += Math.min(MAX_WAIT_STEP_MS, Math.max(0, now - this.lastDrawnAt));
+        this.lastDrawnAt = now;
         const complete = this.engine.sceneComplete;
         if (!complete) this.incomplete++;
         // bounded: past it, the frame shows what the engine has for this view (the export always finishes)
-        const overdue = !complete && now - this.waitFrom >= this.boundMs();
+        const overdue = !complete && this.waitedMs >= this.boundMs();
         if (!complete && !this.ignoreScene && !overdue) {
             this.waited++;
             this.waitingFor = 'scan';
@@ -284,8 +302,9 @@ export class LogExport {
             this.encodedIncomplete++;
             if (!this.ignoreScene) this.forced++;
         }
-        if (this.k > 0) this.waitSpentMs += now - this.waitFrom;
-        this.waitFrom = -1;
+        if (this.k > 0) this.waitSpentMs += this.waitedMs;
+        this.waitedMs = 0;
+        this.lastDrawnAt = -1;
         this.waitingFor = null;
         const s = this.player.sim.s;
         const pose: ExportPose = {
