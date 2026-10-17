@@ -19,6 +19,7 @@
 //       not finished in the same time (its frame 0 waited for all 60 M splats at the finest level).
 //   SITE=http://127.0.0.1:5718 SITE_BEFORE=http://127.0.0.1:5717 npx tsx src/accept-v09-load.ts [V1 V2 ...]
 // Evidence: evidence/<date>/v09-load.json
+import { readFileSync } from 'node:fs';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { launchChrome } from './browser';
 import { writeEvidence } from './evidence';
@@ -55,7 +56,7 @@ const CARD = `(() => {
 })()`;
 
 async function newPage(browser: Browser): Promise<{ ctx: BrowserContext; page: Page; log: string[] }> {
-    const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1, acceptDownloads: true });
     await ctx.route('**/api/e', (r) => r.fulfill({ status: 204, body: '' }));
     await ctx.addInitScript('window.__name = window.__name || ((f) => f);');
     const page = await ctx.newPage();
@@ -183,14 +184,16 @@ async function exportCase(browser: Browser, site: string): Promise<Any> {
     }
     const seconds = (Date.now() - t1) / 1000;
     let file: Any = null;
-    if (result?.ended === 'done') {
-        // the offered download (a blob URL in the browser's storage, or the file in memory): its bytes and its first box
-        file = await page.evaluate(`(async () => {
-            const a = document.querySelector('[data-testid=video-export-offer]');
-            if (!a) return null;
-            const b = new Uint8Array(await (await fetch(a.href)).arrayBuffer());
-            return { bytes: b.length, box: String.fromCharCode(b[4], b[5], b[6], b[7]) };
-        })()`);
+    if (result?.ended === 'done' && (await page.$('[data-testid=video-export-offer]'))) {
+        // the offered download pressed as the pilot would (fetch() of its blob: URL is refused by the page's CSP,
+        // connect-src has no blob:): the bytes the browser saved and their first box
+        const [dl] = await Promise.all([
+            page.waitForEvent('download', { timeout: 60000 }),
+            page.evaluate(`document.querySelector('[data-testid=video-export-offer]').click()`)
+        ]);
+        const path = await dl.path();
+        const b = path ? readFileSync(path) : null;
+        file = b ? { name: dl.suggestedFilename(), bytes: b.length, box: b.subarray(4, 8).toString('latin1') } : { name: dl.suggestedFilename(), failure: await dl.failure() };
     }
     if (!result) await page.evaluate('window.__gsfpv.videoExport.cancel()').catch(() => undefined);
     await ctx.close();
