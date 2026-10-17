@@ -366,7 +366,7 @@ try {
         const c = await context(browser, { phone: true });
         await radioFlying(c.page, FIRST);
         for (let n = 1; n <= 3; n++) { await crash(c.page); await wait(c.page, 400); }
-        const toastBox = () => c.page.evaluate(`(() => { const e = document.querySelector('[data-testid="crash-toast"]'); if (!e) return null; const r = e.getBoundingClientRect(); return { y: r.y, h: r.height }; })()`);
+        const toastBox = () => c.page.evaluate(`(() => { const e = document.querySelector('[data-testid="crash-toast"]'); if (!e) return null; const r = e.getBoundingClientRect(); return { y: r.y, h: r.height }; })()`) as Promise<{ y: number; h: number } | null>;
         const inView = (v: HintView) => (v.rect ? v.rect.x >= 0 && v.rect.x + v.rect.w <= 390 && v.rect.y >= 0 && v.rect.y + v.rect.h <= 844 : false);
         const view = await hintView(c.page);
         const toast = await toastBox();
