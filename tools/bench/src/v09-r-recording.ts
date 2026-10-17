@@ -54,9 +54,13 @@ const EXPERIMENT = `(async (FRAMES, SUB, W, H, BUDGET) => {
   const settle = async (n) => { for (let i = 0; i < n; i++) await nextEnd(); };
 
   async function pass(stochastic, jitter, sub, encode) {
+    // the frame intervals right after the switch: does flipping the drawing hitch (a new shader variant)?
+    const stamps = []; const stamp = () => stamps.push(performance.now()); app.on('frameend', stamp);
     r.setStochastic(stochastic);
     r.camera.camera.jitter = jitter ? 1 : 0;
     pose(0); await settle(12);
+    app.off('frameend', stamp);
+    const switchIntervalsMs = stamps.slice(1, 11).map((t, i) => Math.round((t - stamps[i]) * 10) / 10);
     const lumas = []; const chunks = []; let bytes = 0; let encErr = null;
     let enc = null;
     if (encode) {
@@ -91,7 +95,7 @@ const EXPERIMENT = `(async (FRAMES, SUB, W, H, BUDGET) => {
       await dec.flush();
     }
     r.camera.camera.jitter = 0;
-    return { lumas, bytes, decoded, encErr, chunks: chunks.length };
+    return { lumas, bytes, decoded, encErr, chunks: chunks.length, switchIntervalsMs };
   }
 
   const S = await pass(false, false, 1, true);
@@ -108,6 +112,8 @@ const EXPERIMENT = `(async (FRAMES, SUB, W, H, BUDGET) => {
     bytes: { sorted: S.bytes, stochastic: T.bytes, accumulated: A.bytes }, chunks: { sorted: S.chunks, stochastic: T.chunks, accumulated: A.chunks },
     decodedFrames: { sorted: S.decoded && S.decoded.length, stochastic: T.decoded && T.decoded.length, accumulated: A.decoded && A.decoded.length },
     errors: [S.encErr, T.encErr, A.encErr].filter(Boolean),
+    // frame intervals (ms) of the first frames after switching to each drawing (display period ~33 ms): a hitch shows as a long one
+    switchIntervalsMs: { toSorted: S.switchIntervalsMs, toStochastic: T.switchIntervalsMs, toAccumulated: A.switchIntervalsMs, toStochasticAgain: T2.switchIntervalsMs },
     // the same stochastic view twice: is the grain stable (static pattern) frame to frame?
     psnr_T_vs_T_again: row(each(T, T2)),
     // grain alone: stochastic and accumulated against the clean sorted frame of the same view

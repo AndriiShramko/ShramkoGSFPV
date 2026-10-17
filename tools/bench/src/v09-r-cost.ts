@@ -59,7 +59,7 @@ try {
         return { ok: true, settledMs: Date.now() - t0, state: null };
     }
 
-    const STATE = `const g = s.renderer.app.scene.gsplat; const l = h.lod ? h.lod() : null; return { engineStochastic: g.stochastic === true, budgetM: g.splatBudget / 1e6, top: h.governor ? h.governor.topBudgetMillions : null, step: h.governor ? h.governor.step : null, changes: h.governor ? h.governor.changes : null, scale: s.renderer.renderScale, canvas: [s.renderer.canvas.width, s.renderer.canvas.height], drawnM: l ? Math.round(l.drawn / 1e5) / 10 : null, from: h.drawing ? h.drawing.from : null, search: location.search };`;
+    const STATE = `const g = s.renderer.app.scene.gsplat; const l = h.lod ? h.lod() : null; return { engineStochastic: g.stochastic === true, budgetM: g.splatBudget / 1e6, top: h.governor ? h.governor.topBudgetMillions : null, step: h.governor ? h.governor.step : null, changes: h.governor ? h.governor.changes : null, scale: s.renderer.renderScale, canvas: [s.renderer.canvas.width, s.renderer.canvas.height], drawnM: l ? Math.round(l.drawn / 1e5) / 10 : null, vramMiB: (() => { const v = s.renderer.device._vram; const m = (x) => Math.round(x / 1048576); return v ? { tex: m(v.tex), sb: m(v.sb), vb: m(v.vb), total: m(v.tex + v.sb + v.vb + v.ib + v.ub) } : null; })(), maxStorageBindingMiB: (() => { const l2 = s.renderer.device.wgpu && s.renderer.device.wgpu.limits; return l2 ? Math.round(l2.maxStorageBufferBindingSize / 1048576) : null; })(), from: h.drawing ? h.drawing.from : null, search: location.search };`;
 
     if (MODE === 'cost') {
         for (const scene of SCENES) {
