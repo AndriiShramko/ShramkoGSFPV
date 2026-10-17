@@ -151,7 +151,8 @@ try {
                 await page.goto(flyUrl(a));
                 const first = await revealOf(page, `${c}:load`, t0, false);
                 await page.waitForTimeout(1000 * Number(b ?? 5));
-                await page.evaluate(`(window.__vx = null, window.__gsfpv.videoExport.run({ size: '1080p' }).then((r) => { window.__vx = r; }))`);
+                // not awaited in the page (evaluate would wait for the whole export): sampled below
+                await page.evaluate(`(window.__vx = null, void window.__gsfpv.videoExport.run({ size: '1080p' }).then((r) => { window.__vx = r; }), 0)`);
                 const t1 = Date.now();
                 const samples: Any[] = [];
                 let result: Any = null;
@@ -159,7 +160,7 @@ try {
                     await page.waitForTimeout(1000);
                     result = await page.evaluate('window.__vx');
                     const x: Any = await page.evaluate(`({ st: window.__gsfpv.videoExport.state(), bar: (document.querySelector('[data-testid=video-export-status]') || {}).textContent || null, eng: ${SAMPLE}.engine || null })`);
-                    samples.push({ t: Date.now() - t1, k: x.st.k, frames: x.st.frames, waited: x.st.waited, bar: x.bar, splatFrame: x.eng?.splatFrame, octrees: x.eng?.octrees, budgetM: x.eng?.budgetM, range: x.eng?.range });
+                    samples.push({ t: Date.now() - t1, k: x.st.k, frames: x.st.frames, waited: x.st.waited, bar: x.bar, splatFrame: x.eng?.splatFrame, octrees: x.eng?.octrees, budgetM: x.eng?.budgetM, range: x.eng?.range, drawn: x.eng?.drawn });
                     if (result) break;
                 }
                 const last = samples[samples.length - 1];
