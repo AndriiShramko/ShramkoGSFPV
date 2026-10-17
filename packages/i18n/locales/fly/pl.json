@@ -103,7 +103,7 @@
   "radio.touch": "Dotykowe drążki",
   "radio.touchHint": "Wystarczy, żeby się rozejrzeć i pokazać znajomym. Do nauki latania użyj aparatury.",
   "radio.keyboard": "Klawiatura",
-  "radio.keyboardHint": "Spacja uzbraja. W / S gaz, A / D odchylenie, strzałki pochylenie i przechył, M włącza i wyłącza samopoziomowanie.",
+  "radio.keyboardHint": "Lataj jak w grze: kliknij obraz, aby przechwycić mysz, i ruszaj nią, żeby się rozglądać; W A S D to ruch, Spacja w górę, Shift w dół, F pełny ekran. Klawisze pilota (Spacja uzbraja, W / S gaz) są w Ustawieniach.",
   "radio.connect": "Połącz",
   "radio.moveStick": "Rusz drążkiem, żeby wykryć urządzenie",
   "radio.rate": "{hz} odczytów / s",

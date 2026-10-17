@@ -6,8 +6,8 @@
 //   Back to start (R), Replay, Save log, Settings (O), Share this crash (L, v0.7 D1: the share panel
 //   with the crash's words). data-action values: respawn (B12 clicks it), rewind, replay, save,
 //   settings, share-crash.
-// - Scene keys (E.5, item 10): the toast hints N (next scene) and F (next favourite); the panel has
-//   Next scene (N), Random scene (Shift+N) and Next favourite (F): data-action scene-next,
+// - Scene keys (E.5, item 10): the toast hints N (next scene) and Shift+F (next favourite); the panel has
+//   Next scene (N), Random scene (Shift+N) and Next favourite (Shift+F): data-action scene-next,
 //   scene-random, scene-favourite. With scenes.autoSwitch the toast counts down to the next scene.
 // - RewindLabel: after a rewind a small "-5 s" at the top centre for 1.5 s. It fades, never flashes
 //   (WCAG 2.3.1).
@@ -82,7 +82,7 @@ export interface PanelActions {
     settings: { run: () => void; keys: readonly KeyHint[] } | null;
     /** v0.7 D1: Share this crash (the share panel, builtin/share.ts); absent: no button */
     share?: { run: () => void; keys: readonly KeyHint[] };
-    /** E.5: Next scene (N), Random scene (Shift+N), Next favourite (F); absent: no scene row */
+    /** E.5: Next scene (N), Random scene (Shift+N), Next favourite (Shift+F); absent: no scene row */
     scenes?: Record<'next' | 'random' | 'favourite', { run: () => void; keys: readonly KeyHint[] }>;
 }
 

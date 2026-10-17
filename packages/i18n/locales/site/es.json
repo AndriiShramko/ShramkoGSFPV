@@ -586,7 +586,7 @@
     "items": [
       { "t": "Más de 1300 lugares reales", "d": "La pestaña SuperSplat del simulador muestra todos los escaneos públicos con paredes, con la ordenación, los filtros y la búsqueda de superspl.at." },
       { "t": "Un lugar nuevo tras cada choque", "d": "Marca con estrella los escaneos que te gusten, activa «Siguiente escena tras un choque» y cada choque te lleva a otro sitio, en orden aleatorio: tus favoritas, los lugares que ya volaste o la selección de Andrii." },
-      { "t": "Cambia en un segundo", "d": "N: siguiente escena, Shift+N: aleatoria, F: siguiente favorita. La página no se recarga y tu emisora sigue conectada." },
+      { "t": "Cambia en un segundo", "d": "N: siguiente escena, Shift+N: aleatoria, Shift+F: siguiente favorita. La página no se recarga y tu emisora sigue conectada." },
       { "t": "Tu propio escaneo, o el de cualquiera", "d": "Publica un escaneo en SuperSplat, o elige cualquiera público, y pega su enlace aquí o en el simulador." }
     ],
     "random": "Vuela a un lugar al azar",
@@ -789,7 +789,7 @@
         "Whoops de clase BetaFPV, un quad de 5 pulgadas de freestyle y otro de carreras y un cinelifter X8 con cámara de cine, y cada número de sus fichas dice de dónde sale. Pega un diff de la CLI de Betaflight para volar con tus rates y tu PID.",
         "Choca contra una pared y el dron se estrella a la velocidad del golpe, con los restos rodando; dos segundos después vuelve al aire, 5 s atrás en tu trayectoria y aún armado. Choques desactivados, el retraso y dónde reapareces están en Ajustes.",
         "Un OSD como el de tus gafas, campo de visión e inclinación de la cámara. F9 graba vídeo a 60 fps de los escaneos de Andrii con su crédito en la imagen, la grabación automática guarda cada vuelo en tu carpeta y un registro de vuelo se convierte en vídeo a 60 fps hasta 4K.",
-        "Elige uno de los más de 1300 escaneos con paredes en la pestaña SuperSplat, con sus propios filtros, uno de Andrii o pega un enlace, y mira cómo carga con números reales. N, Shift+N y F cambian de escena en la misma página con la emisora conectada; [ y ] escalan la escena de ×0,25 a ×100.",
+        "Elige uno de los más de 1300 escaneos con paredes en la pestaña SuperSplat, con sus propios filtros, uno de Andrii o pega un enlace, y mira cómo carga con números reales. N, Shift+N y Shift+F cambian de escena en la misma página con la emisora conectada; [ y ] escalan la escena de ×0,25 a ×100.",
         "Muestra las paredes contra las que chocas como una rejilla de vóxeles sobre el escaneo, o vuela solo la rejilla. ¿Un escaneo con ruido? Quita sus motas flotantes, las paredes fantasma, con vista previa en vivo, o desactiva las paredes para todas las escenas.",
         "Todos los ajustes en una pantalla, guardados entre visitas, con exportar, importar y restablecer. Desarma y una tarjeta como la de las gafas muestra el vuelo; en pausa, el panel de resumen tiene sus estadísticas, cada opción del menú y cada tecla."
       ],

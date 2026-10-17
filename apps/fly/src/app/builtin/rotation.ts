@@ -1,6 +1,6 @@
 // Scene rotation in flight (docs/architecture-v03.md E.3-E.5; the owner's item 10): N loads the next
 // scene of the rotation (scenes.rotation: curated / favourites / history, scenes.order: random /
-// sequential), Shift+N a random curated scene, F the next favourite. The keys work in flight and
+// sequential), Shift+N a random curated scene, Shift+F the next favourite (F is full screen since v0.9). The keys work in flight and
 // on the crash toast and panel (the panel has the buttons too, app/builtin/crash.ts); the pause
 // menu lists them with their keys. scenes.autoSwitch on: after a crash the director asks for the
 // next scene instead of a respawn (its rules' onCrash 'next-scene', app/builtin/respawn.ts), and

@@ -122,7 +122,7 @@ Everything you can change in [ShramkoGSFPV](https://gsfpv.flyreelstudio.eu), the
 | Setting | What it does | Default | Range or options | Scope | Key |
 |---|---|---|---|---|---|
 | **Next scene after a crash**<br>`scenes.autoSwitch` | On: after a crash the next scene loads instead of a respawn, and you start on its platform. The radio stays connected. | Off |  | global |  |
-| **Scenes to rotate through**<br>`scenes.rotation` | Where N (next scene) and the next scene after a crash come from. Shift+N is always a random scene from the author's list; F is your next favourite. | The author's list | The author's list · My favourites · Scenes I have flown | global |  |
+| **Scenes to rotate through**<br>`scenes.rotation` | Where N (next scene) and the next scene after a crash come from. Shift+N is always a random scene from the author's list; Shift+F is your next favourite. | The author's list | The author's list · My favourites · Scenes I have flown | global |  |
 | **Order**<br>`scenes.order` | Random: every scene once before any comes again, never the one you are in. In order: one after another, round and round. | Random | Random · In order | global |  |
 | **Include scenes without walls**<br>`scenes.allowNoWalls` | Scenes without walls have no crashes: you fly through everything. Off: the rotation skips them. | Off |  | global |  |
 | **Scene size**<br>`scene.transform` | Some scans are not in true metres, so the drone feels too big or too small. Or make a room huge and fly it like a mosquito, a chair as big as a house. From x0.25 to x100, around the drone; [ and ] change it in flight, x1.1 a press, with Shift x2. Kept for each scan. | 1× | 0.25×–100× | per scene | `[` `Shift+[` `]` `Shift+]` |

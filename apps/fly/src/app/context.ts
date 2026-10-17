@@ -61,7 +61,7 @@ export type SceneSwitchReason = 'next' | 'random' | 'favourite' | 'auto' | 'pick
 
 /** In-page scene switching (app/scene-host.ts): the radio, the settings and the page stay. */
 export interface SceneSwitcher {
-    /** N (next), Shift+N (random), F (next favourite), auto (the crash with scenes.autoSwitch): pick from the rotation and load; false when nothing loaded */
+    /** N (next), Shift+N (random), Shift+F (next favourite), auto (the crash with scenes.autoSwitch): pick from the rotation and load; false when nothing loaded */
     go(kind: 'next' | 'random' | 'favourite' | 'auto'): Promise<boolean>;
     /** load this scene in place of the one flown; `render`: the drawing its link asked for (a pasted SuperSplat link) */
     load(id: string, reason: SceneSwitchReason, render?: SceneRender): Promise<boolean>;

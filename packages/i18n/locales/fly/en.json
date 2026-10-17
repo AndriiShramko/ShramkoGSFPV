@@ -103,7 +103,7 @@
   "radio.touch": "Touch sticks",
   "radio.touchHint": "Good for looking around and showing friends. To learn to fly, use a radio.",
   "radio.keyboard": "Keyboard",
-  "radio.keyboardHint": "Space arms. W / S throttle, A / D yaw, arrows pitch and roll, M turns self-levelling on or off.",
+  "radio.keyboardHint": "Fly like a game: click the view to capture the mouse and move it to look, W A S D to move, Space up, Shift down, F full screen. The pilot keys (Space arms, W / S throttle) are in Settings.",
   "radio.connect": "Connect",
   "radio.moveStick": "Move a stick to detect the device",
   "radio.rate": "{hz} reports / s",

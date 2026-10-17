@@ -586,7 +586,7 @@
     "items": [
       { "t": "1,300+ real places", "d": "The SuperSplat tab in the simulator lists every public scan with walls, with superspl.at's own sorting, filters and search." },
       { "t": "A new place after every crash", "d": "Star the scans you like, switch on “Next scene after a crash”, and every crash drops you somewhere else, in random order: your favourites, the places you have flown or Andrii's picks." },
-      { "t": "Switch in a second", "d": "N: next scene, Shift+N: random, F: next favourite. The page does not reload and your radio stays connected." },
+      { "t": "Switch in a second", "d": "N: next scene, Shift+N: random, Shift+F: next favourite. The page does not reload and your radio stays connected." },
       { "t": "Your own scan, or anyone's", "d": "Publish a scan on SuperSplat, or take any public one, and paste its link here or in the simulator." }
     ],
     "random": "Fly a random location",
@@ -789,7 +789,7 @@
         "BetaFPV-class whoops, a 5-inch freestyle and a 5-inch race quad and an X8 cinelifter with a cinema camera, and every number on their cards says where it comes from. Paste a Betaflight CLI diff to fly with your own rates and PID.",
         "Hit a wall and the quad crashes at the speed it hit, the wreck tumbling with debris; two seconds later it is back in the air, 5 s back along your path and still armed. Crashes off, the delay and where you come back sit in Settings.",
         "An OSD like in your goggles, field of view and camera uptilt. F9 records 60 fps video of Andrii's scans with their credit in the picture, auto-record catches every flight into your folder, and a flight log becomes a 60 fps video up to 4K.",
-        "Pick one of 1,300+ walkable scans in the SuperSplat tab with its own filters, one of Andrii's, or paste a link, and watch it load with real numbers. N, Shift+N and F change the scene in the page with the radio still connected; [ and ] scale the scene from ×0.25 to ×100.",
+        "Pick one of 1,300+ walkable scans in the SuperSplat tab with its own filters, one of Andrii's, or paste a link, and watch it load with real numbers. N, Shift+N and Shift+F change the scene in the page with the radio still connected; [ and ] scale the scene from ×0.25 to ×100.",
         "Show the walls you crash into as a voxel grid over the scan, or fly the grid alone. A noisy scan? Drop its floating specks, the phantom walls, with a live preview, or switch the walls off for every scene.",
         "Every setting on one screen, kept between visits, with export, import and reset. Disarm and a goggles-style card shows the flight; pause and the summary panel has its stats, every menu item and every key."
       ],
