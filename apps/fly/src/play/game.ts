@@ -62,9 +62,13 @@ export const COMMAND_RAMP_PER_S = 4;
 export const FLARE_MPS2 = 2.5;
 /** ... starting this much earlier than the height says, seconds of the present sink speed: the vertical loop lags its target. */
 export const FLARE_LAG_S = 0.35;
-/** Touch-down speed: this share of the crash speed, and never more than TOUCH_MAX_MPS. */
-export const TOUCH_SHARE = 0.3;
-export const TOUCH_MAX_MPS = 1.2;
+/**
+ * Touch-down speed: this share of the crash speed, and never more than TOUCH_MAX_MPS. Well under the
+ * speed a landing bounces at (1.5 m/s on the presets), because the vertical loop lags its target and a
+ * floor of voxels is not flat: measured on the real scan, 1.2 m/s touched down at 1.2-1.9 m/s and bounced.
+ */
+export const TOUCH_SHARE = 0.2;
+export const TOUCH_MAX_MPS = 0.7;
 /** A take-off from the ground climbs to this height, m. */
 export const TAKEOFF_HOP_M = 1;
 /** The ground within this clearance counts as "on the ground", m. */
@@ -181,6 +185,8 @@ export class GameAssist {
     private lift = 0;
     private turn = 0;
     private landedFor = 0;
+    /** mouse yaw that arrived before the first update set the aim, degrees */
+    private pendingYaw = 0;
     private curves: { key: SimParams; c: Curves } | null = null;
     /** read by the pilot and the tests: the motors can stop, the drone has been on the ground long enough with Shift held */
     landed = false;
@@ -192,6 +198,7 @@ export class GameAssist {
     /** A new life, scene, drone or input: nothing carried over (the aim starts from the body's heading, the gimbal level). */
     reset(): void {
         this.aimYawDeg = null;
+        this.pendingYaw = 0;
         this.gimbalDeg = 0;
         this.tvx = this.tvz = this.ix = this.iz = this.lift = this.turn = 0;
         this.landedFor = 0;
@@ -214,8 +221,6 @@ export class GameAssist {
         else this.pendingYaw += yawDeg;
         this.gimbalDeg = Math.max(GIMBAL_MIN_DEG, Math.min(GIMBAL_MAX_DEG, this.gimbalDeg + pitchDeg));
     }
-    /** mouse yaw that arrived before the first update set the aim */
-    private pendingYaw = 0;
 
     private curvesOf(p: SimParams): Curves {
         const c = this.curves;

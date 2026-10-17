@@ -820,7 +820,7 @@
       "wizard-arm": { "t": "Przełącznik uzbrojenia", "d": "Przestaw przełącznik uzbrojenia na ON i z powrotem na OFF, wybierz jego kanał albo pomiń krok i uzbrajaj spacją." },
       "wizard-check": { "t": "Sprawdzenie przed lotem", "d": "Każdy kanał z paskiem na żywo i przyciskami odwrócenia i powtórki, stan uzbrojenia oraz profil do pobrania lub wczytania." },
       "arm-card": { "t": "Gotowy do uzbrojenia", "d": "Nieuzbrojony z aparaturą: karta pokazuje, czego jeszcze brakuje — puszczone drążki, gaz w dół, przełącznik uzbrojenia." },
-      "keys": { "t": "Klawiatura", "d": "Wszystkie klawisze lotu na ekranie: spacja uzbraja, W i S to gaz, A i D odchylenie, strzałki przechylają, M samopoziomowanie, V siatka wokseli, C ściany." },
+      "keys": { "t": "Klawiatura", "d": "Wszystkie klawisze na ekranie: kliknij, aby lecieć, mysz rozgląda się i obraca, W A S D to ruch, spacja w górę, Shift w dół, F pełny ekran, Esc pauza." },
       "walls": { "t": "Ściany włączone lub nie", "d": "Linia ścian przy podpisie autora otwiera menu ścian: przełącznik ścian (kolizji), siatkę wokseli i zapisane ściany. Tutaj ściany są wyłączone (C): dron przelatuje przez wszystko, bez kraks." },
       "voxels": { "t": "Siatka wokseli na skanie", "d": "Ściany, w które uderzasz, narysowane na skanie Tunisu od Andrija w kolorach według wysokości: V przełącza między ukrytą, na skanie i samymi wokselami; etykieta podaje styl i rozmiar woksela." },
       "voxels-wire": { "t": "Siatka z krawędzi", "d": "Ściany Ogrodu zimowego z wokseli 3,2 cm jako krawędzie na skanie: zobacz, gdzie naprawdę jest ściana, zanim polecisz tą linią." },

@@ -820,7 +820,7 @@
       "wizard-arm": { "t": "Interruptor de armado", "d": "Pon el interruptor con el que armas en ON y vuelve a OFF, elige su canal o salta el paso y arma con Espacio." },
       "wizard-check": { "t": "Comprobación antes de volar", "d": "Cada canal con su barra en vivo y botones para invertirlo o repetirlo, el estado de armado y el perfil para descargar o cargar." },
       "arm-card": { "t": "Listo para armar", "d": "Desarmado con una emisora, una tarjeta dice lo que falta para armar: soltar los sticks, gas abajo, el interruptor." },
-      "keys": { "t": "Teclado", "d": "Todas las teclas de vuelo en pantalla: Espacio arma, W y S el gas, A y D la guiñada, las flechas inclinan, M el autonivelado, V la rejilla de vóxeles, C las paredes." },
+      "keys": { "t": "Teclado", "d": "Todas las teclas en pantalla: haz clic para volar, el ratón mira y gira, W A S D para moverte, Espacio sube, Shift baja, F pantalla completa, Esc pausa." },
       "walls": { "t": "Paredes activadas o no", "d": "La línea de paredes del crédito abre su menú: el interruptor de las paredes (colisiones), la rejilla de vóxeles y las paredes guardadas. Aquí están desactivadas (C): el dron atraviesa todo, sin choques." },
       "voxels": { "t": "Rejilla de vóxeles sobre el escaneo", "d": "Las paredes contra las que chocas, dibujadas sobre el escaneo de Túnez de Andrii con colores por altura: V pasa de oculta a sobre el escaneo y a solo vóxeles; la etiqueta indica el estilo y el tamaño del vóxel." },
       "voxels-wire": { "t": "Rejilla en aristas", "d": "Las paredes de 3,2 cm del Jardín de invierno como aristas sobre el escaneo: comprueba dónde está de verdad una pared antes de volar la línea." },

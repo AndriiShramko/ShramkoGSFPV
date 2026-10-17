@@ -42,6 +42,11 @@ export class GamePilot {
         this.env = env;
     }
 
+    /** The clearance above the ground below as last looked at, m (null: none within reach); for the bench's hook. */
+    get groundM(): number | null {
+        return this.ground;
+    }
+
     /** A new life or a new scene: the height to hold, the integrals and the aim start again from the craft's new state. */
     resetFlight(): void {
         this.game.reset();

@@ -40,7 +40,7 @@ declare module '../test-hook' {
         play?: () => {
             profile: PlayProfile; arm: string; want: boolean; helpActive: boolean; throttle: number; target: number; step: SchoolStep; school: { seconds: number; goal: number } | null;
             /** the game scheme (v0.9): null when something else flies */
-            game: { arm: string; want: boolean; locked: boolean; lockSupported: boolean; aimYawDeg: number | null; gimbalDeg: number; headingDeg: number; speed: string; goalForward: number; goalRight: number; tiltPitchDeg: number; tiltRollDeg: number; landed: boolean; throttle: number; fullscreen: boolean; hintShown: boolean } | null;
+            game: { arm: string; want: boolean; locked: boolean; lockSupported: boolean; aimYawDeg: number | null; gimbalDeg: number; headingDeg: number; speed: string; groundM: number | null; goalForward: number; goalRight: number; tiltPitchDeg: number; tiltRollDeg: number; landed: boolean; throttle: number; fullscreen: boolean; hintShown: boolean } | null;
         };
     }
 }
@@ -88,7 +88,9 @@ export const play: Feature = {
         /** A screen that needs the cursor is up (the pause menu counts: it is a panel). */
         const needsCursor = (): boolean => ctx.menu.isOpen || dialogOpen() || ctx.ui.querySelector('.crash-overlay') !== null;
         function syncHint(): void {
-            const show = gameOn() && mouse.supported && !mouse.locked && !ctx.session.paused && !needsCursor();
+            // the key card on the ground already says "Click to fly": the pill is for the flight in the air
+            const cardUp = ctx.ui.querySelector('[data-testid="key-card"]:not(.hidden)') !== null;
+            const show = gameOn() && mouse.supported && !mouse.locked && !ctx.session.paused && !needsCursor() && !cardUp;
             if (hint.hidden === show) hint.hidden = !show;
         }
         document.addEventListener('pointerlockchange', syncHint);
@@ -268,7 +270,7 @@ export const play: Feature = {
                 profile: playProfile(ctx), arm: ez.arm.state, want: ez.arm.want, helpActive: ez.helpActive(), throttle: ez.throttleSent, target: ez.help.target, step: schoolStep(ctx), school: last,
                 game: gameOn() ? {
                     arm: gp.arm.state, want: gp.arm.want, locked: mouse.locked, lockSupported: mouse.supported, aimYawDeg: g.aimYawDeg, gimbalDeg: g.gimbalDeg, headingDeg: headingDeg(ctx.session.sim.s),
-                    speed: g.speed, goalForward: g.goal.forward, goalRight: g.goal.right, tiltPitchDeg: g.tilt.pitch, tiltRollDeg: g.tilt.roll, landed: g.landed, throttle: gp.throttleSent,
+                    speed: g.speed, groundM: gp.groundM, goalForward: g.goal.forward, goalRight: g.goal.right, tiltPitchDeg: g.tilt.pitch, tiltRollDeg: g.tilt.roll, landed: g.landed, throttle: gp.throttleSent,
                     fullscreen: isFullscreen(), hintShown: !hint.hidden
                 } : null
             };

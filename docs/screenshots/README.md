@@ -32,7 +32,7 @@ Each menu has two files: `<name>-panel.webp` is the menu itself with a little of
 <td width="50%" valign="top"><a href="arm-card.webp"><img src="arm-card-panel.webp" alt="Ready to arm"></a><br><sub><b>Ready to arm</b> — Disarmed with a radio, a card lists what arming still needs: sticks let go, throttle down, the arm switch. <a href="arm-card.webp">Whole screen</a>.</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><a href="keys.webp"><img src="keys-panel.webp" alt="Keyboard"></a><br><sub><b>Keyboard</b> — Every flying key on screen: Space arms, W and S throttle, A and D yaw, the arrows tilt, M self-levelling, V the voxel grid, C the walls. <a href="keys.webp">Whole screen</a>.</sub></td>
+<td width="50%" valign="top"><a href="keys.webp"><img src="keys-panel.webp" alt="Keyboard"></a><br><sub><b>Keyboard</b> — Every key on screen: click to fly, the mouse looks and turns, W A S D move, Space up, Shift down, F full screen, Esc pause. <a href="keys.webp">Whole screen</a>.</sub></td>
 <td width="50%" valign="top"><a href="crash-toast.webp"><img src="crash-toast-panel.webp" alt="Automatic respawn"></a><br><sub><b>Automatic respawn</b> — The toast counts down; 2 s after the crash the drone is back 5 s along its path, still armed. Enter stays, R goes to the start, N and F load another scene. <a href="crash-toast.webp">Whole screen</a>.</sub></td>
 </tr>
 <tr>

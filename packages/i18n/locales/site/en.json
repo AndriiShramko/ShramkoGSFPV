@@ -820,7 +820,7 @@
       "wizard-arm": { "t": "Arm switch", "d": "Flip the switch you arm with ON and back OFF, pick its channel, or skip the step and arm with Space." },
       "wizard-check": { "t": "Check before flying", "d": "Every channel with a live bar and buttons to reverse or redo it, the arm state, and the profile to download or load." },
       "arm-card": { "t": "Ready to arm", "d": "Disarmed with a radio, a card lists what arming still needs: sticks let go, throttle down, the arm switch." },
-      "keys": { "t": "Keyboard", "d": "Every flying key on screen: Space arms, W and S throttle, A and D yaw, the arrows tilt, M self-levelling, V the voxel grid, C the walls." },
+      "keys": { "t": "Keyboard", "d": "Every key on screen: click to fly, the mouse looks and turns, W A S D move, Space up, Shift down, F full screen, Esc pause." },
       "walls": { "t": "Walls on or off", "d": "The walls line on the credit opens the walls menu: the walls (collisions) switch, the voxel grid and the stored walls. Here the walls are off (C): the drone flies through everything, no crashes." },
       "voxels": { "t": "Voxel grid over the scan", "d": "The walls you crash into, drawn over Andrii's Tunis scan in height colours: V switches between off, over the scan and voxels only; the chip names the style and the voxel size." },
       "voxels-wire": { "t": "Wireframe grid", "d": "The Winter Garden's 3.2 cm walls as a wireframe over the scan: see where a wall really is before you fly the line." },

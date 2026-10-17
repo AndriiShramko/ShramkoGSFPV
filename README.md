@@ -50,7 +50,7 @@ Real screenshots of the live simulator, taken on 2 October 2026 by [`tools/bench
 <td width="50%" valign="top"><a href="docs/screenshots/betaflight.webp"><img src="docs/screenshots/betaflight-panel.webp" alt="Betaflight import"></a><br><sub><b>Betaflight import</b> — Paste a CLI diff and its rates and PID fly the quad; every setting the simulator does not use is listed (here a test diff).</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><a href="docs/screenshots/keys.webp"><img src="docs/screenshots/keys-panel.webp" alt="Keyboard"></a><br><sub><b>Keyboard</b> — Every flying key on screen: Space arms, W and S throttle, A and D yaw, the arrows tilt, M self-levelling, V the voxel grid, C the walls.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/keys.webp"><img src="docs/screenshots/keys-panel.webp" alt="Keyboard"></a><br><sub><b>Keyboard</b> — Every key on screen: click to fly, the mouse looks and turns, W A S D move, Space up, Shift down, F full screen, Esc pause.</sub></td>
 <td width="50%" valign="top"><a href="docs/screenshots/cinema.webp"><img src="docs/screenshots/cinema.webp" alt="Cinema mode"></a><br><sub><b>Cinema mode</b> — Full detail, automatic quality off, no HUD; Record saves an MP4 with the scan's credit in the picture.</sub></td>
 </tr>
 <tr>

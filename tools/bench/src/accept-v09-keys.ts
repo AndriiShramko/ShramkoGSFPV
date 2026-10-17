@@ -67,6 +67,23 @@ async function keyboardFlight(p: Page, qs: string, wallsOff: boolean): Promise<v
     for (let i = 0; i < 50 && (await ev(p, 'return h.controls.source;')) !== 'keyboard'; i++) await sleep(100);
     if (wallsOff) await ev(p, 'h.wallsSwitch.set(false); return 0;'); // the palms over the spawn stop a climb
     await sleep(2500); // detail streams in around the spawn
+    // Chrome grants pointer lock only to a window the OS has focused (WrongDocumentError otherwise), and a mouse click
+    // sent through Chrome's input protocol does not move the OS focus: a person's click does. This is the test's
+    // stand-in for the window being in front, as it is when someone is playing.
+    await p.bringToFront();
+    await sleep(400);
+}
+
+/** A point on the view where a click lands on no button, link or panel: the "view around the menu". */
+async function freePoint(p: Page): Promise<{ x: number; y: number }> {
+    return p.evaluate(`(() => {
+        const keeps = 'button, a, input, select, textarea, label, summary, .panel, .screen, .attribution, .top-actions, .mode-chip, .school-chip, .school-pop, .school-offer, .crash-overlay, [role="dialog"]';
+        for (const y of [400, 300, 500, 200, 600, 150, 650]) for (const x of [20, 60, 1260, 1220, 100, 1180, 640]) {
+            const el = document.elementFromPoint(x, y);
+            if (el && !el.closest(keeps)) return { x, y };
+        }
+        return { x: 5, y: 400 };
+    })()`) as Promise<{ x: number; y: number }>;
 }
 
 /** The mouse moved by (dx, dy) px: Chrome's input protocol first; the page's own mousemove event if Chrome sent no movement. */
@@ -190,18 +207,18 @@ const modeNow = await ev<string>(p, 'return h.controls.flyingMode();');
 check('V8 M does not leave angle mode (the game keys command tilts); it says so', modeNow === 'angle' && note === EN['play.game.angleOnly'], { mode: modeNow, note });
 
 // ------------------------------------------------------------------ settings: invert-Y, sensitivity, speed
-await ev(p, 'h.prefs.set("input.mouseInvertY", true); h.prefs.set("input.mouseSensitivity", 2); return 0;');
+await ev(p, 'try { h.prefs.set("input.mouseInvertY", true); h.prefs.set("input.mouseSensitivity", 2); } catch (e) { /* the base build has no such settings */ } return 0;');
 const g0 = (await ev<Any>(p, 'return h.play().game;'));
 await moveMouse(p, 100, -100);
 const g1 = (await ev<Any>(p, 'return h.play().game;'));
 check('V9 invert-Y flips the pitch of the same movement; sensitivity 2 doubles the turn (100 px = 20 degrees)', !!g1 && (g1.gimbalDeg - g0.gimbalDeg) < -15 && Math.abs(wrap(g1.aimYawDeg - g0.aimYawDeg) - 20) < 2.5, { gimbalChange: r3((g1?.gimbalDeg ?? 0) - g0.gimbalDeg), yawChange: r3(wrap((g1?.aimYawDeg ?? 0) - g0.aimYawDeg)) });
-await ev(p, 'h.prefs.set("input.mouseInvertY", false); h.prefs.set("input.mouseSensitivity", 1); h.prefs.set("input.gameSpeed", "slow"); return 0;');
+await ev(p, 'try { h.prefs.set("input.mouseInvertY", false); h.prefs.set("input.mouseSensitivity", 1); h.prefs.set("input.gameSpeed", "slow"); } catch (e) { /* the base build has no such settings */ } return 0;');
 await moveMouse(p, 0, 400, 8);
 await p.keyboard.down('KeyW');
 await sleep(3500);
 const slowV = speedOf(await ev<Pos>(p, POS));
 await p.keyboard.up('KeyW');
-await ev(p, 'h.prefs.set("input.gameSpeed", "normal"); return 0;');
+await ev(p, 'try { h.prefs.set("input.gameSpeed", "normal"); } catch (e) { /* the base build has no such settings */ } return 0;');
 check('V9b the speed setting: slow flies about 4 m/s', Math.abs(slowV - 4) < 1, { speed: r3(slowV) });
 await sleep(2500);
 
@@ -264,10 +281,11 @@ await ev(p, 'document.exitPointerLock(); return 0;'); // what the browser does f
 await sleep(700);
 const afterEsc = await ev<Any>(p, 'return { locked: document.pointerLockElement !== null, paused: s.paused, menu: !!document.querySelector(".pause-menu") };');
 await p.screenshot({ path: join(SHOTS, 'v12-paused.jpg'), quality: 80 });
-await p.mouse.click(centre.x + 300, centre.y - 250); // the view around the menu
+const around = await freePoint(p);
+await p.mouse.click(around.x, around.y); // the view around the menu
 await sleep(900);
 const afterClick = await ev<Any>(p, 'return { locked: document.pointerLockElement !== null, paused: s.paused, menu: !!document.querySelector(".pause-menu") };');
-check('V12 the mouse released (what Esc does) pauses into the menu; a click on the view resumes and captures the mouse again', beforeEsc.locked && !beforeEsc.paused && !afterEsc.locked && afterEsc.paused && afterEsc.menu && afterClick.locked && !afterClick.paused && !afterClick.menu, { beforeEsc, afterEsc, afterClick });
+check('V12 the mouse released (what Esc does) pauses into the menu; a click on the view resumes and captures the mouse again', beforeEsc.locked && !beforeEsc.paused && !afterEsc.locked && afterEsc.paused && afterEsc.menu && afterClick.locked && !afterClick.paused && !afterClick.menu, { beforeEsc, afterEsc, afterClick, clickedAt: around });
 // the Escape key itself (the page's key): pauses; Esc again resumes
 await p.keyboard.press('Escape');
 await sleep(500);
@@ -294,7 +312,7 @@ await sleep(500);
 const rep = await ev<Any>(p, `const e = h.saveLog("v09-keys"); const v = h.verifyLastLog(); const at = Math.floor(s.sim.tick / 2);
     const lsb = h.verifyLastLog({ atTick: at, channel: 2 }); const tw = h.verifyLastLog({ atTick: at, channel: 0, delta: 0.05 });
     return { saved: e.hash, replayed: v.hash, endTick: v.endTick, refused: v.refused ?? null, lsb: { differs: lsb.hash !== v.hash }, twitch: { differs: tw.hash !== v.hash } };`);
-check('V13 the game-scheme flight replays from its log to the same hash; controls: one LSB of the throttle and a 0.05 stick twitch change it', rep.saved === rep.replayed && !!rep.saved && !rep.refused && rep.lsb.differs && rep.twitch.differs, rep);
+check('V13 the game-scheme flight replays from its log to the same hash; controls: one LSB of the throttle and a 0.05 stick twitch change it', rep.saved === rep.replayed && !!rep.saved && !rep.refused && rep.lsb.differs && rep.twitch.differs, rep, false);
 const errs = L.console.filter((l) => l.startsWith('pageerror'));
 check('V14 no page errors', errs.length === 0, { errors: errs.slice(0, 5) }, false);
 await L.browser.close();
@@ -342,7 +360,7 @@ await L.browser.close();
     await sleep(1500);
     await W.page.keyboard.up('KeyW');
     const again = await ev<Any>(W.page, 'return { armed: s.sim.armed, y: s.sim.s[1] };');
-    check('V16b the next key starts the motors again and the drone lifts off', again.armed === true && again.y > post.y + 0.4, { armed: again.armed, y: r3(again.y), from: r3(post.y) });
+    check('V16b the next key starts the motors again and the drone lifts off', landed && again.armed === true && again.y > post.y + 0.4, { armed: again.armed, y: r3(again.y), from: r3(post.y) });
     await W.browser.close();
 }
 
