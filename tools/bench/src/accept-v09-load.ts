@@ -22,7 +22,8 @@
 //       frame measure's own control is a uniform picture, which must not pass it (V6blank).
 //   SITE=http://127.0.0.1:5718 SITE_BEFORE=http://127.0.0.1:5717 npx tsx src/accept-v09-load.ts [V1 V2 ...]
 // Evidence: evidence/<date>/v09-load.json
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { launchChrome } from './browser';
 import { writeEvidence } from './evidence';
@@ -74,8 +75,12 @@ async function newPage(browser: Browser): Promise<{ ctx: BrowserContext; page: P
 const errorsOf = (log: readonly string[]): number => log.filter((l) => l.startsWith('pageerror')).length;
 
 /** Sampled frames of a saved video: the measure, and the bound a frame must pass (not blank, not one colour). */
-const FRAME_STD_MIN = 8;
-const FRAME_OFF_MIN = 0.5;
+// measured in run 4 on the 1994c65c export (a dark scan: half the frame is its black surround): std 39.9-42.1,
+// off 0.444-0.459; a uniform picture: 0 and 0. The bounds sit at a quarter and under half of the real frames'.
+const FRAME_STD_MIN = 10;
+const FRAME_OFF_MIN = 0.2;
+/** V6_FRAMES_DIR=<dir>: the sampled frames are also written there as JPEGs (960x540), to look at. */
+const FRAMES_DIR = process.env.V6_FRAMES_DIR ?? null;
 /**
  * The saved video decoded by the browser (a <video> on a blob: URL in a blank page: the app's CSP refuses
  * blob: fetches) at `parts` points of its length. Per frame: the luminance's mean and spread (std), the share
@@ -87,7 +92,7 @@ async function frameStats(browser: Browser, bytes: Buffer, parts: number[]): Pro
     const page = await ctx.newPage();
     try {
         await page.evaluate('window.__name = window.__name || ((f) => f)');
-        return await page.evaluate(async ({ b64, parts }) => {
+        const r: Any = await page.evaluate(async ({ b64, parts, keep }) => {
             const bin = atob(b64);
             const u8 = new Uint8Array(bin.length);
             for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
@@ -121,17 +126,27 @@ async function frameStats(browser: Browser, bytes: Buffer, parts: number[]): Pro
                 return { mean: r1(mean), std: r1(Math.sqrt(Math.max(0, s2 / n - mean * mean))), off: Math.round((1 - mode / n) * 1000) / 1000, edge: r1(e / ((W - 1) * (H - 1))) };
             };
             const frames: Array<{ t: number } & ReturnType<typeof measure>> = [];
+            const jpegs: string[] = [];
+            const big = document.createElement('canvas');
+            big.width = 960; big.height = 540;
             for (const f of parts) {
                 const t = Math.min(f * v.duration, v.duration - 0.02);
                 v.currentTime = t;
                 await new Promise((res) => { v.onseeked = res; });
                 g.drawImage(v, 0, 0, W, H);
                 frames.push({ t: Math.round(t * 100) / 100, ...measure() });
+                if (keep) { big.getContext('2d')!.drawImage(v, 0, 0, 960, 540); jpegs.push(big.toDataURL('image/jpeg', 0.85)); }
             }
             g.fillStyle = 'rgb(40,44,52)';
             g.fillRect(0, 0, W, H);
-            return { duration: v.duration, w: v.videoWidth, h: v.videoHeight, frames, uniform: measure() };
-        }, { b64: bytes.toString('base64'), parts });
+            return { duration: v.duration, w: v.videoWidth, h: v.videoHeight, frames, uniform: measure(), jpegs };
+        }, { b64: bytes.toString('base64'), parts, keep: FRAMES_DIR !== null });
+        if (FRAMES_DIR && r.jpegs) {
+            mkdirSync(FRAMES_DIR, { recursive: true });
+            r.jpegs.forEach((d: string, i: number) => writeFileSync(join(FRAMES_DIR, `v6-frame-${i}.jpg`), Buffer.from(d.slice(d.indexOf(',') + 1), 'base64')));
+        }
+        delete r.jpegs;
+        return r;
     } catch (e) {
         return { error: String(e).slice(0, 300) };
     } finally {
