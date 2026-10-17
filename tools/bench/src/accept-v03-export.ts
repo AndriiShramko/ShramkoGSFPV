@@ -165,12 +165,13 @@ if (want('E3')) {
     await page.waitForTimeout(800);
     await hook(page, 'h.videoExport.cancel(); return true;');
     const r = await hook(page, 'return await window.__vx;');
-    const underBar = await hook(page, 'return { paused: s.paused, bar: h.videoExport.state().bar, text: document.querySelector("[data-testid=video-export-status]")?.textContent };');
+    const underBar = await hook(page, 'return { paused: s.paused, stochastic: s.renderer.stochastic, bar: h.videoExport.state().bar, text: document.querySelector("[data-testid=video-export-status]")?.textContent };');
     const after = await hook<Any[]>(page, listFolder(`gsfpv-export-${RUN}`));
     await page.keyboard.press('Escape'); // the bar's Close
     await page.waitForTimeout(300);
     const closed = await hook(page, 'return { bar: h.videoExport.state().bar, menuOpen: !!document.querySelector(".pause-menu"), paused: s.paused };');
-    const pass = r.ended === 'cancel' && r.encoded > 0 && r.encoded < r.frames && after.length === before.length && underBar.paused === true && underBar.bar === true && closed.bar === false && closed.menuOpen === true;
+    const pass = r.ended === 'cancel' && r.encoded > 0 && r.encoded < r.frames && after.length === before.length && underBar.paused === true && underBar.bar === true && closed.bar === false && closed.menuOpen === true
+        && underBar.stochastic === true; // v0.9 lane R: the cancelled export gave the desktop's drawing back
     out.E3 = { pass, what: 'Cancel stops the export, leaves no file, keeps the flight paused under the bar; Esc closes the bar back to the summary panel', result: { ended: r.ended, encoded: r.encoded, frames: r.frames }, filesBefore: before.length, filesAfter: after.length, underBar, closed };
     console.log('E3', pass ? 'PASS' : 'FAIL', JSON.stringify(out.E3));
 }

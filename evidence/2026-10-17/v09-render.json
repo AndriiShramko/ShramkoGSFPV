@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-17T21:35:39.756Z",
-    "gitHead": "2cb6ddb",
+    "date": "2026-10-17T22:49:21.794Z",
+    "gitHead": "4865a58",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -26,8 +26,11 @@
     "D1": true,
     "D2": true,
     "D3": true,
-    "D4": false,
+    "D4": true,
     "D5": true
+  },
+  "runs": {
+    "D4": "2026-10-17T22:49:21.793Z"
   },
   "checks": [
     {
@@ -76,6 +79,16 @@
       "control": false
     },
     {
+      "name": "D5 control: the base build answers the literal \"...?scene=2f1ddf5f?budget=8&stochastic\" with the picker (\"not a SuperSplat link\")",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "D5 the owner's link draws stochastic at 8 M by every way it is pasted (deep link encoded and raw, deep link, the literal second \"?\", the picker's field, the picker over a flight, wrapped in <> and a full stop)",
+      "ok": true,
+      "control": false
+    },
+    {
       "name": "D4a the pilot's Render = Sorted beats the device default (stochastic)",
       "ok": true,
       "control": false
@@ -92,12 +105,12 @@
     },
     {
       "name": "D4c a stochastic link; the pilot picks Sorted in flight: sorted at once (the control never looks dead)",
-      "ok": false,
+      "ok": true,
       "control": false
     },
     {
       "name": "D4c back to Auto: the link rules again (stochastic at 8 M)",
-      "ok": false,
+      "ok": true,
       "control": false
     },
     {
@@ -117,16 +130,6 @@
     },
     {
       "name": "D4e a stochastic link beats the owner's sorted entry",
-      "ok": true,
-      "control": false
-    },
-    {
-      "name": "D5 control: the base build answers the literal \"...?scene=2f1ddf5f?budget=8&stochastic\" with the picker (\"not a SuperSplat link\")",
-      "ok": true,
-      "control": true
-    },
-    {
-      "name": "D5 the owner's link draws stochastic at 8 M by every way it is pasted (deep link encoded and raw, deep link, the literal second \"?\", the picker's field, the picker over a flight, wrapped in <> and a full stop)",
       "ok": true,
       "control": false
     }
@@ -489,32 +492,38 @@
           "status": "ready",
           "drawing": {
             "scene": "39e63ce9",
-            "mode": "sorted",
+            "mode": "auto",
+            "budgetSetting": null,
             "request": {
               "budgetM": 8,
               "stochastic": true
             },
-            "stochastic": false,
+            "catalogue": null,
+            "stochastic": true,
             "budgetM": 8,
+            "from": {
+              "stochastic": "link",
+              "budget": "link"
+            },
             "note": null,
-            "engineStochastic": false,
+            "engineStochastic": true,
             "engineBudgetM": 8,
             "handheld": false,
             "mobile": false,
             "webgpu": true
           },
-          "engine": false,
+          "engine": true,
           "hybrid": {
             "gpuSort": true,
-            "stochastic": false,
-            "define": false
+            "stochastic": true,
+            "define": true
           },
           "top": 8,
           "budgetM": 8,
           "renderer": 2,
           "levels": 4,
-          "search": "?scene=39e63ce9&drawing=sorted&budget=8&stochastic&nowarn=1&input=touch",
-          "note": "",
+          "search": "?scene=39e63ce9&budget=8&stochastic&nowarn=1&input=touch",
+          "note": "Stochastic drawing (SuperSplat), 8 M splats \u00b7 Settings \u2192 Display",
           "f3": ""
         },
         "liveSorted": {
@@ -522,12 +531,17 @@
           "drawing": {
             "scene": "39e63ce9",
             "mode": "sorted",
+            "budgetSetting": null,
             "request": {
-              "budgetM": 8,
-              "stochastic": true
+              "budgetM": 8
             },
+            "catalogue": null,
             "stochastic": false,
             "budgetM": 8,
+            "from": {
+              "stochastic": "setting",
+              "budget": "link"
+            },
             "note": null,
             "engineStochastic": false,
             "engineBudgetM": 8,
@@ -545,40 +559,46 @@
           "budgetM": 8,
           "renderer": 2,
           "levels": 4,
-          "search": "?scene=39e63ce9&drawing=sorted&budget=8&stochastic&nowarn=1&input=touch",
-          "note": "",
+          "search": "?scene=39e63ce9&budget=8&stochastic&nowarn=1&input=touch",
+          "note": "Stochastic drawing (SuperSplat), 8 M splats \u00b7 Settings \u2192 Display",
           "f3": ""
         },
         "liveAuto": {
           "status": "ready",
           "drawing": {
             "scene": "39e63ce9",
-            "mode": "sorted",
+            "mode": "auto",
+            "budgetSetting": null,
             "request": {
               "budgetM": 8,
               "stochastic": true
             },
-            "stochastic": false,
+            "catalogue": null,
+            "stochastic": true,
             "budgetM": 8,
+            "from": {
+              "stochastic": "link",
+              "budget": "link"
+            },
             "note": null,
-            "engineStochastic": false,
+            "engineStochastic": true,
             "engineBudgetM": 8,
             "handheld": false,
             "mobile": false,
             "webgpu": true
           },
-          "engine": false,
+          "engine": true,
           "hybrid": {
             "gpuSort": true,
-            "stochastic": false,
-            "define": false
+            "stochastic": true,
+            "define": true
           },
           "top": 8,
           "budgetM": 8,
           "renderer": 2,
           "levels": 4,
-          "search": "?scene=39e63ce9&drawing=sorted&budget=8&stochastic&nowarn=1&input=touch",
-          "note": "",
+          "search": "?scene=39e63ce9&budget=8&stochastic&nowarn=1&input=touch",
+          "note": "Stochastic drawing (SuperSplat), 8 M splats \u00b7 Settings \u2192 Display",
           "f3": ""
         },
         "budget": {
