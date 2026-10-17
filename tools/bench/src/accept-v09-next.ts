@@ -145,14 +145,17 @@ async function crash(p: Page): Promise<boolean> {
     return false;
 }
 
-interface HintView { present: boolean; text: string; buttons: string[]; pointerEvents: string; rect: Rect | null; overlaps: string[] }
+/** `exists`: the element is in the page; `present`: it is on screen (not display: none, not hidden) */
+interface HintView { exists: boolean; present: boolean; text: string; buttons: string[]; pointerEvents: string; rect: Rect | null; overlaps: string[] }
 interface Rect { x: number; y: number; w: number; h: number }
 /** The hint as the page shows it, and everything it overlaps (any visible button, the crash toast, the crash panel). */
 async function hintView(p: Page): Promise<HintView> {
     return p.evaluate(`(() => {
         const el = document.querySelector('[data-testid="next-hint"]');
-        if (!el) return { present: false, text: '', buttons: [], pointerEvents: '', rect: null, overlaps: [] };
+        if (!el) return { exists: false, present: false, text: '', buttons: [], pointerEvents: '', rect: null, overlaps: [] };
         const r = el.getBoundingClientRect();
+        const shown = r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden';
+        if (!shown) return { exists: true, present: false, text: el.querySelector('.nh-text').textContent, buttons: [], pointerEvents: '', rect: null, overlaps: [] };
         const hit = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
         const overlaps = [];
         const others = [...document.querySelectorAll('#ui button, #ui [role="dialog"], [data-testid="crash-toast"], [data-testid="crash-panel"]')]
@@ -163,7 +166,7 @@ async function hintView(p: Page): Promise<HintView> {
             if (b.width === 0 || b.height === 0 || cs.visibility === 'hidden' || cs.display === 'none') continue;
             if (hit(r, b)) overlaps.push((o.getAttribute('data-testid') || o.getAttribute('data-action') || o.className || o.tagName).toString().slice(0, 40));
         }
-        return { present: true, text: el.querySelector('.nh-text').textContent, buttons: [...el.querySelectorAll('button')].map((b) => b.getAttribute('data-action')),
+        return { exists: true, present: true, text: el.querySelector('.nh-text').textContent, buttons: [...el.querySelectorAll('button')].map((b) => b.getAttribute('data-action')),
             pointerEvents: getComputedStyle(el).pointerEvents, rect: { x: r.x, y: r.y, w: r.width, h: r.height }, overlaps };
     })()`) as Promise<HintView>;
 }
@@ -251,17 +254,21 @@ try {
         }
         const toast = await c.page.locator('[data-testid="crash-toast"]').count();
         await c.page.screenshot({ path: join(SHOTS, 'h1-hint-after-3rd-crash.png') });
-        // Enter keeps the wreck: the crash panel (Replay, Rewind, Start...) opens; the hint must not cover it
+        // it takes no click of its own: a click through its box lands on what is under it
+        const r = shown.after3.rect;
+        const through = r ? await c.page.evaluate(`(() => { const e = document.elementFromPoint(${r.x + 6}, ${r.y + r.h / 2}); return e ? !e.closest('[data-testid="next-hint"]') : null; })()`) : null;
+        // Enter keeps the wreck: the crash panel (Replay, Rewind, Start...) opens; the hint steps aside, it does not cover it
         await c.page.keyboard.press('Enter');
         await c.page.waitForSelector('[data-testid="crash-panel"]', { timeout: 5000 }).catch(() => null);
         const withPanel = await hintView(c.page);
         const panelButtons = await c.page.locator('[data-testid="crash-panel"] button').count();
-        await c.page.screenshot({ path: join(SHOTS, 'h1-hint-with-crash-panel.png') });
-        // it takes no click of its own: a click through its box lands on what is under it
-        const r = shown.after3.rect;
-        const through = r ? await c.page.evaluate(`(() => { const e = document.elementFromPoint(${r.x + 6}, ${r.y + r.h / 2}); return e ? !e.closest('[data-testid="next-hint"]') : null; })()`) : null;
-        // its close button takes it away
-        await c.page.click('[data-action="hint-close"]');
+        const panelBox = await c.page.locator('[data-testid="crash-panel"]').boundingBox();
+        await c.page.screenshot({ path: join(SHOTS, 'h1-hint-steps-aside-for-crash-panel.png') });
+        // back to the start (R): the panel goes, the hint is there again for the rest of its time; its close button takes it away
+        await c.page.keyboard.press('KeyR');
+        await c.page.waitForSelector('[data-testid="next-hint"]', { state: 'visible', timeout: 5000 }).catch(() => null);
+        const afterPanel = await hintView(c.page);
+        await c.page.click('[data-action="hint-close"]', { timeout: 5000 }).catch(() => null);
         const closed = await hintView(c.page);
         for (let n = 4; n <= 5; n++) {
             crashed.push(await crash(c.page));
@@ -283,11 +290,11 @@ try {
         const textOk = (v: HintView) => /Want another place\? Press N for the next scene/.test(v.text);
         const clean = (v: HintView) => v.present && v.overlaps.length === 0 && v.pointerEvents === 'none';
         const pass = crashed.every(Boolean) && !shown.after1.present && !shown.after2.present && shown.after3.present && textOk(shown.after3) && clean(shown.after3) && toast === 1
-            && withPanel.present && clean(withPanel) && panelButtons >= 5 && through === true && shown.after3.buttons.join() === 'hint-close'
-            && !closed.present && !shown.after4.present && !shown.after5.present && shown.after6.present && textOk(shown.after6)
+            && withPanel.exists && !withPanel.present && panelButtons >= 5 && panelBox !== null && through === true && shown.after3.buttons.join() === 'hint-close'
+            && afterPanel.present && clean(afterPanel) && !closed.exists && !shown.after4.present && !shown.after5.present && shown.after6.present && textOk(shown.after6)
             && used0 === null && sw.state === 'done' && scene !== before && used1 === '1' && !afterN.present;
-        out.H1 = { pass, what: 'no hint after crash 1 and 2; after the 3rd "Want another place? Press N for the next scene" (a status line taking no click, overlapping no button, the crash toast or the crash panel), closed by its x; none after 4 and 5; again after the 6th; N changes the scene, stores "N used" and takes the hint away', crashed, shown, toastShown: toast, withPanel, panelButtons, clickThrough: through, closed, used: { before: used0, after: used1 }, afterN, errors: errors(c.log) };
-        console.log('H1', pass ? 'PASS' : 'FAIL', JSON.stringify({ after: Object.fromEntries(Object.entries(shown).map(([k, v]) => [k, v.present ? v.text : null])), overlaps: shown.after3.overlaps, withPanel: withPanel.overlaps, used: [used0, used1] }));
+        out.H1 = { pass, what: 'no hint after crash 1 and 2; after the 3rd "Want another place? Press N for the next scene" (a status line taking no click, overlapping no button or the crash toast), hidden while the crash panel is open (its Replay, Rewind, Start buttons are all there) and back after R, closed by its x; none after 4 and 5; again after the 6th; N changes the scene, stores "N used" and takes the hint away', crashed, shown, toastShown: toast, withPanel, panelButtons, panelBox, afterPanel, clickThrough: through, closed, used: { before: used0, after: used1 }, afterN, errors: errors(c.log) };
+        console.log('H1', pass ? 'PASS' : 'FAIL', JSON.stringify({ after: Object.fromEntries(Object.entries(shown).map(([k, v]) => [k, v.present ? v.text : null])), overlaps: shown.after3.overlaps, withPanelVisible: withPanel.present, afterPanel: afterPanel.overlaps, used: [used0, used1] }));
         h1 = out.H1;
         await c.ctx.close();
     }

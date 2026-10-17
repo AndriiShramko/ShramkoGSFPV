@@ -4,7 +4,7 @@
 // again once N was used (app/next-used.ts), and not with scenes.autoSwitch on. The rules are
 // app/next-hint-logic.ts, the widget ui/next-hint.ts; this file counts the crashes and shows and takes it away.
 // It goes with the next scene, N, its close button or after HINT_MS, and never covers the crash toast or the
-// crash panel (builtin/crash.ts): it has its own place at the top.
+// crash panel (builtin/crash.ts): it sits above the toast and steps aside while the panel is open.
 import { hasFn } from '@gsfpv/input';
 import { NextHint } from '../../ui/next-hint';
 import { t } from '../../i18n';
