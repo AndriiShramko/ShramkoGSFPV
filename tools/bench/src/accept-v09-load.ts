@@ -80,11 +80,15 @@ async function watchLoad(page: Page, t0: number, shown: (x: Any) => boolean, lim
     let spinning = false;
     let flyNowAt: number | null = null;
     let last: Any = null;
+    let prevT = 0; // the last sample that did not yet see the view
     while (Date.now() - t0 < limitMs) {
         const x: Any = await page.evaluate(CARD).catch(() => null);
         const t = Date.now() - t0;
         if (x) {
             last = x;
+            // "Preparing the view" lasted less than one sample: it began after the previous sample, so the time from it
+            // to the view is at most the gap between the two samples (an upper bound, marked as such)
+            if (shown(x) && stages.prepare === undefined && x.card?.stage === 'done') { stages.prepare = prevT; stages.prepareUnseen = 1; }
             if (x.card) {
                 if (stages[x.card.stage] === undefined) stages[x.card.stage] = t;
                 if (x.card.spinning) spinning = true;
@@ -96,6 +100,7 @@ async function watchLoad(page: Page, t0: number, shown: (x: Any) => boolean, lim
             if (shown(x)) { shownAt = t; break; }
         }
         if (stages.prepare !== undefined && t - stages.prepare > afterPrepareMs) break;
+        prevT = t;
         await page.waitForTimeout(250);
     }
     const prepareMs = shownAt !== null && stages.prepare !== undefined ? shownAt - stages.prepare : null;
