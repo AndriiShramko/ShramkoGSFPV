@@ -5,7 +5,8 @@
 //       3 s after the stage "Preparing the view" begins, for the reason 'ready' or 'settled'.
 //       Control: the base build is still preparing 20 s later (it waited for 30 s of silence).
 //   V2  the owner's flow: flying a8cfc66e, the in-page switch (N / the picker, the page's shared renderer) to the
-//       single-file 224aba38 (61.5 MB): the same 3 s bound after "Preparing the view". Control: as V1.
+//       single-file 224aba38 (61.5 MB): the same 3 s bound after "Preparing the view", and no uncaught page error
+//       during the switch. Control: as V1 (and the base's errors).
 //   V3  streamed scan by link (a8cfc66e): shown within 3 s of "Preparing the view" (guard: both builds).
 //   V4  the card never stands still (from V1 and V2): the spinner turns, and the card's own rows (stage, numbers,
 //       parts) never stay the same for more than 3 s before the view is shown. Control: the base card's rows stand
@@ -15,8 +16,10 @@
 //       card offers no Fly now within 12 s.
 //   V6  the video export finishes on a big streamed scan over a slow link (1994c65c, 60 M splats, the link throttled to
 //       3 MB/s, a 5 s parked flight at 1080p): it ends 'done' within EXPORT_LIMIT_S with every frame encoded, and the
-//       saved file is read back: its bytes as the export reports them, an MP4 ('ftyp'). Control: the base export has
-//       not finished in the same time (its frame 0 waited for all 60 M splats at the finest level).
+//       saved file is read back: its bytes as the export reports them, an MP4 ('ftyp'), and six frames decoded from
+//       it across its length each show the scan (a spread of light, not one colour; frameStats). Control: the base
+//       export has not finished in the same time (its frame 0 waited for all 60 M splats at the finest level); the
+//       frame measure's own control is a uniform picture, which must not pass it (V6blank).
 //   SITE=http://127.0.0.1:5718 SITE_BEFORE=http://127.0.0.1:5717 npx tsx src/accept-v09-load.ts [V1 V2 ...]
 // Evidence: evidence/<date>/v09-load.json
 import { readFileSync } from 'node:fs';
@@ -61,9 +64,81 @@ async function newPage(browser: Browser): Promise<{ ctx: BrowserContext; page: P
     await ctx.addInitScript('window.__name = window.__name || ((f) => f);');
     const page = await ctx.newPage();
     const log: string[] = [];
-    page.on('pageerror', (e) => log.push(`pageerror: ${e.message}`.slice(0, 300)));
+    page.on('pageerror', (e) => {
+        log.push(`pageerror: ${e.message}`.slice(0, 300));
+        // the first one's stack (minified: line:column in the release's bundle), to find where it comes from
+        if (log.length === 1) log.push(`stack: ${String(e.stack ?? '').slice(0, 1200)}`);
+    });
     return { ctx, page, log };
 }
+const errorsOf = (log: readonly string[]): number => log.filter((l) => l.startsWith('pageerror')).length;
+
+/** Sampled frames of a saved video: the measure, and the bound a frame must pass (not blank, not one colour). */
+const FRAME_STD_MIN = 8;
+const FRAME_OFF_MIN = 0.5;
+/**
+ * The saved video decoded by the browser (a <video> on a blob: URL in a blank page: the app's CSP refuses
+ * blob: fetches) at `parts` points of its length. Per frame: the luminance's mean and spread (std), the share
+ * of pixels away from the frame's most common colour (off) and the mean luminance step between neighbours
+ * (edge, the detail). The same measure of a uniform picture drawn in that page is the check's own control.
+ */
+async function frameStats(browser: Browser, bytes: Buffer, parts: number[]): Promise<Any> {
+    const ctx = await browser.newContext();
+    const page = await ctx.newPage();
+    try {
+        await page.evaluate('window.__name = window.__name || ((f) => f)');
+        return await page.evaluate(async ({ b64, parts }) => {
+            const bin = atob(b64);
+            const u8 = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+            const v = document.createElement('video');
+            v.muted = true;
+            v.preload = 'auto';
+            v.src = URL.createObjectURL(new Blob([u8], { type: 'video/mp4' }));
+            document.body.append(v);
+            await new Promise((res, rej) => { v.onloadeddata = res; v.onerror = () => rej(new Error(`video error ${v.error?.code}`)); });
+            const W = 320, H = 180;
+            const c = document.createElement('canvas');
+            c.width = W; c.height = H;
+            const g = c.getContext('2d', { willReadFrequently: true })!;
+            const measure = (): { mean: number; std: number; off: number; edge: number } => {
+                const d = g.getImageData(0, 0, W, H).data;
+                const y = new Float32Array(W * H);
+                const bins = new Map<number, number>();
+                let s = 0, s2 = 0;
+                for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+                    const l = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+                    y[p] = l; s += l; s2 += l * l;
+                    const key = ((d[i] >> 4) << 8) | ((d[i + 1] >> 4) << 4) | (d[i + 2] >> 4);
+                    bins.set(key, (bins.get(key) ?? 0) + 1);
+                }
+                const n = W * H, mean = s / n;
+                let mode = 0;
+                for (const b of bins.values()) mode = Math.max(mode, b);
+                let e = 0;
+                for (let r = 0; r < H - 1; r++) for (let q = 0; q < W - 1; q++) { const p = r * W + q; e += Math.abs(y[p + 1] - y[p]) + Math.abs(y[p + W] - y[p]); }
+                const r1 = (x: number): number => Math.round(x * 10) / 10;
+                return { mean: r1(mean), std: r1(Math.sqrt(Math.max(0, s2 / n - mean * mean))), off: Math.round((1 - mode / n) * 1000) / 1000, edge: r1(e / ((W - 1) * (H - 1))) };
+            };
+            const frames: Array<{ t: number } & ReturnType<typeof measure>> = [];
+            for (const f of parts) {
+                const t = Math.min(f * v.duration, v.duration - 0.02);
+                v.currentTime = t;
+                await new Promise((res) => { v.onseeked = res; });
+                g.drawImage(v, 0, 0, W, H);
+                frames.push({ t: Math.round(t * 100) / 100, ...measure() });
+            }
+            g.fillStyle = 'rgb(40,44,52)';
+            g.fillRect(0, 0, W, H);
+            return { duration: v.duration, w: v.videoWidth, h: v.videoHeight, frames, uniform: measure() };
+        }, { b64: bytes.toString('base64'), parts });
+    } catch (e) {
+        return { error: String(e).slice(0, 300) };
+    } finally {
+        await ctx.close();
+    }
+}
+const frameOk = (f: Any): boolean => !!f && f.std >= FRAME_STD_MIN && f.off >= FRAME_OFF_MIN;
 const flyUrl = (site: string, id: string): string => `${site}/en/fly/?scene=${id}&nowarn=1&input=touch`;
 
 /**
@@ -198,7 +273,7 @@ async function exportCase(browser: Browser, site: string): Promise<Any> {
         ]);
         const path = await dl.path();
         const b = path ? readFileSync(path) : null;
-        file = b ? { name: dl.suggestedFilename(), bytes: b.length, box: b.subarray(4, 8).toString('latin1') } : { name: dl.suggestedFilename(), failure: await dl.failure() };
+        file = b ? { name: dl.suggestedFilename(), bytes: b.length, box: b.subarray(4, 8).toString('latin1'), content: await frameStats(browser, b, [0.02, 0.2, 0.4, 0.6, 0.8, 0.98]) } : { name: dl.suggestedFilename(), failure: await dl.failure() };
     }
     if (!result) await page.evaluate('window.__gsfpv.videoExport.cancel()').catch(() => undefined);
     await ctx.close();
@@ -227,9 +302,11 @@ try {
         const now = await bySwitch(browser, SITE, 'a8cfc66e', '224aba38', false);
         const before = SITE_BEFORE ? await bySwitch(browser, SITE_BEFORE, 'a8cfc66e', '224aba38', true) : null;
         out.V2 = { now, before };
-        pass.V2 = now.prepareMs !== null && now.prepareMs <= PREPARE_BOUND_MS && now.last?.sceneSwitch?.state !== 'failed';
-        control.V2 = before ? !(before.prepareMs !== null && before.prepareMs <= PREPARE_BOUND_MS) : null;
-        console.log(`V2 ${pass.V2 ? 'PASS' : 'FAIL'} switch prepare ${now.prepareMs} ms (stages ${JSON.stringify(now.stages)}); control ${before ? `${before.prepareMs ?? '>20000'} ms -> ${control.V2 ? 'fails as it must' : 'PASSED (bad control)'}` : 'skipped'}`);
+        // and no uncaught error in the page during the switch (v0.9 review: 319 'reading armed' were recorded, not asserted)
+        pass.V2 = now.prepareMs !== null && now.prepareMs <= PREPARE_BOUND_MS && now.last?.sceneSwitch?.state !== 'failed' && errorsOf(now.pageerrors) === 0;
+        control.V2 = before ? !(before.prepareMs !== null && before.prepareMs <= PREPARE_BOUND_MS && errorsOf(before.pageerrors) === 0) : null;
+        console.log(`V2 ${pass.V2 ? 'PASS' : 'FAIL'} switch prepare ${now.prepareMs} ms (stages ${JSON.stringify(now.stages)}), page errors ${errorsOf(now.pageerrors)}; control ${before ? `${before.prepareMs ?? '>20000'} ms, page errors ${errorsOf(before.pageerrors)} -> ${control.V2 ? 'fails as it must' : 'PASSED (bad control)'}` : 'skipped'}`);
+        if (now.pageerrors.length) console.log(`V2 first page error: ${now.pageerrors.slice(0, 2).join(' | ')}`);
     }
     if (want('V3')) {
         const now = await byLink(browser, SITE, 'a8cfc66e', false);
@@ -260,9 +337,15 @@ try {
         const before = SITE_BEFORE ? await exportCase(browser, SITE_BEFORE) : null;
         out.V6 = { now, before };
         const r = now.result;
-        pass.V6 = !!r && r.ended === 'done' && r.encoded === r.frames && r.frames > 0 && !!r.info && r.info.frames === r.frames && !!now.file && now.file.bytes === r.info.bytes && now.file.bytes > 100_000 && now.file.box === 'ftyp';
+        // the frames show the scan: every sampled frame of the file has a spread of light and is not one colour
+        const content = now.file?.content ?? null;
+        const shows = !!content && !content.error && content.frames.length === 6 && content.frames.every(frameOk);
+        pass.V6 = !!r && r.ended === 'done' && r.encoded === r.frames && r.frames > 0 && !!r.info && r.info.frames === r.frames && !!now.file && now.file.bytes === r.info.bytes && now.file.bytes > 100_000 && now.file.box === 'ftyp' && shows;
         control.V6 = before ? !(before.result?.ended === 'done') : null;
-        console.log(`V6 ${pass.V6 ? 'PASS' : 'FAIL'} ${r ? `${r.ended} ${r.encoded}/${r.frames} (forced ${r.forced}) in ${now.seconds.toFixed(0)} s, file ${JSON.stringify(now.file)}` : `not finished in ${EXPORT_LIMIT_S} s (frame ${now.kAtEnd})`}; control ${before ? `${before.result ? `${before.result.ended} ${before.result.encoded}/${before.result.frames}` : `not finished in ${EXPORT_LIMIT_S} s, frame ${before.kAtEnd}`} -> ${control.V6 ? 'fails as it must' : 'PASSED (bad control)'}` : 'skipped'}`);
+        // the content measure's own control: a uniform picture in the same page must not pass it
+        control.V6blank = content && !content.error ? !frameOk(content.uniform) : null;
+        console.log(`V6 ${pass.V6 ? 'PASS' : 'FAIL'} ${r ? `${r.ended} ${r.encoded}/${r.frames} (forced ${r.forced}) in ${now.seconds.toFixed(0)} s, file ${JSON.stringify({ ...now.file, content: undefined })}` : `not finished in ${EXPORT_LIMIT_S} s (frame ${now.kAtEnd})`}; control ${before ? `${before.result ? `${before.result.ended} ${before.result.encoded}/${before.result.frames}` : `not finished in ${EXPORT_LIMIT_S} s, frame ${before.kAtEnd}`} -> ${control.V6 ? 'fails as it must' : 'PASSED (bad control)'}` : 'skipped'}`);
+        console.log(`V6 frames ${content ? JSON.stringify(content.frames ?? content.error) : 'none'}; uniform ${JSON.stringify(content?.uniform ?? null)} -> ${control.V6blank === null ? 'skipped' : control.V6blank ? 'fails as it must' : 'PASSED (bad control)'}`);
     }
 } finally {
     await browser.close();
