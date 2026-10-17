@@ -41,7 +41,7 @@ type Any = any;
 const hook = <T = Any>(p: Page, body: string): Promise<T> => p.evaluate(`(() => { const h = window.__gsfpv; const s = h.session; ${body} })()`) as Promise<T>;
 
 for (;;) {
-    try { mkdirSync(LOCK); break; } catch { console.log('waiting for the GPU lock'); await sleep(15000); }
+    try { mkdirSync(LOCK); break; } catch { console.log('waiting for the GPU lock'); await sleep(Number(process.env.LOCK_POLL_MS ?? 3000)); }
 }
 const release = (): void => { try { rmdirSync(LOCK); } catch { /* gone */ } };
 process.on('SIGINT', () => { release(); process.exit(130); });

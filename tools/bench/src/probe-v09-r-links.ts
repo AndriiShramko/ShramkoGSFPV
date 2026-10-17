@@ -20,7 +20,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const link = `https://superspl.at/scene/${SCENE}?budget=8&stochastic`;
 
 for (;;) {
-    try { mkdirSync(LOCK); break; } catch { console.log('waiting for the GPU lock'); await sleep(15000); }
+    try { mkdirSync(LOCK); break; } catch { console.log('waiting for the GPU lock'); await sleep(Number(process.env.LOCK_POLL_MS ?? 3000)); }
 }
 const release = (): void => { try { rmdirSync(LOCK); } catch { /* gone */ } };
 process.on('SIGINT', () => { release(); process.exit(130); });

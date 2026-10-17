@@ -1,0 +1,239 @@
+{
+  "site": "http://127.0.0.1:5391",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "results": {
+    "39e63ce9": {
+      "frames": 72,
+      "size": [
+        1280,
+        720
+      ],
+      "bitrate": 5529600,
+      "sub": 4,
+      "budgetM": 4,
+      "bytes": {
+        "sorted": 968380,
+        "stochastic": 1257176,
+        "accumulated": 1255855
+      },
+      "chunks": {
+        "sorted": 72,
+        "stochastic": 72,
+        "accumulated": 72
+      },
+      "decodedFrames": {
+        "sorted": 72,
+        "stochastic": 72,
+        "accumulated": 72
+      },
+      "errors": [],
+      "switchIntervalsMs": {
+        "toSorted": [
+          26.6,
+          191.6,
+          7.9,
+          33.9,
+          33.1,
+          33.5,
+          33.2,
+          32.9,
+          134.1,
+          32.7
+        ],
+        "toStochastic": [
+          32.7,
+          33.3,
+          34.1,
+          32.7,
+          33.4,
+          33.3,
+          34,
+          32.6,
+          33.7,
+          32.7
+        ],
+        "toAccumulated": [
+          33.9,
+          32.5,
+          33.3,
+          33.7,
+          33.2,
+          33,
+          33.3,
+          34.3,
+          32.7,
+          33.4
+        ],
+        "toStochasticAgain": [
+          32.8,
+          32.7,
+          33.4,
+          33.9,
+          32.8,
+          33.2,
+          33.7,
+          33.3,
+          33,
+          33.5
+        ]
+      },
+      "psnr_T_vs_T_again": {
+        "mean": 90.55,
+        "min": 50.36
+      },
+      "psnr_S_vs_T": {
+        "mean": 16.08,
+        "min": 13.02
+      },
+      "psnr_S_vs_A": {
+        "mean": 19.44,
+        "min": 16.13
+      },
+      "psnr_S_vs_decS": {
+        "mean": 32.89,
+        "min": 30.36
+      },
+      "psnr_S_vs_decT": {
+        "mean": 18.09,
+        "min": 14.83
+      },
+      "psnr_S_vs_decA": {
+        "mean": 20.36,
+        "min": 16.54
+      },
+      "psnr_own": {
+        "sorted": {
+          "mean": 32.89,
+          "min": 30.36
+        },
+        "stochastic": {
+          "mean": 19.23,
+          "min": 15.34
+        },
+        "accumulated": {
+          "mean": 24.33,
+          "min": 20.72
+        }
+      }
+    },
+    "ba7aa29d": {
+      "frames": 72,
+      "size": [
+        1280,
+        720
+      ],
+      "bitrate": 5529600,
+      "sub": 4,
+      "budgetM": 4,
+      "bytes": {
+        "sorted": 976291,
+        "stochastic": 1175405,
+        "accumulated": 1134327
+      },
+      "chunks": {
+        "sorted": 72,
+        "stochastic": 72,
+        "accumulated": 72
+      },
+      "decodedFrames": {
+        "sorted": 72,
+        "stochastic": 72,
+        "accumulated": 72
+      },
+      "errors": [],
+      "switchIntervalsMs": {
+        "toSorted": [
+          16.3,
+          203.7,
+          30.4,
+          32.4,
+          33.8,
+          36.6,
+          29.4,
+          33.7,
+          133.9,
+          32.5
+        ],
+        "toStochastic": [
+          2.2,
+          31.8,
+          33.6,
+          37.9,
+          28.7,
+          33,
+          33.8,
+          33.4,
+          39.1,
+          28
+        ],
+        "toAccumulated": [
+          34.6,
+          29.1,
+          33.9,
+          32.9,
+          33.4,
+          33.8,
+          32.9,
+          33.1,
+          33.4,
+          33.9
+        ],
+        "toStochasticAgain": [
+          30.6,
+          33.5,
+          33.6,
+          33.2,
+          33.4,
+          33.3,
+          37.6,
+          28.6,
+          34.2,
+          32.7
+        ]
+      },
+      "psnr_T_vs_T_again": {
+        "mean": 20.93,
+        "min": 20.57
+      },
+      "psnr_S_vs_T": {
+        "mean": 22.82,
+        "min": 22.52
+      },
+      "psnr_S_vs_A": {
+        "mean": 26.32,
+        "min": 25.35
+      },
+      "psnr_S_vs_decS": {
+        "mean": 31.88,
+        "min": 30.74
+      },
+      "psnr_S_vs_decT": {
+        "mean": 24.15,
+        "min": 21.24
+      },
+      "psnr_S_vs_decA": {
+        "mean": 25.75,
+        "min": 24.3
+      },
+      "psnr_own": {
+        "sorted": {
+          "mean": 31.88,
+          "min": 30.74
+        },
+        "stochastic": {
+          "mean": 23.85,
+          "min": 23.41
+        },
+        "accumulated": {
+          "mean": 27.53,
+          "min": 26.73
+        }
+      }
+    }
+  }
+}
