@@ -437,6 +437,7 @@ export function headingFromCamera(c: SceneCamera): number {
 // SuperSplat catalogue (the list superspl.at shows, through our caching proxy): see superspl.ts
 export * from './superspl';
 export * from './rotation';
+export * from './tour';
 export * from './catalog';
 export * from './link';
 export * from './facts';
