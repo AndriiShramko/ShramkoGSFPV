@@ -275,10 +275,17 @@ login is refused before the password is looked at. Every action goes to `data/ad
 **The catalogue entry** (the order in the list is the order pilots see): `id` (SuperSplat id), `version`
 (CDN folder v<N>), `title`, `author`, `license`, `thumb` (poster URL, S3 or the CDN only), `kind`
 (`interior`, `exterior`, `other`), `collision` (the scene has walls), `walls` (`on`/`off`: the admin
-default of the walls switch), `dropFloaters` (0-64), `scale` (0.25-4), `voxelCm`, `sizeMb`, `format`,
+default of the walls switch), `dropFloaters` (0-64), `scale` (0.25-100: the default Scene size, the pilot's [ ] range), `voxelCm`, `sizeMb`, `format`,
 `defaultDrone`, `pitch` (one line per language, `{"en": ..., "ru": ...}`), `collections` (ids of the
 catalogue's `collections`, each `{id, title: {en, es, pl, ru}}`), `pinned` (the Featured row), `hidden`
 (kept, not shown). `showcase.json`'s fields mean the same.
+
+**Default Scene size and the public catalogue (v0.9).** `GET /api/catalog` sends the published scenes without the
+hidden ones, plus `defaults`: `{"<sceneId>": {"scale": 30}}` for each hidden published scene whose `scale` is not 1
+(the only thing the public learns of a hidden scene; the draft is never exposed). The simulator applies the size
+whenever that scene opens (picker, `/fly/?scene=<id>`, a pasted superspl.at link, N): a shared link's size >
+the pilot's own saved size for the scene > this default > 1. Same ETag / `max-age=60` as the rest, so a change goes
+live within a minute of Publish. Needs the API (`admin.py`) deployed before the simulator build.
 
 v0.7 fields (`packages/scenes/src/catalog.ts` and `admin.py` keep the same rules; out of range = dropped):
 `geo` `{lat, lon, place?}` (WGS84, 3 decimals), `compassDeg` (0-360, the compass heading of the scene's

@@ -32,7 +32,8 @@ POST /api/share  a picture of the view (JPEG 1200x630) for a link that shows it 
                  as the shared flight's link asked (optional "render": SuperSplat's budget and
                  stochastic, as /fly/?scene=<id>&budget=<M>&stochastic); GET /s/<id>.jpg is the
                  picture (immutable).
-GET  /api/catalog the scene catalogue the scene picker shows (public, ETag/304, max-age 60), and
+GET  /api/catalog the scene catalogue the scene picker shows (public, ETag/304, max-age 60; plus `defaults`, the
+                 default Scene size of each hidden published scene, v0.9: admin.py), and
 /api/admin/...   the owner's admin behind a password (login, sessions, CSRF, brute-force guard, audit,
                  catalogue draft/publish/history, report status): admin.py, which documents both.
 GET  /{lang}/scenes/, /{lang}/scenes/<id>/, /scenes/sitemap.xml, /scenes/llms.txt

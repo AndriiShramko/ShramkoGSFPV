@@ -71,7 +71,11 @@ export interface CatalogScene {
     walls?: 'on' | 'off';
     /** the admin's default floater filter (G.3, prefs scene.dropFloaters): pieces of the walls under N blocks dropped; absent = 0 */
     dropFloaters?: number;
-    /** the admin's verified size of the scan (E.7), 0.25..4; absent = 1 */
+    /**
+     * The owner's default Scene size for the scan (E.7), CATALOG_SCALE_MIN..CATALOG_SCALE_MAX (the range of the
+     * pilot's [ ] keys); absent = 1. Used whenever the scene opens (picker, deep link, pasted link, N), under the
+     * pilot's own saved size and a shared link's. A hidden scene's reaches the simulator through SceneCatalog.defaults.
+     */
     scale?: number;
     /** one line under the title of a featured card */
     pitch?: LocalText;
@@ -121,10 +125,24 @@ export interface CatalogCollection {
     title: LocalText;
 }
 
+/**
+ * What the public catalogue says about a scene the picker does not list (a hidden one): only its default size.
+ * The scene's other fields stay private (GET /api/catalog, apps/api/admin.py CatalogStore.public).
+ */
+export interface SceneDefaults {
+    scale?: number;
+}
+
 export interface SceneCatalog {
     collections: CatalogCollection[];
     scenes: CatalogScene[];
+    /** defaults of the published scenes that are hidden from the picker, by scene id; absent: none (or an older API) */
+    defaults?: Record<string, SceneDefaults>;
 }
+
+/** The range of CatalogScene.scale: the pilot's Scene size range (prefs SCALE_MIN / SCALE_MAX; a test keeps them equal). */
+export const CATALOG_SCALE_MIN = 0.25;
+export const CATALOG_SCALE_MAX = 100;
 
 const ID = /^[0-9a-f]{6,32}$/;
 const KINDS: readonly CatalogKind[] = ['interior', 'exterior', 'other'];
@@ -209,7 +227,7 @@ export function readScene(v: unknown): CatalogScene | null {
     };
     const n: [keyof CatalogScene, number | undefined][] = [
         ['version', num(o.version, 1, 999999)], ['voxelCm', num(o.voxelCm, 0.1, 100)], ['sizeMb', num(o.sizeMb, 0.01, 100000)],
-        ['dropFloaters', num(o.dropFloaters, 0, 64)], ['scale', num(o.scale, 0.25, 4)]
+        ['dropFloaters', num(o.dropFloaters, 0, 64)], ['scale', num(o.scale, CATALOG_SCALE_MIN, CATALOG_SCALE_MAX)]
     ];
     for (const [k, x] of n) if (x !== undefined) (s as unknown as Record<string, unknown>)[k] = x;
     if (typeof o.thumb === 'string' && /^https:\/\/[^\s"'<>]+\.webp$/.test(o.thumb)) s.thumb = o.thumb;
@@ -245,7 +263,7 @@ export function readScene(v: unknown): CatalogScene | null {
 /** A catalogue document (the API's or showcase.json); null when it has no scene list at all. */
 export function readCatalog(doc: unknown): SceneCatalog | null {
     if (!doc || typeof doc !== 'object' || !Array.isArray((doc as { scenes?: unknown }).scenes)) return null;
-    const d = doc as { scenes: unknown[]; collections?: unknown };
+    const d = doc as { scenes: unknown[]; collections?: unknown; defaults?: unknown };
     const seen = new Set<string>();
     const scenes = d.scenes.map(readScene).filter((s): s is CatalogScene => !!s && !seen.has(s.id) && !!seen.add(s.id));
     const collections: CatalogCollection[] = [];
@@ -256,7 +274,29 @@ export function readCatalog(doc: unknown): SceneCatalog | null {
             if (typeof id === 'string' && title) collections.push({ id, title });
         }
     }
-    return { collections, scenes };
+    const defaults = readDefaults(d.defaults);
+    return defaults ? { collections, scenes, defaults } : { collections, scenes };
+}
+
+/** The `defaults` map of the public catalogue, read strictly: a scene id and a scale in range, nothing else. */
+function readDefaults(v: unknown): Record<string, SceneDefaults> | undefined {
+    if (!v || typeof v !== 'object' || Array.isArray(v)) return undefined;
+    const out: Record<string, SceneDefaults> = {};
+    for (const [id, e] of Object.entries(v as Record<string, unknown>)) {
+        if (!ID.test(id) || !e || typeof e !== 'object') continue;
+        const scale = num((e as Record<string, unknown>).scale, CATALOG_SCALE_MIN, CATALOG_SCALE_MAX);
+        if (scale !== undefined) out[id] = { scale };
+    }
+    return Object.keys(out).length ? out : undefined;
+}
+
+/**
+ * The owner's default Scene size for scene `id`: its own entry's scale, else the public `defaults` of a scene
+ * the picker does not list (hidden), else undefined (the size is 1). The one lookup everything uses.
+ */
+export function sceneDefaultScale(catalog: Pick<SceneCatalog, 'scenes' | 'defaults'>, id: string): number | undefined {
+    const own = catalog.scenes.find((s) => s.id === id)?.scale;
+    return own ?? (catalog.defaults && Object.hasOwn(catalog.defaults, id) ? catalog.defaults[id].scale : undefined);
 }
 
 /** The text in this language, else English, else any. */

@@ -22,7 +22,8 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
     const catalog = await loadCatalog();
     const showcase = catalog.scenes;
     // the curated scans are the store's per-scan defaults (the walls switch), so it opens after them
-    const prefs = openPagePrefs(showcase, q.toString());
+    // `defaults`: the owner's size for scenes the picker does not list (hidden), so a link to one opens at it too
+    const prefs = openPagePrefs(showcase, q.toString(), { defaults: catalog.defaults });
     hook.prefs = prefsHook(prefs);
     // E.1: history, favourites and the filter live in the store from here on (the picker reads them)
     useStoreLibrary(prefs);

@@ -19,6 +19,7 @@
 import { COLLECTION_IDS, IdbKv, LEGACY_KEYS, LEGACY_PREFIXES, PREFS_KEY, SCHEMA, canonicalJson, openBrowserPrefs, settingsFromQuery } from '@gsfpv/prefs';
 import type { BrowserOptions, CollectionId, Collections, Ctx, GroupId, ImportMode, ImportReport, MigrationInfo, PrefsFile, PrefsStore, PresetResolver, RatesValue, Schema, Scope, SetResult, ThrottleValue, PidValue } from '@gsfpv/prefs';
 import type { GravityMode, ParamOverrides, PresetJson } from '@gsfpv/sim-core';
+import type { SceneCatalog } from '@gsfpv/scenes';
 import type { ShowcaseScene } from '../ui/scenes';
 import type { VoxelController, VoxelMode, VoxelPrefs, VoxelStyle } from '../voxels';
 import { PRESETS } from '../presets';
@@ -26,10 +27,13 @@ import { PRESETS } from '../presets';
 /**
  * Drone preset fields and the admin's per-scan values (public/showcase.json) for the store's
  * defaults. field(): a numeric preset field (v_crash_ms, camera_fov_deg, ...); curated(): a
- * showcase entry's own field as written there ("walls": "off"); curatedScale(): its "scale"
- * (showcase v2, E.2; absent today, so a scene's size default is 1).
+ * showcase entry's own field as written there ("walls": "off"); curatedScale(): the owner's default
+ * Scene size of a scene (v0.9, item 14): its own entry's "scale", else `defaults`, the public
+ * catalogue's size for a scene the picker does not list (hidden; @gsfpv/scenes sceneDefaultScale),
+ * else undefined (a scene's size default is 1). Every way a scene opens reads the default through the
+ * store, so none needs its own lookup.
  */
-export function presetResolver(presets: Readonly<Record<string, PresetJson>>, showcase: readonly ShowcaseScene[]): PresetResolver {
+export function presetResolver(presets: Readonly<Record<string, PresetJson>>, showcase: readonly ShowcaseScene[], defaults: SceneCatalog['defaults'] = undefined): PresetResolver {
     const scenes = new Map<string, Readonly<Record<string, unknown>>>();
     for (const s of showcase) if (typeof s?.id === 'string' && !scenes.has(s.id)) scenes.set(s.id, s as unknown as Record<string, unknown>);
     const own = (scene: string, field: string): unknown => {
@@ -43,7 +47,7 @@ export function presetResolver(presets: Readonly<Record<string, PresetJson>>, sh
             return typeof v === 'number' && Number.isFinite(v) ? v : undefined;
         },
         curatedScale(scene) {
-            const v = own(scene, 'scale');
+            const v = own(scene, 'scale') ?? (defaults && Object.hasOwn(defaults, scene) ? defaults[scene].scale : undefined);
             return typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : undefined;
         },
         curated: own
@@ -58,12 +62,12 @@ let page: { store: PrefsStore; dispose(): void; link: Map<string, string> } | nu
  * ?walls= ...) go into the session layer, never stored, as the app applies them to this load.
  * `o`: the page's storage, window, document by default (tests pass fakes).
  */
-export function openPagePrefs(showcase: readonly ShowcaseScene[], query: string, o: BrowserOptions & { schema?: Schema; presets?: Readonly<Record<string, PresetJson>> } = {}): PrefsStore {
+export function openPagePrefs(showcase: readonly ShowcaseScene[], query: string, o: BrowserOptions & { schema?: Schema; presets?: Readonly<Record<string, PresetJson>>; defaults?: SceneCatalog['defaults'] } = {}): PrefsStore {
     if (page) return page.store;
-    const { schema = SCHEMA, presets = PRESETS, ...browser } = o;
+    const { schema = SCHEMA, presets = PRESETS, defaults, ...browser } = o;
     // storageManager null: no navigator.storage.persist() at boot or on a change. Firefox answers it
     // with a prompt, so it is asked only from the pilot's click in Settings -> Data (askPersistence).
-    const resolver = presetResolver(presets, showcase);
+    const resolver = presetResolver(presets, showcase, defaults);
     let opened: ReturnType<typeof openBrowserPrefs>;
     try {
         opened = openBrowserPrefs(schema, resolver, { storageManager: null, ...browser });

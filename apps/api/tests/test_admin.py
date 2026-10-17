@@ -294,7 +294,7 @@ class Catalogue(AdminApi):
         for doc in bad:
             self.assertEqual(self.req("POST", "/api/admin/catalog/draft", {"catalog": doc}, cookie=cookie, csrf=csrf)[0], 400, doc)
         # control: the same entry once, with junk fields dropped and values clamped to their ranges
-        doc = {"scenes": [{**ok, "evil": "<script>", "scale": 9, "dropFloaters": 12, "walls": "off", "collections": ["nope"],
+        doc = {"scenes": [{**ok, "evil": "<script>", "scale": 150, "dropFloaters": 12, "walls": "off", "collections": ["nope"],
                            "title": "A‮\x00 b", "thumb": "https://evil.example/x.webp"}]}
         st, _, body = self.req("POST", "/api/admin/catalog/draft", {"catalog": doc}, cookie=cookie, csrf=csrf)
         self.assertEqual(st, 200)
@@ -303,6 +303,48 @@ class Catalogue(AdminApi):
         for k in ("evil", "scale", "thumb"):
             self.assertNotIn(k, s)
         self.assertEqual(self.req("POST", "/api/admin/catalog/draft", b"x" * 10, cookie=cookie, csrf=csrf)[0], 400)
+
+    def test_scale_range_follows_the_shared_table(self):
+        """The default Scene size is 0.25..100 (v0.9), the pilot's [ ] range; the table is the TypeScript test's too."""
+        table = json.loads((REPO / "packages" / "scenes" / "test" / "fixtures" / "scene-scale-range.json").read_text(encoding="utf-8"))
+        self.assertEqual((admin.SCALE_MIN, admin.SCALE_MAX), (table["min"], table["max"]))
+        for row in table["rows"]:
+            kept = admin.clean_scene({"id": "39e63ce9", "title": "A", "scale": row["scale"]}).get("scale")
+            self.assertEqual(kept, row["kept"], row)
+        # control: the range before v0.9 (0.25..4) refuses the rows this table keeps above 4
+        old = lambda v: admin._number(v, 0.25, 4)  # noqa: E731
+        self.assertIsNone(old(30))
+        self.assertEqual(admin.clean_scene({"id": "39e63ce9", "title": "A", "scale": 30})["scale"], 30)
+
+    def test_public_defaults_are_the_scale_of_hidden_scenes_only(self):
+        """A hidden scene is not in "scenes", but its default size reaches the simulator through "defaults"
+        (and nothing else of it); published scenes keep their own scale; an unpublished draft is not exposed."""
+        _, cookie, csrf, _ = self.login()
+        d = self.state(cookie)["draft"]
+        listed = {"id": "aaaaaa01", "title": "Listed", "scale": 5}
+        hidden = {"id": "aaaaaa02", "title": "Secret title", "author": "Somebody", "scale": 30, "hidden": True, "about": {"en": "private words"}}
+        hidden_one = {"id": "aaaaaa03", "title": "Hidden at size 1", "scale": 1, "hidden": True}
+        hidden_none = {"id": "aaaaaa04", "title": "Hidden, no size", "hidden": True}
+        self.req("POST", "/api/admin/catalog/draft", {"catalog": {**d, "scenes": [listed, hidden, hidden_one, hidden_none] + d["scenes"]}}, cookie=cookie, csrf=csrf)
+        # not published yet: the public catalogue knows nothing of the draft
+        self.assertNotIn("defaults", self.public())
+        self.assertNotIn("aaaaaa02", json.dumps(self.public()))
+        self.req("POST", "/api/admin/catalog/publish", {}, cookie=cookie, csrf=csrf)
+        pub = self.public()
+        self.assertEqual(pub["defaults"], {"aaaaaa02": {"scale": 30}})
+        self.assertEqual([s["id"] for s in pub["scenes"]][:1], ["aaaaaa01"])
+        self.assertEqual(pub["scenes"][0]["scale"], 5)
+        raw = json.dumps(pub)
+        for private in ("Secret title", "Somebody", "private words", "aaaaaa03", "aaaaaa04"):
+            self.assertNotIn(private, raw)
+        # control: un-hiding it moves it to "scenes" and out of "defaults"
+        d2 = self.state(cookie)["draft"]
+        d2["scenes"] = [{**s, "hidden": False} if s["id"] == "aaaaaa02" else s for s in d2["scenes"]]
+        self.req("POST", "/api/admin/catalog/draft", {"catalog": d2}, cookie=cookie, csrf=csrf)
+        self.req("POST", "/api/admin/catalog/publish", {}, cookie=cookie, csrf=csrf)
+        pub = self.public()
+        self.assertNotIn("defaults", pub)
+        self.assertEqual(next(s for s in pub["scenes"] if s["id"] == "aaaaaa02")["scale"], 30)
 
 
 class ReportsTab(AdminApi):
