@@ -121,6 +121,23 @@ describe('LinkMeter leaves out what is not the link', () => {
         expect(withList.meanMs).toBeCloseTo(1, 1);
     });
 
+    it('a source timed by the device (no slack): the samples after a stall, taken on time, still count', () => {
+        // the Gamepad API: the page looks every 4 ms for 8 ms of each 33 ms frame, and finds the samples' own times
+        const build = (slack: number) => {
+            const m = new LinkMeter(slack);
+            for (let f = 0; f < 90; f++) {
+                const start = f * 33.3;
+                for (let i = 0; i < 25; i++) m.note(start + i); // the device reported every ms through the block
+                m.stall(start, start + 25);
+                for (let i = 25; i < 33; i++) m.note(start + i);
+            }
+            return m.stats(3000);
+        };
+        expect(build(0).n).toBeGreaterThan(300); // what is left after the stalls is measured
+        expect(build(0).verdict).toBe('ok');
+        expect(build(LINK.STALL_SLACK_MS).n).toBeLessThan(build(0).n); // the control: a slack drops the free window
+    });
+
     it('control: a real bunched link is still bursty when the page also stalls now and then', () => {
         const m = new LinkMeter();
         for (const t of reportTimes('bleBursty', 3000, 3)) m.note(t);

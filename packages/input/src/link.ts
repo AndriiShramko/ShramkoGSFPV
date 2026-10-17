@@ -34,7 +34,7 @@ export const LINK = {
     PAUSE_MS: 20,
     /** this many pauses in the window make the bunching a habit, not one hiccup */
     PAUSES: 3,
-    /** a gap that ends within this long after a page stall was delivered late by the page, not by the link */
+    /** a sample that comes within this long after a page stall was delivered late by the page, not by the link (WebHID events queue up behind a stall and run right after it) */
     STALL_SLACK_MS: 8,
     /** samples kept (a 1000 Hz device fills the window with 3000) */
     CAP: 4096,
@@ -72,6 +72,17 @@ export class LinkMeter {
     private stalls = new Float64Array(LINK.STALLS * 2);
     private stallN = 0;
     private gaps = new Float64Array(LINK.CAP);
+    private slack: number;
+
+    /**
+     * `stallSlackMs`: how long after a stall a sample still counts as delivered by it. A source whose
+     * times are the device's own (the Gamepad API's timestamps: the browser's thread took the report
+     * when it arrived, whatever the page was doing) passes 0; one timed by the page (WebHID's
+     * event.timeStamp is when the page ran the event) keeps the default.
+     */
+    constructor(stallSlackMs: number = LINK.STALL_SLACK_MS) {
+        this.slack = stallSlackMs;
+    }
 
     /** A new sample at page time `t` ms. A time before the previous sample's is not a sample (non-monotonic stamps). */
     note(t: number): void {
@@ -144,8 +155,8 @@ export class LinkMeter {
         for (let i = this.stallN - 1; i >= 0; i--) {
             const a = this.stalls[i * 2];
             const b = this.stalls[i * 2 + 1];
-            if (t >= a && t <= b + LINK.STALL_SLACK_MS) return true;
-            if (b + LINK.STALL_SLACK_MS < t - LINK.WINDOW_MS) break;
+            if (t >= a && t <= b + this.slack) return true;
+            if (b + this.slack < t - LINK.WINDOW_MS) break;
         }
         return false;
     }
