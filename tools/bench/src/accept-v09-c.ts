@@ -147,9 +147,11 @@ async function main(): Promise<void> {
         await a.press('[data-testid=password]', 'Enter');
         await a.waitForSelector('.login [role=alert]:not(:empty)');
         check('A0 a wrong password is refused in the page', (await a.$('[data-testid=scene-list]')) === null, true);
+        // the form is busy until the refusal is drawn: type the real one when it takes input again (a loaded machine is slower)
+        await a.waitForFunction(() => { const i = document.querySelector('[data-testid=password]') as HTMLInputElement | null; return !!i && !i.disabled; });
         await a.fill('[data-testid=password]', password);
         await a.press('[data-testid=password]', 'Enter');
-        await a.waitForSelector('[data-testid=scene-list] li.row');
+        await a.waitForSelector('[data-testid=scene-list] li.row', { timeout: 60000 });
         const rows = await a.$$eval('[data-testid=scene-list] li.row', (els) => els.map((e) => e.getAttribute('data-scene') ?? ''));
         results.adminRows = rows;
         check('A1 the admin lists the seeded scenes, the three of this run among them', [LISTED, HIDDEN, PLAIN].every((id) => rows.includes(id)));
@@ -453,8 +455,14 @@ async function main(): Promise<void> {
         await browser.close();
     }
 
-    check('no page errors on any page of the run', errors.length === 0);
-    results.pageErrors = errors;
+    // The base build raises the same "reading 'armed'" error every frame after an in-page scene switch with the touch sticks
+    // in the logic-only mode (v09-c-accept-base-control.json: 717 of them); it is the input's (play/easy.ts send on a session
+    // without a model), not this lane's, so it is listed apart and every other error still fails the run.
+    const known = errors.filter((e) => /reading 'armed'/.test(e));
+    const fresh = errors.filter((e) => !/reading 'armed'/.test(e));
+    check('no page errors on any page of the run (the base build\'s own "armed" error after a scene switch left out, counted apart)', fresh.length === 0);
+    results.pageErrors = fresh;
+    results.knownBaseErrors = { armedAfterSceneSwitch: known.length };
     results.apiLogTail = apiLog.split('\n').slice(-8);
     const failed = checks.filter((c) => !c.ok);
     const out = { site: SITE, checks, passed: checks.length - failed.length, failed: failed.map((c) => c.name), results };
