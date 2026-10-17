@@ -62,6 +62,9 @@ export class EasyPilot {
     send(i: PlayIntent, tMs: number): void {
         const s = this.env.session();
         const sim = s.sim;
+        // a scene switch replaces the session and for a moment the new one has no model: nothing to send yet
+        // (before this guard every frame of the switch threw "reading 'armed'", base 631fd5f too: evidence v07-render R4)
+        if (!sim) return;
         const dt = this.lastT < 0 ? 0 : (tMs - this.lastT) / 1000;
         this.lastT = tMs;
         const a = this.arm.step({ simArmed: sim.armed, crashed: sim.crashed, paused: s.paused, now: tMs });
