@@ -30,8 +30,10 @@ POST /api/share  a picture of the view (JPEG 1200x630) for a link that shows it 
                  share/<id>.jpg + share/<id>.json. GET /s/<id> is a tiny page with Open Graph and
                  Twitter card tags that sends a visitor on to the simulator with that scene, drawn
                  as the shared flight's link asked (optional "render": SuperSplat's budget and
-                 stochastic, as /fly/?scene=<id>&budget=<M>&stochastic); GET /s/<id>.jpg is the
-                 picture (immutable).
+                 stochastic, as /fly/?scene=<id>&budget=<M>&stochastic; optional "shared": the
+                 sharer's scene settings that differ from the scene's defaults - size, walls,
+                 floaters, wind, ceiling, drone - as &sz=3&wl=0&fl=4&wd=270,4,2&ce=12.5&drone=<id>,
+                 shared_settings/shared_query); GET /s/<id>.jpg is the picture (immutable).
 GET  /api/catalog the scene catalogue the scene picker shows (public, ETag/304, max-age 60; plus `defaults`, the
                  default Scene size of each hidden published scene, v0.9: admin.py), and
 /api/admin/...   the owner's admin behind a password (login, sessions, CSRF, brute-force guard, audit,
@@ -1043,6 +1045,8 @@ def parse_share(b: dict) -> tuple[bytes, dict]:
             "locale": locale if locale in LOCALES else "en"}
     if render := link_render(b.get("render")):
         meta["render"] = render
+    if shared := shared_settings(b.get("shared")):
+        meta["shared"] = shared
     return data, meta
 
 
@@ -1065,10 +1069,90 @@ def link_render(r) -> dict | None:
     return out or None
 
 
-def fly_link(loc: str, scene: str, render=None) -> str:
+# The scene settings a share link carries (packages/scenes src/shared-settings.ts, v0.9 item 15): the sharer's
+# Scene size, walls, floater cleanup, wind, collision ceiling and drone, each only when it differs from the
+# scene's defaults. Read as strictly as the page reads them; packages/scenes/test/fixtures/shared-links.json
+# is the table both writers are held to.
+_SHARED_SIZE = (0.25, 100.0)       # the catalogue's and the pilot's Scene size range (admin.py SCALE_MIN/MAX)
+_SHARED_FLOATERS_MAX = 64
+_SHARED_WIND = {"fromDeg": (0.0, 360.0), "speed": (0.0, 30.0), "gust": (0.0, 20.0)}
+_SHARED_CEILING = (-10000.0, 10000.0)
+_SHARED_DRONE_RE = re.compile(r"[a-z0-9][a-z0-9-]{0,39}")
+
+
+def _shared_num(v, lo: float, hi: float, places: int):
+    """A JSON number in [lo, hi] rounded to `places` decimals, else None (a string, a bool, NaN, out of range)."""
+    if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) or not lo <= v <= hi:
+        return None
+    r = round(float(v), places)
+    return r if lo <= r <= hi else None
+
+
+def shared_settings(v) -> dict | None:
+    """The settings a share carries, from the POST body's `shared`: a field of the wrong type or out of range
+    is dropped, unknown fields are ignored, numbers are rounded to what a link carries (Scene size 3
+    decimals, wind 1, ceiling 2). None when nothing is left."""
+    if not isinstance(v, dict):
+        return None
+    out: dict = {}
+    if (size := _shared_num(v.get("size"), *_SHARED_SIZE, 3)) is not None:
+        out["size"] = size
+    if v.get("walls") in ("on", "off"):
+        out["walls"] = v["walls"]
+    f = v.get("floaters")
+    if isinstance(f, int) and not isinstance(f, bool) and 0 <= f <= _SHARED_FLOATERS_MAX:
+        out["floaters"] = f
+    w = v.get("wind")
+    if w == "off":
+        out["wind"] = "off"
+    elif isinstance(w, dict):
+        got = {k: _shared_num(w.get(k), *rng, 1) for k, rng in _SHARED_WIND.items()}
+        if all(x is not None for x in got.values()):
+            out["wind"] = got
+    c = v.get("ceiling")
+    if c == "off":
+        out["ceiling"] = "off"
+    elif (cm := _shared_num(c, *_SHARED_CEILING, 2)) is not None:
+        out["ceiling"] = cm
+    d = v.get("drone")
+    if isinstance(d, str) and _SHARED_DRONE_RE.fullmatch(d):
+        out["drone"] = d
+    return out or None
+
+
+def _shared_text(n: float, places: int) -> str:
+    """A number as the page prints it: at most `places` decimals, no trailing zeros, never an exponent."""
+    s = f"{n:.{places}f}"
+    if "." in s:
+        s = s.rstrip("0").rstrip(".")
+    return "0" if s in ("-0", "") else s
+
+
+def shared_query(shared) -> str:
+    """The settings as the link's parameters, in the order shared-settings.ts sharedQuery writes them; '' for none."""
+    s = shared_settings(shared) or {}
+    p: list[str] = []
+    if "size" in s:
+        p.append("sz=" + _shared_text(s["size"], 3))
+    if "walls" in s:
+        p.append("wl=" + ("0" if s["walls"] == "off" else "1"))
+    if "floaters" in s:
+        p.append(f"fl={s['floaters']}")
+    if "wind" in s:
+        w = s["wind"]
+        p.append("wd=" + ("off" if w == "off" else ",".join(_shared_text(w[k], 1) for k in ("fromDeg", "speed", "gust"))))
+    if "ceiling" in s:
+        p.append("ce=" + ("off" if s["ceiling"] == "off" else _shared_text(s["ceiling"], 2)))
+    if "drone" in s:
+        p.append("drone=" + s["drone"])
+    return "&".join(p)
+
+
+def fly_link(loc: str, scene: str, render=None, shared=None) -> str:
     """The simulator's deep link of a scene, written as packages/scenes link.ts flyDeepLink writes it:
     /{loc}/fly/?scene=<id>, then &budget=<M> and the bare &stochastic flag (or &stochastic=0) when the
-    link asked for them. The budget is printed as JavaScript prints a number (8, not 8.0)."""
+    link asked for them, then the sharer's scene settings (shared_query). The budget is printed as
+    JavaScript prints a number (8, not 8.0)."""
     out = f"/{loc}/fly/?scene={scene}"
     r = link_render(render) or {}
     if "budgetM" in r:
@@ -1078,6 +1162,8 @@ def fly_link(loc: str, scene: str, render=None) -> str:
         out += "&stochastic"
     elif r.get("stochastic") is False:
         out += "&stochastic=0"
+    if q := shared_query(shared):
+        out += "&" + q
     return out
 
 
@@ -1127,7 +1213,7 @@ def share_page(sid: str) -> bytes | None:
     alt = tx["alt"].format(scene=name)
     page = f"{PUBLIC_ORIGIN}/s/{sid}"
     img = f"{PUBLIC_ORIGIN}/s/{sid}.jpg"
-    fly = fly_link(loc, meta["scene"], meta.get("render"))
+    fly = fly_link(loc, meta["scene"], meta.get("render"), meta.get("shared"))
     e = lambda s: html.escape(s, quote=True)  # noqa: E731
     tags = [("property", "og:type", "website"), ("property", "og:site_name", "ShramkoGSFPV"), ("property", "og:title", title),
             ("property", "og:description", desc), ("property", "og:url", page), ("property", "og:image", img),
