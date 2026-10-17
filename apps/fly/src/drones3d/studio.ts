@@ -23,7 +23,6 @@ import type { Model } from './kit';
 import { viewPosition } from './orbit';
 import type { OrbitState } from './orbit';
 import { brushedStreaks, carbonWeave, floorFade, studioEnvironment } from './textures';
-import { lathe } from './shapes';
 
 export interface StudioOptions {
     /** 'webgl2' forces the fallback (tests); default: WebGPU where there is one */
@@ -52,6 +51,9 @@ export class Studio {
     /** called every engine frame before the frame is drawn, with the seconds since the last */
     onFrame: ((dt: number) => void) | null = null;
     frames = 0;
+    /** draw every other engine frame (the idle turn needs no more, and the flight's own scan is drawing beside it) */
+    halfRate = false;
+    private skip = false;
     private camera: Entity;
     private modelRoot: Entity | null = null;
     private meshes: Mesh[] = [];
@@ -91,31 +93,39 @@ export class Studio {
         // key light with a soft shadow, a cool rim and a weak fill: the studio
         const key = new Entity('key', app);
         key.addComponent('light', {
-            type: 'directional', color: new Color(1, 0.96, 0.9), intensity: 2.4, castShadows: true, shadowType: SHADOW_PCF5_32F,
-            shadowResolution: 2048, shadowDistance: 12, shadowBias: 0.08, normalOffsetBias: 0.04, shadowIntensity: 0.85
+            type: 'directional', color: new Color(1, 0.96, 0.9), intensity: 3.3, castShadows: true, shadowType: SHADOW_PCF5_32F,
+            shadowResolution: 2048, shadowDistance: 12, shadowBias: 0.08, normalOffsetBias: 0.04, shadowIntensity: 0.9
         });
         key.setEulerAngles(52, 38, 0);
         app.root.addChild(key);
         const rim = new Entity('rim', app);
-        rim.addComponent('light', { type: 'directional', color: new Color(0.62, 0.78, 1), intensity: 0.9, castShadows: false });
+        rim.addComponent('light', { type: 'directional', color: new Color(0.62, 0.78, 1), intensity: 1.5, castShadows: false });
         rim.setEulerAngles(28, 200, 0);
         app.root.addChild(rim);
         const fill = new Entity('fill', app);
-        fill.addComponent('light', { type: 'directional', color: new Color(1, 0.9, 0.82), intensity: 0.35, castShadows: false });
+        fill.addComponent('light', { type: 'directional', color: new Color(1, 0.9, 0.82), intensity: 0.8, castShadows: false });
         fill.setEulerAngles(-18, -110, 0);
         app.root.addChild(fill);
 
-        app.scene.exposure = 1.15;
-        app.scene.skyboxIntensity = 1.25;
-        app.scene.ambientLight.set(0.04, 0.045, 0.055);
+        app.scene.exposure = 1.55;
+        app.scene.skyboxIntensity = 1.9;
+        app.scene.ambientLight.set(0.05, 0.055, 0.068);
         this.buildEnvironment();
         this.floor = this.buildFloor();
 
         this.ro = new ResizeObserver(() => this.resize());
         this.ro.observe(canvas);
         this.resize();
-        app.on('update', (dt: number) => { if (!this.destroyed) this.onFrame?.(dt); });
-        app.on('frameend', () => { this.frames++; });
+        app.on('update', (dt: number) => {
+            if (this.destroyed) return;
+            this.onFrame?.(dt);
+            if (this.active) {
+                this.skip = this.halfRate ? !this.skip : false;
+                this.app.autoRender = !this.skip;
+            }
+        });
+        // counted where a frame is really drawn (the engine fires 'frameend' for a skipped one too)
+        app.on('postrender', () => { this.frames++; });
         app.start();
     }
 
@@ -158,9 +168,9 @@ export class Studio {
     private buildFloor(): Entity {
         const mat = new StandardMaterial();
         mat.useMetalness = true;
-        mat.diffuse = new Color(0.55, 0.57, 0.62);
+        mat.diffuse = new Color(0.3, 0.32, 0.37);
         mat.metalness = 0;
-        mat.gloss = 0.55;
+        mat.gloss = 0.16;
         const fade = this.tex(floorFade(), { name: 'floor-fade' });
         mat.opacityMap = fade;
         mat.opacityMapChannel = 'a';
@@ -168,7 +178,12 @@ export class Studio {
         mat.depthWrite = false;
         mat.update();
         this.materialsExtra.push(mat);
-        const mesh = this.meshOf(lathe([[1, 0], [0, 0]], { segments: 72 }), 'floor');
+        // a plain square with planar uvs: the fade picture must not be wrapped round like a lathe's
+        const quad: MeshData = {
+            positions: [-1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1], normals: [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+            uvs: [0, 0, 1, 0, 1, 1, 0, 1], indices: [0, 2, 1, 0, 3, 2]
+        };
+        const mesh = this.meshOf(quad, 'floor');
         const e = new Entity('floor', this.app);
         e.addComponent('render', { meshInstances: [new MeshInstance(mesh, mat)], castShadows: false, receiveShadows: true });
         this.app.root.addChild(e);
@@ -240,8 +255,8 @@ export class Studio {
         this.radius = 1;
         const h = (model.bounds.max[1] - model.bounds.min[1]) * unit;
         this.target = [0, h * 0.42, 0];
-        const fs = 2.6 * Math.max(1, (model.bounds.max[0] - model.bounds.min[0]) * unit * 0.5);
-        this.floor.setLocalScale(fs * 2.2, 1, fs * 2.2);
+        const fs = 1.9 * Math.max(1, (model.bounds.max[0] - model.bounds.min[0]) * unit * 0.5);
+        this.floor.setLocalScale(fs, 1, fs);
         this.app.renderNextFrame = true;
     }
 
@@ -257,14 +272,15 @@ export class Studio {
         const p = viewPosition(s, this.radius, this.target);
         this.camera.setPosition(p[0], p[1], p[2]);
         this.camera.lookAt(this.target[0], this.target[1], this.target[2]);
-        this.app.renderNextFrame = true;
     }
 
     /** Draw frames (true) or hold the last one (false): a hidden stage costs nothing. */
     setActive(on: boolean): void {
+        this.active = on;
         this.app.autoRender = on;
         if (on) this.app.renderNextFrame = true;
     }
+    private active = true;
 
     resize(): void {
         const dpr = Math.min(2, window.devicePixelRatio || 1);

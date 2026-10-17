@@ -93,6 +93,11 @@ export class Orbit {
         this.flyTo(HOME);
     }
 
+    /** the player is working it (a drag, a momentum, a view change): it wants every frame; the idle turn does not */
+    get interacting(): boolean {
+        return this.dragging || this.goal !== null || Math.abs(this.vel.yaw) > 0.05 || Math.abs(this.vel.pitch) > 0.05;
+    }
+
     get moving(): boolean {
         return this.dragging || this.goal !== null || Math.abs(this.vel.yaw) > 0.05 || Math.abs(this.vel.pitch) > 0.05 || (this.spin && !this.reduceMotion && this.idle >= IDLE_RESUME_S);
     }

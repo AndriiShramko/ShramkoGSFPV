@@ -381,11 +381,12 @@ export interface PropellerOptions {
 export function propeller(o: PropellerOptions): MeshData {
     const R = o.diameter / 2, rh = o.hubRadius;
     const nSt = o.stations ?? 14, nCh = 8;
-    const chordMax = o.chordMax ?? (0.42 * R) / Math.max(1.4, o.blades * 0.62);
+    const chordMax = o.chordMax ?? (0.5 * R) / Math.max(1.4, o.blades * 0.62);
     const th = o.thickness ?? Math.max(0.35, o.diameter * 0.011);
     const pitch = o.pitchRatio * o.diameter;
     const m = emptyMesh();
-    const chordAt = (t: number): number => (t <= 0.55 ? 0.5 + 0.5 * Math.sin((Math.PI / 2) * (t / 0.55)) : 1 - 0.78 * Math.pow((t - 0.55) / 0.45, 2.2)) * chordMax;
+    // widest at 55 % of the span, an elliptical tip: the chord shrinks like sqrt(1 - u^2) and never quite reaches nothing
+    const chordAt = (t: number): number => (t <= 0.55 ? 0.5 + 0.5 * Math.sin((Math.PI / 2) * (t / 0.55)) : Math.max(0.09, Math.sqrt(1 - Math.pow((t - 0.55) / 0.45, 2)))) * chordMax;
     const mirror = o.ccw ? -1 : 1;
     // one blade, then rotated about Y for each blade
     const blade = emptyMesh();

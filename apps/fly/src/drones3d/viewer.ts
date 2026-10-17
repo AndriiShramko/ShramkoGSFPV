@@ -14,6 +14,7 @@ import type { CalloutRow } from './callouts';
 import { modelOf } from './model';
 import type { Anchor, CalloutId, Model } from './model';
 import { Orbit } from './orbit';
+import { viewFor } from './views';
 import type { OrbitState } from './orbit';
 import { PAYLOADS, PAYLOAD_IDS } from './payloads';
 import type { PayloadId } from './payloads';
@@ -71,14 +72,6 @@ function hook(): Hook {
     return (w.__gsfpvDrones3d ??= { created: 0, disposed: 0, live: 0, infos: () => [...liveStages].map((s) => s.info()), lastClosed: null });
 }
 
-const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
-
-/** The view that looks at the side of the model a pin faces (a legend row asks for it). */
-export function viewFor(a: Anchor): Partial<OrbitState> {
-    const n = a.normal ?? [0, 0, -1];
-    return { yaw: (Math.atan2(n[0], -n[2]) * 180) / Math.PI, pitch: clamp((Math.asin(clamp(n[1], -1, 1)) * 180) / Math.PI + 18, 14, 60), dist: 1.75 };
-}
-
 /** The panel colour behind the canvas, so it melts into the picker (the --bg2 of fly.css), as linear 0..1. */
 function panelColour(): [number, number, number] {
     try {
@@ -88,6 +81,8 @@ function panelColour(): [number, number, number] {
     } catch { /* no styles: the default */ }
     return [0.055, 0.067, 0.086];
 }
+
+export { viewFor };
 
 export function mountStage(host: HTMLElement, o: StageOptions): Stage {
     const card = o.mode === 'card';
@@ -153,14 +148,14 @@ export function mountStage(host: HTMLElement, o: StageOptions): Stage {
             }
             if (card) continue;
             const basisTip = t(`d3.basisTip.${r.basis}`);
-            const li = h('li', { 'data-callout': r.id },
+            const li = h('li', { 'data-callout': r.id, class: 'd3-li' },
                 h('button', { type: 'button', class: `d3-row${r.none ? ' none' : ''}`, 'aria-label': `${r.label}: ${r.title}`, onclick: () => focusRow(r.id) },
                     h('span', { class: `d3-n${anchor ? ' pinned' : ''}`, 'aria-hidden': 'true' }, num || '-'),
-                    h('span', { class: 'd3-label' }, r.label,
-                        h('span', { class: `d3-basis ${r.basis}`, title: basisTip }, t(`d3.basis.${r.basis}`)),
-                        r.ref ? h('a', { class: 'd3-src', href: r.ref, target: '_blank', rel: 'noopener noreferrer', onclick: (e: Event) => e.stopPropagation() }, t('d3.source')) : null),
+                    h('span', { class: 'd3-label' }, r.label, h('span', { class: `d3-basis ${r.basis}`, title: basisTip }, t(`d3.basis.${r.basis}`))),
                     h('span', { class: 'd3-title' }, r.title),
-                    h('span', { class: 'd3-facts' }, r.facts.join('  ·  '))));
+                    h('span', { class: 'd3-facts' }, r.facts.join('  ·  '))),
+                // the maker's page, beside the row (a link inside a button would not be valid)
+                r.ref ? h('a', { class: 'd3-src', href: r.ref, target: '_blank', rel: 'noopener noreferrer', 'aria-label': `${r.label}: ${t('d3.source')}` }, t('d3.source')) : null);
             legend.append(li);
         }
         // the camera choice of the cinelifter
@@ -314,6 +309,7 @@ export function mountStage(host: HTMLElement, o: StageOptions): Stage {
             s.onFrame = (dt) => {
                 if (!root.isConnected) { stage.dispose(); return; }
                 orbit.tick(dt);
+                s.halfRate = !orbit.interacting;
                 s.setView(orbit.state);
                 updatePins();
                 if (!status.hidden && s.frames > 1) status.hidden = true;

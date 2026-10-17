@@ -18,6 +18,7 @@ import { PRESETS, REPO } from '../../../packages/prefs/test/helpers';
 import { buildFor } from '../../../apps/fly/src/drones3d/build';
 import { calloutRows, cinelifterNote } from '../../../apps/fly/src/drones3d/callouts';
 import type { Say } from '../../../apps/fly/src/drones3d/callouts';
+import { viewFor } from '../../../apps/fly/src/drones3d/views';
 import { AUTO_SPIN, DIST_MAX, DIST_MIN, HOME, IDLE_RESUME_S, Orbit, PITCH_MAX, PITCH_MIN, viewPosition } from '../../../apps/fly/src/drones3d/orbit';
 import { PAYLOAD_IDS } from '../../../apps/fly/src/drones3d/payloads';
 
@@ -206,5 +207,23 @@ describe('the turntable', () => {
         expect(home[0]).toBeGreaterThan(0);
         expect(home[1]).toBeGreaterThan(0);
         expect(home[2]).toBeLessThan(0);
+    });
+});
+
+describe('what a legend row looks at', () => {
+    const at = (normal: [number, number, number]) => viewFor({ id: 'motors', at: [0, 0, 0], normal });
+    it('the front of the model is seen from yaw 0, its right side from 90, its back from 180, the top from above', async () => {
+        expect(at([0, 0, -1]).yaw).toBeCloseTo(0, 6);
+        expect(at([1, 0, 0]).yaw).toBeCloseTo(90, 6);
+        expect(Math.abs(at([0, 0, 1]).yaw as number)).toBeCloseTo(180, 6);
+        expect(at([-1, 0, 0]).yaw).toBeCloseTo(-90, 6);
+        expect(at([0, 1, 0]).pitch).toBe(60);
+        expect(at([0, 0, -1]).pitch).toBeCloseTo(18, 6);
+        // the camera of that view really is on the pin's side
+        const p = viewPosition({ yaw: at([1, 0, 0]).yaw as number, pitch: 0, dist: 2 }, 1, [0, 0, 0]);
+        expect(p[0]).toBeGreaterThan(1.9);
+    });
+    it('a pin with no direction is seen from the front', () => {
+        expect(viewFor({ id: 'frame', at: [0, 0, 0] }).yaw).toBeCloseTo(0, 6);
     });
 });
