@@ -8,9 +8,9 @@ import { sha256Hex } from '@gsfpv/sim-core';
 import { REPO } from './evidence';
 
 const CDN = 'https://d28zzqy0iyovbz.cloudfront.net';
-const S3 = 'https://s3-eu-west-1.amazonaws.com/splats.playcanvas.com';
+// the S3 path (s3-eu-west-1.amazonaws.com/splats.playcanvas.com) answers 403 since 2026-10-16: the walls come from CloudFront too
 
-/** Files are kept exactly as the CDN stores them; S3 serves the voxel data gzip-encoded. */
+/** Files are kept exactly as the CDN stores them (S3 served the voxel data gzip-encoded; old caches may hold that). */
 function decoded(b: Uint8Array): Uint8Array {
     return b.length > 2 && b[0] === 0x1f && b[1] === 0x8b ? new Uint8Array(gunzipSync(b)) : b;
 }
@@ -55,8 +55,8 @@ export interface LoadedScene {
 }
 
 export async function loadScene(id: string): Promise<LoadedScene> {
-    const json = await cached(id, 'scene.voxel.json', `${S3}/${id}/v1/scene.voxel.json`);
-    const bin = await cached(id, 'scene.voxel.bin', `${S3}/${id}/v1/scene.voxel.bin`);
+    const json = await cached(id, 'scene.voxel.json', `${CDN}/${id}/v1/scene.voxel.json`);
+    const bin = await cached(id, 'scene.voxel.bin', `${CDN}/${id}/v1/scene.voxel.bin`);
     const metadata = JSON.parse(new TextDecoder().decode(json)) as VoxelMetadata;
     const collision = openVoxelCollision(metadata, bin);
     const both = new Uint8Array(json.length + bin.length);

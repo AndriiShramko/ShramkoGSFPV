@@ -10,7 +10,7 @@ const out: Record<string, unknown> = { status: 'running' };
 async function run() {
     const q = new URLSearchParams(location.search);
     const p = compileParams(PRESETS['pavo20pro-3s']);
-    const col = await fetchVoxelCollision('https://s3-eu-west-1.amazonaws.com/splats.playcanvas.com/39e63ce9/v1/scene.voxel.json');
+    const col = await fetchVoxelCollision('https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/scene.voxel.json');
     const world = new VoxelContactWorld(col.collision);
     const spawn = JSON.parse(q.get('spawn') ?? '[0.6857250332832336,1.5809873342514038,0.6940217018127441,-107.22887701503547]') as [number, number, number, number];
     const results = [];
