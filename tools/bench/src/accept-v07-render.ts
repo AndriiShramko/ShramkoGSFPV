@@ -223,8 +223,9 @@ async function stats(p: Page, pngs: Buffer[]): Promise<Any> {
 // ------------------------------------------------------------------ R5
 if (want('R5')) {
     const { ctx, page, log } = await context(browser);
-    // no ?drawing=: a URL value sits in the store's session layer, over what prefs.set() stores
-    const st0 = await open(page, `scene=${A}&governor=0`);
+    // v0.9: the desktop default is stochastic, so the sorted start is the link's (stochastic=0); no ?drawing=: a URL
+    // value sits in the store's session layer, over what prefs.set() stores. The pilot's live change beats the link.
+    const st0 = await open(page, `scene=${A}&governor=0&stochastic=0`);
     // a still picture: the flight model paused, the HUD off, every level of detail in place
     await hook(page, `s.pause(true, 'bake'); h.prefs.set('display.hud', false); return 0;`);
     const settle = async () => {
@@ -276,7 +277,7 @@ if (want('R5')) {
 // Control: the same stochastic view with the layer's clear switched off in the page.
 if (want('R7')) {
     const { ctx, page, log } = await context(browser);
-    const st0 = await open(page, `scene=${A}&governor=0`);
+    const st0 = await open(page, `scene=${A}&governor=0&stochastic=0`);
     await hook(page, `s.pause(true, 'bake'); h.prefs.set('display.hud', false); return 0;`);
     const settle = async () => {
         const t0 = Date.now();
@@ -390,7 +391,8 @@ if (want('R6')) {
     const B = Number(process.env.R6_BUDGET ?? 8);
     const res = /^(\d+)x(\d+)$/.exec(process.env.R6_RES ?? '');
     const key = process.env.R6_TAG ? `R6-${process.env.R6_TAG}` : 'R6';
-    const sortedQs = `scene=${HEAVY}&budget=${B}&stochastic&drawing=sorted&governor=0`;
+    // v0.9: a link beats the pilot's setting, so the sorted run asks for it with the link (stochastic=0), not drawing=sorted
+    const sortedQs = `scene=${HEAVY}&budget=${B}&stochastic=0&governor=0`;
     const stochQs = `scene=${HEAVY}&budget=${B}&stochastic&governor=0`;
     for (const [mode, qs] of [['sorted', sortedQs], ['stochastic', stochQs], ['sorted again', sortedQs], ['stochastic again', stochQs]] as const) {
         const t0 = Date.now();

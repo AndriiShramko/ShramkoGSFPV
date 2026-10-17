@@ -14,9 +14,10 @@
 //       entry (a fake /api/catalog) beats the device but not the pilot.
 //   D5  the owner's exact link (superspl.at/scene/2f1ddf5f?budget=8&stochastic) by every way it is pasted:
 //       the deep link in two spellings, the picker's field, the picker over a flight: stochastic at 8 M.
-//   D6  the pilot's share of the HUD: a refused request still says who asked; the default on a phone does not.
+//       The HUD's share (a refused request still says who asked, the default on a phone does not) is D1 and D3.
 //   SITE=http://127.0.0.1:5391 BASE_SITE=http://127.0.0.1:5392 npx tsx src/accept-v09-render.ts [D1 D2 ...]
-// Evidence: evidence/<date>/v09-render.json
+// Evidence: evidence/<date>/v09-render.json; items run alone (EVIDENCE_DATE: the day of the file to add to) replace
+// their own entries in it and the others stay, as accept-v07-render.ts does.
 import { mkdirSync, rmdirSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Browser, BrowserContext, Page } from 'playwright';
@@ -153,6 +154,8 @@ try {
         check('D4b a stochastic link beats a Sorted setting (stochastic at 8 M, "from the link")', stochasticOn(rows.linkOverSetting) && rows.linkOverSetting.top === 8 && rows.linkOverSetting.drawing?.from?.stochastic === 'link');
         check('D4b control: the base build lets the setting beat the link (sorted)', rows.base.engine === false, true);
         // c. the pilot's change in flight beats the link for that scene; Auto hands over to the link again
+        // (the page is on the BASE build after the control above: back to this build, on the link, first)
+        await open(page, SITE, `scene=${A}&budget=8&stochastic`);
         await hook(page, `h.prefs.set('display.drawing', 'auto'); return 0;`);
         await sleep(400);
         rows.liveStart = await hook(page, STATE);
@@ -226,7 +229,18 @@ try {
     release();
 }
 for (const k of Object.keys(pass)) pass[k] = pass[k] && checks.filter((c) => c.name.startsWith(k)).every((c) => c.ok);
-const file = writeEvidence('v09-render', { site: SITE, baseSite: BASE_SITE, browser: which, pass, checks, items: out });
-console.log(JSON.stringify(pass), file);
-if (existsSync(file) && Object.values(pass).some((v) => !v)) process.exitCode = 1;
-void today;
+// items run alone land in the file of the day: the other items stay, a re-run item replaces its own
+const day = process.env.EVIDENCE_DATE ?? today();
+const prevFile = join(REPO, 'evidence', day, 'v09-render.json');
+type Prev = { pass?: Record<string, boolean>; checks?: { name: string }[]; items?: Record<string, unknown>; runs?: Record<string, string> };
+const prev: Prev = existsSync(prevFile) ? JSON.parse(readFileSync(prevFile, 'utf8')) as Prev : {};
+const ran = Object.keys(pass);
+const keep = (c: { name: string }) => !ran.some((k) => c.name.startsWith(k));
+const stamp = Object.fromEntries(ran.map((k) => [k, new Date().toISOString()]));
+const file = writeEvidence('v09-render', {
+    site: SITE, baseSite: BASE_SITE, browser: which,
+    pass: { ...prev.pass, ...pass }, runs: { ...prev.runs, ...stamp },
+    checks: [...(prev.checks ?? []).filter(keep), ...checks], items: { ...prev.items, ...out }
+}, day);
+console.log(JSON.stringify({ ...prev.pass, ...pass }), file);
+if (existsSync(file) && Object.values({ ...prev.pass, ...pass }).some((v) => !v)) process.exitCode = 1;

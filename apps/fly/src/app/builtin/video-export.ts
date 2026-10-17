@@ -189,7 +189,7 @@ export const videoExport: Feature = {
             showBar(size);
             const r = ctx.renderer;
             const s = ctx.session;
-            const prev = { cinema: ctx.quality.cinema, override: s.cameraOverride, transform: r.sceneTransform };
+            const prev = { cinema: ctx.quality.cinema, override: s.cameraOverride, transform: r.sceneTransform, stochastic: r.stochastic };
             const { w, h: hgt } = EXPORT_SIZES[size];
             let cv: CrashView | null = null;
             try {
@@ -198,6 +198,11 @@ export const videoExport: Feature = {
                 // the picture as cinema draws it: full detail, the governor off, at exactly the video's size
                 ctx.quality.setCinema(true);
                 r.setDetail('final');
+                // v0.9 lane R: the desktop draws stochastic by default, whose grain the encoder spends its bits on
+                // (same bitrate: the file 20-30 % larger, 8-15 dB further from the clean frame, evidence
+                // v09-r-recording.json). A video is a deliberate render nobody watches live, so it is drawn the
+                // classic way and the pilot's drawing returns in restore().
+                r.setStochastic(false);
                 r.setFixedResolution({ w, h: hgt });
                 s.cameraOverride = true;
                 ctx.crash.hold(true);
@@ -298,6 +303,7 @@ export const videoExport: Feature = {
                 r.setSceneTransform(prev.transform[0], [prev.transform[1], prev.transform[2], prev.transform[3]]);
                 ctx.quality.setCinema(prev.cinema);
                 r.setDetail(prev.cinema ? 'final' : 'auto');
+                r.setStochastic(prev.stochastic);
                 ctx.quality.apply();
                 r.renderOnce();
             }
