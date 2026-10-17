@@ -27,6 +27,9 @@ import { BOOST_CODES, GAME_KEYS, KEY_ACRO_DPS, KEY_TILT_DEG, KEY_YAW_DPS, MODE2_
 import { PadGrab, SCREEN_EDGE_PX, UNBOUNDED, absoluteRead, padTravel, reachOf } from '../../../apps/fly/src/play/touch-map';
 import { GOAL_S, SCHOOL_STEPS, SchoolProgress, settingsOf, stepOf } from '../../../apps/fly/src/play/school';
 import { KeyCardShow } from '../../../apps/fly/src/ui/key-card-state';
+import { EasyPilot } from '../../../apps/fly/src/play/easy';
+import type { Controls } from '../../../apps/fly/src/controls';
+import type { FlightSession } from '../../../apps/fly/src/session';
 
 const PRESET_DIR = join(REPO, 'packages', 'sim-core', 'presets');
 const PRESET_IDS = readdirSync(PRESET_DIR).filter((f) => f.endsWith('.json')).map((f) => f.replace(/\.json$/, ''));
@@ -518,5 +521,25 @@ describe('pilot school', () => {
         expect(sp.update(1, { index: 1, airtimeS: GOAL_S[1] + 1, crashes: 0 }).reached).toBe(false);
         // another step starts its own count
         expect(sp.update(2, { index: 1, airtimeS: GOAL_S[1] + 2, crashes: 0 }).seconds).toBe(0);
+    });
+});
+
+describe('easy play during an in-page scene switch (v0.9 lane A)', () => {
+    // the new flight has no model until its walls are in (session.sim undefined): every touch frame of a
+    // switch threw "Cannot read properties of undefined (reading 'armed')" (285 in one switch, accept-v09-load V2)
+    it('no model yet: a frame sends nothing and throws nothing; once the model is there the frame flies', () => {
+        const sent: number[][] = [];
+        const controls = { channels: (ch: ArrayLike<number>) => { sent.push(Array.from(ch)); }, flyingMode: () => 'angle' as FlightMode } as unknown as Controls;
+        let sim: Sim | undefined;
+        const pilot = new EasyPilot(controls, { session: () => ({ sim, paused: false }) as unknown as FlightSession, altitudeHelp: () => false });
+        const ask = { roll: 0.2, pitch: 0, yaw: 0, lift: 0, throttle: 0, boost: false };
+        expect(() => pilot.send(ask, 0)).not.toThrow();
+        expect(() => pilot.send(ask, 16)).not.toThrow();
+        expect(sent.length).toBe(0);
+        // control: the same frame with a model goes through Controls
+        sim = new Sim(params(), null);
+        pilot.send(ask, 33);
+        expect(sent.length).toBe(1);
+        expect(sent[0][0]).toBeCloseTo(0.2);
     });
 });

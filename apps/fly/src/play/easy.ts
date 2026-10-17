@@ -61,9 +61,12 @@ export class EasyPilot {
     /** Sends one frame through Controls (and its arm gate) at page time `tMs`. */
     send(i: PlayIntent, tMs: number): void {
         const s = this.env.session();
-        const sim = s.sim;
+        const sim = s.sim as FlightSession['sim'] | undefined;
         const dt = this.lastT < 0 ? 0 : (tMs - this.lastT) / 1000;
         this.lastT = tMs;
+        // no model yet (an in-page scene switch: the new flight's walls are not in): nothing flies this frame
+        // (v0.9 lane A: every touch frame of a switch threw "reading 'armed'", 285 in one switch)
+        if (!sim) return;
         const a = this.arm.step({ simArmed: sim.armed, crashed: sim.crashed, paused: s.paused, now: tMs });
         let thr: number;
         if (a.holdLow || sim.crashed) {
