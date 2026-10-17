@@ -11,6 +11,7 @@ import { PRESETS, DEFAULT_PRESET } from '../presets';
 import { h } from './dom';
 import { cardHover } from './drone-card';
 import { t } from '../i18n';
+import type { Stage } from '../drones3d';
 import './drone-tune.css';
 
 function srcLabel(src: string): string {
@@ -63,12 +64,17 @@ export class DronePicker {
      */
     onTune: ((id: string) => void) | null = null;
     private readonly current: string;
+    /** v0.9: the 3D stage over the cards (drones3d, a lazy chunk); null until it has loaded, and after the picker closes */
+    private stage: Stage | null = null;
+    private gone = false;
+    private readonly stageSlot: HTMLElement;
 
     /** `store`: the page's settings, for the per-drone count on each card; `tune`: draw the help-us-tune buttons */
     constructor(parent: HTMLElement, current: string, o: { store?: PrefsStore; tune?: boolean } = {}) {
         this.current = current;
         const changed = (id: string): number => o.store?.explicitList({ drone: id }).filter((e) => e.scope === 'drone').length ?? 0;
         const cards = h('div', { class: 'drone-grid' });
+        this.stageSlot = h('div', { class: 'd3-slot', 'data-testid': 'drone-stage-slot' });
         let keep: HTMLButtonElement | null = null;
         for (const [id, p] of Object.entries(PRESETS)) {
             const hover = cardHover(compileParams(p));
@@ -90,6 +96,7 @@ export class DronePicker {
                 hover ? h('p', { class: 'muted small', 'data-testid': 'drone-hover' }, t('drone.hover', { full: String(hover.full), low: String(hover.low) })) : null,
                 changed(id) ? h('p', { class: 'small ok', 'data-testid': 'drone-changed' }, t('prefs.droneChanged', { n: String(changed(id)) })) : null,
                 h('div', { class: 'drone-actions' }, btn,
+                    h('button', { type: 'button', class: 'btn', 'data-action': 'drone-view3d', onclick: () => this.view3d(id) }, t('d3.view3d')),
                     o.tune ? h('button', { type: 'button', class: 'btn', 'data-action': 'drone-tune', onclick: () => this.onTune?.(id) }, t('drone.tune.button')) : null)
             );
             cards.append(card);
@@ -101,10 +108,31 @@ export class DronePicker {
             h('p', { class: 'muted' }, t('drone.sourceNote')),
             o.tune ? h('div', { class: 'drone-tune', 'data-testid': 'drone-tune' }, h('p', {}, t('drone.tune.lead')),
                 h('button', { type: 'button', class: 'btn', 'data-action': 'drone-ask', onclick: () => this.onTune?.('new') }, t('drone.tune.ask'))) : null,
-            cards);
+            this.stageSlot, cards);
         parent.append(this.root);
+        this.loadStage(current);
         // Enter keeps the drone in use; Tab reaches the others
         (keep ?? x).focus({ preventScroll: true });
+    }
+
+    /** The 3D stage is its own chunk: the cards are usable at once, the stage appears when it has loaded. */
+    private loadStage(id: string): void {
+        void import('../drones3d').then((m) => {
+            if (this.gone) return;
+            this.stage = m.mountStage(this.stageSlot, { presets: PRESETS, droneId: id, mode: 'full' });
+            this.mark(id);
+        }).catch((e) => { console.warn('drone stage not loaded', e); this.stageSlot.remove(); });
+    }
+
+    /** "View in 3D" on a card: that drone on the stage, which scrolls into view. */
+    private view3d(id: string): void {
+        this.stage?.setDrone(id);
+        this.mark(id);
+        this.stageSlot.scrollIntoView({ block: 'nearest' });
+    }
+
+    private mark(id: string): void {
+        for (const c of this.root.querySelectorAll('.drone-card')) c.toggleAttribute('data-viewing', c.getAttribute('data-preset') === id);
     }
 
     /** The close button and the current drone's card: nothing changes. Without an onClose, main.ts
@@ -115,6 +143,9 @@ export class DronePicker {
     }
 
     remove(): void {
+        this.gone = true;
+        this.stage?.dispose();
+        this.stage = null;
         this.root.remove();
     }
 }

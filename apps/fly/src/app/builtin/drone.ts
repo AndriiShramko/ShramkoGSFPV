@@ -6,6 +6,9 @@
 // the air goes on from where it is (A.7). Esc, the picker's x and the current drone's own card keep
 // the drone and fly on: no new flight model, no respawn.
 import { DronePicker } from '../../ui/drone';
+import { h } from '../../ui/dom';
+import { PRESETS } from '../../presets';
+import { PauseMenu } from '../menu';
 import { applyCamera, applyModel, pilotSet } from '../prefs';
 import { openFeedback } from './feedback';
 import type { Feature } from '../context';
@@ -13,6 +16,24 @@ import type { Feature } from '../context';
 export const drone: Feature = {
     id: 'drone',
     install(ctx) {
+        // v0.9 lane D: "Your drone" in the pause menu, a small turntable of the drone in use with the numbers that matter.
+        // The 3D models are their own chunk (drones3d): loaded when the menu opens, drawn only while it is open, freed
+        // with it (the stage disposes itself when its element leaves the page).
+        if (ctx.menu instanceof PauseMenu) {
+            ctx.menu.addRow(() => {
+                const host = h('section', { class: 'sum-row d3-host', 'data-testid': 'your-drone' });
+                const id = ctx.session.presetId;
+                void import('../../drones3d').then((m) => {
+                    if (!host.isConnected || !PRESETS[id]) return;
+                    m.mountStage(host, {
+                        presets: PRESETS, droneId: id, mode: 'card',
+                        // the same button as the menu's own "Change drone": the menu closes, the picker opens
+                        onChange: () => host.closest('.pause-menu')?.querySelector<HTMLElement>('[data-action="pause.drone"]')?.click()
+                    });
+                }).catch((e) => console.warn('your-drone card not loaded', e));
+                return host;
+            });
+        }
         ctx.menu.add({
             id: 'pause.drone', action: null, labelKey: 'pause.drone', order: 40, section: 'setup',
             run: () => {
