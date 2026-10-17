@@ -6,6 +6,12 @@
 // (or the replay's own crash view, on the replay's clock), and a bar at the bottom shows the frames
 // done with Cancel (Esc). The file goes where a recording goes (recording.ts: the folder, the
 // browser's storage, memory) with the credit burned in. Every scan, like recording (D36; showcase scans only until v0.7, D34).
+// v0.9 (the owner's item 3b: 10 min at "frame 0" on 1994c65c, then "Codec reclaimed due to inactivity"):
+// the scan is drawn at the engine's own levels of detail under cinema's splat budget, not the finest
+// level everywhere (on a 60 M-splat streamed scan that meant downloading all of it before frame 0); a
+// frame waits for the scan only so long (videoexport.ts), and the bar says what it waits for and when
+// it goes on anyway; the encoder Chrome reclaims while idle comes back (cinema.ts); a failed export
+// offers Try again.
 import { S } from '@gsfpv/sim-core';
 import type { Life } from '@gsfpv/sim-core';
 import { h } from '../../ui/dom';
@@ -35,6 +41,8 @@ export interface ExportResult {
     incomplete: number;
     encodedIncomplete: number;
     crashes: number;
+    /** frames saved after the wait's bound, with the scan still loading for their view */
+    forced: number;
     seconds: number;
     first: ExportPose | null;
     last: ExportPose | null;
@@ -54,6 +62,9 @@ export interface ExportRunOptions {
     stepFps?: number;
     /** test only (control): encode frames whatever the scan's state */
     ignoreScene?: boolean;
+    /** test only: the waits' bounds (videoexport.ts FIRST_WAIT_MS, FRAME_WAIT_MS; Infinity: v0.8's unbounded wait) */
+    firstWaitMs?: number;
+    frameWaitMs?: number;
 }
 
 /** window.__gsfpv.videoExport: the acceptance drives the export and checks it against its own replay. */
@@ -123,6 +134,9 @@ export const videoExport: Feature = {
         const cancelBtn = h('button', { type: 'button', class: 'btn', 'data-action': 'video-export-cancel', onclick: () => cancel() }, t('rec.export.cancel')) as HTMLButtonElement;
         const closeBtn = h('button', { type: 'button', class: 'btn', 'data-action': 'video-export-close', hidden: true, onclick: () => close() }, t('rec.export.close')) as HTMLButtonElement;
         const offer = h('span', { class: 'vx-offer' });
+        /** the options of the last run, for Try again */
+        let lastRun: ExportRunOptions = {};
+        const retryBtn = h('button', { type: 'button', class: 'btn primary', 'data-action': 'video-export-retry', hidden: true, onclick: () => { hideBar(); void run(lastRun); } }, t('rec.export.retry')) as HTMLButtonElement;
         const onKey = (e: KeyboardEvent): void => {
             if (!bar) return;
             // the flight is paused under the bar: its keys (P, Esc, the flight's) are not for now
@@ -140,8 +154,9 @@ export const videoExport: Feature = {
             offer.replaceChildren();
             cancelBtn.hidden = false;
             closeBtn.hidden = true;
+            retryBtn.hidden = true;
             bar = h('div', { class: 'vx-bar interactive', role: 'dialog', 'aria-labelledby': 'vx-title', 'data-testid': 'video-export-bar' },
-                h('div', { class: 'vx-head' }, title, cancelBtn, closeBtn), progress, h('div', { class: 'vx-line' }, status, offer));
+                h('div', { class: 'vx-head' }, title, cancelBtn, retryBtn, closeBtn), progress, h('div', { class: 'vx-line' }, status, offer));
             ctx.ui.append(bar);
             addEventListener('keydown', onKey, { capture: true });
             cancelBtn.focus();
@@ -167,11 +182,12 @@ export const videoExport: Feature = {
         // ------------------------------------------------------------------ one run
         async function run(o: ExportRunOptions = {}): Promise<ExportResult> {
             const size = o.size ?? defaultSize();
+            lastRun = { ...o, size };
             const cur = currentRange();
             const lives = o.lives ?? cur.lives;
             const fromTick = o.fromTick ?? (o.lives ? lives[0]?.header.life.startTick ?? 0 : cur.from);
             const toTick = o.toTick ?? (o.lives ? lives[lives.length - 1]?.endTick ?? 0 : cur.to);
-            const result: ExportResult = { ended: 'error', size, frames: 0, encoded: 0, startTick: fromTick, endTick: toTick, stepFps: o.stepFps ?? 60, waited: 0, incomplete: 0, encodedIncomplete: 0, crashes: 0, seconds: 0, first: null, last: null, info: null, creditStripStd: 0 };
+            const result: ExportResult = { ended: 'error', size, frames: 0, encoded: 0, startTick: fromTick, endTick: toTick, stepFps: o.stepFps ?? 60, waited: 0, incomplete: 0, encodedIncomplete: 0, crashes: 0, forced: 0, seconds: 0, first: null, last: null, info: null, creditStripStd: 0 };
             const share = recordingOf(ctx);
             const no = why(lives, fromTick, toTick);
             if (no || !share || running) {
@@ -195,13 +211,16 @@ export const videoExport: Feature = {
             try {
                 const recorder = await share.rec.openExport({ width: w, height: hgt, activation });
                 running.recorder = recorder;
-                // the picture as cinema draws it: full detail, the governor off, at exactly the video's size
+                // cinema's splat budget with the governor off, at exactly the video's size; the levels of detail the
+                // engine picks by distance under that budget (SuperSplat's own way), not the finest level everywhere:
+                // on 1994c65c (60 M splats) 'final' had frame 0 wait for the whole scan (evidence/2026-10-17/
+                // v09-load-probe-base-export.json: 0.8 -> 59.7 M splats in 70 s on a fast link, 10 min on the owner's)
                 ctx.quality.setCinema(true);
-                r.setDetail('final');
+                r.setDetail('auto');
                 r.setFixedResolution({ w, h: hgt });
                 s.cameraOverride = true;
                 ctx.crash.hold(true);
-                const ex = new LogExport(lives, s.wallsSource, { fromTick, toTick, stepFps: o.stepFps, ignoreScene: o.ignoreScene }, r, view(), {
+                const ex = new LogExport(lives, s.wallsSource, { fromTick, toTick, stepFps: o.stepFps, ignoreScene: o.ignoreScene, firstWaitMs: o.firstWaitMs, frameWaitMs: o.frameWaitMs, now: () => performance.now() }, r, view(), {
                     get canTake() { return recorder.canTake; },
                     take: () => recorder.addExact(ctx.canvas) >= 0
                 });
@@ -243,9 +262,22 @@ export const videoExport: Feature = {
                 }
                 progress.max = Math.max(1, ex.frames);
                 await ex.prepare();
+                /** Frame k of n and what it waits for: the scan (files on their way, when it goes on anyway), the encoder, a hidden tab. */
+                const say = (): void => {
+                    progress.value = ex.k;
+                    const waitS = ex.forcedInMs();
+                    const why = document.hidden ? t('rec.export.hidden')
+                        : ex.waitingFor === 'scan' ? (waitS === null ? t('rec.export.loading') : t('rec.export.waitScan', { n: r.splatFrame.loading, s: Math.max(1, Math.ceil(waitS / 1000)) }))
+                        : ex.waitingFor === 'encoder' ? t('rec.export.waitEncoder') : '';
+                    status.textContent = `${t('rec.export.progress', { k: ex.k, n: ex.frames })}${why ? ` · ${why}` : ''}`;
+                };
+                // a hidden tab draws no frames: the export waits, and the bar says so when it is seen again
+                const onVisibility = (): void => say();
+                document.addEventListener('visibilitychange', onVisibility);
+                say();
                 const ended = await new Promise<'done' | 'cancel' | 'error'>((resolve) => {
                     let shown = 0;
-                    const off = (v: 'done' | 'cancel' | 'error'): void => { r.app.off('frameend', onEnd); resolve(v); };
+                    const off = (v: 'done' | 'cancel' | 'error'): void => { r.app.off('frameend', onEnd); document.removeEventListener('visibilitychange', onVisibility); resolve(v); };
                     const onEnd = (): void => {
                         if (running?.cancelled) return off('cancel');
                         if (!recorder.recording) return off('error'); // the memory cap, a full disk, access lost
@@ -257,13 +289,12 @@ export const videoExport: Feature = {
                         const now = performance.now();
                         if (now - shown > 200) {
                             shown = now;
-                            progress.value = ex.k;
-                            status.textContent = `${t('rec.export.progress', { k: ex.k, n: ex.frames })}${step === 'wait' && !r.sceneComplete ? ` · ${t('rec.export.loading')}` : ''}`;
+                            say();
                         }
                     };
                     r.app.on('frameend', onEnd);
                 });
-                Object.assign(result, { ended, encoded: ex.k, waited: ex.waited, incomplete: ex.incomplete, encodedIncomplete: ex.encodedIncomplete, crashes: ex.crashes, first: ex.first, last: ex.last, creditStripStd: recorder.lastCreditStripStd });
+                Object.assign(result, { ended, encoded: ex.k, waited: ex.waited, incomplete: ex.incomplete, encodedIncomplete: ex.encodedIncomplete, crashes: ex.crashes, forced: ex.forced, first: ex.first, last: ex.last, creditStripStd: recorder.lastCreditStripStd });
                 restore();
                 if (ended === 'cancel') await share.rec.cancelExport(recorder);
                 else {
@@ -281,11 +312,13 @@ export const videoExport: Feature = {
             running = null;
             progress.value = result.encoded;
             status.textContent = result.ended === 'done' && result.info
-                ? `${t('rec.export.done', { n: result.encoded })} · ${result.info.where === 'folder' ? t('rec.saved', { s: result.info.seconds.toFixed(1), name: result.info.folder, mb: (result.info.bytes / 1048576).toFixed(1) }) : t('rec.savedBrowser', { s: result.info.seconds.toFixed(1), mb: (result.info.bytes / 1048576).toFixed(1) })}`
+                ? `${t('rec.export.done', { n: result.encoded })} · ${result.info.where === 'folder' ? t('rec.saved', { s: result.info.seconds.toFixed(1), name: result.info.folder, mb: (result.info.bytes / 1048576).toFixed(1) }) : t('rec.savedBrowser', { s: result.info.seconds.toFixed(1), mb: (result.info.bytes / 1048576).toFixed(1) })}${result.forced > 0 ? ` · ${t('rec.export.forced', { n: result.forced })}` : ''}`
                 : result.ended === 'cancel' ? t('rec.export.cancelled') : t('rec.export.failed', { e: result.error ?? result.info?.error ?? '' });
             cancelBtn.hidden = true;
             closeBtn.hidden = false;
-            closeBtn.focus();
+            // a real failure (not the pilot's cancel): the same export once more with one press
+            retryBtn.hidden = result.ended !== 'error';
+            (result.ended === 'error' ? retryBtn : closeBtn).focus();
             return result;
 
             /** Everything as it was before the export: the canvas size, the quality, the scene, the camera. */

@@ -137,3 +137,52 @@ describe('LogExport on a flown life (fake engine)', () => {
         expect(hx.ex.encodedIncomplete).toBeGreaterThan(0);
     });
 });
+
+/**
+ * v0.9 (the owner's item 3b): a scan that never becomes complete for the view (1994c65c at the finest
+ * level: 70 s on a fast link, 10 min on the owner's, evidence/2026-10-17/v09-load-probe-base-export.json).
+ * A fake clock moves 33 ms per drawn frame (a 30 Hz display).
+ */
+describe('a frame waits for the scan only so long (the export always finishes)', () => {
+    async function never(o: Partial<LogExportOptions>) {
+        let clock = 0;
+        const engine = { frameNumber: 0, sceneComplete: false };
+        let current: Sim | null = null;
+        const view: ExportView = {
+            beforeStep: () => undefined, crash: async () => undefined, respawn: () => undefined, transform: () => undefined,
+            show: (sim) => { current = sim; },
+            camera: () => { const s = current!.s; return [s[S.px], s[S.py], s[S.pz]]; }
+        };
+        const ex = new LogExport(LIVES, WALLS, { fromTick: FROM, toTick: FROM + 1000, now: () => clock, ...o }, engine, view, { canTake: true, take: () => true });
+        await ex.prepare();
+        const waits: string[] = [];
+        let drawn = 0;
+        for (; drawn < 50_000 && !ex.done; drawn++) {
+            engine.frameNumber++;
+            clock += 33;
+            if (ex.onFrameEnd() === 'took') await ex.prepare();
+            else if (ex.waitingFor && waits[waits.length - 1] !== ex.waitingFor) waits.push(ex.waitingFor);
+        }
+        return { ex, drawn, seconds: clock / 1000, waits };
+    }
+
+    it('60 frames: the first after 20 s, each next after 4 s, all counted as forced; the bar is told what it waits for', async () => {
+        const r = await never({});
+        expect(r.ex.frames).toBe(60);
+        expect(r.ex.k).toBe(60);
+        expect(r.ex.forced).toBe(60);
+        expect(r.ex.encodedIncomplete).toBe(60);
+        // 20 s + 59 x 4 s of waiting, within one frame each
+        expect(r.seconds).toBeGreaterThan(20 + 59 * 4 - 1);
+        expect(r.seconds).toBeLessThan(20 + 59 * 4 + 60 * 0.1);
+        expect(r.waits).toContain('scan');
+    });
+
+    it('control: v0.8\'s unbounded wait (Infinity) never gets past frame 0', async () => {
+        const r = await never({ firstWaitMs: Infinity, frameWaitMs: Infinity });
+        expect(r.drawn).toBe(50_000);
+        expect(r.ex.k).toBe(0);
+        expect(r.ex.forced).toBe(0);
+        expect(r.ex.forcedInMs()).toBeNull();
+    });
+});

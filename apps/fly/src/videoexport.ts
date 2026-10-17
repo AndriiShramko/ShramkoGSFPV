@@ -3,7 +3,10 @@
 // flight time; each frame is drawn on demand and encoded only once the engine drew it with the scan
 // complete for that view (nothing loading, every level of detail in place: the gsplat
 // 'frame:ready'), so the file is the clean 60 fps a live recording cannot be (a live one repeats
-// what the screen missed). The flight model is the log's own (LivesPlayer: params and walls from
+// what the screen missed). The wait for a frame is bounded (v0.9, the owner's item 3b: 10 minutes at
+// "frame 0" on 1994c65c, then Chrome reclaimed the idle encoder): after FIRST_WAIT_MS for the first
+// frame and FRAME_WAIT_MS for any other, the frame is encoded with what the engine has (counted in
+// `forced`), so the export always finishes. The flight model is the log's own (LivesPlayer: params and walls from
 // each life's header); the scan is drawn under the transform the life was flown at (its header,
 // then each world record, E.7); a crash is drawn by a CrashView on this replay's clock.
 //
@@ -24,6 +27,16 @@ export const EXPORT_SIZES: Readonly<Record<ExportSize, { w: number; h: number }>
 };
 
 export const EXPORT_FPS = 60;
+
+/**
+ * The longest the first frame waits for the scan to be complete for its view, ms: the engine fills the
+ * splat budget from nothing (16 M splats of a streamed scan is ~270 MB). Measured on 1994c65c (60 M
+ * splats) at the export's old finest-level detail: 70 s at frame 0 on a fast link, 10 min on the
+ * owner's (evidence/2026-10-17/v09-load-probe-base-export.json).
+ */
+export const FIRST_WAIT_MS = 20000;
+/** The longest any later frame waits, ms: the view moves 1/60 s per frame, so little is new. */
+export const FRAME_WAIT_MS = 4000;
 
 /** Frames of `durationTicks` ms of flight at `fps`: frame k shows k/fps s (300 for 5 s at 60; ticks x fps first, so no period is rounded). */
 export function exportFrameCount(durationTicks: number, fps: number = EXPORT_FPS): number {
@@ -88,7 +101,15 @@ export interface LogExportOptions {
     stepFps?: number;
     /** Test only (control): encode frames whatever the scan's state. */
     ignoreScene?: boolean;
+    /** the first frame's and every later frame's longest wait for a complete scan, ms (Infinity: v0.8's unbounded wait, the control) */
+    firstWaitMs?: number;
+    frameWaitMs?: number;
+    /** the clock the waits are measured on (the page: performance.now; tests: a fake) */
+    now?: () => number;
 }
+
+/** What the frame being made waits for (the bar says it). */
+export type ExportWait = 'pose' | 'scan' | 'encoder' | null;
 
 export type ExportStep = 'wait' | 'took' | 'done';
 
@@ -108,8 +129,17 @@ export class LogExport {
     waited = 0;
     /** of those, frames drawn with the scan incomplete */
     incomplete = 0;
-    /** frames encoded with the scan incomplete (0 unless ignoreScene) */
+    /** frames encoded with the scan incomplete (after the wait's bound, or ignoreScene) */
     encodedIncomplete = 0;
+    /** of those, frames encoded because the wait reached its bound (the scan still loading for that view) */
+    forced = 0;
+    /** what the frame being made waits for now */
+    waitingFor: ExportWait = null;
+    private readonly firstWaitMs: number;
+    private readonly frameWaitMs: number;
+    private readonly now: () => number;
+    /** when frame k's pose was first drawn (its wait began), -1 before */
+    private waitFrom = -1;
     first: ExportPose | null = null;
     last: ExportPose | null = null;
     crashes = 0;
@@ -125,6 +155,9 @@ export class LogExport {
         this.fps = o.fps ?? EXPORT_FPS;
         this.stepFps = o.stepFps ?? this.fps;
         this.ignoreScene = o.ignoreScene === true;
+        this.firstWaitMs = o.firstWaitMs ?? FIRST_WAIT_MS;
+        this.frameWaitMs = o.frameWaitMs ?? FRAME_WAIT_MS;
+        this.now = o.now ?? (() => performance.now());
         const first = lives.findIndex((l) => l.endTick > o.fromTick);
         const from = lives.slice(Math.max(0, first));
         this.player = new LivesPlayer(from, walls, o.toTick);
@@ -153,6 +186,13 @@ export class LogExport {
 
     get done(): boolean {
         return this.k >= this.frames;
+    }
+
+    /** ms until the frame being made is encoded whatever the scan's state (null: not waiting for the scan). */
+    forcedInMs(): number | null {
+        if (this.waitingFor !== 'scan' || this.waitFrom < 0) return null;
+        const bound = this.k === 0 ? this.firstWaitMs : this.frameWaitMs;
+        return Number.isFinite(bound) ? Math.max(0, bound - (this.now() - this.waitFrom)) : null;
     }
 
     /** Steps the replay to frame k's tick and places the camera. Async only when a crash shows (Rapier). */
@@ -200,14 +240,32 @@ export class LogExport {
     onFrameEnd(): ExportStep {
         if (this.done) return 'done';
         // the pose was set after this frame began: it is the next one that shows it
-        if (!this.prepared || this.engine.frameNumber <= this.prepFrame) return 'wait';
-        const complete = this.engine.sceneComplete;
-        if (!complete) this.incomplete++;
-        if ((!complete && !this.ignoreScene) || !this.sink.canTake || !this.sink.take()) {
-            this.waited++;
+        if (!this.prepared || this.engine.frameNumber <= this.prepFrame) {
+            this.waitingFor = 'pose';
             return 'wait';
         }
-        if (!complete) this.encodedIncomplete++;
+        const now = this.now();
+        if (this.waitFrom < 0) this.waitFrom = now;
+        const complete = this.engine.sceneComplete;
+        if (!complete) this.incomplete++;
+        // bounded: past it, the frame shows what the engine has for this view (the export always finishes)
+        const overdue = !complete && now - this.waitFrom >= (this.k === 0 ? this.firstWaitMs : this.frameWaitMs);
+        if (!complete && !this.ignoreScene && !overdue) {
+            this.waited++;
+            this.waitingFor = 'scan';
+            return 'wait';
+        }
+        if (!this.sink.canTake || !this.sink.take()) {
+            this.waited++;
+            this.waitingFor = 'encoder';
+            return 'wait';
+        }
+        if (!complete) {
+            this.encodedIncomplete++;
+            if (!this.ignoreScene) this.forced++;
+        }
+        this.waitFrom = -1;
+        this.waitingFor = null;
         const s = this.player.sim.s;
         const pose: ExportPose = {
             k: this.k, tick: this.player.sim.tick,
