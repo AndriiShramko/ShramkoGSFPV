@@ -386,6 +386,25 @@ describe('the governor\'s top budget (a link\'s ?budget=)', () => {
         expect(g.current.splatBudgetMillions).toBeGreaterThan(DEFAULT_STEPS[g.step].splatBudgetMillions);
     });
 
+    it('v0.9: the desktop default top (STOCHASTIC_BUDGET_M) on a 30 Hz display: on-time frames never lower it', () => {
+        // the owner's 4K monitor runs 30 Hz over HDMI; the default top is above the old 4 M, so the governor must
+        // treat a calm 30 Hz as calm at the new top too (steps 8, 6, 5, 4, 3 M)
+        const g = new FrameGovernor();
+        g.setTopBudget(STOCHASTIC_BUDGET_M);
+        expect(g.steps.map((s) => s.splatBudgetMillions)).toEqual(DEFAULT_STEPS.map((s) => s.splatBudgetMillions * STOCHASTIC_BUDGET_M / DEFAULT_BUDGET_M));
+        const p = 1000 / 30;
+        let t = 0;
+        for (let i = 0; i < 30 * 40; i++) { t += p; g.onFrame(t); }
+        expect([g.step, g.changes, g.current.splatBudgetMillions]).toEqual([0, 0, STOCHASTIC_BUDGET_M]);
+        // control: the same governor with every other frame late does step down, so the calm above is the frames' and not a dead governor
+        const h = new FrameGovernor();
+        h.setTopBudget(STOCHASTIC_BUDGET_M);
+        let u = 0, k = 0;
+        h.onFrame(u);
+        while (u < 8000) { u += p * (k++ % 2 ? 3 : 1); h.onFrame(u); }
+        expect(h.step).toBeGreaterThan(0);
+    });
+
     it('control: without setTopBudget the governor never gives more than 4 M', () => {
         const g = new FrameGovernor();
         expect(Math.max(...g.steps.map((s) => s.splatBudgetMillions))).toBe(4);

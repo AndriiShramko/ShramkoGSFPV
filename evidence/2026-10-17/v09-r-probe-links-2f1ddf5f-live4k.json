@@ -1,0 +1,542 @@
+{
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "scene": "2f1ddf5f",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "link": "https://superspl.at/scene/2f1ddf5f?budget=8&stochastic",
+  "results": {
+    "P1": {
+      "how": "deep link, scene= the whole link, percent-encoded (the landing)",
+      "loadedMs": 5125,
+      "ready": "ready",
+      "status": "ready",
+      "drawing": {
+        "scene": "2f1ddf5f",
+        "mode": "auto",
+        "request": {
+          "budgetM": 8,
+          "stochastic": true
+        },
+        "stochastic": true,
+        "budgetM": 8,
+        "note": null,
+        "engineStochastic": true,
+        "engineBudgetM": 8,
+        "handheld": false,
+        "mobile": false,
+        "webgpu": true
+      },
+      "engineStochastic": true,
+      "engineBudgetM": 8,
+      "renderer": 2,
+      "top": 8,
+      "step": 0,
+      "changes": 0,
+      "renderScale": 1,
+      "search": "?scene=2f1ddf5f&nowarn=1&input=touch&budget=8&stochastic",
+      "note": "Stochastic drawing (SuperSplat beta), 8 M splats · Settings → Display",
+      "picker": false,
+      "pickerError": "",
+      "timeline": [
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.167999999999665
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.167999999999665
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999891
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999891
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.167999999999665
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999891
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999891
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999709
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.167999999999665
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.100000000000364
+        }
+      ],
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+      ]
+    },
+    "P2": {
+      "how": "deep link, scene= the whole link pasted raw after ?scene=",
+      "loadedMs": 4828,
+      "ready": "ready",
+      "status": "ready",
+      "drawing": {
+        "scene": "2f1ddf5f",
+        "mode": "auto",
+        "request": {
+          "budgetM": 8,
+          "stochastic": true
+        },
+        "stochastic": true,
+        "budgetM": 8,
+        "note": null,
+        "engineStochastic": true,
+        "engineBudgetM": 8,
+        "handheld": false,
+        "mobile": false,
+        "webgpu": true
+      },
+      "engineStochastic": true,
+      "engineBudgetM": 8,
+      "renderer": 2,
+      "top": 8,
+      "step": 0,
+      "changes": 0,
+      "renderScale": 1,
+      "search": "?scene=2f1ddf5f&stochastic&nowarn=1&input=touch&budget=8",
+      "note": "Stochastic drawing (SuperSplat beta), 8 M splats · Settings → Display",
+      "picker": false,
+      "pickerError": "",
+      "timeline": [
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.100000000000364
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.100000000000364
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999891
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999891
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999891
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999891
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999891
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999891
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999709
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999709
+        }
+      ],
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+      ]
+    },
+    "P4": {
+      "how": "picker field, link typed, Enter",
+      "loadedMs": 57,
+      "ready": "picker",
+      "status": "ready",
+      "drawing": {
+        "scene": "2f1ddf5f",
+        "mode": "auto",
+        "request": {
+          "budgetM": 8,
+          "stochastic": true
+        },
+        "stochastic": true,
+        "budgetM": 8,
+        "note": null,
+        "engineStochastic": true,
+        "engineBudgetM": 8,
+        "handheld": false,
+        "mobile": false,
+        "webgpu": true
+      },
+      "engineStochastic": true,
+      "engineBudgetM": 8,
+      "renderer": 2,
+      "top": 8,
+      "step": 0,
+      "changes": 0,
+      "renderScale": 1,
+      "search": "?nowarn=1&input=touch&scene=2f1ddf5f&budget=8&stochastic",
+      "note": "Stochastic drawing (SuperSplat beta), 8 M splats · Settings → Display",
+      "picker": false,
+      "pickerError": "",
+      "timeline": [
+        {
+          "step": null,
+          "changes": null,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999982
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999982
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999982
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999982
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999982
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999891
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999891
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999891
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999891
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 8,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.19999999999709
+        }
+      ],
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+      ]
+    },
+    "P5": {
+      "how": "control: plain deep link (no parameters)",
+      "loadedMs": 6810,
+      "ready": "ready",
+      "status": "ready",
+      "drawing": {
+        "scene": "2f1ddf5f",
+        "mode": "auto",
+        "request": null,
+        "stochastic": false,
+        "budgetM": 4,
+        "note": null,
+        "engineStochastic": false,
+        "engineBudgetM": 4,
+        "handheld": false,
+        "mobile": false,
+        "webgpu": true
+      },
+      "engineStochastic": false,
+      "engineBudgetM": 4,
+      "renderer": 2,
+      "top": 4,
+      "step": 0,
+      "changes": 0,
+      "renderScale": 1,
+      "search": "?scene=2f1ddf5f&nowarn=1&input=touch",
+      "note": "",
+      "picker": false,
+      "pickerError": "",
+      "timeline": [
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 4,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.099999999999454
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 4,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.100000000000364
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 4,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.100000000000364
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 4,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.100000000000364
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 4,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.100000000000364
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 4,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.100000000000364
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 4,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.100000000000364
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 4,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.100000000000364
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 4,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.100000000000364
+        },
+        {
+          "step": 0,
+          "changes": 0,
+          "budgetM": 4,
+          "scale": 1,
+          "w": 3840,
+          "h": 2160,
+          "period": 33.100000000000364
+        }
+      ],
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+      ]
+    }
+  }
+}

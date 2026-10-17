@@ -284,7 +284,9 @@ v0.7 fields (`packages/scenes/src/catalog.ts` and `admin.py` keep the same rules
 `geo` `{lat, lon, place?}` (WGS84, 3 decimals), `compassDeg` (0-360, the compass heading of the scene's
 forward axis), `wind` `{fromDeg 0-360, speed 0-30 m/s, gust 0-20 m/s above the mean, source manual|climate}`,
 `ceilingM` (collisions ignored above it, scan coordinates), `render` `{budgetM 0.25-32, stochastic}` (from a
-pasted link's `?budget=&stochastic`), `about` (our words for the scene page, per language, 1500 characters),
+pasted link's `?budget=&stochastic`; since v0.9 `stochastic` is true, false = the owner wants this scene drawn
+the classic sorted way, or absent = the device's default, which is stochastic on a desktop WebGPU browser; the
+pilot's own Render / Splat budget settings and a link's parameters outrank it), `about` (our words for the scene page, per language, 1500 characters),
 `origin` `{url (superspl.at only), description (600), tags (12), created (ISO), user (SuperSplat user name)}`
 (what SuperSplat said: filled by "Add a scene" and "Refresh from SuperSplat"), `extentM` `[x, y, z]` (the
 scan's bounding box in metres, from its collision file).
