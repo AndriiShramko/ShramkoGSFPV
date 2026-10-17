@@ -1,12 +1,19 @@
-// Scene rotation (docs/architecture-v03.md E.3, E.5; the owner's item 10): which scene N (next),
-// Shift+N (random) and F (next favourite) load, and which one follows a crash when scenes.autoSwitch
-// is on. Pure: the curated list and the library come in through deps, the random numbers through rng.
+// Scene rotation (docs/architecture-v03.md E.3, E.5; the owner's item 10): which scene Shift+N (random)
+// and F (next favourite) load, and which one N (next) and the scene after a crash (scenes.autoSwitch)
+// load from the pilot's own sources (favourites, history). N and the crash from the owner's catalogue
+// go through the tour (tour.ts: the catalogue in his order, then SuperSplat). Pure: the curated list
+// and the library come in through deps, the random numbers through rng.
 //   - random order: a shuffle bag per source: no scene comes twice before every scene of the
 //     source has come once, and the current scene never comes;
 //   - sequential: the source's own order, after the current scene, wrapping;
-//   - skipped: scenes without walls (unless allowNoWalls), scenes that failed to load in the last
-//     24 h. `skip: false` turns the skipping off (the tests' negative control).
-// Random SuperSplat scenes by likes (E.6 phase 2) are not here yet: Shift+N draws from the curated list.
+//   - skipped: scenes that failed to load in the last 24 h; for the pilot's own sources (history,
+//     favourites) also scenes without walls (unless allowNoWalls). `skip: false` turns the skipping
+//     off (the tests' negative control).
+// The owner's catalogue is never filtered by walls: it is his shop window, the picker shows every
+// scene he published (TAB_FILTERS.showcase has no walls control), and N has to reach all of them. Until
+// v0.9 this file filtered the catalogue by walls as well, and since 9 of the owner's 13 scenes are
+// published without a walls file, N, Shift+N and the scene after a crash drew from only 4 of them.
+// Random SuperSplat scenes by likes (E.6 phase 2) are not here: Shift+N draws from the curated list.
 import { failedRecently, opened } from './library';
 import type { SceneLibraryData } from './library';
 
@@ -51,12 +58,14 @@ export class SceneRotation {
             return lib.history.find((e) => e.id === id)?.hasCollision ?? null;
         };
         const ids = source === 'curated' ? curated.map((s) => s.id) : source === 'favourites' ? lib.favourites : opened(lib).map((e) => e.id);
+        // the walls rule is a discovery filter: it applies to what the pilot collected, never to the owner's list
+        const wallsRule = source !== 'curated' && !rules.allowNoWalls;
         const out: string[] = [];
         for (const id of ids) {
             if (out.includes(id)) continue;
             if (rules.skip !== false) {
                 // unknown (null) counts as walls: a never-opened favourite is not left out on a guess
-                if (!rules.allowNoWalls && walls(id) === false) continue;
+                if (wallsRule && walls(id) === false) continue;
                 if (failedRecently(lib, id, now)) continue;
             }
             out.push(id);
