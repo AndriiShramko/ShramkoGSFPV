@@ -30,6 +30,7 @@
   "rec.export.hidden": "wstrzymane, dopóki ta karta jest ukryta",
   "rec.export.forced": "Klatki zapisane, zanim skan był kompletny dla ich widoku: {n}",
   "rec.export.retry": "Spróbuj ponownie",
+  "rec.export.starting": "uruchamiamy koder wideo…",
   "rec.export.cancel": "Anuluj",
   "rec.export.close": "Zamknij",
   "rec.export.cancelled": "Wideo nie zostało zapisane: anulowano.",

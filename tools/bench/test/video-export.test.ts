@@ -166,16 +166,23 @@ describe('a frame waits for the scan only so long (the export always finishes)',
         return { ex, drawn, seconds: clock / 1000, waits };
     }
 
-    it('60 frames: the first after 20 s, each next after 4 s, all counted as forced; the bar is told what it waits for', async () => {
+    it('60 frames: the first after 20 s, the next ones after 4 s until their share (60 x 0.15 s) is spent, all forced; the bar is told', async () => {
         const r = await never({});
         expect(r.ex.frames).toBe(60);
         expect(r.ex.k).toBe(60);
         expect(r.ex.forced).toBe(60);
         expect(r.ex.encodedIncomplete).toBe(60);
-        // 20 s + 59 x 4 s of waiting, within one frame each
-        expect(r.seconds).toBeGreaterThan(20 + 59 * 4 - 1);
-        expect(r.seconds).toBeLessThan(20 + 59 * 4 + 60 * 0.1);
+        // 20 s for frame 0, then 9 s for all the others together (4 + 4 + 1), within a frame each
+        expect(r.seconds).toBeGreaterThan(20 + 9 - 0.1);
+        expect(r.seconds).toBeLessThan(20 + 9 + 60 * 0.1);
         expect(r.waits).toContain('scan');
+    });
+
+    it('a share large enough: every later frame waits its full 4 s', async () => {
+        const r = await never({ waitShareMs: 10_000 });
+        expect(r.ex.k).toBe(60);
+        expect(r.seconds).toBeGreaterThan(20 + 59 * 4 - 0.1);
+        expect(r.seconds).toBeLessThan(20 + 59 * 4 + 60 * 0.1);
     });
 
     it('control: v0.8\'s unbounded wait (Infinity) never gets past frame 0', async () => {

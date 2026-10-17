@@ -30,6 +30,7 @@
   "rec.export.hidden": "пауза, пока эта вкладка скрыта",
   "rec.export.forced": "Кадров сохранено до того, как скан был полным для их вида: {n}",
   "rec.export.retry": "Попробовать ещё раз",
+  "rec.export.starting": "запускаем видеокодер…",
   "rec.export.cancel": "Отмена",
   "rec.export.close": "Закрыть",
   "rec.export.cancelled": "Видео не сохранено: отменено.",

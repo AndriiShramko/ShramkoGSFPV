@@ -30,6 +30,7 @@
   "rec.export.hidden": "en pausa mientras esta pestaña está oculta",
   "rec.export.forced": "{n} fotogramas se guardaron antes de que el escaneo estuviera completo para su vista",
   "rec.export.retry": "Reintentar",
+  "rec.export.starting": "iniciando el codificador de vídeo…",
   "rec.export.cancel": "Cancelar",
   "rec.export.close": "Cerrar",
   "rec.export.cancelled": "Vídeo no guardado: cancelado.",

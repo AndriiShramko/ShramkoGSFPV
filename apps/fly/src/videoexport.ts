@@ -5,8 +5,8 @@
 // 'frame:ready'), so the file is the clean 60 fps a live recording cannot be (a live one repeats
 // what the screen missed). The wait for a frame is bounded (v0.9, the owner's item 3b: 10 minutes at
 // "frame 0" on 1994c65c, then Chrome reclaimed the idle encoder): after FIRST_WAIT_MS for the first
-// frame and FRAME_WAIT_MS for any other, the frame is encoded with what the engine has (counted in
-// `forced`), so the export always finishes. The flight model is the log's own (LivesPlayer: params and walls from
+// frame and FRAME_WAIT_MS for any other (and WAIT_SHARE_MS per frame for all of them together), the
+// frame is encoded with what the engine has (counted in `forced`), so the export always finishes. The flight model is the log's own (LivesPlayer: params and walls from
 // each life's header); the scan is drawn under the transform the life was flown at (its header,
 // then each world record, E.7); a crash is drawn by a CrashView on this replay's clock.
 //
@@ -37,6 +37,13 @@ export const EXPORT_FPS = 60;
 export const FIRST_WAIT_MS = 20000;
 /** The longest any later frame waits, ms: the view moves 1/60 s per frame, so little is new. */
 export const FRAME_WAIT_MS = 4000;
+/**
+ * All frames after the first together wait at most this much per frame of the video, ms: on a slow link
+ * a moving view can keep files on their way at every frame, and 4 s each would make a 4929-frame flight
+ * a 5-hour export; with this the waiting adds at most ~0.15 s per frame (12 min for 4929 frames, never
+ * more), and once it is spent frames wait only for the encoder.
+ */
+export const WAIT_SHARE_MS = 150;
 
 /** Frames of `durationTicks` ms of flight at `fps`: frame k shows k/fps s (300 for 5 s at 60; ticks x fps first, so no period is rounded). */
 export function exportFrameCount(durationTicks: number, fps: number = EXPORT_FPS): number {
@@ -104,6 +111,8 @@ export interface LogExportOptions {
     /** the first frame's and every later frame's longest wait for a complete scan, ms (Infinity: v0.8's unbounded wait, the control) */
     firstWaitMs?: number;
     frameWaitMs?: number;
+    /** the later frames' waiting all together, ms per frame of the video (WAIT_SHARE_MS) */
+    waitShareMs?: number;
     /** the clock the waits are measured on (the page: performance.now; tests: a fake) */
     now?: () => number;
 }
@@ -137,6 +146,9 @@ export class LogExport {
     waitingFor: ExportWait = null;
     private readonly firstWaitMs: number;
     private readonly frameWaitMs: number;
+    private readonly waitShareMs: number;
+    /** ms the frames after the first spent waiting so far */
+    private waitSpentMs = 0;
     private readonly now: () => number;
     /** when frame k's pose was first drawn (its wait began), -1 before */
     private waitFrom = -1;
@@ -157,6 +169,7 @@ export class LogExport {
         this.ignoreScene = o.ignoreScene === true;
         this.firstWaitMs = o.firstWaitMs ?? FIRST_WAIT_MS;
         this.frameWaitMs = o.frameWaitMs ?? FRAME_WAIT_MS;
+        this.waitShareMs = o.waitShareMs ?? WAIT_SHARE_MS;
         this.now = o.now ?? (() => performance.now());
         const first = lives.findIndex((l) => l.endTick > o.fromTick);
         const from = lives.slice(Math.max(0, first));
@@ -188,10 +201,17 @@ export class LogExport {
         return this.k >= this.frames;
     }
 
+    /** How long frame k may wait for the scan, ms: the first frame's bound, else the smaller of a frame's bound and what is left of the share. */
+    private boundMs(): number {
+        if (this.k === 0) return this.firstWaitMs;
+        const left = this.frames * this.waitShareMs - this.waitSpentMs;
+        return Math.min(this.frameWaitMs, Math.max(0, left));
+    }
+
     /** ms until the frame being made is encoded whatever the scan's state (null: not waiting for the scan). */
     forcedInMs(): number | null {
         if (this.waitingFor !== 'scan' || this.waitFrom < 0) return null;
-        const bound = this.k === 0 ? this.firstWaitMs : this.frameWaitMs;
+        const bound = this.boundMs();
         return Number.isFinite(bound) ? Math.max(0, bound - (this.now() - this.waitFrom)) : null;
     }
 
@@ -249,7 +269,7 @@ export class LogExport {
         const complete = this.engine.sceneComplete;
         if (!complete) this.incomplete++;
         // bounded: past it, the frame shows what the engine has for this view (the export always finishes)
-        const overdue = !complete && now - this.waitFrom >= (this.k === 0 ? this.firstWaitMs : this.frameWaitMs);
+        const overdue = !complete && now - this.waitFrom >= this.boundMs();
         if (!complete && !this.ignoreScene && !overdue) {
             this.waited++;
             this.waitingFor = 'scan';
@@ -264,6 +284,7 @@ export class LogExport {
             this.encodedIncomplete++;
             if (!this.ignoreScene) this.forced++;
         }
+        if (this.k > 0) this.waitSpentMs += now - this.waitFrom;
         this.waitFrom = -1;
         this.waitingFor = null;
         const s = this.player.sim.s;

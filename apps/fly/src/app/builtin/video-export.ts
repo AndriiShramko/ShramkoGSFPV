@@ -150,7 +150,8 @@ export const videoExport: Feature = {
         const showBar = (size: ExportSize): void => {
             title.textContent = t('rec.export.running', { size: t(`set.recording.resolution.opt.${size}`) });
             progress.value = 0;
-            status.textContent = '';
+            // the encoder takes a moment to start: the bar says so instead of standing empty
+            status.textContent = t('rec.export.starting');
             offer.replaceChildren();
             cancelBtn.hidden = false;
             closeBtn.hidden = true;
