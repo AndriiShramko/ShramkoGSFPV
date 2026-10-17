@@ -81,6 +81,26 @@ export interface SplatBytes {
     failed: number;
     /** performance.now() of the last byte, 0 before the first */
     lastByteAt: number;
+    /** files the first view needs: the coarse level's files and the environment of a streamed scan, 1 for a single file */
+    files: number;
+    /** of those, the files whose every byte is in */
+    filesIn: number;
+    /** splats of the first view as lod-meta.json / meta.json count them (the environment's are not counted) */
+    splats: number;
+}
+
+/**
+ * The first view of the scan as the engine has it now (SplatRenderer.firstView): its files and bytes
+ * (splatBytes) and what the last frame drew. The loader reveals the view from this (apps/fly
+ * session/loader.ts) and the loading card shows it while the view is prepared.
+ */
+export interface FirstView extends SplatBytes {
+    /** splats the engine drew in the last frame it rendered */
+    drawn: number;
+    /** the last gsplat 'frame:ready': every level of detail for the view in place and sorted */
+    ready: boolean;
+    /** files of the scan the engine is still loading (the last 'frame:ready'; always 0 for a single file) */
+    loading: number;
 }
 
 // Sizes of files whose images have not all reported yet, from the splat counts in lod-meta.json /
@@ -198,6 +218,8 @@ export class SplatRenderer {
     streamTicks = 0;
     /** what the scan on screen was loaded from (lodState) */
     private contentKind: 'lod-meta' | 'meta' | null = null;
+    /** engine frame in which the scan's entity was made: frames up to it say nothing about this scan (firstView) */
+    private splatMadeAt = -1;
 
     private constructor(canvas: HTMLCanvasElement, device: GraphicsDevice, opts: RendererOptions) {
         this.canvas = canvas;
@@ -410,6 +432,7 @@ export class SplatRenderer {
                 e.addComponent('gsplat', { asset }); // unified rendering is the engine default
                 this.app.root.addChild(e);
                 this.splat = e;
+                this.splatMadeAt = this.frameNumber;
                 // coarse LOD first for a fast reveal; revealFullDetail() opens the full range
                 const comp = e.gsplat as GSplatComponent;
                 const octree = (comp.resource as unknown as { octree?: OctreeView } | null)?.octree;
@@ -493,7 +516,12 @@ export class SplatRenderer {
         let total = 0;
         let exact = c.listed;
         let complete = c.listed;
+        let files = 0;
+        let filesIn = 0;
+        let splats = 0;
         for (const [dir, count] of c.expected) {
+            files++;
+            splats += count ?? 0;
             const d = dirs.get(dir);
             if (!d) {
                 total += estimateBytes(count, null);
@@ -506,15 +534,32 @@ export class SplatRenderer {
             total += d.sized ? d.total : Math.max(estimateBytes(count, d.sh), d.total);
             if (!d.sized) exact = false;
             if (!d.done) complete = false;
+            else filesIn++;
         }
         for (const [dir, d] of dirs) {
             if (c.expected.has(dir)) continue;
             // a file the first view needed that lod-meta did not predict
+            files++;
             total += d.total;
             if (!d.sized) exact = false;
             if (!d.done) complete = false;
+            else filesIn++;
         }
-        return { listed: c.listed, received, total: Math.max(total, received), exact, complete, failed, lastByteAt: c.lastByteAt };
+        return { listed: c.listed, received, total: Math.max(total, received), exact, complete, failed, lastByteAt: c.lastByteAt, files, filesIn, splats };
+    }
+
+    /** The first view now: its files and bytes (splatBytes) and what the last frame drew (FirstView). */
+    firstView(): FirstView {
+        const f = this.splatFrame;
+        // the stats and the last 'frame:ready' speak of this scan only once a frame after its entity was made has run
+        // (until then they may still be the scan before it on the page's renderer, or no scan at all)
+        const ours = !!this.splat && f.frame > this.splatMadeAt;
+        return {
+            ...this.splatBytes(),
+            drawn: ours && this.splat!.enabled && this.frameNumber > this.splatMadeAt + 1 ? (this.app.stats as unknown as { frame?: { gsplats?: number } }).frame?.gsplats ?? 0 : 0,
+            ready: ours && f.ready,
+            loading: ours ? f.loading : 0
+        };
     }
 
     /** Open the full LOD range after the coarse level has been shown. */

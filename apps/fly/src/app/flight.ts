@@ -6,7 +6,7 @@ import { recordOpen, SceneError } from '@gsfpv/scenes';
 import type { CatalogCollection, SceneLink } from '@gsfpv/scenes';
 import type { SplatRenderer } from '@gsfpv/render-pc';
 import { GSPLAT_RENDERER_RASTER_GPU_SORT } from 'playcanvas';
-import { FlightSession } from '../session';
+import { FlightSession, FlyNow } from '../session';
 import { Controls } from '../controls';
 import { CrashView } from '../crashview';
 import { VoxelController } from '../voxels';
@@ -150,12 +150,15 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
     const own = ownInput();
     const resumed = own ? resumeInput().catch(() => null) : Promise.resolve(null);
     const controlsNext = own ? !expectResume() : sim === 'raw' && q.get('lat') !== '1' && q.get('input') !== 'touch' && !(isTouch && !hasHid);
+    // the card's Fly now shows the first view at once (session/reveal.ts)
+    const flyNow = new FlyNow();
     const loading = new LoadingScreen(ui, {
         sceneId,
         title: meta?.title,
         next: controlsNext ? t('loading.next') : null,
         onRetry: () => location.reload(),
-        onBack: () => { location.search = ''; }
+        onBack: () => { location.search = ''; },
+        onFlyNow: () => flyNow.press()
     });
     const tLoad = performance.now();
     hook.loading = { stage: 'connect', loaded: 0, total: 0, fraction: 0, exact: false, elapsedMs: 0 };
@@ -183,9 +186,10 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
             renderScale: q.get('scale') ? Number(q.get('scale')) : 1,
             // asked once the renderer's device exists (a WebGL fallback gets the default budget)
             drawing: (webgpu) => drawingFor(prefs, sceneRef, webgpu),
+            flyNow,
             onProgress: (p) => {
                 loading.update(p);
-                hook.loading = { stage: p.stage, loaded: p.loaded, total: p.total, fraction: p.fraction, exact: p.exact, elapsedMs: Math.round(performance.now() - tLoad) };
+                hook.loading = { stage: p.stage, loaded: p.loaded, total: p.total, fraction: p.fraction, exact: p.exact, elapsedMs: Math.round(performance.now() - tLoad), view: p.view, reveal: p.reveal, canFlyNow: p.canFlyNow, revealInMs: p.revealInMs };
             }
         });
     } catch (e) {

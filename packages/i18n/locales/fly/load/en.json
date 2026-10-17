@@ -1,0 +1,10 @@
+{
+  "load.flyNow": "Fly now",
+  "load.view.files": "{n} of {total} parts in place",
+  "load.view.drawn": "{m} M splats on screen",
+  "load.view.notDrawn": "nothing on screen yet",
+  "load.view.loading": "{n} files on their way",
+  "load.view.soon": "shown in {s} s at most",
+  "load.reveal.pilot": "You chose Fly now: the rest of the scan keeps loading while you fly.",
+  "load.reveal.stall": "Nothing arrived for 30 s, so you see what is here; the rest keeps loading while you fly."
+}

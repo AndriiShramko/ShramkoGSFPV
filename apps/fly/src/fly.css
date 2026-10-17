@@ -155,8 +155,12 @@ dl.measure { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; } dl
 .load-poster img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .load-title, .load-stage, .load-nums, .load-parts { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .load-title { font-weight: 600; height: 1.45em; }
-.load-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; height: 1.45em; }
-.load-stage { font-size: 16px; min-width: 0; }
+.load-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; height: 1.45em; }
+.load-stage { font-size: 16px; min-width: 0; flex: 1; }
+/* always turning while the scan loads (v0.9): the wait never looks frozen, whatever the numbers do */
+.load-spin { flex: none; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--accent); animation: load-spin .9s linear infinite; }
+.loading[data-stage="done"] .load-spin { animation: none; border-color: var(--accent); }
+@keyframes load-spin { to { transform: rotate(360deg); } }
 .load-elapsed, .load-nums, .load-parts { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
 .load-elapsed { flex: none; }
 .load-nums, .load-parts { height: 1.45em; }
@@ -165,6 +169,8 @@ dl.measure { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; } dl
 .load-bar .fill { right: 0; background: var(--accent); transform: scaleX(0); transform-origin: 0 50%; transition: transform .3s linear; }
 .load-bar .sweep { width: 35%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent); opacity: 0; transform: translateX(-100%); }
 .loading[data-indeterminate] .load-bar .sweep { opacity: 1; animation: load-sweep 1.3s linear infinite; }
+/* over a determinate bar too, fainter: the bar moves even while a big file's bytes are counted */
+.loading:not([data-indeterminate]):not([data-stage="done"]) .load-bar .sweep { opacity: .45; animation: load-sweep 1.6s linear infinite; }
 @keyframes load-sweep { from { transform: translateX(-100%); } to { transform: translateX(290%); } }
 .load-hint { height: 2.9em; overflow: hidden; font-size: 13px; color: var(--warn); }
 .load-hint.note { color: var(--fg); }
@@ -176,8 +182,9 @@ dl.measure { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; } dl
 @media (prefers-reduced-motion: reduce) {
     .loading, .load-bar .fill { transition: none; }
     /* no sweeping motion: a slow fade of the track says "working" instead */
-    .loading[data-indeterminate] .load-bar .sweep { animation: none; opacity: 0; }
+    .loading .load-bar .sweep, .loading[data-indeterminate] .load-bar .sweep, .loading:not([data-indeterminate]):not([data-stage="done"]) .load-bar .sweep { animation: none; opacity: 0; }
     .loading[data-indeterminate] .load-bar { animation: load-pulse 2s ease-in-out infinite; }
+    .load-spin { animation: load-pulse 1.2s ease-in-out infinite; }
 }
 .center-msg { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); background: var(--panel); padding: 16px 20px; border-radius: 12px; max-width: min(92vw, 560px); text-align: center; }
 /* touch sticks */

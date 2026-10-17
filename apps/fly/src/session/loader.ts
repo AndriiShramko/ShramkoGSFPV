@@ -1,12 +1,15 @@
-// Loading a scan for a flight (split from v0.2's session.ts, behaviour unchanged): the walls
-// download beside the scan with their bytes counted, the coarse level of the scan is watched until
-// it is resident, and a progress report goes out every 100 ms until the first view is on screen.
+// Loading a scan for a flight (split from v0.2's session.ts): the walls download beside the scan with
+// their bytes counted, the first view of the scan (its coarse level, or the whole of a single file) is
+// watched until it is drawable (reveal.ts: when, and why), and a progress report goes out every 100 ms
+// until the first view is on screen, with what the view waits for while it is prepared.
 import { sha256Hex } from '@gsfpv/sim-core';
 import { fetchVoxelCollision, VoxelContactWorld, NoCollisionError } from '@gsfpv/collision';
 import type { VoxelCollision } from '@gsfpv/collision';
 import { cachedFetch } from '@gsfpv/scenes';
 import type { ResolvedScene } from '@gsfpv/scenes';
 import type { SplatRenderer, SplatBytes } from '@gsfpv/render-pc';
+import { RevealWatch } from './reveal';
+import type { FlyNow, RevealReason } from './reveal';
 
 /** connect: scene settings, GPU, file lists; download: bytes; build: walls from bytes; prepare: first frame */
 export type LoadStage = 'connect' | 'download' | 'build' | 'prepare' | 'done';
@@ -39,10 +42,32 @@ export interface LoadProgress {
     lastByteAt: number;
     /** scan images the engine gave up on */
     failed: number;
-    /** the view was shown after REVEAL_STALL_MS of silence, not because the scan was in */
+    /** the view was shown before the first view's files were all in (the pilot's Fly now, or REVEAL_STALL_MS of silence) */
     partial: boolean;
+    /** the first view as the engine has it (render-pc FirstView), null before the scan is opened or with no scan drawn */
+    view: LoadView | null;
+    /** why the view was shown ('done' only; reveal.ts) */
+    reveal: RevealReason | null;
+    /** ms until the view is shown anyway (reveal.ts SETTLE_MS), null when no such bound runs */
+    revealInMs: number | null;
+    /** something of the scan is drawn and the wait has lasted long enough: the card offers Fly now */
+    canFlyNow: boolean;
     /** the scene's v<N> folder once its settings were found (a republished scene's poster lives there), else null */
     version: number | null;
+}
+
+/** The first view while it is prepared: what the loading card shows so the wait never looks frozen. */
+export interface LoadView {
+    /** files of the first view (the coarse level and the environment of a streamed scan; 1 for a single file) */
+    files: number;
+    /** of those, the files whose bytes are all in */
+    filesIn: number;
+    /** splats of the first view (0: not known) */
+    splats: number;
+    /** splats the engine drew in the last frame */
+    drawn: number;
+    /** files the engine is still loading */
+    loading: number;
 }
 
 interface WallsBytes {
@@ -61,8 +86,8 @@ interface WallsBytes {
 }
 
 const PROGRESS_EVERY_MS = 100;
-/** no new byte and no change in the engine's streaming state for this long: show what there is */
-const REVEAL_STALL_MS = 30000;
+/** how often the first view is checked when the engine draws no frames (a hidden tab) */
+const WATCH_EVERY_MS = 250;
 
 /** Resolves after the next paint, or after 50 ms when no frames come (background tab). */
 export function nextPaint(): Promise<void> {
@@ -107,6 +132,10 @@ export class SessionLoader {
     private coarseReady = false;
     private coarseForced = false;
     private loadDone = false;
+    /** the first view's watch while it runs (watchCoarse) */
+    private watch: RevealWatch | null = null;
+    private reveal: RevealReason | null = null;
+    private stopWatch: (() => void) | null = null;
 
     constructor(host: LoaderHost, onProgress?: (p: LoadProgress) => void) {
         this.host = host;
@@ -175,37 +204,49 @@ export class SessionLoader {
         }
     }
 
-    /** Resolves when the coarse level is resident, or when loading has been silent for REVEAL_STALL_MS. */
-    watchCoarse(): Promise<void> {
-        if (!this.host.drawScan) return Promise.resolve().then(() => { this.coarseReady = true; });
+    /**
+     * Resolves, with the reason (reveal.ts), when the first view is drawable: its files are in and the
+     * engine drew it, or the bound after that, or the pilot's Fly now, or REVEAL_STALL_MS of silence.
+     * Read from the state each frame (the gsplat 'frame:ready') and every WATCH_EVERY_MS (no frames in a
+     * hidden tab), so a single file, a streamed scan, the browser's cache and an in-page switch on the
+     * page's renderer are all the same case. stop() ends the watch (the session was disposed).
+     */
+    watchCoarse(flyNow?: FlyNow): Promise<RevealReason> {
+        if (!this.host.drawScan) return Promise.resolve().then(() => { this.coarseReady = true; this.reveal = 'ready'; return 'ready' as const; });
         const renderer = this.host.renderer!;
-        return new Promise<void>((resolve) => {
+        return new Promise<RevealReason>((resolve) => {
             const sys = renderer.app.systems.gsplat!;
-            let streaming = false;
-            let state = '';
-            let changedAt = performance.now();
-            const finish = (forced: boolean): void => {
-                sys.off('frame:ready', handler);
-                clearInterval(watchdog);
+            const watch = new RevealWatch(performance.now());
+            this.watch = watch;
+            let pilot = false;
+            let done = false;
+            const finish = (why: RevealReason): void => {
+                if (done) return;
+                done = true;
+                off();
+                const sb = renderer.splatBytes();
                 this.coarseReady = true;
-                this.coarseForced = forced;
-                resolve();
+                this.coarseForced = (why === 'pilot' || why === 'stall') && !(sb.listed && sb.complete);
+                this.reveal = why;
+                resolve(why);
             };
-            const handler = (_cam: unknown, _layer: unknown, ready: boolean, loading: number): void => {
-                const st = `${ready}/${loading}`;
-                if (st !== state) {
-                    state = st;
-                    changedAt = performance.now();
-                }
-                // coarse level streamed in and fully resident -> reveal, then stream the detail
-                if (loading > 0) streaming = true;
-                if (ready && loading === 0 && streaming) finish(false);
+            const check = (): void => {
+                const v = renderer.firstView();
+                const why = watch.step({ ...v, lastByteAt: Math.max(v.lastByteAt, this.wallsBytes?.lastByteAt ?? 0) }, performance.now(), pilot);
+                if (why) finish(why);
             };
+            const handler = (): void => check();
             sys.on('frame:ready', handler);
-            // never block the pilot forever, but only on silence: a slow link that still delivers keeps going
-            const watchdog = window.setInterval(() => {
-                if (performance.now() - Math.max(changedAt, renderer.splatBytes().lastByteAt) > REVEAL_STALL_MS) finish(true);
-            }, 1000);
+            const timer = window.setInterval(check, WATCH_EVERY_MS);
+            const off = (): void => {
+                sys.off('frame:ready', handler);
+                clearInterval(timer);
+                this.watch = null;
+                this.stopWatch = null;
+            };
+            this.stopWatch = off;
+            flyNow?.bind(() => { pilot = true; check(); });
+            check();
         });
     }
 
@@ -216,9 +257,11 @@ export class SessionLoader {
         this.stop();
     }
 
+    /** The reports and the first view's watch stop (the view is shown, or the session was disposed). */
     stop(): void {
         clearInterval(this.progressTimer);
         this.progressTimer = 0;
+        this.stopWatch?.();
     }
 
     private stageNow(sb: SplatBytes | null, w: WallsBytes | null): LoadStage {
@@ -246,6 +289,10 @@ export class SessionLoader {
             const loaded = w.cached ? 0 : w.netTotal > 0 && w.decoded > 0 ? Math.min(w.netTotal, (w.got / w.decoded) * w.netTotal) : w.got;
             walls = { loaded, total: Math.max(total, loaded), exact: w.cached || (w.sized && (w.netTotal > 0 || w.decoded > 0)), done: w.built, cached: w.cached };
         }
+        // the first view as the engine has it, once the scan is opened (while it is prepared the card shows it)
+        const fv = sb && this.host.drawScan && sb.listed ? this.host.renderer!.firstView() : null;
+        const view: LoadView | null = fv ? { files: fv.files, filesIn: fv.filesIn, splats: fv.splats, drawn: fv.drawn, loading: fv.loading } : null;
+        const now = performance.now();
         const prev = this.lastProgress;
         let stage = this.stageNow(sb, w);
         if (prev && STAGES.indexOf(prev.stage) > STAGES.indexOf(stage)) stage = prev.stage;
@@ -263,6 +310,11 @@ export class SessionLoader {
             lastByteAt: Math.max(sb?.lastByteAt ?? 0, w?.lastByteAt ?? 0),
             failed: sb?.failed ?? 0,
             partial: this.coarseForced,
+            view,
+            reveal: this.loadDone ? this.reveal : null,
+            revealInMs: this.watch ? this.watch.revealInMs(now) : null,
+            // only where the walls are in (the flight needs them): the view is all that is left to wait for
+            canFlyNow: !this.loadDone && !!fv && !!this.watch && (!w || w.built) && this.watch.canFlyNow({ ...fv }, now),
             // undefined until resolveScene returns (the first reports come before it)
             version: this.host.scene?.version ?? null
         };
