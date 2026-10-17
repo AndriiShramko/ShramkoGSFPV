@@ -17,7 +17,7 @@
 //   H2  never once N was used: N pressed, three crashes, no hint; and with the flag stored by an earlier visit.
 //       Control: H1 (the same three crashes without N show it).
 //   H3  a radio whose profile maps the next-scene function: the hint names the switch.
-//   H4  a narrow phone: the hint overlaps neither the crash toast (at the top there) nor the top buttons.
+//   H4  a narrow phone: the hint sits inside the screen and overlaps neither the crash toast (at the top there) nor any button.
 // The 12 + 13 scene loads and the sim-radio wizard make it a long run (about 5 minutes).
 //   SITE=http://localhost:5517 npx tsx src/accept-v09-next.ts [N1 N2 ...]
 // Evidence: evidence/<date>/v09-next.json (+ v09-next/*.png). The same run against the base build (631fd5f) is the
@@ -302,7 +302,8 @@ try {
     // ------------------------------------------------------------------ H2 never once N was used
     if (want('H2')) {
         const c = await context(browser);
-        await radioFlying(c.page, FIRST);
+        // from the second scene (no walls) N goes to the third, which has walls: a crash needs them
+        await radioFlying(c.page, IDS[1]);
         const r = await press(c.page, 'KeyN');
         const crashed: boolean[] = [];
         const afterCrash: boolean[] = [];
@@ -334,7 +335,8 @@ try {
         // touch: the input source says touch (a real touch screen cannot be driven here): a Next scene button, no key line
         const t = await context(browser);
         await radioFlying(t.page, FIRST);
-        await hook(t.page, "h.controls.source = 'touch'; return 0;");
+        // the class a touch screen's pads put on the body (devices/touch.ts): the crash toast then sits above the pads
+        await hook(t.page, "h.controls.source = 'touch'; document.body.classList.add('touch-on'); return 0;");
         for (let n = 1; n <= 3; n++) { await crash(t.page); await wait(t.page, 400); }
         const touchHint = await hintView(t.page);
         await t.page.screenshot({ path: join(SHOTS, 'h3-touch-hint.png') });
@@ -364,13 +366,21 @@ try {
         const c = await context(browser, { phone: true });
         await radioFlying(c.page, FIRST);
         for (let n = 1; n <= 3; n++) { await crash(c.page); await wait(c.page, 400); }
+        const toastBox = () => c.page.evaluate(`(() => { const e = document.querySelector('[data-testid="crash-toast"]'); if (!e) return null; const r = e.getBoundingClientRect(); return { y: r.y, h: r.height }; })()`);
+        const inView = (v: HintView) => (v.rect ? v.rect.x >= 0 && v.rect.x + v.rect.w <= 390 && v.rect.y >= 0 && v.rect.y + v.rect.h <= 844 : false);
         const view = await hintView(c.page);
-        const toast = await c.page.evaluate(`(() => { const e = document.querySelector('[data-testid="crash-toast"]'); if (!e) return null; const r = e.getBoundingClientRect(); return { y: r.y, h: r.height }; })()`);
+        const toast = await toastBox();
         await c.page.screenshot({ path: join(SHOTS, 'h4-phone-hint-and-toast.png') });
-        const inView = view.rect ? view.rect.x >= 0 && view.rect.x + view.rect.w <= 390 && view.rect.y + view.rect.h <= 844 : false;
-        const pass = view.present && view.overlaps.length === 0 && inView && toast !== null;
-        out.H4 = { pass, what: 'on a 390 px phone the hint sits inside the screen and overlaps neither the crash toast (at the top there) nor any button', view, toast, errors: errors(c.log) };
-        console.log('H4', pass ? 'PASS' : 'FAIL', JSON.stringify({ rect: view.rect, overlaps: view.overlaps, toast }));
+        // the same phone with the body class of a touch screen (the pads put it there): the toast's rules change
+        await hook(c.page, "document.body.classList.add('touch-on'); return 0;");
+        await crash(c.page);
+        await wait(c.page, 500);
+        const viewTouch = await hintView(c.page);
+        const toastTouch = await toastBox();
+        await c.page.screenshot({ path: join(SHOTS, 'h4-phone-touch-on-hint-and-toast.png') });
+        const pass = view.present && view.overlaps.length === 0 && inView(view) && toast !== null && viewTouch.present && viewTouch.overlaps.length === 0 && inView(viewTouch) && toastTouch !== null;
+        out.H4 = { pass, what: 'on a 390 px phone the hint sits inside the screen and overlaps neither the crash toast (at the top there) nor any button; the same with the body class of a touch screen', view, toast, touchOn: { view: viewTouch, toast: toastTouch }, errors: errors(c.log) };
+        console.log('H4', pass ? 'PASS' : 'FAIL', JSON.stringify({ rect: view.rect, overlaps: view.overlaps, toast, touchOn: { rect: viewTouch.rect, overlaps: viewTouch.overlaps, toast: toastTouch } }));
         await c.ctx.close();
     }
 } finally {

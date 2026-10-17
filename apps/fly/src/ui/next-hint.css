@@ -1,8 +1,8 @@
 /* The crash hint "Want another place? Press N for the next scene" (ui/next-hint.ts, v0.9 item 11).
    Bottom centre, one step above the crash toast (ui/crash.css: the toast is 64 px up and about 72 px tall; on a
-   touch screen it is above the pads, on a narrow phone at the top). The crash panel with its Replay and
-   respawn buttons is higher up in the middle, and while it is open the hint steps aside (the panel has its own
-   Next scene (N) button). The box takes no click, its buttons do. */
+   touch screen it is above the pads), and just above the pads on a narrow phone, where the toast is at the
+   top. The crash panel with its Replay and respawn buttons is higher up in the middle, and while it is open
+   the hint steps aside (the panel has its own Next scene (N) button). The box takes no click, its buttons do. */
 .next-hint { position: absolute; left: 50%; bottom: 148px; transform: translateX(-50%); width: max-content; max-width: min(92vw, 520px); display: flex; align-items: center; gap: 10px; padding: 4px 4px 4px 14px; border-radius: 12px; background: rgba(12,14,18,.82); border: 1px solid var(--line); color: #fff; font-size: 14px; pointer-events: none; animation: fadein .3s ease both; }
 .next-hint .nh-text { flex: 1 1 auto; }
 .next-hint .nh-btn, .next-hint .nh-x { pointer-events: auto; flex: none; }
@@ -11,8 +11,8 @@
 .next-hint .nh-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* touch sticks: the crash toast sits above the pads (ui/crash.css), so the hint goes above it */
 body.touch-on .next-hint { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 12px + 84px); }
-/* a narrow phone: the crash toast goes under the top buttons (96 px down, about 56 px tall), so the hint goes under it */
-@media (max-width: 640px) { .next-hint, body.touch-on .next-hint { bottom: auto; top: calc(max(10px, env(safe-area-inset-top)) + 164px + var(--banner-h, 0px)); } }
+/* a narrow phone: the crash toast goes under the top buttons (its height depends on the text), so the hint stays at the bottom: just above the pads */
+@media (max-width: 640px) { body.touch-on .next-hint { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 12px); } }
 /* text off (H), a clean view and the cinema bar keep every text away; the crash panel and any modal panel stay on top */
 #ui.hud-off .next-hint, body.clean .next-hint, body.cinema .next-hint, #ui:has(> .crash-overlay) > .next-hint { display: none; }
 #ui:has(> .panel) > .next-hint { visibility: hidden; }
