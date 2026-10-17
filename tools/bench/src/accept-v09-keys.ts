@@ -22,7 +22,7 @@ if (!SITE_RAW) throw new Error('accept-v09-keys needs SITE=http://localhost:<por
 const SITE = SITE_RAW.replace(/\/$/, '');
 const CONTROL = process.env.V09_CONTROL === '1';
 console.log(`accept-v09-keys target: ${SITE}${CONTROL ? ' (CONTROL: the base build)' : ''}`);
-const SHOTS = join(REPO, 'evidence', today(), 'v09-b');
+const SHOTS = join(REPO, 'evidence', today(), CONTROL ? 'v09-b-control' : 'v09-b'); // the control must not overwrite the lane's screenshots
 mkdirSync(SHOTS, { recursive: true });
 const SCENE = '887f27aa';
 const fly = (qs: string): string => `${SITE}/en/fly/?scene=${SCENE}&nowarn=1&${qs}&cb=${Math.random().toString(36).slice(2)}`;
