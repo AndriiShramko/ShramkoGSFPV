@@ -1,0 +1,108 @@
+{
+  "name": "v09-load",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-17T22:57:09.911Z",
+    "gitHead": "c63a26e",
+    "gitDirty": false,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5718",
+  "siteBefore": "http://127.0.0.1:5717",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "pass": {
+    "V1": true,
+    "V3": true
+  },
+  "control": {
+    "V1": true,
+    "V3": null
+  },
+  "ok": true,
+  "out": {
+    "V1": {
+      "now": {
+        "site": "http://127.0.0.1:5718",
+        "id": "d8ba72a6",
+        "stages": {
+          "connect": 601,
+          "download": 856,
+          "prepare": 1393,
+          "done": 1652
+        },
+        "shownAt": 1652,
+        "prepareMs": 259,
+        "longestStillMs": 0,
+        "spinning": true,
+        "flyNowAt": null,
+        "reveal": "ready",
+        "pageerrors": []
+      },
+      "before": {
+        "site": "http://127.0.0.1:5717",
+        "id": "d8ba72a6",
+        "stages": {
+          "connect": 508,
+          "download": 1017,
+          "prepare": 1277
+        },
+        "shownAt": null,
+        "prepareMs": null,
+        "longestStillMs": 20080,
+        "spinning": false,
+        "flyNowAt": null,
+        "reveal": null,
+        "pageerrors": []
+      }
+    },
+    "V3": {
+      "now": {
+        "site": "http://127.0.0.1:5718",
+        "id": "a8cfc66e",
+        "stages": {
+          "connect": 586,
+          "download": 1101,
+          "prepare": 1637,
+          "done": 1900
+        },
+        "shownAt": 1900,
+        "prepareMs": 263,
+        "longestStillMs": 259,
+        "spinning": true,
+        "flyNowAt": null,
+        "reveal": "ready",
+        "pageerrors": []
+      },
+      "before": {
+        "site": "http://127.0.0.1:5717",
+        "id": "a8cfc66e",
+        "stages": {
+          "connect": 505,
+          "download": 759,
+          "prepare": 1416,
+          "prepareUnseen": 1,
+          "done": 1684
+        },
+        "shownAt": 1684,
+        "prepareMs": 268,
+        "longestStillMs": 401,
+        "spinning": false,
+        "flyNowAt": null,
+        "reveal": null,
+        "pageerrors": []
+      }
+    }
+  }
+}
