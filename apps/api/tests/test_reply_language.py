@@ -161,6 +161,21 @@ class Reply(Flow):
         self.at(61)
         self.assertEqual(self.sent()[0]["Content-Language"], "en")
 
+    def test_the_agents_cli_shows_the_language_and_the_translation(self):
+        import ideas_cli
+        rec = self.pilot(lang="en")                                      # wrote Polish on the English page
+        self.assertNotIn("wrote=", ideas_cli.render_idea(self.w.service.get(rec["id"])))      # not asked yet
+        self.w.service.reply(rec["id"], RU_THANKS, "telegram")
+        shown = ideas_cli.render_idea(self.w.service.get(rec["id"]))
+        self.assertIn("lang=en", shown)
+        self.assertIn("wrote=pl (Polish)", shown)                        # an agent writes the done summary in THIS language
+        self.assertIn("translated ru->pl", shown)
+        self.w.env.pop("GEMINI_API_KEY")
+        held =self.w.service.reply(rec["id"], RU_THANKS, "telegram")[1]
+        self.assertEqual(held["state"], "waiting_language")
+        self.assertIn(f"{held['id']} reply waiting_language", ideas_cli.render_idea(self.w.service.get(rec["id"])))
+        self.assertIn("HELD (no-key)", ideas_cli.render_idea(self.w.service.get(rec["id"])))
+
     def test_no_address_no_call(self):
         rec = self.pilot(contact="@pilot_on_telegram")
         _, mail = self.w.service.reply(rec["id"], RU_THANKS, "telegram")

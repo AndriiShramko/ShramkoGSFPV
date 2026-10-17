@@ -340,8 +340,8 @@ class IdeasService:
                 if ((rec.get("done") or {}).get("summary") or {}) != old:
                     continue     # a newer summary landed while the translation ran: decide again from it
                 if words:        # the language the owner wrote in: the translator found it, else the form's
-                    key = plan.source if plan is not None and plan.source in ideas.LOCALES else                         lang if lang in ideas.LOCALES else rec["lang"] if rec["lang"] in ideas.LOCALES else "en"
-                    clean = {key: words}
+                    fallback = lang if lang in ideas.LOCALES else rec["lang"] if rec["lang"] in ideas.LOCALES else "en"
+                    clean = {plan.source if plan is not None and plan.source in ideas.LOCALES else fallback: words}
                 became_done = rec["status"] != "done"
                 if became_done:
                     rec["status"], rec["statusAt"] = "done", stamp
