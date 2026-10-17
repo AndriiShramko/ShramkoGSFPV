@@ -1,7 +1,8 @@
 # v0.9 plan — the owner's message 22 (2026-10-17)
 
-Primary source (verbatim, Russian): vault `01 - Projects/FPV-симулятор в 3DGS-сценах/Бриф Андрія — дословно.md`,
-section "сообщение 22". Below is a faithful English rendering; when in doubt the vault text wins.
+Primary source (verbatim, Russian): the vault's verbatim-brief note of the FPV simulator project (folder
+"01 - Projects", the simulator's folder, the brief note), section for message 22. Below is a faithful English
+rendering; when in doubt the vault text wins.
 
 Base: `8c90f53` (`main`, live release 1e1be0e005ef). Lanes work in `C:/dev/gsfpv-v09-<lane>` on branch `v09-<lane>`,
 each with `docs/wip/v09-<lane>.md` (design note + `## Status`). The lead merges, deploys and checks the live site.
@@ -12,8 +13,8 @@ each with `docs/wip/v09-<lane>.md` (design note + `## Status`). The lead merges,
    cannot fly a scene on the keyboard. "Nothing like the way games control flying characters."**
 3a. **Beautiful 3D models of the drones, rendered in the browser**, so users see which drone they fly, what equipment is
    on it, which cameras — e.g. does the cinelifter carry a RED or Blackmagic camera or not. Visual, not only a name.
-3b. **Recording stuck**: "Klatka 0 z 4929 · czekamy, aż skan wczyta się dla tego widoku" (frame 0 of 4929, waiting for
-   the scan to load for this view) for 10 minutes on scene 1994c65c, no progress; then "Wideo nie zostało zapisane:
+3b. **Recording stuck**: (Polish UI) "frame 0 of 4929, waiting for the scan to load for this
+   view" for 10 minutes on scene 1994c65c, no progress; then "the video was not saved:
    Codec reclaimed due to inactivity". Fix, and find out whether it hangs or renders.
 4. Replies the owner sends through Telegram must reach the pilot **in the pilot's language** (the language they wrote
    in), English at worst.
