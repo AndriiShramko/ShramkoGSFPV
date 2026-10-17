@@ -9,7 +9,8 @@
 //   video  after a recording stops: "Share your flight" on the recording bar (builtin/cinema.ts)
 // In a flight the link is the picture page /s/<id> of the view as it is (share/picture.ts); the
 // picker's cards share the scene's page (ui/scenes.ts, share/links.ts).
-// The scene goes out drawn as it is flown (lane R: SuperSplat's ?budget= and ?stochastic, the link it
+// The scene goes out with the settings it is flown with that differ from its defaults (v0.9 item 15,
+// share/shared.ts) and drawn as it is flown (lane R: SuperSplat's ?budget= and ?stochastic, the link it
 // was opened with over the catalogue's render), taken from ctx.scene when the share starts, so after
 // an in-page scene switch it is the new scene's: the plain link is its fly deep link (flyDeepLink) and
 // POST /api/share sends it as `render`, so /s/<id> opens the same deep link (share/links.ts).
@@ -22,6 +23,7 @@ import { openSharePanel, shareState } from '../../share/panel';
 import type { ShareRequest, ShareState } from '../../share/panel';
 import { flightDrawing } from '../../share/links';
 import type { ShareEntry } from '../../share/links';
+import { drawingPick, sharedOf } from '../../share/shared';
 import { sharePicture } from '../../share/picture';
 import { shareIcon } from '../../share/icon';
 import { creditText } from '../../scene-facts';
@@ -44,7 +46,9 @@ export function flightShareRequest(ctx: FlightContext, entry: ShareEntry, extra:
     return {
         entry,
         scene,
-        drawing: flightDrawing(ctx.scene),
+        drawing: flightDrawing(ctx.scene, drawingPick(ctx.prefs)),
+        // what he flies this scene with that the scene does not (v0.9): Scene size, walls, cleanup, wind, ceiling, drone
+        shared: sharedOf(ctx.prefs, ctx.scene.id, { meta: ctx.scene.meta, hasWalls: !!ctx.session.baseCollision }),
         ...extra,
         picture: () => sharePicture(ctx.renderer, ctx.canvas, {
             hook: t('share.hook'),

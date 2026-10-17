@@ -11,5 +11,7 @@
   "scale.voxelCoarseM": "Walls: {m} m blocks — coarse: you may crash before you touch what you see",
   "scale.pushed": "The smaller scene put the drone inside a wall: it moved to the nearest free spot",
   "set.scene.transform": "Scene size",
-  "set.scene.transform.help": "Some scans are not in true metres, so the drone feels too big or too small. Or make a room huge and fly it like a mosquito, a chair as big as a house. From x0.25 to x100, around the drone; [ and ] change it in flight, x1.1 a press, with Shift x2. Kept for each scan."
+  "set.scene.transform.help": "Some scans are not in true metres, so the drone feels too big or too small. Or make a room huge and fly it like a mosquito, a chair as big as a house. From x0.25 to x100, around the drone; [ and ] change it in flight, x1.1 a press, with Shift x2. Kept for each scan.",
+  "scale.macroHint": "This scene starts at x{x}: it is a small real thing (a plant, a toy, an insect), scaled up so you fly it like a big building. [ and ] change the size.",
+  "scale.macroHint.ok": "Got it"
 }

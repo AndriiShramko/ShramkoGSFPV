@@ -136,7 +136,8 @@ export function customWind(prefs: Pick<PrefsStore, 'get'>, scene: string): { fro
 export async function windFor(prefs: Pick<PrefsStore, 'get'>, sceneId: string, meta: Pick<CatalogScene, 'wind' | 'compassDeg'> | undefined, fetchFn: typeof fetch | null = typeof fetch === 'function' ? fetch.bind(globalThis) : null): Promise<WindSpec | null> {
     let mode: WindMode;
     try {
-        mode = windMode(prefs.get('wind.mode'));
+        // with the scene: a shared link may have brought its own wind for this scene (the store's visit layer)
+        mode = windMode(prefs.get('wind.mode', { scene: sceneId }));
     } catch {
         return null;
     }

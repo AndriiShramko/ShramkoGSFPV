@@ -256,6 +256,15 @@ export function forgetAllLinks(store: PrefsStore): void {
     for (const d of store.schema.defs) if (d.persist === false) store.reset(d.id);
 }
 
+/**
+ * The link's value for a setting ends without storing anything: the session layer lets go of it and the
+ * address bar loses its parameter (a shared link's drone after Reset; pilotSet / pilotReset do the same
+ * after storing or resetting).
+ */
+export function forgetLinkValue(store: PrefsStore, id: string): void {
+    forgetLink(store, id);
+}
+
 function forgetLink(store: PrefsStore, id: string): void {
     if (store.schema.byId.get(id)?.persist === false) return;
     store.clearSession(id);

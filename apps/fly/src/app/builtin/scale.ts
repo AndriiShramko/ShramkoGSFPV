@@ -8,7 +8,11 @@
 // Every change rescales around the craft (session.setTransform: the craft stays where it is, the
 // walls and the splats follow, the log gets a world record) and is kept per scene (prefs
 // scene.transform), so it survives a reload. A change made elsewhere (the Settings row, a reset,
-// an import) is taken as the new size and applied around the craft the same way.
+// an import) is taken as the new size and applied around the craft the same way; one that comes from
+// the store's session or visit layer (a shared link's size arriving or going, Reset on its chip) is applied
+// and never stored: the pilot's saved size is only ever written by the pilot.
+// v0.9 (item 17): a scene that starts at the owner's default size of x2 or more says so once, in a note
+// (app/macro-hint.ts has the rule): a small real object scaled up to fly like a big building, [ ] change it.
 import { SCALE_MAX, SCALE_MIN } from '@gsfpv/prefs';
 import type { PrefsStore, SceneTransform as StoredTransform } from '@gsfpv/prefs';
 import { rescaleAround } from '@gsfpv/collision';
@@ -16,8 +20,14 @@ import type { FlightSession } from '../../session';
 import { PauseMenu } from '../menu';
 import { h } from '../../ui/dom';
 import { t } from '../../i18n';
+import { macroHintDue, macroHintSeen, markMacroHintSeen } from '../macro-hint';
+import { addSceneNote } from '../scene-notes';
 import type { Feature, FlightContext } from '../context';
 import './scale.css';
+import './shared-settings.css';
+
+/** How long the macro note stays, ms (a click on "Got it" closes it sooner). */
+export const MACRO_NOTE_MS = 16000;
 
 /** One press of [ or ]. */
 export const SCALE_STEP = 1.1;
@@ -86,8 +96,8 @@ export const scale: Feature = {
             }
         };
 
-        /** The scene at size s around the craft, kept for this scene. */
-        const setSize = (want: number): void => {
+        /** The scene at size s around the craft, kept for this scene (`persist` false: only flown, as a shared link's size is). */
+        const setSize = (want: number, persist = true): void => {
             const ses = ctx.session;
             if (!ses?.renderer || ses.disposed) return;
             let s = clampSize(want);
@@ -97,11 +107,13 @@ export const scale: Feature = {
             const next = rescaleAround(cur, s / cur.s, ses.pivot());
             next.s = s;
             const r = ses.setTransform(next);
-            writing = true;
-            try {
-                ctx.prefs.set('scene.transform', { s: r.transform.s, t: [...r.transform.t], v: ses.scene.version }, sceneCtx());
-            } finally {
-                writing = false;
+            if (persist) {
+                writing = true;
+                try {
+                    ctx.prefs.set('scene.transform', { s: r.transform.s, t: [...r.transform.t], v: ses.scene.version }, sceneCtx());
+                } finally {
+                    writing = false;
+                }
             }
             ctx.renderer.renderOnce();
             if (r.pushed) ctx.hud.flash(t('scale.pushed'), 3500);
@@ -171,7 +183,7 @@ export const scale: Feature = {
             const v = storedTransform(ctx.prefs, ctx.scene.id);
             if (!v) return;
             const cur = ctx.session.transform;
-            if (Math.abs(v.s - cur.s) > 1e-6) setSize(v.s);
+            if (Math.abs(v.s - cur.s) > 1e-6) setSize(v.s, c.source !== 'session');
             else if (v.t.some((x, i) => Math.abs(x - cur.t[i]) > 1e-6)) {
                 // the same size, another place (a reset at the default size, an import): as given
                 const r = ctx.session.setTransform(v);
@@ -181,18 +193,51 @@ export const scale: Feature = {
             }
         });
 
+        // ---- the macro note: this scene starts at the owner's size of x2 or more (once per browser)
+        let noteDue = false;
+        let noteOff: (() => void) | null = null;
+        const checkNote = (): void => {
+            noteOff?.();
+            noteOff = null;
+            const scene = ctx.scene.id;
+            noteDue = macroHintDue({
+                start: ctx.session.transform.s,
+                ownerDefault: defaultSize(),
+                pilotOwn: ctx.prefs.isExplicit('scene.transform', { scene }),
+                sharedSize: Object.hasOwn(ctx.prefs.visitOf(scene), 'scene.transform'),
+                seen: macroHintSeen()
+            });
+        };
+        /** Shows the note once the flight runs (not under the Controls screen or a picker). */
+        const showNote = (): void => {
+            if (!noteDue || ctx.session.paused || noteOff) return;
+            noteDue = false;
+            markMacroHintSeen();
+            const x = fmt(ctx.session.transform.s).replace(/\.?0+$/, '');
+            const close = h('button', { type: 'button', class: 'btn sn-btn', 'data-action': 'macro-hint-ok', onclick: () => { noteOff?.(); noteOff = null; } }, t('scale.macroHint.ok'));
+            const note = h('div', { class: 'macro-hint', role: 'note', 'data-testid': 'macro-hint' }, h('span', { class: 'sn-text' }, t('scale.macroHint', { x })), close);
+            noteOff = addSceneNote(ctx.ui, note, MACRO_NOTE_MS);
+        };
+        checkNote();
+        const offPause = ctx.events.on('pause', ({ on }) => { if (!on) showNote(); });
+        const noteTimer = window.setTimeout(showNote, 800); // a flight with no Controls screen never pauses and resumes
+
         // a new scene (E.4) starts with its own stored size; a key's step for the old one is dropped
         const offSession = ctx.events.on('session', () => {
             clearTimeout(timer);
             timer = 0;
             pending = 1;
             refresh();
+            checkNote();
         });
 
         ctx.hook.scale = { size, set: (s) => setSize(s), reset: () => setSize(defaultSize()), pending: () => pending };
         return () => {
             clearTimeout(timer);
             clearTimeout(slideTimer);
+            clearTimeout(noteTimer);
+            noteOff?.();
+            offPause();
             offDown();
             offUp();
             offRow();

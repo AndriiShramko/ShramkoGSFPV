@@ -43,7 +43,7 @@ export function windRow(ctx: FlightContext): { el: HTMLElement; refresh(): void 
     const el = h('div', { class: 'sr-extra' }, line, note);
     const refresh = (): void => {
         const prefs = ctx.prefs, id = ctx.scene.id, meta = ctx.scene.meta;
-        const mode = windMode(prefs.get('wind.mode'));
+        const mode = windMode(prefs.get('wind.mode', { scene: id }));
         // the live wind is asked when the flight goes on; until then the line says so
         const c = chooseWind(mode === 'now' ? 'scene' : mode, meta, customWind(prefs, id), null);
         line.textContent = mode === 'now' ? t('wind.row.now', { fallback: windText(c.spec) }) : windText(c.spec);
@@ -65,7 +65,7 @@ export const wind: Feature = {
         /** A note at the start of a scene: which wind flies, or why not the live one asked for. */
         const announce = (): void => {
             const ses = ctx.session;
-            const mode = windMode(ctx.prefs.get('wind.mode'));
+            const mode = windMode(ctx.prefs.get('wind.mode', { scene: ctx.scene.id }));
             if (mode === 'now' && ses.windSpec?.source !== 'now') ctx.hud.flash(t(ses.windSpec ? 'wind.note.nowFallbackScene' : 'wind.note.nowNone'), 5000);
             else if (ses.windSpec) ctx.hud.flash(t('wind.note.on', { text: windText(ses.windSpec) }), 4000);
         };
@@ -115,7 +115,7 @@ export const wind: Feature = {
                 const sim = ses.shownSim;
                 const compass = ctx.scene.meta?.compassDeg;
                 return {
-                    mode: windMode(ctx.prefs.get('wind.mode')),
+                    mode: windMode(ctx.prefs.get('wind.mode', { scene: ctx.scene.id })),
                     spec: ses.windSpec,
                     config: sim.p.wind,
                     windNow: Array.from(sim.windNow),
