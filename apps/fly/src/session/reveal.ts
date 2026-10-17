@@ -9,9 +9,10 @@
 // 15a202e6 measured at 33-38 s). The rule now reads the state, not a transition, so the content type,
 // the browser's cache and an in-page switch on the shared renderer do not matter:
 //   'ready'    every file of the first view has its bytes, the engine drew it and loads nothing more;
-//   'settled'  the first view's files are in (or the engine drew the scan and loads nothing) for
+//   'settled'  the engine drew the scan and the first view's files are in (or it loads nothing) for
 //              SETTLE_MS: shown anyway (the engine may go on with the next level's prefetch or the
-//              environment, which the view does not need). This bounds the wait after the bytes;
+//              environment, which the view does not need). This bounds the wait after the bytes; bytes
+//              in with nothing drawn waits for the engine (then 'stall', said as partial);
 //   'pilot'    the pilot pressed "Fly now" once something was drawn (FLY_NOW_AFTER_MS into the stage);
 //   'stall'    no byte and no change for REVEAL_STALL_MS: what there is, with the reason said.
 
@@ -43,6 +44,14 @@ export const REVEAL_STALL_MS = 30000;
 /** "Fly now" is offered once something is drawn and the wait has lasted this long. */
 export const FLY_NOW_AFTER_MS = 5000;
 
+/**
+ * The view was shown partial (LoadProgress.partial: the card says "showing what has arrived" and why, not
+ * ready): by the pilot or after the stall, with the first view's files not all in or nothing of the scan drawn.
+ */
+export function revealPartial(why: RevealReason, v: Pick<ViewNow, 'listed' | 'complete' | 'drawn'>): boolean {
+    return (why === 'pilot' || why === 'stall') && !(v.listed && v.complete && v.drawn > 0);
+}
+
 export class RevealWatch {
     private sig = '';
     private changedAt: number;
@@ -55,9 +64,13 @@ export class RevealWatch {
         this.changedAt = now;
     }
 
-    /** The engine has the first view's files (or drew the scan and loads nothing): the settle clock runs. */
+    /**
+     * The engine drew the scan and has the first view's files (or loads nothing more): the settle clock
+     * runs. Bytes in but nothing drawn yet is the engine still preparing them (a slow GPU or the CPU
+     * sort): that waits for the engine, else the view would be shown blank as 'settled' (v0.9 review).
+     */
     private settling(v: ViewNow): boolean {
-        return (v.listed && v.complete) || (v.listed && v.drawn > 0 && v.ready && v.loading === 0);
+        return v.listed && v.drawn > 0 && (v.complete || (v.ready && v.loading === 0));
     }
 
     /** One observation (a frame, or the 250 ms timer when no frames come); the reason to show the view now, or null. */

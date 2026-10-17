@@ -8,7 +8,7 @@ import type { VoxelCollision } from '@gsfpv/collision';
 import { cachedFetch } from '@gsfpv/scenes';
 import type { ResolvedScene } from '@gsfpv/scenes';
 import type { SplatRenderer, SplatBytes } from '@gsfpv/render-pc';
-import { RevealWatch } from './reveal';
+import { RevealWatch, revealPartial } from './reveal';
 import type { FlyNow, RevealReason } from './reveal';
 
 /** connect: scene settings, GPU, file lists; download: bytes; build: walls from bytes; prepare: first frame */
@@ -42,7 +42,7 @@ export interface LoadProgress {
     lastByteAt: number;
     /** scan images the engine gave up on */
     failed: number;
-    /** the view was shown before the first view's files were all in (the pilot's Fly now, or REVEAL_STALL_MS of silence) */
+    /** the view was shown before the first view's files were all in or anything of the scan was drawn (the pilot's Fly now, or REVEAL_STALL_MS of silence) */
     partial: boolean;
     /** the first view as the engine has it (render-pc FirstView), null before the scan is opened or with no scan drawn */
     view: LoadView | null;
@@ -224,9 +224,8 @@ export class SessionLoader {
                 if (done) return;
                 done = true;
                 off();
-                const sb = renderer.splatBytes();
                 this.coarseReady = true;
-                this.coarseForced = (why === 'pilot' || why === 'stall') && !(sb.listed && sb.complete);
+                this.coarseForced = revealPartial(why, renderer.firstView());
                 this.reveal = why;
                 resolve(why);
             };

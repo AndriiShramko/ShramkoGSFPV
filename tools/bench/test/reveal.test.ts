@@ -3,7 +3,7 @@
 // (evidence/2026-10-17/v09-load-probe-base*.json); every case also runs v0.8's rule (the control, copied
 // below from loader.ts at 631fd5f) to show what the pilot met before.
 import { describe, expect, it } from 'vitest';
-import { RevealWatch, SETTLE_MS, REVEAL_STALL_MS, FLY_NOW_AFTER_MS, FlyNow } from '../../../apps/fly/src/session/reveal';
+import { RevealWatch, SETTLE_MS, REVEAL_STALL_MS, FLY_NOW_AFTER_MS, FlyNow, revealPartial } from '../../../apps/fly/src/session/reveal';
 import type { RevealReason, ViewNow } from '../../../apps/fly/src/session/reveal';
 
 const FRAME_MS = 33; // the owner's 30 Hz display
@@ -87,6 +87,30 @@ describe('the first view is shown as soon as it is drawable, whatever the conten
         expect(now.why).toBe('stall');
         expect(now.ms).toBeGreaterThan(REVEAL_STALL_MS);
         expect(now.ms).toBeLessThan(REVEAL_STALL_MS + 2 * FRAME_MS);
+    });
+
+    // v0.9 review: the bytes are in but the engine has drawn nothing yet (a slow GPU or the CPU sort preparing them)
+    const SLOW_PREPARE = (f: number, now: number): ViewNow => view({ drawn: now < 4000 ? 0 : 750322, ready: now >= 4000 });
+    const NEVER_DRAWN = (): ViewNow => view({ drawn: 0, ready: false });
+
+    it('bytes in, nothing drawn for 4 s: shown when the engine drew it ("ready"), not "settled" on a blank scene at 2.5 s', () => {
+        const now = run(SLOW_PREPARE, 'v09');
+        expect(now.why).toBe('ready');
+        expect(now.ms).toBeGreaterThanOrEqual(4000);
+        expect(now.ms).toBeLessThan(4000 + 2 * FRAME_MS);
+    });
+
+    it('bytes in, never drawn: no "settled"; the stall shows it after REVEAL_STALL_MS, and as partial (the card does not say ready)', () => {
+        const now = run(NEVER_DRAWN, 'v09');
+        expect(now.why).toBe('stall');
+        expect(now.ms).toBeGreaterThan(REVEAL_STALL_MS);
+        expect(revealPartial('stall', NEVER_DRAWN())).toBe(true);
+        // controls: the same stall with the scan drawn is not partial, nor is a settled or ready view
+        expect(revealPartial('stall', view({ drawn: 1 }))).toBe(false);
+        expect(revealPartial('settled', view({ drawn: 1 }))).toBe(false);
+        expect(revealPartial('pilot', view({ complete: false, drawn: 1 }))).toBe(true);
+        // and a view drawn with its bytes in still settles as before (NEVER_QUIET above)
+        expect(run(NEVER_QUIET, 'v09').why).toBe('settled');
     });
 
     it('the settle bound counts down where the card can show it, and is null when not running', () => {
