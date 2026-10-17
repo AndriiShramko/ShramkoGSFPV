@@ -763,7 +763,7 @@ const REVIVALS_MAX = 8;
  * replace when nothing is in it: then a new encoder with the same settings goes on, its first frame a key
  * frame. The MP4 holds the first encoder's description of the stream, so the new encoder's must be the
  * same bytes (it is for the same settings on the same machine); if not, the file cannot go on and fails
- * with that reason. Pure bookkeeping: Part makes the encoders (tools/bench/test/encoder-revival.test.ts).
+ * with that reason. Pure bookkeeping: Part makes the encoders (both in tools/bench/test/encoder-revival.test.ts).
  */
 export class EncoderRevival {
     revivals = 0;
@@ -786,12 +786,13 @@ export class EncoderRevival {
     onOutput(meta: EncodedVideoChunkMetadata | undefined): string | null {
         const d = meta?.decoderConfig?.description;
         const bytes = d ? new Uint8Array(ArrayBuffer.isView(d) ? d.buffer.slice(d.byteOffset, d.byteOffset + d.byteLength) : (d as ArrayBuffer).slice(0)) : null;
-        if (!this.first && bytes && !this.checkNext) this.first = bytes;
         if (this.checkNext && meta?.decoderConfig) {
             this.checkNext = false;
             const a = this.first;
             if (a && bytes && (a.length !== bytes.length || a.some((v, i) => v !== bytes[i]))) return 'the video encoder came back with other settings';
         }
+        // the stream's description is the first one any encoder gave (also one made again before any packet)
+        if (!this.first && bytes) this.first = bytes;
         return null;
     }
 
@@ -803,8 +804,11 @@ export class EncoderRevival {
     }
 }
 
-/** One file: its own encoder and MP4 output, so a split never waits for the previous file. */
-class Part {
+/**
+ * One file: its own encoder and MP4 output, so a split never waits for the previous file. Exported for
+ * tools/bench/test/encoder-revival.test.ts (a fake encoder and Mediabunny drive the reclaim path).
+ */
+export class Part {
     readonly firstSlot: number;
     name = '';
     frames = 0;
