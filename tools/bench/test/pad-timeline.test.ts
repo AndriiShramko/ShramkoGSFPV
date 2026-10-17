@@ -68,7 +68,7 @@ describe('the links with a browser that stamps each report (Chromium raw input),
         expect(slow.lag.mean).toBeGreaterThan(fast.lag.mean + 3);
     });
 
-    it('v0.8 stamped the move at its arrival, v0.7 at the poll: v0.7 is 2-3 ms later in what the physics is told, v0.8 and the new file equal', () => {
+    it('v0.8 stamped the move at its arrival, v0.7 at the poll: v0.7 is 1.5-3 ms later in what the physics is told, v0.8 and the new file equal', () => {
         for (const name of ['usb1000', 'ble90', 'bleBursty']) {
             const v07 = run(V07, name);
             const v08 = run(V08, name);
