@@ -1,0 +1,412 @@
+{
+  "name": "v09-keys",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-17T23:32:00.873Z",
+    "gitHead": "c7e9887",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:18781",
+  "control": false,
+  "delivery": "page-event",
+  "strayMouse": {
+    "n": 4,
+    "px": 1780
+  },
+  "passed": true,
+  "controlAllDiscriminatingFail": null,
+  "notDiscriminating": [
+    "V3 no arming step: W alone starts the motors; held 2 s it moves several metres in the facing direction",
+    "V7b Shift descends",
+    "V12b the Escape key pauses and Escape resumes",
+    "V13 the game-scheme flight replays from its log to the same hash; controls: one LSB of the throttle and a 0.05 stick twitch change it",
+    "V14 no page errors",
+    "V15 the pilot profile (Mode 2) is still selectable: no mouse capture on a click, W is a throttle that does not arm, its card is the Mode 2 one"
+  ],
+  "checks": [
+    {
+      "id": "V1 the first-run card is up on the ground: \"Click to fly\", the mouse, W A S D, Space, Shift, F, Esc",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "shown": true,
+        "title": "Click to fly",
+        "now": "Click to fly, or press W or Space to take off",
+        "rows": [
+          "Mouselook and turn (up and down tilts the camera)",
+          "WASDmove (the arrow keys too)",
+          "\u2190\u2192QEturn without a mouse",
+          "Spaceup",
+          "Shiftdown (hold to land)",
+          "Ffull screen",
+          "Escpause (frees the mouse)",
+          "Rback to the start",
+          "Kshow / hide these keys"
+        ]
+      }
+    },
+    {
+      "id": "V2 a click on the view captures the mouse (pointer lock on the canvas); before the click there is none",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "before": false,
+        "after": true,
+        "game": true
+      }
+    },
+    {
+      "id": "V2b with the mouse captured the card stops asking for a click",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "title": "Keyboard and mouse"
+      }
+    },
+    {
+      "id": "V3 no arming step: W alone starts the motors; held 2 s it moves several metres in the facing direction",
+      "ok": true,
+      "discriminating": false,
+      "detail": {
+        "armedBefore": false,
+        "armedAfterW": true,
+        "alongM": 7.423,
+        "acrossM": 0,
+        "speed": 8.019
+      }
+    },
+    {
+      "id": "V4 released: under 0.5 m/s within 2.5 s and the height held",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "underMs": 1155,
+        "speedAfter": 0,
+        "heightChangeM": -0.144,
+        "speedEvery100ms": [
+          8.119,
+          8.131,
+          7.958,
+          7.507,
+          6.851,
+          6.045,
+          4.815,
+          3.829,
+          2.831,
+          1.852,
+          0.959,
+          0.304,
+          0.083,
+          0.3,
+          0.337,
+          0.321,
+          0.279,
+          0.227,
+          0.176,
+          0.116,
+          0.081,
+          0.053,
+          0.026,
+          0.014,
+          0.005
+        ]
+      }
+    },
+    {
+      "id": "V5 moving the mouse right 400 px turns the aim 40 degrees (0.1 deg per pixel) and the drone follows; the camera looks along the aim",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "aimChangeDeg": 40,
+        "headingChangeDeg": 39.986,
+        "cameraHeadingChangeDeg": 40,
+        "delivery": "page-event"
+      }
+    },
+    {
+      "id": "V6 the mouse up and down tilts the camera gimbal (+20 deg for 200 px up), clamped at +30 and -60, the body stays as it is",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "gimbalAfterUp": 20,
+        "cameraPitchUp": 20,
+        "gimbalAfterDown": -60,
+        "cameraPitchDown": -60
+      }
+    },
+    {
+      "id": "V6b the gimbal stops at +30 degrees going up",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "gimbalDeg": 30
+      }
+    },
+    {
+      "id": "V7 Space climbs at about 5 m/s (normal) and, released, the height holds",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "climbMps": 5.172,
+        "gainedM": 7.506,
+        "holdSpreadM": 0.08
+      }
+    },
+    {
+      "id": "V7b Shift descends",
+      "ok": true,
+      "discriminating": false,
+      "detail": {
+        "lostM": 4.327,
+        "vy": -5.336
+      }
+    },
+    {
+      "id": "V8 M does not leave angle mode (the game keys command tilts); it says so",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "mode": "angle",
+        "note": "The game keys fly in angle mode. For horizon or acro use the pilot keys (Settings, Controls)."
+      }
+    },
+    {
+      "id": "V9 invert-Y flips the pitch of the same movement; sensitivity 2 doubles the turn (100 px = 20 degrees)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "gimbalChange": -20,
+        "yawChange": 20
+      }
+    },
+    {
+      "id": "V9b the speed setting: slow flies about 4 m/s",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "speed": 4.04
+      }
+    },
+    {
+      "id": "V10 F puts the page full screen (document.fullscreenElement set) and F again leaves it",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "before": false,
+        "afterF": true,
+        "afterSecondF": false,
+        "pressedWhileOn": "true"
+      }
+    },
+    {
+      "id": "V10b the mouse stays captured through full screen on and off",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "locked": [
+          true,
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "id": "V10c a button on the top bar toggles full screen too",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "shown": true,
+        "toggles": true,
+        "error": null
+      }
+    },
+    {
+      "id": "V11 Shift+F is the next favourite scene (its note when none is saved); plain F is not",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "shiftF": "No other favourite scene yet: star scenes in the scene list (\u2605).",
+        "plainF": null,
+        "plainFfullScreen": true
+      }
+    },
+    {
+      "id": "V12 the mouse released (what Esc does) pauses into the menu; a click on the view resumes and captures the mouse again",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "beforeEsc": {
+          "locked": true,
+          "paused": false
+        },
+        "afterEsc": {
+          "locked": false,
+          "paused": true,
+          "menu": true
+        },
+        "afterClick": {
+          "locked": true,
+          "paused": false,
+          "menu": false
+        },
+        "clickedAt": {
+          "x": 20,
+          "y": 400
+        }
+      }
+    },
+    {
+      "id": "V12b the Escape key pauses and Escape resumes",
+      "ok": true,
+      "discriminating": false,
+      "detail": {
+        "paused": true,
+        "resumed": true
+      }
+    },
+    {
+      "id": "V12c Esc pauses while Shift is held (the descent)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "paused": true
+      }
+    },
+    {
+      "id": "V13 the game-scheme flight replays from its log to the same hash; controls: one LSB of the throttle and a 0.05 stick twitch change it",
+      "ok": true,
+      "discriminating": false,
+      "detail": {
+        "saved": "8a48480666ad1e872c21ddeb0326c78914b9e45ff4907a4a44ac818340208622",
+        "replayed": "8a48480666ad1e872c21ddeb0326c78914b9e45ff4907a4a44ac818340208622",
+        "endTick": 41623,
+        "refused": null,
+        "lsb": {
+          "differs": true
+        },
+        "twitch": {
+          "differs": true
+        }
+      }
+    },
+    {
+      "id": "V14 no page errors",
+      "ok": true,
+      "discriminating": false,
+      "detail": {
+        "errors": []
+      }
+    },
+    {
+      "id": "V15 the pilot profile (Mode 2) is still selectable: no mouse capture on a click, W is a throttle that does not arm, its card is the Mode 2 one",
+      "ok": true,
+      "discriminating": false,
+      "detail": {
+        "lockedPilot": false,
+        "wArmed": false,
+        "title": "Keyboard"
+      }
+    },
+    {
+      "id": "V16 holding Shift lands without a crash (touch-down below the crash speed) and the motors stop by themselves",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "climbedToY": 6.534,
+        "endY": -0.069,
+        "crashes": 0,
+        "contactSpeeds": [
+          0.193,
+          0.307,
+          0.695,
+          1.073,
+          0.738,
+          0.228,
+          0.322,
+          0.331,
+          0.128,
+          0.126,
+          0.059,
+          0.059,
+          0.073,
+          0.057,
+          0.077,
+          0.057,
+          0.08,
+          0.062,
+          0.059,
+          0.073,
+          0.057,
+          0.066,
+          0.068,
+          0.072,
+          0.06,
+          0.077,
+          0.056,
+          0.066,
+          0.079,
+          0.058,
+          0.074,
+          0.053,
+          0.191,
+          0.271,
+          0.317,
+          0.329,
+          0.327,
+          0.332,
+          0.336,
+          0.328,
+          0.331,
+          0.335,
+          0.328,
+          0.331,
+          0.335,
+          0.338,
+          0.338,
+          0.328,
+          0.33,
+          0.334,
+          0.328,
+          0.331,
+          0.335,
+          0.328,
+          0.331,
+          0.335,
+          0.338,
+          0.338,
+          0.328,
+          0.33,
+          0.334,
+          0.328,
+          0.331,
+          0.335,
+          0.328,
+          0.331,
+          0.335,
+          0.338,
+          0.338
+        ],
+        "armedAfter": false,
+        "tookMs": 4254
+      }
+    },
+    {
+      "id": "V16b the next key starts the motors again and the drone lifts off",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "armed": true,
+        "y": 0.964,
+        "from": -0.069
+      }
+    }
+  ]
+}
