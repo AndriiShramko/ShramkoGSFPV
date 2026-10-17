@@ -19,6 +19,8 @@ code, configuration and data as the API (tools/ideas/ideas.py runs them over SSH
                                           bot): this API then reads every update of that bot and acts only on
                                           GSFPV's; --replace takes the bot over from another service's webhook
   ... mail-check                          connect to Gmail and log in, send nothing
+  ... translate-check                     ask Gemini to detect and translate one test sentence (Russian -> Polish):
+                                          prints ok with the model and the answer, or why not; sends no e-mail
 
 Text comes on stdin as UTF-8 so that no shell quoting meets the pilot's or the owner's language.
 Output is UTF-8 whatever the console says. Nothing here sends an e-mail: only the owner does (Telegram,
@@ -117,7 +119,7 @@ def main(argv: list[str] | None = None) -> int:
     rl.add_argument("sha")
     sub.add_parser("tg-setup").add_argument("--replace", action="store_true",
                                             help="replace a webhook another service set on this bot")
-    for name in ("tg-info", "tg-remove", "mail-check"):
+    for name in ("tg-info", "tg-remove", "mail-check", "translate-check"):
         sub.add_parser(name)
     a = p.parse_args(argv)
 
@@ -168,6 +170,10 @@ def main(argv: list[str] | None = None) -> int:
             print("removed" if server.BOT.remove_webhook() else "not removed (no bot token, or the webhook is not this API's)")
         elif a.cmd == "mail-check":
             print(server.MAILER.check_login())
+        elif a.cmd == "translate-check":
+            r = server.TRANSLATOR.check()
+            print(json.dumps(r, ensure_ascii=False))
+            return 0 if r["ok"] else 1
     except IdeaError as e:
         sys.exit(f"refused: {e.code}")
     except RuntimeError as e:

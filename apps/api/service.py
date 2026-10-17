@@ -13,12 +13,18 @@ the outbox worker (outbox.py) all call these methods, so a rule lives in one pla
   as `waiting_setup` and only goes after a later explicit send_mail();
 - the worker claims a due e-mail (queued -> sending) before it talks to SMTP and records the outcome
   after, so an e-mail is never handed to SMTP twice by itself; one left in `sending` by a restart
-  becomes `unknown` (recover()).
+  becomes `unknown` (recover());
+- the pilot receives the e-mail in the language they wrote in (v0.9, owner's item 4): reply() and
+  set_done_summary() ask the translator (translate.py) BEFORE the store transaction (a network call must
+  not hold the file lock) what goes: the owner's words, or their translation with the original kept
+  (`orig`, `tr`). A text the pilot cannot surely read waits as `waiting_language` (never sent by itself:
+  the owner's send_mail() is "send it as written"); use_original() swaps a translation for the owner's
+  own words inside its undo window.
 
 Every change emits an event to the listeners (the owner bot shows it in Telegram): (event, idea, mail,
 by) with event in status, urgency, comment, public, release, note, draft, mail-queued, mail-waiting,
-mail-noemail, mail-cancelled, mail-sent, mail-failed, mail-unknown, mail-ask. Listeners run after the
-change is on disk; a listener that fails never undoes it.
+mail-noemail, mail-language, mail-cancelled, mail-sent, mail-failed, mail-unknown, mail-ask. Listeners run
+after the change is on disk; a listener that fails never undoes it.
 """
 from __future__ import annotations
 
@@ -31,11 +37,12 @@ import urllib.parse
 from typing import Callable, Iterator
 
 import ideas
+import translate
 from ideas import IdeaStore, index, now_iso, parse_iso
 from mailer import Mailer, MailError
 
 RETRY_BACKOFF_S = (60, 300, 1800, 7200, 21600)  # after the 1st..5th failed attempt; then it stops
-RESENDABLE = ("waiting_setup", "failed", "unknown")
+RESENDABLE = ("waiting_setup", "failed", "unknown", "waiting_language")
 
 Listener = Callable[[str, dict, "dict | None", str], None]
 
@@ -50,8 +57,10 @@ class IdeaError(Exception):
 
 class IdeasService:
     def __init__(self, store: IdeaStore, mailer: Mailer, clock: Callable[[], float] = time.time,
-                 undo_s: float | None = None, env=os.environ, public_origin: str = "https://gsfpv.flyreelstudio.eu"):
+                 undo_s: float | None = None, env=os.environ, public_origin: str = "https://gsfpv.flyreelstudio.eu",
+                 translator: translate.Translator | None = None):
         self.store, self.mailer, self.clock = store, mailer, clock
+        self.translator = translator or translate.Translator(lambda: translate.GeminiConfig.from_env(env), store.data_dir)
         try:
             self.undo_s = float(env.get("MAIL_UNDO_S", "60")) if undo_s is None else float(undo_s)
         except ValueError:
@@ -216,15 +225,42 @@ class IdeasService:
 
     # ---------------- e-mail ----------------
 
-    def _mail(self, doc: dict, rec: dict, kind: str, body: str, by: str, state: str, stamp: str) -> dict:
+    def _plan(self, rec: dict, text: str | dict) -> translate.Plan:
+        """What goes to the pilot (translate.Translator.plan), asked OUTSIDE the store transaction. A bug in
+        the translator never loses the owner's words: the text then waits for his own Send."""
+        try:
+            return self.translator.plan(rec, text)
+        except Exception as e:  # noqa: BLE001
+            print(f"translate: plan failed ({type(e).__name__})", flush=True)
+            words = next(iter(text.values())) if isinstance(text, dict) else text
+            lang = rec["lang"] if rec["lang"] in ideas.LOCALES else "en"
+            return translate.Plan(False, words, lang, why="failed:internal")
+
+    def _remember_pilot(self, rec: dict, plan: translate.Plan | None) -> None:
+        """Keep the pilot's language detected from their own text on the idea (asked once, kept)."""
+        if plan is not None and plan.pilot_new and plan.pilot is not None and not rec.get("pilotLang"):
+            rec["pilotLang"] = {"code": plan.pilot.code, "name": plan.pilot.name, "at": now_iso(self.clock())}
+
+    def _mail(self, doc: dict, rec: dict, kind: str, body: str, by: str, state: str, stamp: str,
+              plan: translate.Plan | None = None) -> dict:
+        """A mail of the idea's thread. With a plan (translate.py): its language, its body (the owner's words
+        translated, or as written) and the owner's original; without one (no e-mail address: nothing will
+        be sent) the form language and the owner's words."""
         mid = ideas.next_mail_id(doc)
-        lang = rec["lang"] if rec["lang"] in ideas.LOCALES else "en"
-        plain, html = self.mailer.compose(kind, lang, body, rec)
+        lang = plan.lang if plan is not None else rec["lang"] if rec["lang"] in ideas.LOCALES else "en"
+        text = plan.body if plan is not None else body
+        plain, html = self.mailer.compose(kind, lang, text, rec)
         return {"id": mid, "kind": kind, "to": rec["email"], "lang": lang, "subject": self.mailer.subject(kind, lang, rec),
-                "body": body, "plain": plain, "html": html,
+                "body": text, "orig": (plan.original or None) if plan is not None else None,
+                "tr": plan.tr if plan is not None else None, "wait": "", "plain": plain, "html": html,
                 "messageId": f"<gsfpv.{rec['id']}.{mid}.{secrets.token_hex(4)}@{self.host}>",
                 "inReplyTo": None, "references": [], "state": state, "created": stamp, "notBefore": None,
                 "attempts": 0, "nextAt": None, "error": "", "sentAt": None, "by": by, "tgMsg": None}
+
+    def _hold(self, mail: dict, plan: translate.Plan) -> str:
+        """The text cannot surely be read by the pilot: it waits for the owner (see the module's docstring)."""
+        mail["state"], mail["wait"] = "waiting_language", plan.why
+        return "mail-language"
 
     def _queue(self, mail: dict, t: float) -> str:
         """Ready to go after the undo window, or waiting for Gmail's setup; the event to emit."""
@@ -239,10 +275,23 @@ class IdeasService:
         text = ideas.clean_text(text, ideas.TEXT_MAX)
         if not text:
             raise IdeaError("empty")
-        t, stamp = self._now()
+        before = self.get(rid)
+        if before is None:
+            raise IdeaError("not-found", 404)
+        # in the pilot's language (the network, so before the transaction); no address: nothing will be sent
+        plan = self._plan(before, text) if before["contactKind"] == "email" else None
+        t, stamp = self._now()    # after the translation: the undo window starts when the owner can read the result
         with self._idea(rid) as (doc, rec):
-            mail = self._mail(doc, rec, "reply", text, by, "no_email", stamp)
-            event = "mail-noemail" if rec["contactKind"] != "email" else self._queue(mail, t)
+            if rec["contactKind"] == "email" and plan is None:
+                raise IdeaError("busy", 409)   # the address appeared between the two reads: the owner sends again
+            self._remember_pilot(rec, plan)
+            mail = self._mail(doc, rec, "reply", text, by, "no_email", stamp, plan)
+            if rec["contactKind"] != "email":
+                event = "mail-noemail"
+            elif plan is not None and not plan.ok:
+                event = self._hold(mail, plan)
+            else:
+                event = self._queue(mail, t)
             rec["thread"].append(mail)
             out = copy.deepcopy(rec)
         self._emit(event, out, mail, by)
@@ -267,34 +316,57 @@ class IdeasService:
 
     def set_done_summary(self, rid: str, summary, by: str, lang: str | None = None) -> tuple[dict, dict | None]:
         """What was done (owner's item 7): the idea is done and a DRAFT thank-you e-mail in the pilot's
-        language is (re)written. The draft never goes by itself: send_done() is the owner's Send."""
-        _, stamp = self._now()
-        with self._idea(rid) as (doc, rec):
+        language is (re)written. The draft never goes by itself: send_done() is the owner's Send.
+
+        `summary` is a text of unknown language (the owner's words in Telegram: filed under the language the
+        translator finds in it) or {language: text} (an agent). The draft says it in the language the pilot
+        wrote in: the summary written in it, else a translation of the English one (translate.py)."""
+        for _ in range(3):
+            before = self.get(rid)
+            if before is None:
+                raise IdeaError("not-found", 404)
+            old = (before.get("done") or {}).get("summary") or {}
             if isinstance(summary, str):
-                summary = {(lang if lang in ideas.LOCALES else rec["lang"] if rec["lang"] in ideas.LOCALES else "en"): summary}
-            clean = ideas.clean_texts(summary, ideas.SUMMARY_MAX, lines=True)
-            if not clean:
+                words = ideas.clean_text(summary, ideas.SUMMARY_MAX)
+                clean, said = {}, words
+            else:
+                clean = ideas.clean_texts(summary, ideas.SUMMARY_MAX, lines=True)
+                words, said = "", {**old, **clean}
+            if not (words or clean):
                 raise IdeaError("empty")
-            became_done = rec["status"] != "done"
-            if became_done:
-                rec["status"], rec["statusAt"] = "done", stamp
-            done = rec.get("done") or {}
-            rec["done"] = {"summary": {**(done.get("summary") or {}), **clean}, "by": by,
-                           "at": stamp if became_done or not done.get("at") else done["at"]}
-            draft = None
-            if rec["contactKind"] == "email":
-                lang_ = rec["lang"] if rec["lang"] in ideas.LOCALES else "en"
-                s = rec["done"]["summary"]
-                body = s.get(lang_) or s.get("en") or next(iter(s.values()))
-                for m in rec["thread"]:  # kept, so a Send pressed under an older draft is refused, not lost
-                    if m["kind"] == "done" and m["state"] == "draft":
-                        m["state"] = "superseded"
-                draft = self._mail(doc, rec, "done", body, by, "draft", stamp)
-                rec["thread"].append(draft)
-            out = copy.deepcopy(rec)
+            plan = self._plan(before, said) if before["contactKind"] == "email" else None
+            _, stamp = self._now()
+            with self._idea(rid) as (doc, rec):
+                if ((rec.get("done") or {}).get("summary") or {}) != old:
+                    continue     # a newer summary landed while the translation ran: decide again from it
+                if words:        # the language the owner wrote in: the translator found it, else the form's
+                    key = plan.source if plan is not None and plan.source in ideas.LOCALES else                         lang if lang in ideas.LOCALES else rec["lang"] if rec["lang"] in ideas.LOCALES else "en"
+                    clean = {key: words}
+                became_done = rec["status"] != "done"
+                if became_done:
+                    rec["status"], rec["statusAt"] = "done", stamp
+                done = rec.get("done") or {}
+                rec["done"] = {"summary": {**old, **clean}, "by": by,
+                               "at": stamp if became_done or not done.get("at") else done["at"]}
+                draft, event = None, "draft"
+                if rec["contactKind"] == "email":
+                    if plan is None:
+                        raise IdeaError("busy", 409)
+                    self._remember_pilot(rec, plan)
+                    for m in rec["thread"]:  # kept, so a Send pressed under an older draft is refused, not lost
+                        if m["kind"] == "done" and m["state"] in ("draft", "waiting_language"):
+                            m["state"] = "superseded"
+                    draft = self._mail(doc, rec, "done", plan.body, by, "draft", stamp, plan)
+                    if not plan.ok:
+                        event = self._hold(draft, plan)
+                    rec["thread"].append(draft)
+                out = copy.deepcopy(rec)
+            break
+        else:
+            raise IdeaError("busy", 409)
         if became_done:
             self._emit("status", out, None, by)  # the owner's card shows "done" (an agent's summary, the admin)
-        self._emit("draft", out, copy.deepcopy(draft), by)
+        self._emit(event, out, copy.deepcopy(draft), by)
         return out, copy.deepcopy(draft)
 
     def send_done(self, rid: str, mail_id: str, by: str) -> tuple[dict, dict]:
@@ -331,9 +403,31 @@ class IdeasService:
             if mail["state"] not in RESENDABLE + ("draft",):
                 raise IdeaError("not-resendable", 409)
             event = self._queue(mail, t)
-            mail["nextAt"], mail["error"] = None, ""
+            mail["nextAt"], mail["error"], mail["wait"] = None, "", ""
             out, m = copy.deepcopy(rec), copy.deepcopy(mail)
         self._emit(event, out, m, by)
+        return out, m
+
+    def use_original(self, mail_id: str, by: str) -> tuple[dict, dict]:
+        """Instead of the translation the owner was shown, send his own words (Telegram: "Send my original
+        instead"): the same e-mail is rebuilt around them and gets a new undo window, so he sees what goes.
+        Only while it still waits in the outbox (queued) and only a translated one has an original."""
+        t, _ = self._now()
+        with self.store.tx() as doc:
+            hit = ideas.find_mail(doc, mail_id) if isinstance(mail_id, str) else None
+            if hit is None:
+                raise IdeaError("not-found", 404)
+            rec, mail = hit
+            if mail["state"] in ("sending", "sent"):
+                raise IdeaError("too-late", 409)
+            if mail["state"] != "queued" or not mail.get("orig"):
+                raise IdeaError("no-original", 409)
+            words = mail["orig"]
+            mail["plain"], mail["html"] = self.mailer.compose(mail["kind"], mail["lang"], words, rec)
+            mail["body"], mail["orig"], mail["tr"] = words, None, None
+            mail["notBefore"] = now_iso(t + self.undo_s)
+            out, m = copy.deepcopy(rec), copy.deepcopy(mail)
+        self._emit("mail-queued", out, m, by)
         return out, m
 
     # ---------------- the outbox worker (outbox.py) ----------------

@@ -91,5 +91,21 @@
   "cmd.note": "Write down a pilot's idea: text, e-mail, #urgency, #language",
   "cmd.queue": "The work queue by urgency",
   "cmd.help": "What this bot does",
-  "help": "ShramkoGSFPV ideas.\n\nEvery bug report and idea from the site comes here as a card.\n- Reply to a card: your answer goes to the pilot by e-mail from your Gmail, {s} s later (Cancel stops it).\n- Accept, Reject, In progress, Done and the urgency buttons decide what happens to it. An idea enters the work queue once it is accepted and has an urgency.\n- Comment: a note for the agent who will build it.\n- Done: write what was done; you get the draft thank-you e-mail in the pilot's language, and it goes only when you press Send.\n\n/note <text>: a pilot's idea told outside the form; add their e-mail, #urgent #high #normal #low and #en #es #pl #ru if you know them.\n/queue: the work queue.\n/help: this text.\n\nI act only on GSFPV cards and these commands; anything else here (another site's lead, a reply to it) I leave alone."
+  "help": "ShramkoGSFPV ideas.\n\nEvery bug report and idea from the site comes here as a card.\n- Reply to a card: your answer goes to the pilot by e-mail from your Gmail, {s} s later (Cancel stops it).\n- The translation: your reply goes to the pilot in the language they wrote in. You see the translated e-mail first, with your original under it, and can send your own words instead.\n- Accept, Reject, In progress, Done and the urgency buttons decide what happens to it. An idea enters the work queue once it is accepted and has an urgency.\n- Comment: a note for the agent who will build it.\n- Done: write what was done; you get the draft thank-you e-mail in the pilot's language, and it goes only when you press Send.\n\n/note <text>: a pilot's idea told outside the form; add their e-mail, #urgent #high #normal #low and #en #es #pl #ru if you know them.\n/queue: the work queue.\n/help: this text.\n\nI act only on GSFPV cards and these commands; anything else here (another site's lead, a reply to it) I leave alone.",
+  "lang.en": "English",
+  "lang.es": "Spanish",
+  "lang.pl": "Polish",
+  "lang.ru": "Russian",
+  "lang.unknown": "another language",
+  "mail.queuedTranslated": "The e-mail to {to} ({id}) goes in {s} s. Your text was translated ({source} → {language}, the language the pilot wrote in). Check the translation below. Cancel stops the e-mail; \"Send my original instead\" sends your own words as you wrote them.",
+  "mail.original": "The original, as written:",
+  "mail.language": "NOT sent: the e-mail to {to} ({id}) is neither in English nor in {language}, the pilot's language, and it could not be translated ({why}). Write it again in English or in {language} (reply to the card), or press \"Send as written\" to send it anyway.",
+  "why.noKey": "no translation key is set on the server",
+  "why.failed": "the translation service failed: {code}",
+  "btn.original": "Send my original instead",
+  "btn.sendAsWritten": "Send as written",
+  "toast.original": "Your original goes instead",
+  "mail.originalChosen": "Replaced: the e-mail to {to} ({id}) now carries your own words; see the new message below.",
+  "mail.noOriginal": "Nothing to swap: this e-mail has no translation, or it is already sent or cancelled.",
+  "draft.translated": "Translated ({source} → {language}, the language the pilot wrote in); the original is below."
 }

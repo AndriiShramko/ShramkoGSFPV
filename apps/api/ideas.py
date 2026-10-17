@@ -18,13 +18,18 @@ A record (see docs/wip/v07-b.md for the meaning of each field):
     (email|other|none), email, suspect, diagnostics, status (new|accepted|in_progress|done|rejected),
     statusAt, urgency (urgent|high|normal|low|None), comments [{at, text, by}], public {title, text,
     visible}, done {at, summary {lang: text}, by} | None, notified, releases [sha], thread [mail], order,
-    source (report|telegram|admin|seed), tg {card: message_id}.
+    source (report|telegram|admin|seed), tg {card: message_id}, and once the pilot's language is known,
+    pilotLang {code, name, at}: the language the pilot WROTE in, found by translate.py in their own text and
+    kept (absent: not asked yet; the form language `lang` is the fallback).
 A mail (inside its idea's thread; this is the outbox). The thread is OUT only: what came IN is the
 record's own text (the pilot's report); a pilot's e-mail answer stays in the owner's Gmail (no IMAP):
     id (M-<n>), kind (reply|done), to, lang, subject, body, plain, html, messageId, inReplyTo,
-    references, state (draft|superseded|queued|sending|sent|failed|cancelled|waiting_setup|no_email|
-    unknown; superseded: a draft a newer done summary replaced, kept so its Send is refused),
-    created, notBefore, attempts, nextAt, error, sentAt, by, tgMsg.
+    references, state (draft|superseded|queued|sending|sent|failed|cancelled|waiting_setup|waiting_language|
+    no_email|unknown; superseded: a draft a newer done summary replaced, kept so its Send is refused;
+    waiting_language: the text may not be readable by the pilot, only the owner's Send sends it as written),
+    created, notBefore, attempts, nextAt, error, sentAt, by, tgMsg; and for the language of the pilot (v0.9):
+    lang (the e-mail's language), body (the text in the e-mail), orig (the owner's own words when body is a
+    translation, else null), tr ({from, to, model} of a translation, else null), wait (why it waits).
 
 Migration: the first transaction on a missing file imports every line of reports.jsonl (the visitors'
 own file, never rewritten) and the old admin flags of report-status.json (open -> new, closed -> done);
@@ -54,7 +59,7 @@ URGENCIES = ("urgent", "high", "normal", "low")  # most urgent first: the queue'
 LOCALES = ("en", "es", "pl", "ru")
 CONTACT_KINDS = ("email", "other", "none")
 MAIL_KINDS = ("reply", "done")
-MAIL_STATES = ("draft", "superseded", "queued", "sending", "sent", "failed", "cancelled", "waiting_setup", "no_email", "unknown")
+MAIL_STATES = ("draft", "superseded", "queued", "sending", "sent", "failed", "cancelled", "waiting_setup", "waiting_language", "no_email", "unknown")
 # the public roadmap: store status -> roadmap status, store kind -> roadmap kind (plan, "Contracts")
 ROADMAP_STATUS = {"accepted": "planned", "in_progress": "in_progress", "done": "done"}
 ROADMAP_KIND = {"feature": "feature", "idea": "idea", "note": "idea", "bug": "bug"}

@@ -15,6 +15,10 @@ Configuration (config.env on the hub, never in git): GMAIL_USER (zmei116@gmail.c
 password does not work over SMTP). Optional: MAIL_FROM_NAME (default "Andrii Shramko"). For tests only:
 SMTP_HOST, SMTP_PORT, SMTP_TLS=none (refused for any host but this machine), SMTP_CAFILE.
 Without GMAIL_USER and GMAIL_APP_PASSWORD the mailer is "not configured": e-mails wait (waiting_setup).
+
+Language: an e-mail is written in the language the pilot wrote in (translate.py decides, service.py asks).
+Its greeting, signature and footer come from locales/mail for en/es/pl/ru and from a translated, cached
+frame (`frames`: translate.Translator.cached_frame, a file read) for any other language; with neither, English.
 """
 from __future__ import annotations
 
@@ -28,7 +32,7 @@ from email.message import EmailMessage
 from email.utils import formataddr, formatdate
 from typing import Callable
 
-from texts import Texts
+from texts import LANGS, Texts
 
 LINKEDIN = "https://www.linkedin.com/in/andrii-shramko/"
 QUOTE_MAX = 2000
@@ -105,9 +109,10 @@ class Mailer:
     """compose() renders a message in the pilot's language; send() hands it to SMTP once."""
 
     def __init__(self, config: Callable[[], MailConfig], public_origin: str, texts: Texts | None = None,
-                 smtp_class: type = _SMTP):
+                 smtp_class: type = _SMTP, frames: Callable[[str], dict | None] | None = None):
         self.config, self.origin, self.smtp_class = config, public_origin.rstrip("/"), smtp_class
         self._texts = texts
+        self.frames = frames
 
     @property
     def texts(self) -> Texts:
@@ -119,6 +124,15 @@ class Mailer:
     @property
     def configured(self) -> bool:
         return self.config().configured
+
+    def _t(self, lang: str, key: str, /, **values) -> str:
+        """A sentence of the e-mail's frame in `lang`: en/es/pl/ru from the dictionaries, another language
+        from its translated frame when one is cached, else English."""
+        if lang not in LANGS and self.frames is not None:
+            table = self.frames(lang)
+            if table and key in table:
+                return table[key].format_map(values) if values else table[key]
+        return self.texts.t(lang, key, **values)
 
     def sender(self) -> str:
         return self.config().user
@@ -141,12 +155,12 @@ class Mailer:
         return {"subject": subject, "intro": intro, "quote": from_form, "footer": "footer" if from_form else "footerNote"}
 
     def subject(self, kind: str, lang: str, idea: dict) -> str:
-        return self.texts.t(lang, self.keys(kind, idea)["subject"], id=idea["id"])
+        return self._t(lang, self.keys(kind, idea)["subject"], id=idea["id"])
 
     def compose(self, kind: str, lang: str, body: str, idea: dict) -> tuple[str, str]:
         """(text/plain, text/html) of a reply (body = the owner's answer) or a thank-you (body = what was
         done). Both end with the signature; a pilot's report is quoted with its date (see keys())."""
-        t = lambda key, **v: self.texts.t(lang, key, **v)  # noqa: E731
+        t = lambda key, **v: self._t(lang, key, **v)  # noqa: E731
         k = self.keys(kind, idea)
         site = f"{self.origin}/{self.texts.lang(lang)}/"
         parts = [t("hello")]
