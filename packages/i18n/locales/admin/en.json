@@ -32,6 +32,11 @@
   "admin.add.render": "Drawn as the link asks: {what}.",
   "admin.add.render.stochastic": "stochastic (SuperSplat beta, desktop only)",
   "admin.add.render.budget": "{m} M splats",
+  "admin.add.render.sorted": "sorted (the classic drawing)",
+  "admin.add.updateRender": "Give the scene in the list this drawing",
+  "admin.render.auto": "Auto (stochastic on a desktop)",
+  "admin.render.stochastic": "Stochastic",
+  "admin.render.sorted": "Sorted (classic)",
   "admin.warn.noWalls": "No walls file: pilots fly through everything, no crashes.",
   "admin.warn.unsupported": "Format {format} does not open in the simulator yet.",
   "admin.warn.notFound": "The CDN has no splats for this scene.",
@@ -151,10 +156,5 @@
   "admin.history.row": "{time}: {n} scenes",
   "admin.history.restore": "Make live again",
   "admin.history.confirm": "Make the version of {time} live again? Pilots see it within a minute.",
-  "admin.history.empty": "Nothing has been published from here yet.",
-  "admin.add.render.sorted": "sorted (the classic drawing)",
-  "admin.add.updateRender": "Give the scene in the list this drawing",
-  "admin.render.auto": "Auto (stochastic on a desktop)",
-  "admin.render.stochastic": "Stochastic",
-  "admin.render.sorted": "Sorted (classic)"
+  "admin.history.empty": "Nothing has been published from here yet."
 }

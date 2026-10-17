@@ -32,6 +32,11 @@
   "admin.add.render": "Se dibuja como pide el enlace: {what}.",
   "admin.add.render.stochastic": "estocástico (beta de SuperSplat, solo en escritorio)",
   "admin.add.render.budget": "{m} M de splats",
+  "admin.add.render.sorted": "ordenado (el dibujo clásico)",
+  "admin.add.updateRender": "Dar este dibujo a la escena de la lista",
+  "admin.render.auto": "Automático (estocástico en escritorio)",
+  "admin.render.stochastic": "Estocástico",
+  "admin.render.sorted": "Ordenado (clásico)",
   "admin.warn.noWalls": "Sin archivo de paredes: los pilotos atraviesan todo, sin choques.",
   "admin.warn.unsupported": "El formato {format} aún no se abre en el simulador.",
   "admin.warn.notFound": "La CDN no tiene splats de esta escena.",
@@ -151,10 +156,5 @@
   "admin.history.row": "{time}: {n} escenas",
   "admin.history.restore": "Volver a publicar",
   "admin.history.confirm": "¿Volver a publicar la versión del {time}? Los pilotos la verán en un minuto.",
-  "admin.history.empty": "Aún no se ha publicado nada desde aquí.",
-  "admin.add.render.sorted": "ordenado (el dibujo clásico)",
-  "admin.add.updateRender": "Dar este dibujo a la escena de la lista",
-  "admin.render.auto": "Automático (estocástico en escritorio)",
-  "admin.render.stochastic": "Estocástico",
-  "admin.render.sorted": "Ordenado (clásico)"
+  "admin.history.empty": "Aún no se ha publicado nada desde aquí."
 }
