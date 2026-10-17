@@ -31,6 +31,9 @@ const V02: Record<string, string> = {
     'gsfpv.walls.9d09ab82': 'on',
     'gsfpv.bakeSecondsPerMillion': '41.3',
     'gsfpv.admin': '1',
+    // v0.9 lane N: the N-walk's bookmark and the "N was used" flag (machine-local, never migrated)
+    'gsfpv.tour.v1': JSON.stringify({ v: 1, at: 1760000000000, seen: ['39e63ce9'], ss: 0 }),
+    'gsfpv.nextUsed.v1': '1',
     'gsfpv.profiles.v1': JSON.stringify({ [POCKET.deviceKey]: POCKET, [PAD.deviceKey]: PAD, [ALIEN.deviceKey]: ALIEN }),
     'gsfpv.stickMode': '1',
     'gsfpv.lastInput': JSON.stringify({ kind: 'hid', key: POCKET.deviceKey }),
@@ -106,6 +109,10 @@ describe('legacy migration v0 -> v1 (A.5)', () => {
         expect(m.found).not.toContain('gsfpv.bakeSecondsPerMillion');
         expect(asked).not.toContain('gsfpv.admin');
         expect(m.found).not.toContain('gsfpv.admin');
+        for (const k of ['gsfpv.tour.v1', 'gsfpv.nextUsed.v1']) {
+            expect(asked).not.toContain(k);
+            expect(m.found).not.toContain(k);
+        }
         expect(canonicalJson(m.doc)).not.toContain('41.3');
     });
 
@@ -115,6 +122,9 @@ describe('legacy migration v0 -> v1 (A.5)', () => {
         // and so would the admin hint (v0.7 lane E)
         const { 'gsfpv.admin': __, ...noHint } = MACHINE_LOCAL_KEYS;
         expect([...keysInSource()].sort()).not.toEqual(classified(noHint));
+        // and the N-walk's two (v0.9 lane N)
+        const { 'gsfpv.tour.v1': ___, 'gsfpv.nextUsed.v1': ____, ...noTour } = MACHINE_LOCAL_KEYS;
+        expect([...keysInSource()].sort()).not.toEqual(classified(noTour));
     });
 
     it('moves every key into the document, in its v0.3 shape', () => {

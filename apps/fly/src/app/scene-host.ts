@@ -11,11 +11,14 @@
 // A scene picked from a SuperSplat link keeps the drawing the link asked for (?budget=, ?stochastic;
 // v0.7 lane R, app/drawing.ts): the new session loads with it and the deep link carries it.
 // A scene that fails to load is noted (the rotation skips it for a day) and the scene left comes
-// back. Which scene N, Shift+N and F load comes from the rotation (@gsfpv/scenes rotation.ts).
+// back. Which scene N and the scene after a crash load comes from the tour (@gsfpv/scenes tour.ts, wired in
+// app/tour.ts): the owner's catalogue in his order, then SuperSplat, no scene twice until all were seen;
+// from the pilot's own sources (settings: favourites, history) and for Shift+N and F, from the rotation
+// (@gsfpv/scenes rotation.ts).
 // The pause menu's "Change scan" opens the scene picker over the flight (openPicker): a scene picked
 // there loads the same way, so changing the scan by hand keeps the radio too (item 5).
 import { SceneError, SceneRotation, flyQueryString, getLibrary, legacyLibraryStore, mergeLibraries, parseSceneLink, recordFailure, recordOpen, sameRender, useLibraryStore, writeSceneQuery } from '@gsfpv/scenes';
-import type { CatalogCollection, RotationRules, RotationSource, RotationOrder, SceneLibraryData, SceneRender } from '@gsfpv/scenes';
+import type { CatalogCollection, RotationRules, RotationSource, RotationOrder, SceneLibraryData, SceneRender, SceneTour, TourFrom } from '@gsfpv/scenes';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { FlightSession } from '../session';
 import type { SessionOptions } from '../session';
@@ -33,6 +36,8 @@ import { beacon, q } from './env';
 import { hook } from './test-hook';
 import type { FlightContext, SceneRef, SceneSwitchReason, SceneSwitcher } from './context';
 import { drawingFor } from './drawing';
+import { noteNextUsed } from './next-used';
+import { pageTour } from './tour';
 
 /** What the shell gives the host: the page's context with the swap, the canvas, the curated list. */
 export interface SceneHostDeps {
@@ -51,33 +56,48 @@ export interface SwitchRecord { from: string; to: string; reason: SceneSwitchRea
 export class SceneHost implements SceneSwitcher {
     private readonly d: SceneHostDeps;
     readonly rotation: SceneRotation;
+    /** N and the scene after a crash from the owner's catalogue: his scenes, then SuperSplat (app/tour.ts) */
+    readonly tour: SceneTour;
     private busyNow = false;
+    /** go() is deciding which scene (SuperSplat may have to be asked): no second decision meanwhile */
+    private picking = false;
     readonly log: SwitchRecord[] = [];
     private picker: ScenePicker | null = null;
 
     constructor(d: SceneHostDeps) {
         this.d = d;
         this.rotation = new SceneRotation({ curated: () => d.showcase.map((s) => ({ id: s.id, collision: s.collision })), library: getLibrary });
+        this.tour = pageTour(d.showcase, d.ctx.prefs);
+        // the scene the page opened with is seen: N does not bring it back this round
+        this.tour.noteFlown(d.ctx.scene.id);
     }
 
     get busy(): boolean {
-        return this.busyNow;
+        return this.busyNow || this.picking;
     }
 
     private rules(): RotationRules {
         return { allowNoWalls: this.d.ctx.prefs.get<boolean>('scenes.allowNoWalls') === true };
     }
 
-    /** The scene N (or a crash with scenes.autoSwitch), Shift+N or F would load now; null: none. */
-    pick(kind: 'next' | 'random' | 'favourite' | 'auto'): string | null {
+    /**
+     * The scene N (or a crash with scenes.autoSwitch), Shift+N or F would load now, and where it came from
+     * (`again`: every scene was seen, a new round began); id null: none. N and the crash go through the tour
+     * when the source is the author's list (the default), through the rotation for the pilot's own sources.
+     */
+    async pick(kind: 'next' | 'random' | 'favourite' | 'auto'): Promise<{ id: string | null; from?: TourFrom }> {
         const prefs = this.d.ctx.prefs;
         const cur = this.d.ctx.scene.id;
-        if (kind === 'random') return this.rotation.random(cur, this.rules());
-        if (kind === 'favourite') return this.rotation.nextFavourite(cur, this.rules());
+        if (kind === 'random') return { id: this.rotation.random(cur, this.rules()) };
+        if (kind === 'favourite') return { id: this.rotation.nextFavourite(cur, this.rules()) };
         const src = prefs.get<string>('scenes.rotation');
-        const source: RotationSource = src === 'favourites' || src === 'history' ? src : 'curated';
-        const order: RotationOrder = prefs.get<string>('scenes.order') === 'sequential' ? 'sequential' : 'random';
-        return this.rotation.next(source, cur, order, this.rules());
+        const order: RotationOrder = prefs.get<string>('scenes.order') === 'random' ? 'random' : 'sequential';
+        if (src === 'favourites' || src === 'history') {
+            const source: RotationSource = src;
+            return { id: this.rotation.next(source, cur, order, this.rules()) };
+        }
+        const step = await this.tour.next(cur, order);
+        return step ? { id: step.id, from: step.from } : { id: null };
     }
 
     /**
@@ -124,13 +144,23 @@ export class SceneHost implements SceneSwitcher {
     }
 
     async go(kind: 'next' | 'random' | 'favourite' | 'auto'): Promise<boolean> {
-        if (this.busyNow) return false;
-        const id = this.pick(kind);
-        if (!id) {
+        if (this.busy) return false;
+        // N and Shift+N, whatever pressed them (key, radio switch, panel button, the crash hint): the pilot knows N now
+        if (kind === 'next' || kind === 'random') noteNextUsed();
+        this.picking = true;
+        let chosen: { id: string | null; from?: TourFrom };
+        try {
+            chosen = await this.pick(kind);
+        } finally {
+            this.picking = false;
+        }
+        if (!chosen.id) {
             this.d.ctx.hud.flash(t(kind === 'favourite' ? 'rotation.noFavourite' : 'rotation.none'), 3500);
             return false;
         }
-        return this.load(id, kind);
+        // every scene was seen, or SuperSplat did not answer: the owner's scenes come round again
+        if (chosen.from === 'again') this.d.ctx.hud.flash(t('rotation.again'), 4500);
+        return this.load(chosen.id, kind);
     }
 
     /**
@@ -207,6 +237,7 @@ export class SceneHost implements SceneSwitcher {
         if (q.get('inflight') !== null) next.renderer.maxFramesInFlight = Number(q.get('inflight'));
         await loading.finish();
         ctx.swapSession(next, ref);
+        this.tour.noteFlown(id);
         // the deep link follows the scene: its own budget and flag, none left from the scene before
         const u = new URL(location.href);
         writeSceneQuery(u.searchParams, id, render);
