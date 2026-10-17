@@ -259,6 +259,7 @@ svg.rb-mini .rb-dim { opacity: .5; }
 .wz-ch.lead { color: var(--fg); }
 .wz-foot { display: flex; gap: 6px 16px; flex-wrap: wrap; margin-top: 8px; }
 .wz-foot p { margin: 0; }
+.wz-link-note { margin: 6px 0 0; max-width: 62ch; } /* a slow or bunched link: Bluetooth adds delay, a cable is faster (link-text.ts) */
 .wz-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; position: sticky; bottom: 0; z-index: 1; background: rgba(7, 8, 10, .95); padding: 8px 0 max(12px, env(safe-area-inset-bottom)); }
 .wz-files { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .wz-files .btn { min-height: 36px; padding: 4px 12px; font-size: 13px; }

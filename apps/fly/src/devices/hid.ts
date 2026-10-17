@@ -6,9 +6,15 @@
 // fixed EdgeTX layout is only the fallback when the browser hands over no usable descriptor. The
 // chooser lists every HID game control and the EdgeTX USB ids. Timestamps are the browser's
 // event.timeStamp (same clock as performance.now()).
+//
+// v0.9 lane E: every report is noted in a LinkMeter (@gsfpv/input link.ts), so the Controls screen and
+// F3 can say how often this device's reports arrive. event.timeStamp is when the PAGE ran the event,
+// so while the main thread is busy the queued events of a 1000 Hz cable look like one bunch: a short
+// timer (devices/link-beat.ts) notes every stall of the page and the meter leaves those gaps out.
 
-import { EDGETX_USB, GAME_CONTROL_USAGES, hidDisplayName, hidProfileKey, makeHidReader, parseEdgeTxReport } from '@gsfpv/input';
+import { EDGETX_USB, GAME_CONTROL_USAGES, LinkMeter, hidDisplayName, hidProfileKey, makeHidReader, parseEdgeTxReport } from '@gsfpv/input';
 import type { HidReader, RawFrame } from '@gsfpv/input';
+import { watchStalls } from './link-beat';
 
 /** What the browser's chooser offers: the EdgeTX / OpenTX joystick by its USB ids, and every HID game control (joystick, gamepad, multi-axis controller), the collections the reader reads. */
 export const HID_CHOOSER_FILTERS: HIDDeviceFilter[] = [
@@ -28,6 +34,9 @@ export class HidSource {
     private rateT0 = 0;
     private rateN = 0;
     rateHz = 0;
+    /** how often reports arrive: interval, jitter, longest gap, bunching (the Controls screen and F3 say it) */
+    readonly link = new LinkMeter();
+    private stopBeat: (() => void) | null = null;
     reportLen = 0;
     /** the device's own descriptor, or the fixed EdgeTX layout without one (makeHidReader) */
     private read: HidReader = makeHidReader({});
@@ -49,6 +58,8 @@ export class HidSource {
         this.device = d;
         this.read = makeHidReader(d);
         d.addEventListener('inputreport', this.onReport);
+        this.stopBeat?.();
+        this.stopBeat = watchStalls(this.link);
     }
 
     private onReport = (e: HIDInputReportEvent): void => {
@@ -61,6 +72,7 @@ export class HidSource {
             return;
         }
         f.t = e.timeStamp;
+        this.link.note(f.t);
         this.reports++;
         this.rateN++;
         if (f.t - this.rateT0 >= 1000) {
@@ -78,5 +90,7 @@ export class HidSource {
 
     close(): void {
         this.device?.removeEventListener('inputreport', this.onReport);
+        this.stopBeat?.();
+        this.stopBeat = null;
     }
 }

@@ -11,6 +11,7 @@ import { radioArt, knobsFrom, sideOf, tickIcon } from './radio-art';
 import type { ArtTarget } from './radio-art';
 import { watchTopRow } from './top-row';
 import { KeyCardShow } from './key-card-state';
+import { linkLines } from './link-text';
 
 /** Disarmed with a radio: what is still needed to arm, in order, with a small live radio drawing. */
 class ArmCard {
@@ -227,7 +228,12 @@ export class Hud {
     private statsHint = h('div', { 'data-testid': 'display-hint', hidden: true });
     // F3: the levels of detail at work (app/lod.ts lodLine, written by app/builtin/hud.ts)
     private statsDetail = h('div', { 'data-testid': 'detail-line', class: 'detail', hidden: true });
-    private frameStats = h('div', { class: 'osd frame hidden' }, this.statsMain, this.statsDetail, this.statsHint);
+    // F3: how the radio's or gamepad's reports arrive (interval, jitter, longest gap) and, for a slow or
+    // bunched link, the note about a cable (v0.9 lane E, @gsfpv/input link.ts)
+    private statsInput = h('div', { 'data-testid': 'input-line', class: 'detail', hidden: true });
+    private statsLink = h('div', { 'data-testid': 'link-hint', class: 'detail', hidden: true });
+    private frameStats = h('div', { class: 'osd frame hidden' }, this.statsMain, this.statsInput, this.statsLink, this.statsDetail, this.statsHint);
+    private inputAt = -1e9;
     private card = new ArmCard(() => this.onArm?.());
     private keys = new KeyCard();
     private last = 0;
@@ -365,6 +371,25 @@ export class Hud {
         this.gate.classList.toggle('mid', src === 'touch');
         if (this.gate.textContent !== say) this.gate.textContent = say; // the same text again is announced again
         this.latencyLine(s, frameMs.p50);
+        this.inputLine(view, now);
+    }
+
+    /** F3's line about the device's reports: four times a second, only while F3 is on and a radio or gamepad flies. */
+    private inputLine(view: ArmView | undefined, now: number): void {
+        if (this.frameStats.classList.contains('hidden')) return;
+        const link = view?.link ?? null;
+        if (!link) {
+            this.statsInput.hidden = true;
+            this.statsLink.hidden = true;
+            return;
+        }
+        if (now - this.inputAt < 250) return;
+        this.inputAt = now;
+        const ll = linkLines(link(now), t, 'f3');
+        this.statsInput.hidden = !ll;
+        this.statsLink.hidden = !ll?.note;
+        if (ll && this.statsInput.textContent !== ll.line) this.statsInput.textContent = ll.line;
+        if (ll?.note && this.statsLink.textContent !== ll.note) this.statsLink.textContent = ll.note;
     }
 
     /**
