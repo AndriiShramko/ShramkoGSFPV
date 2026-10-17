@@ -4,6 +4,7 @@
   measurements; `src/screens.ts`: landing and README screenshots. Each writes
   `evidence/<date>/<name>.json` through `src/evidence.ts`.
 - `test/*.test.ts`: vitest (run from the repo root: `npx vitest run`).
+- `src/pad-timeline.ts`: the Gamepad API latency harness's table (v0.9 lane E; the model is `test/helpers/pad-sim.ts`, the assertions `test/pad-timeline.test.ts`): the real `GamepadSource` of v0.7, v0.8 and now on synthetic Bluetooth / USB timelines, writes `evidence/<date>/v09-e-pad-timeline.json`.
 - `scripts/`: small live checks (their own README).
 
 ## Which browser
