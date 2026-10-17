@@ -63,7 +63,7 @@ const SAMPLE = `(() => {
     const comp = r.splat && r.splat.gsplat;
     const eng = { splatFrame: Object.assign({}, r.splatFrame), frameNumber: r.frameNumber, drawn: r.app.stats.frame.gsplats, budgetM: r.app.scene.gsplat.splatBudget / 1e6,
         stochastic: r.app.scene.gsplat.stochastic === true, range: comp ? [comp.lodRangeMin, comp.lodRangeMax] : null, visibleMs: s.timings.visibleMs, probe: r.__probe ? { ...r.__probe, tail: r.__probe.tail.join(' ') } : null };
-    const dir = r.app.renderer.gsplatDirector;
+    try { const dir = r.app.renderer.gsplatDirector;
     const insts = [];
     if (dir) dir.camerasMap.forEach((cd) => cd.layersMap.forEach((ld) => {
         const w = ld.gsplatManager && ld.gsplatManager.world;
@@ -75,6 +75,7 @@ const SAMPLE = `(() => {
             insts.push({ pending: inst.pending.size, prefetch: inst.prefetchPending.size, env: inst.octree.environmentUrl || null, envPlaced: !!inst.environmentPlacement, nodesPerLevel: perLevel });
         });
     }));
+    } catch (e) { eng.engineError = String(e); } // mid-switch: the old octree is being unloaded
     eng.octrees = insts;
     out.engine = eng;
     return out;
