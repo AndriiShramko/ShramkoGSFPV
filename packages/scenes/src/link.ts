@@ -60,12 +60,24 @@ export function renderParams(budget: string | null, stochastic: string | null): 
     return r.budgetM === undefined && r.stochastic === undefined ? undefined : r;
 }
 
+/** What chat apps, mail and Markdown put in front of a link, and after it (a closing bracket, the sentence's full stop). */
+const WRAP_BEFORE = `<("'[`;
+const WRAP_AFTER = `>)"'].,;:!?`;
+
 /**
  * A pasted text without what chat apps, mail and Markdown put around a link: surrounding space, quotes,
- * angle brackets, a bracket or two and the sentence's full stop or comma after it.
+ * angle brackets, a bracket or two and the sentence's full stop or comma after it. Two scans, linear in
+ * the text on any input: this runs on unbounded text (the address bar, the picker's field), BEFORE the
+ * length cap below, and the regex that did it (`/[>)"'\].,;:!?]+$/`) backtracks quadratically on a long
+ * run of those characters (80 000 of them froze the main thread for 6.7 s).
  */
 function unwrap(raw: string): string {
-    return raw.trim().replace(/^[<("'\[]+/, '').replace(/[>)"'\].,;:!?]+$/, '').trim();
+    const t = raw.trim();
+    let a = 0;
+    while (a < t.length && WRAP_BEFORE.includes(t[a])) a++;
+    let b = t.length;
+    while (b > a && WRAP_AFTER.includes(t[b - 1])) b--;
+    return t.slice(a, b).trim();
 }
 
 /**

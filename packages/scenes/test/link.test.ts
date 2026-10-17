@@ -124,6 +124,47 @@ describe('parseSceneLink: the id and the drawing parameters of every link form',
     });
 });
 
+describe('parseSceneLink on hostile text: linear, and the cap holds', () => {
+    /** The unwrap of ef8e337 (lane R, first cut): two regexes, the second backtracks quadratically on a long run of its characters. */
+    const regexUnwrap = (raw: string): string => raw.trim().replace(/^[<("'[]+/, '').replace(/[>)"'\].,;:!?]+$/, '').trim();
+    const timed = (f: () => unknown): number => {
+        const t0 = performance.now();
+        f();
+        return performance.now() - t0;
+    };
+
+    it('a crafted link of 100 000 closing marks is refused at once (a link in a group must not freeze a tab)', () => {
+        const hostile = `https://superspl.at/scene/${'!'.repeat(100_000)}x`;
+        let result: SceneLink | null = { id: 'unset' };
+        const ms = timed(() => { result = parseSceneLink(hostile); });
+        expect(result).toBeNull();
+        expect(ms).toBeLessThan(250);
+        for (const c of ['!', '.', ')', '"', "'", ']', ';', ':', '?', ',', '>']) {
+            expect(timed(() => parseSceneLink(`${c.repeat(100_000)}x`)), c).toBeLessThan(250);
+        }
+    });
+
+    it('control: the regex unwrap it replaced takes many times longer on the same text', () => {
+        const hostile = `${'!'.repeat(30_000)}x`;
+        const was = timed(() => regexUnwrap(hostile));
+        const now = timed(() => parseSceneLink(hostile));
+        expect(was).toBeGreaterThan(Math.max(now, 1) * 20);
+    });
+
+    it('it still strips exactly what the regexes stripped, however long the run', () => {
+        const link = 'https://superspl.at/scene/2f1ddf5f?budget=8&stochastic';
+        const want = { id: '2f1ddf5f', render: { budgetM: 8, stochastic: true } };
+        expect(parseSceneLink(`<<<(${link})>>>${'.'.repeat(50_000)}`)).toEqual(want);
+        expect(parseSceneLink(`"'[${link}]'",;:!?`)).toEqual(want);
+        for (const raw of ['', '   ', '<>', '()', '...', `${'<'.repeat(5000)}${'>'.repeat(5000)}`, `x${'!'.repeat(40)}`, `${'.'.repeat(40)}2f1ddf5f${'!'.repeat(40)}`]) {
+            expect(parseSceneLink(raw), raw.slice(0, 20)).toEqual(parseSceneLink(regexUnwrap(raw)));
+        }
+        // the cap on the length still applies after the wrapping is gone
+        expect(parseSceneLink(`${link}&pad=${'a'.repeat(2100)}`)).toBeNull();
+        expect(parseSceneLink(`<${link}&pad=${'a'.repeat(100)}>.`)).toEqual(want);
+    });
+});
+
 describe('renderParams: the raw values of a query', () => {
     it('absent (null) and present without a value (\'\') are different', () => {
         expect(renderParams(null, null)).toBeUndefined();
