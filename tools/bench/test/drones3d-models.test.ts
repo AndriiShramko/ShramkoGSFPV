@@ -21,6 +21,8 @@ import { boundsOf, merge, problemsOf, triangleCount } from '../../../apps/fly/sr
 import { modelOf } from '../../../apps/fly/src/drones3d/model';
 import type { Model } from '../../../apps/fly/src/drones3d/model';
 import { PAYLOAD_IDS, PAYLOADS } from '../../../apps/fly/src/drones3d/payloads';
+import { PAYLOAD_OPTIONS } from '../../../packages/prefs/src/defs/drone';
+import { SCHEMA } from '../../../packages/prefs/src';
 
 const preset = (id: string): PresetJson => PRESETS.find((p) => p.id === id) as unknown as PresetJson;
 const num = (id: string, key: string): number => preset(id).fields[key].value as number;
@@ -178,6 +180,15 @@ describe('the cinelifter\'s camera', () => {
                 expect(Math.hypot(nx - d.cx, nz - d.cz), `disc at ${d.cx.toFixed(0)},${d.cz.toFixed(0)}`).toBeGreaterThan(d.r - 0.5);
             }
         }
+    });
+    it('the drone.payload setting lists the same loads as the payload table, the own load of the preset first and by default', () => {
+        expect([...PAYLOAD_OPTIONS]).toEqual([...PAYLOAD_IDS]);
+        const def = SCHEMA.byId.get('drone.payload')!;
+        expect(def.type === 'enum' ? [...def.options] : null).toEqual([...PAYLOAD_IDS]);
+        expect(def.default).toBe(PAYLOAD_IDS[0]);
+        expect(def.scope).toBe('drone');
+        // control: a list with the options reordered would fail the same predicate
+        expect([...PAYLOAD_OPTIONS].reverse()).not.toEqual([...PAYLOAD_IDS]);
     });
     it('only the cinelifter has a camera choice', () => {
         for (const other of DRONE_IDS.filter((x) => x !== id)) expect(buildFor(preset(other)).payload).toBeNull();

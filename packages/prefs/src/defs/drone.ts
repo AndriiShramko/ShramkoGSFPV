@@ -13,10 +13,20 @@ import type { SettingDef } from '../schema';
  */
 export const DRONE_IDS: readonly string[] = ['pavo20pro-3s', 'pavo20pro2-3s', 'pavo20pro2-4s', 'pavopico-2s', 'meteor65pro-1s', 'air65-1s', 'nazgulf5v3-6s', 'machr5sport-6s', 'taurusx8-komodo-6s'];
 
+/**
+ * The camera loads of the cinelifter (v0.9 lane D, docs/research/drone-models.md section 4): the RED KOMODO 6K rig the
+ * preset assumes (first, the default), a Blackmagic Pocket Cinema Camera 6K Pro rig, a GoPro HERO13 Black, none. The
+ * same ids as apps/fly/src/drones3d/payloads.ts, which holds the masses (tools/bench/test/drones3d-models.test.ts keeps
+ * the two lists equal); a drone whose preset names no camera load ignores the choice.
+ */
+export const PAYLOAD_OPTIONS: readonly string[] = ['komodo', 'bmpcc6kpro', 'gopro13', 'none'];
+
 export const DRONE_DEFS: readonly SettingDef[] = [
     { id: 'drone.current', group: 'drone', scope: 'global', type: 'enum', options: DRONE_IDS, default: 'pavo20pro-3s', apply: 'life', shown: ['picker', 'url'], url: 'drone', status: 'shipped', since: 1, items: [13] },
     // any value in range: the settings screen has a slider and a number field (Earth 9.81, Moon
     // 1.62, Mars 3.72 in its help); v0.2's select of four values could not show ?g=5 (review C11)
+    // v0.9 lane D: the cinelifter's camera; chosen on the drone picker's 3D stage, so it is not a Settings row (shown: picker, url)
+    { id: 'drone.payload', group: 'drone', scope: 'drone', type: 'enum', options: PAYLOAD_OPTIONS, default: 'komodo', apply: 'life', shown: ['picker', 'url'], url: 'payload', status: 'shipped', since: 2 },
     { id: 'physics.gravity', group: 'drone', scope: 'global', type: 'number', min: 0, max: 30, step: 0.01, unit: 'mps2', default: 9.81, apply: 'life', shown: ['settings', 'url'], url: 'g', status: 'shipped', since: 1, items: [12] },
     { id: 'physics.gravityMode', group: 'drone', scope: 'global', type: 'enum', options: ['honest', 'same-twr', 'auto-throttle'], default: 'honest', apply: 'life', shown: ['settings', 'url'], url: 'gm', status: 'shipped', since: 1, items: [12] },
     // v0.8: up to 16 for the 5-inch race quad (12.5:1), 2 still below the cinelifter (3.3:1)

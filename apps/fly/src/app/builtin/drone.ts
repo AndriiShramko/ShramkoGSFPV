@@ -10,6 +10,8 @@ import { h } from '../../ui/dom';
 import { PRESETS } from '../../presets';
 import { PauseMenu } from '../menu';
 import { applyCamera, applyModel, pilotSet } from '../prefs';
+import { isPayloadId } from '../../drones3d/payloads';
+import type { PayloadId } from '../../drones3d/payloads';
 import { openFeedback } from './feedback';
 import type { Feature } from '../context';
 
@@ -39,7 +41,12 @@ export const drone: Feature = {
             run: () => {
                 const session = ctx.session;
                 ctx.pause('panel');
-                const d = new DronePicker(ctx.ui, session.presetId, { store: ctx.prefs, tune: true });
+                // v0.9: the cinelifter's camera load is the drone.payload setting of the drone it is chosen for
+                const payload = {
+                    get: (drone: string): PayloadId => { const v = ctx.prefs.get<string>('drone.payload', { drone }); return isPayloadId(v) ? v : 'komodo'; },
+                    set: (drone: string, id: PayloadId): void => { pilotSet(ctx.prefs, 'drone.payload', id, { drone }); }
+                };
+                const d = new DronePicker(ctx.ui, session.presetId, { store: ctx.prefs, tune: true, payload });
                 // the picker is a screen, not a panel: while it is up, Esc is its close (P does nothing)
                 const unEsc = ctx.keys.on('pause.toggle', (e) => { if (e.code === 'Escape') close(); });
                 let open = true;
@@ -47,6 +54,8 @@ export const drone: Feature = {
                 function close(): void {
                     if (!open) return;
                     gone();
+                    // a camera load chosen for the drone in use reaches its flight model (a craft in the air goes on from where it is)
+                    applyModel(ctx.session, ctx.prefs);
                     ctx.resume('panel');
                 }
                 d.onClose = close;

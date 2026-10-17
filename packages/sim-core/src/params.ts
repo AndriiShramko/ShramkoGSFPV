@@ -132,6 +132,13 @@ export interface ParamOverrides {
      * without those fields have no prop wash whatever this says.
      */
     wake?: number;
+    /**
+     * The camera load the drone carries, grams (v0.9, docs/research/drone-models.md section 4): only for a preset that
+     * names its own load (`payload_g`, the cinelifter's 2000 g inside its all-up weight); absent or equal to it = the
+     * preset exactly. The motors do not change, so the thrust stays the preset's and the mass, thrust-to-weight, hover
+     * throttle and inertia follow the load; a preset without `payload_g` ignores it.
+     */
+    payloadG?: number;
 }
 
 function num(p: PresetJson, key: string): number {
@@ -204,13 +211,45 @@ function voc(soc: number): number {
 }
 export { voc as cellVoc };
 
+/**
+ * What a different camera load does to a preset that carries one (ParamOverrides.payloadG): the change of mass in kg
+ * and of the inertia about the pitch/roll axes and the yaw axis, kg m^2, for a point mass at the preset's
+ * `payload_arm_m` (x, y, z metres from the centre of gravity; only the squares matter, so hung below the frame or
+ * standing on it is the same). The camera's own spread is inside the preset's inertia for its own load and left out
+ * for the change. Zeros for a preset with no `payload_g` and for the preset's own load.
+ */
+export function payloadChange(p: PresetJson, grams: number | undefined): { dm: number; dIpr: number; dIy: number } {
+    const none = { dm: 0, dIpr: 0, dIy: 0 };
+    if (grams === undefined) return none;
+    if (!(grams >= 0) || !Number.isFinite(grams)) throw new RangeError(`payloadG must be a number >= 0, got ${String(grams)}`);
+    const own = p.fields.payload_g;
+    if (own === undefined) return none;
+    if (typeof own.value !== 'number' || !Number.isFinite(own.value)) throw new Error(`preset ${p.id}: payload_g is not a number`);
+    const dm = (grams - own.value) / 1000;
+    if (dm === 0) return none;
+    const armField = p.fields.payload_arm_m;
+    let x = 0, y = 0, z = 0;
+    if (armField !== undefined) {
+        const a = armField.value;
+        if (!Array.isArray(a) || a.length !== 3 || a.some((v) => typeof v !== 'number' || !Number.isFinite(v))) throw new Error(`preset ${p.id}: payload_arm_m must be [x, y, z] in metres`);
+        [x, y, z] = a as number[];
+    }
+    // about x (pitch): y^2 + z^2, about z (roll): x^2 + y^2, about y (yaw): x^2 + z^2; the model keeps one roll/pitch value
+    return { dm, dIpr: (dm * ((y * y + z * z) + (x * x + y * y))) / 2, dIy: dm * (x * x + z * z) };
+}
+
 export function compileParams(p: PresetJson, o: ParamOverrides = {}): SimParams {
-    const mass = num(p, 'auw_g') / 1000;
-    const twr = o.twr ?? num(p, 'twr');
+    const mass0 = num(p, 'auw_g') / 1000;
+    const twr0 = o.twr ?? num(p, 'twr');
+    const load = payloadChange(p, o.payloadG);
+    // another camera load changes the mass and not the motors: the thrust stays TWR x the preset's mass, the
+    // thrust-to-weight is what that thrust makes of the new mass (no override: the very same numbers as before)
+    const mass = mass0 + load.dm;
+    const twr = load.dm === 0 ? twr0 : (twr0 * mass0) / mass;
     const gravity = o.gravity ?? EARTH_G;
     const gravityMode = o.gravityMode ?? 'honest';
     // thrust is defined on Earth: T_max = TWR * m * 9.81; "same TWR" rescales it with g
-    let tmaxTotal = twr * mass * EARTH_G;
+    let tmaxTotal = twr0 * mass0 * EARTH_G;
     if (gravityMode === 'same-twr') tmaxTotal *= gravity / EARTH_G;
     const tmaxMotorNom = tmaxTotal / 4;
 
@@ -283,8 +322,9 @@ export function compileParams(p: PresetJson, o: ParamOverrides = {}): SimParams 
     const cdaH = (num(p, 'cda_horizontal_cm2') / 10000) * cdaScale;
     const cdaV = (num(p, 'cda_vertical_cm2') / 10000) * cdaScale;
 
-    const ipr = num(p, 'inertia_roll_pitch_kgm2');
-    const iy = num(p, 'inertia_yaw_kgm2');
+    const ipr = num(p, 'inertia_roll_pitch_kgm2') + load.dIpr;
+    const iy = num(p, 'inertia_yaw_kgm2') + load.dIy;
+    if (!(ipr > 0) || !(iy > 0)) throw new RangeError(`preset ${p.id}: a payload of ${String(o.payloadG)} g leaves no inertia`);
 
     return {
         presetId: p.id,

@@ -1,9 +1,9 @@
 {
- "generated": "2026-10-16",
+ "generated": "2026-10-17",
  "schemaVersion": 2,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
-  "settings": 67,
+  "settings": 68,
   "groups": 11,
   "drones": 9,
   "modes": 3,
@@ -679,6 +679,29 @@
         "iFlight Nazgul Evoque F5 V3 class, 6S",
         "iFlight Mach R5 Sport class, 6S",
         "iFlight Taurus X8 class with a RED Komodo, 6S"
+       ],
+       "shown": [
+        "picker",
+        "url"
+       ]
+      },
+      {
+       "id": "drone.payload",
+       "label": "Camera load",
+       "help": "What the cinelifter carries under its frame. iFlight sells the Taurus X8 without a camera and allows up to 3 kg; the motors stay the same, so the weight, thrust-to-weight and hover throttle change with the camera. Chosen on the drone picker's 3D view; the other drones ignore it.",
+       "type": "enum",
+       "default": "RED KOMODO 6K rig",
+       "range": "RED KOMODO 6K rig / Blackmagic BMPCC 6K Pro rig / GoPro HERO13 Black / No camera",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "RED KOMODO 6K rig",
+        "Blackmagic BMPCC 6K Pro rig",
+        "GoPro HERO13 Black",
+        "No camera"
        ],
        "shown": [
         "picker",
@@ -2597,6 +2620,29 @@
        ]
       },
       {
+       "id": "drone.payload",
+       "label": "Carga de c\u00e1mara",
+       "help": "Lo que lleva el dron de cine bajo el chasis. iFlight vende el Taurus X8 sin c\u00e1mara y admite hasta 3 kg; los motores no cambian, as\u00ed que el peso, la relaci\u00f3n empuje-peso y el acelerador de vuelo estacionario cambian con la c\u00e1mara. Se elige en la vista 3D del selector de drones; los dem\u00e1s drones lo ignoran.",
+       "type": "enum",
+       "default": "Equipo RED KOMODO 6K",
+       "range": "Equipo RED KOMODO 6K / Equipo Blackmagic BMPCC 6K Pro / GoPro HERO13 Black / Sin c\u00e1mara",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Equipo RED KOMODO 6K",
+        "Equipo Blackmagic BMPCC 6K Pro",
+        "GoPro HERO13 Black",
+        "Sin c\u00e1mara"
+       ],
+       "shown": [
+        "picker",
+        "url"
+       ]
+      },
+      {
        "id": "physics.gravity",
        "label": "Gravedad",
        "help": "Tierra 9,81, Luna 1,62, Marte 3,72, gravedad cero o cualquier valor intermedio.",
@@ -4508,6 +4554,29 @@
        ]
       },
       {
+       "id": "drone.payload",
+       "label": "\u0141adunek kamery",
+       "help": "Co niesie dron filmowy pod ram\u0105. iFlight sprzedaje Taurusa X8 bez kamery i dopuszcza do 3 kg; silniki si\u0119 nie zmieniaj\u0105, wi\u0119c masa, stosunek ci\u0105gu do masy i gaz zawisu zmieniaj\u0105 si\u0119 razem z kamer\u0105. Wybierasz to w widoku 3D w wyborze drona; inne drony to pomijaj\u0105.",
+       "type": "enum",
+       "default": "Zestaw RED KOMODO 6K",
+       "range": "Zestaw RED KOMODO 6K / Zestaw Blackmagic BMPCC 6K Pro / GoPro HERO13 Black / Bez kamery",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Zestaw RED KOMODO 6K",
+        "Zestaw Blackmagic BMPCC 6K Pro",
+        "GoPro HERO13 Black",
+        "Bez kamery"
+       ],
+       "shown": [
+        "picker",
+        "url"
+       ]
+      },
+      {
        "id": "physics.gravity",
        "label": "Grawitacja",
        "help": "Ziemia 9,81, Ksi\u0119\u017cyc 1,62, Mars 3,72, zero g albo dowolna warto\u015b\u0107 pomi\u0119dzy.",
@@ -6412,6 +6481,29 @@
         "iFlight Nazgul Evoque F5 V3 class, 6S",
         "iFlight Mach R5 Sport class, 6S",
         "iFlight Taurus X8 class with a RED Komodo, 6S"
+       ],
+       "shown": [
+        "picker",
+        "url"
+       ]
+      },
+      {
+       "id": "drone.payload",
+       "label": "\u041a\u0430\u043c\u0435\u0440\u0430 \u043d\u0430 \u0431\u043e\u0440\u0442\u0443",
+       "help": "\u0427\u0442\u043e \u043a\u0438\u043d\u043e\u043b\u0438\u0444\u0442\u0435\u0440 \u043d\u0435\u0441\u0451\u0442 \u043f\u043e\u0434 \u0440\u0430\u043c\u043e\u0439. iFlight \u043f\u0440\u043e\u0434\u0430\u0451\u0442 Taurus X8 \u0431\u0435\u0437 \u043a\u0430\u043c\u0435\u0440\u044b \u0438 \u0434\u043e\u043f\u0443\u0441\u043a\u0430\u0435\u0442 \u0434\u043e 3 \u043a\u0433; \u043c\u043e\u0442\u043e\u0440\u044b \u043e\u0441\u0442\u0430\u044e\u0442\u0441\u044f \u043f\u0440\u0435\u0436\u043d\u0438\u043c\u0438, \u043f\u043e\u044d\u0442\u043e\u043c\u0443 \u043c\u0430\u0441\u0441\u0430, \u0442\u044f\u0433\u043e\u0432\u043e\u043e\u0440\u0443\u0436\u0451\u043d\u043d\u043e\u0441\u0442\u044c \u0438 \u0433\u0430\u0437 \u0437\u0430\u0432\u0438\u0441\u0430\u043d\u0438\u044f \u043c\u0435\u043d\u044f\u044e\u0442\u0441\u044f \u0432\u043c\u0435\u0441\u0442\u0435 \u0441 \u043a\u0430\u043c\u0435\u0440\u043e\u0439. \u0412\u044b\u0431\u0438\u0440\u0430\u0435\u0442\u0441\u044f \u0432 3D-\u0432\u0438\u0434\u0435 \u0432\u044b\u0431\u043e\u0440\u0430 \u0434\u0440\u043e\u043d\u0430; \u043e\u0441\u0442\u0430\u043b\u044c\u043d\u044b\u0435 \u0434\u0440\u043e\u043d\u044b \u044d\u0442\u043e \u0438\u0433\u043d\u043e\u0440\u0438\u0440\u0443\u044e\u0442.",
+       "type": "enum",
+       "default": "\u041a\u043e\u043c\u043f\u043b\u0435\u043a\u0442 RED KOMODO 6K",
+       "range": "\u041a\u043e\u043c\u043f\u043b\u0435\u043a\u0442 RED KOMODO 6K / \u041a\u043e\u043c\u043f\u043b\u0435\u043a\u0442 Blackmagic BMPCC 6K Pro / GoPro HERO13 Black / \u0411\u0435\u0437 \u043a\u0430\u043c\u0435\u0440\u044b",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "\u041a\u043e\u043c\u043f\u043b\u0435\u043a\u0442 RED KOMODO 6K",
+        "\u041a\u043e\u043c\u043f\u043b\u0435\u043a\u0442 Blackmagic BMPCC 6K Pro",
+        "GoPro HERO13 Black",
+        "\u0411\u0435\u0437 \u043a\u0430\u043c\u0435\u0440\u044b"
        ],
        "shown": [
         "picker",

@@ -22,6 +22,8 @@ import type { GravityMode, ParamOverrides, PresetJson } from '@gsfpv/sim-core';
 import type { ShowcaseScene } from '../ui/scenes';
 import type { VoxelController, VoxelMode, VoxelPrefs, VoxelStyle } from '../voxels';
 import { PRESETS } from '../presets';
+import { PAYLOADS } from '../drones3d/payloads';
+import type { PayloadId } from '../drones3d/payloads';
 
 /**
  * Drone preset fields and the admin's per-scan values (public/showcase.json) for the store's
@@ -122,6 +124,8 @@ const PARAM_FIELDS: Readonly<Record<string, (o: ParamOverrides, v: unknown) => v
     'physics.propInertia': (o, v) => { o.propInertia = v as number; },
     // v0.8: prop wash, a multiplier on the preset's (sim-core wake.ts); presets without prop wash ignore it
     'physics.propWash': (o, v) => { o.wake = v as number; },
+    // v0.9 lane D: the cinelifter's camera load in grams (sim-core payloadG); a preset without a camera load ignores it
+    'drone.payload': (o, v) => { const p = Object.hasOwn(PAYLOADS, v as string) ? PAYLOADS[v as PayloadId] : undefined; if (p) o.payloadG = p.loadG; },
     // the setting is a percentage, sim-core a fraction (0.055 = Betaflight dshot_idle_value 550)
     'physics.idlePct': (o, v) => { o.idle = (v as number) / 100; },
     'tune.pid': (o, v) => { const p = v as PidValue; o.pid = { roll: [...p.roll], pitch: [...p.pitch], yaw: [...p.yaw] }; },

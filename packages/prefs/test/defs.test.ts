@@ -27,7 +27,9 @@ const V03_SHIPPED = [
     // v0.8 lane D (docs/wip/v08-d.md): prop wash of the 5-inch and cinelifter presets, Settings -> Drone & physics
     'physics.propWash',
     // v0.8 lane A (docs/wip/v08-a.md): easy play for touch and keyboard, Settings -> Controls
-    'input.play', 'input.altitudeHelp', 'input.haptics'
+    'input.play', 'input.altitudeHelp', 'input.haptics',
+    // v0.9 lane D (docs/wip/v09-d.md): the cinelifter's camera load, chosen on the drone picker's 3D stage
+    'drone.payload'
 ];
 
 /**
@@ -84,6 +86,7 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['physics.ductDrag', 'drone', 'drone', 'number', 'preset:rotor_drag_per_s', 'life'],
     ['physics.propInertia', 'drone', 'drone', 'number', 1, 'life'],
     ['physics.propWash', 'drone', 'drone', 'number', 1, 'life'],
+    ['drone.payload', 'drone', 'drone', 'enum', 'komodo', 'life'],
     ['physics.idlePct', 'drone', 'drone', 'number', 'preset:motor_idle', 'life'],
     ['tune.pid', 'tune', 'drone', 'json', null, 'life'],
     ['tune.rates', 'tune', 'drone', 'json', null, 'life'],
@@ -153,7 +156,7 @@ const WAVE2_SETTINGS = [
 
 describe('SCHEMA is the A.8 table', () => {
     it('has the 74 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard, v0.7\'s drawing, wind and ceiling, v0.7 D1\'s seven, v0.8\'s prop wash and lane A\'s three), each with its group, scope, type, default and apply', () => {
-        expect(SCHEMA.defs).toHaveLength(74);
+        expect(SCHEMA.defs).toHaveLength(75);
         const got = SCHEMA.defs.map((d) => [d.id, d.group, d.scope, d.type, isPresetRef(d.default) ? `preset:${d.default.preset}` : isCuratedRef(d.default) ? `curated:${d.default.curated}|${String(d.default.fallback)}` : d.default, d.apply]);
         // order inside a group follows the def files, not the table's rows
         const byId = (a: unknown[], b: unknown[]) => String(a[0]).localeCompare(String(b[0]));
@@ -252,7 +255,8 @@ describe('SCHEMA is the A.8 table', () => {
         expect(Object.fromEntries(SCHEMA.defs.filter((d) => d.url).map((d) => [d.url, d.id]))).toEqual({
             governor: 'display.governor', guard: 'display.latencyGuard', drone: 'drone.current', g: 'physics.gravity', gm: 'physics.gravityMode',
             walls: 'scene.walls', voxels: 'voxels.show', vstyle: 'voxels.style', vradius: 'voxels.radiusM',
-            drawing: 'display.drawing' // v0.7 lane R: ?drawing=auto|stochastic|sorted for one load (benches)
+            drawing: 'display.drawing', // v0.7 lane R: ?drawing=auto|stochastic|sorted for one load (benches)
+            payload: 'drone.payload' // v0.9 lane D: ?payload=komodo|bmpcc6kpro|gopro13|none, the cinelifter's camera load
         });
     });
 });
