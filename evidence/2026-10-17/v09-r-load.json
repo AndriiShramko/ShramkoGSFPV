@@ -1,0 +1,405 @@
+{
+  "site": "http://127.0.0.1:5431",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "scenes": [
+    "ba7aa29d",
+    "2f1ddf5f"
+  ],
+  "budgets": [
+    4,
+    8
+  ],
+  "repeats": 2,
+  "limitMs": 90000,
+  "runs": [
+    {
+      "scene": "ba7aa29d",
+      "budgetM": 4,
+      "rep": 0,
+      "status": "ready",
+      "readyMs": 5549,
+      "completeMs": 26258,
+      "bytes": {
+        "total": 300502992,
+        "requests": 699,
+        "byHost": {
+          "127.0.0.1:5431": 5627127,
+          "s3-eu-west-1.amazonaws.com": 17136,
+          "d28zzqy0iyovbz.cloudfront.net": 294858729
+        }
+      },
+      "drawnM": 3.9,
+      "stillComplete": true
+    },
+    {
+      "scene": "ba7aa29d",
+      "budgetM": 8,
+      "rep": 0,
+      "status": "ready",
+      "readyMs": 2628,
+      "completeMs": 25292,
+      "bytes": {
+        "total": 501629082,
+        "requests": 947,
+        "byHost": {
+          "127.0.0.1:5431": 5627127,
+          "d28zzqy0iyovbz.cloudfront.net": 495984819,
+          "s3-eu-west-1.amazonaws.com": 17136
+        }
+      },
+      "drawnM": 7.8,
+      "stillComplete": true
+    },
+    {
+      "scene": "ba7aa29d",
+      "budgetM": 4,
+      "rep": 1,
+      "status": "ready",
+      "readyMs": 1893,
+      "completeMs": 1908,
+      "bytes": {
+        "total": 48268239,
+        "requests": 163,
+        "byHost": {
+          "127.0.0.1:5431": 5627127,
+          "s3-eu-west-1.amazonaws.com": 17136,
+          "d28zzqy0iyovbz.cloudfront.net": 42623976
+        }
+      },
+      "drawnM": 0.9,
+      "stillComplete": false,
+      "share": {
+        "1920x1080-stochastic": {
+          "canvas": [
+            1920,
+            1080
+          ],
+          "engineStochastic": true,
+          "bytes": {
+            "0.88": 228411,
+            "0.8": 160659,
+            "0.72": 122745,
+            "0.64": 97899,
+            "0.56": 80532
+          }
+        },
+        "1920x1080-sorted": {
+          "canvas": [
+            1920,
+            1080
+          ],
+          "engineStochastic": false,
+          "bytes": {
+            "0.88": 86859,
+            "0.8": 63024,
+            "0.72": 51045,
+            "0.64": 43539,
+            "0.56": 38298
+          }
+        },
+        "3840x2160-stochastic": {
+          "canvas": [
+            3840,
+            2160
+          ],
+          "engineStochastic": true,
+          "bytes": {
+            "0.88": 204480,
+            "0.8": 143514,
+            "0.72": 110994,
+            "0.64": 90180,
+            "0.56": 76035
+          }
+        },
+        "3840x2160-sorted": {
+          "canvas": [
+            3840,
+            2160
+          ],
+          "engineStochastic": false,
+          "bytes": {
+            "0.88": 117051,
+            "0.8": 85698,
+            "0.72": 69513,
+            "0.64": 59463,
+            "0.56": 52524
+          }
+        }
+      }
+    },
+    {
+      "scene": "ba7aa29d",
+      "budgetM": 8,
+      "rep": 1,
+      "status": "ready",
+      "readyMs": 2572,
+      "completeMs": 21799,
+      "bytes": {
+        "total": 501560357,
+        "requests": 947,
+        "byHost": {
+          "127.0.0.1:5431": 5627127,
+          "d28zzqy0iyovbz.cloudfront.net": 495916094,
+          "s3-eu-west-1.amazonaws.com": 17136
+        }
+      },
+      "drawnM": 7.8,
+      "stillComplete": true,
+      "share": {
+        "1920x1080-stochastic": {
+          "canvas": [
+            1920,
+            1080
+          ],
+          "engineStochastic": true,
+          "bytes": {
+            "0.88": 211575,
+            "0.8": 147603,
+            "0.72": 113877,
+            "0.64": 92736,
+            "0.56": 78201
+          }
+        },
+        "1920x1080-sorted": {
+          "canvas": [
+            1920,
+            1080
+          ],
+          "engineStochastic": false,
+          "bytes": {
+            "0.88": 118542,
+            "0.8": 86790,
+            "0.72": 70581,
+            "0.64": 60369,
+            "0.56": 53331
+          }
+        },
+        "3840x2160-stochastic": {
+          "canvas": [
+            3840,
+            2160
+          ],
+          "engineStochastic": true,
+          "bytes": {
+            "0.88": 212547,
+            "0.8": 149895,
+            "0.72": 116634,
+            "0.64": 95520,
+            "0.56": 80871
+          }
+        },
+        "3840x2160-sorted": {
+          "canvas": [
+            3840,
+            2160
+          ],
+          "engineStochastic": false,
+          "bytes": {
+            "0.88": 124230,
+            "0.8": 90795,
+            "0.72": 73536,
+            "0.64": 62733,
+            "0.56": 55245
+          }
+        }
+      }
+    },
+    {
+      "scene": "2f1ddf5f",
+      "budgetM": 4,
+      "rep": 0,
+      "status": "ready",
+      "readyMs": 9482,
+      "completeMs": 25015,
+      "bytes": {
+        "total": 97834588,
+        "requests": 541,
+        "byHost": {
+          "127.0.0.1:5431": 5627127,
+          "d28zzqy0iyovbz.cloudfront.net": 92191047,
+          "s3-eu-west-1.amazonaws.com": 16414
+        }
+      },
+      "drawnM": 3.9,
+      "stillComplete": true
+    },
+    {
+      "scene": "2f1ddf5f",
+      "budgetM": 8,
+      "rep": 0,
+      "status": "ready",
+      "readyMs": 6515,
+      "completeMs": 20149,
+      "bytes": {
+        "total": 161486924,
+        "requests": 571,
+        "byHost": {
+          "127.0.0.1:5431": 5627127,
+          "s3-eu-west-1.amazonaws.com": 16414,
+          "d28zzqy0iyovbz.cloudfront.net": 155843383
+        }
+      },
+      "drawnM": 7.9,
+      "stillComplete": true
+    },
+    {
+      "scene": "2f1ddf5f",
+      "budgetM": 4,
+      "rep": 1,
+      "status": "ready",
+      "readyMs": 6214,
+      "completeMs": 12932,
+      "bytes": {
+        "total": 97813252,
+        "requests": 541,
+        "byHost": {
+          "127.0.0.1:5431": 5627127,
+          "d28zzqy0iyovbz.cloudfront.net": 92169711,
+          "s3-eu-west-1.amazonaws.com": 16414
+        }
+      },
+      "drawnM": 3.9,
+      "stillComplete": true,
+      "share": {
+        "1920x1080-stochastic": {
+          "canvas": [
+            1920,
+            1080
+          ],
+          "engineStochastic": true,
+          "bytes": {
+            "0.88": 103980,
+            "0.8": 83343,
+            "0.72": 69966,
+            "0.64": 60495,
+            "0.56": 53295
+          }
+        },
+        "1920x1080-sorted": {
+          "canvas": [
+            1920,
+            1080
+          ],
+          "engineStochastic": false,
+          "bytes": {
+            "0.88": 73011,
+            "0.8": 56742,
+            "0.72": 47850,
+            "0.64": 41769,
+            "0.56": 37503
+          }
+        },
+        "3840x2160-stochastic": {
+          "canvas": [
+            3840,
+            2160
+          ],
+          "engineStochastic": true,
+          "bytes": {
+            "0.88": 103857,
+            "0.8": 83022,
+            "0.72": 69684,
+            "0.64": 60231,
+            "0.56": 53103
+          }
+        },
+        "3840x2160-sorted": {
+          "canvas": [
+            3840,
+            2160
+          ],
+          "engineStochastic": false,
+          "bytes": {
+            "0.88": 76524,
+            "0.8": 59619,
+            "0.72": 50028,
+            "0.64": 43431,
+            "0.56": 38871
+          }
+        }
+      }
+    },
+    {
+      "scene": "2f1ddf5f",
+      "budgetM": 8,
+      "rep": 1,
+      "status": "ready",
+      "readyMs": 6618,
+      "completeMs": 15079,
+      "bytes": {
+        "total": 161476334,
+        "requests": 571,
+        "byHost": {
+          "127.0.0.1:5431": 5627127,
+          "d28zzqy0iyovbz.cloudfront.net": 155832793,
+          "s3-eu-west-1.amazonaws.com": 16414
+        }
+      },
+      "drawnM": 7.9,
+      "stillComplete": true,
+      "share": {
+        "1920x1080-stochastic": {
+          "canvas": [
+            1920,
+            1080
+          ],
+          "engineStochastic": true,
+          "bytes": {
+            "0.88": 106023,
+            "0.8": 85446,
+            "0.72": 72024,
+            "0.64": 62286,
+            "0.56": 55083
+          }
+        },
+        "1920x1080-sorted": {
+          "canvas": [
+            1920,
+            1080
+          ],
+          "engineStochastic": false,
+          "bytes": {
+            "0.88": 77391,
+            "0.8": 59904,
+            "0.72": 50280,
+            "0.64": 43803,
+            "0.56": 39084
+          }
+        },
+        "3840x2160-stochastic": {
+          "canvas": [
+            3840,
+            2160
+          ],
+          "engineStochastic": true,
+          "bytes": {
+            "0.88": 106005,
+            "0.8": 85005,
+            "0.72": 71673,
+            "0.64": 62103,
+            "0.56": 54987
+          }
+        },
+        "3840x2160-sorted": {
+          "canvas": [
+            3840,
+            2160
+          ],
+          "engineStochastic": false,
+          "bytes": {
+            "0.88": 81126,
+            "0.8": 63000,
+            "0.72": 52767,
+            "0.64": 45672,
+            "0.56": 40650
+          }
+        }
+      }
+    }
+  ]
+}

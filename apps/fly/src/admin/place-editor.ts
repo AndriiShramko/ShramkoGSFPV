@@ -117,11 +117,16 @@ export function placeEditor(s: CatalogScene, api: AdminClient, changed: () => vo
 
     // ---- how SuperSplat draws it ----
     const budget = numberInput(s.render?.budgetM, 0.25, 32, 0.25, 'budgetM');
-    const stochastic = h('input', { type: 'checkbox', 'data-field': 'stochastic' }) as HTMLInputElement;
-    stochastic.checked = s.render?.stochastic === true;
+    // three values (v0.9): '' = the device's default (stochastic on a desktop WebGPU browser), 'stochastic', 'sorted'
+    // (the owner wants THIS scene drawn the classic way); the pilot's own Render setting outranks it
+    const stochastic = h('select', { 'data-field': 'render' },
+        h('option', { value: '' }, t('admin.render.auto')),
+        h('option', { value: 'stochastic' }, t('admin.render.stochastic')),
+        h('option', { value: 'sorted' }, t('admin.render.sorted'))) as HTMLSelectElement;
+    stochastic.value = s.render?.stochastic === true ? 'stochastic' : s.render?.stochastic === false ? 'sorted' : '';
     const setRender = (): void => {
         const b = read(budget, 0.25, 32);
-        const r = { ...(b !== undefined ? { budgetM: b } : {}), ...(stochastic.checked ? { stochastic: true } : {}) };
+        const r = { ...(b !== undefined ? { budgetM: b } : {}), ...(stochastic.value ? { stochastic: stochastic.value === 'stochastic' } : {}) };
         if (Object.keys(r).length) s.render = r; else delete s.render;
         changed();
     };
@@ -152,7 +157,7 @@ export function placeEditor(s: CatalogScene, api: AdminClient, changed: () => vo
         climateNote,
         field(t('admin.field.ceilingM'), ceiling),
         field(t('admin.field.budgetM'), budget),
-        h('label', { class: 'check' }, stochastic, ' ', t('admin.field.stochastic')),
+        field(t('admin.field.stochastic'), stochastic),
         ...about
     );
 }

@@ -29,7 +29,9 @@ export interface SceneWind {
 
 /**
  * How SuperSplat's viewer was asked to draw the scene (its link's ?budget=8&stochastic): budgetM is the
- * splat budget in millions; stochastic is the sort-free, dithered drawing (desktop WebGPU only).
+ * splat budget in millions; stochastic is the sort-free, dithered drawing (desktop WebGPU only): true
+ * asks for it, false asks for the classic sorted drawing (stochastic=0, or the owner's choice for a
+ * scene), absent asks for nothing (the device's default: stochastic on a desktop WebGPU browser).
  */
 export interface SceneRender {
     budgetM?: number;
@@ -170,7 +172,9 @@ function readRender(v: unknown): SceneRender | undefined {
     const r: SceneRender = {};
     const b = num(o.budgetM, 0.25, 32);
     if (b !== undefined) r.budgetM = b;
-    if (o.stochastic === true) r.stochastic = true;
+    // true: draw it stochastic; false: the owner wants THIS scene drawn the classic (sorted) way (v0.9: the
+    // desktop default is stochastic, so "sorted" is a choice worth keeping); absent: the device's default
+    if (typeof o.stochastic === 'boolean') r.stochastic = o.stochastic;
     return Object.keys(r).length ? r : undefined;
 }
 

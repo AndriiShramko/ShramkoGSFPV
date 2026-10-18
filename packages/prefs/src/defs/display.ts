@@ -19,6 +19,11 @@ export const DISPLAY_DEFS: readonly SettingDef[] = [
     // sort-free beta, 'sorted' the classic drawing. Desktop WebGPU only: phones, tablets and WebGL keep
     // the sorted drawing with a note (packages/render-pc drawing.ts). ?drawing= for a load (benches).
     { id: 'display.drawing', group: 'display', scope: 'global', type: 'enum', options: ['auto', 'stochastic', 'sorted'], default: 'auto', apply: 'live', shown: ['settings', 'url'], url: 'drawing', status: 'shipped', since: 2 },
+    // v0.9 (message 22, item 13): stochastic is the DEFAULT on a desktop WebGPU browser now, so 'auto' above is
+    // "what the link / the owner / the device decides" and this is the pilot's splat budget on top of it:
+    // 'auto' = the link's, the owner's scene entry, else the device's (render-pc drawing.ts BUDGET_OPTIONS,
+    // millions of splats). Link > these two settings > the owner's entry > the device's default.
+    { id: 'display.budget', group: 'display', scope: 'global', type: 'enum', options: ['auto', '1', '2', '4', '8', '16', '32'], default: 'auto', apply: 'live', shown: ['settings'], status: 'shipped', since: 2 },
     // 'system' follows prefers-reduced-motion; v0.2 re-read the OS on every panel open (D-b)
     { id: 'display.reducedMotion', group: 'display', scope: 'global', type: 'enum', options: ['system', 'on', 'off'], default: 'system', apply: 'live', shown: ['settings'], status: 'shipped', since: 1, items: [20] },
     { id: 'display.frameStats', group: 'display', scope: 'global', type: 'bool', default: false, apply: 'live', shown: ['key'], action: 'frameStats.toggle', status: 'shipped', since: 1, items: [12] },

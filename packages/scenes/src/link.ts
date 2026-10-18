@@ -8,6 +8,12 @@
 // searchParams.has('stochastic'), any value. Here, on purpose: the budget must be a plain decimal in the
 // catalogue contract's range (0.25..32 M, catalog.ts readRender), and stochastic=0/false/no/off is an
 // explicit "sorted" instead of "on"; any other stochastic value is dropped.
+//
+// Future-proof (v0.9, the owner's item 7: "when SuperSplat makes it the default the URL will change"):
+// only these two parameters are read and every other one is ignored, never an error, so a link that
+// gains parameters tomorrow (or loses these two, stochastic becoming SuperSplat's default) still opens
+// its scene; a link with no parameters asks for nothing, and what nothing gets is the device's default
+// (stochastic on a desktop WebGPU browser, @gsfpv/render-pc drawing.ts).
 import type { SceneRender } from './catalog';
 
 /** Scene ids seen so far are 8 hex chars; accept 6..32 so a longer id is not rejected blindly. */
@@ -22,6 +28,8 @@ const MAX_LINK_CHARS = 2048;
 
 /** A plain decimal: digits, at most one point; no sign, exponent, hex, spaces or units. */
 const DECIMAL = /^(?:\d{1,3}(?:\.\d{1,4})?|\.\d{1,4})$/;
+/** A scene id, then ? or &, then its parameters (a fragment after # is not one). */
+const BARE_ID_PARAMS = /^([0-9a-f]{6,32})[?&]([^#]*)(?:#.*)?$/i;
 const ON = new Set(['', '1', 'true', 'yes', 'on']);
 const OFF = new Set(['0', 'false', 'no', 'off']);
 
@@ -52,15 +60,45 @@ export function renderParams(budget: string | null, stochastic: string | null): 
     return r.budgetM === undefined && r.stochastic === undefined ? undefined : r;
 }
 
+/** What chat apps, mail and Markdown put in front of a link, and after it (a closing bracket, the sentence's full stop). */
+const WRAP_BEFORE = `<("'[`;
+const WRAP_AFTER = `>)"'].,;:!?`;
+
 /**
- * Accepts a bare id, https://superspl.at/scene/<id>[?...] or https://superspl.at/s?id=<id>[&...]
- * (with or without the scheme, www. allowed). Returns the lower-case id and the link's drawing
+ * A pasted text without what chat apps, mail and Markdown put around a link: surrounding space, quotes,
+ * angle brackets, a bracket or two and the sentence's full stop or comma after it. Two scans, linear in
+ * the text on any input: this runs on unbounded text (the address bar, the picker's field), BEFORE the
+ * length cap below, and the regex that did it (`/[>)"'\].,;:!?]+$/`) backtracks quadratically on a long
+ * run of those characters (80 000 of them froze the main thread for 6.7 s).
+ */
+function unwrap(raw: string): string {
+    const t = raw.trim();
+    let a = 0;
+    while (a < t.length && WRAP_BEFORE.includes(t[a])) a++;
+    let b = t.length;
+    while (b > a && WRAP_AFTER.includes(t[b - 1])) b--;
+    return t.slice(a, b).trim();
+}
+
+/**
+ * Accepts a bare id (also with its parameters: 2f1ddf5f?budget=8&stochastic), https://superspl.at/scene/<id>[?...],
+ * https://superspl.at/s?id=<id>[&...] or the viewer's https://superspl.at/view?id=<id> (with or without the
+ * scheme, www. allowed). Returns the lower-case id and the link's drawing
  * parameters, or null when the text is not a SuperSplat scene link.
  */
 export function parseSceneLink(raw: string): SceneLink | null {
-    const s = raw.trim();
+    const s = unwrap(raw);
     if (!s || s.length > MAX_LINK_CHARS) return null;
     if (SCENE_ID_RE.test(s)) return { id: s.toLowerCase() };
+    // a scene id and its parameters without the address in front: SuperSplat says "add ?budget=8&stochastic to the
+    // URL", and copied literally into OUR address that reads /fly/?scene=2f1ddf5f?budget=8&stochastic (v0.9: it was
+    // "not a SuperSplat link"); the same in the picker's field
+    const bare = BARE_ID_PARAMS.exec(s);
+    if (bare) {
+        const q = new URLSearchParams(bare[2]);
+        const render = renderParams(q.get('budget'), q.get('stochastic'));
+        return render ? { id: bare[1].toLowerCase(), render } : { id: bare[1].toLowerCase() };
+    }
     let u: URL;
     try {
         u = new URL(s.includes('://') ? s : `https://${s}`);
@@ -73,7 +111,7 @@ export function parseSceneLink(raw: string): SceneLink | null {
     let id: string | null = null;
     const m = u.pathname.match(/^\/scene\/([0-9a-f]+)\/?$/i);
     if (m && SCENE_ID_RE.test(m[1])) id = m[1];
-    else if (u.pathname === '/s' || u.pathname === '/s/') {
+    else if (u.pathname === '/s' || u.pathname === '/s/' || u.pathname === '/view' || u.pathname === '/view/') {
         const q = u.searchParams.get('id');
         if (q && SCENE_ID_RE.test(q)) id = q;
     }
@@ -101,14 +139,16 @@ export function sameRender(a: SceneRender | undefined, b: SceneRender | undefine
 }
 
 /**
- * A link's request as the catalogue stores it (the contract field `render`): only a budget in range and
- * stochastic: true; an explicit "sorted" is the catalogue's default already. undefined when nothing is left.
+ * A link's request as the catalogue stores it (the contract field `render`): a budget in range and
+ * stochastic true or false. Since v0.9 an explicit "sorted" (stochastic=0) is worth storing: stochastic is
+ * the desktop default now, so the owner's "draw THIS scene the classic way" is no longer the default.
+ * undefined when nothing is left.
  */
 export function catalogueRender(r: SceneRender | undefined): SceneRender | undefined {
     if (!r) return undefined;
     const out: SceneRender = {};
     if (r.budgetM !== undefined && r.budgetM >= BUDGET_MIN_M && r.budgetM <= BUDGET_MAX_M) out.budgetM = r.budgetM;
-    if (r.stochastic === true) out.stochastic = true;
+    if (typeof r.stochastic === 'boolean') out.stochastic = r.stochastic;
     return Object.keys(out).length ? out : undefined;
 }
 

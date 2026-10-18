@@ -54,7 +54,8 @@ describe('catalogDiff', () => {
 
 /**
  * The admin's "Add a scene" (apps/fly/src/admin/scenes-tab.ts find): lane R's one link parser, the result
- * stored as the catalogue contract keeps it (a budget in 0.25..32 M, stochastic: true; sorted is the default).
+ * stored as the catalogue contract keeps it (a budget in 0.25..32 M, stochastic true or false: since v0.9 stochastic
+ * is the desktop default, so an explicit sorted is the owner's choice for the scene and is kept).
  */
 const addRender = (raw: string): SceneRender | undefined => catalogueRender(parseSceneLink(raw)?.render);
 
@@ -68,8 +69,8 @@ const ADD_CASES: [string, SceneRender | undefined][] = [
     ['https://superspl.at/scene/2f1ddf5f?budget=8e1', undefined],
     ['https://evil.example/scene/2f1ddf5f?budget=8&stochastic', undefined],
     ['2f1ddf5f', undefined],
-    ['https://superspl.at/scene/2f1ddf5f?stochastic=false', undefined],
-    ['https://superspl.at/scene/2f1ddf5f?stochastic=0&budget=4', { budgetM: 4 }],
+    ['https://superspl.at/scene/2f1ddf5f?stochastic=false', { stochastic: false }],
+    ['https://superspl.at/scene/2f1ddf5f?stochastic=0&budget=4', { budgetM: 4, stochastic: false }],
     ['https://superspl.at/scene/2f1ddf5f?stochastic=maybe', undefined]
 ];
 
@@ -77,7 +78,7 @@ const addFailures = (read: (raw: string) => SceneRender | null | undefined): str
     ADD_CASES.filter(([raw, want]) => JSON.stringify(read(raw) ?? undefined) !== JSON.stringify(want)).map(([raw]) => raw);
 
 describe('a pasted link\'s drawing parameters for the catalogue entry (the admin\'s Add: parseSceneLink + catalogueRender)', () => {
-    it('every case: SuperSplat\'s parameters kept, out of range / another host / an id / sorted / an unknown value store nothing', () => {
+    it('every case: SuperSplat\'s parameters kept, out of range / another host / an id / an unknown value store nothing (sorted is kept)', () => {
         expect(addFailures(addRender)).toEqual([]);
         // the scene of an out-of-range link still opens: only its budget is dropped
         expect(parseSceneLink('https://superspl.at/scene/2f1ddf5f?budget=900')).toEqual({ id: '2f1ddf5f' });
@@ -95,8 +96,17 @@ describe('a pasted link\'s drawing parameters for the catalogue entry (the admin
             if (st !== null && st !== '0' && st !== 'false') r.stochastic = true;
             return Object.keys(r).length ? r : null;
         };
-        expect(addFailures(former)).toEqual(['https://superspl.at/scene/2f1ddf5f?stochastic=maybe']);
-        expect(addFailures((raw) => parseSceneLink(raw)?.render)).toEqual(['https://superspl.at/scene/2f1ddf5f?stochastic=false', 'https://superspl.at/scene/2f1ddf5f?stochastic=0&budget=4']);
+        expect(addFailures(former)).toEqual(['https://superspl.at/scene/2f1ddf5f?stochastic=false', 'https://superspl.at/scene/2f1ddf5f?stochastic=0&budget=4', 'https://superspl.at/scene/2f1ddf5f?stochastic=maybe']);
+        // control: the v0.7 contract (only stochastic: true is stored; sorted was the default) loses the owner's "sorted for this scene"
+        const v07 = (raw: string): SceneRender | undefined => {
+            const r = parseSceneLink(raw)?.render;
+            if (!r) return undefined;
+            const out: SceneRender = {};
+            if (r.budgetM !== undefined) out.budgetM = r.budgetM;
+            if (r.stochastic === true) out.stochastic = true;
+            return Object.keys(out).length ? out : undefined;
+        };
+        expect(addFailures(v07)).toEqual(['https://superspl.at/scene/2f1ddf5f?stochastic=false', 'https://superspl.at/scene/2f1ddf5f?stochastic=0&budget=4']);
     });
 });
 

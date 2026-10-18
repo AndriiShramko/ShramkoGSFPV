@@ -156,13 +156,11 @@ def poster(s: dict, size: str = "m") -> str:
 
 
 def fly_href(s: dict, lang: str) -> str:
-    q = [("scene", s["id"])]
-    r = s.get("render") if isinstance(s.get("render"), dict) else {}
-    b = r.get("budgetM")
-    if isinstance(b, (int, float)) and not isinstance(b, bool) and 0.25 <= b <= 32:
-        q.append(("budget", f"{b:g}"))
-    href = f"/{lang}/fly/?" + urllib.parse.urlencode(q)
-    return href + "&stochastic" if r.get("stochastic") is True else href
+    """The simulator's deep link of a scene page: the scene only. The owner's per-scene `render` (budget,
+    stochastic) is NOT written into it (v0.9): the simulator applies the catalogue entry itself when the
+    scene is in the published catalogue, and a link's own parameters outrank the pilot's Render setting,
+    which the owner's entry must not (link > pilot's setting > owner's entry > device default)."""
+    return f"/{lang}/fly/?" + urllib.parse.urlencode([("scene", s["id"])])
 
 
 # ---------------- the pages ----------------

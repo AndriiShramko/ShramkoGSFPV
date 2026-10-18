@@ -5,6 +5,7 @@
 import type { SplatRenderer } from '@gsfpv/render-pc';
 import { grabView } from '../app/diagnostics';
 import { BRAND, SITE_HOST } from '../scene-facts';
+import { encodeUnder } from './links';
 
 /** The share picture's width, px (the Open Graph card size). */
 export const SHARE_W = 1200;
@@ -100,16 +101,16 @@ export function brand(g: CanvasRenderingContext2D, w: number, hgt: number, o: Sh
     g.restore();
 }
 
-/** The share picture of the view now as a JPEG data URL under MAX_BYTES, or null without a frame. */
+/**
+ * The share picture of the view now as a JPEG data URL under MAX_BYTES, or null without a frame or when no
+ * quality step brings it under (it used to hand back the last, still too large, one: the API then refused it
+ * after the upload). The frame is drawn sorted even when the pilot's drawing is stochastic (grabView): JPEG
+ * spends its bytes on stochastic grain, and the card is seen by everyone the link reaches.
+ */
 export async function sharePicture(renderer: SplatRenderer, canvas: HTMLCanvasElement, words: ShareWords): Promise<string | null> {
-    const c = await grabView(renderer, canvas, SHARE_W, SHARE_H);
+    const c = await grabView(renderer, canvas, SHARE_W, SHARE_H, { sorted: true });
     const g = c?.getContext('2d');
     if (!c || !g) return null;
     brand(g, SHARE_W, SHARE_H, words);
-    let url = '';
-    for (const q of [0.88, 0.8, 0.72, 0.64, 0.56]) {
-        url = c.toDataURL('image/jpeg', q);
-        if ((url.length - 23) * 0.75 <= MAX_BYTES) break;
-    }
-    return url;
+    return encodeUnder((q) => c.toDataURL('image/jpeg', q), MAX_BYTES, [0.88, 0.8, 0.72, 0.64, 0.56]);
 }

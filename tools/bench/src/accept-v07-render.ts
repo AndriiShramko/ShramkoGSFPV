@@ -5,15 +5,17 @@
 //   R1  link forms (the landing's encoded link, the deep link, the /s?id= form) open with stochastic in
 //       the engine (app.scene.gsplat.stochastic) and the link's budget as the governor's top; the
 //       address becomes /fly/?scene=<id>&budget=<M>&stochastic. Controls: a plain link and a link with
-//       hostile values (budget=1e9, stochastic=<x>) draw sorted at the default top of 4 M.
-//   R2  the setting wins: drawing=sorted on a stochastic link draws sorted (the budget stays), drawing=
-//       stochastic on a plain link draws stochastic; switching the setting live reaches the engine.
+//       hostile values (budget=1e9, stochastic=<x>) ask for nothing, so the device's default applies (v0.9:
+//       stochastic at STOCHASTIC_BUDGET_M on a desktop; the links here carry 6 M to be told from it).
+//   R2  (v0.9 order: link > the pilot's setting) drawing=sorted does not stop a stochastic link, drawing=
+//       stochastic on a plain link draws stochastic at the default budget; switching the setting live reaches
+//       the engine. accept-v09-render.ts D4 holds the whole order.
 //   R3  a phone (user agent, touch, small viewport): the request is ignored (the phone's own top: 2 M since
 //       v0.8, SuperSplat's mobile budget), the HUD says who asked and
 //       what was refused (the scene's stochastic, the pilot's setting, a budget alone); the same
 //       link on the desktop page (R1) is the control.
 //   R4  the picker over a flight: a pasted link with parameters loads with its drawing and the deep link
-//       follows; the next scene of the rotation (no request) draws sorted again and drops them.
+//       follows; the next scene of the rotation (no request) draws the device's default again and drops them.
 //   R5  the look, a still camera on one view: sorted twice (control: the same picture), stochastic twice;
 //       the luminance change and the fine-detail energy (mean |pixel - mean of its 4 neighbours|).
 //   R7  the voxel overlay (V) over each drawing: the share of the picture the voxels change; control: the
@@ -31,6 +33,7 @@ import { join } from 'node:path';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { launchChrome, waitReady } from './browser';
 import { writeEvidence, REPO, today } from './evidence';
+import { STOCHASTIC_BUDGET_M } from '../../../packages/render-pc/src/drawing';
 
 const SITE = (process.env.SITE ?? 'http://127.0.0.1:5372').replace(/\/$/, '');
 const fly = (qs: string) => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}` : `${SITE}/en/fly/?${qs}`);
@@ -62,7 +65,8 @@ async function context(browser: Browser, phone = false, init?: string): Promise<
     const page = await ctx.newPage();
     const log: string[] = [];
     page.on('console', (m) => log.push(`${m.type()}: ${m.text()}`.slice(0, 300)));
-    page.on('pageerror', (e) => log.push(`pageerror: ${e.message}`.slice(0, 300)));
+    // the message and the top stack frame (a release is minified, but the frame says which chunk and where)
+    page.on('pageerror', (e) => log.push(`pageerror: ${e.message} @ ${(e.stack ?? '').split('\n')[1]?.trim() ?? ''}`.slice(0, 400)));
     return { ctx, page, log };
 }
 const errors = (log: string[]) => log.filter((l) => l.startsWith('pageerror'));
@@ -87,17 +91,19 @@ if (want('R1')) {
     const { ctx, page, log } = await context(browser);
     const enc = encodeURIComponent;
     const forms: [string, string, boolean][] = [
-        ['landing paste (encoded SuperSplat link)', `scene=${enc(`https://superspl.at/scene/${A}?budget=8&stochastic`)}`, true],
-        ['deep link', `scene=${A}&budget=8&stochastic`, true],
-        ['/s?id= form, stochastic=1', `scene=${enc(`superspl.at/s?id=${A}&budget=8&stochastic=1`)}`, true],
+        ['landing paste (encoded SuperSplat link)', `scene=${enc(`https://superspl.at/scene/${A}?budget=6&stochastic`)}`, true],
+        ['deep link', `scene=${A}&budget=6&stochastic`, true],
+        ['/s?id= form, stochastic=1', `scene=${enc(`superspl.at/s?id=${A}&budget=6&stochastic=1`)}`, true],
+        // v0.9: nothing asked (a plain link, hostile values that are dropped) is the device's default: stochastic
+        // at STOCHASTIC_BUDGET_M on a desktop, with no budget or flag written into the address
         ['control: plain link', `scene=${enc(`https://superspl.at/scene/${A}`)}`, false],
         ['control: hostile values', `scene=${A}&budget=1e9&stochastic=${enc('<x>')}`, false]
     ];
     const rows: Any[] = [];
     for (const [name, qs, stoch] of forms) {
         const st = await open(page, qs);
-        const canonical = stoch ? /[?&]budget=8&stochastic(&|$)/.test(st.search) : !/[?&](budget|stochastic)=?/.test(st.search);
-        const ok = st.status === 'ready' && st.engine === stoch && st.top === (stoch ? 8 : 4) && canonical;
+        const canonical = stoch ? /[?&]budget=6&stochastic(&|$)/.test(st.search) : !/[?&](budget|stochastic)=?/.test(st.search);
+        const ok = st.status === 'ready' && st.engine === true && st.top === (stoch ? 6 : STOCHASTIC_BUDGET_M) && canonical;
         rows.push({ name, qs, expectStochastic: stoch, ok, canonical, ...st });
         console.log('R1', name, ok, JSON.stringify({ engine: st.engine, top: st.top, search: st.search }));
     }
@@ -122,7 +128,8 @@ if (want('R2')) {
     await hook(page, `h.prefs.reset('display.drawing'); return 0;`);
     const rows = { sorted, forced, link, liveSorted, liveAuto };
     out.R2 = { rows, pageerrors: errors(log) };
-    pass.R2 = sorted.engine === false && sorted.top === 8 && forced.engine === true && forced.top === 4
+    // v0.9: a link beats the pilot's setting (link > setting > the owner's entry > the device), so ?drawing=sorted does not stop a stochastic link
+    pass.R2 = sorted.engine === true && sorted.top === 8 && forced.engine === true && forced.top === STOCHASTIC_BUDGET_M
         && link.engine === true && liveSorted.engine === false && liveAuto.engine === true && errors(log).length === 0;
     console.log('R2', pass.R2, JSON.stringify({ sorted: sorted.engine, forced: forced.engine, link: link.engine, liveSorted: liveSorted.engine, liveAuto: liveAuto.engine }));
     await ctx.close();
@@ -164,8 +171,8 @@ if (want('R4')) {
     await wait(page, 600);
     const next = await hook(page, STATE);
     out.R4 = { before, switch: sw, picked, nextSwitch: sw2, next, pageerrors: errors(log) };
-    pass.R4 = before.engine === false && sw.state === 'done' && picked.engine === true && picked.top === 6 && /[?&]scene=887f27aa(&|$)/.test(picked.search) && /[?&]budget=6&stochastic(&|$)/.test(picked.search)
-        && sw2.state === 'done' && next.engine === false && next.top === 4 && !/[?&](budget|stochastic)/.test(next.search) && errors(log).length === 0;
+    pass.R4 = before.engine === true && before.top === STOCHASTIC_BUDGET_M && sw.state === 'done' && picked.engine === true && picked.top === 6 && /[?&]scene=887f27aa(&|$)/.test(picked.search) && /[?&]budget=6&stochastic(&|$)/.test(picked.search)
+        && sw2.state === 'done' && next.engine === true && next.top === STOCHASTIC_BUDGET_M && !/[?&](budget|stochastic)/.test(next.search) && errors(log).length === 0;
     console.log('R4', pass.R4, JSON.stringify({ before: before.engine, picked: [picked.engine, picked.top, picked.search], next: [next.engine, next.top, next.search] }));
     await ctx.close();
 }
@@ -217,8 +224,9 @@ async function stats(p: Page, pngs: Buffer[]): Promise<Any> {
 // ------------------------------------------------------------------ R5
 if (want('R5')) {
     const { ctx, page, log } = await context(browser);
-    // no ?drawing=: a URL value sits in the store's session layer, over what prefs.set() stores
-    const st0 = await open(page, `scene=${A}&governor=0`);
+    // v0.9: the desktop default is stochastic, so the sorted start is the link's (stochastic=0); no ?drawing=: a URL
+    // value sits in the store's session layer, over what prefs.set() stores. The pilot's live change beats the link.
+    const st0 = await open(page, `scene=${A}&governor=0&stochastic=0`);
     // a still picture: the flight model paused, the HUD off, every level of detail in place
     await hook(page, `s.pause(true, 'bake'); h.prefs.set('display.hud', false); return 0;`);
     const settle = async () => {
@@ -270,7 +278,7 @@ if (want('R5')) {
 // Control: the same stochastic view with the layer's clear switched off in the page.
 if (want('R7')) {
     const { ctx, page, log } = await context(browser);
-    const st0 = await open(page, `scene=${A}&governor=0`);
+    const st0 = await open(page, `scene=${A}&governor=0&stochastic=0`);
     await hook(page, `s.pause(true, 'bake'); h.prefs.set('display.hud', false); return 0;`);
     const settle = async () => {
         const t0 = Date.now();
@@ -384,7 +392,8 @@ if (want('R6')) {
     const B = Number(process.env.R6_BUDGET ?? 8);
     const res = /^(\d+)x(\d+)$/.exec(process.env.R6_RES ?? '');
     const key = process.env.R6_TAG ? `R6-${process.env.R6_TAG}` : 'R6';
-    const sortedQs = `scene=${HEAVY}&budget=${B}&stochastic&drawing=sorted&governor=0`;
+    // v0.9: a link beats the pilot's setting, so the sorted run asks for it with the link (stochastic=0), not drawing=sorted
+    const sortedQs = `scene=${HEAVY}&budget=${B}&stochastic=0&governor=0`;
     const stochQs = `scene=${HEAVY}&budget=${B}&stochastic&governor=0`;
     for (const [mode, qs] of [['sorted', sortedQs], ['stochastic', stochQs], ['sorted again', sortedQs], ['stochastic again', stochQs]] as const) {
         const t0 = Date.now();

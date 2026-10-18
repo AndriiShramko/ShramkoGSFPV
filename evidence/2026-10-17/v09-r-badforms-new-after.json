@@ -1,0 +1,95 @@
+{
+  "site": "http://127.0.0.1:5391",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "rows": [
+    {
+      "name": "canonical deep link",
+      "qs": "scene=2f1ddf5f&budget=8&stochastic",
+      "status": "ready",
+      "errorCode": null,
+      "request": {
+        "budgetM": 8,
+        "stochastic": true
+      },
+      "budgetM": 8,
+      "stochastic": true,
+      "pickerError": "",
+      "search": "?scene=2f1ddf5f&budget=8&stochastic&nowarn=1&input=touch&render=off"
+    },
+    {
+      "name": "second ? instead of & (SuperSplat's syntax copied literally)",
+      "qs": "scene=2f1ddf5f?budget=8&stochastic",
+      "status": "ready",
+      "errorCode": null,
+      "request": {
+        "budgetM": 8,
+        "stochastic": true
+      },
+      "budgetM": 8,
+      "stochastic": true,
+      "pickerError": "",
+      "search": "?scene=2f1ddf5f&stochastic&nowarn=1&input=touch&render=off&budget=8"
+    },
+    {
+      "name": "the whole SuperSplat link, raw",
+      "qs": "scene=https://superspl.at/scene/2f1ddf5f?budget=8&stochastic",
+      "status": "ready",
+      "errorCode": null,
+      "request": {
+        "budgetM": 8,
+        "stochastic": true
+      },
+      "budgetM": 8,
+      "stochastic": true,
+      "pickerError": "",
+      "search": "?scene=2f1ddf5f&stochastic&nowarn=1&input=touch&render=off&budget=8"
+    },
+    {
+      "name": "id then & (budget inside the scene value)",
+      "qs": "scene=2f1ddf5f%26budget=8&stochastic",
+      "status": "ready",
+      "errorCode": null,
+      "request": {
+        "budgetM": 8,
+        "stochastic": true
+      },
+      "budgetM": 8,
+      "stochastic": true,
+      "pickerError": "",
+      "search": "?scene=2f1ddf5f&stochastic&nowarn=1&input=touch&render=off&budget=8"
+    },
+    {
+      "name": "the link wrapped as chat apps do",
+      "qs": "scene=%3Chttps%3A%2F%2Fsuperspl.at%2Fscene%2F2f1ddf5f%3Fbudget%3D8%26stochastic%3E.",
+      "status": "ready",
+      "errorCode": null,
+      "request": {
+        "budgetM": 8,
+        "stochastic": true
+      },
+      "budgetM": 8,
+      "stochastic": true,
+      "pickerError": "",
+      "search": "?scene=2f1ddf5f&nowarn=1&input=touch&render=off&budget=8&stochastic"
+    },
+    {
+      "name": "the viewer address form",
+      "qs": "scene=https%3A%2F%2Fsuperspl.at%2Fview%3Fid%3D2f1ddf5f%26budget%3D8%26stochastic",
+      "status": "ready",
+      "errorCode": null,
+      "request": {
+        "budgetM": 8,
+        "stochastic": true
+      },
+      "budgetM": 8,
+      "stochastic": true,
+      "pickerError": "",
+      "search": "?scene=2f1ddf5f&nowarn=1&input=touch&render=off&budget=8&stochastic"
+    }
+  ]
+}

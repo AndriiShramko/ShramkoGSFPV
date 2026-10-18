@@ -31,6 +31,15 @@ class PlaceFields(unittest.TestCase):
         bad = admin.clean_scene({**BASE, "origin": {"url": "https://superspl.at/scene/70b50d42", "user": "<b>x</b>"}})
         self.assertEqual(bad["origin"], {"url": "https://superspl.at/scene/70b50d42"})
 
+    def test_render_is_three_valued(self):
+        # v0.9: stochastic is the desktop default, so "sorted" (False) is a choice the owner keeps for a scene;
+        # absent means the device's default; anything that is not a true boolean is dropped
+        self.assertEqual(admin.clean_scene({**BASE, "render": {"stochastic": False}})["render"], {"stochastic": False})
+        self.assertEqual(admin.clean_scene({**BASE, "render": {"budgetM": 4, "stochastic": False}})["render"], {"budgetM": 4, "stochastic": False})
+        self.assertEqual(admin.clean_scene({**BASE, "render": {"stochastic": True}})["render"], {"stochastic": True})
+        for bad in ("no", 0, 1, None, [], "false"):
+            self.assertNotIn("render", admin.clean_scene({**BASE, "render": {"stochastic": bad}}), bad)
+
     def test_extent(self):
         self.assertEqual(admin.clean_scene({**BASE, "extentM": [25.31, 10, 17.7]})["extentM"], [25.31, 10.0, 17.7])
         for bad in ([1, 2], [1, -2, 3], [1, "2", 3], "25x10x17"):

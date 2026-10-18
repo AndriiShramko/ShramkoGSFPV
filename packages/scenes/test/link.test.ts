@@ -23,6 +23,26 @@ const CASES: [string, SceneLink | null][] = [
     ['https://superspl.at/s?id=2f1ddf5f&budget=4&stochastic', { id: '2f1ddf5f', render: { budgetM: 4, stochastic: true } }],
     ['http://superspl.at/scene/2f1ddf5f?budget=0.25', { id: '2f1ddf5f', render: { budgetM: 0.25 } }],
     ['https://superspl.at/scene/2f1ddf5f?budget=32', { id: '2f1ddf5f', render: { budgetM: 32 } }],
+    // v0.9, the owner's item 7: parameters SuperSplat adds or drops later are not our business. Unknown ones are ignored,
+    // never an error; a link with none (stochastic becoming SuperSplat's default) asks for nothing, so the device decides
+    ['https://superspl.at/scene/2f1ddf5f?budget=8&stochastic&lod=high&beta=2&quality=max', { id: '2f1ddf5f', render: { budgetM: 8, stochastic: true } }],
+    ['https://superspl.at/scene/2f1ddf5f?future=1&stochastic=0', { id: '2f1ddf5f', render: { stochastic: false } }],
+    ['https://superspl.at/scene/2f1ddf5f?lod=high', { id: '2f1ddf5f' }],
+    // how a link arrives from chat, mail and Markdown: wrapped, quoted, followed by a full stop
+    ['<https://superspl.at/scene/2f1ddf5f?budget=8&stochastic>', { id: '2f1ddf5f', render: { budgetM: 8, stochastic: true } }],
+    ['"https://superspl.at/scene/2f1ddf5f?budget=8&stochastic".', { id: '2f1ddf5f', render: { budgetM: 8, stochastic: true } }],
+    ['(https://superspl.at/scene/2f1ddf5f?budget=8&stochastic),', { id: '2f1ddf5f', render: { budgetM: 8, stochastic: true } }],
+    ['  https://superspl.at/scene/2f1ddf5f?budget=8&stochastic\r\n', { id: '2f1ddf5f', render: { budgetM: 8, stochastic: true } }],
+    // SuperSplat's "add ?budget=8&stochastic to the URL" copied into OUR address: /fly/?scene=2f1ddf5f?budget=8&stochastic
+    ['2f1ddf5f?budget=8', { id: '2f1ddf5f', render: { budgetM: 8 } }],
+    ['2F1DDF5F?budget=8&stochastic', { id: '2f1ddf5f', render: { budgetM: 8, stochastic: true } }],
+    ['2f1ddf5f&budget=8&stochastic', { id: '2f1ddf5f', render: { budgetM: 8, stochastic: true } }],
+    ['2f1ddf5f?', { id: '2f1ddf5f' }],
+    ['2f1ddf5f?lod=high#stochastic', { id: '2f1ddf5f' }],
+    ['xyz123?budget=8&stochastic', null],
+    ['2f1ddf5f/edit?budget=8', null],
+    // the viewer's own address form
+    ['https://superspl.at/view?id=2f1ddf5f&budget=8&stochastic', { id: '2f1ddf5f', render: { budgetM: 8, stochastic: true } }],
     // plain links and ids: no render at all
     ['https://superspl.at/scene/2f1ddf5f', { id: '2f1ddf5f' }],
     ['  2F1DDF5F  ', { id: '2f1ddf5f' }],
@@ -104,6 +124,47 @@ describe('parseSceneLink: the id and the drawing parameters of every link form',
     });
 });
 
+describe('parseSceneLink on hostile text: linear, and the cap holds', () => {
+    /** The unwrap of ef8e337 (lane R, first cut): two regexes, the second backtracks quadratically on a long run of its characters. */
+    const regexUnwrap = (raw: string): string => raw.trim().replace(/^[<("'[]+/, '').replace(/[>)"'\].,;:!?]+$/, '').trim();
+    const timed = (f: () => unknown): number => {
+        const t0 = performance.now();
+        f();
+        return performance.now() - t0;
+    };
+
+    it('a crafted link of 100 000 closing marks is refused at once (a link in a group must not freeze a tab)', () => {
+        const hostile = `https://superspl.at/scene/${'!'.repeat(100_000)}x`;
+        let result: SceneLink | null = { id: 'unset' };
+        const ms = timed(() => { result = parseSceneLink(hostile); });
+        expect(result).toBeNull();
+        expect(ms).toBeLessThan(250);
+        for (const c of ['!', '.', ')', '"', "'", ']', ';', ':', '?', ',', '>']) {
+            expect(timed(() => parseSceneLink(`${c.repeat(100_000)}x`)), c).toBeLessThan(250);
+        }
+    });
+
+    it('control: the regex unwrap it replaced takes many times longer on the same text', () => {
+        const hostile = `${'!'.repeat(30_000)}x`;
+        const was = timed(() => regexUnwrap(hostile));
+        const now = timed(() => parseSceneLink(hostile));
+        expect(was).toBeGreaterThan(Math.max(now, 1) * 20);
+    });
+
+    it('it still strips exactly what the regexes stripped, however long the run', () => {
+        const link = 'https://superspl.at/scene/2f1ddf5f?budget=8&stochastic';
+        const want = { id: '2f1ddf5f', render: { budgetM: 8, stochastic: true } };
+        expect(parseSceneLink(`<<<(${link})>>>${'.'.repeat(50_000)}`)).toEqual(want);
+        expect(parseSceneLink(`"'[${link}]'",;:!?`)).toEqual(want);
+        for (const raw of ['', '   ', '<>', '()', '...', `${'<'.repeat(5000)}${'>'.repeat(5000)}`, `x${'!'.repeat(40)}`, `${'.'.repeat(40)}2f1ddf5f${'!'.repeat(40)}`]) {
+            expect(parseSceneLink(raw), raw.slice(0, 20)).toEqual(parseSceneLink(regexUnwrap(raw)));
+        }
+        // the cap on the length still applies after the wrapping is gone
+        expect(parseSceneLink(`${link}&pad=${'a'.repeat(2100)}`)).toBeNull();
+        expect(parseSceneLink(`<${link}&pad=${'a'.repeat(100)}>.`)).toEqual(want);
+    });
+});
+
 describe('renderParams: the raw values of a query', () => {
     it('absent (null) and present without a value (\'\') are different', () => {
         expect(renderParams(null, null)).toBeUndefined();
@@ -164,9 +225,11 @@ describe('sceneRender: the link wins field by field, the catalogue is the defaul
         expect(sceneRender({ budgetM: 2 }, { budgetM: 6, stochastic: true })).toEqual({ budgetM: 2, stochastic: true });
     });
 
-    it('catalogueRender keeps only what the contract stores (a budget in range, stochastic: true)', () => {
+    it('catalogueRender keeps only what the contract stores (a budget in range, stochastic true or false)', () => {
         expect(catalogueRender({ budgetM: 8, stochastic: true })).toEqual({ budgetM: 8, stochastic: true });
-        expect(catalogueRender({ stochastic: false })).toBeUndefined();
+        // v0.9: an explicit "sorted" is kept: stochastic is the desktop default now, so it is the owner's choice for a scene
+        expect(catalogueRender({ stochastic: false })).toEqual({ stochastic: false });
+        expect(catalogueRender({ budgetM: 4, stochastic: false })).toEqual({ budgetM: 4, stochastic: false });
         expect(catalogueRender({ budgetM: 64 })).toBeUndefined();
         expect(catalogueRender(undefined)).toBeUndefined();
     });

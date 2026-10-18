@@ -29,7 +29,7 @@ import { join } from 'node:path';
 import { KEYMAP, actionFor, keymapProblems } from '../../../packages/prefs/src';
 import { mkStore } from '../../../packages/prefs/test/helpers';
 import { REPO } from '../src/evidence';
-import { SHARE_ENTRIES, cardDrawing, dataUrlBytes, flightDrawing, inFlight, instagramCaption, kindOf, scenePageUrl, shareApiBody, shareLink, targetHref, wordsKey } from '../../../apps/fly/src/share/links';
+import { SHARE_ENTRIES, cardDrawing, dataUrlBytes, dataUrlSize, encodeUnder, flightDrawing, inFlight, instagramCaption, kindOf, scenePageUrl, shareApiBody, shareLink, targetHref, wordsKey } from '../../../apps/fly/src/share/links';
 import type { DrawnScene, ShareEntry } from '../../../apps/fly/src/share/links';
 import { flyDeepLink, parseSceneLink, renderParams } from '../../../packages/scenes/src';
 import type { SceneRender } from '../../../packages/scenes/src';
@@ -142,12 +142,32 @@ describe('share links: the right link from every place a share starts', () => {
         expect(link({ meta })).toBe(`${AT.origin}/pl/scenes/ab12cd34/`);
         // a link asking for what the catalogue says already is the same drawing
         expect(link({ meta, render: { stochastic: true } })).toBe(`${AT.origin}/pl/scenes/ab12cd34/`);
-        // a pasted link asking for the sorted drawing: the scene page would draw it stochastic
-        expect(link({ meta, render: { stochastic: false } })).toBe(`${AT.origin}/pl/fly/?scene=ab12cd34&budget=4&stochastic=0`);
+        // a pasted link asking for the sorted drawing: the scene page would draw it stochastic. The deep link
+        // carries the link's OWN fields only: the owner's budget stays the catalogue's to apply (v0.9 order:
+        // link > pilot > owner), a `budget=4` here would make it a link parameter that outranks the visitor's Splat budget
+        expect(link({ meta, render: { stochastic: false } })).toBe(`${AT.origin}/pl/fly/?scene=ab12cd34&stochastic=0`);
         expect(scenePageUrl('ab12cd34', true, AT)).toBe(`${AT.origin}/pl/scenes/ab12cd34/`);
         // control: D1's rule (a catalogue scan always shares its page) gives the page there, and stochastic=0 is lost
         const d1ScenePage = (id: string, inCatalogue: boolean): string => (inCatalogue ? `${AT.origin}/pl/scenes/${id}/` : `${AT.origin}/pl/fly/?scene=${id}`);
         expect(d1ScenePage('ab12cd34', true)).not.toBe(link({ meta, render: { stochastic: false } }));
+    });
+
+    it('the owner\'s per-scene entry never becomes a link parameter, on any share path (link > pilot > owner: a parameter outranks the visitor\'s Render and Splat budget)', () => {
+        const owner = { budgetM: 4, stochastic: false };
+        const sent = (drawing: ReturnType<typeof flightDrawing>): unknown => shareApiBody({ image: '', sceneId: '2f1ddf5f', title: null, credit: 'c', locale: 'en', drawing }).render;
+        // flown with no link of its own: the /s/<id> page must open `/fly/?scene=<id>`, nothing else
+        expect(sent(flightDrawing({ meta: { render: owner } }))).toBeNull();
+        expect(sent(cardDrawing({ render: owner }))).toBeNull();
+        expect(sent(cardDrawing({ render: { budgetM: 8, stochastic: true } }))).toBeNull();
+        // flown with a link that names one field: that field only, the owner's other field stays the owner's
+        expect(sent(flightDrawing({ meta: { render: owner }, render: { stochastic: true } }))).toEqual({ stochastic: true });
+        expect(sent(flightDrawing({ meta: { render: owner }, render: { budgetM: 2 } }))).toEqual({ budgetM: 2 });
+        // what the visitor is sent to: the link's own fields, never `&budget=4` / `&stochastic=0` from the owner
+        const body = shareApiBody({ image: '', sceneId: '2f1ddf5f', title: null, credit: 'c', locale: 'en', drawing: flightDrawing({ meta: { render: owner } }) });
+        expect(flyDeepLink('/en/fly/', '2f1ddf5f', body.render as SceneRender | undefined)).toBe('/en/fly/?scene=2f1ddf5f');
+        // the scene page and the deep link, from the share link: no owner field in the deep link
+        expect(shareLink({ entry: 'picker', sceneId: '2f1ddf5f', inCatalogue: false, at: AT, pictureUrl: null, drawing: cardDrawing({ render: owner }) })).toBe(`${AT.origin}/pl/fly/?scene=2f1ddf5f`);
+        expect(shareLink({ entry: 'crash', sceneId: '2f1ddf5f', inCatalogue: false, at: AT, pictureUrl: null, drawing: flightDrawing({ meta: { render: owner }, render: { stochastic: true } }) })).toBe(`${AT.origin}/pl/fly/?scene=2f1ddf5f&stochastic`);
     });
 
     it('a picker card shares the scene as the card opens it: the catalogue\'s drawing, never the page\'s query (control: D1 gave the Continue card the page\'s)', () => {
@@ -197,6 +217,31 @@ describe('share links: the right link from every place a share starts', () => {
         expect(b?.type).toBe('image/jpeg');
         expect(Array.from(b!.bytes)).toEqual([0xff, 0xd8, 0xff, 0xd9]);
         expect(dataUrlBytes('https://example.com/x.jpg')).toBeNull();
+    });
+
+    it('the share picture steps its quality down to fit the API\'s limit, and says so when nothing fits (control: it used to return the last, too large, one)', () => {
+        // a fake encoder: the lower the quality, the smaller the picture (a grainy stochastic frame needs the low steps)
+        const sizes: Record<number, number> = { 0.88: 500_000, 0.8: 420_000, 0.72: 390_000, 0.64: 370_000, 0.56: 300_000 };
+        const make = (bytes: number): string => `data:image/jpeg;base64,${'A'.repeat(Math.ceil((bytes * 4) / 3))}`;
+        const tried: number[] = [];
+        const encode = (q: number): string => { tried.push(q); return make(sizes[q]); };
+        const Q = [0.88, 0.8, 0.72, 0.64, 0.56] as const;
+        const MAX = 380 * 1024;
+        expect(dataUrlSize(make(1000))).toBeGreaterThanOrEqual(1000);
+        expect(dataUrlSize(make(1000))).toBeLessThanOrEqual(1003);
+        const url = encodeUnder(encode, MAX, Q);
+        expect(url && dataUrlSize(url)).toBeLessThanOrEqual(MAX);
+        expect(tried).toEqual([0.88, 0.8, 0.72, 0.64]); // stops at the first that fits
+        // nothing fits: null, every step tried
+        tried.length = 0;
+        expect(encodeUnder((q) => { tried.push(q); return make(900_000); }, MAX, Q)).toBeNull();
+        expect(tried).toEqual([...Q]);
+        // control: the loop it replaced handed back the last attempt however large
+        const old = (enc: (q: number) => string): string => { let u = ''; for (const q of Q) { u = enc(q); if ((u.length - 23) * 0.75 <= MAX) break; } return u; };
+        expect(dataUrlSize(old(() => make(900_000)))).toBeGreaterThan(MAX);
+        // the boundary is the old comparison's: exactly the limit fits, one byte over does not
+        expect(encodeUnder(() => make(300_000), 300_000, [0.9])).not.toBeNull();
+        expect(encodeUnder(() => make(300_003), 300_000, [0.9])).toBeNull();
     });
 });
 

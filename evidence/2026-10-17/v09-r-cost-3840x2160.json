@@ -1,0 +1,648 @@
+{
+  "site": "http://127.0.0.1:5391",
+  "mode": "cost",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "scenes": [
+    "ba7aa29d",
+    "2f1ddf5f"
+  ],
+  "budgets": [
+    4,
+    8
+  ],
+  "res": "3840x2160",
+  "view": "1280x800@1",
+  "repeats": 2,
+  "seconds": 10,
+  "runs": [
+    {
+      "scene": "ba7aa29d",
+      "mode": "sorted",
+      "budgetM": 4,
+      "rep": 0,
+      "res": "3840x2160",
+      "settledMs": 24290,
+      "sceneComplete": false,
+      "gpuProfilerMs": {
+        "n": 303,
+        "p50": 4.13,
+        "p95": 5.9
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 8.7,
+        "p95": 23.4
+      },
+      "drawnHz": 30,
+      "framesHeld": 1,
+      "state": {
+        "engineStochastic": false,
+        "budgetM": 4,
+        "top": 4,
+        "step": 0,
+        "changes": 0,
+        "scale": 1,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 3.9,
+        "from": {
+          "stochastic": "link",
+          "budget": "link"
+        },
+        "search": "?scene=ba7aa29d&budget=4&stochastic=0&governor=0&nowarn=1&input=touch"
+      }
+    },
+    {
+      "scene": "ba7aa29d",
+      "mode": "stochastic",
+      "budgetM": 4,
+      "rep": 0,
+      "res": "3840x2160",
+      "settledMs": 16680,
+      "sceneComplete": true,
+      "gpuProfilerMs": {
+        "n": 303,
+        "p50": 2.49,
+        "p95": 4.65
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 6.7,
+        "p95": 21.2
+      },
+      "drawnHz": 30,
+      "framesHeld": 0,
+      "state": {
+        "engineStochastic": true,
+        "budgetM": 4,
+        "top": 4,
+        "step": 0,
+        "changes": 0,
+        "scale": 1,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 3.9,
+        "from": {
+          "stochastic": "link",
+          "budget": "link"
+        },
+        "search": "?scene=ba7aa29d&budget=4&stochastic&governor=0&nowarn=1&input=touch"
+      }
+    },
+    {
+      "scene": "ba7aa29d",
+      "mode": "sorted",
+      "budgetM": 8,
+      "rep": 0,
+      "res": "3840x2160",
+      "settledMs": 27150,
+      "sceneComplete": false,
+      "gpuProfilerMs": {
+        "n": 303,
+        "p50": 5.37,
+        "p95": 8.06
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 10.5,
+        "p95": 27.7
+      },
+      "drawnHz": 30,
+      "framesHeld": 0,
+      "state": {
+        "engineStochastic": false,
+        "budgetM": 8,
+        "top": 8,
+        "step": 0,
+        "changes": 0,
+        "scale": 1,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 7.8,
+        "from": {
+          "stochastic": "link",
+          "budget": "link"
+        },
+        "search": "?scene=ba7aa29d&budget=8&stochastic=0&governor=0&nowarn=1&input=touch"
+      }
+    },
+    {
+      "scene": "ba7aa29d",
+      "mode": "stochastic",
+      "budgetM": 8,
+      "rep": 0,
+      "res": "3840x2160",
+      "settledMs": 26776,
+      "sceneComplete": false,
+      "gpuProfilerMs": {
+        "n": 304,
+        "p50": 3.34,
+        "p95": 7.34
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 8.4,
+        "p95": 28.3
+      },
+      "drawnHz": 30,
+      "framesHeld": 0,
+      "state": {
+        "engineStochastic": true,
+        "budgetM": 8,
+        "top": 8,
+        "step": 0,
+        "changes": 0,
+        "scale": 1,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 7.7,
+        "from": {
+          "stochastic": "link",
+          "budget": "link"
+        },
+        "search": "?scene=ba7aa29d&budget=8&stochastic&governor=0&nowarn=1&input=touch"
+      }
+    },
+    {
+      "scene": "ba7aa29d",
+      "mode": "sorted",
+      "budgetM": 4,
+      "rep": 1,
+      "res": "3840x2160",
+      "settledMs": 17662,
+      "sceneComplete": true,
+      "gpuProfilerMs": {
+        "n": 302,
+        "p50": 3.74,
+        "p95": 6.03
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 8.6,
+        "p95": 22.9
+      },
+      "drawnHz": 29.7,
+      "framesHeld": 0,
+      "state": {
+        "engineStochastic": false,
+        "budgetM": 4,
+        "top": 4,
+        "step": 0,
+        "changes": 0,
+        "scale": 1,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 3.9,
+        "from": {
+          "stochastic": "link",
+          "budget": "link"
+        },
+        "search": "?scene=ba7aa29d&budget=4&stochastic=0&governor=0&nowarn=1&input=touch"
+      }
+    },
+    {
+      "scene": "ba7aa29d",
+      "mode": "stochastic",
+      "budgetM": 4,
+      "rep": 1,
+      "res": "3840x2160",
+      "settledMs": 16983,
+      "sceneComplete": true,
+      "gpuProfilerMs": {
+        "n": 304,
+        "p50": 2.75,
+        "p95": 4.06
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 7,
+        "p95": 27
+      },
+      "drawnHz": 30,
+      "framesHeld": 0,
+      "state": {
+        "engineStochastic": true,
+        "budgetM": 4,
+        "top": 4,
+        "step": 0,
+        "changes": 0,
+        "scale": 1,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 3.9,
+        "from": {
+          "stochastic": "link",
+          "budget": "link"
+        },
+        "search": "?scene=ba7aa29d&budget=4&stochastic&governor=0&nowarn=1&input=touch"
+      }
+    },
+    {
+      "scene": "ba7aa29d",
+      "mode": "sorted",
+      "budgetM": 8,
+      "rep": 1,
+      "res": "3840x2160",
+      "settledMs": 32854,
+      "sceneComplete": true,
+      "gpuProfilerMs": {
+        "n": 304,
+        "p50": 4.98,
+        "p95": 8.26
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 11.1,
+        "p95": 40
+      },
+      "drawnHz": 30,
+      "framesHeld": 1,
+      "state": {
+        "engineStochastic": false,
+        "budgetM": 8,
+        "top": 8,
+        "step": 0,
+        "changes": 0,
+        "scale": 1,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 7.8,
+        "from": {
+          "stochastic": "link",
+          "budget": "link"
+        },
+        "search": "?scene=ba7aa29d&budget=8&stochastic=0&governor=0&nowarn=1&input=touch"
+      }
+    },
+    {
+      "scene": "ba7aa29d",
+      "mode": "stochastic",
+      "budgetM": 8,
+      "rep": 1,
+      "res": "3840x2160",
+      "settledMs": 24130,
+      "sceneComplete": false,
+      "gpuProfilerMs": {
+        "n": 305,
+        "p50": 3.34,
+        "p95": 6.62
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 8.4,
+        "p95": 32.4
+      },
+      "drawnHz": 30,
+      "framesHeld": 0,
+      "state": {
+        "engineStochastic": true,
+        "budgetM": 8,
+        "top": 8,
+        "step": 0,
+        "changes": 0,
+        "scale": 1,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 7.8,
+        "from": {
+          "stochastic": "link",
+          "budget": "link"
+        },
+        "search": "?scene=ba7aa29d&budget=8&stochastic&governor=0&nowarn=1&input=touch"
+      }
+    },
+    {
+      "scene": "2f1ddf5f",
+      "mode": "sorted",
+      "budgetM": 4,
+      "rep": 0,
+      "res": "3840x2160",
+      "settledMs": 9402,
+      "sceneComplete": false,
+      "gpuProfilerMs": {
+        "n": 300,
+        "p50": 6.95,
+        "p95": 29.69
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 10.8,
+        "p95": 19.8
+      },
+      "drawnHz": 29.8,
+      "framesHeld": 0,
+      "state": {
+        "engineStochastic": false,
+        "budgetM": 4,
+        "top": 4,
+        "step": 0,
+        "changes": 0,
+        "scale": 1,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 3.8,
+        "from": {
+          "stochastic": "link",
+          "budget": "link"
+        },
+        "search": "?scene=2f1ddf5f&budget=4&stochastic=0&governor=0&nowarn=1&input=touch"
+      }
+    },
+    {
+      "scene": "2f1ddf5f",
+      "mode": "stochastic",
+      "budgetM": 4,
+      "rep": 0,
+      "res": "3840x2160",
+      "settledMs": 8898,
+      "sceneComplete": false,
+      "gpuProfilerMs": {
+        "n": 297,
+        "p50": 3.21,
+        "p95": 26.02
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 7.8,
+        "p95": 21.6
+      },
+      "drawnHz": 29.3,
+      "framesHeld": 1,
+      "state": {
+        "engineStochastic": true,
+        "budgetM": 4,
+        "top": 4,
+        "step": 0,
+        "changes": 0,
+        "scale": 1,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 3.8,
+        "from": {
+          "stochastic": "link",
+          "budget": "link"
+        },
+        "search": "?scene=2f1ddf5f&budget=4&stochastic&governor=0&nowarn=1&input=touch"
+      }
+    },
+    {
+      "scene": "2f1ddf5f",
+      "mode": "sorted",
+      "budgetM": 8,
+      "rep": 0,
+      "res": "3840x2160",
+      "settledMs": 13374,
+      "sceneComplete": false,
+      "gpuProfilerMs": {
+        "n": 293,
+        "p50": 6.16,
+        "p95": 24.12
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 11.6,
+        "p95": 35.8
+      },
+      "drawnHz": 29,
+      "framesHeld": 4,
+      "state": {
+        "engineStochastic": false,
+        "budgetM": 8,
+        "top": 8,
+        "step": 0,
+        "changes": 0,
+        "scale": 1,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 7.6,
+        "from": {
+          "stochastic": "link",
+          "budget": "link"
+        },
+        "search": "?scene=2f1ddf5f&budget=8&stochastic=0&governor=0&nowarn=1&input=touch"
+      }
+    },
+    {
+      "scene": "2f1ddf5f",
+      "mode": "stochastic",
+      "budgetM": 8,
+      "rep": 0,
+      "res": "3840x2160",
+      "settledMs": 12251,
+      "sceneComplete": false,
+      "gpuProfilerMs": {
+        "n": 300,
+        "p50": 4.06,
+        "p95": 26.02
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 9.5,
+        "p95": 28.9
+      },
+      "drawnHz": 29.7,
+      "framesHeld": 1,
+      "state": {
+        "engineStochastic": true,
+        "budgetM": 8,
+        "top": 8,
+        "step": 0,
+        "changes": 0,
+        "scale": 1,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 8.1,
+        "from": {
+          "stochastic": "link",
+          "budget": "link"
+        },
+        "search": "?scene=2f1ddf5f&budget=8&stochastic&governor=0&nowarn=1&input=touch"
+      }
+    },
+    {
+      "scene": "2f1ddf5f",
+      "mode": "sorted",
+      "budgetM": 4,
+      "rep": 1,
+      "res": "3840x2160",
+      "settledMs": 10464,
+      "sceneComplete": false,
+      "gpuProfilerMs": {
+        "n": 296,
+        "p50": 4.26,
+        "p95": 25.69
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 9.3,
+        "p95": 27.4
+      },
+      "drawnHz": 29.3,
+      "framesHeld": 2,
+      "state": {
+        "engineStochastic": false,
+        "budgetM": 4,
+        "top": 4,
+        "step": 0,
+        "changes": 0,
+        "scale": 1,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 3.9,
+        "from": {
+          "stochastic": "link",
+          "budget": "link"
+        },
+        "search": "?scene=2f1ddf5f&budget=4&stochastic=0&governor=0&nowarn=1&input=touch"
+      }
+    },
+    {
+      "scene": "2f1ddf5f",
+      "mode": "stochastic",
+      "budgetM": 4,
+      "rep": 1,
+      "res": "3840x2160",
+      "settledMs": 9425,
+      "sceneComplete": false,
+      "gpuProfilerMs": {
+        "n": 299,
+        "p50": 3.08,
+        "p95": 19.4
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 7.8,
+        "p95": 20.1
+      },
+      "drawnHz": 29.4,
+      "framesHeld": 0,
+      "state": {
+        "engineStochastic": true,
+        "budgetM": 4,
+        "top": 4,
+        "step": 0,
+        "changes": 0,
+        "scale": 1,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 3.9,
+        "from": {
+          "stochastic": "link",
+          "budget": "link"
+        },
+        "search": "?scene=2f1ddf5f&budget=4&stochastic&governor=0&nowarn=1&input=touch"
+      }
+    },
+    {
+      "scene": "2f1ddf5f",
+      "mode": "sorted",
+      "budgetM": 8,
+      "rep": 1,
+      "res": "3840x2160",
+      "settledMs": 12156,
+      "sceneComplete": false,
+      "gpuProfilerMs": {
+        "n": 286,
+        "p50": 5.37,
+        "p95": 17.69
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 12.4,
+        "p95": 45
+      },
+      "drawnHz": 28.3,
+      "framesHeld": 4,
+      "state": {
+        "engineStochastic": false,
+        "budgetM": 8,
+        "top": 8,
+        "step": 0,
+        "changes": 0,
+        "scale": 1,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 8.1,
+        "from": {
+          "stochastic": "link",
+          "budget": "link"
+        },
+        "search": "?scene=2f1ddf5f&budget=8&stochastic=0&governor=0&nowarn=1&input=touch"
+      }
+    },
+    {
+      "scene": "2f1ddf5f",
+      "mode": "stochastic",
+      "budgetM": 8,
+      "rep": 1,
+      "res": "3840x2160",
+      "settledMs": 11359,
+      "sceneComplete": false,
+      "gpuProfilerMs": {
+        "n": 298,
+        "p50": 4.33,
+        "p95": 25.3
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 9.7,
+        "p95": 40.4
+      },
+      "drawnHz": 29.5,
+      "framesHeld": 1,
+      "state": {
+        "engineStochastic": true,
+        "budgetM": 8,
+        "top": 8,
+        "step": 0,
+        "changes": 0,
+        "scale": 1,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 8,
+        "from": {
+          "stochastic": "link",
+          "budget": "link"
+        },
+        "search": "?scene=2f1ddf5f&budget=8&stochastic&governor=0&nowarn=1&input=touch"
+      }
+    }
+  ]
+}

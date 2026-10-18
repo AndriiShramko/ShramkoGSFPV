@@ -76,7 +76,10 @@ const listFolder = (name: string) => `const root = await navigator.storage.getDi
 async function exportWatched(p: Page, opts: string, sampleAfterMs = 600): Promise<{ result: Any; during: Any }> {
     await hook(p, `window.__vx = h.videoExport.run(${opts}); return true;`);
     await p.waitForTimeout(sampleAfterMs);
-    const during = await hook(p, 'return { ...h.videoExport.state(), paused: s.paused, menuOpen: !!document.querySelector(".pause-menu"), barText: document.querySelector("[data-testid=video-export-bar]")?.textContent ?? null };');
+    const sample = () => hook(p, 'return { ...h.videoExport.state(), stochastic: s.renderer.stochastic, paused: s.paused, menuOpen: !!document.querySelector(".pause-menu"), barText: document.querySelector("[data-testid=video-export-bar]")?.textContent ?? null };');
+    let during = await sample();
+    // the export draws sorted once its recorder is open: give that a few more samples while it runs (never hides a drawing that stays on)
+    for (let i = 0; i < 10 && during.running && during.stochastic === true; i++) { await p.waitForTimeout(400); during = await sample(); }
     const result = await hook(p, 'return await window.__vx;');
     return { result, during };
 }
@@ -108,11 +111,13 @@ console.log('flight', JSON.stringify(out.flight));
 
 // ------------------------------------------------------------------ E1 + C1: 5 s at 1080p
 if (want('E1')) {
+    // v0.9 lane R: the desktop draws stochastic by default; the export draws the classic way and gives the drawing back
+    const drawingBefore = await hook<boolean>(page, 'return s.renderer.stochastic;');
     const { result: r, during } = await exportWatched(page, `{ size: '1080p', fromTick: ${range.from}, toTick: ${range.to} }`);
     const file = await saveLast(page, 'e1-1080p');
     const pr = file ? probe(file.file) : null;
     const pics = file && pr ? stills(file.file, 'e1', pr.packets) : [];
-    const afterRun = await hook(page, 'return { paused: s.paused, bar: h.videoExport.state().bar };');
+    const afterRun = await hook(page, 'return { paused: s.paused, bar: h.videoExport.state().bar, stochastic: s.renderer.stochastic };');
     await hook(page, 'h.videoExport.close(); return true;');
     await page.waitForTimeout(300);
     const afterClose = await hook(page, 'return { paused: s.paused, bar: h.videoExport.state().bar, menuOpen: !!document.querySelector(".pause-menu"), row: !!document.querySelector("[data-testid=video-export]") };');
@@ -123,7 +128,8 @@ if (want('E1')) {
     const pass = !!pr && pr.r_frame_rate === '60/1' && pr.packets === 300 && pr.decoded === 300 && pr.dupPts === 0 && pr.width === 1920 && pr.height === 1080
         && r.ended === 'done' && r.encoded === 300 && r.encodedIncomplete === 0 && poseOk(r.first, replay[0]) && poseOk(r.last, replay[1]) && camOk(r.first) && camOk(r.last)
         && during.running === true && during.bar === true && during.paused === true && during.menuOpen === false && afterRun.paused === true
-        && afterClose.bar === false && afterClose.menuOpen === true && afterClose.row === true && r.creditStripStd > 0.1 && r.info?.where === 'folder';
+        && afterClose.bar === false && afterClose.menuOpen === true && afterClose.row === true && r.creditStripStd > 0.1 && r.info?.where === 'folder'
+        && drawingBefore === true && during.stochastic === false && afterRun.stochastic === true;
     // control: the same stretch with a 1/30 s frame step
     await hook(page, 'h.menu?.close?.(); return true;');
     const c1 = await hook(page, `return await h.videoExport.run({ size: '1080p', fromTick: ${range.from}, toTick: ${range.to}, stepFps: 30 });`);
@@ -132,8 +138,8 @@ if (want('E1')) {
     await hook(page, 'h.videoExport.close(); return true;');
     const fired = !!c1Probe && c1Probe.packets === 150 && c1.encoded === 150 && !poseOk(c1.last, replay[1]) && dist(c1.last.p, replay[1].p) > 1e-6;
     out.E1 = {
-        pass: pass && fired, what: 'a 5 s stretch of the life saved as video at 1080p: 60/1, 300 frames, all decoded, 0 duplicate pts; no frame encoded with the scan incomplete; first and last frame poses = a fresh replay at 0 and 299/60 s; paused (reason export) with the bar up meanwhile; Close goes back to the summary panel; the credit burned in; into the folder',
-        result: r, during, afterRun, afterClose, replay, file: file && { ...file, file: undefined }, ffprobe: pr, stills: pics, folder,
+        pass: pass && fired, what: 'a 5 s stretch of the life saved as video at 1080p: 60/1, 300 frames, all decoded, 0 duplicate pts; no frame encoded with the scan incomplete; first and last frame poses = a fresh replay at 0 and 299/60 s; paused (reason export) with the bar up meanwhile; Close goes back to the summary panel; the credit burned in; into the folder; the scan drawn sorted during the run (stochastic before and after: the desktop default, v0.9 lane R)',
+        drawingBefore, result: r, during, afterRun, afterClose, replay, file: file && { ...file, file: undefined }, ffprobe: pr, stills: pics, folder,
         control: { what: 'C1: the same stretch with a deliberately wrong frame step (1/30 s): 150 frames, the last pose not the replay\'s at 299/60 s', fired, result: { encoded: c1.encoded, frames: c1.frames, first: c1.first, last: c1.last }, ffprobe: c1Probe, lastPoseOffM: c1.last ? dist(c1.last.p, replay[1].p) : null }
     };
     console.log('E1', pass ? 'PASS' : 'FAIL', 'C1', fired ? 'FIRED' : 'DID NOT FIRE', JSON.stringify({ pr, encoded: r.encoded, incomplete: r.incomplete, waited: r.waited, encodedIncomplete: r.encodedIncomplete, first: r.first, last: r.last, replay, during, afterClose, strip: r.creditStripStd, c1Probe: c1Probe && { packets: c1Probe.packets }, c1Last: c1.last }));
@@ -159,12 +165,13 @@ if (want('E3')) {
     await page.waitForTimeout(800);
     await hook(page, 'h.videoExport.cancel(); return true;');
     const r = await hook(page, 'return await window.__vx;');
-    const underBar = await hook(page, 'return { paused: s.paused, bar: h.videoExport.state().bar, text: document.querySelector("[data-testid=video-export-status]")?.textContent };');
+    const underBar = await hook(page, 'return { paused: s.paused, stochastic: s.renderer.stochastic, bar: h.videoExport.state().bar, text: document.querySelector("[data-testid=video-export-status]")?.textContent };');
     const after = await hook<Any[]>(page, listFolder(`gsfpv-export-${RUN}`));
     await page.keyboard.press('Escape'); // the bar's Close
     await page.waitForTimeout(300);
     const closed = await hook(page, 'return { bar: h.videoExport.state().bar, menuOpen: !!document.querySelector(".pause-menu"), paused: s.paused };');
-    const pass = r.ended === 'cancel' && r.encoded > 0 && r.encoded < r.frames && after.length === before.length && underBar.paused === true && underBar.bar === true && closed.bar === false && closed.menuOpen === true;
+    const pass = r.ended === 'cancel' && r.encoded > 0 && r.encoded < r.frames && after.length === before.length && underBar.paused === true && underBar.bar === true && closed.bar === false && closed.menuOpen === true
+        && underBar.stochastic === true; // v0.9 lane R: the cancelled export gave the desktop's drawing back
     out.E3 = { pass, what: 'Cancel stops the export, leaves no file, keeps the flight paused under the bar; Esc closes the bar back to the summary panel', result: { ended: r.ended, encoded: r.encoded, frames: r.frames }, filesBefore: before.length, filesAfter: after.length, underBar, closed };
     console.log('E3', pass ? 'PASS' : 'FAIL', JSON.stringify(out.E3));
 }
