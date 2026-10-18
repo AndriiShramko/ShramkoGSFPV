@@ -5,8 +5,9 @@
 // go of them and the flight takes his own back live (the features that follow the store do the rest; the
 // drone is rebuilt here). Both take the parameters out of the address bar. Changing one of the settings
 // himself (a key, the Settings screen) ends its share and the chip stops naming it; with none left it goes.
-// A scene switch (N, the picker, auto-switch) ends the visit: the layer is cleared and the address cleaned,
-// so a reload of the next scene never inherits this one's settings.
+// A scene switch (N, the picker, auto-switch) ends the visit: the layer is cleared, the address cleaned and
+// the link's drone let go (the pilot's own comes back, as after Reset: shared-visit.ts leaveShared), so a
+// reload of the next scene never inherits this one's settings.
 // window.__gsfpv.sharedSettings: what stands and the two buttons' actions, for the acceptance.
 import { flyQueryString, isEmptyShared, stripSharedParams } from '@gsfpv/scenes';
 import type { SharedSettings } from '@gsfpv/scenes';
@@ -16,7 +17,7 @@ import { PRESETS } from '../../presets';
 import { aboveStart } from '../../session/ceiling-source';
 import { addSceneNote } from '../scene-notes';
 import { applyModel, linkSettings } from '../prefs';
-import { chipItems, endSharedVisit, keepShared, resetShared, sharedVisit, stillShared } from '../shared-visit';
+import { chipItems, endSharedVisit, keepShared, leaveShared, resetShared, sharedVisit, stillShared } from '../shared-visit';
 import type { Feature } from '../context';
 import './shared-settings.css';
 
@@ -27,7 +28,7 @@ declare module '../test-hook' {
     }
 }
 
-/** The address without the parameters of a shared link (not the drone: the prefs URL layer lets go of that itself). */
+/** The address without the parameters of a shared link (not the drone: forgetLinkValue takes that out, in Reset and in a scene switch). */
 function cleanAddress(): void {
     try {
         const u = new URL(location.href);
@@ -105,13 +106,15 @@ export const sharedSettings: Feature = {
         show();
         // a setting the pilot changes himself leaves the visit layer: the chip names what is still shared
         const offPrefs = ctx.prefs.onChange(() => { if (removeChip) show(); });
-        // another scene: this visit is over (the layer cleared, the address cleaned)
+        // another scene: this visit is over (the layer cleared, the address cleaned, the link's drone let go)
         const offSession = ctx.events.on('session', () => {
             const v = sharedVisit();
             if (!v || v.scene === ctx.scene.id) return;
-            ctx.prefs.clearVisit(v.scene);
+            const droneWasLinks = leaveShared(ctx.prefs, v);
             cleanAddress();
             close();
+            // the new session was built with the drone flown; the pilot's own comes back like after Reset
+            if (droneWasLinks) applyModel(ctx.session, ctx.prefs);
         });
         ctx.hook.sharedSettings = { standing, chip: () => text?.textContent ?? null, keep: keep_, reset: reset_ };
         return () => {

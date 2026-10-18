@@ -15,7 +15,7 @@
 import { isEmptyShared } from '@gsfpv/scenes';
 import type { SharedSettings } from '@gsfpv/scenes';
 import type { PrefsStore } from '@gsfpv/prefs';
-import { forgetLinkValue, pilotSet } from './prefs';
+import { forgetLinkValue, linkSettings, pilotSet } from './prefs';
 
 /** One shared item and the settings of the store it becomes. */
 interface Item {
@@ -141,4 +141,17 @@ export function keepShared(prefs: PrefsStore, visit: SharedVisit): string[] {
 export function resetShared(prefs: PrefsStore, visit: SharedVisit): void {
     prefs.clearVisit(visit.scene);
     if (visit.applied.drone !== undefined) forgetLinkValue(prefs, 'drone.current');
+}
+
+/**
+ * The pilot leaves the scene the link was for (N, the picker, auto-switch): the visit is over, as after Reset
+ * (the layer cleared, the link's drone let go, nothing stored), so neither the next scene nor a reload of it
+ * inherits the link's settings. The drone is global, not the scene's: left alone it would stay flown and in the
+ * address with no chip to end it. Returns true when the drone flown was the link's and is now the pilot's own
+ * again (the caller rebuilds the flight model: app/prefs.ts applyModel); false when he had chosen one himself.
+ */
+export function leaveShared(prefs: PrefsStore, visit: SharedVisit): boolean {
+    const linkDrone = visit.applied.drone !== undefined && linkSettings().has('drone.current');
+    resetShared(prefs, visit);
+    return linkDrone;
 }

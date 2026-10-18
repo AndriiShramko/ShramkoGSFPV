@@ -305,6 +305,41 @@ describe('the receiver: the link\'s settings, for that visit and that scene', ()
         expect(V.applyShared(prefs, A, { drone: 'nosuchdrone' }, P.linkSettings())).toEqual({});
     });
 
+    it('a scene switch ends the drone of the link too: the pilot\'s own comes back and the address loses it (control: clearing the layer alone keeps it)', () => {
+        const query = 'scene=aaaaaa01&drone=taurusx8-komodo-6s';
+        const open = (): PrefsStore => P.openPagePrefs(CAT.scenes, query, { storage: new FakeStorage() as unknown as Storage, win: null, doc: null, cookieDoc: null, debounceMs: 0, openKv: async () => ({ get: async () => undefined, put: async () => undefined, close: () => undefined }) });
+        const visitOf = (prefs: PrefsStore) => ({ scene: A, applied: V.applyShared(prefs, A, { size: 5, drone: 'taurusx8-komodo-6s' }, P.linkSettings()) });
+        // control: what the scene switch did before (the layer alone) leaves the drone flown and held by the link, with no chip left to end it
+        let prefs = open();
+        let visit = visitOf(prefs);
+        expect(visit.applied).toEqual({ size: 5, drone: 'taurusx8-komodo-6s' });
+        prefs.clearVisit(A);
+        expect(prefs.get('drone.current')).toBe('taurusx8-komodo-6s');
+        expect(P.linkSettings().has('drone.current')).toBe(true);
+        P.closePagePrefs();
+        // the fix: the visit ends as after Reset, nothing stored
+        prefs = open();
+        visit = visitOf(prefs);
+        expect(V.leaveShared(prefs, visit)).toBe(true);
+        expect(prefs.get('drone.current')).toBe('pavo20pro-3s');
+        expect(P.linkSettings().has('drone.current')).toBe(false);
+        expect(prefs.isExplicit('drone.current')).toBe(false);
+        expect(prefs.visitOf(A)).toEqual({});
+        expect(V.stillShared(prefs, A, visit.applied, P.linkSettings())).toEqual({});
+        P.closePagePrefs();
+        // a drone the pilot chose himself during the visit is his: it stays, and the flight model is not rebuilt
+        prefs = open();
+        visit = visitOf(prefs);
+        expect(P.pilotSet(prefs, 'drone.current', 'nazgulf5v3-6s').ok).toBe(true);
+        expect(V.leaveShared(prefs, visit)).toBe(false);
+        expect(prefs.get('drone.current')).toBe('nazgulf5v3-6s');
+        expect(prefs.isExplicit('drone.current')).toBe(true);
+        P.closePagePrefs();
+        // a link without a drone: nothing to let go of
+        prefs = P.openPagePrefs(CAT.scenes, 'scene=aaaaaa01', { storage: new FakeStorage() as unknown as Storage, win: null, doc: null, cookieDoc: null, debounceMs: 0, openKv: async () => ({ get: async () => undefined, put: async () => undefined, close: () => undefined }) });
+        expect(V.leaveShared(prefs, { scene: A, applied: V.applyShared(prefs, A, { size: 5 }, P.linkSettings()) })).toBe(false);
+    });
+
     it('the chip words: one entry per item, in the link\'s order, numbers as the pilot reads them', () => {
         const items = V.chipItems({ ...SHARED, drone: 'nazgulf5v3-6s' }, { droneName: (id) => `<${id}>`, ceilingHeight: (c) => c - 1 });
         expect(items.map((i) => i.key)).toEqual(['shared.item.size', 'shared.item.wallsOff', 'shared.item.floaters', 'shared.item.wind', 'shared.item.ceiling', 'shared.item.drone']);

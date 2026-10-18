@@ -37,6 +37,8 @@ const GPU_LOCK = process.env.GPU_LOCK ?? 'C:/dev/.gpu-lock';
 const LISTED = '39e63ce9'; // owner default x3, listed
 const HIDDEN = '7a475d38'; // owner default x30, hidden from the picker
 const PLAIN = '887f27aa'; // never configured
+const LINK_DRONE = 'taurusx8-komodo-6s'; // a drone a shared link brings
+const OWN_DRONE = 'pavo20pro-3s'; // the pilot's own: the default
 const FLY = (qs: string): string => `${SITE}/en/fly/?${qs}`;
 const LOGIC = 'nowarn=1&input=touch&render=off';
 
@@ -364,6 +366,18 @@ async function main(): Promise<void> {
             check('C5 N / a scene switch ends the visit: no chip, the parameters are out of the address, the next scene is x1', gone.chips === 0 && !/(^|[?&])(sz|wl|fl|wd|ce)=/.test(gone.search) && near(gone.size, 1));
             check('C5b ... and coming back opens the scene\'s own default x3, not the link\'s x5', back.chips === 0 && near(back.size, 3));
             await ctx.close();
+            // the drone of the link is part of the visit: a switch gives the pilot's own back, in the flight and in the address
+            const c2 = await newCtx(browser);
+            const d = await openFly(c2, `scene=${LISTED}&sz=5&drone=${LINK_DRONE}&${LOGIC}`);
+            const flown = await hook<Any>(d, `return { drone: h.session.presetId, store: h.prefs.get('drone.current') };`);
+            const chip = await chipText(d);
+            await hook(d, `return await h.scenes.load('${PLAIN}', 'next');`);
+            const left = await hook<Any>(d, `return { drone: h.session.presetId, store: h.prefs.get('drone.current'), explicit: h.prefs.isExplicit('drone.current') };`);
+            const addr = await search(d);
+            results.C5d = { flown, chip, left, addr };
+            check('C5c the link\'s drone is flown and named on the chip while the visit lasts', flown.drone === LINK_DRONE && flown.store === LINK_DRONE && !!chip && !chip.includes('shared.'));
+            check('C5d a scene switch gives the pilot\'s own drone back (flight, store, address) and stores nothing', left.drone === OWN_DRONE && left.store === OWN_DRONE && left.explicit === false && !/(^|[?&])drone=/.test(addr));
+            await c2.close();
         });
         await section('block 12', async () => {
             // the pilot changes a shared setting himself: the chip names what is still shared; none left, no chip
