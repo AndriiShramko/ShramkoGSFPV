@@ -3,15 +3,19 @@
 // No hardware: a fake gamepad in the page (an init script) with the DJI controller's ids, so it is
 // recognised and opens its check screen by itself (no wizard), sends reports on a schedule of its own:
 //   usb      a report every ~1 ms (a cable at 1000 Hz)
-//   ble90    every ~11 ms with +-3 ms of jitter (Bluetooth LE at ~90 Hz)
+//   usb100   every 10 ms with 0.2 ms of timer noise (a wired joystick at 100 Hz: its mean sits on the old 10 ms line)
+//   ble90    every ~11 ms with +-3 ms of jitter (Bluetooth LE at ~90 Hz: a link that delivers on time)
+//   ble50    every ~20 ms with +-6 ms of jitter
 //   ble30    every ~33 ms with +-8 ms of jitter
 //   bunches  3-6 reports within 1.5 ms every 50-100 ms (Bluetooth LE in bunches)
 // Gamepad.timestamp is the report's time (as Chromium's raw input stamps it) and the values move with
 // every report. The page is the logic-only test mode (?render=off): no GPU, nothing here is about the
 // picture. Per run, checked: the check screen's line ("reports every .. ms, jitter .., longest gap ..")
-// and its note about a cable; after Fly and F3, F3's line and note. The cable must get NO note on either
-// (the negative control) and each Bluetooth timeline must get one that names the measured numbers; the
-// note is in the page's language (compared with the locale file, read here, not typed here).
+// and its note about a cable; after Fly and F3, F3's line and note. The cables (1000 and 100 Hz) and the
+// healthy Bluetooth link (11 ms) must get NO note on either (the negative controls: the page cannot tell
+// a cable from Bluetooth, so the note is about the cadence); the slow (20, 33 ms) and the bunched
+// timelines must get one that names the measured numbers; the note is in the page's language (compared
+// with the locale file, read here, not typed here).
 // Usage: node link-line-probe.mjs <base with the locale, e.g. http://localhost:5390/en> <outDir> [--only a,b]
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
@@ -44,8 +48,8 @@ function installPad(cfg) {
     if (cfg.kind === 'bunches') {
         for (; t < end; t += 50 + rnd() * 50) { const k = 3 + Math.floor(rnd() * 4); for (let i = 0; i < k; i++) times.push(t + (i / k) * 1.5); }
     } else {
-        const gap = { usb: 1, ble90: 11.1, ble30: 33.3 }[cfg.kind];
-        const jit = { usb: 0.3, ble90: 6, ble30: 16 }[cfg.kind];
+        const gap = { usb: 1, usb100: 10, ble90: 11.1, ble50: 20, ble30: 33.3 }[cfg.kind];
+        const jit = { usb: 0.3, usb100: 0.4, ble90: 6, ble50: 12, ble30: 16 }[cfg.kind];
         for (; t < end; t += gap + (rnd() - 0.5) * jit) times.push(t);
     }
     const s = { present: sessionStorage.getItem('__padShown') === '1' };
@@ -73,7 +77,7 @@ const out = { what: 'the Controls screen and F3 say how the reports arrive (link
 let failed = 0;
 const check = (name, pass, detail) => { if (!pass) failed++; console.log(`  ${pass ? 'PASS' : 'FAIL'} ${name} ${JSON.stringify(detail)}`); return { name, pass, ...detail }; };
 
-for (const kind of ['usb', 'ble90', 'ble30', 'bunches']) {
+for (const kind of ['usb', 'usb100', 'ble90', 'ble50', 'ble30', 'bunches']) {
     if (!runs(kind)) continue;
     console.log(kind);
     const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
@@ -99,19 +103,19 @@ for (const kind of ['usb', 'ble90', 'ble30', 'bunches']) {
     await page.screenshot({ path: `${outDir}/${kind}-check.png` });
     await page.locator('[data-testid=link-line]').scrollIntoViewIfNeeded().catch(() => undefined);
     await page.screenshot({ path: `${outDir}/${kind}-check-foot.png` });
-    const cable = kind === 'usb';
+    const cable = kind === 'usb' || kind === 'usb100' || kind === 'ble90'; // no note: the two cables and a link that delivers on time
     const rows = [];
     rows.push(check('check screen opened', screen.check === 'check', { id: screen.check }));
     rows.push(check('the line of numbers is shown', !!screen.line && /\d/.test(screen.line) && screen.line.startsWith(lead('link.line')), { line: screen.line }));
-    if (cable) rows.push(check('control: a cable gets no note on the check screen', !screen.noteShown, { noteShown: screen.noteShown }));
+    if (cable) rows.push(check(`control: ${kind} gets no note on the check screen`, !screen.noteShown, { noteShown: screen.noteShown }));
     else {
         const lead2 = lead(kind === 'bunches' ? 'link.note.bursty' : 'link.note.slow');
         rows.push(check('the note is shown, in the page language, with measured numbers', screen.noteShown && screen.note.startsWith(lead2) && !/\{/.test(screen.note) && /\d/.test(screen.note.slice(lead2.length)), { note: screen.note }));
-        if (kind !== 'bunches') {
-            const want = kind === 'ble90' ? 11 : 33;
-            const m = screen.line?.match(/(\d+(?:\.\d+)?)/);
-            rows.push(check(`the interval is the timeline's (~${want} ms)`, !!m && Math.abs(Number(m[1]) - want) < want * 0.25, { first: m?.[1] }));
-        }
+    }
+    const want = { usb100: 10, ble90: 11, ble50: 20, ble30: 33 }[kind];
+    if (want) {
+        const m = screen.line?.match(/(\d+(?:\.\d+)?)/);
+        rows.push(check(`the interval is the timeline's (~${want} ms)`, !!m && Math.abs(Number(m[1]) - want) < want * 0.25, { first: m?.[1] }));
     }
     // Fly, then F3
     await page.locator('[data-action=wizard-done]').click();
@@ -132,7 +136,7 @@ for (const kind of ['usb', 'ble90', 'ble30', 'bunches']) {
     await page.screenshot({ path: `${outDir}/${kind}-f3.png` });
     rows.push(check('flying with the gamepad', f3.source === 'gamepad', { source: f3.source }));
     rows.push(check('F3 shows the numbers', f3.lineShown && /\d/.test(f3.line) && f3.line.startsWith(lead('link.f3')), { line: f3.line }));
-    if (cable) rows.push(check('control: a cable gets no note on F3', !f3.hintShown, { hintShown: f3.hintShown }));
+    if (cable) rows.push(check(`control: ${kind} gets no note on F3`, !f3.hintShown, { hintShown: f3.hintShown }));
     else rows.push(check('F3 shows the note', f3.hintShown && f3.hint.startsWith(lead(kind === 'bunches' ? 'link.note.bursty' : 'link.note.slow')), { hint: f3.hint }));
     rows.push(check('no page errors', errors.length === 0, { errors }));
     out.runs[kind] = { screen, f3, rows };
