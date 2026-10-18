@@ -81,6 +81,7 @@ import uuid
 import zlib
 from collections import OrderedDict, defaultdict, deque
 from dataclasses import dataclass
+from decimal import ROUND_HALF_UP, Decimal
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -1081,10 +1082,13 @@ _SHARED_DRONE_RE = re.compile(r"[a-z0-9][a-z0-9-]{0,39}")
 
 
 def _shared_num(v, lo: float, hi: float, places: int):
-    """A JSON number in [lo, hi] rounded to `places` decimals, else None (a string, a bool, NaN, out of range)."""
+    """A JSON number in [lo, hi] rounded to `places` decimals, else None (a string, a bool, NaN, out of range).
+    Rounded as the page's Number.prototype.toFixed rounds (the exact value of the double, a tie away from
+    zero), not as Python's round() does (a tie to the even digit): -6749.125 is -6749.13 on both sides, so the
+    link a body gives is the link the page would have written (fixtures/shared-links.json has the tie rows)."""
     if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) or not lo <= v <= hi:
         return None
-    r = round(float(v), places)
+    r = float(Decimal(float(v)).quantize(Decimal(1).scaleb(-places), rounding=ROUND_HALF_UP))
     return r if lo <= r <= hi else None
 
 

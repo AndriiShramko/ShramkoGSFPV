@@ -45,6 +45,8 @@
   "objects": [
     { "body": { "size": 3, "walls": "off", "floaters": 4, "wind": { "fromDeg": 270, "speed": 4, "gust": 2 }, "ceiling": 12.5, "drone": "pavo20pro-3s" }, "kept": { "size": 3, "walls": "off", "floaters": 4, "wind": { "fromDeg": 270, "speed": 4, "gust": 2 }, "ceiling": 12.5, "drone": "pavo20pro-3s" } },
     { "body": { "size": 2.34567, "ceiling": 12.3456, "wind": { "fromDeg": 90.04, "speed": 4.26, "gust": 1.5 } }, "kept": { "size": 2.346, "ceiling": 12.35, "wind": { "fromDeg": 90, "speed": 4.3, "gust": 1.5 } } },
+    { "body": { "size": 2.0625, "ceiling": 12.125, "wind": { "fromDeg": 267.25, "speed": 4.25, "gust": 1.25 } }, "kept": { "size": 2.063, "ceiling": 12.13, "wind": { "fromDeg": 267.3, "speed": 4.3, "gust": 1.3 } } },
+    { "body": { "size": 0.3125, "ceiling": -6749.125, "wind": { "fromDeg": 355.25, "speed": 0.05, "gust": 0.15 } }, "kept": { "size": 0.313, "ceiling": -6749.13, "wind": { "fromDeg": 355.3, "speed": 0.1, "gust": 0.1 } } },
     { "body": { "size": 101, "walls": "maybe", "floaters": 65, "wind": { "fromDeg": 1, "speed": 31, "gust": 0 }, "ceiling": 99999, "drone": "../x" }, "kept": {} },
     { "body": { "size": "3", "walls": 1, "floaters": 4.5, "wind": "gale", "ceiling": "12", "drone": 7 }, "kept": {} },
     { "body": { "size": true, "floaters": true, "wind": { "fromDeg": "270", "speed": 4, "gust": 2 } }, "kept": {} },
