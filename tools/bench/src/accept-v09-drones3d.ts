@@ -196,12 +196,14 @@ async function stagePicture(page: Page, path: string): Promise<void> {
     await page.locator('.d3-view').scrollIntoViewIfNeeded();
     await page.screenshot({ path });
 }
-/** The canvas lies wholly inside what the pilot can see: below the top of the scrolling screen and above the bottom of the window. */
+/** The canvas lies wholly inside what the pilot can see: below the picker's sticky heading (which is opaque and covers what scrolls under it) and above the bottom of the window. */
 async function canvasInView(page: Page): Promise<boolean> {
     return page.evaluate(() => {
         const c = document.querySelector('.d3-canvas')?.getBoundingClientRect();
         const sc = (document.querySelector('.screen.drones') ?? document.documentElement).getBoundingClientRect();
-        return !!c && c.top >= sc.top - 0.5 && c.bottom <= Math.min(sc.bottom, innerHeight) + 0.5 && c.left >= -0.5 && c.right <= innerWidth + 0.5;
+        const head = document.querySelector('.drone-head')?.getBoundingClientRect();
+        const top = Math.max(sc.top, head ? head.bottom : 0);
+        return !!c && c.top >= top - 0.5 && c.bottom <= Math.min(sc.bottom, innerHeight) + 0.5 && c.left >= -0.5 && c.right <= innerWidth + 0.5;
     });
 }
 
