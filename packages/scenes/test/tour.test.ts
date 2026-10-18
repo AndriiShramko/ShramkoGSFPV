@@ -1,9 +1,10 @@
 // The tour (packages/scenes/src/tour.ts; v0.9 lane N, the owner's item 9): N walks the owner's catalogue in
-// his order, then SuperSplat, never repeating a scene until everything was seen; a returning visitor
-// continues. Every claim has a negative control: the checker that proves it is run on a sequence that
-// breaks the rule (or the same walk without the rule) and must fail.
-import { describe, expect, it } from 'vitest';
-import { SceneTour, TOUR_KEY, TOUR_KEEP_MS, TOUR_PAGE, MAX_PAGES_PER_STEP, catalogueOrder, storefront } from '../src/index';
+// his order, then SuperSplat, never repeating a scene until everything was seen; the SuperSplat leg of a step
+// is bounded in time; the place in the walk is kept between visits only when the page hands in a store. Every
+// claim has a negative control: the checker that proves it is run on a sequence that breaks the rule (or the
+// same walk without the rule) and must fail.
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { SceneTour, SUPERSPLAT_READ_MS, TOUR_KEY, TOUR_KEEP_MS, TOUR_PAGE, MAX_PAGES_PER_STEP, catalogueOrder, storefront } from '../src/index';
 import type { TourItem, TourPage, TourStep, TourStorage, TourScene, CatalogScene } from '../src/index';
 
 /** A seeded generator (mulberry32). */
@@ -45,6 +46,8 @@ interface Opts {
     store?: TourStorage;
     now?: () => number;
     seed?: number;
+    onSearch?: () => void;
+    readTimeoutMs?: number;
 }
 const NOW = 1_800_000_000_000;
 function tour(o: Opts = {}): SceneTour {
@@ -53,6 +56,8 @@ function tour(o: Opts = {}): SceneTour {
         failed: (id) => o.failed?.has(id) ?? false,
         pages: o.pages === undefined ? pagesOf(list(100)) : o.pages,
         store: o.store,
+        onSearch: o.onSearch,
+        readTimeoutMs: o.readTimeoutMs,
         now: o.now ?? (() => NOW),
         rng: rng(o.seed ?? 1)
     });
@@ -241,7 +246,107 @@ describe('failures and the end of the list', () => {
     });
 });
 
-describe('a returning visitor continues', () => {
+describe('SuperSplat is asked within a bounded time (the 13th press on a slow connection)', () => {
+    afterEach(() => { vi.useRealTimers(); });
+
+    /** A step started now; `settled()` says whether it has answered, `result()` what. */
+    function start(t: SceneTour, from: string): { settled: () => boolean; result: () => TourStep | null | undefined } {
+        let done = false;
+        let res: TourStep | null | undefined;
+        void t.next(from, 'sequential').then((r) => { done = true; res = r; });
+        return { settled: () => done, result: () => res };
+    }
+
+    /** the owner's list all seen: the next step has to go to SuperSplat */
+    async function allSeen(t: SceneTour): Promise<void> {
+        for (const id of CAT) t.noteFlown(id);
+    }
+
+    it('a page that never answers: the step ends at the budget with a new round (again), not never', async () => {
+        vi.useFakeTimers();
+        const t = tour({ pages: () => new Promise<TourPage>(() => undefined) });
+        await allSeen(t);
+        const step = start(t, CAT[11]);
+        await vi.advanceTimersByTimeAsync(SUPERSPLAT_READ_MS - 1);
+        expect(step.settled()).toBe(false);
+        await vi.advanceTimersByTimeAsync(1);
+        expect(step.settled()).toBe(true);
+        expect(step.result()).toEqual({ id: CAT[0], from: 'again' });
+    });
+
+    it('control: the same page with the bound switched off (a budget longer than the test waits) is still waiting', async () => {
+        vi.useFakeTimers();
+        const t = tour({ pages: () => new Promise<TourPage>(() => undefined), readTimeoutMs: 24 * 3600 * 1000 });
+        await allSeen(t);
+        const step = start(t, CAT[11]);
+        await vi.advanceTimersByTimeAsync(SUPERSPLAT_READ_MS * 5);
+        expect(step.settled()).toBe(false);
+    });
+
+    it('the budget is for the whole step: pages that each take 3 s and bring nothing end it at 4 s, not after 6 pages', async () => {
+        vi.useFakeTimers();
+        let asked = 0;
+        // every entry is one the owner's list already has: nothing to bring, so the step wants the next page
+        const slow = (skip: number, limit: number): Promise<TourPage> => new Promise((resolve) => {
+            asked++;
+            setTimeout(() => resolve({ items: CAT.slice(0, limit).map((id) => ({ id, format: 'sog' })), total: 1000 }), 3000);
+        });
+        const t = tour({ pages: slow });
+        await allSeen(t);
+        const step = start(t, CAT[11]);
+        await vi.advanceTimersByTimeAsync(SUPERSPLAT_READ_MS);
+        expect(step.settled()).toBe(true);
+        expect(step.result()?.from).toBe('again');
+        // the second page was asked for at 3 s and dropped at 4 s; no third request went out past the budget
+        expect(asked).toBe(2);
+        await vi.advanceTimersByTimeAsync(10 * 1000);
+        expect(asked).toBe(2);
+    });
+
+    it('a page that arrives late is dropped; the next step asks for the same page again and gets its scene', async () => {
+        vi.useFakeTimers();
+        const calls: [number, number][] = [];
+        let slow = true;
+        const pages = (skip: number, limit: number): Promise<TourPage> => {
+            calls.push([skip, limit]);
+            const page = { items: list(100).slice(skip, skip + limit), total: 100 };
+            return slow ? new Promise((resolve) => setTimeout(() => resolve(page), SUPERSPLAT_READ_MS + 2000)) : Promise.resolve(page);
+        };
+        const t = tour({ pages });
+        await allSeen(t);
+        const first = start(t, CAT[11]);
+        await vi.advanceTimersByTimeAsync(SUPERSPLAT_READ_MS);
+        expect(first.result()?.from).toBe('again');
+        await vi.advanceTimersByTimeAsync(5000); // the dropped page lands; nothing happens
+        slow = false;
+        // everything is walked again (the new round), then the list: the page asked for is page 0 once more
+        for (const id of CAT) t.noteFlown(id);
+        const second = start(t, CAT[11]);
+        await vi.advanceTimersByTimeAsync(0);
+        expect(second.result()).toEqual({ id: hex('5500', 1), from: 'superspl' });
+        expect(calls).toEqual([[0, TOUR_PAGE], [0, TOUR_PAGE]]);
+    });
+
+    it('says it is searching once per step that goes to the network, never while the catalogue or the buffer answers', async () => {
+        let searches = 0;
+        const t = tour({ onSearch: () => { searches++; } });
+        await walk(t, CAT[0], 11); // the catalogue answers every press
+        expect(searches).toBe(0);
+        await t.next(CAT[11], 'sequential'); // the 12th press: page 0
+        expect(searches).toBe(1);
+        await t.next(hex('5500', 1), 'sequential'); // the buffer of that page answers
+        expect(searches).toBe(1);
+        // a step that has to read several pages says it once
+        let many = 0;
+        const t2 = tour({ onSearch: () => { many++; }, pages: pagesOf([...list(2 * TOUR_PAGE, 'compressed.ply'), ...list(3).map((x, i) => ({ ...x, id: hex('6600', i + 1) }))]) });
+        await allSeen(t2);
+        const s = await t2.next(CAT[11], 'sequential');
+        expect(s?.from).toBe('superspl');
+        expect(many).toBe(1);
+    });
+});
+
+describe('the place in the walk, when the page keeps it (the page does not unless asked: D45)', () => {
     it('the next visit resumes in the catalogue where the last one stopped', async () => {
         const store = new MapStore();
         const first = await walk(tour({ store }), CAT[0], 5);

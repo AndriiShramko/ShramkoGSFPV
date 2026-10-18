@@ -29,6 +29,16 @@ export interface RotationDeps {
     now?(): number;
 }
 
+/**
+ * The order N takes for `source`. What the pilot chose wins (`chosen`); null: the pilot never set Order, so
+ * each source keeps what it did before v0.9 or gets the owner's wish: the owner's catalogue is walked in his
+ * order (the tour), the pilot's own lists (favourites, scenes flown) are shuffled. A history walked in order
+ * only ping-pongs between the two scenes flown last, because opening a scene moves it to the top of the list.
+ */
+export function orderFor(source: RotationSource, chosen: RotationOrder | null): RotationOrder {
+    return chosen ?? (source === 'curated' ? 'sequential' : 'random');
+}
+
 export interface RotationRules {
     /** scenes.allowNoWalls: scenes without walls may come too */
     allowNoWalls: boolean;

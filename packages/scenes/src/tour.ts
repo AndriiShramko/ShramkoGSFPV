@@ -10,10 +10,14 @@
 // A scene is never brought twice until a new round starts. "Seen" is every scene on screen (the page's
 // first, N, a pick, a pasted link). Order `sequential` takes the first unseen catalogue scene after the
 // current one, round the list; `random` draws uniformly among the unseen.
-// The position survives the visit (the owner: "a returning visitor continues"): the seen catalogue scenes
-// and how far into the SuperSplat list the tour has read, in one small record in the storage the page
-// hands in (localStorage; every access is guarded, a page without storage starts at the top each visit).
-// A record older than TOUR_KEEP_MS is ignored: the trending list and the catalogue have moved on.
+// The place in the walk CAN survive the visit, but only when the page hands in a `store` (the page does not:
+// the owner asked for no such thing, and a visitor who had walked the list once would meet SuperSplat on the
+// first N of the next visit, which looks like the bug of item 9 again; app/tour.ts, decision D45). The record:
+// the seen catalogue scenes and how far into the SuperSplat list the tour has read, in one small record in
+// that storage (every access is guarded). A record older than TOUR_KEEP_MS is ignored: the trending list and
+// the catalogue have moved on.
+// The SuperSplat leg of a step is bounded (SUPERSPLAT_READ_MS): a slow or stalled proxy counts as "SuperSplat
+// did not answer", the step falls back to the catalogue (`again`) instead of leaving N dead while it waits.
 // Pure: no DOM globals. The pages, the storage, the clock and the random numbers come in through deps.
 import { EXPLORE_BOUNDS, formatVerdict } from './superspl';
 
@@ -59,6 +63,12 @@ const SEEN_KEPT = 500;
  * (the proxy allows a visitor 60 a minute). Hitting the limit counts as "nothing to bring now".
  */
 export const MAX_PAGES_PER_STEP = 6;
+/**
+ * The most one step waits for SuperSplat's pages, all of them together (the same 4 s as the catalogue's own
+ * load, loadCatalog). The proxy may take 10 s upstream and a bad mobile connection longer; N and the scene
+ * after a crash are ignored while a step is being decided, so the wait has to end.
+ */
+export const SUPERSPLAT_READ_MS = 4000;
 
 const ID = /^[0-9a-f]{6,32}$/;
 
@@ -69,8 +79,12 @@ export interface TourDeps {
     failed(id: string): boolean;
     /** the SuperSplat list; null: the tour stays in the catalogue */
     pages: TourPages | null;
-    /** where the position is kept between visits; absent: nowhere */
+    /** where the position is kept between visits; absent: nowhere (every visit walks the list from its start) */
     store?: TourStorage;
+    /** a step is about to read a SuperSplat page from the network, once per step (the page says "looking" if it drags on) */
+    onSearch?(): void;
+    /** the budget of one step's SuperSplat reads in ms (default SUPERSPLAT_READ_MS) */
+    readTimeoutMs?: number;
     now?(): number;
     rng?(): number;
     /** may this SuperSplat entry be brought (default: a format the simulator opens, formatVerdict) */
@@ -167,37 +181,54 @@ export class SceneTour {
         return null;
     }
 
-    /** The next SuperSplat entry the tour may bring; null: the list is read to its end, or could not be read. */
+    /**
+     * The next SuperSplat entry the tour may bring; null: the list is read to its end, or could not be read
+     * (an error, or no answer within the step's budget: the page is read again by the next step).
+     */
     private async fromSuperSplat(): Promise<string | null> {
         const opens = this.d.opens ?? ((it: TourItem) => formatVerdict(it.format ?? '') === 'opens');
         const s = this.stream;
-        for (let read = 0; ; read++) {
-            while (s.buffer.length > 0) {
-                const it = s.buffer.shift()!;
-                s.consumed++;
-                // the owner's scenes are all seen (or failed) by now, so they are passed over here as well
-                if (this.seen.has(it.id) || this.d.failed(it.id) || !opens(it)) continue;
-                return it.id;
+        // one budget for all the pages of this step, started with the first read
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        let late: Promise<'late'> | null = null;
+        try {
+            for (let read = 0; ; read++) {
+                while (s.buffer.length > 0) {
+                    const it = s.buffer.shift()!;
+                    s.consumed++;
+                    // the owner's scenes are all seen (or failed) by now, so they are passed over here as well
+                    if (this.seen.has(it.id) || this.d.failed(it.id) || !opens(it)) continue;
+                    return it.id;
+                }
+                if (s.exhausted || !this.d.pages || read >= MAX_PAGES_PER_STEP) return null;
+                if (!late) {
+                    this.d.onSearch?.();
+                    const ms = this.d.readTimeoutMs ?? SUPERSPLAT_READ_MS;
+                    late = new Promise<'late'>((resolve) => { timer = setTimeout(() => resolve('late'), ms); });
+                }
+                let page: TourPage | 'late';
+                try {
+                    // a page that arrives after the budget is dropped (race keeps its rejection handled)
+                    page = await Promise.race([this.d.pages(s.nextSkip, this.pageSize), late]);
+                } catch {
+                    return null;
+                }
+                if (page === 'late') return null;
+                const end = s.nextSkip + this.pageSize;
+                s.nextSkip = end;
+                // the proxy allows skip up to EXPLORE_BOUNDS.skipMax; an empty page ends the list as well
+                if (end >= page.total || end > EXPLORE_BOUNDS.skipMax || page.items.length === 0) s.exhausted = true;
+                let items = page.items.slice();
+                if (s.skipFirst > 0) {
+                    const passed = Math.min(s.skipFirst, items.length);
+                    s.consumed += passed;
+                    items = items.slice(passed);
+                    s.skipFirst = 0;
+                }
+                s.buffer.push(...items);
             }
-            if (s.exhausted || !this.d.pages || read >= MAX_PAGES_PER_STEP) return null;
-            let page: TourPage;
-            try {
-                page = await this.d.pages(s.nextSkip, this.pageSize);
-            } catch {
-                return null;
-            }
-            const end = s.nextSkip + this.pageSize;
-            s.nextSkip = end;
-            // the proxy allows skip up to EXPLORE_BOUNDS.skipMax; an empty page ends the list as well
-            if (end >= page.total || end > EXPLORE_BOUNDS.skipMax || page.items.length === 0) s.exhausted = true;
-            let items = page.items.slice();
-            if (s.skipFirst > 0) {
-                const passed = Math.min(s.skipFirst, items.length);
-                s.consumed += passed;
-                items = items.slice(passed);
-                s.skipFirst = 0;
-            }
-            s.buffer.push(...items);
+        } finally {
+            clearTimeout(timer);
         }
     }
 

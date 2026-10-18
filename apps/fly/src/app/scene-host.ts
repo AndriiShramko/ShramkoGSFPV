@@ -17,7 +17,7 @@
 // (@gsfpv/scenes rotation.ts).
 // The pause menu's "Change scan" opens the scene picker over the flight (openPicker): a scene picked
 // there loads the same way, so changing the scan by hand keeps the radio too (item 5).
-import { SceneError, SceneRotation, flyQueryString, getLibrary, legacyLibraryStore, mergeLibraries, parseSceneLink, recordFailure, recordOpen, sameRender, useLibraryStore, writeSceneQuery } from '@gsfpv/scenes';
+import { SUPERSPLAT_READ_MS, SceneError, SceneRotation, flyQueryString, getLibrary, legacyLibraryStore, mergeLibraries, orderFor, parseSceneLink, recordFailure, recordOpen, sameRender, useLibraryStore, writeSceneQuery } from '@gsfpv/scenes';
 import type { CatalogCollection, RotationRules, RotationSource, RotationOrder, SceneLibraryData, SceneRender, SceneTour, TourFrom } from '@gsfpv/scenes';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { FlightSession } from '../session';
@@ -38,6 +38,11 @@ import type { FlightContext, SceneRef, SceneSwitchReason, SceneSwitcher } from '
 import { drawingFor } from './drawing';
 import { noteNextUsed } from './next-used';
 import { pageTour } from './tour';
+
+/** A SuperSplat read that has taken this long says "looking for the next scene" (an answer in the blink of an eye says nothing). */
+const LOOKING_AFTER_MS = 600;
+/** How long that note stays: the read is over by SUPERSPLAT_READ_MS at the latest. */
+const LOOKING_FLASH_MS = SUPERSPLAT_READ_MS - LOOKING_AFTER_MS + 400;
 
 /** What the shell gives the host: the page's context with the swap, the canvas, the curated list. */
 export interface SceneHostDeps {
@@ -61,15 +66,26 @@ export class SceneHost implements SceneSwitcher {
     private busyNow = false;
     /** go() is deciding which scene (SuperSplat may have to be asked): no second decision meanwhile */
     private picking = false;
+    /** the "looking for the next scene" note is due when this fires (searching) */
+    private lookingTimer: ReturnType<typeof setTimeout> | undefined;
     readonly log: SwitchRecord[] = [];
     private picker: ScenePicker | null = null;
 
     constructor(d: SceneHostDeps) {
         this.d = d;
         this.rotation = new SceneRotation({ curated: () => d.showcase.map((s) => ({ id: s.id, collision: s.collision })), library: getLibrary });
-        this.tour = pageTour(d.showcase, d.ctx.prefs);
+        this.tour = pageTour(d.showcase, d.ctx.prefs, { onSearch: () => this.searching() });
         // the scene the page opened with is seen: N does not bring it back this round
         this.tour.noteFlown(d.ctx.scene.id);
+    }
+
+    /**
+     * The tour is asking SuperSplat for a page (the owner's scenes are used up). The wait is bounded
+     * (SUPERSPLAT_READ_MS) but N is ignored while it lasts, so a slow answer says what is going on.
+     */
+    private searching(): void {
+        if (this.lookingTimer !== undefined) return;
+        this.lookingTimer = setTimeout(() => this.d.ctx.hud.flash(t('rotation.looking'), LOOKING_FLASH_MS), LOOKING_AFTER_MS);
     }
 
     get busy(): boolean {
@@ -91,13 +107,20 @@ export class SceneHost implements SceneSwitcher {
         if (kind === 'random') return { id: this.rotation.random(cur, this.rules()) };
         if (kind === 'favourite') return { id: this.rotation.nextFavourite(cur, this.rules()) };
         const src = prefs.get<string>('scenes.rotation');
-        const order: RotationOrder = prefs.get<string>('scenes.order') === 'random' ? 'random' : 'sequential';
         if (src === 'favourites' || src === 'history') {
             const source: RotationSource = src;
-            return { id: this.rotation.next(source, cur, order, this.rules()) };
+            return { id: this.rotation.next(source, cur, orderFor(source, this.chosenOrder()), this.rules()) };
         }
-        const step = await this.tour.next(cur, order);
+        const step = await this.tour.next(cur, orderFor('curated', this.chosenOrder()));
         return step ? { id: step.id, from: step.from } : { id: null };
+    }
+
+    /** scenes.order when the pilot set it (stored, even equal to the default, or by the URL); null: never touched. */
+    private chosenOrder(): RotationOrder | null {
+        const prefs = this.d.ctx.prefs;
+        const v = prefs.get<string>('scenes.order');
+        const set = prefs.isExplicit('scenes.order') || v !== prefs.defaultOf<string>('scenes.order');
+        return set ? (v === 'random' ? 'random' : 'sequential') : null;
     }
 
     /**
@@ -153,6 +176,8 @@ export class SceneHost implements SceneSwitcher {
             chosen = await this.pick(kind);
         } finally {
             this.picking = false;
+            clearTimeout(this.lookingTimer);
+            this.lookingTimer = undefined;
         }
         if (!chosen.id) {
             this.d.ctx.hud.flash(t(kind === 'favourite' ? 'rotation.noFavourite' : 'rotation.none'), 3500);

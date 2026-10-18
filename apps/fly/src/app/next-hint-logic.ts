@@ -21,8 +21,9 @@ export interface HintDue {
     autoSwitch: boolean;
 }
 
-export function hintDue(o: HintDue): boolean {
-    return HINT_AT.includes(o.crashes) && !o.nextUsed && !o.autoSwitch;
+/** `at`: the crash counts the hint shows at (HINT_AT; the tests run the rule with other counts as a control) */
+export function hintDue(o: HintDue, at: readonly number[] = HINT_AT): boolean {
+    return at.includes(o.crashes) && !o.nextUsed && !o.autoSwitch;
 }
 
 export type HintKind = 'key' | 'radio' | 'touch';

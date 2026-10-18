@@ -2,9 +2,10 @@
 // tested in packages/scenes/test/tour.test.ts; here the SuperSplat pages it asks for, and the hint's rules
 // (apps/fly/src/app/next-hint-logic.ts, next-used.ts). Each claim has a control that must fail.
 import { describe, expect, it } from 'vitest';
-import { SuperSplatCatalog, TOUR_PAGE } from '../../../packages/scenes/src/index';
+import { SuperSplatCatalog, TOUR_KEY, TOUR_PAGE } from '../../../packages/scenes/src/index';
+import type { PrefsStore } from '../../../packages/prefs/src/index';
 import { PAGE_SIZE, defaultFilters, toQuery } from '../../../apps/fly/src/ui/superspl-tab-logic';
-import { superSplatPages } from '../../../apps/fly/src/app/tour';
+import { pageTour, superSplatPages } from '../../../apps/fly/src/app/tour';
 import { HINT_AT, hintDue, hintKind } from '../../../apps/fly/src/app/next-hint-logic';
 import { nextUsed, noteNextUsed, onNextUsed } from '../../../apps/fly/src/app/next-used';
 
@@ -49,14 +50,65 @@ describe('the tour reads the SuperSplat tab\'s pages', () => {
     });
 });
 
+describe('the page\'s tour keeps nothing between visits unless asked (decision D45)', () => {
+    /** a localStorage that records what is written to it */
+    function fakeStorage(): { writes: string[]; restore: () => void } {
+        const writes: string[] = [];
+        const m = new Map<string, string>();
+        const g = globalThis as { localStorage?: unknown };
+        const had = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+        Object.defineProperty(globalThis, 'localStorage', {
+            configurable: true,
+            value: { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => { writes.push(k); m.set(k, v); } }
+        });
+        return { writes, restore: () => { if (had) Object.defineProperty(globalThis, 'localStorage', had); else delete g.localStorage; } };
+    }
+    const scenes = ['aaaa0001', 'aaaa0002', 'aaaa0003'].map((id) => ({ id, title: id, author: '', license: '', kind: 'other' as const, collision: false }));
+    const prefs = { get: () => false } as unknown as PrefsStore;
+
+    it('a walk through the owner\'s scenes writes nothing to localStorage; with remember it writes the tour record (control)', async () => {
+        const fake = fakeStorage();
+        try {
+            const t = pageTour(scenes, prefs);
+            t.noteFlown('aaaa0001');
+            expect((await t.next('aaaa0001', 'sequential'))?.id).toBe('aaaa0002');
+            expect(fake.writes).toEqual([]);
+            // control: the same walk with the memory asked for does write its record
+            const kept = pageTour(scenes, prefs, { remember: true });
+            kept.noteFlown('aaaa0001');
+            await kept.next('aaaa0001', 'sequential');
+            expect(fake.writes).toContain(TOUR_KEY);
+        } finally {
+            fake.restore();
+        }
+    });
+
+    it('a second visit starts at the top: N from the first scene goes to the second, not to where the last visit stopped', async () => {
+        const fake = fakeStorage();
+        try {
+            const first = pageTour(scenes, prefs);
+            first.noteFlown('aaaa0001');
+            expect((await first.next('aaaa0001', 'sequential'))?.id).toBe('aaaa0002');
+            const second = pageTour(scenes, prefs);
+            second.noteFlown('aaaa0001');
+            expect((await second.next('aaaa0001', 'sequential'))?.id).toBe('aaaa0002');
+        } finally {
+            fake.restore();
+        }
+    });
+});
+
 describe('the crash hint: when it shows (item 11)', () => {
     const due = (crashes: number, o: { nextUsed?: boolean; autoSwitch?: boolean } = {}) => hintDue({ crashes, nextUsed: false, autoSwitch: false, ...o });
 
     it('the 3rd crash of a visit and the 6th, no other', () => {
         expect([1, 2, 3, 4, 5, 6, 7, 8, 9].filter((n) => due(n))).toEqual([3, 6]);
         expect(HINT_AT).toEqual([3, 6]);
-        // control: a rule that fires on every crash from the 3rd on is not this one
-        expect([1, 2, 3, 4, 5, 6].filter((n) => n >= 3)).not.toEqual([3, 6]);
+        // control: hintDue run with the rule changed (every crash from the 3rd on; the 3rd and the 7th) gives other crashes
+        const every = (at: readonly number[]) => [1, 2, 3, 4, 5, 6, 7, 8, 9].filter((n) => hintDue({ crashes: n, nextUsed: false, autoSwitch: false }, at));
+        expect(every([3, 4, 5, 6, 7, 8, 9])).not.toEqual([3, 6]);
+        expect(every([3, 7])).not.toEqual([3, 6]);
+        expect(every(HINT_AT)).toEqual([3, 6]);
     });
 
     it('never once N was used, and not when the crash already goes to the next scene', () => {

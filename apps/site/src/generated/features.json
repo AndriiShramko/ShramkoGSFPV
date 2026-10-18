@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-17",
+ "generated": "2026-10-18",
  "schemaVersion": 2,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
@@ -1028,7 +1028,7 @@
       {
        "id": "scenes.order",
        "label": "Order",
-       "help": "Random: every scene once before any comes again, never the one you are in. In order: one after another, round and round. The author's scenes come first, then SuperSplat in its own order.",
+       "help": "Random: every scene once before any comes again, never the one you are in. In order: one after another, round and round. The author's scenes come first, then SuperSplat in its own order. Left on the default, your own lists (favourites, scenes flown) still shuffle.",
        "type": "enum",
        "default": "In order",
        "range": "Random / In order",
@@ -2939,7 +2939,7 @@
       {
        "id": "scenes.order",
        "label": "Orden",
-       "help": "Aleatorio: cada escena una vez antes de que se repita ninguna, nunca la que tienes delante. En orden: una tras otra, en bucle. Primero van las escenas del autor, luego SuperSplat en su propio orden.",
+       "help": "Aleatorio: cada escena una vez antes de que se repita ninguna, nunca la que tienes delante. En orden: una tras otra, en bucle. Primero van las escenas del autor, luego SuperSplat en su propio orden. Si lo dejas por defecto, tus propias listas (favoritas, escenas voladas) siguen mezcl\u00e1ndose.",
        "type": "enum",
        "default": "En orden",
        "range": "Aleatorio / En orden",
@@ -4850,7 +4850,7 @@
       {
        "id": "scenes.order",
        "label": "Kolejno\u015b\u0107",
-       "help": "Losowo: ka\u017cda scena raz, zanim kt\u00f3ra\u015b si\u0119 powt\u00f3rzy, nigdy ta, w kt\u00f3rej jeste\u015b. Po kolei: jedna za drug\u0105, w k\u00f3\u0142ko. Najpierw sceny autora, potem SuperSplat w jego w\u0142asnej kolejno\u015bci.",
+       "help": "Losowo: ka\u017cda scena raz, zanim kt\u00f3ra\u015b si\u0119 powt\u00f3rzy, nigdy ta, w kt\u00f3rej jeste\u015b. Po kolei: jedna za drug\u0105, w k\u00f3\u0142ko. Najpierw sceny autora, potem SuperSplat w jego w\u0142asnej kolejno\u015bci. Przy ustawieniu domy\u015blnym twoje w\u0142asne listy (ulubione, przelatane sceny) nadal s\u0105 losowane.",
        "type": "enum",
        "default": "Po kolei",
        "range": "Losowo / Po kolei",
@@ -6761,7 +6761,7 @@
       {
        "id": "scenes.order",
        "label": "\u041f\u043e\u0440\u044f\u0434\u043e\u043a",
-       "help": "\u0421\u043b\u0443\u0447\u0430\u0439\u043d\u043e: \u043a\u0430\u0436\u0434\u0430\u044f \u0441\u0446\u0435\u043d\u0430 \u043f\u043e \u0440\u0430\u0437\u0443, \u043f\u043e\u043a\u0430 \u043d\u0435 \u043f\u0440\u043e\u0439\u0434\u0443\u0442 \u0432\u0441\u0435, \u0438 \u043d\u0438\u043a\u043e\u0433\u0434\u0430 \u0442\u0430, \u0433\u0434\u0435 \u0432\u044b \u0441\u0435\u0439\u0447\u0430\u0441. \u041f\u043e \u043f\u043e\u0440\u044f\u0434\u043a\u0443: \u043e\u0434\u043d\u0430 \u0437\u0430 \u0434\u0440\u0443\u0433\u043e\u0439 \u043f\u043e \u043a\u0440\u0443\u0433\u0443. \u0421\u043d\u0430\u0447\u0430\u043b\u0430 \u0441\u0446\u0435\u043d\u044b \u0430\u0432\u0442\u043e\u0440\u0430, \u0437\u0430\u0442\u0435\u043c SuperSplat \u0432 \u0435\u0433\u043e \u0441\u043e\u0431\u0441\u0442\u0432\u0435\u043d\u043d\u043e\u043c \u043f\u043e\u0440\u044f\u0434\u043a\u0435.",
+       "help": "\u0421\u043b\u0443\u0447\u0430\u0439\u043d\u043e: \u043a\u0430\u0436\u0434\u0430\u044f \u0441\u0446\u0435\u043d\u0430 \u043f\u043e \u0440\u0430\u0437\u0443, \u043f\u043e\u043a\u0430 \u043d\u0435 \u043f\u0440\u043e\u0439\u0434\u0443\u0442 \u0432\u0441\u0435, \u0438 \u043d\u0438\u043a\u043e\u0433\u0434\u0430 \u0442\u0430, \u0433\u0434\u0435 \u0432\u044b \u0441\u0435\u0439\u0447\u0430\u0441. \u041f\u043e \u043f\u043e\u0440\u044f\u0434\u043a\u0443: \u043e\u0434\u043d\u0430 \u0437\u0430 \u0434\u0440\u0443\u0433\u043e\u0439 \u043f\u043e \u043a\u0440\u0443\u0433\u0443. \u0421\u043d\u0430\u0447\u0430\u043b\u0430 \u0441\u0446\u0435\u043d\u044b \u0430\u0432\u0442\u043e\u0440\u0430, \u0437\u0430\u0442\u0435\u043c SuperSplat \u0432 \u0435\u0433\u043e \u0441\u043e\u0431\u0441\u0442\u0432\u0435\u043d\u043d\u043e\u043c \u043f\u043e\u0440\u044f\u0434\u043a\u0435. \u0415\u0441\u043b\u0438 \u043e\u0441\u0442\u0430\u0432\u0438\u0442\u044c \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e, \u0432\u0430\u0448\u0438 \u0441\u043e\u0431\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0435 \u0441\u043f\u0438\u0441\u043a\u0438 (\u0438\u0437\u0431\u0440\u0430\u043d\u043d\u043e\u0435, \u043f\u0440\u043e\u0439\u0434\u0435\u043d\u043d\u044b\u0435 \u0441\u0446\u0435\u043d\u044b) \u043f\u043e-\u043f\u0440\u0435\u0436\u043d\u0435\u043c\u0443 \u043f\u0435\u0440\u0435\u043c\u0435\u0448\u0438\u0432\u0430\u044e\u0442\u0441\u044f.",
        "type": "enum",
        "default": "\u041f\u043e \u043f\u043e\u0440\u044f\u0434\u043a\u0443",
        "range": "\u0421\u043b\u0443\u0447\u0430\u0439\u043d\u043e / \u041f\u043e \u043f\u043e\u0440\u044f\u0434\u043a\u0443",
