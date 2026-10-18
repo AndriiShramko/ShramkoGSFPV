@@ -1,0 +1,366 @@
+{
+  "name": "v09-live",
+  "what": "Live acceptance of ShramkoGSFPV v0.9, each live-safe bench once, one after another, against the live site",
+  "target": "https://gsfpv.flyreelstudio.eu",
+  "liveRelease": {
+    "sha": "24fc1e5",
+    "built": "2026-10-18T05:53:51.879Z",
+    "source": "GET /release.json before the run (equals the commit the lead deployed)"
+  },
+  "ranAt": "2026-10-18 07:58-08:19 local (CEST), Windows, system Chrome 155.0.8059.40 (visible window), ANGLE NVIDIA RTX 4090 (browser record of wizard-auto-check)",
+  "readOnly": {
+    "adminLogin": false,
+    "ssh": false,
+    "deploy": false,
+    "codeChanges": false,
+    "apiShare": "no bench that ran contains a POST /api/share, /api/report or feedback send (source-checked: accept-fly, accept-v09-load, accept-v09-keys, accept-v09-render, wizard-auto-check, hid-source-probe)",
+    "telemetry": "accept-fly, accept-v09-keys, wizard-auto-check and hid-source-probe do not route the page telemetry (POST /api/e) away, so the live site saw the normal page beacons of those visits (accept-fly does this by design on every live run); accept-v09-load and accept-v09-render fulfil /api/e with 204 in the browser",
+    "localMocks": "accept-v09-render fakes /api/catalog for D4e inside the browser (page.route); that request never reaches the live API"
+  },
+  "benches": {
+    "accept-fly": {
+      "command": "cd tools/bench && SITE=https://gsfpv.flyreelstudio.eu npx tsx src/accept-fly.ts B6 B7 B9 B10 B11 B12 B13 B14 B15 B16",
+      "targetPrinted": "accept-fly target: https://gsfpv.flyreelstudio.eu",
+      "result": "pass",
+      "exit": 0,
+      "seconds": 351,
+      "render": "on",
+      "checksPassed": [
+        "B6",
+        "B7",
+        "B9",
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15",
+        "B16"
+      ],
+      "checksFailed": [],
+      "items": {
+        "B6": {
+          "pass": true,
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "render": "on"
+        },
+        "B7": {
+          "pass": true,
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "render": "on"
+        },
+        "B9": {
+          "pass": true,
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "render": "on"
+        },
+        "B10": {
+          "pass": true,
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "render": "on"
+        },
+        "B11": {
+          "pass": true,
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "render": "on"
+        },
+        "B12": {
+          "pass": true,
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "render": "on"
+        },
+        "B13": {
+          "pass": true,
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "render": "on"
+        },
+        "B14": {
+          "pass": true,
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "render": "on"
+        },
+        "B15": {
+          "pass": true,
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "render": "on"
+        },
+        "B16": {
+          "pass": true,
+          "site": "https://gsfpv.flyreelstudio.eu",
+          "render": "on"
+        }
+      },
+      "pageErrors": "none in any B6 row (9 loads, hosts only gsfpv.flyreelstudio.eu, the CDN and s3-eu-west-1, outside = [])",
+      "skipped": [],
+      "evidence": "evidence/2026-10-18/b-fly-summary-v09-live.json, b-fly-b*-v09-live.json"
+    },
+    "wizard-auto-check": {
+      "command": "node tools/bench/scripts/wizard-auto-check.mjs https://gsfpv.flyreelstudio.eu/en <shots>",
+      "targetPrinted": "none: the script prints no target line; it was started with https://gsfpv.flyreelstudio.eu/en and opened https://gsfpv.flyreelstudio.eu/en/fly/?scene=39e63ce9&simradio=raw...",
+      "result": "pass",
+      "exit": 0,
+      "seconds": 97,
+      "checksPassed": [
+        "nobuttons reached the check screen by itself",
+        "human reached the check screen by itself",
+        "dji reached the check screen by itself",
+        "no Start or Next ever shown (all three)",
+        "0 page errors (all three)"
+      ],
+      "checksFailed": [],
+      "detail": {
+        "nobuttons": {
+          "seconds": 26,
+          "end": {
+            "id": "check",
+            "profile": true,
+            "startOrNextVisible": false
+          },
+          "screens": 23,
+          "errors": []
+        },
+        "human": {
+          "seconds": 33,
+          "end": {
+            "id": "check",
+            "profile": true,
+            "startOrNextVisible": false
+          },
+          "screens": 23,
+          "errors": []
+        },
+        "dji": {
+          "seconds": 20,
+          "end": {
+            "id": "check",
+            "profile": true,
+            "startOrNextVisible": false
+          },
+          "screens": 23,
+          "errors": []
+        }
+      },
+      "skipped": [],
+      "evidence": ".cache/v09-live/wizard/result.json (not tracked)"
+    },
+    "hid-source-probe": {
+      "command": "node tools/bench/scripts/hid-source-probe.mjs https://gsfpv.flyreelstudio.eu/en <outDir>",
+      "targetPrinted": "none: the script prints no target line; it was started with https://gsfpv.flyreelstudio.eu/en",
+      "result": "pass",
+      "exit": 0,
+      "seconds": 107,
+      "checksPassed": [
+        "dji",
+        "dji-windows",
+        "edgetx",
+        "dji-other",
+        "dji-none",
+        "dji-pad-chooser",
+        "dji-pad-cancel",
+        "dji-pad-nopick"
+      ],
+      "checksFailed": [],
+      "summary": "8 of 8 runs pass (incl. the negative controls dji-other, dji-none, dji-pad-nopick)",
+      "skipped": [],
+      "evidence": ".cache/v09-live/hid.log (JSON), .cache/v09-live/hid/*.png (not tracked)"
+    },
+    "accept-v09-load": {
+      "command": "cd tools/bench && SITE=https://gsfpv.flyreelstudio.eu npx tsx src/accept-v09-load.ts (no SITE_BEFORE)",
+      "targetPrinted": "target https://gsfpv.flyreelstudio.eu control (none: controls skipped)",
+      "result": "pass after one rerun of V5 (first run: V5 fail, exit 1)",
+      "exit": 1,
+      "seconds": 145,
+      "checksPassed": [
+        "V1",
+        "V2",
+        "V3",
+        "V4",
+        "V6",
+        "V6blank (the frame measure rejects a uniform picture)",
+        "V5 on the rerun"
+      ],
+      "checksFailed": [
+        "V5 on the first run: Fly now offered at 13344 ms from the page start, bound 8000 ms"
+      ],
+      "detail": {
+        "V1": "prepare 268 ms (ready)",
+        "V2": "switch prepare 1099 ms, 0 page errors",
+        "V3": "streamed prepare 263 ms (ready)",
+        "V4": "card spinning, longest still 256 and 318 ms (bound 3000)",
+        "V5": {
+          "firstRun": {
+            "offeredAtMs": 13344,
+            "pressedShownAtMs": 99,
+            "reveal": "pilot",
+            "pass": false
+          },
+          "rerun": {
+            "offeredAtMs": 6160,
+            "pressedShownAtMs": 116,
+            "reveal": "pilot",
+            "pass": true,
+            "evidence": "evidence/2026-10-18/v09-load-v09-live-v5-rerun.json"
+          }
+        },
+        "V6": "444/444 frames (444 forced) in 103 s, MP4 (ftyp) 2763793 bytes, six decoded frames show the scan (std 40.2-43.4, off 0.431-0.459)"
+      },
+      "verdictOnV5": "flakiness / network-dependence, not a live defect: the press itself worked both times (view shown 99 ms and 116 ms after the press, reason pilot, the card says why); the offer time is \"something drawn\" plus FLY_NOW_AFTER_MS = 5 s into the stage (apps/fly/src/session/reveal.ts), measured from page.goto, and the 8 s bound was calibrated on localhost (5.7 s on the merged local release); live adds the page and scan fetches over the internet. Rerun once: 6160 ms, pass.",
+      "skipped": [
+        "SITE_BEFORE controls (V1 V2 V4 V5 V6 against the pre-fix build): not run, base-build controls were recorded locally"
+      ],
+      "evidence": "evidence/2026-10-18/v09-load-v09-live.json, v09-load-v09-live-v5-rerun.json"
+    },
+    "accept-v09-keys": {
+      "command": "cd tools/bench && SITE=https://gsfpv.flyreelstudio.eu npx tsx src/accept-v09-keys.ts",
+      "targetPrinted": "accept-v09-keys target: https://gsfpv.flyreelstudio.eu",
+      "result": "pass",
+      "exit": 0,
+      "seconds": 85,
+      "checksPassed": [
+        "V1 the first-run card is up on the ground: \"Click to fly\", the mouse, W A S D, Space, Shift, F, Esc",
+        "V2 a click on the view captures the mouse (pointer lock on the canvas); before the click there is none",
+        "V2b with the mouse captured the card stops asking for a click",
+        "V3 no arming step: W alone starts the motors; held 2 s it moves several metres in the facing direction",
+        "V4 released: under 0.5 m/s within 2.5 s and the height held",
+        "V5 moving the mouse right 400 px turns the aim 40 degrees (0.1 deg per pixel) and the drone follows; the camera looks along the aim",
+        "V6 the mouse up and down tilts the camera gimbal (+20 deg for 200 px up), clamped at +30 and -60, the body stays as it is",
+        "V6b the gimbal stops at +30 degrees going up",
+        "V7 Space climbs at about 5 m/s (normal) and, released, the height holds",
+        "V7b Shift descends",
+        "V8 M does not leave angle mode (the game keys command tilts); it says so",
+        "V9 invert-Y flips the pitch of the same movement; sensitivity 2 doubles the turn (100 px = 20 degrees)",
+        "V9b the speed setting: slow flies about 4 m/s",
+        "V10 F puts the page full screen (document.fullscreenElement set) and F again leaves it",
+        "V10b the mouse stays captured through full screen on and off",
+        "V10c a button on the top bar toggles full screen too",
+        "V11 Shift+F is the next favourite scene (its note when none is saved); plain F is not",
+        "V12 the mouse released (what Esc does) pauses into the menu; a click on the view resumes and captures the mouse again",
+        "V12b the Escape key pauses and Escape resumes",
+        "V12c Esc pauses while Shift is held (the descent)",
+        "V13 the game-scheme flight replays from its log to the same hash; controls: one LSB of the throttle and a 0.05 stick twitch change it",
+        "V14 no page errors",
+        "V15 the pilot profile (Mode 2) is still selectable: no mouse capture on a click, W is a throttle that does not arm, its card is the Mode 2 one",
+        "V16 holding Shift lands without a crash, no body sphere touches faster than half the bounce speed (the earlier landing touched at 0.72 x on this scan, this one at 0.41 x), and the motors stop by themselves",
+        "V16b the next key starts the motors again and the drone lifts off"
+      ],
+      "checksFailed": [],
+      "summary": "25 of 25 checks pass",
+      "skipped": [
+        "V09_CONTROL=1 (the same bench against the base build 631fd5f): not run, recorded locally"
+      ],
+      "evidence": "evidence/2026-10-18/v09-keys-v09-live.json"
+    },
+    "accept-v09-render": {
+      "command": "cd tools/bench && SITE=https://gsfpv.flyreelstudio.eu BASE_SITE=https://gsfpv.flyreelstudio.eu npx tsx src/accept-v09-render.ts",
+      "targetPrinted": "none: the script prints no target line; evidence says site=https://gsfpv.flyreelstudio.eu baseSite=https://gsfpv.flyreelstudio.eu",
+      "result": "pass on every non-control check; 4 base-build controls fail by construction (BASE_SITE = the live site)",
+      "exit": 1,
+      "exitNote": "exit 1 is the bench marking D1 D2 D4 D5 false because of those four controls only",
+      "itemFlags": {
+        "D1": false,
+        "D2": false,
+        "D3": true,
+        "D4": false,
+        "D5": false,
+        "D6": true
+      },
+      "checksPassed": [
+        "D1 desktop, no parameters: stochastic from the first frame (engine, hybrid renderer, its shader define)",
+        "D1 at the measured default budget (4 M), decided by the device",
+        "D1 the HUD says nothing about the drawing (a default is not news) and F3 says what draws and who decided",
+        "D2 a streamed scan (Opole): stochastic engaged in the engine and the shader, from the device",
+        "D2 it is a levels-of-detail scan (more than one level) drawn under the stochastic budget",
+        "D3 a phone with nothing asked: sorted at the phone's 2 M, no note, decided by the device",
+        "D3 a phone given the owner's link: still sorted at 2 M, and the HUD says who asked (the scene)",
+        "D4a the pilot's Render = Sorted beats the device default (stochastic)",
+        "D4b a stochastic link beats a Sorted setting (stochastic at 8 M, \"from the link\")",
+        "D4c a stochastic link; the pilot picks Sorted in flight: sorted at once (the control never looks dead)",
+        "D4c back to Auto: the link rules again (stochastic at 8 M)",
+        "D4d the Splat budget setting: 2 M at once, stochastic stays, then Auto gives the default back",
+        "D4e the owner's entry \"sorted, 6 M\" beats the device default",
+        "D4e the pilot's Stochastic beats the owner's sorted entry; the entry's budget stays",
+        "D4e a stochastic link beats the owner's sorted entry",
+        "D5 the owner's link draws stochastic at 8 M by every way it is pasted (deep link encoded and raw, deep link, the literal second \"?\", the picker's field, the picker over a flight, wrapped in <> and a full stop)",
+        "D5 a link pasted over a flight beats a stored Render = Sorted for the scene it opens (stochastic at 8 M, \"from the link\")",
+        "D6 the share picture of a stochastic desktop is made from the sorted frame: at most 0.8 of the stochastic grab's bytes, and well under the API's 400 KB",
+        "D6 the pilot's drawing is back right after (stochastic in the engine and the shader, the same budget)"
+      ],
+      "checksFailed": [],
+      "controlsPassed": [
+        "D6 control: the grab of the same view is rougher stochastic than sorted (the stochastic grab weighs 1.25x or more of the sorted one)"
+      ],
+      "controlsFailedByConstruction": [
+        "D1 control: the base build draws the same scene sorted at 4 M",
+        "D2 control: the base build draws it sorted",
+        "D4b control: the base build lets the setting beat the link (sorted)",
+        "D5 control: the base build answers the literal \"...?scene=2f1ddf5f?budget=8&stochastic\" with the picker (\"not a SuperSplat link\")"
+      ],
+      "pageErrors": {
+        "D1": [],
+        "D2": [],
+        "D3": [],
+        "D4": [],
+        "D5": [],
+        "D6": []
+      },
+      "detail": {
+        "D6": {
+          "before": {
+            "engine": true,
+            "top": 4
+          },
+          "stochasticGrabBytes": 204969,
+          "sortedGrabBytes": 108309,
+          "appPictureBytes": 103959,
+          "appPictureMs": 176,
+          "after": {
+            "engine": true,
+            "hybrid": {
+              "gpuSort": true,
+              "stochastic": true,
+              "define": true
+            },
+            "top": 4
+          },
+          "pageerrors": []
+        }
+      },
+      "skipped": [
+        "the four base-build controls D1, D2, D4b and D5 (they need the build before lane R; the bench has no switch to skip them, so BASE_SITE was pointed at the live site, where each one fails by construction, and is reported as skipped, not as a defect)"
+      ],
+      "seconds": 317,
+      "evidence": "evidence/2026-10-18/v09-render-v09-live.json"
+    },
+    "accept-v09-drones3d": {
+      "result": "skipped",
+      "reason": "cannot run on live: the bench throws unless SITE, BASE_SITE and PRE_SITE are all http://localhost or 127.0.0.1 (\"a local release; never the live site\"), and it needs BASE_SITE (build 631fd5f) and PRE_SITE (build 06bef1f, not kept). The lead recorded V1-V9 and the green half of V10 locally."
+    },
+    "accept-v09-next": {
+      "result": "skipped",
+      "reason": "needs mocks: it fakes /api/catalog (12 scenes in a chosen order) and /api/superspl/explore in every browser context (page.route) and asserts the order N visits them; against the live catalogue N1 N2 N3 have no fixed expected order. The mocks are in-browser and would not write to the live API, so a run against the live static site is possible if the lead wants one, but the brief said to skip a bench that needs mocks."
+    },
+    "accept-v09-c": {
+      "result": "skipped",
+      "reason": "cannot target the live site: it starts its own throwaway API on a temp data folder with a made-up admin password and serves dist/ itself (reads no SITE); it exercises the admin Save and Publish, which must not be done on live."
+    }
+  },
+  "realLiveDefects": [],
+  "note": "Raw logs: .cache/v09-live/*.log (gitignored). Bench evidence files (untracked, not committed here): evidence/2026-10-18/b-fly-*-v09-live.json, v09-load-v09-live.json, v09-load-v09-live-v5-rerun.json, v09-keys-v09-live.json, v09-render-v09-live.json; wizard and hid results in .cache/v09-live/wizard/result.json and hid.log. Screenshots the live runs wrote over the lanes tracked ones were put back with git checkout and the live copies kept in .cache/v09-live/shots/.",
+  "summary": {
+    "pass": [
+      "accept-fly B6-B16",
+      "wizard-auto-check",
+      "hid-source-probe",
+      "accept-v09-load (V5 after one rerun)",
+      "accept-v09-keys",
+      "accept-v09-render (non-control checks; 4 controls skipped)"
+    ],
+    "fail": [],
+    "skipped": [
+      "accept-v09-drones3d",
+      "accept-v09-next",
+      "accept-v09-c"
+    ],
+    "realLiveDefects": 0
+  }
+}
