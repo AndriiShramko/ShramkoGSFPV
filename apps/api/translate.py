@@ -16,7 +16,9 @@ final. Texts go to Google for translation: the owner chose that (docs/decisions.
 What is asked of the model, always as JSON data inside a strict system prompt, never as free text:
   detect(text)            the language a pilot wrote in (code, English name, confident)
   translate(text, lang)   {source_language, translation}; the answer is checked (not empty, a sane length,
-                          every link and e-mail address of the original still in it)
+                          every link and e-mail address of the original still in it, and not in another
+                          language than asked: the model's "it is already in your language" and its
+                          translation are tested by the offline net, langguess, never taken on trust)
   frame(code)             the greeting, signature and footer strings of mail/en.json in another language,
                           once, with their {placeholders} checked, cached in DATA_DIR/mail-frames/<code>.json
 
@@ -33,6 +35,7 @@ plan(rec, text) is the one decision, returned as a Plan:
 """
 from __future__ import annotations
 
+import http.client
 import json
 import re
 import socket
@@ -53,6 +56,9 @@ DEFAULT_MODEL = "gemini-2.5-flash"
 DEFAULT_BASE = "https://generativelanguage.googleapis.com"
 NAMES = {"en": "English", "es": "Spanish", "pl": "Polish", "ru": "Russian"}
 LETTERS_MIN = 8          # a pilot's text with fewer letters is too short to tell its language
+OTHER_LETTERS_MIN = 12   # the offline net calls a text "other" (none of our four languages) only from this many letters on
+# languages written in Cyrillic: the offline net reads all of them as Russian, so it cannot tell them from it
+_CYRILLIC_LANGS = frozenset(("uk", "be", "bg", "mk", "sr", "kk", "ky", "mn", "tg", "tt"))
 DETECT_CHARS = 1500      # the part of a pilot's text shown to the model
 TRANSIENT_HTTP = (408, 425, 429, 500, 502, 503, 504)
 _KEY_RE = re.compile(r"[A-Za-z0-9_-]{8,256}")
@@ -192,7 +198,8 @@ class Gemini:
             raise TranslateError(f"http-{e.code}", transient=e.code in TRANSIENT_HTTP) from None
         except (TimeoutError, socket.timeout):
             raise TranslateError("timeout", transient=True) from None
-        except (urllib.error.URLError, OSError) as e:
+        except (urllib.error.URLError, OSError, http.client.HTTPException) as e:
+            # HTTPException: a body cut short in a chunked answer (IncompleteRead) or a connection that closed before a status line
             slow = isinstance(getattr(e, "reason", None), (TimeoutError, socket.timeout))
             raise TranslateError("timeout" if slow else "network", transient=True) from None
         try:
@@ -257,10 +264,35 @@ def _name(v, code: str) -> str:
 
 
 def pilot_words(text: str) -> str:
-    """The pilot's own words of a report: a drone-physics report starts with English header lines of ours."""
-    if text.startswith("Drone physics:"):
+    """The pilot's own words of a report: a drone-physics report starts with English header lines of ours
+    (ideas.drone_header, which begins with ideas.DRONE_MARK)."""
+    if text.startswith(ideas.DRONE_MARK):
         return text.split("\n\n", 1)[1] if "\n\n" in text else ""
     return text
+
+
+def _same(a: str, b: str) -> bool:
+    """The same words, whatever the spacing and the case."""
+    return " ".join(a.split()).casefold() == " ".join(b.split()).casefold()
+
+
+def _verdict(text: str) -> str:
+    """langguess.classify(), except that "other" on a few letters (a name with an accent) tells nothing."""
+    seen = langguess.classify(text)
+    return "unknown" if seen == "other" and sum(c.isalpha() for c in text) < OTHER_LETTERS_MIN else seen
+
+
+def _contradicts(text: str, code: str) -> bool:
+    """The offline net is SURE `text` is not in the language `code`. It knows the four languages of ours (and
+    a longer text in none of them is "other"). About any other language only Cyrillic text is sure to be wrong:
+    German "was" and "in" read as English, Portuguese as Spanish, Czech as Polish, and a language written in
+    Cyrillic itself (Bulgarian...) reads as Russian."""
+    seen = _verdict(text)
+    if seen in ("unknown", code):
+        return False
+    if code in LANGS:
+        return True
+    return seen == "ru" and code not in _CYRILLIC_LANGS
 
 
 def _holes(s: str) -> list[str]:
@@ -307,9 +339,25 @@ class Translator:
             raise TranslateError("bad-response")
         got = got.strip()
         problem = self._problem(text, got)
+        source = _code(out.get("source_language"))
+        if not problem and self._wrong_language(text, got, source, target):
+            problem = "bad-translation"
         if problem:
             raise TranslateError(problem)
-        return Translated(got, _code(out.get("source_language")))
+        return Translated(got, source)
+
+    @staticmethod
+    def _wrong_language(original: str, got: str, source: str, target: Lang) -> bool:
+        """The model's word is not taken on trust (a Russian text echoed back as 'already Polish' or as its own
+        'translation' must not reach a Polish pilot). Wrong when the model says the text is already in the target
+        language and the offline net is sure it is not; when the answer is surely in another language than asked;
+        or, for a target the net does not know, when nothing was translated: the answer is the original and the
+        net recognises it as a language the pilot was not asked in."""
+        if source == target.code:
+            return _contradicts(original, target.code)
+        if _contradicts(got, target.code):
+            return True
+        return target.code not in LANGS and _same(got, original) and _verdict(got) != "unknown"
 
     @staticmethod
     def _problem(original: str, got: str) -> str:
@@ -446,7 +494,7 @@ class Translator:
                 self._note("translate", e)
                 why = f"failed:{e.reason}"
             else:
-                if got.source == target.code:
+                if got.source == target.code or _same(got.text, words):    # nothing to translate: his words as he wrote them
                     return Plan(True, words, target.code, source=got.source)
                 return Plan(True, got.text, target.code, original=words, source=got.source,
                             tr={"from": got.source, "to": target.code, "toName": target.name, "model": self.config().model})

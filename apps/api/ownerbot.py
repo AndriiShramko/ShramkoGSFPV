@@ -23,7 +23,8 @@ What the owner does in his chat:
   shows the whole e-mail as it will go (a report's words are quoted; a note's never are, mailer.keys);
   the e-mail is in the language the pilot wrote in (translate.py): a translated one is shown as "Translated
   (ru -> pl)" with the original under it and a button "Send my original instead"; a text the pilot cannot
-  surely read does not go: the bot says why and offers "Send as written" (v0.9, owner's item 4);
+  surely read does not go: the bot says why and offers "Send as written" (v0.9, owner's item 4); a reply to a
+  held answer is a new answer, a reply to a held thank-you's notice is a new summary (never an ordinary e-mail);
 - Comment -> his reply to the bot's prompt is a comment for the agent who will build it;
 - Done -> his reply to the prompt (or the agent's summary) is what was done -> the bot shows the DRAFT
   thank-you e-mail in the pilot's language with Send and Edit; nothing goes without Send;
@@ -368,6 +369,22 @@ class OwnerBot:
             return self.t("why.noKey")
         return self.t("why.failed", code=wait.partition(":")[2] or wait) if wait else "-"
 
+    def _show_held(self, rec: dict, mail: dict) -> None:
+        """A text the pilot cannot surely read was NOT queued: say so, and give the way out. Buttons: "Send as
+        written" and Cancel. An answer to the pilot is written again in a reply to the card (or this notice); a
+        thank-you is written again in a reply to THIS notice, which is linked as a draft, so that the reply is a
+        new summary (superseding the held e-mail) and never an ordinary e-mail to the pilot. The wording differs
+        for a pilot whose e-mail is in English (nothing to name twice) and for a thank-you."""
+        c, t = self.cfg, self.t
+        pilot = rec.get("pilotLang") or {}
+        language = self.label(mail["lang"], pilot.get("name", "") if pilot.get("code") == mail["lang"] else "")
+        thanks, english = mail["kind"] == "done", mail["lang"] == "en"
+        key = "mail.language" + ("Done" if thanks else "") + ("En" if english else "")
+        m = self.api().send(c.chat, t(key, to=mail.get("to") or "-", id=rec["id"], language=language, why=self._why(mail.get("wait") or "")) + "\n\n" + mail["body"],
+                            buttons=[[{"text": t("btn.sendAsWritten"), "callback_data": f"w:{mail['id']}"}, {"text": t("btn.cancel"), "callback_data": f"x:{mail['id']}"}]])
+        if m:
+            self.service.link_message(m, rec["id"], "draft" if thanks else "mail", mail["id"])
+
     def queue_text(self) -> str:
         work, waiting = self.service.queue()
         t = self.t
@@ -465,13 +482,7 @@ class OwnerBot:
             if m:
                 self.service.link_message(m, rid, "mail", mid_)
         elif event == "mail-language":
-            # the text may not be readable by the pilot: it was NOT queued; he rewrites it or sends it as written
-            pilot = rec.get("pilotLang") or {}
-            language = self.label(mail["lang"], pilot.get("name", "") if pilot.get("code") == mail["lang"] else "")
-            m = api.send(c.chat, t("mail.language", to=to, id=rid, language=language, why=self._why(mail.get("wait") or "")) + "\n\n" + mail["body"],
-                         buttons=[[{"text": t("btn.sendAsWritten"), "callback_data": f"w:{mid_}"}, {"text": t("btn.cancel"), "callback_data": f"x:{mid_}"}]])
-            if m:
-                self.service.link_message(m, rid, "mail", mid_)
+            self._show_held(rec, mail)
         elif event == "mail-noemail":
             api.send(c.chat, t("mail.noEmail", id=rid, contact=rec["contact"] or "-"))
         elif event == "mail-ask":
@@ -682,8 +693,11 @@ class OwnerBot:
             if e.code == "stale-draft":   # Send under a replaced draft: nothing went; show the draft that would go now
                 hit = self.service.find_mail(rest)
                 current = self._current_draft(hit[0]) if hit else None
+                held = self._held_thanks(hit[0]) if hit and current is None else None
                 if current is not None:
                     self._show_draft(hit[0], current)
+                elif held is not None:
+                    self._show_held(hit[0], held)
         if isinstance(cb.get("id"), str):
             api.answer(cb["id"], toast)
         return result
@@ -696,6 +710,10 @@ class OwnerBot:
         if draft is not None and summary and not force:
             self._show_draft(rec, draft)
             return
+        held = self._held_thanks(rec)
+        if held is not None and summary and not force:   # a summary is there, its e-mail waits for the language: say so, do not ask again
+            self._show_held(rec, held)
+            return
         key = "prompt.summary" if rec["contactKind"] == "email" else "prompt.summaryNoEmail"
         m = api.send(c.chat, t(key, id=rec["id"], lang=rec["lang"] or "en"), force_reply=t("placeholder.summary"))
         if m:
@@ -705,6 +723,11 @@ class OwnerBot:
     def _current_draft(rec: dict) -> dict | None:
         """The thank-you draft that Send would queue now (older ones are `superseded`)."""
         return next((m for m in reversed(rec["thread"]) if m["kind"] == "done" and m["state"] == "draft"), None)
+
+    @staticmethod
+    def _held_thanks(rec: dict) -> dict | None:
+        """The thank-you that waits because the pilot cannot surely read it (a newer summary supersedes it)."""
+        return next((m for m in reversed(rec["thread"]) if m["kind"] == "done" and m["state"] == "waiting_language"), None)
 
     def _show_draft(self, rec: dict, draft: dict) -> None:
         """The draft as it will go, with Send bound to THIS draft's e-mail id (a newer draft makes this

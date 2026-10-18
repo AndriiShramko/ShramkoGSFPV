@@ -38,6 +38,10 @@ PL_THANKS = "Dzi\u0119kuj\u0119! Dodamy deszcz w listopadzie."
 PL_DONE = "Deszcz jest teraz w ka\u017cdej scenie na zewn\u0105trz."
 DE_PILOT = "Bitte f\xfcgt Regen zu den Szenen hinzu, das fehlt mir sehr."
 EN_DONE = "Rain is in every outdoor scene."
+# translations the fake Gemini gives (its default is in no language, which the translator refuses)
+EN_THANKS = "Thank you! We will add rain in November."
+DE_THANKS = "Danke! Wir fuegen im November Regen hinzu."
+PL_RAIN = "Deszcz jest teraz we wszystkich scenach, nie ma sie czym martwic."
 CYRILLIC = re.compile("[\u0400-\u04ff]")
 LOCALES = HERE.parents[2] / "packages" / "i18n" / "locales" / "mail"
 
@@ -58,6 +62,9 @@ class Flow(unittest.TestCase):
             self.g.sources[RU_THANKS] = self.g.sources[RU_DONE] = "ru"
             self.g.glossary[("pl", RU_THANKS)] = PL_THANKS
             self.g.glossary[("pl", RU_DONE)] = PL_DONE
+            self.g.glossary[("en", RU_THANKS)] = EN_THANKS
+            self.g.glossary[("de", RU_THANKS)] = DE_THANKS
+            self.g.glossary[("pl", EN_DONE)] = PL_RAIN
 
     def tearDown(self):
         self.w.close()
@@ -131,7 +138,7 @@ class Reply(Flow):
     def test_a_pilot_who_wrote_english_on_the_polish_page_gets_english(self):
         rec = self.pilot(message="Please add rain to the outdoor scenes", wrote=("en", "English"), lang="pl")
         _, mail = self.w.service.reply(rec["id"], RU_THANKS, "telegram")
-        self.assertEqual((mail["lang"], mail["body"], mail["state"]), ("en", "[en] " + RU_THANKS, "queued"))
+        self.assertEqual((mail["lang"], mail["body"], mail["state"]), ("en", EN_THANKS, "queued"))
         self.at(61)
         msg, plain, _ = self.sent()
         self.assertEqual(msg["Subject"], mail_text("en")["replySubject"].format(id=rec["id"]))
@@ -140,7 +147,7 @@ class Reply(Flow):
     def test_a_pilot_in_another_language_gets_a_translated_frame(self):
         rec = self.pilot(message=DE_PILOT, wrote=("de", "German"), lang="en")
         _, mail = self.w.service.reply(rec["id"], RU_THANKS, "telegram")
-        self.assertEqual((mail["lang"], mail["body"], mail["state"]), ("de", "[de] " + RU_THANKS, "queued"))
+        self.assertEqual((mail["lang"], mail["body"], mail["state"]), ("de", DE_THANKS, "queued"))
         self.assertEqual(self.at(61), 1)
         msg, plain, html = self.sent()
         self.assertEqual(msg["Content-Language"], "de")
@@ -157,7 +164,7 @@ class Reply(Flow):
         rec = self.pilot(message=DE_PILOT, wrote=("de", "German"), lang="en")
         self.g.script = [("pass",), ("frame-lost-hole",)]
         _, mail = self.w.service.reply(rec["id"], RU_THANKS, "telegram")
-        self.assertEqual((mail["lang"], mail["body"], mail["state"]), ("en", "[en] " + RU_THANKS, "queued"))
+        self.assertEqual((mail["lang"], mail["body"], mail["state"]), ("en", EN_THANKS, "queued"))
         self.at(61)
         self.assertEqual(self.sent()[0]["Content-Language"], "en")
 
@@ -182,6 +189,24 @@ class Reply(Flow):
         self.assertEqual((mail["state"], mail["lang"], mail["body"], mail["orig"]), ("no_email", "pl", RU_THANKS, None))
         self.assertEqual(self.g.requests, [])                           # nothing to translate: nothing will be sent
         self.assertEqual(self.at(86400), 0)
+
+    def test_a_translation_in_the_wrong_language_never_reaches_the_pilot(self):
+        """A model that hands the Russian back (as the 'translation', or saying it is Polish already) must not be believed."""
+        rec = self.pilot()
+        self.g.glossary[("pl", RU_THANKS)] = RU_THANKS
+        for claim in ("ru", "pl"):
+            self.g.sources[RU_THANKS] = claim
+            out, held = self.w.service.reply(rec["id"], RU_THANKS, "telegram")
+            self.assertEqual((held["state"], held["wait"], held["body"], held["tr"], held["orig"]),
+                             ("waiting_language", "failed:bad-translation", RU_THANKS, None, None), claim)
+        self.assertEqual(self.at(86400), 0)                              # nothing went, however long it waits
+        # control: an honest answer goes, with not one Russian letter in it
+        self.g.sources[RU_THANKS] = "ru"
+        self.g.glossary[("pl", RU_THANKS)] = PL_THANKS
+        _, good = self.w.service.reply(rec["id"], RU_THANKS, "telegram")
+        self.assertEqual((good["state"], good["body"]), ("queued", PL_THANKS))
+        self.assertEqual(self.at(61), 1)
+        self.assertNotRegex(self.sent()[1], CYRILLIC)
 
     def test_a_bug_in_the_translator_never_loses_the_owners_words(self):
         rec = self.pilot()
@@ -312,7 +337,7 @@ class Done(Flow):
     def test_a_summary_in_english_reaches_a_polish_pilot_in_polish(self):
         rec = self.pilot()
         out, draft = self.w.service.set_done_summary(rec["id"], {"en": EN_DONE}, "agent")
-        self.assertEqual((draft["state"], draft["lang"], draft["body"], draft["orig"]), ("draft", "pl", "[pl] " + EN_DONE, EN_DONE))
+        self.assertEqual((draft["state"], draft["lang"], draft["body"], draft["orig"]), ("draft", "pl", PL_RAIN, EN_DONE))
         self.assertEqual(draft["tr"]["from"], "en")
         self.assertEqual(out["done"]["summary"], {"en": EN_DONE})
         self.assertEqual(self.at(86400), 0)                              # a draft never goes by itself
@@ -320,7 +345,7 @@ class Done(Flow):
         self.assertEqual(self.at(61), 1)
         msg, plain, _ = self.sent()
         self.assertEqual(msg["Subject"], mail_text("pl")["doneSubject"].format(id=rec["id"]))
-        self.assertIn("[pl] " + EN_DONE, plain)
+        self.assertIn(PL_RAIN, plain)
         self.assertIn(mail_text("pl")["doneThanks"].format(site="https://gsfpv.example/pl/"), plain)
 
     def test_a_summary_already_in_the_pilots_language_is_not_translated(self):
@@ -342,7 +367,7 @@ class Done(Flow):
         # a later summary in English by an agent: the Polish draft is built from the newest, translated, not from the Russian text
         out, d2 = self.w.service.set_done_summary(rec["id"], {"en": EN_DONE}, "agent")
         self.assertEqual(out["done"]["summary"], {"ru": RU_DONE, "en": EN_DONE})
-        self.assertEqual((d2["body"], d2["orig"]), ("[pl] " + EN_DONE, EN_DONE))
+        self.assertEqual((d2["body"], d2["orig"]), (PL_RAIN, EN_DONE))
         self.assertEqual([m["state"] for m in self.thread(rec["id"])], ["superseded", "draft"])
 
     def test_a_summary_that_cannot_be_checked_waits_and_a_newer_one_replaces_it(self):
@@ -360,6 +385,14 @@ class Done(Flow):
             self.w.service.send_mail(held["id"], "telegram")              # a replaced text is never sent
         self.assertEqual(e.exception.code, "stale-draft")
         self.assertEqual(fresh["body"], PL_DONE)
+
+    def test_a_summary_the_model_hands_back_untranslated_waits(self):
+        rec = self.pilot()
+        self.g.glossary[("pl", RU_DONE)] = RU_DONE
+        _, held = self.w.service.set_done_summary(rec["id"], RU_DONE, "telegram")
+        self.assertEqual((held["state"], held["wait"], held["body"], held["tr"]), ("waiting_language", "failed:bad-translation", RU_DONE, None))
+        self.assertEqual(self.at(86400), 0)
+        self.assertIsNone(self.w.service.get(rec["id"])["notified"])     # nobody was thanked
 
     def test_a_summary_written_while_the_translation_ran_is_not_lost(self):
         rec = self.pilot()
@@ -499,6 +532,80 @@ class Telegram(Flow):
         self.w.update(10, **self.w.owner_msg(RU_THANKS, reply_to=card))
         self.assertIn(self.t("why.failed", code="http-503"), self.texts()[-1]["text"])
 
+    def held_thanks(self) -> tuple[dict, int, int]:
+        """A Polish pilot's idea is Done in Telegram and the owner's Russian summary is held (the service is down):
+        (the idea, the card's message, the notice's message)."""
+        rec, card = self.card()
+        self.g.script = [("pass",), ("http", 503), ("http", 503)]
+        self.w.update(10, **self.w.press(f"s:d:{rec['id']}", card))
+        self.assertEqual(self.w.update(11, **self.w.owner_msg(RU_DONE, reply_to=self.w.tg._next)), "summary")
+        return rec, card, self.w.tg._next
+
+    def test_a_held_thank_you_is_written_again_in_a_reply_to_its_notice(self):
+        rec, card, notice = self.held_thanks()
+        shown = self.texts()[-1]
+        why = self.t("why.failed", code="http-503")
+        self.assertEqual(shown["text"], self.t("mail.languageDone", to="pilot@example.com", id=rec["id"], language="Polish", why=why) + "\n\n" + RU_DONE)
+        self.assertEqual([[b["callback_data"] for b in row] for row in shown["reply_markup"]["inline_keyboard"]], [["w:M-1", "x:M-1"]])
+        self.assertEqual(self.w.service.message_target(notice), {"idea": rec["id"], "purpose": "draft", "mail": "M-1"})   # a reply is a summary
+        # Done pressed again: the held e-mail is shown, the owner is not asked for a summary that exists
+        n = len(self.texts())
+        self.w.update(12, **self.w.press(f"s:d:{rec['id']}", card))
+        again = self.texts()[-1]
+        self.assertEqual(len(self.texts()), n + 1)
+        self.assertTrue(again["text"].startswith(self.t("mail.languageDone", to="pilot@example.com", id=rec["id"], language="Polish", why=why)))
+        self.assertNotIn("force_reply", json.dumps(again.get("reply_markup") or {}))
+        # the service is back; his reply to the notice is the new summary (English goes in the pilot's frame, translated)
+        self.assertEqual(self.w.update(13, **self.w.owner_msg(EN_DONE, reply_to=notice, mid=2)), "summary")
+        thread = self.thread(rec["id"])
+        self.assertEqual([(m["kind"], m["state"]) for m in thread], [("done", "superseded"), ("done", "draft")])    # not an ordinary reply
+        draft = self.texts()[-1]
+        self.assertIn(PL_RAIN, draft["text"])
+        self.assertEqual([b["callback_data"] for b in draft["reply_markup"]["inline_keyboard"][0]], ["m:M-2", f"e:{rec['id']}"])
+        self.assertEqual(self.at(86400), 0)                                # nothing went by itself
+
+    def test_a_held_thank_you_can_be_sent_as_written_and_then_the_pilot_is_thanked(self):
+        rec, card, notice = self.held_thanks()
+        self.assertIsNone(self.w.service.get(rec["id"])["notified"])
+        self.assertEqual(self.w.update(12, **self.w.press("w:M-1", notice)), "send-again")
+        self.assertEqual(self.at(59), 0)
+        self.assertEqual(self.at(2), 1)
+        self.assertIn(RU_DONE, self.sent()[1])                             # what he wrote, as he wrote it
+        self.assertIsNotNone(self.w.service.get(rec["id"])["notified"])    # the admin stops offering the thank-you
+        self.assertEqual([m["kind"] for m in self.thread(rec["id"])], ["done"])
+
+    def test_an_answer_held_for_its_language_is_still_rewritten_in_a_reply_to_the_card(self):
+        """Control for the thank-you: the notice of a held ANSWER is the one linked as an e-mail, and the card still works."""
+        rec, card = self.card()
+        self.g.glossary[("pl", EN_THANKS)] = PL_THANKS
+        self.g.script = [("pass",), ("http", 503), ("http", 503)]
+        self.w.update(10, **self.w.owner_msg(RU_THANKS, reply_to=card))
+        self.assertEqual(self.w.service.message_target(self.w.tg._next), {"idea": rec["id"], "purpose": "mail", "mail": "M-1"})
+        self.assertEqual(self.w.update(11, **self.w.owner_msg(EN_THANKS, reply_to=card, mid=2)), "reply")
+        self.assertEqual([(m["kind"], m["state"]) for m in self.thread(rec["id"])], [("reply", "waiting_language"), ("reply", "queued")])
+
+    def test_an_english_pilot_is_not_told_neither_in_english_nor_in_english(self):
+        self.g.close()
+        self.w.env.pop("GEMINI_API_KEY")
+        rec, card = self.card(message="Please add rain to the outdoor scenes", wrote=None, lang="en")
+        self.assertEqual(self.w.update(10, **self.w.owner_msg(RU_THANKS, reply_to=card)), "reply")
+        shown = self.texts()[-1]["text"]
+        self.assertEqual(shown, self.t("mail.languageEn", to="pilot@example.com", id=rec["id"], language="English", why=self.t("why.noKey")) + "\n\n" + RU_THANKS)
+        self.assertNotIn("English or in English", shown)
+        self.assertNotIn("nor in English", shown)
+        # control: a Polish pilot is told both languages (the old wording, for the pilot who needs it)
+        other, card2 = self.card(rid="R-20261013-0002", wrote=None)
+        self.w.update(11, **self.w.owner_msg(RU_THANKS, reply_to=card2, mid=2))
+        self.assertIn("Polish", self.texts()[-1]["text"])
+        self.assertIn("nor in Polish", self.texts()[-1]["text"])
+
+    def test_the_held_notices_name_the_pilots_language_only_when_it_is_not_english(self):
+        for lang in ("en", "es", "pl", "ru"):
+            for key, times in (("mail.language", 2), ("mail.languageEn", 0), ("mail.languageDone", 2), ("mail.languageDoneEn", 0)):
+                text = self.w.bot.texts.t(lang, key, to="a@b.c", id="R-1", language="XQZ", why="w")
+                self.assertEqual(text.count("XQZ"), times, (lang, key))
+                self.assertIn("a@b.c", text)
+
     def test_a_translated_thank_you_draft_says_so_and_shows_the_original(self):
         rec, card = self.card()
         self.w.service.set_done_summary(rec["id"], {"en": EN_DONE}, "agent")
@@ -506,7 +613,7 @@ class Telegram(Flow):
         self.assertTrue(draft["text"].startswith(self.t("draft.head", to="pilot@example.com", lang="pl", id=rec["id"])))
         self.assertIn(self.t("draft.translated", source="English", language="Polish"), draft["text"])
         self.assertTrue(draft["text"].endswith(self.t("mail.original") + "\n" + EN_DONE))
-        self.assertIn("[pl] " + EN_DONE, draft["text"])
+        self.assertIn(PL_RAIN, draft["text"])
         self.assertEqual([b["callback_data"] for b in draft["reply_markup"]["inline_keyboard"][0]], ["m:M-1", f"e:{rec['id']}"])
         # control: a draft already in the pilot's language carries no translation note
         other, _ = self.card(rid="R-20261013-0002")

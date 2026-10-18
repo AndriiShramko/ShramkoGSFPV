@@ -107,8 +107,11 @@ export function moveBody(i: Idea, to: string): { id: string; status: IdeaStatus 
 
 /** A thank-you in one of these states has gone, may have gone, or is on its way: no other is offered. */
 const THANKS_GOING: ReadonlySet<MailState> = new Set(['queued', 'sending', 'sent', 'unknown']);
-/** A thank-you in one of these states waits for the owner's Send: a draft, one saved until Gmail is set up, one that failed. */
-const THANKS_PENDING: ReadonlySet<MailState> = new Set(['draft', 'waiting_setup', 'failed']);
+/**
+ * A thank-you in one of these states waits for the owner's Send: a draft, one saved until Gmail is set up, one that
+ * failed, one held because the pilot cannot surely read it (waiting_language: Send sends it as written).
+ */
+const THANKS_PENDING: ReadonlySet<MailState> = new Set(['draft', 'waiting_setup', 'waiting_language', 'failed']);
 
 /**
  * The thank-you e-mail waiting for the owner's Send, if there is one (the latest). The dialog shows it and

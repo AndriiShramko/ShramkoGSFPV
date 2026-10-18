@@ -128,6 +128,10 @@ class FakeTelegram:
             return {t for t, _, _ in self.calls}
 
 
+class Cut(bytes):
+    """An answer body that FakeGemini sends only in part (the "short" step)."""
+
+
 class FakeGemini:
     """The tables a test fills (all optional):
       languages  {text: (code, name, confident)}    what detect finds (default: English, confident)
@@ -135,7 +139,11 @@ class FakeGemini:
       glossary   {(target code, text): translation} (default "[<target>] <text>": never mistaken for a real one)
       script     [step, ...]  one is used up per request, before the tables: ("http", 503) | ("sleep", seconds) |
                  ("raw", bytes) | ("blocked",) | ("finish", "MAX_TOKENS") | ("drop-links",) | ("empty",) |
-                 ("frame-lost-hole",)   (the last one: a frame answer that drops a {placeholder})
+                 ("frame-lost-hole",) | ("short",)   (frame-lost-hole: a frame answer that drops a {placeholder};
+                 short: a chunked answer that the connection cuts off inside its first chunk)
+    The default translation, "[<target>] <text>", is NOT in the target language, so the translator's language check
+    refuses it: a test that gets a translation sets a glossary entry with a real one (or a text for the check to
+    refuse, to test that).
     requests: [{"path", "key", "task", "body", "data"}] in arrival order (body: the request as sent, data: the
     task JSON inside it)."""
 
@@ -157,6 +165,12 @@ class FakeGemini:
                 raw = self.rfile.read(int(self.headers.get("Content-Length") or 0))
                 try:
                     code, body = fake._handle(self.path, self.headers.get("x-goog-api-key"), json.loads(raw))
+                    if isinstance(body, Cut):     # the chunk says more bytes follow than the connection ever carries
+                        self.wfile.write(b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nTransfer-Encoding: chunked\r\n\r\n"
+                                         + b"%x\r\n" % (len(body) + 64) + body[: len(body) // 2])
+                        self.wfile.flush()
+                        self.close_connection = True
+                        return
                     self.send_response(code)
                     self.send_header("Content-Type", "application/json")
                     self.send_header("Content-Length", str(len(body)))
@@ -196,6 +210,8 @@ class FakeGemini:
             time.sleep(step[1])
         if step and step[0] == "raw":
             return 200, step[1]
+        if step and step[0] == "short":
+            return 200, Cut(self._answer({"translation": "cut", "source_language": "ru"}))
         if step and step[0] == "blocked":
             return 200, json.dumps({"promptFeedback": {"blockReason": "SAFETY"}}).encode()
         if step and step[0] == "finish":

@@ -265,8 +265,9 @@ describe('the board model', () => {
         expect(B.thanksDue({ ...due, mails: [mail('queued')] })).toBe(false);
         expect(B.thanksDue({ ...due, mails: [mail('sent')] })).toBe(false);
         expect(B.thanksDue({ ...due, mails: [mail('unknown')] })).toBe(false); // may have gone: decided on the card's e-mail row
-        // a draft, one waiting for Gmail, a failed one: still due, and that one is pending (Sent, not re-drafted)
-        for (const s of ['draft', 'waiting_setup', 'failed'] as const) {
+        // a draft, one waiting for Gmail, one held for its language (v0.9), a failed one: still due, and that one is
+        // pending (Sent as it is, not re-drafted behind its back: a second thank-you would supersede the held one)
+        for (const s of ['draft', 'waiting_setup', 'waiting_language', 'failed'] as const) {
             expect([B.thanksDue({ ...due, mails: [mail(s)] }), B.thanksPending({ ...due, mails: [mail(s)] })?.state]).toEqual([true, s]);
         }
         // cancelled or replaced: due, nothing pending (a new draft may be written)

@@ -150,12 +150,15 @@ def set_contact(rec: dict, contact: str) -> None:
     rec["contactKind"] = "email" if email else ("other" if contact else "none")
 
 
+DRONE_MARK = "Drone physics:"   # what drone_header() starts with (translate.pilot_words() skips the header by it)
+
+
 def drone_header(r: dict) -> str:
     """The first lines of a drone-physics report's idea (kind "drone", v0.8): which drone, the blackbox log's
     link, whether the Betaflight text is in the technical-details file. The owner sees them wherever he reads
     the idea (Telegram card, admin, CLI) without anything new to learn there."""
     drone = r.get("drone") if isinstance(r.get("drone"), str) else ""
-    lines = ["Drone physics: " + ("a drone that is not in the list" if drone == "new" else drone or "drone not given")]
+    lines = [DRONE_MARK + " " + ("a drone that is not in the list" if drone == "new" else drone or "drone not given")]
     if isinstance(r.get("logUrl"), str) and r["logUrl"]:
         lines.append(f"Blackbox log: {r['logUrl']}")
     if r.get("diagnostics") is True:
