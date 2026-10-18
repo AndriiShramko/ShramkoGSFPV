@@ -35,15 +35,20 @@ process.on('SIGINT', () => { unlock(); process.exit(130); });
 await lock();
 try {
     const L = await launch({ width: 1100, height: 720 });
+    // VIEWS="yaw:pitch:dist;..." takes several pictures of each drone (the default: the first view only)
+    const views = (process.env.VIEWS ?? '').split(';').filter(Boolean).map((v) => v.split(':'));
     for (const id of ids.length ? ids : ALL) {
-        const url = `${LAB}/fly/lab/drones3d.html?drone=${id}${extra.length ? '&' + extra.join('&') : ''}`;
-        await L.page.goto(url);
-        await L.page.waitForFunction(() => (window as unknown as { __lab?: { ready: boolean; studio: { frames: number } } }).__lab?.ready && (window as unknown as { __lab: { studio: { frames: number } } }).__lab.studio.frames > 20, undefined, { timeout: 60000 });
-        await sleep(600);
-        const tally = await L.page.evaluate(() => (window as unknown as { __lab: { tally(): unknown } }).__lab.tally());
-        await L.page.screenshot({ path: join(OUT, `${id}${extra.length ? '-' + extra.join('-').replace(/[^\w=.-]/g, '') : ''}.png`) });
-        console.log(id, JSON.stringify(tally), L.console.filter((l) => /error|warn/i.test(l)).slice(-3).join(' | '));
-        L.console.length = 0;
+        for (const [vi, view] of (views.length ? views : [[]]).entries()) {
+            const vq = view.length ? `&yaw=${view[0]}&pitch=${view[1]}&dist=${view[2] ?? 2.25}` : '';
+            const url = `${LAB}/fly/lab/drones3d.html?drone=${id}${vq}${extra.length ? '&' + extra.join('&') : ''}`;
+            await L.page.goto(url);
+            await L.page.waitForFunction(() => (window as unknown as { __lab?: { ready: boolean; studio: { frames: number } } }).__lab?.ready && (window as unknown as { __lab: { studio: { frames: number } } }).__lab.studio.frames > 20, undefined, { timeout: 60000 });
+            await sleep(600);
+            const tally = await L.page.evaluate(() => (window as unknown as { __lab: { tally(): unknown } }).__lab.tally());
+            await L.page.screenshot({ path: join(OUT, `${id}${views.length ? `-v${vi}` : ''}${extra.length ? '-' + extra.join('-').replace(/[^\w=.-]/g, '') : ''}.png`) });
+            console.log(id, vi, JSON.stringify(tally), L.console.filter((l) => /error|warn/i.test(l)).slice(-3).join(' | '));
+            L.console.length = 0;
+        }
     }
     await L.browser.close();
 } finally {

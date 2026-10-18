@@ -22,7 +22,7 @@ export const AUTO_SPIN = 14;
 /** seconds after the last touch before the turntable turns again */
 export const IDLE_RESUME_S = 3.5;
 /** the first view: three quarters from the front-right and a little above */
-export const HOME: Readonly<OrbitState> = { yaw: 34, pitch: 22, dist: 2.7 };
+export const HOME: Readonly<OrbitState> = { yaw: 34, pitch: 22, dist: 2.25 };
 
 const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 const wrap = (a: number): number => ((((a + 180) % 360) + 360) % 360) - 180;

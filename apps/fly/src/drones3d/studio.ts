@@ -50,6 +50,8 @@ export class Studio {
     readonly canvas: HTMLCanvasElement;
     /** called every engine frame before the frame is drawn, with the seconds since the last */
     onFrame: ((dt: number) => void) | null = null;
+    /** the GPU took the device away (a driver reset, a crash): not our own dispose; the stage can say so and stop */
+    onLost: ((reason: string) => void) | null = null;
     frames = 0;
     /** draw every other engine frame (the idle turn needs no more, and the flight's own scan is drawing beside it) */
     halfRate = false;
@@ -82,7 +84,11 @@ export class Studio {
         this.app = app;
         const wgpu = (device as unknown as { wgpu?: { lost?: Promise<{ reason: string }> } }).wgpu;
         this.lost = wgpu?.lost ?? null;
-        void this.lost?.then((info) => { if ((info as { reason?: string } | undefined)?.reason === 'destroyed') this.gpuDestroyed = true; });
+        void this.lost?.then((info) => {
+            const reason = (info as { reason?: string } | undefined)?.reason ?? 'unknown';
+            if (reason === 'destroyed') this.gpuDestroyed = true;
+            else if (!this.destroyed) this.onLost?.(reason);
+        });
 
         const bg = o.background ?? [0.075, 0.09, 0.11];
         const cam = new Entity('studio-camera', app);
@@ -168,9 +174,9 @@ export class Studio {
     private buildFloor(): Entity {
         const mat = new StandardMaterial();
         mat.useMetalness = true;
-        mat.diffuse = new Color(0.3, 0.32, 0.37);
+        mat.diffuse = new Color(0.17, 0.18, 0.21);
         mat.metalness = 0;
-        mat.gloss = 0.16;
+        mat.gloss = 0.12;
         const fade = this.tex(floorFade(), { name: 'floor-fade' });
         mat.opacityMap = fade;
         mat.opacityMapChannel = 'a';

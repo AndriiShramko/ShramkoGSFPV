@@ -7,13 +7,51 @@
 // the drone and fly on: no new flight model, no respawn.
 import { DronePicker } from '../../ui/drone';
 import { h } from '../../ui/dom';
-import { PRESETS } from '../../presets';
+import { DEFAULT_PRESET, PRESETS } from '../../presets';
+import type { Stage } from '../../drones3d';
 import { PauseMenu } from '../menu';
 import { applyCamera, applyModel, pilotSet } from '../prefs';
 import { isPayloadId } from '../../drones3d/payloads';
 import type { PayloadId } from '../../drones3d/payloads';
 import { openFeedback } from './feedback';
-import type { Feature } from '../context';
+import type { Feature, FlightContext } from '../context';
+
+/** The camera load the store keeps for a drone (the drone.payload setting), as the stage and the cards read it. */
+function payloadOf(ctx: FlightContext, drone: string): PayloadId {
+    const v = ctx.prefs.get<string>('drone.payload', { drone });
+    return isPayloadId(v) ? v : 'komodo';
+}
+
+/**
+ * The settings screen's picture of the drone under its Drone row (v0.9 lane D): a small turntable of the drone the
+ * Drone setting names, with the numbers that matter, above the row's own line (`inner`: the "Help tune it" row).
+ * The 3D chunk is loaded and a graphics device made only when the row scrolls into view, and both go with the screen.
+ */
+export function droneRow(ctx: FlightContext, inner: { el: HTMLElement; refresh(): void }): { el: HTMLElement; refresh(): void } {
+    const host = h('div', { class: 'd3-host d3-settings', 'data-testid': 'settings-drone-card' });
+    let stage: Stage | null = null;
+    let shown = '';
+    const current = (): string => { const id = ctx.prefs.get<string>('drone.current'); return PRESETS[id] ? id : DEFAULT_PRESET; };
+    const payload = (id: string): PayloadId | undefined => (PRESETS[id].fields.payload_g ? payloadOf(ctx, id) : undefined);
+    const io = typeof IntersectionObserver === 'function' ? new IntersectionObserver((es) => {
+        if (stage || !es.some((e) => e.isIntersecting)) return;
+        io?.disconnect();
+        void import('../../drones3d').then((m) => {
+            if (!host.isConnected) return;
+            shown = current();
+            stage = m.mountStage(host, { presets: PRESETS, droneId: shown, mode: 'card', payload: payload(shown) });
+        }).catch((e) => console.warn('settings drone card not loaded', e));
+    }) : null;
+    io?.observe(host);
+    return {
+        el: h('div', { class: 'd3-settings-row' }, host, inner.el),
+        refresh: () => {
+            inner.refresh();
+            const id = current();
+            if (stage && id !== shown) { shown = id; stage.setDrone(id, payload(id)); }
+        }
+    };
+}
 
 export const drone: Feature = {
     id: 'drone',

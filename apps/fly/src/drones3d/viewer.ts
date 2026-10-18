@@ -306,6 +306,7 @@ export function mountStage(host: HTMLElement, o: StageOptions): Stage {
             const s = await Studio.create(canvas, { backend: o.backend, background: panelColour() });
             if (disposed || !root.isConnected) { s.dispose(); if (!disposed) stage.dispose(); return; }
             studio = s;
+            s.onLost = () => { unavailable = true; status.hidden = false; status.textContent = t('d3.unavailable'); };
             s.onFrame = (dt) => {
                 if (!root.isConnected) { stage.dispose(); return; }
                 orbit.tick(dt);

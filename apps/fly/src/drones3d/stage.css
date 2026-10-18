@@ -11,7 +11,8 @@
 .d3-pin:hover, .d3-pin.on { background: var(--accent); color: var(--accent-ink); border-color: #fff; transform: scale(1.18); }
 .d3-pin.back { opacity: .28; }
 .d3-pin[hidden] { display: none; }
-.d3-over { position: absolute; left: 10px; right: 10px; bottom: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; pointer-events: none; font-size: 12px; color: var(--muted); }
+.d3-over { position: absolute; left: 10px; right: 10px; bottom: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; pointer-events: none; font-size: 12px; color: #c4ccd6; }
+.d3-over > span { padding: 3px 9px; border-radius: 999px; background: rgba(14,17,22,.72); }
 .d3-reset { pointer-events: auto; min-height: 30px; padding: 3px 10px; border-radius: 8px; border: 1px solid var(--line); background: rgba(14,17,22,.8); color: var(--fg); font: inherit; font-size: 12px; cursor: pointer; }
 .d3-reset:hover { border-color: #334155; }
 .d3-status { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; text-align: center; color: var(--muted); }
@@ -49,3 +50,4 @@
 .d3-card-actions { margin-top: 6px; }
 @media (max-width: 560px) { .d3-card { grid-template-columns: 1fr; } .d3-card .d3-view { max-width: 220px; } }
 @media (prefers-reduced-motion: reduce) { .d3-pin { transition: none; } }
+.d3-settings { margin: 8px 0 4px; max-width: 560px; }

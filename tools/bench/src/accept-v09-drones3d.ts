@@ -13,6 +13,8 @@
 //  V4  the pause menu's "Your drone" card draws and goes with the menu; "Change drone" opens the picker.
 //  V5  the legend speaks Polish and Russian in the same build (maker names unchanged).
 //  V6  the WebGL2 fallback (navigator.gpu removed) draws too.
+//  V8  Settings -> Drone & physics: the drone row carries a small turntable of the drone the setting names; picking another
+//      drone in the row changes it; closing Settings frees it. Control: the settings row of the base release has no card.
 //  V7  the 3D chunk is fetched only when a picker or the pause menu opens, not at page load (and its size).
 // The scan is not loaded (?render=off: logic-only page), so the only drawing is the stage's own; it holds the GPU lock.
 //   node scripts/build-release.mjs && node tools/bench/scripts/serve-csp.mjs dist <port>     (another shell)
@@ -134,6 +136,8 @@ async function main(): Promise<void> {
     const { browser } = await launchChrome({ headless: false, args: ['--window-position=40,40', '--window-size=1300,1000'] });
     try {
         const ctx = await browser.newContext({ viewport: { width: 1280, height: 880 }, deviceScaleFactor: 1.5 });
+        // tsx keeps function names with __name(); functions sent to page.evaluate need it in the page
+        await ctx.addInitScript('window.__name = window.__name || ((f) => f);');
         const page = await ctx.newPage();
         const errors: string[] = [];
         page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`.slice(0, 300)));
@@ -325,6 +329,35 @@ async function main(): Promise<void> {
             await closePicker(page);
         }
 
+        // ---------------------------------------------------------------- V8 the settings screen's picture of the drone
+        {
+            await open(page, SITE, 'drone=pavo20pro-3s');
+            await page.keyboard.press('KeyO');
+            await page.click('.set-rail-btn[data-group="drone"]');
+            await page.waitForSelector('[data-testid="settings-drone-card"] canvas', { timeout: 30000 });
+            await frames(page, 15, 30000);
+            const name0 = ((await page.locator('[data-testid="settings-drone-card"] h3').textContent()) ?? '').trim();
+            const m = await measure(page, await page.locator('[data-testid="settings-drone-card"] .d3-canvas').screenshot());
+            await page.locator('[data-testid="settings-drone-card"]').screenshot({ path: join(OUT, 'settings-card-pavo20pro-3s.png') });
+            await page.selectOption('[data-testid="setting-drone.current"] select', 'nazgulf5v3-6s');
+            await sleep(900);
+            const name1 = ((await page.locator('[data-testid="settings-drone-card"] h3').textContent()) ?? '').trim();
+            const info = (await hookInfos(page))[0];
+            await page.click('[data-action="settings-close"]');
+            await sleep(1200);
+            const after = await hookCounts(page);
+            const base = await ctx.newPage();
+            await open(base, BASE_SITE, 'drone=pavo20pro-3s');
+            await base.keyboard.press('KeyO');
+            await base.click('.set-rail-btn[data-group="drone"]');
+            await sleep(1500);
+            const baseCards = await base.locator('[data-testid="settings-drone-card"]').count();
+            await base.close();
+            const pass = /Pavo20 Pro/.test(name0) && /Nazgul Evoque/.test(name1) && info?.drone === 'nazgulf5v3-6s' && m.lit > NONEMPTY && after?.live === 0 && after.created === after.disposed && baseCards === 0;
+            results.V8 = { pass, name0, name1, lit: +m.lit.toFixed(4), liveAfterClose: after?.live, control: { baseReleaseCards: baseCards } };
+            console.log('V8', pass, JSON.stringify(results.V8));
+        }
+
         // ---------------------------------------------------------------- V5 Polish and Russian
         {
             const out: Record<string, Any> = {};
@@ -384,7 +417,7 @@ try {
     console.error(e);
     unlock();
 }
-const keys = ['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7'];
+const keys = ['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8'];
 const pass = keys.every((k) => results[k]?.pass === true) && !results.error;
 const file = writeEvidence('v09-drones3d', { pass, site: SITE, baseSite: BASE_SITE, scene: SCENE, ...results });
 writeFileSync(join(OUT, 'README.md'), '# 3D models of the drones, v0.9 lane D\n\nOne picture per drone, taken from the real drone picker of a local release by `tools/bench/src/accept-v09-drones3d.ts` (evidence `../v09-drones3d.json`). The picture is the whole stage: the turntable at its first view, the numbered pins and the legend beside it. Colours, finishes and the layout of wires and screws are stylised; sizes follow the published dimensions (docs/research/drone-models.md).\n');
