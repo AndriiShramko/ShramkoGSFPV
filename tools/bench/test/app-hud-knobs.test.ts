@@ -177,6 +177,56 @@ describe('the arm card\'s knobs are the pilot\'s stick: drawn every frame, not a
     });
 });
 
+describe('how late the green stick was behind the text gate (a model of the old rule, for scale)', () => {
+    /** Frames every `period` ms with `jitter`; moves at random times; the lag from a move to the frame that draws it. */
+    function lags(period: number, jitter: number, draws: (t: number, last: number) => boolean, seed = 11) {
+        let x = seed;
+        const rnd = () => (x = (x * 1664525 + 1013904223) >>> 0) / 4294967296;
+        const frames: number[] = [];
+        for (let t = 0, i = 0; i < 6000; i++) { t += period + (rnd() - 0.5) * 2 * jitter; frames.push(t); }
+        const drawn: number[] = [];
+        let last = 0;
+        for (const f of frames) if (draws(f, last)) { drawn.push(f); last = f; }
+        const out: number[] = [];
+        for (let k = 0; k < 4000; k++) {
+            const m = 1000 + rnd() * (frames[frames.length - 1] - 3000);
+            out.push(drawn.find((d) => d >= m)! - m);
+        }
+        out.sort((a, b) => a - b);
+        return { mean: out.reduce((a, b) => a + b, 0) / out.length, max: out[out.length - 1] };
+    }
+
+    it('the old rule (a draw only when 100 ms have passed since the last): 59 ms on average and up to 135 at 30 Hz; every frame: 17 and 35', () => {
+        const gated = lags(33.33, 2, (t, last) => t - last >= 100);
+        const every = lags(33.33, 2, () => true);
+        expect(gated.mean).toBeGreaterThan(52);
+        expect(gated.mean).toBeLessThan(66);
+        expect(gated.max).toBeGreaterThan(110);
+        expect(every.mean).toBeGreaterThan(15);
+        expect(every.mean).toBeLessThan(18.5);
+        expect(every.max).toBeLessThan(36);
+    });
+
+    it('the Hud draws a move in the first frame after it, whatever the phase against its text updates (200 random moves at 30 Hz)', () => {
+        const { hud } = mounted();
+        const view = newView();
+        const s = fakeSession();
+        let x = 5;
+        const rnd = () => (x = (x * 1664525 + 1013904223) >>> 0) / 4294967296;
+        let t = 1000;
+        frame(hud, t, view, s);
+        let late = 0;
+        for (let i = 0; i < 200; i++) {
+            for (let f = Math.floor(rnd() * 6); f >= 0; f--) { t += 33.33; frame(hud, t, view, s); } // a random number of frames, so the move's phase against the 100 ms gate varies
+            view.ch[0] = i % 2 === 0 ? 0.6 : -0.6;
+            t += 33.33;
+            frame(hud, t, view, s);
+            if (rightKnob(hud) !== `translate(${(view.ch[0] * 46).toFixed(1)} 0.0)`) late++;
+        }
+        expect(late).toBe(0);
+    });
+});
+
 describe('F3\'s line about the device\'s reports', () => {
     const STATS = (verdict: LinkStats['verdict'], meanMs: number): LinkStats => ({ n: 100, hz: 1000 / meanMs, meanMs, jitterMs: 1.7, maxGapMs: meanMs * 1.5, ageMs: meanMs / 2, bunched: 0, verdict });
     const shown = (hud: InstanceType<HudModule['Hud']>, id: string): { shown: boolean; text: string } => {
