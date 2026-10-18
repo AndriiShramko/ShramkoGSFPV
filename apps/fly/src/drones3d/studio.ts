@@ -58,6 +58,7 @@ export class Studio {
     private skip = false;
     private camera: Entity;
     private modelRoot: Entity | null = null;
+    private shown: Model | null = null;
     private meshes: Mesh[] = [];
     private materials = new Map<MaterialId, StandardMaterial>();
     private extraTextures: Texture[] = [];
@@ -258,6 +259,7 @@ export class Studio {
         }
         this.app.root.addChild(root);
         this.modelRoot = root;
+        this.shown = model;
         this.radius = 1;
         this.target = targetOf(model);
         const fs = 1.9 * Math.max(1, (model.bounds.max[0] - model.bounds.min[0]) * unit * 0.5);
@@ -266,6 +268,7 @@ export class Studio {
     }
 
     private dropModel(): void {
+        this.shown = null;
         if (this.modelRoot) { this.modelRoot.destroy(); this.modelRoot = null; }
         const keep = this.meshes.filter((m) => (m as unknown as { name: string }).name === 'floor');
         for (const m of this.meshes) if (!keep.includes(m)) m.destroy();
@@ -304,6 +307,32 @@ export class Studio {
         const out = new Vec3();
         this.camera.camera!.worldToScreen(world, out);
         return { x: out.x, y: out.y, front: out.z > 0 };
+    }
+
+    /**
+     * The box the model's vertices span on the stage, CSS pixels from the canvas' top-left corner, through the engine's own camera
+     * (what the browser checks read: a model that fits the stage leaves a margin on every side). Null with no model. A hundred
+     * thousand vertices at most, and only when asked for.
+     */
+    extent(): { x0: number; y0: number; x1: number; y1: number } | null {
+        const m = this.shown;
+        if (!m || !this.modelRoot) return null;
+        const unit = this.modelRoot.getLocalScale().x;
+        const cam = this.camera.camera!;
+        const w = new Vec3(), o = new Vec3();
+        let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+        for (const part of m.parts) {
+            const pos = part.mesh.positions;
+            for (let i = 0; i < pos.length; i += 3) {
+                w.set(pos[i] * unit, pos[i + 1] * unit, pos[i + 2] * unit);
+                cam.worldToScreen(w, o);
+                if (o.x < x0) x0 = o.x;
+                if (o.x > x1) x1 = o.x;
+                if (o.y < y0) y0 = o.y;
+                if (o.y > y1) y1 = o.y;
+            }
+        }
+        return { x0, y0, x1, y1 };
     }
 
     /** Where the camera is, for fading the pins that face away. */

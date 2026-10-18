@@ -55,10 +55,15 @@ export interface StageInfo {
     view: OrbitState;
 }
 
+/** The box the model spans on the stage and the stage's size, CSS pixels: a model that fits the stage leaves a margin all round. */
+export type StageExtent = { x0: number; y0: number; x1: number; y1: number; width: number; height: number };
+
 export interface Stage {
     readonly root: HTMLElement;
     setDrone(id: string, payload?: PayloadId): void;
     info(): StageInfo;
+    /** measured on demand (it walks every vertex of the model): null before the first model is on the stage */
+    extent(): StageExtent | null;
     dispose(): void;
 }
 
@@ -68,13 +73,15 @@ interface Hook {
     disposed: number;
     live: number;
     infos: () => StageInfo[];
+    /** what each live stage's model spans on its stage (a test reads it; never polled) */
+    extents: () => (StageExtent | null)[];
     /** the tally of the last stage that was disposed, and whether the GPU reported its device destroyed */
     lastClosed: { tally: Tally; gpuReleased: boolean; drone: string } | null;
 }
 const liveStages = new Set<Stage>();
 function hook(): Hook {
     const w = window as unknown as { __gsfpvDrones3d?: Hook };
-    return (w.__gsfpvDrones3d ??= { created: 0, disposed: 0, live: 0, infos: () => [...liveStages].map((s) => s.info()), lastClosed: null });
+    return (w.__gsfpvDrones3d ??= { created: 0, disposed: 0, live: 0, infos: () => [...liveStages].map((s) => s.info()), extents: () => [...liveStages].map((s) => s.extent()), lastClosed: null });
 }
 
 /** The panel colour behind the canvas, so it melts into the picker (the --bg2 of fly.css), as linear 0..1. */
@@ -305,6 +312,7 @@ export function mountStage(host: HTMLElement, o: StageOptions): Stage {
         root,
         setDrone,
         info,
+        extent: (): StageExtent | null => { const e = studio?.extent(); return e ? { ...e, width: canvas.clientWidth, height: canvas.clientHeight } : null; },
         dispose(): void {
             if (disposed) return;
             disposed = true;

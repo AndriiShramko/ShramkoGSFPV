@@ -155,7 +155,7 @@ const WAVE2_SETTINGS = [
 ];
 
 describe('SCHEMA is the A.8 table', () => {
-    it('has the 74 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard, v0.7\'s drawing, wind and ceiling, v0.7 D1\'s seven, v0.8\'s prop wash and lane A\'s three), each with its group, scope, type, default and apply', () => {
+    it('has the 75 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard, v0.7\'s drawing, wind and ceiling, v0.7 D1\'s seven, v0.8\'s prop wash and lane A\'s three, and v0.9 lane D\'s camera load), each with its group, scope, type, default and apply', () => {
         expect(SCHEMA.defs).toHaveLength(75);
         const got = SCHEMA.defs.map((d) => [d.id, d.group, d.scope, d.type, isPresetRef(d.default) ? `preset:${d.default.preset}` : isCuratedRef(d.default) ? `curated:${d.default.curated}|${String(d.default.fallback)}` : d.default, d.apply]);
         // order inside a group follows the def files, not the table's rows

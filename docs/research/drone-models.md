@@ -44,7 +44,7 @@ Camera data used for the model and the payload choice:
 |---|---|---|---|
 | RED KOMODO 6K body | 2.10 lb = 952 g (without body cap and CFast card) | 4 x 4 x 4 in (101.6 mm cube), Canon RF mount, Super35 27.03 x 14.26 mm | Lensrentals https://www.lensrentals.com/rent/red-komodo-6k-monochrome-standard, AbelCine https://www.abelcine.com/buy/cameras-accessories/digital-cinema-cameras/red-komodo-6k-digital-cinema-camera-rf-mount-2 (`listing`; RED's own spec page was not readable) |
 | Blackmagic Pocket Cinema Camera 6K Pro body | 2.73 lb = 1238 g | 7.08 x 4.41 x 4.84 in (180 x 112 x 123 mm), active EF mount, Super35 23.10 x 12.99 mm, NP-F570 battery | Blackmagic tech specs (sensor, mount, battery: https://www.blackmagicdesign.com/products/blackmagicpocketcinemacamera/techspecs/W-CIN-12; the weight and size are an image there) and retail listings (Micro Center, Shopmoment) (`listing`) |
-| GoPro HERO13 Black | 154 g with mounting fingers and battery (121 g without) | 71.8 x 50.8 x 33.6 mm | retail copies of GoPro's sheet (`listing`; gopro.com did not answer) |
+| GoPro HERO13 Black | 157 g, of which the battery is 33 g | 71.8 x 50.8 x 33.6 mm in GoPro's drawing (its text line says 71.0 x 55.0 x 33.6 mm, "values may be rounded") | GoPro's own support article https://community.gopro.com/s/article/HERO13-Black-Camera-Size-And-Weight?language=en_US (`maker`, read 2026-10-18; the page needs a browser, a plain fetch gets an empty shell). Retailers copy 154 g (Cathay Photo) or 159 g (Clifton Cameras, Galaxus): the maker's 157 g is used |
 
 ## 2. The nine presets
 
@@ -128,7 +128,7 @@ Options (default = what the preset assumes, so the A6 hash and every number of t
 |---|---|---|
 | RED Komodo 6K rig (default) | 2000 | the preset's own `payload_g`: body 950 g + lens, media, ND and plate |
 | Blackmagic Pocket Cinema Camera 6K Pro rig | 2288 | body 1238 g + the same 1050 g allowance for lens, media and plate |
-| GoPro HERO13 Black | 154 | the maker's body weight with its battery; no cage |
+| GoPro HERO13 Black | 157 | the maker's weight with its battery (GoPro's support article); no cage |
 | none | 0 | iFlight's own take-off weight, 2872 g |
 
 The motors do not change, so the thrust stays the preset's (T = 3.3 x 4.872 kg x g); the thrust-to-weight, hover
@@ -154,4 +154,5 @@ allowance is the preset's own estimate, not a maker figure; the maximum payload 
 - XING2 2207: https://www.getfpv.com/iflight-xing2-2207-motor-w-logos-1750kv.html; XING2 3110: https://rcdrone.top/pl/products/iflight-xing2-3110-fpv-motor
 - DJI O4 Air Unit Pro camera module: https://store.dji.com/product/dji-o4-air-unit-pro-camera-module
 - RED Komodo 6K: AbelCine, Lensrentals (links in section 1); Blackmagic Pocket Cinema Camera 6K Pro tech specs (section 1)
+- GoPro HERO13 Black, size and weight: GoPro's support article https://community.gopro.com/s/article/HERO13-Black-Camera-Size-And-Weight?language=en_US (157 g, battery 33 g; read in a browser 2026-10-18)
 - The v0.8 note on the presets: `drones-v08.md`
