@@ -11,6 +11,7 @@ import { radioArt, knobsFrom, sideOf, tickIcon } from './radio-art';
 import type { ArtTarget } from './radio-art';
 import { watchTopRow } from './top-row';
 import { KeyCardShow } from './key-card-state';
+import { linkLines } from './link-text';
 
 /** Disarmed with a radio: what is still needed to arm, in order, with a small live radio drawing. */
 class ArmCard {
@@ -21,6 +22,13 @@ class ArmCard {
     private reason = h('p', { class: 'reason' });
     private rows: { li: HTMLLIElement; text: HTMLSpanElement }[] = [];
     private armBtn: HTMLButtonElement;
+    /**
+     * The drawing is in sight (set by `update`, which runs at the text's 10 Hz, cleared when the card hides
+     * or shows only a reason): `live` then paints the knobs every frame. They are the pilot's own stick;
+     * behind the text's 100 ms gate a move was drawn 59 ms after it reached the page on average, up to 135 ms
+     * (frames every 33 ms), where a draw in every frame takes 17 and at most 35 ms (docs/wip/v09-e.md).
+     */
+    private drawn: { key: boolean; block: Exclude<ArmBlock, null> } | null = null;
 
     constructor(onArm: () => void) {
         const row = (): { li: HTMLLIElement; text: HTMLSpanElement } => {
@@ -42,7 +50,8 @@ class ArmCard {
         this.disarm.classList.toggle('hidden', !(v && key && armed && !crashed && !screenOpen));
         const show = !!v && !armed && !crashed && !screenOpen && block !== null;
         this.el.classList.toggle('hidden', !show);
-        if (!v || !show) return;
+        this.drawn = null;
+        if (!v || !show || block === null) return;
         // no signal, hidden tab, crashed, no profile: only the reason, the steps do not apply
         const reasonOnly = block === 'stale' || block === 'hidden' || block === 'crashed' || block === 'noProfile';
         this.list.hidden = reasonOnly;
@@ -61,12 +70,23 @@ class ArmCard {
         set(1, t('arm.row.throttle', { pct: Math.round(Math.max(0, Math.min(1, u)) * 100) }), u <= 0.05, block === 'throttle');
         set(2, key ? t('arm.row.key') : t('arm.row.switch', { src: v.armLabel }), false, block === 'switch');
         this.armBtn.classList.toggle('hidden', !key);
+        this.drawn = { key, block };
+        this.paint(v, this.drawn);
+    }
+
+    /** Every frame, whatever the text's rate: the knobs and the arm lever follow the sticks where they are now. */
+    live(v: ArmView | null): void {
+        if (v && this.drawn) this.paint(v, this.drawn);
+    }
+
+    private paint(v: ArmView, d: { key: boolean; block: Exclude<ArmBlock, null> }): void {
+        const ch = v.ch;
         const mode = v.mode;
         const k = knobsFrom({ roll: ch[0], pitch: ch[1], throttle: ch[2], yaw: ch[3] }, mode);
-        const target: ArtTarget = block === 'center' ? { side: 'both', dir: 'centre' }
-            : block === 'throttle' ? { side: sideOf('throttle', mode), dir: 'down' }
-            : block === 'switch' && !key ? { side: 'SW', dir: 'flip' } : null;
-        this.art.set({ mode, target, knobL: k.L, knobR: k.R, hold: 0, ok: false, sw: key ? null : ch[4] > 0, tol: 0, label: '' });
+        const target: ArtTarget = d.block === 'center' ? { side: 'both', dir: 'centre' }
+            : d.block === 'throttle' ? { side: sideOf('throttle', mode), dir: 'down' }
+            : d.block === 'switch' && !d.key ? { side: 'SW', dir: 'flip' } : null;
+        this.art.set({ mode, target, knobL: k.L, knobR: k.R, hold: 0, ok: false, sw: d.key ? null : ch[4] > 0, tol: 0, label: '' });
     }
 }
 
@@ -229,7 +249,12 @@ export class Hud {
     private statsDetail = h('div', { 'data-testid': 'detail-line', class: 'detail', hidden: true });
     // F3: how the scan is drawn and who decided it (app/drawing.ts drawingLine, written by app/builtin/hud.ts)
     private statsDrawing = h('div', { 'data-testid': 'drawing-line', class: 'detail', hidden: true });
-    private frameStats = h('div', { class: 'osd frame hidden' }, this.statsMain, this.statsDetail, this.statsDrawing, this.statsHint);
+    // F3: how the radio's or gamepad's reports arrive (interval, jitter, longest gap) and, for a slow or
+    // bunched link, the note about a cable (v0.9 lane E, @gsfpv/input link.ts)
+    private statsInput = h('div', { 'data-testid': 'input-line', class: 'detail', hidden: true });
+    private statsLink = h('div', { 'data-testid': 'link-hint', class: 'detail', hidden: true });
+    private frameStats = h('div', { class: 'osd frame hidden' }, this.statsMain, this.statsInput, this.statsLink, this.statsDetail, this.statsDrawing, this.statsHint);
+    private inputAt = -1e9;
     private card = new ArmCard(() => this.onArm?.());
     private keys = new KeyCard();
     private last = 0;
@@ -334,6 +359,12 @@ export class Hud {
         const ui = this.ui;
         if (!ui) return; // not on the page yet
         const now = performance.now();
+        const src = view?.source ?? null;
+        // a radio or gamepad gets the step-by-step card, the keyboard its keys; touch and sim the one line
+        const radio = !!view && (src === 'hid' || src === 'gamepad');
+        // the radio drawing is the pilot's own stick: every frame. Everything else is text, at 10 Hz
+        // (a number that changes with every frame cannot be read)
+        this.card.live(radio && view ? view : null);
         if (now - this.last < 100) return;
         this.last = now;
         this.root.style.display = this.visible && !this.textOff ? '' : 'none';
@@ -350,10 +381,7 @@ export class Hud {
         this.tl.innerHTML = `${status} · ${mode}${walls}`;
         this.tr.textContent = `${fmt(hd.volts, 1)} V  ${fmt(hd.timeS, 1)} s`;
         this.bl.textContent = `THR ${hd.throttlePct}%  ${fmt(hd.speed, 1)} m/s  ALT ${fmt(hd.altitude, 1)} m`;
-        const src = view?.source ?? null;
         const kbd = src === 'keyboard';
-        // a radio or gamepad gets the step-by-step card, the keyboard its keys; touch and sim the one line
-        const radio = !!view && (src === 'hid' || src === 'gamepad');
         this.card.update(radio && view ? view : null, hd.armed, hd.crashed, block);
         // the test pilot (?simradio=scenario) flies the model directly, past the arm gate: the gate's
         // "Calibrate your controls first" was never true for it, and it printed into every bot frame
@@ -373,6 +401,25 @@ export class Hud {
         this.gate.classList.toggle('mid', src === 'touch');
         if (this.gate.textContent !== say) this.gate.textContent = say; // the same text again is announced again
         this.latencyLine(s, frameMs.p50);
+        this.inputLine(view, now);
+    }
+
+    /** F3's line about the device's reports: four times a second, only while F3 is on and a radio or gamepad flies. */
+    private inputLine(view: ArmView | undefined, now: number): void {
+        if (this.frameStats.classList.contains('hidden')) return;
+        const link = view?.link ?? null;
+        if (!link) {
+            this.statsInput.hidden = true;
+            this.statsLink.hidden = true;
+            return;
+        }
+        if (now - this.inputAt < 250) return;
+        this.inputAt = now;
+        const ll = linkLines(link(now), t, 'f3');
+        this.statsInput.hidden = !ll;
+        this.statsLink.hidden = !ll?.note;
+        if (ll && this.statsInput.textContent !== ll.line) this.statsInput.textContent = ll.line;
+        if (ll?.note && this.statsLink.textContent !== ll.note) this.statsLink.textContent = ll.note;
     }
 
     /**

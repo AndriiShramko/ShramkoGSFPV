@@ -69,7 +69,7 @@ h1 { font-size: 22px; margin: 0 0 12px; } h2 { font-size: 18px; margin: 0 0 10px
 .osd.tl { top: calc(max(14px, env(safe-area-inset-top)) + var(--banner-h, 0px)); left: 44px; } .osd.tr { top: calc(max(14px, env(safe-area-inset-top)) + var(--banner-h, 0px)); right: 16px; text-align: right; }
 .osd.bl { bottom: 14px; left: 16px; } .osd.br { bottom: 14px; right: 16px; text-align: right; font-size: 12px; font-weight: 500; opacity: .85; white-space: nowrap; } /* one line: flight.ts picks a text that fits beside the telemetry */
 .osd.frame { top: calc(44px + var(--banner-h, 0px)); left: 44px; font-size: 12px; } .hidden { display: none; }
-.osd.frame .detail { max-width: 60ch; } /* the levels-of-detail line wraps like the slow-screen hint, clear of the centre notes */
+.osd.frame .detail { max-width: 60ch; } /* the levels-of-detail and input lines wrap like the slow-screen hint, clear of the centre notes */
 .osd .armed { color: var(--accent); } .osd .disarmed { color: var(--warn); } .osd .crash { color: var(--bad); }
 .gate-msg { position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%); background: rgba(0,0,0,.55); color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 14px; max-width: 90vw; text-align: center; }
 .gate-msg:empty { display: none; }

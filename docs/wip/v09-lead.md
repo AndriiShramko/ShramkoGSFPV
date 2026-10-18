@@ -8,3 +8,6 @@ Plan: `docs/wip/v09-plan.md`. Lane notes: `docs/wip/v09-<lane>.md`.
 RESUME-FIRST: `git log --oneline -30` shows which `Merge v09-*` commits exist; continue from the first missing step.
 
 - [x] merge v09-f (clean)
+- [x] merge v09-a (conflict: docs/decisions.md only; kept both sections)
+- [x] merge v09-r (conflicts: video-export.ts = A's setDetail('auto') + R's setStochastic(false) and its restore; play/easy.ts = one guard, A's placement after lastT; decisions.md)
+- [x] merge v09-e (conflicts: ui/hud.ts = union of statsDrawing (R) and statsInput/statsLink (E); decisions.md)

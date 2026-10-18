@@ -15,7 +15,7 @@
 // actions (onSwitchAction, wired to the key router by app/builtin/switches.ts).
 
 import { ArmGate, ArmLatch, SwitchActionWatch, armByRanges, inputName, knownDevice, mapFrame, profileArmLevel, radioSetsMode, readChannelTable, readSwitches, validModeSwitch } from '@gsfpv/input';
-import type { ChannelTable, Profile, RawFrame, ArmBlock, RadioDevice, SwitchAction, SwitchInput } from '@gsfpv/input';
+import type { ChannelTable, LinkStats, Profile, RawFrame, ArmBlock, RadioDevice, SwitchAction, SwitchInput } from '@gsfpv/input';
 import { MODE_CHANNEL, modeFromChannel } from '@gsfpv/sim-core';
 import type { FlightMode } from '@gsfpv/sim-core';
 import { LEGACY_KEYS } from '@gsfpv/prefs';
@@ -184,6 +184,11 @@ export interface ArmView {
     source: Controls['source'];
     /** easy play flies (touch or keyboard with prefs input.play 'easy', v0.8): no arming, the HUD says "take off" */
     easy: boolean;
+    /**
+     * How often the radio's or gamepad's reports arrive (interval, jitter, longest gap; F3 says it,
+     * v0.9 lane E); asked only while F3 is on. Null for touch, keyboard, and a device that measures nothing.
+     */
+    link: ((now: number) => LinkStats) | null;
 }
 
 /** Routes mapped channels through the arm gate into the session. */
@@ -211,15 +216,31 @@ export class Controls {
     /** A switch range of an action was entered (Profile.switches): app/builtin/switches.ts runs the action. */
     onSwitchAction: ((a: SwitchAction) => void) | null = null;
     private actions = new SwitchActionWatch();
+    /** The device in use reads itself once more before each frame steps the physics (a gamepad's pollNow); set by app/input.ts, null for any other input. */
+    private pollHook: (() => void) | null = null;
+    /** The meter of the device in use (HidSource.link / GamepadSource.link), for the HUD's F3 line. */
+    private linkOf: ((now: number) => LinkStats) | null = null;
 
     constructor(session: FlightSession) {
         this.session = session;
-        this.armView = { ch: this.ch, armKind: null, armLabel: '', mode: 2, source: null, easy: false };
+        this.armView = { ch: this.ch, armKind: null, armLabel: '', mode: 2, source: null, easy: false, link: null };
     }
 
     /** A new scene (E.4): the same input, profile and arm gate feed the new session. */
     setSession(session: FlightSession): void {
         this.session = session;
+        session.beforeStep = this.pollHook;
+    }
+
+    /**
+     * The device the pilot flies with, for the two things that need more than its frames: a
+     * `poll` run just before each frame steps the physics (null: nothing to read), and the link
+     * meter F3 reads. Called by app/input.ts when the input changes.
+     */
+    useDevice(poll: (() => void) | null, link: ((now: number) => LinkStats) | null): void {
+        this.pollHook = poll;
+        this.linkOf = link;
+        this.session.beforeStep = poll;
     }
 
     /**
@@ -324,6 +345,7 @@ export class Controls {
         v.mode = this.profile?.mode ?? getStickMode();
         v.source = this.source;
         v.easy = this.play === 'easy' && (this.source === 'touch' || this.source === 'keyboard');
+        v.link = this.source === 'hid' || this.source === 'gamepad' ? this.linkOf : null;
         return v;
     }
 

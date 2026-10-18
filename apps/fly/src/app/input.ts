@@ -176,6 +176,11 @@ export class InputHost {
         ctx.controls.source = c.kind;
         if (c.kind === 'hid' && c.hid) c.hid.onFrame = (f) => ctx.controls.raw(f);
         if (c.kind === 'gamepad' && c.gamepad) c.gamepad.onFrame = (f) => ctx.controls.raw(f);
+        // a gamepad reads itself once more just before each frame steps the physics; F3 reads the
+        // device's link meter (v0.9 lane E)
+        const pad = c.kind === 'gamepad' ? c.gamepad : undefined;
+        const meter = c.kind === 'hid' ? c.hid?.link : c.kind === 'gamepad' ? c.gamepad?.link : undefined;
+        ctx.controls.useDevice(pad ? () => pad.pollNow() : null, meter ? (now) => meter.stats(now) : null);
         // a new input starts easy play from the ground: motors off until its first flying input
         if (c.kind !== prev?.kind) this.easy.reset();
         if (c.kind === 'touch') this.touch = this.makeTouch();

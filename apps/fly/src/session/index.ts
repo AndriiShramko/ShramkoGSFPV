@@ -214,6 +214,12 @@ export class FlightSession {
     lagFrames = 0;
     private lagQueue: number[] = [];
     onFrame: ((s: FlightSession, dtMs: number) => void) | null = null;
+    /**
+     * Called at the start of every frame, before the physics steps: the input reads its device once
+     * more (Controls: GamepadSource.pollNow, v0.9 lane E), so a report published after the polling
+     * loop's last look is in this frame, not the next one (a whole display period later).
+     */
+    beforeStep: (() => void) | null = null;
     onEvent: ((e: SimEvent) => void) | null = null;
     private evIdx = 0;
     readonly createdAt = performance.now();
@@ -708,6 +714,7 @@ export class FlightSession {
         this.offEngine?.();
         this.offEngine = null;
         this.onFrame = null;
+        this.beforeStep = null;
         this.onEvent = null;
         this.onLife = null;
         this.sceneIntentCb = null;
@@ -752,6 +759,7 @@ export class FlightSession {
 
     private frame(): void {
         if (!this.runner) return; // the engine already streams the scan while the walls download
+        this.beforeStep?.();
         const now = performance.now();
         this.frameTimes.push(now);
         if (this.frameTimes.length > 600) this.frameTimes.shift();

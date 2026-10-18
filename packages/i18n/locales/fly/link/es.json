@@ -1,0 +1,6 @@
+{
+  "link.line": "lecturas cada {ms} ms · fluctuación {jitter} ms · pausa más larga {gap} ms",
+  "link.f3": "mando: {hz} lecturas / s · cada {ms} ms · fluctuación {jitter} ms · pausa más larga {gap} ms",
+  "link.note.slow": "Las lecturas llegan despacio: una cada {ms} ms, hasta {gap} ms entre ellas. Si la radio está conectada sin cable (Bluetooth), un cable USB es más rápido.",
+  "link.note.bursty": "Las lecturas llegan en grupos, hasta {gap} ms entre ellos. Si la radio está conectada sin cable (Bluetooth), un cable USB es más rápido."
+}

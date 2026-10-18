@@ -21,6 +21,8 @@ import type { ArtState, ArtTarget } from './radio-art';
 import { modeSwitchRow, modeRowKey } from './mode-switch-row';
 import { SwitchesView } from './switches';
 import { knownNameNote, knownNote, knownOfferBlock, knownPanel } from './known-panel';
+import { LinkReadout, drawFrame, rateOf } from './device-rate';
+import type { DeviceRate } from './device-rate';
 
 export type SourceKind = 'hid' | 'gamepad' | 'touch' | 'keyboard';
 
@@ -334,11 +336,11 @@ export class RadioScreen {
         if (cur.kind === 'hid' && cur.hid) {
             const d = cur.hid;
             this.hid = d;
-            this.runWizard(d.key, name, (cb) => { d.onFrame = cb; }, () => d.rateHz, 'hid', recogniseDevice('hid', d));
+            this.runWizard(d.key, name, (cb) => { d.onFrame = cb; }, rateOf(d), 'hid', recogniseDevice('hid', d));
         } else if (cur.kind === 'gamepad' && cur.gamepad) {
             const g = cur.gamepad;
             this.gp = g;
-            this.runWizard(g.key, name, (cb) => { g.onFrame = cb; }, () => g.rateHz, 'gamepad', recogniseDevice('gamepad', g));
+            this.runWizard(g.key, name, (cb) => { g.onFrame = cb; }, rateOf(g), 'gamepad', recogniseDevice('gamepad', g));
         }
     }
 
@@ -350,11 +352,11 @@ export class RadioScreen {
         if (cur.kind === 'hid' && cur.hid) {
             const d = cur.hid;
             this.hid = d;
-            this.mount(CalibrationWizard.resume(p), d.key, p.deviceName, (cb) => { d.onFrame = cb; }, () => d.rateHz, 'hid', p, { match: recogniseDevice('hid', d) });
+            this.mount(CalibrationWizard.resume(p), d.key, p.deviceName, (cb) => { d.onFrame = cb; }, rateOf(d), 'hid', p, { match: recogniseDevice('hid', d) });
         } else if (cur.kind === 'gamepad' && cur.gamepad) {
             const g = cur.gamepad;
             this.gp = g;
-            this.mount(CalibrationWizard.resume(p), g.key, p.deviceName, (cb) => { g.onFrame = cb; }, () => g.rateHz, 'gamepad', p, { match: recogniseDevice('gamepad', g) });
+            this.mount(CalibrationWizard.resume(p), g.key, p.deviceName, (cb) => { g.onFrame = cb; }, rateOf(g), 'gamepad', p, { match: recogniseDevice('gamepad', g) });
         }
     }
 
@@ -365,11 +367,11 @@ export class RadioScreen {
         if (cur.kind === 'hid' && cur.hid) {
             const d = cur.hid;
             this.hid = d;
-            this.mount(CalibrationWizard.resume(p), d.key, name, (cb) => { d.onFrame = cb; }, () => d.rateHz, 'hid', p, { match, fresh: true });
+            this.mount(CalibrationWizard.resume(p), d.key, name, (cb) => { d.onFrame = cb; }, rateOf(d), 'hid', p, { match, fresh: true });
         } else if (cur.kind === 'gamepad' && cur.gamepad) {
             const g = cur.gamepad;
             this.gp = g;
-            this.mount(CalibrationWizard.resume(p), g.key, name, (cb) => { g.onFrame = cb; }, () => g.rateHz, 'gamepad', p, { match, fresh: true });
+            this.mount(CalibrationWizard.resume(p), g.key, name, (cb) => { g.onFrame = cb; }, rateOf(g), 'gamepad', p, { match, fresh: true });
         }
     }
 
@@ -405,9 +407,10 @@ export class RadioScreen {
         this.root.setAttribute('aria-labelledby', 'radio-title');
         this.body.append(view.el);
         dev.onFrame = (f) => { if (gen === this.gen) view.frame(f); };
+        const rate = rateOf(dev);
         const loop = (): void => {
             if (gen !== this.gen) return;
-            view.live();
+            drawFrame(rate, () => view.live());
             this.raf = requestAnimationFrame(loop);
         };
         this.raf = requestAnimationFrame(loop);
@@ -434,7 +437,7 @@ export class RadioScreen {
             const match = recogniseDevice('hid', src);
             const name = match?.device.mapping ? match.device.name : hidDisplayName(d);
             const sub: Subscribe = (cb) => { src.onFrame = cb; };
-            this.open(src.key, name, sub, () => src.rateHz, 'hid', match);
+            this.open(src.key, name, sub, rateOf(src), 'hid', match);
         } catch (e) {
             if (gen !== this.gen) return;
             status.className = 'error small radio-status';
@@ -458,7 +461,7 @@ export class RadioScreen {
             started = true;
             const sub: Subscribe = (cb) => { gp.onFrame = cb; };
             const match = recogniseDevice('gamepad', gp);
-            this.open(gp.key, match?.device.mapping ? match.device.name : gp.id || 'gamepad', sub, () => gp.rateHz, 'gamepad', match);
+            this.open(gp.key, match?.device.mapping ? match.device.name : gp.id || 'gamepad', sub, rateOf(gp), 'gamepad', match);
         };
     }
 
@@ -468,7 +471,7 @@ export class RadioScreen {
      * each control to confirm it and presses Fly); else the setup wizard (told about a controller
      * recognised by name only, as an EdgeTX radio).
      */
-    private open(key: string, name: string, sub: Subscribe, rate: () => number, kind: SourceKind, match: KnownMatch | null): void {
+    private open(key: string, name: string, sub: Subscribe, rate: DeviceRate, kind: SourceKind, match: KnownMatch | null): void {
         const saved = profileFor(key);
         if (saved) { this.mount(CalibrationWizard.resume(saved), key, name, sub, rate, kind, saved, { match }); return; }
         const known = match ? knownProfile(match, key, name) : null;
@@ -477,7 +480,7 @@ export class RadioScreen {
     }
 
     /** Also used by tests with the simulated radio (fake HID device). `match`: a controller recognised by name, or with a channel table the wizard's profile keeps. */
-    runWizard(key: string, name: string, subscribe: Subscribe, rate: () => number, kind: SourceKind, match: KnownMatch | null = null): void {
+    runWizard(key: string, name: string, subscribe: Subscribe, rate: DeviceRate, kind: SourceKind, match: KnownMatch | null = null): void {
         const known = match ? knownProfile(match, key, name) : null;
         const device = known?.channels ? { channels: known.channels, known: known.known } : match ? { known: match.device.id } : {};
         this.mount(new CalibrationWizard(key, name, device), key, name, subscribe, rate, kind, null, { match });
@@ -489,7 +492,7 @@ export class RadioScreen {
         this.done({ kind, profile: p, hid: kind === 'hid' ? this.hid : undefined, gamepad: kind === 'gamepad' ? this.gp : undefined });
     }
 
-    private mount(wz: CalibrationWizard, key: string, name: string, subscribe: Subscribe, rate: () => number, kind: SourceKind, saved: Profile | null, known: KnownOpts = {}): void {
+    private mount(wz: CalibrationWizard, key: string, name: string, subscribe: Subscribe, rate: DeviceRate, kind: SourceKind, saved: Profile | null, known: KnownOpts = {}): void {
         this.leave();
         const gen = this.gen;
         // Liftoff-style: the sticks move the wizard on, no Start / Next per step (Andrii 2026-09-27)
@@ -519,6 +522,9 @@ export class RadioScreen {
         const extra = h('div', { class: 'wz-extra' });
         const chans = h('div', { class: 'wz-chans', hidden: true });
         const rateEl = h('p', { class: 'wz-rate muted small' });
+        // how the reports arrive (interval, jitter, longest gap) and, for a slow or bunched link, the note about a cable (v0.9 lane E)
+        const linkEl = h('p', { class: 'wz-link muted small', 'data-testid': 'link-line' });
+        const linkNote = h('p', { class: 'wz-link-note warn small', 'data-testid': 'link-note', role: 'note', hidden: true });
         const actions = h('div', { class: 'wz-actions' });
         // a recognised controller (known-devices.ts): what it is and how to check it; one known by
         // name only (EdgeTX): why the wizard asks; a saved setup: that it is the saved one
@@ -550,13 +556,15 @@ export class RadioScreen {
                 note,
                 h('div', { class: 'wz-stage' }, art.el, chip, count, gaugeT),
                 hint, extra, chans,
-                h('div', { class: 'wz-foot' }, rateEl, h('p', { class: 'wz-kbd muted small' }, t('wizard.kbd'))),
+                h('div', { class: 'wz-foot' }, rateEl, linkEl, h('p', { class: 'wz-kbd muted small' }, t('wizard.kbd'))),
+                linkNote,
                 actions));
         this.body.append(wzEl);
 
         const stepsEl = wzEl.firstElementChild as HTMLElement;
         let lastCur = -1;
         let lastW = -1;
+        const linkOut = new LinkReadout({ line: linkEl, note: linkNote }); // twice a second
         let sig = ''; // rebuild buttons and the extra panel only when this changes
         let stageKey = ''; // id|stage: a change is a new screen (focus, key guard, resets)
         let pickOpen = false;
@@ -1166,7 +1174,9 @@ export class RadioScreen {
                     setText(cc.fn, c.fn ? FN_LETTER[c.fn] : '');
                 }
             }
-            setText(rateEl, chs.length ? t('radio.rate', { hz: Math.round(rate()) }) : ''); // nothing to count before the first report
+            setText(rateEl, chs.length ? t('radio.rate', { hz: Math.round(rate.hz()) }) : ''); // nothing to count before the first report
+            linkOut.update(rate, now, chs.length > 0); // how the reports arrive
+
             // buttons and the extra panel
             const can = st.can;
             const s2 = [sk, st.hint?.key === 'wizard.hint.arm.none', can.begin, can.next, can.back, can.pick, can.skipArm, can.measureAnyway, can.fly, can.reverse, can.redo,
@@ -1195,7 +1205,7 @@ export class RadioScreen {
         if (!saved) wz.start(performance.now());
         const loop = (): void => {
             if (gen !== this.gen) return;
-            render();
+            drawFrame(rate, render); // a report the pad published since the polling loop's last look is in this frame, not the next
             this.raf = requestAnimationFrame(loop);
         };
         render();

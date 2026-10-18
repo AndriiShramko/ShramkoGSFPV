@@ -188,3 +188,48 @@ describe('the chooser', () => {
         expect(asked).toEqual({ filters: [{ vendorId: 0x1209, productId: 0x4f54 }, { usagePage: 1, usage: 4 }, { usagePage: 1, usage: 5 }, { usagePage: 1, usage: 8 }] });
     });
 });
+
+describe('HidSource notes every report in its link meter (v0.9 lane E)', () => {
+    const send = (d: FakeHidDevice, times: number[]) => times.forEach((t) => d.send(0, djiRc3Report([-11, 0, 0, -8, 0], 0x50), t));
+    const steady = (n: number, gap: number): number[] => Array.from({ length: n }, (_, i) => 100 + i * gap);
+
+    it('a cable at 160 Hz reads as a fast, steady link; the same device slowed to 33 ms reads as slow (the control)', async () => {
+        const fast = await opened(dji());
+        send(dji0(fast), steady(200, 6.25));
+        const f = fast.src.link.stats(100 + 200 * 6.25);
+        expect(f.verdict).toBe('ok');
+        expect(f.hz).toBeGreaterThan(150);
+        expect(f.hz).toBeLessThan(170);
+        fast.src.close();
+
+        const slow = await opened(dji());
+        send(dji0(slow), steady(60, 33));
+        const sl = slow.src.link.stats(100 + 60 * 33);
+        expect(sl.verdict).toBe('slow');
+        expect(sl.meanMs).toBeCloseTo(33, 3);
+        slow.src.close();
+    });
+
+    it('bunches of reports with pauses between them read as bursty', async () => {
+        const { src, ...rest } = await opened(dji());
+        const times: number[] = [];
+        for (let b = 0; b < 40; b++) for (let k = 0; k < 4; k++) times.push(100 + b * 70 + k * 0.4);
+        send(dji0({ src, ...rest }), times);
+        expect(src.link.stats(100 + 40 * 70).verdict).toBe('bursty');
+        src.close();
+    });
+
+    it('a refused report is not a sample, and a closed source stops watching the page for stalls', async () => {
+        const { src } = await opened(dji());
+        const d = (src as unknown as { device: FakeHidDevice }).device;
+        for (let i = 0; i < 30; i++) d.send(9, djiRc3Report([0, 0, 0, 0, 0], 0), 100 + i * 5); // a report id the device does not have
+        expect(src.link.stats(300).n).toBe(0);
+        src.close();
+        expect((src as unknown as { stopBeat: unknown }).stopBeat).toBeNull();
+    });
+});
+
+/** The fake device an opened source reads. */
+function dji0(o: { src: InstanceType<AppHid['HidSource']> }): FakeHidDevice {
+    return (o.src as unknown as { device: FakeHidDevice }).device;
+}
