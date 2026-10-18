@@ -767,6 +767,110 @@
     "pl": "Duże skany strumieniowe zostają ostre: poziomy szczegółów w pełnej jakości na komputerze, lżej na telefonach, a uszkodzony plik szczegółów otwiera zwykły skan",
     "ru": "Большие потоковые сканы остаются чёткими: уровни детализации в полном качестве на компьютере, облегчённо на телефонах, а при битом файле детализации открывается обычный скан"
    }
+  },
+  {
+   "id": "F-scans-appear-as-soon-as-drawable",
+   "kind": "feature",
+   "status": "done",
+   "group": "scenes",
+   "order": 60,
+   "title": {
+    "en": "Scans appear as soon as they can be drawn; the loading card always moves and offers Fly now; a video export always finishes",
+    "es": "Los escaneos aparecen en cuanto se pueden dibujar; la tarjeta de carga siempre se mueve y ofrece Volar ya; la exportación de vídeo siempre termina",
+    "pl": "Skany pojawiają się, gdy tylko da się je narysować; karta ładowania zawsze się rusza i proponuje Leć teraz; eksport wideo zawsze się kończy",
+    "ru": "Сканы появляются, как только их можно нарисовать; карточка загрузки всегда движется и предлагает «Лететь сейчас»; экспорт видео всегда доходит до конца"
+   }
+  },
+  {
+   "id": "F-keyboard-and-mouse-like-a-game",
+   "kind": "feature",
+   "status": "done",
+   "group": "controls",
+   "order": 61,
+   "title": {
+    "en": "Keyboard and mouse like a game: click to fly, the mouse looks, W A S D move, Space up, Shift down, and the drone hovers when you let go",
+    "es": "Teclado y ratón como en un juego: clic para volar, el ratón mira, W A S D mueven, Espacio sube, Shift baja y el dron se queda quieto al soltar",
+    "pl": "Klawiatura i mysz jak w grze: kliknij, aby lecieć, mysz patrzy, W A S D poruszają, Spacja w górę, Shift w dół, a dron zawisa, gdy puścisz klawisze",
+    "ru": "Клавиатура и мышь как в игре: клик — и летишь, мышь смотрит, W A S D двигают, Space вверх, Shift вниз, а отпустил клавиши — дрон зависает"
+   }
+  },
+  {
+   "id": "F-stochastic-by-default-supersplat-links",
+   "kind": "feature",
+   "status": "done",
+   "group": "scenes",
+   "order": 62,
+   "title": {
+    "en": "Stochastic drawing by default on a computer; SuperSplat links with budget and stochastic open as SuperSplat draws them",
+    "es": "Dibujo estocástico por defecto en el ordenador; los enlaces de SuperSplat con budget y stochastic se abren como en SuperSplat",
+    "pl": "Rysowanie stochastyczne domyślnie na komputerze; linki SuperSplat z budget i stochastic otwierają się jak w SuperSplat",
+    "ru": "Стохастическая отрисовка по умолчанию на компьютере; ссылки SuperSplat с budget и stochastic открываются как в SuperSplat"
+   }
+  },
+  {
+   "id": "F-default-scene-size-and-shared-settings",
+   "kind": "feature",
+   "status": "done",
+   "group": "scenes",
+   "order": 63,
+   "title": {
+    "en": "Each scene opens at the size set for it (macro scans scaled up), and a shared link carries the sharer's scene settings",
+    "es": "Cada escena se abre al tamaño que se le ha fijado (los escaneos macro, ampliados), y un enlace compartido lleva los ajustes de escena de quien lo comparte",
+    "pl": "Każda scena otwiera się w ustawionej dla niej skali (skany makro powiększone), a udostępniony link niesie ustawienia sceny osoby, która go udostępnia",
+    "ru": "Каждая сцена открывается в заданном для неё масштабе (макросканы увеличены), а ссылка «Поделиться» несёт настройки сцены того, кто поделился"
+   }
+  },
+  {
+   "id": "F-n-walks-every-curated-scene-then-supersplat",
+   "kind": "feature",
+   "status": "done",
+   "group": "scenes",
+   "order": 64,
+   "title": {
+    "en": "N walks every curated scene in order, then goes on through SuperSplat; after a few crashes a hint shows how to change the place",
+    "es": "N recorre en orden todas las escenas seleccionadas y luego sigue por SuperSplat; tras unos choques, una pista muestra cómo cambiar de lugar",
+    "pl": "N przechodzi po kolei przez wszystkie wybrane sceny, a potem dalej przez SuperSplat; po kilku kraksach podpowiedź pokazuje, jak zmienić miejsce",
+    "ru": "N проходит по порядку все отобранные сцены, а потом идёт дальше по SuperSplat; после нескольких крашей подсказка показывает, как сменить место"
+   }
+  },
+  {
+   "id": "F-controller-report-rate-shown-bluetooth-note",
+   "kind": "feature",
+   "status": "done",
+   "group": "radio",
+   "order": 65,
+   "title": {
+    "en": "The controller check shows how often your radio or gamepad reports, with a note when Bluetooth adds delay",
+    "es": "La comprobación del mando muestra cada cuánto informa tu emisora o gamepad, con un aviso cuando Bluetooth añade retraso",
+    "pl": "Sprawdzenie kontrolera pokazuje, jak często aparatura lub gamepad wysyła dane, z uwagą, gdy Bluetooth dodaje opóźnienie",
+    "ru": "Проверка пульта показывает, как часто аппаратура или геймпад шлёт данные, и предупреждает, когда Bluetooth добавляет задержку"
+   }
+  },
+  {
+   "id": "F-3d-models-of-every-drone-and-camera-load",
+   "kind": "feature",
+   "status": "done",
+   "group": "drone",
+   "order": 66,
+   "title": {
+    "en": "A 3D model of every drone with its equipment; the cinelifter's camera load (RED Komodo, BMPCC 6K Pro, GoPro or none) changes its physics",
+    "es": "Un modelo 3D de cada dron con su equipo; la carga de cámara del cinelifter (RED Komodo, BMPCC 6K Pro, GoPro o ninguna) cambia su física",
+    "pl": "Model 3D każdego drona z jego wyposażeniem; ładunek kamery cineliftera (RED Komodo, BMPCC 6K Pro, GoPro albo nic) zmienia jego fizykę",
+    "ru": "3D-модель каждого дрона с его оборудованием; груз камеры синелифтера (RED Komodo, BMPCC 6K Pro, GoPro или ничего) меняет его физику"
+   }
+  },
+  {
+   "id": "F-replies-in-the-language-you-wrote-in",
+   "kind": "feature",
+   "status": "done",
+   "group": "settings",
+   "order": 67,
+   "title": {
+    "en": "Replies to your feedback come in the language you wrote in",
+    "es": "Las respuestas a tus mensajes llegan en el idioma en que escribiste",
+    "pl": "Odpowiedzi na Twoje zgłoszenia przychodzą w języku, w którym napisałeś",
+    "ru": "Ответы на ваши сообщения приходят на том языке, на котором вы написали"
+   }
   }
  ]
 }
