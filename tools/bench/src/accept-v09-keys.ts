@@ -370,9 +370,10 @@ await L.browser.close();
     const lt0 = Date.now();
     while (Date.now() - lt0 < 12000 && !landed) { await sleep(150); landed = !(await ev<boolean>(W.page, 'return s.sim.armed;')); }
     await W.page.keyboard.up('ShiftLeft');
-    const post = await ev<Any>(W.page, 'return { armed: s.sim.armed, crashed: s.sim.crashed, y: s.sim.s[1], crashes: h.events.filter((e) => e.type === "crash").length, contacts: h.events.filter((e) => e.type === "contact").map((e) => e.speed) };');
+    const post = await ev<Any>(W.page, 'return { armed: s.sim.armed, crashed: s.sim.crashed, y: s.sim.s[1], vBounce: s.sim.p.vBounce, crashes: h.events.filter((e) => e.type === "crash").length, contacts: h.events.filter((e) => e.type === "contact").map((e) => e.speed) };');
     await W.page.screenshot({ path: join(SHOTS, 'v16-landed.jpg'), quality: 80 });
-    check('V16 holding Shift lands without a crash (touch-down below the crash speed) and the motors stop by themselves', landed && !post.crashed && post.crashes === 0 && up.y - post.y > 0.3, { climbedToY: r3(up.y), endY: r3(post.y), crashes: post.crashes, contactSpeeds: (post.contacts as number[]).map(r3), armedAfter: post.armed, tookMs: Date.now() - lt0 });
+    const touchMax = Math.max(0, ...(post.contacts as number[]));
+    check('V16 holding Shift lands without a crash, no body sphere touches faster than half the bounce speed (the earlier landing touched at 0.72 x on this scan, this one at 0.41 x), and the motors stop by themselves', landed && !post.crashed && post.crashes === 0 && up.y - post.y > 0.3 && touchMax < 0.5 * post.vBounce, { climbedToY: r3(up.y), endY: r3(post.y), crashes: post.crashes, touchMaxMps: r3(touchMax), limitMps: r3(0.5 * post.vBounce), contactSpeeds: (post.contacts as number[]).map(r3), armedAfter: post.armed, tookMs: Date.now() - lt0 });
     await W.page.keyboard.down('KeyW');
     await sleep(1500);
     await W.page.keyboard.up('KeyW');

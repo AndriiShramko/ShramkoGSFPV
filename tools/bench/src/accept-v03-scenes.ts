@@ -9,8 +9,9 @@
 //       VRAM grows past +15 % of A's just before. Draws the scan: GPU lock, render on.
 //   S3  scenes.autoSwitch on: a crash loads the next scene after the delay (the toast says so).
 //       Control: off, the same crash respawns in the same scene. Also: Enter on the toast opens the
-//       crash panel, its scene row (N, Shift+N, F) is there and Next scene loads the next scene.
-//   S4  F loads the next favourite (starred in the picker), Shift+N a random curated scene. Control: no favourites, F loads nothing.
+//       crash panel, its scene row (N, Shift+N, Shift+F) is there and Next scene loads the next scene.
+//   S4  Shift+F loads the next favourite (starred in the picker), Shift+N a random curated scene (F is full screen since v0.9: accept-v09-keys V11).
+//       Control: no favourites, Shift+F loads nothing.
 //   S5  the picker's "Continue" card is the last scene flown. Control: a fresh browser has none.
 //   S6  pause menu -> Change scan opens the picker over the flight; a picked card loads in the page
 //       with the simulated radio still connected; Esc closes it and the flight goes on. Control: a
@@ -215,7 +216,7 @@ if (want('S3')) {
     const panelSwitch = await switched(p);
     const panelAfter = await hook(p, 'return { scene: s.scene.id, sameFake: window.__fake === h.fake, panel: !!document.querySelector(\'[data-testid="crash-panel"]\'), controlsScreen: !!document.querySelector(".screen.radio") };');
     const panel = { crashed: panelCrashed, row, switch: panelSwitch, after: panelAfter,
-        ok: panelCrashed && row.map((r: Any) => `${r.action}:${r.keys}`).join() === 'scene-next:N,scene-random:Shift+N,scene-favourite:F' && panelSwitch.state === 'done' && panelSwitch.reason === 'next' && panelAfter.scene !== A && panelAfter.sameFake && !panelAfter.panel && !panelAfter.controlsScreen };
+        ok: panelCrashed && row.map((r: Any) => `${r.action}:${r.keys}`).join() === 'scene-next:N,scene-random:Shift+N,scene-favourite:Shift+F' && panelSwitch.state === 'done' && panelSwitch.reason === 'next' && panelAfter.scene !== A && panelAfter.sameFake && !panelAfter.panel && !panelAfter.controlsScreen };
     // back to A (its spawn drop crashes at 2 m/s) for the automatic switch
     await hook(p, `h.sceneSwitch = null; h.scenes.load('${A}', 'pick'); return 0;`);
     await switched(p);
@@ -252,7 +253,7 @@ if (want('S4') || want('S5')) {
     const favourites = await hook<string[]>(p, "return h.prefs.collection('sceneLibrary').favourites;");
     const fav: Any[] = [];
     for (let i = 0; i < 2; i++) {
-        await p.keyboard.press('KeyF');
+        await p.keyboard.press('Shift+KeyF');
         const sw = await switched(p);
         await wait(p, 300);
         fav.push({ switch: sw, scene: await hook<string>(p, 'return s.scene.id;') });
@@ -268,7 +269,7 @@ if (want('S4') || want('S5')) {
         await c2.page.goto(fly(`scene=${A}&nowarn=1&input=touch&render=off`));
         await waitReady(c2.page, 180000);
         await wait(c2.page, 500);
-        await c2.page.keyboard.press('KeyF');
+        await c2.page.keyboard.press('Shift+KeyF');
         await wait(c2.page, 1500);
         const ctl = await hook(c2.page, 'return { switches: h.scenes.log.length, scene: s.scene.id, sceneSwitch: h.sceneSwitch ?? null, favourites: h.prefs.collection("sceneLibrary").favourites };');
         // the keys do reach the page there: N loads the next scene
@@ -278,7 +279,7 @@ if (want('S4') || want('S5')) {
         const pass = favourites.join() === [B, C].join() && fav[0].scene === B && fav[1].scene === C && fav.every((x) => x.switch.state === 'done' && x.switch.reason === 'favourite')
             && random.switch.state === 'done' && random.switch.reason === 'random' && random.scene !== C && [A, B].includes(random.scene);
         const control = { ...ctl, nWorks, fired: ctl.switches === 0 && ctl.scene === A && ctl.sceneSwitch === null && nWorks };
-        out.S4 = { pass: pass && control.fired, what: 'F loads the next favourite in the favourites order (starred in the picker), Shift+N a random curated scene (never the current one); with no favourites F loads nothing', favourites, fav, random, control, errors: errors(log) };
+        out.S4 = { pass: pass && control.fired, what: 'Shift+F loads the next favourite in the favourites order (starred in the picker), Shift+N a random curated scene (never the current one); with no favourites Shift+F loads nothing', favourites, fav, random, control, errors: errors(log) };
         console.log('S4', out.S4.pass ? 'PASS' : 'FAIL', JSON.stringify({ favourites, fav: fav.map((x) => x.scene), random: random.scene, control }));
     }
     if (want('S5')) {

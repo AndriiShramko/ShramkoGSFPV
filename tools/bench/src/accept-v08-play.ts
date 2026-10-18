@@ -11,6 +11,8 @@
 // as early as a radio's report is handled), the climb speed and the height hold. The review fixes of
 // 2026-10-16 added: K over the ground card, Esc while Shift boosts, a Space tap in the air, full stick
 // from a pad's rim, and the flight log's exact replay after the keyboard and the touch flights.
+// v0.9 lane B replaced the keyboard scheme, so the K part was cut to what the game scheme left alone (see the K part for
+// what was retired and what replaced it); the scheme itself is accept-v09-keys.ts. The touch part is unchanged.
 import { mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from 'playwright';
@@ -150,12 +152,19 @@ async function keyboardFlight(p: Page, qs: string): Promise<void> {
 }
 
 // ------------------------------------------------------------------ K: keyboard, easy play, desktop
+// v0.9 lane B replaced the keyboard scheme (docs/wip/v09-b.md): the mouse looks, W A S D move, Space goes up and Shift down,
+// the arrows tilt nothing, Shift is no boost, Space is no motor key, and the pilot school is for the touch sticks. What the
+// scheme does is measured by accept-v09-keys.ts. The v0.8 checks of the old scheme are retired here, each with what replaced it:
+// K4 (W tilts 25 deg) by V3, K12 (replay) by V13, K10 (Esc while Shift boosts) by V12c, K11 (Space taps and holds) by V16 and
+// V16b. K6 and K7 (the school offer and a throttle that stays, walked on the keyboard) are NOT replaced: the school belongs to
+// touch now, its chip is T6 below and its steps are unit-tested (app-play.test.ts), but its offer is no longer walked in a
+// browser. Kept: the key card and K, the quiet motor sound and its mute, the pilot profile as the control.
 if (ONLY !== 'T') {
     const L = await launch({ width: 1280, height: 800 });
     const p = L.page;
     await keyboardFlight(p, 'x=1');
     const card = await p.evaluate(`(() => { const c = document.querySelector('[data-testid="key-card"]'); return c ? { shown: !c.classList.contains('hidden'), title: c.querySelector('h3')?.textContent, now: c.querySelector('p.now')?.textContent, rows: c.querySelectorAll('.kc-list li').length } : null; })()`) as Any;
-    check('K1 the key card shows on the ground with the game keys and "press a flying key to take off"', !!card && card.shown && card.title === EN['play.keys.title'] && card.now === EN['play.gate.keys'] && card.rows >= 8, card);
+    check('K1 the key card shows on the ground with the game keys and "press a flying key to take off"', !!card && card.shown && card.title === EN['play.game.title'] && card.now === EN['play.gate.keys'] && card.rows >= 9, card);
     await p.screenshot({ path: join(SHOTS, 'k-desktop-ground.jpg'), quality: 80 });
     // K over the ground card: it goes, and stays away over the take-off (the first rule pinned it there)
     const cardHidden = `document.querySelector('[data-testid="key-card"]').classList.contains('hidden')`;
@@ -164,24 +173,18 @@ if (ONLY !== 'T') {
     const hiddenByK = await p.evaluate(cardHidden) as boolean;
     const before = await ev<boolean>(p, 'return s.sim.armed;');
     const y0 = await ev<number>(p, 'return s.sim.s[1];');
-    await p.keyboard.down('ArrowUp');
+    await p.keyboard.down('Space');
     await sleep(1500);
     const climb = await track(p, 1000);
-    await p.keyboard.up('ArrowUp');
+    await p.keyboard.up('Space');
     const armed = await ev<boolean>(p, 'return s.sim.armed;');
-    check('K2 the up arrow starts the motors (no Space) and climbs at about 2.5 m/s', !before && armed && Math.abs(mean(climb.vy) - 2.5) < 0.6 && climb.y.at(-1)! - y0 > 2, { armedBefore: before, armed, climbMps: r3(mean(climb.vy)), gainedM: r3(climb.y.at(-1)! - y0) });
+    const climbMps = mean(climb.vy);
+    check('K2 Space starts the motors (no arm switch) and climbs at the speed setting (normal: 5 m/s)', !before && armed && Math.abs(climbMps - 5) < 1.5 && climb.y.at(-1)! - y0 > 3, { armedBefore: before, armed, climbMps: r3(climbMps), gainedM: r3(climb.y.at(-1)! - y0) });
     const hiddenInAir = await p.evaluate(cardHidden) as boolean;
     check('K9 K over the ground card hides it, and it does not come back over the flight; control: the card was up on the ground before K (K1)', !!card && card.shown === true && hiddenByK && hiddenInAir, { upBeforeK: card?.shown, hiddenByKOnTheGround: hiddenByK, hiddenAfterTakeOff: hiddenInAir });
     await sleep(3000);
     const hold = await track(p, 4000, 200);
     check('K3 keys released: the height holds (altitude help)', spread(hold.y) < 0.4, { spreadM: r3(spread(hold.y)), meanVy: r3(mean(hold.vy)) });
-    const yW = await ev<number>(p, 'return s.sim.s[1];');
-    await p.keyboard.down('KeyW');
-    await sleep(1200);
-    const pitch = await ev<number>(p, PITCH);
-    const fwd = await track(p, 600, 100);
-    await p.keyboard.up('KeyW');
-    check('K4 W tilts the drone forward about 25 deg and the height holds through it', Math.abs(pitch - 25) < 6 && Math.max(...fwd.y.map((y) => Math.abs(y - yW))) < 1, { pitchDeg: r3(pitch), maxHeightChangeM: r3(Math.max(...fwd.y.map((y) => Math.abs(y - yW)))) });
     await p.screenshot({ path: join(SHOTS, 'k-desktop-flying.jpg'), quality: 80 });
     const hidden = await p.evaluate(`document.querySelector('[data-testid="key-card"]').classList.contains('hidden')`);
     await p.keyboard.press('KeyK');
@@ -192,42 +195,6 @@ if (ONLY !== 'T') {
     await sleep(300);
     const hiddenAgain = await p.evaluate(`document.querySelector('[data-testid="key-card"]').classList.contains('hidden')`);
     check('K5 in the air the card goes; K shows it, K again hides it', hidden === true && shownK === true && hiddenAgain === true, { hiddenFlying: hidden, shownAfterK: shownK, hiddenAfterK: hiddenAgain });
-    // Shift held as the boost (with W): Esc still pauses; control: Shift alone stays the modifier, Shift+Esc pauses nothing
-    await p.keyboard.down('Shift');
-    await p.keyboard.down('KeyW');
-    await sleep(150);
-    await p.keyboard.press('Escape');
-    await sleep(300);
-    const pausedBoosting = await ev<boolean>(p, 'return s.paused;');
-    await p.keyboard.up('KeyW');
-    await p.keyboard.up('Shift');
-    await p.keyboard.press('Escape');
-    await sleep(300);
-    const resumed = !(await ev<boolean>(p, 'return s.paused;'));
-    await p.keyboard.down('Shift');
-    await p.keyboard.press('Escape');
-    await sleep(300);
-    const pausedShiftAlone = await ev<boolean>(p, 'return s.paused;');
-    await p.keyboard.up('Shift');
-    if (pausedShiftAlone) { await p.keyboard.press('Escape'); await sleep(300); }
-    check('K10 Esc pauses while Shift is held as the boost with W (and Esc resumes); control: Shift alone is the modifier, Shift+Esc pauses nothing', pausedBoosting && resumed && !pausedShiftAlone, { pausedWhileBoosting: pausedBoosting, resumedByEsc: resumed, pausedByShiftEscAlone: pausedShiftAlone });
-    // the pilot school: the chip counts, the goal (30 s without a crash) offers step 2
-    const chip0 = await p.evaluate(`document.querySelector('[data-testid="school-chip"]')?.textContent ?? null`) as string | null;
-    let offer = false;
-    for (let i = 0; i < 80 && !offer; i++) { await sleep(500); offer = await p.evaluate(`!document.querySelector('[data-testid="school-offer"]').hidden`) as boolean; }
-    const chip1 = await p.evaluate(`document.querySelector('[data-testid="school-chip"]')?.textContent ?? null`) as string | null;
-    await p.screenshot({ path: join(SHOTS, 'k-desktop-school-offer.jpg'), quality: 80 });
-    if (offer) await p.click('[data-action="school-next"]');
-    await sleep(400);
-    const step2 = await ev<Any>(p, 'return { help: h.prefs.get("input.altitudeHelp"), mode: h.prefs.get("flight.mode"), play: h.play() };');
-    check('K6 the school chip counts toward 30 s; the goal offers step 2, which switches the altitude help off', !!chip0 && /^School 1\/4/.test(chip0) && offer && step2.help === false && step2.mode === 'angle' && step2.play.step === 2, { chipStart: chip0, chipAtGoal: chip1, offer, after: step2 });
-    // step 2: the up arrow is a throttle that stays (no help): released, it keeps its value
-    await p.keyboard.down('ArrowUp'); await sleep(150); await p.keyboard.up('ArrowUp');
-    const t1 = await ev<number>(p, 'return h.play().throttle;');
-    await sleep(500);
-    const t2 = await ev<number>(p, 'return h.play().throttle;');
-    check('K7 without the help the arrows move a throttle that stays where it is left (it took over from the help without a jump)', Math.abs(t1 - t2) < 1e-6 && t1 > step2.play.throttle + 0.05 && !(await ev<boolean>(p, 'return h.play().helpActive;')), { throttleWhenHelpWentOff: r3(step2.play.throttle), throttleAfterRelease: r3(t1), throttle500msLater: r3(t2) });
-    await ev(p, 'h.prefs.set("input.altitudeHelp", true); return 0;');
     // the quiet sound and the quick mute
     const vol = await ev<number>(p, 'return h.prefs.get("sound.volume");');
     const m0 = await ev<boolean>(p, 'return h.prefs.get("sound.motors");');
@@ -238,20 +205,6 @@ if (ONLY !== 'T') {
     await p.click('[data-action="sound-toggle"]');
     const m2 = await ev<boolean>(p, 'return h.prefs.get("sound.motors");');
     check('S1 the motor sound is 15 % by default; the speaker on the top bar mutes and unmutes it', vol === 15 && m0 === true && m1 === false && pressed === 'true' && m2 === true, { volume: vol, before: m0, afterClick: m1, ariaPressed: pressed, afterSecondClick: m2 });
-    // Space in easy play: a tap in the air keeps the motors on; held 0.8 s it stops them (the control:
-    // the same measurement sees the motors stop when they are told to)
-    await sleep(1500);
-    const ySpace = await ev<number>(p, 'return s.sim.s[1];');
-    await p.keyboard.down('Space'); await sleep(120); await p.keyboard.up('Space');
-    await sleep(1500);
-    const tap = await ev<Any>(p, 'return { armed: s.sim.armed, y: s.sim.s[1], want: h.play().want };');
-    await p.keyboard.down('Space'); await sleep(800); await p.keyboard.up('Space');
-    await sleep(300);
-    const held = await ev<Any>(p, 'return { armed: s.sim.armed, want: h.play().want, arm: h.play().arm };');
-    check('K11 Space: a tap in the air keeps the drone flying and its height; held 0.8 s it stops the motors (control)', tap.armed === true && tap.want === true && Math.abs(tap.y - ySpace) < 0.5 && held.want === false && held.armed === false, { afterTap: { armed: tap.armed, want: tap.want, heightChangeM: r3(tap.y - ySpace) }, afterHold: held });
-    await sleep(2000);
-    const rep = await replayCheck(p, 'v08-play-k');
-    check('K12 the easy-play flight (auto-arm, altitude help, Space) replays from its log to the same hash; controls: one LSB and a 0.05 stick twitch in one record change it', rep.ok, rep);
     const errs = L.console.filter((l) => l.startsWith('pageerror'));
     check('K8 no page errors', errs.length === 0, { errors: errs.slice(0, 5) });
     await L.browser.close();
