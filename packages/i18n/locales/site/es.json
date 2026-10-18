@@ -600,6 +600,7 @@
     "eyebrow": "Novedad: escala de la escena",
     "h2": "Encógete: vuela una habitación como si fuera una ciudad",
     "lead": "Dos teclas escalan toda la escena alrededor del dron, de ×0,25 a ×100. A ×100 tienes el tamaño de un mosquito: una silla es un rascacielos y el hueco bajo la cama, un cañón. Lánzate en picado junto a la pata de una silla: la sensación es increíble.",
+    "macro": "Los escaneos macro también funcionan: una planta, un juguete o un insecto es un objeto pequeño y real, así que amplíalo de ×3 a ×10 y vuélalo como un edificio grande, entre las hojas o alrededor de una mosca. Estas escenas pueden arrancar ya ampliadas, y [ y ] cambian el tamaño en cualquier momento. Al revés, reduce una ciudad (hasta ×0,25) para que parezca una maqueta y vuélala con un micro whoop.",
     "stops": [
       { "k": "×0,25", "d": "un escaneo que salió demasiado grande" },
       { "k": "×1", "d": "tamaño real" },

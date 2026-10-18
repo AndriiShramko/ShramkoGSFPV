@@ -2,7 +2,11 @@
 
 Routes (nginx: location ^~ /api/admin/, GET/POST only, 256 KB bodies; location = /api/catalog):
 GET  /api/catalog                      the published scene catalogue for the scene picker (public,
-                                       ETag + If-None-Match -> 304, max-age 60); hidden scenes left out
+                                       ETag + If-None-Match -> 304, max-age 60); hidden scenes left out of
+                                       "scenes". "defaults" ({"<id>": {"scale": 3}}) holds the default Scene
+                                       size of each HIDDEN published scene that has one: the only thing the
+                                       public learns about a hidden scene (v0.9, so a link to it opens at the
+                                       owner's size). The unpublished draft is never exposed.
 POST /api/admin/login {password}       a session cookie + the CSRF token
 POST /api/admin/logout
 GET  /api/admin/session                the CSRF token of the current session (a page reload)
@@ -69,6 +73,9 @@ LOCALES = ("en", "es", "pl", "ru")
 KINDS = ("interior", "exterior", "other")
 REPORT_STATUSES = ("open", "closed")
 MAX_SCENES = 500
+# the default Scene size of a scene: the pilot's [ ] range (packages/prefs SCALE_MIN/MAX, packages/scenes
+# CATALOG_SCALE_MIN/MAX; packages/scenes/test/fixtures/scene-scale-range.json keeps the three equal)
+SCALE_MIN, SCALE_MAX = 0.25, 100
 MAX_COLLECTIONS = 40
 HISTORY_LISTED = 50
 _ID_RE = re.compile(r"[0-9a-f]{6,32}")
@@ -283,7 +290,7 @@ def clean_scene(e) -> dict:
     out: dict = {"id": sid, "title": title, "author": _words(e.get("author"), 80), "license": _words(e.get("license"), 40),
                  "kind": e.get("kind") if e.get("kind") in KINDS else "other"}
     for k, lo, hi, whole in (("version", 1, 999999, True), ("voxelCm", 0.1, 100, False), ("sizeMb", 0.01, 100000, False),
-                             ("scale", 0.25, 4, False), ("dropFloaters", 0, 64, True)):
+                             ("scale", SCALE_MIN, SCALE_MAX, False), ("dropFloaters", 0, 64, True)):
         x = _number(e.get(k), lo, hi, whole)
         if x is not None:
             out[k] = x
@@ -434,7 +441,8 @@ class CatalogStore:
             return doc
 
     def public(self) -> tuple[bytes, str] | None:
-        """What /api/catalog sends (hidden scenes and the admin-only field dropped) and its ETag."""
+        """What /api/catalog sends and its ETag: the published scenes without the admin-only field and without
+        the hidden ones, and "defaults", the Scene size of each hidden scene that has one (nothing else of it)."""
         with self._mu:
             doc = self.published()
             if doc is None:
@@ -443,8 +451,11 @@ class CatalogStore:
             key = (st.st_mtime_ns, st.st_size, str(self._p("catalog.json")))
             if self._public is None or self._public[0] != key:
                 scenes = [{k: v for k, v in s.items() if k != "hidden"} for s in doc["scenes"] if not s.get("hidden")]
-                body = json.dumps({"v": 1, "published": doc.get("published"), "collections": doc["collections"], "scenes": scenes},
-                                  ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+                out = {"v": 1, "published": doc.get("published"), "collections": doc["collections"], "scenes": scenes}
+                defaults = {s["id"]: {"scale": s["scale"]} for s in doc["scenes"] if s.get("hidden") and s.get("scale") not in (None, 1)}
+                if defaults:
+                    out["defaults"] = defaults
+                body = json.dumps(out, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
                 self._public = (key, body, '"' + hashlib.sha256(body).hexdigest()[:32] + '"')
             return self._public[1], self._public[2]
 

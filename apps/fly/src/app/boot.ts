@@ -2,7 +2,7 @@
 // (app/prefs.ts: opened once, the v0.2 keys migrated at the first v0.3 boot), the first-visit
 // warning, the scene from the link or the scene picker; a scan that fails to load comes back to the
 // picker with its error.
-import { flyQueryString, parseSceneLink, sceneRender, writeSceneQuery } from '@gsfpv/scenes';
+import { flyQueryString, parseSceneLink, parseSharedSettings, sceneRender, stripSharedParams, writeSceneQuery } from '@gsfpv/scenes';
 import { ScenePicker, loadCatalog } from '../ui/scenes';
 import type { PickSource } from '../ui/picker-tabs';
 import { warningModal } from '../ui/panels';
@@ -10,7 +10,8 @@ import { t } from '../i18n';
 import { banner, beacon, hasHid, hasWebGPU, q } from './env';
 import { hook } from './test-hook';
 import { fly } from './flight';
-import { mirrorWarned, openPagePrefs, prefsHook } from './prefs';
+import { linkSettings, mirrorWarned, openPagePrefs, prefsHook } from './prefs';
+import { applyShared, beginSharedVisit } from './shared-visit';
 import { openSettingsLink, storageBanner } from './builtin/settings';
 import { useStoreLibrary } from './scene-host';
 import { pageRender } from './drawing';
@@ -22,7 +23,8 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
     const catalog = await loadCatalog();
     const showcase = catalog.scenes;
     // the curated scans are the store's per-scan defaults (the walls switch), so it opens after them
-    const prefs = openPagePrefs(showcase, q.toString());
+    // `defaults`: the owner's size for scenes the picker does not list (hidden), so a link to one opens at it too
+    const prefs = openPagePrefs(showcase, q.toString(), { defaults: catalog.defaults });
     hook.prefs = prefsHook(prefs);
     // E.1: history, favourites and the filter live in the store from here on (the picker reads them)
     useStoreLibrary(prefs);
@@ -54,6 +56,11 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
         const render = page ? sceneRender(pageRender, link.render) : link.render;
         const u = new URL(location.href);
         writeSceneQuery(u.searchParams, link.id, render);
+        // v0.9 item 15: the settings of a shared link belong to the page's own scene and to this visit: they go into the
+        // store's visit layer before the flight reads it (the chip offers Keep / Reset); a scene picked or pasted here has
+        // none, and the address loses the previous link's, so a reload cannot hand them to another scene
+        if (page) beginSharedVisit(link.id, applyShared(prefs, link.id, parseSharedSettings(q), linkSettings()));
+        else stripSharedParams(u.searchParams);
         u.search = flyQueryString(u.searchParams);
         history.replaceState(null, '', u);
         beacon('scene_open', { source });

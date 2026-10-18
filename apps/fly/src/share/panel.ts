@@ -19,6 +19,8 @@ import { SHARE_W, SHARE_H } from './picture';
 import { copyText } from './clipboard';
 import { dataUrlBytes, inFlight, instagramCaption, kindOf, shareApiBody, shareLink, targetHref, wordsKey } from './links';
 import type { ShareDrawing, ShareEntry } from './links';
+import { sharedQuery } from '@gsfpv/scenes';
+import type { SharedSettings } from '@gsfpv/scenes';
 import './share.css';
 
 /** One share: where it started, the scene, and what the place it started from can add. */
@@ -39,6 +41,11 @@ export interface ShareRequest {
      * the page's own query is never read for it.
      */
     drawing: ShareDrawing;
+    /**
+     * the scene settings the sharer flies the scene with that differ from the scene's defaults (v0.9, share/shared.ts):
+     * Scene size, walls, floater cleanup, wind, collision ceiling, drone. The link carries them and POST /api/share sends them.
+     */
+    shared?: SharedSettings;
     /** the crash's impact speed, m/s (the crash panel's words) */
     speed?: number;
 }
@@ -52,7 +59,7 @@ export interface ShareHost {
 }
 
 /** What a test or the acceptance reads of the panel shown last (window.__gsfpv.share); `files`: the video's parts offered. */
-export interface ShareState { entry: ShareEntry; kind: string; url: string | null; text: string; picture: boolean; video: 'none' | 'loading' | 'ready' | 'gone'; files: string[]; canShareFiles: boolean }
+export interface ShareState { entry: ShareEntry; kind: string; url: string | null; text: string; picture: boolean; video: 'none' | 'loading' | 'ready' | 'gone'; files: string[]; canShareFiles: boolean; /** the scene settings the link carries, as its query text (v0.9; '' for none) */ shared: string }
 let lastState: ShareState | null = null;
 /** The last share panel's state (null: none opened in this page). */
 export function shareState(): ShareState | null {
@@ -90,7 +97,7 @@ export function openSharePanel(host: ShareHost, req: ShareRequest): { close(): v
     const text = t(wordsKey(kind), { scene: sceneName, speed: (req.speed ?? 0).toFixed(1) });
     const credit = creditText(req.scene);
     const nav = navigator as ShareNav;
-    const state: ShareState = { entry: req.entry, kind, url: null, text, picture: false, video: req.video ? 'loading' : 'none', files: [], canShareFiles: false };
+    const state: ShareState = { entry: req.entry, kind, url: null, text, picture: false, video: req.video ? 'loading' : 'none', files: [], canShareFiles: false, shared: sharedQuery(req.shared ?? {}) };
     lastState = state;
 
     let closed = false;
@@ -192,6 +199,7 @@ export function openSharePanel(host: ShareHost, req: ShareRequest): { close(): v
 
     const at = { origin: location.origin, locale };
     const drawing = req.drawing;
+    const shared = req.shared ?? {};
     void (async () => {
         if (req.video) {
             try { parts = await req.video(); } catch { parts = []; }
@@ -212,7 +220,7 @@ export function openSharePanel(host: ShareHost, req: ShareRequest): { close(): v
                 const r = await fetch('/api/share', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     // render: how the scene is drawn, so /s/<id> opens the same deep link (apps/api/server.py fly_link)
-                    body: JSON.stringify(shareApiBody({ image: picture, sceneId: req.scene.id, title: req.scene.title, credit, locale, drawing }))
+                    body: JSON.stringify(shareApiBody({ image: picture, sceneId: req.scene.id, title: req.scene.title, credit, locale, drawing, shared }))
                 });
                 const j = (await r.json()) as { ok?: boolean; url?: string };
                 if (!r.ok || !j.ok || !j.url) throw new Error(`share ${r.status}`);
@@ -222,7 +230,7 @@ export function openSharePanel(host: ShareHost, req: ShareRequest): { close(): v
             }
         }
         if (closed) return;
-        const url = shareLink({ entry: req.entry, sceneId: req.scene.id, inCatalogue: req.scene.inCatalogue, at, pictureUrl, drawing });
+        const url = shareLink({ entry: req.entry, sceneId: req.scene.id, inCatalogue: req.scene.inCatalogue, at, pictureUrl, drawing, shared });
         status.textContent = failed ? t('share.failed') : pictureUrl ? t('share.ready') : t('share.ready.page');
         show(url);
     })();

@@ -1,0 +1,9 @@
+/* Small notes about the scene over the flight, bottom centre (app/scene-notes.ts): the chip for the
+   settings a shared link brought (builtin/shared-settings.ts) and the one-time macro hint (builtin/scale.ts).
+   The strip never takes a click except on a note's own buttons (#ui is click-through). */
+.scene-notes { position: absolute; left: 50%; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 56px); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; width: min(560px, calc(100vw - 24px)); pointer-events: none; z-index: 4; }
+.scene-note { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 10px; max-width: 100%; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--line); background: rgba(8, 11, 16, .88); backdrop-filter: blur(6px); color: var(--fg); font-size: 14px; line-height: 1.35; text-align: center; }
+.scene-note .sn-text { flex: 1 1 auto; min-width: 0; }
+.scene-note .sn-btn { min-height: 34px; padding: 4px 12px; }
+.shared-chip .sn-text b { color: var(--accent); font-weight: 600; }
+@media (max-width: 520px) { .scene-notes { bottom: calc(max(12px, env(safe-area-inset-bottom)) + 150px); } } /* above the touch pads' row */

@@ -1,0 +1,21 @@
+{
+  "shared.chip": "Shared settings: {items}",
+  "shared.chip.aria": "Settings that came with the shared link",
+  "shared.sep": ", ",
+  "shared.keep": "Keep",
+  "shared.keep.aria": "Keep these settings as your own",
+  "shared.reset": "Reset",
+  "shared.reset.aria": "Go back to your own settings",
+  "shared.kept": "Saved as your own settings.",
+  "shared.reset.done": "Back to your own settings.",
+  "shared.item.size": "x{x}",
+  "shared.item.wallsOff": "walls off",
+  "shared.item.wallsOn": "walls on",
+  "shared.item.floaters": "cleanup of pieces under {n} blocks",
+  "shared.item.floatersOff": "no cleanup",
+  "shared.item.wind": "wind {speed} m/s from {from}°",
+  "shared.item.windOff": "no wind",
+  "shared.item.ceiling": "ceiling {h} m",
+  "shared.item.ceilingOff": "no ceiling",
+  "shared.item.drone": "{name}"
+}

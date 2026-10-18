@@ -120,7 +120,7 @@ The release with the Feedback dialog and "Share this scene" needs the new API an
 | Route | nginx | API |
 |---|---|---|
 | `POST /api/report` | `location = /api/report`, POST only, `client_max_body_size 512k`, no cookies | a bug or an idea: stored first in `data/reports.jsonl` (fsync, id `R-YYYYMMDD-NNNN`), then the report in the owner's Telegram (until v0.6 a short note without the diagnostics; since v0.7 the whole report, see "Ideas (v0.7)" below). A bug's diagnostics only with the visitor's consent, in `data/reports/<id>.json`. 8 KB of words, 512 KB on the wire, gzip accepted (unpacked at most 2 MB); honeypot and time-to-submit as for a lead (a suspect is stored, not sent, keeps no diagnostics); 10 an hour per visitor, 300 in all; the disk guard and `REPORTS_CAP_BYTES` (default 1 GB) skip diagnostics, never the record |
-| `POST /api/share` | `location = /api/share`, POST only, 512k | a whole JPEG of exactly 1200x630 (at most 400 KB), its words and optionally the flight link's drawing (`render`: `budgetM` 0.25..32, `stochastic` true/false; `/s/<id>` then links `/fly/?scene=<id>&budget=<M>&stochastic`): `data/share/<id>.jpg` + `.json`, id 11 random URL-safe characters; 12 an hour per visitor, 300 in all; 503 under the disk guard, 507 over `SHARE_CAP_BYTES` (default 1 GB) |
+| `POST /api/share` | `location = /api/share`, POST only, 512k | a whole JPEG of exactly 1200x630 (at most 400 KB), its words and optionally the flight link's drawing (`render`: `budgetM` 0.25..32, `stochastic` true/false; `/s/<id>` then links `/fly/?scene=<id>&budget=<M>&stochastic`) and optionally `shared`, the sharer's scene settings that differ from the scene's defaults (v0.9: `size` 0.25..100, `walls` on/off, `floaters` 0..64, `wind` off or `{fromDeg, speed, gust}`, `ceiling` off or metres, `drone` id; read strictly, a bad field is dropped; `/s/<id>` appends `&sz=3&wl=0&fl=4&wd=270,4,2&ce=12.5&drone=<id>`): `data/share/<id>.jpg` + `.json`, id 11 random URL-safe characters; 12 an hour per visitor, 300 in all; 503 under the disk guard, 507 over `SHARE_CAP_BYTES` (default 1 GB) |
 | `GET /s/<id>`, `GET /s/<id>.jpg` | `location ~ "^/s/[A-Za-z0-9_-]{11}(\.jpg)?$"`, GET/HEAD only; any other `/s/...` is the static 404 | the share page: Open Graph and Twitter card tags (og:image is the picture), its own CSP (one hashed script sends a person on to `/<locale>/fly/?scene=<id>`; crawlers do not run it); the picture with `Cache-Control: immutable` |
 
 New environment (in `compose.yml`'s `environment` or `config.env`, all optional, no secrets):
@@ -290,10 +290,17 @@ login is refused before the password is looked at. Every action goes to `data/ad
 **The catalogue entry** (the order in the list is the order pilots see): `id` (SuperSplat id), `version`
 (CDN folder v<N>), `title`, `author`, `license`, `thumb` (poster URL, S3 or the CDN only), `kind`
 (`interior`, `exterior`, `other`), `collision` (the scene has walls), `walls` (`on`/`off`: the admin
-default of the walls switch), `dropFloaters` (0-64), `scale` (0.25-4), `voxelCm`, `sizeMb`, `format`,
+default of the walls switch), `dropFloaters` (0-64), `scale` (0.25-100: the default Scene size, the pilot's [ ] range), `voxelCm`, `sizeMb`, `format`,
 `defaultDrone`, `pitch` (one line per language, `{"en": ..., "ru": ...}`), `collections` (ids of the
 catalogue's `collections`, each `{id, title: {en, es, pl, ru}}`), `pinned` (the Featured row), `hidden`
 (kept, not shown). `showcase.json`'s fields mean the same.
+
+**Default Scene size and the public catalogue (v0.9).** `GET /api/catalog` sends the published scenes without the
+hidden ones, plus `defaults`: `{"<sceneId>": {"scale": 30}}` for each hidden published scene whose `scale` is not 1
+(the only thing the public learns of a hidden scene; the draft is never exposed). The simulator applies the size
+whenever that scene opens (picker, `/fly/?scene=<id>`, a pasted superspl.at link, N): a shared link's size >
+the pilot's own saved size for the scene > this default > 1. Same ETag / `max-age=60` as the rest, so a change goes
+live within a minute of Publish. Needs the API (`admin.py`) deployed before the simulator build.
 
 v0.7 fields (`packages/scenes/src/catalog.ts` and `admin.py` keep the same rules; out of range = dropped):
 `geo` `{lat, lon, place?}` (WGS84, 3 decimals), `compassDeg` (0-360, the compass heading of the scene's

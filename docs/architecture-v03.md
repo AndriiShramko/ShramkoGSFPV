@@ -415,7 +415,7 @@ This removes "closing with x throws the edits away" and "Apply resets the flight
 | `scenes.rotation` | scenes | global | curated / favourites / history | **curated** | live | settings | 10 |
 | `scenes.order` | scenes | global | random / sequential | random | live | settings | 10 |
 | `scenes.allowNoWalls` | scenes | global | bool | off | live | settings | 10 |
-| `scene.transform` | scenes | scene | { s 0.25–4, t } | curated `scale` or 1 | live (world record) | summary row, [ ] | 11 |
+| `scene.transform` | scenes | scene | { s 0.25–100, t } | curated `scale` (0.25–100, v0.9) or 1 | live (world record) | summary row, [ ] | 11 |
 | `scene.dropFloaters` | voxels | scene | 0–64 blocks | 0 (off) | life | settings | 24 |
 | `voxels.show` | voxels | global | off / overlay / only | off | live | V, settings | 24 |
 | `voxels.opacity` | voxels | global | 0–1 | 0.35 | live | settings | 24 |

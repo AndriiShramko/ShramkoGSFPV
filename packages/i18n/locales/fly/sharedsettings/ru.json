@@ -1,0 +1,21 @@
+{
+  "shared.chip": "Настройки из ссылки: {items}",
+  "shared.chip.aria": "Настройки, пришедшие с общей ссылкой",
+  "shared.sep": ", ",
+  "shared.keep": "Оставить",
+  "shared.keep.aria": "Оставить эти настройки своими",
+  "shared.reset": "Сбросить",
+  "shared.reset.aria": "Вернуть свои настройки",
+  "shared.kept": "Сохранено как ваши настройки.",
+  "shared.reset.done": "Вернулись ваши настройки.",
+  "shared.item.size": "x{x}",
+  "shared.item.wallsOff": "стены выключены",
+  "shared.item.wallsOn": "стены включены",
+  "shared.item.floaters": "очистка кусков меньше {n} блоков",
+  "shared.item.floatersOff": "без очистки",
+  "shared.item.wind": "ветер {speed} м/с, с {from}°",
+  "shared.item.windOff": "без ветра",
+  "shared.item.ceiling": "потолок {h} м",
+  "shared.item.ceilingOff": "без потолка",
+  "shared.item.drone": "{name}"
+}

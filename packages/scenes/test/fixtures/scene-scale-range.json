@@ -1,0 +1,20 @@
+{
+  "about": "The range of a catalogue scene's default Scene size (CatalogScene.scale). Two writers must agree: packages/scenes/src/catalog.ts readScene and apps/api/admin.py clean_scene. packages/scenes/test/catalog.test.ts and apps/api/tests/test_admin.py both read this table; tools/bench/test/scene-default.test.ts keeps min/max equal to the pilot's [ ] range (packages/prefs SCALE_MIN/MAX). kept: the value the entry keeps, null: the field is dropped.",
+  "min": 0.25,
+  "max": 100,
+  "rows": [
+    { "scale": 0.25, "kept": 0.25 },
+    { "scale": 1, "kept": 1 },
+    { "scale": 3.5, "kept": 3.5 },
+    { "scale": 9, "kept": 9 },
+    { "scale": 30, "kept": 30 },
+    { "scale": 100, "kept": 100 },
+    { "scale": 0.24, "kept": null },
+    { "scale": 100.5, "kept": null },
+    { "scale": 0, "kept": null },
+    { "scale": -3, "kept": null },
+    { "scale": "5", "kept": null },
+    { "scale": true, "kept": null },
+    { "scale": null, "kept": null }
+  ]
+}

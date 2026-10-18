@@ -222,6 +222,21 @@ describe('walls switch: one choice for every scan, and the flight follows the st
         expect([p.live(), p.walls.adminOff]).toEqual([true, false]);
     });
 
+    it('the note "walls off by the admin\'s default" is true only while the walls ARE off: a shared link\'s or a ?walls= value that turns them on takes it away', () => {
+        freshStorage();
+        // v0.9 lane C: a shared link with wl=1 on a scan whose admin default is off (the visit layer)
+        const p = page('', NOISY);
+        expect([p.live(), p.walls.adminOff]).toEqual([false, true]); // control: nobody turned them on
+        expect(p.store.setVisit(NOISY, 'scene.walls', 'on').ok).toBe(true);
+        expect([p.live(), p.walls.adminOff]).toEqual([true, false]);
+        p.store.clearVisit(NOISY); // Reset: the admin's default again
+        expect([p.live(), p.walls.adminOff]).toEqual([false, true]);
+        // the same through the URL's session layer (?walls=on), which had the same gap before the visit layer existed
+        freshStorage();
+        const q = page('walls=on', NOISY);
+        expect([q.live(), q.walls.adminOff]).toEqual([true, false]);
+    });
+
     it('Settings, a reset or an import changes the store: the flight follows at once, one new life each', () => {
         freshStorage();
         const p = page('', CLEAN);

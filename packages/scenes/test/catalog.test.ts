@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { collectionId, localText, moveItem, readCatalog, storefront } from '../src/catalog';
+import { CATALOG_SCALE_MAX, CATALOG_SCALE_MIN, collectionId, localText, moveItem, readCatalog, readScene, sceneDefaultScale, storefront } from '../src/catalog';
 
 const SHOWCASE = JSON.parse(readFileSync(join(__dirname, '..', '..', '..', 'apps', 'fly', 'public', 'showcase.json'), 'utf8'));
 
@@ -20,7 +20,8 @@ describe('readCatalog', () => {
             scenes: [{ id: 'abcdef12', title: 'A', pinned: true, pitch: 'Go', collections: ['cities'], evil: 1, scale: 9 }, { id: 'abcdef12', title: 'dup' }, { id: '../x', title: 'B' }, 'junk']
         })!;
         expect(c.collections.map((x) => x.id)).toEqual(['cities']);
-        expect(c.scenes).toEqual([{ id: 'abcdef12', title: 'A', author: '', license: '', kind: 'other', collision: true, pinned: true, pitch: { en: 'Go' }, collections: ['cities'] }]);
+        // scale 9 is a valid default size since v0.9 (0.25..100)
+        expect(c.scenes).toEqual([{ id: 'abcdef12', title: 'A', author: '', license: '', kind: 'other', collision: true, scale: 9, pinned: true, pitch: { en: 'Go' }, collections: ['cities'] }]);
         // control: no scene list at all is "no catalogue", not an empty one
         expect(readCatalog({ ok: false })).toBeNull();
         expect(readCatalog('<!doctype html>')).toBeNull();
@@ -70,5 +71,40 @@ describe('admin helpers', () => {
         expect(localText({ en: 'Fly', ru: 'R' }, 'ru')).toBe('R');
         expect(localText({ en: 'Fly' }, 'pl')).toBe('Fly');
         expect(localText(undefined, 'pl')).toBe('');
+    });
+});
+
+const SCALE_TABLE = JSON.parse(readFileSync(join(__dirname, 'fixtures', 'scene-scale-range.json'), 'utf8')) as { min: number; max: number; rows: { scale: unknown; kept: number | null }[] };
+
+describe('the default Scene size of a scene (v0.9, item 14)', () => {
+    const kept = (scale: unknown): number | undefined => readScene({ id: 'abcdef12', title: 'A', scale })?.scale;
+
+    it('0.25..100, the table the admin API reads too (apps/api/admin.py clean_scene)', () => {
+        expect([CATALOG_SCALE_MIN, CATALOG_SCALE_MAX]).toEqual([SCALE_TABLE.min, SCALE_TABLE.max]);
+        for (const row of SCALE_TABLE.rows) expect(kept(row.scale), JSON.stringify(row)).toBe(row.kept ?? undefined);
+        // control: the range before v0.9 (0.25..4) drops what this table keeps above 4
+        const before = (v: unknown): number | undefined => (typeof v === 'number' && v >= 0.25 && v <= 4 ? v : undefined);
+        expect(SCALE_TABLE.rows.filter((r) => before(r.scale) !== (r.kept ?? undefined)).map((r) => r.scale)).toEqual([9, 30, 100]);
+    });
+
+    it('defaults: read strictly (a scene id and a scale in range), nothing else gets through', () => {
+        const c = readCatalog({
+            scenes: [{ id: 'aaaaaa01', title: 'A' }],
+            defaults: { aaaaaa02: { scale: 30, title: 'leak' }, '../x': { scale: 3 }, aaaaaa03: { scale: 500 }, aaaaaa04: { scale: 'big' }, aaaaaa05: 7, aaaaaa06: {} }
+        })!;
+        expect(c.defaults).toEqual({ aaaaaa02: { scale: 30 } });
+        // control: no defaults key (an older API, the static list) and a junk one both read as none
+        expect(readCatalog({ scenes: [] })!.defaults).toBeUndefined();
+        expect(readCatalog({ scenes: [], defaults: [1, 2] })!.defaults).toBeUndefined();
+        expect(readCatalog({ scenes: [], defaults: { aaaaaa03: { scale: 500 } } })!.defaults).toBeUndefined();
+    });
+
+    it('sceneDefaultScale: the entry of the scene itself, else the default of a hidden one, else nothing', () => {
+        const c = readCatalog({ scenes: [{ id: 'aaaaaa01', title: 'A', scale: 5 }, { id: 'aaaaaa07', title: 'B' }], defaults: { aaaaaa02: { scale: 30 }, aaaaaa01: { scale: 99 } } })!;
+        expect(sceneDefaultScale(c, 'aaaaaa01')).toBe(5); // its own entry wins over a defaults row
+        expect(sceneDefaultScale(c, 'aaaaaa02')).toBe(30); // hidden: only in defaults
+        expect(sceneDefaultScale(c, 'aaaaaa07')).toBeUndefined(); // listed, no size
+        expect(sceneDefaultScale(c, 'ffffff00')).toBeUndefined(); // not in the catalogue at all
+        expect(sceneDefaultScale(c, '__proto__')).toBeUndefined();
     });
 });

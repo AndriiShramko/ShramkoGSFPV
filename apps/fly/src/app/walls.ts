@@ -33,7 +33,8 @@ export function wallsHost(o: { session: () => FlightSession; scene: () => SceneR
     return {
         has: () => !!o.session().collision,
         on: () => o.session().wallsOn,
-        get adminOff() { return o.scene().meta?.walls === 'off' && !o.prefs.isExplicit('scene.walls'); },
+        // the admin's default is why they are off: his default says off, the pilot never chose, and nothing else (?walls=, a shared link's wl=1) turns them on
+        get adminOff() { return o.scene().meta?.walls === 'off' && !o.prefs.isExplicit('scene.walls') && !wanted(); },
         set(on: boolean, remember = true): void {
             if (wanted() === on) return;
             const v = on ? 'on' : 'off';

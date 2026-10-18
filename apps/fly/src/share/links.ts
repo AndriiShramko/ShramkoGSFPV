@@ -22,9 +22,15 @@
 // owner's entry itself whenever the link names nothing. So `render` below is the link's, `catalogue`
 // the owner's, and only the first one ever reaches a URL or the /api/share body.
 //
+// The sharer's scene settings (v0.9 item 15: Scene size, walls, floater cleanup, wind, collision ceiling, drone)
+// go after the deep link as compact parameters (@gsfpv/scenes shared-settings.ts; share/shared.ts decides
+// which differ from the scene's defaults), so a scene with some of them is shared as its deep link, not as
+// its static page. How the scene is DRAWN stays lane R's alone: the pilot's own Display drawing / budget choice is
+// a choice about his device, not about the scene, so a share never carries it (decision C3).
+//
 // Pure: no DOM, no clock, no fetch (tools/bench/test/flight-ux.test.ts). share/panel.ts is the page.
-import { flyDeepLink, sameRender, sceneRender } from '@gsfpv/scenes';
-import type { SceneRender } from '@gsfpv/scenes';
+import { appendShared, flyDeepLink, isEmptyShared, sameRender, sceneRender } from '@gsfpv/scenes';
+import type { SceneRender, SharedSettings } from '@gsfpv/scenes';
 
 /**
  * Where a share starts. In a flight: `top` (the button on the top bar), `key` (L), `pause` (the pause
@@ -93,10 +99,11 @@ export function cardDrawing(meta: { render?: SceneRender } | undefined): ShareDr
  * scan outside the catalogue has no page, and a catalogue scan whose link asked for another drawing
  * would lose it there. The owner's entry is not written into the deep link (see the top of the file).
  */
-export function scenePageUrl(id: string, inCatalogue: boolean, at: PagePlace, drawing: ShareDrawing = {}): string {
+export function scenePageUrl(id: string, inCatalogue: boolean, at: PagePlace, drawing: ShareDrawing = {}, shared: SharedSettings = {}): string {
     const asCatalogue = sceneRender(undefined, drawing.catalogue);
-    if (inCatalogue && sameRender(sceneRender(drawing.render, drawing.catalogue), asCatalogue)) return `${at.origin}/${at.locale}/scenes/${id}/`;
-    return `${at.origin}${flyDeepLink(`/${at.locale}/fly/`, id, drawing.render)}`;
+    // the static page cannot carry settings: a scene shared with some goes out as its deep link
+    if (inCatalogue && isEmptyShared(shared) && sameRender(sceneRender(drawing.render, drawing.catalogue), asCatalogue)) return `${at.origin}/${at.locale}/scenes/${id}/`;
+    return `${at.origin}${appendShared(flyDeepLink(`/${at.locale}/fly/`, id, drawing.render), shared)}`;
 }
 
 /**
@@ -104,18 +111,20 @@ export function scenePageUrl(id: string, inCatalogue: boolean, at: PagePlace, dr
  * picture's page could be made (`pictureUrl`), else the scene's page (scenePageUrl, with `drawing`,
  * the shared scene's drawing).
  */
-export function shareLink(o: { entry: ShareEntry; sceneId: string; inCatalogue: boolean; at: PagePlace; pictureUrl: string | null; drawing?: ShareDrawing }): string {
+export function shareLink(o: { entry: ShareEntry; sceneId: string; inCatalogue: boolean; at: PagePlace; pictureUrl: string | null; drawing?: ShareDrawing; shared?: SharedSettings }): string {
     if (inFlight(o.entry) && o.pictureUrl) return o.pictureUrl;
-    return scenePageUrl(o.sceneId, o.inCatalogue, o.at, o.drawing);
+    return scenePageUrl(o.sceneId, o.inCatalogue, o.at, o.drawing, o.shared);
 }
 
 /**
  * The body of POST /api/share (apps/api/server.py): the picture, the scene, its words, and `render`,
  * what the scene's link asked for (never the owner's entry), from which the server writes the /s/<id> page's deep link (fly_link, the
- * same table as flyDeepLink: packages/scenes/test/fixtures/fly-deep-links.json). `hp`: the honeypot.
+ * same table as flyDeepLink: packages/scenes/test/fixtures/fly-deep-links.json), and `shared`, the sharer's scene
+ * settings that differ from the scene's defaults (shared_query, packages/scenes/test/fixtures/shared-links.json).
+ * `hp`: the honeypot.
  */
-export function shareApiBody(o: { image: string; sceneId: string; title: string | null; credit: string; locale: string; drawing: ShareDrawing }): Record<string, unknown> {
-    return { image: o.image, scene: o.sceneId, render: o.drawing.render ?? null, title: o.title ?? '', credit: o.credit, locale: o.locale, hp: '' };
+export function shareApiBody(o: { image: string; sceneId: string; title: string | null; credit: string; locale: string; drawing: ShareDrawing; shared?: SharedSettings }): Record<string, unknown> {
+    return { image: o.image, scene: o.sceneId, render: o.drawing.render ?? null, shared: o.shared && !isEmptyShared(o.shared) ? o.shared : null, title: o.title ?? '', credit: o.credit, locale: o.locale, hp: '' };
 }
 
 /** The i18n key of the words for a kind (packages/i18n/locales/fly/share/). */

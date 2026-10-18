@@ -600,6 +600,7 @@
     "eyebrow": "New: scene scale",
     "h2": "Shrink yourself: fly a room like a city",
     "lead": "Two keys scale the whole scene around the drone, from ×0.25 to ×100. At ×100 you are the size of a mosquito: a chair is a tower block, the gap under the bed a canyon. Dive along a chair leg — it is an awesome feeling.",
+    "macro": "Macro scans work too: a plant, a toy or an insect is a small real object, so scale it up from ×3 to ×10 and fly it like a big building, among the leaves or around a fly. Such scenes can start already enlarged, and [ and ] change the size at any moment. The other way round, shrink a city (down to ×0.25) so it feels like a model, and fly it with a micro whoop.",
     "stops": [
       { "k": "×0.25", "d": "a scan that came out too big" },
       { "k": "×1", "d": "true size" },

@@ -600,6 +600,7 @@
     "eyebrow": "Nowość: skala sceny",
     "h2": "Zmniejsz się: lataj po pokoju jak po mieście",
     "lead": "Dwa klawisze skalują całą scenę wokół drona, od ×0,25 do ×100. Przy ×100 masz rozmiar komara: krzesło to wieżowiec, a szpara pod łóżkiem — kanion. Zanurkuj wzdłuż nogi krzesła — to niesamowite uczucie.",
+    "macro": "Skany makro też działają: roślina, zabawka czy owad to mały prawdziwy przedmiot, więc powiększ go od ×3 do ×10 i lataj jak po dużym budynku, między liśćmi albo wokół muchy. Takie sceny mogą startować już powiększone, a [ i ] zmieniają rozmiar w każdej chwili. W drugą stronę: pomniejsz miasto (do ×0,25), żeby wyglądało jak makieta, i lataj po nim mikro whoopem.",
     "stops": [
       { "k": "×0,25", "d": "skan, który wyszedł za duży" },
       { "k": "×1", "d": "prawdziwy rozmiar" },

@@ -2,11 +2,11 @@
 // to. No DOM here (architecture rule 1.4): storage arrives as a Backend, so the same store runs in
 // the page (browser.ts LocalStorageBackend), in Node tests and in the catalogue generator.
 //
-// Where a value comes from: the session layer (URL, test hook) ?? the stored entry of the def's
-// scope (global, drone[ctx.drone], scene[ctx.scene]) ?? the default (a literal, the drone preset's
-// field, the admin's value for the scan in showcase.json, or a scene's curated scale). ctx.drone
-// defaults to the drone flown now (drone.current). A def with `persist: false` lives in the
-// session layer only (this page load).
+// Where a value comes from: the session layer (URL, test hook) ?? the visit layer of ctx.scene (what a
+// shared link brought for that one scene, v0.9) ?? the stored entry of the def's scope (global,
+// drone[ctx.drone], scene[ctx.scene]) ?? the default (a literal, the drone preset's field, the admin's
+// value for the scan in showcase.json, or a scene's curated scale). ctx.drone defaults to the drone
+// flown now (drone.current). A def with `persist: false` lives in the session layer only (this page load).
 
 import { boundsOf, canonicalJson, checkValue, isCuratedRef, isPresetRef, presetValue, SCHEMA_VERSION } from './schema';
 import type { GroupId, PresetResolver, Schema, Scope, SettingDef } from './schema';
@@ -96,6 +96,14 @@ export class PrefsStore {
     private readonly origin: string;
     private readonly external: Readonly<Record<string, ValueBackend>>;
     private readonly session = new Map<string, unknown>();
+    /**
+     * The visit layer (v0.9, item 15): settings a shared link brought for ONE scene, by scene id then setting
+     * id. Read only with a ctx that names that scene, whatever the setting's own scope is (a global setting
+     * such as the walls switch is then the scene's value for this visit), never stored, never exported. The
+     * pilot's own write or reset of the same setting takes its entry out (the pilot's choice wins from then
+     * on, as with a link's value in the session layer); keepVisit stores them as his own.
+     */
+    private readonly visit = new Map<string, Map<string, unknown>>();
     /** entries and collection fields this tab changed since its last successful write */
     private readonly dirty = new Set<string>();
     private readonly dirtyCols = new Set<string>();
@@ -167,6 +175,8 @@ export class PrefsStore {
     get<T = unknown>(id: string, ctx?: Ctx): T {
         const def = this.def(id);
         if (this.session.has(id)) return clone(this.session.get(id)) as T;
+        const v = ctx?.scene !== undefined ? this.visit.get(ctx.scene) : undefined;
+        if (v?.has(id)) return clone(v.get(id)) as T;
         const s = this.stored(def, ctx);
         return (s.has ? s.value : this.defaultOf(id, ctx)) as T;
     }
@@ -253,6 +263,7 @@ export class PrefsStore {
                 if (def) this.remove(def, undefined, 'reset');
             }
             for (const def of this.schema.defs) if (def.persist === false) this.remove(def, undefined, 'reset');
+            for (const scene of [...this.visit.keys()]) this.clearVisit(scene);
         }
         for (const k of o.collections ?? []) this.replaceCollection(k, defaultCollection(k), 'reset');
     }
@@ -275,6 +286,68 @@ export class PrefsStore {
             const previous = this.get(k);
             this.session.delete(k);
             this.emit({ id: k, scope: this.def(k).scope, key: null, value: this.get(k), previous, source: 'session' });
+        }
+    }
+
+    // ------------------------------------------------------------------ the visit layer (v0.9)
+
+    /**
+     * What a shared link brought for `scene`, this visit only: `id` reads as `value` for get(id, { scene }).
+     * Validated like any write (range, option); announced as a change with source 'session', so whatever
+     * follows the store (the flight's scale, walls, floater filter, ceiling, wind) follows it.
+     */
+    setVisit(scene: string, id: string, value: unknown): SetResult {
+        const def = this.schema.byId.get(id);
+        if (!def) return { ok: false, reason: 'unknown-id' };
+        if (isReservedKey(scene) || def.persist === false) return { ok: false, reason: 'no-context' };
+        const c = this.check(def, value, null);
+        if (!c.ok) return c;
+        const previous = this.get(id, { scene });
+        let m = this.visit.get(scene);
+        if (!m) this.visit.set(scene, (m = new Map()));
+        m.set(id, c.value);
+        this.emit({ id, scope: def.scope, key: def.scope === 'scene' ? scene : null, value: clone(c.value), previous, source: 'session' });
+        return c;
+    }
+
+    /** The visit layer of `scene` (a copy): setting id -> value; empty when no shared link brought any. */
+    visitOf(scene: string): Record<string, unknown> {
+        const m = this.visit.get(scene);
+        return m ? Object.fromEntries([...m].map(([k, v]) => [k, clone(v)])) : {};
+    }
+
+    /** Takes `id` (or every setting) of `scene` out of the visit layer: the pilot's own value reads again. */
+    clearVisit(scene: string, id?: string): void {
+        const m = this.visit.get(scene);
+        if (!m) return;
+        for (const k of id === undefined ? [...m.keys()] : [id]) {
+            if (!m.has(k)) continue;
+            const previous = this.get(k, { scene });
+            m.delete(k);
+            const def = this.def(k);
+            this.emit({ id: k, scope: def.scope, key: def.scope === 'scene' ? scene : null, value: this.get(k, { scene }), previous, source: 'session' });
+        }
+        if (!m.size) this.visit.delete(scene);
+    }
+
+    /**
+     * "Keep": the visit layer of `scene` becomes the pilot's own stored settings, the same writes as if he had
+     * set each by hand (a global setting such as the walls switch is then his choice for every scan, as setting
+     * it while flying this scene would be). The ids kept, in the order they were set.
+     */
+    keepVisit(scene: string): string[] {
+        const kept: string[] = [];
+        for (const [id, value] of Object.entries(this.visitOf(scene))) if (this.write(id, value, { scene }, 'user').ok) kept.push(id);
+        this.clearVisit(scene);
+        return kept;
+    }
+
+    /** A setting the pilot wrote or reset himself leaves the visit layer: his choice wins from then on. */
+    private dropVisit(def: SettingDef, scene: string | null): void {
+        for (const [s, m] of this.visit) {
+            if (scene !== null && s !== scene) continue;
+            m.delete(def.id);
+            if (!m.size) this.visit.delete(s);
         }
     }
 
@@ -464,11 +537,18 @@ export class PrefsStore {
             this.dirty.add(slot(t.scope, t.key, id));
             this.schedule();
         }
+        // the pilot's own value for a setting a shared link set for this visit: his value reads from now on
+        if (source === 'user' || source === 'import') this.dropVisit(def, t.scope === 'scene' ? t.key : null);
         this.emit({ id, scope: t.scope, key: t.key, value: clone(c.value), previous, source });
         return c;
     }
 
     private remove(def: SettingDef, ctx: Ctx | undefined, source: ChangeSource): void {
+        // the pilot's reset also ends a shared link's value for it (announced; nothing may be stored to reset)
+        if (source === 'reset') {
+            if (def.scope !== 'scene') for (const scene of [...this.visit.keys()]) this.clearVisit(scene, def.id);
+            else if (ctx?.scene !== undefined) this.clearVisit(ctx.scene, def.id);
+        }
         if (def.persist === false) {
             if (!this.session.has(def.id)) return;
             const previous = this.get(def.id);

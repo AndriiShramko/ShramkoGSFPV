@@ -440,6 +440,7 @@ export * from './rotation';
 export * from './tour';
 export * from './catalog';
 export * from './link';
+export * from './shared-settings';
 export * from './facts';
 export * from './content';
 export * as library from './library';

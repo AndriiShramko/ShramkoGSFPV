@@ -9,7 +9,7 @@
 // licence, description, date, poster, walls, format, size) come through the server
 // (/api/admin/superspl/<id>), the CDN check says whether the simulator opens it. "Refresh from SuperSplat"
 // on a scene lists what SuperSplat says differently and applies the ticked fields.
-import { SceneError, SuperSplatCatalog, applyFacts, catalogDiff, catalogueRender, collectionId, entryFromFacts, factChanges, formatVerdict, moveItem, parseSceneLink, posterUrl, resolveScene } from '@gsfpv/scenes';
+import { CATALOG_SCALE_MAX, CATALOG_SCALE_MIN, SceneError, SuperSplatCatalog, applyFacts, catalogDiff, catalogueRender, collectionId, entryFromFacts, factChanges, formatVerdict, moveItem, parseSceneLink, posterUrl, resolveScene } from '@gsfpv/scenes';
 import type { CatalogDiff, CatalogKind, CatalogScene, ExploreItem, FactField, LocalText, SceneCatalog, SceneRender, SuperSplatFacts } from '@gsfpv/scenes';
 import { h, clear } from '../ui/dom';
 import { t, locale } from './i18n';
@@ -294,7 +294,7 @@ export class ScenesTab {
             return field(t(`admin.field.${key}`), i);
         };
         const number = (key: 'dropFloaters' | 'scale' | 'voxelCm' | 'sizeMb' | 'version', min: number, max: number, step: number): HTMLElement => {
-            const i = h('input', { type: 'number', min, max, step, inputmode: 'decimal', value: bag[key] === undefined ? '' : String(bag[key]) }) as HTMLInputElement;
+            const i = h('input', { type: 'number', min, max, step, inputmode: 'decimal', value: bag[key] === undefined ? '' : String(bag[key]), 'data-field': key }) as HTMLInputElement;
             i.addEventListener('input', () => {
                 const v = i.valueAsNumber;
                 if (Number.isFinite(v) && v >= min && v <= max) bag[key] = v; else delete bag[key];
@@ -330,7 +330,7 @@ export class ScenesTab {
             text('title', 120), text('author', 80), text('license', 40), field(t('admin.field.kind'), kind),
             ...pitch,
             h('label', { class: 'check' }, walls, ' ', t('admin.field.walls')),
-            number('dropFloaters', 0, 64, 1), number('scale', 0.25, 4, 0.05), number('voxelCm', 0.1, 100, 0.1), number('sizeMb', 0.01, 100000, 0.1),
+            number('dropFloaters', 0, 64, 1), number('scale', CATALOG_SCALE_MIN, CATALOG_SCALE_MAX, 0.05), number('voxelCm', 0.1, 100, 0.1), number('sizeMb', 0.01, 100000, 0.1),
             number('version', 1, 999999, 1), text('thumb', 300),
             cols.length ? h('fieldset', { class: 'checks' }, h('legend', {}, t('admin.collections')), ...cols) : null,
             placeEditor(s, this.api, () => this.changed(false))

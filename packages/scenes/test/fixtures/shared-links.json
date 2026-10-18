@@ -1,0 +1,58 @@
+{
+  "about": "The scene settings a share link carries (v0.9 item 15) after the fly deep link of scene 2f1ddf5f (locale en). Two writers must agree: packages/scenes/src/shared-settings.ts appendShared (the page's plain share link) and apps/api/server.py fly_link (the /s/<id> page's link). packages/scenes/test/shared-settings.test.ts and apps/api/tests/test_feedback.py both read this file. rows: render + shared -> link; queries: a page query -> what the receiver reads (ignored parameters give nothing); objects: a POST /api/share `shared` body -> what the server keeps.",
+  "rows": [
+    { "render": null, "shared": {}, "link": "/en/fly/?scene=2f1ddf5f" },
+    { "render": null, "shared": { "size": 3 }, "link": "/en/fly/?scene=2f1ddf5f&sz=3" },
+    { "render": null, "shared": { "size": 0.25, "walls": "off" }, "link": "/en/fly/?scene=2f1ddf5f&sz=0.25&wl=0" },
+    { "render": null, "shared": { "size": 100 }, "link": "/en/fly/?scene=2f1ddf5f&sz=100" },
+    { "render": null, "shared": { "walls": "on" }, "link": "/en/fly/?scene=2f1ddf5f&wl=1" },
+    { "render": null, "shared": { "floaters": 0 }, "link": "/en/fly/?scene=2f1ddf5f&fl=0" },
+    { "render": null, "shared": { "wind": "off", "ceiling": "off" }, "link": "/en/fly/?scene=2f1ddf5f&wd=off&ce=off" },
+    { "render": null, "shared": { "wind": { "fromDeg": 22.5, "speed": 7.5, "gust": 0 } }, "link": "/en/fly/?scene=2f1ddf5f&wd=22.5,7.5,0" },
+    { "render": null, "shared": { "ceiling": -3.5 }, "link": "/en/fly/?scene=2f1ddf5f&ce=-3.5" },
+    { "render": { "stochastic": true }, "shared": { "size": 2.5 }, "link": "/en/fly/?scene=2f1ddf5f&stochastic&sz=2.5" },
+    {
+      "render": { "budgetM": 8, "stochastic": true },
+      "shared": { "size": 12.5, "walls": "on", "floaters": 4, "wind": { "fromDeg": 270, "speed": 4, "gust": 2 }, "ceiling": 12.5, "drone": "nazgulf5v3-6s" },
+      "link": "/en/fly/?scene=2f1ddf5f&budget=8&stochastic&sz=12.5&wl=1&fl=4&wd=270,4,2&ce=12.5&drone=nazgulf5v3-6s"
+    }
+  ],
+  "queries": [
+    { "query": "scene=2f1ddf5f&sz=3&wl=0&fl=4&wd=270,4,2&ce=12.5&drone=taurusx8-komodo-6s", "shared": { "size": 3, "walls": "off", "floaters": 4, "wind": { "fromDeg": 270, "speed": 4, "gust": 2 }, "ceiling": 12.5, "drone": "taurusx8-komodo-6s" } },
+    { "query": "scene=2f1ddf5f&sz=0.24", "shared": {} },
+    { "query": "scene=2f1ddf5f&sz=100.5", "shared": {} },
+    { "query": "scene=2f1ddf5f&sz=1e2", "shared": {} },
+    { "query": "scene=2f1ddf5f&sz=three", "shared": {} },
+    { "query": "scene=2f1ddf5f&sz=", "shared": {} },
+    { "query": "scene=2f1ddf5f&sz=3x&wl=1", "shared": { "walls": "on" } },
+    { "query": "scene=2f1ddf5f&wl=2&fl=65", "shared": {} },
+    { "query": "scene=2f1ddf5f&wl=off&fl=-1", "shared": {} },
+    { "query": "scene=2f1ddf5f&fl=4.5", "shared": {} },
+    { "query": "scene=2f1ddf5f&fl=0", "shared": { "floaters": 0 } },
+    { "query": "scene=2f1ddf5f&wd=270,4", "shared": {} },
+    { "query": "scene=2f1ddf5f&wd=270,31,2", "shared": {} },
+    { "query": "scene=2f1ddf5f&wd=361,4,2", "shared": {} },
+    { "query": "scene=2f1ddf5f&wd=270,4,21", "shared": {} },
+    { "query": "scene=2f1ddf5f&wd=270,4,2,1", "shared": {} },
+    { "query": "scene=2f1ddf5f&wd=off", "shared": { "wind": "off" } },
+    { "query": "scene=2f1ddf5f&ce=10000.5", "shared": {} },
+    { "query": "scene=2f1ddf5f&ce=-10000", "shared": { "ceiling": -10000 } },
+    { "query": "scene=2f1ddf5f&ce=1e3", "shared": {} },
+    { "query": "scene=2f1ddf5f&drone=../x", "shared": {} },
+    { "query": "scene=2f1ddf5f&drone=Upper", "shared": {} },
+    { "query": "scene=2f1ddf5f&evil=1&budget=8&stochastic", "shared": {} }
+  ],
+  "objects": [
+    { "body": { "size": 3, "walls": "off", "floaters": 4, "wind": { "fromDeg": 270, "speed": 4, "gust": 2 }, "ceiling": 12.5, "drone": "pavo20pro-3s" }, "kept": { "size": 3, "walls": "off", "floaters": 4, "wind": { "fromDeg": 270, "speed": 4, "gust": 2 }, "ceiling": 12.5, "drone": "pavo20pro-3s" } },
+    { "body": { "size": 2.34567, "ceiling": 12.3456, "wind": { "fromDeg": 90.04, "speed": 4.26, "gust": 1.5 } }, "kept": { "size": 2.346, "ceiling": 12.35, "wind": { "fromDeg": 90, "speed": 4.3, "gust": 1.5 } } },
+    { "body": { "size": 2.0625, "ceiling": 12.125, "wind": { "fromDeg": 267.25, "speed": 4.25, "gust": 1.25 } }, "kept": { "size": 2.063, "ceiling": 12.13, "wind": { "fromDeg": 267.3, "speed": 4.3, "gust": 1.3 } } },
+    { "body": { "size": 0.3125, "ceiling": -6749.125, "wind": { "fromDeg": 355.25, "speed": 0.05, "gust": 0.15 } }, "kept": { "size": 0.313, "ceiling": -6749.13, "wind": { "fromDeg": 355.3, "speed": 0.1, "gust": 0.1 } } },
+    { "body": { "size": 101, "walls": "maybe", "floaters": 65, "wind": { "fromDeg": 1, "speed": 31, "gust": 0 }, "ceiling": 99999, "drone": "../x" }, "kept": {} },
+    { "body": { "size": "3", "walls": 1, "floaters": 4.5, "wind": "gale", "ceiling": "12", "drone": 7 }, "kept": {} },
+    { "body": { "size": true, "floaters": true, "wind": { "fromDeg": "270", "speed": 4, "gust": 2 } }, "kept": {} },
+    { "body": { "size": 0.25, "evil": "<script>", "wind": "off", "ceiling": "off" }, "kept": { "size": 0.25, "wind": "off", "ceiling": "off" } },
+    { "body": [], "kept": {} },
+    { "body": null, "kept": {} },
+    { "body": "sz=3", "kept": {} }
+  ]
+}

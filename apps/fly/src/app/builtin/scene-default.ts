@@ -35,7 +35,7 @@ export function flownDefaults(ses: FlightSession, prefs: Pick<PrefsStore, 'get'>
         dropFloaters: ses.floaterMinBlocks,
         scale: ses.transform.s,
         ceilingM: ses.ceilingM,
-        wind: flownWind(ses.windSpec, windMode(prefs.get('wind.mode')), customWind(prefs, sceneId))
+        wind: flownWind(ses.windSpec, windMode(prefs.get('wind.mode', { scene: sceneId })), customWind(prefs, sceneId))
     };
 }
 

@@ -362,6 +362,40 @@ class Share(Api):
         old = [r for r in table["rows"] if f"/en/fly/?scene=2f1ddf5f" == r["link"]]
         self.assertEqual(len(old), 1)
 
+    def test_shared_settings_table_is_the_pages_table(self):
+        """v0.9 item 15: the sharer's scene settings after the deep link. The table is the one
+        packages/scenes/test/shared-settings.test.ts holds the page's writer (appendShared) to."""
+        table = json.loads((Path(__file__).resolve().parents[3] / "packages" / "scenes" / "test" / "fixtures" / "shared-links.json").read_text(encoding="utf-8"))
+        self.assertGreater(len(table["rows"]), 8)
+        for row in table["rows"]:
+            self.assertEqual(server.fly_link("en", "2f1ddf5f", row["render"], row["shared"]), row["link"], row)
+        for case in table["objects"]:
+            self.assertEqual(server.shared_settings(case["body"]) or {}, case["kept"], case)
+        # control: the writer before (no settings) gets every row that has some wrong
+        wrong = [r for r in table["rows"] if server.fly_link("en", "2f1ddf5f", r["render"]) != r["link"]]
+        self.assertEqual(len(wrong), len([r for r in table["rows"] if r["shared"]]))
+
+    def test_page_opens_the_flight_with_the_sharers_settings(self):
+        shared = {"size": 3, "walls": "off", "floaters": 4, "wind": {"fromDeg": 270, "speed": 4, "gust": 2}, "ceiling": 12.5, "drone": "nazgulf5v3-6s"}
+        sid = self.share(scene="2f1ddf5f", render={"budgetM": 8, "stochastic": True}, shared=shared)[1]["id"]
+        page = self.call("GET", f"/s/{sid}")[1].decode()
+        self.assertIn('href="/en/fly/?scene=2f1ddf5f&amp;budget=8&amp;stochastic&amp;sz=3&amp;wl=0&amp;fl=4&amp;wd=270,4,2&amp;ce=12.5&amp;drone=nazgulf5v3-6s"', page)
+        # what is stored is the cleaned object, nothing else of the body
+        stored = json.loads((server.SHARE_DIR / f"{sid}.json").read_text(encoding="utf-8"))
+        self.assertEqual(stored["shared"], shared)
+        # hostile or malformed settings are dropped, never written into the page
+        for bad in ({"size": "<x>", "drone": "../../etc", "walls": "\"><b>"}, {"size": 1e9}, "sz=3&evil=1", [3], {"wind": "<script>"}, {"ceiling": float("nan")}):
+            s, b = self.share(scene="2f1ddf5f", shared=bad)
+            self.assertEqual(s, 200, bad)
+            page = self.call("GET", f"/s/{b['id']}")[1].decode()
+            self.assertIn('href="/en/fly/?scene=2f1ddf5f"', page, bad)
+            self.assertNotIn("<x>", page)
+            self.assertNotIn("<b>", page)
+            self.assertNotIn("shared", json.loads((server.SHARE_DIR / f"{b['id']}.json").read_text(encoding="utf-8")), bad)
+        # control: without settings the page links the plain scene, as before
+        sid = self.share(scene="2f1ddf5f")[1]["id"]
+        self.assertIn('href="/en/fly/?scene=2f1ddf5f"', self.call("GET", f"/s/{sid}")[1].decode())
+
     def test_unknown_and_malformed_ids(self):
         self.assertEqual(self.call("GET", "/s/AAAAAAAAAAA")[0], 404)
         self.assertEqual(self.call("GET", "/s/AAAAAAAAAAA.jpg")[0], 404)

@@ -12,6 +12,7 @@ import { creditFacts } from '../scene-facts';
 import { openSharePanel } from '../share/panel';
 import { shareIcon } from '../share/icon';
 import { cardDrawing } from '../share/links';
+import { sharedOfPage } from '../share/page';
 import type { ShareEntry } from '../share/links';
 import { pickerTabs } from './picker-tabs';
 import type { PickSource, PickerTab } from './picker-tabs';
@@ -216,7 +217,7 @@ export class ScenePicker {
     private share(id: string, entry: ShareEntry, listed: SceneFacts = {}): void {
         const meta = this.showcase.find((s) => s.id === id);
         this.sharePanel = openSharePanel({ parent: this.root.parentElement ?? document.body, onClose: () => { this.sharePanel = null; } },
-            { entry, scene: creditFacts(id, meta, { ...sceneFacts(id), ...listed }), drawing: cardDrawing(meta) }) ?? this.sharePanel;
+            { entry, scene: creditFacts(id, meta, { ...sceneFacts(id), ...listed }), drawing: cardDrawing(meta), shared: sharedOfPage(id, { meta }) }) ?? this.sharePanel;
     }
 
     /** A card's round Share button (under the star). */

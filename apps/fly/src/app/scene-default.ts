@@ -12,9 +12,10 @@
 // apps/api/admin.py clean_scene keeps the same ranges): an absent field is the catalogue's default.
 //  - walls: 'on' | 'off' as flown; a scan without walls keeps the entry's value.
 //  - dropFloaters: the floater filter flown, 1..64 blocks; 0 = no field.
-//  - scale: Scene size s, when it is in the catalogue's range 0.25..4 (1 = no field). Above x4 (the
-//    pilot goes to x100) the entry keeps its scale and the result says so. The pilot's offset (Scene
-//    size scales around the drone) has no catalogue field: the default scales as the catalogue does.
+//  - scale: Scene size s, when it is in the catalogue's range 0.25..100 (the pilot's own [ ] range since
+//    v0.9; 1 = no field). A value outside it (cannot be flown, kept for a range that may shrink again)
+//    leaves the entry's scale and the result says so. The pilot's offset (Scene size scales around the
+//    drone) has no catalogue field: the default scales as the catalogue does.
 //  - ceilingM: the ceiling flown, scan metres (the number the walls were cut with); none = no field.
 //  - wind (FlownWind, from flownWind): the entry's wind is never removed. The admin's own wind for this
 //    scan is saved as 'manual', still air picked for it (0 m/s, no gusts) as a calm 'manual' wind. The
@@ -22,12 +23,12 @@
 //    stays). The live wind of the place is weather, not a default: kept, and the result says so. Wind
 //    switched off is the pilot's own setting for every scan (prefs wind.mode is global), not the scan's:
 //    kept, and the result says so when the entry has a wind.
+import { CATALOG_SCALE_MAX, CATALOG_SCALE_MIN } from '@gsfpv/scenes';
 import type { CatalogScene, SceneCatalog, SceneWind } from '@gsfpv/scenes';
 import type { WindMode, WindSpec } from '../session/wind-source';
 
-/** The catalogue's range of `scale` (packages/scenes catalog.ts, apps/api/admin.py clean_scene). */
-export const CATALOG_SCALE_MIN = 0.25;
-export const CATALOG_SCALE_MAX = 4;
+/** The catalogue's range of `scale` is packages/scenes catalog.ts's (and apps/api/admin.py clean_scene's, 0.25..100). */
+export { CATALOG_SCALE_MAX, CATALOG_SCALE_MIN };
 /** The catalogue's range of `dropFloaters`. */
 export const CATALOG_FLOATERS_MAX = 64;
 
@@ -71,7 +72,7 @@ export function flownWind(spec: WindSpec | null, mode: WindMode, custom: { fromD
 export type DefaultField = 'walls' | 'dropFloaters' | 'scale' | 'ceilingM' | 'wind';
 
 /**
- * Left untouched on purpose, each said to the admin: 'scale' above the catalogue's x4; 'wind-live' the
+ * Left untouched on purpose, each said to the admin: 'scale' outside the catalogue's range; 'wind-live' the
  * live wind (weather); 'wind-off' the pilot's wind switched off (a personal setting, not the scan's).
  */
 export type KeptField = 'scale' | 'wind-live' | 'wind-off';

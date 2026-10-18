@@ -260,6 +260,9 @@ function Landing({ locale }: { locale: Locale }) {
                   </li>
                 ))}
               </ol>
+              <p className="mt-8 max-w-prose text-ink/80" data-testid="scale-macro">
+                {t("scale.macro")}
+              </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <a href={`${fly}?scene=${VIDEOS.scale.scene}`} data-track="fly_click" className="btn-primary min-h-14 px-7 text-lg sm:shrink-0">
                   {t("scale.cta")}

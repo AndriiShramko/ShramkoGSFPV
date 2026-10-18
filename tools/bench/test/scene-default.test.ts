@@ -4,13 +4,14 @@
 // Telegram, nothing leaves this machine). Every claim has a control that must fire.
 import { spawn } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { CatalogScene, SceneCatalog } from '../../../packages/scenes/src';
 import { ADMIN_HINT_KEY, AdminClient, adminHinted } from '../../../apps/fly/src/admin/api';
-import { flownWind, sceneDefaultPatch, saveSceneDefault, withSceneDefault } from '../../../apps/fly/src/app/scene-default';
+import { CATALOG_SCALE_MAX, CATALOG_SCALE_MIN, flownWind, sceneDefaultPatch, saveSceneDefault, withSceneDefault } from '../../../apps/fly/src/app/scene-default';
+import { SCALE_MAX, SCALE_MIN } from '../../../packages/prefs/src';
 import type { FlownDefaults } from '../../../apps/fly/src/app/scene-default';
 import type { WindSpec } from '../../../apps/fly/src/session/wind-source';
 
@@ -43,12 +44,19 @@ describe('what is flown -> the catalogue entry (sceneDefaultPatch, withSceneDefa
         expect(e.wind).toEqual(ALPHA.wind);
     });
 
-    it('Scene size above the catalogue\'s x4 keeps the entry\'s size; control: x4 itself is saved', () => {
-        const big = sceneDefaultPatch({ ...TUNED, scale: 10 });
-        expect(big.kept).toEqual(['scale']);
-        expect('scale' in big.set || big.drop.includes('scale')).toBe(false);
-        expect(withSceneDefault(CAT, ALPHA.id, big)!.scenes[0].scale).toBe(1.5);
-        expect(sceneDefaultPatch({ ...TUNED, scale: 4 }).set.scale).toBe(4); // control
+    it('a Scene size outside the catalogue range keeps the entry\'s size; control: x100 and x10 are saved (the range was x4 before v0.9)', () => {
+        const out = sceneDefaultPatch({ ...TUNED, scale: 150 });
+        expect(out.kept).toEqual(['scale']);
+        expect('scale' in out.set || out.drop.includes('scale')).toBe(false);
+        expect(withSceneDefault(CAT, ALPHA.id, out)!.scenes[0].scale).toBe(1.5);
+        expect(sceneDefaultPatch({ ...TUNED, scale: 100 }).set.scale).toBe(100); // control
+        expect(sceneDefaultPatch({ ...TUNED, scale: 10 }).set.scale).toBe(10); // control: the base build refused this one
+    });
+
+    it('the catalogue range of scale is the pilot\'s [ ] range and the shared table\'s', () => {
+        expect([CATALOG_SCALE_MIN, CATALOG_SCALE_MAX]).toEqual([SCALE_MIN, SCALE_MAX]);
+        const table = JSON.parse(readFileSync(join(REPO, 'packages', 'scenes', 'test', 'fixtures', 'scene-scale-range.json'), 'utf8')) as { min: number; max: number };
+        expect([table.min, table.max]).toEqual([SCALE_MIN, SCALE_MAX]);
     });
 
     it('the scan\'s own wind flown leaves the entry\'s wind (and its climate source) alone; the live wind is kept and said', () => {

@@ -1,0 +1,21 @@
+{
+  "shared.chip": "Ajustes compartidos: {items}",
+  "shared.chip.aria": "Ajustes que llegaron con el enlace compartido",
+  "shared.sep": ", ",
+  "shared.keep": "Conservar",
+  "shared.keep.aria": "Conservar estos ajustes como tuyos",
+  "shared.reset": "Restablecer",
+  "shared.reset.aria": "Volver a tus propios ajustes",
+  "shared.kept": "Guardado como tus propios ajustes.",
+  "shared.reset.done": "De vuelta a tus ajustes.",
+  "shared.item.size": "x{x}",
+  "shared.item.wallsOff": "paredes desactivadas",
+  "shared.item.wallsOn": "paredes activadas",
+  "shared.item.floaters": "limpieza de piezas de menos de {n} bloques",
+  "shared.item.floatersOff": "sin limpieza",
+  "shared.item.wind": "viento de {speed} m/s desde {from}°",
+  "shared.item.windOff": "sin viento",
+  "shared.item.ceiling": "techo a {h} m",
+  "shared.item.ceilingOff": "sin techo",
+  "shared.item.drone": "{name}"
+}

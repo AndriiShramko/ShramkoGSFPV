@@ -37,6 +37,7 @@ import { crosshair } from './builtin/crosshair';
 import { sound } from './builtin/sound';
 import { play } from './builtin/play';
 import { nextHint } from './builtin/next-hint';
+import { sharedSettings } from './builtin/shared-settings';
 
 export const FEATURES: readonly Feature[] = [
     scene,
@@ -71,5 +72,6 @@ export const FEATURES: readonly Feature[] = [
     crosshair,
     sound,
     play,
-    nextHint
+    nextHint,
+    sharedSettings
 ];

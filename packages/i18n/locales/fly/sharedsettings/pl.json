@@ -1,0 +1,21 @@
+{
+  "shared.chip": "Ustawienia z linku: {items}",
+  "shared.chip.aria": "Ustawienia, które przyszły z udostępnionym linkiem",
+  "shared.sep": ", ",
+  "shared.keep": "Zachowaj",
+  "shared.keep.aria": "Zachowaj te ustawienia jako własne",
+  "shared.reset": "Resetuj",
+  "shared.reset.aria": "Wróć do własnych ustawień",
+  "shared.kept": "Zapisano jako Twoje ustawienia.",
+  "shared.reset.done": "Wrócono do Twoich ustawień.",
+  "shared.item.size": "x{x}",
+  "shared.item.wallsOff": "ściany wyłączone",
+  "shared.item.wallsOn": "ściany włączone",
+  "shared.item.floaters": "czyszczenie kawałków poniżej {n} bloków",
+  "shared.item.floatersOff": "bez czyszczenia",
+  "shared.item.wind": "wiatr {speed} m/s z {from}°",
+  "shared.item.windOff": "bez wiatru",
+  "shared.item.ceiling": "sufit {h} m",
+  "shared.item.ceilingOff": "bez sufitu",
+  "shared.item.drone": "{name}"
+}
