@@ -7,7 +7,7 @@
 //   N1  N from the first scene visits all 12 in the owner's order, then SuperSplat's first openable scene,
 //       then the next; SuperSplat is not asked for before the 12th press; no scene twice; our own scene and the
 //       legacy one in SuperSplat's list are passed over; the request is the SuperSplat tab's defaults.
-//   N2  a new visit walks the list again (D45: nothing is remembered between visits): after four N presses nothing is
+//   N2  a new visit walks the list again (D64: nothing is remembered between visits): after four N presses nothing is
 //       stored, and a new page load of the first scene followed by N goes to the second, not to the sixth. Control:
 //       the run before the review (evidence/2026-10-18/v09-next-before-review.json) had the position remembered
 //       (stored record, N went to the sixth scene) and is this check's opposite.
@@ -255,7 +255,7 @@ try {
         const second = await press(c.page, 'KeyN');
         const storedAfter = await c.page.evaluate("localStorage.getItem('gsfpv.tour.v1')");
         const pass = reached === IDS[4] && stored === null && storedAfter === null && second.scene === IDS[1] && second.sw.state === 'done';
-        out.N2 = { pass, what: 'after four N presses nothing is stored; a new page load of the first scene and N goes to the second scene, not to the sixth where the last visit stopped (nothing is remembered between visits, D45)', reached, stored, nextVisit: second.scene, storedAfterTheSecondVisit: storedAfter, knownBaselineErrors: knownErrors(c.log), errors: errors(c.log) };
+        out.N2 = { pass, what: 'after four N presses nothing is stored; a new page load of the first scene and N goes to the second scene, not to the sixth where the last visit stopped (nothing is remembered between visits, D64)', reached, stored, nextVisit: second.scene, storedAfterTheSecondVisit: storedAfter, knownBaselineErrors: knownErrors(c.log), errors: errors(c.log) };
         console.log('N2', pass ? 'PASS' : 'FAIL', JSON.stringify({ reached, stored, second: second.scene }));
         await c.ctx.close();
     }

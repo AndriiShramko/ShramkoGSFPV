@@ -15,5 +15,5 @@ RESUME-FIRST: `git log --oneline -30` shows which `Merge v09-*` commits exist; c
 - [x] merge v09-n (conflicts: fly/rotation locale x4 = help text with Shift+F (B) and opt.curated "... then SuperSplat" (N); decisions.md; STATE.md reset to the base (the lead writes STATE after deploy; lane STATE lines left out); generated files taken ours; 31 add/add accept-fly evidence files: N's moved to evidence/<date>/v09-n/)
 - [x] merge v09-c (conflicts: app/features.ts = nextHint (N) + sharedSettings (C); share/links.ts scenePageUrl = R's effective-render comparison plus C's shared settings and appendShared; decisions.md; 21 add/add accept-fly evidence files: C's moved to evidence/2026-10-18/v09-c/)
 - [x] merge v09-d (conflicts: defs.test.ts = ids list union + count 79 (checked: SCHEMA.defs.length = 79); decisions.md; 20 add/add accept-fly evidence files: D's moved to evidence/2026-10-18/v09-d/)
-- [ ] renumber decisions (D44.. in merge order), fix references
+- [x] renumber decisions (D44..D74 in merge order f a r e b n c d), references fixed in lane notes and code comments (see Renumbered decisions)
 - [ ] gen-catalog, gates, release, benches (see below as they are done)

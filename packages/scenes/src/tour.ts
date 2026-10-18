@@ -12,7 +12,7 @@
 // current one, round the list; `random` draws uniformly among the unseen.
 // The place in the walk CAN survive the visit, but only when the page hands in a `store` (the page does not:
 // the owner asked for no such thing, and a visitor who had walked the list once would meet SuperSplat on the
-// first N of the next visit, which looks like the bug of item 9 again; app/tour.ts, decision D45). The record:
+// first N of the next visit, which looks like the bug of item 9 again; app/tour.ts, decision D64). The record:
 // the seen catalogue scenes and how far into the SuperSplat list the tour has read, in one small record in
 // that storage (every access is guarded). A record older than TOUR_KEEP_MS is ignored: the trending list and
 // the catalogue have moved on.

@@ -136,7 +136,7 @@ describe('the sender: what differs from the scene\'s defaults', () => {
         expect(prefs.isExplicit('scene.transform', { scene: A })).toBe(false);
     });
 
-    it('the pilot\'s own Display drawing choice is his device\'s, not the scene\'s: no setting of a share, and a card of a catalogue scene stays the static page (lane R draws; decision C3)', () => {
+    it('the pilot\'s own Display drawing choice is his device\'s, not the scene\'s: no setting of a share, and a card of a catalogue scene stays the static page (lane R draws; decision D69)', () => {
         const prefs = store();
         prefs.set('display.drawing', 'sorted');
         expect(sharedOf(prefs, A)).toEqual({});

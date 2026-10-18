@@ -50,7 +50,7 @@ describe('the tour reads the SuperSplat tab\'s pages', () => {
     });
 });
 
-describe('the page\'s tour keeps nothing between visits unless asked (decision D45)', () => {
+describe('the page\'s tour keeps nothing between visits unless asked (decision D64)', () => {
     /** a localStorage that records what is written to it */
     function fakeStorage(): { writes: string[]; restore: () => void } {
         const writes: string[] = [];

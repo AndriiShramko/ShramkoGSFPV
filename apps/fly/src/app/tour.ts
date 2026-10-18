@@ -42,7 +42,7 @@ export interface PageTourOptions {
     onSearch?(): void;
     /**
      * Keep the place in the walk between visits (localStorage, 30 days). Off: every visit walks the owner's
-     * list from its start, so N on a second day does not jump to SuperSplat (decision D45; the owner has not
+     * list from its start, so N on a second day does not jump to SuperSplat (decision D64; the owner has not
      * asked for a memory). Turning it on is this one flag.
      */
     remember?: boolean;

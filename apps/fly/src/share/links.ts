@@ -26,7 +26,7 @@
 // go after the deep link as compact parameters (@gsfpv/scenes shared-settings.ts; share/shared.ts decides
 // which differ from the scene's defaults), so a scene with some of them is shared as its deep link, not as
 // its static page. How the scene is DRAWN stays lane R's alone: the pilot's own Display drawing / budget choice is
-// a choice about his device, not about the scene, so a share never carries it (decision C3).
+// a choice about his device, not about the scene, so a share never carries it (decision D69).
 //
 // Pure: no DOM, no clock, no fetch (tools/bench/test/flight-ux.test.ts). share/panel.ts is the page.
 import { appendShared, flyDeepLink, isEmptyShared, sameRender, sceneRender } from '@gsfpv/scenes';

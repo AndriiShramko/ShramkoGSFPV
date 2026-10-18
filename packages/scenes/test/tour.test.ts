@@ -346,7 +346,7 @@ describe('SuperSplat is asked within a bounded time (the 13th press on a slow co
     });
 });
 
-describe('the place in the walk, when the page keeps it (the page does not unless asked: D45)', () => {
+describe('the place in the walk, when the page keeps it (the page does not unless asked: D64)', () => {
     it('the next visit resumes in the catalogue where the last one stopped', async () => {
         const store = new MapStore();
         const first = await walk(tour({ store }), CAT[0], 5);
