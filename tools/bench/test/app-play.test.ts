@@ -440,6 +440,31 @@ describe('every text easy play names exists in all four languages', () => {
         // control: a key that does not exist is caught
         expect(dict('en')['play.school.step5']).toBeUndefined();
     });
+
+    it('the key card\'s move row names the Up and Down arrows only (Left and Right turn, the row below); every play.game text is used by the page', () => {
+        // the truth: which arrow does what in the game layout
+        expect(gameDirs(new Set(['ArrowUp']))).toEqual({ forward: 1, strafe: 0, turn: 0, lift: 0 });
+        expect(gameDirs(new Set(['ArrowDown']))).toEqual({ forward: -1, strafe: 0, turn: 0, lift: 0 });
+        expect(gameDirs(new Set(['ArrowLeft']))).toEqual({ forward: 0, strafe: 0, turn: -1, lift: 0 });
+        expect(gameDirs(new Set(['ArrowRight']))).toEqual({ forward: 0, strafe: 0, turn: 1, lift: 0 });
+        // what the card says of it (English; the other languages carry the same sentence, kept by the language check above)
+        const namesOnlyUpDown = (text: string): boolean => /\bUp and Down\b/.test(text) && !/arrow keys too/.test(text);
+        expect(namesOnlyUpDown(dict('en')['play.game.move'])).toBe(true);
+        expect(namesOnlyUpDown('move (the arrow keys too)')).toBe(false); // control: the card's first wording
+        // no text of the game card sits unused in the dictionaries
+        const used = new Set<string>();
+        const walk = (dir: string): void => {
+            for (const e of readdirSync(dir, { withFileTypes: true })) {
+                const p = join(dir, e.name);
+                if (e.isDirectory()) walk(p);
+                else if (e.name.endsWith('.ts')) for (const m of readFileSync(p, 'utf8').matchAll(/'(play\.game\.[a-zA-Z0-9_.]+)'/g)) used.add(m[1]);
+            }
+        };
+        walk(join(REPO, 'apps', 'fly', 'src'));
+        const unusedIn = (d: Record<string, string>): string[] => Object.keys(d).filter((k) => k.startsWith('play.game.') && !used.has(k));
+        for (const l of ['en', 'es', 'pl', 'ru']) expect(unusedIn(dict(l)), l).toEqual([]);
+        expect(unusedIn({ ...dict('en'), 'play.game.summary': 'x' })).toEqual(['play.game.summary']); // control: the scan sees a string nobody uses
+    });
 });
 
 describe('the key card: K hides it when it is up, shows and pins it when it is not', () => {

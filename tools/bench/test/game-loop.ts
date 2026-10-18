@@ -45,7 +45,7 @@ export class GameLoop {
     readonly sim: Sim;
     readonly gate = new ArmGate({ keepArmedAfterCrash: true });
     readonly arm = new AutoArm();
-    readonly game = new GameAssist();
+    readonly game: GameAssist;
     snap: Float64Array;
     snapArmed = false;
     snapGround: number | null = null;
@@ -61,8 +61,10 @@ export class GameLoop {
      * `blindGround`: the assist is told there is no ground below (the control of the soft landing).
      * `tiltKeys`: the keys are v0.8's, a fixed tilt while held and level when released, with the height
      * held (the control of "let go and the drone stops": a drone coasts).
+     * `assist`: another assist (a subclass with an earlier rule, the control of a landing or touch-down claim).
      */
-    constructor(readonly p: SimParams, readonly world: ContactWorld | null = null, y0 = 50, speed: GameSpeed = 'normal', readonly opts: { blindGround?: boolean; tiltKeys?: boolean } = {}) {
+    constructor(readonly p: SimParams, readonly world: ContactWorld | null = null, y0 = 50, speed: GameSpeed = 'normal', readonly opts: { blindGround?: boolean; tiltKeys?: boolean; assist?: GameAssist } = {}) {
+        this.game = opts.assist ?? new GameAssist();
         this.sim = new Sim(p, world);
         this.sim.reset(0, y0, 0, 0, { soc: 1 });
         this.snap = new Float64Array(this.sim.s);

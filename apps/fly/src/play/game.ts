@@ -63,20 +63,36 @@ export const FLARE_MPS2 = 2.5;
 /** ... starting this much earlier than the height says, seconds of the present sink speed: the vertical loop lags its target. */
 export const FLARE_LAG_S = 0.35;
 /**
- * Touch-down speed: this share of the crash speed, and never more than TOUCH_MAX_MPS. Well under the
- * speed a landing bounces at (1.5 m/s on the presets), because the vertical loop lags its target and a
- * floor of voxels is not flat: measured on the real scan, 1.2 m/s touched down at 1.2-1.9 m/s and bounced.
+ * Touch-down speed: this share of the speed a landing bounces at (`v_bounce_ms`, 1.5 m/s on most presets, 1 on the
+ * heavy one), and never more than TOUCH_MAX_MPS. Not a share of the crash speed: a crash is far away, a bounce is
+ * what a player sees. The model's body is a few spheres, so the first sphere to touch turns the body and the rest
+ * come down faster than the drone does (measured on the presets: up to 2.2 times, a level landing at 0.85 m/s
+ * touched at 1.86 m/s on the Nazgul), and the vertical loop runs 0.1-0.2 m/s behind its target. Aiming at
+ * 0.3 x v_bounce keeps the worst sphere under 0.7 x v_bounce on every preset (tools/bench/test/app-game.test.ts).
  */
-export const TOUCH_SHARE = 0.2;
-export const TOUCH_MAX_MPS = 0.7;
+export const TOUCH_SHARE = 0.3;
+export const TOUCH_MAX_MPS = 0.4;
 /** A take-off from the ground climbs to this height, m. */
 export const TAKEOFF_HOP_M = 1;
 /** The ground within this clearance counts as "on the ground", m. */
 export const ON_GROUND_M = 0.5;
-/** Landed: Shift held, within LANDED_M of the ground and slower than LANDED_MPS for LANDED_S: the motors stop. */
+/**
+ * Landed: Shift held, the lowest point of the drone within LANDED_M of the ground, and no net sink (the vertical speed
+ * averaged over about VY_AVG_TAU_S is within LANDED_MPS of zero), all for LANDED_S: the motors stop. The average, not the
+ * instant speed: a quad on idle thrust hops on the floor (the 5-inch Mach R5 cycles at +/-0.45 m/s with a touch every
+ * 0.3 s) and never sits under an instant bound, yet it goes nowhere; a controlled descent through the last 15 cm sinks
+ * at the touch-down speed or more, so it is never "landed" before it touches and the motors never stop in the air.
+ */
 export const LANDED_M = 0.15;
-export const LANDED_MPS = 0.4;
-export const LANDED_S = 0.5;
+export const LANDED_MPS = 0.15;
+export const LANDED_S = 0.4;
+export const VY_AVG_TAU_S = 0.3;
+/**
+ * The motors stop only at the bottom of a hop: within this much of the lowest clearance seen while resting. Cut at
+ * the top of a hop (4 cm on the Mach R5) the drone falls and its body spheres slap the floor at 1.8 m/s, six
+ * times the speed it landed at.
+ */
+export const LANDED_SETTLE_M = 0.012;
 
 const RAD = Math.PI / 180;
 const DEG = 180 / Math.PI;
@@ -173,6 +189,9 @@ function approach(cur: number, goal: number, step: number): number {
 export class GameAssist {
     readonly help = new AltitudeHelp();
     speed: GameSpeed = 'normal';
+    /** Only the tests' negative controls change these two: a yaw gain that overshoots, a diagonal that is not normalised. */
+    yawGain = KYAW;
+    normaliseDiagonal = true;
     /** the heading the camera looks along and the drone turns to, degrees; null until the first update after a reset */
     aimYawDeg: number | null = null;
     /** the camera gimbal's pitch from the horizon, degrees, up positive */
@@ -185,6 +204,10 @@ export class GameAssist {
     private lift = 0;
     private turn = 0;
     private landedFor = 0;
+    /** the vertical speed smoothed over VY_AVG_TAU_S, m/s (up positive): what "no net sink" reads */
+    private vyAvg = 0;
+    /** the lowest clearance seen while resting on the ground with Shift held, m (Infinity: not resting) */
+    private lowM = Infinity;
     /** mouse yaw that arrived before the first update set the aim, degrees */
     private pendingYaw = 0;
     private curves: { key: SimParams; c: Curves } | null = null;
@@ -202,6 +225,8 @@ export class GameAssist {
         this.gimbalDeg = 0;
         this.tvx = this.tvz = this.ix = this.iz = this.lift = this.turn = 0;
         this.landedFor = 0;
+        this.vyAvg = 0;
+        this.lowM = Infinity;
         this.landed = false;
         this.help.reset();
     }
@@ -212,6 +237,8 @@ export class GameAssist {
         this.lift = 0; // the descent command of the landing (Shift held) must not ramp back through a sink and drop the hop
         this.tvx = this.tvz = this.ix = this.iz = 0;
         this.landedFor = 0;
+        this.vyAvg = 0;
+        this.lowM = Infinity;
         this.landed = false;
         if (sense.groundM !== null && sense.groundM < ON_GROUND_M) this.help.holdAt(sense.s[S.py] + TAKEOFF_HOP_M);
     }
@@ -239,7 +266,7 @@ export class GameAssist {
     sinkLimit(p: SimParams, groundM: number | null, sinkMps: number): number {
         const full = GAME_SPEEDS[this.speed].vertical;
         if (groundM === null) return full;
-        const touch = Math.min(TOUCH_MAX_MPS, TOUCH_SHARE * p.vCrash);
+        const touch = Math.min(TOUCH_MAX_MPS, TOUCH_SHARE * p.vBounce);
         const room = Math.max(0, groundM - FLARE_LAG_S * Math.max(0, sinkMps));
         return Math.min(full, touch + Math.sqrt(2 * FLARE_MPS2 * room));
     }
@@ -263,6 +290,8 @@ export class GameAssist {
             this.help.reset();
             this.lift = 0;
             this.landedFor = 0;
+            this.vyAvg = 0;
+            this.lowM = Infinity;
             this.landed = false;
             return { roll: 0, pitch: 0, yaw: 0, throttle: 0 };
         }
@@ -274,7 +303,7 @@ export class GameAssist {
         let kf = keys.forward;
         let kr = keys.strafe;
         const kn = Math.hypot(kf, kr);
-        if (kn > 1) { kf /= kn; kr /= kn; } // a diagonal is not faster
+        if (kn > 1 && this.normaliseDiagonal) { kf /= kn; kr /= kn; } // a diagonal is not faster
         this.goal.forward = kf * hv;
         this.goal.right = kr * hv;
         const sa = Math.sin(aim), ca = Math.cos(aim);
@@ -324,7 +353,7 @@ export class GameAssist {
 
         // ---- heading: P on the error to the aim -> a yaw rate -> a stick through the rate curve
         const err = wrap180(this.aimYawDeg - heading);
-        const rate = KYAW * err;
+        const rate = this.yawGain * err;
         const yaw = Math.sign(rate) * curves.yaw.stickFor(Math.abs(rate));
 
         // ---- height: Space / Shift ramp to a vertical speed; none holds the height
@@ -335,10 +364,13 @@ export class GameAssist {
         }
         const throttle = this.help.follow(vt, p, s, dtc);
 
-        // ---- landed: Shift held, on the ground, at rest
-        const resting = keys.lift < 0 && sense.groundM !== null && sense.groundM < LANDED_M && Math.abs(s[S.vy]) < LANDED_MPS;
+        // ---- landed: Shift held, on the ground, going nowhere on average (a drone hopping on idle thrust is down too)
+        this.vyAvg += (s[S.vy] - this.vyAvg) * Math.min(1, dtc / VY_AVG_TAU_S);
+        const gm = sense.groundM;
+        const resting = keys.lift < 0 && gm !== null && gm < LANDED_M && Math.abs(this.vyAvg) < LANDED_MPS;
         this.landedFor = resting ? this.landedFor + dtc : 0;
-        this.landed = this.landedFor >= LANDED_S;
+        this.lowM = resting ? Math.min(this.lowM, gm) : Infinity;
+        this.landed = this.landedFor >= LANDED_S && gm !== null && gm <= this.lowM + LANDED_SETTLE_M;
         return { roll, pitch, yaw, throttle };
     }
 }
