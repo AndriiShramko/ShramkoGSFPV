@@ -23,7 +23,7 @@ import { openSharePanel, shareState } from '../../share/panel';
 import type { ShareRequest, ShareState } from '../../share/panel';
 import { flightDrawing } from '../../share/links';
 import type { ShareEntry } from '../../share/links';
-import { drawingPick, sharedOf } from '../../share/shared';
+import { sharedOf } from '../../share/shared';
 import { sharePicture } from '../../share/picture';
 import { shareIcon } from '../../share/icon';
 import { creditText } from '../../scene-facts';
@@ -46,7 +46,7 @@ export function flightShareRequest(ctx: FlightContext, entry: ShareEntry, extra:
     return {
         entry,
         scene,
-        drawing: flightDrawing(ctx.scene, drawingPick(ctx.prefs)),
+        drawing: flightDrawing(ctx.scene),
         // what he flies this scene with that the scene does not (v0.9): Scene size, walls, cleanup, wind, ceiling, drone
         shared: sharedOf(ctx.prefs, ctx.scene.id, { meta: ctx.scene.meta, hasWalls: !!ctx.session.baseCollision }),
         ...extra,

@@ -19,7 +19,8 @@
 // The sharer's scene settings (v0.9 item 15: Scene size, walls, floater cleanup, wind, collision ceiling, drone)
 // go after the deep link as compact parameters (@gsfpv/scenes shared-settings.ts; share/shared.ts decides
 // which differ from the scene's defaults), so a scene with some of them is shared as its deep link, not as
-// its static page. The Display drawing setting the pilot picked (stochastic / sorted) joins the drawing.
+// its static page. How the scene is DRAWN stays lane R's alone: the pilot's own Display drawing / budget choice is
+// a choice about his device, not about the scene, so a share never carries it (decision C3).
 //
 // Pure: no DOM, no clock, no fetch (tools/bench/test/flight-ux.test.ts). share/panel.ts is the page.
 import { appendShared, flyDeepLink, isEmptyShared, sameRender, sceneRender } from '@gsfpv/scenes';
@@ -64,14 +65,6 @@ export interface ShareDrawing {
     catalogue?: SceneRender;
 }
 
-/** The pilot's own Display drawing choice a share carries ('auto' and the default are "what the scene asks": undefined). */
-export type DrawingPick = 'stochastic' | 'sorted' | undefined;
-
-/** `render` with the pilot's stochastic / sorted choice laid over it (his choice wins, as in resolveDrawing). */
-function withPick(render: SceneRender | undefined, pick: DrawingPick): SceneRender | undefined {
-    return pick ? { ...render, stochastic: pick === 'stochastic' } : render;
-}
-
 /** A scene as the flight holds it (app/context.ts SceneRef): the link's render and the catalogue entry's. */
 export interface DrawnScene {
     render?: SceneRender;
@@ -82,13 +75,13 @@ export interface DrawnScene {
  * The drawing of the scene flown now. Read when the share starts, from the flight's current scene, so a
  * share after an in-page scene switch carries the new scene's drawing (app/drawing.ts requestOf).
  */
-export function flightDrawing(scene: DrawnScene, pick: DrawingPick = undefined): ShareDrawing {
-    return { render: withPick(sceneRender(scene.render, scene.meta?.render), pick), catalogue: scene.meta?.render };
+export function flightDrawing(scene: DrawnScene): ShareDrawing {
+    return { render: sceneRender(scene.render, scene.meta?.render), catalogue: scene.meta?.render };
 }
 
 /** The drawing of a picker card's scene: a card opens it as the catalogue says (a card passes no link). */
-export function cardDrawing(meta: { render?: SceneRender } | undefined, pick: DrawingPick = undefined): ShareDrawing {
-    return { render: withPick(sceneRender(undefined, meta?.render), pick), catalogue: meta?.render };
+export function cardDrawing(meta: { render?: SceneRender } | undefined): ShareDrawing {
+    return { render: sceneRender(undefined, meta?.render), catalogue: meta?.render };
 }
 
 /**

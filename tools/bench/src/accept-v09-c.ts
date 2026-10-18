@@ -303,6 +303,22 @@ async function main(): Promise<void> {
             check('C0 what he flies that differs from the scene\'s defaults is in the share, in the link\'s order', st?.shared === SHARED && /\/s\/[A-Za-z0-9_-]{11}$/.test(st?.url ?? ''));
             await ctx.close();
         });
+        await section('block 7b', async () => {
+            // how the scene is drawn is lane R's, and the pilot's Display drawing is a choice about his device: a share never carries it
+            const ctx = await newCtx(browser);
+            const p = await openFly(ctx, `scene=${LISTED}&${LOGIC}`);
+            await hook(p, `h.prefs.set('display.drawing', 'sorted'); return 0;`);
+            await p.waitForTimeout(300);
+            let posted: string | null = null;
+            p.on('request', (r) => { if (r.method() === 'POST' && r.url().endsWith('/api/share')) posted = r.postData(); });
+            const st = await hook<Any>(p, `h.share.open('key'); for (let i = 0; i < 40 && !(h.share.state() && h.share.state().url); i++) await new Promise((r) => setTimeout(r, 250)); return h.share.state();`);
+            const sid = /\/s\/([A-Za-z0-9_-]{11})$/.exec(st?.url ?? '')?.[1];
+            const link = sid ? /href="(\/en\/fly\/[^"]*)"/.exec(await (await fetch(`${API}/s/${sid}`)).text())?.[1] ?? null : null;
+            const render = posted ? (JSON.parse(posted) as Any).render : 'no request';
+            results.C0b = { sid: !!sid, render, link };
+            check('C0b a pilot whose Display drawing is "sorted" shares the scene as it is: no drawing in the request, none in the /s/<id> link', !!sid && render === null && link === `/en/fly/?scene=${LISTED}`);
+            await ctx.close();
+        });
         await section('block 8', async () => {
             // the receiver opens the link: flies with them, sees the chip, his saved prefs untouched
             const ctx = await newCtx(browser);

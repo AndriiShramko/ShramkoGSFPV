@@ -136,19 +136,15 @@ describe('the sender: what differs from the scene\'s defaults', () => {
         expect(prefs.isExplicit('scene.transform', { scene: A })).toBe(false);
     });
 
-    it('the Display drawing choice joins the drawing only when it is the pilot\'s own and not the default', () => {
+    it('the pilot\'s own Display drawing choice is his device\'s, not the scene\'s: no setting of a share, and a card of a catalogue scene stays the static page (lane R draws; decision C3)', () => {
         const prefs = store();
-        expect(S.drawingPick(prefs)).toBeUndefined();
         prefs.set('display.drawing', 'sorted');
-        expect(S.drawingPick(prefs)).toBe('sorted');
-        prefs.set('display.drawing', 'stochastic');
-        expect(S.drawingPick(prefs)).toBe('stochastic');
-        prefs.set('display.drawing', 'auto');
-        expect(S.drawingPick(prefs)).toBeUndefined();
+        expect(sharedOf(prefs, A)).toEqual({});
+        const at = { origin: 'https://gsfpv.flyreelstudio.eu', locale: 'en' };
+        expect(L.shareLink({ entry: 'picker', sceneId: A, inCatalogue: true, at, pictureUrl: null, drawing: L.cardDrawing({}), shared: sharedOf(prefs, A) })).toBe(`${at.origin}/en/scenes/${A}/`);
         const scene = { render: { budgetM: 8 }, meta: { render: { stochastic: true } } };
-        expect(L.flightDrawing(scene, 'sorted').render).toEqual({ budgetM: 8, stochastic: false });
-        expect(L.flightDrawing(scene).render).toEqual({ budgetM: 8, stochastic: true }); // control: no choice, as before
-        expect(L.cardDrawing(undefined, 'stochastic').render).toEqual({ stochastic: true });
+        expect(L.flightDrawing(scene).render).toEqual({ budgetM: 8, stochastic: true }); // the link's / the owner's drawing, nothing of the pilot's
+        expect(L.cardDrawing({ render: { stochastic: true } }).render).toEqual({ stochastic: true });
     });
 });
 

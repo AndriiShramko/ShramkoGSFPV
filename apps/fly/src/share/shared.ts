@@ -17,7 +17,6 @@ import type { CatalogScene, SharedSettings } from '@gsfpv/scenes';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { sceneCeiling, storedCeiling } from '../session/ceiling-source';
 import { customWind, windMode } from '../session/wind-source';
-import type { DrawingPick } from './links';
 
 /** What the sender reads of the store. */
 export type SharedSource = Pick<PrefsStore, 'get' | 'defaultOf'>;
@@ -72,18 +71,4 @@ export function sharedOf(prefs: SharedSource, sceneId: string, scene: SharedScen
     if (drone !== prefs.defaultOf<string>('drone.current')) out.drone = drone;
 
     return readShared(out);
-}
-
-/**
- * The Display drawing setting as a share carries it: only a choice of the pilot's own that is not the
- * default (a pilot on the default shares what the scene asks, as before). 'auto' is "what the scene asks".
- */
-export function drawingPick(prefs: SharedSource): DrawingPick {
-    try {
-        const mode = prefs.get<string>('display.drawing');
-        if (mode === prefs.defaultOf<string>('display.drawing')) return undefined;
-        return mode === 'stochastic' || mode === 'sorted' ? mode : undefined;
-    } catch {
-        return undefined;
-    }
 }
