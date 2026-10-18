@@ -1,7 +1,12 @@
 name: cdn-canary
 
-# Once a day: the SuperSplat CDN paths the simulator depends on still answer 200 with CORS "*".
+# Once a day: the SuperSplat CDN paths the simulator depends on still answer 200/206 with CORS "*".
 # The paths are undocumented; if they move, this opens an issue instead of users finding out.
+# Since 2026-10-16 the S3 path (s3-eu-west-1.amazonaws.com/splats.playcanvas.com/<id>/v1/*) answers 403;
+# the simulator reads everything, the walls too, from CloudFront (packages/scenes resolveScene), so that
+# is what is checked: settings.json, the streamed scan (lod-meta.json), a single-file scan (meta.json,
+# 62 % of SuperSplat's scenes) and the walls (scene.voxel.json / .bin).
+
 on:
   schedule:
     - cron: '17 5 * * *'
@@ -19,18 +24,18 @@ jobs:
         id: check
         run: |
           fail=0
-          for id in 39e63ce9 887f27aa; do
-            for url in \
-              "https://d28zzqy0iyovbz.cloudfront.net/$id/v1/settings.json" \
-              "https://d28zzqy0iyovbz.cloudfront.net/$id/v1/lod-meta.json" \
-              "https://s3-eu-west-1.amazonaws.com/splats.playcanvas.com/$id/v1/scene.voxel.json" \
-              "https://s3-eu-west-1.amazonaws.com/splats.playcanvas.com/$id/v1/scene.voxel.bin"; do
-              h=$(curl -s -o /dev/null -D - -H "Origin: https://gsfpv.flyreelstudio.eu" -H "Range: bytes=0-0" "$url?cb=$RANDOM")
-              code=$(echo "$h" | head -1 | awk '{print $2}')
-              acao=$(echo "$h" | tr -d '\r' | grep -i '^access-control-allow-origin:' | awk '{print $2}')
-              echo "$code $acao $url"
-              if [ "$code" != "200" ] && [ "$code" != "206" ] || [ "$acao" != "*" ]; then fail=1; fi
-            done
+          cdn="https://d28zzqy0iyovbz.cloudfront.net"
+          # <scene>:<file>: 39e63ce9 and 887f27aa are the owner's streamed scans with walls, d8ba72a6 a single file
+          for pair in \
+            39e63ce9:settings.json 39e63ce9:lod-meta.json 39e63ce9:scene.voxel.json 39e63ce9:scene.voxel.bin \
+            887f27aa:settings.json 887f27aa:lod-meta.json 887f27aa:scene.voxel.json 887f27aa:scene.voxel.bin \
+            d8ba72a6:settings.json d8ba72a6:meta.json; do
+            url="$cdn/${pair%%:*}/v1/${pair#*:}"
+            h=$(curl -s -o /dev/null -D - -H "Origin: https://gsfpv.flyreelstudio.eu" -H "Range: bytes=0-0" "$url?cb=$RANDOM")
+            code=$(echo "$h" | head -1 | awk '{print $2}')
+            acao=$(echo "$h" | tr -d '\r' | grep -i '^access-control-allow-origin:' | awk '{print $2}')
+            echo "$code $acao $url"
+            if [ "$code" != "200" ] && [ "$code" != "206" ] || [ "$acao" != "*" ]; then fail=1; fi
           done
           echo "fail=$fail" >> "$GITHUB_OUTPUT"
       - name: Open an issue on failure
@@ -39,5 +44,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh issue create --repo "$GITHUB_REPOSITORY" --title "SuperSplat CDN canary failed ($(date -u +%F))" \
-            --body "One of the CDN paths the simulator loads (settings.json, lod-meta.json, scene.voxel.json/.bin for 39e63ce9 or 887f27aa) did not answer 200/206 with Access-Control-Allow-Origin: *. See the run log: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            --body "One of the CloudFront paths the simulator loads (settings.json, lod-meta.json, meta.json, scene.voxel.json/.bin of 39e63ce9, 887f27aa or d8ba72a6) did not answer 200/206 with Access-Control-Allow-Origin: *. See the run log: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           exit 1

@@ -381,7 +381,7 @@ export class Controls {
         const age = remote && !stalled ? now - this.lastSampleAt : 0;
         if (this.gate.armed && (age > 100 || document.visibilityState !== 'visible')) {
             this.fill();
-            this.out[4] = this.gate.update({} as Profile, this.ch, age, document.visibilityState === 'visible', this.session.sim.crashed);
+            this.out[4] = this.gate.update({} as Profile, this.ch, age, document.visibilityState === 'visible', this.session.sim?.crashed ?? false);
             this.block = this.gate.block;
             this.dropLatch();
             this.session.input(this.out, now);

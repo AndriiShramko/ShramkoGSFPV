@@ -1,8 +1,13 @@
 // Loading screen of a scan: what is downloading, how much of how much, for how long, and what to
 // do when nothing arrives. Rows have fixed heights (numbers change, the layout does not move); the
 // bar is drawn with transforms so its animation keeps running while the main thread decodes.
+// It never looks frozen (v0.9, the owner's items 10/16): a spinner and the bar's sweep always move,
+// the seconds count, the download shows MB, MB/s and the time left, and while the view is prepared
+// the card shows what the engine has of it (files in place, splats on screen, files on their way,
+// the bound after which it is shown anyway). Once something is drawn and the wait has lasted, Fly now
+// shows the view at once (session/reveal.ts); a view shown before it was whole says why.
 import { posterUrl, knownVersion } from '@gsfpv/scenes';
-import type { LoadProgress, LoadPart } from '../session';
+import type { LoadProgress, LoadPart, LoadView } from '../session';
 import { t, locale } from '../i18n';
 import { h } from './dom';
 
@@ -27,6 +32,8 @@ export interface LoadingOptions {
     next?: string | null;
     onRetry: () => void;
     onBack: () => void;
+    /** Fly now (offered when LoadProgress.canFlyNow): show the first view at once */
+    onFlyNow?: () => void;
     /** a scene switch in flight (E.4): a small card over the flight view instead of the whole screen */
     compact?: boolean;
 }
@@ -56,6 +63,12 @@ export class LoadingScreen {
     /** screen readers hear each kind of hint once, not a counter ticking every second */
     private readonly srEl: HTMLDivElement;
     private srKey = '';
+    private readonly flyNowBtn: HTMLButtonElement;
+    private readonly retryBtn: HTMLButtonElement;
+    private readonly backBtn: HTMLButtonElement;
+    /** the first view's numbers last time they changed (a wait is only "long" while nothing changes) */
+    private viewSig = '';
+    private viewAt = performance.now();
     private readonly nf = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
     constructor(parent: HTMLElement, o: LoadingOptions) {
@@ -77,14 +90,15 @@ export class LoadingScreen {
         this.partsEl = h('div', { class: 'load-parts', 'aria-hidden': 'true' });
         this.hintEl = h('div', { class: 'load-hint', 'aria-hidden': 'true' });
         this.srEl = h('div', { class: 'visually-hidden', role: 'status' });
-        const actions = h('div', { class: 'load-actions' },
-            h('button', { type: 'button', class: 'btn primary', 'data-action': 'load-retry', onclick: () => o.onRetry() }, t('loading.retry')),
-            h('button', { type: 'button', class: 'btn', 'data-action': 'load-back', onclick: () => o.onBack() }, t('loading.back')));
+        this.flyNowBtn = h('button', { type: 'button', class: 'btn primary', 'data-action': 'load-fly-now', hidden: true, onclick: () => o.onFlyNow?.() }, t('load.flyNow')) as HTMLButtonElement;
+        this.retryBtn = h('button', { type: 'button', class: 'btn', 'data-action': 'load-retry', hidden: true, onclick: () => o.onRetry() }, t('loading.retry')) as HTMLButtonElement;
+        this.backBtn = h('button', { type: 'button', class: 'btn', 'data-action': 'load-back', hidden: true, onclick: () => o.onBack() }, t('loading.back')) as HTMLButtonElement;
+        const actions = h('div', { class: 'load-actions' }, this.flyNowBtn, this.retryBtn, this.backBtn);
         this.root = h('div', { class: o.compact ? 'loading compact' : 'loading', 'data-testid': 'loading', 'data-stage': 'connect', 'data-indeterminate': true, 'aria-busy': 'true' },
             h('div', { class: 'load-card' },
                 h('div', { class: 'load-poster' }, img),
                 h('div', { class: 'load-title' }, o.title ?? o.sceneId),
-                h('div', { class: 'load-head' }, this.stageEl, this.elapsedEl),
+                h('div', { class: 'load-head' }, h('i', { class: 'load-spin', 'aria-hidden': 'true' }), this.stageEl, this.elapsedEl),
                 this.bar,
                 this.numsEl,
                 this.partsEl,
@@ -180,15 +194,28 @@ export class LoadingScreen {
                 nums.push(left < 90 ? t('loading.left', { s: Math.ceil(left) }) : t('loading.leftMin', { m: Math.round(left / 60) }));
             }
         }
+        // while the view is prepared: what the engine has of it, so the wait shows what it waits for
+        const view = p.view;
+        if (view && (stage === 'prepare' || stage === 'build')) {
+            nums.length = 0;
+            nums.push(...this.viewLine(view));
+            if (p.revealInMs !== null) nums.push(t('load.view.soon', { s: Math.max(1, Math.ceil(p.revealInMs / 1000)) }));
+        }
         this.numsEl.textContent = nums.join(' · ');
 
         const parts = [this.part(t('loading.part.scan'), p.scan)];
         if (p.walls) parts.push(this.part(t('loading.part.walls'), p.walls));
         this.partsEl.textContent = stage === 'connect' && p.loaded === 0 ? '' : parts.join(' · ');
 
-        // silence: a hint after 10 s, a way out after 20 s; a failed file gets the way out at once
+        // silence: a hint after 10 s, a way out after 20 s; a failed file gets the way out at once. While the
+        // view is prepared, silence is the engine's numbers standing still (not the time since the stage began)
         const waitingForBytes = stage === 'connect' || stage === 'download';
-        const quietMs = now - Math.max(this.startedAt, this.stageAt, waitingForBytes ? p.lastByteAt : 0);
+        const sig = view ? `${view.filesIn}/${view.files}/${view.drawn}/${view.loading}` : '';
+        if (sig !== this.viewSig) {
+            this.viewSig = sig;
+            this.viewAt = now;
+        }
+        const quietMs = now - Math.max(this.startedAt, this.stageAt, waitingForBytes ? p.lastByteAt : this.viewAt);
         const quietS = Math.floor(quietMs / 1000);
         let key = '';
         let actions = false;
@@ -203,7 +230,18 @@ export class LoadingScreen {
         if (this.hintEl.textContent !== hint) this.hintEl.textContent = hint;
         this.hintEl.classList.remove('note');
         this.say(key, key ? t(key, { s: Math.floor((key === 'loading.stallLong' ? STALL_ACTIONS_MS : STALL_HINT_MS) / 1000) }) : '');
-        this.root.toggleAttribute('data-actions', actions);
+        this.retryBtn.hidden = !actions;
+        this.backBtn.hidden = !actions;
+        this.flyNowBtn.hidden = !p.canFlyNow;
+        this.root.toggleAttribute('data-actions', actions || p.canFlyNow);
+    }
+
+    /** The first view while it is prepared: files in place, splats on screen, files on their way. */
+    private viewLine(v: LoadView): string[] {
+        const out = [t('load.view.files', { n: v.filesIn, total: v.files })];
+        out.push(v.drawn > 0 ? t('load.view.drawn', { m: this.nf.format(v.drawn / 1e6) }) : t('load.view.notDrawn'));
+        if (v.loading > 0) out.push(t('load.view.loading', { n: v.loading }));
+        return out;
     }
 
     private say(key: string, text: string): void {
@@ -218,20 +256,25 @@ export class LoadingScreen {
         this.render();
         this.finished = true;
         clearInterval(this.timer);
-        // shown after a long silence: say so, and leave the bar where the bytes left it
+        // shown before it was whole (the pilot's Fly now, a long silence): say why, and leave the bar where the bytes left it
         const partial = !!this.p?.partial;
+        const why = this.p?.reveal ?? null;
         const f = partial ? this.p!.fraction : 1;
         this.root.dataset.stage = 'done';
         this.root.toggleAttribute('data-partial', partial);
         this.root.removeAttribute('data-indeterminate');
         this.root.removeAttribute('data-actions');
+        this.flyNowBtn.hidden = true;
         this.root.setAttribute('aria-busy', 'false');
         this.fill.style.transform = `scaleX(${f})`;
         this.bar.setAttribute('aria-valuenow', String(Math.round(f * 100)));
         this.stageEl.textContent = t(partial ? 'loading.stage.partial' : 'loading.stage.ready');
-        this.hintEl.textContent = this.next ?? '';
+        this.root.dataset.reveal = why ?? '';
+        // a view shown before it was whole says why (the rest keeps loading in flight)
+        const reason = partial && (why === 'pilot' || why === 'stall') ? t(`load.reveal.${why}`) : '';
+        this.hintEl.textContent = [reason, this.next ?? ''].filter(Boolean).join(' ');
         this.hintEl.classList.add('note');
-        this.say('done', `${this.stageEl.textContent} ${this.next ?? ''}`.trim());
+        this.say('done', `${this.stageEl.textContent} ${this.hintEl.textContent}`.trim());
         await sleep(READY_MS);
         if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
             this.root.classList.add('leaving');

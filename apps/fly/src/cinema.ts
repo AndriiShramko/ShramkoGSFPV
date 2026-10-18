@@ -747,15 +747,77 @@ const PENDING_CALLS_MAX = 240;
 /** v0.2's bound (the test-only control keeps v0.2's behaviour) */
 const LEGACY_QUEUE_MAX = 8;
 
-/** One file: its own encoder and MP4 output, so a split never waits for the previous file. */
-class Part {
+/** Chrome took back an encoder nobody fed for a while: "Codec reclaimed due to inactivity" (a QuotaExceededError). */
+export function isReclaimed(e: unknown): boolean {
+    const x = e as { name?: unknown; message?: unknown } | null | undefined;
+    return !!x && (x.name === 'QuotaExceededError' || /reclaim/i.test(String(x.message ?? '')));
+}
+
+/** Times one file's encoder may be made again after Chrome reclaimed it. */
+const REVIVALS_MAX = 8;
+
+/**
+ * Keeps a file's encoder alive across Chrome's reclaim (v0.9, the owner's item 3b: an export that waited
+ * 10 minutes for its first frame lost its encoder: "Codec reclaimed due to inactivity"). Chrome reclaims
+ * a codec that was idle for a while (a frame waiting for the scan, a hidden tab), which is only safe to
+ * replace when nothing is in it: then a new encoder with the same settings goes on, its first frame a key
+ * frame. The MP4 holds the first encoder's description of the stream, so the new encoder's must be the
+ * same bytes (it is for the same settings on the same machine); if not, the file cannot go on and fails
+ * with that reason. Pure bookkeeping: Part makes the encoders (both in tools/bench/test/encoder-revival.test.ts).
+ */
+export class EncoderRevival {
+    revivals = 0;
+    private keyNext = false;
+    private checkNext = false;
+    private first: Uint8Array | null = null;
+
+    constructor(private readonly max = REVIVALS_MAX) {}
+
+    /** The encoder failed with `e` while `inFlight` encodes were in it: true = make a new one and go on. */
+    onError(e: unknown, inFlight: number): boolean {
+        if (!isReclaimed(e) || inFlight > 0 || this.revivals >= this.max) return false;
+        this.revivals++;
+        this.keyNext = true;
+        this.checkNext = true;
+        return true;
+    }
+
+    /** Each packet's metadata: null when the stream goes on, else why it cannot. */
+    onOutput(meta: EncodedVideoChunkMetadata | undefined): string | null {
+        const d = meta?.decoderConfig?.description;
+        const bytes = d ? new Uint8Array(ArrayBuffer.isView(d) ? d.buffer.slice(d.byteOffset, d.byteOffset + d.byteLength) : (d as ArrayBuffer).slice(0)) : null;
+        if (this.checkNext && meta?.decoderConfig) {
+            this.checkNext = false;
+            const a = this.first;
+            if (a && bytes && (a.length !== bytes.length || a.some((v, i) => v !== bytes[i]))) return 'the video encoder came back with other settings';
+        }
+        // the stream's description is the first one any encoder gave (also one made again before any packet)
+        if (!this.first && bytes) this.first = bytes;
+        return null;
+    }
+
+    /** The next frame must be a key frame (the first one of a new encoder). */
+    takeKey(): boolean {
+        const k = this.keyNext;
+        this.keyNext = false;
+        return k;
+    }
+}
+
+/**
+ * One file: its own encoder and MP4 output, so a split never waits for the previous file. Exported for
+ * tools/bench/test/encoder-revival.test.ts (a fake encoder and Mediabunny drive the reclaim path).
+ */
+export class Part {
     readonly firstSlot: number;
     name = '';
     frames = 0;
     bytes = 0;
     failed: unknown = null;
     private readonly output: Output<Mp4OutputFormat, StreamTarget>;
-    private readonly encoder: VideoEncoder;
+    /** made again when Chrome reclaims it idle (EncoderRevival) */
+    private encoder: VideoEncoder;
+    private readonly revival = new EncoderRevival();
     private writes: Promise<void>;
     private readonly sink: Promise<RecordSink>;
     /** per encode call still in the encoder, in order: does it carry a picture of its own (not a repeat) */
@@ -792,16 +854,29 @@ class Part {
         };
         started.catch(fail);
         // packets must reach the container in decode order: chain the writes
-        this.encoder = new VideoEncoder({
+        const init: VideoEncoderInit = {
             output: (chunk, meta) => {
                 if (this.inFlight.shift()) this.pendingPictures--;
+                const why = this.revival.onOutput(meta);
+                if (why) return fail(new Error(why));
                 this.packets++;
                 const pkt = mb.EncodedPacket.fromEncodedChunk(chunk);
                 this.writes = this.writes.then(() => track.add(pkt, meta)).catch(fail);
             },
-            error: fail
-        });
+            error: (e) => {
+                // Chrome reclaimed it while idle and nothing was in it: the same encoder again, nothing lost
+                if (!this.revival.onError(e, this.inFlight.length)) return fail(e);
+                this.encoder = new VideoEncoder(init);
+                this.encoder.configure(config);
+            }
+        };
+        this.encoder = new VideoEncoder(init);
         this.encoder.configure(config);
+    }
+
+    /** Times this file's encoder was made again after Chrome reclaimed it. */
+    get revivals(): number {
+        return this.revival.revivals;
     }
 
     get queue(): number {
@@ -817,7 +892,7 @@ class Part {
     encode(frame: VideoFrame, slot: number, fps: number, repeat: boolean): void {
         const ts = slotUs(slot - this.firstSlot, fps);
         const f = new VideoFrame(frame, { timestamp: ts, duration: slotUs(1, fps) });
-        this.encoder.encode(f, { keyFrame: this.frames % KEY_EVERY === 0 });
+        this.encoder.encode(f, { keyFrame: this.revival.takeKey() || this.frames % KEY_EVERY === 0 });
         f.close();
         this.inFlight.push(!repeat);
         if (!repeat) this.pendingPictures++;
@@ -827,7 +902,7 @@ class Part {
     /** v0.2's path (test-only control): the render time as the timestamp. */
     encodeAt(frame: VideoFrame, timestampUs: number): void {
         const f = new VideoFrame(frame, { timestamp: timestampUs });
-        this.encoder.encode(f, { keyFrame: this.frames % 60 === 0 });
+        this.encoder.encode(f, { keyFrame: this.revival.takeKey() || this.frames % 60 === 0 });
         f.close();
         this.inFlight.push(true);
         this.pendingPictures++;

@@ -1,0 +1,10 @@
+{
+  "load.flyNow": "Volar ya",
+  "load.view.files": "{n} de {total} partes listas",
+  "load.view.drawn": "{m} M splats en pantalla",
+  "load.view.notDrawn": "aún no hay nada en pantalla",
+  "load.view.loading": "archivos en camino: {n}",
+  "load.view.soon": "se muestra en {s} s como mucho",
+  "load.reveal.pilot": "Elegiste volar ya: el resto del escaneo sigue cargando mientras vuelas.",
+  "load.reveal.stall": "No llegó nada en 30 s, así que ves lo que ya está; el resto sigue cargando mientras vuelas."
+}

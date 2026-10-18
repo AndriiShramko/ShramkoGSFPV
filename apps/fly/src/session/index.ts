@@ -24,6 +24,7 @@ import { wallsState } from '../flightwalls';
 import type { WallsState } from '../flightwalls';
 import { SessionLoader } from './loader';
 import type { LoadProgress } from './loader';
+import type { FlyNow, RevealReason } from './reveal';
 import { LivesPlayer, lifeProblem } from './replay';
 import type { WallsSource } from './replay';
 import { measureTwr, dropTest, tunnelSelfTest } from './selftest';
@@ -31,7 +32,9 @@ import { IDENTITY, f32, filteredWalls, isIdentity, packed, pointMap, pushOut, sa
 import type { SceneTransform } from './world';
 import type { WindSpec } from './wind-source';
 
-export type { LoadStage, LoadPart, LoadProgress } from './loader';
+export type { LoadStage, LoadPart, LoadProgress, LoadView } from './loader';
+export { FlyNow } from './reveal';
+export type { RevealReason } from './reveal';
 
 export interface SessionOptions {
     sceneId: string;
@@ -50,6 +53,8 @@ export interface SessionOptions {
     drawScan?: boolean;
     /** loading state every 100 ms until the first view is on screen */
     onProgress?: (p: LoadProgress) => void;
+    /** the loading card's Fly now: shows the first view at once once something of it is drawn (reveal.ts) */
+    flyNow?: FlyNow;
     /**
      * In-page scene switching (E.4): the page's renderer, kept from the first scene. The session
      * draws with it and never starts or destroys it; dispose() only unloads this scene's splats.
@@ -96,6 +101,8 @@ export interface Timings {
     collisionMs: number | null;
     firstFrameMs: number | null;
     visibleMs: number | null;
+    /** why the first view was shown (reveal.ts), null until it is */
+    reveal: RevealReason | null;
 }
 
 /** A replay on screen: lives played in real time from `startTick`. */
@@ -199,7 +206,7 @@ export class FlightSession {
     /** page clock -> sim clock (pauses, restarts, skipped stalls) and the inputs not yet stepped */
     readonly clock = new SimClock();
     frames = 0;
-    timings: Timings = { settingsMs: 0, collisionMs: null, firstFrameMs: null, visibleMs: null };
+    timings: Timings = { settingsMs: 0, collisionMs: null, firstFrameMs: null, visibleMs: null, reveal: null };
     /** resolves when the streamed splats have been rendered (loading finished, splats on screen) */
     visible!: Promise<void>;
     crashes = 0;
@@ -301,7 +308,7 @@ export class FlightSession {
             this.renderer.setCameraLookAt(p[0], p[1], p[2], q[0], q[1], q[2]);
         }
         // logic-only: nothing streams, so nothing to wait for (the walls are awaited below)
-        const coarse = loader.watchCoarse();
+        const coarse = loader.watchCoarse(o.flyNow);
         const onUpdate = (): void => this.frame();
         const onFrameEnd = (): void => {
             if (this.timings.firstFrameMs === null) this.timings.firstFrameMs = performance.now() - this.createdAt;
@@ -331,8 +338,12 @@ export class FlightSession {
         if (o.paused) this.pause(true, 'menu');
         this.lagFrames = o.lagFrames ?? 0;
         // on screen = coarse level resident and walls in; only then the detail streams (it would slow the walls)
-        this.visible = coarse.then(() => {
+        this.visible = coarse.then((why) => {
+            // a session disposed meanwhile must not open the LOD range of the next scan on the page's renderer
+            // (dispose() stops the watch, so this is only a guard)
+            if (this.disposed) return;
             this.timings.visibleMs = performance.now() - this.createdAt;
+            this.timings.reveal = why;
             this.renderer.revealFullDetail();
             loader.done();
         });

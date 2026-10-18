@@ -1,0 +1,3080 @@
+{
+  "name": "v09-load-probe",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-17T19:52:57.105Z",
+    "gitHead": "25e5fa2",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5717",
+  "limitS": 90,
+  "cases": [
+    {
+      "case": "export:1994c65c:5",
+      "load": {
+        "revealedMs": 3454
+      },
+      "result": {
+        "ended": "done",
+        "size": "1080p",
+        "frames": 392,
+        "encoded": 392,
+        "startTick": 0,
+        "endTick": 6549,
+        "stepFps": 60,
+        "waited": 1720,
+        "incomplete": 1720,
+        "encodedIncomplete": 0,
+        "crashes": 0,
+        "seconds": 6.533333333333333,
+        "first": {
+          "k": 0,
+          "tick": 0,
+          "p": [
+            -12.126351356506348,
+            5.645046710968018,
+            -0.5554925799369812
+          ],
+          "q": [
+            0.8396651241376505,
+            0,
+            -0.5431044828639365,
+            0
+          ],
+          "cam": [
+            -12.126351356506348,
+            5.645046710968018,
+            -0.5554925799369812
+          ],
+          "crash": false
+        },
+        "last": {
+          "k": 391,
+          "tick": 6517,
+          "p": [
+            -12.126351356506348,
+            5.645046710968018,
+            -0.5554925799369812
+          ],
+          "q": [
+            0.8396651241376505,
+            0,
+            -0.5431044828639365,
+            0
+          ],
+          "cam": [
+            -12.126351356506348,
+            5.645046710968018,
+            -0.5554925799369812
+          ],
+          "crash": false
+        },
+        "info": {
+          "codec": "avc1.640033",
+          "width": 1920,
+          "height": 1080,
+          "fps": 60,
+          "frames": 392,
+          "bytes": 8547822,
+          "seconds": 6.533333333333333,
+          "duplicated": 0,
+          "heldForEncoder": 0,
+          "heldWhy": {
+            "readback": 0,
+            "encoder": 0
+          },
+          "dropped": 0,
+          "file": "gsfpv-1994c65c-20261017-215129.mp4",
+          "files": [
+            {
+              "name": "gsfpv-1994c65c-20261017-215129.mp4",
+              "bytes": 8547822,
+              "frames": 392,
+              "seconds": 6.533333333333333
+            }
+          ],
+          "where": "browser",
+          "folder": "",
+          "ended": "stop",
+          "picture": "webgpu"
+        },
+        "creditStripStd": 0.28774283717865307
+      },
+      "samples": [
+        {
+          "t": 1019,
+          "k": 0,
+          "frames": 0,
+          "waited": 0,
+          "bar": null,
+          "splatFrame": {
+            "frame": 202,
+            "ready": true,
+            "loading": 80
+          },
+          "octrees": [
+            {
+              "pending": 40,
+              "prefetch": 40,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "4": 214,
+                "5": 514,
+                "6": 207,
+                "7": 297,
+                "8": 73,
+                "9": 2,
+                "10": 662
+              }
+            }
+          ],
+          "budgetM": 3,
+          "range": [
+            0,
+            1000
+          ],
+          "drawn": 808452
+        },
+        {
+          "t": 2045,
+          "k": 0,
+          "frames": 0,
+          "waited": 0,
+          "bar": null,
+          "splatFrame": {
+            "frame": 227,
+            "ready": false,
+            "loading": 80
+          },
+          "octrees": [
+            {
+              "pending": 40,
+              "prefetch": 40,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "4": 206,
+                "5": 484,
+                "6": 222,
+                "7": 381,
+                "8": 99,
+                "9": 3,
+                "10": 574
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            1000
+          ],
+          "drawn": 826451
+        },
+        {
+          "t": 3081,
+          "k": 0,
+          "frames": 392,
+          "waited": 24,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 254,
+            "ready": true,
+            "loading": 414
+          },
+          "octrees": [
+            {
+              "pending": 207,
+              "prefetch": 207,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "4": 206,
+                "5": 329,
+                "6": 419,
+                "7": 381,
+                "8": 99,
+                "9": 3,
+                "10": 532
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 814264
+        },
+        {
+          "t": 4114,
+          "k": 0,
+          "frames": 392,
+          "waited": 55,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 285,
+            "ready": true,
+            "loading": 406
+          },
+          "octrees": [
+            {
+              "pending": 203,
+              "prefetch": 203,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 44,
+                "4": 206,
+                "5": 329,
+                "6": 412,
+                "7": 364,
+                "8": 96,
+                "9": 3,
+                "10": 516
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 1864127
+        },
+        {
+          "t": 5131,
+          "k": 0,
+          "frames": 392,
+          "waited": 86,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 316,
+            "ready": true,
+            "loading": 400
+          },
+          "octrees": [
+            {
+              "pending": 200,
+              "prefetch": 200,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 52,
+                "4": 206,
+                "5": 329,
+                "6": 412,
+                "7": 364,
+                "8": 96,
+                "9": 3,
+                "10": 508
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 2860470
+        },
+        {
+          "t": 6151,
+          "k": 0,
+          "frames": 392,
+          "waited": 116,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 346,
+            "ready": true,
+            "loading": 394
+          },
+          "octrees": [
+            {
+              "pending": 197,
+              "prefetch": 197,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 60,
+                "4": 206,
+                "5": 329,
+                "6": 412,
+                "7": 364,
+                "8": 96,
+                "9": 3,
+                "10": 500
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 3844612
+        },
+        {
+          "t": 7175,
+          "k": 0,
+          "frames": 392,
+          "waited": 146,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 376,
+            "ready": true,
+            "loading": 388
+          },
+          "octrees": [
+            {
+              "pending": 194,
+              "prefetch": 194,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 72,
+                "4": 206,
+                "5": 329,
+                "6": 412,
+                "7": 363,
+                "8": 96,
+                "9": 3,
+                "10": 489
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 4853996
+        },
+        {
+          "t": 8205,
+          "k": 0,
+          "frames": 392,
+          "waited": 177,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 407,
+            "ready": true,
+            "loading": 380
+          },
+          "octrees": [
+            {
+              "pending": 190,
+              "prefetch": 190,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 94,
+                "4": 206,
+                "5": 329,
+                "6": 412,
+                "7": 362,
+                "8": 96,
+                "9": 3,
+                "10": 468
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 6096084
+        },
+        {
+          "t": 9218,
+          "k": 0,
+          "frames": 392,
+          "waited": 207,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 437,
+            "ready": true,
+            "loading": 374
+          },
+          "octrees": [
+            {
+              "pending": 187,
+              "prefetch": 187,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 130,
+                "4": 206,
+                "5": 329,
+                "6": 412,
+                "7": 359,
+                "8": 96,
+                "9": 3,
+                "10": 435
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 7018913
+        },
+        {
+          "t": 10229,
+          "k": 0,
+          "frames": 392,
+          "waited": 238,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 468,
+            "ready": true,
+            "loading": 368
+          },
+          "octrees": [
+            {
+              "pending": 184,
+              "prefetch": 184,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 145,
+                "4": 206,
+                "5": 329,
+                "6": 412,
+                "7": 356,
+                "8": 95,
+                "9": 3,
+                "10": 424
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 7648885
+        },
+        {
+          "t": 11236,
+          "k": 0,
+          "frames": 392,
+          "waited": 268,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 498,
+            "ready": true,
+            "loading": 360
+          },
+          "octrees": [
+            {
+              "pending": 180,
+              "prefetch": 180,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 159,
+                "4": 206,
+                "5": 329,
+                "6": 412,
+                "7": 356,
+                "8": 95,
+                "9": 3,
+                "10": 410
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 8783387
+        },
+        {
+          "t": 12241,
+          "k": 0,
+          "frames": 392,
+          "waited": 298,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 528,
+            "ready": true,
+            "loading": 356
+          },
+          "octrees": [
+            {
+              "pending": 178,
+              "prefetch": 178,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 164,
+                "4": 206,
+                "5": 329,
+                "6": 412,
+                "7": 356,
+                "8": 95,
+                "9": 3,
+                "10": 405
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 9401184
+        },
+        {
+          "t": 13246,
+          "k": 0,
+          "frames": 392,
+          "waited": 327,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 557,
+            "ready": true,
+            "loading": 348
+          },
+          "octrees": [
+            {
+              "pending": 174,
+              "prefetch": 174,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 172,
+                "4": 206,
+                "5": 329,
+                "6": 412,
+                "7": 356,
+                "8": 95,
+                "9": 3,
+                "10": 397
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 10569239
+        },
+        {
+          "t": 14266,
+          "k": 0,
+          "frames": 392,
+          "waited": 357,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 587,
+            "ready": true,
+            "loading": 340
+          },
+          "octrees": [
+            {
+              "pending": 170,
+              "prefetch": 170,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 184,
+                "4": 206,
+                "5": 329,
+                "6": 412,
+                "7": 356,
+                "8": 95,
+                "9": 3,
+                "10": 385
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 11600277
+        },
+        {
+          "t": 15283,
+          "k": 0,
+          "frames": 392,
+          "waited": 387,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 617,
+            "ready": true,
+            "loading": 334
+          },
+          "octrees": [
+            {
+              "pending": 167,
+              "prefetch": 167,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 191,
+                "4": 206,
+                "5": 329,
+                "6": 412,
+                "7": 356,
+                "8": 95,
+                "9": 3,
+                "10": 378
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 12510771
+        },
+        {
+          "t": 16305,
+          "k": 0,
+          "frames": 392,
+          "waited": 417,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 647,
+            "ready": true,
+            "loading": 328
+          },
+          "octrees": [
+            {
+              "pending": 164,
+              "prefetch": 164,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 199,
+                "4": 206,
+                "5": 329,
+                "6": 412,
+                "7": 356,
+                "8": 95,
+                "9": 3,
+                "10": 370
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 13552747
+        },
+        {
+          "t": 17334,
+          "k": 0,
+          "frames": 392,
+          "waited": 448,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 678,
+            "ready": true,
+            "loading": 320
+          },
+          "octrees": [
+            {
+              "pending": 160,
+              "prefetch": 160,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 238,
+                "4": 187,
+                "5": 329,
+                "6": 406,
+                "7": 356,
+                "8": 95,
+                "9": 3,
+                "10": 356
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 14740184
+        },
+        {
+          "t": 18365,
+          "k": 0,
+          "frames": 392,
+          "waited": 477,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 707,
+            "ready": true,
+            "loading": 312
+          },
+          "octrees": [
+            {
+              "pending": 156,
+              "prefetch": 156,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 277,
+                "4": 168,
+                "5": 329,
+                "6": 395,
+                "7": 355,
+                "8": 95,
+                "9": 3,
+                "10": 348
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 15717650
+        },
+        {
+          "t": 19375,
+          "k": 0,
+          "frames": 392,
+          "waited": 507,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 737,
+            "ready": true,
+            "loading": 306
+          },
+          "octrees": [
+            {
+              "pending": 153,
+              "prefetch": 153,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 286,
+                "4": 166,
+                "5": 329,
+                "6": 395,
+                "7": 355,
+                "8": 95,
+                "9": 3,
+                "10": 341
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 16769076
+        },
+        {
+          "t": 20379,
+          "k": 0,
+          "frames": 392,
+          "waited": 537,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 767,
+            "ready": true,
+            "loading": 298
+          },
+          "octrees": [
+            {
+              "pending": 149,
+              "prefetch": 149,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 306,
+                "4": 160,
+                "5": 329,
+                "6": 395,
+                "7": 355,
+                "8": 95,
+                "9": 3,
+                "10": 327
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 17798251
+        },
+        {
+          "t": 21393,
+          "k": 0,
+          "frames": 392,
+          "waited": 566,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 796,
+            "ready": true,
+            "loading": 292
+          },
+          "octrees": [
+            {
+              "pending": 146,
+              "prefetch": 146,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 326,
+                "4": 160,
+                "5": 328,
+                "6": 395,
+                "7": 355,
+                "8": 95,
+                "9": 3,
+                "10": 308
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 18693340
+        },
+        {
+          "t": 22401,
+          "k": 0,
+          "frames": 392,
+          "waited": 596,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 826,
+            "ready": true,
+            "loading": 286
+          },
+          "octrees": [
+            {
+              "pending": 143,
+              "prefetch": 143,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 333,
+                "4": 158,
+                "5": 327,
+                "6": 395,
+                "7": 355,
+                "8": 95,
+                "9": 3,
+                "10": 304
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 19646032
+        },
+        {
+          "t": 23407,
+          "k": 0,
+          "frames": 392,
+          "waited": 626,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 856,
+            "ready": true,
+            "loading": 280
+          },
+          "octrees": [
+            {
+              "pending": 140,
+              "prefetch": 140,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 344,
+                "4": 147,
+                "5": 327,
+                "6": 395,
+                "7": 355,
+                "8": 95,
+                "9": 3,
+                "10": 304
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 20544950
+        },
+        {
+          "t": 24418,
+          "k": 0,
+          "frames": 392,
+          "waited": 655,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 885,
+            "ready": true,
+            "loading": 272
+          },
+          "octrees": [
+            {
+              "pending": 136,
+              "prefetch": 136,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 371,
+                "4": 129,
+                "5": 324,
+                "6": 395,
+                "7": 354,
+                "8": 95,
+                "9": 3,
+                "10": 299
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 21501954
+        },
+        {
+          "t": 25444,
+          "k": 0,
+          "frames": 392,
+          "waited": 685,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 915,
+            "ready": true,
+            "loading": 266
+          },
+          "octrees": [
+            {
+              "pending": 133,
+              "prefetch": 133,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 385,
+                "4": 118,
+                "5": 322,
+                "6": 395,
+                "7": 354,
+                "8": 95,
+                "9": 3,
+                "10": 298
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 22298183
+        },
+        {
+          "t": 26461,
+          "k": 0,
+          "frames": 392,
+          "waited": 715,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 945,
+            "ready": true,
+            "loading": 260
+          },
+          "octrees": [
+            {
+              "pending": 130,
+              "prefetch": 130,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 416,
+                "4": 88,
+                "5": 322,
+                "6": 395,
+                "7": 354,
+                "8": 95,
+                "9": 3,
+                "10": 297
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 23071717
+        },
+        {
+          "t": 27470,
+          "k": 0,
+          "frames": 392,
+          "waited": 745,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 975,
+            "ready": true,
+            "loading": 250
+          },
+          "octrees": [
+            {
+              "pending": 125,
+              "prefetch": 125,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 466,
+                "4": 63,
+                "5": 322,
+                "6": 393,
+                "7": 353,
+                "8": 95,
+                "9": 3,
+                "10": 275
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 24469133
+        },
+        {
+          "t": 28477,
+          "k": 0,
+          "frames": 392,
+          "waited": 772,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1002,
+            "ready": true,
+            "loading": 244
+          },
+          "octrees": [
+            {
+              "pending": 122,
+              "prefetch": 122,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 475,
+                "4": 63,
+                "5": 322,
+                "6": 393,
+                "7": 353,
+                "8": 95,
+                "9": 3,
+                "10": 266
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 25591548
+        },
+        {
+          "t": 29485,
+          "k": 0,
+          "frames": 392,
+          "waited": 802,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1032,
+            "ready": true,
+            "loading": 236
+          },
+          "octrees": [
+            {
+              "pending": 118,
+              "prefetch": 118,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 502,
+                "4": 42,
+                "5": 322,
+                "6": 392,
+                "7": 353,
+                "8": 95,
+                "9": 3,
+                "10": 261
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 26841033
+        },
+        {
+          "t": 30493,
+          "k": 0,
+          "frames": 392,
+          "waited": 831,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1061,
+            "ready": true,
+            "loading": 230
+          },
+          "octrees": [
+            {
+              "pending": 115,
+              "prefetch": 115,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 510,
+                "4": 40,
+                "5": 322,
+                "6": 392,
+                "7": 353,
+                "8": 95,
+                "9": 3,
+                "10": 255
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 27481084
+        },
+        {
+          "t": 31511,
+          "k": 0,
+          "frames": 392,
+          "waited": 857,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1087,
+            "ready": true,
+            "loading": 226
+          },
+          "octrees": [
+            {
+              "pending": 113,
+              "prefetch": 113,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 515,
+                "4": 40,
+                "5": 322,
+                "6": 392,
+                "7": 353,
+                "8": 95,
+                "9": 3,
+                "10": 250
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 28476206
+        },
+        {
+          "t": 32536,
+          "k": 0,
+          "frames": 392,
+          "waited": 885,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1115,
+            "ready": true,
+            "loading": 218
+          },
+          "octrees": [
+            {
+              "pending": 109,
+              "prefetch": 109,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 528,
+                "4": 29,
+                "5": 322,
+                "6": 392,
+                "7": 353,
+                "8": 95,
+                "9": 3,
+                "10": 248
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 29584698
+        },
+        {
+          "t": 33545,
+          "k": 0,
+          "frames": 392,
+          "waited": 915,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1145,
+            "ready": true,
+            "loading": 212
+          },
+          "octrees": [
+            {
+              "pending": 106,
+              "prefetch": 106,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 535,
+                "4": 28,
+                "5": 320,
+                "6": 392,
+                "7": 353,
+                "8": 95,
+                "9": 3,
+                "10": 244
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 30425662
+        },
+        {
+          "t": 34557,
+          "k": 0,
+          "frames": 392,
+          "waited": 944,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1174,
+            "ready": true,
+            "loading": 204
+          },
+          "octrees": [
+            {
+              "pending": 102,
+              "prefetch": 102,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 550,
+                "4": 19,
+                "5": 318,
+                "6": 392,
+                "7": 353,
+                "8": 95,
+                "9": 3,
+                "10": 240
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 31776695
+        },
+        {
+          "t": 35563,
+          "k": 0,
+          "frames": 392,
+          "waited": 972,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1202,
+            "ready": true,
+            "loading": 196
+          },
+          "octrees": [
+            {
+              "pending": 98,
+              "prefetch": 98,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 565,
+                "4": 19,
+                "5": 318,
+                "6": 392,
+                "7": 353,
+                "8": 95,
+                "9": 3,
+                "10": 225
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 32638579
+        },
+        {
+          "t": 36567,
+          "k": 0,
+          "frames": 392,
+          "waited": 998,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1228,
+            "ready": true,
+            "loading": 192
+          },
+          "octrees": [
+            {
+              "pending": 96,
+              "prefetch": 96,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 569,
+                "4": 19,
+                "5": 318,
+                "6": 392,
+                "7": 353,
+                "8": 95,
+                "9": 3,
+                "10": 221
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 33186545
+        },
+        {
+          "t": 37572,
+          "k": 0,
+          "frames": 392,
+          "waited": 1025,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1255,
+            "ready": true,
+            "loading": 184
+          },
+          "octrees": [
+            {
+              "pending": 92,
+              "prefetch": 92,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 578,
+                "4": 16,
+                "5": 318,
+                "6": 392,
+                "7": 353,
+                "8": 95,
+                "9": 3,
+                "10": 215
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 34417040
+        },
+        {
+          "t": 38582,
+          "k": 0,
+          "frames": 392,
+          "waited": 1052,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1282,
+            "ready": true,
+            "loading": 174
+          },
+          "octrees": [
+            {
+              "pending": 87,
+              "prefetch": 87,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 679,
+                "4": 16,
+                "5": 268,
+                "6": 349,
+                "7": 347,
+                "8": 95,
+                "9": 3,
+                "10": 213
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 35747157
+        },
+        {
+          "t": 39587,
+          "k": 0,
+          "frames": 392,
+          "waited": 1080,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1310,
+            "ready": true,
+            "loading": 170
+          },
+          "octrees": [
+            {
+              "pending": 85,
+              "prefetch": 85,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 736,
+                "4": 16,
+                "5": 268,
+                "6": 349,
+                "7": 346,
+                "8": 95,
+                "9": 3,
+                "10": 157
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 36284799
+        },
+        {
+          "t": 40592,
+          "k": 0,
+          "frames": 392,
+          "waited": 1106,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1336,
+            "ready": true,
+            "loading": 162
+          },
+          "octrees": [
+            {
+              "pending": 81,
+              "prefetch": 81,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 750,
+                "4": 11,
+                "5": 265,
+                "6": 349,
+                "7": 346,
+                "8": 95,
+                "9": 3,
+                "10": 151
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 37562563
+        },
+        {
+          "t": 41599,
+          "k": 0,
+          "frames": 392,
+          "waited": 1131,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1361,
+            "ready": true,
+            "loading": 154
+          },
+          "octrees": [
+            {
+              "pending": 77,
+              "prefetch": 77,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 770,
+                "4": 5,
+                "5": 265,
+                "6": 349,
+                "7": 345,
+                "8": 95,
+                "9": 3,
+                "10": 138
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 38499253
+        },
+        {
+          "t": 42608,
+          "k": 0,
+          "frames": 392,
+          "waited": 1158,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1388,
+            "ready": true,
+            "loading": 150
+          },
+          "octrees": [
+            {
+              "pending": 75,
+              "prefetch": 75,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 779,
+                "4": 5,
+                "5": 263,
+                "6": 349,
+                "7": 345,
+                "8": 95,
+                "9": 3,
+                "10": 131
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 39476680
+        },
+        {
+          "t": 43646,
+          "k": 0,
+          "frames": 392,
+          "waited": 1186,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1416,
+            "ready": true,
+            "loading": 144
+          },
+          "octrees": [
+            {
+              "pending": 72,
+              "prefetch": 72,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 788,
+                "4": 2,
+                "5": 260,
+                "6": 348,
+                "7": 345,
+                "8": 95,
+                "9": 3,
+                "10": 129
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 40364251
+        },
+        {
+          "t": 44651,
+          "k": 0,
+          "frames": 392,
+          "waited": 1212,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1442,
+            "ready": true,
+            "loading": 136
+          },
+          "octrees": [
+            {
+              "pending": 68,
+              "prefetch": 68,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 801,
+                "4": 2,
+                "5": 252,
+                "6": 347,
+                "7": 345,
+                "8": 95,
+                "9": 3,
+                "10": 125
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 41549046
+        },
+        {
+          "t": 45673,
+          "k": 0,
+          "frames": 392,
+          "waited": 1240,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1470,
+            "ready": true,
+            "loading": 130
+          },
+          "octrees": [
+            {
+              "pending": 65,
+              "prefetch": 65,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 809,
+                "4": 2,
+                "5": 244,
+                "6": 347,
+                "7": 345,
+                "8": 95,
+                "9": 3,
+                "10": 125
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 42411509
+        },
+        {
+          "t": 46696,
+          "k": 0,
+          "frames": 392,
+          "waited": 1267,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1497,
+            "ready": true,
+            "loading": 122
+          },
+          "octrees": [
+            {
+              "pending": 61,
+              "prefetch": 61,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 830,
+                "5": 241,
+                "6": 347,
+                "7": 344,
+                "8": 95,
+                "9": 3,
+                "10": 110
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 43577889
+        },
+        {
+          "t": 47707,
+          "k": 0,
+          "frames": 392,
+          "waited": 1292,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1522,
+            "ready": true,
+            "loading": 114
+          },
+          "octrees": [
+            {
+              "pending": 57,
+              "prefetch": 57,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 877,
+                "5": 232,
+                "6": 326,
+                "7": 339,
+                "8": 94,
+                "9": 3,
+                "10": 99
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 44759872
+        },
+        {
+          "t": 48713,
+          "k": 0,
+          "frames": 392,
+          "waited": 1318,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1548,
+            "ready": true,
+            "loading": 110
+          },
+          "octrees": [
+            {
+              "pending": 55,
+              "prefetch": 55,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 883,
+                "5": 226,
+                "6": 326,
+                "7": 339,
+                "8": 94,
+                "9": 3,
+                "10": 99
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 45423116
+        },
+        {
+          "t": 49721,
+          "k": 0,
+          "frames": 392,
+          "waited": 1344,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1574,
+            "ready": true,
+            "loading": 104
+          },
+          "octrees": [
+            {
+              "pending": 52,
+              "prefetch": 52,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 908,
+                "5": 218,
+                "6": 318,
+                "7": 332,
+                "8": 93,
+                "9": 2,
+                "10": 99
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 46117129
+        },
+        {
+          "t": 50730,
+          "k": 0,
+          "frames": 392,
+          "waited": 1373,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1603,
+            "ready": true,
+            "loading": 100
+          },
+          "octrees": [
+            {
+              "pending": 50,
+              "prefetch": 50,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 943,
+                "5": 187,
+                "6": 318,
+                "7": 330,
+                "8": 93,
+                "9": 2,
+                "10": 97
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 46746637
+        },
+        {
+          "t": 51758,
+          "k": 0,
+          "frames": 392,
+          "waited": 1402,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1632,
+            "ready": true,
+            "loading": 96
+          },
+          "octrees": [
+            {
+              "pending": 48,
+              "prefetch": 48,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 947,
+                "5": 183,
+                "6": 318,
+                "7": 330,
+                "8": 93,
+                "9": 2,
+                "10": 97
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 47321231
+        },
+        {
+          "t": 52781,
+          "k": 0,
+          "frames": 392,
+          "waited": 1428,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1658,
+            "ready": true,
+            "loading": 90
+          },
+          "octrees": [
+            {
+              "pending": 45,
+              "prefetch": 45,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 965,
+                "5": 170,
+                "6": 318,
+                "7": 329,
+                "8": 93,
+                "9": 2,
+                "10": 93
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 48192393
+        },
+        {
+          "t": 53787,
+          "k": 0,
+          "frames": 392,
+          "waited": 1452,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1682,
+            "ready": true,
+            "loading": 80
+          },
+          "octrees": [
+            {
+              "pending": 40,
+              "prefetch": 40,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1070,
+                "5": 150,
+                "6": 254,
+                "7": 316,
+                "8": 85,
+                "9": 2,
+                "10": 93
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 49612312
+        },
+        {
+          "t": 54797,
+          "k": 0,
+          "frames": 392,
+          "waited": 1472,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1702,
+            "ready": true,
+            "loading": 74
+          },
+          "octrees": [
+            {
+              "pending": 37,
+              "prefetch": 37,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1164,
+                "5": 129,
+                "6": 245,
+                "7": 287,
+                "8": 83,
+                "9": 2,
+                "10": 60
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 50423624
+        },
+        {
+          "t": 55812,
+          "k": 0,
+          "frames": 392,
+          "waited": 1472,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1702,
+            "ready": true,
+            "loading": 74
+          },
+          "octrees": [
+            {
+              "pending": 37,
+              "prefetch": 37,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1164,
+                "5": 129,
+                "6": 245,
+                "7": 287,
+                "8": 83,
+                "9": 2,
+                "10": 60
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 50423624
+        },
+        {
+          "t": 56826,
+          "k": 0,
+          "frames": 392,
+          "waited": 1472,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1702,
+            "ready": true,
+            "loading": 74
+          },
+          "octrees": [
+            {
+              "pending": 37,
+              "prefetch": 37,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1164,
+                "5": 129,
+                "6": 245,
+                "7": 287,
+                "8": 83,
+                "9": 2,
+                "10": 60
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 50423624
+        },
+        {
+          "t": 57864,
+          "k": 0,
+          "frames": 392,
+          "waited": 1482,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1712,
+            "ready": true,
+            "loading": 70
+          },
+          "octrees": [
+            {
+              "pending": 35,
+              "prefetch": 35,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1176,
+                "5": 123,
+                "6": 245,
+                "7": 287,
+                "8": 83,
+                "9": 2,
+                "10": 54
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 50948192
+        },
+        {
+          "t": 58875,
+          "k": 0,
+          "frames": 392,
+          "waited": 1510,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1740,
+            "ready": true,
+            "loading": 68
+          },
+          "octrees": [
+            {
+              "pending": 34,
+              "prefetch": 34,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1179,
+                "5": 120,
+                "6": 245,
+                "7": 287,
+                "8": 83,
+                "9": 2,
+                "10": 54
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 51282379
+        },
+        {
+          "t": 59890,
+          "k": 0,
+          "frames": 392,
+          "waited": 1532,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1762,
+            "ready": true,
+            "loading": 58
+          },
+          "octrees": [
+            {
+              "pending": 29,
+              "prefetch": 29,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1259,
+                "5": 89,
+                "6": 205,
+                "7": 286,
+                "8": 83,
+                "9": 2,
+                "10": 46
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 52720907
+        },
+        {
+          "t": 60898,
+          "k": 0,
+          "frames": 392,
+          "waited": 1559,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1789,
+            "ready": true,
+            "loading": 52
+          },
+          "octrees": [
+            {
+              "pending": 26,
+              "prefetch": 26,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1337,
+                "5": 81,
+                "6": 188,
+                "7": 253,
+                "8": 63,
+                "9": 2,
+                "10": 46
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 53540832
+        },
+        {
+          "t": 61904,
+          "k": 0,
+          "frames": 392,
+          "waited": 1582,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1812,
+            "ready": true,
+            "loading": 44
+          },
+          "octrees": [
+            {
+              "pending": 22,
+              "prefetch": 22,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1422,
+                "5": 68,
+                "6": 145,
+                "7": 239,
+                "8": 63,
+                "9": 2,
+                "10": 31
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 54535380
+        },
+        {
+          "t": 62916,
+          "k": 0,
+          "frames": 392,
+          "waited": 1609,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1839,
+            "ready": true,
+            "loading": 36
+          },
+          "octrees": [
+            {
+              "pending": 18,
+              "prefetch": 18,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1517,
+                "5": 35,
+                "6": 92,
+                "7": 234,
+                "8": 59,
+                "9": 2,
+                "10": 31
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 55578061
+        },
+        {
+          "t": 63922,
+          "k": 0,
+          "frames": 392,
+          "waited": 1632,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1862,
+            "ready": true,
+            "loading": 28
+          },
+          "octrees": [
+            {
+              "pending": 14,
+              "prefetch": 14,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1651,
+                "5": 3,
+                "6": 80,
+                "7": 174,
+                "8": 45,
+                "9": 1,
+                "10": 16
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 56674936
+        },
+        {
+          "t": 64931,
+          "k": 0,
+          "frames": 392,
+          "waited": 1649,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1879,
+            "ready": true,
+            "loading": 24
+          },
+          "octrees": [
+            {
+              "pending": 12,
+              "prefetch": 12,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1709,
+                "5": 3,
+                "6": 47,
+                "7": 154,
+                "8": 40,
+                "9": 1,
+                "10": 16
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 57238983
+        },
+        {
+          "t": 65935,
+          "k": 0,
+          "frames": 392,
+          "waited": 1662,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1892,
+            "ready": true,
+            "loading": 16
+          },
+          "octrees": [
+            {
+              "pending": 8,
+              "prefetch": 8,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1829,
+                "6": 26,
+                "7": 80,
+                "8": 29,
+                "9": 1,
+                "10": 5
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 58070463
+        },
+        {
+          "t": 66939,
+          "k": 0,
+          "frames": 392,
+          "waited": 1662,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1892,
+            "ready": true,
+            "loading": 16
+          },
+          "octrees": [
+            {
+              "pending": 8,
+              "prefetch": 8,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1829,
+                "6": 26,
+                "7": 80,
+                "8": 29,
+                "9": 1,
+                "10": 5
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 58070463
+        },
+        {
+          "t": 67955,
+          "k": 0,
+          "frames": 392,
+          "waited": 1662,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1892,
+            "ready": true,
+            "loading": 16
+          },
+          "octrees": [
+            {
+              "pending": 8,
+              "prefetch": 8,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1829,
+                "6": 26,
+                "7": 80,
+                "8": 29,
+                "9": 1,
+                "10": 5
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 58070463
+        },
+        {
+          "t": 68963,
+          "k": 0,
+          "frames": 392,
+          "waited": 1662,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1892,
+            "ready": true,
+            "loading": 16
+          },
+          "octrees": [
+            {
+              "pending": 8,
+              "prefetch": 8,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1829,
+                "6": 26,
+                "7": 80,
+                "8": 29,
+                "9": 1,
+                "10": 5
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 58070463
+        },
+        {
+          "t": 69977,
+          "k": 0,
+          "frames": 392,
+          "waited": 1665,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1895,
+            "ready": true,
+            "loading": 16
+          },
+          "octrees": [
+            {
+              "pending": 8,
+              "prefetch": 8,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1829,
+                "6": 26,
+                "7": 80,
+                "8": 29,
+                "9": 1,
+                "10": 5
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 58070463
+        },
+        {
+          "t": 71008,
+          "k": 0,
+          "frames": 392,
+          "waited": 1688,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1918,
+            "ready": true,
+            "loading": 12
+          },
+          "octrees": [
+            {
+              "pending": 6,
+              "prefetch": 6,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1847,
+                "6": 18,
+                "7": 74,
+                "8": 29,
+                "9": 1,
+                "10": 1
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 58381430
+        },
+        {
+          "t": 72018,
+          "k": 0,
+          "frames": 392,
+          "waited": 1704,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1934,
+            "ready": true,
+            "loading": 6
+          },
+          "octrees": [
+            {
+              "pending": 3,
+              "prefetch": 3,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1933,
+                "6": 8,
+                "7": 21,
+                "8": 7,
+                "9": 1
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 59175290
+        },
+        {
+          "t": 73039,
+          "k": 1,
+          "frames": 392,
+          "waited": 1720,
+          "bar": "Frame 0 of 392 \u00b7 waiting for the scan to load for this view",
+          "splatFrame": {
+            "frame": 1951,
+            "ready": true,
+            "loading": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1970
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 59721288
+        },
+        {
+          "t": 74055,
+          "k": 20,
+          "frames": 392,
+          "waited": 1720,
+          "bar": "Frame 16 of 392",
+          "splatFrame": {
+            "frame": 1970,
+            "ready": true,
+            "loading": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1970
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 59743889
+        },
+        {
+          "t": 75070,
+          "k": 50,
+          "frames": 392,
+          "waited": 1720,
+          "bar": "Frame 50 of 392",
+          "splatFrame": {
+            "frame": 2000,
+            "ready": true,
+            "loading": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1970
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 59743889
+        },
+        {
+          "t": 76080,
+          "k": 80,
+          "frames": 392,
+          "waited": 1720,
+          "bar": "Frame 76 of 392",
+          "splatFrame": {
+            "frame": 2030,
+            "ready": true,
+            "loading": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1970
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 59743889
+        },
+        {
+          "t": 77109,
+          "k": 111,
+          "frames": 392,
+          "waited": 1720,
+          "bar": "Frame 108 of 392",
+          "splatFrame": {
+            "frame": 2061,
+            "ready": true,
+            "loading": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1970
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 59743889
+        },
+        {
+          "t": 78116,
+          "k": 142,
+          "frames": 392,
+          "waited": 1720,
+          "bar": "Frame 140 of 392",
+          "splatFrame": {
+            "frame": 2092,
+            "ready": true,
+            "loading": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1970
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 59743889
+        },
+        {
+          "t": 79137,
+          "k": 172,
+          "frames": 392,
+          "waited": 1720,
+          "bar": "Frame 172 of 392",
+          "splatFrame": {
+            "frame": 2122,
+            "ready": true,
+            "loading": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1970
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 59743889
+        },
+        {
+          "t": 80161,
+          "k": 203,
+          "frames": 392,
+          "waited": 1720,
+          "bar": "Frame 198 of 392",
+          "splatFrame": {
+            "frame": 2153,
+            "ready": true,
+            "loading": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1970
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 59743889
+        },
+        {
+          "t": 81190,
+          "k": 234,
+          "frames": 392,
+          "waited": 1720,
+          "bar": "Frame 231 of 392",
+          "splatFrame": {
+            "frame": 2184,
+            "ready": true,
+            "loading": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1970
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 59743889
+        },
+        {
+          "t": 82214,
+          "k": 264,
+          "frames": 392,
+          "waited": 1720,
+          "bar": "Frame 263 of 392",
+          "splatFrame": {
+            "frame": 2214,
+            "ready": true,
+            "loading": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1970
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 59743889
+        },
+        {
+          "t": 83239,
+          "k": 295,
+          "frames": 392,
+          "waited": 1720,
+          "bar": "Frame 291 of 392",
+          "splatFrame": {
+            "frame": 2245,
+            "ready": true,
+            "loading": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1970
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 59743889
+        },
+        {
+          "t": 84253,
+          "k": 326,
+          "frames": 392,
+          "waited": 1720,
+          "bar": "Frame 323 of 392",
+          "splatFrame": {
+            "frame": 2276,
+            "ready": true,
+            "loading": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1970
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 59743889
+        },
+        {
+          "t": 85267,
+          "k": 356,
+          "frames": 392,
+          "waited": 1720,
+          "bar": "Frame 355 of 392",
+          "splatFrame": {
+            "frame": 2306,
+            "ready": true,
+            "loading": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1970
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 59743889
+        },
+        {
+          "t": 86283,
+          "k": 387,
+          "frames": 392,
+          "waited": 1720,
+          "bar": "Frame 382 of 392",
+          "splatFrame": {
+            "frame": 2337,
+            "ready": true,
+            "loading": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1970
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            0
+          ],
+          "drawn": 59743889
+        },
+        {
+          "t": 87294,
+          "k": 0,
+          "frames": 0,
+          "waited": 0,
+          "bar": "392 frames at 60 fps \u00b7 Saved 6.5 s in the browser (8.2 MB)",
+          "splatFrame": {
+            "frame": 2365,
+            "ready": true,
+            "loading": 126
+          },
+          "octrees": [
+            {
+              "pending": 63,
+              "prefetch": 63,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "0": 1909,
+                "9": 57,
+                "10": 2
+              }
+            }
+          ],
+          "budgetM": 2.5,
+          "range": [
+            0,
+            1000
+          ],
+          "drawn": 59540813
+        }
+      ],
+      "log": [
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+      ]
+    }
+  ]
+}

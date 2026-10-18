@@ -1,0 +1,10 @@
+{
+  "load.flyNow": "Leć teraz",
+  "load.view.files": "{n} z {total} części na miejscu",
+  "load.view.drawn": "{m} mln splatów na ekranie",
+  "load.view.notDrawn": "na ekranie jeszcze nic",
+  "load.view.loading": "plików w drodze: {n}",
+  "load.view.soon": "pokażemy najpóźniej za {s} s",
+  "load.reveal.pilot": "Wybrano „Leć teraz”: reszta skanu wczytuje się w trakcie lotu.",
+  "load.reveal.stall": "Przez 30 s nic nie dotarło, więc widzisz to, co już jest; reszta wczytuje się w trakcie lotu."
+}

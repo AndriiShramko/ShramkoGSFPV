@@ -17,7 +17,7 @@
 import { SceneError, SceneRotation, flyQueryString, getLibrary, legacyLibraryStore, mergeLibraries, parseSceneLink, recordFailure, recordOpen, sameRender, useLibraryStore, writeSceneQuery } from '@gsfpv/scenes';
 import type { CatalogCollection, RotationRules, RotationSource, RotationOrder, SceneLibraryData, SceneRender } from '@gsfpv/scenes';
 import type { PrefsStore } from '@gsfpv/prefs';
-import { FlightSession } from '../session';
+import { FlightSession, FlyNow } from '../session';
 import type { SessionOptions } from '../session';
 import { LoadingScreen } from '../ui/loading';
 import { ScenePicker } from '../ui/scenes';
@@ -151,13 +151,16 @@ export class SceneHost implements SceneSwitcher {
         const old = ctx.session;
         const meta = showcase.find((s) => s.id === id);
         const ref: SceneRef = render ? { id, meta, render } : { id, meta };
+        // the card's Fly now shows the first view at once (session/reveal.ts)
+        const flyNow = new FlyNow();
         const loading = new LoadingScreen(ctx.ui, {
             sceneId: id,
             title: meta?.title,
             next: null,
             compact: true,
             onRetry: () => location.reload(),
-            onBack: () => { location.search = ''; }
+            onBack: () => { location.search = ''; },
+            onFlyNow: () => flyNow.press()
         });
         // the channels the craft flies with now: the new scene's first life starts with them (C.4 'scene')
         const ch = old.sim ? Array.from(old.sim.ch) : null;
@@ -179,7 +182,11 @@ export class SceneHost implements SceneSwitcher {
             wind: windFor(ctx.prefs, id, meta),
             // the gusts go on with the same seed in the next scene
             windSeed: old.windSeed,
-            onProgress: (p) => loading.update(p)
+            flyNow,
+            onProgress: (p) => {
+                loading.update(p);
+                hook.loading = { stage: p.stage, loaded: p.loaded, total: p.total, fraction: p.fraction, exact: p.exact, elapsedMs: Math.round(performance.now() - t0), view: p.view, reveal: p.reveal, canFlyNow: p.canFlyNow, revealInMs: p.revealInMs };
+            }
         };
         old.dispose();
         let next: FlightSession;

@@ -4,7 +4,7 @@ import type { LifeHeader, SimEvent } from '@gsfpv/sim-core';
 import type { Scenario } from '@gsfpv/input/sim';
 import type { FrameGovernor } from '@gsfpv/render-pc';
 import type { RecorderInfo } from '../cinema';
-import type { FlightSession } from '../session';
+import type { FlightSession, LoadView, RevealReason } from '../session';
 import type { Controls } from '../controls';
 import type { RadioScreen } from '../ui/radio';
 import type { FakeEdgeTx } from '../devices/fakehid';
@@ -32,8 +32,11 @@ export interface TestHook {
     prefs?: PrefsHook;
     error?: string;
     errorCode?: string;
-    /** the loading screen's numbers (bytes of the first view), updated every 100 ms until 'done' */
-    loading?: { stage: string; loaded: number; total: number; fraction: number; exact: boolean; elapsedMs: number };
+    /**
+     * the loading screen's numbers (bytes of the first view), updated every 100 ms until 'done'; v0.9: what the
+     * view waits for while it is prepared (LoadView), why it was shown, and whether the card offers Fly now
+     */
+    loading?: { stage: string; loaded: number; total: number; fraction: number; exact: boolean; elapsedMs: number; view?: LoadView | null; reveal?: RevealReason | null; canFlyNow?: boolean; revealInMs?: number | null };
     session?: FlightSession;
     scenario?: Scenario;
     controls?: Controls;

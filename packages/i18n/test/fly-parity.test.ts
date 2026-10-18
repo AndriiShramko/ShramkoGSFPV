@@ -124,6 +124,43 @@ describe('fly dictionaries: parity', () => {
     });
 });
 
+/**
+ * Counts that are often 1 have no plural form in t(): they are written count-neutral, "label: {n}", in every
+ * language (v0.9 review: "1 files on their way", and Polish needs another word for 1). The keys the loading
+ * card and the video export show while the count runs down to 1.
+ */
+const COUNT_NEUTRAL = ['load.view.loading', 'rec.export.waitScan', 'rec.export.forced'];
+
+/** Keys of COUNT_NEUTRAL whose {n} is not right after a colon, as `<ns>/<lang>: <key>`. */
+function countProblems(sets: readonly DictSet[]): string[] {
+    const out: string[] = [];
+    for (const { ns, files } of sets) {
+        for (const l of LANGS) {
+            const d = files[l] as Record<string, unknown> | undefined;
+            if (!d) continue;
+            for (const k of COUNT_NEUTRAL) {
+                const s = d[k];
+                if (typeof s === 'string' && !/:\s\{n\}/.test(s)) out.push(`${ns || 'flat'}/${l}: ${k}`);
+            }
+        }
+    }
+    return out;
+}
+
+describe('fly dictionaries: counts that can be 1', () => {
+    it('are count-neutral ("label: {n}") in every language', () => {
+        const tree = loadTree();
+        const found = COUNT_NEUTRAL.filter((k) => tree.some(({ files }) => LANGS.every((l) => typeof (files[l] as Record<string, unknown> | undefined)?.[k] === 'string')));
+        expect(found).toEqual(COUNT_NEUTRAL);
+        expect(countProblems(tree)).toEqual([]);
+    });
+
+    it('control: the count before its noun is caught', () => {
+        const sets = planted((s) => { set(s, 'load').en['load.view.loading'] = '{n} files on their way'; });
+        expect(countProblems(sets)).toEqual(['load/en: load.view.loading']);
+    });
+});
+
 describe('fly dictionaries: negative controls (each must be caught)', () => {
     it('a key missing in pl', () => {
         const sets = planted((s) => {

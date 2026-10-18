@@ -1,0 +1,3389 @@
+{
+  "name": "v09-load-probe-base",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-17T19:37:35.280Z",
+    "gitHead": "78eb719",
+    "gitDirty": false,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5717",
+  "limitS": 75,
+  "cases": [
+    {
+      "case": "link:d8ba72a6",
+      "label": "link:d8ba72a6",
+      "revealedMs": 33268,
+      "stages": {
+        "connect": 677,
+        "download": 1520,
+        "prepare": 2294,
+        "done": 33268
+      },
+      "hints": [
+        "Preparing the view is taking longer than usual (N s)."
+      ],
+      "last": {
+        "t": 33268,
+        "status": "loading",
+        "errorCode": null,
+        "loading": {
+          "stage": "done",
+          "loaded": 13237287,
+          "total": 13237287,
+          "fraction": 1,
+          "exact": true,
+          "elapsedMs": 32766
+        },
+        "sceneSwitch": null,
+        "card": {
+          "stage": "done",
+          "actions": false,
+          "title": "Showing what has arrived so far",
+          "nums": "13.2 / 13.2 MB",
+          "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+          "hint": ""
+        },
+        "engine": {
+          "splatFrame": {
+            "frame": 913,
+            "ready": true,
+            "loading": 0
+          },
+          "frameNumber": 913,
+          "drawn": 750322,
+          "budgetM": 4,
+          "stochastic": false,
+          "range": [
+            0,
+            1000
+          ],
+          "visibleMs": 32764.600000023842,
+          "probe": {
+            "frames": 908,
+            "readyFlips": 0,
+            "loadingFlips": 0,
+            "readyFrames": 908,
+            "maxLoading": 0,
+            "last": {
+              "ready": true,
+              "loading": 0
+            },
+            "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+          },
+          "world": {
+            "current": 1,
+            "last": 1,
+            "awaitingLod": false,
+            "pendingLoadCount": 0
+          },
+          "octrees": []
+        }
+      },
+      "samples": [
+        {
+          "t": 416,
+          "status": "loading",
+          "errorCode": null,
+          "loading": null,
+          "sceneSwitch": null,
+          "card": null
+        },
+        {
+          "t": 1520,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "download",
+            "loaded": 0,
+            "total": 12455477.200000001,
+            "fraction": 0,
+            "exact": false,
+            "elapsedMs": 1005
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "download",
+            "actions": false,
+            "title": "Downloading the scan and its walls",
+            "nums": "0.0 / ~12.5 MB",
+            "parts": "Scan 0.0 / ~12.5 MB \u00b7 Walls 0.0 / ~0.0 MB",
+            "hint": ""
+          }
+        },
+        {
+          "t": 2557,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 2103
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 2,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 3,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 0,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 0,
+              "maxLoading": 0,
+              "last": null,
+              "tail": ""
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 3605,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 3103
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 23,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 23,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 18,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 18,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 4648,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 4102
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 54,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 54,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 49,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 49,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 5702,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 5206
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 86,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 86,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 81,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 81,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 6751,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 6206
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 117,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 117,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 112,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 112,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 7809,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 7306
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 149,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 149,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 144,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 144,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 8858,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 8403
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 181,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 181,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 176,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 176,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 9911,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 9406
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 212,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 212,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 207,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 207,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 10958,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 10503
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 244,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 244,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 239,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 239,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 12011,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 11509
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 275,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 275,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 270,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 270,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 13051,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 12508
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (10 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 306,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 306,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 301,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 301,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 14101,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 13607
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (12 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 338,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 338,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 333,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 333,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 15155,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 14610
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (13 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 369,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 369,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 364,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 364,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 16200,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 15708
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (14 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 401,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 401,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 396,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 396,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 17251,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 16706
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (15 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 432,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 432,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 427,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 427,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 18310,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 17806
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (16 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 464,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 464,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 459,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 459,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 19361,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 18907
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (17 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 496,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 496,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 491,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 491,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 20406,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 19903
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (18 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 527,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 527,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 522,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 522,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 21456,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 20905
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (19 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 558,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 558,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 553,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 553,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 22502,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 22004
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": true,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (20 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 590,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 590,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 585,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 585,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 23550,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 23006
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": true,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (21 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 621,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 621,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 616,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 616,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 24596,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 24105
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": true,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (22 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 653,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 653,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 648,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 648,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 25643,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 25109
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": true,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (23 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 684,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 684,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 679,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 679,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 26695,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 26205
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": true,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (24 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 716,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 716,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 711,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 711,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 27747,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 27205
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": true,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (25 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 747,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 747,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 742,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 742,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 28798,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 28305
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": true,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (26 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 779,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 779,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 774,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 774,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 29847,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 29305
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": true,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (27 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 810,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 810,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 805,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 805,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 30912,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 30405
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": true,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (28 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 842,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 842,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 837,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 837,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 31953,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 31406
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": true,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (29 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 873,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 873,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 868,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 868,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 33002,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 32511
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": true,
+            "title": "Preparing the view",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": "Preparing the view is taking longer than usual (30 s)."
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 905,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 905,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              99
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 900,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 900,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        },
+        {
+          "t": 33268,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "done",
+            "loaded": 13237287,
+            "total": 13237287,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 32766
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "done",
+            "actions": false,
+            "title": "Showing what has arrived so far",
+            "nums": "13.2 / 13.2 MB",
+            "parts": "Scan \u2713 13.2 MB \u00b7 Walls \u2713 0.0 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 913,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 913,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              1000
+            ],
+            "visibleMs": 32764.600000023842,
+            "probe": {
+              "frames": 908,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 908,
+              "maxLoading": 0,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        }
+      ],
+      "log": [
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+      ]
+    },
+    {
+      "case": "link:a8cfc66e",
+      "label": "link:a8cfc66e",
+      "revealedMs": 2743,
+      "stages": {
+        "connect": 560,
+        "download": 1378,
+        "prepare": 2199,
+        "done": 2743
+      },
+      "hints": [],
+      "last": {
+        "t": 2743,
+        "status": "loading",
+        "errorCode": null,
+        "loading": {
+          "stage": "done",
+          "loaded": 12430301,
+          "total": 12430301,
+          "fraction": 1,
+          "exact": true,
+          "elapsedMs": 2426
+        },
+        "sceneSwitch": null,
+        "card": {
+          "stage": "done",
+          "actions": false,
+          "title": "The scan is ready",
+          "nums": "12.4 / 12.4 MB",
+          "parts": "Scan \u2713 9.5 MB \u00b7 Walls \u2713 2.9 MB",
+          "hint": ""
+        },
+        "engine": {
+          "splatFrame": {
+            "frame": 41,
+            "ready": true,
+            "loading": 0
+          },
+          "frameNumber": 41,
+          "drawn": 0,
+          "budgetM": 4,
+          "stochastic": false,
+          "range": [
+            0,
+            1000
+          ],
+          "visibleMs": 2425.4000000953674,
+          "probe": {
+            "frames": 4,
+            "readyFlips": 0,
+            "loadingFlips": 1,
+            "readyFrames": 4,
+            "maxLoading": 4,
+            "last": {
+              "ready": true,
+              "loading": 0
+            },
+            "tail": "R4 R4 R4 R0"
+          },
+          "world": {
+            "current": 4,
+            "last": 4,
+            "awaitingLod": false,
+            "pendingLoadCount": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "5": 160
+              }
+            }
+          ]
+        }
+      },
+      "samples": [
+        {
+          "t": 290,
+          "status": "loading",
+          "errorCode": null,
+          "loading": null,
+          "sceneSwitch": null,
+          "card": null
+        },
+        {
+          "t": 1378,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "download",
+            "loaded": 0,
+            "total": 21503580,
+            "fraction": 0,
+            "exact": false,
+            "elapsedMs": 1005
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "download",
+            "actions": false,
+            "title": "Downloading the scan and its walls",
+            "nums": "0.0 / ~21.5 MB",
+            "parts": "Scan 0.0 / ~12.6 MB \u00b7 Walls 0.0 / ~8.9 MB",
+            "hint": ""
+          }
+        },
+        {
+          "t": 2469,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 12430301,
+            "total": 12430301,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 2102
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "12.4 / 12.4 MB",
+            "parts": "Scan \u2713 9.5 MB \u00b7 Walls \u2713 2.9 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 29,
+              "ready": true,
+              "loading": 4
+            },
+            "frameNumber": 33,
+            "drawn": 0,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              5,
+              5
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 3,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 3,
+              "maxLoading": 4,
+              "last": {
+                "ready": true,
+                "loading": 4
+              },
+              "tail": "R4 R4 R4"
+            },
+            "world": {
+              "current": 3,
+              "last": 3,
+              "awaitingLod": false,
+              "pendingLoadCount": 4
+            },
+            "octrees": [
+              {
+                "pending": 2,
+                "prefetch": 2,
+                "env": null,
+                "envPlaced": false,
+                "nodesPerLevel": {}
+              }
+            ]
+          }
+        },
+        {
+          "t": 2743,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "done",
+            "loaded": 12430301,
+            "total": 12430301,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 2426
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "done",
+            "actions": false,
+            "title": "The scan is ready",
+            "nums": "12.4 / 12.4 MB",
+            "parts": "Scan \u2713 9.5 MB \u00b7 Walls \u2713 2.9 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 41,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 41,
+            "drawn": 0,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              1000
+            ],
+            "visibleMs": 2425.4000000953674,
+            "probe": {
+              "frames": 4,
+              "readyFlips": 0,
+              "loadingFlips": 1,
+              "readyFrames": 4,
+              "maxLoading": 4,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R4 R4 R4 R0"
+            },
+            "world": {
+              "current": 4,
+              "last": 4,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": [
+              {
+                "pending": 0,
+                "prefetch": 0,
+                "env": null,
+                "envPlaced": false,
+                "nodesPerLevel": {
+                  "5": 160
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "log": [
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+      ]
+    },
+    {
+      "case": "link:b11e45d1",
+      "label": "link:b11e45d1",
+      "revealedMs": 3011,
+      "stages": {
+        "connect": 575,
+        "download": 1408,
+        "prepare": 2221,
+        "done": 3011
+      },
+      "hints": [],
+      "last": {
+        "t": 3011,
+        "status": "loading",
+        "errorCode": null,
+        "loading": {
+          "stage": "done",
+          "loaded": 10664603,
+          "total": 10664603,
+          "fraction": 1,
+          "exact": true,
+          "elapsedMs": 2499
+        },
+        "sceneSwitch": null,
+        "card": {
+          "stage": "done",
+          "actions": false,
+          "title": "The scan is ready",
+          "nums": "10.7 / 10.7 MB",
+          "parts": "Scan \u2713 4.9 MB \u00b7 Walls \u2713 5.8 MB",
+          "hint": ""
+        },
+        "engine": {
+          "splatFrame": {
+            "frame": 36,
+            "ready": true,
+            "loading": 0
+          },
+          "frameNumber": 36,
+          "drawn": 425066,
+          "budgetM": 4,
+          "stochastic": false,
+          "range": [
+            0,
+            1000
+          ],
+          "visibleMs": 2498,
+          "probe": {
+            "frames": 14,
+            "readyFlips": 0,
+            "loadingFlips": 2,
+            "readyFrames": 14,
+            "maxLoading": 3,
+            "last": {
+              "ready": true,
+              "loading": 0
+            },
+            "tail": "R2 R2 R0 R0 R0 R0 R0 R0"
+          },
+          "world": {
+            "current": 4,
+            "last": 4,
+            "awaitingLod": false,
+            "pendingLoadCount": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": "https://d28zzqy0iyovbz.cloudfront.net/b11e45d1/v1/env/meta.json",
+              "envPlaced": true,
+              "nodesPerLevel": {
+                "6": 1599
+              }
+            }
+          ]
+        }
+      },
+      "samples": [
+        {
+          "t": 314,
+          "status": "loading",
+          "errorCode": null,
+          "loading": null,
+          "sceneSwitch": null,
+          "card": null
+        },
+        {
+          "t": 1408,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "download",
+            "loaded": 25416.749960943092,
+            "total": 12239885.600000001,
+            "fraction": 0.0020765512678438017,
+            "exact": false,
+            "elapsedMs": 1015
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "download",
+            "actions": false,
+            "title": "Downloading the scan and its walls",
+            "nums": "0.0 / ~12.2 MB",
+            "parts": "Scan 0.0 / ~6.4 MB \u00b7 Walls 0.0 / 5.8 MB",
+            "hint": ""
+          }
+        },
+        {
+          "t": 2481,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 10664603,
+            "total": 10664603,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 2107
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "10.7 / 10.7 MB",
+            "parts": "Scan \u2713 4.9 MB \u00b7 Walls \u2713 5.8 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 22,
+              "ready": true,
+              "loading": 2
+            },
+            "frameNumber": 24,
+            "drawn": 54975,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              6,
+              6
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 3,
+              "readyFlips": 0,
+              "loadingFlips": 1,
+              "readyFrames": 3,
+              "maxLoading": 3,
+              "last": {
+                "ready": true,
+                "loading": 2
+              },
+              "tail": "R3 R2 R2"
+            },
+            "world": {
+              "current": 3,
+              "last": 3,
+              "awaitingLod": false,
+              "pendingLoadCount": 2
+            },
+            "octrees": [
+              {
+                "pending": 1,
+                "prefetch": 1,
+                "env": "https://d28zzqy0iyovbz.cloudfront.net/b11e45d1/v1/env/meta.json",
+                "envPlaced": true,
+                "nodesPerLevel": {}
+              }
+            ]
+          }
+        },
+        {
+          "t": 3011,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "done",
+            "loaded": 10664603,
+            "total": 10664603,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 2499
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "done",
+            "actions": false,
+            "title": "The scan is ready",
+            "nums": "10.7 / 10.7 MB",
+            "parts": "Scan \u2713 4.9 MB \u00b7 Walls \u2713 5.8 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 36,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 36,
+            "drawn": 425066,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              1000
+            ],
+            "visibleMs": 2498,
+            "probe": {
+              "frames": 14,
+              "readyFlips": 0,
+              "loadingFlips": 2,
+              "readyFrames": 14,
+              "maxLoading": 3,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R2 R2 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 4,
+              "last": 4,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": [
+              {
+                "pending": 0,
+                "prefetch": 0,
+                "env": "https://d28zzqy0iyovbz.cloudfront.net/b11e45d1/v1/env/meta.json",
+                "envPlaced": true,
+                "nodesPerLevel": {
+                  "6": 1599
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "log": [
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+      ]
+    },
+    {
+      "case": "link:a8cfc66e:stochastic",
+      "label": "link:a8cfc66e:stochastic",
+      "revealedMs": 2688,
+      "stages": {
+        "connect": 588,
+        "download": 1379,
+        "prepare": 2148,
+        "done": 2688
+      },
+      "hints": [],
+      "last": {
+        "t": 2688,
+        "status": "loading",
+        "errorCode": null,
+        "loading": {
+          "stage": "done",
+          "loaded": 12430301,
+          "total": 12430301,
+          "fraction": 1,
+          "exact": true,
+          "elapsedMs": 2184
+        },
+        "sceneSwitch": null,
+        "card": {
+          "stage": "done",
+          "actions": false,
+          "title": "The scan is ready",
+          "nums": "12.4 / 12.4 MB",
+          "parts": "Scan \u2713 9.5 MB \u00b7 Walls \u2713 2.9 MB",
+          "hint": ""
+        },
+        "engine": {
+          "splatFrame": {
+            "frame": 35,
+            "ready": true,
+            "loading": 0
+          },
+          "frameNumber": 35,
+          "drawn": 760780,
+          "budgetM": 4,
+          "stochastic": true,
+          "range": [
+            0,
+            1000
+          ],
+          "visibleMs": 2182.6999999284744,
+          "probe": {
+            "frames": 10,
+            "readyFlips": 0,
+            "loadingFlips": 1,
+            "readyFrames": 10,
+            "maxLoading": 2,
+            "last": {
+              "ready": true,
+              "loading": 0
+            },
+            "tail": "R2 R2 R2 R0 R0 R0 R0 R0"
+          },
+          "world": {
+            "current": 4,
+            "last": 4,
+            "awaitingLod": false,
+            "pendingLoadCount": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "5": 160
+              }
+            }
+          ]
+        }
+      },
+      "samples": [
+        {
+          "t": 332,
+          "status": "loading",
+          "errorCode": null,
+          "loading": null,
+          "sceneSwitch": null,
+          "card": null
+        },
+        {
+          "t": 1379,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "download",
+            "loaded": 1047572,
+            "total": 18231323,
+            "fraction": 0.057460009896155094,
+            "exact": false,
+            "elapsedMs": 1005
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "download",
+            "actions": false,
+            "title": "Downloading the scan and its walls",
+            "nums": "1.0 / ~18.2 MB",
+            "parts": "Scan 1.0 / ~9.4 MB \u00b7 Walls 0.0 / ~8.9 MB",
+            "hint": ""
+          }
+        },
+        {
+          "t": 2425,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "prepare",
+            "loaded": 12430301,
+            "total": 12430301,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 2004
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "prepare",
+            "actions": false,
+            "title": "Preparing the view",
+            "nums": "12.4 / 12.4 MB",
+            "parts": "Scan \u2713 9.5 MB \u00b7 Walls \u2713 2.9 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 27,
+              "ready": true,
+              "loading": 2
+            },
+            "frameNumber": 27,
+            "drawn": 234615,
+            "budgetM": 4,
+            "stochastic": true,
+            "range": [
+              5,
+              5
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 2,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 2,
+              "maxLoading": 2,
+              "last": {
+                "ready": true,
+                "loading": 2
+              },
+              "tail": "R2 R2"
+            },
+            "world": {
+              "current": 3,
+              "last": 3,
+              "awaitingLod": false,
+              "pendingLoadCount": 2
+            },
+            "octrees": [
+              {
+                "pending": 1,
+                "prefetch": 1,
+                "env": null,
+                "envPlaced": false,
+                "nodesPerLevel": {
+                  "5": 43
+                }
+              }
+            ]
+          }
+        },
+        {
+          "t": 2688,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "done",
+            "loaded": 12430301,
+            "total": 12430301,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 2184
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "done",
+            "actions": false,
+            "title": "The scan is ready",
+            "nums": "12.4 / 12.4 MB",
+            "parts": "Scan \u2713 9.5 MB \u00b7 Walls \u2713 2.9 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 35,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 35,
+            "drawn": 760780,
+            "budgetM": 4,
+            "stochastic": true,
+            "range": [
+              0,
+              1000
+            ],
+            "visibleMs": 2182.6999999284744,
+            "probe": {
+              "frames": 10,
+              "readyFlips": 0,
+              "loadingFlips": 1,
+              "readyFrames": 10,
+              "maxLoading": 2,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R2 R2 R2 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 4,
+              "last": 4,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": [
+              {
+                "pending": 0,
+                "prefetch": 0,
+                "env": null,
+                "envPlaced": false,
+                "nodesPerLevel": {
+                  "5": 160
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "log": [
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+      ]
+    },
+    {
+      "case": "switch:39e63ce9:a8cfc66e",
+      "first": {
+        "revealedMs": 3041
+      },
+      "label": "switch:39e63ce9:a8cfc66e",
+      "revealedMs": 1786,
+      "stages": {
+        "done": 1786
+      },
+      "hints": [],
+      "last": {
+        "t": 1786,
+        "status": "ready",
+        "errorCode": null,
+        "loading": {
+          "stage": "done",
+          "loaded": 6027891,
+          "total": 6027891,
+          "fraction": 1,
+          "exact": true,
+          "elapsedMs": 2503
+        },
+        "sceneSwitch": {
+          "state": "done",
+          "from": "39e63ce9",
+          "to": "a8cfc66e",
+          "reason": "pick",
+          "ms": 1755
+        },
+        "card": null,
+        "engine": {
+          "splatFrame": {
+            "frame": 162,
+            "ready": true,
+            "loading": 42
+          },
+          "frameNumber": 162,
+          "drawn": 760780,
+          "budgetM": 4,
+          "stochastic": false,
+          "range": [
+            0,
+            1000
+          ],
+          "visibleMs": 1018.0999999046326,
+          "probe": {
+            "frames": 137,
+            "readyFlips": 0,
+            "loadingFlips": 7,
+            "readyFrames": 137,
+            "maxLoading": 42,
+            "last": {
+              "ready": true,
+              "loading": 42
+            },
+            "tail": "R42 R42 R42 R42 R42 R42 R42 R42"
+          },
+          "world": {
+            "current": 4,
+            "last": 4,
+            "awaitingLod": false,
+            "pendingLoadCount": 42
+          },
+          "octrees": [
+            {
+              "pending": 21,
+              "prefetch": 21,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "5": 160
+              }
+            }
+          ]
+        }
+      },
+      "samples": [
+        {
+          "t": 1786,
+          "status": "ready",
+          "errorCode": null,
+          "loading": {
+            "stage": "done",
+            "loaded": 6027891,
+            "total": 6027891,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 2503
+          },
+          "sceneSwitch": {
+            "state": "done",
+            "from": "39e63ce9",
+            "to": "a8cfc66e",
+            "reason": "pick",
+            "ms": 1755
+          },
+          "card": null,
+          "engine": {
+            "splatFrame": {
+              "frame": 162,
+              "ready": true,
+              "loading": 42
+            },
+            "frameNumber": 162,
+            "drawn": 760780,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              1000
+            ],
+            "visibleMs": 1018.0999999046326,
+            "probe": {
+              "frames": 137,
+              "readyFlips": 0,
+              "loadingFlips": 7,
+              "readyFrames": 137,
+              "maxLoading": 42,
+              "last": {
+                "ready": true,
+                "loading": 42
+              },
+              "tail": "R42 R42 R42 R42 R42 R42 R42 R42"
+            },
+            "world": {
+              "current": 4,
+              "last": 4,
+              "awaitingLod": false,
+              "pendingLoadCount": 42
+            },
+            "octrees": [
+              {
+                "pending": 21,
+                "prefetch": 21,
+                "env": null,
+                "envPlaced": false,
+                "nodesPerLevel": {
+                  "5": 160
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "log": [
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')"
+      ]
+    },
+    {
+      "case": "switch:39e63ce9:d8ba72a6",
+      "first": {
+        "revealedMs": 2009
+      },
+      "label": "switch:39e63ce9:d8ba72a6",
+      "revealedMs": 32463,
+      "stages": {
+        "done": 32463
+      },
+      "hints": [],
+      "last": {
+        "t": 32463,
+        "status": "ready",
+        "errorCode": null,
+        "loading": {
+          "stage": "done",
+          "loaded": 6027891,
+          "total": 6027891,
+          "fraction": 1,
+          "exact": true,
+          "elapsedMs": 1509
+        },
+        "sceneSwitch": {
+          "state": "done",
+          "from": "39e63ce9",
+          "to": "d8ba72a6",
+          "reason": "pick",
+          "ms": 32450
+        },
+        "card": null,
+        "engine": {
+          "splatFrame": {
+            "frame": 1067,
+            "ready": true,
+            "loading": 0
+          },
+          "frameNumber": 1067,
+          "drawn": 750322,
+          "budgetM": 4,
+          "stochastic": false,
+          "range": [
+            0,
+            1000
+          ],
+          "visibleMs": 31712.5,
+          "probe": {
+            "frames": 1034,
+            "readyFlips": 0,
+            "loadingFlips": 7,
+            "readyFrames": 1034,
+            "maxLoading": 12,
+            "last": {
+              "ready": true,
+              "loading": 0
+            },
+            "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+          },
+          "world": {
+            "current": 1,
+            "last": 1,
+            "awaitingLod": false,
+            "pendingLoadCount": 0
+          },
+          "octrees": []
+        }
+      },
+      "samples": [
+        {
+          "t": 32463,
+          "status": "ready",
+          "errorCode": null,
+          "loading": {
+            "stage": "done",
+            "loaded": 6027891,
+            "total": 6027891,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 1509
+          },
+          "sceneSwitch": {
+            "state": "done",
+            "from": "39e63ce9",
+            "to": "d8ba72a6",
+            "reason": "pick",
+            "ms": 32450
+          },
+          "card": null,
+          "engine": {
+            "splatFrame": {
+              "frame": 1067,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 1067,
+            "drawn": 750322,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              1000
+            ],
+            "visibleMs": 31712.5,
+            "probe": {
+              "frames": 1034,
+              "readyFlips": 0,
+              "loadingFlips": 7,
+              "readyFrames": 1034,
+              "maxLoading": 12,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R0 R0 R0 R0 R0 R0 R0 R0"
+            },
+            "world": {
+              "current": 1,
+              "last": 1,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": []
+          }
+        }
+      ],
+      "log": [
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')"
+      ]
+    },
+    {
+      "case": "revisit:a8cfc66e:cold",
+      "label": "revisit:a8cfc66e:cold",
+      "revealedMs": 2482,
+      "stages": {
+        "connect": 550,
+        "download": 1098,
+        "prepare": 1686,
+        "done": 2482
+      },
+      "hints": [],
+      "last": {
+        "t": 2482,
+        "status": "loading",
+        "errorCode": null,
+        "loading": {
+          "stage": "done",
+          "loaded": 12430301,
+          "total": 12430301,
+          "fraction": 1,
+          "exact": true,
+          "elapsedMs": 2117
+        },
+        "sceneSwitch": null,
+        "card": {
+          "stage": "done",
+          "actions": false,
+          "title": "The scan is ready",
+          "nums": "12.4 / 12.4 MB",
+          "parts": "Scan \u2713 9.5 MB \u00b7 Walls \u2713 2.9 MB",
+          "hint": ""
+        },
+        "engine": {
+          "splatFrame": {
+            "frame": 32,
+            "ready": true,
+            "loading": 0
+          },
+          "frameNumber": 32,
+          "drawn": 760780,
+          "budgetM": 4,
+          "stochastic": false,
+          "range": [
+            0,
+            1000
+          ],
+          "visibleMs": 2115.7999999523163,
+          "probe": {
+            "frames": 9,
+            "readyFlips": 0,
+            "loadingFlips": 1,
+            "readyFrames": 9,
+            "maxLoading": 2,
+            "last": {
+              "ready": true,
+              "loading": 0
+            },
+            "tail": "R2 R2 R2 R2 R2 R2 R0 R0"
+          },
+          "world": {
+            "current": 4,
+            "last": 4,
+            "awaitingLod": false,
+            "pendingLoadCount": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "5": 160
+              }
+            }
+          ]
+        }
+      },
+      "samples": [
+        {
+          "t": 276,
+          "status": "loading",
+          "errorCode": null,
+          "loading": null,
+          "sceneSwitch": null,
+          "card": null
+        },
+        {
+          "t": 1364,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "download",
+            "loaded": 6464463.546001569,
+            "total": 12430301,
+            "fraction": 0.520056879234185,
+            "exact": true,
+            "elapsedMs": 1004
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "download",
+            "actions": false,
+            "title": "Downloading the scan and its walls",
+            "nums": "6.5 / 12.4 MB",
+            "parts": "Scan 5.4 / 9.5 MB \u00b7 Walls 1.1 / 2.9 MB",
+            "hint": ""
+          }
+        },
+        {
+          "t": 2482,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "done",
+            "loaded": 12430301,
+            "total": 12430301,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 2117
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "done",
+            "actions": false,
+            "title": "The scan is ready",
+            "nums": "12.4 / 12.4 MB",
+            "parts": "Scan \u2713 9.5 MB \u00b7 Walls \u2713 2.9 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 32,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 32,
+            "drawn": 760780,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              1000
+            ],
+            "visibleMs": 2115.7999999523163,
+            "probe": {
+              "frames": 9,
+              "readyFlips": 0,
+              "loadingFlips": 1,
+              "readyFrames": 9,
+              "maxLoading": 2,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R2 R2 R2 R2 R2 R2 R0 R0"
+            },
+            "world": {
+              "current": 4,
+              "last": 4,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": [
+              {
+                "pending": 0,
+                "prefetch": 0,
+                "env": null,
+                "envPlaced": false,
+                "nodesPerLevel": {
+                  "5": 160
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "log": [
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+      ]
+    },
+    {
+      "case": "revisit:a8cfc66e:warm",
+      "label": "revisit:a8cfc66e:warm",
+      "revealedMs": 1817,
+      "stages": {
+        "connect": 434,
+        "download": 689,
+        "done": 1817
+      },
+      "hints": [],
+      "last": {
+        "t": 1817,
+        "status": "loading",
+        "errorCode": null,
+        "loading": {
+          "stage": "done",
+          "loaded": 9503370,
+          "total": 9503370,
+          "fraction": 1,
+          "exact": true,
+          "elapsedMs": 1601
+        },
+        "sceneSwitch": null,
+        "card": {
+          "stage": "done",
+          "actions": false,
+          "title": "The scan is ready",
+          "nums": "9.5 / 9.5 MB",
+          "parts": "Scan \u2713 9.5 MB \u00b7 Walls \u2713 already in this browser",
+          "hint": ""
+        },
+        "engine": {
+          "splatFrame": {
+            "frame": 22,
+            "ready": true,
+            "loading": 0
+          },
+          "frameNumber": 22,
+          "drawn": 760780,
+          "budgetM": 4,
+          "stochastic": false,
+          "range": [
+            0,
+            1000
+          ],
+          "visibleMs": 1601,
+          "probe": {
+            "frames": 9,
+            "readyFlips": 0,
+            "loadingFlips": 1,
+            "readyFrames": 9,
+            "maxLoading": 2,
+            "last": {
+              "ready": true,
+              "loading": 0
+            },
+            "tail": "R2 R2 R2 R2 R2 R2 R0 R0"
+          },
+          "world": {
+            "current": 3,
+            "last": 3,
+            "awaitingLod": false,
+            "pendingLoadCount": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "5": 160
+              }
+            }
+          ]
+        }
+      },
+      "samples": [
+        {
+          "t": 170,
+          "status": "loading",
+          "errorCode": null,
+          "loading": null,
+          "sceneSwitch": null,
+          "card": null
+        },
+        {
+          "t": 1553,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "download",
+            "loaded": 7652553,
+            "total": 9503370,
+            "fraction": 0.8052462442270478,
+            "exact": true,
+            "elapsedMs": 801
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "download",
+            "actions": false,
+            "title": "Downloading the scan",
+            "nums": "7.7 / 9.5 MB",
+            "parts": "Scan 7.7 / 9.5 MB \u00b7 Walls \u2713 already in this browser",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 12,
+              "ready": true,
+              "loading": 2
+            },
+            "frameNumber": 13,
+            "drawn": 234615,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              5,
+              5
+            ],
+            "visibleMs": null,
+            "probe": {
+              "frames": 1,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 1,
+              "maxLoading": 2,
+              "last": {
+                "ready": true,
+                "loading": 2
+              },
+              "tail": "R2"
+            },
+            "world": {
+              "current": 2,
+              "last": 2,
+              "awaitingLod": false,
+              "pendingLoadCount": 2
+            },
+            "octrees": [
+              {
+                "pending": 1,
+                "prefetch": 1,
+                "env": null,
+                "envPlaced": false,
+                "nodesPerLevel": {
+                  "5": 43
+                }
+              }
+            ]
+          }
+        },
+        {
+          "t": 1817,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "done",
+            "loaded": 9503370,
+            "total": 9503370,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 1601
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "done",
+            "actions": false,
+            "title": "The scan is ready",
+            "nums": "9.5 / 9.5 MB",
+            "parts": "Scan \u2713 9.5 MB \u00b7 Walls \u2713 already in this browser",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 22,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 22,
+            "drawn": 760780,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              1000
+            ],
+            "visibleMs": 1601,
+            "probe": {
+              "frames": 9,
+              "readyFlips": 0,
+              "loadingFlips": 1,
+              "readyFrames": 9,
+              "maxLoading": 2,
+              "last": {
+                "ready": true,
+                "loading": 0
+              },
+              "tail": "R2 R2 R2 R2 R2 R2 R0 R0"
+            },
+            "world": {
+              "current": 3,
+              "last": 3,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": [
+              {
+                "pending": 0,
+                "prefetch": 0,
+                "env": null,
+                "envPlaced": false,
+                "nodesPerLevel": {
+                  "5": 160
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "log": [
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+      ]
+    }
+  ]
+}

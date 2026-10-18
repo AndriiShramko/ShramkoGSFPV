@@ -1,0 +1,715 @@
+{
+  "name": "v09-load-probe",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-17T19:41:43.027Z",
+    "gitHead": "78eb719",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5717",
+  "limitS": 60,
+  "cases": [
+    {
+      "case": "link:b11e45d1:budget=8&stochastic",
+      "label": "link:b11e45d1:budget=8&stochastic",
+      "revealedMs": 2392,
+      "stages": {
+        "connect": 705,
+        "download": 1495,
+        "done": 2392
+      },
+      "hints": [],
+      "last": {
+        "t": 2392,
+        "status": "loading",
+        "errorCode": null,
+        "loading": {
+          "stage": "done",
+          "loaded": 10664603,
+          "total": 10664603,
+          "fraction": 1,
+          "exact": true,
+          "elapsedMs": 1907
+        },
+        "sceneSwitch": null,
+        "card": {
+          "stage": "done",
+          "actions": false,
+          "title": "The scan is ready",
+          "nums": "10.7 / 10.7 MB",
+          "parts": "Scan \u2713 4.9 MB \u00b7 Walls \u2713 5.8 MB",
+          "hint": ""
+        },
+        "engine": {
+          "splatFrame": {
+            "frame": 23,
+            "ready": true,
+            "loading": 0
+          },
+          "frameNumber": 24,
+          "drawn": 425066,
+          "budgetM": 8,
+          "stochastic": true,
+          "range": [
+            0,
+            1000
+          ],
+          "visibleMs": 1906.1999999284744,
+          "probe": {
+            "frames": 0,
+            "readyFlips": 0,
+            "loadingFlips": 0,
+            "readyFrames": 0,
+            "maxLoading": 0,
+            "last": null,
+            "tail": ""
+          },
+          "world": {
+            "current": 3,
+            "last": 3,
+            "awaitingLod": false,
+            "pendingLoadCount": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": "https://d28zzqy0iyovbz.cloudfront.net/b11e45d1/v1/env/meta.json",
+              "envPlaced": true,
+              "nodesPerLevel": {
+                "6": 1599
+              }
+            }
+          ]
+        }
+      },
+      "samples": [
+        {
+          "t": 448,
+          "status": "loading",
+          "errorCode": null,
+          "loading": null,
+          "sceneSwitch": null,
+          "card": null
+        },
+        {
+          "t": 1495,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "download",
+            "loaded": 0,
+            "total": 26414370.6,
+            "fraction": 0,
+            "exact": false,
+            "elapsedMs": 1011
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "download",
+            "actions": false,
+            "title": "Downloading the scan and its walls",
+            "nums": "0.0 / ~26.4 MB",
+            "parts": "Scan 0.0 / ~6.4 MB \u00b7 Walls 0.0 / ~20.0 MB",
+            "hint": ""
+          }
+        },
+        {
+          "t": 2392,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "done",
+            "loaded": 10664603,
+            "total": 10664603,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 1907
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "done",
+            "actions": false,
+            "title": "The scan is ready",
+            "nums": "10.7 / 10.7 MB",
+            "parts": "Scan \u2713 4.9 MB \u00b7 Walls \u2713 5.8 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 23,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 24,
+            "drawn": 425066,
+            "budgetM": 8,
+            "stochastic": true,
+            "range": [
+              0,
+              1000
+            ],
+            "visibleMs": 1906.1999999284744,
+            "probe": {
+              "frames": 0,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 0,
+              "maxLoading": 0,
+              "last": null,
+              "tail": ""
+            },
+            "world": {
+              "current": 3,
+              "last": 3,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": [
+              {
+                "pending": 0,
+                "prefetch": 0,
+                "env": "https://d28zzqy0iyovbz.cloudfront.net/b11e45d1/v1/env/meta.json",
+                "envPlaced": true,
+                "nodesPerLevel": {
+                  "6": 1599
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "log": [
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+      ]
+    },
+    {
+      "case": "link:a8cfc66e:budget=8&stochastic",
+      "label": "link:a8cfc66e:budget=8&stochastic",
+      "revealedMs": 2467,
+      "stages": {
+        "connect": 615,
+        "download": 1404,
+        "done": 2467
+      },
+      "hints": [],
+      "last": {
+        "t": 2467,
+        "status": "loading",
+        "errorCode": null,
+        "loading": {
+          "stage": "done",
+          "loaded": 12430301,
+          "total": 12430301,
+          "fraction": 1,
+          "exact": true,
+          "elapsedMs": 2033
+        },
+        "sceneSwitch": null,
+        "card": {
+          "stage": "done",
+          "actions": false,
+          "title": "The scan is ready",
+          "nums": "12.4 / 12.4 MB",
+          "parts": "Scan \u2713 9.5 MB \u00b7 Walls \u2713 2.9 MB",
+          "hint": ""
+        },
+        "engine": {
+          "splatFrame": {
+            "frame": 32,
+            "ready": true,
+            "loading": 0
+          },
+          "frameNumber": 32,
+          "drawn": 760780,
+          "budgetM": 8,
+          "stochastic": true,
+          "range": [
+            0,
+            1000
+          ],
+          "visibleMs": 2031.9000000953674,
+          "probe": {
+            "frames": 0,
+            "readyFlips": 0,
+            "loadingFlips": 0,
+            "readyFrames": 0,
+            "maxLoading": 0,
+            "last": null,
+            "tail": ""
+          },
+          "world": {
+            "current": 4,
+            "last": 4,
+            "awaitingLod": false,
+            "pendingLoadCount": 0
+          },
+          "octrees": [
+            {
+              "pending": 0,
+              "prefetch": 0,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "5": 160
+              }
+            }
+          ]
+        }
+      },
+      "samples": [
+        {
+          "t": 350,
+          "status": "loading",
+          "errorCode": null,
+          "loading": null,
+          "sceneSwitch": null,
+          "card": null
+        },
+        {
+          "t": 1404,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "download",
+            "loaded": 221828,
+            "total": 18156148,
+            "fraction": 0.012217789808719338,
+            "exact": false,
+            "elapsedMs": 1002
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "download",
+            "actions": false,
+            "title": "Downloading the scan and its walls",
+            "nums": "0.2 / ~18.2 MB",
+            "parts": "Scan 0.2 / ~9.3 MB \u00b7 Walls 0.0 / ~8.9 MB",
+            "hint": ""
+          }
+        },
+        {
+          "t": 2467,
+          "status": "loading",
+          "errorCode": null,
+          "loading": {
+            "stage": "done",
+            "loaded": 12430301,
+            "total": 12430301,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 2033
+          },
+          "sceneSwitch": null,
+          "card": {
+            "stage": "done",
+            "actions": false,
+            "title": "The scan is ready",
+            "nums": "12.4 / 12.4 MB",
+            "parts": "Scan \u2713 9.5 MB \u00b7 Walls \u2713 2.9 MB",
+            "hint": ""
+          },
+          "engine": {
+            "splatFrame": {
+              "frame": 32,
+              "ready": true,
+              "loading": 0
+            },
+            "frameNumber": 32,
+            "drawn": 760780,
+            "budgetM": 8,
+            "stochastic": true,
+            "range": [
+              0,
+              1000
+            ],
+            "visibleMs": 2031.9000000953674,
+            "probe": {
+              "frames": 0,
+              "readyFlips": 0,
+              "loadingFlips": 0,
+              "readyFrames": 0,
+              "maxLoading": 0,
+              "last": null,
+              "tail": ""
+            },
+            "world": {
+              "current": 4,
+              "last": 4,
+              "awaitingLod": false,
+              "pendingLoadCount": 0
+            },
+            "octrees": [
+              {
+                "pending": 0,
+                "prefetch": 0,
+                "env": null,
+                "envPlaced": false,
+                "nodesPerLevel": {
+                  "5": 160
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "log": [
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+      ]
+    },
+    {
+      "case": "switch:b11e45d1:a8cfc66e:8",
+      "first": {
+        "revealedMs": 2441
+      },
+      "label": "switch:b11e45d1:a8cfc66e:8",
+      "revealedMs": 1709,
+      "stages": {
+        "done": 1709
+      },
+      "hints": [],
+      "last": {
+        "t": 1709,
+        "status": "ready",
+        "errorCode": null,
+        "loading": {
+          "stage": "done",
+          "loaded": 10664603,
+          "total": 10664603,
+          "fraction": 1,
+          "exact": true,
+          "elapsedMs": 1966
+        },
+        "sceneSwitch": {
+          "state": "done",
+          "from": "b11e45d1",
+          "to": "a8cfc66e",
+          "reason": "pick",
+          "ms": 1676
+        },
+        "card": null,
+        "engine": {
+          "splatFrame": {
+            "frame": 303,
+            "ready": true,
+            "loading": 42
+          },
+          "frameNumber": 303,
+          "drawn": 760780,
+          "budgetM": 4,
+          "stochastic": false,
+          "range": [
+            0,
+            1000
+          ],
+          "visibleMs": 925.3000000715256,
+          "probe": {
+            "frames": 275,
+            "readyFlips": 0,
+            "loadingFlips": 19,
+            "readyFrames": 275,
+            "maxLoading": 42,
+            "last": {
+              "ready": true,
+              "loading": 42
+            },
+            "tail": "R42 R42 R42 R42 R42 R42 R42 R42"
+          },
+          "world": {
+            "current": 5,
+            "last": 5,
+            "awaitingLod": false,
+            "pendingLoadCount": 42
+          },
+          "octrees": [
+            {
+              "pending": 21,
+              "prefetch": 21,
+              "env": null,
+              "envPlaced": false,
+              "nodesPerLevel": {
+                "5": 160
+              }
+            }
+          ]
+        }
+      },
+      "samples": [
+        {
+          "t": 1709,
+          "status": "ready",
+          "errorCode": null,
+          "loading": {
+            "stage": "done",
+            "loaded": 10664603,
+            "total": 10664603,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 1966
+          },
+          "sceneSwitch": {
+            "state": "done",
+            "from": "b11e45d1",
+            "to": "a8cfc66e",
+            "reason": "pick",
+            "ms": 1676
+          },
+          "card": null,
+          "engine": {
+            "splatFrame": {
+              "frame": 303,
+              "ready": true,
+              "loading": 42
+            },
+            "frameNumber": 303,
+            "drawn": 760780,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              1000
+            ],
+            "visibleMs": 925.3000000715256,
+            "probe": {
+              "frames": 275,
+              "readyFlips": 0,
+              "loadingFlips": 19,
+              "readyFrames": 275,
+              "maxLoading": 42,
+              "last": {
+                "ready": true,
+                "loading": 42
+              },
+              "tail": "R42 R42 R42 R42 R42 R42 R42 R42"
+            },
+            "world": {
+              "current": 5,
+              "last": 5,
+              "awaitingLod": false,
+              "pendingLoadCount": 42
+            },
+            "octrees": [
+              {
+                "pending": 21,
+                "prefetch": 21,
+                "env": null,
+                "envPlaced": false,
+                "nodesPerLevel": {
+                  "5": 160
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "log": [
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')"
+      ]
+    },
+    {
+      "case": "switch:a8cfc66e:b11e45d1:8",
+      "first": {
+        "revealedMs": 1953
+      },
+      "label": "switch:a8cfc66e:b11e45d1:8",
+      "revealedMs": 1791,
+      "stages": {
+        "done": 1791
+      },
+      "hints": [],
+      "last": {
+        "t": 1791,
+        "status": "ready",
+        "errorCode": null,
+        "loading": {
+          "stage": "done",
+          "loaded": 12430301,
+          "total": 12430301,
+          "fraction": 1,
+          "exact": true,
+          "elapsedMs": 1485
+        },
+        "sceneSwitch": {
+          "state": "done",
+          "from": "a8cfc66e",
+          "to": "b11e45d1",
+          "reason": "pick",
+          "ms": 1763
+        },
+        "card": null,
+        "engine": {
+          "splatFrame": {
+            "frame": 296,
+            "ready": true,
+            "loading": 40
+          },
+          "frameNumber": 296,
+          "drawn": 425066,
+          "budgetM": 4,
+          "stochastic": false,
+          "range": [
+            0,
+            1000
+          ],
+          "visibleMs": 1014.9000000953674,
+          "probe": {
+            "frames": 259,
+            "readyFlips": 0,
+            "loadingFlips": 20,
+            "readyFrames": 259,
+            "maxLoading": 42,
+            "last": {
+              "ready": true,
+              "loading": 40
+            },
+            "tail": "R40 R40 R40 R40 R40 R40 R40 R40"
+          },
+          "world": {
+            "current": 4,
+            "last": 4,
+            "awaitingLod": false,
+            "pendingLoadCount": 40
+          },
+          "octrees": [
+            {
+              "pending": 20,
+              "prefetch": 20,
+              "env": "https://d28zzqy0iyovbz.cloudfront.net/b11e45d1/v1/env/meta.json",
+              "envPlaced": true,
+              "nodesPerLevel": {
+                "6": 1599
+              }
+            }
+          ]
+        }
+      },
+      "samples": [
+        {
+          "t": 1791,
+          "status": "ready",
+          "errorCode": null,
+          "loading": {
+            "stage": "done",
+            "loaded": 12430301,
+            "total": 12430301,
+            "fraction": 1,
+            "exact": true,
+            "elapsedMs": 1485
+          },
+          "sceneSwitch": {
+            "state": "done",
+            "from": "a8cfc66e",
+            "to": "b11e45d1",
+            "reason": "pick",
+            "ms": 1763
+          },
+          "card": null,
+          "engine": {
+            "splatFrame": {
+              "frame": 296,
+              "ready": true,
+              "loading": 40
+            },
+            "frameNumber": 296,
+            "drawn": 425066,
+            "budgetM": 4,
+            "stochastic": false,
+            "range": [
+              0,
+              1000
+            ],
+            "visibleMs": 1014.9000000953674,
+            "probe": {
+              "frames": 259,
+              "readyFlips": 0,
+              "loadingFlips": 20,
+              "readyFrames": 259,
+              "maxLoading": 42,
+              "last": {
+                "ready": true,
+                "loading": 40
+              },
+              "tail": "R40 R40 R40 R40 R40 R40 R40 R40"
+            },
+            "world": {
+              "current": 4,
+              "last": 4,
+              "awaitingLod": false,
+              "pendingLoadCount": 40
+            },
+            "octrees": [
+              {
+                "pending": 20,
+                "prefetch": 20,
+                "env": "https://d28zzqy0iyovbz.cloudfront.net/b11e45d1/v1/env/meta.json",
+                "envPlaced": true,
+                "nodesPerLevel": {
+                  "6": 1599
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "log": [
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "error: Failed to load resource: the server responded with a status of 403 ()",
+        "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')",
+        "pageerror: Cannot read properties of undefined (reading 'armed')"
+      ]
+    }
+  ]
+}

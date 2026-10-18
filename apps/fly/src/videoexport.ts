@@ -3,7 +3,12 @@
 // flight time; each frame is drawn on demand and encoded only once the engine drew it with the scan
 // complete for that view (nothing loading, every level of detail in place: the gsplat
 // 'frame:ready'), so the file is the clean 60 fps a live recording cannot be (a live one repeats
-// what the screen missed). The flight model is the log's own (LivesPlayer: params and walls from
+// what the screen missed). The wait for a frame is bounded (v0.9, the owner's item 3b: 10 minutes at
+// "frame 0" on 1994c65c, then Chrome reclaimed the idle encoder): after FIRST_WAIT_MS for the first
+// frame and FRAME_WAIT_MS for any other (and WAIT_SHARE_MS per frame for all of them together, spread
+// over the frames still to come), the frame is encoded with what the engine has (counted in `forced`),
+// so the export always finishes. A wait counts drawn time only: a hidden tab draws no frames, so the
+// time between two frames adds at most MAX_WAIT_STEP_MS. The flight model is the log's own (LivesPlayer: params and walls from
 // each life's header); the scan is drawn under the transform the life was flown at (its header,
 // then each world record, E.7); a crash is drawn by a CrashView on this replay's clock.
 //
@@ -24,6 +29,32 @@ export const EXPORT_SIZES: Readonly<Record<ExportSize, { w: number; h: number }>
 };
 
 export const EXPORT_FPS = 60;
+
+/**
+ * The longest the first frame waits for the scan to be complete for its view, ms: the engine fills the
+ * splat budget from nothing (16 M splats of a streamed scan is ~270 MB). Measured on 1994c65c (60 M
+ * splats) at the export's old finest-level detail: 70 s at frame 0 on a fast link, 10 min on the
+ * owner's (evidence/2026-10-17/v09-load-probe-base-export.json).
+ */
+export const FIRST_WAIT_MS = 20000;
+/** The longest any later frame waits, ms: the view moves 1/60 s per frame, so little is new. */
+export const FRAME_WAIT_MS = 4000;
+/**
+ * All frames after the first together wait at most this much per frame of the video, ms: on a slow link
+ * a moving view can keep files on their way at every frame, and 4 s each would make a 4929-frame flight
+ * a 5-hour export; with this the waiting adds at most ~0.15 s per frame (12 min for 4929 frames, never
+ * more). It is spread: frame k may wait what is left of it divided by the frames still to come (at most
+ * FRAME_WAIT_MS), so the last frames of a slow export wait as much as the first ones, and what a quick
+ * frame did not use goes to the later ones.
+ */
+export const WAIT_SHARE_MS = 150;
+/**
+ * The most one gap between two drawn frames adds to a wait, ms: a hidden tab draws no frames (no
+ * requestAnimationFrame) and a stalled page none either, and that time is neither the scan streaming
+ * for this view in front of the pilot nor time the share should lose (v0.9 review: one tab switch of
+ * 50 s spent the whole share of a 300-frame export, and 294 frames were then encoded without a wait).
+ */
+export const MAX_WAIT_STEP_MS = 1000;
 
 /** Frames of `durationTicks` ms of flight at `fps`: frame k shows k/fps s (300 for 5 s at 60; ticks x fps first, so no period is rounded). */
 export function exportFrameCount(durationTicks: number, fps: number = EXPORT_FPS): number {
@@ -88,7 +119,17 @@ export interface LogExportOptions {
     stepFps?: number;
     /** Test only (control): encode frames whatever the scan's state. */
     ignoreScene?: boolean;
+    /** the first frame's and every later frame's longest wait for a complete scan, ms (Infinity: v0.8's unbounded wait, the control) */
+    firstWaitMs?: number;
+    frameWaitMs?: number;
+    /** the later frames' waiting all together, ms per frame of the video (WAIT_SHARE_MS) */
+    waitShareMs?: number;
+    /** the clock the waits are measured on (the page: performance.now; tests: a fake) */
+    now?: () => number;
 }
+
+/** What the frame being made waits for (the bar says it). */
+export type ExportWait = 'pose' | 'scan' | 'encoder' | null;
 
 export type ExportStep = 'wait' | 'took' | 'done';
 
@@ -108,8 +149,22 @@ export class LogExport {
     waited = 0;
     /** of those, frames drawn with the scan incomplete */
     incomplete = 0;
-    /** frames encoded with the scan incomplete (0 unless ignoreScene) */
+    /** frames encoded with the scan incomplete (after the wait's bound, or ignoreScene) */
     encodedIncomplete = 0;
+    /** of those, frames encoded because the wait reached its bound (the scan still loading for that view) */
+    forced = 0;
+    /** what the frame being made waits for now */
+    waitingFor: ExportWait = null;
+    private readonly firstWaitMs: number;
+    private readonly frameWaitMs: number;
+    private readonly waitShareMs: number;
+    /** ms the frames after the first spent waiting so far */
+    private waitSpentMs = 0;
+    private readonly now: () => number;
+    /** ms frame k has waited so far, drawn time only (each gap between frames adds at most MAX_WAIT_STEP_MS) */
+    private waitedMs = 0;
+    /** when the last frame of frame k's wait was drawn, -1 before its pose was first drawn */
+    private lastDrawnAt = -1;
     first: ExportPose | null = null;
     last: ExportPose | null = null;
     crashes = 0;
@@ -125,6 +180,10 @@ export class LogExport {
         this.fps = o.fps ?? EXPORT_FPS;
         this.stepFps = o.stepFps ?? this.fps;
         this.ignoreScene = o.ignoreScene === true;
+        this.firstWaitMs = o.firstWaitMs ?? FIRST_WAIT_MS;
+        this.frameWaitMs = o.frameWaitMs ?? FRAME_WAIT_MS;
+        this.waitShareMs = o.waitShareMs ?? WAIT_SHARE_MS;
+        this.now = o.now ?? (() => performance.now());
         const first = lives.findIndex((l) => l.endTick > o.fromTick);
         const from = lives.slice(Math.max(0, first));
         this.player = new LivesPlayer(from, walls, o.toTick);
@@ -153,6 +212,23 @@ export class LogExport {
 
     get done(): boolean {
         return this.k >= this.frames;
+    }
+
+    /**
+     * How long frame k may wait for the scan, ms: the first frame's bound, else the smaller of a frame's
+     * bound and its part of what is left of the share (spread over the frames still to come).
+     */
+    private boundMs(): number {
+        if (this.k === 0) return this.firstWaitMs;
+        const left = this.frames * this.waitShareMs - this.waitSpentMs;
+        return Math.min(this.frameWaitMs, Math.max(0, left) / Math.max(1, this.frames - this.k));
+    }
+
+    /** ms until the frame being made is encoded whatever the scan's state (null: not waiting for the scan). */
+    forcedInMs(): number | null {
+        if (this.waitingFor !== 'scan' || this.lastDrawnAt < 0) return null;
+        const bound = this.boundMs();
+        return Number.isFinite(bound) ? Math.max(0, bound - this.waitedMs) : null;
     }
 
     /** Steps the replay to frame k's tick and places the camera. Async only when a crash shows (Rapier). */
@@ -200,14 +276,36 @@ export class LogExport {
     onFrameEnd(): ExportStep {
         if (this.done) return 'done';
         // the pose was set after this frame began: it is the next one that shows it
-        if (!this.prepared || this.engine.frameNumber <= this.prepFrame) return 'wait';
-        const complete = this.engine.sceneComplete;
-        if (!complete) this.incomplete++;
-        if ((!complete && !this.ignoreScene) || !this.sink.canTake || !this.sink.take()) {
-            this.waited++;
+        if (!this.prepared || this.engine.frameNumber <= this.prepFrame) {
+            this.waitingFor = 'pose';
             return 'wait';
         }
-        if (!complete) this.encodedIncomplete++;
+        // the wait counts drawn time: a gap (a hidden tab, a stalled page) adds at most MAX_WAIT_STEP_MS
+        const now = this.now();
+        if (this.lastDrawnAt >= 0) this.waitedMs += Math.min(MAX_WAIT_STEP_MS, Math.max(0, now - this.lastDrawnAt));
+        this.lastDrawnAt = now;
+        const complete = this.engine.sceneComplete;
+        if (!complete) this.incomplete++;
+        // bounded: past it, the frame shows what the engine has for this view (the export always finishes)
+        const overdue = !complete && this.waitedMs >= this.boundMs();
+        if (!complete && !this.ignoreScene && !overdue) {
+            this.waited++;
+            this.waitingFor = 'scan';
+            return 'wait';
+        }
+        if (!this.sink.canTake || !this.sink.take()) {
+            this.waited++;
+            this.waitingFor = 'encoder';
+            return 'wait';
+        }
+        if (!complete) {
+            this.encodedIncomplete++;
+            if (!this.ignoreScene) this.forced++;
+        }
+        if (this.k > 0) this.waitSpentMs += this.waitedMs;
+        this.waitedMs = 0;
+        this.lastDrawnAt = -1;
+        this.waitingFor = null;
         const s = this.player.sim.s;
         const pose: ExportPose = {
             k: this.k, tick: this.player.sim.tick,
