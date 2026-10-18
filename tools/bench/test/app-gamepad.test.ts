@@ -54,6 +54,45 @@ describe('GamepadSource stamps its frames with the pad\'s own sample time', () =
     });
 });
 
+describe('GamepadSource: the stamps it sends are gamepadStamp\'s (v0.9 lane E review)', () => {
+    afterEach(() => vi.unstubAllGlobals());
+
+    it('a timestamp that goes backwards is stamped at the poll, one before the last stamp keeps it: the stamps never decrease', () => {
+        const pad = { id: 'Radiomaster GX12 BLE', index: 0, connected: true, mapping: '', axes: [0, 0, 0, 0], buttons: Array.from({ length: 8 }, () => ({ pressed: false })), timestamp: 1000 };
+        vi.stubGlobal('navigator', { getGamepads: () => [pad] });
+        const src = new GamepadSource();
+        const seen: number[] = [];
+        src.onFrame = (f) => seen.push(f.t);
+        const poll = (now: number) => (src as unknown as { poll(n: number): void }).poll(now);
+        poll(1010); // first sample: its timestamp
+        pad.axes = [0.3, 0, 0, 0];
+        pad.timestamp = 990; // the clock went back: not the time the move happened
+        poll(1020);
+        pad.axes = [0.6, 0, 0, 0];
+        pad.timestamp = 1015; // forward again, but before the stamp 1020 already sent
+        poll(1030);
+        expect(seen).toEqual([1000, 1020, 1020]);
+        expect(seen.every((t, i) => i === 0 || t >= seen[i - 1])).toBe(true);
+    });
+
+    it('control: the same pad with a plain forward clock is stamped at its own times', () => {
+        const pad = { id: 'Radiomaster GX12 BLE', index: 0, connected: true, mapping: '', axes: [0, 0, 0, 0], buttons: Array.from({ length: 8 }, () => ({ pressed: false })), timestamp: 1000 };
+        vi.stubGlobal('navigator', { getGamepads: () => [pad] });
+        const src = new GamepadSource();
+        const seen: number[] = [];
+        src.onFrame = (f) => seen.push(f.t);
+        const poll = (now: number) => (src as unknown as { poll(n: number): void }).poll(now);
+        poll(1010);
+        pad.axes = [0.3, 0, 0, 0];
+        pad.timestamp = 1012;
+        poll(1020);
+        pad.axes = [0.6, 0, 0, 0];
+        pad.timestamp = 1024;
+        poll(1030);
+        expect(seen).toEqual([1000, 1012, 1024]);
+    });
+});
+
 describe('gamepadSampleTime and a timestamp that goes backwards (v0.9 lane E)', () => {
     it('a timestamp before the previous sample\'s own is not a time the move happened: the poll time', () => {
         expect(gamepadSampleTime(true, 1000, 1012, 990)).toBe(1000);

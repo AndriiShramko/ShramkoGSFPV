@@ -25,7 +25,8 @@ class ArmCard {
     /**
      * The drawing is in sight (set by `update`, which runs at the text's 10 Hz, cleared when the card hides
      * or shows only a reason): `live` then paints the knobs every frame. They are the pilot's own stick;
-     * behind the text's 100 ms gate they showed a move 60 ms late on average, 133 ms at worst, at 30 Hz.
+     * behind the text's 100 ms gate a move was drawn 59 ms after it reached the page on average, up to 135 ms
+     * (frames every 33 ms), where a draw in every frame takes 17 and at most 35 ms (docs/wip/v09-e.md).
      */
     private drawn: { key: boolean; block: Exclude<ArmBlock, null> } | null = null;
 

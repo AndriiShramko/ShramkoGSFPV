@@ -3,8 +3,9 @@
 // a clock the test owns.
 //
 // The finding: the card's knobs were drawn inside the HUD's 10 Hz text gate (`now - last < 100`), so the
-// green stick on the disarmed flight view showed a move 60 ms late on average, 133 ms at worst, at the
-// owner's 30 Hz screen, a delay our code added on top of the link's. The knobs are the pilot's own stick
+// green stick on the disarmed flight view showed a move 59 ms after it reached the page on average, up to
+// 135 ms, at the owner's 30 Hz screen (a draw in every frame: 17 ms, at most 35), a delay our code added
+// on top of the link's (simulated in the lane note). The knobs are the pilot's own stick
 // and are drawn every frame; the text (steps, throttle %, telemetry) stays at 10 Hz. Negative controls:
 // the text is still gated, a hidden card draws nothing, and a stick that did not move draws nothing new.
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';

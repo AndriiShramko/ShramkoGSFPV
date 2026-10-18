@@ -154,8 +154,10 @@ export class GamepadSource {
         const fresh = stamped || this.moved(g);
         if (!fresh && now - this.lastEmit < KEEPALIVE_MS) return;
         const f = this.frame;
+        // the sample's own time (the link meter takes it: a backwards one is dropped there) and the stamp
+        // it goes out with, never before the previous stamp (the physics takes samples in order)
         const at = gamepadSampleTime(stamped, g.timestamp, now, this.lastTs);
-        f.t = at > f.t ? at : f.t;
+        f.t = gamepadStamp(stamped, g.timestamp, now, f.t, this.lastTs);
         this.lastTs = g.timestamp;
         for (let i = 0; i < 8; i++) f.axes[i] = i < g.axes.length ? g.axes[i] : 0;
         let b = 0;
