@@ -433,7 +433,9 @@ for (const reduce of [false, true]) {
     const state = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll("video[data-bg-video]")].map((v) => [v.closest("section")?.id ?? "?", v.dataset.state ?? "none"])));
     const early = got.filter((x) => x.at < loadAt).length;
     // control: the scale block, far below the first screen, fetches and plays its loop once scrolled to
-    await page.locator("#scale").scrollIntoViewIfNeeded();
+    // scroll to the loop itself: on a phone the block's text (v0.9 macro paragraph) is taller than the screen, and its top
+    // in view does not mean the video is
+    await page.locator("#scale video[data-bg-video]").scrollIntoViewIfNeeded();
     const played = await page
       .waitForFunction(() => {
         const v = document.querySelector("#scale video[data-bg-video]");
