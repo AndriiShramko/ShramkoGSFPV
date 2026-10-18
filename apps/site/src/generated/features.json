@@ -1,15 +1,15 @@
 {
- "generated": "2026-10-17",
+ "generated": "2026-10-18",
  "schemaVersion": 2,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
-  "settings": 68,
+  "settings": 72,
   "groups": 11,
   "drones": 9,
   "modes": 3,
-  "keys": 23,
+  "keys": 24,
   "rateTypes": 5,
-  "flyingKeys": 13,
+  "flyingKeys": 12,
   "allKeys": 34
  },
  "locales": {
@@ -625,17 +625,17 @@
       {
        "id": "input.play",
        "label": "How touch and keyboard fly",
-       "help": "Easy play: no arming (the first stick or key starts the motors), the drone holds its height, keys like a game (W A S D move, arrows turn and climb), and a pilot school that takes the help away step by step. Pilot: as a radio \u2014 the ARM button or Space, a throttle that stays where you leave it, Mode 2 keys (W/S throttle, A/D yaw, arrows pitch and roll). A radio or a gamepad always flies as a radio.",
+       "help": "Easy play: no arming (the first key or touch starts the motors). On a keyboard it flies like a game: click to capture the mouse, move the mouse to turn and to look up and down, W A S D to move, Space up, Shift down, and when you let go the drone stops and hovers in place. On a touch screen: sticks with altitude help and a pilot school. Pilot: as a radio \u2014 the ARM button or Space, a throttle that stays where you leave it, Mode 2 keys (W/S throttle, A/D yaw, arrows pitch and roll). A radio or a gamepad always flies as a radio.",
        "type": "enum",
-       "default": "Easy play",
-       "range": "Easy play / Pilot (as a radio)",
+       "default": "Easy play (game keys)",
+       "range": "Easy play (game keys) / Pilot (as a radio)",
        "scope": "global",
        "apply": "live",
        "keys": [],
        "advanced": false,
        "preset": false,
        "options": [
-        "Easy play",
+        "Easy play (game keys)",
         "Pilot (as a radio)"
        ],
        "shown": [
@@ -644,8 +644,8 @@
       },
       {
        "id": "input.altitudeHelp",
-       "label": "Altitude help (easy play)",
-       "help": "The drone holds its height by itself; up and down (the arrows, or the left stick on a touch screen) climb and sink at a steady speed. Works in angle mode only: horizon and acro can flip, and there your throttle flies. Step 1 of the pilot school.",
+       "label": "Altitude help (touch)",
+       "help": "The drone holds its height by itself; up and down (the left stick on a touch screen) climb and sink at a steady speed. Works in angle mode only: horizon and acro can flip, and there your throttle flies. Step 1 of the pilot school. The game keys on a keyboard always hold the height.",
        "type": "bool",
        "default": "On",
        "range": "",
@@ -672,6 +672,61 @@
        "advanced": false,
        "preset": false,
        "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.mouseSensitivity",
+       "label": "Mouse sensitivity (game keys)",
+       "help": "How far the drone turns and the camera tilts for a movement of the mouse. 1 is 0.1 degrees for each pixel of movement. Works with the game keys, while the mouse is captured (click on the view).",
+       "type": "number",
+       "default": "1\u00d7",
+       "range": "0.25\u20133\u00d7",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.mouseInvertY",
+       "label": "Invert the mouse up and down",
+       "help": "Off: moving the mouse away from you looks up, as in most games. On: it looks down, like a flight stick pulled back.",
+       "type": "bool",
+       "default": "Off",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.gameSpeed",
+       "label": "Flight speed (game keys)",
+       "help": "How fast W A S D and Space / Shift fly: slow 4 m/s across and 3 m/s up, normal 8 and 5, fast 14 and 8. A small drone cannot always reach the fast speed: it flies as fast as its tilt and the air allow.",
+       "type": "enum",
+       "default": "Normal",
+       "range": "Slow / Normal / Fast",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Slow",
+        "Normal",
+        "Fast"
+       ],
        "shown": [
         "settings"
        ]
@@ -1055,17 +1110,17 @@
       {
        "id": "scenes.rotation",
        "label": "Scenes to rotate through",
-       "help": "Where N (next scene) and the next scene after a crash come from. Shift+N is always a random scene from the author's list; F is your next favourite.",
+       "help": "Where N (next scene) and the next scene after a crash come from. Shift+N is always a random scene from the author's list; Shift+F is your next favourite.",
        "type": "enum",
-       "default": "The author's list",
-       "range": "The author's list / My favourites / Scenes I have flown",
+       "default": "The author's list, then SuperSplat",
+       "range": "The author's list, then SuperSplat / My favourites / Scenes I have flown",
        "scope": "global",
        "apply": "live",
        "keys": [],
        "advanced": false,
        "preset": false,
        "options": [
-        "The author's list",
+        "The author's list, then SuperSplat",
         "My favourites",
         "Scenes I have flown"
        ],
@@ -1076,9 +1131,9 @@
       {
        "id": "scenes.order",
        "label": "Order",
-       "help": "Random: every scene once before any comes again, never the one you are in. In order: one after another, round and round.",
+       "help": "Random: every scene once before any comes again, never the one you are in. In order: one after another, round and round. The author's scenes come first, then SuperSplat in its own order. Left on the default, your own lists (favourites, scenes flown) still shuffle.",
        "type": "enum",
-       "default": "Random",
+       "default": "In order",
        "range": "Random / In order",
        "scope": "global",
        "apply": "live",
@@ -1096,7 +1151,7 @@
       {
        "id": "scenes.allowNoWalls",
        "label": "Include scenes without walls",
-       "help": "Scenes without walls have no crashes: you fly through everything. Off: the rotation skips them.",
+       "help": "Scenes without walls have no crashes: you fly through everything. Off: the rotation skips them (the author's own scenes always come).",
        "type": "bool",
        "default": "Off",
        "range": "",
@@ -1453,7 +1508,7 @@
      "action": "scene.favourite",
      "label": "Next favourite scene",
      "keys": [
-      "F"
+      "Shift+F"
      ]
     },
     {
@@ -1465,7 +1520,7 @@
     },
     {
      "action": "arm.toggle",
-     "label": "Arm / disarm (keyboard flying)",
+     "label": "Arm / disarm (pilot keys)",
      "keys": [
       "Space"
      ]
@@ -1548,11 +1603,24 @@
      "keys": [
       "K"
      ]
+    },
+    {
+     "action": "fullscreen.toggle",
+     "label": "Full screen on / off",
+     "keys": [
+      "F"
+     ]
     }
    ],
    "flying": [
     {
-     "label": "forward / back",
+     "label": "look and turn (up and down tilts the camera)",
+     "keys": [
+      "Mouse"
+     ]
+    },
+    {
+     "label": "forward / back (the up and down arrows too)",
      "keys": [
       "W",
       "S"
@@ -1566,7 +1634,7 @@
      ]
     },
     {
-     "label": "turn left / right",
+     "label": "turn without a mouse",
      "keys": [
       "\u2190",
       "\u2192",
@@ -1575,22 +1643,15 @@
      ]
     },
     {
-     "label": "up / down (with altitude help; without it, the throttle, which stays where you leave it)",
-     "keys": [
-      "\u2191",
-      "\u2193"
-     ]
-    },
-    {
-     "label": "hold: faster",
-     "keys": [
-      "Shift"
-     ]
-    },
-    {
-     "label": "tap: motors on; hold half a second: motors off (easy play; pilot keys: arm / disarm)",
+     "label": "up",
      "keys": [
       "Space"
+     ]
+    },
+    {
+     "label": "down (hold to land)",
+     "keys": [
+      "Shift"
      ]
     },
     {
@@ -2584,17 +2645,17 @@
       {
        "id": "input.play",
        "label": "C\u00f3mo vuelan la pantalla t\u00e1ctil y el teclado",
-       "help": "Juego f\u00e1cil: sin armar (el primer stick o tecla arranca los motores), el dron mantiene la altura, teclas como en un juego (W A S D para moverse, flechas para girar y subir) y una escuela de pilotos que retira la ayuda paso a paso. Piloto: como una emisora: el bot\u00f3n ARMAR o Espacio, un acelerador que se queda donde lo dejas, teclas en Modo 2 (W/S acelerador, A/D gui\u00f1ada, flechas cabeceo y alabeo). Una emisora o un mando siempre vuela como una emisora.",
+       "help": "Juego f\u00e1cil: sin armar (la primera tecla o toque arranca los motores). En el teclado vuela como un juego: haz clic para capturar el rat\u00f3n, mu\u00e9velo para girar y mirar arriba y abajo, W A S D para moverte, Espacio sube, Shift baja, y al soltarlo todo el dron se detiene y se queda quieto en el sitio. En una pantalla t\u00e1ctil: sticks con ayuda de altura y una escuela de pilotos. Piloto: como una emisora: el bot\u00f3n ARMAR o Espacio, un acelerador que se queda donde lo dejas, teclas en Modo 2 (W/S acelerador, A/D gui\u00f1ada, flechas cabeceo y alabeo). Una emisora o un mando siempre vuela como una emisora.",
        "type": "enum",
-       "default": "Juego f\u00e1cil",
-       "range": "Juego f\u00e1cil / Piloto (como una emisora)",
+       "default": "Juego f\u00e1cil (teclas de juego)",
+       "range": "Juego f\u00e1cil (teclas de juego) / Piloto (como una emisora)",
        "scope": "global",
        "apply": "live",
        "keys": [],
        "advanced": false,
        "preset": false,
        "options": [
-        "Juego f\u00e1cil",
+        "Juego f\u00e1cil (teclas de juego)",
         "Piloto (como una emisora)"
        ],
        "shown": [
@@ -2603,8 +2664,8 @@
       },
       {
        "id": "input.altitudeHelp",
-       "label": "Ayuda de altura (juego f\u00e1cil)",
-       "help": "El dron mantiene la altura solo; arriba y abajo (las flechas, o el stick izquierdo en una pantalla t\u00e1ctil) suben y bajan a velocidad constante. Solo funciona en el modo angle: en horizon y acro el dron puede dar la vuelta, y ah\u00ed vuela tu acelerador. Paso 1 de la escuela de pilotos.",
+       "label": "Ayuda de altura (t\u00e1ctil)",
+       "help": "El dron mantiene la altura solo; arriba y abajo (el stick izquierdo en una pantalla t\u00e1ctil) suben y bajan a velocidad constante. Solo funciona en el modo angle: en horizon y acro el dron puede dar la vuelta, y ah\u00ed vuela tu acelerador. Paso 1 de la escuela de pilotos. Las teclas de juego del teclado siempre mantienen la altura.",
        "type": "bool",
        "default": "Activado",
        "range": "",
@@ -2631,6 +2692,61 @@
        "advanced": false,
        "preset": false,
        "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.mouseSensitivity",
+       "label": "Sensibilidad del rat\u00f3n (teclas de juego)",
+       "help": "Cu\u00e1nto gira el dron y se inclina la c\u00e1mara con un movimiento del rat\u00f3n. 1 son 0,1 grados por cada p\u00edxel de movimiento. Funciona con las teclas de juego, mientras el rat\u00f3n est\u00e1 capturado (haz clic en la imagen).",
+       "type": "number",
+       "default": "1\u00d7",
+       "range": "0.25\u20133\u00d7",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.mouseInvertY",
+       "label": "Invertir el rat\u00f3n arriba y abajo",
+       "help": "Desactivado: mover el rat\u00f3n hacia delante mira hacia arriba, como en la mayor\u00eda de los juegos. Activado: mira hacia abajo, como una palanca de vuelo tirada hacia atr\u00e1s.",
+       "type": "bool",
+       "default": "Desactivado",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.gameSpeed",
+       "label": "Velocidad de vuelo (teclas de juego)",
+       "help": "A qu\u00e9 velocidad vuelan W A S D y Espacio / Shift: lenta 4 m/s de lado y 3 m/s hacia arriba, normal 8 y 5, r\u00e1pida 14 y 8. Un dron peque\u00f1o no siempre alcanza la velocidad r\u00e1pida: vuela tan r\u00e1pido como le permiten su inclinaci\u00f3n y el aire.",
+       "type": "enum",
+       "default": "Normal",
+       "range": "Lenta / Normal / R\u00e1pida",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Lenta",
+        "Normal",
+        "R\u00e1pida"
+       ],
        "shown": [
         "settings"
        ]
@@ -3014,17 +3130,17 @@
       {
        "id": "scenes.rotation",
        "label": "Escenas para rotar",
-       "help": "De d\u00f3nde salen N (siguiente escena) y la escena tras un choque. Shift+N es siempre una escena aleatoria de la lista del autor; F, tu siguiente favorita.",
+       "help": "De d\u00f3nde salen N (siguiente escena) y la escena tras un choque. Shift+N es siempre una escena aleatoria de la lista del autor; Shift+F, tu siguiente favorita.",
        "type": "enum",
-       "default": "Lista del autor",
-       "range": "Lista del autor / Mis favoritas / Escenas que he volado",
+       "default": "Lista del autor, luego SuperSplat",
+       "range": "Lista del autor, luego SuperSplat / Mis favoritas / Escenas que he volado",
        "scope": "global",
        "apply": "live",
        "keys": [],
        "advanced": false,
        "preset": false,
        "options": [
-        "Lista del autor",
+        "Lista del autor, luego SuperSplat",
         "Mis favoritas",
         "Escenas que he volado"
        ],
@@ -3035,9 +3151,9 @@
       {
        "id": "scenes.order",
        "label": "Orden",
-       "help": "Aleatorio: cada escena una vez antes de que se repita ninguna, nunca la que tienes delante. En orden: una tras otra, en bucle.",
+       "help": "Aleatorio: cada escena una vez antes de que se repita ninguna, nunca la que tienes delante. En orden: una tras otra, en bucle. Primero van las escenas del autor, luego SuperSplat en su propio orden. Si lo dejas por defecto, tus propias listas (favoritas, escenas voladas) siguen mezcl\u00e1ndose.",
        "type": "enum",
-       "default": "Aleatorio",
+       "default": "En orden",
        "range": "Aleatorio / En orden",
        "scope": "global",
        "apply": "live",
@@ -3055,7 +3171,7 @@
       {
        "id": "scenes.allowNoWalls",
        "label": "Incluir escenas sin paredes",
-       "help": "En las escenas sin paredes no hay choques: atraviesas todo. Desactivado: la rotaci\u00f3n las omite.",
+       "help": "En las escenas sin paredes no hay choques: atraviesas todo. Desactivado: la rotaci\u00f3n las omite (las escenas del autor siempre entran).",
        "type": "bool",
        "default": "Desactivado",
        "range": "",
@@ -3412,7 +3528,7 @@
      "action": "scene.favourite",
      "label": "Siguiente escena favorita",
      "keys": [
-      "F"
+      "Shift+F"
      ]
     },
     {
@@ -3424,7 +3540,7 @@
     },
     {
      "action": "arm.toggle",
-     "label": "Armar / desarmar (vuelo con teclado)",
+     "label": "Armar / desarmar (teclas de piloto)",
      "keys": [
       "Espacio"
      ]
@@ -3507,11 +3623,24 @@
      "keys": [
       "K"
      ]
+    },
+    {
+     "action": "fullscreen.toggle",
+     "label": "Pantalla completa s\u00ed / no",
+     "keys": [
+      "F"
+     ]
     }
    ],
    "flying": [
     {
-     "label": "adelante / atr\u00e1s",
+     "label": "mirar y girar (arriba y abajo inclina la c\u00e1mara)",
+     "keys": [
+      "Rat\u00f3n"
+     ]
+    },
+    {
+     "label": "adelante / atr\u00e1s (tambi\u00e9n las flechas arriba y abajo)",
      "keys": [
       "W",
       "S"
@@ -3525,7 +3654,7 @@
      ]
     },
     {
-     "label": "girar a la izquierda / derecha",
+     "label": "girar sin rat\u00f3n",
      "keys": [
       "\u2190",
       "\u2192",
@@ -3534,22 +3663,15 @@
      ]
     },
     {
-     "label": "subir / bajar (con la ayuda de altura; sin ella, el acelerador, que se queda donde lo dejas)",
-     "keys": [
-      "\u2191",
-      "\u2193"
-     ]
-    },
-    {
-     "label": "mantener: m\u00e1s r\u00e1pido",
-     "keys": [
-      "Shift"
-     ]
-    },
-    {
-     "label": "toque: encender los motores; mantener medio segundo: apagarlos (juego f\u00e1cil; teclas de piloto: armar / desarmar)",
+     "label": "subir",
      "keys": [
       "Espacio"
+     ]
+    },
+    {
+     "label": "bajar (mant\u00e9n para aterrizar)",
+     "keys": [
+      "Shift"
      ]
     },
     {
@@ -4543,17 +4665,17 @@
       {
        "id": "input.play",
        "label": "Jak lataj\u0105 ekran dotykowy i klawiatura",
-       "help": "\u0141atwa gra: bez uzbrajania (pierwszy dr\u0105\u017cek lub klawisz uruchamia silniki), dron sam trzyma wysoko\u015b\u0107, klawisze jak w grze (W A S D ruch, strza\u0142ki obr\u00f3t i wznoszenie) i szko\u0142a pilot\u00f3w, kt\u00f3ra krok po kroku zabiera pomoc. Pilot: jak z aparatury \u2014 przycisk UZBR\u00d3J lub Spacja, gaz zostaje tam, gdzie go zostawisz, klawisze w Mode 2 (W/S gaz, A/D odchylenie, strza\u0142ki pochylenie i przechy\u0142). Aparatura lub pad zawsze lata jak aparatura.",
+       "help": "\u0141atwa gra: bez uzbrajania (pierwszy klawisz lub dotyk uruchamia silniki). Na klawiaturze dron leci jak w grze: kliknij, aby przechwyci\u0107 mysz, ruchem myszy obracasz si\u0119 i patrzysz w g\u00f3r\u0119 i w d\u00f3\u0142, W A S D to ruch, Spacja w g\u00f3r\u0119, Shift w d\u00f3\u0142, a po puszczeniu wszystkiego dron zatrzymuje si\u0119 i wisi w miejscu. Na ekranie dotykowym: dr\u0105\u017cki z pomoc\u0105 wysoko\u015bci i szko\u0142a pilot\u00f3w. Pilot: jak z aparatury \u2014 przycisk UZBR\u00d3J lub Spacja, gaz zostaje tam, gdzie go zostawisz, klawisze w Mode 2 (W/S gaz, A/D odchylenie, strza\u0142ki pochylenie i przechy\u0142). Aparatura lub pad zawsze lata jak aparatura.",
        "type": "enum",
-       "default": "\u0141atwa gra",
-       "range": "\u0141atwa gra / Pilot (jak z aparatury)",
+       "default": "\u0141atwa gra (klawisze jak w grze)",
+       "range": "\u0141atwa gra (klawisze jak w grze) / Pilot (jak z aparatury)",
        "scope": "global",
        "apply": "live",
        "keys": [],
        "advanced": false,
        "preset": false,
        "options": [
-        "\u0141atwa gra",
+        "\u0141atwa gra (klawisze jak w grze)",
         "Pilot (jak z aparatury)"
        ],
        "shown": [
@@ -4562,8 +4684,8 @@
       },
       {
        "id": "input.altitudeHelp",
-       "label": "Pomoc wysoko\u015bci (\u0142atwa gra)",
-       "help": "Dron sam trzyma wysoko\u015b\u0107; g\u00f3ra i d\u00f3\u0142 (strza\u0142ki albo lewy dr\u0105\u017cek na ekranie dotykowym) wznosz\u0105 i opuszczaj\u0105 ze sta\u0142\u0105 pr\u0119dko\u015bci\u0105. Dzia\u0142a tylko w trybie angle: w horizon i acro dron mo\u017ce si\u0119 przewr\u00f3ci\u0107, tam leci tw\u00f3j gaz. Krok 1 szko\u0142y pilot\u00f3w.",
+       "label": "Pomoc wysoko\u015bci (dotyk)",
+       "help": "Dron sam trzyma wysoko\u015b\u0107; g\u00f3ra i d\u00f3\u0142 (lewy dr\u0105\u017cek na ekranie dotykowym) wznosz\u0105 i opuszczaj\u0105 ze sta\u0142\u0105 pr\u0119dko\u015bci\u0105. Dzia\u0142a tylko w trybie angle: w horizon i acro dron mo\u017ce si\u0119 przewr\u00f3ci\u0107, tam leci tw\u00f3j gaz. Krok 1 szko\u0142y pilot\u00f3w. Klawisze jak w grze na klawiaturze zawsze trzymaj\u0105 wysoko\u015b\u0107.",
        "type": "bool",
        "default": "W\u0142\u0105czone",
        "range": "",
@@ -4590,6 +4712,61 @@
        "advanced": false,
        "preset": false,
        "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.mouseSensitivity",
+       "label": "Czu\u0142o\u015b\u0107 myszy (klawisze jak w grze)",
+       "help": "O ile obraca si\u0119 dron i przechyla kamera przy ruchu myszy. 1 to 0,1 stopnia na piksel ruchu. Dzia\u0142a z klawiszami jak w grze, gdy mysz jest przechwycona (kliknij w obraz).",
+       "type": "number",
+       "default": "1\u00d7",
+       "range": "0.25\u20133\u00d7",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.mouseInvertY",
+       "label": "Odwr\u00f3\u0107 mysz w g\u00f3r\u0119 i w d\u00f3\u0142",
+       "help": "Wy\u0142\u0105czone: ruch myszy od siebie patrzy w g\u00f3r\u0119, jak w wi\u0119kszo\u015bci gier. W\u0142\u0105czone: patrzy w d\u00f3\u0142, jak przy wychyleniu dr\u0105\u017cka do siebie.",
+       "type": "bool",
+       "default": "Wy\u0142\u0105czone",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.gameSpeed",
+       "label": "Pr\u0119dko\u015b\u0107 lotu (klawisze jak w grze)",
+       "help": "Jak szybko lec\u0105 W A S D oraz Spacja / Shift: wolno 4 m/s w bok i 3 m/s w g\u00f3r\u0119, normalnie 8 i 5, szybko 14 i 8. Ma\u0142y dron nie zawsze osi\u0105gnie szybk\u0105 pr\u0119dko\u015b\u0107: leci tak szybko, na ile pozwalaj\u0105 mu pochylenie i powietrze.",
+       "type": "enum",
+       "default": "Normalnie",
+       "range": "Wolno / Normalnie / Szybko",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Wolno",
+        "Normalnie",
+        "Szybko"
+       ],
        "shown": [
         "settings"
        ]
@@ -4973,17 +5150,17 @@
       {
        "id": "scenes.rotation",
        "label": "Z jakich scen wybiera\u0107",
-       "help": "Sk\u0105d bior\u0105 si\u0119 N (nast\u0119pna scena) i scena po crashu. Shift+N to zawsze losowa scena z listy autora; F to nast\u0119pna ulubiona.",
+       "help": "Sk\u0105d bior\u0105 si\u0119 N (nast\u0119pna scena) i scena po crashu. Shift+N to zawsze losowa scena z listy autora; Shift+F to nast\u0119pna ulubiona.",
        "type": "enum",
-       "default": "Lista autora",
-       "range": "Lista autora / Moje ulubione / Sceny, w kt\u00f3rych lata\u0142em",
+       "default": "Lista autora, potem SuperSplat",
+       "range": "Lista autora, potem SuperSplat / Moje ulubione / Sceny, w kt\u00f3rych lata\u0142em",
        "scope": "global",
        "apply": "live",
        "keys": [],
        "advanced": false,
        "preset": false,
        "options": [
-        "Lista autora",
+        "Lista autora, potem SuperSplat",
         "Moje ulubione",
         "Sceny, w kt\u00f3rych lata\u0142em"
        ],
@@ -4994,9 +5171,9 @@
       {
        "id": "scenes.order",
        "label": "Kolejno\u015b\u0107",
-       "help": "Losowo: ka\u017cda scena raz, zanim kt\u00f3ra\u015b si\u0119 powt\u00f3rzy, nigdy ta, w kt\u00f3rej jeste\u015b. Po kolei: jedna za drug\u0105, w k\u00f3\u0142ko.",
+       "help": "Losowo: ka\u017cda scena raz, zanim kt\u00f3ra\u015b si\u0119 powt\u00f3rzy, nigdy ta, w kt\u00f3rej jeste\u015b. Po kolei: jedna za drug\u0105, w k\u00f3\u0142ko. Najpierw sceny autora, potem SuperSplat w jego w\u0142asnej kolejno\u015bci. Przy ustawieniu domy\u015blnym twoje w\u0142asne listy (ulubione, przelatane sceny) nadal s\u0105 losowane.",
        "type": "enum",
-       "default": "Losowo",
+       "default": "Po kolei",
        "range": "Losowo / Po kolei",
        "scope": "global",
        "apply": "live",
@@ -5014,7 +5191,7 @@
       {
        "id": "scenes.allowNoWalls",
        "label": "Uwzgl\u0119dniaj sceny bez \u015bcian",
-       "help": "W scenach bez \u015bcian nie ma crashy: dron przelatuje przez wszystko. Wy\u0142.: rotacja je pomija.",
+       "help": "W scenach bez \u015bcian nie ma crashy: dron przelatuje przez wszystko. Wy\u0142.: rotacja je pomija (sceny autora zawsze wchodz\u0105).",
        "type": "bool",
        "default": "Wy\u0142\u0105czone",
        "range": "",
@@ -5371,7 +5548,7 @@
      "action": "scene.favourite",
      "label": "Nast\u0119pna ulubiona scena",
      "keys": [
-      "F"
+      "Shift+F"
      ]
     },
     {
@@ -5383,7 +5560,7 @@
     },
     {
      "action": "arm.toggle",
-     "label": "Uzbr\u00f3j / rozbr\u00f3j (latanie klawiatur\u0105)",
+     "label": "Uzbr\u00f3j / rozbr\u00f3j (klawisze pilota)",
      "keys": [
       "Spacja"
      ]
@@ -5466,11 +5643,24 @@
      "keys": [
       "K"
      ]
+    },
+    {
+     "action": "fullscreen.toggle",
+     "label": "Pe\u0142ny ekran w\u0142. / wy\u0142.",
+     "keys": [
+      "F"
+     ]
     }
    ],
    "flying": [
     {
-     "label": "do przodu / do ty\u0142u",
+     "label": "rozgl\u0105danie i obr\u00f3t (g\u00f3ra i d\u00f3\u0142 przechyla kamer\u0119)",
+     "keys": [
+      "Mysz"
+     ]
+    },
+    {
+     "label": "do przodu / do ty\u0142u (strza\u0142ki w g\u00f3r\u0119 i w d\u00f3\u0142 te\u017c)",
      "keys": [
       "W",
       "S"
@@ -5484,7 +5674,7 @@
      ]
     },
     {
-     "label": "obr\u00f3t w lewo / w prawo",
+     "label": "obr\u00f3t bez myszy",
      "keys": [
       "\u2190",
       "\u2192",
@@ -5493,22 +5683,15 @@
      ]
     },
     {
-     "label": "w g\u00f3r\u0119 / w d\u00f3\u0142 (z pomoc\u0105 wysoko\u015bci; bez niej gaz, kt\u00f3ry zostaje tam, gdzie go zostawisz)",
-     "keys": [
-      "\u2191",
-      "\u2193"
-     ]
-    },
-    {
-     "label": "przytrzymaj: szybciej",
-     "keys": [
-      "Shift"
-     ]
-    },
-    {
-     "label": "stuknij: w\u0142\u0105cz silniki; przytrzymaj p\u00f3\u0142 sekundy: wy\u0142\u0105cz (\u0142atwa gra; klawisze pilota: uzbr\u00f3j / rozbr\u00f3j)",
+     "label": "w g\u00f3r\u0119",
      "keys": [
       "Spacja"
+     ]
+    },
+    {
+     "label": "w d\u00f3\u0142 (przytrzymaj, aby wyl\u0105dowa\u0107)",
+     "keys": [
+      "Shift"
      ]
     },
     {
@@ -6502,17 +6685,17 @@
       {
        "id": "input.play",
        "label": "\u041a\u0430\u043a \u043b\u0435\u0442\u0430\u044e\u0442 \u0441\u0435\u043d\u0441\u043e\u0440\u043d\u044b\u0439 \u044d\u043a\u0440\u0430\u043d \u0438 \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u0430",
-       "help": "\u041b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430: \u0431\u0435\u0437 \u0430\u0440\u043c\u0430 (\u043f\u0435\u0440\u0432\u044b\u0439 \u0441\u0442\u0438\u043a \u0438\u043b\u0438 \u043a\u043b\u0430\u0432\u0438\u0448\u0430 \u0437\u0430\u043f\u0443\u0441\u043a\u0430\u0435\u0442 \u043c\u043e\u0442\u043e\u0440\u044b), \u0434\u0440\u043e\u043d \u0441\u0430\u043c \u0434\u0435\u0440\u0436\u0438\u0442 \u0432\u044b\u0441\u043e\u0442\u0443, \u043a\u043b\u0430\u0432\u0438\u0448\u0438 \u043a\u0430\u043a \u0432 \u0438\u0433\u0440\u0435 (W A S D \u2014 \u0434\u0432\u0438\u0436\u0435\u043d\u0438\u0435, \u0441\u0442\u0440\u0435\u043b\u043a\u0438 \u2014 \u043f\u043e\u0432\u043e\u0440\u043e\u0442 \u0438 \u0432\u044b\u0441\u043e\u0442\u0430) \u0438 \u0448\u043a\u043e\u043b\u0430 \u043f\u0438\u043b\u043e\u0442\u043e\u0432, \u043a\u043e\u0442\u043e\u0440\u0430\u044f \u0448\u0430\u0433 \u0437\u0430 \u0448\u0430\u0433\u043e\u043c \u0443\u0431\u0438\u0440\u0430\u0435\u0442 \u043f\u043e\u043c\u043e\u0449\u044c. \u041f\u0438\u043b\u043e\u0442: \u043a\u0430\u043a \u0441 \u0430\u043f\u043f\u0430\u0440\u0430\u0442\u0443\u0440\u044b \u2014 \u043a\u043d\u043e\u043f\u043a\u0430 \u0410\u0420\u041c \u0438\u043b\u0438 \u041f\u0440\u043e\u0431\u0435\u043b, \u0433\u0430\u0437 \u043e\u0441\u0442\u0430\u0451\u0442\u0441\u044f \u0442\u0430\u043c, \u0433\u0434\u0435 \u0435\u0433\u043e \u043e\u0441\u0442\u0430\u0432\u0438\u043b\u0438, \u043a\u043b\u0430\u0432\u0438\u0448\u0438 \u0432 Mode 2 (W/S \u0433\u0430\u0437, A/D \u0440\u044b\u0441\u043a\u0430\u043d\u0438\u0435, \u0441\u0442\u0440\u0435\u043b\u043a\u0438 \u0442\u0430\u043d\u0433\u0430\u0436 \u0438 \u043a\u0440\u0435\u043d). \u0410\u043f\u043f\u0430\u0440\u0430\u0442\u0443\u0440\u0430 \u0438\u043b\u0438 \u0433\u0435\u0439\u043c\u043f\u0430\u0434 \u0432\u0441\u0435\u0433\u0434\u0430 \u043b\u0435\u0442\u0430\u044e\u0442 \u043a\u0430\u043a \u0430\u043f\u043f\u0430\u0440\u0430\u0442\u0443\u0440\u0430.",
+       "help": "\u041b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430: \u0431\u0435\u0437 \u0430\u0440\u043c\u0430 (\u043f\u0435\u0440\u0432\u0430\u044f \u043a\u043b\u0430\u0432\u0438\u0448\u0430 \u0438\u043b\u0438 \u043a\u0430\u0441\u0430\u043d\u0438\u0435 \u0437\u0430\u043f\u0443\u0441\u043a\u0430\u0435\u0442 \u043c\u043e\u0442\u043e\u0440\u044b). \u041d\u0430 \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u0435 \u0434\u0440\u043e\u043d \u043b\u0435\u0442\u0430\u0435\u0442 \u043a\u0430\u043a \u0432 \u0438\u0433\u0440\u0435: \u0449\u0451\u043b\u043a\u043d\u0438\u0442\u0435, \u0447\u0442\u043e\u0431\u044b \u0437\u0430\u0445\u0432\u0430\u0442\u0438\u0442\u044c \u043c\u044b\u0448\u044c, \u0434\u0432\u0438\u0436\u0435\u043d\u0438\u0435\u043c \u043c\u044b\u0448\u0438 \u043f\u043e\u0432\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0439\u0442\u0435\u0441\u044c \u0438 \u0441\u043c\u043e\u0442\u0440\u0438\u0442\u0435 \u0432\u0432\u0435\u0440\u0445 \u0438 \u0432\u043d\u0438\u0437, W A S D \u2014 \u0434\u0432\u0438\u0436\u0435\u043d\u0438\u0435, \u041f\u0440\u043e\u0431\u0435\u043b \u2014 \u0432\u0432\u0435\u0440\u0445, Shift \u2014 \u0432\u043d\u0438\u0437, \u0430 \u043a\u043e\u0433\u0434\u0430 \u0432\u044b \u0432\u0441\u0451 \u043e\u0442\u043f\u0443\u0441\u0442\u0438\u043b\u0438, \u0434\u0440\u043e\u043d \u043e\u0441\u0442\u0430\u043d\u0430\u0432\u043b\u0438\u0432\u0430\u0435\u0442\u0441\u044f \u0438 \u0437\u0430\u0432\u0438\u0441\u0430\u0435\u0442 \u043d\u0430 \u043c\u0435\u0441\u0442\u0435. \u041d\u0430 \u0441\u0435\u043d\u0441\u043e\u0440\u043d\u043e\u043c \u044d\u043a\u0440\u0430\u043d\u0435: \u0441\u0442\u0438\u043a\u0438 \u0441 \u043f\u043e\u043c\u043e\u0449\u044c\u044e \u043f\u043e \u0432\u044b\u0441\u043e\u0442\u0435 \u0438 \u0448\u043a\u043e\u043b\u0430 \u043f\u0438\u043b\u043e\u0442\u043e\u0432. \u041f\u0438\u043b\u043e\u0442: \u043a\u0430\u043a \u0441 \u0430\u043f\u043f\u0430\u0440\u0430\u0442\u0443\u0440\u044b \u2014 \u043a\u043d\u043e\u043f\u043a\u0430 \u0410\u0420\u041c \u0438\u043b\u0438 \u041f\u0440\u043e\u0431\u0435\u043b, \u0433\u0430\u0437 \u043e\u0441\u0442\u0430\u0451\u0442\u0441\u044f \u0442\u0430\u043c, \u0433\u0434\u0435 \u0435\u0433\u043e \u043e\u0441\u0442\u0430\u0432\u0438\u043b\u0438, \u043a\u043b\u0430\u0432\u0438\u0448\u0438 \u0432 Mode 2 (W/S \u0433\u0430\u0437, A/D \u0440\u044b\u0441\u043a\u0430\u043d\u0438\u0435, \u0441\u0442\u0440\u0435\u043b\u043a\u0438 \u0442\u0430\u043d\u0433\u0430\u0436 \u0438 \u043a\u0440\u0435\u043d). \u0410\u043f\u043f\u0430\u0440\u0430\u0442\u0443\u0440\u0430 \u0438\u043b\u0438 \u0433\u0435\u0439\u043c\u043f\u0430\u0434 \u0432\u0441\u0435\u0433\u0434\u0430 \u043b\u0435\u0442\u0430\u044e\u0442 \u043a\u0430\u043a \u0430\u043f\u043f\u0430\u0440\u0430\u0442\u0443\u0440\u0430.",
        "type": "enum",
-       "default": "\u041b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430",
-       "range": "\u041b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430 / \u041f\u0438\u043b\u043e\u0442 (\u043a\u0430\u043a \u0441 \u0430\u043f\u043f\u0430\u0440\u0430\u0442\u0443\u0440\u044b)",
+       "default": "\u041b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430 (\u043a\u043b\u0430\u0432\u0438\u0448\u0438 \u043a\u0430\u043a \u0432 \u0438\u0433\u0440\u0435)",
+       "range": "\u041b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430 (\u043a\u043b\u0430\u0432\u0438\u0448\u0438 \u043a\u0430\u043a \u0432 \u0438\u0433\u0440\u0435) / \u041f\u0438\u043b\u043e\u0442 (\u043a\u0430\u043a \u0441 \u0430\u043f\u043f\u0430\u0440\u0430\u0442\u0443\u0440\u044b)",
        "scope": "global",
        "apply": "live",
        "keys": [],
        "advanced": false,
        "preset": false,
        "options": [
-        "\u041b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430",
+        "\u041b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430 (\u043a\u043b\u0430\u0432\u0438\u0448\u0438 \u043a\u0430\u043a \u0432 \u0438\u0433\u0440\u0435)",
         "\u041f\u0438\u043b\u043e\u0442 (\u043a\u0430\u043a \u0441 \u0430\u043f\u043f\u0430\u0440\u0430\u0442\u0443\u0440\u044b)"
        ],
        "shown": [
@@ -6521,8 +6704,8 @@
       },
       {
        "id": "input.altitudeHelp",
-       "label": "\u041f\u043e\u043c\u043e\u0449\u044c \u043f\u043e \u0432\u044b\u0441\u043e\u0442\u0435 (\u043b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430)",
-       "help": "\u0414\u0440\u043e\u043d \u0441\u0430\u043c \u0434\u0435\u0440\u0436\u0438\u0442 \u0432\u044b\u0441\u043e\u0442\u0443; \u0432\u0432\u0435\u0440\u0445 \u0438 \u0432\u043d\u0438\u0437 (\u0441\u0442\u0440\u0435\u043b\u043a\u0438 \u0438\u043b\u0438 \u043b\u0435\u0432\u044b\u0439 \u0441\u0442\u0438\u043a \u043d\u0430 \u0441\u0435\u043d\u0441\u043e\u0440\u043d\u043e\u043c \u044d\u043a\u0440\u0430\u043d\u0435) \u043f\u043e\u0434\u043d\u0438\u043c\u0430\u044e\u0442 \u0438 \u043e\u043f\u0443\u0441\u043a\u0430\u044e\u0442 \u0441 \u043f\u043e\u0441\u0442\u043e\u044f\u043d\u043d\u043e\u0439 \u0441\u043a\u043e\u0440\u043e\u0441\u0442\u044c\u044e. \u0420\u0430\u0431\u043e\u0442\u0430\u0435\u0442 \u0442\u043e\u043b\u044c\u043a\u043e \u0432 \u0440\u0435\u0436\u0438\u043c\u0435 angle: \u0432 horizon \u0438 acro \u0434\u0440\u043e\u043d \u043c\u043e\u0436\u0435\u0442 \u043f\u0435\u0440\u0435\u0432\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f, \u0442\u0430\u043c \u043b\u0435\u0442\u0438\u0442 \u0432\u0430\u0448 \u0433\u0430\u0437. \u0428\u0430\u0433 1 \u0448\u043a\u043e\u043b\u044b \u043f\u0438\u043b\u043e\u0442\u043e\u0432.",
+       "label": "\u041f\u043e\u043c\u043e\u0449\u044c \u043f\u043e \u0432\u044b\u0441\u043e\u0442\u0435 (\u043a\u0430\u0441\u0430\u043d\u0438\u0435)",
+       "help": "\u0414\u0440\u043e\u043d \u0441\u0430\u043c \u0434\u0435\u0440\u0436\u0438\u0442 \u0432\u044b\u0441\u043e\u0442\u0443; \u0432\u0432\u0435\u0440\u0445 \u0438 \u0432\u043d\u0438\u0437 (\u043b\u0435\u0432\u044b\u0439 \u0441\u0442\u0438\u043a \u043d\u0430 \u0441\u0435\u043d\u0441\u043e\u0440\u043d\u043e\u043c \u044d\u043a\u0440\u0430\u043d\u0435) \u043f\u043e\u0434\u043d\u0438\u043c\u0430\u044e\u0442 \u0438 \u043e\u043f\u0443\u0441\u043a\u0430\u044e\u0442 \u0441 \u043f\u043e\u0441\u0442\u043e\u044f\u043d\u043d\u043e\u0439 \u0441\u043a\u043e\u0440\u043e\u0441\u0442\u044c\u044e. \u0420\u0430\u0431\u043e\u0442\u0430\u0435\u0442 \u0442\u043e\u043b\u044c\u043a\u043e \u0432 \u0440\u0435\u0436\u0438\u043c\u0435 angle: \u0432 horizon \u0438 acro \u0434\u0440\u043e\u043d \u043c\u043e\u0436\u0435\u0442 \u043f\u0435\u0440\u0435\u0432\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f, \u0442\u0430\u043c \u043b\u0435\u0442\u0438\u0442 \u0432\u0430\u0448 \u0433\u0430\u0437. \u0428\u0430\u0433 1 \u0448\u043a\u043e\u043b\u044b \u043f\u0438\u043b\u043e\u0442\u043e\u0432. \u041a\u043b\u0430\u0432\u0438\u0448\u0438 \u043a\u0430\u043a \u0432 \u0438\u0433\u0440\u0435 \u043d\u0430 \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u0435 \u0432\u0441\u0435\u0433\u0434\u0430 \u0434\u0435\u0440\u0436\u0430\u0442 \u0432\u044b\u0441\u043e\u0442\u0443.",
        "type": "bool",
        "default": "\u0412\u043a\u043b.",
        "range": "",
@@ -6549,6 +6732,61 @@
        "advanced": false,
        "preset": false,
        "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.mouseSensitivity",
+       "label": "\u0427\u0443\u0432\u0441\u0442\u0432\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c \u043c\u044b\u0448\u0438 (\u043a\u043b\u0430\u0432\u0438\u0448\u0438 \u043a\u0430\u043a \u0432 \u0438\u0433\u0440\u0435)",
+       "help": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u0432\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u0442\u0441\u044f \u0434\u0440\u043e\u043d \u0438 \u043d\u0430\u043a\u043b\u043e\u043d\u044f\u0435\u0442\u0441\u044f \u043a\u0430\u043c\u0435\u0440\u0430 \u043f\u0440\u0438 \u0434\u0432\u0438\u0436\u0435\u043d\u0438\u0438 \u043c\u044b\u0448\u0438. 1 \u2014 \u044d\u0442\u043e 0,1 \u0433\u0440\u0430\u0434\u0443\u0441\u0430 \u043d\u0430 \u043a\u0430\u0436\u0434\u044b\u0439 \u043f\u0438\u043a\u0441\u0435\u043b\u044c \u0434\u0432\u0438\u0436\u0435\u043d\u0438\u044f. \u0420\u0430\u0431\u043e\u0442\u0430\u0435\u0442 \u0441 \u043a\u043b\u0430\u0432\u0438\u0448\u0430\u043c\u0438 \u043a\u0430\u043a \u0432 \u0438\u0433\u0440\u0435, \u043f\u043e\u043a\u0430 \u043c\u044b\u0448\u044c \u0437\u0430\u0445\u0432\u0430\u0447\u0435\u043d\u0430 (\u0449\u0451\u043b\u043a\u043d\u0438\u0442\u0435 \u043f\u043e \u043a\u0430\u0440\u0442\u0438\u043d\u043a\u0435).",
+       "type": "number",
+       "default": "1\u00d7",
+       "range": "0.25\u20133\u00d7",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.mouseInvertY",
+       "label": "\u0418\u043d\u0432\u0435\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043c\u044b\u0448\u044c \u0432\u0432\u0435\u0440\u0445 \u0438 \u0432\u043d\u0438\u0437",
+       "help": "\u0412\u044b\u043a\u043b.: \u0434\u0432\u0438\u0436\u0435\u043d\u0438\u0435 \u043c\u044b\u0448\u0438 \u043e\u0442 \u0441\u0435\u0431\u044f \u2014 \u0432\u0437\u0433\u043b\u044f\u0434 \u0432\u0432\u0435\u0440\u0445, \u043a\u0430\u043a \u0432 \u0431\u043e\u043b\u044c\u0448\u0438\u043d\u0441\u0442\u0432\u0435 \u0438\u0433\u0440. \u0412\u043a\u043b.: \u0432\u0437\u0433\u043b\u044f\u0434 \u0432\u043d\u0438\u0437, \u043a\u0430\u043a \u043f\u0440\u0438 \u0440\u0443\u0447\u043a\u0435, \u0432\u0437\u044f\u0442\u043e\u0439 \u043d\u0430 \u0441\u0435\u0431\u044f.",
+       "type": "bool",
+       "default": "\u0412\u044b\u043a\u043b.",
+       "range": "",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "input.gameSpeed",
+       "label": "\u0421\u043a\u043e\u0440\u043e\u0441\u0442\u044c \u043f\u043e\u043b\u0451\u0442\u0430 (\u043a\u043b\u0430\u0432\u0438\u0448\u0438 \u043a\u0430\u043a \u0432 \u0438\u0433\u0440\u0435)",
+       "help": "\u041a\u0430\u043a \u0431\u044b\u0441\u0442\u0440\u043e \u043b\u0435\u0442\u044f\u0442 W A S D \u0438 \u041f\u0440\u043e\u0431\u0435\u043b / Shift: \u043c\u0435\u0434\u043b\u0435\u043d\u043d\u043e \u2014 4 \u043c/\u0441 \u0432\u0431\u043e\u043a \u0438 3 \u043c/\u0441 \u0432\u0432\u0435\u0440\u0445, \u043e\u0431\u044b\u0447\u043d\u043e \u2014 8 \u0438 5, \u0431\u044b\u0441\u0442\u0440\u043e \u2014 14 \u0438 8. \u041c\u0430\u043b\u0435\u043d\u044c\u043a\u0438\u0439 \u0434\u0440\u043e\u043d \u043d\u0435 \u0432\u0441\u0435\u0433\u0434\u0430 \u0434\u043e\u0441\u0442\u0438\u0433\u0430\u0435\u0442 \u0431\u044b\u0441\u0442\u0440\u043e\u0439 \u0441\u043a\u043e\u0440\u043e\u0441\u0442\u0438: \u043e\u043d \u043b\u0435\u0442\u0438\u0442 \u0442\u0430\u043a \u0431\u044b\u0441\u0442\u0440\u043e, \u043a\u0430\u043a \u043f\u043e\u0437\u0432\u043e\u043b\u044f\u044e\u0442 \u0435\u0433\u043e \u043d\u0430\u043a\u043b\u043e\u043d \u0438 \u0432\u043e\u0437\u0434\u0443\u0445.",
+       "type": "enum",
+       "default": "\u041e\u0431\u044b\u0447\u043d\u043e",
+       "range": "\u041c\u0435\u0434\u043b\u0435\u043d\u043d\u043e / \u041e\u0431\u044b\u0447\u043d\u043e / \u0411\u044b\u0441\u0442\u0440\u043e",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "\u041c\u0435\u0434\u043b\u0435\u043d\u043d\u043e",
+        "\u041e\u0431\u044b\u0447\u043d\u043e",
+        "\u0411\u044b\u0441\u0442\u0440\u043e"
+       ],
        "shown": [
         "settings"
        ]
@@ -6932,17 +7170,17 @@
       {
        "id": "scenes.rotation",
        "label": "\u0418\u0437 \u043a\u0430\u043a\u0438\u0445 \u0441\u0446\u0435\u043d \u0432\u044b\u0431\u0438\u0440\u0430\u0442\u044c",
-       "help": "\u041e\u0442\u043a\u0443\u0434\u0430 \u0431\u0435\u0440\u0443\u0442\u0441\u044f N (\u0441\u043b\u0435\u0434\u0443\u044e\u0449\u0430\u044f \u0441\u0446\u0435\u043d\u0430) \u0438 \u0441\u0446\u0435\u043d\u0430 \u043f\u043e\u0441\u043b\u0435 \u043a\u0440\u0430\u0448\u0430. Shift+N \u2014 \u0432\u0441\u0435\u0433\u0434\u0430 \u0441\u043b\u0443\u0447\u0430\u0439\u043d\u0430\u044f \u0441\u0446\u0435\u043d\u0430 \u0438\u0437 \u0441\u043f\u0438\u0441\u043a\u0430 \u0430\u0432\u0442\u043e\u0440\u0430; F \u2014 \u0441\u043b\u0435\u0434\u0443\u044e\u0449\u0430\u044f \u0438\u0437\u0431\u0440\u0430\u043d\u043d\u0430\u044f.",
+       "help": "\u041e\u0442\u043a\u0443\u0434\u0430 \u0431\u0435\u0440\u0443\u0442\u0441\u044f N (\u0441\u043b\u0435\u0434\u0443\u044e\u0449\u0430\u044f \u0441\u0446\u0435\u043d\u0430) \u0438 \u0441\u0446\u0435\u043d\u0430 \u043f\u043e\u0441\u043b\u0435 \u043a\u0440\u0430\u0448\u0430. Shift+N \u2014 \u0432\u0441\u0435\u0433\u0434\u0430 \u0441\u043b\u0443\u0447\u0430\u0439\u043d\u0430\u044f \u0441\u0446\u0435\u043d\u0430 \u0438\u0437 \u0441\u043f\u0438\u0441\u043a\u0430 \u0430\u0432\u0442\u043e\u0440\u0430; Shift+F \u2014 \u0441\u043b\u0435\u0434\u0443\u044e\u0449\u0430\u044f \u0438\u0437\u0431\u0440\u0430\u043d\u043d\u0430\u044f.",
        "type": "enum",
-       "default": "\u0421\u043f\u0438\u0441\u043e\u043a \u0430\u0432\u0442\u043e\u0440\u0430",
-       "range": "\u0421\u043f\u0438\u0441\u043e\u043a \u0430\u0432\u0442\u043e\u0440\u0430 / \u041c\u043e\u0438 \u0438\u0437\u0431\u0440\u0430\u043d\u043d\u044b\u0435 / \u0413\u0434\u0435 \u044f \u0443\u0436\u0435 \u043b\u0435\u0442\u0430\u043b",
+       "default": "\u0421\u043f\u0438\u0441\u043e\u043a \u0430\u0432\u0442\u043e\u0440\u0430, \u0437\u0430\u0442\u0435\u043c SuperSplat",
+       "range": "\u0421\u043f\u0438\u0441\u043e\u043a \u0430\u0432\u0442\u043e\u0440\u0430, \u0437\u0430\u0442\u0435\u043c SuperSplat / \u041c\u043e\u0438 \u0438\u0437\u0431\u0440\u0430\u043d\u043d\u044b\u0435 / \u0413\u0434\u0435 \u044f \u0443\u0436\u0435 \u043b\u0435\u0442\u0430\u043b",
        "scope": "global",
        "apply": "live",
        "keys": [],
        "advanced": false,
        "preset": false,
        "options": [
-        "\u0421\u043f\u0438\u0441\u043e\u043a \u0430\u0432\u0442\u043e\u0440\u0430",
+        "\u0421\u043f\u0438\u0441\u043e\u043a \u0430\u0432\u0442\u043e\u0440\u0430, \u0437\u0430\u0442\u0435\u043c SuperSplat",
         "\u041c\u043e\u0438 \u0438\u0437\u0431\u0440\u0430\u043d\u043d\u044b\u0435",
         "\u0413\u0434\u0435 \u044f \u0443\u0436\u0435 \u043b\u0435\u0442\u0430\u043b"
        ],
@@ -6953,9 +7191,9 @@
       {
        "id": "scenes.order",
        "label": "\u041f\u043e\u0440\u044f\u0434\u043e\u043a",
-       "help": "\u0421\u043b\u0443\u0447\u0430\u0439\u043d\u043e: \u043a\u0430\u0436\u0434\u0430\u044f \u0441\u0446\u0435\u043d\u0430 \u043f\u043e \u0440\u0430\u0437\u0443, \u043f\u043e\u043a\u0430 \u043d\u0435 \u043f\u0440\u043e\u0439\u0434\u0443\u0442 \u0432\u0441\u0435, \u0438 \u043d\u0438\u043a\u043e\u0433\u0434\u0430 \u0442\u0430, \u0433\u0434\u0435 \u0432\u044b \u0441\u0435\u0439\u0447\u0430\u0441. \u041f\u043e \u043f\u043e\u0440\u044f\u0434\u043a\u0443: \u043e\u0434\u043d\u0430 \u0437\u0430 \u0434\u0440\u0443\u0433\u043e\u0439 \u043f\u043e \u043a\u0440\u0443\u0433\u0443.",
+       "help": "\u0421\u043b\u0443\u0447\u0430\u0439\u043d\u043e: \u043a\u0430\u0436\u0434\u0430\u044f \u0441\u0446\u0435\u043d\u0430 \u043f\u043e \u0440\u0430\u0437\u0443, \u043f\u043e\u043a\u0430 \u043d\u0435 \u043f\u0440\u043e\u0439\u0434\u0443\u0442 \u0432\u0441\u0435, \u0438 \u043d\u0438\u043a\u043e\u0433\u0434\u0430 \u0442\u0430, \u0433\u0434\u0435 \u0432\u044b \u0441\u0435\u0439\u0447\u0430\u0441. \u041f\u043e \u043f\u043e\u0440\u044f\u0434\u043a\u0443: \u043e\u0434\u043d\u0430 \u0437\u0430 \u0434\u0440\u0443\u0433\u043e\u0439 \u043f\u043e \u043a\u0440\u0443\u0433\u0443. \u0421\u043d\u0430\u0447\u0430\u043b\u0430 \u0441\u0446\u0435\u043d\u044b \u0430\u0432\u0442\u043e\u0440\u0430, \u0437\u0430\u0442\u0435\u043c SuperSplat \u0432 \u0435\u0433\u043e \u0441\u043e\u0431\u0441\u0442\u0432\u0435\u043d\u043d\u043e\u043c \u043f\u043e\u0440\u044f\u0434\u043a\u0435. \u0415\u0441\u043b\u0438 \u043e\u0441\u0442\u0430\u0432\u0438\u0442\u044c \u043f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e, \u0432\u0430\u0448\u0438 \u0441\u043e\u0431\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0435 \u0441\u043f\u0438\u0441\u043a\u0438 (\u0438\u0437\u0431\u0440\u0430\u043d\u043d\u043e\u0435, \u043f\u0440\u043e\u0439\u0434\u0435\u043d\u043d\u044b\u0435 \u0441\u0446\u0435\u043d\u044b) \u043f\u043e-\u043f\u0440\u0435\u0436\u043d\u0435\u043c\u0443 \u043f\u0435\u0440\u0435\u043c\u0435\u0448\u0438\u0432\u0430\u044e\u0442\u0441\u044f.",
        "type": "enum",
-       "default": "\u0421\u043b\u0443\u0447\u0430\u0439\u043d\u043e",
+       "default": "\u041f\u043e \u043f\u043e\u0440\u044f\u0434\u043a\u0443",
        "range": "\u0421\u043b\u0443\u0447\u0430\u0439\u043d\u043e / \u041f\u043e \u043f\u043e\u0440\u044f\u0434\u043a\u0443",
        "scope": "global",
        "apply": "live",
@@ -6973,7 +7211,7 @@
       {
        "id": "scenes.allowNoWalls",
        "label": "\u0412\u043a\u043b\u044e\u0447\u0430\u0442\u044c \u0441\u0446\u0435\u043d\u044b \u0431\u0435\u0437 \u0441\u0442\u0435\u043d",
-       "help": "\u0412 \u0441\u0446\u0435\u043d\u0430\u0445 \u0431\u0435\u0437 \u0441\u0442\u0435\u043d \u043d\u0435\u0442 \u043a\u0440\u0430\u0448\u0435\u0439: \u0434\u0440\u043e\u043d \u043f\u0440\u043e\u043b\u0435\u0442\u0430\u0435\u0442 \u0441\u043a\u0432\u043e\u0437\u044c \u0432\u0441\u0451. \u0412\u044b\u043a\u043b.: \u0442\u0430\u043a\u0438\u0435 \u0441\u0446\u0435\u043d\u044b \u043f\u0440\u043e\u043f\u0443\u0441\u043a\u0430\u044e\u0442\u0441\u044f.",
+       "help": "\u0412 \u0441\u0446\u0435\u043d\u0430\u0445 \u0431\u0435\u0437 \u0441\u0442\u0435\u043d \u043d\u0435\u0442 \u043a\u0440\u0430\u0448\u0435\u0439: \u0434\u0440\u043e\u043d \u043f\u0440\u043e\u043b\u0435\u0442\u0430\u0435\u0442 \u0441\u043a\u0432\u043e\u0437\u044c \u0432\u0441\u0451. \u0412\u044b\u043a\u043b.: \u0442\u0430\u043a\u0438\u0435 \u0441\u0446\u0435\u043d\u044b \u043f\u0440\u043e\u043f\u0443\u0441\u043a\u0430\u044e\u0442\u0441\u044f (\u0441\u0446\u0435\u043d\u044b \u0430\u0432\u0442\u043e\u0440\u0430 \u0438\u0434\u0443\u0442 \u0432\u0441\u0435\u0433\u0434\u0430).",
        "type": "bool",
        "default": "\u0412\u044b\u043a\u043b.",
        "range": "",
@@ -7330,7 +7568,7 @@
      "action": "scene.favourite",
      "label": "\u0421\u043b\u0435\u0434\u0443\u044e\u0449\u0430\u044f \u0438\u0437\u0431\u0440\u0430\u043d\u043d\u0430\u044f \u0441\u0446\u0435\u043d\u0430",
      "keys": [
-      "F"
+      "Shift+F"
      ]
     },
     {
@@ -7342,7 +7580,7 @@
     },
     {
      "action": "arm.toggle",
-     "label": "\u0410\u0440\u043c / \u0434\u0438\u0437\u0430\u0440\u043c (\u043f\u043e\u043b\u0451\u0442 \u0441 \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u044b)",
+     "label": "\u0410\u0440\u043c / \u0434\u0438\u0437\u0430\u0440\u043c (\u043a\u043b\u0430\u0432\u0438\u0448\u0438 \u043f\u0438\u043b\u043e\u0442\u0430)",
      "keys": [
       "\u041f\u0440\u043e\u0431\u0435\u043b"
      ]
@@ -7425,11 +7663,24 @@
      "keys": [
       "K"
      ]
+    },
+    {
+     "action": "fullscreen.toggle",
+     "label": "\u041f\u043e\u043b\u043d\u044b\u0439 \u044d\u043a\u0440\u0430\u043d \u0432\u043a\u043b. / \u0432\u044b\u043a\u043b.",
+     "keys": [
+      "F"
+     ]
     }
    ],
    "flying": [
     {
-     "label": "\u0432\u043f\u0435\u0440\u0451\u0434 / \u043d\u0430\u0437\u0430\u0434",
+     "label": "\u0441\u043c\u043e\u0442\u0440\u0435\u0442\u044c \u0438 \u043f\u043e\u0432\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0442\u044c\u0441\u044f (\u0432\u0432\u0435\u0440\u0445 \u0438 \u0432\u043d\u0438\u0437 \u043d\u0430\u043a\u043b\u043e\u043d\u044f\u0435\u0442 \u043a\u0430\u043c\u0435\u0440\u0443)",
+     "keys": [
+      "\u041c\u044b\u0448\u044c"
+     ]
+    },
+    {
+     "label": "\u0432\u043f\u0435\u0440\u0451\u0434 / \u043d\u0430\u0437\u0430\u0434 (\u0441\u0442\u0440\u0435\u043b\u043a\u0438 \u0432\u0432\u0435\u0440\u0445 \u0438 \u0432\u043d\u0438\u0437 \u0442\u043e\u0436\u0435)",
      "keys": [
       "W",
       "S"
@@ -7443,7 +7694,7 @@
      ]
     },
     {
-     "label": "\u043f\u043e\u0432\u043e\u0440\u043e\u0442 \u0432\u043b\u0435\u0432\u043e / \u0432\u043f\u0440\u0430\u0432\u043e",
+     "label": "\u043f\u043e\u0432\u043e\u0440\u043e\u0442 \u0431\u0435\u0437 \u043c\u044b\u0448\u0438",
      "keys": [
       "\u2190",
       "\u2192",
@@ -7452,22 +7703,15 @@
      ]
     },
     {
-     "label": "\u0432\u0432\u0435\u0440\u0445 / \u0432\u043d\u0438\u0437 (\u0441 \u043f\u043e\u043c\u043e\u0449\u044c\u044e \u043f\u043e \u0432\u044b\u0441\u043e\u0442\u0435; \u0431\u0435\u0437 \u043d\u0435\u0451 \u2014 \u0433\u0430\u0437, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u043e\u0441\u0442\u0430\u0451\u0442\u0441\u044f \u0442\u0430\u043c, \u0433\u0434\u0435 \u0435\u0433\u043e \u043e\u0441\u0442\u0430\u0432\u0438\u043b\u0438)",
-     "keys": [
-      "\u2191",
-      "\u2193"
-     ]
-    },
-    {
-     "label": "\u0443\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0442\u044c: \u0431\u044b\u0441\u0442\u0440\u0435\u0435",
-     "keys": [
-      "Shift"
-     ]
-    },
-    {
-     "label": "\u043d\u0430\u0436\u0430\u0442\u044c: \u043c\u043e\u0442\u043e\u0440\u044b \u0432\u043a\u043b; \u0443\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0442\u044c \u043f\u043e\u043b\u0441\u0435\u043a\u0443\u043d\u0434\u044b: \u0432\u044b\u043a\u043b (\u043b\u0451\u0433\u043a\u0430\u044f \u0438\u0433\u0440\u0430; \u043a\u043b\u0430\u0432\u0438\u0448\u0438 \u043f\u0438\u043b\u043e\u0442\u0430: \u0430\u0440\u043c / \u0434\u0438\u0437\u0430\u0440\u043c)",
+     "label": "\u0432\u0432\u0435\u0440\u0445",
      "keys": [
       "\u041f\u0440\u043e\u0431\u0435\u043b"
+     ]
+    },
+    {
+     "label": "\u0432\u043d\u0438\u0437 (\u0443\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0439\u0442\u0435, \u0447\u0442\u043e\u0431\u044b \u0441\u0435\u0441\u0442\u044c)",
+     "keys": [
+      "Shift"
      ]
     },
     {
