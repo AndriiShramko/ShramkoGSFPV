@@ -143,8 +143,10 @@ describe('the sender: what differs from the scene\'s defaults', () => {
         const at = { origin: 'https://gsfpv.flyreelstudio.eu', locale: 'en' };
         expect(L.shareLink({ entry: 'picker', sceneId: A, inCatalogue: true, at, pictureUrl: null, drawing: L.cardDrawing({}), shared: sharedOf(prefs, A) })).toBe(`${at.origin}/en/scenes/${A}/`);
         const scene = { render: { budgetM: 8 }, meta: { render: { stochastic: true } } };
-        expect(L.flightDrawing(scene).render).toEqual({ budgetM: 8, stochastic: true }); // the link's / the owner's drawing, nothing of the pilot's
-        expect(L.cardDrawing({ render: { stochastic: true } }).render).toEqual({ stochastic: true });
+        // lane R's contract (D50, D52): `render` is what the scene's own LINK asked for, the owner's entry is kept apart in
+        // `catalogue` and never written into a link; nothing of the pilot's own drawing choice either way
+        expect(L.flightDrawing(scene)).toEqual({ render: { budgetM: 8 }, catalogue: { stochastic: true } });
+        expect(L.cardDrawing({ render: { stochastic: true } })).toEqual({ render: undefined, catalogue: { stochastic: true } });
     });
 });
 
