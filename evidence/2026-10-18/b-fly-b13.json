@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-18T01:18:30.299Z",
-    "gitHead": "1104899",
+    "date": "2026-10-18T02:02:32.951Z",
+    "gitHead": "97ff30e",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5531",
+  "site": "http://localhost:5561",
   "render": "on",
   "pass": true,
   "oracle": "every tick: each body sphere resampled every voxel/4 with the upstream querySphere",

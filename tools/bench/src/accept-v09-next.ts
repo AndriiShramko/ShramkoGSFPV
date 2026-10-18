@@ -7,9 +7,15 @@
 //   N1  N from the first scene visits all 12 in the owner's order, then SuperSplat's first openable scene,
 //       then the next; SuperSplat is not asked for before the 12th press; no scene twice; our own scene and the
 //       legacy one in SuperSplat's list are passed over; the request is the SuperSplat tab's defaults.
-//   N2  a returning visitor continues: after four N presses, a new page load of the first scene and N goes to
-//       the fifth-after, not the second. Control: the stored position removed, N goes to the second.
+//   N2  a new visit walks the list again (D45: nothing is remembered between visits): after four N presses nothing is
+//       stored, and a new page load of the first scene followed by N goes to the second, not to the sixth. Control:
+//       the run before the review (evidence/2026-10-18/v09-next-before-review.json) had the position remembered
+//       (stored record, N went to the sixth scene) and is this check's opposite.
 //   N3  Shift+N (random) reaches every one of the 12 scenes, the wall-less ones included.
+//   N4  the 12th press with SuperSplat not answering (the request stays open): the page says "Looking for the next
+//       scene" while it waits, a second N during the wait is ignored, the wait ends at the tour's budget (4 s) with
+//       the catalogue starting again, and N works at once afterwards. Control: the tour's unit tests (the bound removed
+//       leaves the step waiting for ever, packages/scenes/test/tour.test.ts).
 //   H1  the crash hint: none after the 1st and 2nd crash, there after the 3rd ("Press N for the next scene"),
 //       taken away by its close button, none after the 4th and 5th, there again after the 6th; it is a status
 //       line that takes no click and overlaps no other button, the crash toast or the crash panel; an N
@@ -24,6 +30,9 @@
 //   SITE=http://localhost:5517 npx tsx src/accept-v09-next.ts [N1 N2 ...]
 // Evidence: evidence/<date>/v09-next.json (+ v09-next/*.png). The same run against the base build (631fd5f) is the
 // negative control: N1 stops at the 4 scenes with walls, N2 and every H check fail (EVIDENCE_SUFFIX=-base).
+// Placement controls: H4 before its CSS fix is in evidence/2026-10-17/v09-next.json (the hint over REC, Auto, the walls
+// buttons); H5 on a copy of the dist without the max-height rule of next-hint.css (EVIDENCE_SUFFIX=-no-h5-css) puts the
+// hint 3 px above the top of the screen. A check also fails on any page error but the one KNOWN baseline error.
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Browser, BrowserContext, Page } from 'playwright';
@@ -60,9 +69,10 @@ const SS_LIST: { id: string; format: string }[] = [
 ];
 const SS_EXPECT = ['58a989fb', '3d37bda9', '2f359069'];
 
-interface Rec { explore: string[]; catalogue: number }
+/** `stall`: the SuperSplat proxy takes the request and never answers (set it when the page should be waiting for it) */
+interface Rec { explore: string[]; catalogue: number; stall: boolean }
 async function mocks(ctx: BrowserContext): Promise<Rec> {
-    const rec: Rec = { explore: [], catalogue: 0 };
+    const rec: Rec = { explore: [], catalogue: 0, stall: false };
     await ctx.route(/\/api\/catalog(\?|$)/, (r) => {
         rec.catalogue++;
         const scenes = ORDER.map(([id, collision]) => ({ id, title: `Mock scene ${id}`, author: 'Andrii Shramko', license: 'CC BY 4.0', kind: 'other', collision, walls: 'on' }));
@@ -71,6 +81,7 @@ async function mocks(ctx: BrowserContext): Promise<Rec> {
     await ctx.route(/\/api\/superspl\/explore/, (r) => {
         const u = new URL(r.request().url());
         rec.explore.push(u.search);
+        if (rec.stall) return; // neither fulfilled nor continued: the request stays open until the context closes
         const skip = Number(u.searchParams.get('skip') ?? 0);
         const limit = Number(u.searchParams.get('limit') ?? 24);
         const items = SS_LIST.slice(skip, skip + limit).map((x) => ({ id: x.id, version: 1, title: `SuperSplat ${x.id}`, author: 'someone', license: 'by', downloadable: true, likes: 5, views: 50, sizeBytes: 1000000, thumbs: {}, createdAt: '2026-10-01T00:00:00Z', description: '', format: x.format }));
@@ -92,7 +103,16 @@ async function context(browser: Browser, o: { phone?: boolean; landscape?: boole
     page.on('pageerror', (e) => log.push(`pageerror: ${e.message}`.slice(0, 300)));
     return { ctx, page, log, rec };
 }
-const errors = (log: string[]) => log.filter((l) => l.startsWith('pageerror'));
+/**
+ * The page errors of a run. KNOWN is the one error the base build (631fd5f) throws too, on every touch frame of an in-page
+ * scene switch when the page flies with ?input=touch (easy play asks the flight model of a session that has none yet:
+ * EasyPilot.send, "reading 'armed'"; the lanes A and R carry a one-line guard for it, v0.9 lane N does not touch play/).
+ * N1-N3 use ?input=touch on a desktop, so they see it (600 to 1,400 times). Every check demands that nothing ELSE was
+ * thrown; the evidence keeps the count of the known one, so its disappearance after the merge shows too.
+ */
+const KNOWN_ERROR = /^pageerror: Cannot read properties of undefined \(reading 'armed'\)$/;
+const errors = (log: string[]) => log.filter((l) => l.startsWith('pageerror') && !KNOWN_ERROR.test(l));
+const knownErrors = (log: string[]) => log.filter((l) => KNOWN_ERROR.test(l)).length;
 
 /** Wait for the scene switch under way to end; its record. */
 async function switched(p: Page, timeoutMs = 120000): Promise<Any> {
@@ -218,7 +238,7 @@ try {
         const defaults = request.includes('sort=trending') && request.includes('order=-1') && request.includes('time=all') && request.includes('features=walkable') && request.includes('skip=0') && request.includes('limit=24');
         const pass = JSON.stringify(ids) === JSON.stringify(expected) && visited.every((v) => v.state === 'done' && v.reason === 'next') && askedBefore12 === 0 && defaults && noRepeat;
         await c.page.screenshot({ path: join(SHOTS, 'n1-after-13-presses.png') });
-        out.N1 = { pass, what: 'N from the first of 12 mocked scenes (8 without walls) visits all 12 in the owner\'s order, then the first two openable SuperSplat scenes; SuperSplat is asked only for the 12th press, with the tab\'s defaults', startScene, visited, expected, askedBeforeThe12th: askedBefore12, superSplatRequests: c.rec.explore, defaults, noRepeat, errors: errors(c.log) };
+        out.N1 = { pass, what: 'N from the first of 12 mocked scenes (8 without walls) visits all 12 in the owner\'s order, then the first two openable SuperSplat scenes; SuperSplat is asked only for the 12th press, with the tab\'s defaults', startScene, visited, expected, askedBeforeThe12th: askedBefore12, superSplatRequests: c.rec.explore, defaults, noRepeat, knownBaselineErrors: knownErrors(c.log), errors: errors(c.log) };
         console.log('N1', pass ? 'PASS' : 'FAIL', JSON.stringify({ ids, expected, askedBefore12, request }));
         await c.ctx.close();
     }
@@ -233,14 +253,10 @@ try {
         // a new visit: the page opened on the first scene again
         await open(c.page, FIRST);
         const second = await press(c.page, 'KeyN');
-        // control: the same visit with the remembered position removed
-        await c.page.evaluate("localStorage.removeItem('gsfpv.tour.v1')");
-        await open(c.page, FIRST);
-        const fresh = await press(c.page, 'KeyN');
-        const pass = reached === IDS[4] && second.scene === IDS[5] && second.sw.state === 'done' && stored !== null;
-        const control = { scene: fresh.scene, fired: fresh.scene === IDS[1] };
-        out.N2 = { pass: pass && control.fired, what: 'after four N presses a new page load of the first scene and N goes on to the sixth scene (the position is remembered); with the stored position removed it goes to the second', reached, nextVisit: second.scene, stored: stored ? JSON.parse(stored as string) : null, control, errors: errors(c.log) };
-        console.log('N2', out.N2.pass ? 'PASS' : 'FAIL', JSON.stringify({ reached, second: second.scene, control }));
+        const storedAfter = await c.page.evaluate("localStorage.getItem('gsfpv.tour.v1')");
+        const pass = reached === IDS[4] && stored === null && storedAfter === null && second.scene === IDS[1] && second.sw.state === 'done';
+        out.N2 = { pass, what: 'after four N presses nothing is stored; a new page load of the first scene and N goes to the second scene, not to the sixth where the last visit stopped (nothing is remembered between visits, D45)', reached, stored, nextVisit: second.scene, storedAfterTheSecondVisit: storedAfter, knownBaselineErrors: knownErrors(c.log), errors: errors(c.log) };
+        console.log('N2', pass ? 'PASS' : 'FAIL', JSON.stringify({ reached, stored, second: second.scene }));
         await c.ctx.close();
     }
 
@@ -258,8 +274,44 @@ try {
         const walls = new Map(ORDER);
         const withoutWalls = [...seen].filter((id) => walls.get(id) === false).length;
         const pass = seen.size === 12 && withoutWalls === 8;
-        out.N3 = { pass, what: 'eleven Shift+N from a 12-scene catalogue reach all 12 scenes, the 8 without walls included (v0.8 drew from the 4 with walls)', draws, distinct: seen.size, withoutWalls, errors: errors(c.log) };
+        out.N3 = { pass, what: 'eleven Shift+N from a 12-scene catalogue reach all 12 scenes, the 8 without walls included (v0.8 drew from the 4 with walls)', draws, distinct: seen.size, withoutWalls, knownBaselineErrors: knownErrors(c.log), errors: errors(c.log) };
         console.log('N3', pass ? 'PASS' : 'FAIL', JSON.stringify({ distinct: seen.size, withoutWalls }));
+        await c.ctx.close();
+    }
+
+    // ------------------------------------------------------------------ N4 the 12th press when SuperSplat does not answer
+    if (want('N4')) {
+        const c = await context(browser);
+        await open(c.page, FIRST);
+        for (let i = 0; i < 11; i++) await press(c.page, 'KeyN');
+        const last = await hook<string>(c.page, 'return s.scene.id;');
+        const note = () => c.page.evaluate("(() => { const e = document.querySelector('.hud-note'); return e && !e.hidden ? e.textContent : null; })()") as Promise<string | null>;
+        c.rec.stall = true;
+        await hook(c.page, 'h.sceneSwitch = null; return 0;');
+        const t0 = Date.now();
+        await c.page.keyboard.press('KeyN');
+        // the search says so once the answer is slow (after 0.6 s), and a second N while it waits is ignored
+        await wait(c.page, 1500);
+        const looking = await note();
+        await c.page.keyboard.press('KeyN');
+        await wait(c.page, 200);
+        const requestsDuringWait = c.rec.explore.length;
+        // the wait ends at the budget: the author's list starts again (the note says so), then the scene loads
+        let again: string | null = null;
+        let againAt = -1;
+        while (Date.now() - t0 < 20000) {
+            const n = await note();
+            if (n && /starts again/.test(n)) { again = n; againAt = Date.now() - t0; break; }
+            await wait(c.page, 100);
+        }
+        const sw = await switched(c.page);
+        const scene = await hook<string>(c.page, 'return s.scene.id;');
+        // N is alive after the timeout: the next press goes on in the author's list (SuperSplat still not answering)
+        const next = await press(c.page, 'KeyN');
+        const pass = last === IDS[11] && looking === 'Looking for the next scene…' && requestsDuringWait === 1 && again !== null && againAt >= 3500 && againAt <= 6500
+            && sw.state === 'done' && scene === IDS[0] && next.sw.state === 'done' && next.scene === IDS[1];
+        out.N4 = { pass, what: 'the 12th press with SuperSplat holding the request open: "Looking for the next scene…" shows while it waits, a second N is ignored (one request), the wait ends 4 s after it began with "the author\'s list starts again" and the first scene loads, and the next N goes to the second scene', last, looking, requestsDuringWait, againNote: again, againAfterMs: againAt, switchedTo: { sw, scene }, nextAfterTimeout: { scene: next.scene, state: next.sw.state }, superSplatRequests: c.rec.explore, knownBaselineErrors: knownErrors(c.log), errors: errors(c.log) };
+        console.log('N4', pass ? 'PASS' : 'FAIL', JSON.stringify({ last, looking, requestsDuringWait, againAt, scene, next: next.scene }));
         await c.ctx.close();
     }
 
@@ -426,6 +478,8 @@ try {
     }
 } finally {
     await browser.close();
+    // no check passes with a page error in it, other than the one KNOWN baseline error (errors() above)
+    for (const [k, v] of Object.entries(out)) if (/^[NH]\d$/.test(k) && Array.isArray((v as Any).errors) && (v as Any).errors.length > 0) (v as Any).pass = false;
     out.summary = Object.fromEntries(Object.entries(out).filter(([k]) => /^[NH]\d$/.test(k)).map(([k, v]) => [k, (v as Any).pass]));
     const file = writeEvidence('v09-next', out);
     console.log('evidence', file, JSON.stringify(out.summary));
