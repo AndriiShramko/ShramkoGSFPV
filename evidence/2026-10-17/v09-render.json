@@ -7,15 +7,15 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-17T22:49:21.794Z",
-    "gitHead": "4865a58",
+    "date": "2026-10-17T23:59:37.906Z",
+    "gitHead": "8ce93a7",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://127.0.0.1:5391",
-  "baseSite": "http://127.0.0.1:5392",
+  "site": "http://127.0.0.1:5441",
+  "baseSite": "http://127.0.0.1:5442",
   "browser": {
     "kind": "system-chrome",
     "version": "155.0.8059.40",
@@ -27,10 +27,16 @@
     "D2": true,
     "D3": true,
     "D4": true,
-    "D5": true
+    "D5": true,
+    "D6": true
   },
   "runs": {
-    "D4": "2026-10-17T22:49:21.793Z"
+    "D4": "2026-10-17T23:59:37.906Z",
+    "D1": "2026-10-17T23:59:37.905Z",
+    "D2": "2026-10-17T23:59:37.906Z",
+    "D3": "2026-10-17T23:59:37.906Z",
+    "D5": "2026-10-17T23:59:37.906Z",
+    "D6": "2026-10-17T23:59:37.906Z"
   },
   "checks": [
     {
@@ -39,7 +45,7 @@
       "control": false
     },
     {
-      "name": "D1 at the measured default budget (8 M), decided by the device",
+      "name": "D1 at the measured default budget (4 M), decided by the device",
       "ok": true,
       "control": false
     },
@@ -75,16 +81,6 @@
     },
     {
       "name": "D3 a phone given the owner's link: still sorted at 2 M, and the HUD says who asked (the scene)",
-      "ok": true,
-      "control": false
-    },
-    {
-      "name": "D5 control: the base build answers the literal \"...?scene=2f1ddf5f?budget=8&stochastic\" with the picker (\"not a SuperSplat link\")",
-      "ok": true,
-      "control": true
-    },
-    {
-      "name": "D5 the owner's link draws stochastic at 8 M by every way it is pasted (deep link encoded and raw, deep link, the literal second \"?\", the picker's field, the picker over a flight, wrapped in <> and a full stop)",
       "ok": true,
       "control": false
     },
@@ -132,6 +128,36 @@
       "name": "D4e a stochastic link beats the owner's sorted entry",
       "ok": true,
       "control": false
+    },
+    {
+      "name": "D5 control: the base build answers the literal \"...?scene=2f1ddf5f?budget=8&stochastic\" with the picker (\"not a SuperSplat link\")",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "D5 the owner's link draws stochastic at 8 M by every way it is pasted (deep link encoded and raw, deep link, the literal second \"?\", the picker's field, the picker over a flight, wrapped in <> and a full stop)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "D5 a link pasted over a flight beats a stored Render = Sorted for the scene it opens (stochastic at 8 M, \"from the link\")",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "D6 control: the grab of the same view is rougher stochastic than sorted (the stochastic grab weighs 1.25x or more of the sorted one)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "D6 the share picture of a stochastic desktop is made from the sorted frame: at most 0.8 of the stochastic grab's bytes, and well under the API's 400 KB",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "D6 the pilot's drawing is back right after (stochastic in the engine and the shader, the same budget)",
+      "ok": true,
+      "control": false
     }
   ],
   "items": {
@@ -145,14 +171,14 @@
           "request": null,
           "catalogue": null,
           "stochastic": true,
-          "budgetM": 8,
+          "budgetM": 4,
           "from": {
             "stochastic": "device",
             "budget": "device"
           },
           "note": null,
           "engineStochastic": true,
-          "engineBudgetM": 8,
+          "engineBudgetM": 4,
           "handheld": false,
           "mobile": false,
           "webgpu": true
@@ -163,15 +189,15 @@
           "stochastic": true,
           "define": true
         },
-        "top": 8,
-        "budgetM": 8,
+        "top": 4,
+        "budgetM": 4,
         "renderer": 2,
         "levels": 4,
         "search": "?scene=39e63ce9&nowarn=1&input=touch",
         "note": "",
         "f3": ""
       },
-      "line": "Render: stochastic (this device) \u00b7 budget 8 M splats (this device)",
+      "line": "Render: stochastic (this device) \u00b7 budget 4 M splats (this device)",
       "base": {
         "status": "ready",
         "drawing": {
@@ -213,14 +239,14 @@
           "request": null,
           "catalogue": null,
           "stochastic": true,
-          "budgetM": 8,
+          "budgetM": 4,
           "from": {
             "stochastic": "device",
             "budget": "device"
           },
           "note": null,
           "engineStochastic": true,
-          "engineBudgetM": 8,
+          "engineBudgetM": 4,
           "handheld": false,
           "mobile": false,
           "webgpu": true
@@ -231,8 +257,8 @@
           "stochastic": true,
           "define": true
         },
-        "top": 8,
-        "budgetM": 8,
+        "top": 4,
+        "budgetM": 4,
         "renderer": 2,
         "levels": 10,
         "search": "?scene=ba7aa29d&nowarn=1&input=touch",
@@ -392,14 +418,14 @@
             "request": null,
             "catalogue": null,
             "stochastic": true,
-            "budgetM": 8,
+            "budgetM": 4,
             "from": {
               "stochastic": "setting",
               "budget": "device"
             },
             "note": null,
             "engineStochastic": true,
-            "engineBudgetM": 8,
+            "engineBudgetM": 4,
             "handheld": false,
             "mobile": false,
             "webgpu": true
@@ -410,8 +436,8 @@
             "stochastic": true,
             "define": true
           },
-          "top": 8,
-          "budgetM": 8,
+          "top": 4,
+          "budgetM": 4,
           "renderer": 2,
           "levels": 4,
           "search": "?scene=39e63ce9&drawing=stochastic&nowarn=1&input=touch",
@@ -610,14 +636,14 @@
             "request": null,
             "catalogue": null,
             "stochastic": true,
-            "budgetM": 8,
+            "budgetM": 4,
             "from": {
               "stochastic": "device",
               "budget": "device"
             },
             "note": null,
             "engineStochastic": true,
-            "engineBudgetM": 8,
+            "engineBudgetM": 4,
             "handheld": false,
             "mobile": false,
             "webgpu": true
@@ -628,8 +654,8 @@
             "stochastic": true,
             "define": true
           },
-          "top": 8,
-          "budgetM": 8,
+          "top": 4,
+          "budgetM": 4,
           "renderer": 2,
           "levels": 4,
           "search": "?scene=39e63ce9&nowarn=1&input=touch",
@@ -680,14 +706,14 @@
             "request": null,
             "catalogue": null,
             "stochastic": true,
-            "budgetM": 8,
+            "budgetM": 4,
             "from": {
               "stochastic": "device",
               "budget": "device"
             },
             "note": null,
             "engineStochastic": true,
-            "engineBudgetM": 8,
+            "engineBudgetM": 4,
             "handheld": false,
             "mobile": false,
             "webgpu": true
@@ -698,8 +724,8 @@
             "stochastic": true,
             "define": true
           },
-          "top": 8,
-          "budgetM": 8,
+          "top": 4,
+          "budgetM": 4,
           "renderer": 2,
           "levels": 4,
           "search": "?scene=39e63ce9&nowarn=1&input=touch",
@@ -1054,7 +1080,65 @@
           "search": "?nowarn=1&input=touch&scene=2f1ddf5f&budget=8&stochastic",
           "note": "Stochastic drawing (SuperSplat), 8 M splats \u00b7 Settings \u2192 Display",
           "f3": ""
+        },
+        "inFlightOverSorted": {
+          "status": "ready",
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "sorted",
+            "budgetSetting": null,
+            "request": {
+              "budgetM": 8,
+              "stochastic": true
+            },
+            "catalogue": null,
+            "stochastic": true,
+            "budgetM": 8,
+            "from": {
+              "stochastic": "link",
+              "budget": "link"
+            },
+            "note": null,
+            "engineStochastic": true,
+            "engineBudgetM": 6,
+            "handheld": false,
+            "mobile": false,
+            "webgpu": true
+          },
+          "engine": true,
+          "hybrid": {
+            "gpuSort": true,
+            "stochastic": true,
+            "define": true
+          },
+          "top": 8,
+          "budgetM": 6,
+          "renderer": 2,
+          "levels": 4,
+          "search": "?nowarn=1&input=touch&scene=39e63ce9&budget=8&stochastic",
+          "note": "Stochastic drawing (SuperSplat), 8 M splats \u00b7 Settings \u2192 Display",
+          "f3": ""
         }
+      },
+      "pageerrors": []
+    },
+    "D6": {
+      "before": {
+        "engine": true,
+        "top": 4
+      },
+      "stochasticGrabBytes": 205191,
+      "sortedGrabBytes": 108300,
+      "appPictureBytes": 100539,
+      "appPictureMs": 159,
+      "after": {
+        "engine": true,
+        "hybrid": {
+          "gpuSort": true,
+          "stochastic": true,
+          "define": true
+        },
+        "top": 4
       },
       "pageerrors": []
     }
