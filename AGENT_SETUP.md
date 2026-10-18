@@ -27,7 +27,7 @@ All tests must pass. If `pnpm install` stops at "Ignored build scripts", the rep
 pnpm --filter @gsfpv/fly dev
 ```
 
-Open `http://localhost:5190/fly/?scene=39e63ce9` in Chrome. Keyboard: `Space` arm, `W`/`S` throttle, arrows roll/pitch, `A`/`D` yaw, `M` angle mode. Any SuperSplat scene works as `?scene=<id or link>`. A radio (EdgeTX in USB joystick mode), a gamepad or touch sticks are set up in the in-app wizard.
+Open `http://localhost:5190/fly/?scene=39e63ce9` in Chrome. Keyboard (flies like a game): click the view to capture the mouse, the mouse looks and turns, `W` `A` `S` `D` move, `Space` up, `Shift` down, `F` full screen, `Esc` pause. The pilot keys (`Space` arm, `W`/`S` throttle, arrows roll/pitch, `A`/`D` yaw) are in Settings. Any SuperSplat scene works as `?scene=<id or link>`. A radio (EdgeTX in USB joystick mode), a gamepad or touch sticks are set up in the in-app wizard.
 
 The landing page: `pnpm --filter @gsfpv/site dev` (port 3000).
 

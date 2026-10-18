@@ -182,20 +182,24 @@ describe('screens with keys of their own, and the listener', () => {
     });
 });
 
-describe('Shift held as easy play\'s boost (v0.8; the review of 2026-10-16)', () => {
-    it('with the boost held every shortcut is the one of its key alone; control: Shift as a modifier drops pause, respawn, M, K, H, C and turns N into a random scene', () => {
-        const boosting = { on: true };
-        const { r, runs } = counting(KEYMAP, { shiftIsBoost: () => boosting.on });
-        const plain = chords(KEYMAP, 'flight').filter((c) => !c.shiftKey);
-        for (const c of plain) {
+describe('Shift held as the game scheme\'s descent (v0.9; the review of 2026-10-16 for v0.8\'s boost)', () => {
+    it('a pilot holding Shift to land still pauses, respawns and so on: the real chord first, then the key alone; control: without the rule Shift drops them', () => {
+        const flying = { on: true };
+        const { r, runs } = counting(KEYMAP, { shiftIsFlying: () => flying.on });
+        const all = chords(KEYMAP, 'flight');
+        const shifted = new Set(all.filter((c) => c.shiftKey).map((c) => c.code));
+        // a chord that names Shift (Shift+N, Shift+F, Shift+[ and Shift+]) is that chord; every other key is the key alone
+        for (const c of all.filter((x) => !x.shiftKey && !shifted.has(x.code))) {
             runs.clear();
-            expect(r.route(key({ code: c.code, shiftKey: true })), `${c.code} with the boost held`).toBe(c.action);
+            expect(r.route(key({ code: c.code, shiftKey: true })), `${c.code} with Shift held to descend`).toBe(c.action);
         }
-        expect(r.route(key({ code: 'KeyN', shiftKey: true }))).toBe('scene.next');
-        // Shift without a flying key is the modifier again: Shift+N is the random scene
-        boosting.on = false;
         expect(r.route(key({ code: 'KeyN', shiftKey: true }))).toBe('scene.random');
-        // control: the router without the boost rule, Shift held
+        expect(r.route(key({ code: 'KeyF', shiftKey: true }))).toBe('scene.favourite');
+        expect(r.route(key({ code: 'KeyF' }))).toBe('fullscreen.toggle');
+        // Shift is not held as a flying key: Shift+Esc is nothing, as before
+        flying.on = false;
+        expect(r.route(key({ code: 'Escape', shiftKey: true }))).toBeNull();
+        // control: the router without the rule, Shift held
         const C = counting(KEYMAP);
         const lost = ['Escape', 'KeyP', 'KeyR', 'KeyM', 'KeyK', 'KeyH', 'KeyC'].filter((code) => C.r.route(key({ code, shiftKey: true })) === null);
         expect(lost).toEqual(['Escape', 'KeyP', 'KeyR', 'KeyM', 'KeyK', 'KeyH', 'KeyC']);

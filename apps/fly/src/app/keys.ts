@@ -40,11 +40,12 @@ export interface KeyRouterOptions {
     /** the page's state for the bindings' `when` */
     state?: () => KeyState;
     /**
-     * Shift is held as easy play's boost now (devices/keyboard.ts boosting(): Shift with a flying key).
-     * A shortcut is then chosen as if Shift were up, so pause, respawn and the rest work while boosting
-     * and N stays "next scene"; the handler still gets the real event.
+     * Shift is a flying key now (the game scheme's "down", devices/keyboard.ts shiftFlies()). A pilot
+     * descends with Shift held and presses P, R or Esc meanwhile, so a press with Shift is read as the
+     * chord it is first (Shift+N, Shift+F, Shift+[ are bindings), and when no binding has that chord,
+     * as the key alone (Shift+Esc pauses, Shift+R respawns). The handler still gets the real event.
      */
-    shiftIsBoost?: () => boolean;
+    shiftIsFlying?: () => boolean;
 }
 
 export class KeyRouter {
@@ -53,13 +54,13 @@ export class KeyRouter {
     private readonly map: readonly KeyBinding[];
     private readonly isText: (target: EventTarget | null) => boolean;
     private readonly state: () => KeyState;
-    private readonly shiftIsBoost: () => boolean;
+    private readonly shiftIsFlying: () => boolean;
 
     constructor(o: KeyRouterOptions = {}) {
         this.map = o.map ?? KEYMAP;
         this.isText = o.isText ?? typing;
         this.state = o.state ?? (() => 'flight');
-        this.shiftIsBoost = o.shiftIsBoost ?? (() => false);
+        this.shiftIsFlying = o.shiftIsFlying ?? (() => false);
     }
 
     /**
@@ -109,9 +110,12 @@ export class KeyRouter {
         for (const b of this.blocks) if (b()) return null;
         // a text field takes R and P as letters; Esc is never text, so it still closes the panel around it
         if (this.isText(e.target) && !THROUGH_TEXT.has(e.code)) return null;
-        // Shift held as the boost is not a modifier: the shortcut is the one of the key alone
-        const press = e.shiftKey && this.shiftIsBoost() ? { code: e.code, shiftKey: false, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey } : e;
-        const action = actionFor(press, this.state(), { map: this.map });
+        // Shift held as a flying key (the descent) is a modifier only where a binding says so: the real chord
+        // first, then the key alone
+        let action = actionFor(e, this.state(), { map: this.map });
+        if (action === null && e.shiftKey && this.shiftIsFlying()) {
+            action = actionFor({ code: e.code, shiftKey: false, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey }, this.state(), { map: this.map });
+        }
         if (action === null) return null;
         const list = this.handlers.get(action);
         const run = list?.[list.length - 1];

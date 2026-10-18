@@ -169,7 +169,7 @@ export function keysFor(action: ActionId): KeyHint[];
 | Back to start (respawn at the spawn, on the platform) | R (v0.2) | summary, crash toast/panel |
 | Rewind 5 s now | Y (Liftoff's rewind key, research-a (c) [L10]) | summary, crash panel |
 | Keep the wreck (open the crash panel instead of auto-respawn) | Enter | crash toast |
-| Next scene / random scene / next favourite | N / Shift+N / F | summary, crash |
+| Next scene / random scene / next favourite | N / Shift+N / Shift+F (F was the favourite until v0.9; it is full screen now) | summary, crash |
 | Flight mode cycle | M (keyboard flying already uses M) | HUD mode chip |
 | Voxel overlay cycle (off, overlay, voxels only) | V | summary, voxel legend |
 | HUD on/off | H | summary |

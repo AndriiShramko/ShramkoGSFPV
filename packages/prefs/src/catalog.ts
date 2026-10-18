@@ -57,7 +57,7 @@ export interface CatalogueOptions {
  * too, in the shortcut list and in every row (review C14). Letters, symbols, F-keys, Esc, Enter and
  * Shift are printed on the keys themselves and stay as they are.
  */
-export const CAP_WORDS: Readonly<Record<string, string>> = { Space: 'arm.keys.space' };
+export const CAP_WORDS: Readonly<Record<string, string>> = { Space: 'arm.keys.space', Mouse: 'play.game.mouseKey' };
 
 /** A key-cap as a language writes it; the cap itself when the dictionary has no word for it. */
 export function capText(cap: string, dict: Dict): string {

@@ -1,5 +1,6 @@
 /* Easy play (v0.8 lane A, app/builtin/play.ts): the pilot school's chip under the mode chip, its list
-   of steps, the next-step offer, and the key card's foot line. Colours reuse fly.css. */
+   of steps, the next-step offer, and the key card's foot line; v0.9: the game scheme's "Click to fly" hint.
+   Colours reuse fly.css. */
 .school-chip { position: absolute; left: 44px; top: 64px; min-height: 28px; padding: 2px 10px; border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, .28); background: rgba(12, 14, 18, .62); color: #e5e7eb; cursor: pointer;
     font: 600 13px/1.2 ui-monospace, "Cascadia Mono", Consolas, monospace; text-shadow: 0 1px 2px #000; white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -28,3 +29,8 @@
 /* easy play's touch sticks have no ARM button: the bottom centre stays free */
 .touch-root.easy .touch-arm { display: none; }
 @media (prefers-reduced-motion: reduce) { .school-offer { transition: none; } }
+/* the game scheme, mouse not captured yet (or let go): a pill at the bottom centre, clear of the corner lines and the cards */
+.game-hint { position: absolute; left: 50%; bottom: 76px; transform: translateX(-50%); z-index: 2; padding: 8px 16px; border-radius: 999px;
+    background: rgba(12, 14, 18, .72); border: 1px solid var(--accent); color: #f3f4f6; font: 600 15px/1.2 system-ui, sans-serif;
+    text-shadow: 0 1px 2px #000; pointer-events: none; white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis; }
+.game-hint[hidden] { display: none; }

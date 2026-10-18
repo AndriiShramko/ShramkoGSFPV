@@ -1,16 +1,16 @@
 // Keyboard input (flying without a radio, latency measurement). Two profiles (prefs input.play;
-// docs/wip/v08-a.md, the owner's message 21 item 1: "for gamers the keys are incomprehensible"):
-//  - easy (default): the game layout of play/keys.ts (W/S forward/back, A/D left/right, the side
-//    arrows or Q/E turn, the up/down arrows climb and sink, Shift faster, Space: a tap starts the
-//    motors, a 0.5 s hold stops them, so a tap in the air never drops the drone). A key
-//    ramps its stick toward a target in physical units (play/keys.ts keyTargets: 25 deg of tilt,
-//    110 deg/s of turn, the drone's own rates turned back into a stick); the motors start with the
-//    first flying key and the altitude help flies the throttle (play/easy.ts EasyPilot). Without the
-//    help (pilot school step 2 and on) the up/down arrows move a throttle that stays where it is left.
+// docs/wip/v09-b.md, the owner's message 22 item 1: "ordinary PC gamers still cannot fly a scene on the
+// keyboard; nothing like the way games control flying characters"):
+//  - easy (default): the game scheme. W/S (or Up/Down) forward and back, A/D left and right, relative to
+//    where the drone faces; the side arrows or Q/E turn for players without a mouse; Space up, Shift down;
+//    the mouse (pointer lock, play/mouse-look.ts) turns and tilts the camera gimbal. Let go of every key and
+//    the drone brakes and holds its place. The first flying key starts the motors (Shift alone does not).
+//    The keys are intents: play/game.ts turns them into sticks for the angle-mode physics, play/game-pilot.ts
+//    sends the frames. Ctrl is never read (Ctrl+W closes the tab).
 //  - pilot: the Mode 2 layout of v0.2-v0.7, unchanged: W/S throttle (stays where it is left; held W is
 //    0 -> 100 % in 0.5 s of real time), A/D yaw, arrows roll/pitch, every key bang-bang, Space arms.
 // The flight mode is not read here: M is the page's mode key for every input (keymap mode.cycle,
-// app/builtin/modes.ts) and Controls puts the pilot's mode on ch[5].
+// app/builtin/modes.ts) and Controls puts the pilot's mode on ch[5] (angle in the game scheme).
 // F13..F24 are reserved for the latency harness: each press is one numbered input event that
 // travels the normal path (queue -> physics tick -> marker in the next rendered frame).
 // Every frame goes through Controls and its arm gate, like the other sources. Only the chosen
@@ -19,17 +19,15 @@
 // override the radio (item 22).
 
 import type { Controls } from '../controls';
-import type { EasyPilot } from '../play/easy';
-import { BOOST_CODES, EASY_THR_DOWN_S, EASY_THR_UP_S, GAME_KEYS, MODE2_KEYS, MotorKey, axisDirs, keyTargets, mode2Sticks, slew } from '../play/keys';
-import type { KeyTargets, PlayProfile } from '../play/keys';
-import type { FlightMode, SimParams } from '@gsfpv/sim-core';
+import type { GamePilot } from '../play/game-pilot';
+import { mouseToAim } from '../play/game';
+import { GAME_KEYS, GAME_START_CODES, MODE2_KEYS, gameDirs, mode2Sticks } from '../play/keys';
+import type { PlayProfile } from '../play/keys';
 
 /** The pilot layout's keys (Mode 2): read by the pilot profile only. */
 const FLY_KEYS = MODE2_KEYS.map((k) => k.code);
-/** Every key the easy profile reads: the game layout and Shift. */
-const EASY_KEYS = [...GAME_KEYS.map((k) => k.code), ...BOOST_CODES];
-/** Keys that ask easy play to fly (Shift alone does not start the motors). */
-const EASY_FLYING = GAME_KEYS.map((k) => k.code);
+/** Every key the game scheme reads (Shift is the descent). */
+const GAME_CODES = GAME_KEYS.map((k) => k.code);
 
 /** Held W takes the throttle from 0 to 100 % in this long, by elapsed time (timers get clamped). */
 const THR_UP_MS = 500;
@@ -37,8 +35,8 @@ const THR_UP_MS = 500;
 const THR_DOWN_MS = 333;
 /** A longer gap between two updates is a stalled page, not key-held time the pilot meant. */
 const RAMP_MAX_STEP_MS = 200;
-/** Easy play sends a frame at least this often while the keyboard flies (the altitude help needs a steady stream). */
-const EASY_FRAME_MS = 10;
+/** The game scheme sends a frame at least this often while the keyboard flies (the loops need a steady stream). */
+const GAME_FRAME_MS = 10;
 
 /** Inputs that take no text: a focused slider or checkbox must not swallow R, P or Esc. */
 const NOT_TEXT = new Set(['range', 'checkbox', 'radio', 'button', 'submit', 'reset']);
@@ -59,11 +57,13 @@ export function dialogOpen(): boolean {
     return !!document.querySelector('.screen.radio, .panel, .screen.drones, .screen.scenes');
 }
 
-/** What easy play needs from the page besides the keys: the pilot, the model's numbers and the mode. */
-export interface KeyboardEasy {
-    pilot: EasyPilot;
-    params(): SimParams;
-    mode(): FlightMode;
+/** What the game scheme needs from the page besides the keys: the pilot and the mouse settings. */
+export interface KeyboardGame {
+    pilot: GamePilot;
+    /** prefs input.mouseSensitivity */
+    sensitivity(): number;
+    /** prefs input.mouseInvertY */
+    invertY(): boolean;
 }
 
 export class KeyboardSource {
@@ -77,19 +77,13 @@ export class KeyboardSource {
     onArm: (() => void) | null = null;
     /** prefs input.play; set by app/builtin/play.ts */
     profile: PlayProfile = 'pilot';
-    /** easy play's parts, given by the input host; without them the easy profile flies as pilot */
-    easy: KeyboardEasy | null = null;
+    /** the game scheme's parts, given by the input host; without them the easy profile flies as pilot */
+    game: KeyboardGame | null = null;
     private controls: Controls;
     private timer = 0;
     /** page time the throttle ramp has been integrated up to */
     private rampT = 0;
-    // easy play: the ramped sticks, the time they were moved to, the last frame sent
-    private sticks = { roll: 0, pitch: 0, yaw: 0 };
-    private sticksT = 0;
-    private lastEasyEmit = -1e9;
-    /** easy play's Space: a tap starts the motors, a hold stops them */
-    private readonly motorKey = new MotorKey();
-    private targets: { key: SimParams | null; mode: FlightMode | null; t: KeyTargets | null } = { key: null, mode: null, t: null };
+    private lastGameEmit = -1e9;
 
     constructor(controls: Controls) {
         this.controls = controls;
@@ -102,29 +96,25 @@ export class KeyboardSource {
         this.timer = window.setInterval(() => this.tick(performance.now()), 2);
     }
 
-    /** Easy play is what flies: the easy profile with its parts given. */
-    private get isEasy(): boolean {
-        return this.profile === 'easy' && this.easy !== null;
+    /** The game scheme is what flies: the easy profile with its parts given. */
+    private get isGame(): boolean {
+        return this.profile === 'easy' && this.game !== null;
     }
 
     /**
-     * Shift is held as easy play's boost: the keyboard flies easy play and Shift is down together
-     * with a flying key. Shift alone boosts nothing, so then it stays the shortcut modifier (Shift+N).
-     * The key router reads it to choose shortcuts as if Shift were up (app/keys.ts shiftIsBoost).
+     * Shift is held as the game scheme's descent. The key router reads it so that a shortcut pressed
+     * meanwhile is read as its chord first, else as the key alone (app/keys.ts shiftIsFlying): Esc
+     * pauses while a pilot holds Shift to land.
      */
-    boosting(): boolean {
-        if (this.passive || !this.isEasy) return false;
-        return BOOST_CODES.some((c) => this.down.has(c)) && EASY_FLYING.some((c) => this.down.has(c));
+    shiftFlies(): boolean {
+        return !this.passive && this.isGame && (this.down.has('ShiftLeft') || this.down.has('ShiftRight'));
     }
 
     /** Fly with the keyboard (true) or leave the sticks to another source (false). */
     setActive(on: boolean): void {
         this.passive = !on;
         this.down.clear();
-        this.motorKey.release();
         this.rampT = performance.now();
-        this.sticks = { roll: 0, pitch: 0, yaw: 0 };
-        this.sticksT = this.rampT;
         if (on) this.emit(performance.now()); // the HUD's arm hint needs one frame from the chosen source
     }
 
@@ -133,10 +123,16 @@ export class KeyboardSource {
         if (p === this.profile) return;
         this.profile = p;
         this.down.clear();
-        this.motorKey.release();
-        this.sticks = { roll: 0, pitch: 0, yaw: 0 };
         this.armed = false;
         if (!this.passive) this.emit(performance.now());
+    }
+
+    /** Mouse movement in pixels while the pointer is locked (play/mouse-look.ts): the aim turns, the camera gimbal tilts. */
+    mouse(dxPx: number, dyPx: number): void {
+        if (this.passive || !this.isGame) return;
+        const g = this.game!;
+        const a = mouseToAim(dxPx, dyPx, g.sensitivity(), g.invertY());
+        g.pilot.look(a.yaw, a.pitch);
     }
 
     private onDown = (e: KeyboardEvent): void => {
@@ -157,7 +153,7 @@ export class KeyboardSource {
             }
             return;
         }
-        if (this.isEasy) { this.onDownEasy(e); return; }
+        if (this.isGame) { this.onDownGame(e); return; }
         if (e.code === 'Space' && !e.repeat) {
             // the gate let go while no key was held (a respawn that wants a new flip, a refusal):
             // this press is "arm", so OFF goes out first and the gate sees the edge it waits for
@@ -173,30 +169,19 @@ export class KeyboardSource {
         }
     };
 
-    /** Easy play: Space starts the motors (a tap) or stops them (held, play/keys.ts MotorKey); a flying key starts them and moves its stick. */
-    private onDownEasy(e: KeyboardEvent): void {
-        const pilot = this.easy!.pilot;
-        if (e.code === 'Space') {
-            if (!e.repeat && this.motorKey.press(e.timeStamp, pilot.arm.want) === 'start') {
-                pilot.arm.request();
-                this.emitEasy(e.timeStamp);
-            }
-            e.preventDefault();
-            return;
-        }
-        if (!EASY_KEYS.includes(e.code)) return;
-        if (!this.down.has(e.code)) this.moveSticks(e.timeStamp); // the ramp starts at the press
+    /** Game scheme: a flying key is held until it goes up; the first one that is not Shift starts the motors. */
+    private onDownGame(e: KeyboardEvent): void {
+        if (!GAME_CODES.includes(e.code)) return;
         this.down.add(e.code);
-        if (EASY_FLYING.includes(e.code)) pilot.arm.request();
-        this.emitEasy(e.timeStamp);
-        e.preventDefault();
+        if (GAME_START_CODES.includes(e.code)) this.game!.pilot.arm.request();
+        this.emitGame(e.timeStamp);
+        // Shift has no default action of its own; Space and the arrows would scroll the page
+        if (!e.code.startsWith('Shift')) e.preventDefault();
     }
 
     private onUp = (e: KeyboardEvent): void => {
-        if (this.isEasy) {
-            if (e.code === 'Space') this.motorKey.release();
-            this.moveSticks(e.timeStamp);
-            if (this.down.delete(e.code) && !this.passive) this.emitEasy(e.timeStamp);
+        if (this.isGame) {
+            if (this.down.delete(e.code) && !this.passive) this.emitGame(e.timeStamp);
             return;
         }
         this.ramp(e.timeStamp); // the time since the last tick was held too
@@ -206,10 +191,8 @@ export class KeyboardSource {
     };
 
     private release = (): void => {
-        if (this.isEasy) this.moveSticks(performance.now());
-        else this.ramp(performance.now());
+        if (!this.isGame) this.ramp(performance.now());
         this.down.clear();
-        this.motorKey.release();
     };
 
     /** Move the throttle by the time W / S were held since the last call (not by timer ticks). */
@@ -223,10 +206,8 @@ export class KeyboardSource {
 
     private tick(t: number): void {
         if (this.passive) return;
-        if (this.isEasy) {
-            this.moveSticks(t);
-            if (this.motorKey.tick(t) === 'stop') { this.easy!.pilot.arm.stop(); this.emitEasy(t); }
-            if (t - this.lastEasyEmit >= EASY_FRAME_MS) this.emitEasy(t);
+        if (this.isGame) {
+            if (t - this.lastGameEmit >= GAME_FRAME_MS) this.emitGame(t);
             return;
         }
         this.ramp(t);
@@ -237,7 +218,7 @@ export class KeyboardSource {
 
     private emit(t: number): void {
         if (this.passive) return;
-        if (this.isEasy) { this.emitEasy(t); return; }
+        if (this.isGame) { this.emitGame(t); return; }
         const st = mode2Sticks(this.down); // bang-bang, as v0.2-v0.7
         this.ch[0] = st.roll;
         this.ch[1] = st.pitch;
@@ -251,45 +232,10 @@ export class KeyboardSource {
         if (this.armed && this.letGo()) this.armed = false;
     }
 
-    // ------------------------------------------------------------------ easy play
-
-    /** The key targets of the drone and mode flown now (recomputed when either changes). */
-    private keyTargets(): KeyTargets {
-        const e = this.easy!;
-        const p = e.params();
-        const mode = e.mode();
-        const c = this.targets;
-        if (c.t === null || c.key !== p || c.mode !== mode) {
-            c.key = p;
-            c.mode = mode;
-            c.t = keyTargets(p.rates, p.level.limitDeg, mode);
-        }
-        return c.t;
-    }
-
-    /** Ramp the sticks toward the held keys' targets and the own throttle by the up/down keys, up to page time `t`. */
-    private moveSticks(t: number): void {
-        const dt = Math.min(RAMP_MAX_STEP_MS, Math.max(0, t - this.sticksT)) / 1000;
-        if (t > this.sticksT) this.sticksT = t;
-        if (this.passive || dt === 0) return;
-        const dirs = axisDirs(this.down, GAME_KEYS);
-        const boost = BOOST_CODES.some((c) => this.down.has(c));
-        const k = this.keyTargets();
-        const tg = boost ? k.boost : k;
-        this.sticks.roll = slew(this.sticks.roll, dirs.roll * tg.roll, dt);
-        this.sticks.pitch = slew(this.sticks.pitch, dirs.pitch * tg.pitch, dt);
-        this.sticks.yaw = slew(this.sticks.yaw, dirs.yaw * tg.yaw, dt);
-        const pilot = this.easy!.pilot;
-        if (pilot.helpActive()) this.throttle = pilot.throttleSent; // the own throttle takes over from the help without a jump
-        else if (dirs.lift > 0) this.throttle = Math.min(1, this.throttle + dt / EASY_THR_UP_S);
-        else if (dirs.lift < 0) this.throttle = Math.max(0, this.throttle - dt / EASY_THR_DOWN_S);
-    }
-
-    private emitEasy(t: number): void {
+    private emitGame(t: number): void {
         if (this.passive) return;
-        this.lastEasyEmit = t;
-        const dirs = axisDirs(this.down, GAME_KEYS);
-        this.easy!.pilot.send({ roll: this.sticks.roll, pitch: this.sticks.pitch, yaw: this.sticks.yaw, lift: dirs.lift, throttle: this.throttle, boost: BOOST_CODES.some((c) => this.down.has(c)) }, t);
+        this.lastGameEmit = t;
+        this.game!.pilot.send(gameDirs(this.down), t);
     }
 
     /** The gate is not armed for a reason other than the crash in progress. */

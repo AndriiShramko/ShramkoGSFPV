@@ -1,38 +1,58 @@
-// Keyboard flying as data (docs/wip/v08-a.md sections 0-2; the owner's message 21, item 1). Pure: no
+// Keyboard flying as data (docs/wip/v09-b.md; the owner's message 22, item 1: "ordinary PC gamers still
+// cannot fly a scene on the keyboard; nothing like the way games control flying characters"). Pure: no
 // DOM, so Node tests, the keymap check and the key card read the same tables the page flies with.
 //
 // Two layouts:
-//  - GAME (easy play, the default for a keyboard): what games for players use. W/S forward and back,
-//    A/D left and right (a tilt; in angle mode the drone moves that way), the side arrows or Q/E turn,
-//    the up/down arrows climb and sink (altitude help) or move a throttle that stays where it is left.
-//    Shift is faster. Research: GoDrone's web UI (arrows altitude/yaw, WASD pitch/roll), "The Dude"
-//    (WASD tilt, arrows turn), NEXUS FPV (Shift boost), Dronesim (an altitude hold key).
-//  - MODE2 (the pilot profile): a Mode 2 radio laid on the keys, the layout before v0.8: W/S throttle,
+//  - GAME (prefs input.play 'easy', the default for a keyboard): what games for players use, from the
+//    research in docs/wip/v09-b.md. The mouse (pointer lock) looks and turns; W/S forward and back,
+//    A/D left and right, relative to where the drone faces; Space up, Shift down; the arrows mirror
+//    W A S D for players without a mouse (left/right turn), and Q/E turn as in v0.8. Letting go of every
+//    key stops the drone and holds the place (play/game.ts). Ctrl is never read: Ctrl+W closes the tab.
+//  - MODE2 (the pilot profile): a Mode 2 radio laid on the keys, the layout of v0.2: W/S throttle,
 //    A/D yaw, the arrows pitch and roll.
-// Easy play turns a key into a stick target in physical units (degrees of tilt, degrees per second)
-// through the drone's own rates, so every drone answers a key alike; the stick then ramps to it
-// (slew()) instead of jumping (bang-bang was the pilot layout's 0.6 the moment a key went down).
 
 import { setpointRate } from '@gsfpv/sim-core';
-import type { FlightMode, RatesConfig } from '@gsfpv/sim-core';
+import type { RatesConfig } from '@gsfpv/sim-core';
 
-/** How touch sticks and the keyboard fly (prefs input.play): easy play, or as a radio. */
+/** How touch sticks and the keyboard fly (prefs input.play): easy play (a keyboard: the game scheme), or as a radio. */
 export type PlayProfile = 'easy' | 'pilot';
 
-/** What a flying key moves: roll, pitch, yaw, or lift (climb/sink with altitude help, else the throttle). */
+/** What a pilot-profile key moves: roll, pitch, yaw, or lift (the throttle). */
 export type KeyAxis = 'roll' | 'pitch' | 'yaw' | 'lift';
 
 /** One flying key: its KeyboardEvent.code (the same place on every layout), the axis and the side. */
-export interface KeyBind { code: string; axis: KeyAxis; dir: 1 | -1 }
+export interface KeyBind<A extends string = KeyAxis> { code: string; axis: A; dir: 1 | -1 }
 
-/** Easy play: the game layout. Pitch +1 is the stick forward (nose down), roll +1 right, yaw +1 right. */
-export const GAME_KEYS: readonly KeyBind[] = [
-    { code: 'KeyW', axis: 'pitch', dir: 1 }, { code: 'KeyS', axis: 'pitch', dir: -1 },
-    { code: 'KeyD', axis: 'roll', dir: 1 }, { code: 'KeyA', axis: 'roll', dir: -1 },
-    { code: 'ArrowRight', axis: 'yaw', dir: 1 }, { code: 'ArrowLeft', axis: 'yaw', dir: -1 },
-    { code: 'KeyE', axis: 'yaw', dir: 1 }, { code: 'KeyQ', axis: 'yaw', dir: -1 },
-    { code: 'ArrowUp', axis: 'lift', dir: 1 }, { code: 'ArrowDown', axis: 'lift', dir: -1 }
+/** What a game key asks for: forward (+1) / back, strafe right (+1) / left, turn right (+1) / left, lift up (+1) / down. */
+export type GameAxis = 'forward' | 'strafe' | 'turn' | 'lift';
+
+/** The game layout. Shift is the descent: it is never a modifier for a flying key (app/keys.ts reads a shortcut with it as the real chord first). */
+export const GAME_KEYS: readonly KeyBind<GameAxis>[] = [
+    { code: 'KeyW', axis: 'forward', dir: 1 }, { code: 'KeyS', axis: 'forward', dir: -1 },
+    { code: 'ArrowUp', axis: 'forward', dir: 1 }, { code: 'ArrowDown', axis: 'forward', dir: -1 },
+    { code: 'KeyD', axis: 'strafe', dir: 1 }, { code: 'KeyA', axis: 'strafe', dir: -1 },
+    { code: 'ArrowRight', axis: 'turn', dir: 1 }, { code: 'ArrowLeft', axis: 'turn', dir: -1 },
+    { code: 'KeyE', axis: 'turn', dir: 1 }, { code: 'KeyQ', axis: 'turn', dir: -1 },
+    { code: 'Space', axis: 'lift', dir: 1 },
+    { code: 'ShiftLeft', axis: 'lift', dir: -1 }, { code: 'ShiftRight', axis: 'lift', dir: -1 }
 ];
+
+/** The keys that start the motors: every game key but Shift (Shift alone is "down", there is nothing to descend from). */
+export const GAME_START_CODES: readonly string[] = GAME_KEYS.filter((k) => !k.code.startsWith('Shift')).map((k) => k.code);
+
+/** Direction per game axis from the held keys (-1, 0, 1); opposite keys cancel, and a pair on one side (W and Up) counts once. */
+export function gameDirs(held: ReadonlySet<string>): Record<GameAxis, number> {
+    const out: Record<GameAxis, number> = { forward: 0, strafe: 0, turn: 0, lift: 0 };
+    const seen = new Set<string>();
+    for (const k of GAME_KEYS) {
+        if (!held.has(k.code)) continue;
+        const id = `${k.axis}${k.dir}`;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        out[k.axis] += k.dir;
+    }
+    return out;
+}
 
 /** The pilot profile: Mode 2 on the keys (v0.2-v0.7's only layout). */
 export const MODE2_KEYS: readonly KeyBind[] = [
@@ -53,15 +73,7 @@ export function mode2Sticks(held: ReadonlySet<string>): { roll: number; pitch: n
     return { roll: d.roll * MODE2_TILT_STICK, pitch: d.pitch * MODE2_TILT_STICK, yaw: d.yaw * MODE2_YAW_STICK };
 }
 
-/** Held for "faster" in easy play (game layout). Not a shortcut: Shift alone runs no action. */
-export const BOOST_CODES: readonly string[] = ['ShiftLeft', 'ShiftRight'];
-
-/** The layout of a profile. */
-export function layoutFor(profile: PlayProfile): readonly KeyBind[] {
-    return profile === 'pilot' ? MODE2_KEYS : GAME_KEYS;
-}
-
-/** Every key code keyboard flying reads in either layout (Space = arm is the keymap's own binding). */
+/** Every key code keyboard flying reads in either layout (Space = arm in the pilot profile is the keymap's own binding). */
 export function flyingKeyCodes(): string[] {
     return [...new Set([...GAME_KEYS, ...MODE2_KEYS].map((k) => k.code))];
 }
@@ -72,7 +84,6 @@ export function axisDirs(held: ReadonlySet<string>, layout: readonly KeyBind[]):
     const seen = new Set<string>();
     for (const k of layout) {
         if (!held.has(k.code)) continue;
-        // Q and the left arrow both turn left: one side counts once
         const id = `${k.axis}${k.dir}`;
         if (seen.has(id)) continue;
         seen.add(id);
@@ -81,16 +92,7 @@ export function axisDirs(held: ReadonlySet<string>, layout: readonly KeyBind[]):
     return out;
 }
 
-// ------------------------------------------------------------------ easy play: physical targets
-
-/** A tilt key in angle and horizon modes: degrees (Shift: BOOST). */
-export const KEY_TILT_DEG = 25;
-/** A tilt key in acro: degrees per second (Shift: BOOST). */
-export const KEY_ACRO_DPS = 200;
-/** A turn key: degrees per second (Shift: BOOST). */
-export const KEY_YAW_DPS = 110;
-/** Shift multiplies a key's target by this (tilt 45 deg, turn 220 deg/s, acro 400 deg/s). */
-export const BOOST = 1.8;
+// ------------------------------------------------------------------ sticks from physical targets
 
 /** The stick (0..1) whose setpoint on this axis is `dps`, by bisection of the drone's own curve; 1 if it cannot reach it. */
 export function stickForRate(dps: number, rates: RatesConfig, axis: 'roll' | 'pitch' | 'yaw'): number {
@@ -116,86 +118,3 @@ export function stickForAngle(deg: number, rates: RatesConfig, axis: 'roll' | 'p
     const max = setpointRate(rates.type, 1, rates[axis], rates.rateLimit, rates.quickRcExpo === true);
     return stickForRate((deg / limitDeg) * max, rates, axis);
 }
-
-/** Stick magnitudes (0..1) of one key per axis for a drone in a mode, normal and with Shift. */
-export interface KeyTargets { roll: number; pitch: number; yaw: number; boost: { roll: number; pitch: number; yaw: number } }
-
-/** The easy-play key targets of a drone (its rates and angle limit) in a flight mode. */
-export function keyTargets(rates: RatesConfig, limitDeg: number, mode: FlightMode): KeyTargets {
-    const tilt = (axis: 'roll' | 'pitch', k: number): number => (mode === 'acro' ? stickForRate(KEY_ACRO_DPS * k, rates, axis) : stickForAngle(KEY_TILT_DEG * k, rates, axis, limitDeg));
-    return {
-        roll: tilt('roll', 1),
-        pitch: tilt('pitch', 1),
-        yaw: stickForRate(KEY_YAW_DPS, rates, 'yaw'),
-        boost: { roll: tilt('roll', BOOST), pitch: tilt('pitch', BOOST), yaw: stickForRate(KEY_YAW_DPS * BOOST, rates, 'yaw') }
-    };
-}
-
-// ------------------------------------------------------------------ ramps
-
-/** Stick units per second toward a key's target (0 -> 0.5 in 0.2 s). */
-export const RAMP_RISE_PER_S = 2.5;
-/** Stick units per second back toward centre on release (0.5 -> 0 in 0.08 s): letting go is quick. */
-export const RAMP_FALL_PER_S = 6;
-
-/**
- * One stick moved toward `target` over `dtS` seconds: away from centre at RAMP_RISE_PER_S, toward
- * centre (a release, a reversal) at RAMP_FALL_PER_S. A reversal crosses centre at the fall rate and
- * continues at the rise rate, all within the same step.
- */
-export function slew(cur: number, target: number, dtS: number, rise = RAMP_RISE_PER_S, fall = RAMP_FALL_PER_S): number {
-    let x = cur;
-    let t = Math.max(0, dtS);
-    // toward centre first when the target is nearer to it or on the other side
-    if (x !== 0 && (Math.sign(target) !== Math.sign(x) || Math.abs(target) < Math.abs(x))) {
-        const stop = Math.sign(target) === Math.sign(x) ? target : 0;
-        const need = Math.abs(x - stop) / fall;
-        if (need >= t) return x + Math.sign(stop - x) * fall * t;
-        x = stop;
-        t -= need;
-    }
-    if (x === target) return x;
-    const need = Math.abs(target - x) / rise;
-    if (need >= t) return x + Math.sign(target - x) * rise * t;
-    return target;
-}
-
-// ------------------------------------------------------------------ Space in easy play
-
-/** Easy play: Space must be held this long to stop the motors (a tap never does). */
-export const MOTOR_STOP_HOLD_MS = 500;
-
-/**
- * Space in easy play (the review of 2026-10-16: many games climb on Space, so a gamer's tap in the
- * air must not drop the drone). Motors off: a press starts them at once. Motors on: a press starts a
- * hold; held MOTOR_STOP_HOLD_MS it stops them, released earlier it does nothing. Pure: the keyboard
- * passes the event times and asks tick() from its 500 Hz sampling.
- */
-export class MotorKey {
-    /** when Space went down with the motors on; null: no stop pending */
-    private since: number | null = null;
-
-    /** Space went down at `t` (not a key repeat); `on`: the motors are wanted now. 'start' starts them. */
-    press(t: number, on: boolean): 'start' | null {
-        if (!on) { this.since = null; return 'start'; }
-        this.since = t;
-        return null;
-    }
-
-    /** Space went up (or the window lost the keys): a pending stop is dropped. */
-    release(): void {
-        this.since = null;
-    }
-
-    /** Time `t` with Space still down: 'stop' once, when it has been held long enough. */
-    tick(t: number): 'stop' | null {
-        if (this.since === null || t - this.since < MOTOR_STOP_HOLD_MS) return null;
-        this.since = null;
-        return 'stop';
-    }
-}
-
-/** Keyboard throttle in easy play without altitude help: 0 -> 100 % in this long (the pilot layout: 0.5 s). */
-export const EASY_THR_UP_S = 1.0;
-/** ... and 100 % -> 0 in this long (the pilot layout: 0.333 s). */
-export const EASY_THR_DOWN_S = 0.6;

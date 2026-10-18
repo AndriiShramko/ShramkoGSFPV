@@ -120,6 +120,39 @@ class Cli(unittest.TestCase):
         self.w.worker.run_once()
         self.assertEqual(len(self.w.smtp.messages), 1)
 
+    def test_the_pilot_paragraph_of_the_v09_lane_note_takes_the_full_screen_idea_to_done(self):
+        # docs/wip/v09-b.md section 3 gives the lead the Polish paragraph for idea R-20261017-0002 (a key for full screen) as one
+        # JSON string; that exact line walks the idea accepted -> in_progress -> done through the CLI with every letter in the
+        # owner's draft, and nothing is sent. (The live hub and the admin board are the lead's: this is the same code on a temp store.)
+        note = (REPO / "docs" / "wip" / "v09-b.md").read_text(encoding="utf-8")
+        text = json.loads(note.split("```json\n", 1)[1].split("\n```", 1)[0])
+        for cp in (0x142, 0x105, 0x15B, 0x17C, 0xF3, 0x119):  # l-stroke, a-ogonek, s-acute, z-dot, o-acute, e-ogonek
+            self.assertIn(chr(cp), text)
+        self.assertIn("Shift+F", text)
+        s = self.w.service
+        rid = self.w.report(rid="R-20261017-0002", message="A key for full screen", lang="pl")["id"]
+        s.set_status(rid, "accepted", "telegram")
+        self.assertEqual(self.cli("status", rid, "in_progress").returncode, 0)
+        self.assertEqual(s.get(rid)["status"], "in_progress")
+        # control: the line cut short is refused and the idea stays where it was
+        other = self.w.report(rid="R-20261017-0003", message="Another idea", lang="pl")["id"]
+        s.set_status(other, "accepted", "telegram")
+        cut = json.dumps({"pl": text}, ensure_ascii=False).encode("utf-8")[:-3]
+        self.assertNotEqual(self.cli("summary", other, stdin=cut).returncode, 0)
+        self.assertEqual(s.get(other)["status"], "accepted")
+        # the real line
+        r = self.cli("summary", rid, stdin=json.dumps({"pl": text}, ensure_ascii=False).encode("utf-8"))
+        self.assertEqual(r.returncode, 0, r.stderr.decode("utf-8", "replace"))
+        got = s.get(rid)
+        self.assertEqual(got["status"], "done")
+        self.assertEqual(got["done"]["summary"]["pl"], text)
+        self.assertEqual([m["state"] for m in got["thread"]], ["draft"])
+        mail_id = got["thread"][-1]["id"]
+        drafts = [p for p in self.w.tg.of("sendMessage") if any(b["callback_data"] == f"m:{mail_id}" for row in (p.get("reply_markup") or {}).get("inline_keyboard", []) for b in row)]
+        self.assertEqual(len(drafts), 1)
+        self.assertIn(text, drafts[0]["text"])
+        self.assertEqual(self.w.smtp.messages, [])
+
     def test_status_and_unknown_ids(self):
         rid = self.w.report()["id"]
         self.assertEqual(self.cli("status", rid, "in_progress").returncode, 0)

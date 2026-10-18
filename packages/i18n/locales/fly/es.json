@@ -103,7 +103,7 @@
   "radio.touch": "Sticks táctiles",
   "radio.touchHint": "Sirve para mirar alrededor y enseñárselo a tus amigos. Para aprender a volar, usa una emisora.",
   "radio.keyboard": "Teclado",
-  "radio.keyboardHint": "Espacio arma. W / S acelerador, A / D guiñada, flechas cabeceo y alabeo, M activa o desactiva el autonivelado.",
+  "radio.keyboardHint": "Vuela como en un juego: haz clic en la imagen para capturar el ratón y muévelo para mirar, W A S D para moverte, Espacio sube, Shift baja, F pantalla completa. Las teclas de piloto (Espacio arma, W / S acelerador) están en Ajustes.",
   "radio.connect": "Conectar",
   "radio.moveStick": "Mueve un stick para detectar el dispositivo",
   "radio.rate": "{hz} lecturas / s",

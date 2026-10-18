@@ -6,9 +6,10 @@
 //  - altitude help: holds the height for every preset, on the Moon, in auto-throttle mode and on a
 //    drained pack; holds it through a 25 deg key tilt (control: the hover stick alone loses metres);
 //    climbs and sinks at the asked speeds;
-//  - keys: physical targets (25 deg, 110 deg/s, 200 deg/s acro) reached in the model, the same for
-//    any rates (control: a fixed stick differs by rates); ramps instead of steps; both layouts
-//    read only keyboard-flying keys, none of the keymap's shortcuts;
+//  - keys: a stick made from a physical target (25 deg of tilt, 110 deg/s of turn) reaches it in the model,
+//    the same for any rates (control: a fixed stick differs by rates); the pilot layout is a step; both
+//    layouts read only keyboard-flying keys, none of the keymap's shortcuts (the game scheme itself is
+//    app-game.test.ts);
 //  - touch: a touch-down never moves a stick (control: v0.7's absolute pad jumps), and a finger
 //    moves the stick as far as a calibrated radio's stick moves its channel;
 //  - pilot school: steps from the settings, progress per life and step.
@@ -23,7 +24,7 @@ import { REPO } from '../../../packages/prefs/test/helpers';
 import { FLYING_CODES, KEYMAP, keymapProblems } from '../../../packages/prefs/src';
 import type { KeyBinding } from '../../../packages/prefs/src';
 import { ARM_RETRY_MS, AltitudeHelp, AutoArm, CLIMB_BOOST, CLIMB_MPS, SINK_MPS, helpFlies, stickForThrust } from '../../../apps/fly/src/play/assist';
-import { BOOST_CODES, GAME_KEYS, KEY_ACRO_DPS, KEY_TILT_DEG, KEY_YAW_DPS, MODE2_KEYS, MODE2_TILT_STICK, MODE2_YAW_STICK, MOTOR_STOP_HOLD_MS, MotorKey, mode2Sticks, RAMP_FALL_PER_S, RAMP_RISE_PER_S, axisDirs, flyingKeyCodes, keyTargets, slew, stickForRate } from '../../../apps/fly/src/play/keys';
+import { GAME_KEYS, GAME_START_CODES, MODE2_KEYS, MODE2_TILT_STICK, MODE2_YAW_STICK, mode2Sticks, axisDirs, flyingKeyCodes, gameDirs, stickForAngle, stickForRate } from '../../../apps/fly/src/play/keys';
 import { PadGrab, SCREEN_EDGE_PX, UNBOUNDED, absoluteRead, padTravel, reachOf } from '../../../apps/fly/src/play/touch-map';
 import { GOAL_S, SCHOOL_STEPS, SchoolProgress, settingsOf, stepOf } from '../../../apps/fly/src/play/school';
 import { KeyCardShow } from '../../../apps/fly/src/ui/key-card-state';
@@ -151,35 +152,6 @@ describe('easy play: the motors start from a flying input, no switch', () => {
         for (let t = 10; t < ARM_RETRY_MS * 3; t += 10) expect(b.step({ simArmed: false, crashed: false, paused: true, now: t }).arm).toBe(1);
     });
 
-    it('Space: a tap in the air keeps the motors on, a 0.5 s hold stops them; control: the hold drops the drone', () => {
-        const k = new MotorKey();
-        expect(k.press(0, false)).toBe('start');
-        expect(k.press(1000, true)).toBe(null);
-        for (let t = 1000; t < 1000 + MOTOR_STOP_HOLD_MS; t += 2) expect(k.tick(t)).toBe(null);
-        k.release();
-        expect(k.tick(9000)).toBe(null); // released before the hold ended: nothing pending
-        k.press(10000, true);
-        expect(k.tick(10000 + MOTOR_STOP_HOLD_MS)).toBe('stop');
-        expect(k.tick(11000)).toBe(null); // once per press
-        // in flight with the help: Space as the keyboard drives it (press, 500 Hz ticks, release)
-        const space = (holdMs: number): { armed: boolean; lossM: number } => {
-            const L = airborne(params());
-            const key = new MotorKey();
-            const y0 = L.y;
-            if (key.press(L.t, L.arm.want) === 'start') L.arm.request();
-            for (let i = 0; i < holdMs; i += 2) { L.run(2, {}); if (key.tick(L.t) === 'stop') L.arm.stop(); }
-            key.release();
-            L.run(2000, {});
-            return { armed: L.sim.armed, lossM: y0 - L.y };
-        };
-        const tap = space(150);
-        expect(tap.armed).toBe(true);
-        expect(Math.abs(tap.lossM)).toBeLessThan(0.3);
-        const hold = space(600);
-        expect(hold.armed).toBe(false);
-        expect(hold.lossM).toBeGreaterThan(1);
-    });
-
     it('a model that drops out by itself waits for the next input; a crash keeps the switch on (keepArmed)', () => {
         const a = new AutoArm();
         a.request();
@@ -219,7 +191,7 @@ describe('altitude help: holds the height, climbs and sinks at the asked speed',
 
     it('holds through a 25 deg key tilt; control: the level hover stick alone loses metres', () => {
         const p = params();
-        const pitch = keyTargets(p.rates, p.level.limitDeg, 'angle').pitch;
+        const pitch = stickForAngle(25, p.rates, 'pitch', p.level.limitDeg);
         const L = airborne(p);
         const y0 = L.y;
         let worst = 0;
@@ -309,60 +281,62 @@ describe('altitude help: holds the height, climbs and sinks at the asked speed',
     });
 });
 
-describe('keys: physical targets through the drone\'s rates, ramps, layouts', () => {
-    it('a tilt key levels the model at 25 deg (angle), a turn key yaws at 110 deg/s, an acro key rolls at 200 deg/s', () => {
+describe('keys: physical targets through the drone\'s rates, layouts', () => {
+    it('a stick made for 25 deg levels the model at 25 deg (angle), one made for 110 deg/s yaws at 110 deg/s', () => {
         const p = params();
-        const k = keyTargets(p.rates, p.level.limitDeg, 'angle');
+        const tilt = stickForAngle(25, p.rates, 'pitch', p.level.limitDeg);
+        const turn = stickForRate(110, p.rates, 'yaw');
         const L = airborne(p);
-        L.run(2000, { fly: true, pitch: k.pitch });
-        expect(Math.abs(attitude(L.sim.s).pitch - KEY_TILT_DEG)).toBeLessThan(2.5);
+        L.run(2000, { fly: true, pitch: tilt });
+        expect(Math.abs(attitude(L.sim.s).pitch - 25)).toBeLessThan(2.5);
         const M = airborne(p);
-        M.run(800, { fly: true, yaw: k.yaw });
+        M.run(800, { fly: true, yaw: turn });
         const yawRate = -M.sim.s[S.wy] * (180 / Math.PI);
-        expect(Math.abs(yawRate - KEY_YAW_DPS)).toBeLessThan(KEY_YAW_DPS * 0.08);
-        const a = keyTargets(p.rates, p.level.limitDeg, 'acro');
-        expect(Math.abs(setpointRate(p.rates.type, a.roll, p.rates.roll, p.rates.rateLimit) - KEY_ACRO_DPS)).toBeLessThan(1);
+        expect(Math.abs(yawRate - 110)).toBeLessThan(110 * 0.08);
     });
 
-    it('the same physical turn whatever the rates; control: v0.7\'s fixed 0.5 stick differs by rates', () => {
+    it('the same physical turn whatever the rates; control: a fixed 0.5 stick differs by rates', () => {
         const actual = params().rates;
         // Betaflight's classic rates in its CLI units (rc_rate 100, srate 70, expo 0), as presets and diffs hold them
         const classic: RatesConfig = { type: 'BETAFLIGHT', roll: { rcRate: 100, rate: 70, expo: 0 }, pitch: { rcRate: 100, rate: 70, expo: 0 }, yaw: { rcRate: 100, rate: 70, expo: 0 }, rateLimit: 1998 };
         const dps = (r: RatesConfig, x: number): number => setpointRate(r.type, x, r.yaw, r.rateLimit);
-        expect(Math.abs(dps(actual, stickForRate(KEY_YAW_DPS, actual, 'yaw')) - KEY_YAW_DPS)).toBeLessThan(0.5);
-        expect(Math.abs(dps(classic, stickForRate(KEY_YAW_DPS, classic, 'yaw')) - KEY_YAW_DPS)).toBeLessThan(0.5);
+        expect(Math.abs(dps(actual, stickForRate(110, actual, 'yaw')) - 110)).toBeLessThan(0.5);
+        expect(Math.abs(dps(classic, stickForRate(110, classic, 'yaw')) - 110)).toBeLessThan(0.5);
         const fixed = [dps(actual, 0.5), dps(classic, 0.5)];
         expect(Math.abs(fixed[0] - fixed[1]) / Math.min(...fixed)).toBeGreaterThan(0.2);
     });
 
-    it('a key ramps the stick: 0 -> 0.5 in 0.2 s, back in 0.08 s; a reversal crosses centre at the fall rate; control: the pilot layout\'s keys are there at once', () => {
-        const steps = (from: number, to: number): number => { let x = from; let n = 0; while (Math.abs(x - to) > 1e-9 && n < 10000) { x = slew(x, to, 0.001); n++; } return n; };
-        expect(Math.abs(steps(0, 0.5) - (0.5 / RAMP_RISE_PER_S) * 1000)).toBeLessThanOrEqual(1);
-        expect(Math.abs(steps(0.5, 0) - (0.5 / RAMP_FALL_PER_S) * 1000)).toBeLessThanOrEqual(1);
-        expect(slew(0.3, -0.3, 0.05)).toBeCloseTo(-(0.05 - 0.3 / RAMP_FALL_PER_S) * RAMP_RISE_PER_S, 9);
-        // control: the pilot layout as devices/keyboard.ts emits it (mode2Sticks) is a step, full at the press
+    it('the pilot layout is a step: full at the press (mode2Sticks as devices/keyboard.ts emits it)', () => {
         expect(readFileSync(join(REPO, 'apps', 'fly', 'src', 'devices', 'keyboard.ts'), 'utf8')).toMatch(/const st = mode2Sticks\(this\.down\)/);
         const pressed = mode2Sticks(new Set(['ArrowRight', 'KeyD']));
         expect([pressed.roll, pressed.yaw]).toEqual([MODE2_TILT_STICK, MODE2_YAW_STICK]);
-        expect(slew(0, MODE2_TILT_STICK, 0.001)).toBeLessThan(0.01);
-        expect(slew(0, MODE2_YAW_STICK, 0.001)).toBeLessThan(0.01);
     });
 
     it('both layouts read only keyboard-flying keys, the keymap is sound, and no shortcut sits on a flying key', () => {
         for (const c of flyingKeyCodes()) expect(FLYING_CODES, c).toContain(c);
         expect(keymapProblems(KEYMAP)).toEqual([]);
         for (const b of KEYMAP) if (!b.flying) for (const k of b.keys) expect(flyingKeyCodes(), `${b.action} ${k.code}`).not.toContain(k.code);
-        for (const c of BOOST_CODES) expect(KEYMAP.some((b) => b.keys.some((k) => k.code === c))).toBe(false);
-        // control: a shortcut put on Q (now a turn key) is reported
+        // Shift is the game scheme's descent and a modifier of chords: it is never a binding's own key
+        for (const c of ['ShiftLeft', 'ShiftRight']) expect(KEYMAP.some((b) => b.keys.some((k) => k.code === c))).toBe(false);
+        // control: a shortcut put on Q (a turn key) is reported
         const bad: KeyBinding[] = [...KEYMAP, { action: 'test.q', keys: [{ code: 'KeyQ', cap: 'Q', aria: 'Q' }], when: 'always', labelKey: 'keys.test.q', status: 'shipped' }];
         expect(keymapProblems(bad).some((s) => s.includes('KeyQ'))).toBe(true);
     });
 
-    it('opposite keys cancel; Q and the left arrow turn left once; the game layout moves with WASD', () => {
-        expect(axisDirs(new Set(['KeyW', 'KeyD']), GAME_KEYS)).toEqual({ roll: 1, pitch: 1, yaw: 0, lift: 0 });
-        expect(axisDirs(new Set(['KeyW', 'KeyS']), GAME_KEYS).pitch).toBe(0);
-        expect(axisDirs(new Set(['KeyQ', 'ArrowLeft']), GAME_KEYS).yaw).toBe(-1);
-        expect(axisDirs(new Set(['ArrowUp']), GAME_KEYS).lift).toBe(1);
+    it('opposite keys cancel; Q, E and the side arrows turn once; W and Up are one forward; Ctrl is no flying key; the pilot layout is unchanged', () => {
+        expect(gameDirs(new Set(['KeyW', 'KeyD']))).toEqual({ forward: 1, strafe: 1, turn: 0, lift: 0 });
+        expect(gameDirs(new Set(['KeyW', 'KeyS'])).forward).toBe(0);
+        expect(gameDirs(new Set(['KeyW', 'ArrowUp'])).forward).toBe(1);
+        expect(gameDirs(new Set(['KeyQ', 'ArrowLeft'])).turn).toBe(-1);
+        expect(gameDirs(new Set(['KeyE', 'ArrowRight'])).turn).toBe(1);
+        expect(gameDirs(new Set(['Space'])).lift).toBe(1);
+        expect(gameDirs(new Set(['ShiftLeft'])).lift).toBe(-1);
+        expect(gameDirs(new Set(['Space', 'ShiftRight'])).lift).toBe(0);
+        // Ctrl closes tabs (Ctrl+W): no layout reads it
+        for (const c of ['ControlLeft', 'ControlRight']) { expect(flyingKeyCodes()).not.toContain(c); expect(GAME_KEYS.map((k) => k.code)).not.toContain(c); }
+        // Shift alone does not start the motors; every other game key does
+        expect(GAME_START_CODES).not.toContain('ShiftLeft');
+        expect(GAME_START_CODES).toEqual(expect.arrayContaining(['KeyW', 'Space', 'ArrowUp', 'KeyD']));
         expect(axisDirs(new Set(['KeyW']), MODE2_KEYS)).toEqual({ roll: 0, pitch: 0, yaw: 0, lift: 1 });
         expect(axisDirs(new Set(['ArrowUp']), MODE2_KEYS).pitch).toBe(1);
     });
@@ -457,7 +431,7 @@ describe('every text easy play names exists in all four languages', () => {
         for (const ns of readdirSync(FLY)) if (!ns.endsWith('.json')) Object.assign(d, JSON.parse(readFileSync(join(FLY, ns, `${l}.json`), 'utf8')));
         return d;
     };
-    const SRC = ['app/builtin/play.ts', 'devices/keyboard.ts', 'devices/touch.ts', 'ui/hud.ts', 'app/builtin/sound.ts'];
+    const SRC = ['app/builtin/play.ts', 'app/builtin/top.ts', 'app/builtin/modes.ts', 'devices/keyboard.ts', 'devices/touch.ts', 'ui/hud.ts', 'app/builtin/sound.ts'];
     it('literal t() keys of the changed files, and the school steps built from a template', () => {
         const names = new Set<string>();
         for (const f of SRC) for (const m of readFileSync(join(REPO, 'apps', 'fly', 'src', f), 'utf8').matchAll(/\bt\(\s*'([a-zA-Z0-9_.]+)'/g)) names.add(m[1]);
@@ -468,6 +442,31 @@ describe('every text easy play names exists in all four languages', () => {
         }
         // control: a key that does not exist is caught
         expect(dict('en')['play.school.step5']).toBeUndefined();
+    });
+
+    it('the key card\'s move row names the Up and Down arrows only (Left and Right turn, the row below); every play.game text is used by the page', () => {
+        // the truth: which arrow does what in the game layout
+        expect(gameDirs(new Set(['ArrowUp']))).toEqual({ forward: 1, strafe: 0, turn: 0, lift: 0 });
+        expect(gameDirs(new Set(['ArrowDown']))).toEqual({ forward: -1, strafe: 0, turn: 0, lift: 0 });
+        expect(gameDirs(new Set(['ArrowLeft']))).toEqual({ forward: 0, strafe: 0, turn: -1, lift: 0 });
+        expect(gameDirs(new Set(['ArrowRight']))).toEqual({ forward: 0, strafe: 0, turn: 1, lift: 0 });
+        // what the card says of it (English; the other languages carry the same sentence, kept by the language check above)
+        const namesOnlyUpDown = (text: string): boolean => /\bUp and Down\b/.test(text) && !/arrow keys too/.test(text);
+        expect(namesOnlyUpDown(dict('en')['play.game.move'])).toBe(true);
+        expect(namesOnlyUpDown('move (the arrow keys too)')).toBe(false); // control: the card's first wording
+        // no text of the game card sits unused in the dictionaries
+        const used = new Set<string>();
+        const walk = (dir: string): void => {
+            for (const e of readdirSync(dir, { withFileTypes: true })) {
+                const p = join(dir, e.name);
+                if (e.isDirectory()) walk(p);
+                else if (e.name.endsWith('.ts')) for (const m of readFileSync(p, 'utf8').matchAll(/'(play\.game\.[a-zA-Z0-9_.]+)'/g)) used.add(m[1]);
+            }
+        };
+        walk(join(REPO, 'apps', 'fly', 'src'));
+        const unusedIn = (d: Record<string, string>): string[] => Object.keys(d).filter((k) => k.startsWith('play.game.') && !used.has(k));
+        for (const l of ['en', 'es', 'pl', 'ru']) expect(unusedIn(dict(l)), l).toEqual([]);
+        expect(unusedIn({ ...dict('en'), 'play.game.summary': 'x' })).toEqual(['play.game.summary']); // control: the scan sees a string nobody uses
     });
 });
 

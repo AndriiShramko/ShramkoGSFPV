@@ -9,7 +9,7 @@
   "set.scenes.autoSwitch": "Следующая сцена после краша",
   "set.scenes.autoSwitch.help": "Вкл.: после краша вместо респауна загружается следующая сцена, и вы стартуете с её площадки. Пульт остаётся подключённым.",
   "set.scenes.rotation": "Из каких сцен выбирать",
-  "set.scenes.rotation.help": "Откуда берутся N (следующая сцена) и сцена после краша. Shift+N — всегда случайная сцена из списка автора; F — следующая избранная.",
+  "set.scenes.rotation.help": "Откуда берутся N (следующая сцена) и сцена после краша. Shift+N — всегда случайная сцена из списка автора; Shift+F — следующая избранная.",
   "set.scenes.rotation.opt.curated": "Список автора",
   "set.scenes.rotation.opt.favourites": "Мои избранные",
   "set.scenes.rotation.opt.history": "Где я уже летал",

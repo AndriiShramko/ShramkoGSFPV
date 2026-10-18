@@ -18,6 +18,8 @@ import type { ContentAttempt, ResolvedScene } from '@gsfpv/scenes';
 import { BrokenFileError, SplatRenderer, drawOnDevice } from '@gsfpv/render-pc';
 import type { DrawingChoice } from '@gsfpv/render-pc';
 import { PRESETS, DEFAULT_PRESET } from '../presets';
+import { gimbalQuat } from '../play/gimbal';
+import type { CameraAim } from '../play/gimbal';
 import { SimClock } from '../simclock';
 import { assertWalls } from '../bake';
 import { wallsState } from '../flightwalls';
@@ -229,6 +231,12 @@ export class FlightSession {
     }
     /** when true the crash view owns the camera */
     cameraOverride = false;
+    /**
+     * The game scheme's stabilised gimbal (play/gimbal.ts): where the pilot's mouse aims the camera. Asked once per
+     * frame; null (or no function) is the drone's own camera, body pose and uptilt. Render only, like setCamera:
+     * the flight model never sees it, and a replay of the log shows the drone's own camera.
+     */
+    cameraAim: (() => CameraAim | null) | null = null;
     private replay: ReplayState | null = null;
     frameTimes: number[] = [];
     private loader: SessionLoader | null = null;
@@ -783,7 +791,13 @@ export class FlightSession {
         if (!this.cameraOverride) {
             const s = this.sim.s;
             const frac = this.paused ? 0 : Math.max(0, Math.min(0.001, (this.toSimUs(now) - this.sim.tick * 1000) / 1e6));
-            this.renderer.setPose(s[S.px] + s[S.vx] * frac, s[S.py] + s[S.vy] * frac, s[S.pz] + s[S.vz] * frac, s[S.qw], s[S.qx], s[S.qy], s[S.qz], this.cameraUptiltDeg);
+            const aim = this.cameraAim?.() ?? null;
+            if (aim) {
+                const q = gimbalQuat(aim);
+                this.renderer.setPose(s[S.px] + s[S.vx] * frac, s[S.py] + s[S.vy] * frac, s[S.pz] + s[S.vz] * frac, q[0], q[1], q[2], q[3], 0);
+            } else {
+                this.renderer.setPose(s[S.px] + s[S.vx] * frac, s[S.py] + s[S.vy] * frac, s[S.pz] + s[S.vz] * frac, s[S.qw], s[S.qx], s[S.qy], s[S.qz], this.cameraUptiltDeg);
+            }
         }
         if (this.lagFrames > 0) {
             this.lagQueue.push(this.runner.lastAppliedId);

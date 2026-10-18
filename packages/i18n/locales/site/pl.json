@@ -586,7 +586,7 @@
     "items": [
       { "t": "Ponad 1300 prawdziwych miejsc", "d": "Zakładka SuperSplat w symulatorze pokazuje każdy publiczny skan ze ścianami, z sortowaniem, filtrami i wyszukiwarką samego superspl.at." },
       { "t": "Nowe miejsce po każdej kraksie", "d": "Oznacz gwiazdką skany, które lubisz, włącz „Następna scena po kraksie”, a każda kraksa przeniesie Cię gdzie indziej, w losowej kolejności: do ulubionych, do już przelatanych albo do wyboru Andrija." },
-      { "t": "Zmiana w sekundę", "d": "N: następna scena, Shift+N: losowa, F: następna ulubiona. Strona się nie przeładowuje, a aparatura zostaje połączona." },
+      { "t": "Zmiana w sekundę", "d": "N: następna scena, Shift+N: losowa, Shift+F: następna ulubiona. Strona się nie przeładowuje, a aparatura zostaje połączona." },
       { "t": "Twój własny skan albo czyjkolwiek", "d": "Opublikuj skan na SuperSplat albo weź dowolny publiczny i wklej jego link tutaj lub w symulatorze." }
     ],
     "random": "Leć w losowe miejsce",
@@ -789,7 +789,7 @@
         "Whoopy klasy BetaFPV, 5-calowy quad freestyle i wyścigowy oraz cinelifter X8 z kamerą kinową, a każda liczba na ich kartach mówi, skąd pochodzi. Wklej diff z CLI Betaflight i lataj na własnych rates i PID.",
         "Uderz w ścianę, a dron rozbije się z prędkością uderzenia, a wrak potoczy się z odłamkami; dwie sekundy później jest znów w powietrzu, 5 s wstecz na trasie i nadal uzbrojony. Wyłączenie kraks, opóźnienie i miejsce powrotu są w Ustawieniach.",
         "OSD jak w goglach, pole widzenia i pochylenie kamery. F9 nagrywa wideo 60 fps ze skanów Andrija z podpisem autora w kadrze, automatyczne nagrywanie zapisuje każdy lot w twoim folderze, a log lotu staje się wideo 60 fps do 4K.",
-        "Wybierz jeden z ponad 1300 skanów ze ścianami w zakładce SuperSplat z jej filtrami, skan Andrija albo wklej link i zobacz, jak się wczytuje z prawdziwymi liczbami. N, Shift+N i F zmieniają scenę na tej samej stronie przy podłączonej aparaturze; [ i ] skalują scenę od ×0,25 do ×100.",
+        "Wybierz jeden z ponad 1300 skanów ze ścianami w zakładce SuperSplat z jej filtrami, skan Andrija albo wklej link i zobacz, jak się wczytuje z prawdziwymi liczbami. N, Shift+N i Shift+F zmieniają scenę na tej samej stronie przy podłączonej aparaturze; [ i ] skalują scenę od ×0,25 do ×100.",
         "Pokaż ściany, w które uderzasz, jako siatkę wokseli na skanie albo lataj po samej siatce. Skan z szumem? Usuń unoszące się drobiny — ściany-widma — z podglądem na żywo albo wyłącz ściany dla wszystkich scen.",
         "Wszystkie ustawienia na jednym ekranie, zapamiętane między wizytami, z eksportem, importem i resetem. Po rozbrojeniu karta jak w goglach pokazuje lot; w pauzie panel podsumowania ma jego statystyki, każdą pozycję menu i każdy klawisz."
       ],
@@ -820,7 +820,7 @@
       "wizard-arm": { "t": "Przełącznik uzbrojenia", "d": "Przestaw przełącznik uzbrojenia na ON i z powrotem na OFF, wybierz jego kanał albo pomiń krok i uzbrajaj spacją." },
       "wizard-check": { "t": "Sprawdzenie przed lotem", "d": "Każdy kanał z paskiem na żywo i przyciskami odwrócenia i powtórki, stan uzbrojenia oraz profil do pobrania lub wczytania." },
       "arm-card": { "t": "Gotowy do uzbrojenia", "d": "Nieuzbrojony z aparaturą: karta pokazuje, czego jeszcze brakuje — puszczone drążki, gaz w dół, przełącznik uzbrojenia." },
-      "keys": { "t": "Klawiatura", "d": "Wszystkie klawisze lotu na ekranie: spacja uzbraja, W i S to gaz, A i D odchylenie, strzałki przechylają, M samopoziomowanie, V siatka wokseli, C ściany." },
+      "keys": { "t": "Klawiatura", "d": "Wszystkie klawisze na ekranie: kliknij, aby lecieć, mysz rozgląda się i obraca, W A S D to ruch, spacja w górę, Shift w dół, F pełny ekran, Esc pauza." },
       "walls": { "t": "Ściany włączone lub nie", "d": "Linia ścian przy podpisie autora otwiera menu ścian: przełącznik ścian (kolizji), siatkę wokseli i zapisane ściany. Tutaj ściany są wyłączone (C): dron przelatuje przez wszystko, bez kraks." },
       "voxels": { "t": "Siatka wokseli na skanie", "d": "Ściany, w które uderzasz, narysowane na skanie Tunisu od Andrija w kolorach według wysokości: V przełącza między ukrytą, na skanie i samymi wokselami; etykieta podaje styl i rozmiar woksela." },
       "voxels-wire": { "t": "Siatka z krawędzi", "d": "Ściany Ogrodu zimowego z wokseli 3,2 cm jako krawędzie na skanie: zobacz, gdzie naprawdę jest ściana, zanim polecisz tą linią." },

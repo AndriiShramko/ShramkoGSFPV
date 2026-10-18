@@ -11,3 +11,4 @@ RESUME-FIRST: `git log --oneline -30` shows which `Merge v09-*` commits exist; c
 - [x] merge v09-a (conflict: docs/decisions.md only; kept both sections)
 - [x] merge v09-r (conflicts: video-export.ts = A's setDetail('auto') + R's setStochastic(false) and its restore; play/easy.ts = one guard, A's placement after lastT; decisions.md)
 - [x] merge v09-e (conflicts: ui/hud.ts = union of statsDrawing (R) and statsInput/statsLink (E); decisions.md)
+- [x] merge v09-b (conflicts: controls.ts ArmView = link (E) + game (B); defs.test.ts count 78; decisions.md; generated files README/llms.txt/settings.md/features.json taken ours, regenerate at the end; 25 add/add evidence files (lane A and lane B both wrote accept-fly output to evidence/<date>/b-fly*): A's stay at the default path, B's moved to evidence/<date>/v09-b/ and v09-b.md references fixed)

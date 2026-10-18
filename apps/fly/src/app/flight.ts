@@ -78,8 +78,8 @@ class Flight implements FlightContext {
         this.crash = new CrashView(session);
         this.quality = new Quality(session.renderer);
         // the Controls screen has its own keys (it stops Esc, P, R and Space itself)
-        // Shift held with a flying key is easy play's boost, not a modifier (app/keys.ts shiftIsBoost)
-        this.keys = new KeyRouter({ state: () => (this.crash.active ? 'crash' : 'flight'), shiftIsBoost: () => this.input.keyboard.boosting() });
+        // Shift is the game scheme's descent: a shortcut with it is read as its chord, else as the key alone (app/keys.ts shiftIsFlying)
+        this.keys = new KeyRouter({ state: () => (this.crash.active ? 'crash' : 'flight'), shiftIsFlying: () => this.input.keyboard.shiftFlies() });
         this.keys.block(() => !!document.querySelector('.screen.radio'));
         this.menu = new PauseMenu(ui, this.keys, this);
         this.input = new InputHost(this);

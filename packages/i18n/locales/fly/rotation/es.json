@@ -9,7 +9,7 @@
   "set.scenes.autoSwitch": "Siguiente escena tras un choque",
   "set.scenes.autoSwitch.help": "Activado: tras un choque se carga la siguiente escena en lugar de reaparecer, y empiezas en su plataforma. La emisora sigue conectada.",
   "set.scenes.rotation": "Escenas para rotar",
-  "set.scenes.rotation.help": "De dónde salen N (siguiente escena) y la escena tras un choque. Shift+N es siempre una escena aleatoria de la lista del autor; F, tu siguiente favorita.",
+  "set.scenes.rotation.help": "De dónde salen N (siguiente escena) y la escena tras un choque. Shift+N es siempre una escena aleatoria de la lista del autor; Shift+F, tu siguiente favorita.",
   "set.scenes.rotation.opt.curated": "Lista del autor",
   "set.scenes.rotation.opt.favourites": "Mis favoritas",
   "set.scenes.rotation.opt.history": "Escenas que he volado",

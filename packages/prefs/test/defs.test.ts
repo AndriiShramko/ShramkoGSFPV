@@ -29,7 +29,9 @@ const V03_SHIPPED = [
     // v0.8 lane D (docs/wip/v08-d.md): prop wash of the 5-inch and cinelifter presets, Settings -> Drone & physics
     'physics.propWash',
     // v0.8 lane A (docs/wip/v08-a.md): easy play for touch and keyboard, Settings -> Controls
-    'input.play', 'input.altitudeHelp', 'input.haptics'
+    'input.play', 'input.altitudeHelp', 'input.haptics',
+    // v0.9 lane B (docs/wip/v09-b.md): the game scheme's mouse and speed, Settings -> Controls
+    'input.mouseSensitivity', 'input.mouseInvertY', 'input.gameSpeed'
 ];
 
 /**
@@ -78,6 +80,10 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['input.play', 'input', 'global', 'enum', 'easy', 'live'],
     ['input.altitudeHelp', 'input', 'global', 'bool', true, 'live'],
     ['input.haptics', 'input', 'global', 'bool', true, 'live'],
+    // v0.9 lane B: the game scheme
+    ['input.mouseSensitivity', 'input', 'global', 'number', 1, 'live'],
+    ['input.mouseInvertY', 'input', 'global', 'bool', false, 'live'],
+    ['input.gameSpeed', 'input', 'global', 'enum', 'normal', 'live'],
     ['drone.current', 'drone', 'global', 'enum', 'pavo20pro-3s', 'life'],
     ['physics.gravity', 'drone', 'global', 'number', 9.81, 'life'],
     ['physics.gravityMode', 'drone', 'global', 'enum', 'honest', 'life'],
@@ -155,8 +161,8 @@ const WAVE2_SETTINGS = [
 ];
 
 describe('SCHEMA is the A.8 table', () => {
-    it('has the 75 settings (A.8\'s 53, main\'s voxel opacity with the scan hidden, the walls switch, the latency guard, v0.7\'s drawing, wind and ceiling, v0.7 D1\'s seven, v0.8\'s prop wash and lane A\'s three, v0.9\'s splat budget), each with its group, scope, type, default and apply', () => {
-        expect(SCHEMA.defs).toHaveLength(75);
+    it('has the 78 settings (the A.8 table of 53, the voxel opacity with the scan hidden, the walls switch, the latency guard, the v0.7 drawing, wind and ceiling, the v0.7 D1 seven, the v0.8 prop wash and lane A three, the v0.9 lane R splat budget and lane B three), each with its group, scope, type, default and apply', () => {
+        expect(SCHEMA.defs).toHaveLength(78);
         const got = SCHEMA.defs.map((d) => [d.id, d.group, d.scope, d.type, isPresetRef(d.default) ? `preset:${d.default.preset}` : isCuratedRef(d.default) ? `curated:${d.default.curated}|${String(d.default.fallback)}` : d.default, d.apply]);
         // order inside a group follows the def files, not the table's rows
         const byId = (a: unknown[], b: unknown[]) => String(a[0]).localeCompare(String(b[0]));
