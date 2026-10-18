@@ -20,7 +20,7 @@ import { calloutRows, cinelifterNote } from '../../../apps/fly/src/drones3d/call
 import type { Say } from '../../../apps/fly/src/drones3d/callouts';
 import { viewFor } from '../../../apps/fly/src/drones3d/views';
 import { AUTO_SPIN, DIST_MAX, DIST_MIN, HOME, IDLE_RESUME_S, Orbit, PITCH_MAX, PITCH_MIN, viewPosition } from '../../../apps/fly/src/drones3d/orbit';
-import { PAYLOAD_IDS } from '../../../apps/fly/src/drones3d/payloads';
+import { PAYLOAD_IDS, PAYLOADS } from '../../../apps/fly/src/drones3d/payloads';
 
 type Dict = Record<string, string>;
 const LANGS = ['en', 'es', 'pl', 'ru'] as const;
@@ -123,6 +123,25 @@ describe('legend rows in four languages', () => {
         expect(none.find((r) => r.id === 'payload')!.facts.join(' ')).toContain('2872 g');
         expect(rowsOf('bmpcc6kpro').find((r) => r.id === 'payload')!.title).toBe('Blackmagic Pocket Cinema Camera 6K Pro');
         expect(rowsOf('bmpcc6kpro').find((r) => r.id === 'payload')!.facts.join(' ')).toContain('2288 g');
+    });
+
+    it('every camera load of the cinelifter says where its figures come from, and links it', () => {
+        const say = sayIn(DICTS.en);
+        const linked = (ref: string | undefined): boolean => typeof ref === 'string' && /^https:\/\//.test(ref);
+        for (const choice of PAYLOAD_IDS) {
+            const b = buildFor(preset('taurusx8-komodo-6s'), choice);
+            const row = calloutRows(b, say).find((r) => r.id === (PAYLOADS[choice].kind === 'action' ? 'action' : 'payload'))!;
+            expect(['maker', 'listing', 'typical'], choice).toContain(row.basis);
+            // the row of "no camera" cites the maker's page that says it is sold without one; the others cite the camera's own page or a listing
+            expect(linked(row.ref), `${choice} row`).toBe(true);
+            // the table itself: a load has a basis and a link
+            expect(linked(PAYLOADS[choice].ref), `${choice} table`).toBe(true);
+        }
+        // the GoPro's figures are GoPro's own page, not a retailer's copy (the first cut cited no source at all)
+        expect(PAYLOADS.gopro13.basis).toBe('maker');
+        expect(PAYLOADS.gopro13.ref).toMatch(/^https:\/\/community\.gopro\.com\//);
+        // control: a load with a basis but no link fails the same predicate (the first cut's GoPro)
+        expect(linked({ ...PAYLOADS.gopro13, ref: undefined }.ref)).toBe(false);
     });
 
     it('typical facts say so, maker and listing rows link their source', () => {

@@ -14,9 +14,9 @@ import type { CalloutRow } from './callouts';
 import { modelOf } from './model';
 import type { Anchor, CalloutId, Model } from './model';
 import { Orbit } from './orbit';
-import { viewFor } from './views';
+import { fitDistance, viewFor } from './views';
 import type { OrbitState } from './orbit';
-import { PAYLOADS, PAYLOAD_IDS } from './payloads';
+import { loadedNumbers, PAYLOADS, PAYLOAD_IDS } from './payloads';
 import type { PayloadId } from './payloads';
 import { Studio } from './studio';
 import type { Tally } from './studio';
@@ -34,6 +34,11 @@ export interface StageOptions {
     onChange?: () => void;
     /** 'webgl2' forces the fallback device (the browser check runs both) */
     backend?: 'auto' | 'webgl2';
+    /**
+     * The pilot's reduced-motion choice (the display.reducedMotion setting: 'on', 'off', or 'system' following the OS), asked
+     * every frame so a change on the settings screen shows at once. Without it the OS preference alone decides.
+     */
+    reducedMotion?: () => boolean;
 }
 
 export interface StageInfo {
@@ -87,7 +92,9 @@ export { viewFor };
 export function mountStage(host: HTMLElement, o: StageOptions): Stage {
     const card = o.mode === 'card';
     const orbit = new Orbit();
-    orbit.reduceMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const osCalm = (): boolean => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const calmNow = (): boolean => (o.reducedMotion ? o.reducedMotion() : osCalm());
+    orbit.reduceMotion = calmNow();
     let drone = o.droneId;
     let payload: PayloadId | undefined = o.payload;
     let build: Build = buildFor(o.presets[drone], payload);
@@ -119,16 +126,32 @@ export function mountStage(host: HTMLElement, o: StageOptions): Stage {
                 o.onChange ? h('div', { class: 'd3-card-actions' }, h('button', { type: 'button', class: 'btn', 'data-action': 'd3-change', onclick: () => o.onChange?.() }, t('d3.change'))) : null))
         : h('section', { class: 'd3-stage', 'data-testid': 'drone-stage' }, view, h('div', { class: 'd3-side' }, nameEl, classEl, specEl, chipsEl, noteEl, legend));
     host.replaceChildren(root);
+    root.classList.toggle('d3-calm', orbit.reduceMotion);
+
+    // ---- the first view: the distance at which this model fits this stage
+    let fitAspect = 0;
+    function fit(force = false): void {
+        if (!model) return;
+        const w = canvas.clientWidth, hgt = canvas.clientHeight;
+        // a stage not laid out yet (hidden, or not in the page): the shape its style asks for
+        const aspect = w > 0 && hgt > 0 ? w / hgt : card ? 3 / 2 : 16 / 10;
+        if (!force && Math.abs(aspect - fitAspect) < 0.005) return;
+        fitAspect = aspect;
+        orbit.setHomeDist(fitDistance(model, aspect, orbit.home.yaw, orbit.home.pitch));
+    }
 
     // ---- what the drone carries
-    function fill(): void {
+    /** `keepChips`: the camera choice stays as it is (the pilot just pressed one of its buttons, and keeps the focus on it) */
+    function fill(keepChips = false): void {
         const p = o.presets[drone];
         build = buildFor(p, payload);
         model = modelOf(build);
         rows = calloutRows(build, t);
         (card ? cardName : nameEl).textContent = build.name;
         classEl.textContent = build.cls;
-        specEl.textContent = `${t('drone.weight')}: ${build.auwG} g  ·  ${t('drone.twr')}: ${String(p.fields.twr?.value ?? '')}:1  ·  ${build.cells}S ${build.mah} mAh`;
+        // the weight and thrust-to-weight of the camera load the model shows, as the flight model will run them (not the preset's own, always)
+        const num = loadedNumbers(p, build.payload);
+        specEl.textContent = `${t('drone.weight')}: ${num.weight} g  ·  ${t('drone.twr')}: ${num.twr}:1  ·  ${build.cells}S ${build.mah} mAh`;
         canvas.setAttribute('aria-label', t('d3.stage.aria', { name: build.name }));
         const note = cinelifterNote(build, t);
         noteEl.hidden = !note || card;
@@ -158,16 +181,25 @@ export function mountStage(host: HTMLElement, o: StageOptions): Stage {
                 r.ref ? h('a', { class: 'd3-src', href: r.ref, target: '_blank', rel: 'noopener noreferrer', 'aria-label': `${r.label}: ${t('d3.source')}` }, t('d3.source')) : null);
             legend.append(li);
         }
-        // the camera choice of the cinelifter
-        chipsEl.replaceChildren();
-        if (!card && build.payload && o.onPayload) {
-            const chips = h('div', { class: 'd3-chips', role: 'group', 'aria-label': t('d3.payload.title') });
-            for (const id of PAYLOAD_IDS) {
-                chips.append(h('button', { type: 'button', class: 'd3-chip', 'data-payload': id, 'aria-pressed': String(id === build.payload), onclick: () => { o.onPayload?.(id); setDrone(drone, id); } }, PAYLOADS[id].name ?? t('d3.f.none')));
+        // the camera choice of the cinelifter: built with the drone, and only marked afterwards (replacing the buttons under a
+        // pilot who just pressed one would drop the keyboard focus)
+        if (keepChips) markChips();
+        else {
+            chipsEl.replaceChildren();
+            if (!card && build.payload && o.onPayload) {
+                const chips = h('div', { class: 'd3-chips', role: 'group', 'aria-label': t('d3.payload.title') });
+                for (const id of PAYLOAD_IDS) {
+                    chips.append(h('button', { type: 'button', class: 'd3-chip', 'data-payload': id, 'aria-pressed': String(id === build.payload), onclick: () => { o.onPayload?.(id); setPayload(id); } }, PAYLOADS[id].name ?? t('d3.f.none')));
+                }
+                chipsEl.append(h('div', { class: 'd3-chips-label' }, t('d3.payload.title')), chips);
             }
-            chipsEl.append(h('div', { class: 'd3-chips-label' }, t('d3.payload.title')), chips);
         }
+        fit(true);
         if (studio && model) { studio.setModel(model); studio.setView(orbit.state); }
+    }
+
+    function markChips(): void {
+        for (const b of chipsEl.querySelectorAll<HTMLButtonElement>('.d3-chip')) b.setAttribute('aria-pressed', String(b.getAttribute('data-payload') === build.payload));
     }
 
     function focusRow(id: CalloutId): void {
@@ -184,6 +216,13 @@ export function mountStage(host: HTMLElement, o: StageOptions): Stage {
         payload = p;
         orbit.reset();
         fill();
+    }
+
+    /** Another camera load on the same drone: the model, legend and numbers follow, the view and the focus stay where they are. */
+    function setPayload(id: PayloadId): void {
+        if (disposed || (id === payload && id === build.payload)) return;
+        payload = id;
+        fill(true);
     }
 
     // ---- pins follow the model
@@ -294,12 +333,19 @@ export function mountStage(host: HTMLElement, o: StageOptions): Stage {
     const active = (): boolean => visible && !document.hidden && root.isConnected;
     const io = typeof IntersectionObserver === 'function' ? new IntersectionObserver((es) => { visible = es.some((e) => e.isIntersecting); studio?.setActive(active()); }) : null;
     io?.observe(view);
+    // the stage's shape is the page's (a narrow column, a tall window, a rotated phone): the first view fits the shape it has
+    let fitFrame = 0;
+    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(() => {
+        if (fitFrame || disposed) return;
+        fitFrame = requestAnimationFrame(() => { fitFrame = 0; if (!disposed) fit(); });
+    }) : null;
+    ro?.observe(canvas);
     const onVis = (): void => studio?.setActive(active());
     document.addEventListener('visibilitychange', onVis);
     // the page forgot us (the pause menu closed, the picker was removed): free the GPU at once
     const mo = new MutationObserver(() => { if (!root.isConnected) stage.dispose(); });
     mo.observe(document.body, { childList: true, subtree: true });
-    tidy.push(() => { io?.disconnect(); mo.disconnect(); document.removeEventListener('visibilitychange', onVis); });
+    tidy.push(() => { io?.disconnect(); ro?.disconnect(); if (fitFrame) cancelAnimationFrame(fitFrame); mo.disconnect(); document.removeEventListener('visibilitychange', onVis); });
 
     void (async () => {
         try {
@@ -309,6 +355,8 @@ export function mountStage(host: HTMLElement, o: StageOptions): Stage {
             s.onLost = () => { unavailable = true; status.hidden = false; status.textContent = t('d3.unavailable'); };
             s.onFrame = (dt) => {
                 if (!root.isConnected) { stage.dispose(); return; }
+                const calm = calmNow();
+                if (calm !== orbit.reduceMotion) { orbit.reduceMotion = calm; root.classList.toggle('d3-calm', calm); }
                 orbit.tick(dt);
                 s.halfRate = !orbit.interacting;
                 s.setView(orbit.state);

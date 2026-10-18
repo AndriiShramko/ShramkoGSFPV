@@ -20,7 +20,8 @@ import { MATERIALS } from '../../../apps/fly/src/drones3d/materials';
 import { boundsOf, merge, problemsOf, triangleCount } from '../../../apps/fly/src/drones3d/mesh';
 import { modelOf } from '../../../apps/fly/src/drones3d/model';
 import type { Model } from '../../../apps/fly/src/drones3d/model';
-import { PAYLOAD_IDS, PAYLOADS } from '../../../apps/fly/src/drones3d/payloads';
+import { loadedNumbers, PAYLOAD_IDS, PAYLOADS } from '../../../apps/fly/src/drones3d/payloads';
+import { compileParams } from '@gsfpv/sim-core';
 import { PAYLOAD_OPTIONS } from '../../../packages/prefs/src/defs/drone';
 import { SCHEMA } from '../../../packages/prefs/src';
 
@@ -189,6 +190,35 @@ describe('the cinelifter\'s camera', () => {
         expect(def.scope).toBe('drone');
         // control: a list with the options reordered would fail the same predicate
         expect([...PAYLOAD_OPTIONS].reverse()).not.toEqual([...PAYLOAD_IDS]);
+    });
+    it('the weight and thrust-to-weight printed for a camera load are the ones the flight model runs with (stage, picker cards)', () => {
+        const p = preset(id);
+        for (const choice of PAYLOAD_IDS) {
+            const sp = compileParams(p, { payloadG: PAYLOADS[choice].loadG });
+            const n = loadedNumbers(p, choice);
+            // as printed: grams as a whole number, TWR to one decimal; the preset's own text where the load is the preset's own
+            if (choice === 'komodo') expect(n).toEqual({ weight: String(p.fields.auw_g.value), twr: String(p.fields.twr.value) });
+            else expect(n).toEqual({ weight: String(Math.round(sp.mass * 1000)), twr: sp.twr.toFixed(1) });
+            expect(Number(n.weight)).toBeCloseTo(sp.mass * 1000, 0);
+            expect(Number(n.twr)).toBeCloseTo(sp.twr, 1);
+        }
+        // the cases the review found wrong: no camera is 2872 g and 5.6:1, not the preset's 4872 g and 3.3:1
+        expect(loadedNumbers(preset(id), 'none')).toEqual({ weight: '2872', twr: '5.6' });
+        expect(loadedNumbers(preset(id), 'komodo')).toEqual({ weight: '4872', twr: '3.3' });
+        // control: the preset's own numbers differ from what the choice makes of it, so a stage that printed them would be caught
+        expect(String(preset(id).fields.auw_g.value)).not.toBe(loadedNumbers(preset(id), 'none').weight);
+        expect(String(preset(id).fields.twr.value)).not.toBe(loadedNumbers(preset(id), 'none').twr);
+        // heavier camera, lower thrust-to-weight (monotone)
+        const twrs = (['none', 'gopro13', 'komodo', 'bmpcc6kpro'] as const).map((c) => Number(loadedNumbers(preset(id), c).twr));
+        expect([...twrs].sort((a, b) => b - a)).toEqual(twrs);
+    });
+    it('a drone without a camera load prints its own numbers whatever load is asked for', () => {
+        for (const other of DRONE_IDS.filter((x) => x !== id)) {
+            const own = { weight: String(preset(other).fields.auw_g.value), twr: String(preset(other).fields.twr.value) };
+            expect(loadedNumbers(preset(other), null), other).toEqual(own);
+            expect(loadedNumbers(preset(other), undefined), other).toEqual(own);
+            expect(loadedNumbers(preset(other), 'none'), other).toEqual(own);
+        }
     });
     it('only the cinelifter has a camera choice', () => {
         for (const other of DRONE_IDS.filter((x) => x !== id)) expect(buildFor(preset(other)).payload).toBeNull();

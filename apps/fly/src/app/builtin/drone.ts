@@ -7,6 +7,7 @@
 // the drone and fly on: no new flight model, no respawn.
 import { DronePicker } from '../../ui/drone';
 import { h } from '../../ui/dom';
+import { reducedMotion } from '../../ui/motion';
 import { DEFAULT_PRESET, PRESETS } from '../../presets';
 import type { Stage } from '../../drones3d';
 import { PauseMenu } from '../menu';
@@ -22,6 +23,12 @@ function payloadOf(ctx: FlightContext, drone: string): PayloadId {
     return isPayloadId(v) ? v : 'komodo';
 }
 
+/** What a stage of `id` is told about the camera: the drone's own load when it carries one (the cinelifter), else nothing. */
+const payloadFor = (ctx: FlightContext, id: string): PayloadId | undefined => (PRESETS[id]?.fields.payload_g ? payloadOf(ctx, id) : undefined);
+
+/** The pilot's Reduced motion setting, asked by a stage every frame (so a change on the settings screen shows at once). */
+const calm = (ctx: FlightContext) => (): boolean => reducedMotion(ctx.prefs.get<string>('display.reducedMotion'));
+
 /**
  * The settings screen's picture of the drone under its Drone row (v0.9 lane D): a small turntable of the drone the
  * Drone setting names, with the numbers that matter, above the row's own line (`inner`: the "Help tune it" row).
@@ -32,14 +39,14 @@ export function droneRow(ctx: FlightContext, inner: { el: HTMLElement; refresh()
     let stage: Stage | null = null;
     let shown = '';
     const current = (): string => { const id = ctx.prefs.get<string>('drone.current'); return PRESETS[id] ? id : DEFAULT_PRESET; };
-    const payload = (id: string): PayloadId | undefined => (PRESETS[id].fields.payload_g ? payloadOf(ctx, id) : undefined);
+    const payload = (id: string): PayloadId | undefined => payloadFor(ctx, id);
     const io = typeof IntersectionObserver === 'function' ? new IntersectionObserver((es) => {
         if (stage || !es.some((e) => e.isIntersecting)) return;
         io?.disconnect();
         void import('../../drones3d').then((m) => {
             if (!host.isConnected) return;
             shown = current();
-            stage = m.mountStage(host, { presets: PRESETS, droneId: shown, mode: 'card', payload: payload(shown) });
+            stage = m.mountStage(host, { presets: PRESETS, droneId: shown, mode: 'card', payload: payload(shown), reducedMotion: calm(ctx) });
         }).catch((e) => console.warn('settings drone card not loaded', e));
     }) : null;
     io?.observe(host);
@@ -66,7 +73,8 @@ export const drone: Feature = {
                 void import('../../drones3d').then((m) => {
                     if (!host.isConnected || !PRESETS[id]) return;
                     m.mountStage(host, {
-                        presets: PRESETS, droneId: id, mode: 'card',
+                        // the camera the pilot flies the cinelifter with (read as the menu opens), so the card's model and numbers are the flight model's
+                        presets: PRESETS, droneId: id, mode: 'card', payload: payloadFor(ctx, id), reducedMotion: calm(ctx),
                         // the same button as the menu's own "Change drone": the menu closes, the picker opens
                         onChange: () => host.closest('.pause-menu')?.querySelector<HTMLElement>('[data-action="pause.drone"]')?.click()
                     });
@@ -84,7 +92,7 @@ export const drone: Feature = {
                     get: (drone: string): PayloadId => { const v = ctx.prefs.get<string>('drone.payload', { drone }); return isPayloadId(v) ? v : 'komodo'; },
                     set: (drone: string, id: PayloadId): void => { pilotSet(ctx.prefs, 'drone.payload', id, { drone }); }
                 };
-                const d = new DronePicker(ctx.ui, session.presetId, { store: ctx.prefs, tune: true, payload });
+                const d = new DronePicker(ctx.ui, session.presetId, { store: ctx.prefs, tune: true, payload, reducedMotion: calm(ctx) });
                 // the picker is a screen, not a panel: while it is up, Esc is its close (P does nothing)
                 const unEsc = ctx.keys.on('pause.toggle', (e) => { if (e.code === 'Escape') close(); });
                 let open = true;
@@ -101,6 +109,8 @@ export const drone: Feature = {
                 d.onTune = (id) => {
                     if (!open) return;
                     gone();
+                    // a camera load chosen a moment ago is stored: it reaches the flight model here too (as on close), not at some later close
+                    applyModel(ctx.session, ctx.prefs);
                     openFeedback(ctx, 'drone', { drone: id });
                 };
                 d.onPick = (id) => {

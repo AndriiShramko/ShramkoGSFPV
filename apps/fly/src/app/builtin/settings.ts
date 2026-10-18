@@ -14,6 +14,7 @@
 import type { PrefChange, PrefsStore } from '@gsfpv/prefs';
 import { SettingsScreen } from '../../ui/settings/screen';
 import { dialogOpen } from '../../devices/keyboard';
+import { reducedMotion } from '../../ui/motion';
 import { loadVoxelPrefs } from '../../voxels';
 import { t } from '../../i18n';
 import { banner, q } from '../env';
@@ -161,13 +162,6 @@ export function openSettingsLink(ui: HTMLElement, store: PrefsStore): void {
 function showFrameStats(ctx: FlightContext, on: boolean): void {
     const el = ctx.ui.querySelector('.hud .osd.frame');
     if (el && el.classList.contains('hidden') === on) ctx.hud.toggleFrameStats();
-}
-
-/** The reduced-motion setting as the crash camera uses it: 'system' follows the OS. */
-function reducedMotion(v: string): boolean {
-    if (v === 'on') return true;
-    if (v === 'off') return false;
-    return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 export const settings: Feature = {

@@ -29,6 +29,8 @@ const wrap = (a: number): number => ((((a + 180) % 360) + 360) % 360) - 180;
 
 export class Orbit {
     state: OrbitState = { ...HOME };
+    /** the view "Reset" and a double click return to: HOME, at the distance that fits the model on this stage (setHomeDist) */
+    readonly home: OrbitState = { ...HOME };
     /** the turntable turns when true and nobody is touching it */
     spin = true;
     /** the user prefers no motion: it never turns by itself */
@@ -79,18 +81,30 @@ export class Orbit {
         this.goal = null;
     }
 
-    /** Ease to a view (a legend row asks to look at its part). */
+    /** Ease to a view (a legend row asks to look at its part); with reduced motion, jump there. */
     flyTo(to: Partial<OrbitState>): void {
         const g: OrbitState = { ...this.state, ...to };
         g.pitch = clamp(g.pitch, PITCH_MIN, PITCH_MAX);
         g.dist = clamp(g.dist, DIST_MIN, DIST_MAX);
-        this.goal = g;
         this.idle = 0;
         this.vel.yaw = 0; this.vel.pitch = 0;
+        if (this.reduceMotion) { Object.assign(this.state, g); this.goal = null; return; }
+        this.goal = g;
     }
 
     reset(): void {
-        this.flyTo(HOME);
+        this.flyTo(this.home);
+    }
+
+    /**
+     * The first view's distance for the model on this stage. A view still at (or on its way to) the old home follows it; one the
+     * player has zoomed or turned away from is left where it is.
+     */
+    setHomeDist(d: number): void {
+        const was = this.home.dist;
+        this.home.dist = clamp(d, DIST_MIN, DIST_MAX);
+        if (this.goal && Math.abs(this.goal.dist - was) < 1e-9) this.goal.dist = this.home.dist;
+        else if (!this.goal && Math.abs(this.state.dist - was) < 1e-9) this.state.dist = this.home.dist;
     }
 
     /** the player is working it (a drag, a momentum, a view change): it wants every frame; the idle turn does not */

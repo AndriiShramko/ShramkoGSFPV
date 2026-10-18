@@ -22,6 +22,7 @@ import type { MaterialId, MaterialSpec } from './materials';
 import type { Model } from './kit';
 import { viewPosition } from './orbit';
 import type { OrbitState } from './orbit';
+import { FOV_DEG, targetOf } from './views';
 import { brushedStreaks, carbonWeave, floorFade, studioEnvironment } from './textures';
 
 export interface StudioOptions {
@@ -41,7 +42,6 @@ export interface Tally {
     destroyed: boolean;
 }
 
-const FOV = 28;
 const col = (c: readonly [number, number, number]): Color => new Color(c[0], c[1], c[2]);
 
 export class Studio {
@@ -92,7 +92,7 @@ export class Studio {
 
         const bg = o.background ?? [0.075, 0.09, 0.11];
         const cam = new Entity('studio-camera', app);
-        cam.addComponent('camera', { clearColor: new Color(bg[0], bg[1], bg[2], 1), fov: FOV, nearClip: 0.05, farClip: 60, toneMapping: TONEMAP_NEUTRAL });
+        cam.addComponent('camera', { clearColor: new Color(bg[0], bg[1], bg[2], 1), fov: FOV_DEG, nearClip: 0.05, farClip: 60, toneMapping: TONEMAP_NEUTRAL });
         app.root.addChild(cam);
         this.camera = cam;
 
@@ -259,8 +259,7 @@ export class Studio {
         this.app.root.addChild(root);
         this.modelRoot = root;
         this.radius = 1;
-        const h = (model.bounds.max[1] - model.bounds.min[1]) * unit;
-        this.target = [0, h * 0.42, 0];
+        this.target = targetOf(model);
         const fs = 1.9 * Math.max(1, (model.bounds.max[0] - model.bounds.min[0]) * unit * 0.5);
         this.floor.setLocalScale(fs, 1, fs);
         this.app.renderNextFrame = true;

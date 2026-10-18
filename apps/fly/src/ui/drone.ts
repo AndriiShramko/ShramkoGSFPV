@@ -6,7 +6,7 @@
 // "Ask for another drone"; they call onTune (the feedback dialog's Drone physics kind) when it is set.
 import { compileParams, setpointRate } from '@gsfpv/sim-core';
 import type { PresetJson } from '@gsfpv/sim-core';
-import { PAYLOADS } from '../drones3d/payloads';
+import { loadedNumbers, PAYLOADS } from '../drones3d/payloads';
 import type { PayloadId } from '../drones3d/payloads';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { PRESETS, DEFAULT_PRESET } from '../presets';
@@ -81,9 +81,13 @@ export class DronePicker {
     private gone = false;
     private readonly stageSlot: HTMLElement;
 
-    /** `store`: the page's settings, for the per-drone count on each card; `tune`: draw the help-us-tune buttons */
-    constructor(parent: HTMLElement, current: string, o: { store?: PrefsStore; tune?: boolean; payload?: PayloadHooks } = {}) {
+    /** the pilot's Reduced motion setting for the 3D stage (asked every frame) */
+    private readonly reducedMotion: (() => boolean) | undefined;
+
+    /** `store`: the page's settings, for the per-drone count on each card; `tune`: draw the help-us-tune buttons; `reducedMotion`: the pilot's setting, for the 3D stage */
+    constructor(parent: HTMLElement, current: string, o: { store?: PrefsStore; tune?: boolean; payload?: PayloadHooks; reducedMotion?: () => boolean } = {}) {
         this.current = current;
+        this.reducedMotion = o.reducedMotion;
         this.payload = o.payload ?? null;
         this.stageDrone = current;
         const changed = (id: string): number => o.store?.explicitList({ drone: id }).filter((e) => e.scope === 'drone').length ?? 0;
@@ -101,8 +105,8 @@ export class DronePicker {
             const card = h('div', { class: `drone-card ${isCur ? 'selected' : ''}`, 'data-preset': id },
                 h('h3', {}, p.name, id === DEFAULT_PRESET ? h('span', { class: 'pill' }, t('drone.default')) : null),
                 h('p', { class: 'muted' }, p.class),
-                row(p, 'twr', t('drone.twr'), (v) => `${this.twrText(id, v)}:1`),
-                row(p, 'auw_g', t('drone.weight'), (v) => `${this.weightText(id, v)} g`),
+                row(p, 'twr', t('drone.twr'), () => `${this.loaded(id).twr}:1`),
+                row(p, 'auw_g', t('drone.weight'), () => `${this.loaded(id).weight} g`),
                 this.loadLine(id),
                 row(p, 'wheelbase_mm', t('drone.wheelbase'), (v) => `${v} mm`),
                 row(p, 'motor', t('drone.motor'), (v) => String(v)),
@@ -138,14 +142,9 @@ export class DronePicker {
         return choice ? { payloadG: choice.loadG } : {};
     }
 
-    private twrText(id: string, preset: unknown): string {
-        const o = this.overridesOf(id);
-        return o.payloadG === undefined || o.payloadG === Number(PRESETS[id].fields.payload_g?.value) ? String(preset) : compileParams(PRESETS[id], o).twr.toFixed(1);
-    }
-
-    private weightText(id: string, preset: unknown): string {
-        const o = this.overridesOf(id);
-        return o.payloadG === undefined ? String(preset) : String(Math.round(compileParams(PRESETS[id], o).mass * 1000));
+    /** The thrust-to-weight and the all-up weight of a card, for the camera load the pilot has chosen (drones3d/payloads.ts loadedNumbers: the one rule of the stage and the cards). */
+    private loaded(id: string): { weight: string; twr: string } {
+        return loadedNumbers(PRESETS[id], this.payload && PRESETS[id].fields.payload_g ? this.payload.get(id) : null);
     }
 
     /** "Camera load: RED KOMODO 6K" under the cinelifter's numbers, so a card never shows a weight without saying what it carries. */
@@ -161,8 +160,8 @@ export class DronePicker {
         if (!card) return;
         const p = PRESETS[id];
         const set = (spec: string, text: string): void => { const el = card.querySelector(`[data-spec="${spec}"] .spec-v`); if (el) el.textContent = text; };
-        set('twr', `${this.twrText(id, p.fields.twr?.value)}:1`);
-        set('auw_g', `${this.weightText(id, p.fields.auw_g?.value)} g`);
+        set('twr', `${this.loaded(id).twr}:1`);
+        set('auw_g', `${this.loaded(id).weight} g`);
         const hv = cardHover(compileParams(p, this.overridesOf(id)));
         const hel = card.querySelector('[data-testid="drone-hover"]');
         if (hel && hv) hel.textContent = t('drone.hover', { full: String(hv.full), low: String(hv.low) });
@@ -175,7 +174,7 @@ export class DronePicker {
         void import('../drones3d').then((m) => {
             if (this.gone) return;
             this.stage = m.mountStage(this.stageSlot, {
-                presets: PRESETS, droneId: id, mode: 'full', payload: this.payload && PRESETS[id].fields.payload_g ? this.payload.get(id) : undefined,
+                presets: PRESETS, droneId: id, mode: 'full', payload: this.payload && PRESETS[id].fields.payload_g ? this.payload.get(id) : undefined, reducedMotion: this.reducedMotion,
                 onPayload: this.payload ? (choice) => this.payloadChosen(this.stageDrone, choice) : undefined
             });
             this.mark(id);
