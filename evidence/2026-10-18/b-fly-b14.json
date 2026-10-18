@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-18T01:29:21.733Z",
-    "gitHead": "db9ebc2",
+    "date": "2026-10-18T03:54:34.851Z",
+    "gitHead": "7f91fb4",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -54,8 +54,8 @@
         "seconds": 10,
         "crashed": false,
         "armedAll": true,
-        "minY": 3.5699818636877323,
-        "maxY": 3.897457281259357,
+        "minY": 3.7674308903185305,
+        "maxY": 6.285241461699498,
         "target": 2.7980273116102277
       },
       "view": {
@@ -116,9 +116,9 @@
         "seconds": 10,
         "crashed": false,
         "armedAll": true,
-        "minY": 3.498135180475728,
-        "maxY": 3.8701422201405213,
-        "target": 2.79802738196478
+        "minY": 3.502137393191609,
+        "maxY": 3.82115883300629,
+        "target": 2.79802748181291
       },
       "view": {
         "scrollX": 0,
