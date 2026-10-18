@@ -12,13 +12,18 @@ code, configuration and data as the API (tools/ideas/ideas.py runs them over SSH
   ... title <id>                          JSON on stdin: {"title": {"en","es","pl","ru"}, "text"?: {...}, "visible"?: bool}
                                           the roadmap's words (all four languages for the title)
   ... summary <id>                        JSON on stdin: {"en": "what was done", "pl": "..."}: the idea is done and the
-                                          owner gets the DRAFT thank-you e-mail in Telegram; nothing is sent from here
+                                          owner gets the DRAFT thank-you e-mail in Telegram; nothing is sent from here.
+                                          The draft is in the language the pilot wrote in (`wrote=` in show/queue): the
+                                          summary written in it is used as it is, else the English one is translated
+                                          (the owner sees both); write in that language when you can
   ... release <id> <sha>                  the release that shipped it
   ... tg-setup [--replace] | tg-info | tg-remove
                                           the bot's webhook (TG_OWNER_BOT_TOKEN, by default the shared lead
                                           bot): this API then reads every update of that bot and acts only on
                                           GSFPV's; --replace takes the bot over from another service's webhook
   ... mail-check                          connect to Gmail and log in, send nothing
+  ... translate-check                     ask Gemini to detect and translate one test sentence (Russian -> Polish):
+                                          prints ok with the model and the answer, or why not; sends no e-mail
 
 Text comes on stdin as UTF-8 so that no shell quoting meets the pilot's or the owner's language.
 Output is UTF-8 whatever the console says. Nothing here sends an e-mail: only the owner does (Telegram,
@@ -53,6 +58,9 @@ def render_idea(r: dict) -> str:
     out = [f"{r['id']}  {r['kind']}  status={r['status']}  urgency={r.get('urgency') or '-'}  created={r['created']}",
            f"lang={r.get('lang') or '-'} page={r.get('page') or '-'} scene={r.get('scene') or '-'} release={r.get('release') or '-'}"
            f" contact={r.get('contact') or '-'} ({r.get('contactKind')}) diagnostics={r.get('diagnostics')}"]
+    pl = r.get("pilotLang")
+    if isinstance(pl, dict) and pl.get("code"):   # found by translate.py in the pilot's own text: write the done summary in it
+        out[-1] += f" wrote={pl['code']} ({pl.get('name') or pl['code']})"
     if r.get("suspect"):
         out.append("SUSPECT (honeypot or too fast)")
     out += ["", "Pilot's words:" if r["kind"] in ("idea", "bug") else "Text:", r.get("text") or "-"]
@@ -66,7 +74,9 @@ def render_idea(r: dict) -> str:
     if r.get("releases"):
         out += ["Releases: " + ", ".join(r["releases"])]
     if r.get("thread"):
-        out += ["", "E-mails:"] + [f"  {m['id']} {m['kind']} {m['state']} to={m.get('to') or '-'} {m.get('sentAt') or m.get('created')}" for m in r["thread"]]
+        out += ["", "E-mails:"] + [f"  {m['id']} {m['kind']} {m['state']} to={m.get('to') or '-'} {m.get('sentAt') or m.get('created')}"
+                                          + (f" translated {m['tr']['from'] or '?'}->{m['tr']['to']}" if m.get("tr") else "")
+                                          + (f" HELD ({m['wait']})" if m.get("state") == "waiting_language" else "") for m in r["thread"]]
     return "\n".join(out)
 
 
@@ -117,7 +127,7 @@ def main(argv: list[str] | None = None) -> int:
     rl.add_argument("sha")
     sub.add_parser("tg-setup").add_argument("--replace", action="store_true",
                                             help="replace a webhook another service set on this bot")
-    for name in ("tg-info", "tg-remove", "mail-check"):
+    for name in ("tg-info", "tg-remove", "mail-check", "translate-check"):
         sub.add_parser(name)
     a = p.parse_args(argv)
 
@@ -168,6 +178,10 @@ def main(argv: list[str] | None = None) -> int:
             print("removed" if server.BOT.remove_webhook() else "not removed (no bot token, or the webhook is not this API's)")
         elif a.cmd == "mail-check":
             print(server.MAILER.check_login())
+        elif a.cmd == "translate-check":
+            r = server.TRANSLATOR.check()
+            print(json.dumps(r, ensure_ascii=False))
+            return 0 if r["ok"] else 1
     except IdeaError as e:
         sys.exit(f"refused: {e.code}")
     except RuntimeError as e:

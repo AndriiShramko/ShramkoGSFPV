@@ -107,6 +107,7 @@
   "admin.ideas.mail.state.failed": "не доставлено",
   "admin.ideas.mail.state.cancelled": "отменено",
   "admin.ideas.mail.state.waiting_setup": "ждёт настройки Gmail",
+  "admin.ideas.mail.state.waiting_language": "задержано: не на языке пилота, перевести не удалось («Отправить» отправит как есть)",
   "admin.ideas.mail.state.no_email": "нет адреса e-mail",
   "admin.ideas.mail.state.unknown": "возможно, не ушло",
   "admin.ideas.thanks.open": "Письмо с благодарностью…",

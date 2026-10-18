@@ -175,6 +175,9 @@ inside the container), `texts.py` (the bot's and the e-mails' words).
 | `GMAIL_USER` | `zmei116@gmail.com` (From and Reply-To of every e-mail to a pilot; the name is `MAIL_FROM_NAME`, default "Andrii Shramko") |
 | `GMAIL_APP_PASSWORD` | a Gmail app password (Google account, Security, 2-Step Verification, App passwords: 16 letters). The normal password does not work over SMTP. Without it e-mails wait (`waiting_setup`) and the bot says so; once it is set the bot asks per waiting e-mail, nothing goes by itself |
 | `MAIL_UNDO_S` | optional; the window in which Cancel stops an e-mail (default 60 s) |
+| `GEMINI_API_KEY` | v0.9 (owner's item 4): the Google AI Studio key for `apps/api/translate.py`. With it the owner's reply reaches the pilot in the language THE PILOT WROTE IN (found once by Gemini in their own text, kept on the idea), translated when needed, with his original kept. Without it (or while Gemini fails) English text, the pilot's own language and plain ASCII go as written; anything else is held (`waiting_language`) and the bot says so. The texts are sent to Google for translation |
+| `GEMINI_MODEL` | optional; default `gemini-2.5-flash` |
+| `GEMINI_TIMEOUT_S` | optional; seconds per attempt (default 12, one retry on a timeout, a network error, HTTP 408/429/5xx) |
 
 **The shared lead bot's updates are now read by `gsfpv-api`.** `tg-setup` gives the bot that
 `TG_OWNER_BOT_TOKEN` names (by default the shared `TG_BOT_TOKEN`, @leadformfromallsitesbot, which every
@@ -222,6 +225,7 @@ failure is retried after 1, 5, 30, 120 and 360 minutes, a permanent one is not.
 ```bash
 scp -P $GSFPV_PORT -i $GSFPV_KEY apps/api/server.py apps/api/admin.py apps/api/ideas.py apps/api/ideas_admin.py \
     apps/api/ideas_cli.py apps/api/mailer.py apps/api/outbox.py apps/api/ownerbot.py apps/api/service.py apps/api/texts.py \
+    apps/api/translate.py apps/api/langguess.py \
     $GSFPV_HOST:$GSFPV_BASE/api/
 scp -r -P $GSFPV_PORT -i $GSFPV_KEY packages/i18n/locales/bot packages/i18n/locales/mail $GSFPV_HOST:$GSFPV_BASE/api/locales/
 scp -P $GSFPV_PORT -i $GSFPV_KEY apps/api/locales/roadmap-seed.json $GSFPV_HOST:$GSFPV_BASE/api/locales/   # the roadmap seed, loaded once
@@ -238,11 +242,22 @@ $SSH "docker exec gsfpv-api python /app/ideas_cli.py tg-setup"     # {"webhook":
                                                                     # refused if another service already set a webhook on the bot (see above)
 $SSH "docker exec gsfpv-api python /app/ideas_cli.py tg-info"      # pending updates, last error
 $SSH "docker exec gsfpv-api python /app/ideas_cli.py mail-check"   # ok (logs in, sends nothing)
+$SSH "docker exec gsfpv-api python /app/ideas_cli.py translate-check"   # v0.9: {"ok": true, "model": ..., "detected": "ru", "polish": "..."} (asks Gemini, sends no e-mail, prints no key)
 curl -sD- -o /dev/null https://gsfpv.flyreelstudio.eu/api/roadmap | grep -iE '^(HTTP|etag|cache-control)'   # 200, an ETag, max-age=60
 curl -s -o /dev/null -w '%{http_code}\n' -X POST -d '{}' https://gsfpv.flyreelstudio.eu/api/tg/00000000000000000000000000000000   # 404
 ```
 Then the owner sends an idea from the landing with his own second address as the contact, replies to
 the card in Telegram and checks that the e-mail arrives in that inbox (not spam) after a minute.
+
+**The pilot's language (v0.9, `translate.py`).** A reply is written in the language the pilot wrote in, English
+at worst. The bot's message for a translated reply says "goes in 60 s, translated (ru -> pl)", shows the whole
+e-mail and the owner's original under it, with Cancel and "Send my original instead"; for a text the pilot
+cannot surely read it says "NOT sent" and why, with "Send as written" and Cancel. Check live with a test
+idea (contact: the owner's second address, page language not Russian), `[TEST]` in its text; reply in
+Russian: the translated e-mail arrives in the page's or the text's language; reply with Gemini failing (the
+key removed from `config.env`, container recreated): the bot holds the Russian text, English still goes.
+Another language than en/es/pl/ru gets a frame built once by Gemini and kept in `data/mail-frames/<code>.json`
+(delete the file to build it again). `pilotLang` on the idea (`ideas_cli.py show <id> --json`) is the language found.
 
 ## Admin (v0.6): /admin/, the scene catalogue, report status
 

@@ -110,8 +110,9 @@ export function openThanks(start: Idea, host: ThanksHost): HTMLDialogElement {
         body.value = m.plain;
         step1.hidden = true;
         step2.hidden = false;
-        // a new text would be a second thank-you next to one that only waits: Edit is for a draft only
-        edit.hidden = m.state !== 'draft';
+        // a new text would be a second thank-you next to one that only waits: Edit is for a draft, and for one held for
+        // its language (a new summary supersedes it, so writing it again in the pilot's language is the way out)
+        edit.hidden = m.state !== 'draft' && m.state !== 'waiting_language';
         if (m.state === 'draft') tell('', 'muted');
         else tell(t('admin.ideas.thanks.notSent', { state: t(`admin.ideas.mail.state.${m.state}`) }), 'warn');
         send.focus();

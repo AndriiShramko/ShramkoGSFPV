@@ -8,12 +8,16 @@ GET  /api/admin/ideas/<id>             one idea
 POST /api/admin/ideas/update           {id, status?, urgency? (null clears), comment?, publicTitle? {lang: text},
                                         publicText? {lang: text}, visible?, release?, order?}
 POST /api/admin/ideas/note             {text, contact?, lang?, urgency?, kind?: note|feature, publicTitle?}
-POST /api/admin/ideas/reply            {id, text}: the owner's answer by e-mail (queued with the undo window)
+POST /api/admin/ideas/reply            {id, text}: the owner's answer by e-mail (queued with the undo window), in the
+                                       language the pilot wrote in: translated when needed (mail.orig keeps his words,
+                                       mail.tr says from/to), or HELD as state waiting_language when the pilot could not
+                                       surely read it (no key, the translator failed); mail/send then sends it as written
 POST /api/admin/ideas/mail/cancel      {id: mail id}: 409 when it is already being sent or was sent
 POST /api/admin/ideas/done             {id, summary: {lang: text} | text}: done + the draft thank-you e-mail
 POST /api/admin/ideas/send-done        {id, mail: the draft's e-mail id}: the owner's Send under the draft he was
                                        shown; 409 stale-draft when a newer summary replaced it (show the new one)
 POST /api/admin/ideas/mail/send        {id: mail id}: send again an e-mail that waited, failed or may not have gone
+                                       (a held waiting_language text: send it as written)
 """
 from __future__ import annotations
 

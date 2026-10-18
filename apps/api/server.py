@@ -91,6 +91,7 @@ import ownerbot
 import scenepages
 import service
 import superspl_facts
+import translate
 import wind
 
 SITE = os.environ.get("SITE_TAG", "gsfpv")
@@ -1185,8 +1186,10 @@ def _roadmap_seed() -> Path | None:
 # ---------------- ideas: the store, the owner's decisions, Gmail, the owner bot ----------------
 IDEAS = ideas.IdeaStore(data_dir=lambda: DATA_DIR, reports_file=lambda: REPORTS_FILE,
                         report_status=lambda: DATA_DIR / "report-status.json", seed=_roadmap_seed)
-MAILER = mailer.Mailer(lambda: mailer.MailConfig.from_env(os.environ), public_origin=PUBLIC_ORIGIN)
-SERVICE = service.IdeasService(IDEAS, MAILER, public_origin=PUBLIC_ORIGIN)
+# replies and thank-you e-mails reach the pilot in the language they wrote in (GEMINI_API_KEY, GEMINI_MODEL in config.env)
+TRANSLATOR = translate.Translator(lambda: translate.GeminiConfig.from_env(os.environ), lambda: DATA_DIR)
+MAILER = mailer.Mailer(lambda: mailer.MailConfig.from_env(os.environ), public_origin=PUBLIC_ORIGIN, frames=TRANSLATOR.cached_frame)
+SERVICE = service.IdeasService(IDEAS, MAILER, public_origin=PUBLIC_ORIGIN, translator=TRANSLATOR)
 BOT = ownerbot.OwnerBot(SERVICE, public_origin=PUBLIC_ORIGIN)
 WORKER = outbox.OutboxWorker(SERVICE, MAILER)
 

@@ -107,6 +107,7 @@
   "admin.ideas.mail.state.failed": "niedostarczony",
   "admin.ideas.mail.state.cancelled": "anulowano",
   "admin.ideas.mail.state.waiting_setup": "czeka na konfigurację Gmaila",
+  "admin.ideas.mail.state.waiting_language": "wstrzymany: nie jest w języku pilota i nie dało się go przetłumaczyć (Wyślij wyśle go jak jest)",
   "admin.ideas.mail.state.no_email": "brak adresu e-mail",
   "admin.ideas.mail.state.unknown": "mógł nie wyjść",
   "admin.ideas.thanks.open": "E-mail z podziękowaniem…",

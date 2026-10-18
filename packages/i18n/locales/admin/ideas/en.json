@@ -107,6 +107,7 @@
   "admin.ideas.mail.state.failed": "not delivered",
   "admin.ideas.mail.state.cancelled": "cancelled",
   "admin.ideas.mail.state.waiting_setup": "waiting for Gmail to be set up",
+  "admin.ideas.mail.state.waiting_language": "held: not in the pilot's language and could not be translated (Send sends it as written)",
   "admin.ideas.mail.state.no_email": "no e-mail address",
   "admin.ideas.mail.state.unknown": "may not have gone",
   "admin.ideas.thanks.open": "Thank-you e-mail…",

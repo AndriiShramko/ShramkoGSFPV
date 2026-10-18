@@ -26,12 +26,16 @@ export type PublicLang = (typeof PUBLIC_LANGS)[number];
  */
 export const PUBLIC_TITLE_MAX = 240;
 
-/** States of an e-mail in an idea's thread (lane B's outbox; superseded: a draft thank-you a newer one replaced). */
-export const MAIL_STATES = ['draft', 'superseded', 'queued', 'sending', 'sent', 'failed', 'cancelled', 'waiting_setup', 'no_email', 'unknown'] as const;
+/**
+ * States of an e-mail in an idea's thread (lane B's outbox; superseded: a draft thank-you a newer one replaced;
+ * waiting_language, v0.9: the text is not in the pilot's language or English and could not be translated, so it
+ * was held, and Send sends it as written).
+ */
+export const MAIL_STATES = ['draft', 'superseded', 'queued', 'sending', 'sent', 'failed', 'cancelled', 'waiting_setup', 'waiting_language', 'no_email', 'unknown'] as const;
 export type MailState = (typeof MAIL_STATES)[number];
 /** States the owner may still cancel, and the ones Send (again) applies to. */
-export const CANCELLABLE: ReadonlySet<MailState> = new Set(['draft', 'queued', 'waiting_setup', 'failed', 'unknown']);
-export const SENDABLE: ReadonlySet<MailState> = new Set(['draft', 'waiting_setup', 'failed', 'unknown']);
+export const CANCELLABLE: ReadonlySet<MailState> = new Set(['draft', 'queued', 'waiting_setup', 'waiting_language', 'failed', 'unknown']);
+export const SENDABLE: ReadonlySet<MailState> = new Set(['draft', 'waiting_setup', 'waiting_language', 'failed', 'unknown']);
 
 /** A comment of the owner's: from this page ('admin'), Telegram, or an agent. */
 export interface IdeaComment { at: string; text: string; by: string }
