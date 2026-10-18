@@ -12,6 +12,6 @@
   "scale.pushed": "Po zmniejszeniu sceny dron znalazł się w ścianie: przeniesiono go w najbliższe wolne miejsce",
   "set.scene.transform": "Rozmiar sceny",
   "set.scene.transform.help": "Niektóre skany nie są w prawdziwych metrach, więc dron wydaje się za duży albo za mały. Albo powiększ pokój i lataj po nim jak komar, z krzesłem wielkości domu. Od x0,25 do x100, wokół drona; [ i ] zmieniają rozmiar w locie, x1,1 na naciśnięcie, z Shift x2. Zapamiętywane dla każdego skanu.",
-  "scale.macroHint": "Ta scena zaczyna się w skali x{x}: to mała rzecz z prawdziwego świata (roślina, zabawka, owad), powiększona tak, żebyś latał po niej jak po dużym budynku. [ i ] zmieniają rozmiar.",
+  "scale.macroHint": "Ta scena zaczyna się w skali x{x}, ustawionej przez jej autora. Małe skany (np. roślina, zabawka, owad) często się tak powiększa, żeby latać po nich jak po dużym budynku. Rozmiar zmienisz w menu pauzy, w wierszu Rozmiar sceny, albo klawiszami [ i ] na klawiaturze.",
   "scale.macroHint.ok": "Jasne"
 }

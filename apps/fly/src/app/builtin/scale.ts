@@ -12,7 +12,9 @@
 // the store's session or visit layer (a shared link's size arriving or going, Reset on its chip) is applied
 // and never stored: the pilot's saved size is only ever written by the pilot.
 // v0.9 (item 17): a scene that starts at the owner's default size of x2 or more says so once, in a note
-// (app/macro-hint.ts has the rule): a small real object scaled up to fly like a big building, [ ] change it.
+// (app/macro-hint.ts has the rule): it states the size as the owner's, says in general that small scans are
+// scaled up like this, and names the Scene size row of the pause menu and the keys [ ] (the rule cannot know
+// the scan is a macro one, so the words never claim it).
 import { SCALE_MAX, SCALE_MIN } from '@gsfpv/prefs';
 import type { PrefsStore, SceneTransform as StoredTransform } from '@gsfpv/prefs';
 import { rescaleAround } from '@gsfpv/collision';

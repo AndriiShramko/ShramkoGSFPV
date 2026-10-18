@@ -1,9 +1,14 @@
 // v0.9 lane C, item 17: the one-time hint for a scene that starts at the owner's size of x2 or more
 // (apps/fly/src/app/macro-hint.ts). The rule, and the browser's note that it was shown. Controls: each
 // case that must stay quiet differs from the one that speaks in exactly one fact.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { MACRO_HINT_KEY, MACRO_HINT_MIN, macroHintDue, macroHintSeen, markMacroHintSeen } from '../../../apps/fly/src/app/macro-hint';
 import type { MacroHintFacts } from '../../../apps/fly/src/app/macro-hint';
+
+const LOCALES = join(__dirname, '..', '..', '..', 'packages', 'i18n', 'locales', 'fly', 'scale');
+const words = (loc: string): Record<string, string> => JSON.parse(readFileSync(join(LOCALES, `${loc}.json`), 'utf8')) as Record<string, string>;
 
 const SPEAKS: MacroHintFacts = { start: 5, ownerDefault: 5, pilotOwn: false, sharedSize: false, seen: false };
 
@@ -49,5 +54,24 @@ describe('the note that it was shown', () => {
         expect(() => markMacroHintSeen(blocked)).not.toThrow();
         expect(macroHintSeen(null)).toBe(false);
         expect(() => markMacroHintSeen(null)).not.toThrow();
+    });
+});
+
+describe('the words of the hint', () => {
+    // The rule only knows the owner set x2 or more, not that the scan is a macro one: the text states the size as
+    // the owner's, the macro idea as a general one, and names a way to change the size on every device.
+    const OLD_EN = 'This scene starts at x{x}: it is a small real thing (a plant, a toy, an insect), scaled up so you fly it like a big building. [ and ] change the size.';
+
+    const names = (text: string, w: Record<string, string>): boolean =>
+        text.includes('{x}') && text.includes(w['scale.title']) && text.includes('[') && text.includes(']');
+
+    it.each(['en', 'es', 'pl', 'ru'])('%s: the size placeholder, the Scene size row of the pause menu (touch has no keys) and the keys', (loc) => {
+        const w = words(loc);
+        expect(names(w['scale.macroHint'], w), loc).toBe(true);
+    });
+
+    it('control: the earlier English text named only the keys, and stated that this very scene is a small real thing', () => {
+        expect(names(OLD_EN, words('en'))).toBe(false);
+        expect(words('en')['scale.macroHint']).not.toMatch(/it is a small real thing/);
     });
 });
