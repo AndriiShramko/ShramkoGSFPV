@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-17T20:40:14.668Z",
-    "gitHead": "3304655",
+    "date": "2026-10-18T00:16:29.427Z",
+    "gitHead": "be91442",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5731",
+  "site": "http://localhost:5917",
   "render": "on",
   "pass": true,
   "radio": "SimRadio EdgeTX Classic (simulated raw HID reports, NOT a real radio)",
@@ -35,21 +35,21 @@
         "yaw": {
           "index": 3,
           "invert": false,
-          "center": 0.030587196657272355,
+          "center": 0.029650298579424826,
           "min": -1,
           "max": 1
         },
         "pitch": {
           "index": 2,
           "invert": true,
-          "center": 0.02947391428351705,
+          "center": 0.029901556907867353,
           "min": -1,
           "max": 1
         },
         "roll": {
           "index": 1,
           "invert": false,
-          "center": 0.029430806478290664,
+          "center": 0.030901028966061346,
           "min": -1,
           "max": 1
         }
@@ -64,20 +64,20 @@
       },
       "angleMode": null,
       "deadband": 0,
-      "created": "2026-10-17T20:39:21.414Z",
+      "created": "2026-10-18T00:15:37.625Z",
       "wizard": 2
     },
     "mappingCorrect": true
   },
   "throttleUpClimbs": {
     "armed": true,
-    "y0": 1.5790073852730848,
-    "y1": 2.482008060467443,
-    "climbed": 0.9030006751943582
+    "y0": 1.5790245115575816,
+    "y1": 2.6957261254867677,
+    "climbed": 1.116701613929186
   },
   "survivesReload": true,
-  "profileBefore": "{\"angleMode\":null,\"arm\":{\"index\":4,\"kind\":\"axis\",\"off\":-0.9990234375,\"on\":0.9990234375,\"onAbove\":true,\"threshold\":0.49951171875},\"axes\":{\"pitch\":{\"center\":0.02947391428351705,\"index\":2,\"invert\":true,\"max\":1,\"min\":-1},\"roll\":{\"center\":0.029430806478290664,\"index\":1,\"invert\":false,\"max\":1,\"min\":-1},\"throttle\":{\"center\":-0.9794921875,\"index\":0,\"invert\":false,\"max\":0.9990234375,\"min\":-0.9794921875},\"yaw\":{\"center\":0.030587196657272355,\"index\":3,\"invert\":false,\"max\":1,\"min\":-1}},\"created\":\"2026-10-17T20:39:21.414Z\",\"deadband\":0,\"deviceKey\":\"hid:1209:4f54:SimRadio EdgeTX Classic TAER:19\",\"deviceName\":\"SimRadio EdgeTX Classic\",\"mode\":2,\"version\":1,\"wizard\":2}",
-  "profileAfterReload": "{\"angleMode\":null,\"arm\":{\"index\":4,\"kind\":\"axis\",\"off\":-0.9990234375,\"on\":0.9990234375,\"onAbove\":true,\"threshold\":0.49951171875},\"axes\":{\"pitch\":{\"center\":0.02947391428351705,\"index\":2,\"invert\":true,\"max\":1,\"min\":-1},\"roll\":{\"center\":0.029430806478290664,\"index\":1,\"invert\":false,\"max\":1,\"min\":-1},\"throttle\":{\"center\":-0.9794921875,\"index\":0,\"invert\":false,\"max\":0.9990234375,\"min\":-0.9794921875},\"yaw\":{\"center\":0.030587196657272355,\"index\":3,\"invert\":false,\"max\":1,\"min\":-1}},\"created\":\"2026-10-17T20:39:21.414Z\",\"deadband\":0,\"deviceKey\":\"hid:1209:4f54:SimRadio EdgeTX Classic TAER:19\",\"deviceName\":\"SimRadio EdgeTX Classic\",\"mode\":2,\"version\":1,\"wizard\":2}",
+  "profileBefore": "{\"angleMode\":null,\"arm\":{\"index\":4,\"kind\":\"axis\",\"off\":-0.9990234375,\"on\":0.9990234375,\"onAbove\":true,\"threshold\":0.49951171875},\"axes\":{\"pitch\":{\"center\":0.029901556907867353,\"index\":2,\"invert\":true,\"max\":1,\"min\":-1},\"roll\":{\"center\":0.030901028966061346,\"index\":1,\"invert\":false,\"max\":1,\"min\":-1},\"throttle\":{\"center\":-0.9794921875,\"index\":0,\"invert\":false,\"max\":0.9990234375,\"min\":-0.9794921875},\"yaw\":{\"center\":0.029650298579424826,\"index\":3,\"invert\":false,\"max\":1,\"min\":-1}},\"created\":\"2026-10-18T00:15:37.625Z\",\"deadband\":0,\"deviceKey\":\"hid:1209:4f54:SimRadio EdgeTX Classic TAER:19\",\"deviceName\":\"SimRadio EdgeTX Classic\",\"mode\":2,\"version\":1,\"wizard\":2}",
+  "profileAfterReload": "{\"angleMode\":null,\"arm\":{\"index\":4,\"kind\":\"axis\",\"off\":-0.9990234375,\"on\":0.9990234375,\"onAbove\":true,\"threshold\":0.49951171875},\"axes\":{\"pitch\":{\"center\":0.029901556907867353,\"index\":2,\"invert\":true,\"max\":1,\"min\":-1},\"roll\":{\"center\":0.030901028966061346,\"index\":1,\"invert\":false,\"max\":1,\"min\":-1},\"throttle\":{\"center\":-0.9794921875,\"index\":0,\"invert\":false,\"max\":0.9990234375,\"min\":-0.9794921875},\"yaw\":{\"center\":0.029650298579424826,\"index\":3,\"invert\":false,\"max\":1,\"min\":-1}},\"created\":\"2026-10-18T00:15:37.625Z\",\"deadband\":0,\"deviceKey\":\"hid:1209:4f54:SimRadio EdgeTX Classic TAER:19\",\"deviceName\":\"SimRadio EdgeTX Classic\",\"mode\":2,\"version\":1,\"wizard\":2}",
   "controls": {
     "otherOrder": {
       "profile": {
@@ -95,21 +95,21 @@
           "yaw": {
             "index": 3,
             "invert": false,
-            "center": 0.030034949758535216,
+            "center": 0.030310073032216334,
             "min": -1,
             "max": 1
           },
           "pitch": {
             "index": 1,
             "invert": false,
-            "center": 0.029401336418512333,
+            "center": 0.03154155364376745,
             "min": -1,
             "max": 1
           },
           "roll": {
             "index": 0,
             "invert": false,
-            "center": 0.0285400662650219,
+            "center": 0.028469084520268695,
             "min": -1,
             "max": 1
           }
@@ -124,7 +124,7 @@
         },
         "angleMode": null,
         "deadband": 0,
-        "created": "2026-10-17T20:39:47.014Z",
+        "created": "2026-10-18T00:16:02.332Z",
         "wizard": 2
       },
       "fired": true
