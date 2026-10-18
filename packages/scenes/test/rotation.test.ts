@@ -1,8 +1,9 @@
 // Scene rotation (docs/architecture-v03.md E.3, E.10): the shuffle bag does not repeat until it is
-// exhausted, never returns the current scene, and skips failed and wall-less scenes. Control: with
+// exhausted, never returns the current scene, and skips failed scenes (and, for the pilot's own
+// sources, wall-less ones; the owner's catalogue is never filtered by walls, v0.9 item 9). Control: with
 // skipping disabled, they are returned.
 import { describe, expect, it } from 'vitest';
-import { SceneRotation, library as L, emptyLibrary } from '../src/index';
+import { SceneRotation, library as L, emptyLibrary, orderFor } from '../src/index';
 import type { RotationScene, SceneLibraryData } from '../src/index';
 
 /** A seeded generator (mulberry32), so every run draws the same. */
@@ -38,7 +39,7 @@ describe('scene rotation: shuffle bag', () => {
         for (let seed = 1; seed <= 200; seed++) {
             const r = rot(seed);
             const pool = r.candidates('curated', RULES);
-            expect(pool.sort()).toEqual(['a', 'b', 'c', 'd', 'e', 'old-fail']);
+            expect(pool.sort()).toEqual(['a', 'b', 'c', 'd', 'e', 'nowalls', 'old-fail']);
             let current: string | null = 'a';
             const seen: string[] = [];
             for (let i = 0; i < 40; i++) {
@@ -48,28 +49,28 @@ describe('scene rotation: shuffle bag', () => {
                 seen.push(id);
                 current = id;
             }
-            // each bag is every scene but the current one: 5 draws, 5 different scenes, then a refill
-            for (let k = 0; k + 5 <= seen.length; k += 5) expect(new Set(seen.slice(k, k + 5)).size).toBe(5);
+            // each bag is every scene but the current one: 6 draws, 6 different scenes, then a refill
+            for (let k = 0; k + 6 <= seen.length; k += 6) expect(new Set(seen.slice(k, k + 6)).size).toBe(6);
         }
     });
 
-    it('skips scenes without walls and scenes that failed in the last 24 h; allowNoWalls lets the wall-less in', () => {
+    it('skips scenes that failed in the last 24 h; the owner\'s list is not filtered by walls', () => {
         const r = rot(3);
         const drawn = new Set<string>();
         let cur: string | null = null;
         for (let i = 0; i < 200; i++) { cur = r.next('curated', cur, 'random', RULES); drawn.add(cur!); }
-        expect(drawn.has('nowalls')).toBe(false);
+        expect(drawn.has('nowalls')).toBe(true);
         expect(drawn.has('failed')).toBe(false);
         expect(drawn.has('old-fail')).toBe(true);
-        expect(rot(3).candidates('curated', { allowNoWalls: true })).toContain('nowalls');
+        // allowNoWalls changes nothing for the owner's list
+        expect(rot(3).candidates('curated', { allowNoWalls: true })).toEqual(rot(3).candidates('curated', RULES));
     });
 
-    it('control: with skipping disabled the failed and wall-less scenes are returned', () => {
+    it('control: with skipping disabled the failed scene is returned', () => {
         const r = rot(3);
         const drawn = new Set<string>();
         let cur: string | null = null;
         for (let i = 0; i < 200; i++) { cur = r.next('curated', cur, 'random', { allowNoWalls: false, skip: false }); drawn.add(cur!); }
-        expect(drawn.has('nowalls')).toBe(true);
         expect(drawn.has('failed')).toBe(true);
     });
 
@@ -86,7 +87,7 @@ describe('scene rotation: sequential, favourites, random', () => {
         const walk: string[] = [];
         let cur: string | null = 'd';
         for (let i = 0; i < 7; i++) { cur = r.next('curated', cur, 'sequential', RULES); walk.push(cur!); }
-        expect(walk).toEqual(['e', 'old-fail', 'a', 'b', 'c', 'd', 'e']);
+        expect(walk).toEqual(['e', 'nowalls', 'old-fail', 'a', 'b', 'c', 'd']);
     });
 
     it('F: the next favourite in the favourites order; skipped ones are passed over', () => {
@@ -109,5 +110,91 @@ describe('scene rotation: sequential, favourites, random', () => {
         // only scenes opened here: 'old-fail' failed before it was ever opened, so it is not history
         expect(r.candidates('history', RULES)).toEqual(['h1']);
         for (let i = 0; i < 50; i++) expect(r.random('a', RULES)).not.toBe('a');
+    });
+});
+
+// The owner's report (message 22, item 9): "N cycles only 3-4 scenes although many are uploaded".
+// The flags below are the live catalogue of 2026-10-17 (GET /api/catalog): 13 published scenes, 9 of
+// them without a walls file (collision false), in the owner's order.
+const LIVE: RotationScene[] = [
+    ['887f27aa', true], ['39e63ce9', true], ['7a475d38', true], ['70b50d42', false], ['ab5efa0e', false], ['d10c5638', false],
+    ['2f1ddf5f', false], ['ba7aa29d', false], ['9baef54b', false], ['0230d903', false], ['eb5f51dc', false], ['1994c65c', false], ['b11e45d1', true]
+].map(([id, collision]) => ({ id: id as string, collision: collision as boolean }));
+
+describe('scene rotation: the owner\'s catalogue is not filtered by walls (v0.9 item 9)', () => {
+    /** The v0.8 rule, transcribed: the walls rule applied to every source, the default setting being off. */
+    const v08Candidates = (list: readonly RotationScene[]): string[] => list.filter((s) => s.collision !== false).map((s) => s.id);
+
+    it('the live catalogue: N can reach all 13 scenes, not the 4 that have walls', () => {
+        const r = new SceneRotation({ curated: () => LIVE, library: () => emptyLibrary(), now: () => NOW }, rng(7));
+        expect(r.candidates('curated', RULES)).toEqual(LIVE.map((s) => s.id));
+        // walking N in the default (random) order for a while reaches every scene
+        const reached = new Set<string>();
+        let cur: string | null = null;
+        for (let i = 0; i < 60; i++) { cur = r.next('curated', cur, 'random', RULES); reached.add(cur!); }
+        expect(reached.size).toBe(13);
+        // control: the v0.8 rule on the same list leaves the 4 scenes the owner saw
+        expect(v08Candidates(LIVE)).toEqual(['887f27aa', '39e63ce9', '7a475d38', 'b11e45d1']);
+    });
+
+    it('the pilot\'s own sources keep the walls rule (history, favourites); allowNoWalls lets them in', () => {
+        let d = emptyLibrary();
+        d = L.recordOpen(d, { id: 'h1', version: 1, hasCollision: true }, NOW - 10);
+        d = L.recordOpen(d, { id: 'h2', version: 1, hasCollision: false }, NOW - 5);
+        d = L.toggleFavourite(d, 'h2', { hasCollision: false }).data;
+        d = L.toggleFavourite(d, 'h1', { hasCollision: true }).data;
+        const r = new SceneRotation({ curated: () => LIVE, library: () => d, now: () => NOW }, rng(1));
+        expect(r.candidates('history', RULES)).toEqual(['h1']);
+        expect(r.candidates('favourites', RULES)).toEqual(['h1']);
+        expect(r.candidates('history', { allowNoWalls: true }).sort()).toEqual(['h1', 'h2']);
+        expect(r.candidates('favourites', { allowNoWalls: true }).sort()).toEqual(['h1', 'h2']);
+    });
+});
+
+// v0.9 changed the scenes.order default from random to sequential so that N walks the owner's catalogue in his
+// order. That default must not reach the pilot's own lists: a history walked in order ping-pongs (the scene
+// just opened moves to the top, so "the entry after the current one" is the scene just left).
+describe('the order N takes when the pilot never set Order', () => {
+    const H = ['aaaaaa01', 'bbbbbb01', 'cccccc01'];
+
+    /** Press N `n` times on the history source, opening each scene the way the page does (recordOpen moves it to the top). */
+    function walkHistory(order: (cur: string) => 'random' | 'sequential', seed: number, n: number): string[] {
+        let d = emptyLibrary();
+        for (let i = 0; i < H.length; i++) d = L.recordOpen(d, { id: H[i], version: 1, hasCollision: true }, NOW - 100 + i);
+        const r = new SceneRotation({ curated: () => [], library: () => d, now: () => NOW }, rng(seed));
+        let cur = H[H.length - 1]; // the scene flown last, top of the history
+        const visited: string[] = [cur];
+        for (let i = 0; i < n; i++) {
+            const next = r.next('history', cur, order(cur), RULES)!;
+            d = L.recordOpen(d, { id: next, version: 1, hasCollision: true }, NOW + i);
+            visited.push(next);
+            cur = next;
+        }
+        return visited;
+    }
+
+    it('the catalogue goes in the owner\'s order, the pilot\'s own lists shuffle; a chosen order wins everywhere', () => {
+        expect(orderFor('curated', null)).toBe('sequential');
+        expect(orderFor('history', null)).toBe('random');
+        expect(orderFor('favourites', null)).toBe('random');
+        for (const src of ['curated', 'history', 'favourites'] as const) {
+            expect(orderFor(src, 'random')).toBe('random');
+            expect(orderFor(src, 'sequential')).toBe('sequential');
+        }
+    });
+
+    it('history left on the default reaches every scene flown, over many seeds (no ping-pong between the last two)', () => {
+        for (let seed = 1; seed <= 100; seed++) {
+            const visited = walkHistory(() => orderFor('history', null), seed, 6);
+            // the shuffle bag: every scene but the current one before any comes again
+            expect(new Set(visited.slice(0, 3)).size, `seed ${seed}`).toBe(3);
+            for (let i = 1; i < visited.length; i++) expect(visited[i]).not.toBe(visited[i - 1]);
+        }
+    });
+
+    it('control: the v0.9 default applied to every source (sequential history) never leaves the two scenes flown last', () => {
+        const visited = walkHistory(() => 'sequential', 1, 12);
+        expect(visited).toEqual(['cccccc01', 'bbbbbb01', 'cccccc01', 'bbbbbb01', 'cccccc01', 'bbbbbb01', 'cccccc01', 'bbbbbb01', 'cccccc01', 'bbbbbb01', 'cccccc01', 'bbbbbb01', 'cccccc01']);
+        expect(visited).not.toContain('aaaaaa01');
     });
 });

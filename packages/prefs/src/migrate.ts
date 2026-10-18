@@ -40,7 +40,12 @@ export const MACHINE_LOCAL_KEYS: Readonly<Record<string, string>> = {
     'gsfpv.bakeSecondsPerMillion': "this machine's measured walls-bake speed, a calibration of its GPU and network, not a pilot's choice",
     // apps/fly admin/api.ts (v0.7 lane E): '1' while this browser has an admin session, so the flight
     // page may ask /api/admin/session (and only then) before offering "Save as this scan's default".
-    'gsfpv.admin': "this browser's sign-in to the admin page (a hint the server checks), not a pilot's choice; it must never travel in an exported file"
+    'gsfpv.admin': "this browser's sign-in to the admin page (a hint the server checks), not a pilot's choice; it must never travel in an exported file",
+    // apps/fly app/tour.ts (v0.9 lane N): which of the owner's scenes N has brought here and how far into the
+    // SuperSplat list; a bookmark of this browser's walk, kept 30 days, not a setting.
+    'gsfpv.tour.v1': "where this browser's N-walk through the scenes stands (scenes seen, place in the SuperSplat list), a bookmark that expires, not a pilot's choice",
+    // apps/fly app/next-used.ts (v0.9 lane N): '1' once this browser used N, so the crash hint is never shown again.
+    'gsfpv.nextUsed.v1': "whether this browser already used the next-scene key, so the crash hint stays away; a fact about this browser, not a pilot's choice"
 };
 
 export interface LegacyBag { format: 'gsfpv-legacy'; version: 0; keys: Record<string, string> }

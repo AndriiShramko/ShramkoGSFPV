@@ -11,7 +11,8 @@
 .crash-toast .ct-keys { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; color: #d1d5db; font-size: 13px; }
 .crash-toast .ct-key { display: inline-flex; align-items: center; gap: 6px; }
 /* touch sticks: the bottom corners are the pads and the middle is ARM, so the toast goes above them */
-body.touch-on .crash-toast { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 12px); }
+/* top: auto - on a narrow phone the rule above sets `top` as well, and a box with both top and bottom stretches between them (546 px tall on a 390 x 844 phone, measured v0.9 lane N) */
+body.touch-on .crash-toast { top: auto; bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 12px); }
 body.touch-on .crash-toast .ct-keys { display: none; } /* keyboard keys: nothing to press on a phone */
 /* cinema mode: above the Record control */
 body.cinema .crash-toast { bottom: calc(var(--cinema-top, 96px) + 8px); }

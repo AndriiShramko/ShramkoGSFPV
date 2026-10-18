@@ -3,6 +3,8 @@
   "rotation.key.next": "Next scene",
   "rotation.key.favourite": "Favourite",
   "rotation.none": "No other scene to go to. Change the source in Settings → Scenes, or allow scenes without walls.",
+  "rotation.again": "No new scene to bring right now: the author's list starts again.",
+  "rotation.looking": "Looking for the next scene…",
   "rotation.noFavourite": "No other favourite scene yet: star scenes in the scene list (★).",
   "rotation.failed": "Scene {id} did not load: back to the one you flew. It is skipped for a day.",
   "scenes.continue": "Continue: {title}",
@@ -10,13 +12,16 @@
   "set.scenes.autoSwitch.help": "On: after a crash the next scene loads instead of a respawn, and you start on its platform. The radio stays connected.",
   "set.scenes.rotation": "Scenes to rotate through",
   "set.scenes.rotation.help": "Where N (next scene) and the next scene after a crash come from. Shift+N is always a random scene from the author's list; Shift+F is your next favourite.",
-  "set.scenes.rotation.opt.curated": "The author's list",
+  "set.scenes.rotation.opt.curated": "The author's list, then SuperSplat",
   "set.scenes.rotation.opt.favourites": "My favourites",
   "set.scenes.rotation.opt.history": "Scenes I have flown",
   "set.scenes.order": "Order",
-  "set.scenes.order.help": "Random: every scene once before any comes again, never the one you are in. In order: one after another, round and round.",
+  "set.scenes.order.help": "Random: every scene once before any comes again, never the one you are in. In order: one after another, round and round. The author's scenes come first, then SuperSplat in its own order. Left on the default, your own lists (favourites, scenes flown) still shuffle.",
   "set.scenes.order.opt.random": "Random",
   "set.scenes.order.opt.sequential": "In order",
   "set.scenes.allowNoWalls": "Include scenes without walls",
-  "set.scenes.allowNoWalls.help": "Scenes without walls have no crashes: you fly through everything. Off: the rotation skips them."
+  "set.scenes.allowNoWalls.help": "Scenes without walls have no crashes: you fly through everything. Off: the rotation skips them (the author's own scenes always come).",
+  "nexthint.key": "Want another place? Press {key} for the next scene",
+  "nexthint.radio": "Want another place? Flip your next-scene switch, or press {key}",
+  "nexthint.touch": "Want another place?"
 }

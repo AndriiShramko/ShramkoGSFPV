@@ -99,7 +99,7 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['tune.throttle', 'tune', 'drone', 'json', null, 'life'],
     ['scenes.autoSwitch', 'scenes', 'global', 'bool', false, 'live'],
     ['scenes.rotation', 'scenes', 'global', 'enum', 'curated', 'live'],
-    ['scenes.order', 'scenes', 'global', 'enum', 'random', 'live'],
+    ['scenes.order', 'scenes', 'global', 'enum', 'sequential', 'live'],
     ['scenes.allowNoWalls', 'scenes', 'global', 'bool', false, 'live'],
     ['scene.transform', 'scenes', 'scene', 'json', null, 'live'],
     ['scene.dropFloaters', 'voxels', 'scene', 'number', 'curated:dropFloaters|0', 'life'],
