@@ -187,10 +187,12 @@ async function main(): Promise<void> {
             // distinct pictures
             const pairs: { a: string; b: string; d: number }[] = [];
             for (let i = 0; i < IDS.length; i++) for (let j = i + 1; j < IDS.length; j++) pairs.push({ a: IDS[i], b: IDS[j], d: +sigDiff(sigs[IDS[i]], sigs[IDS[j]]).toFixed(4) });
-            // Presets that are the same airframe sold with another pack, motors or prop (the Pavo20 Pro, its Pro II on 3S and 4S;
-            // the 65 mm whoops) are drawn on the same parametric airframe, so their pictures differ in a few pixels only: those
-            // pairs must still differ (a stuck model gives exactly 0, as the same-preset control does), the others by a lot.
-            const group = (id: string): string => (/^pavo20pro/.test(id) ? 'pavo20' : /^(meteor65|air65)/.test(id) ? 'whoop65' : id);
+            // The four families of the design note (docs/wip/v09-d.md section 1): ducted 2" HD cinewhoops, tiny 65 mm whoops,
+            // open-prop X quads, the coaxial X8. A family is one parametric build, sized from each preset, so its members look alike
+            // by design (the Pavo20 Pro and its Pro II are the same frame: 93.7 and 93.9 mm). Across families the pictures must
+            // differ a lot; within one they must still differ (a model stuck on one preset gives exactly 0, as does the
+            // same-preset control below), by a smaller margin.
+            const group = (id: string): string => (/^pavo/.test(id) ? 'ducted-hd' : /^(meteor65|air65)/.test(id) ? 'tiny-whoop' : /^taurus/.test(id) ? 'cinelifter' : 'open-x');
             const across = pairs.filter((p) => group(p.a) !== group(p.b));
             const within = pairs.filter((p) => group(p.a) === group(p.b));
             const minPair = across.reduce((m, p) => (p.d < m.d ? p : m), across[0]);
@@ -216,7 +218,7 @@ async function main(): Promise<void> {
             const allNonEmpty = IDS.every((id) => per[id].nonEmpty);
             const distinct = minPair.d > 0.012 && minWithin.d > 0.0004;
             const pass = ready && allNonEmpty && distinct && legendOk && dragChange > 0.012 && same < 0.004;
-            results.V1 = { pass, ready, perDrone: per, distinct: { minAcrossAirframes: minPair, threshold: 0.012, minWithinAirframe: minWithin, withinThreshold: 0.0004, pairs }, control: { samePresetTwice: +same.toFixed(5), dragChange: +dragChange.toFixed(4), identicalBelow: same < 0.004, dragAbove: dragChange > 0.012 } };
+            results.V1 = { pass, ready, perDrone: per, distinct: { minAcrossFamilies: minPair, threshold: 0.012, minWithinFamily: minWithin, withinThreshold: 0.0004, pairs }, control: { samePresetTwice: +same.toFixed(5), dragChange: +dragChange.toFixed(4), identicalBelow: same < 0.004, dragAbove: dragChange > 0.012 } };
             console.log('V1', pass, JSON.stringify({ ready, allNonEmpty, distinct, minPair, minWithin, legendOk, same, dragChange }));
             await closePicker(page);
         }
