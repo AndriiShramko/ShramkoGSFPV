@@ -56,6 +56,10 @@ mkdirSync(OUT, { recursive: true });
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Any = any;
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+/** ACCEPT_TRACE=1: where a long run is (a step that hangs shows as the last line). Every trace is also a sign of life for the watchdog. */
+let lastStep = 'start';
+let lastLife = Date.now();
+const trace = (...a: unknown[]): void => { lastStep = a.join(' '); lastLife = Date.now(); if (process.env.ACCEPT_TRACE) console.log('trace', ...a); };
 const results: Record<string, Any> = {};
 const cb = (): string => `cb=${Math.random().toString(36).slice(2)}`;
 /** `scan: true` loads and draws the scan (V9); otherwise ?render=off, the logic-only page */
@@ -67,7 +71,7 @@ let haveLock = false;
 let waited = 0;
 async function lock(): Promise<void> {
     for (;;) {
-        try { mkdirSync(LOCK); haveLock = true; return; } catch {
+        try { mkdirSync(LOCK); haveLock = true; lockedAt = Date.now(); return; } catch {
             try { if (Date.now() - statSync(LOCK).mtimeMs > 20 * 60 * 1000) { rmdirSync(LOCK); continue; } } catch { /* gone meanwhile */ }
             if (!waited++ || waited % 600 === 0) console.log('waiting for the GPU lock');
             await sleep(100);
@@ -76,26 +80,63 @@ async function lock(): Promise<void> {
 }
 const unlock = (): void => { if (haveLock) { try { rmdirSync(LOCK); } catch { /* */ } haveLock = false; } };
 process.on('SIGINT', () => { unlock(); process.exit(130); });
+// A page whose renderer hangs leaves a Playwright call waiting for good (evaluate has no timeout) and the lock held until another run
+// takes it as stale (20 minutes). Every step of the run is a sign of life (trace); no sign for 3 minutes, or 19 minutes with the lock:
+// the lock is freed and the run stops, saying where it was.
+let lockedAt = 0;
+let theCtx: BrowserContext | null = null;
+/** Where the JavaScript of each open page is right now (the debugger is asked to pause it): a loop in the page shows as its call stack. */
+async function diagnose(): Promise<void> {
+    if (!theCtx) return;
+    for (const pg of theCtx.pages()) {
+        try {
+            const cdp = await theCtx.newCDPSession(pg);
+            const where = await Promise.race([
+                new Promise<string>((res) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    cdp.on('Debugger.paused', (e: any) => res(e.callFrames.slice(0, 8).map((f: any) => `${f.functionName || '(anonymous)'} ${String(f.url).split('/').pop()}:${f.location.lineNumber}`).join(' <- ')));
+                    void cdp.send('Debugger.enable').then(() => cdp.send('Debugger.pause'));
+                }),
+                sleep(4000).then(() => 'no pause within 4 s: its JavaScript is not running, or the renderer does not answer')
+            ]);
+            console.error('  page', pg.url().slice(0, 100), '->', where);
+        } catch (e) { console.error('  page', pg.url().slice(0, 100), 'could not be asked:', String(e).slice(0, 120)); }
+    }
+}
+let stopping = false;
+setInterval(() => {
+    if (!haveLock || stopping) return;
+    const quiet = Date.now() - lastLife, held = Date.now() - lockedAt;
+    if (quiet > 2 * 60 * 1000 || held > 19 * 60 * 1000) {
+        stopping = true;
+        console.error(`accept-v09-drones3d: WATCHDOG (${Math.round(quiet / 1000)} s without a step, ${Math.round(held / 1000)} s with the GPU lock), last step: ${lastStep}`);
+        void Promise.race([diagnose(), sleep(20000)]).finally(() => { console.error('freed the lock and stopped'); unlock(); process.exit(3); });
+    }
+}, 5000).unref();
 
 // ------------------------------------------------------------------ page helpers
 async function open(page: Page, site: string, qs: string, lang = 'en', scan = false): Promise<void> {
+    trace('open', site, qs, scan ? 'scan' : 'render=off');
     await page.goto(url(site, qs, lang, scan));
     const t0 = Date.now();
     for (;;) {
+        trace('open: waiting for the page');
         const h = await page.evaluate(() => { const w = window as Any; return w.__gsfpv ? { status: w.__gsfpv.status, error: w.__gsfpv.error } : null; });
-        if (h && h.status !== 'loading') { if (h.status !== 'ready') throw new Error(`page not ready: ${JSON.stringify(h)}`); return; }
+        if (h && h.status !== 'loading') { if (h.status !== 'ready') throw new Error(`page not ready: ${JSON.stringify(h)}`); trace('ready'); return; }
         if (Date.now() - t0 > (scan ? 240000 : 120000)) throw new Error('page did not become ready');
         await sleep(250);
     }
 }
 
 async function openPicker(page: Page): Promise<void> {
+    trace('openPicker');
     await page.keyboard.press('KeyP');
     await page.click('[data-action="pause.drone"]');
     await page.waitForSelector('.screen.drones');
 }
 
 async function closePicker(page: Page): Promise<void> {
+    trace('closePicker');
     await page.click('[data-action="drone-close"]');
     await page.waitForSelector('.screen.drones', { state: 'detached' });
 }
@@ -105,6 +146,7 @@ const hookCounts = (page: Page): Promise<Any> => page.evaluate(() => { const k =
 
 /** The stage has drawn `n` more frames than when this was called. */
 async function frames(page: Page, n: number, timeoutMs = 20000): Promise<boolean> {
+    trace('frames', n);
     const f0 = (await hookInfos(page))[0]?.frames ?? 0;
     try { await page.waitForFunction((want) => ((window as Any).__gsfpvDrones3d?.infos()[0]?.frames ?? 0) >= want, f0 + n, { timeout: timeoutMs }); return true; } catch { return false; }
 }
@@ -146,16 +188,21 @@ async function canvasShot(page: Page, sel = '.d3-canvas'): Promise<Buffer> {
 }
 
 /**
- * The whole stage as a picture, from the window as it is: a clip of the page inside the viewport. (An element screenshot of a stage taller
- * than the window lays the page out again at another height, and the canvas, clamped to 56vh, comes out another shape than the one the
- * pilot sees: the first pictures of this lane were taken that way.)
+ * The picker as the pilot sees it: the window, with the canvas scrolled into view first. Not an element screenshot of the stage: the stage
+ * with its legend is taller than the window, and Playwright lays the page out again at the element's height for it (the canvas, clamped to
+ * 56vh, comes out another shape, cropped under the heading): the first pictures of this lane were taken that way.
  */
 async function stagePicture(page: Page, path: string): Promise<void> {
-    const box = await page.locator('[data-testid="drone-stage"]').boundingBox();
-    const vp = page.viewportSize();
-    if (!box || !vp) throw new Error('no stage to take a picture of');
-    const y = Math.max(0, box.y);
-    await page.screenshot({ path, clip: { x: Math.max(0, box.x), y, width: Math.min(box.width, vp.width - Math.max(0, box.x)), height: Math.min(box.height - (y - box.y), vp.height - y) } });
+    await page.locator('.d3-view').scrollIntoViewIfNeeded();
+    await page.screenshot({ path });
+}
+/** The canvas lies wholly inside what the pilot can see: below the top of the scrolling screen and above the bottom of the window. */
+async function canvasInView(page: Page): Promise<boolean> {
+    return page.evaluate(() => {
+        const c = document.querySelector('.d3-canvas')?.getBoundingClientRect();
+        const sc = (document.querySelector('.screen.drones') ?? document.documentElement).getBoundingClientRect();
+        return !!c && c.top >= sc.top - 0.5 && c.bottom <= Math.min(sc.bottom, innerHeight) + 0.5 && c.left >= -0.5 && c.right <= innerWidth + 0.5;
+    });
 }
 
 const NONEMPTY = 0.035;
@@ -229,10 +276,12 @@ async function reviewChecks(ctx: BrowserContext, site: string): Promise<{ checks
         await openPicker(page);
         await settleStage();
         const margins: Record<string, number | null> = {};
+        const inView: Record<string, boolean> = {};
         for (const id of [CINE, 'nazgulf5v3-6s', 'machr5sport-6s']) {
             await showDrone(id);
             await sleep(1500); // eases to its first view; the idle turn has not started
             margins[id] = await edgeMargin(page);
+            inView[id] = await canvasInView(page); // "View in 3D" brings the picture into view (the first cut scrolled its top away under the top bar)
         }
         // control: the measure sees a model that does cross the edge (zoomed right in with the keyboard)
         await page.focus('.d3-canvas');
@@ -241,6 +290,7 @@ async function reviewChecks(ctx: BrowserContext, site: string): Promise<{ checks
         const zoomedMargin = await edgeMargin(page);
         await page.keyboard.press('Home');
         await sleep(1200);
+        d.viewInWindow = { canvasInView: inView };
         d.firstView = { edgeMargin: margins, edgeMarginMin: EDGE_MIN, control: { zoomedIn: zoomedMargin, crosses: zoomedMargin !== null && zoomedMargin < 0 } };
         // ---- findings 1 and 7: the stage's own numbers follow the camera load; the GoPro is GoPro's own figure
         await showDrone(CINE);
@@ -317,6 +367,7 @@ async function reviewChecks(ctx: BrowserContext, site: string): Promise<{ checks
         d.restored = { massKg: restored };
         const printedKg = (line: string): number => Number((/(\d+) g/.exec(line) ?? [])[1]) / 1000;
         const checks: Record<string, boolean> = {
+            viewInWindow: Object.values(inView).every(Boolean),
             firstView: Object.values(margins).every((m) => m !== null && m >= EDGE_MIN) && zoomedMargin !== null && zoomedMargin < 0,
             stageLine: /4872 g/.test(lineKomodo) && /3\.3:1/.test(lineKomodo) && /2872 g/.test(lineNone) && /5\.6:1/.test(lineNone) && cardNone.weight === '2872 g' && cardNone.twr === '5.6:1',
             gopro: /3029 g/.test(lineGopro) && /5\.3:1/.test(lineGopro) && hrefs.some((h) => /^https:\/\/community\.gopro\.com\//.test(h)),
@@ -374,6 +425,7 @@ async function scanDrawn(ctx: BrowserContext): Promise<Record<string, Any>> {
         for (const [name, sf] of Object.entries(surfaces)) {
             const rounds: Any[] = [];
             for (let i = 0; i < 5; i++) {
+                trace('V9', name, i + 1);
                 const tOpen = await now();
                 const w0 = Date.now();
                 await sf.open();
@@ -445,6 +497,7 @@ async function main(): Promise<void> {
     const { browser } = await launchChrome({ headless: false, args: ['--window-position=40,40', '--window-size=1300,1000'] });
     try {
         const ctx = await browser.newContext({ viewport: { width: 1280, height: 880 }, deviceScaleFactor: 1.5 });
+        theCtx = ctx;
         // tsx keeps function names with __name(); functions sent to page.evaluate need it in the page
         await ctx.addInitScript('window.__name = window.__name || ((f) => f);');
         const page = await ctx.newPage();
@@ -479,19 +532,24 @@ async function main(): Promise<void> {
             for (const id of IDS) {
                 await page.click(`.drone-card[data-preset="${id}"] [data-action="drone-view3d"]`);
                 await page.waitForFunction((want) => (window as Any).__gsfpvDrones3d?.infos()[0]?.drone === want, id, { timeout: 10000 });
+                trace('V1', id, 'shown');
                 await frames(page, 12);
                 await sleep(1300); // the turntable eases to its first view
+                trace('V1', id, 'settled');
                 const shot = await canvasShot(page);
+                trace('V1', id, 'canvas shot');
                 const m = await measure(page, shot);
+                trace('V1', id, 'measured');
                 const info = (await hookInfos(page))[0];
                 const rowsN = await page.locator('[data-testid="d3-legend"] li').count();
                 const pinsVisible = info.pins.filter((p: Any) => p.visible && !p.back).length;
                 const legendTitles = await page.locator('[data-testid="d3-legend"] .d3-title').allTextContents();
                 // the evidence picture: the whole stage with its pins and legend
                 await stagePicture(page, join(OUT, `${id}.png`));
-                if (id === CINE) await page.screenshot({ path: join(OUT, `picker-page-${id}.png`) });
+                trace('V1', id, 'picture');
                 const margin = await edgeMargin(page);
-                per[id] = { lit: +m.lit.toFixed(4), edgeMargin: margin === null ? null : +margin.toFixed(4), insideStage: margin !== null && margin >= EDGE_MIN, nonEmpty: m.lit > NONEMPTY, legendRows: rowsN, pinsVisible, backend: info.tally?.backend, titles: legendTitles, size: `${m.w}x${m.h}` };
+                const inView = await canvasInView(page);
+                per[id] = { canvasInView: inView, lit: +m.lit.toFixed(4), edgeMargin: margin === null ? null : +margin.toFixed(4), insideStage: margin !== null && margin >= EDGE_MIN, nonEmpty: m.lit > NONEMPTY, legendRows: rowsN, pinsVisible, backend: info.tally?.backend, titles: legendTitles, size: `${m.w}x${m.h}` };
                 sigs[id] = m.sig;
             }
             // distinct pictures
@@ -527,10 +585,11 @@ async function main(): Promise<void> {
             const legendOk = IDS.every((id) => per[id].legendRows >= 6 && per[id].pinsVisible >= 4);
             const allNonEmpty = IDS.every((id) => per[id].nonEmpty);
             const allInside = IDS.every((id) => per[id].insideStage);
+            const allInView = IDS.every((id) => per[id].canvasInView);
             const distinct = minPair.d > 0.012 && minWithin.d > 0.0004;
-            const pass = ready && allNonEmpty && allInside && distinct && legendOk && dragChange > 0.012 && same < 0.004;
-            results.V1 = { pass, ready, allInsideStage: allInside, edgeMarginMin: EDGE_MIN, perDrone: per, distinct: { minAcrossFamilies: minPair, threshold: 0.012, minWithinFamily: minWithin, withinThreshold: 0.0004, pairs }, control: { samePresetTwice: +same.toFixed(5), dragChange: +dragChange.toFixed(4), identicalBelow: same < 0.004, dragAbove: dragChange > 0.012 } };
-            console.log('V1', pass, JSON.stringify({ ready, allNonEmpty, allInside, edgeMarginByDrone: Object.fromEntries(IDS.map((id) => [id, per[id].edgeMargin])), distinct, minPair, minWithin, legendOk, same, dragChange }));
+            const pass = ready && allNonEmpty && allInside && allInView && distinct && legendOk && dragChange > 0.012 && same < 0.004;
+            results.V1 = { pass, ready, allCanvasInView: allInView, allInsideStage: allInside, edgeMarginMin: EDGE_MIN, perDrone: per, distinct: { minAcrossFamilies: minPair, threshold: 0.012, minWithinFamily: minWithin, withinThreshold: 0.0004, pairs }, control: { samePresetTwice: +same.toFixed(5), dragChange: +dragChange.toFixed(4), identicalBelow: same < 0.004, dragAbove: dragChange > 0.012 } };
+            console.log('V1', pass, JSON.stringify({ ready, allNonEmpty, allInside, allInView, edgeMarginByDrone: Object.fromEntries(IDS.map((id) => [id, per[id].edgeMargin])), distinct, minPair, minWithin, legendOk, same, dragChange }));
             await closePicker(page);
         }
 
@@ -768,6 +827,6 @@ try {
 const keys = ['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10'].filter(want);
 const pass = keys.every((k) => results[k]?.pass === true) && !results.error;
 const file = writeEvidence(ONLY.length ? `v09-drones3d-partial-${ONLY.join('-').toLowerCase()}` : 'v09-drones3d', { pass, site: SITE, baseSite: BASE_SITE, preFixSite: PRE_SITE, scene: SCENE, ...results });
-writeFileSync(join(OUT, 'README.md'), '# 3D models of the drones, v0.9 lane D\n\nOne picture per drone, taken from the real drone picker of a local release by `tools/bench/src/accept-v09-drones3d.ts` (evidence `../v09-drones3d.json`). The picture is the whole stage: the turntable at its first view, the numbered pins and the legend beside it. Colours, finishes and the layout of wires and screws are stylised; sizes follow the published dimensions (docs/research/drone-models.md).\n');
+writeFileSync(join(OUT, 'README.md'), '# 3D models of the drones, v0.9 lane D\n\nOne picture per drone, taken from the real drone picker of a local release by `tools/bench/src/accept-v09-drones3d.ts` (evidence `../v09-drones3d.json`). The picture is the picker as the pilot sees it in a 1280 x 880 window (device scale 1.5): the turntable at its first view with its numbered pins, and the legend beside it. Colours, finishes and the layout of wires and screws are stylised; sizes follow the published dimensions (docs/research/drone-models.md).\n');
 console.log(`accept-v09-drones3d: ${pass ? 'PASS' : 'FAIL'} -> ${file}`);
 process.exit(pass ? 0 : 1);

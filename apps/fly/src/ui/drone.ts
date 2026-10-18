@@ -186,7 +186,9 @@ export class DronePicker {
         this.stageDrone = id;
         this.stage?.setDrone(id, this.payload && PRESETS[id].fields.payload_g ? this.payload.get(id) : undefined);
         this.mark(id);
-        this.stageSlot.scrollIntoView({ block: 'nearest' });
+        // the picture (the canvas) comes into view, not the whole stage: the stage with its legend is taller than the window, and
+        // 'nearest' on it left the top of the canvas scrolled away under the top bar (found taking the review's retake of the pictures)
+        (this.stageSlot.querySelector('.d3-view') ?? this.stageSlot).scrollIntoView({ block: 'nearest' });
     }
 
     private mark(id: string): void {
