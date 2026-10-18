@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-18T00:18:21.745Z",
-    "gitHead": "be91442",
+    "date": "2026-10-18T00:54:42.339Z",
+    "gitHead": "4c07f2b",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5917",
+  "site": "http://localhost:5683",
   "render": "on",
   "pass": true,
   "note": "touch through CDP Input.dispatchTouchEvent in Chrome (which one: context.browser) with hasTouch; input=touch because desktop Chrome has WebHID; the pilot profile (set.input.play=pilot), easy play is accept-v08-play.ts",
@@ -54,8 +54,8 @@
         "seconds": 10,
         "crashed": false,
         "armedAll": true,
-        "minY": 3.519389338927938,
-        "maxY": 3.89587549728781,
+        "minY": 3.4954577984925823,
+        "maxY": 3.9378912417641483,
         "target": 2.7980274118044415
       },
       "view": {
@@ -116,8 +116,8 @@
         "seconds": 10,
         "crashed": false,
         "armedAll": true,
-        "minY": 3.530560798806092,
-        "maxY": 3.8724257487407616,
+        "minY": 3.5027003357746316,
+        "maxY": 3.863722631953953,
         "target": 2.79802748181291
       },
       "view": {
