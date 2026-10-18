@@ -50,4 +50,6 @@
 .d3-card-actions { margin-top: 6px; }
 @media (max-width: 560px) { .d3-card { grid-template-columns: 1fr; } .d3-card .d3-view { max-width: 220px; } }
 @media (prefers-reduced-motion: reduce) { .d3-pin { transition: none; } }
-.d3-settings { margin: 8px 0 4px; max-width: 560px; }
+.d3-settings { margin: 8px 0 4px; max-width: 560px; container-type: inline-size; }
+/* the settings column is narrow: the picture above its text, as on a phone */
+@container (max-width: 420px) { .d3-card { grid-template-columns: 1fr; } .d3-card .d3-view { max-width: 240px; } }

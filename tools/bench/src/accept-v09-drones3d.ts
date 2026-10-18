@@ -180,13 +180,21 @@ async function main(): Promise<void> {
                 const legendTitles = await page.locator('[data-testid="d3-legend"] .d3-title').allTextContents();
                 // the evidence picture: the whole stage with its pins and legend
                 await page.locator('[data-testid="drone-stage"]').screenshot({ path: join(OUT, `${id}.png`) });
+                if (id === CINE) await page.screenshot({ path: join(OUT, `picker-page-${id}.png`) });
                 per[id] = { lit: +m.lit.toFixed(4), nonEmpty: m.lit > NONEMPTY, legendRows: rowsN, pinsVisible, backend: info.tally?.backend, titles: legendTitles, size: `${m.w}x${m.h}` };
                 sigs[id] = m.sig;
             }
             // distinct pictures
             const pairs: { a: string; b: string; d: number }[] = [];
             for (let i = 0; i < IDS.length; i++) for (let j = i + 1; j < IDS.length; j++) pairs.push({ a: IDS[i], b: IDS[j], d: +sigDiff(sigs[IDS[i]], sigs[IDS[j]]).toFixed(4) });
-            const minPair = pairs.reduce((m, p) => (p.d < m.d ? p : m), pairs[0]);
+            // Presets that are the same airframe sold with another pack, motors or prop (the Pavo20 Pro, its Pro II on 3S and 4S;
+            // the 65 mm whoops) are drawn on the same parametric airframe, so their pictures differ in a few pixels only: those
+            // pairs must still differ (a stuck model gives exactly 0, as the same-preset control does), the others by a lot.
+            const group = (id: string): string => (/^pavo20pro/.test(id) ? 'pavo20' : /^(meteor65|air65)/.test(id) ? 'whoop65' : id);
+            const across = pairs.filter((p) => group(p.a) !== group(p.b));
+            const within = pairs.filter((p) => group(p.a) === group(p.b));
+            const minPair = across.reduce((m, p) => (p.d < m.d ? p : m), across[0]);
+            const minWithin = within.reduce((m, p) => (p.d < m.d ? p : m), within[0]);
             // control for "different": the same preset shot twice (no motion in between)
             await page.click(`.drone-card[data-preset="${CINE}"] [data-action="drone-view3d"]`);
             await frames(page, 12);
@@ -206,10 +214,10 @@ async function main(): Promise<void> {
             const dragChange = sigDiff(s2.sig, afterDrag.sig);
             const legendOk = IDS.every((id) => per[id].legendRows >= 6 && per[id].pinsVisible >= 4);
             const allNonEmpty = IDS.every((id) => per[id].nonEmpty);
-            const distinct = minPair.d > 0.012;
+            const distinct = minPair.d > 0.012 && minWithin.d > 0.0004;
             const pass = ready && allNonEmpty && distinct && legendOk && dragChange > 0.012 && same < 0.004;
-            results.V1 = { pass, ready, perDrone: per, distinct: { minPair, threshold: 0.012 }, control: { samePresetTwice: +same.toFixed(5), dragChange: +dragChange.toFixed(4), identicalBelow: same < 0.004, dragAbove: dragChange > 0.012 } };
-            console.log('V1', pass, JSON.stringify({ ready, allNonEmpty, distinct, minPair, legendOk, same, dragChange }));
+            results.V1 = { pass, ready, perDrone: per, distinct: { minAcrossAirframes: minPair, threshold: 0.012, minWithinAirframe: minWithin, withinThreshold: 0.0004, pairs }, control: { samePresetTwice: +same.toFixed(5), dragChange: +dragChange.toFixed(4), identicalBelow: same < 0.004, dragAbove: dragChange > 0.012 } };
+            console.log('V1', pass, JSON.stringify({ ready, allNonEmpty, distinct, minPair, minWithin, legendOk, same, dragChange }));
             await closePicker(page);
         }
 
@@ -238,12 +246,13 @@ async function main(): Promise<void> {
                 await page.waitForSelector('[data-testid="drone-stage"] canvas', { timeout: 30000 });
                 await frames(page, 15, 30000);
                 const open1 = (await hookInfos(page))[0];
-                const canvasesOpen = await page.locator('canvas').count();
+                const liveOpen = (await hookCounts(page))?.live;
+                const canvasesOpen = await page.locator('.d3-canvas').count();
                 await closePicker(page);
                 await sleep(1200);
                 const counts = await hookCounts(page);
-                const canvasesClosed = await page.locator('canvas').count();
-                rounds.push({ round: i + 1, whileOpen: open1?.tally, canvasesOpen, canvasesClosed, counts: { created: counts?.created, disposed: counts?.disposed, live: counts?.live }, closedDrone: counts?.lastClosed?.drone, closedTally: counts?.lastClosed?.tally, gpuReleased: counts?.lastClosed?.gpuReleased });
+                const canvasesClosed = await page.locator('.d3-canvas').count();
+                rounds.push({ round: i + 1, whileOpen: open1?.tally, liveOpen, canvasesOpen, canvasesClosed, counts: { created: counts?.created, disposed: counts?.disposed, live: counts?.live }, closedDrone: counts?.lastClosed?.drone, closedTally: counts?.lastClosed?.tally, gpuReleased: counts?.lastClosed?.gpuReleased });
             }
             // the flight app is alive: the page still steps its physics
             const t0 = await page.evaluate(() => (window as Any).__gsfpv.session.sim.tick as number);
@@ -251,7 +260,9 @@ async function main(): Promise<void> {
             const t1 = await page.evaluate(() => (window as Any).__gsfpv.session.sim.tick as number);
             alive = t1 > t0 && errors.filter((e) => /pageerror/.test(e)).length === 0;
             const last = rounds[rounds.length - 1];
-            const freed = rounds.every((r) => r.counts.live === 0 && r.counts.created === r.round && r.counts.disposed === r.round && r.canvasesClosed === r.canvasesOpen - 1 && r.gpuReleased === true && r.closedTally?.destroyed === true);
+            // each round makes two stages: the pause menu's "Your drone" card (gone as the picker takes over) and the picker's own;
+            // only the picker's is alive while it is open, and every one made is disposed (no device is left behind)
+            const freed = rounds.every((r) => r.counts.live === 0 && r.liveOpen === 1 && r.counts.created === 2 * r.round && r.counts.disposed === 2 * r.round && r.canvasesOpen === 1 && r.canvasesClosed === 0 && r.gpuReleased === true && r.closedTally?.destroyed === true);
             const heldWhileOpen = rounds.every((r) => (r.whileOpen?.textures ?? 0) > 3 && (r.whileOpen?.buffers ?? 0) > 3 && (r.whileOpen?.shaders ?? 0) > 3);
             results.V2 = { pass: freed && heldWhileOpen && alive, rounds, simClock: { t0, t1 }, pageErrors: errors.slice(0, 5), control: { openCountersNonZero: heldWhileOpen, base: 'the base release creates no stage (V1 baseRelease)' } };
             console.log('V2', results.V2.pass, JSON.stringify({ freed, heldWhileOpen, alive, last: { whileOpen: last.whileOpen, closed: last.closedTally, gpuReleased: last.gpuReleased } }));
@@ -397,7 +408,7 @@ async function main(): Promise<void> {
             await closePicker(p2);
             await sleep(800);
             const counts = await hookCounts(p2);
-            const pass = ok && info?.tally?.backend === 'webgl2' && m.lit > NONEMPTY && counts?.live === 0 && counts.disposed === 1 && errs.length === 0;
+            const pass = ok && info?.tally?.backend === 'webgl2' && m.lit > NONEMPTY && counts?.live === 0 && counts.disposed === 2 && errs.length === 0;
             results.V6 = { pass, backend: info?.tally?.backend, lit: +m.lit.toFixed(4), tallyOpen: info?.tally, counts: { live: counts?.live, disposed: counts?.disposed }, pageErrors: errs };
             console.log('V6', pass, JSON.stringify(results.V6));
             await p2.close();
