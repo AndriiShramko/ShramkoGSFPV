@@ -11,6 +11,7 @@
     "prop_diameter_mm": { "value": 203.2, "source": "manufacturer", "note": "8 inch; the coaxial pair shares one disk" },
     "dry_mass_g": { "value": 1989, "source": "manufacturer", "ref": "https://shop.iflight.com/Taurus-X8-V3-O3-HD-Cinelifter-BNF-Pro1973", "note": "Taurus X8 V3 O4 6S, without battery and camera" },
     "payload_g": { "value": 2000, "source": "manufacturer", "ref": "https://shop.iflight.com/Taurus-X8-V3-O3-HD-Cinelifter-BNF-Pro1973", "note": "the 2 kg load of iFlight's hover-time figure (maximum payload 3 kg); a RED Komodo 6K body alone is 950 g (https://www.abelcine.com/buy/cameras-accessories/digital-cinema-cameras/red-komodo-6k-digital-cinema-camera-rf-mount-2)" },
+    "payload_arm_m": { "value": [0, 0.07, -0.045], "source": "estimate", "note": "where the camera rig sits from the centre of gravity, metres (x right, y up, z back): about 70 mm off the arm plane and 45 mm ahead of the middle (the 3D model hangs it under the frame, drones3d/family-x8.ts; above or below is the same inertia). Used only to change the inertia when the pilot picks another camera load (ParamOverrides.payloadG)" },
     "battery": { "value": "6S 5600 mAh", "source": "manufacturer", "note": "the Fullsend pack in the box" },
     "battery_cells": { "value": 6, "source": "manufacturer" },
     "battery_capacity_mah": { "value": 5600, "source": "manufacturer" },

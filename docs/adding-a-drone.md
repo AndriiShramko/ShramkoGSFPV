@@ -25,6 +25,14 @@ is skipped.
 3. **Register it**: `DRONE_IDS` in `packages/prefs/src/defs/drone.ts` (the picker's order) and `apps/fly/src/presets.ts`.
    `packages/prefs/test/defs.test.ts` fails until `DRONE_IDS` equals the presets folder; the preset-wide tests
    (`PRESET_IDS` in `packages/sim-core/test/model-helpers.ts`) pick the new file up by themselves.
+3b. **Its equipment and its 3D model** (v0.9, `docs/research/drone-models.md`): one row in `apps/fly/src/drones3d/equipment.ts`
+   (family, frame, motor stator from its name, prop name and blades, battery connector, the FPV system, antennas) with a
+   `basis` per fact (`maker` with the page's link, `listing`, or `typical`) and the research note's table for the drone.
+   Numbers the preset has (wheelbase, prop diameter, cells, mAh, KV) are read from it, never repeated.
+   `tools/bench/test/drones3d-models.test.ts` fails until the row exists and the model's propellers sit on the preset's
+   wheelbase with its prop diameter. A body that none of the four families (`family-open-x.ts`, `family-whoop.ts`,
+   `family-x8.ts`) can draw is a new family file. Look at it: the lab page
+   (`cd apps/fly && npx vite`, then `/fly/lab/drones3d.html?drone=<id>`) and `tools/bench/src/drones3d-shots.ts`.
 4. **Its behaviour tests**, with negative controls, like `packages/sim-core/test/model-drones-v08.test.ts`: hover
    throttle band, climb, top speed, roll response, the maker's hover time from the hover current, and angle mode
    (everyone's default: full stick, hold, release; it must stop at the limit and not swing past level). A preset whose

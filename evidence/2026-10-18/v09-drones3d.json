@@ -1,0 +1,1104 @@
+{
+  "name": "v09-drones3d",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-18T03:47:55.816Z",
+    "gitHead": "7f91fb4",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "site": "http://localhost:5471",
+  "baseSite": "http://localhost:5472",
+  "preFixSite": "http://localhost:5473",
+  "scene": "39e63ce9",
+  "V7": {
+    "pass": true,
+    "requestedAtLoad": 0,
+    "requestedAtOpen": 2,
+    "chunk": [
+      {
+        "u": "drones3d-Dl9TSHWa.js",
+        "bytes": 57441,
+        "gz": null
+      },
+      {
+        "u": "drones3d-BZ3jyy9a.css",
+        "bytes": 4638,
+        "gz": null
+      }
+    ]
+  },
+  "V1": {
+    "pass": true,
+    "ready": true,
+    "allCanvasInView": true,
+    "allInsideStage": true,
+    "edgeMarginMin": 0.01,
+    "perDrone": {
+      "pavo20pro-3s": {
+        "canvasInView": true,
+        "lit": 0.5714,
+        "edgeMargin": 0.0461,
+        "insideStage": true,
+        "nonEmpty": true,
+        "legendRows": 6,
+        "pinsVisible": 4,
+        "backend": "webgpu",
+        "titles": [
+          "Pavo20 Pro",
+          "LAVA 1104 7200 KV",
+          "Gemfan 2218",
+          "3S 550 mAh",
+          "DJI O4 Air Unit Pro",
+          "None"
+        ],
+        "size": "903x566"
+      },
+      "pavo20pro2-3s": {
+        "canvasInView": true,
+        "lit": 0.5717,
+        "edgeMargin": 0.0461,
+        "insideStage": true,
+        "nonEmpty": true,
+        "legendRows": 6,
+        "pinsVisible": 4,
+        "backend": "webgpu",
+        "titles": [
+          "Pavo20 Pro II",
+          "LAVA 1104 7200 KV",
+          "Gemfan D2.2",
+          "3S 580 mAh",
+          "DJI O4 Air Unit Pro",
+          "None"
+        ],
+        "size": "903x566"
+      },
+      "pavo20pro2-4s": {
+        "canvasInView": true,
+        "lit": 0.5735,
+        "edgeMargin": 0.0461,
+        "insideStage": true,
+        "nonEmpty": true,
+        "legendRows": 6,
+        "pinsVisible": 4,
+        "backend": "webgpu",
+        "titles": [
+          "Pavo20 Pro II",
+          "LAVA 1104 5500 KV",
+          "Gemfan D2.2",
+          "4S 580 mAh",
+          "DJI O4 Air Unit Pro",
+          "None"
+        ],
+        "size": "903x566"
+      },
+      "pavopico-2s": {
+        "canvasInView": true,
+        "lit": 0.5698,
+        "edgeMargin": 0.0461,
+        "insideStage": true,
+        "nonEmpty": true,
+        "legendRows": 6,
+        "pinsVisible": 4,
+        "backend": "webgpu",
+        "titles": [
+          "Pavo Pico",
+          "1102 14000 KV",
+          "Gemfan 45 mm",
+          "2S 450 mAh",
+          "DJI O3 Air Unit",
+          "None"
+        ],
+        "size": "903x566"
+      },
+      "meteor65pro-1s": {
+        "canvasInView": true,
+        "lit": 0.6235,
+        "edgeMargin": 0.0461,
+        "insideStage": true,
+        "nonEmpty": true,
+        "legendRows": 7,
+        "pinsVisible": 5,
+        "backend": "webgpu",
+        "titles": [
+          "Meteor65 Pro",
+          "0802SE 19500 KV",
+          "35 mm",
+          "1S 300 mAh",
+          "C03",
+          "M03 25-350 mW",
+          "None"
+        ],
+        "size": "903x566"
+      },
+      "air65-1s": {
+        "canvasInView": true,
+        "lit": 0.6246,
+        "edgeMargin": 0.0461,
+        "insideStage": true,
+        "nonEmpty": true,
+        "legendRows": 7,
+        "pinsVisible": 5,
+        "backend": "webgpu",
+        "titles": [
+          "Air65",
+          "0702SE II 23000 KV",
+          "HQ 31 mm Ultralight",
+          "1S 260 mAh",
+          "C03",
+          "5.8G 25-400 mW",
+          "None"
+        ],
+        "size": "903x566"
+      },
+      "nazgulf5v3-6s": {
+        "canvasInView": true,
+        "lit": 0.6494,
+        "edgeMargin": 0.0455,
+        "insideStage": true,
+        "nonEmpty": true,
+        "legendRows": 6,
+        "pinsVisible": 5,
+        "backend": "webgpu",
+        "titles": [
+          "Nazgul Evoque F5 V3",
+          "XING2 2207 1750 KV",
+          "Nazgul F5 5.1 x 3.5",
+          "6S 1480 mAh",
+          "DJI O4 Air Unit Pro",
+          "None"
+        ],
+        "size": "903x566"
+      },
+      "machr5sport-6s": {
+        "canvasInView": true,
+        "lit": 0.6622,
+        "edgeMargin": 0.0455,
+        "insideStage": true,
+        "nonEmpty": true,
+        "legendRows": 7,
+        "pinsVisible": 6,
+        "backend": "webgpu",
+        "titles": [
+          "Mach R5 Sport",
+          "R5 2207 2050 KV",
+          "Nazgul R5 V2 5.1 x 3.8",
+          "6S 1400 mAh",
+          "FPV camera (model not named)",
+          "BLITZ Force VTX 600 mW",
+          "None"
+        ],
+        "size": "903x566"
+      },
+      "taurusx8-komodo-6s": {
+        "canvasInView": true,
+        "lit": 0.6042,
+        "edgeMargin": 0.0455,
+        "insideStage": true,
+        "nonEmpty": true,
+        "legendRows": 7,
+        "pinsVisible": 6,
+        "backend": "webgpu",
+        "titles": [
+          "Taurus X8 V3",
+          "XING2 3110 1250 KV",
+          "HQ 8x4x3",
+          "6S 5600 mAh",
+          "DJI O4 Air Unit Pro",
+          "None",
+          "RED KOMODO 6K"
+        ],
+        "size": "903x566"
+      }
+    },
+    "distinct": {
+      "minAcrossFamilies": {
+        "a": "nazgulf5v3-6s",
+        "b": "taurusx8-komodo-6s",
+        "d": 0.043
+      },
+      "threshold": 0.012,
+      "minWithinFamily": {
+        "a": "pavo20pro-3s",
+        "b": "pavo20pro2-3s",
+        "d": 0.0008
+      },
+      "withinThreshold": 0.0004,
+      "pairs": [
+        {
+          "a": "pavo20pro-3s",
+          "b": "pavo20pro2-3s",
+          "d": 0.0008
+        },
+        {
+          "a": "pavo20pro-3s",
+          "b": "pavo20pro2-4s",
+          "d": 0.0055
+        },
+        {
+          "a": "pavo20pro-3s",
+          "b": "pavopico-2s",
+          "d": 0.0041
+        },
+        {
+          "a": "pavo20pro-3s",
+          "b": "meteor65pro-1s",
+          "d": 0.0556
+        },
+        {
+          "a": "pavo20pro-3s",
+          "b": "air65-1s",
+          "d": 0.0533
+        },
+        {
+          "a": "pavo20pro-3s",
+          "b": "nazgulf5v3-6s",
+          "d": 0.0619
+        },
+        {
+          "a": "pavo20pro-3s",
+          "b": "machr5sport-6s",
+          "d": 0.0677
+        },
+        {
+          "a": "pavo20pro-3s",
+          "b": "taurusx8-komodo-6s",
+          "d": 0.0521
+        },
+        {
+          "a": "pavo20pro2-3s",
+          "b": "pavo20pro2-4s",
+          "d": 0.0048
+        },
+        {
+          "a": "pavo20pro2-3s",
+          "b": "pavopico-2s",
+          "d": 0.0041
+        },
+        {
+          "a": "pavo20pro2-3s",
+          "b": "meteor65pro-1s",
+          "d": 0.0557
+        },
+        {
+          "a": "pavo20pro2-3s",
+          "b": "air65-1s",
+          "d": 0.0535
+        },
+        {
+          "a": "pavo20pro2-3s",
+          "b": "nazgulf5v3-6s",
+          "d": 0.0617
+        },
+        {
+          "a": "pavo20pro2-3s",
+          "b": "machr5sport-6s",
+          "d": 0.0675
+        },
+        {
+          "a": "pavo20pro2-3s",
+          "b": "taurusx8-komodo-6s",
+          "d": 0.0521
+        },
+        {
+          "a": "pavo20pro2-4s",
+          "b": "pavopico-2s",
+          "d": 0.007
+        },
+        {
+          "a": "pavo20pro2-4s",
+          "b": "meteor65pro-1s",
+          "d": 0.0566
+        },
+        {
+          "a": "pavo20pro2-4s",
+          "b": "air65-1s",
+          "d": 0.0548
+        },
+        {
+          "a": "pavo20pro2-4s",
+          "b": "nazgulf5v3-6s",
+          "d": 0.0603
+        },
+        {
+          "a": "pavo20pro2-4s",
+          "b": "machr5sport-6s",
+          "d": 0.0661
+        },
+        {
+          "a": "pavo20pro2-4s",
+          "b": "taurusx8-komodo-6s",
+          "d": 0.0514
+        },
+        {
+          "a": "pavopico-2s",
+          "b": "meteor65pro-1s",
+          "d": 0.056
+        },
+        {
+          "a": "pavopico-2s",
+          "b": "air65-1s",
+          "d": 0.0537
+        },
+        {
+          "a": "pavopico-2s",
+          "b": "nazgulf5v3-6s",
+          "d": 0.0621
+        },
+        {
+          "a": "pavopico-2s",
+          "b": "machr5sport-6s",
+          "d": 0.068
+        },
+        {
+          "a": "pavopico-2s",
+          "b": "taurusx8-komodo-6s",
+          "d": 0.0517
+        },
+        {
+          "a": "meteor65pro-1s",
+          "b": "air65-1s",
+          "d": 0.0106
+        },
+        {
+          "a": "meteor65pro-1s",
+          "b": "nazgulf5v3-6s",
+          "d": 0.0652
+        },
+        {
+          "a": "meteor65pro-1s",
+          "b": "machr5sport-6s",
+          "d": 0.069
+        },
+        {
+          "a": "meteor65pro-1s",
+          "b": "taurusx8-komodo-6s",
+          "d": 0.0686
+        },
+        {
+          "a": "air65-1s",
+          "b": "nazgulf5v3-6s",
+          "d": 0.0637
+        },
+        {
+          "a": "air65-1s",
+          "b": "machr5sport-6s",
+          "d": 0.0682
+        },
+        {
+          "a": "air65-1s",
+          "b": "taurusx8-komodo-6s",
+          "d": 0.0672
+        },
+        {
+          "a": "nazgulf5v3-6s",
+          "b": "machr5sport-6s",
+          "d": 0.0131
+        },
+        {
+          "a": "nazgulf5v3-6s",
+          "b": "taurusx8-komodo-6s",
+          "d": 0.043
+        },
+        {
+          "a": "machr5sport-6s",
+          "b": "taurusx8-komodo-6s",
+          "d": 0.0474
+        }
+      ]
+    },
+    "control": {
+      "samePresetTwice": 0,
+      "dragChange": 0.0652,
+      "identicalBelow": true,
+      "dragAbove": true
+    },
+    "baseRelease": {
+      "stage": 0,
+      "canvases": 0,
+      "hook": "undefined",
+      "noModel": true
+    }
+  },
+  "V2": {
+    "pass": true,
+    "rounds": [
+      {
+        "round": 1,
+        "whileOpen": {
+          "backend": "webgpu",
+          "textures": 22,
+          "buffers": 53,
+          "targets": 2,
+          "shaders": 20,
+          "destroyed": false
+        },
+        "liveOpen": 1,
+        "canvasesOpen": 1,
+        "canvasesClosed": 0,
+        "counts": {
+          "created": 2,
+          "disposed": 2,
+          "live": 0
+        },
+        "closedDrone": "nazgulf5v3-6s",
+        "closedTally": {
+          "backend": "webgpu",
+          "textures": 0,
+          "buffers": 0,
+          "targets": 0,
+          "shaders": 0,
+          "destroyed": true
+        },
+        "gpuReleased": true
+      },
+      {
+        "round": 2,
+        "whileOpen": {
+          "backend": "webgpu",
+          "textures": 22,
+          "buffers": 53,
+          "targets": 2,
+          "shaders": 20,
+          "destroyed": false
+        },
+        "liveOpen": 1,
+        "canvasesOpen": 1,
+        "canvasesClosed": 0,
+        "counts": {
+          "created": 4,
+          "disposed": 4,
+          "live": 0
+        },
+        "closedDrone": "nazgulf5v3-6s",
+        "closedTally": {
+          "backend": "webgpu",
+          "textures": 0,
+          "buffers": 0,
+          "targets": 0,
+          "shaders": 0,
+          "destroyed": true
+        },
+        "gpuReleased": true
+      },
+      {
+        "round": 3,
+        "whileOpen": {
+          "backend": "webgpu",
+          "textures": 22,
+          "buffers": 53,
+          "targets": 2,
+          "shaders": 20,
+          "destroyed": false
+        },
+        "liveOpen": 1,
+        "canvasesOpen": 1,
+        "canvasesClosed": 0,
+        "counts": {
+          "created": 6,
+          "disposed": 6,
+          "live": 0
+        },
+        "closedDrone": "nazgulf5v3-6s",
+        "closedTally": {
+          "backend": "webgpu",
+          "textures": 0,
+          "buffers": 0,
+          "targets": 0,
+          "shaders": 0,
+          "destroyed": true
+        },
+        "gpuReleased": true
+      },
+      {
+        "round": 4,
+        "whileOpen": {
+          "backend": "webgpu",
+          "textures": 22,
+          "buffers": 53,
+          "targets": 2,
+          "shaders": 20,
+          "destroyed": false
+        },
+        "liveOpen": 1,
+        "canvasesOpen": 1,
+        "canvasesClosed": 0,
+        "counts": {
+          "created": 8,
+          "disposed": 8,
+          "live": 0
+        },
+        "closedDrone": "nazgulf5v3-6s",
+        "closedTally": {
+          "backend": "webgpu",
+          "textures": 0,
+          "buffers": 0,
+          "targets": 0,
+          "shaders": 0,
+          "destroyed": true
+        },
+        "gpuReleased": true
+      },
+      {
+        "round": 5,
+        "whileOpen": {
+          "backend": "webgpu",
+          "textures": 22,
+          "buffers": 53,
+          "targets": 2,
+          "shaders": 20,
+          "destroyed": false
+        },
+        "liveOpen": 1,
+        "canvasesOpen": 1,
+        "canvasesClosed": 0,
+        "counts": {
+          "created": 10,
+          "disposed": 10,
+          "live": 0
+        },
+        "closedDrone": "nazgulf5v3-6s",
+        "closedTally": {
+          "backend": "webgpu",
+          "textures": 0,
+          "buffers": 0,
+          "targets": 0,
+          "shaders": 0,
+          "destroyed": true
+        },
+        "gpuReleased": true
+      }
+    ],
+    "simClock": {
+      "t0": 7014,
+      "t1": 7714
+    },
+    "pageErrors": [
+      "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "console: Failed to load resource: the server responded with a status of 403 ()",
+      "console: Failed to load resource: the server responded with a status of 403 ()",
+      "console: Failed to load resource: the server responded with a status of 403 ()",
+      "console: Failed to load resource: the server responded with a status of 403 ()"
+    ],
+    "control": {
+      "openCountersNonZero": true,
+      "base": "the base release creates no stage (V1 baseRelease)"
+    }
+  },
+  "V3": {
+    "pass": true,
+    "legendBefore": "1Framemaker's specTaurus X8 V3Wheelbase 400 mm  \u00b7  Eight propellers in four coaxial pairs  \u00b7  Made of carbon fibre, aluminium, TPUSource2Motorsmaker's specXING2 3110 1250 KVStator 3110  \u00b7  Motors: 8Source3Propellersmaker's specHQ 8x4x3Disc 203.2 mm  \u00b7  Blades: 3Source4Batterymaker's spec6S 5600 mAhConnector XT90  \u00b7  Strapped on topSource5FPV camera and video linkmaker's specDJI O4 Air Unit ProDigital HD video  \u00b7  Records video itself, so it is not an extra camera  \u00b7  Tilts 5 to 35 deg; set to 10 deg hereSource-Action cameramaker's specNoneNot carried: the DJI O4 Air Unit Pro records video itself6Cinema cameraretailer's copy of the specRED KOMODO 6KLoad 2000 g  \u00b7  Body 101.6 x 101.6 x 101.6 mm  \u00b7  Maker's maximum payload 3 kgSource",
+    "note": "Sold without a camera. iFlight's page names RED Komodo, Z CAM and Blackmagic BMPCC as examples and allows up to 3 kg. This preset carries a RED KOMODO 6K rig of 2000 g, the load of iFlight's own hover-time figure (the drone alone weighs 2872 g with its pack).",
+    "card": {
+      "before": {
+        "twr": "3.3:1",
+        "weight": "4872 g"
+      },
+      "afterNone": {
+        "twr": "5.6:1",
+        "weight": "2872 g"
+      }
+    },
+    "stageLine": {
+      "komodo": "All-up weight: 4872 g \u00b7 Thrust / weight: 3.3:1 \u00b7 6S 5600 mAh",
+      "none": "All-up weight: 2872 g \u00b7 Thrust / weight: 5.6:1 \u00b7 6S 5600 mAh"
+    },
+    "flightMassKg": {
+      "start": 4.872,
+      "afterNone": 2.872,
+      "afterReload": 2.872,
+      "backToKomodo": 4.872
+    },
+    "stageChanged": 0.0111,
+    "pressedAfterReload": "none",
+    "control": {
+      "massBeforeChoice": 4.872,
+      "note": "the mass at the start is the preset's 4.872 kg: the choice, not the picker, moved it"
+    }
+  },
+  "V4": {
+    "pass": true,
+    "card": "Your drone | iFlight Mach R5 Sport class, 6S | 5-inch race quad | All-up weight: 525 g \u00b7 Thrust / weight: 12.5:1 \u00b7 6S 1400 mAh | Change drone",
+    "lit": 0.6213,
+    "liveAfterClose": 0,
+    "pickerStages": 1,
+    "cardsLeft": 0,
+    "control": {
+      "liveWhileOpen": 1,
+      "note": "measured while the card is open: one stage alive; after the menu closes none"
+    }
+  },
+  "V8": {
+    "pass": true,
+    "name0": "BetaFPV Pavo20 Pro class, 3S",
+    "name1": "iFlight Nazgul Evoque F5 V3 class, 6S",
+    "lit": 0.4999,
+    "liveAfterClose": 0,
+    "control": {
+      "baseReleaseCards": 0
+    }
+  },
+  "V5": {
+    "pass": true,
+    "pl": {
+      "hasMotorsWord": true,
+      "hasNone": true,
+      "note": true,
+      "makerName": true
+    },
+    "ru": {
+      "hasMotorsWord": true,
+      "hasNone": true,
+      "note": true,
+      "makerName": true
+    },
+    "control": {
+      "englishHasPolishWord": false
+    }
+  },
+  "V6": {
+    "pass": true,
+    "backend": "webgl2",
+    "lit": 0.6245,
+    "tallyOpen": {
+      "backend": "webgl2",
+      "textures": 20,
+      "buffers": 40,
+      "targets": 2,
+      "shaders": 12,
+      "destroyed": false
+    },
+    "counts": {
+      "live": 0,
+      "disposed": 2
+    },
+    "pageErrors": []
+  },
+  "V10": {
+    "pass": true,
+    "checks": {
+      "viewInWindow": true,
+      "firstView": true,
+      "stageLine": true,
+      "gopro": true,
+      "chipFocus": true,
+      "helpTune": true,
+      "pauseCard": true,
+      "settingsCard": true,
+      "reducedMotion": true,
+      "restored": true
+    },
+    "details": {
+      "viewInWindow": {
+        "canvasInView": {
+          "taurusx8-komodo-6s": true,
+          "nazgulf5v3-6s": true,
+          "machr5sport-6s": true
+        }
+      },
+      "firstView": {
+        "edgeMargin": {
+          "taurusx8-komodo-6s": 0.0454545747393463,
+          "nazgulf5v3-6s": 0.04545450330909317,
+          "machr5sport-6s": 0.045454496828523795
+        },
+        "edgeMarginMin": 0.01,
+        "control": {
+          "zoomedIn": -0.9114148704852157,
+          "crosses": true
+        }
+      },
+      "gopro": {
+        "line": "All-up weight: 3029 g \u00b7 Thrust / weight: 5.3:1 \u00b7 6S 5600 mAh",
+        "sources": [
+          "https://community.gopro.com/s/article/HERO13-Black-Camera-Size-And-Weight?language=en_US"
+        ]
+      },
+      "stageLine": {
+        "komodo": "All-up weight: 4872 g \u00b7 Thrust / weight: 3.3:1 \u00b7 6S 5600 mAh",
+        "none": "All-up weight: 2872 g \u00b7 Thrust / weight: 5.6:1 \u00b7 6S 5600 mAh",
+        "cardNone": {
+          "weight": "2872 g",
+          "twr": "5.6:1"
+        }
+      },
+      "chipFocus": {
+        "sameElement": true,
+        "focusedPayload": "bmpcc6kpro",
+        "pressed": "true",
+        "turnedBy": {
+          "before": {
+            "yaw": 58,
+            "pitch": 22,
+            "dist": 2.6218013531333777
+          },
+          "after": {
+            "yaw": 58,
+            "pitch": 22,
+            "dist": 2.6218013531333777
+          },
+          "yawDeg": 0,
+          "pitchDeg": 0
+        }
+      },
+      "helpTune": {
+        "massKg": 2.872
+      },
+      "pauseCard": {
+        "payload": "none",
+        "line": "All-up weight: 2872 g \u00b7 Thrust / weight: 5.6:1 \u00b7 6S 5600 mAh",
+        "flightMassKg": 2.872
+      },
+      "settingsCard": {
+        "payload": "none",
+        "line": "All-up weight: 2872 g \u00b7 Thrust / weight: 5.6:1 \u00b7 6S 5600 mAh"
+      },
+      "reducedMotion": {
+        "reducedMotionOnTurnedDeg": 0,
+        "reducedMotionOffTurnedDeg": 35.93
+      },
+      "restored": {
+        "massKg": 4.872
+      }
+    },
+    "control": {
+      "release": "built from 06bef1f, before the review fixes",
+      "checks": {
+        "viewInWindow": false,
+        "firstView": false,
+        "stageLine": false,
+        "gopro": false,
+        "chipFocus": false,
+        "helpTune": false,
+        "pauseCard": false,
+        "settingsCard": false,
+        "reducedMotion": false,
+        "restored": true
+      },
+      "details": {
+        "viewInWindow": {
+          "canvasInView": {
+            "taurusx8-komodo-6s": false,
+            "nazgulf5v3-6s": false,
+            "machr5sport-6s": false
+          }
+        },
+        "firstView": {
+          "edgeMargin": {
+            "taurusx8-komodo-6s": null,
+            "nazgulf5v3-6s": null,
+            "machr5sport-6s": null
+          },
+          "edgeMarginMin": 0.01,
+          "control": {
+            "zoomedIn": null,
+            "crosses": false
+          }
+        },
+        "gopro": {
+          "line": "All-up weight: 4872 g \u00b7 Thrust / weight: 3.3:1 \u00b7 6S 5600 mAh",
+          "sources": []
+        },
+        "stageLine": {
+          "komodo": "All-up weight: 4872 g \u00b7 Thrust / weight: 3.3:1 \u00b7 6S 5600 mAh",
+          "none": "All-up weight: 4872 g \u00b7 Thrust / weight: 3.3:1 \u00b7 6S 5600 mAh",
+          "cardNone": {
+            "weight": "2872 g",
+            "twr": "5.6:1"
+          }
+        },
+        "chipFocus": {
+          "sameElement": false,
+          "focusedPayload": null,
+          "pressed": null,
+          "turnedBy": {
+            "before": {
+              "yaw": 58,
+              "pitch": 22,
+              "dist": 2.25
+            },
+            "after": {
+              "yaw": 34.295068965192286,
+              "pitch": 22,
+              "dist": 2.25
+            },
+            "yawDeg": 23.7,
+            "pitchDeg": 0
+          }
+        },
+        "helpTune": {
+          "massKg": 4.872
+        },
+        "pauseCard": {
+          "payload": "komodo",
+          "line": "All-up weight: 4872 g \u00b7 Thrust / weight: 3.3:1 \u00b7 6S 5600 mAh",
+          "flightMassKg": 2.872
+        },
+        "settingsCard": {
+          "payload": "none",
+          "line": "All-up weight: 4872 g \u00b7 Thrust / weight: 3.3:1 \u00b7 6S 5600 mAh"
+        },
+        "reducedMotion": {
+          "reducedMotionOnTurnedDeg": 35.46,
+          "reducedMotionOffTurnedDeg": 35
+        },
+        "restored": {
+          "massKg": 4.872
+        }
+      },
+      "everyCheckFailsBefore": true
+    },
+    "pageErrors": []
+  },
+  "V9": {
+    "pass": true,
+    "scanDrawn": {
+      "render": "on",
+      "splatsDrawn": 3804374,
+      "flightBackend": "webgpu",
+      "canvasStdBefore": 0.1736,
+      "canvasStdAfter": 0.1715,
+      "stdMin": 0.04
+    },
+    "baseline": {
+      "flightHz": [
+        27.4,
+        30.3,
+        29.9
+      ],
+      "longestTaskMsWithNoStage": 0
+    },
+    "firstOpenStall": {
+      "flightHz": 5.3,
+      "flightFrames": 8,
+      "baselineHz": 27.4,
+      "recoveredNextRound": true
+    },
+    "summary": {
+      "rounds": 15,
+      "worstFirstFrameMs": 423,
+      "lowestFlightHzAfterTheFirstOpen": 25.7,
+      "longestTaskMs": 98,
+      "flightHzFloor": 13.7
+    },
+    "perSurface": {
+      "pause": [
+        {
+          "round": 1,
+          "firstFrameMs": 320,
+          "flightHz": 5.3,
+          "flightFrames": 8,
+          "splatsDrawn": 3804374,
+          "longestTaskMs": 98,
+          "liveAfterClose": 0,
+          "created": 1,
+          "disposed": 1
+        },
+        {
+          "round": 2,
+          "firstFrameMs": 187,
+          "flightHz": 25.9,
+          "flightFrames": 39,
+          "splatsDrawn": 3804374,
+          "longestTaskMs": 80,
+          "liveAfterClose": 0,
+          "created": 2,
+          "disposed": 2
+        },
+        {
+          "round": 3,
+          "firstFrameMs": 213,
+          "flightHz": 26.4,
+          "flightFrames": 40,
+          "splatsDrawn": 3804374,
+          "longestTaskMs": 76,
+          "liveAfterClose": 0,
+          "created": 3,
+          "disposed": 3
+        },
+        {
+          "round": 4,
+          "firstFrameMs": 212,
+          "flightHz": 25.8,
+          "flightFrames": 39,
+          "splatsDrawn": 3804374,
+          "longestTaskMs": 78,
+          "liveAfterClose": 0,
+          "created": 4,
+          "disposed": 4
+        },
+        {
+          "round": 5,
+          "firstFrameMs": 210,
+          "flightHz": 25.7,
+          "flightFrames": 39,
+          "splatsDrawn": 3804374,
+          "longestTaskMs": 76,
+          "liveAfterClose": 0,
+          "created": 5,
+          "disposed": 5
+        }
+      ],
+      "picker": [
+        {
+          "round": 1,
+          "firstFrameMs": 423,
+          "flightHz": 28,
+          "flightFrames": 42,
+          "splatsDrawn": 2879978,
+          "longestTaskMs": 87,
+          "liveAfterClose": 0,
+          "created": 7,
+          "disposed": 7
+        },
+        {
+          "round": 2,
+          "firstFrameMs": 401,
+          "flightHz": 28,
+          "flightFrames": 42,
+          "splatsDrawn": 2457100,
+          "longestTaskMs": 88,
+          "liveAfterClose": 0,
+          "created": 9,
+          "disposed": 9
+        },
+        {
+          "round": 3,
+          "firstFrameMs": 419,
+          "flightHz": 28.4,
+          "flightFrames": 43,
+          "splatsDrawn": 1964216,
+          "longestTaskMs": 87,
+          "liveAfterClose": 0,
+          "created": 11,
+          "disposed": 11
+        },
+        {
+          "round": 4,
+          "firstFrameMs": 413,
+          "flightHz": 25.8,
+          "flightFrames": 39,
+          "splatsDrawn": 1447549,
+          "longestTaskMs": 79,
+          "liveAfterClose": 0,
+          "created": 13,
+          "disposed": 13
+        },
+        {
+          "round": 5,
+          "firstFrameMs": 417,
+          "flightHz": 27.8,
+          "flightFrames": 42,
+          "splatsDrawn": 1447549,
+          "longestTaskMs": 76,
+          "liveAfterClose": 0,
+          "created": 15,
+          "disposed": 15
+        }
+      ],
+      "settings": [
+        {
+          "round": 1,
+          "firstFrameMs": 319,
+          "flightHz": 27.8,
+          "flightFrames": 42,
+          "splatsDrawn": 1447549,
+          "longestTaskMs": 78,
+          "liveAfterClose": 0,
+          "created": 16,
+          "disposed": 16
+        },
+        {
+          "round": 2,
+          "firstFrameMs": 330,
+          "flightHz": 25.9,
+          "flightFrames": 39,
+          "splatsDrawn": 1964216,
+          "longestTaskMs": 79,
+          "liveAfterClose": 0,
+          "created": 17,
+          "disposed": 17
+        },
+        {
+          "round": 3,
+          "firstFrameMs": 285,
+          "flightHz": 25.8,
+          "flightFrames": 39,
+          "splatsDrawn": 1964216,
+          "longestTaskMs": 79,
+          "liveAfterClose": 0,
+          "created": 18,
+          "disposed": 18
+        },
+        {
+          "round": 4,
+          "firstFrameMs": 286,
+          "flightHz": 25.9,
+          "flightFrames": 39,
+          "splatsDrawn": 1964216,
+          "longestTaskMs": 80,
+          "liveAfterClose": 0,
+          "created": 19,
+          "disposed": 19
+        },
+        {
+          "round": 5,
+          "firstFrameMs": 296,
+          "flightHz": 26.4,
+          "flightFrames": 40,
+          "splatsDrawn": 1964216,
+          "longestTaskMs": 90,
+          "liveAfterClose": 0,
+          "created": 20,
+          "disposed": 20
+        }
+      ]
+    },
+    "flightDevice": {
+      "lostReason": null,
+      "contextLost": false,
+      "renderer": 2
+    },
+    "stageCounts": {
+      "created": 20,
+      "disposed": 20,
+      "live": 0
+    },
+    "control": {
+      "stallInjectedMs": 1000,
+      "stallLongTaskMs": 1000,
+      "stallHz": 9.2,
+      "stallSeen": true,
+      "renderOffSplatsDrawn": 0,
+      "renderOffDrawsNoScan": true,
+      "renderOffFlightCanvasStd": 0.0847
+    },
+    "pageErrors": [
+      "console: Failed to load resource: the server responded with a status of 403 ()",
+      "console: Failed to load resource: the server responded with a status of 403 ()",
+      "console: Failed to load resource: the server responded with a status of 403 ()",
+      "console: Failed to load resource: the server responded with a status of 403 ()",
+      "console: Failed to load resource: the server responded with a status of 403 ()"
+    ]
+  },
+  "pageErrors": [
+    "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "console: Failed to load resource: the server responded with a status of 403 ()",
+    "console: Failed to load resource: the server responded with a status of 403 ()",
+    "console: Failed to load resource: the server responded with a status of 403 ()",
+    "console: Failed to load resource: the server responded with a status of 403 ()",
+    "console: Failed to load resource: the server responded with a status of 403 ()",
+    "console: Failed to load resource: the server responded with a status of 403 ()",
+    "console: Failed to load resource: the server responded with a status of 403 ()",
+    "console: Failed to load resource: the server responded with a status of 403 ()",
+    "console: Failed to load resource: the server responded with a status of 403 ()"
+  ]
+}

@@ -4,3 +4,5 @@
 .drone-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .tune-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 6px 0 2px; font-size: 14px; color: var(--muted); }
 .tune-row p { flex: 1 1 260px; margin: 0; }
+/* v0.9: the card whose drone is on the 3D stage */
+.drone-card[data-viewing] { box-shadow: inset 3px 0 0 var(--accent); }

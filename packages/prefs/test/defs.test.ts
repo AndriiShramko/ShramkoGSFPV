@@ -31,7 +31,9 @@ const V03_SHIPPED = [
     // v0.8 lane A (docs/wip/v08-a.md): easy play for touch and keyboard, Settings -> Controls
     'input.play', 'input.altitudeHelp', 'input.haptics',
     // v0.9 lane B (docs/wip/v09-b.md): the game scheme's mouse and speed, Settings -> Controls
-    'input.mouseSensitivity', 'input.mouseInvertY', 'input.gameSpeed'
+    'input.mouseSensitivity', 'input.mouseInvertY', 'input.gameSpeed',
+    // v0.9 lane D (docs/wip/v09-d.md): the cinelifter's camera load, chosen on the drone picker's 3D stage
+    'drone.payload'
 ];
 
 /**
@@ -93,6 +95,7 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['physics.ductDrag', 'drone', 'drone', 'number', 'preset:rotor_drag_per_s', 'life'],
     ['physics.propInertia', 'drone', 'drone', 'number', 1, 'life'],
     ['physics.propWash', 'drone', 'drone', 'number', 1, 'life'],
+    ['drone.payload', 'drone', 'drone', 'enum', 'komodo', 'life'],
     ['physics.idlePct', 'drone', 'drone', 'number', 'preset:motor_idle', 'life'],
     ['tune.pid', 'tune', 'drone', 'json', null, 'life'],
     ['tune.rates', 'tune', 'drone', 'json', null, 'life'],
@@ -161,8 +164,8 @@ const WAVE2_SETTINGS = [
 ];
 
 describe('SCHEMA is the A.8 table', () => {
-    it('has the 78 settings (the A.8 table of 53, the voxel opacity with the scan hidden, the walls switch, the latency guard, the v0.7 drawing, wind and ceiling, the v0.7 D1 seven, the v0.8 prop wash and lane A three, the v0.9 lane R splat budget and lane B three), each with its group, scope, type, default and apply', () => {
-        expect(SCHEMA.defs).toHaveLength(78);
+    it('has the 79 settings (the A.8 table of 53, the voxel opacity with the scan hidden, the walls switch, the latency guard, the v0.7 drawing, wind and ceiling, the v0.7 D1 seven, the v0.8 prop wash and lane A three, the v0.9 lane R splat budget, lane B three and lane D camera load), each with its group, scope, type, default and apply', () => {
+        expect(SCHEMA.defs).toHaveLength(79);
         const got = SCHEMA.defs.map((d) => [d.id, d.group, d.scope, d.type, isPresetRef(d.default) ? `preset:${d.default.preset}` : isCuratedRef(d.default) ? `curated:${d.default.curated}|${String(d.default.fallback)}` : d.default, d.apply]);
         // order inside a group follows the def files, not the table's rows
         const byId = (a: unknown[], b: unknown[]) => String(a[0]).localeCompare(String(b[0]));
@@ -261,7 +264,8 @@ describe('SCHEMA is the A.8 table', () => {
         expect(Object.fromEntries(SCHEMA.defs.filter((d) => d.url).map((d) => [d.url, d.id]))).toEqual({
             governor: 'display.governor', guard: 'display.latencyGuard', drone: 'drone.current', g: 'physics.gravity', gm: 'physics.gravityMode',
             walls: 'scene.walls', voxels: 'voxels.show', vstyle: 'voxels.style', vradius: 'voxels.radiusM',
-            drawing: 'display.drawing' // v0.7 lane R: ?drawing=auto|stochastic|sorted for one load (benches)
+            drawing: 'display.drawing', // v0.7 lane R: ?drawing=auto|stochastic|sorted for one load (benches)
+            payload: 'drone.payload' // v0.9 lane D: ?payload=komodo|bmpcc6kpro|gopro13|none, the cinelifter's camera load
         });
     });
 });

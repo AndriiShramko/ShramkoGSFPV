@@ -16,7 +16,7 @@ Everything you can change in [ShramkoGSFPV](https://gsfpv.flyreelstudio.eu), the
 - [Display](#display) (11)
 - [Sound](#sound) (2)
 - [Controls](#controls) (4)
-- [Drone & physics](#drone--physics) (14)
+- [Drone & physics](#drone--physics) (15)
 - [Tune](#tune) (3)
 - [Scenes](#scenes) (5)
 - [Walls and voxel grid](#walls-and-voxel-grid) (8)
@@ -93,6 +93,7 @@ Everything you can change in [ShramkoGSFPV](https://gsfpv.flyreelstudio.eu), the
 | Setting | What it does | Default | Range or options | Scope | Key |
 |---|---|---|---|---|---|
 | **Drone**<br>`drone.current` | One of the presets: BetaFPV-class whoops, a 5-inch freestyle and a 5-inch race quad, an X8 cinelifter with a cinema camera; every number on its card says where it comes from. Each drone keeps its own settings. | BetaFPV Pavo20 Pro class, 3S | BetaFPV Pavo20 Pro class, 3S · BetaFPV Pavo20 Pro II class, 3S · BetaFPV Pavo20 Pro II class, 4S · BetaFPV Pavo Pico class, 2S · BetaFPV Meteor65 Pro class, 1S · BetaFPV Air65 Freestyle class, 1S · iFlight Nazgul Evoque F5 V3 class, 6S · iFlight Mach R5 Sport class, 6S · iFlight Taurus X8 class with a RED Komodo, 6S | global |  |
+| **Camera load**<br>`drone.payload` | What the cinelifter carries under its frame. iFlight sells the Taurus X8 without a camera and allows up to 3 kg; the motors stay the same, so the weight, thrust-to-weight and hover throttle change with the camera. Chosen on the drone picker's 3D view; the other drones ignore it. | RED KOMODO 6K rig | RED KOMODO 6K rig · Blackmagic BMPCC 6K Pro rig · GoPro HERO13 Black · No camera | per drone |  |
 | **Gravity**<br>`physics.gravity` | Earth 9.81, Moon 1.62, Mars 3.72, zero-g, or any value in between. | 9.81 m/s² | 0–30 m/s² | global |  |
 | **Thrust on other worlds**<br>`physics.gravityMode` | Same motors (honest), the thrust-to-weight you have on Earth, or auto throttle that hovers at stick centre. | Real (same motors) | Real (same motors) · Keep thrust / weight · Auto throttle (stick centre hovers) | global |  |
 | **Thrust-to-weight** (advanced)<br>`physics.twr` | Maximum thrust divided by weight; the preset takes it from the manufacturer or an estimate. | 5 (drone preset) | 2–16 | per drone |  |

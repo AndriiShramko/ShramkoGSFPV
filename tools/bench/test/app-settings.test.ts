@@ -113,6 +113,8 @@ const CHANGES: Record<string, { v: unknown; field: (p: ReturnType<typeof compile
     'physics.propInertia': { v: 2, field: (p) => p.rotorInertia },
     // v0.8: prop wash exists only on presets that have it (the 5-inch quads, the cinelifter), so it is tested on one
     'physics.propWash': { v: 0.5, field: (p) => [p.wakeLoss, p.wakeShake], drone: 'nazgulf5v3-6s' },
+    // v0.9 lane D: the camera load exists only on the cinelifter (its preset names a payload_g), so it is tested there
+    'drone.payload': { v: 'none', field: (p) => p.mass, drone: 'taurusx8-komodo-6s' },
     'physics.idlePct': { v: 3, field: (p) => p.idle },
     'tune.pid': { v: { roll: [60, 100, 40, 0], pitch: [60, 100, 40, 0], yaw: [50, 90, 0, 0] }, field: (p) => p.pid },
     'tune.rates': { v: { type: 'BETAFLIGHT', roll: { rcRate: 100, rate: 70, expo: 0 }, pitch: { rcRate: 100, rate: 70, expo: 0 }, yaw: { rcRate: 100, rate: 70, expo: 0 }, rateLimit: 1998 }, field: (p) => p.rates },

@@ -6,11 +6,14 @@
 // "Ask for another drone"; they call onTune (the feedback dialog's Drone physics kind) when it is set.
 import { compileParams, setpointRate } from '@gsfpv/sim-core';
 import type { PresetJson } from '@gsfpv/sim-core';
+import { loadedNumbers, PAYLOADS } from '../drones3d/payloads';
+import type { PayloadId } from '../drones3d/payloads';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { PRESETS, DEFAULT_PRESET } from '../presets';
 import { h } from './dom';
 import { cardHover } from './drone-card';
 import { t } from '../i18n';
+import type { Stage } from '../drones3d';
 import './drone-tune.css';
 
 function srcLabel(src: string): string {
@@ -24,7 +27,7 @@ function srcLabel(src: string): string {
 function row(p: PresetJson, key: string, label: string, render: (v: unknown) => string): HTMLElement | null {
     const f = p.fields[key];
     if (!f) return null;
-    return h('div', { class: 'spec-row' }, h('span', { class: 'spec-k' }, label), h('span', { class: 'spec-v' }, render(f.value)), h('span', { class: `src src-${f.source.split(':')[0]}`, title: f.ref ?? '' }, srcLabel(f.source)));
+    return h('div', { class: 'spec-row', 'data-spec': key }, h('span', { class: 'spec-k' }, label), h('span', { class: 'spec-v' }, render(f.value)), h('span', { class: `src src-${f.source.split(':')[0]}`, title: f.ref ?? '' }, srcLabel(f.source)));
 }
 
 function curve(p: PresetJson): HTMLCanvasElement {
@@ -51,6 +54,12 @@ function curve(p: PresetJson): HTMLCanvasElement {
     return c;
 }
 
+/** The camera load the host keeps for a drone (the drone.payload setting): read for the cards and the stage, written when the player picks another. */
+export interface PayloadHooks {
+    get(drone: string): PayloadId;
+    set(drone: string, id: PayloadId): void;
+}
+
 export class DronePicker {
     readonly root: HTMLDivElement;
     onPick: ((id: string) => void) | null = null;
@@ -63,15 +72,30 @@ export class DronePicker {
      */
     onTune: ((id: string) => void) | null = null;
     private readonly current: string;
+    /** v0.9 lane D: the cinelifter's camera load, read and written by the host (the drone.payload setting) */
+    private readonly payload: PayloadHooks | null;
+    /** the drone on the 3D stage (the one in use at first) */
+    private stageDrone: string;
+    /** v0.9: the 3D stage over the cards (drones3d, a lazy chunk); null until it has loaded, and after the picker closes */
+    private stage: Stage | null = null;
+    private gone = false;
+    private readonly stageSlot: HTMLElement;
 
-    /** `store`: the page's settings, for the per-drone count on each card; `tune`: draw the help-us-tune buttons */
-    constructor(parent: HTMLElement, current: string, o: { store?: PrefsStore; tune?: boolean } = {}) {
+    /** the pilot's Reduced motion setting for the 3D stage (asked every frame) */
+    private readonly reducedMotion: (() => boolean) | undefined;
+
+    /** `store`: the page's settings, for the per-drone count on each card; `tune`: draw the help-us-tune buttons; `reducedMotion`: the pilot's setting, for the 3D stage */
+    constructor(parent: HTMLElement, current: string, o: { store?: PrefsStore; tune?: boolean; payload?: PayloadHooks; reducedMotion?: () => boolean } = {}) {
         this.current = current;
+        this.reducedMotion = o.reducedMotion;
+        this.payload = o.payload ?? null;
+        this.stageDrone = current;
         const changed = (id: string): number => o.store?.explicitList({ drone: id }).filter((e) => e.scope === 'drone').length ?? 0;
         const cards = h('div', { class: 'drone-grid' });
+        this.stageSlot = h('div', { class: 'd3-slot', 'data-testid': 'drone-stage-slot' });
         let keep: HTMLButtonElement | null = null;
         for (const [id, p] of Object.entries(PRESETS)) {
-            const hover = cardHover(compileParams(p));
+            const hover = cardHover(compileParams(p, this.overridesOf(id)));
             const isCur = id === current;
             // the drone in use says so, and its button leaves without rebuilding the flight model
             const btn = isCur
@@ -81,8 +105,9 @@ export class DronePicker {
             const card = h('div', { class: `drone-card ${isCur ? 'selected' : ''}`, 'data-preset': id },
                 h('h3', {}, p.name, id === DEFAULT_PRESET ? h('span', { class: 'pill' }, t('drone.default')) : null),
                 h('p', { class: 'muted' }, p.class),
-                row(p, 'twr', t('drone.twr'), (v) => `${v}:1`),
-                row(p, 'auw_g', t('drone.weight'), (v) => `${v} g`),
+                row(p, 'twr', t('drone.twr'), () => `${this.loaded(id).twr}:1`),
+                row(p, 'auw_g', t('drone.weight'), () => `${this.loaded(id).weight} g`),
+                this.loadLine(id),
                 row(p, 'wheelbase_mm', t('drone.wheelbase'), (v) => `${v} mm`),
                 row(p, 'motor', t('drone.motor'), (v) => String(v)),
                 row(p, 'battery', t('drone.battery'), (v) => String(v)),
@@ -90,6 +115,7 @@ export class DronePicker {
                 hover ? h('p', { class: 'muted small', 'data-testid': 'drone-hover' }, t('drone.hover', { full: String(hover.full), low: String(hover.low) })) : null,
                 changed(id) ? h('p', { class: 'small ok', 'data-testid': 'drone-changed' }, t('prefs.droneChanged', { n: String(changed(id)) })) : null,
                 h('div', { class: 'drone-actions' }, btn,
+                    h('button', { type: 'button', class: 'btn', 'data-action': 'drone-view3d', onclick: () => this.view3d(id) }, t('d3.view3d')),
                     o.tune ? h('button', { type: 'button', class: 'btn', 'data-action': 'drone-tune', onclick: () => this.onTune?.(id) }, t('drone.tune.button')) : null)
             );
             cards.append(card);
@@ -101,10 +127,72 @@ export class DronePicker {
             h('p', { class: 'muted' }, t('drone.sourceNote')),
             o.tune ? h('div', { class: 'drone-tune', 'data-testid': 'drone-tune' }, h('p', {}, t('drone.tune.lead')),
                 h('button', { type: 'button', class: 'btn', 'data-action': 'drone-ask', onclick: () => this.onTune?.('new') }, t('drone.tune.ask'))) : null,
-            cards);
+            this.stageSlot, cards);
         parent.append(this.root);
+        this.loadStage(current);
         // Enter keeps the drone in use; Tab reaches the others
         (keep ?? x).focus({ preventScroll: true });
+    }
+
+    /** The overrides a card's numbers are computed with: the cinelifter's camera load (nothing for a drone without one). */
+    private overridesOf(id: string): { payloadG?: number } {
+        const p = PRESETS[id];
+        if (!this.payload || !p.fields.payload_g) return {};
+        const choice = PAYLOADS[this.payload.get(id)];
+        return choice ? { payloadG: choice.loadG } : {};
+    }
+
+    /** The thrust-to-weight and the all-up weight of a card, for the camera load the pilot has chosen (drones3d/payloads.ts loadedNumbers: the one rule of the stage and the cards). */
+    private loaded(id: string): { weight: string; twr: string } {
+        return loadedNumbers(PRESETS[id], this.payload && PRESETS[id].fields.payload_g ? this.payload.get(id) : null);
+    }
+
+    /** "Camera load: RED KOMODO 6K" under the cinelifter's numbers, so a card never shows a weight without saying what it carries. */
+    private loadLine(id: string): HTMLElement | null {
+        if (!this.payload || !PRESETS[id].fields.payload_g) return null;
+        return h('p', { class: 'muted small', 'data-testid': 'drone-load' }, `${t('d3.payload.title')}: ${PAYLOADS[this.payload.get(id)]?.name ?? t('d3.f.none')}`);
+    }
+
+    /** The player picked another camera load on the stage: keep it, and bring the cinelifter's card up to date. */
+    private payloadChosen(id: string, choice: PayloadId): void {
+        this.payload?.set(id, choice);
+        const card = this.root.querySelector(`.drone-card[data-preset="${id}"]`);
+        if (!card) return;
+        const p = PRESETS[id];
+        const set = (spec: string, text: string): void => { const el = card.querySelector(`[data-spec="${spec}"] .spec-v`); if (el) el.textContent = text; };
+        set('twr', `${this.loaded(id).twr}:1`);
+        set('auw_g', `${this.loaded(id).weight} g`);
+        const hv = cardHover(compileParams(p, this.overridesOf(id)));
+        const hel = card.querySelector('[data-testid="drone-hover"]');
+        if (hel && hv) hel.textContent = t('drone.hover', { full: String(hv.full), low: String(hv.low) });
+        const load = card.querySelector('[data-testid="drone-load"]');
+        if (load) load.textContent = `${t('d3.payload.title')}: ${PAYLOADS[choice]?.name ?? t('d3.f.none')}`;
+    }
+
+    /** The 3D stage is its own chunk: the cards are usable at once, the stage appears when it has loaded. */
+    private loadStage(id: string): void {
+        void import('../drones3d').then((m) => {
+            if (this.gone) return;
+            this.stage = m.mountStage(this.stageSlot, {
+                presets: PRESETS, droneId: id, mode: 'full', payload: this.payload && PRESETS[id].fields.payload_g ? this.payload.get(id) : undefined, reducedMotion: this.reducedMotion,
+                onPayload: this.payload ? (choice) => this.payloadChosen(this.stageDrone, choice) : undefined
+            });
+            this.mark(id);
+        }).catch((e) => { console.warn('drone stage not loaded', e); this.stageSlot.remove(); });
+    }
+
+    /** "View in 3D" on a card: that drone on the stage, which scrolls into view. */
+    private view3d(id: string): void {
+        this.stageDrone = id;
+        this.stage?.setDrone(id, this.payload && PRESETS[id].fields.payload_g ? this.payload.get(id) : undefined);
+        this.mark(id);
+        // the picture (the canvas) comes into view, not the whole stage: the stage with its legend is taller than the window, and
+        // 'nearest' on it left the top of the canvas scrolled away under the top bar (found taking the review's retake of the pictures)
+        (this.stageSlot.querySelector('.d3-view') ?? this.stageSlot).scrollIntoView({ block: 'nearest' });
+    }
+
+    private mark(id: string): void {
+        for (const c of this.root.querySelectorAll('.drone-card')) c.toggleAttribute('data-viewing', c.getAttribute('data-preset') === id);
     }
 
     /** The close button and the current drone's card: nothing changes. Without an onClose, main.ts
@@ -115,6 +203,9 @@ export class DronePicker {
     }
 
     remove(): void {
+        this.gone = true;
+        this.stage?.dispose();
+        this.stage = null;
         this.root.remove();
     }
 }

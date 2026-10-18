@@ -14,6 +14,7 @@
 import type { PrefChange, PrefsStore } from '@gsfpv/prefs';
 import { SettingsScreen } from '../../ui/settings/screen';
 import { dialogOpen } from '../../devices/keyboard';
+import { reducedMotion } from '../../ui/motion';
 import { loadVoxelPrefs } from '../../voxels';
 import { t } from '../../i18n';
 import { banner, q } from '../env';
@@ -23,6 +24,7 @@ import { ceilingRow } from './ceiling';
 import { windRow } from './wind';
 import { switchesRow } from './switches';
 import { tuneRow } from './tune';
+import { droneRow } from './drone';
 import type { Feature, FlightContext } from '../context';
 
 let current: SettingsScreen | null = null;
@@ -126,7 +128,8 @@ export function openSettings(ctx: FlightContext, focus: string | null = null): v
             if (id === 'wind.mode') return windRow(ctx);
             if (id === 'input.stickMode') return switchesRow(ctx, () => current?.close());
             // v0.8: help us tune this drone (app/builtin/tune.ts) under the drone
-            if (id === 'drone.current') return tuneRow(ctx, () => current?.close());
+            // v0.9 lane D: and a picture of the drone above it (app/builtin/drone.ts droneRow)
+            if (id === 'drone.current') return droneRow(ctx, tuneRow(ctx, () => current?.close()));
             return null;
         }
     }, { focus });
@@ -159,13 +162,6 @@ export function openSettingsLink(ui: HTMLElement, store: PrefsStore): void {
 function showFrameStats(ctx: FlightContext, on: boolean): void {
     const el = ctx.ui.querySelector('.hud .osd.frame');
     if (el && el.classList.contains('hidden') === on) ctx.hud.toggleFrameStats();
-}
-
-/** The reduced-motion setting as the crash camera uses it: 'system' follows the OS. */
-function reducedMotion(v: string): boolean {
-    if (v === 'on') return true;
-    if (v === 'off') return false;
-    return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 export const settings: Feature = {
