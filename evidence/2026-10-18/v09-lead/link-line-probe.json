@@ -1,0 +1,356 @@
+{
+ "what": "the Controls screen and F3 say how the reports arrive (link-line-probe.mjs)",
+ "base": "http://localhost:5611/en",
+ "lang": "en",
+ "runs": {
+  "usb": {
+   "screen": {
+    "check": "check",
+    "rate": "481 reports / s",
+    "line": "reports every 2.1 ms \u00b7 jitter 0.7 ms \u00b7 longest gap 8.2 ms",
+    "noteShown": false,
+    "note": ""
+   },
+   "f3": {
+    "source": "gamepad",
+    "lineShown": true,
+    "line": "controller: 489 reports / s \u00b7 every 2.0 ms \u00b7 jitter 0.7 ms \u00b7 longest gap 7.4 ms",
+    "hintShown": false,
+    "hint": ""
+   },
+   "rows": [
+    {
+     "name": "check screen opened",
+     "pass": true,
+     "id": "check"
+    },
+    {
+     "name": "the line of numbers is shown",
+     "pass": true,
+     "line": "reports every 2.1 ms \u00b7 jitter 0.7 ms \u00b7 longest gap 8.2 ms"
+    },
+    {
+     "name": "control: usb gets no note on the check screen",
+     "pass": true,
+     "noteShown": false
+    },
+    {
+     "name": "flying with the gamepad",
+     "pass": true,
+     "source": "gamepad"
+    },
+    {
+     "name": "F3 shows the numbers",
+     "pass": true,
+     "line": "controller: 489 reports / s \u00b7 every 2.0 ms \u00b7 jitter 0.7 ms \u00b7 longest gap 7.4 ms"
+    },
+    {
+     "name": "control: usb gets no note on F3",
+     "pass": true,
+     "hintShown": false
+    },
+    {
+     "name": "no page errors",
+     "pass": true,
+     "errors": []
+    }
+   ]
+  },
+  "usb100": {
+   "screen": {
+    "check": "check",
+    "rate": "100 reports / s",
+    "line": "reports every 10 ms \u00b7 jitter 0.1 ms \u00b7 longest gap 10 ms",
+    "noteShown": false,
+    "note": ""
+   },
+   "f3": {
+    "source": "gamepad",
+    "lineShown": true,
+    "line": "controller: 100 reports / s \u00b7 every 10.0 ms \u00b7 jitter 0.1 ms \u00b7 longest gap 11 ms",
+    "hintShown": false,
+    "hint": ""
+   },
+   "rows": [
+    {
+     "name": "check screen opened",
+     "pass": true,
+     "id": "check"
+    },
+    {
+     "name": "the line of numbers is shown",
+     "pass": true,
+     "line": "reports every 10 ms \u00b7 jitter 0.1 ms \u00b7 longest gap 10 ms"
+    },
+    {
+     "name": "control: usb100 gets no note on the check screen",
+     "pass": true,
+     "noteShown": false
+    },
+    {
+     "name": "the interval is the timeline's (~10 ms)",
+     "pass": true,
+     "first": "10"
+    },
+    {
+     "name": "flying with the gamepad",
+     "pass": true,
+     "source": "gamepad"
+    },
+    {
+     "name": "F3 shows the numbers",
+     "pass": true,
+     "line": "controller: 100 reports / s \u00b7 every 10.0 ms \u00b7 jitter 0.1 ms \u00b7 longest gap 11 ms"
+    },
+    {
+     "name": "control: usb100 gets no note on F3",
+     "pass": true,
+     "hintShown": false
+    },
+    {
+     "name": "no page errors",
+     "pass": true,
+     "errors": []
+    }
+   ]
+  },
+  "ble90": {
+   "screen": {
+    "check": "check",
+    "rate": "90 reports / s",
+    "line": "reports every 11 ms \u00b7 jitter 1.7 ms \u00b7 longest gap 14 ms",
+    "noteShown": false,
+    "note": ""
+   },
+   "f3": {
+    "source": "gamepad",
+    "lineShown": true,
+    "line": "controller: 90 reports / s \u00b7 every 11 ms \u00b7 jitter 1.7 ms \u00b7 longest gap 14 ms",
+    "hintShown": false,
+    "hint": ""
+   },
+   "rows": [
+    {
+     "name": "check screen opened",
+     "pass": true,
+     "id": "check"
+    },
+    {
+     "name": "the line of numbers is shown",
+     "pass": true,
+     "line": "reports every 11 ms \u00b7 jitter 1.7 ms \u00b7 longest gap 14 ms"
+    },
+    {
+     "name": "control: ble90 gets no note on the check screen",
+     "pass": true,
+     "noteShown": false
+    },
+    {
+     "name": "the interval is the timeline's (~11 ms)",
+     "pass": true,
+     "first": "11"
+    },
+    {
+     "name": "flying with the gamepad",
+     "pass": true,
+     "source": "gamepad"
+    },
+    {
+     "name": "F3 shows the numbers",
+     "pass": true,
+     "line": "controller: 90 reports / s \u00b7 every 11 ms \u00b7 jitter 1.7 ms \u00b7 longest gap 14 ms"
+    },
+    {
+     "name": "control: ble90 gets no note on F3",
+     "pass": true,
+     "hintShown": false
+    },
+    {
+     "name": "no page errors",
+     "pass": true,
+     "errors": []
+    }
+   ]
+  },
+  "ble50": {
+   "screen": {
+    "check": "check",
+    "rate": "51 reports / s",
+    "line": "reports every 20 ms \u00b7 jitter 3.3 ms \u00b7 longest gap 26 ms",
+    "noteShown": true,
+    "note": "Reports arrive slowly: one every 20 ms, up to 26 ms apart. If the radio is connected wirelessly (Bluetooth), a USB cable is faster."
+   },
+   "f3": {
+    "source": "gamepad",
+    "lineShown": true,
+    "line": "controller: 50 reports / s \u00b7 every 20 ms \u00b7 jitter 3.5 ms \u00b7 longest gap 26 ms",
+    "hintShown": true,
+    "hint": "Reports arrive slowly: one every 20 ms, up to 26 ms apart. If the radio is connected wirelessly (Bluetooth), a USB cable is faster."
+   },
+   "rows": [
+    {
+     "name": "check screen opened",
+     "pass": true,
+     "id": "check"
+    },
+    {
+     "name": "the line of numbers is shown",
+     "pass": true,
+     "line": "reports every 20 ms \u00b7 jitter 3.3 ms \u00b7 longest gap 26 ms"
+    },
+    {
+     "name": "the note is shown, in the page language, with measured numbers",
+     "pass": true,
+     "note": "Reports arrive slowly: one every 20 ms, up to 26 ms apart. If the radio is connected wirelessly (Bluetooth), a USB cable is faster."
+    },
+    {
+     "name": "the interval is the timeline's (~20 ms)",
+     "pass": true,
+     "first": "20"
+    },
+    {
+     "name": "flying with the gamepad",
+     "pass": true,
+     "source": "gamepad"
+    },
+    {
+     "name": "F3 shows the numbers",
+     "pass": true,
+     "line": "controller: 50 reports / s \u00b7 every 20 ms \u00b7 jitter 3.5 ms \u00b7 longest gap 26 ms"
+    },
+    {
+     "name": "F3 shows the note",
+     "pass": true,
+     "hint": "Reports arrive slowly: one every 20 ms, up to 26 ms apart. If the radio is connected wirelessly (Bluetooth), a USB cable is faster."
+    },
+    {
+     "name": "no page errors",
+     "pass": true,
+     "errors": []
+    }
+   ]
+  },
+  "ble30": {
+   "screen": {
+    "check": "check",
+    "rate": "31 reports / s",
+    "line": "reports every 33 ms \u00b7 jitter 4.6 ms \u00b7 longest gap 41 ms",
+    "noteShown": true,
+    "note": "Reports arrive slowly: one every 33 ms, up to 41 ms apart. If the radio is connected wirelessly (Bluetooth), a USB cable is faster."
+   },
+   "f3": {
+    "source": "gamepad",
+    "lineShown": true,
+    "line": "controller: 30 reports / s \u00b7 every 33 ms \u00b7 jitter 4.5 ms \u00b7 longest gap 41 ms",
+    "hintShown": true,
+    "hint": "Reports arrive slowly: one every 33 ms, up to 41 ms apart. If the radio is connected wirelessly (Bluetooth), a USB cable is faster."
+   },
+   "rows": [
+    {
+     "name": "check screen opened",
+     "pass": true,
+     "id": "check"
+    },
+    {
+     "name": "the line of numbers is shown",
+     "pass": true,
+     "line": "reports every 33 ms \u00b7 jitter 4.6 ms \u00b7 longest gap 41 ms"
+    },
+    {
+     "name": "the note is shown, in the page language, with measured numbers",
+     "pass": true,
+     "note": "Reports arrive slowly: one every 33 ms, up to 41 ms apart. If the radio is connected wirelessly (Bluetooth), a USB cable is faster."
+    },
+    {
+     "name": "the interval is the timeline's (~33 ms)",
+     "pass": true,
+     "first": "33"
+    },
+    {
+     "name": "flying with the gamepad",
+     "pass": true,
+     "source": "gamepad"
+    },
+    {
+     "name": "F3 shows the numbers",
+     "pass": true,
+     "line": "controller: 30 reports / s \u00b7 every 33 ms \u00b7 jitter 4.5 ms \u00b7 longest gap 41 ms"
+    },
+    {
+     "name": "F3 shows the note",
+     "pass": true,
+     "hint": "Reports arrive slowly: one every 33 ms, up to 41 ms apart. If the radio is connected wirelessly (Bluetooth), a USB cable is faster."
+    },
+    {
+     "name": "no page errors",
+     "pass": true,
+     "errors": []
+    }
+   ]
+  },
+  "bunches": {
+   "screen": {
+    "check": "check",
+    "rate": "22 reports / s",
+    "line": "reports every 44 ms \u00b7 jitter 38 ms \u00b7 longest gap 96 ms",
+    "noteShown": true,
+    "note": "Reports arrive in bunches, up to 96 ms apart. If the radio is connected wirelessly (Bluetooth), a USB cable is faster."
+   },
+   "f3": {
+    "source": "gamepad",
+    "lineShown": true,
+    "line": "controller: 22 reports / s \u00b7 every 46 ms \u00b7 jitter 36 ms \u00b7 longest gap 98 ms",
+    "hintShown": true,
+    "hint": "Reports arrive in bunches, up to 98 ms apart. If the radio is connected wirelessly (Bluetooth), a USB cable is faster."
+   },
+   "rows": [
+    {
+     "name": "check screen opened",
+     "pass": true,
+     "id": "check"
+    },
+    {
+     "name": "the line of numbers is shown",
+     "pass": true,
+     "line": "reports every 44 ms \u00b7 jitter 38 ms \u00b7 longest gap 96 ms"
+    },
+    {
+     "name": "the note is shown, in the page language, with measured numbers",
+     "pass": true,
+     "note": "Reports arrive in bunches, up to 96 ms apart. If the radio is connected wirelessly (Bluetooth), a USB cable is faster."
+    },
+    {
+     "name": "flying with the gamepad",
+     "pass": true,
+     "source": "gamepad"
+    },
+    {
+     "name": "F3 shows the numbers",
+     "pass": true,
+     "line": "controller: 22 reports / s \u00b7 every 46 ms \u00b7 jitter 36 ms \u00b7 longest gap 98 ms"
+    },
+    {
+     "name": "F3 shows the note",
+     "pass": true,
+     "hint": "Reports arrive in bunches, up to 98 ms apart. If the radio is connected wirelessly (Bluetooth), a USB cable is faster."
+    },
+    {
+     "name": "no page errors",
+     "pass": true,
+     "errors": []
+    }
+   ]
+  }
+ },
+ "browser": {
+  "kind": "system-chrome",
+  "version": "155.0.8059.40",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+  "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "softwareGl": false,
+  "counts": true
+ },
+ "failed": 0
+}

@@ -1,0 +1,59 @@
+{
+ "what": "the lag of the green stick on the arm card (arm-card-knob-probe.mjs)",
+ "base": "http://localhost:5611/en",
+ "expect": "fast",
+ "n": 60,
+ "browser": {
+  "kind": "system-chrome",
+  "version": "155.0.8059.40",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+  "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "softwareGl": false,
+  "counts": true
+ },
+ "stats": {
+  "period": 33.34,
+  "n": 60,
+  "of": 60,
+  "mean": 17.8,
+  "p95": 33.4,
+  "max": 75
+ },
+ "rows": [
+  {
+   "name": "flying with the gamepad, the arm card is up with its two knobs",
+   "pass": true,
+   "source": "gamepad",
+   "knobs": 2,
+   "cardShown": true
+  },
+  {
+   "name": "every move was drawn (none lost)",
+   "pass": true,
+   "period": 33.34,
+   "n": 60,
+   "of": 60,
+   "mean": 17.8,
+   "p95": 33.4,
+   "max": 75
+  },
+  {
+   "name": "the knobs follow the stick within frames: p95 <= 2 frame periods, mean <= 1.5",
+   "pass": true,
+   "period": 33.34,
+   "n": 60,
+   "of": 60,
+   "mean": 17.8,
+   "p95": 33.4,
+   "max": 75
+  },
+  {
+   "name": "no page errors",
+   "pass": true,
+   "errors": []
+  }
+ ],
+ "failed": 0
+}

@@ -1,0 +1,201 @@
+{
+  "name": "v09-drones3d-partial-v10",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-18T04:57:02.987Z",
+    "gitHead": "c473e0c",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": false,
+  "site": "http://localhost:5611",
+  "baseSite": "http://localhost:5612",
+  "preFixSite": "http://localhost:5611",
+  "scene": "39e63ce9",
+  "V10": {
+    "pass": false,
+    "checks": {
+      "viewInWindow": true,
+      "firstView": true,
+      "stageLine": true,
+      "gopro": true,
+      "chipFocus": true,
+      "helpTune": true,
+      "pauseCard": true,
+      "settingsCard": true,
+      "reducedMotion": true,
+      "restored": true
+    },
+    "details": {
+      "viewInWindow": {
+        "canvasInView": {
+          "taurusx8-komodo-6s": true,
+          "nazgulf5v3-6s": true,
+          "machr5sport-6s": true
+        }
+      },
+      "firstView": {
+        "edgeMargin": {
+          "taurusx8-komodo-6s": 0.0454545747393463,
+          "nazgulf5v3-6s": 0.04545450330909317,
+          "machr5sport-6s": 0.045454496828523795
+        },
+        "edgeMarginMin": 0.01,
+        "control": {
+          "zoomedIn": -0.9114148704852157,
+          "crosses": true
+        }
+      },
+      "gopro": {
+        "line": "All-up weight: 3029 g \u00b7 Thrust / weight: 5.3:1 \u00b7 6S 5600 mAh",
+        "sources": [
+          "https://community.gopro.com/s/article/HERO13-Black-Camera-Size-And-Weight?language=en_US"
+        ]
+      },
+      "stageLine": {
+        "komodo": "All-up weight: 4872 g \u00b7 Thrust / weight: 3.3:1 \u00b7 6S 5600 mAh",
+        "none": "All-up weight: 2872 g \u00b7 Thrust / weight: 5.6:1 \u00b7 6S 5600 mAh",
+        "cardNone": {
+          "weight": "2872 g",
+          "twr": "5.6:1"
+        }
+      },
+      "chipFocus": {
+        "sameElement": true,
+        "focusedPayload": "bmpcc6kpro",
+        "pressed": "true",
+        "turnedBy": {
+          "before": {
+            "yaw": 58,
+            "pitch": 22,
+            "dist": 2.6218013531333777
+          },
+          "after": {
+            "yaw": 58,
+            "pitch": 22,
+            "dist": 2.6218013531333777
+          },
+          "yawDeg": 0,
+          "pitchDeg": 0
+        }
+      },
+      "helpTune": {
+        "massKg": 2.872
+      },
+      "pauseCard": {
+        "payload": "none",
+        "line": "All-up weight: 2872 g \u00b7 Thrust / weight: 5.6:1 \u00b7 6S 5600 mAh",
+        "flightMassKg": 2.872
+      },
+      "settingsCard": {
+        "payload": "none",
+        "line": "All-up weight: 2872 g \u00b7 Thrust / weight: 5.6:1 \u00b7 6S 5600 mAh"
+      },
+      "reducedMotion": {
+        "reducedMotionOnTurnedDeg": 0,
+        "reducedMotionOffTurnedDeg": 35.47
+      },
+      "restored": {
+        "massKg": 4.872
+      }
+    },
+    "control": {
+      "release": "built from 06bef1f, before the review fixes",
+      "checks": {
+        "viewInWindow": true,
+        "firstView": true,
+        "stageLine": true,
+        "gopro": true,
+        "chipFocus": true,
+        "helpTune": true,
+        "pauseCard": true,
+        "settingsCard": true,
+        "reducedMotion": true,
+        "restored": true
+      },
+      "details": {
+        "viewInWindow": {
+          "canvasInView": {
+            "taurusx8-komodo-6s": true,
+            "nazgulf5v3-6s": true,
+            "machr5sport-6s": true
+          }
+        },
+        "firstView": {
+          "edgeMargin": {
+            "taurusx8-komodo-6s": 0.0454545747393463,
+            "nazgulf5v3-6s": 0.04545450330909317,
+            "machr5sport-6s": 0.045454496828523795
+          },
+          "edgeMarginMin": 0.01,
+          "control": {
+            "zoomedIn": -0.9114148704852157,
+            "crosses": true
+          }
+        },
+        "gopro": {
+          "line": "All-up weight: 3029 g \u00b7 Thrust / weight: 5.3:1 \u00b7 6S 5600 mAh",
+          "sources": [
+            "https://community.gopro.com/s/article/HERO13-Black-Camera-Size-And-Weight?language=en_US"
+          ]
+        },
+        "stageLine": {
+          "komodo": "All-up weight: 4872 g \u00b7 Thrust / weight: 3.3:1 \u00b7 6S 5600 mAh",
+          "none": "All-up weight: 2872 g \u00b7 Thrust / weight: 5.6:1 \u00b7 6S 5600 mAh",
+          "cardNone": {
+            "weight": "2872 g",
+            "twr": "5.6:1"
+          }
+        },
+        "chipFocus": {
+          "sameElement": true,
+          "focusedPayload": "bmpcc6kpro",
+          "pressed": "true",
+          "turnedBy": {
+            "before": {
+              "yaw": 58,
+              "pitch": 22,
+              "dist": 2.6218013531333777
+            },
+            "after": {
+              "yaw": 58,
+              "pitch": 22,
+              "dist": 2.6218013531333777
+            },
+            "yawDeg": 0,
+            "pitchDeg": 0
+          }
+        },
+        "helpTune": {
+          "massKg": 2.872
+        },
+        "pauseCard": {
+          "payload": "none",
+          "line": "All-up weight: 2872 g \u00b7 Thrust / weight: 5.6:1 \u00b7 6S 5600 mAh",
+          "flightMassKg": 2.872
+        },
+        "settingsCard": {
+          "payload": "none",
+          "line": "All-up weight: 2872 g \u00b7 Thrust / weight: 5.6:1 \u00b7 6S 5600 mAh"
+        },
+        "reducedMotion": {
+          "reducedMotionOnTurnedDeg": 0,
+          "reducedMotionOffTurnedDeg": 35.47
+        },
+        "restored": {
+          "massKg": 4.872
+        }
+      },
+      "everyCheckFailsBefore": false
+    },
+    "pageErrors": []
+  },
+  "pageErrors": []
+}

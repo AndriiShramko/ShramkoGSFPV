@@ -1,0 +1,5 @@
+accept-v09-drones3d target: http://localhost:5611  base (control): http://localhost:5612  before-the-review-fixes (control): http://localhost:5611
+accept-v09-drones3d: WATCHDOG (122 s without a step, 205 s with the GPU lock), last step: frames 8
+  page about:blank -> no pause within 4 s: its JavaScript is not running, or the renderer does not answer
+  page http://localhost:5611/en/fly/?scene=39e63ce9&nowarn=1&input=touch&render=off&drone=taurusx8-komodo-6 -> no pause within 4 s: its JavaScript is not running, or the renderer does not answer
+freed the lock and stopped

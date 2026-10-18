@@ -1,0 +1,434 @@
+{
+  "name": "v09-c-accept",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-18T04:20:02.797Z",
+    "gitHead": "3329aae",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5581",
+  "checks": [
+    {
+      "name": "A0 a wrong password is refused in the page",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "A1 the admin lists the seeded scenes, the three of this run among them",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "A2 the scale field is in the scene editor, range 0.25..100",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "A3 typing x3 saves it into the draft",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "A4 out of range (x150) is not saved: the field is dropped",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "A5 x30 (above the old x4 limit) saves",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "A6 the scene can be hidden from the picker",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "A7 before Publish the public catalogue knows nothing of the draft",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "A8 after Publish a listed scene carries its size in \"scenes\"",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "A9 a hidden scene is not in \"scenes\", its size is in \"defaults\" and nothing else of it is public",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "A10 the published version is in the history (undo)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "B1 a deep link to a listed scene opens at the owner size x3",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "B1c a scene the owner never configured opens at x1",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "B2 a deep link to a HIDDEN scene opens at its public default x30",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "B2c with /api/catalog down (the static list) the same link opens at x1: the default comes from the API",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "B3 a pasted superspl.at link to the hidden scene opens at x30",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "B4 switching scenes in the page (N / auto-switch use the same load) starts each at its own size",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "B5 the pilot's own saved size (x2) wins over the owner's x3; after his reset the owner's default is back",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "B6 a scene that starts at x3 says once what that means",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "B6b ... and not again on the next visit",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "B6c an ordinary scene (x1) never shows it",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "C0a a pilot who changed nothing shares nothing extra (his link is the plain scene page)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "C0 what he flies that differs from the scene's defaults is in the share, in the link's order",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "C0b a pilot whose Display drawing is \"sorted\" shares the scene as it is: no drawing in the request, none in the /s/<id> link",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "C1 the scene opens with the shared size x5, walls off, cleanup 4, ceiling, wind",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "C1b the chip names them in words (no raw key)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "C1c the pilot's saved settings are untouched",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "C2 Reset gives his own settings back live: x3, walls on, no cleanup, no ceiling, no wind",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "C2b ... the chip is gone, nothing was stored, the address lost the parameters",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "C3 Keep stores the settings as his own",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "C3b ... and the next plain visit flies with them",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "C4 a shared size beats his saved size for the visit, and Reset restores HIS (x2), not the default",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "C5 N / a scene switch ends the visit: no chip, the parameters are out of the address, the next scene is x1",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "C5b ... and coming back opens the scene's own default x3, not the link's x5",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "C5c the link's drone is flown and named on the chip while the visit lasts",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "C5d a scene switch gives the pilot's own drone back (flight, store, address) and stores nothing",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "C6 his own change of the size takes it out of the chip, the walls stay named",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "C6b with nothing shared left the chip goes",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "C7 malformed shared parameters are ignored: the scene opens at its default and no chip is offered",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "C7b a valid parameter next to a malformed one still counts",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "D1 the hidden scene opens drawn at x30 (the engine takes the scene transform)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "D2 a share from the flight makes the picture page and carries the settings",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "D2b the /s/<id> page sends a visitor on to the scene with the same settings",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "D3 drawn: the chip sits inside the view (screenshot kept for the eyes)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "no page errors on any page of the run (the base build's own \"armed\" error after a scene switch left out, counted apart)",
+      "ok": true,
+      "control": false
+    }
+  ],
+  "passed": 45,
+  "failed": [],
+  "results": {
+    "target": {
+      "site": "http://localhost:5581",
+      "api": "http://127.0.0.1:8394",
+      "dist": "C:/dev/gsfpv-v03/dist"
+    },
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "adminRows": [
+      "39e63ce9",
+      "7a475d38",
+      "887f27aa"
+    ],
+    "publicCatalog": {
+      "defaults": {
+        "7a475d38": {
+          "scale": 30
+        }
+      },
+      "listedScale": 3,
+      "hiddenInScenes": false
+    },
+    "B1": {
+      "listed": 3,
+      "plain": 1
+    },
+    "B2": {
+      "hidden": 30
+    },
+    "B3": {
+      "status": "ready",
+      "size": 30,
+      "search": "?nowarn=1&input=touch&render=off&scene=7a475d38&budget=8"
+    },
+    "B4": [
+      3,
+      30,
+      1,
+      3
+    ],
+    "B5": {
+      "own": 2,
+      "back": 3
+    },
+    "B6": {
+      "txt": "This scene starts at x3, the size its owner set. Small scans (a plant, a toy, an insect) are often scaled up like this, to fly them like a big building. Change the size in the pause menu, row Scene size, or with [ and ] on a keyboard.",
+      "seen": "1",
+      "second": 0
+    },
+    "C0": {
+      "none": "",
+      "shared": "sz=5&wl=0&fl=4&wd=270,4,2&ce=12.5",
+      "url": "https://gsfpv.flyreelstudio.eu/s/mmmDfzsRaho"
+    },
+    "C0b": {
+      "sid": true,
+      "render": null,
+      "link": "/en/fly/?scene=39e63ce9"
+    },
+    "C1": {
+      "flown": {
+        "size": 5,
+        "walls": false,
+        "floaters": 4,
+        "ceiling": 12.5,
+        "wind": {
+          "from": 270,
+          "speed": 4,
+          "gust": 2,
+          "source": "custom"
+        }
+      },
+      "chip": "Shared settings: x5, walls off, cleanup of pieces under 4 blocks, wind 4 m/s from 270\u00b0, ceiling 54.6 m",
+      "explicit": [],
+      "search": "?scene=39e63ce9&sz=5&wl=0&fl=4&wd=270%2C4%2C2&ce=12.5&nowarn=1&input=touch&render=off"
+    },
+    "C2": {
+      "flown": {
+        "size": 3,
+        "walls": true,
+        "floaters": 0,
+        "ceiling": null,
+        "wind": null
+      },
+      "chips": 0,
+      "explicit": [],
+      "search": "?scene=39e63ce9&nowarn=1&input=touch&render=off"
+    },
+    "C3": {
+      "explicit": [
+        "scene.walls@*",
+        "wind.mode@*",
+        "scene.ceiling@39e63ce9",
+        "scene.ceilingM@39e63ce9",
+        "scene.dropFloaters@39e63ce9",
+        "scene.transform@39e63ce9",
+        "wind.fromDeg@39e63ce9",
+        "wind.gust@39e63ce9",
+        "wind.speed@39e63ce9"
+      ],
+      "next": {
+        "size": 5,
+        "walls": false,
+        "floaters": 4,
+        "ceiling": 12.5
+      }
+    },
+    "C4": {
+      "shared": 5,
+      "own": 2
+    },
+    "C5": {
+      "gone": {
+        "chips": 0,
+        "search": "?scene=887f27aa&nowarn=1&input=touch&render=off",
+        "size": 1
+      },
+      "back": {
+        "chips": 0,
+        "size": 3
+      }
+    },
+    "C5d": {
+      "flown": {
+        "drone": "taurusx8-komodo-6s",
+        "store": "taurusx8-komodo-6s"
+      },
+      "chip": "Shared settings: x5, iFlight Taurus X8 class with a RED Komodo, 6S",
+      "left": {
+        "drone": "pavo20pro-3s",
+        "store": "pavo20pro-3s",
+        "explicit": false
+      },
+      "addr": "?scene=887f27aa&nowarn=1&input=touch&render=off"
+    },
+    "C6": {
+      "after": "Shared settings: walls off",
+      "left": 0,
+      "size": 7
+    },
+    "C7": {
+      "size": 3,
+      "chips": 0
+    },
+    "D1": {
+      "status": "ready",
+      "size": 30,
+      "render": "on",
+      "frames": 137,
+      "screenshot": "C:\\dev\\gsfpv-v03\\evidence\\2026-10-18\\v09-c-macro-x30.png",
+      "note": "This scene starts at x30, the size its owner set. Small scans (a plant, a toy, an insect) are often scaled up like this, to fly them like a big building. Change the size in the pause menu, row Scene size, or with [ and ] on a keyboard."
+    },
+    "D2": {
+      "url": "https://gsfpv.flyreelstudio.eu/s/aO2WFlrUaYY",
+      "shared": "sz=5&wl=0",
+      "picture": true,
+      "link": "/en/fly/?scene=39e63ce9&amp;sz=5&amp;wl=0"
+    },
+    "D3": {
+      "chip": "Shared settings: x5, walls off, cleanup of pieces under 4 blocks, wind 4 m/s from 270\u00b0, ceiling 54.6 m",
+      "box": {
+        "x": 360,
+        "y": 636.875,
+        "width": 560,
+        "height": 95.125
+      },
+      "screenshot": "C:\\dev\\gsfpv-v03\\evidence\\2026-10-18\\v09-c-shared-chip.png"
+    },
+    "pageErrors": [],
+    "knownBaseErrors": {
+      "armedAfterSceneSwitch": 0
+    },
+    "apiLogTail": [
+      "06:19:53 POST /api/e\r",
+      "06:19:55 POST /api/share\r",
+      "06:19:55 GET /s/aO2WFlrUaYY\r",
+      "06:19:56 GET /api/catalog\r",
+      "06:19:56 POST /api/e\r",
+      "06:19:58 POST /api/e\r",
+      "06:19:58 POST /api/e\r",
+      ""
+    ]
+  }
+}

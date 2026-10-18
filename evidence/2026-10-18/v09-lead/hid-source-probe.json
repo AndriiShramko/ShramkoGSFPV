@@ -1,0 +1,470 @@
+{
+ "what": "HidSource on the local release with a fake navigator.hid (hid-source-probe.mjs)",
+ "base": "http://localhost:5611/en",
+ "browser": {
+  "kind": "system-chrome",
+  "version": "155.0.8059.40",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+  "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "softwareGl": false,
+  "counts": true
+ },
+ "dji": {
+  "pass": true,
+  "expect": {
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "name": "DJI FPV Remote Controller",
+   "end": "check",
+   "known": "dji-virtual-joystick",
+   "controls": 11,
+   "wizard": false
+  },
+  "seconds": 2,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "profileKey": "hid:2ca3:1021:HID Interface:13:d",
+   "profileName": "DJI FPV Remote Controller",
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "reports": 170,
+   "badReports": 0,
+   "lastBadLen": 0,
+   "rateHz": 153,
+   "deviceName": "HID Interface",
+   "hint": "",
+   "probe": {
+    "requested": 1,
+    "opened": 1,
+    "sent": 170,
+    "listeners": 1
+   },
+   "known": "dji-virtual-joystick",
+   "knownNote": true,
+   "controls": 11,
+   "checkAt": 1285
+  },
+  "screens": 2,
+  "path": [
+   {
+    "t": 171,
+    "k": "none"
+   },
+   {
+    "t": 872,
+    "k": "check/null"
+   }
+  ],
+  "errors": []
+ },
+ "dji-windows": {
+  "pass": true,
+  "expect": {
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "name": "DJI FPV Remote Controller",
+   "end": "check",
+   "known": "dji-virtual-joystick",
+   "controls": 11,
+   "wizard": false
+  },
+  "seconds": 2,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "profileKey": "hid:2ca3:1021:HID Interface:13:d",
+   "profileName": "DJI FPV Remote Controller",
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "reports": 169,
+   "badReports": 0,
+   "lastBadLen": 0,
+   "rateHz": 149,
+   "deviceName": "HID Interface",
+   "hint": "",
+   "probe": {
+    "requested": 1,
+    "opened": 1,
+    "sent": 169,
+    "listeners": 1
+   },
+   "known": "dji-virtual-joystick",
+   "knownNote": true,
+   "controls": 11,
+   "checkAt": 1352
+  },
+  "screens": 2,
+  "path": [
+   {
+    "t": 233,
+    "k": "none"
+   },
+   {
+    "t": 934,
+    "k": "check/null"
+   }
+  ],
+  "errors": []
+ },
+ "edgetx": {
+  "pass": true,
+  "expect": {
+   "key": "hid:1209:4f54:RadioMaster TX16S Joystick:19",
+   "name": "RadioMaster TX16S Joystick",
+   "end": "check",
+   "known": "edgetx-joystick",
+   "controls": 0,
+   "wizard": true
+  },
+  "seconds": 22,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "profileKey": "hid:1209:4f54:RadioMaster TX16S Joystick:19",
+   "profileName": "RadioMaster TX16S Joystick",
+   "key": "hid:1209:4f54:RadioMaster TX16S Joystick:19",
+   "reports": 5173,
+   "badReports": 0,
+   "lastBadLen": 0,
+   "rateHz": 248,
+   "deviceName": "RadioMaster TX16S Joystick",
+   "hint": "",
+   "probe": {
+    "requested": 1,
+    "opened": 1,
+    "sent": 5173,
+    "listeners": 1
+   },
+   "known": "edgetx-joystick",
+   "knownNote": true,
+   "controls": 0,
+   "checkAt": 21123
+  },
+  "screens": 23,
+  "path": [
+   {
+    "t": 165,
+    "k": "none"
+   },
+   {
+    "t": 768,
+    "k": "stir/ready"
+   },
+   {
+    "t": 1353,
+    "k": "stir/active"
+   },
+   {
+    "t": 3991,
+    "k": "stir/done"
+   },
+   {
+    "t": 4806,
+    "k": "centre/ready"
+   },
+   {
+    "t": 5408,
+    "k": "centre/active"
+   },
+   {
+    "t": 6205,
+    "k": "centre/done"
+   },
+   {
+    "t": 7022,
+    "k": "throttle/ready"
+   },
+   {
+    "t": 7639,
+    "k": "throttle/active"
+   },
+   {
+    "t": 8649,
+    "k": "throttle/done"
+   },
+   {
+    "t": 9468,
+    "k": "yaw/ready"
+   },
+   {
+    "t": 10069,
+    "k": "yaw/active"
+   },
+   {
+    "t": 10856,
+    "k": "yaw/done"
+   },
+   {
+    "t": 12080,
+    "k": "pitch/ready"
+   },
+   {
+    "t": 12688,
+    "k": "pitch/active"
+   },
+   {
+    "t": 13706,
+    "k": "pitch/done"
+   },
+   {
+    "t": 15134,
+    "k": "roll/ready"
+   },
+   {
+    "t": 15729,
+    "k": "roll/active"
+   },
+   {
+    "t": 16512,
+    "k": "roll/done"
+   },
+   {
+    "t": 17717,
+    "k": "arm/ready"
+   },
+   {
+    "t": 18298,
+    "k": "arm/active"
+   },
+   {
+    "t": 19691,
+    "k": "arm/done"
+   },
+   {
+    "t": 20705,
+    "k": "check/null"
+   }
+  ],
+  "errors": []
+ },
+ "dji-other": {
+  "pass": true,
+  "expect": {
+   "end": "wizard",
+   "known": null
+  },
+  "seconds": 12,
+  "end": {
+   "id": "stir",
+   "profile": false,
+   "profileKey": null,
+   "profileName": null,
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "reports": 1975,
+   "badReports": 0,
+   "lastBadLen": 0,
+   "rateHz": 166,
+   "deviceName": "HID Interface",
+   "hint": "Now stir the other stick too, into every corner. If it moves but no new bar below turns green, set the radio to USB Joystick mode.",
+   "probe": {
+    "requested": 1,
+    "opened": 1,
+    "sent": 1975,
+    "listeners": 1
+   },
+   "known": null,
+   "knownNote": false,
+   "controls": 0,
+   "checkAt": null
+  },
+  "screens": 3,
+  "path": [
+   {
+    "t": 154,
+    "k": "none"
+   },
+   {
+    "t": 720,
+    "k": "stir/ready"
+   },
+   {
+    "t": 1289,
+    "k": "stir/active"
+   }
+  ],
+  "errors": []
+ },
+ "dji-none": {
+  "pass": true,
+  "expect": {
+   "end": "connect",
+   "refused": true
+  },
+  "seconds": 31,
+  "end": {
+   "id": "connect",
+   "profile": false,
+   "profileKey": null,
+   "profileName": null,
+   "key": "hid:2ca3:1021:HID Interface:13",
+   "reports": 0,
+   "badReports": 4979,
+   "lastBadLen": 13,
+   "rateHz": 0,
+   "deviceName": "HID Interface",
+   "hint": "The device sends 13-byte reports we cannot read. Try the \"Gamepad or radio as gamepad\" button instead; an EdgeTX radio can also be set to USB Joystick mode Classic in its model settings.",
+   "probe": {
+    "requested": 1,
+    "opened": 1,
+    "sent": 4979,
+    "listeners": 1
+   },
+   "known": null,
+   "knownNote": false,
+   "controls": 0,
+   "checkAt": null
+  },
+  "screens": 2,
+  "path": [
+   {
+    "t": 152,
+    "k": "none"
+   },
+   {
+    "t": 1685,
+    "k": "connect/null"
+   }
+  ],
+  "errors": []
+ },
+ "dji-pad-chooser": {
+  "pass": true,
+  "expect": {
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "name": "DJI FPV Remote Controller",
+   "end": "check",
+   "known": "dji-virtual-joystick",
+   "controls": 11,
+   "wizard": false,
+   "requested": 1
+  },
+  "seconds": 4,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "profileKey": "hid:2ca3:1021:HID Interface:13:d",
+   "profileName": "DJI FPV Remote Controller",
+   "key": "hid:2ca3:1021:HID Interface:13:d",
+   "reports": 2,
+   "badReports": 0,
+   "lastBadLen": 0,
+   "rateHz": 0,
+   "deviceName": "HID Interface",
+   "hint": "",
+   "probe": {
+    "requested": 1,
+    "opened": 1,
+    "sent": 2,
+    "listeners": 1
+   },
+   "known": "dji-virtual-joystick",
+   "knownNote": true,
+   "controls": 11,
+   "checkAt": 3282
+  },
+  "screens": 2,
+  "path": [
+   {
+    "t": 525,
+    "k": "none"
+   },
+   {
+    "t": 3282,
+    "k": "check/null"
+   }
+  ],
+  "errors": []
+ },
+ "dji-pad-cancel": {
+  "pass": true,
+  "expect": {
+   "end": "pad",
+   "key": "gp:HID Interface (Vendor: 2ca3 Product: 1021):5:24:",
+   "known": "dji-virtual-joystick",
+   "requested": 1,
+   "afterMs": 800
+  },
+  "seconds": 2,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "profileKey": "gp:HID Interface (Vendor: 2ca3 Product: 1021):5:24:",
+   "profileName": "DJI FPV Remote Controller",
+   "key": "",
+   "reports": 0,
+   "badReports": 0,
+   "lastBadLen": 0,
+   "rateHz": 0,
+   "deviceName": null,
+   "hint": "",
+   "probe": {
+    "requested": 1,
+    "opened": 0,
+    "sent": 0,
+    "listeners": 0
+   },
+   "known": "dji-virtual-joystick",
+   "knownNote": true,
+   "controls": 11,
+   "checkAt": 1312
+  },
+  "screens": 2,
+  "path": [
+   {
+    "t": 508,
+    "k": "none"
+   },
+   {
+    "t": 1312,
+    "k": "check/null"
+   }
+  ],
+  "errors": []
+ },
+ "dji-pad-nopick": {
+  "pass": true,
+  "expect": {
+   "end": "pad",
+   "key": "gp:HID Interface (Vendor: 2ca3 Product: 1021):5:24:",
+   "known": "dji-virtual-joystick",
+   "requested": 0,
+   "withinMs": 3000
+  },
+  "seconds": 1,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "profileKey": "gp:HID Interface (Vendor: 2ca3 Product: 1021):5:24:",
+   "profileName": "DJI FPV Remote Controller",
+   "key": "",
+   "reports": 0,
+   "badReports": 0,
+   "lastBadLen": 0,
+   "rateHz": 0,
+   "deviceName": null,
+   "hint": "",
+   "probe": {
+    "requested": 0,
+    "opened": 0,
+    "sent": 0,
+    "listeners": 0
+   },
+   "known": "dji-virtual-joystick",
+   "knownNote": true,
+   "controls": 11,
+   "checkAt": 552
+  },
+  "screens": 2,
+  "path": [
+   {
+    "t": 305,
+    "k": "none"
+   },
+   {
+    "t": 552,
+    "k": "check/null"
+   }
+  ],
+  "errors": []
+ },
+ "pass": true
+}

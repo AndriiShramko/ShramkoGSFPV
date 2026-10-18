@@ -1,0 +1,105 @@
+{
+  "name": "v09-admin-render",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-18T04:20:15.641Z",
+    "gitHead": "3329aae",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "error": null,
+  "checks": [
+    {
+      "name": "1 the preview of the owner's address names the drawing it will store (stochastic, 8 M)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "1 published: the scene is in the catalogue with render {budgetM 8, stochastic true}",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "2 the editor's drawing field is Auto / Stochastic / Sorted; Auto and no budget remove the entry's render",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "2 published with Auto: the scene has no render at all (the device decides)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "2 a listed scene pasted again: \"Add\" stays off and \"Give the scene in the list this drawing\" is offered",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "2 published: the listed scene now has render {budgetM 8, stochastic true}",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "3 the editor's Sorted is published as render.stochastic false, the budget kept",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "3 /api/catalog (what the simulator reads) carries it",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "4 the preview of a stochastic=0 link says sorted",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "4 published: render {stochastic false}",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "control: the base build's admin stops at \"Already in the list\" (no way to give the listed scene the drawing)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "control: the base build's editor has a stochastic checkbox, not the three-way field",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "the server kept the sorted entry through the base admin's read (nothing was rewritten)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "no page errors",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "the password is in no log or data file",
+      "ok": true,
+      "control": false
+    }
+  ],
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "addLine": "Drawn as the link asks: stochastic (SuperSplat beta, desktop only), 8 M splats.",
+  "sortedLine": "Drawn as the link asks: sorted (the classic drawing).",
+  "pageErrors": []
+}

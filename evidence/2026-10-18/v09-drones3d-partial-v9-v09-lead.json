@@ -1,0 +1,255 @@
+{
+  "name": "v09-drones3d-partial-v9",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-18T04:58:26.025Z",
+    "gitHead": "c473e0c",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "site": "http://localhost:5611",
+  "baseSite": "http://localhost:5612",
+  "preFixSite": "http://localhost:5611",
+  "scene": "39e63ce9",
+  "V9": {
+    "pass": true,
+    "scanDrawn": {
+      "render": "on",
+      "splatsDrawn": 3804374,
+      "flightBackend": "webgpu",
+      "canvasStdBefore": 0.195,
+      "canvasStdAfter": 0.185,
+      "stdMin": 0.04
+    },
+    "baseline": {
+      "flightHz": [
+        28.5,
+        29.9,
+        30.4
+      ],
+      "longestTaskMsWithNoStage": 0
+    },
+    "firstOpenStall": {
+      "flightHz": 4,
+      "flightFrames": 6,
+      "baselineHz": 28.5,
+      "recoveredNextRound": true
+    },
+    "summary": {
+      "rounds": 15,
+      "worstFirstFrameMs": 546,
+      "lowestFlightHzAfterTheFirstOpen": 25.9,
+      "longestTaskMs": 101,
+      "flightHzFloor": 14.2
+    },
+    "perSurface": {
+      "pause": [
+        {
+          "round": 1,
+          "firstFrameMs": 311,
+          "flightHz": 4,
+          "flightFrames": 6,
+          "splatsDrawn": 3804374,
+          "longestTaskMs": 101,
+          "liveAfterClose": 0,
+          "created": 1,
+          "disposed": 1
+        },
+        {
+          "round": 2,
+          "firstFrameMs": 215,
+          "flightHz": 30.4,
+          "flightFrames": 46,
+          "splatsDrawn": 3804374,
+          "longestTaskMs": 85,
+          "liveAfterClose": 0,
+          "created": 2,
+          "disposed": 2
+        },
+        {
+          "round": 3,
+          "firstFrameMs": 211,
+          "flightHz": 30.6,
+          "flightFrames": 46,
+          "splatsDrawn": 3804374,
+          "longestTaskMs": 89,
+          "liveAfterClose": 0,
+          "created": 3,
+          "disposed": 3
+        },
+        {
+          "round": 4,
+          "firstFrameMs": 199,
+          "flightHz": 30,
+          "flightFrames": 45,
+          "splatsDrawn": 3804374,
+          "longestTaskMs": 86,
+          "liveAfterClose": 0,
+          "created": 4,
+          "disposed": 4
+        },
+        {
+          "round": 5,
+          "firstFrameMs": 242,
+          "flightHz": 30.4,
+          "flightFrames": 46,
+          "splatsDrawn": 3804374,
+          "longestTaskMs": 94,
+          "liveAfterClose": 0,
+          "created": 5,
+          "disposed": 5
+        }
+      ],
+      "picker": [
+        {
+          "round": 1,
+          "firstFrameMs": 546,
+          "flightHz": 27.8,
+          "flightFrames": 42,
+          "splatsDrawn": 2817670,
+          "longestTaskMs": 89,
+          "liveAfterClose": 0,
+          "created": 7,
+          "disposed": 7
+        },
+        {
+          "round": 2,
+          "firstFrameMs": 410,
+          "flightHz": 27.9,
+          "flightFrames": 42,
+          "splatsDrawn": 1964216,
+          "longestTaskMs": 84,
+          "liveAfterClose": 0,
+          "created": 9,
+          "disposed": 9
+        },
+        {
+          "round": 3,
+          "firstFrameMs": 383,
+          "flightHz": 27.7,
+          "flightFrames": 42,
+          "splatsDrawn": 1447549,
+          "longestTaskMs": 76,
+          "liveAfterClose": 0,
+          "created": 11,
+          "disposed": 11
+        },
+        {
+          "round": 4,
+          "firstFrameMs": 407,
+          "flightHz": 27.7,
+          "flightFrames": 42,
+          "splatsDrawn": 1447549,
+          "longestTaskMs": 88,
+          "liveAfterClose": 0,
+          "created": 13,
+          "disposed": 13
+        },
+        {
+          "round": 5,
+          "firstFrameMs": 425,
+          "flightHz": 28.4,
+          "flightFrames": 43,
+          "splatsDrawn": 1447549,
+          "longestTaskMs": 75,
+          "liveAfterClose": 0,
+          "created": 15,
+          "disposed": 15
+        }
+      ],
+      "settings": [
+        {
+          "round": 1,
+          "firstFrameMs": 357,
+          "flightHz": 26.4,
+          "flightFrames": 40,
+          "splatsDrawn": 1447549,
+          "longestTaskMs": 87,
+          "liveAfterClose": 0,
+          "created": 16,
+          "disposed": 16
+        },
+        {
+          "round": 2,
+          "firstFrameMs": 273,
+          "flightHz": 25.9,
+          "flightFrames": 39,
+          "splatsDrawn": 1447549,
+          "longestTaskMs": 77,
+          "liveAfterClose": 0,
+          "created": 17,
+          "disposed": 17
+        },
+        {
+          "round": 3,
+          "firstFrameMs": 291,
+          "flightHz": 28.4,
+          "flightFrames": 43,
+          "splatsDrawn": 1964216,
+          "longestTaskMs": 76,
+          "liveAfterClose": 0,
+          "created": 18,
+          "disposed": 18
+        },
+        {
+          "round": 4,
+          "firstFrameMs": 278,
+          "flightHz": 25.9,
+          "flightFrames": 39,
+          "splatsDrawn": 1964216,
+          "longestTaskMs": 79,
+          "liveAfterClose": 0,
+          "created": 19,
+          "disposed": 19
+        },
+        {
+          "round": 5,
+          "firstFrameMs": 292,
+          "flightHz": 26.4,
+          "flightFrames": 40,
+          "splatsDrawn": 2457100,
+          "longestTaskMs": 81,
+          "liveAfterClose": 0,
+          "created": 20,
+          "disposed": 20
+        }
+      ]
+    },
+    "flightDevice": {
+      "lostReason": null,
+      "contextLost": false,
+      "renderer": 2
+    },
+    "stageCounts": {
+      "created": 20,
+      "disposed": 20,
+      "live": 0
+    },
+    "control": {
+      "stallInjectedMs": 1000,
+      "stallLongTaskMs": 1000,
+      "stallHz": 9.2,
+      "stallSeen": true,
+      "renderOffSplatsDrawn": 0,
+      "renderOffDrawsNoScan": true,
+      "renderOffFlightCanvasStd": 0.0902
+    },
+    "pageErrors": [
+      "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "console: Failed to load resource: the server responded with a status of 403 ()",
+      "console: Failed to load resource: the server responded with a status of 403 ()",
+      "console: Failed to load resource: the server responded with a status of 403 ()",
+      "console: Failed to load resource: the server responded with a status of 403 ()",
+      "console: Failed to load resource: the server responded with a status of 403 ()"
+    ]
+  },
+  "pageErrors": []
+}
