@@ -50,7 +50,7 @@ Real screenshots of the live simulator, taken on 2 October 2026 by [`tools/bench
 <td width="50%" valign="top"><a href="docs/screenshots/betaflight.webp"><img src="docs/screenshots/betaflight-panel.webp" alt="Betaflight import"></a><br><sub><b>Betaflight import</b> — Paste a CLI diff and its rates and PID fly the quad; every setting the simulator does not use is listed (here a test diff).</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><a href="docs/screenshots/keys.webp"><img src="docs/screenshots/keys-panel.webp" alt="Keyboard"></a><br><sub><b>Keyboard</b> — Every flying key on screen: Space arms, W and S throttle, A and D yaw, the arrows tilt, M self-levelling, V the voxel grid, C the walls.</sub></td>
+<td width="50%" valign="top"><a href="docs/screenshots/keys.webp"><img src="docs/screenshots/keys-panel.webp" alt="Keyboard"></a><br><sub><b>Keyboard</b> — Every key on screen: click to fly, the mouse looks and turns, W A S D move, Space up, Shift down, F full screen, Esc pause.</sub></td>
 <td width="50%" valign="top"><a href="docs/screenshots/cinema.webp"><img src="docs/screenshots/cinema.webp" alt="Cinema mode"></a><br><sub><b>Cinema mode</b> — Full detail, automatic quality off, no HUD; Record saves an MP4 with the scan's credit in the picture.</sub></td>
 </tr>
 <tr>
@@ -120,7 +120,7 @@ Status on 2 October 2026. **Live** means you can use it on https://gsfpv.flyreel
 | Scenes & SuperSplat | Any public SuperSplat scene in the current format, by link or id, re-published versions (v2, v3…) too; scenes in SuperSplat's older PLY format do not open yet | Live |
 | Scenes & SuperSplat | Tabs: Andrii's scans, Recent, Favourites; filters for walls, type and flown | Live |
 | Scenes & SuperSplat | A SuperSplat tab listing every public walkable scan (1,300+ on 2 October 2026) with superspl.at's filters and sorting, a random top-rated scene and a star for favourites (`v03-superspl-live.json`) | Live |
-| Scenes & SuperSplat | Change scenes without reloading the page: `N` next, `Shift+N` random, `F` next favourite; the radio stays connected (`v03-scenes-live.json`) | Live |
+| Scenes & SuperSplat | Change scenes without reloading the page: `N` next, `Shift+N` random, `Shift+F` next favourite; the radio stays connected (`v03-scenes-live.json`) | Live |
 | Scenes & SuperSplat | After a crash, the next scene instead of a respawn: in random or fixed order, from Andrii's list, your favourites or the scenes you flew (off by default; `v03-scenes-live.json`, S3) | Live |
 | Scenes & SuperSplat | Scene scale around the drone from ×0.25 to ×100 with `[` and `]` (`Shift` doubles a step) or the pause menu, kept for each scan, the walls scaling with it: fly a room like a city (`v03-scale.json`; ×100 in `v05-ux.json`, W5) | Live |
 | Scenes & SuperSplat | Loading progress: stage, MB, speed, time left and retry | Live |
