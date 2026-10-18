@@ -1,8 +1,9 @@
 // The link meter (link.ts): what a device's report cadence looks like on the timelines of a USB cable
 // and of Bluetooth LE (sim/link-timelines.ts), and that the verdict is about the LINK. Every verdict
-// has a control that must say something else: a USB timeline never gets the Bluetooth note, a
-// bursty one is told from a merely slow one, the page's own stalls are not the link's, a quiet
-// device is not a slow one, and a window with too few reports says nothing.
+// has a control that must say something else: no wired timeline (1000, 125 and 100 Hz) is ever called
+// slow, a bursty one is told from a merely slow one, the page's own stalls are not the link's, a quiet
+// device is not a slow one, and a window with too few reports says nothing. Review 2026-10-18: the
+// slow line was 10 ms, exactly the report period of a 100 Hz wired joystick, so timer noise decided.
 import { describe, expect, it } from 'vitest';
 import { LINK, LinkMeter } from '../src/link';
 import { LINK_MEAN_MS, mulberry32, reportTimes } from '../src/sim';
@@ -27,15 +28,49 @@ describe('LinkMeter on the timelines of each link', () => {
         }
     });
 
-    it('Bluetooth at about 90 Hz: slow (11 ms), its numbers are the timeline\'s', () => {
+    it('Bluetooth at about 90 Hz: a link that delivers on time (11 ms): its numbers, no verdict against it', () => {
         const s = measure('ble90');
-        expect(s.verdict).toBe('slow');
+        expect(s.verdict).toBe('ok');
         expect(s.meanMs).toBeGreaterThan(10.5);
         expect(s.meanMs).toBeLessThan(11.7);
         expect(s.jitterMs).toBeGreaterThan(1.3); // uniform +-3 ms: 1.7
         expect(s.jitterMs).toBeLessThan(2.2);
         expect(s.maxGapMs).toBeLessThan(15);
         expect(s.ageMs).toBeCloseTo(s.meanMs / 2, 0); // a steady device: the newest report is half a gap old
+    });
+
+    it('Bluetooth at about 50 Hz (a 20 ms interval) is slow, and so is a steady 16.7 ms: just over the line', () => {
+        const s = measure('ble50');
+        expect(s.verdict).toBe('slow');
+        expect(s.meanMs).toBeGreaterThan(18.5);
+        expect(s.meanMs).toBeLessThan(21.5);
+        expect(s.bunched).toBeLessThan(0.05);
+    });
+
+    it('a wired joystick at 100 Hz (HID interval 10 ms) is not slow, whatever its timer noise: its mean sits where the old line was', () => {
+        // review 2026-10-18: with the line at 10 ms, 28 of 40 runs of this device came out "slow"
+        for (let seed = 1; seed <= 40; seed++) {
+            for (const slack of [LINK.STALL_SLACK_MS, 0]) { // WebHID (timed by the page) and the Gamepad API (timed by the browser)
+                const m = new LinkMeter(slack);
+                for (const t of reportTimes('usb100', 3000, seed)) m.note(t);
+                const s = m.stats(3000);
+                expect(s.verdict, `usb100 seed ${seed} slack ${slack}`).toBe('ok');
+                expect(s.meanMs).toBeGreaterThan(9.9);
+                expect(s.meanMs).toBeLessThan(10.1);
+            }
+        }
+    });
+
+    it('control: the line itself: a mean of 10 ms is ok, 15 ms is ok, 16 ms is slow (so the line is neither 10 nor out of reach of a slow link)', () => {
+        const steady = (gap: number) => {
+            const m = new LinkMeter();
+            for (let t = 0; t < 3000; t += gap) m.note(t);
+            return m.stats(3000).verdict;
+        };
+        expect(steady(10)).toBe('ok');
+        expect(steady(LINK.SLOW_MS)).toBe('ok');
+        expect(steady(LINK.SLOW_MS + 1)).toBe('slow');
+        expect(LINK.SLOW_MS).toBeGreaterThan(11.25); // above Apple's documented best case for BLE HID, not a verdict against it
     });
 
     it('Bluetooth at 30 Hz is slow, not bursty (a regular 33 ms link has no bunches)', () => {
@@ -65,16 +100,18 @@ describe('LinkMeter on the timelines of each link', () => {
         expect(steady.ageMs).toBeLessThan(bursty.ageMs / 2);
     });
 
-    it('control: no timeline of a cable gets the Bluetooth verdicts, on any seed', () => {
+    it('control: no timeline of a cable gets a verdict against it, on any seed', () => {
         for (let seed = 1; seed <= 20; seed++) {
             expect(measure('usb1000', 3000, seed).verdict).toBe('ok');
             expect(measure('usb125', 3000, seed).verdict).toBe('ok');
+            expect(measure('usb100', 3000, seed).verdict).toBe('ok');
         }
     });
 
-    it('control: every Bluetooth timeline gets a verdict, on any seed (the meter is not tuned to one)', () => {
+    it('control: every slow or bunched timeline gets its verdict, on any seed (the meter is not tuned to one), and a healthy BLE link none', () => {
         for (let seed = 1; seed <= 20; seed++) {
-            expect(measure('ble90', 3000, seed).verdict, `ble90 ${seed}`).toBe('slow');
+            expect(measure('ble90', 3000, seed).verdict, `ble90 ${seed}`).toBe('ok');
+            expect(measure('ble50', 3000, seed).verdict, `ble50 ${seed}`).toBe('slow');
             expect(measure('ble30', 3000, seed).verdict, `ble30 ${seed}`).toBe('slow');
             expect(measure('bleBursty', 3000, seed).verdict, `bursty ${seed}`).toBe('bursty');
         }
@@ -161,7 +198,7 @@ describe('LinkMeter leaves out what is not the link', () => {
 
     it('the window: samples older than 3 s are gone, and a window with too few says nothing', () => {
         const m = new LinkMeter();
-        for (const t of reportTimes('ble90', 1000)) m.note(t);
+        for (const t of reportTimes('ble50', 1000)) m.note(t);
         expect(m.stats(1000).verdict).toBe('slow');
         expect(m.stats(1000 + LINK.WINDOW_MS + 50).verdict).toBe('unknown'); // the device went quiet
         const few = new LinkMeter();

@@ -158,7 +158,7 @@ describe('a heavy scan holds the main thread 25 ms of every 33 ms frame', () => 
 describe('the source\'s own link meter on each timeline', () => {
     it('reads each link as what it is', () => {
         expect(run(Now, 'usb1000').link?.verdict).toBe('ok');
-        expect(run(Now, 'ble90').link?.verdict).toBe('slow');
+        expect(run(Now, 'ble90').link?.verdict).toBe('ok'); // a report every 11 ms is a link that delivers on time (SLOW_MS 15)
         // the browser's provider publishes the newest state every 4 ms, so a bunch of reports that
         // arrive within 1.5 ms is ONE new sample here: this path sees the bunches' own cadence (every
         // 50-100 ms), which is the delay that matters. WebHID sees each report (link.test.ts: bursty)

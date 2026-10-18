@@ -2,8 +2,10 @@
 // clock of its own (the caller passes page times in, so tests drive it with any timeline).
 //
 // Why it exists (v0.9 lane E, the owner's item 12): a radio flown over Bluetooth feels late, and the
-// pilot cannot tell the link from the simulator. A USB radio reports every 1-8 ms; a Bluetooth LE
-// joystick every 7-30 ms or in bunches (several reports in one radio event, then a pause). The page
+// pilot cannot tell the link from the simulator. A USB radio reports every 1-10 ms; a Bluetooth LE
+// joystick every 7-30 ms or in bunches (several reports in one radio event, then a pause). The meter
+// does not know which transport it is looking at: it says how the reports arrive, and what it says
+// about a slow one must hold for a cable as well. The page
 // cannot see the link's own queue, but it can see how often a NEW value arrives, and that is the
 // part of the delay the cadence itself adds: the newest value is on average `ageMs` old when a frame
 // or the physics looks at it. docs/wip/v09-e.md has the numbers and the sources.
@@ -24,8 +26,15 @@ export const LINK = {
     IDLE_MS: 250,
     /** fewer gaps than this and nothing is said */
     MIN_GAPS: 20,
-    /** a mean gap above this (below 100 reports / s) is a slow link */
-    SLOW_MS: 10,
+    /**
+     * a mean gap above this (below 67 reports / s) is a slow link. Not 10 ms (review 2026-10-18): that is
+     * exactly the report period of a 100 Hz wired joystick (HID bInterval 10), where timer noise alone
+     * decided "slow" (14 of 40 runs of the timeline), and the page cannot tell a cable from Bluetooth. 15 ms
+     * is clear of every wired rate (1000, 500, 250, 125, 100 Hz) and of a healthy BLE link (7.5-15 ms
+     * connection intervals; 11.25 ms is Apple's documented best case for BLE HID), and it is where the
+     * cadence itself is a delay worth a note: the newest report is 7.5 ms old on average.
+     */
+    SLOW_MS: 15,
     /** a gap shorter than this share of the mean came together with the report before it */
     BUNCH_FRAC: 0.25,
     /** this share of such gaps, with real pauses between the bunches, is a bursty link */

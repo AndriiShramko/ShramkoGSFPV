@@ -1,8 +1,10 @@
 // What the Controls screen and F3 say about how a device's reports arrive (apps/fly/src/ui/link-text.ts,
 // v0.9 lane E), in the four languages with the real strings: the numbers are the meter's, a slow or
-// bunched link gets the note that a USB cable is faster, a fast cable or a meter with too little gets
-// none. Negative controls: a cable never gets the note, an unknown meter says nothing, and a string
-// cannot lose a number (every placeholder is filled in every language).
+// bunched link gets the note (the measured cadence, and that a USB cable is faster if the link is
+// wireless), a fast cable, a healthy Bluetooth link or a meter with too little gets none. The page
+// cannot tell a cable from Bluetooth, so the note never says the link IS Bluetooth (review 2026-10-18).
+// Negative controls: no cable (1000, 125, 100 Hz) gets the note, an unknown meter says nothing, and a
+// string cannot lose a number (every placeholder is filled in every language).
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -47,8 +49,8 @@ describe('linkLines in the four languages', () => {
     for (const lang of LANGS) {
         const t = tFor(lang);
 
-        it(`${lang}: a cable at 1000 Hz and at 125 Hz: the numbers, no note`, () => {
-            for (const kind of ['usb1000', 'usb125'] as const) {
+        it(`${lang}: a cable at 1000, 125 and 100 Hz: the numbers, no note`, () => {
+            for (const kind of ['usb1000', 'usb125', 'usb100'] as const) {
                 for (const where of ['screen', 'f3'] as const) {
                     const l = linkLines(stats(kind), t, where);
                     expect(l, `${kind} ${where}`).not.toBeNull();
@@ -58,15 +60,25 @@ describe('linkLines in the four languages', () => {
             }
         });
 
-        it(`${lang}: Bluetooth at 90 Hz and 30 Hz: the note, with the measured interval and the longest gap`, () => {
-            for (const kind of ['ble90', 'ble30'] as const) {
+        it(`${lang}: a healthy Bluetooth link (90 Hz, a report every 11 ms): the numbers, no note`, () => {
+            for (const where of ['screen', 'f3'] as const) {
+                const l = linkLines(stats('ble90'), t, where)!;
+                expect(l.line).toContain(ms(stats('ble90').meanMs));
+                expect(l.note).toBeNull();
+            }
+        });
+
+        it(`${lang}: a slow link (50 Hz, 30 Hz): the note, with the measured interval and the longest gap, that does not claim to know the transport`, () => {
+            for (const kind of ['ble50', 'ble30'] as const) {
                 const s = stats(kind);
                 const l = linkLines(s, t, 'screen')!;
                 expect(l.note, kind).not.toBeNull();
                 expect(l.note!, kind).not.toMatch(/\{\w+\}/);
                 expect(l.note!, kind).toContain(ms(s.meanMs));
                 expect(l.note!, kind).toContain(ms(s.maxGapMs));
-                expect(l.note!, kind).toMatch(/Bluetooth/);
+                expect(l.note!, kind).toContain('USB');
+                expect(l.note!, kind).toMatch(/Bluetooth/); // named only as the case the advice is for
+                expect(l.note!, kind).not.toMatch(/^Bluetooth/); // ... never as the statement
                 expect(l.line, kind).toContain(ms(s.jitterMs));
             }
         });
@@ -78,6 +90,7 @@ describe('linkLines in the four languages', () => {
             expect(bursty.note).not.toBeNull();
             expect(bursty.note).not.toBe(slow.note);
             expect(bursty.note!).toContain(ms(s.maxGapMs));
+            expect(bursty.note!).not.toMatch(/^Bluetooth/);
         });
 
         it(`${lang}: F3's line carries the rate, the Controls screen's does not (it has the rate on its own line)`, () => {
@@ -97,7 +110,7 @@ describe('linkLines in the four languages', () => {
     });
 
     it('control: the languages differ (the note is not English in the others)', () => {
-        const s = stats('ble90');
+        const s = stats('ble30');
         const notes = LANGS.map((l) => linkLines(s, tFor(l), 'screen')!.note);
         expect(new Set(notes).size).toBe(4);
     });

@@ -1,6 +1,6 @@
 {
   "link.line": "odczyty co {ms} ms · rozrzut {jitter} ms · najdłuższa przerwa {gap} ms",
   "link.f3": "aparatura: {hz} odczytów / s · co {ms} ms · rozrzut {jitter} ms · najdłuższa przerwa {gap} ms",
-  "link.note.slow": "Bluetooth dodaje opóźnienie — kabel USB jest szybszy. Zmierzone: odczyt co {ms} ms, do {gap} ms przerwy.",
-  "link.note.bursty": "Bluetooth dodaje opóźnienie — kabel USB jest szybszy. Zmierzone: odczyty przychodzą paczkami, do {gap} ms przerwy."
+  "link.note.slow": "Odczyty przychodzą wolno: jeden co {ms} ms, do {gap} ms przerwy. Jeśli aparatura jest połączona bezprzewodowo (Bluetooth), kabel USB jest szybszy.",
+  "link.note.bursty": "Odczyty przychodzą paczkami, do {gap} ms przerwy. Jeśli aparatura jest połączona bezprzewodowo (Bluetooth), kabel USB jest szybszy."
 }

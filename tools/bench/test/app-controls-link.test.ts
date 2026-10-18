@@ -25,7 +25,7 @@ class FakeSession {
     input(): void { /* not needed */ }
 }
 
-const STATS: LinkStats = { n: 100, hz: 90, meanMs: 11.1, jitterMs: 1.7, maxGapMs: 14, ageMs: 5.6, bunched: 0, verdict: 'slow' };
+const STATS: LinkStats = { n: 100, hz: 50, meanMs: 20, jitterMs: 3.4, maxGapMs: 28, ageMs: 10, bunched: 0, verdict: 'slow' };
 
 describe('Controls.useDevice', () => {
     it('a gamepad\'s read-before-the-frame is the session\'s beforeStep, and it follows a new scene', () => {

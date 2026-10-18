@@ -1,13 +1,14 @@
 // What the Controls screen and F3 say about how a device's reports arrive (v0.9 lane E, the owner's
 // item 12: a Bluetooth radio feels late and the pilot cannot tell the link from the simulator). The
 // numbers are the LinkMeter's (@gsfpv/input link.ts) written out; a short note is added when the
-// link itself is slow (a report every 10 ms or more) or sends in bunches. No DOM, `t` passed in so a
-// Node test can pass the real strings.
+// link itself is slow (a report every 15 ms or more) or sends in bunches. The page cannot tell a cable
+// from Bluetooth, so the note states the measured cadence and says what helps if the link is wireless;
+// it never says the link IS Bluetooth. No DOM, `t` passed in so a Node test can pass the real strings.
 import type { LinkStats } from '@gsfpv/input';
 
 type T = (key: string, vars?: Record<string, string | number>) => string;
 
-/** The line of numbers and, when the link is slow or bursty, the note about a cable; null while the meter has too little to say. */
+/** The line of numbers and, when the link is slow or bursty, the note (measured cadence, and a cable if the link is wireless); null while the meter has too little to say. */
 export interface LinkLines { line: string; note: string | null }
 
 /** Milliseconds as a pilot reads them: a decimal under 10, whole numbers above. */

@@ -1,6 +1,6 @@
 {
   "link.line": "reports every {ms} ms · jitter {jitter} ms · longest gap {gap} ms",
   "link.f3": "controller: {hz} reports / s · every {ms} ms · jitter {jitter} ms · longest gap {gap} ms",
-  "link.note.slow": "Bluetooth adds delay — a USB cable is faster. Measured: a report every {ms} ms, up to {gap} ms apart.",
-  "link.note.bursty": "Bluetooth adds delay — a USB cable is faster. Measured: reports arrive in bunches, up to {gap} ms apart."
+  "link.note.slow": "Reports arrive slowly: one every {ms} ms, up to {gap} ms apart. If the radio is connected wirelessly (Bluetooth), a USB cable is faster.",
+  "link.note.bursty": "Reports arrive in bunches, up to {gap} ms apart. If the radio is connected wirelessly (Bluetooth), a USB cable is faster."
 }
