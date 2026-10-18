@@ -17,7 +17,9 @@
 //   H2  never once N was used: N pressed, three crashes, no hint; and with the flag stored by an earlier visit.
 //       Control: H1 (the same three crashes without N show it).
 //   H3  a radio whose profile maps the next-scene function: the hint names the switch.
-//   H4  a narrow phone: the hint sits inside the screen and overlaps neither the crash toast (at the top there) nor any button.
+//   H4  a narrow phone: the hint sits inside the screen and overlaps neither the crash toast (at the top there) nor any button;
+//       the same with a touch screen's pads and body class (the crash toast and the recording bar are above the pads there).
+//   H5  a 844 x 390 touch phone on its side: the hint sits inside the screen and overlaps no button, pad, text block or the toast.
 // The 12 + 13 scene loads and the sim-radio wizard make it a long run (about 5 minutes).
 //   SITE=http://localhost:5517 npx tsx src/accept-v09-next.ts [N1 N2 ...]
 // Evidence: evidence/<date>/v09-next.json (+ v09-next/*.png). The same run against the base build (631fd5f) is the
@@ -78,9 +80,9 @@ async function mocks(ctx: BrowserContext): Promise<Rec> {
 }
 
 interface Ctx { ctx: BrowserContext; page: Page; log: string[]; rec: Rec }
-async function context(browser: Browser, o: { phone?: boolean; init?: string } = {}): Promise<Ctx> {
+async function context(browser: Browser, o: { phone?: boolean; landscape?: boolean; init?: string } = {}): Promise<Ctx> {
     const ctx = await browser.newContext(o.phone
-        ? { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }
+        ? { viewport: o.landscape ? { width: 844, height: 390 } : { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }
         : { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
     if (o.init) await ctx.addInitScript(o.init);
     const rec = await mocks(ctx);
@@ -149,26 +151,47 @@ async function crash(p: Page): Promise<boolean> {
 interface HintView { exists: boolean; present: boolean; text: string; buttons: string[]; pointerEvents: string; rect: Rect | null; overlaps: string[] }
 interface Rect { x: number; y: number; w: number; h: number }
 /** The hint as the page shows it, and everything it overlaps (any visible button, the crash toast, the crash panel). */
-async function hintView(p: Page): Promise<HintView> {
-    return p.evaluate(`(() => {
+async function hintView(p: Page, extra = ''): Promise<HintView> {
+    return p.evaluate(`((extra) => {
         const el = document.querySelector('[data-testid="next-hint"]');
         if (!el) return { exists: false, present: false, text: '', buttons: [], pointerEvents: '', rect: null, overlaps: [] };
         const r = el.getBoundingClientRect();
         const shown = r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden';
         if (!shown) return { exists: true, present: false, text: el.querySelector('.nh-text').textContent, buttons: [], pointerEvents: '', rect: null, overlaps: [] };
         const hit = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+        // a round pad is a circle: the corner of its box is not covered
+        const hitCircle = (a, b) => { const cx = (b.left + b.right) / 2, cy = (b.top + b.bottom) / 2, rad = b.width / 2; const dx = Math.max(a.left, Math.min(cx, a.right)) - cx, dy = Math.max(a.top, Math.min(cy, a.bottom)) - cy; return dx * dx + dy * dy < rad * rad; };
         const overlaps = [];
-        const others = [...document.querySelectorAll('#ui button, #ui [role="dialog"], [data-testid="crash-toast"], [data-testid="crash-panel"]')]
+        const others = [...document.querySelectorAll('#ui button, #ui [role="dialog"], [data-testid="crash-toast"], [data-testid="crash-panel"]' + (extra ? ', ' + extra : ''))]
             .filter((o) => !el.contains(o) && o !== el);
         for (const o of others) {
             const b = o.getBoundingClientRect();
             const cs = getComputedStyle(o);
             if (b.width === 0 || b.height === 0 || cs.visibility === 'hidden' || cs.display === 'none') continue;
-            if (hit(r, b)) overlaps.push((o.getAttribute('data-testid') || o.getAttribute('data-action') || o.className || o.tagName).toString().slice(0, 40));
+            // what a closed menu leaves in the page (opacity 0 or a hidden ancestor) is not on screen
+            if (o.checkVisibility && !o.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) continue;
+            if (o.classList.contains('touch-pad') ? hitCircle(r, b) : hit(r, b)) overlaps.push((o.getAttribute('data-testid') || o.getAttribute('data-action') || o.className || o.tagName).toString().slice(0, 40));
         }
         return { exists: true, present: true, text: el.querySelector('.nh-text').textContent, buttons: [...el.querySelectorAll('button')].map((b) => b.getAttribute('data-action')),
             pointerEvents: getComputedStyle(el).pointerEvents, rect: { x: r.x, y: r.y, w: r.width, h: r.height }, overlaps };
-    })()`) as Promise<HintView>;
+    })(${JSON.stringify(extra)})`) as Promise<HintView>;
+}
+
+/** What the touch sticks put on the page (devices/touch.ts): the body class, the two pads and the ARM button, so the touch layout is
+ *  the real one; the flight is still the simulated radio's (the sticks need a touch screen). The text blocks a hint must not cover. */
+const TOUCH_EXTRA = '.touch-pad, .touch-hint, .attribution, .osd, .top-actions';
+async function touchUi(p: Page): Promise<void> {
+    await p.evaluate(`(() => {
+        document.body.classList.add('touch-on');
+        const root = document.createElement('div');
+        root.className = 'touch-root interactive pilot';
+        for (const side of ['left', 'right']) { const pad = document.createElement('div'); pad.className = 'touch-pad ' + side; root.append(pad); }
+        const arm = document.createElement('button');
+        arm.className = 'touch-arm';
+        arm.textContent = 'ARM';
+        root.append(arm);
+        document.querySelector('#ui').append(root);
+    })()`);
 }
 
 const { browser, which } = await launchChrome({ headless: false, args: ['--window-position=40,40', '--window-size=1296,920'] });
@@ -371,18 +394,34 @@ try {
         const view = await hintView(c.page);
         const toast = await toastBox();
         await c.page.screenshot({ path: join(SHOTS, 'h4-phone-hint-and-toast.png') });
-        // the same phone with the body class of a touch screen (the pads put it there): the toast's rules change
-        await hook(c.page, "document.body.classList.add('touch-on'); return 0;");
+        // the same phone with what a touch screen puts on the page (body class, pads, ARM): the toast's and the recording bar's rules change
+        await touchUi(c.page);
         await crash(c.page);
         await wait(c.page, 500);
-        const viewTouch = await hintView(c.page);
+        const viewTouch = await hintView(c.page, TOUCH_EXTRA);
         const toastTouch = await toastBox();
         await c.page.screenshot({ path: join(SHOTS, 'h4-phone-touch-on-hint-and-toast.png') });
         const pass = view.present && view.overlaps.length === 0 && inView(view) && toast !== null && viewTouch.present && viewTouch.overlaps.length === 0 && inView(viewTouch) && toastTouch !== null
             // the crash toast of a narrow touch screen is a toast, not a box stretched between its top and bottom (546 px before v0.9)
             && toastTouch.h < 160;
-        out.H4 = { pass, what: 'on a 390 px phone the hint sits inside the screen and overlaps neither the crash toast (at the top there) nor any button; the same with the body class of a touch screen, where the crash toast is a small box above the pads (before v0.9 it stretched 546 px down the screen)', view, toast, touchOn: { view: viewTouch, toast: toastTouch }, errors: errors(c.log) };
+        out.H4 = { pass, what: 'on a 390 px phone the hint sits inside the screen and overlaps neither the crash toast (at the top there) nor any button; the same with the body class, pads and ARM button of a touch screen, where the crash toast is a small box above the pads (before v0.9 it stretched 546 px down the screen) and the hint overlaps no button, pad or text block', view, toast, touchOn: { view: viewTouch, toast: toastTouch }, errors: errors(c.log) };
         console.log('H4', pass ? 'PASS' : 'FAIL', JSON.stringify({ rect: view.rect, overlaps: view.overlaps, toast, touchOn: { rect: viewTouch.rect, overlaps: viewTouch.overlaps, toast: toastTouch } }));
+        await c.ctx.close();
+    }
+
+    // ------------------------------------------------------------------ H5 a phone on its side, touch
+    if (want('H5')) {
+        const c = await context(browser, { phone: true, landscape: true });
+        await radioFlying(c.page, FIRST);
+        await touchUi(c.page);
+        for (let n = 1; n <= 3; n++) { await crash(c.page); await wait(c.page, 400); }
+        const view = await hintView(c.page, TOUCH_EXTRA);
+        const toast = await c.page.evaluate(`(() => { const e = document.querySelector('[data-testid="crash-toast"]'); if (!e) return null; const r = e.getBoundingClientRect(); return { y: r.y, h: r.height }; })()`);
+        await c.page.screenshot({ path: join(SHOTS, 'h5-landscape-phone-touch-hint.png') });
+        const inside = view.rect ? view.rect.x >= 0 && view.rect.x + view.rect.w <= 844 && view.rect.y >= 0 && view.rect.y + view.rect.h <= 390 : false;
+        const pass = view.present && inside && view.overlaps.length === 0 && toast !== null;
+        out.H5 = { pass, what: 'a 844 x 390 touch phone on its side (body class, pads, ARM): the hint sits inside the screen and overlaps no button, pad, text block or the crash toast', view, toast, errors: errors(c.log) };
+        console.log('H5', pass ? 'PASS' : 'FAIL', JSON.stringify({ rect: view.rect, overlaps: view.overlaps, toast }));
         await c.ctx.close();
     }
 } finally {

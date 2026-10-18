@@ -11,9 +11,17 @@
 .next-hint .nh-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* touch sticks: the crash toast sits above the pads (ui/crash.css), so the hint goes above it */
 body.touch-on .next-hint { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 12px + 84px); }
-/* a narrow phone without pads: the bottom holds the recording bar and the scene credit, and the crash toast is at
-   the top (96 px down, 54 to about 150 px tall with the key row), so the hint goes under the toast's room */
-@media (max-width: 640px) { body:not(.touch-on) .next-hint { bottom: auto; top: calc(max(10px, env(safe-area-inset-top)) + 96px + 170px + var(--banner-h, 0px)); } }
+/* a narrow phone, with the pads or without: above the pads sit the crash toast AND the recording bar (cinema.css,
+   Record, Auto, the folder: about 130 px of buttons whose height varies), so a spot "one step above the toast" lands
+   on the bar (measured v0.9 lane N, check H4: the hint covered REC, Auto and the walls buttons on a 390 x 844 touch
+   phone). Without pads the bottom holds the same bar and the scene credit, and the crash toast is at the top.
+   Either way the hint goes under the toast's room at the top (96 px down, 54 to about 150 px tall with the key
+   row), where nothing else lives below the scene credit. */
+@media (max-width: 640px) and (min-height: 501px) { body .next-hint, body.touch-on .next-hint { bottom: auto; top: calc(max(10px, env(safe-area-inset-top)) + 96px + 170px + var(--banner-h, 0px)); } }
+/* a phone on its side with pads (a short window): the toast (48 px, above the pads) is near the top, the recording bar
+   sits between the pads lower down, and the strip between them takes one line: right under the toast (the toast's
+   bottom is pads + 12 px up; the hint's 53 px and an 8 px gap below it) */
+@media (max-height: 500px) { body.touch-on .next-hint { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 12px - 61px); } }
 /* text off (H), a clean view and the cinema bar keep every text away; the crash panel and any modal panel stay on top */
 #ui.hud-off .next-hint, body.clean .next-hint, body.cinema .next-hint, #ui:has(> .crash-overlay) > .next-hint { display: none; }
 #ui:has(> .panel) > .next-hint { visibility: hidden; }
