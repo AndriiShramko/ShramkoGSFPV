@@ -1,7 +1,8 @@
 /* The crash hint "Want another place? Press N for the next scene" (ui/next-hint.ts, v0.9 item 11).
    Bottom centre, one step above the crash toast (ui/crash.css: the toast is 64 px up and about 72 px tall; on a
-   touch screen it is above the pads); on a narrow phone without pads, under the toast's room at the top. The
-   crash panel with its Replay and respawn buttons is higher up in the middle, and while it is open the hint
+   touch screen it is above the pads); on a narrow phone at the top, under the toast's room; on a phone on its
+   side one line under the toast between the pads (each spot measured: docs/wip/v09-n.md, checks H1, H4, H5).
+   The crash panel with its Replay and respawn buttons is higher up in the middle, and while it is open the hint
    steps aside (the panel has its own Next scene (N) button). The box takes no click, its buttons do. */
 .next-hint { position: absolute; left: 50%; bottom: 148px; transform: translateX(-50%); width: max-content; max-width: min(92vw, 520px); display: flex; align-items: center; gap: 10px; padding: 4px 4px 4px 14px; border-radius: 12px; background: rgba(12,14,18,.82); border: 1px solid var(--line); color: #fff; font-size: 14px; pointer-events: none; animation: fadein .3s ease both; }
 .next-hint .nh-text { flex: 1 1 auto; }
