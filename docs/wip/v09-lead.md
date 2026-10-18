@@ -16,4 +16,6 @@ RESUME-FIRST: `git log --oneline -30` shows which `Merge v09-*` commits exist; c
 - [x] merge v09-c (conflicts: app/features.ts = nextHint (N) + sharedSettings (C); share/links.ts scenePageUrl = R's effective-render comparison plus C's shared settings and appendShared; decisions.md; 21 add/add accept-fly evidence files: C's moved to evidence/2026-10-18/v09-c/)
 - [x] merge v09-d (conflicts: defs.test.ts = ids list union + count 79 (checked: SCHEMA.defs.length = 79); decisions.md; 20 add/add accept-fly evidence files: D's moved to evidence/2026-10-18/v09-d/)
 - [x] renumber decisions (D44..D74 in merge order f a r e b n c d), references fixed in lane notes and code comments (see Renumbered decisions)
-- [ ] gen-catalog, gates, release, benches (see below as they are done)
+- [x] gen-catalog regenerated (commit cb55ad1)
+- [x] gates once on the merged tree (HEAD after the share-test fix): `pnpm -r typecheck` ok (no lockfile or package.json change in any lane, no install); `npx vitest run` 147 files / 1921 tests ok after one fix (lane C's share test expected the pre-R merged drawing; follows R's contract now); `python -m unittest discover -s apps/api/tests` 302 ok; `check-architecture` ok; site `i18n:check` ok (949 strings x 4); `gen-catalog --check` ok; B18 PASS (`evidence/2026-10-18/b-repo-b18-v09-lead.json`); A6 hash 1d01ca5b... = `tools/bench/test/a6-reference.test.ts`, inside the vitest run, passed
+- [ ] merged local release, benches (below as they are done)
