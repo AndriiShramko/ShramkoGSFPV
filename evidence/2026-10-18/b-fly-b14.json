@@ -1,0 +1,147 @@
+{
+  "name": "b-fly-b14",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-18T01:19:12.495Z",
+    "gitHead": "1104899",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5531",
+  "render": "on",
+  "pass": true,
+  "note": "touch through CDP Input.dispatchTouchEvent in Chrome (which one: context.browser) with hasTouch; input=touch because desktop Chrome has WebHID; the pilot profile (set.input.play=pilot), easy play is accept-v08-play.ts",
+  "rows": [
+    {
+      "viewport": "375x812",
+      "pauseButtonReachable": true,
+      "armedByButton": true,
+      "touchDownMovesNothing": {
+        "at": {
+          "x": 250.73959350585938,
+          "y": 733.3625
+        },
+        "ch": [
+          0,
+          0
+        ],
+        "ok": true,
+        "control": {
+          "v07AbsolutePad": [
+            -0.5,
+            -0.39999999999999913
+          ],
+          "fired": true
+        }
+      },
+      "bothPairsOneFrame": {
+        "ch": [
+          -0.4168365001678467,
+          0.31262579560279846,
+          -0.9478971362113953,
+          0.31262752413749695
+        ],
+        "ok": true
+      },
+      "hover": {
+        "seconds": 10,
+        "crashed": false,
+        "armedAll": true,
+        "minY": 3.491487967001997,
+        "maxY": 3.9136080990972957,
+        "target": 2.7980274118044415
+      },
+      "view": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "scale": 1
+      },
+      "control": {
+        "outsideTouch": {
+          "before": [
+            0,
+            0,
+            -1,
+            0
+          ],
+          "after": [
+            0,
+            0,
+            -1,
+            0
+          ],
+          "fired": true
+        }
+      }
+    },
+    {
+      "viewport": "1024x768",
+      "pauseButtonReachable": true,
+      "armedByButton": true,
+      "touchDownMovesNothing": {
+        "at": {
+          "x": 847,
+          "y": 668.4
+        },
+        "ch": [
+          0,
+          0
+        ],
+        "ok": true,
+        "control": {
+          "v07AbsolutePad": [
+            -0.5,
+            -0.39999999999999974
+          ],
+          "fired": true
+        }
+      },
+      "bothPairsOneFrame": {
+        "ch": [
+          -0.4095241129398346,
+          0.3071419894695282,
+          -0.9488103985786438,
+          0.30714306235313416
+        ],
+        "ok": true
+      },
+      "hover": {
+        "seconds": 10,
+        "crashed": false,
+        "armedAll": true,
+        "minY": 3.490639446121234,
+        "maxY": 3.8753505011468596,
+        "target": 2.79802738196478
+      },
+      "view": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "scale": 1
+      },
+      "control": {
+        "outsideTouch": {
+          "before": [
+            0,
+            0,
+            -1,
+            0
+          ],
+          "after": [
+            0,
+            0,
+            -1,
+            0
+          ],
+          "fired": true
+        }
+      }
+    }
+  ]
+}
