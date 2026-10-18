@@ -9,7 +9,7 @@
 // flight mode or runs an action; v0.7) at the top, so none hides behind "connect a device".
 import './wizard.css';
 import { ArmLatch, CalibrationWizard, STEP_IDS, TUNING, channelOrder, keepOwnSetup, knownOffer, knownProfile, recognise, resolveInput, seenFromGamepad } from '@gsfpv/input';
-import type { ArmSource, Fn, Hint, KnownMatch, LinkStats, Profile, RawFrame, StepResult, Verdict, WizardState } from '@gsfpv/input';
+import type { ArmSource, Fn, Hint, KnownMatch, Profile, RawFrame, StepResult, Verdict, WizardState } from '@gsfpv/input';
 import { h, clear } from './dom';
 import { t } from '../i18n';
 import { HidSource, hidDisplayName } from '../devices/hid';
@@ -21,7 +21,8 @@ import type { ArtState, ArtTarget } from './radio-art';
 import { modeSwitchRow, modeRowKey } from './mode-switch-row';
 import { SwitchesView } from './switches';
 import { knownNameNote, knownNote, knownOfferBlock, knownPanel } from './known-panel';
-import { linkLines } from './link-text';
+import { LinkReadout, drawFrame, rateOf } from './device-rate';
+import type { DeviceRate } from './device-rate';
 
 export type SourceKind = 'hid' | 'gamepad' | 'touch' | 'keyboard';
 
@@ -43,19 +44,6 @@ export interface RadioScreenOptions {
 
 type Subscribe = (cb: (f: RawFrame) => void) => void;
 type Device = HidSource | GamepadSource;
-/**
- * A device's reports per second for the screen, and what else the screen can ask of the device: how
- * its reports arrive (`link`, the Controls screen's line about a slow or bunched link, v0.9 lane E)
- * and a read of the pad just before each frame draws (`pollNow`, a gamepad only). Tests pass a plain
- * function (the simulated radio has neither).
- */
-type Rate = (() => number) & { link?: (now: number) => LinkStats; pollNow?: () => void };
-
-/** The rate of a real device with its link meter and, for a gamepad, its read-before-draw. */
-function rateOf(d: Device): Rate {
-    const pollNow = d instanceof GamepadSource ? (): void => d.pollNow() : undefined;
-    return Object.assign(() => d.rateHz, { link: (now: number) => d.link.stats(now), ...(pollNow ? { pollNow } : {}) });
-}
 type Cmd = () => Verdict | boolean | void;
 
 /**
@@ -76,7 +64,6 @@ const FN_LETTER: Record<Fn | 'arm', string> = { throttle: 'T', yaw: 'R', pitch: 
 const KEY_GUARD_MS = 300;
 const GAUGE_TEXT_MS = 150; // the "further: 45 %" line: readable, not flickering
 const REFUSAL_MS = 4000; // a refused press keeps its answer on screen at least this long
-const LINK_TEXT_MS = 500; // the line about how the reports arrive is rewritten this often
 const CENTRE_TOL = 0.15; // calib.ts CENTRE_TOL: a stick counts as let go within this of its middle
 const END_TOL = 0.10; // calib.ts END_TOL: a stick counts as at its end within this of it
 
@@ -420,10 +407,10 @@ export class RadioScreen {
         this.root.setAttribute('aria-labelledby', 'radio-title');
         this.body.append(view.el);
         dev.onFrame = (f) => { if (gen === this.gen) view.frame(f); };
+        const rate = rateOf(dev);
         const loop = (): void => {
             if (gen !== this.gen) return;
-            if (dev instanceof GamepadSource) dev.pollNow();
-            view.live();
+            drawFrame(rate, () => view.live());
             this.raf = requestAnimationFrame(loop);
         };
         this.raf = requestAnimationFrame(loop);
@@ -484,7 +471,7 @@ export class RadioScreen {
      * each control to confirm it and presses Fly); else the setup wizard (told about a controller
      * recognised by name only, as an EdgeTX radio).
      */
-    private open(key: string, name: string, sub: Subscribe, rate: Rate, kind: SourceKind, match: KnownMatch | null): void {
+    private open(key: string, name: string, sub: Subscribe, rate: DeviceRate, kind: SourceKind, match: KnownMatch | null): void {
         const saved = profileFor(key);
         if (saved) { this.mount(CalibrationWizard.resume(saved), key, name, sub, rate, kind, saved, { match }); return; }
         const known = match ? knownProfile(match, key, name) : null;
@@ -493,7 +480,7 @@ export class RadioScreen {
     }
 
     /** Also used by tests with the simulated radio (fake HID device). `match`: a controller recognised by name, or with a channel table the wizard's profile keeps. */
-    runWizard(key: string, name: string, subscribe: Subscribe, rate: Rate, kind: SourceKind, match: KnownMatch | null = null): void {
+    runWizard(key: string, name: string, subscribe: Subscribe, rate: DeviceRate, kind: SourceKind, match: KnownMatch | null = null): void {
         const known = match ? knownProfile(match, key, name) : null;
         const device = known?.channels ? { channels: known.channels, known: known.known } : match ? { known: match.device.id } : {};
         this.mount(new CalibrationWizard(key, name, device), key, name, subscribe, rate, kind, null, { match });
@@ -505,7 +492,7 @@ export class RadioScreen {
         this.done({ kind, profile: p, hid: kind === 'hid' ? this.hid : undefined, gamepad: kind === 'gamepad' ? this.gp : undefined });
     }
 
-    private mount(wz: CalibrationWizard, key: string, name: string, subscribe: Subscribe, rate: Rate, kind: SourceKind, saved: Profile | null, known: KnownOpts = {}): void {
+    private mount(wz: CalibrationWizard, key: string, name: string, subscribe: Subscribe, rate: DeviceRate, kind: SourceKind, saved: Profile | null, known: KnownOpts = {}): void {
         this.leave();
         const gen = this.gen;
         // Liftoff-style: the sticks move the wizard on, no Start / Next per step (Andrii 2026-09-27)
@@ -577,7 +564,7 @@ export class RadioScreen {
         const stepsEl = wzEl.firstElementChild as HTMLElement;
         let lastCur = -1;
         let lastW = -1;
-        let linkAt = -LINK_TEXT_MS; // when the link line was last written
+        const linkOut = new LinkReadout({ line: linkEl, note: linkNote }); // twice a second
         let sig = ''; // rebuild buttons and the extra panel only when this changes
         let stageKey = ''; // id|stage: a change is a new screen (focus, key guard, resets)
         let pickOpen = false;
@@ -1187,15 +1174,9 @@ export class RadioScreen {
                     setText(cc.fn, c.fn ? FN_LETTER[c.fn] : '');
                 }
             }
-            setText(rateEl, chs.length ? t('radio.rate', { hz: Math.round(rate()) }) : ''); // nothing to count before the first report
-            // how the reports arrive: twice a second (numbers that change with every frame cannot be read)
-            if (rate.link && now - linkAt >= LINK_TEXT_MS) {
-                linkAt = now;
-                const ll = chs.length ? linkLines(rate.link(now), t, 'screen') : null;
-                setText(linkEl, ll?.line ?? '');
-                setText(linkNote, ll?.note ?? '');
-                linkNote.hidden = !ll?.note;
-            }
+            setText(rateEl, chs.length ? t('radio.rate', { hz: Math.round(rate.hz()) }) : ''); // nothing to count before the first report
+            linkOut.update(rate, now, chs.length > 0); // how the reports arrive
+
             // buttons and the extra panel
             const can = st.can;
             const s2 = [sk, st.hint?.key === 'wizard.hint.arm.none', can.begin, can.next, can.back, can.pick, can.skipArm, can.measureAnyway, can.fly, can.reverse, can.redo,
@@ -1224,8 +1205,7 @@ export class RadioScreen {
         if (!saved) wz.start(performance.now());
         const loop = (): void => {
             if (gen !== this.gen) return;
-            rate.pollNow?.(); // a report the pad published since the loop's last look is in this frame, not the next
-            render();
+            drawFrame(rate, render); // a report the pad published since the polling loop's last look is in this frame, not the next
             this.raf = requestAnimationFrame(loop);
         };
         render();

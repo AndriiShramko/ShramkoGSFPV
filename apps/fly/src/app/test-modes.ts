@@ -124,7 +124,7 @@ function simRadio(ctx: FlightContext): void {
         if (a.kind === 'fly') document.querySelector<HTMLButtonElement>('[data-action="wizard-done"]')?.click();
         else act(w, a, performance.now());
     };
-    r.runWizard(fake.key, fake.name, (cb) => { fake.onFrame = cb; }, () => fake.cfg.rateHz, 'hid');
+    r.runWizard(fake.key, fake.name, (cb) => { fake.onFrame = cb; }, { hz: () => fake.cfg.rateHz }, 'hid');
     r.onDone = (c) => {
         r.remove();
         ctx.resume('controls');
