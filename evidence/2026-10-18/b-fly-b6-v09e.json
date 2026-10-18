@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-17T20:16:23.504Z",
-    "gitHead": "34a9165",
+    "date": "2026-10-18T01:03:52.893Z",
+    "gitHead": "117e4ef",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5473",
+  "site": "http://localhost:5871",
   "render": "on",
   "pass": true,
   "frameNotEmptyRule": "luminance std > 0.04",
@@ -26,11 +26,11 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 1485.8999999761581,
-      "pixelStd": 0.15943274437056137,
-      "pixelMean": 0.5533015936090594,
+      "loadMs": 1130.1000000238419,
+      "pixelStd": 0.15942610793247153,
+      "pixelMean": 0.5533225557689865,
       "hosts": [
-        "localhost:5473",
+        "localhost:5871",
         "d28zzqy0iyovbz.cloudfront.net",
         "s3-eu-west-1.amazonaws.com"
       ],
@@ -44,11 +44,11 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 893.7000000476837,
-      "pixelStd": 0.15941824414136657,
-      "pixelMean": 0.5533214521445996,
+      "loadMs": 1206.5,
+      "pixelStd": 0.15942063849931984,
+      "pixelMean": 0.5533212624479084,
       "hosts": [
-        "localhost:5473",
+        "localhost:5871",
         "s3-eu-west-1.amazonaws.com",
         "d28zzqy0iyovbz.cloudfront.net"
       ],
@@ -62,13 +62,13 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 1065,
-      "pixelStd": 0.15942312323171526,
-      "pixelMean": 0.5533221519730308,
+      "loadMs": 797.8999999761581,
+      "pixelStd": 0.15941821825378996,
+      "pixelMean": 0.553321349276952,
       "hosts": [
-        "localhost:5473",
-        "d28zzqy0iyovbz.cloudfront.net",
-        "s3-eu-west-1.amazonaws.com"
+        "localhost:5871",
+        "s3-eu-west-1.amazonaws.com",
+        "d28zzqy0iyovbz.cloudfront.net"
       ],
       "outside": [],
       "pageerrors": []
@@ -80,11 +80,11 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 1797.6000000238419,
-      "pixelStd": 0.22394561386337303,
-      "pixelMean": 0.47248226596201043,
+      "loadMs": 1584.1999999284744,
+      "pixelStd": 0.2239503988488884,
+      "pixelMean": 0.47248744828125044,
       "hosts": [
-        "localhost:5473",
+        "localhost:5871",
         "d28zzqy0iyovbz.cloudfront.net",
         "s3-eu-west-1.amazonaws.com"
       ],
@@ -98,11 +98,11 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 1583.2999999523163,
-      "pixelStd": 0.22483717508757844,
-      "pixelMean": 0.4730329151501237,
+      "loadMs": 1267,
+      "pixelStd": 0.22395591240316623,
+      "pixelMean": 0.47248517747549096,
       "hosts": [
-        "localhost:5473",
+        "localhost:5871",
         "s3-eu-west-1.amazonaws.com",
         "d28zzqy0iyovbz.cloudfront.net"
       ],
@@ -116,13 +116,13 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 1627.3999999761581,
-      "pixelStd": 0.2242814237832368,
-      "pixelMean": 0.47245630924019755,
+      "loadMs": 1430.7000000476837,
+      "pixelStd": 0.2242860227291469,
+      "pixelMean": 0.4724575757291682,
       "hosts": [
-        "d28zzqy0iyovbz.cloudfront.net",
-        "localhost:5473",
-        "s3-eu-west-1.amazonaws.com"
+        "localhost:5871",
+        "s3-eu-west-1.amazonaws.com",
+        "d28zzqy0iyovbz.cloudfront.net"
       ],
       "outside": [],
       "pageerrors": []
@@ -134,11 +134,11 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 1840.3999999761581,
-      "pixelStd": 0.23551292628965398,
-      "pixelMean": 0.48615212753371345,
+      "loadMs": 1874.2000000476837,
+      "pixelStd": 0.23551684635436748,
+      "pixelMean": 0.48615353809437495,
       "hosts": [
-        "localhost:5473",
+        "localhost:5871",
         "d28zzqy0iyovbz.cloudfront.net",
         "s3-eu-west-1.amazonaws.com"
       ],
@@ -152,11 +152,11 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 1483,
-      "pixelStd": 0.23614776347900504,
-      "pixelMean": 0.48611095696998824,
+      "loadMs": 1868.8000000715256,
+      "pixelStd": 0.23615416433231895,
+      "pixelMean": 0.48611686494792944,
       "hosts": [
-        "localhost:5473",
+        "localhost:5871",
         "s3-eu-west-1.amazonaws.com",
         "d28zzqy0iyovbz.cloudfront.net"
       ],
@@ -170,13 +170,13 @@
       "hasCollision": true,
       "renderer": 2,
       "visibility": "visible",
-      "loadMs": 1436.5,
-      "pixelStd": 0.23615368702471365,
-      "pixelMean": 0.48611388568322367,
+      "loadMs": 1361.6000000238419,
+      "pixelStd": 0.23615336060215036,
+      "pixelMean": 0.48611241454964643,
       "hosts": [
-        "localhost:5473",
-        "s3-eu-west-1.amazonaws.com",
-        "d28zzqy0iyovbz.cloudfront.net"
+        "d28zzqy0iyovbz.cloudfront.net",
+        "localhost:5871",
+        "s3-eu-west-1.amazonaws.com"
       ],
       "outside": [],
       "pageerrors": []
