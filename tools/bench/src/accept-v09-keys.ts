@@ -129,8 +129,10 @@ await sleep(500);
 const card = await p.evaluate(`(() => { const c = document.querySelector('[data-testid="how-to-fly"]'); return c ? { kind: c.getAttribute('data-kind'), title: c.querySelector('h2')?.textContent, text: c.textContent.replace(/\\s+/g, ' ') } : null; })()`) as Any;
 check('V1 the first-run card (K opens it here): "How to fly", the mouse, W A S D, Space, Shift, F, Esc', !!card && card.kind === 'game' && card.title === EN['play.card.title'] && /Mouse/.test(card.text) && /W.?A.?S.?D/.test(card.text) && /Space/.test(card.text) && /Shift/.test(card.text) && /F.*full screen/.test(card.text) && /Esc.*pause/.test(card.text), card ?? {});
 await p.screenshot({ path: join(SHOTS, 'v1-first-run-card.jpg'), quality: 80 });
-// Esc closes the card and the flight goes on. Not K: the release of the card's pause asks for the mouse like every resume of a
-// game-scheme flight, a K key press is an activation and the mouse would be captured before V2 measures the click that captures it
+// Esc closes the card and the flight goes on. Not K, and not at once: the release of the card's pause asks for the mouse like every
+// resume of a game-scheme flight, and the K press that opened the card is a user activation for 5 s, so the mouse would be captured
+// before V2 measures the click that captures it. Waited out, Esc (no activation) closes the card and the mouse stays free
+await sleep(5500);
 await p.keyboard.press('Escape');
 await sleep(400);
 
