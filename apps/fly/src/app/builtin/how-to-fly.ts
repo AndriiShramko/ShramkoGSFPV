@@ -74,18 +74,25 @@ export const howToFly: Feature = {
             // before an input is chosen the card is the game's (a K press with nothing chosen yet)
             const kind = cardKind(ctx.controls.source, ctx.controls.play) ?? 'game';
             const from = document.activeElement;
+            shown = true; // whatever happens next, it does not try again in this visit by itself
+            let ui: HowToFlyCard;
+            try {
+                ui = buildHowToFlyCard(cardModel(kind, env()), {
+                    hideChecked: !enabled(),
+                    onStart: () => close('start'),
+                    onClose: () => close('close'),
+                    // written at once: x, Esc and K keep the choice too
+                    onHide: (hidden) => { prefs.set('input.howToFly', !hidden); }
+                });
+            } catch (e) {
+                // a card that cannot be drawn must not hold the flight: nothing was paused yet
+                console.error('how to fly: the card could not be built', e);
+                return;
+            }
             ctx.pause('panel');
-            const ui = buildHowToFlyCard(cardModel(kind, env()), {
-                hideChecked: !enabled(),
-                onStart: () => close('start'),
-                onClose: () => close('close'),
-                // written at once: x, Esc and K keep the choice too
-                onHide: (hidden) => { prefs.set('input.howToFly', !hidden); }
-            });
             ctx.ui.append(ui.root);
             ui.focusStart();
             card = { ui, kind, from };
-            shown = true;
             opened.push(how);
         }
 
