@@ -1,0 +1,165 @@
+$ node scripts/verify.mjs
+PASS  out/sitemap.xml exists
+PASS  out/robots.txt exists
+PASS  out/llms.txt exists
+PASS  out/og.jpg exists
+PASS  out/index.html exists
+PASS  out/404.html exists
+PASS  out/icon.svg exists
+PASS  out/en/index.html exists
+PASS  en/ <html lang="en">
+PASS  en/ canonical  — https://gsfpv.flyreelstudio.eu/en/
+PASS  en/ hreflang 4+1  — en=https://gsfpv.flyreelstudio.eu/en/ es=https://gsfpv.flyreelstudio.eu/es/ pl=https://gsfpv.flyreelstudio.eu/pl/ ru=https://gsfpv.flyreelstudio.eu/ru/ x-default=https://gsfpv.flyreelstudio.eu/en/
+PASS  en/ JSON-LD parses  — SoftwareApplication,SoftwareSourceCode,Person,FAQPage
+PASS  en/ og:image
+PASS  out/en/privacy/index.html exists
+PASS  en/privacy/ <html lang="en">
+PASS  en/privacy/ canonical  — https://gsfpv.flyreelstudio.eu/en/privacy/
+PASS  en/privacy/ hreflang 4+1  — en=https://gsfpv.flyreelstudio.eu/en/privacy/ es=https://gsfpv.flyreelstudio.eu/es/privacy/ pl=https://gsfpv.flyreelstudio.eu/pl/privacy/ ru=https://gsfpv.flyreelstudio.eu/ru/privacy/ x-default=https://gsfpv.flyreelstudio.eu/en/privacy/
+PASS  en/privacy/ JSON-LD parses  — SoftwareApplication,SoftwareSourceCode,Person
+PASS  en/privacy/ og:image
+PASS  out/en/licenses/index.html exists
+PASS  en/licenses/ <html lang="en">
+PASS  en/licenses/ canonical  — https://gsfpv.flyreelstudio.eu/en/licenses/
+PASS  en/licenses/ hreflang 4+1  — en=https://gsfpv.flyreelstudio.eu/en/licenses/ es=https://gsfpv.flyreelstudio.eu/es/licenses/ pl=https://gsfpv.flyreelstudio.eu/pl/licenses/ ru=https://gsfpv.flyreelstudio.eu/ru/licenses/ x-default=https://gsfpv.flyreelstudio.eu/en/licenses/
+PASS  en/licenses/ JSON-LD parses  — SoftwareApplication,SoftwareSourceCode,Person
+PASS  en/licenses/ og:image
+PASS  out/es/index.html exists
+PASS  es/ <html lang="es">
+PASS  es/ canonical  — https://gsfpv.flyreelstudio.eu/es/
+PASS  es/ hreflang 4+1  — en=https://gsfpv.flyreelstudio.eu/en/ es=https://gsfpv.flyreelstudio.eu/es/ pl=https://gsfpv.flyreelstudio.eu/pl/ ru=https://gsfpv.flyreelstudio.eu/ru/ x-default=https://gsfpv.flyreelstudio.eu/en/
+PASS  es/ JSON-LD parses  — SoftwareApplication,SoftwareSourceCode,Person,FAQPage
+PASS  es/ og:image
+PASS  out/es/privacy/index.html exists
+PASS  es/privacy/ <html lang="es">
+PASS  es/privacy/ canonical  — https://gsfpv.flyreelstudio.eu/es/privacy/
+PASS  es/privacy/ hreflang 4+1  — en=https://gsfpv.flyreelstudio.eu/en/privacy/ es=https://gsfpv.flyreelstudio.eu/es/privacy/ pl=https://gsfpv.flyreelstudio.eu/pl/privacy/ ru=https://gsfpv.flyreelstudio.eu/ru/privacy/ x-default=https://gsfpv.flyreelstudio.eu/en/privacy/
+PASS  es/privacy/ JSON-LD parses  — SoftwareApplication,SoftwareSourceCode,Person
+PASS  es/privacy/ og:image
+PASS  out/es/licenses/index.html exists
+PASS  es/licenses/ <html lang="es">
+PASS  es/licenses/ canonical  — https://gsfpv.flyreelstudio.eu/es/licenses/
+PASS  es/licenses/ hreflang 4+1  — en=https://gsfpv.flyreelstudio.eu/en/licenses/ es=https://gsfpv.flyreelstudio.eu/es/licenses/ pl=https://gsfpv.flyreelstudio.eu/pl/licenses/ ru=https://gsfpv.flyreelstudio.eu/ru/licenses/ x-default=https://gsfpv.flyreelstudio.eu/en/licenses/
+PASS  es/licenses/ JSON-LD parses  — SoftwareApplication,SoftwareSourceCode,Person
+PASS  es/licenses/ og:image
+PASS  out/pl/index.html exists
+PASS  pl/ <html lang="pl">
+PASS  pl/ canonical  — https://gsfpv.flyreelstudio.eu/pl/
+PASS  pl/ hreflang 4+1  — en=https://gsfpv.flyreelstudio.eu/en/ es=https://gsfpv.flyreelstudio.eu/es/ pl=https://gsfpv.flyreelstudio.eu/pl/ ru=https://gsfpv.flyreelstudio.eu/ru/ x-default=https://gsfpv.flyreelstudio.eu/en/
+PASS  pl/ JSON-LD parses  — SoftwareApplication,SoftwareSourceCode,Person,FAQPage
+PASS  pl/ og:image
+PASS  out/pl/privacy/index.html exists
+PASS  pl/privacy/ <html lang="pl">
+PASS  pl/privacy/ canonical  — https://gsfpv.flyreelstudio.eu/pl/privacy/
+PASS  pl/privacy/ hreflang 4+1  — en=https://gsfpv.flyreelstudio.eu/en/privacy/ es=https://gsfpv.flyreelstudio.eu/es/privacy/ pl=https://gsfpv.flyreelstudio.eu/pl/privacy/ ru=https://gsfpv.flyreelstudio.eu/ru/privacy/ x-default=https://gsfpv.flyreelstudio.eu/en/privacy/
+PASS  pl/privacy/ JSON-LD parses  — SoftwareApplication,SoftwareSourceCode,Person
+PASS  pl/privacy/ og:image
+PASS  out/pl/licenses/index.html exists
+PASS  pl/licenses/ <html lang="pl">
+PASS  pl/licenses/ canonical  — https://gsfpv.flyreelstudio.eu/pl/licenses/
+PASS  pl/licenses/ hreflang 4+1  — en=https://gsfpv.flyreelstudio.eu/en/licenses/ es=https://gsfpv.flyreelstudio.eu/es/licenses/ pl=https://gsfpv.flyreelstudio.eu/pl/licenses/ ru=https://gsfpv.flyreelstudio.eu/ru/licenses/ x-default=https://gsfpv.flyreelstudio.eu/en/licenses/
+PASS  pl/licenses/ JSON-LD parses  — SoftwareApplication,SoftwareSourceCode,Person
+PASS  pl/licenses/ og:image
+PASS  out/ru/index.html exists
+PASS  ru/ <html lang="ru">
+PASS  ru/ canonical  — https://gsfpv.flyreelstudio.eu/ru/
+PASS  ru/ hreflang 4+1  — en=https://gsfpv.flyreelstudio.eu/en/ es=https://gsfpv.flyreelstudio.eu/es/ pl=https://gsfpv.flyreelstudio.eu/pl/ ru=https://gsfpv.flyreelstudio.eu/ru/ x-default=https://gsfpv.flyreelstudio.eu/en/
+PASS  ru/ JSON-LD parses  — SoftwareApplication,SoftwareSourceCode,Person,FAQPage
+PASS  ru/ og:image
+PASS  out/ru/privacy/index.html exists
+PASS  ru/privacy/ <html lang="ru">
+PASS  ru/privacy/ canonical  — https://gsfpv.flyreelstudio.eu/ru/privacy/
+PASS  ru/privacy/ hreflang 4+1  — en=https://gsfpv.flyreelstudio.eu/en/privacy/ es=https://gsfpv.flyreelstudio.eu/es/privacy/ pl=https://gsfpv.flyreelstudio.eu/pl/privacy/ ru=https://gsfpv.flyreelstudio.eu/ru/privacy/ x-default=https://gsfpv.flyreelstudio.eu/en/privacy/
+PASS  ru/privacy/ JSON-LD parses  — SoftwareApplication,SoftwareSourceCode,Person
+PASS  ru/privacy/ og:image
+PASS  out/ru/licenses/index.html exists
+PASS  ru/licenses/ <html lang="ru">
+PASS  ru/licenses/ canonical  — https://gsfpv.flyreelstudio.eu/ru/licenses/
+PASS  ru/licenses/ hreflang 4+1  — en=https://gsfpv.flyreelstudio.eu/en/licenses/ es=https://gsfpv.flyreelstudio.eu/es/licenses/ pl=https://gsfpv.flyreelstudio.eu/pl/licenses/ ru=https://gsfpv.flyreelstudio.eu/ru/licenses/ x-default=https://gsfpv.flyreelstudio.eu/en/licenses/
+PASS  ru/licenses/ JSON-LD parses  — SoftwareApplication,SoftwareSourceCode,Person
+PASS  ru/licenses/ og:image
+PASS  built HTML/TXT/XML free of undefined|TODO|PLACEHOLDER|lorem|Liftoff-level|like Liftoff
+PASS  sitemap lists exactly the 16 pages (4 x 4 languages)  — https://gsfpv.flyreelstudio.eu/en/ https://gsfpv.flyreelstudio.eu/en/licenses/ https://gsfpv.flyreelstudio.eu/en/privacy/ https://gsfpv.flyreelstudio.eu/en/scenes/ https://gsfpv.flyreelstudio.eu/es/ https://gsfpv.flyreelstudio.eu/es/licenses/ https://gsfpv.flyreelstudio.eu/es/privacy/ https://gsfpv.flyreelstudio.eu/es/scenes/ https://gsfpv.flyreelstudio.eu/pl/ https://gsfpv.flyreelstudio.eu/pl/licenses/ https://gsfpv.flyreelstudio.eu/pl/privacy/ https://gsfpv.flyreelstudio.eu/pl/scenes/ https://gsfpv.flyreelstudio.eu/ru/ https://gsfpv.flyreelstudio.eu/ru/licenses/ https://gsfpv.flyreelstudio.eu/ru/privacy/ https://gsfpv.flyreelstudio.eu/ru/scenes/
+PASS  robots allows AI crawlers + sitemap
+PASS  screenshots: 39 shots (21 with a menu crop), files present, <= 250 KB / 100 KB, docs copies, captions in 4 languages
+PASS  every screenshot is on each landing (gallery) and JSON-LD lists screenshots that exist
+PASS  roadmap: every one of the 67 snapshot items (seed) is in each page's static HTML in its language, tiles 65/1/1
+PASS  roadmap: comparing ES/PL/RU pages with the English titles fails (control)  — 201 mismatches
+browser: {"kind":"system-chrome","version":"155.0.8059.40","executable":"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe","why":"installed"}
+GA mode: expecting the consent banner for G-E7X0ES0QBE
+PASS  no console errors / hydration errors on /en/
+PASS  band and tour screenshots: requested only after the load event, then all swapped in  — {"load":456,"deferredImgs":42,"inBand":24,"inTour":16,"requests":1,"beforeLoad":[]}
+PASS  EN 1440x900 screenshot  — .shots/en-1440x900-full.png
+PASS  no Google request (no GA id, or visitor declined)
+PASS  all images loaded (desktop)
+PASS  en 375 hero video plays (muted, inline)  — {"present":true,"muted":true,"autoplay":true,"playsinline":true,"time":2.036095,"paused":false,"w":1280}
+PASS  EN 375x812 screenshot  — .shots/en-375x812-full.part0.png, en-375x812-full.part1.png, en-375x812-full.part2.png, en-375x812-full.part3.png, en-375x812-full.part4.png, en-375x812-full.part5.png, en-375x812-full.part6.png (54978px)
+PASS  ru 375 hero video plays (muted, inline)  — {"present":true,"muted":true,"autoplay":true,"playsinline":true,"time":2.038833,"paused":false,"w":1280}
+PASS  RU 375x812 screenshot  — .shots/ru-375x812-full.part0.png, ru-375x812-full.part1.png, ru-375x812-full.part2.png, ru-375x812-full.part3.png, ru-375x812-full.part4.png, ru-375x812-full.part5.png, ru-375x812-full.part6.png, ru-375x812-full.part7.png (60386px)
+PASS  no horizontal overflow at 375: /en/
+PASS  no horizontal overflow at 375: /en/privacy/
+PASS  no horizontal overflow at 375: /en/licenses/
+PASS  no horizontal overflow at 375: /es/
+PASS  no horizontal overflow at 375: /es/privacy/
+PASS  no horizontal overflow at 375: /es/licenses/
+PASS  no horizontal overflow at 375: /pl/
+PASS  no horizontal overflow at 375: /pl/privacy/
+PASS  no horizontal overflow at 375: /pl/licenses/
+PASS  no horizontal overflow at 375: /ru/
+PASS  no horizontal overflow at 375: /ru/privacy/
+PASS  no horizontal overflow at 375: /ru/licenses/
+PASS  tap targets >= 44 px (landing, 375)
+PASS  no pointer cursor on non-controls
+PASS  overflow rule: planted 600 px element and clipped content caught, band tiles exempt (control)  — {"plainCaught":true,"clippedContentCaught":true,"bandTileExempt":true}
+PASS  no layout shift while scrolling the whole landing at 375 (lazy screenshots)  — sum of layout-shift values = 0.0000 over 54874 px
+PASS  phone data: at the top a phone fetches 0 screenshot files (0 KB); the tour picture 12568 px down waits until scrolled to (control)  — {"atTop":{"shotFiles":0,"shotKB":0,"bandImgs":24,"tourOnly":6,"lastTop":12568,"lastFetched":false,"allLazy":true},"there":{"shotFiles":6,"shotKB":280,"bandImgs":24,"tourOnly":6,"lastTop":12576,"lastFetched":true,"allLazy":true}}
+PASS  parallax: the band rows move with the scroll  — translate3d(113.1px, 0px, 0px) | translate3d(-113.1px, 0px, 0px)  ->  translate3d(-27.9px, 0px, 0px) | translate3d(27.9px, 0px, 0px)
+PASS  parallax: reduced motion keeps every layer still (control of the same measurement)  — none | none | none | none | none | none
+PASS  background videos 1440: at the top only the hero fetches its loop (3754 KB: /media/tunis-1920.av1.mp4), none before the load event; the scale block's loop is fetched and plays once scrolled to, the hero pauses off screen (control)  — {"atTop":["/media/tunis-1920.av1.mp4"],"state":{"top":"1920-av1","locations":"none","scale":"none"},"early":0,"played":true,"scaleFetched":true,"heroPaused":true,"scaleKB":2882}
+PASS  background videos 375: at the top only the hero fetches its loop (1844 KB: /media/tunis-1280.av1.mp4), none before the load event; the scale block's loop is fetched and plays once scrolled to, the hero pauses off screen (control)  — {"atTop":["/media/tunis-1280.av1.mp4"],"state":{"top":"1280-av1","locations":"none","scale":"none"},"early":0,"played":true,"scaleFetched":true,"heroPaused":true,"scaleKB":1706}
+PASS  background videos, reduced motion: no loop fetched while scrolling past all three blocks, the posters show instead  — {"fetched":[],"posters":3}
+PASS  background videos, Save-Data: no loop fetched while scrolling past all three blocks, the posters show instead  — {"fetched":[],"posters":3}
+PASS  gallery at 1440: a grid of every picture, 4 to a row, no strip or buttons; a tile opens the whole screen  — {"grid":{"cards":39,"columns":4,"rows":10,"scrolls":false,"buttonsShown":false},"opened":{"src":"/shots/pause-1600.webp","w":1600},"firstId":"pause"}
+PASS  gallery strip at 820: ArrowRight scrolls one card, a picture opens large, arrows step, Esc closes, focus returns  — {"x0":2,"x1":458,"counter":"2 of 39","t1":"Summary panel","t2":"Settings","closed":true,"focusBack":"pause"}
+PASS  lang switch nav /ru/ -> en  — lang=en cookie=en beacon=true
+PASS  lang switch nav /en/ -> es  — lang=es cookie=es beacon=true
+PASS  lang switch nav /en/ -> pl  — lang=pl cookie=pl beacon=true
+PASS  lang switch nav /en/ -> ru  — lang=ru cookie=ru beacon=true
+PASS  lang switch nav /ru/privacy/ -> en  — lang=en cookie=en beacon=true
+PASS  lang switch nav /en/privacy/ -> es  — lang=es cookie=es beacon=true
+PASS  lang switch nav /en/privacy/ -> pl  — lang=pl cookie=pl beacon=true
+PASS  lang switch nav /en/privacy/ -> ru  — lang=ru cookie=ru beacon=true
+PASS  lang switch footer /ru/ -> en  — lang=en cookie=en beacon=true
+PASS  lang switch footer /en/ -> es  — lang=es cookie=es beacon=true
+PASS  lang switch footer /en/ -> pl  — lang=pl cookie=pl beacon=true
+PASS  lang switch footer /en/ -> ru  — lang=ru cookie=ru beacon=true
+PASS  lang switch footer /ru/privacy/ -> en  — lang=en cookie=en beacon=true
+PASS  lang switch footer /en/privacy/ -> es  — lang=es cookie=es beacon=true
+PASS  lang switch footer /en/privacy/ -> pl  — lang=pl cookie=pl beacon=true
+PASS  lang switch footer /en/privacy/ -> ru  — lang=ru cookie=ru beacon=true
+PASS  out/index.html redirects by Accept-Language then cookie  — /pl/ /es/
+PASS  copy button copies the agent prompt and shows Copied  — label=Copied
+PASS  lead form: disabled until valid, POST JSON shape, success panel  — {"role":"studio","message":"We scan venues and want them flyable.","email":"pilot@example.com","locale":"en","consent":true,"t":3012,"hp":""}
+PASS  lead form: network error shows a friendly retry message  — Sending didn't work this time. Your answers are still here — please try again in a moment, or write to zmei116@gmail.com.
+PASS  hero paste navigates to /en/fly/?scene=<encoded>  — /en/fly/?scene=https%3A%2F%2Fsuperspl.at%2Fscene%2F39e63ce9
+PASS  beacons: scene_open{paste|showcase}, fly_click, only {e,p}  — {"e":"scene_open","p":"paste"} {"e":"scene_open","p":"showcase"} {"e":"fly_click","p":""}
+PASS  catalogue: every snapshot scene is a card in the built HTML  — 887f27aa,39e63ce9,7a475d38,70b50d42,b11e45d1,0230d903
+PASS  catalogue: every card links to its scene page
+PASS  Places links to the scene catalogue page
+PASS  catalogue: a scene published after the build appears from /api/catalog  — 1
+PASS  ?report=39e63ce9 prefills role=takedown, message and scrolls to #contact  — {"role":"takedown","msg":"Scene 39e63ce9: ","top":64,"notice":true}
+PASS  ?report with an invalid id is ignored  — {"takedown":false,"msg":""}
+PASS  roadmap: the board refreshes from /api/roadmap once (live), the pilot's idea marked and in Polish with its public text, the unknown status dropped, a done item without a group under More, the seeded groups kept  — {"asked":1,"state":"live","counts":{"done":66,"in_progress":2,"planned":1},"items":69,"pilot":true,"pilotTitle":"Dzwiek silnikow do wlaczenia","pilotText":"Domyslnie wylaczony, w Ustawieniach","odd":false,"looseGroup":"more","firstGroup":"radio","want":{"done":66,"in_progress":2,"planned":1}}
+PASS  roadmap: a failing /api/roadmap keeps the snapshot (state kept, every item, the same tiles)  — {"state":"kept","counts":{"done":65,"in_progress":1,"planned":1},"items":67,"pilot":false,"pilotTitle":null,"pilotText":null,"odd":false,"looseGroup":null,"firstGroup":"radio"}
+PASS  roadmap: an answer that misses most of the snapshot (a store never seeded) keeps the snapshot  — {"state":"kept","counts":{"done":65,"in_progress":1,"planned":1},"items":67,"pilot":false,"pilotTitle":null,"pilotText":null,"odd":false,"looseGroup":null,"firstGroup":"radio"}
+PASS  roadmap: an answer with nothing this page can show keeps the snapshot too  — {"state":"kept","counts":{"done":65,"in_progress":1,"planned":1},"items":67,"pilot":false,"pilotTitle":null,"pilotText":null,"odd":false,"looseGroup":null,"firstGroup":"radio"}
+PASS  roadmap: "Suggest an idea" opens the feedback form on Idea (without JavaScript the link goes to #contact)  — href=#contact ideaChecked=true
+PASS  GA: banner shown, no googletagmanager request and no _ga cookie before consent
+PASS  GA: Decline is remembered, still nothing from Google
+PASS  GA: after Accept gtag.js loads with G-E7X0ES0QBE (consent default denied → analytics_storage granted)  — 200 https://www.googletagmanager.com/gtag/js?id=G-E7X0ES0QBE; collect attempts=1; _ga cookies=_ga_E7X0ES0QBE,_ga
+
+verify: 156/156 passed
+
+real	2m38.400s
+user	0m0.045s
+sys	0m0.183s

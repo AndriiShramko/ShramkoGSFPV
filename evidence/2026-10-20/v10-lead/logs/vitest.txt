@@ -1,0 +1,12 @@
+
+ RUN  v5.0.1 C:/dev/gsfpv-v03
+
+
+ Test Files  151 passed (151)
+      Tests  1996 passed (1996)
+   Start at  21:22:58
+   Duration  29.95s (tests 76%, transform 13%, import 10%, worker 1%)
+
+    Isolate  151 workers spawned · ~507ms startup each (spawn + environment, per file)
+             at least ~1.68s faster with isolate: false — reuses workers across files instead of one per file
+

@@ -1,0 +1,117 @@
+$ node scripts/numbers.mjs && node scripts/media.mjs && node scripts/catalog-snapshot.mjs && node scripts/roadmap.mjs
+numbers: 4 items from evidence/latest.json (updated 2026-09-24T16:46:28.337010)
+media: tunis video, garden video, villa video
+catalog-snapshot: the committed snapshot (6 scenes, published 2026-10-07T17:04:42Z); refresh with --refresh
+roadmap: 67 items from the seed
+$ next build
+▲ Next.js 16.3.6 (Turbopack)
+✓ Running next.config.ts took 101ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 1909ms
+  Running TypeScript ...
+  Finished TypeScript in 3.4s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/23) ...
+  Generating static pages using 9 workers (5/23) 
+  Generating static pages using 9 workers (11/23) 
+  Generating static pages using 9 workers (17/23) 
+✓ Generating static pages using 9 workers (23/23) in 2.4s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /_not-found
+├   /[locale]
+│ ├ ● /en
+│ ├ ● /es
+│ ├ ● /pl
+│ └ ● /ru
+├   /[locale]/licenses
+│ ├ ● /en/licenses
+│ ├ ● /es/licenses
+│ ├ ● /pl/licenses
+│ └ ● /ru/licenses
+├   /[locale]/privacy
+│ ├ ● /en/privacy
+│ ├ ● /es/privacy
+│ ├ ● /pl/privacy
+│ └ ● /ru/privacy
+├   /scene-template/[locale]/index
+│ ├ ● /scene-template/en/index
+│ ├ ● /scene-template/es/index
+│ ├ ● /scene-template/pl/index
+│ └ ● /scene-template/ru/index
+├   /scene-template/[locale]/scene
+│ ├ ● /scene-template/en/scene
+│ ├ ● /scene-template/es/scene
+│ ├ ● /scene-template/pl/scene
+│ └ ● /scene-template/ru/scene
+└ ○ /sitemap.xml
+
+
+○  (Static)  prerendered as static content
+●  (SSG)     prerendered as static HTML (uses generateStaticParams)
+
+$ node scripts/fix-lang.mjs && node scripts/scene-templates.mjs
+fix-lang: rewrote lang attribute in 9 file(s)
+fix-lang: shortened 3397 Flight "$undefined" token(s) to "$u"
+fix-lang: wrote out/index.html (locale redirect fallback)
+scene-templates: OK (8 templates in out/scene-templates/)
+$ vite build
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vite.config.ts:19:37). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+[36mvite v8.3.1 [32mbuilding client environment for production...[36m[39m
+transforming...
+
+new URL("webp.wasm",import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.
+[33m[plugin rolldown:vite-resolve] Module "node:os" has been externalized for browser compatibility, imported by "C:/dev/gsfpv-v03/node_modules/.pnpm/@playcanvas+splat-transform@3.6.4_playcanvas@2.23.2/node_modules/@playcanvas/splat-transform/dist/index.mjs". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.[39m
+[33m[plugin rolldown:vite-resolve] Module "node:worker_threads" has been externalized for browser compatibility, imported by "C:/dev/gsfpv-v03/node_modules/.pnpm/@playcanvas+splat-transform@3.6.4_playcanvas@2.23.2/node_modules/@playcanvas/splat-transform/dist/index.mjs". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.[39m
+[33m[plugin rolldown:vite-resolve] Module "node:module" has been externalized for browser compatibility, imported by "C:/dev/gsfpv-v03/node_modules/.pnpm/@playcanvas+splat-transform@3.6.4_playcanvas@2.23.2/node_modules/@playcanvas/splat-transform/dist/index.mjs". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.[39m
+✓ 1816 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/admin/index.html                                0.61 kB │ gzip:     0.34 kB
+dist/index.html                                      0.83 kB │ gzip:     0.46 kB
+dist/assets/webp-BFoGoIkZ.mjs                       11.48 kB
+dist/assets/voxels.worker-2i-WfrSW.js               19.67 kB
+dist/assets/worker-su9aYUln.mjs                     64.21 kB
+dist/assets/webp-D-qyFmK3.wasm                     352.22 kB │ gzip:   144.47 kB
+dist/assets/drones3d-BZ3jyy9a.css                    4.63 kB │ gzip:     1.49 kB
+dist/assets/admin-B6moMgFZ.css                      16.49 kB │ gzip:     4.05 kB
+dist/assets/main-lpK7hDSF.css                       95.11 kB │ gzip:    19.14 kB
+dist/assets/webp-DGXS2EtW.js                         0.10 kB │ gzip:     0.11 kB │ map:     0.34 kB
+dist/assets/__vite-browser-external-uP5PEmmg.js      0.15 kB │ gzip:     0.16 kB │ map:     0.18 kB
+dist/assets/rolldown-runtime-CbXtAM7H.js             0.58 kB │ gzip:     0.36 kB
+dist/assets/api-CeSkNACj.js                         39.70 kB │ gzip:    14.42 kB │ map:   201.24 kB
+dist/assets/drones3d-DKza4zT8.js                    57.44 kB │ gzip:    20.86 kB │ map:   238.85 kB
+dist/assets/constants-C_vHgHG9.js                   65.40 kB │ gzip:    20.33 kB │ map:   249.46 kB
+dist/assets/admin-BK22Dnm1.js                      210.24 kB │ gzip:    56.44 kB │ map:   432.04 kB
+dist/assets/src-CjAzgnal.js                        688.12 kB │ gzip:   172.98 kB │ map: 2,777.56 kB
+dist/assets/spz-DEYRea_v-Bjxgum9C.js               987.35 kB │ gzip:   268.73 kB │ map: 2,466.69 kB
+dist/assets/main-D4TODbcS.js                     2,658.93 kB │ gzip:   768.87 kB │ map: 6,636.32 kB
+dist/assets/rapier-B4hmj00C.js                   2,889.70 kB │ gzip: 1,106.62 kB │ map: 3,055.89 kB
+dist/assets/dist-Cmk4kEUi.js                     3,723.80 kB │ gzip:   889.49 kB │ map: 6,130.99 kB
+
+[32m✓ built in 3.65s[39m
+[33m[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+[33m[33m[PLUGIN_TIMINGS] [0mPlugin hooks ran for 2.5s of this 3.6s build (68%).
+The slowest hooks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - vite:build-import-analysis generateBundle (32%, 1.2s, 1 call)
+Additional hook time came from the hooks below and from hooks under 1s.
+4 hooks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:
+  - vite:css-post renderChunk (12 calls)
+  - vite:css transform (25 calls)
+  - vite:build-html transform (2 calls)
+  … and 1 more
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[39m
+{"dist":"C:\\dev\\gsfpv-v03\\dist","files":401,"gzipped":109,"cspPages":49,"cspHashes":134,"sha":"e8f0387","sha256":"26fdd0e48404fad9802d62b73ffc39608702f5695ebd02703f4ea52f1893d54f","bytes":58557726}
+
+real	0m33.675s
+user	0m0.000s
+sys	0m0.015s

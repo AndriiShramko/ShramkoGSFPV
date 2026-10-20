@@ -1,0 +1,32 @@
+Scope: 12 of 13 workspace projects
+packages/collision typecheck$ tsc -p tsconfig.json
+packages/prefs typecheck$ tsc -p tsconfig.json
+packages/scenes typecheck$ tsc -p tsconfig.json
+packages/render-pc typecheck$ tsc -p tsconfig.json
+packages/scenes typecheck: Done
+packages/sim-core typecheck$ tsc -p tsconfig.json
+packages/collision typecheck: Done
+packages/prefs typecheck: Done
+packages/render-pc typecheck: Done
+packages/sim-core typecheck: Done
+apps/site typecheck$ node scripts/numbers.mjs && node scripts/media.mjs && node scripts/roadmap.mjs && next typegen && tsc --noEmit -p tsconfig.json
+packages/crash typecheck$ tsc -p tsconfig.json
+packages/input typecheck$ tsc -p tsconfig.json
+tools/blackbox typecheck$ tsc -p tsconfig.json
+apps/site typecheck: numbers: 4 items from evidence/latest.json (updated 2026-09-24T16:46:28.337010)
+apps/site typecheck: media: tunis video, garden video, villa video
+apps/site typecheck: roadmap: 67 items from the seed
+packages/crash typecheck: Done
+apps/site typecheck: Generating route types...
+apps/site typecheck: ✓ Types generated successfully
+packages/input typecheck: Done
+tools/blackbox typecheck: Done
+apps/site typecheck: Done
+apps/fly typecheck$ tsc -p tsconfig.json
+tools/bench typecheck$ tsc -p tsconfig.json
+tools/bench typecheck: Done
+apps/fly typecheck: Done
+
+real	0m15.767s
+user	0m0.045s
+sys	0m0.200s
