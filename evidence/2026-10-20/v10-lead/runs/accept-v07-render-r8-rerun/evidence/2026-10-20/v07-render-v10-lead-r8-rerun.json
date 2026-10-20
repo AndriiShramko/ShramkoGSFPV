@@ -1,0 +1,107 @@
+{
+  "name": "v07-render",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-20T19:53:47.524Z",
+    "gitHead": "1c0f20c",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5701",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "pass": {
+    "R8": true
+  },
+  "runs": {
+    "R8": "2026-10-20T19:53:47.523Z"
+  },
+  "items": {
+    "R8": {
+      "before": {
+        "status": "ready",
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": {
+            "budgetM": 8,
+            "stochastic": true
+          },
+          "catalogue": null,
+          "stochastic": true,
+          "budgetM": 8,
+          "from": {
+            "stochastic": "link",
+            "budget": "link"
+          },
+          "note": null,
+          "engineStochastic": true,
+          "engineBudgetM": 8,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": null,
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "engine": true,
+        "top": 8,
+        "budgetM": 8,
+        "renderer": 2,
+        "search": "?scene=39e63ce9&budget=8&stochastic&nowarn=1&input=touch",
+        "note": "Stochastic drawing (SuperSplat), 8 M splats \u00b7 Settings \u2192 Display",
+        "noteShown": true
+      },
+      "afterLoad": {
+        "step": 0,
+        "budgetM": 8,
+        "engine": true,
+        "top": 8,
+        "changes": 0,
+        "waitedS": 0
+      },
+      "calm": {
+        "step": 0,
+        "budgetM": 8,
+        "engine": true,
+        "top": 8,
+        "changes": 0,
+        "waitedS": 0
+      },
+      "overloaded": {
+        "step": 2,
+        "budgetM": 5,
+        "engine": true,
+        "top": 8
+      },
+      "pageerrors": []
+    }
+  }
+}

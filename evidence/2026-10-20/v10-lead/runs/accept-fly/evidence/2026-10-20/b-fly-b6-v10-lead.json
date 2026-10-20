@@ -1,0 +1,209 @@
+{
+  "name": "b-fly-b6",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-20T19:58:15.538Z",
+    "gitHead": "1c0f20c",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5701",
+  "render": "on",
+  "pass": true,
+  "frameNotEmptyRule": "luminance std > 0.04",
+  "runs": [
+    {
+      "id": "39e63ce9",
+      "form": "39e63ce9",
+      "status": "ready",
+      "hasCollision": true,
+      "renderer": 2,
+      "visibility": "visible",
+      "loadMs": 2131.100000023842,
+      "pixelStd": 0.15998828546594673,
+      "pixelMean": 0.5528114675949666,
+      "hosts": [
+        "localhost:5701",
+        "d28zzqy0iyovbz.cloudfront.net",
+        "s3-eu-west-1.amazonaws.com"
+      ],
+      "outside": [],
+      "pageerrors": []
+    },
+    {
+      "id": "39e63ce9",
+      "form": "https://superspl.at/scene/39e63ce9",
+      "status": "ready",
+      "hasCollision": true,
+      "renderer": 2,
+      "visibility": "visible",
+      "loadMs": 1175.5999999046326,
+      "pixelStd": 0.1599967579546455,
+      "pixelMean": 0.5528157879289125,
+      "hosts": [
+        "localhost:5701",
+        "s3-eu-west-1.amazonaws.com",
+        "d28zzqy0iyovbz.cloudfront.net"
+      ],
+      "outside": [],
+      "pageerrors": []
+    },
+    {
+      "id": "39e63ce9",
+      "form": "https://superspl.at/s?id=39e63ce9",
+      "status": "ready",
+      "hasCollision": true,
+      "renderer": 2,
+      "visibility": "visible",
+      "loadMs": 806.9000000953674,
+      "pixelStd": 0.1599888753958393,
+      "pixelMean": 0.5528143973743784,
+      "hosts": [
+        "localhost:5701",
+        "s3-eu-west-1.amazonaws.com",
+        "d28zzqy0iyovbz.cloudfront.net"
+      ],
+      "outside": [],
+      "pageerrors": []
+    },
+    {
+      "id": "7a475d38",
+      "form": "7a475d38",
+      "status": "ready",
+      "hasCollision": true,
+      "renderer": 2,
+      "visibility": "visible",
+      "loadMs": 2167.3000000715256,
+      "pixelStd": 0.22400361869520885,
+      "pixelMean": 0.4718739076102944,
+      "hosts": [
+        "localhost:5701",
+        "d28zzqy0iyovbz.cloudfront.net",
+        "s3-eu-west-1.amazonaws.com"
+      ],
+      "outside": [],
+      "pageerrors": []
+    },
+    {
+      "id": "7a475d38",
+      "form": "https://superspl.at/scene/7a475d38",
+      "status": "ready",
+      "hasCollision": true,
+      "renderer": 2,
+      "visibility": "visible",
+      "loadMs": 1414.8999999761581,
+      "pixelStd": 0.22488982619347242,
+      "pixelMean": 0.4724209408946091,
+      "hosts": [
+        "localhost:5701",
+        "s3-eu-west-1.amazonaws.com",
+        "d28zzqy0iyovbz.cloudfront.net"
+      ],
+      "outside": [],
+      "pageerrors": []
+    },
+    {
+      "id": "7a475d38",
+      "form": "https://superspl.at/s?id=7a475d38",
+      "status": "ready",
+      "hasCollision": true,
+      "renderer": 2,
+      "visibility": "visible",
+      "loadMs": 1479.2999999523163,
+      "pixelStd": 0.2242343552323392,
+      "pixelMean": 0.47197986867953634,
+      "hosts": [
+        "localhost:5701",
+        "s3-eu-west-1.amazonaws.com",
+        "d28zzqy0iyovbz.cloudfront.net"
+      ],
+      "outside": [],
+      "pageerrors": []
+    },
+    {
+      "id": "887f27aa",
+      "form": "887f27aa",
+      "status": "ready",
+      "hasCollision": true,
+      "renderer": 2,
+      "visibility": "visible",
+      "loadMs": 1427.1000000238419,
+      "pixelStd": 0.2358004452481036,
+      "pixelMean": 0.48525497747550206,
+      "hosts": [
+        "d28zzqy0iyovbz.cloudfront.net",
+        "localhost:5701",
+        "s3-eu-west-1.amazonaws.com"
+      ],
+      "outside": [],
+      "pageerrors": []
+    },
+    {
+      "id": "887f27aa",
+      "form": "https://superspl.at/scene/887f27aa",
+      "status": "ready",
+      "hasCollision": true,
+      "renderer": 2,
+      "visibility": "visible",
+      "loadMs": 1722.2000000476837,
+      "pixelStd": 0.23580382390173638,
+      "pixelMean": 0.48525311364584567,
+      "hosts": [
+        "localhost:5701",
+        "s3-eu-west-1.amazonaws.com",
+        "d28zzqy0iyovbz.cloudfront.net"
+      ],
+      "outside": [],
+      "pageerrors": []
+    },
+    {
+      "id": "887f27aa",
+      "form": "https://superspl.at/s?id=887f27aa",
+      "status": "ready",
+      "hasCollision": true,
+      "renderer": 2,
+      "visibility": "visible",
+      "loadMs": 1587.5,
+      "pixelStd": 0.2358029685400656,
+      "pixelMean": 0.48525868905944824,
+      "hosts": [
+        "localhost:5701",
+        "s3-eu-west-1.amazonaws.com",
+        "d28zzqy0iyovbz.cloudfront.net"
+      ],
+      "outside": [],
+      "pageerrors": []
+    }
+  ],
+  "errors": [
+    {
+      "input": "00000000",
+      "status": "error",
+      "errorCode": "not-found",
+      "text": "\u0422\u0430\u043a\u043e\u0439 \u0441\u0446\u0435\u043d\u044b \u043d\u0435\u0442 \u043d\u0430 SuperSplat, \u0438\u043b\u0438 \u043e\u043d\u0430 \u043d\u0435 \u043f\u0443\u0431\u043b\u0438\u0447\u043d\u0430\u044f.",
+      "expected": "\u0422\u0430\u043a\u043e\u0439 \u0441\u0446\u0435\u043d\u044b \u043d\u0435\u0442 \u043d\u0430 SuperSplat, \u0438\u043b\u0438 \u043e\u043d\u0430 \u043d\u0435 \u043f\u0443\u0431\u043b\u0438\u0447\u043d\u0430\u044f.",
+      "ok": true,
+      "pageerrors": []
+    },
+    {
+      "input": "https://example.com/scene/39e63ce9",
+      "status": "picker",
+      "errorCode": "invalid-link",
+      "text": "\u042d\u0442\u043e \u043d\u0435 \u0441\u0441\u044b\u043b\u043a\u0430 SuperSplat \u0438 \u043d\u0435 ID \u0441\u0446\u0435\u043d\u044b. \u0412\u0441\u0442\u0430\u0432\u044c \u0441\u0441\u044b\u043b\u043a\u0443 \u0432\u0438\u0434\u0430 superspl.at/scene/39e63ce9.",
+      "expected": "\u042d\u0442\u043e \u043d\u0435 \u0441\u0441\u044b\u043b\u043a\u0430 SuperSplat \u0438 \u043d\u0435 ID \u0441\u0446\u0435\u043d\u044b. \u0412\u0441\u0442\u0430\u0432\u044c \u0441\u0441\u044b\u043b\u043a\u0443 \u0432\u0438\u0434\u0430 superspl.at/scene/39e63ce9.",
+      "ok": true,
+      "pageerrors": []
+    }
+  ],
+  "control": {
+    "blankPageStd": 1.0536712127723509e-8,
+    "fired": true
+  }
+}

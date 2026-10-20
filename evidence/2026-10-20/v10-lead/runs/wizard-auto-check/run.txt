@@ -1,0 +1,47 @@
+lock taken 21:53:58
+{
+ "browser": {
+  "kind": "system-chrome",
+  "version": "155.0.8059.40",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+  "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "softwareGl": false,
+  "counts": true
+ },
+ "nobuttons": {
+  "seconds": 26,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "startOrNextVisible": false
+  },
+  "screens": 23,
+  "errors": [],
+  "anyStartNext": false
+ },
+ "human": {
+  "seconds": 32,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "startOrNextVisible": false
+  },
+  "screens": 23,
+  "errors": [],
+  "anyStartNext": false
+ },
+ "dji": {
+  "seconds": 20,
+  "end": {
+   "id": "check",
+   "profile": true,
+   "startOrNextVisible": false
+  },
+  "screens": 23,
+  "errors": [],
+  "anyStartNext": false
+ }
+}
+exit code 0

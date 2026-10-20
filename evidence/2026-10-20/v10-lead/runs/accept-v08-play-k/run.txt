@@ -1,0 +1,11 @@
+lock taken 22:03:36
+accept-v08-play target: http://localhost:5701
+PASS K1 the game scheme has no ground card; K opens the How to fly card (the flight is held while it is up), K again closes it; the corner line names Space up / Shift down {"groundCardShown":false,"how":"game","heldByCard":true,"closedByK":true,"pausedAfter":false,"corner":"crashes 0  ·  Space up · Shift down · K keys · F full screen · R respawn · Esc pause · H hide text"}
+PASS K2 Space starts the motors (no arm switch) and climbs at the speed setting (normal: 5 m/s) {"armedBefore":false,"armed":true,"climbMps":5.166,"gainedM":10.762}
+PASS K3 keys released: the height holds (altitude help) {"spreadM":0.068,"meanVy":0.018}
+PASS K5 in the air no ground card is up; K opens the How to fly card, Esc closes it {"groundCardHiddenFlying":true,"howToFlyAfterK":true,"closedAfterEsc":true}
+PASS S1 the motor sound is 15 % by default; the speaker on the top bar mutes and unmutes it {"volume":15,"before":true,"afterClick":false,"ariaPressed":"true","afterSecondClick":true}
+PASS K8 no page errors {"errors":[]}
+PASS K-control the pilot profile: the same key does not start the motors, its card is the Mode 2 one {"armed":false,"cardTitle":"Keyboard"}
+accept-v08-play PASS (7/7) -> C:\dev\gsfpv-v03\evidence\2026-10-20\v08-a-play-k-v10-lead.json
+exit code 0

@@ -1,0 +1,27 @@
+ok   D1 desktop, no parameters: sorted from the first frame (engine, hybrid renderer, its shader define)
+ok   D1 at the measured default budget (4 M), decided by the device
+ok   D1 the HUD says nothing about the drawing (a default is not news) and F3 says what draws and who decided
+skip [control] D1 control: the base build (v0.8) draws the same scene sorted at 4 M (BASE_SITE is SITE)
+ok   D2 a streamed scan (Opole): sorted in the engine and the shader, from the device
+ok   D2 it is a levels-of-detail scan (more than one level) drawn under the desktop budget
+skip [control] D2 control: the base build draws it sorted (BASE_SITE is SITE)
+ok   D3 a phone with nothing asked: sorted at the phone's 2 M, no note, decided by the device
+ok   D3 a phone given the owner's link: still sorted at 2 M, and the HUD says who asked (the scene)
+ok   D4a the pilot's Render = Sorted is decided by the setting, not by the device default
+ok   D4b a stochastic link beats a Sorted setting (stochastic at 8 M, "from the link")
+skip [control] D4b control: the base build lets the setting beat the link (sorted) (BASE_SITE is SITE)
+ok   D4c a stochastic link; the pilot picks Sorted in flight: sorted at once (the control never looks dead)
+ok   D4c back to Auto: the link rules again (stochastic at 8 M)
+ok   D4d the Splat budget setting: 2 M at once, the drawing stays as the device default, then Auto gives the default back
+ok   D4e the owner's entry "sorted, 6 M" beats the device default
+ok   D4e the pilot's Stochastic beats the owner's sorted entry; the entry's budget stays
+ok   D4e a stochastic link beats the owner's sorted entry
+skip [control] D5 control: the base build answers the literal "...?scene=2f1ddf5f?budget=8&stochastic" with the picker ("not a SuperSplat link") (BASE_SITE is SITE)
+ok   D5 the owner's link draws stochastic at 8 M by every way it is pasted (deep link encoded and raw, deep link, the literal second "?", the picker's field, the picker over a flight, wrapped in <> and a full stop)
+ok   D5 a link pasted over a flight beats a stored Render = Sorted for the scene it opens (stochastic at 8 M, "from the link")
+D5 [["encoded",true],["raw",true],["deep",true],["literal",true],["field",true],["inFlight",true]] overSorted true
+ok   [control] D6 control: the grab of the same view is rougher stochastic than sorted (the stochastic grab weighs 1.25x or more of the sorted one)
+ok   D6 the share picture of a stochastic desktop is made from the sorted frame: at most 0.8 of the stochastic grab's bytes, and well under the API's 400 KB
+ok   D6 the pilot's drawing is back right after (stochastic in the engine and the shader, the same budget)
+D6 {"before":{"engine":true,"top":4},"stochasticGrabBytes":205614,"sortedGrabBytes":108291,"appPictureBytes":100563,"appPictureMs":187,"after":{"engine":true,"hybrid":{"gpuSort":true,"stochastic":true,"define":true},"top":4},"pageerrors":[]}
+{"D1":true,"D2":true,"D3":true,"D4":true,"D5":true,"D6":true} C:\dev\gsfpv-v03\evidence\2026-10-20\v09-render-v10-lead.json

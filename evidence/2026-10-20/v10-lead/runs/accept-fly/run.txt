@@ -1,0 +1,25 @@
+lock taken 21:57:25
+accept-fly target: http://localhost:5701
+B6 {"id":"39e63ce9","form":"39e63ce9","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":2131.100000023842,"pixelStd":0.15998828546594673,"pixelMean":0.5528114675949666,"hosts":["localhost:5701","d28zzqy0iyovbz.cloudfront.net","s3-eu-west-1.amazonaws.com"],"outside":[],"pageerrors":[]}
+B6 {"id":"39e63ce9","form":"https://superspl.at/scene/39e63ce9","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":1175.5999999046326,"pixelStd":0.1599967579546455,"pixelMean":0.5528157879289125,"hosts":["localhost:5701","s3-eu-west-1.amazonaws.com","d28zzqy0iyovbz.cloudfront.net"],"outside":[],"pageerrors":[]}
+B6 {"id":"39e63ce9","form":"https://superspl.at/s?id=39e63ce9","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":806.9000000953674,"pixelStd":0.1599888753958393,"pixelMean":0.5528143973743784,"hosts":["localhost:5701","s3-eu-west-1.amazonaws.com","d28zzqy0iyovbz.cloudfront.net"],"outside":[],"pageerrors":[]}
+B6 {"id":"7a475d38","form":"7a475d38","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":2167.3000000715256,"pixelStd":0.22400361869520885,"pixelMean":0.4718739076102944,"hosts":["localhost:5701","d28zzqy0iyovbz.cloudfront.net","s3-eu-west-1.amazonaws.com"],"outside":[],"pageerrors":[]}
+B6 {"id":"7a475d38","form":"https://superspl.at/scene/7a475d38","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":1414.8999999761581,"pixelStd":0.22488982619347242,"pixelMean":0.4724209408946091,"hosts":["localhost:5701","s3-eu-west-1.amazonaws.com","d28zzqy0iyovbz.cloudfront.net"],"outside":[],"pageerrors":[]}
+B6 {"id":"7a475d38","form":"https://superspl.at/s?id=7a475d38","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":1479.2999999523163,"pixelStd":0.2242343552323392,"pixelMean":0.47197986867953634,"hosts":["localhost:5701","s3-eu-west-1.amazonaws.com","d28zzqy0iyovbz.cloudfront.net"],"outside":[],"pageerrors":[]}
+B6 {"id":"887f27aa","form":"887f27aa","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":1427.1000000238419,"pixelStd":0.2358004452481036,"pixelMean":0.48525497747550206,"hosts":["d28zzqy0iyovbz.cloudfront.net","localhost:5701","s3-eu-west-1.amazonaws.com"],"outside":[],"pageerrors":[]}
+B6 {"id":"887f27aa","form":"https://superspl.at/scene/887f27aa","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":1722.2000000476837,"pixelStd":0.23580382390173638,"pixelMean":0.48525311364584567,"hosts":["localhost:5701","s3-eu-west-1.amazonaws.com","d28zzqy0iyovbz.cloudfront.net"],"outside":[],"pageerrors":[]}
+B6 {"id":"887f27aa","form":"https://superspl.at/s?id=887f27aa","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":1587.5,"pixelStd":0.2358029685400656,"pixelMean":0.48525868905944824,"hosts":["localhost:5701","s3-eu-west-1.amazonaws.com","d28zzqy0iyovbz.cloudfront.net"],"outside":[],"pageerrors":[]}
+B6 PASS
+B7 PASS
+B9 PASS
+B10 PASS
+B11 PASS
+B12 PASS
+B13 PASS
+B14 {"viewport":"375x812","pauseButtonReachable":true,"armedByButton":true,"touchDownMovesNothing":{"at":{"x":250.73959350585938,"y":733.3625},"ch":[0,0],"ok":true,"control":{"v07AbsolutePad":[-0.5,-0.39999999999999913],"fired":true}},"bothPairsOneFrame":{"ch":[-0.4168365001678467,0.31262579560279846,-0.9478971362113953,0.31262752413749695],"ok":true},"hover":{"seconds":10,"crashed":false,"armedAll":true,"minY":3.4833044783187974,"maxY":3.943867379351419,"target":2.7980274118044415},"view":{"scrollX":0,"scrollY":0,"scale":1},"control":{"outsideTouch":{"before":[0,0,-1,0],"after":[0,0,-1,0],"fired":true}}}
+B14 {"viewport":"1024x768","pauseButtonReachable":true,"armedByButton":true,"touchDownMovesNothing":{"at":{"x":847,"y":668.4},"ch":[0,0],"ok":true,"control":{"v07AbsolutePad":[-0.5,-0.39999999999999974],"fired":true}},"bothPairsOneFrame":{"ch":[-0.4095241129398346,0.3071419894695282,-0.9488103985786438,0.30714306235313416],"ok":true},"hover":{"seconds":10,"crashed":false,"armedAll":true,"minY":3.487529541613328,"maxY":3.8692930091932825,"target":2.79802748181291},"view":{"scrollX":0,"scrollY":0,"scale":1},"control":{"outsideTouch":{"before":[0,0,-1,0],"after":[0,0,-1,0],"fired":true}}}
+B14 PASS
+B15 PASS
+B16 PASS
+{"B6":true,"B7":true,"B9":true,"B10":true,"B11":true,"B12":true,"B13":true,"B14":true,"B15":true,"B16":true}
+exit code 0
