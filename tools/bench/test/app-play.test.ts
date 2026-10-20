@@ -27,7 +27,6 @@ import { ARM_RETRY_MS, AltitudeHelp, AutoArm, CLIMB_BOOST, CLIMB_MPS, SINK_MPS, 
 import { GAME_KEYS, GAME_START_CODES, MODE2_KEYS, MODE2_TILT_STICK, MODE2_YAW_STICK, mode2Sticks, axisDirs, flyingKeyCodes, gameDirs, stickForAngle, stickForRate } from '../../../apps/fly/src/play/keys';
 import { PadGrab, SCREEN_EDGE_PX, UNBOUNDED, absoluteRead, padTravel, reachOf } from '../../../apps/fly/src/play/touch-map';
 import { GOAL_S, SCHOOL_STEPS, SchoolProgress, settingsOf, stepOf } from '../../../apps/fly/src/play/school';
-import { KeyCardShow } from '../../../apps/fly/src/ui/key-card-state';
 import { EasyPilot } from '../../../apps/fly/src/play/easy';
 import type { Controls } from '../../../apps/fly/src/controls';
 import type { FlightSession } from '../../../apps/fly/src/session';
@@ -464,41 +463,11 @@ describe('every text easy play names exists in all four languages', () => {
             }
         };
         walk(join(REPO, 'apps', 'fly', 'src'));
+        // the settings catalogue names the vertical keys with play.game.up / .down (scripts/gen-catalog.ts, docs/settings.md)
+        for (const m of readFileSync(join(REPO, 'scripts', 'gen-catalog.ts'), 'utf8').matchAll(/'(play\.game\.[a-zA-Z0-9_.]+)'/g)) used.add(m[1]);
         const unusedIn = (d: Record<string, string>): string[] => Object.keys(d).filter((k) => k.startsWith('play.game.') && !used.has(k));
         for (const l of ['en', 'es', 'pl', 'ru']) expect(unusedIn(dict(l)), l).toEqual([]);
         expect(unusedIn({ ...dict('en'), 'play.game.summary': 'x' })).toEqual(['play.game.summary']); // control: the scan sees a string nobody uses
-    });
-});
-
-describe('the key card: K hides it when it is up, shows and pins it when it is not', () => {
-    interface CardRule { shown(ground: boolean): boolean; toggle(): boolean }
-    /** What the player sees through a ground wait, K, take-off, K in the air: the broken promises, [] when none. */
-    const scenario = (k: CardRule): string[] => {
-        const bad: string[] = [];
-        const want = (what: string, got: boolean, exp: boolean): void => { if (got !== exp) bad.push(`${what}: ${got}`); };
-        want('ground: up by itself', k.shown(true), true);
-        want('K over the ground card: away', k.toggle(), false);
-        want('still away on the ground', k.shown(true), false);
-        want('take-off: not over the flight', k.shown(false), false);
-        want('the next ground wait: up again', k.shown(true), true);
-        k.shown(false);
-        want('K in the air: up', k.toggle(), true);
-        want('pinned through the flight', k.shown(false), true);
-        want('pinned on the ground', k.shown(true), true);
-        want('K again: away', k.toggle(), false);
-        want('away in the air', k.shown(false), false);
-        return bad;
-    };
-
-    it('K on the ground hides the card until take-off without pinning it; K in the air pins it; control: the first rule (K flips a pin) fails the same walk', () => {
-        expect(scenario(new KeyCardShow())).toEqual([]);
-        // the first version: shown = ground || pinned, K flipped the pin
-        const first = new (class implements CardRule {
-            private pinned = false;
-            shown(ground: boolean): boolean { return ground || this.pinned; }
-            toggle(): boolean { this.pinned = !this.pinned; return this.pinned; }
-        })();
-        expect(scenario(first)).toContain('take-off: not over the flight: true');
     });
 });
 

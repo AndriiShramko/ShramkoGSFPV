@@ -1,0 +1,327 @@
+{
+  "name": "v10-k-first-visit-new",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-20T17:13:56.586Z",
+    "gitHead": "f9a09b7",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5472",
+  "scene": "887f27aa",
+  "steps": [
+    {
+      "path": "desktop-keyboard",
+      "step": "1-open",
+      "up": {
+        "status": "loading",
+        "walls": 1,
+        "up": [
+          {
+            "name": "warning (Before you fly)",
+            "sel": ".panel:not(.pause):not(.how-to-fly)",
+            "x": 360,
+            "y": 296,
+            "w": 560,
+            "h": 209,
+            "text": "Before you flyFast flight and crashes can cause motion sickness. Measured over 50 crashes, crash effects flash at most 2 times per second (the WCAG limit is 3);"
+          }
+        ],
+        "space": false
+      }
+    },
+    {
+      "path": "desktop-keyboard",
+      "step": "2-after-warning",
+      "up": {
+        "status": "loading",
+        "walls": 1,
+        "up": [
+          {
+            "name": "loading card",
+            "sel": ".loading",
+            "x": 0,
+            "y": 0,
+            "w": 1280,
+            "h": 800,
+            "text": "Tunis \u2014 old town streetsOpening the scan0 sFly nowTry againChoose another scan"
+          }
+        ],
+        "space": false
+      }
+    },
+    {
+      "path": "desktop-keyboard",
+      "step": "3-scan-ready",
+      "up": {
+        "status": "ready",
+        "source": null,
+        "walls": 1,
+        "up": [
+          {
+            "name": "controls dialog (How will you fly)",
+            "sel": ".screen.radio",
+            "x": 0,
+            "y": 0,
+            "w": 1280,
+            "h": 800,
+            "text": "ControlsThe scan is ready. How will you fly?\u00d7Radio or controller over USB (EdgeTX, DJI)EdgeTX: choose \"USB Joystick\" and switch the RF module off \u2014 reports then"
+          }
+        ],
+        "space": true
+      }
+    },
+    {
+      "path": "desktop-keyboard",
+      "step": "4-keyboard-chosen",
+      "up": {
+        "status": "ready",
+        "source": "keyboard",
+        "walls": 1,
+        "up": [
+          {
+            "name": "how-to-fly card (v0.10)",
+            "sel": "[data-testid=\"how-to-fly\"]",
+            "x": 280,
+            "y": 107,
+            "w": 720,
+            "h": 585,
+            "text": "How to fly\u00d7Keyboard and mouseSpace\u2191Uphold to climbShift\u2193Downhold to descend, and to landMouselook and turn (up and down tilts the camera)WASDmove (the Up and Do"
+          }
+        ],
+        "space": true
+      }
+    },
+    {
+      "path": "desktop-keyboard",
+      "step": "5-after-click",
+      "up": {
+        "status": "ready",
+        "source": "keyboard",
+        "walls": 1,
+        "up": [
+          {
+            "name": "how-to-fly card (v0.10)",
+            "sel": "[data-testid=\"how-to-fly\"]",
+            "x": 280,
+            "y": 107,
+            "w": 720,
+            "h": 585,
+            "text": "How to fly\u00d7Keyboard and mouseSpace\u2191Uphold to climbShift\u2193Downhold to descend, and to landMouselook and turn (up and down tilts the camera)WASDmove (the Up and Do"
+          }
+        ],
+        "space": true
+      }
+    },
+    {
+      "path": "desktop-keyboard",
+      "step": "6-flying-space-held",
+      "up": {
+        "status": "ready",
+        "source": "keyboard",
+        "walls": 1,
+        "up": [
+          {
+            "name": "how-to-fly card (v0.10)",
+            "sel": "[data-testid=\"how-to-fly\"]",
+            "x": 280,
+            "y": 107,
+            "w": 720,
+            "h": 585,
+            "text": "How to fly\u00d7Keyboard and mouseSpace\u2191Uphold to climbShift\u2193Downhold to descend, and to landMouselook and turn (up and down tilts the camera)WASDmove (the Up and Do"
+          }
+        ],
+        "space": true
+      }
+    },
+    {
+      "path": "desktop-close",
+      "step": "1-open",
+      "up": {
+        "status": "loading",
+        "walls": 1,
+        "up": [
+          {
+            "name": "warning (Before you fly)",
+            "sel": ".panel:not(.pause):not(.how-to-fly)",
+            "x": 360,
+            "y": 296,
+            "w": 560,
+            "h": 209,
+            "text": "Before you flyFast flight and crashes can cause motion sickness. Measured over 50 crashes, crash effects flash at most 2 times per second (the WCAG limit is 3);"
+          }
+        ],
+        "space": false
+      }
+    },
+    {
+      "path": "desktop-close",
+      "step": "2-after-warning",
+      "up": {
+        "status": "loading",
+        "walls": 1,
+        "up": [
+          {
+            "name": "loading card",
+            "sel": ".loading",
+            "x": 0,
+            "y": 0,
+            "w": 1280,
+            "h": 800,
+            "text": "Tunis \u2014 old town streetsOpening the scan0 sFly nowTry againChoose another scan"
+          }
+        ],
+        "space": false
+      }
+    },
+    {
+      "path": "desktop-close",
+      "step": "3-scan-ready",
+      "up": {
+        "status": "ready",
+        "source": null,
+        "walls": 1,
+        "up": [
+          {
+            "name": "controls dialog (How will you fly)",
+            "sel": ".screen.radio",
+            "x": 0,
+            "y": 0,
+            "w": 1280,
+            "h": 800,
+            "text": "ControlsThe scan is ready. How will you fly?\u00d7Radio or controller over USB (EdgeTX, DJI)EdgeTX: choose \"USB Joystick\" and switch the RF module off \u2014 reports then"
+          }
+        ],
+        "space": true
+      }
+    },
+    {
+      "path": "desktop-close",
+      "step": "4-closed-controls",
+      "up": {
+        "status": "ready",
+        "source": "keyboard",
+        "walls": 1,
+        "up": [
+          {
+            "name": "how-to-fly card (v0.10)",
+            "sel": "[data-testid=\"how-to-fly\"]",
+            "x": 280,
+            "y": 107,
+            "w": 720,
+            "h": 585,
+            "text": "How to fly\u00d7Keyboard and mouseSpace\u2191Uphold to climbShift\u2193Downhold to descend, and to landMouselook and turn (up and down tilts the camera)WASDmove (the Up and Do"
+          }
+        ],
+        "space": true
+      }
+    },
+    {
+      "path": "phone",
+      "step": "1-open",
+      "up": {
+        "status": "loading",
+        "walls": 1,
+        "up": [
+          {
+            "name": "warning (Before you fly)",
+            "sel": ".panel:not(.pause):not(.how-to-fly)",
+            "x": 16,
+            "y": 296,
+            "w": 358,
+            "h": 252,
+            "text": "Before you flyFast flight and crashes can cause motion sickness. Measured over 50 crashes, crash effects flash at most 2 times per second (the WCAG limit is 3);"
+          }
+        ],
+        "space": false
+      }
+    },
+    {
+      "path": "phone",
+      "step": "2-after-warning",
+      "up": {
+        "status": "loading",
+        "walls": 1,
+        "up": [
+          {
+            "name": "loading card",
+            "sel": ".loading",
+            "x": 0,
+            "y": 0,
+            "w": 390,
+            "h": 844,
+            "text": "Tunis \u2014 old town streetsDownloading the scan and its walls0 s0.4 / ~24.9 MBScan 0.4 / ~11.4 MB \u00b7 Walls 0.0 / ~13.4 MBFly nowTry againChoose another scan"
+          }
+        ],
+        "space": false
+      }
+    },
+    {
+      "path": "phone",
+      "step": "3-scan-ready",
+      "up": {
+        "status": "ready",
+        "source": "touch",
+        "walls": 2,
+        "up": [
+          {
+            "name": "how-to-fly card (v0.10)",
+            "sel": "[data-testid=\"how-to-fly\"]",
+            "x": 12,
+            "y": 197,
+            "w": 366,
+            "h": 450,
+            "text": "How to fly\u00d7Touch sticksLeft stickup / down and turnRight stickfly forward, back, left and rightTouch a stick to take offStart flyingDo not show again"
+          },
+          {
+            "name": "touch hint",
+            "sel": ".touch-hint",
+            "x": 20,
+            "y": 143,
+            "w": 351,
+            "h": 17,
+            "text": "Left stick: up / down and turn. Right stick: fly."
+          }
+        ],
+        "space": false
+      }
+    },
+    {
+      "path": "phone",
+      "step": "4-later",
+      "up": {
+        "status": "ready",
+        "source": "touch",
+        "walls": 2,
+        "up": [
+          {
+            "name": "how-to-fly card (v0.10)",
+            "sel": "[data-testid=\"how-to-fly\"]",
+            "x": 12,
+            "y": 197,
+            "w": 366,
+            "h": 450,
+            "text": "How to fly\u00d7Touch sticksLeft stickup / down and turnRight stickfly forward, back, left and rightTouch a stick to take offStart flyingDo not show again"
+          },
+          {
+            "name": "touch hint",
+            "sel": ".touch-hint",
+            "x": 20,
+            "y": 143,
+            "w": 351,
+            "h": 17,
+            "text": "Left stick: up / down and turn. Right stick: fly."
+          }
+        ],
+        "space": false
+      }
+    }
+  ]
+}

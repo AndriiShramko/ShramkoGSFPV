@@ -1,0 +1,344 @@
+{
+  "name": "v10-k-first-visit-base",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-20T16:54:15.648Z",
+    "gitHead": "198b659",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5471",
+  "scene": "887f27aa",
+  "steps": [
+    {
+      "path": "desktop-keyboard",
+      "step": "1-open",
+      "up": {
+        "status": "loading",
+        "walls": 1,
+        "up": [
+          {
+            "name": "warning (Before you fly)",
+            "sel": ".panel:not(.pause)",
+            "x": 360,
+            "y": 296,
+            "w": 560,
+            "h": 209,
+            "text": "Before you flyFast flight and crashes can cause motion sickness. Measured over 50 crashes, crash effects flash at most 2 times per second (the WCAG limit is 3);"
+          }
+        ],
+        "space": false
+      }
+    },
+    {
+      "path": "desktop-keyboard",
+      "step": "2-after-warning",
+      "up": {
+        "status": "loading",
+        "walls": 1,
+        "up": [
+          {
+            "name": "loading card",
+            "sel": ".loading",
+            "x": 0,
+            "y": 0,
+            "w": 1280,
+            "h": 800,
+            "text": "Tunis \u2014 old town streetsOpening the scan0 sFly nowTry againChoose another scan"
+          }
+        ],
+        "space": false
+      }
+    },
+    {
+      "path": "desktop-keyboard",
+      "step": "3-scan-ready",
+      "up": {
+        "status": "ready",
+        "source": null,
+        "walls": 1,
+        "up": [
+          {
+            "name": "controls dialog (How will you fly)",
+            "sel": ".screen.radio",
+            "x": 0,
+            "y": 0,
+            "w": 1280,
+            "h": 800,
+            "text": "ControlsThe scan is ready. How will you fly?\u00d7Radio or controller over USB (EdgeTX, DJI)EdgeTX: choose \"USB Joystick\" and switch the RF module off \u2014 reports then"
+          }
+        ],
+        "space": true
+      }
+    },
+    {
+      "path": "desktop-keyboard",
+      "step": "4-keyboard-chosen",
+      "up": {
+        "status": "ready",
+        "source": "keyboard",
+        "walls": 2,
+        "up": [
+          {
+            "name": "key card",
+            "sel": "[data-testid=\"key-card\"]",
+            "x": 230,
+            "y": 454,
+            "w": 820,
+            "h": 241,
+            "text": "Click to flyClick to fly, or press W or Space to take offMouselook and turn (up and down tilts the camera)WASDmove (the Up and Down arrows too)\u2190\u2192QEturn without "
+          },
+          {
+            "name": "gate line",
+            "sel": ".gate-msg",
+            "x": 628,
+            "y": 683,
+            "w": 24,
+            "h": 12,
+            "text": "Click to fly, or press W or Space to take off"
+          }
+        ],
+        "space": true
+      }
+    },
+    {
+      "path": "desktop-keyboard",
+      "step": "5-after-click",
+      "up": {
+        "status": "ready",
+        "source": "keyboard",
+        "walls": 2,
+        "up": [
+          {
+            "name": "key card",
+            "sel": "[data-testid=\"key-card\"]",
+            "x": 230,
+            "y": 454,
+            "w": 820,
+            "h": 241,
+            "text": "Keyboard and mouseClick to fly, or press W or Space to take offMouselook and turn (up and down tilts the camera)WASDmove (the Up and Down arrows too)\u2190\u2192QEturn wi"
+          },
+          {
+            "name": "gate line",
+            "sel": ".gate-msg",
+            "x": 628,
+            "y": 683,
+            "w": 24,
+            "h": 12,
+            "text": "Click to fly, or press W or Space to take off"
+          }
+        ],
+        "space": true
+      }
+    },
+    {
+      "path": "desktop-keyboard",
+      "step": "6-flying-space-held",
+      "up": {
+        "status": "ready",
+        "source": "keyboard",
+        "walls": 0,
+        "up": [],
+        "space": false
+      }
+    },
+    {
+      "path": "desktop-close",
+      "step": "1-open",
+      "up": {
+        "status": "loading",
+        "walls": 1,
+        "up": [
+          {
+            "name": "warning (Before you fly)",
+            "sel": ".panel:not(.pause)",
+            "x": 360,
+            "y": 296,
+            "w": 560,
+            "h": 209,
+            "text": "Before you flyFast flight and crashes can cause motion sickness. Measured over 50 crashes, crash effects flash at most 2 times per second (the WCAG limit is 3);"
+          }
+        ],
+        "space": false
+      }
+    },
+    {
+      "path": "desktop-close",
+      "step": "2-after-warning",
+      "up": {
+        "status": "loading",
+        "walls": 1,
+        "up": [
+          {
+            "name": "loading card",
+            "sel": ".loading",
+            "x": 0,
+            "y": 0,
+            "w": 1280,
+            "h": 800,
+            "text": "Tunis \u2014 old town streetsDownloading the scan and its walls0 s0.0 / ~24.8 MBScan 0.0 / ~11.4 MB \u00b7 Walls 0.0 / ~13.4 MBFly nowTry againChoose another scan"
+          }
+        ],
+        "space": false
+      }
+    },
+    {
+      "path": "desktop-close",
+      "step": "3-scan-ready",
+      "up": {
+        "status": "ready",
+        "source": null,
+        "walls": 1,
+        "up": [
+          {
+            "name": "controls dialog (How will you fly)",
+            "sel": ".screen.radio",
+            "x": 0,
+            "y": 0,
+            "w": 1280,
+            "h": 800,
+            "text": "ControlsThe scan is ready. How will you fly?\u00d7Radio or controller over USB (EdgeTX, DJI)EdgeTX: choose \"USB Joystick\" and switch the RF module off \u2014 reports then"
+          }
+        ],
+        "space": true
+      }
+    },
+    {
+      "path": "desktop-close",
+      "step": "4-closed-controls",
+      "up": {
+        "status": "ready",
+        "source": "keyboard",
+        "walls": 2,
+        "up": [
+          {
+            "name": "key card",
+            "sel": "[data-testid=\"key-card\"]",
+            "x": 230,
+            "y": 454,
+            "w": 820,
+            "h": 241,
+            "text": "Click to flyClick to fly, or press W or Space to take offMouselook and turn (up and down tilts the camera)WASDmove (the Up and Down arrows too)\u2190\u2192QEturn without "
+          },
+          {
+            "name": "gate line",
+            "sel": ".gate-msg",
+            "x": 628,
+            "y": 683,
+            "w": 24,
+            "h": 12,
+            "text": "Click to fly, or press W or Space to take off"
+          }
+        ],
+        "space": true
+      }
+    },
+    {
+      "path": "phone",
+      "step": "1-open",
+      "up": {
+        "status": "loading",
+        "walls": 1,
+        "up": [
+          {
+            "name": "warning (Before you fly)",
+            "sel": ".panel:not(.pause)",
+            "x": 16,
+            "y": 296,
+            "w": 358,
+            "h": 252,
+            "text": "Before you flyFast flight and crashes can cause motion sickness. Measured over 50 crashes, crash effects flash at most 2 times per second (the WCAG limit is 3);"
+          }
+        ],
+        "space": false
+      }
+    },
+    {
+      "path": "phone",
+      "step": "2-after-warning",
+      "up": {
+        "status": "loading",
+        "walls": 1,
+        "up": [
+          {
+            "name": "loading card",
+            "sel": ".loading",
+            "x": 0,
+            "y": 0,
+            "w": 390,
+            "h": 844,
+            "text": "Tunis \u2014 old town streetsOpening the scan0 sFly nowTry againChoose another scan"
+          }
+        ],
+        "space": false
+      }
+    },
+    {
+      "path": "phone",
+      "step": "3-scan-ready",
+      "up": {
+        "status": "ready",
+        "source": "touch",
+        "walls": 2,
+        "up": [
+          {
+            "name": "gate line",
+            "sel": ".gate-msg",
+            "x": 97,
+            "y": 486,
+            "w": 195,
+            "h": 39,
+            "text": "Touch a stick to take off"
+          },
+          {
+            "name": "touch hint",
+            "sel": ".touch-hint",
+            "x": 20,
+            "y": 143,
+            "w": 351,
+            "h": 17,
+            "text": "Left stick: up / down and turn. Right stick: fly."
+          }
+        ],
+        "space": false
+      }
+    },
+    {
+      "path": "phone",
+      "step": "4-later",
+      "up": {
+        "status": "ready",
+        "source": "touch",
+        "walls": 2,
+        "up": [
+          {
+            "name": "gate line",
+            "sel": ".gate-msg",
+            "x": 97,
+            "y": 486,
+            "w": 195,
+            "h": 39,
+            "text": "Touch a stick to take off"
+          },
+          {
+            "name": "touch hint",
+            "sel": ".touch-hint",
+            "x": 20,
+            "y": 143,
+            "w": 351,
+            "h": 17,
+            "text": "Left stick: up / down and turn. Right stick: fly."
+          }
+        ],
+        "space": false
+      }
+    }
+  ]
+}

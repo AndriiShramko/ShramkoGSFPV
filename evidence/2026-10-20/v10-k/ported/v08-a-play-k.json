@@ -1,0 +1,89 @@
+{
+  "name": "v08-a-play-k",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-20T18:15:39.407Z",
+    "gitHead": "a80254c",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5472",
+  "pass": true,
+  "only": "K",
+  "checks": [
+    {
+      "id": "K1 the game scheme has no ground card; K opens the How to fly card (the flight is held while it is up), K again closes it; the corner line names Space up / Shift down",
+      "ok": true,
+      "detail": {
+        "groundCardShown": false,
+        "how": "game",
+        "heldByCard": true,
+        "closedByK": true,
+        "pausedAfter": false,
+        "corner": "crashes 0  \u00b7  Space up \u00b7 Shift down \u00b7 K keys \u00b7 F full screen \u00b7 R respawn \u00b7 Esc pause \u00b7 H hide text"
+      }
+    },
+    {
+      "id": "K2 Space starts the motors (no arm switch) and climbs at the speed setting (normal: 5 m/s)",
+      "ok": true,
+      "detail": {
+        "armedBefore": false,
+        "armed": true,
+        "climbMps": 5.163,
+        "gainedM": 10.753
+      }
+    },
+    {
+      "id": "K3 keys released: the height holds (altitude help)",
+      "ok": true,
+      "detail": {
+        "spreadM": 0.069,
+        "meanVy": 0.018
+      }
+    },
+    {
+      "id": "K5 in the air no ground card is up; K opens the How to fly card, Esc closes it",
+      "ok": true,
+      "detail": {
+        "groundCardHiddenFlying": true,
+        "howToFlyAfterK": true,
+        "closedAfterEsc": true
+      }
+    },
+    {
+      "id": "S1 the motor sound is 15 % by default; the speaker on the top bar mutes and unmutes it",
+      "ok": true,
+      "detail": {
+        "volume": 15,
+        "before": true,
+        "afterClick": false,
+        "ariaPressed": "true",
+        "afterSecondClick": true
+      }
+    },
+    {
+      "id": "K8 no page errors",
+      "ok": true,
+      "detail": {
+        "errors": []
+      }
+    },
+    {
+      "id": "K-control the pilot profile: the same key does not start the motors, its card is the Mode 2 one",
+      "ok": true,
+      "detail": {
+        "armed": false,
+        "cardTitle": "Keyboard"
+      }
+    }
+  ],
+  "shots": "evidence/2026-10-20/v08-a/",
+  "note": "touch = CDP synthetic touches (the page path, not a real digitiser); keyboard = Playwright key events; the scan drawn (visible system Chrome)"
+}

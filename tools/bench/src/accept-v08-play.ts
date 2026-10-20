@@ -158,19 +158,29 @@ async function keyboardFlight(p: Page, qs: string): Promise<void> {
 // K4 (W tilts 25 deg) by V3, K12 (replay) by V13, K10 (Esc while Shift boosts) by V12c, K11 (Space taps and holds) by V16 and
 // V16b. K6 and K7 (the school offer and a throttle that stays, walked on the keyboard) are NOT replaced: the school belongs to
 // touch now, its chip is T6 below and its steps are unit-tested (app-play.test.ts), but its offer is no longer walked in a
-// browser. Kept: the key card and K, the quiet motor sound and its mute, the pilot profile as the control.
+// browser. Kept: the quiet motor sound and its mute, the pilot profile as the control. v0.10 lane K (docs/wip/v10-k.md) moved the
+// game scheme's key card to the How to fly card (accept-v10-keys.ts): K1, K9 and K5 below now say what K does there (no ground
+// card for the game scheme, K opens the How to fly card and K again closes it, the flight is held while it is up).
 if (ONLY !== 'T') {
     const L = await launch({ width: 1280, height: 800 });
     const p = L.page;
     await keyboardFlight(p, 'x=1');
-    const card = await p.evaluate(`(() => { const c = document.querySelector('[data-testid="key-card"]'); return c ? { shown: !c.classList.contains('hidden'), title: c.querySelector('h3')?.textContent, now: c.querySelector('p.now')?.textContent, rows: c.querySelectorAll('.kc-list li').length } : null; })()`) as Any;
-    check('K1 the key card shows on the ground with the game keys and "press a flying key to take off"', !!card && card.shown && card.title === EN['play.game.title'] && card.now === EN['play.gate.keys'] && card.rows >= 9, card);
+    const card = await p.evaluate(`(() => { const c = document.querySelector('[data-testid="key-card"]'); return c ? { shown: !c.classList.contains('hidden'), title: c.querySelector('h3')?.textContent } : null; })()`) as Any;
     await p.screenshot({ path: join(SHOTS, 'k-desktop-ground.jpg'), quality: 80 });
-    // K over the ground card: it goes, and stays away over the take-off (the first rule pinned it there)
-    const cardHidden = `document.querySelector('[data-testid="key-card"]').classList.contains('hidden')`;
+    // v0.10: the game scheme has no ground card, its keys are on the How to fly card, which K opens (the page has ?nowarn=1: it
+    // does not open by itself here); the corner line names the vertical pair
+    const corner = await p.evaluate(`(document.querySelector('.osd.br') || {}).textContent || ''`) as string;
     await p.keyboard.press('KeyK');
-    await sleep(300);
-    const hiddenByK = await p.evaluate(cardHidden) as boolean;
+    await sleep(500);
+    const howToFly = await p.evaluate(`(() => { const c = document.querySelector('[data-testid="how-to-fly"]'); return c ? { kind: c.getAttribute('data-kind'), text: c.textContent.replace(/\\s+/g, ' ') } : null; })()`) as Any;
+    const heldByCard = await ev<boolean>(p, 'return s.paused;');
+    await p.keyboard.press('KeyK');
+    await sleep(400);
+    const closedByK = (await p.evaluate(`document.querySelector('[data-testid="how-to-fly"]') === null`)) as boolean;
+    const pausedAfter = await ev<boolean>(p, 'return s.paused;');
+    check('K1 the game scheme has no ground card; K opens the How to fly card (the flight is held while it is up), K again closes it; the corner line names Space up / Shift down',
+        !!card && card.shown === false && howToFly?.kind === 'game' && /Space/.test(howToFly.text) && /Shift/.test(howToFly.text) && heldByCard === true && closedByK && pausedAfter === false && /Space up/.test(corner) && /Shift down/.test(corner),
+        { groundCardShown: card?.shown ?? null, how: howToFly?.kind ?? null, heldByCard, closedByK, pausedAfter, corner });
     const before = await ev<boolean>(p, 'return s.sim.armed;');
     const y0 = await ev<number>(p, 'return s.sim.s[1];');
     await p.keyboard.down('Space');
@@ -180,8 +190,7 @@ if (ONLY !== 'T') {
     const armed = await ev<boolean>(p, 'return s.sim.armed;');
     const climbMps = mean(climb.vy);
     check('K2 Space starts the motors (no arm switch) and climbs at the speed setting (normal: 5 m/s)', !before && armed && Math.abs(climbMps - 5) < 1.5 && climb.y.at(-1)! - y0 > 3, { armedBefore: before, armed, climbMps: r3(climbMps), gainedM: r3(climb.y.at(-1)! - y0) });
-    const hiddenInAir = await p.evaluate(cardHidden) as boolean;
-    check('K9 K over the ground card hides it, and it does not come back over the flight; control: the card was up on the ground before K (K1)', !!card && card.shown === true && hiddenByK && hiddenInAir, { upBeforeK: card?.shown, hiddenByKOnTheGround: hiddenByK, hiddenAfterTakeOff: hiddenInAir });
+    // K9 (K over the ground card) is retired with the ground card: the pilot profile's ground card is checked as K-control below
     await sleep(3000);
     const hold = await track(p, 4000, 200);
     check('K3 keys released: the height holds (altitude help)', spread(hold.y) < 0.4, { spreadM: r3(spread(hold.y)), meanVy: r3(mean(hold.vy)) });
@@ -189,12 +198,15 @@ if (ONLY !== 'T') {
     const hidden = await p.evaluate(`document.querySelector('[data-testid="key-card"]').classList.contains('hidden')`);
     await p.keyboard.press('KeyK');
     await sleep(300);
-    const shownK = await p.evaluate(`!document.querySelector('[data-testid="key-card"]').classList.contains('hidden')`);
+    const shownK = await p.evaluate(`document.querySelector('[data-testid="how-to-fly"]') !== null`);
     await p.screenshot({ path: join(SHOTS, 'k-desktop-keycard-k.jpg'), quality: 80 });
-    await p.keyboard.press('KeyK');
-    await sleep(300);
-    const hiddenAgain = await p.evaluate(`document.querySelector('[data-testid="key-card"]').classList.contains('hidden')`);
-    check('K5 in the air the card goes; K shows it, K again hides it', hidden === true && shownK === true && hiddenAgain === true, { hiddenFlying: hidden, shownAfterK: shownK, hiddenAfterK: hiddenAgain });
+    // Esc closes it (K closing it is K1's check). The K press above is a user activation for 5 s, and closing the card asks for the
+    // mouse as every resume of a game-scheme flight does: wait it out so the mouse is not captured over the buttons clicked next
+    await sleep(5500);
+    await p.keyboard.press('Escape');
+    await sleep(400);
+    const hiddenAgain = await p.evaluate(`document.querySelector('[data-testid="how-to-fly"]') === null`);
+    check('K5 in the air no ground card is up; K opens the How to fly card, Esc closes it', hidden === true && shownK === true && hiddenAgain === true, { groundCardHiddenFlying: hidden, howToFlyAfterK: shownK, closedAfterEsc: hiddenAgain });
     // the quiet sound and the quick mute
     const vol = await ev<number>(p, 'return h.prefs.get("sound.volume");');
     const m0 = await ev<boolean>(p, 'return h.prefs.get("sound.motors");');

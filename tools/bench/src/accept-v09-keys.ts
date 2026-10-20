@@ -122,10 +122,19 @@ await keyboardFlight(p, 'x=1', true);
 const ready = await ev<Any>(p, 'return { play: h.play(), mode: h.controls.flyingMode(), source: h.controls.source };');
 
 // ------------------------------------------------------------------ the first run: the game card
-const card = await p.evaluate(`(() => { const c = document.querySelector('[data-testid="key-card"]'); return c ? { shown: !c.classList.contains('hidden'), title: c.querySelector('h3')?.textContent, now: c.querySelector('p.now')?.textContent, rows: [...c.querySelectorAll('.kc-list li')].map((li) => li.textContent) } : null; })()`) as Any;
-const rowText = (card?.rows ?? []).join(' | ');
-check('V1 the first-run card is up on the ground: "Click to fly", the mouse, W A S D, Space, Shift, F, Esc', !!card && card.shown && card.title === EN['play.game.title'] && /Mouse/.test(rowText) && /W.?A.?S.?D/.test(rowText) && /Space/.test(rowText) && /Shift/.test(rowText) && /F.*full screen/.test(rowText) && /Esc.*pause/.test(rowText) && card.now === EN['play.gate.keys'], card ?? {});
+// v0.10 lane K (docs/wip/v10-k.md): the game scheme's card moved from the ground (a translucent key card) to the How to fly card,
+// which opens by itself on a real first visit (accept-v10-keys.ts) and with K here (this page has ?nowarn=1, a test page).
+await p.keyboard.press('KeyK');
+await sleep(500);
+const card = await p.evaluate(`(() => { const c = document.querySelector('[data-testid="how-to-fly"]'); return c ? { kind: c.getAttribute('data-kind'), title: c.querySelector('h2')?.textContent, text: c.textContent.replace(/\\s+/g, ' ') } : null; })()`) as Any;
+check('V1 the first-run card (K opens it here): "How to fly", the mouse, W A S D, Space, Shift, F, Esc', !!card && card.kind === 'game' && card.title === EN['play.card.title'] && /Mouse/.test(card.text) && /W.?A.?S.?D/.test(card.text) && /Space/.test(card.text) && /Shift/.test(card.text) && /F.*full screen/.test(card.text) && /Esc.*pause/.test(card.text), card ?? {});
 await p.screenshot({ path: join(SHOTS, 'v1-first-run-card.jpg'), quality: 80 });
+// Esc closes the card and the flight goes on. Not K, and not at once: the release of the card's pause asks for the mouse like every
+// resume of a game-scheme flight, and the K press that opened the card is a user activation for 5 s, so the mouse would be captured
+// before V2 measures the click that captures it. Waited out, Esc (no activation) closes the card and the mouse stays free
+await sleep(5500);
+await p.keyboard.press('Escape');
+await sleep(400);
 
 // ------------------------------------------------------------------ click to fly: pointer lock
 const box = (await p.locator('canvas').first().boundingBox())!;
@@ -135,8 +144,10 @@ await p.mouse.click(centre.x, centre.y);
 await sleep(600);
 const lockAfter = await ev<Any>(p, 'const c = document.querySelector("canvas"); return { locked: document.pointerLockElement === c, game: h.play().game, hint: document.querySelector("[data-testid=game-hint]") ? !document.querySelector("[data-testid=game-hint]").hidden : null };');
 check('V2 a click on the view captures the mouse (pointer lock on the canvas); before the click there is none', !lockBefore.locked && lockAfter.locked && lockAfter.game?.locked === true, { before: lockBefore.locked, after: lockAfter.locked, game: lockAfter.game?.locked ?? null });
-const cardLive = await p.evaluate(`document.querySelector('[data-testid="key-card"] h3')?.textContent ?? null`);
-check('V2b with the mouse captured the card stops asking for a click', cardLive === EN['play.game.titleLive'], { title: cardLive });
+// V2b (the ground card's title stops asking for a click once the mouse is captured) is retired with the ground card: the pill
+// "Click to fly with the mouse" goes when the mouse is captured, which is V2's own check below (game.hintShown)
+const pillGone = await ev<Any>(p, 'return h.play().game.hintShown;');
+check('V2b with the mouse captured the "click to fly" pill is gone', pillGone === false, { hintShown: pillGone });
 await p.screenshot({ path: join(SHOTS, 'v2-locked-ground.jpg'), quality: 80 });
 
 // ------------------------------------------------------------------ W: forward, in the facing direction, no arming step
