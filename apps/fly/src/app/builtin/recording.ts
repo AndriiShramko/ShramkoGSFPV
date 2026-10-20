@@ -7,6 +7,11 @@
 // Where a file goes, in order: the pilot's folder when the browser lets us write it; else the
 // browser's own storage (OPFS), offered after stop, and moved into the folder once access is given;
 // else memory, offered after stop, at most 2 minutes.
+//
+// While a recording runs (REC, F9, the dot, auto-record) the scan is drawn sorted, the clean picture (v0.10, the
+// owner's item 2): the recorder takes a hold on the sorted drawing (RecordingDeps.cleanDraw, app/clean-draw.ts)
+// before its first frame and lets go when it ends, however it ends (stop, auto stop, the memory cap, an error, a
+// split's last part), and the pilot's drawing comes back. The video export does the same on its own.
 // The permission can only be asked inside a click or a key press: radio and gamepad input cannot
 // grant it (research-b 3.4), so an auto recording started by the radio's arm switch goes to the
 // browser's storage while the bar offers "Allow saving to <folder>".
@@ -56,6 +61,12 @@ export interface RecordingDeps {
     scene: () => { id: string; credit: string };
     /** auto-respawn is on (then a crash does not stop auto-record) */
     autoRespawn: () => boolean;
+    /**
+     * The clean picture while a recording runs (app/clean-draw.ts): takes the hold on the sorted drawing and returns
+     * what lets go of it (calling it again does nothing). None: the drawing is not touched (the export's recorder,
+     * a test).
+     */
+    cleanDraw?: () => () => void;
 }
 
 /** Auto-respawn counts only once its setting ships (W2-2); until then a crash ends the flight. */
@@ -94,10 +105,24 @@ export class Recording {
     /** test only (the hook), the control of W4-1: the latency guard may skip while recording */
     guardHoldOff = false;
     private paused = { flight: false, hidden: false };
+    /** lets go of the hold on the sorted drawing the running recording took (RecordingDeps.cleanDraw) */
+    private clean: (() => void) | null = null;
     private offerUrls: string[] = [];
     private pending: Promise<unknown> = Promise.resolve();
 
     constructor(private readonly d: RecordingDeps) {}
+
+    /** The recording is over (or never began): the pilot's drawing comes back. Safe to call twice. */
+    private letGo(): void {
+        const f = this.clean;
+        this.clean = null;
+        f?.();
+    }
+
+    /** The scan is drawn sorted for this recording (a hold is taken, once). */
+    get drawsClean(): boolean {
+        return this.clean !== null;
+    }
 
     get supported(): boolean {
         return CinemaRecorder.supported;
@@ -249,16 +274,24 @@ export class Recording {
                 legacyV02: o.legacyV02,
                 canvas: this.d.canvas
             });
+            // the clean picture from the first frame: sorted until this recording ends (a failed start lets go below)
+            this.letGo();
+            this.clean = this.d.cleanDraw?.() ?? null;
             const codec = await r.start();
             r.pause(this.paused.flight || this.paused.hidden);
             r.onEnded = (info) => {
                 if (this.recorder === r) this.recorder = null;
+                this.letGo();
                 void this.finish(info, r.target);
             };
             this.recorder = r;
             this.autoRun = o.auto;
             this.onStarted(o.auto);
             return codec;
+        } catch (e) {
+            // the encoder or the target refused: nothing records, so nothing stays drawn sorted
+            this.letGo();
+            throw e;
         } finally {
             this.busy = false;
             this.onChange();
@@ -315,6 +348,7 @@ export class Recording {
         try {
             return await this.finish(await r.stop(), r.target);
         } finally {
+            this.letGo();
             this.busy = false;
             this.onChange();
         }

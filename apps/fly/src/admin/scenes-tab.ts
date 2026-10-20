@@ -37,7 +37,7 @@ export class ScenesTab {
     private readonly status = h('p', { class: 'status', role: 'status', 'data-testid': 'draft-status' });
     private readonly publishBtn = h('button', { type: 'button', class: 'btn primary', 'data-action': 'publish' }, t('admin.publish'));
     private readonly changesBox = h('details', { class: 'changes', 'data-testid': 'draft-changes', hidden: true });
-    private diff: CatalogDiff = { scenes: [], collections: false, dirty: false };
+    private diff: CatalogDiff = { scenes: [], collections: false, drawing: false, dirty: false };
     private readonly list = h('ol', { class: 'rows', 'data-testid': 'scene-list' });
     private readonly cols = h('div', { class: 'cols' });
     private readonly hist = h('ul', { class: 'history' });
@@ -139,7 +139,7 @@ export class ScenesTab {
     }
 
     private changeCount(): number {
-        return this.diff.scenes.length + (this.diff.collections ? 1 : 0);
+        return this.diff.scenes.length + (this.diff.collections ? 1 : 0) + (this.diff.drawing ? 1 : 0);
     }
 
     /**
@@ -161,6 +161,7 @@ export class ScenesTab {
                 list.append(h('li', { 'data-change': c.kind, 'data-scene': c.id }, t(`admin.changes.${c.kind}`, { title: c.title, fields })));
             }
             if (this.diff.collections) list.append(h('li', { 'data-change': 'collections' }, t('admin.changes.collections')));
+            if (this.diff.drawing) list.append(h('li', { 'data-change': 'drawing' }, t('admin.changes.drawing')));
             this.changesBox.append(h('summary', {}, t('admin.changes.title')), list);
         }
         const kinds = new Map(this.diff.scenes.map((c) => [c.id, c.kind]));

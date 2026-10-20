@@ -140,6 +140,13 @@ export interface SceneCatalog {
     scenes: CatalogScene[];
     /** defaults of the published scenes that are hidden from the picker, by scene id; absent: none (or an older API) */
     defaults?: Record<string, SceneDefaults>;
+    /**
+     * The owner's drawing defaults (v0.10, the admin's "Drawing" tab): one preset per class of device, as the API
+     * stores them ({ presets: { <class>: { drawing, budgetM, renderScale } } }). Carried untouched: the simulator and the admin
+     * page read it with @gsfpv/render-pc's readDrawingDefaults (this package knows nothing of devices). Absent: the
+     * built-in table (an older API, or nothing set).
+     */
+    drawing?: unknown;
 }
 
 /** The range of CatalogScene.scale: the pilot's Scene size range (prefs SCALE_MIN / SCALE_MAX; a test keeps them equal). */
@@ -279,7 +286,18 @@ export function readCatalog(doc: unknown): SceneCatalog | null {
         }
     }
     const defaults = readDefaults(d.defaults);
-    return defaults ? { collections, scenes, defaults } : { collections, scenes };
+    const drawing = readDrawingDoc((doc as { drawing?: unknown }).drawing);
+    return { collections, scenes, ...(defaults ? { defaults } : {}), ...(drawing ? { drawing } : {}) };
+}
+
+/** The `drawing` document passed through when it is a plain, small JSON object (the reader of it validates the content). */
+function readDrawingDoc(v: unknown): Record<string, unknown> | undefined {
+    if (!v || typeof v !== 'object' || Array.isArray(v)) return undefined;
+    try {
+        return JSON.stringify(v).length <= 4096 ? (JSON.parse(JSON.stringify(v)) as Record<string, unknown>) : undefined;
+    } catch {
+        return undefined;
+    }
 }
 
 /** The `defaults` map of the public catalogue, read strictly: a scene id and a scale in range, nothing else. */
@@ -353,7 +371,9 @@ export interface CatalogDiff {
     scenes: SceneChange[];
     /** the collections list differs (added, removed, renamed or reordered) */
     collections: boolean;
-    /** scenes, collections or the order differ: Publish has something to do */
+    /** the owner's drawing defaults (the device presets) differ */
+    drawing: boolean;
+    /** scenes, collections, the drawing defaults or the order differ: Publish has something to do */
     dirty: boolean;
 }
 
@@ -399,7 +419,8 @@ export function catalogDiff(draft: SceneCatalog, live: SceneCatalog | null): Cat
     });
     for (const s of liveScenes) if (!after.has(s.id)) scenes.push({ id: s.id, title: s.title, kind: 'removed' });
     const collections = canonical(draft.collections) !== canonical(live?.collections ?? []);
-    return { scenes, collections, dirty: collections || scenes.length > 0 };
+    const drawing = canonical(draft.drawing ?? null) !== canonical(live?.drawing ?? null);
+    return { scenes, collections, drawing, dirty: collections || drawing || scenes.length > 0 };
 }
 
 /** The indexes of one longest strictly increasing subsequence of `a` (patience sorting, O(n log n)). */

@@ -1,9 +1,9 @@
 {
- "generated": "2026-10-18",
+ "generated": "2026-10-20",
  "schemaVersion": 2,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
-  "settings": 72,
+  "settings": 73,
   "groups": 11,
   "drones": 9,
   "modes": 3,
@@ -366,17 +366,17 @@
       {
        "id": "display.drawing",
        "label": "Render",
-       "help": "How the scan is drawn. Auto: SuperSplat's stochastic drawing in a desktop browser with WebGPU, the classic sorted drawing on phones, tablets and without WebGPU, unless the scene's link or its owner asks for the other. Stochastic skips sorting the splats and leaves a fine grain. Sorted is the classic, smooth drawing. A link with ?stochastic (or ?stochastic=0) is obeyed when a scene opens; a choice made here while flying wins for that scene. Stochastic needs WebGPU in a desktop browser.",
+       "help": "How the scan is drawn. Auto: your device's preset (the line under this row says which one was picked), normally the classic sorted drawing, which is smooth and keeps the scan's detail; the site's owner can change the presets. Stochastic skips sorting the splats and leaves a fine grain: it is a single noisy sample per pixel, so it can look rough in rooms. Sorted is the classic, smooth drawing. A link with ?stochastic (or ?stochastic=0) is obeyed when a scene opens; a choice made here while flying wins for that scene. Stochastic needs WebGPU in a desktop browser. Recording and the video export always draw sorted.",
        "type": "enum",
-       "default": "Auto (stochastic on a desktop)",
-       "range": "Auto (stochastic on a desktop) / Stochastic (SuperSplat) / Sorted (classic)",
+       "default": "Auto (this device's preset)",
+       "range": "Auto (this device's preset) / Stochastic (SuperSplat) / Sorted (classic)",
        "scope": "global",
        "apply": "live",
        "keys": [],
        "advanced": false,
        "preset": false,
        "options": [
-        "Auto (stochastic on a desktop)",
+        "Auto (this device's preset)",
         "Stochastic (SuperSplat)",
         "Sorted (classic)"
        ],
@@ -388,23 +388,46 @@
       {
        "id": "display.budget",
        "label": "Splat budget",
-       "help": "How many million splats the scan may draw at most. Auto takes the link's ?budget=, the scene owner's choice, or what suits this device. A link's ?budget= is obeyed when a scene opens; a choice made here while flying wins for that scene. More splats are sharper and slower; the quality governor still lowers it when frames are missed.",
+       "help": "How many million splats the scan may draw at most. Auto takes the link's ?budget=, the scene owner's choice, or this device's preset (see the Render row). A link's ?budget= is obeyed when a scene opens; a choice made here while flying wins for that scene. More splats are sharper and slower; the quality governor still lowers it when frames are missed.",
        "type": "enum",
-       "default": "Auto (link, scene or device)",
-       "range": "Auto (link, scene or device) / 1 million splats / 2 million splats / 4 million splats / 8 million splats / 16 million splats / 32 million splats",
+       "default": "Auto (link, scene or preset)",
+       "range": "Auto (link, scene or preset) / 1 million splats / 2 million splats / 4 million splats / 8 million splats / 16 million splats / 32 million splats",
        "scope": "global",
        "apply": "live",
        "keys": [],
        "advanced": false,
        "preset": false,
        "options": [
-        "Auto (link, scene or device)",
+        "Auto (link, scene or preset)",
         "1 million splats",
         "2 million splats",
         "4 million splats",
         "8 million splats",
         "16 million splats",
         "32 million splats"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "display.deviceClass",
+       "label": "Device class",
+       "help": "Which kind of device the site's drawing presets treat this as. Auto recognises it from the browser (the graphics adapter, memory, processor cores, touch screen and screen size); name the class yourself when the guess is wrong, for example a laptop that should draw like a strong desktop. The class sets the preset that Auto in Render and Splat budget stands for: the drawing, the splat budget and the resolution. You can still set Render and Splat budget by hand.",
+       "type": "enum",
+       "default": "Auto (recognised from this browser)",
+       "range": "Auto (recognised from this browser) / Desktop or laptop, strong graphics / Desktop or laptop, weak graphics / Tablet / Phone",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Auto (recognised from this browser)",
+        "Desktop or laptop, strong graphics",
+        "Desktop or laptop, weak graphics",
+        "Tablet",
+        "Phone"
        ],
        "shown": [
         "settings"
@@ -2386,17 +2409,17 @@
       {
        "id": "display.drawing",
        "label": "Renderizado",
-       "help": "C\u00f3mo se dibuja el escaneo. Autom\u00e1tico: el dibujo estoc\u00e1stico de SuperSplat en un navegador de escritorio con WebGPU, el dibujo cl\u00e1sico ordenado en m\u00f3viles, tabletas y sin WebGPU, salvo que el enlace de la escena o su due\u00f1o pidan lo contrario. Estoc\u00e1stico no ordena los splats y deja un grano fino. Ordenado es el dibujo cl\u00e1sico, suave. Un enlace con ?stochastic (o ?stochastic=0) se obedece al abrir la escena; lo que eliges aqu\u00ed mientras vuelas manda en esa escena. El estoc\u00e1stico necesita WebGPU en un navegador de escritorio.",
+       "help": "C\u00f3mo se dibuja el escaneo. Autom\u00e1tico: el preajuste de tu dispositivo (la l\u00ednea bajo esta fila dice cu\u00e1l se eligi\u00f3), normalmente el dibujo cl\u00e1sico ordenado, que es suave y conserva el detalle del escaneo; el due\u00f1o del sitio puede cambiar los preajustes. Estoc\u00e1stico no ordena los splats y deja un grano fino: es una sola muestra ruidosa por p\u00edxel, por eso puede verse \u00e1spero en interiores. Ordenado es el dibujo cl\u00e1sico, suave. Un enlace con ?stochastic (o ?stochastic=0) se obedece al abrir la escena; lo que eliges aqu\u00ed mientras vuelas manda en esa escena. El estoc\u00e1stico necesita WebGPU en un navegador de escritorio. La grabaci\u00f3n y la exportaci\u00f3n de v\u00eddeo siempre dibujan ordenado.",
        "type": "enum",
-       "default": "Autom\u00e1tico (estoc\u00e1stico en escritorio)",
-       "range": "Autom\u00e1tico (estoc\u00e1stico en escritorio) / Estoc\u00e1stico (SuperSplat) / Ordenado (cl\u00e1sico)",
+       "default": "Autom\u00e1tico (preajuste de este dispositivo)",
+       "range": "Autom\u00e1tico (preajuste de este dispositivo) / Estoc\u00e1stico (SuperSplat) / Ordenado (cl\u00e1sico)",
        "scope": "global",
        "apply": "live",
        "keys": [],
        "advanced": false,
        "preset": false,
        "options": [
-        "Autom\u00e1tico (estoc\u00e1stico en escritorio)",
+        "Autom\u00e1tico (preajuste de este dispositivo)",
         "Estoc\u00e1stico (SuperSplat)",
         "Ordenado (cl\u00e1sico)"
        ],
@@ -2408,23 +2431,46 @@
       {
        "id": "display.budget",
        "label": "Presupuesto de splats",
-       "help": "Cu\u00e1ntos millones de splats puede dibujar como m\u00e1ximo el escaneo. Autom\u00e1tico toma el ?budget= del enlace, la elecci\u00f3n del due\u00f1o de la escena o lo que conviene a este dispositivo. El ?budget= de un enlace se obedece al abrir la escena; lo que eliges aqu\u00ed mientras vuelas manda en esa escena. M\u00e1s splats son m\u00e1s n\u00edtidos y m\u00e1s lentos; el regulador de calidad lo baja igualmente si se pierden fotogramas.",
+       "help": "Cu\u00e1ntos millones de splats puede dibujar como m\u00e1ximo el escaneo. Autom\u00e1tico toma el ?budget= del enlace, la elecci\u00f3n del due\u00f1o de la escena o el preajuste de este dispositivo (mira la fila Renderizado). El ?budget= de un enlace se obedece al abrir la escena; lo que eliges aqu\u00ed mientras vuelas manda en esa escena. M\u00e1s splats son m\u00e1s n\u00edtidos y m\u00e1s lentos; el regulador de calidad lo baja igualmente si se pierden fotogramas.",
        "type": "enum",
-       "default": "Autom\u00e1tico (enlace, escena o dispositivo)",
-       "range": "Autom\u00e1tico (enlace, escena o dispositivo) / 1 mill\u00f3n de splats / 2 millones de splats / 4 millones de splats / 8 millones de splats / 16 millones de splats / 32 millones de splats",
+       "default": "Autom\u00e1tico (enlace, escena o preajuste)",
+       "range": "Autom\u00e1tico (enlace, escena o preajuste) / 1 mill\u00f3n de splats / 2 millones de splats / 4 millones de splats / 8 millones de splats / 16 millones de splats / 32 millones de splats",
        "scope": "global",
        "apply": "live",
        "keys": [],
        "advanced": false,
        "preset": false,
        "options": [
-        "Autom\u00e1tico (enlace, escena o dispositivo)",
+        "Autom\u00e1tico (enlace, escena o preajuste)",
         "1 mill\u00f3n de splats",
         "2 millones de splats",
         "4 millones de splats",
         "8 millones de splats",
         "16 millones de splats",
         "32 millones de splats"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "display.deviceClass",
+       "label": "Clase de dispositivo",
+       "help": "Qu\u00e9 tipo de dispositivo creen los preajustes de dibujo del sitio que es este. Autom\u00e1tico lo reconoce por el navegador (el adaptador gr\u00e1fico, la memoria, los n\u00facleos del procesador, la pantalla t\u00e1ctil y el tama\u00f1o de pantalla); indica t\u00fa la clase cuando se equivoque, por ejemplo un port\u00e1til que deber\u00eda dibujar como un escritorio potente. La clase fija el preajuste que significa Autom\u00e1tico en Renderizado y Presupuesto de splats: el dibujo, el presupuesto de splats y la resoluci\u00f3n. Puedes seguir ajustando Renderizado y Presupuesto de splats a mano.",
+       "type": "enum",
+       "default": "Autom\u00e1tico (reconocido por este navegador)",
+       "range": "Autom\u00e1tico (reconocido por este navegador) / Escritorio o port\u00e1til, gr\u00e1ficos potentes / Escritorio o port\u00e1til, gr\u00e1ficos modestos / Tableta / M\u00f3vil",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Autom\u00e1tico (reconocido por este navegador)",
+        "Escritorio o port\u00e1til, gr\u00e1ficos potentes",
+        "Escritorio o port\u00e1til, gr\u00e1ficos modestos",
+        "Tableta",
+        "M\u00f3vil"
        ],
        "shown": [
         "settings"
@@ -4406,17 +4452,17 @@
       {
        "id": "display.drawing",
        "label": "Renderowanie",
-       "help": "Jak rysowany jest skan. Automatycznie: stochastyczne rysowanie SuperSplat w przegl\u0105darce na komputerze z WebGPU, klasyczne sortowane rysowanie na telefonach, tabletach i bez WebGPU, chyba \u017ce link sceny albo jej w\u0142a\u015bciciel prosz\u0105 o inne. Stochastyczne nie sortuje splat\u00f3w i zostawia drobne ziarno. Sortowane to klasyczne, g\u0142adkie rysowanie. Link z ?stochastic (albo ?stochastic=0) jest respektowany przy otwarciu sceny; wyb\u00f3r tutaj podczas lotu wygrywa w tej scenie. Stochastyczne wymaga WebGPU w przegl\u0105darce na komputerze.",
+       "help": "Jak rysowany jest skan. Automatycznie: ustawienie wst\u0119pne twojego urz\u0105dzenia (wiersz pod tym m\u00f3wi, kt\u00f3re wybrano), zwykle klasyczne sortowane rysowanie, g\u0142adkie i zachowuj\u0105ce szczeg\u00f3\u0142y skanu; w\u0142a\u015bciciel serwisu mo\u017ce zmienia\u0107 ustawienia wst\u0119pne. Stochastyczne nie sortuje splat\u00f3w i zostawia drobne ziarno: to jedna zaszumiona pr\u00f3bka na piksel, wi\u0119c we wn\u0119trzach mo\u017ce wygl\u0105da\u0107 szorstko. Sortowane to klasyczne, g\u0142adkie rysowanie. Link z ?stochastic (albo ?stochastic=0) jest respektowany przy otwarciu sceny; wyb\u00f3r tutaj podczas lotu wygrywa w tej scenie. Stochastyczne wymaga WebGPU w przegl\u0105darce na komputerze. Nagrywanie i eksport wideo zawsze rysuj\u0105 sortowane.",
        "type": "enum",
-       "default": "Automatycznie (na komputerze stochastyczne)",
-       "range": "Automatycznie (na komputerze stochastyczne) / Stochastyczne (SuperSplat) / Sortowane (klasyczne)",
+       "default": "Automatycznie (ustawienie wst\u0119pne urz\u0105dzenia)",
+       "range": "Automatycznie (ustawienie wst\u0119pne urz\u0105dzenia) / Stochastyczne (SuperSplat) / Sortowane (klasyczne)",
        "scope": "global",
        "apply": "live",
        "keys": [],
        "advanced": false,
        "preset": false,
        "options": [
-        "Automatycznie (na komputerze stochastyczne)",
+        "Automatycznie (ustawienie wst\u0119pne urz\u0105dzenia)",
         "Stochastyczne (SuperSplat)",
         "Sortowane (klasyczne)"
        ],
@@ -4428,23 +4474,46 @@
       {
        "id": "display.budget",
        "label": "Bud\u017cet splat\u00f3w",
-       "help": "Ile milion\u00f3w splat\u00f3w skan mo\u017ce narysowa\u0107 najwy\u017cej. Automatycznie bierze ?budget= z linku, wyb\u00f3r w\u0142a\u015bciciela sceny albo to, co pasuje temu urz\u0105dzeniu. ?budget= z linku jest respektowane przy otwarciu sceny; wyb\u00f3r tutaj podczas lotu wygrywa w tej scenie. Wi\u0119cej splat\u00f3w to ostrzej i wolniej; regulator jako\u015bci i tak go obni\u017ca, gdy gubione s\u0105 klatki.",
+       "help": "Ile milion\u00f3w splat\u00f3w skan mo\u017ce narysowa\u0107 najwy\u017cej. Automatycznie bierze ?budget= z linku, wyb\u00f3r w\u0142a\u015bciciela sceny albo ustawienie wst\u0119pne tego urz\u0105dzenia (zobacz wiersz Renderowanie). ?budget= z linku jest respektowane przy otwarciu sceny; wyb\u00f3r tutaj podczas lotu wygrywa w tej scenie. Wi\u0119cej splat\u00f3w to ostrzej i wolniej; regulator jako\u015bci i tak go obni\u017ca, gdy gubione s\u0105 klatki.",
        "type": "enum",
-       "default": "Automatycznie (link, scena lub urz\u0105dzenie)",
-       "range": "Automatycznie (link, scena lub urz\u0105dzenie) / 1 mln splat\u00f3w / 2 mln splat\u00f3w / 4 mln splat\u00f3w / 8 mln splat\u00f3w / 16 mln splat\u00f3w / 32 mln splat\u00f3w",
+       "default": "Automatycznie (link, scena lub ustawienie wst\u0119pne)",
+       "range": "Automatycznie (link, scena lub ustawienie wst\u0119pne) / 1 mln splat\u00f3w / 2 mln splat\u00f3w / 4 mln splat\u00f3w / 8 mln splat\u00f3w / 16 mln splat\u00f3w / 32 mln splat\u00f3w",
        "scope": "global",
        "apply": "live",
        "keys": [],
        "advanced": false,
        "preset": false,
        "options": [
-        "Automatycznie (link, scena lub urz\u0105dzenie)",
+        "Automatycznie (link, scena lub ustawienie wst\u0119pne)",
         "1 mln splat\u00f3w",
         "2 mln splat\u00f3w",
         "4 mln splat\u00f3w",
         "8 mln splat\u00f3w",
         "16 mln splat\u00f3w",
         "32 mln splat\u00f3w"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "display.deviceClass",
+       "label": "Klasa urz\u0105dzenia",
+       "help": "Za jakie urz\u0105dzenie ustawienia wst\u0119pne rysowania uznaj\u0105 to. Automatycznie rozpoznaje je po przegl\u0105darce (karta graficzna, pami\u0119\u0107, rdzenie procesora, ekran dotykowy i rozmiar ekranu); gdy zgadnie \u017ale, podaj klas\u0119 sam, na przyk\u0142ad laptop, kt\u00f3ry powinien rysowa\u0107 jak mocny komputer. Klasa wyznacza ustawienie wst\u0119pne, kt\u00f3re znaczy Automatycznie w Renderowaniu i Bud\u017cecie splat\u00f3w: rysowanie, bud\u017cet splat\u00f3w i rozdzielczo\u015b\u0107. Renderowanie i Bud\u017cet splat\u00f3w nadal mo\u017cesz ustawi\u0107 r\u0119cznie.",
+       "type": "enum",
+       "default": "Automatycznie (rozpoznane po przegl\u0105darce)",
+       "range": "Automatycznie (rozpoznane po przegl\u0105darce) / Komputer lub laptop, mocna grafika / Komputer lub laptop, s\u0142aba grafika / Tablet / Telefon",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Automatycznie (rozpoznane po przegl\u0105darce)",
+        "Komputer lub laptop, mocna grafika",
+        "Komputer lub laptop, s\u0142aba grafika",
+        "Tablet",
+        "Telefon"
        ],
        "shown": [
         "settings"
@@ -6426,17 +6495,17 @@
       {
        "id": "display.drawing",
        "label": "\u0420\u0435\u043d\u0434\u0435\u0440",
-       "help": "\u041a\u0430\u043a \u0440\u0438\u0441\u0443\u0435\u0442\u0441\u044f \u0441\u043a\u0430\u043d. \u00ab\u0410\u0432\u0442\u043e\u00bb: \u0441\u0442\u043e\u0445\u0430\u0441\u0442\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u043e\u0442\u0440\u0438\u0441\u043e\u0432\u043a\u0430 SuperSplat \u0432 \u0431\u0440\u0430\u0443\u0437\u0435\u0440\u0435 \u043d\u0430 \u043a\u043e\u043c\u043f\u044c\u044e\u0442\u0435\u0440\u0435 \u0441 WebGPU, \u043a\u043b\u0430\u0441\u0441\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u0441\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u0430\u044f \u2014 \u043d\u0430 \u0442\u0435\u043b\u0435\u0444\u043e\u043d\u0430\u0445, \u043f\u043b\u0430\u043d\u0448\u0435\u0442\u0430\u0445 \u0438 \u0431\u0435\u0437 WebGPU, \u0435\u0441\u043b\u0438 \u0441\u0441\u044b\u043b\u043a\u0430 \u0441\u0446\u0435\u043d\u044b \u0438\u043b\u0438 \u0435\u0451 \u0432\u043b\u0430\u0434\u0435\u043b\u0435\u0446 \u043d\u0435 \u043f\u0440\u043e\u0441\u044f\u0442 \u0434\u0440\u0443\u0433\u0443\u044e. \u00ab\u0421\u0442\u043e\u0445\u0430\u0441\u0442\u0438\u0447\u0435\u0441\u043a\u0430\u044f\u00bb \u043d\u0435 \u0441\u043e\u0440\u0442\u0438\u0440\u0443\u0435\u0442 \u0441\u043f\u043b\u0430\u0442\u044b \u0438 \u043e\u0441\u0442\u0430\u0432\u043b\u044f\u0435\u0442 \u043c\u0435\u043b\u043a\u043e\u0435 \u0437\u0435\u0440\u043d\u043e. \u00ab\u0421\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u0430\u044f\u00bb \u2014 \u043a\u043b\u0430\u0441\u0441\u0438\u0447\u0435\u0441\u043a\u0430\u044f, \u0433\u043b\u0430\u0434\u043a\u0430\u044f. \u0421\u0441\u044b\u043b\u043a\u0430 \u0441 ?stochastic (\u0438\u043b\u0438 ?stochastic=0) \u0432\u044b\u043f\u043e\u043b\u043d\u044f\u0435\u0442\u0441\u044f \u043f\u0440\u0438 \u043e\u0442\u043a\u0440\u044b\u0442\u0438\u0438 \u0441\u0446\u0435\u043d\u044b; \u0432\u044b\u0431\u043e\u0440 \u0437\u0434\u0435\u0441\u044c \u0432\u043e \u0432\u0440\u0435\u043c\u044f \u043f\u043e\u043b\u0451\u0442\u0430 \u0433\u043b\u0430\u0432\u043d\u0435\u0435 \u0434\u043b\u044f \u044d\u0442\u043e\u0439 \u0441\u0446\u0435\u043d\u044b. \u0421\u0442\u043e\u0445\u0430\u0441\u0442\u0438\u0447\u0435\u0441\u043a\u043e\u0439 \u043d\u0443\u0436\u0435\u043d WebGPU \u0432 \u0431\u0440\u0430\u0443\u0437\u0435\u0440\u0435 \u043d\u0430 \u043a\u043e\u043c\u043f\u044c\u044e\u0442\u0435\u0440\u0435.",
+       "help": "\u041a\u0430\u043a \u0440\u0438\u0441\u0443\u0435\u0442\u0441\u044f \u0441\u043a\u0430\u043d. \u00ab\u0410\u0432\u0442\u043e\u00bb: \u043f\u0440\u0435\u0441\u0435\u0442 \u0432\u0430\u0448\u0435\u0433\u043e \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0430 (\u0441\u0442\u0440\u043e\u043a\u0430 \u043f\u043e\u0434 \u044d\u0442\u043e\u0439 \u0433\u043e\u0432\u043e\u0440\u0438\u0442, \u043a\u0430\u043a\u043e\u0439 \u0432\u044b\u0431\u0440\u0430\u043d), \u043e\u0431\u044b\u0447\u043d\u043e \u043a\u043b\u0430\u0441\u0441\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u0441\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u0430\u044f \u043e\u0442\u0440\u0438\u0441\u043e\u0432\u043a\u0430 \u2014 \u0433\u043b\u0430\u0434\u043a\u0430\u044f, \u0441\u043e\u0445\u0440\u0430\u043d\u044f\u0435\u0442 \u0434\u0435\u0442\u0430\u043b\u0438 \u0441\u043a\u0430\u043d\u0430; \u0432\u043b\u0430\u0434\u0435\u043b\u0435\u0446 \u0441\u0430\u0439\u0442\u0430 \u043c\u043e\u0436\u0435\u0442 \u043c\u0435\u043d\u044f\u0442\u044c \u043f\u0440\u0435\u0441\u0435\u0442\u044b. \u00ab\u0421\u0442\u043e\u0445\u0430\u0441\u0442\u0438\u0447\u0435\u0441\u043a\u0430\u044f\u00bb \u043d\u0435 \u0441\u043e\u0440\u0442\u0438\u0440\u0443\u0435\u0442 \u0441\u043f\u043b\u0430\u0442\u044b \u0438 \u043e\u0441\u0442\u0430\u0432\u043b\u044f\u0435\u0442 \u043c\u0435\u043b\u043a\u043e\u0435 \u0437\u0435\u0440\u043d\u043e: \u044d\u0442\u043e \u043e\u0434\u0438\u043d \u0448\u0443\u043c\u043d\u044b\u0439 \u043e\u0442\u0441\u0447\u0451\u0442 \u043d\u0430 \u043f\u0438\u043a\u0441\u0435\u043b\u044c, \u043f\u043e\u044d\u0442\u043e\u043c\u0443 \u0432 \u043f\u043e\u043c\u0435\u0449\u0435\u043d\u0438\u044f\u0445 \u043e\u043d\u0430 \u043c\u043e\u0436\u0435\u0442 \u0432\u044b\u0433\u043b\u044f\u0434\u0435\u0442\u044c \u0433\u0440\u0443\u0431\u043e. \u00ab\u0421\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u0430\u044f\u00bb \u2014 \u043a\u043b\u0430\u0441\u0441\u0438\u0447\u0435\u0441\u043a\u0430\u044f, \u0433\u043b\u0430\u0434\u043a\u0430\u044f. \u0421\u0441\u044b\u043b\u043a\u0430 \u0441 ?stochastic (\u0438\u043b\u0438 ?stochastic=0) \u0432\u044b\u043f\u043e\u043b\u043d\u044f\u0435\u0442\u0441\u044f \u043f\u0440\u0438 \u043e\u0442\u043a\u0440\u044b\u0442\u0438\u0438 \u0441\u0446\u0435\u043d\u044b; \u0432\u044b\u0431\u043e\u0440 \u0437\u0434\u0435\u0441\u044c \u0432\u043e \u0432\u0440\u0435\u043c\u044f \u043f\u043e\u043b\u0451\u0442\u0430 \u0433\u043b\u0430\u0432\u043d\u0435\u0435 \u0434\u043b\u044f \u044d\u0442\u043e\u0439 \u0441\u0446\u0435\u043d\u044b. \u0421\u0442\u043e\u0445\u0430\u0441\u0442\u0438\u0447\u0435\u0441\u043a\u043e\u0439 \u043d\u0443\u0436\u0435\u043d WebGPU \u0432 \u0431\u0440\u0430\u0443\u0437\u0435\u0440\u0435 \u043d\u0430 \u043a\u043e\u043c\u043f\u044c\u044e\u0442\u0435\u0440\u0435. \u0417\u0430\u043f\u0438\u0441\u044c \u0438 \u044d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432\u0438\u0434\u0435\u043e \u0432\u0441\u0435\u0433\u0434\u0430 \u0440\u0438\u0441\u0443\u044e\u0442 \u0441\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u043e.",
        "type": "enum",
-       "default": "\u0410\u0432\u0442\u043e (\u043d\u0430 \u043a\u043e\u043c\u043f\u044c\u044e\u0442\u0435\u0440\u0435 \u0441\u0442\u043e\u0445\u0430\u0441\u0442\u0438\u0447\u0435\u0441\u043a\u0430\u044f)",
-       "range": "\u0410\u0432\u0442\u043e (\u043d\u0430 \u043a\u043e\u043c\u043f\u044c\u044e\u0442\u0435\u0440\u0435 \u0441\u0442\u043e\u0445\u0430\u0441\u0442\u0438\u0447\u0435\u0441\u043a\u0430\u044f) / \u0421\u0442\u043e\u0445\u0430\u0441\u0442\u0438\u0447\u0435\u0441\u043a\u0430\u044f (SuperSplat) / \u0421\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u0430\u044f (\u043a\u043b\u0430\u0441\u0441\u0438\u0447\u0435\u0441\u043a\u0430\u044f)",
+       "default": "\u0410\u0432\u0442\u043e (\u043f\u0440\u0435\u0441\u0435\u0442 \u044d\u0442\u043e\u0433\u043e \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0430)",
+       "range": "\u0410\u0432\u0442\u043e (\u043f\u0440\u0435\u0441\u0435\u0442 \u044d\u0442\u043e\u0433\u043e \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0430) / \u0421\u0442\u043e\u0445\u0430\u0441\u0442\u0438\u0447\u0435\u0441\u043a\u0430\u044f (SuperSplat) / \u0421\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u0430\u044f (\u043a\u043b\u0430\u0441\u0441\u0438\u0447\u0435\u0441\u043a\u0430\u044f)",
        "scope": "global",
        "apply": "live",
        "keys": [],
        "advanced": false,
        "preset": false,
        "options": [
-        "\u0410\u0432\u0442\u043e (\u043d\u0430 \u043a\u043e\u043c\u043f\u044c\u044e\u0442\u0435\u0440\u0435 \u0441\u0442\u043e\u0445\u0430\u0441\u0442\u0438\u0447\u0435\u0441\u043a\u0430\u044f)",
+        "\u0410\u0432\u0442\u043e (\u043f\u0440\u0435\u0441\u0435\u0442 \u044d\u0442\u043e\u0433\u043e \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0430)",
         "\u0421\u0442\u043e\u0445\u0430\u0441\u0442\u0438\u0447\u0435\u0441\u043a\u0430\u044f (SuperSplat)",
         "\u0421\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u0430\u044f (\u043a\u043b\u0430\u0441\u0441\u0438\u0447\u0435\u0441\u043a\u0430\u044f)"
        ],
@@ -6448,23 +6517,46 @@
       {
        "id": "display.budget",
        "label": "\u0411\u044e\u0434\u0436\u0435\u0442 \u0441\u043f\u043b\u0430\u0442\u043e\u0432",
-       "help": "\u0421\u043a\u043e\u043b\u044c\u043a\u043e \u043c\u0438\u043b\u043b\u0438\u043e\u043d\u043e\u0432 \u0441\u043f\u043b\u0430\u0442\u043e\u0432 \u0441\u043a\u0430\u043d \u043c\u043e\u0436\u0435\u0442 \u0440\u0438\u0441\u043e\u0432\u0430\u0442\u044c \u0441\u0430\u043c\u043e\u0435 \u0431\u043e\u043b\u044c\u0448\u0435\u0435. \u00ab\u0410\u0432\u0442\u043e\u00bb \u0431\u0435\u0440\u0451\u0442 ?budget= \u0438\u0437 \u0441\u0441\u044b\u043b\u043a\u0438, \u0432\u044b\u0431\u043e\u0440 \u0432\u043b\u0430\u0434\u0435\u043b\u044c\u0446\u0430 \u0441\u0446\u0435\u043d\u044b \u0438\u043b\u0438 \u0442\u043e, \u0447\u0442\u043e \u043f\u043e\u0434\u0445\u043e\u0434\u0438\u0442 \u044d\u0442\u043e\u043c\u0443 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0443. ?budget= \u0438\u0437 \u0441\u0441\u044b\u043b\u043a\u0438 \u0432\u044b\u043f\u043e\u043b\u043d\u044f\u0435\u0442\u0441\u044f \u043f\u0440\u0438 \u043e\u0442\u043a\u0440\u044b\u0442\u0438\u0438 \u0441\u0446\u0435\u043d\u044b; \u0432\u044b\u0431\u043e\u0440 \u0437\u0434\u0435\u0441\u044c \u0432\u043e \u0432\u0440\u0435\u043c\u044f \u043f\u043e\u043b\u0451\u0442\u0430 \u0433\u043b\u0430\u0432\u043d\u0435\u0435 \u0434\u043b\u044f \u044d\u0442\u043e\u0439 \u0441\u0446\u0435\u043d\u044b. \u0411\u043e\u043b\u044c\u0448\u0435 \u0441\u043f\u043b\u0430\u0442\u043e\u0432 \u2014 \u0447\u0451\u0442\u0447\u0435 \u0438 \u043c\u0435\u0434\u043b\u0435\u043d\u043d\u0435\u0435; \u0440\u0435\u0433\u0443\u043b\u044f\u0442\u043e\u0440 \u043a\u0430\u0447\u0435\u0441\u0442\u0432\u0430 \u0432\u0441\u0451 \u0440\u0430\u0432\u043d\u043e \u0441\u043d\u0438\u0436\u0430\u0435\u0442 \u0431\u044e\u0434\u0436\u0435\u0442, \u0435\u0441\u043b\u0438 \u043a\u0430\u0434\u0440\u044b \u0442\u0435\u0440\u044f\u044e\u0442\u0441\u044f.",
+       "help": "\u0421\u043a\u043e\u043b\u044c\u043a\u043e \u043c\u0438\u043b\u043b\u0438\u043e\u043d\u043e\u0432 \u0441\u043f\u043b\u0430\u0442\u043e\u0432 \u0441\u043a\u0430\u043d \u043c\u043e\u0436\u0435\u0442 \u0440\u0438\u0441\u043e\u0432\u0430\u0442\u044c \u0441\u0430\u043c\u043e\u0435 \u0431\u043e\u043b\u044c\u0448\u0435\u0435. \u00ab\u0410\u0432\u0442\u043e\u00bb \u0431\u0435\u0440\u0451\u0442 ?budget= \u0438\u0437 \u0441\u0441\u044b\u043b\u043a\u0438, \u0432\u044b\u0431\u043e\u0440 \u0432\u043b\u0430\u0434\u0435\u043b\u044c\u0446\u0430 \u0441\u0446\u0435\u043d\u044b \u0438\u043b\u0438 \u043f\u0440\u0435\u0441\u0435\u0442 \u044d\u0442\u043e\u0433\u043e \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0430 (\u0441\u043c. \u0441\u0442\u0440\u043e\u043a\u0443 \u00ab\u0420\u0435\u043d\u0434\u0435\u0440\u00bb). ?budget= \u0438\u0437 \u0441\u0441\u044b\u043b\u043a\u0438 \u0432\u044b\u043f\u043e\u043b\u043d\u044f\u0435\u0442\u0441\u044f \u043f\u0440\u0438 \u043e\u0442\u043a\u0440\u044b\u0442\u0438\u0438 \u0441\u0446\u0435\u043d\u044b; \u0432\u044b\u0431\u043e\u0440 \u0437\u0434\u0435\u0441\u044c \u0432\u043e \u0432\u0440\u0435\u043c\u044f \u043f\u043e\u043b\u0451\u0442\u0430 \u0433\u043b\u0430\u0432\u043d\u0435\u0435 \u0434\u043b\u044f \u044d\u0442\u043e\u0439 \u0441\u0446\u0435\u043d\u044b. \u0411\u043e\u043b\u044c\u0448\u0435 \u0441\u043f\u043b\u0430\u0442\u043e\u0432 \u2014 \u0447\u0451\u0442\u0447\u0435 \u0438 \u043c\u0435\u0434\u043b\u0435\u043d\u043d\u0435\u0435; \u0440\u0435\u0433\u0443\u043b\u044f\u0442\u043e\u0440 \u043a\u0430\u0447\u0435\u0441\u0442\u0432\u0430 \u0432\u0441\u0451 \u0440\u0430\u0432\u043d\u043e \u0441\u043d\u0438\u0436\u0430\u0435\u0442 \u0431\u044e\u0434\u0436\u0435\u0442, \u0435\u0441\u043b\u0438 \u043a\u0430\u0434\u0440\u044b \u0442\u0435\u0440\u044f\u044e\u0442\u0441\u044f.",
        "type": "enum",
-       "default": "\u0410\u0432\u0442\u043e (\u0441\u0441\u044b\u043b\u043a\u0430, \u0441\u0446\u0435\u043d\u0430 \u0438\u043b\u0438 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e)",
-       "range": "\u0410\u0432\u0442\u043e (\u0441\u0441\u044b\u043b\u043a\u0430, \u0441\u0446\u0435\u043d\u0430 \u0438\u043b\u0438 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e) / 1 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432 / 2 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432 / 4 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432 / 8 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432 / 16 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432 / 32 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432",
+       "default": "\u0410\u0432\u0442\u043e (\u0441\u0441\u044b\u043b\u043a\u0430, \u0441\u0446\u0435\u043d\u0430 \u0438\u043b\u0438 \u043f\u0440\u0435\u0441\u0435\u0442)",
+       "range": "\u0410\u0432\u0442\u043e (\u0441\u0441\u044b\u043b\u043a\u0430, \u0441\u0446\u0435\u043d\u0430 \u0438\u043b\u0438 \u043f\u0440\u0435\u0441\u0435\u0442) / 1 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432 / 2 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432 / 4 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432 / 8 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432 / 16 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432 / 32 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432",
        "scope": "global",
        "apply": "live",
        "keys": [],
        "advanced": false,
        "preset": false,
        "options": [
-        "\u0410\u0432\u0442\u043e (\u0441\u0441\u044b\u043b\u043a\u0430, \u0441\u0446\u0435\u043d\u0430 \u0438\u043b\u0438 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e)",
+        "\u0410\u0432\u0442\u043e (\u0441\u0441\u044b\u043b\u043a\u0430, \u0441\u0446\u0435\u043d\u0430 \u0438\u043b\u0438 \u043f\u0440\u0435\u0441\u0435\u0442)",
         "1 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432",
         "2 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432",
         "4 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432",
         "8 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432",
         "16 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432",
         "32 \u043c\u043b\u043d \u0441\u043f\u043b\u0430\u0442\u043e\u0432"
+       ],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "display.deviceClass",
+       "label": "\u041a\u043b\u0430\u0441\u0441 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0430",
+       "help": "\u0417\u0430 \u043a\u0430\u043a\u043e\u0435 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e \u043f\u0440\u0435\u0441\u0435\u0442\u044b \u043e\u0442\u0440\u0438\u0441\u043e\u0432\u043a\u0438 \u0441\u0430\u0439\u0442\u0430 \u043f\u0440\u0438\u043d\u0438\u043c\u0430\u044e\u0442 \u044d\u0442\u043e. \u00ab\u0410\u0432\u0442\u043e\u00bb \u043e\u043f\u0440\u0435\u0434\u0435\u043b\u044f\u0435\u0442 \u043f\u043e \u0431\u0440\u0430\u0443\u0437\u0435\u0440\u0443 (\u0432\u0438\u0434\u0435\u043e\u0430\u0434\u0430\u043f\u0442\u0435\u0440, \u043f\u0430\u043c\u044f\u0442\u044c, \u044f\u0434\u0440\u0430 \u043f\u0440\u043e\u0446\u0435\u0441\u0441\u043e\u0440\u0430, \u0441\u0435\u043d\u0441\u043e\u0440\u043d\u044b\u0439 \u044d\u043a\u0440\u0430\u043d \u0438 \u0440\u0430\u0437\u043c\u0435\u0440 \u044d\u043a\u0440\u0430\u043d\u0430); \u0435\u0441\u043b\u0438 \u0443\u0433\u0430\u0434\u0430\u043b \u043d\u0435\u0432\u0435\u0440\u043d\u043e, \u043d\u0430\u0437\u043e\u0432\u0438\u0442\u0435 \u043a\u043b\u0430\u0441\u0441 \u0441\u0430\u043c\u0438, \u043d\u0430\u043f\u0440\u0438\u043c\u0435\u0440 \u043d\u043e\u0443\u0442\u0431\u0443\u043a, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u0434\u043e\u043b\u0436\u0435\u043d \u0440\u0438\u0441\u043e\u0432\u0430\u0442\u044c \u043a\u0430\u043a \u043c\u043e\u0449\u043d\u044b\u0439 \u043a\u043e\u043c\u043f\u044c\u044e\u0442\u0435\u0440. \u041a\u043b\u0430\u0441\u0441 \u0437\u0430\u0434\u0430\u0451\u0442 \u043f\u0440\u0435\u0441\u0435\u0442, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u0437\u043d\u0430\u0447\u0438\u0442 \u00ab\u0410\u0432\u0442\u043e\u00bb \u0432 \u00ab\u0420\u0435\u043d\u0434\u0435\u0440\u00bb \u0438 \u00ab\u0411\u044e\u0434\u0436\u0435\u0442 \u0441\u043f\u043b\u0430\u0442\u043e\u0432\u00bb: \u043e\u0442\u0440\u0438\u0441\u043e\u0432\u043a\u0430, \u0431\u044e\u0434\u0436\u0435\u0442 \u0441\u043f\u043b\u0430\u0442\u043e\u0432 \u0438 \u0440\u0430\u0437\u0440\u0435\u0448\u0435\u043d\u0438\u0435. \u00ab\u0420\u0435\u043d\u0434\u0435\u0440\u00bb \u0438 \u00ab\u0411\u044e\u0434\u0436\u0435\u0442 \u0441\u043f\u043b\u0430\u0442\u043e\u0432\u00bb \u043f\u043e-\u043f\u0440\u0435\u0436\u043d\u0435\u043c\u0443 \u043c\u043e\u0436\u043d\u043e \u0437\u0430\u0434\u0430\u0442\u044c \u0432\u0440\u0443\u0447\u043d\u0443\u044e.",
+       "type": "enum",
+       "default": "\u0410\u0432\u0442\u043e (\u043e\u043f\u0440\u0435\u0434\u0435\u043b\u0435\u043d\u043e \u043f\u043e \u0431\u0440\u0430\u0443\u0437\u0435\u0440\u0443)",
+       "range": "\u0410\u0432\u0442\u043e (\u043e\u043f\u0440\u0435\u0434\u0435\u043b\u0435\u043d\u043e \u043f\u043e \u0431\u0440\u0430\u0443\u0437\u0435\u0440\u0443) / \u041a\u043e\u043c\u043f\u044c\u044e\u0442\u0435\u0440 \u0438\u043b\u0438 \u043d\u043e\u0443\u0442\u0431\u0443\u043a, \u043c\u043e\u0449\u043d\u0430\u044f \u0433\u0440\u0430\u0444\u0438\u043a\u0430 / \u041a\u043e\u043c\u043f\u044c\u044e\u0442\u0435\u0440 \u0438\u043b\u0438 \u043d\u043e\u0443\u0442\u0431\u0443\u043a, \u0441\u043b\u0430\u0431\u0430\u044f \u0433\u0440\u0430\u0444\u0438\u043a\u0430 / \u041f\u043b\u0430\u043d\u0448\u0435\u0442 / \u0422\u0435\u043b\u0435\u0444\u043e\u043d",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "\u0410\u0432\u0442\u043e (\u043e\u043f\u0440\u0435\u0434\u0435\u043b\u0435\u043d\u043e \u043f\u043e \u0431\u0440\u0430\u0443\u0437\u0435\u0440\u0443)",
+        "\u041a\u043e\u043c\u043f\u044c\u044e\u0442\u0435\u0440 \u0438\u043b\u0438 \u043d\u043e\u0443\u0442\u0431\u0443\u043a, \u043c\u043e\u0449\u043d\u0430\u044f \u0433\u0440\u0430\u0444\u0438\u043a\u0430",
+        "\u041a\u043e\u043c\u043f\u044c\u044e\u0442\u0435\u0440 \u0438\u043b\u0438 \u043d\u043e\u0443\u0442\u0431\u0443\u043a, \u0441\u043b\u0430\u0431\u0430\u044f \u0433\u0440\u0430\u0444\u0438\u043a\u0430",
+        "\u041f\u043b\u0430\u043d\u0448\u0435\u0442",
+        "\u0422\u0435\u043b\u0435\u0444\u043e\u043d"
        ],
        "shown": [
         "settings"

@@ -232,7 +232,7 @@ export class SceneHost implements SceneSwitcher {
             wallsOn: wallsWanted(ctx.prefs, id),
             transform: storedTransform(ctx.prefs, id),
             dropFloaters: storedDropFloaters(ctx.prefs, id),
-            drawing: (webgpu) => drawingFor(ctx.prefs, ref, webgpu),
+            drawing: (webgpu, gpu) => drawingFor(ctx.prefs, ref, webgpu, gpu),
             ceilingM: storedCeiling(ctx.prefs, id),
             wind: windFor(ctx.prefs, id, meta),
             // the gusts go on with the same seed in the next scene

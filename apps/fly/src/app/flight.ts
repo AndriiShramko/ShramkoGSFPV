@@ -185,7 +185,7 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
             lagFrames: Number(q.get('lagFrames') ?? 0),
             renderScale: q.get('scale') ? Number(q.get('scale')) : 1,
             // asked once the renderer's device exists (a WebGL fallback gets the default budget)
-            drawing: (webgpu) => drawingFor(prefs, sceneRef, webgpu),
+            drawing: (webgpu, gpu) => drawingFor(prefs, sceneRef, webgpu, gpu),
             flyNow,
             onProgress: (p) => {
                 loading.update(p);

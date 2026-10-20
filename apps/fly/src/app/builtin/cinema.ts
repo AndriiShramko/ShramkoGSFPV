@@ -20,6 +20,7 @@
 import { h } from '../../ui/dom';
 import { t } from '../../i18n';
 import { q } from '../env';
+import { cleanDraw } from '../clean-draw';
 import { authorNotice, sceneSource, videoCredit } from '../../scene-facts';
 import { sceneCredit } from './scene';
 import { openFlightShare } from './share';
@@ -77,7 +78,14 @@ export const cinema: Feature = {
             prefs: ctx.prefs,
             canvas,
             scene: () => ({ id: ctx.scene.id, credit: creditOf() }),
-            autoRespawn: () => autoRespawnShipped(ctx.prefs)
+            autoRespawn: () => autoRespawnShipped(ctx.prefs),
+            // v0.10: while a recording runs the scan is drawn sorted, the clean picture; say so once when that changes what the pilot sees
+            cleanDraw: () => {
+                const grain = ctx.renderer.stochastic;
+                const release = cleanDraw.acquire();
+                if (grain) ctx.hud.flash(t('drawing.rec.clean'), 4000);
+                return release;
+            }
         });
         let note = '';
         /** test only, the control of the stamping fix: frames stamped when their work ended (before W4-1) */

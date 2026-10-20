@@ -22,6 +22,7 @@ import { applyCamera, applyModel, bridgeVoxels, modelDiffers, pilotSet } from '.
 import { floatersRow } from './floaters';
 import { ceilingRow } from './ceiling';
 import { windRow } from './wind';
+import { drawingRow } from './drawing-row';
 import { switchesRow } from './switches';
 import { tuneRow } from './tune';
 import { droneRow } from './drone';
@@ -126,6 +127,8 @@ export function openSettings(ctx: FlightContext, focus: string | null = null): v
             if (id === 'scene.dropFloaters') return floatersRow(ctx, () => current?.close());
             if (id === 'scene.ceiling') return ceilingRow(ctx, () => current?.close());
             if (id === 'wind.mode') return windRow(ctx);
+            // v0.10 lane R: which class of device this is and what Auto draws with, under the Render row
+            if (id === 'display.drawing') return drawingRow(ctx);
             if (id === 'input.stickMode') return switchesRow(ctx, () => current?.close());
             // v0.8: help us tune this drone (app/builtin/tune.ts) under the drone
             // v0.9 lane D: and a picture of the drone above it (app/builtin/drone.ts droneRow)

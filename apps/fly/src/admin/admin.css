@@ -235,3 +235,22 @@ table.data tr.is-bad td.first { background: var(--bad-bg); box-shadow: inset 3px
     .filters select { flex: 1 1 140px; max-width: none; }
     table.data .first { min-width: 120px; max-width: 150px; }
 }
+/* The Drawing tab (v0.10): one preset per class of device, the order of who decides, the scenes' own entries. */
+.presets { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.preset-row { display: grid; grid-template-columns: minmax(190px, 1.5fr) minmax(150px, 1fr) minmax(150px, .9fr) minmax(110px, .7fr) auto; gap: 6px 12px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.preset-row.preset-head { background: transparent; border-color: transparent; color: var(--muted); font-size: 13px; padding-top: 0; padding-bottom: 0; }
+.preset-row.is-changed { border-color: rgba(251,191,36,.55); }
+.preset-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.preset-actions { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.preset-mark { color: var(--warn); font-size: 13px; }
+.preset-builtin { grid-column: 1 / -1; }
+.preset-row input[type="number"] { width: 92px; }
+.preset-row input[aria-invalid="true"] { border-color: var(--bad); }
+.order { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 4px; }
+.row-main select, .row-main input[type="number"] { flex: none; }
+.row-main input[type="number"] { width: 92px; }
+@media (max-width: 760px) {
+    .preset-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .preset-row.preset-head { display: none; }
+    .preset-name, .preset-builtin, .preset-actions { grid-column: 1 / -1; }
+}

@@ -1,10 +1,10 @@
 // What says how a scene is drawn, read from the page's state (v0.9 lane R, items 7 and 13). The pure half of
-// app/drawing.ts, with no `location` and no `navigator`, so it runs in Node tests: the pilot's two Display settings
-// (Render, Splat budget), the scene's link less what the pilot overrode while flying it, the owner's entry, and
-// the F3 line. @gsfpv/render-pc drawing.ts resolveDrawing holds the order: link > the pilot's settings > the
-// owner's entry > the device.
-import { pilotBudgetM } from '@gsfpv/render-pc';
-import type { Drawing, DrawingAsk, DrawingMode } from '@gsfpv/render-pc';
+// app/drawing.ts, with no `location` and no `navigator`, so it runs in Node tests: the pilot's Display settings
+// (Render, Splat budget, Device class), the scene's link less what the pilot overrode while flying it, the owner's
+// entry, and the F3 line. @gsfpv/render-pc drawing.ts resolveDrawing holds the order: link > the pilot's settings >
+// the owner's entry > the device's class preset.
+import { DEVICE_CLASSES, pilotBudgetM } from '@gsfpv/render-pc';
+import type { DeviceClass, DeviceReading, Drawing, DrawingAsk, DrawingMode, DrawingPreset } from '@gsfpv/render-pc';
 import type { SceneRender } from '@gsfpv/scenes';
 
 /** The part of a prefs store this reads (PrefsStore.get). */
@@ -25,6 +25,26 @@ export function drawingMode(prefs: PrefsReader): DrawingMode {
 /** The pilot's Display setting Splat budget, millions; undefined = auto (or anything unknown). */
 export function drawingBudget(prefs: PrefsReader): number | undefined {
     return pilotBudgetM(prefs.get<string>('display.budget'));
+}
+
+/** The pilot's Display setting Device class: a class he named, or undefined for auto (and for anything unknown). */
+export function deviceClassSetting(prefs: PrefsReader): DeviceClass | undefined {
+    const v = prefs.get<string>('display.deviceClass');
+    return (DEVICE_CLASSES as readonly string[]).includes(v) ? (v as DeviceClass) : undefined;
+}
+
+/** The class this page treats the device as: the pilot's own naming over what the browser says. */
+export interface DeviceChoice {
+    cls: DeviceClass;
+    /** what the browser says (render-pc classifyDevice), whatever the pilot named */
+    auto: DeviceReading;
+    /** the pilot named the class (Settings -> Display -> Device class) */
+    picked: boolean;
+}
+
+export function chooseDevice(prefs: PrefsReader, auto: DeviceReading): DeviceChoice {
+    const named = deviceClassSetting(prefs);
+    return { cls: named ?? auto.cls, auto, picked: named !== undefined };
 }
 
 /**
@@ -65,11 +85,46 @@ export function askFor(prefs: PrefsReader, scene: AskedScene): DrawingAsk {
  * The F3 line about the drawing: what it is and who decided it ("Render: stochastic (this device) · budget
  * 8 M splats (the link)"), the answer to "is it on, and why" that the owner could not get in v0.7.
  */
-export function drawingLine(d: Drawing, say: (key: string, vars?: Record<string, string | number>) => string): string {
+export function drawingLine(d: Drawing, say: (key: string, vars?: Record<string, string | number>) => string, held = false): string {
+    // a recording (REC, auto-record) draws sorted while it runs (app/clean-draw.ts): the line says so, not what Auto would draw
     return say('drawing.line', {
-        mode: say(`drawing.mode.${d.stochastic ? 'stochastic' : 'sorted'}`),
-        modeFrom: say(`drawing.from.${d.from.stochastic}`),
+        mode: say(`drawing.mode.${d.stochastic && !held ? 'stochastic' : 'sorted'}`),
+        modeFrom: say(held && d.stochastic ? 'drawing.from.rec' : `drawing.from.${d.from.stochastic}`),
         budget: Math.round(d.budgetM * 100) / 100,
-        budgetFrom: say(`drawing.from.${d.from.budget}`)
+        budgetFrom: say(`drawing.from.${d.from.budget}`),
+        device: say(`drawing.class.${d.deviceClass}`)
     });
+}
+
+/** What the Render row's live line (Settings -> Display) tells: the class this device is and what Auto draws with. */
+export interface DeviceLineInput {
+    /** the class in use (the pilot's naming over the browser's reading) */
+    choice: DeviceChoice;
+    /** the preset of that class: the owner's fields over the built-in ones */
+    preset: DrawingPreset;
+    /** the device can draw stochastic (desktop WebGPU): a preset that says stochastic on a phone draws sorted */
+    canStochastic: boolean;
+    /** a short name for the GPU ("nvidia lovelace"); empty when the browser hides it */
+    gpu: string;
+    /** the owner changed a field of this class's preset in the admin */
+    ownerChanged: boolean;
+    /** a recording runs: the picture is sorted until it stops */
+    held: boolean;
+}
+
+/** The line and the notes under the Render row: "This device: desktop, strong graphics (nvidia lovelace). Auto draws sorted, up to 4 M splats, at 100 % of the screen's resolution." */
+export function deviceLine(i: DeviceLineInput, say: (key: string, vars?: Record<string, string | number>) => string): { line: string; notes: string[] } {
+    const stochastic = i.preset.drawing === 'stochastic' && i.canStochastic;
+    const line = say('drawing.row.line', {
+        device: say(`drawing.class.${i.choice.cls}`),
+        gpu: i.gpu ? say('drawing.row.gpu', { gpu: i.gpu }) : '',
+        mode: say(`drawing.mode.${stochastic ? 'stochastic' : 'sorted'}`),
+        budget: Math.round(i.preset.budgetM * 100) / 100,
+        scale: Math.round(i.preset.renderScale * 100)
+    });
+    const notes: string[] = [];
+    if (i.choice.picked) notes.push(say('drawing.row.picked', { auto: say(`drawing.class.${i.choice.auto.cls}`) }));
+    if (i.ownerChanged) notes.push(say('drawing.row.owner'));
+    if (i.held) notes.push(say('drawing.row.held'));
+    return { line, notes };
 }
