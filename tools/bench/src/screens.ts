@@ -139,7 +139,7 @@ const PANEL: Record<string, PanelSpec> = {
     'wizard-arm': { sel: '.wz-steps, .wz-head, .wz-live, .wz-stage, .wz-extra', maxW: 1200, pad: 0.05 },
     'wizard-check': { sel: '.wz-steps, .wz-head, .wz-live, .wz-stage, .wz-extra', maxW: 1200, pad: 0.05 },
     'arm-card': { sel: '.arm-card:not(.hidden)', minW: 620 },
-    keys: { sel: '.key-card:not(.hidden)', minW: 700 },
+    keys: { sel: '[data-testid="how-to-fly"]', minW: 700 },
     walls: { sel: '[data-testid="walls-more"]', minW: 700 },
     crash: { sel: '.crash-overlay', extra: [MID], maxW: 1100, pad: 0.05 }
 };
@@ -491,7 +491,8 @@ const flows: Record<string, (b: Browser) => Promise<void>> = {
         await page.goto(fly(`scene=887f27aa&refine=offer&${DESK_Q}`));
         await ready(page);
         await page.click('[data-action="radio-keyboard"]');
-        await page.locator('.key-card:not(.hidden)').waitFor({ timeout: 10000 });
+        // v0.10: the How to fly card opens by itself once the keyboard is chosen (this page is not a ?nowarn test page)
+        await page.locator('[data-testid="how-to-fly"]').waitFor({ timeout: 10000 });
         await until(page, 'return h.walls ? h.walls.state : null;', (v) => v === 'offer' || v === 'none' || v === 'refused', 60000, 250);
         await page.waitForTimeout(2500);
         await snap(page, 'keys');
