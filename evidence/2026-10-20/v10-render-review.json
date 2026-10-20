@@ -1,0 +1,553 @@
+{
+  "name": "v10-render-review",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-20T18:57:37.574Z",
+    "gitHead": "55f424a",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "new": ".\\dist",
+  "base": null,
+  "pre": ".\\.cache\\dist-pre-review",
+  "pass": {
+    "R7": true
+  },
+  "checks": [
+    {
+      "name": "R7 a phone (class phone, preset 2 M) whose pilot sets Splat budget 8 M: the page draws up to 8 M, \"from your setting\", sorted, no note",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R7 control: the build before the review round drops the 8 M and keeps 2 M on the phone",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "R7 a tablet (class tablet, preset 2 M) whose pilot sets Splat budget 8 M: the page draws up to 8 M, \"from your setting\", sorted, no note",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R7 control: the build before the review round drops the 8 M and keeps 2 M on the tablet",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "R7 a desktop without WebGPU (class desktop-weak, preset 2.5 M) whose pilot sets Splat budget 8 M: the page draws up to 8 M, \"from your setting\", sorted, no note",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R7 control: the build before the review round drops the 8 M and keeps 2.5 M on the desktop without WebGPU",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "R7 a phone given a link's ?budget=8: refused (the phone's 2 M, the note says so); then the pilot sets 4 M: his number wins over the link",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R7 a phone that sends a desktop user agent ({\"ua\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWeb\",\"mobile\":false,\"touch\":5,\"screen\":[412,915]}) is a phone: class phone (reason small-touch-screen), sorted, 2 M, resolution capped at 70 % (canvas 577 px, 577 expected)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R7 it never draws stochastic: the pilot choosing Stochastic is refused and the HUD says so (setting-handheld)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R7 control: the build before the review round takes the same device for a strong desktop (class desktop-strong, 4 M, scale 1) and lets it draw stochastic when asked",
+      "ok": true,
+      "control": true
+    }
+  ],
+  "items": {
+    "build": {
+      "new": ".\\dist",
+      "base": null,
+      "pre": ".\\.cache\\dist-pre-review"
+    },
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "R7": {
+      "phone": {
+        "now": {
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": 8,
+            "request": null,
+            "catalogue": null,
+            "stochastic": false,
+            "budgetM": 8,
+            "from": {
+              "stochastic": "device",
+              "budget": "setting"
+            },
+            "note": null,
+            "engineStochastic": false,
+            "engineBudgetM": 8,
+            "handheld": true,
+            "mobile": true,
+            "webgpu": true,
+            "class": "phone",
+            "classAuto": "phone",
+            "classReasons": [
+              "phone"
+            ],
+            "classPicked": false,
+            "renderScale": 0.7,
+            "presetRenderScale": 0.7,
+            "owner": null,
+            "held": false,
+            "gpu": {
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": "",
+              "description": "",
+              "isFallback": false,
+              "maxBufferSize": 2147483648
+            }
+          },
+          "top": 8
+        },
+        "pre": {
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": 8,
+            "request": null,
+            "catalogue": null,
+            "stochastic": false,
+            "budgetM": 2,
+            "from": {
+              "stochastic": "device",
+              "budget": "device"
+            },
+            "note": null,
+            "engineStochastic": false,
+            "engineBudgetM": 2,
+            "handheld": true,
+            "mobile": true,
+            "webgpu": true,
+            "class": "phone",
+            "classAuto": "phone",
+            "classReasons": [
+              "phone"
+            ],
+            "classPicked": false,
+            "renderScale": 0.7,
+            "presetRenderScale": 0.7,
+            "owner": null,
+            "held": false,
+            "gpu": {
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": "",
+              "description": "",
+              "isFallback": false,
+              "maxBufferSize": 2147483648
+            }
+          },
+          "top": 2
+        }
+      },
+      "tablet": {
+        "now": {
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": 8,
+            "request": null,
+            "catalogue": null,
+            "stochastic": false,
+            "budgetM": 8,
+            "from": {
+              "stochastic": "device",
+              "budget": "setting"
+            },
+            "note": null,
+            "engineStochastic": false,
+            "engineBudgetM": 8,
+            "handheld": true,
+            "mobile": true,
+            "webgpu": true,
+            "class": "tablet",
+            "classAuto": "tablet",
+            "classReasons": [
+              "tablet"
+            ],
+            "classPicked": false,
+            "renderScale": 0.85,
+            "presetRenderScale": 0.85,
+            "owner": null,
+            "held": false,
+            "gpu": {
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": "",
+              "description": "",
+              "isFallback": false,
+              "maxBufferSize": 2147483648
+            }
+          },
+          "top": 8
+        },
+        "pre": {
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": 8,
+            "request": null,
+            "catalogue": null,
+            "stochastic": false,
+            "budgetM": 2,
+            "from": {
+              "stochastic": "device",
+              "budget": "device"
+            },
+            "note": null,
+            "engineStochastic": false,
+            "engineBudgetM": 2,
+            "handheld": true,
+            "mobile": true,
+            "webgpu": true,
+            "class": "tablet",
+            "classAuto": "tablet",
+            "classReasons": [
+              "tablet"
+            ],
+            "classPicked": false,
+            "renderScale": 0.85,
+            "presetRenderScale": 0.85,
+            "owner": null,
+            "held": false,
+            "gpu": {
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": "",
+              "description": "",
+              "isFallback": false,
+              "maxBufferSize": 2147483648
+            }
+          },
+          "top": 2
+        }
+      },
+      "desktop without WebGPU": {
+        "now": {
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": 8,
+            "request": null,
+            "catalogue": null,
+            "stochastic": false,
+            "budgetM": 8,
+            "from": {
+              "stochastic": "device",
+              "budget": "setting"
+            },
+            "note": null,
+            "engineStochastic": false,
+            "engineBudgetM": 8,
+            "handheld": false,
+            "mobile": false,
+            "webgpu": false,
+            "class": "desktop-weak",
+            "classAuto": "desktop-weak",
+            "classReasons": [
+              "no-webgpu"
+            ],
+            "classPicked": false,
+            "renderScale": 0.85,
+            "presetRenderScale": 0.85,
+            "owner": null,
+            "held": false,
+            "gpu": null
+          },
+          "top": 8
+        },
+        "pre": {
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": 8,
+            "request": null,
+            "catalogue": null,
+            "stochastic": false,
+            "budgetM": 2.5,
+            "from": {
+              "stochastic": "device",
+              "budget": "device"
+            },
+            "note": null,
+            "engineStochastic": false,
+            "engineBudgetM": 2.5,
+            "handheld": false,
+            "mobile": false,
+            "webgpu": false,
+            "class": "desktop-weak",
+            "classAuto": "desktop-weak",
+            "classReasons": [
+              "no-webgpu"
+            ],
+            "classPicked": false,
+            "renderScale": 0.85,
+            "presetRenderScale": 0.85,
+            "owner": null,
+            "held": false,
+            "gpu": null
+          },
+          "top": 2.5
+        }
+      },
+      "phoneLink": {
+        "link": {
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": null,
+            "request": {
+              "budgetM": 8
+            },
+            "catalogue": null,
+            "stochastic": false,
+            "budgetM": 2,
+            "from": {
+              "stochastic": "device",
+              "budget": "device"
+            },
+            "note": "budget-handheld",
+            "engineStochastic": false,
+            "engineBudgetM": 2,
+            "handheld": true,
+            "mobile": true,
+            "webgpu": true,
+            "class": "phone",
+            "classAuto": "phone",
+            "classReasons": [
+              "phone"
+            ],
+            "classPicked": false,
+            "renderScale": 0.7,
+            "presetRenderScale": 0.7,
+            "owner": null,
+            "held": false,
+            "gpu": {
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": "",
+              "description": "",
+              "isFallback": false,
+              "maxBufferSize": 2147483648
+            }
+          },
+          "top": 2,
+          "note": "This scene asks for 8 M splats, a budget for desktop browsers. On this device it draws at most 2 M."
+        },
+        "withSetting": {
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": 4,
+            "request": null,
+            "catalogue": null,
+            "stochastic": false,
+            "budgetM": 4,
+            "from": {
+              "stochastic": "device",
+              "budget": "setting"
+            },
+            "note": null,
+            "engineStochastic": false,
+            "engineBudgetM": 4,
+            "handheld": true,
+            "mobile": true,
+            "webgpu": true,
+            "class": "phone",
+            "classAuto": "phone",
+            "classReasons": [
+              "phone"
+            ],
+            "classPicked": false,
+            "renderScale": 0.7,
+            "presetRenderScale": 0.7,
+            "owner": null,
+            "held": false,
+            "gpu": {
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": "",
+              "description": "",
+              "isFallback": false,
+              "maxBufferSize": 2147483648
+            }
+          },
+          "top": 4
+        }
+      },
+      "desktopSitePhone": {
+        "device": {
+          "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWeb",
+          "mobile": false,
+          "touch": 5,
+          "screen": [
+            412,
+            915
+          ]
+        },
+        "now": {
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": null,
+            "request": null,
+            "catalogue": null,
+            "stochastic": false,
+            "budgetM": 2,
+            "from": {
+              "stochastic": "device",
+              "budget": "device"
+            },
+            "note": null,
+            "engineStochastic": false,
+            "engineBudgetM": 2,
+            "handheld": true,
+            "mobile": false,
+            "webgpu": true,
+            "class": "phone",
+            "classAuto": "phone",
+            "classReasons": [
+              "small-touch-screen"
+            ],
+            "classPicked": false,
+            "renderScale": 0.7,
+            "presetRenderScale": 0.7,
+            "owner": null,
+            "held": false,
+            "gpu": {
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": "",
+              "description": "",
+              "isFallback": false,
+              "maxBufferSize": 2147483648
+            }
+          },
+          "scale": 0.7,
+          "canvas": [
+            577,
+            1281
+          ],
+          "css": [
+            412,
+            915
+          ],
+          "dpr": 2.0000000596046448,
+          "asked": {
+            "drawing": {
+              "scene": "39e63ce9",
+              "mode": "stochastic",
+              "budgetSetting": null,
+              "request": null,
+              "catalogue": null,
+              "stochastic": false,
+              "budgetM": 2,
+              "from": {
+                "stochastic": "device",
+                "budget": "device"
+              },
+              "note": "setting-handheld",
+              "engineStochastic": false,
+              "engineBudgetM": 2,
+              "handheld": true,
+              "mobile": false,
+              "webgpu": true,
+              "class": "phone",
+              "classAuto": "phone",
+              "classReasons": [
+                "small-touch-screen"
+              ],
+              "classPicked": false,
+              "renderScale": 0.7,
+              "presetRenderScale": 0.7,
+              "owner": null,
+              "held": false,
+              "gpu": {
+                "vendor": "nvidia",
+                "architecture": "lovelace",
+                "device": "",
+                "description": "",
+                "isFallback": false,
+                "maxBufferSize": 2147483648
+              }
+            },
+            "engine": false
+          }
+        },
+        "pre": {
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": null,
+            "request": null,
+            "catalogue": null,
+            "stochastic": false,
+            "budgetM": 4,
+            "from": {
+              "stochastic": "device",
+              "budget": "device"
+            },
+            "note": null,
+            "engineStochastic": false,
+            "engineBudgetM": 4,
+            "handheld": false,
+            "mobile": false,
+            "webgpu": true,
+            "class": "desktop-strong",
+            "classAuto": "desktop-strong",
+            "classReasons": [
+              "strong"
+            ],
+            "classPicked": false,
+            "renderScale": 1,
+            "presetRenderScale": 1,
+            "owner": null,
+            "held": false,
+            "gpu": {
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": "",
+              "description": "",
+              "isFallback": false,
+              "maxBufferSize": 2147483648
+            }
+          },
+          "top": 4,
+          "scale": 1,
+          "asked": {
+            "engine": true
+          }
+        }
+      }
+    },
+    "apiLogHasPassword": false
+  },
+  "failed": null
+}

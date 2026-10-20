@@ -1,8 +1,10 @@
 // Render quality: the frame governor holds the display's frame rate, the settings' quality slider is
 // its ceiling, and cinema mode renders at full detail with the governor off. ?governor=0 switches the
 // governor off for a load (tests); the test hook's setFrameDelay burns CPU in each frame to simulate
-// an overload mid-flight. The top splat budget is 4 M unless the scene's link asks for another one
-// (v0.7 lane R, app/drawing.ts): setTopBudget moves the governor's steps, the slider and cinema with it.
+// an overload mid-flight. The top splat budget is the device class's preset (4 M on a strong desktop) unless
+// the scene's link, the pilot's setting or the scene's entry asks for another one (v0.7 lane R, app/drawing.ts):
+// setTopBudget moves the governor's steps, the slider and cinema with it. The preset's top render scale
+// (v0.10, setPresetScale) caps the resolution the governor lowers from: a phone starts at 70 % of its pixels.
 import { FrameGovernor } from '@gsfpv/render-pc';
 import type { SplatRenderer } from '@gsfpv/render-pc';
 import { q } from './env';
@@ -14,6 +16,8 @@ export class Quality {
     readonly governor = new FrameGovernor();
     private renderer: SplatRenderer;
     private userMaxScale: number;
+    /** the device class preset's top render scale (setPresetScale); 1 = every pixel */
+    private presetScale = 1;
     /** the settings' quality, 0 (stable frame) .. 1 (detail) */
     private userQuality = 1;
     private cinemaOn = false;
@@ -63,6 +67,22 @@ export class Quality {
         if (this.governor.setTopBudget(m)) this.apply();
     }
 
+    /**
+     * The top render scale of this device's class preset (render-pc presets.ts renderScale): the resolution never
+     * goes above it, the governor lowers it from there. Cinema mode (full detail) ignores it, like the budget.
+     */
+    setPresetScale(scale: number): void {
+        const s = Math.max(0.1, Math.min(1, scale));
+        if (s === this.presetScale) return;
+        this.presetScale = s;
+        this.apply();
+    }
+
+    /** The preset's top render scale now (the test hook and the settings line read it). */
+    get presetRenderScale(): number {
+        return this.presetScale;
+    }
+
     setFrameDelay(ms: number): void {
         this.frameDelay = Math.max(0, Math.min(200, ms));
     }
@@ -75,7 +95,7 @@ export class Quality {
             return;
         }
         const st = this.governor.current;
-        r.setRenderScale(Math.min(this.userMaxScale, st.renderScale));
+        r.setRenderScale(Math.min(this.userMaxScale, this.presetScale, st.renderScale));
         r.setSplatBudgetMillions(Math.min(this.settingBudgetMillions, st.splatBudgetMillions));
     }
 

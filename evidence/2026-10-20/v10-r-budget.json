@@ -1,0 +1,196 @@
+{
+  "site": "http://localhost:5493",
+  "size": [
+    1280,
+    720
+  ],
+  "budgets": [
+    2,
+    4,
+    8,
+    16
+  ],
+  "ref": 16,
+  "scenes": {
+    "7a475d38": [
+      {
+        "budgetM": 2,
+        "bytesMB": 130.5,
+        "loadedMs": 41724,
+        "drawnM": 2,
+        "complete": true,
+        "stable": true,
+        "gpuMsP50": 0.59,
+        "vsRef": {
+          "psnrMean": 28.65,
+          "psnrMin": 25.82,
+          "ssimMean": 0.922
+        }
+      },
+      {
+        "budgetM": 4,
+        "bytesMB": 222,
+        "loadedMs": 44277,
+        "drawnM": 4,
+        "complete": true,
+        "stable": true,
+        "gpuMsP50": 0.79,
+        "vsRef": {
+          "psnrMean": 33.38,
+          "psnrMin": 28.8,
+          "ssimMean": 0.963
+        }
+      },
+      {
+        "budgetM": 8,
+        "bytesMB": 366.2,
+        "loadedMs": 48125,
+        "drawnM": 8,
+        "complete": true,
+        "stable": true,
+        "gpuMsP50": 0.98,
+        "vsRef": {
+          "psnrMean": 39.23,
+          "psnrMin": 33.89,
+          "ssimMean": 0.987
+        }
+      },
+      {
+        "budgetM": 16,
+        "bytesMB": 246.8,
+        "loadedMs": 46086,
+        "drawnM": 15.4,
+        "complete": true,
+        "stable": true,
+        "gpuMsP50": 1.44,
+        "vsRef": {
+          "psnrMean": 99,
+          "psnrMin": 99,
+          "ssimMean": 1
+        }
+      }
+    ],
+    "ba7aa29d": [
+      {
+        "budgetM": 2,
+        "bytesMB": 238.3,
+        "loadedMs": 48463,
+        "drawnM": 2,
+        "complete": true,
+        "stable": true,
+        "gpuMsP50": 0.59,
+        "vsRef": {
+          "psnrMean": 29.9,
+          "psnrMin": 28.23,
+          "ssimMean": 0.87
+        }
+      },
+      {
+        "budgetM": 4,
+        "bytesMB": 410.9,
+        "loadedMs": 56504,
+        "drawnM": 3.9,
+        "complete": true,
+        "stable": true,
+        "gpuMsP50": 0.85,
+        "vsRef": {
+          "psnrMean": 33.17,
+          "psnrMin": 31.24,
+          "ssimMean": 0.934
+        }
+      },
+      {
+        "budgetM": 8,
+        "bytesMB": 702.5,
+        "loadedMs": 88677,
+        "drawnM": 7.8,
+        "complete": true,
+        "stable": true,
+        "gpuMsP50": 1.18,
+        "vsRef": {
+          "psnrMean": 38.72,
+          "psnrMin": 35.62,
+          "ssimMean": 0.978
+        }
+      },
+      {
+        "budgetM": 16,
+        "bytesMB": 998.9,
+        "loadedMs": 111458,
+        "drawnM": 15.6,
+        "complete": true,
+        "stable": true,
+        "gpuMsP50": 2.1,
+        "vsRef": {
+          "psnrMean": 99,
+          "psnrMin": 99,
+          "ssimMean": 1
+        }
+      }
+    ],
+    "2f1ddf5f": [
+      {
+        "budgetM": 2,
+        "bytesMB": 108.9,
+        "loadedMs": 58218,
+        "drawnM": 2,
+        "complete": true,
+        "stable": true,
+        "gpuMsP50": 1.51,
+        "vsRef": {
+          "psnrMean": 24.11,
+          "psnrMin": 23.45,
+          "ssimMean": 0.812
+        }
+      },
+      {
+        "budgetM": 4,
+        "bytesMB": 176.5,
+        "loadedMs": 55260,
+        "drawnM": 3.9,
+        "complete": true,
+        "stable": true,
+        "gpuMsP50": 2.1,
+        "vsRef": {
+          "psnrMean": 26.25,
+          "psnrMin": 25.71,
+          "ssimMean": 0.872
+        }
+      },
+      {
+        "budgetM": 8,
+        "bytesMB": 289.2,
+        "loadedMs": 59658,
+        "drawnM": 7.9,
+        "complete": true,
+        "stable": true,
+        "gpuMsP50": 3.6,
+        "vsRef": {
+          "psnrMean": 29.51,
+          "psnrMin": 29.29,
+          "ssimMean": 0.933
+        }
+      },
+      {
+        "budgetM": 16,
+        "bytesMB": 521.6,
+        "loadedMs": 83494,
+        "drawnM": 15.8,
+        "complete": true,
+        "stable": true,
+        "gpuMsP50": 5.64,
+        "vsRef": {
+          "psnrMean": 99,
+          "psnrMin": 99,
+          "ssimMean": 1
+        }
+      }
+    ]
+  },
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  }
+}

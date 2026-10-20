@@ -14,7 +14,7 @@ import { linkSettings, mirrorWarned, openPagePrefs, prefsHook } from './prefs';
 import { applyShared, beginSharedVisit } from './shared-visit';
 import { openSettingsLink, storageBanner } from './builtin/settings';
 import { useStoreLibrary } from './scene-host';
-import { pageRender } from './drawing';
+import { pageRender, setDrawingDefaults } from './drawing';
 
 export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<void> {
     if (!hasWebGPU) banner(ui, t('banner.noWebgpu'), 'no-webgpu');
@@ -22,6 +22,8 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
     // the owner's published catalogue (/api/catalog), else the release's static list
     const catalog = await loadCatalog();
     const showcase = catalog.scenes;
+    // v0.10 lane R: the owner's drawing defaults (the device presets of the admin's Drawing tab), before any scene opens
+    setDrawingDefaults(catalog.drawing);
     // the curated scans are the store's per-scan defaults (the walls switch), so it opens after them
     // `defaults`: the owner's size for scenes the picker does not list (hidden), so a link to one opens at it too
     const prefs = openPagePrefs(showcase, q.toString(), { defaults: catalog.defaults });

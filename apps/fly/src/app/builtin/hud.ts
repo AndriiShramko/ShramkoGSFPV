@@ -6,6 +6,7 @@ import { t } from '../../i18n';
 import type { Feature } from '../context';
 import { lodLine, lodReport } from '../lod';
 import { drawingFor, drawingLine } from '../drawing';
+import { cleanDraw } from '../clean-draw';
 
 export const hud: Feature = {
     id: 'hud',
@@ -34,7 +35,7 @@ export const hud: Feature = {
             if (!h.frameStatsShown || now - lastDetail < 250) return;
             lastDetail = now;
             h.setDetailLine(ctx.renderer.splatVisible ? lodLine(lodReport(ctx), t) : null);
-            h.setDrawingLine(ctx.renderer.splatVisible ? drawingLine(drawingFor(ctx.prefs, ctx.scene, ctx.renderer.isWebGPU), t) : null);
+            h.setDrawingLine(ctx.renderer.splatVisible ? drawingLine(drawingFor(ctx.prefs, ctx.scene, ctx.renderer.isWebGPU, ctx.renderer.gpuInfo), t, cleanDraw.held) : null);
         });
     }
 };

@@ -1,0 +1,908 @@
+{
+  "site": "http://localhost:5493",
+  "avg": 64,
+  "scenes": {
+    "224aba38": {
+      "size": [
+        1280,
+        720
+      ],
+      "variants": {
+        "engine": [
+          {
+            "yaw": 0,
+            "single": {
+              "psnr": 15.71,
+              "ssim": 0.196
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 15.7,
+                "ssim": 0.201
+              },
+              {
+                "frames": 4,
+                "psnr": 17.05,
+                "ssim": 0.385
+              },
+              {
+                "frames": 16,
+                "psnr": 17.52,
+                "ssim": 0.55
+              },
+              {
+                "frames": 64,
+                "psnr": 17.64,
+                "ssim": 0.625
+              }
+            ],
+            "meanChannelDelta": [
+              34.8,
+              25.86,
+              15.58
+            ]
+          },
+          {
+            "yaw": 90,
+            "single": {
+              "psnr": 17.71,
+              "ssim": 0.321
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 17.72,
+                "ssim": 0.321
+              },
+              {
+                "frames": 4,
+                "psnr": 19.95,
+                "ssim": 0.5
+              },
+              {
+                "frames": 16,
+                "psnr": 20.74,
+                "ssim": 0.623
+              },
+              {
+                "frames": 64,
+                "psnr": 20.98,
+                "ssim": 0.677
+              }
+            ],
+            "meanChannelDelta": [
+              15.5,
+              12.09,
+              9.31
+            ]
+          }
+        ],
+        "linear": [
+          {
+            "yaw": 0,
+            "single": {
+              "psnr": 13.98,
+              "ssim": 0.101
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 14.14,
+                "ssim": 0.103
+              },
+              {
+                "frames": 4,
+                "psnr": 20.13,
+                "ssim": 0.291
+              },
+              {
+                "frames": 16,
+                "psnr": 25.94,
+                "ssim": 0.582
+              },
+              {
+                "frames": 64,
+                "psnr": 31.35,
+                "ssim": 0.827
+              }
+            ],
+            "meanChannelDelta": [
+              -2.69,
+              -1.51,
+              -0.18
+            ]
+          },
+          {
+            "yaw": 90,
+            "single": {
+              "psnr": 15.65,
+              "ssim": 0.259
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 15.92,
+                "ssim": 0.273
+              },
+              {
+                "frames": 4,
+                "psnr": 21.89,
+                "ssim": 0.503
+              },
+              {
+                "frames": 16,
+                "psnr": 27.37,
+                "ssim": 0.736
+              },
+              {
+                "frames": 64,
+                "psnr": 32.43,
+                "ssim": 0.892
+              }
+            ],
+            "meanChannelDelta": [
+              -1.88,
+              -1.62,
+              -0.91
+            ]
+          }
+        ],
+        "hash": [
+          {
+            "yaw": 0,
+            "single": {
+              "psnr": 16.77,
+              "ssim": 0.418
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 16.77,
+                "ssim": 0.418
+              },
+              {
+                "frames": 4,
+                "psnr": 16.77,
+                "ssim": 0.418
+              },
+              {
+                "frames": 16,
+                "psnr": 16.77,
+                "ssim": 0.418
+              },
+              {
+                "frames": 64,
+                "psnr": 16.77,
+                "ssim": 0.418
+              }
+            ],
+            "meanChannelDelta": [
+              18.81,
+              13.68,
+              11.63
+            ]
+          },
+          {
+            "yaw": 90,
+            "single": {
+              "psnr": 18.24,
+              "ssim": 0.4
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 18.24,
+                "ssim": 0.4
+              },
+              {
+                "frames": 4,
+                "psnr": 18.24,
+                "ssim": 0.401
+              },
+              {
+                "frames": 16,
+                "psnr": 18.24,
+                "ssim": 0.401
+              },
+              {
+                "frames": 64,
+                "psnr": 18.24,
+                "ssim": 0.401
+              }
+            ],
+            "meanChannelDelta": [
+              5.57,
+              5.22,
+              6.63
+            ]
+          }
+        ]
+      },
+      "sortedChannelMeans": [
+        102.65,
+        75.09,
+        43.01
+      ],
+      "chunkRestored": true
+    },
+    "39e63ce9": {
+      "size": [
+        1280,
+        720
+      ],
+      "variants": {
+        "engine": [
+          {
+            "yaw": 0,
+            "single": {
+              "psnr": 19.68,
+              "ssim": 0.678
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 19.6,
+                "ssim": 0.678
+              },
+              {
+                "frames": 4,
+                "psnr": 22.48,
+                "ssim": 0.802
+              },
+              {
+                "frames": 16,
+                "psnr": 23.76,
+                "ssim": 0.878
+              },
+              {
+                "frames": 64,
+                "psnr": 24.15,
+                "ssim": 0.909
+              }
+            ],
+            "meanChannelDelta": [
+              -1.88,
+              -1.86,
+              -1.09
+            ]
+          },
+          {
+            "yaw": 90,
+            "single": {
+              "psnr": 21.47,
+              "ssim": 0.497
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 21.42,
+                "ssim": 0.497
+              },
+              {
+                "frames": 4,
+                "psnr": 24.91,
+                "ssim": 0.65
+              },
+              {
+                "frames": 16,
+                "psnr": 26.58,
+                "ssim": 0.791
+              },
+              {
+                "frames": 64,
+                "psnr": 27.16,
+                "ssim": 0.877
+              }
+            ],
+            "meanChannelDelta": [
+              0.22,
+              -0.72,
+              -1.28
+            ]
+          }
+        ],
+        "linear": [
+          {
+            "yaw": 0,
+            "single": {
+              "psnr": 21.31,
+              "ssim": 0.674
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 21.36,
+                "ssim": 0.683
+              },
+              {
+                "frames": 4,
+                "psnr": 27.17,
+                "ssim": 0.824
+              },
+              {
+                "frames": 16,
+                "psnr": 32.61,
+                "ssim": 0.926
+              },
+              {
+                "frames": 64,
+                "psnr": 36.8,
+                "ssim": 0.969
+              }
+            ],
+            "meanChannelDelta": [
+              0.18,
+              0.18,
+              0.3
+            ]
+          },
+          {
+            "yaw": 90,
+            "single": {
+              "psnr": 23.31,
+              "ssim": 0.507
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 23.55,
+                "ssim": 0.523
+              },
+              {
+                "frames": 4,
+                "psnr": 29.39,
+                "ssim": 0.697
+              },
+              {
+                "frames": 16,
+                "psnr": 34.42,
+                "ssim": 0.852
+              },
+              {
+                "frames": 64,
+                "psnr": 38.43,
+                "ssim": 0.941
+              }
+            ],
+            "meanChannelDelta": [
+              0.16,
+              0.07,
+              0.24
+            ]
+          }
+        ],
+        "hash": [
+          {
+            "yaw": 0,
+            "single": {
+              "psnr": 18.61,
+              "ssim": 0.748
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 18.61,
+                "ssim": 0.748
+              },
+              {
+                "frames": 4,
+                "psnr": 18.61,
+                "ssim": 0.748
+              },
+              {
+                "frames": 16,
+                "psnr": 18.62,
+                "ssim": 0.748
+              },
+              {
+                "frames": 64,
+                "psnr": 18.62,
+                "ssim": 0.748
+              }
+            ],
+            "meanChannelDelta": [
+              -1.03,
+              -0.84,
+              0.84
+            ]
+          },
+          {
+            "yaw": 90,
+            "single": {
+              "psnr": 18.86,
+              "ssim": 0.773
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 18.86,
+                "ssim": 0.773
+              },
+              {
+                "frames": 4,
+                "psnr": 18.86,
+                "ssim": 0.773
+              },
+              {
+                "frames": 16,
+                "psnr": 18.86,
+                "ssim": 0.773
+              },
+              {
+                "frames": 64,
+                "psnr": 18.86,
+                "ssim": 0.773
+              }
+            ],
+            "meanChannelDelta": [
+              0.84,
+              -3.01,
+              -5.06
+            ]
+          }
+        ]
+      },
+      "sortedChannelMeans": [
+        137.21,
+        134,
+        127.8
+      ],
+      "chunkRestored": true
+    },
+    "7a475d38": {
+      "size": [
+        1280,
+        720
+      ],
+      "variants": {
+        "engine": [
+          {
+            "yaw": 0,
+            "single": {
+              "psnr": 16.44,
+              "ssim": 0.424
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 16.39,
+                "ssim": 0.421
+              },
+              {
+                "frames": 4,
+                "psnr": 19.68,
+                "ssim": 0.607
+              },
+              {
+                "frames": 16,
+                "psnr": 21.25,
+                "ssim": 0.72
+              },
+              {
+                "frames": 64,
+                "psnr": 21.73,
+                "ssim": 0.763
+              }
+            ],
+            "meanChannelDelta": [
+              -0.63,
+              0.06,
+              -0.33
+            ]
+          },
+          {
+            "yaw": 90,
+            "single": {
+              "psnr": 16.07,
+              "ssim": 0.442
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 16.04,
+                "ssim": 0.439
+              },
+              {
+                "frames": 4,
+                "psnr": 19.38,
+                "ssim": 0.619
+              },
+              {
+                "frames": 16,
+                "psnr": 20.93,
+                "ssim": 0.718
+              },
+              {
+                "frames": 64,
+                "psnr": 21.44,
+                "ssim": 0.756
+              }
+            ],
+            "meanChannelDelta": [
+              -0.81,
+              -0.15,
+              -1.36
+            ]
+          }
+        ],
+        "linear": [
+          {
+            "yaw": 0,
+            "single": {
+              "psnr": 18.01,
+              "ssim": 0.506
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 18.09,
+                "ssim": 0.51
+              },
+              {
+                "frames": 4,
+                "psnr": 23.72,
+                "ssim": 0.748
+              },
+              {
+                "frames": 16,
+                "psnr": 28.45,
+                "ssim": 0.893
+              },
+              {
+                "frames": 64,
+                "psnr": 31.48,
+                "ssim": 0.952
+              }
+            ],
+            "meanChannelDelta": [
+              -0.81,
+              -0.87,
+              -0.58
+            ]
+          },
+          {
+            "yaw": 90,
+            "single": {
+              "psnr": 17.25,
+              "ssim": 0.515
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 17.44,
+                "ssim": 0.526
+              },
+              {
+                "frames": 4,
+                "psnr": 23.04,
+                "ssim": 0.761
+              },
+              {
+                "frames": 16,
+                "psnr": 27.55,
+                "ssim": 0.896
+              },
+              {
+                "frames": 64,
+                "psnr": 30.46,
+                "ssim": 0.953
+              }
+            ],
+            "meanChannelDelta": [
+              -0.29,
+              -0.41,
+              -0.18
+            ]
+          }
+        ],
+        "hash": [
+          {
+            "yaw": 0,
+            "single": {
+              "psnr": 13.89,
+              "ssim": 0.328
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 13.89,
+                "ssim": 0.328
+              },
+              {
+                "frames": 4,
+                "psnr": 13.89,
+                "ssim": 0.328
+              },
+              {
+                "frames": 16,
+                "psnr": 13.89,
+                "ssim": 0.328
+              },
+              {
+                "frames": 64,
+                "psnr": 13.89,
+                "ssim": 0.328
+              }
+            ],
+            "meanChannelDelta": [
+              -1.03,
+              1.09,
+              0.22
+            ]
+          },
+          {
+            "yaw": 90,
+            "single": {
+              "psnr": 13.59,
+              "ssim": 0.319
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 13.59,
+                "ssim": 0.319
+              },
+              {
+                "frames": 4,
+                "psnr": 13.59,
+                "ssim": 0.319
+              },
+              {
+                "frames": 16,
+                "psnr": 13.59,
+                "ssim": 0.319
+              },
+              {
+                "frames": 64,
+                "psnr": 13.59,
+                "ssim": 0.319
+              }
+            ],
+            "meanChannelDelta": [
+              -6.57,
+              -4.71,
+              -7.62
+            ]
+          }
+        ]
+      },
+      "sortedChannelMeans": [
+        93.86,
+        101.17,
+        85.32
+      ],
+      "chunkRestored": true
+    },
+    "ba7aa29d": {
+      "size": [
+        1280,
+        720
+      ],
+      "variants": {
+        "engine": [
+          {
+            "yaw": 0,
+            "single": {
+              "psnr": 22.57,
+              "ssim": 0.532
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 22.55,
+                "ssim": 0.532
+              },
+              {
+                "frames": 4,
+                "psnr": 26.28,
+                "ssim": 0.734
+              },
+              {
+                "frames": 16,
+                "psnr": 28.15,
+                "ssim": 0.834
+              },
+              {
+                "frames": 64,
+                "psnr": 28.75,
+                "ssim": 0.866
+              }
+            ],
+            "meanChannelDelta": [
+              1.31,
+              1.31,
+              1.42
+            ]
+          },
+          {
+            "yaw": 90,
+            "single": {
+              "psnr": 22.77,
+              "ssim": 0.533
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 22.76,
+                "ssim": 0.534
+              },
+              {
+                "frames": 4,
+                "psnr": 26.48,
+                "ssim": 0.733
+              },
+              {
+                "frames": 16,
+                "psnr": 28.28,
+                "ssim": 0.832
+              },
+              {
+                "frames": 64,
+                "psnr": 28.9,
+                "ssim": 0.866
+              }
+            ],
+            "meanChannelDelta": [
+              1.04,
+              1.12,
+              1.4
+            ]
+          }
+        ],
+        "linear": [
+          {
+            "yaw": 0,
+            "single": {
+              "psnr": 22.99,
+              "ssim": 0.524
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 23.09,
+                "ssim": 0.533
+              },
+              {
+                "frames": 4,
+                "psnr": 28.74,
+                "ssim": 0.774
+              },
+              {
+                "frames": 16,
+                "psnr": 33.5,
+                "ssim": 0.912
+              },
+              {
+                "frames": 64,
+                "psnr": 36.55,
+                "ssim": 0.961
+              }
+            ],
+            "meanChannelDelta": [
+              -0.2,
+              -0.17,
+              0.19
+            ]
+          },
+          {
+            "yaw": 90,
+            "single": {
+              "psnr": 22.75,
+              "ssim": 0.495
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 23.14,
+                "ssim": 0.522
+              },
+              {
+                "frames": 4,
+                "psnr": 28.81,
+                "ssim": 0.754
+              },
+              {
+                "frames": 16,
+                "psnr": 33.38,
+                "ssim": 0.895
+              },
+              {
+                "frames": 64,
+                "psnr": 36.49,
+                "ssim": 0.957
+              }
+            ],
+            "meanChannelDelta": [
+              -0.56,
+              -0.64,
+              -0.33
+            ]
+          }
+        ],
+        "hash": [
+          {
+            "yaw": 0,
+            "single": {
+              "psnr": 21.28,
+              "ssim": 0.557
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 21.28,
+                "ssim": 0.557
+              },
+              {
+                "frames": 4,
+                "psnr": 21.28,
+                "ssim": 0.557
+              },
+              {
+                "frames": 16,
+                "psnr": 21.28,
+                "ssim": 0.557
+              },
+              {
+                "frames": 64,
+                "psnr": 21.28,
+                "ssim": 0.557
+              }
+            ],
+            "meanChannelDelta": [
+              1.31,
+              1.34,
+              1.11
+            ]
+          },
+          {
+            "yaw": 90,
+            "single": {
+              "psnr": 21.45,
+              "ssim": 0.557
+            },
+            "converged": [
+              {
+                "frames": 1,
+                "psnr": 21.45,
+                "ssim": 0.557
+              },
+              {
+                "frames": 4,
+                "psnr": 21.47,
+                "ssim": 0.558
+              },
+              {
+                "frames": 16,
+                "psnr": 21.47,
+                "ssim": 0.559
+              },
+              {
+                "frames": 64,
+                "psnr": 21.47,
+                "ssim": 0.559
+              }
+            ],
+            "meanChannelDelta": [
+              0.98,
+              1.37,
+              1.59
+            ]
+          }
+        ]
+      },
+      "sortedChannelMeans": [
+        146.44,
+        137.95,
+        130.27
+      ],
+      "chunkRestored": true
+    }
+  },
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  }
+}

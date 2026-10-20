@@ -22,6 +22,11 @@
 //       fewer bytes than a stochastic grab of the same view, and the pilot's drawing is back right after.
 //       Control: the same view grabbed stochastic weighs well over the sorted grab (the measurement can tell).
 //   SITE=http://127.0.0.1:5391 BASE_SITE=http://127.0.0.1:5392 npx tsx src/accept-v09-render.ts [D1 D2 ...]
+// The device's DEFAULT drawing is the one thing here that v0.10 changed (stochastic on a desktop was withdrawn: sorted on every
+// class). The rows that depend on it (D1, D2, D4d, D6's starting drawing) expect the v0.10 default; V09_DEFAULTS=1 runs them
+// against a v0.9 build instead. Their BASE controls (the base build draws it sorted) name the v0.8 build and mean nothing
+// against v0.10: give BASE_SITE the same address as SITE and read the non-control rows. accept-v10-render.ts R1 and R2 are the
+// v0.10 acceptance of the default itself.
 // Evidence: evidence/<date>/v09-render.json; items run alone (EVIDENCE_DATE: the day of the file to add to) replace
 // their own entries in it and the others stay, as accept-v07-render.ts does.
 import { mkdirSync, rmdirSync, readFileSync, existsSync, writeFileSync } from 'node:fs';
@@ -100,7 +105,22 @@ function check(name: string, ok: boolean, control = false): boolean {
     console.log(`${ok ? 'ok  ' : 'FAIL'} ${control ? '[control] ' : ''}${name}`);
     return ok;
 }
+/**
+ * A control that names the BASE build (the v0.8 build before this lane's items): with BASE_SITE the same address as SITE (a build with no
+ * older sibling to compare with, the v0.10 live check) it says nothing and is skipped, not failed.
+ */
+const NO_BASE = BASE_SITE === SITE;
+function baseControl(name: string, ok: boolean): boolean {
+    if (NO_BASE) { console.log(`skip [control] ${name} (BASE_SITE is SITE)`); return true; }
+    return check(name, ok, true);
+}
 const stochasticOn = (st: Any): boolean => st.engine === true && st.hybrid?.stochastic === true && st.hybrid?.define === true && st.hybrid?.gpuSort === true;
+const sortedOn = (st: Any): boolean => st.engine === false && st.hybrid?.stochastic === false && st.hybrid?.define === false && st.hybrid?.gpuSort === true;
+/** The build under test still has the v0.9 default (stochastic on a desktop with WebGPU); unset: the v0.10 default (sorted). */
+const V09_DEFAULTS = process.env.V09_DEFAULTS === '1';
+/** What a desktop that nobody asked draws, in the engine and the shader. */
+const defaultOn = (st: Any): boolean => (V09_DEFAULTS ? stochasticOn(st) : sortedOn(st));
+const DEFAULT_WORD = V09_DEFAULTS ? 'stochastic' : 'sorted';
 
 const { browser, which } = await launchChrome({ headless: false, args: ['--window-position=40,40', '--window-size=1296,920'] });
 try {
@@ -111,10 +131,10 @@ try {
         const line = await f3(page);
         const base = await open(page, BASE_SITE, `scene=${A}`);
         out.D1 = { st, line, base, pageerrors: errors(log) };
-        const a = check('D1 desktop, no parameters: stochastic from the first frame (engine, hybrid renderer, its shader define)', st.status === 'ready' && stochasticOn(st));
+        const a = check(`D1 desktop, no parameters: ${DEFAULT_WORD} from the first frame (engine, hybrid renderer, its shader define)`, st.status === 'ready' && defaultOn(st));
         const b = check(`D1 at the measured default budget (${STOCHASTIC_BUDGET_M} M), decided by the device`, st.top === STOCHASTIC_BUDGET_M && st.drawing?.from?.stochastic === 'device' && st.drawing?.from?.budget === 'device' && st.drawing?.note === null);
-        const c = check('D1 the HUD says nothing about the drawing (a default is not news) and F3 says what draws and who decided', !/tochastic/.test(st.note) && /stochastic/.test(line) && /this device/.test(line) && new RegExp(`${STOCHASTIC_BUDGET_M} M`).test(line));
-        const d = check('D1 control: the base build draws the same scene sorted at 4 M', base.status === 'ready' && base.engine === false && base.top === DEFAULT_BUDGET_M, true);
+        const c = check('D1 the HUD says nothing about the drawing (a default is not news) and F3 says what draws and who decided', !/tochastic/.test(st.note) && new RegExp(DEFAULT_WORD).test(line) && /this device/.test(line) && new RegExp(`${STOCHASTIC_BUDGET_M} M`).test(line));
+        const d = baseControl('D1 control: the base build (v0.8) draws the same scene sorted at 4 M', base.status === 'ready' && base.engine === false && base.top === DEFAULT_BUDGET_M);
         pass.D1 = a && b && c && d && errors(log).length === 0;
         await ctx.close();
     }
@@ -125,9 +145,9 @@ try {
         const st = await open(page, SITE, `scene=${OPOLE}`);
         const base = await open(page, BASE_SITE, `scene=${OPOLE}`);
         out.D2 = { st, base, pageerrors: errors(log) };
-        const a = check('D2 a streamed scan (Opole): stochastic engaged in the engine and the shader, from the device', stochasticOn(st) && st.drawing?.from?.stochastic === 'device');
-        const b = check('D2 it is a levels-of-detail scan (more than one level) drawn under the stochastic budget', (st.levels ?? 0) > 1 && st.top === STOCHASTIC_BUDGET_M);
-        const c = check('D2 control: the base build draws it sorted', base.engine === false && base.hybrid?.define === false, true);
+        const a = check(`D2 a streamed scan (Opole): ${DEFAULT_WORD} in the engine and the shader, from the device`, defaultOn(st) && st.drawing?.from?.stochastic === 'device');
+        const b = check('D2 it is a levels-of-detail scan (more than one level) drawn under the desktop budget', (st.levels ?? 0) > 1 && st.top === STOCHASTIC_BUDGET_M);
+        const c = baseControl('D2 control: the base build draws it sorted', base.engine === false && base.hybrid?.define === false);
         pass.D2 = a && b && c && errors(log).length === 0;
         await ctx.close();
     }
@@ -153,12 +173,12 @@ try {
         // a. the pilot's setting beats the device default
         rows.settingSorted = await open(page, SITE, `scene=${A}&drawing=sorted`);
         rows.settingStochasticOnPhoneless = await open(page, SITE, `scene=${A}&drawing=stochastic`);
-        check('D4a the pilot\'s Render = Sorted beats the device default (stochastic)', rows.settingSorted.engine === false && rows.settingSorted.drawing?.from?.stochastic === 'setting' && rows.settingSorted.top === DEFAULT_BUDGET_M);
+        check('D4a the pilot\'s Render = Sorted is decided by the setting, not by the device default', rows.settingSorted.engine === false && rows.settingSorted.drawing?.from?.stochastic === 'setting' && rows.settingSorted.top === DEFAULT_BUDGET_M);
         // b. the link beats the setting (the base build obeys the setting: the control)
         rows.linkOverSetting = await open(page, SITE, `scene=${A}&drawing=sorted&budget=8&stochastic`);
         rows.base = await open(page, BASE_SITE, `scene=${A}&drawing=sorted&budget=8&stochastic`);
         check('D4b a stochastic link beats a Sorted setting (stochastic at 8 M, "from the link")', stochasticOn(rows.linkOverSetting) && rows.linkOverSetting.top === 8 && rows.linkOverSetting.drawing?.from?.stochastic === 'link');
-        check('D4b control: the base build lets the setting beat the link (sorted)', rows.base.engine === false, true);
+        baseControl('D4b control: the base build lets the setting beat the link (sorted)', rows.base.engine === false);
         // c. the pilot's change in flight beats the link for that scene; Auto hands over to the link again
         // (the page is on the BASE build after the control above: back to this build, on the link, first)
         await open(page, SITE, `scene=${A}&budget=8&stochastic`);
@@ -181,7 +201,7 @@ try {
         await hook(page, `h.prefs.set('display.budget', 'auto'); return 0;`);
         await sleep(500);
         rows.budgetAuto = await hook(page, STATE);
-        check('D4d the Splat budget setting: 2 M at once, stochastic stays, then Auto gives the default back', rows.budget2.top === 2 && rows.budget2.engine === true && rows.budgetAuto.top === STOCHASTIC_BUDGET_M && rows.budget2.drawing?.from?.budget === 'setting');
+        check('D4d the Splat budget setting: 2 M at once, the drawing stays as the device default, then Auto gives the default back', rows.budget2.top === 2 && defaultOn(rows.budget2) && rows.budgetAuto.top === STOCHASTIC_BUDGET_M && rows.budget2.drawing?.from?.budget === 'setting');
         // e. the owner's entry (a fake catalogue) beats the device, not the pilot, not the link
         const sorted = await context(browser, { catalog: catalogEntry({ stochastic: false, budgetM: 6 }) });
         rows.entrySorted = await open(sorted.page, SITE, `scene=${A}`);
@@ -235,7 +255,7 @@ try {
         rows.inFlightOverSorted = await hook(page, STATE);
         const overSorted = stochasticOn(rows.inFlightOverSorted) && rows.inFlightOverSorted.top === 8 && rows.inFlightOverSorted.drawing?.from?.stochastic === 'link' && new RegExp(`[?&]scene=${A}(&|$)`).test(rows.inFlightOverSorted.search);
         out.D5 = { rows, pageerrors: errors(log) };
-        check('D5 control: the base build answers the literal "...?scene=2f1ddf5f?budget=8&stochastic" with the picker ("not a SuperSplat link")', literalBase.status === 'picker', true);
+        baseControl('D5 control: the base build answers the literal "...?scene=2f1ddf5f?budget=8&stochastic" with the picker ("not a SuperSplat link")', literalBase.status === 'picker');
         check('D5 the owner\'s link draws stochastic at 8 M by every way it is pasted (deep link encoded and raw, deep link, the literal second "?", the picker\'s field, the picker over a flight, wrapped in <> and a full stop)', all.every(([, ok]) => ok));
         check('D5 a link pasted over a flight beats a stored Render = Sorted for the scene it opens (stochastic at 8 M, "from the link")', overSorted);
         console.log('D5', JSON.stringify(all), 'overSorted', overSorted);
@@ -246,7 +266,8 @@ try {
     // ------------------------------------------------------------------ D6
     if (want('D6')) {
         const { ctx, page, log } = await context(browser);
-        const st = await open(page, SITE, `scene=${OPOLE}&governor=0`);
+        // a stochastic desktop: v0.9 by default, v0.10 only when asked (a link's ?stochastic)
+        const st = await open(page, SITE, `scene=${OPOLE}&governor=0${V09_DEFAULTS ? '' : '&stochastic'}`);
         for (let i = 0; i < 120; i++) { if (await hook<boolean>(page, 'return s.renderer.sceneComplete;')) break; await sleep(500); }
         await sleep(1500);
         // the same crop and JPEG as share/picture.ts makes, of the drawing the engine has NOW (before the brand is drawn)

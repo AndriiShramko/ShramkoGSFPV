@@ -17,7 +17,7 @@ const LIVE = cat([
 describe('catalogDiff', () => {
     it('nothing changed: not dirty, even when the draft leaves out the defaults the API writes', () => {
         const draft = cat([{ id: 'aaaaaa01', title: 'A' }, { id: 'aaaaaa02', title: 'B' }, { id: 'aaaaaa03', title: 'C' }, { id: 'aaaaaa04', title: 'D' }]);
-        expect(catalogDiff(draft, LIVE)).toEqual({ scenes: [], collections: false, dirty: false });
+        expect(catalogDiff(draft, LIVE)).toEqual({ scenes: [], collections: false, drawing: false, dirty: false });
     });
 
     it('added, removed, changed (with the fields) and one dragged scene = one "moved"', () => {
@@ -40,8 +40,39 @@ describe('catalogDiff', () => {
     it('a renamed collection alone makes the draft dirty; with nothing live every scene is new', () => {
         const live = cat([{ id: 'aaaaaa01', title: 'A' }], [{ id: 'c1', title: { en: 'Cities' } }]);
         const draft = cat([{ id: 'aaaaaa01', title: 'A' }], [{ id: 'c1', title: { en: 'Towns' } }]);
-        expect(catalogDiff(draft, live)).toEqual({ scenes: [], collections: true, dirty: true });
+        expect(catalogDiff(draft, live)).toEqual({ scenes: [], collections: true, drawing: false, dirty: true });
         expect(catalogDiff(draft, null).scenes).toEqual([{ id: 'aaaaaa01', title: 'A', kind: 'added' }]);
+    });
+
+    it('the drawing defaults (the device presets) are part of what Publish would change (v0.10)', () => {
+        const scenes = [{ id: 'aaaaaa01', title: 'A' }];
+        const live = readCatalog({ scenes, collections: [], drawing: { presets: { phone: { budgetM: 2 } } } })!;
+        const same = readCatalog({ scenes, collections: [], drawing: { presets: { phone: { budgetM: 2 } } } })!;
+        const edited = readCatalog({ scenes, collections: [], drawing: { presets: { phone: { budgetM: 1.5 } } } })!;
+        const cleared = readCatalog({ scenes, collections: [] })!;
+        expect(catalogDiff(same, live)).toEqual({ scenes: [], collections: false, drawing: false, dirty: false });
+        expect(catalogDiff(edited, live)).toEqual({ scenes: [], collections: false, drawing: true, dirty: true });
+        // back to the built-in table (the key gone) is a change too; and nothing live with defaults in the draft is
+        expect(catalogDiff(cleared, live).drawing).toBe(true);
+        expect(catalogDiff(live, cleared).drawing).toBe(true);
+        expect(catalogDiff(cleared, cleared).dirty).toBe(false);
+        // key order inside the document is not a change
+        const reordered = readCatalog({ scenes, collections: [], drawing: { presets: { phone: { budgetM: 2 } } } })!;
+        expect(catalogDiff(reordered, live).drawing).toBe(false);
+        // control: a diff that looks only at scenes and collections (the v0.9 rule) calls the edited draft clean
+        const v09 = (d: SceneCatalog, l: SceneCatalog): boolean => catalogDiff({ ...d, drawing: undefined }, { ...l, drawing: undefined }).dirty;
+        expect(v09(edited, live)).toBe(false);
+    });
+
+    it('readCatalog carries the drawing document through untouched, and drops anything that is not a small plain object', () => {
+        const doc = { presets: { tablet: { drawing: 'sorted', budgetM: 1.5, renderScale: 0.8 } } };
+        expect(readCatalog({ scenes: [], collections: [], drawing: doc })?.drawing).toEqual(doc);
+        for (const bad of [undefined, null, 5, 'x', [], [doc]]) expect(readCatalog({ scenes: [], collections: [], drawing: bad })?.drawing, JSON.stringify(bad)).toBeUndefined();
+        expect(readCatalog({ scenes: [], collections: [], drawing: { presets: { x: 'y'.repeat(5000) } } })?.drawing).toBeUndefined();
+        // the document is a copy: editing it never edits the source
+        const copy = readCatalog({ scenes: [], collections: [], drawing: doc })!;
+        (copy.drawing as { presets: { tablet: { budgetM: number } } }).presets.tablet.budgetM = 9;
+        expect(doc.presets.tablet.budgetM).toBe(1.5);
     });
 
     it('control: comparing positions one by one (the naive rule) calls every scene a dragged one passed "moved"', () => {

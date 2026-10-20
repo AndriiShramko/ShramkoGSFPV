@@ -1,0 +1,1333 @@
+{
+  "name": "v10-render",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-20T17:58:35.004Z",
+    "gitHead": "459ec16",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "new": ".\\.cache\\dist-v10r",
+  "base": ".\\.cache\\dist-base",
+  "pass": {
+    "R1": true,
+    "R2": true,
+    "R3": true,
+    "R4": true,
+    "R5": true,
+    "R6": true
+  },
+  "checks": [
+    {
+      "name": "R1 control: the BASE build draws a desktop interior stochastic by default (engine, shader, from the device)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "R1 desktop, nothing asked: sorted in the engine and in the shader, 4 M, decided by this device (its class preset)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R1 the class is read from the browser: desktop-strong (reasons: strong), with the GPU the engine got",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R1 F3 names what draws and the class",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R1 the default picture IS the sorted picture: 87.86 dB against ?stochastic=0 (above 45)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R1 control: the BASE default picture is 21.89 dB from the sorted one (below 25: the grain and the colour shift)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "R2 a phone: class phone, sorted, 2 M, resolution capped at 70 % (the canvas is 577 px wide, 577 expected), no note",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R2 control: the BASE build draws the same phone at the full 824.0000245571136 px width (scale 1)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "R2 a tablet: class tablet, sorted, 2 M, resolution capped at 85 % (the canvas is 1394 px wide, 1394 expected), no note",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R2 control: the BASE build draws the same tablet at the full 1640.0000488758087 px width (scale 1)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "R2 the Render row of Settings says the class, the GPU and what Auto draws (desktop-strong: sorted, up to 4 M, 100 %)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R2 a pilot who names the weak desktop class gets its preset: class desktop-weak (picked, the browser said desktop-strong), 2.5 M, scale 85 %, sorted",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R2 the row follows: it names the class the pilot chose and what the browser says",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R2 control: the BASE build has no Device class setting (the call fails or changes nothing: still 4 M stochastic)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "R3 the Drawing tab lists the four classes, each with its built-in values (sorted, 4 / 2.5 / 2 / 2 M, 100 / 85 / 85 / 70 %), and every scene of the catalogue",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R3 a change is saved as a draft on the server with only the fields the owner touched, marked \"changed\" in the row",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R3 the draft is not live: /api/catalog has no drawing yet",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R3 control: a fresh desktop page still gets the built-in table while it is a draft (sorted, 4 M)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "R3 Publish: /api/catalog carries the owner's drawing (and the history has the version)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R3 a fresh desktop draws what the owner set: stochastic at 6 M in the engine and the shader, still \"from this device\"",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R3 F3 and the Render row say so, and that the owner changed the preset",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R4 the pilot's Render = Sorted beats the owner's stochastic preset (from \"your setting\")",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R4 the pilot's Splat budget 2 M beats the owner's 6 M (from \"your setting\")",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R4 back to Auto: the owner's preset again (stochastic, 6 M, this device)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R4 a link's ?budget=3&stochastic beats everything below it: stochastic at 3 M from the link",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R4 a setting changed in flight beats the link for that scene (sorted, the link's 3 M kept)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R3 a fresh phone gets the owner's phone preset: 1.5 M, 60 % (and still sorted: the owner's stochastic is for the desktop class)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R3 control: the BASE page, served the same catalogue, ignores the owner's preset (stochastic at its own 4 M, not 6)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "R3 the admin table writes the scene's own render ({budgetM 5, stochastic false}) into the catalogue",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R4 the scene's own entry beats the owner's preset: sorted at 5 M, from \"the scene's entry\" (the preset says stochastic 6 M)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R3 Reset all + Publish: /api/catalog has no drawing again, a fresh desktop is back on sorted 4 M, and the history kept every version",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R3 control: the BASE build's admin has no Drawing tab",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "R3 the admin page raised no errors; the password is in no log or data file",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R5 control: the BASE build keeps drawing stochastic while it records (the grain goes into the file)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "R5 before REC the link's stochastic draws (engine and shader)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R5 while REC runs the scan is drawn sorted (engine and shader), the hook says the hold is on, F3 says \"sorted (recording)\"",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R5 the HUD says once that the recording draws the clean picture (only because the drawing was stochastic)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R5 a Render setting changed during the recording waits for it (still sorted)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R5 after the stop the pilot's drawing is back (the link's stochastic: engine and shader), the hold is off",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R6 control: a grab of the same stochastic view weighs 1.25x or more of the sorted grab (the measurement can tell)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "R6 the share picture of a stochastic view is one sorted frame: at most 0.8 of the stochastic grab's bytes, under the API's 400 KB",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "R6 the drawing is back right after (stochastic in the engine and the shader, the same budget)",
+      "ok": true,
+      "control": false
+    }
+  ],
+  "items": {
+    "build": {
+      "new": ".\\.cache\\dist-v10r",
+      "base": ".\\.cache\\dist-base"
+    },
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "R1": {
+      "new": {
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 4,
+          "from": {
+            "stochastic": "device",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 4,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": null,
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "top": 4,
+        "hybrid": {
+          "gpuSort": true,
+          "stochastic": false,
+          "define": false
+        },
+        "f3": "Render: sorted (this device) \u00b7 budget 4 M splats (this device) \u00b7 desktop, strong graphics"
+      },
+      "linkSorted": {
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": {
+            "stochastic": false
+          },
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 4,
+          "from": {
+            "stochastic": "link",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 4,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": null,
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        }
+      },
+      "base": {
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": null,
+          "stochastic": true,
+          "budgetM": 4,
+          "from": {
+            "stochastic": "device",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": true,
+          "engineBudgetM": 4,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true
+        },
+        "top": 4,
+        "hybrid": {
+          "gpuSort": true,
+          "stochastic": true,
+          "define": true
+        }
+      },
+      "psnrDefaultVsSorted": 87.86,
+      "psnrBaseDefaultVsSorted": 21.89,
+      "pageerrors": []
+    },
+    "R2": {
+      "phone": {
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 2,
+          "from": {
+            "stochastic": "device",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 2,
+          "handheld": true,
+          "mobile": true,
+          "webgpu": true,
+          "class": "phone",
+          "classAuto": "phone",
+          "classReasons": [
+            "phone"
+          ],
+          "classPicked": false,
+          "renderScale": 0.7,
+          "presetRenderScale": 0.7,
+          "owner": null,
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "top": 2,
+        "scale": 0.7,
+        "canvas": [
+          577,
+          1281
+        ],
+        "css": [
+          412,
+          915
+        ],
+        "dpr": 2.0000000596046448
+      },
+      "phoneBase": {
+        "top": 2,
+        "scale": 1,
+        "canvas": [
+          824,
+          1830
+        ]
+      },
+      "tablet": {
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 2,
+          "from": {
+            "stochastic": "device",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 2,
+          "handheld": true,
+          "mobile": true,
+          "webgpu": true,
+          "class": "tablet",
+          "classAuto": "tablet",
+          "classReasons": [
+            "tablet"
+          ],
+          "classPicked": false,
+          "renderScale": 0.85,
+          "presetRenderScale": 0.85,
+          "owner": null,
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "top": 2,
+        "scale": 0.85,
+        "canvas": [
+          1394,
+          2006
+        ],
+        "css": [
+          820,
+          1180
+        ],
+        "dpr": 2.0000000596046448
+      },
+      "tabletBase": {
+        "top": 2,
+        "scale": 1,
+        "canvas": [
+          1640,
+          2360
+        ]
+      },
+      "desktop": {
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 4,
+          "from": {
+            "stochastic": "device",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 4,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": null,
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "row": {
+          "line": "This device: desktop, strong graphics (nvidia lovelace). Auto draws sorted, up to 4 M splats, at 100 % of the screen's resolution.",
+          "notes": []
+        }
+      },
+      "weakNamed": {
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 2.5,
+          "from": {
+            "stochastic": "device",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 2.5,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-weak",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": true,
+          "renderScale": 0.85,
+          "presetRenderScale": 0.85,
+          "owner": null,
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "top": 2.5,
+        "scale": 0.85,
+        "row": {
+          "line": "This device: desktop, weak graphics (nvidia lovelace). Auto draws sorted, up to 2.5 M splats, at 85 % of the screen's resolution.",
+          "notes": [
+            "You named this class; the browser says: desktop, strong graphics."
+          ]
+        }
+      },
+      "baseDeviceClass": {
+        "result": "throws: unknown setting display.deviceClass",
+        "top": 4
+      }
+    },
+    "R3": {
+      "desktopPublished": {
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": null,
+          "stochastic": true,
+          "budgetM": 6,
+          "from": {
+            "stochastic": "device",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": true,
+          "engineBudgetM": 6,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": {
+            "presets": {
+              "desktop-strong": {
+                "drawing": "stochastic",
+                "budgetM": 6
+              },
+              "phone": {
+                "budgetM": 1.5,
+                "renderScale": 0.6
+              }
+            }
+          },
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "top": 6,
+        "hybrid": {
+          "gpuSort": true,
+          "stochastic": true,
+          "define": true
+        },
+        "f3": "Render: stochastic (this device) \u00b7 budget 6 M splats (this device) \u00b7 desktop, strong graphics",
+        "row": {
+          "line": "This device: desktop, strong graphics (nvidia lovelace). Auto draws stochastic, up to 6 M splats, at 100 % of the screen's resolution.",
+          "notes": [
+            "The site's owner changed this preset."
+          ]
+        }
+      },
+      "pilot": {
+        "sorted": {
+          "scene": "39e63ce9",
+          "mode": "sorted",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 6,
+          "from": {
+            "stochastic": "setting",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 6,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": {
+            "presets": {
+              "desktop-strong": {
+                "drawing": "stochastic",
+                "budgetM": 6
+              },
+              "phone": {
+                "budgetM": 1.5,
+                "renderScale": 0.6
+              }
+            }
+          },
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "budget2": {
+          "scene": "39e63ce9",
+          "mode": "sorted",
+          "budgetSetting": 2,
+          "request": null,
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 2,
+          "from": {
+            "stochastic": "setting",
+            "budget": "setting"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 1.5,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": {
+            "presets": {
+              "desktop-strong": {
+                "drawing": "stochastic",
+                "budgetM": 6
+              },
+              "phone": {
+                "budgetM": 1.5,
+                "renderScale": 0.6
+              }
+            }
+          },
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "backToAuto": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": null,
+          "stochastic": true,
+          "budgetM": 6,
+          "from": {
+            "stochastic": "device",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": true,
+          "engineBudgetM": 4.5,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": {
+            "presets": {
+              "desktop-strong": {
+                "drawing": "stochastic",
+                "budgetM": 6
+              },
+              "phone": {
+                "budgetM": 1.5,
+                "renderScale": 0.6
+              }
+            }
+          },
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        }
+      },
+      "link": {
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": {
+            "budgetM": 3,
+            "stochastic": true
+          },
+          "catalogue": null,
+          "stochastic": true,
+          "budgetM": 3,
+          "from": {
+            "stochastic": "link",
+            "budget": "link"
+          },
+          "note": null,
+          "engineStochastic": true,
+          "engineBudgetM": 3,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": {
+            "presets": {
+              "desktop-strong": {
+                "drawing": "stochastic",
+                "budgetM": 6
+              },
+              "phone": {
+                "budgetM": 1.5,
+                "renderScale": 0.6
+              }
+            }
+          },
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "afterSetting": {
+          "scene": "39e63ce9",
+          "mode": "sorted",
+          "budgetSetting": null,
+          "request": {
+            "budgetM": 3
+          },
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 3,
+          "from": {
+            "stochastic": "setting",
+            "budget": "link"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 3,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": {
+            "presets": {
+              "desktop-strong": {
+                "drawing": "stochastic",
+                "budgetM": 6
+              },
+              "phone": {
+                "budgetM": 1.5,
+                "renderScale": 0.6
+              }
+            }
+          },
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        }
+      },
+      "phonePublished": {
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 1.5,
+          "from": {
+            "stochastic": "device",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 1.5,
+          "handheld": true,
+          "mobile": true,
+          "webgpu": true,
+          "class": "phone",
+          "classAuto": "phone",
+          "classReasons": [
+            "phone"
+          ],
+          "classPicked": false,
+          "renderScale": 0.6,
+          "presetRenderScale": 0.6,
+          "owner": {
+            "presets": {
+              "desktop-strong": {
+                "drawing": "stochastic",
+                "budgetM": 6
+              },
+              "phone": {
+                "budgetM": 1.5,
+                "renderScale": 0.6
+              }
+            }
+          },
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "top": 1.5,
+        "scale": 0.6
+      },
+      "baseIgnores": {
+        "top": 4,
+        "hybrid": {
+          "gpuSort": true,
+          "stochastic": true,
+          "define": true
+        }
+      },
+      "entry": {
+        "published": {
+          "budgetM": 5,
+          "stochastic": false
+        },
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": {
+            "budgetM": 5,
+            "stochastic": false
+          },
+          "stochastic": false,
+          "budgetM": 5,
+          "from": {
+            "stochastic": "scene",
+            "budget": "scene"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 5,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": {
+            "presets": {
+              "desktop-strong": {
+                "drawing": "stochastic",
+                "budgetM": 6
+              },
+              "phone": {
+                "budgetM": 1.5,
+                "renderScale": 0.6
+              }
+            }
+          },
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "top": 5
+      },
+      "reset": {
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 4,
+          "from": {
+            "stochastic": "device",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 4,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": null,
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "versions": 3
+      }
+    },
+    "adminErrors": [],
+    "R5": {
+      "new": {
+        "before": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": {
+            "stochastic": true
+          },
+          "catalogue": null,
+          "stochastic": true,
+          "budgetM": 4,
+          "from": {
+            "stochastic": "link",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": true,
+          "engineBudgetM": 4,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": null,
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "pre": {
+          "engine": true,
+          "hybrid": {
+            "gpuSort": true,
+            "stochastic": true,
+            "define": true
+          }
+        },
+        "during": {
+          "engine": false,
+          "hybrid": {
+            "gpuSort": true,
+            "stochastic": false,
+            "define": false
+          },
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": null,
+            "request": {
+              "stochastic": true
+            },
+            "catalogue": null,
+            "stochastic": true,
+            "budgetM": 4,
+            "from": {
+              "stochastic": "link",
+              "budget": "device"
+            },
+            "note": null,
+            "engineStochastic": false,
+            "engineBudgetM": 4,
+            "handheld": false,
+            "mobile": false,
+            "webgpu": true,
+            "class": "desktop-strong",
+            "classAuto": "desktop-strong",
+            "classReasons": [
+              "strong"
+            ],
+            "classPicked": false,
+            "renderScale": 1,
+            "presetRenderScale": 1,
+            "owner": null,
+            "held": true,
+            "gpu": {
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": "",
+              "description": "",
+              "isFallback": false,
+              "maxBufferSize": 2147483648
+            }
+          },
+          "note": "Recording draws the clean, sorted picture. Your drawing comes back when it stops.",
+          "f3": "Render: sorted (recording) \u00b7 budget 4 M splats (this device) \u00b7 desktop, strong graphics"
+        },
+        "duringSetting": {
+          "engine": false,
+          "hybrid": {
+            "gpuSort": true,
+            "stochastic": false,
+            "define": false
+          }
+        },
+        "after": {
+          "engine": true,
+          "hybrid": {
+            "gpuSort": true,
+            "stochastic": true,
+            "define": true
+          },
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": null,
+            "request": {
+              "stochastic": true
+            },
+            "catalogue": null,
+            "stochastic": true,
+            "budgetM": 4,
+            "from": {
+              "stochastic": "link",
+              "budget": "device"
+            },
+            "note": null,
+            "engineStochastic": true,
+            "engineBudgetM": 4,
+            "handheld": false,
+            "mobile": false,
+            "webgpu": true,
+            "class": "desktop-strong",
+            "classAuto": "desktop-strong",
+            "classReasons": [
+              "strong"
+            ],
+            "classPicked": false,
+            "renderScale": 1,
+            "presetRenderScale": 1,
+            "owner": null,
+            "held": false,
+            "gpu": {
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": "",
+              "description": "",
+              "isFallback": false,
+              "maxBufferSize": 2147483648
+            }
+          },
+          "f3": "Render: stochastic (the link) \u00b7 budget 4 M splats (this device) \u00b7 desktop, strong graphics"
+        },
+        "errors": []
+      },
+      "base": {
+        "before": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": {
+            "stochastic": true
+          },
+          "catalogue": null,
+          "stochastic": true,
+          "budgetM": 4,
+          "from": {
+            "stochastic": "link",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": true,
+          "engineBudgetM": 4,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true
+        },
+        "pre": {
+          "engine": true,
+          "hybrid": {
+            "gpuSort": true,
+            "stochastic": true,
+            "define": true
+          }
+        },
+        "during": {
+          "engine": true,
+          "hybrid": {
+            "gpuSort": true,
+            "stochastic": true,
+            "define": true
+          },
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": null,
+            "request": {
+              "stochastic": true
+            },
+            "catalogue": null,
+            "stochastic": true,
+            "budgetM": 4,
+            "from": {
+              "stochastic": "link",
+              "budget": "device"
+            },
+            "note": null,
+            "engineStochastic": true,
+            "engineBudgetM": 4,
+            "handheld": false,
+            "mobile": false,
+            "webgpu": true
+          },
+          "note": "Stochastic drawing (SuperSplat), 4 M splats \u00b7 Settings \u2192 Display",
+          "f3": "Render: stochastic (the link) \u00b7 budget 4 M splats (this device)"
+        },
+        "duringSetting": {
+          "engine": true,
+          "hybrid": {
+            "gpuSort": true,
+            "stochastic": true,
+            "define": true
+          }
+        },
+        "after": {
+          "engine": true,
+          "hybrid": {
+            "gpuSort": true,
+            "stochastic": true,
+            "define": true
+          },
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": null,
+            "request": {
+              "stochastic": true
+            },
+            "catalogue": null,
+            "stochastic": true,
+            "budgetM": 4,
+            "from": {
+              "stochastic": "link",
+              "budget": "device"
+            },
+            "note": null,
+            "engineStochastic": true,
+            "engineBudgetM": 4,
+            "handheld": false,
+            "mobile": false,
+            "webgpu": true
+          },
+          "f3": "Render: stochastic (the link) \u00b7 budget 4 M splats (this device)"
+        },
+        "errors": []
+      }
+    },
+    "R6": {
+      "stochasticGrabBytes": 166611,
+      "sortedGrabBytes": 81888,
+      "appPictureBytes": 87474,
+      "before": {
+        "engine": true,
+        "top": 4
+      },
+      "after": {
+        "engine": true,
+        "hybrid": {
+          "gpuSort": true,
+          "stochastic": true,
+          "define": true
+        },
+        "top": 4
+      }
+    },
+    "apiLogHasPassword": false
+  },
+  "failed": null
+}

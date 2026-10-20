@@ -306,12 +306,25 @@ v0.7 fields (`packages/scenes/src/catalog.ts` and `admin.py` keep the same rules
 `geo` `{lat, lon, place?}` (WGS84, 3 decimals), `compassDeg` (0-360, the compass heading of the scene's
 forward axis), `wind` `{fromDeg 0-360, speed 0-30 m/s, gust 0-20 m/s above the mean, source manual|climate}`,
 `ceilingM` (collisions ignored above it, scan coordinates), `render` `{budgetM 0.25-32, stochastic}` (from a
-pasted link's `?budget=&stochastic`; since v0.9 `stochastic` is true, false = the owner wants this scene drawn
-the classic sorted way, or absent = the device's default, which is stochastic on a desktop WebGPU browser; the
-pilot's own Render / Splat budget settings and a link's parameters outrank it), `about` (our words for the scene page, per language, 1500 characters),
+pasted link's `?budget=&stochastic`; `stochastic` true = this scene drawn the SuperSplat stochastic way, false =
+the classic sorted way, absent = the device's class preset, which is sorted since v0.10 (stochastic on a desktop
+WebGPU browser in v0.9); the pilot's own Render / Splat budget settings and a link's parameters outrank it), `about` (our words for the scene page, per language, 1500 characters),
 `origin` `{url (superspl.at only), description (600), tags (12), created (ISO), user (SuperSplat user name)}`
 (what SuperSplat said: filled by "Add a scene" and "Refresh from SuperSplat"), `extentM` `[x, y, z]` (the
 scan's bounding box in metres, from its collision file).
+
+**Drawing defaults (v0.10, admin tab "Drawing").** The catalogue document has a third key beside `collections` and
+`scenes`: `drawing` = `{"presets": {"<class>": {"drawing": "sorted"|"stochastic", "budgetM": 0.25-32, "renderScale": 0.4-1}}}`,
+class one of `desktop-strong`, `desktop-weak`, `tablet`, `phone` (`packages/render-pc/src/device-class.ts`, `presets.ts`;
+`admin.py` `clean_drawing` keeps the same table and drops what is unknown or out of range; a test keeps the two equal). Only the
+fields the owner changed are stored: the rest is the simulator's built-in table (`BUILTIN_PRESETS`: sorted everywhere; 4 M / 2.5 M /
+2 M / 2 M; 100 / 85 / 85 / 70 % of the screen's pixels). It goes through the same draft, Publish, history and Restore as the scenes
+(`GET /api/admin/catalog` returns it in `draft` and `published`, `POST /api/admin/catalog/draft` takes it in `catalog`; a client that sends
+no `drawing` key does not wipe it, one that sends it empty removes it) and `GET /api/catalog` carries it when set (absent = the built-in
+table, also what an API that predates it gives). The simulator reads it at boot, before any scene opens, and starts the device's class
+preset where nothing asks for anything else: the order is the scene's link > the pilot's own Render / Splat budget / Device class settings >
+the scene's own `render` entry > the class's preset. Needs the API (`admin.py`) deployed before the simulator build, like the rest; the old
+simulator ignores the key. History versions from before it simply have no `drawing` (Restore brings the built-in table back).
 
 **Seeding.** The first time the catalogue is read and `data/catalog.json` does not exist, the API copies
 `showcase.json`'s scenes into it (none pinned or hidden, no collections). It looks for `CATALOG_SEED`, then

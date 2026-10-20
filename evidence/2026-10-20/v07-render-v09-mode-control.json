@@ -1,0 +1,583 @@
+{
+  "name": "v07-render",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-20T18:59:04.145Z",
+    "gitHead": "55f424a",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5491",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "pass": {
+    "R1": false,
+    "R4": false,
+    "R9": false
+  },
+  "runs": {
+    "R1": "2026-10-20T18:59:04.144Z",
+    "R4": "2026-10-20T18:59:04.144Z",
+    "R9": "2026-10-20T18:59:04.144Z"
+  },
+  "items": {
+    "R1": {
+      "rows": [
+        {
+          "name": "landing paste (encoded SuperSplat link)",
+          "qs": "scene=https%3A%2F%2Fsuperspl.at%2Fscene%2F39e63ce9%3Fbudget%3D6%26stochastic",
+          "expectStochastic": true,
+          "ok": true,
+          "canonical": true,
+          "status": "ready",
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": null,
+            "request": {
+              "budgetM": 6,
+              "stochastic": true
+            },
+            "catalogue": null,
+            "stochastic": true,
+            "budgetM": 6,
+            "from": {
+              "stochastic": "link",
+              "budget": "link"
+            },
+            "note": null,
+            "engineStochastic": true,
+            "engineBudgetM": 6,
+            "handheld": false,
+            "mobile": false,
+            "webgpu": true,
+            "class": "desktop-strong",
+            "classAuto": "desktop-strong",
+            "classReasons": [
+              "strong"
+            ],
+            "classPicked": false,
+            "renderScale": 1,
+            "presetRenderScale": 1,
+            "owner": null,
+            "held": false,
+            "gpu": {
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": "",
+              "description": "",
+              "isFallback": false,
+              "maxBufferSize": 2147483648
+            }
+          },
+          "engine": true,
+          "top": 6,
+          "budgetM": 6,
+          "renderer": 2,
+          "search": "?scene=39e63ce9&nowarn=1&input=touch&budget=6&stochastic",
+          "note": "Stochastic drawing (SuperSplat), 6 M splats \u00b7 Settings \u2192 Display",
+          "noteShown": true
+        },
+        {
+          "name": "deep link",
+          "qs": "scene=39e63ce9&budget=6&stochastic",
+          "expectStochastic": true,
+          "ok": true,
+          "canonical": true,
+          "status": "ready",
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": null,
+            "request": {
+              "budgetM": 6,
+              "stochastic": true
+            },
+            "catalogue": null,
+            "stochastic": true,
+            "budgetM": 6,
+            "from": {
+              "stochastic": "link",
+              "budget": "link"
+            },
+            "note": null,
+            "engineStochastic": true,
+            "engineBudgetM": 6,
+            "handheld": false,
+            "mobile": false,
+            "webgpu": true,
+            "class": "desktop-strong",
+            "classAuto": "desktop-strong",
+            "classReasons": [
+              "strong"
+            ],
+            "classPicked": false,
+            "renderScale": 1,
+            "presetRenderScale": 1,
+            "owner": null,
+            "held": false,
+            "gpu": {
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": "",
+              "description": "",
+              "isFallback": false,
+              "maxBufferSize": 2147483648
+            }
+          },
+          "engine": true,
+          "top": 6,
+          "budgetM": 6,
+          "renderer": 2,
+          "search": "?scene=39e63ce9&budget=6&stochastic&nowarn=1&input=touch",
+          "note": "Stochastic drawing (SuperSplat), 6 M splats \u00b7 Settings \u2192 Display",
+          "noteShown": true
+        },
+        {
+          "name": "/s?id= form, stochastic=1",
+          "qs": "scene=superspl.at%2Fs%3Fid%3D39e63ce9%26budget%3D6%26stochastic%3D1",
+          "expectStochastic": true,
+          "ok": true,
+          "canonical": true,
+          "status": "ready",
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": null,
+            "request": {
+              "budgetM": 6,
+              "stochastic": true
+            },
+            "catalogue": null,
+            "stochastic": true,
+            "budgetM": 6,
+            "from": {
+              "stochastic": "link",
+              "budget": "link"
+            },
+            "note": null,
+            "engineStochastic": true,
+            "engineBudgetM": 6,
+            "handheld": false,
+            "mobile": false,
+            "webgpu": true,
+            "class": "desktop-strong",
+            "classAuto": "desktop-strong",
+            "classReasons": [
+              "strong"
+            ],
+            "classPicked": false,
+            "renderScale": 1,
+            "presetRenderScale": 1,
+            "owner": null,
+            "held": false,
+            "gpu": {
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": "",
+              "description": "",
+              "isFallback": false,
+              "maxBufferSize": 2147483648
+            }
+          },
+          "engine": true,
+          "top": 6,
+          "budgetM": 6,
+          "renderer": 2,
+          "search": "?scene=39e63ce9&nowarn=1&input=touch&budget=6&stochastic",
+          "note": "Stochastic drawing (SuperSplat), 6 M splats \u00b7 Settings \u2192 Display",
+          "noteShown": true
+        },
+        {
+          "name": "control: plain link",
+          "qs": "scene=https%3A%2F%2Fsuperspl.at%2Fscene%2F39e63ce9",
+          "expectStochastic": false,
+          "ok": false,
+          "canonical": true,
+          "status": "ready",
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": null,
+            "request": null,
+            "catalogue": null,
+            "stochastic": false,
+            "budgetM": 4,
+            "from": {
+              "stochastic": "device",
+              "budget": "device"
+            },
+            "note": null,
+            "engineStochastic": false,
+            "engineBudgetM": 4,
+            "handheld": false,
+            "mobile": false,
+            "webgpu": true,
+            "class": "desktop-strong",
+            "classAuto": "desktop-strong",
+            "classReasons": [
+              "strong"
+            ],
+            "classPicked": false,
+            "renderScale": 1,
+            "presetRenderScale": 1,
+            "owner": null,
+            "held": false,
+            "gpu": {
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": "",
+              "description": "",
+              "isFallback": false,
+              "maxBufferSize": 2147483648
+            }
+          },
+          "engine": false,
+          "top": 4,
+          "budgetM": 4,
+          "renderer": 2,
+          "search": "?scene=39e63ce9&nowarn=1&input=touch",
+          "note": "",
+          "noteShown": false
+        },
+        {
+          "name": "control: hostile values",
+          "qs": "scene=39e63ce9&budget=1e9&stochastic=%3Cx%3E",
+          "expectStochastic": false,
+          "ok": false,
+          "canonical": true,
+          "status": "ready",
+          "drawing": {
+            "scene": "39e63ce9",
+            "mode": "auto",
+            "budgetSetting": null,
+            "request": null,
+            "catalogue": null,
+            "stochastic": false,
+            "budgetM": 4,
+            "from": {
+              "stochastic": "device",
+              "budget": "device"
+            },
+            "note": null,
+            "engineStochastic": false,
+            "engineBudgetM": 4,
+            "handheld": false,
+            "mobile": false,
+            "webgpu": true,
+            "class": "desktop-strong",
+            "classAuto": "desktop-strong",
+            "classReasons": [
+              "strong"
+            ],
+            "classPicked": false,
+            "renderScale": 1,
+            "presetRenderScale": 1,
+            "owner": null,
+            "held": false,
+            "gpu": {
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": "",
+              "description": "",
+              "isFallback": false,
+              "maxBufferSize": 2147483648
+            }
+          },
+          "engine": false,
+          "top": 4,
+          "budgetM": 4,
+          "renderer": 2,
+          "search": "?scene=39e63ce9&nowarn=1&input=touch",
+          "note": "",
+          "noteShown": false
+        }
+      ],
+      "pageerrors": []
+    },
+    "R4": {
+      "before": {
+        "status": "ready",
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 4,
+          "from": {
+            "stochastic": "device",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 4,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": null,
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "engine": false,
+        "top": 4,
+        "budgetM": 4,
+        "renderer": 2,
+        "search": "?scene=39e63ce9&nowarn=1&input=touch",
+        "note": "",
+        "noteShown": false
+      },
+      "switch": {
+        "state": "done",
+        "from": "39e63ce9",
+        "to": "887f27aa",
+        "reason": "pick",
+        "ms": 2165
+      },
+      "picked": {
+        "status": "ready",
+        "drawing": {
+          "scene": "887f27aa",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": {
+            "budgetM": 6,
+            "stochastic": true
+          },
+          "catalogue": null,
+          "stochastic": true,
+          "budgetM": 6,
+          "from": {
+            "stochastic": "link",
+            "budget": "link"
+          },
+          "note": null,
+          "engineStochastic": true,
+          "engineBudgetM": 6,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": null,
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "engine": true,
+        "top": 6,
+        "budgetM": 6,
+        "renderer": 2,
+        "search": "?scene=887f27aa&nowarn=1&input=touch&budget=6&stochastic",
+        "note": "Stochastic drawing (SuperSplat), 6 M splats \u00b7 Settings \u2192 Display",
+        "noteShown": true
+      },
+      "nextSwitch": {
+        "state": "done",
+        "from": "887f27aa",
+        "to": "7a475d38",
+        "reason": "next",
+        "ms": 1877
+      },
+      "next": {
+        "status": "ready",
+        "drawing": {
+          "scene": "7a475d38",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 4,
+          "from": {
+            "stochastic": "device",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 4,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": null,
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "engine": false,
+        "top": 4,
+        "budgetM": 4,
+        "renderer": 2,
+        "search": "?scene=7a475d38&nowarn=1&input=touch",
+        "note": "Stochastic drawing (SuperSplat), 6 M splats \u00b7 Settings \u2192 Display",
+        "noteShown": true
+      },
+      "pageerrors": []
+    },
+    "R9": {
+      "webglFallback": {
+        "status": "ready",
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": {
+            "budgetM": 8,
+            "stochastic": true
+          },
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 2.5,
+          "from": {
+            "stochastic": "device",
+            "budget": "device"
+          },
+          "note": "scene-webgl",
+          "engineStochastic": false,
+          "engineBudgetM": 2.5,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": false,
+          "class": "desktop-weak",
+          "classAuto": "desktop-weak",
+          "classReasons": [
+            "no-webgpu"
+          ],
+          "classPicked": false,
+          "renderScale": 0.85,
+          "presetRenderScale": 0.85,
+          "owner": null,
+          "held": false,
+          "gpu": null
+        },
+        "engine": false,
+        "top": 2.5,
+        "budgetM": 2.5,
+        "renderer": 1,
+        "search": "?scene=39e63ce9&budget=8&stochastic&nowarn=1&input=touch",
+        "note": "This scene asks for SuperSplat's stochastic drawing. It needs WebGPU, which this browser does not offer, so the scene is drawn the classic way.",
+        "noteShown": true,
+        "load": {
+          "stochastic": false,
+          "budgetM": 2.5,
+          "webgpu": false
+        },
+        "gpuApi": true,
+        "isWebGPU": false,
+        "pageerrors": []
+      },
+      "controlWebGPU": {
+        "status": "ready",
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": {
+            "budgetM": 8,
+            "stochastic": true
+          },
+          "catalogue": null,
+          "stochastic": true,
+          "budgetM": 8,
+          "from": {
+            "stochastic": "link",
+            "budget": "link"
+          },
+          "note": null,
+          "engineStochastic": true,
+          "engineBudgetM": 8,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": null,
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "engine": true,
+        "top": 8,
+        "budgetM": 8,
+        "renderer": 2,
+        "search": "?scene=39e63ce9&budget=8&stochastic&nowarn=1&input=touch",
+        "note": "Stochastic drawing (SuperSplat), 8 M splats \u00b7 Settings \u2192 Display",
+        "noteShown": true,
+        "load": {
+          "stochastic": true,
+          "budgetM": 8,
+          "webgpu": true
+        },
+        "gpuApi": true,
+        "isWebGPU": true,
+        "pageerrors": []
+      },
+      "expectedNote": "This scene asks for SuperSplat's stochastic drawing. It needs WebGPU, which this browser does not offer, so the scene is drawn the classic way."
+    }
+  }
+}

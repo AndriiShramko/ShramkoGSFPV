@@ -16,7 +16,7 @@ import type { FloaterFilter, VoxelCollision, VoxelMetadata } from '@gsfpv/collis
 import { resolveScene, headingFromCamera, noContentError } from '@gsfpv/scenes';
 import type { ContentAttempt, ResolvedScene } from '@gsfpv/scenes';
 import { BrokenFileError, SplatRenderer, drawOnDevice } from '@gsfpv/render-pc';
-import type { DrawingChoice } from '@gsfpv/render-pc';
+import type { DrawingChoice, GpuInfo } from '@gsfpv/render-pc';
 import { PRESETS, DEFAULT_PRESET } from '../presets';
 import { gimbalQuat } from '../play/gimbal';
 import type { CameraAim } from '../play/gimbal';
@@ -83,7 +83,7 @@ export interface SessionOptions {
      * WebGPU) once the renderer exists, and written to it before the scan loads, so it streams with the
      * budget this device gets (render-pc drawOnDevice); none = the renderer's default (sorted, 4 M).
      */
-    drawing?: (webgpu: boolean) => DrawingChoice;
+    drawing?: (webgpu: boolean, gpu: GpuInfo | null) => DrawingChoice;
     /** the collision ceiling (v0.7, prefs scene.ceiling): no walls at or above this height in the scan's own coordinates; null or none = off */
     ceilingM?: number | null;
     /**

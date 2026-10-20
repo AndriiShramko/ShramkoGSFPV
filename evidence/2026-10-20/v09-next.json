@@ -1,0 +1,179 @@
+{
+  "name": "v09-next",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-20T18:00:11.881Z",
+    "gitHead": "459ec16",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5503",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "render": "off",
+  "mockedCatalogue": [
+    "b11e45d1",
+    "70b50d42",
+    "887f27aa",
+    "ab5efa0e",
+    "d10c5638",
+    "39e63ce9",
+    "2f1ddf5f",
+    "ba7aa29d",
+    "7a475d38",
+    "9baef54b",
+    "0230d903",
+    "eb5f51dc"
+  ],
+  "mockedSuperSplat": [
+    {
+      "id": "39e63ce9",
+      "format": "sog"
+    },
+    {
+      "id": "c67edb74",
+      "format": "compressed.ply"
+    },
+    {
+      "id": "58a989fb",
+      "format": "sog"
+    },
+    {
+      "id": "3d37bda9",
+      "format": "ssog"
+    },
+    {
+      "id": "2f359069",
+      "format": "sog"
+    },
+    {
+      "id": "95d6b197",
+      "format": "sog"
+    },
+    {
+      "id": "a6df26f1",
+      "format": "ssog"
+    }
+  ],
+  "N1": {
+    "pass": true,
+    "what": "N from the first of 12 mocked scenes (8 without walls) visits all 12 in the owner's order, then the first two openable SuperSplat scenes; SuperSplat is asked only for the 12th press, with the tab's defaults",
+    "startScene": "b11e45d1",
+    "visited": [
+      {
+        "scene": "70b50d42",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "887f27aa",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "ab5efa0e",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "d10c5638",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "39e63ce9",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "2f1ddf5f",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "ba7aa29d",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "7a475d38",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "9baef54b",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "0230d903",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "eb5f51dc",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "58a989fb",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "3d37bda9",
+        "state": "done",
+        "reason": "next"
+      }
+    ],
+    "expected": [
+      "b11e45d1",
+      "70b50d42",
+      "887f27aa",
+      "ab5efa0e",
+      "d10c5638",
+      "39e63ce9",
+      "2f1ddf5f",
+      "ba7aa29d",
+      "7a475d38",
+      "9baef54b",
+      "0230d903",
+      "eb5f51dc",
+      "58a989fb",
+      "3d37bda9"
+    ],
+    "askedBeforeThe12th": 0,
+    "superSplatRequests": [
+      "?sort=trending&order=-1&time=all&features=walkable&skip=0&limit=24"
+    ],
+    "defaults": true,
+    "noRepeat": true,
+    "knownBaselineErrors": 0,
+    "errors": []
+  },
+  "N2": {
+    "pass": true,
+    "what": "after four N presses nothing is stored; a new page load of the first scene and N goes to the second scene, not to the sixth where the last visit stopped (nothing is remembered between visits, D64)",
+    "reached": "d10c5638",
+    "stored": null,
+    "nextVisit": "70b50d42",
+    "storedAfterTheSecondVisit": null,
+    "knownBaselineErrors": 0,
+    "errors": []
+  },
+  "summary": {
+    "N1": true,
+    "N2": true
+  }
+}
