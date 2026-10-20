@@ -12,7 +12,8 @@
 //      pause menu bring it back. Flight after Start, the mouse capture, the first-flight pill and the corner line are checked here.
 //   B  phone 390 x 844 (touch, no WebHID like Android Chrome): the touch card.
 //   C  desktop 900 x 480 (a short window; the base build's key card showed no key at all there), Controls closed with x.
-//   D  ?nowarn=1 (the page every older bench uses): the card never opens by itself.
+//   D  ?nowarn=1 (the page every older bench uses): the card never opens by itself; with the pilot profile (set.input.play=pilot)
+//      the pilot keyboard's ground card is still there and K opens the pilot version of the card.
 // What this does not prove: a real hand and a real mouse (the click on Start is Playwright's trusted click, pointer lock is
 // granted to it; Esc as the browser's own release cannot be pressed from a test); a real phone (touch emulation of Chrome without
 // WebHID); a real radio or gamepad (the radio card is drawn by pointing the page at a gamepad source and pressing K, the model
@@ -431,15 +432,20 @@ const { browser } = await launchChrome({ headless: false, args: ['--window-posit
 {
     const ctx = await newContext(browser, { width: 1280, height: 800 });
     const p = await ctx.newPage();
-    await p.goto(url('nowarn=1'));
+    await p.goto(url('nowarn=1&set.input.play=pilot'));
     await untilReady(p);
     await p.locator('[data-action="radio-close"]').click({ timeout: 15000 });
     await sleep(CONTROL ? 2500 : 4000);
     const h4 = await hook(p);
     check('K21 on a ?nowarn=1 page (the page every older bench uses) the card never opens by itself, the keyboard flies as before', (await cardCount(p)) === 0 && (h4 === null || (h4.shown === false && h4.testPage === true)), { hook: h4 }, false);
+    const ground = await p.evaluate(`(() => { const c = document.querySelector('[data-testid="key-card"]'); return c ? { shown: !c.classList.contains('hidden'), title: (c.querySelector('h3') || {}).textContent, rows: c.querySelectorAll('.kc-list li').length } : null; })()`) as Any;
+    check('K22 with the pilot profile the ground card of the pilot keyboard is still up (arm steps, the Mode 2 keys)', !!ground && ground.shown === true && ground.title === EN['arm.keys.title'] && ground.rows >= 9, { ground }, false);
     await p.keyboard.press('KeyK');
     const upK = await cardUp(p, CONTROL ? 1500 : 4000);
     check('K21b K still opens it there', upK, {});
+    const fp = upK ? await cardFacts(p) : null;
+    if (upK) await shot(p, 'k23-pilot-card');
+    check('K23 for the pilot keyboard the card is the pilot one: Space arms, W / S throttle, A / D yaw, the arrows tilt, M mode, then R, Esc, N, K; no Space / Shift pair', fp?.kind === 'pilot' && JSON.stringify(fp.rows) === JSON.stringify(['arm', 'throttle', 'yaw', 'sticks', 'mode', 'respawn', 'pause', 'next', 'again']) && fp.upCaps === null, { kind: fp?.kind ?? null, rows: fp?.rows ?? null });
     await ctx.close();
 }
 

@@ -11,6 +11,9 @@ import { radioArt, knobsFrom, sideOf, tickIcon } from './radio-art';
 import type { ArtTarget } from './radio-art';
 import { watchTopRow } from './top-row';
 import { linkLines } from './link-text';
+import { keysFor } from '@gsfpv/prefs';
+import { MODE2_KEYS } from '../play/keys';
+import { pilotCaps } from './controls-card-logic';
 
 /** Disarmed with a radio: what is still needed to arm, in order, with a small live radio drawing. */
 class ArmCard {
@@ -107,22 +110,25 @@ class KeyCard {
         const caps = (...ks: string[]): HTMLSpanElement => h('span', { class: 'kc-keys' }, ...ks.map((k) => h('kbd', {}, k)));
         const row = (keys: HTMLSpanElement, text: string): HTMLLIElement => h('li', {}, keys, h('span', {}, text));
         const space = t('arm.keys.space');
+        // the caps are the tables the keyboard flies with (play/keys.ts MODE2_KEYS) and the keymap's, not a list of this card's own
+        const pc = pilotCaps(MODE2_KEYS, space);
+        const km = (action: string): string[] => keysFor(action).map((k) => (k.cap === 'Space' ? space : k.cap));
         this.title.textContent = t('arm.keys.title');
         this.rows = {
-            arm: row(caps(space), t('arm.keys.arm')),
-            thr: row(caps('W', 'S'), t('arm.keys.throttle')),
-            sticks: row(caps('↑', '↓', '←', '→'), t('arm.keys.sticks'))
+            arm: row(caps(...km('arm.toggle')), t('arm.keys.arm')),
+            thr: row(caps(...pc.throttle), t('arm.keys.throttle')),
+            sticks: row(caps(...pc.sticks), t('arm.keys.sticks'))
         };
         this.list.replaceChildren(
             this.rows.arm!, this.rows.thr!,
-            row(caps('A', 'D'), t('arm.keys.yaw')),
+            row(caps(...pc.yaw), t('arm.keys.yaw')),
             this.rows.sticks!,
-            row(caps('M'), t('arm.keys.mode')),
-            row(caps('V'), t('arm.keys.voxels')),
-            row(caps('C'), t('arm.keys.walls')),
-            row(caps('R'), t('arm.keys.respawn')),
-            row(caps('P', 'Esc'), t('arm.keys.pause')),
-            row(caps('K'), t('play.keys.toggle')));
+            row(caps(...km('mode.cycle')), t('arm.keys.mode')),
+            row(caps(...km('voxels.cycle')), t('arm.keys.voxels')),
+            row(caps(...km('walls.toggle')), t('arm.keys.walls')),
+            row(caps(...km('respawn.start')), t('arm.keys.respawn')),
+            row(caps(...km('pause.toggle').reverse()), t('arm.keys.pause')),
+            row(caps(...km('help.keys')), t('play.keys.toggle')));
     }
 
     update(show: boolean, say: string, block: ArmBlock): void {
