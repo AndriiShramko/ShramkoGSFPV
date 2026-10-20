@@ -871,6 +871,32 @@
     "pl": "Odpowiedzi na Twoje zgłoszenia przychodzą w języku, w którym napisałeś",
     "ru": "Ответы на ваши сообщения приходят на том языке, на котором вы написали"
    }
+  },
+  {
+   "id": "F-how-to-fly-card-space-up-shift-down",
+   "kind": "feature",
+   "status": "done",
+   "group": "controls",
+   "order": 68,
+   "title": {
+    "en": "A How to fly card when the game opens: Space up, Shift down and every key, with Do not show again",
+    "es": "Una tarjeta Cómo volar al abrir el juego: Espacio sube, Shift baja y todas las teclas, con No volver a mostrar",
+    "pl": "Karta Jak latać po otwarciu gry: Spacja w górę, Shift w dół i wszystkie klawisze, z opcją Nie pokazuj więcej",
+    "ru": "Карточка «Как летать» при входе в игру: Space вверх, Shift вниз и все клавиши, с галочкой «Больше не показывать»"
+   }
+  },
+  {
+   "id": "F-clean-drawing-by-default-and-device-presets",
+   "kind": "feature",
+   "status": "done",
+   "group": "settings",
+   "order": 69,
+   "title": {
+    "en": "Clean drawing by default for the best picture, presets for each kind of device, and a splat budget you can set yourself",
+    "es": "Dibujo limpio por defecto para la mejor imagen, ajustes para cada tipo de dispositivo y un presupuesto de splats que puedes fijar tú",
+    "pl": "Czyste rysowanie domyślnie dla najlepszego obrazu, ustawienia dla każdego rodzaju urządzenia i budżet splatów, który ustawisz sam",
+    "ru": "Чистая отрисовка по умолчанию для лучшей картинки, пресеты для каждого типа устройства и бюджет сплатов, который можно задать самому"
+   }
   }
  ]
 }
