@@ -83,13 +83,20 @@ const ROWS: Row[] = [
     row('phone: the phone\'s own budget is not refused', ask({ link: { budgetM: PHONE_P.budgetM } }), PHONE, false, PHONE_P.budgetM),
     row('phone: the desktop\'s 4 M asked by a link is a refusal (v0.8)', ask({ link: { budgetM: DEFAULT_BUDGET_M } }), PHONE, false, PHONE_P.budgetM, 'budget-handheld'),
     row('phone: the pilot\'s lighter budget is kept', ask({ pilot: { mode: 'auto', budgetM: 1 } }), PHONE, false, 1),
-    row('phone: the pilot\'s heavier budget is refused, without a note (their own number)', ask({ pilot: { mode: 'auto', budgetM: 16 } }), PHONE, false, PHONE_P.budgetM),
+    // v0.10 review: the pilot sets the budget to the power of his machine, so his own number holds on a handheld or WebGL
+    // too, up as well as down, without a note (it is his own number); only a link's or a scene's number is refused
+    row('phone: the pilot\'s heavier budget is kept, without a note (their own number)', ask({ pilot: { mode: 'auto', budgetM: 16 } }), PHONE, false, 16),
+    row('phone: the pilot\'s budget beats the owner\'s link budget, which is still named as refused', ask({ link: { budgetM: 8 }, pilot: { mode: 'auto', budgetM: 4 } }), PHONE, false, 4, 'budget-handheld'),
+    row('phone: the pilot\'s budget beats the scene\'s entry budget, nothing named (the entry was outranked, not refused)', ask({ pilot: { mode: 'auto', budgetM: 4 }, scene: { budgetM: 8 } }), PHONE, false, 4),
+    row('phone: the pilot\'s budget with the pilot choosing stochastic: the drawing is refused and named, the budget kept', ask({ pilot: { mode: 'stochastic', budgetM: 8 } }), PHONE, false, 8, 'setting-handheld'),
     row('owner\'s preset on a phone: stochastic 1.5 M -> the budget is kept, the drawing refused without a note', ask({}), OWNER_PHONE, false, 1.5),
     // an iPad whose Safari says "Macintosh": the tablet class; stochastic is refused, the tablet preset's budget
     row('ipad: nobody asks', ask({}), IPAD_OS, false, TABLET.budgetM),
     row('ipad: the owner\'s link', ask({ link: OWNER }), IPAD_OS, false, TABLET.budgetM, 'scene-handheld'),
     row('ipad: a link\'s budget only', ask({ link: { budgetM: 8 } }), IPAD_OS, false, TABLET.budgetM, 'budget-handheld'),
     row('ipad: the tablet\'s own budget is not refused', ask({ link: { budgetM: TABLET.budgetM } }), IPAD_OS, false, TABLET.budgetM),
+    row('ipad: the pilot\'s heavier budget is kept (an iPad Pro is not a phone)', ask({ pilot: { mode: 'auto', budgetM: 8 } }), IPAD_OS, false, 8),
+    row('ipad: the pilot\'s lighter budget is kept', ask({ pilot: { mode: 'auto', budgetM: 1 } }), IPAD_OS, false, 1),
     // WebGL (no WebGPU, or the engine fell back): the CPU-sort renderer cannot draw it; the weak desktop's preset
     row('webgl: nobody asks', ask({}), DESKTOP_GL, false, WEAK.budgetM),
     row('webgl: the owner\'s link', ask({ link: OWNER }), DESKTOP_GL, false, WEAK.budgetM, 'scene-webgl'),
@@ -97,7 +104,9 @@ const ROWS: Row[] = [
     row('webgl: a link\'s budget only', ask({ link: { budgetM: 8 } }), DESKTOP_GL, false, WEAK.budgetM, 'budget-webgl'),
     row('webgl: the pilot chose sorted, the link asks 8 M stochastic', ask({ link: OWNER, pilot: { mode: 'sorted' } }), DESKTOP_GL, false, WEAK.budgetM, 'scene-webgl'),
     row('webgl: sorted asked by the entry', ask({ scene: { stochastic: false } }), DESKTOP_GL, false, WEAK.budgetM),
-    row('webgl: the pilot\'s lighter budget is kept', ask({ pilot: { mode: 'auto', budgetM: 1 } }), DESKTOP_GL, false, 1)
+    row('webgl: the pilot\'s lighter budget is kept', ask({ pilot: { mode: 'auto', budgetM: 1 } }), DESKTOP_GL, false, 1),
+    row('webgl: the pilot\'s heavier budget is kept (a strong GPU on a browser without WebGPU can lift the weak class\'s preset)', ask({ pilot: { mode: 'auto', budgetM: 4 } }), DESKTOP_GL, false, 4),
+    row('webgl: the pilot\'s heavier budget beats the link\'s, which is named as refused', ask({ link: { budgetM: 8 }, pilot: { mode: 'auto', budgetM: 4 } }), DESKTOP_GL, false, 4, 'budget-webgl')
 ];
 
 /** The rows a policy gets wrong. */
@@ -202,6 +211,33 @@ describe('resolveDrawing: link x pilot x owner\'s entry x the class\'s preset', 
         expect(f).toContain('link beats the pilot: sorted setting, stochastic link');
         expect(f).toContain('link beats the pilot: stochastic setting, sorted link');
         expect(f).not.toContain('desktop: the owner\'s link');
+    });
+
+    it('the pilot\'s own splat budget holds on every device, up as well as down (v0.10 review of item 3)', () => {
+        expect(resolveDrawing(ask({ pilot: { mode: 'auto', budgetM: 16 } }), PHONE)).toMatchObject({ stochastic: false, budgetM: 16, note: null, from: { stochastic: 'device', budget: 'setting' } });
+        expect(resolveDrawing(ask({ pilot: { mode: 'auto', budgetM: 8 } }), IPAD_OS)).toMatchObject({ budgetM: 8, from: { budget: 'setting' } });
+        expect(resolveDrawing(ask({ pilot: { mode: 'auto', budgetM: 4 } }), DESKTOP_GL)).toMatchObject({ budgetM: 4, from: { budget: 'setting' } });
+        // a link's or a scene's number is still the desktop's, refused; nobody setting a budget means the class's preset
+        expect(resolveDrawing(ask({ link: { budgetM: 8 } }), PHONE)).toMatchObject({ budgetM: PHONE_P.budgetM, note: 'budget-handheld', from: { budget: 'device' } });
+        expect(resolveDrawing(ask({ scene: { budgetM: 8 } }), IPAD_OS)).toMatchObject({ budgetM: TABLET.budgetM, from: { budget: 'device' } });
+        // control: the v0.10 first cut, the pilot's number kept only when lighter than the class's preset, fails exactly these rows
+        const lighterOnly: Policy = (a, d) => {
+            const r = real(a, d);
+            if (canDrawStochastic(d)) return r;
+            const top = (d.preset ?? BUILTIN_PRESETS[d.class ?? impliedClass(d)]).budgetM;
+            const own = a.pilot.budgetM;
+            return { ...r, budgetM: own !== undefined && own < top ? own : top };
+        };
+        const f = failures(lighterOnly);
+        expect(f).toContain('phone: the pilot\'s heavier budget is kept, without a note (their own number)');
+        expect(f).toContain('ipad: the pilot\'s heavier budget is kept (an iPad Pro is not a phone)');
+        expect(f).toContain('webgl: the pilot\'s heavier budget is kept (a strong GPU on a browser without WebGPU can lift the weak class\'s preset)');
+        expect(f).toContain('phone: the pilot\'s budget with the pilot choosing stochastic: the drawing is refused and named, the budget kept');
+        expect(f.length).toBe(7);
+        // the lighter-than-preset rows and every desktop row were right before and stay right
+        expect(f).not.toContain('phone: the pilot\'s lighter budget is kept');
+        expect(f).not.toContain('ipad: the pilot\'s lighter budget is kept');
+        expect(f.some((n) => n.startsWith('desktop'))).toBe(false);
     });
 
     it('the owner\'s preset sits below the scene\'s entry, the pilot and the link, and above the built-in table', () => {

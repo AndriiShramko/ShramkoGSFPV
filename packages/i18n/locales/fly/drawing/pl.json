@@ -5,7 +5,7 @@
   "set.display.drawing.opt.stochastic": "Stochastyczne (SuperSplat)",
   "set.display.drawing.opt.sorted": "Sortowane (klasyczne)",
   "set.display.budget": "Budżet splatów",
-  "set.display.budget.help": "Ile milionów splatów skan może narysować najwyżej. Automatycznie bierze ?budget= z linku, wybór właściciela sceny albo ustawienie wstępne tego urządzenia (zobacz wiersz Renderowanie). ?budget= z linku jest respektowane przy otwarciu sceny; wybór tutaj podczas lotu wygrywa w tej scenie. Więcej splatów to ostrzej i wolniej; regulator jakości i tak go obniża, gdy gubione są klatki.",
+  "set.display.budget.help": "Ile milionów splatów skan może narysować najwyżej. Automatycznie bierze ?budget= z linku, wybór właściciela sceny albo ustawienie wstępne tego urządzenia (zobacz wiersz Renderowanie). ?budget= z linku jest respektowane przy otwarciu sceny; wybór tutaj podczas lotu wygrywa w tej scenie. Więcej splatów to ostrzej i wolniej; regulator jakości i tak go obniża, gdy gubione są klatki. Ustaw to na tyle, ile udźwignie Twoje urządzenie: działa też na telefonie i tablecie, w górę i w dół (liczba z linku lub ze sceny nie).",
   "set.display.budget.opt.auto": "Automatycznie (link, scena lub ustawienie wstępne)",
   "set.display.budget.opt.1": "1 mln splatów",
   "set.display.budget.opt.2": "2 mln splatów",

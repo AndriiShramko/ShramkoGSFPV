@@ -5,7 +5,7 @@
   "set.display.drawing.opt.stochastic": "Stochastic (SuperSplat)",
   "set.display.drawing.opt.sorted": "Sorted (classic)",
   "set.display.budget": "Splat budget",
-  "set.display.budget.help": "How many million splats the scan may draw at most. Auto takes the link's ?budget=, the scene owner's choice, or this device's preset (see the Render row). A link's ?budget= is obeyed when a scene opens; a choice made here while flying wins for that scene. More splats are sharper and slower; the quality governor still lowers it when frames are missed.",
+  "set.display.budget.help": "How many million splats the scan may draw at most. Auto takes the link's ?budget=, the scene owner's choice, or this device's preset (see the Render row). A link's ?budget= is obeyed when a scene opens; a choice made here while flying wins for that scene. More splats are sharper and slower; the quality governor still lowers it when frames are missed. Set it to what your device can do: it counts on a phone and a tablet too, up as well as down (a link's or a scene's number does not).",
   "set.display.budget.opt.auto": "Auto (link, scene or preset)",
   "set.display.budget.opt.1": "1 million splats",
   "set.display.budget.opt.2": "2 million splats",

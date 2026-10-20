@@ -4,7 +4,7 @@
 // a control that must fail: a rule by touch points alone, a rule that calls every Intel GPU weak (Arc is discrete), a rule
 // that ignores the WebGL fallback, one that needs a single weak hint instead of two.
 import { describe, it, expect } from 'vitest';
-import { classifyDevice, gpuName, impliedClass, isPhoneSized, DEVICE_CLASSES, SMALL_BUFFER_BYTES } from '../src/device-class';
+import { classifyDevice, gpuName, impliedClass, isHandheld, isPhoneSized, looksHandheld, DEVICE_CLASSES, PHONE_SHORT_SIDE, SMALL_BUFFER_BYTES } from '../src/device-class';
 import type { DeviceSignals, GpuInfo } from '../src/device-class';
 
 const UA = {
@@ -48,6 +48,40 @@ describe('classifyDevice: handhelds', () => {
         expect(classifyDevice(laptop).cls).toBe('desktop-strong');
         // and a real Mac (no touch points) stays a desktop
         expect(classifyDevice(sig({ userAgent: UA.mac, gpu: gpu({ vendor: 'apple', architecture: 'metal-3' }) })).cls).toBe('desktop-strong');
+    });
+
+    it('a phone that sends a desktop user agent ("Request desktop site") is still a phone: more than one touch point and a phone-sized screen (v0.10 review)', () => {
+        // Android Chrome in desktop-site mode: a Linux user agent, Client Hints mobile false, but screen.width/height stay the phone's
+        const desktopSite = sig({ userAgent: UA.linux, uaMobile: false, maxTouchPoints: 5, screenShortSide: 412, gpu: null });
+        expect(classifyDevice(desktopSite)).toEqual({ cls: 'phone', reasons: ['small-touch-screen'] });
+        expect(classifyDevice({ ...desktopSite, userAgent: UA.windows })).toEqual({ cls: 'phone', reasons: ['small-touch-screen'] });
+        expect(looksHandheld(desktopSite)).toBe(true);
+        // the border: 599 CSS px is a phone's, 600 is not
+        expect(classifyDevice({ ...desktopSite, screenShortSide: PHONE_SHORT_SIDE - 1 }).cls).toBe('phone');
+        expect(classifyDevice({ ...desktopSite, screenShortSide: PHONE_SHORT_SIDE }).cls).toBe('desktop-strong');
+        // a user agent that does say handheld keeps its own reason
+        expect(classifyDevice(sig({ userAgent: UA.androidPhone, maxTouchPoints: 5, screenShortSide: 412, gpu: null })).reasons).toEqual(['phone']);
+        // control: a rule that reads the user agent alone (the first cut) calls the desktop-site phone a strong desktop; the real rule does not
+        const uaOnly = (s: DeviceSignals) => (isHandheld(s.userAgent, s.maxTouchPoints, s.uaMobile) ? classifyDevice(s).cls : classifyDevice({ ...s, maxTouchPoints: 0 }).cls);
+        expect(uaOnly(desktopSite)).toBe('desktop-strong');
+        expect(classifyDevice(desktopSite).cls).toBe('phone');
+    });
+
+    it('a touch laptop, a monitor with no touch, one touch point and a tablet in desktop mode are not phones', () => {
+        // a Windows laptop with a touch screen: 1366x768 is the smallest common one
+        expect(classifyDevice(sig({ maxTouchPoints: 10, screenShortSide: 768 })).cls).toBe('desktop-strong');
+        expect(classifyDevice(sig({ maxTouchPoints: 10, screenShortSide: 1080 })).cls).toBe('desktop-strong');
+        // no touch at all: a small screen alone is a small monitor
+        expect(classifyDevice(sig({ maxTouchPoints: 0, screenShortSide: 412 })).cls).toBe('desktop-strong');
+        // a single touch point is not a touch screen's multi-touch
+        expect(classifyDevice(sig({ maxTouchPoints: 1, screenShortSide: 412 })).cls).toBe('desktop-strong');
+        // unknown screen size counts for nothing
+        expect(classifyDevice(sig({ maxTouchPoints: 5, screenShortSide: 0 })).cls).toBe('desktop-strong');
+        // not looked for: a tablet in desktop mode looks like a Linux touch laptop; the pilot names the class in Settings
+        expect(classifyDevice(sig({ userAgent: UA.linux, uaMobile: false, maxTouchPoints: 10, screenShortSide: 800 })).cls).toBe('desktop-strong');
+        // control: a rule by touch and size without the border (any touch device under 900) calls the touch laptop a phone-class device
+        const looseSize = (s: DeviceSignals) => (s.maxTouchPoints > 1 && s.screenShortSide < 900 ? 'phone' : classifyDevice(s).cls);
+        expect(looseSize(sig({ maxTouchPoints: 10, screenShortSide: 768 }))).toBe('phone');
     });
 
     it('isPhoneSized: the order of the rules', () => {

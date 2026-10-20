@@ -23,11 +23,13 @@
 //
 // The device decides what is possible: the engine draws stochastic only with its GPU-sort renderer, i.e.
 // WebGPU. SuperSplat shows it on desktop browsers only, so on phones and tablets a request for it is
-// ignored too, and so is the scene's budget (a desktop number). The budget a refused device draws under
-// is its class's preset (v0.10; until then SuperSplat's viewer's own rule, isViewerMobile: 2 M on Android,
-// iPhone, iPad and iPod, else 4 M). The HUD's short note then says who asked (the scene or the pilot's
-// setting) and what was refused (stochastic, or only the budget): DrawingNote. Nobody asked, nothing
-// refused: no note (a phone's default is not news).
+// ignored too, and so is the link's or the scene's budget (a desktop number). The budget a refused device
+// draws under is its class's preset (v0.10; until then SuperSplat's viewer's own rule, isViewerMobile: 2 M on
+// Android, iPhone, iPad and iPod, else 4 M) unless the PILOT set one in Display -> Splat budget: that number
+// is his machine's power and holds on every device, up or down (v0.10 review: it used to go only down).
+// The HUD's short note then says who asked (the scene or the pilot's setting) and what was refused
+// (stochastic, or only the budget): DrawingNote. Nobody asked, nothing refused: no note (a phone's default
+// is not news).
 // The splat budget becomes the quality governor's top level (governor.ts setTopBudget); missed frames
 // lower the budget from there and never switch stochastic off.
 
@@ -194,11 +196,12 @@ export function resolveDrawing(ask: DrawingAsk, device: DrawingDevice): Drawing 
     const refusedStochastic = wants && stochasticFrom !== 'device';
     const who = refusedStochastic ? (stochasticFrom === 'setting' ? 'setting' : 'scene')
         : asked !== undefined && budgetFrom !== 'setting' && asked !== top ? 'budget' : null;
-    // the pilot's own budget is kept here when it is lighter than the device's; a heavier one is refused
-    // like a scene's (a phone that asked for 16 M is not helped by getting it)
+    // the pilot's own budget (Display -> Splat budget) is kept here whatever its size (v0.10 owner item 3: the pilot
+    // sets it to the power of his computer, tablet or phone, and an iPad Pro or a strong GPU on Firefox must be able
+    // to go above the class's preset); the quality governor still lowers it when frames are missed. Only a link's
+    // or a scene's number is refused: those are desktop numbers written for somebody else's machine.
     const own = pilot.budgetM;
-    const lighter = own !== undefined && own < top;
-    return { stochastic: false, budgetM: lighter ? own : top, renderScale: preset.renderScale, deviceClass, note: who ? `${who}-${why}` : null, from: { stochastic: 'device', budget: lighter ? 'setting' : 'device' } };
+    return { stochastic: false, budgetM: own ?? top, renderScale: preset.renderScale, deviceClass, note: who ? `${who}-${why}` : null, from: { stochastic: 'device', budget: own !== undefined ? 'setting' : 'device' } };
 }
 
 /** The two numbers a scan is drawn with (a Drawing without its note). */

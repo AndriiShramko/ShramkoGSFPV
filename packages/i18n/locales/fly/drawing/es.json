@@ -5,7 +5,7 @@
   "set.display.drawing.opt.stochastic": "Estocástico (SuperSplat)",
   "set.display.drawing.opt.sorted": "Ordenado (clásico)",
   "set.display.budget": "Presupuesto de splats",
-  "set.display.budget.help": "Cuántos millones de splats puede dibujar como máximo el escaneo. Automático toma el ?budget= del enlace, la elección del dueño de la escena o el preajuste de este dispositivo (mira la fila Renderizado). El ?budget= de un enlace se obedece al abrir la escena; lo que eliges aquí mientras vuelas manda en esa escena. Más splats son más nítidos y más lentos; el regulador de calidad lo baja igualmente si se pierden fotogramas.",
+  "set.display.budget.help": "Cuántos millones de splats puede dibujar como máximo el escaneo. Automático toma el ?budget= del enlace, la elección del dueño de la escena o el preajuste de este dispositivo (mira la fila Renderizado). El ?budget= de un enlace se obedece al abrir la escena; lo que eliges aquí mientras vuelas manda en esa escena. Más splats son más nítidos y más lentos; el regulador de calidad lo baja igualmente si se pierden fotogramas. Ajústalo a lo que aguanta tu dispositivo: cuenta también en un móvil y en una tableta, hacia arriba y hacia abajo (el número de un enlace o de una escena no).",
   "set.display.budget.opt.auto": "Automático (enlace, escena o preajuste)",
   "set.display.budget.opt.1": "1 millón de splats",
   "set.display.budget.opt.2": "2 millones de splats",

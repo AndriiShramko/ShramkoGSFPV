@@ -4,13 +4,18 @@
 //
 // Four classes, each with its own drawing preset (presets.ts; the owner edits them in the admin):
 //   phone          a handheld (isHandheld) that is phone-sized: an iPhone or iPod, an Android with "Mobile" in its
-//                  user agent, or any handheld whose shorter screen side is under 600 CSS pixels
+//                  user agent, or any handheld whose shorter screen side is under 600 CSS pixels; also a phone-sized
+//                  touch screen behind a desktop user agent ("Request desktop site", isSmallTouchScreen)
 //   tablet         any other handheld: an iPad (also iPadOS, whose Safari says "Macintosh" but has touch points),
 //                  an Android tablet (no "Mobile"), a large foldable
 //   desktop-weak   a desktop or laptop browser whose graphics are probably not up to the full picture: no WebGPU
 //                  (the engine's CPU-sort renderer), a fallback (software) adapter, an Intel integrated GPU (Arc
 //                  and Xe-HPG are discrete and count as strong), or two of the weak hints below
 //   desktop-strong every other desktop: WebGPU on a real adapter (NVIDIA, AMD, Apple, Intel Arc) with nothing weak
+// Why no WebGPU alone is weak: the site tells such a browser that flying needs WebGPU (banner.noWebgpu), so it only looks
+// at the scan, on the engine's CPU-sort renderer, whose cost no GPU hint can see. Nobody measured a strong GPU behind a
+// browser without WebGPU, so it starts cautious (the weak preset); the pilot's own Splat budget goes above the preset
+// there (drawing.ts), and the Device class setting names the class outright.
 // Weak hints (two of three make it weak): navigator.deviceMemory at most 4 GB (the browser rounds it down and caps it
 // at 8), at most 4 logical cores, a WebGPU adapter whose buffer limits are under 1 GiB.
 // What this cannot see: an AMD APU ("Radeon Graphics") or a Qualcomm laptop looks like any other adapter when the
@@ -60,7 +65,7 @@ export interface DeviceReading {
 }
 
 export type DeviceReason =
-    | 'phone' | 'tablet'
+    | 'phone' | 'tablet' | 'small-touch-screen'
     | 'no-webgpu' | 'fallback-adapter' | 'intel-integrated'
     | 'little-memory' | 'few-cores' | 'small-buffers'
     | 'strong';
@@ -70,6 +75,25 @@ export function isHandheld(userAgent: string, maxTouchPoints: number, uaDataMobi
     if (uaDataMobile === true) return true;
     if (/Android|iPhone|iPad|iPod|Mobile/i.test(userAgent)) return true;
     return /Macintosh/.test(userAgent) && maxTouchPoints > 1;
+}
+
+/** A touch screen with a short side under this many CSS pixels is a phone's (a tablet starts near 600, a Windows or Linux touch laptop at 700 and up). */
+export const PHONE_SHORT_SIDE = 600;
+
+/**
+ * A phone-sized touch screen behind a user agent that does not say handheld: "Request desktop site" in Android Chrome and some Samsung
+ * modes send a desktop user agent and Client Hints `mobile: false`, but the screen is still a phone's (more than one touch point, the
+ * shorter side under PHONE_SHORT_SIDE CSS pixels; `screen`, not the window, which the desktop-site mode widens). A touch laptop is far
+ * bigger. Not looked for: a tablet in desktop mode (a Linux user agent with touch points looks like a Linux touch laptop; the pilot
+ * can name the class in Settings).
+ */
+export function isSmallTouchScreen(s: Pick<DeviceSignals, 'maxTouchPoints' | 'screenShortSide'>): boolean {
+    return s.maxTouchPoints > 1 && s.screenShortSide > 0 && s.screenShortSide < PHONE_SHORT_SIDE;
+}
+
+/** A phone or a tablet by everything the browser says: isHandheld, or a phone-sized touch screen under a desktop user agent (isSmallTouchScreen). */
+export function looksHandheld(s: Pick<DeviceSignals, 'userAgent' | 'maxTouchPoints' | 'uaMobile' | 'screenShortSide'>): boolean {
+    return isHandheld(s.userAgent, s.maxTouchPoints, s.uaMobile) || isSmallTouchScreen(s);
 }
 
 /** A handheld that is phone-sized. */
@@ -89,8 +113,9 @@ export const SMALL_BUFFER_BYTES = 1024 ** 3;
 
 /** The class of a device, and why (see the header for the rule). */
 export function classifyDevice(s: DeviceSignals): DeviceReading {
-    if (isHandheld(s.userAgent, s.maxTouchPoints, s.uaMobile)) {
-        return isPhoneSized(s) ? { cls: 'phone', reasons: ['phone'] } : { cls: 'tablet', reasons: ['tablet'] };
+    if (looksHandheld(s)) {
+        if (!isPhoneSized(s)) return { cls: 'tablet', reasons: ['tablet'] };
+        return { cls: 'phone', reasons: [isHandheld(s.userAgent, s.maxTouchPoints, s.uaMobile) ? 'phone' : 'small-touch-screen'] };
     }
     const hard: DeviceReason[] = [];
     if (!s.webgpu) hard.push('no-webgpu');

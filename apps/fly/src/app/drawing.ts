@@ -16,7 +16,7 @@
 // once the flight is built (the governor's top budget), on every scene switch and setting change.
 // The part that reads no browser state (the settings, the link less the pilot's live choice, the F3 line) is
 // drawing-ask.ts, tested in Node; this file holds what needs `location` and `navigator`.
-import { classifyDevice, isHandheld, isViewerMobile, presetFor, readDrawingDefaults, resolveDrawing } from '@gsfpv/render-pc';
+import { classifyDevice, isViewerMobile, looksHandheld, presetFor, readDrawingDefaults, resolveDrawing } from '@gsfpv/render-pc';
 import type { DeviceReading, DeviceSignals, Drawing, DrawingDefaults, DrawingPreset, GpuInfo } from '@gsfpv/render-pc';
 import { renderParams } from '@gsfpv/scenes';
 import type { SceneRender } from '@gsfpv/scenes';
@@ -32,12 +32,17 @@ export type { DeviceChoice } from './drawing-ask';
 /** This page's own drawing parameters (its deep link): they belong to the scene of the page's ?scene=. */
 export const pageRender: SceneRender | undefined = renderParams(q.get('budget'), q.get('stochastic'));
 
-/** A phone or a tablet (render-pc isHandheld): User-Agent Client Hints when the browser has them, else the user agent. */
-export const handheld: boolean = isHandheld(
-    navigator.userAgent,
-    navigator.maxTouchPoints ?? 0,
-    (navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData?.mobile
-);
+/**
+ * A phone or a tablet (render-pc looksHandheld): User-Agent Client Hints when the browser has them, else the user agent, else a
+ * phone-sized touch screen under a desktop user agent ("Request desktop site"). The same rule as the class (classifyDevice), so a
+ * device the class calls a phone is never offered the stochastic drawing.
+ */
+export const handheld: boolean = looksHandheld({
+    userAgent: navigator.userAgent,
+    maxTouchPoints: navigator.maxTouchPoints ?? 0,
+    uaMobile: (navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData?.mobile,
+    screenShortSide: Math.min(screen.width, screen.height) || 0
+});
 
 /** What SuperSplat's viewer calls mobile (render-pc isViewerMobile): it sets the top splat budget, 2 M or 4 M. */
 export const mobile: boolean = isViewerMobile(navigator.userAgent);
