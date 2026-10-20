@@ -112,7 +112,7 @@ const errors = (log: string[]): string[] => log.filter((l) => l.startsWith('page
 /** The drawing as the page decided it and as the engine really has it, the resolution, F3's line (a string run in the page). */
 const STATE = `const g = s.renderer.app.scene.gsplat; const dir = s.renderer.app.renderer.gsplatDirector; let hybrid = null;
   if (dir) for (const cd of dir.camerasMap.values()) for (const ld of cd.layersMap.values()) { const m = ld.gsplatManager; const r = m && m.renderer; if (r) hybrid = { gpuSort: r.usesGpuSort === true, stochastic: r.stochastic === true, define: r._material ? !!r._material.getDefine('GSPLAT_STOCHASTIC') : null }; }
-  return { status: h.status, drawing: h.drawing ?? null, engine: g.stochastic === true, hybrid, top: h.governor ? h.governor.topBudgetMillions : null, budgetM: g.splatBudget / 1e6, scale: s.renderer.renderScale, canvas: [s.renderer.canvas.width, s.renderer.canvas.height], css: [s.renderer.canvas.clientWidth, s.renderer.canvas.clientHeight], dpr: window.devicePixelRatio, search: location.search, f3: (document.querySelector('[data-testid=drawing-line]') || {}).textContent || '' };`;
+  return { status: h.status, drawing: h.drawing ?? null, engine: g.stochastic === true, hybrid, top: h.governor ? h.governor.topBudgetMillions : null, budgetM: g.splatBudget / 1e6, scale: s.renderer.renderScale, canvas: [s.renderer.canvas.width, s.renderer.canvas.height], css: [s.renderer.canvas.clientWidth, s.renderer.canvas.clientHeight], dpr: window.devicePixelRatio, search: location.search, note: (document.querySelector('.hud-note') || {}).textContent || '', f3: (document.querySelector('[data-testid=drawing-line]') || {}).textContent || '' };`;
 const sorted = (st: Any): boolean => st.engine === false && st.hybrid?.stochastic === false && st.hybrid?.define === false && st.hybrid?.gpuSort === true;
 const stochastic = (st: Any): boolean => st.engine === true && st.hybrid?.stochastic === true && st.hybrid?.define === true && st.hybrid?.gpuSort === true;
 
@@ -452,7 +452,7 @@ async function main(): Promise<void> {
                 await sleep(1200);
                 const after = await state(n.page);
                 const lineAfter = await f3(n.page);
-                const res = { before: before.drawing, pre: { engine: pre.engine, hybrid: pre.hybrid }, during: { engine: during.engine, hybrid: during.hybrid, drawing: during.drawing, f3: lineDuring }, duringSetting: { engine: duringSetting.engine, hybrid: duringSetting.hybrid }, after: { engine: after.engine, hybrid: after.hybrid, drawing: after.drawing, f3: lineAfter }, errors: errors(n.log) };
+                const res = { before: before.drawing, pre: { engine: pre.engine, hybrid: pre.hybrid }, during: { engine: during.engine, hybrid: during.hybrid, drawing: during.drawing, note: during.note, f3: lineDuring }, duringSetting: { engine: duringSetting.engine, hybrid: duringSetting.hybrid }, after: { engine: after.engine, hybrid: after.hybrid, drawing: after.drawing, f3: lineAfter }, errors: errors(n.log) };
                 await n.ctx.close();
                 return res;
             };
@@ -462,6 +462,7 @@ async function main(): Promise<void> {
             check('R5 control: the BASE build keeps drawing stochastic while it records (the grain goes into the file)', base.pre.engine === true && base.during.engine === true && base.after.engine === true, true);
             check('R5 before REC the link\'s stochastic draws (engine and shader)', r.pre.engine === true && r.pre.hybrid?.stochastic === true && r.pre.hybrid?.define === true);
             check('R5 while REC runs the scan is drawn sorted (engine and shader), the hook says the hold is on, F3 says "sorted (recording)"', r.during.engine === false && r.during.hybrid?.stochastic === false && r.during.hybrid?.define === false && r.during.drawing?.held === true && /^Render: sorted \(recording\)/.test(r.during.f3));
+            check('R5 the HUD says once that the recording draws the clean picture (only because the drawing was stochastic)', r.during.note === EN['drawing.rec.clean']);
             check('R5 a Render setting changed during the recording waits for it (still sorted)', r.duringSetting.engine === false && r.duringSetting.hybrid?.define === false);
             check('R5 after the stop the pilot\'s drawing is back (the link\'s stochastic: engine and shader), the hold is off', r.after.engine === true && r.after.hybrid?.stochastic === true && r.after.hybrid?.define === true && r.after.drawing?.held === false && /^Render: stochastic/.test(r.after.f3));
             pass.R5 = r.errors.length === 0;
