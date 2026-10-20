@@ -112,7 +112,8 @@ async function cardUp(p: Page, ms = CARD_WAIT_MS): Promise<boolean> {
 }
 const cardCount = (p: Page): Promise<number> => p.evaluate(`document.querySelectorAll('[data-testid="how-to-fly"]').length`) as Promise<number>;
 const hook = (p: Page): Promise<Any> => p.evaluate(`(() => { const f = window.__gsfpv && window.__gsfpv.howToFly; return f ? f() : null; })()`) as Promise<Any>;
-const shot = (p: Page, name: string): Promise<unknown> => p.screenshot({ path: join(SHOTS, `${name}.jpg`), type: 'jpeg', quality: 80 });
+// the card fades in over 0.4 s: a picture taken at once shows it half transparent
+const shot = async (p: Page, name: string): Promise<unknown> => { await sleep(600); return p.screenshot({ path: join(SHOTS, `${name}.jpg`), type: 'jpeg', quality: 80 }); };
 
 /** What the card shows, read from its own DOM. */
 async function cardFacts(p: Page): Promise<Any> {
