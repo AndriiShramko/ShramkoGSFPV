@@ -1,0 +1,291 @@
+{
+  "name": "v09-render",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-20T19:00:44.013Z",
+    "gitHead": "55f424a",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5491",
+  "baseSite": "http://127.0.0.1:5491",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "pass": {
+    "D1": false,
+    "D2": false
+  },
+  "runs": {
+    "D1": "2026-10-20T19:00:44.012Z",
+    "D2": "2026-10-20T19:00:44.012Z"
+  },
+  "checks": [
+    {
+      "name": "D1 desktop, no parameters: stochastic from the first frame (engine, hybrid renderer, its shader define)",
+      "ok": false,
+      "control": false
+    },
+    {
+      "name": "D1 at the measured default budget (4 M), decided by the device",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "D1 the HUD says nothing about the drawing (a default is not news) and F3 says what draws and who decided",
+      "ok": false,
+      "control": false
+    },
+    {
+      "name": "D1 control: the base build (v0.8) draws the same scene sorted at 4 M",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "D2 a streamed scan (Opole): stochastic in the engine and the shader, from the device",
+      "ok": false,
+      "control": false
+    },
+    {
+      "name": "D2 it is a levels-of-detail scan (more than one level) drawn under the desktop budget",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "D2 control: the base build draws it sorted",
+      "ok": true,
+      "control": true
+    }
+  ],
+  "items": {
+    "D1": {
+      "st": {
+        "status": "ready",
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 4,
+          "from": {
+            "stochastic": "device",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 4,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": null,
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "engine": false,
+        "hybrid": {
+          "gpuSort": true,
+          "stochastic": false,
+          "define": false
+        },
+        "top": 4,
+        "budgetM": 4,
+        "renderer": 2,
+        "levels": 4,
+        "search": "?scene=39e63ce9&nowarn=1&input=touch",
+        "note": "",
+        "f3": ""
+      },
+      "line": "Render: sorted (this device) \u00b7 budget 4 M splats (this device) \u00b7 desktop, strong graphics",
+      "base": {
+        "status": "ready",
+        "drawing": {
+          "scene": "39e63ce9",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 4,
+          "from": {
+            "stochastic": "device",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 4,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": null,
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "engine": false,
+        "hybrid": {
+          "gpuSort": true,
+          "stochastic": false,
+          "define": false
+        },
+        "top": 4,
+        "budgetM": 4,
+        "renderer": 2,
+        "levels": 4,
+        "search": "?scene=39e63ce9&nowarn=1&input=touch",
+        "note": "",
+        "f3": "Render: sorted (this device) \u00b7 budget 4 M splats (this device) \u00b7 desktop, strong graphics"
+      },
+      "pageerrors": []
+    },
+    "D2": {
+      "st": {
+        "status": "ready",
+        "drawing": {
+          "scene": "ba7aa29d",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 4,
+          "from": {
+            "stochastic": "device",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 4,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": null,
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "engine": false,
+        "hybrid": {
+          "gpuSort": true,
+          "stochastic": false,
+          "define": false
+        },
+        "top": 4,
+        "budgetM": 4,
+        "renderer": 2,
+        "levels": 10,
+        "search": "?scene=ba7aa29d&nowarn=1&input=touch",
+        "note": "",
+        "f3": ""
+      },
+      "base": {
+        "status": "ready",
+        "drawing": {
+          "scene": "ba7aa29d",
+          "mode": "auto",
+          "budgetSetting": null,
+          "request": null,
+          "catalogue": null,
+          "stochastic": false,
+          "budgetM": 4,
+          "from": {
+            "stochastic": "device",
+            "budget": "device"
+          },
+          "note": null,
+          "engineStochastic": false,
+          "engineBudgetM": 4,
+          "handheld": false,
+          "mobile": false,
+          "webgpu": true,
+          "class": "desktop-strong",
+          "classAuto": "desktop-strong",
+          "classReasons": [
+            "strong"
+          ],
+          "classPicked": false,
+          "renderScale": 1,
+          "presetRenderScale": 1,
+          "owner": null,
+          "held": false,
+          "gpu": {
+            "vendor": "nvidia",
+            "architecture": "lovelace",
+            "device": "",
+            "description": "",
+            "isFallback": false,
+            "maxBufferSize": 2147483648
+          }
+        },
+        "engine": false,
+        "hybrid": {
+          "gpuSort": true,
+          "stochastic": false,
+          "define": false
+        },
+        "top": 4,
+        "budgetM": 4,
+        "renderer": 2,
+        "levels": 10,
+        "search": "?scene=ba7aa29d&nowarn=1&input=touch",
+        "note": "",
+        "f3": ""
+      },
+      "pageerrors": []
+    }
+  }
+}
