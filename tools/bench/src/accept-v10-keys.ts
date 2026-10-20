@@ -195,12 +195,14 @@ const { browser } = await launchChrome({ headless: false, args: ['--window-posit
     await shot(p, 'k1b-controls-dialog');
     // the card must not come while Controls is up, however long we look
     await sleep(1800);
-    check('K1c the card does not come while the Controls dialog is still up (2 s later)', (await p.locator('.screen.radio').count()) > 0 && (await cardCount(p)) === 0, {});
+    const controlsStill = (await p.locator('.screen.radio').count()) > 0 && (await cardCount(p)) === 0;
     await p.locator('[data-action="radio-keyboard"]').click({ timeout: 15000 });
     const up1 = await cardUp(p);
     check('K1 a first-time visitor who chose Keyboard meets the card after the scan is ready', up1, { up: up1, hook: await hook(p) });
+    // judged together with K1: a build that has no card at all trivially "keeps it off the Controls dialog"
+    check('K1c the card waited for the choice: it was not up while the Controls dialog was still up (2 s later), and it came after Keyboard was chosen', controlsStill && up1, { controlsStill, up: up1 });
+    const f = up1 ? await cardFacts(p) : null;
     if (up1) {
-        const f = await cardFacts(p);
         await shot(p, 'k1-card-desktop');
         check('K2 the card shows SPACE = UP and SHIFT = DOWN as the two big keys (arrow and word with each), hold to land',
             f.kind === 'game' && JSON.stringify(f.upCaps) === JSON.stringify(['Space']) && f.upWord === 'Up' && JSON.stringify(f.downCaps) === JSON.stringify(['Shift']) && f.downWord === 'Down' && /land/.test(f.downSub ?? ''), { kind: f.kind, up: f.upCaps, upWord: f.upWord, down: f.downCaps, downWord: f.downWord, downSub: f.downSub });
@@ -226,37 +228,40 @@ const { browser } = await launchChrome({ headless: false, args: ['--window-posit
             const moved = Math.hypot(after.x - before.x, after.z - before.z);
             return f.paused === true && after.armed === false && moved < 0.05;
         })(), { paused: f.paused });
-        // the lock: Start flying captures the mouse and the next key takes off
-        await ev(p, 'h.wallsSwitch.set(false); return 0;'); // the palms over the spawn stop a climb
-        await p.bringToFront(); // Chrome grants pointer lock only to a window the OS has focused
-        await sleep(300);
-        const y0 = (await ev<Any>(p, POS)).y;
-        await p.locator('[data-action="htf-start"]').click();
-        await sleep(500);
-        const afterStart = await ev<Any>(p, 'return { locked: document.pointerLockElement !== null, game: h.play() && h.play().game, paused: s.paused, cards: document.querySelectorAll(\'[data-testid="how-to-fly"]\').length };');
-        check('K6 Start flying closes the card, resumes the flight and captures the mouse (pointer lock)', afterStart.cards === 0 && afterStart.paused === false && afterStart.locked === true && afterStart.game?.locked === true, { cards: afterStart.cards, paused: afterStart.paused, locked: afterStart.locked });
-        await shot(p, 'k6-after-start');
-        await p.keyboard.down('Space');
-        await sleep(1400);
-        const rem = await reminderOn(p);
-        const fly = await ev<Any>(p, POS);
-        check('K7 the first key after Start takes off: Space climbs (the drone is armed and higher than at the start)', fly.armed === true && fly.y > y0 + 0.3, { y0, y: fly.y, armed: fly.armed });
-        check('K8 for the first seconds of the first flight a small pill says "Space up . Shift down"', rem === true, { reminder: rem });
-        await shot(p, 'k8-first-flight-reminder');
-        const pillText = await p.evaluate(`(document.querySelector('[data-testid="game-reminder"]') || {}).textContent || ''`);
-        check('K8b the pill names both caps and both words', /Space/.test(pillText as string) && /Shift/.test(pillText as string) && /up/.test(pillText as string) && /down/.test(pillText as string), { pillText });
-        const corner = await p.evaluate(`(document.querySelector('.osd.br') || {}).textContent || ''`);
-        check('K9 the corner line in flight starts with Space up / Shift down (before: K keys, F, R, Esc, H)', /Space up/.test(corner as string) && /Shift down/.test(corner as string), { corner });
-        await p.keyboard.up('Space');
-        // a new press of Shift: the pilot has found the keys, the pill goes
-        await p.keyboard.press('Shift');
-        await sleep(700);
-        check('K8c the pill goes at once when Shift is pressed', (await reminderOn(p)) === false, {});
+    } else {
+        // the base build has no card: these are failed checks there, and nothing is pressed (a W would start the motors)
+        for (const id of ['K2', 'K2b', 'K3', 'K3b', 'K4', 'K5']) check(`${id} (needs the card)`, false, { skipped: 'no card came up' });
     }
-    check('K10 across the whole first visit the card was never up together with another dialog (Controls, the motion notice, a panel, the menu, the picker, the crash panel)', await (async () => {
-        const o = await p.evaluate(`window.__overlap`) as Any;
-        return o.frames === 0;
-    })(), { overlap: await p.evaluate(`window.__overlap`) });
+    // the lock: Start flying captures the mouse and the next key takes off. Without a card (the base build) a click on the view stands in
+    await ev(p, 'h.wallsSwitch.set(false); return 0;'); // the palms over the spawn stop a climb
+    await p.bringToFront(); // Chrome grants pointer lock only to a window the OS has focused
+    await sleep(300);
+    const y0 = (await ev<Any>(p, POS)).y;
+    if (up1) await p.locator('[data-action="htf-start"]').click();
+    else { const box = (await p.locator('canvas').first().boundingBox())!; await p.mouse.click(box.x + box.width / 2, box.y + box.height / 2); }
+    await sleep(500);
+    const afterStart = await ev<Any>(p, 'return { locked: document.pointerLockElement !== null, game: h.play() && h.play().game, paused: s.paused, cards: document.querySelectorAll(\'[data-testid="how-to-fly"]\').length };');
+    check('K6 Start flying closes the card, resumes the flight and captures the mouse (pointer lock)', up1 && afterStart.cards === 0 && afterStart.paused === false && afterStart.locked === true && afterStart.game?.locked === true, { cards: afterStart.cards, paused: afterStart.paused, locked: afterStart.locked });
+    await shot(p, 'k6-after-start');
+    await p.keyboard.down('Space');
+    await sleep(1400);
+    const rem = await reminderOn(p);
+    const fly = await ev<Any>(p, POS);
+    check('K7 the first key after the start takes off: Space climbs (the drone is armed and higher than at the start)', fly.armed === true && fly.y > y0 + 0.3, { y0, y: fly.y, armed: fly.armed }, false);
+    check('K8 for the first seconds of the first flight a small pill says "Space up . Shift down"', rem === true, { reminder: rem });
+    await shot(p, 'k8-first-flight-reminder');
+    const pillText = await p.evaluate(`(document.querySelector('[data-testid="game-reminder"]') || {}).textContent || ''`);
+    check('K8b the pill names both caps and both words', /Space/.test(pillText as string) && /Shift/.test(pillText as string) && /up/.test(pillText as string) && /down/.test(pillText as string), { pillText });
+    const corner = await p.evaluate(`(document.querySelector('.osd.br') || {}).textContent || ''`);
+    check('K9 the corner line in flight starts with Space up / Shift down (before: K keys, F, R, Esc, H)', /Space up/.test(corner as string) && /Shift down/.test(corner as string), { corner });
+    await p.keyboard.up('Space');
+    // a new press of Shift: the pilot has found the keys, the pill goes
+    await p.keyboard.press('Shift');
+    await sleep(700);
+    check('K8c the pill was up and goes at once when Shift is pressed', rem === true && (await reminderOn(p)) === false, { wasUp: rem });
+    // judged together with the card having been seen: a build with no card at all is never "over another dialog"
+    const overlap1 = await p.evaluate(`window.__overlap`) as Any;
+    check('K10 across the whole first visit the card was up and never together with another dialog (Controls, the motion notice, a panel, the menu, the picker, the crash panel)', up1 && overlap1.frames === 0, { up: up1, overlap: overlap1 });
     // the sampler itself must see an overlap (control): a second dialog put up under the card is counted
     if (up1) {
         // the card is gone after Start; K opens it, then a stand-in dialog is put up and the sampler must count it
@@ -279,14 +284,14 @@ const { browser } = await launchChrome({ headless: false, args: ['--window-posit
     const up2 = await cardUp(p);
     const h2 = await hook(p);
     check('K11 a second visit (nothing ticked) shows the card again, by itself: no Controls dialog this time, the keyboard of last time is back', up2 && (h2?.opened ?? []).includes('auto'), { up: up2, opened: h2?.opened ?? null });
-    if (up2) {
-        await shot(p, 'k11-second-visit');
-        const box2 = await cardFacts(p);
+    {
+        if (up2) await shot(p, 'k11-second-visit');
+        const box2 = up2 ? await cardFacts(p) : null;
         check('K11b the box is not ticked on the second visit (nothing was ticked in the first)', box2?.hideChecked === false, { hideChecked: box2?.hideChecked ?? null });
         // the pill's 8 seconds: take off with W held and let it run out (walls off: nothing to crash into)
         await ev(p, 'h.wallsSwitch.set(false); return 0;');
         await p.bringToFront();
-        await p.locator('[data-action="htf-start"]').click();
+        if (up2) await p.locator('[data-action="htf-start"]').click();
         await sleep(400);
         await p.keyboard.down('KeyW');
         await sleep(1800);
@@ -372,7 +377,7 @@ const { browser } = await launchChrome({ headless: false, args: ['--window-posit
     })();
     check('K17 for a radio or gamepad the card is the short radio one: sticks, arm, mode switch, N, Esc, K', radio?.kind === 'radio' && JSON.stringify(radio.rows) === JSON.stringify(['sticks', 'arm', 'mode', 'pause', 'next', 'again']), { kind: radio?.kind ?? null, rows: radio?.rows ?? null });
     const overlapA = await p.evaluate(`window.__overlap`) as Any;
-    check('K18 in visits 2 and 3 as well the card was never up together with another dialog', overlapA.frames === 0, { overlap: overlapA });
+    check('K18 in visits 2 and 3 as well the card came and was never up together with another dialog', up1 && up2 && overlapA.frames === 0, { overlap: overlapA });
     await ctxA.close();
 }
 
@@ -400,6 +405,9 @@ const { browser } = await launchChrome({ headless: false, args: ['--window-posit
         const after = await ev<Any>(p, 'return { cards: document.querySelectorAll(\'[data-testid="how-to-fly"]\').length, paused: s.paused, source: h.controls.source, pads: document.querySelectorAll(".touch-pad, .touch-root").length };');
         check('K19c tapping Start flying closes it and leaves the touch sticks to fly', after.cards === 0 && after.paused === false && after.source === 'touch' && after.pads > 0, { ...after });
         check('K19d it did not stand over the motion notice or another dialog on the phone either', oc.frames === 0, { overlap: oc });
+    } else {
+        check('K19c tapping Start flying closes it and leaves the touch sticks to fly', false, { skipped: 'no card came up' });
+        check('K19d it did not stand over the motion notice or another dialog on the phone either', false, { skipped: 'no card came up' });
     }
     await ctx.close();
 }
