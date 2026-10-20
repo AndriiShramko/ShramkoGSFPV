@@ -103,9 +103,12 @@ export class DrawingTab {
         return readDrawingDefaults(this.draft.drawing);
     }
 
+    /**
+     * Nothing left to say = `null`, not a missing key: the server keeps the drawing defaults of a draft that sends no `drawing` key
+     * (an older admin page must not wipe them), and takes null as "back to the built-in table" (admin.py CatalogStore.save_draft).
+     */
     private setOwner(next: DrawingDefaults | undefined): void {
-        if (next && Object.keys(next.presets).length) this.draft.drawing = next;
-        else delete this.draft.drawing;
+        this.draft.drawing = next && Object.keys(next.presets).length ? next : null;
     }
 
     /** One field of one class changed by the owner (undefined: back to following the built-in table). */

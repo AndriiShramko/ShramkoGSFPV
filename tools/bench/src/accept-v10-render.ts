@@ -133,7 +133,8 @@ async function f3(p: Page): Promise<string> {
 /** Settings (O): the Render row's live line and notes, then closed again. */
 async function settingsRow(p: Page): Promise<{ line: string; notes: string[] }> {
     await p.keyboard.press('KeyO');
-    await p.waitForSelector('[data-testid=drawing-row-line]', { timeout: 10000 });
+    // every group's rows are in the DOM, the Display group's section is hidden until its rail button is picked: read it attached
+    await p.waitForSelector('[data-testid=drawing-row-line]', { state: 'attached', timeout: 10000 });
     await sleep(300);
     const r = await p.evaluate(() => ({ line: (document.querySelector('[data-testid=drawing-row-line]') || {} as Element).textContent || '', notes: [...document.querySelectorAll('.sr-extra-notes p')].map((e) => e.textContent || '') }));
     await p.keyboard.press('Escape');
@@ -359,6 +360,7 @@ async function main(): Promise<void> {
                 const l = await context(browser);
                 const stLink = await open(l.page, NEW, `scene=${ROOM}&budget=3&stochastic`);
                 await setPref(l.page, 'display.drawing', 'sorted');
+                await sleep(800);
                 const stLinkAfter = await state(l.page);
                 rows.link = { drawing: stLink.drawing, afterSetting: stLinkAfter.drawing };
                 check('R4 a link\'s ?budget=3&stochastic beats everything below it: stochastic at 3 M from the link', stochastic(stLink) && stLink.top === 3 && stLink.drawing?.from?.stochastic === 'link' && stLink.drawing?.from?.budget === 'link');
