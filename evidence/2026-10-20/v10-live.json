@@ -1,0 +1,205 @@
+{
+  "what": "ShramkoGSFPV v0.10 live acceptance: release 5f2af1f (575920947b9c) at https://gsfpv.flyreelstudio.eu, read-only, one run of each bench, 2026-10-20 22:31-22:50 local",
+  "liveRelease": {
+    "before": "5f2af1f built 2026-10-20T20:12:05.902Z",
+    "after": "5f2af1f built 2026-10-20T20:12:05.902Z (queue.log: unchanged for every START and at the end)"
+  },
+  "repoHead": "v03-lead 0ece378",
+  "readOnly": {
+    "method": "every browser context was created through a preloaded guard (.cache/v10-live/guard.cjs, NODE_OPTIONS --require): no POST/PUT/DELETE to the live /api/ left the PC; /api/e (anonymous usage beacon) is answered 204 locally, any other write would be aborted and logged. Self-tested on a local server before the run (beacon, fetch POST, /api/report, /api/share, newPage).",
+    "blockedWrites": {
+      "fly POST /api/e": 115,
+      "wizard POST /api/e": 6,
+      "hid POST /api/e": 16,
+      "v10keys POST /api/e": 36,
+      "v09keys POST /api/e": 14
+    },
+    "otherWritesAttempted": 0,
+    "noAdminLogin": true,
+    "noSsh": true,
+    "noDeploy": true,
+    "noCodeChange": true,
+    "getsOnly": "GET /api/catalog, /api/health, /release.json, pages, scenes from superspl.at CDN"
+  },
+  "catalogueOnLive": "GET /api/catalog before the run: no drawing key; 11 of 13 scenes carry render {stochastic:false} (published 2026-10-18), 70b50d42 and 2f1ddf5f carry none; the repo snapshot apps/site/src/generated/catalog.json (2026-10-07) has none, which is what the bench asserts against",
+  "benches": {
+    "accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16": {
+      "targetPrinted": "accept-fly target: https://gsfpv.flyreelstudio.eu",
+      "result": "pass",
+      "passed": [
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15",
+        "B16",
+        "B6",
+        "B7",
+        "B9"
+      ],
+      "failed": [],
+      "skippedParts": [],
+      "evidence": ".cache/v10-live/files/fly/",
+      "durationS": 473
+    },
+    "wizard-auto-check (base https://gsfpv.flyreelstudio.eu/en)": {
+      "targetPrinted": "the script prints no target line; argv base https://gsfpv.flyreelstudio.eu/en, every page address in result.json starts with it",
+      "result": "pass",
+      "passed": [
+        "nobuttons reaches the check screen",
+        "human reaches the check screen",
+        "dji reaches the check screen",
+        "no Start or Next ever shown",
+        "0 page errors"
+      ],
+      "failed": [],
+      "runs": {
+        "nobuttons": {
+          "screens": 22,
+          "seconds": 26,
+          "reachedCheck": true,
+          "startOrNextEverShown": false,
+          "errors": 0
+        },
+        "human": {
+          "screens": 23,
+          "seconds": 35,
+          "reachedCheck": true,
+          "startOrNextEverShown": false,
+          "errors": 0
+        },
+        "dji": {
+          "screens": 22,
+          "seconds": 19,
+          "reachedCheck": true,
+          "startOrNextEverShown": false,
+          "errors": 0
+        }
+      },
+      "note": "screens counted 22 / 23 / 22 (lead locally: 23 each); the count is how many screen changes a 200 ms poll saw, not a check",
+      "skippedParts": [],
+      "evidence": ".cache/v10-live/wizard/result.json"
+    },
+    "hid-source-probe (base https://gsfpv.flyreelstudio.eu/en)": {
+      "targetPrinted": "the script prints no target line; result.json base = https://gsfpv.flyreelstudio.eu/en",
+      "result": "pass",
+      "passed": [
+        "dji",
+        "dji-none",
+        "dji-other",
+        "dji-pad-cancel",
+        "dji-pad-chooser",
+        "dji-pad-nopick",
+        "dji-windows",
+        "edgetx"
+      ],
+      "failed": [],
+      "overallPass": true,
+      "skippedParts": [],
+      "evidence": ".cache/v10-live/hid/result.json"
+    },
+    "accept-v10-keys": {
+      "targetPrinted": "accept-v10-keys target: https://gsfpv.flyreelstudio.eu",
+      "result": "pass",
+      "passed": [
+        "55 of 55 checks"
+      ],
+      "failed": [],
+      "summary": {
+        "control": false,
+        "passed": true,
+        "total": 55,
+        "failed": []
+      },
+      "notProven": [
+        "a real hand and a real mouse (the click on Start is a Playwright trusted click)",
+        "a real phone (Chrome touch emulation without WebHID)",
+        "a real radio or gamepad (the card is pointed at a gamepad source and K pressed)",
+        "Esc as the browser's own release of the mouse"
+      ],
+      "skippedParts": [
+        "V10_CONTROL=1 (the base-build negative control) not run: it needs the base build, not a SITE"
+      ],
+      "evidence": ".cache/v10-live/files/v10keys/"
+    },
+    "accept-v10-render (live-safe derivation .cache/v10-live/accept-v10-render-live.ts)": {
+      "targetPrinted": "accept-v10-render-live target: https://gsfpv.flyreelstudio.eu",
+      "result": "fail-on-live-data (2 of 22 non-control checks); no live defect",
+      "passed": [
+        "R1 the class is read from the browser: desktop-strong (reasons: strong), with the GPU the engine got",
+        "R1 the default picture IS the sorted picture: 46.41 dB against ?stochastic=0 (above 45)",
+        "R2 a phone: class phone, sorted, 2 M, resolution capped at 70 % (the canvas is 577 px wide, 577 expected), no note",
+        "R2 a tablet: class tablet, sorted, 2 M, resolution capped at 85 % (the canvas is 1394 px wide, 1394 expected), no note",
+        "R2 the Render row of Settings says the class, the GPU and what Auto draws (desktop-strong: sorted, up to 4 M, 100 %)",
+        "R2 a pilot who names the weak desktop class gets its preset: class desktop-weak (picked, the browser said desktop-strong), 2.5 M, scale 85 %, sorted",
+        "R2 the row follows: it names the class the pilot chose and what the browser says",
+        "R4 a link's ?budget=3&stochastic beats everything below it: stochastic at 3 M from the link",
+        "R4 a setting changed in flight beats the link for that scene (sorted, the link's 3 M kept)",
+        "R5 before REC the link's stochastic draws (engine and shader)",
+        "R5 while REC runs the scan is drawn sorted (engine and shader), the hook says the hold is on, F3 says \"sorted (recording)\"",
+        "R5 the HUD says once that the recording draws the clean picture (only because the drawing was stochastic)",
+        "R5 a Render setting changed during the recording waits for it (still sorted)",
+        "R5 after the stop the pilot's drawing is back (the link's stochastic: engine and shader), the hold is off",
+        "R7 a phone (class phone, preset 2 M) whose pilot sets Splat budget 8 M: the page draws up to 8 M, \"from your setting\", sorted, no note",
+        "R7 a tablet (class tablet, preset 2 M) whose pilot sets Splat budget 8 M: the page draws up to 8 M, \"from your setting\", sorted, no note",
+        "R7 a desktop without WebGPU (class desktop-weak, preset 2.5 M) whose pilot sets Splat budget 8 M: the page draws up to 8 M, \"from your setting\", sorted, no note",
+        "R7 a phone given a link's ?budget=8: refused (the phone's 2 M, the note says so); then the pilot sets 4 M: his number wins over the link",
+        "R7 a phone that sends a desktop user agent ({\"ua\":\"Mozilla/5.0 (X11; Linux x86_64) AppleWeb\",\"mobile\":false,\"touch\":5,\"screen\":[412,915]}) is a phone: class phone (reason small-touch-screen), sorted, 2 M, resolution capped at 70 % (canvas 577 px, 577 expected)",
+        "R7 it never draws stochastic: the pilot choosing Stochastic is refused and the HUD says so (setting-handheld)"
+      ],
+      "failed": [
+        "R1 desktop, nothing asked: sorted in the engine and in the shader, 4 M, decided by this device (its class preset)",
+        "R1 F3 names what draws and the class"
+      ],
+      "skippedParts": [
+        "R1 controls (2): they draw the BASE build, which does not exist on a SITE",
+        "R2 controls (3): they open the BASE build",
+        "R3 (all 9 checks): the admin Drawing tab, Draft, Publish, History, Reset: needs the owner login and would write the live catalogue",
+        "R4 (4 checks: pilot Sorted over the owner's preset, pilot 2 M over 6 M, back to Auto, the scene entry over the preset): they need an owner preset / scene entry published from the admin",
+        "R5 control (1): it records the BASE build",
+        "R6 (3 checks): pressing L makes the share picture and the page then POSTs /api/share, which stores a record on the live site",
+        "R7 controls (4): they open the pre-review build"
+      ],
+      "caveat": "the original bench cannot take a SITE (it spawns its own API, admin and base builds), so a copy with its helpers and check bodies line for line was run against the live site, controls and admin parts removed; the copy is in .cache/v10-live, not in the repo",
+      "evidence": ".cache/v10-live/files/v10render/"
+    },
+    "accept-v09-keys (v0.10 expectations, ported in a80254c)": {
+      "targetPrinted": "accept-v09-keys target: https://gsfpv.flyreelstudio.eu",
+      "result": "pass",
+      "passed": [
+        "25 of 25 checks"
+      ],
+      "failed": [],
+      "notDiscriminating": [
+        "V3 no arming step: W alone starts the motors; held 2 s it moves several metres in the facing direction",
+        "V7b Shift descends",
+        "V12b the Escape key pauses and Escape resumes",
+        "V13 the game-scheme flight replays from its log to the same hash; controls: one LSB of the throttle and a 0.05 stick twitch change it",
+        "V14 no page errors",
+        "V15 the pilot profile (Mode 2) is still selectable: no mouse capture on a click, W is a throttle that does not arm, its card is the Mode 2 one"
+      ],
+      "skippedParts": [
+        "V09_CONTROL=1 (base-build control) not run"
+      ],
+      "evidence": ".cache/v10-live/files/v09keys/"
+    }
+  },
+  "failureAnalysis": {
+    "R1 desktop nothing asked (from.stochastic must be \"device\") and R1 F3 line (must end \"(this device)\")": {
+      "verdict": "bench that cannot run as written on live: live data, not a live defect",
+      "evidenceOnce": "run 1: drawing.from.stochastic = \"scene\", catalogue {stochastic:false}, F3 \"Render: sorted (the scene's entry) - budget 4 M splats (this device) - desktop, strong graphics\"; engine and shader sorted, 4 M, class desktop-strong",
+      "rerunOnce": "same two checks fail again with the same values; the picture check passed in both runs (46.41 dB, then 86.77 dB against ?stochastic=0)",
+      "why": "the live catalogue has a per-scene entry render {stochastic:false} on 39e63ce9 (and 10 more scenes); a scene entry outranks the device preset, so the page is sorted because of the entry, which is the designed order (decision R4), and the bench seeds its own API from the older snapshot with no entries",
+      "premiseHoldsCheck": "the same R1 on 2f1ddf5f (Lublin, no scene entry): drawing sorted from \"device\", 4 M, class desktop-strong, F3 line matches: all three pass (evidence .cache/v10-live/files/v10render-r1-noentry/); there its fourth check (picture vs ?stochastic=0) gave 35.29 dB, below 45: two separate loads of a large streamed scene are not the same picture; the 45 dB limit was measured on the 3.8 M scene that fits the 4 M budget; cause not proven (the scene size was not recorded), not treated as a defect"
+    }
+  },
+  "notRunBecauseNotLiveSafe": [
+    "accept-v10-render R3 (admin Drawing tab, Publish, Reset), the R4 checks that need an owner preset, R6 (L makes a share picture and POSTs /api/share)",
+    "every control (they open the base or pre-review build)"
+  ],
+  "notRequestedByThisTask": [
+    "accept-v07-render and accept-v09-render live rows (the lead's deploy list item 3 names them; this run was not asked for them)"
+  ],
+  "cleanup": "tracked screenshots and JSON the benches overwrote were restored with git checkout (25 files), the new JSON files moved to .cache/v10-live/files/<bench>/; no browser or server of this run left; GPU lock released after every bench"
+}
