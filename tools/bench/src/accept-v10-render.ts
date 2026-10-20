@@ -23,8 +23,13 @@
 //   R5  REC: the scan is drawn sorted while it records and the pilot's drawing is back after the stop; a setting changed
 //       during the recording waits for it. Control: the BASE build keeps drawing stochastic while it records.
 //   R6  the share picture (L) of a stochastic view is one sorted frame and the drawing is back right after.
+//   R7  (the review round) the pilot's own Splat budget holds above the preset on a phone, a tablet and a desktop without
+//       WebGPU, and a phone that sends a DESKTOP user agent ("Request desktop site": more than one touch point, a 412 px
+//       screen) is a phone: class phone, the phone's 2 M and 70 %, never stochastic. Controls: the build BEFORE the review
+//       round (PRE_DIST, the lane's first release 459ec16) drops the heavier budget and calls the same device a strong desktop.
 //   SITE_DIST=.cache/dist-v10r BASE_DIST=.cache/dist-base npx tsx src/accept-v10-render.ts [R1 R2 ...]   (from tools/bench)
-// Evidence: evidence/<date>/v10-render.json (+ v10-render-*.png of the admin tab).
+//   SITE_DIST=dist PRE_DIST=.cache/dist-pre-review npx tsx src/accept-v10-render.ts R7   (R7 alone needs no BASE build)
+// Evidence: evidence/<date>/v10-render.json (+ v10-render-*.png of the admin tab); R7 alone: v10-render-review.json.
 import { spawn, execFileSync } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, rmdirSync, writeFileSync } from 'node:fs';
@@ -36,17 +41,25 @@ import { REPO, today, writeEvidence } from './evidence';
 
 const DIST = join(REPO, process.env.SITE_DIST ?? join('.cache', 'dist-v10r'));
 const BASE_DIST = join(REPO, process.env.BASE_DIST ?? join('.cache', 'dist-base'));
+const PRE_DIST = join(REPO, process.env.PRE_DIST ?? join('.cache', 'dist-pre-review'));
 const API_PORT = 8000 + Math.floor(Math.random() * 900);
 const NEW_PORT = API_PORT + 1000;
 const BASE_PORT = API_PORT + 2000;
+const PRE_PORT = API_PORT + 3000;
 const NEW = `http://127.0.0.1:${NEW_PORT}`;
 const BASE = `http://127.0.0.1:${BASE_PORT}`;
+const PRE = `http://127.0.0.1:${PRE_PORT}`;
 const ROOM = '39e63ce9'; // Modlinek Villa, red room and bathroom: 3.8 M splats, a small interior
 const ONLY = process.argv.slice(2).map((x) => x.toUpperCase());
 const want = (id: string): boolean => ONLY.length === 0 || ONLY.includes(id);
+/** Which release builds this run needs: the BASE build (the commit before the lane) for R1-R6, the PRE build (before the review round) for R7. */
+const needBase = ONLY.length === 0 || ONLY.some((x) => x !== 'R7');
+const needPre = want('R7');
 const LOCK = 'C:/dev/.gpu-lock';
 const PHONE_UA = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36';
 const TABLET_UA = 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
+/** What Android Chrome sends in "Request desktop site" mode: a Linux desktop. */
+const DESKTOP_UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36';
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 const EN = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'drawing', 'en.json'), 'utf8')) as Record<string, string>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,15 +104,23 @@ async function until(url: string, ms = 30000): Promise<void> {
     throw new Error(`${url} did not come up`);
 }
 
-/** A fresh context: a desktop, a phone or a tablet (user agent, touch, screen). */
-async function context(browser: Browser, kind: 'desktop' | 'phone' | 'tablet' = 'desktop'): Promise<{ ctx: BrowserContext; page: Page; log: string[] }> {
+/**
+ * A fresh context: a desktop, a phone or a tablet (user agent, touch, screen). 'desktopSitePhone': a phone in "Request desktop
+ * site" mode: a desktop user agent, Client Hints not mobile, the phone's 412 px screen and 5 touch points (Playwright's hasTouch
+ * reports one point; a phone reports five or ten). `init`: one more script that runs before the page's own.
+ */
+async function context(browser: Browser, kind: 'desktop' | 'phone' | 'tablet' | 'desktopSitePhone' = 'desktop', init?: string): Promise<{ ctx: BrowserContext; page: Page; log: string[] }> {
     const ctx = await browser.newContext(kind === 'phone'
         ? { viewport: { width: 412, height: 915 }, screen: { width: 412, height: 915 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, userAgent: PHONE_UA }
         : kind === 'tablet'
             ? { viewport: { width: 820, height: 1180 }, screen: { width: 820, height: 1180 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, userAgent: TABLET_UA }
-            : { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+            : kind === 'desktopSitePhone'
+                ? { viewport: { width: 412, height: 915 }, screen: { width: 412, height: 915 }, deviceScaleFactor: 2, isMobile: false, hasTouch: true, userAgent: DESKTOP_UA }
+                : { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
     await ctx.route('**/api/e', (r) => r.fulfill({ status: 204, body: '' }));
     await ctx.addInitScript('window.__name = window.__name || ((f) => f);');
+    if (kind === 'desktopSitePhone') await ctx.addInitScript("Object.defineProperty(Navigator.prototype, 'maxTouchPoints', { get: () => 5 });");
+    if (init) await ctx.addInitScript(init);
     await ctx.addInitScript({ content: "try { localStorage.setItem('gsfpv.warned', '1'); } catch (e) {}" });
     const page = await ctx.newPage();
     const log: string[] = [];
@@ -200,13 +221,15 @@ async function main(): Promise<void> {
     let apiLog = '';
     api.stdout.on('data', (b) => { apiLog += String(b); });
     api.stderr.on('data', (b) => { apiLog += String(b); });
-    for (const [dist, port] of [[DIST, NEW_PORT], [BASE_DIST, BASE_PORT]] as const) {
+    const servers: (readonly [string, number, string])[] = [[DIST, NEW_PORT, NEW]];
+    if (needBase) servers.push([BASE_DIST, BASE_PORT, BASE]);
+    if (needPre) servers.push([PRE_DIST, PRE_PORT, PRE]);
+    for (const [dist, port] of servers) {
         children.push(spawn('node', [join(REPO, 'tools', 'bench', 'scripts', 'serve-csp.mjs'), dist, String(port)], { env: { ...process.env, API_PROXY: `http://127.0.0.1:${API_PORT}` }, stdio: 'ignore' }));
     }
     await until(`http://127.0.0.1:${API_PORT}/api/health`);
-    await until(`${NEW}/en/`);
-    await until(`${BASE}/en/`);
-    out.build = { new: DIST.replace(REPO, '.'), base: BASE_DIST.replace(REPO, '.') };
+    for (const [, , origin] of servers) await until(`${origin}/en/`);
+    out.build = { new: DIST.replace(REPO, '.'), base: needBase ? BASE_DIST.replace(REPO, '.') : null, pre: needPre ? PRE_DIST.replace(REPO, '.') : null };
 
     const { browser, which } = await launchChrome({ headless: false, args: ['--window-position=40,40', '--window-size=1296,920'] });
     out.browser = which;
@@ -498,6 +521,69 @@ async function main(): Promise<void> {
             pass.R6 = errors(n.log).length === 0;
             await n.ctx.close();
         }
+
+        // ------------------------------------------------------------------ R7 the review round
+        if (want('R7')) {
+            const rows: Record<string, Any> = {};
+            const noWebgpu = 'if (navigator.gpu) navigator.gpu.requestAdapter = async () => null;';
+            /** The page at `site` on a device of `kind`; the pilot's Splat budget set to `budget` after it is up; the state, the hook's drawing. */
+            const withBudget = async (site: string, kind: 'phone' | 'tablet' | 'desktop', budget: string, init?: string): Promise<Any> => {
+                const n = await context(browser, kind, init);
+                await open(n.page, site, `scene=${ROOM}`);
+                await setPref(n.page, 'display.budget', budget);
+                await sleep(900);
+                const st = await state(n.page);
+                const e = errors(n.log);
+                await n.ctx.close();
+                return { ...st, pageerrors: e };
+            };
+            // a. the pilot's own Splat budget goes ABOVE the class's preset where the device cannot draw stochastic
+            for (const [name, kind, init, presetM, cls] of [['phone', 'phone', undefined, 2, 'phone'], ['tablet', 'tablet', undefined, 2, 'tablet'], ['desktop without WebGPU', 'desktop', noWebgpu, 2.5, 'desktop-weak']] as const) {
+                const now = await withBudget(NEW, kind, '8', init);
+                const pre = await withBudget(PRE, kind, '8', init);
+                rows[name] = { now: { drawing: now.drawing, top: now.top }, pre: { drawing: pre.drawing, top: pre.top } };
+                check(`R7 a ${name} (class ${cls}, preset ${presetM} M) whose pilot sets Splat budget 8 M: the page draws up to 8 M, "from your setting", sorted, no note`,
+                    now.status === 'ready' && now.drawing?.class === cls && now.top === 8 && now.drawing?.budgetM === 8 && now.drawing?.from?.budget === 'setting' && now.drawing?.stochastic === false && now.drawing?.note === null && now.pageerrors.length === 0);
+                check(`R7 control: the build before the review round drops the 8 M and keeps ${presetM} M on the ${name}`, pre.status === 'ready' && pre.top === presetM, true);
+            }
+            // a link's budget is still refused on a phone (a desktop number), and the HUD says so; the pilot's own number stays
+            {
+                const n = await context(browser, 'phone');
+                const st = await open(n.page, NEW, `scene=${ROOM}&budget=8`);
+                await setPref(n.page, 'display.budget', '4');
+                await sleep(900);
+                const after = await state(n.page);
+                rows.phoneLink = { link: { drawing: st.drawing, top: st.top, note: st.note }, withSetting: { drawing: after.drawing, top: after.top } };
+                check('R7 a phone given a link\'s ?budget=8: refused (the phone\'s 2 M, the note says so); then the pilot sets 4 M: his number wins over the link', st.top === 2 && st.drawing?.note === 'budget-handheld' && after.top === 4 && after.drawing?.from?.budget === 'setting');
+                await n.ctx.close();
+            }
+            // b. a phone in "Request desktop site" mode
+            {
+                const now = await context(browser, 'desktopSitePhone');
+                const st = await open(now.page, NEW, `scene=${ROOM}`);
+                await waitComplete(now.page, 60000);
+                const after = await state(now.page);
+                const asked = await open(now.page, NEW, `scene=${ROOM}&drawing=stochastic`);
+                const ua = await now.page.evaluate('({ ua: navigator.userAgent.slice(0, 40), mobile: navigator.userAgentData ? navigator.userAgentData.mobile : null, touch: navigator.maxTouchPoints, screen: [screen.width, screen.height] })');
+                await now.ctx.close();
+                const old = await context(browser, 'desktopSitePhone');
+                const stOld = await open(old.page, PRE, `scene=${ROOM}`);
+                await waitComplete(old.page, 60000);
+                const oldAfter = await state(old.page);
+                const oldAsked = await open(old.page, PRE, `scene=${ROOM}&drawing=stochastic`);
+                await old.ctx.close();
+                rows.desktopSitePhone = { device: ua, now: { drawing: st.drawing, scale: after.scale, canvas: after.canvas, css: after.css, dpr: after.dpr, asked: { drawing: asked.drawing, engine: asked.engine } }, pre: { drawing: stOld.drawing, top: stOld.top, scale: oldAfter.scale, asked: { engine: oldAsked.engine } } };
+                const wantPx = Math.round(after.css[0] * after.dpr * 0.7);
+                check(`R7 a phone that sends a desktop user agent (${JSON.stringify(ua)}) is a phone: class phone (reason small-touch-screen), sorted, 2 M, resolution capped at 70 % (canvas ${after.canvas[0]} px, ${wantPx} expected)`,
+                    st.status === 'ready' && st.drawing?.class === 'phone' && st.drawing?.classAuto === 'phone' && JSON.stringify(st.drawing?.classReasons) === '["small-touch-screen"]' && st.drawing?.handheld === true
+                    && st.drawing?.stochastic === false && st.top === 2 && after.scale === 0.7 && Math.abs(after.canvas[0] - wantPx) <= 2 && st.drawing?.note === null);
+                check('R7 it never draws stochastic: the pilot choosing Stochastic is refused and the HUD says so (setting-handheld)', asked.drawing?.stochastic === false && asked.engine === false && asked.drawing?.note === 'setting-handheld' && asked.note === EN['drawing.note.setting-handheld']);
+                check(`R7 control: the build before the review round takes the same device for a strong desktop (class ${stOld.drawing?.class}, ${stOld.top} M, scale ${oldAfter.scale}) and lets it draw stochastic when asked`,
+                    stOld.drawing?.class === 'desktop-strong' && stOld.top === 4 && oldAfter.scale === 1 && oldAsked.engine === true, true);
+            }
+            out.R7 = rows;
+            pass.R7 = true;
+        }
     } finally {
         await browser.close().catch(() => undefined);
     }
@@ -516,6 +602,8 @@ try {
     try { rmSync(DATA, { recursive: true, force: true }); } catch { /* temp */ }
 }
 for (const k of Object.keys(pass)) pass[k] = pass[k] && checks.filter((c) => c.name.startsWith(k)).every((c) => c.ok);
-const file = writeEvidence('v10-render', { new: DIST.replace(REPO, '.'), base: BASE_DIST.replace(REPO, '.'), pass, checks, items: out, failed: failed ? String(failed) : null });
+// R7 alone (it needs no BASE build) must not replace the evidence of the whole run
+const evidenceName = ONLY.length > 0 && ONLY.every((x) => x === 'R7') ? 'v10-render-review' : 'v10-render';
+const file = writeEvidence(evidenceName, { new: DIST.replace(REPO, '.'), base: needBase ? BASE_DIST.replace(REPO, '.') : null, pre: needPre ? PRE_DIST.replace(REPO, '.') : null, pass, checks, items: out, failed: failed ? String(failed) : null });
 console.log(JSON.stringify(pass), file);
 if (failed || Object.values(pass).some((v) => !v) || checks.some((c) => !c.ok)) process.exitCode = 1;

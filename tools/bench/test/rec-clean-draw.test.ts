@@ -155,10 +155,22 @@ describe('REC draws sorted while it runs and lets go when it ends', () => {
             expect(hold.held, `after ${i}`).toBe(false);
         }
         expect(w.acquired()).toBe(3);
-        // control: a recorder that never lets go (a hold with no release on stop) leaves the page sorted for good
-        const leaky = new SortedHold();
-        leaky.acquire();
-        expect(leaky.held).toBe(true);
+    });
+
+    it('control: a recording whose release does nothing leaves the page sorted for good (the stop assertions above have teeth)', async () => {
+        const hold = new SortedHold();
+        // the page's wiring with a release that never lets go: what a recorder that forgot to release would leave behind
+        const rec = new Recording({ ...wired(hold).deps, cleanDraw: () => { hold.acquire(); return () => undefined; } });
+        await rec.start({ auto: false, activation: true });
+        expect(hold.held).toBe(true);
+        await rec.stop();
+        expect(rec.recording).toBe(false);
+        // the real wiring above reads false here; the leak reads true, so `expect(hold.held).toBe(false)` after stop fails on it
+        expect(hold.held).toBe(true);
+        // and each further recording piles one more hold on, so one real release cannot clear them
+        await rec.start({ auto: false, activation: true });
+        await rec.stop();
+        expect(hold.held).toBe(true);
     });
 
     it('the video export is its own business: opening it takes no hold from the Recording', async () => {

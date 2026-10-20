@@ -27,6 +27,10 @@
 //   R6  the cost on a heavy scan (2f1ddf5f, 259 M splats at full detail): GPU time per frame (submit ->
 //       done) with the camera turning, governor off so both draw the same 8 M budget.
 //   SITE=http://127.0.0.1:5372 npx tsx src/accept-v07-render.ts [R1 R2 ...]
+// The device's DEFAULT drawing changed twice since these rows were written: v0.9 made stochastic the desktop default,
+// v0.10 withdrew it (sorted on every class; a desktop without WebGPU is the weak class, 2.5 M). The rows that depend on it
+// (R1's plain-link rows, R4, R9's budget) expect the v0.10 default; V09_DEFAULTS=1 runs them against a v0.9 build instead.
+// accept-v10-render.ts R1 and R2 are the v0.10 acceptance of the default itself.
 // Evidence: evidence/<date>/v07-render.json and v07-render/ (crops of R5).
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -34,12 +38,17 @@ import type { Browser, BrowserContext, Page } from 'playwright';
 import { launchChrome, waitReady } from './browser';
 import { writeEvidence, REPO, today } from './evidence';
 import { STOCHASTIC_BUDGET_M } from '../../../packages/render-pc/src/drawing';
+import { BUILTIN_PRESETS } from '../../../packages/render-pc/src/presets';
 
 const SITE = (process.env.SITE ?? 'http://127.0.0.1:5372').replace(/\/$/, '');
 const fly = (qs: string) => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}` : `${SITE}/en/fly/?${qs}`);
 const A = '39e63ce9';
 const C = '887f27aa';
 const HEAVY = process.env.HEAVY ?? '2f1ddf5f';
+/** The build under test still has the v0.9 default (stochastic on a desktop with WebGPU); unset: the v0.10 default (sorted). */
+const V09_DEFAULTS = process.env.V09_DEFAULTS === '1';
+/** The budget a desktop without WebGPU (the engine fell back to WebGL) draws under: v0.9 4 M, v0.10 the weak class's preset. */
+const WEBGL_TOP_M = V09_DEFAULTS ? 4 : BUILTIN_PRESETS['desktop-weak'].budgetM;
 const ONLY = process.argv.slice(2).map((x) => x.toUpperCase());
 const want = (id: string) => ONLY.length === 0 || ONLY.includes(id);
 const SHOTS = join(REPO, 'evidence', today(), 'v07-render' + (process.env.EVIDENCE_SUFFIX ?? ''));
@@ -94,8 +103,8 @@ if (want('R1')) {
         ['landing paste (encoded SuperSplat link)', `scene=${enc(`https://superspl.at/scene/${A}?budget=6&stochastic`)}`, true],
         ['deep link', `scene=${A}&budget=6&stochastic`, true],
         ['/s?id= form, stochastic=1', `scene=${enc(`superspl.at/s?id=${A}&budget=6&stochastic=1`)}`, true],
-        // v0.9: nothing asked (a plain link, hostile values that are dropped) is the device's default: stochastic
-        // at STOCHASTIC_BUDGET_M on a desktop, with no budget or flag written into the address
+        // nothing asked (a plain link, hostile values that are dropped) is the device's default: v0.10 sorted (v0.9:
+        // stochastic) at STOCHASTIC_BUDGET_M (4 M) on a desktop, with no budget or flag written into the address
         ['control: plain link', `scene=${enc(`https://superspl.at/scene/${A}`)}`, false],
         ['control: hostile values', `scene=${A}&budget=1e9&stochastic=${enc('<x>')}`, false]
     ];
@@ -103,7 +112,7 @@ if (want('R1')) {
     for (const [name, qs, stoch] of forms) {
         const st = await open(page, qs);
         const canonical = stoch ? /[?&]budget=6&stochastic(&|$)/.test(st.search) : !/[?&](budget|stochastic)=?/.test(st.search);
-        const ok = st.status === 'ready' && st.engine === true && st.top === (stoch ? 6 : STOCHASTIC_BUDGET_M) && canonical;
+        const ok = st.status === 'ready' && st.engine === (stoch || V09_DEFAULTS) && st.top === (stoch ? 6 : STOCHASTIC_BUDGET_M) && canonical;
         rows.push({ name, qs, expectStochastic: stoch, ok, canonical, ...st });
         console.log('R1', name, ok, JSON.stringify({ engine: st.engine, top: st.top, search: st.search }));
     }
@@ -171,8 +180,8 @@ if (want('R4')) {
     await wait(page, 600);
     const next = await hook(page, STATE);
     out.R4 = { before, switch: sw, picked, nextSwitch: sw2, next, pageerrors: errors(log) };
-    pass.R4 = before.engine === true && before.top === STOCHASTIC_BUDGET_M && sw.state === 'done' && picked.engine === true && picked.top === 6 && /[?&]scene=887f27aa(&|$)/.test(picked.search) && /[?&]budget=6&stochastic(&|$)/.test(picked.search)
-        && sw2.state === 'done' && next.engine === true && next.top === STOCHASTIC_BUDGET_M && !/[?&](budget|stochastic)/.test(next.search) && errors(log).length === 0;
+    pass.R4 = before.engine === V09_DEFAULTS && before.top === STOCHASTIC_BUDGET_M && sw.state === 'done' && picked.engine === true && picked.top === 6 && /[?&]scene=887f27aa(&|$)/.test(picked.search) && /[?&]budget=6&stochastic(&|$)/.test(picked.search)
+        && sw2.state === 'done' && next.engine === V09_DEFAULTS && next.top === STOCHASTIC_BUDGET_M && !/[?&](budget|stochastic)/.test(next.search) && errors(log).length === 0;
     console.log('R4', pass.R4, JSON.stringify({ before: before.engine, picked: [picked.engine, picked.top, picked.search], next: [next.engine, next.top, next.search] }));
     await ctx.close();
 }
@@ -377,8 +386,8 @@ if (want('R9')) {
     const gl = await run(true);
     const control = await run(false);
     out.R9 = { webglFallback: gl, controlWebGPU: control, expectedNote: EN['drawing.note.scene-webgl'] };
-    pass.R9 = gl.status === 'ready' && gl.gpuApi === true && gl.isWebGPU === false && gl.load?.webgpu === false && gl.load.budgetM === 4 && gl.load.stochastic === false
-        && gl.engine === false && gl.top === 4 && gl.drawing?.note === 'scene-webgl' && gl.note === EN['drawing.note.scene-webgl'] && gl.pageerrors.length === 0
+    pass.R9 = gl.status === 'ready' && gl.gpuApi === true && gl.isWebGPU === false && gl.load?.webgpu === false && gl.load.budgetM === WEBGL_TOP_M && gl.load.stochastic === false
+        && gl.engine === false && gl.top === WEBGL_TOP_M && gl.drawing?.note === 'scene-webgl' && gl.note === EN['drawing.note.scene-webgl'] && gl.pageerrors.length === 0
         && control.status === 'ready' && control.isWebGPU === true && control.load?.webgpu === true && control.load.budgetM === 8 && control.load.stochastic === true && control.drawing?.note === null;
     console.log('R9', pass.R9, JSON.stringify({ gl: [gl.isWebGPU, gl.load, gl.drawing?.note, gl.note], control: [control.isWebGPU, control.load, control.drawing?.note] }));
 }
