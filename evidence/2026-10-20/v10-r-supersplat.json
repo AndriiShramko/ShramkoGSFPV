@@ -1,0 +1,147 @@
+{
+  "size": [
+    1280,
+    720
+  ],
+  "shotMs": 2500,
+  "scenes": {
+    "39e63ce9": {
+      "sortedSettledMs": 20797,
+      "stochasticSettledMs": 23072,
+      "stochasticVsSorted": {
+        "psnr": 36.25,
+        "ssim": 0.949,
+        "darkShare": 0.022
+      },
+      "series": [
+        {
+          "tMs": 3349,
+          "psnr": 26.81,
+          "ssim": 0.736
+        },
+        {
+          "tMs": 6798,
+          "psnr": 33.98,
+          "ssim": 0.907,
+          "vsPrevious": 27.57
+        },
+        {
+          "tMs": 10773,
+          "psnr": 35.77,
+          "ssim": 0.941,
+          "vsPrevious": 38.43
+        },
+        {
+          "tMs": 14906,
+          "psnr": 36.25,
+          "ssim": 0.949,
+          "vsPrevious": 45
+        },
+        {
+          "tMs": 18761,
+          "psnr": 36.25,
+          "ssim": 0.949,
+          "vsPrevious": 99
+        },
+        {
+          "tMs": 22394,
+          "psnr": 36.25,
+          "ssim": 0.949,
+          "vsPrevious": 99
+        }
+      ]
+    },
+    "7a475d38": {
+      "sortedSettledMs": 23140,
+      "stochasticSettledMs": 24268,
+      "stochasticVsSorted": {
+        "psnr": 34.91,
+        "ssim": 0.979,
+        "darkShare": 0.068
+      },
+      "series": [
+        {
+          "tMs": 3423,
+          "psnr": 21.86,
+          "ssim": 0.692
+        },
+        {
+          "tMs": 6726,
+          "psnr": 27.91,
+          "ssim": 0.877,
+          "vsPrevious": 22.86
+        },
+        {
+          "tMs": 10445,
+          "psnr": 32.4,
+          "ssim": 0.95,
+          "vsPrevious": 27.86
+        },
+        {
+          "tMs": 14290,
+          "psnr": 34.34,
+          "ssim": 0.973,
+          "vsPrevious": 35.99
+        },
+        {
+          "tMs": 18060,
+          "psnr": 34.89,
+          "ssim": 0.979,
+          "vsPrevious": 42.88
+        },
+        {
+          "tMs": 22090,
+          "psnr": 34.91,
+          "ssim": 0.979,
+          "vsPrevious": 54.63
+        }
+      ]
+    },
+    "224aba38": {
+      "sortedSettledMs": 22499,
+      "stochasticSettledMs": 21721,
+      "stochasticVsSorted": {
+        "psnr": 37.28,
+        "ssim": 0.982,
+        "darkShare": 0.035
+      },
+      "series": [
+        {
+          "tMs": 4860,
+          "psnr": 23.34,
+          "ssim": 0.696
+        },
+        {
+          "tMs": 9375,
+          "psnr": 35.57,
+          "ssim": 0.973,
+          "vsPrevious": 23.29
+        },
+        {
+          "tMs": 13196,
+          "psnr": 37.17,
+          "ssim": 0.982,
+          "vsPrevious": 40.52
+        },
+        {
+          "tMs": 17061,
+          "psnr": 37.28,
+          "ssim": 0.982,
+          "vsPrevious": 52.04
+        },
+        {
+          "tMs": 20847,
+          "psnr": 37.28,
+          "ssim": 0.982,
+          "vsPrevious": 99
+        }
+      ]
+    }
+  },
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  }
+}

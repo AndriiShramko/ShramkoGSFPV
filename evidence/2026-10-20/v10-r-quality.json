@@ -1,0 +1,1233 @@
+{
+  "site": "http://localhost:5493",
+  "size": [
+    1280,
+    720
+  ],
+  "frames": 48,
+  "avg": 64,
+  "scenes": {
+    "39e63ce9@4M": {
+      "loadedMs": 34729,
+      "size": [
+        1280,
+        720
+      ],
+      "drawnM": 3.8,
+      "sceneComplete": true,
+      "still": [
+        {
+          "yaw": 0,
+          "drawnM": 3.8,
+          "T": {
+            "psnr": 19.68,
+            "ssim": 0.677
+          },
+          "Tjitter": {
+            "psnr": 19.62,
+            "ssim": 0.679
+          },
+          "worst": {
+            "x": 480,
+            "y": 360
+          }
+        },
+        {
+          "yaw": 90,
+          "drawnM": 3.8,
+          "T": {
+            "psnr": 21.49,
+            "ssim": 0.496
+          },
+          "Tjitter": {
+            "psnr": 21.47,
+            "ssim": 0.496
+          },
+          "worst": {
+            "x": 1120,
+            "y": 360
+          }
+        },
+        {
+          "yaw": 180,
+          "drawnM": 3.8,
+          "T": {
+            "psnr": 18.01,
+            "ssim": 0.303
+          },
+          "Tjitter": {
+            "psnr": 18.01,
+            "ssim": 0.303
+          },
+          "worst": {
+            "x": 960,
+            "y": 630
+          }
+        },
+        {
+          "yaw": 270,
+          "drawnM": 3.8,
+          "T": {
+            "psnr": 19.46,
+            "ssim": 0.514
+          },
+          "Tjitter": {
+            "psnr": 19.44,
+            "ssim": 0.514
+          },
+          "worst": {
+            "x": 1120,
+            "y": 630
+          }
+        }
+      ],
+      "moving": {
+        "frames": 48,
+        "T": {
+          "psnrMean": 16.97,
+          "psnrMin": 13.02,
+          "ssimMean": 0.292,
+          "ssimMin": 0.096
+        },
+        "Tjitter": {
+          "psnrMean": 17,
+          "psnrMin": 13.06,
+          "ssimMean": 0.301,
+          "ssimMin": 0.106
+        },
+        "flicker": {
+          "sorted": 14.55,
+          "stochastic": 20.79,
+          "stochasticJitter": 30.18
+        }
+      },
+      "converged": [
+        {
+          "frames": 1,
+          "psnr": 19.59,
+          "ssim": 0.677
+        },
+        {
+          "frames": 4,
+          "psnr": 22.63,
+          "ssim": 0.806
+        },
+        {
+          "frames": 16,
+          "psnr": 23.76,
+          "ssim": 0.879
+        },
+        {
+          "frames": 64,
+          "psnr": 24.15,
+          "ssim": 0.909
+        }
+      ],
+      "stable": true,
+      "budgetM": 4
+    },
+    "39e63ce9@8M": {
+      "loadedMs": 34536,
+      "size": [
+        1280,
+        720
+      ],
+      "drawnM": 3.8,
+      "sceneComplete": true,
+      "still": [
+        {
+          "yaw": 0,
+          "drawnM": 3.8,
+          "T": {
+            "psnr": 19.68,
+            "ssim": 0.677
+          },
+          "Tjitter": {
+            "psnr": 19.62,
+            "ssim": 0.679
+          },
+          "worst": {
+            "x": 480,
+            "y": 360
+          }
+        },
+        {
+          "yaw": 90,
+          "drawnM": 3.8,
+          "T": {
+            "psnr": 21.49,
+            "ssim": 0.496
+          },
+          "Tjitter": {
+            "psnr": 21.47,
+            "ssim": 0.496
+          },
+          "worst": {
+            "x": 1120,
+            "y": 360
+          }
+        },
+        {
+          "yaw": 180,
+          "drawnM": 3.8,
+          "T": {
+            "psnr": 18.01,
+            "ssim": 0.303
+          },
+          "Tjitter": {
+            "psnr": 17.95,
+            "ssim": 0.302
+          },
+          "worst": {
+            "x": 960,
+            "y": 630
+          }
+        },
+        {
+          "yaw": 270,
+          "drawnM": 3.8,
+          "T": {
+            "psnr": 19.46,
+            "ssim": 0.514
+          },
+          "Tjitter": {
+            "psnr": 19.44,
+            "ssim": 0.514
+          },
+          "worst": {
+            "x": 1120,
+            "y": 630
+          }
+        }
+      ],
+      "moving": {
+        "frames": 48,
+        "T": {
+          "psnrMean": 16.97,
+          "psnrMin": 13.02,
+          "ssimMean": 0.292,
+          "ssimMin": 0.096
+        },
+        "Tjitter": {
+          "psnrMean": 17.01,
+          "psnrMin": 13.02,
+          "ssimMean": 0.3,
+          "ssimMin": 0.101
+        },
+        "flicker": {
+          "sorted": 14.55,
+          "stochastic": 20.79,
+          "stochasticJitter": 30.12
+        }
+      },
+      "converged": [
+        {
+          "frames": 1,
+          "psnr": 19.59,
+          "ssim": 0.677
+        },
+        {
+          "frames": 4,
+          "psnr": 22.63,
+          "ssim": 0.806
+        },
+        {
+          "frames": 16,
+          "psnr": 23.76,
+          "ssim": 0.879
+        },
+        {
+          "frames": 64,
+          "psnr": 24.15,
+          "ssim": 0.909
+        }
+      ],
+      "stable": true,
+      "budgetM": 8
+    },
+    "7a475d38@4M": {
+      "loadedMs": 46620,
+      "size": [
+        1280,
+        720
+      ],
+      "drawnM": 4,
+      "sceneComplete": true,
+      "still": [
+        {
+          "yaw": 0,
+          "drawnM": 4,
+          "T": {
+            "psnr": 16.44,
+            "ssim": 0.423
+          },
+          "Tjitter": {
+            "psnr": 16.37,
+            "ssim": 0.42
+          },
+          "worst": {
+            "x": 800,
+            "y": 180
+          }
+        },
+        {
+          "yaw": 90,
+          "drawnM": 4,
+          "T": {
+            "psnr": 16.06,
+            "ssim": 0.44
+          },
+          "Tjitter": {
+            "psnr": 16.06,
+            "ssim": 0.44
+          },
+          "worst": {
+            "x": 960,
+            "y": 90
+          }
+        },
+        {
+          "yaw": 180,
+          "drawnM": 4,
+          "T": {
+            "psnr": 17.04,
+            "ssim": 0.477
+          },
+          "Tjitter": {
+            "psnr": 17.05,
+            "ssim": 0.477
+          },
+          "worst": {
+            "x": 0,
+            "y": 270
+          }
+        },
+        {
+          "yaw": 270,
+          "drawnM": 4,
+          "T": {
+            "psnr": 19.02,
+            "ssim": 0.459
+          },
+          "Tjitter": {
+            "psnr": 19.01,
+            "ssim": 0.46
+          },
+          "worst": {
+            "x": 0,
+            "y": 630
+          }
+        }
+      ],
+      "moving": {
+        "frames": 48,
+        "T": {
+          "psnrMean": 15.9,
+          "psnrMin": 14.21,
+          "ssimMean": 0.352,
+          "ssimMin": 0.184
+        },
+        "Tjitter": {
+          "psnrMean": 15.87,
+          "psnrMin": 14.25,
+          "ssimMean": 0.35,
+          "ssimMin": 0.182
+        },
+        "flicker": {
+          "sorted": 44.16,
+          "stochastic": 54.73,
+          "stochasticJitter": 55.87
+        }
+      },
+      "converged": [
+        {
+          "frames": 1,
+          "psnr": 16.39,
+          "ssim": 0.422
+        },
+        {
+          "frames": 4,
+          "psnr": 19.82,
+          "ssim": 0.614
+        },
+        {
+          "frames": 16,
+          "psnr": 21.25,
+          "ssim": 0.721
+        },
+        {
+          "frames": 64,
+          "psnr": 21.73,
+          "ssim": 0.764
+        }
+      ],
+      "stable": true,
+      "budgetM": 4
+    },
+    "7a475d38@8M": {
+      "loadedMs": 47540,
+      "size": [
+        1280,
+        720
+      ],
+      "drawnM": 8,
+      "sceneComplete": false,
+      "still": [
+        {
+          "yaw": 0,
+          "drawnM": 7.9,
+          "T": {
+            "psnr": 16.42,
+            "ssim": 0.426
+          },
+          "Tjitter": {
+            "psnr": 16.39,
+            "ssim": 0.424
+          },
+          "worst": {
+            "x": 800,
+            "y": 180
+          }
+        },
+        {
+          "yaw": 90,
+          "drawnM": 7.9,
+          "T": {
+            "psnr": 15.96,
+            "ssim": 0.439
+          },
+          "Tjitter": {
+            "psnr": 15.97,
+            "ssim": 0.44
+          },
+          "worst": {
+            "x": 0,
+            "y": 450
+          }
+        },
+        {
+          "yaw": 180,
+          "drawnM": 8,
+          "T": {
+            "psnr": 16.92,
+            "ssim": 0.478
+          },
+          "Tjitter": {
+            "psnr": 16.92,
+            "ssim": 0.477
+          },
+          "worst": {
+            "x": 0,
+            "y": 270
+          }
+        },
+        {
+          "yaw": 270,
+          "drawnM": 8,
+          "T": {
+            "psnr": 19.05,
+            "ssim": 0.46
+          },
+          "Tjitter": {
+            "psnr": 18.98,
+            "ssim": 0.458
+          },
+          "worst": {
+            "x": 0,
+            "y": 630
+          }
+        }
+      ],
+      "moving": {
+        "frames": 48,
+        "T": {
+          "psnrMean": 15.86,
+          "psnrMin": 14.26,
+          "ssimMean": 0.354,
+          "ssimMin": 0.188
+        },
+        "Tjitter": {
+          "psnrMean": 15.83,
+          "psnrMin": 14.24,
+          "ssimMean": 0.353,
+          "ssimMin": 0.185
+        },
+        "flicker": {
+          "sorted": 44.82,
+          "stochastic": 54.8,
+          "stochasticJitter": 56.01
+        }
+      },
+      "converged": [
+        {
+          "frames": 1,
+          "psnr": 16.39,
+          "ssim": 0.42
+        },
+        {
+          "frames": 4,
+          "psnr": 19.76,
+          "ssim": 0.612
+        },
+        {
+          "frames": 16,
+          "psnr": 21.13,
+          "ssim": 0.718
+        },
+        {
+          "frames": 64,
+          "psnr": 21.61,
+          "ssim": 0.761
+        }
+      ],
+      "stable": false,
+      "budgetM": 8
+    },
+    "224aba38@4M": {
+      "loadedMs": 33618,
+      "size": [
+        1280,
+        720
+      ],
+      "drawnM": 4.6,
+      "sceneComplete": true,
+      "still": [
+        {
+          "yaw": 0,
+          "drawnM": 4.6,
+          "T": {
+            "psnr": 15.71,
+            "ssim": 0.196
+          },
+          "Tjitter": {
+            "psnr": 15.69,
+            "ssim": 0.2
+          },
+          "worst": {
+            "x": 960,
+            "y": 90
+          }
+        },
+        {
+          "yaw": 90,
+          "drawnM": 4.6,
+          "T": {
+            "psnr": 17.71,
+            "ssim": 0.321
+          },
+          "Tjitter": {
+            "psnr": 17.7,
+            "ssim": 0.32
+          },
+          "worst": {
+            "x": 800,
+            "y": 630
+          }
+        },
+        {
+          "yaw": 180,
+          "drawnM": 4.6,
+          "T": {
+            "psnr": 17.48,
+            "ssim": 0.459
+          },
+          "Tjitter": {
+            "psnr": 17.48,
+            "ssim": 0.46
+          },
+          "worst": {
+            "x": 640,
+            "y": 630
+          }
+        },
+        {
+          "yaw": 270,
+          "drawnM": 4.6,
+          "T": {
+            "psnr": 17.13,
+            "ssim": 0.337
+          },
+          "Tjitter": {
+            "psnr": 17.13,
+            "ssim": 0.339
+          },
+          "worst": {
+            "x": 160,
+            "y": 90
+          }
+        }
+      ],
+      "moving": {
+        "frames": 48,
+        "T": {
+          "psnrMean": 16.36,
+          "psnrMin": 14.78,
+          "ssimMean": 0.232,
+          "ssimMin": 0.163
+        },
+        "Tjitter": {
+          "psnrMean": 16.34,
+          "psnrMin": 14.75,
+          "ssimMean": 0.235,
+          "ssimMin": 0.166
+        },
+        "flicker": {
+          "sorted": 25.13,
+          "stochastic": 33.88,
+          "stochasticJitter": 34.51
+        }
+      },
+      "converged": [
+        {
+          "frames": 1,
+          "psnr": 15.69,
+          "ssim": 0.198
+        },
+        {
+          "frames": 4,
+          "psnr": 17.11,
+          "ssim": 0.389
+        },
+        {
+          "frames": 16,
+          "psnr": 17.51,
+          "ssim": 0.553
+        },
+        {
+          "frames": 64,
+          "psnr": 17.64,
+          "ssim": 0.625
+        }
+      ],
+      "stable": true,
+      "budgetM": 4
+    },
+    "224aba38@8M": {
+      "loadedMs": 32748,
+      "size": [
+        1280,
+        720
+      ],
+      "drawnM": 4.6,
+      "sceneComplete": true,
+      "still": [
+        {
+          "yaw": 0,
+          "drawnM": 4.6,
+          "T": {
+            "psnr": 15.71,
+            "ssim": 0.196
+          },
+          "Tjitter": {
+            "psnr": 15.69,
+            "ssim": 0.2
+          },
+          "worst": {
+            "x": 960,
+            "y": 90
+          }
+        },
+        {
+          "yaw": 90,
+          "drawnM": 4.6,
+          "T": {
+            "psnr": 17.71,
+            "ssim": 0.321
+          },
+          "Tjitter": {
+            "psnr": 17.7,
+            "ssim": 0.32
+          },
+          "worst": {
+            "x": 800,
+            "y": 630
+          }
+        },
+        {
+          "yaw": 180,
+          "drawnM": 4.6,
+          "T": {
+            "psnr": 17.48,
+            "ssim": 0.459
+          },
+          "Tjitter": {
+            "psnr": 17.48,
+            "ssim": 0.46
+          },
+          "worst": {
+            "x": 640,
+            "y": 630
+          }
+        },
+        {
+          "yaw": 270,
+          "drawnM": 4.6,
+          "T": {
+            "psnr": 17.13,
+            "ssim": 0.337
+          },
+          "Tjitter": {
+            "psnr": 17.13,
+            "ssim": 0.339
+          },
+          "worst": {
+            "x": 160,
+            "y": 90
+          }
+        }
+      ],
+      "moving": {
+        "frames": 48,
+        "T": {
+          "psnrMean": 16.36,
+          "psnrMin": 14.78,
+          "ssimMean": 0.232,
+          "ssimMin": 0.163
+        },
+        "Tjitter": {
+          "psnrMean": 16.34,
+          "psnrMin": 14.77,
+          "ssimMean": 0.235,
+          "ssimMin": 0.165
+        },
+        "flicker": {
+          "sorted": 25.13,
+          "stochastic": 33.88,
+          "stochasticJitter": 34.44
+        }
+      },
+      "converged": [
+        {
+          "frames": 1,
+          "psnr": 15.69,
+          "ssim": 0.198
+        },
+        {
+          "frames": 4,
+          "psnr": 17.11,
+          "ssim": 0.389
+        },
+        {
+          "frames": 16,
+          "psnr": 17.51,
+          "ssim": 0.553
+        },
+        {
+          "frames": 64,
+          "psnr": 17.64,
+          "ssim": 0.625
+        }
+      ],
+      "stable": true,
+      "budgetM": 8
+    },
+    "ba7aa29d@4M": {
+      "loadedMs": 64835,
+      "size": [
+        1280,
+        720
+      ],
+      "drawnM": 3.9,
+      "sceneComplete": true,
+      "still": [
+        {
+          "yaw": 0,
+          "drawnM": 3.9,
+          "T": {
+            "psnr": 22.59,
+            "ssim": 0.533
+          },
+          "Tjitter": {
+            "psnr": 22.55,
+            "ssim": 0.532
+          },
+          "worst": {
+            "x": 160,
+            "y": 630
+          }
+        },
+        {
+          "yaw": 90,
+          "drawnM": 3.9,
+          "T": {
+            "psnr": 22.76,
+            "ssim": 0.532
+          },
+          "Tjitter": {
+            "psnr": 22.76,
+            "ssim": 0.533
+          },
+          "worst": {
+            "x": 960,
+            "y": 360
+          }
+        },
+        {
+          "yaw": 180,
+          "drawnM": 3.9,
+          "T": {
+            "psnr": 20.71,
+            "ssim": 0.485
+          },
+          "Tjitter": {
+            "psnr": 20.69,
+            "ssim": 0.485
+          },
+          "worst": {
+            "x": 1120,
+            "y": 0
+          }
+        },
+        {
+          "yaw": 270,
+          "drawnM": 3.9,
+          "T": {
+            "psnr": 21.07,
+            "ssim": 0.512
+          },
+          "Tjitter": {
+            "psnr": 21.07,
+            "ssim": 0.512
+          },
+          "worst": {
+            "x": 0,
+            "y": 630
+          }
+        }
+      ],
+      "moving": {
+        "frames": 48,
+        "T": {
+          "psnrMean": 22.86,
+          "psnrMin": 22.55,
+          "ssimMean": 0.525,
+          "ssimMin": 0.506
+        },
+        "Tjitter": {
+          "psnrMean": 22.82,
+          "psnrMin": 22.52,
+          "ssimMean": 0.524,
+          "ssimMin": 0.506
+        },
+        "flicker": {
+          "sorted": 12.46,
+          "stochastic": 20.09,
+          "stochasticJitter": 20.47
+        }
+      },
+      "converged": [
+        {
+          "frames": 1,
+          "psnr": 22.5,
+          "ssim": 0.521
+        },
+        {
+          "frames": 4,
+          "psnr": 26.42,
+          "ssim": 0.734
+        },
+        {
+          "frames": 16,
+          "psnr": 28.16,
+          "ssim": 0.835
+        },
+        {
+          "frames": 64,
+          "psnr": 28.76,
+          "ssim": 0.866
+        }
+      ],
+      "stable": true,
+      "budgetM": 4
+    },
+    "ba7aa29d@8M": {
+      "loadedMs": 69233,
+      "size": [
+        1280,
+        720
+      ],
+      "drawnM": 7.8,
+      "sceneComplete": true,
+      "still": [
+        {
+          "yaw": 0,
+          "drawnM": 7.9,
+          "T": {
+            "psnr": 22.6,
+            "ssim": 0.538
+          },
+          "Tjitter": {
+            "psnr": 22.57,
+            "ssim": 0.537
+          },
+          "worst": {
+            "x": 160,
+            "y": 630
+          }
+        },
+        {
+          "yaw": 90,
+          "drawnM": 7.9,
+          "T": {
+            "psnr": 22.75,
+            "ssim": 0.54
+          },
+          "Tjitter": {
+            "psnr": 22.71,
+            "ssim": 0.539
+          },
+          "worst": {
+            "x": 960,
+            "y": 360
+          }
+        },
+        {
+          "yaw": 180,
+          "drawnM": 7.8,
+          "T": {
+            "psnr": 20.74,
+            "ssim": 0.489
+          },
+          "Tjitter": {
+            "psnr": 20.74,
+            "ssim": 0.489
+          },
+          "worst": {
+            "x": 1120,
+            "y": 0
+          }
+        },
+        {
+          "yaw": 270,
+          "drawnM": 7.8,
+          "T": {
+            "psnr": 21.1,
+            "ssim": 0.513
+          },
+          "Tjitter": {
+            "psnr": 21.09,
+            "ssim": 0.513
+          },
+          "worst": {
+            "x": 0,
+            "y": 630
+          }
+        }
+      ],
+      "moving": {
+        "frames": 48,
+        "T": {
+          "psnrMean": 22.86,
+          "psnrMin": 22.56,
+          "ssimMean": 0.53,
+          "ssimMin": 0.512
+        },
+        "Tjitter": {
+          "psnrMean": 22.83,
+          "psnrMin": 22.54,
+          "ssimMean": 0.529,
+          "ssimMin": 0.512
+        },
+        "flicker": {
+          "sorted": 12.77,
+          "stochastic": 20.34,
+          "stochasticJitter": 20.72
+        }
+      },
+      "converged": [
+        {
+          "frames": 1,
+          "psnr": 22.57,
+          "ssim": 0.532
+        },
+        {
+          "frames": 4,
+          "psnr": 26.35,
+          "ssim": 0.736
+        },
+        {
+          "frames": 16,
+          "psnr": 28.16,
+          "ssim": 0.836
+        },
+        {
+          "frames": 64,
+          "psnr": 28.74,
+          "ssim": 0.868
+        }
+      ],
+      "stable": true,
+      "budgetM": 8
+    },
+    "2f1ddf5f@4M": {
+      "loadedMs": 62064,
+      "size": [
+        1280,
+        720
+      ],
+      "drawnM": 3.9,
+      "sceneComplete": true,
+      "still": [
+        {
+          "yaw": 0,
+          "drawnM": 3.9,
+          "T": {
+            "psnr": 18.37,
+            "ssim": 0.629
+          },
+          "Tjitter": {
+            "psnr": 18.35,
+            "ssim": 0.628
+          },
+          "worst": {
+            "x": 160,
+            "y": 630
+          }
+        },
+        {
+          "yaw": 90,
+          "drawnM": 3.9,
+          "T": {
+            "psnr": 17.79,
+            "ssim": 0.637
+          },
+          "Tjitter": {
+            "psnr": 17.74,
+            "ssim": 0.637
+          },
+          "worst": {
+            "x": 1120,
+            "y": 540
+          }
+        },
+        {
+          "yaw": 180,
+          "drawnM": 3.9,
+          "T": {
+            "psnr": 18.1,
+            "ssim": 0.631
+          },
+          "Tjitter": {
+            "psnr": 18.07,
+            "ssim": 0.632
+          },
+          "worst": {
+            "x": 320,
+            "y": 450
+          }
+        },
+        {
+          "yaw": 270,
+          "drawnM": 3.9,
+          "T": {
+            "psnr": 18.93,
+            "ssim": 0.645
+          },
+          "Tjitter": {
+            "psnr": 18.92,
+            "ssim": 0.645
+          },
+          "worst": {
+            "x": 800,
+            "y": 630
+          }
+        }
+      ],
+      "moving": {
+        "frames": 48,
+        "T": {
+          "psnrMean": 18.22,
+          "psnrMin": 17.75,
+          "ssimMean": 0.639,
+          "ssimMin": 0.629
+        },
+        "Tjitter": {
+          "psnrMean": 18.2,
+          "psnrMin": 17.75,
+          "ssimMean": 0.638,
+          "ssimMin": 0.628
+        },
+        "flicker": {
+          "sorted": 14.56,
+          "stochastic": 21.74,
+          "stochasticJitter": 22.76
+        }
+      },
+      "converged": [
+        {
+          "frames": 1,
+          "psnr": 18.32,
+          "ssim": 0.627
+        },
+        {
+          "frames": 4,
+          "psnr": 21.75,
+          "ssim": 0.712
+        },
+        {
+          "frames": 16,
+          "psnr": 23.24,
+          "ssim": 0.772
+        },
+        {
+          "frames": 64,
+          "psnr": 23.73,
+          "ssim": 0.799
+        }
+      ],
+      "stable": true,
+      "budgetM": 4
+    },
+    "2f1ddf5f@8M": {
+      "loadedMs": 59705,
+      "size": [
+        1280,
+        720
+      ],
+      "drawnM": 7.9,
+      "sceneComplete": true,
+      "still": [
+        {
+          "yaw": 0,
+          "drawnM": 7.9,
+          "T": {
+            "psnr": 17.83,
+            "ssim": 0.631
+          },
+          "Tjitter": {
+            "psnr": 17.81,
+            "ssim": 0.631
+          },
+          "worst": {
+            "x": 160,
+            "y": 630
+          }
+        },
+        {
+          "yaw": 90,
+          "drawnM": 7.9,
+          "T": {
+            "psnr": 17.28,
+            "ssim": 0.64
+          },
+          "Tjitter": {
+            "psnr": 17.3,
+            "ssim": 0.64
+          },
+          "worst": {
+            "x": 1120,
+            "y": 540
+          }
+        },
+        {
+          "yaw": 180,
+          "drawnM": 7.9,
+          "T": {
+            "psnr": 17.64,
+            "ssim": 0.634
+          },
+          "Tjitter": {
+            "psnr": 17.65,
+            "ssim": 0.634
+          },
+          "worst": {
+            "x": 320,
+            "y": 450
+          }
+        },
+        {
+          "yaw": 270,
+          "drawnM": 7.9,
+          "T": {
+            "psnr": 18.52,
+            "ssim": 0.645
+          },
+          "Tjitter": {
+            "psnr": 18.53,
+            "ssim": 0.645
+          },
+          "worst": {
+            "x": 800,
+            "y": 630
+          }
+        }
+      ],
+      "moving": {
+        "frames": 48,
+        "T": {
+          "psnrMean": 17.68,
+          "psnrMin": 17.24,
+          "ssimMean": 0.642,
+          "ssimMin": 0.632
+        },
+        "Tjitter": {
+          "psnrMean": 17.64,
+          "psnrMin": 17.16,
+          "ssimMean": 0.641,
+          "ssimMin": 0.631
+        },
+        "flicker": {
+          "sorted": 15.9,
+          "stochastic": 23.24,
+          "stochasticJitter": 24.08
+        }
+      },
+      "converged": [
+        {
+          "frames": 1,
+          "psnr": 18.12,
+          "ssim": 0.627
+        },
+        {
+          "frames": 4,
+          "psnr": 21.59,
+          "ssim": 0.712
+        },
+        {
+          "frames": 16,
+          "psnr": 22.99,
+          "ssim": 0.769
+        },
+        {
+          "frames": 64,
+          "psnr": 23.14,
+          "ssim": 0.794
+        }
+      ],
+      "stable": true,
+      "budgetM": 8
+    }
+  },
+  "device": {
+    "deviceMemory": 32,
+    "cores": 36,
+    "dpr": 1.0000000298023224,
+    "touch": 0,
+    "screen": [
+      1280,
+      800
+    ],
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+    "uaMobile": false,
+    "coarse": false,
+    "adapter": {
+      "vendor": "nvidia",
+      "architecture": "lovelace",
+      "device": "",
+      "description": "",
+      "features": 19,
+      "limits": {
+        "maxBufferSize": 2147483648,
+        "maxStorageBufferBindingSize": 2147483644,
+        "maxTextureDimension2D": 16384,
+        "maxComputeInvocationsPerWorkgroup": 1024
+      }
+    }
+  },
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.40",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  }
+}

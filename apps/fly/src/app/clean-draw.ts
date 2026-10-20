@@ -1,5 +1,5 @@
-// REC and auto-record draw the clean picture (v0.10 lane R, the owner's item 2: "при записи видео (REC) рисовать
-// «чисто»"). Stochastic drawing leaves a fine grain that a video encoder spends its bits on (docs/wip/v09-r.md: +20 to
+// REC and auto-record draw the clean picture (v0.10 lane R, the owner's item 2: while REC runs, draw "clean").
+// Stochastic drawing leaves a fine grain that a video encoder spends its bits on (docs/wip/v09-r.md: +20 to
 // +30 % bytes, 8 to 15 dB against the clean frame), so while a recording runs the scan is drawn sorted, and the pilot's
 // own drawing comes back when it stops, like the video export already does (builtin/video-export.ts).
 //
