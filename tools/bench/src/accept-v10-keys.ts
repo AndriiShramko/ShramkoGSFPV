@@ -361,6 +361,21 @@ const { browser } = await launchChrome({ headless: false, args: ['--window-posit
             await p.locator('[data-action="htf-close"]').click();
             await sleep(300);
         }
+        // with the menu up, K runs the item (app/menu.ts: a key shown beside an item is that item)
+        await p.keyboard.press('Escape');
+        await sleep(500);
+        const menuUp = (await p.locator('.pause-menu').count()) > 0;
+        await p.keyboard.press('KeyK');
+        const upMK = await cardUp(p, 4000);
+        const hmk = await hook(p);
+        check('K16c with the menu up, K runs the item: the card opens and the menu is gone', menuUp && upMK && (hmk?.opened ?? []).filter((x: string) => x === 'menu').length >= 2 && (await p.locator('.pause-menu').count()) === 0, { menuUp, up: upMK, opened: hmk?.opened ?? null });
+        if (upMK) {
+            await p.locator('[data-action="htf-close"]').click();
+            await sleep(300);
+        } else if (menuUp) {
+            await p.keyboard.press('Escape'); // leave the menu so the next step starts from the flight
+            await sleep(300);
+        }
     }
     // the radio's card: the page pointed at a gamepad source, K pressed
     const radio = await (async () => {
