@@ -2,13 +2,17 @@
 //  - prefs input.play goes to the input host (the keyboard's layout, the touch sticks' ARM button and
 //    left stick) and to Controls (the HUD's "take off" line). ?lat=1 (the latency harness) always
 //    flies the pilot profile: it measures the radio-like path, one numbered key at a time.
-//  - K shows or hides the keyboard's key card (keymap help.keys); it shows by itself on the ground.
+//  - K (keymap help.keys) opens the "How to fly" card (app/builtin/how-to-fly.ts, v0.10 lane K); it replaced the pin of the
+//    keyboard's ground card, which now shows only for the pilot keys (ui/hud.ts).
 //  - A new life or a new scene: the altitude help and the game scheme start again from the craft's new state.
 //  - v0.9 lane B (docs/wip/v09-b.md; the owner's message 22 items 1 and 6): the game scheme's page half.
 //    A click on the flight view captures the mouse (pointer lock, play/mouse-look.ts) and the keyboard
 //    source turns its movement into the aim and the camera gimbal; a lost lock (Esc is the browser's own
 //    gesture) pauses into the menu, and a click on the paused view or Continue resumes and captures again.
 //    The camera of a game-scheme flight is the stabilised gimbal (session.cameraAim, play/gimbal.ts).
+//  - v0.10 lane K (docs/wip/v10-k.md): for the first 8 seconds of the first flight of a visit a small pill names the two caps that
+//    are new to a gamer, "Space up / Shift down" (FirstFlightReminder in ui/controls-card-logic.ts); it goes when one of them is
+//    pressed, and not at all after "Do not show again" on the How to fly card.
 //    F toggles full screen (keymap fullscreen.toggle; the top-bar button is app/builtin/top.ts). The
 //    mouse is let go while a screen needs the cursor (the menu, a panel, Controls, the crash panel).
 //  - input.haptics: a short vibration on a crash with the touch sticks (navigator.vibrate; Android
@@ -23,6 +27,8 @@ import type { SchoolStep } from '../../play/school';
 import type { PlayProfile } from '../../play/keys';
 import { headingDeg } from '../../play/game';
 import type { CameraAim } from '../../play/gimbal';
+import { GAME_KEYS } from '../../play/keys';
+import { FirstFlightReminder, gameCaps } from '../../ui/controls-card-logic';
 import { MouseLook } from '../../play/mouse-look';
 import { isFullscreen, toggleFullscreen } from '../../play/fullscreen';
 import { dialogOpen } from '../../devices/keyboard';
@@ -40,7 +46,7 @@ declare module '../test-hook' {
         play?: () => {
             profile: PlayProfile; arm: string; want: boolean; helpActive: boolean; throttle: number; target: number; step: SchoolStep; school: { seconds: number; goal: number } | null;
             /** the game scheme (v0.9): null when something else flies */
-            game: { arm: string; want: boolean; locked: boolean; lockSupported: boolean; aimYawDeg: number | null; gimbalDeg: number; headingDeg: number; speed: string; groundM: number | null; goalForward: number; goalRight: number; tiltPitchDeg: number; tiltRollDeg: number; landed: boolean; throttle: number; fullscreen: boolean; hintShown: boolean } | null;
+            game: { arm: string; want: boolean; locked: boolean; lockSupported: boolean; aimYawDeg: number | null; gimbalDeg: number; headingDeg: number; speed: string; groundM: number | null; goalForward: number; goalRight: number; tiltPitchDeg: number; tiltRollDeg: number; landed: boolean; throttle: number; fullscreen: boolean; hintShown: boolean; reminderShown: boolean } | null;
         };
     }
 }
@@ -77,20 +83,26 @@ export const play: Feature = {
         /** The game scheme flies: the keyboard is the input and prefs input.play is easy (Controls.gameKeys). */
         const gameOn = (): boolean => ctx.controls.gameKeys();
         const hint = h('div', { class: 'game-hint', role: 'status', 'data-testid': 'game-hint', hidden: true }, t('play.game.clickHint'));
-        ctx.ui.append(hint);
+        // the first seconds of the first flight: "Space up . Shift down" (the caps are the game layout's own, play/keys.ts)
+        const gc = gameCaps(GAME_KEYS, t('arm.keys.space'));
+        const cap = (c: string): HTMLElement => h('kbd', {}, c);
+        const reminder = h('div', { class: 'game-reminder', role: 'status', 'data-testid': 'game-reminder', hidden: true },
+            ...gc.up.map(cap), ' ', t('play.reminder.up'), h('span', { class: 'sep', 'aria-hidden': 'true' }, '·'), ...gc.down.map(cap), ' ', t('play.reminder.down'));
+        const remind = new FirstFlightReminder();
+        // a new press only: holding Space from the take-off sends repeats, and that is not the pilot finding the keys
+        const onKeyUsed = (e: KeyboardEvent): void => { if (!e.repeat && (e.code === 'Space' || e.code.startsWith('Shift'))) remind.used(); };
+        addEventListener('keydown', onKeyUsed);
+        ctx.ui.append(hint, reminder);
         const mouse = new MouseLook({
             target: ctx.canvas,
             onMove: (dx, dy) => ctx.input.keyboard.mouse(dx, dy),
             // Esc (the browser's own release), alt-tab, leaving full screen: the flight pauses into the menu
             onLost: () => { if (gameOn() && !ctx.session.paused) ctx.menu.open(); syncHint(); }
         });
-        ctx.hud.mouseLocked = () => mouse.locked;
         /** A screen that needs the cursor is up (the pause menu counts: it is a panel). */
         const needsCursor = (): boolean => ctx.menu.isOpen || dialogOpen() || ctx.ui.querySelector('.crash-overlay') !== null;
         function syncHint(): void {
-            // the key card on the ground already says "Click to fly": the pill is for the flight in the air
-            const cardUp = ctx.ui.querySelector('[data-testid="key-card"]:not(.hidden)') !== null;
-            const show = gameOn() && mouse.supported && !mouse.locked && !ctx.session.paused && !needsCursor() && !cardUp;
+            const show = gameOn() && mouse.supported && !mouse.locked && !ctx.session.paused && !needsCursor();
             if (hint.hidden === show) hint.hidden = !show;
         }
         document.addEventListener('pointerlockchange', syncHint);
@@ -144,12 +156,6 @@ export const play: Feature = {
             } else if (c.id === 'flight.mode' && gameOn() && prefs.get('flight.mode') !== 'angle') {
                 ctx.hud.flash(t('play.game.angleOnly'), 4000);
             }
-        });
-
-        // K: the key card on demand (the keyboard's; a note for anything else)
-        const offKey = ctx.keys.on('help.keys', (e) => {
-            if (e.repeat) return;
-            ctx.hud.toggleKeys();
         });
 
         const offLife = ctx.events.on('life', () => { ctx.input.easy.resetHelp(); gamePilot.resetFlight(); });
@@ -236,6 +242,10 @@ export const play: Feature = {
             // the game scheme's mouse: let go for a screen that needs the cursor, or when something else flies
             if (mouse.locked && (!gameOn() || ctx.ui.querySelector('.crash-overlay'))) mouse.unlock();
             syncHint();
+            // the first seconds of the first flight (game scheme, in the air, not paused, not after "Do not show again")
+            const hd = ctx.session.hud();
+            const showRemind = remind.update(now, gameOn() && hd.armed && !hd.crashed && !ctx.session.paused, prefs.get('input.howToFly') !== false);
+            if (reminder.hidden === showRemind) reminder.hidden = !showRemind;
             // the pilot school is for the touch sticks: the game keys have no steps to take away
             const view = ctx.controls.view();
             const on = view.easy && !view.game;
@@ -271,20 +281,21 @@ export const play: Feature = {
                 game: gameOn() ? {
                     arm: gp.arm.state, want: gp.arm.want, locked: mouse.locked, lockSupported: mouse.supported, aimYawDeg: g.aimYawDeg, gimbalDeg: g.gimbalDeg, headingDeg: headingDeg(ctx.session.sim.s),
                     speed: g.speed, groundM: gp.groundM, goalForward: g.goal.forward, goalRight: g.goal.right, tiltPitchDeg: g.tilt.pitch, tiltRollDeg: g.tilt.roll, landed: g.landed, throttle: gp.throttleSent,
-                    fullscreen: isFullscreen(), hintShown: !hint.hidden
+                    fullscreen: isFullscreen(), hintShown: !hint.hidden, reminderShown: !reminder.hidden
                 } : null
             };
         };
 
         return () => {
-            offPrefs(); offKey(); offLife(); offSession(); offSim(); offFrame(); offPause(); offAim(); offFs(); offMousePause();
+            offPrefs(); offLife(); offSession(); offSim(); offFrame(); offPause(); offAim(); offFs(); offMousePause();
             removeEventListener('pointerdown', outside, { capture: true });
             removeEventListener('click', onClick, { capture: true });
+            removeEventListener('keydown', onKeyUsed);
             document.removeEventListener('pointerlockchange', syncHint);
             clearTimeout(offerTimer);
             ctx.session.cameraAim = null;
             mouse.dispose();
-            chip.remove(); panel.remove(); offer.remove(); hint.remove();
+            chip.remove(); panel.remove(); offer.remove(); hint.remove(); reminder.remove();
         };
     }
 };

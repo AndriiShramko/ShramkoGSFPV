@@ -24,8 +24,7 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, .45); display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
 .school-offer[hidden] { display: none; }
 .school-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
-.key-card .kc-foot { margin: 6px 0 0; font-size: 12px; color: var(--muted); }
-.key-card .kc-foot[hidden], .key-card p.now[hidden] { display: none; }
+.key-card p.now[hidden] { display: none; }
 /* easy play's touch sticks have no ARM button: the bottom centre stays free */
 .touch-root.easy .touch-arm { display: none; }
 @media (prefers-reduced-motion: reduce) { .school-offer { transition: none; } }
@@ -34,3 +33,10 @@
     background: rgba(12, 14, 18, .72); border: 1px solid var(--accent); color: #f3f4f6; font: 600 15px/1.2 system-ui, sans-serif;
     text-shadow: 0 1px 2px #000; pointer-events: none; white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis; }
 .game-hint[hidden] { display: none; }
+/* v0.10 lane K: the first seconds of the first flight, "Space up / Shift down"; above the hint pill, clear of the corner lines and the recording bar */
+.game-reminder { position: absolute; left: 50%; bottom: 124px; transform: translateX(-50%); z-index: 2; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 999px;
+    background: rgba(12, 14, 18, .78); border: 1px solid rgba(255, 255, 255, .28); color: #f3f4f6; font: 600 15px/1.2 system-ui, sans-serif; text-shadow: 0 1px 2px #000; pointer-events: none; white-space: nowrap; max-width: calc(100vw - 32px); }
+.game-reminder[hidden] { display: none; }
+.game-reminder kbd { min-width: 26px; padding: 2px 8px; border: 1px solid #4b5668; border-bottom-width: 2px; border-radius: 6px; background: #0b0e12; color: #f3f4f6; font: 700 13px/18px ui-monospace, "Cascadia Mono", Consolas, monospace; text-align: center; }
+.game-reminder .sep { margin: 0 6px; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { .game-reminder { animation: fadein .4s ease both; } }

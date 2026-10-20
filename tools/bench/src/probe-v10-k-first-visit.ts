@@ -31,9 +31,11 @@ type Any = any;
 /** Every guidance surface of the flight page, with whether it is on screen and its text. */
 const UP = `(() => {
   const defs = [
-    ['warning (Before you fly)', '.panel:not(.pause)'],
+    ['warning (Before you fly)', '.panel:not(.pause):not(.how-to-fly)'],
     ['controls dialog (How will you fly)', '.screen.radio'],
     ['key card', '[data-testid="key-card"]'],
+    ['how-to-fly card (v0.10)', '[data-testid="how-to-fly"]'],
+    ['first-flight reminder (v0.10)', '[data-testid="game-reminder"]'],
     ['click-to-fly pill', '[data-testid="game-hint"]'],
     ['gate line', '.gate-msg'],
     ['touch hint', '.touch-hint'],

@@ -10,7 +10,6 @@ import type { ArmView } from '../controls';
 import { radioArt, knobsFrom, sideOf, tickIcon } from './radio-art';
 import type { ArtTarget } from './radio-art';
 import { watchTopRow } from './top-row';
-import { KeyCardShow } from './key-card-state';
 import { linkLines } from './link-text';
 
 /** Disarmed with a radio: what is still needed to arm, in order, with a small live radio drawing. */
@@ -91,83 +90,44 @@ class ArmCard {
 }
 
 /**
- * The keyboard's key card: what to press now, then every flying key (they live only in
- * devices/keyboard.ts and play/keys.ts, so a first-time player had no way to learn them). It shows
- * while the drone waits on the ground and on demand (K, app/builtin/play.ts). Two layouts: the game
- * scheme's card (v0.9: "Click to fly", the mouse, W A S D, Space, Shift, F, Esc; its title says so
- * until the mouse is captured), or the pilot's Mode 2 keys with Space to arm.
+ * The pilot keyboard's key card: what to press now (arm, throttle, centre), then every pilot key, with the step that is
+ * missing lit. It shows while the drone waits on the ground. The game scheme (v0.9: the mouse, W A S D, Space up, Shift down)
+ * has no ground card any more: its keys are on the "How to fly" card (ui/controls-card.ts, v0.10 lane K), which opens when
+ * the scan is ready and again with K or the pause menu. K no longer pins this card.
  */
 class KeyCard {
     readonly el: HTMLDivElement;
     private now = h('p', { class: 'reason now' });
     private title = h('h3', {});
     private list = h('ul', { class: 'kc-list' });
-    private foot = h('p', { class: 'kc-foot' });
     private rows: Partial<Record<'arm' | 'thr' | 'sticks', HTMLLIElement>> = {};
-    /** the layout drawn: game or pilot */
-    private drawn = '';
 
     constructor() {
-        this.el = h('div', { class: 'arm-card key-card hidden', 'data-testid': 'key-card' }, h('div', {}, this.title, this.now, this.list, this.foot));
-        this.build(false);
-    }
-
-    /** The rows of a layout (rebuilt only when the layout changes). */
-    private build(game: boolean): void {
-        const id = game ? 'game' : 'pilot';
-        if (id === this.drawn) return;
-        this.drawn = id;
+        this.el = h('div', { class: 'arm-card key-card hidden', 'data-testid': 'key-card' }, h('div', {}, this.title, this.now, this.list));
         const caps = (...ks: string[]): HTMLSpanElement => h('span', { class: 'kc-keys' }, ...ks.map((k) => h('kbd', {}, k)));
         const row = (keys: HTMLSpanElement, text: string): HTMLLIElement => h('li', {}, keys, h('span', {}, text));
         const space = t('arm.keys.space');
-        let rows: HTMLLIElement[];
-        if (game) {
-            this.rows = {};
-            rows = [
-                row(caps(t('play.game.mouseKey')), t('play.game.mouse')),
-                row(caps('W', 'A', 'S', 'D'), t('play.game.move')),
-                row(caps('←', '→', 'Q', 'E'), t('play.game.turnKeys')),
-                row(caps(space), t('play.game.up')),
-                row(caps('Shift'), t('play.game.down')),
-                row(caps('F'), t('play.game.fullscreen')),
-                row(caps('Esc'), t('play.game.pause')),
-                row(caps('R'), t('arm.keys.respawn')),
-                row(caps('K'), t('play.keys.toggle'))
-            ];
-            this.foot.textContent = t('play.keys.pilotNote');
-        } else {
-            this.title.textContent = t('arm.keys.title');
-            this.rows = {
-                arm: row(caps(space), t('arm.keys.arm')),
-                thr: row(caps('W', 'S'), t('arm.keys.throttle')),
-                sticks: row(caps('↑', '↓', '←', '→'), t('arm.keys.sticks'))
-            };
-            rows = [
-                this.rows.arm!, this.rows.thr!,
-                row(caps('A', 'D'), t('arm.keys.yaw')),
-                this.rows.sticks!,
-                row(caps('M'), t('arm.keys.mode')),
-                row(caps('V'), t('arm.keys.voxels')),
-                row(caps('C'), t('arm.keys.walls')),
-                row(caps('R'), t('arm.keys.respawn')),
-                row(caps('P', 'Esc'), t('arm.keys.pause')),
-                row(caps('K'), t('play.keys.toggle'))
-            ];
-            this.foot.textContent = '';
-        }
-        this.list.replaceChildren(...rows);
-        this.foot.hidden = !this.foot.textContent;
+        this.title.textContent = t('arm.keys.title');
+        this.rows = {
+            arm: row(caps(space), t('arm.keys.arm')),
+            thr: row(caps('W', 'S'), t('arm.keys.throttle')),
+            sticks: row(caps('↑', '↓', '←', '→'), t('arm.keys.sticks'))
+        };
+        this.list.replaceChildren(
+            this.rows.arm!, this.rows.thr!,
+            row(caps('A', 'D'), t('arm.keys.yaw')),
+            this.rows.sticks!,
+            row(caps('M'), t('arm.keys.mode')),
+            row(caps('V'), t('arm.keys.voxels')),
+            row(caps('C'), t('arm.keys.walls')),
+            row(caps('R'), t('arm.keys.respawn')),
+            row(caps('P', 'Esc'), t('arm.keys.pause')),
+            row(caps('K'), t('play.keys.toggle')));
     }
 
-    /** `game`: the game scheme's card; `locked`: the mouse is captured (the title stops asking for a click). */
-    update(show: boolean, say: string, block: ArmBlock, game: boolean, locked: boolean): void {
+    update(show: boolean, say: string, block: ArmBlock): void {
         this.el.classList.toggle('hidden', !show);
         if (!show) return;
-        this.build(game);
-        if (game) {
-            const title = t(locked ? 'play.game.titleLive' : 'play.game.title');
-            if (this.title.textContent !== title) this.title.textContent = title;
-        }
         if (this.now.textContent !== say) this.now.textContent = say;
         this.now.hidden = !say;
         this.rows.arm?.classList.toggle('now', block === 'switch');
@@ -262,11 +222,7 @@ export class Hud {
     private card = new ArmCard(() => this.onArm?.());
     private keys = new KeyCard();
     private last = 0;
-    /** when the key card is up: by itself on the ground, K hides or pins it (ui/key-card-state.ts) */
-    private keyShow = new KeyCardShow();
     visible = true;
-    /** the mouse is captured by the game scheme (pointer lock, set by app/builtin/play.ts): the key card stops asking for a click */
-    mouseLocked: () => boolean = () => false;
     /** Arm kind 'key' (no switch on the radio): the on-screen ARM / DISARM button. */
     onArm: (() => void) | null = null;
 
@@ -332,12 +288,6 @@ export class Hud {
         if (this.br.textContent !== pick) this.br.textContent = pick;
     }
 
-    /** K: the keyboard's key card away when it is up, else up (and it stays while flying). Returns whether it is up now. */
-    toggleKeys(): boolean {
-        this.last = 0; // draw it at the next frame, not up to 100 ms later
-        return this.keyShow.toggle();
-    }
-
     toggleFrameStats(): void {
         this.frameStats.classList.toggle('hidden');
     }
@@ -390,10 +340,10 @@ export class Hud {
         // the test pilot (?simradio=scenario) flies the model directly, past the arm gate: the gate's
         // "Calibrate your controls first" was never true for it, and it printed into every bot frame
         const say = !hd.armed && !hd.crashed && block && src !== 'sim' ? gateText(block, view) : '';
-        const cardUp = this.keyShow.shown(kbd && say !== '');
-        const keyCard = kbd && cardUp && !document.querySelector('.screen.radio');
+        // the pilot keyboard's ground card; the game scheme's keys are on the "How to fly" card (app/builtin/how-to-fly.ts)
+        const keyCard = kbd && !view?.game && say !== '' && !document.querySelector('.screen.radio');
         const easy = !!view?.easy;
-        this.keys.update(keyCard, say, block, !!view?.game, this.mouseLocked());
+        this.keys.update(keyCard, say, block);
         // keyboard: the flying keys stay in the corner once the key card is gone (armed, crashed)
         const keysLine = kbd ? (keyCard ? '' : t(easy ? 'play.hud.keys' : 'hud.keysKbd')) : t('hud.keys');
         const n = t('hud.crashes', { n: hd.crashes });

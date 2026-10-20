@@ -170,6 +170,21 @@ describe('what each card says', () => {
     });
 });
 
+describe('every literal text the files of this lane name exists in all four languages', () => {
+    it('t() keys of the card, its logic, the feature and play.ts', () => {
+        const SRC = ['ui/controls-card.ts', 'ui/controls-card-logic.ts', 'app/builtin/how-to-fly.ts', 'app/builtin/play.ts', 'ui/hud.ts'];
+        const names = new Set<string>();
+        for (const f of SRC) for (const m of readFileSync(join(REPO, 'apps', 'fly', 'src', f), 'utf8').matchAll(/\bt\(\s*'([a-zA-Z0-9_.]+)'/g)) names.add(m[1]);
+        // the dynamic one: the line under the title, one per kind
+        for (const k of KINDS) names.add(`play.card.sub.${k}`);
+        expect(names.size).toBeGreaterThan(20);
+        for (const lang of LANGS) expect([...names].filter((k) => !DICTS[lang][k]), lang).toEqual([]);
+        // control: the key the first version of the pause item had in mind does not exist
+        expect(DICTS.en['pause.howtofly']).toBeUndefined();
+        expect(DICTS.en['pause.howToFly']).toBe('How to fly');
+    });
+});
+
 describe('when the card opens by itself', () => {
     const ready: OpenInput = { enabled: true, testPage: false, shown: false, source: 'keyboard', play: 'easy', blocked: false, hidden: false };
 
