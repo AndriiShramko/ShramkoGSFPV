@@ -166,6 +166,9 @@ const groundLine = (p: Page): Promise<Any> => p.evaluate(`(() => {
         shown: g.offsetParent !== null && cs.display !== 'none' && cs.visibility !== 'hidden' && r.width > 40 && r.height > 12 && r.x >= 0 && r.right <= innerWidth && r.bottom <= innerHeight,
         fontPx: parseFloat(cs.fontSize),
         hintShown: !!hint && !hint.hidden,
+        // the other texts of the flight view that the pill must not stand on (the credit line with its "Report this scene" link, the corner lines, the buttons)
+        overlaps: ['.attribution', '.osd.bl', '.osd.br', '.osd.tl', '.osd.tr', '.top-actions', '.cinema-bar', '.hud-note', '.bake-box', '.voxel-legend', '.banner']
+            .filter((sel) => [...document.querySelectorAll(sel)].some((e) => { if (e === g || e.offsetParent === null) return false; const a = e.getBoundingClientRect(); return a.width > 0 && a.height > 0 && !(r.right <= a.left || r.left >= a.right || r.bottom <= a.top || r.top >= a.bottom); })),
         rect: { x: Math.round(r.x), bottom: Math.round(r.bottom), w: Math.round(r.width), h: Math.round(r.height) }
     };
 })()`);
@@ -272,7 +275,11 @@ const { browser } = await launchChrome({ headless: false, args: ['--window-posit
     // review: the ground card is gone and the mouse is captured, so the only thing left to say how to leave the ground is the arm gate's line
     const gl = await groundLine(p);
     check('K6b on the ground after Start flying the take-off line is on the screen, not only spoken, and names W and Space (a pilot who closed the card unread still knows)',
-        !!gl && gl.shown === true && gl.spokenOnly === false && gl.text === EN['play.gate.keys'] && /\bW\b/.test(gl.text) && /\bSpace\b/.test(gl.text) && gl.fontPx >= 14, { ...(gl ?? {}) });
+        !!gl && gl.shown === true && gl.spokenOnly === false && gl.text === EN['play.gate.keys'] && /\bW\b/.test(gl.text) && /\bSpace\b/.test(gl.text) && gl.fontPx >= 14 && gl.overlaps.length === 0, { ...(gl ?? {}) });
+    // control of the overlap measure: the pill put back to 76 px (where it first stood and covered the credit line) is seen standing on it
+    const low = await p.evaluate(`(() => { const g = document.querySelector('.hud > .gate-msg'); g.style.setProperty('bottom', '76px', 'important'); })()`).then(() => groundLine(p));
+    await p.evaluate(`document.querySelector('.hud > .gate-msg').style.removeProperty('bottom')`);
+    check('K6c (control of the overlap measure) the same pill put down to 76 px is seen covering the credit line', !!low && low.overlaps.includes('.attribution'), { overlaps: low?.overlaps ?? null }, false);
     await p.keyboard.down('Space');
     await sleep(1400);
     const rem = await reminderOn(p);
@@ -354,7 +361,7 @@ const { browser } = await launchChrome({ headless: false, args: ['--window-posit
     // mouse" pill would stand on the same place, so the line takes it over)
     const gl3 = await groundLine(p);
     check('K14c with the box ticked and no card, the ground shows the take-off line (drawn) and the "Click to fly with the mouse" pill is not stacked on it',
-        up2 && card3 === 0 && !!gl3 && gl3.shown === true && gl3.spokenOnly === false && gl3.text === EN['play.gate.keys'] && gl3.hintShown === false, { ...(gl3 ?? {}) });
+        up2 && card3 === 0 && !!gl3 && gl3.shown === true && gl3.spokenOnly === false && gl3.text === EN['play.gate.keys'] && gl3.hintShown === false && gl3.overlaps.length === 0, { ...(gl3 ?? {}) });
     await shot(p, 'k14c-ticked-ground');
     // a pilot who ticked the box has said he knows the keys: no pill in his flight either
     await ev(p, 'h.wallsSwitch.set(false); return 0;');
@@ -486,6 +493,13 @@ const { browser } = await launchChrome({ headless: false, args: ['--window-posit
     check('K20 closing Controls with x also ends at the card (the keyboard stands in), and in a 900 x 480 window the Space and Shift keys are fully on screen',
         up && f?.kind === 'game' && f.upRect.y >= 0 && f.upRect.bottom <= f.vh && f.downRect.bottom <= f.vh && /Space/.test(f.text) && /Shift/.test(f.text), { kind: f?.kind ?? null, up: f?.upRect ?? null, down: f?.downRect ?? null, vh: f?.vh ?? null });
     check('K20b Start flying is reachable in that window: on the screen, or the card scrolls', !!f && (f.startRect.bottom <= f.vh || f.scrollable), { start: f?.startRect ?? null, scrollable: f?.scrollable ?? null });
+    if (up) {
+        await p.locator('[data-action="htf-start"]').click();
+        await sleep(900);
+        const gs = await groundLine(p);
+        await shot(p, 'k20c-short-ground');
+        check('K20c in that short window too the ground line is drawn, inside the screen and over no other text', !!gs && gs.shown === true && gs.spokenOnly === false && gs.text === EN['play.gate.keys'] && gs.overlaps.length === 0, { ...(gs ?? {}) });
+    } else check('K20c in that short window too the ground line is drawn, inside the screen and over no other text', false, { skipped: 'no card came up' });
     await ctx.close();
 }
 

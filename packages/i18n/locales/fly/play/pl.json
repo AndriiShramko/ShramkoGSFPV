@@ -45,7 +45,7 @@
   "play.card.downSub": "przytrzymaj, aby opadać i lądować",
   "play.card.next": "następna scena",
   "play.card.again": "pokaż tę kartę jeszcze raz",
-  "play.card.click": "Naciśnij Zacznij latać, aby przechwycić mysz, a potem naciśnij {fwd} lub {up}, aby wystartować. Esc ją zwalnia.",
+  "play.card.click": "Naciśnij Zacznij latać, aby przechwycić mysz, a potem, aby wystartować, naciśnij klawisz: {fwd} lub {up}. Esc ją zwalnia.",
   "play.card.start": "Zacznij latać",
   "play.card.hide": "Nie pokazuj więcej",
   "play.card.padLeft": "Lewy drążek",
