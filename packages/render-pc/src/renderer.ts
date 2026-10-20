@@ -14,6 +14,7 @@ import {
 import type { GraphicsDevice, GSplatComponent } from 'playcanvas';
 import { LatencyGuard, inputToScreenMs } from './governor';
 import { applyDrawing, DEFAULT_BUDGET_M } from './drawing';
+import type { GpuInfo } from './device-class';
 import { BrokenFileError, lodMetaProblem, lodMode } from './lod';
 import type { LodState } from './lod';
 
@@ -313,6 +314,27 @@ export class SplatRenderer {
 
     get isWebGPU(): boolean {
         return this.device.isWebGPU;
+    }
+
+    /**
+     * What the WebGPU adapter says about itself (the engine keeps the adapter it made the device from): the
+     * class of this device is read from it (device-class.ts classifyDevice). null on WebGL, and when the
+     * browser gives the engine no adapter. Chrome hides the GPU's model name (vendor and architecture only).
+     */
+    get gpuInfo(): GpuInfo | null {
+        type Adapter = { info?: Record<string, unknown>; limits?: { maxBufferSize?: number }; isFallbackAdapter?: boolean };
+        const a = (this.device as unknown as { gpuAdapter?: Adapter | null }).gpuAdapter;
+        if (!this.device.isWebGPU || !a) return null;
+        const i = a.info ?? {};
+        const text = (v: unknown): string => (typeof v === 'string' ? v : '');
+        return {
+            vendor: text(i.vendor),
+            architecture: text(i.architecture),
+            device: text(i.device),
+            description: text(i.description),
+            isFallback: a.isFallbackAdapter === true || i.isFallbackAdapter === true,
+            maxBufferSize: typeof a.limits?.maxBufferSize === 'number' ? a.limits.maxBufferSize : 0
+        };
     }
 
     /** 2 = GSPLAT_RENDERER_RASTER_GPU_SORT: Gaussians are sorted on the GPU */

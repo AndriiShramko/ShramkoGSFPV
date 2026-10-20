@@ -78,6 +78,13 @@ MAX_SCENES = 500
 SCALE_MIN, SCALE_MAX = 0.25, 100
 MAX_COLLECTIONS = 40
 HISTORY_LISTED = 50
+# the owner's drawing defaults (v0.10 lane R, docs/wip/v10-r.md): one preset per class of device. The classes, the
+# drawing modes and the ranges are the shared table of packages/render-pc/src/presets.ts (a test keeps them equal);
+# a class or a field the owner never set is the simulator's built-in value, so the stored document is only the changes.
+DEVICE_CLASSES = ("desktop-strong", "desktop-weak", "tablet", "phone")
+DRAWING_MODES = ("sorted", "stochastic")
+PRESET_BUDGET_MIN, PRESET_BUDGET_MAX = 0.25, 32       # splat budget, millions (the link contract's range too)
+PRESET_SCALE_MIN, PRESET_SCALE_MAX = 0.4, 1.0         # the top render scale, a share of the display's pixels
 _ID_RE = re.compile(r"[0-9a-f]{6,32}")
 _SLUG_RE = re.compile(r"[a-z0-9][a-z0-9-]{0,31}")
 _DRONE_RE = re.compile(r"[a-z0-9][a-z0-9._-]{0,39}")
@@ -366,8 +373,32 @@ def _place_fields(e: dict) -> dict:
     return out
 
 
+def clean_drawing(v) -> dict | None:
+    """The owner's drawing defaults in canonical form: {"presets": {class: {"drawing", "budgetM", "renderScale"}}}.
+    Only known classes, known modes and numbers in range survive (a field out of range is dropped, as the place
+    fields are); a preset with no field left, and a document with no preset left, are None (= the built-in table)."""
+    if not isinstance(v, dict) or not isinstance(v.get("presets"), dict):
+        return None
+    presets: dict = {}
+    for cls in DEVICE_CLASSES:
+        p = v["presets"].get(cls)
+        if not isinstance(p, dict):
+            continue
+        out: dict = {}
+        if p.get("drawing") in DRAWING_MODES:
+            out["drawing"] = p["drawing"]
+        if (b := _number(p.get("budgetM"), PRESET_BUDGET_MIN, PRESET_BUDGET_MAX)) is not None:
+            out["budgetM"] = b
+        if (r := _number(p.get("renderScale"), PRESET_SCALE_MIN, PRESET_SCALE_MAX)) is not None:
+            out["renderScale"] = r
+        if out:
+            presets[cls] = out
+    return {"presets": presets} if presets else None
+
+
 def clean_catalog(doc) -> dict:
-    """The whole list: scenes in the admin's order (the order IS the position), collections in theirs."""
+    """The whole list: scenes in the admin's order (the order IS the position), collections in theirs, and the
+    drawing defaults when the document has them (a document without the key says nothing about them)."""
     if not isinstance(doc, dict) or not isinstance(doc.get("scenes"), list):
         raise BadCatalog("no scene list")
     if len(doc["scenes"]) > MAX_SCENES:
@@ -391,7 +422,10 @@ def clean_catalog(doc) -> dict:
         ids.add(s["id"])
         s["collections"] = [c for c in s["collections"] if c in seen]
         scenes.append(s)
-    return {"collections": cols, "scenes": scenes}
+    out = {"collections": cols, "scenes": scenes}
+    if "drawing" in doc and (drawing := clean_drawing(doc["drawing"])):
+        out["drawing"] = drawing
+    return out
 
 
 def seed_from_showcase(path: Path | None) -> dict:
@@ -452,6 +486,8 @@ class CatalogStore:
             if self._public is None or self._public[0] != key:
                 scenes = [{k: v for k, v in s.items() if k != "hidden"} for s in doc["scenes"] if not s.get("hidden")]
                 out = {"v": 1, "published": doc.get("published"), "collections": doc["collections"], "scenes": scenes}
+                if doc.get("drawing"):
+                    out["drawing"] = doc["drawing"]
                 defaults = {s["id"]: {"scale": s["scale"]} for s in doc["scenes"] if s.get("hidden") and s.get("scale") not in (None, 1)}
                 if defaults:
                     out["defaults"] = defaults
@@ -465,22 +501,27 @@ class CatalogStore:
             if d is not None:
                 return d
             pub = self.published()
-            return {"collections": pub["collections"], "scenes": pub["scenes"]} if pub else {"collections": [], "scenes": []}
+            if not pub:
+                return {"collections": [], "scenes": []}
+            return {"collections": pub["collections"], "scenes": pub["scenes"], **({"drawing": pub["drawing"]} if pub.get("drawing") else {})}
 
     def state(self) -> dict:
         with self._mu:
             pub = self.published()
             draft = self.draft()
-            live = {"collections": pub["collections"], "scenes": pub["scenes"]} if pub else {"collections": [], "scenes": []}
+            live = {"collections": pub["collections"], "scenes": pub["scenes"], "drawing": pub.get("drawing")} if pub else {"collections": [], "scenes": []}
             return {"draft": draft, "published": pub, "dirty": self._body(draft) != self._body(live), "history": self.history()}
 
     @staticmethod
     def _body(d: dict) -> str:
-        return json.dumps({"collections": d.get("collections"), "scenes": d.get("scenes")}, sort_keys=True)
+        return json.dumps({"collections": d.get("collections"), "scenes": d.get("scenes"), "drawing": d.get("drawing")}, sort_keys=True)
 
     def save_draft(self, doc) -> dict:
         clean = clean_catalog(doc)
         with self._mu:
+            # a client that does not know the drawing defaults (the key is absent) must not wipe them
+            if isinstance(doc, dict) and "drawing" not in doc and (kept := self.draft().get("drawing")):
+                clean["drawing"] = kept
             self._write(self._p("catalog-draft.json"), {"saved": self._stamp(), **clean})
         return clean
 

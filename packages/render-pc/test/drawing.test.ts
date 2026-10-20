@@ -1,10 +1,11 @@
-// The drawing policy (v0.7 lane R, rewritten for v0.9 items 7 and 13): stochastic drawing is the DEFAULT on a
-// desktop WebGPU browser, and the answer comes from, in this order, the link, the pilot's settings (Render and
-// Splat budget), the owner's scene entry, the device's default. Which devices get stochastic and a budget,
-// that the choice reaches the engine's gsplat params, and the governor's top budget. Each part has a control
-// that must fail: a policy that ignores the device, a policy with the old order (the setting beating the
-// link, the device default sorted), one that lets the owner's entry beat the pilot, one that lets the pilot
-// beat the link, an apply that ignores the renderer, a governor that is not told the top.
+// The drawing policy (v0.7 lane R, rewritten for v0.9 items 7 and 13 and again for v0.10 items 3 and 4): the answer
+// comes from, in this order, the link, the pilot's settings (Render and Splat budget), the owner's scene entry, the
+// device's class preset (sorted by default since v0.10, the owner's own numbers from the admin over the built-in
+// ones). Which devices get stochastic and a budget, that the choice reaches the engine's gsplat params, and the
+// governor's top budget. Each part has a control that must fail: a policy that ignores the device, one with the
+// v0.9 defaults (stochastic on a desktop), one with the old order (the setting beating the link), one that
+// ignores the owner's preset, one blind to the class, one that lets the owner's entry beat the pilot, one that
+// lets the pilot beat the link, an apply that ignores the renderer, a governor that is not told the top.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -12,6 +13,10 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { resolveDrawing, isHandheld, isViewerMobile, applyDrawing, drawOnDevice, defaultBudgetM, canDrawStochastic, pilotBudgetM, DEFAULT_BUDGET_M, MOBILE_BUDGET_M, STOCHASTIC_BUDGET_M, BUDGET_OPTIONS, DRAWING_MODES, DRAWING_NOTES } from '../src/drawing';
 import type { Drawing, DrawingAsk, DrawingDevice, DrawingRequest, PilotDrawing } from '../src/drawing';
+import { BUILTIN_PRESETS } from '../src/presets';
+import type { DrawingPresets } from '../src/presets';
+import { DEVICE_CLASSES, impliedClass } from '../src/device-class';
+import type { GpuInfo } from '../src/device-class';
 import { FrameGovernor, DEFAULT_STEPS } from '../src/governor';
 // the Display settings' definitions (packages/prefs is pure data; render-pc does not depend on it at run time)
 import { DISPLAY_DEFS } from '../../prefs/src/defs/display';
@@ -19,9 +24,18 @@ import { DISPLAY_DEFS } from '../../prefs/src/defs/display';
 const DESKTOP: DrawingDevice = { webgpu: true, handheld: false, mobile: false };
 const DESKTOP_GL: DrawingDevice = { webgpu: false, handheld: false, mobile: false };
 const PHONE: DrawingDevice = { webgpu: true, handheld: true, mobile: true };
-/** iPadOS Safari: says "Macintosh", has touch points; a tablet to us (no stochastic), desktop to SuperSplat's viewer (4 M). */
+/** iPadOS Safari: says "Macintosh", has touch points; a tablet to us (no stochastic, the tablet preset). */
 const IPAD_OS: DrawingDevice = { webgpu: true, handheld: true, mobile: false };
 const OWNER: DrawingRequest = { budgetM: 8, stochastic: true }; // superspl.at/scene/2f1ddf5f?budget=8&stochastic
+
+// the built-in presets of the classes the flags above imply (impliedClass): the numbers every default row expects
+const STRONG = BUILTIN_PRESETS['desktop-strong'];
+const WEAK = BUILTIN_PRESETS['desktop-weak'];
+const TABLET = BUILTIN_PRESETS.tablet;
+const PHONE_P = BUILTIN_PRESETS.phone;
+/** What the owner may do in the admin: a stochastic 8 M preset for the strong desktop, and for a phone (which cannot draw it). */
+const OWNER_STRONG: DrawingDevice = { ...DESKTOP, class: 'desktop-strong', preset: { drawing: 'stochastic', budgetM: 8, renderScale: 1 } };
+const OWNER_PHONE: DrawingDevice = { ...PHONE, class: 'phone', preset: { drawing: 'stochastic', budgetM: 1.5, renderScale: 0.6 } };
 
 const AUTO: PilotDrawing = { mode: 'auto' };
 const ask = (o: { link?: DrawingRequest; pilot?: PilotDrawing; scene?: DrawingRequest }): DrawingAsk => ({ ...(o.link ? { link: o.link } : {}), pilot: o.pilot ?? AUTO, ...(o.scene ? { scene: o.scene } : {}) });
@@ -31,58 +45,77 @@ interface Row { name: string; ask: DrawingAsk; device: DrawingDevice; want: Pick
 const row = (name: string, a: DrawingAsk, device: DrawingDevice, stochastic: boolean, budgetM: number, note: Drawing['note'] = null): Row => ({ name, ask: a, device, want: { stochastic, budgetM, note } });
 
 const ROWS: Row[] = [
-    // ---- a desktop with WebGPU: stochastic is the default (v0.9, item 13)
-    row('desktop: nobody asks -> stochastic, the measured default budget', ask({}), DESKTOP, true, STOCHASTIC_BUDGET_M),
+    // ---- a desktop with WebGPU: the class's preset is sorted (v0.10: good quality by default)
+    row('desktop: nobody asks -> the preset: sorted at the strong desktop budget', ask({}), DESKTOP, false, STRONG.budgetM),
     row('desktop: the owner\'s link', ask({ link: OWNER }), DESKTOP, true, 8),
-    row('desktop: a link\'s budget alone keeps the default stochastic', ask({ link: { budgetM: 6 } }), DESKTOP, true, 6),
+    row('desktop: a link\'s budget alone keeps the preset\'s drawing (sorted)', ask({ link: { budgetM: 6 } }), DESKTOP, false, 6),
     row('desktop: a link asking sorted (stochastic=0) with its budget', ask({ link: { stochastic: false, budgetM: 2 } }), DESKTOP, false, 2),
-    row('desktop: a link asking sorted gets the sorted default budget', ask({ link: { stochastic: false } }), DESKTOP, false, DEFAULT_BUDGET_M),
-    row('desktop: the pilot chose sorted', ask({ pilot: { mode: 'sorted' } }), DESKTOP, false, DEFAULT_BUDGET_M),
-    row('desktop: the pilot chose stochastic', ask({ pilot: { mode: 'stochastic' } }), DESKTOP, true, STOCHASTIC_BUDGET_M),
-    // ---- the order: link > the pilot's settings > the owner's entry > the device
+    row('desktop: a link asking sorted gets the preset budget', ask({ link: { stochastic: false } }), DESKTOP, false, STRONG.budgetM),
+    row('desktop: the pilot chose sorted', ask({ pilot: { mode: 'sorted' } }), DESKTOP, false, STRONG.budgetM),
+    row('desktop: the pilot chose stochastic', ask({ pilot: { mode: 'stochastic' } }), DESKTOP, true, STRONG.budgetM),
+    // ---- the order: link > the pilot's settings > the owner's entry > the device's preset
     row('link beats the pilot: sorted setting, stochastic link', ask({ link: OWNER, pilot: { mode: 'sorted' } }), DESKTOP, true, 8),
-    row('link beats the pilot: stochastic setting, sorted link', ask({ link: { stochastic: false }, pilot: { mode: 'stochastic' } }), DESKTOP, false, DEFAULT_BUDGET_M),
-    row('link beats the pilot\'s budget', ask({ link: { budgetM: 8 }, pilot: { mode: 'auto', budgetM: 16 } }), DESKTOP, true, 8),
+    row('link beats the pilot: stochastic setting, sorted link', ask({ link: { stochastic: false }, pilot: { mode: 'stochastic' } }), DESKTOP, false, STRONG.budgetM),
+    row('link beats the pilot\'s budget', ask({ link: { budgetM: 8 }, pilot: { mode: 'auto', budgetM: 16 } }), DESKTOP, false, 8),
     row('the pilot beats the owner\'s entry: sorted setting, stochastic entry', ask({ pilot: { mode: 'sorted' }, scene: { stochastic: true, budgetM: 6 } }), DESKTOP, false, 6),
-    row('the pilot beats the owner\'s entry: stochastic setting, sorted entry', ask({ pilot: { mode: 'stochastic' }, scene: { stochastic: false } }), DESKTOP, true, STOCHASTIC_BUDGET_M),
-    row('the pilot\'s budget beats the owner\'s entry', ask({ pilot: { mode: 'auto', budgetM: 16 }, scene: { budgetM: 6 } }), DESKTOP, true, 16),
-    row('the owner\'s entry beats the device: a sorted scene', ask({ scene: { stochastic: false } }), DESKTOP, false, DEFAULT_BUDGET_M),
+    row('the pilot beats the owner\'s entry: stochastic setting, sorted entry', ask({ pilot: { mode: 'stochastic' }, scene: { stochastic: false } }), DESKTOP, true, STRONG.budgetM),
+    row('the pilot\'s budget beats the owner\'s entry', ask({ pilot: { mode: 'auto', budgetM: 16 }, scene: { budgetM: 6 } }), DESKTOP, false, 16),
+    row('the owner\'s entry beats the device: a stochastic scene', ask({ scene: { stochastic: true } }), DESKTOP, true, STRONG.budgetM),
     row('the owner\'s entry beats the device: its own budget', ask({ scene: { stochastic: true, budgetM: 12 } }), DESKTOP, true, 12),
-    row('a link field by field: the link\'s budget, the owner\'s stochastic', ask({ link: { budgetM: 3 }, scene: { stochastic: false } }), DESKTOP, false, 3),
-    row('the pilot\'s budget alone, stochastic by default', ask({ pilot: { mode: 'auto', budgetM: 2 } }), DESKTOP, true, 2),
+    row('a link field by field: the link\'s budget, the owner\'s stochastic', ask({ link: { budgetM: 3 }, scene: { stochastic: true } }), DESKTOP, true, 3),
+    row('the pilot\'s budget alone, the preset\'s drawing', ask({ pilot: { mode: 'auto', budgetM: 2 } }), DESKTOP, false, 2),
+    // ---- the owner's preset (admin) is the device's answer: below the entry, the pilot and the link
+    row('owner\'s preset (stochastic 8 M): nobody asks', ask({}), OWNER_STRONG, true, 8),
+    row('owner\'s preset: the pilot chose sorted -> sorted, at the preset\'s budget', ask({ pilot: { mode: 'sorted' } }), OWNER_STRONG, false, 8),
+    row('owner\'s preset: a link asking sorted', ask({ link: { stochastic: false } }), OWNER_STRONG, false, 8),
+    row('owner\'s preset: the scene\'s entry says sorted, 5 M', ask({ scene: { stochastic: false, budgetM: 5 } }), OWNER_STRONG, false, 5),
+    row('owner\'s preset: the pilot\'s own budget', ask({ pilot: { mode: 'auto', budgetM: 3 } }), OWNER_STRONG, true, 3),
     // ---- phones and tablets: nothing of the request; the note says who asked and what was refused, none when nobody asked
-    row('phone: nobody asks -> sorted, no note (the default is not news)', ask({}), PHONE, false, MOBILE_BUDGET_M),
-    row('phone: the owner\'s link', ask({ link: OWNER }), PHONE, false, MOBILE_BUDGET_M, 'scene-handheld'),
-    row('phone: the owner\'s entry asks stochastic', ask({ scene: OWNER }), PHONE, false, MOBILE_BUDGET_M, 'scene-handheld'),
-    row('phone: the pilot chose stochastic', ask({ pilot: { mode: 'stochastic' } }), PHONE, false, MOBILE_BUDGET_M, 'setting-handheld'),
-    row('phone: the pilot chose stochastic, the entry too -> the pilot\'s choice is named', ask({ pilot: { mode: 'stochastic' }, scene: OWNER }), PHONE, false, MOBILE_BUDGET_M, 'setting-handheld'),
-    row('phone: a link\'s budget only', ask({ link: { budgetM: 8 } }), PHONE, false, MOBILE_BUDGET_M, 'budget-handheld'),
-    row('phone: a link asking sorted with a big budget', ask({ link: { stochastic: false, budgetM: 1 } }), PHONE, false, MOBILE_BUDGET_M, 'budget-handheld'),
-    row('phone: the pilot chose sorted, the owner\'s link asks stochastic', ask({ link: OWNER, pilot: { mode: 'sorted' } }), PHONE, false, MOBILE_BUDGET_M, 'scene-handheld'),
-    row('phone: sorted chosen, the entry asks stochastic: nothing refused', ask({ pilot: { mode: 'sorted' }, scene: { stochastic: true } }), PHONE, false, MOBILE_BUDGET_M),
-    row('phone: the phone\'s own budget is not refused', ask({ link: { budgetM: MOBILE_BUDGET_M } }), PHONE, false, MOBILE_BUDGET_M),
-    row('phone: the desktop\'s 4 M asked by a link is a refusal (v0.8)', ask({ link: { budgetM: DEFAULT_BUDGET_M } }), PHONE, false, MOBILE_BUDGET_M, 'budget-handheld'),
+    row('phone: nobody asks -> sorted, the phone preset, no note (the default is not news)', ask({}), PHONE, false, PHONE_P.budgetM),
+    row('phone: the owner\'s link', ask({ link: OWNER }), PHONE, false, PHONE_P.budgetM, 'scene-handheld'),
+    row('phone: the owner\'s entry asks stochastic', ask({ scene: OWNER }), PHONE, false, PHONE_P.budgetM, 'scene-handheld'),
+    row('phone: the pilot chose stochastic', ask({ pilot: { mode: 'stochastic' } }), PHONE, false, PHONE_P.budgetM, 'setting-handheld'),
+    row('phone: the pilot chose stochastic, the entry too -> the pilot\'s choice is named', ask({ pilot: { mode: 'stochastic' }, scene: OWNER }), PHONE, false, PHONE_P.budgetM, 'setting-handheld'),
+    row('phone: a link\'s budget only', ask({ link: { budgetM: 8 } }), PHONE, false, PHONE_P.budgetM, 'budget-handheld'),
+    row('phone: a link asking sorted with a small budget', ask({ link: { stochastic: false, budgetM: 1 } }), PHONE, false, PHONE_P.budgetM, 'budget-handheld'),
+    row('phone: the pilot chose sorted, the owner\'s link asks stochastic', ask({ link: OWNER, pilot: { mode: 'sorted' } }), PHONE, false, PHONE_P.budgetM, 'scene-handheld'),
+    row('phone: sorted chosen, the entry asks stochastic: nothing refused', ask({ pilot: { mode: 'sorted' }, scene: { stochastic: true } }), PHONE, false, PHONE_P.budgetM),
+    row('phone: the phone\'s own budget is not refused', ask({ link: { budgetM: PHONE_P.budgetM } }), PHONE, false, PHONE_P.budgetM),
+    row('phone: the desktop\'s 4 M asked by a link is a refusal (v0.8)', ask({ link: { budgetM: DEFAULT_BUDGET_M } }), PHONE, false, PHONE_P.budgetM, 'budget-handheld'),
     row('phone: the pilot\'s lighter budget is kept', ask({ pilot: { mode: 'auto', budgetM: 1 } }), PHONE, false, 1),
-    row('phone: the pilot\'s heavier budget is refused, without a note (their own number)', ask({ pilot: { mode: 'auto', budgetM: 16 } }), PHONE, false, MOBILE_BUDGET_M),
-    // review R5: an iPad whose Safari says "Macintosh" draws the 4 M superspl.at gives it; stochastic is still refused
-    row('ipad: nobody asks', ask({}), IPAD_OS, false, DEFAULT_BUDGET_M),
-    row('ipad: the owner\'s link', ask({ link: OWNER }), IPAD_OS, false, DEFAULT_BUDGET_M, 'scene-handheld'),
-    row('ipad: a link\'s budget only', ask({ link: { budgetM: 8 } }), IPAD_OS, false, DEFAULT_BUDGET_M, 'budget-handheld'),
-    row('ipad: the iPad\'s own budget is not refused', ask({ link: { budgetM: DEFAULT_BUDGET_M } }), IPAD_OS, false, DEFAULT_BUDGET_M),
-    // WebGL (no WebGPU, or the engine fell back): the CPU-sort renderer cannot draw it
-    row('webgl: nobody asks', ask({}), DESKTOP_GL, false, DEFAULT_BUDGET_M),
-    row('webgl: the owner\'s link', ask({ link: OWNER }), DESKTOP_GL, false, DEFAULT_BUDGET_M, 'scene-webgl'),
-    row('webgl: the pilot chose stochastic', ask({ pilot: { mode: 'stochastic' } }), DESKTOP_GL, false, DEFAULT_BUDGET_M, 'setting-webgl'),
-    row('webgl: a link\'s budget only', ask({ link: { budgetM: 8 } }), DESKTOP_GL, false, DEFAULT_BUDGET_M, 'budget-webgl'),
-    row('webgl: the pilot chose sorted, the link asks 8 M stochastic', ask({ link: OWNER, pilot: { mode: 'sorted' } }), DESKTOP_GL, false, DEFAULT_BUDGET_M, 'scene-webgl'),
-    row('webgl: sorted asked by the entry', ask({ scene: { stochastic: false } }), DESKTOP_GL, false, DEFAULT_BUDGET_M),
-    row('webgl: the pilot\'s lighter budget is kept', ask({ pilot: { mode: 'auto', budgetM: 2 } }), DESKTOP_GL, false, 2)
+    row('phone: the pilot\'s heavier budget is refused, without a note (their own number)', ask({ pilot: { mode: 'auto', budgetM: 16 } }), PHONE, false, PHONE_P.budgetM),
+    row('owner\'s preset on a phone: stochastic 1.5 M -> the budget is kept, the drawing refused without a note', ask({}), OWNER_PHONE, false, 1.5),
+    // an iPad whose Safari says "Macintosh": the tablet class; stochastic is refused, the tablet preset's budget
+    row('ipad: nobody asks', ask({}), IPAD_OS, false, TABLET.budgetM),
+    row('ipad: the owner\'s link', ask({ link: OWNER }), IPAD_OS, false, TABLET.budgetM, 'scene-handheld'),
+    row('ipad: a link\'s budget only', ask({ link: { budgetM: 8 } }), IPAD_OS, false, TABLET.budgetM, 'budget-handheld'),
+    row('ipad: the tablet\'s own budget is not refused', ask({ link: { budgetM: TABLET.budgetM } }), IPAD_OS, false, TABLET.budgetM),
+    // WebGL (no WebGPU, or the engine fell back): the CPU-sort renderer cannot draw it; the weak desktop's preset
+    row('webgl: nobody asks', ask({}), DESKTOP_GL, false, WEAK.budgetM),
+    row('webgl: the owner\'s link', ask({ link: OWNER }), DESKTOP_GL, false, WEAK.budgetM, 'scene-webgl'),
+    row('webgl: the pilot chose stochastic', ask({ pilot: { mode: 'stochastic' } }), DESKTOP_GL, false, WEAK.budgetM, 'setting-webgl'),
+    row('webgl: a link\'s budget only', ask({ link: { budgetM: 8 } }), DESKTOP_GL, false, WEAK.budgetM, 'budget-webgl'),
+    row('webgl: the pilot chose sorted, the link asks 8 M stochastic', ask({ link: OWNER, pilot: { mode: 'sorted' } }), DESKTOP_GL, false, WEAK.budgetM, 'scene-webgl'),
+    row('webgl: sorted asked by the entry', ask({ scene: { stochastic: false } }), DESKTOP_GL, false, WEAK.budgetM),
+    row('webgl: the pilot\'s lighter budget is kept', ask({ pilot: { mode: 'auto', budgetM: 1 } }), DESKTOP_GL, false, 1)
 ];
 
 /** The rows a policy gets wrong. */
 const failingRows = (policy: Policy) => ROWS.filter((r) => JSON.stringify(policy(r.ask, r.device)) !== JSON.stringify(r.want));
 const failures = (policy: Policy): string[] => failingRows(policy).map((r) => r.name);
 const real: Policy = (a, d) => { const { stochastic, budgetM, note } = resolveDrawing(a, d); return { stochastic, budgetM, note }; };
+
+/**
+ * The v0.9 defaults as presets, for the control: stochastic at 4 M on a desktop with WebGPU, sorted at 4 M on WebGL
+ * and on an iPadOS Safari (SuperSplat's viewer's rule), sorted at 2 M on a phone. Same order, other defaults.
+ */
+const V09_PRESETS: DrawingPresets = {
+    'desktop-strong': { drawing: 'stochastic', budgetM: 4, renderScale: 1 },
+    'desktop-weak': { drawing: 'sorted', budgetM: 4, renderScale: 1 },
+    tablet: { drawing: 'sorted', budgetM: 4, renderScale: 1 },
+    phone: { drawing: 'sorted', budgetM: 2, renderScale: 1 }
+};
+const v09: Policy = (a, d) => real(a, { ...d, class: impliedClass(d), preset: V09_PRESETS[impliedClass(d)] });
 
 /** The v0.8 order, for the control: the setting beat the link, the device's default was sorted at 4 M. */
 const v08: Policy = (a, d) => {
@@ -95,20 +128,37 @@ const v08: Policy = (a, d) => {
     return { stochastic: false, budgetM: top, note: who ? `${who}-${d.handheld ? 'handheld' : 'webgl'}` as Drawing['note'] : null };
 };
 
-describe('the desktop default budget of the stochastic drawing', () => {
-    it('is the sorted drawing\'s 4 M, SuperSplat\'s desktop budget: a desktop streams no more bytes and holds no more VRAM than before, and a link that loses ?budget=8&stochastic draws what a bare link draws', () => {
-        expect(STOCHASTIC_BUDGET_M).toBe(DEFAULT_BUDGET_M);
-        expect(DEFAULT_BUDGET_M).toBe(4);
-        const bare = resolveDrawing(ask({}), DESKTOP);
-        expect(bare).toMatchObject({ stochastic: true, budgetM: 4 });
-        // the budget SuperSplat's example link asks for is still honoured, from the link
+describe('v0.10: the device\'s default is the class\'s preset, and the preset is sorted (good quality by default)', () => {
+    it('every built-in preset draws sorted, at a budget the viewer\'s own rule would give that class or less', () => {
+        for (const c of DEVICE_CLASSES) expect(BUILTIN_PRESETS[c].drawing, c).toBe('sorted');
+        expect(STRONG.budgetM).toBe(DEFAULT_BUDGET_M);
+        for (const p of [WEAK, TABLET, PHONE_P]) expect(p.budgetM).toBeLessThanOrEqual(DEFAULT_BUDGET_M);
+        expect(PHONE_P.budgetM).toBeLessThanOrEqual(MOBILE_BUDGET_M);
+    });
+
+    it('a desktop that nobody asked draws sorted at its preset budget; asking stochastic (a link, the setting, the entry) still gets it', () => {
+        expect(resolveDrawing(ask({}), DESKTOP)).toMatchObject({ stochastic: false, budgetM: STRONG.budgetM, deviceClass: 'desktop-strong', renderScale: STRONG.renderScale, from: { stochastic: 'device', budget: 'device' } });
         expect(resolveDrawing(ask({ link: OWNER }), DESKTOP)).toMatchObject({ stochastic: true, budgetM: 8 });
-        // control: the first v0.9 cut gave 8 M by default, which the load measurement (+65 % bytes, ~1.7x VRAM) refused
-        expect(bare.budgetM).not.toBe(8);
+        expect(resolveDrawing(ask({ pilot: { mode: 'stochastic' } }), DESKTOP).stochastic).toBe(true);
+        expect(resolveDrawing(ask({ scene: { stochastic: true } }), DESKTOP).stochastic).toBe(true);
+    });
+
+    it('control: the v0.9 defaults (stochastic on a desktop, 4 M on WebGL and iPadOS) fail exactly the rows that depend on the default', () => {
+        const f = failures(v09);
+        expect(f).toContain('desktop: nobody asks -> the preset: sorted at the strong desktop budget');
+        expect(f).toContain('desktop: a link\'s budget alone keeps the preset\'s drawing (sorted)');
+        expect(f).toContain('the pilot\'s budget alone, the preset\'s drawing');
+        expect(f).toContain('webgl: nobody asks');
+        expect(f).toContain('ipad: nobody asks');
+        // an explicit ask (a link, the pilot's setting, the entry) never depended on the default's drawing
+        expect(f).not.toContain('desktop: the owner\'s link');
+        expect(f).not.toContain('desktop: the pilot chose sorted');
+        expect(f).not.toContain('desktop: the pilot chose stochastic');
+        expect(f).not.toContain('phone: nobody asks -> sorted, the phone preset, no note (the default is not news)');
     });
 });
 
-describe('resolveDrawing: link x pilot x owner\'s entry x device', () => {
+describe('resolveDrawing: link x pilot x owner\'s entry x the class\'s preset', () => {
     it('every row', () => {
         expect(failures(real)).toEqual([]);
         expect(DRAWING_MODES).toEqual(['auto', 'stochastic', 'sorted']);
@@ -130,16 +180,12 @@ describe('resolveDrawing: link x pilot x owner\'s entry x device', () => {
         expect(from(ask({ pilot: { mode: 'auto', budgetM: 1 } }), PHONE)).toEqual({ stochastic: 'device', budget: 'setting' });
     });
 
-    it('control: the v0.8 order (the setting beats the link, sorted by default) fails the default, the precedence and the entry rows', () => {
+    it('control: the v0.8 order (the setting beats the link) fails the link-vs-pilot rows', () => {
         const f = failures(v08);
-        // the device default, "link beats the pilot" both ways, the pilot-vs-entry and budget rows it ordered differently
-        expect(f).toContain('desktop: nobody asks -> stochastic, the measured default budget');
         expect(f).toContain('link beats the pilot: sorted setting, stochastic link');
         expect(f).toContain('link beats the pilot: stochastic setting, sorted link');
         expect(f).toContain('the pilot\'s budget beats the owner\'s entry'); // it had no budget setting
         expect(f.length).toBeGreaterThanOrEqual(8);
-        // and the rows the order did not touch (a phone given nothing, WebGL given nothing) pass either way
-        expect(f).not.toContain('webgl: nobody asks');
     });
 
     it('control: a policy that lets the owner\'s entry beat the pilot fails exactly the pilot-vs-entry rows', () => {
@@ -147,7 +193,7 @@ describe('resolveDrawing: link x pilot x owner\'s entry x device', () => {
         const f = failures(entryFirst);
         expect(f).toContain('the pilot beats the owner\'s entry: sorted setting, stochastic entry');
         expect(f).toContain('the pilot beats the owner\'s entry: stochastic setting, sorted entry');
-        expect(f).not.toContain('desktop: nobody asks -> stochastic, the measured default budget');
+        expect(f).not.toContain('desktop: nobody asks -> the preset: sorted at the strong desktop budget');
     });
 
     it('control: a policy that lets the pilot beat the link fails exactly the link-vs-pilot rows', () => {
@@ -156,6 +202,39 @@ describe('resolveDrawing: link x pilot x owner\'s entry x device', () => {
         expect(f).toContain('link beats the pilot: sorted setting, stochastic link');
         expect(f).toContain('link beats the pilot: stochastic setting, sorted link');
         expect(f).not.toContain('desktop: the owner\'s link');
+    });
+
+    it('the owner\'s preset sits below the scene\'s entry, the pilot and the link, and above the built-in table', () => {
+        // the preset is the device's answer: a stochastic 8 M preset, and each stronger voice still wins its own field
+        expect(resolveDrawing(ask({}), OWNER_STRONG)).toMatchObject({ stochastic: true, budgetM: 8, from: { stochastic: 'device', budget: 'device' } });
+        expect(resolveDrawing(ask({ scene: { stochastic: false } }), OWNER_STRONG)).toMatchObject({ stochastic: false, budgetM: 8, from: { stochastic: 'scene', budget: 'device' } });
+        expect(resolveDrawing(ask({ pilot: { mode: 'sorted' }, scene: { stochastic: true } }), OWNER_STRONG)).toMatchObject({ stochastic: false, from: { stochastic: 'setting' } });
+        expect(resolveDrawing(ask({ link: { stochastic: false, budgetM: 2 } }), OWNER_STRONG)).toMatchObject({ stochastic: false, budgetM: 2, from: { stochastic: 'link', budget: 'link' } });
+        // control: a policy that ignores the owner's preset (the built-in table only) fails the preset rows and no other
+        const builtinOnly: Policy = (a, d) => real(a, { ...d, preset: undefined });
+        const f = failures(builtinOnly);
+        expect(f).toContain('owner\'s preset (stochastic 8 M): nobody asks');
+        expect(f).toContain('owner\'s preset: a link asking sorted');
+        expect(f.every((n) => n.startsWith('owner\'s preset'))).toBe(true);
+    });
+
+    it('a class\'s preset reaches the answer: the class, the budget, the render scale', () => {
+        const strong = resolveDrawing(ask({}), DESKTOP);
+        const phone = resolveDrawing(ask({}), PHONE);
+        const weak = resolveDrawing(ask({}), DESKTOP_GL);
+        const tablet = resolveDrawing(ask({}), IPAD_OS);
+        expect([strong.deviceClass, phone.deviceClass, weak.deviceClass, tablet.deviceClass]).toEqual(['desktop-strong', 'phone', 'desktop-weak', 'tablet']);
+        expect([strong.renderScale, phone.renderScale, weak.renderScale, tablet.renderScale]).toEqual([STRONG.renderScale, PHONE_P.renderScale, WEAK.renderScale, TABLET.renderScale]);
+        expect(new Set([strong.budgetM, phone.budgetM, weak.budgetM]).size).toBeGreaterThan(1);
+        // a class named by the pilot (class) with the owner's preset beats the flags' implied class
+        expect(resolveDrawing(ask({}), { ...DESKTOP, class: 'phone' }).budgetM).toBe(PHONE_P.budgetM);
+        // control: a policy blind to the class gives every device the strong desktop's numbers and fails the other classes' rows
+        const blindToClass: Policy = (a, d) => real(a, { ...d, class: 'desktop-strong', preset: STRONG });
+        const f = failingRows(blindToClass);
+        expect(f.some((r) => r.device === PHONE)).toBe(true);
+        expect(f.some((r) => r.device === IPAD_OS)).toBe(true);
+        expect(f.some((r) => r.device === DESKTOP_GL)).toBe(true);
+        expect(f.some((r) => r.device === DESKTOP)).toBe(false);
     });
 
     it('the Display settings Render and Splat budget: exactly these values, auto by default, live', () => {
@@ -174,28 +253,15 @@ describe('resolveDrawing: link x pilot x owner\'s entry x device', () => {
         for (const bad of [undefined, null, 8, '', '3', '0', '64', 'NaN', '8M', ' 8']) expect(pilotBudgetM(bad), String(bad)).toBeUndefined();
     });
 
-    it('v0.8: a phone or tablet draws under SuperSplat\'s mobile budget (2 M), a desktop under its desktop budget (4 M)', () => {
+    it('SuperSplat\'s viewer budgets (2 M mobile, 4 M desktop) are where the presets start (defaultBudgetM keeps the viewer\'s rule)', () => {
         expect([MOBILE_BUDGET_M, DEFAULT_BUDGET_M]).toEqual([2, 4]);
         expect(defaultBudgetM(PHONE)).toBe(2);
         expect(defaultBudgetM(DESKTOP)).toBe(4);
         expect(defaultBudgetM(DESKTOP_GL)).toBe(4);
-        expect(resolveDrawing(ask({}), PHONE).budgetM).toBe(2);
-        // control: the v0.7 rule gave a phone the desktop's 4 M; it fails the phone rows (and the WebGL desktop's lighter pilot budget), never the iPad's
-        const v07: Policy = (a, d) => ({ ...real(a, d), budgetM: d.webgpu && !d.handheld ? real(a, d).budgetM : DEFAULT_BUDGET_M });
-        const f = failingRows(v07);
-        expect(f.filter((r) => r.device.mobile).length).toBeGreaterThanOrEqual(8);
-        expect(f.some((r) => r.device === IPAD_OS)).toBe(false);
-    });
-
-    it('review R5: the budget follows SuperSplat\'s viewer, so iPadOS (a tablet that says "Macintosh") draws 4 M; stochastic stays refused', () => {
         expect(defaultBudgetM(IPAD_OS)).toBe(DEFAULT_BUDGET_M);
-        expect(resolveDrawing(ask({}), IPAD_OS)).toMatchObject({ stochastic: false, budgetM: DEFAULT_BUDGET_M, note: null });
-        expect(resolveDrawing(ask({ pilot: { mode: 'stochastic' } }), IPAD_OS).stochastic).toBe(false);
-        // control: the rule before R5 (the budget by isHandheld) gives the iPad 2 M and fails exactly the iPad rows
-        const byHandheld: Policy = (a, d) => real(a, { ...d, mobile: d.handheld });
-        const f = failingRows(byHandheld);
-        expect(f.length).toBeGreaterThan(0);
-        expect(f.every((r) => r.device === IPAD_OS)).toBe(true);
+        // the presets are the policy now: the phone class and the tablet class are not the viewer's mobile flag
+        expect(resolveDrawing(ask({}), PHONE).budgetM).toBe(PHONE_P.budgetM);
+        expect(resolveDrawing(ask({}), IPAD_OS).budgetM).toBe(TABLET.budgetM);
     });
 
     it('control: a policy that follows the asks on every device fails the phone and WebGL rows, and only those', () => {
@@ -206,7 +272,8 @@ describe('resolveDrawing: link x pilot x owner\'s entry x device', () => {
         };
         const f = failingRows(blind);
         expect(f.length).toBeGreaterThanOrEqual(15);
-        expect(f.every((r) => r.device.handheld || !r.device.webgpu)).toBe(true);
+        // the owner's strong-desktop preset is a desktop too, but a blind policy cannot know its numbers
+        expect(f.every((r) => r.device.handheld || !r.device.webgpu || r.device === OWNER_STRONG)).toBe(true);
     });
 
     it('control: noting every request as "the scene asks" fails the setting rows, the budget-only rows and the default rows', () => {
@@ -342,7 +409,7 @@ describe('drawOnDevice: a scan\'s drawing is decided with the device the rendere
             setStochastic(on: boolean) { r.stochastic = on && webgpu; return r.stochastic; } };
         return r;
     };
-    const owner = (r: { asked: boolean[] }) => (webgpu: boolean) => { r.asked.push(webgpu); return resolveDrawing(ask({ link: OWNER }), { webgpu, handheld: false, mobile: false }); };
+    const owner = (r: { asked: boolean[] }) => (webgpu: boolean, _gpu?: GpuInfo | null) => { r.asked.push(webgpu); return resolveDrawing(ask({ link: OWNER }), { webgpu, handheld: false, mobile: false }); };
 
     it('WebGPU: the link\'s budget and stochastic before the scan loads', () => {
         const r = renderer(true);
@@ -350,10 +417,21 @@ describe('drawOnDevice: a scan\'s drawing is decided with the device the rendere
         expect([r.budgetM, r.stochastic, r.asked]).toEqual([8, true, [true]]);
     });
 
-    it('a browser that offers WebGPU but whose engine fell back to WebGL: the default budget, sorted', () => {
+    it('a browser that offers WebGPU but whose engine fell back to WebGL: the weak desktop\'s budget, sorted', () => {
         const r = renderer(false);
         drawOnDevice(r, owner(r));
-        expect([r.budgetM, r.stochastic, r.asked]).toEqual([DEFAULT_BUDGET_M, false, [false]]);
+        expect([r.budgetM, r.stochastic, r.asked]).toEqual([WEAK.budgetM, false, [false]]);
+    });
+
+    it('v0.10: the renderer\'s adapter goes to the decision, so the class can be read from it (and a missing adapter is null, not undefined)', () => {
+        const gpu: GpuInfo = { vendor: 'nvidia', architecture: 'lovelace', device: '', description: '', isFallback: false, maxBufferSize: 2 ** 31 };
+        const seen: (GpuInfo | null)[] = [];
+        const decide = (webgpu: boolean, g: GpuInfo | null) => { seen.push(g); return resolveDrawing(ask({}), { webgpu, handheld: false, mobile: false }); };
+        drawOnDevice({ ...renderer(true), gpuInfo: gpu }, decide);
+        drawOnDevice(renderer(false), decide);
+        expect(seen).toEqual([gpu, null]);
+        // control: a target that offers no adapter and a decision that wants one gets null, never a stale object
+        expect(seen[1]).toBeNull();
     });
 
     it('control: deciding with the browser\'s navigator.gpu before the device exists streams the WebGL fallback at the link\'s 8 M', () => {
