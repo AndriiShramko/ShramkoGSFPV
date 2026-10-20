@@ -7,20 +7,20 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-20T18:21:36.339Z",
-    "gitHead": "9f9549c",
+    "date": "2026-10-20T18:49:32.998Z",
+    "gitHead": "cf086e9",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5472",
+  "site": "http://localhost:5483",
   "scene": "887f27aa",
   "control": false,
   "summary": {
     "control": false,
     "passed": true,
-    "total": 47,
+    "total": 55,
     "failed": []
   },
   "checks": [
@@ -103,6 +103,14 @@
       }
     },
     {
+      "id": "K2c the card names the way off the ground: press W or Space to take off (the caps are the layout's own)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "note": "Press Start flying to capture the mouse, then press W or Space to take off. Esc lets it go."
+      }
+    },
+    {
       "id": "K3 accessibility: a modal dialog named by its title, the focus is on Start flying, Tab stays inside the card",
       "ok": true,
       "discriminating": true,
@@ -172,12 +180,41 @@
       }
     },
     {
+      "id": "K6b on the ground after Start flying the take-off line is on the screen, not only spoken, and names W and Space (a pilot who closed the card unread still knows)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "text": "Click to fly, or press W or Space to take off",
+        "spokenOnly": false,
+        "shown": true,
+        "fontPx": 15,
+        "hintShown": false,
+        "overlaps": [],
+        "rect": {
+          "x": 479,
+          "bottom": 676,
+          "w": 321,
+          "h": 35
+        }
+      }
+    },
+    {
+      "id": "K6c (control of the overlap measure) the same pill put down to 76 px is seen covering the credit line",
+      "ok": true,
+      "discriminating": false,
+      "detail": {
+        "overlaps": [
+          ".attribution"
+        ]
+      }
+    },
+    {
       "id": "K7 the first key after the start takes off: Space climbs (the drone is armed and higher than at the start)",
       "ok": true,
       "discriminating": false,
       "detail": {
         "y0": 2,
-        "y": 7.448936540110398,
+        "y": 7.417289287672725,
         "armed": true
       }
     },
@@ -231,9 +268,9 @@
       "discriminating": true,
       "detail": {
         "overlap": {
-          "frames": 12,
+          "frames": 13,
           "with": {
-            "screen radio": 12
+            "screen radio": 13
           }
         }
       }
@@ -293,6 +330,25 @@
           "opened": [],
           "enabled": false,
           "testPage": false
+        }
+      }
+    },
+    {
+      "id": "K14c with the box ticked and no card, the ground shows the take-off line (drawn) and the \"Click to fly with the mouse\" pill is not stacked on it",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "text": "Click to fly, or press W or Space to take off",
+        "spokenOnly": false,
+        "shown": true,
+        "fontPx": 15,
+        "hintShown": false,
+        "overlaps": [],
+        "rect": {
+          "x": 479,
+          "bottom": 676,
+          "w": 321,
+          "h": 35
         }
       }
     },
@@ -376,6 +432,15 @@
           "next",
           "again"
         ]
+      }
+    },
+    {
+      "id": "K17b the radio card's arm line invents no channel number: with no arm set up it says \"as set up on the Controls screen\", else it names the profile's own",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "armKind": null,
+        "armText": "arm: as set up on the Controls screen, with the throttle at the bottom"
       }
     },
     {
@@ -488,6 +553,25 @@
       }
     },
     {
+      "id": "K20c in that short window too the ground line is drawn, inside the screen and over no other text",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "text": "Click to fly, or press W or Space to take off",
+        "spokenOnly": false,
+        "shown": true,
+        "fontPx": 15,
+        "hintShown": false,
+        "overlaps": [],
+        "rect": {
+          "x": 289,
+          "bottom": 392,
+          "w": 321,
+          "h": 35
+        }
+      }
+    },
+    {
       "id": "K24 phone-landscape (en, 812 x 375): the touch card is up, inside the screen, no sideways scroll, nothing sticks out, Start flying reachable (on the screen or the card scrolls)",
       "ok": true,
       "discriminating": true,
@@ -545,8 +629,8 @@
           "panel": {
             "x": 90,
             "right": 810,
-            "bottom": 452,
-            "top": 28
+            "bottom": 462,
+            "top": 18
           },
           "vw": 900,
           "vh": 480,
@@ -556,6 +640,14 @@
         "upCaps": [
           "Spacja"
         ]
+      }
+    },
+    {
+      "id": "K24b short-pl (pl): the card's note names the way off the ground with the page's own word for Space",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "note": "Naci\u015bnij Zacznij lata\u0107, aby przechwyci\u0107 mysz, a potem, aby wystartowa\u0107, naci\u015bnij klawisz: W lub Spacja. Esc j\u0105 zwalnia."
       }
     },
     {
@@ -581,6 +673,14 @@
         "upCaps": [
           "Espacio"
         ]
+      }
+    },
+    {
+      "id": "K24b desktop-es (es): the card's note names the way off the ground with the page's own word for Space",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "note": "Pulsa Empezar a volar para capturar el rat\u00f3n y luego pulsa W o Espacio para despegar. Esc lo libera."
       }
     },
     {

@@ -1,0 +1,721 @@
+{
+  "name": "v10-keys",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.40",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-20T18:43:20.110Z",
+    "gitHead": "e60b980",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5481",
+  "scene": "887f27aa",
+  "control": false,
+  "summary": {
+    "control": false,
+    "passed": false,
+    "total": 53,
+    "failed": [
+      "K2c the card names the way off the ground: press W or Space to take off (the caps are the layout's own)",
+      "K6b on the ground after Start flying the take-off line is on the screen, not only spoken, and names W and Space (a pilot who closed the card unread still knows)",
+      "K14c with the box ticked and no card, the ground shows the take-off line (drawn) and the \"Click to fly with the mouse\" pill is not stacked on it",
+      "K17b the radio card's arm line invents no channel number: with no arm set up it says \"as set up on the Controls screen\", else it names the profile's own",
+      "K24b short-pl (pl): the card's note names the way off the ground with the page's own word for Space",
+      "K24b desktop-es (es): the card's note names the way off the ground with the page's own word for Space"
+    ]
+  },
+  "checks": [
+    {
+      "id": "K1a the motion notice is the first thing, and the card is not up with it",
+      "ok": true,
+      "discriminating": false,
+      "detail": {
+        "warningUp": true
+      }
+    },
+    {
+      "id": "K1b the Controls dialog \"How will you fly?\" is up after the scan is ready, with no card on it",
+      "ok": true,
+      "discriminating": false,
+      "detail": {
+        "controlsUp": true,
+        "cards": 0
+      }
+    },
+    {
+      "id": "K1 a first-time visitor who chose Keyboard meets the card after the scan is ready",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "up": true,
+        "hook": {
+          "open": true,
+          "kind": "game",
+          "shown": true,
+          "opened": [
+            "auto"
+          ],
+          "enabled": true,
+          "testPage": false
+        }
+      }
+    },
+    {
+      "id": "K1c the card waited for the choice: it was not up while the Controls dialog was still up (2 s later), and it came after Keyboard was chosen",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "controlsStill": true,
+        "up": true
+      }
+    },
+    {
+      "id": "K2 the card shows SPACE = UP and SHIFT = DOWN as the two big keys (arrow and word with each), hold to land",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "kind": "game",
+        "up": [
+          "Space"
+        ],
+        "upWord": "Up",
+        "down": [
+          "Shift"
+        ],
+        "downWord": "Down",
+        "downSub": "hold to descend, and to land"
+      }
+    },
+    {
+      "id": "K2b the rest of the game scheme is on it: mouse, W A S D, turn keys, F full screen, Esc pause, R, N next scene, K this card",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "rows": [
+          "mouse",
+          "move",
+          "turn",
+          "fullscreen",
+          "pause",
+          "respawn",
+          "next",
+          "again"
+        ]
+      }
+    },
+    {
+      "id": "K2c the card names the way off the ground: press W or Space to take off (the caps are the layout's own)",
+      "ok": false,
+      "discriminating": true,
+      "detail": {
+        "note": "Press Start flying to capture the mouse. Esc lets it go."
+      }
+    },
+    {
+      "id": "K3 accessibility: a modal dialog named by its title, the focus is on Start flying, Tab stays inside the card",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "role": "dialog",
+        "modal": "true",
+        "title": "How to fly",
+        "active": "htf-start"
+      }
+    },
+    {
+      "id": "K3b five Tab presses never leave the card (x, Start, the box, round again)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "tabbed": [
+          "htf-hide",
+          "htf-close",
+          "htf-start",
+          "htf-hide",
+          "htf-close"
+        ]
+      }
+    },
+    {
+      "id": "K4 every text on the card is at least WCAG AA against the lightest scene behind it (>= 4.5:1)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "worst": 9.5,
+        "panelBg": [
+          20,
+          22,
+          26
+        ],
+        "ratios": {
+          "sub": 11,
+          "rowText": 15.1,
+          "upSub": 11,
+          "downSub": 11,
+          "note": 10.9,
+          "check": 14.7,
+          "foot": 9.5,
+          "word": 15.1,
+          "cap": 17.6,
+          "bigUp": 11.1,
+          "bigDown": 11.6
+        }
+      }
+    },
+    {
+      "id": "K5 the flight is held while the card is up, and flying keys do nothing under it (W held 0.6 s: not armed, not moved)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "paused": true
+      }
+    },
+    {
+      "id": "K6 Start flying closes the card, resumes the flight and captures the mouse (pointer lock)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "cards": 0,
+        "paused": false,
+        "locked": true
+      }
+    },
+    {
+      "id": "K6b on the ground after Start flying the take-off line is on the screen, not only spoken, and names W and Space (a pilot who closed the card unread still knows)",
+      "ok": false,
+      "discriminating": true,
+      "detail": {
+        "text": "Click to fly, or press W or Space to take off",
+        "spokenOnly": true,
+        "shown": false,
+        "fontPx": 14,
+        "hintShown": false,
+        "rect": {
+          "x": 628,
+          "bottom": 736,
+          "w": 24,
+          "h": 12
+        }
+      }
+    },
+    {
+      "id": "K7 the first key after the start takes off: Space climbs (the drone is armed and higher than at the start)",
+      "ok": true,
+      "discriminating": false,
+      "detail": {
+        "y0": 2,
+        "y": 7.255979513737959,
+        "armed": true
+      }
+    },
+    {
+      "id": "K8 for the first seconds of the first flight a small pill says \"Space up . Shift down\"",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "reminder": true
+      }
+    },
+    {
+      "id": "K8b the pill names both caps and both words",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "pillText": "Space up\u00b7Shift down"
+      }
+    },
+    {
+      "id": "K9 the corner line in flight starts with Space up / Shift down (before: K keys, F, R, Esc, H)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "corner": "crashes 0  \u00b7  Space up \u00b7 Shift down \u00b7 K keys \u00b7 F full screen \u00b7 R respawn \u00b7 Esc pause \u00b7 H hide text"
+      }
+    },
+    {
+      "id": "K8c the pill was up and goes at once when Shift is pressed",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "wasUp": true
+      }
+    },
+    {
+      "id": "K10 across the whole first visit the card was up and never together with another dialog (Controls, the motion notice, a panel, the menu, the picker, the crash panel)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "up": true,
+        "overlap": {
+          "frames": 0,
+          "with": {}
+        }
+      }
+    },
+    {
+      "id": "K10c (control of the sampler) a dialog put up under the card is counted by the overlap sampler",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "overlap": {
+          "frames": 12,
+          "with": {
+            "screen radio": 12
+          }
+        }
+      }
+    },
+    {
+      "id": "K11 a second visit (nothing ticked) shows the card again, by itself: no Controls dialog this time, the keyboard of last time is back",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "up": true,
+        "opened": [
+          "auto"
+        ]
+      }
+    },
+    {
+      "id": "K11b the box is not ticked on the second visit (nothing was ticked in the first)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "hideChecked": false
+      }
+    },
+    {
+      "id": "K13 the pill lasts the first seconds only: up at 2 s, gone by 10 s, with W held from take-off (key repeats do not hide it)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "at2s": true,
+        "at10s": false
+      }
+    },
+    {
+      "id": "K12 ticking \"Do not show again\" writes the setting at once (input.howToFly off), and closing with x keeps it",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "K12b the tick survives closing with x",
+      "ok": true,
+      "discriminating": true,
+      "detail": {}
+    },
+    {
+      "id": "K14 after \"Do not show again\" a reload does not bring the card back (4.5 s after the scene is ready)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "cards": 0,
+        "hook": {
+          "open": false,
+          "kind": null,
+          "shown": false,
+          "opened": [],
+          "enabled": false,
+          "testPage": false
+        }
+      }
+    },
+    {
+      "id": "K14c with the box ticked and no card, the ground shows the take-off line (drawn) and the \"Click to fly with the mouse\" pill is not stacked on it",
+      "ok": false,
+      "discriminating": true,
+      "detail": {
+        "text": "Click to fly, or press W or Space to take off",
+        "spokenOnly": true,
+        "shown": false,
+        "fontPx": 14,
+        "hintShown": true,
+        "rect": {
+          "x": 628,
+          "bottom": 736,
+          "w": 24,
+          "h": 12
+        }
+      }
+    },
+    {
+      "id": "K14b after \"Do not show again\" the first-flight pill does not show either (the drone is flying)",
+      "ok": true,
+      "discriminating": false,
+      "detail": {
+        "reminder": false,
+        "armed": true
+      }
+    },
+    {
+      "id": "K15 K opens the card again, whatever the setting says; its box shows the setting (ticked)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "up": true,
+        "hideChecked": true
+      }
+    },
+    {
+      "id": "K15b K again closes it and the flight goes on (not paused)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {}
+    },
+    {
+      "id": "K15c Esc closes the card (and does not open the pause menu on top)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {}
+    },
+    {
+      "id": "K16 the pause menu has a \"How to fly\" item with its key K beside it",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "itemKeys": "How to fly\nK"
+      }
+    },
+    {
+      "id": "K16b picking it shows the card (over nothing: the menu is gone), opened from the menu",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "up": true,
+        "opened": [
+          "key",
+          "key",
+          "menu"
+        ]
+      }
+    },
+    {
+      "id": "K16c with the menu up, K runs the item: the card opens and the menu is gone",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "menuUp": true,
+        "up": true,
+        "opened": [
+          "key",
+          "key",
+          "menu",
+          "menu"
+        ]
+      }
+    },
+    {
+      "id": "K17 for a radio or gamepad the card is the short radio one: sticks, arm, mode switch, N, Esc, K",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "kind": "radio",
+        "rows": [
+          "sticks",
+          "arm",
+          "mode",
+          "pause",
+          "next",
+          "again"
+        ]
+      }
+    },
+    {
+      "id": "K17b the radio card's arm line invents no channel number: with no arm set up it says \"as set up on the Controls screen\", else it names the profile's own",
+      "ok": false,
+      "discriminating": true,
+      "detail": {
+        "armKind": null,
+        "armText": "arm: flip the arm switch (CH5) with the throttle at the bottom"
+      }
+    },
+    {
+      "id": "K18 in visits 2 and 3 as well the card came and was never up together with another dialog",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "overlap": {
+          "frames": 0,
+          "with": {}
+        }
+      }
+    },
+    {
+      "id": "K19 on a phone (touch, no WebHID) the card is the touch one: the two pads, no key caps, \"touch a stick to take off\"",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "kind": "touch",
+        "pads": 2,
+        "kbd": 0
+      }
+    },
+    {
+      "id": "K19b it fits the phone: inside the screen, Start flying reachable",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "panel": {
+          "x": 12,
+          "y": 197,
+          "w": 366,
+          "h": 450,
+          "bottom": 647,
+          "right": 378
+        },
+        "start": {
+          "x": 27,
+          "y": 528,
+          "w": 180,
+          "h": 48,
+          "bottom": 576,
+          "right": 207
+        },
+        "vw": 390,
+        "vh": 844
+      }
+    },
+    {
+      "id": "K19c tapping Start flying closes it and leaves the touch sticks to fly",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "cards": 0,
+        "paused": false,
+        "source": "touch",
+        "pads": 3
+      }
+    },
+    {
+      "id": "K19d it did not stand over the motion notice or another dialog on the phone either",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "overlap": {
+          "frames": 0,
+          "with": {}
+        }
+      }
+    },
+    {
+      "id": "K20 closing Controls with x also ends at the card (the keyboard stands in), and in a 900 x 480 window the Space and Shift keys are fully on screen",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "kind": "game",
+        "up": {
+          "x": 107,
+          "y": 117,
+          "w": 337,
+          "h": 68,
+          "bottom": 185,
+          "right": 444
+        },
+        "down": {
+          "x": 456,
+          "y": 117,
+          "w": 337,
+          "h": 68,
+          "bottom": 185,
+          "right": 793
+        },
+        "vh": 480
+      }
+    },
+    {
+      "id": "K20b Start flying is reachable in that window: on the screen, or the card scrolls",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "start": {
+          "x": 107,
+          "y": 388,
+          "w": 180,
+          "h": 48,
+          "bottom": 436,
+          "right": 287
+        },
+        "scrollable": false
+      }
+    },
+    {
+      "id": "K24 phone-landscape (en, 812 x 375): the touch card is up, inside the screen, no sideways scroll, nothing sticks out, Start flying reachable (on the screen or the card scrolls)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "kind": "touch",
+        "fit": {
+          "sideways": false,
+          "overflowing": [],
+          "panel": {
+            "x": 46,
+            "right": 766,
+            "bottom": 329,
+            "top": 46
+          },
+          "vw": 812,
+          "vh": 375,
+          "scrollable": false
+        },
+        "startVisible": true,
+        "upCaps": null
+      }
+    },
+    {
+      "id": "K24 phone-ru (ru, 390 x 844): the touch card is up, inside the screen, no sideways scroll, nothing sticks out, Start flying reachable (on the screen or the card scrolls)",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "kind": "touch",
+        "fit": {
+          "sideways": false,
+          "overflowing": [],
+          "panel": {
+            "x": 12,
+            "right": 378,
+            "bottom": 647,
+            "top": 197
+          },
+          "vw": 390,
+          "vh": 844,
+          "scrollable": false
+        },
+        "startVisible": true,
+        "upCaps": null
+      }
+    },
+    {
+      "id": "K24 short-pl (pl, 900 x 480): the game card is up, inside the screen, no sideways scroll, nothing sticks out, Start flying reachable (on the screen or the card scrolls), Space in the page's own word",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "kind": "game",
+        "fit": {
+          "sideways": false,
+          "overflowing": [],
+          "panel": {
+            "x": 90,
+            "right": 810,
+            "bottom": 452,
+            "top": 28
+          },
+          "vw": 900,
+          "vh": 480,
+          "scrollable": false
+        },
+        "startVisible": true,
+        "upCaps": [
+          "Spacja"
+        ]
+      }
+    },
+    {
+      "id": "K24b short-pl (pl): the card's note names the way off the ground with the page's own word for Space",
+      "ok": false,
+      "discriminating": true,
+      "detail": {
+        "note": "Naci\u015bnij Zacznij lata\u0107, aby przechwyci\u0107 mysz. Esc j\u0105 zwalnia."
+      }
+    },
+    {
+      "id": "K24 desktop-es (es, 1280 x 800): the game card is up, inside the screen, no sideways scroll, nothing sticks out, Start flying reachable (on the screen or the card scrolls), Space in the page's own word",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "kind": "game",
+        "fit": {
+          "sideways": false,
+          "overflowing": [],
+          "panel": {
+            "x": 280,
+            "right": 1000,
+            "bottom": 657,
+            "top": 143
+          },
+          "vw": 1280,
+          "vh": 800,
+          "scrollable": false
+        },
+        "startVisible": true,
+        "upCaps": [
+          "Espacio"
+        ]
+      }
+    },
+    {
+      "id": "K24b desktop-es (es): the card's note names the way off the ground with the page's own word for Space",
+      "ok": false,
+      "discriminating": true,
+      "detail": {
+        "note": "Pulsa Empezar a volar para capturar el rat\u00f3n. Esc lo libera."
+      }
+    },
+    {
+      "id": "K21 on a ?nowarn=1 page (the page every older bench uses) the card never opens by itself, the keyboard flies as before",
+      "ok": true,
+      "discriminating": false,
+      "detail": {
+        "hook": {
+          "open": false,
+          "kind": null,
+          "shown": false,
+          "opened": [],
+          "enabled": true,
+          "testPage": true
+        }
+      }
+    },
+    {
+      "id": "K22 with the pilot profile the ground card of the pilot keyboard is still up (arm steps, the Mode 2 keys)",
+      "ok": true,
+      "discriminating": false,
+      "detail": {
+        "ground": {
+          "shown": true,
+          "title": "Keyboard",
+          "rows": 10
+        }
+      }
+    },
+    {
+      "id": "K21b K still opens it there",
+      "ok": true,
+      "discriminating": true,
+      "detail": {}
+    },
+    {
+      "id": "K23 for the pilot keyboard the card is the pilot one: Space arms, W / S throttle, A / D yaw, the arrows tilt, M mode, then R, Esc, N, K; no Space / Shift pair",
+      "ok": true,
+      "discriminating": true,
+      "detail": {
+        "kind": "pilot",
+        "rows": [
+          "arm",
+          "throttle",
+          "yaw",
+          "sticks",
+          "mode",
+          "respawn",
+          "pause",
+          "next",
+          "again"
+        ]
+      }
+    }
+  ],
+  "notProven": [
+    "a real hand and a real mouse (the click on Start is a Playwright trusted click)",
+    "a real phone (Chrome touch emulation without WebHID)",
+    "a real radio or gamepad (the card is pointed at a gamepad source and K pressed)",
+    "Esc as the browser's own release of the mouse"
+  ]
+}
