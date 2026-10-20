@@ -205,9 +205,12 @@ if (ONLY !== 'T') {
     const hiddenAgain = await p.evaluate(`document.querySelector('[data-testid="how-to-fly"]') === null`);
     check('K5 in the air no ground card is up; K opens the How to fly card, K again closes it', hidden === true && shownK === true && hiddenAgain === true, { groundCardHiddenFlying: hidden, howToFlyAfterK: shownK, closedAfterK: hiddenAgain });
     // closing the card resumes the flight and, like every resume of a game-scheme flight, asks for the mouse (a key press is the
-    // activation it needs): let it go again before the buttons are clicked
+    // activation it needs): let it go again before the buttons are clicked. The page treats that as the browser's own release (what
+    // Esc does) and pauses into the menu; Esc closes the menu and resumes
     await ev(p, 'document.exitPointerLock(); return 0;');
-    await sleep(300);
+    await sleep(500);
+    await p.keyboard.press('Escape');
+    await sleep(400);
     // the quiet sound and the quick mute
     const vol = await ev<number>(p, 'return h.prefs.get("sound.volume");');
     const m0 = await ev<boolean>(p, 'return h.prefs.get("sound.motors");');
