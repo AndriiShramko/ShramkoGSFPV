@@ -12,6 +12,8 @@
 //      pause menu bring it back. Flight after Start, the mouse capture, the first-flight pill and the corner line are checked here.
 //   B  phone 390 x 844 (touch, no WebHID like Android Chrome): the touch card.
 //   C  desktop 900 x 480 (a short window; the base build's key card showed no key at all there), Controls closed with x.
+//   E  a phone on its side (812 x 375), the Russian phone (390 x 844) and the Polish short desktop window (900 x 480): the card fits
+//      in every language and on every shape (no cut-off, no sideways scroll, Start flying reachable).
 //   D  ?nowarn=1 (the page every older bench uses): the card never opens by itself; with the pilot profile (set.input.play=pilot)
 //      the pilot keyboard's ground card is still there and K opens the pilot version of the card.
 // What this does not prove: a real hand and a real mouse (the click on Start is Playwright's trusted click, pointer lock is
@@ -32,18 +34,18 @@ console.log(`accept-v10-keys target: ${SITE}${CONTROL ? ' (CONTROL: the base bui
 const SHOTS = join(REPO, 'evidence', today(), CONTROL ? 'v10-k-control' : 'v10-k');
 mkdirSync(SHOTS, { recursive: true });
 const SCENE = '887f27aa';
-const url = (qs = ''): string => `${SITE}/en/fly/?scene=${SCENE}${qs ? `&${qs}` : ''}&cb=${Math.random().toString(36).slice(2)}`;
+const url = (qs = '', lang = 'en'): string => `${SITE}/${lang}/fly/?scene=${SCENE}${qs ? `&${qs}` : ''}&cb=${Math.random().toString(36).slice(2)}`;
 /** How long the card is waited for. In the control the card never comes: do not wait a minute for it. */
 const CARD_WAIT_MS = CONTROL ? 3500 : 12000;
 
-/** The English fly dictionary as the page merges it. */
-function en(): Record<string, string> {
+/** A fly dictionary as the page merges it (the flat file plus every namespace folder). */
+function dictOf(lang: string): Record<string, string> {
     const dir = join(REPO, 'packages', 'i18n', 'locales', 'fly');
-    const d = JSON.parse(readFileSync(join(dir, 'en.json'), 'utf8')) as Record<string, string>;
-    for (const ns of readdirSync(dir)) if (!ns.endsWith('.json')) Object.assign(d, JSON.parse(readFileSync(join(dir, ns, 'en.json'), 'utf8')));
+    const d = JSON.parse(readFileSync(join(dir, `${lang}.json`), 'utf8')) as Record<string, string>;
+    for (const ns of readdirSync(dir)) if (!ns.endsWith('.json')) Object.assign(d, JSON.parse(readFileSync(join(dir, ns, `${lang}.json`), 'utf8')));
     return d;
 }
-const EN = en();
+const EN = dictOf('en');
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Any = any;
@@ -446,6 +448,44 @@ const { browser } = await launchChrome({ headless: false, args: ['--window-posit
     check('K20 closing Controls with x also ends at the card (the keyboard stands in), and in a 900 x 480 window the Space and Shift keys are fully on screen',
         up && f?.kind === 'game' && f.upRect.y >= 0 && f.upRect.bottom <= f.vh && f.downRect.bottom <= f.vh && /Space/.test(f.text) && /Shift/.test(f.text), { kind: f?.kind ?? null, up: f?.upRect ?? null, down: f?.downRect ?? null, vh: f?.vh ?? null });
     check('K20b Start flying is reachable in that window: on the screen, or the card scrolls', !!f && (f.startRect.bottom <= f.vh || f.scrollable), { start: f?.startRect ?? null, scrollable: f?.scrollable ?? null });
+    await ctx.close();
+}
+
+// =====================================================================================================================
+// E  other shapes and languages: the card fits
+// =====================================================================================================================
+const SHAPES: { id: string; lang: string; width: number; height: number; mobile: boolean; kind: string }[] = [
+    { id: 'phone-landscape', lang: 'en', width: 812, height: 375, mobile: true, kind: 'touch' },
+    { id: 'phone-ru', lang: 'ru', width: 390, height: 844, mobile: true, kind: 'touch' },
+    { id: 'short-pl', lang: 'pl', width: 900, height: 480, mobile: false, kind: 'game' },
+    { id: 'desktop-es', lang: 'es', width: 1280, height: 800, mobile: false, kind: 'game' }
+];
+for (const sh of SHAPES) {
+    const ctx = await newContext(browser, { width: sh.width, height: sh.height, mobile: sh.mobile });
+    const p = await ctx.newPage();
+    await p.goto(url('', sh.lang));
+    await sleep(1500);
+    await p.locator('[data-action="warning-ok"]').click();
+    await untilReady(p);
+    if (!sh.mobile) {
+        await sleep(800);
+        await p.locator('[data-action="radio-keyboard"]').click({ timeout: 15000 });
+    }
+    const up = await cardUp(p);
+    const f = up ? await cardFacts(p) : null;
+    const fit = up ? await p.evaluate(`(() => {
+        const c = document.querySelector('[data-testid="how-to-fly"]');
+        const r = c.getBoundingClientRect();
+        const wide = [...c.querySelectorAll('*')].filter((el) => el.getBoundingClientRect().right > r.right + 1).map((el) => el.className.toString().slice(0, 30)).slice(0, 4);
+        return { sideways: c.scrollWidth > c.clientWidth + 1, overflowing: wide, panel: { x: Math.round(r.x), right: Math.round(r.right), bottom: Math.round(r.bottom), top: Math.round(r.y) }, vw: innerWidth, vh: innerHeight, scrollable: c.scrollHeight > c.clientHeight + 1 };
+    })()`) as Any : null;
+    await shot(p, `k24-${sh.id}`);
+    const D = dictOf(sh.lang);
+    const startVisible = !!f && f.startRect.bottom <= f.vh && f.startRect.y >= 0;
+    const heroOk = sh.kind !== 'game' || (!!f && f.upCaps?.[0] === D['arm.keys.space'] && f.upRect.right <= f.panelRect.right + 1 && f.downRect.right <= f.panelRect.right + 1);
+    check(`K24 ${sh.id} (${sh.lang}, ${sh.width} x ${sh.height}): the ${sh.kind} card is up, inside the screen, no sideways scroll, nothing sticks out, Start flying reachable (on the screen or the card scrolls)${sh.kind === 'game' ? ', Space in the page\'s own word' : ''}`,
+        up && f?.kind === sh.kind && !!fit && fit.sideways === false && fit.overflowing.length === 0 && fit.panel.x >= 0 && fit.panel.right <= fit.vw && (startVisible || fit.scrollable) && heroOk,
+        { kind: f?.kind ?? null, fit, startVisible, upCaps: f?.upCaps ?? null });
     await ctx.close();
 }
 
