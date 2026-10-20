@@ -13,7 +13,7 @@ import { watchTopRow } from './top-row';
 import { linkLines } from './link-text';
 import { keysFor } from '@gsfpv/prefs';
 import { MODE2_KEYS } from '../play/keys';
-import { pilotCaps } from './controls-card-logic';
+import { gateSpoken, pilotCaps } from './controls-card-logic';
 
 /** Disarmed with a radio: what is still needed to arm, in order, with a small live radio drawing. */
 class ArmCard {
@@ -229,6 +229,8 @@ export class Hud {
     private keys = new KeyCard();
     private last = 0;
     visible = true;
+    /** the game scheme's take-off line is being drawn (set at 10 Hz by update) */
+    private groundLine = false;
     /** Arm kind 'key' (no switch on the radio): the on-screen ARM / DISARM button. */
     onArm: (() => void) | null = null;
 
@@ -246,6 +248,14 @@ export class Hud {
         parent.append(this.root, this.note);
         watchBanners(parent);
         watchTopRow(parent);
+    }
+
+    /**
+     * The game scheme waits on the ground and its take-off line is on the screen: "Click to fly with the mouse" would only
+     * say the same under it (app/builtin/play.ts leaves that pill out then).
+     */
+    get groundLineShown(): boolean {
+        return this.groundLine && this.visible && !this.textOff;
     }
 
     /** H: every text on the flight view off, or back on. */
@@ -355,8 +365,13 @@ export class Hud {
         const n = t('hud.crashes', { n: hd.crashes });
         const short = t('hud.keysShort');
         this.setCorner(keysLine ? [`${n}  ·  ${keysLine}`, `${n}  ·  ${short}`, short, n] : [n]);
-        // under a card the line is only spoken (visually hidden): the step, never the live throttle %
-        this.gate.classList.toggle('visually-hidden', radio || kbd);
+        // under a card the line is only spoken (visually hidden): the step, never the live throttle %. The game scheme has no ground
+        // card, so its take-off line is drawn (play.css .gate-msg.game): a pilot who closed the How to fly card unread, or switched
+        // it off, still sees how to leave the ground
+        const spoken = gateSpoken(src, !!view?.game);
+        this.groundLine = !spoken && !!view?.game && say !== '';
+        this.gate.classList.toggle('visually-hidden', spoken);
+        this.gate.classList.toggle('game', !spoken && !!view?.game);
         // touch: mid-screen, clear of the pads and the ARM button it points to
         this.gate.classList.toggle('mid', src === 'touch');
         if (this.gate.textContent !== say) this.gate.textContent = say; // the same text again is announced again

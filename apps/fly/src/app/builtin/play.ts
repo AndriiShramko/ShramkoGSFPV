@@ -102,7 +102,8 @@ export const play: Feature = {
         /** A screen that needs the cursor is up (the pause menu counts: it is a panel). */
         const needsCursor = (): boolean => ctx.menu.isOpen || dialogOpen() || ctx.ui.querySelector('.crash-overlay') !== null;
         function syncHint(): void {
-            const show = gameOn() && mouse.supported && !mouse.locked && !ctx.session.paused && !needsCursor();
+            // on the ground the take-off line (ui/hud.ts) already says "click to fly": the pill is for the flight in the air
+            const show = gameOn() && mouse.supported && !mouse.locked && !ctx.session.paused && !needsCursor() && !ctx.hud.groundLineShown;
             if (hint.hidden === show) hint.hidden = !show;
         }
         document.addEventListener('pointerlockchange', syncHint);

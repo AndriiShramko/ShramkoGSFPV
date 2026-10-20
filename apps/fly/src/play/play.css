@@ -33,6 +33,9 @@
     background: rgba(12, 14, 18, .72); border: 1px solid var(--accent); color: #f3f4f6; font: 600 15px/1.2 system-ui, sans-serif;
     text-shadow: 0 1px 2px #000; pointer-events: none; white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis; }
 .game-hint[hidden] { display: none; }
+/* v0.10 lane K: the game scheme waits on the ground: the take-off line (ui/hud.ts) is drawn like the hint pill, in the hint's place */
+.gate-msg.game { bottom: 76px; padding: 8px 16px; border-radius: 999px; background: rgba(12, 14, 18, .72); border: 1px solid var(--accent);
+    font: 600 15px/1.2 system-ui, sans-serif; text-shadow: 0 1px 2px #000; white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis; }
 /* v0.10 lane K: the first seconds of the first flight, "Space up / Shift down"; above the hint pill, clear of the corner lines and the recording bar */
 .game-reminder { position: absolute; left: 50%; bottom: 124px; transform: translateX(-50%); z-index: 2; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 999px;
     background: rgba(12, 14, 18, .78); border: 1px solid rgba(255, 255, 255, .28); color: #f3f4f6; font: 600 15px/1.2 system-ui, sans-serif; text-shadow: 0 1px 2px #000; pointer-events: none; white-space: nowrap; max-width: calc(100vw - 32px); }

@@ -2,13 +2,14 @@
 // found no word that Space is up and Shift is down). Pure: no DOM, no page state, so Node tests drive every rule here
 // (tools/bench/test/app-controls-card.test.ts) and ui/controls-card.ts only draws what this returns.
 //
-// Three things live here:
+// Four things live here:
 //  - which card the input in use gets (cardKind) and what is on it (cardModel). The caps of the flying keys are read from the
 //    tables the keyboard flies with (play/keys.ts GAME_KEYS / MODE2_KEYS) and the caps of every other key from the keymap
 //    (the caller passes `caps`, the router's own `keysFor`): the card has no list of key names of its own;
 //  - when the card opens by itself (shouldOpen, Settle): once per visit, when the scan is ready, an input is chosen and nothing
 //    else is up, after a short quiet time;
-//  - the small reminder of the first seconds of the first flight (FirstFlightReminder).
+//  - the small reminder of the first seconds of the first flight (FirstFlightReminder);
+//  - where the arm gate's take-off line is drawn or only spoken (gateSpoken).
 
 import { GAME_KEYS, MODE2_KEYS } from '../play/keys';
 import type { GameAxis, KeyAxis, KeyBind, PlayProfile } from '../play/keys';
@@ -115,9 +116,24 @@ export interface CardEnv {
     caps(action: string): string[];
     /** easy play's altitude help is on: the left touch stick climbs and sinks (else it is a throttle that stays) */
     altitudeHelp: boolean;
-    /** a radio's arm control: its kind ('key': Space or the ARM button) and its name ("CH5", "button 3") */
+    /** a radio's arm control: its kind ('key': Space or the ARM button) and its name ("CH5", "button 3"); null and '' when none is set up */
     armKind: 'axis' | 'button' | 'toggle' | 'key' | null;
     armLabel: string;
+    /** the layouts the keyboard flies with (play/keys.ts); the page leaves them out and gets the shipped tables, tests pass their own */
+    gameKeys?: readonly KeyBind<GameAxis>[];
+    pilotKeys?: readonly KeyBind[];
+}
+
+/**
+ * The radio card's arm line, from what the profile has: a flip switch, a button, a key, or nothing set up. A channel number
+ * is only ever the one the profile names (there is no "CH5" to fall back on), and a button is pressed, not flipped.
+ */
+export function radioArmText(env: Pick<CardEnv, 't' | 'armKind' | 'armLabel'>): string {
+    const { t, armKind: kind, armLabel: src } = env;
+    if (kind === 'key') return t('play.card.radioArmKey');
+    if (!kind || !src) return t('play.card.radioArmAny');
+    if (kind === 'axis') return t('play.card.radioArmSwitch', { src });
+    return t('play.card.radioArmButton', { src });
 }
 
 /** The first cap of an action ("Esc" of Esc / P), or none. */
@@ -135,7 +151,7 @@ export function cardModel(kind: CardKind, env: CardEnv): CardModel {
     ];
     const base = { kind, title: t('play.card.title'), sub: t(`play.card.sub.${kind}`), hero: null, pads: null, note: null, foot: null };
     if (kind === 'game') {
-        const g = gameCaps(GAME_KEYS, space);
+        const g = gameCaps(env.gameKeys ?? GAME_KEYS, space);
         return {
             ...base,
             hero: {
@@ -151,12 +167,14 @@ export function cardModel(kind: CardKind, env: CardEnv): CardModel {
                 row('respawn', caps('respawn.start'), t('arm.keys.respawn')),
                 ...common()
             ],
-            note: t('play.card.click'),
+            // the way off the ground is named here too (a pilot who closes the card unread is told again by the ground line,
+            // ui/hud.ts); the keys are the layout's own: W and Space
+            note: t('play.card.click', { fwd: g.wasd[0], up: g.up[0] }),
             foot: t('play.keys.pilotNote')
         };
     }
     if (kind === 'pilot') {
-        const p = pilotCaps(MODE2_KEYS, space);
+        const p = pilotCaps(env.pilotKeys ?? MODE2_KEYS, space);
         return {
             ...base,
             rows: [
@@ -188,7 +206,7 @@ export function cardModel(kind: CardKind, env: CardEnv): CardModel {
         ...base,
         rows: [
             row('sticks', [], t('play.card.radioSticks'), t('play.card.capSticks')),
-            row('arm', ['ARM'], env.armKind === 'key' ? t('play.card.radioArmKey') : t('play.card.radioArmSwitch', { src: env.armLabel || 'CH5' })),
+            row('arm', ['ARM'], radioArmText(env)),
             row('mode', caps('mode.cycle'), t('play.card.radioMode')),
             row('pause', first(caps('pause.toggle')), t('arm.keys.pause')),
             ...common()
@@ -230,6 +248,18 @@ export class Settle {
         this.since ??= now;
         return now - this.since >= this.ms;
     }
+}
+
+// ------------------------------------------------------------------ the ground line
+
+/**
+ * The arm gate's line on the ground ("Click to fly, or press W or Space to take off") is only spoken when a card of its own already
+ * writes it: the radio's step card and the pilot keyboard's key card. The game scheme has no ground card (its keys are on the
+ * How to fly card, which a pilot may close unread or switch off), so there the line is drawn: the way off the ground stays on
+ * the screen. Touch and the rest draw it as always.
+ */
+export function gateSpoken(source: InputSource, game: boolean): boolean {
+    return source === 'hid' || source === 'gamepad' || (source === 'keyboard' && !game);
 }
 
 // ------------------------------------------------------------------ the first seconds of the first flight

@@ -1,10 +1,14 @@
-// v0.10 lane K (docs/wip/v10-k.md): the "How to fly" card's pure parts. Every claim has a negative control that must fire.
-//  - which card an input gets; the caps come from the tables the keyboard flies with and from the keymap (a card with its own
-//    list of keys would not follow them: the control);
+// v0.10 lane K (docs/wip/v10-k.md): the "How to fly" card's pure parts. A negative control here runs the SHIPPED function with a fault
+// put into its input (a moved layout, a keymap that moved K, a quiet time of 0); no control re-implements the logic it judges (the
+// review found four that did, and they are gone). A fault in the code itself is the browser bench's job (accept-v10-keys, base build).
+//  - which card an input gets; the caps come from the tables the keyboard flies with and from the keymap (a layout that moves
+//    moves the card: the game card's hero, rows and note are driven through cardModel itself);
 //  - the card carries the vertical pair (Space up, Shift down) for the game scheme and says what each input needs;
 //  - every text the card uses exists in the four languages with the same placeholders;
-//  - when the card opens by itself: once per visit, after the scan is ready and an input is chosen, never over another screen
-//    (the control opens over a dialog), only after a quiet time (the control opens at once);
+//  - when the card opens by itself: once per visit, after the scan is ready and an input is chosen, never over another screen,
+//    only after a quiet time (the control is a quiet time of 0: it opens at once);
+//  - the take-off line on the ground is drawn for the game scheme and only spoken where a card already writes it (gateSpoken);
+//  - the radio card's arm line follows the profile: no channel number is invented, a button is pressed, not flipped;
 //  - the first-seconds reminder: starts at the first flight, lasts REMIND_MS, goes when Space or Shift is used, never comes back.
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -14,7 +18,7 @@ import { KEYMAP, keysFor } from '../../../packages/prefs/src';
 import type { PlayProfile } from '../../../apps/fly/src/play/keys';
 import { GAME_KEYS, MODE2_KEYS } from '../../../apps/fly/src/play/keys';
 import type { KeyBind, GameAxis } from '../../../apps/fly/src/play/keys';
-import { REMIND_MS, SETTLE_MS, FirstFlightReminder, Settle, capOfCode, cardKind, cardModel, gameCaps, pilotCaps, shouldOpen } from '../../../apps/fly/src/ui/controls-card-logic';
+import { REMIND_MS, SETTLE_MS, FirstFlightReminder, Settle, cardKind, cardModel, gameCaps, gateSpoken, pilotCaps, radioArmText, shouldOpen } from '../../../apps/fly/src/ui/controls-card-logic';
 import type { CardEnv, CardKind, InputSource, OpenInput } from '../../../apps/fly/src/ui/controls-card-logic';
 
 const FLY = join(REPO, 'packages', 'i18n', 'locales', 'fly');
@@ -47,9 +51,6 @@ describe('which card an input gets', () => {
             ['hid', 'easy', 'radio'], ['gamepad', 'pilot', 'radio'], [null, 'easy', null], ['sim', 'easy', null]
         ];
         for (const [source, play, want] of table) expect(cardKind(source, play), `${source} / ${play}`).toBe(want);
-        // control: a rule that looks at the device only gives the pilot keyboard the game card
-        const naive = (source: InputSource): CardKind | null => (source === 'keyboard' ? 'game' : cardKind(source, 'easy'));
-        expect(naive('keyboard')).not.toBe(cardKind('keyboard', 'pilot'));
     });
 });
 
@@ -62,13 +63,26 @@ describe('the caps are the tables the keyboard flies with, not a list of the car
         expect(g.turn).toEqual(['←', '→', 'Q', 'E']);
     });
 
-    it('a changed layout changes the card (control: a hard-coded card would keep saying Space and Shift)', () => {
+    it('a changed layout changes the card: the shipped cardModel follows a moved Space and Shift (control: a typed-in card would keep saying Space and Shift)', () => {
         const moved: KeyBind<GameAxis>[] = GAME_KEYS.map((k) => (k.code === 'Space' ? { ...k, code: 'KeyZ' } : k.code === 'ShiftLeft' ? { ...k, code: 'KeyX' } : k));
         const g = gameCaps(moved, 'Space');
         expect(g.up).toEqual(['Z']);
         expect(g.down).toEqual(['X', 'Shift']);
-        const hardCoded = { up: ['Space'], down: ['Shift'] };
-        expect(hardCoded.up).not.toEqual(g.up);
+        const m = cardModel('game', env('en', { gameKeys: moved }));
+        expect(m.hero!.up.caps).toEqual(['Z']);
+        expect(m.hero!.down.caps).toEqual(['X', 'Shift']);
+        // the way off the ground in the note moves with it
+        expect(m.note).toMatch(/\bZ\b/);
+        expect(m.note).not.toMatch(/Space/);
+        // and the shipped tables give the shipped card
+        expect(cardModel('game', env()).hero!.up.caps).toEqual(['Space']);
+    });
+
+    it('the pilot card follows a moved Mode 2 layout the same way', () => {
+        const moved: KeyBind[] = MODE2_KEYS.map((k) => (k.code === 'KeyW' ? { ...k, code: 'KeyI' } : k));
+        const throttle = (m: ReturnType<typeof cardModel>): string[] => m.rows.find((r) => r.id === 'throttle')!.caps;
+        expect(throttle(cardModel('pilot', env('en', { pilotKeys: moved })))).toEqual(['I', 'S']);
+        expect(throttle(cardModel('pilot', env()))).toEqual(['W', 'S']);
     });
 
     it('the pilot card names Mode 2 as MODE2_KEYS has it', () => {
@@ -110,8 +124,18 @@ describe('what each card says', () => {
         expect(m.hero!.down.sub).toMatch(/land/);
         expect(m.rows.map((r) => r.id)).toEqual(['mouse', 'move', 'turn', 'fullscreen', 'pause', 'respawn', 'next', 'again']);
         expect(m.note).toMatch(/capture the mouse/);
-        // the base build's card (the v0.9 key card) had the pair as two rows of nine, no hero: the control is a model without one
-        expect({ ...m, hero: null }.hero).toBeNull();
+    });
+
+    it('the game card also names the way off the ground, W or Space, in every language (a pilot who closes it unread has the ground line)', () => {
+        for (const lang of LANGS) {
+            const note = cardModel('game', env(lang)).note!;
+            expect(note, lang).toContain('W');
+            expect(note, lang).toContain(DICTS[lang]['arm.keys.space']);
+            expect(note, lang).not.toMatch(/\{\w+\}/);
+            // the text carries both holes, or the caps passed in would never reach the pilot
+            expect(DICTS[lang]['play.card.click'], lang).toContain('{fwd}');
+            expect(DICTS[lang]['play.card.click'], lang).toContain('{up}');
+        }
     });
 
     it('the pilot card has Space arm and no pair', () => {
@@ -141,6 +165,32 @@ describe('what each card says', () => {
         expect(sw.rows[0].tag).toBe('Sticks');
     });
 
+    it('the radio card\'s arm line follows the profile: a channel only when the profile names one, a button is pressed, nothing set up has no number', () => {
+        const arm = (armKind: CardEnv['armKind'], armLabel: string, lang: (typeof LANGS)[number] = 'en'): string => cardModel('radio', env(lang, { armKind, armLabel })).rows.find((r) => r.id === 'arm')!.text;
+        expect(arm('axis', 'CH6')).toMatch(/CH6/);
+        expect(arm('axis', 'CH6')).toMatch(/flip/);
+        // a button or a toggle: pressed, named as the profile names it, never "flip the switch"
+        for (const kind of ['button', 'toggle'] as const) {
+            expect(arm(kind, 'button 3')).toMatch(/button 3/);
+            expect(arm(kind, 'button 3')).toMatch(/press/);
+            expect(arm(kind, 'button 3')).not.toMatch(/flip/);
+            expect(arm(kind, 'Start/stop button')).toMatch(/Start\/stop button/);
+        }
+        // nothing set up (the Controls screen has no arm yet): no channel number out of thin air, and no half-sentence
+        for (const lang of LANGS) {
+            for (const none of [arm(null, '', lang), arm('axis', '', lang), arm('button', '', lang)]) {
+                expect(none, lang).not.toMatch(/\d/);
+                expect(none, lang).not.toMatch(/\{\w+\}/);
+                expect(none, lang).toBe(DICTS[lang]['play.card.radioArmAny']);
+            }
+        }
+        expect(arm('key', 'Space / ARM button')).toBe(DICTS.en['play.card.radioArmKey']);
+        // the four cases read differently from each other, so one that fell through to another would show
+        expect(new Set([arm('axis', 'CH6'), arm('button', 'button 3'), arm('key', ''), arm(null, '')]).size).toBe(4);
+        // the helper on its own, on the shipped texts
+        expect(radioArmText({ t: strictT('pl'), armKind: 'toggle', armLabel: 'przycisk 2' })).toBe(DICTS.pl['play.card.radioArmButton'].replace('{src}', 'przycisk 2'));
+    });
+
     it('every text of every card exists in all four languages, and a card is never built from a missing one', () => {
         for (const lang of LANGS) {
             for (const kind of KINDS) {
@@ -149,8 +199,11 @@ describe('what each card says', () => {
                 const texts = [m.sub, m.note ?? '', m.foot ?? '', ...m.rows.map((r) => r.text), ...(m.hero ? [m.hero.up.word, m.hero.up.sub, m.hero.down.word, m.hero.down.sub] : []), ...(m.pads ? [m.pads.left, m.pads.leftText, m.pads.right, m.pads.rightText] : [])];
                 for (const x of texts) expect(x, `${kind} ${lang}`).not.toMatch(/\{\w+\}/); // no placeholder left open
             }
+            for (const armKind of [null, 'axis', 'button', 'toggle', 'key'] as const) {
+                for (const x of cardModel('radio', env(lang, { armKind, armLabel: armKind ? 'CH6' : '' })).rows.map((r) => r.text)) expect(x, `radio ${armKind} ${lang}`).not.toMatch(/\{\w+\}/);
+            }
         }
-        // control: a text that is not in a language fails the strict t()
+        // the harness itself: a text that is not in a language fails the strict t(), so a forgotten key cannot pass the loops above
         expect(() => strictT('pl')('play.card.nonexistent')).toThrow(/missing text/);
     });
 
@@ -177,6 +230,8 @@ describe('every literal text the files of this lane name exists in all four lang
         for (const f of SRC) for (const m of readFileSync(join(REPO, 'apps', 'fly', 'src', f), 'utf8').matchAll(/\bt\(\s*'([a-zA-Z0-9_.]+)'/g)) names.add(m[1]);
         // the dynamic one: the line under the title, one per kind
         for (const k of KINDS) names.add(`play.card.sub.${k}`);
+        // the radio arm line picks its text by the profile; every one it can pick ships
+        for (const k of ['radioArmSwitch', 'radioArmButton', 'radioArmAny', 'radioArmKey']) names.add(`play.card.${k}`);
         expect(names.size).toBeGreaterThan(20);
         for (const lang of LANGS) expect([...names].filter((k) => !DICTS[lang][k]), lang).toEqual([]);
         // control: the key the first version of the pause item had in mind does not exist
@@ -199,11 +254,12 @@ describe('when the card opens by itself', () => {
         for (const source of ['touch', 'hid', 'gamepad'] as const) expect(shouldOpen({ ...ready, source }), source).toBe(true);
     });
 
-    it('never over another screen: the Controls dialog, a panel, the menu, the motion notice (control: a policy that ignores `blocked` opens over them)', () => {
-        const blocked = { ...ready, blocked: true };
-        expect(shouldOpen(blocked)).toBe(false);
-        const ignoresBlocked = (i: OpenInput): boolean => i.enabled && !i.testPage && !i.shown && !i.hidden && cardKind(i.source, i.play) !== null;
-        expect(ignoresBlocked(blocked)).toBe(true);
+    it('never over another screen: the Controls dialog, a panel, the menu, the motion notice (blocked is the page\'s word for all of them)', () => {
+        // blocked decides alone: every input that opens when the page is free stays shut when it is not
+        for (const source of ['keyboard', 'touch', 'hid', 'gamepad'] as const) {
+            expect(shouldOpen({ ...ready, source }), `${source} free`).toBe(true);
+            expect(shouldOpen({ ...ready, source, blocked: true }), `${source} blocked`).toBe(false);
+        }
     });
 
     it('after a quiet time: a blip of another screen restarts it (control: no settling opens between two screens)', () => {
@@ -218,6 +274,35 @@ describe('when the card opens by itself', () => {
         expect(s.free(SETTLE_MS + 20 + SETTLE_MS, true)).toBe(true);
         const immediate = new Settle(0);
         expect(immediate.free(5, true)).toBe(true);
+    });
+});
+
+describe('the take-off line on the ground', () => {
+    it('is drawn for the game scheme, which has no ground card, and only spoken where a card of its own writes it (review: the line had no visible home)', () => {
+        const table: [InputSource, boolean, boolean][] = [
+            // source, game scheme flying, only spoken
+            ['keyboard', true, false],
+            ['keyboard', false, true],
+            ['hid', false, true],
+            ['gamepad', false, true],
+            ['touch', false, false],
+            [null, false, false],
+            ['sim', false, false]
+        ];
+        for (const [source, game, spoken] of table) expect(gateSpoken(source, game), `${source} game=${game}`).toBe(spoken);
+        // a radio never flies the game scheme (the view says game only for the keyboard), but if it did the radio card still owns the line
+        expect(gateSpoken('hid', true)).toBe(true);
+    });
+
+    it('every input the How to fly card opens for has a way off the ground on the screen once the card is shut: a ground card or the drawn line', () => {
+        // the pilot keyboard has its key card and a radio its arm card (both draw the line themselves); the rest draw the gate's line
+        const groundCard = (kind: CardKind): boolean => kind === 'pilot' || kind === 'radio';
+        for (const source of ['keyboard', 'touch', 'hid', 'gamepad'] as const) {
+            for (const play of ['easy', 'pilot'] as const) {
+                const kind = cardKind(source, play)!;
+                expect(groundCard(kind) || !gateSpoken(source, kind === 'game'), `${source} / ${play}`).toBe(true);
+            }
+        }
     });
 });
 

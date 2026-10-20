@@ -14,6 +14,9 @@
 //   C  desktop 900 x 480 (a short window; the base build's key card showed no key at all there), Controls closed with x.
 //   E  a phone on its side (812 x 375), the Russian phone (390 x 844) and the Polish short desktop window (900 x 480): the card fits
 //      in every language and on every shape (no cut-off, no sideways scroll, Start flying reachable).
+//      Review of 2026-10-20: the take-off line on the ground ("Click to fly, or press W or Space to take off") is DRAWN for the game scheme
+//      (K6b after Start flying, K14c with the box ticked and no card), the card's note names the way off the ground (K2c, K24b), and the
+//      radio card's arm line invents no channel number (K17b).
 //   D  ?nowarn=1 (the page every older bench uses): the card never opens by itself; with the pilot profile (set.input.play=pilot)
 //      the pilot keyboard's ground card is still there and K opens the pilot version of the card.
 // What this does not prove: a real hand and a real mouse (the click on Start is Playwright's trusted click, pointer lock is
@@ -138,6 +141,8 @@ async function cardFacts(p: Page): Promise<Any> {
             active: document.activeElement ? (document.activeElement.getAttribute('data-action') || document.activeElement.tagName) : null,
             activeInside: !!document.activeElement && c.contains(document.activeElement),
             hideChecked: !!(c.querySelector('[data-testid="htf-hide"]') || {}).checked,
+            note: (c.querySelector('.htf-note') || {}).textContent || '',
+            armText: (c.querySelector('[data-row="arm"] .htf-text') || {}).textContent || null,
             startRect: rect(c.querySelector('[data-action="htf-start"]')),
             upRect: rect(up), downRect: rect(down), panelRect: rect(c),
             scrollable: c.scrollHeight > c.clientHeight + 1,
@@ -147,6 +152,23 @@ async function cardFacts(p: Page): Promise<Any> {
         };
     })()`);
 }
+
+/** The arm gate's line as the pilot sees it on the ground: drawn on the screen (not only spoken), where, and whether the "Click to fly" pill is stacked on it. */
+const groundLine = (p: Page): Promise<Any> => p.evaluate(`(() => {
+    const g = document.querySelector('.hud > .gate-msg');
+    if (!g) return null;
+    const hint = document.querySelector('[data-testid="game-hint"]');
+    const r = g.getBoundingClientRect();
+    const cs = getComputedStyle(g);
+    return {
+        text: (g.textContent || '').trim(),
+        spokenOnly: g.classList.contains('visually-hidden'),
+        shown: g.offsetParent !== null && cs.display !== 'none' && cs.visibility !== 'hidden' && r.width > 40 && r.height > 12 && r.x >= 0 && r.right <= innerWidth && r.bottom <= innerHeight,
+        fontPx: parseFloat(cs.fontSize),
+        hintShown: !!hint && !hint.hidden,
+        rect: { x: Math.round(r.x), bottom: Math.round(r.bottom), w: Math.round(r.width), h: Math.round(r.height) }
+    };
+})()`);
 
 const POS = 'return { x: s.sim.s[0], y: s.sim.s[1], z: s.sim.s[2], vx: s.sim.s[3], vy: s.sim.s[4], vz: s.sim.s[5], armed: s.hud().armed, crashed: s.hud().crashed };';
 const reminderOn = (p: Page): Promise<boolean> => p.evaluate(`(() => { const e = document.querySelector('[data-testid="game-reminder"]'); return !!e && !e.hidden; })()`) as Promise<boolean>;
@@ -211,6 +233,7 @@ const { browser } = await launchChrome({ headless: false, args: ['--window-posit
             f.kind === 'game' && JSON.stringify(f.upCaps) === JSON.stringify(['Space']) && f.upWord === 'Up' && JSON.stringify(f.downCaps) === JSON.stringify(['Shift']) && f.downWord === 'Down' && /land/.test(f.downSub ?? ''), { kind: f.kind, up: f.upCaps, upWord: f.upWord, down: f.downCaps, downWord: f.downWord, downSub: f.downSub });
         check('K2b the rest of the game scheme is on it: mouse, W A S D, turn keys, F full screen, Esc pause, R, N next scene, K this card',
             JSON.stringify(f.rows) === JSON.stringify(['mouse', 'move', 'turn', 'fullscreen', 'pause', 'respawn', 'next', 'again']), { rows: f.rows });
+        check('K2c the card names the way off the ground: press W or Space to take off (the caps are the layout\'s own)', /take off/.test(f.note) && /\bW\b/.test(f.note) && /\bSpace\b/.test(f.note) && !/\{\w+\}/.test(f.note), { note: f.note });
         check('K3 accessibility: a modal dialog named by its title, the focus is on Start flying, Tab stays inside the card',
             f.role === 'dialog' && f.modal === 'true' && f.title === EN['play.card.title'] && f.active === 'htf-start' && f.activeInside, { role: f.role, modal: f.modal, title: f.title, active: f.active });
         const tabbed: string[] = [];
@@ -233,7 +256,7 @@ const { browser } = await launchChrome({ headless: false, args: ['--window-posit
         })(), { paused: f.paused });
     } else {
         // the base build has no card: these are failed checks there, and nothing is pressed (a W would start the motors)
-        for (const id of ['K2', 'K2b', 'K3', 'K3b', 'K4', 'K5']) check(`${id} (needs the card)`, false, { skipped: 'no card came up' });
+        for (const id of ['K2', 'K2b', 'K2c', 'K3', 'K3b', 'K4', 'K5']) check(`${id} (needs the card)`, false, { skipped: 'no card came up' });
     }
     // the lock: Start flying captures the mouse and the next key takes off. Without a card (the base build) a click on the view stands in
     await ev(p, 'h.wallsSwitch.set(false); return 0;'); // the palms over the spawn stop a climb
@@ -246,6 +269,10 @@ const { browser } = await launchChrome({ headless: false, args: ['--window-posit
     const afterStart = await ev<Any>(p, 'return { locked: document.pointerLockElement !== null, game: h.play() && h.play().game, paused: s.paused, cards: document.querySelectorAll(\'[data-testid="how-to-fly"]\').length };');
     check('K6 Start flying closes the card, resumes the flight and captures the mouse (pointer lock)', up1 && afterStart.cards === 0 && afterStart.paused === false && afterStart.locked === true && afterStart.game?.locked === true, { cards: afterStart.cards, paused: afterStart.paused, locked: afterStart.locked });
     await shot(p, 'k6-after-start');
+    // review: the ground card is gone and the mouse is captured, so the only thing left to say how to leave the ground is the arm gate's line
+    const gl = await groundLine(p);
+    check('K6b on the ground after Start flying the take-off line is on the screen, not only spoken, and names W and Space (a pilot who closed the card unread still knows)',
+        !!gl && gl.shown === true && gl.spokenOnly === false && gl.text === EN['play.gate.keys'] && /\bW\b/.test(gl.text) && /\bSpace\b/.test(gl.text) && gl.fontPx >= 14, { ...(gl ?? {}) });
     await p.keyboard.down('Space');
     await sleep(1400);
     const rem = await reminderOn(p);
@@ -323,6 +350,12 @@ const { browser } = await launchChrome({ headless: false, args: ['--window-posit
     const h3 = await hook(p);
     const card3 = await cardCount(p);
     check('K14 after "Do not show again" a reload does not bring the card back (4.5 s after the scene is ready)', up2 && card3 === 0 && h3?.shown === false && h3?.enabled === false, { cards: card3, hook: h3 });
+    // the box is ticked and no card came: the ground still shows how to take off (the mouse is not captured after a reload: the "Click to fly with the
+    // mouse" pill would stand on the same place, so the line takes it over)
+    const gl3 = await groundLine(p);
+    check('K14c with the box ticked and no card, the ground shows the take-off line (drawn) and the "Click to fly with the mouse" pill is not stacked on it',
+        up2 && card3 === 0 && !!gl3 && gl3.shown === true && gl3.spokenOnly === false && gl3.text === EN['play.gate.keys'] && gl3.hintShown === false, { ...(gl3 ?? {}) });
+    await shot(p, 'k14c-ticked-ground');
     // a pilot who ticked the box has said he knows the keys: no pill in his flight either
     await ev(p, 'h.wallsSwitch.set(false); return 0;');
     await p.keyboard.down('Space');
@@ -387,6 +420,7 @@ const { browser } = await launchChrome({ headless: false, args: ['--window-posit
         const upR = await cardUp(p, 4000);
         if (!upR) return null;
         const f = await cardFacts(p);
+        f.armKind = await ev(p, 'return h.controls.view().armKind;');
         await shot(p, 'k17-radio-card');
         await p.keyboard.press('KeyK');
         await sleep(300);
@@ -394,6 +428,9 @@ const { browser } = await launchChrome({ headless: false, args: ['--window-posit
         return f;
     })();
     check('K17 for a radio or gamepad the card is the short radio one: sticks, arm, mode switch, N, Esc, K', radio?.kind === 'radio' && JSON.stringify(radio.rows) === JSON.stringify(['sticks', 'arm', 'mode', 'pause', 'next', 'again']), { kind: radio?.kind ?? null, rows: radio?.rows ?? null });
+    // review: with no arm set up the card must not invent "CH5"; with one set up it names that one
+    check('K17b the radio card\'s arm line invents no channel number: with no arm set up it says "as set up on the Controls screen", else it names the profile\'s own',
+        radio?.kind === 'radio' && typeof radio.armText === 'string' && (radio.armKind !== null || radio.armText === EN['play.card.radioArmAny']), { armKind: radio?.armKind ?? null, armText: radio?.armText ?? null });
     const overlapA = await p.evaluate(`window.__overlap`) as Any;
     check('K18 in visits 2 and 3 as well the card came and was never up together with another dialog', up1 && up2 && overlapA.frames === 0, { overlap: overlapA });
     await ctxA.close();
@@ -487,6 +524,10 @@ for (const sh of SHAPES) {
     check(`K24 ${sh.id} (${sh.lang}, ${sh.width} x ${sh.height}): the ${sh.kind} card is up, inside the screen, no sideways scroll, nothing sticks out, Start flying reachable (on the screen or the card scrolls)${sh.kind === 'game' ? ', Space in the page\'s own word' : ''}`,
         up && f?.kind === sh.kind && !!fit && fit.sideways === false && fit.overflowing.length === 0 && fit.panel.x >= 0 && fit.panel.right <= fit.vw && (startVisible || fit.scrollable) && heroOk,
         { kind: f?.kind ?? null, fit, startVisible, upCaps: f?.upCaps ?? null });
+    if (sh.kind === 'game') {
+        check(`K24b ${sh.id} (${sh.lang}): the card's note names the way off the ground with the page's own word for Space`,
+            !!f && f.note.includes(D['arm.keys.space']) && /\bW\b/.test(f.note) && !/\{\w+\}/.test(f.note), { note: f?.note ?? null });
+    }
     await ctx.close();
 }
 
