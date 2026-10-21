@@ -312,7 +312,9 @@ async function main(): Promise<void> {
             const cspBase = (await fetch(`${BASE}/en/fly/`)).headers.get('content-security-policy') ?? '';
             out.V6 = { bytes: { new: mine.length, base: base.length }, eval: { new: count(mine, EV), base: count(base, EV) }, newFunction: { new: count(mine, NF), base: count(base, NF) }, hostsAdded: added, cspSame: cspNew === cspBase, scriptSrc: (/script-src[^;]*/.exec(cspNew) ?? [''])[0] };
             check(`V6 the release has no more eval( (${count(mine, EV)} against ${count(base, EV)}) and no more new Function( (${count(mine, NF)} against ${count(base, NF)}) than the BASE`, count(mine, EV) <= count(base, EV) && count(mine, NF) <= count(base, NF));
-            check('V6 the policy the pages are served with is strict (no unsafe-eval) and is the same text as the BASE\'s', cspNew.length > 100 && !/unsafe-eval/.test(cspNew) && cspNew === cspBase);
+            const scriptSrc = (/script-src[^;]*/.exec(cspNew) ?? [''])[0];
+            check('V6 the policy the pages are served with is strict (no \'unsafe-eval\' and no \'unsafe-inline\' in script-src; \'wasm-unsafe-eval\' is the one the engine always had) and is the same text as the BASE\'s', cspNew.length > 100 && !/'unsafe-eval'/.test(scriptSrc) && !/'unsafe-inline'/.test(scriptSrc) && /'wasm-unsafe-eval'/.test(scriptSrc) && cspNew === cspBase);
+            check('V6 control: a policy with \'unsafe-eval\' in script-src would be seen', /'unsafe-eval'/.test(`${scriptSrc} 'unsafe-eval'`) && !/'unsafe-eval'/.test(scriptSrc), true);
             check(`V6 the bundle names no host the BASE bundle does not (${added.length ? added.join(', ') : 'none'})`, added.length === 0);
             check('V6 control: a made-up host in the bundle would be seen (the check has teeth)', [...hosts(`${mine} https://example-new-host.dev/x`)].filter((x) => !hBase.has(x)).includes('example-new-host.dev'), true);
             pass.V6 = true;
