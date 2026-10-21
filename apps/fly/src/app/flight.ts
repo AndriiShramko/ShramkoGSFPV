@@ -217,7 +217,7 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
     const hidNote = ui.querySelector('.banner[data-kind="no-hid"]');
     if (hidNote) setTimeout(() => hidNote.remove(), HID_NOTE_FLIGHT_MS);
     recordOpen(sceneId, !!session.collision, meta?.title, session.scene.version);
-    beacon('scene_loaded', { has_collision: !!session.collision, load_ms_bucket: Math.round((session.timings.visibleMs ?? 0) / 1000) });
+    beacon('scene_loaded', { has_collision: !!session.collision, load_ms_bucket: Math.round((session.timings.visibleMs ?? 0) / 1000) }, { scene_id: sceneId });
 
     const ctx = new Flight(ui, canvas, session, sceneRef, prefs);
     // E.4: the next scenes load in this page, on this renderer, with the same input

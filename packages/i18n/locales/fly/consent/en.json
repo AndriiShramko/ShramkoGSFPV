@@ -1,0 +1,8 @@
+{
+  "consent.title": "Analytics cookies",
+  "consent.text": "May we use Google Analytics to see how the simulator is used? Nothing from Google loads unless you accept.",
+  "consent.more": "Privacy",
+  "consent.accept": "Accept",
+  "consent.decline": "Decline",
+  "consent.settings": "Cookie settings"
+}

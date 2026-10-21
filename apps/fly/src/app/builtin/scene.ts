@@ -4,6 +4,7 @@
 // "Change scene" (the picker over the flight, app/scene-host.ts). sceneCredit() is what every credit
 // of this scene starts from: the share picture and caption, the video's burned-in line, the notice.
 import { recordFlight, sceneFacts } from '@gsfpv/scenes';
+import { modeFromChannel } from '@gsfpv/sim-core';
 import { h } from '../../ui/dom';
 import { t, locale } from '../../i18n';
 import { beacon } from '../env';
@@ -36,7 +37,8 @@ export const scene: Feature = {
         ctx.events.on('session', credit);
 
         ctx.events.on('sim', (e) => {
-            if (e.type === 'arm') { beacon('arm'); recordFlight(ctx.scene.id); }
+            // GA4 only (app/analytics.ts): the scene and the flight mode armed in; the counter keeps the bare event
+            if (e.type === 'arm') { beacon('arm', {}, { scene_id: ctx.scene.id, mode: ctx.session.sim ? modeFromChannel(ctx.session.sim.ch[5]) : undefined }); recordFlight(ctx.scene.id); }
         });
 
         // the picker over the flight (E.4): a picked scene loads in the page, the radio stays connected

@@ -161,7 +161,7 @@ export class SceneHost implements SceneSwitcher {
             // drawing for it loads it again with that drawing)
             if (link.id === ctx.scene.id && sameRender(link.render, ctx.scene.render)) { close(true); return; }
             close(false); // the 'scene' pause stays: load() holds it and releases it when the new scene flies
-            beacon('scene_open', { source });
+            beacon('scene_open', { source }, { scene_id: link.id });
             void this.load(link.id, 'pick', link.render);
         };
     }
@@ -280,7 +280,7 @@ export class SceneHost implements SceneSwitcher {
         const ms = Math.round(performance.now() - t0);
         this.log.push({ from, to: id, reason, ok: true, ms });
         hook.sceneSwitch = { state: 'done', from, to: id, reason, ms };
-        beacon('scene_switch', { reason, has_collision: !!next.collision, load_ms_bucket: Math.round(ms / 1000) });
+        beacon('scene_switch', { reason, has_collision: !!next.collision, load_ms_bucket: Math.round(ms / 1000) }, { scene_id: id });
         this.busyNow = false;
         ctx.resume('scene');
         return true;

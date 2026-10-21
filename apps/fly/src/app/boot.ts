@@ -15,6 +15,7 @@ import { applyShared, beginSharedVisit } from './shared-visit';
 import { openSettingsLink, storageBanner } from './builtin/settings';
 import { useStoreLibrary } from './scene-host';
 import { pageRender, setDrawingDefaults } from './drawing';
+import { startAnalytics } from './analytics';
 
 export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<void> {
     if (!hasWebGPU) banner(ui, t('banner.noWebgpu'), 'no-webgpu');
@@ -65,7 +66,7 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
         else stripSharedParams(u.searchParams);
         u.search = flyQueryString(u.searchParams);
         history.replaceState(null, '', u);
-        beacon('scene_open', { source });
+        beacon('scene_open', { source }, { scene_id: link.id });
         picker?.remove();
         void fly(ui, canvas, render ? { id: link.id, render } : { id: link.id }, showcase, prefs, (code, msg) => showPicker(code, msg), catalog.collections);
     }
@@ -80,6 +81,10 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
             openSettingsLink(ui, prefs);
         }
     };
+    // GA4 (app/analytics.ts) before the first scene opens, so its scene_open is counted too. gtag.js loads
+    // asynchronously: start() below rewrites ?scene= in this same task, before the tag can read the address,
+    // so the config's page_view names the settled deep link and the rewrite is no second page view.
+    startAnalytics(!!q.get('simradio') || q.get('lat') === '1' || q.get('nowarn') === '1');
     if (first && !q.get('simradio') && q.get('lat') !== '1' && q.get('nowarn') !== '1') {
         warningModal(ui, () => { try { localStorage.setItem('gsfpv.warned', '1'); } catch { /* ignore */ } mirrorWarned(prefs); start(); });
     } else start();
