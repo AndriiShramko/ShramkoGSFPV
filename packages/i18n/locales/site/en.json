@@ -857,7 +857,7 @@
   },
   "consent": {
     "title": "Analytics cookies",
-    "text": "May we use Google Analytics to see which parts of this site help? Nothing from Google loads unless you accept.",
+    "text": "May we use Google Analytics to see which parts of this site and the simulator help? Nothing from Google loads unless you accept.",
     "more": "Privacy",
     "accept": "Accept",
     "decline": "Decline"
@@ -867,6 +867,7 @@
     "linksLabel": "Site links",
     "home": "Home",
     "privacy": "Privacy",
+    "cookies": "Cookie settings",
     "licenses": "Licenses",
     "license": "MIT license",
     "disclaimer": "Not affiliated with or endorsed by PlayCanvas, BetaFPV, iFlight, RED Digital Cinema, the Betaflight project, LuGus Studios (Liftoff), DJI or RadioMaster. Trademarks belong to their owners."
@@ -876,12 +877,12 @@
     "description": "What ShramkoGSFPV collects, why, for how long, and your rights under the GDPR.",
     "eyebrow": "Privacy",
     "h1": "Privacy notice",
-    "updated": "Last updated: 18 October 2026",
+    "updated": "Last updated: 21 October 2026",
     "review": "Legal review not yet done.",
     "sections": [
       { "h": "Who is responsible", "p": ["The controller of your data is Andrii Shramko. You can reach him at zmei116@gmail.com or through the contact form on this site."] },
-      { "h": "Cookieless visit counter", "p": ["The site sends a few whitelisted events to its own server at /api/e: switching language, clicks on the main buttons and contact links, and opening a scene. No cookies are set, no device identifier is created and your IP address is not stored.", "Purpose: understanding which parts of the site are useful (legitimate interest, Art. 6(1)(f) GDPR). Events are kept for 12 months."] },
-      { "h": "Google Analytics — only with your consent", "p": ["If analytics is switched on for this site, a banner asks first. Google's script is not loaded until you press Accept. Consent mode starts with every storage type denied, and Accept grants analytics storage only.", "Legal basis: your consent (Art. 6(1)(a) GDPR). You can withdraw it at any time."] },
+      { "h": "Cookieless visit counter", "p": ["The site and the simulator send a few whitelisted events to their own server at /api/e: page views (only the language of the page), switching language, clicks on the main buttons and contact links, opening and switching a scene, the kind of input connected (radio, gamepad, keyboard or touch), arming, crashes and the walls switch. No cookies are set, no device identifier is created and the events do not contain your IP address.", "Purpose: understanding which parts of the site and the simulator are useful (legitimate interest, Art. 6(1)(f) GDPR). Events are kept for 12 months."] },
+      { "h": "Google Analytics — only with your consent", "p": ["The site and the simulator use Google Analytics 4, a service of Google Ireland Limited (Gordon House, Barrow Street, Dublin 4, Ireland), only if you press Accept in the banner. Until then nothing from Google is loaded. Consent mode starts with every storage type denied, and Accept grants analytics storage only; advertising features and Google signals are off.", "After you accept, Google Analytics sets the cookies _ga and _ga_E7X0ES0QBE on this site and records the pages you view and what you do on them: the events of the counter above, the sections of the page you scroll to, the forms you start and send (never their content or your e-mail address) and errors of the page's scripts, together with your browser, device type and an approximate location that Google derives from your IP address (Google Analytics 4 does not store the IP address). The cookies expire after 14 months at most, and Google keeps this data for 14 months; it may be processed outside the EU under the EU standard contractual clauses.", "Legal basis: your consent (Art. 6(1)(a) GDPR). Your choice is kept in your browser's storage. You can withdraw it at any time: Cookie settings at the bottom of every page (in the simulator: Cookie settings in the pause menu), then Decline. The cookies are then deleted and nothing more is sent to Google."] },
       { "h": "Stored only in your browser", "p": ["Radio calibration, flight history and favourites stay in your browser's storage. They are strictly necessary for the simulator to work, never leave your device and need no consent."] },
       { "h": "Collaboration form", "p": ["If you send the form, your email, the role you chose and your message are stored on the server and forwarded to the owner's Telegram notification bot.", "They are kept until your request is handled or until you ask for them to be deleted. Legal basis: your consent (Art. 6(1)(a) GDPR)."] },
       { "h": "Bug reports and ideas", "p": ["If you send a bug report or an idea from the simulator or this site, your message, the page and scene you were on, the release, your language and, if you leave one, your contact (an e-mail address or another handle) are stored on the server. Technical details (browser, graphics card, screen, frame times, recent errors, settings, the flight log and a small picture of the view) are added only if you tick the box for them.", "A Drone physics report, sent with Help tune it in the simulator, also carries the drone it is about, the Betaflight text and the blackbox log link you paste and, unless you untick its box, the simulator settings you changed for that drone, the flight mode and the input you fly with (radio, gamepad, keyboard or touch). They are stored and forwarded like a bug's technical details.", "Everything you send, including your message, your contact and, if you added them, the technical details and the picture, is forwarded to the owner's Telegram chat (so it passes through Telegram's servers), where he reads and sorts the reports. Your e-mail address is used only to answer you: the owner's replies, and a thank-you once your idea is in the simulator, come from his Gmail address (zmei116@gmail.com) through Google's mail servers. So that a reply reaches you in the language you wrote in, your message (to recognise its language) and the owner's reply (to translate it) are sent to Google's Gemini API. Nothing is sent automatically, and if you reply, your answer goes to his Gmail inbox. If you tell him an idea in person and give him your address, it is kept and used the same way.", "Reports are kept while the idea or the problem is being worked on and afterwards as a record of how the simulator was improved. The public roadmap shows only titles written by us, never your words or your contact. You can ask at any time for your report, or only your e-mail address, to be deleted. Legal basis: your consent (Art. 6(1)(a) GDPR), given by sending the report and ticking the box for technical details."] },
@@ -889,7 +890,7 @@
       { "h": "Your rights", "p": ["You can ask for access to your data, its correction or erasure, restriction of processing, data portability, and you can object to processing or withdraw consent — through the contact form or by email.", "You also have the right to lodge a complaint with the Polish supervisory authority, the President of the Personal Data Protection Office (UODO)."] }
     ],
     "resetConsent": "Change my analytics choice",
-    "resetDone": "Choice cleared",
+    "resetDone": "Choose in the banner",
     "contactTitle": "Contact the controller",
     "formLink": "Contact form",
     "uodoLink": "UODO — Polish data protection authority"

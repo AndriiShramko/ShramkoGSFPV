@@ -40,6 +40,7 @@ export default function ShareButtons({ where }: { where: "hero" | "footer" }) {
           <button
             type="button"
             className={`${pill} border-accent text-accent`}
+            data-share-action="native"
             onClick={() => {
               navigator.share({ title, text, url }).catch(() => undefined);
             }}
@@ -52,7 +53,7 @@ export default function ShareButtons({ where }: { where: "hero" | "footer" }) {
             {s.label}
           </a>
         ))}
-        <button type="button" className={pill} onClick={copy} aria-live="polite">
+        <button type="button" className={pill} onClick={copy} aria-live="polite" data-share-action="copy">
           {copied ? t("copied") : t("copy")}
         </button>
       </div>

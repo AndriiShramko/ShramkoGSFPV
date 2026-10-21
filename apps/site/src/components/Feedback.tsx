@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { REPORT_ENDPOINT } from "@/config/site";
+import { gaEvent } from "@/lib/track";
 
 /**
  * "Feedback" on every page (bottom left, above the phone's Fly bar): a bug or an idea goes to
@@ -110,6 +111,7 @@ export default function Feedback() {
       return;
     }
     setState("sending");
+    gaEvent("form_submit", { form_id: `feedback_${kind}` });
     for (let left = MIN_MS - (performance.now() - openedAt.current); left > 0; left = MIN_MS - (performance.now() - openedAt.current)) {
       await new Promise((r) => setTimeout(r, Math.ceil(left) + 1));
     }
@@ -140,6 +142,7 @@ export default function Feedback() {
       const r = await fetch(REPORT_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const j = (await r.json()) as { ok?: boolean; id?: string };
       if (!r.ok || !j.ok || !j.id) throw new Error("not ok");
+      gaEvent("feedback_send", { form_id: `feedback_${kind}` });
       setMessage("");
       setDoneId(j.id);
       setState("idle");
@@ -197,7 +200,7 @@ export default function Feedback() {
               </button>
             </div>
           ) : (
-            <form onSubmit={send} noValidate className="mt-2">
+            <form onSubmit={send} noValidate data-form="feedback" className="mt-2">
               <p className="text-sm text-muted">{t("lead")}</p>
               <div role="radiogroup" aria-label={t("kind.label")} className="mt-4 grid grid-cols-3 gap-2">
                 {KINDS.map((k) => (

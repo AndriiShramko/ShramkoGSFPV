@@ -41,6 +41,12 @@ export default function Footer({ locale, page, share = true }: { locale: Locale;
               </a>
             </li>
             <li>
+              {/* opens the consent banner again (components/ClickTracker); without JS the privacy page's button */}
+              <a href={`/${locale}/privacy/#cookies`} data-consent="open" data-testid="cookie-settings" className={link}>
+                {t("cookies")}
+              </a>
+            </li>
+            <li>
               <a href={`/${locale}/licenses/`} className={link}>
                 {t("licenses")}
               </a>

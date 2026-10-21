@@ -162,7 +162,8 @@ const pick = pickBrowser({ expected: chromium.executablePath() });
 const browser = await chromium.launch({ ...pick.launch });
 console.log(`browser: ${JSON.stringify(describeBrowser(pick, browser.version()))}`);
 
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "";
+// the Measurement ID is committed in src/lib/track.ts (never read from the build environment again)
+const GA_ID = readFileSync(join(SITE_DIR, "src", "lib", "track.ts"), "utf8").match(/export const GA_ID = "(G-[A-Z0-9]{6,12})"/)?.[1] ?? "";
 console.log(GA_ID ? `GA mode: expecting the consent banner for ${GA_ID}` : "no-GA mode: expecting no banner and no Google requests");
 
 // consent: "no" pre-answers the banner (so it never covers what a test clicks), "ask" leaves it.
@@ -228,7 +229,7 @@ async function newCtx(viewport, opts = {}, consent = "no") {
   });
   await page.screenshot({ path: join(SHOTS, "en-1440x900-full.png"), fullPage: true });
   ok("EN 1440x900 screenshot", true, ".shots/en-1440x900-full.png");
-  if (!GA_ID) ok("no consent banner without NEXT_PUBLIC_GA_ID", (await page.locator("[aria-label='Analytics cookies']").count()) === 0);
+  if (!GA_ID) ok("no consent banner without a GA id", (await page.locator("[aria-label='Analytics cookies']").count()) === 0);
   ok("no Google request (no GA id, or visitor declined)", google.length === 0, google.join(" "));
   const brokenImgs = await page.evaluate(() => [...document.images].filter((i) => !i.naturalWidth).map((i) => i.src));
   ok("all images loaded (desktop)", brokenImgs.length === 0, brokenImgs.join(" "));
@@ -623,16 +624,16 @@ for (const mode of ["ok", "fail"]) {
   await page.goto(`${BASE}/en/`, { waitUntil: "networkidle" });
   await Promise.all([page.waitForURL(/\/en\/fly\/$/), page.click("#top a[href='/en/fly/']")]);
   await page.waitForTimeout(300);
-  const want = [{ e: "scene_open", p: "paste" }, { e: "scene_open", p: "showcase" }, { e: "fly_click", p: "" }].map((x) => JSON.stringify(x));
+  const want = [{ e: "scene_open", p: "paste" }, { e: "scene_open", p: "showcase" }, { e: "fly_click", p: "" }, { e: "page_view", p: "en" }].map((x) => JSON.stringify(x));
   const allWhitelisted = beacons.every((b) => {
     try {
       const o = JSON.parse(b);
-      return Object.keys(o).join(",") === "e,p" && ["lang_switch", "cta_click", "scene_open", "fly_click"].includes(o.e);
+      return Object.keys(o).join(",") === "e,p" && ["lang_switch", "cta_click", "scene_open", "fly_click", "page_view"].includes(o.e);
     } catch {
       return false;
     }
   });
-  ok("beacons: scene_open{paste|showcase}, fly_click, only {e,p}", want.every((w) => beacons.includes(w)) && allWhitelisted, beacons.join(" "));
+  ok("beacons: scene_open{paste|showcase}, fly_click, page_view{en}, only {e,p}", want.every((w) => beacons.includes(w)) && allWhitelisted, beacons.join(" "));
   await ctx.close();
 }
 
@@ -782,6 +783,41 @@ if (GA_ID) {
     const loadedWithId = !!resp && resp.url().includes(`id=${GA_ID}`) && resp.status() === 200;
     const consentOk = dl.includes('"consent","default"') && dl.includes('"analytics_storage":"denied"') && dl.includes('"consent","update",{"analytics_storage":"granted"}') && dl.includes(`"config","${GA_ID}"`);
     ok(`GA: after Accept gtag.js loads with ${GA_ID} (consent default denied → analytics_storage granted)`, loadedWithId && consentOk, `${resp ? resp.status() + " " + resp.url() : "no gtag response"}; collect attempts=${google.filter((u) => u.includes("/g/collect")).length}; _ga cookies=${(await cookiesGa(ctx)).join(",") || "none"}`);
+    await ctx.close();
+  }
+  {
+    // T6: Decline as strong as Accept; withdrawal from the footer's "Cookie settings" on any page:
+    // consent update denied, ga-disable-<ID>, every _ga cookie deleted, the choice stored, no more hits
+    const { ctx, google } = await newCtx({ width: 1440, height: 900 }, {}, "ask");
+    const page = await ctx.newPage();
+    await page.goto(`${BASE}/en/privacy/`, { waitUntil: "networkidle" });
+    const banner = page.locator("[aria-label='Analytics cookies']");
+    const classes = await banner.locator("button").evaluateAll((bs) => bs.map((b) => b.className));
+    ok("GA: Decline and Accept have the same visual weight (the same class)", classes.length === 2 && classes[0] === classes[1], classes.join(" | "));
+    await banner.getByRole("button", { name: "Accept" }).click();
+    await page.waitForFunction(() => /(^|; )_ga=/.test(document.cookie), undefined, { timeout: 15000 }).catch(() => {});
+    const cookiesBefore = await cookiesGa(ctx);
+    await page.locator("footer [data-testid='cookie-settings']").click();
+    const reopened = await banner.isVisible();
+    await banner.getByRole("button", { name: "Decline" }).click();
+    await page.waitForTimeout(500);
+    const hitsAfterWithdraw = google.filter((u) => u.includes("/g/collect")).length;
+    const state = await page.evaluate((id) => ({
+      denied: JSON.stringify((window.dataLayer ?? []).map((a) => Array.from(a))).includes('"consent","update",{"analytics_storage":"denied"}'),
+      disabled: window[`ga-disable-${id}`] === true,
+      stored: localStorage.getItem("gsfpv_consent"),
+    }), GA_ID);
+    // scrolling would send section_view and GA's own scroll event: nothing may leave now
+    for (let y = 0; y < 6; y++) {
+      await page.mouse.wheel(0, 900);
+      await page.waitForTimeout(250);
+    }
+    await page.waitForTimeout(1500);
+    const cookiesAfter = await cookiesGa(ctx);
+    const hitsLater = google.filter((u) => u.includes("/g/collect")).length;
+    ok("GA: Cookie settings → Decline withdraws (denied, ga-disable, _ga cookies deleted, stored no, no further hits)",
+      cookiesBefore.length > 0 && reopened && state.denied && state.disabled && state.stored === "no" && cookiesAfter.length === 0 && hitsLater === hitsAfterWithdraw,
+      JSON.stringify({ cookiesBefore, reopened, ...state, cookiesAfter, hitsAfterWithdraw, hitsLater }));
     await ctx.close();
   }
 }
