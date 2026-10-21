@@ -280,10 +280,11 @@ describe('AccumDrawing', () => {
         const r = fake();
         const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);
         r.frame = () => { throw new Error('bad buffer'); };
-        const { a, fails } = make(r);
+        const { a, fails, ev } = make(r);
         a.enable();
         // the engine's event calls the instance's frame: the guard catches it
         expect(() => r.frame()).not.toThrow();
+        ev.endFrame(); // the hand-back waits for the frame's end
         expect(a.failed).toBe('bad buffer');
         expect(a.active).toBe(false);
         expect(r.calls).toContain('enabled:false');
@@ -334,18 +335,34 @@ describe('AccumDrawing', () => {
         err.mockRestore();
         vi.useRealTimers();
     });
-    it('a throw in the frame function or the frameend handler hands back at once (the engine is not rendering with it)', () => {
+    it('a throw in the frame function (inside the engine\'s update) waits for the frame\'s end like a pass: handing back from there gave 5 WebGPU validation errors and a page error in the real page (acceptance V9)', () => {
         const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-        for (const site of ['frame', 'frameend'] as const) {
-            const r = fake();
-            const { a, ev, fails } = make(r);
-            a.enable();
-            a.forceFault(site);
-            if (site === 'frame') r.frame(); else ev.endFrame();
-            expect(a.failedAt, site).toBe(site);
-            expect(r.calls.at(-1), site).toBe('enabled:false');
-            expect(fails, site).toEqual([1]);
-        }
+        const r = fake();
+        const { a, ev, fails } = make(r);
+        a.enable();
+        a.forceFault('frame');
+        r.frame();
+        expect(a.failedAt).toBe('frame');
+        expect(a.active).toBe(false);
+        expect(r.calls).toEqual(['enabled:true']); // not handed back inside the update, the caller not told yet
+        expect(fails).toEqual([]);
+        r.bindPass.execute(); r.rasterPass.execute(); r.taaPass.execute(); // the render of the same frame: dead, nothing runs
+        expect(r.calls).toEqual(['enabled:true']);
+        ev.endFrame();
+        expect(r.calls).toEqual(['enabled:true', 'enabled:false']);
+        expect(fails).toEqual([1]);
+        err.mockRestore();
+    });
+    it('a throw in the frameend handler is at the frame\'s end already: it hands back at once', () => {
+        const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        const r = fake();
+        const { a, ev, fails } = make(r);
+        a.enable();
+        a.forceFault('frameend');
+        ev.endFrame();
+        expect(a.failedAt).toBe('frameend');
+        expect(r.calls.at(-1)).toBe('enabled:false');
+        expect(fails).toEqual([1]);
         err.mockRestore();
     });
     it('forceFault throws once at the named site only, inside the guard (the page\'s way of exercising the real fallback)', () => {

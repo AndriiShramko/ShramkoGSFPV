@@ -30,7 +30,8 @@
 //       "stochastic, fallback dither after an error", no WebGPU validation error and no page error, the picture stays lit and frames go on; the renderer
 //       does not come back after a scene switch (decided: a throw is a defect for this page, not a loading state). The guard covers the five sites.
 //       The throw is forced inside the guard (AccumDrawing.forceFault): it proves the guard and what follows, not that a given line of upstream can throw.
-//       V7 also reads F3 during a scene switch: "sorted while the scene loads", then accumulating again.
+//       V7 also records, in the page, what draws on every frame of a scene switch: sorted with the plan "loading" (the hold), then accumulating again.
+//       (F3 cannot show the hold: an in-page switch has no HUD frames while the scene loads, see V7.)
 //   SITE_DIST=dist BASE_DIST=.cache/dist-base npx tsx src/accept-v11-stochastic.ts [V1 V2 ...]   (from tools/bench)
 // Evidence: evidence/<date>/v11-stochastic.json
 import { spawn } from 'node:child_process';
@@ -363,35 +364,35 @@ async function main(): Promise<void> {
             await hook(n.page, 'return 0;');
             const vram = async (): Promise<number> => hook<number>(n.page, 'const v = s.renderer.device._vram; return v ? Math.round((v.tex + v.sb + v.vb + v.ib + v.ub) / 1048576) : -1;');
             const switches: Any[] = [];
-            // F3 shown: the line about the drawing is read while each scene loads (the accumulating renderer waits, sorted draws: the line must say so)
-            const line0 = await f3(n.page);
-            const readLine = (): Promise<string> => n.page.evaluate(() => (document.querySelector('[data-testid=drawing-line]') || {} as Element).textContent || '');
+            // what draws while each scene loads, recorded IN the page on every frame (drawn / why of the renderer's last plan). The F3 line cannot show it: an in-page
+            // switch disposes the old session and swaps the new one in when the scene is ready (flight.ts swapSession), so the HUD has no frames while the scene loads and the
+            // pilot sits on the loading screen then; the text for this state ("sorted while the scene loads") is covered by the drawing-ask unit tests
+            await hook(n.page, "window.__states = new Set(); window.__gsfpv.session.renderer.app.on('frameend', () => { const r = window.__gsfpv.session.renderer; window.__states.add(r.drawn + '/' + (r.plan ? r.plan.why : '')); }); return 0;");
+            await frames(n.page, 30);
+            const statesBefore = await hook<string[]>(n.page, 'return [...window.__states];');
             for (let i = 1; i < SCENES5.length; i++) {
-                await hook(n.page, 'h.sceneSwitch = null; return 0;');
+                await hook(n.page, 'window.__states.clear(); h.sceneSwitch = null; return 0;');
                 await hook(n.page, `h.scenes.load(${JSON.stringify(SCENES5[i])}, 'next'); return 0;`);
                 let sw: Any = null;
-                const lines = new Set<string>();
                 for (let t0 = Date.now(); Date.now() - t0 < 180000;) {
                     sw = await hook(n.page, 'return h.sceneSwitch ? { ...h.sceneSwitch } : null;');
-                    lines.add((await readLine()).replace(/ · budget.*$/, ''));
                     if (sw && (sw.state === 'done' || sw.state === 'failed')) break;
                     await sleep(250);
                 }
                 await waitComplete(n.page, 90000);
                 await frames(n.page, 60);
-                await sleep(500);
+                const states = await hook<string[]>(n.page, 'return [...window.__states];');
                 const st = await state(n.page);
-                const lineAfter = (await readLine()).replace(/ · budget.*$/, '');
-                switches.push({ scene: SCENES5[i], state: sw?.state, drawn: st.drawn, active: st.accum?.active, splatsM: Math.round((st.accum?.activeSplats ?? 0) / 1e5) / 10, taa: st.accum?.taaActive, vramMiB: await vram(), gpuErrors: st.gpuErrors.length, f3Seen: [...lines], f3After: lineAfter });
+                switches.push({ scene: SCENES5[i], state: sw?.state, drawn: st.drawn, active: st.accum?.active, splatsM: Math.round((st.accum?.activeSplats ?? 0) / 1e5) / 10, taa: st.accum?.taaActive, vramMiB: await vram(), gpuErrors: st.gpuErrors.length, states });
             }
             const lastErrors = errors(n.log);
             out.V7 = { scale: steps, switches, pageErrors: lastErrors };
             check(`V7 five scenes in a page with the renderer on (${ROOM} > ${switches.map((x) => x.scene).join(' > ')}): every switch ends done, the accumulating renderer draws each once its first view is complete (millions of splats), no GPU error`, switches.length === 4 && switches.every((x) => x.state === 'done' && x.drawn === 'accum' && x.active === true && x.splatsM > 0.5 && x.taa === true && x.gpuErrors === 0));
             out.V7.vramStartMiB = vramStart;
-            const held = switches.filter((x) => (x.f3Seen as string[]).some((l) => /^Render: sorted while the scene loads/.test(l)));
-            check(`V7 F3 says what draws while a scene loads: "sorted while the scene loads" was on the line in ${held.length} of ${switches.length} switches, and "stochastic, accumulating" again after each (${switches.map((x) => x.f3After).join(' | ')}); before the first switch it said "${line0.replace(/ · budget.*$/, '')}"`,
-                held.length >= 3 && switches.every((x) => /^Render: stochastic, accumulating/.test(x.f3After)) && /^Render: stochastic, accumulating/.test(line0));
-            check('V7 control: the line is not stuck on the hold text (what is seen first and last differs in every switch)', switches.every((x) => (x.f3Seen as string[]).length >= 2), true);
+            const held = switches.filter((x) => (x.states as string[]).includes('sorted/loading'));
+            check(`V7 while a scene loads the renderer says what draws: sorted with the plan "loading" (the hold) was seen in ${held.length} of ${switches.length} switches (states per switch: ${switches.map((x) => (x.states as string[]).join('+')).join(' | ')}), and every switch ends with the accumulating renderer (accum/ok)`,
+                held.length >= 3 && switches.every((x) => (x.states as string[]).includes('accum/ok') && x.drawn === 'accum'));
+            check(`V7 control: with no switch under way the recorder sees only the accumulating renderer (${statesBefore.join('+')}), so a hold is not an artefact of recording`, statesBefore.length === 1 && statesBefore[0] === 'accum/ok', true);
             check(`V7 video memory does not grow across the switches: ${vramStart} MiB with the first scene, then ${switches.map((x) => x.vramMiB).join(', ')} MiB; the last scene is the first one again and ends within 15 % + 50 MiB of where it began (the engine frees a replaced scan's textures lazily, so the middle numbers wander)`, vramStart > 0 && switches.every((x) => x.vramMiB > 0) && switches[switches.length - 1].vramMiB <= vramStart * 1.15 + 50);
             check('V7 no page error through the scale steps and the scene switches', lastErrors.length === 0);
             await n.ctx.close();
@@ -456,9 +457,11 @@ async function main(): Promise<void> {
                 const post = await state(n.page);
                 const linePost = trim(await f3(n.page));
                 const meanPost = await lumaMean(n.page);
-                const row: Any = { site, pre: { drawn: pre.drawn, guarded: pre.accum?.guarded, linePre, meanPre }, post: { drawn: post.drawn, plan: post.plan, failed: post.accum?.failed, failedAt: post.accum?.failedAt, active: post.accum?.active, engineFlag: post.engineFlag, linePost, meanPost, gpuErrors: post.gpuErrors.length }, pageErrors: errors(n.log).length };
+                const row: Any = { site, pre: { drawn: pre.drawn, guarded: pre.accum?.guarded, linePre, meanPre }, post: { drawn: post.drawn, plan: post.plan, failed: post.accum?.failed, failedAt: post.accum?.failedAt, active: post.accum?.active, engineFlag: post.engineFlag, linePost, meanPost, gpuErrors: post.gpuErrors.length, gpuErrorTexts: (post.gpuErrors as string[]).slice(0, 3) }, pageErrors: errors(n.log).length, pageErrorTexts: errors(n.log).slice(0, 3) };
                 if (site === 'taa') {
-                    // a throw is a defect of this page, not a loading state: a scene switch does not bring the renderer back (decided, see the note)
+                    // a throw is a defect of this page, not a loading state: a scene switch does not bring the renderer back (decided, see the note).
+                    // The link asked for stochastic for the first scene only: the pilot's own setting asks for it on the next one, so a renderer that did come back would be seen drawing
+                    await setPref(n.page, 'display.drawing', 'stochastic');
                     await hook(n.page, "h.sceneSwitch = null; h.scenes.load('7a475d38', 'next'); return 0;");
                     for (let t0 = Date.now(); Date.now() - t0 < 120000;) { const sw = await hook<Any>(n.page, 'return h.sceneSwitch ? { ...h.sceneSwitch } : null;'); if (sw && (sw.state === 'done' || sw.state === 'failed')) { row.switchState = sw.state; break; } await sleep(300); }
                     await waitComplete(n.page, 60000);

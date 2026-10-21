@@ -12,8 +12,8 @@
 //   - guards every place the renderer's code runs from the engine (guardRenderer): its per-frame function, which runs inside
 //     the engine's gsplat `frame:ready` event (an exception there would break the engine's update on every frame), the passes
 //     it adds to the camera's render graph (bind, raster, taa) and its `frameend` handler. A throw switches the renderer off
-//     for good, hands the splats back and says so once (`failed`, `failedAt`); a throw inside the render graph hands back
-//     at that frame's end, never in the middle of the render;
+//     for good, hands the splats back and says so once (`failed`, `failedAt`); a throw inside the engine's frame (the frame
+//     function or a pass) hands back at that frame's end, never in the middle of the update or the render;
 //   - never asks the app for extra frames (`requestFrame` is a no-op): this page draws every frame, and a request would
 //     override the latency guard's deliberate hold (renderer.ts onFrameRender).
 // This file and the vendored folder are the first code of ours that reaches the engine's internal gsplat classes
@@ -87,8 +87,13 @@ export interface AccumStats {
 /** Where the renderer's code runs from the engine: its frame function, the three kinds of passes it adds to the camera, its frameend handler. */
 export type GuardSite = 'frame' | 'bind' | 'raster' | 'sets' | 'taa' | 'frameend';
 
-/** A throw inside the render graph (these sites) must not tear the renderer down while the engine is rendering with it. */
-const DURING_RENDER: readonly GuardSite[] = ['bind', 'raster', 'sets', 'taa'];
+/**
+ * A throw at these sites must not tear the renderer down on the spot: the engine is in the middle of a frame (the frame function runs inside the engine's
+ * gsplat update, the passes inside its render) and is using the renderer's buffers, targets and the work buffer it patched. The hand-back waits for the
+ * frame's end. Found by the real-page fault test (acceptance V9): handing back from inside the frame function gave 5 WebGPU validation errors and a page error.
+ * A throw in the frameend handler is already at the frame's end.
+ */
+const DEFER_TO_FRAME_END: readonly GuardSite[] = ['frame', 'bind', 'raster', 'sets', 'taa'];
 
 export interface GuardHooks {
     /** a guarded function threw: it is not rethrown, the engine goes on */
@@ -283,8 +288,9 @@ export class AccumDrawing {
 
     /**
      * The renderer threw: it is off for good (`failed`), the splats go back to the engine's renderer and the caller is told once.
-     * From inside the render graph (a pass) the hand-back waits for the frame's end: detaching the passes and freeing the targets
-     * while the engine is drawing with them would turn one throw into several; until then every guarded function does nothing.
+     * From inside the engine's frame (the frame function or a pass) the hand-back waits for the frame's end: detaching the passes,
+     * freeing the targets and giving the work buffer back while the engine is updating or drawing with them would turn one throw into
+     * several; until then every guarded function does nothing.
      */
     private fail(e: unknown, site: GuardSite | 'start' = 'start'): void {
         if (this.failed !== null) return;
@@ -304,7 +310,7 @@ export class AccumDrawing {
             this.o.onFail?.();
         };
         const app = this.o.app as unknown as { once?: (name: string, cb: () => void) => unknown };
-        if (site !== 'start' && DURING_RENDER.includes(site) && typeof app.once === 'function') {
+        if (site !== 'start' && DEFER_TO_FRAME_END.includes(site) && typeof app.once === 'function') {
             app.once('frameend', handBack);
             // the frame may never end (a throw elsewhere in the engine's tick): hand back anyway
             setTimeout(handBack, 250);
