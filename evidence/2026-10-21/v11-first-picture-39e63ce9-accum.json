@@ -1,0 +1,105 @@
+{
+  "site": "http://127.0.0.1:5611",
+  "scene": "39e63ce9",
+  "impl": "accum",
+  "budget": "4",
+  "size": [
+    1280,
+    720
+  ],
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.85",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "console": [
+    "error: Failed to load resource: the server responded with a status of 403 ()",
+    "error: Failed to load resource: the server responded with a status of 403 ()",
+    "error: Failed to load resource: the server responded with a status of 403 ()",
+    "error: Failed to load resource: the server responded with a status of 403 ()",
+    "error: Failed to load resource: the server responded with a status of 403 ()",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+  ],
+  "drawing": {
+    "scene": "39e63ce9",
+    "mode": "auto",
+    "budgetSetting": null,
+    "request": {
+      "budgetM": 4,
+      "stochastic": true
+    },
+    "catalogue": null,
+    "stochastic": true,
+    "budgetM": 4,
+    "from": {
+      "stochastic": "link",
+      "budget": "link"
+    },
+    "note": null,
+    "engineStochastic": true,
+    "engineBudgetM": 4,
+    "handheld": false,
+    "mobile": false,
+    "webgpu": true,
+    "class": "desktop-strong",
+    "classAuto": "desktop-strong",
+    "classReasons": [
+      "strong"
+    ],
+    "classPicked": false,
+    "renderScale": 1,
+    "presetRenderScale": 1,
+    "owner": null,
+    "held": false,
+    "impl": "accum",
+    "plan": {
+      "draw": "accum",
+      "why": "ok"
+    },
+    "drawn": "accum",
+    "accumMissing": []
+  },
+  "accumNow": {
+    "active": true,
+    "taaActive": true,
+    "culling": true,
+    "cullSuspended": false,
+    "gpuBytes": 163005076,
+    "activeSplats": 3804374,
+    "variant": {
+      "compose": "blend",
+      "cull": "auto",
+      "contribution": 0,
+      "coverage": "pixel",
+      "jitter": 0,
+      "strata": 4,
+      "interleaveArea": 0,
+      "taa": "on",
+      "taaMax": 256,
+      "taaMoveMax": 16,
+      "taaClip": 1.25,
+      "taaReproj": "sample",
+      "taaMotion": 4,
+      "taaParallax": "on",
+      "taaSharp": 16,
+      "taaHistory": "auto",
+      "taaSharpen": 0,
+      "taaDebug": 0,
+      "warp": "auto",
+      "stereo": "shared",
+      "units": "engine"
+    },
+    "failed": null
+  },
+  "drawn": "accum",
+  "plan": {
+    "draw": "accum",
+    "why": "ok"
+  },
+  "stochastic": true,
+  "fps": 30,
+  "gpuErrors": [],
+  "sceneComplete": true,
+  "loadedMs": 12493
+}
