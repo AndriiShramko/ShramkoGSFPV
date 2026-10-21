@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-21T14:18:27.222Z",
-    "gitHead": "359b4dd",
+    "date": "2026-10-21T14:45:22.451Z",
+    "gitHead": "5324cfa",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -73,12 +73,12 @@
       "control": false
     },
     {
-      "name": "V2 at rest the picture converges to the sorted one: after 256 frames every view is above 33 dB (39.18, 40.95, 37.44, 36.01) and within 1.5 levels of the sorted mean colour (0.16, 0.31, 0.14, 0.26)",
+      "name": "V2 at rest the picture converges to the sorted one: after 256 frames every view is above 33 dB (39.18, 40.95, 37.44, 36.02) and within 1.5 levels of the sorted mean colour (0.16, 0.31, 0.14, 0.26)",
       "ok": true,
       "control": false
     },
     {
-      "name": "V2 it gets there: each step of the history is better than the one before (view 1: 21.52 < 24.5 < 27.4 < 30.18 < 32.78 < 35.06 < 36.96 < 38.3 < 39.18)",
+      "name": "V2 it gets there: each step of the history is better than the one before (view 1: 21.52 < 24.49 < 27.4 < 30.18 < 32.78 < 35.06 < 36.96 < 38.3 < 39.18)",
       "ok": true,
       "control": false
     },
@@ -88,7 +88,7 @@
       "control": true
     },
     {
-      "name": "V2 control: the harness sorted against sorted reads silence (60 dB or more, 70 to 100 in the bench: the GPU sort is not bit-exact) (84.51, 77.75, 82.17, 86.44 dB)",
+      "name": "V2 control: the harness sorted against sorted reads silence (60 dB or more, 70 to 100 in the bench: the GPU sort is not bit-exact) (84.22, 77.98, 82.68, 81.79 dB)",
       "ok": true,
       "control": true
     },
@@ -148,7 +148,7 @@
       "control": false
     },
     {
-      "name": "V5 the frame the picture is made from is the sorted picture of the view (87.28 dB from a hand-made sorted frame, 40 dB or more)",
+      "name": "V5 the frame the picture is made from is the sorted picture of the view (86.19 dB from a hand-made sorted frame, 40 dB or more)",
       "ok": true,
       "control": false
     },
@@ -193,7 +193,7 @@
       "control": false
     },
     {
-      "name": "V7 video memory does not grow across the switches (615, 433, 846, 366 MiB; the last scene is the first one again and may differ by 15 %)",
+      "name": "V7 video memory does not grow across the switches: 355 MiB with the first scene, then 613, 433, 821, 355 MiB; the last scene is the first one again and ends within 15 % + 50 MiB of where it began (the engine frees a replaced scan's textures lazily, so the middle numbers wander)",
       "ok": true,
       "control": false
     },
@@ -394,9 +394,9 @@
       "budgetM": 4,
       "impl0": "accum",
       "timingsMs": {
-        "q1": 51791,
-        "q3": 100475,
-        "q4": 120244
+        "q1": 51578,
+        "q3": 101827,
+        "q4": 120803
       },
       "stable": true,
       "sceneComplete": true,
@@ -405,7 +405,7 @@
           "yaw": 0,
           "drawnM": 3.8,
           "SvS": {
-            "psnr": 84.51,
+            "psnr": 84.22,
             "ssim": 1
           },
           "E": {
@@ -413,7 +413,7 @@
             "ssim": 0.676,
             "shift": [
               -1.81,
-              -1.77,
+              -1.78,
               -1.02
             ]
           },
@@ -433,7 +433,7 @@
               "ssim": 0.71
             },
             "2": {
-              "psnr": 24.5,
+              "psnr": 24.49,
               "ssim": 0.779
             },
             "4": {
@@ -476,7 +476,7 @@
           "yaw": 90,
           "drawnM": 3.8,
           "SvS": {
-            "psnr": 77.75,
+            "psnr": 77.98,
             "ssim": 1
           },
           "E": {
@@ -485,7 +485,7 @@
             "shift": [
               0.18,
               -0.74,
-              -1.29
+              -1.28
             ]
           },
           "A0": {
@@ -547,7 +547,7 @@
           "yaw": 180,
           "drawnM": 3.8,
           "SvS": {
-            "psnr": 82.17,
+            "psnr": 82.68,
             "ssim": 1
           },
           "E": {
@@ -599,7 +599,7 @@
               "ssim": 0.926
             },
             "128": {
-              "psnr": 36.55,
+              "psnr": 36.56,
               "ssim": 0.952
             },
             "256": {
@@ -618,7 +618,7 @@
           "yaw": 270,
           "drawnM": 3.8,
           "SvS": {
-            "psnr": 86.44,
+            "psnr": 81.79,
             "ssim": 1
           },
           "E": {
@@ -636,7 +636,7 @@
               "ssim": 0.83
             },
             "f64": {
-              "psnr": 28.23,
+              "psnr": 28.22,
               "ssim": 0.83
             }
           },
@@ -674,7 +674,7 @@
               "ssim": 0.964
             },
             "256": {
-              "psnr": 36.01,
+              "psnr": 36.02,
               "ssim": 0.973
             }
           },
@@ -759,7 +759,7 @@
         "flipFrames": 12,
         "afterFrames": 64,
         "floor": {
-          "j1Psnr": 84.81,
+          "j1Psnr": 82.17,
           "ghost48": 0
         },
         "E": {
@@ -901,10 +901,10 @@
             ]
           },
           "lead": {
-            "1": 16.33,
+            "1": 16.34,
             "2": 16.71,
             "3": 17.16,
-            "4": 17.56,
+            "4": 17.57,
             "8": 18.87
           },
           "ghost48": 0.004,
@@ -1084,7 +1084,7 @@
       "shareState": {
         "entry": "top",
         "kind": "flight",
-        "url": "http://127.0.0.1:5765/en/fly/?scene=39e63ce9&stochastic",
+        "url": "http://127.0.0.1:5759/en/fly/?scene=39e63ce9&stochastic",
         "text": "I just flew an FPV drone through Modlinek Villa \u2014 red room and bathroom \u2014 a real 3D scan, right in the browser. Free, and your own radio works. Can you fly this line?",
         "picture": true,
         "video": "none",
@@ -1092,14 +1092,14 @@
         "canShareFiles": false,
         "shared": ""
       },
-      "psnrFrameVsSorted": 87.28,
+      "psnrFrameVsSorted": 86.19,
       "after": "accum",
       "gpuErrors": [],
       "errors": []
     },
     "V6": {
       "bytes": {
-        "new": 11367055,
+        "new": 11367113,
         "base": 11229460
       },
       "eval": {
@@ -1169,7 +1169,7 @@
           "active": true,
           "splatsM": 4,
           "taa": true,
-          "vramMiB": 615,
+          "vramMiB": 613,
           "gpuErrors": 0
         },
         {
@@ -1189,7 +1189,7 @@
           "active": true,
           "splatsM": 3.9,
           "taa": true,
-          "vramMiB": 846,
+          "vramMiB": 821,
           "gpuErrors": 0
         },
         {
@@ -1199,11 +1199,12 @@
           "active": true,
           "splatsM": 3.8,
           "taa": true,
-          "vramMiB": 366,
+          "vramMiB": 355,
           "gpuErrors": 0
         }
       ],
       "pageErrors": [],
+      "vramStartMiB": 355,
       "renderOff": {
         "made": true,
         "scan": false,
