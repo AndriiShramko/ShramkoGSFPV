@@ -23,6 +23,7 @@
   "drawing.on": "Стохастическая отрисовка (SuperSplat), {budget} млн сплатов · Настройки → Экран",
   "drawing.line": "Рендер: {mode} ({modeFrom}) · бюджет {budget} млн сплатов ({budgetFrom}) · {device}",
   "drawing.mode.stochastic": "стохастический",
+  "drawing.mode.accumulating": "стохастический, с накоплением",
   "drawing.mode.sorted": "сортированный",
   "drawing.from.link": "ссылка",
   "drawing.from.setting": "ваша настройка",

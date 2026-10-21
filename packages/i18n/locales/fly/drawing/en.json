@@ -23,6 +23,7 @@
   "drawing.on": "Stochastic drawing (SuperSplat), {budget} M splats · Settings → Display",
   "drawing.line": "Render: {mode} ({modeFrom}) · budget {budget} M splats ({budgetFrom}) · {device}",
   "drawing.mode.stochastic": "stochastic",
+  "drawing.mode.accumulating": "stochastic, accumulating",
   "drawing.mode.sorted": "sorted",
   "drawing.from.link": "the link",
   "drawing.from.setting": "your setting",

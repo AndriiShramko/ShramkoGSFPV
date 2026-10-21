@@ -23,6 +23,7 @@
   "drawing.on": "Dibujo estocástico (SuperSplat), {budget} M de splats · Ajustes → Pantalla",
   "drawing.line": "Renderizado: {mode} ({modeFrom}) · presupuesto {budget} M de splats ({budgetFrom}) · {device}",
   "drawing.mode.stochastic": "estocástico",
+  "drawing.mode.accumulating": "estocástico, con acumulación",
   "drawing.mode.sorted": "ordenado",
   "drawing.from.link": "el enlace",
   "drawing.from.setting": "tu ajuste",

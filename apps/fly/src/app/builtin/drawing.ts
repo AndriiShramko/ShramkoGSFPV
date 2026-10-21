@@ -39,7 +39,10 @@ function apply(ctx: FlightContext, announce: boolean): void {
         stochastic: d.stochastic, budgetM: d.budgetM, from: d.from, note: d.note, engineStochastic: engine, engineBudgetM: r.splatBudgetMillions, handheld, mobile, webgpu: r.isWebGPU,
         // v0.10: the class this device is, what the browser said (auto), whether the pilot named it, the preset's resolution cap, the owner's table, the recording hold
         class: d.deviceClass, classAuto: dev.auto.cls, classReasons: dev.auto.reasons, classPicked: dev.picked, renderScale: d.renderScale, presetRenderScale: ctx.quality.presetRenderScale,
-        owner: drawingDefaults() ?? null, held: clean, gpu: r.gpuInfo
+        owner: drawingDefaults() ?? null, held: clean, gpu: r.gpuInfo,
+        // v0.11: which code draws stochastic (the accumulating SuperSplat renderer or the engine's own dither), what planStochastic
+        // decided and why, what draws now, what the accumulating renderer lacks on this engine, and its live numbers
+        impl: r.stochasticImpl, plan: r.plan, drawn: r.drawn, accumMissing: r.accumMissing(), accum: () => r.accumStats()
     };
     if (!announce) return;
     // the note names who asked and what was refused (render-pc DrawingNote); a budget note quotes both numbers

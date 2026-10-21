@@ -23,6 +23,7 @@
   "drawing.on": "Rysowanie stochastyczne (SuperSplat), {budget} mln splatów · Ustawienia → Ekran",
   "drawing.line": "Renderowanie: {mode} ({modeFrom}) · budżet {budget} mln splatów ({budgetFrom}) · {device}",
   "drawing.mode.stochastic": "stochastyczne",
+  "drawing.mode.accumulating": "stochastyczne, z akumulacją",
   "drawing.mode.sorted": "sortowane",
   "drawing.from.link": "link",
   "drawing.from.setting": "twoje ustawienie",

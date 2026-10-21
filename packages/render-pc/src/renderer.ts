@@ -1,6 +1,9 @@
 // Splat renderer on the PlayCanvas engine directly (no viewer wrapper): our camera is never
-// overwritten, our render scale really changes the backbuffer, and nothing private is used.
-// Decision record: docs/decisions.md (D18, probe A1).
+// overwritten, our render scale really changes the backbuffer, and nothing private is used, with ONE exception since
+// v0.11: the accumulating stochastic drawing (accum.ts, the vendored SuperSplat renderer) reads the engine's internal
+// gsplat classes (gsplatDirector, the manager's world, indirect draw slots). It runs only after accum.ts accumMissing found
+// every member it drives, and only where stochastic is asked for; everything else here uses the public engine API.
+// Decision record: docs/decisions.md (D18, probe A1; v0.11: D84 and on).
 
 import {
     AppBase, AppOptions, Asset, Entity, Color, StandardMaterial, Vec3, Quat,
@@ -14,6 +17,10 @@ import {
 import type { GraphicsDevice, GSplatComponent } from 'playcanvas';
 import { LatencyGuard, inputToScreenMs } from './governor';
 import { applyDrawing, DEFAULT_BUDGET_M } from './drawing';
+import { AccumDrawing, accumMissing, worldLayer } from './accum';
+import type { AccumStats } from './accum';
+import { DEFAULT_STOCHASTIC_IMPL, planStochastic } from './accum-policy';
+import type { DrawPlan, StochasticImpl } from './accum-policy';
 import type { GpuInfo } from './device-class';
 import { BrokenFileError, lodMetaProblem, lodMode } from './lod';
 import type { LodState } from './lod';
@@ -59,6 +66,10 @@ export interface RendererOptions {
      * afterwards with drawing.ts drawOnDevice (setSplatBudgetMillions, setStochastic)
      */
     splatBudgetMillions?: number;
+    /** which code draws "stochastic": the accumulating SuperSplat renderer (default) or the engine's own dither (the bench's control) */
+    stochasticImpl?: StochasticImpl;
+    /** upstream's `key:value,key:value` switches for the accumulating renderer (a test hook; empty = upstream's defaults) */
+    accumVariant?: string;
 }
 
 export const TONEMAPS: Record<string, number> = {
@@ -221,11 +232,22 @@ export class SplatRenderer {
     private contentKind: 'lod-meta' | 'meta' | null = null;
     /** engine frame in which the scan's entity was made: frames up to it say nothing about this scan (firstView) */
     private splatMadeAt = -1;
+    /** which code draws "stochastic" (accum-policy.ts); the bench sets it to 'engine' for its control arm */
+    stochasticImpl: StochasticImpl;
+    /** the accumulating renderer's adapter, made the first time it is wanted (accum.ts) */
+    private accum: AccumDrawing | null = null;
+    private accumVariant: string;
+    /** the last setStochastic request, so a failed accumulating renderer can be replaced by the engine's own dither */
+    private wantStochastic = false;
+    /** what the last setStochastic decided (the test hook, F3) */
+    plan: DrawPlan = { draw: 'sorted', why: 'not-asked' };
 
     private constructor(canvas: HTMLCanvasElement, device: GraphicsDevice, opts: RendererOptions) {
         this.canvas = canvas;
         this.device = device;
         this.renderScale = opts.renderScale ?? 1;
+        this.stochasticImpl = opts.stochasticImpl ?? DEFAULT_STOCHASTIC_IMPL;
+        this.accumVariant = opts.accumVariant ?? '';
         const app = new AppBase(canvas);
         const ao = new AppOptions();
         ao.graphicsDevice = device;
@@ -699,18 +721,70 @@ export class SplatRenderer {
     }
 
     /**
-     * SuperSplat's stochastic drawing on or off (drawing.ts resolveDrawing decides; the engine's
-     * app.scene.gsplat.stochastic: no sorting, dithered coverage, opaque blending, depth writes). The
-     * engine takes it only in its GPU-sort renderer (WebGPU); elsewhere it stays off. Returns what the
-     * engine now draws with.
+     * The stochastic drawing on or off (drawing.ts resolveDrawing decides; accum-policy.ts planStochastic picks the code).
+     * No sorting, each splat kept per pixel with the probability of its opacity, opaque blending, depth writes. Only a
+     * GPU-sort renderer (WebGPU) has it; elsewhere it stays off. On: the accumulating SuperSplat renderer (accum.ts: its
+     * temporal history averages the noise away) wherever this engine and device can run it, else the engine's own dither
+     * (app.scene.gsplat.stochastic, v0.10). Off: the engine's sorted drawing (the accumulating renderer hands the splats
+     * back). Returns whether a stochastic drawing is now on.
      */
     setStochastic(on: boolean): boolean {
-        return applyDrawing(this.app.scene.gsplat, on, this.currentRenderer === GSPLAT_RENDERER_RASTER_GPU_SORT);
+        this.wantStochastic = on;
+        const g = this.app.scene.gsplat;
+        const gpuSort = this.currentRenderer === GSPLAT_RENDERER_RASTER_GPU_SORT;
+        const failed = this.accum?.failed != null;
+        const wantsAccum = on && gpuSort && this.stochasticImpl === 'accum' && !failed;
+        const missing = wantsAccum ? this.accumMissing() : [];
+        let plan = planStochastic({ on, gpuSort, impl: this.stochasticImpl, missing, failed });
+        if (plan.draw === 'accum') {
+            if (this.accumDrawing().enable()) {
+                this.plan = plan;
+                // the accumulating renderer owns the splats: the engine's own dither stays off
+                applyDrawing(g, false, gpuSort);
+                return true;
+            }
+            plan = { draw: 'engine', why: 'failed' };
+        }
+        this.plan = plan;
+        this.accum?.disable();
+        return applyDrawing(g, plan.draw === 'engine', gpuSort);
     }
 
-    /** The engine draws stochastic now (what the next frame uses). */
+    /** A stochastic drawing is on now: the accumulating renderer's or the engine's own. */
     get stochastic(): boolean {
-        return this.app.scene.gsplat.stochastic === true;
+        return this.accum?.active === true || this.app.scene.gsplat.stochastic === true;
+    }
+
+    /** What draws the scan now (the test hook, F3): live, so a renderer that failed in a frame is seen as it is. */
+    get drawn(): 'sorted' | 'engine' | 'accum' {
+        return this.accum?.active ? 'accum' : this.app.scene.gsplat.stochastic === true ? 'engine' : 'sorted';
+    }
+
+    /** The accumulating renderer's adapter, for the benches (null until stochastic was first wanted). */
+    get accumulating(): AccumDrawing | null {
+        return this.accum;
+    }
+
+    /** What the accumulating renderer reports (null before it was first wanted). */
+    accumStats(): AccumStats | null {
+        return this.accum ? this.accum.stats() : null;
+    }
+
+    /** The engine members the accumulating renderer needs that are missing here (empty: it can run). */
+    accumMissing(): string[] {
+        return accumMissing(this.app, this.camera.camera, this.app.scene.gsplat.splatBudget);
+    }
+
+    private accumDrawing(): AccumDrawing {
+        if (!this.accum) {
+            const layer = worldLayer(this.app);
+            if (!layer || !this.camera.camera) throw new Error('accumulating drawing needs the camera and the World layer');
+            this.accum = new AccumDrawing(this.app, this.camera.camera, layer, this.accumVariant, () => {
+                // it threw inside a frame and handed the splats back: put the engine's own dither where the pilot asked for stochastic
+                queueMicrotask(() => { if (!this.destroyed && this.wantStochastic) this.setStochastic(true); });
+            });
+        }
+        return this.accum;
     }
 
     /** Camera at the body pose, tilted up by the FPV camera uptilt. Quaternion (w, x, y, z). */
@@ -985,6 +1059,8 @@ export class SplatRenderer {
         this.latProbe?.node.remove();
         document.removeEventListener('visibilitychange', this.onVisibility);
         this.ro.disconnect();
+        this.accum?.destroy();
+        this.accum = null;
         this.app.destroy();
     }
 }

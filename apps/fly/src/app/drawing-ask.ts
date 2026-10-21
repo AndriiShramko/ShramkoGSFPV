@@ -85,10 +85,12 @@ export function askFor(prefs: PrefsReader, scene: AskedScene): DrawingAsk {
  * The F3 line about the drawing: what it is and who decided it ("Render: stochastic (this device) · budget
  * 8 M splats (the link)"), the answer to "is it on, and why" that the owner could not get in v0.7.
  */
-export function drawingLine(d: Drawing, say: (key: string, vars?: Record<string, string | number>) => string, held = false): string {
-    // a recording (REC, auto-record) draws sorted while it runs (app/clean-draw.ts): the line says so, not what Auto would draw
+export function drawingLine(d: Drawing, say: (key: string, vars?: Record<string, string | number>) => string, held = false, drawn?: 'sorted' | 'engine' | 'accum'): string {
+    // a recording (REC, auto-record) draws sorted while it runs (app/clean-draw.ts): the line says so, not what Auto would draw.
+    // `drawn` (the renderer's live answer, v0.11): the accumulating renderer says so; an engine that fell back to its own dither is plain "stochastic"
+    const stochastic = d.stochastic && !held;
     return say('drawing.line', {
-        mode: say(`drawing.mode.${d.stochastic && !held ? 'stochastic' : 'sorted'}`),
+        mode: say(`drawing.mode.${!stochastic ? 'sorted' : drawn === 'accum' ? 'accumulating' : 'stochastic'}`),
         modeFrom: say(held && d.stochastic ? 'drawing.from.rec' : `drawing.from.${d.from.stochastic}`),
         budget: Math.round(d.budgetM * 100) / 100,
         budgetFrom: say(`drawing.from.${d.from.budget}`),
