@@ -9,6 +9,7 @@
 //   q5  hover (0.5 px sinusoid): flicker and per-pixel temporal standard deviation
 //   k1  colour at 256 frames per tone map, and the control (a wrong output transform)
 //   k2  composition: a mesh at five depths, the background colour, the scene scale
+//   tune  one knob set of the accumulation at a time (VARIANTS), scored on cruise, agile (60 and 30 Hz step) and flip-and-stop
 // The harness control (v10-r's engine numbers must reproduce) is computed here from evidence/2026-10-20/v10-r-quality.json.
 // Draws the scan: GPU lock C:/dev/.gpu-lock (taken here, waited for in-process).
 //   SITE=http://127.0.0.1:5611 SCENES=39e63ce9 MODES=q1,q2,q3,q4,q5,k1,k2 BUDGET=4 npx tsx src/v11-s-accum.ts   (from tools/bench)
@@ -26,6 +27,8 @@ const W = Number(process.env.W ?? 1280);
 const H = Number(process.env.H ?? 720);
 const FRAMES = Number(process.env.FRAMES ?? 48);
 const PICS = process.env.PICS !== '0';
+// mode tune: upstream's `key:value,key:value` switch strings, separated by ';' ('default' = upstream's defaults)
+const VARIANTS = (process.env.VARIANTS ?? 'default').split(';').map((v) => (v === 'default' ? '' : v));
 const TAG = process.env.TAG ?? 'main';
 const LOCK = 'C:/dev/.gpu-lock';
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -71,7 +74,7 @@ try {
         while (Date.now() - t0 < 90000 && !(await page.evaluate('window.__gsfpv.session.renderer.sceneComplete'))) await sleep(500);
         await sleep(2000);
         try {
-            const res = (await page.evaluate(`(${PAGE})(${JSON.stringify({ W, H, frames: FRAMES, pics: PICS, modes: MODES })})`)) as Any;
+            const res = (await page.evaluate(`(${PAGE})(${JSON.stringify({ W, H, frames: FRAMES, pics: PICS, modes: MODES, variants: VARIANTS })})`)) as Any;
             const pics = res.pics as { name: string; b64: string; jpg?: boolean }[];
             delete res.pics;
             if (PICS && pics.length) {
@@ -87,6 +90,7 @@ try {
                 q2: res.q2 && { E: res.q2.E.psnrMean, A: res.q2.A.psnrMean, A0: res.q2.A0.psnrMean, flickS: res.q2.S.flicker, flickE: res.q2.E.flicker, flickA: res.q2.A.flicker },
                 q3: res.q3 && { s1A: res.q3.step1.A.psnrMean, s1E: res.q3.step1.E.psnrMean, s2A: res.q3.step2.A.psnrMean, s2E: res.q3.step2.E.psnrMean },
                 q4: res.q4 && { A: res.q4.A.after, lead: res.q4.A.lead, ghostA: res.q4.A.ghost48, ghostE: res.q4.E.ghost48, ghostAN: res.q4.AN.ghost48 },
+                tune: res.tune && res.tune.map((t: Any) => `${t.variant || 'default'}: cruise ${t.cruise.psnrMean}/${t.cruise.flickerExcessPct}% agile1 ${t.agile1.psnrMean} agile2 ${t.agile2.psnrMean} flip j1 ${t.flip.j1} j16 ${t.flip.j16} ghost ${t.flip.ghost48} lag ${t.flip.lagMin}`),
                 k1: res.k1, k2: res.k2, gpuErrors: res.gpuErrors.length
             }));
         } catch (e) {

@@ -1,0 +1,756 @@
+{
+  "site": "http://127.0.0.1:5611",
+  "size": [
+    1280,
+    720
+  ],
+  "budgetM": 4,
+  "modes": [
+    "q1",
+    "q2",
+    "q3",
+    "q4",
+    "q5",
+    "k1",
+    "k2"
+  ],
+  "frames": 48,
+  "scenes": {
+    "2f1ddf5f": {
+      "loadedMs": 280420,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()"
+      ],
+      "size": [
+        1280,
+        720
+      ],
+      "budgetM": 4,
+      "impl0": "accum",
+      "timingsMs": {
+        "q1": 61677,
+        "q2": 79110,
+        "q3": 128495,
+        "q5": 147270,
+        "q4": 169310,
+        "k1": 207940,
+        "k2": 256436
+      },
+      "stable": true,
+      "sceneComplete": true,
+      "q1": [
+        {
+          "yaw": 0,
+          "drawnM": 3.9,
+          "SvS": {
+            "psnr": 85.93,
+            "ssim": 1
+          },
+          "E": {
+            "psnr": 18.37,
+            "ssim": 0.629,
+            "shift": [
+              -0.85,
+              -0.79,
+              -0.54
+            ]
+          },
+          "A0": {
+            "f1": {
+              "psnr": 27.01,
+              "ssim": 0.853
+            },
+            "f64": {
+              "psnr": 27,
+              "ssim": 0.853
+            }
+          },
+          "A": {
+            "1": {
+              "psnr": 19.21,
+              "ssim": 0.676
+            },
+            "2": {
+              "psnr": 21.89,
+              "ssim": 0.737
+            },
+            "4": {
+              "psnr": 24.48,
+              "ssim": 0.802
+            },
+            "8": {
+              "psnr": 26.81,
+              "ssim": 0.858
+            },
+            "16": {
+              "psnr": 28.79,
+              "ssim": 0.902
+            },
+            "32": {
+              "psnr": 30.3,
+              "ssim": 0.932
+            },
+            "64": {
+              "psnr": 31.31,
+              "ssim": 0.95
+            },
+            "128": {
+              "psnr": 31.92,
+              "ssim": 0.96
+            },
+            "256": {
+              "psnr": 32.26,
+              "ssim": 0.966
+            }
+          },
+          "shift256": [
+            -0.43,
+            -0.49,
+            -0.48
+          ],
+          "framesTo30dB": 32
+        },
+        {
+          "yaw": 90,
+          "drawnM": 3.9,
+          "SvS": {
+            "psnr": 90.7,
+            "ssim": 1
+          },
+          "E": {
+            "psnr": 17.76,
+            "ssim": 0.636,
+            "shift": [
+              -1.55,
+              -1.23,
+              -0.87
+            ]
+          },
+          "A0": {
+            "f1": {
+              "psnr": 26.8,
+              "ssim": 0.87
+            },
+            "f64": {
+              "psnr": 26.8,
+              "ssim": 0.869
+            }
+          },
+          "A": {
+            "1": {
+              "psnr": 19.02,
+              "ssim": 0.682
+            },
+            "2": {
+              "psnr": 21.73,
+              "ssim": 0.745
+            },
+            "4": {
+              "psnr": 24.32,
+              "ssim": 0.808
+            },
+            "8": {
+              "psnr": 26.62,
+              "ssim": 0.863
+            },
+            "16": {
+              "psnr": 28.54,
+              "ssim": 0.905
+            },
+            "32": {
+              "psnr": 30.03,
+              "ssim": 0.933
+            },
+            "64": {
+              "psnr": 31,
+              "ssim": 0.951
+            },
+            "128": {
+              "psnr": 31.57,
+              "ssim": 0.96
+            },
+            "256": {
+              "psnr": 31.91,
+              "ssim": 0.965
+            }
+          },
+          "shift256": [
+            -0.11,
+            -0.27,
+            -0.28
+          ],
+          "framesTo30dB": 32
+        },
+        {
+          "yaw": 180,
+          "drawnM": 3.9,
+          "SvS": {
+            "psnr": 80.46,
+            "ssim": 1
+          },
+          "E": {
+            "psnr": 18.09,
+            "ssim": 0.632,
+            "shift": [
+              -1.15,
+              -0.8,
+              -0.53
+            ]
+          },
+          "A0": {
+            "f1": {
+              "psnr": 26.24,
+              "ssim": 0.851
+            },
+            "f64": {
+              "psnr": 26.23,
+              "ssim": 0.851
+            }
+          },
+          "A": {
+            "1": {
+              "psnr": 19.29,
+              "ssim": 0.682
+            },
+            "2": {
+              "psnr": 21.96,
+              "ssim": 0.749
+            },
+            "4": {
+              "psnr": 24.44,
+              "ssim": 0.812
+            },
+            "8": {
+              "psnr": 26.64,
+              "ssim": 0.865
+            },
+            "16": {
+              "psnr": 28.43,
+              "ssim": 0.904
+            },
+            "32": {
+              "psnr": 29.69,
+              "ssim": 0.929
+            },
+            "64": {
+              "psnr": 30.51,
+              "ssim": 0.944
+            },
+            "128": {
+              "psnr": 30.97,
+              "ssim": 0.952
+            },
+            "256": {
+              "psnr": 31.24,
+              "ssim": 0.956
+            }
+          },
+          "shift256": [
+            -0.41,
+            -0.5,
+            -0.44
+          ],
+          "framesTo30dB": 64
+        },
+        {
+          "yaw": 270,
+          "drawnM": 3.9,
+          "SvS": {
+            "psnr": 83.66,
+            "ssim": 1
+          },
+          "E": {
+            "psnr": 18.92,
+            "ssim": 0.645,
+            "shift": [
+              0.24,
+              0.17,
+              0.18
+            ]
+          },
+          "A0": {
+            "f1": {
+              "psnr": 26.22,
+              "ssim": 0.842
+            },
+            "f64": {
+              "psnr": 26.22,
+              "ssim": 0.842
+            }
+          },
+          "A": {
+            "1": {
+              "psnr": 19.82,
+              "ssim": 0.691
+            },
+            "2": {
+              "psnr": 22.38,
+              "ssim": 0.755
+            },
+            "4": {
+              "psnr": 24.74,
+              "ssim": 0.816
+            },
+            "8": {
+              "psnr": 26.84,
+              "ssim": 0.867
+            },
+            "16": {
+              "psnr": 28.49,
+              "ssim": 0.904
+            },
+            "32": {
+              "psnr": 29.65,
+              "ssim": 0.929
+            },
+            "64": {
+              "psnr": 30.38,
+              "ssim": 0.944
+            },
+            "128": {
+              "psnr": 30.79,
+              "ssim": 0.952
+            },
+            "256": {
+              "psnr": 31.02,
+              "ssim": 0.956
+            }
+          },
+          "shift256": [
+            -0.1,
+            -0.32,
+            -0.37
+          ],
+          "framesTo30dB": 64
+        }
+      ],
+      "drawnM": 3.9,
+      "q2": {
+        "frames": 48,
+        "S": {
+          "flicker": 14.63
+        },
+        "E": {
+          "psnrMean": 18.23,
+          "psnrMin": 17.77,
+          "ssimMean": 0.639,
+          "ssimMin": 0.63,
+          "below20": 1,
+          "flicker": 21.75,
+          "flickerExcessPct": 48.68
+        },
+        "A": {
+          "psnrMean": 29.7,
+          "psnrMin": 28.69,
+          "ssimMean": 0.928,
+          "ssimMin": 0.917,
+          "below20": 0,
+          "flicker": 14.03,
+          "flickerExcessPct": -4.09
+        },
+        "A0": {
+          "psnrMean": 26.75,
+          "psnrMin": 26.15,
+          "ssimMean": 0.856,
+          "ssimMin": 0.847,
+          "below20": 0,
+          "flicker": 14.76,
+          "flickerExcessPct": 0.91
+        }
+      },
+      "q3": {
+        "step1": {
+          "frames": 90,
+          "S": {
+            "flicker": 26.02
+          },
+          "E": {
+            "psnrMean": 18.06,
+            "psnrMin": 17.09,
+            "ssimMean": 0.624,
+            "ssimMin": 0.597,
+            "below20": 1,
+            "flicker": 32.21,
+            "flickerExcessPct": 23.78
+          },
+          "A": {
+            "psnrMean": 27.91,
+            "psnrMin": 26.44,
+            "ssimMean": 0.892,
+            "ssimMin": 0.855,
+            "below20": 0,
+            "flicker": 25.78,
+            "flickerExcessPct": -0.94
+          },
+          "AN": {
+            "psnrMean": 27.71,
+            "psnrMin": 26.13,
+            "ssimMean": 0.888,
+            "ssimMin": 0.856,
+            "below20": 0,
+            "flicker": 25.48,
+            "flickerExcessPct": -2.1
+          }
+        },
+        "step2": {
+          "frames": 90,
+          "S": {
+            "flicker": 31.31
+          },
+          "E": {
+            "psnrMean": 18.02,
+            "psnrMin": 17.12,
+            "ssimMean": 0.619,
+            "ssimMin": 0.593,
+            "below20": 1,
+            "flicker": 37.16,
+            "flickerExcessPct": 18.68
+          },
+          "A": {
+            "psnrMean": 27.15,
+            "psnrMin": 24.52,
+            "ssimMean": 0.87,
+            "ssimMin": 0.814,
+            "below20": 0,
+            "flicker": 31.29,
+            "flickerExcessPct": -0.07
+          },
+          "AN": {
+            "psnrMean": 27.31,
+            "psnrMin": 25.71,
+            "ssimMean": 0.875,
+            "ssimMin": 0.835,
+            "below20": 0,
+            "flicker": 31.22,
+            "flickerExcessPct": -0.28
+          }
+        }
+      },
+      "q5": {
+        "frames": 90,
+        "S": {
+          "flicker": 0.34,
+          "tstd": 1.41
+        },
+        "E": {
+          "psnrMean": 18.35,
+          "psnrMin": 18.34,
+          "ssimMean": 0.629,
+          "ssimMin": 0.628,
+          "below20": 1,
+          "flicker": 1.24,
+          "flickerExcessPct": 264.21,
+          "tstd": 3.47
+        },
+        "A": {
+          "psnrMean": 30.84,
+          "psnrMin": 30.69,
+          "ssimMean": 0.938,
+          "ssimMin": 0.936,
+          "below20": 0,
+          "flicker": 0.57,
+          "flickerExcessPct": 67.34,
+          "tstd": 2.05
+        }
+      },
+      "q4": {
+        "flipFrames": 12,
+        "afterFrames": 64,
+        "floor": {
+          "j1Psnr": 31.02,
+          "ghost48": 0.003
+        },
+        "E": {
+          "after": {
+            "1": 17.99,
+            "2": 17.99,
+            "4": 17.99,
+            "8": 17.99,
+            "16": 18.06,
+            "32": 18.06,
+            "64": 18.06
+          },
+          "lag": {
+            "k1min": 5.69,
+            "k2min": 6.03,
+            "k1": [
+              5.7,
+              6.03,
+              6.27,
+              5.69,
+              6,
+              5.83,
+              5.88,
+              6.31,
+              6.19,
+              5.75
+            ],
+            "k2": [
+              6.03,
+              6.1,
+              6.43,
+              6.35,
+              6.3,
+              6.43,
+              6.63,
+              7.03,
+              6.61,
+              6.52
+            ]
+          },
+          "lead": {
+            "1": 6.25,
+            "2": 6.25,
+            "3": 6.25,
+            "4": 6.25,
+            "8": 6.25
+          },
+          "ghost48": 0.112,
+          "ghost30": 0.191,
+          "framesTo30dB": null,
+          "framesTo33dB": null
+        },
+        "A": {
+          "after": {
+            "1": 25.96,
+            "2": 26.25,
+            "4": 26.65,
+            "8": 27.08,
+            "16": 28.99,
+            "32": 29.64,
+            "64": 30.18
+          },
+          "lag": {
+            "k1min": 14.14,
+            "k2min": 15.13,
+            "k1": [
+              15.85,
+              16.55,
+              16.55,
+              15.8,
+              16.06,
+              15.76,
+              15.63,
+              15.53,
+              14.92,
+              14.14
+            ],
+            "k2": [
+              16.15,
+              16.45,
+              16.75,
+              16.61,
+              16.33,
+              16.46,
+              16.49,
+              16.37,
+              15.42,
+              15.13
+            ]
+          },
+          "lead": {
+            "1": 13.6,
+            "2": 13.89,
+            "3": 14.12,
+            "4": 14.3,
+            "8": 14.74
+          },
+          "ghost48": 0.011,
+          "ghost30": 0.04,
+          "framesTo30dB": 49,
+          "framesTo33dB": null
+        },
+        "AN": {
+          "after": {
+            "1": 25.81,
+            "2": 26.06,
+            "4": 26.43,
+            "8": 26.92,
+            "16": 28.9,
+            "32": 29.71,
+            "64": 30.25
+          },
+          "lag": {
+            "k1min": 13.97,
+            "k2min": 14.96,
+            "k1": [
+              15.84,
+              16.45,
+              16.54,
+              15.82,
+              15.95,
+              15.71,
+              15.04,
+              15.16,
+              14.65,
+              13.97
+            ],
+            "k2": [
+              16.15,
+              16.36,
+              16.73,
+              16.64,
+              16.23,
+              16.41,
+              15.91,
+              16.01,
+              15.17,
+              14.96
+            ]
+          },
+          "lead": {
+            "1": 13.43,
+            "2": 13.7,
+            "3": 13.9,
+            "4": 14.07,
+            "8": 14.57
+          },
+          "ghost48": 0.011,
+          "ghost30": 0.042,
+          "framesTo30dB": 45,
+          "framesTo33dB": null
+        }
+      },
+      "k1": {
+        "linear": {
+          "shift": [
+            0.16,
+            0.17,
+            0.21
+          ],
+          "psnr": 33.5,
+          "ssim": 0.969
+        },
+        "neutral": {
+          "shift": [
+            -0.42,
+            -0.48,
+            -0.48
+          ],
+          "psnr": 32.25,
+          "ssim": 0.966
+        },
+        "aces": {
+          "shift": [
+            1.4,
+            1.45,
+            1.51
+          ],
+          "psnr": 30.23,
+          "ssim": 0.961
+        },
+        "controlWrongTransform": {
+          "shift": [
+            4.03,
+            3.99,
+            3.89
+          ],
+          "psnr": 26.13,
+          "ssim": 0.946
+        }
+      },
+      "k2": {
+        "noBox": {
+          "window": 37.92,
+          "whole": 31.91
+        },
+        "boxes": [
+          {
+            "dist": 0.6,
+            "window": 99,
+            "whole": 32.29
+          },
+          {
+            "dist": 1.2,
+            "window": 45.05,
+            "whole": 31.94
+          },
+          {
+            "dist": 2.5,
+            "window": 37.98,
+            "whole": 31.91
+          },
+          {
+            "dist": 5,
+            "window": 37.91,
+            "whole": 31.91
+          },
+          {
+            "dist": 9,
+            "window": 37.95,
+            "whole": 31.91
+          }
+        ],
+        "background": {
+          "psnr": 31.92,
+          "ssim": 0.96
+        },
+        "scale": {
+          "100": {
+            "psnr": 21.15,
+            "ssim": 0.831,
+            "activeSplatsM": 3.94
+          },
+          "0.25": {
+            "psnr": 99,
+            "ssim": 1,
+            "activeSplatsM": 3.94
+          }
+        }
+      },
+      "accumStats": {
+        "active": true,
+        "taaActive": true,
+        "culling": true,
+        "cullSuspended": false,
+        "gpuBytes": 167849224,
+        "activeSplats": 3939064,
+        "variant": {
+          "compose": "blend",
+          "cull": "auto",
+          "contribution": 0,
+          "coverage": "pixel",
+          "jitter": 0,
+          "strata": 4,
+          "interleaveArea": 0,
+          "taa": "on",
+          "taaMax": 256,
+          "taaMoveMax": 16,
+          "taaClip": 1.25,
+          "taaReproj": "sample",
+          "taaMotion": 4,
+          "taaParallax": "on",
+          "taaSharp": 16,
+          "taaHistory": "auto",
+          "taaSharpen": 0,
+          "taaDebug": 0,
+          "warp": "auto",
+          "stereo": "shared",
+          "units": "engine"
+        },
+        "failed": null
+      },
+      "gpuErrors": []
+    }
+  },
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.85",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "controlE": {
+    "2f1ddf5f": {
+      "stillMeanMine": 18.29,
+      "stillMeanV10r": 18.3,
+      "diffDb": -0.01,
+      "movingMine": 18.23,
+      "movingV10r": 18.22
+    }
+  }
+}

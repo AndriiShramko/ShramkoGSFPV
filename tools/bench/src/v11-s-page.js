@@ -82,7 +82,7 @@ async (O) => {
 
   // one arm on one path: settle at pose 0, then one frame per pose 1..frames; the luma frames, and the RGBA of the frames in `keepAt`
   const run = async (arm, pose, frames, keepAt = []) => {
-    await useArm(arm); pose(0); await settle(arm === 'A' || arm === 'AN' ? 30 : 10); await stable();
+    await useArm(arm); pose(0); await settle(arm === 'A' || arm === 'AN' || arm === 'V' ? 30 : 10); await stable();
     const fr = [], kept = {};
     for (let k = 1; k <= frames; k++) { pose(k); const sn = await snap(keepAt.includes(k)); fr.push(sn.l); if (sn.rgba) kept[k] = sn.rgba; }
     return { fr, kept };
@@ -190,6 +190,26 @@ async (O) => {
     }
     for (const [n, b] of Object.entries(tiles)) pics.push({ name: 'q4-j4-' + n, b64: b });
     out.q4 = q4; lap('q4');
+  }
+
+  // ================= tune: one knob set of the accumulation at a time (O.variants: upstream's `key:value,...` strings, '' = its defaults)
+  // scored on the three moving paths of the FPV use (cruise, agile at the 60 Hz and the 30 Hz step, the flip and stop), never on the still picture
+  if (O.modes.includes('tune')) {
+    const AFTER = 64, TOT = FLIP + AFTER;
+    const Scr = (await run('S', cruise, O.frames)).fr, Sa1 = (await run('S', agile(1), 90)).fr, Sa2 = (await run('S', agile(2), 90)).fr, Sfl = (await run('S', flip, TOT)).fr;
+    out.tune = [];
+    for (const v of O.variants) {
+      variantOf.V = v;
+      const row = { variant: v };
+      const c = await run('V', cruise, O.frames); row.cruise = vs(Scr, c.fr); row.cruise.flickerExcessPct = r2((flick(c.fr) - flick(Scr)) / flick(Scr) * 100);
+      const a1 = await run('V', agile(1), 90); row.agile1 = vs(Sa1, a1.fr);
+      const a2 = await run('V', agile(2), 90); row.agile2 = vs(Sa2, a2.fr);
+      const f = await run('V', flip, TOT);
+      const psn = (t) => r2(psnr(f.fr[t - 1], Sfl[t - 1]));
+      row.flip = { j1: psn(FLIP + 1), j4: psn(FLIP + 4), j16: psn(FLIP + 16), j64: psn(FLIP + 64), ghost48: r3(mean([1, 2, 3, 4].map((j) => ghost(f.fr[FLIP + j - 1], Sfl[FLIP + j - 1], 48)))), lead2: r2(psnr(f.fr[FLIP + 1], Sfl[FLIP + 1]) - psnr(f.fr[FLIP + 1], Sfl[FLIP - 3])), lagMin: Math.min(...Array.from({ length: FLIP - 2 }, (_, i) => { const t = i + 3; return r2(psnr(f.fr[t - 1], Sfl[t - 1]) - psnr(f.fr[t - 1], Sfl[t - 2])); })) };
+      out.tune.push(row);
+    }
+    lap('tune');
   }
 
   // ================= K1 colour: at 256 frames per tone map, and the control (a wrong output transform)
