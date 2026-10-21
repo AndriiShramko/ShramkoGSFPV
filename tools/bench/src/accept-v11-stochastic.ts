@@ -19,7 +19,7 @@
 //   V5  the share picture stays sorted: the frame it is made from is drawn sorted (within 40 dB of a sorted frame), the page returns
 //       to accumulating right after.
 //   V6  CSP stays strict: no securitypolicyviolation in any page; the release has no more eval / new Function / hosts than the BASE.
-//   V7  integration: render scale steps, five scene switches with the renderer on (no growth of video memory), ?render=off makes nothing.
+//   V7  integration: render scale steps, four scene switches with the renderer on (sorted while a scene loads, accumulating again at its first complete view; no growth of video memory, no GPU error), ?render=off draws nothing.
 //   V8  the order of who decides is unchanged: the link, then the pilot's Render setting; nothing asked is sorted and makes no renderer.
 //   SITE_DIST=dist BASE_DIST=.cache/dist-base npx tsx src/accept-v11-stochastic.ts [V1 V2 ...]   (from tools/bench)
 // Evidence: evidence/<date>/v11-stochastic.json
@@ -351,7 +351,7 @@ async function main(): Promise<void> {
             }
             const lastErrors = errors(n.log);
             out.V7 = { scale: steps, switches, pageErrors: lastErrors };
-            check(`V7 five scenes in a page with the renderer on (${switches.map((x) => x.scene).join(' > ')}): every switch ends done, the accumulating renderer draws each (millions of splats), no GPU error`, switches.length === 4 && switches.every((x) => x.state === 'done' && x.drawn === 'accum' && x.active === true && x.splatsM > 0.5 && x.taa === true && x.gpuErrors === 0));
+            check(`V7 five scenes in a page with the renderer on (${ROOM} > ${switches.map((x) => x.scene).join(' > ')}): every switch ends done, the accumulating renderer draws each once its first view is complete (millions of splats), no GPU error`, switches.length === 4 && switches.every((x) => x.state === 'done' && x.drawn === 'accum' && x.active === true && x.splatsM > 0.5 && x.taa === true && x.gpuErrors === 0));
             const v0 = switches[0].vramMiB;
             check(`V7 video memory does not grow across the switches (${switches.map((x) => x.vramMiB).join(', ')} MiB; the last scene is the first one again and may differ by 15 %)`, switches.every((x) => x.vramMiB > 0) && switches[switches.length - 1].vramMiB <= v0 * 1.15 + 50);
             check('V7 no page error through the scale steps and the scene switches', lastErrors.length === 0);
@@ -359,10 +359,10 @@ async function main(): Promise<void> {
             const off = await context(browser);
             await open(off.page, NEW, `scene=${ROOM}&stochastic&render=off&governor=0`);
             await sleep(1500);
-            const so = await hook<Any>(off.page, 'const r = s.renderer; return { made: r.accumulating !== null, drawn: r.drawn, gpuErrors: (window.__gpuErrors || []).length };');
+            const so = await hook<Any>(off.page, 'const r = s.renderer; const a = r.accumStats(); return { made: r.accumulating !== null, scan: !!r.splat, activeSplats: a ? a.activeSplats : 0, drawn: r.drawn, gpuErrors: (window.__gpuErrors || []).length, errors: window.__gpuErrors || [] };');
             await off.ctx.close();
             out.V7.renderOff = so;
-            check('V7 ?render=off (logic only) makes no accumulating renderer and draws nothing', so.made === false || so.drawn !== 'accum');
+            check('V7 ?render=off (logic only): no scan is loaded, the accumulating renderer (made before the scan, as on every page) has nothing resident and raises no GPU error', so.scan === false && so.activeSplats === 0 && so.gpuErrors === 0);
             pass.V7 = true;
         }
 
