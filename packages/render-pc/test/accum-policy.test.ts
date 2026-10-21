@@ -20,6 +20,9 @@ describe('planStochastic', () => {
         ['the engine\'s dither also when the accumulating renderer would have been supported', { impl: 'engine', missing: [] }, { draw: 'engine', why: 'impl' }],
         ['an engine without a member it needs: the engine\'s dither', { missing: ['gsplatDirector'] }, { draw: 'engine', why: 'unsupported' }],
         ['several members missing: the same', { missing: ['webgpu', 'computeDispatch'] }, { draw: 'engine', why: 'unsupported' }],
+        ['a scene switch is under way: the accumulating renderer waits, sorted draws', { hold: true }, { draw: 'sorted', why: 'loading' }],
+        ['the engine\'s own dither does not wait (it has no work buffer of its own)', { hold: true, impl: 'engine' }, { draw: 'engine', why: 'impl' }],
+        ['not asked beats the hold', { hold: true, on: false }, { draw: 'sorted', why: 'not-asked' }],
         ['it threw while drawing: the engine\'s dither', { failed: true }, { draw: 'engine', why: 'failed' }],
         ['failed beats missing in the reason', { failed: true, missing: ['x'] }, { draw: 'engine', why: 'failed' }]
     ];
@@ -49,6 +52,12 @@ describe('controls: a policy missing one check fails its own rows', () => {
         const i = { ...base, impl: 'engine' as const };
         expect(planStochastic(i).draw).toBe('engine');
         expect(ignoresImpl(i).draw).toBe('accum');
+    });
+    it('ignoring the hold binds the projector to the work buffer the engine has reset to 1x1 (WebGPU validation errors in the page, v0.11 acceptance V7)', () => {
+        const ignoresHold = (i: PlanInput): DrawPlan => planStochastic({ ...i, hold: false });
+        const i = { ...base, hold: true };
+        expect(planStochastic(i)).toEqual({ draw: 'sorted', why: 'loading' });
+        expect(ignoresHold(i).draw).toBe('accum');
     });
     it('ignoring the GPU-sort test draws stochastic on WebGL', () => {
         const i = { ...base, gpuSort: false };
@@ -82,6 +91,11 @@ describe('applyStochastic (the whole of SplatRenderer.setStochastic, without the
     it('the engine\'s dither asked for: nothing is made, an adapter made before is handed back, the flag is on', () => {
         const was = fake();
         expect(run({ impl: 'engine' }, was)).toMatchObject({ plan: { draw: 'engine', why: 'impl' }, on: true, made: 0, calls: ['disable'], params: { stochastic: true } });
+    });
+    it('a scene switch under way: nothing is made, an adapter made before is handed back, the engine\'s flag stays off', () => {
+        const was = fake();
+        expect(run({ hold: true }, was)).toMatchObject({ plan: { draw: 'sorted', why: 'loading' }, on: false, made: 0, calls: ['disable'], params: { stochastic: false } });
+        expect(run({ hold: true }, null)).toMatchObject({ made: 0, on: false });
     });
     it('an engine that lacks members: the engine\'s dither, nothing made', () => {
         expect(run({ missing: ['gsplatDirector'] }, null)).toMatchObject({ plan: { draw: 'engine', why: 'unsupported' }, on: true, made: 0, params: { stochastic: true } });

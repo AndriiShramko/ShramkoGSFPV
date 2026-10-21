@@ -22,7 +22,7 @@ export function parseImpl(text: string | null | undefined): StochasticImpl | und
 
 /** What draws the scan after a call to setStochastic. */
 export type DrawPlan =
-    | { draw: 'sorted'; why: 'not-asked' | 'no-gpu-sort' }
+    | { draw: 'sorted'; why: 'not-asked' | 'no-gpu-sort' | 'loading' }
     | { draw: 'engine'; why: 'impl' | 'unsupported' | 'failed' }
     | { draw: 'accum'; why: 'ok' };
 
@@ -37,17 +37,25 @@ export interface PlanInput {
     missing: readonly string[];
     /** the accumulating renderer threw while drawing and was switched off for good (accum.ts) */
     failed: boolean;
+    /**
+     * a scan was unloaded and the next one has not reported its first complete view yet (renderer.ts unloadSplat): the engine resets its
+     * work buffer to 1x1 in between, which the accumulating renderer's projector must not be bound to (a WebGPU validation error and a
+     * dropped command buffer), so the splats go to the sorted drawing until the new scan is ready. Only the accumulating renderer waits.
+     */
+    hold?: boolean;
 }
 
 /**
  * The drawing for a request. Sorted unless stochastic is wanted and a GPU-sort renderer runs. Then the accumulating renderer
- * if it is asked for, can run on this engine and has not failed; else the engine's own dither (v0.10 behaviour).
+ * if it is asked for, can run on this engine and has not failed; else the engine's own dither (v0.10 behaviour). While a scene switch is
+ * under way (`hold`) the accumulating renderer waits and the splats are drawn sorted.
  */
 export function planStochastic(i: PlanInput): DrawPlan {
     if (!i.on) return { draw: 'sorted', why: 'not-asked' };
     if (!i.gpuSort) return { draw: 'sorted', why: 'no-gpu-sort' };
     if (i.impl === 'engine') return { draw: 'engine', why: 'impl' };
     if (i.failed) return { draw: 'engine', why: 'failed' };
+    if (i.hold) return { draw: 'sorted', why: 'loading' };
     if (i.missing.length > 0) return { draw: 'engine', why: 'unsupported' };
     return { draw: 'accum', why: 'ok' };
 }

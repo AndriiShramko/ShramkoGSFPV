@@ -239,6 +239,8 @@ export class SplatRenderer {
     private accumVariant: string;
     /** the last setStochastic request, so a failed accumulating renderer can be replaced by the engine's own dither */
     private wantStochastic = false;
+    /** between unloadSplat() and the next scan's first complete view the accumulating renderer waits (accum-policy.ts PlanInput.hold) */
+    private accumHeld = false;
     /** what the last setStochastic decided (the test hook, F3) */
     plan: DrawPlan = { draw: 'sorted', why: 'not-asked' };
 
@@ -306,6 +308,11 @@ export class SplatRenderer {
             this.splatFrame.frame = this.frameNumber;
             this.splatFrame.ready = ready === true;
             this.splatFrame.loading = n;
+            // the next scan has its first complete view: the accumulating renderer takes over again (not inside the engine's update)
+            if (this.accumHeld && ready === true && this.splat && this.frameNumber > this.splatMadeAt + 1) {
+                this.accumHeld = false;
+                queueMicrotask(() => { if (!this.destroyed) this.setStochastic(this.wantStochastic); });
+            }
         });
         this.gpuQueue = (device as unknown as { wgpu?: { queue?: WgpuQueue } }).wgpu?.queue ?? null;
         if (this.gpuQueue) {
@@ -651,6 +658,8 @@ export class SplatRenderer {
      * the latency guard and the device stay. Lead contract step before wave 3.
      */
     unloadSplat(): void {
+        // the engine resets its work buffer while the scene changes; the accumulating renderer stays out of it until the next scan is ready
+        if (this.accum?.active) { this.accumHeld = true; this.setStochastic(this.wantStochastic); }
         if (this.splat) {
             this.splat.destroy();
             this.splat = null;
@@ -735,7 +744,7 @@ export class SplatRenderer {
         const failed = this.accum?.failed != null;
         const wantsAccum = on && gpuSort && this.stochasticImpl === 'accum' && !failed;
         const missing = wantsAccum ? this.accumMissing() : [];
-        const r = applyStochastic({ on, gpuSort, impl: this.stochasticImpl, missing, failed }, () => this.accumDrawing(), this.accum, g);
+        const r = applyStochastic({ on, gpuSort, impl: this.stochasticImpl, missing, failed, hold: this.accumHeld }, () => this.accumDrawing(), this.accum, g);
         this.plan = r.plan;
         return r.on;
     }

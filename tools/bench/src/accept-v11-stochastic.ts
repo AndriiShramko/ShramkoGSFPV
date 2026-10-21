@@ -223,7 +223,7 @@ async function main(): Promise<void> {
                     q1.every((r) => r.A[256].psnr >= 33 && r.shift256.every((x: number) => Math.abs(x) <= 1.5)));
                 check(`V2 it gets there: each step of the history is better than the one before (view 1: ${Object.values(q1[0].A as Record<string, Any>).map((x) => x.psnr).join(' < ')})`, q1.every((r) => { const v = Object.values(r.A as Record<string, Any>).map((x) => x.psnr); return v.every((x: number, i: number) => i === 0 || x > v[i - 1]); }));
                 check(`V2 control: one frame of the same renderer is far below (${q1.map((r) => r.A[1].psnr).join(', ')}) and the engine's dither stays below 25 dB (${q1.map((r) => r.E.psnr).join(', ')}) however long it is watched`, q1.every((r) => r.A[1].psnr < 28 && r.E.psnr < 25), true);
-                check(`V2 control: the harness sorted against sorted reads silence (${q1.map((r) => r.SvS.psnr).join(', ')} dB)`, q1.every((r) => r.SvS.psnr > 80), true);
+                check(`V2 control: the harness sorted against sorted reads silence (60 dB or more, 70 to 100 in the bench: the GPU sort is not bit-exact) (${q1.map((r) => r.SvS.psnr).join(', ')} dB)`, q1.every((r) => r.SvS.psnr > 60), true);
             }
             if (want('V3')) {
                 const q4 = res.q4 as Any;
