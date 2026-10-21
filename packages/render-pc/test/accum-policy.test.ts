@@ -3,8 +3,9 @@
 // Controls: a policy that ignores the support report, one that ignores a failure, one that ignores the implementation switch,
 // and one that draws stochastic without a GPU-sort renderer each fail the rows that need the check.
 import { describe, it, expect } from 'vitest';
-import { ACCUM_REQUIRES, DEFAULT_STOCHASTIC_IMPL, STOCHASTIC_IMPLS, parseImpl, planStochastic } from '../src/accum-policy';
-import type { DrawPlan, PlanInput } from '../src/accum-policy';
+import { ACCUM_REQUIRES, DEFAULT_STOCHASTIC_IMPL, STOCHASTIC_IMPLS, applyStochastic, parseImpl, planStochastic } from '../src/accum-policy';
+import type { AccumSwitch, DrawPlan, PlanInput } from '../src/accum-policy';
+import { applyDrawing } from '../src/drawing';
 
 const base: PlanInput = { on: true, gpuSort: true, impl: 'accum', missing: [], failed: false };
 
@@ -53,6 +54,92 @@ describe('controls: a policy missing one check fails its own rows', () => {
         const i = { ...base, gpuSort: false };
         expect(planStochastic(i).draw).toBe('sorted');
         expect(ignoresGpuSort(i).draw).toBe('accum');
+    });
+});
+
+describe('applyStochastic (the whole of SplatRenderer.setStochastic, without the engine)', () => {
+    /** An adapter that records what was asked of it; `canStart` false = it cannot start (it failed). */
+    const fake = (canStart = true) => {
+        const calls: string[] = [];
+        return { calls, enable() { calls.push('enable'); return canStart; }, disable() { calls.push('disable'); } };
+    };
+    const run = (over: Partial<PlanInput>, existing: ReturnType<typeof fake> | null, canStart = true, params = { stochastic: false }) => {
+        const a = existing ?? fake(canStart);
+        let made = 0;
+        const r = applyStochastic({ ...base, ...over }, () => { made++; return a; }, existing, params);
+        return { ...r, made, calls: a.calls, params };
+    };
+
+    it('wanted and supported: the adapter is made and enabled, the engine\'s dither stays off', () => {
+        const r = run({}, null);
+        expect(r).toMatchObject({ plan: { draw: 'accum', why: 'ok' }, on: true, made: 1, calls: ['enable'], params: { stochastic: false } });
+    });
+    it('not wanted: nothing is made (a pilot on sorted pays nothing), an adapter made before is handed back, the flag is off', () => {
+        expect(run({ on: false }, null)).toMatchObject({ plan: { draw: 'sorted' }, on: false, made: 0, params: { stochastic: false } });
+        const was = fake();
+        expect(run({ on: false }, was)).toMatchObject({ on: false, made: 0, calls: ['disable'], params: { stochastic: false } });
+    });
+    it('the engine\'s dither asked for: nothing is made, an adapter made before is handed back, the flag is on', () => {
+        const was = fake();
+        expect(run({ impl: 'engine' }, was)).toMatchObject({ plan: { draw: 'engine', why: 'impl' }, on: true, made: 0, calls: ['disable'], params: { stochastic: true } });
+    });
+    it('an engine that lacks members: the engine\'s dither, nothing made', () => {
+        expect(run({ missing: ['gsplatDirector'] }, null)).toMatchObject({ plan: { draw: 'engine', why: 'unsupported' }, on: true, made: 0, params: { stochastic: true } });
+    });
+    it('an adapter that cannot start turns the plan into the engine\'s dither (a failed adapter hands itself back inside enable; one made before is handed back here too)', () => {
+        const r = run({}, null, false);
+        expect(r).toMatchObject({ plan: { draw: 'engine', why: 'failed' }, on: true, made: 1, params: { stochastic: true } });
+        expect(r.calls).toEqual(['enable']);
+        const was = fake(false);
+        expect(run({}, was, false).calls).toEqual(['enable', 'disable']);
+    });
+    it('without a GPU-sort renderer nothing stochastic exists: sorted, the flag stays off, nothing is made', () => {
+        expect(run({ gpuSort: false }, null)).toMatchObject({ plan: { draw: 'sorted', why: 'no-gpu-sort' }, on: false, made: 0, params: { stochastic: false } });
+        expect(run({ gpuSort: false, impl: 'engine' }, null)).toMatchObject({ on: false, params: { stochastic: false } });
+    });
+    it('on, off, on again: the adapter is made once by its owner and enabled, disabled, enabled', () => {
+        const a = fake();
+        const params = { stochastic: false };
+        const step = (on: boolean) => applyStochastic({ ...base, on }, () => a, a, params);
+        step(true); step(false); step(true);
+        expect(a.calls).toEqual(['enable', 'disable', 'enable']);
+        expect(params.stochastic).toBe(false);
+    });
+
+    describe('controls: a setStochastic missing one rule fails its own rows', () => {
+        // v0.10's: only the engine's flag follows the request, no adapter exists
+        const v010 = (i: PlanInput, params: { stochastic: boolean }) => { params.stochastic = i.on && i.gpuSort; return { made: 0 }; };
+        // one that makes the adapter whatever is asked
+        const eager = (i: PlanInput, make: () => AccumSwitch, existing: AccumSwitch | null, params: { stochastic: boolean }) => { make(); return applyStochastic(i, make, existing, params); };
+        it('v0.10\'s switch never makes the accumulating renderer, so "wanted and supported" would still draw the engine\'s dither', () => {
+            const params = { stochastic: false };
+            expect(v010(base, params).made).toBe(0);
+            expect(params.stochastic).toBe(true); // the engine's dither is on: the real policy keeps it off here
+            expect(run({}, null).params.stochastic).toBe(false);
+        });
+        it('an eager switch makes the renderer for a pilot on sorted', () => {
+            let made = 0;
+            eager({ ...base, on: false }, () => { made++; return fake(); }, null, { stochastic: false });
+            expect(made).toBe(1);
+            expect(run({ on: false }, null).made).toBe(0);
+        });
+        it('a switch that forgets to hand back leaves the renderer on when sorted is asked', () => {
+            // applyStochastic without its `existing?.disable()` line
+            const noHandBack = (i: PlanInput, make: () => AccumSwitch, params: { stochastic: boolean }) => {
+                let plan = planStochastic(i);
+                if (plan.draw === 'accum') {
+                    if (make().enable()) { applyDrawing(params, false, i.gpuSort); return { plan, on: true }; }
+                    plan = { draw: 'engine', why: 'failed' };
+                }
+                return { plan, on: applyDrawing(params, plan.draw === 'engine', i.gpuSort) };
+            };
+            const forgetful = fake();
+            noHandBack({ ...base, on: false }, () => forgetful, { stochastic: false });
+            expect(forgetful.calls).toEqual([]);
+            const was = fake();
+            run({ on: false }, was);
+            expect(was.calls).toEqual(['disable']);
+        });
     });
 });
 

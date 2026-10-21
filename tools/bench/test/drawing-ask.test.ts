@@ -140,7 +140,28 @@ describe('F3\'s drawing line', () => {
         expect(say('drawing.from.nobody')).toBe('?drawing.from.nobody');
         for (const k of ['link', 'setting', 'scene', 'device', 'rec']) expect(say(`drawing.from.${k}`)).not.toMatch(/^\?/);
         for (const k of ['desktop-strong', 'desktop-weak', 'tablet', 'phone']) expect(say(`drawing.class.${k}`)).not.toMatch(/^\?/);
-        for (const k of ['stochastic', 'sorted']) expect(say(`drawing.mode.${k}`)).not.toMatch(/^\?/);
+        for (const k of ['stochastic', 'accumulating', 'sorted']) expect(say(`drawing.mode.${k}`)).not.toMatch(/^\?/);
+    });
+
+    it('v0.11: F3 says "accumulating" when the SuperSplat renderer with its temporal history draws, plain "stochastic" for the engine\'s own dither', () => {
+        const prefs = mkStore();
+        prefs.set('display.drawing', 'stochastic');
+        const d = drawn(prefs, {});
+        expect(drawingLine(d, say, false, 'accum')).toBe(`Render: stochastic, accumulating (your setting) · budget ${DEFAULT_BUDGET_M} M splats (this device) · desktop, strong graphics`);
+        expect(drawingLine(d, say, false, 'engine')).toBe(`Render: stochastic (your setting) · budget ${DEFAULT_BUDGET_M} M splats (this device) · desktop, strong graphics`);
+        // the renderer's own answer is not asked: the old line (the v0.10 callers)
+        expect(drawingLine(d, say)).toMatch(/^Render: stochastic \(your setting\)/);
+        // control: a line that took `drawn` at its word would claim accumulating while a recording or a sorted preset draws sorted
+        expect(drawingLine(d, say, true, 'accum')).toMatch(/^Render: sorted \(recording\)/);
+        expect(drawingLine(drawn(mkStore(), {}), say, false, 'accum')).toMatch(/^Render: sorted \(this device\)/);
+    });
+
+    it('v0.11: the new mode text exists in every language, apart from the English one', () => {
+        for (const lang of ['en', 'es', 'pl', 'ru']) {
+            const d = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'drawing', `${lang}.json`), 'utf8')) as Record<string, string>;
+            expect(d['drawing.mode.accumulating'], lang).toBeTruthy();
+            if (lang !== 'en') expect(d['drawing.mode.accumulating'], lang).not.toBe(EN['drawing.mode.accumulating']);
+        }
     });
 });
 

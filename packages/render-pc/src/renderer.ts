@@ -19,7 +19,7 @@ import { LatencyGuard, inputToScreenMs } from './governor';
 import { applyDrawing, DEFAULT_BUDGET_M } from './drawing';
 import { AccumDrawing, accumMissing, worldLayer } from './accum';
 import type { AccumStats } from './accum';
-import { DEFAULT_STOCHASTIC_IMPL, planStochastic } from './accum-policy';
+import { DEFAULT_STOCHASTIC_IMPL, applyStochastic } from './accum-policy';
 import type { DrawPlan, StochasticImpl } from './accum-policy';
 import type { GpuInfo } from './device-class';
 import { BrokenFileError, lodMetaProblem, lodMode } from './lod';
@@ -735,19 +735,9 @@ export class SplatRenderer {
         const failed = this.accum?.failed != null;
         const wantsAccum = on && gpuSort && this.stochasticImpl === 'accum' && !failed;
         const missing = wantsAccum ? this.accumMissing() : [];
-        let plan = planStochastic({ on, gpuSort, impl: this.stochasticImpl, missing, failed });
-        if (plan.draw === 'accum') {
-            if (this.accumDrawing().enable()) {
-                this.plan = plan;
-                // the accumulating renderer owns the splats: the engine's own dither stays off
-                applyDrawing(g, false, gpuSort);
-                return true;
-            }
-            plan = { draw: 'engine', why: 'failed' };
-        }
-        this.plan = plan;
-        this.accum?.disable();
-        return applyDrawing(g, plan.draw === 'engine', gpuSort);
+        const r = applyStochastic({ on, gpuSort, impl: this.stochasticImpl, missing, failed }, () => this.accumDrawing(), this.accum, g);
+        this.plan = r.plan;
+        return r.on;
     }
 
     /** A stochastic drawing is on now: the accumulating renderer's or the engine's own. */

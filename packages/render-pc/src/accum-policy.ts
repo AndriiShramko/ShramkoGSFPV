@@ -6,6 +6,9 @@
 // (D75's order of who decides is untouched, drawing.ts). 'engine' exists as the bench's control (the v0.10 numbers) and as
 // the fallback when the accumulating renderer cannot run here or has failed.
 
+import { applyDrawing } from './drawing';
+import type { GsplatDrawingParams } from './drawing';
+
 /** Which code draws a stochastic picture. */
 export type StochasticImpl = 'accum' | 'engine';
 export const STOCHASTIC_IMPLS: readonly StochasticImpl[] = ['accum', 'engine'];
@@ -47,6 +50,34 @@ export function planStochastic(i: PlanInput): DrawPlan {
     if (i.failed) return { draw: 'engine', why: 'failed' };
     if (i.missing.length > 0) return { draw: 'engine', why: 'unsupported' };
     return { draw: 'accum', why: 'ok' };
+}
+
+/** What applyStochastic needs of the accumulating renderer's adapter (accum.ts AccumDrawing; a fake in tests). */
+export interface AccumSwitch {
+    /** make the renderer if needed and let it draw; false when it cannot (it failed) */
+    enable(): boolean;
+    /** hand the scan back to the engine's own renderer */
+    disable(): void;
+}
+
+/**
+ * The whole of SplatRenderer.setStochastic, without the engine: plan, then make the plan true. The accumulating renderer is made
+ * only when the plan says accum (`make` is not called otherwise: a pilot on sorted pays nothing); every other plan hands the scan
+ * back (`existing`, when one was ever made) and the engine's own dither flag follows the plan (on for 'engine', off otherwise, and
+ * off whenever the accumulating renderer owns the splats). A renderer that cannot start turns the plan into the engine's dither.
+ * Returns the plan that holds and whether a stochastic drawing is now on.
+ */
+export function applyStochastic(i: PlanInput, make: () => AccumSwitch, existing: AccumSwitch | null, params: GsplatDrawingParams): { plan: DrawPlan; on: boolean } {
+    let plan = planStochastic(i);
+    if (plan.draw === 'accum') {
+        if (make().enable()) {
+            applyDrawing(params, false, i.gpuSort);
+            return { plan, on: true };
+        }
+        plan = { draw: 'engine', why: 'failed' };
+    }
+    existing?.disable();
+    return { plan, on: applyDrawing(params, plan.draw === 'engine', i.gpuSort) };
 }
 
 /** The members of the engine and device the accumulating renderer drives directly, with how to read each (accum.ts checks them). */
