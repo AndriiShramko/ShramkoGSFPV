@@ -44,7 +44,8 @@ export function accumMissing(app: AppBase, camera: CameraComponent | null | unde
     const system = (app.systems as unknown as { gsplat?: Anything }).gsplat;
     if (!system || typeof system.on !== 'function') miss.push('gsplat system events');
     const renderer = app.renderer as unknown as Anything;
-    if (!('gsplatDirector' in renderer)) miss.push('gsplatDirector');
+    // made by the gsplat component system's constructor (engine 2.23.2 gsplat/system.js), so present once that system is registered
+    if (!renderer.gsplatDirector) miss.push('gsplatDirector');
     if (typeof renderer.renderForwardLayer !== 'function') miss.push('renderForwardLayer');
     if (!camera?.camera || !Array.isArray((camera.camera as unknown as Anything).beforePasses)) miss.push('camera.beforePasses');
     if (!worldLayer(app)) miss.push('world layer');
@@ -77,21 +78,47 @@ export interface AccumStats {
     failed: string | null;
 }
 
+/**
+ * Make the renderer's per-frame function safe to run inside the engine's `frame:ready` event: the provider's callback looks
+ * `frame` up on the instance when it fires, so a replacement on the instance is what runs. A throw goes to `onThrow` and the
+ * engine's update goes on.
+ */
+export function guardFrame(r: object, onThrow: (e: unknown) => void): void {
+    const target = r as { frame: (...a: unknown[]) => void };
+    const frame = target.frame.bind(r);
+    target.frame = (...a: unknown[]): void => {
+        try {
+            frame(...a);
+        } catch (e) {
+            onThrow(e);
+        }
+    };
+}
+
+export interface AccumOptions {
+    app: AppBase;
+    camera: CameraComponent;
+    layer: Layer;
+    /** `key:value,key:value` seeds for upstream's switches (a test hook; empty = upstream's defaults) */
+    variant?: string;
+    /** called once if the renderer threw inside a frame and was handed back (the caller may choose another drawing) */
+    onFail?: () => void;
+    /** makes the renderer (tests pass a fake; the default is upstream's, work-buffer data path, per-pixel coverage) */
+    create?: (variant: string) => StochasticSplatRenderer;
+}
+
 export class AccumDrawing {
     private r: StochasticSplatRenderer | null = null;
     private on = false;
     /** why the renderer was switched off for good, else null */
     failed: string | null = null;
+    private variant: string;
+    private readonly o: AccumOptions;
 
-    constructor(
-        private readonly app: AppBase,
-        private readonly camera: CameraComponent,
-        private readonly layer: Layer,
-        /** `key:value,key:value` seeds for upstream's switches (a test hook; empty = upstream's defaults) */
-        private variant = '',
-        /** called once if the renderer threw inside a frame and was handed back (the caller may choose another drawing) */
-        private readonly onFail: () => void = () => undefined
-    ) {}
+    constructor(o: AccumOptions) {
+        this.o = o;
+        this.variant = o.variant ?? '';
+    }
 
     /** The renderer draws the scan now. */
     get active(): boolean {
@@ -160,24 +187,18 @@ export class AccumDrawing {
     }
 
     private make(): StochasticSplatRenderer {
-        const r = new StochasticSplatRenderer(this.app, this.camera, this.layer, {
-            source: 'workbuffer',
-            mode: 'pixel',
-            variant: this.variant,
-            // this page draws every frame; a request would override the latency guard's hold
-            requestFrame: () => undefined
-        });
-        // `frame` runs inside the engine's `frame:ready` event (the provider's callback looks it up on the instance at call
-        // time): a throw there would break the engine's update on every frame
-        const target = r as unknown as { frame: (...a: unknown[]) => void };
-        const frame = target.frame.bind(r);
-        target.frame = (...a: unknown[]): void => {
-            try {
-                frame(...a);
-            } catch (e) {
-                this.fail(e);
-            }
-        };
+        const { app, camera, layer } = this.o;
+        const r = this.o.create
+            ? this.o.create(this.variant)
+            : new StochasticSplatRenderer(app, camera, layer, {
+                source: 'workbuffer',
+                mode: 'pixel',
+                variant: this.variant,
+                // this page draws every frame; a request would override the latency guard's hold
+                requestFrame: () => undefined
+            });
+        // `frame` runs inside the engine's `frame:ready` event: a throw there would break the engine's update on every frame
+        guardFrame(r, (e) => this.fail(e));
         return r;
     }
 
@@ -191,6 +212,6 @@ export class AccumDrawing {
         } catch (e2) {
             console.error('accum hand-back', e2);
         }
-        this.onFail();
+        this.o.onFail?.();
     }
 }

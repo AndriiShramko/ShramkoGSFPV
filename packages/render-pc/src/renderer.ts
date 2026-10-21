@@ -779,9 +779,10 @@ export class SplatRenderer {
         if (!this.accum) {
             const layer = worldLayer(this.app);
             if (!layer || !this.camera.camera) throw new Error('accumulating drawing needs the camera and the World layer');
-            this.accum = new AccumDrawing(this.app, this.camera.camera, layer, this.accumVariant, () => {
+            this.accum = new AccumDrawing({
+                app: this.app, camera: this.camera.camera, layer, variant: this.accumVariant,
                 // it threw inside a frame and handed the splats back: put the engine's own dither where the pilot asked for stochastic
-                queueMicrotask(() => { if (!this.destroyed && this.wantStochastic) this.setStochastic(true); });
+                onFail: () => { queueMicrotask(() => { if (!this.destroyed && this.wantStochastic) this.setStochastic(true); }); }
             });
         }
         return this.accum;
