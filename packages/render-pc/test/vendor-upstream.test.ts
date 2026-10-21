@@ -97,6 +97,66 @@ describe('vendored SuperSplat renderer', () => {
     });
 });
 
+/**
+ * The local edits as UPSTREAM.md lists them: [file, line in OUR file, what the line holds]. Six in two vendored files (five on four marker
+ * lines in the renderer, one in the resident-set reader) and a seventh in the stand-in picker.ts. A marker line sits on the edit's line or
+ * one or two lines above it (the raster pass's `override` and `?? null` share one marker).
+ */
+const EDITS: [string, number, string][] = [
+    ['render/resident-set.ts', 220, 'this.set!.files[i]'],
+    ['render/stochastic-splat-renderer.ts', 362, 'override execute()'],
+    ['render/stochastic-splat-renderer.ts', 363, '?? null'],
+    ['render/stochastic-splat-renderer.ts', 381, 'override execute()'],
+    ['render/stochastic-splat-renderer.ts', 2168, 'device.backBuffer!.flipY'],
+    ['render/stochastic-splat-renderer.ts', 2574, 'interleaveMesh?.destroy()'],
+    ['picker.ts', 30, 'if (!cam) return;']
+];
+
+/** What is wrong between a copy of UPSTREAM.md's "Local changes" list and the source (empty: they agree). */
+function editProblems(doc: string): string[] {
+    const bad: string[] = [];
+    const from = doc.indexOf('## Local changes'), to = doc.indexOf('## Stand-ins');
+    const items = doc.slice(from, to).split('\n').filter((l) => /^\d+\. `/.test(l));
+    if (items.length !== EDITS.length) bad.push(`the list has ${items.length} items, the source has ${EDITS.length} edits`);
+    EDITS.forEach(([file, line, token], i) => {
+        const base = file.split('/').pop() as string;
+        const item = items[i] ?? '';
+        if (!item.startsWith(`${i + 1}. \`${base}\``)) bad.push(`item ${i + 1} does not start with ${base}`);
+        if (!new RegExp(`line ${line}\\b`).test(item)) bad.push(`item ${i + 1} does not say line ${line}`);
+        const src = read(file).replace(/\r\n/g, '\n').split('\n');
+        if (!(src[line - 1] ?? '').includes(token)) bad.push(`${file}:${line} does not hold ${token}`);
+        if (![0, 1, 2].some((up) => (src[line - 1 - up] ?? '').includes('GSFPV:'))) bad.push(`${file}:${line} has no GSFPV marker on or just above it`);
+    });
+    // every marker line of a vendored file is covered by an edit above
+    for (const [rel, want] of Object.entries(VENDORED)) {
+        if (want.edits === 0) continue;
+        const lines = read(rel).replace(/\r\n/g, '\n').split('\n');
+        lines.forEach((l, k) => {
+            if (!l.includes('GSFPV:')) return;
+            if (!EDITS.some(([f, line]) => f === rel && [0, 1, 2].includes(line - 1 - k))) bad.push(`${rel}:${k + 1} is a marker no listed edit covers`);
+        });
+    }
+    return bad;
+}
+
+describe('UPSTREAM.md and the source agree on the local edits (review finding F6: four documents counted them four ways)', () => {
+    const doc = readFileSync(join(DIR, 'UPSTREAM.md'), 'utf8');
+    it('the list names every edit with its real line, the source holds it there, every marker line is covered', () => {
+        expect(editProblems(doc)).toEqual([]);
+    });
+    it('PROVENANCE.md and D85 say six edits in two vendored files', () => {
+        const prov = readFileSync(join(__dirname, '..', '..', '..', 'docs', 'PROVENANCE.md'), 'utf8');
+        const dec = readFileSync(join(__dirname, '..', '..', '..', 'docs', 'decisions.md'), 'utf8');
+        expect(prov).toContain('two carry six marked one-line type edits');
+        expect(dec).toContain('six marked one-line type edits in two of the vendored files');
+    });
+    it('control: a list with one wrong line, a missing item or an edit that moved is seen', () => {
+        expect(editProblems(doc.replace('line 362', 'line 361')).join('|')).toContain('item 2 does not say line 362');
+        expect(editProblems(doc.replace(/^3\. `stochastic.*$/m, '')).join('|')).toContain('the list has 6 items');
+        expect(editProblems(doc.replace('line 2168', 'line 2169').replace('2168 (', '2169 (')).join('|')).toContain('item 5 does not say line 2168');
+    });
+});
+
 describe('the guard has teeth (negative controls)', () => {
     it('one changed byte breaks the blob', () => {
         const t = read('render/shaders/taa.ts');
