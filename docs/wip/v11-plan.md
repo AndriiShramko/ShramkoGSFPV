@@ -21,3 +21,8 @@ Base: `a1838e1` (`main`, live release 575920947b9c). One lane `v11-s` in `C:/dev
 Owns: `packages/render-pc` (a vendored copy under `packages/render-pc/src/vendor/supersplat-viewer/` with its MIT licence text
 and the exact upstream commit, plus our adapter), the drawing choice where the new mode plugs in (`apps/fly/src/app/drawing*.ts`),
 `THIRD_PARTY_NOTICES` (or the repo's existing notices file), benches and evidence. Decisions appended to `docs/decisions.md`.
+
+## After release (owner message 25, 2026-10-21)
+When v0.11 is live and checked, the lead hands the announcement to the Facebook-group agents: reels on what stochastic
+drawing is and why the simulator has it (beta on SuperSplat, adapted for FPV flight and published here), posted in every
+fitting group (vault skill fb-campaign-gsfpv, "Objavleniya obnovleniy" item 6). Only measured numbers from docs/wip/v11-s.md.
