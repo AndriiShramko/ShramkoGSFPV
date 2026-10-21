@@ -115,11 +115,16 @@ MAX_INFLATED = 2 * 1024 * 1024       # a gzip body unpacks to at most this
 REPORTS_CAP_BYTES = int(os.environ.get("REPORTS_CAP_BYTES", str(1024 * 1024 * 1024)))
 SHARE_CAP_BYTES = int(os.environ.get("SHARE_CAP_BYTES", str(1024 * 1024 * 1024)))
 
-# event -> allowed property -> allowed values (None = small integer bucket)
-EVENTS: dict[str, dict[str, set | None]] = {
+# event -> allowed property -> allowed values (None = small integer bucket, DECIMAL = a number with one
+# decimal, also sent as text). Every name the simulator's beacon() and the landing's track() send is here
+# (apps/api/tests/test_events.py reads both sources): an unknown name is refused with 400 and lost.
+DECIMAL = "decimal"
+EVENTS: dict[str, dict[str, set | str | None]] = {
     # the same list as apps/fly/src/ui/picker-tabs.ts PickSource
     "scene_open": {"source": {"showcase", "paste", "history", "superspl", "random", "next", "favourite"}},
     "scene_loaded": {"load_ms_bucket": None, "has_collision": {True, False}},
+    # a scene switched in the page (apps/fly/src/app/scene-host.ts; SceneSwitchReason in app/context.ts)
+    "scene_switch": {"reason": {"next", "random", "favourite", "auto", "pick", "back"}, "has_collision": {True, False}, "load_ms_bucket": None},
     "input_connected": {"kind": {"hid", "gamepad", "touch", "keyboard", "sim"}},
     "calibration_done": {},
     "arm": {},
@@ -127,6 +132,9 @@ EVENTS: dict[str, dict[str, set | None]] = {
     "session_end": {"flight_s_bucket": None},
     "webgpu_unavailable": {},
     "bake_done": {},
+    # the walls switch (apps/fly/src/app/walls.ts) and finer walls built (apps/fly/src/walls.ts, cm as text)
+    "walls_switch": {"on": {True, False}},
+    "refine_done": {"cm": DECIMAL},
     "lang_switch": {"to": {"en", "es", "pl", "ru"}},
     "cta_click": {"target": {"github", "calendar", "linkedin", "email"}},
     "fly_click": {},
@@ -222,6 +230,22 @@ def housekeeping() -> None:
         time.sleep(300)
 
 
+_DECIMAL_RE = re.compile(r"[0-9]{1,4}(\.[0-9]{1,2})?")
+
+
+def _decimal(v) -> float | None:
+    """A small number 0..1000 with one decimal, from a number or its text ("2.5"); else None."""
+    if isinstance(v, bool):
+        return None
+    if isinstance(v, str):
+        if not _DECIMAL_RE.fullmatch(v):
+            return None
+        v = float(v)
+    if not isinstance(v, (int, float)) or not 0 <= v <= 1000:
+        return None
+    return round(float(v), 1)
+
+
 def clean_event(body: dict) -> dict | None:
     name = body.get("e")
     if name not in EVENTS:
@@ -241,7 +265,11 @@ def clean_event(body: dict) -> dict | None:
         if rule is None:
             if isinstance(v, (int, float)) and 0 <= v <= 100000:
                 out[k] = int(v)
-        elif v in rule:
+        elif rule == DECIMAL:
+            num = _decimal(v)
+            if num is not None:
+                out[k] = num
+        elif isinstance(rule, set) and v in rule:
             out[k] = v
     return {"ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "e": name, "p": out}
 
