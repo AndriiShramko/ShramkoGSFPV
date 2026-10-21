@@ -19,8 +19,8 @@ measurements: `docs/wip/v11-s.md`.
 
 | file | git blob at the pinned commit | local change |
 |---|---|---|
-| `stochastic-splat-renderer.ts` | `4ecc457e540a07b02960dd7a53063491f05a080b` | 4 marked edits (below) |
-| `resident-set.ts` | `830531af626c161c86b74225216747504aa67f53` | 1 marked edit |
+| `stochastic-splat-renderer.ts` | `4ecc457e540a07b02960dd7a53063491f05a080b` | 5 edits on 4 marked lines (below) |
+| `resident-set.ts` | `830531af626c161c86b74225216747504aa67f53` | 1 edit on 1 marked line |
 | `splat-source.ts` | `50e660389a99a68f6721a13827bb269ed968442b` | none |
 | `splat-source-workbuffer.ts` | `7eca4ab9769d70160f9e07b1fe88bb4478c94c77` | none |
 | `xr-rate-map.ts` | `89151f3105065b404e746a04c44421d7803523e6` | none (imported by the renderer; never runs here) |
@@ -39,16 +39,20 @@ differs from this table or when a modified file has lost or gained a `GSFPV:` ma
 
 ## Local changes (all marked `// GSFPV:`; `grep -rn "GSFPV:" .` lists them)
 
-Seven one-line type edits, found by a scratch `tsc` of the upstream render folder against engine 2.23.2 under this repo's
-`strict` + `noImplicitOverride` config. No logic changed.
+Six one-line type edits in two vendored files (five in `stochastic-splat-renderer.ts` on four marker lines, one in
+`resident-set.ts`), found by a scratch `tsc` of the upstream render folder against engine 2.23.2 under this repo's `strict` +
+`noImplicitOverride` config, plus a seventh in our own stand-in `picker.ts` (not a vendored file): seven edits in all, six of them
+in upstream's files. No logic changed. A diff of the two files against a fresh clone of the pinned commit shows exactly these and
+nothing else (re-checked in the v0.11 fix round); `test/vendor-upstream.test.ts` counts marker LINES (4 + 1), not edits.
+Line numbers: the local file's, with upstream's at the pinned commit in brackets (the markers add lines).
 
-1. `resident-set.ts` (line 219): `this.set!.files[i]` (possibly null inside a callback; the check above it rules null out).
-2. `stochastic-splat-renderer.ts` (line 361): `override execute()` on the raster pass.
-3. `stochastic-splat-renderer.ts` (line 362): `this.renderTarget ?? null` (the engine's types give `RenderTarget | null | undefined`).
-4. `stochastic-splat-renderer.ts` (line 379): `override execute()` on the bind pass.
-5. `stochastic-splat-renderer.ts` (line 2165): `device.backBuffer!.flipY`.
-6. `stochastic-splat-renderer.ts` (line 2570): `interleaveMesh?.destroy()`.
-7. `picker.ts` (our stand-in, below): `if (!cam) return;`.
+1. `resident-set.ts`, line 220 (upstream 219): `this.set!.files[i]` (possibly null inside a callback; the check above it rules null out).
+2. `stochastic-splat-renderer.ts`, line 362 (upstream 361): `override execute()` on the raster pass.
+3. `stochastic-splat-renderer.ts`, line 363 (upstream 362): `this.renderTarget ?? null` (the engine's types give `RenderTarget | null | undefined`). Items 2 and 3 share one marker line (361).
+4. `stochastic-splat-renderer.ts`, line 381 (upstream 379): `override execute()` on the bind pass.
+5. `stochastic-splat-renderer.ts`, line 2168 (upstream 2165): `device.backBuffer!.flipY`.
+6. `stochastic-splat-renderer.ts`, line 2574 (upstream 2570): `interleaveMesh?.destroy()`.
+7. `picker.ts` (our stand-in, below), line 30: `if (!cam) return;`.
 
 ## Stand-ins of ours (files upstream has, under the upstream names, so the vendored files stay byte-identical)
 

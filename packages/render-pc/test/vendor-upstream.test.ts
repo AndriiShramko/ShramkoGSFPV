@@ -15,7 +15,11 @@ function gitBlobId(text: string): string {
     return createHash('sha1').update(Buffer.concat([Buffer.from(`blob ${body.length}\0`), body])).digest('hex');
 }
 
-/** The pinned upstream blobs (commit 88482a6e4a145520cddf4d9c3d9e00481ae558c1) and how many "GSFPV:" edits the file may carry. */
+/**
+ * The pinned upstream blobs (commit 88482a6e4a145520cddf4d9c3d9e00481ae558c1) and how many lines marked "GSFPV:" the file may carry.
+ * A marked line can cover two edits (the renderer's raster pass: `override` and `?? null`): 4 lines hold 5 edits there, 1 line holds 1
+ * in the resident-set reader, so 6 edits in two vendored files (UPSTREAM.md lists each with its line).
+ */
 const VENDORED: Record<string, { blob: string; edits: number }> = {
     'render/stochastic-splat-renderer.ts': { blob: '4ecc457e540a07b02960dd7a53063491f05a080b', edits: 4 },
     'render/resident-set.ts': { blob: '830531af626c161c86b74225216747504aa67f53', edits: 1 },
