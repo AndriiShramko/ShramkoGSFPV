@@ -82,7 +82,7 @@ const INIT = `(() => {
   navigator.gpu.requestAdapter = async (o) => {
     const a = await ra(o); if (!a) return a;
     const rd = a.requestDevice.bind(a);
-    a.requestDevice = async (d) => { const dev = await rd(d); dev.addEventListener('uncapturederror', (e) => window.__gpuErrors.push(String(e.error && e.error.message).slice(0, 400))); return dev; };
+    a.requestDevice = async (d) => { const dev = await rd(d); dev.lost.then((i) => { window.__lost = i.reason + ' ' + String(i.message).slice(0, 200); }); dev.addEventListener('uncapturederror', (e) => window.__gpuErrors.push(String(e.error && e.error.message).slice(0, 400))); return dev; };
     return a;
   };
 })();`;

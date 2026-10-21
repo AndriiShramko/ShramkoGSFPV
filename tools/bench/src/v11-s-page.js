@@ -19,16 +19,22 @@ async (O) => {
   const N = W * H;
   const r2 = (x) => Math.round(x * 100) / 100, r3 = (x) => Math.round(x * 1000) / 1000;
   const mean = (a) => a.reduce((x, y) => x + y, 0) / (a.length || 1);
-  const nextEnd = () => new Promise((res) => app.once('frameend', res));
+  // one 'frameend' (a drawn frame), or an error after 20 s: a hidden or occluded window, a lost device and the like must end the run with a reason, not hang it
+  const waitEnd = (work) => new Promise((res, rej) => {
+    const t = setTimeout(() => { app.off('frameend', f); rej(new Error('no frame for 20 s at "' + (window.__progress || '') + '": ' + document.visibilityState + ', lost ' + (window.__lost || 'no') + ', gpu errors ' + JSON.stringify((window.__gpuErrors || []).slice(0, 3)))); }, 20000);
+    const f = () => { clearTimeout(t); try { res(work ? work() : undefined); } catch (e) { rej(e); } };
+    app.once('frameend', f);
+  });
+  const nextEnd = () => waitEnd(null);
   const settle = async (n) => { for (let i = 0; i < n; i++) await nextEnd(); };
   const lumaOf = (d) => { const l = new Uint8Array(N); for (let i = 0; i < N; i++) l[i] = (0.299 * d[4 * i] + 0.587 * d[4 * i + 1] + 0.114 * d[4 * i + 2] + 0.5) | 0; return l; };
   // read the canvas inside the frameend handler: luma (Uint8), the mean colour, optionally the RGBA copy
-  const snap = (keep) => new Promise((res) => app.once('frameend', () => {
+  const snap = (keep) => waitEnd(() => {
     cctx.drawImage(canvas, 0, 0, W, H);
     const d = cctx.getImageData(0, 0, W, H).data; const l = new Uint8Array(N); let mr = 0, mg = 0, mb = 0;
     for (let i = 0; i < N; i++) { const R = d[4 * i], G = d[4 * i + 1], B = d[4 * i + 2]; l[i] = (0.299 * R + 0.587 * G + 0.114 * B + 0.5) | 0; mr += R; mg += G; mb += B; }
-    res({ l, m: [mr / N, mg / N, mb / N], rgba: keep ? new Uint8ClampedArray(d) : null });
-  }));
+    return { l, m: [mr / N, mg / N, mb / N], rgba: keep ? new Uint8ClampedArray(d) : null };
+  });
   // frames 1..max after the call; the frames in `want` are read, the rest only counted
   const seq = async (max, want, keepAt = []) => { const out = {}; for (let f = 1; f <= max; f++) { if (want.includes(f)) out[f] = await snap(keepAt.includes(f)); else await nextEnd(); } return out; };
   const psnr = (a, b) => { let e = 0; for (let i = 0; i < N; i++) { const d = a[i] - b[i]; e += d * d; } e /= N; return e === 0 ? 99 : 10 * Math.log10(255 * 255 / e); };
@@ -82,6 +88,7 @@ async (O) => {
 
   // one arm on one path: settle at pose 0, then one frame per pose 1..frames; the luma frames, and the RGBA of the frames in `keepAt`
   const run = async (arm, pose, frames, keepAt = []) => {
+    window.__progress = 'run ' + arm + ' ' + frames + ' frames ' + (window.__what || '');
     await useArm(arm); pose(0); await settle(arm === 'A' || arm === 'AN' || arm === 'V' ? 30 : 10); await stable();
     const fr = [], kept = {};
     for (let k = 1; k <= frames; k++) { pose(k); const sn = await snap(keepAt.includes(k)); fr.push(sn.l); if (sn.rgba) kept[k] = sn.rgba; }
@@ -199,7 +206,7 @@ async (O) => {
     const Scr = (await run('S', cruise, O.frames)).fr, Sa1 = (await run('S', agile(1), 90)).fr, Sa2 = (await run('S', agile(2), 90)).fr, Sfl = (await run('S', flip, TOT)).fr;
     out.tune = [];
     for (const v of O.variants) {
-      variantOf.V = v;
+      variantOf.V = v; window.__what = 'tune ' + (v || 'default');
       const row = { variant: v };
       const c = await run('V', cruise, O.frames); row.cruise = vs(Scr, c.fr); row.cruise.flickerExcessPct = r2((flick(c.fr) - flick(Scr)) / flick(Scr) * 100);
       const a1 = await run('V', agile(1), 90); row.agile1 = vs(Sa1, a1.fr);

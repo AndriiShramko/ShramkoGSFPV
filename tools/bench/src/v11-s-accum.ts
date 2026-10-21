@@ -48,7 +48,7 @@ const GPU_ERRORS = `(() => {
   navigator.gpu.requestAdapter = async (o) => {
     const a = await ra(o); if (!a) return a;
     const rd = a.requestDevice.bind(a);
-    a.requestDevice = async (d) => { const dev = await rd(d); dev.addEventListener('uncapturederror', (e) => window.__gpuErrors.push(String(e.error && e.error.message).slice(0, 400))); return dev; };
+    a.requestDevice = async (d) => { const dev = await rd(d); dev.lost.then((i) => { window.__lost = i.reason + ' ' + String(i.message).slice(0, 200); }); dev.addEventListener('uncapturederror', (e) => window.__gpuErrors.push(String(e.error && e.error.message).slice(0, 400))); return dev; };
     return a;
   };
 })();`;
@@ -94,7 +94,8 @@ try {
                 k1: res.k1, k2: res.k2, gpuErrors: res.gpuErrors.length
             }));
         } catch (e) {
-            out.scenes[scene] = { error: String(e).slice(0, 600) };
+            const why = await page.evaluate('({ progress: window.__progress || null, lost: window.__lost || null, visible: document.visibilityState, gpuErrors: (window.__gpuErrors || []).slice(0, 3) })').catch(() => null);
+            out.scenes[scene] = { error: String(e).slice(0, 600), why };
             console.log(scene, 'failed', String(e).slice(0, 400));
         }
     }
