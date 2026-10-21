@@ -1,10 +1,14 @@
 // The adapter around the vendored SuperSplat renderer (v0.11 lane S, accum.ts) without a GPU: the engine-member check
-// (accumMissing), the guard that keeps an exception out of the engine's frame event (guardFrame), and the on/off/failed
-// life of AccumDrawing with a fake renderer. Controls: an unguarded frame throws; a checker that reports nothing passes an
-// engine that lacks every member; an adapter that does not remember a failure would enable again.
+// (accumMissing), the guards that keep an exception out of the engine's frame event, render graph and frameend (guardFrame,
+// guardRenderer), and the on/off/failed life of AccumDrawing with a fake renderer. What discriminates: each engine member is
+// removed from an otherwise complete engine and must be named; a throw at each guarded site must be swallowed, hand the splats
+// back (at the frame's end for the passes) and tell the caller once; an empty engine must be reported as missing everything;
+// an adapter that forgets a failure would enable again.
 import { describe, it, expect, vi } from 'vitest';
 import type { AppBase, CameraComponent, Layer } from 'playcanvas';
-import { AccumDrawing, accumMissing, guardFrame, worldLayer } from '../src/accum';
+import { AccumDrawing, accumMissing, guardFrame, guardRenderer, worldLayer } from '../src/accum';
+import type { GuardSite } from '../src/accum';
+import { ACCUM_REQUIRES } from '../src/accum-policy';
 import type { StochasticSplatRenderer } from '../src/vendor/supersplat-viewer/render/stochastic-splat-renderer';
 
 type Anything = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -58,11 +62,15 @@ describe('accumMissing', () => {
         expect(accumMissing(small, cam(), M4)).toEqual([]);
         expect(accumMissing(small, cam(), 8_000_000)).toContain('cache fits one storage binding');
     });
-    it('control: a checker that reports nothing would pass an engine that lacks everything', () => {
-        const empty = { graphicsDevice: { isWebGPU: false }, systems: {}, renderer: {}, scene: { layers: { getLayerById: () => null } } } as unknown as AppBase;
-        expect(accumMissing(empty, undefined, M4).length).toBeGreaterThanOrEqual(8);
-        const reportsNothing = (): string[] => [];
-        expect(reportsNothing()).toEqual([]);
+    it('control: an engine that lacks everything is reported as lacking every requirement, and the rows above name every requirement (a check dropped from accumMissing fails its row)', () => {
+        const empty = { graphicsDevice: { isWebGPU: false, wgpu: { limits: { maxStorageBufferBindingSize: 1 } } }, systems: {}, renderer: {}, scene: { layers: { getLayerById: () => null } } } as unknown as AppBase;
+        // every requirement the policy knows, from the real checker on the real (empty) shape
+        expect(new Set(accumMissing(empty, undefined, M4))).toEqual(new Set(ACCUM_REQUIRES));
+        // and the rows above each remove ONE member of a complete engine: together they cover every requirement
+        const named = new Set(cases.map(([, , want]) => want));
+        named.add('camera.beforePasses');
+        named.add('cache fits one storage binding');
+        expect(named).toEqual(new Set(ACCUM_REQUIRES));
     });
 });
 
@@ -94,33 +102,151 @@ describe('guardFrame', () => {
         expect(() => r.frame()).not.toThrow();
         expect((got[0] as Error).message).toBe('boom');
     });
-    it('control: without the guard the throw reaches the caller', () => {
-        const r = { frame() { throw new Error('boom'); } };
-        expect(() => r.frame()).toThrow('boom');
+});
+
+/** A renderer shaped like upstream's for the guards: its own `frame` and `onFrameEnd`, the passes it keeps (bind, raster, taa, four pixel-set passes), each with an `execute`. */
+function shaped(log: string[]) {
+    const pass = (name: string) => ({ name, execute() { log.push(name); } });
+    return {
+        frame() { log.push('frame'); },
+        onFrameEnd() { log.push('frameend'); },
+        bindPass: pass('bind'), rasterPass: pass('raster'), taaPass: pass('taa'), setPasses: [pass('s0'), pass('s1'), pass('s2'), pass('s3')]
+    };
+}
+/** The part of an app that carries `frameend`: records the handlers; `endFrame` is what the engine does at the end of a frame. */
+function events() {
+    const handlers: (() => void)[] = [];
+    const once: (() => void)[] = [];
+    return {
+        handlers,
+        on: (name: string, cb: () => void) => { if (name === 'frameend') handlers.push(cb); },
+        off: (name: string, cb: () => void) => { const i = handlers.indexOf(cb); if (name === 'frameend' && i >= 0) handlers.splice(i, 1); },
+        once: (name: string, cb: () => void) => { if (name === 'frameend') once.push(cb); },
+        endFrame() { for (const h of [...handlers]) h(); for (const h of once.splice(0)) h(); }
+    };
+}
+
+describe('guardRenderer', () => {
+    const sites = (calls: { site: GuardSite; e: unknown }[]) => calls.map((c) => c.site);
+
+    it('guards the frame function, the bind, raster, pixel-set and taa passes and the frameend handler, and says which', () => {
+        const log: string[] = [];
+        const r = shaped(log);
+        const app = events();
+        app.on('frameend', r.onFrameEnd);
+        const guarded = guardRenderer(r, app, { onThrow: () => undefined });
+        expect(guarded.sort()).toEqual(['bind', 'frame', 'frameend', 'raster', 'sets', 'taa']);
+        // the frameend registration moved to the guard: one handler, and it is the property's current value
+        expect(app.handlers).toHaveLength(1);
+        expect(app.handlers[0]).toBe(r.onFrameEnd);
+    });
+    it('swallows a throw at each site and names the site (the original function throws: the real thing the engine would have seen)', () => {
+        for (const site of ['frame', 'bind', 'raster', 'sets', 'taa', 'frameend'] as GuardSite[]) {
+            const log: string[] = [];
+            const r = shaped(log);
+            const app = events();
+            app.on('frameend', r.onFrameEnd);
+            const calls: { site: GuardSite; e: unknown }[] = [];
+            // make the ORIGINAL at that site throw before it is guarded
+            const boom = () => { throw new Error(`boom at ${site}`); };
+            if (site === 'frame') r.frame = boom;
+            else if (site === 'frameend') { app.off('frameend', r.onFrameEnd); r.onFrameEnd = boom; app.on('frameend', boom); }
+            else if (site === 'bind') r.bindPass.execute = boom;
+            else if (site === 'raster') r.rasterPass.execute = boom;
+            else if (site === 'taa') r.taaPass.execute = boom;
+            else r.setPasses[2].execute = boom;
+            guardRenderer(r, app, { onThrow: (s, e) => calls.push({ site: s, e }) });
+            // what the engine does: the event, the passes in order, the frameend event
+            const frame = (): void => { r.frame(); r.bindPass.execute(); for (const p of r.setPasses) p.execute(); r.rasterPass.execute(); r.taaPass.execute(); app.endFrame(); };
+            expect(frame, site).not.toThrow();
+            expect(sites(calls), site).toEqual([site]);
+            expect((calls[0].e as Error).message).toBe(`boom at ${site}`);
+        }
+    });
+    it('control: the same throw without the guard reaches the engine at every site (the guard is what stops it)', () => {
+        for (const site of ['frame', 'bind', 'raster', 'sets', 'taa', 'frameend'] as GuardSite[]) {
+            const log: string[] = [];
+            const r = shaped(log);
+            const app = events();
+            app.on('frameend', r.onFrameEnd);
+            const boom = () => { throw new Error('boom'); };
+            if (site === 'frame') r.frame = boom;
+            else if (site === 'frameend') { app.off('frameend', r.onFrameEnd); r.onFrameEnd = boom; app.on('frameend', boom); }
+            else if (site === 'bind') r.bindPass.execute = boom;
+            else if (site === 'raster') r.rasterPass.execute = boom;
+            else if (site === 'taa') r.taaPass.execute = boom;
+            else r.setPasses[0].execute = boom;
+            const frame = (): void => { r.frame(); r.bindPass.execute(); for (const p of r.setPasses) p.execute(); r.rasterPass.execute(); r.taaPass.execute(); app.endFrame(); };
+            expect(frame, site).toThrow('boom');
+        }
+    });
+    it('passes arguments and `this` through while nothing throws, and runs the hook first', () => {
+        const seen: unknown[] = [];
+        const r = { n: 0, frame(...a: unknown[]) { this.n++; seen.push(a); return 'done'; } };
+        const before: GuardSite[] = [];
+        guardRenderer(r, null, { onThrow: () => { throw new Error('unexpected'); }, before: (s) => before.push(s) });
+        expect(r.frame(1, 'two')).toBe('done');
+        expect(r.n).toBe(1);
+        expect(seen).toEqual([[1, 'two']]);
+        expect(before).toEqual(['frame']);
+    });
+    it('a throw from the hook is a throw of the function: swallowed, named, and the original does not run', () => {
+        const log: string[] = [];
+        const r = shaped(log);
+        const calls: GuardSite[] = [];
+        guardRenderer(r, null, { onThrow: (s) => calls.push(s), before: (s) => { if (s === 'raster') throw new Error('forced'); } });
+        r.rasterPass.execute();
+        r.taaPass.execute();
+        expect(calls).toEqual(['raster']);
+        expect(log).toEqual(['taa']);
+    });
+    it('once dead, every guarded function does nothing (the passes after a failed one never run on its half-written state)', () => {
+        const log: string[] = [];
+        const r = shaped(log);
+        let dead = false;
+        guardRenderer(r, null, { onThrow: () => { dead = true; }, dead: () => dead, before: (s) => { if (s === 'raster') throw new Error('x'); } });
+        r.bindPass.execute();
+        r.rasterPass.execute();
+        r.taaPass.execute();
+        r.frame();
+        expect(log).toEqual(['bind']);
+    });
+    it('a member an upstream update renamed is missing from the answer instead of crashing', () => {
+        const r = { frame() { /* kept */ }, rasterPass: {} as Record<string, unknown>, taaPass: null, setPasses: 'not a list' };
+        expect(guardRenderer(r, null, { onThrow: () => undefined })).toEqual(['frame']);
     });
 });
 
-/** A stand-in for upstream's renderer: records the calls the adapter makes. */
-function fake(): StochasticSplatRenderer & { calls: string[]; frame: (...a: unknown[]) => void } {
+type Fake = StochasticSplatRenderer & {
+    calls: string[]; frame: (...a: unknown[]) => void;
+    bindPass: { execute(): void }; rasterPass: { execute(): void }; taaPass: { execute(): void }; setPasses: { execute(): void }[]; onFrameEnd: () => void;
+};
+
+/** A stand-in for upstream's renderer: records the calls the adapter makes, and has the passes and the frameend handler the guards look for. */
+function fake(): Fake {
     const calls: string[] = [];
+    const pass = (name: string) => ({ execute() { calls.push(name); } });
     return {
         calls,
         frame: () => { calls.push('frame'); },
+        onFrameEnd: () => { calls.push('frameend'); },
+        bindPass: pass('bind'), rasterPass: pass('raster'), taaPass: pass('taa'), setPasses: [pass('s0'), pass('s1'), pass('s2'), pass('s3')],
         setEnabled(v: boolean) { calls.push(`enabled:${v}`); },
         setVariant(t: string) { calls.push(`variant:${t}`); },
         destroy() { calls.push('destroy'); },
         taaActive: true, culling: false, cullSuspended: false, gpuBytes: 1234, activeSplats: 77, variant: { taa: 'on', taaMax: 256 }
-    } as unknown as StochasticSplatRenderer & { calls: string[]; frame: (...a: unknown[]) => void };
+    } as unknown as Fake;
 }
 
 const make = (r = fake(), extra: Partial<ConstructorParameters<typeof AccumDrawing>[0]> = {}) => {
     const created: string[] = [];
     const fails: number[] = [];
+    const ev = events();
     const a = new AccumDrawing({
-        app: app(), camera: cam(), layer: {} as Layer, variant: 'taa:on',
+        app: Object.assign(app(), { on: ev.on, off: ev.off, once: ev.once }), camera: cam(), layer: {} as Layer, variant: 'taa:on',
         create: (v) => { created.push(v); return r; }, onFail: () => fails.push(1), ...extra
     });
-    return { a, r, created, fails };
+    return { a, r, created, fails, ev };
 };
 
 describe('AccumDrawing', () => {
@@ -189,6 +315,81 @@ describe('AccumDrawing', () => {
         expect(fails).toEqual([1]);
         expect(err).toHaveBeenCalled();
         err.mockRestore();
+    });
+    it('a throw inside a pass of the render graph: the passes after it do nothing, the hand-back and the caller wait for the frame\'s end (not in the middle of the render)', () => {
+        const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        const r = fake();
+        r.rasterPass.execute = () => { throw new Error('bad pass'); };
+        const { a, ev, fails } = make(r);
+        a.enable();
+        // what the engine does inside one render: the camera's passes in order
+        r.bindPass.execute(); r.rasterPass.execute(); r.taaPass.execute();
+        expect(a.failed).toBe('bad pass');
+        expect(a.failedAt).toBe('raster');
+        expect(a.active).toBe(false);
+        expect(r.calls).toEqual(['enabled:true', 'bind']); // taa did not run on the raster's half-written state, and nothing was torn down yet
+        expect(fails).toEqual([]);
+        ev.endFrame();
+        expect(r.calls.at(-1)).toBe('enabled:false');
+        expect(fails).toEqual([1]);
+        // a second frame: everything is dead, nothing runs, nothing is reported again
+        r.frame(); r.bindPass.execute(); r.taaPass.execute(); ev.endFrame();
+        expect(r.calls).toEqual(['enabled:true', 'bind', 'enabled:false']);
+        expect(fails).toEqual([1]);
+        expect(a.enable()).toBe(false);
+        err.mockRestore();
+    });
+    it('a frame that never ends still hands back, after 250 ms, and only once', () => {
+        vi.useFakeTimers();
+        const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        const r = fake();
+        r.taaPass.execute = () => { throw new Error('bad taa'); };
+        const { a, ev, fails } = make(r);
+        a.enable();
+        r.taaPass.execute();
+        expect(r.calls).not.toContain('enabled:false');
+        vi.advanceTimersByTime(250);
+        expect(r.calls.filter((c) => c === 'enabled:false')).toHaveLength(1);
+        expect(fails).toEqual([1]);
+        ev.endFrame(); // the late frameend does not hand back again
+        expect(r.calls.filter((c) => c === 'enabled:false')).toHaveLength(1);
+        expect(fails).toEqual([1]);
+        err.mockRestore();
+        vi.useRealTimers();
+    });
+    it('a throw in the frame function or the frameend handler hands back at once (the engine is not rendering with it)', () => {
+        const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        for (const site of ['frame', 'frameend'] as const) {
+            const r = fake();
+            const { a, ev, fails } = make(r);
+            a.enable();
+            a.forceFault(site);
+            if (site === 'frame') r.frame(); else ev.endFrame();
+            expect(a.failedAt, site).toBe(site);
+            expect(r.calls.at(-1), site).toBe('enabled:false');
+            expect(fails, site).toEqual([1]);
+        }
+        err.mockRestore();
+    });
+    it('forceFault throws once at the named site only, inside the guard (the page\'s way of exercising the real fallback)', () => {
+        const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        const { a, r, ev } = make();
+        a.enable();
+        a.forceFault('taa');
+        r.rasterPass.execute(); r.bindPass.execute(); r.frame();        // other sites: nothing happens
+        expect(a.failed).toBeNull();
+        expect(r.calls).toEqual(['enabled:true', 'raster', 'bind', 'frame']);
+        r.taaPass.execute();
+        expect(a.failed).toBe('forced fault at taa');
+        ev.endFrame();
+        expect(a.stats()).toMatchObject({ failed: 'forced fault at taa', failedAt: 'taa', active: false });
+        err.mockRestore();
+    });
+    it('says which sites are guarded', () => {
+        const { a } = make();
+        expect(a.stats().guarded).toEqual([]);
+        a.enable();
+        expect(a.stats().guarded.sort()).toEqual(['bind', 'frame', 'frameend', 'raster', 'sets', 'taa']);
     });
     it('control: an adapter that forgot a failure would enable again', () => {
         const r = fake();

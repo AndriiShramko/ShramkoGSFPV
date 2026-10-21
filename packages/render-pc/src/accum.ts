@@ -9,9 +9,11 @@
 //     untouched, so handing the picture back to the sorted drawing (REC, video export, share picture) needs no repair;
 //   - checks that this engine and device have everything the renderer drives directly (accumMissing) and reports what is
 //     missing instead of crashing, so renderer.ts keeps the engine's own dither on such an engine (planStochastic);
-//   - wraps the renderer's per-frame function: it runs inside the engine's gsplat `frame:ready` event, so an exception would
-//     break the engine's update for every frame. A throw switches the renderer off for good, hands the splats back to the
-//     sorted drawing and says so once (`failed`);
+//   - guards every place the renderer's code runs from the engine (guardRenderer): its per-frame function, which runs inside
+//     the engine's gsplat `frame:ready` event (an exception there would break the engine's update on every frame), the passes
+//     it adds to the camera's render graph (bind, raster, taa) and its `frameend` handler. A throw switches the renderer off
+//     for good, hands the splats back and says so once (`failed`, `failedAt`); a throw inside the render graph hands back
+//     at that frame's end, never in the middle of the render;
 //   - never asks the app for extra frames (`requestFrame` is a no-op): this page draws every frame, and a request would
 //     override the latency guard's deliberate hold (renderer.ts onFrameRender).
 // This file and the vendored folder are the first code of ours that reaches the engine's internal gsplat classes
@@ -76,23 +78,81 @@ export interface AccumStats {
     variant: Readonly<Record<string, unknown>>;
     /** the error that switched the renderer off, else null */
     failed: string | null;
+    /** where that error came from ('start': making or enabling the renderer), else null */
+    failedAt: GuardSite | 'start' | null;
+    /** the places the renderer's code runs from the engine that are guarded (guardRenderer) */
+    guarded: GuardSite[];
+}
+
+/** Where the renderer's code runs from the engine: its frame function, the three kinds of passes it adds to the camera, its frameend handler. */
+export type GuardSite = 'frame' | 'bind' | 'raster' | 'sets' | 'taa' | 'frameend';
+
+/** A throw inside the render graph (these sites) must not tear the renderer down while the engine is rendering with it. */
+const DURING_RENDER: readonly GuardSite[] = ['bind', 'raster', 'sets', 'taa'];
+
+export interface GuardHooks {
+    /** a guarded function threw: it is not rethrown, the engine goes on */
+    onThrow(site: GuardSite, e: unknown): void;
+    /** runs first inside every guarded function, so a throw from here is a throw of the function (the page's fault hook, forceFault) */
+    before?(site: GuardSite): void;
+    /** true once the renderer failed: every guarded function then does nothing, so the passes after the failed one never run on its half-written state */
+    dead?(): boolean;
+}
+
+/** `owner[key]` replaced by a function that runs the original under `hooks` (false: there is no such function, nothing was guarded). */
+function guardMember(owner: object, key: string, site: GuardSite, hooks: GuardHooks): boolean {
+    const target = owner as Record<string, unknown>;
+    const original = target[key];
+    if (typeof original !== 'function') return false;
+    const run = (original as (...a: unknown[]) => unknown).bind(owner);
+    target[key] = (...a: unknown[]): unknown => {
+        if (hooks.dead?.()) return undefined;
+        try {
+            hooks.before?.(site);
+            return run(...a);
+        } catch (e) {
+            hooks.onThrow(site, e);
+            return undefined;
+        }
+    };
+    return true;
 }
 
 /**
- * Make the renderer's per-frame function safe to run inside the engine's `frame:ready` event: the provider's callback looks
- * `frame` up on the instance when it fires, so a replacement on the instance is what runs. A throw goes to `onThrow` and the
- * engine's update goes on.
+ * Make every function the engine calls into the renderer safe, by replacing it on the instance (so no vendored line changes):
+ *   - `frame`: the provider's callback looks it up on the instance when the engine's `frame:ready` fires;
+ *   - `execute` of the bind pass, the raster pass, the four pixel-set passes and the taa pass: the render graph calls them
+ *     through the pass objects the renderer put into `camera.beforePasses` (they stay the same objects over disable and enable);
+ *   - `onFrameEnd`: registered on the app's `frameend`; the registration is replaced too (the renderer's `destroy` unregisters the
+ *     property's current value, which is the guard).
+ * Returns the sites that were guarded; a member an upstream update renamed is missing from it (the acceptance checks the list).
+ */
+export function guardRenderer(r: object, app: { on(name: string, cb: () => void): unknown; off(name: string, cb: () => void): unknown } | null, hooks: GuardHooks): GuardSite[] {
+    const R = r as Record<string, unknown>;
+    const done: GuardSite[] = [];
+    const add = (ok: boolean, site: GuardSite): void => { if (ok && !done.includes(site)) done.push(site); };
+    add(guardMember(r, 'frame', 'frame', hooks), 'frame');
+    for (const [field, site] of [['bindPass', 'bind'], ['rasterPass', 'raster'], ['taaPass', 'taa']] as const) {
+        const pass = R[field];
+        if (pass && typeof pass === 'object') add(guardMember(pass, 'execute', site, hooks), site);
+    }
+    const sets = R.setPasses;
+    if (Array.isArray(sets)) for (const pass of sets) if (pass && typeof pass === 'object') add(guardMember(pass, 'execute', 'sets', hooks), 'sets');
+    const onEnd = R.onFrameEnd;
+    if (app && typeof onEnd === 'function') {
+        app.off('frameend', onEnd as () => void);
+        add(guardMember(r, 'onFrameEnd', 'frameend', hooks), 'frameend');
+        app.on('frameend', R.onFrameEnd as () => void);
+    }
+    return done;
+}
+
+/**
+ * Make the renderer's per-frame function safe to run inside the engine's `frame:ready` event (guardRenderer's first site on its own):
+ * a throw goes to `onThrow` and the engine's update goes on.
  */
 export function guardFrame(r: object, onThrow: (e: unknown) => void): void {
-    const target = r as { frame: (...a: unknown[]) => void };
-    const frame = target.frame.bind(r);
-    target.frame = (...a: unknown[]): void => {
-        try {
-            frame(...a);
-        } catch (e) {
-            onThrow(e);
-        }
-    };
+    guardMember(r, 'frame', 'frame', { onThrow: (_site, e) => onThrow(e) });
 }
 
 export interface AccumOptions {
@@ -112,8 +172,14 @@ export class AccumDrawing {
     private on = false;
     /** why the renderer was switched off for good, else null */
     failed: string | null = null;
+    /** where the failing call came from, else null */
+    failedAt: GuardSite | 'start' | null = null;
+    /** the sites of the renderer's code that are guarded (guardRenderer; empty before the renderer is made) */
+    guarded: GuardSite[] = [];
     private variant: string;
     private readonly o: AccumOptions;
+    /** the site the next guarded call throws from (forceFault), else null */
+    private faultAt: GuardSite | null = null;
 
     constructor(o: AccumOptions) {
         this.o = o;
@@ -161,6 +227,15 @@ export class AccumDrawing {
         this.r?.setVariant(text);
     }
 
+    /**
+     * Test hook (the acceptance): the next call of the guarded function at `site` throws, inside the guard, so the real hand-back and
+     * the real fallback run in the real page. The throw is the guard's own try block's, not the vendored function's: it proves the
+     * guard and what follows a throw, not that a particular line of upstream can throw.
+     */
+    forceFault(site: GuardSite | null): void {
+        this.faultAt = site;
+    }
+
     stats(): AccumStats {
         const r = this.r;
         return {
@@ -171,7 +246,9 @@ export class AccumDrawing {
             gpuBytes: r && this.on ? r.gpuBytes : 0,
             activeSplats: r && this.on ? r.activeSplats : 0,
             variant: r ? { ...r.variant } : {},
-            failed: this.failed
+            failed: this.failed,
+            failedAt: this.failedAt,
+            guarded: [...this.guarded]
         };
     }
 
@@ -197,21 +274,50 @@ export class AccumDrawing {
                 // this page draws every frame; a request would override the latency guard's hold
                 requestFrame: () => undefined
             });
-        // `frame` runs inside the engine's `frame:ready` event: a throw there would break the engine's update on every frame
-        guardFrame(r, (e) => this.fail(e));
+        // `frame` runs inside the engine's `frame:ready` event (a throw there would break the engine's update on every frame), the
+        // passes and the frameend handler run inside the engine's render: all of it is guarded
+        this.guarded = guardRenderer(r, app as unknown as Parameters<typeof guardRenderer>[1], {
+            onThrow: (site, e) => this.fail(e, site),
+            before: (site) => {
+                if (this.faultAt === site) {
+                    this.faultAt = null;
+                    throw new Error(`forced fault at ${site}`);
+                }
+            },
+            dead: () => this.failed !== null
+        });
         return r;
     }
 
-    private fail(e: unknown): void {
+    /**
+     * The renderer threw: it is off for good (`failed`), the splats go back to the engine's renderer and the caller is told once.
+     * From inside the render graph (a pass) the hand-back waits for the frame's end: detaching the passes and freeing the targets
+     * while the engine is drawing with them would turn one throw into several; until then every guarded function does nothing.
+     */
+    private fail(e: unknown, site: GuardSite | 'start' = 'start'): void {
         if (this.failed !== null) return;
         this.failed = e instanceof Error ? e.message : String(e);
-        console.error('accumulating stochastic drawing failed, drawing sorted', e);
+        this.failedAt = site;
+        console.error(`accumulating stochastic drawing failed (${site}), drawing without it`, e);
         this.on = false;
-        try {
-            this.r?.setEnabled(false);
-        } catch (e2) {
-            console.error('accum hand-back', e2);
+        let handed = false;
+        const handBack = (): void => {
+            if (handed) return;
+            handed = true;
+            try {
+                this.r?.setEnabled(false);
+            } catch (e2) {
+                console.error('accum hand-back', e2);
+            }
+            this.o.onFail?.();
+        };
+        const app = this.o.app as unknown as { once?: (name: string, cb: () => void) => unknown };
+        if (site !== 'start' && DURING_RENDER.includes(site) && typeof app.once === 'function') {
+            app.once('frameend', handBack);
+            // the frame may never end (a throw elsewhere in the engine's tick): hand back anyway
+            setTimeout(handBack, 250);
+        } else {
+            handBack();
         }
-        this.o.onFail?.();
     }
 }

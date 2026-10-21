@@ -85,12 +85,21 @@ export function askFor(prefs: PrefsReader, scene: AskedScene): DrawingAsk {
  * The F3 line about the drawing: what it is and who decided it ("Render: stochastic (this device) · budget
  * 8 M splats (the link)"), the answer to "is it on, and why" that the owner could not get in v0.7.
  */
-export function drawingLine(d: Drawing, say: (key: string, vars?: Record<string, string | number>) => string, held = false, drawn?: 'sorted' | 'engine' | 'accum'): string {
+export function drawingLine(d: Drawing, say: (key: string, vars?: Record<string, string | number>) => string, held = false, drawn?: 'sorted' | 'engine' | 'accum', why?: string): string {
     // a recording (REC, auto-record) draws sorted while it runs (app/clean-draw.ts): the line says so, not what Auto would draw.
-    // `drawn` (the renderer's live answer, v0.11): the accumulating renderer says so; an engine that fell back to its own dither is plain "stochastic"
+    // `drawn` and `why` (the renderer's live answer and the reason of its last plan, v0.11): the accumulating renderer says so; the three
+    // states the pilot would otherwise not see are named: sorted while a scene switch holds the accumulating renderer back (why 'loading'),
+    // and the engine's own dither as a fallback after an error or on an engine without what the renderer needs (why 'failed' / 'unsupported';
+    // the bench's ?impl=engine control, why 'impl', stays plain "stochastic")
     const stochastic = d.stochastic && !held;
+    const mode = !stochastic ? 'sorted'
+        : drawn === 'accum' ? 'accumulating'
+            : drawn === 'sorted' && why === 'loading' ? 'loading'
+                : drawn === 'engine' && why === 'failed' ? 'fallback-failed'
+                    : drawn === 'engine' && why === 'unsupported' ? 'fallback-unsupported'
+                        : 'stochastic';
     return say('drawing.line', {
-        mode: say(`drawing.mode.${!stochastic ? 'sorted' : drawn === 'accum' ? 'accumulating' : 'stochastic'}`),
+        mode: say(`drawing.mode.${mode}`),
         modeFrom: say(held && d.stochastic ? 'drawing.from.rec' : `drawing.from.${d.from.stochastic}`),
         budget: Math.round(d.budgetM * 100) / 100,
         budgetFrom: say(`drawing.from.${d.from.budget}`),

@@ -4,8 +4,7 @@
 // and one that draws stochastic without a GPU-sort renderer each fail the rows that need the check.
 import { describe, it, expect } from 'vitest';
 import { ACCUM_REQUIRES, DEFAULT_STOCHASTIC_IMPL, STOCHASTIC_IMPLS, applyStochastic, parseImpl, planStochastic } from '../src/accum-policy';
-import type { AccumSwitch, DrawPlan, PlanInput } from '../src/accum-policy';
-import { applyDrawing } from '../src/drawing';
+import type { DrawPlan, PlanInput } from '../src/accum-policy';
 
 const base: PlanInput = { on: true, gpuSort: true, impl: 'accum', missing: [], failed: false };
 
@@ -120,41 +119,11 @@ describe('applyStochastic (the whole of SplatRenderer.setStochastic, without the
         expect(params.stochastic).toBe(false);
     });
 
-    describe('controls: a setStochastic missing one rule fails its own rows', () => {
-        // v0.10's: only the engine's flag follows the request, no adapter exists
-        const v010 = (i: PlanInput, params: { stochastic: boolean }) => { params.stochastic = i.on && i.gpuSort; return { made: 0 }; };
-        // one that makes the adapter whatever is asked
-        const eager = (i: PlanInput, make: () => AccumSwitch, existing: AccumSwitch | null, params: { stochastic: boolean }) => { make(); return applyStochastic(i, make, existing, params); };
-        it('v0.10\'s switch never makes the accumulating renderer, so "wanted and supported" would still draw the engine\'s dither', () => {
-            const params = { stochastic: false };
-            expect(v010(base, params).made).toBe(0);
-            expect(params.stochastic).toBe(true); // the engine's dither is on: the real policy keeps it off here
-            expect(run({}, null).params.stochastic).toBe(false);
-        });
-        it('an eager switch makes the renderer for a pilot on sorted', () => {
-            let made = 0;
-            eager({ ...base, on: false }, () => { made++; return fake(); }, null, { stochastic: false });
-            expect(made).toBe(1);
-            expect(run({ on: false }, null).made).toBe(0);
-        });
-        it('a switch that forgets to hand back leaves the renderer on when sorted is asked', () => {
-            // applyStochastic without its `existing?.disable()` line
-            const noHandBack = (i: PlanInput, make: () => AccumSwitch, params: { stochastic: boolean }) => {
-                let plan = planStochastic(i);
-                if (plan.draw === 'accum') {
-                    if (make().enable()) { applyDrawing(params, false, i.gpuSort); return { plan, on: true }; }
-                    plan = { draw: 'engine', why: 'failed' };
-                }
-                return { plan, on: applyDrawing(params, plan.draw === 'engine', i.gpuSort) };
-            };
-            const forgetful = fake();
-            noHandBack({ ...base, on: false }, () => forgetful, { stochastic: false });
-            expect(forgetful.calls).toEqual([]);
-            const was = fake();
-            run({ on: false }, was);
-            expect(was.calls).toEqual(['disable']);
-        });
-    });
+    // The controls of applyStochastic are its own rows above: each names the call a missing rule would drop or add (a switch that never
+    // makes the renderer: "wanted and supported" expects made 1 and the engine's flag off; one that makes it for a pilot on sorted: "not
+    // wanted" expects made 0; one that forgets to hand back: "an adapter made before is handed back" expects calls ['disable']). An
+    // earlier version of this file kept locally pasted copies of applyStochastic as "controls"; they tested the copies and were
+    // removed (v0.11 fix round, finding: controls that cannot fail).
 });
 
 describe('the implementation names', () => {
