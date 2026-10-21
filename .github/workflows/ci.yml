@@ -13,10 +13,9 @@ jobs:
   test-and-build:
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    env:
-      # the build and the browser smoke must agree on the GA id (public Measurement ID, not a
-      # secret): verify.mjs then expects the consent banner and mocks every GA hit
-      NEXT_PUBLIC_GA_ID: G-E7X0ES0QBE
+    # the GA Measurement ID is committed in the sources (apps/site/src/lib/track.ts,
+    # apps/fly/src/app/analytics.ts); build-release.mjs refuses a release without it and
+    # verify.mjs reads it from track.ts, expects the consent banner and mocks every GA hit
     steps:
       - uses: actions/checkout@v4
         with:
