@@ -326,6 +326,8 @@ async function main(): Promise<void> {
             await open(n.page, NEW, `scene=${ROOM}&stochastic&governor=0`);
             await waitComplete(n.page, 60000);
             await frames(n.page, 60);
+            // the page's own video memory with the first scene on screen: the last scene (the first one again) is compared with it
+            const vramStart = await hook<number>(n.page, 'const v = s.renderer.device._vram; return v ? Math.round((v.tex + v.sb + v.vb + v.ib + v.ub) / 1048576) : -1;');
             const steps: Any[] = [];
             for (const scale of [0.6, 1, 0.8, 1]) {
                 await hook(n.page, `s.renderer.setRenderScale(${scale}); return 0;`);
@@ -354,8 +356,8 @@ async function main(): Promise<void> {
             const lastErrors = errors(n.log);
             out.V7 = { scale: steps, switches, pageErrors: lastErrors };
             check(`V7 five scenes in a page with the renderer on (${ROOM} > ${switches.map((x) => x.scene).join(' > ')}): every switch ends done, the accumulating renderer draws each once its first view is complete (millions of splats), no GPU error`, switches.length === 4 && switches.every((x) => x.state === 'done' && x.drawn === 'accum' && x.active === true && x.splatsM > 0.5 && x.taa === true && x.gpuErrors === 0));
-            const v0 = switches[0].vramMiB;
-            check(`V7 video memory does not grow across the switches (${switches.map((x) => x.vramMiB).join(', ')} MiB; the last scene is the first one again and may differ by 15 %)`, switches.every((x) => x.vramMiB > 0) && switches[switches.length - 1].vramMiB <= v0 * 1.15 + 50);
+            out.V7.vramStartMiB = vramStart;
+            check(`V7 video memory does not grow across the switches: ${vramStart} MiB with the first scene, then ${switches.map((x) => x.vramMiB).join(', ')} MiB; the last scene is the first one again and ends within 15 % + 50 MiB of where it began (the engine frees a replaced scan's textures lazily, so the middle numbers wander)`, vramStart > 0 && switches.every((x) => x.vramMiB > 0) && switches[switches.length - 1].vramMiB <= vramStart * 1.15 + 50);
             check('V7 no page error through the scale steps and the scene switches', lastErrors.length === 0);
             await n.ctx.close();
             const off = await context(browser);
