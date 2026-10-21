@@ -4,7 +4,13 @@
 // Arms, all on the SAME view, budget and poses:
 //   S  sorted (the reference)        E  the engine's own dither (impl 'engine', v0.10)
 //   A  the accumulating renderer with upstream's defaults        A0  A with taa:off (single frame, the vendored renderer's raw quality)
-//   AN A with no clamp and a long moving history (taaClip:0, taaMoveMax:64, taaMotion:0): the negative control of the motion tests
+//   AN A with no clamp and a long moving history (taaClip:0, taaMoveMax:64, taaMotion:0): the negative control of the motion tests;
+//      taaMotion:0 also switches off the cap that shortens the history with the image motion and the cap on a history an occluder left behind
+//   AX A with no clamp, parallax off and a long history (taaClip:0, taaParallax:off, taaMoveMax:64): the second control of the strafe test (q6)
+// Every moving path is also run twice in sorted (S and S2): the second run is the FLOOR of what a number against S can mean (two runs of the same
+// drawing on the same poses; on a streamed scan the levels of detail differ between runs, so the floor is low there and a renderer reading near it is not being measured).
+// Q4 (flip) is a pure rotation about a fixed point: history reprojection is exact for it whatever the history length, so it cannot show ghosting;
+// that is what Q6 (a strafe past occlusion edges, translation with parallax) is for.
 // One frame per pose: the pose is set right after a frame's 'frameend' (so the next frame draws it) and the next 'frameend'
 // reads the canvas, the only moment a WebGPU canvas holds its picture. Luma is stored as Uint8 (one byte a pixel).
 async (O) => {
@@ -61,7 +67,8 @@ async (O) => {
 
   // ---- arms
   const ACC = () => r.accumulating && r.accumulating.inner;
-  const variantOf = { A: '', A0: 'taa:off', AN: 'taaClip:0,taaMoveMax:64,taaMotion:0' };
+  const variantOf = { A: '', A0: 'taa:off', AN: 'taaClip:0,taaMoveMax:64,taaMotion:0', AX: 'taaClip:0,taaParallax:off,taaMoveMax:64' };
+  const longHistory = ['A', 'AN', 'AX', 'V'];
   const useArm = async (name) => {
     if (name === 'S') r.setStochastic(false);
     else if (name === 'E') { r.stochasticImpl = 'engine'; r.setStochastic(true); }
@@ -89,7 +96,7 @@ async (O) => {
   // one arm on one path: settle at pose 0, then one frame per pose 1..frames; the luma frames, and the RGBA of the frames in `keepAt`
   const run = async (arm, pose, frames, keepAt = []) => {
     window.__progress = 'run ' + arm + ' ' + frames + ' frames ' + (window.__what || '');
-    await useArm(arm); pose(0); await settle(arm === 'A' || arm === 'AN' || arm === 'V' ? 30 : 10); await stable();
+    await useArm(arm); pose(0); await settle(longHistory.includes(arm) ? 30 : 10); await stable();
     const fr = [], kept = {};
     for (let k = 1; k <= frames; k++) { pose(k); const sn = await snap(keepAt.includes(k)); fr.push(sn.l); if (sn.rgba) kept[k] = sn.rgba; }
     return { fr, kept };
@@ -133,8 +140,12 @@ async (O) => {
 
   // ================= Q2 cruise, Q3 FPV-agile (and at the 30 Hz step), Q5 hover: S then the other arms on the same poses
   const motion = async (pose, frames, arms, picAt, withTstd) => {
+    if (O.warm) await run('S', pose, frames);     // the levels of detail the path needs are resident (and chosen) before anything is measured
     const S = await run('S', pose, frames, picAt ? [picAt] : []);
     const res = { frames, S: { flicker: r2(flick(S.fr)) } };
+    // the floor: the same drawing on the same poses once more (what a number against S can mean at all on this scene)
+    const S2 = await run('S', pose, frames);
+    res.floor = { ...vs(S.fr, S2.fr), flicker: r2(flick(S2.fr)) };
     if (withTstd) res.S.tstd = r2(tstd(S.fr));
     const kept = { S: S.kept };
     for (const arm of arms) {
@@ -170,9 +181,10 @@ async (O) => {
   if (O.modes.includes('q4')) {
     const AFTER = 64, TOT = FLIP + AFTER, KEEP = [FLIP + 1, FLIP + 4, FLIP + 16];
     // frame t (1-based) has pose flip(t); frame FLIP is the arrival at the final pose, FLIP + j the j-th frame after it
+    if (O.warm) await run('S', flip, TOT);
     const S = await run('S', flip, TOT, KEEP);
     const S2 = await run('S', flip, TOT);
-    const q4 = { flipFrames: FLIP, afterFrames: AFTER, floor: { j1Psnr: r2(psnr(S.fr[FLIP], S2.fr[FLIP])), ghost48: r3(mean([1, 2, 3, 4].map((j) => ghost(S.fr[FLIP + j - 1], S2.fr[FLIP + j - 1], 48)))) } };
+    const q4 = { flipFrames: FLIP, afterFrames: AFTER, floor: { ...vs(S.fr, S2.fr), j1Psnr: r2(psnr(S.fr[FLIP], S2.fr[FLIP])), ghost48: r3(mean([1, 2, 3, 4].map((j) => ghost(S.fr[FLIP + j - 1], S2.fr[FLIP + j - 1], 48)))) }, note: 'pure rotation about a fixed point: history reprojection is exact, so this path cannot show ghosting (see q6)' };
     let w = null; const tiles = {};
     for (const arm of ['E', 'A', 'AN']) {
       const X = await run(arm, flip, TOT, KEEP);
@@ -197,6 +209,56 @@ async (O) => {
     }
     for (const [n, b] of Object.entries(tiles)) pics.push({ name: 'q4-j4-' + n, b64: b });
     out.q4 = q4; lap('q4');
+  }
+
+  // ================= Q6 strafe past occlusion edges: translation with parallax (the case Q4 cannot show) and the trailing it can leave
+  // The view is fixed (looking along -z), the camera slides 1 m either side of the start (a sinusoid, peak 5 m/s at the 60 Hz step; sc = 2 is the 30 Hz step at the
+  // same speed), two periods, from rest. In a room the nearest surfaces move 20 to 30 px a frame across the picture, their edges uncover background every frame.
+  // TRAILING: a pixel counts as "changed" when sorted's frame k differs by more than 40 levels from sorted's frame k - m (an edge or a surface moved there); it is
+  // "trailing" when arm X's frame k is within 16 levels of the OLD sorted frame and more than 40 off the CURRENT one: X still shows what was there m frames ago.
+  // Reported as the share of changed pixels (mean, p95, max over the frames from the 9th on) and the share of all pixels that changed (the path must have edges).
+  // The reference of nothing-to-trail is A0 (taa:off, one frame, no history); the control that must lose is AN (no clamp, no motion cap, no occluder cap, history 64) and
+  // AX (no clamp, parallax off, history 64); the floor is sorted's second run.
+  if (O.modes.includes('q6')) {
+    out.q6 = {};
+    const AMP = 1.0, T = 75;
+    const strafe = (sc) => (k) => { const t = k * sc; const x = p0[0] + AMP * Math.sin(2 * Math.PI * t / T - Math.PI / 2); r.setCameraLookAt(x, p0[1], p0[2], x, p0[1] - 0.1, p0[2] - 1); };
+    const TH_CHANGED = 40, TH_NEAR = 16, FROM = 8;
+    const trail = (X, S, m) => {
+      let ch = 0, tr = 0; const per = [];
+      for (let k = FROM; k < X.length; k++) {
+        const xk = X[k], sk = S[k], so = S[k - m]; let c = 0, t = 0;
+        for (let i = 0; i < N; i++) {
+          if (Math.abs(sk[i] - so[i]) <= TH_CHANGED) continue;
+          c++;
+          if (Math.abs(xk[i] - so[i]) < TH_NEAR && Math.abs(xk[i] - sk[i]) > TH_CHANGED) t++;
+        }
+        per.push(c ? t / c : 0); ch += c; tr += t;
+      }
+      const srt = [...per].sort((u, v) => u - v);
+      return { mean: r3(tr / Math.max(1, ch)), p95: r3(srt[Math.min(srt.length - 1, Math.floor(0.95 * (srt.length - 1)))]), max: r3(srt[srt.length - 1]), changedShare: r3(ch / ((X.length - FROM) * N)) };
+    };
+    for (const sc of [1, 2]) {
+      const pose = strafe(sc), frames = Math.round(150 / sc), m = sc === 1 ? 2 : 1, picK = Math.round(94 / sc);
+      const pics6 = O.pics && sc === 1 ? [picK] : [];
+      window.__what = 'q6 step ' + sc;
+      if (O.warm) await run('S', pose, frames);
+      const S = await run('S', pose, frames, pics6);
+      const S2 = await run('S', pose, frames);
+      const q6 = { frames, lagFrames: m, thresholds: { changed: TH_CHANGED, near: TH_NEAR, fromFrame: FROM + 1 }, floor: { ...vs(S.fr, S2.fr), trail: trail(S2.fr, S.fr, m) } };
+      const kept = { S: S.kept };
+      for (const arm of ['E', 'A0', 'A', 'AN', 'AX']) {
+        const X = await run(arm, pose, frames, pics6);
+        q6[arm] = { ...vs(S.fr, X.fr), trail: trail(X.fr, S.fr, m) };
+        kept[arm] = X.kept;
+      }
+      out.q6['step' + sc] = q6;
+      if (pics6.length) {
+        const w = worstTile(lumaOf(kept.S[picK]), lumaOf(kept.AN[picK]));
+        for (const n of ['S', 'A0', 'A', 'AN', 'AX']) pics.push({ name: 'q6-k' + picK + '-' + n, b64: await crop(kept[n][picK], w.x, w.y) });
+      }
+    }
+    lap('q6');
   }
 
   // ================= tune: one knob set of the accumulation at a time (O.variants: upstream's `key:value,...` strings, '' = its defaults)

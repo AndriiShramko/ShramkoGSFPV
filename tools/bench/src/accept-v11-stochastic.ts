@@ -11,16 +11,26 @@
 //       the plan says unsupported).
 //   V2  at rest it converges to the sorted picture: after 256 frames every one of four views is above PSNR 33 dB (luma) and within
 //       1.5 levels of the sorted mean colour. Controls: one frame of the same renderer, and the engine's dither, stay below 25 dB.
-//   V3  after a fast turn it does not ghost: 180 deg in 12 frames then still: from the 2nd frame after the stop the picture is closer to
-//       the final view than to the view two frames before the stop, and its share of pixels more than 48 levels off the sorted
-//       picture is not above the engine dither's plus 1 %. Control: no colour clamp and a long moving history (taaClip 0, taaMoveMax
-//       64, taaMotion 0) smears: its worst lag is negative where the defaults' is not, or it has more ghost pixels.
+//   V3  motion. (a) after a fast turn (pure rotation: 180 deg in 12 frames then still; history reprojection is exact for a rotation, so
+//       this tests LAG, not ghosting) the picture from the 2nd frame after the stop is closer to the final view than to the view two frames
+//       before the stop. (b) TRAILING under translation with parallax (a 5 m/s strafe past the room's edges at the 60 Hz and the 30 Hz step):
+//       the share of changed pixels that still show the old picture is not above that of one frame without history (taa:off) plus 1 %.
+//       Controls: no colour clamp and a long history (AN: taaClip 0, taaMoveMax 64, taaMotion 0; AX: taaClip 0, taaParallax off, taaMoveMax 64)
+//       must trail at least 2 % more than the defaults, or the strafe test cannot tell a ghosting renderer from this one and the claim is void;
+//       the path must have edges (2 % of the pixels change); sorted against a second sorted run (the floor of every number against sorted)
+//       shows no trailing and reads above 55 dB.
 //   V4  REC stays sorted: the drawing is the accumulating one before, sorted while it records (the hold), accumulating again after.
 //   V5  the share picture stays sorted: the frame it is made from is drawn sorted (within 40 dB of a sorted frame), the page returns
 //       to accumulating right after.
 //   V6  CSP stays strict: no securitypolicyviolation in any page; the release has no more eval / new Function / hosts than the BASE.
 //   V7  integration: render scale steps, four scene switches with the renderer on (sorted while a scene loads, accumulating again at its first complete view; no growth of video memory, no GPU error), ?render=off draws nothing.
 //   V8  the order of who decides is unchanged: the link, then the pilot's Render setting; nothing asked is sorted and makes no renderer.
+//   V9  a fault in the real page (the page's own guards, hand-back and fallback, with a real engine and device): the next call at a guarded site
+//       (frame, raster pass, taa pass, frameend handler) throws inside its guard; the renderer is off for good, the engine's own dither draws, F3 says
+//       "stochastic, fallback dither after an error", no WebGPU validation error and no page error, the picture stays lit and frames go on; the renderer
+//       does not come back after a scene switch (decided: a throw is a defect for this page, not a loading state). The guard covers the five sites.
+//       The throw is forced inside the guard (AccumDrawing.forceFault): it proves the guard and what follows, not that a given line of upstream can throw.
+//       V7 also reads F3 during a scene switch: "sorted while the scene loads", then accumulating again.
 //   SITE_DIST=dist BASE_DIST=.cache/dist-base npx tsx src/accept-v11-stochastic.ts [V1 V2 ...]   (from tools/bench)
 // Evidence: evidence/<date>/v11-stochastic.json
 import { spawn } from 'node:child_process';
@@ -212,7 +222,7 @@ async function main(): Promise<void> {
             const a = await context(browser);
             await open(a.page, NEW, `scene=${ROOM}&stochastic=0&governor=0`);
             await waitComplete(a.page, 60000);
-            const modes = [...(want('V2') ? ['q1'] : []), ...(want('V3') ? ['q4', 'q3'] : [])];
+            const modes = [...(want('V2') ? ['q1'] : []), ...(want('V3') ? ['q4', 'q3', 'q6'] : [])];
             const res = await a.page.evaluate(`(${PAGE})(${JSON.stringify({ W: 1280, H: 720, frames: 48, pics: false, modes })})`) as Any;
             delete res.pics;
             out.V23 = { ...res, errors: errors(a.log) };
@@ -228,11 +238,18 @@ async function main(): Promise<void> {
             if (want('V3')) {
                 const q4 = res.q4 as Any;
                 const leads = [2, 3, 4, 8].map((j) => q4.A.lead[j]);
-                check(`V3 after a fast turn there is no smear: from the 2nd frame after the stop the picture is closer to the final view than to the one two frames before it (lead ${leads.join(', ')} dB, all >= 0)`, leads.every((x: number) => x >= 0));
-                check(`V3 and no ghosts: pixels more than 48 levels off the sorted picture just after the stop ${q4.A.ghost48} against the engine dither's ${q4.E.ghost48} (+1 % allowed)`, q4.A.ghost48 <= q4.E.ghost48 + 0.01);
+                check(`V3 (a) after a fast turn (a pure rotation: lag, not ghosting) the picture is not a smear of the old view: from the 2nd frame after the stop it is closer to the final view than to the one two frames before it (lead ${leads.join(', ')} dB, all >= 0)`, leads.every((x: number) => x >= 0));
                 const q3 = res.q3.step1 as Any;
                 check(`V3 control: where the motion is sustained (360 deg/s, +-60 deg roll, 6 m/s: 90 frames) no colour clamp and a long moving history (AN) are worse: PSNR ${q3.AN.psnrMean} (worst ${q3.AN.psnrMin}) against the defaults' ${q3.A.psnrMean} (worst ${q3.A.psnrMin})`, q3.AN.psnrMean < q3.A.psnrMean - 1 && q3.AN.psnrMin < q3.A.psnrMin);
-                check(`V3 control: the sorted run against a second sorted run has no ghosts (${q4.floor.ghost48})`, q4.floor.ghost48 < 0.005, true);
+                const floors = [['turn', q4.floor], ['agile', q3.floor], ['agile 30 Hz', (res.q3.step2 as Any).floor], ['strafe', res.q6.step1.floor], ['strafe 30 Hz', res.q6.step2.floor]] as [string, Any][];
+                check(`V3 control: the reference is reproducible on this scene: sorted against a second sorted run reads above 55 dB on every moving path (${floors.map(([n, f]) => `${n} ${f.psnrMean}`).join(', ')})`, floors.every(([, f]) => f.psnrMean > 55), true);
+                for (const step of ['step1', 'step2']) {
+                    const q6 = res.q6[step] as Any;
+                    const hz = step === 'step1' ? '60 Hz step' : '30 Hz step';
+                    check(`V3 control: the strafe (${hz}) has edges to trail at (${q6.A.trail.changedShare} of the pixels change between frames, 0.02 or more) and sorted against a second sorted run shows no trailing (${q6.floor.trail.mean}, under 0.005)`, q6.A.trail.changedShare >= 0.02 && q6.floor.trail.mean < 0.005, true);
+                    check(`V3 (b) under translation past edges (${hz}) the picture does not trail: ${q6.A.trail.mean} of the changed pixels still show the old picture (p95 ${q6.A.trail.p95}, max ${q6.A.trail.max}), one frame without history shows ${q6.A0.trail.mean}, the engine's dither ${q6.E.trail.mean}; allowed: the no-history figure + 0.01`, q6.A.trail.mean <= q6.A0.trail.mean + 0.01);
+                    check(`V3 control: no colour clamp and a long history trail (${hz}): AN ${q6.AN.trail.mean} and AX ${q6.AX.trail.mean} against the defaults' ${q6.A.trail.mean} (2 % more, or the test cannot see a ghosting renderer)`, q6.AN.trail.mean >= q6.A.trail.mean + 0.02 && q6.AX.trail.mean >= q6.A.trail.mean + 0.02, true);
+                }
             }
             pass.V2 = want('V2');
             pass.V3 = want('V3');
@@ -343,20 +360,35 @@ async function main(): Promise<void> {
             await hook(n.page, 'return 0;');
             const vram = async (): Promise<number> => hook<number>(n.page, 'const v = s.renderer.device._vram; return v ? Math.round((v.tex + v.sb + v.vb + v.ib + v.ub) / 1048576) : -1;');
             const switches: Any[] = [];
+            // F3 shown: the line about the drawing is read while each scene loads (the accumulating renderer waits, sorted draws: the line must say so)
+            const line0 = await f3(n.page);
+            const readLine = (): Promise<string> => n.page.evaluate(() => (document.querySelector('[data-testid=drawing-line]') || {} as Element).textContent || '');
             for (let i = 1; i < SCENES5.length; i++) {
                 await hook(n.page, 'h.sceneSwitch = null; return 0;');
                 await hook(n.page, `h.scenes.load(${JSON.stringify(SCENES5[i])}, 'next'); return 0;`);
                 let sw: Any = null;
-                for (let t0 = Date.now(); Date.now() - t0 < 180000;) { sw = await hook(n.page, 'return h.sceneSwitch ? { ...h.sceneSwitch } : null;'); if (sw && (sw.state === 'done' || sw.state === 'failed')) break; await sleep(300); }
+                const lines = new Set<string>();
+                for (let t0 = Date.now(); Date.now() - t0 < 180000;) {
+                    sw = await hook(n.page, 'return h.sceneSwitch ? { ...h.sceneSwitch } : null;');
+                    lines.add((await readLine()).replace(/ · budget.*$/, ''));
+                    if (sw && (sw.state === 'done' || sw.state === 'failed')) break;
+                    await sleep(250);
+                }
                 await waitComplete(n.page, 90000);
                 await frames(n.page, 60);
+                await sleep(500);
                 const st = await state(n.page);
-                switches.push({ scene: SCENES5[i], state: sw?.state, drawn: st.drawn, active: st.accum?.active, splatsM: Math.round((st.accum?.activeSplats ?? 0) / 1e5) / 10, taa: st.accum?.taaActive, vramMiB: await vram(), gpuErrors: st.gpuErrors.length });
+                const lineAfter = (await readLine()).replace(/ · budget.*$/, '');
+                switches.push({ scene: SCENES5[i], state: sw?.state, drawn: st.drawn, active: st.accum?.active, splatsM: Math.round((st.accum?.activeSplats ?? 0) / 1e5) / 10, taa: st.accum?.taaActive, vramMiB: await vram(), gpuErrors: st.gpuErrors.length, f3Seen: [...lines], f3After: lineAfter });
             }
             const lastErrors = errors(n.log);
             out.V7 = { scale: steps, switches, pageErrors: lastErrors };
             check(`V7 five scenes in a page with the renderer on (${ROOM} > ${switches.map((x) => x.scene).join(' > ')}): every switch ends done, the accumulating renderer draws each once its first view is complete (millions of splats), no GPU error`, switches.length === 4 && switches.every((x) => x.state === 'done' && x.drawn === 'accum' && x.active === true && x.splatsM > 0.5 && x.taa === true && x.gpuErrors === 0));
             out.V7.vramStartMiB = vramStart;
+            const held = switches.filter((x) => (x.f3Seen as string[]).some((l) => /^Render: sorted while the scene loads/.test(l)));
+            check(`V7 F3 says what draws while a scene loads: "sorted while the scene loads" was on the line in ${held.length} of ${switches.length} switches, and "stochastic, accumulating" again after each (${switches.map((x) => x.f3After).join(' | ')}); before the first switch it said "${line0.replace(/ · budget.*$/, '')}"`,
+                held.length >= 3 && switches.every((x) => /^Render: stochastic, accumulating/.test(x.f3After)) && /^Render: stochastic, accumulating/.test(line0));
+            check('V7 control: the line is not stuck on the hold text (what is seen first and last differs in every switch)', switches.every((x) => (x.f3Seen as string[]).length >= 2), true);
             check(`V7 video memory does not grow across the switches: ${vramStart} MiB with the first scene, then ${switches.map((x) => x.vramMiB).join(', ')} MiB; the last scene is the first one again and ends within 15 % + 50 MiB of where it began (the engine frees a replaced scan's textures lazily, so the middle numbers wander)`, vramStart > 0 && switches.every((x) => x.vramMiB > 0) && switches[switches.length - 1].vramMiB <= vramStart * 1.15 + 50);
             check('V7 no page error through the scale steps and the scene switches', lastErrors.length === 0);
             await n.ctx.close();
@@ -402,6 +434,51 @@ async function main(): Promise<void> {
             check('V8 the pilot choosing Stochastic gets the accumulating renderer ("your setting"), Auto hands it back', pilotAsks.drawn === 'accum' && pilotAsks.hook?.from?.stochastic === 'setting' && handedBack.drawn === 'sorted');
             pass.V8 = true;
         }
+        // ------------------------------------------------------------------ V9 a fault in the real page
+        if (want('V9')) {
+            const rows: Any[] = [];
+            const lumaMean = async (p: Page): Promise<number> => { const lum = await p.evaluate(`${luma640}(2)`) as string; return Math.round(Buffer.from(lum, 'base64').reduce((a, b) => a + b, 0) / (640 * 360) * 10) / 10; };
+            const trim = (l: string): string => l.replace(/ · budget.*$/, '');
+            for (const site of ['frame', 'raster', 'taa', 'frameend']) {
+                const n = await context(browser);
+                await open(n.page, NEW, `scene=${ROOM}&stochastic&governor=0`);
+                await waitComplete(n.page, 60000);
+                await frames(n.page, 60);
+                const pre = await state(n.page);
+                const linePre = trim(await f3(n.page));
+                const meanPre = await lumaMean(n.page);
+                await hook(n.page, `s.renderer.accumulating.forceFault(${JSON.stringify(site)}); return 0;`);
+                await frames(n.page, 40);
+                await sleep(500);
+                const post = await state(n.page);
+                const linePost = trim(await f3(n.page));
+                const meanPost = await lumaMean(n.page);
+                const row: Any = { site, pre: { drawn: pre.drawn, guarded: pre.accum?.guarded, linePre, meanPre }, post: { drawn: post.drawn, plan: post.plan, failed: post.accum?.failed, failedAt: post.accum?.failedAt, active: post.accum?.active, engineFlag: post.engineFlag, linePost, meanPost, gpuErrors: post.gpuErrors.length }, pageErrors: errors(n.log).length };
+                if (site === 'taa') {
+                    // a throw is a defect of this page, not a loading state: a scene switch does not bring the renderer back (decided, see the note)
+                    await hook(n.page, "h.sceneSwitch = null; h.scenes.load('7a475d38', 'next'); return 0;");
+                    for (let t0 = Date.now(); Date.now() - t0 < 120000;) { const sw = await hook<Any>(n.page, 'return h.sceneSwitch ? { ...h.sceneSwitch } : null;'); if (sw && (sw.state === 'done' || sw.state === 'failed')) { row.switchState = sw.state; break; } await sleep(300); }
+                    await waitComplete(n.page, 60000);
+                    await frames(n.page, 40);
+                    const aft = await state(n.page);
+                    row.afterSwitch = { drawn: aft.drawn, plan: aft.plan, failed: aft.accum?.failed, line: trim(await f3(n.page)), meanLit: await lumaMean(n.page), gpuErrors: aft.gpuErrors.length };
+                    row.pageErrors = errors(n.log).length;
+                }
+                rows.push(row);
+                await n.ctx.close();
+                check(`V9 [${site}] before the fault the accumulating renderer draws and says so ("${linePre}"), and every site of its code that the engine calls is guarded (${(pre.accum?.guarded ?? []).join(', ')})`, pre.drawn === 'accum' && /^Render: stochastic, accumulating/.test(linePre) && ['frame', 'bind', 'raster', 'taa', 'frameend'].every((x) => (pre.accum?.guarded ?? []).includes(x)), true);
+                check(`V9 [${site}] a throw there: the renderer is off for good (failed "${post.accum?.failed}" at ${post.accum?.failedAt}), the engine's own dither draws (drawn ${post.drawn}, plan ${post.plan?.draw}/${post.plan?.why}, its flag ${post.engineFlag})`, post.drawn === 'engine' && post.plan?.draw === 'engine' && post.plan?.why === 'failed' && post.accum?.failed === `forced fault at ${site}` && post.accum?.failedAt === site && post.accum?.active === false && post.engineFlag === true);
+                check(`V9 [${site}] F3 says it: "${linePost}"`, /^Render: stochastic, fallback dither after an error/.test(linePost));
+                check(`V9 [${site}] the page goes on: frames keep coming (40 more drew), the picture is lit (mean luma ${meanPost}, before ${meanPre}), no WebGPU validation error (${post.gpuErrors.length}), no page error (${errors(n.log).length})`, meanPost > 20 && post.gpuErrors.length === 0 && errors(n.log).length === 0);
+                if (site === 'taa') {
+                    const a = row.afterSwitch as Any;
+                    check(`V9 [taa] after a scene switch (${row.switchState}) the failed renderer does not come back: drawn ${a.drawn}, plan ${a.plan?.draw}/${a.plan?.why}, F3 "${a.line}", the scene is lit (${a.meanLit}), no GPU error (${a.gpuErrors}), no page error (${row.pageErrors})`, row.switchState === 'done' && a.drawn === 'engine' && a.plan?.why === 'failed' && /^Render: stochastic, fallback dither after an error/.test(a.line) && a.meanLit > 20 && a.gpuErrors === 0 && row.pageErrors === 0);
+                }
+            }
+            out.V9 = { rows };
+            pass.V9 = true;
+        }
+
         // the tally of the whole run: every page state read saw no CSP violation and no WebGPU validation error
         if (want('V6')) check(`V6 no page of this run (${seen.states} state reads) saw a CSP violation (${seen.csp.length})`, seen.states > 0 && seen.csp.length === 0);
         out.tally = { states: seen.states, csp: seen.csp, gpuErrors: seen.gpu };

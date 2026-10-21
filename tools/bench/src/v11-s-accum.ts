@@ -7,6 +7,9 @@
 //   q3  FPV-agile (360 deg/s, +-60 deg roll, 6 m/s) at the 60 Hz step and at double the step (30 Hz); AN = the no-clamp control
 //   q4  flip (180 deg in 12 frames) and stop (64 frames): PSNR after the stop, lag index, ghost pixels, frames to 30/33 dB
 //   q5  hover (0.5 px sinusoid): flicker and per-pixel temporal standard deviation
+//   q6  strafe past occlusion edges (translation with parallax, 5 m/s peak, 60 Hz and 30 Hz step): trailing = pixels that still show the old picture; controls AN, AX
+//   every moving path (q2 q3 q4 q5 q6) also runs sorted twice: the second run is the FLOOR of what a number against sorted can mean on that scene (floor.psnrMean)
+//   WARM=1 runs each path once in sorted before it is measured, so the levels of detail a streamed scan needs on that path are resident and chosen
 //   k1  colour at 256 frames per tone map, and the control (a wrong output transform)
 //   k2  composition: a mesh at five depths, the background colour, the scene scale
 //   tune  one knob set of the accumulation at a time (VARIANTS), scored on cruise, agile (60 and 30 Hz step) and flip-and-stop
@@ -27,6 +30,7 @@ const W = Number(process.env.W ?? 1280);
 const H = Number(process.env.H ?? 720);
 const FRAMES = Number(process.env.FRAMES ?? 48);
 const PICS = process.env.PICS !== '0';
+const WARM = process.env.WARM === '1';
 // mode tune: upstream's `key:value,key:value` switch strings, separated by ';' ('default' = upstream's defaults)
 const VARIANTS = (process.env.VARIANTS ?? 'default').split(';').map((v) => (v === 'default' ? '' : v));
 const TAG = process.env.TAG ?? 'main';
@@ -74,7 +78,7 @@ try {
         while (Date.now() - t0 < 90000 && !(await page.evaluate('window.__gsfpv.session.renderer.sceneComplete'))) await sleep(500);
         await sleep(2000);
         try {
-            const res = (await page.evaluate(`(${PAGE})(${JSON.stringify({ W, H, frames: FRAMES, pics: PICS, modes: MODES, variants: VARIANTS })})`)) as Any;
+            const res = (await page.evaluate(`(${PAGE})(${JSON.stringify({ W, H, frames: FRAMES, pics: PICS, modes: MODES, variants: VARIANTS, warm: WARM })})`)) as Any;
             const pics = res.pics as { name: string; b64: string; jpg?: boolean }[];
             delete res.pics;
             if (PICS && pics.length) {
@@ -87,9 +91,10 @@ try {
             console.log(scene, JSON.stringify({
                 drawnM: res.drawnM, timings: res.timingsMs,
                 q1: q1 && { S_S: avg((r) => r.SvS.psnr), E: avg((r) => r.E.psnr), A1: avg((r) => r.A[1].psnr), A16: avg((r) => r.A[16].psnr), A64: avg((r) => r.A[64].psnr), A256: avg((r) => r.A[256].psnr), to30: q1.map((r) => r.framesTo30dB) },
-                q2: res.q2 && { E: res.q2.E.psnrMean, A: res.q2.A.psnrMean, A0: res.q2.A0.psnrMean, flickS: res.q2.S.flicker, flickE: res.q2.E.flicker, flickA: res.q2.A.flicker },
-                q3: res.q3 && { s1A: res.q3.step1.A.psnrMean, s1E: res.q3.step1.E.psnrMean, s2A: res.q3.step2.A.psnrMean, s2E: res.q3.step2.E.psnrMean },
-                q4: res.q4 && { A: res.q4.A.after, lead: res.q4.A.lead, ghostA: res.q4.A.ghost48, ghostE: res.q4.E.ghost48, ghostAN: res.q4.AN.ghost48 },
+                q2: res.q2 && { E: res.q2.E.psnrMean, A: res.q2.A.psnrMean, A0: res.q2.A0.psnrMean, floor: res.q2.floor.psnrMean, flickS: res.q2.S.flicker, flickE: res.q2.E.flicker, flickA: res.q2.A.flicker },
+                q3: res.q3 && { s1A: res.q3.step1.A.psnrMean, s1E: res.q3.step1.E.psnrMean, s1floor: res.q3.step1.floor.psnrMean, s2A: res.q3.step2.A.psnrMean, s2E: res.q3.step2.E.psnrMean, s2floor: res.q3.step2.floor.psnrMean },
+                q4: res.q4 && { A: res.q4.A.after, lead: res.q4.A.lead, ghostA: res.q4.A.ghost48, ghostE: res.q4.E.ghost48, ghostAN: res.q4.AN.ghost48, floor: res.q4.floor.psnrMean },
+                q6: res.q6 && Object.fromEntries(Object.entries(res.q6 as Record<string, Any>).map(([k, v]) => [k, { floor: v.floor.psnrMean, floorTrail: v.floor.trail.mean, changed: v.A.trail.changedShare, trailE: v.E.trail.mean, trailA0: v.A0.trail.mean, trailA: v.A.trail.mean, trailAN: v.AN.trail.mean, trailAX: v.AX.trail.mean, psnrA: v.A.psnrMean, psnrAN: v.AN.psnrMean }])),
                 tune: res.tune && res.tune.map((t: Any) => `${t.variant || 'default'}: hover ${t.hover ? t.hover.psnrMean + '/' + t.hover.flickerExcessPct + '%' : '-'} cruise ${t.cruise.psnrMean}/${t.cruise.flickerExcessPct}% agile1 ${t.agile1.psnrMean} agile2 ${t.agile2.psnrMean} flip j1 ${t.flip.j1} j16 ${t.flip.j16} ghost ${t.flip.ghost48} lag ${t.flip.lagMin}`),
                 k1: res.k1, k2: res.k2, gpuErrors: res.gpuErrors.length
             }));
