@@ -174,6 +174,17 @@ describe('F3\'s drawing line', () => {
         expect(drawingLine(d, say, false, 'engine', 'loading')).toBe(`Render: stochastic${tail}`);
     });
 
+    it('v0.11 fix round: the Render help tells the pilot what the stochastic picture is in flight (noisier and softer than Sorted in rooms, settling only when the camera is still), not "a little grainier"', () => {
+        const say: Record<string, string> = { en: 'visibly noisier and softer', es: 'más ruidoso y borroso', pl: 'bardziej zaszumione i miększe', ru: 'шумнее и мягче' };
+        const old: Record<string, string> = { en: 'a little grainier', es: 'algo más granulado', pl: 'nieco bardziej ziarniste', ru: 'чуть зернистее' };
+        for (const lang of ['en', 'es', 'pl', 'ru']) {
+            const d = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'drawing', `${lang}.json`), 'utf8')) as Record<string, string>;
+            const help = d['set.display.drawing.help'];
+            expect(help, lang).toContain(say[lang]);
+            expect(help, lang).not.toContain(old[lang]); // the text before the fix had the old phrase and not the new one: both assertions failed on it
+        }
+    });
+
     it('v0.11: the new mode texts exist in every language, apart from the English ones', () => {
         for (const lang of ['en', 'es', 'pl', 'ru']) {
             const d = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'drawing', `${lang}.json`), 'utf8')) as Record<string, string>;
