@@ -147,14 +147,6 @@ export function guardRenderer(r: object, app: { on(name: string, cb: () => void)
     return done;
 }
 
-/**
- * Make the renderer's per-frame function safe to run inside the engine's `frame:ready` event (guardRenderer's first site on its own):
- * a throw goes to `onThrow` and the engine's update goes on.
- */
-export function guardFrame(r: object, onThrow: (e: unknown) => void): void {
-    guardMember(r, 'frame', 'frame', { onThrow: (_site, e) => onThrow(e) });
-}
-
 export interface AccumOptions {
     app: AppBase;
     camera: CameraComponent;

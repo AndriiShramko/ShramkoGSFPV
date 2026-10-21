@@ -1,12 +1,12 @@
 // The adapter around the vendored SuperSplat renderer (v0.11 lane S, accum.ts) without a GPU: the engine-member check
-// (accumMissing), the guards that keep an exception out of the engine's frame event, render graph and frameend (guardFrame,
-// guardRenderer), and the on/off/failed life of AccumDrawing with a fake renderer. What discriminates: each engine member is
+// (accumMissing), the guards that keep an exception out of the engine's frame event, render graph and frameend (guardRenderer),
+// and the on/off/failed life of AccumDrawing with a fake renderer. What discriminates: each engine member is
 // removed from an otherwise complete engine and must be named; a throw at each guarded site must be swallowed, hand the splats
 // back (at the frame's end for the passes) and tell the caller once; an empty engine must be reported as missing everything;
 // an adapter that forgets a failure would enable again.
 import { describe, it, expect, vi } from 'vitest';
 import type { AppBase, CameraComponent, Layer } from 'playcanvas';
-import { AccumDrawing, accumMissing, guardFrame, guardRenderer, worldLayer } from '../src/accum';
+import { AccumDrawing, accumMissing, guardRenderer, worldLayer } from '../src/accum';
 import type { GuardSite } from '../src/accum';
 import { ACCUM_REQUIRES } from '../src/accum-policy';
 import type { StochasticSplatRenderer } from '../src/vendor/supersplat-viewer/render/stochastic-splat-renderer';
@@ -78,29 +78,6 @@ describe('worldLayer', () => {
     it('is the layer the engine returns, null when it has none', () => {
         expect(worldLayer(app())).toEqual({});
         expect(worldLayer(app({ layer: null }))).toBeNull();
-    });
-});
-
-describe('guardFrame', () => {
-    it('passes the arguments and the return through while nothing throws', () => {
-        const seen: unknown[][] = [];
-        const r = { frame(...a: unknown[]) { seen.push(a); } };
-        guardFrame(r, () => { throw new Error('unexpected'); });
-        r.frame(1, 'two', {});
-        expect(seen).toEqual([[1, 'two', {}]]);
-    });
-    it('keeps `this` for the original function', () => {
-        const r = { n: 0, frame() { this.n++; } };
-        guardFrame(r, () => undefined);
-        r.frame();
-        expect(r.n).toBe(1);
-    });
-    it('hands a throw to the callback instead of the engine\'s event', () => {
-        const got: unknown[] = [];
-        const r = { frame() { throw new Error('boom'); } };
-        guardFrame(r, (e) => got.push(e));
-        expect(() => r.frame()).not.toThrow();
-        expect((got[0] as Error).message).toBe('boom');
     });
 });
 
