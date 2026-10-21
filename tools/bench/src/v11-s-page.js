@@ -203,11 +203,13 @@ async (O) => {
   // scored on the three moving paths of the FPV use (cruise, agile at the 60 Hz and the 30 Hz step, the flip and stop), never on the still picture
   if (O.modes.includes('tune')) {
     const AFTER = 64, TOT = FLIP + AFTER;
+    const Shv = (await run('S', hover, 90)).fr;
     const Scr = (await run('S', cruise, O.frames)).fr, Sa1 = (await run('S', agile(1), 90)).fr, Sa2 = (await run('S', agile(2), 90)).fr, Sfl = (await run('S', flip, TOT)).fr;
     out.tune = [];
     for (const v of O.variants) {
       variantOf.V = v; window.__what = 'tune ' + (v || 'default');
       const row = { variant: v };
+      const hv = await run('V', hover, 90); row.hover = vs(Shv, hv.fr); row.hover.flickerExcessPct = r2((flick(hv.fr) - flick(Shv)) / flick(Shv) * 100);
       const c = await run('V', cruise, O.frames); row.cruise = vs(Scr, c.fr); row.cruise.flickerExcessPct = r2((flick(c.fr) - flick(Scr)) / flick(Scr) * 100);
       const a1 = await run('V', agile(1), 90); row.agile1 = vs(Sa1, a1.fr);
       const a2 = await run('V', agile(2), 90); row.agile2 = vs(Sa2, a2.fr);

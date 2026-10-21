@@ -90,7 +90,7 @@ try {
                 q2: res.q2 && { E: res.q2.E.psnrMean, A: res.q2.A.psnrMean, A0: res.q2.A0.psnrMean, flickS: res.q2.S.flicker, flickE: res.q2.E.flicker, flickA: res.q2.A.flicker },
                 q3: res.q3 && { s1A: res.q3.step1.A.psnrMean, s1E: res.q3.step1.E.psnrMean, s2A: res.q3.step2.A.psnrMean, s2E: res.q3.step2.E.psnrMean },
                 q4: res.q4 && { A: res.q4.A.after, lead: res.q4.A.lead, ghostA: res.q4.A.ghost48, ghostE: res.q4.E.ghost48, ghostAN: res.q4.AN.ghost48 },
-                tune: res.tune && res.tune.map((t: Any) => `${t.variant || 'default'}: cruise ${t.cruise.psnrMean}/${t.cruise.flickerExcessPct}% agile1 ${t.agile1.psnrMean} agile2 ${t.agile2.psnrMean} flip j1 ${t.flip.j1} j16 ${t.flip.j16} ghost ${t.flip.ghost48} lag ${t.flip.lagMin}`),
+                tune: res.tune && res.tune.map((t: Any) => `${t.variant || 'default'}: hover ${t.hover ? t.hover.psnrMean + '/' + t.hover.flickerExcessPct + '%' : '-'} cruise ${t.cruise.psnrMean}/${t.cruise.flickerExcessPct}% agile1 ${t.agile1.psnrMean} agile2 ${t.agile2.psnrMean} flip j1 ${t.flip.j1} j16 ${t.flip.j16} ghost ${t.flip.ghost48} lag ${t.flip.lagMin}`),
                 k1: res.k1, k2: res.k2, gpuErrors: res.gpuErrors.length
             }));
         } catch (e) {
