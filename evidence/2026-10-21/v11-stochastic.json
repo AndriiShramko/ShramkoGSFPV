@@ -1,0 +1,1247 @@
+{
+  "name": "v11-stochastic",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.85",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-21T14:18:27.222Z",
+    "gitHead": "359b4dd",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "new": ".\\dist",
+  "base": ".\\.cache\\dist-base",
+  "pass": {
+    "V1": true,
+    "V2": true,
+    "V3": true,
+    "V4": true,
+    "V5": true,
+    "V6": true,
+    "V7": true,
+    "V8": true
+  },
+  "checks": [
+    {
+      "name": "V1 `?stochastic` draws through the vendored renderer: drawn accum, plan accum/ok, the page's hook agrees, the engine's own dither is off",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V1 the renderer is up: active, accumulating (taa), occlusion culling on, millions of splats resident, its buffers allocated",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V1 upstream's defaults are in force (256 frames at rest, 16 moving, clamp 1.25)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V1 F3 says \"stochastic, accumulating\" and who decided",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V1 no WebGPU validation error, no CSP violation, no page error",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V1 control: ?impl=engine draws the engine's own dither (drawn engine, flag on) and makes no accumulating renderer; F3 says plain \"stochastic\"",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V1 control: the BASE build has no such renderer (no accumStats) and draws the engine's dither for the same link",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V1 control: a device whose storage binding cannot hold the cache falls back to the engine's dither (impl engine, plan unsupported, nothing made)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V1 the 403s in the console are the page's own and the BASE has the same (5 against 5): not ours",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V2 at rest the picture converges to the sorted one: after 256 frames every view is above 33 dB (39.18, 40.95, 37.44, 36.01) and within 1.5 levels of the sorted mean colour (0.16, 0.31, 0.14, 0.26)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V2 it gets there: each step of the history is better than the one before (view 1: 21.52 < 24.5 < 27.4 < 30.18 < 32.78 < 35.06 < 36.96 < 38.3 < 39.18)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V2 control: one frame of the same renderer is far below (21.52, 23.81, 19.75, 21.33) and the engine's dither stays below 25 dB (19.68, 21.47, 17.98, 19.46) however long it is watched",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V2 control: the harness sorted against sorted reads silence (60 dB or more, 70 to 100 in the bench: the GPU sort is not bit-exact) (84.51, 77.75, 82.17, 86.44 dB)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V3 after a fast turn there is no smear: from the 2nd frame after the stop the picture is closer to the final view than to the one two frames before it (lead 16.72, 17.16, 17.57, 18.88 dB, all >= 0)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V3 and no ghosts: pixels more than 48 levels off the sorted picture just after the stop 0.004 against the engine dither's 0.115 (+1 % allowed)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V3 control: where the motion is sustained (360 deg/s, +-60 deg roll, 6 m/s: 90 frames) no colour clamp and a long moving history (AN) are worse: PSNR 28.81 (worst 22.59) against the defaults' 31.12 (worst 25.79)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V3 control: the sorted run against a second sorted run has no ghosts (0)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V4 before REC the accumulating renderer draws (so the check can see it)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V4 while REC runs the scan is drawn sorted: the renderer is handed back (not active), the engine's dither is off, the hook says the hold is on, F3 says \"sorted (recording)\"",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V4 after the stop the pilot's drawing is back: accumulating again, accumulating (taa), the hold is off, F3 says so",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V4 no WebGPU validation error and no page error through the switches",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V5 before the share the accumulating renderer draws",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V5 the share panel made its picture",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V5 a sorted frame was drawn for it, and the drawing is accumulating again right after",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V5 the frame the picture is made from is the sorted picture of the view (87.28 dB from a hand-made sorted frame, 40 dB or more)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V5 no WebGPU validation error and no page error",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V6 the release has no more eval( (4 against 4) and no more new Function( (0 against 0) than the BASE",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V6 the policy the pages are served with is strict (no 'unsafe-eval' and no 'unsafe-inline' in script-src; 'wasm-unsafe-eval' is the one the engine always had) and is the same text as the BASE's",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V6 control: a policy with 'unsafe-eval' in script-src would be seen",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V6 the bundle names no host the BASE bundle does not (none)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V6 control: a made-up host in the bundle would be seen (the check has teeth)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V7 render scale steps (the governor's way): the canvas follows (768, 1280, 1024, 1280), the accumulating renderer keeps drawing a lit picture, no GPU error",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V7 five scenes in a page with the renderer on (39e63ce9 > 7a475d38 > 224aba38 > ba7aa29d > 39e63ce9): every switch ends done, the accumulating renderer draws each once its first view is complete (millions of splats), no GPU error",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V7 video memory does not grow across the switches (615, 433, 846, 366 MiB; the last scene is the first one again and may differ by 15 %)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V7 no page error through the scale steps and the scene switches",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V7 ?render=off (logic only): no scan is loaded, the accumulating renderer (made before the scan, as on every page) has nothing resident and raises no GPU error",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V8 the link's ?stochastic draws accumulating; the pilot's Render = Sorted wins for that scene (sorted, renderer handed back); back to Auto the link is followed again",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V8 nothing asked: sorted by the device's preset, and no accumulating renderer was ever made (a pilot on sorted pays nothing)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V8 the pilot choosing Stochastic gets the accumulating renderer (\"your setting\"), Auto hands it back",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V6 no page of this run (22 state reads) saw a CSP violation (0)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "no page of this run saw a WebGPU validation error (0 in 22 state reads)",
+      "ok": true,
+      "control": false
+    }
+  ],
+  "items": {
+    "build": {
+      "new": ".\\dist",
+      "base": ".\\.cache\\dist-base",
+      "baseCommit": "db73942"
+    },
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.85",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "V1": {
+      "new": {
+        "status": "ready",
+        "hasApi": true,
+        "drawn": "accum",
+        "impl": "accum",
+        "plan": {
+          "draw": "accum",
+          "why": "ok"
+        },
+        "stochastic": true,
+        "engineFlag": false,
+        "accum": {
+          "active": true,
+          "taaActive": true,
+          "culling": true,
+          "cullSuspended": false,
+          "gpuBytes": 166288596,
+          "activeSplats": 3804374,
+          "variant": {
+            "compose": "blend",
+            "cull": "auto",
+            "contribution": 0,
+            "coverage": "pixel",
+            "jitter": 0,
+            "strata": 4,
+            "interleaveArea": 0,
+            "taa": "on",
+            "taaMax": 256,
+            "taaMoveMax": 16,
+            "taaClip": 1.25,
+            "taaReproj": "sample",
+            "taaMotion": 4,
+            "taaParallax": "on",
+            "taaSharp": 16,
+            "taaHistory": "auto",
+            "taaSharpen": 0,
+            "taaDebug": 0,
+            "warp": "auto",
+            "stereo": "shared",
+            "units": "engine"
+          },
+          "failed": null
+        },
+        "made": true,
+        "hook": {
+          "from": {
+            "stochastic": "link",
+            "budget": "device"
+          },
+          "impl": "accum",
+          "drawn": "accum",
+          "missing": [],
+          "held": false,
+          "stochastic": true
+        },
+        "canvas": [
+          1280,
+          800
+        ],
+        "gpuErrors": [],
+        "csp": [],
+        "f3": ""
+      },
+      "f3": "Render: stochastic, accumulating (the link) \u00b7 budget 4 M splats (this device) \u00b7 desktop, strong graphics",
+      "engine": {
+        "status": "ready",
+        "hasApi": true,
+        "drawn": "engine",
+        "impl": "engine",
+        "plan": {
+          "draw": "engine",
+          "why": "impl"
+        },
+        "stochastic": true,
+        "engineFlag": true,
+        "accum": null,
+        "made": false,
+        "hook": {
+          "from": {
+            "stochastic": "link",
+            "budget": "device"
+          },
+          "impl": "engine",
+          "drawn": "engine",
+          "missing": [],
+          "held": false,
+          "stochastic": true
+        },
+        "canvas": [
+          1280,
+          800
+        ],
+        "gpuErrors": [],
+        "csp": [],
+        "f3": ""
+      },
+      "f3Engine": "Render: stochastic (the link) \u00b7 budget 4 M splats (this device) \u00b7 desktop, strong graphics",
+      "base": {
+        "status": "ready",
+        "hasApi": false,
+        "plan": null,
+        "stochastic": true,
+        "engineFlag": true,
+        "accum": null,
+        "made": null,
+        "hook": {
+          "from": {
+            "stochastic": "link",
+            "budget": "device"
+          },
+          "held": false,
+          "stochastic": true
+        },
+        "canvas": [
+          1280,
+          800
+        ],
+        "gpuErrors": [],
+        "csp": [],
+        "f3": ""
+      },
+      "forced": {
+        "on": true,
+        "drawn": "engine",
+        "impl": "accum",
+        "plan": {
+          "draw": "engine",
+          "why": "unsupported"
+        },
+        "missing": [
+          "cache fits one storage binding"
+        ],
+        "made": false
+      },
+      "errors": [],
+      "console403": {
+        "new": 5,
+        "base": 5
+      }
+    },
+    "V23": {
+      "size": [
+        1280,
+        720
+      ],
+      "budgetM": 4,
+      "impl0": "accum",
+      "timingsMs": {
+        "q1": 51791,
+        "q3": 100475,
+        "q4": 120244
+      },
+      "stable": true,
+      "sceneComplete": true,
+      "q1": [
+        {
+          "yaw": 0,
+          "drawnM": 3.8,
+          "SvS": {
+            "psnr": 84.51,
+            "ssim": 1
+          },
+          "E": {
+            "psnr": 19.68,
+            "ssim": 0.676,
+            "shift": [
+              -1.81,
+              -1.77,
+              -1.02
+            ]
+          },
+          "A0": {
+            "f1": {
+              "psnr": 28.13,
+              "ssim": 0.889
+            },
+            "f64": {
+              "psnr": 28.13,
+              "ssim": 0.889
+            }
+          },
+          "A": {
+            "1": {
+              "psnr": 21.52,
+              "ssim": 0.71
+            },
+            "2": {
+              "psnr": 24.5,
+              "ssim": 0.779
+            },
+            "4": {
+              "psnr": 27.4,
+              "ssim": 0.843
+            },
+            "8": {
+              "psnr": 30.18,
+              "ssim": 0.895
+            },
+            "16": {
+              "psnr": 32.78,
+              "ssim": 0.932
+            },
+            "32": {
+              "psnr": 35.06,
+              "ssim": 0.956
+            },
+            "64": {
+              "psnr": 36.96,
+              "ssim": 0.97
+            },
+            "128": {
+              "psnr": 38.3,
+              "ssim": 0.978
+            },
+            "256": {
+              "psnr": 39.18,
+              "ssim": 0.982
+            }
+          },
+          "shift256": [
+            0.05,
+            0.05,
+            0.16
+          ],
+          "framesTo30dB": 8
+        },
+        {
+          "yaw": 90,
+          "drawnM": 3.8,
+          "SvS": {
+            "psnr": 77.75,
+            "ssim": 1
+          },
+          "E": {
+            "psnr": 21.47,
+            "ssim": 0.496,
+            "shift": [
+              0.18,
+              -0.74,
+              -1.29
+            ]
+          },
+          "A0": {
+            "f1": {
+              "psnr": 33.49,
+              "ssim": 0.853
+            },
+            "f64": {
+              "psnr": 33.49,
+              "ssim": 0.853
+            }
+          },
+          "A": {
+            "1": {
+              "psnr": 23.81,
+              "ssim": 0.549
+            },
+            "2": {
+              "psnr": 26.76,
+              "ssim": 0.627
+            },
+            "4": {
+              "psnr": 29.64,
+              "ssim": 0.713
+            },
+            "8": {
+              "psnr": 32.39,
+              "ssim": 0.796
+            },
+            "16": {
+              "psnr": 34.96,
+              "ssim": 0.864
+            },
+            "32": {
+              "psnr": 37.17,
+              "ssim": 0.913
+            },
+            "64": {
+              "psnr": 38.92,
+              "ssim": 0.944
+            },
+            "128": {
+              "psnr": 40.16,
+              "ssim": 0.962
+            },
+            "256": {
+              "psnr": 40.95,
+              "ssim": 0.972
+            }
+          },
+          "shift256": [
+            0.17,
+            0.12,
+            0.31
+          ],
+          "framesTo30dB": 8
+        },
+        {
+          "yaw": 180,
+          "drawnM": 3.8,
+          "SvS": {
+            "psnr": 82.17,
+            "ssim": 1
+          },
+          "E": {
+            "psnr": 17.98,
+            "ssim": 0.302,
+            "shift": [
+              0.37,
+              -1.25,
+              -2.56
+            ]
+          },
+          "A0": {
+            "f1": {
+              "psnr": 27.94,
+              "ssim": 0.76
+            },
+            "f64": {
+              "psnr": 27.94,
+              "ssim": 0.76
+            }
+          },
+          "A": {
+            "1": {
+              "psnr": 19.75,
+              "ssim": 0.366
+            },
+            "2": {
+              "psnr": 22.67,
+              "ssim": 0.476
+            },
+            "4": {
+              "psnr": 25.59,
+              "ssim": 0.597
+            },
+            "8": {
+              "psnr": 28.41,
+              "ssim": 0.716
+            },
+            "16": {
+              "psnr": 31,
+              "ssim": 0.812
+            },
+            "32": {
+              "psnr": 33.31,
+              "ssim": 0.882
+            },
+            "64": {
+              "psnr": 35.2,
+              "ssim": 0.926
+            },
+            "128": {
+              "psnr": 36.55,
+              "ssim": 0.952
+            },
+            "256": {
+              "psnr": 37.44,
+              "ssim": 0.966
+            }
+          },
+          "shift256": [
+            -0.05,
+            -0.14,
+            0.01
+          ],
+          "framesTo30dB": 16
+        },
+        {
+          "yaw": 270,
+          "drawnM": 3.8,
+          "SvS": {
+            "psnr": 86.44,
+            "ssim": 1
+          },
+          "E": {
+            "psnr": 19.46,
+            "ssim": 0.513,
+            "shift": [
+              1.6,
+              1.15,
+              1.59
+            ]
+          },
+          "A0": {
+            "f1": {
+              "psnr": 28.23,
+              "ssim": 0.83
+            },
+            "f64": {
+              "psnr": 28.23,
+              "ssim": 0.83
+            }
+          },
+          "A": {
+            "1": {
+              "psnr": 21.33,
+              "ssim": 0.56
+            },
+            "2": {
+              "psnr": 24.25,
+              "ssim": 0.651
+            },
+            "4": {
+              "psnr": 27.01,
+              "ssim": 0.743
+            },
+            "8": {
+              "psnr": 29.53,
+              "ssim": 0.822
+            },
+            "16": {
+              "psnr": 31.75,
+              "ssim": 0.883
+            },
+            "32": {
+              "psnr": 33.54,
+              "ssim": 0.924
+            },
+            "64": {
+              "psnr": 34.79,
+              "ssim": 0.95
+            },
+            "128": {
+              "psnr": 35.57,
+              "ssim": 0.964
+            },
+            "256": {
+              "psnr": 36.01,
+              "ssim": 0.973
+            }
+          },
+          "shift256": [
+            -0.22,
+            -0.26,
+            -0.17
+          ],
+          "framesTo30dB": 16
+        }
+      ],
+      "drawnM": 3.8,
+      "q3": {
+        "step1": {
+          "frames": 90,
+          "S": {
+            "flicker": 23.2
+          },
+          "E": {
+            "psnrMean": 20.7,
+            "psnrMin": 16.06,
+            "ssimMean": 0.48,
+            "ssimMin": 0.18,
+            "below20": 0.6,
+            "flicker": 29.48,
+            "flickerExcessPct": 27.08
+          },
+          "A": {
+            "psnrMean": 31.12,
+            "psnrMin": 25.79,
+            "ssimMean": 0.871,
+            "ssimMin": 0.764,
+            "below20": 0,
+            "flicker": 22.52,
+            "flickerExcessPct": -2.92
+          },
+          "AN": {
+            "psnrMean": 28.81,
+            "psnrMin": 22.59,
+            "ssimMean": 0.85,
+            "ssimMin": 0.695,
+            "below20": 0,
+            "flicker": 21.88,
+            "flickerExcessPct": -5.67
+          }
+        },
+        "step2": {
+          "frames": 90,
+          "S": {
+            "flicker": 29.57
+          },
+          "E": {
+            "psnrMean": 19.69,
+            "psnrMin": 14.38,
+            "ssimMean": 0.481,
+            "ssimMin": 0.181,
+            "below20": 0.7,
+            "flicker": 35.81,
+            "flickerExcessPct": 21.09
+          },
+          "A": {
+            "psnrMean": 29.8,
+            "psnrMin": 23.42,
+            "ssimMean": 0.847,
+            "ssimMin": 0.7,
+            "below20": 0,
+            "flicker": 28.72,
+            "flickerExcessPct": -2.87
+          },
+          "AN": {
+            "psnrMean": 27.56,
+            "psnrMin": 21.74,
+            "ssimMean": 0.808,
+            "ssimMin": 0.523,
+            "below20": 0,
+            "flicker": 28.57,
+            "flickerExcessPct": -3.37
+          }
+        }
+      },
+      "q4": {
+        "flipFrames": 12,
+        "afterFrames": 64,
+        "floor": {
+          "j1Psnr": 84.81,
+          "ghost48": 0
+        },
+        "E": {
+          "after": {
+            "1": 17.98,
+            "2": 17.98,
+            "4": 17.98,
+            "8": 17.98,
+            "16": 17.98,
+            "32": 17.98,
+            "64": 17.98
+          },
+          "lag": {
+            "k1min": 3.06,
+            "k2min": 3.01,
+            "k1": [
+              3.06,
+              6.8,
+              7.89,
+              6.5,
+              5.03,
+              6,
+              6.53,
+              6.39,
+              6.2,
+              5.79
+            ],
+            "k2": [
+              3.01,
+              6.55,
+              7.22,
+              7.37,
+              5.24,
+              6.07,
+              6.78,
+              6.64,
+              6.47,
+              6.76
+            ]
+          },
+          "lead": {
+            "1": 6.76,
+            "2": 6.76,
+            "3": 6.76,
+            "4": 6.76,
+            "8": 6.76
+          },
+          "ghost48": 0.115,
+          "ghost30": 0.229,
+          "framesTo30dB": null,
+          "framesTo33dB": null
+        },
+        "A": {
+          "after": {
+            "1": 28.28,
+            "2": 28.65,
+            "4": 29.5,
+            "8": 30.81,
+            "16": 32.38,
+            "32": 34.02,
+            "64": 35.53
+          },
+          "lag": {
+            "k1min": 12.54,
+            "k2min": 12.74,
+            "k1": [
+              12.54,
+              18.52,
+              20.52,
+              18.78,
+              16.99,
+              18.1,
+              17.83,
+              17.7,
+              17.87,
+              17.2
+            ],
+            "k2": [
+              12.74,
+              18.21,
+              19.37,
+              19.6,
+              17.07,
+              18.06,
+              18.08,
+              17.88,
+              18.02,
+              18.15
+            ]
+          },
+          "lead": {
+            "1": 16.35,
+            "2": 16.72,
+            "3": 17.16,
+            "4": 17.57,
+            "8": 18.88
+          },
+          "ghost48": 0.004,
+          "ghost30": 0.018,
+          "framesTo30dB": 6,
+          "framesTo33dB": 21
+        },
+        "AN": {
+          "after": {
+            "1": 28.28,
+            "2": 28.65,
+            "4": 29.5,
+            "8": 30.81,
+            "16": 32.38,
+            "32": 34.03,
+            "64": 35.53
+          },
+          "lag": {
+            "k1min": 12.49,
+            "k2min": 12.71,
+            "k1": [
+              12.49,
+              18.45,
+              20.43,
+              18.7,
+              16.94,
+              18.06,
+              17.79,
+              17.66,
+              17.82,
+              17.18
+            ],
+            "k2": [
+              12.71,
+              18.14,
+              19.27,
+              19.52,
+              17.03,
+              18.03,
+              18.04,
+              17.84,
+              17.97,
+              18.14
+            ]
+          },
+          "lead": {
+            "1": 16.33,
+            "2": 16.71,
+            "3": 17.16,
+            "4": 17.56,
+            "8": 18.87
+          },
+          "ghost48": 0.004,
+          "ghost30": 0.018,
+          "framesTo30dB": 6,
+          "framesTo33dB": 21
+        }
+      },
+      "accumStats": {
+        "active": true,
+        "taaActive": true,
+        "culling": true,
+        "cullSuspended": false,
+        "gpuBytes": 163005076,
+        "activeSplats": 3804374,
+        "variant": {
+          "compose": "blend",
+          "cull": "auto",
+          "contribution": 0,
+          "coverage": "pixel",
+          "jitter": 0,
+          "strata": 4,
+          "interleaveArea": 0,
+          "taa": "on",
+          "taaMax": 256,
+          "taaMoveMax": 64,
+          "taaClip": 0,
+          "taaReproj": "sample",
+          "taaMotion": 0,
+          "taaParallax": "on",
+          "taaSharp": 16,
+          "taaHistory": "auto",
+          "taaSharpen": 0,
+          "taaDebug": 0,
+          "warp": "auto",
+          "stereo": "shared",
+          "units": "engine"
+        },
+        "failed": null
+      },
+      "gpuErrors": [],
+      "errors": []
+    },
+    "V4": {
+      "pre": {
+        "drawn": "accum",
+        "accum": {
+          "active": true,
+          "taaActive": true,
+          "culling": true,
+          "cullSuspended": false,
+          "gpuBytes": 166288596,
+          "activeSplats": 3804374,
+          "variant": {
+            "compose": "blend",
+            "cull": "auto",
+            "contribution": 0,
+            "coverage": "pixel",
+            "jitter": 0,
+            "strata": 4,
+            "interleaveArea": 0,
+            "taa": "on",
+            "taaMax": 256,
+            "taaMoveMax": 16,
+            "taaClip": 1.25,
+            "taaReproj": "sample",
+            "taaMotion": 4,
+            "taaParallax": "on",
+            "taaSharp": 16,
+            "taaHistory": "auto",
+            "taaSharpen": 0,
+            "taaDebug": 0,
+            "warp": "auto",
+            "stereo": "shared",
+            "units": "engine"
+          },
+          "failed": null
+        }
+      },
+      "during": {
+        "drawn": "sorted",
+        "accum": {
+          "active": false,
+          "taaActive": false,
+          "culling": false,
+          "cullSuspended": false,
+          "gpuBytes": 0,
+          "activeSplats": 0,
+          "variant": {
+            "compose": "blend",
+            "cull": "auto",
+            "contribution": 0,
+            "coverage": "pixel",
+            "jitter": 0,
+            "strata": 4,
+            "interleaveArea": 0,
+            "taa": "on",
+            "taaMax": 256,
+            "taaMoveMax": 16,
+            "taaClip": 1.25,
+            "taaReproj": "sample",
+            "taaMotion": 4,
+            "taaParallax": "on",
+            "taaSharp": 16,
+            "taaHistory": "auto",
+            "taaSharpen": 0,
+            "taaDebug": 0,
+            "warp": "auto",
+            "stereo": "shared",
+            "units": "engine"
+          },
+          "failed": null
+        },
+        "held": true,
+        "f3": "Render: sorted (recording) \u00b7 budget 4 M splats (this device) \u00b7 desktop, strong graphics"
+      },
+      "after": {
+        "drawn": "accum",
+        "accum": {
+          "active": true,
+          "taaActive": true,
+          "culling": true,
+          "cullSuspended": false,
+          "gpuBytes": 166288596,
+          "activeSplats": 3804374,
+          "variant": {
+            "compose": "blend",
+            "cull": "auto",
+            "contribution": 0,
+            "coverage": "pixel",
+            "jitter": 0,
+            "strata": 4,
+            "interleaveArea": 0,
+            "taa": "on",
+            "taaMax": 256,
+            "taaMoveMax": 16,
+            "taaClip": 1.25,
+            "taaReproj": "sample",
+            "taaMotion": 4,
+            "taaParallax": "on",
+            "taaSharp": 16,
+            "taaHistory": "auto",
+            "taaSharpen": 0,
+            "taaDebug": 0,
+            "warp": "auto",
+            "stereo": "shared",
+            "units": "engine"
+          },
+          "failed": null
+        },
+        "held": false,
+        "f3": "Render: stochastic, accumulating (the link) \u00b7 budget 4 M splats (this device) \u00b7 desktop, strong graphics"
+      },
+      "gpuErrors": [],
+      "errors": []
+    },
+    "V5": {
+      "before": "accum",
+      "seen": [
+        "sorted",
+        "accum"
+      ],
+      "seenFirst": [
+        "sorted",
+        "accum",
+        "accum",
+        "accum",
+        "accum",
+        "accum",
+        "accum",
+        "accum",
+        "accum",
+        "accum",
+        "accum",
+        "accum"
+      ],
+      "shareState": {
+        "entry": "top",
+        "kind": "flight",
+        "url": "http://127.0.0.1:5765/en/fly/?scene=39e63ce9&stochastic",
+        "text": "I just flew an FPV drone through Modlinek Villa \u2014 red room and bathroom \u2014 a real 3D scan, right in the browser. Free, and your own radio works. Can you fly this line?",
+        "picture": true,
+        "video": "none",
+        "files": [],
+        "canShareFiles": false,
+        "shared": ""
+      },
+      "psnrFrameVsSorted": 87.28,
+      "after": "accum",
+      "gpuErrors": [],
+      "errors": []
+    },
+    "V6": {
+      "bytes": {
+        "new": 11367055,
+        "base": 11229460
+      },
+      "eval": {
+        "new": 4,
+        "base": 4
+      },
+      "newFunction": {
+        "new": 0,
+        "base": 0
+      },
+      "hostsAdded": [],
+      "cspSame": true,
+      "scriptSrc": "script-src 'self' 'wasm-unsafe-eval' https://www.googletagmanager.com 'self'"
+    },
+    "V7": {
+      "scale": [
+        {
+          "scale": 0.6,
+          "canvas": [
+            768,
+            480
+          ],
+          "drawn": "accum",
+          "taa": true,
+          "mean": 144.3,
+          "gpuErrors": 0
+        },
+        {
+          "scale": 1,
+          "canvas": [
+            1280,
+            800
+          ],
+          "drawn": "accum",
+          "taa": true,
+          "mean": 144.2,
+          "gpuErrors": 0
+        },
+        {
+          "scale": 0.8,
+          "canvas": [
+            1024,
+            640
+          ],
+          "drawn": "accum",
+          "taa": true,
+          "mean": 144.2,
+          "gpuErrors": 0
+        },
+        {
+          "scale": 1,
+          "canvas": [
+            1280,
+            800
+          ],
+          "drawn": "accum",
+          "taa": true,
+          "mean": 144.2,
+          "gpuErrors": 0
+        }
+      ],
+      "switches": [
+        {
+          "scene": "7a475d38",
+          "state": "done",
+          "drawn": "accum",
+          "active": true,
+          "splatsM": 4,
+          "taa": true,
+          "vramMiB": 615,
+          "gpuErrors": 0
+        },
+        {
+          "scene": "224aba38",
+          "state": "done",
+          "drawn": "accum",
+          "active": true,
+          "splatsM": 4.6,
+          "taa": true,
+          "vramMiB": 433,
+          "gpuErrors": 0
+        },
+        {
+          "scene": "ba7aa29d",
+          "state": "done",
+          "drawn": "accum",
+          "active": true,
+          "splatsM": 3.9,
+          "taa": true,
+          "vramMiB": 846,
+          "gpuErrors": 0
+        },
+        {
+          "scene": "39e63ce9",
+          "state": "done",
+          "drawn": "accum",
+          "active": true,
+          "splatsM": 3.8,
+          "taa": true,
+          "vramMiB": 366,
+          "gpuErrors": 0
+        }
+      ],
+      "pageErrors": [],
+      "renderOff": {
+        "made": true,
+        "scan": false,
+        "activeSplats": 0,
+        "drawn": "accum",
+        "gpuErrors": 0,
+        "errors": []
+      }
+    },
+    "V8": {
+      "link": "accum",
+      "pilotSorted": "sorted",
+      "autoBack": "accum",
+      "nothing": {
+        "drawn": "sorted",
+        "made": false,
+        "from": {
+          "stochastic": "device",
+          "budget": "device"
+        }
+      },
+      "pilotAsks": {
+        "drawn": "accum",
+        "from": {
+          "stochastic": "setting",
+          "budget": "device"
+        }
+      },
+      "handedBack": "sorted"
+    },
+    "tally": {
+      "states": 22,
+      "csp": [],
+      "gpuErrors": []
+    }
+  },
+  "failed": null,
+  "strings": {
+    "accumulating": "stochastic, accumulating"
+  }
+}
