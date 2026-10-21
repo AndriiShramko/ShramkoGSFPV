@@ -798,7 +798,7 @@ if (GA_ID) {
     await page.waitForFunction(() => /(^|; )_ga=/.test(document.cookie), undefined, { timeout: 15000 }).catch(() => {});
     const cookiesBefore = await cookiesGa(ctx);
     await page.locator("footer [data-testid='cookie-settings']").click();
-    const reopened = await banner.isVisible();
+    const reopened = await banner.waitFor({ state: "visible", timeout: 5000 }).then(() => true, () => false);
     await banner.getByRole("button", { name: "Decline" }).click();
     await page.waitForTimeout(500);
     const hitsAfterWithdraw = google.filter((u) => u.includes("/g/collect")).length;
