@@ -308,8 +308,10 @@ export class SplatRenderer {
             this.splatFrame.frame = this.frameNumber;
             this.splatFrame.ready = ready === true;
             this.splatFrame.loading = n;
-            // the next scan has its first complete view: the accumulating renderer takes over again (not inside the engine's update)
-            if (this.accumHeld && ready === true && this.splat && this.frameNumber > this.splatMadeAt + 1) {
+            // the next scan has its first complete view: the accumulating renderer takes over again (not inside the engine's update).
+            // An empty scan is "ready" too (nothing in any level of detail): wait until the engine drew splats, or the renderer would be
+            // taken over while the work buffer is still 1x1 and is then reallocated under it (page errors, v0.11 acceptance V7)
+            if (this.accumHeld && ready === true && this.splat && this.frameNumber > this.splatMadeAt + 1 && this.engineDrawn() > 0) {
                 this.accumHeld = false;
                 queueMicrotask(() => { if (!this.destroyed) this.setStochastic(this.wantStochastic); });
             }
@@ -597,6 +599,11 @@ export class SplatRenderer {
             else filesIn++;
         }
         return { listed: c.listed, received, total: Math.max(total, received), exact, complete, failed, lastByteAt: c.lastByteAt, files, filesIn, splats };
+    }
+
+    /** Splats the engine drew in the last frame it rendered (its own counter). */
+    private engineDrawn(): number {
+        return (this.app.stats as unknown as { frame?: { gsplats?: number } }).frame?.gsplats ?? 0;
     }
 
     /** The first view now: its files and bytes (splatBytes) and what the last frame drew (FirstView). */

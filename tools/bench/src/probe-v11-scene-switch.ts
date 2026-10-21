@@ -31,7 +31,7 @@ const release = (): void => { try { rmdirSync(LOCK); } catch { /* gone */ } };
 process.on('SIGINT', () => { release(); process.exit(130); });
 
 const INIT = `(() => {
-  window.__gpuErrors = [];
+  window.__gpuErrors = []; window.__pe = 0; window.addEventListener('error', () => { window.__pe++; });
   const ra = navigator.gpu.requestAdapter.bind(navigator.gpu);
   navigator.gpu.requestAdapter = async (o) => {
     const a = await ra(o); if (!a) return a;
@@ -61,6 +61,8 @@ try {
     await ctx.addInitScript('window.__name = window.__name || ((f) => f);');
     await ctx.addInitScript(INIT);
     const page = await ctx.newPage();
+    const pageErrors: Any[] = [];
+    page.on('pageerror', (e) => { if (pageErrors.length < 6) pageErrors.push({ message: e.message.slice(0, 200), stack: (e.stack ?? '').split(String.fromCharCode(10)).slice(0, 14).join(' | ') }); });
     await page.goto(`${SITE}/en/fly/?scene=${FROM}&stochastic&governor=0&nowarn=1&input=touch`);
     await waitReady(page, 240000);
     for (let t0 = Date.now(); Date.now() - t0 < 90000 && !(await page.evaluate('window.__gsfpv.session.renderer.sceneComplete'));) await sleep(500);
@@ -79,7 +81,7 @@ try {
         for (let i = 0; i < 160; i++) {
           await new Promise((res) => app.once('frameend', res));
           const w = window.__wb();
-          rows.push({ i, drawn: r.drawn, errors: window.__gpuErrors.length, hash: w[0] && w[0].hash, files: w[0] && w[0].state && w[0].state.files, total: w[0] && w[0].state && w[0].state.total, streams: w[0] ? w[0].streams.map((s) => s.name + ':' + s.fmt + ':' + (s.tex ? s.tex.join('x') : '-')).join(' ') : null, accum: r.accumStats() && { active: r.accumStats().active, splats: r.accumStats().activeSplats, taa: r.accumStats().taaActive }, sw: h.sceneSwitch && h.sceneSwitch.state });
+          rows.push({ i, drawn: r.drawn, errors: window.__gpuErrors.length, pe: window.__pe, held: r.accumHeldNow ? r.accumHeldNow() : undefined, hash: w[0] && w[0].hash, files: w[0] && w[0].state && w[0].state.files, total: w[0] && w[0].state && w[0].state.total, streams: w[0] ? w[0].streams.map((s) => s.name + ':' + s.fmt + ':' + (s.tex ? s.tex.join('x') : '-')).join(' ') : null, accum: r.accumStats() && { active: r.accumStats().active, splats: r.accumStats().activeSplats, taa: r.accumStats().taaActive }, sw: h.sceneSwitch && h.sceneSwitch.state });
         }
         return rows;
       })()`) as Any[];
@@ -88,6 +90,7 @@ try {
       result.switches.push({ to, rows });
     }
     result.frames = result.switches[result.switches.length - 1].rows;
+    result.pageErrors = pageErrors;
     result.errors = await page.evaluate('window.__gpuErrors');
     result.after = await page.evaluate(WB);
     await ctx.close();
@@ -105,4 +108,10 @@ const allRows = ((result.switches ?? []) as Any[]).flatMap((x) => (x.rows as Any
 let prev = result.beforeErrors ?? 0;
 const firstErr = allRows.find((r) => { const bad = r.errors > prev; prev = r.errors; return bad; });
 console.log(JSON.stringify({ error: result.error, before: result.before?.[0] && { hash: result.before[0].hash, streams: result.before[0].streams.map((s: Any) => `${s.name}:${s.fmt}`).join(' ') }, after: result.after?.[0] && { hash: result.after[0].hash, streams: result.after[0].streams.map((s: Any) => `${s.name}:${s.fmt}`).join(' ') }, errors: (result.errors ?? []).length, firstErrorFrame: firstErr ? { to: firstErr.to, i: firstErr.i, hash: firstErr.hash, streams: firstErr.streams, files: firstErr.files, total: firstErr.total, sw: firstErr.sw, accum: firstErr.accum } : null, perSwitch: ((result.switches ?? []) as Any[]).map((x) => ({ to: x.to, errorsAtEnd: x.rows[x.rows.length - 1].errors })) }, null, 1));
+{
+    const rows2 = allRows;
+    let pe0 = 0; const idx = rows2.findIndex((r) => r.pe > pe0);
+    console.log('first page error at', idx >= 0 ? JSON.stringify({ to: rows2[idx].to, i: rows2[idx].i }) : 'none', 'rows around:', idx >= 0 ? JSON.stringify(rows2.slice(Math.max(0, idx - 3), idx + 4).map((r) => ({ i: r.i, drawn: r.drawn, pe: r.pe, files: r.files, total: r.total, sw: r.sw, accum: r.accum, tex: r.streams && r.streams.split(' ')[0] }))) : '');
+    console.log('pe per switch', JSON.stringify(((result.switches ?? []) as Any[]).map((x) => ({ to: x.to, pe: x.rows[x.rows.length - 1].pe }))));
+}
 console.log('written', file);
