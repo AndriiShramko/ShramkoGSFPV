@@ -4,6 +4,7 @@ import type { ParamOverrides } from '@gsfpv/sim-core';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { recordOpen, SceneError } from '@gsfpv/scenes';
 import type { CatalogCollection, SceneLink } from '@gsfpv/scenes';
+import { parseImpl } from '@gsfpv/render-pc';
 import type { SplatRenderer } from '@gsfpv/render-pc';
 import { GSPLAT_RENDERER_RASTER_GPU_SORT } from 'playcanvas';
 import { FlightSession, FlyNow } from '../session';
@@ -182,6 +183,9 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
             preset: q.get('drone') ?? undefined,
             overrides: { gravity: g ? Number(g) : undefined, gravityMode: gm ?? undefined },
             latencyMarker: q.get('lat') === '1',
+            // test switches of the stochastic drawing (the bench's control arm and upstream's variant keys)
+            ...(parseImpl(q.get('impl')) ? { stochasticImpl: parseImpl(q.get('impl')) } : {}),
+            accumVariant: q.get('accum') ?? '',
             lagFrames: Number(q.get('lagFrames') ?? 0),
             renderScale: q.get('scale') ? Number(q.get('scale')) : 1,
             // asked once the renderer's device exists (a WebGL fallback gets the default budget)
