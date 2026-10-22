@@ -3,7 +3,7 @@
 // Controls: a policy that ignores the support report, one that ignores a failure, one that ignores the implementation switch,
 // and one that draws stochastic without a GPU-sort renderer each fail the rows that need the check.
 import { describe, it, expect } from 'vitest';
-import { ACCUM_REQUIRES, DEFAULT_STOCHASTIC_IMPL, STOCHASTIC_IMPLS, applyStochastic, parseImpl, planStochastic } from '../src/accum-policy';
+import { ACCUM_REQUIRES, DEFAULT_STOCHASTIC_IMPL, STOCHASTIC_IMPLS, applyStochastic, holdOnUnload, parseImpl, planStochastic } from '../src/accum-policy';
 import type { DrawPlan, PlanInput } from '../src/accum-policy';
 
 const base: PlanInput = { on: true, gpuSort: true, impl: 'accum', missing: [], failed: false };
@@ -124,6 +124,37 @@ describe('applyStochastic (the whole of SplatRenderer.setStochastic, without the
     // wanted" expects made 0; one that forgets to hand back: "an adapter made before is handed back" expects calls ['disable']). An
     // earlier version of this file kept locally pasted copies of applyStochastic as "controls"; they tested the copies and were
     // removed (v0.11 fix round, finding: controls that cannot fail).
+});
+
+describe('holdOnUnload (v0.11 lane N: the hold does not depend on the accumulating renderer drawing at that moment)', () => {
+    it('the accumulating implementation, not failed: held; every other case: not', () => {
+        expect(holdOnUnload('accum', false)).toBe(true);
+        expect(holdOnUnload('accum', true)).toBe(false);
+        expect(holdOnUnload('engine', false)).toBe(false);
+        expect(holdOnUnload('engine', true)).toBe(false);
+    });
+
+    /**
+     * What a drawing asked for while the new scan loads becomes. `held` is what unloadSplat decided. Before lane N it was held only when the
+     * renderer was drawing at that moment (the old rule below): a scene that had been drawn sorted (a recording, the pilot's setting, the scene's
+     * own request) left the hold off, and the stochastic request of the next scene, of the pilot or of the end of the recording attached the renderer
+     * with no scan to draw (bench accept-v11-n FUZZ=toggle: page errors on every frame of the load).
+     */
+    const duringLoad = (held: boolean): DrawPlan => planStochastic({ ...base, hold: held });
+    const oldRule = (drawingAtUnload: boolean): boolean => drawingAtUnload;
+
+    it('a stochastic request while the scan loads waits (sorted, "loading") also when the renderer was not drawing at the unload', () => {
+        expect(duringLoad(holdOnUnload('accum', false))).toEqual({ draw: 'sorted', why: 'loading' });
+        // control: the old rule, for a renderer that was handed back before the unload, lets it attach to a scene with no scan
+        expect(duringLoad(oldRule(false))).toEqual({ draw: 'accum', why: 'ok' });
+    });
+    it('the same when it was drawing at the unload (nothing changes there)', () => {
+        expect(duringLoad(holdOnUnload('accum', false))).toEqual({ draw: 'sorted', why: 'loading' });
+        expect(duringLoad(oldRule(true))).toEqual({ draw: 'sorted', why: 'loading' });
+    });
+    it('a pilot on sorted is not affected: not asked beats the hold', () => {
+        expect(planStochastic({ ...base, on: false, hold: holdOnUnload('accum', false) })).toEqual({ draw: 'sorted', why: 'not-asked' });
+    });
 });
 
 describe('the implementation names', () => {

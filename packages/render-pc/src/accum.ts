@@ -152,6 +152,28 @@ export function guardRenderer(r: object, app: { on(name: string, cb: () => void)
     return done;
 }
 
+/**
+ * Leave a renderer that was just detached quiet (v0.11 lane N, the side finding of docs/wip/v11-n.md). The vendored `detach()` destroys the
+ * views (their targets, textures and buffers) and puts an empty one in their place, but leaves the pass flags as the last drawn frame set
+ * them: the raster, pixel-set and taa passes enabled, the compose instance visible, `ready` set. The passes take their render target, and the
+ * compose its textures and buffers, from the view's bindings, which only a frame of the renderer writes. So a renderer attached again before such a
+ * frame has run (no scan yet, the engine's manager without a world state, a frame function that throws first) starts the engine's render pass
+ * on the target of the destroyed view: `Cannot read properties of null (reading 'createView')` out of the engine's `startRenderPass` (outside
+ * every guard) on EVERY frame until a frame binds a view again (bench accept-v11-n FUZZ=toggle: the drawing switched at random moments during
+ * scene switches, 14 of 40 switches on the base build, bursts of 2 to 17 page errors, all in this state: enabled, passes on, no bindings, no
+ * resident set). Quiet is the state the renderer is made in: `ready` false (the vendored setReady: raster and pixel-set passes disabled, the
+ * compose hidden) and the taa pass disabled. The first frame that binds a view turns them on again (setReady(true) at the end of the frame's
+ * preparation, `taaPass.enabled` in the same place). True: done; false: this renderer has no such member (an upstream update moved it).
+ */
+export function quietRenderer(r: object): boolean {
+    const R = r as Record<string, unknown>;
+    if (typeof R.setReady !== 'function') return false;
+    (R.setReady as (v: boolean) => void).call(r, false);
+    const taa = R.taaPass as { enabled?: boolean } | undefined;
+    if (taa && typeof taa === 'object') taa.enabled = false;
+    return true;
+}
+
 export interface AccumOptions {
     app: AppBase;
     camera: CameraComponent;
@@ -213,6 +235,7 @@ export class AccumDrawing {
         this.on = false;
         try {
             this.r.setEnabled(false);
+            quietRenderer(this.r);
         } catch (e) {
             this.fail(e);
         }
@@ -304,6 +327,7 @@ export class AccumDrawing {
             handed = true;
             try {
                 this.r?.setEnabled(false);
+                if (this.r) quietRenderer(this.r);
             } catch (e2) {
                 console.error('accum hand-back', e2);
             }

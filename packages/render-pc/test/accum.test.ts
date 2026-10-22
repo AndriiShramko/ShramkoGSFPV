@@ -6,7 +6,7 @@
 // an adapter that forgets a failure would enable again.
 import { describe, it, expect, vi } from 'vitest';
 import type { AppBase, CameraComponent, Layer } from 'playcanvas';
-import { AccumDrawing, accumMissing, guardRenderer, worldLayer } from '../src/accum';
+import { AccumDrawing, accumMissing, guardRenderer, quietRenderer, worldLayer } from '../src/accum';
 import type { GuardSite } from '../src/accum';
 import { ACCUM_REQUIRES } from '../src/accum-policy';
 import type { StochasticSplatRenderer } from '../src/vendor/supersplat-viewer/render/stochastic-splat-renderer';
@@ -215,6 +215,32 @@ function fake(): Fake {
     } as unknown as Fake;
 }
 
+/**
+ * A stand-in that keeps the one behaviour of the vendored renderer the stale-state finding rests on (vendor/supersplat-viewer/render/
+ * stochastic-splat-renderer.ts): detach() (setEnabled(false)) destroys the view and leaves the pass flags as the last frame set them; setReady() is the
+ * only thing that turns the raster and pixel-set passes and the compose on or off; a frame that binds a view is what sets ready (and the taa pass) again.
+ * `scheduled()` is what the engine would start this frame: passes that are in the camera's list and enabled, the compose when it is in the layer and visible.
+ * `bindings` is the view's: 0 right after detach (an empty view), > 0 after a frame bound one.
+ */
+function vendoredLike() {
+    const r = {
+        attached: false, ready: false, bindings: 0,
+        rasterPass: { enabled: false }, taaPass: { enabled: false }, setPasses: [{ enabled: false }, { enabled: false }], composeInstance: { visible: false },
+        setEnabled(v: boolean) { r.attached = v; if (!v) r.bindings = 0; /* detach(): the view is replaced by an empty one; the flags stay */ },
+        setReady(v: boolean) { r.ready = v; r.rasterPass.enabled = v; for (const p of r.setPasses) p.enabled = v; r.composeInstance.visible = v; },
+        /** a frame of the renderer that found a resident set and bound a view */
+        frameBinds() { r.bindings = 34; r.setReady(true); r.taaPass.enabled = true; },
+        /** what the engine would run this frame (the renderer's passes and compose that are attached and on) */
+        scheduled(): string[] {
+            if (!r.attached) return [];
+            return [r.rasterPass.enabled && 'raster', r.taaPass.enabled && 'taa', r.setPasses.some((p) => p.enabled) && 'sets', r.composeInstance.visible && 'compose'].filter(Boolean) as string[];
+        },
+        destroy() {}, setVariant() {}, frame() {}, onFrameEnd() {},
+        bindPass: { execute() {} }
+    };
+    return r;
+}
+
 const make = (r = fake(), extra: Partial<ConstructorParameters<typeof AccumDrawing>[0]> = {}) => {
     const created: string[] = [];
     const fails: number[] = [];
@@ -253,6 +279,60 @@ describe('AccumDrawing', () => {
         expect(r.calls).toEqual(['enabled:true', 'enabled:false']);
         expect(a.enable()).toBe(true);
         expect(r.calls.at(-1)).toBe('enabled:true');
+    });
+    describe('a detached renderer stays quiet until a frame has bound a view (v0.11 lane N, the side finding of docs/wip/v11-n.md)', () => {
+        const mk = () => {
+            const v = vendoredLike();
+            const { a } = make(v as unknown as Fake);
+            return { v, a };
+        };
+        it('after the hand-back and a new attach with no frame in between, nothing of the renderer is scheduled', () => {
+            const { v, a } = mk();
+            a.enable();
+            v.frameBinds();
+            expect(v.scheduled()).toEqual(['raster', 'taa', 'sets', 'compose']);
+            a.disable();
+            // a drawing asked for before the new scan had a resident set, or the frame function did not run: attached, no frame yet
+            expect(a.enable()).toBe(true);
+            expect(v.scheduled()).toEqual([]);
+            expect(v.bindings).toBe(0);
+            // the first frame that binds a view turns it on again
+            v.frameBinds();
+            expect(v.scheduled()).toEqual(['raster', 'taa', 'sets', 'compose']);
+        });
+        it('control: without quieting, the attached renderer would run its passes and draw the compose on the destroyed view (the page errors on every frame)', () => {
+            const v = vendoredLike();
+            v.setEnabled(true);
+            v.frameBinds();
+            v.setEnabled(false); // what the adapter did before lane N: the vendored hand-back and nothing else
+            v.setEnabled(true);
+            expect(v.scheduled()).toEqual(['raster', 'taa', 'sets', 'compose']);
+            expect(v.bindings).toBe(0);
+        });
+        it('the hand-back after a failure leaves it quiet as well', () => {
+            const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+            const v = vendoredLike();
+            const { a, ev } = make(v as unknown as Fake);
+            a.enable();
+            v.frameBinds();
+            a.forceFault('frame');
+            (v as unknown as Fake).frame();
+            ev.endFrame();
+            expect(a.failed).not.toBeNull();
+            v.setEnabled(true); // whatever attaches it again
+            expect(v.scheduled()).toEqual([]);
+            err.mockRestore();
+        });
+        it('quietRenderer says false and touches nothing on a renderer without setReady (an upstream update renamed it)', () => {
+            const o = { taaPass: { enabled: true } };
+            expect(quietRenderer(o)).toBe(false);
+            expect(o.taaPass.enabled).toBe(true);
+            const v = vendoredLike();
+            v.frameBinds();
+            expect(quietRenderer(v)).toBe(true);
+            expect(v.taaPass.enabled).toBe(false);
+            expect(v.ready).toBe(false);
+        });
     });
     it('reports the renderer\'s numbers only while it draws', () => {
         const { a } = make();
