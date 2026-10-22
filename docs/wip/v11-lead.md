@@ -8,7 +8,7 @@ Nothing here is pushed, deployed or run against the live site.
 
 RESUME-FIRST: `git -C C:/dev/gsfpv-v03 log --oneline -8`, `git status`, then the first unchecked box. Never redo a merge or a passed check for unchanged inputs.
 
-- [ ] merge `v11-s` into `v03-lead` (conflicts resolved, headless mechanism reconciled, STATE.md entry)
-- [ ] gates once on the merged tree: typecheck, vitest, unittest, architecture, i18n, catalog, B18, landing smoke
+- [x] merge `v11-s` into `v03-lead` (conflicts resolved, headless mechanism reconciled, STATE.md entry): merge commit `252587d`
+- [x] gates once on the merged tree (HEAD `252587d`): typecheck, vitest (154 files, 2098 tests; one suite re-run alone), unittest 320, architecture, i18n 951 x 4, catalog, B18 PASS, landing smoke 158/158 (details below)
 - [ ] one merged local release, then accept-v11-stochastic, accept-v10-render, accept-v10-keys, accept-fly B6 B7 B9-B16
 - [ ] this note finished (results, evidence paths, DEPLOY LIST, notVerified, owner questions) and committed
