@@ -1,0 +1,823 @@
+{
+  "name": "v11-n",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.85",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-22T21:48:17.071Z",
+    "gitHead": "b316bce",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "feed": "the page's own",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.85",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "render": "off",
+  "presses": 16,
+  "superSplatProxy": "simulated: 503",
+  "catalogue": {
+    "count": 13,
+    "ids": [
+      "887f27aa",
+      "39e63ce9",
+      "7a475d38",
+      "70b50d42",
+      "ab5efa0e",
+      "d10c5638",
+      "2f1ddf5f",
+      "ba7aa29d",
+      "9baef54b",
+      "0230d903",
+      "eb5f51dc",
+      "1994c65c",
+      "b11e45d1"
+    ],
+    "pinned": [],
+    "hidden": [],
+    "requests": [
+      {
+        "url": "",
+        "status": 200,
+        "ms": 60
+      }
+    ]
+  },
+  "start": "887f27aa",
+  "settings": {
+    "rotation": "curated",
+    "order": "sequential",
+    "autoSwitch": false,
+    "allowNoWalls": false
+  },
+  "page": {
+    "render": "off",
+    "visibility": "visible",
+    "status": "ready"
+  },
+  "run": {
+    "sequence": [
+      "887f27aa",
+      "39e63ce9",
+      "7a475d38",
+      "70b50d42",
+      "ab5efa0e",
+      "d10c5638",
+      "2f1ddf5f",
+      "ba7aa29d",
+      "9baef54b",
+      "0230d903",
+      "eb5f51dc",
+      "1994c65c",
+      "b11e45d1",
+      "887f27aa",
+      "39e63ce9",
+      "7a475d38",
+      "70b50d42"
+    ],
+    "presses": [
+      {
+        "i": 1,
+        "key": "KeyN",
+        "startedAfterMs": 15,
+        "from": "887f27aa",
+        "to": "39e63ce9",
+        "reason": "next",
+        "state": "done",
+        "ms": 1080,
+        "now": "39e63ce9",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "tour": {
+          "seen": [
+            "887f27aa",
+            "39e63ce9"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 2,
+        "key": "KeyN",
+        "startedAfterMs": 10,
+        "from": "39e63ce9",
+        "to": "7a475d38",
+        "reason": "next",
+        "state": "done",
+        "ms": 1961,
+        "now": "7a475d38",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "tour": {
+          "seen": [
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 3,
+        "key": "KeyN",
+        "startedAfterMs": 9,
+        "from": "7a475d38",
+        "to": "70b50d42",
+        "reason": "next",
+        "state": "done",
+        "ms": 1001,
+        "now": "70b50d42",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "tour": {
+          "seen": [
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 4,
+        "key": "KeyN",
+        "startedAfterMs": 9,
+        "from": "70b50d42",
+        "to": "ab5efa0e",
+        "reason": "next",
+        "state": "done",
+        "ms": 1080,
+        "now": "ab5efa0e",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "tour": {
+          "seen": [
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 5,
+        "key": "KeyN",
+        "startedAfterMs": 11,
+        "from": "ab5efa0e",
+        "to": "d10c5638",
+        "reason": "next",
+        "state": "done",
+        "ms": 921,
+        "now": "d10c5638",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "tour": {
+          "seen": [
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 6,
+        "key": "KeyN",
+        "startedAfterMs": 10,
+        "from": "d10c5638",
+        "to": "2f1ddf5f",
+        "reason": "next",
+        "state": "done",
+        "ms": 919,
+        "now": "2f1ddf5f",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "tour": {
+          "seen": [
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 7,
+        "key": "KeyN",
+        "startedAfterMs": 8,
+        "from": "2f1ddf5f",
+        "to": "ba7aa29d",
+        "reason": "next",
+        "state": "done",
+        "ms": 906,
+        "now": "ba7aa29d",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "tour": {
+          "seen": [
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f",
+            "ba7aa29d"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 8,
+        "key": "KeyN",
+        "startedAfterMs": 9,
+        "from": "ba7aa29d",
+        "to": "9baef54b",
+        "reason": "next",
+        "state": "done",
+        "ms": 926,
+        "now": "9baef54b",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "tour": {
+          "seen": [
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f",
+            "ba7aa29d",
+            "9baef54b"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 9,
+        "key": "KeyN",
+        "startedAfterMs": 10,
+        "from": "9baef54b",
+        "to": "0230d903",
+        "reason": "next",
+        "state": "done",
+        "ms": 926,
+        "now": "0230d903",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "tour": {
+          "seen": [
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f",
+            "ba7aa29d",
+            "9baef54b",
+            "0230d903"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 10,
+        "key": "KeyN",
+        "startedAfterMs": 9,
+        "from": "0230d903",
+        "to": "eb5f51dc",
+        "reason": "next",
+        "state": "done",
+        "ms": 912,
+        "now": "eb5f51dc",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "tour": {
+          "seen": [
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f",
+            "ba7aa29d",
+            "9baef54b",
+            "0230d903",
+            "eb5f51dc"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 11,
+        "key": "KeyN",
+        "startedAfterMs": 9,
+        "from": "eb5f51dc",
+        "to": "1994c65c",
+        "reason": "next",
+        "state": "done",
+        "ms": 912,
+        "now": "1994c65c",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "tour": {
+          "seen": [
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f",
+            "ba7aa29d",
+            "9baef54b",
+            "0230d903",
+            "eb5f51dc",
+            "1994c65c"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 12,
+        "key": "KeyN",
+        "startedAfterMs": 9,
+        "from": "1994c65c",
+        "to": "b11e45d1",
+        "reason": "next",
+        "state": "done",
+        "ms": 1844,
+        "now": "b11e45d1",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "tour": {
+          "seen": [
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f",
+            "ba7aa29d",
+            "9baef54b",
+            "0230d903",
+            "eb5f51dc",
+            "1994c65c",
+            "b11e45d1"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 13,
+        "key": "KeyN",
+        "startedAfterMs": 110,
+        "from": "b11e45d1",
+        "to": "887f27aa",
+        "reason": "next",
+        "state": "done",
+        "ms": 1182,
+        "now": "887f27aa",
+        "note": "No new scene to bring right now: the author's list starts again.",
+        "blockers": [],
+        "exploreRequests": 1,
+        "pageErrors": [],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 14,
+        "key": "KeyN",
+        "startedAfterMs": 11,
+        "from": "887f27aa",
+        "to": "39e63ce9",
+        "reason": "next",
+        "state": "done",
+        "ms": 1103,
+        "now": "39e63ce9",
+        "note": "No new scene to bring right now: the author's list starts again.",
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 15,
+        "key": "KeyN",
+        "startedAfterMs": 9,
+        "from": "39e63ce9",
+        "to": "7a475d38",
+        "reason": "next",
+        "state": "done",
+        "ms": 1195,
+        "now": "7a475d38",
+        "note": "No new scene to bring right now: the author's list starts again.",
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 16,
+        "key": "KeyN",
+        "startedAfterMs": 10,
+        "from": "7a475d38",
+        "to": "70b50d42",
+        "reason": "next",
+        "state": "done",
+        "ms": 940,
+        "now": "70b50d42",
+        "note": "No new scene to bring right now: the author's list starts again.",
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      }
+    ],
+    "switchLog": [
+      {
+        "from": "887f27aa",
+        "to": "39e63ce9",
+        "reason": "next",
+        "ok": true,
+        "ms": 1080
+      },
+      {
+        "from": "39e63ce9",
+        "to": "7a475d38",
+        "reason": "next",
+        "ok": true,
+        "ms": 1961
+      },
+      {
+        "from": "7a475d38",
+        "to": "70b50d42",
+        "reason": "next",
+        "ok": true,
+        "ms": 1001
+      },
+      {
+        "from": "70b50d42",
+        "to": "ab5efa0e",
+        "reason": "next",
+        "ok": true,
+        "ms": 1080
+      },
+      {
+        "from": "ab5efa0e",
+        "to": "d10c5638",
+        "reason": "next",
+        "ok": true,
+        "ms": 921
+      },
+      {
+        "from": "d10c5638",
+        "to": "2f1ddf5f",
+        "reason": "next",
+        "ok": true,
+        "ms": 919
+      },
+      {
+        "from": "2f1ddf5f",
+        "to": "ba7aa29d",
+        "reason": "next",
+        "ok": true,
+        "ms": 906
+      },
+      {
+        "from": "ba7aa29d",
+        "to": "9baef54b",
+        "reason": "next",
+        "ok": true,
+        "ms": 926
+      },
+      {
+        "from": "9baef54b",
+        "to": "0230d903",
+        "reason": "next",
+        "ok": true,
+        "ms": 926
+      },
+      {
+        "from": "0230d903",
+        "to": "eb5f51dc",
+        "reason": "next",
+        "ok": true,
+        "ms": 912
+      },
+      {
+        "from": "eb5f51dc",
+        "to": "1994c65c",
+        "reason": "next",
+        "ok": true,
+        "ms": 912
+      },
+      {
+        "from": "1994c65c",
+        "to": "b11e45d1",
+        "reason": "next",
+        "ok": true,
+        "ms": 1844
+      },
+      {
+        "from": "b11e45d1",
+        "to": "887f27aa",
+        "reason": "next",
+        "ok": true,
+        "ms": 1182
+      },
+      {
+        "from": "887f27aa",
+        "to": "39e63ce9",
+        "reason": "next",
+        "ok": true,
+        "ms": 1103
+      },
+      {
+        "from": "39e63ce9",
+        "to": "7a475d38",
+        "reason": "next",
+        "ok": true,
+        "ms": 1195
+      },
+      {
+        "from": "7a475d38",
+        "to": "70b50d42",
+        "reason": "next",
+        "ok": true,
+        "ms": 940
+      }
+    ],
+    "catalogueScenesVisited": 13,
+    "firstPressIntoSuperSplat": null,
+    "repeatBeforeSuperSplat": {
+      "press": 13,
+      "to": "887f27aa"
+    },
+    "superSplatRequests": [
+      {
+        "url": "?sort=trending&order=-1&time=all&features=walkable&skip=0&limit=24",
+        "status": 503,
+        "ms": 11
+      }
+    ],
+    "beaconsAnswered": 19,
+    "blockedWrites": [],
+    "requests": 221,
+    "httpErrors": [
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/lod-meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v6/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v12/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v9/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/lod-meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v8/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v7/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v10/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v11/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/lod-meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "503 gsfpv.flyreelstudio.eu/api/superspl/explore",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json"
+    ],
+    "pageErrors": [],
+    "consoleErrors": [
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()"
+    ]
+  }
+}
