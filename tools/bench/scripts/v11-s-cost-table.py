@@ -79,9 +79,9 @@ def main(argv):
             line = f"| {NAMES.get(key[0], key[0])} {key[1].replace('1280x720', '720p').replace('3840x2160', '4K')} {key[2]} M | {arm} | {' / '.join(f'{x:g}' for x in p50)} | **{st.median(p50):g}** | {' / '.join(f'{x:g}' for x in p95)} | {min(vr):.0f} to {max(vr):.0f} |"
             if clocks:
                 cl = [clock_in(clocks, r['window']) if r.get('window') else None for r in rs]
-                if all(cl):
-                    full = [r['gpuProfilerMs']['p50'] * x[0] / x[1] for r, x in zip(rs, cl)]
-                    line += f" {' / '.join(f'{x[0]:.0f}' for x in cl)} | {st.median(full):.2f} |"
+                full = [r['gpuProfilerMs']['p50'] * x[0] / x[1] for r, x in zip(rs, cl) if x]
+                if full:  # a run the log does not cover is shown as "no log" and left out of the scaled median
+                    line += f" {' / '.join(f'{x[0]:.0f}' if x else 'no log' for x in cl)} | {st.median(full):.2f} |"
                 else:
                     line += ' - | - |'
             print(line)
