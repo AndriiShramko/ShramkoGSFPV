@@ -102,9 +102,9 @@ class RoadmapSeed(unittest.TestCase):
         items = self.doc["items"]
         by = {s: [i for i in items if i["status"] == s] for s in STATUSES}
         # the landing on 13 October 2026: 51 live, 1 in progress, 1 next (live -> done, progress ->
-        # in_progress, next -> accepted); v0.8 lane D appended 3 done drone features (docs/wip/v08-d.md R1); the v0.8 lead 3 more, the v0.9 lead 8, the v0.10 lead 2.
+        # in_progress, next -> accepted); v0.8 lane D appended 3 done drone features (docs/wip/v08-d.md R1); the v0.8 lead 3 more, the v0.9 lead 8, the v0.10 lead 2, the v0.11 lead 1.
         # The live store loaded the seed once: new seed items reach a fresh store only (the lead adds them live).
-        self.assertEqual({s: len(v) for s, v in by.items()}, {"done": 67, "in_progress": 1, "accepted": 1})
+        self.assertEqual({s: len(v) for s, v in by.items()}, {"done": 68, "in_progress": 1, "accepted": 1})
         self.assertEqual([i["order"] for i in items], list(range(1, len(items) + 1)))
         self.assertEqual(items[0]["title"]["en"], "EdgeTX radio over USB (WebHID) in Chrome or Edge")
         self.assertEqual(sorted({i["group"] for i in by["done"]}), sorted(GROUPS))

@@ -897,6 +897,19 @@
     "pl": "Czyste rysowanie domyślnie dla najlepszego obrazu, ustawienia dla każdego rodzaju urządzenia i budżet splatów, który ustawisz sam",
     "ru": "Чистая отрисовка по умолчанию для лучшей картинки, пресеты для каждого типа устройства и бюджет сплатов, который можно задать самому"
    }
+  },
+  {
+   "id": "F-stochastic-with-frame-accumulation",
+   "kind": "feature",
+   "status": "done",
+   "group": "settings",
+   "order": 70,
+   "title": {
+    "en": "Stochastic drawing with frame accumulation, from SuperSplat's open-source viewer: a near-clean picture when the drone hovers, a choice in Settings",
+    "es": "Dibujo estocástico con acumulación de fotogramas, del visor de código abierto de SuperSplat: imagen casi limpia cuando el dron se queda quieto, una opción en Ajustes",
+    "pl": "Rysowanie stochastyczne z akumulacją klatek z otwartego viewera SuperSplat: prawie czysty obraz, gdy dron wisi w miejscu, do wyboru w Ustawieniach",
+    "ru": "Стохастическая отрисовка с накоплением кадров из открытого вьюера SuperSplat: почти чистая картинка, когда дрон висит, выбор в настройках"
+   }
   }
  ]
 }
