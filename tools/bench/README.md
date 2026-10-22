@@ -19,7 +19,7 @@
    a Playwright build (the container's `/opt/google/chrome/chrome`) counts as bundled.
 3. `BENCH_BROWSER=chrome | bundled | <path to an executable>` overrides.
 
-Windows stay headful. Where there is no display, run the driver under `xvfb-run -a`. Every
+Windows stay headful, unless `BENCH_BACKGROUND=headless` (new headless Chrome, no window; the owner's request of 2026-10-22: tests never take his screen, focus or mouse) or `BENCH_BACKGROUND=offscreen` (a headed window parked at -32000,-32000) is set; in both a page's pointer lock is stubbed (`POINTER_LOCK_STUB` in `src/browser.ts`: the page's `pointerLockElement` and `pointerlockchange` follow the call, the real mouse is never grabbed) and the evidence file says which mode ran. Where there is no display, run the driver under `xvfb-run -a`. Every
 evidence file records the browser under `context.browser` (`kind`, `version`, `executable`, `why`).
 Nothing here installs browsers: never run `playwright install`.
 

@@ -13,7 +13,7 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from 'playwright';
-import { launchChrome, waitReady } from './browser';
+import { BACKGROUND, launchChrome, waitReady } from './browser';
 import { REPO, today } from './evidence';
 
 const SITE = (process.env.SITE ?? 'http://127.0.0.1:5611').replace(/\/$/, '');
@@ -96,8 +96,10 @@ try {
                 await sleep(3000);
                 await hook(page, 'window.__frames.length = 0; window.__gpuT.length = 0; window.__pass.clear(); window.__passN = 0; return 0;');
                 const held0 = await hook<number>(page, 'return s.renderer.framesHeld;');
+                const w0 = Date.now(); // the measured window, for the GPU clock log (nvidia-smi, 1 s) that is joined to it afterwards
                 const done: number[] = [];
                 for (let i = 0; i < SECONDS; i++) { await sleep(1000); done.push(...await hook<number[]>(page, 'return [...s.renderer.submitDone];')); }
+                const w1 = Date.now();
                 const fr = await hook<number[]>(page, 'return window.__frames.slice();');
                 const gpuT = await hook<number[]>(page, 'return window.__gpuT.slice();');
                 const pass = await hook<Record<string, number>>(page, 'const o = {}; for (const [k, v] of window.__pass) o[k] = Math.round(v / Math.max(1, window.__passN) * 1000) / 1000; return o;');
@@ -105,7 +107,7 @@ try {
                 const st = await hook<Any>(page, STATE);
                 const vram1 = await hook(page, VRAM);
                 const row = {
-                    ...key, settledMs: o.settledMs, sceneComplete: await hook(page, 'return s.renderer.sceneComplete;'),
+                    ...key, window: [w0, w1], background: BACKGROUND, settledMs: o.settledMs, sceneComplete: await hook(page, 'return s.renderer.sceneComplete;'),
                     gpuProfilerMs: { n: gpuT.length, p50: q(gpuT, 0.5), p95: q(gpuT, 0.95) }, passMs: pass, submitToDoneMs: { n: done.length, p50: q(done, 0.5), p95: q(done, 0.95) },
                     drawnHz: fr.length > 1 ? Math.round((fr.length - 1) * 10000 / (fr[fr.length - 1] - fr[0])) / 10 : null, framesHeld: held,
                     vramMiB: { atLoad: vram0, afterRun: vram1 }, state: st

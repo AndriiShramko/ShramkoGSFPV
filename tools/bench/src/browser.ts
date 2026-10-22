@@ -19,10 +19,38 @@ export interface Launched {
     which: BrowserInfo;
 }
 
+/**
+ * BENCH_BACKGROUND (the owner's request of 2026-10-22: the tests run in the background and never take his screen, focus or mouse):
+ *   headless  new headless Chrome (no window at all)
+ *   offscreen a headed Chrome parked at -32000,-32000 (for a driver that cannot draw headless)
+ * In both a page's pointer lock is stubbed (see POINTER_LOCK_STUB): nothing can grab the real mouse. Unset: the visible window as before.
+ */
+export const BACKGROUND = process.env.BENCH_BACKGROUND === 'headless' || process.env.BENCH_BACKGROUND === 'offscreen' ? process.env.BENCH_BACKGROUND : null;
+
+/** Pointer lock without the real pointer: the page's own state (`pointerLockElement`, `pointerlockchange`) follows the call, the mouse stays the owner's. */
+export const POINTER_LOCK_STUB = `(() => {
+  let locked = null;
+  Object.defineProperty(Document.prototype, 'pointerLockElement', { configurable: true, get() { return locked; } });
+  Element.prototype.requestPointerLock = function () { locked = this; queueMicrotask(() => document.dispatchEvent(new Event('pointerlockchange'))); return Promise.resolve(); };
+  Document.prototype.exitPointerLock = function () { if (locked) { locked = null; queueMicrotask(() => document.dispatchEvent(new Event('pointerlockchange'))); } };
+})();`;
+
 /** chromium.launch() on system Chrome, else the bundled Chromium (chrome.mjs); the choice goes into the evidence. */
 export async function launchChrome(o: Parameters<typeof chromium.launch>[0] = {}): Promise<{ browser: Browser; which: BrowserInfo }> {
     const pick = pickBrowser({ expected: chromium.executablePath() });
-    const browser = await chromium.launch({ ...o, ...pick.launch });
+    const asked = BACKGROUND === 'headless' ? { ...o, headless: true, args: [...(o.args ?? []).filter((a) => !a.startsWith('--window-')), '--window-size=1296,920'] }
+        : BACKGROUND === 'offscreen' ? { ...o, headless: false, args: [...(o.args ?? []).filter((a) => !a.startsWith('--window-')), '--window-position=-32000,-32000', '--window-size=1296,920'] }
+            : o;
+    const browser = await chromium.launch({ ...asked, ...pick.launch });
+    if (BACKGROUND) {
+        // every context of a background browser carries the stub; the contexts the drivers make themselves too
+        const newContext = browser.newContext.bind(browser);
+        browser.newContext = (async (opts?: Parameters<Browser['newContext']>[0]) => {
+            const c = await newContext(opts);
+            await c.addInitScript(POINTER_LOCK_STUB);
+            return c;
+        }) as Browser['newContext'];
+    }
     const which = describeBrowser(pick, browser.version());
     noteBrowser(which);
     return { browser, which };
