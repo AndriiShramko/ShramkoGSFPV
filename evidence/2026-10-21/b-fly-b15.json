@@ -1,0 +1,79 @@
+{
+  "name": "b-fly-b15",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.85",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-21T16:33:16.331Z",
+    "gitHead": "2c40c30",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:8771",
+  "render": "off",
+  "renderNote": "logic-only (?render=off): the scan was not drawn; not a visual or latency check",
+  "pass": true,
+  "flight": {
+    "phase": "rest",
+    "flip": {
+      "startTick": 5721,
+      "endTick": 6171,
+      "minUpY": -0.9999998748515548
+    },
+    "crash": {
+      "tick": 19238,
+      "speed": 8.565648919042033,
+      "px": -4.899018282169666,
+      "py": 2.1660896045074054,
+      "pz": 0.8999678014733062
+    },
+    "tick": 30283
+  },
+  "saved": {
+    "hash": "cc309e06cd6c22eb54d2fe51256921df4fa7c6f990beaab6d0ba1fcafaebe95a",
+    "endTick": 30283,
+    "records": 5631,
+    "lives": 2
+  },
+  "newTab": {
+    "saved": "cc309e06cd6c22eb54d2fe51256921df4fa7c6f990beaab6d0ba1fcafaebe95a",
+    "hash": "cc309e06cd6c22eb54d2fe51256921df4fa7c6f990beaab6d0ba1fcafaebe95a",
+    "endTick": 30283,
+    "lives": 2,
+    "refused": null
+  },
+  "cpuThrottle": {
+    "x1": {
+      "stepsPerWallSecond": 994.8985940027374,
+      "hitches": 0
+    },
+    "x4": {
+      "stepsPerWallSecond": 1004.2559546035233,
+      "hitches": 0
+    }
+  },
+  "control": {
+    "atTick": 10000,
+    "channel": "throttle",
+    "lsb": {
+      "hash": "555fb2dc2e9e039bcfef957af4d2f71fe2a2726e1bd3a2b2b30f6417042ef873",
+      "differs": true,
+      "maxDivergenceM": 0.008597828333406157,
+      "tamperedValue": -0.3721637725830078,
+      "fired": true
+    },
+    "twitch": {
+      "delta": 0.05,
+      "hash": "7d9c48df2cc6f230da8c6ac9fef38de9934c5c0ac3cef9d5f7ae16217daf146d",
+      "differs": true,
+      "maxDivergenceM": 0.36844098538667286,
+      "tamperedValue": -0.3721637725830078,
+      "fired": true
+    }
+  }
+}

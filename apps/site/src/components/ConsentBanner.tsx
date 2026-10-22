@@ -1,14 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { GA_ID, loadGaWithConsent } from "@/lib/track";
-
-const KEY = "gsfpv_consent";
+import { CONSENT_OPEN_EVENT, loadGaWithConsent, storeConsent, storedConsent, withdrawConsent } from "@/lib/track";
 
 /**
- * Cookie banner for Google Analytics 4 only. Rendered only when NEXT_PUBLIC_GA_ID was set at
- * build time; with no ID there is no banner and nothing from Google is loaded.
- * The choice is remembered in localStorage (try/catch: storage may be blocked).
+ * Cookie banner for Google Analytics 4 only (lib/track.ts). Nothing from Google loads before Accept.
+ * The choice is remembered in localStorage (try/catch: storage may be blocked), under the key the
+ * simulator reads too. The footer's "Cookie settings" and the privacy page open it again: Decline then
+ * withdraws a consent given before. Decline and Accept have the same visual weight (T6).
  */
 export default function ConsentBanner() {
   const t = useTranslations("consent");
@@ -16,27 +15,22 @@ export default function ConsentBanner() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (!GA_ID) return;
-    let stored: string | null = null;
-    try {
-      stored = localStorage.getItem(KEY);
-    } catch {
-      stored = null;
-    }
+    const stored = storedConsent();
     if (stored === "yes") loadGaWithConsent();
     else if (stored !== "no") setOpen(true);
+    const reopen = () => setOpen(true);
+    window.addEventListener(CONSENT_OPEN_EVENT, reopen);
+    return () => window.removeEventListener(CONSENT_OPEN_EVENT, reopen);
   }, []);
 
-  if (!GA_ID || !open) return null;
+  if (!open) return null;
 
   const decide = (yes: boolean) => {
-    try {
-      localStorage.setItem(KEY, yes ? "yes" : "no");
-    } catch {
-      /* ignore */
-    }
     setOpen(false);
-    if (yes) loadGaWithConsent();
+    if (yes) {
+      storeConsent("yes");
+      loadGaWithConsent();
+    } else withdrawConsent();
   };
 
   return (
@@ -52,7 +46,7 @@ export default function ConsentBanner() {
         </a>
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
-        <button type="button" onClick={() => decide(false)} className="btn-secondary px-5">
+        <button type="button" onClick={() => decide(false)} className="btn-primary px-5">
           {t("decline")}
         </button>
         <button type="button" onClick={() => decide(true)} className="btn-primary px-5">

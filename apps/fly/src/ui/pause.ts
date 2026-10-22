@@ -8,6 +8,7 @@ import { h, panel } from './dom';
 import { modeChip, statsColumn, keysBlock } from './summary';
 import type { SummaryData } from './summary';
 import { t, locale } from '../i18n';
+import { consentSettingsShown, openConsent } from '../app/analytics';
 
 /** One button of the menu: `id` is its data-action, `keys` its key-caps (keysFor of its action). */
 export interface PauseMenuEntry {
@@ -43,6 +44,8 @@ export function pauseMenu(parent: HTMLElement, entries: readonly PauseMenuEntry[
     // rows of other features above the columns (the scene size, E.7)
     if (rows.length) p.body.append(h('div', { class: 'sum-rows' }, ...rows));
     p.body.append(h('div', { class: 'sum-grid' }, summary ? statsColumn(summary) : null, menu, summary ? keysBlock(summary) : null));
+    // the simulator's "footer": the analytics choice again (app/analytics.ts; not on test pages, which have no GA)
+    if (consentSettingsShown()) p.body.append(h('p', { class: 'pm-cookies' }, h('button', { type: 'button', class: 'linkish', 'data-action': 'cookie-settings', onclick: () => openConsent() }, t('consent.settings'))));
     // Up / Down walk the menu (arrows fly only outside a dialog: devices/keyboard.ts dialogOpen)
     p.root.addEventListener('keydown', (e) => {
         if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;

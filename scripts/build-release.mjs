@@ -14,9 +14,20 @@ const ROOT = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '
 const DIST = join(ROOT, 'dist');
 const LOCALES = ['en', 'es', 'pl', 'ru'];
 const skip = process.argv.includes('--skip-build');
-// GA4 property "ShramkoGSFPV" (public Measurement ID, not a secret). The site loads it only after
-// the visitor accepts analytics cookies; override with NEXT_PUBLIC_GA_ID= (empty) to build without GA.
-process.env.NEXT_PUBLIC_GA_ID ??= 'G-E7X0ES0QBE';
+// GA4 property "ShramkoGSFPV" (public Measurement ID, not a secret), loaded only after the visitor
+// accepts analytics cookies. The ID is committed in the sources (apps/site/src/lib/track.ts and
+// apps/fly/src/app/analytics.ts), not read from the build environment: an empty variable used to give a
+// release without GA and without any error (Drony Bydgoszcz lost GA for 8 days that way). The check
+// further down refuses a release whose landing or simulator bundles lack this exact ID; deploy/deploy.sh
+// checks the tarball again before anything is uploaded.
+const GA_ID = 'G-E7X0ES0QBE';
+for (const src of ['apps/site/src/lib/track.ts', 'apps/fly/src/app/analytics.ts']) {
+    const text = readFileSync(join(ROOT, src), 'utf8');
+    if (!text.includes(`"${GA_ID}"`) && !text.includes(`'${GA_ID}'`)) {
+        console.error(`GA guard: ${src} does not name ${GA_ID}`);
+        process.exit(1);
+    }
+}
 
 const run = (cmd, cwd = ROOT) => execSync(cmd, { cwd, stdio: 'inherit', env: process.env });
 
@@ -114,6 +125,10 @@ for (const f of walk(DIST)) {
     if (/(ghp_|gho_|github_pat_)[A-Za-z0-9]{20,}|BEGIN [A-Z ]*PRIVATE KEY|bot\d{8,}:[A-Za-z0-9_-]{30,}/.test(s)) bad.push(`secret-like string: ${f}`);
     if (f.endsWith('.html') && /[?&](lat|simradio|lagFrames)=/.test(s)) bad.push(`test switch linked: ${f}`);
 }
+// GA guard: the landing's scripts and the simulator's bundle must both carry the Measurement ID
+const gaIn = (dir) => walk(dir).some((f) => f.endsWith('.js') && readFileSync(f, 'utf8').includes(GA_ID));
+if (!gaIn(join(DIST, '_next'))) bad.push(`GA guard: no script under dist/_next names ${GA_ID} (the landing would ship without analytics)`);
+if (!gaIn(join(DIST, 'fly', 'assets'))) bad.push(`GA guard: no script under dist/fly/assets names ${GA_ID} (the simulator would ship without analytics)`);
 if (bad.length) {
     console.error(bad.join('\n'));
     process.exit(1);

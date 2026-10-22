@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { LEAD_ENDPOINT } from "@/config/site";
+import { gaEvent } from "@/lib/track";
 
 /**
  * Collaboration form: choose-one chips, one optional free-text field, email, specific consent.
@@ -97,6 +98,7 @@ export default function LeadForm() {
     e.preventDefault();
     if (!valid || state === "sending") return;
     setState("sending");
+    gaEvent("form_submit", { form_id: "lead" });
     // a timer may fire a fraction of a millisecond early, and t = 2999 is "suspect" on the server,
     // so wait until the full MIN_MS has really passed
     for (let left = MIN_MS - (performance.now() - renderedAt.current); left > 0; left = MIN_MS - (performance.now() - renderedAt.current)) {
@@ -118,6 +120,8 @@ export default function LeadForm() {
         body: JSON.stringify(body),
       });
       if (!r.ok) throw new Error("not ok");
+      // the server stored the lead (2xx): only now a lead for GA4 (the role, never the e-mail or the text)
+      gaEvent("generate_lead", { form_id: "lead", lead_type: d.role || "other" });
       setState("done");
       try {
         localStorage.removeItem(DRAFT_KEY);
@@ -139,7 +143,7 @@ export default function LeadForm() {
   }
 
   return (
-    <form onSubmit={submit} noValidate className="relative rounded-xl border border-line bg-surface p-5 sm:p-8" aria-describedby="lead-status">
+    <form onSubmit={submit} noValidate data-form="lead" className="relative rounded-xl border border-line bg-surface p-5 sm:p-8" aria-describedby="lead-status">
       <div aria-hidden="true" className="absolute -left-[9999px] top-0 h-px w-px overflow-hidden">
         <label>
           Website

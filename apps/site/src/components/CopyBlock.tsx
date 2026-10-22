@@ -43,7 +43,7 @@ export default function CopyBlock({ text, label, copied, caption, id }: { text: 
     <div className="overflow-hidden rounded-xl border border-line bg-bg">
       <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-2">
         <span className="font-mono text-xs uppercase tracking-wider text-muted">{caption}</span>
-        <button type="button" onClick={copy} className="btn-secondary min-h-11 px-4 text-sm" aria-describedby={id}>
+        <button type="button" onClick={copy} className="btn-secondary min-h-11 px-4 text-sm" aria-describedby={id} data-ga={id === "agent-prompt" ? "copy_agent_prompt" : undefined}>
           <span aria-live="polite">{ok ? copied : label}</span>
         </button>
       </div>

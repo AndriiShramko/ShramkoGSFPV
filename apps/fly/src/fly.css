@@ -332,3 +332,8 @@ body.cinema .rec-dot { display: none; }
 .sf-badge.walls { color: var(--accent); border-color: rgba(74,222,128,.45); }
 .sf-badge.nowalls { color: var(--warn); border-color: rgba(251,191,36,.45); }
 @media (max-width: 640px) { .sf-row { grid-auto-columns: 86%; } }
+/* GA4 consent (app/analytics.ts): a card at the bottom edge until answered, both buttons of one weight; the pause menu's "Cookie settings" */
+.consent-card { position: fixed; left: 50%; bottom: max(12px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 70; width: min(560px, calc(100vw - 24px)); background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; box-shadow: 0 8px 30px rgba(0,0,0,.5); pointer-events: auto; font-size: 14px; }
+.consent-card p { margin: 0 0 10px; color: var(--muted); } .consent-card strong { color: var(--fg); } .consent-card a { color: var(--accent); }
+.consent-actions { display: flex; flex-wrap: wrap; gap: 8px; } .consent-actions .btn { min-width: 120px; }
+.pm-cookies { margin: 10px 0 0; text-align: center; } .pm-cookies .linkish { background: none; border: 0; padding: 8px; min-height: 44px; color: var(--muted); font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; } .pm-cookies .linkish:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

@@ -20,6 +20,7 @@ import { h, clear, panel } from '../../ui/dom';
 import { t, locale } from '../../i18n';
 import { PRESETS } from '../../presets';
 import { q } from '../env';
+import { gaEvent } from '../analytics';
 import { DIAG_ITEMS, collectDiagnostics, releaseId } from '../diagnostics';
 import { BETAFLIGHT_MAX, DRONE_NEW, DRONE_REPORT_ITEMS, LOG_URL_MAX, LOG_URL_RE, droneReportBody } from './drone-report';
 import type { DroneSettings } from './drone-report';
@@ -287,9 +288,12 @@ export function openFeedback(ctx: FlightContext, first: FeedbackKind = 'bug', o:
                 send.disabled = true;
                 send.textContent = f.sending;
                 const ms = await wait();
+                gaEvent('form_submit', { form_id: 'fly_lead' });
                 try {
                     const r = await post('/api/lead', { role, message: msg.value.trim().slice(0, LEAD_MESSAGE_MAX), email: email.value.trim(), locale, consent: true, t: ms, hp: hp.value, scene: ctx.scene.id });
                     if (!r.ok) throw new Error(`lead ${r.status}`);
+                    // stored by the server (2xx): a lead for GA4, the role only (app/analytics.ts)
+                    gaEvent('generate_lead', { form_id: 'fly_lead', lead_type: role || 'other' });
                     done(f.done.title, f.done.text);
                 } catch {
                     out.textContent = f.error;

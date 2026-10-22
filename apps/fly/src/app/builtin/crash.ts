@@ -76,7 +76,7 @@ export const crash: Feature = {
         ctx.events.on('sim', (e) => {
             if (e.type !== 'crash') return;
             const session = ctx.session;
-            beacon('crash');
+            beacon('crash', {}, { scene_id: ctx.scene.id });
             takeDown();
             last = e;
             session.cameraOverride = true;

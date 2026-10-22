@@ -35,6 +35,20 @@ have=$(sha256sum "$TGZ" | awk '{print $1}')
 id="${have:0:12}"
 bytes=$(wc -c < "$TGZ" | tr -d ' ')
 
+# GA guard (WEB-TECH-BASELINE T6): the landing's scripts and the simulator's bundle must both name the
+# GA4 Measurement ID (committed in apps/site/src/lib/track.ts and apps/fly/src/app/analytics.ts). A release
+# built without it would ship with no analytics and no error at all. Read from stdin: GNU tar takes
+# "C:/..." for a remote host. grep -c reads to the end (grep -q would cut tar off and fail the pipe).
+GA_ID=G-E7X0ES0QBE
+for part in ./_next/ ./fly/assets/; do
+  n=$(tar -xzf - -O --wildcards "${part}*.js" < "$TGZ" 2>/dev/null | grep -c "$GA_ID" || true)
+  if [ "${n:-0}" -lt 1 ]; then
+    echo "REFUSED: no script under ${part#./} in $TGZ names $GA_ID (the release would ship without analytics). Nothing was uploaded or switched."
+    exit 1
+  fi
+done
+echo "GA guard: $GA_ID is in the landing's scripts and in the simulator's bundle"
+
 if [ "$SWITCH" = 1 ]; then
   # The enforced CSP only exists in the repo's nginx.conf. With an older one live, the switch would
   # go through and the hash check after it would fail, so compare first: the file on the hub
