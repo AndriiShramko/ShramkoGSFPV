@@ -1,0 +1,17 @@
+ok   V1 `?stochastic` draws through the vendored renderer: drawn accum, plan accum/ok, the page's hook agrees, the engine's own dither is off
+ok   V1 the renderer is up: active, accumulating (taa), occlusion culling on, millions of splats resident, its buffers allocated
+ok   V1 upstream's defaults are in force (256 frames at rest, 16 moving, clamp 1.25)
+ok   V1 F3 says "stochastic, accumulating" and who decided
+ok   V1 no WebGPU validation error, no CSP violation, no page error
+ok   [control] V1 control: ?impl=engine draws the engine's own dither (drawn engine, flag on) and makes no accumulating renderer; F3 says plain "stochastic"
+ok   [control] V1 control: the BASE build has no such renderer (no accumStats) and draws the engine's dither for the same link
+ok   [control] V1 control: a device whose storage binding cannot hold the cache falls back to the engine's dither (impl engine, plan unsupported, nothing made)
+ok   V1 the 403s in the console are the page's own and the BASE has the same (5 against 5): not ours
+ok   V6 the release has no more eval( (4 against 4) and no more new Function( (0 against 0) than the BASE
+ok   V6 the policy the pages are served with is strict (no 'unsafe-eval' and no 'unsafe-inline' in script-src; 'wasm-unsafe-eval' is the one the engine always had) and is the same text as the BASE's
+ok   [control] V6 control: a policy with 'unsafe-eval' in script-src would be seen
+ok   V6 the bundle names no host the BASE bundle does not (none; allowed by V6_ALLOW_HOSTS: www.googletagmanager.com)
+ok   [control] V6 control: a made-up host in the bundle would be seen (the check has teeth)
+ok   V6 no page of this run (3 state reads) saw a CSP violation (0)
+ok   no page of this run saw a WebGPU validation error (0 in 3 state reads)
+{"V1":true,"V6":true} C:\dev\gsfpv-v03\evidence\2026-10-22\v11-stochastic-v11-lead-v1v6-2.json

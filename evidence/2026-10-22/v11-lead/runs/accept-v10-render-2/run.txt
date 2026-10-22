@@ -1,0 +1,53 @@
+FAIL [control] R1 control: the BASE build draws a desktop interior stochastic by default (engine, shader, from the device)
+ok   R1 desktop, nothing asked: sorted in the engine and in the shader, 4 M, decided by this device (its class preset)
+ok   R1 the class is read from the browser: desktop-strong (reasons: strong), with the GPU the engine got
+ok   R1 F3 names what draws and the class
+ok   R1 the default picture IS the sorted picture: 86.13 dB against ?stochastic=0 (above 45)
+FAIL [control] R1 control: the BASE default picture is 86.51 dB from the sorted one (below 25: the grain and the colour shift)
+ok   R2 a phone: class phone, sorted, 2 M, resolution capped at 70 % (the canvas is 577 px wide, 577 expected), no note
+FAIL [control] R2 control: the BASE build draws the same phone at the full 824 px width (scale 0.7)
+ok   R2 a tablet: class tablet, sorted, 2 M, resolution capped at 85 % (the canvas is 1394 px wide, 1394 expected), no note
+FAIL [control] R2 control: the BASE build draws the same tablet at the full 1640 px width (scale 0.85)
+ok   R2 the Render row of Settings says the class, the GPU and what Auto draws (desktop-strong: sorted, up to 4 M, 100 %)
+ok   R2 a pilot who names the weak desktop class gets its preset: class desktop-weak (picked, the browser said desktop-strong), 2.5 M, scale 85 %, sorted
+ok   R2 the row follows: it names the class the pilot chose and what the browser says
+FAIL [control] R2 control: the BASE build has no Device class setting (the call fails or changes nothing: still 4 M stochastic)
+ok   R3 the Drawing tab lists the four classes, each with its built-in values (sorted, 4 / 2.5 / 2 / 2 M, 100 / 85 / 85 / 70 %), and every scene of the catalogue
+ok   R3 a change is saved as a draft on the server with only the fields the owner touched, marked "changed" in the row
+ok   R3 the draft is not live: /api/catalog has no drawing yet
+ok   [control] R3 control: a fresh desktop page still gets the built-in table while it is a draft (sorted, 4 M)
+ok   R3 Publish: /api/catalog carries the owner's drawing (and the history has the version)
+ok   R3 a fresh desktop draws what the owner set: stochastic at 6 M in the engine and the shader, still "from this device"
+ok   R3 F3 and the Render row say so, and that the owner changed the preset
+ok   R4 the pilot's Render = Sorted beats the owner's stochastic preset (from "your setting")
+ok   R4 the pilot's Splat budget 2 M beats the owner's 6 M (from "your setting")
+ok   R4 back to Auto: the owner's preset again (stochastic, 6 M, this device)
+ok   R4 a link's ?budget=3&stochastic beats everything below it: stochastic at 3 M from the link
+ok   R4 a setting changed in flight beats the link for that scene (sorted, the link's 3 M kept)
+ok   R3 a fresh phone gets the owner's phone preset: 1.5 M, 60 % (and still sorted: the owner's stochastic is for the desktop class)
+FAIL [control] R3 control: the BASE page, served the same catalogue, ignores the owner's preset (stochastic at its own 4 M, not 6)
+ok   R3 the admin table writes the scene's own render ({budgetM 5, stochastic false}) into the catalogue
+ok   R4 the scene's own entry beats the owner's preset: sorted at 5 M, from "the scene's entry" (the preset says stochastic 6 M)
+ok   R3 Reset all + Publish: /api/catalog has no drawing again, a fresh desktop is back on sorted 4 M, and the history kept every version
+FAIL [control] R3 control: the BASE build's admin has no Drawing tab
+ok   R3 the admin page raised no errors; the password is in no log or data file
+FAIL [control] R5 control: the BASE build keeps drawing stochastic while it records (the grain goes into the file)
+ok   R5 before REC the link's stochastic draws (engine and shader)
+ok   R5 while REC runs the scan is drawn sorted (engine and shader), the hook says the hold is on, F3 says "sorted (recording)"
+ok   R5 the HUD says once that the recording draws the clean picture (only because the drawing was stochastic)
+ok   R5 a Render setting changed during the recording waits for it (still sorted)
+ok   R5 after the stop the pilot's drawing is back (the link's stochastic: engine and shader), the hold is off
+ok   [control] R6 control: a grab of the same stochastic view weighs 1.25x or more of the sorted grab (the measurement can tell)
+ok   R6 the share picture of a stochastic view is one sorted frame: at most 0.8 of the stochastic grab's bytes, under the API's 400 KB
+ok   R6 the drawing is back right after (stochastic in the engine and the shader, the same budget)
+ok   R7 a phone (class phone, preset 2 M) whose pilot sets Splat budget 8 M: the page draws up to 8 M, "from your setting", sorted, no note
+FAIL [control] R7 control: the build before the review round drops the 8 M and keeps 2 M on the phone
+ok   R7 a tablet (class tablet, preset 2 M) whose pilot sets Splat budget 8 M: the page draws up to 8 M, "from your setting", sorted, no note
+FAIL [control] R7 control: the build before the review round drops the 8 M and keeps 2 M on the tablet
+ok   R7 a desktop without WebGPU (class desktop-weak, preset 2.5 M) whose pilot sets Splat budget 8 M: the page draws up to 8 M, "from your setting", sorted, no note
+FAIL [control] R7 control: the build before the review round drops the 8 M and keeps 2.5 M on the desktop without WebGPU
+ok   R7 a phone given a link's ?budget=8: refused (the phone's 2 M, the note says so); then the pilot sets 4 M: his number wins over the link
+ok   R7 a phone that sends a desktop user agent ({"ua":"Mozilla/5.0 (X11; Linux x86_64) AppleWeb","mobile":false,"touch":5,"screen":[412,915]}) is a phone: class phone (reason small-touch-screen), sorted, 2 M, resolution capped at 70 % (canvas 577 px, 577 expected)
+ok   R7 it never draws stochastic: the pilot choosing Stochastic is refused and the HUD says so (setting-handheld)
+FAIL [control] R7 control: the build before the review round takes the same device for a strong desktop (class phone, 2 M, scale 0.7) and lets it draw stochastic when asked
+{"R1":false,"R2":false,"R3":false,"R4":true,"R5":false,"R6":true,"R7":false} C:\dev\gsfpv-v03\evidence\2026-10-22\v10-render-v11-lead-2.json

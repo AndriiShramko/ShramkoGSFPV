@@ -1,0 +1,23 @@
+accept-fly target: http://localhost:5731
+B6 {"id":"39e63ce9","form":"39e63ce9","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":1088.2999999970198,"pixelStd":0.15988208567742748,"pixelMean":0.5519871012315989,"hosts":["localhost:5731","d28zzqy0iyovbz.cloudfront.net","s3-eu-west-1.amazonaws.com"],"outside":[],"pageerrors":[]}
+B6 {"id":"39e63ce9","form":"https://superspl.at/scene/39e63ce9","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":846.1000000089407,"pixelStd":0.16036146397724793,"pixelMean":0.5529316510968008,"hosts":["localhost:5731","s3-eu-west-1.amazonaws.com","d28zzqy0iyovbz.cloudfront.net"],"outside":[],"pageerrors":[]}
+B6 {"id":"39e63ce9","form":"https://superspl.at/s?id=39e63ce9","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":743.8000000119209,"pixelStd":0.1603613140844868,"pixelMean":0.5529315787867516,"hosts":["localhost:5731","s3-eu-west-1.amazonaws.com","d28zzqy0iyovbz.cloudfront.net"],"outside":[],"pageerrors":[]}
+B6 {"id":"7a475d38","form":"7a475d38","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":1339.5,"pixelStd":0.2242829525323344,"pixelMean":0.47201473598345317,"hosts":["localhost:5731","d28zzqy0iyovbz.cloudfront.net","s3-eu-west-1.amazonaws.com"],"outside":[],"pageerrors":[]}
+B6 {"id":"7a475d38","form":"https://superspl.at/scene/7a475d38","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":1428.5,"pixelStd":0.22462173313372966,"pixelMean":0.47199296837928784,"hosts":["localhost:5731","s3-eu-west-1.amazonaws.com","d28zzqy0iyovbz.cloudfront.net"],"outside":[],"pageerrors":[]}
+B6 {"id":"7a475d38","form":"https://superspl.at/s?id=7a475d38","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":1447.5,"pixelStd":0.22462139243387527,"pixelMean":0.47199196710784147,"hosts":["localhost:5731","s3-eu-west-1.amazonaws.com","d28zzqy0iyovbz.cloudfront.net"],"outside":[],"pageerrors":[]}
+B6 {"id":"887f27aa","form":"887f27aa","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":1424.2999999970198,"pixelStd":0.23594581035563425,"pixelMean":0.48530153855699604,"hosts":["localhost:5731","d28zzqy0iyovbz.cloudfront.net","s3-eu-west-1.amazonaws.com"],"outside":[],"pageerrors":[]}
+B6 {"id":"887f27aa","form":"https://superspl.at/scene/887f27aa","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":1502,"pixelStd":0.23594809855743337,"pixelMean":0.4853066447426575,"hosts":["localhost:5731","s3-eu-west-1.amazonaws.com","d28zzqy0iyovbz.cloudfront.net"],"outside":[],"pageerrors":[]}
+B6 {"id":"887f27aa","form":"https://superspl.at/s?id=887f27aa","status":"ready","hasCollision":true,"renderer":2,"visibility":"visible","loadMs":1639.1000000089407,"pixelStd":0.2359483901801778,"pixelMean":0.4853057621354284,"hosts":["localhost:5731","s3-eu-west-1.amazonaws.com","d28zzqy0iyovbz.cloudfront.net"],"outside":[],"pageerrors":[]}
+B6 PASS
+B7 PASS
+B9 PASS
+B10 PASS
+B11 PASS
+B12 PASS
+B13 PASS
+B14 {"viewport":"375x812","pauseButtonReachable":true,"armedByButton":true,"touchDownMovesNothing":{"at":{"x":250.5,"y":733.4},"ch":[0,0],"ok":true,"control":{"v07AbsolutePad":[-0.5,-0.3999999999999996],"fired":true}},"bothPairsOneFrame":{"ch":[-0.4163264036178589,0.3122446537017822,-0.9479594230651855,0.3122449517250061],"ok":true},"hover":{"seconds":10,"crashed":false,"armedAll":true,"minY":3.505906965244474,"maxY":3.926899349292336,"target":2.7980274165787975},"view":{"scrollX":0,"scrollY":0,"scale":1},"control":{"outsideTouch":{"before":[0,0,-1,0],"after":[0,0,-1,0],"fired":true}}}
+B14 {"viewport":"1024x768","pauseButtonReachable":true,"armedByButton":true,"touchDownMovesNothing":{"at":{"x":847,"y":668.4},"ch":[0,0],"ok":true,"control":{"v07AbsolutePad":[-0.5,-0.39999999999999974],"fired":true}},"bothPairsOneFrame":{"ch":[-0.4095241129398346,0.3071427047252655,-0.9488096833229065,0.30714288353919983],"ok":true},"hover":{"seconds":10,"crashed":false,"armedAll":true,"minY":3.492866322770257,"maxY":3.8450256046980202,"target":2.798027481758075},"view":{"scrollX":0,"scrollY":0,"scale":1},"control":{"outsideTouch":{"before":[0,0,-1,0],"after":[0,0,-1,0],"fired":true}}}
+B14 PASS
+B15 PASS
+B16 PASS
+{"B6":true,"B7":true,"B9":true,"B10":true,"B11":true,"B12":true,"B13":true,"B14":true,"B15":true,"B16":true}

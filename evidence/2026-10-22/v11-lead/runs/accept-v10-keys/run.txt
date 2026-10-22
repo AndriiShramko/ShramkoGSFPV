@@ -1,0 +1,107 @@
+accept-v10-keys target: http://localhost:5731
+PASS K1a the motion notice is the first thing, and the card is not up with it {"warningUp":true}
+PASS K1b the Controls dialog "How will you fly?" is up after the scan is ready, with no card on it {"controlsUp":true,"cards":0}
+PASS K1 a first-time visitor who chose Keyboard meets the card after the scan is ready {"up":true,"hook":{"open":true,"kind":"game","shown":true,"opened":["auto"],"enabled":true,"testPage":false}}
+PASS K1c the card waited for the choice: it was not up while the Controls dialog was still up (2 s later), and it came after Keyboard was chosen {"controlsStill":true,"up":true}
+PASS K2 the card shows SPACE = UP and SHIFT = DOWN as the two big keys (arrow and word with each), hold to land {"kind":"game","up":["Space"],"upWord":"Up","down":["Shift"],"downWord":"Down","downSub":"hold to descend, and to land"}
+PASS K2b the rest of the game scheme is on it: mouse, W A S D, turn keys, F full screen, Esc pause, R, N next scene, K this card {"rows":["mouse","move","turn","fullscreen","pause","respawn","next","again"]}
+PASS K2c the card names the way off the ground: press W or Space to take off (the caps are the layout's own) {"note":"Press Start flying to capture the mouse, then press W or Space to take off. Esc lets it go."}
+PASS K3 accessibility: a modal dialog named by its title, the focus is on Start flying, Tab stays inside the card {"role":"dialog","modal":"true","title":"How to fly","active":"htf-start"}
+PASS K3b five Tab presses never leave the card (x, Start, the box, round again) {"tabbed":["htf-hide","htf-close","htf-start","htf-hide","htf-close"]}
+PASS K4 every text on the card is at least WCAG AA against the lightest scene behind it (>= 4.5:1) {"worst":9.5,"panelBg":[20,22,26],"ratios":{"sub":11,"rowText":15.1,"upSub":11,"downSub":11,"note":10.9,"check":14.7,"foot":9.5,"word":15.1,"cap":17.6,"bigUp":11.1,"bigDown":11.6}}
+PASS K5 the flight is held while the card is up, and flying keys do nothing under it (W held 0.6 s: not armed, not moved) {"paused":true}
+PASS K6 Start flying closes the card, resumes the flight and captures the mouse (pointer lock) {"cards":0,"paused":false,"locked":true}
+PASS K6b on the ground after Start flying the take-off line is on the screen, not only spoken, and names W and Space (a pilot who closed the card unread still knows) {"text":"Click to fly, or press W or Space to take off","spokenOnly":false,"shown":true,"fontPx":15,"hintShown":false,"overlaps":[],"rect":{"x":479,"bottom":676,"w":322,"h":36}}
+PASS K6c (control of the overlap measure) the same pill put down to 76 px is seen covering the credit line {"overlaps":[".attribution"]}
+PASS K7 the first key after the start takes off: Space climbs (the drone is armed and higher than at the start) {"y0":2,"y":7.253936223287355,"armed":true}
+PASS K8 for the first seconds of the first flight a small pill says "Space up . Shift down" {"reminder":true}
+PASS K8b the pill names both caps and both words {"pillText":"Space up\u00b7Shift down"}
+PASS K9 the corner line in flight starts with Space up / Shift down (before: K keys, F, R, Esc, H) {"corner":"crashes 0  \u00b7  Space up \u00b7 Shift down \u00b7 K keys \u00b7 F full screen \u00b7 R respawn \u00b7 Esc pause \u00b7 H hide text"}
+PASS K8c the pill was up and goes at once when Shift is pressed {"wasUp":true}
+PASS K10 across the whole first visit the card was up and never together with another dialog (Controls, the motion notice, a panel, the menu, the picker, the crash panel) {"up":true,"overlap":{"frames":0,"with":{}}}
+PASS K10c (control of the sampler) a dialog put up under the card is counted by the overlap sampler {"overlap":{"frames":12,"with":{"screen radio":12}}}
+PASS K11 a second visit (nothing ticked) shows the card again, by itself: no Controls dialog this time, the keyboard of last time is back {"up":true,"opened":["auto"]}
+PASS K11b the box is not ticked on the second visit (nothing was ticked in the first) {"hideChecked":false}
+PASS K13 the pill lasts the first seconds only: up at 2 s, gone by 10 s, with W held from take-off (key repeats do not hide it) {"at2s":true,"at10s":false}
+PASS K12 ticking "Do not show again" writes the setting at once (input.howToFly off), and closing with x keeps it {"enabled":false}
+PASS K12b the tick survives closing with x {}
+PASS K14 after "Do not show again" a reload does not bring the card back (4.5 s after the scene is ready) {"cards":0,"hook":{"open":false,"kind":null,"shown":false,"opened":[],"enabled":false,"testPage":false}}
+PASS K14c with the box ticked and no card, the ground shows the take-off line (drawn) and the "Click to fly with the mouse" pill is not stacked on it {"text":"Click to fly, or press W or Space to take off","spokenOnly":false,"shown":true,"fontPx":15,"hintShown":false,"overlaps":[],"rect":{"x":479,"bottom":676,"w":322,"h":36}}
+PASS K14b after "Do not show again" the first-flight pill does not show either (the drone is flying) {"reminder":false,"armed":true}
+PASS K15 K opens the card again, whatever the setting says; its box shows the setting (ticked) {"up":true,"hideChecked":true}
+PASS K15b K again closes it and the flight goes on (not paused) {}
+PASS K15c Esc closes the card (and does not open the pause menu on top) {}
+PASS K16 the pause menu has a "How to fly" item with its key K beside it {"itemKeys":"How to fly\nK"}
+PASS K16b picking it shows the card (over nothing: the menu is gone), opened from the menu {"up":true,"opened":["key","key","menu"]}
+PASS K16c with the menu up, K runs the item: the card opens and the menu is gone {"menuUp":true,"up":true,"opened":["key","key","menu","menu"]}
+PASS K17 for a radio or gamepad the card is the short radio one: sticks, arm, mode switch, N, Esc, K {"kind":"radio","rows":["sticks","arm","mode","pause","next","again"]}
+PASS K17b the radio card's arm line invents no channel number: with no arm set up it says "as set up on the Controls screen", else it names the profile's own {"armKind":null,"armText":"arm: as set up on the Controls screen, with the throttle at the bottom"}
+PASS K18 in visits 2 and 3 as well the card came and was never up together with another dialog {"overlap":{"frames":0,"with":{}}}
+PASS K19 on a phone (touch, no WebHID) the card is the touch one: the two pads, no key caps, "touch a stick to take off" {"kind":"touch","pads":2,"kbd":0}
+PASS K19b it fits the phone: inside the screen, Start flying reachable {"panel":{"x":12,"y":196,"w":366,"h":452,"bottom":648,"right":378},"start":{"x":27,"y":529,"w":180,"h":48,"bottom":577,"right":207},"vw":390,"vh":844}
+PASS K19c tapping Start flying closes it and leaves the touch sticks to fly {"cards":0,"paused":false,"source":"touch","pads":3}
+PASS K19d it did not stand over the motion notice or another dialog on the phone either {"overlap":{"frames":0,"with":{}}}
+PASS K20 closing Controls with x also ends at the card (the keyboard stands in), and in a 900 x 480 window the Space and Shift keys are fully on screen {"kind":"game","up":{"x":107,"y":117,"w":337,"h":68,"bottom":185,"right":444},"down":{"x":456,"y":117,"w":337,"h":68,"bottom":185,"right":793},"vh":480}
+PASS K20b Start flying is reachable in that window: on the screen, or the card scrolls {"start":{"x":107,"y":388,"w":180,"h":48,"bottom":436,"right":287},"scrollable":false}
+node:internal/modules/run_main:122
+    triggerUncaughtException(
+    ^
+
+locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-action="htf-start"]')[22m
+[2m    - locator resolved to <button type="button" data-action="htf-start" class="btn primary htf-start">Start flying</button>[22m
+[2m  - attempting click action[22m
+[2m    2 \u00d7 waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <button type="button" class="btn primary" data-action="consent-decline">Decline</button> from <div role="region" class="consent-card" data-testid="consent" aria-label="Analytics cookies">\u2026</div> subtree intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 \u00d7 waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <button type="button" class="btn primary" data-action="consent-decline">Decline</button> from <div role="region" class="consent-card" data-testid="consent" aria-label="Analytics cookies">\u2026</div> subtree intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    22 \u00d7 waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <button type="button" class="btn primary" data-action="consent-decline">Decline</button> from <div role="region" class="consent-card" data-testid="consent" aria-label="Analytics cookies">\u2026</div> subtree intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+    at <anonymous> (C:\dev\gsfpv-v03\tools\bench\src\accept-v10-keys.ts:497:54) {
+  log: [
+    `  - waiting for locator('[data-action="htf-start"]')`,
+    '    - locator resolved to <button type="button" data-action="htf-start" class="btn primary htf-start">Start flying</button>',
+    '  - attempting click action',
+    '    2 \u00d7 waiting for element to be visible, enabled and stable',
+    '      - element is visible, enabled and stable',
+    '      - scrolling into view if needed',
+    '      - done scrolling',
+    '      - <button type="button" class="btn primary" data-action="consent-decline">Decline</button> from <div role="region" class="consent-card" data-testid="consent" aria-label="Analytics cookies">\u2026</div> subtree intercepts pointer events',
+    '    - retrying click action',
+    '    - waiting 20ms',
+    '    2 \u00d7 waiting for element to be visible, enabled and stable',
+    '      - element is visible, enabled and stable',
+    '      - scrolling into view if needed',
+    '      - done scrolling',
+    '      - <button type="button" class="btn primary" data-action="consent-decline">Decline</button> from <div role="region" class="consent-card" data-testid="consent" aria-label="Analytics cookies">\u2026</div> subtree intercepts pointer events',
+    '    - retrying click action',
+    '      - waiting 100ms',
+    '    22 \u00d7 waiting for element to be visible, enabled and stable',
+    '       - element is visible, enabled and stable',
+    '       - scrolling into view if needed',
+    '       - done scrolling',
+    '       - <button type="button" class="btn primary" data-action="consent-decline">Decline</button> from <div role="region" class="consent-card" data-testid="consent" aria-label="Analytics cookies">\u2026</div> subtree intercepts pointer events',
+    '     - retrying click action',
+    '       - waiting 500ms'
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v22.13.0

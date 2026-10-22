@@ -1,0 +1,297 @@
+{
+  "name": "v11-stochastic",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.85",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-22T15:28:39.668Z",
+    "gitHead": "d383f37",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "new": ".\\dist",
+  "base": ".\\.cache\\dist-base",
+  "pass": {
+    "V1": true,
+    "V6": true
+  },
+  "checks": [
+    {
+      "name": "V1 `?stochastic` draws through the vendored renderer: drawn accum, plan accum/ok, the page's hook agrees, the engine's own dither is off",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V1 the renderer is up: active, accumulating (taa), occlusion culling on, millions of splats resident, its buffers allocated",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V1 upstream's defaults are in force (256 frames at rest, 16 moving, clamp 1.25)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V1 F3 says \"stochastic, accumulating\" and who decided",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V1 no WebGPU validation error, no CSP violation, no page error",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V1 control: ?impl=engine draws the engine's own dither (drawn engine, flag on) and makes no accumulating renderer; F3 says plain \"stochastic\"",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V1 control: the BASE build has no such renderer (no accumStats) and draws the engine's dither for the same link",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V1 control: a device whose storage binding cannot hold the cache falls back to the engine's dither (impl engine, plan unsupported, nothing made)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V1 the 403s in the console are the page's own and the BASE has the same (5 against 5): not ours",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V6 the release has no more eval( (4 against 4) and no more new Function( (0 against 0) than the BASE",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V6 the policy the pages are served with is strict (no 'unsafe-eval' and no 'unsafe-inline' in script-src; 'wasm-unsafe-eval' is the one the engine always had) and is the same text as the BASE's",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V6 control: a policy with 'unsafe-eval' in script-src would be seen",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V6 the bundle names no host the BASE bundle does not (none; allowed by V6_ALLOW_HOSTS: www.googletagmanager.com)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V6 control: a made-up host in the bundle would be seen (the check has teeth)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V6 no page of this run (3 state reads) saw a CSP violation (0)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "no page of this run saw a WebGPU validation error (0 in 3 state reads)",
+      "ok": true,
+      "control": false
+    }
+  ],
+  "items": {
+    "build": {
+      "new": ".\\dist",
+      "base": ".\\.cache\\dist-base",
+      "baseCommit": "db73942"
+    },
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.85",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "V1": {
+      "new": {
+        "status": "ready",
+        "hasApi": true,
+        "drawn": "accum",
+        "impl": "accum",
+        "plan": {
+          "draw": "accum",
+          "why": "ok"
+        },
+        "stochastic": true,
+        "engineFlag": false,
+        "accum": {
+          "active": true,
+          "taaActive": true,
+          "culling": true,
+          "cullSuspended": false,
+          "gpuBytes": 166288596,
+          "activeSplats": 3804374,
+          "variant": {
+            "compose": "blend",
+            "cull": "auto",
+            "contribution": 0,
+            "coverage": "pixel",
+            "jitter": 0,
+            "strata": 4,
+            "interleaveArea": 0,
+            "taa": "on",
+            "taaMax": 256,
+            "taaMoveMax": 16,
+            "taaClip": 1.25,
+            "taaReproj": "sample",
+            "taaMotion": 4,
+            "taaParallax": "on",
+            "taaSharp": 16,
+            "taaHistory": "auto",
+            "taaSharpen": 0,
+            "taaDebug": 0,
+            "warp": "auto",
+            "stereo": "shared",
+            "units": "engine"
+          },
+          "failed": null,
+          "failedAt": null,
+          "guarded": [
+            "frame",
+            "bind",
+            "raster",
+            "taa",
+            "sets",
+            "frameend"
+          ]
+        },
+        "made": true,
+        "hook": {
+          "from": {
+            "stochastic": "link",
+            "budget": "device"
+          },
+          "impl": "accum",
+          "drawn": "accum",
+          "missing": [],
+          "held": false,
+          "stochastic": true
+        },
+        "canvas": [
+          1280,
+          800
+        ],
+        "gpuErrors": [],
+        "csp": [],
+        "f3": ""
+      },
+      "f3": "Render: stochastic, accumulating (the link) \u00b7 budget 4 M splats (this device) \u00b7 desktop, strong graphics",
+      "engine": {
+        "status": "ready",
+        "hasApi": true,
+        "drawn": "engine",
+        "impl": "engine",
+        "plan": {
+          "draw": "engine",
+          "why": "impl"
+        },
+        "stochastic": true,
+        "engineFlag": true,
+        "accum": null,
+        "made": false,
+        "hook": {
+          "from": {
+            "stochastic": "link",
+            "budget": "device"
+          },
+          "impl": "engine",
+          "drawn": "engine",
+          "missing": [],
+          "held": false,
+          "stochastic": true
+        },
+        "canvas": [
+          1280,
+          800
+        ],
+        "gpuErrors": [],
+        "csp": [],
+        "f3": ""
+      },
+      "f3Engine": "Render: stochastic (the link) \u00b7 budget 4 M splats (this device) \u00b7 desktop, strong graphics",
+      "base": {
+        "status": "ready",
+        "hasApi": false,
+        "plan": null,
+        "stochastic": true,
+        "engineFlag": true,
+        "accum": null,
+        "made": null,
+        "hook": {
+          "from": {
+            "stochastic": "link",
+            "budget": "device"
+          },
+          "held": false,
+          "stochastic": true
+        },
+        "canvas": [
+          1280,
+          800
+        ],
+        "gpuErrors": [],
+        "csp": [],
+        "f3": ""
+      },
+      "forced": {
+        "on": true,
+        "drawn": "engine",
+        "impl": "accum",
+        "plan": {
+          "draw": "engine",
+          "why": "unsupported"
+        },
+        "missing": [
+          "cache fits one storage binding"
+        ],
+        "made": false
+      },
+      "errors": [],
+      "console403": {
+        "new": 5,
+        "base": 5
+      }
+    },
+    "V6": {
+      "bytes": {
+        "new": 11374964,
+        "base": 11229460
+      },
+      "eval": {
+        "new": 4,
+        "base": 4
+      },
+      "newFunction": {
+        "new": 0,
+        "base": 0
+      },
+      "hostsAdded": [],
+      "hostsAllowed": [
+        "www.googletagmanager.com"
+      ],
+      "cspSame": true,
+      "scriptSrc": "script-src 'self' 'wasm-unsafe-eval' https://www.googletagmanager.com 'self'"
+    },
+    "tally": {
+      "states": 3,
+      "csp": [],
+      "gpuErrors": []
+    }
+  },
+  "failed": null,
+  "strings": {
+    "accumulating": "stochastic, accumulating"
+  }
+}

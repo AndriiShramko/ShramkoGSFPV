@@ -1,0 +1,117 @@
+$ node scripts/numbers.mjs && node scripts/media.mjs && node scripts/catalog-snapshot.mjs && node scripts/roadmap.mjs
+numbers: 4 items from evidence/latest.json (updated 2026-09-24T16:46:28.337010)
+media: tunis video, garden video, villa video
+catalog-snapshot: the committed snapshot (6 scenes, published 2026-10-07T17:04:42Z); refresh with --refresh
+roadmap: 69 items from the seed
+$ next build
+\u25b2 Next.js 16.3.6 (Turbopack)
+\u2713 Running next.config.ts took 106ms
+
+  Creating an optimized production build ...
+\u2713 Compiled successfully in 1179ms
+  Running TypeScript ...
+  Finished TypeScript in 5.4s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/23) ...
+  Generating static pages using 9 workers (5/23) 
+  Generating static pages using 9 workers (11/23) 
+  Generating static pages using 9 workers (17/23) 
+\u2713 Generating static pages using 9 workers (23/23) in 3.1s
+  Finalizing page optimization ...
+
+Route (app)
+\u250c \u25cb /_not-found
+\u251c   /[locale]
+\u2502 \u251c \u25cf /en
+\u2502 \u251c \u25cf /es
+\u2502 \u251c \u25cf /pl
+\u2502 \u2514 \u25cf /ru
+\u251c   /[locale]/licenses
+\u2502 \u251c \u25cf /en/licenses
+\u2502 \u251c \u25cf /es/licenses
+\u2502 \u251c \u25cf /pl/licenses
+\u2502 \u2514 \u25cf /ru/licenses
+\u251c   /[locale]/privacy
+\u2502 \u251c \u25cf /en/privacy
+\u2502 \u251c \u25cf /es/privacy
+\u2502 \u251c \u25cf /pl/privacy
+\u2502 \u2514 \u25cf /ru/privacy
+\u251c   /scene-template/[locale]/index
+\u2502 \u251c \u25cf /scene-template/en/index
+\u2502 \u251c \u25cf /scene-template/es/index
+\u2502 \u251c \u25cf /scene-template/pl/index
+\u2502 \u2514 \u25cf /scene-template/ru/index
+\u251c   /scene-template/[locale]/scene
+\u2502 \u251c \u25cf /scene-template/en/scene
+\u2502 \u251c \u25cf /scene-template/es/scene
+\u2502 \u251c \u25cf /scene-template/pl/scene
+\u2502 \u2514 \u25cf /scene-template/ru/scene
+\u2514 \u25cb /sitemap.xml
+
+
+\u25cb  (Static)  prerendered as static content
+\u25cf  (SSG)     prerendered as static HTML (uses generateStaticParams)
+
+$ node scripts/fix-lang.mjs && node scripts/scene-templates.mjs
+fix-lang: rewrote lang attribute in 9 file(s)
+fix-lang: shortened 3397 Flight "$undefined" token(s) to "$u"
+fix-lang: wrote out/index.html (locale redirect fallback)
+scene-templates: OK (8 templates in out/scene-templates/)
+$ vite build
+[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vite.config.ts:19:37). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
+[36mvite v8.3.1 [32mbuilding client environment for production...[36m[39m
+transforming...
+
+new URL("webp.wasm",import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.
+[33m[plugin rolldown:vite-resolve] Module "node:os" has been externalized for browser compatibility, imported by "C:/dev/gsfpv-v03/node_modules/.pnpm/@playcanvas+splat-transform@3.6.4_playcanvas@2.23.2/node_modules/@playcanvas/splat-transform/dist/index.mjs". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.[39m
+[33m[plugin rolldown:vite-resolve] Module "node:worker_threads" has been externalized for browser compatibility, imported by "C:/dev/gsfpv-v03/node_modules/.pnpm/@playcanvas+splat-transform@3.6.4_playcanvas@2.23.2/node_modules/@playcanvas/splat-transform/dist/index.mjs". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.[39m
+[33m[plugin rolldown:vite-resolve] Module "node:module" has been externalized for browser compatibility, imported by "C:/dev/gsfpv-v03/node_modules/.pnpm/@playcanvas+splat-transform@3.6.4_playcanvas@2.23.2/node_modules/@playcanvas/splat-transform/dist/index.mjs". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.[39m
+\u2713 1838 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/admin/index.html                                0.61 kB \u2502 gzip:     0.34 kB
+dist/index.html                                      0.83 kB \u2502 gzip:     0.46 kB
+dist/assets/webp-BFoGoIkZ.mjs                       11.48 kB
+dist/assets/voxels.worker-2i-WfrSW.js               19.67 kB
+dist/assets/worker-su9aYUln.mjs                     64.21 kB
+dist/assets/webp-D-qyFmK3.wasm                     352.22 kB \u2502 gzip:   144.47 kB
+dist/assets/drones3d-BZ3jyy9a.css                    4.63 kB \u2502 gzip:     1.49 kB
+dist/assets/admin-B6moMgFZ.css                      16.49 kB \u2502 gzip:     4.05 kB
+dist/assets/main-D9rDiapk.css                       95.93 kB \u2502 gzip:    19.28 kB
+dist/assets/webp-DGXS2EtW.js                         0.10 kB \u2502 gzip:     0.11 kB \u2502 map:     0.34 kB
+dist/assets/__vite-browser-external-uP5PEmmg.js      0.15 kB \u2502 gzip:     0.16 kB \u2502 map:     0.18 kB
+dist/assets/rolldown-runtime-CbXtAM7H.js             0.58 kB \u2502 gzip:     0.36 kB
+dist/assets/api-CeSkNACj.js                         39.70 kB \u2502 gzip:    14.42 kB \u2502 map:   201.24 kB
+dist/assets/drones3d-Dd7NLurS.js                    57.44 kB \u2502 gzip:    20.86 kB \u2502 map:   238.85 kB
+dist/assets/constants-C_vHgHG9.js                   65.40 kB \u2502 gzip:    20.33 kB \u2502 map:   249.46 kB
+dist/assets/admin-CPBmDN5X.js                      211.93 kB \u2502 gzip:    57.15 kB \u2502 map:   433.72 kB
+dist/assets/src-CjAzgnal.js                        688.12 kB \u2502 gzip:   172.98 kB \u2502 map: 2,777.56 kB
+dist/assets/spz-DEYRea_v-Bjxgum9C.js               987.35 kB \u2502 gzip:   268.73 kB \u2502 map: 2,466.69 kB
+dist/assets/main-Cy2FYtj-.js                     2,803.52 kB \u2502 gzip:   811.04 kB \u2502 map: 6,996.11 kB
+dist/assets/rapier-B4hmj00C.js                   2,889.70 kB \u2502 gzip: 1,106.62 kB \u2502 map: 3,055.89 kB
+dist/assets/dist-vkT9eWJG.js                     3,723.80 kB \u2502 gzip:   889.49 kB \u2502 map: 6,130.99 kB
+
+[32m\u2713 built in 3.85s[39m
+[33m[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+[33m[33m[PLUGIN_TIMINGS] [0mPlugin hooks ran for 2.6s of this 3.8s build (68%).
+The slowest hooks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - vite:build-import-analysis generateBundle (33%, 1.3s, 1 call)
+Additional hook time came from the hooks below and from hooks under 1s.
+5 hooks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:
+  - vite:css-post renderChunk (12 calls)
+  - vite:css transform (25 calls)
+  - vite:asset load (4 calls)
+  \u2026 and 2 more
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[39m
+{"dist":"C:\\dev\\gsfpv-v03\\dist","files":401,"gzipped":109,"cspPages":49,"cspHashes":136,"sha":"252587d","sha256":"d6ee6374c6d22c690188061b589b335c074181a200b218cb21ecd350dc6d1c95","bytes":58701114}
+
+real	0m38.036s
+user	0m0.000s
+sys	0m0.015s

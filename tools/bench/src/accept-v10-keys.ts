@@ -92,6 +92,10 @@ async function newContext(browser: Browser, o: { width: number; height: number; 
     const context = await browser.newContext({ viewport: { width: o.width, height: o.height }, deviceScaleFactor: 1, isMobile: !!o.mobile, hasTouch: !!o.mobile });
     if (o.mobile) await context.addInitScript(`try { delete Navigator.prototype.hid; } catch (e) {}`); // a phone's Chrome has no WebHID
     await context.addInitScript(OVERLAP);
+    // The visitor has answered the analytics card (gsfpv_consent, apps/fly/src/app/analytics.ts; added to main after this bench was written):
+    // in a short window (900 x 480) and on a phone that card stands over Start flying until it is answered, and this bench is about the
+    // How to fly card. A first visitor meeting both cards is the lead's note (docs/wip/v11-lead.md), not a check here.
+    await context.addInitScript(`try { localStorage.setItem('gsfpv_consent', 'no'); } catch (e) {}`);
     return context;
 }
 async function untilReady(p: Page, ms = 240000): Promise<void> {

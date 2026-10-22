@@ -1,0 +1,33 @@
+
+ RUN  v5.0.1 C:/dev/gsfpv-v03
+
+ \u276f tools/bench/test/shared-settings-app.test.ts (20 tests | 20 skipped) 10015ms
+
+\u23af\u23af\u23af\u23af\u23af\u23af Failed Suites 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af
+
+ FAIL  tools/bench/test/shared-settings-app.test.ts [ tools/bench/test/shared-settings-app.test.ts ]
+Error: Hook timed out in 10000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".
+ \u276f tools/bench/test/shared-settings-app.test.ts:26:1
+     24| let P: AppPrefs, PR: Presets, SC: Scale, FL: Floaters, V: Visit, S: Sh\u2026
+     25|
+     26| beforeAll(async () => {
+       | ^
+     27|     vi.stubGlobal('location', { href: 'http://127.0.0.1/fly/', search:\u2026
+     28|     vi.stubGlobal('history', { state: null, replaceState: () => undefi\u2026
+
+\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af
+
+
+ Test Files  1 failed | 153 passed (154)
+      Tests  2078 passed | 20 skipped (2098)
+   Start at  16:39:56
+   Duration  36.92s (tests 71%, transform 15%, import 13%, worker 1%)
+
+    Isolate  154 workers spawned \u00b7 ~796ms startup each (spawn + environment, per file)
+             at least ~2.71s faster with isolate: false \u2014 reuses workers across files instead of one per file
+
+
+real	0m39.174s
+user	0m0.153s
+sys	0m0.291s

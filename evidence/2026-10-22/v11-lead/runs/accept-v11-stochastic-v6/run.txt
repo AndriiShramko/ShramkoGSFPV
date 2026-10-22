@@ -1,0 +1,8 @@
+ok   V6 the release has no more eval( (4 against 4) and no more new Function( (0 against 0) than the BASE
+ok   V6 the policy the pages are served with is strict (no 'unsafe-eval' and no 'unsafe-inline' in script-src; 'wasm-unsafe-eval' is the one the engine always had) and is the same text as the BASE's
+ok   [control] V6 control: a policy with 'unsafe-eval' in script-src would be seen
+ok   V6 the bundle names no host the BASE bundle does not (none; allowed by V6_ALLOW_HOSTS: www.googletagmanager.com)
+ok   [control] V6 control: a made-up host in the bundle would be seen (the check has teeth)
+FAIL V6 no page of this run (0 state reads) saw a CSP violation (0)
+ok   no page of this run saw a WebGPU validation error (0 in 0 state reads)
+{"V6":false} C:\dev\gsfpv-v03\evidence\2026-10-22\v11-stochastic-v11-lead-v6.json

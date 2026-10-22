@@ -1,0 +1,22 @@
+v0.11 lead, gates once on the merged tree. HEAD 252587d (merge of v11-s into v03-lead), 2026-10-22, Node v22.13.0, Windows.
+The outputs below are the verbatim result lines of each command; the long ones are in the files next to this one.
+
+pnpm -r typecheck                          green (typecheck.txt)
+npx vitest run                             154 files; 153 passed and 1 failed in the full run: tools/bench/test/shared-settings-app.test.ts,
+                                           "Hook timed out in 10000ms" while 154 workers loaded the machine (20 tests skipped); 2078 passed.
+                                           vitest-full.txt. That file alone, same tree: "Test Files 1 passed (1) / Tests 20 passed (20)".
+                                           Together: 154 files, 2098 tests, all pass.
+python -m unittest discover -s apps/api/tests
+                                           Ran 320 tests in 143.289s / OK
+node scripts/check-architecture.mjs        architecture rules: ok
+pnpm --filter @gsfpv/site i18n:check       i18n-check: OK (951 strings x 4 locales, 2 dictionaries)
+node --import tsx scripts/gen-catalog.ts --check
+                                           gen-catalog --check: up to date (74 settings in 11 groups, 24 shortcut keys + 12 flying keys, 9 drones)
+B18 (tools/bench, SITE=x accept-repo.ts)   B18 PASS {"outside":[],"placeholders":[],"topics":14}   (b-repo-b18-merged-gate.json)
+node scripts/build-release.mjs             {"dist":"C:\\dev\\gsfpv-v03\\dist","files":401,"gzipped":109,"cspPages":49,"cspHashes":136,"sha":"252587d",
+                                           "sha256":"d6ee6374c6d22c690188061b589b335c074181a200b218cb21ecd350dc6d1c95","bytes":58701114}
+landing smoke (apps/site/scripts/verify.mjs, what CI runs)
+                                           against tools/bench/scripts/serve-csp.mjs: 157/158 (landing-smoke-serve-csp.txt). The one miss,
+                                           "out/index.html redirects by Accept-Language then cookie  - /en/ /en/", is serve-csp answering "/" with a
+                                           fixed 302 to /en/ (line 43 of serve-csp.mjs); nginx and the site's own server do not. Not a build fault.
+                                           against apps/site/scripts/serve.mjs (a copy of out/): verify: 158/158 passed (landing-smoke-site-serve.txt)

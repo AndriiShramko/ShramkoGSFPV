@@ -1,0 +1,68 @@
+ok   V1 `?stochastic` draws through the vendored renderer: drawn accum, plan accum/ok, the page's hook agrees, the engine's own dither is off
+ok   V1 the renderer is up: active, accumulating (taa), occlusion culling on, millions of splats resident, its buffers allocated
+ok   V1 upstream's defaults are in force (256 frames at rest, 16 moving, clamp 1.25)
+ok   V1 F3 says "stochastic, accumulating" and who decided
+ok   V1 no WebGPU validation error, no CSP violation, no page error
+ok   [control] V1 control: ?impl=engine draws the engine's own dither (drawn engine, flag on) and makes no accumulating renderer; F3 says plain "stochastic"
+FAIL [control] V1 control: the BASE build has no such renderer (no accumStats) and draws the engine's dither for the same link
+ok   [control] V1 control: a device whose storage binding cannot hold the cache falls back to the engine's dither (impl engine, plan unsupported, nothing made)
+ok   V1 the 403s in the console are the page's own and the BASE has the same (5 against 5): not ours
+ok   V2 at rest the picture converges to the sorted one: after 256 frames every view is above 33 dB (39.18, 40.96, 37.43, 36.01) and within 1.5 levels of the sorted mean colour (0.16, 0.31, 0.13, 0.26)
+ok   V2 it gets there: each step of the history is better than the one before (view 1: 21.5 < 24.49 < 27.38 < 30.18 < 32.79 < 35.08 < 36.97 < 38.3 < 39.18)
+ok   [control] V2 control: one frame of the same renderer is far below (21.5, 23.85, 19.77, 21.33) and the engine's dither stays below 25 dB (19.68, 21.47, 17.99, 19.46) however long it is watched
+ok   [control] V2 control: the harness sorted against sorted reads silence (60 dB or more, 70 to 100 in the bench: the GPU sort is not bit-exact) (86.51, 88.53, 85.06, 81.33 dB)
+ok   V3 (a) after a fast turn (a pure rotation: lag, not ghosting) the picture is not a smear of the old view: from the 2nd frame after the stop it is closer to the final view than to the one two frames before it (lead 16.72, 17.16, 17.56, 18.86 dB, all >= 0)
+ok   V3 control: where the motion is sustained (360 deg/s, +-60 deg roll, 6 m/s: 90 frames) no colour clamp and a long moving history (AN) are worse: PSNR 28.74 (worst 22.6) against the defaults' 30.99 (worst 25.79)
+ok   [control] V3 control: the reference is reproducible on this scene: sorted against a second sorted run reads above 55 dB on every moving path (turn 84.99, agile 88.31, agile 30 Hz 88.47, strafe 91.65, strafe 30 Hz 91.54)
+ok   [control] V3 control: the strafe (60 Hz step) has edges to trail at (0.084 of the pixels change between frames, 0.02 or more) and sorted against a second sorted run shows no trailing (0, under 0.005)
+ok   V3 (b) under translation past edges (60 Hz step) the picture does not trail: 0.01 of the changed pixels still show the old picture (p95 0.039, max 0.095), one frame without history shows 0.012, the engine's dither 0.054; allowed: the no-history figure + 0.01
+ok   [control] V3 control: no colour clamp, no motion cap and a long history (AN) trail (60 Hz step): 0.041 against the defaults' 0.01 (2 % of the changed pixels more, the bound set before the first run, or the test cannot see a ghosting renderer)
+ok   [control] V3 control (second, a ratio added after the first run): no colour clamp, parallax off and a long history (AX) trail at least twice as much (60 Hz step): 0.024 against 0.01
+ok   [control] V3 control: the strafe (30 Hz step) has edges to trail at (0.081 of the pixels change between frames, 0.02 or more) and sorted against a second sorted run shows no trailing (0, under 0.005)
+ok   V3 (b) under translation past edges (30 Hz step) the picture does not trail: 0.012 of the changed pixels still show the old picture (p95 0.045, max 0.05), one frame without history shows 0.012, the engine's dither 0.055; allowed: the no-history figure + 0.01
+ok   [control] V3 control: no colour clamp, no motion cap and a long history (AN) trail (30 Hz step): 0.043 against the defaults' 0.012 (2 % of the changed pixels more, the bound set before the first run, or the test cannot see a ghosting renderer)
+ok   [control] V3 control (second, a ratio added after the first run): no colour clamp, parallax off and a long history (AX) trail at least twice as much (30 Hz step): 0.026 against 0.012
+ok   [control] V4 before REC the accumulating renderer draws (so the check can see it)
+ok   V4 while REC runs the scan is drawn sorted: the renderer is handed back (not active), the engine's dither is off, the hook says the hold is on, F3 says "sorted (recording)"
+ok   V4 after the stop the pilot's drawing is back: accumulating again, accumulating (taa), the hold is off, F3 says so
+ok   V4 no WebGPU validation error and no page error through the switches
+ok   [control] V5 before the share the accumulating renderer draws
+ok   V5 the share panel made its picture
+ok   V5 a sorted frame was drawn for it, and the drawing is accumulating again right after
+ok   V5 the frame the picture is made from is the sorted picture of the view (87.13 dB from a hand-made sorted frame, 40 dB or more)
+ok   V5 no WebGPU validation error and no page error
+ok   V6 the release has no more eval( (4 against 4) and no more new Function( (0 against 0) than the BASE
+ok   V6 the policy the pages are served with is strict (no 'unsafe-eval' and no 'unsafe-inline' in script-src; 'wasm-unsafe-eval' is the one the engine always had) and is the same text as the BASE's
+ok   [control] V6 control: a policy with 'unsafe-eval' in script-src would be seen
+ok   V6 the bundle names no host the BASE bundle does not (none)
+ok   [control] V6 control: a made-up host in the bundle would be seen (the check has teeth)
+ok   V7 render scale steps (the governor's way): the canvas follows (768, 1280, 1024, 1280), the accumulating renderer keeps drawing a lit picture, no GPU error
+ok   V7 five scenes in a page with the renderer on (39e63ce9 > 7a475d38 > 224aba38 > ba7aa29d > 39e63ce9): every switch ends done, the accumulating renderer draws each once its first view is complete (millions of splats), no GPU error
+ok   V7 while a scene loads the renderer says what draws: sorted with the plan "loading" (the hold) was seen in 4 of 4 switches (states per switch: sorted/loading+accum/ok | sorted/loading+accum/ok | sorted/loading+accum/ok | sorted/loading+accum/ok), and every switch ends with the accumulating renderer (accum/ok)
+ok   [control] V7 control: with no switch under way the recorder sees only the accumulating renderer (accum/ok), so a hold is not an artefact of recording
+ok   V7 video memory does not grow across the switches: 364 MiB with the first scene, then 440, 433, 280, 355 MiB; the last scene is the first one again and ends within 15 % + 50 MiB of where it began (the engine frees a replaced scan's textures lazily, so the middle numbers wander)
+ok   V7 no page error through the scale steps and the scene switches
+ok   V7 ?render=off (logic only): no scan is loaded, the accumulating renderer (made before the scan, as on every page) has nothing resident and raises no GPU error
+ok   V8 the link's ?stochastic draws accumulating; the pilot's Render = Sorted wins for that scene (sorted, renderer handed back); back to Auto the link is followed again
+ok   V8 nothing asked: sorted by the device's preset, and no accumulating renderer was ever made (a pilot on sorted pays nothing)
+ok   V8 the pilot choosing Stochastic gets the accumulating renderer ("your setting"), Auto hands it back
+ok   [control] V9 [frame] before the fault the accumulating renderer draws and says so ("Render: stochastic, accumulating (the link)"), and every site of its code that the engine calls is guarded (frame, bind, raster, taa, sets, frameend)
+ok   V9 [frame] a throw there: the renderer is off for good (failed "forced fault at frame" at frame), the engine's own dither draws (drawn engine, plan engine/failed, its flag true)
+ok   V9 [frame] F3 says it: "Render: stochastic, fallback dither after an error (the link)"
+ok   V9 [frame] the page goes on: frames keep coming (40 more drew), the picture is lit (mean luma 145, before 144.2), no WebGPU validation error (0), no page error (0)
+ok   [control] V9 [raster] before the fault the accumulating renderer draws and says so ("Render: stochastic, accumulating (the link)"), and every site of its code that the engine calls is guarded (frame, bind, raster, taa, sets, frameend)
+ok   V9 [raster] a throw there: the renderer is off for good (failed "forced fault at raster" at raster), the engine's own dither draws (drawn engine, plan engine/failed, its flag true)
+ok   V9 [raster] F3 says it: "Render: stochastic, fallback dither after an error (the link)"
+ok   V9 [raster] the page goes on: frames keep coming (40 more drew), the picture is lit (mean luma 145, before 144.2), no WebGPU validation error (0), no page error (0)
+ok   [control] V9 [taa] before the fault the accumulating renderer draws and says so ("Render: stochastic, accumulating (the link)"), and every site of its code that the engine calls is guarded (frame, bind, raster, taa, sets, frameend)
+ok   V9 [taa] a throw there: the renderer is off for good (failed "forced fault at taa" at taa), the engine's own dither draws (drawn engine, plan engine/failed, its flag true)
+ok   V9 [taa] F3 says it: "Render: stochastic, fallback dither after an error (the link)"
+ok   V9 [taa] the page goes on: frames keep coming (40 more drew), the picture is lit (mean luma 145, before 144.2), no WebGPU validation error (0), no page error (0)
+ok   V9 [taa] after a scene switch (done) the failed renderer does not come back: drawn engine, plan engine/failed, F3 "Render: stochastic, fallback dither after an error (your setting)", the scene is lit (121.3), no GPU error (0), no page error (0)
+ok   [control] V9 [frameend] before the fault the accumulating renderer draws and says so ("Render: stochastic, accumulating (the link)"), and every site of its code that the engine calls is guarded (frame, bind, raster, taa, sets, frameend)
+ok   V9 [frameend] a throw there: the renderer is off for good (failed "forced fault at frameend" at frameend), the engine's own dither draws (drawn engine, plan engine/failed, its flag true)
+ok   V9 [frameend] F3 says it: "Render: stochastic, fallback dither after an error (the link)"
+ok   V9 [frameend] the page goes on: frames keep coming (40 more drew), the picture is lit (mean luma 145, before 144.2), no WebGPU validation error (0), no page error (0)
+ok   V6 no page of this run (32 state reads) saw a CSP violation (0)
+ok   no page of this run saw a WebGPU validation error (0 in 32 state reads)
+{"V1":false,"V2":true,"V3":true,"V4":true,"V5":true,"V6":true,"V7":true,"V8":true,"V9":true} C:\dev\gsfpv-v03\evidence\2026-10-22\v11-stochastic-v11-lead.json
