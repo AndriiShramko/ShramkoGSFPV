@@ -1,0 +1,329 @@
+{
+  "site": "http://127.0.0.1:5611",
+  "size": [
+    1280,
+    720
+  ],
+  "budgetM": 4,
+  "modes": [
+    "tune"
+  ],
+  "frames": 48,
+  "scenes": {
+    "39e63ce9": {
+      "loadedMs": 201031,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()"
+      ],
+      "size": [
+        1280,
+        720
+      ],
+      "budgetM": 4,
+      "impl0": "accum",
+      "timingsMs": {
+        "tune": 187795
+      },
+      "stable": true,
+      "sceneComplete": true,
+      "tune": [
+        {
+          "variant": "",
+          "hover": {
+            "psnrMean": 33.36,
+            "psnrMin": 32.81,
+            "ssimMean": 0.963,
+            "ssimMin": 0.961,
+            "below20": 0,
+            "flickerExcessPct": -31.87
+          },
+          "cruise": {
+            "psnrMean": 27.59,
+            "psnrMin": 24.1,
+            "ssimMean": 0.699,
+            "ssimMin": 0.542,
+            "below20": 0,
+            "flickerExcessPct": 6.1
+          },
+          "agile1": {
+            "psnrMean": 30.99,
+            "psnrMin": 25.79,
+            "ssimMean": 0.87,
+            "ssimMin": 0.765,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 29.8,
+            "psnrMin": 23.34,
+            "ssimMean": 0.847,
+            "ssimMin": 0.701,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 28.28,
+            "j4": 29.49,
+            "j16": 32.36,
+            "j64": 35.54,
+            "ghost48": 0.004,
+            "lead2": 16.72,
+            "lagMin": 12.53
+          }
+        },
+        {
+          "variant": "taaMoveMax:32",
+          "hover": {
+            "psnrMean": 33.65,
+            "psnrMin": 33.08,
+            "ssimMean": 0.967,
+            "ssimMin": 0.963,
+            "below20": 0,
+            "flickerExcessPct": -53.78
+          },
+          "cruise": {
+            "psnrMean": 27.36,
+            "psnrMin": 23.64,
+            "ssimMean": 0.7,
+            "ssimMin": 0.54,
+            "below20": 0,
+            "flickerExcessPct": 4.3
+          },
+          "agile1": {
+            "psnrMean": 30.91,
+            "psnrMin": 25.72,
+            "ssimMean": 0.872,
+            "ssimMin": 0.765,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 29.76,
+            "psnrMin": 23.32,
+            "ssimMean": 0.848,
+            "ssimMin": 0.701,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 28.28,
+            "j4": 29.49,
+            "j16": 32.36,
+            "j64": 35.54,
+            "ghost48": 0.004,
+            "lead2": 16.72,
+            "lagMin": 12.41
+          }
+        },
+        {
+          "variant": "taaMoveMax:64",
+          "hover": {
+            "psnrMean": 33.42,
+            "psnrMin": 32.8,
+            "ssimMean": 0.967,
+            "ssimMin": 0.963,
+            "below20": 0,
+            "flickerExcessPct": -66.19
+          },
+          "cruise": {
+            "psnrMean": 27.02,
+            "psnrMin": 23.11,
+            "ssimMean": 0.698,
+            "ssimMin": 0.526,
+            "below20": 0,
+            "flickerExcessPct": 2.85
+          },
+          "agile1": {
+            "psnrMean": 30.72,
+            "psnrMin": 25.59,
+            "ssimMean": 0.871,
+            "ssimMin": 0.764,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 29.63,
+            "psnrMin": 23.3,
+            "ssimMean": 0.847,
+            "ssimMin": 0.7,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 28.28,
+            "j4": 29.49,
+            "j16": 32.36,
+            "j64": 35.54,
+            "ghost48": 0.004,
+            "lead2": 16.72,
+            "lagMin": 12.36
+          }
+        },
+        {
+          "variant": "taaMoveMax:128",
+          "hover": {
+            "psnrMean": 33.27,
+            "psnrMin": 32.36,
+            "ssimMean": 0.967,
+            "ssimMin": 0.963,
+            "below20": 0,
+            "flickerExcessPct": -69.53
+          },
+          "cruise": {
+            "psnrMean": 26.75,
+            "psnrMin": 22.75,
+            "ssimMean": 0.697,
+            "ssimMin": 0.512,
+            "below20": 0,
+            "flickerExcessPct": 1.78
+          },
+          "agile1": {
+            "psnrMean": 30.58,
+            "psnrMin": 25.49,
+            "ssimMean": 0.87,
+            "ssimMin": 0.762,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 29.5,
+            "psnrMin": 23.29,
+            "ssimMean": 0.846,
+            "ssimMin": 0.7,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 28.28,
+            "j4": 29.49,
+            "j16": 32.36,
+            "j64": 35.54,
+            "ghost48": 0.004,
+            "lead2": 16.72,
+            "lagMin": 12.36
+          }
+        },
+        {
+          "variant": "taaMoveMax:64,taaMotion:8",
+          "hover": {
+            "psnrMean": 33.42,
+            "psnrMin": 32.8,
+            "ssimMean": 0.967,
+            "ssimMin": 0.963,
+            "below20": 0,
+            "flickerExcessPct": -66.19
+          },
+          "cruise": {
+            "psnrMean": 26.87,
+            "psnrMin": 22.9,
+            "ssimMean": 0.695,
+            "ssimMin": 0.514,
+            "below20": 0,
+            "flickerExcessPct": 2.59
+          },
+          "agile1": {
+            "psnrMean": 30.67,
+            "psnrMin": 25.55,
+            "ssimMean": 0.871,
+            "ssimMin": 0.763,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 29.56,
+            "psnrMin": 23.3,
+            "ssimMean": 0.846,
+            "ssimMin": 0.7,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 28.28,
+            "j4": 29.49,
+            "j16": 32.36,
+            "j64": 35.54,
+            "ghost48": 0.004,
+            "lead2": 16.72,
+            "lagMin": 12.36
+          }
+        },
+        {
+          "variant": "taaMoveMax:64,taaMotion:2",
+          "hover": {
+            "psnrMean": 33.42,
+            "psnrMin": 32.8,
+            "ssimMean": 0.967,
+            "ssimMin": 0.963,
+            "below20": 0,
+            "flickerExcessPct": -66.19
+          },
+          "cruise": {
+            "psnrMean": 27.27,
+            "psnrMin": 23.52,
+            "ssimMean": 0.701,
+            "ssimMin": 0.539,
+            "below20": 0,
+            "flickerExcessPct": 3.65
+          },
+          "agile1": {
+            "psnrMean": 30.83,
+            "psnrMin": 25.66,
+            "ssimMean": 0.872,
+            "ssimMin": 0.765,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 29.71,
+            "psnrMin": 23.3,
+            "ssimMean": 0.848,
+            "ssimMin": 0.701,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 28.28,
+            "j4": 29.49,
+            "j16": 32.36,
+            "j64": 35.54,
+            "ghost48": 0.004,
+            "lead2": 16.72,
+            "lagMin": 12.36
+          }
+        }
+      ],
+      "accumStats": {
+        "active": true,
+        "taaActive": true,
+        "culling": true,
+        "cullSuspended": false,
+        "gpuBytes": 163005076,
+        "activeSplats": 3804374,
+        "variant": {
+          "compose": "blend",
+          "cull": "auto",
+          "contribution": 0,
+          "coverage": "pixel",
+          "jitter": 0,
+          "strata": 4,
+          "interleaveArea": 0,
+          "taa": "on",
+          "taaMax": 256,
+          "taaMoveMax": 64,
+          "taaClip": 1.25,
+          "taaReproj": "sample",
+          "taaMotion": 2,
+          "taaParallax": "on",
+          "taaSharp": 16,
+          "taaHistory": "auto",
+          "taaSharpen": 0,
+          "taaDebug": 0,
+          "warp": "auto",
+          "stereo": "shared",
+          "units": "engine"
+        },
+        "failed": null
+      },
+      "gpuErrors": []
+    }
+  },
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.85",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "controlE": {}
+}

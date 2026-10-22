@@ -1,0 +1,485 @@
+{
+  "site": "http://127.0.0.1:5611",
+  "size": [
+    1280,
+    720
+  ],
+  "budgetM": 4,
+  "modes": [
+    "tune"
+  ],
+  "frames": 48,
+  "scenes": {
+    "39e63ce9": {
+      "loadedMs": 280809,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()"
+      ],
+      "size": [
+        1280,
+        720
+      ],
+      "budgetM": 4,
+      "impl0": "accum",
+      "timingsMs": {
+        "tune": 270735
+      },
+      "stable": true,
+      "sceneComplete": true,
+      "tune": [
+        {
+          "variant": "",
+          "cruise": {
+            "psnrMean": 27.57,
+            "psnrMin": 24.73,
+            "ssimMean": 0.699,
+            "ssimMin": 0.544,
+            "below20": 0,
+            "flickerExcessPct": 6.92
+          },
+          "agile1": {
+            "psnrMean": 31.11,
+            "psnrMin": 25.85,
+            "ssimMean": 0.87,
+            "ssimMin": 0.764,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 29.79,
+            "psnrMin": 23.34,
+            "ssimMean": 0.847,
+            "ssimMin": 0.699,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 28.26,
+            "j4": 29.48,
+            "j16": 32.36,
+            "j64": 35.54,
+            "ghost48": 0.004,
+            "lead2": 16.68,
+            "lagMin": 12.52
+          }
+        },
+        {
+          "variant": "taaMoveMax:8",
+          "cruise": {
+            "psnrMean": 27.58,
+            "psnrMin": 24.95,
+            "ssimMean": 0.696,
+            "ssimMin": 0.546,
+            "below20": 0,
+            "flickerExcessPct": 8.15
+          },
+          "agile1": {
+            "psnrMean": 31.03,
+            "psnrMin": 25.84,
+            "ssimMean": 0.867,
+            "ssimMin": 0.763,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 29.75,
+            "psnrMin": 23.34,
+            "ssimMean": 0.845,
+            "ssimMin": 0.699,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 28.26,
+            "j4": 29.46,
+            "j16": 32.34,
+            "j64": 35.53,
+            "ghost48": 0.004,
+            "lead2": 16.67,
+            "lagMin": 12.6
+          }
+        },
+        {
+          "variant": "taaMoveMax:24",
+          "cruise": {
+            "psnrMean": 27.45,
+            "psnrMin": 24.5,
+            "ssimMean": 0.699,
+            "ssimMin": 0.543,
+            "below20": 0,
+            "flickerExcessPct": 5.84
+          },
+          "agile1": {
+            "psnrMean": 31.09,
+            "psnrMin": 25.82,
+            "ssimMean": 0.872,
+            "ssimMin": 0.765,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 29.78,
+            "psnrMin": 23.32,
+            "ssimMean": 0.848,
+            "ssimMin": 0.699,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 28.26,
+            "j4": 29.48,
+            "j16": 32.36,
+            "j64": 35.54,
+            "ghost48": 0.004,
+            "lead2": 16.68,
+            "lagMin": 12.46
+          }
+        },
+        {
+          "variant": "taaMoveMax:32",
+          "cruise": {
+            "psnrMean": 27.34,
+            "psnrMin": 24.23,
+            "ssimMean": 0.699,
+            "ssimMin": 0.542,
+            "below20": 0,
+            "flickerExcessPct": 5.16
+          },
+          "agile1": {
+            "psnrMean": 31.03,
+            "psnrMin": 25.79,
+            "ssimMean": 0.873,
+            "ssimMin": 0.765,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 29.75,
+            "psnrMin": 23.32,
+            "ssimMean": 0.848,
+            "ssimMin": 0.699,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 28.26,
+            "j4": 29.48,
+            "j16": 32.36,
+            "j64": 35.54,
+            "ghost48": 0.004,
+            "lead2": 16.68,
+            "lagMin": 12.41
+          }
+        },
+        {
+          "variant": "taaMotion:2",
+          "cruise": {
+            "psnrMean": 27.59,
+            "psnrMin": 24.9,
+            "ssimMean": 0.697,
+            "ssimMin": 0.545,
+            "below20": 0,
+            "flickerExcessPct": 7.72
+          },
+          "agile1": {
+            "psnrMean": 31.05,
+            "psnrMin": 25.84,
+            "ssimMean": 0.868,
+            "ssimMin": 0.763,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 29.75,
+            "psnrMin": 23.34,
+            "ssimMean": 0.845,
+            "ssimMin": 0.699,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 28.26,
+            "j4": 29.48,
+            "j16": 32.36,
+            "j64": 35.54,
+            "ghost48": 0.004,
+            "lead2": 16.68,
+            "lagMin": 12.52
+          }
+        },
+        {
+          "variant": "taaMotion:8",
+          "cruise": {
+            "psnrMean": 27.44,
+            "psnrMin": 24.4,
+            "ssimMean": 0.698,
+            "ssimMin": 0.543,
+            "below20": 0,
+            "flickerExcessPct": 5.85
+          },
+          "agile1": {
+            "psnrMean": 31.11,
+            "psnrMin": 25.85,
+            "ssimMean": 0.872,
+            "ssimMin": 0.765,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 29.79,
+            "psnrMin": 23.33,
+            "ssimMean": 0.848,
+            "ssimMin": 0.699,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 28.26,
+            "j4": 29.48,
+            "j16": 32.36,
+            "j64": 35.54,
+            "ghost48": 0.004,
+            "lead2": 16.68,
+            "lagMin": 12.52
+          }
+        },
+        {
+          "variant": "taaClip:1",
+          "cruise": {
+            "psnrMean": 27.67,
+            "psnrMin": 24.87,
+            "ssimMean": 0.701,
+            "ssimMin": 0.556,
+            "below20": 0,
+            "flickerExcessPct": 7.8
+          },
+          "agile1": {
+            "psnrMean": 31.16,
+            "psnrMin": 25.86,
+            "ssimMean": 0.871,
+            "ssimMin": 0.766,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 29.88,
+            "psnrMin": 23.36,
+            "ssimMean": 0.849,
+            "ssimMin": 0.717,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 28.26,
+            "j4": 29.47,
+            "j16": 32.35,
+            "j64": 35.53,
+            "ghost48": 0.004,
+            "lead2": 16.68,
+            "lagMin": 12.44
+          }
+        },
+        {
+          "variant": "taaClip:1.5",
+          "cruise": {
+            "psnrMean": 27.51,
+            "psnrMin": 24.64,
+            "ssimMean": 0.697,
+            "ssimMin": 0.534,
+            "below20": 0,
+            "flickerExcessPct": 6.43
+          },
+          "agile1": {
+            "psnrMean": 31.07,
+            "psnrMin": 25.84,
+            "ssimMean": 0.87,
+            "ssimMin": 0.763,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 29.71,
+            "psnrMin": 23.33,
+            "ssimMean": 0.845,
+            "ssimMin": 0.683,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 28.26,
+            "j4": 29.48,
+            "j16": 32.36,
+            "j64": 35.54,
+            "ghost48": 0.004,
+            "lead2": 16.68,
+            "lagMin": 12.57
+          }
+        },
+        {
+          "variant": "taaSharp:8",
+          "cruise": {
+            "psnrMean": 27.33,
+            "psnrMin": 24.32,
+            "ssimMean": 0.673,
+            "ssimMin": 0.511,
+            "below20": 0,
+            "flickerExcessPct": 9.56
+          },
+          "agile1": {
+            "psnrMean": 31.04,
+            "psnrMin": 25.92,
+            "ssimMean": 0.862,
+            "ssimMin": 0.748,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 29.73,
+            "psnrMin": 23.34,
+            "ssimMean": 0.84,
+            "ssimMin": 0.689,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 28.25,
+            "j4": 29.47,
+            "j16": 32.35,
+            "j64": 35.54,
+            "ghost48": 0.004,
+            "lead2": 16.68,
+            "lagMin": 12.56
+          }
+        },
+        {
+          "variant": "taaSharp:32",
+          "cruise": {
+            "psnrMean": 27.65,
+            "psnrMin": 24.91,
+            "ssimMean": 0.709,
+            "ssimMin": 0.555,
+            "below20": 0,
+            "flickerExcessPct": 5.81
+          },
+          "agile1": {
+            "psnrMean": 31.09,
+            "psnrMin": 25.77,
+            "ssimMean": 0.873,
+            "ssimMin": 0.769,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 29.78,
+            "psnrMin": 23.32,
+            "ssimMean": 0.849,
+            "ssimMin": 0.704,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 28.25,
+            "j4": 29.47,
+            "j16": 32.35,
+            "j64": 35.54,
+            "ghost48": 0.004,
+            "lead2": 16.67,
+            "lagMin": 12.47
+          }
+        },
+        {
+          "variant": "taaParallax:off",
+          "cruise": {
+            "psnrMean": 27.53,
+            "psnrMin": 24.91,
+            "ssimMean": 0.698,
+            "ssimMin": 0.544,
+            "below20": 0,
+            "flickerExcessPct": 6.98
+          },
+          "agile1": {
+            "psnrMean": 30.88,
+            "psnrMin": 25.83,
+            "ssimMean": 0.863,
+            "ssimMin": 0.762,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 29.71,
+            "psnrMin": 23.34,
+            "ssimMean": 0.844,
+            "ssimMin": 0.699,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 26.95,
+            "j4": 28.2,
+            "j16": 31.69,
+            "j64": 35.33,
+            "ghost48": 0.005,
+            "lead2": 15.36,
+            "lagMin": 11.62
+          }
+        },
+        {
+          "variant": "taaReproj:history",
+          "cruise": {
+            "psnrMean": 27,
+            "psnrMin": 24.13,
+            "ssimMean": 0.712,
+            "ssimMin": 0.577,
+            "below20": 0,
+            "flickerExcessPct": 1.2
+          },
+          "agile1": {
+            "psnrMean": 29.94,
+            "psnrMin": 24.85,
+            "ssimMean": 0.853,
+            "ssimMin": 0.739,
+            "below20": 0
+          },
+          "agile2": {
+            "psnrMean": 28.43,
+            "psnrMin": 22.66,
+            "ssimMean": 0.825,
+            "ssimMin": 0.689,
+            "below20": 0
+          },
+          "flip": {
+            "j1": 28.26,
+            "j4": 29.47,
+            "j16": 32.36,
+            "j64": 35.54,
+            "ghost48": 0.004,
+            "lead2": 16.68,
+            "lagMin": 12.52
+          }
+        }
+      ],
+      "accumStats": {
+        "active": true,
+        "taaActive": true,
+        "culling": true,
+        "cullSuspended": false,
+        "gpuBytes": 163005076,
+        "activeSplats": 3804374,
+        "variant": {
+          "compose": "blend",
+          "cull": "auto",
+          "contribution": 0,
+          "coverage": "pixel",
+          "jitter": 0,
+          "strata": 4,
+          "interleaveArea": 0,
+          "taa": "on",
+          "taaMax": 256,
+          "taaMoveMax": 16,
+          "taaClip": 1.25,
+          "taaReproj": "history",
+          "taaMotion": 4,
+          "taaParallax": "on",
+          "taaSharp": 16,
+          "taaHistory": "auto",
+          "taaSharpen": 0,
+          "taaDebug": 0,
+          "warp": "auto",
+          "stereo": "shared",
+          "units": "engine"
+        },
+        "failed": null
+      },
+      "gpuErrors": []
+    }
+  },
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.85",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "controlE": {}
+}

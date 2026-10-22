@@ -19,8 +19,16 @@
    a Playwright build (the container's `/opt/google/chrome/chrome`) counts as bundled.
 3. `BENCH_BROWSER=chrome | bundled | <path to an executable>` overrides.
 
-Windows stay headful. Where there is no display, run the driver under `xvfb-run -a`. Every
-evidence file records the browser under `context.browser` (`kind`, `version`, `executable`, `why`).
+**Headless by default** (owner, 2026-10-22: a test must never take his mouse, focus or screen). `pickBrowser()` puts
+`headless` into the `launch` it returns, so every launcher built on it (`launchChrome` in `src/browser.ts`, which spreads
+`pick.launch` last so a caller's own `headless: false` cannot override it; the `apps/site/scripts/*.mjs` and the bench
+scripts that call `pickBrowser`) opens no window. Headless Chrome draws WebGPU on the real GPU and pointer lock works
+inside the page, so there is no pointer-lock stub and no offscreen window. **One switch shows a window: `BENCH_VISIBLE=1`**
+(only when the owner asks to watch a run; any other value is not a request to watch). The hardware does not change:
+headless is the same Chrome on the same GPU. Where there is no display and a window is wanted anyway, run the driver
+under `xvfb-run -a`. Every evidence file records the browser under `context.browser` (`kind`, `version`, `executable`,
+`why`). The cost bench `v11-s-cost.ts` also records `headless` and its measured window (`window: [start, end]` in ms)
+beside the GPU clock log.
 Nothing here installs browsers: never run `playwright install`.
 
 ## Logic-only mode: `?render=off` (machines without a GPU)

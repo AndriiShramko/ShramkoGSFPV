@@ -30,6 +30,10 @@ The formulas and constants below were **read** from Betaflight 4.5.1 (tag `4.5.1
 
 `packages/collision/src/vendor/` contains three files copied from [playcanvas/supersplat-viewer](https://github.com/playcanvas/supersplat-viewer) v1.35.0 (commit `e669b5d785a80571763bdf272849bcb8e50a5eb8`), MIT, Copyright (c) 2011-2026 PlayCanvas Ltd. The logic is unchanged; the only edits are an attribution header and two extra exports. Details: [`packages/collision/UPSTREAM.md`](../packages/collision/UPSTREAM.md).
 
+## Stochastic renderer with temporal accumulation (SuperSplat viewer, MIT)
+
+`packages/render-pc/src/vendor/supersplat-viewer/` contains 14 files copied from [playcanvas/supersplat-viewer](https://github.com/playcanvas/supersplat-viewer) v1.38.0 (commit `88482a6e4a145520cddf4d9c3d9e00481ae558c1`), MIT, Copyright (c) 2011-2026 PlayCanvas Ltd.: the renderer, its resident-set reader, the work-buffer data path and the WGSL passes (projector, order, raster, temporal resolve, compose). Twelve are byte-identical; two carry six marked one-line type edits (`// GSFPV:`; five in the renderer, one in the resident-set reader), and two small stand-ins of ours keep the imports of the files we do not take (the GPU picker, the direct splat source; one more marked edit sits in the picker stand-in). Details, blob hashes and the update procedure: [`UPSTREAM.md`](../packages/render-pc/src/vendor/supersplat-viewer/UPSTREAM.md); licence text next to it.
+
 ## Deterministic math (fdlibm / musl)
 
 `packages/sim-core/src/dmath.ts` ports the algorithms and coefficients of `__sin`, `__cos`, `__rem_pio2` (medium path), `atan`, `atan2` and `exp` from fdlibm as distributed in musl libc. fdlibm: "Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved. Developed at SunPro, a Sun Microsystems, Inc. business. Permission to use, copy, modify, and distribute this software is freely granted, provided that this notice is preserved." musl: MIT.

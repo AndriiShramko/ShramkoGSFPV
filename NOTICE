@@ -25,6 +25,13 @@ SuperSplat Viewer (@playcanvas/supersplat-viewer)
     packages/collision/src/vendor/find-spawn.ts
   License text: packages/collision/LICENSE-supersplat-viewer
   Local changes: packages/collision/UPSTREAM.md
+  The stochastic splat renderer with temporal accumulation (release v1.38.0,
+  commit 88482a6e4a145520cddf4d9c3d9e00481ae558c1), vendored under
+  packages/render-pc/src/vendor/supersplat-viewer/ (14 files from src/render/
+  and shaders/, plus two small stand-ins of ours for picker.ts and the direct
+  splat source). Changes are marked "GSFPV:" in the source.
+  License text: packages/render-pc/src/vendor/supersplat-viewer/LICENSE-supersplat-viewer
+  Local changes: packages/render-pc/src/vendor/supersplat-viewer/UPSTREAM.md
 
 splat-transform (@playcanvas/splat-transform)
   https://github.com/playcanvas/splat-transform

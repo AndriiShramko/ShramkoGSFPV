@@ -140,7 +140,59 @@ describe('F3\'s drawing line', () => {
         expect(say('drawing.from.nobody')).toBe('?drawing.from.nobody');
         for (const k of ['link', 'setting', 'scene', 'device', 'rec']) expect(say(`drawing.from.${k}`)).not.toMatch(/^\?/);
         for (const k of ['desktop-strong', 'desktop-weak', 'tablet', 'phone']) expect(say(`drawing.class.${k}`)).not.toMatch(/^\?/);
-        for (const k of ['stochastic', 'sorted']) expect(say(`drawing.mode.${k}`)).not.toMatch(/^\?/);
+        for (const k of ['stochastic', 'accumulating', 'sorted', 'loading', 'fallback-failed', 'fallback-unsupported']) expect(say(`drawing.mode.${k}`)).not.toMatch(/^\?/);
+    });
+
+    it('v0.11: F3 says "accumulating" when the SuperSplat renderer with its temporal history draws, plain "stochastic" for the engine\'s own dither', () => {
+        const prefs = mkStore();
+        prefs.set('display.drawing', 'stochastic');
+        const d = drawn(prefs, {});
+        expect(drawingLine(d, say, false, 'accum')).toBe(`Render: stochastic, accumulating (your setting) · budget ${DEFAULT_BUDGET_M} M splats (this device) · desktop, strong graphics`);
+        expect(drawingLine(d, say, false, 'engine')).toBe(`Render: stochastic (your setting) · budget ${DEFAULT_BUDGET_M} M splats (this device) · desktop, strong graphics`);
+        // the renderer's own answer is not asked: the old line (the v0.10 callers)
+        expect(drawingLine(d, say)).toMatch(/^Render: stochastic \(your setting\)/);
+        // control: a line that took `drawn` at its word would claim accumulating while a recording or a sorted preset draws sorted
+        expect(drawingLine(d, say, true, 'accum')).toMatch(/^Render: sorted \(recording\)/);
+        expect(drawingLine(drawn(mkStore(), {}), say, false, 'accum')).toMatch(/^Render: sorted \(this device\)/);
+    });
+
+    it('v0.11 fix round: F3 names the two states the pilot could not see, sorted while a scene switch holds the renderer back and the engine\'s dither as a fallback', () => {
+        const prefs = mkStore();
+        prefs.set('display.drawing', 'stochastic');
+        const d = drawn(prefs, {});
+        const tail = ` (your setting) · budget ${DEFAULT_BUDGET_M} M splats (this device) · desktop, strong graphics`;
+        expect(drawingLine(d, say, false, 'sorted', 'loading')).toBe(`Render: sorted while the scene loads${tail}`);
+        expect(drawingLine(d, say, false, 'engine', 'failed')).toBe(`Render: stochastic, fallback dither after an error${tail}`);
+        expect(drawingLine(d, say, false, 'engine', 'unsupported')).toBe(`Render: stochastic, fallback dither (accumulating not available here)${tail}`);
+        // the bench's ?impl=engine is not a fallback, and the accumulating renderer drawing says accumulating whatever the last plan said
+        expect(drawingLine(d, say, false, 'engine', 'impl')).toBe(`Render: stochastic${tail}`);
+        expect(drawingLine(d, say, false, 'accum', 'ok')).toBe(`Render: stochastic, accumulating${tail}`);
+        // controls: a line that read the reason alone would announce a fallback or a hold where sorted or a recording was asked for, and where the drawing is not the one the reason is about
+        expect(drawingLine(drawn(mkStore(), {}), say, false, 'sorted', 'loading')).toMatch(/^Render: sorted \(this device\)/);
+        expect(drawingLine(d, say, true, 'engine', 'failed')).toMatch(/^Render: sorted \(recording\)/);
+        expect(drawingLine(d, say, false, 'sorted', 'failed')).toBe(`Render: stochastic${tail}`);
+        expect(drawingLine(d, say, false, 'engine', 'loading')).toBe(`Render: stochastic${tail}`);
+    });
+
+    it('v0.11 fix round: the Render help tells the pilot what the stochastic picture is in flight (noisier and softer than Sorted in rooms, settling only when the camera is still), not "a little grainier"', () => {
+        const say: Record<string, string> = { en: 'visibly noisier and softer', es: 'm\u00e1s ruidoso y borroso', pl: 'bardziej zaszumione i mi\u0119ksze', ru: '\u0448\u0443\u043c\u043d\u0435\u0435 \u0438 \u043c\u044f\u0433\u0447\u0435' };
+        const old: Record<string, string> = { en: 'a little grainier', es: 'algo m\u00e1s granulado', pl: 'nieco bardziej ziarniste', ru: '\u0447\u0443\u0442\u044c \u0437\u0435\u0440\u043d\u0438\u0441\u0442\u0435\u0435' };
+        for (const lang of ['en', 'es', 'pl', 'ru']) {
+            const d = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'drawing', `${lang}.json`), 'utf8')) as Record<string, string>;
+            const help = d['set.display.drawing.help'];
+            expect(help, lang).toContain(say[lang]);
+            expect(help, lang).not.toContain(old[lang]); // the text before the fix had the old phrase and not the new one: both assertions failed on it
+        }
+    });
+
+    it('v0.11: the new mode texts exist in every language, apart from the English ones', () => {
+        for (const lang of ['en', 'es', 'pl', 'ru']) {
+            const d = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'drawing', `${lang}.json`), 'utf8')) as Record<string, string>;
+            for (const k of ['accumulating', 'loading', 'fallback-failed', 'fallback-unsupported']) {
+                expect(d[`drawing.mode.${k}`], `${lang} ${k}`).toBeTruthy();
+                if (lang !== 'en') expect(d[`drawing.mode.${k}`], `${lang} ${k}`).not.toBe(EN[`drawing.mode.${k}`]);
+            }
+        }
     });
 });
 

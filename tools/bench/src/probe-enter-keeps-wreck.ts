@@ -3,11 +3,12 @@
 //   SITE=https://gsfpv.flyreelstudio.eu npx tsx src/probe-enter-keeps-wreck.ts
 // Logic-only mode (?render=off). Evidence: evidence/<date>/v03-enter-keeps-wreck.json.
 import { chromium } from 'playwright';
+import { benchHeadless } from './chrome.mjs';
 import { writeEvidence } from './evidence';
 
 const SITE = (process.env.SITE ?? 'https://gsfpv.flyreelstudio.eu').replace(/\/$/, '');
 const fly = (qs: string) => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}` : `${SITE}/en/fly/?${qs}`);
-const browser = await chromium.launch({ channel: 'chrome', headless: process.env.BENCH_VISIBLE !== '1' });
+const browser = await chromium.launch({ channel: 'chrome', headless: benchHeadless() });
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Any = any;
 async function run(pressEnter: boolean): Promise<Any> {

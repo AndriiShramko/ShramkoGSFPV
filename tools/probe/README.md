@@ -26,7 +26,7 @@ npx serve -l 5188 -C . &                        # any static server on 5188 work
 node probe/run.mjs "http://127.0.0.1:5188/probe?id=39e63ce9"
 ```
 
-The result is written to `probe/last-result.json`. `PROBE_HEADLESS=1` runs Chrome headless.
+The result is written to `probe/last-result.json`. It runs Chrome headless (no window takes the owner's mouse or focus); `BENCH_VISIBLE=1` shows the window (`tools/bench/README.md`).
 
 ## What it measures
 

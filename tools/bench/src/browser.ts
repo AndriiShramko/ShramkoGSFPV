@@ -1,9 +1,10 @@
-// System Chrome through Playwright: VISIBLE window, stock flags only (no --disable-gpu-vsync
-// and friends). Every run records visibility and the gsplat renderer; a run where the page was
+// System Chrome through Playwright, HEADLESS by default (owner 2026-10-22: a test never takes his mouse or focus;
+// chrome.mjs puts `headless` into pickBrowser().launch, BENCH_VISIBLE=1 shows a window), stock flags only (no
+// --disable-gpu-vsync and friends). Headless Chrome draws WebGPU on the real GPU and pointer lock works inside the
+// page, so there is no stub here. Every run records visibility and the gsplat renderer; a run where the page was
 // hidden or the GPU sort was not active is invalid.
-// Without system Chrome (the cloud container) Playwright's bundled Chromium runs instead, still
-// headful (under `xvfb-run -a` where there is no display): chrome.mjs picks, and every evidence
-// file of the run says which browser it was (evidence.ts context().browser). tools/bench/README.md.
+// Without system Chrome (the cloud container) Playwright's bundled Chromium runs instead (chrome.mjs picks, and every
+// evidence file of the run says which browser it was, evidence.ts context().browser). tools/bench/README.md.
 import { chromium } from 'playwright';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { describeBrowser, pickBrowser } from './chrome.mjs';
@@ -19,7 +20,11 @@ export interface Launched {
     which: BrowserInfo;
 }
 
-/** chromium.launch() on system Chrome, else the bundled Chromium (chrome.mjs); the choice goes into the evidence. */
+/**
+ * chromium.launch() on system Chrome, else the bundled Chromium (chrome.mjs); the choice goes into the evidence.
+ * `pick.launch` is spread last on purpose: it carries `headless` (true unless BENCH_VISIBLE=1), so a caller's own
+ * `headless: false` (launch() below passes one) cannot open a window on the owner's desktop.
+ */
 export async function launchChrome(o: Parameters<typeof chromium.launch>[0] = {}): Promise<{ browser: Browser; which: BrowserInfo }> {
     const pick = pickBrowser({ expected: chromium.executablePath() });
     const browser = await chromium.launch({ ...o, ...pick.launch });
@@ -30,7 +35,7 @@ export async function launchChrome(o: Parameters<typeof chromium.launch>[0] = {}
 
 export async function launch(opts: { width?: number; height?: number; mobile?: boolean } = {}): Promise<Launched> {
     const { browser, which } = await launchChrome({
-        headless: false,
+        // (headless comes from chrome.mjs, see the header; the window arguments only size a window when BENCH_VISIBLE=1)
         // Playwright adds its automation defaults; we add nothing that changes rendering or vsync
         args: ['--window-position=40,40', `--window-size=${(opts.width ?? 1280) + 16},${(opts.height ?? 800) + 120}`]
     });

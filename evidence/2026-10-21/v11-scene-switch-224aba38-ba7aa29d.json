@@ -1,0 +1,2105 @@
+{
+  "from": "224aba38",
+  "to": "ba7aa29d",
+  "before": [
+    {
+      "hash": 429688979,
+      "textureSize": 2145,
+      "streams": [
+        {
+          "name": "dataColor",
+          "fmt": 37,
+          "tex": [
+            2145,
+            2145,
+            37
+          ]
+        },
+        {
+          "name": "dataTransformA",
+          "fmt": 49,
+          "tex": [
+            2145,
+            2145,
+            49
+          ]
+        },
+        {
+          "name": "dataTransformB",
+          "fmt": 37,
+          "tex": [
+            2145,
+            2145,
+            37
+          ]
+        }
+      ],
+      "state": {
+        "version": 1,
+        "files": 1,
+        "total": 4555198
+      }
+    }
+  ],
+  "beforeErrors": 0,
+  "frames": [
+    {
+      "i": 0,
+      "drawn": "accum",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": true,
+        "splats": 4555198
+      }
+    },
+    {
+      "i": 1,
+      "drawn": "accum",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": true,
+        "splats": 4555198
+      }
+    },
+    {
+      "i": 2,
+      "drawn": "accum",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": true,
+        "splats": 4555198
+      }
+    },
+    {
+      "i": 3,
+      "drawn": "accum",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": true,
+        "splats": 4555198
+      }
+    },
+    {
+      "i": 4,
+      "drawn": "accum",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": true,
+        "splats": 4555198
+      }
+    },
+    {
+      "i": 5,
+      "drawn": "accum",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": true,
+        "splats": 4555198
+      }
+    },
+    {
+      "i": 6,
+      "drawn": "accum",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": true,
+        "splats": 4555198
+      }
+    },
+    {
+      "i": 7,
+      "drawn": "accum",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": true,
+        "splats": 4555198
+      }
+    },
+    {
+      "i": 8,
+      "drawn": "accum",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": true,
+        "splats": 4555198
+      }
+    },
+    {
+      "i": 9,
+      "drawn": "sorted",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 10,
+      "drawn": "sorted",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 11,
+      "drawn": "sorted",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 12,
+      "drawn": "sorted",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 13,
+      "drawn": "sorted",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 14,
+      "drawn": "sorted",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 15,
+      "drawn": "sorted",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 16,
+      "drawn": "sorted",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 17,
+      "drawn": "sorted",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 18,
+      "drawn": "sorted",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 19,
+      "drawn": "sorted",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 20,
+      "drawn": "sorted",
+      "errors": 0,
+      "streams": null,
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 21,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 22,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 23,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 24,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 25,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 26,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 27,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 28,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 29,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 30,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 31,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 32,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 33,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 34,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 35,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 36,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 37,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 38,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 39,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 40,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 41,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 42,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 43,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 44,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 45,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 46,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 47,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 48,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 49,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 50,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 0,
+      "total": 0,
+      "streams": "dataColor:37:1x1x37 dataTransformA:49:1x1x49 dataTransformB:37:1x1x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 51,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 52,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 53,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 54,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 55,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 56,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 57,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 58,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 59,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 60,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 61,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 62,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 63,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 64,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 65,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 66,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 67,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 68,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 69,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 70,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 2,
+      "total": 14681,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 71,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 72,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 73,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 74,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 75,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 76,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 77,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 78,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 79,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 80,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 81,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 82,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 83,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 84,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 85,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 86,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 87,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 88,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 89,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 90,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 4,
+      "total": 29370,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 91,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 92,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 93,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 94,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 95,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 96,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 97,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 98,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 99,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 100,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 101,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 102,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 103,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 104,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 105,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 106,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 107,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 108,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 109,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 110,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 111,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 112,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 113,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 114,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 115,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 116,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 117,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 118,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 119,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 120,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 6,
+      "total": 44160,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 121,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 122,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 123,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 124,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 125,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 126,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 127,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 128,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 129,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 130,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 131,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 132,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 133,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 134,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 135,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 136,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 137,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 138,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 139,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 140,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 141,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 142,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 143,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 144,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 145,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 146,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 147,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 148,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 149,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 150,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 151,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 152,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 153,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 154,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 155,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 156,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 157,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 158,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    },
+    {
+      "i": 159,
+      "drawn": "sorted",
+      "errors": 0,
+      "hash": 429688979,
+      "files": 8,
+      "total": 58994,
+      "streams": "dataColor:37:2145x2145x37 dataTransformA:49:2145x2145x49 dataTransformB:37:2145x2145x37",
+      "accum": {
+        "active": false,
+        "splats": 0
+      }
+    }
+  ],
+  "errors": [],
+  "after": [
+    {
+      "hash": 429688979,
+      "textureSize": 2145,
+      "streams": [
+        {
+          "name": "dataColor",
+          "fmt": 37,
+          "tex": [
+            2145,
+            2145,
+            37
+          ]
+        },
+        {
+          "name": "dataTransformA",
+          "fmt": 49,
+          "tex": [
+            2145,
+            2145,
+            49
+          ]
+        },
+        {
+          "name": "dataTransformB",
+          "fmt": 37,
+          "tex": [
+            2145,
+            2145,
+            37
+          ]
+        }
+      ],
+      "state": {
+        "version": 11,
+        "files": 8,
+        "total": 58994
+      }
+    }
+  ]
+}

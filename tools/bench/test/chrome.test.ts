@@ -3,7 +3,9 @@
 // is none (the cloud container). Fake file systems, no browser is started. Negative control: the old
 // rule (channel 'chrome' always) picks a Chrome that is not there.
 import { describe, expect, it } from 'vitest';
-import { join } from 'node:path';
+import { readdirSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { browserRoots, bundledChromium, pickBrowser, systemChromePaths, benchHeadless } from '../src/chrome.mjs';
 
 const fs = (files: string[], dirs: Record<string, string[]> = {}) => ({
@@ -73,6 +75,46 @@ describe('which browser the harnesses launch', () => {
         expect(benchHeadless({ BENCH_VISIBLE: '0' })).toBe(true);
         // a caller asking for a window gets it only through the environment: launchChrome spreads pick.launch last
         expect({ headless: false, ...pickBrowser({ env: WIN_ENV, platform: 'win32', ...f }).launch }.headless).toBe(true);
+    });
+
+    // One mechanism, no second switch (the v0.11 merge: a lane's BENCH_BACKGROUND=headless|offscreen and a pointer-lock stub
+    // were reconciled into this one). Every launcher in the repo takes its headless from chrome.mjs (the spread of
+    // pick.launch, benchHeadless(), or a literal true), never from a literal false that would open a window by itself.
+    describe('no launcher opens a window on its own', () => {
+        const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+        const walk = (dir: string, out: string[] = []): string[] => {
+            for (const e of readdirSync(dir, { withFileTypes: true })) {
+                if (e.name === 'node_modules' || e.name === 'test' || e.name === 'evidence' || e.name.startsWith('.')) continue;
+                const p = join(dir, e.name);
+                if (e.isDirectory()) walk(p, out);
+                else if (/\.(ts|mjs|js)$/.test(e.name) && !e.name.endsWith('.d.mts')) out.push(p);
+            }
+            return out;
+        };
+        const LAUNCH = /\b(?:chromium|firefox|webkit)\.(?:launch|launchPersistentContext)\(([^;]*)/g;
+        const SAFE = /\.\.\.pick\.launch|benchHeadless\(\)|headless:\s*true/;
+        const code = (src: string) => src.split('\n').filter((l) => !/^\s*(?:\/\/|\/?\*)/.test(l)).join('\n'); // comment lines mention launch() too
+        const unsafe = (src: string): string[] => [...code(src).matchAll(LAUNCH)].map((m) => m[1]).filter((args) => !SAFE.test(args));
+
+        it('every chromium/firefox/webkit launch in tools/ and apps/site/scripts/ is headless unless BENCH_VISIBLE=1', () => {
+            const files = [...walk(join(ROOT, 'tools')), ...walk(join(ROOT, 'apps', 'site', 'scripts'))];
+            const bad = files.flatMap((f) => unsafe(readFileSync(f, 'utf8')).map((a) => `${f.slice(ROOT.length + 1)}: ${a.slice(0, 80)}`));
+            expect(bad).toEqual([]);
+            expect(files.length).toBeGreaterThan(20); // the scan really looked at the launchers
+        });
+
+        it('control: a launcher with a literal headless:false, or a bare launch(), is caught', () => {
+            expect(unsafe("const b = await chromium.launch({ channel: 'chrome', headless: false });")).toHaveLength(1);
+            expect(unsafe('const b = await firefox.launch();')).toHaveLength(1);
+            expect(unsafe("const b = await chromium.launch({ ...pick.launch, args: ['--x'] });")).toHaveLength(0);
+            expect(unsafe('const b = await firefox.launch({ headless: benchHeadless() });')).toHaveLength(0);
+        });
+
+        it('the lane switch is gone: no BENCH_BACKGROUND and no pointer-lock stub anywhere in the harness', () => {
+            const text = [...walk(join(ROOT, 'tools')), ...walk(join(ROOT, 'apps', 'site', 'scripts'))]
+                .filter((f) => !f.endsWith('chrome.test.ts')).map((f) => readFileSync(f, 'utf8')).join('\n');
+            expect(text).not.toMatch(/BENCH_BACKGROUND|POINTER_LOCK_STUB/);
+        });
     });
 
     it('nothing at all: a clear error, never an install', () => {

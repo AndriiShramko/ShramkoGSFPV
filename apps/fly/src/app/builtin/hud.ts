@@ -35,7 +35,7 @@ export const hud: Feature = {
             if (!h.frameStatsShown || now - lastDetail < 250) return;
             lastDetail = now;
             h.setDetailLine(ctx.renderer.splatVisible ? lodLine(lodReport(ctx), t) : null);
-            h.setDrawingLine(ctx.renderer.splatVisible ? drawingLine(drawingFor(ctx.prefs, ctx.scene, ctx.renderer.isWebGPU, ctx.renderer.gpuInfo), t, cleanDraw.held) : null);
+            h.setDrawingLine(ctx.renderer.splatVisible ? drawingLine(drawingFor(ctx.prefs, ctx.scene, ctx.renderer.isWebGPU, ctx.renderer.gpuInfo), t, cleanDraw.held, ctx.renderer.drawn, ctx.renderer.plan.why) : null);
         });
     }
 };

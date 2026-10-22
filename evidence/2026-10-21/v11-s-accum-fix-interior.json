@@ -1,0 +1,1726 @@
+{
+  "site": "http://127.0.0.1:5611",
+  "size": [
+    1280,
+    720
+  ],
+  "budgetM": 4,
+  "modes": [
+    "q2",
+    "q3",
+    "q4",
+    "q5",
+    "q6"
+  ],
+  "frames": 48,
+  "scenes": {
+    "39e63ce9": {
+      "loadedMs": 241435,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()"
+      ],
+      "size": [
+        1280,
+        720
+      ],
+      "budgetM": 4,
+      "impl0": "accum",
+      "timingsMs": {
+        "q2": 18187,
+        "q3": 82895,
+        "q5": 110647,
+        "q4": 132052,
+        "q6": 229728
+      },
+      "stable": true,
+      "sceneComplete": true,
+      "q2": {
+        "frames": 48,
+        "S": {
+          "flicker": 14.58
+        },
+        "floor": {
+          "psnrMean": 97,
+          "psnrMin": 80.57,
+          "ssimMean": 1,
+          "ssimMin": 1,
+          "below20": 0,
+          "flicker": 14.58
+        },
+        "E": {
+          "psnrMean": 16.81,
+          "psnrMin": 13.04,
+          "ssimMean": 0.282,
+          "ssimMin": 0.106,
+          "below20": 0.771,
+          "flicker": 20.85,
+          "flickerExcessPct": 43.02
+        },
+        "A": {
+          "psnrMean": 27.59,
+          "psnrMin": 24.1,
+          "ssimMean": 0.699,
+          "ssimMin": 0.542,
+          "below20": 0,
+          "flicker": 15.47,
+          "flickerExcessPct": 6.1
+        },
+        "A0": {
+          "psnrMean": 26.42,
+          "psnrMin": 23.53,
+          "ssimMean": 0.645,
+          "ssimMin": 0.464,
+          "below20": 0,
+          "flicker": 17.16,
+          "flickerExcessPct": 17.7
+        }
+      },
+      "q3": {
+        "step1": {
+          "frames": 90,
+          "S": {
+            "flicker": 23.2
+          },
+          "floor": {
+            "psnrMean": 87.76,
+            "psnrMin": 77.12,
+            "ssimMean": 1,
+            "ssimMin": 1,
+            "below20": 0,
+            "flicker": 23.2
+          },
+          "E": {
+            "psnrMean": 20.68,
+            "psnrMin": 16.06,
+            "ssimMean": 0.478,
+            "ssimMin": 0.18,
+            "below20": 0.6,
+            "flicker": 29.51,
+            "flickerExcessPct": 27.19
+          },
+          "A": {
+            "psnrMean": 30.99,
+            "psnrMin": 25.79,
+            "ssimMean": 0.87,
+            "ssimMin": 0.765,
+            "below20": 0,
+            "flicker": 22.57,
+            "flickerExcessPct": -2.73
+          },
+          "AN": {
+            "psnrMean": 28.74,
+            "psnrMin": 22.6,
+            "ssimMean": 0.848,
+            "ssimMin": 0.687,
+            "below20": 0,
+            "flicker": 21.92,
+            "flickerExcessPct": -5.52
+          }
+        },
+        "step2": {
+          "frames": 90,
+          "S": {
+            "flicker": 29.57
+          },
+          "floor": {
+            "psnrMean": 88.53,
+            "psnrMin": 79.7,
+            "ssimMean": 1,
+            "ssimMin": 1,
+            "below20": 0,
+            "flicker": 29.57
+          },
+          "E": {
+            "psnrMean": 19.67,
+            "psnrMin": 14.39,
+            "ssimMean": 0.48,
+            "ssimMin": 0.18,
+            "below20": 0.7,
+            "flicker": 35.84,
+            "flickerExcessPct": 21.2
+          },
+          "A": {
+            "psnrMean": 29.8,
+            "psnrMin": 23.34,
+            "ssimMean": 0.847,
+            "ssimMin": 0.701,
+            "below20": 0,
+            "flicker": 28.73,
+            "flickerExcessPct": -2.83
+          },
+          "AN": {
+            "psnrMean": 27.57,
+            "psnrMin": 21.67,
+            "ssimMean": 0.808,
+            "ssimMin": 0.526,
+            "below20": 0,
+            "flicker": 28.57,
+            "flickerExcessPct": -3.37
+          }
+        }
+      },
+      "q5": {
+        "frames": 90,
+        "S": {
+          "flicker": 0.54,
+          "tstd": 1.27
+        },
+        "floor": {
+          "psnrMean": 87.37,
+          "psnrMin": 83.53,
+          "ssimMean": 1,
+          "ssimMin": 1,
+          "below20": 0,
+          "flicker": 0.54
+        },
+        "E": {
+          "psnrMean": 19.67,
+          "psnrMin": 19.66,
+          "ssimMean": 0.677,
+          "ssimMin": 0.676,
+          "below20": 1,
+          "flicker": 0.22,
+          "flickerExcessPct": -58.07,
+          "tstd": 1.65
+        },
+        "A": {
+          "psnrMean": 33.39,
+          "psnrMin": 32.81,
+          "ssimMean": 0.963,
+          "ssimMin": 0.961,
+          "below20": 0,
+          "flicker": 0.36,
+          "flickerExcessPct": -31.98,
+          "tstd": 1.44
+        }
+      },
+      "q4": {
+        "flipFrames": 12,
+        "afterFrames": 64,
+        "floor": {
+          "psnrMean": 84.12,
+          "psnrMin": 78.43,
+          "ssimMean": 1,
+          "ssimMin": 1,
+          "below20": 0,
+          "j1Psnr": 85.13,
+          "ghost48": 0
+        },
+        "note": "pure rotation about a fixed point: history reprojection is exact, so this path cannot show ghosting (see q6)",
+        "E": {
+          "after": {
+            "1": 17.99,
+            "2": 17.99,
+            "4": 17.99,
+            "8": 17.99,
+            "16": 17.99,
+            "32": 17.99,
+            "64": 17.99
+          },
+          "lag": {
+            "k1min": 3.04,
+            "k2min": 2.99,
+            "k1": [
+              3.04,
+              6.78,
+              7.91,
+              6.5,
+              5.04,
+              6.03,
+              6.54,
+              6.42,
+              6.21,
+              5.8
+            ],
+            "k2": [
+              2.99,
+              6.52,
+              7.23,
+              7.37,
+              5.24,
+              6.09,
+              6.78,
+              6.67,
+              6.47,
+              6.77
+            ]
+          },
+          "lead": {
+            "1": 6.77,
+            "2": 6.77,
+            "3": 6.77,
+            "4": 6.77,
+            "8": 6.77
+          },
+          "ghost48": 0.115,
+          "ghost30": 0.229,
+          "framesTo30dB": null,
+          "framesTo33dB": null
+        },
+        "A": {
+          "after": {
+            "1": 28.28,
+            "2": 28.65,
+            "4": 29.49,
+            "8": 30.79,
+            "16": 32.36,
+            "32": 34.02,
+            "64": 35.54
+          },
+          "lag": {
+            "k1min": 12.49,
+            "k2min": 12.69,
+            "k1": [
+              12.49,
+              18.58,
+              20.68,
+              19,
+              17.04,
+              18.12,
+              17.83,
+              17.69,
+              17.88,
+              17.21
+            ],
+            "k2": [
+              12.69,
+              18.27,
+              19.55,
+              19.79,
+              17.13,
+              18.07,
+              18.08,
+              17.86,
+              18.03,
+              18.15
+            ]
+          },
+          "lead": {
+            "1": 16.34,
+            "2": 16.72,
+            "3": 17.16,
+            "4": 17.56,
+            "8": 18.86
+          },
+          "ghost48": 0.004,
+          "ghost30": 0.018,
+          "framesTo30dB": 6,
+          "framesTo33dB": 21
+        },
+        "AN": {
+          "after": {
+            "1": 28.28,
+            "2": 28.65,
+            "4": 29.49,
+            "8": 30.79,
+            "16": 32.36,
+            "32": 34.02,
+            "64": 35.54
+          },
+          "lag": {
+            "k1min": 12.46,
+            "k2min": 12.67,
+            "k1": [
+              12.46,
+              18.51,
+              20.58,
+              18.91,
+              17,
+              18.08,
+              17.79,
+              17.65,
+              17.82,
+              17.19
+            ],
+            "k2": [
+              12.67,
+              18.19,
+              19.44,
+              19.71,
+              17.08,
+              18.04,
+              18.04,
+              17.83,
+              17.98,
+              18.14
+            ]
+          },
+          "lead": {
+            "1": 16.34,
+            "2": 16.71,
+            "3": 17.16,
+            "4": 17.56,
+            "8": 18.86
+          },
+          "ghost48": 0.004,
+          "ghost30": 0.018,
+          "framesTo30dB": 6,
+          "framesTo33dB": 21
+        }
+      },
+      "q6": {
+        "step1": {
+          "frames": 150,
+          "lagFrames": 2,
+          "thresholds": {
+            "changed": 40,
+            "near": 16,
+            "fromFrame": 9
+          },
+          "floor": {
+            "psnrMean": 91.49,
+            "psnrMin": 82.96,
+            "ssimMean": 1,
+            "ssimMin": 1,
+            "below20": 0,
+            "trail": {
+              "mean": 0,
+              "p95": 0,
+              "max": 0,
+              "changedShare": 0.084
+            }
+          },
+          "E": {
+            "psnrMean": 20.44,
+            "psnrMin": 19.18,
+            "ssimMean": 0.635,
+            "ssimMin": 0.454,
+            "below20": 0.68,
+            "trail": {
+              "mean": 0.054,
+              "p95": 0.31,
+              "max": 0.476,
+              "changedShare": 0.084
+            }
+          },
+          "A0": {
+            "psnrMean": 28.71,
+            "psnrMin": 27.17,
+            "ssimMean": 0.862,
+            "ssimMin": 0.732,
+            "below20": 0,
+            "trail": {
+              "mean": 0.012,
+              "p95": 0.022,
+              "max": 0.095,
+              "changedShare": 0.084
+            }
+          },
+          "A": {
+            "psnrMean": 30.78,
+            "psnrMin": 26.84,
+            "ssimMean": 0.903,
+            "ssimMin": 0.677,
+            "below20": 0,
+            "trail": {
+              "mean": 0.01,
+              "p95": 0.039,
+              "max": 0.095,
+              "changedShare": 0.084
+            }
+          },
+          "AN": {
+            "psnrMean": 27.14,
+            "psnrMin": 24.4,
+            "ssimMean": 0.884,
+            "ssimMin": 0.764,
+            "below20": 0,
+            "trail": {
+              "mean": 0.041,
+              "p95": 0.166,
+              "max": 0.239,
+              "changedShare": 0.084
+            }
+          },
+          "AX": {
+            "psnrMean": 28.61,
+            "psnrMin": 25.74,
+            "ssimMean": 0.897,
+            "ssimMin": 0.755,
+            "below20": 0,
+            "trail": {
+              "mean": 0.024,
+              "p95": 0.081,
+              "max": 0.143,
+              "changedShare": 0.084
+            }
+          }
+        },
+        "step2": {
+          "frames": 75,
+          "lagFrames": 1,
+          "thresholds": {
+            "changed": 40,
+            "near": 16,
+            "fromFrame": 9
+          },
+          "floor": {
+            "psnrMean": 91.44,
+            "psnrMin": 83.51,
+            "ssimMean": 1,
+            "ssimMin": 1,
+            "below20": 0,
+            "trail": {
+              "mean": 0,
+              "p95": 0,
+              "max": 0,
+              "changedShare": 0.081
+            }
+          },
+          "E": {
+            "psnrMean": 20.44,
+            "psnrMin": 19.18,
+            "ssimMean": 0.635,
+            "ssimMin": 0.454,
+            "below20": 0.68,
+            "trail": {
+              "mean": 0.055,
+              "p95": 0.31,
+              "max": 0.476,
+              "changedShare": 0.081
+            }
+          },
+          "A0": {
+            "psnrMean": 28.69,
+            "psnrMin": 27.17,
+            "ssimMean": 0.862,
+            "ssimMin": 0.732,
+            "below20": 0,
+            "trail": {
+              "mean": 0.012,
+              "p95": 0.022,
+              "max": 0.095,
+              "changedShare": 0.081
+            }
+          },
+          "A": {
+            "psnrMean": 30.22,
+            "psnrMin": 27.83,
+            "ssimMean": 0.894,
+            "ssimMin": 0.783,
+            "below20": 0,
+            "trail": {
+              "mean": 0.012,
+              "p95": 0.045,
+              "max": 0.05,
+              "changedShare": 0.081
+            }
+          },
+          "AN": {
+            "psnrMean": 26.89,
+            "psnrMin": 23.96,
+            "ssimMean": 0.868,
+            "ssimMin": 0.737,
+            "below20": 0,
+            "trail": {
+              "mean": 0.044,
+              "p95": 0.122,
+              "max": 0.311,
+              "changedShare": 0.081
+            }
+          },
+          "AX": {
+            "psnrMean": 28.29,
+            "psnrMin": 25.48,
+            "ssimMean": 0.884,
+            "ssimMin": 0.762,
+            "below20": 0,
+            "trail": {
+              "mean": 0.026,
+              "p95": 0.095,
+              "max": 0.232,
+              "changedShare": 0.081
+            }
+          }
+        }
+      },
+      "accumStats": {
+        "active": true,
+        "taaActive": true,
+        "culling": false,
+        "cullSuspended": true,
+        "gpuBytes": 163005076,
+        "activeSplats": 3804374,
+        "variant": {
+          "compose": "blend",
+          "cull": "auto",
+          "contribution": 0,
+          "coverage": "pixel",
+          "jitter": 0,
+          "strata": 4,
+          "interleaveArea": 0,
+          "taa": "on",
+          "taaMax": 256,
+          "taaMoveMax": 64,
+          "taaClip": 0,
+          "taaReproj": "sample",
+          "taaMotion": 4,
+          "taaParallax": "off",
+          "taaSharp": 16,
+          "taaHistory": "auto",
+          "taaSharpen": 0,
+          "taaDebug": 0,
+          "warp": "auto",
+          "stereo": "shared",
+          "units": "engine"
+        },
+        "failed": null,
+        "failedAt": null,
+        "guarded": [
+          "frame",
+          "bind",
+          "raster",
+          "taa",
+          "sets",
+          "frameend"
+        ]
+      },
+      "gpuErrors": []
+    },
+    "7a475d38": {
+      "loadedMs": 251572,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()"
+      ],
+      "size": [
+        1280,
+        720
+      ],
+      "budgetM": 4,
+      "impl0": "accum",
+      "timingsMs": {
+        "q2": 22062,
+        "q3": 86148,
+        "q5": 111943,
+        "q4": 132962,
+        "q6": 234470
+      },
+      "stable": true,
+      "sceneComplete": true,
+      "q2": {
+        "frames": 48,
+        "S": {
+          "flicker": 44.1
+        },
+        "floor": {
+          "psnrMean": 49.18,
+          "psnrMin": 27.68,
+          "ssimMean": 0.982,
+          "ssimMin": 0.936,
+          "below20": 0,
+          "flicker": 44.22
+        },
+        "E": {
+          "psnrMean": 15.87,
+          "psnrMin": 14.24,
+          "ssimMean": 0.346,
+          "ssimMin": 0.161,
+          "below20": 1,
+          "flicker": 54.74,
+          "flickerExcessPct": 24.12
+        },
+        "A": {
+          "psnrMean": 23.41,
+          "psnrMin": 21.27,
+          "ssimMean": 0.753,
+          "ssimMin": 0.616,
+          "below20": 0,
+          "flicker": 38.44,
+          "flickerExcessPct": -12.83
+        },
+        "A0": {
+          "psnrMean": 23.17,
+          "psnrMin": 22.39,
+          "ssimMean": 0.715,
+          "ssimMin": 0.653,
+          "below20": 0,
+          "flicker": 40.58,
+          "flickerExcessPct": -7.99
+        }
+      },
+      "q3": {
+        "step1": {
+          "frames": 90,
+          "S": {
+            "flicker": 46.91
+          },
+          "floor": {
+            "psnrMean": 41.72,
+            "psnrMin": 30.52,
+            "ssimMean": 0.988,
+            "ssimMin": 0.945,
+            "below20": 0,
+            "flicker": 46.96
+          },
+          "E": {
+            "psnrMean": 16.84,
+            "psnrMin": 15.06,
+            "ssimMean": 0.411,
+            "ssimMin": 0.335,
+            "below20": 1,
+            "flicker": 55.13,
+            "flickerExcessPct": 17.53
+          },
+          "A": {
+            "psnrMean": 24.06,
+            "psnrMin": 21.44,
+            "ssimMean": 0.776,
+            "ssimMin": 0.716,
+            "below20": 0,
+            "flicker": 42.12,
+            "flickerExcessPct": -10.2
+          },
+          "AN": {
+            "psnrMean": 19.13,
+            "psnrMin": 14.42,
+            "ssimMean": 0.649,
+            "ssimMin": 0.505,
+            "below20": 0.622,
+            "flicker": 40.41,
+            "flickerExcessPct": -13.84
+          }
+        },
+        "step2": {
+          "frames": 90,
+          "S": {
+            "flicker": 56.57
+          },
+          "floor": {
+            "psnrMean": 35.35,
+            "psnrMin": 28.94,
+            "ssimMean": 0.977,
+            "ssimMin": 0.935,
+            "below20": 0,
+            "flicker": 56.58
+          },
+          "E": {
+            "psnrMean": 16.93,
+            "psnrMin": 15.1,
+            "ssimMean": 0.424,
+            "ssimMin": 0.34,
+            "below20": 0.989,
+            "flicker": 64.14,
+            "flickerExcessPct": 13.39
+          },
+          "A": {
+            "psnrMean": 23.84,
+            "psnrMin": 21.33,
+            "ssimMean": 0.765,
+            "ssimMin": 0.69,
+            "below20": 0,
+            "flicker": 52.16,
+            "flickerExcessPct": -7.79
+          },
+          "AN": {
+            "psnrMean": 20.22,
+            "psnrMin": 15.34,
+            "ssimMean": 0.672,
+            "ssimMin": 0.493,
+            "below20": 0.444,
+            "flicker": 50.8,
+            "flickerExcessPct": -10.2
+          }
+        }
+      },
+      "q5": {
+        "frames": 90,
+        "S": {
+          "flicker": 0.93,
+          "tstd": 4.18
+        },
+        "floor": {
+          "psnrMean": 68.57,
+          "psnrMin": 67.3,
+          "ssimMean": 1,
+          "ssimMin": 1,
+          "below20": 0,
+          "flicker": 0.93
+        },
+        "E": {
+          "psnrMean": 16.42,
+          "psnrMin": 16.41,
+          "ssimMean": 0.423,
+          "ssimMin": 0.422,
+          "below20": 1,
+          "flicker": 1.03,
+          "flickerExcessPct": 10.79,
+          "tstd": 6.95
+        },
+        "A": {
+          "psnrMean": 27.6,
+          "psnrMin": 26.93,
+          "ssimMean": 0.916,
+          "ssimMin": 0.907,
+          "below20": 0,
+          "flicker": 0.88,
+          "flickerExcessPct": -5.78,
+          "tstd": 3.87
+        }
+      },
+      "q4": {
+        "flipFrames": 12,
+        "afterFrames": 64,
+        "floor": {
+          "psnrMean": 41.1,
+          "psnrMin": 37.26,
+          "ssimMean": 0.989,
+          "ssimMin": 0.984,
+          "below20": 0,
+          "j1Psnr": 38.48,
+          "ghost48": 0.001
+        },
+        "note": "pure rotation about a fixed point: history reprojection is exact, so this path cannot show ghosting (see q6)",
+        "E": {
+          "after": {
+            "1": 17.14,
+            "2": 17.14,
+            "4": 17.14,
+            "8": 17.15,
+            "16": 17.15,
+            "32": 17.14,
+            "64": 17.14
+          },
+          "lag": {
+            "k1min": 6.14,
+            "k2min": 6.74,
+            "k1": [
+              6.14,
+              6.38,
+              6.53,
+              6.89,
+              7.3,
+              6.91,
+              7.09,
+              6.53,
+              7.2,
+              7.74
+            ],
+            "k2": [
+              7.02,
+              6.74,
+              7.1,
+              7.57,
+              7.88,
+              8.2,
+              7.82,
+              7.62,
+              7.59,
+              8.53
+            ]
+          },
+          "lead": {
+            "1": 8.53,
+            "2": 8.53,
+            "3": 8.53,
+            "4": 8.53,
+            "8": 8.53
+          },
+          "ghost48": 0.121,
+          "ghost30": 0.214,
+          "framesTo30dB": null,
+          "framesTo33dB": null
+        },
+        "A": {
+          "after": {
+            "1": 25.07,
+            "2": 25.66,
+            "4": 26.63,
+            "8": 27.92,
+            "16": 29.31,
+            "32": 30.28,
+            "64": 31.13
+          },
+          "lag": {
+            "k1min": 13,
+            "k2min": 13.81,
+            "k1": [
+              14.03,
+              13.56,
+              13.25,
+              13,
+              13.74,
+              13.29,
+              13.74,
+              13.24,
+              13.79,
+              14.37
+            ],
+            "k2": [
+              15,
+              13.96,
+              13.81,
+              13.83,
+              14.43,
+              14.79,
+              14.58,
+              14.51,
+              14.28,
+              15.32
+            ]
+          },
+          "lead": {
+            "1": 15.86,
+            "2": 16.47,
+            "3": 17.01,
+            "4": 17.46,
+            "8": 18.77
+          },
+          "ghost48": 0.011,
+          "ghost30": 0.044,
+          "framesTo30dB": 27,
+          "framesTo33dB": null
+        },
+        "AN": {
+          "after": {
+            "1": 24.96,
+            "2": 25.57,
+            "4": 26.54,
+            "8": 27.84,
+            "16": 29.26,
+            "32": 30.24,
+            "64": 31.12
+          },
+          "lag": {
+            "k1min": 12.96,
+            "k2min": 13.78,
+            "k1": [
+              14.02,
+              13.53,
+              13.22,
+              12.96,
+              13.64,
+              13.27,
+              13.78,
+              13.18,
+              13.71,
+              14.21
+            ],
+            "k2": [
+              15,
+              13.94,
+              13.78,
+              13.79,
+              14.34,
+              14.76,
+              14.61,
+              14.45,
+              14.2,
+              15.17
+            ]
+          },
+          "lead": {
+            "1": 15.74,
+            "2": 16.36,
+            "3": 16.9,
+            "4": 17.36,
+            "8": 18.69
+          },
+          "ghost48": 0.011,
+          "ghost30": 0.046,
+          "framesTo30dB": 28,
+          "framesTo33dB": null
+        }
+      },
+      "q6": {
+        "step1": {
+          "frames": 150,
+          "lagFrames": 2,
+          "thresholds": {
+            "changed": 40,
+            "near": 16,
+            "fromFrame": 9
+          },
+          "floor": {
+            "psnrMean": 43.68,
+            "psnrMin": 34.64,
+            "ssimMean": 0.994,
+            "ssimMin": 0.971,
+            "below20": 0,
+            "trail": {
+              "mean": 0,
+              "p95": 0,
+              "max": 0.001,
+              "changedShare": 0.398
+            }
+          },
+          "E": {
+            "psnrMean": 16.6,
+            "psnrMin": 15.86,
+            "ssimMean": 0.401,
+            "ssimMin": 0.222,
+            "below20": 0.973,
+            "trail": {
+              "mean": 0.051,
+              "p95": 0.099,
+              "max": 0.14,
+              "changedShare": 0.398
+            }
+          },
+          "A0": {
+            "psnrMean": 23.2,
+            "psnrMin": 15.83,
+            "ssimMean": 0.741,
+            "ssimMin": 0.61,
+            "below20": 0.027,
+            "trail": {
+              "mean": 0.015,
+              "p95": 0.025,
+              "max": 0.055,
+              "changedShare": 0.398
+            }
+          },
+          "A": {
+            "psnrMean": 23.53,
+            "psnrMin": 15.34,
+            "ssimMean": 0.775,
+            "ssimMin": 0.575,
+            "below20": 0.027,
+            "trail": {
+              "mean": 0.014,
+              "p95": 0.019,
+              "max": 0.033,
+              "changedShare": 0.398
+            }
+          },
+          "AN": {
+            "psnrMean": 17.85,
+            "psnrMin": 14.53,
+            "ssimMean": 0.576,
+            "ssimMin": 0.431,
+            "below20": 0.88,
+            "trail": {
+              "mean": 0.059,
+              "p95": 0.077,
+              "max": 0.136,
+              "changedShare": 0.398
+            }
+          },
+          "AX": {
+            "psnrMean": 18.95,
+            "psnrMin": 14.67,
+            "ssimMean": 0.638,
+            "ssimMin": 0.477,
+            "below20": 0.807,
+            "trail": {
+              "mean": 0.044,
+              "p95": 0.059,
+              "max": 0.09,
+              "changedShare": 0.398
+            }
+          }
+        },
+        "step2": {
+          "frames": 75,
+          "lagFrames": 1,
+          "thresholds": {
+            "changed": 40,
+            "near": 16,
+            "fromFrame": 9
+          },
+          "floor": {
+            "psnrMean": 41.5,
+            "psnrMin": 34.48,
+            "ssimMean": 0.992,
+            "ssimMin": 0.957,
+            "below20": 0,
+            "trail": {
+              "mean": 0,
+              "p95": 0,
+              "max": 0.001,
+              "changedShare": 0.392
+            }
+          },
+          "E": {
+            "psnrMean": 16.6,
+            "psnrMin": 15.86,
+            "ssimMean": 0.4,
+            "ssimMin": 0.222,
+            "below20": 0.973,
+            "trail": {
+              "mean": 0.052,
+              "p95": 0.09,
+              "max": 0.129,
+              "changedShare": 0.392
+            }
+          },
+          "A0": {
+            "psnrMean": 23.06,
+            "psnrMin": 14.45,
+            "ssimMean": 0.736,
+            "ssimMin": 0.603,
+            "below20": 0.027,
+            "trail": {
+              "mean": 0.016,
+              "p95": 0.028,
+              "max": 0.073,
+              "changedShare": 0.392
+            }
+          },
+          "A": {
+            "psnrMean": 23.03,
+            "psnrMin": 14.53,
+            "ssimMean": 0.747,
+            "ssimMin": 0.564,
+            "below20": 0.027,
+            "trail": {
+              "mean": 0.017,
+              "p95": 0.024,
+              "max": 0.102,
+              "changedShare": 0.392
+            }
+          },
+          "AN": {
+            "psnrMean": 17.06,
+            "psnrMin": 13.36,
+            "ssimMean": 0.523,
+            "ssimMin": 0.366,
+            "below20": 0.92,
+            "trail": {
+              "mean": 0.069,
+              "p95": 0.09,
+              "max": 0.124,
+              "changedShare": 0.392
+            }
+          },
+          "AX": {
+            "psnrMean": 18.73,
+            "psnrMin": 13.64,
+            "ssimMean": 0.615,
+            "ssimMin": 0.489,
+            "below20": 0.84,
+            "trail": {
+              "mean": 0.048,
+              "p95": 0.068,
+              "max": 0.12,
+              "changedShare": 0.392
+            }
+          }
+        }
+      },
+      "accumStats": {
+        "active": true,
+        "taaActive": true,
+        "culling": true,
+        "cullSuspended": false,
+        "gpuBytes": 168495640,
+        "activeSplats": 3975340,
+        "variant": {
+          "compose": "blend",
+          "cull": "auto",
+          "contribution": 0,
+          "coverage": "pixel",
+          "jitter": 0,
+          "strata": 4,
+          "interleaveArea": 0,
+          "taa": "on",
+          "taaMax": 256,
+          "taaMoveMax": 64,
+          "taaClip": 0,
+          "taaReproj": "sample",
+          "taaMotion": 4,
+          "taaParallax": "off",
+          "taaSharp": 16,
+          "taaHistory": "auto",
+          "taaSharpen": 0,
+          "taaDebug": 0,
+          "warp": "auto",
+          "stereo": "shared",
+          "units": "engine"
+        },
+        "failed": null,
+        "failedAt": null,
+        "guarded": [
+          "frame",
+          "bind",
+          "raster",
+          "taa",
+          "sets",
+          "frameend"
+        ]
+      },
+      "gpuErrors": []
+    },
+    "224aba38": {
+      "loadedMs": 231674,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()",
+        "Failed to load resource: the server responded with a status of 403 ()"
+      ],
+      "size": [
+        1280,
+        720
+      ],
+      "budgetM": 4,
+      "impl0": "accum",
+      "timingsMs": {
+        "q2": 17718,
+        "q3": 80655,
+        "q5": 106218,
+        "q4": 127952,
+        "q6": 224009
+      },
+      "stable": true,
+      "sceneComplete": true,
+      "q2": {
+        "frames": 48,
+        "S": {
+          "flicker": 25.51
+        },
+        "floor": {
+          "psnrMean": 90.46,
+          "psnrMin": 82.23,
+          "ssimMean": 1,
+          "ssimMin": 1,
+          "below20": 0,
+          "flicker": 25.51
+        },
+        "E": {
+          "psnrMean": 16.43,
+          "psnrMin": 14.78,
+          "ssimMean": 0.236,
+          "ssimMin": 0.162,
+          "below20": 1,
+          "flicker": 34.26,
+          "flickerExcessPct": 34.31
+        },
+        "A": {
+          "psnrMean": 26.3,
+          "psnrMin": 24.94,
+          "ssimMean": 0.631,
+          "ssimMin": 0.564,
+          "below20": 0,
+          "flicker": 23.48,
+          "flickerExcessPct": -7.95
+        },
+        "A0": {
+          "psnrMean": 26,
+          "psnrMin": 24.59,
+          "ssimMean": 0.609,
+          "ssimMin": 0.543,
+          "below20": 0,
+          "flicker": 27.82,
+          "flickerExcessPct": 9.05
+        }
+      },
+      "q3": {
+        "step1": {
+          "frames": 90,
+          "S": {
+            "flicker": 23.1
+          },
+          "floor": {
+            "psnrMean": 90.1,
+            "psnrMin": 82.41,
+            "ssimMean": 1,
+            "ssimMin": 1,
+            "below20": 0,
+            "flicker": 23.1
+          },
+          "E": {
+            "psnrMean": 19.75,
+            "psnrMin": 13.69,
+            "ssimMean": 0.431,
+            "ssimMin": 0.182,
+            "below20": 0.733,
+            "flicker": 27.29,
+            "flickerExcessPct": 18.12
+          },
+          "A": {
+            "psnrMean": 28.55,
+            "psnrMin": 22.51,
+            "ssimMean": 0.725,
+            "ssimMin": 0.508,
+            "below20": 0,
+            "flicker": 22.28,
+            "flickerExcessPct": -3.56
+          },
+          "AN": {
+            "psnrMean": 19.79,
+            "psnrMin": 10.46,
+            "ssimMean": 0.465,
+            "ssimMin": 0.039,
+            "below20": 0.489,
+            "flicker": 20.85,
+            "flickerExcessPct": -9.74
+          }
+        },
+        "step2": {
+          "frames": 90,
+          "S": {
+            "flicker": 30.7
+          },
+          "floor": {
+            "psnrMean": 90.73,
+            "psnrMin": 80.47,
+            "ssimMean": 1,
+            "ssimMin": 1,
+            "below20": 0,
+            "flicker": 30.7
+          },
+          "E": {
+            "psnrMean": 20.85,
+            "psnrMin": 13.69,
+            "ssimMean": 0.46,
+            "ssimMin": 0.18,
+            "below20": 0.689,
+            "flicker": 35.25,
+            "flickerExcessPct": 14.82
+          },
+          "A": {
+            "psnrMean": 29.06,
+            "psnrMin": 21.78,
+            "ssimMean": 0.726,
+            "ssimMin": 0.479,
+            "below20": 0,
+            "flicker": 29.78,
+            "flickerExcessPct": -2.98
+          },
+          "AN": {
+            "psnrMean": 24.17,
+            "psnrMin": 10.61,
+            "ssimMean": 0.578,
+            "ssimMin": 0.036,
+            "below20": 0.267,
+            "flicker": 29.36,
+            "flickerExcessPct": -4.36
+          }
+        }
+      },
+      "q5": {
+        "frames": 90,
+        "S": {
+          "flicker": 0.44,
+          "tstd": 1.49
+        },
+        "floor": {
+          "psnrMean": 94.46,
+          "psnrMin": 88.43,
+          "ssimMean": 1,
+          "ssimMin": 1,
+          "below20": 0,
+          "flicker": 0.44
+        },
+        "E": {
+          "psnrMean": 15.71,
+          "psnrMin": 15.7,
+          "ssimMean": 0.196,
+          "ssimMin": 0.196,
+          "below20": 1,
+          "flicker": 0.23,
+          "flickerExcessPct": -47.31,
+          "tstd": 1.81
+        },
+        "A": {
+          "psnrMean": 31.17,
+          "psnrMin": 31.03,
+          "ssimMean": 0.863,
+          "ssimMin": 0.808,
+          "below20": 0,
+          "flicker": 1.59,
+          "flickerExcessPct": 265.52,
+          "tstd": 4.93
+        }
+      },
+      "q4": {
+        "flipFrames": 12,
+        "afterFrames": 64,
+        "floor": {
+          "psnrMean": 83.91,
+          "psnrMin": 81.52,
+          "ssimMean": 1,
+          "ssimMin": 1,
+          "below20": 0,
+          "j1Psnr": 83.99,
+          "ghost48": 0
+        },
+        "note": "pure rotation about a fixed point: history reprojection is exact, so this path cannot show ghosting (see q6)",
+        "E": {
+          "after": {
+            "1": 17.48,
+            "2": 17.48,
+            "4": 17.48,
+            "8": 17.48,
+            "16": 17.48,
+            "32": 17.48,
+            "64": 17.48
+          },
+          "lag": {
+            "k1min": 2.95,
+            "k2min": 3.28,
+            "k1": [
+              2.95,
+              3.84,
+              6.19,
+              5.94,
+              6.55,
+              6.58,
+              7.37,
+              7.26,
+              7.7,
+              8.17
+            ],
+            "k2": [
+              3.28,
+              3.97,
+              7.53,
+              8.13,
+              8.17,
+              8.21,
+              8.78,
+              8.78,
+              8.81,
+              9.82
+            ]
+          },
+          "lead": {
+            "1": 9.82,
+            "2": 9.82,
+            "3": 9.82,
+            "4": 9.82,
+            "8": 9.82
+          },
+          "ghost48": 0.121,
+          "ghost30": 0.224,
+          "framesTo30dB": null,
+          "framesTo33dB": null
+        },
+        "A": {
+          "after": {
+            "1": 23.75,
+            "2": 24.31,
+            "4": 25.43,
+            "8": 27.03,
+            "16": 28.95,
+            "32": 30.95,
+            "64": 32.81
+          },
+          "lag": {
+            "k1min": 14.04,
+            "k2min": 15.07,
+            "k1": [
+              14.04,
+              14.76,
+              17.17,
+              15.86,
+              15.07,
+              14.34,
+              14.21,
+              14.29,
+              15.01,
+              15.09
+            ],
+            "k2": [
+              15.07,
+              15.47,
+              18.8,
+              18.52,
+              16.95,
+              16.34,
+              15.92,
+              16.04,
+              16.25,
+              16.94
+            ]
+          },
+          "lead": {
+            "1": 15.76,
+            "2": 16.33,
+            "3": 16.92,
+            "4": 17.44,
+            "8": 19.03
+          },
+          "ghost48": 0.018,
+          "ghost30": 0.064,
+          "framesTo30dB": 23,
+          "framesTo33dB": null
+        },
+        "AN": {
+          "after": {
+            "1": 23.76,
+            "2": 24.32,
+            "4": 25.43,
+            "8": 27.04,
+            "16": 28.95,
+            "32": 30.95,
+            "64": 32.81
+          },
+          "lag": {
+            "k1min": 14.2,
+            "k2min": 15.31,
+            "k1": [
+              14.27,
+              15.06,
+              17.45,
+              16.11,
+              15.2,
+              14.38,
+              14.2,
+              14.29,
+              15.01,
+              15.06
+            ],
+            "k2": [
+              15.31,
+              15.79,
+              19.09,
+              18.79,
+              17.09,
+              16.38,
+              15.92,
+              16.04,
+              16.25,
+              16.92
+            ]
+          },
+          "lead": {
+            "1": 15.74,
+            "2": 16.31,
+            "3": 16.91,
+            "4": 17.42,
+            "8": 19.02
+          },
+          "ghost48": 0.018,
+          "ghost30": 0.064,
+          "framesTo30dB": 23,
+          "framesTo33dB": null
+        }
+      },
+      "q6": {
+        "step1": {
+          "frames": 150,
+          "lagFrames": 2,
+          "thresholds": {
+            "changed": 40,
+            "near": 16,
+            "fromFrame": 9
+          },
+          "floor": {
+            "psnrMean": 93.7,
+            "psnrMin": 83.45,
+            "ssimMean": 1,
+            "ssimMin": 1,
+            "below20": 0,
+            "trail": {
+              "mean": 0,
+              "p95": 0,
+              "max": 0,
+              "changedShare": 0.278
+            }
+          },
+          "E": {
+            "psnrMean": 15.5,
+            "psnrMin": 14.23,
+            "ssimMean": 0.175,
+            "ssimMin": 0.139,
+            "below20": 1,
+            "trail": {
+              "mean": 0.109,
+              "p95": 0.125,
+              "max": 0.129,
+              "changedShare": 0.278
+            }
+          },
+          "A0": {
+            "psnrMean": 25.39,
+            "psnrMin": 24.41,
+            "ssimMean": 0.554,
+            "ssimMin": 0.501,
+            "below20": 0,
+            "trail": {
+              "mean": 0.003,
+              "p95": 0.005,
+              "max": 0.006,
+              "changedShare": 0.278
+            }
+          },
+          "A": {
+            "psnrMean": 25.73,
+            "psnrMin": 24.03,
+            "ssimMean": 0.574,
+            "ssimMin": 0.413,
+            "below20": 0,
+            "trail": {
+              "mean": 0.007,
+              "p95": 0.013,
+              "max": 0.051,
+              "changedShare": 0.278
+            }
+          },
+          "AN": {
+            "psnrMean": 21.85,
+            "psnrMin": 20.41,
+            "ssimMean": 0.435,
+            "ssimMin": 0.317,
+            "below20": 0,
+            "trail": {
+              "mean": 0.093,
+              "p95": 0.136,
+              "max": 0.179,
+              "changedShare": 0.278
+            }
+          },
+          "AX": {
+            "psnrMean": 23.74,
+            "psnrMin": 22.83,
+            "ssimMean": 0.504,
+            "ssimMin": 0.462,
+            "below20": 0,
+            "trail": {
+              "mean": 0.034,
+              "p95": 0.061,
+              "max": 0.077,
+              "changedShare": 0.278
+            }
+          }
+        },
+        "step2": {
+          "frames": 75,
+          "lagFrames": 1,
+          "thresholds": {
+            "changed": 40,
+            "near": 16,
+            "fromFrame": 9
+          },
+          "floor": {
+            "psnrMean": 94.14,
+            "psnrMin": 84.62,
+            "ssimMean": 1,
+            "ssimMin": 1,
+            "below20": 0,
+            "trail": {
+              "mean": 0,
+              "p95": 0,
+              "max": 0,
+              "changedShare": 0.276
+            }
+          },
+          "E": {
+            "psnrMean": 15.5,
+            "psnrMin": 14.23,
+            "ssimMean": 0.175,
+            "ssimMin": 0.139,
+            "below20": 1,
+            "trail": {
+              "mean": 0.11,
+              "p95": 0.124,
+              "max": 0.129,
+              "changedShare": 0.276
+            }
+          },
+          "A0": {
+            "psnrMean": 25.39,
+            "psnrMin": 24.41,
+            "ssimMean": 0.554,
+            "ssimMin": 0.501,
+            "below20": 0,
+            "trail": {
+              "mean": 0.003,
+              "p95": 0.005,
+              "max": 0.006,
+              "changedShare": 0.276
+            }
+          },
+          "A": {
+            "psnrMean": 25.38,
+            "psnrMin": 24.12,
+            "ssimMean": 0.546,
+            "ssimMin": 0.414,
+            "below20": 0,
+            "trail": {
+              "mean": 0.008,
+              "p95": 0.014,
+              "max": 0.017,
+              "changedShare": 0.276
+            }
+          },
+          "AN": {
+            "psnrMean": 22.39,
+            "psnrMin": 20.46,
+            "ssimMean": 0.413,
+            "ssimMin": 0.281,
+            "below20": 0,
+            "trail": {
+              "mean": 0.067,
+              "p95": 0.1,
+              "max": 0.127,
+              "changedShare": 0.276
+            }
+          },
+          "AX": {
+            "psnrMean": 23.74,
+            "psnrMin": 22.8,
+            "ssimMean": 0.476,
+            "ssimMin": 0.429,
+            "below20": 0,
+            "trail": {
+              "mean": 0.032,
+              "p95": 0.064,
+              "max": 0.079,
+              "changedShare": 0.276
+            }
+          }
+        }
+      },
+      "accumStats": {
+        "active": true,
+        "taaActive": true,
+        "culling": false,
+        "cullSuspended": true,
+        "gpuBytes": 189342396,
+        "activeSplats": 4555198,
+        "variant": {
+          "compose": "blend",
+          "cull": "auto",
+          "contribution": 0,
+          "coverage": "pixel",
+          "jitter": 0,
+          "strata": 4,
+          "interleaveArea": 0,
+          "taa": "on",
+          "taaMax": 256,
+          "taaMoveMax": 64,
+          "taaClip": 0,
+          "taaReproj": "sample",
+          "taaMotion": 4,
+          "taaParallax": "off",
+          "taaSharp": 16,
+          "taaHistory": "auto",
+          "taaSharpen": 0,
+          "taaDebug": 0,
+          "warp": "auto",
+          "stereo": "shared",
+          "units": "engine"
+        },
+        "failed": null,
+        "failedAt": null,
+        "guarded": [
+          "frame",
+          "bind",
+          "raster",
+          "taa",
+          "sets",
+          "frameend"
+        ]
+      },
+      "gpuErrors": []
+    }
+  },
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.85",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "controlE": {}
+}

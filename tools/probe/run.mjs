@@ -1,13 +1,14 @@
 // Probe runner: launches real Chromium with WebGPU and reports what actually happened.
 import { chromium } from 'playwright';
 import { writeFileSync } from 'node:fs';
+import { benchHeadless } from '../bench/src/chrome.mjs';
 
 const URL_ = process.argv[2] || 'http://127.0.0.1:5188/probe/index.html';
 const TIMEOUT = Number(process.env.PROBE_TIMEOUT || 180000);
 
 const browser = await chromium.launch({
     channel: 'chrome',              // the user's real Chrome — representative of what pilots run
-    headless: process.env.PROBE_HEADLESS === '1',
+    headless: benchHeadless(),      // headless unless BENCH_VISIBLE=1 (tools/bench/README.md)
     args: [
         '--enable-unsafe-webgpu',
         '--enable-features=Vulkan,UseSkiaRenderer',

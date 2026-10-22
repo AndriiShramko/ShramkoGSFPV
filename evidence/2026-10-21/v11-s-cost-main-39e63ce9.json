@@ -1,0 +1,1204 @@
+{
+  "site": "http://127.0.0.1:5611",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.85",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "scenes": [
+    "39e63ce9"
+  ],
+  "budgets": [
+    4,
+    8
+  ],
+  "res": [
+    "1280x720",
+    "3840x2160"
+  ],
+  "arms": [
+    "S",
+    "E",
+    "A"
+  ],
+  "repeats": 1,
+  "seconds": 10,
+  "runs": [
+    {
+      "scene": "39e63ce9",
+      "res": "1280x720",
+      "budgetM": 4,
+      "arm": "S",
+      "rep": 0,
+      "settledMs": 6602,
+      "sceneComplete": true,
+      "gpuProfilerMs": {
+        "n": 303,
+        "p50": 0.79,
+        "p95": 2.36
+      },
+      "passMs": {
+        "GSplatIntervalCull": 0.002,
+        "PrefixSumScan": 0.004,
+        "GSplatIntervalScatter": 0.028,
+        "GSplatIntervalWriteIndirectArgs": 0.002,
+        "GSplatProjector": 0.115,
+        "GSplatProjectorWriteIndirectArgs": 0.002,
+        "OneSweep-GlobalHistIndirect": 0.056,
+        "OneSweep-ScanIndirect": 0.001,
+        "OneSweep-BinningIndirect-0": 0.029,
+        "OneSweep-BinningIndirect-1": 0.025,
+        "OneSweep-BinningIndirect-2": 0.022,
+        "rO": 0.708
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 4.5,
+        "p95": 6.6
+      },
+      "drawnHz": 30,
+      "framesHeld": 0,
+      "vramMiB": {
+        "atLoad": {
+          "tex": 187.1,
+          "sb": 210.2,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.5,
+          "total": 397.8
+        },
+        "afterRun": {
+          "tex": 178.1,
+          "sb": 210.2,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.5,
+          "total": 388.8
+        }
+      },
+      "state": {
+        "drawn": "sorted",
+        "plan": {
+          "draw": "sorted",
+          "why": "not-asked"
+        },
+        "budgetM": 4,
+        "canvas": [
+          1280,
+          720
+        ],
+        "drawnM": 3.8,
+        "accum": null,
+        "timings": {
+          "settingsMs": 211.39999999850988,
+          "collisionMs": 377.8999999985099,
+          "firstFrameMs": 755.8000000007451,
+          "visibleMs": 1845,
+          "reveal": "ready"
+        },
+        "gpuErrors": [],
+        "limit": {
+          "maxStorageBufferBindingSize": 2147483644,
+          "maxBufferSize": 2147483648
+        }
+      }
+    },
+    {
+      "scene": "39e63ce9",
+      "res": "1280x720",
+      "budgetM": 4,
+      "arm": "E",
+      "rep": 0,
+      "settledMs": 7001,
+      "sceneComplete": true,
+      "gpuProfilerMs": {
+        "n": 303,
+        "p50": 0.46,
+        "p95": 0.79
+      },
+      "passMs": {
+        "GSplatIntervalCull": 0.003,
+        "PrefixSumScan": 0.002,
+        "GSplatIntervalScatter": 0.027,
+        "GSplatIntervalWriteIndirectArgs": 0.002,
+        "GSplatProjector": 0.188,
+        "GSplatProjectorWriteIndirectArgs": 0.002,
+        "rO": 0.422
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 4.6,
+        "p95": 5.9
+      },
+      "drawnHz": 30,
+      "framesHeld": 0,
+      "vramMiB": {
+        "atLoad": {
+          "tex": 187.1,
+          "sb": 162.8,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.5,
+          "total": 350.4
+        },
+        "afterRun": {
+          "tex": 178.1,
+          "sb": 162.8,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.5,
+          "total": 341.4
+        }
+      },
+      "state": {
+        "drawn": "engine",
+        "plan": {
+          "draw": "engine",
+          "why": "impl"
+        },
+        "budgetM": 4,
+        "canvas": [
+          1280,
+          720
+        ],
+        "drawnM": 3.8,
+        "accum": null,
+        "timings": {
+          "settingsMs": 258.30000000074506,
+          "collisionMs": 496.90000000037253,
+          "firstFrameMs": 917.1000000014901,
+          "visibleMs": 1846.800000000745,
+          "reveal": "ready"
+        },
+        "gpuErrors": [],
+        "limit": {
+          "maxStorageBufferBindingSize": 2147483644,
+          "maxBufferSize": 2147483648
+        }
+      }
+    },
+    {
+      "scene": "39e63ce9",
+      "res": "1280x720",
+      "budgetM": 4,
+      "arm": "A",
+      "rep": 0,
+      "settledMs": 3495,
+      "sceneComplete": true,
+      "gpuProfilerMs": {
+        "n": 303,
+        "p50": 0.46,
+        "p95": 0.59
+      },
+      "passMs": {
+        "sse-splat-reduce1": 0.007,
+        "sse-splat-reduce2": 0.001,
+        "sse-splat-project": 0.099,
+        "sse-splat-args": 0.002,
+        "sse-splat-order-scan": 0.002,
+        "sse-splat-order-scatter": 0.048,
+        "sse-splat-raster": 0.231,
+        "sse-splat-taa": 0.033,
+        "rO": 0.009
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 4.6,
+        "p95": 6.5
+      },
+      "drawnHz": 30,
+      "framesHeld": 0,
+      "vramMiB": {
+        "atLoad": {
+          "tex": 190.3,
+          "sb": 93.5,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.3,
+          "total": 284.1
+        },
+        "afterRun": {
+          "tex": 206.2,
+          "sb": 145,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.4,
+          "total": 351.6
+        }
+      },
+      "state": {
+        "drawn": "accum",
+        "plan": {
+          "draw": "accum",
+          "why": "ok"
+        },
+        "budgetM": 4,
+        "canvas": [
+          1280,
+          720
+        ],
+        "drawnM": 3.8,
+        "accum": {
+          "active": true,
+          "taaActive": true,
+          "culling": false,
+          "cullSuspended": true,
+          "gpuBytes": 163005076,
+          "activeSplats": 3804374,
+          "variant": {
+            "compose": "blend",
+            "cull": "auto",
+            "contribution": 0,
+            "coverage": "pixel",
+            "jitter": 0,
+            "strata": 4,
+            "interleaveArea": 0,
+            "taa": "on",
+            "taaMax": 256,
+            "taaMoveMax": 16,
+            "taaClip": 1.25,
+            "taaReproj": "sample",
+            "taaMotion": 4,
+            "taaParallax": "on",
+            "taaSharp": 16,
+            "taaHistory": "auto",
+            "taaSharpen": 0,
+            "taaDebug": 0,
+            "warp": "auto",
+            "stereo": "shared",
+            "units": "engine"
+          },
+          "failed": null
+        },
+        "timings": {
+          "settingsMs": 155.09999999962747,
+          "collisionMs": 412.40000000037253,
+          "firstFrameMs": 611.3999999985099,
+          "visibleMs": 1027.8999999985099,
+          "reveal": "ready"
+        },
+        "gpuErrors": [],
+        "limit": {
+          "maxStorageBufferBindingSize": 2147483644,
+          "maxBufferSize": 2147483648
+        }
+      }
+    },
+    {
+      "scene": "39e63ce9",
+      "res": "1280x720",
+      "budgetM": 8,
+      "arm": "S",
+      "rep": 0,
+      "settledMs": 5385,
+      "sceneComplete": true,
+      "gpuProfilerMs": {
+        "n": 298,
+        "p50": 0.79,
+        "p95": 2.56
+      },
+      "passMs": {
+        "GSplatIntervalCull": 0.004,
+        "PrefixSumScan": 0.003,
+        "GSplatIntervalScatter": 0.025,
+        "GSplatIntervalWriteIndirectArgs": 0.004,
+        "GSplatProjector": 0.113,
+        "GSplatProjectorWriteIndirectArgs": 0.001,
+        "OneSweep-GlobalHistIndirect": 0.059,
+        "OneSweep-ScanIndirect": 0.001,
+        "OneSweep-BinningIndirect-0": 0.026,
+        "OneSweep-BinningIndirect-1": 0.025,
+        "OneSweep-BinningIndirect-2": 0.02,
+        "rO": 0.71
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 5.2,
+        "p95": 8
+      },
+      "drawnHz": 29.5,
+      "framesHeld": 0,
+      "vramMiB": {
+        "atLoad": {
+          "tex": 292.5,
+          "sb": 227.8,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.4,
+          "total": 520.7
+        },
+        "afterRun": {
+          "tex": 283.5,
+          "sb": 227.8,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.4,
+          "total": 511.7
+        }
+      },
+      "state": {
+        "drawn": "sorted",
+        "plan": {
+          "draw": "sorted",
+          "why": "not-asked"
+        },
+        "budgetM": 8,
+        "canvas": [
+          1280,
+          720
+        ],
+        "drawnM": 3.8,
+        "accum": null,
+        "timings": {
+          "settingsMs": 155.5,
+          "collisionMs": 313.6000000014901,
+          "firstFrameMs": 477.90000000037253,
+          "visibleMs": 1346.6000000014901,
+          "reveal": "ready"
+        },
+        "gpuErrors": [],
+        "limit": {
+          "maxStorageBufferBindingSize": 2147483644,
+          "maxBufferSize": 2147483648
+        }
+      }
+    },
+    {
+      "scene": "39e63ce9",
+      "res": "1280x720",
+      "budgetM": 8,
+      "arm": "E",
+      "rep": 0,
+      "settledMs": 5297,
+      "sceneComplete": true,
+      "gpuProfilerMs": {
+        "n": 303,
+        "p50": 0.46,
+        "p95": 0.79
+      },
+      "passMs": {
+        "GSplatIntervalCull": 0.002,
+        "PrefixSumScan": 0.003,
+        "GSplatIntervalScatter": 0.027,
+        "GSplatIntervalWriteIndirectArgs": 0.002,
+        "GSplatProjector": 0.114,
+        "GSplatProjectorWriteIndirectArgs": 0.002,
+        "rO": 0.354
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 4.4,
+        "p95": 5.8
+      },
+      "drawnHz": 30,
+      "framesHeld": 0,
+      "vramMiB": {
+        "atLoad": {
+          "tex": 292.5,
+          "sb": 180.4,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.4,
+          "total": 473.3
+        },
+        "afterRun": {
+          "tex": 283.5,
+          "sb": 180.4,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.4,
+          "total": 464.2
+        }
+      },
+      "state": {
+        "drawn": "engine",
+        "plan": {
+          "draw": "engine",
+          "why": "impl"
+        },
+        "budgetM": 8,
+        "canvas": [
+          1280,
+          720
+        ],
+        "drawnM": 3.8,
+        "accum": null,
+        "timings": {
+          "settingsMs": 155,
+          "collisionMs": 322.40000000037253,
+          "firstFrameMs": 369.5,
+          "visibleMs": 734.6000000014901,
+          "reveal": "ready"
+        },
+        "gpuErrors": [],
+        "limit": {
+          "maxStorageBufferBindingSize": 2147483644,
+          "maxBufferSize": 2147483648
+        }
+      }
+    },
+    {
+      "scene": "39e63ce9",
+      "res": "1280x720",
+      "budgetM": 8,
+      "arm": "A",
+      "rep": 0,
+      "settledMs": 6610,
+      "sceneComplete": true,
+      "gpuProfilerMs": {
+        "n": 303,
+        "p50": 0.46,
+        "p95": 0.59
+      },
+      "passMs": {
+        "sse-splat-reduce1": 0.006,
+        "sse-splat-reduce2": 0.001,
+        "sse-splat-project": 0.097,
+        "sse-splat-args": 0.001,
+        "sse-splat-order-scan": 0.002,
+        "sse-splat-order-scatter": 0.049,
+        "sse-splat-raster": 0.232,
+        "sse-splat-taa": 0.033,
+        "rO": 0.009
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 4.5,
+        "p95": 6.1
+      },
+      "drawnHz": 30,
+      "framesHeld": 0,
+      "vramMiB": {
+        "atLoad": {
+          "tex": 320.6,
+          "sb": 162.6,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.4,
+          "total": 483.6
+        },
+        "afterRun": {
+          "tex": 311.6,
+          "sb": 162.6,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.4,
+          "total": 474.6
+        }
+      },
+      "state": {
+        "drawn": "accum",
+        "plan": {
+          "draw": "accum",
+          "why": "ok"
+        },
+        "budgetM": 8,
+        "canvas": [
+          1280,
+          720
+        ],
+        "drawnM": 3.8,
+        "accum": {
+          "active": true,
+          "taaActive": true,
+          "culling": false,
+          "cullSuspended": true,
+          "gpuBytes": 163005076,
+          "activeSplats": 3804374,
+          "variant": {
+            "compose": "blend",
+            "cull": "auto",
+            "contribution": 0,
+            "coverage": "pixel",
+            "jitter": 0,
+            "strata": 4,
+            "interleaveArea": 0,
+            "taa": "on",
+            "taaMax": 256,
+            "taaMoveMax": 16,
+            "taaClip": 1.25,
+            "taaReproj": "sample",
+            "taaMotion": 4,
+            "taaParallax": "on",
+            "taaSharp": 16,
+            "taaHistory": "auto",
+            "taaSharpen": 0,
+            "taaDebug": 0,
+            "warp": "auto",
+            "stereo": "shared",
+            "units": "engine"
+          },
+          "failed": null
+        },
+        "timings": {
+          "settingsMs": 156.80000000074506,
+          "collisionMs": 156.7000000011176,
+          "firstFrameMs": 632.8000000007451,
+          "visibleMs": 1916.300000000745,
+          "reveal": "ready"
+        },
+        "gpuErrors": [],
+        "limit": {
+          "maxStorageBufferBindingSize": 2147483644,
+          "maxBufferSize": 2147483648
+        }
+      }
+    },
+    {
+      "scene": "39e63ce9",
+      "res": "3840x2160",
+      "budgetM": 4,
+      "arm": "S",
+      "rep": 0,
+      "settledMs": 5570,
+      "sceneComplete": true,
+      "gpuProfilerMs": {
+        "n": 303,
+        "p50": 3.74,
+        "p95": 8.13
+      },
+      "passMs": {
+        "GSplatIntervalCull": 0.005,
+        "PrefixSumScan": 0.002,
+        "GSplatIntervalScatter": 0.027,
+        "GSplatIntervalWriteIndirectArgs": 0.001,
+        "GSplatProjector": 0.127,
+        "GSplatProjectorWriteIndirectArgs": 0.002,
+        "OneSweep-GlobalHistIndirect": 0.062,
+        "OneSweep-ScanIndirect": 0.002,
+        "OneSweep-BinningIndirect-0": 0.028,
+        "OneSweep-BinningIndirect-1": 0.029,
+        "OneSweep-BinningIndirect-2": 0.028,
+        "rO": 3.781
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 7.2,
+        "p95": 13.5
+      },
+      "drawnHz": 30,
+      "framesHeld": 0,
+      "vramMiB": {
+        "atLoad": {
+          "tex": 187.1,
+          "sb": 210.2,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.4,
+          "total": 397.7
+        },
+        "afterRun": {
+          "tex": 178.1,
+          "sb": 210.2,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.4,
+          "total": 388.7
+        }
+      },
+      "state": {
+        "drawn": "sorted",
+        "plan": {
+          "draw": "sorted",
+          "why": "not-asked"
+        },
+        "budgetM": 4,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 3.8,
+        "accum": null,
+        "timings": {
+          "settingsMs": 154.09999999962747,
+          "collisionMs": 896.9000000003725,
+          "firstFrameMs": 466.7000000011176,
+          "visibleMs": 1564.9000000003725,
+          "reveal": "ready"
+        },
+        "gpuErrors": [],
+        "limit": {
+          "maxStorageBufferBindingSize": 2147483644,
+          "maxBufferSize": 2147483648
+        }
+      }
+    },
+    {
+      "scene": "39e63ce9",
+      "res": "3840x2160",
+      "budgetM": 4,
+      "arm": "E",
+      "rep": 0,
+      "settledMs": 6638,
+      "sceneComplete": true,
+      "gpuProfilerMs": {
+        "n": 303,
+        "p50": 2.29,
+        "p95": 3.87
+      },
+      "passMs": {
+        "GSplatIntervalCull": 0.003,
+        "PrefixSumScan": 0.003,
+        "GSplatIntervalScatter": 0.029,
+        "GSplatIntervalWriteIndirectArgs": 0.001,
+        "GSplatProjector": 0.124,
+        "GSplatProjectorWriteIndirectArgs": 0.002,
+        "rO": 2.149
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 5.3,
+        "p95": 8.1
+      },
+      "drawnHz": 30,
+      "framesHeld": 0,
+      "vramMiB": {
+        "atLoad": {
+          "tex": 187.1,
+          "sb": 162.8,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.4,
+          "total": 350.3
+        },
+        "afterRun": {
+          "tex": 178.1,
+          "sb": 162.8,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.4,
+          "total": 341.3
+        }
+      },
+      "state": {
+        "drawn": "engine",
+        "plan": {
+          "draw": "engine",
+          "why": "impl"
+        },
+        "budgetM": 4,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 3.8,
+        "accum": null,
+        "timings": {
+          "settingsMs": 202.90000000037253,
+          "collisionMs": 533.0999999996275,
+          "firstFrameMs": 1410,
+          "visibleMs": 2377.2000000011176,
+          "reveal": "ready"
+        },
+        "gpuErrors": [],
+        "limit": {
+          "maxStorageBufferBindingSize": 2147483644,
+          "maxBufferSize": 2147483648
+        }
+      }
+    },
+    {
+      "scene": "39e63ce9",
+      "res": "3840x2160",
+      "budgetM": 4,
+      "arm": "A",
+      "rep": 0,
+      "settledMs": 7430,
+      "sceneComplete": true,
+      "gpuProfilerMs": {
+        "n": 303,
+        "p50": 2.29,
+        "p95": 3.8
+      },
+      "passMs": {
+        "sse-splat-reduce1": 0.041,
+        "sse-splat-reduce2": 0.002,
+        "sse-splat-project": 0.107,
+        "sse-splat-args": 0.001,
+        "sse-splat-order-scan": 0.001,
+        "sse-splat-order-scatter": 0.05,
+        "sse-splat-raster": 1.429,
+        "sse-splat-taa": 0.37,
+        "rO": 0.294
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 5.5,
+        "p95": 9.5
+      },
+      "drawnHz": 30,
+      "framesHeld": 0,
+      "vramMiB": {
+        "atLoad": {
+          "tex": 440.3,
+          "sb": 145.5,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.4,
+          "total": 586.1
+        },
+        "afterRun": {
+          "tex": 431.2,
+          "sb": 145.5,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.4,
+          "total": 577.1
+        }
+      },
+      "state": {
+        "drawn": "accum",
+        "plan": {
+          "draw": "accum",
+          "why": "ok"
+        },
+        "budgetM": 4,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 3.8,
+        "accum": {
+          "active": true,
+          "taaActive": true,
+          "culling": false,
+          "cullSuspended": true,
+          "gpuBytes": 399424436,
+          "activeSplats": 3804374,
+          "variant": {
+            "compose": "blend",
+            "cull": "auto",
+            "contribution": 0,
+            "coverage": "pixel",
+            "jitter": 0,
+            "strata": 4,
+            "interleaveArea": 0,
+            "taa": "on",
+            "taaMax": 256,
+            "taaMoveMax": 16,
+            "taaClip": 1.25,
+            "taaReproj": "sample",
+            "taaMotion": 4,
+            "taaParallax": "on",
+            "taaSharp": 16,
+            "taaHistory": "auto",
+            "taaSharpen": 0,
+            "taaDebug": 0,
+            "warp": "auto",
+            "stereo": "shared",
+            "units": "engine"
+          },
+          "failed": null
+        },
+        "timings": {
+          "settingsMs": 355.19999999925494,
+          "collisionMs": 775,
+          "firstFrameMs": 1011.5999999996275,
+          "visibleMs": 2309.5,
+          "reveal": "ready"
+        },
+        "gpuErrors": [],
+        "limit": {
+          "maxStorageBufferBindingSize": 2147483644,
+          "maxBufferSize": 2147483648
+        }
+      }
+    },
+    {
+      "scene": "39e63ce9",
+      "res": "3840x2160",
+      "budgetM": 8,
+      "arm": "S",
+      "rep": 0,
+      "settledMs": 5584,
+      "sceneComplete": true,
+      "gpuProfilerMs": {
+        "n": 303,
+        "p50": 4.13,
+        "p95": 8.65
+      },
+      "passMs": {
+        "GSplatIntervalCull": 0.004,
+        "PrefixSumScan": 0.003,
+        "GSplatIntervalScatter": 0.028,
+        "GSplatIntervalWriteIndirectArgs": 0.001,
+        "GSplatProjector": 0.127,
+        "GSplatProjectorWriteIndirectArgs": 0.002,
+        "OneSweep-GlobalHistIndirect": 0.061,
+        "OneSweep-ScanIndirect": 0.002,
+        "OneSweep-BinningIndirect-0": 0.031,
+        "OneSweep-BinningIndirect-1": 0.029,
+        "OneSweep-BinningIndirect-2": 0.024,
+        "rO": 3.895
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 8,
+        "p95": 13.9
+      },
+      "drawnHz": 30,
+      "framesHeld": 0,
+      "vramMiB": {
+        "atLoad": {
+          "tex": 292.5,
+          "sb": 227.8,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.4,
+          "total": 520.7
+        },
+        "afterRun": {
+          "tex": 283.5,
+          "sb": 227.8,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.4,
+          "total": 511.7
+        }
+      },
+      "state": {
+        "drawn": "sorted",
+        "plan": {
+          "draw": "sorted",
+          "why": "not-asked"
+        },
+        "budgetM": 8,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 3.8,
+        "accum": null,
+        "timings": {
+          "settingsMs": 150.5,
+          "collisionMs": 298.7000000011176,
+          "firstFrameMs": 569.0999999996275,
+          "visibleMs": 933.1999999992549,
+          "reveal": "ready"
+        },
+        "gpuErrors": [],
+        "limit": {
+          "maxStorageBufferBindingSize": 2147483644,
+          "maxBufferSize": 2147483648
+        }
+      }
+    },
+    {
+      "scene": "39e63ce9",
+      "res": "3840x2160",
+      "budgetM": 8,
+      "arm": "E",
+      "rep": 0,
+      "settledMs": 5571,
+      "sceneComplete": true,
+      "gpuProfilerMs": {
+        "n": 304,
+        "p50": 2.23,
+        "p95": 4.78
+      },
+      "passMs": {
+        "GSplatIntervalCull": 0.002,
+        "PrefixSumScan": 0.002,
+        "GSplatIntervalScatter": 0.028,
+        "GSplatIntervalWriteIndirectArgs": 0.002,
+        "GSplatProjector": 0.127,
+        "GSplatProjectorWriteIndirectArgs": 0.002,
+        "rO": 2.243
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 5.4,
+        "p95": 9.2
+      },
+      "drawnHz": 30,
+      "framesHeld": 0,
+      "vramMiB": {
+        "atLoad": {
+          "tex": 292.5,
+          "sb": 180.4,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.4,
+          "total": 473.3
+        },
+        "afterRun": {
+          "tex": 283.5,
+          "sb": 180.4,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.4,
+          "total": 464.2
+        }
+      },
+      "state": {
+        "drawn": "engine",
+        "plan": {
+          "draw": "engine",
+          "why": "impl"
+        },
+        "budgetM": 8,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 3.8,
+        "accum": null,
+        "timings": {
+          "settingsMs": 165,
+          "collisionMs": 446.2000000011176,
+          "firstFrameMs": 535.6999999992549,
+          "visibleMs": 907,
+          "reveal": "ready"
+        },
+        "gpuErrors": [],
+        "limit": {
+          "maxStorageBufferBindingSize": 2147483644,
+          "maxBufferSize": 2147483648
+        }
+      }
+    },
+    {
+      "scene": "39e63ce9",
+      "res": "3840x2160",
+      "budgetM": 8,
+      "arm": "A",
+      "rep": 0,
+      "settledMs": 5492,
+      "sceneComplete": true,
+      "gpuProfilerMs": {
+        "n": 301,
+        "p50": 2.23,
+        "p95": 4.85
+      },
+      "passMs": {
+        "sse-splat-reduce1": 0.055,
+        "sse-splat-reduce2": 0.002,
+        "sse-splat-project": 0.179,
+        "sse-splat-args": 0.002,
+        "sse-splat-order-scan": 0.002,
+        "sse-splat-order-scatter": 0.063,
+        "sse-splat-raster": 1.499,
+        "sse-splat-taa": 0.464,
+        "rO": 0.366
+      },
+      "submitToDoneMs": {
+        "n": 300,
+        "p50": 5.4,
+        "p95": 10
+      },
+      "drawnHz": 29.7,
+      "framesHeld": 0,
+      "vramMiB": {
+        "atLoad": {
+          "tex": 545.6,
+          "sb": 163,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.3,
+          "total": 709
+        },
+        "afterRun": {
+          "tex": 536.6,
+          "sb": 163,
+          "vb": 0,
+          "ib": 0,
+          "ub": 0.3,
+          "total": 700
+        }
+      },
+      "state": {
+        "drawn": "accum",
+        "plan": {
+          "draw": "accum",
+          "why": "ok"
+        },
+        "budgetM": 8,
+        "canvas": [
+          3840,
+          2160
+        ],
+        "drawnM": 3.8,
+        "accum": {
+          "active": true,
+          "taaActive": true,
+          "culling": false,
+          "cullSuspended": true,
+          "gpuBytes": 399424436,
+          "activeSplats": 3804374,
+          "variant": {
+            "compose": "blend",
+            "cull": "auto",
+            "contribution": 0,
+            "coverage": "pixel",
+            "jitter": 0,
+            "strata": 4,
+            "interleaveArea": 0,
+            "taa": "on",
+            "taaMax": 256,
+            "taaMoveMax": 16,
+            "taaClip": 1.25,
+            "taaReproj": "sample",
+            "taaMotion": 4,
+            "taaParallax": "on",
+            "taaSharp": 16,
+            "taaHistory": "auto",
+            "taaSharpen": 0,
+            "taaDebug": 0,
+            "warp": "auto",
+            "stereo": "shared",
+            "units": "engine"
+          },
+          "failed": null
+        },
+        "timings": {
+          "settingsMs": 156.80000000074506,
+          "collisionMs": 346.59999999962747,
+          "firstFrameMs": 398.7999999988824,
+          "visibleMs": 751,
+          "reveal": "ready"
+        },
+        "gpuErrors": [],
+        "limit": {
+          "maxStorageBufferBindingSize": 2147483644,
+          "maxBufferSize": 2147483648
+        }
+      }
+    },
+    {
+      "c3": true,
+      "scene": "39e63ce9",
+      "res": "1280x720",
+      "budgetM": 4,
+      "baseline": {
+        "p50": 33.29999999888241,
+        "worst": 34.40000000037253
+      },
+      "trips": [
+        {
+          "toA": {
+            "worst": 304.7000000011176,
+            "p50": 33.40000000037253
+          },
+          "toS": {
+            "worst": 57.69999999925494,
+            "p50": 33.29999999888241
+          },
+          "taaAfterSwitch": true,
+          "drawnAfterToA": null
+        },
+        {
+          "toA": {
+            "worst": 34.399999998509884,
+            "p50": 33.29999999888241
+          },
+          "toS": {
+            "worst": 34.30000000074506,
+            "p50": 33.20000000111759
+          },
+          "taaAfterSwitch": true,
+          "drawnAfterToA": null
+        },
+        {
+          "toA": {
+            "worst": 34.40000000037253,
+            "p50": 33.29999999888241
+          },
+          "toS": {
+            "worst": 34.600000001490116,
+            "p50": 33.29999999888241
+          },
+          "taaAfterSwitch": true,
+          "drawnAfterToA": null
+        },
+        {
+          "toA": {
+            "worst": 34.79999999888241,
+            "p50": 33.19999999925494
+          },
+          "toS": {
+            "worst": 34.40000000037253,
+            "p50": 33.399999998509884
+          },
+          "taaAfterSwitch": true,
+          "drawnAfterToA": null
+        },
+        {
+          "toA": {
+            "worst": 34.100000001490116,
+            "p50": 33.399999998509884
+          },
+          "toS": {
+            "worst": 34.19999999925494,
+            "p50": 33.40000000037253
+          },
+          "taaAfterSwitch": true,
+          "drawnAfterToA": null
+        },
+        {
+          "toA": {
+            "worst": 34.5,
+            "p50": 33.29999999888241
+          },
+          "toS": {
+            "worst": 34.600000001490116,
+            "p50": 33.40000000037253
+          },
+          "taaAfterSwitch": true,
+          "drawnAfterToA": null
+        },
+        {
+          "toA": {
+            "worst": 34.69999999925494,
+            "p50": 33.30000000074506
+          },
+          "toS": {
+            "worst": 34.19999999925494,
+            "p50": 33.399999998509884
+          },
+          "taaAfterSwitch": true,
+          "drawnAfterToA": null
+        },
+        {
+          "toA": {
+            "worst": 34.59999999962747,
+            "p50": 33.40000000037253
+          },
+          "toS": {
+            "worst": 133.7000000011176,
+            "p50": 33.40000000037253
+          },
+          "taaAfterSwitch": true,
+          "drawnAfterToA": null
+        },
+        {
+          "toA": {
+            "worst": 34.90000000037253,
+            "p50": 33.19999999925494
+          },
+          "toS": {
+            "worst": 34.90000000037253,
+            "p50": 33.30000000074506
+          },
+          "taaAfterSwitch": true,
+          "drawnAfterToA": null
+        },
+        {
+          "toA": {
+            "worst": 39.5,
+            "p50": 33.30000000074506
+          },
+          "toS": {
+            "worst": 34.80000000074506,
+            "p50": 33.5
+          },
+          "taaAfterSwitch": true,
+          "drawnAfterToA": null
+        }
+      ],
+      "vramDeltaMiB": -8.7,
+      "gpuErrors": [],
+      "drawnEnd": "sorted"
+    }
+  ]
+}

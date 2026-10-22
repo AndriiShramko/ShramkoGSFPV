@@ -17,6 +17,7 @@ import { join } from 'node:path';
 import { firefox } from 'playwright';
 import type { BrowserContext, Page } from 'playwright';
 import { launch, waitReady } from './browser';
+import { benchHeadless } from './chrome.mjs';
 import { writeEvidence, REPO, today } from './evidence';
 
 const SITE = (process.env.SITE ?? 'https://gsfpv.flyreelstudio.eu').replace(/\/$/, '');
@@ -222,7 +223,7 @@ if (want('B8')) {
     // Firefox (Playwright build): the scan is visible, the banner says radios need Chrome/Edge
     let ff: Record<string, unknown> = { ran: false };
     try {
-        const fb = await firefox.launch({ headless: false });
+        const fb = await firefox.launch({ headless: benchHeadless() });
         const fp = await fb.newPage({ viewport: { width: 1280, height: 800 } });
         await fp.goto(fly('en', 'scene=39e63ce9&nowarn=1&input=touch'));
         const fh = await waitReady(fp, 240000);

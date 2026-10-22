@@ -16,7 +16,7 @@ import type { FloaterFilter, VoxelCollision, VoxelMetadata } from '@gsfpv/collis
 import { resolveScene, headingFromCamera, noContentError } from '@gsfpv/scenes';
 import type { ContentAttempt, ResolvedScene } from '@gsfpv/scenes';
 import { BrokenFileError, SplatRenderer, drawOnDevice } from '@gsfpv/render-pc';
-import type { DrawingChoice, GpuInfo } from '@gsfpv/render-pc';
+import type { DrawingChoice, GpuInfo, StochasticImpl } from '@gsfpv/render-pc';
 import { PRESETS, DEFAULT_PRESET } from '../presets';
 import { gimbalQuat } from '../play/gimbal';
 import type { CameraAim } from '../play/gimbal';
@@ -43,6 +43,9 @@ export interface SessionOptions {
     preset?: string;
     overrides?: ParamOverrides;
     latencyMarker?: boolean;
+    /** which code draws "stochastic" (?impl=engine: the bench's control arm) and upstream's switches for it (?accum=key:value,...): test switches, no pilot setting; read once by app/flight.ts */
+    stochasticImpl?: StochasticImpl;
+    accumVariant?: string;
     lagFrames?: number;
     renderScale?: number;
     /** fly with the scan's walls (default) or through everything (flightwalls.ts) */
@@ -298,7 +301,10 @@ export class FlightSession {
         this.windSeed = o.windSeed !== undefined && Number.isInteger(o.windSeed) && o.windSeed >= 0 && o.windSeed <= WIND_SEED_MAX ? o.windSeed : newWindSeed();
         // the wind joins the model once its ground is known (after the walls, below)
         this.compileModel();
-        this.renderer = o.renderer ?? await SplatRenderer.create(canvas, { renderScale: o.renderScale ?? 1, hFovDeg: this.params.cameraFovDeg, latencyMarker: !!o.latencyMarker });
+        this.renderer = o.renderer ?? await SplatRenderer.create(canvas, {
+            renderScale: o.renderScale ?? 1, hFovDeg: this.params.cameraFovDeg, latencyMarker: !!o.latencyMarker,
+            ...(o.stochasticImpl ? { stochasticImpl: o.stochasticImpl } : {}), accumVariant: o.accumVariant ?? ''
+        });
         if (o.renderer) this.renderer.setFov(this.params.cameraFovDeg);
         // this scene's drawing, decided now that the device is known, before its splats load
         if (o.drawing) drawOnDevice(this.renderer, o.drawing);
