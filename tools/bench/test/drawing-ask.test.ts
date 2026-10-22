@@ -175,8 +175,8 @@ describe('F3\'s drawing line', () => {
     });
 
     it('v0.11 fix round: the Render help tells the pilot what the stochastic picture is in flight (noisier and softer than Sorted in rooms, settling only when the camera is still), not "a little grainier"', () => {
-        const say: Record<string, string> = { en: 'visibly noisier and softer', es: 'más ruidoso y borroso', pl: 'bardziej zaszumione i miększe', ru: 'шумнее и мягче' };
-        const old: Record<string, string> = { en: 'a little grainier', es: 'algo más granulado', pl: 'nieco bardziej ziarniste', ru: 'чуть зернистее' };
+        const say: Record<string, string> = { en: 'visibly noisier and softer', es: 'm\u00e1s ruidoso y borroso', pl: 'bardziej zaszumione i mi\u0119ksze', ru: '\u0448\u0443\u043c\u043d\u0435\u0435 \u0438 \u043c\u044f\u0433\u0447\u0435' };
+        const old: Record<string, string> = { en: 'a little grainier', es: 'algo m\u00e1s granulado', pl: 'nieco bardziej ziarniste', ru: '\u0447\u0443\u0442\u044c \u0437\u0435\u0440\u043d\u0438\u0441\u0442\u0435\u0435' };
         for (const lang of ['en', 'es', 'pl', 'ru']) {
             const d = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'drawing', `${lang}.json`), 'utf8')) as Record<string, string>;
             const help = d['set.display.drawing.help'];
