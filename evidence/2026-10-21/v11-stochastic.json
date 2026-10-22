@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-10-21T14:45:22.451Z",
-    "gitHead": "5324cfa",
+    "date": "2026-10-21T16:54:43.898Z",
+    "gitHead": "90d7b32",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -24,7 +24,8 @@
     "V5": true,
     "V6": true,
     "V7": true,
-    "V8": true
+    "V8": true,
+    "V9": true
   },
   "checks": [
     {
@@ -73,12 +74,12 @@
       "control": false
     },
     {
-      "name": "V2 at rest the picture converges to the sorted one: after 256 frames every view is above 33 dB (39.18, 40.95, 37.44, 36.02) and within 1.5 levels of the sorted mean colour (0.16, 0.31, 0.14, 0.26)",
+      "name": "V2 at rest the picture converges to the sorted one: after 256 frames every view is above 33 dB (39.18, 40.95, 37.44, 36.01) and within 1.5 levels of the sorted mean colour (0.16, 0.31, 0.14, 0.26)",
       "ok": true,
       "control": false
     },
     {
-      "name": "V2 it gets there: each step of the history is better than the one before (view 1: 21.52 < 24.49 < 27.4 < 30.18 < 32.78 < 35.06 < 36.96 < 38.3 < 39.18)",
+      "name": "V2 it gets there: each step of the history is better than the one before (view 1: 21.52 < 24.49 < 27.4 < 30.18 < 32.78 < 35.06 < 36.95 < 38.3 < 39.18)",
       "ok": true,
       "control": false
     },
@@ -88,17 +89,12 @@
       "control": true
     },
     {
-      "name": "V2 control: the harness sorted against sorted reads silence (60 dB or more, 70 to 100 in the bench: the GPU sort is not bit-exact) (84.22, 77.98, 82.68, 81.79 dB)",
+      "name": "V2 control: the harness sorted against sorted reads silence (60 dB or more, 70 to 100 in the bench: the GPU sort is not bit-exact) (89.39, 78.49, 82.2, 85.06 dB)",
       "ok": true,
       "control": true
     },
     {
-      "name": "V3 after a fast turn there is no smear: from the 2nd frame after the stop the picture is closer to the final view than to the one two frames before it (lead 16.72, 17.16, 17.57, 18.88 dB, all >= 0)",
-      "ok": true,
-      "control": false
-    },
-    {
-      "name": "V3 and no ghosts: pixels more than 48 levels off the sorted picture just after the stop 0.004 against the engine dither's 0.115 (+1 % allowed)",
+      "name": "V3 (a) after a fast turn (a pure rotation: lag, not ghosting) the picture is not a smear of the old view: from the 2nd frame after the stop it is closer to the final view than to the one two frames before it (lead 16.72, 17.16, 17.57, 18.88 dB, all >= 0)",
       "ok": true,
       "control": false
     },
@@ -108,7 +104,47 @@
       "control": false
     },
     {
-      "name": "V3 control: the sorted run against a second sorted run has no ghosts (0)",
+      "name": "V3 control: the reference is reproducible on this scene: sorted against a second sorted run reads above 55 dB on every moving path (turn 83.93, agile 88.29, agile 30 Hz 87.51, strafe 90.87, strafe 30 Hz 90.64)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V3 control: the strafe (60 Hz step) has edges to trail at (0.084 of the pixels change between frames, 0.02 or more) and sorted against a second sorted run shows no trailing (0, under 0.005)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V3 (b) under translation past edges (60 Hz step) the picture does not trail: 0.01 of the changed pixels still show the old picture (p95 0.036, max 0.051), one frame without history shows 0.012, the engine's dither 0.054; allowed: the no-history figure + 0.01",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V3 control: no colour clamp, no motion cap and a long history (AN) trail (60 Hz step): 0.041 against the defaults' 0.01 (2 % of the changed pixels more, the bound set before the first run, or the test cannot see a ghosting renderer)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V3 control (second, a ratio added after the first run): no colour clamp, parallax off and a long history (AX) trail at least twice as much (60 Hz step): 0.024 against 0.01",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V3 control: the strafe (30 Hz step) has edges to trail at (0.081 of the pixels change between frames, 0.02 or more) and sorted against a second sorted run shows no trailing (0, under 0.005)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V3 (b) under translation past edges (30 Hz step) the picture does not trail: 0.012 of the changed pixels still show the old picture (p95 0.039, max 0.053), one frame without history shows 0.012, the engine's dither 0.055; allowed: the no-history figure + 0.01",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V3 control: no colour clamp, no motion cap and a long history (AN) trail (30 Hz step): 0.044 against the defaults' 0.012 (2 % of the changed pixels more, the bound set before the first run, or the test cannot see a ghosting renderer)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V3 control (second, a ratio added after the first run): no colour clamp, parallax off and a long history (AX) trail at least twice as much (30 Hz step): 0.027 against 0.012",
       "ok": true,
       "control": true
     },
@@ -148,7 +184,7 @@
       "control": false
     },
     {
-      "name": "V5 the frame the picture is made from is the sorted picture of the view (86.19 dB from a hand-made sorted frame, 40 dB or more)",
+      "name": "V5 the frame the picture is made from is the sorted picture of the view (101.76 dB from a hand-made sorted frame, 40 dB or more)",
       "ok": true,
       "control": false
     },
@@ -193,7 +229,17 @@
       "control": false
     },
     {
-      "name": "V7 video memory does not grow across the switches: 355 MiB with the first scene, then 613, 433, 821, 355 MiB; the last scene is the first one again and ends within 15 % + 50 MiB of where it began (the engine frees a replaced scan's textures lazily, so the middle numbers wander)",
+      "name": "V7 while a scene loads the renderer says what draws: sorted with the plan \"loading\" (the hold) was seen in 4 of 4 switches (states per switch: sorted/loading+accum/ok | sorted/loading+accum/ok | sorted/loading+accum/ok | sorted/loading+accum/ok), and every switch ends with the accumulating renderer (accum/ok)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V7 control: with no switch under way the recorder sees only the accumulating renderer (accum/ok), so a hold is not an artefact of recording",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V7 video memory does not grow across the switches: 355 MiB with the first scene, then 618, 433, 822, 364 MiB; the last scene is the first one again and ends within 15 % + 50 MiB of where it began (the engine frees a replaced scan's textures lazily, so the middle numbers wander)",
       "ok": true,
       "control": false
     },
@@ -223,12 +269,97 @@
       "control": false
     },
     {
-      "name": "V6 no page of this run (22 state reads) saw a CSP violation (0)",
+      "name": "V9 [frame] before the fault the accumulating renderer draws and says so (\"Render: stochastic, accumulating (the link)\"), and every site of its code that the engine calls is guarded (frame, bind, raster, taa, sets, frameend)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V9 [frame] a throw there: the renderer is off for good (failed \"forced fault at frame\" at frame), the engine's own dither draws (drawn engine, plan engine/failed, its flag true)",
       "ok": true,
       "control": false
     },
     {
-      "name": "no page of this run saw a WebGPU validation error (0 in 22 state reads)",
+      "name": "V9 [frame] F3 says it: \"Render: stochastic, fallback dither after an error (the link)\"",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V9 [frame] the page goes on: frames keep coming (40 more drew), the picture is lit (mean luma 145, before 144.2), no WebGPU validation error (0), no page error (0)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V9 [raster] before the fault the accumulating renderer draws and says so (\"Render: stochastic, accumulating (the link)\"), and every site of its code that the engine calls is guarded (frame, bind, raster, taa, sets, frameend)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V9 [raster] a throw there: the renderer is off for good (failed \"forced fault at raster\" at raster), the engine's own dither draws (drawn engine, plan engine/failed, its flag true)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V9 [raster] F3 says it: \"Render: stochastic, fallback dither after an error (the link)\"",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V9 [raster] the page goes on: frames keep coming (40 more drew), the picture is lit (mean luma 145, before 144.2), no WebGPU validation error (0), no page error (0)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V9 [taa] before the fault the accumulating renderer draws and says so (\"Render: stochastic, accumulating (the link)\"), and every site of its code that the engine calls is guarded (frame, bind, raster, taa, sets, frameend)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V9 [taa] a throw there: the renderer is off for good (failed \"forced fault at taa\" at taa), the engine's own dither draws (drawn engine, plan engine/failed, its flag true)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V9 [taa] F3 says it: \"Render: stochastic, fallback dither after an error (the link)\"",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V9 [taa] the page goes on: frames keep coming (40 more drew), the picture is lit (mean luma 145, before 144.2), no WebGPU validation error (0), no page error (0)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V9 [taa] after a scene switch (done) the failed renderer does not come back: drawn engine, plan engine/failed, F3 \"Render: stochastic, fallback dither after an error (your setting)\", the scene is lit (121.2), no GPU error (0), no page error (0)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V9 [frameend] before the fault the accumulating renderer draws and says so (\"Render: stochastic, accumulating (the link)\"), and every site of its code that the engine calls is guarded (frame, bind, raster, taa, sets, frameend)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V9 [frameend] a throw there: the renderer is off for good (failed \"forced fault at frameend\" at frameend), the engine's own dither draws (drawn engine, plan engine/failed, its flag true)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V9 [frameend] F3 says it: \"Render: stochastic, fallback dither after an error (the link)\"",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V9 [frameend] the page goes on: frames keep coming (40 more drew), the picture is lit (mean luma 145, before 144.2), no WebGPU validation error (0), no page error (0)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V6 no page of this run (32 state reads) saw a CSP violation (0)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "no page of this run saw a WebGPU validation error (0 in 32 state reads)",
       "ok": true,
       "control": false
     }
@@ -287,7 +418,16 @@
             "stereo": "shared",
             "units": "engine"
           },
-          "failed": null
+          "failed": null,
+          "failedAt": null,
+          "guarded": [
+            "frame",
+            "bind",
+            "raster",
+            "taa",
+            "sets",
+            "frameend"
+          ]
         },
         "made": true,
         "hook": {
@@ -395,8 +535,9 @@
       "impl0": "accum",
       "timingsMs": {
         "q1": 51578,
-        "q3": 101827,
-        "q4": 120803
+        "q3": 113075,
+        "q4": 134370,
+        "q6": 231644
       },
       "stable": true,
       "sceneComplete": true,
@@ -405,7 +546,7 @@
           "yaw": 0,
           "drawnM": 3.8,
           "SvS": {
-            "psnr": 84.22,
+            "psnr": 89.39,
             "ssim": 1
           },
           "E": {
@@ -413,7 +554,7 @@
             "ssim": 0.676,
             "shift": [
               -1.81,
-              -1.78,
+              -1.77,
               -1.02
             ]
           },
@@ -453,7 +594,7 @@
               "ssim": 0.956
             },
             "64": {
-              "psnr": 36.96,
+              "psnr": 36.95,
               "ssim": 0.97
             },
             "128": {
@@ -476,7 +617,7 @@
           "yaw": 90,
           "drawnM": 3.8,
           "SvS": {
-            "psnr": 77.98,
+            "psnr": 78.49,
             "ssim": 1
           },
           "E": {
@@ -485,7 +626,7 @@
             "shift": [
               0.18,
               -0.74,
-              -1.28
+              -1.29
             ]
           },
           "A0": {
@@ -547,7 +688,7 @@
           "yaw": 180,
           "drawnM": 3.8,
           "SvS": {
-            "psnr": 82.68,
+            "psnr": 82.2,
             "ssim": 1
           },
           "E": {
@@ -575,7 +716,7 @@
               "ssim": 0.366
             },
             "2": {
-              "psnr": 22.67,
+              "psnr": 22.68,
               "ssim": 0.476
             },
             "4": {
@@ -583,7 +724,7 @@
               "ssim": 0.597
             },
             "8": {
-              "psnr": 28.41,
+              "psnr": 28.42,
               "ssim": 0.716
             },
             "16": {
@@ -591,11 +732,11 @@
               "ssim": 0.812
             },
             "32": {
-              "psnr": 33.31,
+              "psnr": 33.32,
               "ssim": 0.882
             },
             "64": {
-              "psnr": 35.2,
+              "psnr": 35.21,
               "ssim": 0.926
             },
             "128": {
@@ -618,7 +759,7 @@
           "yaw": 270,
           "drawnM": 3.8,
           "SvS": {
-            "psnr": 81.79,
+            "psnr": 85.06,
             "ssim": 1
           },
           "E": {
@@ -674,7 +815,7 @@
               "ssim": 0.964
             },
             "256": {
-              "psnr": 36.02,
+              "psnr": 36.01,
               "ssim": 0.973
             }
           },
@@ -691,6 +832,14 @@
         "step1": {
           "frames": 90,
           "S": {
+            "flicker": 23.2
+          },
+          "floor": {
+            "psnrMean": 88.29,
+            "psnrMin": 78.96,
+            "ssimMean": 1,
+            "ssimMin": 1,
+            "below20": 0,
             "flicker": 23.2
           },
           "E": {
@@ -726,6 +875,14 @@
           "S": {
             "flicker": 29.57
           },
+          "floor": {
+            "psnrMean": 87.51,
+            "psnrMin": 80.36,
+            "ssimMean": 1,
+            "ssimMin": 1,
+            "below20": 0,
+            "flicker": 29.57
+          },
           "E": {
             "psnrMean": 19.69,
             "psnrMin": 14.38,
@@ -759,9 +916,15 @@
         "flipFrames": 12,
         "afterFrames": 64,
         "floor": {
-          "j1Psnr": 82.17,
+          "psnrMean": 83.93,
+          "psnrMin": 81.45,
+          "ssimMean": 1,
+          "ssimMin": 1,
+          "below20": 0,
+          "j1Psnr": 83.21,
           "ghost48": 0
         },
+        "note": "pure rotation about a fixed point: history reprojection is exact, so this path cannot show ghosting (see q6)",
         "E": {
           "after": {
             "1": 17.98,
@@ -913,11 +1076,187 @@
           "framesTo33dB": 21
         }
       },
+      "q6": {
+        "step1": {
+          "frames": 150,
+          "lagFrames": 2,
+          "thresholds": {
+            "changed": 40,
+            "near": 16,
+            "fromFrame": 9
+          },
+          "floor": {
+            "psnrMean": 90.87,
+            "psnrMin": 82.99,
+            "ssimMean": 1,
+            "ssimMin": 1,
+            "below20": 0,
+            "trail": {
+              "mean": 0,
+              "p95": 0,
+              "max": 0,
+              "changedShare": 0.084
+            }
+          },
+          "E": {
+            "psnrMean": 20.48,
+            "psnrMin": 19.17,
+            "ssimMean": 0.638,
+            "ssimMin": 0.472,
+            "below20": 0.653,
+            "trail": {
+              "mean": 0.054,
+              "p95": 0.319,
+              "max": 0.619,
+              "changedShare": 0.084
+            }
+          },
+          "A0": {
+            "psnrMean": 28.79,
+            "psnrMin": 27.23,
+            "ssimMean": 0.861,
+            "ssimMin": 0.726,
+            "below20": 0,
+            "trail": {
+              "mean": 0.012,
+              "p95": 0.025,
+              "max": 0.058,
+              "changedShare": 0.084
+            }
+          },
+          "A": {
+            "psnrMean": 30.78,
+            "psnrMin": 26.73,
+            "ssimMean": 0.904,
+            "ssimMin": 0.67,
+            "below20": 0,
+            "trail": {
+              "mean": 0.01,
+              "p95": 0.036,
+              "max": 0.051,
+              "changedShare": 0.084
+            }
+          },
+          "AN": {
+            "psnrMean": 27.13,
+            "psnrMin": 24.39,
+            "ssimMean": 0.884,
+            "ssimMin": 0.762,
+            "below20": 0,
+            "trail": {
+              "mean": 0.041,
+              "p95": 0.123,
+              "max": 0.223,
+              "changedShare": 0.084
+            }
+          },
+          "AX": {
+            "psnrMean": 28.6,
+            "psnrMin": 25.75,
+            "ssimMean": 0.898,
+            "ssimMin": 0.751,
+            "below20": 0,
+            "trail": {
+              "mean": 0.024,
+              "p95": 0.072,
+              "max": 0.152,
+              "changedShare": 0.084
+            }
+          }
+        },
+        "step2": {
+          "frames": 75,
+          "lagFrames": 1,
+          "thresholds": {
+            "changed": 40,
+            "near": 16,
+            "fromFrame": 9
+          },
+          "floor": {
+            "psnrMean": 90.64,
+            "psnrMin": 82.93,
+            "ssimMean": 1,
+            "ssimMin": 1,
+            "below20": 0,
+            "trail": {
+              "mean": 0,
+              "p95": 0,
+              "max": 0,
+              "changedShare": 0.081
+            }
+          },
+          "E": {
+            "psnrMean": 20.48,
+            "psnrMin": 19.17,
+            "ssimMean": 0.638,
+            "ssimMin": 0.472,
+            "below20": 0.653,
+            "trail": {
+              "mean": 0.055,
+              "p95": 0.319,
+              "max": 0.619,
+              "changedShare": 0.081
+            }
+          },
+          "A0": {
+            "psnrMean": 28.79,
+            "psnrMin": 27.23,
+            "ssimMean": 0.861,
+            "ssimMin": 0.726,
+            "below20": 0,
+            "trail": {
+              "mean": 0.012,
+              "p95": 0.025,
+              "max": 0.058,
+              "changedShare": 0.081
+            }
+          },
+          "A": {
+            "psnrMean": 30.25,
+            "psnrMin": 27.53,
+            "ssimMean": 0.894,
+            "ssimMin": 0.772,
+            "below20": 0,
+            "trail": {
+              "mean": 0.012,
+              "p95": 0.039,
+              "max": 0.053,
+              "changedShare": 0.081
+            }
+          },
+          "AN": {
+            "psnrMean": 26.88,
+            "psnrMin": 23.98,
+            "ssimMean": 0.866,
+            "ssimMin": 0.707,
+            "below20": 0,
+            "trail": {
+              "mean": 0.044,
+              "p95": 0.113,
+              "max": 0.285,
+              "changedShare": 0.081
+            }
+          },
+          "AX": {
+            "psnrMean": 28.27,
+            "psnrMin": 25.39,
+            "ssimMean": 0.883,
+            "ssimMin": 0.739,
+            "below20": 0,
+            "trail": {
+              "mean": 0.027,
+              "p95": 0.108,
+              "max": 0.259,
+              "changedShare": 0.081
+            }
+          }
+        }
+      },
       "accumStats": {
         "active": true,
         "taaActive": true,
-        "culling": true,
-        "cullSuspended": false,
+        "culling": false,
+        "cullSuspended": true,
         "gpuBytes": 163005076,
         "activeSplats": 3804374,
         "variant": {
@@ -933,8 +1272,8 @@
           "taaMoveMax": 64,
           "taaClip": 0,
           "taaReproj": "sample",
-          "taaMotion": 0,
-          "taaParallax": "on",
+          "taaMotion": 4,
+          "taaParallax": "off",
           "taaSharp": 16,
           "taaHistory": "auto",
           "taaSharpen": 0,
@@ -943,7 +1282,16 @@
           "stereo": "shared",
           "units": "engine"
         },
-        "failed": null
+        "failed": null,
+        "failedAt": null,
+        "guarded": [
+          "frame",
+          "bind",
+          "raster",
+          "taa",
+          "sets",
+          "frameend"
+        ]
       },
       "gpuErrors": [],
       "errors": []
@@ -981,7 +1329,16 @@
             "stereo": "shared",
             "units": "engine"
           },
-          "failed": null
+          "failed": null,
+          "failedAt": null,
+          "guarded": [
+            "frame",
+            "bind",
+            "raster",
+            "taa",
+            "sets",
+            "frameend"
+          ]
         }
       },
       "during": {
@@ -1016,7 +1373,16 @@
             "stereo": "shared",
             "units": "engine"
           },
-          "failed": null
+          "failed": null,
+          "failedAt": null,
+          "guarded": [
+            "frame",
+            "bind",
+            "raster",
+            "taa",
+            "sets",
+            "frameend"
+          ]
         },
         "held": true,
         "f3": "Render: sorted (recording) \u00b7 budget 4 M splats (this device) \u00b7 desktop, strong graphics"
@@ -1053,7 +1419,16 @@
             "stereo": "shared",
             "units": "engine"
           },
-          "failed": null
+          "failed": null,
+          "failedAt": null,
+          "guarded": [
+            "frame",
+            "bind",
+            "raster",
+            "taa",
+            "sets",
+            "frameend"
+          ]
         },
         "held": false,
         "f3": "Render: stochastic, accumulating (the link) \u00b7 budget 4 M splats (this device) \u00b7 desktop, strong graphics"
@@ -1084,7 +1459,7 @@
       "shareState": {
         "entry": "top",
         "kind": "flight",
-        "url": "http://127.0.0.1:5759/en/fly/?scene=39e63ce9&stochastic",
+        "url": "http://127.0.0.1:5812/en/fly/?scene=39e63ce9&stochastic",
         "text": "I just flew an FPV drone through Modlinek Villa \u2014 red room and bathroom \u2014 a real 3D scan, right in the browser. Free, and your own radio works. Can you fly this line?",
         "picture": true,
         "video": "none",
@@ -1092,14 +1467,14 @@
         "canShareFiles": false,
         "shared": ""
       },
-      "psnrFrameVsSorted": 86.19,
+      "psnrFrameVsSorted": 101.76,
       "after": "accum",
       "gpuErrors": [],
       "errors": []
     },
     "V6": {
       "bytes": {
-        "new": 11367113,
+        "new": 11369555,
         "base": 11229460
       },
       "eval": {
@@ -1169,8 +1544,12 @@
           "active": true,
           "splatsM": 4,
           "taa": true,
-          "vramMiB": 613,
-          "gpuErrors": 0
+          "vramMiB": 618,
+          "gpuErrors": 0,
+          "states": [
+            "sorted/loading",
+            "accum/ok"
+          ]
         },
         {
           "scene": "224aba38",
@@ -1180,7 +1559,11 @@
           "splatsM": 4.6,
           "taa": true,
           "vramMiB": 433,
-          "gpuErrors": 0
+          "gpuErrors": 0,
+          "states": [
+            "sorted/loading",
+            "accum/ok"
+          ]
         },
         {
           "scene": "ba7aa29d",
@@ -1189,8 +1572,12 @@
           "active": true,
           "splatsM": 3.9,
           "taa": true,
-          "vramMiB": 821,
-          "gpuErrors": 0
+          "vramMiB": 822,
+          "gpuErrors": 0,
+          "states": [
+            "sorted/loading",
+            "accum/ok"
+          ]
         },
         {
           "scene": "39e63ce9",
@@ -1199,8 +1586,12 @@
           "active": true,
           "splatsM": 3.8,
           "taa": true,
-          "vramMiB": 355,
-          "gpuErrors": 0
+          "vramMiB": 364,
+          "gpuErrors": 0,
+          "states": [
+            "sorted/loading",
+            "accum/ok"
+          ]
         }
       ],
       "pageErrors": [],
@@ -1235,8 +1626,156 @@
       },
       "handedBack": "sorted"
     },
+    "V9": {
+      "rows": [
+        {
+          "site": "frame",
+          "pre": {
+            "drawn": "accum",
+            "guarded": [
+              "frame",
+              "bind",
+              "raster",
+              "taa",
+              "sets",
+              "frameend"
+            ],
+            "linePre": "Render: stochastic, accumulating (the link)",
+            "meanPre": 144.2
+          },
+          "post": {
+            "drawn": "engine",
+            "plan": {
+              "draw": "engine",
+              "why": "failed"
+            },
+            "failed": "forced fault at frame",
+            "failedAt": "frame",
+            "active": false,
+            "engineFlag": true,
+            "linePost": "Render: stochastic, fallback dither after an error (the link)",
+            "meanPost": 145,
+            "gpuErrors": 0,
+            "gpuErrorTexts": []
+          },
+          "pageErrors": 0,
+          "pageErrorTexts": []
+        },
+        {
+          "site": "raster",
+          "pre": {
+            "drawn": "accum",
+            "guarded": [
+              "frame",
+              "bind",
+              "raster",
+              "taa",
+              "sets",
+              "frameend"
+            ],
+            "linePre": "Render: stochastic, accumulating (the link)",
+            "meanPre": 144.2
+          },
+          "post": {
+            "drawn": "engine",
+            "plan": {
+              "draw": "engine",
+              "why": "failed"
+            },
+            "failed": "forced fault at raster",
+            "failedAt": "raster",
+            "active": false,
+            "engineFlag": true,
+            "linePost": "Render: stochastic, fallback dither after an error (the link)",
+            "meanPost": 145,
+            "gpuErrors": 0,
+            "gpuErrorTexts": []
+          },
+          "pageErrors": 0,
+          "pageErrorTexts": []
+        },
+        {
+          "site": "taa",
+          "pre": {
+            "drawn": "accum",
+            "guarded": [
+              "frame",
+              "bind",
+              "raster",
+              "taa",
+              "sets",
+              "frameend"
+            ],
+            "linePre": "Render: stochastic, accumulating (the link)",
+            "meanPre": 144.2
+          },
+          "post": {
+            "drawn": "engine",
+            "plan": {
+              "draw": "engine",
+              "why": "failed"
+            },
+            "failed": "forced fault at taa",
+            "failedAt": "taa",
+            "active": false,
+            "engineFlag": true,
+            "linePost": "Render: stochastic, fallback dither after an error (the link)",
+            "meanPost": 145,
+            "gpuErrors": 0,
+            "gpuErrorTexts": []
+          },
+          "pageErrors": 0,
+          "pageErrorTexts": [],
+          "switchState": "done",
+          "afterSwitch": {
+            "drawn": "engine",
+            "plan": {
+              "draw": "engine",
+              "why": "failed"
+            },
+            "failed": "forced fault at taa",
+            "line": "Render: stochastic, fallback dither after an error (your setting)",
+            "meanLit": 121.2,
+            "gpuErrors": 0
+          }
+        },
+        {
+          "site": "frameend",
+          "pre": {
+            "drawn": "accum",
+            "guarded": [
+              "frame",
+              "bind",
+              "raster",
+              "taa",
+              "sets",
+              "frameend"
+            ],
+            "linePre": "Render: stochastic, accumulating (the link)",
+            "meanPre": 144.2
+          },
+          "post": {
+            "drawn": "engine",
+            "plan": {
+              "draw": "engine",
+              "why": "failed"
+            },
+            "failed": "forced fault at frameend",
+            "failedAt": "frameend",
+            "active": false,
+            "engineFlag": true,
+            "linePost": "Render: stochastic, fallback dither after an error (the link)",
+            "meanPost": 145,
+            "gpuErrors": 0,
+            "gpuErrorTexts": []
+          },
+          "pageErrors": 0,
+          "pageErrorTexts": []
+        }
+      ]
+    },
     "tally": {
-      "states": 22,
+      "states": 32,
       "csp": [],
       "gpuErrors": []
     }
