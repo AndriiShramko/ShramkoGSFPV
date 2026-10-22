@@ -4,7 +4,7 @@
 // rule (channel 'chrome' always) picks a Chrome that is not there.
 import { describe, expect, it } from 'vitest';
 import { join } from 'node:path';
-import { browserRoots, bundledChromium, pickBrowser, systemChromePaths } from '../src/chrome.mjs';
+import { browserRoots, bundledChromium, pickBrowser, systemChromePaths, benchHeadless } from '../src/chrome.mjs';
 
 const fs = (files: string[], dirs: Record<string, string[]> = {}) => ({
     exists: (p: string) => files.includes(p),
@@ -25,18 +25,18 @@ describe('which browser the harnesses launch', () => {
     it('Windows with Chrome installed: system Chrome through the channel, as before', () => {
         const f = fs([WIN_CHROME]);
         const p = pickBrowser({ env: WIN_ENV, platform: 'win32', expected: 'C:\\pw\\chromium-1243\\chrome-win64\\chrome.exe', ...f });
-        expect(p).toEqual({ kind: 'system-chrome', launch: { channel: 'chrome' }, executable: WIN_CHROME, why: 'installed' });
+        expect(p).toEqual({ kind: 'system-chrome', launch: { channel: 'chrome', headless: true }, executable: WIN_CHROME, why: 'installed' });
     });
 
     it('Linux with Chrome installed: system Chrome', () => {
         const p = pickBrowser({ env: CLOUD_ENV, platform: 'linux', ...fs(['/opt/google/chrome/chrome', CLOUD_EXE], CLOUD_DIRS) });
         expect(p.kind).toBe('system-chrome');
-        expect(p.launch).toEqual({ channel: 'chrome' });
+        expect(p.launch).toEqual({ channel: 'chrome', headless: true });
     });
 
     it('the cloud (no Chrome, an older bundled build): the newest chromium-* under PLAYWRIGHT_BROWSERS_PATH, never the headless shell', () => {
         const p = pickBrowser({ env: CLOUD_ENV, platform: 'linux', expected: '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome', ...fs([CLOUD_EXE], CLOUD_DIRS) });
-        expect(p).toEqual({ kind: 'bundled-chromium', launch: { executablePath: CLOUD_EXE }, executable: CLOUD_EXE, why: 'no system Chrome' });
+        expect(p).toEqual({ kind: 'bundled-chromium', launch: { executablePath: CLOUD_EXE, headless: true }, executable: CLOUD_EXE, why: 'no system Chrome' });
         const newer = join('/opt/pw-browsers', 'chromium-1300', 'chrome-linux64', 'chrome');
         expect(bundledChromium(CLOUD_ENV, 'linux', (x) => [CLOUD_EXE, newer].includes(x), () => [...CLOUD_DIRS['/opt/pw-browsers'], 'chromium-1300'])).toBe(newer);
     });
@@ -46,7 +46,7 @@ describe('which browser the harnesses launch', () => {
         const f = fs([link, CLOUD_EXE], CLOUD_DIRS);
         const p = pickBrowser({ env: CLOUD_ENV, platform: 'linux', ...f, realpath: (x) => (x === link ? CLOUD_EXE : x) });
         expect(p.kind).toBe('bundled-chromium');
-        expect(p.launch).toEqual({ executablePath: CLOUD_EXE });
+        expect(p.launch).toEqual({ executablePath: CLOUD_EXE, headless: true });
         expect(p.why).toMatch(/links to a Playwright build/);
         // control: the same path as a real install is system Chrome
         expect(pickBrowser({ env: CLOUD_ENV, platform: 'linux', ...f, realpath: (x) => x }).kind).toBe('system-chrome');
@@ -54,14 +54,25 @@ describe('which browser the harnesses launch', () => {
 
     it('the build this Playwright expects wins over an older one when it is installed', () => {
         const want = '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome';
-        expect(pickBrowser({ env: CLOUD_ENV, platform: 'linux', expected: want, ...fs([CLOUD_EXE, want], CLOUD_DIRS) }).launch).toEqual({ executablePath: want });
+        expect(pickBrowser({ env: CLOUD_ENV, platform: 'linux', expected: want, ...fs([CLOUD_EXE, want], CLOUD_DIRS) }).launch).toEqual({ executablePath: want, headless: true });
     });
 
     it('BENCH_BROWSER overrides: bundled on a PC with Chrome, a path, chrome', () => {
         expect(pickBrowser({ env: { ...WIN_ENV, PLAYWRIGHT_BROWSERS_PATH: 'C:\\pw', BENCH_BROWSER: 'bundled' }, platform: 'win32', ...fs([WIN_CHROME, join('C:\\pw', 'chromium-1243', 'chrome-win64', 'chrome.exe')], { 'C:\\pw': ['chromium-1243'] }) }).kind).toBe('bundled-chromium');
         expect(pickBrowser({ env: { BENCH_BROWSER: '/usr/bin/chromium' }, platform: 'linux', ...fs(['/usr/bin/chromium']) })).toMatchObject({ kind: 'custom', launch: { executablePath: '/usr/bin/chromium' } });
         expect(() => pickBrowser({ env: { BENCH_BROWSER: '/nope' }, platform: 'linux', ...fs([]) })).toThrow(/no such executable/);
-        expect(pickBrowser({ env: { ...CLOUD_ENV, BENCH_BROWSER: 'chrome' }, platform: 'linux', ...fs([CLOUD_EXE], CLOUD_DIRS) }).launch).toEqual({ channel: 'chrome' });
+        expect(pickBrowser({ env: { ...CLOUD_ENV, BENCH_BROWSER: 'chrome' }, platform: 'linux', ...fs([CLOUD_EXE], CLOUD_DIRS) }).launch).toEqual({ channel: 'chrome', headless: true });
+    });
+
+    it('headless by default, so no window takes the owner mouse (2026-10-22); BENCH_VISIBLE=1 shows it', () => {
+        const f = fs([WIN_CHROME]);
+        expect(pickBrowser({ env: WIN_ENV, platform: 'win32', ...f }).launch.headless).toBe(true);
+        expect(pickBrowser({ env: { ...WIN_ENV, BENCH_VISIBLE: '1' }, platform: 'win32', ...f }).launch.headless).toBe(false);
+        expect(benchHeadless({})).toBe(true);
+        // control: any other value is not a request to watch
+        expect(benchHeadless({ BENCH_VISIBLE: '0' })).toBe(true);
+        // a caller asking for a window gets it only through the environment: launchChrome spreads pick.launch last
+        expect({ headless: false, ...pickBrowser({ env: WIN_ENV, platform: 'win32', ...f }).launch }.headless).toBe(true);
     });
 
     it('nothing at all: a clear error, never an install', () => {

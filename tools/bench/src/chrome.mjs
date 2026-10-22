@@ -8,6 +8,11 @@
 // /opt/pw-browsers/chromium-1194, older than this Playwright's build). BENCH_BROWSER=chrome |
 // bundled | <path to an executable> overrides the choice. Never installs anything: no
 // `playwright install`. Headful windows need a display: run under `xvfb-run -a` where there is none.
+//
+// HEADLESS BY DEFAULT (owner, 2026-10-22: "tests must not take my mouse; I keep working, you test in the background"):
+// every launch built from pickBrowser() is headless, so no window appears, takes focus or locks the pointer on the
+// owner's desktop. Headless Chrome still draws WebGPU on the real GPU (checked 2026-10-22: adapter nvidia/lovelace,
+// rAF at the display's rate). BENCH_VISIBLE=1 shows the window again, only when the owner asks to watch a run.
 import { existsSync, readdirSync, realpathSync } from 'node:fs';
 import { join } from 'node:path';
 import os from 'node:os';
@@ -19,6 +24,11 @@ export function systemChromePaths(env = process.env, platform = process.platform
     }
     if (platform === 'darwin') return ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'];
     return ['/opt/google/chrome/chrome'];
+}
+
+/** Headless unless BENCH_VISIBLE=1 (see the header): goes into every `launch` that pickBrowser returns. */
+export function benchHeadless(env = process.env) {
+    return env.BENCH_VISIBLE !== '1';
 }
 
 /** A Playwright build (chromium-<revision>/...), wherever it is linked from. */
@@ -93,15 +103,15 @@ export function pickBrowser(o = {}) {
     const bundled = () => (o.expected && exists(o.expected) ? o.expected : bundledChromium(env, platform, exists, o.list ?? readdirSync));
     if (force && force !== 'chrome' && force !== 'bundled') {
         if (!exists(force)) throw new Error(`BENCH_BROWSER=${force}: no such executable`);
-        return { kind: 'custom', launch: { executablePath: force }, executable: force, why: 'BENCH_BROWSER' };
+        return { kind: 'custom', launch: { executablePath: force, headless: benchHeadless(env) }, executable: force, why: 'BENCH_BROWSER' };
     }
     if (force === 'chrome' || (force !== 'bundled' && system)) {
-        return { kind: 'system-chrome', launch: { channel: 'chrome' }, executable: system, why: force === 'chrome' ? 'BENCH_BROWSER' : 'installed' };
+        return { kind: 'system-chrome', launch: { channel: 'chrome', headless: benchHeadless(env) }, executable: system, why: force === 'chrome' ? 'BENCH_BROWSER' : 'installed' };
     }
     const b = bundled();
     if (!b) throw new Error('no browser for the harness: install Google Chrome, or point PLAYWRIGHT_BROWSERS_PATH at a folder with a Playwright chromium-<revision> build (never `playwright install` here)');
     const why = force === 'bundled' ? 'BENCH_BROWSER' : linked ? `no system Chrome (${linked} links to a Playwright build)` : 'no system Chrome';
-    return { kind: 'bundled-chromium', launch: { executablePath: b }, executable: b, why };
+    return { kind: 'bundled-chromium', launch: { executablePath: b, headless: benchHeadless(env) }, executable: b, why };
 }
 
 /** One line for logs and evidence: which browser, which build, where. */

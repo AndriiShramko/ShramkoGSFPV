@@ -115,7 +115,7 @@ async function loadAndSettle(page) {
 }
 
 const pick = pickHarnessBrowser({ expected: chromium.executablePath() }, false);
-const browser = await chromium.launch({ ...pick.launch, headless: false });
+const browser = await chromium.launch({ ...pick.launch, headless: pick.launch.headless });
 const out = { what: 'a recognised DJI FPV Remote Controller 3 flies out of the box on the Gamepad API (known-controller-probe.mjs)', base, steps: {} };
 {
     const probe = await browser.newContext();

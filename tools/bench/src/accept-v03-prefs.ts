@@ -71,7 +71,7 @@ function watch(p: Page): void {
 /** A browser on its own user-data dir (P1: "days later" is the same dir in a new browser). */
 async function persistent(dir: string, init?: string): Promise<BrowserContext> {
     const pick = pickBrowser({ expected: chromium.executablePath() });
-    const ctx = await chromium.launchPersistentContext(dir, { ...pick.launch, headless: false, viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1, args: ['--window-position=60,60', '--window-size=1296,920'] });
+    const ctx = await chromium.launchPersistentContext(dir, { ...pick.launch, headless: pick.launch.headless, viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1, args: ['--window-position=60,60', '--window-size=1296,920'] });
     if (init) await ctx.addInitScript(init);
     return ctx;
 }

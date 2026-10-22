@@ -67,7 +67,7 @@ function installPad(cfg) {
 }
 
 const pick = pickHarnessBrowser({ expected: chromium.executablePath() }, false);
-const browser = await chromium.launch({ ...pick.launch, headless: false });
+const browser = await chromium.launch({ ...pick.launch, headless: pick.launch.headless });
 const out = { what: 'the Controls screen and F3 say how the reports arrive (link-line-probe.mjs)', base, lang, runs: {} };
 {
     const probe = await browser.newContext();

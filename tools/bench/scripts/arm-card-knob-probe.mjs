@@ -44,7 +44,7 @@ function installPad(cfg) {
 }
 
 const pick = pickHarnessBrowser({ expected: chromium.executablePath() }, false);
-const browser = await chromium.launch({ ...pick.launch, headless: false });
+const browser = await chromium.launch({ ...pick.launch, headless: pick.launch.headless });
 const out = { what: 'the lag of the green stick on the arm card (arm-card-knob-probe.mjs)', base, expect, n: N };
 {
     const probe = await browser.newContext();

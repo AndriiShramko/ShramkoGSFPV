@@ -39,7 +39,7 @@ try {
     const ctx = await browser.newContext();
     const real = await browserRecord(which, await ctx.newPage());
     await ctx.close();
-    const soft = await chromium.launch({ ...pick.launch, headless: false, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+    const soft = await chromium.launch({ ...pick.launch, headless: pick.launch.headless, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
     let refused = '';
     let softGl: string | null = null;
     try {

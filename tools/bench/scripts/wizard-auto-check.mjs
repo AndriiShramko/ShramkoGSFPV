@@ -15,7 +15,7 @@ const base = process.argv[2] ?? 'http://localhost:5346';
 const shots = process.argv[3] ?? ROOT + '/.cache/wz/auto-shots';
 mkdirSync(shots, { recursive: true });
 const pick = pickHarnessBrowser({ expected: chromium.executablePath() }, false);
-const browser = await chromium.launch({ ...pick.launch, headless: false });
+const browser = await chromium.launch({ ...pick.launch, headless: pick.launch.headless });
 const out = {};
 {
     const probe = await browser.newContext();

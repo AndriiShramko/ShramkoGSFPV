@@ -13,7 +13,7 @@ const { chromium } = require('playwright');
 const base = process.argv[2] ?? 'http://localhost:5320';
 const out = { base, pages: [] };
 const pick = pickHarnessBrowser({ expected: chromium.executablePath() }, false);
-const browser = await chromium.launch({ ...pick.launch, headless: false, args: ['--enable-unsafe-webgpu'] });
+const browser = await chromium.launch({ ...pick.launch, headless: pick.launch.headless, args: ['--enable-unsafe-webgpu'] });
 {
     const probe = await browser.newContext();
     out.browser = await browserRecord(pick, await probe.newPage(), { visual: false, version: browser.version() });

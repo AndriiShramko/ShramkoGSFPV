@@ -12,7 +12,7 @@ const { chromium } = require('playwright');
 const OUT = ROOT + '/.cache/wvl/live-look';
 mkdirSync(OUT, { recursive: true });
 const pick = pickHarnessBrowser({ expected: chromium.executablePath() });
-const browser = await chromium.launch({ ...pick.launch, headless: false });
+const browser = await chromium.launch({ ...pick.launch, headless: pick.launch.headless });
 const res = {};
 {
     const ctx = await browser.newContext();

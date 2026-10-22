@@ -363,7 +363,7 @@ if (want('W6')) {
     const dir = mkdtempSync(join(tmpdir(), 'gsfpv-w6-'));
     const pick = pickBrowser({ expected: chromium.executablePath() });
     const persistent = async () => {
-        const c = await chromium.launchPersistentContext(dir, { ...pick.launch, headless: false, viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1, acceptDownloads: true, args: ['--window-position=60,60'] });
+        const c = await chromium.launchPersistentContext(dir, { ...pick.launch, headless: pick.launch.headless, viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1, acceptDownloads: true, args: ['--window-position=60,60'] });
         const pg = c.pages()[0] ?? await c.newPage();
         pg.on('pageerror', (e) => errors.push(e.message.slice(0, 300)));
         return { c, pg };

@@ -18,7 +18,7 @@ mkdirSync(DIR, { recursive: true });
 const out = {};
 const pick = pickHarnessBrowser({ expected: chromium.executablePath() });
 async function open(qs) {
-    const ctx = await chromium.launchPersistentContext(`${DIR}/profile`, { ...pick.launch, headless: false, viewport: { width: 1600, height: 900 }, args: ['--window-position=40,40'] });
+    const ctx = await chromium.launchPersistentContext(`${DIR}/profile`, { ...pick.launch, headless: pick.launch.headless, viewport: { width: 1600, height: 900 }, args: ['--window-position=40,40'] });
     await ctx.route('**/api/e', (r) => r.fulfill({ status: 204, body: '' }));
     const page = ctx.pages()[0] ?? (await ctx.newPage());
     out.browser ??= await browserRecord(pick, page); // software GL: refused before any timing

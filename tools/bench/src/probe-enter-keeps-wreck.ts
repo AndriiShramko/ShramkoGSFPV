@@ -7,7 +7,7 @@ import { writeEvidence } from './evidence';
 
 const SITE = (process.env.SITE ?? 'https://gsfpv.flyreelstudio.eu').replace(/\/$/, '');
 const fly = (qs: string) => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}` : `${SITE}/en/fly/?${qs}`);
-const browser = await chromium.launch({ channel: 'chrome', headless: false });
+const browser = await chromium.launch({ channel: 'chrome', headless: process.env.BENCH_VISIBLE !== '1' });
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Any = any;
 async function run(pressEnter: boolean): Promise<Any> {

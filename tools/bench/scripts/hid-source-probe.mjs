@@ -185,7 +185,7 @@ function installFakeHid(cfg) {
 }
 
 const pick = pickHarnessBrowser({ expected: chromium.executablePath() }, false);
-const browser = await chromium.launch({ ...pick.launch, headless: false });
+const browser = await chromium.launch({ ...pick.launch, headless: pick.launch.headless });
 const out = { what: 'HidSource on the local release with a fake navigator.hid (hid-source-probe.mjs)', base };
 {
     const probe = await browser.newContext();

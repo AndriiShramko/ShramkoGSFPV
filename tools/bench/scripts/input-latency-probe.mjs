@@ -147,7 +147,7 @@ function record(busy) {
 const q = (a, p) => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y); return Math.round(s[Math.min(s.length - 1, Math.floor(p * s.length))] * 10) / 10; };
 
 const pick = pickHarnessBrowser({ expected: chromium.executablePath() }, true);
-const browser = await chromium.launch({ ...pick.launch, headless: false });
+const browser = await chromium.launch({ ...pick.launch, headless: pick.launch.headless });
 const out = { what: 'input pipeline latency, Gamepad API vs WebHID, fake DJI FPV Remote Controller 3 (input-latency-probe.mjs)', base, edges: EDGES };
 {
     const probe = await browser.newContext();

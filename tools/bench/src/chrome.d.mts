@@ -2,7 +2,8 @@
 export type BrowserKind = 'system-chrome' | 'bundled-chromium' | 'custom';
 export interface BrowserPick {
     kind: BrowserKind;
-    launch: { channel: 'chrome' } | { executablePath: string };
+    /** headless unless BENCH_VISIBLE=1 (chrome.mjs header) */
+    launch: ({ channel: 'chrome' } | { executablePath: string }) & { headless: boolean };
     executable: string | null;
     why: string;
 }
@@ -19,3 +20,4 @@ export function bundledChromium(env?: Env, platform?: string, exists?: (p: strin
 export function isPlaywrightBuild(path: string): boolean;
 export function pickBrowser(o?: { env?: Env; platform?: string; expected?: string; exists?: (p: string) => boolean; list?: (dir: string) => string[]; realpath?: (p: string) => string }): BrowserPick;
 export function describeBrowser(pick: BrowserPick, version?: string): BrowserInfo;
+export function benchHeadless(env?: Record<string, string | undefined>): boolean;
