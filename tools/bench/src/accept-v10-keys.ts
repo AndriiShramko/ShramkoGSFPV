@@ -572,6 +572,33 @@ for (const sh of SHAPES) {
     await ctx.close();
 }
 
+// =====================================================================================================================
+// E  a first visitor who has NOT answered the analytics card yet, in a short window (v0.11 lead, 2026-10-22): the How to fly
+//    card waits until the consent card is answered (it covered Start flying before); after Decline it comes. Control: a build
+//    from before the fix (e.g. the live release 2c40c30) shows the card under the consent card and fails K25.
+// =====================================================================================================================
+{
+    const ctx = await browser.newContext({ viewport: { width: 900, height: 480 }, deviceScaleFactor: 1 });
+    await ctx.addInitScript(OVERLAP);
+    const p = await ctx.newPage();
+    await p.goto(url());
+    await sleep(1500);
+    if ((await p.locator('[data-action="warning-ok"]').count()) > 0) await p.locator('[data-action="warning-ok"]').click();
+    await untilReady(p);
+    await sleep(1200);
+    const consentUp = (await p.locator('[data-testid="consent"]').count()) > 0;
+    if ((await p.locator('[data-action="radio-keyboard"]').count()) > 0) await p.locator('[data-action="radio-keyboard"]').click({ timeout: 15000 });
+    await sleep(4000);
+    const cardsUnderConsent = await cardCount(p);
+    const consentStill = (await p.locator('[data-testid="consent"]').count()) > 0;
+    check('K25 with the analytics card unanswered the How to fly card waits (it never stands under it)', consentUp && consentStill && cardsUnderConsent === 0, { consentUp, consentStill, cards: cardsUnderConsent });
+    if (consentStill) await p.locator('[data-action="consent-decline"]').click({ timeout: 15000 });
+    const upAfter = await cardUp(p);
+    const startTop = upAfter ? await p.evaluate(`(() => { const b = document.querySelector('[data-action="htf-start"]'); if (!b) return false; const r = b.getBoundingClientRect(); const e = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return !!e && b.contains(e); })()`) : false;
+    check('K25b after Decline the card comes and Start flying is the topmost element under its own centre', upAfter && startTop === true, { up: upAfter, startTop });
+    await ctx.close();
+}
+
 await browser.close();
 
 const failed = checks.filter((c) => !c.ok);

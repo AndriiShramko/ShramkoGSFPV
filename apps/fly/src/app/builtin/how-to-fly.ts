@@ -66,8 +66,10 @@ export const howToFly: Feature = {
             };
         };
         /** Something else is on the screen that the card must not stand on or over. */
+        // the analytics consent card (app/analytics.ts, on document.body) counts too: on a first visit in a small window
+        // it covered the card's Start flying (v0.11 lead, 2026-10-22); the card waits until it is answered
         const busy = (): boolean => dialogOpen() || ctx.menu.isOpen || ctx.session.paused || ctx.scenes.busy
-            || ctx.ui.querySelector('.crash-overlay, .loading') !== null;
+            || ctx.ui.querySelector('.crash-overlay, .loading') !== null || document.querySelector('.consent-card') !== null;
 
         function open(how: 'auto' | 'key' | 'menu'): void {
             if (card) return;
