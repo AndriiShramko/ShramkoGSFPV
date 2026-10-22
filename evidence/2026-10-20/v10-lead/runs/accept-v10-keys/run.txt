@@ -15,8 +15,8 @@ PASS K6b on the ground after Start flying the take-off line is on the screen, no
 PASS K6c (control of the overlap measure) the same pill put down to 76 px is seen covering the credit line {"overlaps":[".attribution"]}
 PASS K7 the first key after the start takes off: Space climbs (the drone is armed and higher than at the start) {"y0":2,"y":7.275451441319729,"armed":true}
 PASS K8 for the first seconds of the first flight a small pill says "Space up . Shift down" {"reminder":true}
-PASS K8b the pill names both caps and both words {"pillText":"Space up·Shift down"}
-PASS K9 the corner line in flight starts with Space up / Shift down (before: K keys, F, R, Esc, H) {"corner":"crashes 0  ·  Space up · Shift down · K keys · F full screen · R respawn · Esc pause · H hide text"}
+PASS K8b the pill names both caps and both words {"pillText":"Space up\xb7Shift down"}
+PASS K9 the corner line in flight starts with Space up / Shift down (before: K keys, F, R, Esc, H) {"corner":"crashes 0  \xb7  Space up \xb7 Shift down \xb7 K keys \xb7 F full screen \xb7 R respawn \xb7 Esc pause \xb7 H hide text"}
 PASS K8c the pill was up and goes at once when Shift is pressed {"wasUp":true}
 PASS K10 across the whole first visit the card was up and never together with another dialog (Controls, the motion notice, a panel, the menu, the picker, the crash panel) {"up":true,"overlap":{"frames":0,"with":{}}}
 PASS K10c (control of the sampler) a dialog put up under the card is counted by the overlap sampler {"overlap":{"frames":12,"with":{"screen radio":12}}}
@@ -47,9 +47,9 @@ PASS K20c in that short window too the ground line is drawn, inside the screen a
 PASS K24 phone-landscape (en, 812 x 375): the touch card is up, inside the screen, no sideways scroll, nothing sticks out, Start flying reachable (on the screen or the card scrolls) {"kind":"touch","fit":{"sideways":false,"overflowing":[],"panel":{"x":46,"right":766,"bottom":329,"top":46},"vw":812,"vh":375,"scrollable":false},"startVisible":true,"upCaps":null}
 PASS K24 phone-ru (ru, 390 x 844): the touch card is up, inside the screen, no sideways scroll, nothing sticks out, Start flying reachable (on the screen or the card scrolls) {"kind":"touch","fit":{"sideways":false,"overflowing":[],"panel":{"x":12,"right":378,"bottom":647,"top":197},"vw":390,"vh":844,"scrollable":false},"startVisible":true,"upCaps":null}
 PASS K24 short-pl (pl, 900 x 480): the game card is up, inside the screen, no sideways scroll, nothing sticks out, Start flying reachable (on the screen or the card scrolls), Space in the page's own word {"kind":"game","fit":{"sideways":false,"overflowing":[],"panel":{"x":90,"right":810,"bottom":462,"top":18},"vw":900,"vh":480,"scrollable":false},"startVisible":true,"upCaps":["Spacja"]}
-PASS K24b short-pl (pl): the card's note names the way off the ground with the page's own word for Space {"note":"Naciśnij Zacznij latać, aby przechwycić mysz, a potem, aby wystartować, naciśnij klawisz: W lub Spacja. Esc ją zwalnia."}
+PASS K24b short-pl (pl): the card's note names the way off the ground with the page's own word for Space {"note":"Naci\u015bnij Zacznij lata\u0107, aby przechwyci\u0107 mysz, a potem, aby wystartowa\u0107, naci\u015bnij klawisz: W lub Spacja. Esc j\u0105 zwalnia."}
 PASS K24 desktop-es (es, 1280 x 800): the game card is up, inside the screen, no sideways scroll, nothing sticks out, Start flying reachable (on the screen or the card scrolls), Space in the page's own word {"kind":"game","fit":{"sideways":false,"overflowing":[],"panel":{"x":280,"right":1000,"bottom":657,"top":143},"vw":1280,"vh":800,"scrollable":false},"startVisible":true,"upCaps":["Espacio"]}
-PASS K24b desktop-es (es): the card's note names the way off the ground with the page's own word for Space {"note":"Pulsa Empezar a volar para capturar el ratón y luego pulsa W o Espacio para despegar. Esc lo libera."}
+PASS K24b desktop-es (es): the card's note names the way off the ground with the page's own word for Space {"note":"Pulsa Empezar a volar para capturar el rat\xf3n y luego pulsa W o Espacio para despegar. Esc lo libera."}
 PASS K21 on a ?nowarn=1 page (the page every older bench uses) the card never opens by itself, the keyboard flies as before {"hook":{"open":false,"kind":null,"shown":false,"opened":[],"enabled":true,"testPage":true}}
 PASS K22 with the pilot profile the ground card of the pilot keyboard is still up (arm steps, the Mode 2 keys) {"ground":{"shown":true,"title":"Keyboard","rows":10}}
 PASS K21b K still opens it there {}
