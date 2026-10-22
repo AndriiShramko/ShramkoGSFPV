@@ -14,8 +14,9 @@
 //   N3  Shift+N (random) reaches every one of the 12 scenes, the wall-less ones included.
 //   N4  the 12th press with SuperSplat not answering (the request stays open): the page says "Looking for the next
 //       scene" while it waits, a second N during the wait is ignored, the wait ends at the tour's budget (4 s) with
-//       the catalogue starting again, and N works at once afterwards. Control: the tour's unit tests (the bound removed
-//       leaves the step waiting for ever, packages/scenes/test/tour.test.ts).
+//       the catalogue starting again, and N works at once afterwards: the next press asks SuperSplat again first (v0.11 lane N,
+//       the owner's item 9: still no answer, so it waits the budget again and then shows the second scene). Control: the tour's
+//       unit tests (the bound removed leaves the step waiting for ever, packages/scenes/test/tour.test.ts).
 //   H1  the crash hint: none after the 1st and 2nd crash, there after the 3rd ("Press N for the next scene"),
 //       taken away by its close button, none after the 4th and 5th, there again after the 6th; it is a status
 //       line that takes no click and overlaps no other button, the crash toast or the crash panel; an N
@@ -306,12 +307,22 @@ try {
         }
         const sw = await switched(c.page);
         const scene = await hook<string>(c.page, 'return s.scene.id;');
-        // N is alive after the timeout: the next press goes on in the author's list (SuperSplat still not answering)
-        const next = await press(c.page, 'KeyN');
+        // N is alive after the timeout: the next press asks SuperSplat again before the author's list (v0.11 lane N): the page says so ("Looking
+        // for the next scene…" after 0.6 s: the author's list alone would switch at once and say nothing). The page's catalogue shares the request
+        // still open (same page, same query), so the proxy sees no second request; it still does not answer, so the budget runs out again and the
+        // author's list goes on with the second scene
+        await hook(c.page, 'h.sceneSwitch = null; return 0;');
+        const tNext = Date.now();
+        await c.page.keyboard.press('KeyN');
+        await wait(c.page, 1500);
+        const lookingAgain = await note();
+        const nextSw = await switched(c.page);
+        const nextWaitedMs = Date.now() - tNext;
+        const next = { sw: nextSw, scene: await hook<string>(c.page, 'return s.scene.id;') };
         const pass = last === IDS[11] && looking === 'Looking for the next scene…' && requestsDuringWait === 1 && again !== null && againAt >= 3500 && againAt <= 6500
-            && sw.state === 'done' && scene === IDS[0] && next.sw.state === 'done' && next.scene === IDS[1];
-        out.N4 = { pass, what: 'the 12th press with SuperSplat holding the request open: "Looking for the next scene…" shows while it waits, a second N is ignored (one request), the wait ends 4 s after it began with "the author\'s list starts again" and the first scene loads, and the next N goes to the second scene', last, looking, requestsDuringWait, againNote: again, againAfterMs: againAt, switchedTo: { sw, scene }, nextAfterTimeout: { scene: next.scene, state: next.sw.state }, superSplatRequests: c.rec.explore, knownBaselineErrors: knownErrors(c.log), errors: errors(c.log) };
-        console.log('N4', pass ? 'PASS' : 'FAIL', JSON.stringify({ last, looking, requestsDuringWait, againAt, scene, next: next.scene }));
+            && sw.state === 'done' && scene === IDS[0] && next.sw.state === 'done' && next.scene === IDS[1] && lookingAgain === 'Looking for the next scene…' && nextWaitedMs >= 3500;
+        out.N4 = { pass, what: 'the 12th press with SuperSplat holding the request open: "Looking for the next scene…" shows while it waits, a second N is ignored (one request), the wait ends 4 s after it began with "the author\'s list starts again" and the first scene loads, and the next N asks SuperSplat again first (the page says "Looking for the next scene…" again and the switch comes after the budget) and goes to the second scene', last, looking, requestsDuringWait, againNote: again, againAfterMs: againAt, switchedTo: { sw, scene }, nextAfterTimeout: { scene: next.scene, state: next.sw.state }, nextPressAskedSuperSplatFirst: { lookingAgain, endedAfterMs: nextWaitedMs }, superSplatRequests: c.rec.explore, knownBaselineErrors: knownErrors(c.log), errors: errors(c.log) };
+        console.log('N4', pass ? 'PASS' : 'FAIL', JSON.stringify({ last, looking, requestsDuringWait, againAt, scene, next: next.scene, lookingAgain, nextWaitedMs }));
         await c.ctx.close();
     }
 
