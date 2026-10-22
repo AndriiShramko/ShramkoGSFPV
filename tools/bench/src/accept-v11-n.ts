@@ -7,7 +7,7 @@
 // RENDER=off|on (default off: the scan is not drawn, the flight logic is; `on` draws and needs the GPU lock), GAP=<ms> (pause after
 // a switch before the next press, default 250), STRESS=scale|budget|both (random render scale / splat budget changes every STRESS_MS=120 ms,
 // what the quality governor does on a loaded GPU), FUZZ=toggle (stochastic/sorted switched at random moments, also during a switch), THROTTLE=<rate> (JavaScript <rate> times slower), LOAD=1 (a second page keeps the
-// GPU busy), TIMELINE=1 (also keep the phases of every switch, not only of the ones that threw),
+// GPU busy), FAULT=first-frame (the renderer's first frame after it was attached during a switch throws, once), TIMELINE=1 (also keep the phases of every switch, not only of the ones that threw),
 // SS=abort|503|slow (the SuperSplat proxy stand-in: no answer / 503 / 6.5 s; nothing is sent for it),
 // SS=flaky (the first SS_FAILS = 1 requests for a SuperSplat page get no answer, the later ones the real answer: needs the live
 // site or FEED=live; the press after the failed one must ask SuperSplat again and bring its scene: the owner's item 9, the
@@ -50,6 +50,12 @@ const LOAD = process.env.LOAD === '1';
  * night, but each toggle is a call the page makes on its own.
  */
 const FUZZ = process.env.FUZZ === 'toggle' ? 'toggle' : '';
+/**
+ * FAULT=first-frame: the renderer's frame function throws (AccumDrawing.forceFault, inside the guard, the page's own test hook) the first time it
+ * should run after the accumulating renderer was attached again during a scene switch: what a real throw in that frame does (the guard hands the
+ * renderer back at the frame's end, or after 250 ms when the engine's render threw and the frame never ends). Once per page load.
+ */
+const FAULT = process.env.FAULT === 'first-frame' ? 'first-frame' : '';
 const RENDER = process.env.RENDER === 'on' ? 'on' : 'off';
 /** SS=abort|503|slow|flaky: the SuperSplat proxy answers nothing / 503 / after 6.5 s / nothing for the first SS_FAILS requests, then really */
 const SS = process.env.SS === 'abort' || process.env.SS === '503' || process.env.SS === 'slow' || process.env.SS === 'flaky' ? process.env.SS : '';
@@ -99,6 +105,10 @@ const ERROR_CAPTURE = `(() => {
   window.__tl = []; window.__noframe = 0; let last = ''; let lastFc = -1; let lastFrame = -1;
   const tick = () => { try {
     const s = snap(); const k = s.inside || {};
+    // FAULT=first-frame: attached again (loading, hold ended), no frame of the renderer has bound a view since: its frame function will throw
+    if (window.__fault === 'first-frame' && !window.__faulted && k.en && k.b === 0 && k.set === 0 && s.sw && /^loading/.test(s.sw)) {
+      try { window.__gsfpv.session.renderer.accum.forceFault('frame'); window.__faulted = performance.now(); } catch (e) { /* no hook */ }
+    }
     const sig = [s.sw, s.scene, s.disposed, s.drawn, s.held, s.plan, s.accum && s.accum.on, k.en, k.rp, k.tp, k.cv, k.b, k.set, k.nc, k.pa].join('|');
     // the renderer is on, the engine drew a frame, and the renderer's frame function did not run in it: the passes ran on whatever the last frame left
     if (k.en && s.frame !== lastFrame && k.fc === lastFc && lastFc >= 0) { window.__noframe++; if (window.__tl.length < 400) window.__tl.push({ t: performance.now(), noFrameCall: true, inside: k, frame: s.frame }); }
@@ -121,6 +131,7 @@ const ERROR_CAPTURE = `(() => {
 async function guard(ctx: BrowserContext): Promise<Rec> {
     const rec: Rec = { catalog: null, catalogRequests: [], explore: [], beacons: [], blockedWrites: [], requests: 0, httpErrors: [], exploreAsked: 0 };
     await ctx.addInitScript("try { localStorage.setItem('gsfpv_consent', 'no'); } catch (e) { /* blocked */ }");
+    await ctx.addInitScript(`window.__fault = ${JSON.stringify(FAULT)};`);
     await ctx.addInitScript(ERROR_CAPTURE);
     await ctx.route('**/*', async (route) => {
         const req = route.request();
@@ -315,6 +326,7 @@ try {
         if (r.state === 'no-switch' && r.blockers.length) break;
     }
     if (FUZZ) out.fuzzCalls = await page.evaluate('window.__fuzzCalls');
+    if (FAULT) out.faulted = await page.evaluate('window.__faulted || null');
     await wait(page, 1500);
     const lateEvents = (await page.evaluate('window.__ev.splice(0)') as Any[]);
     const sequence = [startScene, ...presses.map((p) => p.now)];

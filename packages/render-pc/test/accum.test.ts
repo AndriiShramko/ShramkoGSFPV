@@ -309,6 +309,23 @@ describe('AccumDrawing', () => {
             expect(v.scheduled()).toEqual(['raster', 'taa', 'sets', 'compose']);
             expect(v.bindings).toBe(0);
         });
+        it('a throw at a guarded site silences the passes and the compose at once, not at the hand-back 250 ms later (the engine\'s own start of a pass is outside every guard)', () => {
+            const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+            vi.useFakeTimers();
+            const v = vendoredLike();
+            const { a } = make(v as unknown as Fake);
+            a.enable();
+            v.frameBinds();
+            a.forceFault('frame');
+            (v as unknown as Fake).frame();
+            expect(a.failed).not.toBeNull();
+            // the frame's end is never reached (the engine's render threw): nothing of the renderer is scheduled meanwhile, and the timer hands back
+            expect(v.scheduled()).toEqual([]);
+            vi.advanceTimersByTime(250);
+            expect(v.attached).toBe(false);
+            vi.useRealTimers();
+            err.mockRestore();
+        });
         it('the hand-back after a failure leaves it quiet as well', () => {
             const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);
             const v = vendoredLike();

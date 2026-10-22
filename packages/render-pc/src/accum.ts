@@ -313,7 +313,10 @@ export class AccumDrawing {
      * The renderer threw: it is off for good (`failed`), the splats go back to the engine's renderer and the caller is told once.
      * From inside the engine's frame (the frame function or a pass) the hand-back waits for the frame's end: detaching the passes,
      * freeing the targets and giving the work buffer back while the engine is updating or drawing with them would turn one throw into
-     * several; until then every guarded function does nothing.
+     * several; until then every guarded function does nothing, and (lane N) neither do the engine's own start of the renderer's passes and its
+     * draw of the compose, which no guard covers: they are switched off at once (quietRenderer). A frame that threw halfway left the passes
+     * pointing at targets the next frame was to replace; with the frameend of that frame never reached (the engine's render threw), the
+     * hand-back waited its 250 ms while every frame threw again.
      */
     private fail(e: unknown, site: GuardSite | 'start' = 'start'): void {
         if (this.failed !== null) return;
@@ -321,6 +324,7 @@ export class AccumDrawing {
         this.failedAt = site;
         console.error(`accumulating stochastic drawing failed (${site}), drawing without it`, e);
         this.on = false;
+        if (this.r) quietRenderer(this.r);
         let handed = false;
         const handBack = (): void => {
             if (handed) return;
