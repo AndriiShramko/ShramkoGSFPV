@@ -1,0 +1,607 @@
+{
+ "name": "v11-live",
+ "what": "Live acceptance of ShramkoGSFPV v0.11 (release 5e61039a46d3 = commit 2f375b0), headless, read-only, one run of each bench against https://gsfpv.flyreelstudio.eu",
+ "date": "2026-10-22",
+ "site": "https://gsfpv.flyreelstudio.eu",
+ "liveRelease": {
+  "releaseJson": {
+   "sha": "2f375b0",
+   "built": "2026-10-22T15:42:25.229Z"
+  },
+  "releaseId": "5e61039a46d3",
+  "checkoutHead": "72f5b60",
+  "checkoutBranch": "v03-lead"
+ },
+ "browser": {
+  "kind": "system-chrome",
+  "version": "155.0.8059.85",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed"
+ },
+ "headless": true,
+ "visibleWindow": false,
+ "readOnly": {
+  "adminLogin": false,
+  "postsMade": 0,
+  "notDone": [
+   "/api/report",
+   "/api/share",
+   "the feedback form",
+   "any admin page",
+   "ssh, deploy, code change"
+  ],
+  "beaconGuard": "a preload (.cache/v11-live/block-beacon.mjs, NODE_OPTIONS --import, outside the repo tree) answers the site's own cookieless counter POST /api/e with 204 inside every browser context a bench makes, so the benches do not feed the live counter; self-tested against a local server with a control (guard on: 0 hits, off: 2). Swallowed: accept-fly 115, wizard-auto-check 6, hid-source-probe 16, accept-v10-keys 39. No bench check reads /api/e. The stochastic probe made no other non-GET request.",
+  "getRequestsBySeparateCurl": [
+   "/en/fly/ headers",
+   "/release.json",
+   "/api/catalog (read once to explain the V8 label)"
+  ]
+ },
+ "gpuLock": "C:/dev/.gpu-lock taken by one bounded loop per step (the five runs, then the rerun), released after each, absent at the end",
+ "benches": {
+  "accept-fly": {
+   "command": "SITE=https://gsfpv.flyreelstudio.eu npx tsx src/accept-fly.ts B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (EVIDENCE_SUFFIX=-v11-live)",
+   "targetPrinted": "accept-fly target: https://gsfpv.flyreelstudio.eu",
+   "render": "on",
+   "exit": 0,
+   "passed": [
+    "B6",
+    "B7",
+    "B9",
+    "B10",
+    "B11",
+    "B12",
+    "B13",
+    "B14",
+    "B15",
+    "B16"
+   ],
+   "failed": [],
+   "skipped": [],
+   "b6": [
+    {
+     "id": "39e63ce9",
+     "form": "39e63ce9",
+     "status": "ready",
+     "outsideHosts": [],
+     "pageerrors": [],
+     "loadMs": 1476
+    },
+    {
+     "id": "39e63ce9",
+     "form": "https://superspl.at/scene/39e63ce9",
+     "status": "ready",
+     "outsideHosts": [],
+     "pageerrors": [],
+     "loadMs": 767
+    },
+    {
+     "id": "39e63ce9",
+     "form": "https://superspl.at/s?id=39e63ce9",
+     "status": "ready",
+     "outsideHosts": [],
+     "pageerrors": [],
+     "loadMs": 836
+    },
+    {
+     "id": "7a475d38",
+     "form": "7a475d38",
+     "status": "ready",
+     "outsideHosts": [],
+     "pageerrors": [],
+     "loadMs": 1721
+    },
+    {
+     "id": "7a475d38",
+     "form": "https://superspl.at/scene/7a475d38",
+     "status": "ready",
+     "outsideHosts": [],
+     "pageerrors": [],
+     "loadMs": 1153
+    },
+    {
+     "id": "7a475d38",
+     "form": "https://superspl.at/s?id=7a475d38",
+     "status": "ready",
+     "outsideHosts": [],
+     "pageerrors": [],
+     "loadMs": 1472
+    },
+    {
+     "id": "887f27aa",
+     "form": "887f27aa",
+     "status": "ready",
+     "outsideHosts": [],
+     "pageerrors": [],
+     "loadMs": 1586
+    },
+    {
+     "id": "887f27aa",
+     "form": "https://superspl.at/scene/887f27aa",
+     "status": "ready",
+     "outsideHosts": [],
+     "pageerrors": [],
+     "loadMs": 1557
+    },
+    {
+     "id": "887f27aa",
+     "form": "https://superspl.at/s?id=887f27aa",
+     "status": "ready",
+     "outsideHosts": [],
+     "pageerrors": [],
+     "loadMs": 1600
+    }
+   ]
+  },
+  "wizard-auto-check": {
+   "command": "node scripts/wizard-auto-check.mjs https://gsfpv.flyreelstudio.eu/en .cache/v11-live/wizard",
+   "targetPrinted": "no target line; the base argument is https://gsfpv.flyreelstudio.eu/en (pages /fly/?scene=39e63ce9&simradio=raw...)",
+   "passRule": "each of the three runs reaches the check screen by itself (end id check, a profile made), no Start/Next button was ever shown, no page error",
+   "exit": 0,
+   "runs": {
+    "nobuttons": {
+     "seconds": 26,
+     "endScreen": "check",
+     "profile": true,
+     "startOrNextVisible": false,
+     "screens": 23,
+     "pageErrors": 0,
+     "anyStartNextButton": false
+    },
+    "human": {
+     "seconds": 33,
+     "endScreen": "check",
+     "profile": true,
+     "startOrNextVisible": false,
+     "screens": 23,
+     "pageErrors": 0,
+     "anyStartNextButton": false
+    },
+    "dji": {
+     "seconds": 20,
+     "endScreen": "check",
+     "profile": true,
+     "startOrNextVisible": false,
+     "screens": 23,
+     "pageErrors": 0,
+     "anyStartNextButton": false
+    }
+   },
+   "passed": [
+    "nobuttons",
+    "human",
+    "dji"
+   ],
+   "failed": [],
+   "skipped": []
+  },
+  "hid-source-probe": {
+   "command": "node scripts/hid-source-probe.mjs https://gsfpv.flyreelstudio.eu/en .cache/v11-live/hid",
+   "targetPrinted": "no target line; the base argument is https://gsfpv.flyreelstudio.eu/en",
+   "exit": 0,
+   "overallPass": true,
+   "runs": {
+    "dji": true,
+    "dji-windows": true,
+    "edgetx": true,
+    "dji-other": true,
+    "dji-none": true,
+    "dji-pad-chooser": true,
+    "dji-pad-cancel": true,
+    "dji-pad-nopick": true
+   },
+   "passed": [
+    "dji",
+    "dji-windows",
+    "edgetx",
+    "dji-other",
+    "dji-none",
+    "dji-pad-chooser",
+    "dji-pad-cancel",
+    "dji-pad-nopick"
+   ],
+   "failed": [],
+   "skipped": [],
+   "note": "dji-other and dji-none are negative controls of the recognition (they stop at stir / connect by design and count as passing when they do)"
+  },
+  "accept-v10-keys": {
+   "command": "SITE=https://gsfpv.flyreelstudio.eu npx tsx src/accept-v10-keys.ts (EVIDENCE_SUFFIX=-v11-live; no V10_CONTROL)",
+   "targetPrinted": "accept-v10-keys target: https://gsfpv.flyreelstudio.eu",
+   "exit": 0,
+   "summary": {
+    "control": false,
+    "passed": true,
+    "total": 57,
+    "failed": []
+   },
+   "passed": [
+    "K1a the motion notice is the first thing, and the card is not up with it",
+    "K1b the Controls dialog \"How will you fly?\" is up after the scan is ready, with no card on it",
+    "K1 a first-time visitor who chose Keyboard meets the card after the scan is ready",
+    "K1c the card waited for the choice: it was not up while the Controls dialog was still up (2 s later), and it came after Keyboard was chosen",
+    "K2 the card shows SPACE = UP and SHIFT = DOWN as the two big keys (arrow and word with each), hold to land",
+    "K2b the rest of the game scheme is on it: mouse, W A S D, turn keys, F full screen, Esc pause, R, N next scene, K this card",
+    "K2c the card names the way off the ground: press W or Space to take off (the caps are the layout's own)",
+    "K3 accessibility: a modal dialog named by its title, the focus is on Start flying, Tab stays inside the card",
+    "K3b five Tab presses never leave the card (x, Start, the box, round again)",
+    "K4 every text on the card is at least WCAG AA against the lightest scene behind it (>= 4.5:1)",
+    "K5 the flight is held while the card is up, and flying keys do nothing under it (W held 0.6 s: not armed, not moved)",
+    "K6 Start flying closes the card, resumes the flight and captures the mouse (pointer lock)",
+    "K6b on the ground after Start flying the take-off line is on the screen, not only spoken, and names W and Space (a pilot who closed the card unread still knows)",
+    "K6c (control of the overlap measure) the same pill put down to 76 px is seen covering the credit line",
+    "K7 the first key after the start takes off: Space climbs (the drone is armed and higher than at the start)",
+    "K8 for the first seconds of the first flight a small pill says \"Space up . Shift down\"",
+    "K8b the pill names both caps and both words",
+    "K9 the corner line in flight starts with Space up / Shift down (before: K keys, F, R, Esc, H)",
+    "K8c the pill was up and goes at once when Shift is pressed",
+    "K10 across the whole first visit the card was up and never together with another dialog (Controls, the motion notice, a panel, the menu, the picker, the crash panel)",
+    "K10c (control of the sampler) a dialog put up under the card is counted by the overlap sampler",
+    "K11 a second visit (nothing ticked) shows the card again, by itself: no Controls dialog this time, the keyboard of last time is back",
+    "K11b the box is not ticked on the second visit (nothing was ticked in the first)",
+    "K13 the pill lasts the first seconds only: up at 2 s, gone by 10 s, with W held from take-off (key repeats do not hide it)",
+    "K12 ticking \"Do not show again\" writes the setting at once (input.howToFly off), and closing with x keeps it",
+    "K12b the tick survives closing with x",
+    "K14 after \"Do not show again\" a reload does not bring the card back (4.5 s after the scene is ready)",
+    "K14c with the box ticked and no card, the ground shows the take-off line (drawn) and the \"Click to fly with the mouse\" pill is not stacked on it",
+    "K14b after \"Do not show again\" the first-flight pill does not show either (the drone is flying)",
+    "K15 K opens the card again, whatever the setting says; its box shows the setting (ticked)",
+    "K15b K again closes it and the flight goes on (not paused)",
+    "K15c Esc closes the card (and does not open the pause menu on top)",
+    "K16 the pause menu has a \"How to fly\" item with its key K beside it",
+    "K16b picking it shows the card (over nothing: the menu is gone), opened from the menu",
+    "K16c with the menu up, K runs the item: the card opens and the menu is gone",
+    "K17 for a radio or gamepad the card is the short radio one: sticks, arm, mode switch, N, Esc, K",
+    "K17b the radio card's arm line invents no channel number: with no arm set up it says \"as set up on the Controls screen\", else it names the profile's own",
+    "K18 in visits 2 and 3 as well the card came and was never up together with another dialog",
+    "K19 on a phone (touch, no WebHID) the card is the touch one: the two pads, no key caps, \"touch a stick to take off\"",
+    "K19b it fits the phone: inside the screen, Start flying reachable",
+    "K19c tapping Start flying closes it and leaves the touch sticks to fly",
+    "K19d it did not stand over the motion notice or another dialog on the phone either",
+    "K20 closing Controls with x also ends at the card (the keyboard stands in), and in a 900 x 480 window the Space and Shift keys are fully on screen",
+    "K20b Start flying is reachable in that window: on the screen, or the card scrolls",
+    "K20c in that short window too the ground line is drawn, inside the screen and over no other text",
+    "K24 phone-landscape (en, 812 x 375): the touch card is up, inside the screen, no sideways scroll, nothing sticks out, Start flying reachable (on the screen or the card scrolls)",
+    "K24 phone-ru (ru, 390 x 844): the touch card is up, inside the screen, no sideways scroll, nothing sticks out, Start flying reachable (on the screen or the card scrolls)",
+    "K24 short-pl (pl, 900 x 480): the game card is up, inside the screen, no sideways scroll, nothing sticks out, Start flying reachable (on the screen or the card scrolls), Space in the page's own word",
+    "K24b short-pl (pl): the card's note names the way off the ground with the page's own word for Space",
+    "K24 desktop-es (es, 1280 x 800): the game card is up, inside the screen, no sideways scroll, nothing sticks out, Start flying reachable (on the screen or the card scrolls), Space in the page's own word",
+    "K24b desktop-es (es): the card's note names the way off the ground with the page's own word for Space",
+    "K21 on a ?nowarn=1 page (the page every older bench uses) the card never opens by itself, the keyboard flies as before",
+    "K22 with the pilot profile the ground card of the pilot keyboard is still up (arm steps, the Mode 2 keys)",
+    "K21b K still opens it there",
+    "K23 for the pilot keyboard the card is the pilot one: Space arms, W / S throttle, A / D yaw, the arrows tilt, M mode, then R, Esc, N, K; no Space / Shift pair",
+    "K25 with the analytics card unanswered the How to fly card waits (it never stands under it)",
+    "K25b after Decline the card comes and Start flying is the topmost element under its own centre"
+   ],
+   "failed": [],
+   "k25": [
+    {
+     "id": "K25 with the analytics card unanswered the How to fly card waits (it never stands under it)",
+     "ok": true,
+     "detail": {
+      "consentUp": true,
+      "consentStill": true,
+      "cards": 0
+     }
+    },
+    {
+     "id": "K25b after Decline the card comes and Start flying is the topmost element under its own centre",
+     "ok": true,
+     "detail": {
+      "up": true,
+      "startTop": true
+     }
+    }
+   ],
+   "skipped": [
+    "V10_CONTROL=1 (the same bench against the base build 198b659: needs a base build)"
+   ],
+   "notProven": [
+    "a real hand and a real mouse (the click on Start is a Playwright trusted click)",
+    "a real phone (Chrome touch emulation without WebHID)",
+    "a real radio or gamepad (the card is pointed at a gamepad source and K pressed)",
+    "Esc as the browser's own release of the mouse"
+   ]
+  },
+  "accept-v11-stochastic": {
+   "ranAsBench": false,
+   "reason": "the bench has no SITE: it spawns serve-csp on its own ports over local dists (SITE_DIST, BASE_DIST) and checks those; V1/V6 need the BASE build, V2/V3 run the lane's page script on the local release, V4/V5/V7/V9 drive hooks of the local build (REC, share picture, scene switches, forceFault)",
+   "skipped": [
+    "V1 BASE control and forced-limit control",
+    "V2",
+    "V3",
+    "V4",
+    "V5",
+    "V6",
+    "V7",
+    "V9"
+   ],
+   "standIn": {
+    "what": "an ad hoc probe (.cache/v11-live/live-stochastic-probe.mjs, not a repo file, not the bench) that copies the STATE expression and the assertions of V1 (NEW-build checks + the ?impl=engine control) and V8 and points them at the live site",
+    "files": "live-stochastic-probe.json (first run) and live-stochastic-rerun.json (the one rerun)",
+    "checks": [
+     {
+      "name": "V1 `?stochastic` draws through the vendored renderer: drawn accum, plan accum/ok, the hook agrees, the engine's own dither is off",
+      "ok": true,
+      "control": false
+     },
+     {
+      "name": "V1 the renderer is up: active, accumulating (taa), occlusion culling on, millions of splats resident, buffers allocated",
+      "ok": true,
+      "control": false
+     },
+     {
+      "name": "V1 upstream's defaults are in force (256 frames at rest, 16 moving, clamp 1.25)",
+      "ok": true,
+      "control": false
+     },
+     {
+      "name": "V1 F3 says \"Render: stochastic, accumulating (the link)\"",
+      "ok": true,
+      "control": false,
+      "detail": {
+       "f3": "Render: stochastic, accumulating (the link) \u00b7 budget 4 M splats (this device) \u00b7 desktop, strong graphics"
+      }
+     },
+     {
+      "name": "V1 no WebGPU validation error, no CSP violation, no page error",
+      "ok": true,
+      "control": false,
+      "detail": {
+       "gpu": [],
+       "csp": [],
+       "errors": []
+      }
+     },
+     {
+      "name": "V1 control: ?impl=engine draws the engine's own dither (drawn engine, flag on), makes no accumulating renderer; F3 plain \"stochastic\"",
+      "ok": true,
+      "control": true,
+      "detail": {
+       "f3": "Render: stochastic (the link) \u00b7 budget 4 M splats (this device) \u00b7 desktop, strong graphics"
+      }
+     },
+     {
+      "name": "V8 the link's ?stochastic draws accumulating; the pilot's Render = Sorted wins (sorted, renderer handed back); back to Auto the link is followed again",
+      "ok": true,
+      "control": false
+     },
+     {
+      "name": "V8 nothing asked: sorted by the device's preset, and no accumulating renderer was ever made (D75, D88)",
+      "ok": false,
+      "control": false,
+      "detail": {
+       "drawn": "sorted",
+       "made": false,
+       "from": {
+        "stochastic": "scene",
+        "budget": "device"
+       }
+      }
+     },
+     {
+      "name": "V8 the pilot choosing Stochastic gets the accumulating renderer (\"your setting\"), Auto hands it back",
+      "ok": true,
+      "control": false
+     },
+     {
+      "name": "probe: no non-GET request left the browser (a POST/PUT would be a write to the live site; /api/e is swallowed by the preload and does not appear)",
+      "ok": true,
+      "control": false,
+      "detail": {
+       "posts": []
+      }
+     }
+    ],
+    "v8": {
+     "link": "accum",
+     "pilotSorted": "sorted",
+     "autoBack": "accum",
+     "nothing": {
+      "drawn": "sorted",
+      "made": false,
+      "from": {
+       "stochastic": "scene",
+       "budget": "device"
+      },
+      "f3": ""
+     },
+     "pilotAsks": {
+      "drawn": "accum",
+      "from": {
+       "stochastic": "setting",
+       "budget": "device"
+      }
+     },
+     "handedBack": "sorted"
+    },
+    "rerun": {
+     "nothing-39e63ce9": {
+      "drawn": "sorted",
+      "made": false,
+      "from": {
+       "stochastic": "scene",
+       "budget": "device"
+      },
+      "plan": {
+       "draw": "sorted",
+       "why": "not-asked"
+      }
+     },
+     "nothing-70b50d42": {
+      "drawn": "sorted",
+      "made": false,
+      "from": {
+       "stochastic": "device",
+       "budget": "device"
+      },
+      "plan": {
+       "draw": "sorted",
+       "why": "not-asked"
+      }
+     }
+    },
+    "rerunChecks": [
+     {
+      "name": "V8 nothing asked on 39e63ce9: drawn sorted and no accumulating renderer was ever made",
+      "ok": true,
+      "control": false,
+      "detail": {
+       "drawn": "sorted",
+       "made": false,
+       "from": {
+        "stochastic": "scene",
+        "budget": "device"
+       }
+      }
+     },
+     {
+      "name": "V8 nothing asked on 39e63ce9: who decided (the first run's label check 'device')",
+      "ok": false,
+      "control": false,
+      "detail": {
+       "from": {
+        "stochastic": "scene",
+        "budget": "device"
+       }
+      }
+     },
+     {
+      "name": "V8 nothing asked on 70b50d42: drawn sorted and no accumulating renderer was ever made",
+      "ok": true,
+      "control": false,
+      "detail": {
+       "drawn": "sorted",
+       "made": false,
+       "from": {
+        "stochastic": "device",
+        "budget": "device"
+       }
+      }
+     },
+     {
+      "name": "V8 nothing asked on 70b50d42: who decided (the first run's label check 'device')",
+      "ok": true,
+      "control": false,
+      "detail": {
+       "from": {
+        "stochastic": "device",
+        "budget": "device"
+       }
+      }
+     },
+     {
+      "name": "rerun: no non-GET request left the browser",
+      "ok": true,
+      "control": false,
+      "detail": {
+       "posts": []
+      }
+     }
+    ]
+   }
+  },
+  "accept-v10-render": {
+   "ranAsBench": false,
+   "reason": "the bench has no SITE: it runs apps/api/server.py on a temporary DATA_DIR with a test admin password hash, serves the NEW, BASE and PRE dists locally with /api going to it, logs into that admin (R3, the Drawing tab) and publishes to it; every R has a BASE or PRE control",
+   "skipped": [
+    "R1",
+    "R2",
+    "R3 (admin)",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "all BASE/PRE controls"
+   ],
+   "coveredByStandIn": "only the sorted-by-default fact of R1, in part: V8 \"nothing asked\" drawn sorted and no accumulating renderer made, on two live scenes. Not covered: device class, presets, per-scene and pilot precedence through the admin, REC, share picture"
+  }
+ },
+ "failures": [
+  {
+   "where": "live-stochastic-probe V8 \"nothing asked\", first run",
+   "check": "drawn sorted, no accumulating renderer made, and hook.drawing.from.stochastic === \"device\"",
+   "saw": {
+    "drawn": "sorted",
+    "made": false,
+    "from": {
+     "stochastic": "scene",
+     "budget": "device"
+    },
+    "f3": ""
+   },
+   "rerunOnce": {
+    "39e63ce9": {
+     "drawn": "sorted",
+     "made": false,
+     "from": {
+      "stochastic": "scene",
+      "budget": "device"
+     },
+     "plan": {
+      "draw": "sorted",
+      "why": "not-asked"
+     }
+    },
+    "70b50d42": {
+     "drawn": "sorted",
+     "made": false,
+     "from": {
+      "stochastic": "device",
+      "budget": "device"
+     },
+     "plan": {
+      "draw": "sorted",
+      "why": "not-asked"
+     }
+    }
+   },
+   "verdict": "bench assertion that cannot run unchanged on live; NOT a live defect, not flakiness (same result twice)",
+   "why": "the live catalogue (GET /api/catalog) carries the owner's per-scene render entry {stochastic: false} on 39e63ce9, so the one who decides is 'scene' (sorted). The local bench serves a build with no catalogue, where the source is 'device'. On 70b50d42, which has no render entry, the same check reads 'device' and passes. The claim that matters (nothing asked is drawn sorted, no accumulating renderer is made) holds on both scenes.",
+   "liveCatalogueRenderEntries": {
+    "887f27aa": {
+     "stochastic": false
+    },
+    "39e63ce9": {
+     "stochastic": false
+    },
+    "7a475d38": {
+     "stochastic": false
+    },
+    "70b50d42": null,
+    "ab5efa0e": {
+     "stochastic": false
+    },
+    "d10c5638": {
+     "stochastic": false
+    },
+    "2f1ddf5f": null,
+    "ba7aa29d": {
+     "stochastic": false
+    },
+    "9baef54b": {
+     "stochastic": false
+    },
+    "0230d903": {
+     "stochastic": false
+    },
+    "eb5f51dc": {
+     "stochastic": false
+    },
+    "1994c65c": {
+     "stochastic": false
+    },
+    "b11e45d1": {
+     "stochastic": false
+    }
+   }
+  }
+ ],
+ "realLiveDefects": [],
+ "notVerified": [
+  "accept-v11-stochastic V2-V7, V9 and the V1/V6 base controls; accept-v10-render R1-R7: need local servers, the local API/admin or base builds (see benches)",
+  "a real hand and mouse, a real phone, a real radio (headless; the keys bench says the same in its notProven)",
+  "the first-visit overlap of the analytics card and the How to fly card at 812 x 375 (lead note; not looked at here); at 900 x 480 K25/K25b pass on live (the card waits for the answer)",
+  "GA4 /g/collect after consent was not exercised (consent is answered no in the bench contexts)"
+ ]
+}
