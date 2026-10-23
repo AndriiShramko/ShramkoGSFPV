@@ -1,0 +1,4411 @@
+{
+  "name": "v11-n",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.85",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-22T23:03:37.242Z",
+    "gitHead": "134b01b",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5611",
+  "feed": "live answers (https://gsfpv.flyreelstudio.eu, GET only)",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.85",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "render": "on",
+  "presses": 17,
+  "superSplatProxy": "real",
+  "catalogue": {
+    "count": 13,
+    "ids": [
+      "887f27aa",
+      "39e63ce9",
+      "7a475d38",
+      "70b50d42",
+      "ab5efa0e",
+      "d10c5638",
+      "2f1ddf5f",
+      "ba7aa29d",
+      "9baef54b",
+      "0230d903",
+      "eb5f51dc",
+      "1994c65c",
+      "b11e45d1"
+    ],
+    "pinned": [],
+    "hidden": [],
+    "requests": [
+      {
+        "url": "",
+        "status": 200,
+        "ms": 235
+      },
+      {
+        "url": "",
+        "status": 200,
+        "ms": 70
+      }
+    ]
+  },
+  "start": "b11e45d1",
+  "settings": {
+    "rotation": "curated",
+    "order": "sequential",
+    "autoSwitch": false,
+    "allowNoWalls": false
+  },
+  "page": {
+    "render": "on",
+    "visibility": "visible",
+    "status": "ready"
+  },
+  "drawing": {
+    "class": "desktop-strong",
+    "stochastic": true,
+    "from": {
+      "stochastic": "device",
+      "budget": "device"
+    },
+    "impl": "accum",
+    "plan": {
+      "draw": "accum",
+      "why": "ok"
+    },
+    "drawn": "accum",
+    "accumMissing": [],
+    "webgpu": true
+  },
+  "run": {
+    "sequence": [
+      "b11e45d1",
+      "887f27aa",
+      "39e63ce9",
+      "7a475d38",
+      "70b50d42",
+      "ab5efa0e",
+      "d10c5638",
+      "2f1ddf5f",
+      "ba7aa29d",
+      "9baef54b",
+      "0230d903",
+      "eb5f51dc",
+      "1994c65c",
+      "d8ba72a6",
+      "15a202e6",
+      "9f0f903a",
+      "a8cfc66e",
+      "a6df26f1"
+    ],
+    "presses": [
+      {
+        "i": 1,
+        "key": "KeyN",
+        "startedAfterMs": 32,
+        "from": "b11e45d1",
+        "to": "887f27aa",
+        "reason": "next",
+        "state": "done",
+        "ms": 2376,
+        "now": "887f27aa",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "timeline": [
+          {
+            "t": -6245,
+            "sw": null,
+            "scene": null,
+            "disposed": null,
+            "drawn": null,
+            "held": null,
+            "plan": null,
+            "accumOn": null,
+            "inside": null,
+            "frame": null
+          },
+          {
+            "t": -1675,
+            "sw": null,
+            "scene": "b11e45d1",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": false,
+              "tp": false,
+              "cv": false,
+              "b": 0,
+              "nv": 1,
+              "set": 1,
+              "nc": 0,
+              "pa": true,
+              "fc": 0
+            },
+            "frame": 68
+          },
+          {
+            "t": -1674,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": false,
+              "tp": false,
+              "cv": false,
+              "b": 0,
+              "nv": 1,
+              "set": 1,
+              "nc": 0,
+              "pa": true,
+              "fc": 0
+            },
+            "frame": 69
+          },
+          {
+            "t": -1652,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": false,
+              "tp": false,
+              "cv": false,
+              "b": 0,
+              "nv": 1,
+              "set": 1,
+              "nc": 0,
+              "pa": true,
+              "fc": 0
+            },
+            "frame": 70
+          },
+          {
+            "t": -1619,
+            "sw": null,
+            "scene": "b11e45d1",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3065,
+              "pa": true,
+              "fc": 1
+            },
+            "frame": 71
+          },
+          {
+            "t": -1078,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3065,
+              "pa": true,
+              "fc": 2
+            },
+            "frame": 73
+          },
+          {
+            "t": -886,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3065,
+              "pa": true,
+              "fc": 3
+            },
+            "frame": 75
+          },
+          {
+            "t": -686,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3065,
+              "pa": true,
+              "fc": 5
+            },
+            "frame": 78
+          },
+          {
+            "t": -586,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3065,
+              "pa": true,
+              "fc": 7
+            },
+            "frame": 81
+          },
+          {
+            "t": -186,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3065,
+              "pa": true,
+              "fc": 17
+            },
+            "frame": 92
+          },
+          {
+            "t": 17,
+            "sw": "loading>887f27aa",
+            "scene": "b11e45d1",
+            "disposed": true,
+            "drawn": "sorted",
+            "held": true,
+            "plan": "sorted/loading",
+            "accumOn": false,
+            "inside": {
+              "en": false,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 3065,
+              "pa": false,
+              "fc": 19
+            },
+            "frame": 95
+          },
+          {
+            "t": 781,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 3065,
+              "pa": true,
+              "fc": 19
+            },
+            "frame": 115
+          },
+          {
+            "t": 781,
+            "sw": "loading>887f27aa",
+            "scene": "b11e45d1",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 3065,
+              "pa": true,
+              "fc": 19
+            },
+            "frame": 115
+          },
+          {
+            "t": 1342,
+            "sw": "loading>887f27aa",
+            "scene": "b11e45d1",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2530,
+              "pa": true,
+              "fc": 20
+            },
+            "frame": 116
+          },
+          {
+            "t": 1347,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2530,
+              "pa": true,
+              "fc": 20
+            },
+            "frame": 117
+          },
+          {
+            "t": 1450,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2530,
+              "pa": true,
+              "fc": 20
+            },
+            "frame": 118
+          },
+          {
+            "t": 1547,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2530,
+              "pa": true,
+              "fc": 22
+            },
+            "frame": 121
+          },
+          {
+            "t": 1681,
+            "sw": "loading>887f27aa",
+            "scene": "b11e45d1",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3206,
+              "pa": true,
+              "fc": 25
+            },
+            "frame": 124
+          },
+          {
+            "t": 1748,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3206,
+              "pa": true,
+              "fc": 26
+            },
+            "frame": 126
+          },
+          {
+            "t": 2214,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3206,
+              "pa": true,
+              "fc": 36
+            },
+            "frame": 137
+          },
+          {
+            "t": 2414,
+            "sw": "done>887f27aa",
+            "scene": "887f27aa",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3206,
+              "pa": true,
+              "fc": 42
+            },
+            "frame": 143
+          }
+        ],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 2,
+        "key": "KeyN",
+        "startedAfterMs": 11,
+        "from": "887f27aa",
+        "to": "39e63ce9",
+        "reason": "next",
+        "state": "done",
+        "ms": 1856,
+        "now": "39e63ce9",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "timeline": [
+          {
+            "t": 4,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3206,
+              "pa": true,
+              "fc": 43
+            },
+            "frame": 145
+          },
+          {
+            "t": 4,
+            "sw": null,
+            "scene": "887f27aa",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3206,
+              "pa": true,
+              "fc": 43
+            },
+            "frame": 145
+          },
+          {
+            "t": 37,
+            "sw": "loading>39e63ce9",
+            "scene": "887f27aa",
+            "disposed": true,
+            "drawn": "sorted",
+            "held": true,
+            "plan": "sorted/loading",
+            "accumOn": false,
+            "inside": {
+              "en": false,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 3206,
+              "pa": false,
+              "fc": 43
+            },
+            "frame": 146
+          },
+          {
+            "t": 850,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 3206,
+              "pa": true,
+              "fc": 43
+            },
+            "frame": 163
+          },
+          {
+            "t": 850,
+            "sw": "loading>39e63ce9",
+            "scene": "887f27aa",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 3206,
+              "pa": true,
+              "fc": 43
+            },
+            "frame": 163
+          },
+          {
+            "t": 870,
+            "sw": "loading>39e63ce9",
+            "scene": "887f27aa",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 5,
+              "pa": true,
+              "fc": 44
+            },
+            "frame": 164
+          },
+          {
+            "t": 1137,
+            "sw": "loading>39e63ce9",
+            "scene": "887f27aa",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1854,
+              "pa": true,
+              "fc": 51
+            },
+            "frame": 171
+          },
+          {
+            "t": 1874,
+            "sw": "done>39e63ce9",
+            "scene": "39e63ce9",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1854,
+              "pa": true,
+              "fc": 71
+            },
+            "frame": 191
+          }
+        ],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 3,
+        "key": "KeyN",
+        "startedAfterMs": 11,
+        "from": "39e63ce9",
+        "to": "7a475d38",
+        "reason": "next",
+        "state": "done",
+        "ms": 1928,
+        "now": "7a475d38",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "timeline": [
+          {
+            "t": 15,
+            "sw": "loading>7a475d38",
+            "scene": "39e63ce9",
+            "disposed": true,
+            "drawn": "sorted",
+            "held": true,
+            "plan": "sorted/loading",
+            "accumOn": false,
+            "inside": {
+              "en": false,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 1854,
+              "pa": false,
+              "fc": 74
+            },
+            "frame": 194
+          },
+          {
+            "t": 759,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 1854,
+              "pa": true,
+              "fc": 74
+            },
+            "frame": 213
+          },
+          {
+            "t": 759,
+            "sw": "loading>7a475d38",
+            "scene": "39e63ce9",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 1854,
+              "pa": true,
+              "fc": 74
+            },
+            "frame": 213
+          },
+          {
+            "t": 826,
+            "sw": "loading>7a475d38",
+            "scene": "39e63ce9",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 40,
+              "pa": true,
+              "fc": 75
+            },
+            "frame": 214
+          },
+          {
+            "t": 854,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 40,
+              "pa": true,
+              "fc": 75
+            },
+            "frame": 215
+          },
+          {
+            "t": 1084,
+            "sw": "loading>7a475d38",
+            "scene": "39e63ce9",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2010,
+              "pa": true,
+              "fc": 82
+            },
+            "frame": 222
+          },
+          {
+            "t": 1216,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2010,
+              "pa": true,
+              "fc": 83
+            },
+            "frame": 224
+          },
+          {
+            "t": 1515,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2010,
+              "pa": true,
+              "fc": 92
+            },
+            "frame": 234
+          },
+          {
+            "t": 1948,
+            "sw": "done>7a475d38",
+            "scene": "7a475d38",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2010,
+              "pa": true,
+              "fc": 105
+            },
+            "frame": 247
+          },
+          {
+            "t": 2082,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2010,
+              "pa": true,
+              "fc": 108
+            },
+            "frame": 251
+          }
+        ],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 4,
+        "key": "KeyN",
+        "startedAfterMs": 11,
+        "from": "7a475d38",
+        "to": "70b50d42",
+        "reason": "next",
+        "state": "done",
+        "ms": 2180,
+        "now": "70b50d42",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "timeline": [
+          {
+            "t": 15,
+            "sw": "loading>70b50d42",
+            "scene": "7a475d38",
+            "disposed": true,
+            "drawn": "sorted",
+            "held": true,
+            "plan": "sorted/loading",
+            "accumOn": false,
+            "inside": {
+              "en": false,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 2061,
+              "pa": false,
+              "fc": 109
+            },
+            "frame": 252
+          },
+          {
+            "t": 727,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 2061,
+              "pa": true,
+              "fc": 109
+            },
+            "frame": 272
+          },
+          {
+            "t": 727,
+            "sw": "loading>70b50d42",
+            "scene": "7a475d38",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 2061,
+              "pa": true,
+              "fc": 109
+            },
+            "frame": 272
+          },
+          {
+            "t": 748,
+            "sw": "loading>70b50d42",
+            "scene": "7a475d38",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 633,
+              "pa": true,
+              "fc": 110
+            },
+            "frame": 273
+          },
+          {
+            "t": 907,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 633,
+              "pa": true,
+              "fc": 110
+            },
+            "frame": 274
+          },
+          {
+            "t": 1115,
+            "sw": "loading>70b50d42",
+            "scene": "7a475d38",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1007,
+              "pa": true,
+              "fc": 117
+            },
+            "frame": 281
+          },
+          {
+            "t": 1315,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1007,
+              "pa": true,
+              "fc": 121
+            },
+            "frame": 286
+          },
+          {
+            "t": 1482,
+            "sw": "loading>70b50d42",
+            "scene": "7a475d38",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1646,
+              "pa": true,
+              "fc": 126
+            },
+            "frame": 291
+          },
+          {
+            "t": 1682,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1646,
+              "pa": true,
+              "fc": 129
+            },
+            "frame": 295
+          },
+          {
+            "t": 2186,
+            "sw": "done>70b50d42",
+            "scene": "70b50d42",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1646,
+              "pa": true,
+              "fc": 144
+            },
+            "frame": 310
+          },
+          {
+            "t": 2215,
+            "sw": "done>70b50d42",
+            "scene": "70b50d42",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1678,
+              "pa": true,
+              "fc": 145
+            },
+            "frame": 311
+          },
+          {
+            "t": 2248,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1678,
+              "pa": true,
+              "fc": 145
+            },
+            "frame": 312
+          }
+        ],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 5,
+        "key": "KeyN",
+        "startedAfterMs": 11,
+        "from": "70b50d42",
+        "to": "ab5efa0e",
+        "reason": "next",
+        "state": "done",
+        "ms": 3347,
+        "now": "ab5efa0e",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "timeline": [
+          {
+            "t": 77,
+            "sw": "loading>ab5efa0e",
+            "scene": "70b50d42",
+            "disposed": true,
+            "drawn": "sorted",
+            "held": true,
+            "plan": "sorted/loading",
+            "accumOn": false,
+            "inside": {
+              "en": false,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 1678,
+              "pa": false,
+              "fc": 145
+            },
+            "frame": 313
+          },
+          {
+            "t": 2633,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 1678,
+              "pa": true,
+              "fc": 145
+            },
+            "frame": 386
+          },
+          {
+            "t": 2633,
+            "sw": "loading>ab5efa0e",
+            "scene": "70b50d42",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 1678,
+              "pa": true,
+              "fc": 145
+            },
+            "frame": 386
+          },
+          {
+            "t": 2793,
+            "sw": "loading>ab5efa0e",
+            "scene": "70b50d42",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 15703,
+              "pa": true,
+              "fc": 146
+            },
+            "frame": 387
+          },
+          {
+            "t": 2799,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 15703,
+              "pa": true,
+              "fc": 146
+            },
+            "frame": 388
+          },
+          {
+            "t": 2833,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 15703,
+              "pa": true,
+              "fc": 146
+            },
+            "frame": 389
+          },
+          {
+            "t": 3161,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 15703,
+              "pa": true,
+              "fc": 146
+            },
+            "frame": 390
+          },
+          {
+            "t": 3366,
+            "sw": "done>ab5efa0e",
+            "scene": "ab5efa0e",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 15703,
+              "pa": true,
+              "fc": 150
+            },
+            "frame": 394
+          }
+        ],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 6,
+        "key": "KeyN",
+        "startedAfterMs": 10,
+        "from": "ab5efa0e",
+        "to": "d10c5638",
+        "reason": "next",
+        "state": "done",
+        "ms": 1551,
+        "now": "d10c5638",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "timeline": [
+          {
+            "t": 31,
+            "sw": "loading>d10c5638",
+            "scene": "ab5efa0e",
+            "disposed": true,
+            "drawn": "sorted",
+            "held": true,
+            "plan": "sorted/loading",
+            "accumOn": false,
+            "inside": {
+              "en": false,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 15703,
+              "pa": false,
+              "fc": 153
+            },
+            "frame": 397
+          },
+          {
+            "t": 864,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 15703,
+              "pa": true,
+              "fc": 153
+            },
+            "frame": 416
+          },
+          {
+            "t": 864,
+            "sw": "loading>d10c5638",
+            "scene": "ab5efa0e",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 15703,
+              "pa": true,
+              "fc": 153
+            },
+            "frame": 416
+          },
+          {
+            "t": 929,
+            "sw": "loading>d10c5638",
+            "scene": "ab5efa0e",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 15703,
+              "pa": true,
+              "fc": 154
+            },
+            "frame": 417
+          },
+          {
+            "t": 932,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 15703,
+              "pa": true,
+              "fc": 154
+            },
+            "frame": 418
+          },
+          {
+            "t": 1064,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 15703,
+              "pa": true,
+              "fc": 155
+            },
+            "frame": 420
+          },
+          {
+            "t": 1564,
+            "sw": "done>d10c5638",
+            "scene": "d10c5638",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 15703,
+              "pa": true,
+              "fc": 166
+            },
+            "frame": 431
+          }
+        ],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 7,
+        "key": "KeyN",
+        "startedAfterMs": 12,
+        "from": "d10c5638",
+        "to": "2f1ddf5f",
+        "reason": "next",
+        "state": "done",
+        "ms": 3958,
+        "now": "2f1ddf5f",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "timeline": [
+          {
+            "t": 3,
+            "sw": null,
+            "scene": "d10c5638",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 15703,
+              "pa": true,
+              "fc": 169
+            },
+            "frame": 434
+          },
+          {
+            "t": 25,
+            "sw": "loading>2f1ddf5f",
+            "scene": "d10c5638",
+            "disposed": true,
+            "drawn": "sorted",
+            "held": true,
+            "plan": "sorted/loading",
+            "accumOn": false,
+            "inside": {
+              "en": false,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 15703,
+              "pa": false,
+              "fc": 170
+            },
+            "frame": 435
+          },
+          {
+            "t": 991,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 15703,
+              "pa": true,
+              "fc": 170
+            },
+            "frame": 459
+          },
+          {
+            "t": 991,
+            "sw": "loading>2f1ddf5f",
+            "scene": "d10c5638",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 15703,
+              "pa": true,
+              "fc": 170
+            },
+            "frame": 459
+          },
+          {
+            "t": 1025,
+            "sw": "loading>2f1ddf5f",
+            "scene": "d10c5638",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 526,
+              "pa": true,
+              "fc": 171
+            },
+            "frame": 460
+          },
+          {
+            "t": 1258,
+            "sw": "loading>2f1ddf5f",
+            "scene": "d10c5638",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1404,
+              "pa": true,
+              "fc": 178
+            },
+            "frame": 467
+          },
+          {
+            "t": 1591,
+            "sw": "loading>2f1ddf5f",
+            "scene": "d10c5638",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2316,
+              "pa": true,
+              "fc": 188
+            },
+            "frame": 477
+          },
+          {
+            "t": 1825,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2316,
+              "pa": true,
+              "fc": 194
+            },
+            "frame": 484
+          },
+          {
+            "t": 1925,
+            "sw": "loading>2f1ddf5f",
+            "scene": "d10c5638",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2737,
+              "pa": true,
+              "fc": 197
+            },
+            "frame": 487
+          },
+          {
+            "t": 2258,
+            "sw": "loading>2f1ddf5f",
+            "scene": "d10c5638",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3332,
+              "pa": true,
+              "fc": 207
+            },
+            "frame": 497
+          },
+          {
+            "t": 2358,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3332,
+              "pa": true,
+              "fc": 209
+            },
+            "frame": 500
+          },
+          {
+            "t": 2592,
+            "sw": "loading>2f1ddf5f",
+            "scene": "d10c5638",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 4559,
+              "pa": true,
+              "fc": 216
+            },
+            "frame": 507
+          },
+          {
+            "t": 2925,
+            "sw": "loading>2f1ddf5f",
+            "scene": "d10c5638",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 5276,
+              "pa": true,
+              "fc": 226
+            },
+            "frame": 517
+          },
+          {
+            "t": 3258,
+            "sw": "loading>2f1ddf5f",
+            "scene": "d10c5638",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 6728,
+              "pa": true,
+              "fc": 236
+            },
+            "frame": 527
+          },
+          {
+            "t": 3925,
+            "sw": "loading>2f1ddf5f",
+            "scene": "d10c5638",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 7010,
+              "pa": true,
+              "fc": 256
+            },
+            "frame": 547
+          },
+          {
+            "t": 3958,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 7010,
+              "pa": true,
+              "fc": 256
+            },
+            "frame": 548
+          }
+        ],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 8,
+        "key": "KeyN",
+        "startedAfterMs": 13,
+        "from": "2f1ddf5f",
+        "to": "ba7aa29d",
+        "reason": "next",
+        "state": "done",
+        "ms": 1838,
+        "now": "ba7aa29d",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "timeline": [
+          {
+            "t": 2,
+            "sw": "done>2f1ddf5f",
+            "scene": "2f1ddf5f",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 7010,
+              "pa": true,
+              "fc": 257
+            },
+            "frame": 549
+          },
+          {
+            "t": 35,
+            "sw": "loading>ba7aa29d",
+            "scene": "2f1ddf5f",
+            "disposed": true,
+            "drawn": "sorted",
+            "held": true,
+            "plan": "sorted/loading",
+            "accumOn": false,
+            "inside": {
+              "en": false,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 7010,
+              "pa": false,
+              "fc": 258
+            },
+            "frame": 550
+          },
+          {
+            "t": 802,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 7010,
+              "pa": true,
+              "fc": 258
+            },
+            "frame": 570
+          },
+          {
+            "t": 802,
+            "sw": "loading>ba7aa29d",
+            "scene": "2f1ddf5f",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 7010,
+              "pa": true,
+              "fc": 258
+            },
+            "frame": 570
+          },
+          {
+            "t": 835,
+            "sw": "loading>ba7aa29d",
+            "scene": "2f1ddf5f",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 869,
+              "pa": true,
+              "fc": 259
+            },
+            "frame": 571
+          },
+          {
+            "t": 968,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 869,
+              "pa": true,
+              "fc": 260
+            },
+            "frame": 573
+          },
+          {
+            "t": 1135,
+            "sw": "loading>ba7aa29d",
+            "scene": "2f1ddf5f",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1304,
+              "pa": true,
+              "fc": 265
+            },
+            "frame": 578
+          },
+          {
+            "t": 1702,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1304,
+              "pa": true,
+              "fc": 281
+            },
+            "frame": 595
+          },
+          {
+            "t": 1802,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1304,
+              "pa": true,
+              "fc": 283
+            },
+            "frame": 598
+          },
+          {
+            "t": 1868,
+            "sw": "done>ba7aa29d",
+            "scene": "ba7aa29d",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1304,
+              "pa": true,
+              "fc": 285
+            },
+            "frame": 600
+          }
+        ],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f",
+            "ba7aa29d"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 9,
+        "key": "KeyN",
+        "startedAfterMs": 10,
+        "from": "ba7aa29d",
+        "to": "9baef54b",
+        "reason": "next",
+        "state": "done",
+        "ms": 1695,
+        "now": "9baef54b",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "timeline": [
+          {
+            "t": 61,
+            "sw": "loading>9baef54b",
+            "scene": "ba7aa29d",
+            "disposed": true,
+            "drawn": "sorted",
+            "held": true,
+            "plan": "sorted/loading",
+            "accumOn": false,
+            "inside": {
+              "en": false,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 1304,
+              "pa": false,
+              "fc": 287
+            },
+            "frame": 602
+          },
+          {
+            "t": 728,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 1304,
+              "pa": true,
+              "fc": 287
+            },
+            "frame": 622
+          },
+          {
+            "t": 728,
+            "sw": "loading>9baef54b",
+            "scene": "ba7aa29d",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 1304,
+              "pa": true,
+              "fc": 287
+            },
+            "frame": 622
+          },
+          {
+            "t": 762,
+            "sw": "loading>9baef54b",
+            "scene": "ba7aa29d",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 450,
+              "pa": true,
+              "fc": 288
+            },
+            "frame": 623
+          },
+          {
+            "t": 995,
+            "sw": "loading>9baef54b",
+            "scene": "ba7aa29d",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 956,
+              "pa": true,
+              "fc": 295
+            },
+            "frame": 630
+          },
+          {
+            "t": 1628,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 956,
+              "pa": true,
+              "fc": 309
+            },
+            "frame": 645
+          },
+          {
+            "t": 1753,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 956,
+              "pa": true,
+              "fc": 309
+            },
+            "frame": 646
+          },
+          {
+            "t": 1753,
+            "sw": "done>9baef54b",
+            "scene": "9baef54b",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 956,
+              "pa": true,
+              "fc": 309
+            },
+            "frame": 646
+          },
+          {
+            "t": 1762,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 956,
+              "pa": true,
+              "fc": 309
+            },
+            "frame": 647
+          }
+        ],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f",
+            "ba7aa29d",
+            "9baef54b"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 10,
+        "key": "KeyN",
+        "startedAfterMs": 10,
+        "from": "9baef54b",
+        "to": "0230d903",
+        "reason": "next",
+        "state": "done",
+        "ms": 1710,
+        "now": "0230d903",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "timeline": [
+          {
+            "t": 21,
+            "sw": "loading>0230d903",
+            "scene": "9baef54b",
+            "disposed": true,
+            "drawn": "sorted",
+            "held": true,
+            "plan": "sorted/loading",
+            "accumOn": false,
+            "inside": {
+              "en": false,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 956,
+              "pa": false,
+              "fc": 311
+            },
+            "frame": 649
+          },
+          {
+            "t": 748,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 956,
+              "pa": true,
+              "fc": 311
+            },
+            "frame": 669
+          },
+          {
+            "t": 748,
+            "sw": "loading>0230d903",
+            "scene": "9baef54b",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 956,
+              "pa": true,
+              "fc": 311
+            },
+            "frame": 669
+          },
+          {
+            "t": 757,
+            "sw": "loading>0230d903",
+            "scene": "9baef54b",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1245,
+              "pa": true,
+              "fc": 312
+            },
+            "frame": 670
+          },
+          {
+            "t": 816,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1245,
+              "pa": true,
+              "fc": 312
+            },
+            "frame": 671
+          },
+          {
+            "t": 1021,
+            "sw": "loading>0230d903",
+            "scene": "9baef54b",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2536,
+              "pa": true,
+              "fc": 318
+            },
+            "frame": 677
+          },
+          {
+            "t": 1288,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2536,
+              "pa": true,
+              "fc": 324
+            },
+            "frame": 684
+          },
+          {
+            "t": 1555,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2536,
+              "pa": true,
+              "fc": 331
+            },
+            "frame": 692
+          },
+          {
+            "t": 1654,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2536,
+              "pa": true,
+              "fc": 333
+            },
+            "frame": 695
+          },
+          {
+            "t": 1692,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2536,
+              "pa": true,
+              "fc": 333
+            },
+            "frame": 696
+          },
+          {
+            "t": 1728,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2536,
+              "pa": true,
+              "fc": 333
+            },
+            "frame": 697
+          },
+          {
+            "t": 1728,
+            "sw": "done>0230d903",
+            "scene": "0230d903",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2536,
+              "pa": true,
+              "fc": 333
+            },
+            "frame": 697
+          }
+        ],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f",
+            "ba7aa29d",
+            "9baef54b",
+            "0230d903"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 11,
+        "key": "KeyN",
+        "startedAfterMs": 9,
+        "from": "0230d903",
+        "to": "eb5f51dc",
+        "reason": "next",
+        "state": "done",
+        "ms": 1445,
+        "now": "eb5f51dc",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "timeline": [
+          {
+            "t": 45,
+            "sw": "loading>eb5f51dc",
+            "scene": "0230d903",
+            "disposed": true,
+            "drawn": "sorted",
+            "held": true,
+            "plan": "sorted/loading",
+            "accumOn": false,
+            "inside": {
+              "en": false,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 2536,
+              "pa": false,
+              "fc": 336
+            },
+            "frame": 700
+          },
+          {
+            "t": 750,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 2536,
+              "pa": true,
+              "fc": 336
+            },
+            "frame": 722
+          },
+          {
+            "t": 750,
+            "sw": "loading>eb5f51dc",
+            "scene": "0230d903",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 2536,
+              "pa": true,
+              "fc": 336
+            },
+            "frame": 722
+          },
+          {
+            "t": 784,
+            "sw": "loading>eb5f51dc",
+            "scene": "0230d903",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 667,
+              "pa": true,
+              "fc": 337
+            },
+            "frame": 723
+          },
+          {
+            "t": 850,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 667,
+              "pa": true,
+              "fc": 338
+            },
+            "frame": 725
+          },
+          {
+            "t": 1384,
+            "sw": "loading>eb5f51dc",
+            "scene": "0230d903",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 678,
+              "pa": true,
+              "fc": 354
+            },
+            "frame": 741
+          },
+          {
+            "t": 1459,
+            "sw": "done>eb5f51dc",
+            "scene": "eb5f51dc",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 678,
+              "pa": true,
+              "fc": 356
+            },
+            "frame": 743
+          }
+        ],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f",
+            "ba7aa29d",
+            "9baef54b",
+            "0230d903",
+            "eb5f51dc"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 12,
+        "key": "KeyN",
+        "startedAfterMs": 10,
+        "from": "eb5f51dc",
+        "to": "1994c65c",
+        "reason": "next",
+        "state": "done",
+        "ms": 1996,
+        "now": "1994c65c",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "timeline": [
+          {
+            "t": 28,
+            "sw": "loading>1994c65c",
+            "scene": "eb5f51dc",
+            "disposed": true,
+            "drawn": "sorted",
+            "held": true,
+            "plan": "sorted/loading",
+            "accumOn": false,
+            "inside": {
+              "en": false,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 678,
+              "pa": false,
+              "fc": 357
+            },
+            "frame": 745
+          },
+          {
+            "t": 669,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 678,
+              "pa": true,
+              "fc": 357
+            },
+            "frame": 764
+          },
+          {
+            "t": 669,
+            "sw": "loading>1994c65c",
+            "scene": "eb5f51dc",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 678,
+              "pa": true,
+              "fc": 357
+            },
+            "frame": 764
+          },
+          {
+            "t": 695,
+            "sw": "loading>1994c65c",
+            "scene": "eb5f51dc",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 485,
+              "pa": true,
+              "fc": 358
+            },
+            "frame": 765
+          },
+          {
+            "t": 928,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 485,
+              "pa": true,
+              "fc": 364
+            },
+            "frame": 772
+          },
+          {
+            "t": 961,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 485,
+              "pa": true,
+              "fc": 364
+            },
+            "frame": 773
+          },
+          {
+            "t": 995,
+            "sw": "loading>1994c65c",
+            "scene": "eb5f51dc",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 776,
+              "pa": true,
+              "fc": 365
+            },
+            "frame": 774
+          },
+          {
+            "t": 1295,
+            "sw": "loading>1994c65c",
+            "scene": "eb5f51dc",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1845,
+              "pa": true,
+              "fc": 374
+            },
+            "frame": 783
+          },
+          {
+            "t": 1761,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1845,
+              "pa": true,
+              "fc": 387
+            },
+            "frame": 797
+          },
+          {
+            "t": 1795,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1845,
+              "pa": true,
+              "fc": 387
+            },
+            "frame": 798
+          },
+          {
+            "t": 1961,
+            "sw": "loading>1994c65c",
+            "scene": "eb5f51dc",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1886,
+              "pa": true,
+              "fc": 392
+            },
+            "frame": 803
+          },
+          {
+            "t": 2042,
+            "sw": "done>1994c65c",
+            "scene": "1994c65c",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1886,
+              "pa": true,
+              "fc": 394
+            },
+            "frame": 805
+          }
+        ],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f",
+            "ba7aa29d",
+            "9baef54b",
+            "0230d903",
+            "eb5f51dc",
+            "1994c65c"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 13,
+        "key": "KeyN",
+        "startedAfterMs": 111,
+        "from": "1994c65c",
+        "to": "d8ba72a6",
+        "reason": "next",
+        "state": "done",
+        "ms": 1498,
+        "now": "d8ba72a6",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 1,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "timeline": [
+          {
+            "t": 28,
+            "sw": null,
+            "scene": "1994c65c",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1886,
+              "pa": true,
+              "fc": 398
+            },
+            "frame": 809
+          },
+          {
+            "t": 94,
+            "sw": "loading>d8ba72a6",
+            "scene": "1994c65c",
+            "disposed": true,
+            "drawn": "sorted",
+            "held": true,
+            "plan": "sorted/loading",
+            "accumOn": false,
+            "inside": {
+              "en": false,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 1886,
+              "pa": false,
+              "fc": 399
+            },
+            "frame": 811
+          },
+          {
+            "t": 992,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 1886,
+              "pa": true,
+              "fc": 399
+            },
+            "frame": 835
+          },
+          {
+            "t": 992,
+            "sw": "loading>d8ba72a6",
+            "scene": "1994c65c",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 1886,
+              "pa": true,
+              "fc": 399
+            },
+            "frame": 835
+          },
+          {
+            "t": 997,
+            "sw": "loading>d8ba72a6",
+            "scene": "1994c65c",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2931,
+              "pa": true,
+              "fc": 400
+            },
+            "frame": 836
+          },
+          {
+            "t": 1594,
+            "sw": "done>d8ba72a6",
+            "scene": "d8ba72a6",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2931,
+              "pa": true,
+              "fc": 418
+            },
+            "frame": 854
+          }
+        ],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f",
+            "ba7aa29d",
+            "9baef54b",
+            "0230d903",
+            "eb5f51dc",
+            "1994c65c",
+            "d8ba72a6"
+          ],
+          "consumed": 1,
+          "buffer": 23,
+          "nextSkip": 24,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 14,
+        "key": "KeyN",
+        "startedAfterMs": 11,
+        "from": "d8ba72a6",
+        "to": "15a202e6",
+        "reason": "next",
+        "state": "done",
+        "ms": 6882,
+        "now": "15a202e6",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "timeline": [
+          {
+            "t": 33,
+            "sw": "loading>15a202e6",
+            "scene": "d8ba72a6",
+            "disposed": true,
+            "drawn": "sorted",
+            "held": true,
+            "plan": "sorted/loading",
+            "accumOn": false,
+            "inside": {
+              "en": false,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 2931,
+              "pa": false,
+              "fc": 423
+            },
+            "frame": 859
+          },
+          {
+            "t": 6544,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 2931,
+              "pa": true,
+              "fc": 423
+            },
+            "frame": 1011
+          },
+          {
+            "t": 6544,
+            "sw": "loading>15a202e6",
+            "scene": "d8ba72a6",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 2931,
+              "pa": true,
+              "fc": 423
+            },
+            "frame": 1011
+          },
+          {
+            "t": 6567,
+            "sw": "loading>15a202e6",
+            "scene": "d8ba72a6",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2931,
+              "pa": true,
+              "fc": 424
+            },
+            "frame": 1012
+          },
+          {
+            "t": 6900,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2931,
+              "pa": true,
+              "fc": 424
+            },
+            "frame": 1013
+          },
+          {
+            "t": 6900,
+            "sw": "done>15a202e6",
+            "scene": "15a202e6",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2931,
+              "pa": true,
+              "fc": 424
+            },
+            "frame": 1013
+          }
+        ],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f",
+            "ba7aa29d",
+            "9baef54b",
+            "0230d903",
+            "eb5f51dc",
+            "1994c65c",
+            "d8ba72a6",
+            "15a202e6"
+          ],
+          "consumed": 2,
+          "buffer": 22,
+          "nextSkip": 24,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 15,
+        "key": "KeyN",
+        "startedAfterMs": 9,
+        "from": "15a202e6",
+        "to": "9f0f903a",
+        "reason": "next",
+        "state": "done",
+        "ms": 2132,
+        "now": "9f0f903a",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "timeline": [
+          {
+            "t": 239,
+            "sw": "loading>9f0f903a",
+            "scene": "15a202e6",
+            "disposed": true,
+            "drawn": "sorted",
+            "held": true,
+            "plan": "sorted/loading",
+            "accumOn": false,
+            "inside": {
+              "en": false,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 2931,
+              "pa": false,
+              "fc": 425
+            },
+            "frame": 1014
+          },
+          {
+            "t": 1256,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 2931,
+              "pa": true,
+              "fc": 425
+            },
+            "frame": 1042
+          },
+          {
+            "t": 1256,
+            "sw": "loading>9f0f903a",
+            "scene": "15a202e6",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 2931,
+              "pa": true,
+              "fc": 425
+            },
+            "frame": 1042
+          },
+          {
+            "t": 1398,
+            "sw": "loading>9f0f903a",
+            "scene": "15a202e6",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1152,
+              "pa": true,
+              "fc": 426
+            },
+            "frame": 1043
+          },
+          {
+            "t": 1760,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1152,
+              "pa": true,
+              "fc": 433
+            },
+            "frame": 1051
+          },
+          {
+            "t": 1927,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1152,
+              "pa": true,
+              "fc": 437
+            },
+            "frame": 1056
+          },
+          {
+            "t": 2150,
+            "sw": "done>9f0f903a",
+            "scene": "9f0f903a",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1152,
+              "pa": true,
+              "fc": 440
+            },
+            "frame": 1059
+          },
+          {
+            "t": 2164,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 1152,
+              "pa": true,
+              "fc": 440
+            },
+            "frame": 1060
+          }
+        ],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f",
+            "ba7aa29d",
+            "9baef54b",
+            "0230d903",
+            "eb5f51dc",
+            "1994c65c",
+            "d8ba72a6",
+            "15a202e6",
+            "9f0f903a"
+          ],
+          "consumed": 3,
+          "buffer": 21,
+          "nextSkip": 24,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 16,
+        "key": "KeyN",
+        "startedAfterMs": 13,
+        "from": "9f0f903a",
+        "to": "a8cfc66e",
+        "reason": "next",
+        "state": "done",
+        "ms": 1712,
+        "now": "a8cfc66e",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "timeline": [
+          {
+            "t": 21,
+            "sw": "loading>a8cfc66e",
+            "scene": "9f0f903a",
+            "disposed": true,
+            "drawn": "sorted",
+            "held": true,
+            "plan": "sorted/loading",
+            "accumOn": false,
+            "inside": {
+              "en": false,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 1152,
+              "pa": false,
+              "fc": 441
+            },
+            "frame": 1061
+          },
+          {
+            "t": 1060,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 1152,
+              "pa": true,
+              "fc": 441
+            },
+            "frame": 1091
+          },
+          {
+            "t": 1060,
+            "sw": "loading>a8cfc66e",
+            "scene": "9f0f903a",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 1152,
+              "pa": true,
+              "fc": 441
+            },
+            "frame": 1091
+          },
+          {
+            "t": 1088,
+            "sw": "loading>a8cfc66e",
+            "scene": "9f0f903a",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3047,
+              "pa": true,
+              "fc": 442
+            },
+            "frame": 1092
+          },
+          {
+            "t": 1288,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3047,
+              "pa": true,
+              "fc": 443
+            },
+            "frame": 1094
+          },
+          {
+            "t": 1712,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3047,
+              "pa": true,
+              "fc": 454
+            },
+            "frame": 1106
+          },
+          {
+            "t": 1724,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3047,
+              "pa": true,
+              "fc": 454
+            },
+            "frame": 1107
+          },
+          {
+            "t": 1724,
+            "sw": "done>a8cfc66e",
+            "scene": "a8cfc66e",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 3047,
+              "pa": true,
+              "fc": 454
+            },
+            "frame": 1107
+          }
+        ],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f",
+            "ba7aa29d",
+            "9baef54b",
+            "0230d903",
+            "eb5f51dc",
+            "1994c65c",
+            "d8ba72a6",
+            "15a202e6",
+            "9f0f903a",
+            "a8cfc66e"
+          ],
+          "consumed": 4,
+          "buffer": 20,
+          "nextSkip": 24,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 17,
+        "key": "KeyN",
+        "startedAfterMs": 8,
+        "from": "a8cfc66e",
+        "to": "a6df26f1",
+        "reason": "next",
+        "state": "done",
+        "ms": 1420,
+        "now": "a6df26f1",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "timeline": [
+          {
+            "t": 19,
+            "sw": "loading>a6df26f1",
+            "scene": "a8cfc66e",
+            "disposed": true,
+            "drawn": "sorted",
+            "held": true,
+            "plan": "sorted/loading",
+            "accumOn": false,
+            "inside": {
+              "en": false,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 3047,
+              "pa": false,
+              "fc": 455
+            },
+            "frame": 1108
+          },
+          {
+            "t": 706,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 3047,
+              "pa": true,
+              "fc": 455
+            },
+            "frame": 1129
+          },
+          {
+            "t": 706,
+            "sw": "loading>a6df26f1",
+            "scene": "a8cfc66e",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 0,
+              "nv": 1,
+              "set": 0,
+              "nc": 3047,
+              "pa": true,
+              "fc": 455
+            },
+            "frame": 1129
+          },
+          {
+            "t": 739,
+            "sw": "loading>a6df26f1",
+            "scene": "a8cfc66e",
+            "disposed": true,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2204,
+              "pa": true,
+              "fc": 456
+            },
+            "frame": 1130
+          },
+          {
+            "t": 904,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2204,
+              "pa": true,
+              "fc": 457
+            },
+            "frame": 1132
+          },
+          {
+            "t": 1006,
+            "noFrameCall": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2204,
+              "pa": true,
+              "fc": 459
+            },
+            "frame": 1135
+          },
+          {
+            "t": 1439,
+            "sw": "done>a6df26f1",
+            "scene": "a6df26f1",
+            "disposed": false,
+            "drawn": "accum",
+            "held": false,
+            "plan": "accum/ok",
+            "accumOn": true,
+            "inside": {
+              "en": true,
+              "rp": true,
+              "tp": true,
+              "cv": true,
+              "b": 34,
+              "nv": 1,
+              "set": 1,
+              "nc": 2204,
+              "pa": true,
+              "fc": 470
+            },
+            "frame": 1146
+          }
+        ],
+        "tour": {
+          "seen": [
+            "b11e45d1",
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38",
+            "70b50d42",
+            "ab5efa0e",
+            "d10c5638",
+            "2f1ddf5f",
+            "ba7aa29d",
+            "9baef54b",
+            "0230d903",
+            "eb5f51dc",
+            "1994c65c",
+            "d8ba72a6",
+            "15a202e6",
+            "9f0f903a",
+            "a8cfc66e",
+            "a6df26f1"
+          ],
+          "consumed": 5,
+          "buffer": 19,
+          "nextSkip": 24,
+          "exhausted": false
+        }
+      }
+    ],
+    "switchLog": [
+      {
+        "from": "b11e45d1",
+        "to": "887f27aa",
+        "reason": "next",
+        "ok": true,
+        "ms": 2376
+      },
+      {
+        "from": "887f27aa",
+        "to": "39e63ce9",
+        "reason": "next",
+        "ok": true,
+        "ms": 1856
+      },
+      {
+        "from": "39e63ce9",
+        "to": "7a475d38",
+        "reason": "next",
+        "ok": true,
+        "ms": 1928
+      },
+      {
+        "from": "7a475d38",
+        "to": "70b50d42",
+        "reason": "next",
+        "ok": true,
+        "ms": 2180
+      },
+      {
+        "from": "70b50d42",
+        "to": "ab5efa0e",
+        "reason": "next",
+        "ok": true,
+        "ms": 3347
+      },
+      {
+        "from": "ab5efa0e",
+        "to": "d10c5638",
+        "reason": "next",
+        "ok": true,
+        "ms": 1551
+      },
+      {
+        "from": "d10c5638",
+        "to": "2f1ddf5f",
+        "reason": "next",
+        "ok": true,
+        "ms": 3958
+      },
+      {
+        "from": "2f1ddf5f",
+        "to": "ba7aa29d",
+        "reason": "next",
+        "ok": true,
+        "ms": 1838
+      },
+      {
+        "from": "ba7aa29d",
+        "to": "9baef54b",
+        "reason": "next",
+        "ok": true,
+        "ms": 1695
+      },
+      {
+        "from": "9baef54b",
+        "to": "0230d903",
+        "reason": "next",
+        "ok": true,
+        "ms": 1710
+      },
+      {
+        "from": "0230d903",
+        "to": "eb5f51dc",
+        "reason": "next",
+        "ok": true,
+        "ms": 1445
+      },
+      {
+        "from": "eb5f51dc",
+        "to": "1994c65c",
+        "reason": "next",
+        "ok": true,
+        "ms": 1996
+      },
+      {
+        "from": "1994c65c",
+        "to": "d8ba72a6",
+        "reason": "next",
+        "ok": true,
+        "ms": 1498
+      },
+      {
+        "from": "d8ba72a6",
+        "to": "15a202e6",
+        "reason": "next",
+        "ok": true,
+        "ms": 6882
+      },
+      {
+        "from": "15a202e6",
+        "to": "9f0f903a",
+        "reason": "next",
+        "ok": true,
+        "ms": 2132
+      },
+      {
+        "from": "9f0f903a",
+        "to": "a8cfc66e",
+        "reason": "next",
+        "ok": true,
+        "ms": 1712
+      },
+      {
+        "from": "a8cfc66e",
+        "to": "a6df26f1",
+        "reason": "next",
+        "ok": true,
+        "ms": 1420
+      }
+    ],
+    "catalogueScenesVisited": 13,
+    "firstPressIntoSuperSplat": 13,
+    "repeatBeforeSuperSplat": null,
+    "superSplatRequests": [
+      {
+        "url": "?sort=trending&order=-1&time=all&features=walkable&skip=0&limit=24",
+        "status": 200,
+        "ms": 77
+      }
+    ],
+    "beaconsAnswered": 20,
+    "blockedWrites": [],
+    "requests": 1407,
+    "httpErrors": [
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/lod-meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v12/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/lod-meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v9/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v7/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v11/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v10/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v6/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v8/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/lod-meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/scene.voxel.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/lod-meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/lod-meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json"
+    ],
+    "pageErrors": [],
+    "errorsByPress": [],
+    "errorsAfterTheLastPress": [],
+    "totalPageErrors": 0,
+    "totalGpuErrors": 0,
+    "consoleErrors": [
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()"
+    ]
+  }
+}

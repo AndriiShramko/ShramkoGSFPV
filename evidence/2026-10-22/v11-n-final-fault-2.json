@@ -1,0 +1,217 @@
+{
+  "name": "v11-n",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.85",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-22T23:48:33.773Z",
+    "gitHead": "f4044a5",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5612",
+  "feed": "live answers (https://gsfpv.flyreelstudio.eu, GET only)",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.85",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "render": "on",
+  "presses": 2,
+  "superSplatProxy": "simulated: abort",
+  "catalogue": {
+    "count": 13,
+    "ids": [
+      "887f27aa",
+      "39e63ce9",
+      "7a475d38",
+      "70b50d42",
+      "ab5efa0e",
+      "d10c5638",
+      "2f1ddf5f",
+      "ba7aa29d",
+      "9baef54b",
+      "0230d903",
+      "eb5f51dc",
+      "1994c65c",
+      "b11e45d1"
+    ],
+    "pinned": [],
+    "hidden": [],
+    "requests": [
+      {
+        "url": "",
+        "status": 200,
+        "ms": 581
+      },
+      {
+        "url": "",
+        "status": 200,
+        "ms": 62
+      }
+    ]
+  },
+  "start": "887f27aa",
+  "settings": {
+    "rotation": "curated",
+    "order": "sequential",
+    "autoSwitch": false,
+    "allowNoWalls": false
+  },
+  "page": {
+    "render": "on",
+    "visibility": "visible",
+    "status": "ready"
+  },
+  "drawing": {
+    "class": "desktop-strong",
+    "stochastic": true,
+    "from": {
+      "stochastic": "device",
+      "budget": "device"
+    },
+    "impl": "accum",
+    "plan": {
+      "draw": "accum",
+      "why": "ok"
+    },
+    "drawn": "accum",
+    "accumMissing": [],
+    "webgpu": true
+  },
+  "faulted": 5392.5999999940395,
+  "run": {
+    "sequence": [
+      "887f27aa",
+      "39e63ce9",
+      "7a475d38"
+    ],
+    "presses": [
+      {
+        "i": 1,
+        "key": "KeyN",
+        "startedAfterMs": 17,
+        "from": "887f27aa",
+        "to": "39e63ce9",
+        "reason": "next",
+        "state": "done",
+        "ms": 1378,
+        "now": "39e63ce9",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "tour": {
+          "seen": [
+            "887f27aa",
+            "39e63ce9"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      },
+      {
+        "i": 2,
+        "key": "KeyN",
+        "startedAfterMs": 10,
+        "from": "39e63ce9",
+        "to": "7a475d38",
+        "reason": "next",
+        "state": "done",
+        "ms": 1981,
+        "now": "7a475d38",
+        "note": null,
+        "blockers": [],
+        "exploreRequests": 0,
+        "pageErrors": [],
+        "gpuErrors": 0,
+        "events": [],
+        "tour": {
+          "seen": [
+            "887f27aa",
+            "39e63ce9",
+            "7a475d38"
+          ],
+          "consumed": 0,
+          "buffer": 0,
+          "nextSkip": 0,
+          "exhausted": false
+        }
+      }
+    ],
+    "switchLog": [
+      {
+        "from": "887f27aa",
+        "to": "39e63ce9",
+        "reason": "next",
+        "ok": true,
+        "ms": 1378
+      },
+      {
+        "from": "39e63ce9",
+        "to": "7a475d38",
+        "reason": "next",
+        "ok": true,
+        "ms": 1981
+      }
+    ],
+    "catalogueScenesVisited": 3,
+    "firstPressIntoSuperSplat": null,
+    "repeatBeforeSuperSplat": null,
+    "superSplatRequests": [],
+    "beaconsAnswered": 5,
+    "blockedWrites": [],
+    "requests": 232,
+    "httpErrors": [
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v2/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v1/meta.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v5/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v3/settings.json",
+      "403 d28zzqy0iyovbz.cloudfront.net/<id>/v4/settings.json"
+    ],
+    "pageErrors": [],
+    "errorsByPress": [],
+    "errorsAfterTheLastPress": [],
+    "totalPageErrors": 0,
+    "totalGpuErrors": 0,
+    "consoleErrors": [
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: accumulating stochastic drawing failed (frame), drawing without it Error: forced fault at frame\n    at Object.before (http://localhost:5612/fly/assets/main-Cmjn6s0-.js:16652:45106)\n    at IH.i.<computed> (http://localhost:5612/fly/assets/main-Cmjn6s0-.js:16652:43133)\n    at w.frame (<anonymou",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()"
+    ]
+  }
+}

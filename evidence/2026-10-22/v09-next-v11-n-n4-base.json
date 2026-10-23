@@ -1,0 +1,104 @@
+{
+  "name": "v09-next",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.85",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-22T23:35:34.637Z",
+    "gitHead": "d6ad2b5",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5611",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.85",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "render": "off",
+  "mockedCatalogue": [
+    "b11e45d1",
+    "70b50d42",
+    "887f27aa",
+    "ab5efa0e",
+    "d10c5638",
+    "39e63ce9",
+    "2f1ddf5f",
+    "ba7aa29d",
+    "7a475d38",
+    "9baef54b",
+    "0230d903",
+    "eb5f51dc"
+  ],
+  "mockedSuperSplat": [
+    {
+      "id": "39e63ce9",
+      "format": "sog"
+    },
+    {
+      "id": "c67edb74",
+      "format": "compressed.ply"
+    },
+    {
+      "id": "58a989fb",
+      "format": "sog"
+    },
+    {
+      "id": "3d37bda9",
+      "format": "ssog"
+    },
+    {
+      "id": "2f359069",
+      "format": "sog"
+    },
+    {
+      "id": "95d6b197",
+      "format": "sog"
+    },
+    {
+      "id": "a6df26f1",
+      "format": "ssog"
+    }
+  ],
+  "N4": {
+    "pass": false,
+    "what": "the 12th press with SuperSplat holding the request open: \"Looking for the next scene\u2026\" shows while it waits, a second N is ignored (one request), the wait ends 4 s after it began with \"the author's list starts again\" and the first scene loads, and the next N asks SuperSplat again first (the page says \"Looking for the next scene\u2026\" again and the switch comes after the budget) and goes to the second scene",
+    "last": "eb5f51dc",
+    "looking": "Looking for the next scene\u2026",
+    "requestsDuringWait": 1,
+    "againNote": "No new scene to bring right now: the author's list starts again.",
+    "againAfterMs": 4086,
+    "switchedTo": {
+      "sw": {
+        "state": "done",
+        "from": "eb5f51dc",
+        "to": "b11e45d1",
+        "reason": "next",
+        "ms": 1453
+      },
+      "scene": "b11e45d1"
+    },
+    "nextAfterTimeout": {
+      "scene": "70b50d42",
+      "state": "done"
+    },
+    "nextPressAskedSuperSplatFirst": {
+      "lookingAgain": "No new scene to bring right now: the author's list starts again.",
+      "endedAfterMs": 1516
+    },
+    "superSplatRequests": [
+      "?sort=trending&order=-1&time=all&features=walkable&skip=0&limit=24"
+    ],
+    "knownBaselineErrors": 0,
+    "errors": []
+  },
+  "summary": {
+    "N4": false
+  }
+}
