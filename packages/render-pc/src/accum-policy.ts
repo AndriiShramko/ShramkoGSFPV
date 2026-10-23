@@ -60,6 +60,17 @@ export function planStochastic(i: PlanInput): DrawPlan {
     return { draw: 'accum', why: 'ok' };
 }
 
+/**
+ * Is the accumulating renderer kept out of the next scan until that scan has drawn? (renderer.ts unloadSplat.) Whenever it could be asked for:
+ * the implementation is the accumulating one and it has not failed, whether or not it draws at this moment. A hold only for a renderer that
+ * is drawing (v0.11 until lane N) let a drawing asked for while the new scan loads (the next scene's own request, the pilot's Render setting, the
+ * end of a recording) attach it with no scan and no resident set to bind: page errors on every frame until the first frame had bound a view
+ * (accum.ts quietRenderer), and the early take-over the hold exists to prevent (the work buffer is 1x1 and reallocated meanwhile).
+ */
+export function holdOnUnload(impl: StochasticImpl, failed: boolean): boolean {
+    return impl === 'accum' && !failed;
+}
+
 /** What applyStochastic needs of the accumulating renderer's adapter (accum.ts AccumDrawing; a fake in tests). */
 export interface AccumSwitch {
     /** make the renderer if needed and let it draw; false when it cannot (it failed) */

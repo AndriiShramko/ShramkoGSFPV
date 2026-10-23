@@ -1,0 +1,534 @@
+{
+  "name": "v09-next",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.85",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-22T21:59:22.551Z",
+    "gitHead": "23b229c",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5732",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "155.0.8059.85",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "render": "off",
+  "mockedCatalogue": [
+    "b11e45d1",
+    "70b50d42",
+    "887f27aa",
+    "ab5efa0e",
+    "d10c5638",
+    "39e63ce9",
+    "2f1ddf5f",
+    "ba7aa29d",
+    "7a475d38",
+    "9baef54b",
+    "0230d903",
+    "eb5f51dc"
+  ],
+  "mockedSuperSplat": [
+    {
+      "id": "39e63ce9",
+      "format": "sog"
+    },
+    {
+      "id": "c67edb74",
+      "format": "compressed.ply"
+    },
+    {
+      "id": "58a989fb",
+      "format": "sog"
+    },
+    {
+      "id": "3d37bda9",
+      "format": "ssog"
+    },
+    {
+      "id": "2f359069",
+      "format": "sog"
+    },
+    {
+      "id": "95d6b197",
+      "format": "sog"
+    },
+    {
+      "id": "a6df26f1",
+      "format": "ssog"
+    }
+  ],
+  "N1": {
+    "pass": true,
+    "what": "N from the first of 12 mocked scenes (8 without walls) visits all 12 in the owner's order, then the first two openable SuperSplat scenes; SuperSplat is asked only for the 12th press, with the tab's defaults",
+    "startScene": "b11e45d1",
+    "visited": [
+      {
+        "scene": "70b50d42",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "887f27aa",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "ab5efa0e",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "d10c5638",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "39e63ce9",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "2f1ddf5f",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "ba7aa29d",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "7a475d38",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "9baef54b",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "0230d903",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "eb5f51dc",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "58a989fb",
+        "state": "done",
+        "reason": "next"
+      },
+      {
+        "scene": "3d37bda9",
+        "state": "done",
+        "reason": "next"
+      }
+    ],
+    "expected": [
+      "b11e45d1",
+      "70b50d42",
+      "887f27aa",
+      "ab5efa0e",
+      "d10c5638",
+      "39e63ce9",
+      "2f1ddf5f",
+      "ba7aa29d",
+      "7a475d38",
+      "9baef54b",
+      "0230d903",
+      "eb5f51dc",
+      "58a989fb",
+      "3d37bda9"
+    ],
+    "askedBeforeThe12th": 0,
+    "superSplatRequests": [
+      "?sort=trending&order=-1&time=all&features=walkable&skip=0&limit=24"
+    ],
+    "defaults": true,
+    "noRepeat": true,
+    "knownBaselineErrors": 0,
+    "errors": []
+  },
+  "N2": {
+    "pass": true,
+    "what": "after four N presses nothing is stored; a new page load of the first scene and N goes to the second scene, not to the sixth where the last visit stopped (nothing is remembered between visits, D64)",
+    "reached": "d10c5638",
+    "stored": null,
+    "nextVisit": "70b50d42",
+    "storedAfterTheSecondVisit": null,
+    "knownBaselineErrors": 0,
+    "errors": []
+  },
+  "N3": {
+    "pass": true,
+    "what": "eleven Shift+N from a 12-scene catalogue reach all 12 scenes, the 8 without walls included (v0.8 drew from the 4 with walls)",
+    "draws": [
+      "2f1ddf5f",
+      "0230d903",
+      "ab5efa0e",
+      "39e63ce9",
+      "eb5f51dc",
+      "ba7aa29d",
+      "887f27aa",
+      "7a475d38",
+      "d10c5638",
+      "9baef54b",
+      "70b50d42"
+    ],
+    "distinct": 12,
+    "withoutWalls": 8,
+    "knownBaselineErrors": 0,
+    "errors": []
+  },
+  "N4": {
+    "pass": true,
+    "what": "the 12th press with SuperSplat holding the request open: \"Looking for the next scene\u2026\" shows while it waits, a second N is ignored (one request), the wait ends 4 s after it began with \"the author's list starts again\" and the first scene loads, and the next N goes to the second scene",
+    "last": "eb5f51dc",
+    "looking": "Looking for the next scene\u2026",
+    "requestsDuringWait": 1,
+    "againNote": "No new scene to bring right now: the author's list starts again.",
+    "againAfterMs": 4093,
+    "switchedTo": {
+      "sw": {
+        "state": "done",
+        "from": "eb5f51dc",
+        "to": "b11e45d1",
+        "reason": "next",
+        "ms": 1204
+      },
+      "scene": "b11e45d1"
+    },
+    "nextAfterTimeout": {
+      "scene": "70b50d42",
+      "state": "done"
+    },
+    "superSplatRequests": [
+      "?sort=trending&order=-1&time=all&features=walkable&skip=0&limit=24"
+    ],
+    "knownBaselineErrors": 0,
+    "errors": []
+  },
+  "H1": {
+    "pass": true,
+    "what": "no hint after crash 1 and 2; after the 3rd \"Want another place? Press N for the next scene\" (a status line taking no click, overlapping no button or the crash toast), hidden while the crash panel is open (its Replay, Rewind, Start buttons are all there) and back after R, closed by its x; none after 4 and 5; again after the 6th; N changes the scene, stores \"N used\" and takes the hint away",
+    "crashed": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "shown": {
+      "after1": {
+        "exists": false,
+        "present": false,
+        "text": "",
+        "buttons": [],
+        "pointerEvents": "",
+        "rect": null,
+        "overlaps": []
+      },
+      "after2": {
+        "exists": false,
+        "present": false,
+        "text": "",
+        "buttons": [],
+        "pointerEvents": "",
+        "rect": null,
+        "overlaps": []
+      },
+      "after3": {
+        "exists": true,
+        "present": true,
+        "text": "Want another place? Press N for the next scene",
+        "buttons": [
+          "hint-close"
+        ],
+        "pointerEvents": "none",
+        "rect": {
+          "x": 457.4375,
+          "y": 556,
+          "w": 365.125,
+          "h": 54
+        },
+        "overlaps": []
+      },
+      "after4": {
+        "exists": false,
+        "present": false,
+        "text": "",
+        "buttons": [],
+        "pointerEvents": "",
+        "rect": null,
+        "overlaps": []
+      },
+      "after5": {
+        "exists": false,
+        "present": false,
+        "text": "",
+        "buttons": [],
+        "pointerEvents": "",
+        "rect": null,
+        "overlaps": []
+      },
+      "after6": {
+        "exists": true,
+        "present": true,
+        "text": "Want another place? Press N for the next scene",
+        "buttons": [
+          "hint-close"
+        ],
+        "pointerEvents": "none",
+        "rect": {
+          "x": 457.4375,
+          "y": 556,
+          "w": 365.125,
+          "h": 54
+        },
+        "overlaps": []
+      }
+    },
+    "toastShown": 1,
+    "withPanel": {
+      "exists": true,
+      "present": false,
+      "text": "Want another place? Press N for the next scene",
+      "buttons": [],
+      "pointerEvents": "",
+      "rect": null,
+      "overlaps": []
+    },
+    "panelButtons": 9,
+    "panelBox": {
+      "x": 360,
+      "y": 98,
+      "width": 560,
+      "height": 340.78125
+    },
+    "afterPanel": {
+      "exists": true,
+      "present": true,
+      "text": "Want another place? Press N for the next scene",
+      "buttons": [
+        "hint-close"
+      ],
+      "pointerEvents": "none",
+      "rect": {
+        "x": 457.4375,
+        "y": 556,
+        "w": 365.125,
+        "h": 54
+      },
+      "overlaps": []
+    },
+    "clickThrough": true,
+    "closed": {
+      "exists": false,
+      "present": false,
+      "text": "",
+      "buttons": [],
+      "pointerEvents": "",
+      "rect": null,
+      "overlaps": []
+    },
+    "used": {
+      "before": null,
+      "after": "1"
+    },
+    "afterN": {
+      "exists": false,
+      "present": false,
+      "text": "",
+      "buttons": [],
+      "pointerEvents": "",
+      "rect": null,
+      "overlaps": []
+    },
+    "errors": []
+  },
+  "H2": {
+    "pass": true,
+    "what": "N used (this visit, or stored by an earlier one): three crashes show no hint; control: H1's three crashes without N show it",
+    "pressedN": {
+      "state": "done",
+      "from": "70b50d42",
+      "to": "887f27aa",
+      "reason": "next",
+      "ms": 1572
+    },
+    "crashed": [
+      true,
+      true,
+      true
+    ],
+    "hintAfterEachCrash": [
+      false,
+      false,
+      false
+    ],
+    "laterVisit": {
+      "crashed": [
+        true,
+        true,
+        true
+      ],
+      "hintAfterEachCrash": [
+        false,
+        false,
+        false
+      ]
+    },
+    "control": {
+      "h1Shows": true,
+      "fired": true
+    },
+    "errors": []
+  },
+  "H3": {
+    "pass": true,
+    "what": "touch: the hint is \"Want another place?\" with a Next scene button that goes to the next scene; a radio that maps the next-scene function: the hint names the switch. (The touch input is the source flag on a simulated radio flight: NOT a real touch screen.)",
+    "touchHint": {
+      "exists": true,
+      "present": true,
+      "text": "Want another place?",
+      "buttons": [
+        "hint-next-scene",
+        "hint-close"
+      ],
+      "pointerEvents": "none",
+      "rect": {
+        "x": 484.6640625,
+        "y": 406,
+        "w": 310.671875,
+        "h": 54
+      },
+      "overlaps": []
+    },
+    "switchedTo": {
+      "sw": {
+        "state": "done",
+        "from": "b11e45d1",
+        "to": "70b50d42",
+        "reason": "next",
+        "ms": 935
+      },
+      "before": "b11e45d1",
+      "after": "70b50d42"
+    },
+    "hintGone": true,
+    "radioHint": {
+      "exists": true,
+      "present": true,
+      "text": "Want another place? Flip your next-scene switch, or press N",
+      "buttons": [
+        "hint-close"
+      ],
+      "pointerEvents": "none",
+      "rect": {
+        "x": 419.09375,
+        "y": 556,
+        "w": 441.8125,
+        "h": 54
+      },
+      "overlaps": []
+    },
+    "errors": []
+  },
+  "H4": {
+    "pass": true,
+    "what": "on a 390 px phone the hint sits inside the screen and overlaps neither the crash toast (at the top there) nor any button; the same with the body class, pads and ARM button of a touch screen, where the crash toast is a small box above the pads (before v0.9 it stretched 546 px down the screen) and the hint overlaps no button, pad or text block",
+    "view": {
+      "exists": true,
+      "present": true,
+      "text": "Want another place? Press N for the next scene",
+      "buttons": [
+        "hint-close"
+      ],
+      "pointerEvents": "none",
+      "rect": {
+        "x": 15.6015625,
+        "y": 276,
+        "w": 358.796875,
+        "h": 54
+      },
+      "overlaps": []
+    },
+    "toast": {
+      "y": 106,
+      "h": 96.296875
+    },
+    "touchOn": {
+      "view": {
+        "exists": true,
+        "present": true,
+        "text": "Want another place? Press N for the next scene",
+        "buttons": [
+          "hint-close"
+        ],
+        "pointerEvents": "none",
+        "rect": {
+          "x": 15.6015625,
+          "y": 276,
+          "w": 358.796875,
+          "h": 54
+        },
+        "overlaps": []
+      },
+      "toast": {
+        "y": 603.703125,
+        "h": 48.296875
+      }
+    },
+    "errors": []
+  },
+  "H5": {
+    "pass": true,
+    "what": "a 844 x 390 touch phone on its side (body class, pads, ARM): the hint sits inside the screen and overlaps no button, pad, text block or the crash toast",
+    "view": {
+      "exists": true,
+      "present": true,
+      "text": "Want another place? Press N for the next scene",
+      "buttons": [
+        "hint-close"
+      ],
+      "pointerEvents": "none",
+      "rect": {
+        "x": 239.4375,
+        "y": 141,
+        "w": 365.125,
+        "h": 54
+      },
+      "overlaps": []
+    },
+    "toast": {
+      "y": 85.703125,
+      "h": 48.296875
+    },
+    "errors": []
+  },
+  "summary": {
+    "N1": true,
+    "N2": true,
+    "N3": true,
+    "N4": true,
+    "H1": true,
+    "H2": true,
+    "H3": true,
+    "H4": true,
+    "H5": true
+  }
+}

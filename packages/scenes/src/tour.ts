@@ -7,6 +7,14 @@
 //      lazily one at a time and consumed in order, skipping our own scenes, scenes already seen, scenes
 //      that failed to load lately and formats the simulator is not known to open;
 //   3. nothing left (all seen, or SuperSplat did not answer): a new round from the catalogue (`again`).
+// When SuperSplat FAILED (an error, or no answer within the budget; not "it answered and has nothing"), that press
+// still shows the owner's next scene, as in 3, but SuperSplat is marked "next in line": every following step asks
+// it FIRST, before what is left of the owner's list, and the owner's next scene is shown only for a step it fails
+// again. The first step that gets a scene from it brings that scene, and SuperSplat goes on (the owner's list was
+// done when it failed; the one scene shown in its place was a stand-in, not the start of a new round). It stops
+// being first when it answers and has nothing to bring (list read to its end, or only scenes we cannot bring).
+// This is the owner's item 9 (v0.11 lane N): his scenes first, then SuperSplat, and a SuperSplat that hiccuped at
+// the 13th press is tried again at the 14th, not after another 12 presses of his list.
 // A scene is never brought twice until a new round starts. "Seen" is every scene on screen (the page's
 // first, N, a pick, a pasted link). Order `sequential` takes the first unseen catalogue scene after the
 // current one, round the list; `random` draws uniformly among the unseen.
@@ -112,11 +120,20 @@ interface Stream {
     exhausted: boolean;
 }
 
+/** What one SuperSplat attempt gave: a scene, or nothing and why (`failed`: it did not answer; else it answered and has none). */
+interface SsRead { id: string | null; failed: boolean }
+
 export class SceneTour {
     private readonly d: TourDeps;
     private readonly pageSize: number;
     private seen = new Set<string>();
     private stream: Stream;
+    /**
+     * SuperSplat failed at the last step that asked it: the next step asks it before the owner's list. In memory
+     * only (the position kept between visits is the seen scenes and the place in the list; a new visit asks in
+     * the order of the walk again).
+     */
+    private ssFirst = false;
 
     constructor(deps: TourDeps) {
         this.d = deps;
@@ -140,10 +157,19 @@ export class SceneTour {
      */
     async next(current: string | null, order: TourOrder): Promise<TourStep | null> {
         if (current) this.seen.add(current);
+        // SuperSplat failed at the last step that asked it: it is asked first now (one attempt per step; the
+        // step does not ask it a second time below). A step that fails again still shows the owner's next scene.
+        let asked: SsRead | null = null;
+        if (this.ssFirst) {
+            asked = await this.fromSuperSplat();
+            if (asked.id) return this.take(asked.id, 'superspl');
+            if (!asked.failed) this.ssFirst = false; // it answered and has nothing: the walk is the normal one again
+        }
         const fromCatalogue = this.fromCatalogue(current, order);
         if (fromCatalogue) return this.take(fromCatalogue, 'catalogue');
-        const fromList = await this.fromSuperSplat();
-        if (fromList) return this.take(fromList, 'superspl');
+        const read = asked ?? await this.fromSuperSplat();
+        if (read.id) return this.take(read.id, 'superspl');
+        this.ssFirst = read.failed;
         // everything was seen, or SuperSplat has nothing to give now: a new round from the catalogue. A list
         // read to its end starts over too; a list that merely failed to answer is read on from where it was.
         this.seen = new Set(current ? [current] : []);
@@ -182,10 +208,11 @@ export class SceneTour {
     }
 
     /**
-     * The next SuperSplat entry the tour may bring; null: the list is read to its end, or could not be read
-     * (an error, or no answer within the step's budget: the page is read again by the next step).
+     * The next SuperSplat entry the tour may bring. No id and `failed`: the list could not be read (an error, or
+     * no answer within the step's budget: the page is read again by the next step). No id and not `failed`: the
+     * list is read to its end, or this step's pages held nothing it can bring.
      */
-    private async fromSuperSplat(): Promise<string | null> {
+    private async fromSuperSplat(): Promise<SsRead> {
         const opens = this.d.opens ?? ((it: TourItem) => formatVerdict(it.format ?? '') === 'opens');
         const s = this.stream;
         // one budget for all the pages of this step, started with the first read
@@ -198,9 +225,9 @@ export class SceneTour {
                     s.consumed++;
                     // the owner's scenes are all seen (or failed) by now, so they are passed over here as well
                     if (this.seen.has(it.id) || this.d.failed(it.id) || !opens(it)) continue;
-                    return it.id;
+                    return { id: it.id, failed: false };
                 }
-                if (s.exhausted || !this.d.pages || read >= MAX_PAGES_PER_STEP) return null;
+                if (s.exhausted || !this.d.pages || read >= MAX_PAGES_PER_STEP) return { id: null, failed: false };
                 if (!late) {
                     this.d.onSearch?.();
                     const ms = this.d.readTimeoutMs ?? SUPERSPLAT_READ_MS;
@@ -211,9 +238,9 @@ export class SceneTour {
                     // a page that arrives after the budget is dropped (race keeps its rejection handled)
                     page = await Promise.race([this.d.pages(s.nextSkip, this.pageSize), late]);
                 } catch {
-                    return null;
+                    return { id: null, failed: true };
                 }
-                if (page === 'late') return null;
+                if (page === 'late') return { id: null, failed: true };
                 const end = s.nextSkip + this.pageSize;
                 s.nextSkip = end;
                 // the proxy allows skip up to EXPLORE_BOUNDS.skipMax; an empty page ends the list as well

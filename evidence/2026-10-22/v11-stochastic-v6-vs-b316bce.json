@@ -1,0 +1,99 @@
+{
+  "name": "v11-stochastic",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.85",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-10-23T00:02:15.210Z",
+    "gitHead": "f4044a5",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "new": ".\\dist",
+  "base": ".-dist-base",
+  "pass": {
+    "V6": false
+  },
+  "checks": [
+    {
+      "name": "V6 the release has no more eval( (4 against 4) and no more new Function( (0 against 0) than the BASE",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V6 the policy the pages are served with is strict (no 'unsafe-eval' and no 'unsafe-inline' in script-src; 'wasm-unsafe-eval' is the one the engine always had) and is the same text as the BASE's",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V6 control: a policy with 'unsafe-eval' in script-src would be seen",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V6 the bundle names no host the BASE bundle does not (none)",
+      "ok": true,
+      "control": false
+    },
+    {
+      "name": "V6 control: a made-up host in the bundle would be seen (the check has teeth)",
+      "ok": true,
+      "control": true
+    },
+    {
+      "name": "V6 no page of this run (0 state reads) saw a CSP violation (0)",
+      "ok": false,
+      "control": false
+    },
+    {
+      "name": "no page of this run saw a WebGPU validation error (0 in 0 state reads)",
+      "ok": true,
+      "control": false
+    }
+  ],
+  "items": {
+    "build": {
+      "new": ".\\dist",
+      "base": ".-dist-base",
+      "baseCommit": "db73942"
+    },
+    "browser": {
+      "kind": "system-chrome",
+      "version": "155.0.8059.85",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "V6": {
+      "bytes": {
+        "new": 11375528,
+        "base": 11375012
+      },
+      "eval": {
+        "new": 4,
+        "base": 4
+      },
+      "newFunction": {
+        "new": 0,
+        "base": 0
+      },
+      "hostsAdded": [],
+      "hostsAllowed": [],
+      "cspSame": true,
+      "scriptSrc": "script-src 'self' 'wasm-unsafe-eval' https://www.googletagmanager.com 'self'"
+    },
+    "tally": {
+      "states": 0,
+      "csp": [],
+      "gpuErrors": []
+    }
+  },
+  "failed": null,
+  "strings": {
+    "accumulating": "stochastic, accumulating"
+  }
+}

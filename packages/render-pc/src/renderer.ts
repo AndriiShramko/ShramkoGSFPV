@@ -19,7 +19,7 @@ import { LatencyGuard, inputToScreenMs } from './governor';
 import { applyDrawing, DEFAULT_BUDGET_M } from './drawing';
 import { AccumDrawing, accumMissing, worldLayer } from './accum';
 import type { AccumStats } from './accum';
-import { DEFAULT_STOCHASTIC_IMPL, applyStochastic } from './accum-policy';
+import { DEFAULT_STOCHASTIC_IMPL, applyStochastic, holdOnUnload } from './accum-policy';
 import type { DrawPlan, StochasticImpl } from './accum-policy';
 import type { GpuInfo } from './device-class';
 import { BrokenFileError, lodMetaProblem, lodMode } from './lod';
@@ -665,8 +665,12 @@ export class SplatRenderer {
      * the latency guard and the device stay. Lead contract step before wave 3.
      */
     unloadSplat(): void {
-        // the engine resets its work buffer while the scene changes; the accumulating renderer stays out of it until the next scan is ready
-        if (this.accum?.active) { this.accumHeld = true; this.setStochastic(this.wantStochastic); }
+        // the engine resets its work buffer while the scene changes; the accumulating renderer stays out of it until the next scan is ready.
+        // Held whether or not it draws now (accum-policy.ts holdOnUnload): a drawing asked for while the scan loads waits as well
+        if (holdOnUnload(this.stochasticImpl, this.accum?.failed != null)) {
+            this.accumHeld = true;
+            if (this.accum?.active) this.setStochastic(this.wantStochastic);
+        }
         if (this.splat) {
             this.splat.destroy();
             this.splat = null;

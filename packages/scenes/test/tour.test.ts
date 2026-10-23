@@ -194,10 +194,11 @@ describe('failures and the end of the list', () => {
         const down = await walk(t, CAT[0], 13);
         expect(down[11]).toEqual({ id: CAT[0], from: 'again' });
         expect(down[12]).toEqual({ id: CAT[1], from: 'catalogue' });
-        // back up: after the second round, the first SuperSplat scene, not one past it
+        // back up: the very next press brings the first SuperSplat scene, not one past it (v0.11 lane N: the
+        // old rule walked the rest of the owner's list first, so this was the 12th press after the failure)
         up = true;
         const rest = await walk(t, null, 12);
-        expect(rest.find((s) => s.from === 'superspl')).toEqual({ id: hex('5500', 1), from: 'superspl' });
+        expect(rest[0]).toEqual({ id: hex('5500', 1), from: 'superspl' });
     });
 
     it('no SuperSplat at all (pages null): the catalogue goes round, never stuck', async () => {
@@ -243,6 +244,137 @@ describe('failures and the end of the list', () => {
         for (let seed = 1; seed <= 60; seed++) {
             expect((await tour({ seed }).next(CAT[3], 'random'))?.id).not.toBe(CAT[3]);
         }
+    });
+});
+
+describe('after SuperSplat failed, the very next press asks it again (v0.11 lane N, the owner\'s item 9)', () => {
+    /** A SuperSplat that answers only while `up.on`; every request is recorded with whether it was answered. */
+    function flaky(items: readonly TourItem[] = list(100)) {
+        const up = { on: false };
+        const calls: { at: [number, number]; ok: boolean }[] = [];
+        const inner = pagesOf(items);
+        const pages = async (skip: number, limit: number): Promise<TourPage> => {
+            calls.push({ at: [skip, limit], ok: up.on });
+            if (!up.on) throw new Error('busy');
+            return inner(skip, limit);
+        };
+        return { up, calls, pages };
+    }
+
+    it('the press after the failed one brings SuperSplat\'s first scene, not the owner\'s next one; SuperSplat then goes on', async () => {
+        const f = flaky();
+        const t = tour({ pages: f.pages });
+        const first = await walk(t, CAT[0], 12); // 11 of the owner's, then the 12th press: SuperSplat fails
+        expect(first[10]).toEqual({ id: CAT[11], from: 'catalogue' });
+        // the failed press itself is as before: the owner's next scene, saying the list starts again
+        expect(first[11]).toEqual({ id: CAT[0], from: 'again' });
+        expect(f.calls.length).toBe(1);
+        f.up.on = true;
+        const after = await walk(t, CAT[0], 4);
+        // the old rule gave CAT[1], CAT[2], CAT[3], CAT[4] here (another round of the owner's list)
+        expect(after).toEqual([1, 2, 3, 4].map((n) => ({ id: hex('5500', n), from: 'superspl' })));
+        // asked again at once: one request for the failure, one for the retry (page 0), then the buffer answers
+        expect(f.calls.map((c) => [c.at, c.ok])).toEqual([[[0, TOUR_PAGE], false], [[0, TOUR_PAGE], true]]);
+    });
+
+    it('the same with the random order, over many seeds', async () => {
+        for (let seed = 1; seed <= 40; seed++) {
+            const f = flaky();
+            const t = tour({ pages: f.pages, seed });
+            const first = await walk(t, CAT[0], 12, 'random');
+            expect(first.slice(0, 11).every((s) => s.from === 'catalogue')).toBe(true);
+            expect(first[11].from).toBe('again');
+            f.up.on = true;
+            const next = await t.next(first[11].id, 'random');
+            expect(next).toEqual({ id: hex('5500', 1), from: 'superspl' });
+        }
+    });
+
+    it('still failing: every press asks once and shows the owner\'s next scene; the first press that works brings SuperSplat', async () => {
+        const f = flaky();
+        const t = tour({ pages: f.pages });
+        const down = await walk(t, CAT[0], 11 + 5);
+        expect(f.calls.length).toBe(5); // the 12th press and the four after it: one request each
+        expect(down.slice(11).map((s) => s.id)).toEqual([CAT[0], CAT[1], CAT[2], CAT[3], CAT[4]]);
+        expect(down[11].from).toBe('again');
+        expect(down.slice(12).every((s) => s.from === 'catalogue')).toBe(true);
+        f.up.on = true;
+        expect(await t.next(CAT[4], 'sequential')).toEqual({ id: hex('5500', 1), from: 'superspl' });
+        // the page SuperSplat failed to give is the one asked for again: nothing was skipped
+        expect(f.calls[f.calls.length - 1]).toEqual({ at: [0, TOUR_PAGE], ok: true });
+    });
+
+    it('a step asks SuperSplat once, also when the owner\'s list is used up too (no second wait in one press)', async () => {
+        const f = flaky();
+        // a catalogue of the one scene on screen: nothing to show in its place, so the step returns null
+        const t = tour({ catalogue: [CAT[0]], pages: f.pages });
+        t.noteFlown(CAT[0]);
+        expect(await t.next(CAT[0], 'sequential')).toBeNull();
+        expect(f.calls.length).toBe(1);
+        expect(await t.next(CAT[0], 'sequential')).toBeNull();
+        expect(f.calls.length).toBe(2); // asked first, and not asked again by the same step
+        f.up.on = true;
+        expect(await t.next(CAT[0], 'sequential')).toEqual({ id: hex('5500', 1), from: 'superspl' });
+        expect(f.calls.length).toBe(3);
+    });
+
+    it('a page opened in the middle of the list still finishes the owner\'s list first; SuperSplat is not asked before it', async () => {
+        const f = flaky();
+        f.up.on = true;
+        const t = tour({ pages: f.pages });
+        const steps = await walk(t, CAT[4], 12);
+        expect(steps.map((s) => s.id)).toEqual([...CAT.slice(5), ...CAT.slice(0, 4), hex('5500', 1)]);
+        expect(f.calls.length).toBe(1); // only the 12th press went to SuperSplat
+        // and a SuperSplat that is down at the start does not change the order either: the retry rule starts at a failure
+        const g = flaky();
+        const mid = await walk(tour({ pages: g.pages }), CAT[4], 11);
+        expect(mid.every((s) => s.from === 'catalogue')).toBe(true);
+        expect(g.calls.length).toBe(0);
+    });
+
+    it('an answer that holds nothing it can bring is not a failure: the owner\'s list is walked as before', async () => {
+        const calls: [number, number][] = [];
+        const t = tour({ pages: pagesOf(list(TOUR_PAGE * 10, 'compressed.ply'), calls) });
+        await walk(t, CAT[0], 11);
+        const again = await t.next(CAT[11], 'sequential');
+        expect(again?.from).toBe('again');
+        const asked = calls.length;
+        const round = await walk(t, null, 10);
+        expect(round.every((s) => s.from === 'catalogue')).toBe(true);
+        expect(calls.length).toBe(asked); // SuperSplat was not asked during those ten presses
+    });
+
+    it('SuperSplat first until it has nothing to bring: a list read to its end hands the walk back', async () => {
+        const f = flaky(list(5));
+        const t = tour({ pages: f.pages });
+        await walk(t, CAT[0], 12); // the 12th press fails
+        f.up.on = true;
+        const run = await walk(t, CAT[0], 7);
+        expect(run.slice(0, 5)).toEqual([1, 2, 3, 4, 5].map((n) => ({ id: hex('5500', n), from: 'superspl' })));
+        // the list answered and is used up (not a failure): the walk is the normal one again, the owner's list
+        expect(run[5].from).toBe('catalogue');
+        expect(run[6].from).toBe('catalogue');
+        // control: asked once more in the middle of that walk would show as a request; the used-up list is not asked
+        const before = f.calls.length;
+        await t.next(run[6].id, 'sequential');
+        expect(f.calls.length).toBe(before);
+    });
+
+    it('a SuperSplat scene that was brought stays brought: a later failure does not bring it twice', async () => {
+        const f = flaky();
+        const t = tour({ pages: f.pages });
+        await walk(t, CAT[0], 12); // fails
+        f.up.on = true;
+        const got = await walk(t, CAT[0], 2); // SuperSplat 1 and 2
+        f.up.on = false; // a new page is needed only after 24: the buffer answers, so nothing is asked
+        const more = await walk(t, null, TOUR_PAGE - 2); // 3 .. 24
+        expect(more.every((s) => s.from === 'superspl')).toBe(true);
+        const down = await t.next(null, 'sequential'); // page 2 is needed: the proxy is down again
+        expect(down?.from).toBe('catalogue');
+        f.up.on = true;
+        const back = await t.next(null, 'sequential');
+        expect(back).toEqual({ id: hex('5500', TOUR_PAGE + 1), from: 'superspl' });
+        expect(firstRepeat([...got, ...more, back!].map((s) => s.id))).toBeNull();
     });
 });
 
@@ -319,9 +451,8 @@ describe('SuperSplat is asked within a bounded time (the 13th press on a slow co
         expect(first.result()?.from).toBe('again');
         await vi.advanceTimersByTimeAsync(5000); // the dropped page lands; nothing happens
         slow = false;
-        // everything is walked again (the new round), then the list: the page asked for is page 0 once more
-        for (const id of CAT) t.noteFlown(id);
-        const second = start(t, CAT[11]);
+        // the next step asks SuperSplat first (it failed): the page asked for is page 0 once more
+        const second = start(t, CAT[0]);
         await vi.advanceTimersByTimeAsync(0);
         expect(second.result()).toEqual({ id: hex('5500', 1), from: 'superspl' });
         expect(calls).toEqual([[0, TOUR_PAGE], [0, TOUR_PAGE]]);
