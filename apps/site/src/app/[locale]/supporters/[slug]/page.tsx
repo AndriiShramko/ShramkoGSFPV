@@ -170,7 +170,7 @@ function Person({ locale, p }: { locale: Locale; p: Supporter }) {
             {p.scene ? (
               <figure className="mt-4">
                 <a href={fly} data-track="fly_click" className="block overflow-hidden rounded-xl border border-line">
-                  <img src={posterUrl(p.scene, "l", p.sceneVersion)} alt={p.sceneCredit ?? ""} width={1280} height={720} loading="lazy" decoding="async" className="aspect-video w-full object-cover" />
+                  <img src={posterUrl(p.scene, "xl", p.sceneVersion)} alt={p.sceneCredit ?? ""} width={960} height={540} loading="lazy" decoding="async" className="aspect-video w-full object-cover" />
                 </a>
                 {p.sceneCredit ? <figcaption className="mt-2 text-sm text-muted">{p.sceneCredit}</figcaption> : null}
               </figure>
