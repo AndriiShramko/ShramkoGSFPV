@@ -19,7 +19,10 @@ export type Supporter = {
   photo: string;
   links: SupporterLink[];
   works: SupporterWork[];
+  /** A scene picked for them (their own public scan when they have one); the fly button opens it. */
   scene?: string;
+  /** The scan's credit under its picture: «title» by author, licence, SuperSplat. */
+  sceneCredit?: string;
   review: SupporterReview | null;
   text: Record<Locale, SupporterText>;
 };

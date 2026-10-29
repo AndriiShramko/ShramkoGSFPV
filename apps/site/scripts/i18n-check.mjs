@@ -90,6 +90,7 @@ for (const l of LOCALES) for (const [k, v] of Object.entries(dict[l])) if (bad.t
     if (!p.links?.length || p.links.some((l) => !/^https:\/\//.test(l.href) || !l.label)) fail("links need a label and an https address");
     for (const w of p.works ?? []) if (!/^https:\/\//.test(w.href) || !w.title || !/^\d{4}-\d{2}-\d{2}$/.test(w.date)) fail(`work ${w.title}: href, title, date YYYY-MM-DD`);
     if (p.scene !== undefined && !/^[0-9a-f]{6,32}$/.test(p.scene)) fail(`scene ${p.scene}`);
+    if (p.scene !== undefined && !p.sceneCredit?.trim()) fail("a scene needs its credit (title, author, licence)");
     if (p.review && (!/^https:\/\//.test(p.review.href) || !["video", "post"].includes(p.review.kind) || !p.review.title || !p.review.platform)) fail("review needs kind, https href, title, platform");
     if (p.status === "joined" && !p.review) fail("joined without a review");
     for (const l of LOCALES) {

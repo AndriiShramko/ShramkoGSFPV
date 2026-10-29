@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { AUTHOR, flyPath } from "@/config/site";
+import { AUTHOR, flyPath, posterUrl } from "@/config/site";
 import type { Locale } from "@/i18n/routing";
 import AuthorSign from "@/components/AuthorSign";
 import Footer from "@/components/Footer";
@@ -167,6 +167,14 @@ function Person({ locale, p }: { locale: Locale; p: Supporter }) {
               {t("supporters.person.flyTitle")}
             </h2>
             <p className="mt-3 text-ink/85">{t("supporters.person.flyBody")}</p>
+            {p.scene ? (
+              <figure className="mt-4">
+                <a href={fly} data-track="fly_click" className="block overflow-hidden rounded-xl border border-line">
+                  <img src={posterUrl(p.scene, "l")} alt={p.sceneCredit ?? ""} width={1280} height={720} loading="lazy" decoding="async" className="aspect-video w-full object-cover" />
+                </a>
+                {p.sceneCredit ? <figcaption className="mt-2 text-sm text-muted">{p.sceneCredit}</figcaption> : null}
+              </figure>
+            ) : null}
             <p className="mt-4">
               <a href={fly} data-track="fly_click" className="btn-primary inline-flex min-h-11 px-5">
                 {p.scene ? t("supporters.person.flyScene") : t("supporters.person.fly")}
