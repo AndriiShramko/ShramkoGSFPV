@@ -324,6 +324,12 @@ Full steps, update and removal: [`AGENT_SETUP.md`](AGENT_SETUP.md).
 
 Most useful now: real-radio test reports (EdgeTX version, radio model, RF on/off), measurements on other GPUs and high-refresh displays, and flight-model review from pilots. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`SECURITY.md`](SECURITY.md).
 
+## Supporters
+
+ShramkoGSFPV is free, and nobody is paid to talk about it. Pilots and creators who tried it and told their audience about it, or sent an idea that made it into the simulator, are listed on the [supporters wall](https://gsfpv.flyreelstudio.eu/en/supporters/), each with a page of their own, and in this section.
+
+Want to be one of them? Fly it, say what you think wherever your audience is (a video, a post, a story, in any language) and send the link to zmei116@gmail.com. In return: your own page and card on the site, your name in this README, your review shared in the author's Facebook groups, on his profile and on LinkedIn, your quad as a preset from your Betaflight `diff all`, your favourite spot as a flyable scene from a 3DGS scan.
+
 ## Author and collaboration
 
 **Andrii Shramko** — FPV pilot and 3D/4D Gaussian Splatting specialist, author and maintainer of ShramkoGSFPV.

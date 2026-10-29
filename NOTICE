@@ -65,3 +65,12 @@ Scene content
 3D scenes are loaded at runtime from their publishers and are NOT part of
 this repository. They remain the property of their authors and are shown
 with the author's name and license.
+
+------------------------------------------------------------------------
+Supporters
+------------------------------------------------------------------------
+
+Names, photos and reviews on the supporters pages of the site
+(packages/i18n/locales/supporters/people.json, apps/site/public/media/
+supporters/) belong to the people shown. They are NOT covered by the MIT
+license of this repository and are removed on request.

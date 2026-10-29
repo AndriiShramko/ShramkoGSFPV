@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { SITE } from "@/config/site";
 import { routing } from "@/i18n/routing";
+import { joinedSupporters } from "@/lib/supporters";
 
 export const dynamic = "force-static";
 
@@ -10,6 +11,9 @@ const PAGES = [
   { path: "scenes/", priority: 0.8, changeFrequency: "weekly" as const },
   { path: "privacy/", priority: 0.3, changeFrequency: "yearly" as const },
   { path: "licenses/", priority: 0.3, changeFrequency: "monthly" as const },
+  { path: "supporters/", priority: 0.5, changeFrequency: "weekly" as const },
+  // a person's page only once they said yes (status joined); drafts made for invited people stay out
+  ...joinedSupporters().map((p) => ({ path: `supporters/${p.slug}/`, priority: 0.4, changeFrequency: "monthly" as const })),
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

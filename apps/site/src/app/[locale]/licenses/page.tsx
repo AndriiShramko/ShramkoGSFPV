@@ -58,6 +58,15 @@ function Licenses({ locale }: { locale: Locale }) {
             <h2 className="text-2xl font-semibold tracking-tight text-ink">{t("licenses.trademarksTitle")}</h2>
             <p className="mt-3 text-ink/85">{t("footer.disclaimer")}</p>
           </section>
+          <section className="mt-10">
+            <h2 className="text-2xl font-semibold tracking-tight text-ink">{t("licenses.supportersTitle")}</h2>
+            <p className="mt-3 text-ink/85">
+              {t("licenses.supporters")}{" "}
+              <a href={`/${locale}/supporters/`} className="link">
+                {t("footer.supporters")}
+              </a>
+            </p>
+          </section>
           <p className="mt-10 flex flex-wrap gap-x-6 text-sm">
             <Ext href={`${REPO_BLOB}/LICENSE`} className="link inline-flex min-h-11 items-center">
               LICENSE

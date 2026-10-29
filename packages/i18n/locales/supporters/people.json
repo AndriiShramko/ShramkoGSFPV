@@ -1,0 +1,2728 @@
+{
+  "_doc": "People the owner invited to try ShramkoGSFPV and people who helped it (docs/wip/supporters.md). status invited = a draft page: noindex, not in the sitemap, not on the wall; joined = public. text.<lang>: role, about, why, offer[]. Names, photos and reviews belong to these people, are not under the MIT license and are removed on request.",
+  "people": [
+    {
+      "slug": "imersyjni",
+      "name": "IMERSYJNI",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "pl",
+      "photo": "/media/supporters/imersyjni.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@imersyjni"
+        },
+        {
+          "label": "imersyjni.pl",
+          "href": "https://imersyjni.pl/"
+        },
+        {
+          "label": "Spotify",
+          "href": "https://open.spotify.com/show/7IdbsJstqKyW62FzzV9q8d"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/imersyjni"
+        }
+      ],
+      "works": [
+        {
+          "title": "OpenDrone, masa Symulatorów FPV, DJI Neo 3, Divimath + Konkurs!",
+          "href": "https://www.youtube.com/watch?v=QQ-jfx7tCR0",
+          "date": "2026-10-11"
+        },
+        {
+          "title": "Sandbagging, Oxbot, Tinyhawk Aero, DJI O4 Wide, Combat FPV, HGLRC, Mr Steele",
+          "href": "https://www.youtube.com/watch?v=_TyVPh-hlsw",
+          "date": "2026-09-27"
+        },
+        {
+          "title": "FPV Guide App, Wydarzenia, Papuga, HDZero, Drift, NatsLablol.",
+          "href": "https://www.youtube.com/watch?v=8l2ogRJSt6Y",
+          "date": "2026-06-22"
+        }
+      ],
+      "scene": "887f27aa",
+      "sceneCredit": "Tunis, old town — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Polish podcast about FPV drones",
+          "about": "IMERSYJNI is a Polish podcast about FPV drones: building, flying, racing and local communities. Each episode comes with a list of links to the topics discussed, from new hardware and events to simulators and regulations.",
+          "why": "The description of your latest episode has a list of popular FPV simulators, so I would like ShramkoGSFPV to be considered for it. It is open source (MIT), runs in the browser with no install and lets you fly in real places captured as 3DGS scans.",
+          "offer": [
+            "A place of your choice as a flyable scene, from a 3DGS scan, for example for a challenge with your listeners.",
+            "Your episode shared in my 200+ drone groups on Facebook, on my profile and on LinkedIn.",
+            "The name of your podcast in the GitHub README."
+          ]
+        },
+        "es": {
+          "role": "Pódcast polaco sobre drones FPV",
+          "about": "IMERSYJNI es un pódcast polaco sobre drones FPV: montaje, vuelo, carreras y comunidades locales. Cada episodio incluye una lista de enlaces a los temas tratados, desde material nuevo y eventos hasta simuladores y normativa.",
+          "why": "La descripción de tu último episodio incluye una lista de simuladores FPV populares, así que me gustaría que ShramkoGSFPV se tuviera en cuenta para ella. Es de código abierto (MIT), funciona en el navegador sin instalar nada y permite volar en lugares reales capturados como escaneos 3DGS.",
+          "offer": [
+            "Un lugar a tu elección como escena para volar, a partir de un escaneo 3DGS, por ejemplo para un reto con tus oyentes.",
+            "Tu episodio compartido en mis más de 200 grupos de drones de Facebook, en mi perfil y en LinkedIn.",
+            "El nombre de tu pódcast en el README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Polski podcast o dronach FPV",
+          "about": "IMERSYJNI to polski podcast o dronach FPV: budowanie, latanie, wyścigi i lokalne społeczności. Do każdego odcinka dołączona jest lista linków do omawianych tematów, od nowego sprzętu i wydarzeń po symulatory i przepisy.",
+          "why": "W opisie Waszego ostatniego odcinka jest zestawienie popularnych symulatorów FPV, więc chciałbym, żeby ShramkoGSFPV też zostało w nim rozważone. Ma otwarty kod (MIT), działa w przeglądarce bez instalacji i pozwala latać po prawdziwych miejscach ze skanów 3DGS.",
+          "offer": [
+            "Wybrane przez Was miejsce jako scena do latania, ze skanu 3DGS, na przykład do wyzwania dla Waszych słuchaczy.",
+            "Wasz odcinek udostępniony w moich ponad 200 grupach o dronach na Facebooku, na moim profilu i w LinkedIn.",
+            "Nazwa Waszego podcastu w README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Польский подкаст о FPV-дронах",
+          "about": "IMERSYJNI — польский подкаст о FPV-дронах: сборка, полёты, гонки и местные сообщества. К каждому выпуску прилагается список ссылок на обсуждаемые темы — от нового оборудования и событий до симуляторов и правил.",
+          "why": "В описании вашего последнего выпуска есть подборка популярных FPV-симуляторов, поэтому хочу, чтобы ShramkoGSFPV тоже рассмотрели для этой подборки. Он с открытым кодом (MIT), работает в браузере без установки и позволяет летать по реальным местам из 3DGS-сканов.",
+          "offer": [
+            "Выбранное вами место как сцена для полёта — из 3DGS-скана, например для челленджа со слушателями.",
+            "Ваш выпуск в моих 200+ группах о дронах в Facebook, на моём профиле и в LinkedIn.",
+            "Название вашего подкаста в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "kanal-fpv",
+      "name": "Kanał FPV",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "pl",
+      "photo": "/media/supporters/kanal-fpv.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@kanalfpv"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/kanalfpv"
+        },
+        {
+          "label": "TikTok",
+          "href": "https://www.tiktok.com/@kanal.fpv"
+        }
+      ],
+      "works": [
+        {
+          "title": "Rozpoczynamy naukę latania! (Nie)wyczerpujący poradnik FPV #3",
+          "href": "https://www.youtube.com/watch?v=t1PrVBJCT7Y",
+          "date": "2024-02-25"
+        },
+        {
+          "title": "ZABRALI MU DRONA! Betaflight mówi DOŚĆ, a OpenDrone chce zmienić FPV!",
+          "href": "https://www.youtube.com/watch?v=Kb6Ywq_f8ck",
+          "date": "2026-10-09"
+        },
+        {
+          "title": "Twój PIERWSZY lot dronem FPV!",
+          "href": "https://www.youtube.com/watch?v=Ik5z7zQ5w5A",
+          "date": "2026-03-23"
+        }
+      ],
+      "scene": "39e63ce9",
+      "sceneCredit": "Modlinek Villa, red room — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Polish FPV news and education channel",
+          "about": "Kanał FPV is a Polish YouTube channel with FPV news and education: the beginner series “(Nie)wyczerpujący poradnik FPV”, build and configuration guides, and news episodes on Betaflight, OpenDrone, ELRS and Polish FPV rules. It also runs a Discord community.",
+          "why": "One of your beginner episodes is about learning on an FPV simulator, and in your news shows you cover open FPV tools such as OpenDrone. My simulator is open source (MIT), runs in the browser with no install and uses Betaflight rates, so I would like you to know about it.",
+          "offer": [
+            "Your quad as a preset in the simulator, set up from your Betaflight diff all.",
+            "Your review shared in my 200+ drone groups on Facebook, on my profile and on LinkedIn.",
+            "The name of your channel in the GitHub README."
+          ]
+        },
+        "es": {
+          "role": "Canal polaco de noticias y formación sobre FPV",
+          "about": "Kanał FPV es un canal polaco de YouTube con noticias y formación sobre FPV: la serie para principiantes «(Nie)wyczerpujący poradnik FPV», guías de montaje y configuración, y episodios de noticias sobre Betaflight, OpenDrone, ELRS y la normativa polaca de FPV. También mantiene una comunidad en Discord.",
+          "why": "Uno de tus episodios para principiantes trata de aprender en un simulador FPV, y en tus programas de noticias hablas de herramientas FPV abiertas como OpenDrone. Mi simulador es de código abierto (MIT), funciona en el navegador sin instalar nada y usa los rates de Betaflight, así que me gustaría que lo conocieras.",
+          "offer": [
+            "Tu quad como preajuste en el simulador, configurado a partir de tu diff all de Betaflight.",
+            "Tu reseña compartida en mis más de 200 grupos de drones de Facebook, en mi perfil y en LinkedIn.",
+            "El nombre de tu canal en el README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Polski kanał o wiadomościach i nauce FPV",
+          "about": "Kanał FPV to polski kanał na YouTube z wiadomościami ze świata FPV i materiałami edukacyjnymi: seria dla początkujących „(Nie)wyczerpujący poradnik FPV”, poradniki o budowie i konfiguracji oraz odcinki newsowe o Betaflight, OpenDrone, ELRS i polskich przepisach dla FPV. Działa przy nim także społeczność na Discordzie.",
+          "why": "Jeden z Waszych odcinków dla początkujących jest o nauce na symulatorze FPV, a w newsach opisujecie otwarte narzędzia FPV, takie jak OpenDrone. Mój symulator ma otwarty kod (MIT), działa w przeglądarce bez instalacji i wczytuje rates z Betaflight, więc chciałbym, żebyście o nim wiedzieli.",
+          "offer": [
+            "Wasz quad jako preset w symulatorze, ustawiony na podstawie Waszego diff all z Betaflight.",
+            "Wasza recenzja udostępniona w moich ponad 200 grupach o dronach na Facebooku, na moim profilu i w LinkedIn.",
+            "Nazwa Waszego kanału w README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Польский канал о новостях и обучении FPV",
+          "about": "Kanał FPV — польский канал на YouTube с новостями и обучением по FPV: серия для новичков «(Nie)wyczerpujący poradnik FPV», руководства по сборке и настройке и новостные выпуски о Betaflight, OpenDrone, ELRS и польских правилах для FPV. У канала есть сообщество в Discord.",
+          "why": "Один из ваших выпусков для новичков посвящён обучению на FPV-симуляторе, а в новостных выпусках вы рассказываете об открытых FPV-инструментах вроде OpenDrone. Мой симулятор с открытым кодом (MIT), работает в браузере без установки и использует rates из Betaflight, поэтому хочу, чтобы вы о нём знали.",
+          "offer": [
+            "Ваш квадрокоптер как пресет в симуляторе, настроенный по вашему diff all из Betaflight.",
+            "Ваш обзор в моих 200+ группах о дронах в Facebook, на моём профиле и в LinkedIn.",
+            "Название вашего канала в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "prosto-o-dronach",
+      "name": "Prosto o Dronach",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "pl",
+      "photo": "/media/supporters/prosto-o-dronach.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@Prosto_o_Dronach"
+        },
+        {
+          "label": "prostoodronach.com.pl",
+          "href": "https://prostoodronach.com.pl/"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/prosto_o_dronach"
+        },
+        {
+          "label": "Facebook",
+          "href": "https://www.facebook.com/profile.php?id=61558680787698"
+        }
+      ],
+      "works": [
+        {
+          "title": "PoDstream FPV #58. Testujemy symulatory FPV i Q&A. Wasze tematy i luźne sprawy 😉",
+          "href": "https://www.youtube.com/watch?v=HoEUuiTnMkI",
+          "date": "2026-08-27"
+        },
+        {
+          "title": "Podstawy FPV. Cz 5. Symulatory",
+          "href": "https://www.youtube.com/watch?v=ywHggZYbCBY",
+          "date": "2024-05-12"
+        },
+        {
+          "title": "Budowa drona FPV. Szkolenie. 1 | Podstawy, teoria, narzędzia, podzespoły",
+          "href": "https://www.youtube.com/watch?v=pwcScW_C_kY",
+          "date": "2026-10-01"
+        }
+      ],
+      "scene": "7a475d38",
+      "sceneCredit": "Winter Garden, Jastrzębia Góra, Poland — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Polish FPV educator and builder on YouTube",
+          "about": "Prosto o Dronach is a Polish YouTube channel about building, configuring and tuning FPV quads: Betaflight and ESC setup, PID and filters, repairs and 3D-printed parts. It runs a weekly live Q&A, PoDstream FPV, and a multi-part training series, “Budowa drona FPV. Szkolenie”.",
+          "why": "You tested FPV simulators live at your viewers’ request, and you teach how to configure quads in Betaflight. My simulator imports rates and PID from a Betaflight diff all, so a quad you have just built and tuned can be flown in real places captured as 3DGS scans.",
+          "offer": [
+            "Your quad as a preset in the simulator, set up from your Betaflight diff all.",
+            "The place where you fly, as a flyable scene from a 3DGS scan.",
+            "Your review or PoDstream shared in my 200+ drone groups on Facebook, on my profile and on LinkedIn, and your name in the GitHub README."
+          ]
+        },
+        "es": {
+          "role": "Educador FPV y constructor de quads en YouTube (Polonia)",
+          "about": "Prosto o Dronach es un canal polaco de YouTube sobre montar, configurar y afinar quads FPV: Betaflight y ESC, PID y filtros, reparaciones y piezas impresas en 3D. Cada semana emite un directo de preguntas y respuestas, PoDstream FPV, y publica una serie de formación en varias partes, «Budowa drona FPV. Szkolenie».",
+          "why": "Probaste simuladores FPV en directo a petición de tu audiencia y enseñas a configurar quads en Betaflight. Mi simulador importa rates y PID desde un diff all de Betaflight, así que un quad que acabas de montar y afinar se puede volar en lugares reales capturados como escaneos 3DGS.",
+          "offer": [
+            "Tu quad como preajuste en el simulador, configurado a partir de tu diff all de Betaflight.",
+            "El lugar donde vuelas, como escena para volar a partir de un escaneo 3DGS.",
+            "Tu reseña o tu PoDstream compartidos en mis más de 200 grupos de drones de Facebook, en mi perfil y en LinkedIn, y tu nombre en el README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Polski edukator FPV i konstruktor quadów na YouTube",
+          "about": "Prosto o Dronach to polski kanał na YouTube o budowie, konfiguracji i strojeniu quadów FPV: Betaflight i ESC, PID i filtry, naprawy oraz części drukowane w 3D. Co tydzień prowadzi live z pytaniami i odpowiedziami, PoDstream FPV, oraz wieloczęściowy cykl szkoleniowy „Budowa drona FPV. Szkolenie”.",
+          "why": "Na prośbę widzów testowałeś na żywo symulatory FPV i uczysz, jak konfigurować quady w Betaflight. Mój symulator wczytuje rates i PID z diff all z Betaflight, więc na świeżo zbudowanym i nastrojonym quadzie możesz polatać po prawdziwych miejscach ze skanów 3DGS.",
+          "offer": [
+            "Twój quad jako preset w symulatorze, ustawiony na podstawie Twojego diff all z Betaflight.",
+            "Miejsce, w którym latasz, jako scena do latania, ze skanu 3DGS.",
+            "Twoja recenzja albo PoDstream udostępnione w moich ponad 200 grupach o dronach na Facebooku, na moim profilu i w LinkedIn oraz Twoje imię w README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Польский FPV-преподаватель и сборщик квадрокоптеров на YouTube",
+          "about": "Prosto o Dronach — польский канал на YouTube о сборке, настройке и тюнинге FPV-квадрокоптеров: Betaflight и ESC, PID и фильтры, ремонт и детали, напечатанные на 3D-принтере. Каждую неделю на нём идёт прямой эфир с вопросами и ответами PoDstream FPV, а ещё есть многосерийный курс «Budowa drona FPV. Szkolenie».",
+          "why": "По просьбе зрителей вы тестировали FPV-симуляторы в прямом эфире и учите настраивать квадрокоптеры в Betaflight. Мой симулятор подтягивает rates и PID из diff all Betaflight, поэтому на только что собранном и настроенном квадрокоптере можно полетать по реальным местам из 3DGS-сканов.",
+          "offer": [
+            "Ваш квадрокоптер как пресет в симуляторе, настроенный по вашему diff all из Betaflight.",
+            "Место, где вы летаете, как сцена для полёта — из 3DGS-скана.",
+            "Ваш обзор или PoDstream в моих 200+ группах о дронах в Facebook, на моём профиле и в LinkedIn, а ваше имя — в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "rafal-galinski",
+      "name": "Rafał Galiński",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "pl",
+      "photo": "/media/supporters/rafal-galinski.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@RafalGalinski_drony"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/rafagalinski/"
+        },
+        {
+          "label": "rafagalinski.teachable.com",
+          "href": "https://rafagalinski.teachable.com/"
+        }
+      ],
+      "works": [
+        {
+          "title": "Chcesz pewniej latać dronem DJI - poświęć kilka godzin na symulator DJI",
+          "href": "https://www.youtube.com/watch?v=YYXOrdFvosA",
+          "date": "2026-01-07"
+        },
+        {
+          "title": "Jak nauczyć się latać FPV w manualu / acro - podstawowe ćwiczenia",
+          "href": "https://www.youtube.com/watch?v=6rue19BavAU",
+          "date": "2026-03-24"
+        },
+        {
+          "title": "Najlepszy budżetowy zestaw FPV na początek - Beta FPV Meteor75 Pro HD FPV Kit",
+          "href": "https://www.youtube.com/watch?v=V8w5ATTORFg",
+          "date": "2026-06-15"
+        }
+      ],
+      "scene": "7a475d38",
+      "sceneCredit": "Winter Garden, Jastrzębia Góra, Poland — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Drone instructor and YouTuber, Drone Bootcamp",
+          "about": "Rafał Galiński teaches flying drones on YouTube: tutorials for beginners on DJI and FPV drones, and a live Q&A on Saturdays at 9:30, Latająca Kawka. He also runs online courses under the name Drone Bootcamp.",
+          "why": "You tell your viewers to spend a few hours in a simulator, and in your acro video you show exercises on one. My simulator lets your students do such exercises in real places captured as 3DGS scans, with Betaflight rates and an EdgeTX radio over USB.",
+          "offer": [
+            "A place of your choice, for example in the Polish Jura, as a flyable scene for your students, from a 3DGS scan.",
+            "Your review or live episode shared in my 200+ drone groups on Facebook, on my profile and on LinkedIn.",
+            "Your name in the GitHub README."
+          ]
+        },
+        "es": {
+          "role": "Instructor de drones y youtuber, Drone Bootcamp",
+          "about": "Rafał Galiński enseña a volar drones en YouTube: tutoriales para principiantes sobre drones DJI y FPV, y un directo de preguntas y respuestas los sábados a las 9:30, Latająca Kawka. También ofrece cursos en línea con el nombre Drone Bootcamp.",
+          "why": "Dices a tu audiencia que dedique unas horas a un simulador y en tu vídeo sobre acro muestras ejercicios en uno. Mi simulador permite a tus alumnos hacer esos ejercicios en lugares reales capturados como escaneos 3DGS, con los rates de Betaflight y una radio EdgeTX por USB.",
+          "offer": [
+            "Un lugar a tu elección, por ejemplo en el Jura polaco, como escena en la que vuelen tus alumnos, a partir de un escaneo 3DGS.",
+            "Tu reseña o tu directo compartidos en mis más de 200 grupos de drones de Facebook, en mi perfil y en LinkedIn.",
+            "Tu nombre en el README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Instruktor dronów i youtuber, Drone Bootcamp",
+          "about": "Rafał Galiński uczy latania dronami na YouTube: poradniki dla początkujących o dronach DJI i FPV oraz sobotni live z pytaniami i odpowiedziami o 9:30, Latająca Kawka. Prowadzi też kursy online pod nazwą Drone Bootcamp.",
+          "why": "Namawiasz widzów, żeby poświęcili kilka godzin na symulator, a w filmie o nauce latania FPV w manualu / acro pokazujesz na nim ćwiczenia. W moim symulatorze Twoi kursanci mogą robić takie ćwiczenia w prawdziwych miejscach ze skanów 3DGS, z rates z Betaflight i aparaturą EdgeTX po USB.",
+          "offer": [
+            "Wybrane przez Ciebie miejsce, na przykład na Jurze, jako scena do latania dla Twoich kursantów, ze skanu 3DGS.",
+            "Twoja recenzja albo live udostępnione w moich ponad 200 grupach o dronach na Facebooku, na moim profilu i w LinkedIn.",
+            "Twoje imię w README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Инструктор по дронам и ютубер, Drone Bootcamp",
+          "about": "Rafał Galiński учит летать на дронах на YouTube: уроки для новичков по дронам DJI и FPV и субботний прямой эфир с вопросами и ответами в 9:30 — Latająca Kawka. Также проводит онлайн-курсы под названием Drone Bootcamp.",
+          "why": "Вы советуете зрителям потратить несколько часов на симулятор, а в ролике об обучении FPV в ручном режиме / acro показываете на нём упражнения. В моём симуляторе ваши ученики смогут делать такие упражнения в реальных местах из 3DGS-сканов, с rates из Betaflight и пультом EdgeTX по USB.",
+          "offer": [
+            "Выбранное вами место, например на польской Юре, как сцена для полёта ваших учеников — из 3DGS-скана.",
+            "Ваш обзор или эфир в моих 200+ группах о дронах в Facebook, на моём профиле и в LinkedIn.",
+            "Ваше имя в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "uwagadron",
+      "name": "UwagaDron.pl",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "pl",
+      "photo": "/media/supporters/uwagadron.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@UwagaDron"
+        },
+        {
+          "label": "TikTok",
+          "href": "https://www.tiktok.com/@uwagadron.pl"
+        },
+        {
+          "label": "uwagadron.pl",
+          "href": "https://uwagadron.pl/"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/uwagadron.pl/"
+        }
+      ],
+      "works": [
+        {
+          "title": "FPV One Shot połączony z kadrem zza kulis Jump Areny Grunwald #drone #fpv #oneshot",
+          "href": "https://www.youtube.com/watch?v=4naycsxIsys",
+          "date": "2026-04-05"
+        },
+        {
+          "title": "Tak wygląda praca operatora dronów FPV | Backstage reklamy dla Jump Areny Grunwald",
+          "href": "https://www.youtube.com/watch?v=NRgDghpoa8A",
+          "date": "2026-04-04"
+        },
+        {
+          "title": "NAJLEPSZY ZESTAW FPV DO NAUKI LATANIA OD ZERA! BetaFPV Aquila 20 HD Kit #betafpv",
+          "href": "https://www.youtube.com/watch?v=X6ssReVdkis",
+          "date": "2026-10-17"
+        }
+      ],
+      "scene": "7a475d38",
+      "sceneCredit": "Winter Garden, Jastrzębia Góra, Poland — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "FPV filmmaker from Poznań, YouTube and TikTok",
+          "about": "UwagaDron.pl is an FPV and aerial filming service from Poznań. It shoots commissioned cinematic FPV and cinewhoop footage, such as one-take flights through venues, posts clips on TikTok and tests beginner FPV kits on YouTube.",
+          "why": "You fly FPV through real venues and recommend beginner kits for learning from scratch. In my simulator your viewers can also fly real places captured as 3DGS scans, at any scene scale from ×0.25 to ×100.",
+          "offer": [
+            "A venue of your choice as a flyable scene, from a 3DGS scan: new content for your TikTok and a showcase for your portfolio.",
+            "Your quad as a preset in the simulator, set up from your Betaflight diff all.",
+            "Your video shared in my 200+ drone groups on Facebook, on my profile and on LinkedIn, and your name in the GitHub README."
+          ]
+        },
+        "es": {
+          "role": "Cineasta FPV de Poznań, YouTube y TikTok",
+          "about": "UwagaDron.pl es un servicio de filmación FPV y aérea de Poznań. Rueda por encargo imágenes FPV y cinewhoop de estilo cinematográfico, como vuelos en plano secuencia por recintos, publica clips en TikTok y prueba kits FPV para principiantes en YouTube.",
+          "why": "Vuelas en FPV por recintos reales y recomiendas kits para empezar desde cero. En mi simulador tus seguidores también pueden volar lugares reales capturados como escaneos 3DGS, con cualquier escala de escena entre ×0,25 y ×100.",
+          "offer": [
+            "Un recinto a tu elección como escena para volar, a partir de un escaneo 3DGS: contenido nuevo para tu TikTok y un escaparate para tu portafolio.",
+            "Tu quad como preajuste en el simulador, configurado a partir de tu diff all de Betaflight.",
+            "Tu vídeo compartido en mis más de 200 grupos de drones de Facebook, en mi perfil y en LinkedIn, y tu nombre en el README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Filmowiec FPV z Poznania, YouTube i TikTok",
+          "about": "UwagaDron.pl to usługa filmowania FPV i z powietrza z Poznania. Realizuje zamówione filmowe ujęcia FPV i cinewhoop, na przykład przeloty „one shot” przez obiekty, publikuje klipy na TikToku i testuje zestawy FPV dla początkujących na YouTube.",
+          "why": "Latacie FPV po prawdziwych obiektach i polecacie zestawy do nauki od zera. W moim symulatorze Wasi widzowie mogą też latać po prawdziwych miejscach ze skanów 3DGS, w dowolnej skali sceny od ×0,25 do ×100.",
+          "offer": [
+            "Wybrany przez Was obiekt jako scena do latania, ze skanu 3DGS: nowa treść na Wasz TikTok i wizytówka do portfolio.",
+            "Wasz quad jako preset w symulatorze, ustawiony na podstawie Waszego diff all z Betaflight.",
+            "Wasz film udostępniony w moich ponad 200 grupach o dronach na Facebooku, na moim profilu i w LinkedIn oraz nazwa UwagaDron.pl w README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "FPV-оператор из Познани, YouTube и TikTok",
+          "about": "UwagaDron.pl — FPV- и аэросъёмка из Познани. Снимает по заказу кинематографичные FPV- и cinewhoop-кадры, например пролёты одним дублем через площадки, выкладывает ролики в TikTok и тестирует FPV-наборы для новичков на YouTube.",
+          "why": "Вы летаете на FPV по реальным площадкам и рекомендуете наборы для обучения с нуля. В моём симуляторе ваши зрители тоже смогут летать по реальным местам из 3DGS-сканов, в любом масштабе сцены от ×0,25 до ×100.",
+          "offer": [
+            "Выбранная вами площадка как сцена для полёта — из 3DGS-скана: новый контент для вашего TikTok и витрина для портфолио.",
+            "Ваш квадрокоптер как пресет в симуляторе, настроенный по вашему diff all из Betaflight.",
+            "Ваш ролик в моих 200+ группах о дронах в Facebook, на моём профиле и в LinkedIn, а название UwagaDron.pl — в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "whoop-of-poland",
+      "name": "Whoop of Poland",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "pl",
+      "photo": "/media/supporters/whoop-of-poland.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@whoopofpoland"
+        },
+        {
+          "label": "whoopofpoland.pl",
+          "href": "https://whoopofpoland.pl/"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/whoopofpoland"
+        }
+      ],
+      "works": [
+        {
+          "title": "Wyścigi Dronów - Whoop of Poland | MiniFigs.me - SkyLeague Lubiąż 2026",
+          "href": "https://www.youtube.com/watch?v=Hx1VPr6GHa4",
+          "date": "2026-09-26"
+        },
+        {
+          "title": "Wyścigi Dronów - Whoop of Poland | MiniFigs.me - Finał Sezonu 2026 - Finały",
+          "href": "https://www.youtube.com/watch?v=6o1FE7UjomE",
+          "date": "2026-05-24"
+        },
+        {
+          "title": "Wyścigi Dronów - Whoop of Poland | MiniFigs.me - Gdańsk 2026",
+          "href": "https://www.youtube.com/watch?v=MPAGcsbfS-8",
+          "date": "2026-10-24"
+        }
+      ],
+      "scene": "39e63ce9",
+      "sceneCredit": "Modlinek Villa, red room — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Pilot-run whoop racing league in Poland",
+          "about": "Whoop of Poland is a non-profit micro-drone racing league run by pilots, active since 2020. Its rounds are flown in historic and unusual venues, such as the Lubiąż monastery and the Conradinum in Gdańsk, and streamed live on YouTube.",
+          "why": "Your rounds are flown in monasteries and other historic buildings, the kind of place I scan in 3DGS. In my simulator your pilots could fly a scan of the next venue before the round, with their own rates.",
+          "offer": [
+            "One of your next venues, if access can be arranged, as a flyable scene from a 3DGS scan, for practice before the round.",
+            "Your pilots’ quads as presets in the simulator, set up from their Betaflight diff all.",
+            "Your rounds shared in my 200+ drone groups on Facebook, on my profile and on LinkedIn, and the name of the league in the GitHub README."
+          ]
+        },
+        "es": {
+          "role": "Liga de carreras de whoops organizada por pilotos en Polonia",
+          "about": "Whoop of Poland es una liga sin ánimo de lucro de carreras de microdrones, organizada por pilotos y activa desde 2020. Sus rondas se vuelan en lugares históricos e inusuales, como el monasterio de Lubiąż y el Conradinum de Gdańsk, y se retransmiten en directo por YouTube.",
+          "why": "Tus rondas se vuelan en monasterios y otros edificios históricos, el tipo de lugar que escaneo en 3DGS. En mi simulador tus pilotos podrían volar un escaneo de la próxima sede antes de la ronda, con sus propios rates.",
+          "offer": [
+            "Una de tus próximas sedes, si se puede acordar el acceso, como escena para volar a partir de un escaneo 3DGS, para practicar antes de la ronda.",
+            "Los quads de tus pilotos como preajustes en el simulador, configurados a partir de su diff all de Betaflight.",
+            "Tus rondas compartidas en mis más de 200 grupos de drones de Facebook, en mi perfil y en LinkedIn, y el nombre de la liga en el README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Liga wyścigów whoopów prowadzona przez pilotów",
+          "about": "Whoop of Poland to niekomercyjna liga wyścigów mikrodronów, prowadzona przez pilotów i działająca od 2020 roku. Rundy odbywają się w zabytkowych i nietypowych miejscach, takich jak klasztor w Lubiążu czy Conradinum w Gdańsku, i są transmitowane na żywo na YouTube.",
+          "why": "Wasze rundy odbywają się w klasztorach i innych zabytkowych budynkach, czyli w takich miejscach, jakie skanuję w 3DGS. W moim symulatorze piloci mogliby przed rundą polatać po skanie kolejnego obiektu, z własnymi rates.",
+          "offer": [
+            "Jeden z Waszych następnych obiektów, jeśli uda się załatwić dostęp, jako scena do latania ze skanu 3DGS, do treningu przed rundą.",
+            "Quady Waszych pilotów jako presety w symulatorze, ustawione na podstawie ich diff all z Betaflight.",
+            "Wasze rundy udostępnione w moich ponad 200 grupach o dronach na Facebooku, na moim profilu i w LinkedIn oraz nazwa ligi w README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Лига гонок whoop-дронов, которую ведут пилоты",
+          "about": "Whoop of Poland — некоммерческая лига гонок whoop-микродронов, которую ведут сами пилоты, она действует с 2020 года. Этапы проходят в исторических и необычных местах, таких как монастырь в Любёнже (Lubiąż) и Conradinum в Гданьске, и транслируются в прямом эфире на YouTube.",
+          "why": "Ваши этапы проходят в монастырях и других исторических зданиях — именно такие места я сканирую в 3DGS. В моём симуляторе пилоты могли бы перед этапом полетать по скану следующей площадки, со своими rates.",
+          "offer": [
+            "Одна из ваших ближайших площадок, если получится договориться о доступе, как сцена для полёта — из 3DGS-скана, для тренировки перед этапом.",
+            "Квадрокоптеры ваших пилотов как пресеты в симуляторе, настроенные по их diff all из Betaflight.",
+            "Ваши этапы в моих 200+ группах о дронах в Facebook, на моём профиле и в LinkedIn, а название лиги — в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "swiat-dronow",
+      "name": "Świat Dronów",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "pl",
+      "photo": "/media/supporters/swiat-dronow.webp",
+      "links": [
+        {
+          "label": "swiatdronow.pl",
+          "href": "https://www.swiatdronow.pl/"
+        },
+        {
+          "label": "Facebook",
+          "href": "https://www.facebook.com/swiatdronowpl"
+        },
+        {
+          "label": "X",
+          "href": "https://twitter.com/SwiatDronow"
+        },
+        {
+          "label": "LinkedIn",
+          "href": "https://www.linkedin.com/company/80528917"
+        }
+      ],
+      "works": [
+        {
+          "title": "Druga runda sezonu Whoop of Poland 2026/2027 już sobotę 24 października!",
+          "href": "https://www.swiatdronow.pl/druga-runda-sezonu-whoop-of-poland-2026-2027-juz-sobote-24-pazdziernika",
+          "date": "2026-10-22"
+        },
+        {
+          "title": "Droniada Challenge 2027 – Bytom, 7-12 czerwca",
+          "href": "https://www.swiatdronow.pl/droniada-challenge-2027-bytom-7-12-czerwca",
+          "date": "2026-10-26"
+        },
+        {
+          "title": "Już 28 października startuje Droniada Future Forum 2026",
+          "href": "https://www.swiatdronow.pl/juz-28-pazdziernika-startuje-droniada-future-forum-2026",
+          "date": "2026-10-27"
+        }
+      ],
+      "scene": "7a475d38",
+      "sceneCredit": "Winter Garden, Jastrzębia Góra, Poland — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Polish drone news portal",
+          "about": "Świat Dronów (swiatdronow.pl) is a Polish drone news portal edited by Michał Zawadzak. It publishes several articles a week on regulations (EASA, ULC), industry, events and products, and also reports on the Polish FPV racing scene, such as the Whoop of Poland rounds.",
+          "why": "You write about hobby FPV racing as well as regulations and industry. A free, open-source simulator in which you fly real Polish places captured as 3DGS scans, such as Winter Garden in Jastrzębia Góra and Modlinek Villa, seemed to me a local story for your readers.",
+          "offer": [
+            "A ready press kit (description, screenshots, facts) and a short interview about scanning Polish places into a flyable simulator.",
+            "An early look at new Polish scenes before they are announced.",
+            "Your article shared in my 200+ drone groups on Facebook, on my profile and on LinkedIn, and the name of the portal in the GitHub README."
+          ]
+        },
+        "es": {
+          "role": "Portal polaco de noticias sobre drones",
+          "about": "Świat Dronów (swiatdronow.pl) es un portal polaco de noticias sobre drones dirigido por Michał Zawadzak. Publica varios artículos por semana sobre normativa (EASA, ULC), industria, eventos y productos, y también informa sobre las carreras FPV en Polonia, como las rondas de Whoop of Poland.",
+          "why": "Escribes sobre las carreras FPV de aficionados además de normativa e industria. Un simulador gratuito y de código abierto en el que se vuela por lugares reales polacos capturados como escaneos 3DGS, como Winter Garden en Jastrzębia Góra y Modlinek Villa, me pareció una historia local para tus lectores.",
+          "offer": [
+            "Un dosier de prensa listo (descripción, capturas y datos) y una entrevista breve sobre cómo se escanean lugares polacos para un simulador en el que se vuela.",
+            "Un avance de las nuevas escenas polacas antes de que se anuncien.",
+            "Tu artículo compartido en mis más de 200 grupos de drones de Facebook, en mi perfil y en LinkedIn, y el nombre del portal en el README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Polski portal informacyjny o dronach",
+          "about": "Świat Dronów (swiatdronow.pl) to polski portal informacyjny o dronach, redagowany przez Michała Zawadzaka. Publikuje kilka artykułów tygodniowo o przepisach (EASA, ULC), branży, wydarzeniach i produktach, a pisze też o polskiej scenie wyścigów FPV, na przykład o rundach Whoop of Poland.",
+          "why": "Portal pisze nie tylko o przepisach i branży, ale i o hobbystycznych wyścigach FPV. Darmowy symulator z otwartym kodem, w którym lata się po prawdziwych polskich miejscach ze skanów 3DGS, takich jak Winter Garden w Jastrzębiej Górze i Modlinek Villa, wydał mi się lokalnym tematem dla czytelników portalu.",
+          "offer": [
+            "Gotowy pakiet prasowy (opis, zrzuty ekranu, fakty) i krótki wywiad o skanowaniu polskich miejsc do symulatora, w którym można latać.",
+            "Wgląd w nowe polskie sceny przed ich ogłoszeniem.",
+            "Artykuł portalu udostępniony w moich ponad 200 grupach o dronach na Facebooku, na moim profilu i w LinkedIn oraz nazwa portalu w README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Польский новостной портал о дронах",
+          "about": "Świat Dronów (swiatdronow.pl) — польский новостной портал о дронах, редактор — Michał Zawadzak. Публикует несколько материалов в неделю о правилах (EASA, ULC), отрасли, событиях и продуктах, а также пишет о польских FPV-гонках, например об этапах Whoop of Poland.",
+          "why": "Вы пишете не только о правилах и отрасли, но и о любительских FPV-гонках. Бесплатный симулятор с открытым кодом, в котором летают по реальным польским местам из 3DGS-сканов, например Winter Garden в Jastrzębia Góra и Modlinek Villa, показался мне подходящей локальной темой для ваших читателей.",
+          "offer": [
+            "Готовый пресс-кит (описание, скриншоты, факты) и короткое интервью о том, как польские места сканируют для симулятора, где можно летать.",
+            "Предварительный показ новых польских сцен до их анонса.",
+            "Ваша статья в моих 200+ группах о дронах в Facebook, на моём профиле и в LinkedIn, а название портала — в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "alec-searle",
+      "name": "Alec Searle",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/alec-searle.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@alec_searle"
+        },
+        {
+          "label": "alecsearle.com",
+          "href": "https://alecsearle.com"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/alec_searle/"
+        },
+        {
+          "label": "TikTok",
+          "href": "https://www.tiktok.com/@alec_searle"
+        }
+      ],
+      "works": [
+        {
+          "title": "I Spent 20 Hours Learning FPV in a Simulator… Here’s What Happened",
+          "href": "https://www.youtube.com/watch?v=HV4aiumloDk",
+          "date": "2026-04-03"
+        },
+        {
+          "title": "I'm DONE With Analog FPV… (Meteor75 Pro II O4 Review)",
+          "href": "https://www.youtube.com/watch?v=UV-LIEY7-k0",
+          "date": "2026-10-24"
+        }
+      ],
+      "scene": "887f27aa",
+      "sceneCredit": "Tunis, old town — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Beginner-journey FPV YouTuber: sim guides, whoop reviews",
+          "about": "A beginner-journey FPV channel with guides to a first drone and a first simulator, tiny whoop reviews and live simulator sessions where viewers join in. The website alecsearle.com collects setup, gear and tutorials.",
+          "why": "You teach beginners through simulators, and your live viewers fly along with you. In my simulator everyone can load the same real place by pasting its SuperSplat link, so a whole stream can fly one scene on their own screens.",
+          "offer": [
+            "A flyable scene of your own flying spot, or of a place your viewers vote for, made from a 3DGS scan.",
+            "Your Meteor75 Pro II O4 as a preset, set up from its Betaflight diff all, so viewers fly your whoop with your rates.",
+            "If you make a video about it, I share it in my 200+ drone Facebook groups, on my profile and on LinkedIn, and put your name in the GitHub README."
+          ]
+        },
+        "es": {
+          "role": "YouTuber de FPV: guías de simuladores y whoops",
+          "about": "Canal de FPV que sigue el camino de un principiante, con guías del primer dron y del primer simulador, reseñas de tiny whoops y sesiones en directo de simulador en las que se une el público. El sitio alecsearle.com reúne configuración, equipo y tutoriales.",
+          "why": "Enseñas a principiantes a través de simuladores y tus espectadores vuelan contigo en directo. En mi simulador cualquiera puede cargar el mismo lugar real pegando su enlace de SuperSplat, así que un directo entero puede volar una misma escena en su propia pantalla.",
+          "offer": [
+            "Una escena volable de tu propio sitio de vuelo, o de un lugar que voten tus espectadores, hecha a partir de un escaneo 3DGS.",
+            "Tu Meteor75 Pro II O4 como preset, configurado a partir de su diff all de Betaflight, para que tus espectadores vuelen tu whoop con tus rates.",
+            "Si haces un vídeo sobre el simulador, lo comparto en mis más de 200 grupos de drones de Facebook, en mi perfil y en LinkedIn, y pongo tu nombre en el README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "YouTuber FPV: poradniki o symulatorach, recenzje whoopów",
+          "about": "Kanał FPV prowadzony z perspektywy początkującego: poradniki do pierwszego drona i pierwszego symulatora, recenzje tiny whoopów oraz transmisje na żywo z symulatora, do których dołączają widzowie. Strona alecsearle.com zbiera ustawienia, sprzęt i poradniki.",
+          "why": "Uczysz początkujących przez symulatory, a widzowie latają z Tobą na żywo. W moim symulatorze każdy może wczytać to samo prawdziwe miejsce, wklejając link do SuperSplat, więc cała transmisja może latać po jednej scenie na własnych ekranach.",
+          "offer": [
+            "Scena do latania z Twojego miejsca do latania albo z miejsca, które wybiorą widzowie, zrobiona ze skanu 3DGS.",
+            "Twój Meteor75 Pro II O4 jako preset, ustawiony na podstawie jego diff all z Betaflight, żeby widzowie lecieli Twoim whoopem z Twoimi rates.",
+            "Jeśli nagrasz o nim film, udostępnię go w moich ponad 200 grupach dronowych na Facebooku, na moim profilu i na LinkedIn, a Twoja nazwa trafi do README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "FPV-ютубер: гайды по симуляторам, обзоры whoop",
+          "about": "FPV-канал о пути новичка: гайды по первому дрону и первому симулятору, обзоры tiny whoop и прямые эфиры в симуляторе, к которым присоединяются зрители. На сайте alecsearle.com собраны настройки, техника и туториалы.",
+          "why": "Вы учите новичков через симуляторы, и ваши зрители летают вместе с вами в эфире. В моём симуляторе любой может загрузить одно и то же реальное место, вставив ссылку SuperSplat, так что весь эфир может лететь по одной сцене на своих экранах.",
+          "offer": [
+            "Сцена для полёта в вашем собственном месте или в месте, за которое проголосуют зрители, сделанная из 3DGS-скана.",
+            "Ваш Meteor75 Pro II O4 как пресет, настроенный по его diff all из Betaflight, чтобы зрители летали на вашем whoop с вашими rates.",
+            "Если вы снимете о нём видео, я поделюсь им в моих 200+ группах про дроны в Facebook, на моём профиле и в LinkedIn, а ваше имя появится в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "andyrc",
+      "name": "AndyRC",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/andyrc.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@AndyRCchannel"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/andyrc_channel/"
+        }
+      ],
+      "works": [
+        {
+          "title": "Free FPV Simulator!",
+          "href": "https://www.youtube.com/watch?v=vPnnfUH-KRQ",
+          "date": "2016-05-22"
+        },
+        {
+          "title": "I Really Like This! Betafpv Meteor 75 Pro II O4",
+          "href": "https://www.youtube.com/watch?v=e13Gf3XbGUk",
+          "date": "2026-08-05"
+        },
+        {
+          "title": "The Best Tinywhoop Is Broken? Tinyhawk Aero vs Betafpv.",
+          "href": "https://www.youtube.com/watch?v=U3gDr5byILs",
+          "date": "2026-10-24"
+        }
+      ],
+      "scene": "39e63ce9",
+      "sceneCredit": "Modlinek Villa, red room — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "RC and FPV reviewer: tiny whoops, planes, gliders",
+          "about": "A UK reviewer who has flown RC planes and helicopters for 30 years. The channel has long tiny-whoop and FPV reviews, short clips of RC planes and gliders, and FPV head-tracking projects. He reviewed free FPV simulators back in 2015 and 2016.",
+          "why": "You reviewed free FPV simulators in 2015 and 2016, and you review whoops all the time. My simulator is free, runs in the browser and has a scene scale from ×0.25 to ×100, so a whoop can fly the same scan at very different sizes.",
+          "offer": [
+            "Your whoop as a preset in the simulator, set up from its Betaflight diff all.",
+            "A flyable scene of a place you pick, such as your flying field, made from a 3DGS scan.",
+            "If you make a video about it, I share it in my 200+ drone Facebook groups, on my profile and on LinkedIn."
+          ]
+        },
+        "es": {
+          "role": "Reseñas RC y FPV: tiny whoops, aviones, planeadores",
+          "about": "Reseñador británico que vuela aviones y helicópteros RC desde hace 30 años. El canal tiene reseñas largas de tiny whoops y FPV, clips cortos de aviones RC y planeadores, y proyectos de head-tracking FPV. Ya reseñaba simuladores FPV gratuitos en 2015 y 2016.",
+          "why": "Reseñaste simuladores FPV gratuitos en 2015 y 2016, y reseñas whoops continuamente. Mi simulador es gratuito, funciona en el navegador y tiene una escala de escena de ×0,25 a ×100, así que un whoop puede volar el mismo escaneo a tamaños muy distintos.",
+          "offer": [
+            "Tu whoop como preset en el simulador, configurado a partir de su diff all de Betaflight.",
+            "Una escena volable de un lugar que elijas, por ejemplo tu campo de vuelo, hecha a partir de un escaneo 3DGS.",
+            "Si haces un vídeo sobre el simulador, lo comparto en mis más de 200 grupos de drones de Facebook, en mi perfil y en LinkedIn."
+          ]
+        },
+        "pl": {
+          "role": "Recenzent RC i FPV: tiny whoopy, samoloty, szybowce",
+          "about": "Brytyjski recenzent, który lata modelami samolotów i helikopterów RC od 30 lat. Na kanale są długie recenzje tiny whoopów i FPV, krótkie filmy z samolotami RC i szybowcami oraz projekty head-trackingu FPV. Darmowe symulatory FPV recenzował już w 2015 i 2016 roku.",
+          "why": "Recenzowałeś darmowe symulatory FPV w 2015 i 2016 roku, a whoopy recenzujesz cały czas. Mój symulator jest darmowy, działa w przeglądarce i ma skalę sceny od ×0,25 do ×100, więc whoop może latać po tym samym skanie w bardzo różnych rozmiarach.",
+          "offer": [
+            "Twój whoop jako preset w symulatorze, ustawiony na podstawie jego diff all z Betaflight.",
+            "Scena do latania z wybranego przez Ciebie miejsca, na przykład Twojego pola do latania, zrobiona ze skanu 3DGS.",
+            "Jeśli nagrasz o nim film, udostępnię go w moich ponad 200 grupach dronowych na Facebooku, na moim profilu i na LinkedIn."
+          ]
+        },
+        "ru": {
+          "role": "Обзорщик RC и FPV: tiny whoop, самолёты, планеры",
+          "about": "Британский обозреватель, который летает на радиоуправляемых самолётах и вертолётах уже 30 лет. На канале — длинные обзоры tiny whoop и FPV, короткие ролики с самолётами и планерами и проекты с head-tracking в FPV. Бесплатные FPV-симуляторы он обозревал ещё в 2015 и 2016 годах.",
+          "why": "Вы обозревали бесплатные FPV-симуляторы в 2015 и 2016 годах и постоянно обозреваете whoop. Мой симулятор бесплатный, работает в браузере и имеет масштаб сцены от ×0,25 до ×100, так что whoop может летать по одному и тому же скану в очень разных размерах.",
+          "offer": [
+            "Ваш whoop как пресет в симуляторе, настроенный по его diff all из Betaflight.",
+            "Сцена для полёта в выбранном вами месте, например на вашем лётном поле, сделанная из 3DGS-скана.",
+            "Если вы снимете о нём видео, я поделюсь им в моих 200+ группах про дроны в Facebook, на моём профиле и в LinkedIn."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "captain-drone",
+      "name": "CAPTAIN DRONE",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/captain-drone.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@CAPTAINDRONE798"
+        },
+        {
+          "label": "X",
+          "href": "https://twitter.com/Captaindrone798"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/captain_drone/"
+        }
+      ],
+      "works": [
+        {
+          "title": "RadioMaster Pocket - How To Set Up and Bind a Drone - Step by Step",
+          "href": "https://www.youtube.com/watch?v=GgaWMvAHZi8",
+          "date": "2023-08-02"
+        },
+        {
+          "title": "BETAFPV PAVO20 Pro II 4S is a BLAST to Fly!",
+          "href": "https://www.youtube.com/watch?v=mux-0G2aW6k",
+          "date": "2026-08-07"
+        },
+        {
+          "title": "Really Good - BETAFPV Meteor 75 PRO HD FPV Kit",
+          "href": "https://www.youtube.com/watch?v=L20j3eGVRoU",
+          "date": "2026-06-15"
+        }
+      ],
+      "scene": "39e63ce9",
+      "sceneCredit": "Modlinek Villa, red room — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Hobby FPV YouTuber: beginner kits, whoops, radio set-up",
+          "about": "A retired hobbyist who makes FPV videos for enjoyment, with no sponsors. The channel reviews beginner FPV kits, tiny whoops and cinewhoops, shows how to set up and bind radios, and also covers RC planes, helicopters and 360 drones.",
+          "why": "You review drones for people who are about to start flying, and one of them, the BETAFPV Pavo20 Pro II 4S, is a preset in my simulator. ShramkoGSFPV runs in the browser, takes an EdgeTX radio over USB and flies real places captured as 3DGS scans.",
+          "offer": [
+            "Your own quad as a preset in the simulator, set up from your Betaflight diff all.",
+            "A flyable scene of your flying spot, made from a 3DGS scan.",
+            "If you make a video about it, I share it in my 200+ drone Facebook groups, on my profile and on LinkedIn, and put your name in the GitHub README."
+          ]
+        },
+        "es": {
+          "role": "YouTuber de FPV por afición: kits, whoops, radios",
+          "about": "Aficionado jubilado que hace vídeos de FPV por gusto, sin patrocinadores. El canal prueba kits de FPV para principiantes, tiny whoops y cinewhoops, enseña a configurar y enlazar radios, y también trata aviones RC, helicópteros y drones 360.",
+          "why": "Pruebas drones para gente que está a punto de empezar a volar, y uno de ellos, el BETAFPV Pavo20 Pro II 4S, es un preset en mi simulador. ShramkoGSFPV funciona en el navegador, acepta una radio EdgeTX por USB y permite volar por lugares reales capturados como escaneos 3DGS.",
+          "offer": [
+            "Tu propio quad como preset en el simulador, configurado a partir de tu diff all de Betaflight.",
+            "Una escena volable de tu sitio de vuelo, hecha a partir de un escaneo 3DGS.",
+            "Si haces un vídeo sobre el simulador, lo comparto en mis más de 200 grupos de drones de Facebook, en mi perfil y en LinkedIn, y pongo tu nombre en el README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Hobbysta, YouTuber FPV: zestawy, whoopy, aparatury",
+          "about": "Emerytowany hobbysta, który nagrywa filmy o FPV dla przyjemności i bez sponsorów. Kanał testuje zestawy FPV dla początkujących, tiny whoopy i cinewhoopy, pokazuje, jak skonfigurować i zbindować aparatury, a także porusza temat samolotów RC, helikopterów i dronów 360.",
+          "why": "Testujesz drony dla ludzi, którzy zaraz zaczną latać, a jeden z nich, BETAFPV Pavo20 Pro II 4S, jest presetem w moim symulatorze. ShramkoGSFPV działa w przeglądarce, przyjmuje aparaturę EdgeTX po USB i pozwala latać po prawdziwych miejscach ze skanów 3DGS.",
+          "offer": [
+            "Twój własny quad jako preset w symulatorze, ustawiony na podstawie Twojego diff all z Betaflight.",
+            "Scena do latania z Twojego miejsca do latania, zrobiona ze skanu 3DGS.",
+            "Jeśli nagrasz o nim film, udostępnię go w moich ponad 200 grupach dronowych na Facebooku, na moim profilu i na LinkedIn, a Twoja nazwa trafi do README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Хобби-ютубер про FPV: наборы для новичков, whoop, пульты",
+          "about": "Пенсионер-любитель, который снимает видео про FPV для удовольствия и без спонсоров. На канале — обзоры наборов FPV для новичков, tiny whoop и cinewhoop, настройка и бинд пультов, а ещё радиоуправляемые самолёты, вертолёты и 360-дроны.",
+          "why": "Вы обозреваете дроны для тех, кто только собирается начать летать, и один из них, BETAFPV Pavo20 Pro II 4S, есть в моём симуляторе в виде пресета. ShramkoGSFPV работает в браузере, принимает пульт EdgeTX по USB и позволяет летать по реальным местам, снятым в виде 3DGS-сканов.",
+          "offer": [
+            "Ваш собственный квад как пресет в симуляторе, настроенный по вашему diff all из Betaflight.",
+            "Сцена для полёта в вашем месте для полётов, сделанная из 3DGS-скана.",
+            "Если вы снимете о нём видео, я поделюсь им в моих 200+ группах про дроны в Facebook, на моём профиле и в LinkedIn, а ваше имя появится в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "christoph-schindelar",
+      "name": "Christoph Schindelar",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/christoph-schindelar.webp",
+      "links": [
+        {
+          "label": "superspl.at",
+          "href": "https://superspl.at/user/schindelar3d"
+        },
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@Schindelar3D"
+        },
+        {
+          "label": "3dvisual.at",
+          "href": "https://3dvisual.at/"
+        }
+      ],
+      "works": [
+        {
+          "title": "PortalCam - Raytraced GS - Octane Render",
+          "href": "https://www.youtube.com/watch?v=rUiPLlOg_JE",
+          "date": "2026-01-18"
+        },
+        {
+          "title": "SKATEPARK - Baden (A)",
+          "href": "https://superspl.at/scene/964b09c1",
+          "date": "2025-09-14"
+        },
+        {
+          "title": "Kefermarkt Chruch - Gaussian Splatting",
+          "href": "https://www.youtube.com/watch?v=nC6Q2wN-vfM",
+          "date": "2025-06-04"
+        }
+      ],
+      "scene": "964b09c1",
+      "sceneCredit": "«SKATEPARK - Baden (A)» by schindelar3d, SuperSplat (licence not specified)",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "CG and VFX artist, Gaussian splatting scans",
+          "about": "Christoph Schindelar is a CG and VFX artist from Austria who captures real places as Gaussian splats: skateparks, urbex sites, churches and castles, made with an XGRIDS PortalCam and LCC Studio. He publishes them on SuperSplat and YouTube. His scan of the parish church in Kefermarkt received an award for digitisation, as the Austrian news site tips.at reported in March 2026.",
+          "why": "Skateparks and urbex sites are places FPV pilots like to fly, and your scans of them are a natural fit for the simulator. I picked your own «SKATEPARK - Baden (A)»: the simulator builds solid walls from it, so the drone does not pass through them.",
+          "offer": [
+            "Your own public SuperSplat scan «SKATEPARK - Baden (A)», ready to fly in the browser: the button below opens it.",
+            "If you make a video or a post about ShramkoGSFPV, I will share it in the 200+ drone groups I belong to on Facebook, on my profile and on LinkedIn.",
+            "Your name and a link to 3dvisual.at in the README of the project on GitHub."
+          ]
+        },
+        "es": {
+          "role": "Artista CG y VFX, escaneos con Gaussian splatting",
+          "about": "Christoph Schindelar es un artista CG y VFX de Austria que captura lugares reales como Gaussian splats: skateparks, sitios de urbex, iglesias y castillos, con un XGRIDS PortalCam y LCC Studio. Los publica en SuperSplat y YouTube. Su escaneo de la iglesia parroquial de Kefermarkt recibió un premio de digitalización, según informó en marzo de 2026 el sitio de noticias austriaco tips.at.",
+          "why": "Los skateparks y los sitios de urbex son lugares donde a los pilotos FPV les gusta volar, y tus escaneos de ellos encajan de forma natural en el simulador. Elegí tu «SKATEPARK - Baden (A)»: el simulador construye paredes sólidas a partir de él, así que el dron no las atraviesa.",
+          "offer": [
+            "Tu propio escaneo público de SuperSplat «SKATEPARK - Baden (A)», listo para volar en el navegador: el botón de abajo lo abre.",
+            "Si haces un vídeo o una publicación sobre ShramkoGSFPV, lo compartiré en los más de 200 grupos de drones de Facebook en los que estoy, en mi perfil y en LinkedIn.",
+            "Tu nombre y un enlace a 3dvisual.at en el README del proyecto en GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Artysta CG i VFX, skany Gaussian splatting",
+          "about": "Christoph Schindelar to austriacki artysta CG i VFX, który zamienia prawdziwe miejsca w Gaussian splaty: skateparki, obiekty urbex, kościoły i zamki, zeskanowane XGRIDS PortalCam i opracowane w LCC Studio. Publikuje je na SuperSplat i YouTube. Jego skan kościoła parafialnego w Kefermarkt otrzymał nagrodę za digitalizację, o czym w marcu 2026 napisał austriacki serwis tips.at.",
+          "why": "Skateparki i obiekty urbex to miejsca, w których piloci FPV chętnie latają, a Twoje skany takich miejsc naturalnie pasują do symulatora. Wybrałem Twój «SKATEPARK - Baden (A)»: symulator buduje z niego lite ściany, więc dron nie przelatuje przez nie.",
+          "offer": [
+            "Twój własny publiczny skan z SuperSplat «SKATEPARK - Baden (A)», gotowy do lotu w przeglądarce: przycisk poniżej go otwiera.",
+            "Jeśli nagrasz film lub napiszesz post o ShramkoGSFPV, udostępnię go w ponad 200 grupach dronowych na Facebooku, do których należę, na moim profilu i na LinkedIn.",
+            "Twoje imię i nazwisko oraz link do 3dvisual.at w README projektu na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "CG- и VFX-художник, сканы Gaussian splatting",
+          "about": "Christoph Schindelar — австрийский CG- и VFX-художник, который снимает реальные места в виде Gaussian splats: скейтпарки, урбекс-объекты, церкви и замки, с помощью XGRIDS PortalCam и LCC Studio. Он публикует их на SuperSplat и YouTube. Его скан приходской церкви в Kefermarkt получил награду за цифровизацию, о чём в марте 2026 написал австрийский новостной сайт tips.at.",
+          "why": "Скейтпарки и урбекс-места — то, где FPV-пилоты любят летать, и ваши сканы таких мест естественно подходят для симулятора. Я выбрал ваш «SKATEPARK - Baden (A)»: симулятор строит из него твёрдые стены, так что дрон не пролетает сквозь них.",
+          "offer": [
+            "Ваш собственный публичный скан из SuperSplat «SKATEPARK - Baden (A)», готовый к полёту в браузере: кнопка ниже открывает его.",
+            "Если вы снимете видео или напишете пост о ShramkoGSFPV, я поделюсь им в 200+ дрон-группах Facebook, где я состою, на своём профиле и в LinkedIn.",
+            "Ваше имя и ссылка на 3dvisual.at в README проекта на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "dany-bittel",
+      "name": "Dany Bittel",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/dany-bittel.webp",
+      "links": [
+        {
+          "label": "superspl.at",
+          "href": "https://superspl.at/user/danylyon"
+        },
+        {
+          "label": "danybittel.ch",
+          "href": "https://danybittel.ch/macro"
+        },
+        {
+          "label": "Patreon",
+          "href": "https://www.patreon.com/cw/DanyBittel"
+        },
+        {
+          "label": "TikTok",
+          "href": "https://www.tiktok.com/@macrosplats"
+        }
+      ],
+      "works": [
+        {
+          "title": "Rose Flower",
+          "href": "https://superspl.at/scene/4d837bca",
+          "date": "2026-10-24"
+        },
+        {
+          "title": "Saffron Flower",
+          "href": "https://superspl.at/scene/c637e9d7",
+          "date": "2026-10-18"
+        },
+        {
+          "title": "Forest Floor Scenery",
+          "href": "https://superspl.at/scene/ab5efa0e",
+          "date": "2026-10-09"
+        }
+      ],
+      "scene": "ab5efa0e",
+      "sceneCredit": "«Forest Floor Scenery» by danylyon, SuperSplat (licence not specified)",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Digital artist capturing macro Gaussian splats",
+          "about": "Dany Bittel is a self-employed digital artist and developer from Switzerland with a VFX background. He captures insects, flowers, seeds and fungi as macro Gaussian splats from focus-stacked photos and shares them on SuperSplat, Patreon and TikTok. His website explains the method and offers a free model to download.",
+          "why": "I flew a tiny whoop through your «Forest Floor Scenery», scaled up in the simulator, and shared a short clip credited to you with a link to your original scan. Macro worlds like yours fit the scale control well: a tiny plot becomes a landscape you can fly through.",
+          "offer": [
+            "Your own public SuperSplat scan «Forest Floor Scenery», ready to fly in the browser: the button below opens it.",
+            "If you make a video or a post about ShramkoGSFPV, I will share it in the 200+ drone groups I belong to on Facebook, on my profile and on LinkedIn.",
+            "Your name and a link to your website in the README of the project on GitHub."
+          ]
+        },
+        "es": {
+          "role": "Artista digital que captura Gaussian splats macro",
+          "about": "Dany Bittel es un artista digital y desarrollador autónomo de Suiza con formación en VFX. Captura insectos, flores, semillas y hongos como Gaussian splats macro a partir de fotos con apilado de enfoque y los comparte en SuperSplat, Patreon y TikTok. Su web explica cómo trabaja y ofrece un modelo gratuito para descargar.",
+          "why": "Volé un tiny whoop por tu «Forest Floor Scenery», ampliado en el simulador, y compartí un clip corto con tu nombre como autor y un enlace a tu escaneo original. Los mundos macro como el tuyo encajan bien con el control de escala: una parcela diminuta se convierte en un paisaje por el que se puede volar.",
+          "offer": [
+            "Tu propio escaneo público de SuperSplat «Forest Floor Scenery», listo para volar en el navegador: el botón de abajo lo abre.",
+            "Si haces un vídeo o una publicación sobre ShramkoGSFPV, lo compartiré en los más de 200 grupos de drones de Facebook en los que estoy, en mi perfil y en LinkedIn.",
+            "Tu nombre y un enlace a tu web en el README del proyecto en GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Artysta cyfrowy tworzący makro Gaussian splaty",
+          "about": "Dany Bittel to szwajcarski artysta cyfrowy i programista, pracujący na własny rachunek, z doświadczeniem w VFX. Fotografuje owady, kwiaty, nasiona i grzyby w skali makro metodą focus stackingu i zamienia je w makro Gaussian splaty, które publikuje na SuperSplat, Patreonie i TikToku. Na jego stronie opisana jest metoda, można też pobrać darmowy model.",
+          "why": "Przeleciałem dronem tiny whoop przez Twoją scenę «Forest Floor Scenery», powiększoną w symulatorze, i opublikowałem krótki klip z Twoim nazwiskiem jako autora oraz linkiem do oryginalnego skanu. Światy makro takie jak Twój dobrze pasują do regulacji skali: maleńki skrawek ziemi staje się krajobrazem, przez który można latać.",
+          "offer": [
+            "Twój własny publiczny skan z SuperSplat «Forest Floor Scenery», gotowy do lotu w przeglądarce: przycisk poniżej go otwiera.",
+            "Jeśli nagrasz film lub napiszesz post o ShramkoGSFPV, udostępnię go w ponad 200 grupach dronowych na Facebooku, do których należę, na moim profilu i na LinkedIn.",
+            "Twoje imię i nazwisko oraz link do Twojej strony w README projektu na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Цифровой художник, снимает макро-сплаты",
+          "about": "Dany Bittel — швейцарский цифровой художник и разработчик, работающий на себя, с опытом в VFX. Он снимает насекомых, цветы, семена и грибы в макро: по сериям фотографий с фокус-стекингом получает Gaussian splats и публикует их на SuperSplat, Patreon и TikTok. На его сайте описан метод и можно скачать бесплатную модель.",
+          "why": "Я пролетел на tiny whoop по вашей сцене «Forest Floor Scenery», увеличенной в симуляторе, и выложил короткий клип с указанием вас как автора и ссылкой на ваш оригинальный скан. Макромиры вроде вашего хорошо подходят для регулировки масштаба: крошечный участок превращается в ландшафт, по которому можно летать.",
+          "offer": [
+            "Ваш собственный публичный скан из SuperSplat «Forest Floor Scenery», готовый к полёту в браузере: кнопка ниже открывает его.",
+            "Если вы снимете видео или напишете пост о ShramkoGSFPV, я поделюсь им в 200+ дрон-группах Facebook, где я состою, на своём профиле и в LinkedIn.",
+            "Ваше имя и ссылка на ваш сайт в README проекта на GitHub."
+          ]
+        }
+      },
+      "photoInitials": true,
+      "sceneVersion": 2
+    },
+    {
+      "slug": "dimmyv",
+      "name": "DimmyV",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/dimmyv.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@DimmyV"
+        },
+        {
+          "label": "demetrios-photography.com",
+          "href": "https://www.demetrios-photography.com/"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/dimmyv/"
+        }
+      ],
+      "works": [
+        {
+          "title": "Best FPV Simulator for Beginners in 2026? (Steam)",
+          "href": "https://www.youtube.com/watch?v=DbugV9w4Fnc",
+          "date": "2026-01-13"
+        },
+        {
+          "title": "FPV Isn’t Hard, You’re Just Learning It Wrong",
+          "href": "https://www.youtube.com/watch?v=2SyM7mTs7Po",
+          "date": "2026-10-11"
+        },
+        {
+          "title": "What I’d Buy First If I Started FPV Again",
+          "href": "https://www.youtube.com/watch?v=gq5S-lKf5N0",
+          "date": "2026-09-08"
+        }
+      ],
+      "scene": "39e63ce9",
+      "sceneCredit": "Modlinek Villa, red room — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Photographer and drone filmmaker teaching beginner FPV",
+          "about": "A photographer and drone filmmaker in Cyprus who teaches beginner FPV on YouTube. His videos cover first-drone and first-radio buying guides, simulators versus real flying, whoop and cinewhoop reviews, and indoor flying tips.",
+          "why": "Your beginner videos are about learning FPV efficiently, and you have looked at simulators through skill transfer to real flying. I would like you to see a free one that flies real places, imports your quad’s Betaflight diff all and could include a Cyprus spot you know.",
+          "offer": [
+            "A flyable scene of a Cyprus location you choose, made from a 3DGS scan.",
+            "Your quad as a preset in the simulator, set up from your Betaflight diff all.",
+            "If you make a video about it, I share it in my 200+ drone Facebook groups, on my profile and on LinkedIn, with a link to your website."
+          ]
+        },
+        "es": {
+          "role": "Fotógrafo con drones; enseña FPV a principiantes",
+          "about": "Fotógrafo y cineasta con drones en Chipre que enseña FPV a principiantes en YouTube. Sus vídeos tratan guías para comprar el primer dron y la primera radio, simuladores frente a vuelo real, reseñas de whoops y cinewhoops y consejos para volar en interiores.",
+          "why": "Tus vídeos para principiantes tratan de aprender FPV con eficacia, y has mirado los simuladores desde la transferencia de habilidad al vuelo real. Me gustaría que vieras uno gratuito en el que se vuela por lugares reales, que importa el diff all de Betaflight de tu quad y que podría incluir un sitio de Chipre que conoces.",
+          "offer": [
+            "Una escena volable de un lugar de Chipre que elijas, hecha a partir de un escaneo 3DGS.",
+            "Tu quad como preset en el simulador, configurado a partir de tu diff all de Betaflight.",
+            "Si haces un vídeo sobre el simulador, lo comparto en mis más de 200 grupos de drones de Facebook, en mi perfil y en LinkedIn, con un enlace a tu web."
+          ]
+        },
+        "pl": {
+          "role": "Fotograf i filmowiec dronowy, uczy FPV początkujących",
+          "about": "Fotograf i filmowiec dronowy z Cypru, który uczy początkujących FPV na YouTube. W jego filmach są poradniki zakupu pierwszego drona i pierwszej aparatury, symulatory kontra prawdziwe latanie, recenzje whoopów i cinewhoopów oraz wskazówki do latania w pomieszczeniach.",
+          "why": "Twoje filmy dla początkujących są o skutecznej nauce FPV, a symulatory oceniasz pod kątem przenoszenia umiejętności na prawdziwe latanie. Chciałbym, żebyś zobaczył darmowy symulator, w którym lata się po prawdziwych miejscach, który importuje diff all z Betaflight Twojego quada i mógłby mieć scenę z miejsca na Cyprze, które znasz.",
+          "offer": [
+            "Scena do latania z wybranego przez Ciebie miejsca na Cyprze, zrobiona ze skanu 3DGS.",
+            "Twój quad jako preset w symulatorze, ustawiony na podstawie Twojego diff all z Betaflight.",
+            "Jeśli nagrasz o nim film, udostępnię go w moich ponad 200 grupach dronowych na Facebooku, na moim profilu i na LinkedIn, z linkiem do Twojej strony."
+          ]
+        },
+        "ru": {
+          "role": "Фотограф и дрон-оператор, учит FPV новичков",
+          "about": "Фотограф и дрон-оператор с Кипра, который учит FPV новичков на YouTube. В его видео — гайды по выбору первого дрона и первого пульта, симуляторы и реальные полёты, обзоры whoop и cinewhoop и советы по полётам в помещении.",
+          "why": "Ваши видео для новичков о том, как эффективно учиться FPV, а симуляторы вы оцениваете по переносу навыков в реальные полёты. Хочу показать вам бесплатный симулятор: в нём летают по реальным местам, он импортирует diff all из Betaflight вашего квада и может включить место на Кипре, которое вы знаете.",
+          "offer": [
+            "Сцена для полёта в выбранном вами месте на Кипре, сделанная из 3DGS-скана.",
+            "Ваш квад как пресет в симуляторе, настроенный по вашему diff all из Betaflight.",
+            "Если вы снимете о нём видео, я поделюсь им в моих 200+ группах про дроны в Facebook, на моём профиле и в LinkedIn, со ссылкой на ваш сайт."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "dronexl",
+      "name": "DroneXL",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/dronexl.webp",
+      "links": [
+        {
+          "label": "dronexl.co",
+          "href": "https://dronexl.co"
+        },
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@DroneXL"
+        },
+        {
+          "label": "X",
+          "href": "https://twitter.com/DroneXL1"
+        },
+        {
+          "label": "Facebook",
+          "href": "https://www.facebook.com/dronexl"
+        }
+      ],
+      "works": [
+        {
+          "title": "FPV Pilot Flies Kinzua Bridge, A Pennsylvania Park That Bans Drones",
+          "href": "https://dronexl.co/2026/10/03/fpv-pilot-kinzua-bridge-pennsylvania-state-park-permission/",
+          "date": "2026-10-03"
+        },
+        {
+          "title": "DJI Avata 360 Can't Fly Acro. An FPV Pilot Still Calls It Enough",
+          "href": "https://dronexl.co/2026/09/30/dji-avata-360-kai-vertigoh-fpv-test/",
+          "date": "2026-09-30"
+        },
+        {
+          "title": "I Used The Antigravity A1 To Preserve A 1,000-Year-Old Bulgarian Fortress In 3D",
+          "href": "https://dronexl.co/2026/08/24/antigravity-a1-ovech-fortress-gaussian-splatting/",
+          "date": "2026-08-24"
+        }
+      ],
+      "scene": "887f27aa",
+      "sceneCredit": "Tunis, old town — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Drone news site run by Haye Kesteloo",
+          "about": "DroneXL is a daily English-language drone news site founded by Haye Kesteloo, its Editor in Chief. It covers DJI news and firmware, regulation, delivery, public safety and FPV, and often turns one pilot's flight, build or gear test into a short news story. It also runs guest pieces, including a Gaussian splatting capture of a 1,000-year-old Bulgarian fortress.",
+          "why": "In your 26 September piece on drone training you tell readers that a cheap FPV simulator and a used radio show within an hour how much of their skill was the assists. I built a free simulator that runs in the browser and flies real places captured as 3D Gaussian splatting scans, and it might suit a short item for your readers.",
+          "offer": [
+            "I can send screenshots, a short flight recording and a quote from me for any story that could use them.",
+            "If a place from one of your stories has a 3DGS scan on SuperSplat, I'll set it up as a flyable scene.",
+            "I'll share any story you write about it in my Facebook groups (200+ drone groups), on my profile and on LinkedIn, and add DroneXL to the GitHub README."
+          ]
+        },
+        "es": {
+          "role": "Sitio de noticias sobre drones de Haye Kesteloo",
+          "about": "DroneXL es un sitio diario de noticias sobre drones en inglés, fundado por Haye Kesteloo, su editor jefe. Cubre novedades y firmware de DJI, normativa, entregas, seguridad pública y FPV, y a menudo convierte el vuelo, la construcción o la prueba de equipo de un piloto en una noticia breve. También publica artículos de colaboradores, entre ellos una captura con Gaussian splatting de una fortaleza búlgara de 1000 años.",
+          "why": "En tu artículo del 26 de septiembre sobre el entrenamiento con drones dices a los lectores que un simulador FPV barato y una radio usada muestran en una hora cuánto de su habilidad se debía a las ayudas del dron. Yo hice un simulador gratuito que funciona en el navegador y vuela por lugares reales capturados como escaneos de 3D Gaussian splatting, y quizá encaje en una nota breve para tus lectores.",
+          "offer": [
+            "Puedo enviarte capturas de pantalla, una grabación corta de vuelo y una cita mía para cualquier nota que pueda usarlas.",
+            "Si un lugar de alguna de tus notas tiene un escaneo 3DGS en SuperSplat, lo preparo como escena para volar.",
+            "Compartiré cualquier nota tuya sobre el simulador en mis grupos de Facebook (más de 200 grupos de drones), en mi perfil y en LinkedIn, y añadiré DroneXL al README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Serwis newsowy o dronach, założyciel Haye Kesteloo",
+          "about": "DroneXL to codzienny serwis informacyjny o dronach po angielsku, którego założycielem i redaktorem naczelnym jest Haye Kesteloo. Pisze o nowościach i firmware DJI, przepisach, dostawach, bezpieczeństwie publicznym i FPV, a lot, budowę lub test sprzętu jednego pilota często zamienia w krótką wiadomość. Wśród tekstów gościnnych jest skan 1000-letniej bułgarskiej twierdzy w technice Gaussian splatting.",
+          "why": "W tekście z 26 września o szkoleniu pilotów mówisz czytelnikom, że tani symulator FPV i używana aparatura pokażą w godzinę, ile z ich umiejętności wynikało z systemów wspomagających lot. Zrobiłem darmowy symulator działający w przeglądarce, który leci po prawdziwych miejscach uchwyconych jako skany 3D Gaussian splatting, i może pasować na krótką wzmiankę dla Twoich czytelników.",
+          "offer": [
+            "Mogę wysłać zrzuty ekranu, krótkie nagranie lotu i swój komentarz do każdego tekstu, któremu się przydadzą.",
+            "Jeśli miejsce z któregoś z Twoich tekstów ma skan 3DGS na SuperSplat, przygotuję je jako scenę do latania.",
+            "Udostępnię każdy Twój tekst o symulatorze w moich grupach na Facebooku (ponad 200 grup o dronach), na swoim profilu i na LinkedInie oraz dodam DroneXL do README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Новостной сайт о дронах, основатель Haye Kesteloo",
+          "about": "DroneXL — ежедневный англоязычный новостной сайт о дронах, основатель и главный редактор которого — Haye Kesteloo. Он пишет о новостях и прошивках DJI, регулировании, доставке, общественной безопасности и FPV и часто превращает полёт, сборку или тест оборудования одного пилота в короткую новость. Среди гостевых материалов — скан 1000-летней болгарской крепости в технике Gaussian splatting.",
+          "why": "В материале от 26 сентября об обучении пилотов вы пишете, что дешёвый FPV-симулятор и подержанный пульт за час покажут, какая часть их навыка — это помощь автоматики. Я сделал бесплатный симулятор, который работает в браузере и летает по реальным местам, снятым как сканы 3D Gaussian splatting, — возможно, он подойдёт для короткой заметки для ваших читателей.",
+          "offer": [
+            "Пришлю скриншоты, короткую запись полёта и свою цитату для любого материала, которому они пригодятся.",
+            "Если у места из одного из ваших материалов есть 3DGS-скан на SuperSplat, подготовлю его как сцену для полёта.",
+            "Поделюсь любым вашим материалом о симуляторе в моих группах в Facebook (более 200 групп про дроны), на своём профиле и в LinkedIn, а DroneXL добавлю в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "jaybyrd-films",
+      "name": "JayByrd Films",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/jaybyrd-films.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@jaybyrdfilms"
+        },
+        {
+          "label": "jaybyrdfilms.com",
+          "href": "https://www.jaybyrdfilms.com"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/jaybyrdfilms"
+        },
+        {
+          "label": "X",
+          "href": "https://x.com/JayByrdFilms"
+        }
+      ],
+      "works": [
+        {
+          "title": "Texas Tech Football One Take Fly Through!",
+          "href": "https://www.youtube.com/watch?v=XHjND-5MECM",
+          "date": "2025-09-13"
+        },
+        {
+          "title": "Texas Tech Football x JayByrd Films Behind the Scenes",
+          "href": "https://www.youtube.com/watch?v=2TL9q4ywhgE",
+          "date": "2025-09-25"
+        },
+        {
+          "title": "Woodberry Forest School - Back on Campus",
+          "href": "https://www.youtube.com/watch?v=Q6jk1wbtItU",
+          "date": "2026-08-31"
+        }
+      ],
+      "scene": "7a475d38",
+      "sceneCredit": "Winter Garden, Jastrzębia Góra, Poland — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Aerial cinematography studio in Minneapolis",
+          "about": "JayByrd Films is a Minneapolis aerial cinematography studio founded by Jay Christensen. It flies FPV one-takes and live-event shots for sports teams, concert tours and brands. Its 2021 one-take through a bowling alley, “Right Up Our Alley”, drew press coverage.",
+          "why": "Your one-takes are lines through real venues that have to be timed with people and props. I'd like you to be able to rehearse such a line in a 3D Gaussian splatting scan of the venue before the shoot, flying it in the browser with solid walls from the scan.",
+          "offer": [
+            "I'll help turn a venue you are about to film into a flyable scene, from a scan made with a phone, a 360 camera or any scanner.",
+            "I'll share your rehearsal video or any review in my Facebook groups (200+ drone groups), on my profile and on LinkedIn.",
+            "I'll add JayByrd Films to the GitHub README."
+          ]
+        },
+        "es": {
+          "role": "Estudio de cinematografía aérea en Minneapolis",
+          "about": "JayByrd Films es un estudio de cinematografía aérea de Minneapolis fundado por Jay Christensen. Vuela one-takes FPV y tomas de eventos en directo para equipos deportivos, giras de conciertos y marcas. Su one-take de 2021 por una bolera, «Right Up Our Alley», tuvo cobertura de prensa.",
+          "why": "Tus one-takes son recorridos por locales reales que hay que cronometrar con personas y atrezo. Me gustaría que pudieras ensayar un recorrido así en un escaneo 3D Gaussian splatting del local antes del rodaje, volándolo en el navegador con paredes sólidas procedentes del escaneo.",
+          "offer": [
+            "Te ayudaré a convertir un local que vayas a filmar en una escena para volar, a partir de un escaneo hecho con un móvil, una cámara 360 o cualquier escáner.",
+            "Compartiré tu vídeo de ensayo o cualquier reseña en mis grupos de Facebook (más de 200 grupos de drones), en mi perfil y en LinkedIn.",
+            "Añadiré JayByrd Films al README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Studio filmowania z powietrza w Minneapolis",
+          "about": "JayByrd Films to studio filmowania z powietrza z Minneapolis, którego założycielem jest Jay Christensen. Kręci ujęcia FPV typu one-take i relacje z wydarzeń na żywo dla drużyn sportowych, tras koncertowych i marek. Jego one-take z 2021 roku przez kręgielnię, „Right Up Our Alley”, opisywała prasa.",
+          "why": "Twoje ujęcia one-take to trasy przez prawdziwe obiekty, które trzeba zgrać w czasie z ludźmi i rekwizytami. Chciałbym, żebyś mógł przećwiczyć taką trasę w skanie 3D Gaussian splatting tego obiektu przed zdjęciami, lecąc po nim w przeglądarce, ze ścianami ze skanu.",
+          "offer": [
+            "Pomogę zamienić obiekt, który zamierzasz filmować, w scenę do latania, na podstawie skanu zrobionego telefonem, kamerą 360 lub dowolnym skanerem.",
+            "Udostępnię Twój film z próby lub dowolną recenzję w moich grupach na Facebooku (ponad 200 grup o dronach), na swoim profilu i na LinkedInie.",
+            "Dodam JayByrd Films do README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Студия киносъёмки с воздуха в Миннеаполисе",
+          "about": "JayByrd Films — студия киносъёмки с воздуха из Миннеаполиса; основатель — Jay Christensen. Студия снимает FPV one-take и кадры с живых мероприятий для спортивных команд, концертных туров и брендов. Её one-take 2021 года через боулинг «Right Up Our Alley» попал в прессу.",
+          "why": "Ваши one-take — это маршруты через реальные площадки, которые нужно выстроить по времени с людьми и реквизитом. Я хочу, чтобы вы могли отрепетировать такой маршрут в скане 3D Gaussian splatting площадки до съёмки, пролетев по нему в браузере со стенами из скана.",
+          "offer": [
+            "Помогу превратить площадку, которую вы собираетесь снимать, в сцену для полёта — по скану, сделанному телефоном, 360-камерой или любым сканером.",
+            "Поделюсь вашим видео с репетицией или любым обзором в моих группах в Facebook (более 200 групп про дроны), на своём профиле и в LinkedIn.",
+            "Добавлю JayByrd Films в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "kai-vertigoh",
+      "name": "Kai Vertigoh",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/kai-vertigoh.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@KaiVertigoh"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/kaivertigoh/"
+        },
+        {
+          "label": "TikTok",
+          "href": "https://www.tiktok.com/@kaivertigoh"
+        },
+        {
+          "label": "vertigoh.vision",
+          "href": "https://www.vertigoh.vision/"
+        }
+      ],
+      "works": [
+        {
+          "title": "My most complex drone shot yet",
+          "href": "https://www.youtube.com/watch?v=63v00kaKZQE",
+          "date": "2026-10-19"
+        },
+        {
+          "title": "My most dangerous drone shot: Industrial canning factory",
+          "href": "https://www.youtube.com/watch?v=M-BewDPHVHc",
+          "date": "2026-06-23"
+        }
+      ],
+      "scene": "7a475d38",
+      "sceneCredit": "Winter Garden, Jastrzębia Góra, Poland — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "FPV pilot, dancer and video creator",
+          "about": "Kai Vertigoh is an FPV drone pilot, dancer and video creator who runs the production company Vertigoh Vision. His channel mixes behind-the-scenes looks at demanding FPV one-takes, such as a drink-canning factory in Santa Clarita, with drone and camera gear tests and creator advice.",
+          "why": "“My most complex drone shot yet” is one FPV line through a real building, and a line like that takes careful planning. I'd like you to be able to rehearse it in a 3D Gaussian splatting scan of the place before the shoot, and I think a “rehearsal vs real take” comparison could make a good video.",
+          "offer": [
+            "I'll help turn your next location into a flyable scene from a scan made with a phone, a 360 camera or any scanner.",
+            "If you make a rehearsal video, I'll share it in my Facebook groups (200+ drone groups), on my profile and on LinkedIn.",
+            "I'll add your name to the GitHub README, and if your quad runs Betaflight, your diff all can become a preset."
+          ]
+        },
+        "es": {
+          "role": "Piloto FPV, bailarín y creador de vídeo",
+          "about": "Kai Vertigoh es piloto de drones FPV, bailarín y creador de vídeo, y dirige la productora Vertigoh Vision. Su canal combina making-of de one-takes FPV exigentes, como una fábrica de latas de bebidas en Santa Clarita, con pruebas de drones y cámaras y consejos para creadores.",
+          "why": "«My most complex drone shot yet» es una sola línea FPV por un edificio real, y una línea así exige una planificación cuidadosa. Me gustaría que pudieras ensayarla en un escaneo 3D Gaussian splatting del lugar antes del rodaje, y creo que una comparación «ensayo frente a toma real» podría dar un buen vídeo.",
+          "offer": [
+            "Te ayudaré a convertir tu próxima localización en una escena para volar a partir de un escaneo hecho con un móvil, una cámara 360 o cualquier escáner.",
+            "Si haces un vídeo del ensayo, lo compartiré en mis grupos de Facebook (más de 200 grupos de drones), en mi perfil y en LinkedIn.",
+            "Añadiré tu nombre al README de GitHub y, si tu quad usa Betaflight, tu diff all puede convertirse en un preset."
+          ]
+        },
+        "pl": {
+          "role": "Pilot FPV, tancerz i twórca wideo",
+          "about": "Kai Vertigoh to pilot dronów FPV, tancerz i twórca wideo, który prowadzi firmę produkcyjną Vertigoh Vision. Jego kanał łączy materiały zza kulis wymagających ujęć FPV typu one-take, na przykład w fabryce puszek na napoje w Santa Clarita, z testami dronów i kamer oraz poradami dla twórców.",
+          "why": "„My most complex drone shot yet” to jedna trasa FPV przez prawdziwy budynek, a taka trasa wymaga starannego planowania. Chciałbym, żebyś mógł ją przećwiczyć w skanie 3D Gaussian splatting tego miejsca przed zdjęciami, i myślę, że porównanie „próba kontra prawdziwe ujęcie” mogłoby dać dobry film.",
+          "offer": [
+            "Pomogę zamienić Twoją następną lokację w scenę do latania na podstawie skanu zrobionego telefonem, kamerą 360 lub dowolnym skanerem.",
+            "Jeśli nagrasz film z próby, udostępnię go w moich grupach na Facebooku (ponad 200 grup o dronach), na swoim profilu i na LinkedInie.",
+            "Dodam Twoje imię do README na GitHubie, a jeśli Twój quad działa na Betaflight, Twoje diff all może stać się presetem."
+          ]
+        },
+        "ru": {
+          "role": "FPV-пилот, танцор и автор видео",
+          "about": "Kai Vertigoh — FPV-пилот, танцор и автор видео, он руководит продакшн-компанией Vertigoh Vision. Его канал сочетает съёмку за кадром сложных FPV one-take, например на заводе по розливу напитков в банки в Санта-Кларите, с тестами дронов и камер и советами авторам.",
+          "why": "«My most complex drone shot yet» — это одна линия FPV через реальное здание, а такая линия требует тщательного планирования. Я хочу, чтобы вы могли отрепетировать её в скане 3D Gaussian splatting этого места до съёмки, и думаю, что сравнение «репетиция против настоящего дубля» могло бы стать хорошим видео.",
+          "offer": [
+            "Помогу превратить вашу следующую локацию в сцену для полёта по скану, сделанному телефоном, 360-камерой или любым сканером.",
+            "Если вы сделаете видео с репетицией, поделюсь им в моих группах в Facebook (более 200 групп про дроны), на своём профиле и в LinkedIn.",
+            "Добавлю ваше имя в README на GitHub, а если ваш квадрокоптер работает на Betaflight, ваш diff all может стать пресетом."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "mads-tech",
+      "name": "Mads Tech",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/mads-tech.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@MadRC"
+        },
+        {
+          "label": "fpvwiki.co.uk",
+          "href": "https://fpvwiki.co.uk/"
+        },
+        {
+          "label": "Discord",
+          "href": "https://discord.gg/AS7T9bvK5u"
+        },
+        {
+          "label": "X",
+          "href": "https://twitter.com/madrc1"
+        }
+      ],
+      "works": [
+        {
+          "title": "BetaFPV Pavo20 Pro II DJI O4 Cinewhoop Review - Almost The Perfect O4 Whoop!",
+          "href": "https://www.youtube.com/watch?v=SXznY0lMDrs",
+          "date": "2026-10-22"
+        },
+        {
+          "title": "Caddx Curve Micro P18 Digital FPV Drone - Whoop Or Toothpick You Choose!",
+          "href": "https://www.youtube.com/watch?v=3dBL52vx3Bk",
+          "date": "2026-10-15"
+        },
+        {
+          "title": "Caddx Curve 18 - Kiss Ultra Action Camera Module - Vibe Coding Taking Hold In FPV - Q&A & More",
+          "href": "https://www.youtube.com/watch?v=A9IgMyoozi0",
+          "date": "2026-10-18"
+        }
+      ],
+      "scene": "39e63ce9",
+      "sceneCredit": "Modlinek Villa, red room — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "FPV reviewer: cinewhoops, blackbox, weekly Q&A, wiki",
+          "about": "A UK reviewer who makes technical FPV reviews, news and weekly Q&A livestreams. Recent videos cover cinewhoops such as the BETAFPV Pavo20 Pro II, the Caddx Curve P18 whoop and DJI O4 blackbox investigations. He also keeps the Mads Tech FPV & Drone Wiki and a Discord server.",
+          "why": "You review the cinewhoops my simulator starts with: the default drone is a BETAFPV Pavo20 Pro, and there are Pavo20 Pro II presets. It imports Betaflight diff all, and I checked its rate curves against the Betaflight 4.5.1 code.",
+          "offer": [
+            "Your own quad as a preset in the simulator, set up from your Betaflight diff all.",
+            "A flyable scene of a place you pick, made from a 3DGS scan, for cinewhoop lines indoors.",
+            "If you make a video about it, I share it in my 200+ drone Facebook groups, on my profile and on LinkedIn, and put your name in the GitHub README."
+          ]
+        },
+        "es": {
+          "role": "Reseñador de FPV: cinewhoops, blackbox, Q&A semanal, wiki",
+          "about": "Reseñador británico que hace análisis técnicos de FPV, noticias y directos semanales de preguntas y respuestas. Sus vídeos recientes tratan cinewhoops como el BETAFPV Pavo20 Pro II, el whoop Caddx Curve P18 e investigaciones de blackbox del DJI O4. También mantiene la Mads Tech FPV & Drone Wiki y un servidor de Discord.",
+          "why": "Reseñas los cinewhoops con los que empieza mi simulador: el dron por defecto es un BETAFPV Pavo20 Pro y hay presets del Pavo20 Pro II. El simulador importa el diff all de Betaflight, y comprobé sus curvas de rates con el código de Betaflight 4.5.1.",
+          "offer": [
+            "Tu propio quad como preset en el simulador, configurado a partir de tu diff all de Betaflight.",
+            "Una escena volable de un lugar que elijas, hecha a partir de un escaneo 3DGS, para líneas de cinewhoop en interiores.",
+            "Si haces un vídeo sobre el simulador, lo comparto en mis más de 200 grupos de drones de Facebook, en mi perfil y en LinkedIn, y pongo tu nombre en el README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Recenzent FPV: cinewhoopy, blackbox, cotygodniowe Q&A, wiki",
+          "about": "Brytyjski recenzent, który robi techniczne recenzje FPV, wiadomości i cotygodniowe transmisje Q&A. Ostatnie filmy dotyczą cinewhoopów, takich jak BETAFPV Pavo20 Pro II, whoopa Caddx Curve P18 i analiz blackboxa DJI O4. Prowadzi też Mads Tech FPV & Drone Wiki i serwer Discord.",
+          "why": "Recenzujesz cinewhoopy, od których zaczyna mój symulator: domyślny dron to BETAFPV Pavo20 Pro, są też presety Pavo20 Pro II. Symulator importuje diff all z Betaflight, a jego krzywe rates sprawdziłem z kodem Betaflight 4.5.1.",
+          "offer": [
+            "Twój własny quad jako preset w symulatorze, ustawiony na podstawie Twojego diff all z Betaflight.",
+            "Scena do latania z wybranego przez Ciebie miejsca, zrobiona ze skanu 3DGS, do lotów cinewhoopem w pomieszczeniach.",
+            "Jeśli nagrasz o nim film, udostępnię go w moich ponad 200 grupach dronowych na Facebooku, na moim profilu i na LinkedIn, a Twoja nazwa trafi do README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Обзорщик FPV: cinewhoop, blackbox, еженедельный Q&A, вики",
+          "about": "Британский обозреватель, который делает технические обзоры FPV, новости и еженедельные прямые эфиры с вопросами и ответами. В последних видео — cinewhoop вроде BETAFPV Pavo20 Pro II, whoop Caddx Curve P18 и разбор blackbox у DJI O4. Также ведёт Mads Tech FPV & Drone Wiki и сервер в Discord.",
+          "why": "Вы обозреваете cinewhoop, с которых начинается мой симулятор: дрон по умолчанию — BETAFPV Pavo20 Pro, есть и пресеты Pavo20 Pro II. Симулятор импортирует diff all из Betaflight, а его кривые rates я сверил с кодом Betaflight 4.5.1.",
+          "offer": [
+            "Ваш собственный квад как пресет в симуляторе, настроенный по вашему diff all из Betaflight.",
+            "Сцена для полёта в выбранном вами месте, сделанная из 3DGS-скана, для линий cinewhoop в помещении.",
+            "Если вы снимете о нём видео, я поделюсь им в моих 200+ группах про дроны в Facebook, на моём профиле и в LinkedIn, а ваше имя появится в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "olli-huttunen",
+      "name": "Olli Huttunen",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/olli-huttunen.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@OlliHuttunen78"
+        },
+        {
+          "label": "toppinappi.fi",
+          "href": "https://www.toppinappi.fi/"
+        },
+        {
+          "label": "dioramix.eu",
+          "href": "https://dioramix.eu/"
+        },
+        {
+          "label": "superspl.at",
+          "href": "https://superspl.at/user/ollihuttunen"
+        }
+      ],
+      "works": [
+        {
+          "title": "Spirula Studio – The FREE Gaussian Splatting Trainer That Surprised Me!",
+          "href": "https://www.youtube.com/watch?v=2nG0XgPiEmY",
+          "date": "2026-10-25"
+        },
+        {
+          "title": "Making Gaussian Splats Solid – How 3DGS Collision Works?",
+          "href": "https://www.youtube.com/watch?v=vFnYON7xRqM",
+          "date": "2026-10-08"
+        },
+        {
+          "title": "How LOD Works in Gaussian Splatting – Streamed SOG Explained",
+          "href": "https://www.youtube.com/watch?v=N4VfC9qsWuc",
+          "date": "2026-09-28"
+        }
+      ],
+      "scene": "781e9815",
+      "sceneCredit": "«Graffiti Park» by ollihuttunen, CC BY, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "3DGS YouTuber and aerial videographer",
+          "about": "Olli Huttunen is a Finnish 3D creator, animator and aerial videographer who runs the one-man company ToppiNappi. On his YouTube channel he explains Gaussian splatting in practice: collision, streamed SOG with level of detail, training tools and scan merging. He also builds his own tools, among them Point Cloud Merger for Blender and the Dioramix editor.",
+          "why": "You explain how to make splats solid and how streamed SOG with LOD works, and I work on the same two problems: this simulator builds walls from a scan in the browser, and my Shramko SOG LOD Converter turns a huge PLY into streamed SOG with LOD for superspl.at. I would value your technical eye on both.",
+          "offer": [
+            "Your own public SuperSplat scan «Graffiti Park», ready to fly in the browser: the button below opens it.",
+            "If you make a video or a post about ShramkoGSFPV, I will share it in the 200+ drone groups I belong to on Facebook, on my profile and on LinkedIn.",
+            "Your name and a link to your channel in the README of the project on GitHub."
+          ]
+        },
+        "es": {
+          "role": "YouTuber de 3DGS y videógrafo aéreo",
+          "about": "Olli Huttunen es un creador 3D, animador y videógrafo aéreo finlandés que dirige la empresa unipersonal ToppiNappi. En su canal de YouTube explica el Gaussian splatting en la práctica: colisiones, Streamed SOG con niveles de detalle, herramientas de entrenamiento y fusión de escaneos. También construye sus propias herramientas, entre ellas Point Cloud Merger para Blender y el editor Dioramix.",
+          "why": "Tú explicas cómo funcionan las colisiones en los splats y cómo funciona el Streamed SOG con LOD, y yo trabajo en esos mismos dos problemas: este simulador construye paredes a partir de un escaneo en el navegador, y mi Shramko SOG LOD Converter convierte un PLY enorme en Streamed SOG con LOD para superspl.at. Me importa tu mirada técnica sobre ambos.",
+          "offer": [
+            "Tu propio escaneo público de SuperSplat «Graffiti Park», listo para volar en el navegador: el botón de abajo lo abre.",
+            "Si haces un vídeo o una publicación sobre ShramkoGSFPV, lo compartiré en los más de 200 grupos de drones de Facebook en los que estoy, en mi perfil y en LinkedIn.",
+            "Tu nombre y un enlace a tu canal en el README del proyecto en GitHub."
+          ]
+        },
+        "pl": {
+          "role": "YouTuber o 3DGS i filmowiec z powietrza",
+          "about": "Olli Huttunen to fiński twórca 3D, animator i filmowiec z powietrza, który prowadzi jednoosobową firmę ToppiNappi. Na swoim kanale na YouTube tłumaczy Gaussian splatting w praktyce: kolizje, Streamed SOG z poziomami szczegółowości, narzędzia do trenowania i łączenie skanów. Tworzy też własne narzędzia, między innymi Point Cloud Merger dla Blendera i edytor Dioramix.",
+          "why": "Tłumaczysz, jak działają kolizje w splatach i jak działa Streamed SOG z LOD, a ja pracuję nad tymi samymi dwoma problemami: ten symulator buduje ściany ze skanu w przeglądarce, a mój Shramko SOG LOD Converter zamienia ogromny plik PLY w Streamed SOG z LOD dla superspl.at. Chętnie poznam Twoją techniczną opinię o obu.",
+          "offer": [
+            "Twój własny publiczny skan z SuperSplat «Graffiti Park», gotowy do lotu w przeglądarce: przycisk poniżej go otwiera.",
+            "Jeśli nagrasz film lub napiszesz post o ShramkoGSFPV, udostępnię go w ponad 200 grupach dronowych na Facebooku, do których należę, na moim profilu i na LinkedIn.",
+            "Twoje imię i nazwisko oraz link do Twojego kanału w README projektu na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Ютубер о 3DGS и оператор аэросъёмки",
+          "about": "Olli Huttunen — финский 3D-автор, аниматор и оператор аэросъёмки; ведёт компанию ToppiNappi, в которой работает один. На своём YouTube-канале он объясняет Gaussian splatting на практике: коллизии, Streamed SOG с уровнями детализации, программы для обучения сплатов и склейку сканов. Он также создаёт собственные инструменты, среди них Point Cloud Merger для Blender и редактор Dioramix.",
+          "why": "Вы объясняете, как работают коллизии в сплатах и как работает Streamed SOG с LOD, а я занимаюсь теми же двумя задачами: этот симулятор строит стены по скану прямо в браузере, а мой Shramko SOG LOD Converter превращает огромный PLY в Streamed SOG с LOD для superspl.at. Мне важен ваш технический взгляд на обе.",
+          "offer": [
+            "Ваш собственный публичный скан из SuperSplat «Graffiti Park», готовый к полёту в браузере: кнопка ниже открывает его.",
+            "Если вы снимете видео или напишете пост о ShramkoGSFPV, я поделюсь им в 200+ дрон-группах Facebook, где я состою, на своём профиле и в LinkedIn.",
+            "Ваше имя и ссылка на ваш канал в README проекта на GitHub."
+          ]
+        }
+      },
+      "sceneVersion": 2
+    },
+    {
+      "slug": "oscar-liang",
+      "name": "Oscar Liang",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/oscar-liang.webp",
+      "links": [
+        {
+          "label": "oscarliang.com",
+          "href": "https://oscarliang.com/"
+        },
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@OscarFPV"
+        },
+        {
+          "label": "X",
+          "href": "https://twitter.com/OscarLiang1"
+        }
+      ],
+      "works": [
+        {
+          "title": "The Best FPV Drone Simulators: Complete Round-Up",
+          "href": "https://oscarliang.com/fpv-simulator/",
+          "date": "2026-08-28"
+        },
+        {
+          "title": "FPV Drone Rates and Expo Explained: How to Find the Best Betaflight Actual Rates",
+          "href": "https://oscarliang.com/rates/",
+          "date": "2026-07-02"
+        },
+        {
+          "title": "Best Cinewhoops in 2026: Top FPV Drones for Indoor and Outdoor Cinematic Shots",
+          "href": "https://oscarliang.com/cinewhoop/",
+          "date": "2026-10-24"
+        }
+      ],
+      "scene": "7a475d38",
+      "sceneCredit": "Winter Garden, Jastrzębia Góra, Poland — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "FPV blogger: tutorials, build logs, reviews, simulators guide",
+          "about": "He runs oscarliang.com, an FPV blog with build logs, tutorials, troubleshooting and product reviews. He keeps a guide to FPV simulators that is updated every year, and explains Betaflight rates and expo in a separate article. His YouTube channel is Oscar FPV.",
+          "why": "Your simulators guide has a section for other simulators, and I think ShramkoGSFPV could fit there: it is free, open source and flies real places captured as 3DGS scans. Its rate curves are checked against the Betaflight 4.5.1 code, which is the topic of your rates article.",
+          "offer": [
+            "Your name and a link to oscarliang.com in the GitHub README.",
+            "A flyable scene of a place you pick, such as a home track, made from a 3DGS scan.",
+            "If you write about it, I share your post in my 200+ drone Facebook groups, on my profile and on LinkedIn."
+          ]
+        },
+        "es": {
+          "role": "Bloguero de FPV: tutoriales, montajes, reseñas, simuladores",
+          "about": "Dirige oscarliang.com, un blog de FPV con registros de montaje, tutoriales, solución de problemas y reseñas de productos. Mantiene una guía de simuladores de FPV que se actualiza cada año y explica las rates y el expo de Betaflight en un artículo aparte. Su canal de YouTube es Oscar FPV.",
+          "why": "Tu guía de simuladores tiene una sección de otros simuladores, y creo que ShramkoGSFPV podría encajar ahí: es gratuito, de código abierto y permite volar por lugares reales capturados como escaneos 3DGS. Sus curvas de rates están comprobadas con el código de Betaflight 4.5.1, que es el tema de tu artículo sobre rates.",
+          "offer": [
+            "Tu nombre y un enlace a oscarliang.com en el README de GitHub.",
+            "Una escena volable de un lugar que elijas, por ejemplo una pista casera, hecha a partir de un escaneo 3DGS.",
+            "Si escribes sobre el simulador, comparto tu artículo en mis más de 200 grupos de drones de Facebook, en mi perfil y en LinkedIn."
+          ]
+        },
+        "pl": {
+          "role": "Bloger FPV: poradniki, budowy, recenzje, przewodnik po symulatorach",
+          "about": "Prowadzi oscarliang.com, blog o FPV z opisami budów, poradnikami, rozwiązywaniem problemów i recenzjami produktów. Utrzymuje przewodnik po symulatorach FPV, aktualizowany co roku, a w osobnym artykule tłumaczy rates i expo w Betaflight. Jego kanał na YouTube to Oscar FPV.",
+          "why": "W Twoim przewodniku po symulatorach jest sekcja o innych symulatorach i myślę, że ShramkoGSFPV mógłby tam pasować: jest darmowy, open source i pozwala latać po prawdziwych miejscach ze skanów 3DGS. Jego krzywe rates sprawdzono z kodem Betaflight 4.5.1, a to temat Twojego artykułu o rates.",
+          "offer": [
+            "Twoje nazwisko i link do oscarliang.com w README na GitHubie.",
+            "Scena do latania z wybranego przez Ciebie miejsca, na przykład domowego toru, zrobiona ze skanu 3DGS.",
+            "Jeśli napiszesz o nim, udostępnię Twój wpis w moich ponad 200 grupach dronowych na Facebooku, na moim profilu i na LinkedIn."
+          ]
+        },
+        "ru": {
+          "role": "FPV-блогер: туториалы, сборки, обзоры, гид по симуляторам",
+          "about": "Ведёт oscarliang.com — блог о FPV с описаниями сборок, туториалами, разбором проблем и обзорами продуктов. Поддерживает гид по FPV-симуляторам, который обновляется каждый год, а в отдельной статье объясняет rates и expo в Betaflight. Его канал на YouTube называется Oscar FPV.",
+          "why": "В вашем гиде по симуляторам есть раздел про другие симуляторы, и я думаю, что ShramkoGSFPV мог бы там встать: он бесплатный, с открытым кодом и позволяет летать по реальным местам, снятым в виде 3DGS-сканов. Его кривые rates сверены с кодом Betaflight 4.5.1 — это тема вашей статьи про rates.",
+          "offer": [
+            "Ваше имя и ссылка на oscarliang.com в README на GitHub.",
+            "Сцена для полёта в выбранном вами месте, например на домашней трассе, сделанная из 3DGS-скана.",
+            "Если вы напишете о нём, я поделюсь вашим постом в моих 200+ группах про дроны в Facebook, на моём профиле и в LinkedIn."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "paolo-tosolini",
+      "name": "Paolo Tosolini",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/paolo-tosolini.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@tosolini"
+        },
+        {
+          "label": "tosolini.com",
+          "href": "https://www.tosolini.com/"
+        },
+        {
+          "label": "superspl.at",
+          "href": "https://superspl.at/user/tosolini"
+        },
+        {
+          "label": "LinkedIn",
+          "href": "https://www.linkedin.com/in/tosolini/"
+        }
+      ],
+      "works": [
+        {
+          "title": "3D scanning in Croatia and Bosnia-Herzegovina with XGRIDS PortalCam",
+          "href": "https://www.youtube.com/watch?v=wk6Bjla-JPQ",
+          "date": "2026-09-09"
+        },
+        {
+          "title": "Get lost in the alleys of historical Trogir, Croatia",
+          "href": "https://superspl.at/scene/14bac5b2",
+          "date": "2026-09-04"
+        },
+        {
+          "title": "3D Scanning a Ghost Town with XGRIDS PortalCam",
+          "href": "https://www.youtube.com/watch?v=XFz4wRyl-WM",
+          "date": "2026-08-01"
+        }
+      ],
+      "scene": "14bac5b2",
+      "sceneCredit": "«Get lost in the alleys of historical Trogir, Croatia» by tosolini, CC BY, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Creator of interactive 3D tours, VR and AR",
+          "about": "Paolo Tosolini is the founder of Tosolini Productions, a company that tells business stories with interactive touch-screen solutions, 3D virtual tours and VR/AR. He scans cities, heritage sites and ghost towns with an XGRIDS PortalCam and publishes the splats on SuperSplat. He also builds interactive Gaussian splat experiments and posts them on the We Get Around Network forum.",
+          "why": "The narrow alleys of your Trogir scan look like a good place to fly a small drone, and you already turn scans into interactive experiences. I picked it for you: the simulator builds solid walls from it, so you can fly it in the browser right now.",
+          "offer": [
+            "Your own public SuperSplat scan «Get lost in the alleys of historical Trogir, Croatia», ready to fly in the browser: the button below opens it.",
+            "If you make a video or a post about ShramkoGSFPV, I will share it in the 200+ drone groups I belong to on Facebook, on my profile and on LinkedIn.",
+            "Your name and a link to tosolini.com in the README of the project on GitHub."
+          ]
+        },
+        "es": {
+          "role": "Creador de tours 3D interactivos, VR y AR",
+          "about": "Paolo Tosolini es el fundador de Tosolini Productions, una empresa que cuenta historias de negocio con soluciones interactivas de pantalla táctil, tours virtuales 3D y VR/AR. Escanea ciudades, sitios patrimoniales y pueblos fantasma con un XGRIDS PortalCam y publica los splats en SuperSplat. También crea experimentos interactivos de Gaussian splatting y los publica en el foro de We Get Around Network.",
+          "why": "Los callejones estrechos de tu escaneo de Trogir parecen un buen lugar para volar un dron pequeño, y ya conviertes escaneos en experiencias interactivas. Lo elegí para ti: el simulador construye paredes sólidas a partir de él, así que puedes volarlo en el navegador ahora mismo.",
+          "offer": [
+            "Tu propio escaneo público de SuperSplat «Get lost in the alleys of historical Trogir, Croatia», listo para volar en el navegador: el botón de abajo lo abre.",
+            "Si haces un vídeo o una publicación sobre ShramkoGSFPV, lo compartiré en los más de 200 grupos de drones de Facebook en los que estoy, en mi perfil y en LinkedIn.",
+            "Tu nombre y un enlace a tosolini.com en el README del proyecto en GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Twórca interaktywnych wycieczek 3D, VR i AR",
+          "about": "Paolo Tosolini jest założycielem Tosolini Productions, firmy, która opowiada historie biznesowe za pomocą interaktywnych rozwiązań dotykowych, wirtualnych wycieczek 3D oraz VR/AR. Skanuje miasta, miejsca dziedzictwa i miasta duchów skanerem XGRIDS PortalCam i publikuje splaty na SuperSplat. Tworzy też interaktywne eksperymenty z Gaussian splatting i wrzuca je na forum We Get Around Network.",
+          "why": "Wąskie uliczki w Twoim skanie Trogiru wyglądają na dobre miejsce do latania małym dronem, a Ty już zamieniasz skany w interaktywne doświadczenia. Wybrałem go dla Ciebie: symulator buduje z niego lite ściany, więc możesz polecieć nim w przeglądarce od razu.",
+          "offer": [
+            "Twój własny publiczny skan z SuperSplat «Get lost in the alleys of historical Trogir, Croatia», gotowy do lotu w przeglądarce: przycisk poniżej go otwiera.",
+            "Jeśli nagrasz film lub napiszesz post o ShramkoGSFPV, udostępnię go w ponad 200 grupach dronowych na Facebooku, do których należę, na moim profilu i na LinkedIn.",
+            "Twoje imię i nazwisko oraz link do tosolini.com w README projektu na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Автор интерактивных 3D-туров, VR и AR",
+          "about": "Paolo Tosolini — основатель Tosolini Productions, компании, которая рассказывает бизнес-истории с помощью интерактивных сенсорных решений, 3D-виртуальных туров и VR/AR. Он сканирует города, объекты наследия и города-призраки с помощью XGRIDS PortalCam и публикует сплаты на SuperSplat. Также он делает интерактивные эксперименты с Gaussian splatting и выкладывает их на форуме We Get Around Network.",
+          "why": "Узкие улочки вашего скана Трогира выглядят хорошим местом для полёта на маленьком дроне, а вы и так превращаете сканы в интерактивные проекты. Я выбрал его для вас: симулятор строит из него твёрдые стены, так что вы можете лететь по нему в браузере прямо сейчас.",
+          "offer": [
+            "Ваш собственный публичный скан из SuperSplat «Get lost in the alleys of historical Trogir, Croatia», готовый к полёту в браузере: кнопка ниже открывает его.",
+            "Если вы снимете видео или напишете пост о ShramkoGSFPV, я поделюсь им в 200+ дрон-группах Facebook, где я состою, на своём профиле и в LinkedIn.",
+            "Ваше имя и ссылка на tosolini.com в README проекта на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "patrick-watkins",
+      "name": "Patrick Watkins",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/patrick-watkins.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@fpvwithpatrick"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/fpvwithpatrick"
+        }
+      ],
+      "works": [
+        {
+          "title": "I Tried the Craziest FPV Drone Simulator Challenges",
+          "href": "https://www.youtube.com/watch?v=XkWKWydbZCk",
+          "date": "2026-10-15"
+        },
+        {
+          "title": "Attempting Your Simulator Challenges 🥵",
+          "href": "https://www.youtube.com/watch?v=N4DolUuv24g",
+          "date": "2026-10-23"
+        },
+        {
+          "title": "Such a crazy place to fly 😱🤩",
+          "href": "https://www.youtube.com/shorts/eriyPOHaXOA",
+          "date": "2026-10-25"
+        }
+      ],
+      "scene": "887f27aa",
+      "sceneCredit": "Tunis, old town — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "FPV freestyle and travel pilot, sim challenge series",
+          "about": "A UK pilot who makes FPV freestyle and travel videos. In October 2026 he started a simulator series built on challenges from his viewers, and features their attempts in the videos.",
+          "why": "You ask your viewers to send you challenges, and in my simulator a challenge can be a real place from a 3DGS scan. Anyone can open it by pasting its SuperSplat link, so your viewers can fly the same run and send you their clip.",
+          "offer": [
+            "A ready-made challenge in a real scanned place for your next simulator video, with a link your viewers can open and fly.",
+            "Your freestyle quad as a preset from your Betaflight diff all, and a travel spot you fly as a flyable scene.",
+            "If you make a video about it, I share it in my 200+ drone Facebook groups, on my profile and on LinkedIn."
+          ]
+        },
+        "es": {
+          "role": "Piloto FPV: freestyle, viajes y retos en simulador",
+          "about": "Piloto británico que hace vídeos de FPV freestyle y de viajes. En octubre de 2026 empezó una serie de simulador basada en retos que le mandan sus espectadores, y muestra sus intentos en los vídeos.",
+          "why": "Pides a tus espectadores que te envíen retos, y en mi simulador un reto puede ser un lugar real de un escaneo 3DGS. Cualquiera puede abrirlo pegando su enlace de SuperSplat, así que tus espectadores pueden volar el mismo recorrido y mandarte su clip.",
+          "offer": [
+            "Un reto ya preparado en un lugar real escaneado para tu próximo vídeo de simulador, con un enlace que tus espectadores puedan abrir y volar.",
+            "Tu quad de freestyle como preset a partir de tu diff all de Betaflight, y un sitio de viaje donde vuelas como escena volable.",
+            "Si haces un vídeo sobre el simulador, lo comparto en mis más de 200 grupos de drones de Facebook, en mi perfil y en LinkedIn."
+          ]
+        },
+        "pl": {
+          "role": "Pilot FPV: freestyle, podróże, wyzwania w symulatorze",
+          "about": "Brytyjski pilot, który nagrywa filmy FPV freestyle i podróżnicze. W październiku 2026 zaczął serię o symulatorach opartą na wyzwaniach od widzów i pokazuje w filmach ich próby.",
+          "why": "Prosisz widzów o wyzwania, a w moim symulatorze wyzwaniem może być prawdziwe miejsce ze skanu 3DGS. Każdy otworzy je, wklejając link do SuperSplat, więc Twoi widzowie mogą przelecieć tę samą trasę i przesłać Ci swój klip.",
+          "offer": [
+            "Gotowe wyzwanie w prawdziwym zeskanowanym miejscu do Twojego następnego filmu o symulatorze, z linkiem, który widzowie otworzą i polecą.",
+            "Twój quad do freestyle'u jako preset z Twojego diff all z Betaflight oraz miejsce z podróży, w którym latasz, jako scena do latania.",
+            "Jeśli nagrasz o nim film, udostępnię go w moich ponad 200 grupach dronowych na Facebooku, na moim profilu i na LinkedIn."
+          ]
+        },
+        "ru": {
+          "role": "FPV-пилот: фристайл, путешествия, челленджи в симуляторе",
+          "about": "Британский пилот, снимающий FPV-фристайл и видео о путешествиях. В октябре 2026 года он начал серию о симуляторах на основе челленджей от зрителей и показывает их попытки в роликах.",
+          "why": "Вы просите зрителей присылать челленджи, а в моём симуляторе челленджем может быть реальное место из 3DGS-скана. Открыть его может любой, вставив ссылку SuperSplat, так что ваши зрители смогут пролететь тот же маршрут и прислать вам свой клип.",
+          "offer": [
+            "Готовый челлендж в реальном отсканированном месте для вашего следующего видео о симуляторе, со ссылкой, которую зрители откроют и полетят.",
+            "Ваш фристайл-квад как пресет по вашему diff all из Betaflight и место из ваших поездок, где вы летаете, как сцена для полёта.",
+            "Если вы снимете о нём видео, я поделюсь им в моих 200+ группах про дроны в Facebook, на моём профиле и в LinkedIn."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "radiance-fields",
+      "name": "Radiance Fields",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/radiance-fields.webp",
+      "links": [
+        {
+          "label": "radiancefields.com",
+          "href": "https://radiancefields.com/"
+        },
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@RadianceFields"
+        },
+        {
+          "label": "X",
+          "href": "https://x.com/radiancefields"
+        },
+        {
+          "label": "LinkedIn",
+          "href": "https://www.linkedin.com/company/radiancefields"
+        }
+      ],
+      "works": [
+        {
+          "title": "Superman, Rivian and the NBA Bet on Gaussian Splats",
+          "href": "https://www.youtube.com/watch?v=2CbdT4WPSLc",
+          "date": "2026-10-26"
+        },
+        {
+          "title": "PlayCanvas Releases SuperSplat 3.0",
+          "href": "https://radiancefields.com/playcanvas-releases-supersplat-3.0",
+          "date": "2026-09-08"
+        },
+        {
+          "title": "PlayCanvas Opens SuperSplat to Third Party Tools With a REST Publishing API",
+          "href": "https://radiancefields.com/playcanvas-opens-supersplat-to-third-party-tools-with-a-rest-publishing-api",
+          "date": "2026-08-19"
+        }
+      ],
+      "scene": "ffc37bb8",
+      "sceneCredit": "«Colorado» by radiancefields, SuperSplat (licence not specified)",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Gaussian splatting news, weekly show and newsletter",
+          "about": "Radiance Fields is a news site on Gaussian splatting and NeRF, edited by its founder Michael Rubloff. It publishes articles on tools, scanners, research and individual creators, runs a weekly YouTube show and a newsletter, and accepts guest articles.",
+          "why": "I follow how Radiance Fields writes up free tools from solo creators and apps built around SuperSplat, and ShramkoGSFPV is one of them: free, open source and not an ad. I think your readers would enjoy flying a scan instead of just orbiting it.",
+          "offer": [
+            "A short news item or a guest article about the simulator, whichever suits Radiance Fields; I can write the article.",
+            "Your own public SuperSplat scan «Colorado», ready to fly in the browser: the button below opens it.",
+            "If you write about ShramkoGSFPV, I will share the story in the 200+ drone groups I belong to on Facebook, on my profile and on LinkedIn, and put Radiance Fields in the README on GitHub."
+          ]
+        },
+        "es": {
+          "role": "Noticias, programa semanal y boletín sobre Gaussian splatting",
+          "about": "Radiance Fields es un sitio de noticias sobre Gaussian splatting y NeRF, dirigido por su fundador Michael Rubloff. Publica artículos sobre herramientas, escáneres, investigación y creadores, tiene un programa semanal en YouTube y un boletín, y acepta artículos de invitados.",
+          "why": "Sigo cómo Radiance Fields cuenta las herramientas gratuitas de creadores independientes y las aplicaciones construidas en torno a SuperSplat, y ShramkoGSFPV es una de ellas: gratuita, de código abierto y no es publicidad. Creo que a tus lectores les gustaría volar por un escaneo en lugar de limitarse a orbitar alrededor de él.",
+          "offer": [
+            "Una noticia breve o un artículo de invitado sobre el simulador, lo que le convenga a Radiance Fields; el artículo puedo escribirlo yo.",
+            "Tu propio escaneo público de SuperSplat «Colorado», listo para volar en el navegador: el botón de abajo lo abre.",
+            "Si escribes sobre ShramkoGSFPV, compartiré la historia en los más de 200 grupos de drones de Facebook en los que estoy, en mi perfil y en LinkedIn, y pondré a Radiance Fields en el README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Wiadomości, cotygodniowy program i newsletter o Gaussian splatting",
+          "about": "Radiance Fields to serwis informacyjny o Gaussian splatting i NeRF, redagowany przez założyciela, Michaela Rubloffa. Publikuje artykuły o narzędziach, skanerach, badaniach i twórcach, prowadzi cotygodniowy program na YouTube oraz newsletter i przyjmuje artykuły gościnne.",
+          "why": "Obserwuję, jak Radiance Fields opisuje darmowe narzędzia samodzielnych twórców i aplikacje zbudowane wokół SuperSplat, a ShramkoGSFPV jest jedną z nich: darmowa, open source i nie jest reklamą. Myślę, że Twoi czytelnicy chętnie polecieliby przez skan zamiast tylko go obracać.",
+          "offer": [
+            "Krótka wiadomość albo artykuł gościnny o symulatorze, zależnie od tego, co pasuje do Radiance Fields; artykuł mogę napisać sam.",
+            "Twój własny publiczny skan z SuperSplat «Colorado», gotowy do lotu w przeglądarce: przycisk poniżej go otwiera.",
+            "Jeśli napiszesz o ShramkoGSFPV, udostępnię tekst w ponad 200 grupach dronowych na Facebooku, do których należę, na moim profilu i na LinkedIn, a Radiance Fields trafi do README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Новости, еженедельное шоу и рассылка о Gaussian splatting",
+          "about": "Radiance Fields — новостной сайт о Gaussian splatting и NeRF, которым руководит его основатель Michael Rubloff. Он публикует статьи об инструментах, сканерах, исследованиях и авторах, ведёт еженедельное шоу на YouTube и рассылку и принимает гостевые статьи.",
+          "why": "Я слежу за тем, как Radiance Fields пишет о бесплатных инструментах одиночек и о приложениях вокруг SuperSplat, а ShramkoGSFPV — одно из них: бесплатное, с открытым кодом и не реклама. Думаю, вашим читателям понравится летать по скану, а не просто вращать его.",
+          "offer": [
+            "Короткая новость или гостевая статья о симуляторе — как больше подойдёт Radiance Fields; статью могу написать я.",
+            "Ваш собственный публичный скан из SuperSplat «Colorado», готовый к полёту в браузере: кнопка ниже открывает его.",
+            "Если вы напишете о ShramkoGSFPV, я поделюсь материалом в 200+ дрон-группах Facebook, где я состою, на своём профиле и в LinkedIn, а Radiance Fields появится в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "simon-frwt",
+      "name": "Simon Frwt",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/simon-frwt.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@simonfrwt"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/simon.frwt/"
+        },
+        {
+          "label": "TikTok",
+          "href": "https://www.tiktok.com/@Simon.Frwt"
+        }
+      ],
+      "works": [
+        {
+          "title": "Amara Bangkok, Thailand | FPV One-Take Hotel Tour",
+          "href": "https://www.youtube.com/watch?v=UBqP7MJ69dc",
+          "date": "2026-09-08"
+        },
+        {
+          "title": "Vivere Hotel Manila | FPV One-Take Hotel Tour",
+          "href": "https://www.youtube.com/watch?v=606g292v07I",
+          "date": "2026-08-05"
+        }
+      ],
+      "scene": "39e63ce9",
+      "sceneCredit": "Modlinek Villa, red room — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Austrian FPV pilot and hotel videographer",
+          "about": "Simon Frwt (Simon Frühwirth) is an Austrian FPV pilot and hotel videographer working from Southeast Asia. He films continuous “FPV One-Take Hotel Tour” videos, a different hotel almost every time. He also offers coaching and a course for pilots who want to film hotels.",
+          "why": "You film a different hotel in almost every video, and each one is a single line that has to work. I'd like you to be able to rehearse that line in a 3D Gaussian splatting scan of the hotel before you fly it, and maybe show the rehearsal to the pilots you coach.",
+          "offer": [
+            "If a hotel is on your list, I'll help turn it into a flyable scene from a scan made with a phone, a 360 camera or any scanner.",
+            "I'll share your video about it in my Facebook groups (200+ drone groups), on my profile and on LinkedIn.",
+            "I'll add your name to the GitHub README."
+          ]
+        },
+        "es": {
+          "role": "Piloto FPV austriaco y videógrafo de hoteles",
+          "about": "Simon Frwt (Simon Frühwirth) es un piloto FPV austriaco y videógrafo de hoteles que trabaja desde el sudeste asiático. Filma vídeos continuos «FPV One-Take Hotel Tour», casi siempre en un hotel distinto. También ofrece coaching y un curso para pilotos que quieren filmar hoteles.",
+          "why": "Filmas un hotel distinto en casi cada vídeo, y cada uno es una sola línea que tiene que salir bien. Me gustaría que pudieras ensayar esa línea en un escaneo 3D Gaussian splatting del hotel antes de volarla, y quizá mostrar el ensayo a los pilotos a los que enseñas.",
+          "offer": [
+            "Si tienes un hotel en tu lista, te ayudaré a convertirlo en una escena para volar a partir de un escaneo hecho con un móvil, una cámara 360 o cualquier escáner.",
+            "Compartiré tu vídeo sobre ello en mis grupos de Facebook (más de 200 grupos de drones), en mi perfil y en LinkedIn.",
+            "Añadiré tu nombre al README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Austriacki pilot FPV i filmowiec hotelowy",
+          "about": "Simon Frwt (Simon Frühwirth) to austriacki pilot FPV i filmowiec hotelowy, pracujący z Azji Południowo-Wschodniej. Kręci ciągłe filmy „FPV One-Take Hotel Tour”, prawie za każdym razem w innym hotelu. Oferuje też coaching i kurs dla pilotów, którzy chcą filmować hotele.",
+          "why": "Prawie w każdym filmie kręcisz inny hotel, a każdy z nich to jedna trasa, która musi się udać. Chciałbym, żebyś mógł przećwiczyć tę trasę w skanie 3D Gaussian splatting hotelu, zanim go przelecisz, i może pokazać tę próbę pilotom, których uczysz.",
+          "offer": [
+            "Jeśli masz hotel na liście, pomogę zamienić go w scenę do latania na podstawie skanu zrobionego telefonem, kamerą 360 lub dowolnym skanerem.",
+            "Udostępnię Twój film o tym w moich grupach na Facebooku (ponad 200 grup o dronach), na swoim profilu i na LinkedInie.",
+            "Dodam Twoje imię do README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Австрийский FPV-пилот и видеограф отелей",
+          "about": "Simon Frwt (Simon Frühwirth) — австрийский FPV-пилот и видеограф отелей, работающий из Юго-Восточной Азии. Он снимает непрерывные ролики «FPV One-Take Hotel Tour», почти каждый раз в новом отеле. Также проводит коучинг и курс для пилотов, которые хотят снимать отели.",
+          "why": "Вы снимаете новый отель почти в каждом ролике, и каждый — это одна линия полёта, которая должна получиться. Я хочу, чтобы вы могли отрепетировать её в скане 3D Gaussian splatting отеля до полёта и, возможно, показать репетицию пилотам, которых вы учите.",
+          "offer": [
+            "Если отель есть в вашем списке, помогу превратить его в сцену для полёта по скану, сделанному телефоном, 360-камерой или любым сканером.",
+            "Поделюсь вашим видео об этом в моих группах в Facebook (более 200 групп про дроны), на своём профиле и в LinkedIn.",
+            "Добавлю ваше имя в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "sk-production",
+      "name": "SK PRODUCTION",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/sk-production.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@production_sk"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/production_sk"
+        },
+        {
+          "label": "TikTok",
+          "href": "https://www.tiktok.com/@production_sk"
+        },
+        {
+          "label": "Telegram",
+          "href": "https://t.me/skproduction_yt"
+        }
+      ],
+      "works": [
+        {
+          "title": "ЧОМУ FPV ONE SHOT ЗМІНЮЄ КІНО? Секрет ефекту присутності",
+          "href": "https://www.youtube.com/watch?v=bAWAzDdh3eg",
+          "date": "2026-09-16"
+        },
+        {
+          "title": "ІДЕАЛЬНИЙ FPV ДРОН ДО 250г? GEPRC Darkstar 25 O4 Pro. Від розпаковки до фрістайлу",
+          "href": "https://www.youtube.com/watch?v=EleZJ3qDVAo",
+          "date": "2026-10-21"
+        },
+        {
+          "title": "Чому FPV — це ніби ПОЛІТ УВІ СНІ, а MAVIC — це СПОКІЙ?",
+          "href": "https://www.youtube.com/watch?v=L6WWUofe9vY",
+          "date": "2026-09-27"
+        }
+      ],
+      "scene": "39e63ce9",
+      "sceneCredit": "Modlinek Villa, red room — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Ukrainian blogger: FPV, one-shots, enduro, tech",
+          "about": "SK PRODUCTION is a Ukrainian-language blog about FPV flights and gear, cinematic one-shots, enduro and motocross, parkour, and reviews of portable power stations. It also publishes on Telegram, Instagram and TikTok.",
+          "why": "In your video on FPV one-shots you write that a few perfect minutes often hide dozens of failed takes and a trajectory planned to the centimetre. In my simulator you can fly that route in a 3DGS scan of the real place first, with your own quad and rates.",
+          "offer": [
+            "A place where you film (a one-shot route, a track, a parkour spot) as a flyable scene from a 3DGS scan, and your GEPRC Darkstar as a preset from your Betaflight diff all, to rehearse the route first.",
+            "A Ukrainian interface: I will add it if you help me check the translation.",
+            "Your video shared in my 200+ drone groups on Facebook, on my profile and on LinkedIn, and your name in the GitHub README."
+          ]
+        },
+        "es": {
+          "role": "Blog ucraniano de FPV, one-shots, enduro y tecnología",
+          "about": "SK PRODUCTION es un blog ucraniano sobre vuelos y equipo FPV, planos secuencia cinematográficos, enduro y motocross, parkour y reseñas de estaciones de energía portátiles. También publica en Telegram, Instagram y TikTok.",
+          "why": "En tu vídeo sobre los one-shots FPV escribes que detrás de unos pocos minutos perfectos suele haber decenas de tomas fallidas y una trayectoria planificada al centímetro. En mi simulador puedes volar antes esa ruta en un escaneo 3DGS del lugar real, con tu propio quad y tus rates.",
+          "offer": [
+            "Un lugar donde grabas (una ruta de one-shot, un circuito, un spot de parkour) como escena para volar a partir de un escaneo 3DGS, y tu GEPRC Darkstar como preajuste a partir de tu diff all de Betaflight, para ensayar antes la ruta.",
+            "Una interfaz en ucraniano: la añadiré si me ayudas a revisar la traducción.",
+            "Tu vídeo compartido en mis más de 200 grupos de drones de Facebook, en mi perfil y en LinkedIn, y tu nombre en el README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Ukraiński blog o FPV, one shotach, enduro i technice",
+          "about": "SK PRODUCTION to ukraińskojęzyczny blog o lotach i sprzęcie FPV, filmowych ujęciach one shot, enduro i motocrossie, parkourze oraz recenzjach przenośnych stacji zasilania. Publikuje też na Telegramie, Instagramie i TikToku.",
+          "why": "W filmie o ujęciach FPV one shot piszesz, że za kilkoma idealnymi minutami stoją często dziesiątki nieudanych dubli i trajektoria zaplanowana co do centymetra. W moim symulatorze możesz najpierw przelecieć tę trasę po skanie 3DGS prawdziwego miejsca, na własnym quadzie i z własnymi rates.",
+          "offer": [
+            "Miejsce, w którym kręcisz (trasa one shot, tor, spot parkourowy), jako scena do latania ze skanu 3DGS oraz Twój GEPRC Darkstar jako preset z diff all z Betaflight, żeby najpierw przećwiczyć trasę.",
+            "Ukraiński interfejs: dodam go, jeśli pomożesz mi sprawdzić tłumaczenie.",
+            "Twój film udostępniony w moich ponad 200 grupach o dronach na Facebooku, na moim profilu i w LinkedIn oraz Twoje imię w README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Украинский блог о FPV, one-shot, эндуро и технике",
+          "about": "SK PRODUCTION — украиноязычный блог о FPV-полётах и технике, кинематографичных one-shot, эндуро и мотокроссе, паркуре и обзорах портативных электростанций. Публикуется также в Telegram, Instagram и TikTok.",
+          "why": "В ролике о FPV one-shot вы пишете, что за несколькими идеальными минутами часто стоят десятки неудачных дублей и траектория, рассчитанная до сантиметра. В моём симуляторе эту трассу можно сначала пролететь по 3DGS-скану настоящего места, на своём квадрокоптере и со своими rates.",
+          "offer": [
+            "Место, где вы снимаете (маршрут one-shot, трасса, паркур-спот), как сцена для полёта — из 3DGS-скана, и ваш GEPRC Darkstar как пресет по вашему diff all из Betaflight, чтобы сначала отрепетировать маршрут.",
+            "Украинский интерфейс: добавлю его, если поможете мне проверить перевод.",
+            "Ваш ролик в моих 200+ группах о дронах в Facebook, на моём профиле и в LinkedIn, а ваше имя — в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "squadding-quads",
+      "name": "Squadding Quads",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/squadding-quads.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@squaddingquads"
+        },
+        {
+          "label": "Discord",
+          "href": "https://discord.gg/NGuuRW7m5J"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/squaddingquads/"
+        }
+      ],
+      "works": [
+        {
+          "title": "This FREE FPV Simulator Runs in Your Browser… But Is It Any Good?",
+          "href": "https://www.youtube.com/watch?v=-LyXljbRh9E",
+          "date": "2026-09-27"
+        },
+        {
+          "title": "The BEST Betaflight Rates for Beginners to Pros (And How to Switch Them In-Flight!)",
+          "href": "https://www.youtube.com/watch?v=rUCbGMyFbcs",
+          "date": "2025-11-16"
+        },
+        {
+          "title": "Can We React to YOUR FPV Videos? 👀 | LIVE Test Stream",
+          "href": "https://www.youtube.com/watch?v=TJkR6RXByEg",
+          "date": "2026-10-24"
+        }
+      ],
+      "scene": "887f27aa",
+      "sceneCredit": "Tunis, old town — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "FPV YouTuber: gear tests, setup guides, live streams",
+          "about": "UK FPV channel with long tests of drones, radios and other gear, beginner setup guides, the “Questions With Quads” series and live streams, including one that reacts to viewers’ own FPV videos. It has also covered FPV simulators and Betaflight rates.",
+          "why": "I watched how you test a browser simulator with a real radio, judging setup, rates and stick feel, and I would like ShramkoGSFPV to go through the same test. It flies real places captured as 3DGS scans, imports Betaflight diff all, and its rate curves are checked against the Betaflight 4.5.1 code.",
+          "offer": [
+            "Your quad as a preset in the simulator, set up from your Betaflight diff all.",
+            "A flyable scene of a place you pick, made from a 3DGS scan, for your streams that react to viewers’ videos.",
+            "If you make a video about it, I share it in my 200+ drone Facebook groups, on my profile and on LinkedIn, and put your name in the GitHub README."
+          ]
+        },
+        "es": {
+          "role": "YouTuber de FPV: pruebas de equipo, guías, directos",
+          "about": "Canal británico de FPV con pruebas largas de drones, radios y otro equipo, guías de configuración para principiantes, la serie “Questions With Quads” y directos, entre ellos uno que reacciona a los vídeos de FPV de los espectadores. También ha tratado los simuladores de FPV y las rates de Betaflight.",
+          "why": "Vi cómo pruebas un simulador en el navegador con una radio real, juzgando la configuración, las rates y el tacto de los sticks, y me gustaría que ShramkoGSFPV pasara por la misma prueba. Permite volar por lugares reales capturados como escaneos 3DGS, importa el diff all de Betaflight y sus curvas de rates están comprobadas con el código de Betaflight 4.5.1.",
+          "offer": [
+            "Tu quad como preset en el simulador, configurado a partir de tu diff all de Betaflight.",
+            "Una escena volable de un lugar que elijas, hecha a partir de un escaneo 3DGS, para tus directos que reaccionan a los vídeos de los espectadores.",
+            "Si haces un vídeo sobre el simulador, lo comparto en mis más de 200 grupos de drones de Facebook, en mi perfil y en LinkedIn, y pongo tu nombre en el README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "YouTuber FPV: testy sprzętu, poradniki, transmisje",
+          "about": "Brytyjski kanał o FPV z długimi testami dronów, aparatur i innego sprzętu, poradnikami konfiguracji dla początkujących, serią „Questions With Quads” i transmisjami na żywo, w tym jedną, która reaguje na filmy FPV widzów. Omawiał też symulatory FPV i rates w Betaflight.",
+          "why": "Widziałem, jak testujesz symulator w przeglądarce z prawdziwą aparaturą, oceniając konfigurację, rates i czucie drążków, i chciałbym, żeby ShramkoGSFPV przeszedł taki sam test. Pozwala latać po prawdziwych miejscach ze skanów 3DGS, importuje diff all z Betaflight, a jego krzywe rates są sprawdzone z kodem Betaflight 4.5.1.",
+          "offer": [
+            "Twój quad jako preset w symulatorze, ustawiony na podstawie Twojego diff all z Betaflight.",
+            "Scena do latania z wybranego przez Ciebie miejsca, zrobiona ze skanu 3DGS, na Twoje transmisje reagujące na filmy widzów.",
+            "Jeśli nagrasz o nim film, udostępnię go w moich ponad 200 grupach dronowych na Facebooku, na moim profilu i na LinkedIn, a Twoja nazwa trafi do README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "FPV-ютубер: тесты техники, гайды по настройке, эфиры",
+          "about": "Британский FPV-канал: длинные тесты дронов, пультов и другой техники, гайды по настройке для новичков, серия «Questions With Quads» и прямые эфиры, в том числе один с разбором видео зрителей. Канал также рассказывал о FPV-симуляторах и rates в Betaflight.",
+          "why": "Я смотрел, как вы тестируете симулятор в браузере с настоящим пультом, оценивая настройку, rates и ощущение стиков, и хотел бы, чтобы ShramkoGSFPV прошёл такую же проверку. В нём летают по реальным местам, снятым в виде 3DGS-сканов; он импортирует diff all из Betaflight, а его кривые rates сверены с кодом Betaflight 4.5.1.",
+          "offer": [
+            "Ваш квад как пресет в симуляторе, настроенный по вашему diff all из Betaflight.",
+            "Сцена для полёта в выбранном вами месте, сделанная из 3DGS-скана, для ваших эфиров с разбором видео зрителей.",
+            "Если вы снимете о нём видео, я поделюсь им в моих 200+ группах про дроны в Facebook, на моём профиле и в LinkedIn, а ваше имя появится в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "the-drone-girl",
+      "name": "The Drone Girl",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/the-drone-girl.webp",
+      "links": [
+        {
+          "label": "thedronegirl.com",
+          "href": "https://www.thedronegirl.com"
+        },
+        {
+          "label": "X",
+          "href": "https://twitter.com/TheDroneGirl"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/TheDroneGirl/"
+        },
+        {
+          "label": "Facebook",
+          "href": "https://www.facebook.com/thedronegirl/"
+        }
+      ],
+      "works": [
+        {
+          "title": "The best drone simulators",
+          "href": "https://www.thedronegirl.com/2023/10/17/best-drone-simulators/",
+          "date": "2023-10-17"
+        },
+        {
+          "title": "The best indoor drones of 2026 for FPV, photography and more",
+          "href": "https://www.thedronegirl.com/2026/03/26/best-indoor-drone/",
+          "date": "2026-03-26"
+        },
+        {
+          "title": "Big Antigravity A1 drone updates: A 15% off sale, Amazon availability and a new flight simulator",
+          "href": "https://www.thedronegirl.com/2026/01/28/antigravity-amazon/",
+          "date": "2026-01-28"
+        }
+      ],
+      "scene": "7a475d38",
+      "sceneCredit": "Winter Garden, Jastrzębia Góra, Poland — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Drone news, reviews and guides by Sally French",
+          "about": "The Drone Girl is Sally French's site for consumer and hobby drones: news, reviews, buying guides, reader questions in “Ask Drone Girl” and deals, with new posts almost every day. Its buying guides cover topics such as drone simulators and indoor drones for FPV and photography. It also runs guest posts.",
+          "why": "I read your guide “The best drone simulators”, and I think a free, open-source simulator that runs in the browser and flies real places captured as 3D Gaussian splatting scans could be a possible addition to it. It also suits your indoor and FPV coverage: readers can try it at home with no install.",
+          "offer": [
+            "I can send a ready-to-paste blurb and three screenshots for your simulators guide.",
+            "If you would like a guest post, I can write a short one, for example on rehearsing a flight in a 3DGS scan or on FPV for beginners.",
+            "I'll share any mention in my Facebook groups (200+ drone groups), on my profile and on LinkedIn, and add The Drone Girl to the GitHub README."
+          ]
+        },
+        "es": {
+          "role": "Noticias y guías de drones de Sally French",
+          "about": "The Drone Girl es el sitio de Sally French sobre drones de consumo y de afición: noticias, reseñas, guías de compra, preguntas de lectores en «Ask Drone Girl» y ofertas, con entradas nuevas casi a diario. Sus guías de compra tratan temas como simuladores de drones y drones de interior para FPV y fotografía. También publica artículos de colaboradores.",
+          "why": "Leí tu guía «The best drone simulators», y creo que un simulador gratuito y de código abierto que funciona en el navegador y vuela por lugares reales capturados como escaneos de 3D Gaussian splatting podría ser una posible incorporación. También encaja con tu cobertura de vuelo en interiores y FPV: tus lectores pueden probarlo en casa sin instalar nada.",
+          "offer": [
+            "Puedo enviarte un texto listo para pegar y tres capturas de pantalla para tu guía de simuladores.",
+            "Si quieres un artículo invitado, puedo escribir uno breve, por ejemplo sobre ensayar un vuelo en un escaneo 3DGS o sobre FPV para principiantes.",
+            "Compartiré cualquier mención en mis grupos de Facebook (más de 200 grupos de drones), en mi perfil y en LinkedIn, y añadiré The Drone Girl al README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Newsy, testy i poradniki o dronach: Sally French",
+          "about": "The Drone Girl to serwis Sally French o dronach dla zwykłych użytkowników i hobbystów: newsy, testy, poradniki zakupowe, pytania czytelników w „Ask Drone Girl” i promocje, z nowymi wpisami niemal codziennie. Wśród poradników są m.in. zestawienia symulatorów oraz dronów do latania w pomieszczeniach, dla FPV i fotografii. Serwis publikuje też teksty gościnne.",
+          "why": "Przeczytałem Twój poradnik „The best drone simulators” i myślę, że darmowy symulator open source działający w przeglądarce, który leci po prawdziwych miejscach uchwyconych jako skany 3D Gaussian splatting, mógłby być jego możliwym uzupełnieniem. Pasuje też do Twoich tekstów o lataniu w pomieszczeniach i o FPV: czytelnicy mogą go wypróbować w domu, bez instalacji.",
+          "offer": [
+            "Mogę wysłać gotowy do wklejenia opis i trzy zrzuty ekranu do Twojego poradnika o symulatorach.",
+            "Jeśli chcesz tekst gościnny, napiszę krótki, na przykład o ćwiczeniu lotu w skanie 3DGS albo o FPV dla początkujących.",
+            "Udostępnię każdą wzmiankę w moich grupach na Facebooku (ponad 200 grup o dronach), na swoim profilu i na LinkedInie oraz dodam The Drone Girl do README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Новости, обзоры и гайды о дронах, Sally French",
+          "about": "The Drone Girl — сайт Sally French о потребительских и хобби-дронах: новости, обзоры, руководства по выбору, вопросы читателей в рубрике «Ask Drone Girl» и скидки, новые материалы почти каждый день. Руководства по выбору охватывают, среди прочего, симуляторы дронов и дроны для полётов в помещении, для FPV и фотографии. Сайт публикует и гостевые материалы.",
+          "why": "Я прочитал ваше руководство «The best drone simulators» и думаю, что бесплатный симулятор с открытым кодом, который работает в браузере и летает по реальным местам, снятым как сканы 3D Gaussian splatting, мог бы стать возможным дополнением к нему. Он подходит и к вашим материалам о полётах в помещении и FPV: читатели смогут попробовать его дома без установки.",
+          "offer": [
+            "Могу прислать готовый к вставке текст-описание и три скриншота для вашего руководства по симуляторам.",
+            "Если нужен гостевой материал, напишу короткий — например, о репетиции полёта в 3DGS-скане или о FPV для начинающих.",
+            "Поделюсь любым упоминанием в моих группах в Facebook (более 200 групп про дроны), на своём профиле и в LinkedIn, а The Drone Girl добавлю в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "gabriele-romagnoli-xr-ai-spotlight",
+      "name": "XR AI Spotlight",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/gabriele-romagnoli-xr-ai-spotlight.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@XRAISpotlight"
+        },
+        {
+          "label": "Substack",
+          "href": "https://xraispotlight.substack.com/"
+        },
+        {
+          "label": "xraispotlight.com",
+          "href": "https://www.xraispotlight.com/"
+        },
+        {
+          "label": "LinkedIn",
+          "href": "https://www.linkedin.com/in/gabriele-romagnolixr/"
+        }
+      ],
+      "works": [
+        {
+          "title": "Gaussian Splatting on Insta360 X6: Create, Export and Physical AI Applications",
+          "href": "https://www.youtube.com/watch?v=S2ZLmeZl2E8",
+          "date": "2026-10-14"
+        },
+        {
+          "title": "3DGS on the Web: Deep dive with Blurry CEO",
+          "href": "https://xraispotlight.substack.com/p/3dgs-on-the-web-deep-dive-with-blurry",
+          "date": "2026-10-13"
+        },
+        {
+          "title": "Fly Drone in your 3DGS",
+          "href": "https://xraispotlight.substack.com/p/fly-drone-in-your-3dgs",
+          "date": "2026-10-11"
+        }
+      ],
+      "scene": "ee9af325",
+      "sceneCredit": "«De Haar Castle Netherlands» by romagnoli, SuperSplat (licence not specified)",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "XR and AI video podcast and newsletter",
+          "about": "XR AI Spotlight is a newsletter and video podcast by Gabriele Romagnoli. Each week it brings interviews with founders and makers in XR and AI and a roundup of tools, demos and product updates. Its coverage includes Gaussian splatting, and many recent issues are about interactive splats on the web.",
+          "why": "In «Fly Drone in your 3DGS» you featured a web tool for flying through splats. ShramkoGSFPV is my take on that idea: it flies public SuperSplat scenes and builds solid walls from the scan, and its README thanks SplatFPV, the earlier experiment that proved the idea works.",
+          "offer": [
+            "Your own public SuperSplat scan «De Haar Castle Netherlands», ready to fly in the browser: the button below opens it.",
+            "If you feature ShramkoGSFPV, I will share the issue in the 200+ drone groups I belong to on Facebook, on my profile and on LinkedIn.",
+            "Your name and a link to XR AI Spotlight in the README of the project on GitHub."
+          ]
+        },
+        "es": {
+          "role": "Pódcast y boletín sobre XR e IA",
+          "about": "XR AI Spotlight es un boletín y pódcast en vídeo de Gabriele Romagnoli. Cada semana trae entrevistas con fundadores y creadores de XR e IA y un resumen de herramientas, demos y novedades de producto. Entre sus temas está el Gaussian splatting, y muchos números recientes tratan de splats interactivos en la web.",
+          "why": "En «Fly Drone in your 3DGS» presentaste una herramienta web para volar por splats. ShramkoGSFPV es mi versión de esa idea: vuela por escenas públicas de SuperSplat y construye paredes sólidas a partir del escaneo, y su README da las gracias a SplatFPV, el experimento anterior que demostró que la idea funciona.",
+          "offer": [
+            "Tu propio escaneo público de SuperSplat «De Haar Castle Netherlands», listo para volar en el navegador: el botón de abajo lo abre.",
+            "Si destacas ShramkoGSFPV, compartiré el número en los más de 200 grupos de drones de Facebook en los que estoy, en mi perfil y en LinkedIn.",
+            "Tu nombre y un enlace a XR AI Spotlight en el README del proyecto en GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Podcast wideo i newsletter o XR i AI",
+          "about": "XR AI Spotlight to newsletter i podcast wideo autorstwa Gabriele Romagnoli. Co tydzień przynosi rozmowy z założycielami i twórcami z obszaru XR i AI oraz przegląd narzędzi, dem i nowości produktowych. W jego tematyce jest Gaussian splatting, a wiele ostatnich numerów dotyczy interaktywnych splatów w sieci.",
+          "why": "W «Fly Drone in your 3DGS» pokazałeś webowe narzędzie do latania przez splaty. ShramkoGSFPV to moje podejście do tego pomysłu: lata po publicznych scenach SuperSplat i buduje lite ściany ze skanu, a jego README dziękuje SplatFPV, wcześniejszemu eksperymentowi, który dowiódł, że ten pomysł działa.",
+          "offer": [
+            "Twój własny publiczny skan z SuperSplat «De Haar Castle Netherlands», gotowy do lotu w przeglądarce: przycisk poniżej go otwiera.",
+            "Jeśli opiszesz ShramkoGSFPV, udostępnię numer w ponad 200 grupach dronowych na Facebooku, do których należę, na moim profilu i na LinkedIn.",
+            "Twoje imię i nazwisko oraz link do XR AI Spotlight w README projektu na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Видеоподкаст и рассылка об XR и ИИ",
+          "about": "XR AI Spotlight — рассылка и видеоподкаст Gabriele Romagnoli. Каждую неделю в них выходят интервью с основателями и авторами из мира XR и ИИ и подборка инструментов, демо и обновлений продуктов. В темах есть Gaussian splatting, а многие недавние выпуски посвящены интерактивным сплатам в вебе.",
+          "why": "В выпуске «Fly Drone in your 3DGS» вы показали веб-инструмент для полёта сквозь сплаты. ShramkoGSFPV — моё прочтение этой идеи: он летает по публичным сценам SuperSplat и строит твёрдые стены по скану, а его README благодарит SplatFPV — более ранний эксперимент, доказавший, что идея работает.",
+          "offer": [
+            "Ваш собственный публичный скан из SuperSplat «De Haar Castle Netherlands», готовый к полёту в браузере: кнопка ниже открывает его.",
+            "Если вы расскажете о ShramkoGSFPV, я поделюсь выпуском в 200+ дрон-группах Facebook, где я состою, на своём профиле и в LinkedIn.",
+            "Ваше имя и ссылка на XR AI Spotlight в README проекта на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "bagryanyi",
+      "name": "Багряний",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "en",
+      "photo": "/media/supporters/bagryanyi.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@Bagrianyi_Kanal"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/Bagrianyi_Kanal"
+        }
+      ],
+      "works": [
+        {
+          "title": "Чи має значення який fpv симулятор обрати? Не важливо який твій перший фпв симулятор",
+          "href": "https://www.youtube.com/watch?v=GDb-85-W-kk",
+          "date": "2026-05-18"
+        },
+        {
+          "title": "Long Split-S Chimney Dive складний довгий дайв на FPV дроні в симуляторі",
+          "href": "https://www.youtube.com/watch?v=DVoFVQITiLE",
+          "date": "2026-10-08"
+        }
+      ],
+      "scene": "887f27aa",
+      "sceneCredit": "Tunis, old town — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Ukrainian YouTuber on FPV simulators for beginners",
+          "about": "Багряний is a Ukrainian-language YouTube channel about FPV simulators for beginners: advice, reviews, lessons and tricks. The author has flown since 2024, mostly in simulators, and also flies a real tinywhoop.",
+          "why": "Your channel is all about FPV simulators, and in your videos you give your rates and your radio. My simulator takes Betaflight rates and a diff all and works with an EdgeTX radio over USB, so you can fly with your own setup.",
+          "offer": [
+            "Your quad as a preset in the simulator, set up from your Betaflight diff all, with your own rates.",
+            "A Ukrainian interface: I will add it if you help me check the translation.",
+            "Your video shared in my 200+ drone groups on Facebook, on my profile and on LinkedIn, and your name in the GitHub README."
+          ]
+        },
+        "es": {
+          "role": "YouTuber ucraniano sobre simuladores FPV para principiantes",
+          "about": "Багряний es un canal ucraniano de YouTube dedicado a los simuladores FPV para principiantes: consejos, reseñas, lecciones y trucos. El autor vuela desde 2024, principalmente en simuladores, y también pilota un tinywhoop real.",
+          "why": "Tu canal trata por completo de simuladores FPV y en tus vídeos das tus rates y tu radio. Mi simulador admite los rates de Betaflight y un diff all y funciona con una radio EdgeTX por USB, así que puedes volar con tu propia configuración.",
+          "offer": [
+            "Tu quad como preajuste en el simulador, configurado a partir de tu diff all de Betaflight, con tus propios rates.",
+            "Una interfaz en ucraniano: la añadiré si me ayudas a revisar la traducción.",
+            "Tu vídeo compartido en mis más de 200 grupos de drones de Facebook, en mi perfil y en LinkedIn, y tu nombre en el README de GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Ukraiński youtuber o symulatorach FPV dla początkujących",
+          "about": "Багряний to ukraińskojęzyczny kanał na YouTube w całości o symulatorach FPV dla początkujących: porady, recenzje, lekcje i triki. Autor lata od 2024 roku, głównie w symulatorach, a także na prawdziwym tinywhoopie.",
+          "why": "Twój kanał jest w całości o symulatorach FPV, a w filmach podajesz swoje rates i aparaturę. Mój symulator wczytuje rates i diff all z Betaflight i działa z aparaturą EdgeTX po USB, więc możesz latać na własnych ustawieniach.",
+          "offer": [
+            "Twój quad jako preset w symulatorze, ustawiony na podstawie Twojego diff all z Betaflight, z Twoimi rates.",
+            "Ukraiński interfejs: dodam go, jeśli pomożesz mi sprawdzić tłumaczenie.",
+            "Twój film udostępniony w moich ponad 200 grupach o dronach na Facebooku, na moim profilu i w LinkedIn oraz Twoje imię w README na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Украинский ютубер о FPV-симуляторах для новичков",
+          "about": "Багряний — украиноязычный канал на YouTube целиком о FPV-симуляторах для новичков: советы, обзоры, уроки и приёмы. Автор летает с 2024 года, в основном в симуляторах, а ещё на настоящем tinywhoop.",
+          "why": "Ваш канал целиком посвящён FPV-симуляторам, и в роликах вы называете свои rates и пульт. Мой симулятор принимает rates и diff all из Betaflight и работает с пультом EdgeTX по USB, так что можно летать на своих настройках.",
+          "offer": [
+            "Ваш квадрокоптер как пресет в симуляторе, настроенный по вашему diff all из Betaflight, с вашими rates.",
+            "Украинский интерфейс: добавлю его, если поможете мне проверить перевод.",
+            "Ваш ролик в моих 200+ группах о дронах в Facebook, на моём профиле и в LinkedIn, а ваше имя — в README на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "advdron-drones-fpv",
+      "name": "AdvDron",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "es",
+      "photo": "/media/supporters/advdron-drones-fpv.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@AdvDron"
+        },
+        {
+          "label": "advdron.com",
+          "href": "https://advdron.com/"
+        }
+      ],
+      "works": [
+        {
+          "title": "🔶EMISORA BetaFPV Lite Radio 2🔶 Como empezar a practicar simulador en Drones FPV",
+          "href": "https://www.youtube.com/watch?v=kLJTazpbjrs",
+          "date": "2025-08-13"
+        },
+        {
+          "title": "🔶EMISORA Solo Para SIMULADOR🔶 ¿Merece la pena? ¿o mejor ir directamente a una completa? [ STARKTRC ]",
+          "href": "https://www.youtube.com/watch?v=qy6_gMvuEVg",
+          "date": "2025-08-23"
+        },
+        {
+          "title": "🔶RADIOMASTER POCKET🔶 La MEJOR EMISORA Para \"INICIARTE\" en los DRONES FPV",
+          "href": "https://www.youtube.com/watch?v=or3PVpIUcWc",
+          "date": "2024-09-16"
+        }
+      ],
+      "scene": "39e63ce9",
+      "sceneCredit": "Modlinek Villa, red room — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "FPV YouTuber: radios, builds and a free course",
+          "about": "Javi makes AdvDron, a Spanish-language YouTube channel and website for people starting out in FPV. He reviews radios, including radios just for practising on a simulator, plus whoops and builds, and offers a free introductory course on his site.",
+          "why": "You review radios for practising on a simulator and teach beginners for free. I made ShramkoGSFPV to run in the browser with no install, and it takes an EdgeTX radio over USB, so I think it could fit a video or a lesson for the same people.",
+          "offer": [
+            "Your drones as presets, set up from your Betaflight diff all.",
+            "Your video shared in the Facebook drone groups I belong to (more than 200), on my profile and on LinkedIn.",
+            "Your name in the project's README on GitHub."
+          ]
+        },
+        "es": {
+          "role": "Youtuber de FPV: emisoras, montajes y curso gratuito",
+          "about": "Javi lleva AdvDron, un canal de YouTube y una web en español para quien empieza en FPV. Analiza emisoras, también emisoras solo para el simulador, además de whoops y montajes, y ofrece en su web un curso de iniciación gratuito.",
+          "why": "Analizas emisoras para practicar en simulador y enseñas gratis a quien empieza. ShramkoGSFPV, el simulador que hice, funciona en el navegador sin instalar nada y admite una emisora EdgeTX por USB, así que creo que podría encajar en un vídeo o en una lección para esas mismas personas.",
+          "offer": [
+            "Tus drones como presets, configurados a partir de tu diff all de Betaflight.",
+            "Tu vídeo compartido en los grupos de drones de Facebook de los que soy miembro (más de 200), en mi perfil y en LinkedIn.",
+            "Tu nombre en el README del proyecto en GitHub."
+          ]
+        },
+        "pl": {
+          "role": "YouTuber FPV: aparatury, składanie dronów i darmowy kurs",
+          "about": "Javi prowadzi AdvDron, hiszpańskojęzyczny kanał na YouTube i stronę dla osób, które dopiero zaczynają przygodę z FPV. Recenzuje aparatury, także takie przeznaczone tylko do ćwiczeń w symulatorze, oraz whoopy i składanie dronów, a na stronie oferuje darmowy kurs wprowadzający.",
+          "why": "Recenzujesz aparatury do ćwiczeń w symulatorze i za darmo uczysz początkujących. ShramkoGSFPV, symulator, który zrobiłem, działa w przeglądarce bez instalacji i obsługuje aparaturę EdgeTX przez USB, więc myślę, że może pasować do filmu albo lekcji dla tych samych osób.",
+          "offer": [
+            "Twoje drony jako presety, ustawione na podstawie Twojego diff all z Betaflight.",
+            "Twój film udostępniony w grupach dronowych na Facebooku, do których należę (ponad 200), na moim profilu i na LinkedIn.",
+            "Twoje imię w README projektu na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "FPV-ютубер: аппаратура, сборки и бесплатный курс",
+          "about": "Javi ведёт AdvDron — испаноязычный канал на YouTube и сайт для тех, кто начинает в FPV. Он обозревает аппаратуру, в том числе пульты только для практики в симуляторе, а также вупы и сборки, и предлагает на сайте бесплатный вводный курс.",
+          "why": "Ты обозреваешь аппаратуру для практики в симуляторе и бесплатно учишь новичков. ShramkoGSFPV, симулятор, который я сделал, работает в браузере без установки и принимает аппаратуру EdgeTX по USB, так что, думаю, он может подойти для видео или урока для тех же людей.",
+          "offer": [
+            "Твои дроны как пресеты, настроенные по твоему diff all из Betaflight.",
+            "Твоё видео в группах про дроны на Facebook, где я состою (больше 200), на моём профиле и в LinkedIn.",
+            "Твоё имя в README проекта на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "dronic-fpv",
+      "name": "DRONIC FPV",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "es",
+      "photo": "/media/supporters/dronic-fpv.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@dronic_fpv"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/dronic_fpv/"
+        },
+        {
+          "label": "TikTok",
+          "href": "https://www.tiktok.com/@dronic_fpv"
+        },
+        {
+          "label": "dronicmaster.com",
+          "href": "https://dronicmaster.com/"
+        }
+      ],
+      "works": [
+        {
+          "title": "Cómo Empezar a Volar DRONES FPV en 2026 🚀",
+          "href": "https://www.youtube.com/watch?v=oF_agxmnGiA",
+          "date": "2024-03-07"
+        },
+        {
+          "title": "Le enseñé a volar un dron FPV... y pasó esto!! — Día 4 convirtiendo a mi hermana en piloto de drones",
+          "href": "https://www.youtube.com/watch?v=HEiDPXDzAXg",
+          "date": "2026-06-03"
+        },
+        {
+          "title": "Este niño de 10 años montó su primer dron FPV",
+          "href": "https://www.youtube.com/watch?v=F9xi_HfNtGs",
+          "date": "2026-09-16"
+        }
+      ],
+      "scene": "7a475d38",
+      "sceneCredit": "Winter Garden, Jastrzębia Góra, Poland — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "FPV pilot and teacher, founder of Dronic Master",
+          "about": "Eric Bofill is an FPV pilot in Barcelona and the founder of Dronic Master, a school that teaches FPV from zero. On YouTube he makes educational and entertaining FPV videos, including how to get started, and with Dronic Films he shoots FPV footage for clients.",
+          "why": "Dronic Master includes live simulator classes every week. My simulator, ShramkoGSFPV, is free, runs in the browser and has a Spanish interface, so your students could practise with it at no cost between classes.",
+          "offer": [
+            "Your drone as a preset, set up from your Betaflight diff all, so your students can fly yours.",
+            "One of your filming spots as a flyable scene, from a 3DGS scan.",
+            "Your video shared in the Facebook drone groups I belong to (more than 200), on my profile and on LinkedIn, with a link to Dronic Master."
+          ]
+        },
+        "es": {
+          "role": "Piloto FPV, fundador de la escuela Dronic Master",
+          "about": "Eric Bofill es piloto de FPV en Barcelona y fundador de Dronic Master, una escuela que enseña FPV desde cero. En YouTube hace vídeos de FPV educativos y de entretenimiento, entre ellos cómo empezar, y con Dronic Films graba tomas FPV para clientes.",
+          "why": "En Dronic Master das clases de simulador en directo cada semana. Mi simulador, ShramkoGSFPV, es gratuito, funciona en el navegador y tiene interfaz en español, así que tus alumnos podrían practicar con él sin coste entre clases.",
+          "offer": [
+            "Tu dron como preset, configurado a partir de tu diff all de Betaflight, para que tus alumnos vuelen el tuyo.",
+            "Uno de tus lugares de rodaje como escena para volar, a partir de un escaneo 3DGS.",
+            "Tu vídeo compartido en los grupos de drones de Facebook de los que soy miembro (más de 200), en mi perfil y en LinkedIn, con un enlace a Dronic Master."
+          ]
+        },
+        "pl": {
+          "role": "Pilot FPV, założyciel szkoły Dronic Master",
+          "about": "Eric Bofill jest pilotem FPV z Barcelony i założycielem Dronic Master, szkoły, która uczy FPV od zera. Na YouTube robi edukacyjne i rozrywkowe filmy o FPV, także o tym, jak zacząć, a z Dronic Films kręci ujęcia FPV dla klientów.",
+          "why": "W Dronic Master prowadzisz co tydzień zajęcia z symulatora na żywo. Mój symulator, ShramkoGSFPV, jest darmowy, działa w przeglądarce i ma interfejs po hiszpańsku, więc Twoi uczniowie mogliby z niego korzystać bez kosztów między zajęciami.",
+          "offer": [
+            "Twój dron jako preset, ustawiony na podstawie Twojego diff all z Betaflight, żeby uczniowie mogli polatać Twoim.",
+            "Jedno z miejsc, gdzie kręcisz, jako scena do latania, ze skanu 3DGS.",
+            "Twój film udostępniony w grupach dronowych na Facebooku, do których należę (ponad 200), na moim profilu i na LinkedIn, z linkiem do Dronic Master."
+          ]
+        },
+        "ru": {
+          "role": "FPV-пилот, основатель школы Dronic Master",
+          "about": "Eric Bofill — FPV-пилот из Барселоны и основатель Dronic Master, школы, где учат FPV с нуля. На YouTube он снимает образовательные и развлекательные видео о FPV, в том числе о том, как начать, а в Dronic Films делает FPV-съёмку для клиентов.",
+          "why": "В Dronic Master ты каждую неделю проводишь занятия по симулятору в прямом эфире. Мой симулятор ShramkoGSFPV бесплатный, работает в браузере и с интерфейсом на испанском, так что твои ученики могли бы заниматься на нём между занятиями без затрат.",
+          "offer": [
+            "Твой дрон как пресет, настроенный по твоему diff all из Betaflight, чтобы ученики могли полетать на твоём.",
+            "Одно из мест твоих съёмок как сцена для полёта, из скана 3DGS.",
+            "Твоё видео в группах про дроны на Facebook, где я состою (больше 200), на моём профиле и в LinkedIn, со ссылкой на Dronic Master."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "fpv-competicion-drones",
+      "name": "FPV Competición",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "es",
+      "photo": "/media/supporters/fpv-competicion-drones.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@FPV-Drones"
+        },
+        {
+          "label": "fpvdrone.es",
+          "href": "https://fpvdrone.es/"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/fpvcompeticion/"
+        }
+      ],
+      "works": [
+        {
+          "title": "APRENDE A MONTAR UN DRONE FPV EN 2.025 PASO A PASO: ¡DESDE CERO HASTA VOLARLO! (PIEZAS ALIEXPRESS)",
+          "href": "https://www.youtube.com/watch?v=X2jLKKioNw8",
+          "date": "2025-01-26"
+        },
+        {
+          "title": "TOP 2026 DRONES, GAFAS Y EMISORAS FPV - GUÍA COMPLETA PARA ELEGIR BIEN",
+          "href": "https://www.youtube.com/watch?v=yh5WHB5Ropw",
+          "date": "2025-09-22"
+        },
+        {
+          "title": "METEOR65 PRO II O4: ESTE MICRO-DRONE ES BRUTAL",
+          "href": "https://www.youtube.com/watch?v=VxOj9-DwnMI",
+          "date": "2026-07-26"
+        }
+      ],
+      "scene": "887f27aa",
+      "sceneCredit": "Tunis, old town — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "FPV channel and website for beginners",
+          "about": "Alex runs FPV Competición, a Spanish-language YouTube channel and website for people starting out in FPV. He publishes build guides, buying guides and reviews of radios, goggles and drones, and his site gathers what to know before flying: simulators, the rules and the first equipment.",
+          "why": "Your site tells newcomers to log hours in a simulator before spending on a drone, and it has a section on simulators. I would like ShramkoGSFPV, a free simulator in the browser with a Spanish interface, to be considered there.",
+          "offer": [
+            "Your drone as a preset, set up from your Betaflight diff all, so your viewers can fly the drone you review.",
+            "Your video shared in the Facebook drone groups I belong to (more than 200), on my profile and on LinkedIn.",
+            "Your name in the project's README on GitHub."
+          ]
+        },
+        "es": {
+          "role": "Canal y web de FPV para principiantes",
+          "about": "Alex lleva FPV Competición, un canal de YouTube y una web en español para quien empieza en FPV. Publica guías de montaje, guías de compra y reseñas de emisoras, gafas y drones, y su web reúne lo que conviene saber antes de volar: simuladores, normativa y primer equipo.",
+          "why": "En tu web aconsejas a quien empieza echar horas al simulador antes de gastar en un dron, y tienes una sección de simuladores. Me gustaría que ShramkoGSFPV, un simulador gratuito en el navegador y con interfaz en español, se tuviera en cuenta ahí.",
+          "offer": [
+            "Tu dron como preset, configurado a partir de tu diff all de Betaflight, para que tus espectadores vuelen el dron que reseñas.",
+            "Tu vídeo compartido en los grupos de drones de Facebook de los que soy miembro (más de 200), en mi perfil y en LinkedIn.",
+            "Tu nombre en el README del proyecto en GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Kanał i strona o FPV dla początkujących",
+          "about": "Alex prowadzi FPV Competición, hiszpańskojęzyczny kanał na YouTube i stronę dla osób, które dopiero zaczynają przygodę z FPV. Publikuje poradniki o montażu i zakupach oraz recenzje aparatur, gogli i dronów, a na stronie zbiera to, co warto wiedzieć przed lotem: symulatory, przepisy i pierwszy sprzęt.",
+          "why": "Na swojej stronie radzisz początkującym, żeby spędzili godziny w symulatorze, zanim wydadzą pieniądze na drona, i masz sekcję o symulatorach. Chciałbym, żeby ShramkoGSFPV, darmowy symulator w przeglądarce z hiszpańskim interfejsem, został tam uwzględniony.",
+          "offer": [
+            "Twój dron jako preset, ustawiony na podstawie Twojego diff all z Betaflight, żeby widzowie mogli polatać dronem, który recenzujesz.",
+            "Twój film udostępniony w grupach dronowych na Facebooku, do których należę (ponad 200), na moim profilu i na LinkedIn.",
+            "Twoje imię w README projektu na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Канал и сайт о FPV для новичков",
+          "about": "Alex ведёт FPV Competición — испаноязычный канал на YouTube и сайт для тех, кто только начинает в FPV. Он публикует руководства по сборке и выбору техники, а также обзоры аппаратуры, очков и дронов, а на сайте собрано то, что стоит знать перед полётом: симуляторы, правила и первое оборудование.",
+          "why": "На своём сайте ты советуешь новичкам набрать часы в симуляторе, прежде чем тратиться на дрон, и у тебя есть раздел о симуляторах. Мне хочется, чтобы там рассмотрели ShramkoGSFPV — бесплатный симулятор в браузере с интерфейсом на испанском.",
+          "offer": [
+            "Твой дрон как пресет, настроенный по твоему diff all из Betaflight, чтобы зрители могли полетать на дроне, который ты обозреваешь.",
+            "Твоё видео в группах про дроны на Facebook, где я состою (больше 200), на моём профиле и в LinkedIn.",
+            "Твоё имя в README проекта на GitHub."
+          ]
+        }
+      }
+    },
+    {
+      "slug": "hatu",
+      "name": "HATU",
+      "status": "invited",
+      "since": "2026-10-29",
+      "lang": "es",
+      "photo": "/media/supporters/hatu.webp",
+      "links": [
+        {
+          "label": "YouTube",
+          "href": "https://www.youtube.com/@HamintonSmith"
+        },
+        {
+          "label": "TikTok",
+          "href": "https://www.tiktok.com/@hatusmith"
+        },
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/hatu_smith"
+        }
+      ],
+      "works": [
+        {
+          "title": "Render Hiperrealistas 3D con DJI AVATA 360",
+          "href": "https://www.youtube.com/watch?v=Vzzf0uDneps",
+          "date": "2026-10-07"
+        },
+        {
+          "title": "Nuevo Simulador de Drones de DJI, compatible con DJI N3, DJI RC2 y DJI RC PRO 2",
+          "href": "https://www.youtube.com/watch?v=Tim8Hyp14IA",
+          "date": "2026-06-10"
+        },
+        {
+          "title": "DJI GOGGLES N3 - Gafas económicas FPV para Neo y Avata 2",
+          "href": "https://www.youtube.com/watch?v=uEEEFtt0G5c",
+          "date": "2024-11-18"
+        }
+      ],
+      "scene": "887f27aa",
+      "sceneCredit": "Tunis, old town — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
+      "review": null,
+      "text": {
+        "en": {
+          "role": "Drone tutorials, reviews and 3D walkthroughs",
+          "about": "HATU makes Spanish-language drone videos on YouTube and TikTok: tutorials, reviews and unboxings of drone technology, mostly DJI, plus news. He also shows 3D walkthroughs and renders made with the DJI Avata 360, and offers advice and training.",
+          "why": "I work with 3D Gaussian Splatting, and your walkthroughs with the Avata 360 caught my eye. ShramkoGSFPV flies an FPV drone through 3DGS scans of real places, so if you publish one of yours on SuperSplat, you and your viewers can fly it, free, in the browser.",
+          "offer": [
+            "Your own scan, if you publish it on SuperSplat, ready to fly in the simulator, with a link for your viewers.",
+            "Your video shared in the Facebook drone groups I belong to (more than 200), on my profile and on LinkedIn.",
+            "Your name in the project's README on GitHub."
+          ]
+        },
+        "es": {
+          "role": "Tutoriales, reseñas y recorridos 3D de drones",
+          "about": "HATU hace videos en español sobre drones en YouTube y TikTok: tutoriales, reseñas y unboxings de tecnología de drones, sobre todo DJI, además de noticias. También muestra recorridos y renders en 3D hechos con el DJI Avata 360, y ofrece asesorías y capacitaciones.",
+          "why": "Trabajo con 3D Gaussian Splatting y me llamaron la atención tus recorridos con el Avata 360. ShramkoGSFPV deja volar un dron FPV dentro de escaneos 3DGS de lugares reales; si publicas uno tuyo en SuperSplat, tú y tu audiencia pueden volarlo gratis, en el navegador.",
+          "offer": [
+            "Tu propio escaneo, si lo publicas en SuperSplat, listo para volar en el simulador, con un enlace para tu audiencia.",
+            "Tu video compartido en los grupos de drones de Facebook de los que soy miembro (más de 200), en mi perfil y en LinkedIn.",
+            "Tu nombre en el README del proyecto en GitHub."
+          ]
+        },
+        "pl": {
+          "role": "Poradniki, recenzje i spacery 3D o dronach",
+          "about": "HATU robi hiszpańskojęzyczne filmy o dronach na YouTube i TikToku: poradniki, recenzje i unboxingi technologii dronowej, głównie DJI, a także newsy. Pokazuje też wirtualne spacery i rendery 3D wykonane z DJI Avata 360 oraz oferuje doradztwo i szkolenia.",
+          "why": "Zajmuję się 3D Gaussian Splatting i zwróciły moją uwagę Twoje spacery z Avata 360. ShramkoGSFPV pozwala latać dronem FPV po skanach 3DGS prawdziwych miejsc, więc jeśli opublikujesz swój skan na SuperSplat, Ty i Twoi widzowie możecie nim polatać za darmo, w przeglądarce.",
+          "offer": [
+            "Twój własny skan, jeśli opublikujesz go na SuperSplat, gotowy do latania w symulatorze, z linkiem dla Twoich widzów.",
+            "Twój film udostępniony w grupach dronowych na Facebooku, do których należę (ponad 200), na moim profilu i na LinkedIn.",
+            "Twoje imię w README projektu na GitHubie."
+          ]
+        },
+        "ru": {
+          "role": "Уроки, обзоры и 3D-туры о дронах",
+          "about": "HATU делает видео о дронах на испанском для YouTube и TikTok: уроки, обзоры и распаковки техники для дронов, в основном DJI, а также новости. Он показывает 3D-туры и рендеры, сделанные с DJI Avata 360, и предлагает консультации и обучение.",
+          "why": "Я занимаюсь 3D Gaussian Splatting, и меня зацепили твои туры с Avata 360. В ShramkoGSFPV можно летать на FPV-дроне по 3DGS-сканам реальных мест, так что если опубликуешь свой скан в SuperSplat, ты и твои зрители сможете полетать по нему бесплатно, в браузере.",
+          "offer": [
+            "Твой собственный скан, опубликованный в SuperSplat, готовый к полёту в симуляторе, со ссылкой для твоих зрителей.",
+            "Твоё видео в группах про дроны на Facebook, где я состою (больше 200), на моём профиле и в LinkedIn.",
+            "Твоё имя в README проекта на GitHub."
+          ]
+        }
+      }
+    }
+  ]
+}
