@@ -121,3 +121,7 @@ Added by the lead:
 - The lead worktree still has three untracked paths that are not mine: `evidence/2026-10-01/rec/` (80 MB of mp4), `evidence/2026-10-22/v10-k/` (screenshots of the main session's headless keys run) and `evidence/2026-10-22/b-repo-b18-main-7b82f73.json` (its B18 PASS; renamed from `b-repo-b18.json` before the merge, because the lane tracks a file of that name). Left as they were; my two keys runs overwrote the ten screenshots of `v10-k/` and I put the originals back from a copy.
 - Logs of this session, the second copy of the BASE build (`.cache/dist-base`) and the run scripts are under `.cache/v11-lead/` and `.cache/` (ignored).
 - Every non-ASCII character of the run logs is a `\uXXXX` escape (B18 reads tracked `.txt` and `.json` files for Polish and Cyrillic letters).
+
+## 2026-10-29 - privacy retention (session retention-c, outside the v0.11 lanes)
+
+- `main` 295cb81, live release e43d9e302f30: only `packages/i18n/locales/site/{en,es,pl,ru}.json` (privacy sections 4 and 5, "updated"). Contacts from the collaboration form and from reports are kept without a fixed time limit until deletion is requested (owner, 2026-10-29). No API, nginx or data change; nothing deleted. Details and checks: STATE.md "Live (2026-10-29)" and the vault build log `03 - Resources/Deployment/analytics/build-logs/retention-c-security-2026-10-29.md`.
