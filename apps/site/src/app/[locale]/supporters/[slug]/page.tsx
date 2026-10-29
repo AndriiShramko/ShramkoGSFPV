@@ -75,7 +75,7 @@ function Person({ locale, p }: { locale: Locale; p: Supporter }) {
                   </li>
                 ))}
               </ul>
-              {draft ? <p className="text-xs text-muted">{t("supporters.person.photoNote")}</p> : null}
+              {draft ? <p className="text-xs text-muted">{t(p.photoInitials ? "supporters.person.photoInitials" : "supporters.person.photoNote")}</p> : null}
             </div>
           </div>
         </div>
@@ -170,7 +170,7 @@ function Person({ locale, p }: { locale: Locale; p: Supporter }) {
             {p.scene ? (
               <figure className="mt-4">
                 <a href={fly} data-track="fly_click" className="block overflow-hidden rounded-xl border border-line">
-                  <img src={posterUrl(p.scene, "l")} alt={p.sceneCredit ?? ""} width={1280} height={720} loading="lazy" decoding="async" className="aspect-video w-full object-cover" />
+                  <img src={posterUrl(p.scene, "l", p.sceneVersion)} alt={p.sceneCredit ?? ""} width={1280} height={720} loading="lazy" decoding="async" className="aspect-video w-full object-cover" />
                 </a>
                 {p.sceneCredit ? <figcaption className="mt-2 text-sm text-muted">{p.sceneCredit}</figcaption> : null}
               </figure>

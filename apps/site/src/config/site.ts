@@ -30,8 +30,9 @@ export const SHOWCASE = [
 
 export type ShowcaseId = (typeof SHOWCASE)[number]["id"];
 
-export const posterUrl = (id: string, size: "m" | "l" | "xl" = "m") =>
-  `https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/${id}/v1/${size}.webp`;
+/** A scene's poster on SuperSplat's image bucket; a re-uploaded scene keeps it under its own version (v2, …). */
+export const posterUrl = (id: string, size: "m" | "l" | "xl" = "m", version = 1) =>
+  `https://s3-eu-west-1.amazonaws.com/images.playcanvas.com/splat/${id}/v${version}/${size}.webp`;
 export const superSplatUrl = (id: string) => `https://superspl.at/scene/${id}`;
 
 export const flyPath = (locale: string) => `/${locale}/fly/`;

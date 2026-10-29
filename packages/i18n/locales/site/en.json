@@ -1013,6 +1013,7 @@
       "draftTitle": "A draft made for {name}",
       "draftBody": "This page is not public yet: nothing on the site links to it and search engines are asked not to index it. It goes live only with your OK. Want something changed — the text, the photo, the links? Tell me and I will change it:",
       "photoNote": "The photo is from your public profile; send another one if you prefer.",
+      "photoInitials": "I found no photo of you, so for now these are your initials; send one if you like.",
       "aboutTitle": "Who {name} is",
       "worksTitle": "What {name} makes",
       "reviewTitle": "{name} about ShramkoGSFPV",

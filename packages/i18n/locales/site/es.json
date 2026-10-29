@@ -1013,6 +1013,7 @@
       "draftTitle": "Un borrador hecho para {name}",
       "draftBody": "Esta página aún no es pública: nada en el sitio enlaza a ella y se pide a los buscadores que no la indexen. Se publica solo con tu permiso. ¿Quieres cambiar algo: el texto, la foto, los enlaces? Dímelo y lo cambio:",
       "photoNote": "La foto es de tu perfil público; envíame otra si lo prefieres.",
+      "photoInitials": "No encontré una foto tuya, así que por ahora van tus iniciales; envíame una si quieres.",
       "aboutTitle": "Quién es {name}",
       "worksTitle": "Qué hace {name}",
       "reviewTitle": "{name} sobre ShramkoGSFPV",

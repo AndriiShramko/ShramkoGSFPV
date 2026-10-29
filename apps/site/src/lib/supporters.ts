@@ -17,12 +17,16 @@ export type Supporter = {
   since: string;
   lang: Locale;
   photo: string;
+  /** No public photo was found: the picture is their initials (the draft says so instead of "from your profile"). */
+  photoInitials?: boolean;
   links: SupporterLink[];
   works: SupporterWork[];
   /** A scene picked for them (their own public scan when they have one); the fly button opens it. */
   scene?: string;
   /** The scan's credit under its picture: «title» by author, licence, SuperSplat. */
   sceneCredit?: string;
+  /** The scene's version on SuperSplat when it is not 1 (its poster lives under v<version>). */
+  sceneVersion?: number;
   review: SupporterReview | null;
   text: Record<Locale, SupporterText>;
 };

@@ -1013,6 +1013,7 @@
       "draftTitle": "Szkic przygotowany dla: {name}",
       "draftBody": "Ta strona nie jest jeszcze publiczna: nic na stronie do niej nie prowadzi, a wyszukiwarki są proszone, by jej nie indeksowały. Opublikuję ją tylko za Twoją zgodą. Chcesz coś zmienić — tekst, zdjęcie, linki? Napisz, a zmienię:",
       "photoNote": "Zdjęcie pochodzi z Twojego publicznego profilu; jeśli wolisz inne, przyślij je.",
+      "photoInitials": "Nie znalazłem Twojego zdjęcia, więc na razie są tu Twoje inicjały; przyślij zdjęcie, jeśli chcesz.",
       "aboutTitle": "Kim jest {name}",
       "worksTitle": "Co robi {name}",
       "reviewTitle": "{name} o ShramkoGSFPV",
