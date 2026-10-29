@@ -35,5 +35,5 @@ the first message, so the person sees what is already there and what is missing.
 ## Status
 - [~] dictionaries, data loader, wall page, person page, card, signature, footer link, sitemap
 - [ ] checks: i18n-check (people.json), verify.mjs (wall + drafts), gates
-- [ ] people from the research (vault: `01 - Projects/ShramkoGSFPV — блогеры и стена благодарности/research/`)
+- [ ] people from the research (the owner's vault, project "ShramkoGSFPV bloggers", folders research/ and staging/)
 - [ ] build, local look at 375 px and 1280 px, merge into main, ship, live checks
