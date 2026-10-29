@@ -21,7 +21,10 @@ const SHOTS = join(SITE_DIR, ".shots");
 const BASE = process.env.BASE ?? "http://127.0.0.1:8138";
 const ORIGIN = "https://gsfpv.flyreelstudio.eu";
 const LOCALES = ["en", "es", "pl", "ru"];
-const PAGES = ["", "privacy/", "licenses/"];
+const PAGES = ["", "privacy/", "licenses/", "supporters/"];
+// people on the supporters pages (docs/wip/supporters.md): drafts for invited people, public pages for joined ones
+const PEOPLE = JSON.parse(readFileSync(join(SITE_DIR, "..", "..", "packages", "i18n", "locales", "supporters", "people.json"), "utf8")).people;
+const JOINED = PEOPLE.filter((p) => p.status === "joined").map((p) => `supporters/${p.slug}/`);
 const DICT = Object.fromEntries(LOCALES.map((l) => [l, JSON.parse(readFileSync(join(SITE_DIR, "..", "..", "packages", "i18n", "locales", "site", `${l}.json`), "utf8"))]));
 const SNAPSHOT = JSON.parse(readFileSync(join(SITE_DIR, "src", "generated", "catalog.json"), "utf8"));
 const PROMPT = "Set up ShramkoGSFPV for me by following https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/AGENT_SETUP.md exactly. Install, run the checks, start the simulator locally and open it in Chrome. Do not change any system settings; ask me only if a step needs my password or a physical action.";
@@ -81,10 +84,33 @@ const sitemap = readFileSync(join(OUT, "sitemap.xml"), "utf8");
 {
   // src/app/sitemap.ts: the static pages and the scene catalogue page (rendered by the API) in every language;
   // each scene's own page is in /scenes/sitemap.xml (the API's), named in robots.txt
-  const SITEMAP_PAGES = ["", "scenes/", ...PAGES.filter((p) => p !== "")];
+  const SITEMAP_PAGES = ["", "scenes/", ...PAGES.filter((p) => p !== ""), ...JOINED];
   const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]).sort();
   const want = LOCALES.flatMap((l) => SITEMAP_PAGES.map((p) => `${ORIGIN}/${l}/${p}`)).sort();
   ok(`sitemap lists exactly the ${want.length} pages (${SITEMAP_PAGES.length} x ${LOCALES.length} languages)`, locs.join(" ") === want.join(" "), locs.join(" "));
+}
+{
+  // a draft made for an invited person: reachable by its link only (noindex, off the sitemap, off the wall);
+  // a joined person: indexed, in the sitemap, linked from the wall
+  const bad = [];
+  for (const p of PEOPLE) for (const l of LOCALES) {
+    const path = `${l}/supporters/${p.slug}/`;
+    const f = join(OUT, path, "index.html");
+    if (!existsSync(f)) {
+      bad.push(`${path} missing`);
+      continue;
+    }
+    const html = readFileSync(f, "utf8");
+    const wall = readFileSync(join(OUT, l, "supporters", "index.html"), "utf8");
+    const noindex = /<meta name="robots" content="noindex, nofollow"\/>/.test(html);
+    const listed = sitemap.includes(`<loc>${ORIGIN}/${path}</loc>`);
+    const onWall = wall.includes(`href="/${path}"`);
+    const draft = html.includes('data-testid="supporter-draft"');
+    if (p.status === "invited" && (!noindex || listed || onWall || !draft)) bad.push(`${path} draft: noindex ${noindex}, sitemap ${listed}, wall ${onWall}, banner ${draft}`);
+    if (p.status === "joined" && (noindex || !listed || !onWall || draft)) bad.push(`${path} joined: noindex ${noindex}, sitemap ${listed}, wall ${onWall}, banner ${draft}`);
+    if (!html.includes(`<link rel="canonical" href="${ORIGIN}/${path}"/>`)) bad.push(`${path} canonical`);
+  }
+  ok(`supporters: ${PEOPLE.length} people x ${LOCALES.length} languages, drafts hidden, joined listed`, bad.length === 0, bad.join("; "));
 }
 const robots = readFileSync(join(OUT, "robots.txt"), "utf8");
 ok("robots allows AI crawlers + sitemap", ["GPTBot", "ClaudeBot", "PerplexityBot", "Google-Extended"].every((b) => robots.includes(`User-agent: ${b}`)) && robots.includes("Sitemap: https://gsfpv.flyreelstudio.eu/sitemap.xml"));

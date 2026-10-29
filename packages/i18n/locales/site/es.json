@@ -869,6 +869,7 @@
     "privacy": "Privacidad",
     "cookies": "Configuración de cookies",
     "licenses": "Licencias",
+    "supporters": "Colaboradores",
     "license": "licencia MIT",
     "disclaimer": "Sin relación con PlayCanvas, BetaFPV, iFlight, RED Digital Cinema, el proyecto Betaflight, LuGus Studios (Liftoff), DJI ni RadioMaster, y sin su respaldo. Las marcas pertenecen a sus propietarios."
   },
@@ -911,7 +912,9 @@
     ],
     "scenesTitle": "Contenido de las escenas",
     "scenes": "Las escenas pertenecen a sus autores y se cargan desde sus editores durante el uso; no forman parte de este proyecto. Los escaneos de muestra de Andrii Shramko tienen licencia CC BY 4.0. Las demás escenas conservan la licencia que sus autores eligieron en SuperSplat.",
-    "trademarksTitle": "Marcas"
+    "trademarksTitle": "Marcas",
+    "supportersTitle": "Colaboradores",
+    "supporters": "Los nombres, las fotos y las reseñas de las personas en las páginas de colaboradores les pertenecen. No están cubiertos por la licencia MIT y se retiran a petición."
   },
   "feedback": {
     "button": "Opinión",
@@ -970,5 +973,62 @@
     "native": "Compartir…",
     "copy": "Copiar enlace",
     "copied": "Enlace copiado"
+  },
+  "supporters": {
+    "title": "Colaboradores — ShramkoGSFPV",
+    "description": "Pilotos y creadores que probaron ShramkoGSFPV, el simulador FPV gratuito y de código abierto en el navegador, y lo ayudaron con una reseña, una publicación o una idea.",
+    "eyebrow": "Colaboradores",
+    "h1": "Personas que ayudaron a ShramkoGSFPV",
+    "lead": "ShramkoGSFPV es gratuito y de código abierto, y a nadie se le paga por hablar de él. Las personas de este muro lo probaron y le dieron su tiempo, sus conocimientos o su audiencia: una reseña, una publicación, una idea. Gracias.",
+    "emptyTitle": "Las primeras tarjetas están en camino",
+    "emptyBody": "Este muro es nuevo. Aquí aparece una tarjeta cuando un piloto o un creador publica una reseña del simulador o envía una idea que llega al simulador.",
+    "joinTitle": "Cómo aparecer en este muro",
+    "join": [
+      "Vuela ShramkoGSFPV en tu navegador: sin instalar nada y sin cuenta.",
+      "Cuenta lo que piensas donde esté tu audiencia: un vídeo, una publicación, una historia, un mensaje en un grupo, en cualquier idioma.",
+      "Envía el enlace a Andrii. Tu tarjeta y tu propia página aparecen aquí."
+    ],
+    "giveTitle": "Qué recibes a cambio",
+    "give": [
+      "Tu propia página en este sitio y tu tarjeta en este muro, con enlaces a tus canales.",
+      "Tu nombre en el README del proyecto en GitHub.",
+      "Andrii comparte tu reseña en los grupos de Facebook de los que es miembro, en su perfil y en LinkedIn.",
+      "Tu dron como preajuste en el simulador, configurado a partir de tu diff all de Betaflight.",
+      "Tu lugar favorito como escena para volar, a partir de un escaneo 3DGS."
+    ],
+    "fly": "Volar ahora",
+    "card": {
+      "review": "Reseña en {platform}",
+      "pending": "Reseña en camino"
+    },
+    "author": {
+      "role": "Autor de ShramkoGSFPV",
+      "note": "El proyecto es gratuito y de código abierto. No puedo pagar por reseñas, así que ofrezco lo que tengo: una página propia, tu tarjeta en el muro, mi audiencia y mi tiempo. Escríbeme sobre lo que quieras.",
+      "call": "Reservar una llamada"
+    },
+    "person": {
+      "metaDraft": "Hecha para {name} — ShramkoGSFPV",
+      "metaJoined": "{name} · colaboradores de ShramkoGSFPV",
+      "metaDescription": "{name}, {role}. Una página en ShramkoGSFPV, el simulador FPV gratuito y de código abierto en el navegador.",
+      "draftTitle": "Un borrador hecho para {name}",
+      "draftBody": "Esta página aún no es pública: nada en el sitio enlaza a ella y se pide a los buscadores que no la indexen. Se publica solo con tu permiso. ¿Quieres cambiar algo: el texto, la foto, los enlaces? Dímelo y lo cambio:",
+      "photoNote": "La foto es de tu perfil público; envíame otra si lo prefieres.",
+      "aboutTitle": "Quién es {name}",
+      "worksTitle": "Qué hace {name}",
+      "reviewTitle": "{name} sobre ShramkoGSFPV",
+      "reviewEmptyTitle": "Aquí irá tu reseña",
+      "reviewEmptyBody": "Un vídeo, una publicación, una historia: lo que publiques sobre ShramkoGSFPV, donde lo publiques. Envíame el enlace y aparecerá aquí con un enlace hacia ti.",
+      "watch": "Ver en {platform}",
+      "read": "Leer en {platform}",
+      "whyTitle": "Por qué te escribo",
+      "offerTitle": "Qué puedo hacer por ti",
+      "cardTitle": "Tu tarjeta en el muro de colaboradores",
+      "cardBody": "Así se ve tu tarjeta en el muro de las personas que ayudaron al proyecto.",
+      "wall": "Ver el muro",
+      "flyTitle": "Pruébalo",
+      "flyBody": "Gratis, en el navegador de un ordenador (Chrome o Edge), sin instalar nada y sin cuenta. Vuela con tu radio por USB, un mando o el teclado.",
+      "fly": "Abrir el simulador",
+      "flyScene": "Abrir la escena que elegí para ti"
+    }
   }
 }

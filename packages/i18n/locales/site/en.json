@@ -869,6 +869,7 @@
     "privacy": "Privacy",
     "cookies": "Cookie settings",
     "licenses": "Licenses",
+    "supporters": "Supporters",
     "license": "MIT license",
     "disclaimer": "Not affiliated with or endorsed by PlayCanvas, BetaFPV, iFlight, RED Digital Cinema, the Betaflight project, LuGus Studios (Liftoff), DJI or RadioMaster. Trademarks belong to their owners."
   },
@@ -911,7 +912,9 @@
     ],
     "scenesTitle": "Scene content",
     "scenes": "Scenes belong to their authors and are loaded from their publishers at runtime; they are not part of this project. Andrii Shramko's showcase scans are licensed CC BY 4.0. Other scenes keep the license their authors chose on SuperSplat.",
-    "trademarksTitle": "Trademarks"
+    "trademarksTitle": "Trademarks",
+    "supportersTitle": "Supporters",
+    "supporters": "Names, photos and reviews of the people on the supporters pages belong to them. They are not covered by the MIT license and are removed on request."
   },
   "feedback": {
     "button": "Feedback",
@@ -970,5 +973,62 @@
     "native": "Share…",
     "copy": "Copy link",
     "copied": "Link copied"
+  },
+  "supporters": {
+    "title": "Supporters — ShramkoGSFPV",
+    "description": "Pilots and creators who tried ShramkoGSFPV, the free open-source FPV simulator in the browser, and helped it with a review, a post or an idea.",
+    "eyebrow": "Supporters",
+    "h1": "People who helped ShramkoGSFPV",
+    "lead": "ShramkoGSFPV is free and open source, and nobody is paid to talk about it. The people on this wall tried it and gave it their time, knowledge or audience: a review, a post, an idea. Thank you.",
+    "emptyTitle": "The first cards are on their way",
+    "emptyBody": "This wall is new. A card appears here when a pilot or a creator publishes a review of the simulator or sends an idea that makes it into the simulator.",
+    "joinTitle": "How to get on this wall",
+    "join": [
+      "Fly ShramkoGSFPV in your browser: no install, no account.",
+      "Say what you think wherever your audience is: a video, a post, a story, a message in a group, in any language.",
+      "Send the link to Andrii. Your card and your own page appear here."
+    ],
+    "giveTitle": "What you get in return",
+    "give": [
+      "Your own page on this site and your card on this wall, with links to your channels.",
+      "Your name in the README of the project on GitHub.",
+      "Andrii shares your review in the Facebook groups he belongs to, on his profile and on LinkedIn.",
+      "Your quad as a preset in the simulator, set up from your Betaflight diff all.",
+      "Your favourite spot as a flyable scene, from a 3DGS scan of it."
+    ],
+    "fly": "Fly now",
+    "card": {
+      "review": "Review on {platform}",
+      "pending": "Review coming"
+    },
+    "author": {
+      "role": "Author of ShramkoGSFPV",
+      "note": "The project is free and open source. I cannot pay for reviews, so I offer what I have: a page of your own, your card on the wall, my audience and my time. Write to me about anything.",
+      "call": "Book a call"
+    },
+    "person": {
+      "metaDraft": "Made for {name} — ShramkoGSFPV",
+      "metaJoined": "{name} — supporter of ShramkoGSFPV",
+      "metaDescription": "{name}, {role}. A page on ShramkoGSFPV, the free open-source FPV simulator in the browser.",
+      "draftTitle": "A draft made for {name}",
+      "draftBody": "This page is not public yet: nothing on the site links to it and search engines are asked not to index it. It goes live only with your OK. Want something changed — the text, the photo, the links? Tell me and I will change it:",
+      "photoNote": "The photo is from your public profile; send another one if you prefer.",
+      "aboutTitle": "Who {name} is",
+      "worksTitle": "What {name} makes",
+      "reviewTitle": "{name} about ShramkoGSFPV",
+      "reviewEmptyTitle": "Your review goes here",
+      "reviewEmptyBody": "A video, a post, a story: whatever you publish about ShramkoGSFPV, wherever you publish it. Send me the link and it appears here with a link back to you.",
+      "watch": "Watch on {platform}",
+      "read": "Read on {platform}",
+      "whyTitle": "Why I am writing to you",
+      "offerTitle": "What I can do for you",
+      "cardTitle": "Your card on the supporters wall",
+      "cardBody": "This is how your card looks on the wall of people who helped the project.",
+      "wall": "See the wall",
+      "flyTitle": "Try it",
+      "flyBody": "Free, in the browser on a computer (Chrome or Edge), no install, no account. Fly with your radio over USB, a gamepad or the keyboard.",
+      "fly": "Open the simulator",
+      "flyScene": "Open the scene I picked for you"
+    }
   }
 }
