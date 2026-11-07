@@ -1,0 +1,181 @@
+{
+  "name": "sonic-review-keys",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T20:01:47.604Z",
+    "gitHead": "a510bc8",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "lab": "http://localhost:5343",
+  "passed": 14,
+  "total": 14,
+  "checks": [
+    {
+      "name": "the start screen is over the flight and the flight is paused behind it",
+      "pass": true,
+      "value": {
+        "visible": true,
+        "paused": true
+      }
+    },
+    {
+      "name": "Space on \"calm mode\" toggles it on and back off",
+      "pass": true,
+      "value": {
+        "calm0": false,
+        "calm1": true,
+        "calm2": false,
+        "keydowns": [
+          {
+            "code": "Space",
+            "prevented": false,
+            "target": "sonic-calm"
+          },
+          {
+            "code": "Space",
+            "prevented": false,
+            "target": "sonic-calm"
+          }
+        ]
+      }
+    },
+    {
+      "name": "and its keydowns are not default-prevented (the flight does not take Space from the screen)",
+      "pass": true,
+      "value": [
+        {
+          "code": "Space",
+          "prevented": false,
+          "target": "sonic-calm"
+        },
+        {
+          "code": "Space",
+          "prevented": false,
+          "target": "sonic-calm"
+        }
+      ]
+    },
+    {
+      "name": "ArrowRight on the path radio group moves it to the fast path",
+      "pass": true,
+      "value": {
+        "fast": true,
+        "keydowns": [
+          {
+            "code": "ArrowRight",
+            "prevented": false,
+            "target": "sonic-path-full"
+          }
+        ]
+      }
+    },
+    {
+      "name": "and the arrow key is not default-prevented",
+      "pass": true,
+      "value": [
+        {
+          "code": "ArrowRight",
+          "prevented": false,
+          "target": "sonic-path-full"
+        }
+      ]
+    },
+    {
+      "name": "ArrowRight on the speaking-speed slider raises it",
+      "pass": true,
+      "value": {
+        "rate0": "1",
+        "rate1": "1.2",
+        "keydowns": [
+          {
+            "code": "ArrowRight",
+            "prevented": false,
+            "target": "sonic-rate"
+          },
+          {
+            "code": "ArrowRight",
+            "prevented": false,
+            "target": "sonic-rate"
+          }
+        ]
+      }
+    },
+    {
+      "name": "and those keydowns are not default-prevented",
+      "pass": true,
+      "value": [
+        {
+          "code": "ArrowRight",
+          "prevented": false,
+          "target": "sonic-rate"
+        },
+        {
+          "code": "ArrowRight",
+          "prevented": false,
+          "target": "sonic-rate"
+        }
+      ]
+    },
+    {
+      "name": "Space on a headphone button presses it (the status line names the sound)",
+      "pass": true,
+      "value": {
+        "status": "Playing a sound on your left."
+      }
+    },
+    {
+      "name": "and its keydown is not default-prevented",
+      "pass": true,
+      "value": [
+        {
+          "code": "Space",
+          "prevented": false,
+          "target": "BUTTON"
+        }
+      ]
+    },
+    {
+      "name": "Space on \"Volume and pitch of each sound\" opens it",
+      "pass": true,
+      "value": {
+        "detailsOpen": true
+      }
+    },
+    {
+      "name": "the mouse was never touched",
+      "pass": true
+    },
+    {
+      "name": "Escape closes the screen and the flight goes on",
+      "pass": true,
+      "value": {
+        "hidden": true,
+        "paused": false
+      }
+    },
+    {
+      "name": "control: with the screen closed, Space is the flight's key as before (its keydown is prevented)",
+      "pass": true,
+      "value": [
+        {
+          "code": "Space",
+          "prevented": true,
+          "target": "BODY"
+        }
+      ]
+    },
+    {
+      "name": "no page errors",
+      "pass": true,
+      "value": []
+    }
+  ]
+}
