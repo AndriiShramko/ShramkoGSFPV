@@ -17,6 +17,7 @@
 import { bindingOf } from '@gsfpv/prefs';
 import { S, attitude } from '@gsfpv/sim-core';
 import { createSceneSampler } from '@shramko/sonic-fpv';
+import { estimateSpeechS } from '@shramko/sonic-fpv/audio';
 import type { AnalyticWorldInfo, FlightSample, LessonDef, LessonWorldRef, SessionEvent, SonicWorld, TrackFile } from '@shramko/sonic-fpv';
 import { FlightSession } from '../session';
 import type { SessionOptions } from '../session';
@@ -215,6 +216,9 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     mode.engine = audio.engine;
     // every line the engine says is a 'speech' event (the replay's and the report's) once the mode runs
     audio.engine.onSpeech = (line, text) => mode.bridge.speech(line.key, text);
+    // "my screen reader speaks": the lesson waits for its lines read one after the other, as the reader reads them (v12-int step 6)
+    mode.bridge.sequential = () => !entry.setup.prefs.selfVoice;
+    mode.bridge.readTimeMs = (text) => estimateSpeechS(text, entry.setup.prefs.speechRate) * 1000;
     ctx.sonic = new PageRuntime(entry.setup, mode);
     document.body.classList.add('sonic-mode');
     stage = new PrimitiveStage(ctx.renderer);

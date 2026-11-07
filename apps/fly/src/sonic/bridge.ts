@@ -125,6 +125,25 @@ export class SonicBridge {
     private epoch = 0;
     private lastLine: SpeechLine | null = null;
     /**
+     * "My screen reader speaks" (the engine's selfVoice off; v12-int step 6): the engine says nothing and waits each line's time on
+     * its own, all the lines of a burst at once, while a screen reader reads them one after the other. True: the host's queue
+     * counts them one after the other too, so the end of speech (the speech.end marker, runner.spoken) comes when the last line
+     * would have been read, not when the longest one would, and the lesson does not go on while the reader is on its intro. The
+     * lines still go to the engine at once (their speech events and captions are where the runner asked for them, as a replay
+     * re-derives them). Set by the page from the pilot's settings; null: the engine's own waits, as before.
+     */
+    sequential: (() => boolean) | null = null;
+    /** how long a line takes to read, ms (the engine's own estimate at the pilot's speaking speed); `sequential` needs it */
+    readTimeMs: ((text: string) => number) | null = null;
+    /** waits `ms` (the page's timers; a test passes its own clock's) */
+    wait: (ms: number) => Promise<void> = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    /** when the last line of the sequential queue will have been read, on the bridge's clock (ms) */
+    private readEnd = -Infinity;
+    /** the lines of the sequential queue not yet read: a line that interrupts, or a new run of the mode, cuts them */
+    private readonly readCuts = new Set<() => void>();
+    /** the text of the line just handed to the engine (its onSpeech, speech(), runs inside engine.say) */
+    private handed: string | null = null;
+    /**
      * Called after every call the bridge makes into the lesson runner (begin, reset, next, spoken): the runner may have
      * queued things to do (say a line, place the craft, ask a question), and the host takes them at once instead of
      * at the next frame. Set once by the lesson host; it survives start() and stop().
@@ -159,7 +178,15 @@ export class SonicBridge {
         this.sounding = false;
         this.speaking = 0;
         this.lastLine = null;
+        this.cutReading();
         this.follow(session);
+    }
+
+    /** The lines of the sequential queue are over now (cut by an interrupting line, or the run of the mode ended). */
+    private cutReading(): void {
+        for (const cut of this.readCuts) cut();
+        this.readCuts.clear();
+        this.readEnd = -Infinity;
     }
 
     /** The mode stops: the hook comes off, the engine falls silent; nothing more goes out. */
@@ -169,6 +196,7 @@ export class SonicBridge {
         this.silence();
         this.on = false;
         this.epoch++;
+        this.cutReading();
         this.session = null;
         this.runner = null;
     }
@@ -351,8 +379,36 @@ export class SonicBridge {
         this.lastLine = line;
         this.speaking++;
         const run = this.epoch;
+        const readTime = this.sequential?.() === true ? this.readTimeMs : null;
+        // a line that interrupts: what was being read and what waited for its turn are over now
+        if (readTime !== null && interrupt) this.cutReading();
+        this.handed = null;
+        const said = this.engine?.say(line, { interrupt }) ?? Promise.resolve();
         try {
-            await this.engine?.say(line, { interrupt });
+            if (readTime === null) {
+                await said;
+                return;
+            }
+            // "my screen reader speaks": read after the lines before it, its own time from when they end (from now when none is read)
+            const ends = Math.max(this.clock(), this.readEnd) + readTime(this.handed ?? '');
+            this.readEnd = ends;
+            let cut: () => void = () => undefined;
+            const cutNow = new Promise<void>((resolve) => {
+                cut = resolve;
+            });
+            this.readCuts.add(cut);
+            try {
+                await Promise.race([
+                    (async (): Promise<void> => {
+                        await said;
+                        const left = ends - this.clock();
+                        if (left > 0) await this.wait(left);
+                    })(),
+                    cutNow
+                ]);
+            } finally {
+                this.readCuts.delete(cut);
+            }
         } finally {
             if (run === this.epoch) {
                 this.speaking = Math.max(0, this.speaking - 1);
@@ -379,6 +435,7 @@ export class SonicBridge {
 
     /** A line was spoken (the engine's onSpeech): its event, for captions and events.jsonl. */
     speech(key: string, text: string): void {
+        this.handed = text;
         this.event({ t: this.now(), kind: 'speech', key, text });
     }
 
