@@ -1,0 +1,61 @@
+/* Fly by Sound in the flight page (v0.12 lane v12-flight): the captions region and the start screen. Everything here
+   sits outside #ui, which is one aria-live region for the flight's own notes (apps/fly/index.html). */
+
+.sonic-sr-only { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Under the top bar, not at the bottom: the bottom of the page is the flight's (the take-off line, the recording bar, the keys
+   strip) and a caption over them hid both (seen in the lesson screenshots); the view's centre, where the target is, stays free. */
+.sonic-captions { position: fixed; left: 50%; top: calc(92px + env(safe-area-inset-top)); transform: translateX(-50%); z-index: 5; display: flex; flex-direction: column; gap: 6px; align-items: center; width: min(92vw, 900px); pointer-events: none; }
+.sonic-captions[hidden] { display: none; }
+.sonic-caption { margin: 0; padding: 8px 14px; border-radius: 10px; background: rgba(8, 10, 14, .82); color: #fff; font-size: clamp(17px, 2.4vw, 26px); line-height: 1.3; text-align: center; max-width: 100%; }
+/* The older lines of a burst, while a screen reader reads the region (captions.ts, review D6): hidden from the eye, still in the page for the reader. */
+.sonic-caption.sonic-sr-only { padding: 0; margin: -1px; background: none; }
+/* a narrow page wraps the top bar into two rows; a short one has little view to cover (its older lines are hidden from the eye the same way, never display:none: a line that is not rendered is not announced) */
+@media (max-width: 640px) { .sonic-captions { top: calc(150px + env(safe-area-inset-top)); } }
+@media (max-height: 500px) { .sonic-captions { top: calc(100px + env(safe-area-inset-top)); } .sonic-caption { padding: 4px 10px; font-size: 15px; } .sonic-caption:nth-last-child(n+3) { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; background: none; } }
+
+/* ---- the start screen (start-screen.ts): a layer of its own over the page, scrolling by itself (the page is overflow:hidden) */
+.sonic-start { position: fixed; inset: 0; z-index: 30; overflow-y: auto; background: var(--bg, #07080a); color: var(--fg, #e8eaed); padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); font-size: 18px; line-height: 1.5; }
+.sonic-start[hidden] { display: none; }
+.sonic-start > header, .sonic-start > nav, .sonic-start > main, .sonic-start > footer { max-width: 860px; margin: 0 auto; }
+.sonic-start h1 { margin: 8px 0 4px; font-size: 2rem; }
+.sonic-start h2 { margin: 28px 0 10px; font-size: 1.4rem; border-top: 1px solid var(--line, #1f2630); padding-top: 18px; }
+.sonic-start h3 { margin: 18px 0 8px; font-size: 1.1rem; }
+.sonic-start h4 { margin: 10px 0 4px; font-size: 1rem; color: var(--muted, #9aa3ad); }
+.sonic-start h1:focus, .sonic-start h2:focus, .sonic-start h3:focus { outline: 2px solid var(--accent, #4ade80); outline-offset: 4px; }
+.sonic-start a { color: var(--accent, #4ade80); }
+.sonic-start a:focus-visible, .sonic-start input:focus-visible, .sonic-start select:focus-visible, .sonic-start summary:focus-visible, .sonic-start .btn:focus-visible { outline: 3px solid var(--accent, #4ade80); outline-offset: 2px; }
+.sonic-start nav ul, .sonic-start footer ul { display: flex; flex-wrap: wrap; gap: 8px 22px; list-style: none; margin: 10px 0; padding: 0; }
+.sonic-intro { max-width: 60ch; color: var(--fg, #e8eaed); }
+.sonic-note { padding: 10px 14px; border: 1px solid var(--warn, #fbbf24); border-radius: 10px; color: var(--warn, #fbbf24); }
+.sonic-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+.sonic-actions .btn { flex-direction: column; align-items: flex-start; text-align: left; min-height: 56px; }
+.sonic-sub { display: block; font-size: .8em; color: var(--muted, #9aa3ad); font-weight: 400; }
+.sonic-actions .btn.primary .sonic-sub { color: var(--accent-ink, #052e16); }
+.sonic-fieldset { margin: 14px 0; padding: 8px 14px 12px; border: 1px solid var(--line, #1f2630); border-radius: 10px; }
+.sonic-fieldset legend { padding: 0 6px; }
+.sonic-choice { display: flex; gap: 10px; align-items: flex-start; margin: 8px 0; }
+.sonic-choice input { width: 24px; height: 24px; margin-top: 4px; accent-color: var(--accent, #4ade80); }
+.sonic-notes { margin: 8px 0 14px; padding-left: 22px; }
+.sonic-loud { margin-top: 14px; padding: 4px 14px 10px; border: 1px solid var(--line, #1f2630); border-radius: 10px; }
+.sonic-lessons { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.sonic-lesson { width: 100%; flex-direction: column; align-items: flex-start; text-align: left; min-height: 56px; }
+.sonic-lesson.sonic-passed { border-color: var(--accent, #4ade80); }
+.sonic-lesson.sonic-current { border-color: var(--warn, #fbbf24); }
+.sonic-field { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 14px 0; }
+.sonic-field > label { min-width: 14em; }
+.sonic-field select, .sonic-field input[type=range] { min-height: 44px; font: inherit; }
+.sonic-field select { background: var(--bg2, #0e1116); color: var(--fg, #e8eaed); border: 1px solid var(--line, #1f2630); border-radius: 8px; padding: 6px 10px; }
+.sonic-field input[type=range] { flex: 1 1 220px; max-width: 420px; accent-color: var(--accent, #4ade80); }
+.sonic-field input[type=checkbox] { width: 26px; height: 26px; accent-color: var(--accent, #4ade80); }
+.sonic-check { flex-wrap: nowrap; align-items: flex-start; gap: 12px; }
+.sonic-check > label { min-width: 0; }
+.sonic-check .sonic-sub { flex-basis: 100%; }
+.sonic-details { margin: 14px 0; }
+.sonic-details summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
+.sonic-layer { margin: 6px 0 14px; padding-left: 14px; border-left: 2px solid var(--line, #1f2630); }
+@media (max-width: 520px) { .sonic-start { font-size: 17px; } .sonic-field > label { min-width: 0; flex-basis: 100%; } }
+@media (prefers-reduced-motion: no-preference) { .sonic-start .btn { transition: border-color .12s; } }
+
+/* ---- the flight page while a lesson runs (body.sonic-mode, app/builtin/sonic-flight.ts): what only a scan has is not shown */
+body.sonic-mode .attribution { display: none; }

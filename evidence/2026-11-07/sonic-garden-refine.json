@@ -1,0 +1,201 @@
+{
+  "name": "sonic-garden-refine",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T18:59:59.918Z",
+    "gitHead": "188d91b",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "step": "v12-flight 10, plan 8.6: the refined wall grid of Winter Garden, measured",
+  "page": "http://localhost:5342/fly/ (Vite dev server), the scan from the scene CDN",
+  "lessonAtX5": {
+    "walls": "none",
+    "flownCellM": 0.16,
+    "plan": {
+      "action": "refused",
+      "voxelM": null,
+      "estimateS": 61.602204,
+      "reason": "octree",
+      "predictedNodes": 263226141
+    }
+  },
+  "refine": {
+    "seconds": 417.6,
+    "bake": {
+      "ok": true,
+      "kind": "refine",
+      "voxelM": 0.016,
+      "gaussians": 15400551,
+      "solidVoxels": 577052365,
+      "ms": {
+        "read": 263364.5,
+        "voxelize": 153005.5,
+        "total": 416370
+      },
+      "peakJsHeapMb": 2041.0611181259155,
+      "binBytes": 96585572,
+      "collisionSha256": "5bfdb6468be1cb5155ab38be4784fb4ff7e3b87f1115cdad0a971114d1781872"
+    }
+  },
+  "sizes": {
+    "rawBytes": 96585572,
+    "gzipPageBytes": 47311978,
+    "brotliBytes": 35203694,
+    "jsonBytes": 668,
+    "shippedRawBytes": 19208880,
+    "shippedGzipBytes": 10056104,
+    "shippedBrotliBytes": 7590573
+  },
+  "raysNode": {
+    "refined8cm": {
+      "n": 1340,
+      "p50": 0.685,
+      "p95": 0.843,
+      "p99": 1.04,
+      "max": 1.351
+    },
+    "shipped16cm": {
+      "n": 1340,
+      "p50": 0.401,
+      "p95": 0.521,
+      "p99": 0.635,
+      "max": 0.88
+    }
+  },
+  "trackOnRefined": {
+    "ok": true,
+    "minFreeM": 0.86,
+    "startFreeM": 2.538
+  },
+  "note": "headless Chrome 156 on this PC (i9-7980XE, RTX 4090); the bake runs on the page's own WebGPU device; the rays are timed in Node (one core), where the shipped grid measured 0.33 ms p50 in step 3 and 0.35 to 0.39 ms in the page",
+  "checks": [
+    {
+      "name": "in the lesson at x5 the walls box reads the flown cell size (16 cm) as the grid's and refuses a refine ({\"action\":\"refused\",\"voxelM\":null,\"estimateS\":61.602204,\"reason\":\"octree\",\"predictedNodes\":263226141}): a refine can neither be made nor found in the store there",
+      "pass": true,
+      "value": {
+        "walls": "none",
+        "voxelM": 0.16,
+        "plan": {
+          "action": "refused",
+          "voxelM": null,
+          "estimateS": 61.602204,
+          "reason": "octree",
+          "predictedNodes": 263226141
+        },
+        "flown": {
+          "voxelM": 0.16,
+          "builtin": false,
+          "scene": "7a475d38",
+          "scale": 5
+        }
+      }
+    },
+    {
+      "name": "at x1 the walls box offers the refine: 3.2 cm now, plan {\"action\":\"offer\",\"voxelM\":0.016,\"estimateS\":61.602204,\"predictedNodes\":10411882}",
+      "pass": true,
+      "value": {
+        "state": "offer",
+        "voxelM": 0.032,
+        "plan": {
+          "action": "offer",
+          "voxelM": 0.016,
+          "estimateS": 61.602204,
+          "predictedNodes": 10411882
+        },
+        "size": {
+          "kind": "lod-meta",
+          "gaussians": 15400551,
+          "lodLevels": 6,
+          "from": "tree",
+          "etag": "W/\"8443be171118dd8ee23a9702ccb1807c\""
+        }
+      }
+    },
+    {
+      "name": "the page's own refine finished: refine to 1.6 cm in 417.6 s (the page's timer: 416.4 s), 15.4 M Gaussians",
+      "pass": true,
+      "value": {
+        "done": "done",
+        "bake": {
+          "ok": true,
+          "kind": "refine",
+          "voxelM": 0.016,
+          "gaussians": 15400551,
+          "solidVoxels": 577052365,
+          "ms": {
+            "read": 263364.5,
+            "voxelize": 153005.5,
+            "total": 416370
+          },
+          "peakJsHeapMb": 2041.0611181259155,
+          "binBytes": 96585572,
+          "collisionSha256": "5bfdb6468be1cb5155ab38be4784fb4ff7e3b87f1115cdad0a971114d1781872"
+        }
+      }
+    },
+    {
+      "name": "what it would weigh: raw 92.1 MB (the shipped 3.2 cm grid: 18.3 MB), gzip 45.1 MB in the page, brotli q9 33.6 MB in Node (shipped: 7.2 MB)",
+      "pass": true,
+      "value": {
+        "rawBytes": 96585572,
+        "gzipPageBytes": 47311978,
+        "brotliBytes": 35203694,
+        "shipped": {
+          "raw": 19208880,
+          "gzip": 10056104,
+          "brotli": 7590573
+        },
+        "jsonBytes": 668
+      }
+    },
+    {
+      "name": "no console error in the page",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "the refined grid is 1.6 cm cells (8 cm flown at x5): the same scan, the octree has 10854417 node words against the shipped grid's 2070758",
+      "pass": true,
+      "value": {
+        "nodes": 10854417,
+        "leafData": 13291976
+      }
+    },
+    {
+      "name": "the scene sampler (30 rays) along the course in Node: refined 8 cm cells p50 0.685, p95 0.843, p99 1.04, max 1.351 ms a frame; shipped 16 cm cells p50 0.401, p95 0.521 (the plan's budget: p95 under 1 ms)",
+      "pass": true,
+      "value": {
+        "refined": {
+          "n": 1340,
+          "p50": 0.685,
+          "p95": 0.843,
+          "p99": 1.04,
+          "max": 1.351
+        },
+        "shipped": {
+          "n": 1340,
+          "p50": 0.401,
+          "p95": 0.521,
+          "p99": 0.635,
+          "max": 0.88
+        }
+      }
+    },
+    {
+      "name": "the ring track on the refined walls: every opening, frame, run and leg clear by 0.5 m (min free radius 0.86 m, legs 1.609 m)",
+      "pass": true,
+      "value": {
+        "minFreeM": 0.86
+      }
+    }
+  ],
+  "pass": true
+}

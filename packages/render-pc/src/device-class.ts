@@ -108,6 +108,11 @@ export function isPhoneSized(s: Pick<DeviceSignals, 'userAgent' | 'screenShortSi
 /** Intel Arc and Xe-HPG are discrete GPUs: not the integrated class of weakness. */
 const INTEL_DISCRETE = /xe[-_ ]?hpg|alchemist|battlemage|\barc\b/i;
 
+/** An Intel integrated GPU: vendor Intel, and not Arc or Xe-HPG (discrete). The one place this is decided: the class and the GPU hint both read it. */
+export function isIntelIntegrated(g: GpuInfo | null | undefined): boolean {
+    return !!g && g.vendor.toLowerCase() === 'intel' && !INTEL_DISCRETE.test(`${g.architecture} ${g.description} ${g.device}`);
+}
+
 /** GPUs below this many bytes of maxBufferSize are a weak hint (a stock WebGPU adapter reports 256 MiB to 4 GiB). */
 export const SMALL_BUFFER_BYTES = 1024 ** 3;
 
@@ -121,7 +126,7 @@ export function classifyDevice(s: DeviceSignals): DeviceReading {
     if (!s.webgpu) hard.push('no-webgpu');
     const g = s.gpu;
     if (g?.isFallback) hard.push('fallback-adapter');
-    if (g && g.vendor.toLowerCase() === 'intel' && !INTEL_DISCRETE.test(`${g.architecture} ${g.description} ${g.device}`)) hard.push('intel-integrated');
+    if (isIntelIntegrated(g)) hard.push('intel-integrated');
     const soft: DeviceReason[] = [];
     if (s.memoryGb !== undefined && s.memoryGb > 0 && s.memoryGb <= 4) soft.push('little-memory');
     if (s.cores !== undefined && s.cores > 0 && s.cores <= 4) soft.push('few-cores');
@@ -141,4 +146,51 @@ export function impliedClass(d: { webgpu: boolean; handheld: boolean; mobile: bo
 export function gpuName(g: GpuInfo | null | undefined): string {
     if (!g) return '';
     return [g.vendor, g.architecture || g.device].filter(Boolean).join(' ').trim();
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// The GPU hint (v0.12, lane v12-flight, docs/wip/v12-plan.md 2.12): a laptop with an Intel integrated GPU next to an NVIDIA (or
+// AMD) one runs the page on the weaker chip. The renderer asks for the other (`powerPreference: 'high-performance'`,
+// renderer.ts), but Chrome on Windows ignores that request: it uses the GPU Windows gives the browser, the integrated one on
+// a hybrid-graphics laptop. Two things switch it: Chrome's flag chrome://flags/#force-high-performance-gpu, or Windows
+// Settings > System > Display > Graphics > the browser > Options > High performance. A page cannot link to a chrome:// address
+// (it can only show the text to copy). The page cannot see the second GPU (the adapter is the one in use), so the rule is the
+// combination that makes the hint worth saying: Windows, WebGPU, a real Intel integrated adapter. The page shows it once.
+//   not due: a handheld; any system but Windows (macOS honours the request, Linux has its own switch); no WebGPU (the
+//   engine's other renderer); an adapter the browser does not name; a software (fallback) adapter, which no switch would
+//   change; any vendor but Intel (NVIDIA, AMD and Qualcomm are what the hint wants the page on); Intel Arc and Xe-HPG, which
+//   are discrete GPUs.
+
+/** What the hint reads: the device's signals and the operating system as Client Hints name it. */
+export interface GpuHintSignals extends DeviceSignals {
+    /** navigator.userAgentData.platform ("Windows", "macOS", "Linux", ...), when the browser has it */
+    platform?: string;
+}
+
+export type GpuHintReason = 'due' | 'handheld' | 'not-windows' | 'no-webgpu' | 'unknown-adapter' | 'fallback-adapter' | 'not-intel' | 'intel-discrete';
+
+export interface GpuHintReading {
+    due: boolean;
+    /** why: 'due', or the first thing that rules the hint out */
+    reason: GpuHintReason;
+}
+
+/** Windows: Client Hints' platform when there is one, else the user agent (Chrome keeps "Windows NT 10.0; Win64; x64" for every Windows). */
+export function isWindows(userAgent: string, platform?: string): boolean {
+    if (platform !== undefined && platform !== '') return /^windows$/i.test(platform);
+    return /Windows NT|Win64|Win32/i.test(userAgent) && !/Windows Phone/i.test(userAgent);
+}
+
+/** Should the page tell this pilot how to put the browser on the high-performance GPU? (The section header above is the rule.) */
+export function gpuSwitchHintDue(s: GpuHintSignals): GpuHintReading {
+    const no = (reason: GpuHintReason): GpuHintReading => ({ due: false, reason });
+    if (looksHandheld(s)) return no('handheld');
+    if (!isWindows(s.userAgent, s.platform)) return no('not-windows');
+    if (!s.webgpu) return no('no-webgpu');
+    const g = s.gpu;
+    if (!g || g.vendor.trim() === '') return no('unknown-adapter');
+    if (g.isFallback) return no('fallback-adapter');
+    if (g.vendor.toLowerCase() !== 'intel') return no('not-intel');
+    if (!isIntelIntegrated(g)) return no('intel-discrete');
+    return { due: true, reason: 'due' };
 }

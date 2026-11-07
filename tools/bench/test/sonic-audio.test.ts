@@ -1,0 +1,432 @@
+// v0.12 Fly by Sound, lane v12-flight step 7 (docs/wip/v12-plan.md 2.2 and 4.2): the engine in the page, on fakes.
+//  - SonicAudio makes ONE AudioContext inside the press that starts the mode (and unlocks speech there), starts the
+//    engine on it once, survives a browser with no Web Audio, applies the pilot's settings (another theme swaps the
+//    theme) and closes what it made;
+//  - SonicSetup checks a change of settings as a whole before it touches anything (a bad one changes nothing and says
+//    why), applies it to the engine and the captions, and saves it in the prefs collection 'sonic'; the captions are
+//    read by a screen reader exactly when "my screen reader speaks" is on;
+//  - the saved progress is not rewritten when only its timestamp moved;
+//  - the mode hands the engine each frame (its default input, or a lesson's), not while a replay drives it;
+//  - the bridge repeats the last line, interrupting;
+//  - the motor sound plugs into the engine's input node on the engine's context (not its own), is silent unless the
+//    settings ask for it, and never suspends or closes a context that is not its own (control: its own context is
+//    closed as before).
+import { describe, expect, it, vi } from 'vitest';
+import { defaultPrefs, getBuiltinTheme, getLesson } from '../../../packages/sonic-fpv/src';
+import type { AudioContextLike, FlightSample, LessonLayers, Locale, SonicFrameInput, SonicPrefs, SpeechLine, ThemeDef } from '../../../packages/sonic-fpv/src';
+import { SonicAudio } from '../../../apps/fly/src/sonic/audio';
+import type { AudioDeps, PageEngine } from '../../../apps/fly/src/sonic/audio';
+import { SonicSetup, captionMode } from '../../../apps/fly/src/sonic/entry';
+import type { CaptionSink } from '../../../apps/fly/src/sonic/entry';
+import { PageRuntime } from '../../../apps/fly/src/sonic/runtime';
+import { allProgress, currentLesson, loadSonicPrefs, saveProgress, savedProgress, saveSonicPrefs, setCurrentLesson } from '../../../apps/fly/src/sonic/store';
+import { SonicBridge, SILENT_LAYERS } from '../../../apps/fly/src/sonic/bridge';
+import { SonicMode } from '../../../apps/fly/src/sonic/mode';
+import { MotorSound, motorMix } from '../../../apps/fly/src/audio/motor-sound';
+import type { AudioLike, NodeLike } from '../../../apps/fly/src/audio/motor-sound';
+import { mkStore } from '../../../packages/prefs/test/helpers';
+
+// ------------------------------------------------------------------ fakes
+
+class FakeEngine {
+    state: PageEngine['state'] = 'idle';
+    started: unknown[] = [];
+    theme: ThemeDef | null = null;
+    prefs: SonicPrefs | null = null;
+    locale: Locale | null = null;
+    layers: LessonLayers[] = [];
+    frames: SonicFrameInput[] = [];
+    said: { line: SpeechLine; interrupt: boolean }[] = [];
+    closed = false;
+    onSpeech: ((line: SpeechLine, text: string) => void) | null = null;
+    auxInput: object | null = null;
+    constructor(readonly opts: Parameters<AudioDeps['createEngine']>[0]) {
+        this.theme = opts.theme;
+        this.prefs = opts.prefs;
+    }
+    async start(ac: AudioContextLike): Promise<void> { this.started.push(ac); this.state = 'running'; }
+    async suspend(): Promise<void> { this.state = 'suspended'; }
+    async resume(): Promise<void> { this.state = 'running'; }
+    async close(): Promise<void> { this.closed = true; this.state = 'closed'; }
+    setTheme(t: ThemeDef): void { this.theme = t; }
+    setPrefs(p: SonicPrefs): void { this.prefs = p; }
+    setLocale(l: Locale): void { this.locale = l; }
+    setLayers(l: LessonLayers): void { this.layers.push(l); }
+    update(i: SonicFrameInput): void { this.frames.push(i); }
+    cue(): void { /* not under test */ }
+    async say(line: SpeechLine, o?: { interrupt?: boolean }): Promise<void> { this.said.push({ line, interrupt: o?.interrupt === true }); this.opts.caption('text of ' + line.key, line); }
+    activeCues(): readonly never[] { return []; }
+}
+
+function fakeDeps(o: { audio?: boolean } = {}): { deps: AudioDeps; contexts: (AudioContextLike & { closed: boolean })[]; unlocked: { n: number }; engines: FakeEngine[] } {
+    const contexts: (AudioContextLike & { closed: boolean })[] = [];
+    const unlocked = { n: 0 };
+    const engines: FakeEngine[] = [];
+    const deps: AudioDeps = {
+        makeContext() {
+            if (o.audio === false) return null;
+            const c = { currentTime: 0, sampleRate: 48000, state: 'suspended', closed: false, async close() { this.closed = true; } };
+            contexts.push(c as never);
+            return c as never;
+        },
+        unlockSpeech() { unlocked.n++; },
+        createEngine(opts) { const e = new FakeEngine(opts); engines.push(e); return e as unknown as PageEngine; }
+    };
+    return { deps, contexts, unlocked, engines };
+}
+
+class Sink implements CaptionSink {
+    lines: string[] = [];
+    modes: { visible: boolean; live: boolean }[] = [];
+    add(text: string): void { this.lines.push(text); }
+    configure(m: { visible: boolean; live: boolean }): void { this.modes.push(m); }
+}
+
+// ------------------------------------------------------------------ SonicAudio
+
+describe('SonicAudio: one context from one press', () => {
+    it('start() makes one AudioContext, unlocks speech in the same call, starts the engine on it once; a second call is the same promise', async () => {
+        const { deps, contexts, unlocked, engines } = fakeDeps();
+        const a = new SonicAudio({ locale: 'pl', deps });
+        const p1 = a.start();
+        // everything that needs the activation has happened before the first await
+        expect(contexts).toHaveLength(1);
+        expect(unlocked.n).toBe(1);
+        const p2 = a.start();
+        expect(p2).toBe(p1);
+        await p1;
+        expect(contexts).toHaveLength(1);
+        expect(unlocked.n).toBe(1);
+        expect(engines[0]!.started).toEqual([contexts[0]]);
+        expect(a.running).toBe(true);
+        expect(a.ac).toBe(contexts[0]);
+        expect(a.available).toBe(true);
+    });
+
+    it('a browser with no Web Audio: nothing throws, available is false, the engine is never started', async () => {
+        const { deps, contexts, engines } = fakeDeps({ audio: false });
+        const a = new SonicAudio({ locale: 'en', deps });
+        await a.start();
+        expect(contexts).toHaveLength(0);
+        expect(engines[0]!.started).toHaveLength(0);
+        expect(a.available).toBe(false);
+        expect(a.running).toBe(false);
+    });
+
+    it('an engine that fails to start leaves the page running without sound', async () => {
+        const { deps, engines } = fakeDeps();
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const a = new SonicAudio({ locale: 'en', deps });
+        engines[0]!.start = async () => { throw new Error('no audio device'); };
+        await a.start();
+        expect(a.available).toBe(false);
+        warn.mockRestore();
+    });
+
+    it('starts with the pilot\'s theme and language; another theme swaps the theme, a language the engine\'s phrases', () => {
+        const { deps, engines } = fakeDeps();
+        const a = new SonicAudio({ locale: 'ru', prefs: { ...defaultPrefs(), theme: 'clear' }, deps });
+        const e = engines[0]!;
+        expect(e.opts.locale).toBe('ru');
+        expect(e.theme!.id).toBe('clear');
+        a.setPrefs({ ...a.prefs, theme: 'race' });
+        expect(e.theme!.id).toBe('race');
+        expect(a.theme).toBe(getBuiltinTheme('race'));
+        const before = e.theme;
+        a.setPrefs({ ...a.prefs, calm: true });
+        expect(e.theme).toBe(before); // calm is the planner's: the same theme object
+        expect(e.prefs!.calm).toBe(true);
+        a.setLocale('pl');
+        expect(e.locale).toBe('pl');
+    });
+
+    it('close() stops the engine and closes the context it made', async () => {
+        const { deps, contexts, engines } = fakeDeps();
+        const a = new SonicAudio({ locale: 'en', deps });
+        await a.start();
+        await a.close();
+        expect(engines[0]!.closed).toBe(true);
+        expect(contexts[0]!.closed).toBe(true);
+        expect(a.ac).toBeNull();
+    });
+
+    it('the engine\'s spoken lines reach the captions through onCaption', async () => {
+        const { deps, engines } = fakeDeps();
+        const seen: string[] = [];
+        new SonicAudio({ locale: 'en', deps, onCaption: (text) => seen.push(text) });
+        await engines[0]!.say({ key: 'fly.go' });
+        expect(seen).toEqual(['text of fly.go']);
+    });
+});
+
+// ------------------------------------------------------------------ SonicSetup: settings, captions, saving
+
+describe('SonicSetup: the pilot\'s sound settings', () => {
+    function setup(prefs?: Partial<SonicPrefs>) {
+        const host = mkStore();
+        if (prefs) saveSonicPrefs(host, { ...defaultPrefs(), ...prefs });
+        const f = fakeDeps();
+        const captions = new Sink();
+        const s = new SonicSetup(host, 'en', captions, { deps: f.deps });
+        return { host, s, captions, ...f };
+    }
+
+    it('the defaults when nothing is saved: the soft theme, motors off, captions on, the engine speaks, the captions are not read', () => {
+        const { s, captions } = setup();
+        expect(s.prefs).toEqual(defaultPrefs());
+        expect(s.prefs.motorSound).toBe(false);
+        expect(captions.modes).toEqual([{ visible: true, live: false }]);
+    });
+
+    it('saved settings are the ones the engine starts with', () => {
+        const { s, engines } = setup({ theme: 'race', speechRate: 1.5, captions: false, selfVoice: false });
+        expect(s.prefs.theme).toBe('race');
+        expect(engines[0]!.theme!.id).toBe('race');
+        expect(captionModeOf(s.prefs)).toEqual({ visible: false, live: true });
+    });
+
+    it('update(): checked, applied to the engine and the captions at once, and saved (a new store reads it back)', () => {
+        const { host, s, engines, captions } = setup();
+        const r = s.update({ selfVoice: false, speechRate: 1.25, motorSound: true });
+        expect(r).toEqual({ ok: true });
+        expect(engines[0]!.prefs).toMatchObject({ selfVoice: false, speechRate: 1.25, motorSound: true });
+        expect(captions.modes.at(-1)).toEqual({ visible: true, live: true });
+        expect(loadSonicPrefs(host)).toMatchObject({ selfVoice: false, speechRate: 1.25, motorSound: true });
+        expect(loadSonicPrefs(host)).toEqual(s.prefs);
+    });
+
+    it('control: a value out of range changes nothing (engine, captions, store) and says which field', () => {
+        const { host, s, engines, captions } = setup();
+        const stored = JSON.stringify(host.collection('sonic'));
+        const modes = captions.modes.length;
+        const r = s.update({ speechRate: 5 });
+        expect(r.ok).toBe(false);
+        expect((r as { reasons: string[] }).reasons.join(' ')).toMatch(/speechRate/);
+        expect(s.prefs.speechRate).toBe(1);
+        expect(engines[0]!.prefs!.speechRate).toBe(1);
+        expect(captions.modes).toHaveLength(modes);
+        expect(JSON.stringify(host.collection('sonic'))).toBe(stored);
+    });
+
+    it('a stored document with a bad field is repaired field by field, not thrown away', () => {
+        const host = mkStore();
+        host.updateCollection('sonic', (d) => { d.prefs = { format: 'shramko-sonic-prefs/1', theme: 'clear', speechRate: 99, captions: false }; });
+        const p = loadSonicPrefs(host);
+        expect(p.theme).toBe('clear');
+        expect(p.captions).toBe(false);
+        expect(p.speechRate).toBe(1); // the bad one takes its default
+    });
+
+    it('captions are read by a screen reader exactly when the engine does not speak', () => {
+        expect(captionMode({ ...defaultPrefs(), selfVoice: true, captions: true })).toEqual({ visible: true, live: false });
+        expect(captionMode({ ...defaultPrefs(), selfVoice: false, captions: true })).toEqual({ visible: true, live: true });
+        expect(captionMode({ ...defaultPrefs(), selfVoice: false, captions: false })).toEqual({ visible: false, live: true });
+        expect(captionMode({ ...defaultPrefs(), selfVoice: true, captions: false })).toEqual({ visible: false, live: false });
+    });
+});
+
+const captionModeOf = captionMode;
+
+// ------------------------------------------------------------------ the saved state
+
+describe('the saved lesson progress', () => {
+    const p = (o: Record<string, unknown> = {}) => ({ lessonId: 'walls-hall', version: 1, attempts: 2, successes: 1, blocksPassed: 0, passed: false, bestTimeMs: null, lastAt: '2026-11-07T10:00:00.000Z', ...o });
+
+    it('is saved, read back, listed, and not rewritten when only its timestamp moved', () => {
+        const host = mkStore();
+        const changes: string[] = [];
+        host.onChange((c) => changes.push(c.id));
+        saveProgress(host, p());
+        saveProgress(host, p({ lastAt: '2026-11-07T10:05:00.000Z' }));
+        expect(changes).toEqual(['collection.sonic']);
+        saveProgress(host, p({ attempts: 3 }));
+        expect(changes).toHaveLength(2);
+        expect(savedProgress(host, 'walls-hall')).toMatchObject({ attempts: 3 });
+        expect(savedProgress(host, 'corridor')).toBeNull();
+        expect(Object.keys(allProgress(host))).toEqual(['walls-hall']);
+    });
+
+    it('the lesson the pilot is on is saved and cleared', () => {
+        const host = mkStore();
+        setCurrentLesson(host, 'rings-first');
+        expect(currentLesson(host)).toBe('rings-first');
+        setCurrentLesson(host, null);
+        expect(currentLesson(host)).toBeNull();
+    });
+});
+
+// ------------------------------------------------------------------ the mode and the bridge
+
+const SAMPLE: FlightSample = { t: 100, tick: 100, pos: [0, 1.5, 0], vel: [0, 0, 0], quat: [1, 0, 0, 0], rate: [0, 0, 0], yawDeg: 0, pitchDeg: 0, rollDeg: 0, sticks: [0, 0, 0, 0], armed: false, touched: false, paused: false };
+
+function modeWith(engine: FakeEngine | null) {
+    const mode = new SonicMode({
+        events: { emit() { /* no listeners */ }, on() { return () => undefined; } } as never,
+        prefs: { setSession: () => ({ ok: true }) as never, clearSession: () => undefined },
+        session: () => ({ paused: false, replaying: false, runner: undefined, shownSim: undefined }) as never,
+        setLesson: () => undefined,
+        onKey: () => () => undefined,
+        note: () => undefined
+    });
+    if (engine) mode.engine = engine as never;
+    return mode;
+}
+
+describe('the engine hears the mode\'s frames', () => {
+    it('hear(): the default input is the flight in its world with the lesson\'s floor; a lesson\'s own input wins', () => {
+        const e = new FakeEngine({ theme: getBuiltinTheme('soft'), prefs: defaultPrefs(), locale: 'en', caption: () => undefined });
+        const mode = modeWith(e);
+        mode.enter({ floorY: 2 });
+        mode.hear(SAMPLE);
+        expect(e.frames).toHaveLength(1);
+        expect(e.frames[0]).toMatchObject({ sample: SAMPLE, world: null, target: null, floorY: 2 });
+        const own: SonicFrameInput = { sample: SAMPLE, world: null, target: null, floorY: 0 };
+        mode.hear(SAMPLE, own);
+        expect(e.frames[1]).toBe(own);
+    });
+
+    it('control: nothing is heard while the mode is off, in playback, or with no engine', () => {
+        const e = new FakeEngine({ theme: getBuiltinTheme('soft'), prefs: defaultPrefs(), locale: 'en', caption: () => undefined });
+        const mode = modeWith(e);
+        mode.hear(SAMPLE);
+        expect(e.frames).toHaveLength(0); // off
+        mode.enter({});
+        mode.playback(true);
+        expect(mode.inPlayback).toBe(true);
+        mode.hear(SAMPLE);
+        expect(e.frames).toHaveLength(0);
+        mode.playback(false);
+        mode.hear(SAMPLE);
+        expect(e.frames).toHaveLength(1);
+        const bare = modeWith(null);
+        bare.enter({});
+        expect(() => bare.hear(SAMPLE)).not.toThrow();
+    });
+
+    it('entering the mode again starts out of playback (a replay left on would keep the lesson deaf)', () => {
+        const e = new FakeEngine({ theme: getBuiltinTheme('soft'), prefs: defaultPrefs(), locale: 'en', caption: () => undefined });
+        const mode = modeWith(e);
+        mode.enter({ lesson: getLesson('walls-hall') });
+        mode.playback(true);
+        expect(mode.inPlayback).toBe(true);
+        mode.enter({});
+        expect(mode.inPlayback).toBe(false);
+        mode.hear(SAMPLE);
+        expect(e.frames).toHaveLength(1);
+    });
+
+    it('PageRuntime reads the mode live and routes playback to it', () => {
+        const e = new FakeEngine({ theme: getBuiltinTheme('soft'), prefs: defaultPrefs(), locale: 'en', caption: () => undefined });
+        const f = fakeDeps();
+        const s = new SonicSetup(mkStore(), 'en', new Sink(), { deps: f.deps });
+        const mode = modeWith(e);
+        const calls: boolean[] = [];
+        const rt = new PageRuntime(s, mode, (on) => calls.push(on));
+        expect(rt.lesson).toBeNull();
+        expect(rt.runner).toBeNull();
+        expect(rt.world).toBeNull();
+        expect(rt.prefs).toBe(s.prefs);
+        expect(rt.theme).toBe(s.audio.theme);
+        mode.enter({ lesson: getLesson('corridor') });
+        expect(rt.lesson!.id).toBe('corridor');
+        rt.playback(true);
+        expect(mode.inPlayback).toBe(true);
+        expect(calls).toEqual([true]);
+        s.update({ calm: true });
+        expect(rt.prefs.calm).toBe(true);
+    });
+});
+
+describe('the bridge repeats the last line (Z)', () => {
+    function bridgeOn(engine: { say(l: SpeechLine, o?: { interrupt?: boolean }): Promise<void>; setLayers(l: LessonLayers): void; cue(): void }) {
+        const b = new SonicBridge({ sample: () => undefined, event: () => undefined });
+        b.engine = engine as never;
+        b.start({ runner: undefined, shownSim: undefined, paused: false, replaying: false });
+        return b;
+    }
+
+    it('says it again with interrupt; nothing before a first line; the last line is the one spoken last, and a new start forgets it', async () => {
+        const said: { key: string; interrupt: boolean }[] = [];
+        const b = bridgeOn({ say: async (l, o) => { said.push({ key: l.key, interrupt: o?.interrupt === true }); }, setLayers: () => undefined, cue: () => undefined });
+        await b.repeat();
+        expect(said).toEqual([]);
+        await b.say({ key: 'fly.go' }, false);
+        await b.say({ key: 'fly.gate' }, false);
+        expect(b.last).toEqual({ key: 'fly.gate' });
+        await b.repeat();
+        expect(said.at(-1)).toEqual({ key: 'fly.gate', interrupt: true });
+        b.start({ runner: undefined, shownSim: undefined, paused: false, replaying: false });
+        expect(b.last).toBeNull();
+        void SILENT_LAYERS;
+    });
+});
+
+// ------------------------------------------------------------------ the motor sound on the engine
+
+class FakeParam {
+    value = 0;
+    targets: number[] = [];
+    setTargetAtTime(v: number): void { this.targets.push(v); }
+}
+class FakeNode {
+    to: unknown[] = [];
+    started = false;
+    stopped = false;
+    constructor(readonly kind: string) {}
+    connect(n: unknown): void { this.to.push(n); }
+    disconnect(): void { this.to = []; }
+    start(): void { this.started = true; }
+    stop(): void { this.stopped = true; }
+}
+class FakeAudio {
+    currentTime = 0;
+    sampleRate = 8000;
+    state = 'running';
+    ops: string[] = [];
+    destination = new FakeNode('destination');
+    nodes: (FakeNode & Record<string, unknown>)[] = [];
+    private add<T extends FakeNode>(n: T): T { this.nodes.push(n as FakeNode & Record<string, unknown>); return n; }
+    createGain() { return this.add(Object.assign(new FakeNode('gain'), { gain: new FakeParam() })); }
+    createOscillator() { return this.add(Object.assign(new FakeNode('osc'), { frequency: new FakeParam(), setPeriodicWave() { /* no wave */ } })); }
+    createBiquadFilter() { return this.add(Object.assign(new FakeNode('filter'), { type: '', frequency: new FakeParam(), Q: new FakeParam() })); }
+    createBuffer(_c: number, len: number) { const d = new Float32Array(len); return { getChannelData: () => d }; }
+    createBufferSource() { return this.add(Object.assign(new FakeNode('noise'), { buffer: null as unknown, loop: false })); }
+    createPeriodicWave(real: Float32Array, imag: Float32Array) { return { real, imag }; }
+    async resume() { this.ops.push('resume'); this.state = 'running'; }
+    async suspend() { this.ops.push('suspend'); this.state = 'suspended'; }
+    async close() { this.ops.push('close'); this.state = 'closed'; }
+}
+
+describe('the motor sound plugs into the engine, not into the speakers', () => {
+    it('with the engine\'s input node: the master goes into it, never to the context\'s destination; suspend, resume and close leave the context alone', async () => {
+        const ac = new FakeAudio();
+        const aux = new FakeNode('engine-aux');
+        const s = new MotorSound(ac as unknown as AudioLike, 3, aux as unknown as NodeLike);
+        const master = ac.nodes.find((n) => n.to.includes(aux))!;
+        expect(master).toBeDefined();
+        expect(ac.nodes.some((n) => n.to.includes(ac.destination))).toBe(false);
+        await s.suspend();
+        await s.resume();
+        await s.close();
+        expect(ac.ops).toEqual([]);
+        expect(ac.state).toBe('running');
+        expect(s.closed).toBe(true);
+        expect(master.to).toEqual([]); // taken off the engine's input
+    });
+
+    it('control: with no input node it is the old graph: into the destination, and close() closes its own context', async () => {
+        const ac = new FakeAudio();
+        const s = new MotorSound(ac as unknown as AudioLike, 3);
+        expect(ac.nodes.some((n) => n.to.includes(ac.destination))).toBe(true);
+        await s.suspend();
+        await s.resume();
+        await s.close();
+        expect(ac.ops).toEqual(['suspend', 'resume', 'close']);
+    });
+
+    it('silent unless the settings ask: the default sound settings have the motors off, and an off mix has a zero master', () => {
+        expect(defaultPrefs().motorSound).toBe(false);
+        const m = motorMix({ state: { motors: [0.5, 0.5, 0.5, 0.5], volt: 11.4, omegaMaxPerVolt: 500, armed: true, crashed: false, speed: 3 }, paused: false, hidden: false, enabled: false, volume: 100 });
+        expect(m.master).toBe(0);
+    });
+});

@@ -1,0 +1,9 @@
+{
+  "gpuhint.copied": "Copied. Paste it into a new tab.",
+  "gpuhint.copy": "Copy the address",
+  "gpuhint.copyFailed": "Could not copy. Select the address and copy it.",
+  "gpuhint.fixFlag": "In the browser: open this address in a new tab, set it to Enabled and restart the browser:",
+  "gpuhint.fixWindows": "Or in Windows: Settings, System, Display, Graphics, choose this browser, Options, High performance.",
+  "gpuhint.ok": "Got it",
+  "gpuhint.text": "This page is drawing on the Intel graphics chip. If this computer also has an NVIDIA or AMD graphics card, the browser is not using it: Chrome on Windows ignores the page's request for the faster one. To switch:"
+}

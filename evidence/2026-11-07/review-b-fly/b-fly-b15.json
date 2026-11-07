@@ -1,0 +1,78 @@
+{
+  "name": "b-fly-b15",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T20:34:58.554Z",
+    "gitHead": "44a7442",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5392",
+  "render": "on",
+  "pass": true,
+  "flight": {
+    "phase": "rest",
+    "flip": {
+      "startTick": 5697,
+      "endTick": 6147,
+      "minUpY": -0.9999998748515548
+    },
+    "crash": {
+      "tick": 19214,
+      "speed": 8.565648919042033,
+      "px": -4.899018282169666,
+      "py": 2.1660896045074054,
+      "pz": 0.8999678014733062
+    },
+    "tick": 30159
+  },
+  "saved": {
+    "hash": "1051594b519591b7e79bba22be62f8caae63163facfc65c9441bc45f1af12c51",
+    "endTick": 30159,
+    "records": 5631,
+    "lives": 2
+  },
+  "newTab": {
+    "saved": "1051594b519591b7e79bba22be62f8caae63163facfc65c9441bc45f1af12c51",
+    "hash": "1051594b519591b7e79bba22be62f8caae63163facfc65c9441bc45f1af12c51",
+    "endTick": 30159,
+    "lives": 2,
+    "refused": null
+  },
+  "cpuThrottle": {
+    "x1": {
+      "stepsPerWallSecond": 998.4523987848592,
+      "hitches": 0
+    },
+    "x4": {
+      "stepsPerWallSecond": 1004.9575247193743,
+      "hitches": 0
+    }
+  },
+  "control": {
+    "atTick": 10000,
+    "channel": "throttle",
+    "lsb": {
+      "hash": "7f0bec7e2bdb42e205960920798caf17a236a0d266a4345ba08165adfda7fdf5",
+      "differs": true,
+      "maxDivergenceM": 0.016413486211796925,
+      "tamperedValue": -0.37452176213264465,
+      "fired": true
+    },
+    "twitch": {
+      "delta": 0.05,
+      "hash": "29ce799ac0b59bd6c6edfcdad639c4f9841480d6e09088b052f11af5d731eafe",
+      "differs": true,
+      "maxDivergenceM": 0.3423451919777935,
+      "tamperedValue": -0.37452176213264465,
+      "fired": true
+    }
+  }
+}

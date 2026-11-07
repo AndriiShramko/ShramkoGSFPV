@@ -1,0 +1,461 @@
+{
+  "name": "sonic-primitives",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T15:33:44.689Z",
+    "gitHead": "cb7b9a2",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "step": "v12-flight 6: the helper's view of the lesson worlds (primitives.ts) in the page's own renderer",
+  "page": "apps/fly/lab/sonic-primitives.html (Vite dev server)",
+  "webgpu": true,
+  "viewport": [
+    1280,
+    720
+  ],
+  "shots": [
+    {
+      "shot": "hall-start",
+      "lesson": "walls-hall",
+      "prims": 6,
+      "pos": [
+        0,
+        1.5,
+        0
+      ],
+      "yawDeg": 0,
+      "pitchDeg": 0,
+      "target": null,
+      "picture": {
+        "std": 0.06823824872843523,
+        "lit": 1,
+        "mean": 0.3083893106265551
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    },
+    {
+      "shot": "hall-corner",
+      "lesson": "walls-hall",
+      "prims": 6,
+      "pos": [
+        -17,
+        9,
+        26
+      ],
+      "yawDeg": 28,
+      "pitchDeg": -12,
+      "target": null,
+      "picture": {
+        "std": 0.07279504195803568,
+        "lit": 1,
+        "mean": 0.29672530849939893
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    },
+    {
+      "shot": "corridor-start",
+      "lesson": "corridor",
+      "prims": 125,
+      "pos": [
+        0,
+        2,
+        0
+      ],
+      "yawDeg": 0,
+      "pitchDeg": 0,
+      "target": null,
+      "picture": {
+        "std": 0.06619328090460522,
+        "lit": 1,
+        "mean": 0.285586410909887
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    },
+    {
+      "shot": "corridor-obstacle",
+      "lesson": "corridor",
+      "prims": 125,
+      "pos": [
+        0,
+        2,
+        -50
+      ],
+      "yawDeg": 0,
+      "pitchDeg": 0,
+      "target": null,
+      "picture": {
+        "std": 0.06598395500785975,
+        "lit": 1,
+        "mean": 0.28586934710269485
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    },
+    {
+      "shot": "corridor-bends",
+      "lesson": "corridor",
+      "prims": 125,
+      "pos": [
+        0,
+        2,
+        -80
+      ],
+      "yawDeg": 90,
+      "pitchDeg": 0,
+      "target": null,
+      "picture": {
+        "std": 0.06565475361284914,
+        "lit": 1,
+        "mean": 0.2843145991724094
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    },
+    {
+      "shot": "corridor-jogs",
+      "lesson": "corridor",
+      "prims": 125,
+      "pos": [
+        45,
+        2,
+        -125
+      ],
+      "yawDeg": 0,
+      "pitchDeg": 3,
+      "target": null,
+      "picture": {
+        "std": 0.06692409911974732,
+        "lit": 0.9999956597222223,
+        "mean": 0.28265057867960725
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    },
+    {
+      "shot": "corridor-mixed",
+      "lesson": "corridor",
+      "prims": 125,
+      "pos": [
+        45,
+        2,
+        -200
+      ],
+      "yawDeg": 90,
+      "pitchDeg": 0,
+      "target": null,
+      "picture": {
+        "std": 0.06583169233163984,
+        "lit": 1,
+        "mean": 0.283358876174051
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    },
+    {
+      "shot": "rings-first",
+      "lesson": "rings-first",
+      "prims": 7,
+      "pos": [
+        0,
+        3,
+        72
+      ],
+      "yawDeg": 0,
+      "pitchDeg": 0,
+      "target": null,
+      "picture": {
+        "std": 0.07376486252736057,
+        "lit": 1,
+        "mean": 0.2958846139898005
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    },
+    {
+      "shot": "rings-first-lit",
+      "lesson": "rings-first",
+      "prims": 7,
+      "pos": [
+        0,
+        3,
+        72
+      ],
+      "yawDeg": 0,
+      "pitchDeg": 0,
+      "target": "ring-1",
+      "picture": {
+        "std": 0.07840702624666031,
+        "lit": 1,
+        "mean": 0.29699713750220863
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    },
+    {
+      "shot": "rings-line",
+      "lesson": "rings-line",
+      "prims": 9,
+      "pos": [
+        0,
+        3,
+        72
+      ],
+      "yawDeg": 0,
+      "pitchDeg": 2,
+      "target": null,
+      "picture": {
+        "std": 0.07557176113535898,
+        "lit": 1,
+        "mean": 0.29164710464883037
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    },
+    {
+      "shot": "rings-course",
+      "lesson": "rings-course",
+      "prims": 12,
+      "pos": [
+        0,
+        3,
+        72
+      ],
+      "yawDeg": 0,
+      "pitchDeg": 0,
+      "target": null,
+      "picture": {
+        "std": 0.07430474212929394,
+        "lit": 1,
+        "mean": 0.29613922469922693
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    },
+    {
+      "shot": "rings-small",
+      "lesson": "rings-small",
+      "prims": 10,
+      "pos": [
+        0,
+        3,
+        72
+      ],
+      "yawDeg": 0,
+      "pitchDeg": 0,
+      "target": null,
+      "picture": {
+        "std": 0.07395716291547753,
+        "lit": 1,
+        "mean": 0.2959830191266484
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    },
+    {
+      "shot": "square-start",
+      "lesson": "shapes-square",
+      "prims": 10,
+      "pos": [
+        0,
+        3,
+        72
+      ],
+      "yawDeg": 0,
+      "pitchDeg": 0,
+      "target": null,
+      "picture": {
+        "std": 0.07378918997321177,
+        "lit": 1,
+        "mean": 0.296075032807892
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    },
+    {
+      "shot": "cube-start",
+      "lesson": "shapes-cube",
+      "prims": 18,
+      "pos": [
+        0,
+        3,
+        72
+      ],
+      "yawDeg": 0,
+      "pitchDeg": 0,
+      "target": null,
+      "picture": {
+        "std": 0.07502661776704114,
+        "lit": 1,
+        "mean": 0.29718335353912795
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    },
+    {
+      "shot": "pillar-start",
+      "lesson": "walls-pillar",
+      "prims": 7,
+      "pos": [
+        0,
+        1.5,
+        22
+      ],
+      "yawDeg": 0,
+      "pitchDeg": 0,
+      "target": null,
+      "picture": {
+        "std": 0.0721328593933869,
+        "lit": 1,
+        "mean": 0.2981615788079678
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    },
+    {
+      "shot": "pillar-row",
+      "lesson": "walls-row",
+      "prims": 11,
+      "pos": [
+        0,
+        1.5,
+        22
+      ],
+      "yawDeg": 0,
+      "pitchDeg": 0,
+      "target": null,
+      "picture": {
+        "std": 0.06987561494739569,
+        "lit": 1,
+        "mean": 0.29963596805092
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    },
+    {
+      "shot": "zone-move-stop",
+      "lesson": "move-stop",
+      "prims": 13,
+      "pos": [
+        0,
+        1.5,
+        0
+      ],
+      "yawDeg": 0,
+      "pitchDeg": 0,
+      "target": null,
+      "picture": {
+        "std": 0.16630215510488672,
+        "lit": 0.48668836805555554,
+        "mean": 0.18232149774269008
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    },
+    {
+      "shot": "open-hover",
+      "lesson": "hover-height",
+      "prims": 1,
+      "pos": [
+        0,
+        1,
+        0
+      ],
+      "yawDeg": 0,
+      "pitchDeg": 0,
+      "target": null,
+      "picture": {
+        "std": 0.16612959040665867,
+        "lit": 0.49019097222222224,
+        "mean": 0.1833590566445049
+      },
+      "control": {
+        "std": 6.131761984824473e-8,
+        "lit": 0,
+        "mean": 0.020457254901904642
+      },
+      "pass": true
+    }
+  ],
+  "consoleErrors": [],
+  "notFound": [],
+  "pass": true
+}

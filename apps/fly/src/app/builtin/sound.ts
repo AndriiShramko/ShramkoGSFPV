@@ -10,13 +10,19 @@
 //  - The pause menu's "Motor sound: on / off" and the speaker on the top bar (v0.8) flip sound.motors;
 //    Settings -> Sound has it and the volume (15 % by default since v0.8: prefs defs/sound.ts).
 // Not in recordings (the recorder writes video only).
+// Fly by Sound (v0.12, docs/wip/v12-plan.md 2.2): on a page entered through ?sonic= (sonic/entry.ts) the sound engine owns
+// the one AudioContext. The motors are off there unless the pilot's sound settings ask for them (SonicPrefs.motorSound,
+// default off: they mask the cues), and when on they play into the engine's input node (SonicEngine.auxInput), through
+// its limiter, on its context; sound.motors is not read (the engine's setting decides), the level is sound.volume as ever,
+// and no context of this feature's own is made.
 import { S } from '@gsfpv/sim-core';
 import { t } from '../../i18n';
 import { h } from '../../ui/dom';
 import { PRESETS } from '../../presets';
 import { MotorSound, bladesOf, motorMix } from '../../audio/motor-sound';
-import type { AudioLike, Mix, MotorState } from '../../audio/motor-sound';
+import type { AudioLike, Mix, MotorState, NodeLike } from '../../audio/motor-sound';
 import type { Feature, FlightContext } from '../context';
+import { sonicEntry } from '../../sonic/entry';
 
 // window.__gsfpv.sound: the graph's state and the last mix, for the acceptance
 declare module '../test-hook' {
@@ -73,18 +79,43 @@ export const sound: Feature = {
         let blades = 3;
         let paused = false;
         let last: Mix | null = null;
-        const enabled = (): boolean => ctx.prefs.get<boolean>('sound.motors') !== false;
+        /** The page was entered through ?sonic=: the engine's sound settings decide, the engine's context is the one. */
+        const inMode = (): boolean => sonicEntry() !== null;
+        const enabled = (): boolean => (inMode() ? ctx.sonic?.prefs.motorSound === true : ctx.prefs.get<boolean>('sound.motors') !== false);
+        /** Flips the motors: the engine's setting in the mode (it is saved with the pilot's sound settings), else sound.motors. */
+        const toggle = (): void => {
+            if (inMode()) {
+                sonicEntry()?.setup.update({ motorSound: !enabled() });
+                drawSpeaker();
+            } else ctx.prefs.set('sound.motors', !enabled());
+        };
         const presetBlades = (): number => bladesOf(PRESETS[ctx.session.presetId]?.fields.prop?.value);
 
         /** Builds the graph (inside a click or a key, or after one): Web Audio missing, nothing happens. */
         const start = (): void => {
             if (graph || !enabled()) return;
+            if (inMode()) {
+                startOnEngine();
+                return;
+            }
             const Ctor = (globalThis as { AudioContext?: new (o?: AudioContextOptions) => AudioContext }).AudioContext;
             if (!Ctor) return;
             try {
                 blades = presetBlades();
                 graph = new MotorSound(new Ctor({ latencyHint: 'interactive' }) as unknown as AudioLike, blades);
                 void graph.resume().catch(() => undefined);
+            } catch (e) {
+                console.warn('motor sound', e);
+                graph = null;
+            }
+        };
+        /** In the mode: the graph on the engine's context, into its input node (null until the engine has started). */
+        const startOnEngine = (): void => {
+            const aux = ctx.sonic?.engine.auxInput as ({ context?: unknown } & object) | null | undefined;
+            if (!aux?.context) return;
+            try {
+                blades = presetBlades();
+                graph = new MotorSound(aux.context as AudioLike, blades, aux as unknown as NodeLike);
             } catch (e) {
                 console.warn('motor sound', e);
                 graph = null;
@@ -100,6 +131,8 @@ export const sound: Feature = {
         if ((navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation?.hasBeenActive) start();
 
         ctx.events.on('frame', () => {
+            // in the mode the engine comes up (and the pilot may turn the motors on) after this feature installed
+            if (!graph && inMode() && enabled()) start();
             if (!graph) return;
             last = motorMix({ state: motorState(ctx), paused, hidden: document.visibilityState === 'hidden', enabled: enabled(), volume: ctx.prefs.get<number>('sound.volume') });
             graph.apply(last);
@@ -121,11 +154,14 @@ export const sound: Feature = {
         ctx.events.on('life', rebuildForProp);
         document.addEventListener('visibilitychange', () => {
             if (!graph) return;
-            if (document.visibilityState === 'hidden') void graph.suspend().catch(() => undefined);
-            else if (enabled()) void graph.resume().catch(() => undefined);
+            if (document.visibilityState === 'hidden') {
+                // a context that is the engine's is not put to sleep here: the motors fall silent by their own mix
+                graph.apply(last = motorMix({ state: motorState(ctx), paused, hidden: true, enabled: enabled(), volume: ctx.prefs.get<number>('sound.volume') }));
+                void graph.suspend().catch(() => undefined);
+            } else if (enabled()) void graph.resume().catch(() => undefined);
         });
         ctx.prefs.onChange((c) => {
-            if (c.id !== 'sound.motors') return;
+            if (c.id !== 'sound.motors' || inMode()) return;
             if (!enabled()) { if (graph) void graph.suspend().catch(() => undefined); }
             else if (graph) void graph.resume().catch(() => undefined);
             else start();
@@ -133,13 +169,13 @@ export const sound: Feature = {
 
         ctx.menu.add({
             id: 'pause.sound', action: null, labelKey: 'sound.menu', order: 104, section: 'tools',
-            run: () => ctx.prefs.set('sound.motors', !enabled()),
+            run: () => toggle(),
             label: () => t(enabled() ? 'sound.menu.on' : 'sound.menu.off')
         });
 
         // v0.8 (the owner's message 21, item 3): the quick mute on the top bar, one tap on a phone
         // (no keyboard there) and one click on a computer; it flips sound.motors like the pause menu
-        const speakerBtn = h('button', { type: 'button', class: 'btn icon speaker', 'data-action': 'sound-toggle', onclick: () => ctx.prefs.set('sound.motors', !enabled()) });
+        const speakerBtn = h('button', { type: 'button', class: 'btn icon speaker', 'data-action': 'sound-toggle', onclick: () => toggle() });
         const drawSpeaker = (): void => {
             const on = enabled();
             const label = t(on ? 'sound.menu.on' : 'sound.menu.off');

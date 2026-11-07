@@ -34,6 +34,11 @@ export class EasyPilot {
     private ch = new Float32Array([0, 0, -1, 0, -1, 0, 0, 0]);
     private readonly controls: Controls;
     private readonly env: EasyEnv;
+    /**
+     * A Fly by Sound lesson runs (v0.12, play/lesson-pilot.ts, set by app/input.ts): the touch sticks go on as the
+     * pilot's intents (roll, pitch, the left stick's up/down as lift, yaw) for the lesson pilot to fly.
+     */
+    intents = false;
 
     constructor(controls: Controls, env: EasyEnv) {
         this.controls = controls;
@@ -60,6 +65,17 @@ export class EasyPilot {
 
     /** Sends one frame through Controls (and its arm gate) at page time `tMs`. */
     send(i: PlayIntent, tMs: number): void {
+        if (this.intents) {
+            const ch = this.ch;
+            ch[0] = i.roll;
+            ch[1] = i.pitch;
+            ch[2] = i.lift;
+            ch[3] = i.yaw;
+            ch[4] = -1;
+            ch[5] = 0;
+            this.controls.channels(ch, tMs);
+            return;
+        }
         const s = this.env.session();
         const sim = s.sim as FlightSession['sim'] | undefined;
         const dt = this.lastT < 0 ? 0 : (tMs - this.lastT) / 1000;

@@ -38,8 +38,28 @@ export type { LoadStage, LoadPart, LoadProgress, LoadView } from './loader';
 export { FlyNow } from './reveal';
 export type { RevealReason } from './reveal';
 
+/**
+ * A world built in the page instead of a scan (v0.12 Fly by Sound, docs/wip/v12-plan.md 2.5): a lesson
+ * world. Its scene is made in memory with an id that is never a hex SuperSplat id (lesson-<id>), so nothing
+ * is asked of the CDN; nothing is drawn of it; its walls are `collision`, named by `sha256` (an analytic
+ * world's digest) in every life header, so a log replays on the same walls; the craft starts at `spawn`.
+ * Such a world flies as it is: at its own size, walls on, no floater filter, no collision ceiling, no other
+ * walls taken (the session refuses those changes while it flies one).
+ */
+export interface BuiltinWorld {
+    scene: ResolvedScene;
+    collision: VoxelCollision;
+    /** the contact world over `collision`; none = a VoxelContactWorld made here */
+    contact?: VoxelContactWorld;
+    sha256: string;
+    /** x, y, z (world metres), yaw degrees */
+    spawn: readonly [number, number, number, number];
+}
+
 export interface SessionOptions {
     sceneId: string;
+    /** a built-in world instead of the scan of sceneId (BuiltinWorld); its scene's id is the session's */
+    world?: BuiltinWorld;
     preset?: string;
     overrides?: ParamOverrides;
     latencyMarker?: boolean;
@@ -245,6 +265,8 @@ export class FlightSession {
     private loader: SessionLoader | null = null;
     /** the scan is drawn (false: ?render=off, see SessionOptions.drawScan) */
     drawScan = true;
+    /** the built-in world flown instead of a scan (SessionOptions.world), or null for a scan */
+    builtin: BuiltinWorld | null = null;
     /** the renderer is the page's (E.4): never destroyed here */
     private sharedRenderer = false;
     /** the first life's start as a scene switch (SessionOptions.sceneStart), used once */
@@ -269,7 +291,9 @@ export class FlightSession {
 
     static async start(canvas: HTMLCanvasElement, o: SessionOptions): Promise<FlightSession> {
         const s = new FlightSession();
-        s.drawScan = o.drawScan ?? true;
+        s.builtin = o.world ?? null;
+        // a built-in world has no scan to draw
+        s.drawScan = s.builtin ? false : o.drawScan ?? true;
         s.sharedRenderer = !!o.renderer;
         if (o.policy) s.policy = { ...o.policy };
         if (o.crashOn !== undefined) s.crashOn = o.crashOn;
@@ -291,13 +315,16 @@ export class FlightSession {
     private async init(canvas: HTMLCanvasElement, o: SessionOptions): Promise<void> {
         const loader = this.loader!;
         const tS = performance.now();
-        this.scene = await resolveScene(o.sceneId);
+        const built = this.builtin;
+        // a built-in world brings its scene: nothing is resolved, nothing asked of the CDN
+        this.scene = built ? built.scene : await resolveScene(o.sceneId);
         this.timings.settingsMs = performance.now() - tS;
         this.presetId = o.preset && PRESETS[o.preset] ? o.preset : DEFAULT_PRESET;
         this.overrides = jsonSafe(o.overrides ?? {});
-        this.wallsOn = o.wallsOn ?? true;
-        this.floaterMinBlocks = validMinBlocks(o.dropFloaters) ? o.dropFloaters : 0;
-        this.ceilingM = typeof o.ceilingM === 'number' && validCeiling(Math.fround(o.ceilingM)) ? Math.fround(o.ceilingM) : null;
+        // a built-in world flies as it is: walls on, nothing filtered, no ceiling (and its own size, below)
+        this.wallsOn = built ? true : o.wallsOn ?? true;
+        this.floaterMinBlocks = !built && validMinBlocks(o.dropFloaters) ? o.dropFloaters : 0;
+        this.ceilingM = !built && typeof o.ceilingM === 'number' && validCeiling(Math.fround(o.ceilingM)) ? Math.fround(o.ceilingM) : null;
         this.windSeed = o.windSeed !== undefined && Number.isInteger(o.windSeed) && o.windSeed >= 0 && o.windSeed <= WIND_SEED_MAX ? o.windSeed : newWindSeed();
         // the wind joins the model once its ground is known (after the walls, below)
         this.compileModel();
@@ -313,12 +340,15 @@ export class FlightSession {
         this.renderer.setBackground(this.scene.background);
         // the scene's size (E.7) before its splats exist: the renderer gives the entity s and t when it makes it
         // a size set on an older version of the scan keeps its scale, not its offset (the scan moved)
-        const tr = o.transform;
+        const tr = built ? null : o.transform;
         this.transform = tr ? f32(tr.v && tr.v !== this.scene.version ? { s: tr.s, t: [0, 0, 0] } : tr) : IDENTITY;
         this.renderer.setSceneTransform(this.transform.s, [...this.transform.t]);
         const splatLoad = this.drawScan ? this.loadContent() : Promise.resolve(null);
         // the walls download beside the scan, not before it: one slow host no longer holds up the other
-        const walls = this.scene.collisionUrl ? loader.loadWalls(this.scene.collisionUrl) : Promise.resolve(null);
+        // (a built-in world's are in memory already)
+        const walls = built
+            ? Promise.resolve({ collision: built.collision, world: built.contact ?? new VoxelContactWorld(built.collision), sha256: built.sha256, ms: 0 })
+            : this.scene.collisionUrl ? loader.loadWalls(this.scene.collisionUrl) : Promise.resolve(null);
         walls.catch(() => { /* awaited below; this only keeps an early failure from counting as unhandled */ });
         await splatLoad;
         // the chunks stream once the engine runs; until the flight model exists, look from the scan's camera
@@ -348,7 +378,8 @@ export class FlightSession {
             this.collisionSha256 = w.sha256;
             this.timings.collisionMs = w.ms;
         }
-        this.spawn = this.findSpawn();
+        // a built-in world's start is its lesson's: placed by the world's author, not searched for
+        this.spawn = built ? [built.spawn[0], built.spawn[1], built.spawn[2], built.spawn[3]] : this.findSpawn();
         this.windGroundM = this.groundUnderSpawn();
         // the wind (a live one was asked for while the scan loaded): the first life flies in it
         this.windSpec = await Promise.resolve(o.wind ?? null).catch(() => null);
@@ -652,7 +683,7 @@ export class FlightSession {
      * false when nothing changed.
      */
     setWallsOn(on: boolean): boolean {
-        if (on === this.wallsOn) return false;
+        if (on === this.wallsOn || this.builtin) return false;
         this.wallsOn = on;
         if (!this.runner) return true;
         const here = this.here();
@@ -829,6 +860,7 @@ export class FlightSession {
      * `sha`: the json + bin digest when the caller already has it (a 90 MB .bin takes ~1 s here).
      */
     installCollision(json: Uint8Array, bin: Uint8Array, sha: string | null = null): string {
+        if (this.builtin) throw new Error('a built-in world keeps its own walls');
         assertWalls(json, bin);
         this.pendingWalls = null; // the newest walls win
         this.setWalls(json, bin, sha);
@@ -841,6 +873,7 @@ export class FlightSession {
      * the last reset), else at the next start (R) or restart. Refused at once, like installCollision.
      */
     queueCollision(json: Uint8Array, bin: Uint8Array, sha: string | null, onSwap: ((sha: string) => void) | null): void {
+        if (this.builtin) return; // a built-in world keeps its own walls
         assertWalls(json, bin);
         this.pendingWalls = { json, bin, sha, onSwap };
         this.swapWallsIfParked();
@@ -955,7 +988,7 @@ export class FlightSession {
     setCeiling(c: number | null): boolean {
         const next = c === null ? null : Math.fround(c);
         if (next !== null && !validCeiling(next)) throw new RangeError(`collision ceiling must be a height within +-10000 m, got ${c}`);
-        if (next === this.ceilingM) return false;
+        if (next === this.ceilingM || this.builtin) return false;
         this.ceilingM = next;
         this.scaleWalls();
         if (!this.runner) return true;
@@ -984,7 +1017,7 @@ export class FlightSession {
      */
     setDropFloaters(n: number): boolean {
         if (!validMinBlocks(n)) throw new RangeError(`floater filter must be an integer 0..64, got ${n}`);
-        if (n === this.floaterMinBlocks) return false;
+        if (n === this.floaterMinBlocks || this.builtin) return false;
         this.floaterMinBlocks = n;
         this.scaleWalls();
         if (!this.runner) return true;
@@ -1021,7 +1054,8 @@ export class FlightSession {
     setTransform(next: { s: number; t: readonly number[] }): { transform: SceneTransform; pushed: boolean } {
         const to = f32(next);
         const from = this.transform;
-        if (sameTransform(from, to)) return { transform: from, pushed: false };
+        // a built-in world flies at its own size (its lesson's distances and the sound's are metres of it)
+        if (sameTransform(from, to) || this.builtin) return { transform: from, pushed: false };
         const map = pointMap(from, to); // throws on a bad transform, before anything changed
         this.transform = to;
         this.renderer.setSceneTransform(to.s, [...to.t]);

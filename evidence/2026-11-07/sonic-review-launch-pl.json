@@ -1,0 +1,66 @@
+{
+  "name": "sonic-review-launch-pl",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T20:18:27.187Z",
+    "gitHead": "0cef284",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "lab": "http://localhost:5343",
+  "locale": "pl",
+  "expectedLine": "Skan si\u0119 nie wczyta\u0142. Sprawd\u017a po\u0142\u0105czenie i wybierz lekcj\u0119 jeszcze raz.",
+  "observed": {
+    "status": "Skan si\u0119 nie wczyta\u0142. Sprawd\u017a po\u0142\u0105czenie i wybierz lekcj\u0119 jeszcze raz.",
+    "spoken": [
+      "Wczytuj\u0119 skan do tej lekcji. Mo\u017ce to potrwa\u0107 nawet minut\u0119. Lekcja zacznie si\u0119 sama.",
+      "Skan si\u0119 nie wczyta\u0142. Sprawd\u017a po\u0142\u0105czenie i wybierz lekcj\u0119 jeszcze raz."
+    ],
+    "captions": [
+      "Wczytuj\u0119 skan do tej lekcji. Mo\u017ce to potrwa\u0107 nawet minut\u0119. Lekcja zacznie si\u0119 sama.",
+      "Skan si\u0119 nie wczyta\u0142. Sprawd\u017a po\u0142\u0105czenie i wybierz lekcj\u0119 jeszcze raz."
+    ]
+  },
+  "passed": 4,
+  "total": 4,
+  "checks": [
+    {
+      "name": "the start screen is shown again after the flight failed to open",
+      "pass": true
+    },
+    {
+      "name": "what the pilot is told (the live region) is that sentence, not the raw message of an exception",
+      "pass": true,
+      "value": {
+        "status": "Skan si\u0119 nie wczyta\u0142. Sprawd\u017a po\u0142\u0105czenie i wybierz lekcj\u0119 jeszcze raz.",
+        "expected": "Skan si\u0119 nie wczyta\u0142. Sprawd\u017a po\u0142\u0105czenie i wybierz lekcj\u0119 jeszcze raz."
+      }
+    },
+    {
+      "name": "the engine says it (speechSynthesis got exactly that line) and the captions carry it",
+      "pass": true,
+      "value": {
+        "spoken": [
+          "Wczytuj\u0119 skan do tej lekcji. Mo\u017ce to potrwa\u0107 nawet minut\u0119. Lekcja zacznie si\u0119 sama.",
+          "Skan si\u0119 nie wczyta\u0142. Sprawd\u017a po\u0142\u0105czenie i wybierz lekcj\u0119 jeszcze raz."
+        ],
+        "captions": [
+          "Wczytuj\u0119 skan do tej lekcji. Mo\u017ce to potrwa\u0107 nawet minut\u0119. Lekcja zacznie si\u0119 sama.",
+          "Skan si\u0119 nie wczyta\u0142. Sprawd\u017a po\u0142\u0105czenie i wybierz lekcj\u0119 jeszcze raz."
+        ]
+      }
+    },
+    {
+      "name": "no page errors",
+      "pass": true,
+      "value": []
+    }
+  ]
+}

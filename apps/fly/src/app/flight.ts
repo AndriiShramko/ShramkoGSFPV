@@ -8,10 +8,12 @@ import { parseImpl } from '@gsfpv/render-pc';
 import type { SplatRenderer } from '@gsfpv/render-pc';
 import { GSPLAT_RENDERER_RASTER_GPU_SORT } from 'playcanvas';
 import { FlightSession, FlyNow } from '../session';
+import type { BuiltinWorld } from '../session';
 import { Controls } from '../controls';
 import { CrashView } from '../crashview';
 import { VoxelController } from '../voxels';
 import { wallsWanted } from '../flightwalls';
+import { sonicEntry } from '../sonic/entry';
 import { storedTransform } from './builtin/scale';
 import { storedDropFloaters } from './builtin/floaters';
 import { storedCeiling } from '../session/ceiling-source';
@@ -136,24 +138,40 @@ class Flight implements FlightContext {
     }
 }
 
+/** What else fly() can be given. */
+export interface FlyOptions {
+    /**
+     * A built-in world instead of a scan (v0.12 Fly by Sound lessons, session BuiltinWorld): `link.id` is
+     * its scene's id (lesson-<id>). It never reaches the scene library or the scene_loaded beacon.
+     */
+    world?: BuiltinWorld;
+}
+
 /**
  * Load the scene of `link` and fly it; a scan that fails to load goes back to the picker through
  * `onFail`. `link.render`: how the link asked the scene to be drawn (SuperSplat's ?budget= and
  * ?stochastic, app/drawing.ts); the catalogue's render is the default under it.
  */
-export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: SceneLink, showcase: ShowcaseScene[], prefs: PrefsStore, onFail: (code: string, msg: string) => void, collections: CatalogCollection[] = []): Promise<void> {
+export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: SceneLink, showcase: ShowcaseScene[], prefs: PrefsStore, onFail: (code: string, msg: string) => void, collections: CatalogCollection[] = [], opts: FlyOptions = {}): Promise<void> {
     const sceneId = link.id;
+    const world = opts.world;
     const meta = showcase.find((s) => s.id === sceneId);
     const sceneRef: SceneRef = link.render ? { id: sceneId, meta, render: link.render } : { id: sceneId, meta };
     // the Controls screen follows the loading screen unless a test mode or touch sticks take over
     const sim = q.get('simradio');
     // no test mode, no forced input: the input from last time is looked for while the scan loads
     const own = ownInput();
+    // Fly by Sound (v0.12): no radio found, the keyboard flies at once: the Controls screen is a sight-first wizard, and a
+    // radio is set up once by a helper (the pilot's Controls in the pause menu), after which it is the one found here
+    // (a scan lesson flies a scan but is the same mode: it asks for the keyboard the same way). The keyboard is a stand-in
+    // handed to InputHost.start apart from what was found, so it is not remembered over the radio of last time (review D1)
+    const inSonic = !!world || !!sonicEntry();
     const resumed = own ? resumeInput().catch(() => null) : Promise.resolve(null);
-    const controlsNext = own ? !expectResume() : sim === 'raw' && q.get('lat') !== '1' && q.get('input') !== 'touch' && !(isTouch && !hasHid);
+    const controlsNext = own ? !expectResume() && !inSonic : sim === 'raw' && q.get('lat') !== '1' && q.get('input') !== 'touch' && !(isTouch && !hasHid);
     // the card's Fly now shows the first view at once (session/reveal.ts)
     const flyNow = new FlyNow();
-    const loading = new LoadingScreen(ui, {
+    // a built-in world is in memory: nothing loads, so there is no loading card to read, wait for or fade out
+    const loading = world ? null : new LoadingScreen(ui, {
         sceneId,
         title: meta?.title,
         next: controlsNext ? t('loading.next') : null,
@@ -173,6 +191,7 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
     try {
         session = await FlightSession.start(canvas, {
             sceneId,
+            ...(world ? { world } : {}),
             wallsOn,
             transform: storedTransform(prefs, sceneId),
             dropFloaters: storedDropFloaters(prefs, sceneId),
@@ -192,12 +211,12 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
             drawing: (webgpu, gpu) => drawingFor(prefs, sceneRef, webgpu, gpu),
             flyNow,
             onProgress: (p) => {
-                loading.update(p);
+                loading?.update(p);
                 hook.loading = { stage: p.stage, loaded: p.loaded, total: p.total, fraction: p.fraction, exact: p.exact, elapsedMs: Math.round(performance.now() - tLoad), view: p.view, reveal: p.reveal, canFlyNow: p.canFlyNow, revealInMs: p.revealInMs };
             }
         });
     } catch (e) {
-        loading.remove();
+        loading?.remove();
         const code = e instanceof SceneError ? e.code : 'generic';
         hook.error = String((e as Error)?.message ?? e);
         onFail(code, hook.error);
@@ -214,16 +233,22 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
     // ?inflight=N: frames the GPU may still be on when the next is drawn (0 = no limit, the negative control)
     if (q.get('inflight') !== null) session.renderer.maxFramesInFlight = Number(q.get('inflight'));
     // "The scan is ready" for a moment, then the scan fades in: no jump straight into another screen
-    await loading.finish();
+    await loading?.finish();
     document.body.classList.add('flying');
     // the USB note is about choosing a browser; over the flight it covers the OSD's top line and
     // shows through the Controls screen (a phone has no room to move either), so it goes by itself
     const hidNote = ui.querySelector('.banner[data-kind="no-hid"]');
     if (hidNote) setTimeout(() => hidNote.remove(), HID_NOTE_FLIGHT_MS);
-    recordOpen(sceneId, !!session.collision, meta?.title, session.scene.version);
-    beacon('scene_loaded', { has_collision: !!session.collision, load_ms_bucket: Math.round((session.timings.visibleMs ?? 0) / 1000) }, { scene_id: sceneId });
+    // a built-in world is not a scan: not in the pilot's scene history, not a scene_loaded (v0.12 plan 2.5)
+    if (!world) {
+        recordOpen(sceneId, !!session.collision, meta?.title, session.scene.version);
+        beacon('scene_loaded', { has_collision: !!session.collision, load_ms_bucket: Math.round((session.timings.visibleMs ?? 0) / 1000) }, { scene_id: sceneId });
+    }
 
     const ctx = new Flight(ui, canvas, session, sceneRef, prefs);
+    // Fly by Sound: a lesson with other walls replaces the flown session, which only this shell can hand to the page
+    const sonic = sonicEntry();
+    if (sonic) sonic.swapSession = (next, scene) => ctx.swapSession(next, scene);
     // E.4: the next scenes load in this page, on this renderer, with the same input
     const host = new SceneHost({ ctx, canvas, showcase, collections, base: { drawScan, latencyMarker: q.get('lat') === '1', lagFrames: Number(q.get('lagFrames') ?? 0), renderScale: q.get('scale') ? Number(q.get('scale')) : 1 } });
     ctx.scenes = host;
@@ -242,7 +267,7 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
     for (const f of FEATURES) f.install(ctx);
     ctx.keys.attach();
 
-    if (!startTestMode(ctx)) await ctx.input.start(resumed);
+    if (!startTestMode(ctx)) await ctx.input.start(resumed, inSonic ? { kind: 'keyboard', profile: null } : null);
     latencyHarness(ctx);
     voxelSwitches(ctx);
 

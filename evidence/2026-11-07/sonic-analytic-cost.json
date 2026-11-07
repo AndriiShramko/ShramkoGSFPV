@@ -1,0 +1,192 @@
+{
+  "name": "sonic-analytic-cost",
+  "context": {
+    "date": "2026-11-07T16:38:47.919Z",
+    "gitHead": "d443df8",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "step": "v12-flight 9: the planner (scene sampler and cue rules) per frame on the lesson worlds, Node, main thread",
+  "budgetP95Ms": 1,
+  "frames": 4000,
+  "layers": [
+    "safety",
+    "height",
+    "speed",
+    "target",
+    "shape",
+    "room",
+    "voice"
+  ],
+  "note": "every layer on, free points of each world with random headings at 3 m/s; the browser and a slower CPU are not measured",
+  "results": [
+    {
+      "lesson": "hover-height",
+      "generator": "open",
+      "n": 4000,
+      "mean": 0.0209,
+      "p50": 0.0144,
+      "p95": 0.0465,
+      "p99": 0.0859,
+      "max": 2.2234,
+      "pass": true
+    },
+    {
+      "lesson": "hover-turn",
+      "generator": "rings",
+      "n": 4000,
+      "mean": 0.0571,
+      "p50": 0.0484,
+      "p95": 0.0952,
+      "p99": 0.2818,
+      "max": 0.9169,
+      "pass": true
+    },
+    {
+      "lesson": "move-speed",
+      "generator": "open",
+      "n": 4000,
+      "mean": 0.0143,
+      "p50": 0.0115,
+      "p95": 0.0272,
+      "p99": 0.05,
+      "max": 0.7956,
+      "pass": true
+    },
+    {
+      "lesson": "move-stop",
+      "generator": "open",
+      "n": 4000,
+      "mean": 0.0139,
+      "p50": 0.0114,
+      "p95": 0.027,
+      "p99": 0.0479,
+      "max": 0.5581,
+      "pass": true
+    },
+    {
+      "lesson": "walls-hall",
+      "generator": "hall",
+      "n": 4000,
+      "mean": 0.0439,
+      "p50": 0.0367,
+      "p95": 0.0728,
+      "p99": 0.1221,
+      "max": 0.9141,
+      "pass": true
+    },
+    {
+      "lesson": "walls-pillar",
+      "generator": "pillars",
+      "n": 4000,
+      "mean": 0.0551,
+      "p50": 0.0491,
+      "p95": 0.0825,
+      "p99": 0.1197,
+      "max": 0.5507,
+      "pass": true
+    },
+    {
+      "lesson": "walls-row",
+      "generator": "pillars",
+      "n": 4000,
+      "mean": 0.0899,
+      "p50": 0.081,
+      "p95": 0.1407,
+      "p99": 0.2795,
+      "max": 2.1338,
+      "pass": true
+    },
+    {
+      "lesson": "corridor",
+      "generator": "corridor",
+      "n": 4000,
+      "mean": 0.1706,
+      "p50": 0.1613,
+      "p95": 0.2271,
+      "p99": 0.3791,
+      "max": 1.2826,
+      "pass": true
+    },
+    {
+      "lesson": "rings-first",
+      "generator": "rings",
+      "n": 4000,
+      "mean": 0.0493,
+      "p50": 0.0433,
+      "p95": 0.0779,
+      "p99": 0.1182,
+      "max": 0.617,
+      "pass": true
+    },
+    {
+      "lesson": "rings-line",
+      "generator": "rings",
+      "n": 4000,
+      "mean": 0.0625,
+      "p50": 0.0554,
+      "p95": 0.0999,
+      "p99": 0.1502,
+      "max": 0.6129,
+      "pass": true
+    },
+    {
+      "lesson": "rings-small",
+      "generator": "rings",
+      "n": 4000,
+      "mean": 0.0675,
+      "p50": 0.0592,
+      "p95": 0.1111,
+      "p99": 0.1762,
+      "max": 0.661,
+      "pass": true
+    },
+    {
+      "lesson": "rings-course",
+      "generator": "rings",
+      "n": 4000,
+      "mean": 0.0798,
+      "p50": 0.0712,
+      "p95": 0.1265,
+      "p99": 0.1985,
+      "max": 0.7211,
+      "pass": true
+    },
+    {
+      "lesson": "shapes-square",
+      "generator": "squares",
+      "n": 4000,
+      "mean": 0.0494,
+      "p50": 0.0433,
+      "p95": 0.0786,
+      "p99": 0.1281,
+      "max": 0.5496,
+      "pass": true
+    },
+    {
+      "lesson": "shapes-series",
+      "generator": "squares",
+      "n": 4000,
+      "mean": 0.059,
+      "p50": 0.0516,
+      "p95": 0.0957,
+      "p99": 0.1581,
+      "max": 0.6131,
+      "pass": true
+    },
+    {
+      "lesson": "shapes-cube",
+      "generator": "cube-frames",
+      "n": 4000,
+      "mean": 0.047,
+      "p50": 0.0411,
+      "p95": 0.0729,
+      "p99": 0.1133,
+      "max": 0.6707,
+      "pass": true
+    }
+  ],
+  "pass": true
+}

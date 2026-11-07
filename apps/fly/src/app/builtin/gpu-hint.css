@@ -1,0 +1,6 @@
+/* The GPU hint: a scene note (app/scene-notes.ts) with two ways to switch the browser to the faster graphics (app/builtin/gpu-hint.ts). */
+.gpu-hint { pointer-events: auto; max-height: 55vh; overflow-y: auto; }
+.gpu-hint .gh-body { flex: 1 1 100%; min-width: 0; text-align: left; }
+.gpu-hint .gh-body p { margin: 0 0 6px; }
+.gpu-hint .gh-address { display: inline-block; max-width: 100%; margin: 2px 0; padding: 2px 8px; border-radius: 6px; background: rgba(255, 255, 255, .1); font: 600 13px/1.3 ui-monospace, "Cascadia Mono", Consolas, monospace; overflow-wrap: anywhere; user-select: all; }
+.gpu-hint .gh-status { min-height: 1.35em; color: var(--accent); font-size: 13px; }

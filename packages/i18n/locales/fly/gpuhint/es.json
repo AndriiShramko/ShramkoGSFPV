@@ -1,0 +1,9 @@
+{
+  "gpuhint.copied": "Copiado. Pégalo en una pestaña nueva.",
+  "gpuhint.copy": "Copiar la dirección",
+  "gpuhint.copyFailed": "No se pudo copiar. Selecciona la dirección y cópiala.",
+  "gpuhint.fixFlag": "En el navegador: abre esta dirección en una pestaña nueva, ponla en Enabled y reinicia el navegador:",
+  "gpuhint.fixWindows": "O en Windows: Configuración, Sistema, Pantalla, Gráficos, elige este navegador, Opciones, Alto rendimiento.",
+  "gpuhint.ok": "Entendido",
+  "gpuhint.text": "Esta página se dibuja con el chip gráfico de Intel. Si este equipo también tiene una tarjeta gráfica NVIDIA o AMD, el navegador no la usa: Chrome en Windows ignora la petición de la página de usar la más rápida. Para cambiarlo:"
+}

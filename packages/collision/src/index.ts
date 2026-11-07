@@ -5,6 +5,8 @@ export { findSphereSpawn, findCylinderSpawn } from './vendor/find-spawn';
 export * from './open';
 export * from './world';
 export * from './synthetic';
+export * from './analytic';
+export * from './normal';
 export * from './count';
 export * from './transform';
 export * from './mesh';

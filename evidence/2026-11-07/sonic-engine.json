@@ -1,0 +1,226 @@
+{
+  "name": "sonic-engine",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T15:49:03.658Z",
+    "gitHead": "7493c39",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "step": "v12-flight 7: the sound engine in a real page (SonicSetup, the one AudioContext from a click, the tap in front of the destination)",
+  "page": "apps/fly/lab/sonic-engine.html (Vite dev server)",
+  "speechVoices": 3,
+  "note": "headless Chrome runs muted (--mute-audio): the graph is rendered and measured, nothing is played; how it sounds is not judged here",
+  "checks": [
+    {
+      "name": "no AudioContext before the press",
+      "pass": true
+    },
+    {
+      "name": "engine idle before the press",
+      "pass": true
+    },
+    {
+      "name": "one AudioContext after the press",
+      "pass": true,
+      "value": 1
+    },
+    {
+      "name": "the context runs and the engine runs",
+      "pass": true,
+      "value": {
+        "engine": "running",
+        "ac": "running",
+        "currentTime": 0.032,
+        "available": true,
+        "auxReady": true
+      }
+    },
+    {
+      "name": "the engine's input node exists (the motor sound plugs in there)",
+      "pass": true
+    },
+    {
+      "name": "the audio clock advances (the graph is being rendered)",
+      "pass": true,
+      "value": {
+        "t1": 0.032,
+        "t2": 0.3413333333333333
+      }
+    },
+    {
+      "name": "layers off, frames running: the output is silent (RMS under 1e-4)",
+      "pass": true,
+      "value": {
+        "maxRms": 0,
+        "peak": 0,
+        "polls": 101
+      }
+    },
+    {
+      "name": "a wall 3 m ahead closing at 3 m/s: the output has sound (RMS over 2e-3)",
+      "pass": true,
+      "value": {
+        "maxRms": 0.029193256226153163,
+        "peak": 0.07303515076637268,
+        "polls": 201
+      }
+    },
+    {
+      "name": "the engine names an active safety cue",
+      "pass": true,
+      "value": [
+        "safety.wall:front",
+        "safety.wall:front-left"
+      ]
+    },
+    {
+      "name": "the output holds the ceiling: peak at or under -6 dBFS (0.5012)",
+      "pass": true,
+      "value": 0.07303515076637268
+    },
+    {
+      "name": "frames stopped and setLayers({ on: [] }): the output is silent again (RMS under 1e-4)",
+      "pass": true,
+      "value": {
+        "maxRms": 0.00001996851747811655,
+        "peak": 0.00004264712333679199,
+        "polls": 101
+      }
+    },
+    {
+      "name": "a loud signal into the engine's input node comes out at or under the ceiling (peak <= 0.5013)",
+      "pass": true,
+      "value": {
+        "maxRms": 0.3660490911491356,
+        "peak": 0.4927350580692291,
+        "polls": 81
+      }
+    },
+    {
+      "name": "control: the same signal straight at the destination is not limited (peak over 0.9)",
+      "pass": true,
+      "value": {
+        "maxRms": 5.68052985807796,
+        "peak": 8,
+        "polls": 81
+      }
+    },
+    {
+      "name": "the motor sound on the engine's input node is heard (RMS over 1e-3, silent before)",
+      "pass": true,
+      "value": {
+        "before": {
+          "maxRms": 0,
+          "peak": 0,
+          "polls": 51
+        },
+        "motor": {
+          "maxRms": 0.019081006542615353,
+          "peak": 0.0676565170288086,
+          "polls": 101
+        }
+      }
+    },
+    {
+      "name": "and it stays under the ceiling (peak <= 0.5013)",
+      "pass": true,
+      "value": 0.0676565170288086
+    },
+    {
+      "name": "closing the motor sound leaves the context running and the output silent",
+      "pass": true,
+      "value": {
+        "maxRms": 0,
+        "peak": 0,
+        "polls": 61
+      }
+    },
+    {
+      "name": "still one AudioContext",
+      "pass": true
+    },
+    {
+      "name": "a spoken line is captioned (the engine's text, English)",
+      "pass": true,
+      "value": [
+        "Go."
+      ]
+    },
+    {
+      "name": "the engine speaks (default): the captions region is shown and not live, so a screen reader does not say it twice",
+      "pass": true,
+      "value": {
+        "live": "off",
+        "hidden": false,
+        "srOnly": false,
+        "label": "Fly by Sound captions",
+        "role": "log"
+      }
+    },
+    {
+      "name": "\"my screen reader speaks\": the region is a polite live region",
+      "pass": true,
+      "value": {
+        "live": "polite",
+        "hidden": false,
+        "srOnly": false,
+        "label": "Fly by Sound captions",
+        "role": "log"
+      }
+    },
+    {
+      "name": "the line is still captioned when the engine does not voice it",
+      "pass": true,
+      "value": [
+        "Go.",
+        "Paused."
+      ]
+    },
+    {
+      "name": "captions hidden from the eye but a screen reader still reads them: visually hidden, still live",
+      "pass": true,
+      "value": {
+        "live": "polite",
+        "hidden": false,
+        "srOnly": true,
+        "label": "Fly by Sound captions",
+        "role": "log"
+      }
+    },
+    {
+      "name": "the engine speaks and captions are off: nothing on the page, no line kept",
+      "pass": true,
+      "value": {
+        "root4": {
+          "live": "off",
+          "hidden": true,
+          "srOnly": false,
+          "label": "Fly by Sound captions",
+          "role": "log"
+        },
+        "lines4": []
+      }
+    },
+    {
+      "name": "a setting out of range is refused and changes nothing",
+      "pass": true
+    },
+    {
+      "name": "no console errors, no missing file but the favicon",
+      "pass": true,
+      "value": {
+        "errors": [],
+        "notFound": []
+      }
+    }
+  ],
+  "pass": true
+}

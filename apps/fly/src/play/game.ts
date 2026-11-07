@@ -25,6 +25,13 @@ import { AltitudeHelp } from './assist';
 export type GameSpeed = 'slow' | 'normal' | 'fast';
 export const GAME_SPEED_IDS: readonly GameSpeed[] = ['slow', 'normal', 'fast'];
 
+/**
+ * Numeric caps in place of a speed setting (v0.12 Fly by Sound: a lesson's LessonAssists maxSpeedMps, maxClimbMps,
+ * maxYawDps; play/lesson-pilot.ts): horizontal and vertical speed targets at full input, m/s, and the turn rate,
+ * degrees per second, which also bounds the yaw rate the heading loop asks for.
+ */
+export interface GameCaps { horizontal: number; vertical: number; yawDps: number }
+
 /** The speed target of each setting: horizontal and vertical, m/s. */
 export const GAME_SPEEDS: Readonly<Record<GameSpeed, { horizontal: number; vertical: number }>> = {
     slow: { horizontal: 4, vertical: 3 },
@@ -189,6 +196,8 @@ function approach(cur: number, goal: number, step: number): number {
 export class GameAssist {
     readonly help = new AltitudeHelp();
     speed: GameSpeed = 'normal';
+    /** a lesson's numeric caps (GameCaps); null: the speed setting and KEY_TURN_DPS, as the game scheme flies */
+    caps: GameCaps | null = null;
     /** Only the tests' negative controls change these two: a yaw gain that overshoots, a diagonal that is not normalised. */
     yawGain = KYAW;
     normaliseDiagonal = true;
@@ -264,7 +273,7 @@ export class GameAssist {
      * the height the loop's lag eats at the present sink speed).
      */
     sinkLimit(p: SimParams, groundM: number | null, sinkMps: number): number {
-        const full = GAME_SPEEDS[this.speed].vertical;
+        const full = (this.caps ?? GAME_SPEEDS[this.speed]).vertical;
         if (groundM === null) return full;
         const touch = Math.min(TOUCH_MAX_MPS, TOUCH_SHARE * p.vBounce);
         const room = Math.max(0, groundM - FLARE_LAG_S * Math.max(0, sinkMps));
@@ -284,8 +293,9 @@ export class GameAssist {
             this.pendingYaw = 0;
         }
         // turn keys: the aim moves, ramped like the other commands
+        const caps = this.caps;
         this.turn = approach(this.turn, keys.turn, COMMAND_RAMP_PER_S * dtc);
-        this.aimYawDeg = wrap180(this.aimYawDeg + this.turn * KEY_TURN_DPS * dtc);
+        this.aimYawDeg = wrap180(this.aimYawDeg + this.turn * (caps ? caps.yawDps : KEY_TURN_DPS) * dtc);
         if (!flying) {
             this.help.reset();
             this.lift = 0;
@@ -299,7 +309,7 @@ export class GameAssist {
 
         // ---- velocity: target in the aim frame, ramped; PI to an acceleration; tilt in the body's heading frame
         const aim = this.aimYawDeg * RAD;
-        const hv = GAME_SPEEDS[this.speed].horizontal;
+        const hv = (caps ?? GAME_SPEEDS[this.speed]).horizontal;
         let kf = keys.forward;
         let kr = keys.strafe;
         const kn = Math.hypot(kf, kr);
@@ -353,14 +363,15 @@ export class GameAssist {
 
         // ---- heading: P on the error to the aim -> a yaw rate -> a stick through the rate curve
         const err = wrap180(this.aimYawDeg - heading);
-        const rate = this.yawGain * err;
+        // a lesson's cap bounds the turn the loop asks for too (the aim never moves faster than it)
+        const rate = caps ? Math.max(-caps.yawDps, Math.min(caps.yawDps, this.yawGain * err)) : this.yawGain * err;
         const yaw = Math.sign(rate) * curves.yaw.stickFor(Math.abs(rate));
 
         // ---- height: Space / Shift ramp to a vertical speed; none holds the height
         this.lift = approach(this.lift, keys.lift, COMMAND_RAMP_PER_S * dtc);
         let vt: number | null = null;
         if (Math.abs(this.lift) > 0.02) {
-            vt = this.lift > 0 ? this.lift * GAME_SPEEDS[this.speed].vertical : this.lift * this.sinkLimit(p, sense.groundM, -s[S.vy]);
+            vt = this.lift > 0 ? this.lift * (caps ?? GAME_SPEEDS[this.speed]).vertical : this.lift * this.sinkLimit(p, sense.groundM, -s[S.vy]);
         }
         const throttle = this.help.follow(vt, p, s, dtc);
 

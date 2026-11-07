@@ -11,7 +11,9 @@ import { EasyPilot } from '../play/easy';
 import { GAME_SPEED_IDS } from '../play/game';
 import type { GameSpeed } from '../play/game';
 import { GamePilot } from '../play/game-pilot';
+import { LessonPilot, lessonMode, rayClearance } from '../play/lesson-pilot';
 import type { PlayProfile } from '../play/keys';
+import type { LessonAssists } from '@shramko/sonic-fpv';
 import { loadLastInput, saveLastInput, loadProfiles, profileFor, saveProfile } from '../controls';
 import type { LastInput } from '../controls';
 import { RadioScreen } from '../ui/radio';
@@ -80,6 +82,11 @@ export class InputHost {
      * 'easy'. Auto-arm, velocity and height hold, mouse look. A radio or gamepad never goes through it.
      */
     readonly game: GamePilot;
+    /**
+     * Fly by Sound's lesson pilot (v0.12, play/lesson-pilot.ts) while a lesson runs, else null: installed for every
+     * source by setLesson().
+     */
+    private lesson: LessonPilot | null = null;
     /** How touch and keyboard fly now (prefs input.play, set by app/builtin/play.ts through setPlay). */
     private play: PlayProfile = 'pilot';
     private lastChoice: RadioChoice | null = null;
@@ -123,6 +130,45 @@ export class InputHost {
         }
     }
 
+    /**
+     * A Fly by Sound lesson's assists (v0.12 plan 2.3), or null when no lesson runs. With assists the lesson pilot
+     * reads every source's channels as intents and flies them before the arm gate (Controls.assist), the mode the
+     * lesson's control needs is forced (Controls.forcedMode), and the keyboard's and the touch sticks' own pilots
+     * pass their input on as intents. null takes all of it out: every source flies as before.
+     */
+    setLesson(assists: LessonAssists | null): void {
+        const c = this.ctx.controls;
+        if (!assists) {
+            this.lesson = null;
+            c.assist = null;
+            c.forcedMode = null;
+            this.game.intents = false;
+            this.easy.intents = false;
+            return;
+        }
+        let pilot = this.lesson;
+        if (pilot) pilot.setAssists(assists);
+        else {
+            const ctx = this.ctx;
+            pilot = new LessonPilot({
+                sim: () => ctx.session.sim ?? null,
+                paused: () => ctx.session.paused,
+                ground: (sim) => rayClearance(ctx.session.collision, sim)
+            }, assists);
+            this.lesson = pilot;
+        }
+        const p = pilot;
+        c.assist = (ch, out, t) => p.apply(ch, out, t);
+        c.forcedMode = lessonMode(assists);
+        this.game.intents = true;
+        this.easy.intents = true;
+    }
+
+    /** The lesson pilot while a lesson runs (its AutoArm, its assist), else null. */
+    get lessonPilot(): LessonPilot | null {
+        return this.lesson;
+    }
+
     /** Touch sticks for the profile in use. */
     private makeTouch(): TouchSticks {
         const ts = new TouchSticks(this.ctx.ui, this.ctx.controls, this.play === 'easy' ? this.easy : null);
@@ -130,8 +176,14 @@ export class InputHost {
         return ts;
     }
 
-    /** The pilot's own input once the scan is in: forced by the device or the URL, else the one from last time. */
-    async start(resumed: Promise<RadioChoice | null>): Promise<void> {
+    /**
+     * The pilot's own input once the scan is in: forced by the device or the URL, else the one from last time.
+     * `standIn`: what flies when nothing was found and the Controls screen is not shown (Fly by Sound: that screen is a
+     * sight-first wizard, and a radio is set up once by a helper). It is flown but NOT remembered, as the keyboard that
+     * Controls' Close falls back to is not (openRadio onClose): remembered, it would replace the radio of last time, which
+     * would then never be looked for again, here or in the plain simulator.
+     */
+    async start(resumed: Promise<RadioChoice | null>, standIn: RadioChoice | null = null): Promise<void> {
         if (isTouch && !hasHid) {
             this.use({ kind: 'touch', profile: null }, false);
         } else if (q.get('input') === 'touch') {
@@ -148,6 +200,9 @@ export class InputHost {
                 this.use(c);
                 if (choiceOffer(c)) this.openRadio(true);
                 else this.note(c);
+            } else if (standIn) {
+                this.use(standIn, false);
+                this.note(standIn);
             } else this.openRadio(true);
         }
     }
@@ -203,7 +258,7 @@ export class InputHost {
         const meter = c.kind === 'hid' ? c.hid?.link : c.kind === 'gamepad' ? c.gamepad?.link : undefined;
         ctx.controls.useDevice(pad ? () => pad.pollNow() : null, meter ? (now) => meter.stats(now) : null);
         // a new input starts easy play from the ground: motors off until its first flying input
-        if (c.kind !== prev?.kind) { this.easy.reset(); this.game.reset(); }
+        if (c.kind !== prev?.kind) { this.easy.reset(); this.game.reset(); this.lesson?.reset(); }
         if (c.kind === 'touch') this.touch = this.makeTouch();
         this.keyboard.setActive(c.kind === 'keyboard');
         this.lastChoice = c;
