@@ -15,7 +15,7 @@ import { lessonFlightWorld } from './lesson-world';
 import type { LessonWorld } from './lesson-world';
 import { clearScanPrefs, forceScanPrefs } from './scan-lesson';
 import { StartScreen } from './start-screen';
-import { parseSonicParam } from './start-model';
+import { launchFailureLine, parseSonicParam } from './start-model';
 import { allProgress, currentLesson, setCurrentLesson } from './store';
 import { enableZoom } from './zoom';
 import { t } from '../i18n';
@@ -78,8 +78,14 @@ export function startSonic(d: SonicStartDeps): StartHandle {
                 } catch (e) {
                     // the flight did not open: the scan lesson's size and walls are not kept for whatever the pilot does next
                     clearScanPrefs(d.prefs);
+                    console.warn('fly by sound: the flight did not open', e);
                     screen.show();
-                    screen.say(String((e as Error)?.message ?? e));
+                    // told in his language, not with the exception's own English text: aloud with the captions when the engine
+                    // speaks, else the captions are the live region a screen reader reads (so the status line stays quiet
+                    // there, or it would be read twice)
+                    const line = launchFailureLine(lesson.world.kind === 'scan');
+                    void setup.audio.engine.say(line, { interrupt: true }).catch(() => undefined);
+                    if (setup.prefs.selfVoice) screen.say(t(line.key));
                 }
             });
         }

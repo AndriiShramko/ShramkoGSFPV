@@ -9,7 +9,7 @@ Reviewer's Status file. Scope: `git diff v03-lead..v12-flight` (160 files; the l
 - [x] 2 D1 the keyboard stand-in of Fly by Sound is not remembered as the pilot's input
 - [x] 3 D4 the start screen over a running flight keeps Space and the arrow keys for itself
 - [x] 3b D6 the captions region keeps every line of a burst while a screen reader reads it
-- [ ] 4 D3 a lesson that does not open at the entry is said in the pilot's language, by the engine's voice
+- [x] 4 D3 a lesson that does not open at the entry is said in the pilot's language, by the engine's voice
 - [ ] 5 lane acceptance once (the checks the fixes touch: typecheck, the sonic and input tests, a6-reference, i18n parity, catalog, B18, accept-fly on a local build)
 
 ## Findings
@@ -43,6 +43,14 @@ Reviewer's Status file. Scope: `git diff v03-lead..v12-flight` (160 files; the l
 - Test that failed before the fix: `tools/bench/test/sonic-review-input.test.ts` (4 tests become 5 with controls): `InputHost.start(resumed, standIn)` with nothing found flies the keyboard with its note, opens no Controls screen and leaves `last` as the radio. Controls that pass before and after: a radio that is found flies and is remembered; the plain simulator with nothing found opens the Controls screen and keeps the radio; the mechanism (a keyboard handed to `start()` as the input found, the old call, is remembered over the radio); the keyboard picked on the Controls screen is the pilot's choice and is remembered.
 - Fix: `fly()` passes the keyboard as `standIn` (the second argument of `InputHost.start`, used only when nothing was found and the Controls screen is not shown) and `use(standIn, false)`; the wrapper `asKeyboard` and its import are gone. `controlsNext` and every other line of `fly()` are as before; with the mode off `standIn` is null and `start()` is as it was.
 - Checks run: `sonic-review-input` (5), `app-known-controller`, `app-switches`, `app-modes` (45 in four files) pass; typechecks; the page probe above.
+
+### D3 (fixed): a lesson that does not open at the entry is reported with the exception's English text, and not aloud (`sonic/start.ts`, `sonic/start-model.ts`, locales)
+
+- Defect: `startSonic`'s catch (the flight of the chosen lesson did not open: the scan of `?sonic=free-garden` did not load) showed the start screen again and put `String(e.message)` into its live region. That text is an internal English sentence in every language (`scene 7a475d38: the CDN did not answer for every version`), read only by a screen reader, never said by the engine: a pilot without a screen reader (the engine's own voice, the default) had just heard "Loading the scan for this lesson. It can take up to a minute. The lesson starts by itself." and then silence, a lesson that would not start by itself. The same failure from inside a flight already said `sonic.say.scanFailed` in the pilot's language through the engine. (Plan rule: texts for people only in locales.)
+- Probe (refuting attempt, real page: headless Chrome 156, Vite dev server, keyboard only, every request to another origin refused, `tools/bench/src/sonic-review-launch.ts`): before the fix 2 of 4 checks: live region `scene 7a475d38: the CDN did not answer for every version`, the engine said only the "Loading..." line. After, in English and Polish: 4 of 4 (live region and engine: "The scan did not load. Check the connection, then choose the lesson again." / the Polish line of the same entry; the captions carry it; 0 page errors). Evidence: `evidence/2026-11-07/sonic-review-launch.json` and `-pl.json`.
+- Test that failed before the fix: `tools/bench/test/sonic-review.test.ts` "review D3" (`launchFailureLine(scan)`: the scan's line for a scan lesson, `sonic.say.lessonFailed` for the others; both are sentences in the engine's dictionaries in en, es, pl, ru, no key text, no placeholder, no English copy in the other three). Control: the two lines the page already said exist.
+- Fix: `launchFailureLine` (pure, `start-model.ts`); the catch logs the exception to the console, says the line through the engine with interrupt (aloud with captions; with "my screen reader speaks" the captions are the live region, so the status line stays quiet then, to avoid a double reading); new key `sonic.say.lessonFailed` in the four dictionaries (en, es, pl, ru; the other keys of the namespace are unchanged).
+- Checks run: `sonic-review` (9), `sonic-start` (11), `packages/i18n` (22) pass; typechecks; gates architecture, catalog and B18 PASS (run through the skill's `gates.py --only`).
 
 ### D6 (fixed): in "my screen reader speaks" mode a lesson's title and first lines never reach the screen reader (`sonic/captions.ts`, `sonic.css`)
 

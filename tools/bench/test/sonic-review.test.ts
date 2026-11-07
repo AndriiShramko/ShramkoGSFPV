@@ -185,3 +185,32 @@ describe('review D6: the captions region and a screen reader', () => {
         expect(c.lines()).toEqual(burst(6));
     });
 });
+
+describe('review D3: a lesson that does not open at the entry is told to the pilot in his language', () => {
+    it('a scan lesson says the scan did not load, any other lesson says it did not open; both are in the engine\'s dictionaries, in every language, as sentences (no key, no placeholder, no English copy)', async () => {
+        const { launchFailureLine } = await import('../../../apps/fly/src/sonic/start-model');
+        const { engineDicts } = await import('../../../apps/fly/src/sonic/host-lines');
+        const { LOCALES } = await import('../../../packages/sonic-fpv/src');
+        expect(launchFailureLine(true)).toEqual({ key: 'sonic.say.scanFailed' });
+        expect(launchFailureLine(false)).toEqual({ key: 'sonic.say.lessonFailed' });
+        const dicts = engineDicts();
+        for (const scan of [true, false]) {
+            const key = launchFailureLine(scan).key;
+            const english = dicts.en[key];
+            expect(english).toMatch(/^[A-Z].{20,}\.$/);
+            for (const l of LOCALES) {
+                const text = dicts[l][key];
+                expect(text, `${l} ${key}`).toBeTruthy();
+                expect(text).not.toBe(key);
+                expect(text).not.toMatch(/[{}]/);
+                if (l !== 'en') expect(text, `${l} ${key} is not the English text`).not.toBe(english);
+            }
+        }
+    });
+
+    it('control: the lines the page already said for a failed scan load from inside a flight are the same dictionary entries', async () => {
+        const { engineDicts } = await import('../../../apps/fly/src/sonic/host-lines');
+        const dicts = engineDicts();
+        for (const key of ['sonic.say.scanFailed', 'sonic.say.scanLoading']) expect(dicts.en[key]).toBeTruthy();
+    });
+});

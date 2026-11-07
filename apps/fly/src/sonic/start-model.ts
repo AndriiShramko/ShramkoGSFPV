@@ -71,6 +71,15 @@ export function buildModel(progress: Readonly<Record<string, Pick<LessonProgress
     return { modules, beginningId: (lessonPaths()[path][0] ?? ladder()[0]!.id), continueId: continueLesson(progress, current, path) };
 }
 
+/**
+ * What a pilot is told when the flight of the lesson he chose did not open at the entry: the scan of a scan lesson did not load
+ * (the connection), else the lesson did not open. A line of the dictionary in his language (the engine says it, the captions
+ * and the live region carry it), never the raw message of the exception (English, technical, spoken to nobody).
+ */
+export function launchFailureLine(scan: boolean): SpeechLine {
+    return { key: scan ? 'sonic.say.scanFailed' : 'sonic.say.lessonFailed' };
+}
+
 /** What ?sonic= asked for: the start screen, one lesson, or something that is neither (the start screen with a note). */
 export type SonicRequest = { readonly kind: 'start' } | { readonly kind: 'lesson'; readonly id: string } | { readonly kind: 'unknown'; readonly raw: string };
 
