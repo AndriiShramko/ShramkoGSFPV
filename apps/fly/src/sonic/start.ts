@@ -13,6 +13,7 @@ import { Captions } from './captions';
 import { SonicSetup } from './entry';
 import { lessonFlightWorld } from './lesson-world';
 import type { LessonWorld } from './lesson-world';
+import { clearScanPrefs, forceScanPrefs } from './scan-lesson';
 import { StartScreen } from './start-screen';
 import { parseSonicParam } from './start-model';
 import { allProgress, currentLesson, setCurrentLesson } from './store';
@@ -69,9 +70,14 @@ export function startSonic(d: SonicStartDeps): StartHandle {
                     return;
                 }
                 const lesson = getLesson(id);
+                // a scan lesson loads its scan at the lesson's size, walls on: set before the flight loads it (the mode keeps
+                // them while it runs and takes them off when it leaves), and the pilot hears that it takes a while
+                if (forceScanPrefs(d.prefs, lesson.world)) void setup.audio.engine.say({ key: 'sonic.say.scanLoading' }, { interrupt: false }).catch(() => undefined);
                 try {
                     await d.launch({ lessonId: id, world: lessonFlightWorld(lesson), sceneId: lesson.world.kind === 'scan' ? lesson.world.sceneId : null, setup, screen });
                 } catch (e) {
+                    // the flight did not open: the scan lesson's size and walls are not kept for whatever the pilot does next
+                    clearScanPrefs(d.prefs);
                     screen.show();
                     screen.say(String((e as Error)?.message ?? e));
                 }

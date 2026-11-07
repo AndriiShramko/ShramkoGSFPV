@@ -176,7 +176,7 @@ export class StartScreen {
 
     private lessonButton(l: LessonRow): HTMLElement {
         const state = this.key(l.state === 'passed' ? 'menu.lesson.passed' : l.state === 'current' ? 'menu.lesson.current' : 'menu.lesson.new');
-        const notes = [state, l.fastPath ? this.key('menu.main.path-fast') : null, l.scan ? t('sonic.lessons.scan') : null].filter((x): x is string => x !== null);
+        const notes = [state, l.bestTimeMs !== null ? t('sonic.lessons.bestTime', { time: this.tr.duration(l.bestTimeMs) }) : null, l.fastPath ? this.key('menu.main.path-fast') : null, l.scan ? t('sonic.lessons.scan') : null].filter((x): x is string => x !== null);
         // the name a screen reader says: the title, then where the pilot stands, in the same words as the spoken menu
         return h('button', { type: 'button', class: `btn sonic-lesson sonic-${l.state}`, 'data-testid': 'sonic-lesson', 'data-lesson': l.id, 'data-state': l.state, onclick: () => this.start(l.id) }, this.S(l.title), h('span', { class: 'sonic-sub' }, notes.join(', ')));
     }

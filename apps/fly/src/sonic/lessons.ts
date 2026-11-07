@@ -20,13 +20,15 @@
 //              the sound glossary and comes back to the lesson it left; I says where the pilot is; Z says the last line.
 // Every call into the runner goes out as the events the replay needs (the bridge's markers), so a recorded lesson re-derives.
 import { DICTS, createLessonRunner, createTranslator, getLesson, isShippedLesson, nextLesson } from '@shramko/sonic-fpv';
-import type { DemoScene, FlightSample, LessonDef, LessonSession, Locale, Question, RunnerAction, SessionEvent, SonicWorld, SpeechLine } from '@shramko/sonic-fpv';
+import type { DemoScene, FlightSample, LessonDef, LessonSession, Locale, Pose, Question, RunnerAction, SessionEvent, SonicObject, SonicWorld, SpeechLine } from '@shramko/sonic-fpv';
 import type { FlightSession } from '../session';
 import { lessonFlightWorld } from './lesson-world';
 import type { LessonWorld } from './lesson-world';
 import type { SonicMode } from './mode';
 import { worldPrims } from './primitives';
 import type { Prim } from './primitives';
+import { voxelCm, wallsAreCoarse } from './scan-lesson';
+import type { ScanLesson } from './scan-lesson';
 import { savedProgress, saveProgress, setCurrentLesson } from './store';
 import type { SonicHost } from './store';
 
@@ -60,8 +62,12 @@ export interface LessonPage {
     session(): FlightSession;
     /** Replaces the flown session with one on this world (a lesson with other walls); resolves when it flies. */
     swapTo(world: LessonWorld): Promise<void>;
-    /** A scan lesson's world over the scan flown now, or null when the page flies none (module 7). */
-    scanWorld(lesson: LessonDef): { readonly world: SonicWorld; readonly floorY: number } | null;
+    /**
+     * A scan lesson's world over the scan the page flies, with the track's gates and start (module 7): the page brings the
+     * scan to the lesson's size first (it may load it, which takes a while), and resolves when the craft flies it; null
+     * when the page cannot fly a scan. A scan that does not load rejects, and the lesson does not open.
+     */
+    scanLesson(lesson: LessonDef): Promise<ScanLesson | null>;
     /** The start screen over the flight. */
     showMenu(): void;
     /** Milliseconds, for the pause between a pass and the next lesson (performance.now). */
@@ -136,12 +142,18 @@ export class LessonHost {
             this.finish();
             let world: SonicWorld;
             let floorY = 0;
+            let start: Pose = lesson.start;
+            let objects: readonly SonicObject[] | null = null;
+            let scan: ScanLesson | null = null;
             if (lesson.world.kind === 'scan') {
-                const scan = this.p.scanWorld(lesson);
+                scan = await this.p.scanLesson(lesson);
                 if (!scan) throw new Error(`lesson ${lessonId} flies a scan and the page flies none`);
                 world = scan.world;
                 floorY = scan.floorY;
-                this.p.stage.clear();
+                start = scan.start;
+                objects = scan.objects;
+                // the track's gates over the scan: what a helper sees of what the pilot hears
+                this.p.stage.show(scan.prims);
             } else {
                 const lw = this.worldOf(lesson);
                 const ses = this.p.session();
@@ -154,8 +166,9 @@ export class LessonHost {
                 locale: this.p.locale,
                 progress: savedProgress(this.p.store, lessonId),
                 sessionStartMs: Date.now(),
-                start: lesson.start,
-                floorY
+                start,
+                floorY,
+                ...(objects ? { objects } : {})
             });
             this.lesson = lesson;
             this.runner = runner;
@@ -169,6 +182,12 @@ export class LessonHost {
             this.url(lessonId);
             // enter() starts the bridge (the clock at 0), begins the runner and, through afterRunner, takes its first actions
             this.p.mode.enter({ lesson, runner, world, floorY });
+            if (scan) {
+                // a scan's craft waits at the scan's own spawn: it goes to the track's start now, not when the first attempt begins
+                this.p.mode.place(start);
+                // the walls are as fine as the scan's file: said plainly, after the intro
+                if (wallsAreCoarse(scan.voxelM)) void this.p.mode.bridge.say({ key: 'sonic.say.wallsCoarse', params: { cm: voxelCm(scan.voxelM as number) } });
+            }
             return true;
         } catch (e) {
             console.warn('fly by sound: the lesson did not open', e);

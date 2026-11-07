@@ -13,7 +13,8 @@
 // start screen over the flight.
 import { bindingOf } from '@gsfpv/prefs';
 import { S, attitude } from '@gsfpv/sim-core';
-import type { SessionEvent } from '@shramko/sonic-fpv';
+import { createSceneSampler } from '@shramko/sonic-fpv';
+import type { FlightSample, LessonDef, LessonWorldRef, SessionEvent, TrackFile } from '@shramko/sonic-fpv';
 import { FlightSession } from '../../session';
 import type { SessionOptions } from '../../session';
 import { typing } from '../../devices/keyboard';
@@ -26,6 +27,8 @@ import { PageRuntime } from '../../sonic/runtime';
 import { LessonHost, EVENT_LOG_CAP } from '../../sonic/lessons';
 import type { LessonPage } from '../../sonic/lessons';
 import { PrimitiveStage } from '../../sonic/primitives';
+import { buildScanLesson, clearScanPrefs, forceScanPrefs, loadLessonTrack } from '../../sonic/scan-lesson';
+import type { ScanLesson } from '../../sonic/scan-lesson';
 import { allProgress } from '../../sonic/store';
 
 // window.__gsfpv.sonic: what the lesson is doing, for the acceptance runs (tools/bench/src/sonic-*.ts)
@@ -41,6 +44,12 @@ declare module '../test-hook' {
             asking: boolean;
             question: { id: string; options: number } | null;
             engine: string;
+            /** the next gate or zone the runner asks for (the target layer's), flown metres, or null */
+            target: { id: string; pos: [number, number, number] } | null;
+            /** what the engine's frame costs in this page, ms (SonicMode.hearCost) */
+            cost: { n: number; p50: number; p95: number; p99: number; max: number };
+            /** the walls flown: cell size (m) and whether the session flies a built-in world */
+            walls: { voxelM: number | null; builtin: boolean; scene: string; scale: number };
             /** the craft now: position (flown metres), nose (degrees, 0 = -Z, right positive), speed, motors on */
             pos: [number, number, number];
             yaw: number;
@@ -52,6 +61,12 @@ declare module '../test-hook' {
             progress: ReturnType<typeof allProgress>;
             events: SessionEvent[];
         };
+        /**
+         * What the scene sampler's rays cost in this page: the sampler (30 rays against the world of the lesson, hazards, sectors) run
+         * `frames` times at the craft's last sample, the heading turning once round, in one timed span (the page's clock is coarse), after a
+         * warm-up. ms per frame; null while no lesson runs.
+         */
+        sonicRays?: (frames?: number) => { frames: number; msPerFrame: number; raysPerFrame: number } | null;
     }
 }
 
@@ -76,8 +91,62 @@ function craftNow(ctx: FlightContext): { pos: [number, number, number]; yaw: num
     return { pos: [s[S.px], s[S.py], s[S.pz]], yaw: attitude(s).yaw, speed: Math.hypot(s[S.vx], s[S.vy], s[S.vz]), armed: s[S.armed] > 0 };
 }
 
+/** The tracks fetched so far, by id and version (a track is never edited in place: a version is fixed). */
+type TrackCache = Map<string, Promise<TrackFile>>;
+
+/**
+ * The page brings the scan to a scan lesson: it flies it already (the entry loaded it at the lesson's size), or the scan is
+ * loaded in the page's own scene switch (the radio and the settings stay; a line says so, the engine is silent meanwhile),
+ * or it is flown at another size and is put to the lesson's. Then the lesson's world over the scan and the track.
+ */
+async function scanLesson(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, tracks: TrackCache, lesson: LessonDef): Promise<ScanLesson | null> {
+    const w: LessonWorldRef = lesson.world;
+    if (w.kind !== 'scan') return null;
+    const key = `${w.track?.id ?? ''}@${w.track?.version ?? 0}`;
+    let pending = tracks.get(key);
+    if (!pending) {
+        // the release serves the track next to the page's own files, under its base (/fly/)
+        pending = loadLessonTrack(w, fetch, import.meta.env.BASE_URL);
+        tracks.set(key, pending);
+        pending.catch(() => tracks.delete(key));
+    }
+    const say = (line: string): void => void entry.setup.audio.engine.say({ key: line }, { interrupt: false }).catch(() => undefined);
+    let track: TrackFile;
+    try {
+        track = await pending;
+    } catch (e) {
+        say('sonic.say.scanFailed');
+        throw e;
+    }
+    const [s, tx, ty, tz] = w.transform;
+    const ses = ctx.session;
+    if (ses.builtin || ses.scene.id !== w.sceneId) {
+        forceScanPrefs(ctx.prefs, w);
+        mode.bridge.silence();
+        say('sonic.say.scanLoading');
+        const ok = await ctx.scenes.load(w.sceneId, 'pick');
+        if (!ok || ctx.session.builtin || ctx.session.scene.id !== w.sceneId) {
+            // the lesson does not open: the scan's size and walls are not kept in the prefs for a flight that is not the lesson's
+            clearScanPrefs(ctx.prefs);
+            say('sonic.say.scanFailed');
+            throw new Error(`the scan ${w.sceneId} did not load`);
+        }
+    } else if (Math.abs(ses.transform.s - s) > 1e-9 || ses.transform.t.some((v, i) => Math.abs(v - ([tx, ty, tz][i] as number)) > 1e-9)) {
+        ses.setTransform({ s, t: [tx, ty, tz] });
+        ctx.renderer.renderOnce();
+    }
+    const now = ctx.session;
+    return buildScanLesson(track, {
+        sceneId: w.sceneId,
+        sceneVersion: now.scene.version,
+        spawn: { pos: [now.spawn[0], now.spawn[1], now.spawn[2]], yawDeg: now.spawn[3] },
+        // asked each time: the session is replaced by a scene switch, the walls by a refine
+        src: { collision: () => ctx.session.collision, transform: () => ctx.session.transform }
+    });
+}
+
 /** The page as the lesson host sees it. */
-function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: PrimitiveStage, showMenu: () => void): LessonPage {
+function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: PrimitiveStage, tracks: TrackCache, showMenu: () => void): LessonPage {
     return {
         mode,
         store: ctx.prefs,
@@ -114,8 +183,8 @@ function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: P
                 ctx.resume('scene');
             }
         },
-        // a scan lesson (module 7) flies the scan the page flies: its world and track come with step 10
-        scanWorld: () => null,
+        // a scan lesson (module 7): the scan at the lesson's size, walls on, then its world over the track (sonic/scan-lesson.ts)
+        scanLesson: (lesson) => scanLesson(ctx, mode, entry, tracks, lesson),
         showMenu,
         clock: () => performance.now()
     };
@@ -158,7 +227,7 @@ export const sonicFlight: Feature = {
                 screen?.hide();
                 ctx.resume('panel');
             };
-            const h = new LessonHost(pageOf(ctx, mode, entry, stage, showMenu));
+            const h = new LessonHost(pageOf(ctx, mode, entry, stage, new Map(), showMenu));
             host = h;
             hosts.set(ctx, h);
             screen?.bind({
@@ -172,6 +241,21 @@ export const sonicFlight: Feature = {
                 log.push(e);
                 if (log.length > EVENT_LOG_CAP) log.shift();
             }));
+            let lastSample: FlightSample | null = null;
+            offs.push(ctx.events.on('sonicSample', (smp) => { lastSample = smp; }));
+            ctx.hook.sonicRays = (frames = 400) => {
+                const smp = lastSample;
+                const world = h.world;
+                if (!smp || !world) return null;
+                const sampler = createSceneSampler();
+                const run = (n: number): number => {
+                    const t0 = performance.now();
+                    for (let i = 0; i < n; i++) sampler.sample({ ...smp, yawDeg: smp.yawDeg + (360 * i) / n }, world);
+                    return performance.now() - t0;
+                };
+                run(60);
+                return { frames, msPerFrame: Math.round((run(frames) / frames) * 1000) / 1000, raysPerFrame: 30 };
+            };
             offs.push(ctx.menu.add({ id: 'pause.sonic', action: null, labelKey: 'sonic.menu.lessons', order: 95, section: 'tools', run: () => showMenu() }));
             // Z, I and G: keys of the mode, each ignored while no lesson runs
             offs.push(ctx.keys.on('sonic.repeat', (e) => { if (!e.repeat && mode.active) void h.repeat(); }));
@@ -192,6 +276,12 @@ export const sonicFlight: Feature = {
                 asking: h.asking,
                 question: h.pending ? { id: h.pending.id, options: h.pending.options } : null,
                 engine: audio.engine.state,
+                target: (() => {
+                    const o = h.runner?.target();
+                    return o ? { id: o.id, pos: [o.pos[0], o.pos[1], o.pos[2]] as [number, number, number] } : null;
+                })(),
+                cost: mode.hearCost(),
+                walls: { voxelM: ctx.session.collision ? ctx.session.collision.voxelResolution : null, builtin: !!ctx.session.builtin, scene: ctx.session.scene.id, scale: ctx.session.transform.s },
                 ...craftNow(ctx),
                 speechQueue: mode.bridge.speechQueue,
                 lastLine: mode.bridge.last ? mode.bridge.last.key : null,
@@ -255,6 +345,7 @@ export const sonicFlight: Feature = {
                 document.body.classList.remove('sonic-mode');
                 delete ctx.sonic;
                 delete ctx.hook.sonic;
+                delete ctx.hook.sonicRays;
                 hosts.delete(ctx);
             }
             modes.delete(ctx);

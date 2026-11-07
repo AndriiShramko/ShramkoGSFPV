@@ -81,6 +81,22 @@ describe('where the pilot stands', () => {
     });
 });
 
+describe('the best time of a timed lesson', () => {
+    it('is shown for the timed lesson (module 7) from the saved progress, and for no other lesson (control), nothing before a time exists', () => {
+        const rows = (progress: Parameters<typeof buildModel>[0]) => buildModel(progress, null, 'full').modules.flatMap((x) => x.lessons);
+        const none = rows({});
+        expect(none.every((l) => l.bestTimeMs === null)).toBe(true);
+        const timed = rows({ 'free-garden': { ...done(1), bestTimeMs: 31200 } });
+        expect(timed.find((l) => l.id === 'free-garden')!.bestTimeMs).toBe(31200);
+        expect(timed.filter((l) => l.bestTimeMs !== null).map((l) => l.id)).toEqual(['free-garden']);
+        // a time saved against a lesson that is not timed is not shown (the runner never writes one; a hand-edited file might)
+        const odd = rows({ 'hover-height': { ...done(1), bestTimeMs: 5000 } });
+        expect(odd.every((l) => l.bestTimeMs === null)).toBe(true);
+        // begun, never finished: no time yet
+        expect(rows({ 'free-garden': { ...done(1, false), bestTimeMs: null } }).find((l) => l.id === 'free-garden')!.bestTimeMs).toBeNull();
+    });
+});
+
 describe('?sonic=', () => {
     it('empty, start and menu are the start screen', () => {
         for (const v of [null, '', 'start', 'menu', ' start ']) expect(parseSonicParam(v)).toEqual({ kind: 'start' });

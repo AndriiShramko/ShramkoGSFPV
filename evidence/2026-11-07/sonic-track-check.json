@@ -1,0 +1,408 @@
+{
+  "name": "sonic-track-check",
+  "context": {
+    "date": "2026-11-07T18:36:30.003Z",
+    "gitHead": "188d91b",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "step": "v12-flight 10: the Winter Garden ring track proven clear on the real walls",
+  "track": {
+    "id": "7a475d38-rings",
+    "version": 1,
+    "file": "/apps/fly/public/sonic/tracks/7a475d38-rings-v1.json",
+    "gates": 8,
+    "transform": [
+      5,
+      0,
+      0,
+      0
+    ]
+  },
+  "walls": {
+    "scene": "7a475d38",
+    "cm": 3.2,
+    "flownCm": 16,
+    "sha256": "8b7e1d61afcb387cd2dc59f34fc45683271621d57a25f6d1fa4d400748491b1b"
+  },
+  "marginM": 0.5,
+  "provenMarginM": 0.798,
+  "proofMs": 46781,
+  "estimate": {
+    "flightS": 13,
+    "note": "path length over the lesson speed cap: an estimate, not a flight"
+  },
+  "report": {
+    "marginM": 0.5,
+    "ok": true,
+    "startClear": true,
+    "startFreeM": 2.474,
+    "gates": [
+      {
+        "id": "ring-1",
+        "index": 0,
+        "centre": [
+          2.5,
+          6.25,
+          -9
+        ],
+        "diameterM": 3.5,
+        "yawDeg": -180,
+        "clear": true,
+        "freeM": 1.345,
+        "freeAt": [
+          2.5,
+          6.25,
+          -6
+        ],
+        "axisInDeg": 0,
+        "axisOutDeg": 4.764,
+        "turnDeg": 4.764,
+        "directionOk": true
+      },
+      {
+        "id": "ring-2",
+        "index": 1,
+        "centre": [
+          2.5,
+          7,
+          0
+        ],
+        "diameterM": 3.5,
+        "yawDeg": -180,
+        "clear": true,
+        "freeM": 1.413,
+        "freeAt": [
+          3.528,
+          5.462,
+          0
+        ],
+        "axisInDeg": 4.764,
+        "axisOutDeg": 7.907,
+        "turnDeg": 12.671,
+        "directionOk": true
+      },
+      {
+        "id": "ring-3",
+        "index": 2,
+        "centre": [
+          2.5,
+          5.75,
+          9
+        ],
+        "diameterM": 3.5,
+        "yawDeg": -178.1,
+        "clear": true,
+        "freeM": 1.18,
+        "freeAt": [
+          2.5,
+          3.9,
+          9
+        ],
+        "axisInDeg": 8.131,
+        "axisOutDeg": 4.259,
+        "turnDeg": 12.315,
+        "directionOk": true
+      },
+      {
+        "id": "ring-4",
+        "index": 3,
+        "centre": [
+          2,
+          6.25,
+          16.5
+        ],
+        "diameterM": 3.5,
+        "yawDeg": -176.2,
+        "clear": true,
+        "freeM": 1.977,
+        "freeAt": [
+          1.819,
+          4.409,
+          16.488
+        ],
+        "axisInDeg": 3.806,
+        "axisOutDeg": 134.518,
+        "turnDeg": 134.601,
+        "directionOk": true
+      },
+      {
+        "id": "ring-5",
+        "index": 4,
+        "centre": [
+          -2,
+          6,
+          12
+        ],
+        "diameterM": 3.5,
+        "yawDeg": -20.8,
+        "clear": true,
+        "freeM": 1.67,
+        "freeAt": [
+          -1.663,
+          4.186,
+          11.872
+        ],
+        "axisInDeg": 20.963,
+        "axisOutDeg": 21.263,
+        "turnDeg": 41.607,
+        "directionOk": true
+      },
+      {
+        "id": "ring-6",
+        "index": 5,
+        "centre": [
+          -2,
+          5.25,
+          2.5
+        ],
+        "diameterM": 3.5,
+        "yawDeg": 0,
+        "clear": true,
+        "freeM": 1.692,
+        "freeAt": [
+          -3.85,
+          5.25,
+          2.5
+        ],
+        "axisInDeg": 4.514,
+        "axisOutDeg": 7.907,
+        "turnDeg": 12.421,
+        "directionOk": true
+      },
+      {
+        "id": "ring-7",
+        "index": 6,
+        "centre": [
+          -2,
+          6.5,
+          -6.5
+        ],
+        "diameterM": 3.5,
+        "yawDeg": 1.7,
+        "clear": true,
+        "freeM": 1.37,
+        "freeAt": [
+          -3.429,
+          5.326,
+          -6.542
+        ],
+        "axisInDeg": 8.087,
+        "axisOutDeg": 6.259,
+        "turnDeg": 14.34,
+        "directionOk": true
+      },
+      {
+        "id": "ring-8",
+        "index": 7,
+        "centre": [
+          -1.5,
+          5.6,
+          -15
+        ],
+        "diameterM": 3.5,
+        "yawDeg": 3.4,
+        "clear": true,
+        "freeM": 0.802,
+        "freeAt": [
+          -2.672,
+          4.17,
+          -15.07
+        ],
+        "axisInDeg": 6.034,
+        "axisOutDeg": 6.034,
+        "turnDeg": 0,
+        "directionOk": true
+      }
+    ],
+    "legs": [
+      {
+        "from": "start",
+        "to": "ring-1",
+        "lengthM": 8,
+        "clear": true,
+        "freeM": 2.474,
+        "at": [
+          2.5,
+          6.25,
+          -17
+        ]
+      },
+      {
+        "from": "ring-1",
+        "to": "ring-2",
+        "lengthM": 9.031,
+        "clear": true,
+        "freeM": 1.579,
+        "at": [
+          2.5,
+          6.473,
+          -6.324
+        ]
+      },
+      {
+        "from": "ring-2",
+        "to": "ring-3",
+        "lengthM": 9.086,
+        "clear": true,
+        "freeM": 2.489,
+        "at": [
+          2.5,
+          5.986,
+          7.297
+        ]
+      },
+      {
+        "from": "ring-3",
+        "to": "ring-4",
+        "lengthM": 7.533,
+        "clear": true,
+        "freeM": 2.525,
+        "at": [
+          2.355,
+          5.895,
+          11.177
+        ]
+      },
+      {
+        "from": "ring-4",
+        "to": "ring-5",
+        "lengthM": 6.026,
+        "clear": true,
+        "freeM": 3.262,
+        "at": [
+          2,
+          6.25,
+          16.5
+        ]
+      },
+      {
+        "from": "ring-5",
+        "to": "ring-6",
+        "lengthM": 9.53,
+        "clear": true,
+        "freeM": 3.321,
+        "at": [
+          -2,
+          5.75,
+          8.833
+        ]
+      },
+      {
+        "from": "ring-6",
+        "to": "ring-7",
+        "lengthM": 9.086,
+        "clear": true,
+        "freeM": 2.002,
+        "at": [
+          -2,
+          6.196,
+          -4.311
+        ]
+      },
+      {
+        "from": "ring-7",
+        "to": "ring-8",
+        "lengthM": 8.562,
+        "clear": true,
+        "freeM": 2.215,
+        "at": [
+          -1.657,
+          5.883,
+          -12.329
+        ]
+      }
+    ],
+    "pathM": 66.855,
+    "minGapM": 6.026,
+    "minFreeM": 0.802,
+    "issues": []
+  },
+  "checks": [
+    {
+      "name": "start, every opening, every frame, every leg and every run through a gate: a sphere of 0.5 m touches no wall (8 gates, 8 legs, flown at x5)",
+      "pass": true,
+      "value": {
+        "minFreeM": 0.802,
+        "pathM": 66.855
+      }
+    },
+    {
+      "name": "every gate is passed forward: its axis is within 35 degrees of the leg in",
+      "pass": true,
+      "value": [
+        [
+          "ring-1",
+          0,
+          4.764
+        ],
+        [
+          "ring-2",
+          4.764,
+          12.671
+        ],
+        [
+          "ring-3",
+          8.131,
+          12.315
+        ],
+        [
+          "ring-4",
+          3.806,
+          134.601
+        ],
+        [
+          "ring-5",
+          20.963,
+          41.607
+        ],
+        [
+          "ring-6",
+          4.514,
+          12.421
+        ],
+        [
+          "ring-7",
+          8.087,
+          14.34
+        ],
+        [
+          "ring-8",
+          6.034,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "control: the proof is no empty test: the track passes at 0.778 m and fails at 0.818 m (the largest margin it holds is 0.798 m)",
+      "pass": true,
+      "value": {
+        "provenMarginM": 0.798
+      }
+    },
+    {
+      "name": "control: gate ring-5 pushed 0.3 m into the nearest wall (4.639 m away) is refused, and the refusal names that gate",
+      "pass": true,
+      "value": [
+        "leg ring-4 to ring-5: a sphere of 0.5 m touches a wall (free radius along it 6 m at 2, 6.25, 16.5)",
+        "leg ring-5 to ring-6: a sphere of 0.5 m touches a wall (free radius along it 6 m at 1.492, 2.508, 12)",
+        "gate ring-5: the opening, its frame or the run through it is not clear by 0.5 m (free radius 6 m)"
+      ]
+    },
+    {
+      "name": "control: gate ring-5 carried 6 m beyond the nearest wall makes a leg that crosses it, which is refused",
+      "pass": true,
+      "value": [
+        "ring-4->ring-5",
+        "ring-5->ring-6"
+      ]
+    },
+    {
+      "name": "control: a gate turned half way round (its axis against the leg in) is refused as not passed forward",
+      "pass": true
+    }
+  ],
+  "pass": true
+}

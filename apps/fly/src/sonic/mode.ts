@@ -16,6 +16,8 @@
 //                  'manual-start' respawn, exact in a replay of the flight log (the time-based rewind Y is not used).
 //   N              the next step of the lesson (the 'key' event, runner.next); never a scene switch in the mode.
 //   [ ]            locked: a lesson's distances are metres of its world (a note says so).
+//   scan lessons   the prefs' session layer also holds the lesson's scene size and the walls on (scan-lesson.ts), taken off
+//                  again by leave(); the keys [ ] above are why the size cannot move meanwhile.
 import type { PrefsStore } from '@gsfpv/prefs';
 import type { Checkpoint, FlightSample, LessonDef, LessonSession, Pose, SonicFrameInput, SonicWorld } from '@shramko/sonic-fpv';
 import type { FlightSession } from '../session';
@@ -23,9 +25,12 @@ import type { ActionHandler } from '../app/keys';
 import type { AppEvents, Bus } from '../app/context';
 import { SonicBridge, touchMaterial } from './bridge';
 import type { BridgeEngine } from './bridge';
+import { clearScanPrefs, forceScanPrefs } from './scan-lesson';
 
 /** R held this long is the long press (back to the lesson's start), ms. */
 export const LONG_PRESS_MS = 700;
+/** The frames whose engine cost is kept for hearCost. */
+export const COST_KEEP = 3000;
 
 /** The prefs the mode holds in the session layer while it runs, and their values. */
 // (input.howToFly off: the card that shows the keys by itself on a first visit is a sight-first dialog in the page's live
@@ -66,6 +71,9 @@ export class SonicMode {
     /** the recorder's replay drives the view and the engine (SonicRuntime.playback): live frames are not heard */
     private playing = false;
     private offs: (() => void)[] = [];
+    /** the engine's frame costs, a ring (hearCost) */
+    private readonly cost = new Float64Array(COST_KEEP);
+    private costN = 0;
     /** the last checkpoint reached, when no runner keeps it */
     private checkpoint: Checkpoint | null = null;
     private pressAt: number | null = null;
@@ -97,6 +105,9 @@ export class SonicMode {
         this.on = true;
         const h = this.host;
         for (const [id, v] of Object.entries(MODE_PREFS)) h.prefs.setSession(id, v);
+        // a scan lesson flies its scan at the lesson's size, walls on (the session was made with them: the entry and the
+        // lesson host set them before the scan loaded; this keeps them while the mode runs)
+        if (o.lesson) forceScanPrefs(h.prefs, o.lesson.world);
         this.lesson = o.lesson ?? null;
         this.touches = 0;
         this.checkpoint = null;
@@ -126,6 +137,7 @@ export class SonicMode {
         this.offs = [];
         const h = this.host;
         for (const id of Object.keys(MODE_PREFS)) h.prefs.clearSession(id);
+        clearScanPrefs(h.prefs);
         h.setLesson(null);
         this.bridge.stop();
         this.lesson = null;
@@ -150,7 +162,21 @@ export class SonicMode {
     hear(sample: FlightSample, input?: SonicFrameInput | null): void {
         const e = this.bridge.engine;
         if (!this.on || this.playing || !e?.update) return;
+        const t0 = performance.now();
         e.update(input ?? { sample, world: this.bridge.world, target: this.bridge.runner?.target() ?? null, floorY: this.floorY });
+        this.cost[this.costN++ % COST_KEEP] = performance.now() - t0;
+    }
+
+    /**
+     * What the engine's frame cost in this page (ms, the last COST_KEEP frames since the page began): the scene sampler's rays and
+     * the cue planner, on the main thread, for the plan's budget of 1 ms p95 (v12-plan.md 2.4). Measured here, not in Node.
+     */
+    hearCost(): { readonly n: number; readonly p50: number; readonly p95: number; readonly p99: number; readonly max: number } {
+        const n = Math.min(this.costN, COST_KEEP);
+        if (n === 0) return { n: 0, p50: 0, p95: 0, p99: 0, max: 0 };
+        const sorted = Array.from(this.cost.subarray(0, n)).sort((a, b) => a - b);
+        const q = (p: number): number => Math.round((sorted[Math.min(n - 1, Math.floor(p * (n - 1)))] as number) * 1000) / 1000;
+        return { n: this.costN, p50: q(0.5), p95: q(0.95), p99: q(0.99), max: Math.round((sorted[n - 1] as number) * 1000) / 1000 };
     }
 
     /** A new scene session or a new flight model: the bridge's tick hook follows it. */
@@ -212,6 +238,8 @@ export class SonicMode {
      */
     place(pose: Pose): void {
         const s = this.host.session();
+        // a scene is being swapped (the session is gone): nobody to place, and a key pressed meanwhile must not throw
+        if (s.disposed) return;
         s.spawn = [pose.pos[0], pose.pos[1], pose.pos[2], pose.yawDeg];
         s.respawnStart();
         this.placedAt = performance.now();

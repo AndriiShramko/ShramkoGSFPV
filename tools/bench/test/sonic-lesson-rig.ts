@@ -19,11 +19,15 @@ import type { ActionHandler } from '../../../apps/fly/src/app/keys';
 import { LessonPilot, rayClearance } from '../../../apps/fly/src/play/lesson-pilot';
 import { LessonHost } from '../../../apps/fly/src/sonic/lessons';
 import type { LessonPage } from '../../../apps/fly/src/sonic/lessons';
+import { buildScanLesson } from '../../../apps/fly/src/sonic/scan-lesson';
 import { SonicMode } from '../../../apps/fly/src/sonic/mode';
 import { lessonFlightWorld } from '../../../apps/fly/src/sonic/lesson-world';
 import type { LessonWorld } from '../../../apps/fly/src/sonic/lesson-world';
 import type { Prim } from '../../../apps/fly/src/sonic/primitives';
 import { mkStore } from '../../../packages/prefs/test/helpers';
+import { VoxelContactWorld } from '../../../packages/collision/src';
+import type { VoxelCollision } from '../../../packages/collision/src';
+import type { TrackFile } from '../../../packages/sonic-fpv/src';
 
 /** A renderer that draws nothing (as wind-session.test.ts). */
 export function nullRenderer(): NonNullable<SessionOptions['renderer']> {
@@ -116,6 +120,23 @@ export class FakeEngine {
     }
 }
 
+/**
+ * A scan for the rig to fly (module 7): the walls as the flight flies them (a scan's octree under its scene size), the track,
+ * and where the craft waits. The session is a built-in world over those walls (the only way to fly given walls without the
+ * network), so the page's scene switch is not run: the scan is "already flown", as when the page was entered on the lesson.
+ */
+export interface RigScan {
+    readonly sceneId: string;
+    /** the walls flown (transformCollision of the scan's grid) */
+    readonly collision: VoxelCollision;
+    readonly sha256: string;
+    readonly track: TrackFile;
+    /** T(p) = s * p + t, as the lesson forces it */
+    readonly transform: readonly [number, number, number, number];
+    /** where the craft is first made (flown world) */
+    readonly spawn: readonly [number, number, number, number];
+}
+
 /** What a scripted pilot asks for each 10 ms: the intents (sticks) and a digit for a question. */
 export interface Intent {
     forward?: number;
@@ -132,7 +153,7 @@ export class Rig {
     readonly sonic: SessionEvent[] = [];
     readonly sessionPrefs = new Map<string, unknown>();
     readonly keys = new Map<string, ActionHandler[]>();
-    readonly store = mkStore();
+    store = mkStore();
     readonly engine = new FakeEngine(this.clock);
     readonly swaps: string[] = [];
     readonly shown: { count: number; ids: string[] }[] = [];
@@ -158,12 +179,17 @@ export class Rig {
         vi.spyOn(performance, 'now').mockImplementation(() => this.clock.t);
     }
 
-    /** A page on the first lesson's world. `speechEnds`: false makes the speech never report its end (the runner then estimates). */
-    static async make(first: LessonDef): Promise<Rig> {
+    /**
+     * A page on the first lesson's world (or, with `scan`, on that scan). `store`: the pilot's saved state of an earlier page
+     * (progress, best times) instead of an empty one.
+     */
+    static async make(first: LessonDef, o: { scan?: RigScan; store?: ReturnType<typeof mkStore> } = {}): Promise<Rig> {
         const rig = new Rig();
-        const lw = lessonFlightWorld(first);
-        if (!lw) throw new Error('the rig flies built-in worlds');
-        rig.session = await rig.start(lw);
+        if (o.store) rig.store = o.store;
+        const scan = o.scan ?? null;
+        const lw = scan ? null : lessonFlightWorld(first);
+        if (!scan && !lw) throw new Error('the rig flies built-in worlds');
+        rig.session = scan ? await rig.startScan(scan) : await rig.start(lw as LessonWorld);
         rig.events.on('sonicEvent', (e) => rig.sonic.push(e));
         rig.mode = new SonicMode({
             events: rig.events,
@@ -208,13 +234,35 @@ export class Rig {
                     rig.swapping = false;
                 }
             },
-            scanWorld: () => null,
+            scanLesson: async () =>
+                scan
+                    ? buildScanLesson(scan.track, {
+                          sceneId: scan.sceneId,
+                          sceneVersion: 1,
+                          spawn: { pos: [scan.spawn[0], scan.spawn[1], scan.spawn[2]], yawDeg: scan.spawn[3] },
+                          // the walls are flown already (a built-in session has the identity transform): the scene size is the scan's
+                          src: { collision: () => rig.session.collision, transform: () => ({ s: scan.transform[0], t: [scan.transform[1], scan.transform[2], scan.transform[3]] }) }
+                      })
+                    : null,
             showMenu: () => { rig.menus++; },
             clock: () => rig.clock.t
         };
         rig.host = new LessonHost(page);
-        rig.host.seed(first.id, lw);
+        if (lw) rig.host.seed(first.id, lw);
         return rig;
+    }
+
+    private async startScan(scan: RigScan): Promise<FlightSession> {
+        const scene = { id: scan.sceneId, version: 1, settings: {}, camera: null, contentUrl: '', contentKind: 'meta', content: [], collisionUrl: null, background: [0.02, 0.02, 0.03], tonemapping: undefined } as unknown as NonNullable<SessionOptions['world']>['scene'];
+        const ses = await FlightSession.start({} as HTMLCanvasElement, {
+            sceneId: scan.sceneId,
+            world: { scene, collision: scan.collision, contact: new VoxelContactWorld(scan.collision), sha256: scan.sha256, spawn: scan.spawn },
+            renderer: nullRenderer(),
+            crashOn: false,
+            windSeed: 5
+        });
+        ses.onLife = () => this.pilot?.resetFlight();
+        return ses;
     }
 
     private async start(lw: LessonWorld): Promise<FlightSession> {

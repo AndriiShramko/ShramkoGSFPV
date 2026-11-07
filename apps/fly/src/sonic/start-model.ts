@@ -17,6 +17,8 @@ export interface LessonRow {
     readonly state: LessonState;
     /** the lesson has no analytic world (module 7 flies a scan) */
     readonly scan: boolean;
+    /** the timed lesson's best time, ms, or null (none yet, or not a timed lesson) */
+    readonly bestTimeMs: number | null;
 }
 
 export interface ModuleRow {
@@ -55,10 +57,12 @@ export function continueLesson(progress: Readonly<Record<string, Pick<LessonProg
     return list.find((id) => !progress[id]?.passed) ?? list[list.length - 1] ?? null;
 }
 
-export function buildModel(progress: Readonly<Record<string, Pick<LessonProgress, 'passed' | 'attempts'>>>, current: string | null, path: 'full' | 'fast'): StartModel {
+export function buildModel(progress: Readonly<Record<string, Pick<LessonProgress, 'passed' | 'attempts'> & { readonly bestTimeMs?: number | null }>>, current: string | null, path: 'full' | 'fast'): StartModel {
     const byModule = new Map<ModuleId, LessonRow[]>();
     for (const l of ladder()) {
-        const row: LessonRow = { id: l.id, title: l.title, module: l.module, fastPath: l.fastPath, state: stateOf(l.id, progress, current), scan: l.world.kind === 'scan' };
+        const timed = l.goals.some((g) => g.kind === 'timed-course');
+        const best = progress[l.id]?.bestTimeMs;
+        const row: LessonRow = { id: l.id, title: l.title, module: l.module, fastPath: l.fastPath, state: stateOf(l.id, progress, current), scan: l.world.kind === 'scan', bestTimeMs: timed && typeof best === 'number' ? best : null };
         const list = byModule.get(l.module) ?? [];
         list.push(row);
         byModule.set(l.module, list);

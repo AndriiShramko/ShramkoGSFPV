@@ -10,6 +10,7 @@ import { createSonicEngine } from '@shramko/sonic-fpv/audio';
 import type { FlyBySoundEngine } from '@shramko/sonic-fpv/audio';
 import { defaultPrefs, resolveTheme } from '@shramko/sonic-fpv';
 import type { AudioContextLike, Locale, SonicPrefs, SpeechLine, SpeechOut, ThemeDef } from '@shramko/sonic-fpv';
+import { engineDicts } from './host-lines';
 
 /** What the engine host needs of the engine (FlyBySoundEngine; a fake in tests). */
 export type PageEngine = Pick<FlyBySoundEngine, 'state' | 'start' | 'suspend' | 'resume' | 'close' | 'setTheme' | 'setPrefs' | 'setLocale' | 'setLayers' | 'update' | 'cue' | 'say' | 'activeCues' | 'auxInput' | 'onSpeech'>;
@@ -41,7 +42,8 @@ export const browserDeps: AudioDeps = {
             /* no speech in this browser: the captions carry the text */
         }
     },
-    createEngine: (o) => createSonicEngine({ theme: o.theme, prefs: o.prefs, locale: o.locale, ...(o.speech === undefined ? {} : { speech: o.speech }), caption: o.caption })
+    // the package's dictionaries and the page's own spoken lines (host-lines.ts)
+    createEngine: (o) => createSonicEngine({ theme: o.theme, prefs: o.prefs, locale: o.locale, dicts: engineDicts(), ...(o.speech === undefined ? {} : { speech: o.speech }), caption: o.caption })
 };
 
 export interface SonicAudioOptions {

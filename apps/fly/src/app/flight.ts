@@ -164,9 +164,11 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
     const own = ownInput();
     // Fly by Sound (v0.12): no radio found, the keyboard flies at once: the Controls screen is a sight-first wizard, and a
     // radio is set up once by a helper (the pause menu's Controls), after which it is the one found here
-    const asKeyboard = (c: RadioChoice | null): RadioChoice | null => c ?? (world ? { kind: 'keyboard', profile: null } : null);
+    // (a scan lesson flies a scan but is the same mode: it asks for the keyboard the same way)
+    const inSonic = !!world || !!sonicEntry();
+    const asKeyboard = (c: RadioChoice | null): RadioChoice | null => c ?? (inSonic ? { kind: 'keyboard', profile: null } : null);
     const resumed = (own ? resumeInput().catch(() => null) : Promise.resolve(null)).then(asKeyboard);
-    const controlsNext = own ? !expectResume() && !world : sim === 'raw' && q.get('lat') !== '1' && q.get('input') !== 'touch' && !(isTouch && !hasHid);
+    const controlsNext = own ? !expectResume() && !inSonic : sim === 'raw' && q.get('lat') !== '1' && q.get('input') !== 'touch' && !(isTouch && !hasHid);
     // the card's Fly now shows the first view at once (session/reveal.ts)
     const flyNow = new FlyNow();
     // a built-in world is in memory: nothing loads, so there is no loading card to read, wait for or fade out
